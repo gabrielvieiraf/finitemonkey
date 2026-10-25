@@ -1915,6 +1915,8 @@ var BACKUPS_DIR = ".finitemonkey/backups";
 var LOCKS_DIR = ".finitemonkey/locks";
 var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
 var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
+var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
+var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
 var LOCK_SCHEMA = "finitemonkey/lock@1";
 var PLAN_SCHEMA = "finitemonkey/install-plan@1";
 var GENERATED_MARKER = "finitemonkey:generated v=1";
@@ -1923,7 +1925,7 @@ var BLOCK_END = "# finitemonkey:end";
 var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
 var PRESETS = ["neutral", "gabriel"];
 var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
-var COMMITTED_STATE = ["config.yml", "tasks/", "rules.yml", "policy.yml", "findings/"];
+var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
 
 // src/install/hook-entries.ts
 var INSTALLED_HOOKS = [
@@ -1938,20 +1940,16 @@ var INSTALLED_HOOKS = [
   { event: "ConfigChange", timeout: 10, guard: true }
 ];
 var PROJECT_BIN = `\${CLAUDE_PROJECT_DIR}/${LOCAL_BIN}`;
+var VENDORED_BIN = `\${CLAUDE_PROJECT_DIR}/${VENDOR_BIN}`;
 var isScript = (path) => /\.(c|m)?js$/i.test(path);
 var execForm = (runner, event) => {
   if (runner.kind === "local") return { command: "node", args: [PROJECT_BIN, "hook", event] };
+  if (runner.kind === "vendored") return { command: "node", args: [VENDORED_BIN, "hook", event] };
   if (isScript(runner.path)) return { command: "node", args: [runner.path, "hook", event] };
   return { command: runner.path, args: ["hook", event] };
 };
-var shellQuote = (value) => /^[A-Za-z0-9_./:=@%+-]+$/.test(value) ? value : `"${value.replace(/(["\\$`])/g, "\\$1")}"`;
-var npxCommand = (version, event, extra = []) => ["npx", "--yes", "--prefer-offline", `finitemonkey@${version}`, "hook", event, ...extra].map(shellQuote).join(" ");
 var hookHandler = (runner, spec, failClosedSupported) => {
   const failure2 = spec.guard && failClosedSupported ? { onFailure: "block" } : {};
-  if (runner.kind === "npx") {
-    const command2 = npxCommand(runner.version, spec.event);
-    return { type: "command", command: command2, timeout: spec.timeout, ...failure2 };
-  }
   const { command, args } = execForm(runner, spec.event);
   return { type: "command", command, args, timeout: spec.timeout, ...failure2 };
 };
@@ -3208,7 +3206,7 @@ var configTemplate = (t, preset, lang) => [
   `lang: ${lang}`,
   ""
 ].join("\n");
-var hasMarker = (text) => text.includes(GENERATED_MARKER);
+var hasMarker = (text2) => text2.includes(GENERATED_MARKER);
 
 // src/install/deny-floor.ts
 var DENY_FLOOR = {
@@ -3222,6 +3220,7 @@ var DENY_FLOOR = {
   ],
   proof: [
     "Edit(./.finitemonkey/evidence/**)",
+    "Edit(./.finitemonkey/runtime/**)",
     "Edit(./.finitemonkey/lock.json)",
     "Edit(./.finitemonkey/log.jsonl)",
     "Edit(./.finitemonkey/state.md)"
@@ -3315,9 +3314,9 @@ var detectAuthorities = (project, env) => [
     name
   }))
 ];
-var chooseRunner = (project, bin, version) => {
+var chooseRunner = (project, bin) => {
   if (bin !== void 0) return { kind: "path", path: bin };
-  return project.exists(LOCAL_BIN) ? { kind: "local" } : { kind: "npx", version };
+  return project.exists(LOCAL_BIN) ? { kind: "local" } : { kind: "vendored" };
 };
 
 // src/install/gitignore-block.ts
@@ -3352,6 +3351,20 @@ var withoutBlock = (text2) => {
   return [...lines.slice(0, range.start), ...lines.slice(range.end + 1)].join(eol);
 };
 
+// src/install/vendor.ts
+var isBundle = (text2) => text2.startsWith("#!/usr/bin/env node") && text2.includes("finitemonkey");
+var isOwnPackage = (text2) => {
+  const parsed = parseJsonObject(text2);
+  return parsed.ok && parsed.value["name"] === "finitemonkey";
+};
+var vendoredPackage = (version) => `${JSON.stringify({ name: "finitemonkey", version, private: true, type: "module" }, null, 2)}
+`;
+var vendoredFiles = (bundle, version) => [
+  { path: VENDOR_BIN, template: bundle, isOurs: isBundle },
+  { path: VENDOR_PACKAGE, template: vendoredPackage(version), isOurs: isOwnPackage }
+];
+var isBundlePath = (path) => path.endsWith(".mjs");
+
 // src/install/plan.ts
 var CHANGING = ["create", "merge", "update"];
 var detect = (project, gitRoot, input) => ({
@@ -3361,7 +3374,7 @@ var detect = (project, gitRoot, input) => ({
   languages: detectLanguages(project),
   settings: settingsInfo(project.read(SETTINGS_FILE)),
   authorities: detectAuthorities(project, input.env),
-  runner: chooseRunner(project, input.bin, input.version),
+  runner: chooseRunner(project, input.bin),
   claude: detectClaude(project.runtime.probe)
 });
 var readPreviousLock = (project) => {
@@ -3413,29 +3426,39 @@ var gitignoreItem = (project) => {
   const after = withBlock(before);
   return { path: GITIGNORE_FILE, kind: "gitignore", action: actionFor(before, after, "merge"), before, after };
 };
-var configItem = (project, input, previous) => {
-  const before = project.read(CONFIG_FILE);
-  const template = configTemplate(input.t, input.preset, input.lang);
-  const base = { path: CONFIG_FILE, kind: "generated", before };
+var generatedItem = (project, file, previous) => {
+  const before = project.read(file.path);
+  const { template } = file;
+  const base = { path: file.path, kind: "generated", before };
   if (before === void 0) return { ...base, action: "create", after: template };
-  if (previous === void 0 && !hasMarker(before)) {
+  if (previous === void 0 && !file.isOurs(before)) {
     return { ...base, action: "skip-foreign", after: before, proposal: template };
   }
-  if (previous === void 0) {
+  if (hashText(before) !== previous?.hash) {
     return { ...base, action: before === template ? "unchanged" : "keep-edited", after: before, proposal: template };
   }
-  if (hashText(before) !== previous.hash) {
-    const action = before === template ? "unchanged" : "keep-edited";
-    return { ...base, action, after: before, proposal: template };
-  }
   return { ...base, action: actionFor(before, template, "update"), after: template };
+};
+var generatedFiles = (input, vendor) => {
+  const config = { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
+  if (!vendor) return accept([config]);
+  if (input.bundle === void 0) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
+  return accept([config, ...vendoredFiles(input.bundle, input.version)]);
 };
 var entryFor = (lock, path) => lock?.entries.find((entry) => entry.path === path);
 var buildPlan = (project, detection, input, previous) => {
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
-  const items = [settings.value, gitignoreItem(project), configItem(project, input, entryFor(previous, CONFIG_FILE))];
-  return accept({ detection, preset: input.preset, items, previous });
+  const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== void 0;
+  const files = generatedFiles(input, vendor);
+  if (!files.ok) return files;
+  const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
+  return accept({
+    detection,
+    preset: input.preset,
+    items: [settings.value, gitignoreItem(project), ...generated],
+    previous
+  });
 };
 var hasChanges = (plan) => plan.items.some((item) => CHANGING.includes(item.action));
 var needsWrite = (plan) => hasChanges(plan) || plan.previous === void 0;
@@ -3676,19 +3699,27 @@ var problem = (code, messageKey, fix, exitCode, params) => ({
   fix,
   exitCode
 });
-var planProblem = (error) => error.kind === "settings" ? problem(
-  "settings_unreadable",
-  "error.settings_unreadable",
-  "fix the JSON in .claude/settings.json, then run finitemonkey init again",
-  ExitCode.NotConfigured,
-  { detail: error.detail }
-) : problem(
-  "lock_unreadable",
-  "error.lock_unreadable",
-  "finitemonkey uninstall --purge --yes",
-  ExitCode.NotConfigured,
-  { detail: error.detail }
-);
+var planProblem = (error) => {
+  if (error.kind === "bundle") {
+    return problem("install_failed", "error.install_failed", "npx finitemonkey@latest init", ExitCode.NotConfigured, {
+      path: ".finitemonkey/runtime/dist/finitemonkey.mjs",
+      detail: error.detail
+    });
+  }
+  return error.kind === "settings" ? problem(
+    "settings_unreadable",
+    "error.settings_unreadable",
+    "fix the JSON in .claude/settings.json, then run finitemonkey init again",
+    ExitCode.NotConfigured,
+    { detail: error.detail }
+  ) : problem(
+    "lock_unreadable",
+    "error.lock_unreadable",
+    "finitemonkey uninstall --purge --yes",
+    ExitCode.NotConfigured,
+    { detail: error.detail }
+  );
+};
 var applyProblem = (failure2) => failure2.detail.startsWith("locked:") ? problem(
   "install_locked",
   "error.install_locked",
@@ -3703,6 +3734,21 @@ var notInstalled = () => problem("not_installed", "error.not_installed", "finite
 var confirmProblem = (command, question, fix) => problem("needs_confirmation", "error.needs_confirmation", fix, ExitCode.NeedsPerson, { command, question });
 var invalidPreset = (raw) => problem("invalid_arguments", "error.invalid_preset", "finitemonkey init --preset neutral", ExitCode.Usage, {
   preset: raw
+});
+var selfBundle = (ctx) => {
+  if (!isBundlePath(ctx.runtime.selfPath)) return void 0;
+  const text2 = ctx.runtime.readText(ctx.runtime.selfPath);
+  return text2.ok ? text2.value : void 0;
+};
+var planInputFor = (ctx, preset, bin, marketplace) => ({
+  preset,
+  lang: ctx.lang,
+  bin,
+  version: ctx.version,
+  marketplace,
+  bundle: selfBundle(ctx),
+  env: ctx.env,
+  t: ctx.t
 });
 
 // src/commands/init.ts
@@ -3735,15 +3781,7 @@ var runInstall = (ctx, request, presetFallback) => {
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = {
-    preset,
-    lang: ctx.lang,
-    bin: request.bin,
-    version: ctx.version,
-    marketplace: request.marketplace,
-    env: ctx.env,
-    t: ctx.t
-  };
+  const input = planInputFor(ctx, preset, request.bin, request.marketplace);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
@@ -3892,15 +3930,7 @@ var check = (ctx, bin) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
-  const input = {
-    preset: previous.value.preset,
-    lang: ctx.lang,
-    bin,
-    version: ctx.version,
-    marketplace: false,
-    env: ctx.env,
-    t: ctx.t
-  };
+  const input = planInputFor(ctx, previous.value.preset, bin, false);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const data = planData(ctx.t, plan.value, "update", false, void 0);
@@ -4103,13 +4133,21 @@ var run = async (options) => {
 // src/core/version.ts
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 var UNKNOWN_VERSION = "0.0.0-unknown";
-var readPackageVersion = (readText, moduleUrl) => {
-  const text2 = readText(toAbsolutePath(fileURLToPath3(new URL("../package.json", moduleUrl))));
-  if (!text2.ok) return UNKNOWN_VERSION;
+var VERSION_SOURCES = ["../package.json", "../.claude-plugin/plugin.json"];
+var versionAt = (readText, moduleUrl, relative4) => {
+  const text2 = readText(toAbsolutePath(fileURLToPath3(new URL(relative4, moduleUrl))));
+  if (!text2.ok) return void 0;
   const parsed = parseJson(text2.value);
-  if (!parsed.ok || !isRecord(parsed.value)) return UNKNOWN_VERSION;
+  if (!parsed.ok || !isRecord(parsed.value)) return void 0;
   const version = parsed.value["version"];
-  return typeof version === "string" ? version : UNKNOWN_VERSION;
+  return typeof version === "string" ? version : void 0;
+};
+var readPackageVersion = (readText, moduleUrl) => {
+  for (const relative4 of VERSION_SOURCES) {
+    const version = versionAt(readText, moduleUrl, relative4);
+    if (version !== void 0) return version;
+  }
+  return UNKNOWN_VERSION;
 };
 
 // src/cli.ts
