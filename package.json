@@ -1,6 +1,6 @@
 {
   "name": "finitemonkey",
-  "version": "0.0.0-development",
+  "version": "0.1.0-next.1",
   "description": "Infinite monkeys not required. A gate that makes coding agents finish verified work.",
   "type": "module",
   "license": "Apache-2.0",
