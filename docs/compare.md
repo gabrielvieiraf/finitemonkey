@@ -11,9 +11,9 @@ English | [Português (Brasil)](compare.pt-BR.md) | [Español](compare.es.md)
 The question this page asks about every project is the same: when the model would rather skip a rule, what still holds?
 
 - **Mechanism**: code that runs in the harness (a hook, a permission rule, a git hook, a CI step) and blocks or checks no matter what the model decides.
-- **Prose**: text the model reads (a skill, a prompt, a `CLAUDE.md`) and may follow. Prose is often the right tool, for planning, style and judgment. It just can't prove anything.
+- **Prose**: text the model reads (a skill, a prompt, a `CLAUDE.md`) and may follow. Prose is often the right tool for planning, style and judgment. On its own it cannot show that something happened.
 
-Neither is "better". Most good setups mix both. Finite Monkey's planned bet is narrow: the few things that must always hold (verified done, tests not weakened, no leaked secrets, no lost git work, no hand edits to production) should be mechanism.
+Most setups need both. Finite Monkey's planned scope is narrow: the few things that must always hold (verified done, tests not weakened, no leaked secrets, no lost git work, no hand edits to production) should be mechanism.
 
 ## At a glance
 
@@ -40,7 +40,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prose.** The gates are skill text, such as "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" in [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). The model decides whether to call `task-done`, and [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) notes that a stand-in command such as `echo "tests passed"` is indistinguishable from a real test run.
 
-**Where Finite Monkey is planned to differ.** The gate runs the check itself from a hook, not when the model chooses to, and trivial commands do not count as evidence. It does not try to replace the planning skills; an approved Superpowers design could become the input of a definition of done. Planned, not measured yet.
+**Where Finite Monkey is planned to differ.** The gate runs the check itself from a hook every time the agent tries to stop, and trivial commands do not count as evidence. It leaves planning to skills like these; an approved Superpowers design could become the input of a definition of done. Planned, not measured yet.
 
 ## oh-my-claudecode
 
@@ -52,7 +52,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Where the model decides.** The drift guard lets the stop through when `stop_hook_active` is set (line 910), so it blocks once. The git guard is active only in the `ralph`, `autopilot`, `team` and `ultragoal` modes (line 38) or with an environment variable. In the persistent modes, completion is the model running `/cancel`.
 
-**Where Finite Monkey is planned to differ.** The gate keeps blocking while the definition of done fails instead of yielding on the second attempt, and the git guard is always on. Planned, not measured yet.
+**Where Finite Monkey is planned to differ.** The gate keeps blocking for as long as the definition of done fails, and the git guard is always on. Planned, not measured yet.
 
 ## GSD
 
@@ -64,7 +64,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Where the model decides.** Verification is an LLM agent ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) that writes `VERIFICATION.md`, and the phase gate in [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) reads the status that agent wrote.
 
-**Where Finite Monkey is planned to differ.** The verdict comes from commands the gate ran on the current files, not from a report an agent wrote. Planned, not measured yet.
+**Where Finite Monkey is planned to differ.** The verdict comes from commands the gate ran on the current files. Planned, not measured yet.
 
 ## Spec Kit
 
@@ -76,7 +76,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prose.** Extension hooks such as `after_implement` depend on the model invoking them: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), lines 70 to 72). Test validation in the implement command is an instruction, and convergence is declared by the model. [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) asks for a final quality gate.
 
-**Where Finite Monkey is planned to differ.** It is meant to plug into Spec Kit, not compete with it: the gate as a workflow `shell` step or a `Stop` handler, reading `tasks.md` as the definition of done. Planned, not measured yet.
+**Where Finite Monkey is planned to differ.** It is meant to plug into Spec Kit: the gate as a workflow `shell` step or a `Stop` handler, reading `tasks.md` as the definition of done. Planned, not measured yet.
 
 ## ECC (Everything Claude Code)
 
@@ -100,7 +100,7 @@ Official plugin in [`anthropics/claude-plugins-official`](https://github.com/ant
 
 **Where the model decides.** The loop ends when the model's last message contains `<promise>TEXT</promise>` matching the completion promise you set (lines 129 to 138). The hook's own message asks the model not to lie to exit.
 
-**Where Finite Monkey is planned to differ.** The exit condition is a definition of done that the gate checks, not a phrase. Planned, not measured yet.
+**Where Finite Monkey is planned to differ.** The loop would end when the gate's definition of done passes. Planned, not measured yet.
 
 ## tdd-guard
 
@@ -132,11 +132,11 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 All of this is **planned, not measured yet**.
 
-- **Evidence over testimony.** Done means the gate ran the definition of done on the current files. A chat message, a progress file or a report written by an agent does not count.
-- **A gate that doesn't yield.** It keeps blocking while the definition of done fails, and ends with a "not finished" report instead of looping forever.
+- **Evidence from the gate's own runs.** Done means the gate ran the definition of done on the current files. A chat message, a progress file or a report written by an agent does not count.
+- **Blocking until the checks pass.** It keeps blocking while the definition of done fails, and ends with a "not finished" report instead of looping forever.
 - **Four damages in one install.** False "done", leaked secrets, hand edits to production and lost git work, with one `undo` for git.
 - **Small fixed context.** Enforcement lives in hooks, which cost no tokens per turn, with a byte budget checked in CI.
-- **Measured or cut.** A public benchmark with ablation decides which rules stay.
+- **Benchmark.** A public benchmark with ablation decides which rules stay.
 
 ## Where they are ahead today
 

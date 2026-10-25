@@ -11,9 +11,9 @@
 A pergunta que esta página faz a cada projeto é a mesma: quando o modelo prefere pular uma regra, o que continua valendo?
 
 - **Mecanismo**: código que roda no harness (um hook, uma regra de permissão, um git hook, uma etapa de CI) e bloqueia ou confere seja qual for a decisão do modelo.
-- **Prosa**: texto que o modelo lê (uma skill, um prompt, um `CLAUDE.md`) e pode seguir. Prosa muitas vezes é a ferramenta certa, para planejar, para estilo e para julgamento. Só não prova nada.
+- **Prosa**: texto que o modelo lê (uma skill, um prompt, um `CLAUDE.md`) e pode seguir. Prosa muitas vezes é a ferramenta certa para planejar, para estilo e para julgamento. Sozinha, não mostra que algo aconteceu.
 
-Nenhum dos dois é "melhor". A maioria das boas configurações mistura os dois. A aposta planejada do Finite Monkey é estreita: as poucas coisas que precisam valer sempre (pronto verificado, testes não enfraquecidos, nenhum segredo vazado, nenhum trabalho perdido no git, nenhuma mexida na produção na mão) devem ser mecanismo.
+A maioria das configurações precisa dos dois. O escopo planejado do Finite Monkey é estreito: as poucas coisas que precisam valer sempre (pronto verificado, testes não enfraquecidos, nenhum segredo vazado, nenhum trabalho perdido no git, nenhuma mexida na produção na mão) devem ser mecanismo.
 
 ## Visão geral
 
@@ -40,7 +40,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prosa.** Os portões são texto de skill, como "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" em [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). Quem decide chamar o `task-done` é o modelo, e a [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) registra que um comando substituto como `echo "tests passed"` não se distingue de uma execução real de testes.
 
-**Onde o Finite Monkey planeja ser diferente.** O portão roda a checagem ele mesmo, a partir de um hook, e não quando o modelo escolhe; comando trivial não conta como prova. Ele não tenta substituir as skills de planejamento: um design aprovado no Superpowers pode virar a entrada de uma definição de pronto. Planejado, ainda não medido.
+**Onde o Finite Monkey planeja ser diferente.** O portão roda a checagem ele mesmo, a partir de um hook, toda vez que o agente tenta parar, e comando trivial não conta como prova. O planejamento fica com skills como essas: um design aprovado no Superpowers pode virar a entrada de uma definição de pronto. Planejado, ainda não medido.
 
 ## oh-my-claudecode
 
@@ -52,7 +52,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Onde o modelo decide.** O drift guard deixa o fim passar quando `stop_hook_active` está ligado (linha 910), então bloqueia uma vez. A trava de git só fica ativa nos modos `ralph`, `autopilot`, `team` e `ultragoal` (linha 38) ou com uma variável de ambiente. Nos modos persistentes, concluir é o modelo rodar `/cancel`.
 
-**Onde o Finite Monkey planeja ser diferente.** O portão continua bloqueando enquanto a definição de pronto falha, em vez de ceder na segunda tentativa, e a trava de git fica sempre ligada. Planejado, ainda não medido.
+**Onde o Finite Monkey planeja ser diferente.** O portão continua bloqueando enquanto a definição de pronto falhar, e a trava de git fica sempre ligada. Planejado, ainda não medido.
 
 ## GSD
 
@@ -64,7 +64,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Onde o modelo decide.** A verificação é um agente LLM ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) que escreve o `VERIFICATION.md`, e o portão de fase em [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) lê o status que esse agente escreveu.
 
-**Onde o Finite Monkey planeja ser diferente.** O veredito vem de comandos que o portão rodou nos arquivos atuais, não de um relatório escrito por um agente. Planejado, ainda não medido.
+**Onde o Finite Monkey planeja ser diferente.** O veredito vem de comandos que o portão rodou nos arquivos atuais. Planejado, ainda não medido.
 
 ## Spec Kit
 
@@ -76,7 +76,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prosa.** Hooks de extensão como `after_implement` dependem de o modelo chamá-los: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), linhas 70 a 72). A validação de testes no comando de implementação é uma instrução, e a convergência é declarada pelo modelo. A [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) pede um portão final de qualidade.
 
-**Onde o Finite Monkey planeja ser diferente.** A ideia é encaixar no Spec Kit, não competir com ele: o portão como etapa `shell` do workflow ou handler de `Stop`, lendo o `tasks.md` como definição de pronto. Planejado, ainda não medido.
+**Onde o Finite Monkey planeja ser diferente.** A ideia é encaixar no Spec Kit: o portão como etapa `shell` do workflow ou handler de `Stop`, lendo o `tasks.md` como definição de pronto. Planejado, ainda não medido.
 
 ## ECC (Everything Claude Code)
 
@@ -100,7 +100,7 @@ Plugin oficial em [`anthropics/claude-plugins-official`](https://github.com/anth
 
 **Onde o modelo decide.** O laço termina quando a última mensagem do modelo contém `<promise>TEXTO</promise>` igual à promessa de conclusão que você definiu (linhas 129 a 138). A própria mensagem do hook pede ao modelo que não minta para sair.
 
-**Onde o Finite Monkey planeja ser diferente.** A condição de saída é uma definição de pronto que o portão confere, não uma frase. Planejado, ainda não medido.
+**Onde o Finite Monkey planeja ser diferente.** O laço terminaria quando a definição de pronto do portão passasse. Planejado, ainda não medido.
 
 ## tdd-guard
 
@@ -132,11 +132,11 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 Tudo isto é **planejado, ainda não medido**.
 
-- **Prova em vez de depoimento.** Pronto quer dizer que o portão rodou a definição de pronto nos arquivos atuais. Mensagem no chat, arquivo de progresso ou relatório escrito por um agente não contam.
-- **Um portão que não cede.** Ele continua bloqueando enquanto a definição de pronto falha, e termina com um relatório de "não terminado" em vez de um laço sem fim.
+- **Prova das execuções do próprio portão.** Pronto quer dizer que o portão rodou a definição de pronto nos arquivos atuais. Mensagem no chat, arquivo de progresso ou relatório escrito por um agente não contam.
+- **Bloqueio até as checagens passarem.** Ele continua bloqueando enquanto a definição de pronto falha, e termina com um relatório de "não terminado" em vez de um laço sem fim.
 - **Quatro danos numa instalação.** "Pronto" falso, segredo vazado, mexida na produção na mão e trabalho perdido no git, com um `undo` para o git.
 - **Contexto fixo pequeno.** A obrigação mora nos hooks, que não custam token a cada turno, com um orçamento em bytes conferido no CI.
-- **Medido ou cortado.** Um benchmark público com ablação decide quais regras ficam.
+- **Benchmark.** Um benchmark público com ablação decide quais regras ficam.
 
 ## Onde eles estão na frente hoje
 

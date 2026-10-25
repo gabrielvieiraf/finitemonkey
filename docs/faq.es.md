@@ -10,19 +10,19 @@ Cada pregunta es una búsqueda que la gente escribe de verdad, tomada de título
 
 Porque "listo" es una frase que escribe el modelo, y por defecto nada la comprueba. Es una queja frecuente, por ejemplo [anthropics/claude-code#60177](https://github.com/anthropics/claude-code/issues/60177) ("Claude marks tasks done without testing").
 
-- **Hoy:** Claude Code tiene el hook `Stop`. Un hook escrito por ti puede negarse a cerrar la sesión y decirle a Claude por qué. Es la capa correcta; tú escribes y mantienes la comprobación.
+- **Hoy:** Claude Code tiene el hook `Stop`. Un hook escrito por ti puede negarse a cerrar la sesión y decirle a Claude por qué. Funciona, pero tú escribes y mantienes la comprobación.
 - **Previsto en Finite Monkey:** una definición de terminado por tarea (comandos, tests, alcance) que el hook `Stop` ejecuta sobre los archivos actuales. Si falla, Claude recibe la lista de lo que falta y sigue trabajando. El informe final sale de esas pruebas, no del resumen del agente.
 
 ## ¿Cómo evito que Claude Code mienta sobre los tests?
 
-Haz que el resultado del test sea algo que el agente no pueda escribir. Una frase como "todos los tests pasan" en el chat, o un archivo de progreso que el agente edita, es un testimonio. Una ejecución de tests lanzada por un hook, sobre los archivos tal como están ahora, es una prueba.
+Deja el resultado del test en manos de algo que no sea el agente. Una frase como "todos los tests pasan" en el chat, o un archivo de progreso que el agente edita, puede decir cualquier cosa. Una ejecución de tests que lanza un hook sobre los archivos actuales muestra lo que pasó de verdad.
 
 - **Hoy:** un hook `Stop` que ejecuta tu comando de tests y bloquea si falla. Cuidado con las comprobaciones que aceptan cualquier comando que salga con 0, como `echo "tests passed"`.
 - **Previsto:** solo cuenta como prueba lo que Finite Monkey ejecutó por sí mismo, sobre el estado actual del árbol. Los comandos triviales y las ejecuciones con cero tests se rechazarán como prueba.
 
 ## Claude Code borró o se saltó mis tests para que pasaran. ¿Cómo lo evito?
 
-Revisa el diff, no el resultado del test. Una ejecución en verde después de borrar un test o marcarlo con `skip` sigue en verde.
+Mira el diff además del resultado del test: después de borrar un test o marcarlo con `skip`, la ejecución sigue saliendo en verde.
 
 - **Hoy:** revisa los diffs en archivos de test y añade un paso de CI que falle cuando baje el número de tests o aparezca `.skip` u `.only`.
 - **Previsto:** un control de tests que detecta tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control, también cuando el cambio llega por un comando de shell y no por una edición.
@@ -43,7 +43,7 @@ Bloquéalo en dos sitios: en tu máquina y en el servidor.
 
 ## ¿Por qué Claude Code ignora CLAUDE.md, sobre todo después de la compactación?
 
-Porque `CLAUDE.md` es contexto que el modelo lee, no un mecanismo que se ejecuta. El modelo lo pondera frente a todo lo demás de la conversación y puede dejarlo de lado. Mira [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) y [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
+Porque `CLAUDE.md` es texto cargado en el contexto del modelo, y nada lo ejecuta ni lo comprueba. El modelo lo pondera frente a todo lo demás de la conversación y puede dejarlo de lado. Mira [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) y [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
 
 - **Hoy:** mantén `CLAUDE.md` corto y saca de la prosa toda regla que deba cumplirse siempre, llevándola a un hook, una regla de permiso, un git hook o un paso de CI.
 - **Previsto:** Finite Monkey hace ese traslado para las reglas que conoce y te muestra, regla por regla, cuáles se cumplen por mecanismo y cuáles siguen siendo solo texto.
@@ -71,7 +71,7 @@ No le des al agente un camino directo a producción y bloquea los comandos que l
 
 ## ¿Qué es una definición de terminado para agentes de código?
 
-Una lista de condiciones que una máquina puede comprobar antes de que el agente pueda dar el trabajo por terminado: comandos que deben salir bien, tests que deben existir y pasar, archivos que deben o no deben cambiar. Convierte "listo" de afirmación en resultado.
+Una lista de condiciones que una máquina puede comprobar antes de que el agente pueda dar el trabajo por terminado: comandos que deben salir bien, tests que deben existir y pasar, archivos que deben o no deben cambiar.
 
 - **Hoy:** puedes escribir una a mano como script y llamarla desde un hook `Stop`.
 - **Previsto:** Finite Monkey crea una por tarea, la ejecuta en `Stop`, ata las pruebas al estado actual de los archivos y deja la ceremonia en cero para las tareas pequeñas.

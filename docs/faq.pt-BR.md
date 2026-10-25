@@ -10,19 +10,19 @@ Cada pergunta é uma busca que as pessoas digitam de verdade, tirada de títulos
 
 Porque "pronto" é uma frase que o modelo escreve, e por padrão nada confere essa frase. É uma queixa frequente, por exemplo [anthropics/claude-code#60177](https://github.com/anthropics/claude-code/issues/60177) ("Claude marks tasks done without testing").
 
-- **Hoje:** o Claude Code tem o hook `Stop`. Um hook escrito por você pode recusar o fim da sessão e dizer ao Claude por quê. É a camada certa; você é quem escreve e mantém a checagem.
+- **Hoje:** o Claude Code tem o hook `Stop`. Um hook escrito por você pode recusar o fim da sessão e dizer ao Claude por quê. Funciona, mas você escreve e mantém a checagem.
 - **Planejado no Finite Monkey:** uma definição de pronto por tarefa (comandos, testes, escopo) que o hook `Stop` roda nos arquivos atuais. Se falhar, o Claude recebe a lista do que falta e continua trabalhando. O relatório final sai dessa prova, não do resumo do agente.
 
 ## Como impedir o Claude Code de mentir sobre os testes?
 
-Faça o resultado do teste ser algo que o agente não consegue escrever. Uma frase como "todos os testes passaram" no chat, ou um arquivo de progresso que o agente edita, é depoimento. Uma execução de teste disparada por um hook, nos arquivos como estão agora, é prova.
+Deixe o resultado do teste a cargo de algo que não seja o agente. Uma frase como "todos os testes passaram" no chat, ou um arquivo de progresso que o agente edita, pode dizer qualquer coisa. Uma execução de teste que um hook dispara nos arquivos atuais mostra o que de fato aconteceu.
 
 - **Hoje:** um hook `Stop` que roda o seu comando de teste e bloqueia quando falha. Cuidado com checagens que aceitam qualquer comando com saída 0, como `echo "tests passed"`.
 - **Planejado:** só vale como prova o comando que o próprio Finite Monkey rodou, no estado atual da árvore. Comando trivial e execução com zero testes serão recusados como prova.
 
 ## O Claude Code apagou ou pulou meus testes para eles passarem. Como evitar?
 
-Confira o diff, não o resultado do teste. Uma execução verde depois de remover um teste ou marcá-lo com `skip` continua verde.
+Olhe o diff junto com o resultado do teste: depois de remover um teste ou marcá-lo com `skip`, a execução continua aparecendo verde.
 
 - **Hoje:** revise os diffs em arquivos de teste e acrescente uma etapa de CI que falha quando o número de testes cai ou quando aparece `.skip` ou `.only`.
 - **Planejado:** uma trava de testes que pega teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão, inclusive quando a mudança vem por comando de shell e não por edição.
@@ -43,7 +43,7 @@ Bloqueie em dois lugares: na sua máquina e no servidor.
 
 ## Por que o Claude Code ignora o CLAUDE.md, ainda mais depois da compactação?
 
-Porque o `CLAUDE.md` é contexto que o modelo lê, não um mecanismo que roda. O modelo pesa o arquivo contra todo o resto da conversa e pode deixá-lo de lado. Veja [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) e [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
+Porque o `CLAUDE.md` é texto carregado no contexto do modelo, e nada o executa nem confere. O modelo pesa o arquivo contra todo o resto da conversa e pode deixá-lo de lado. Veja [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) e [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
 
 - **Hoje:** mantenha o `CLAUDE.md` curto e tire da prosa toda regra que precisa valer sempre, levando-a para um hook, uma regra de permissão, um git hook ou uma etapa de CI.
 - **Planejado:** o Finite Monkey faz essa mudança para as regras que conhece e mostra, regra por regra, quais são garantidas e quais ainda são só texto.
@@ -71,7 +71,7 @@ Não dê ao agente um caminho direto até a produção, e bloqueie os comandos q
 
 ## O que é uma definição de pronto para agentes de código?
 
-Uma lista de condições que a máquina consegue checar antes de o agente poder chamar o trabalho de terminado: comandos que precisam passar, testes que precisam existir e passar, arquivos que devem ou não devem mudar. Ela transforma "pronto" de afirmação em resultado.
+Uma lista de condições que a máquina consegue checar antes de o agente poder chamar o trabalho de terminado: comandos que precisam passar, testes que precisam existir e passar, arquivos que devem ou não devem mudar.
 
 - **Hoje:** dá para escrever uma à mão, como script, e chamá-la de um hook `Stop`.
 - **Planejado:** o Finite Monkey cria uma por tarefa, roda no `Stop`, prende a prova ao estado atual dos arquivos e mantém a cerimônia em zero para tarefas pequenas.

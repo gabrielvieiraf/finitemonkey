@@ -11,9 +11,9 @@
 La pregunta que esta página le hace a cada proyecto es la misma: cuando el modelo prefiere saltarse una regla, ¿qué sigue valiendo?
 
 - **Mecanismo**: código que se ejecuta en el harness (un hook, una regla de permiso, un git hook, un paso de CI) y bloquea o comprueba decida lo que decida el modelo.
-- **Prosa**: texto que el modelo lee (una skill, un prompt, un `CLAUDE.md`) y puede seguir. La prosa muchas veces es la herramienta correcta, para planificar, para el estilo y para el criterio. Solo que no prueba nada.
+- **Prosa**: texto que el modelo lee (una skill, un prompt, un `CLAUDE.md`) y puede seguir. La prosa muchas veces es la herramienta correcta para planificar, para el estilo y para el criterio. Por sí sola no demuestra que algo haya ocurrido.
 
-Ninguno es "mejor". La mayoría de las buenas configuraciones mezclan los dos. La apuesta prevista de Finite Monkey es acotada: las pocas cosas que siempre deben cumplirse (terminado verificado, tests sin debilitar, ningún secreto filtrado, ningún trabajo perdido en git, ningún cambio a mano en producción) deben ser mecanismo.
+La mayoría de las configuraciones necesitan los dos. El alcance previsto de Finite Monkey es acotado: las pocas cosas que siempre deben cumplirse (terminado verificado, tests sin debilitar, ningún secreto filtrado, ningún trabajo perdido en git, ningún cambio a mano en producción) deben ser mecanismo.
 
 ## De un vistazo
 
@@ -40,7 +40,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prosa.** Los controles son texto de skill, como "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" en [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). Quien decide llamar a `task-done` es el modelo, y [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) señala que un comando sustituto como `echo "tests passed"` no se distingue de una ejecución real de tests.
 
-**Dónde prevé diferenciarse Finite Monkey.** El control ejecuta la comprobación él mismo desde un hook, no cuando el modelo lo elige, y los comandos triviales no cuentan como prueba. No intenta sustituir las skills de planificación: un diseño aprobado en Superpowers puede ser la entrada de una definición de terminado. Previsto, todavía sin medir.
+**Dónde prevé diferenciarse Finite Monkey.** El control ejecuta la comprobación él mismo desde un hook cada vez que el agente intenta parar, y los comandos triviales no cuentan como prueba. La planificación queda en manos de skills como estas: un diseño aprobado en Superpowers puede ser la entrada de una definición de terminado. Previsto, todavía sin medir.
 
 ## oh-my-claudecode
 
@@ -52,7 +52,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Dónde decide el modelo.** El drift guard deja pasar el cierre cuando `stop_hook_active` está activo (línea 910), así que bloquea una vez. El control de git solo está activo en los modos `ralph`, `autopilot`, `team` y `ultragoal` (línea 38) o con una variable de entorno. En los modos persistentes, terminar es que el modelo ejecute `/cancel`.
 
-**Dónde prevé diferenciarse Finite Monkey.** El control sigue bloqueando mientras la definición de terminado falle, en lugar de ceder en el segundo intento, y el control de git está siempre activo. Previsto, todavía sin medir.
+**Dónde prevé diferenciarse Finite Monkey.** El control sigue bloqueando mientras la definición de terminado falle, y el control de git está siempre activo. Previsto, todavía sin medir.
 
 ## GSD
 
@@ -64,7 +64,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Dónde decide el modelo.** La verificación es un agente LLM ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) que escribe `VERIFICATION.md`, y el control de fase en [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) lee el estado que escribió ese agente.
 
-**Dónde prevé diferenciarse Finite Monkey.** El veredicto sale de comandos que el control ejecutó sobre los archivos actuales, no de un informe escrito por un agente. Previsto, todavía sin medir.
+**Dónde prevé diferenciarse Finite Monkey.** El veredicto sale de comandos que el control ejecutó sobre los archivos actuales. Previsto, todavía sin medir.
 
 ## Spec Kit
 
@@ -76,7 +76,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prosa.** Los hooks de extensión como `after_implement` dependen de que el modelo los invoque: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), líneas 70 a 72). La validación de tests en el comando de implementación es una instrucción, y la convergencia la declara el modelo. [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) pide un control final de calidad.
 
-**Dónde prevé diferenciarse Finite Monkey.** La idea es encajar en Spec Kit, no competir con él: el control como paso `shell` del workflow o como handler de `Stop`, leyendo `tasks.md` como definición de terminado. Previsto, todavía sin medir.
+**Dónde prevé diferenciarse Finite Monkey.** La idea es encajar en Spec Kit: el control como paso `shell` del workflow o como handler de `Stop`, leyendo `tasks.md` como definición de terminado. Previsto, todavía sin medir.
 
 ## ECC (Everything Claude Code)
 
@@ -100,7 +100,7 @@ Plugin oficial en [`anthropics/claude-plugins-official`](https://github.com/anth
 
 **Dónde decide el modelo.** El bucle termina cuando el último mensaje del modelo contiene `<promise>TEXTO</promise>` igual a la promesa de finalización que definiste (líneas 129 a 138). El propio mensaje del hook le pide al modelo que no mienta para salir.
 
-**Dónde prevé diferenciarse Finite Monkey.** La condición de salida es una definición de terminado que el control comprueba, no una frase. Previsto, todavía sin medir.
+**Dónde prevé diferenciarse Finite Monkey.** El bucle terminaría cuando pase la definición de terminado del control. Previsto, todavía sin medir.
 
 ## tdd-guard
 
@@ -132,11 +132,11 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 Todo esto es **previsto, todavía sin medir**.
 
-- **Pruebas en lugar de testimonios.** Terminado significa que el control ejecutó la definición de terminado sobre los archivos actuales. Un mensaje en el chat, un archivo de progreso o un informe escrito por un agente no cuentan.
-- **Un control que no cede.** Sigue bloqueando mientras la definición de terminado falle, y termina con un informe de "no terminado" en lugar de un bucle infinito.
+- **Pruebas de las ejecuciones del propio control.** Terminado significa que el control ejecutó la definición de terminado sobre los archivos actuales. Un mensaje en el chat, un archivo de progreso o un informe escrito por un agente no cuentan.
+- **Bloqueo hasta que pasen las comprobaciones.** Sigue bloqueando mientras la definición de terminado falle, y termina con un informe de "no terminado" en lugar de un bucle infinito.
 - **Cuatro daños en una instalación.** "Listo" falso, secretos filtrados, cambios a mano en producción y trabajo perdido en git, con un `undo` para git.
 - **Contexto fijo pequeño.** El cumplimiento vive en hooks, que no cuestan tokens por turno, con un presupuesto en bytes comprobado en CI.
-- **Medido o eliminado.** Un benchmark público con ablación decide qué reglas se quedan.
+- **Benchmark.** Un benchmark público con ablación decide qué reglas se quedan.
 
 ## Dónde van por delante hoy
 

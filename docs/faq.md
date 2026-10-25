@@ -10,19 +10,19 @@ Each question is a search people actually type, taken from issue titles in [anth
 
 Because "done" is a sentence the model writes, and nothing checks it by default. Users report this often, for example [anthropics/claude-code#60177](https://github.com/anthropics/claude-code/issues/60177) ("Claude marks tasks done without testing").
 
-- **Today:** Claude Code has a `Stop` hook. A hook you write can refuse to let the session end and tell Claude why. That is the right layer; you have to write and maintain the check yourself.
+- **Today:** Claude Code has a `Stop` hook. A hook you write can refuse to let the session end and tell Claude why. It works, but you write and maintain the check yourself.
 - **Planned in Finite Monkey:** a definition of done per task (commands, tests, scope) that the `Stop` hook runs on the current files. If it fails, Claude gets the list of what's missing and keeps working. The final report comes from that evidence, not from the agent's summary.
 
 ## How do I stop Claude Code from lying about tests?
 
-Make the test result something the agent cannot write. A claim like "all tests pass" in the chat, or a progress file the agent edits, is testimony. A test run started by a hook, on the files as they are now, is evidence.
+Have something other than the agent produce the test result. A line like "all tests pass" in the chat, or a progress file the agent edits, can say anything. A test run that a hook starts on the current files reports what actually happened.
 
 - **Today:** a `Stop` hook that runs your test command and blocks on failure. Watch out for checks that accept any command that exits 0, such as `echo "tests passed"`.
 - **Planned:** evidence only counts when Finite Monkey ran the command itself, on the current state of the tree. Trivial commands and test runs with zero tests are planned to be rejected as evidence.
 
 ## Claude Code deleted or skipped my tests to make them pass. How do I prevent it?
 
-Check the diff, not the test result. A green run after a test was removed or marked `skip` is still green.
+Look at the diff as well as the test result: after a test is removed or marked `skip`, the run still reports green.
 
 - **Today:** review diffs to test files, and add a CI step that fails when the test count drops or when `.skip` or `.only` appear.
 - **Planned:** a tests guard that catches removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config, including when the change comes through a shell command instead of an edit.
@@ -43,7 +43,7 @@ Block it in two places: on your machine and on the server.
 
 ## Why does Claude Code ignore CLAUDE.md, especially after compaction?
 
-Because `CLAUDE.md` is context the model reads, not a mechanism that runs. The model weighs it against everything else in the conversation and can drop it. See [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) and [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
+Because `CLAUDE.md` is text loaded into the model's context, and nothing executes or checks it. The model weighs it against everything else in the conversation and can drop it. See [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) and [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
 
 - **Today:** keep `CLAUDE.md` short, and move every rule that must always hold out of prose and into a hook, a permission rule, a git hook or a CI step.
 - **Planned:** Finite Monkey does that move for the rules it knows, and shows you, rule by rule, which ones are enforced and which are still just text.
@@ -71,7 +71,7 @@ Give the agent no direct path to production, and block the commands that would c
 
 ## What is a definition of done for coding agents?
 
-A list of conditions a machine can check before the agent is allowed to call the work finished: commands that must succeed, tests that must exist and pass, files that must or must not change. It turns "done" from a claim into a result.
+A list of conditions a machine can check before the agent is allowed to call the work finished: commands that must succeed, tests that must exist and pass, files that must or must not change.
 
 - **Today:** you can write one by hand as a script and call it from a `Stop` hook.
 - **Planned:** Finite Monkey creates one per task, runs it at `Stop`, ties the evidence to the current state of the files, and keeps ceremony at zero for small tasks.
