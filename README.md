@@ -1,6 +1,10 @@
 # Finite Monkey
 
-**Infinite monkeys not required.**
+<p align="center">
+  <img src="assets/finitemonkey.gif" width="720" alt="Animation: a monkey in a hoodie mashes the keyboard of a laptop while a terminal runs finitemonkey gate. Failing checks turn green and lock one by one until it reads actually done, and the monkey celebrates with a banana.">
+</p>
+
+**Infinite monkeys not required. One is enough: you.**
 
 English | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
 
@@ -8,9 +12,13 @@ English | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
 
 ## The idea
 
-The infinite monkey theorem says that enough monkeys typing for long enough will eventually produce Hamlet. In *The Blind Watchmaker* (1986), Richard Dawkins showed a shortcut with his "weasel program": keep every letter that is already right, re-roll only the rest, and the phrase `METHINKS IT IS LIKE A WEASEL` appears in dozens of generations instead of an eternity. Cumulative selection keeps what passed.
+You know the routine. You mash keys, paste something from somewhere, it compiles, ship it. Then it turns out the tests are missing, a `.env` slipped into the diff and "done" meant "done-ish". That is not a character flaw. It is the pace of the work, with or without a coding agent typing for you.
 
-Finite Monkey applies that to coding agents. The agent can make mistakes freely. A gate keeps what has been verified and only lets work through once it is proven. One monkey, finite time, finished work.
+Finite Monkey is designed to be the gate between that monkey and `main`. Type however you like. Every check that passes gets locked in, the rest keeps failing out loud, and nothing is called done until every check has proof. One monkey, finite time, work that actually ships.
+
+### Why it works
+
+The infinite monkey theorem says that enough monkeys typing for long enough will eventually produce Hamlet. In *The Blind Watchmaker* (1986), Richard Dawkins showed a shortcut with his "weasel program": keep every letter that is already right, re-roll only the rest, and `METHINKS IT IS LIKE A WEASEL` shows up in dozens of generations instead of an eternity. Cumulative selection keeps what passed. Finite Monkey applies the same trick to your work and to your agent's: what was verified stays verified, and only what still fails goes back for another try.
 
 ## The problem
 
@@ -26,7 +34,7 @@ These are failures of verification and control, not of intelligence. More Markdo
 
 ## What it will do (planned)
 
-### You just work; the monkey gets gated
+### You keep typing; the gate keeps score
 
 Finite Monkey is designed to need **zero commands to remember**. You run `npx finitemonkey init` once. After that it acts on its own, from context, inside Claude Code:
 

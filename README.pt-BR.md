@@ -1,6 +1,10 @@
 # Finite Monkey
 
-**Infinite monkeys not required.**
+<p align="center">
+  <img src="assets/finitemonkey.gif" width="720" alt="Animação: um macaco de moletom bate no teclado de um notebook enquanto um terminal roda finitemonkey gate. As verificações que falham ficam verdes e travam uma a uma até aparecer actually done, e o macaco comemora com uma banana.">
+</p>
+
+**Não precisa de infinitos macacos. Um basta: você.**
 
 [English](README.md) | Português (Brasil) | [Español](README.es.md)
 
@@ -8,9 +12,13 @@
 
 ## A ideia
 
-O teorema do macaco infinito diz que macacos suficientes, batendo à máquina por tempo suficiente, acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou um atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e a frase `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. A seleção cumulativa guarda o que passou.
+Você conhece o roteiro. Bate no teclado, cola alguma coisa de algum lugar, compilou, manda. Depois descobre que os testes não existem, que um `.env` entrou no diff e que "pronto" era "mais ou menos pronto". Não é defeito de caráter. É o ritmo do trabalho, com ou sem um agente de código digitando por você.
 
-O Finite Monkey aplica isso a agentes de código. O agente pode errar à vontade. Um portão guarda o que foi verificado e só deixa o trabalho seguir depois de provado. Um macaco, tempo finito, trabalho terminado.
+O Finite Monkey foi desenhado para ser o portão entre esse macaco e a `main`. Digite do jeito que quiser. Cada verificação que passa fica travada, o resto continua falhando em voz alta, e nada é chamado de pronto até cada verificação ter prova. Um macaco, tempo finito, trabalho que sai de verdade.
+
+### Por que funciona
+
+O teorema do macaco infinito diz que macacos suficientes, batendo à máquina por tempo suficiente, acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou um atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. A seleção cumulativa guarda o que passou. O Finite Monkey usa o mesmo truque no seu trabalho e no do seu agente: o que foi verificado continua verificado, e só o que ainda falha volta para outra tentativa.
 
 ## O problema
 
@@ -26,7 +34,7 @@ São falhas de verificação e de controle, não de inteligência. Mais Markdown
 
 ## O que ele vai fazer (planejado)
 
-### Você só trabalha; o macaco passa pelo portão
+### Você só digita; o portão confere
 
 O Finite Monkey foi desenhado para **não ter nenhum comando para decorar**. Você roda `npx finitemonkey init` uma vez. Depois disso ele age sozinho, pelo contexto, dentro do Claude Code:
 

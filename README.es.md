@@ -1,6 +1,10 @@
 # Finite Monkey
 
-**Infinite monkeys not required.**
+<p align="center">
+  <img src="assets/finitemonkey.gif" width="720" alt="Animación: un mono con sudadera aporrea el teclado de una portátil mientras una terminal ejecuta finitemonkey gate. Las verificaciones que fallan se vuelven verdes y quedan fijadas una a una hasta que aparece actually done, y el mono celebra con un plátano.">
+</p>
+
+**No hacen falta infinitos monos. Basta con uno: tú.**
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | Español
 
@@ -8,9 +12,13 @@
 
 ## La idea
 
-El teorema del mono infinito dice que suficientes monos, tecleando durante suficiente tiempo, terminan escribiendo Hamlet. En *El relojero ciego* (1986), Richard Dawkins mostró un atajo con su "programa de la comadreja": conserva cada letra que ya es correcta, vuelve a sortear solo el resto, y la frase `METHINKS IT IS LIKE A WEASEL` aparece en decenas de generaciones en lugar de una eternidad. La selección acumulativa conserva lo que pasó.
+Ya conoces la rutina. Aporreas el teclado, pegas algo sacado de quién sabe dónde, compila, a producción. Después resulta que no hay pruebas, que un `.env` se coló en el diff y que "listo" era "casi listo". No es un defecto de carácter. Es el ritmo del trabajo, con o sin un agente de código tecleando por ti.
 
-Finite Monkey aplica eso a los agentes de código. El agente puede equivocarse libremente. Una compuerta conserva lo que se verificó y solo deja avanzar el trabajo cuando está probado. Un mono, tiempo finito, trabajo terminado.
+Finite Monkey está diseñado para ser la compuerta entre ese mono y `main`. Teclea como quieras. Cada verificación que pasa queda fijada, el resto sigue fallando a la vista, y nada se da por listo hasta que cada verificación tenga prueba. Un mono, tiempo finito, trabajo que de verdad sale.
+
+### Por qué funciona
+
+El teorema del mono infinito dice que suficientes monos, tecleando durante suficiente tiempo, terminan escribiendo Hamlet. En *El relojero ciego* (1986), Richard Dawkins mostró un atajo con su "programa de la comadreja": conserva cada letra que ya es correcta, vuelve a sortear solo el resto, y `METHINKS IT IS LIKE A WEASEL` aparece en decenas de generaciones en lugar de una eternidad. La selección acumulativa conserva lo que pasó. Finite Monkey aplica el mismo truco a tu trabajo y al de tu agente: lo verificado sigue verificado, y solo lo que todavía falla vuelve a intentarse.
 
 ## El problema
 
@@ -26,7 +34,7 @@ Son fallas de verificación y de control, no de inteligencia. Más Markdown, má
 
 ## Lo que va a hacer (planeado)
 
-### Tú solo trabajas; el mono pasa por la compuerta
+### Tú tecleas; la compuerta lleva la cuenta
 
 Finite Monkey está diseñado para que **no haya ningún comando que recordar**. Ejecutas `npx finitemonkey init` una vez. Después actúa por su cuenta, según el contexto, dentro de Claude Code:
 
