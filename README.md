@@ -94,4 +94,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Agents and humans changing this reposito
 
 ## License
 
-[MIT](LICENSE), by Gabriel Vieira.
+[Apache-2.0](LICENSE), by Gabriel Vieira. The license does not grant rights to the "Finite Monkey" name or logo.

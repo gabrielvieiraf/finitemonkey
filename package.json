@@ -2,7 +2,7 @@
   "name": "finitemonkey",
   "version": "0.0.0-development",
   "description": "Infinite monkeys not required. A gate that makes coding agents finish verified work.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Gabriel Vieira",
   "repository": {
     "type": "git",
@@ -19,8 +19,9 @@
     "definition-of-done"
   ],
   "files": [
-    "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE",
+    "README.md"
   ],
   "engines": {
     "node": ">=20"

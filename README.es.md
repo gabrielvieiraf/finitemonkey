@@ -94,4 +94,4 @@ Consulta [CONTRIBUTING.md](CONTRIBUTING.md) (en inglés). Los agentes y las pers
 
 ## Licencia
 
-[MIT](LICENSE), por Gabriel Vieira.
+[Apache-2.0](LICENSE), por Gabriel Vieira. La licencia no otorga derechos sobre el nombre ni el logo "Finite Monkey".

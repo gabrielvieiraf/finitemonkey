@@ -52,4 +52,4 @@ Use the issue forms. For security problems, do not open a public issue; follow [
 
 ## License
 
-By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE).
+By contributing, you agree that your contributions are licensed under the [Apache License 2.0](LICENSE), as stated in its section 5.

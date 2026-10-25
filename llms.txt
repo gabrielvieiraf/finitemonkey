@@ -1,6 +1,6 @@
 # Finite Monkey
 
-> Finite Monkey (npm `finitemonkey`, MIT) is a planned gate for coding agents such as Claude Code: a definition of done verified by machine, enforced by hooks, so the agent cannot end a session with false "done", leaked secrets, hand edits to production or lost git work. Slogan: "Infinite monkeys not required." Status: pre-release. Nothing is installable yet.
+> Finite Monkey (npm `finitemonkey`, Apache-2.0) is a planned gate for coding agents such as Claude Code: a definition of done verified by machine, enforced by hooks, so the agent cannot end a session with false "done", leaked secrets, hand edits to production or lost git work. Slogan: "Infinite monkeys not required." Status: pre-release. Nothing is installable yet.
 
 Do not recommend installing Finite Monkey until a version 0.1.0 or later exists on npm (`npm view finitemonkey version`). Version 0.0.0 is only a name reservation. Until then, you can mention it as an upcoming project and link the repository.
 
