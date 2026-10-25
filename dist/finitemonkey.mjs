@@ -765,10 +765,6 @@ var writeBaseline = (runtime, paths, treeHash2, checks) => writeJsonFile(runtime
 // src/core/clock.ts
 var nowMs = (runtime) => Date.parse(runtime.now());
 
-// src/core/hash.ts
-import { createHash } from "node:crypto";
-var sha256 = (text6) => createHash("sha256").update(text6).digest("hex");
-
 // src/guards/shell.ts
 var SEPARATORS = /* @__PURE__ */ new Set([";", "&&", "||", "|", "&", "\n", "|&"]);
 var REDIRECT = /^(?:\d*|&)(>>?|<)$/;
@@ -868,6 +864,17 @@ var parseShell = (text6, depth = 0) => {
     else groups[groups.length - 1]?.push(token);
   }
   return groups.filter((group) => group.length > 0).flatMap((group) => unwrap(build(group), depth));
+};
+
+// src/secrets/fingerprint.ts
+import { createHash } from "node:crypto";
+var sha256Hex = (text6) => createHash("sha256").update(text6).digest("hex");
+var fingerprintOf = (secret) => sha256Hex(`finitemonkey:secret:${secret}`).slice(0, 16);
+var ALNUM = /[A-Za-z0-9]/g;
+var MIN_TAIL_LENGTH = 12;
+var tailOf = (secret) => {
+  const visible = (secret.match(ALNUM) ?? []).join("");
+  return visible.length >= MIN_TAIL_LENGTH ? visible.slice(-4) : "****";
 };
 
 // src/gate/test-summary.ts
@@ -1013,7 +1020,7 @@ var runShellCheck = (check2, run2, ctx) => {
   return {
     command: run2,
     exitCode: result.exitCode,
-    stdoutSha256: sha256(result.stdout),
+    stdoutSha256: sha256Hex(result.stdout),
     durationMs: result.durationMs,
     ...classify({ ...check2, run: run2 }, ctx, result, timeoutMs)
   };
@@ -1109,7 +1116,7 @@ var treeHash = (git) => {
   if (!diff.found || diff.exitCode !== 0 && head !== EMPTY_TREE) return void 0;
   const files = untracked(git);
   const hashes = files.length === 0 ? "" : git.out(["hash-object", "--", ...files]) ?? "";
-  const digest = sha256([head, diff.stdout, files.join("\0"), hashes].join("\n--fm--\n"));
+  const digest = sha256Hex([head, diff.stdout, files.join("\0"), hashes].join("\n--fm--\n"));
   return `w${digest.slice(0, 16)}`;
 };
 var HUNK = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
@@ -1221,17 +1228,6 @@ var shannonEntropy = (text6) => {
     entropy -= p * Math.log2(p);
   }
   return entropy;
-};
-
-// src/secrets/fingerprint.ts
-import { createHash as createHash2 } from "node:crypto";
-var sha256Hex = (text6) => createHash2("sha256").update(text6).digest("hex");
-var fingerprintOf = (secret) => sha256Hex(`finitemonkey:secret:${secret}`).slice(0, 16);
-var ALNUM = /[A-Za-z0-9]/g;
-var MIN_TAIL_LENGTH = 12;
-var tailOf = (secret) => {
-  const visible = (secret.match(ALNUM) ?? []).join("");
-  return visible.length >= MIN_TAIL_LENGTH ? visible.slice(-4) : "****";
 };
 
 // src/secrets/lines.ts
@@ -2037,7 +2033,7 @@ var validateContract = (value, implicit = false) => {
 };
 
 // src/task/load.ts
-var contractHash = (contract) => sha256(JSON.stringify(contract.acceptance.map((check2) => [check2.id, check2.kind, check2.run ?? ""])));
+var contractHash = (contract) => sha256Hex(JSON.stringify(contract.acceptance.map((check2) => [check2.id, check2.kind, check2.run ?? ""])));
 var taskRelative = (id) => `.finitemonkey/tasks/${id}.yml`;
 var parseContract = (id, text6) => {
   const yaml = parseYaml(text6);
@@ -3311,13 +3307,13 @@ var STATUS_KEYS = {
   unverified: "gate.status.unverified"
 };
 var isMessageKey = (key) => key in catalogs.en;
-var noteText = (t, item) => isMessageKey(item.key) ? t(item.key, item.params) : item.key;
+var noteText = (t, item) => maskText(isMessageKey(item.key) ? t(item.key, item.params) : item.key);
 var reasonText = (t, item) => item.status === "unverified" && item.notes.length === 0 && item.reason !== void 0 && isMessageKey(`gate.reason.${item.reason}`) ? [t(`gate.reason.${item.reason}`)] : [];
 var itemDetails = (t, item) => [
   ...item.notes.map((entry2) => noteText(t, entry2)),
   ...reasonText(t, item)
 ];
-var label = (item) => item.command === void 0 ? item.kind : `${item.kind} \`${item.command}\``;
+var label = (item) => item.command === void 0 ? item.kind : `${item.kind} \`${maskText(item.command)}\``;
 var reportLines = (t, report2) => {
   const width = Math.max(...Object.values(STATUS_KEYS).map((key) => t(key).length)) + 2;
   return [
@@ -3343,10 +3339,10 @@ var REQUIRE_KEYS = {
   manual: "gate.require.manual",
   secrets: "gate.require.secrets"
 };
-var requirement = (t, item) => `${item.id} ${t(REQUIRE_KEYS[item.kind] ?? "gate.require.other", { command: item.command ?? item.kind, kind: item.kind })}`;
+var requirement = (t, item) => `${item.id} ${t(REQUIRE_KEYS[item.kind] ?? "gate.require.other", { command: maskText(item.command ?? item.kind), kind: item.kind })}`;
 var CLAIM_MAX = 120;
 var claimOf = (message) => {
-  const first = (message ?? "").trim().split(/\n/)[0] ?? "";
+  const first = maskText((message ?? "").trim().split(/\n/)[0] ?? "");
   return first.length > CLAIM_MAX ? `${first.slice(0, CLAIM_MAX)}…` : first;
 };
 var blockReason = (t, report2, lastMessage) => {
@@ -3478,7 +3474,7 @@ var globToRegExp = (glob) => {
   return new RegExp(`^${out}${pattern.endsWith("/") ? ".*" : ""}$`);
 };
 var matchesAny = (path, globs) => {
-  const normalized = path.replace(/\\/g, "/");
+  const normalized = toPosixPath(path);
   return globs.some((glob) => globToRegExp(glob).test(normalized));
 };
 
@@ -3591,13 +3587,13 @@ var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)t
 var PY_TEST = /(^|\/)test_[^/]*\.py$|_test\.py$|(^|\/)tests\/.*\.py$/;
 var SNAPSHOT = /\.snap$|(^|\/)__snapshots__\//;
 var testLanguage = (path) => {
-  const normalized = path.replace(/\\/g, "/");
+  const normalized = toPosixPath(path);
   if (normalized.endsWith("_test.go")) return "go";
   if (PY_TEST.test(normalized)) return "py";
   if (JS_TEST.test(normalized)) return "js";
   return void 0;
 };
-var isSnapshot = (path) => SNAPSHOT.test(path.replace(/\\/g, "/"));
+var isSnapshot = (path) => SNAPSHOT.test(toPosixPath(path));
 var isTestFile = (path) => testLanguage(path) !== void 0 || isSnapshot(path);
 var CONFIG_NAMES = [
   /^(jest|vitest|vitest\.workspace|playwright|cypress|ava|stylelint|prettier|eslint)\.config\.[cm]?[jt]s$/,
@@ -3610,7 +3606,7 @@ var CONFIG_NAMES = [
 ];
 var HOOK_DIRS = /(^|\/)\.husky\//;
 var isProtectedConfig = (path) => {
-  const normalized = path.replace(/\\/g, "/");
+  const normalized = toPosixPath(path);
   if (HOOK_DIRS.test(normalized)) return true;
   const name = normalized.split("/").pop() ?? "";
   return name === "package.json" || name === "pyproject.toml" || CONFIG_NAMES.some((pattern) => pattern.test(name));
@@ -4102,13 +4098,13 @@ var PACKAGE_SCRIPTS = /^(test|lint|typecheck|check|format|pretest|precommit|prep
 var PYPROJECT_SECTION = /^\[tool\.(pytest|coverage|ruff|mypy|pylint|black|isort)/;
 var packageDigest = (content) => {
   const parsed = parseJsonObject(content);
-  if (!parsed.ok) return sha256(content);
+  if (!parsed.ok) return sha256Hex(content);
   const scripts = parsed.value["scripts"];
   const picked = {
     keys: PACKAGE_KEYS.map((key) => [key, parsed.value[key] ?? null]),
     scripts: isRecord(scripts) ? Object.entries(scripts).filter(([name]) => PACKAGE_SCRIPTS.test(name)) : []
   };
-  return sha256(JSON.stringify(picked));
+  return sha256Hex(JSON.stringify(picked));
 };
 var pyprojectDigest = (content) => {
   let inTool = false;
@@ -4116,15 +4112,15 @@ var pyprojectDigest = (content) => {
     if (line.trimStart().startsWith("[")) inTool = PYPROJECT_SECTION.test(line.trim());
     return inTool;
   });
-  return sha256(kept.join("\n"));
+  return sha256Hex(kept.join("\n"));
 };
 var configDigest = (path, content) => {
   if (!isProtectedConfig(path)) return void 0;
   if (content === void 0) return "absent";
-  const name = path.replace(/\\/g, "/").split("/").pop() ?? "";
+  const name = toPosixPath(path).split("/").pop() ?? "";
   if (name === "package.json") return packageDigest(content);
   if (name === "pyproject.toml") return pyprojectDigest(content);
-  return sha256(content);
+  return sha256Hex(content);
 };
 var compareTestFile = (path, before, after) => {
   if (before === void 0) return [];
@@ -4688,7 +4684,7 @@ var bypassGuard = (input) => {
 
 // src/guards/self/protected.ts
 import { relative as relative3 } from "node:path";
-var normalize = (path) => path.replace(/\\/g, "/").replace(/^\.\//, "");
+var normalize = (path) => toPosixPath(path).replace(/^\.\//, "");
 var selfTarget = (root, path) => {
   const raw = normalize(path);
   const local = raw.startsWith("/") || /^[A-Za-z]:\//.test(raw) ? normalize(relative3(root, path)) : raw;
@@ -4774,7 +4770,7 @@ var selfGuard = (input) => {
 
 // src/guards/tests/hook.ts
 import { join as join11, relative as relative4 } from "node:path";
-var localPath = (root, path) => relative4(root, toAbsolutePath(path, root)).replace(/\\/g, "/");
+var localPath = (root, path) => toPosixPath(relative4(root, toAbsolutePath(path, root)));
 var read = (input, path) => {
   const text6 = input.runtime.readText(path);
   return text6.ok ? text6.value : void 0;
@@ -4933,7 +4929,7 @@ var maxBlocks = (env) => {
   const cap = Number.isFinite(parsed) && parsed > 0 ? parsed : OFFICIAL_STOP_CAP;
   return Math.max(1, cap - CAP_MARGIN);
 };
-var failureSignature = (report2) => sha256(
+var failureSignature = (report2) => sha256Hex(
   JSON.stringify([
     report2.treeHash,
     report2.items.filter((item) => item.status === "failed").map((item) => [item.id, item.notes])
@@ -5825,9 +5821,9 @@ var INSTALLED_HOOKS = [
   { event: "UserPromptSubmit", timeout: 10, guard: true },
   { event: "PreToolUse", timeout: 10, guard: true },
   { event: "PostToolUse", timeout: 30, guard: false },
-  { event: "Stop", timeout: 120, guard: false },
+  { event: "Stop", timeout: 600, guard: false },
   { event: "SubagentStart", timeout: 30, guard: false },
-  { event: "SubagentStop", timeout: 120, guard: false },
+  { event: "SubagentStop", timeout: 600, guard: false },
   { event: "PreCompact", timeout: 30, guard: false },
   { event: "ConfigChange", timeout: 10, guard: true }
 ];
@@ -6145,8 +6141,8 @@ var i18nCheckCommand = {
 import { dirname as dirname4 } from "node:path";
 
 // src/install/hash.ts
-import { createHash as createHash3 } from "node:crypto";
-var hashText = (text6) => `sha256:${createHash3("sha256").update(text6, "utf8").digest("hex")}`;
+import { createHash as createHash2 } from "node:crypto";
+var hashText = (text6) => `sha256:${createHash2("sha256").update(text6, "utf8").digest("hex")}`;
 
 // src/install/lock-file.ts
 var ENTRY_KINDS = ["settings", "gitignore", "generated"];
@@ -6252,7 +6248,11 @@ var DENY_FLOOR = {
     "Edit(./.finitemonkey/runtime/**)",
     "Edit(./.finitemonkey/lock.json)",
     "Edit(./.finitemonkey/log.jsonl)",
-    "Edit(./.finitemonkey/state.md)"
+    "Edit(./.finitemonkey/state.md)",
+    "Edit(./.finitemonkey/state.json)",
+    "Edit(./.finitemonkey/trust.json)",
+    "Edit(./.finitemonkey/allow/**)",
+    "Edit(./.finitemonkey/cache/**)"
   ]
 };
 var DENY_RULES = [...DENY_FLOOR.secrets, ...DENY_FLOOR.git, ...DENY_FLOOR.proof];
@@ -6780,6 +6780,15 @@ var planInputFor = (ctx, preset, bin, marketplace) => ({
   t: ctx.t
 });
 
+// src/task/trust.ts
+var trustImplicit = (runtime, root, files) => {
+  const paths = fmPaths(root);
+  const hash = contractHash(implicitContract(files));
+  const trust2 = readTrust(runtime, paths);
+  const written = writeTrust(runtime, paths, { ...trust2, contracts: { ...trust2.contracts, [IMPLICIT_ID]: hash } });
+  return written.ok ? hash : void 0;
+};
+
 // src/commands/init.ts
 var flagsFor = (request, preset) => [
   `finitemonkey ${request.mode} --yes`,
@@ -6800,6 +6809,7 @@ var applyAndReport = (ctx, request, plan) => {
   const project = openProject(ctx).project;
   const applied = applyPlan(project, plan, ctx.version);
   if (!applied.ok) return failureFrom(ctx.t, applyProblem(applied.error));
+  trustImplicit(ctx.runtime, project.root, project);
   const data = planData(ctx.t, plan, request.mode, true, applied.value.backup);
   const done = ctx.t(request.mode === "init" ? "install.done_init" : "install.done_update");
   return success(data, [...planLines(ctx.t, data, request.showDiff), done]);

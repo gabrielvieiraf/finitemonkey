@@ -1,6 +1,7 @@
 import type { Note } from "../evidence/types.js";
 import { catalogs, type MessageKey } from "../i18n/catalogs.js";
 import type { Translate } from "../i18n/translate.js";
+import { maskText } from "../mask/mask.js";
 import type { GateReport, ReportItem } from "./report.js";
 
 const STATUS_KEYS = {
@@ -12,7 +13,7 @@ const STATUS_KEYS = {
 export const isMessageKey = (key: string): key is MessageKey => key in catalogs.en;
 
 export const noteText = (t: Translate, item: Note): string =>
-  isMessageKey(item.key) ? t(item.key, item.params) : item.key;
+  maskText(isMessageKey(item.key) ? t(item.key, item.params) : item.key);
 
 const reasonText = (t: Translate, item: ReportItem): readonly string[] =>
   item.status === "unverified" &&
@@ -28,7 +29,7 @@ export const itemDetails = (t: Translate, item: ReportItem): readonly string[] =
 ];
 
 const label = (item: ReportItem): string =>
-  item.command === undefined ? item.kind : `${item.kind} \`${item.command}\``;
+  item.command === undefined ? item.kind : `${item.kind} \`${maskText(item.command)}\``;
 
 export const reportLines = (t: Translate, report: GateReport): readonly string[] => {
   const width = Math.max(...Object.values(STATUS_KEYS).map((key) => t(key).length)) + 2;
@@ -58,12 +59,12 @@ const REQUIRE_KEYS: Readonly<Record<string, MessageKey>> = {
 };
 
 const requirement = (t: Translate, item: ReportItem): string =>
-  `${item.id} ${t(REQUIRE_KEYS[item.kind] ?? "gate.require.other", { command: item.command ?? item.kind, kind: item.kind })}`;
+  `${item.id} ${t(REQUIRE_KEYS[item.kind] ?? "gate.require.other", { command: maskText(item.command ?? item.kind), kind: item.kind })}`;
 
 const CLAIM_MAX = 120;
 
 const claimOf = (message: string | undefined): string => {
-  const first = (message ?? "").trim().split(/\n/)[0] ?? "";
+  const first = maskText((message ?? "").trim().split(/\n/)[0] ?? "");
   return first.length > CLAIM_MAX ? `${first.slice(0, CLAIM_MAX)}…` : first;
 };
 

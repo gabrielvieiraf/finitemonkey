@@ -3,10 +3,13 @@ import { after, describe, it } from "node:test";
 
 import type { Runtime } from "../src/core/runtime.js";
 import { readLedger } from "../src/evidence/ledger.js";
+import { reportLines } from "../src/gate/render.js";
 import { runGate } from "../src/gate/run.js";
+import { createTranslator } from "../src/i18n/translate.js";
 import { createTask, type TaskDraft } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, NO_PR, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
+import { SAMPLES } from "./secret-samples.js";
 
 const repos: Repo[] = [];
 after(() => {
@@ -130,6 +133,15 @@ describe("gate", () => {
     const item = done(gate(repo)).items.find((entry) => entry.id === "C1");
     assert.equal(item?.status, "unverified");
     assert.equal(item.reason, "rate_limited");
+  });
+
+  it("the report never prints a secret from a command or its output", () => {
+    const repo = fresh();
+    task(repo, { runs: [`node -e "console.log('${SAMPLES.githubPat}'); process.exit(1)"`], tests: undefined });
+    repo.write("src/a.js", "export const a = 2;\n");
+    const text = reportLines(createTranslator("en"), done(gate(repo))).join("\n");
+    assert.doesNotMatch(text, new RegExp(SAMPLES.githubPat));
+    assert.match(text, /«secret:[^»]+»/);
   });
 
   const theater = [

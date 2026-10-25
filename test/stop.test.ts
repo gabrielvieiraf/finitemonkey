@@ -12,6 +12,7 @@ import { createTask } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
 import { readState } from "../src/task/state.js";
 import { makeRepo, NO_PR, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
+import { SAMPLES } from "./secret-samples.js";
 import { field, parseBody, stdinFrom } from "./support.js";
 
 const t = createTranslator("en");
@@ -44,6 +45,7 @@ interface StopOptions {
   readonly env?: Env;
   readonly runtime?: Runtime;
   readonly event?: "Stop" | "SubagentStop";
+  readonly claim?: string;
 }
 
 const stop = (repo: Repo, options: StopOptions = {}): Promise<HookOutcome> => {
@@ -56,7 +58,7 @@ const stop = (repo: Repo, options: StopOptions = {}): Promise<HookOutcome> => {
         cwd: repo.root,
         hook_event_name: event,
         stop_hook_active: options.active ?? false,
-        last_assistant_message: "Done. The coupon works now.",
+        last_assistant_message: options.claim ?? "Done. The coupon works now.",
       }),
     ),
     deadlineMs: 120_000,
@@ -89,6 +91,15 @@ describe("Stop gate", () => {
     assert.match(lines[3] ?? "", /^not enough: tests: .*skip, only or todo added in test\/a\.test\.js/);
     assert.doesNotMatch(reason, /allow|finitemonkey:|--/);
     assert.match(String(field(body, "systemMessage")), /Held the "done"\. .*Fix the code, not the witness\./);
+  });
+
+  it("never repeats a secret from the claim in the block message", async () => {
+    const repo = setup();
+    breakTests(repo);
+    const outcome = await stop(repo, { claim: `Done, token ${SAMPLES.githubPat} is set.` });
+    assert.equal(outcome.verdict, "block");
+    assert.doesNotMatch(outcome.stdout, new RegExp(SAMPLES.githubPat));
+    assert.match(String(field(parseBody(outcome.stdout), "reason")), /«secret:[^»]+»/);
   });
 
   it("keeps blocking while stop_hook_active is set and ends with a visible NOT DONE", async () => {
