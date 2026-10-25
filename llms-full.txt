@@ -22,7 +22,7 @@ English | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/b
 
 > **Pre-release.** Nothing installs yet. The npm name `finitemonkey` is reserved (0.0.0 is a placeholder) and the code is being built in the open. Everything below is the plan, not today's behavior. Star or watch the repo if you want to know when v0.1 lands.
 
-Claude Code ends a refactor with "Done! All tests pass." It had only run the linter. The only failing test got a `.skip` at 2 a.m., and CI went red twenty minutes after the merge. Finite Monkey is planned as Claude Code hooks that run your checks themselves when the agent tries to stop, and keep the session open until they pass. The monkey in the yellow hoodie is you.
+Claude Code ends a refactor with "Done! All tests pass." It had only run the linter. The only failing test got a `.skip` at 2 a.m., and CI went red twenty minutes after the merge. Finite Monkey is the gate between the monkey and `main`: Claude Code hooks that run your checks themselves when the agent tries to stop, and keep the session open until they pass. The only monkey here is you.
 
 ## Claude Code says it's done, but it isn't
 

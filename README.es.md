@@ -12,7 +12,7 @@
 
 > **Prelanzamiento.** Todavía no se puede instalar. El nombre `finitemonkey` en npm está reservado (la 0.0.0 es solo un marcador) y el código se está construyendo en abierto. Todo lo que sigue es el plan, no lo que pasa hoy. Dale una estrella o sigue el repositorio si quieres enterarte cuando salga la v0.1.
 
-Claude Code cierra un refactor con "¡Listo! Todos los tests pasan." Solo había ejecutado el linter. El único test que fallaba recibió un `.skip` a las dos de la madrugada, y la CI se puso en rojo veinte minutos después del merge. Finite Monkey se está construyendo como hooks de Claude Code que ejecutan tus comprobaciones por su cuenta cuando el agente intenta parar, y mantienen la sesión abierta hasta que pasan. El mono de la sudadera amarilla eres tú.
+Claude Code cierra un refactor con "¡Listo! Todos los tests pasan." Solo había ejecutado el linter. El único test que fallaba recibió un `.skip` a las dos de la madrugada, y la CI se puso en rojo veinte minutos después del merge. Finite Monkey es la puerta entre el mono y `main`: hooks de Claude Code que ejecutan tus comprobaciones por su cuenta cuando el agente intenta parar, y mantienen la sesión abierta hasta que pasan. El único mono aquí eres tú.
 
 ## Claude Code dice que terminó, pero no terminó
 
