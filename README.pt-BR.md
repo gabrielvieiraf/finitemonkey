@@ -48,6 +48,17 @@ Planejado: uma regra única de detecção, aplicada quando um arquivo é escrito
 
 Planejado: comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
 
+## Mais que um portão (planejado)
+
+O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto do plano é sobre quem está digitando:
+
+- **Quando você está dando voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá, um bug colado de uma IA para outra e de volta: o Finite Monkey percebe a volta e diz isso com todas as letras, com o que tentar no lugar.
+- **Quando o projeto é maior que você, por enquanto.** Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, backup e um jeito de voltar atrás. As plantas de projeto mostram o que uma versão de verdade precisa e o que ainda falta, para uma tela de login não ser chamada de produto. As explicações acompanham o que você já sabe e vão sumindo conforme você aprende.
+- **Quando uma decisão pesa.** Antes de trocar uma biblioteca ou um fornecedor: o que existe hoje, quais as opções, os critérios escritos antes dos candidatos, o custo e como voltar.
+- **Quando você roda vários agentes ao mesmo tempo.** Frentes de trabalho em paralelo, cada uma na sua branch, um merge que confere que nada se perdeu e uma tela com o que cada frente está fazendo.
+- **Quando uma regra precisa valer em todo lugar.** A regra que você escreve uma vez vira hook, permissão, git hook e passo de CI, e você vê onde ela ainda é só texto.
+- **Quando vai para produção.** CI, deploy e infraestrutura no tamanho do projeto, e checagens de organização de código para bases que cresceram rápido demais.
+
 ## Nenhum comando para decorar
 
 Você roda um comando, uma vez. Depois disso o Finite Monkey age pelo contexto, dentro do Claude Code:

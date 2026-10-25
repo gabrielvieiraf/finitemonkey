@@ -48,6 +48,17 @@ Previsto: una única regla de detección, aplicada al escribir archivos, en los 
 
 Previsto: los comandos con efecto sobre un servidor de producción se bloquean. Producción cambia por el camino de despliegue que declares.
 
+## Más que una puerta (previsto)
+
+La puerta va primero porque nada más importa si el "listo" puede ser mentira. El resto del plan trata de quien escribe:
+
+- **Cuando estás dando vueltas.** El cuarto arreglo para el mismo error, el mismo archivo editado una y otra vez, un bug pegado de una IA a otra y de vuelta: Finite Monkey nota la vuelta y lo dice claro, con qué probar en su lugar.
+- **Cuando el proyecto te queda grande, por ahora.** Quien nunca puso un SaaS en marcha no sabe que necesita login, cobros, copias de seguridad y una forma de volver atrás. Los planos de proyecto muestran lo que necesita una versión de verdad y lo que aún falta, para que una pantalla de login no se llame producto. Las explicaciones se ajustan a lo que ya sabes y desaparecen a medida que aprendes.
+- **Cuando una decisión pesa.** Antes de cambiar una biblioteca o un proveedor: qué hay hoy, cuáles son las opciones, los criterios escritos antes de los candidatos, el costo y cómo volver.
+- **Cuando usas varios agentes a la vez.** Frentes de trabajo en paralelo, cada uno en su rama, un merge que comprueba que no se perdió nada y una pantalla con lo que hace cada frente.
+- **Cuando una regla tiene que valer en todas partes.** Una regla que escribes una vez se convierte en hook, permiso, git hook y paso de CI, y ves dónde sigue siendo solo texto.
+- **Cuando va a producción.** CI, deploy e infraestructura a la medida del proyecto, y revisiones de organización del código para bases que crecieron demasiado rápido.
+
 ## Ningún comando que memorizar
 
 Ejecutas un comando, una vez. A partir de ahí Finite Monkey actúa por contexto dentro de Claude Code:

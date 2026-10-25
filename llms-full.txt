@@ -58,6 +58,17 @@ Planned: one detection rule applied when files are written, in prompts, at commi
 
 Planned: commands with effects on a production host get blocked. Production changes go through the deploy path you declare.
 
+## More than a gate (planned)
+
+The gate comes first because nothing else matters if "done" can be a lie. The rest of the plan is about the person typing:
+
+- **When you're going in circles.** Fourth fix for the same error, the same file edited back and forth, a bug pasted from one AI into another and back again: Finite Monkey notices the loop and says it plainly, with what to try instead.
+- **When the project is bigger than you are, for now.** Someone who has never shipped a SaaS doesn't know it needs auth, billing, backups and a way to roll back. Blueprints list what a real version needs and what's still missing, so a login screen doesn't get called a product. Explanations adjust to what you already know and fade as you learn.
+- **When a decision matters.** Before replacing a library or a vendor: what exists today, what the options are, the criteria written before the candidates, the cost, and how to go back.
+- **When you run several agents at once.** Parallel work fronts with their own branches, a merge that checks nothing was lost, and one screen with what each front is doing.
+- **When a rule must hold everywhere.** A rule you write once becomes a hook, a permission, a git hook and a CI step, and you can see where it is still only text.
+- **When it goes to production.** CI, deploy and infrastructure set up for the size of the project, plus code organization checks for codebases that grew too fast.
+
 ## Zero commands to remember
 
 You run one command, once. After that, Finite Monkey works from context inside Claude Code:
