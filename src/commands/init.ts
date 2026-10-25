@@ -14,6 +14,7 @@ import {
   planInputFor,
   planProblem,
 } from "../install/session.js";
+import { trustImplicit } from "../task/trust.js";
 import type { CommandSpec } from "./types.js";
 
 export type InstallMode = PlanData["mode"];
@@ -48,6 +49,7 @@ const applyAndReport = (ctx: Ctx, request: InstallRequest, plan: Plan): CommandR
   const project = openProject(ctx).project;
   const applied = applyPlan(project, plan, ctx.version);
   if (!applied.ok) return failureFrom(ctx.t, applyProblem(applied.error));
+  trustImplicit(ctx.runtime, project.root, project);
   const data = planData(ctx.t, plan, request.mode, true, applied.value.backup);
   const done = ctx.t(request.mode === "init" ? "install.done_init" : "install.done_update");
   return success(data, [...planLines(ctx.t, data, request.showDiff), done]);

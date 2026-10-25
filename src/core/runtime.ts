@@ -1,4 +1,5 @@
 import type { AbsolutePath } from "./brand.js";
+import type { Env } from "./context.js";
 import type { Parsed } from "./parsed.js";
 
 export interface ProbeResult {
@@ -40,6 +41,27 @@ export interface LockOptions {
 
 export type ReleaseLock = () => void;
 
+export interface ExecRequest {
+  readonly command: string;
+  readonly args: readonly string[];
+  readonly cwd: AbsolutePath;
+  readonly timeoutMs: number;
+  readonly shell?: boolean;
+  readonly env?: Env;
+  readonly unset?: readonly string[];
+}
+
+export interface ExecResult {
+  readonly found: boolean;
+  readonly exitCode: number | null;
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly timedOut: boolean;
+  readonly durationMs: number;
+}
+
+export type Exec = (request: ExecRequest) => ExecResult;
+
 export interface Runtime {
   readonly nodeVersion: string;
   readonly readText: (path: AbsolutePath) => Parsed<string>;
@@ -58,4 +80,7 @@ export interface Runtime {
   readonly remove: (path: AbsolutePath) => Parsed<undefined>;
   readonly lock: (path: AbsolutePath, options: LockOptions) => Parsed<ReleaseLock>;
   readonly selfPath: AbsolutePath;
+  readonly exec: Exec;
+  readonly appendText: (path: AbsolutePath, text: string) => Parsed<true>;
+  readonly spawnSelf: (args: readonly string[], cwd: AbsolutePath) => boolean;
 }

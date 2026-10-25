@@ -13,6 +13,10 @@ export const DENY_FLOOR = {
     "Edit(./.finitemonkey/lock.json)",
     "Edit(./.finitemonkey/log.jsonl)",
     "Edit(./.finitemonkey/state.md)",
+    "Edit(./.finitemonkey/state.json)",
+    "Edit(./.finitemonkey/trust.json)",
+    "Edit(./.finitemonkey/allow/**)",
+    "Edit(./.finitemonkey/cache/**)",
   ],
 } as const;
 

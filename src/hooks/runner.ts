@@ -1,10 +1,10 @@
 import type { AbsolutePath } from "../core/brand.js";
-import type { TextSource } from "../core/context.js";
+import type { Env, TextSource } from "../core/context.js";
 import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Translate } from "../i18n/translate.js";
 import { HOOK_POLICIES, type HookEvent } from "./events.js";
-import { allow, type HookDecision, type HookHandlers, type HookInput } from "./handlers.js";
+import { allow, composeDecisions, type HookDecision, type HookHandlers, type HookInput } from "./handlers.js";
 import { type HookPayload, parseHookPayload } from "./payload.js";
 import { readAll, withDeadline } from "./stdin.js";
 
@@ -25,6 +25,7 @@ export interface HookRunOptions {
   readonly t: Translate;
   readonly startTimer: Runtime["startTimer"];
   readonly runtime: Runtime;
+  readonly env?: Env;
 }
 
 type Evaluation =
@@ -33,15 +34,8 @@ type Evaluation =
 
 const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
-const decide = async (input: HookInput, handlers: HookHandlers): Promise<HookDecision> => {
-  let output: JsonObject = {};
-  for (const handler of handlers[input.event] ?? [allow]) {
-    const decision = await handler(input);
-    if (decision.kind === "block") return decision;
-    output = { ...output, ...decision.output };
-  }
-  return { kind: "allow", output };
-};
+const decide = (input: HookInput, handlers: HookHandlers): Promise<HookDecision> =>
+  composeDecisions(input, handlers[input.event] ?? [allow]);
 
 const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Evaluation> => {
   const text = await readAll(options.stdin);
@@ -53,7 +47,7 @@ const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Eval
       kind: "decided",
       payload,
       decision: await decide(
-        { event, payload, cwd: options.cwd, runtime: options.runtime, t: options.t },
+        { event, payload, cwd: options.cwd, runtime: options.runtime, t: options.t, env: options.env ?? {} },
         options.handlers,
       ),
     };
@@ -100,7 +94,10 @@ const conclude = (event: HookEvent, evaluation: Evaluation, t: Translate): HookO
   }
   const { decision } = evaluation;
   if (decision.kind === "allow") return allowed(decision.output);
-  if (stopActive) return released(event, decision.reason, t);
+  if (stopActive && decision.persistent !== true) return released(event, decision.reason, t);
+  if (decision.output !== undefined) {
+    return { exitCode: 0, stdout: `${JSON.stringify(decision.output)}\n`, stderr: "", verdict: "block" };
+  }
   return { exitCode: 2, stdout: "", stderr: `finitemonkey: ${decision.reason}\n`, verdict: "block" };
 };
 
