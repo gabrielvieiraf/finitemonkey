@@ -33,7 +33,7 @@ const actions = (body: unknown): Readonly<Record<string, unknown>> => {
   return Object.fromEntries(items.map((item) => [String(field(item, "path")), field(item, "action")]));
 };
 
-const settingsOf = (fs: ReturnType<typeof memoryFs>): unknown => parseBody(fs.files()[at(SETTINGS_FILE)] ?? "{}");
+const settingsOf = (fs: ReturnType<typeof memoryFs>): unknown => parseBody(fs.read(at(SETTINGS_FILE)) ?? "{}");
 
 describe("init detection matrix", () => {
   const cases = [
@@ -197,9 +197,9 @@ describe("init is idempotent and merges without clobbering", () => {
     const result = await run(fs, ["init", "--yes"]);
     assert.equal(result.code, ExitCode.NotConfigured);
     assert.equal(field(result.body, "error", "code"), "install_failed");
-    assert.equal(fs.files()[at(SETTINGS_FILE)], "{}\n");
-    assert.equal(fs.files()[at(".gitignore")], "x\n");
-    assert.equal(fs.files()[at(LOCK_FILE)], undefined);
+    assert.equal(fs.read(at(SETTINGS_FILE)), "{}\n");
+    assert.equal(fs.read(at(".gitignore")), "x\n");
+    assert.equal(fs.read(at(LOCK_FILE)), undefined);
   });
 
   it("a held install lock stops a concurrent run, and a stale one is taken over", async () => {
@@ -222,7 +222,7 @@ describe("marketplace registration and the plugin stepping aside", () => {
       source: { source: "github", repo: "gabrielvieiraf/finitemonkey" },
     });
     assert.equal(field(settings, "enabledPlugins", "finitemonkey@finitemonkey"), true);
-    const raw = fs.files()[at(SETTINGS_FILE)] ?? "";
+    const raw = fs.read(at(SETTINGS_FILE)) ?? "";
     fs.writeAtomic(toAbsolutePath(at(SETTINGS_FILE)), raw.replace('"other@x": true', '"other@x": false'));
     await run(fs, ["uninstall", "--yes"]);
     assert.deepEqual(settingsOf(fs), { enabledPlugins: { "other@x": false } });
@@ -265,18 +265,18 @@ describe("a teammate who clones an installed repository", () => {
     const committed = Object.fromEntries(
       [SETTINGS_FILE, ".gitignore", CONFIG_FILE, VENDOR_BIN, VENDOR_PACKAGE].map((path) => [
         path,
-        first.files()[at(path)] ?? "",
+        first.read(at(path)) ?? "",
       ]),
     );
     const clone = repo(committed);
     const result = await run(clone, ["init", "--yes"]);
     assert.equal(result.code, ExitCode.Ok);
     assert.ok(Object.values(actions(result.body)).every((action) => action === "unchanged"));
-    assert.ok(clone.files()[at(LOCK_FILE)] !== undefined);
+    assert.ok(clone.read(at(LOCK_FILE)) !== undefined);
     const edited = repo({ ...committed, [CONFIG_FILE]: `${committed[CONFIG_FILE] ?? ""}custom: 1\n` });
     const kept = await run(edited, ["init", "--yes"]);
     assert.equal(actions(kept.body)[CONFIG_FILE], "keep-edited");
     await run(edited, ["update", "--yes"], "2.0.0");
-    assert.match(edited.files()[at(CONFIG_FILE)] ?? "", /custom: 1/);
+    assert.match(edited.read(at(CONFIG_FILE)) ?? "", /custom: 1/);
   });
 });

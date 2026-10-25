@@ -21,6 +21,7 @@ type FsRuntime = Pick<
 
 export interface MemoryFs extends FsRuntime {
   readonly files: () => Readonly<Record<string, string>>;
+  readonly read: (path: string) => string | undefined;
   readonly writes: () => number;
   readonly failWritesTo: (path: string) => void;
   readonly tick: (ms: number) => void;
@@ -161,6 +162,7 @@ export const memoryFs = (
   return {
     ...fsOf(state),
     files: () => Object.fromEntries([...state.files].map(([path, file]) => [path, file.content])),
+    read: (path) => state.files.get(fakeKey(path))?.content,
     writes: () => state.writes,
     failWritesTo: (path) => {
       state.failing = fakeKey(path);
