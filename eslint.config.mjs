@@ -60,7 +60,7 @@ export default defineConfig([
     ...shared,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["src/**/*.ts", "assets/scripts/**/*.ts"],
     rules: { "max-lines-per-function": ["error", { max: 50, skipBlankLines: true }] },
   },
   {

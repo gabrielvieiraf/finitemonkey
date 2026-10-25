@@ -1,4 +1,5 @@
 import { glyphs } from "./glyphs.ts";
+import { svg } from "./svg.ts";
 
 export const advance = 6;
 
@@ -13,7 +14,9 @@ export function textPath(content: string, x: number, y: number, size: number): s
         const on = row[col] === "#";
         if (on && start < 0) start = col;
         if (!on && start >= 0) {
-          parts.push(`M${round(cursor + start * size)} ${round(y + rowIndex * size)}h${round((col - start) * size)}v${round(size)}h${round(-(col - start) * size)}z`);
+          parts.push(
+            svg`M${round(cursor + start * size)} ${round(y + rowIndex * size)}h${round((col - start) * size)}v${round(size)}h${round(-(col - start) * size)}z`,
+          );
           start = -1;
         }
       }
@@ -26,12 +29,12 @@ export function textPath(content: string, x: number, y: number, size: number): s
 export function text(content: string, x: number, y: number, size: number, fill: string, opacity = 1): string {
   const d = textPath(content, x, y, size);
   if (d === "") return "";
-  const alpha = opacity < 1 ? ` fill-opacity="${opacity}"` : "";
-  return `<path d="${d}" fill="${fill}"${alpha}/>`;
+  const alpha = opacity < 1 ? svg` fill-opacity="${opacity}"` : "";
+  return svg`<path d="${d}" fill="${fill}"${alpha}/>`;
 }
 
 export function textWidth(content: string, size: number): number {
-  return [...content].length * advance * size - size;
+  return Array.from(content).length * advance * size - size;
 }
 
 function round(value: number): number {
