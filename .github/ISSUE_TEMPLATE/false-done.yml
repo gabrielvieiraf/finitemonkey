@@ -1,0 +1,56 @@
+name: False done that got through
+description: The agent said the work was done, the gate let it finish, and it was not done.
+title: "[false done] "
+labels: ["false-done", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks. A false "done" that got past the gate is the most important bug this project can have.
+        Never paste secrets, tokens or keys. Refer to them by file and line.
+  - type: input
+    id: version
+    attributes:
+      label: Finite Monkey version
+      description: Output of `npx finitemonkey --version`.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Node.js, Claude Code and OS
+      description: Output of `node --version` and `claude --version`, plus your OS (Linux, macOS, Windows, WSL).
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: What you asked for
+      description: The task, in one or two sentences. The prompt itself helps if you can share it.
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: What the agent claimed
+      description: The literal "done" message or final report.
+    validations:
+      required: true
+  - type: textarea
+    id: reality
+    attributes:
+      label: What was actually missing or broken
+      description: For example a test that never ran, a skipped test, a failing build, a file outside the task scope.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Gate output or evidence
+      description: The gate report from the session, or the output of `npx finitemonkey gate --json` run afterwards, if you have it.
+      render: json
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: A minimal repository or a sequence of steps, if you have one.
