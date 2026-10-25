@@ -1993,6 +1993,14 @@ var setKey = (record2, key, value) => {
 // src/install/settings-merge.ts
 var SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
 var ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false };
+var MARKETPLACE_ENTRY = { source: { source: "github", repo: "gabrielvieiraf/finitemonkey" } };
+var MARKETPLACE_KEY = "finitemonkey";
+var PLUGIN_ID = "finitemonkey@finitemonkey";
+var withEntry = (settings, key, name, value) => {
+  const inner = setKey(asRecord(settings[key]), name, value);
+  return setKey(settings, key, Object.keys(inner).length === 0 ? void 0 : inner);
+};
+var hasEntry = (settings, key, name) => name in asRecord(settings[key]);
 var replaceInGroup = (group, isOwn, take) => {
   if (!isRecord(group)) return group;
   const handlers = asList(group["hooks"]).flatMap((handler) => {
@@ -2038,9 +2046,13 @@ var mergeSettings = (current, wanted, recorded) => {
   const existingDeny = asList(asRecord(base["permissions"])["deny"]);
   const deny = wanted.deny.filter((rule) => !existingDeny.includes(rule));
   const attribution = wanted.attributionOff && !("attribution" in base);
+  const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
+  const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
   let settings = withPermissions(withHooks(base, hooks), [...existingDeny, ...deny]);
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
-  return { settings, added: { schema, deny, attribution } };
+  if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
+  if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
+  return { settings, added: { schema, deny, attribution, marketplace, plugin } };
 };
 var sameAttribution = (value) => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
 var unmergeSettings = (current, added, recorded) => {
@@ -2052,6 +2064,8 @@ var unmergeSettings = (current, added, recorded) => {
   if (added.attribution && sameAttribution(settings["attribution"])) {
     settings = setKey(settings, "attribution", void 0);
   }
+  if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, void 0);
+  if (added.plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, void 0);
   if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
   return settings;
 };
@@ -3115,7 +3129,9 @@ var parseAdded = (value) => {
   const deny = strings(value["deny"]);
   const { schema, attribution } = value;
   if (deny === void 0 || typeof schema !== "boolean" || typeof attribution !== "boolean") return void 0;
-  return { schema, attribution, deny };
+  const marketplace = value["marketplace"] === true;
+  const plugin = value["plugin"] === true;
+  return { schema, attribution, deny, marketplace, plugin };
 };
 var parseEntry2 = (value) => {
   if (!isRecord(value)) return void 0;
@@ -3361,17 +3377,24 @@ var union = (a, b) => [.../* @__PURE__ */ new Set([...a, ...b])];
 var joinAdded = (previous, next) => previous === void 0 ? next : {
   schema: previous.schema || next.schema,
   attribution: previous.attribution || next.attribution,
-  deny: union(previous.deny, next.deny)
+  deny: union(previous.deny, next.deny),
+  marketplace: previous.marketplace || next.marketplace,
+  plugin: previous.plugin || next.plugin
 };
 var wantedHooks = (detection) => Object.fromEntries(
   INSTALLED_HOOKS.map((spec) => [spec.event, hookHandler(detection.runner, spec, detection.claude.failClosed)])
 );
-var settingsItem = (project, detection, preset, previous) => {
+var settingsItem = (project, detection, input, previous) => {
   const before = project.read(SETTINGS_FILE);
   const current = parseSettings(before);
   if (!current.ok) return reject({ kind: "settings", detail: current.error });
   const hooks = wantedHooks(detection);
-  const wanted = { hooks, deny: DENY_RULES, attributionOff: preset === "gabriel" };
+  const wanted = {
+    hooks,
+    deny: DENY_RULES,
+    attributionOff: input.preset === "gabriel",
+    marketplace: input.marketplace
+  };
   const merged = mergeSettings(current.value, wanted, previous?.handlers ?? []);
   const after = renderJson(merged.settings, before === void 0 ? DEFAULT_STYLE : styleOf(before));
   return accept({
@@ -3403,7 +3426,7 @@ var configItem = (project, input, previous) => {
 };
 var entryFor = (lock, path) => lock?.entries.find((entry) => entry.path === path);
 var buildPlan = (project, detection, input, previous) => {
-  const settings = settingsItem(project, detection, input.preset, entryFor(previous, SETTINGS_FILE));
+  const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
   const items = [settings.value, gitignoreItem(project), configItem(project, input, entryFor(previous, CONFIG_FILE))];
   return accept({ detection, preset: input.preset, items, previous });
@@ -3679,7 +3702,8 @@ var invalidPreset = (raw) => problem("invalid_arguments", "error.invalid_preset"
 var flagsFor = (request, preset) => [
   `finitemonkey ${request.mode} --yes`,
   ...request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : [],
-  ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`]
+  ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`],
+  ...request.marketplace ? ["--marketplace"] : []
 ].join(" ");
 var presentPlan = (ctx, request, plan) => {
   const data = planData(ctx.t, plan, request.mode, false, void 0);
@@ -3704,7 +3728,15 @@ var runInstall = (ctx, request, presetFallback) => {
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = { preset, lang: ctx.lang, bin: request.bin, version: ctx.version, env: ctx.env, t: ctx.t };
+  const input = {
+    preset,
+    lang: ctx.lang,
+    bin: request.bin,
+    version: ctx.version,
+    marketplace: request.marketplace,
+    env: ctx.env,
+    t: ctx.t
+  };
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   if (ctx.dryRun || !ctx.yes || !hasChanges(plan.value)) return presentPlan(ctx, request, plan.value);
@@ -3714,14 +3746,20 @@ var initRequest = (args) => ({
   mode: "init",
   preset: stringOption(args.values, "preset"),
   bin: stringOption(args.values, "bin"),
+  marketplace: args.values["marketplace"] === true,
   showDiff: false
 });
 var initCommand = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--dry-run] [--yes]",
   status: "ready",
-  options: { preset: { type: "string" }, bin: { type: "string" }, github: { type: "boolean" } },
+  options: {
+    preset: { type: "string" },
+    bin: { type: "string" },
+    github: { type: "boolean" },
+    marketplace: { type: "boolean" }
+  },
   run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral"))
 };
 
@@ -3848,7 +3886,15 @@ var check = (ctx, bin) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
-  const input = { preset: previous.value.preset, lang: ctx.lang, bin, version: ctx.version, env: ctx.env, t: ctx.t };
+  const input = {
+    preset: previous.value.preset,
+    lang: ctx.lang,
+    bin,
+    version: ctx.version,
+    marketplace: false,
+    env: ctx.env,
+    t: ctx.t
+  };
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const data = planData(ctx.t, plan.value, "update", false, void 0);
@@ -3869,7 +3915,8 @@ var runUpdate = (ctx, args) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
-  const request = { mode: "update", preset: stringOption(args.values, "preset"), bin, showDiff: true };
+  const preset = stringOption(args.values, "preset");
+  const request = { mode: "update", preset, bin, marketplace: false, showDiff: true };
   return runInstall(ctx, request, previous.value.preset);
 };
 var updateCommand = {
