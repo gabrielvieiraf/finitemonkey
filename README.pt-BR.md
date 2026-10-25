@@ -12,7 +12,25 @@
 
 > **Pré-lançamento.** Ainda não dá para instalar. O nome `finitemonkey` no npm está reservado (a 0.0.0 é só um marcador) e o código está sendo feito em público. Tudo abaixo é o plano, não o que acontece hoje. Dê uma estrela ou acompanhe o repositório se quiser saber quando sair a v0.1.
 
-O Claude Code termina um refactor com "Pronto! Todos os testes passaram." Ele só tinha rodado o linter. O único teste que falhava ganhou um `.skip` às duas da manhã, e o CI ficou vermelho vinte minutos depois do merge. O Finite Monkey é o portão entre o macaco e a `main`: hooks do Claude Code que rodam as suas checagens por conta própria quando o agente tenta parar, e mantêm a sessão aberta até elas passarem. O único macaco aqui é você.
+Eu sei como é. Com o advento da IA, muita coisa mudou.
+
+Uns batem a cabeça no teclado esperando que o Claude cuspa magicamente o próximo SaaS bilionário. Outros já cansaram de digitar código. E tem quem precise entregar, em dias, o que antes exigiria equipes inteiras trabalhando por meses.
+
+O resultado é quase sempre o mesmo: você vira um macaco na frente do computador, soterrado por tanta coisa para fazer que já não sabe por onde começar, muito menos como terminar.
+
+O Finite Monkey foi criado para ser o portão entre esse macaco e a `main`.
+
+Digite do jeito que quiser. Trabalhe com a IA que preferir. Produza código na velocidade que conseguir.
+
+O Finite Monkey cuida primeiro do que não pode ficar na base da confiança: as verificações.
+
+Cada verificação aprovada fica registrada. Cada falha continua visível até ser resolvida. E nada é considerado pronto sem evidências de que realmente funciona.
+
+Não importa quanto código foi gerado, quantos agentes trabalharam ou quão convincente parece a resposta da IA. Se não passou pelas verificações, não está pronto.
+
+E o portão é só o começo: o Finite Monkey também percebe quando você está dando voltas, mostra o que falta num projeto maior que você, segura as rédeas de vários agentes ao mesmo tempo e leva tudo até produção sem quebrar nada pelo caminho.
+
+Um macaco. Tempo finito. Trabalho que sai de verdade.
 
 ## O Claude Code diz que terminou, mas não terminou
 
@@ -47,6 +65,17 @@ Planejado: uma regra única de detecção, aplicada quando um arquivo é escrito
 ## Como impedir um agente de mexer na produção na mão?
 
 Planejado: comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
+
+## Mais que um portão (planejado)
+
+O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto do plano é sobre quem está digitando:
+
+- **Quando você está dando voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá, um bug colado de uma IA para outra e de volta: o Finite Monkey percebe a volta e diz isso com todas as letras, com o que tentar no lugar.
+- **Quando o projeto é maior que você, por enquanto.** Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, backup e um jeito de voltar atrás. As plantas de projeto mostram o que uma versão de verdade precisa e o que ainda falta, para uma tela de login não ser chamada de produto. As explicações acompanham o que você já sabe e vão sumindo conforme você aprende.
+- **Quando uma decisão pesa.** Antes de trocar uma biblioteca ou um fornecedor: o que existe hoje, quais as opções, os critérios escritos antes dos candidatos, o custo e como voltar.
+- **Quando você roda vários agentes ao mesmo tempo.** Frentes de trabalho em paralelo, cada uma na sua branch, um merge que confere que nada se perdeu e uma tela com o que cada frente está fazendo.
+- **Quando uma regra precisa valer em todo lugar.** A regra que você escreve uma vez vira hook, permissão, git hook e passo de CI, e você vê onde ela ainda é só texto.
+- **Quando vai para produção.** CI, deploy e infraestrutura no tamanho do projeto, e checagens de organização de código para bases que cresceram rápido demais.
 
 ## Nenhum comando para decorar
 

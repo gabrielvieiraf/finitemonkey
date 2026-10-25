@@ -22,7 +22,25 @@ English | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/b
 
 > **Pre-release.** Nothing installs yet. The npm name `finitemonkey` is reserved (0.0.0 is a placeholder) and the code is being built in the open. Everything below is the plan, not today's behavior. Star or watch the repo if you want to know when v0.1 lands.
 
-Claude Code ends a refactor with "Done! All tests pass." It had only run the linter. The only failing test got a `.skip` at 2 a.m., and CI went red twenty minutes after the merge. Finite Monkey is the gate between the monkey and `main`: Claude Code hooks that run your checks themselves when the agent tries to stop, and keep the session open until they pass. The only monkey here is you.
+I know how it is. AI changed a lot of things.
+
+Some people bang their head on the keyboard waiting for Claude to magically spit out the next billion-dollar SaaS. Others got tired of typing code. And some have to deliver in days what used to take whole teams months.
+
+The result is almost always the same: you turn into a monkey in front of a computer, buried under so much to do that you no longer know where to start, let alone how to finish.
+
+Finite Monkey was made to be the gate between that monkey and `main`.
+
+Type however you want. Work with whichever AI you like. Write code as fast as you can.
+
+Finite Monkey first takes care of what can't run on trust: the checks.
+
+Every check that passes is recorded. Every failure stays visible until it's fixed. And nothing counts as done without evidence that it actually works.
+
+It doesn't matter how much code was generated, how many agents worked on it or how convincing the AI's answer sounds. If it didn't pass the checks, it isn't done.
+
+And the gate is only the start: Finite Monkey also notices when you're going in circles, shows what's missing in a project that's bigger than you, keeps the reins on several agents at once and takes it all to production without breaking things on the way.
+
+One monkey. Finite time. Work that actually ships.
 
 ## Claude Code says it's done, but it isn't
 
@@ -57,6 +75,17 @@ Planned: one detection rule applied when files are written, in prompts, at commi
 ## How do I stop an agent from editing production by hand?
 
 Planned: commands with effects on a production host get blocked. Production changes go through the deploy path you declare.
+
+## More than a gate (planned)
+
+The gate comes first because nothing else matters if "done" can be a lie. The rest of the plan is about the person typing:
+
+- **When you're going in circles.** Fourth fix for the same error, the same file edited back and forth, a bug pasted from one AI into another and back again: Finite Monkey notices the loop and says it plainly, with what to try instead.
+- **When the project is bigger than you are, for now.** Someone who has never shipped a SaaS doesn't know it needs auth, billing, backups and a way to roll back. Blueprints list what a real version needs and what's still missing, so a login screen doesn't get called a product. Explanations adjust to what you already know and fade as you learn.
+- **When a decision matters.** Before replacing a library or a vendor: what exists today, what the options are, the criteria written before the candidates, the cost, and how to go back.
+- **When you run several agents at once.** Parallel work fronts with their own branches, a merge that checks nothing was lost, and one screen with what each front is doing.
+- **When a rule must hold everywhere.** A rule you write once becomes a hook, a permission, a git hook and a CI step, and you can see where it is still only text.
+- **When it goes to production.** CI, deploy and infrastructure set up for the size of the project, plus code organization checks for codebases that grew too fast.
 
 ## Zero commands to remember
 

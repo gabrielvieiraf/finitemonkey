@@ -12,7 +12,25 @@
 
 > **Prelanzamiento.** Todavía no se puede instalar. El nombre `finitemonkey` en npm está reservado (la 0.0.0 es solo un marcador) y el código se está construyendo en abierto. Todo lo que sigue es el plan, no lo que pasa hoy. Dale una estrella o sigue el repositorio si quieres enterarte cuando salga la v0.1.
 
-Claude Code cierra un refactor con "¡Listo! Todos los tests pasan." Solo había ejecutado el linter. El único test que fallaba recibió un `.skip` a las dos de la madrugada, y la CI se puso en rojo veinte minutos después del merge. Finite Monkey es la puerta entre el mono y `main`: hooks de Claude Code que ejecutan tus comprobaciones por su cuenta cuando el agente intenta parar, y mantienen la sesión abierta hasta que pasan. El único mono aquí eres tú.
+Sé cómo es. Con la llegada de la IA, muchas cosas cambiaron.
+
+Unos se dan cabezazos contra el teclado esperando que Claude escupa por arte de magia el próximo SaaS millonario. Otros ya se cansaron de escribir código. Y hay quien tiene que entregar en días lo que antes exigía equipos enteros trabajando durante meses.
+
+El resultado casi siempre es el mismo: te conviertes en un mono frente a la computadora, sepultado bajo tanto por hacer que ya no sabes por dónde empezar, y mucho menos cómo terminar.
+
+Finite Monkey nació para ser la puerta entre ese mono y `main`.
+
+Escribe como quieras. Trabaja con la IA que prefieras. Produce código a la velocidad que puedas.
+
+Finite Monkey se ocupa primero de lo que no puede quedar a base de confianza: las verificaciones.
+
+Cada verificación aprobada queda registrada. Cada fallo sigue a la vista hasta que se resuelve. Y nada se considera listo sin pruebas de que realmente funciona.
+
+No importa cuánto código se generó, cuántos agentes trabajaron ni qué tan convincente parece la respuesta de la IA. Si no pasó las verificaciones, no está listo.
+
+Y la puerta es solo el comienzo: Finite Monkey también se da cuenta cuando estás dando vueltas, muestra lo que falta en un proyecto que te queda grande, sostiene las riendas de varios agentes a la vez y lo lleva todo a producción sin romper nada en el camino.
+
+Un mono. Tiempo finito. Trabajo que sale de verdad.
 
 ## Claude Code dice que terminó, pero no terminó
 
@@ -47,6 +65,17 @@ Previsto: una única regla de detección, aplicada al escribir archivos, en los 
 ## ¿Cómo evito que un agente toque producción a mano?
 
 Previsto: los comandos con efecto sobre un servidor de producción se bloquean. Producción cambia por el camino de despliegue que declares.
+
+## Más que una puerta (previsto)
+
+La puerta va primero porque nada más importa si el "listo" puede ser mentira. El resto del plan trata de quien escribe:
+
+- **Cuando estás dando vueltas.** El cuarto arreglo para el mismo error, el mismo archivo editado una y otra vez, un bug pegado de una IA a otra y de vuelta: Finite Monkey nota la vuelta y lo dice claro, con qué probar en su lugar.
+- **Cuando el proyecto te queda grande, por ahora.** Quien nunca puso un SaaS en marcha no sabe que necesita login, cobros, copias de seguridad y una forma de volver atrás. Los planos de proyecto muestran lo que necesita una versión de verdad y lo que aún falta, para que una pantalla de login no se llame producto. Las explicaciones se ajustan a lo que ya sabes y desaparecen a medida que aprendes.
+- **Cuando una decisión pesa.** Antes de cambiar una biblioteca o un proveedor: qué hay hoy, cuáles son las opciones, los criterios escritos antes de los candidatos, el costo y cómo volver.
+- **Cuando usas varios agentes a la vez.** Frentes de trabajo en paralelo, cada uno en su rama, un merge que comprueba que no se perdió nada y una pantalla con lo que hace cada frente.
+- **Cuando una regla tiene que valer en todas partes.** Una regla que escribes una vez se convierte en hook, permiso, git hook y paso de CI, y ves dónde sigue siendo solo texto.
+- **Cuando va a producción.** CI, deploy e infraestructura a la medida del proyecto, y revisiones de organización del código para bases que crecieron demasiado rápido.
 
 ## Ningún comando que memorizar
 
