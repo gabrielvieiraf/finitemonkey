@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
@@ -6,15 +7,17 @@ import { fileURLToPath } from "node:url";
 import type { CommandSpec } from "../src/commands/types.js";
 import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import type { Ctx, Env, TextSource } from "../src/core/context.js";
-import { accept, isRecord, type JsonObject, parseJsonObject, reject } from "../src/core/parsed.js";
+import { isRecord, type JsonObject, parseJsonObject } from "../src/core/parsed.js";
 import { run } from "../src/core/run.js";
 import type { GitResult, ProbeResult, Runtime } from "../src/core/runtime.js";
 import { detectLang } from "../src/i18n/languages.js";
 import { createTranslator } from "../src/i18n/translate.js";
+import { type MemoryFs, memoryFs } from "./memory-fs.js";
 
 export const ROOT = toAbsolutePath(join(dirname(fileURLToPath(import.meta.url)), ".."));
 export const BUNDLE = toAbsolutePath(join(ROOT, "dist", "finitemonkey.mjs"));
 export const TEST_VERSION = "9.9.9-test";
+export const BUNDLE_TEXT = readFileSync(BUNDLE, "utf8");
 
 export const found = (stdout: string): ProbeResult => ({ found: true, ok: true, stdout, timedOut: false });
 export const missing: ProbeResult = { found: false, ok: false, stdout: "", timedOut: false };
@@ -30,25 +33,11 @@ export interface FakeRuntimeOptions {
   readonly now?: string;
   readonly git?: (args: readonly string[]) => GitResult;
   readonly gitLines?: (args: readonly string[]) => readonly string[] | undefined;
+  readonly fs?: MemoryFs;
+  readonly selfPath?: AbsolutePath;
 }
 
 export const gitMissing: GitResult = { found: false, ok: false, stdout: "" };
-
-const childrenOf = (files: ReadonlyMap<string, string>, dir: string): readonly string[] => {
-  const prefix = dir.endsWith("/") ? dir : `${dir}/`;
-  const names = [...files.keys()]
-    .filter((path) => path.startsWith(prefix))
-    .map((path) => path.slice(prefix.length).split("/")[0] ?? "");
-  return [...new Set(names)].filter((name) => name !== "").sort();
-};
-
-const walk = (files: ReadonlyMap<string, string>, root: string): readonly string[] => {
-  const prefix = root.endsWith("/") ? root : `${root}/`;
-  return [...files.keys()]
-    .filter((path) => path.startsWith(prefix))
-    .map((path) => path.slice(prefix.length))
-    .sort();
-};
 
 const DEFAULT_TOOLS: Readonly<Record<string, ProbeResult>> = {
   git: found("git version 2.47.1"),
@@ -69,39 +58,20 @@ const timers: Readonly<Record<TimerMode, Runtime["startTimer"]>> = {
   never: () => () => undefined,
 };
 
-const fakeKey = (path: string): string => path.replace(/\\/g, "/");
-
-export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
-  const files = new Map<string, string>(
-    Object.entries(options.files ?? {}).map(([path, text]) => [fakeKey(path), text]),
-  );
-  return {
-    nodeVersion: options.nodeVersion ?? "22.11.0",
-    readText: (path) => {
-      const text = files.get(fakeKey(path));
-      return text === undefined ? reject(`ENOENT: ${path}`) : accept(text);
-    },
-    probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
-    startTimer: timers[options.timer ?? "real"],
-    writeText: (path, text) => {
-      files.set(fakeKey(path), text);
-      return accept(true);
-    },
-    listDir: (path) => {
-      const names = childrenOf(files, fakeKey(path));
-      return names.length === 0 ? reject(`ENOENT: ${path}`) : accept(names);
-    },
-    walkFiles: (root) => accept(walk(files, fakeKey(root))),
-    now: () => options.now ?? "2026-10-25T12:00:00.000Z",
-    git: (args) => options.git?.(args) ?? gitMissing,
-    gitLines: (args, _cwd, onLine) => {
-      const lines = options.gitLines?.(args);
-      if (lines === undefined) return Promise.resolve(gitMissing);
-      for (const line of lines) onLine(line);
-      return Promise.resolve({ found: true, ok: true, stdout: "" });
-    },
-  };
-};
+export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => ({
+  ...(options.fs ?? memoryFs({ [BUNDLE]: BUNDLE_TEXT, ...options.files }, [], options.now)),
+  nodeVersion: options.nodeVersion ?? "22.11.0",
+  probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
+  startTimer: timers[options.timer ?? "real"],
+  git: (args) => options.git?.(args) ?? gitMissing,
+  gitLines: (args, _cwd, onLine) => {
+    const lines = options.gitLines?.(args);
+    if (lines === undefined) return Promise.resolve(gitMissing);
+    for (const line of lines) onLine(line);
+    return Promise.resolve({ found: true, ok: true, stdout: "" });
+  },
+  selfPath: options.selfPath ?? BUNDLE,
+});
 
 const sink = (): { readonly write: (chunk: string) => void; readonly text: () => string } => {
   const chunks: string[] = [];
@@ -123,6 +93,7 @@ export interface CliOptions {
   readonly registry?: readonly CommandSpec[];
   readonly cwd?: AbsolutePath;
   readonly runtime?: Runtime;
+  readonly version?: string;
 }
 
 export interface CliRun {
@@ -140,7 +111,7 @@ export const cli = async (argv: readonly string[], options: CliOptions = {}): Pr
     cwd: options.cwd ?? toAbsolutePath("/home/ana/project"),
     platform: "linux",
     io: { stdout, stderr, stdin: options.stdin ?? Readable.from([]) },
-    version: TEST_VERSION,
+    version: options.version ?? TEST_VERSION,
     runtime: options.runtime ?? fakeRuntime(),
     ...(options.registry === undefined ? {} : { registry: options.registry }),
   });

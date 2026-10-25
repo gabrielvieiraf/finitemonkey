@@ -1,8 +1,10 @@
+import { stringOption } from "../core/args.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom } from "../core/result.js";
 import { HOOK_EVENTS, type HookEvent, parseDeadline, parseHookEvent } from "../hooks/events.js";
 import { DEFAULT_HANDLERS } from "../hooks/handlers.js";
 import { type HookVerdict, runHook } from "../hooks/runner.js";
+import { PLUGIN_VIA, projectOwnsHooks, YIELD_STDOUT } from "../install/plugin-yield.js";
 import type { CommandSpec } from "./types.js";
 
 export interface HookData {
@@ -16,6 +18,7 @@ export const hookCommand: CommandSpec = {
   usage: `finitemonkey hook <${HOOK_EVENTS.join("|")}>`,
   status: "ready",
   maxPositionals: 1,
+  options: { via: { type: "string" } },
   run: async (ctx, args): Promise<CommandResult<HookData>> => {
     const raw = args.positionals[0] ?? "";
     const event = parseHookEvent(raw);
@@ -25,6 +28,9 @@ export const hookCommand: CommandSpec = {
         ctx.t,
         usageProblem("unknown_hook_event", "error.unknown_hook_event", "finitemonkey help hook", params),
       );
+    }
+    if (stringOption(args.values, "via") === PLUGIN_VIA && projectOwnsHooks(ctx)) {
+      return { ok: true, exitCode: 0, data: { event, verdict: "allow" }, raw: { stdout: YIELD_STDOUT, stderr: "" } };
     }
     const outcome = await runHook(event, {
       stdin: ctx.io.stdin,

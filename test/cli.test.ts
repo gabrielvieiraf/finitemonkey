@@ -26,14 +26,15 @@ describe("dispatch", () => {
     const commands = field(body, "data", "commands");
     assert.deepEqual(names(commands), REGISTRY.map(commandName));
     const planned = Array.isArray(commands) ? commands.filter((item) => field(item, "status") === "planned") : [];
-    assert.deepEqual(names(planned), ["init", "update", "uninstall"]);
-    assert.match((await cli(["help"])).stdout, /init {2,}.*\(not available yet\)/);
+    assert.deepEqual(names(planned), []);
+    assert.doesNotMatch((await cli(["help"])).stdout, /init {2,}.*\(not available yet\)/);
   });
 
   const topics = [
     { argv: ["help", "i18n", "check"], text: /finitemonkey i18n check \[--dir <path>\]/ },
     { argv: ["doctor", "--help"], text: /Usage: finitemonkey doctor/ },
     { argv: ["uninstall", "-h"], text: /--purge, --keep-generated/ },
+    { argv: ["init", "--help"], text: /--preset, --bin, --marketplace/ },
   ] as const;
   for (const { argv, text } of topics) {
     it(`${argv.join(" ")} shows command help`, async () => {

@@ -439,7 +439,7 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETU
 
 This file is for an AI agent, such as Claude Code, that a user asked to install Finite Monkey in a project. Humans can read it too.
 
-> **Status: planned.** Finite Monkey has not been released. The commands below describe the planned interface. Step 1 tells you how to detect that, and what to say to the user.
+> **Status: pre-release.** `init`, `update`, `uninstall` and the Claude Code plugin exist in the repository and are tested, but no version 0.1.0 is on npm yet. Step 1 tells you how to detect that, and what to say to the user. Hooks are installed now; most of what they enforce (the gate, the guards) is still **(planned)**.
 >
 > Valid for `finitemonkey` >= 0.1.0. Check the installed version before following any later step, and stop if it is lower.
 
@@ -452,6 +452,21 @@ This file is for an AI agent, such as Claude Code, that a user asked to install 
 5. **Do not enable anything costly without asking.** Anything that spends money, uses paid APIs, runs long benchmarks, changes GitHub settings such as branch rulesets, or edits global configuration (`~/.claude/settings.json`, shell profiles) needs an explicit yes from the user first.
 6. **Explain each step in one or two sentences, in the user's language.**
 7. **Do not edit files that `init` manages.** If something looks wrong, run `doctor` and report what it says.
+
+## Two ways to install
+
+Both give the same hooks. Use one, or both: when a project has its own Finite Monkey hooks, the plugin's hooks step aside so nothing runs twice.
+
+1. **The Claude Code plugin**, from the repository marketplace. Inside a Claude Code session:
+
+   ```
+   /plugin marketplace add gabrielvieiraf/finitemonkey
+   /plugin install finitemonkey@finitemonkey
+   ```
+
+   The plugin brings the hooks and the skills (`task`, `verify`, `look`, `finish`) that Claude uses on its own. It carries the CLI itself (`scripts/finitemonkey.mjs`, the same build as the version in its `plugin.json`), and every hook runs `node` on that file: no `npx`, no download, no network.
+
+2. **`npx finitemonkey init`** in the project (steps below). It writes the hooks, the `permissions.deny` floor and `.finitemonkey/config.yml` into the project. The hooks run `node` on `node_modules/finitemonkey` when the project has it as a dependency; otherwise `init` copies the CLI that is running it into `.finitemonkey/runtime/` (committed, so teammates and cloud sessions get the same version) and the hooks run that copy. No hook calls `npx`. This also holds where plugins do not load (cloud sessions of a repository read the committed `.claude/settings.json`). Add `--marketplace` to also register the plugin's marketplace in the project settings for everyone who trusts the folder; it is off unless the user asks.
 
 ## What the user gets
 
@@ -480,7 +495,10 @@ npm view finitemonkey version
 npx finitemonkey@latest init --dry-run --json
 ```
 
-This reads the project and returns the plan without writing anything: files to create, files to merge, files left untouched, and the reason for each. Summarize the plan for the user in a few lines. If the output lists decisions (for example a preset or a language), ask the user now.
+This reads the project and returns the plan without writing anything: `data.actions` lists each file with `create`, `merge`, `update`, `unchanged`, `keep-edited` or `skip-foreign`, `data.warnings` lists what the user should know (another plugin that also decides when a session stops, a Claude Code too old to block on a crashed hook, a file that is not Finite Monkey's), and `data.diff` shows the exact change. Summarize the plan for the user in a few lines. Ask the user only these decisions:
+
+- Preset: `neutral` (default) or `gabriel` (adds the author's conventions, such as turning off AI attribution in commits and PRs when the project has not set it).
+- Whether to register the plugin marketplace in the project (`--marketplace`).
 
 ### 4. Install
 
@@ -488,7 +506,7 @@ This reads the project and returns the plan without writing anything: files to c
 npx finitemonkey@latest init --yes --json
 ```
 
-Pass the user's decisions as flags (for example `--lang pt-BR`). `init` backs up every file it touches, merges instead of overwriting, and is safe to run again.
+Pass the user's decisions as flags (for example `--preset gabriel --lang pt-BR`). Without `--yes`, `init` exits 4 with the plan and a `next` field holding the exact command to run after the user agrees. `init` backs up every file it touches to `.finitemonkey/backups/<timestamp>/`, records what it wrote in `.finitemonkey/lock.json`, merges `.claude/settings.json` without removing any user hook or permission, adds a managed block to `.gitignore` (state stays local, `config.yml` is committed), and is safe to run again: a second run with no change writes nothing.
 
 ### 5. Verify
 
@@ -502,7 +520,7 @@ Every item has `check`, `status` and `fix`. If any item is not `ok`, run the `fi
 
 In one or two sentences: what was installed, anything `doctor` could not fix, and that they can now keep working without any new command.
 
-## Planned exit codes
+## Exit codes
 
 | Code | Meaning |
 |---|---|
@@ -515,10 +533,20 @@ In one or two sentences: what was installed, anything `doctor` could not fix, an
 
 With `--json`, errors come as `{"schemaVersion":1,"error":{"code":"...","message":"...","fix":"..."}}`. Run or suggest the `fix` command.
 
+## Update
+
+```sh
+npx finitemonkey update --check --json
+npx finitemonkey update --yes --json
+```
+
+`--check` exits 1 when the managed files differ from this version and 0 when they match. `update` re-pins the hooks to the new version and refreshes generated files the user did not edit. A generated file the user edited is kept, and the new template is shown in `data.diff` as a proposal.
+
 ## Undo
 
 ```sh
-npx finitemonkey uninstall --json
+npx finitemonkey uninstall --yes --json
+npx finitemonkey uninstall --yes --purge --json
 ```
 
-Removes what Finite Monkey added and restores backups. Files the user edited after install are kept and listed.
+The first removes what Finite Monkey added and restores the backups, keeping `.finitemonkey/` (backups and evidence). `--purge` also deletes `.finitemonkey/`; after `init` then `uninstall --purge`, the project is byte-identical to before. Files the user edited after install are kept and listed in `data.kept`. Without `--yes` it exits 4 with the plan. The plugin, if installed, is removed separately: `claude plugin uninstall finitemonkey@finitemonkey`.

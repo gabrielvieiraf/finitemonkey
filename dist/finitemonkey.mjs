@@ -16,10 +16,23 @@ var isEntryPoint = (moduleUrl, argv1, realpath, platform) => {
 // src/core/node-runtime.ts
 import { spawnSync as spawnSync2 } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // src/core/node-fs.ts
-import { closeSync, fsyncSync, mkdirSync, openSync, readdirSync, renameSync, rmSync, writeSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { randomBytes } from "node:crypto";
+import {
+  closeSync,
+  fsyncSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+  unlinkSync,
+  writeSync
+} from "node:fs";
+import { basename, dirname, join, relative } from "node:path";
 
 // src/core/parsed.ts
 var accept = (value) => ({ ok: true, value });
@@ -43,8 +56,18 @@ var optionalString = (record2, key) => {
 };
 
 // src/core/node-fs.ts
+var NEW_FILE_MODE = 420;
 var SKIPPED_DIRS = /* @__PURE__ */ new Set([".git", "node_modules"]);
 var messageOf = (error) => error instanceof Error ? error.message : String(error);
+var errnoOf = (error) => error instanceof Error && "code" in error && typeof error.code === "string" ? error.code : void 0;
+var attempt = (work) => {
+  try {
+    work();
+    return accept(void 0);
+  } catch (error) {
+    return reject(messageOf(error));
+  }
+};
 var nodeWriteText = (path, text2) => {
   const temp = `${path}.${String(process.pid)}.tmp`;
   try {
@@ -63,12 +86,91 @@ var nodeWriteText = (path, text2) => {
     return reject(messageOf(error));
   }
 };
+var nodeStat = (path) => {
+  try {
+    const stats = statSync(path);
+    return { kind: stats.isDirectory() ? "dir" : "file", mtimeMs: stats.mtimeMs };
+  } catch {
+    return void 0;
+  }
+};
 var nodeListDir = (path) => {
   try {
     return accept(readdirSync(path).sort());
   } catch (error) {
     return reject(messageOf(error));
   }
+};
+var modeOf = (path) => {
+  try {
+    return statSync(path).mode & 511;
+  } catch {
+    return NEW_FILE_MODE;
+  }
+};
+var writeAndSync = (file, content, mode) => {
+  const fd = openSync(file, "wx", mode);
+  try {
+    writeSync(fd, content, null, "utf8");
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
+};
+var nodeWriteAtomic = (path, content) => {
+  const temp = join(dirname(path), `.${basename(path)}.${randomBytes(6).toString("hex")}.tmp`);
+  return attempt(() => {
+    try {
+      writeAndSync(temp, content, modeOf(path));
+      renameSync(temp, path);
+    } catch (error) {
+      rmSync(temp, { force: true });
+      throw error;
+    }
+  });
+};
+var nodeRename = (from, to) => attempt(() => {
+  renameSync(from, to);
+});
+var nodeMkdir = (path) => attempt(() => {
+  mkdirSync(path, { recursive: true });
+});
+var nodeRemove = (path) => attempt(() => {
+  rmSync(path, { recursive: true, force: true });
+});
+var createLock = (path, owner, now) => {
+  const fd = openSync(path, "wx", 384);
+  try {
+    writeSync(fd, `${JSON.stringify({ owner, pid: process.pid, at: now })}
+`, null, "utf8");
+  } finally {
+    closeSync(fd);
+  }
+};
+var release = (path) => () => {
+  try {
+    unlinkSync(path);
+  } catch {
+    return;
+  }
+};
+var isStale = (path, staleMs, now) => {
+  const stat = nodeStat(path);
+  return stat !== void 0 && now - stat.mtimeMs > staleMs;
+};
+var nodeLock = (path, options) => {
+  for (let round = 0; round < 2; round += 1) {
+    const now = Date.now();
+    try {
+      createLock(path, options.owner, now);
+      return accept(release(path));
+    } catch (error) {
+      if (errnoOf(error) !== "EEXIST") return reject(messageOf(error));
+      if (!isStale(path, options.staleMs, now)) return reject(`locked: ${path}`);
+      rmSync(path, { force: true });
+    }
+  }
+  return reject(`locked: ${path}`);
 };
 var walkInto = (root, dir, out) => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -183,7 +285,14 @@ var nodeRuntime = () => ({
   walkFiles: nodeWalkFiles,
   now: () => (/* @__PURE__ */ new Date()).toISOString(),
   git: nodeGit,
-  gitLines: nodeGitLines
+  gitLines: nodeGitLines,
+  stat: nodeStat,
+  writeAtomic: nodeWriteAtomic,
+  rename: nodeRename,
+  mkdir: nodeMkdir,
+  remove: nodeRemove,
+  lock: nodeLock,
+  selfPath: toAbsolutePath(fileURLToPath2(import.meta.url))
 });
 
 // src/doctor/system.ts
@@ -310,7 +419,7 @@ var doctorEnvFrom = (ctx) => ({
   cwd: ctx.cwd,
   runtime: ctx.runtime
 });
-var runChecks = (env, checks = CHECKS) => checks.flatMap((check) => check(env));
+var runChecks = (env, checks = CHECKS) => checks.flatMap((check2) => check2(env));
 var toItem = (ctx, finding) => ({
   check: finding.check,
   status: finding.status,
@@ -407,10 +516,10 @@ var needsPersonProblem = (messageKey, fix, params = {}) => ({
 });
 var FmError = class extends Error {
   problem;
-  constructor(problem) {
-    super(problem.code);
+  constructor(problem2) {
+    super(problem2.code);
     this.name = "FmError";
-    this.problem = problem;
+    this.problem = problem2;
   }
 };
 
@@ -481,11 +590,11 @@ var success = (data, human = []) => ({
   data,
   human
 });
-var failureFrom = (t, problem, human) => ({
+var failureFrom = (t, problem2, human) => ({
   ok: false,
-  exitCode: problem.exitCode,
-  error: { code: problem.code, message: t(problem.messageKey, problem.params), fix: problem.fix },
-  ...problem.data === void 0 ? {} : { data: problem.data },
+  exitCode: problem2.exitCode,
+  error: { code: problem2.code, message: t(problem2.messageKey, problem2.params), fix: problem2.fix },
+  ...problem2.data === void 0 ? {} : { data: problem2.data },
   ...human === void 0 ? {} : { human }
 });
 var toEnvelope = (command, result) => ({
@@ -557,10 +666,10 @@ var helpFor = (ctx, spec) => {
 var topicHelp = (ctx, registry, topic) => {
   const resolved = resolveCommand(registry, topic);
   if (resolved !== void 0) return helpFor(ctx, resolved.spec);
-  const problem = usageProblem("unknown_command", "error.unknown_command", "finitemonkey help", {
+  const problem2 = usageProblem("unknown_command", "error.unknown_command", "finitemonkey help", {
     command: topic.join(" ")
   });
-  return failureFrom(ctx.t, problem);
+  return failureFrom(ctx.t, problem2);
 };
 var helpCommand = {
   path: ["help"],
@@ -657,12 +766,12 @@ var saveBaseline = (runtime, root, baseline) => runtime.writeText(baselinePath(r
 var ratchet = (findings, baseline, now, inScope) => {
   const byId = new Map(baseline.entries.map((entry) => [entry.id, entry]));
   const seen = new Set(findings.map((finding) => finding.id));
-  const entryOf2 = (finding) => byId.get(finding.id);
+  const entryOf3 = (finding) => byId.get(finding.id);
   return {
-    fresh: findings.filter((finding) => entryOf2(finding) === void 0),
-    known: findings.filter((finding) => (entryOf2(finding)?.expiresAt ?? "") >= now),
+    fresh: findings.filter((finding) => entryOf3(finding) === void 0),
+    known: findings.filter((finding) => (entryOf3(finding)?.expiresAt ?? "") >= now),
     expired: findings.filter((finding) => {
-      const entry = entryOf2(finding);
+      const entry = entryOf3(finding);
       return entry !== void 0 && entry.expiresAt < now;
     }),
     fixed: inScope === void 0 ? [] : baseline.entries.filter((entry) => !seen.has(entry.id) && inScope(entry.file))
@@ -1297,7 +1406,7 @@ import { join as join4, relative as relative2 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
-var locate = (finding, rawFile, line, commit) => {
+var locate = (finding, rawFile, line, commit2) => {
   const file = toPosixPath(rawFile);
   return {
     id: findingId(finding.ruleId, file, finding.fingerprint),
@@ -1308,7 +1417,7 @@ var locate = (finding, rawFile, line, commit) => {
     column: finding.column,
     fingerprint: finding.fingerprint,
     tail: finding.tail,
-    ...commit === void 0 ? {} : { commit }
+    ...commit2 === void 0 ? {} : { commit: commit2 }
   };
 };
 var whereOf = (finding) => `${finding.file}:${String(finding.line)}`;
@@ -1323,11 +1432,11 @@ var targetOf = (line) => {
   if (path === DEV_NULL) return void 0;
   return path.startsWith("b/") ? path.slice(2) : path;
 };
-var collect = (chunk, commit, found) => {
+var collect = (chunk, commit2, found) => {
   const { file } = chunk;
   if (file === void 0 || chunk.text.length === 0) return;
   for (const finding of scanText(chunk.text.join("\n"), { path: file })) {
-    const located = locate(finding, file, chunk.lines[finding.line - 1] ?? finding.line, commit);
+    const located = locate(finding, file, chunk.lines[finding.line - 1] ?? finding.line, commit2);
     found.set(located.id, located);
   }
 };
@@ -1348,17 +1457,17 @@ var addLine = (chunk, line) => {
 };
 var diffScanner = () => {
   const found = /* @__PURE__ */ new Map();
-  let commit;
+  let commit2;
   let chunk = fresh();
   const flush2 = () => {
-    collect(chunk, commit, found);
+    collect(chunk, commit2, found);
     chunk = fresh();
   };
   const header = (line) => {
     const match = COMMIT.exec(line);
     if (match !== null) {
       flush2();
-      commit = match[1];
+      commit2 = match[1];
       return true;
     }
     if (line.startsWith("diff --git ")) {
@@ -1429,9 +1538,9 @@ var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
 var ENV_FILE = /^\.env(?:\..+)?$/i;
 var KEY_FILE = /\.(?:pem|key|p12|pfx)$/i;
 var SSH_KEY = /^id_(?:rsa|dsa|ecdsa|ed25519)(?:_[A-Za-z0-9_-]+)?$/;
-var basename = (path) => path.split(/[\\/]/).pop() ?? path;
+var basename2 = (path) => path.split(/[\\/]/).pop() ?? path;
 var isSensitivePath = (path) => {
-  const name = basename(path.replace(/^["']|["']$/g, ""));
+  const name = basename2(path.replace(/^["']|["']$/g, ""));
   if (ENV_FILE.test(name)) return !SAFE_ENV.test(name);
   return KEY_FILE.test(name) || SSH_KEY.test(name);
 };
@@ -1619,8 +1728,8 @@ var bashDecision = (input) => {
     const items = found.map((finding) => ({ ruleId: finding.ruleId, where: lineWhere(input.t, finding) }));
     return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
   }
-  const commit = commitIntent(segments);
-  return commit === void 0 ? ALLOW : commitDecision(input, commit.includeUnstaged);
+  const commit2 = commitIntent(segments);
+  return commit2 === void 0 ? ALLOW : commitDecision(input, commit2.includeUnstaged);
 };
 var readDecision = (input) => {
   const inputs = toolInput(input.payload);
@@ -1793,6 +1902,185 @@ var runHook = async (event, options) => {
   }
 };
 
+// src/install/plugin-yield.ts
+import { join as join5 } from "node:path";
+
+// src/install/layout.ts
+var STATE_DIR = ".finitemonkey";
+var SETTINGS_FILE = ".claude/settings.json";
+var GITIGNORE_FILE = ".gitignore";
+var CONFIG_FILE = ".finitemonkey/config.yml";
+var LOCK_FILE = ".finitemonkey/lock.json";
+var BACKUPS_DIR = ".finitemonkey/backups";
+var LOCKS_DIR = ".finitemonkey/locks";
+var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
+var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
+var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
+var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
+var LOCK_SCHEMA = "finitemonkey/lock@1";
+var PLAN_SCHEMA = "finitemonkey/install-plan@1";
+var GENERATED_MARKER = "finitemonkey:generated v=1";
+var BLOCK_BEGIN = "# finitemonkey:begin v=1";
+var BLOCK_END = "# finitemonkey:end";
+var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
+var PRESETS = ["neutral", "gabriel"];
+var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
+var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
+
+// src/install/hook-entries.ts
+var INSTALLED_HOOKS = [
+  { event: "SessionStart", timeout: 30, guard: false },
+  { event: "UserPromptSubmit", timeout: 10, guard: true },
+  { event: "PreToolUse", timeout: 10, guard: true },
+  { event: "PostToolUse", timeout: 30, guard: false },
+  { event: "Stop", timeout: 120, guard: false },
+  { event: "SubagentStart", timeout: 30, guard: false },
+  { event: "SubagentStop", timeout: 120, guard: false },
+  { event: "PreCompact", timeout: 30, guard: false },
+  { event: "ConfigChange", timeout: 10, guard: true }
+];
+var PROJECT_BIN = `\${CLAUDE_PROJECT_DIR}/${LOCAL_BIN}`;
+var VENDORED_BIN = `\${CLAUDE_PROJECT_DIR}/${VENDOR_BIN}`;
+var isScript = (path) => /\.(c|m)?js$/i.test(path);
+var execForm = (runner, event) => {
+  if (runner.kind === "local") return { command: "node", args: [PROJECT_BIN, "hook", event] };
+  if (runner.kind === "vendored") return { command: "node", args: [VENDORED_BIN, "hook", event] };
+  if (isScript(runner.path)) return { command: "node", args: [runner.path, "hook", event] };
+  return { command: runner.path, args: ["hook", event] };
+};
+var hookHandler = (runner, spec, failClosedSupported) => {
+  const failure2 = spec.guard && failClosedSupported ? { onFailure: "block" } : {};
+  const { command, args } = execForm(runner, spec.event);
+  return { type: "command", command, args, timeout: spec.timeout, ...failure2 };
+};
+var OWN_SHELL = /(^|[\s/"'])finitemonkey(@[^\s"]+|\.mjs|\.cmd|\.exe)?"?\s+hook\s/;
+var OWN_SCRIPT = /finitemonkey(\.mjs|\.cmd|\.exe)?$/;
+var stringsOf = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+var isOwnHandler = (handler) => {
+  if (!isRecord(handler)) return false;
+  const command = handler["command"];
+  if (typeof command !== "string") return false;
+  const args = stringsOf(handler["args"]);
+  if (args.length === 0) return OWN_SHELL.test(`${command} `);
+  const hookAt = args.indexOf("hook");
+  if (hookAt < 0) return false;
+  const target = hookAt === 0 ? command : args[hookAt - 1] ?? "";
+  return OWN_SCRIPT.test(target);
+};
+
+// src/install/json-text.ts
+var DEFAULT_STYLE = { indent: "  ", finalNewline: true };
+var styleOf = (text2) => {
+  const indented = /\n([ \t]+)\S/.exec(text2);
+  return { indent: indented?.[1] ?? DEFAULT_STYLE.indent, finalNewline: text2.endsWith("\n") };
+};
+var renderJson = (value, style) => `${JSON.stringify(value, null, style.indent)}${style.finalNewline ? "\n" : ""}`;
+var parseSettings = (text2) => text2 === void 0 || text2.trim() === "" ? { ok: true, value: {} } : parseJsonObject(text2);
+var asList = (value) => Array.isArray(value) ? value : [];
+var asRecord = (value) => isRecord(value) ? value : {};
+var setKey = (record2, key, value) => {
+  if (!(key in record2)) return value === void 0 ? record2 : { ...record2, [key]: value };
+  return Object.fromEntries(
+    Object.entries(record2).flatMap(([name, current]) => {
+      if (name !== key) return [[name, current]];
+      return value === void 0 ? [] : [[name, value]];
+    })
+  );
+};
+
+// src/install/settings-merge.ts
+var SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
+var ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false };
+var MARKETPLACE_ENTRY = { source: { source: "github", repo: "gabrielvieiraf/finitemonkey" } };
+var MARKETPLACE_KEY = "finitemonkey";
+var PLUGIN_ID = "finitemonkey@finitemonkey";
+var withEntry = (settings, key, name, value) => {
+  const inner = setKey(asRecord(settings[key]), name, value);
+  return setKey(settings, key, Object.keys(inner).length === 0 ? void 0 : inner);
+};
+var hasEntry = (settings, key, name) => name in asRecord(settings[key]);
+var replaceInGroup = (group, isOwn, take) => {
+  if (!isRecord(group)) return group;
+  const handlers = asList(group["hooks"]).flatMap((handler) => {
+    if (!isOwn(handler)) return [handler];
+    const replacement = take();
+    return replacement === void 0 ? [] : [replacement];
+  });
+  return handlers.length === 0 ? void 0 : { ...group, hooks: handlers };
+};
+var mergeEvent = (groups, isOwn, wanted) => {
+  let pending = wanted;
+  const take = () => {
+    const next = pending;
+    pending = void 0;
+    return next;
+  };
+  const kept = groups.map((group) => replaceInGroup(group, isOwn, take)).filter((group) => group !== void 0);
+  return pending === void 0 ? kept : [...kept, { hooks: [pending] }];
+};
+var mergeHooks = (hooks, isOwn, wanted) => {
+  const events = [.../* @__PURE__ */ new Set([...Object.keys(hooks), ...Object.keys(wanted)])];
+  const entries = events.flatMap((event) => {
+    const groups = hooks[event];
+    if (groups !== void 0 && !Array.isArray(groups)) return [[event, groups]];
+    const merged = mergeEvent(asList(groups), isOwn, wanted[event]);
+    return merged.length === 0 ? [] : [[event, merged]];
+  });
+  return Object.fromEntries(entries);
+};
+var withHooks = (settings, hooks) => {
+  return setKey(settings, "hooks", Object.keys(hooks).length === 0 ? void 0 : hooks);
+};
+var withPermissions = (settings, deny) => {
+  const permissions = asRecord(settings["permissions"]);
+  const next = setKey(permissions, "deny", deny.length === 0 ? void 0 : deny);
+  return setKey(settings, "permissions", Object.keys(next).length === 0 ? void 0 : next);
+};
+var ownHookMatcher = (recorded) => (handler) => isOwnHandler(handler) || recorded.some((own) => JSON.stringify(own) === JSON.stringify(handler));
+var mergeSettings = (current, wanted, recorded) => {
+  const schema = Object.keys(current).length === 0;
+  const base = schema ? { $schema: SETTINGS_SCHEMA_URL } : current;
+  const hooks = mergeHooks(asRecord(base["hooks"]), ownHookMatcher(recorded), wanted.hooks);
+  const existingDeny = asList(asRecord(base["permissions"])["deny"]);
+  const deny = wanted.deny.filter((rule) => !existingDeny.includes(rule));
+  const attribution = wanted.attributionOff && !("attribution" in base);
+  const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
+  const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
+  let settings = withPermissions(withHooks(base, hooks), [...existingDeny, ...deny]);
+  if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
+  if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
+  if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
+  return { settings, added: { schema, deny, attribution, marketplace, plugin } };
+};
+var sameAttribution = (value) => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
+var unmergeSettings = (current, added, recorded) => {
+  const hooks = mergeHooks(asRecord(current["hooks"]), ownHookMatcher(recorded), {});
+  const deny = asList(asRecord(current["permissions"])["deny"]).filter(
+    (rule) => typeof rule !== "string" || !added.deny.includes(rule)
+  );
+  let settings = withPermissions(withHooks(current, hooks), deny);
+  if (added.attribution && sameAttribution(settings["attribution"])) {
+    settings = setKey(settings, "attribution", void 0);
+  }
+  if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, void 0);
+  if (added.plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, void 0);
+  if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
+  return settings;
+};
+var ownHandlersIn = (settings) => Object.values(asRecord(settings["hooks"])).flatMap((groups) => asList(groups)).flatMap((group) => asList(asRecord(group)["hooks"])).filter(isOwnHandler).length;
+
+// src/install/plugin-yield.ts
+var PLUGIN_VIA = "plugin";
+var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
+`;
+var projectOwnsHooks = (ctx) => {
+  const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
+  const text2 = ctx.runtime.readText(toAbsolutePath(join5(root, ...SETTINGS_FILE.split("/"))));
+  if (!text2.ok) return false;
+  const parsed = parseJsonObject(text2.value);
+  return parsed.ok && ownHandlersIn(parsed.value) > 0;
+};
+
 // src/commands/hook.ts
 var hookCommand = {
   path: ["hook"],
@@ -1800,6 +2088,7 @@ var hookCommand = {
   usage: `finitemonkey hook <${HOOK_EVENTS.join("|")}>`,
   status: "ready",
   maxPositionals: 1,
+  options: { via: { type: "string" } },
   run: async (ctx, args) => {
     const raw = args.positionals[0] ?? "";
     const event = parseHookEvent(raw);
@@ -1809,6 +2098,9 @@ var hookCommand = {
         ctx.t,
         usageProblem("unknown_hook_event", "error.unknown_hook_event", "finitemonkey help hook", params)
       );
+    }
+    if (stringOption(args.values, "via") === PLUGIN_VIA && projectOwnsHooks(ctx)) {
+      return { ok: true, exitCode: 0, data: { event, verdict: "allow" }, raw: { stdout: YIELD_STDOUT, stderr: "" } };
     }
     const outcome = await runHook(event, {
       stdin: ctx.io.stdin,
@@ -1834,7 +2126,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join5 } from "node:path";
+import { join as join6 } from "node:path";
 
 // src/i18n/en.json
 var en_default = {
@@ -1964,7 +2256,36 @@ var en_default = {
   "secrets.error.incident_not_found": "No incident has the id {id}",
   "secrets.error.not_rotated": "Incident {id} is {state}: rotate the key at the provider first, then mark it rotated",
   "secrets.error.bad_transition": "Incident {id} cannot go from {from} to {to}",
-  "secrets.error.write_failed": "Could not write {file}: {detail}"
+  "secrets.error.write_failed": "Could not write {file}: {detail}",
+  "install.config.header": "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
+  "install.plan.title": "Finite Monkey plan for {root} (preset {preset}):",
+  "install.warning": "warning: {message}",
+  "install.warn.not_git": "this folder is not inside a git repository; installing here anyway",
+  "install.warn.fail_open": "Claude Code {version} cannot block an action when a hook crashes (needs 2.1.295 or newer); guards fail open until you update Claude Code",
+  "install.warn.authority": "{name} ({source}) also decides when a session may stop; Finite Monkey works alongside it and never turns it off",
+  "install.warn.plugin": "the finitemonkey plugin is enabled ({source}); its hooks step aside while this project has its own Finite Monkey hooks",
+  "install.warn.foreign": "{path} already exists and was not written by Finite Monkey; left untouched (proposed content in the diff)",
+  "install.warn.edited": "{path} was edited after install; your version is kept (the new template is in the diff)",
+  "install.warn.edited_kept": "kept {path}: you edited it after install",
+  "install.dry_run": "Dry run: nothing was written.",
+  "install.nothing_to_do": "Already up to date. Nothing to write.",
+  "install.up_to_date": "The files Finite Monkey manages match this version.",
+  "install.confirm_question": "apply the plan above (every touched file is backed up first)?",
+  "install.done_init": "Installed. Open Claude Code and keep working: one monkey, finite time, finished work.",
+  "install.done_update": "Updated. Your edits were kept.",
+  "install.uninstall.title": "Removing Finite Monkey from {root}:",
+  "install.uninstall.keeps_state": ".finitemonkey/ stays (backups and evidence). Add --purge to delete it too.",
+  "install.uninstall.purge": ".finitemonkey/ will be deleted, including backups and evidence.",
+  "install.uninstall.outside": "Not touched here, remove it yourself if you installed it: {command}",
+  "install.uninstall.question": "remove what Finite Monkey added and restore the backups?",
+  "install.uninstall.done": "Removed. The project is back to how it was, except files you edited.",
+  "error.settings_unreadable": ".claude/settings.json is not valid JSON ({detail}), so it was not changed",
+  "error.lock_unreadable": ".finitemonkey/lock.json is unreadable ({detail})",
+  "error.install_locked": "another finitemonkey run holds {path}",
+  "error.install_failed": "could not write {path} ({detail}); every file written in this run was put back",
+  "error.not_installed": "Finite Monkey is not installed in this project (no .finitemonkey/lock.json)",
+  "error.install_outdated": "the files Finite Monkey manages differ from this version",
+  "error.invalid_preset": 'Unknown preset "{preset}". Use neutral or gabriel'
 };
 
 // src/i18n/es.json
@@ -2095,7 +2416,36 @@ var es_default = {
   "secrets.error.incident_not_found": "Ningún incidente tiene el id {id}",
   "secrets.error.not_rotated": "El incidente {id} está {state}: rota la clave en el proveedor primero y luego márcalo como rotado",
   "secrets.error.bad_transition": "El incidente {id} no puede pasar de {from} a {to}",
-  "secrets.error.write_failed": "No se pudo escribir {file}: {detail}"
+  "secrets.error.write_failed": "No se pudo escribir {file}: {detail}",
+  "install.config.header": "Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.",
+  "install.plan.title": "Plan de Finite Monkey para {root} (preset {preset}):",
+  "install.warning": "aviso: {message}",
+  "install.warn.not_git": "esta carpeta no está dentro de un repositorio git; se instala aquí de todos modos",
+  "install.warn.fail_open": "Claude Code {version} no puede bloquear la acción cuando un hook falla (necesita 2.1.295 o más nueva); los guardas fallan abiertos hasta que actualices Claude Code",
+  "install.warn.authority": "{name} ({source}) también decide cuándo puede terminar la sesión; Finite Monkey convive con él y nunca lo desactiva",
+  "install.warn.plugin": "el plugin finitemonkey está habilitado ({source}); sus hooks ceden el paso mientras este proyecto tenga sus propios hooks de Finite Monkey",
+  "install.warn.foreign": "{path} ya existe y no lo escribió Finite Monkey; quedó intacto (contenido propuesto en el diff)",
+  "install.warn.edited": "{path} se editó después de instalar; se conserva tu versión (la plantilla nueva está en el diff)",
+  "install.warn.edited_kept": "conservado {path}: lo editaste después de instalar",
+  "install.dry_run": "Simulación: no se escribió nada.",
+  "install.nothing_to_do": "Ya está al día. Nada que escribir.",
+  "install.up_to_date": "Los archivos que gestiona Finite Monkey coinciden con esta versión.",
+  "install.confirm_question": "¿aplicar el plan de arriba (cada archivo tocado se respalda antes)?",
+  "install.done_init": "Instalado. Abre Claude Code y sigue trabajando: un mono, tiempo finito, trabajo terminado.",
+  "install.done_update": "Actualizado. Se conservaron tus cambios.",
+  "install.uninstall.title": "Quitando Finite Monkey de {root}:",
+  "install.uninstall.keeps_state": ".finitemonkey/ se queda (respaldos y evidencias). Usa --purge para borrarlo también.",
+  "install.uninstall.purge": ".finitemonkey/ se borrará, incluidos respaldos y evidencias.",
+  "install.uninstall.outside": "No se toca aquí, quítalo tú si lo instalaste: {command}",
+  "install.uninstall.question": "¿quitar lo que agregó Finite Monkey y restaurar los respaldos?",
+  "install.uninstall.done": "Quitado. El proyecto volvió a como estaba, salvo los archivos que editaste.",
+  "error.settings_unreadable": ".claude/settings.json no es JSON válido ({detail}), así que no se cambió",
+  "error.lock_unreadable": ".finitemonkey/lock.json no se puede leer ({detail})",
+  "error.install_locked": "otra ejecución de finitemonkey tiene {path}",
+  "error.install_failed": "no se pudo escribir {path} ({detail}); se restauró cada archivo escrito en esta ejecución",
+  "error.not_installed": "Finite Monkey no está instalado en este proyecto (no hay .finitemonkey/lock.json)",
+  "error.install_outdated": "los archivos que gestiona Finite Monkey difieren de esta versión",
+  "error.invalid_preset": 'Preset desconocido "{preset}". Usa neutral o gabriel'
 };
 
 // src/i18n/pt-BR.json
@@ -2226,7 +2576,36 @@ var pt_BR_default = {
   "secrets.error.incident_not_found": "Nenhum incidente tem o id {id}",
   "secrets.error.not_rotated": "O incidente {id} está {state}: troque a chave no provedor primeiro e depois marque como rotacionado",
   "secrets.error.bad_transition": "O incidente {id} não pode ir de {from} para {to}",
-  "secrets.error.write_failed": "Não foi possível gravar {file}: {detail}"
+  "secrets.error.write_failed": "Não foi possível gravar {file}: {detail}",
+  "install.config.header": "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
+  "install.plan.title": "Plano do Finite Monkey para {root} (preset {preset}):",
+  "install.warning": "aviso: {message}",
+  "install.warn.not_git": "esta pasta não está dentro de um repositório git; instalando aqui mesmo assim",
+  "install.warn.fail_open": "o Claude Code {version} não consegue barrar a ação quando um hook quebra (precisa da 2.1.295 ou mais nova); as travas falham abertas até você atualizar o Claude Code",
+  "install.warn.authority": "{name} ({source}) também decide quando a sessão pode parar; o Finite Monkey convive com ele e nunca o desliga",
+  "install.warn.plugin": "o plugin finitemonkey está habilitado ({source}); os hooks dele cedem a vez enquanto este projeto tiver os próprios hooks do Finite Monkey",
+  "install.warn.foreign": "{path} já existe e não foi escrito pelo Finite Monkey; ficou intocado (conteúdo proposto no diff)",
+  "install.warn.edited": "{path} foi editado depois da instalação; sua versão foi mantida (o modelo novo está no diff)",
+  "install.warn.edited_kept": "mantido {path}: você o editou depois da instalação",
+  "install.dry_run": "Simulação: nada foi gravado.",
+  "install.nothing_to_do": "Já está em dia. Nada a gravar.",
+  "install.up_to_date": "Os arquivos que o Finite Monkey gerencia batem com esta versão.",
+  "install.confirm_question": "aplicar o plano acima (todo arquivo tocado ganha backup antes)?",
+  "install.done_init": "Instalado. Abra o Claude Code e siga trabalhando: um macaco, tempo finito, trabalho terminado.",
+  "install.done_update": "Atualizado. Suas edições foram mantidas.",
+  "install.uninstall.title": "Removendo o Finite Monkey de {root}:",
+  "install.uninstall.keeps_state": ".finitemonkey/ fica (backups e evidências). Use --purge para apagar também.",
+  "install.uninstall.purge": ".finitemonkey/ será apagado, inclusive backups e evidências.",
+  "install.uninstall.outside": "Não mexido aqui, remova você mesmo se instalou: {command}",
+  "install.uninstall.question": "remover o que o Finite Monkey acrescentou e restaurar os backups?",
+  "install.uninstall.done": "Removido. O projeto voltou ao que era, exceto os arquivos que você editou.",
+  "error.settings_unreadable": ".claude/settings.json não é JSON válido ({detail}), então não foi alterado",
+  "error.lock_unreadable": ".finitemonkey/lock.json está ilegível ({detail})",
+  "error.install_locked": "outra execução do finitemonkey está segurando {path}",
+  "error.install_failed": "não foi possível gravar {path} ({detail}); todo arquivo gravado nesta execução foi restaurado",
+  "error.not_installed": "O Finite Monkey não está instalado neste projeto (sem .finitemonkey/lock.json)",
+  "error.install_outdated": "os arquivos que o Finite Monkey gerencia diferem desta versão",
+  "error.invalid_preset": 'Preset desconhecido "{preset}". Use neutral ou gabriel'
 };
 
 // src/i18n/catalogs.ts
@@ -2304,7 +2683,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join5(dir, `${lang}.json`));
+  const file = toAbsolutePath(join6(dir, `${lang}.json`));
   const text2 = ctx.runtime.readText(file);
   if (!text2.ok) return reject(unreadable(dir, file, text2.error));
   const parsed = parseJsonObject(text2.value);
@@ -2319,12 +2698,12 @@ var loadCatalogs = (ctx, dir) => {
   if (!es.ok) return es;
   return accept({ en: en.value, "pt-BR": ptBR.value, es: es.value });
 };
-var describeProblem = (ctx, problem) => {
-  const kind = ctx.t(`i18n.problem.${problem.kind}`, {
-    expected: (problem.expected ?? []).join(", "),
-    actual: (problem.actual ?? []).join(", ")
+var describeProblem = (ctx, problem2) => {
+  const kind = ctx.t(`i18n.problem.${problem2.kind}`, {
+    expected: (problem2.expected ?? []).join(", "),
+    actual: (problem2.actual ?? []).join(", ")
   });
-  return `  ${problem.lang}  ${problem.key}  ${kind}`;
+  return `  ${problem2.lang}  ${problem2.key}  ${kind}`;
 };
 var runI18nCheck = (ctx, dir) => {
   const input = dir === void 0 ? accept(catalogs) : loadCatalogs(ctx, dir);
@@ -2337,7 +2716,7 @@ var runI18nCheck = (ctx, dir) => {
     ok: false,
     exitCode: ExitCode.CheckFailed,
     data,
-    human: [summary, ...report.problems.map((problem) => describeProblem(ctx, problem))],
+    human: [summary, ...report.problems.map((problem2) => describeProblem(ctx, problem2))],
     error: {
       code: "i18n_mismatch",
       message: ctx.t("error.i18n_mismatch", { count: report.problems.length }),
@@ -2357,34 +2736,700 @@ var i18nCheckCommand = {
   }
 };
 
-// src/commands/planned.ts
-var planned = (name, summaryKey, options) => ({
-  path: [name],
-  summaryKey,
-  usage: `finitemonkey ${name}`,
-  status: "planned",
-  options,
-  maxPositionals: 8,
-  run: (ctx) => Promise.resolve(
-    failureFrom(ctx.t, {
-      code: "not_implemented",
-      messageKey: "error.not_implemented",
-      params: { command: name },
-      fix: "finitemonkey help",
-      exitCode: ExitCode.Usage,
-      data: { command: name, status: "planned" }
+// src/install/apply.ts
+import { dirname as dirname2 } from "node:path";
+
+// src/install/hash.ts
+import { createHash as createHash2 } from "node:crypto";
+var hashText = (text2) => `sha256:${createHash2("sha256").update(text2, "utf8").digest("hex")}`;
+
+// src/install/lock-file.ts
+var ENTRY_KINDS = ["settings", "gitignore", "generated"];
+var strings = (value) => Array.isArray(value) && value.every((item) => typeof item === "string") ? value : void 0;
+var parseAdded = (value) => {
+  if (!isRecord(value)) return void 0;
+  const deny = strings(value["deny"]);
+  const { schema, attribution } = value;
+  if (deny === void 0 || typeof schema !== "boolean" || typeof attribution !== "boolean") return void 0;
+  const marketplace = value["marketplace"] === true;
+  const plugin = value["plugin"] === true;
+  return { schema, attribution, deny, marketplace, plugin };
+};
+var parseEntry2 = (value) => {
+  if (!isRecord(value)) return void 0;
+  const { path, kind, existed, hash, backup } = value;
+  const known = ENTRY_KINDS.find((item) => item === kind);
+  if (typeof path !== "string" || known === void 0 || typeof existed !== "boolean" || typeof hash !== "string") {
+    return void 0;
+  }
+  const added = parseAdded(value["added"]);
+  const handlers = Array.isArray(value["handlers"]) ? value["handlers"].filter(isRecord) : void 0;
+  return {
+    path,
+    kind: known,
+    existed,
+    hash,
+    ...typeof backup === "string" ? { backup } : {},
+    ...added === void 0 ? {} : { added },
+    ...handlers === void 0 ? {} : { handlers }
+  };
+};
+var parseEntries = (value) => {
+  if (!Array.isArray(value)) return void 0;
+  const entries = value.map(parseEntry2);
+  return entries.every((entry) => entry !== void 0) ? entries : void 0;
+};
+var fromRecord = (record2) => {
+  const { schema, version, preset, installedAt, updatedAt } = record2;
+  const known = PRESETS.find((item) => item === preset);
+  const entries = parseEntries(record2["entries"]);
+  const createdDirs = strings(record2["createdDirs"]);
+  if (schema !== LOCK_SCHEMA) return reject(`schema is not ${LOCK_SCHEMA}`);
+  if (typeof version !== "string" || typeof installedAt !== "string" || typeof updatedAt !== "string") {
+    return reject("version, installedAt and updatedAt must be text");
+  }
+  if (known === void 0 || entries === void 0 || createdDirs === void 0) {
+    return reject("preset, entries or createdDirs is malformed");
+  }
+  return accept({ schema, version, preset: known, installedAt, updatedAt, createdDirs, entries });
+};
+var parseLock = (text2) => {
+  const parsed = parseJsonObject(text2);
+  return parsed.ok ? fromRecord(parsed.value) : reject(parsed.error);
+};
+var renderLock = (lock) => `${JSON.stringify(lock, null, 2)}
+`;
+
+// src/install/claude-version.ts
+var ON_FAILURE_MIN = [2, 1, 295];
+var PROBE_MS = 8e3;
+var parseClaudeVersion = (output) => {
+  const match = /(\d+)\.(\d+)\.(\d+)/.exec(output);
+  return match === null ? void 0 : [Number(match[1]), Number(match[2]), Number(match[3])];
+};
+var atLeast = (version, min) => {
+  for (const [index, part] of min.entries()) {
+    const value = version[index] ?? 0;
+    if (value !== part) return value > part;
+  }
+  return true;
+};
+var detectClaude = (probe) => {
+  const result = probe("claude", ["--version"], PROBE_MS);
+  const parsed = result.ok ? parseClaudeVersion(result.stdout) : void 0;
+  if (parsed === void 0) return { version: void 0, failClosed: true };
+  return { version: parsed.join("."), failClosed: atLeast(parsed, ON_FAILURE_MIN) };
+};
+
+// src/install/config-template.ts
+var configTemplate = (t, preset, lang) => [
+  `# ${GENERATED_MARKER}`,
+  `# ${t("install.config.header")}`,
+  "schemaVersion: 1",
+  `preset: ${preset}`,
+  `lang: ${lang}`,
+  ""
+].join("\n");
+var hasMarker = (text2) => text2.includes(GENERATED_MARKER);
+
+// src/install/deny-floor.ts
+var DENY_FLOOR = {
+  secrets: ["Read(./.env)", "Read(./.env.*)", "Read(./**/.env)", "Read(./**/.env.*)", "Read(./**/*.pem)"],
+  git: [
+    "Bash(git push --force *)",
+    "Bash(git push -f *)",
+    "Bash(git clean -f*)",
+    "Bash(git reset --hard*)",
+    "Bash(git worktree remove --force*)"
+  ],
+  proof: [
+    "Edit(./.finitemonkey/evidence/**)",
+    "Edit(./.finitemonkey/runtime/**)",
+    "Edit(./.finitemonkey/lock.json)",
+    "Edit(./.finitemonkey/log.jsonl)",
+    "Edit(./.finitemonkey/state.md)"
+  ]
+};
+var DENY_RULES = [...DENY_FLOOR.secrets, ...DENY_FLOOR.git, ...DENY_FLOOR.proof];
+
+// src/install/detect.ts
+import { join as join7 } from "node:path";
+var PACKAGE_MANAGERS = [
+  { name: "pnpm", files: ["pnpm-lock.yaml"] },
+  { name: "yarn", files: ["yarn.lock"] },
+  { name: "bun", files: ["bun.lock", "bun.lockb"] },
+  { name: "npm", files: ["package-lock.json", "npm-shrinkwrap.json"] }
+];
+var LANGUAGE_MARKERS = [
+  { name: "typescript", files: ["tsconfig.json"] },
+  { name: "javascript", files: ["package.json"] },
+  { name: "python", files: ["pyproject.toml", "requirements.txt", "setup.py"] },
+  { name: "go", files: ["go.mod"] },
+  { name: "rust", files: ["Cargo.toml"] },
+  { name: "ruby", files: ["Gemfile"] },
+  { name: "java", files: ["pom.xml", "build.gradle", "build.gradle.kts"] }
+];
+var LOOP_PLUGINS = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
+var WORKFLOW_DIRS = [
+  { dir: ".planning", name: "gsd" },
+  { dir: ".bmad-core", name: "bmad" },
+  { dir: ".specify", name: "spec-kit" },
+  { dir: "openspec", name: "openspec" }
+];
+var fromPackageJson = (project) => {
+  const text2 = project.read("package.json");
+  const parsed = text2 === void 0 ? void 0 : parseJsonObject(text2);
+  const field = parsed?.ok === true ? parsed.value["packageManager"] : void 0;
+  if (typeof field !== "string") return void 0;
+  return PACKAGE_MANAGERS.find(({ name }) => field.startsWith(`${name}@`))?.name;
+};
+var detectPackageManager = (project) => fromPackageJson(project) ?? PACKAGE_MANAGERS.find(({ files }) => files.some((file) => project.exists(file)))?.name;
+var detectLanguages = (project) => LANGUAGE_MARKERS.filter(({ files }) => files.some((file) => project.exists(file))).map(({ name }) => name);
+var handlersOf = (settings, event) => {
+  const hooks = settings["hooks"];
+  const groups = isRecord(hooks) ? hooks[event] : void 0;
+  return asList(groups).flatMap((group) => asList(asRecord(group)["hooks"]));
+};
+var allHandlers = (settings) => {
+  const hooks = settings["hooks"];
+  return isRecord(hooks) ? Object.keys(hooks).flatMap((event) => handlersOf(settings, event)) : [];
+};
+var settingsInfo = (text2) => {
+  if (text2 === void 0) return { exists: false, valid: true, userHooks: 0, ownHooks: 0 };
+  const parsed = text2.trim() === "" ? { ok: true, value: {} } : parseJsonObject(text2);
+  if (!parsed.ok) return { exists: true, valid: false, userHooks: 0, ownHooks: 0 };
+  const handlers = allHandlers(parsed.value);
+  const own = handlers.filter(isOwnHandler).length;
+  return { exists: true, valid: true, userHooks: handlers.length - own, ownHooks: own };
+};
+var pluginAuthorities = (settings, source) => {
+  const enabled = settings["enabledPlugins"];
+  if (!isRecord(enabled)) return [];
+  return Object.entries(enabled).filter(([, on]) => on === true).map(([id]) => id.split("@")[0] ?? id).flatMap((name) => {
+    if (name === "finitemonkey") return [{ kind: "finitemonkey-plugin", source, name }];
+    return LOOP_PLUGINS.includes(name) ? [{ kind: "loop-plugin", source, name }] : [];
+  });
+};
+var scopeAuthorities = (text2, source) => {
+  const parsed = text2 === void 0 ? void 0 : parseJsonObject(text2);
+  if (parsed?.ok !== true) return [];
+  const stops = ["Stop", "SubagentStop"].flatMap(
+    (event) => handlersOf(parsed.value, event).filter((handler) => !isOwnHandler(handler)).map((handler) => {
+      const command = isRecord(handler) ? handler["command"] : void 0;
+      return { kind: "stop-hook", source, name: `${event}: ${typeof command === "string" ? command : "?"}` };
     })
-  )
+  );
+  return [...stops, ...pluginAuthorities(parsed.value, source)];
+};
+var userSettingsText = (project, env) => {
+  const home = env["CLAUDE_CONFIG_DIR"] ?? env["HOME"] ?? env["USERPROFILE"];
+  if (home === void 0) return void 0;
+  const file = env["CLAUDE_CONFIG_DIR"] === void 0 ? join7(home, ".claude", "settings.json") : join7(home, "settings.json");
+  const text2 = project.runtime.readText(toAbsolutePath(file));
+  return text2.ok ? text2.value : void 0;
+};
+var detectAuthorities = (project, env) => [
+  ...scopeAuthorities(project.read(SETTINGS_FILE), "project"),
+  ...scopeAuthorities(project.read(".claude/settings.local.json"), "local"),
+  ...scopeAuthorities(userSettingsText(project, env), "user"),
+  ...WORKFLOW_DIRS.filter(({ dir }) => project.isDir(dir)).map(({ name }) => ({
+    kind: "workflow",
+    source: "project-dir",
+    name
+  }))
+];
+var chooseRunner = (project, bin) => {
+  if (bin !== void 0) return { kind: "path", path: bin };
+  return project.exists(LOCAL_BIN) ? { kind: "local" } : { kind: "vendored" };
+};
+
+// src/install/gitignore-block.ts
+var gitignoreBlock = () => [
+  BLOCK_BEGIN,
+  `${STATE_DIR}/*`,
+  ...COMMITTED_STATE.map((path) => `!${STATE_DIR}/${path}`),
+  BLOCK_END
+];
+var lineBreak = (text2) => text2.includes("\r\n") ? "\r\n" : "\n";
+var blockRange = (lines) => {
+  const start = lines.findIndex((line) => line.trimEnd() === BLOCK_BEGIN);
+  if (start < 0) return void 0;
+  const end = lines.findIndex((line, index) => index > start && line.trimEnd() === BLOCK_END);
+  return end < 0 ? void 0 : { start, end };
+};
+var withBlock = (text2) => {
+  const eol = text2 === void 0 ? "\n" : lineBreak(text2);
+  const block2 = gitignoreBlock();
+  if (text2 === void 0 || text2 === "") return `${block2.join(eol)}${eol}`;
+  const lines = text2.split(eol);
+  const range = blockRange(lines);
+  if (range !== void 0) return [...lines.slice(0, range.start), ...block2, ...lines.slice(range.end + 1)].join(eol);
+  const separator = text2.endsWith(eol) ? "" : eol;
+  return `${text2}${separator}${block2.join(eol)}${eol}`;
+};
+var withoutBlock = (text2) => {
+  const eol = lineBreak(text2);
+  const lines = text2.split(eol);
+  const range = blockRange(lines);
+  if (range === void 0) return text2;
+  return [...lines.slice(0, range.start), ...lines.slice(range.end + 1)].join(eol);
+};
+
+// src/install/vendor.ts
+var isBundle = (text2) => text2.startsWith("#!/usr/bin/env node") && text2.includes("finitemonkey");
+var isOwnPackage = (text2) => {
+  const parsed = parseJsonObject(text2);
+  return parsed.ok && parsed.value["name"] === "finitemonkey";
+};
+var vendoredPackage = (version) => `${JSON.stringify({ name: "finitemonkey", version, private: true, type: "module" }, null, 2)}
+`;
+var vendoredFiles = (bundle, version) => [
+  { path: VENDOR_BIN, template: bundle, isOurs: isBundle },
+  { path: VENDOR_PACKAGE, template: vendoredPackage(version), isOurs: isOwnPackage }
+];
+var isBundlePath = (path) => path.endsWith(".mjs");
+
+// src/install/plan.ts
+var CHANGING = ["create", "merge", "update"];
+var detect = (project, gitRoot, input) => ({
+  root: project.root,
+  gitRoot,
+  packageManager: detectPackageManager(project),
+  languages: detectLanguages(project),
+  settings: settingsInfo(project.read(SETTINGS_FILE)),
+  authorities: detectAuthorities(project, input.env),
+  runner: chooseRunner(project, input.bin),
+  claude: detectClaude(project.runtime.probe)
 });
-var initCommand = planned("init", "command.init.summary", {
-  preset: { type: "string" },
-  github: { type: "boolean" }
+var readPreviousLock = (project) => {
+  const text2 = project.read(LOCK_FILE);
+  if (text2 === void 0) return accept(void 0);
+  const parsed = parseLock(text2);
+  return parsed.ok ? accept(parsed.value) : reject({ kind: "lock", detail: parsed.error });
+};
+var actionFor = (before, after, existing) => {
+  if (before === void 0) return "create";
+  return before === after ? "unchanged" : existing;
+};
+var union = (a, b) => [.../* @__PURE__ */ new Set([...a, ...b])];
+var joinAdded = (previous, next) => previous === void 0 ? next : {
+  schema: previous.schema || next.schema,
+  attribution: previous.attribution || next.attribution,
+  deny: union(previous.deny, next.deny),
+  marketplace: previous.marketplace || next.marketplace,
+  plugin: previous.plugin || next.plugin
+};
+var wantedHooks = (detection) => Object.fromEntries(
+  INSTALLED_HOOKS.map((spec) => [spec.event, hookHandler(detection.runner, spec, detection.claude.failClosed)])
+);
+var settingsItem = (project, detection, input, previous) => {
+  const before = project.read(SETTINGS_FILE);
+  const current = parseSettings(before);
+  if (!current.ok) return reject({ kind: "settings", detail: current.error });
+  const hooks = wantedHooks(detection);
+  const wanted = {
+    hooks,
+    deny: DENY_RULES,
+    attributionOff: input.preset === "gabriel",
+    marketplace: input.marketplace
+  };
+  const merged = mergeSettings(current.value, wanted, previous?.handlers ?? []);
+  const after = renderJson(merged.settings, before === void 0 ? DEFAULT_STYLE : styleOf(before));
+  return accept({
+    path: SETTINGS_FILE,
+    kind: "settings",
+    action: actionFor(before, after, "merge"),
+    before,
+    after,
+    added: joinAdded(previous?.added, merged.added),
+    handlers: Object.values(hooks)
+  });
+};
+var gitignoreItem = (project) => {
+  const before = project.read(GITIGNORE_FILE);
+  const after = withBlock(before);
+  return { path: GITIGNORE_FILE, kind: "gitignore", action: actionFor(before, after, "merge"), before, after };
+};
+var generatedItem = (project, file, previous) => {
+  const before = project.read(file.path);
+  const { template } = file;
+  const base = { path: file.path, kind: "generated", before };
+  if (before === void 0) return { ...base, action: "create", after: template };
+  if (previous === void 0 && !file.isOurs(before)) {
+    return { ...base, action: "skip-foreign", after: before, proposal: template };
+  }
+  if (hashText(before) !== previous?.hash) {
+    return { ...base, action: before === template ? "unchanged" : "keep-edited", after: before, proposal: template };
+  }
+  return { ...base, action: actionFor(before, template, "update"), after: template };
+};
+var generatedFiles = (input, vendor) => {
+  const config = { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
+  if (!vendor) return accept([config]);
+  if (input.bundle === void 0) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
+  return accept([config, ...vendoredFiles(input.bundle, input.version)]);
+};
+var entryFor = (lock, path) => lock?.entries.find((entry) => entry.path === path);
+var buildPlan = (project, detection, input, previous) => {
+  const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
+  if (!settings.ok) return settings;
+  const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== void 0;
+  const files = generatedFiles(input, vendor);
+  if (!files.ok) return files;
+  const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
+  return accept({
+    detection,
+    preset: input.preset,
+    items: [settings.value, gitignoreItem(project), ...generated],
+    previous
+  });
+};
+var hasChanges = (plan) => plan.items.some((item) => CHANGING.includes(item.action));
+var needsWrite = (plan) => hasChanges(plan) || plan.previous === void 0;
+
+// src/install/apply.ts
+var stamp = (iso) => iso.replace(/[:.]/g, "-");
+var ensureParent = (project, relative4) => project.runtime.mkdir(project.abs(dirname2(relative4)));
+var writeText = (project, relative4, text2) => {
+  const parent = ensureParent(project, relative4);
+  const written = parent.ok ? project.runtime.writeAtomic(project.abs(relative4), text2) : parent;
+  return written.ok ? accept(void 0) : reject({ path: relative4, detail: written.error });
+};
+var restore = (project, items) => {
+  for (const item of items) {
+    if (item.before === void 0) project.runtime.remove(project.abs(item.path));
+    else project.runtime.writeAtomic(project.abs(item.path), item.before);
+  }
+};
+var backupItems = (project, dir, items) => {
+  const manifest = items.map((item) => ({ path: item.path, hash: hashText(item.before ?? "") }));
+  for (const item of items) {
+    const saved = writeText(project, `${dir}/${item.path}`, item.before ?? "");
+    if (!saved.ok) return saved;
+  }
+  return writeText(project, `${dir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}
+`);
+};
+var entryOf = (plan, item, backupDir) => {
+  const previous = plan.previous?.entries.find((entry) => entry.path === item.path);
+  const existed = previous?.existed ?? item.before !== void 0;
+  const backup = previous?.backup ?? (existed && backupDir !== void 0 ? `${backupDir}/${item.path}` : void 0);
+  const hash = item.action === "keep-edited" ? previous?.hash ?? hashText(item.proposal ?? item.after) : hashText(item.after);
+  return {
+    path: item.path,
+    kind: item.kind,
+    existed,
+    hash,
+    ...backup === void 0 ? {} : { backup },
+    ...item.added === void 0 ? {} : { added: item.added },
+    ...item.handlers === void 0 ? {} : { handlers: item.handlers }
+  };
+};
+var nextLock = (plan, version, now, backupDir, createdDirs) => ({
+  schema: LOCK_SCHEMA,
+  version,
+  preset: plan.preset,
+  installedAt: plan.previous?.installedAt ?? now,
+  updatedAt: now,
+  createdDirs: plan.previous?.createdDirs ?? createdDirs,
+  entries: plan.items.filter((item) => item.action !== "skip-foreign").map((item) => entryOf(plan, item, backupDir))
 });
-var updateCommand = planned("update", "command.update.summary", { check: { type: "boolean" } });
-var uninstallCommand = planned("uninstall", "command.uninstall.summary", {
-  purge: { type: "boolean" },
-  "keep-generated": { type: "boolean" }
+var needsBackup = (plan, item) => item.before !== void 0 && plan.previous?.entries.find((entry) => entry.path === item.path)?.backup === void 0;
+var writeAll = (project, items) => {
+  const done = [];
+  for (const item of items) {
+    const written = writeText(project, item.path, item.after);
+    if (!written.ok) {
+      restore(project, done);
+      return written;
+    }
+    done.push(item);
+  }
+  return accept(void 0);
+};
+var createdBy = (project) => [".claude", STATE_DIR].filter((dir) => !project.exists(dir));
+var commit = (project, plan, version, createdDirs) => {
+  const now = project.runtime.now();
+  const changing = plan.items.filter((item) => CHANGING.includes(item.action));
+  const toBackup = changing.filter((item) => needsBackup(plan, item));
+  const backupDir = toBackup.length === 0 ? void 0 : `${BACKUPS_DIR}/${stamp(now)}`;
+  if (backupDir !== void 0) {
+    const saved = backupItems(project, backupDir, toBackup);
+    if (!saved.ok) return saved;
+  }
+  const written = writeAll(project, changing);
+  if (!written.ok) return written;
+  const lock = nextLock(plan, version, now, backupDir, createdDirs);
+  const locked = writeText(project, LOCK_FILE, renderLock(lock));
+  if (!locked.ok) {
+    restore(project, changing);
+    return locked;
+  }
+  return accept({ lock, written: changing.map((item) => item.path), backup: backupDir });
+};
+var withInstallLock = (project, work) => {
+  const dir = project.runtime.mkdir(project.abs(LOCKS_DIR));
+  if (!dir.ok) return reject({ path: LOCKS_DIR, detail: dir.error });
+  const lock = project.runtime.lock(project.abs(INSTALL_LOCK), {
+    staleMs: INSTALL_LOCK_STALE_MS,
+    owner: "finitemonkey"
+  });
+  if (!lock.ok) return reject({ path: INSTALL_LOCK, detail: lock.error });
+  try {
+    return work();
+  } finally {
+    lock.value();
+  }
+};
+var applyPlan = (project, plan, version) => {
+  const created2 = createdBy(project);
+  return withInstallLock(project, () => commit(project, plan, version, created2));
+};
+
+// src/install/diff.ts
+var MAX_DIFF_LINES = 120;
+var table = (a, b) => {
+  const rows = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i -= 1) {
+    const row = rows[i] ?? [];
+    const below = rows[i + 1] ?? [];
+    for (let j = b.length - 1; j >= 0; j -= 1) {
+      row[j] = a[i] === b[j] ? (below[j + 1] ?? 0) + 1 : Math.max(below[j] ?? 0, row[j + 1] ?? 0);
+    }
+  }
+  return rows;
+};
+var walk = (a, b) => {
+  const lcs = table(a, b);
+  const ops = [];
+  let i = 0;
+  let j = 0;
+  while (i < a.length || j < b.length) {
+    const left = a[i];
+    const right = b[j];
+    if (left !== void 0 && left === right) {
+      ops.push(["=", left]);
+      i += 1;
+      j += 1;
+    } else if (right !== void 0 && (left === void 0 || (lcs[i]?.[j + 1] ?? 0) >= (lcs[i + 1]?.[j] ?? 0))) {
+      ops.push(["+", right]);
+      j += 1;
+    } else {
+      ops.push(["-", left ?? ""]);
+      i += 1;
+    }
+  }
+  return ops;
+};
+var splitLines = (text2) => text2 === "" ? [] : text2.replace(/\r?\n$/, "").split(/\r?\n/);
+var lineDiff = (path, before, after) => {
+  const changes = walk(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
+  if (changes.length === 0) return [];
+  const lines = changes.map(([op, line]) => `${op} ${line}`);
+  const shown = lines.slice(0, MAX_DIFF_LINES);
+  const hidden = lines.length - shown.length;
+  return [`--- ${path}`, `+++ ${path}`, ...shown, ...hidden > 0 ? [`… ${String(hidden)} more`] : []];
+};
+
+// src/install/report.ts
+var jsonDetection = (detection) => ({
+  gitRoot: detection.gitRoot,
+  packageManager: detection.packageManager ?? null,
+  languages: detection.languages,
+  settings: detection.settings,
+  authorities: detection.authorities,
+  runner: detection.runner.kind,
+  claudeVersion: detection.claude.version ?? null,
+  failClosedHooks: detection.claude.failClosed
 });
+var authorityWarning = (t, authority) => ({
+  code: `authority_${authority.kind}`,
+  message: t(`install.warn.${authority.kind === "finitemonkey-plugin" ? "plugin" : "authority"}`, {
+    name: authority.name,
+    source: authority.source
+  })
+});
+var itemWarning = (t, item) => {
+  if (item.action === "skip-foreign")
+    return [{ code: "foreign_file", message: t("install.warn.foreign", { path: item.path }) }];
+  if (item.action === "keep-edited")
+    return [{ code: "edited_file", message: t("install.warn.edited", { path: item.path }) }];
+  return [];
+};
+var planWarnings = (t, plan) => [
+  ...plan.detection.gitRoot ? [] : [{ code: "not_git", message: t("install.warn.not_git") }],
+  ...plan.detection.claude.failClosed ? [] : [{ code: "fail_open", message: t("install.warn.fail_open", { version: plan.detection.claude.version ?? "?" }) }],
+  ...plan.detection.authorities.map((authority) => authorityWarning(t, authority)),
+  ...plan.items.flatMap((item) => itemWarning(t, item))
+];
+var planDiff = (plan) => plan.items.flatMap(
+  (item) => item.action === "keep-edited" || item.action === "skip-foreign" ? lineDiff(item.path, item.before ?? "", item.proposal ?? item.after) : lineDiff(item.path, item.before ?? "", item.after)
+);
+var planData = (t, plan, mode, applied, backup) => ({
+  schema: PLAN_SCHEMA,
+  mode,
+  applied,
+  root: plan.detection.root,
+  preset: plan.preset,
+  detection: jsonDetection(plan.detection),
+  actions: plan.items.map(({ path, action }) => ({ path, action })),
+  warnings: planWarnings(t, plan),
+  diff: planDiff(plan),
+  ...backup === void 0 ? {} : { backup }
+});
+var pad2 = (text2, width) => text2.padEnd(width);
+var planLines = (t, data, withDiff) => [
+  t("install.plan.title", { root: data.root, preset: data.preset }),
+  ...data.actions.map(({ path, action }) => `  ${pad2(action, 13)}${path}`),
+  ...data.warnings.map(({ message }) => t("install.warning", { message })),
+  ...withDiff ? data.diff : []
+];
+
+// src/install/project.ts
+import { dirname as dirname3, join as join8 } from "node:path";
+var projectAt = (root, runtime) => {
+  const abs = (relative4) => toAbsolutePath(join8(root, ...relative4.split("/")));
+  return {
+    root,
+    runtime,
+    abs,
+    read: (relative4) => {
+      const text2 = runtime.readText(abs(relative4));
+      return text2.ok ? text2.value : void 0;
+    },
+    exists: (relative4) => runtime.stat(abs(relative4)) !== void 0,
+    isDir: (relative4) => runtime.stat(abs(relative4))?.kind === "dir"
+  };
+};
+var findGitRoot = (start, runtime) => {
+  let current = start;
+  for (; ; ) {
+    if (runtime.stat(toAbsolutePath(join8(current, ".git"))) !== void 0) return toAbsolutePath(current);
+    const parent = dirname3(current);
+    if (parent === current) return void 0;
+    current = parent;
+  }
+};
+
+// src/install/session.ts
+var openProject = (ctx) => {
+  const root = findGitRoot(ctx.cwd, ctx.runtime);
+  return { project: projectAt(root ?? ctx.cwd, ctx.runtime), gitRoot: root !== void 0 };
+};
+var problem = (code, messageKey, fix, exitCode, params) => ({
+  code,
+  messageKey,
+  params,
+  fix,
+  exitCode
+});
+var planProblem = (error) => {
+  if (error.kind === "bundle") {
+    return problem("install_failed", "error.install_failed", "npx finitemonkey@latest init", ExitCode.NotConfigured, {
+      path: ".finitemonkey/runtime/dist/finitemonkey.mjs",
+      detail: error.detail
+    });
+  }
+  return error.kind === "settings" ? problem(
+    "settings_unreadable",
+    "error.settings_unreadable",
+    "fix the JSON in .claude/settings.json, then run finitemonkey init again",
+    ExitCode.NotConfigured,
+    { detail: error.detail }
+  ) : problem(
+    "lock_unreadable",
+    "error.lock_unreadable",
+    "finitemonkey uninstall --purge --yes",
+    ExitCode.NotConfigured,
+    { detail: error.detail }
+  );
+};
+var applyProblem = (failure2) => failure2.detail.startsWith("locked:") ? problem(
+  "install_locked",
+  "error.install_locked",
+  "wait for the other finitemonkey run to finish, then try again",
+  ExitCode.CheckFailed,
+  { path: failure2.path }
+) : problem("install_failed", "error.install_failed", "finitemonkey doctor", ExitCode.NotConfigured, {
+  path: failure2.path,
+  detail: failure2.detail
+});
+var notInstalled = () => problem("not_installed", "error.not_installed", "finitemonkey init", ExitCode.NotConfigured, {});
+var confirmProblem = (command, question, fix) => problem("needs_confirmation", "error.needs_confirmation", fix, ExitCode.NeedsPerson, { command, question });
+var invalidPreset = (raw) => problem("invalid_arguments", "error.invalid_preset", "finitemonkey init --preset neutral", ExitCode.Usage, {
+  preset: raw
+});
+var selfBundle = (ctx) => {
+  if (!isBundlePath(ctx.runtime.selfPath)) return void 0;
+  const text2 = ctx.runtime.readText(ctx.runtime.selfPath);
+  return text2.ok ? text2.value : void 0;
+};
+var planInputFor = (ctx, preset, bin, marketplace) => ({
+  preset,
+  lang: ctx.lang,
+  bin,
+  version: ctx.version,
+  marketplace,
+  bundle: selfBundle(ctx),
+  env: ctx.env,
+  t: ctx.t
+});
+
+// src/commands/init.ts
+var flagsFor = (request, preset) => [
+  `finitemonkey ${request.mode} --yes`,
+  ...request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : [],
+  ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`],
+  ...request.marketplace ? ["--marketplace"] : []
+].join(" ");
+var presentPlan = (ctx, request, plan) => {
+  const data = planData(ctx.t, plan, request.mode, false, void 0);
+  const human = planLines(ctx.t, data, request.showDiff || ctx.dryRun);
+  if (ctx.dryRun) return success(data, [...human, ctx.t("install.dry_run")]);
+  if (!needsWrite(plan)) return success(data, [...human, ctx.t("install.nothing_to_do")]);
+  const next = flagsFor(request, plan.preset);
+  const problem2 = confirmProblem(request.mode, ctx.t("install.confirm_question"), next);
+  return { ...failureFrom(ctx.t, { ...problem2, data }, human), next };
+};
+var applyAndReport = (ctx, request, plan) => {
+  const project = openProject(ctx).project;
+  const applied = applyPlan(project, plan, ctx.version);
+  if (!applied.ok) return failureFrom(ctx.t, applyProblem(applied.error));
+  const data = planData(ctx.t, plan, request.mode, true, applied.value.backup);
+  const done = ctx.t(request.mode === "init" ? "install.done_init" : "install.done_update");
+  return success(data, [...planLines(ctx.t, data, request.showDiff), done]);
+};
+var runInstall = (ctx, request, presetFallback) => {
+  const preset = request.preset === void 0 ? presetFallback : parsePreset(request.preset);
+  if (preset === void 0) return failureFrom(ctx.t, invalidPreset(request.preset ?? ""));
+  const { project, gitRoot } = openProject(ctx);
+  const previous = readPreviousLock(project);
+  if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
+  const input = planInputFor(ctx, preset, request.bin, request.marketplace);
+  const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
+  if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
+  if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
+  return applyAndReport(ctx, request, plan.value);
+};
+var initRequest = (args) => ({
+  mode: "init",
+  preset: stringOption(args.values, "preset"),
+  bin: stringOption(args.values, "bin"),
+  marketplace: args.values["marketplace"] === true,
+  showDiff: false
+});
+var initCommand = {
+  path: ["init"],
+  summaryKey: "command.init.summary",
+  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--dry-run] [--yes]",
+  status: "ready",
+  options: {
+    preset: { type: "string" },
+    bin: { type: "string" },
+    marketplace: { type: "boolean" }
+  },
+  run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral"))
+};
 
 // src/secrets/project.ts
 var projectRoot = (ctx) => {
@@ -2430,7 +3475,7 @@ var daysOf = (values) => {
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
 var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS).toISOString();
-var failure = (ctx, problem) => failureFrom(ctx.t, problem);
+var failure = (ctx, problem2) => failureFrom(ctx.t, problem2);
 var inputProblem = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
   if (!isPerson(ctx)) {
@@ -2447,7 +3492,7 @@ var inputProblem = (ctx, id, reason, days) => {
   }
   return void 0;
 };
-var entryOf = (ctx, finding, args) => {
+var entryOf2 = (ctx, finding, args) => {
   const now = ctx.runtime.now();
   return {
     id: finding.id,
@@ -2478,7 +3523,7 @@ var acceptEntry = (ctx, args) => {
       })
     );
   }
-  const entry = entryOf(ctx, finding, args);
+  const entry = entryOf2(ctx, finding, args);
   const entries = [...baseline.value.entries.filter((item) => item.id !== entry.id), entry];
   const saved = saveBaseline(ctx.runtime, root, { schema: baseline.value.schema, entries });
   if (!saved.ok) {
@@ -2505,12 +3550,12 @@ var secretsAcceptCommand = {
     const id = args.positionals[0] ?? "";
     const reason = stringOption(args.values, "reason");
     const days = daysOf(args.values);
-    const problem = inputProblem(ctx, id, reason, days);
-    if (problem !== void 0 || reason === void 0 || days === void 0) {
+    const problem2 = inputProblem(ctx, id, reason, days);
+    if (problem2 !== void 0 || reason === void 0 || days === void 0) {
       return Promise.resolve(
         failure(
           ctx,
-          problem ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
+          problem2 ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
         )
       );
     }
@@ -2531,7 +3576,7 @@ var PURGE_STEPS = [
   "secrets.purge.step4",
   "secrets.purge.step5"
 ];
-var fail = (ctx, problem) => failureFrom(ctx.t, problem);
+var fail = (ctx, problem2) => failureFrom(ctx.t, problem2);
 var notFound2 = (ctx, id) => fail(
   ctx,
   usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
@@ -2650,7 +3695,7 @@ var view = (finding, status) => ({
   status,
   ...finding.commit === void 0 ? {} : { commit: finding.commit }
 });
-var modeOf = (values) => {
+var modeOf2 = (values) => {
   const chosen = [values["staged"] === true, values["history"] === true, stringOption(values, "path") !== void 0];
   if (chosen.filter(Boolean).length > 1) return void 0;
   if (chosen[0] === true) return "staged";
@@ -2741,7 +3786,7 @@ var secretsScanCommand = {
   status: "ready",
   options: { staged: { type: "boolean" }, history: { type: "boolean" }, path: { type: "string" } },
   run: async (ctx, args) => {
-    const mode = modeOf(args.values);
+    const mode = modeOf2(args.values);
     const fix = "finitemonkey help secrets scan";
     if (mode === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.error.one_mode", fix));
     const root = projectRoot(ctx);
@@ -2760,6 +3805,163 @@ var secretsScanCommand = {
     const incidents = mode === "history" ? historyIncidents(ctx, root, outcome.fresh) : [];
     return resultOf(ctx, dataOf(mode, outcome, incidents));
   }
+};
+
+// src/install/uninstall.ts
+var structural = (entry, current) => {
+  if (entry.kind === "gitignore") {
+    const text2 = withoutBlock(current);
+    return text2 === "" && !entry.existed ? void 0 : text2;
+  }
+  const parsed = parseSettings(current);
+  if (!parsed.ok || entry.added === void 0) return current;
+  const settings = unmergeSettings(parsed.value, entry.added, entry.handlers ?? []);
+  return Object.keys(settings).length === 0 && !entry.existed ? void 0 : renderJson(settings, styleOf(current));
+};
+var unchanged = (project, entry) => {
+  if (!entry.existed) return { path: entry.path, action: "delete", after: void 0 };
+  const original = entry.backup === void 0 ? void 0 : project.read(entry.backup);
+  return original === void 0 ? void 0 : { path: entry.path, action: "restore", after: original };
+};
+var removalFor = (project, entry, options) => {
+  const current = project.read(entry.path);
+  if (current === void 0) return { path: entry.path, action: "gone", after: void 0 };
+  if (entry.kind === "generated" && options.keepGenerated) {
+    return { path: entry.path, action: "keep-generated", after: current };
+  }
+  if (hashText(current) === entry.hash) {
+    const exact2 = unchanged(project, entry);
+    if (exact2 !== void 0) return exact2;
+  }
+  if (entry.kind === "generated") return { path: entry.path, action: "keep-edited", after: current };
+  const after = structural(entry, current);
+  return { path: entry.path, action: after === void 0 ? "delete" : "unmerge", after };
+};
+var planRemoval = (project, lock, options) => ({
+  items: lock.entries.map((entry) => removalFor(project, entry, options)),
+  purge: options.purge,
+  removeDirs: lock.createdDirs.filter((dir) => dir !== STATE_DIR)
+});
+var applyItem = (project, item) => {
+  if (item.action === "delete") {
+    const removed = project.runtime.remove(project.abs(item.path));
+    return removed.ok ? removed : reject({ path: item.path, detail: removed.error });
+  }
+  if (item.after === void 0 || item.action === "gone" || item.action.startsWith("keep")) return accept(void 0);
+  return writeText(project, item.path, item.after);
+};
+var isEmptyDir = (project, relative4) => {
+  const listed2 = project.runtime.listDir(project.abs(relative4));
+  return listed2.ok && listed2.value.length === 0;
+};
+var finish = (project, plan) => {
+  const target = plan.purge ? STATE_DIR : LOCK_FILE;
+  const removed = project.runtime.remove(project.abs(target));
+  if (!removed.ok) return reject({ path: target, detail: removed.error });
+  for (const dir of plan.removeDirs) if (isEmptyDir(project, dir)) project.runtime.remove(project.abs(dir));
+  return accept(void 0);
+};
+var applyRemoval = (project, plan) => {
+  const changed = withInstallLock(project, () => {
+    for (const item of plan.items) {
+      const done = applyItem(project, item);
+      if (!done.ok) return done;
+    }
+    return accept(void 0);
+  });
+  return changed.ok ? finish(project, plan) : changed;
+};
+
+// src/commands/uninstall.ts
+var UNINSTALL_SCHEMA = "finitemonkey/uninstall-plan@1";
+var OUTSIDE = ["claude plugin uninstall finitemonkey@finitemonkey"];
+var dataOf2 = (root, plan, applied) => ({
+  schema: UNINSTALL_SCHEMA,
+  applied,
+  purge: plan.purge,
+  root,
+  actions: plan.items.map(({ path, action }) => ({ path, action })),
+  kept: plan.items.filter((item) => item.action.startsWith("keep")).map(({ path }) => path),
+  outside: OUTSIDE
+});
+var linesOf = (ctx, data) => [
+  ctx.t("install.uninstall.title", { root: data.root }),
+  ...data.actions.map(({ path, action }) => `  ${action.padEnd(15)}${path}`),
+  ...data.purge ? [ctx.t("install.uninstall.purge")] : [ctx.t("install.uninstall.keeps_state")],
+  ...data.kept.map((path) => ctx.t("install.warn.edited_kept", { path })),
+  ctx.t("install.uninstall.outside", { command: OUTSIDE.join(", ") })
+];
+var fixFor = (args) => [
+  "finitemonkey uninstall --yes",
+  ...args.values["purge"] === true ? ["--purge"] : [],
+  ...args.values["keep-generated"] === true ? ["--keep-generated"] : []
+].join(" ");
+var runUninstall = (ctx, args) => {
+  const { project } = openProject(ctx);
+  const lock = readPreviousLock(project);
+  if (!lock.ok) return failureFrom(ctx.t, planProblem(lock.error));
+  if (lock.value === void 0) return failureFrom(ctx.t, notInstalled());
+  const options = { purge: args.values["purge"] === true, keepGenerated: args.values["keep-generated"] === true };
+  const plan = planRemoval(project, lock.value, options);
+  const preview = dataOf2(project.root, plan, false);
+  if (ctx.dryRun) return success(preview, [...linesOf(ctx, preview), ctx.t("install.dry_run")]);
+  if (!ctx.yes) {
+    const next = fixFor(args);
+    const problem2 = confirmProblem("uninstall", ctx.t("install.uninstall.question"), next);
+    return { ...failureFrom(ctx.t, { ...problem2, data: preview }, linesOf(ctx, preview)), next };
+  }
+  const removed = applyRemoval(project, plan);
+  if (!removed.ok) return failureFrom(ctx.t, applyProblem(removed.error));
+  const data = dataOf2(project.root, plan, true);
+  return success(data, [...linesOf(ctx, data), ctx.t("install.uninstall.done")]);
+};
+var uninstallCommand = {
+  path: ["uninstall"],
+  summaryKey: "command.uninstall.summary",
+  usage: "finitemonkey uninstall [--purge] [--keep-generated] [--dry-run] [--yes]",
+  status: "ready",
+  options: { purge: { type: "boolean" }, "keep-generated": { type: "boolean" } },
+  run: (ctx, args) => Promise.resolve(runUninstall(ctx, args))
+};
+
+// src/commands/update.ts
+var check = (ctx, bin) => {
+  const { project, gitRoot } = openProject(ctx);
+  const previous = readPreviousLock(project);
+  if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
+  if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
+  const input = planInputFor(ctx, previous.value.preset, bin, false);
+  const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
+  if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
+  const data = planData(ctx.t, plan.value, "update", false, void 0);
+  const human = planLines(ctx.t, data, true);
+  if (!hasChanges(plan.value)) return success(data, [...human, ctx.t("install.up_to_date")]);
+  return {
+    ok: false,
+    exitCode: ExitCode.CheckFailed,
+    data,
+    human,
+    error: { code: "install_outdated", message: ctx.t("error.install_outdated"), fix: "finitemonkey update --yes" }
+  };
+};
+var runUpdate = (ctx, args) => {
+  const bin = stringOption(args.values, "bin");
+  if (args.values["check"] === true) return check(ctx, bin);
+  const { project } = openProject(ctx);
+  const previous = readPreviousLock(project);
+  if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
+  if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
+  const preset = stringOption(args.values, "preset");
+  const request = { mode: "update", preset, bin, marketplace: false, showDiff: true };
+  return runInstall(ctx, request, previous.value.preset);
+};
+var updateCommand = {
+  path: ["update"],
+  summaryKey: "command.update.summary",
+  usage: "finitemonkey update [--check] [--preset neutral|gabriel] [--bin <path>] [--yes]",
+  status: "ready",
+  options: { check: { type: "boolean" }, preset: { type: "string" }, bin: { type: "string" } },
+  run: (ctx, args) => Promise.resolve(runUpdate(ctx, args))
 };
 
 // src/commands/version.ts
@@ -2824,9 +4026,9 @@ var unknownCommand = (registry, attempted) => {
     suggestion
   });
 };
-var failWith = (ctx, name, problem) => ({
+var failWith = (ctx, name, problem2) => ({
   name,
-  execute: () => Promise.resolve(failureFrom(ctx.t, problem))
+  execute: () => Promise.resolve(failureFrom(ctx.t, problem2))
 });
 var invoke = (ctx, argv, spec, registry) => {
   const name = commandName(spec);
@@ -2911,11 +4113,11 @@ var run = async (options) => {
   let result;
   try {
     if (loose.lang !== void 0 && normalizeLang(loose.lang) === void 0) {
-      const problem = usageProblem("invalid_lang", "error.invalid_lang", "finitemonkey --lang en", {
+      const problem2 = usageProblem("invalid_lang", "error.invalid_lang", "finitemonkey --lang en", {
         lang: loose.lang,
         languages: LANGUAGES.join(", ")
       });
-      result = failureFrom(t, problem);
+      result = failureFrom(t, problem2);
     } else {
       const dispatched = dispatch(ctx, options.argv, loose, options.registry ?? REGISTRY);
       name = dispatched.name;
@@ -2929,15 +4131,23 @@ var run = async (options) => {
 };
 
 // src/core/version.ts
-import { fileURLToPath as fileURLToPath2 } from "node:url";
+import { fileURLToPath as fileURLToPath3 } from "node:url";
 var UNKNOWN_VERSION = "0.0.0-unknown";
-var readPackageVersion = (readText, moduleUrl) => {
-  const text2 = readText(toAbsolutePath(fileURLToPath2(new URL("../package.json", moduleUrl))));
-  if (!text2.ok) return UNKNOWN_VERSION;
+var VERSION_SOURCES = ["../package.json", "../.claude-plugin/plugin.json"];
+var versionAt = (readText, moduleUrl, relative4) => {
+  const text2 = readText(toAbsolutePath(fileURLToPath3(new URL(relative4, moduleUrl))));
+  if (!text2.ok) return void 0;
   const parsed = parseJson(text2.value);
-  if (!parsed.ok || !isRecord(parsed.value)) return UNKNOWN_VERSION;
+  if (!parsed.ok || !isRecord(parsed.value)) return void 0;
   const version = parsed.value["version"];
-  return typeof version === "string" ? version : UNKNOWN_VERSION;
+  return typeof version === "string" ? version : void 0;
+};
+var readPackageVersion = (readText, moduleUrl) => {
+  for (const relative4 of VERSION_SOURCES) {
+    const version = versionAt(readText, moduleUrl, relative4);
+    if (version !== void 0) return version;
+  }
+  return UNKNOWN_VERSION;
 };
 
 // src/cli.ts

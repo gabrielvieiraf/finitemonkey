@@ -22,6 +22,12 @@ export const ERROR_CODES = [
   "secrets_incident_not_found",
   "secrets_not_rotated",
   "secrets_write_failed",
+  "settings_unreadable",
+  "lock_unreadable",
+  "install_locked",
+  "install_failed",
+  "not_installed",
+  "install_outdated",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
