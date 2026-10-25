@@ -1,0 +1,62 @@
+name: Blocked something it should not have
+description: A guard or the gate blocked an action or a finish that was correct and safe.
+title: "[false block] "
+labels: ["false-positive", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        False positives are bugs, and they are counted in public. Thanks for reporting one.
+        Never paste secrets, tokens or keys. If the block was about a secret, describe the value (for example "a test fixture that looks like an AWS key") instead of pasting it.
+  - type: input
+    id: version
+    attributes:
+      label: Finite Monkey version
+      description: Output of `npx finitemonkey --version`.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Node.js, Claude Code and OS
+      description: Output of `node --version` and `claude --version`, plus your OS (Linux, macOS, Windows, WSL).
+    validations:
+      required: true
+  - type: dropdown
+    id: guard
+    attributes:
+      label: What blocked it
+      options:
+        - The gate on Stop (definition of done)
+        - Tests guard
+        - Secrets guard
+        - Git guard
+        - Production guard
+        - Something else or not sure
+    validations:
+      required: true
+  - type: textarea
+    id: action
+    attributes:
+      label: The action that was blocked
+      description: The command, edit or finish attempt. Remove anything sensitive.
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: The block message
+      description: The exact message Finite Monkey showed.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it should have been allowed
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `npx finitemonkey doctor --json`
+      render: json
