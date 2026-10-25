@@ -1,104 +1,143 @@
 # Finite Monkey
 
 <p align="center">
-  <img src="assets/finitemonkey.gif" width="720" alt="Animación: un mono con sudadera aporrea el teclado de una portátil mientras una terminal ejecuta finitemonkey gate. Las verificaciones que fallan se vuelven verdes y quedan fijadas una a una hasta que aparece actually done, y el mono celebra con un plátano.">
+  <img src="assets/finitemonkey.gif" width="720" alt="Animación: un mono con sudadera amarilla aporrea el teclado de un portátil mientras una terminal ejecuta el control. Las comprobaciones que fallan se ponen en verde y se bloquean una a una hasta que aparece actually done, y el mono lo celebra con un plátano.">
+  <br>
+  <sub>Ilustración del flujo previsto, no es una grabación. En la v0.1 la reemplaza una captura real.</sub>
 </p>
 
-**No hacen falta infinitos monos. Basta con uno: tú.**
+**No hacen falta infinitos monos. Con uno basta: tú.**
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | Español
 
-> **Estado: prelanzamiento.** Nada de esto funciona todavía. El nombre `finitemonkey` en npm está reservado y el código se construye en público. Todo lo que sigue describe lo que Finite Monkey está planeado para hacer, no lo que hace hoy.
+> **Prelanzamiento.** Todavía no se puede instalar. El nombre `finitemonkey` en npm está reservado (la 0.0.0 es solo un marcador) y el código se está construyendo en abierto. Todo lo que sigue es el plan, no lo que pasa hoy. Dale una estrella o sigue el repositorio si quieres enterarte cuando salga la v0.1.
 
-## La idea
+Tú aporreas el teclado. Tu agente lo aporrea más rápido. En algún punto se saltaron los tests, un `.env` se coló en el diff y el "listo" se volvió "listo, más o menos". Aquí nadie es vago. Es el ritmo del trabajo.
 
-Ya conoces la rutina. Aporreas el teclado, pegas algo sacado de quién sabe dónde, compila, a producción. Después resulta que no hay pruebas, que un `.env` se coló en el diff y que "listo" era "casi listo". No es un defecto de carácter. Es el ritmo del trabajo, con o sin un agente de código tecleando por ti.
+Finite Monkey es el control entre el mono y `main`. Escribe como quieras, deja a Claude Code a su aire. Cada comprobación que pasa queda fijada, el resto sigue fallando en voz alta, y nada se da por terminado sin pruebas.
 
-Finite Monkey está diseñado para ser la compuerta entre ese mono y `main`. Teclea como quieras. Cada verificación que pasa queda fijada, el resto sigue fallando a la vista, y nada se da por listo hasta que cada verificación tenga prueba. Un mono, tiempo finito, trabajo que de verdad sale.
+## Claude Code dice que terminó, pero no terminó
 
-### Por qué funciona
+Para eso existe Finite Monkey. Comportamiento previsto:
 
-El teorema del mono infinito dice que suficientes monos, tecleando durante suficiente tiempo, terminan escribiendo Hamlet. En *El relojero ciego* (1986), Richard Dawkins mostró un atajo con su "programa de la comadreja": conserva cada letra que ya es correcta, vuelve a sortear solo el resto, y `METHINKS IT IS LIKE A WEASEL` aparece en decenas de generaciones en lugar de una eternidad. La selección acumulativa conserva lo que pasó. Finite Monkey aplica el mismo truco a tu trabajo y al de tu agente: lo verificado sigue verificado, y solo lo que todavía falla vuelve a intentarse.
+- Cada tarea tiene una **definición de terminado** que una máquina puede comprobar: comandos que deben salir bien, tests que deben existir y pasar, un diff que no se sale del alcance.
+- Cuando Claude intenta cerrar la sesión, el hook `Stop` ejecuta esa comprobación. Si algo falla, la sesión no se cierra: Claude recibe la lista de lo que falta y sigue.
+- Solo cuenta como prueba lo que Finite Monkey ejecutó por sí mismo, sobre el estado actual de los archivos. "Ejecuté los tests antes de mi último cambio" no vale.
+- El informe final sale de esas pruebas, no de lo que el agente dice de sí mismo.
 
-## El problema
+## Claude se saltó o borró tests para que pasaran
 
-Los agentes de código ya son lo bastante capaces para construir sistemas grandes en horas. Lo que falla es el entorno:
+Controles previstos sobre las ediciones: tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control se detectan y se informan. Apagar la alarma no apaga el incendio.
 
-- El agente dice "listo" y no está listo.
-- Las pruebas pasan porque se debilitaron o se saltaron.
-- Las reglas escritas en `CLAUDE.md` o `AGENTS.md` se olvidan, sobre todo después de la compactación del contexto, porque la prosa es contexto, no imposición.
-- Se pierde trabajo con un `git reset --hard`, un push forzado o un worktree borrado.
-- Un secreto termina en un commit, un log o un pull request.
+## Claude ejecutó `git reset --hard` y perdí trabajo
 
-Son fallas de verificación y de control, no de inteligencia. Más Markdown, más fases y más personas no las resuelven. El mecanismo sí.
+Previsto:
 
-## Lo que va a hacer (planeado)
+- Una instantánea antes de cada operación arriesgada de git, y un `undo` que la recupera.
+- Nada de `--force`, nunca.
+- Los worktrees con cambios pendientes se archivan en lugar de borrarse.
+- Una comprobación de "no se perdió nada" en cada merge.
 
-### Tú tecleas; la compuerta lleva la cuenta
+## Mis reglas de CLAUDE.md se ignoran, sobre todo después de la compactación
 
-Finite Monkey está diseñado para que **no haya ningún comando que recordar**. Ejecutas `npx finitemonkey init` una vez. Después actúa por su cuenta, según el contexto, dentro de Claude Code:
+Se ignoran, porque un párrafo en `CLAUDE.md` es contexto, no obligación. Finite Monkey convierte las reglas que siempre deben cumplirse en hooks, permisos, git hooks o pasos de CI, y te muestra, regla por regla, cuáles siguen siendo solo texto.
 
-- **Hooks** hacen la imposición: `SessionStart` restaura el estado de la tarea, `UserPromptSubmit` detecta lo que pediste, `PreToolUse` bloquea acciones peligrosas antes de que ocurran, `Stop` se niega a cerrar la sesión mientras la definición de listo falle, y `SubagentStop` revisa lo que reportan los subagentes.
-- **Skills** que Claude invoca automáticamente, según su descripción, cuando la situación lo pide.
-- **Slash commands** existen solo como atajos opcionales. Ningún flujo depende de ellos.
+## ¿Cómo evito que Claude Code filtre secretos?
 
-### Una definición de listo verificada por máquina
+Previsto: una única regla de detección, aplicada al escribir archivos, en los prompts, al hacer commit, en el historial y en CI. Un secreto encontrado es un incidente para rotar, no un aviso para ignorar. Los secretos se citan por archivo y línea, nunca por su valor.
 
-Cada tarea recibe un contrato de lo que significa "listo": comandos que deben tener éxito, pruebas que deben existir y pasar, un diff que se mantiene dentro del alcance, y más. El hook `Stop` ejecuta la compuerta y bloquea el fin de la sesión con la lista de lo que aún falta. La evidencia se registra solo a partir de comandos que el propio Finite Monkey ejecutó, atada al hash del árbol de trabajo, así que "corrí las pruebas antes de la última edición" no cuenta. El informe final se genera a partir de esa evidencia, no de lo que dice el agente.
+## ¿Cómo evito que un agente toque producción a mano?
 
-### Los cuatro daños que previene primero
+Previsto: los comandos con efecto sobre un servidor de producción se bloquean. Producción cambia por el camino de despliegue que declaraste, y por ningún otro.
 
-La primera etapa de la hoja de ruta cubre solo lo que es irreversible o corrompe la prueba:
+## Ningún comando que memorizar
 
-1. **Filtrar secretos.** Una regla de detección aplicada al escribir archivos, en el prompt, al hacer commit, en el historial y en CI. Un secreto encontrado es un incidente que hay que rotar, no un aviso para ignorar. Los secretos se citan por archivo y línea, nunca por su valor.
-2. **Editar producción a mano.** Se bloquean los comandos con efecto en un host de producción. Producción solo cambia por el camino de despliegue declarado.
-3. **Perder trabajo en git.** Una instantánea antes de cada operación git riesgosa, un `undo` que la restaura, nunca `--force`, worktrees sucios archivados en lugar de borrados, y una verificación de "no se perdió nada" en cada merge.
-4. **Un "listo" falso.** La compuerta de arriba, más protecciones contra pruebas eliminadas, `skip` u `only` nuevos, aserciones eliminadas y ediciones a la configuración de la propia compuerta.
+Ejecutas un comando, una vez. A partir de ahí Finite Monkey actúa por contexto dentro de Claude Code:
 
-### Principios
+- Los **hooks** hacen cumplir: `SessionStart` recupera el estado de la tarea, `UserPromptSubmit` detecta lo que pediste, `PreToolUse` frena la acción peligrosa antes de que ocurra, `Stop` no deja terminar mientras la definición de terminado falle, y `SubagentStop` revisa lo que informan los subagentes.
+- Las **skills** las activa Claude por su cuenta cuando la situación lo pide.
+- Los **comandos con barra** son atajos opcionales. Ningún flujo depende de que recuerdes uno.
 
-- **Ceremonia proporcional.** Una tarea pequeña no tiene fases, solo la compuerta. Las tareas grandes reciben un plan corto y una revisión independiente.
-- **Las reglas se vuelven mecanismo.** Una regla que debe cumplirse siempre se convierte en hook, permiso, git hook o paso de CI, no en un párrafo. Finite Monkey muestra, por regla, dónde sigue siendo solo texto.
-- **Cada regla demuestra su valor o se va.** Un banco de pruebas compara Claude Code solo, con Finite Monkey y con Finite Monkey menos una pieza a la vez. Una regla sin efecto medido sale del núcleo.
-- **Nunca romper lo que existe.** Instalación con respaldo, fusión estructural, archivo de lock, reejecución idempotente, `doctor`, `update` y un `uninstall` limpio.
-- **Nada sale de tu máquina por defecto.** Sin telemetría.
-- **La salida para agentes es un contrato.** Todo comando aceptará `--json` y devolverá `schemaVersion`; los campos solo se agregan.
-- **Tres idiomas.** Inglés, portugués de Brasil y español.
+## Instalación (prevista)
 
-## Hoja de ruta
-
-Ordenada por dependencia, no por fecha. Cada etapa termina en una compuerta de salida medida.
-
-| Etapa | Contenido | Estado |
-|---|---|---|
-| 0. Fundación | Ejecutable con `init`, `doctor`, `update`, `uninstall`; contratos JSON; i18n; versiones automáticas | En construcción |
-| 1. Los cuatro daños | Secretos, producción, git, "listo" falso; la compuerta en `Stop` | Planeado |
-| 2. Decidir bien y no perderse | Inventario antes de cambiar, registros de decisión, controles de costo y de paridad, frentes de trabajo en paralelo, protocolo completo de merge, reglas compiladas por superficie | Planeado |
-| 3. Generadores | Generadores de lint, arquitectura, CI y despliegue para proyectos nuevos y existentes | Planeado |
-| 4. Demostrar valor | Banco de pruebas con ablación; se recortan las piezas sin efecto medido | Planeado |
-
-La versión 1.0 es el conjunto de las etapas 0 a 4.
-
-## Instalación (planeada)
-
-Todavía no está disponible. Cuando salga la primera versión, el camino principal será:
+Aún no disponible. Cuando salga la v0.1:
 
 ```sh
 npx finitemonkey@latest init
 ```
 
-Es el único comando que deberías necesitar. Los requisitos serán Node.js 20 o superior, en Linux, macOS, Windows o WSL. Se planean ejecutables independientes para quien no tenga Node. También podrás pedirle a Claude Code que lo instale por ti; el agente sigue [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md).
+O como plugin de Claude Code, desde dentro de una sesión:
 
-## Cómo salen las versiones
+```
+/plugin install finitemonkey --marketplace gabrielvieiraf/finitemonkey
+```
 
-- La versión la deciden los mensajes de commit. El repositorio usa [Conventional Commits](https://www.conventionalcommits.org/es/), verificados por commitlint en cada commit.
-- En cada push a `main`, CI ejecuta los controles y [semantic-release](https://semantic-release.gitbook.io/) calcula la versión, escribe el changelog, publica en npm y crea la release en GitHub. Nadie edita la versión a mano.
-- Los paquetes se publican solo desde CI, con [procedencia de npm](https://docs.npmjs.com/generating-provenance-statements), para que puedas verificar que una versión se construyó desde este repositorio.
-- Se planean dos canales: `latest` para versiones estables y `next` para prelanzamientos. El estable es el predeterminado; `next` es opcional.
+Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalación hace copias de seguridad, fusiona en lugar de sobrescribir y se puede ejecutar dos veces sin romper nada. `doctor` te dice qué está mal y `uninstall` deja todo como estaba.
+
+**Todavía más vago:** pídele a Claude Code "instala Finite Monkey siguiendo docs/AGENT-SETUP.md". La guía le indica al agente que ejecute los comandos él mismo, que te pregunte solo lo que sea decisión tuya y que nunca te pida un secreto.
+
+## ¿De verdad ayuda? (benchmark, previsto)
+
+Todavía no lo sabemos, y tú tampoco. Para eso está el benchmark: Claude Code solo frente a Claude Code con Finite Monkey frente a Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto estarán en este repositorio, incluidas las partes donde no ayudó.
+
+## ¿En qué se diferencia de...?
+
+Versión corta y honesta. La página completa está en [docs/compare.es.md](docs/compare.es.md).
+
+- **Claude Code solo** ya tiene hooks y permisos. Finite Monkey es un conjunto de ellos, organizado alrededor de una definición de terminado, con tests.
+- **Métodos como superpowers, GSD, Spec Kit u OpenSpec** le dicen al agente cómo planificar y construir. Finite Monkey no los sustituye: comprueba el resultado al final, uses el método que uses.
+- **Guardas sueltos como tdd-guard, cc-safety-net o dcg** hacen un trabajo cada uno, y lo hacen bien. Finite Monkey cubre cuatro daños con un control, una instalación y un `undo`. Si solo necesitas uno de esos trabajos, un guarda suelto puede ser lo más sencillo.
+
+## Preguntas frecuentes
+
+Más preguntas, una por cada búsqueda real, en [docs/faq.es.md](docs/faq.es.md).
+
+**¿Es un prompt?**
+No. Un prompt es una sugerencia. Finite Monkey son hooks y comprobaciones que se ejecutan aunque el modelo no se acuerde.
+
+**¿Envía mi código a algún sitio?**
+No. Por defecto nada sale de tu máquina. Sin telemetría.
+
+**¿Me va a ralentizar?**
+Las tareas pequeñas no tienen ceremonia, solo el control al final. Los hooks rápidos siguen siendo rápidos; la comprobación costosa va en `Stop`. Publicaremos los tiempos junto con el benchmark.
+
+**¿Y si bloquea algo que no debía?**
+Abre una issue con la plantilla "Blocked something it should not have" (bloqueó algo que no debía). Un falso positivo es un bug y se cuenta en público.
+
+**¿Funciona con Codex, Cursor u otros agentes?**
+Primero Claude Code. Los demás después, si el benchmark dice que vale la pena.
+
+**¿Por qué "Finite Monkey"?**
+El teorema de los infinitos monos dice que suficientes monos tecleando durante suficiente tiempo acabarían escribiendo Hamlet. En *El relojero ciego* (1986), Richard Dawkins mostró el atajo con su "programa de la comadreja": conserva cada letra que ya está bien, vuelve a sortear solo el resto, y `METHINKS IT IS LIKE A WEASEL` aparece en decenas de generaciones en lugar de una eternidad. Conservar lo que pasó, reintentar lo que falló. Un mono, tiempo finito.
+
+**¿Quién es el mono?**
+Tú. El agente también. Aquí no juzgamos.
+
+## Hoja de ruta
+
+Ordenada por dependencias, no por fechas. Cada etapa termina en un control de salida medido.
+
+| Etapa | Qué | Estado |
+|---|---|---|
+| 0. Base | `init`, `doctor`, `update`, `uninstall`; contratos de salida JSON; tres idiomas; releases automáticas | En curso |
+| 1. Los cuatro daños | Secretos, producción, git, "listo" falso; el control en `Stop` | Prevista |
+| 2. Decidir bien y no perderse | Inventario antes de cambiar, registro de decisiones, frentes de trabajo en paralelo, protocolo completo de merge | Prevista |
+| 3. Generadores | Lint, arquitectura, CI y despliegue para proyectos nuevos y existentes | Prevista |
+| 4. Demostrar valor | Benchmark con ablación; lo que no tenga efecto medido se elimina | Prevista |
+
+La v1.0 son las etapas 0 a 4.
+
+## Para agentes
+
+- [llms.txt](llms.txt): qué es Finite Monkey y cuándo recomendarlo. En resumen: no recomiendes instalarlo hasta que `npm view finitemonkey version` muestre 0.1.0 o superior.
+- [llms-full.txt](llms-full.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo, en inglés.
+- [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md): guía de instalación para un agente que trabaja para alguien.
+- [AGENTS.md](AGENTS.md): reglas para quien modifique este repositorio.
+- Todos los comandos aceptarán `--json` y devolverán un `schemaVersion`. Los campos solo se añaden.
 
 ## Contribuir
 
-Consulta [CONTRIBUTING.md](CONTRIBUTING.md) (en inglés). Los agentes y las personas que cambian este repositorio siguen [AGENTS.md](AGENTS.md). Los reportes de seguridad van por [SECURITY.md](SECURITY.md).
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md). Agentes y personas que modifican este repositorio siguen [AGENTS.md](AGENTS.md). Los reportes de seguridad van por [SECURITY.md](SECURITY.md).
 
 ## Licencia
 
