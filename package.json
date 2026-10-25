@@ -1,7 +1,7 @@
 {
   "name": "finitemonkey",
   "version": "0.1.0-next.1",
-  "description": "Infinite monkeys not required. A gate that makes coding agents finish verified work.",
+  "description": "Claude Code hooks that stop a coding agent from saying done before the tests pass: a machine-checked definition of done, plus guardrails for secrets, git safety and production. Pre-release.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "Gabriel Vieira",
@@ -15,9 +15,17 @@
   },
   "keywords": [
     "claude-code",
-    "agents",
-    "verification",
-    "definition-of-done"
+    "claude-code-plugin",
+    "claude-code-hooks",
+    "hooks",
+    "definition-of-done",
+    "ai-agent",
+    "coding-agent",
+    "guardrails",
+    "secrets",
+    "git-safety",
+    "tests",
+    "verification"
   ],
   "bin": {
     "finitemonkey": "dist/finitemonkey.mjs",
@@ -47,10 +55,12 @@
     "i18n:check": "node dist/finitemonkey.mjs i18n check --dir src/i18n",
     "bench:startup": "node scripts/bench-startup.mjs",
     "smoke:install": "node scripts/smoke-install.mjs",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:dist && npm test && npm run i18n:check && npm pack --dry-run",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:dist && npm test && npm run i18n:check && npm pack --dry-run && npm run llms:check",
     "prepublishOnly": "npm run typecheck && npm run check:dist && npm test",
     "prepare": "husky",
-    "gif": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts"
+    "gif": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts",
+    "llms": "tsx scripts/build-llms.ts",
+    "llms:check": "tsc -p scripts && tsx scripts/build-llms.ts --check"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
