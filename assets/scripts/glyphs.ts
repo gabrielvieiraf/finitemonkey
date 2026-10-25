@@ -1,3 +1,5 @@
+import { upper } from "./upper.ts";
+
 const blank = ".....";
 
 const lower: Record<string, readonly string[]> = {
@@ -66,6 +68,7 @@ const symbols: Record<string, readonly string[]> = {
 
 export const glyphs: Readonly<Record<string, readonly string[]>> = {
   ...lower,
+  ...upper,
   ...digits,
   ...symbols,
 };
