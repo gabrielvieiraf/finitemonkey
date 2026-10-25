@@ -8,7 +8,7 @@ import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import type { Ctx, Env, TextSource } from "../src/core/context.js";
 import { accept, isRecord, type JsonObject, parseJsonObject, reject } from "../src/core/parsed.js";
 import { run } from "../src/core/run.js";
-import type { ProbeResult, Runtime } from "../src/core/runtime.js";
+import type { GitResult, ProbeResult, Runtime } from "../src/core/runtime.js";
 import { detectLang } from "../src/i18n/languages.js";
 import { createTranslator } from "../src/i18n/translate.js";
 
@@ -27,7 +27,28 @@ export interface FakeRuntimeOptions {
   readonly files?: Readonly<Record<string, string>>;
   readonly tools?: Readonly<Record<string, ProbeResult>>;
   readonly timer?: TimerMode;
+  readonly now?: string;
+  readonly git?: (args: readonly string[]) => GitResult;
+  readonly gitLines?: (args: readonly string[]) => readonly string[] | undefined;
 }
+
+export const gitMissing: GitResult = { found: false, ok: false, stdout: "" };
+
+const childrenOf = (files: ReadonlyMap<string, string>, dir: string): readonly string[] => {
+  const prefix = dir.endsWith("/") ? dir : `${dir}/`;
+  const names = [...files.keys()]
+    .filter((path) => path.startsWith(prefix))
+    .map((path) => path.slice(prefix.length).split("/")[0] ?? "");
+  return [...new Set(names)].filter((name) => name !== "").sort();
+};
+
+const walk = (files: ReadonlyMap<string, string>, root: string): readonly string[] => {
+  const prefix = root.endsWith("/") ? root : `${root}/`;
+  return [...files.keys()]
+    .filter((path) => path.startsWith(prefix))
+    .map((path) => path.slice(prefix.length))
+    .sort();
+};
 
 const DEFAULT_TOOLS: Readonly<Record<string, ProbeResult>> = {
   git: found("git version 2.47.1"),
@@ -48,15 +69,35 @@ const timers: Readonly<Record<TimerMode, Runtime["startTimer"]>> = {
   never: () => () => undefined,
 };
 
-export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => ({
-  nodeVersion: options.nodeVersion ?? "22.11.0",
-  readText: (path) => {
-    const text = options.files?.[path];
-    return text === undefined ? reject(`ENOENT: ${path}`) : accept(text);
-  },
-  probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
-  startTimer: timers[options.timer ?? "real"],
-});
+export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
+  const files = new Map<string, string>(Object.entries(options.files ?? {}));
+  return {
+    nodeVersion: options.nodeVersion ?? "22.11.0",
+    readText: (path) => {
+      const text = files.get(path);
+      return text === undefined ? reject(`ENOENT: ${path}`) : accept(text);
+    },
+    probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
+    startTimer: timers[options.timer ?? "real"],
+    writeText: (path, text) => {
+      files.set(path, text);
+      return accept(true);
+    },
+    listDir: (path) => {
+      const names = childrenOf(files, path);
+      return names.length === 0 ? reject(`ENOENT: ${path}`) : accept(names);
+    },
+    walkFiles: (root) => accept(walk(files, root)),
+    now: () => options.now ?? "2026-10-25T12:00:00.000Z",
+    git: (args) => options.git?.(args) ?? gitMissing,
+    gitLines: (args, _cwd, onLine) => {
+      const lines = options.gitLines?.(args);
+      if (lines === undefined) return Promise.resolve(gitMissing);
+      for (const line of lines) onLine(line);
+      return Promise.resolve({ found: true, ok: true, stdout: "" });
+    },
+  };
+};
 
 const sink = (): { readonly write: (chunk: string) => void; readonly text: () => string } => {
   const chunks: string[] = [];
