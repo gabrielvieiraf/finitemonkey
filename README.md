@@ -12,22 +12,20 @@ English | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
 
 > **Pre-release.** Nothing installs yet. The npm name `finitemonkey` is reserved (0.0.0 is a placeholder) and the code is being built in the open. Everything below is the plan, not today's behavior. Star or watch the repo if you want to know when v0.1 lands.
 
-You mash keys. Your agent mashes keys faster. Somewhere in there the tests got skipped, a `.env` slid into the diff, and "done" quietly became "done-ish". Nobody is lazy here. It's just the speed of the work.
-
-Finite Monkey is the gate between the monkey and `main`. Type however you like, let Claude Code go wild. Every check that passes gets locked in, everything else keeps failing out loud, and nothing gets called done until there's proof.
+Claude Code ends a refactor with "Done! All tests pass." It had only run the linter. The only failing test got a `.skip` at 2 a.m., and CI went red twenty minutes after the merge. Finite Monkey is planned as Claude Code hooks that run your checks themselves when the agent tries to stop, and keep the session open until they pass. The monkey in the yellow hoodie is you.
 
 ## Claude Code says it's done, but it isn't
 
-That's the main thing Finite Monkey is for. Planned behavior:
+This is the main problem Finite Monkey is built for. Planned behavior:
 
 - Each task gets a **definition of done** that a machine can check: commands that must succeed, tests that must exist and pass, a diff that stays in scope.
 - When Claude tries to end the session, the `Stop` hook runs that check. If anything fails, the session doesn't end. Claude gets the list of what's missing and keeps going.
 - Evidence only counts if Finite Monkey ran the command itself, on the current state of the files. "I ran the tests before my last edit" doesn't count.
-- The final report is built from that evidence, not from what the agent says about itself.
+- The final report is built from that evidence alone.
 
 ## Claude skipped or deleted tests to make them pass
 
-Planned guards on edits: removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config are caught and reported. Turning the alarm off doesn't count as fixing the fire.
+Planned guards on edits: removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config are caught and reported.
 
 ## Claude ran `git reset --hard` and I lost my work
 
@@ -40,15 +38,15 @@ Planned:
 
 ## My CLAUDE.md rules get ignored, especially after compaction
 
-They do, because a paragraph in `CLAUDE.md` is context, not enforcement. Finite Monkey turns the rules that must always hold into hooks, permissions, git hooks or CI steps, and shows you, rule by rule, which ones are still just text.
+They do. Claude reads `CLAUDE.md` as part of its context, and nothing checks that it was followed. Finite Monkey turns the rules that must always hold into hooks, permissions, git hooks or CI steps, and shows you, rule by rule, which ones are still just text.
 
 ## How do I stop Claude Code from leaking secrets?
 
-Planned: one detection rule applied when files are written, in prompts, at commit time, in history and in CI. A secret found is treated as an incident to rotate, not a warning to scroll past. Secrets are reported by file and line, never by value.
+Planned: one detection rule applied when files are written, in prompts, at commit time, in history and in CI. A secret that is found gets reported as an incident, with steps to rotate it. Secrets are reported by file and line, never by value.
 
 ## How do I stop an agent from editing production by hand?
 
-Planned: commands with effects on a production host get blocked. Production changes go through your declared deploy path, and nowhere else.
+Planned: commands with effects on a production host get blocked. Production changes go through the deploy path you declare.
 
 ## Zero commands to remember
 
@@ -78,11 +76,11 @@ Requirements: Node.js 20 or later, on Linux, macOS, Windows or WSL. Install make
 
 ## Does it actually help? (benchmark, planned)
 
-We don't know yet, and neither do you. That's the point of the benchmark: Claude Code alone vs. Claude Code with Finite Monkey vs. Finite Monkey minus one piece at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will live in this repo, including the parts where it didn't help.
+Not known yet. The planned benchmark compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will live in this repo, including the parts where it didn't help.
 
 ## How is this different from...?
 
-Short version, honest version. The full page is [docs/compare.md](docs/compare.md).
+The full comparison, with sources, is in [docs/compare.md](docs/compare.md).
 
 - **Claude Code on its own** already has hooks and permissions. Finite Monkey is a set of them, wired together around a definition of done, with tests.
 - **Methods like superpowers, GSD, Spec Kit or OpenSpec** tell the agent how to plan and build. Finite Monkey doesn't replace them. It checks the result at the end, whatever method you used.
@@ -93,7 +91,7 @@ Short version, honest version. The full page is [docs/compare.md](docs/compare.m
 More questions, one per real search, in [docs/faq.md](docs/faq.md).
 
 **Is it a prompt?**
-No. Prompts are suggestions. Finite Monkey is hooks and checks that run whether or not the model remembers them.
+No. It is hooks and checks that run whether or not the model remembers them.
 
 **Does it send my code anywhere?**
 No. Nothing leaves your machine by default. No telemetry.
@@ -102,16 +100,16 @@ No. Nothing leaves your machine by default. No telemetry.
 Small tasks get no ceremony, only the gate at the end. Fast hooks stay fast; the expensive check runs at `Stop`. We'll publish timings with the benchmark.
 
 **What if it blocks something it shouldn't?**
-Open an issue with the "Blocked something it should not have" template. False positives are bugs, and they get counted in public.
+Open an issue with the "Blocked something it should not have" template. False positives are treated as bugs and counted in public.
 
 **Does it work with Codex, Cursor or other agents?**
 Claude Code first. Others later, if the benchmark says it's worth it.
 
 **Why "Finite Monkey"?**
-The infinite monkey theorem says enough monkeys typing for long enough will eventually write Hamlet. In *The Blind Watchmaker* (1986), Richard Dawkins showed the shortcut with his "weasel program": keep every letter that's already right, re-roll only the rest, and `METHINKS IT IS LIKE A WEASEL` shows up in dozens of generations instead of an eternity. Keep what passed, retry what failed. One monkey, finite time.
+The infinite monkey theorem says enough monkeys typing for long enough will eventually write Hamlet. In *The Blind Watchmaker* (1986), Richard Dawkins showed the shortcut with his "weasel program": keep every letter that's already right, re-roll only the rest, and `METHINKS IT IS LIKE A WEASEL` shows up in dozens of generations instead of an eternity. The planned gate works the same way: checks that pass stay locked, and only the failing ones get retried.
 
 **Who's the monkey?**
-You. Also the agent. We don't judge.
+You, and on some days the agent.
 
 ## Roadmap
 

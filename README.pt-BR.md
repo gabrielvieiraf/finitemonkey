@@ -12,22 +12,20 @@
 
 > **Pré-lançamento.** Ainda não dá para instalar. O nome `finitemonkey` no npm está reservado (a 0.0.0 é só um marcador) e o código está sendo feito em público. Tudo abaixo é o plano, não o que acontece hoje. Dê uma estrela ou acompanhe o repositório se quiser saber quando sair a v0.1.
 
-Você bate no teclado. O agente bate mais rápido. No meio do caminho os testes foram pulados, um `.env` escorregou para o diff e o "pronto" virou "pronto, mais ou menos". Ninguém aqui é preguiçoso. É o ritmo do trabalho.
-
-O Finite Monkey é o portão entre o macaco e a `main`. Digite do jeito que quiser, deixe o Claude Code solto. Cada verificação que passa fica travada, o resto continua falhando em voz alta, e nada é dado como pronto sem prova.
+O Claude Code termina um refactor com "Pronto! Todos os testes passaram." Ele só tinha rodado o linter. O único teste que falhava ganhou um `.skip` às duas da manhã, e o CI ficou vermelho vinte minutos depois do merge. O Finite Monkey está sendo feito como hooks do Claude Code que rodam as suas checagens por conta própria quando o agente tenta parar, e mantêm a sessão aberta até elas passarem. O macaco de moletom amarelo é você.
 
 ## O Claude Code diz que terminou, mas não terminou
 
-É para isso que o Finite Monkey existe. Comportamento planejado:
+Esse é o principal problema que o Finite Monkey quer resolver. Comportamento planejado:
 
 - Cada tarefa ganha uma **definição de pronto** que a máquina consegue checar: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo.
 - Quando o Claude tenta encerrar a sessão, o hook `Stop` roda essa checagem. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
 - Só vale como prova o comando que o próprio Finite Monkey rodou, no estado atual dos arquivos. "Rodei os testes antes da última edição" não conta.
-- O relatório final sai dessa prova, não do que o agente fala de si mesmo.
+- O relatório final sai só dessa prova.
 
 ## O Claude pulou ou apagou testes para eles passarem
 
-Travas planejadas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados. Desligar o alarme não apaga o incêndio.
+Travas planejadas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.
 
 ## O Claude rodou `git reset --hard` e eu perdi trabalho
 
@@ -40,15 +38,15 @@ Planejado:
 
 ## As regras do meu CLAUDE.md são ignoradas, ainda mais depois da compactação
 
-São mesmo, porque um parágrafo no `CLAUDE.md` é contexto, não obrigação. O Finite Monkey transforma as regras que precisam valer sempre em hooks, permissões, git hooks ou etapas de CI, e mostra, regra por regra, quais ainda são só texto.
+São mesmo. O Claude lê o `CLAUDE.md` como parte do contexto, e nada confere se ele foi seguido. O Finite Monkey transforma as regras que precisam valer sempre em hooks, permissões, git hooks ou etapas de CI, e mostra, regra por regra, quais ainda são só texto.
 
 ## Como impedir o Claude Code de vazar segredos?
 
-Planejado: uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é incidente para rotacionar, não aviso para ignorar. O segredo é citado por arquivo e linha, nunca pelo valor.
+Planejado: uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é relatado como incidente, com os passos para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
 
 ## Como impedir um agente de mexer na produção na mão?
 
-Planejado: comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarou, e por nenhum outro.
+Planejado: comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
 
 ## Nenhum comando para decorar
 
@@ -78,11 +76,11 @@ Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instala�
 
 ## Funciona de verdade? (benchmark, planejado)
 
-Ainda não sabemos, e você também não. É para isso que serve o benchmark: Claude Code sozinho contra Claude Code com Finite Monkey contra Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ficar neste repositório, inclusive onde não ajudou.
+Ainda não se sabe. O benchmark planejado compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ficar neste repositório, inclusive onde não ajudou.
 
 ## Qual a diferença para...?
 
-Versão curta e honesta. A página completa é [docs/compare.pt-BR.md](docs/compare.pt-BR.md).
+A comparação completa, com fontes, está em [docs/compare.pt-BR.md](docs/compare.pt-BR.md).
 
 - **O Claude Code puro** já tem hooks e permissões. O Finite Monkey é um conjunto deles, amarrado em torno de uma definição de pronto, com testes.
 - **Métodos como superpowers, GSD, Spec Kit ou OpenSpec** dizem ao agente como planejar e construir. O Finite Monkey não substitui nenhum deles: confere o resultado no fim, seja qual for o método.
@@ -93,7 +91,7 @@ Versão curta e honesta. A página completa é [docs/compare.pt-BR.md](docs/comp
 Mais perguntas, uma para cada busca real, em [docs/faq.pt-BR.md](docs/faq.pt-BR.md).
 
 **É um prompt?**
-Não. Prompt é sugestão. O Finite Monkey é hook e checagem que rodam lembrando o modelo ou não.
+Não. São hooks e checagens que rodam lembrando o modelo ou não.
 
 **Ele manda meu código para algum lugar?**
 Não. Por padrão nada sai da sua máquina. Sem telemetria.
@@ -102,16 +100,16 @@ Não. Por padrão nada sai da sua máquina. Sem telemetria.
 Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. Os tempos saem junto com o benchmark.
 
 **E se ele barrar algo que não devia?**
-Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é bug e entra na conta pública.
+Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é tratado como bug e contado em público.
 
 **Funciona com Codex, Cursor ou outros agentes?**
 Primeiro o Claude Code. Os outros depois, se o benchmark disser que vale.
 
 **Por que "Finite Monkey"?**
-O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. Guardar o que passou, tentar de novo o que falhou. Um macaco, tempo finito.
+O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão planejado funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
 
 **Quem é o macaco?**
-Você. O agente também. Ninguém está julgando.
+Você, e em alguns dias o agente.
 
 ## Roteiro
 
