@@ -107,7 +107,7 @@ const next = (cursor: Cursor, tokens: Token[], cmd: boolean): void => {
   if (redirect !== null) {
     cursor.pos += redirect[0].length;
     while (peek(cursor) === " ") cursor.pos += 1;
-    const target = redirect[3] === undefined ? word(cursor, cmd).text : redirect[3];
+    const target = redirect[3] ?? word(cursor, cmd).text;
     tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target, body: undefined });
     return;
   }
@@ -131,7 +131,11 @@ export const lexPowerShell = (text: string, cmd = false): Lexed => {
   const skip = (): void => {
     while (peek(cursor) === " " || peek(cursor) === "\t") cursor.pos += 1;
   };
-  for (skip(); !atEnd(cursor); skip()) next(cursor, tokens, cmd);
+  skip();
+  while (!atEnd(cursor)) {
+    next(cursor, tokens, cmd);
+    skip();
+  }
   return { tokens, substitutions: cursor.subs, incomplete: cursor.incomplete };
 };
 

@@ -37,7 +37,12 @@ const run = (
   return result.ok ? accept(result.stdout.trim()) : reject(failure(args[0] ?? "git", result));
 };
 
-const dropSensitive = (runtime: Runtime, repo: Repo, env: Readonly<Record<string, string>>, options: TreeOptions): Parsed<undefined> => {
+const dropSensitive = (
+  runtime: Runtime,
+  repo: Repo,
+  env: Readonly<Record<string, string>>,
+  options: TreeOptions,
+): Parsed<undefined> => {
   const listed = run(runtime, repo, ["ls-files", "-z"], env, options);
   if (!listed.ok) return listed;
   const sensitive = listed.value.split("\u0000").filter((path) => path !== "" && isSensitivePath(path));
@@ -62,7 +67,12 @@ export const withTempIndex = <T>(
   }
 };
 
-export const worktreeTree = (runtime: Runtime, repo: Repo, head: string | undefined, options: TreeOptions): Parsed<string> =>
+export const worktreeTree = (
+  runtime: Runtime,
+  repo: Repo,
+  head: string | undefined,
+  options: TreeOptions,
+): Parsed<string> =>
   withTempIndex(runtime, repo, options, (env) => {
     const read = run(runtime, repo, head === undefined ? ["read-tree", "--empty"] : ["read-tree", head], env, options);
     if (!read.ok) return read;
@@ -98,4 +108,10 @@ export const commitTree = (
   message: string,
   options: TreeOptions,
 ): Parsed<string> =>
-  run(runtime, repo, ["commit-tree", tree, ...parents.flatMap((parent) => ["-p", parent]), "-m", message], IDENTITY_ENV, options);
+  run(
+    runtime,
+    repo,
+    ["commit-tree", tree, ...parents.flatMap((parent) => ["-p", parent]), "-m", message],
+    IDENTITY_ENV,
+    options,
+  );

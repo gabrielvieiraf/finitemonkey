@@ -23,7 +23,8 @@ const DEPLOY_FILES = [
 ] as const;
 
 const SSH_URL = /ssh:\/\/(?:[^@\s/]+@)?([A-Za-z0-9.-]+)/g;
-const HOST_KEY = /^\s*-?\s*(?:host|hostname|server|ssh_host|deploy_host|remote_host)\s*:\s*["']?([A-Za-z0-9][A-Za-z0-9.-]*)["']?\s*$/i;
+const HOST_KEY =
+  /^\s*-?\s*(?:host|hostname|server|ssh_host|deploy_host|remote_host)\s*:\s*["']?([A-Za-z0-9][A-Za-z0-9.-]*)["']?\s*$/i;
 
 export const hostKey = (raw: string): string =>
   raw
@@ -50,7 +51,9 @@ const hostsInText = (text: string): readonly string[] => {
 const workflowFiles = (runtime: Runtime, root: AbsolutePath): readonly string[] => {
   const listed = runtime.listDir(toAbsolutePath(join(root, ".github", "workflows")));
   if (!listed.ok) return [];
-  return listed.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
+  return listed.value
+    .filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name))
+    .map((name) => `.github/workflows/${name}`);
 };
 
 const detectedHosts = (runtime: Runtime, root: AbsolutePath, files: readonly string[]): readonly string[] =>
@@ -62,7 +65,11 @@ const detectedHosts = (runtime: Runtime, root: AbsolutePath, files: readonly str
 export const loadProdTargets = (runtime: Runtime, root: AbsolutePath, config: ConfigTree): ProdTargets => {
   const workflows = workflowFiles(runtime, root);
   const deployFiles = [...workflows, ...DEPLOY_FILES];
-  const hosts = [...configList(config, "prod", "hosts"), ...configList(config, "prod", "databases"), ...detectedHosts(runtime, root, deployFiles)];
+  const hosts = [
+    ...configList(config, "prod", "hosts"),
+    ...configList(config, "prod", "databases"),
+    ...detectedHosts(runtime, root, deployFiles),
+  ];
   const declaredDeploy = configAt(config, "prod", "deploy");
   const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join(root, file))) !== undefined);
   return {

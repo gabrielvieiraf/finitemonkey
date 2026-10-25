@@ -165,7 +165,11 @@ export const lexBash = (text: string): Lexed => {
   const cursor = cursorOf(text.replace(/\r\n/g, "\n"));
   const tokens: Token[] = [];
   const pending: Pending[] = [];
-  for (skipBlank(cursor); !atEnd(cursor); skipBlank(cursor)) nextToken(cursor, tokens, pending);
+  skipBlank(cursor);
+  while (!atEnd(cursor)) {
+    nextToken(cursor, tokens, pending);
+    skipBlank(cursor);
+  }
   flushHeredocs(cursor, tokens, pending);
   return { tokens, substitutions: cursor.subs, incomplete: cursor.incomplete };
 };

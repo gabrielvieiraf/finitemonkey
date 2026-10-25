@@ -21,7 +21,14 @@ const basesOf = (runtime: Runtime, repo: Repo, ours: string, theirs: string): re
   return result.ok ? result.stdout.split("\n").filter((line) => line !== "") : [];
 };
 
-const withBase = (runtime: Runtime, repo: Repo, ours: string, theirs: string, result: string, label: string): Parsed<MergeInputs> => {
+const withBase = (
+  runtime: Runtime,
+  repo: Repo,
+  ours: string,
+  theirs: string,
+  result: string,
+  label: string,
+): Parsed<MergeInputs> => {
   const bases = basesOf(runtime, repo, ours, theirs);
   const base = bases[0];
   if (base === undefined) return reject("no merge base between the two sides");
@@ -32,7 +39,10 @@ const inProgress = (runtime: Runtime, repo: Repo): Parsed<MergeInputs> | undefin
   const theirs = revParse(runtime, repo, "MERGE_HEAD");
   const ours = revParse(runtime, repo, "HEAD");
   if (theirs === undefined || ours === undefined) return undefined;
-  const tree = worktreeTree(runtime, repo, ours, { timeoutMs: 60000, stamp: `verify-${runtime.now().replace(/[:.]/g, "-")}` });
+  const tree = worktreeTree(runtime, repo, ours, {
+    timeoutMs: 60000,
+    stamp: `verify-${runtime.now().replace(/[:.]/g, "-")}`,
+  });
   if (!tree.ok) return reject(tree.error);
   return withBase(runtime, repo, ours, theirs, tree.value, "working tree");
 };
@@ -74,4 +84,5 @@ export const mergeCommitsSince = (runtime: Runtime, repo: Repo, since: string | 
   return result.ok ? result.stdout.split("\n").filter((line) => line !== "") : [];
 };
 
-export const mergeInProgress = (runtime: Runtime, repo: Repo): boolean => revParse(runtime, repo, "MERGE_HEAD") !== undefined;
+export const mergeInProgress = (runtime: Runtime, repo: Repo): boolean =>
+  revParse(runtime, repo, "MERGE_HEAD") !== undefined;

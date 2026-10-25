@@ -43,7 +43,9 @@ const defaultBranchOf = (runtime: Runtime, root: AbsolutePath): string => {
   if (remote !== undefined) return remote.replace(/^[^/]+\//, "");
   const configured = line(runtime, root, ["config", "--get", "init.defaultBranch"]);
   if (configured !== undefined && refExists(runtime, root, `refs/heads/${configured}`)) return configured;
-  return refExists(runtime, root, "refs/heads/master") && !refExists(runtime, root, "refs/heads/main") ? "master" : "main";
+  return refExists(runtime, root, "refs/heads/master") && !refExists(runtime, root, "refs/heads/main")
+    ? "master"
+    : "main";
 };
 
 const upstreamOf = (runtime: Runtime, root: AbsolutePath, branch: string): Upstream | undefined => {
@@ -55,7 +57,9 @@ const upstreamOf = (runtime: Runtime, root: AbsolutePath, branch: string): Upstr
 };
 
 const integrationRefs = (runtime: Runtime, root: AbsolutePath, defaultBranch: string): readonly string[] =>
-  [`refs/heads/${defaultBranch}`, `refs/remotes/origin/${defaultBranch}`].filter((ref) => refExists(runtime, root, ref));
+  [`refs/heads/${defaultBranch}`, `refs/remotes/origin/${defaultBranch}`].filter((ref) =>
+    refExists(runtime, root, ref),
+  );
 
 const contained = (runtime: Runtime, root: AbsolutePath, branch: string, targets: readonly string[]): boolean => {
   const tip = line(runtime, root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`]);
@@ -65,7 +69,12 @@ const contained = (runtime: Runtime, root: AbsolutePath, branch: string, targets
     .some((target) => runtime.git(["merge-base", "--is-ancestor", tip, target], root).ok);
 };
 
-const shared = (runtime: Runtime, root: AbsolutePath, upstream: Upstream | undefined, base: readonly string[]): boolean => {
+const shared = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  upstream: Upstream | undefined,
+  base: readonly string[],
+): boolean => {
   if (upstream === undefined || !refExists(runtime, root, upstream.remoteRef)) return false;
   const own = line(runtime, root, ["config", "--get", "user.email"]) ?? "";
   const log = runtime.git(["log", "--format=%ae", upstream.remoteRef, ...base.map((ref) => `^${ref}`)], root);
@@ -78,7 +87,11 @@ export const protectedPatterns = (config: ConfigTree, defaultBranch: string): re
   ...configList(config, "git", "protected"),
 ];
 
-export const repoFacts = (runtime: Runtime, repo: Repo, config: ConfigTree = loadProjectConfig(runtime, repo.root)): GitFacts => {
+export const repoFacts = (
+  runtime: Runtime,
+  repo: Repo,
+  config: ConfigTree = loadProjectConfig(runtime, repo.root),
+): GitFacts => {
   const { root } = repo;
   const defaultBranch = memo(() => defaultBranchOf(runtime, root));
   const patterns = memo(() => protectedPatterns(config, defaultBranch()));

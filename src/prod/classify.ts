@@ -49,7 +49,8 @@ const dockerHit = (command: ShellCommand, targets: ProdTargets, isProd: IsProdHo
   const context = valueAfter(command.args, "-c", "--context") ?? command.env["DOCKER_CONTEXT"];
   const remote = host === undefined ? undefined : host.replace(/^(?:ssh|tcp|https?):\/\//, "");
   const switching = command.args[0] === "context" && command.args[1] === "use" ? command.args[2] : undefined;
-  if (switching !== undefined && isProdContext(switching, targets.dockerContexts)) return hit("effect", switching, "docker context");
+  if (switching !== undefined && isProdContext(switching, targets.dockerContexts))
+    return hit("effect", switching, "docker context");
   const prodHost = remote !== undefined && isProd(remote) ? hostKey(remote) : undefined;
   const prodContext = context !== undefined && isProdContext(context, targets.dockerContexts) ? context : undefined;
   const target = prodHost ?? prodContext;
@@ -60,7 +61,12 @@ const dockerHit = (command: ShellCommand, targets: ProdTargets, isProd: IsProdHo
 const kubeHit = (command: ShellCommand, targets: ProdTargets): ProdHit | undefined => {
   const context = valueAfter(command.args, "--context", "--kube-context");
   const [verb, object, name] = command.args.filter((arg) => !arg.startsWith("-"));
-  if (verb === "config" && object === "use-context" && name !== undefined && isProdContext(name, targets.kubeContexts)) {
+  if (
+    verb === "config" &&
+    object === "use-context" &&
+    name !== undefined &&
+    isProdContext(name, targets.kubeContexts)
+  ) {
     return hit("effect", name, command.program);
   }
   if (context === undefined || !isProdContext(context, targets.kubeContexts)) return undefined;
@@ -68,19 +74,34 @@ const kubeHit = (command: ShellCommand, targets: ProdTargets): ProdHit | undefin
 };
 
 const URL_HOST = /^(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?):\/\/(?:[^@/]*@)?([^/:?,]+)/i;
-const DATABASE_TOOLS = new Set(["psql", "mysql", "mariadb", "mongosh", "mongo", "redis-cli", "pg_dump", "mysqldump", "pg_restore"]);
+const DATABASE_TOOLS = new Set([
+  "psql",
+  "mysql",
+  "mariadb",
+  "mongosh",
+  "mongo",
+  "redis-cli",
+  "pg_dump",
+  "mysqldump",
+  "pg_restore",
+]);
 const DUMPS = new Set(["pg_dump", "mysqldump"]);
 
 const databaseHost = (command: ShellCommand): string | undefined => {
   const flag = valueAfter(command.args, "-h", "--host");
   if (flag !== undefined) return flag;
-  const url = [...command.args, command.env["DATABASE_URL"] ?? ""].map((arg) => URL_HOST.exec(arg)?.[1]).find((host) => host !== undefined);
+  const url = [...command.args, command.env["DATABASE_URL"] ?? ""]
+    .map((arg) => URL_HOST.exec(arg)?.[1])
+    .find((host) => host !== undefined);
   return url ?? command.env["PGHOST"];
 };
 
 const databaseReadOnly = (command: ShellCommand): boolean => {
   if (DUMPS.has(command.program)) return true;
-  if (command.program === "redis-cli") return readOnlyRedis(command.args.filter((arg, index) => !arg.startsWith("-") && !(command.args[index - 1] ?? "").startsWith("-")));
+  if (command.program === "redis-cli")
+    return readOnlyRedis(
+      command.args.filter((arg, index) => !arg.startsWith("-") && !(command.args[index - 1] ?? "").startsWith("-")),
+    );
   const sql = valueAfter(command.args, "-c", "--command", "-e", "--execute", "--eval");
   return sql !== undefined && readOnlySql(sql);
 };

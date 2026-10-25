@@ -74,7 +74,8 @@ interface Expectation {
 
 const expectations = (file: FileCase, hunks: readonly SideHunk[], removal: Removal): readonly Expectation[] => {
   const base = countLines(file.base);
-  const addsOf = (side: Side): Counts => tally(hunks.filter((item) => item.side === side).flatMap((item) => item.added));
+  const addsOf = (side: Side): Counts =>
+    tally(hunks.filter((item) => item.side === side).flatMap((item) => item.added));
   const ours = addsOf("ours");
   const theirs = addsOf("theirs");
   const keys = new Set([...base.keys(), ...ours.keys(), ...theirs.keys(), ...removal.union.keys()]);
@@ -93,10 +94,22 @@ const countFindings = (file: FileCase, items: readonly Expectation[], removal: R
   return items.flatMap(({ line, expected, ceiling, side }): Finding[] => {
     const actual = countOf(result, line);
     const weak = isWeak(line);
-    if (actual < expected) return [{ kind: "count", file: file.path, side, line: undefined, text: line, weak, expected, actual }];
+    if (actual < expected)
+      return [{ kind: "count", file: file.path, side, line: undefined, text: line, weak, expected, actual }];
     const honored = countOf(removal.honored, line) > 0 && !removal.conflicted.has(line);
     if (!weak && honored && actual > ceiling) {
-      return [{ kind: "removal-not-honored", file: file.path, side: undefined, line: undefined, text: line, weak, expected: ceiling, actual }];
+      return [
+        {
+          kind: "removal-not-honored",
+          file: file.path,
+          side: undefined,
+          line: undefined,
+          text: line,
+          weak,
+          expected: ceiling,
+          actual,
+        },
+      ];
     }
     return [];
   });
@@ -110,5 +123,8 @@ export const checkFile = (file: FileCase, elsewhere: Elsewhere): readonly Findin
     ...theirs.map((hunk) => ({ side: "theirs" as const, hunk, added: meaningful(hunk.added) })),
   ];
   const removal = removalOf(file.ours, theirs, paired);
-  return [...missingAdditions(hunks, file, elsewhere), ...countFindings(file, expectations(file, hunks, removal), removal)];
+  return [
+    ...missingAdditions(hunks, file, elsewhere),
+    ...countFindings(file, expectations(file, hunks, removal), removal),
+  ];
 };

@@ -26,7 +26,13 @@ const flushHunk = (draft: Draft): void => {
 const finish = (draft: Draft | undefined, out: FileDiff[]): void => {
   if (draft === undefined) return;
   flushHunk(draft);
-  out.push({ oldPath: draft.oldPath, newPath: draft.newPath, status: draft.status, binary: draft.binary, hunks: draft.hunks });
+  out.push({
+    oldPath: draft.oldPath,
+    newPath: draft.newPath,
+    status: draft.status,
+    binary: draft.binary,
+    hunks: draft.hunks,
+  });
 };
 
 const headerLine = (draft: Draft, line: string): void => {
@@ -82,7 +88,14 @@ export const parseUnifiedDiff = (text: string): readonly FileDiff[] => {
     const start = DIFF_GIT.exec(line);
     if (start !== null) {
       finish(draft, out);
-      draft = { oldPath: start[1], newPath: start[2], status: "modified", binary: false, hunks: [], current: undefined };
+      draft = {
+        oldPath: start[1],
+        newPath: start[2],
+        status: "modified",
+        binary: false,
+        hunks: [],
+        current: undefined,
+      };
     } else if (draft !== undefined) bodyLine(draft, line);
   }
   finish(draft, out);

@@ -30,7 +30,12 @@ const powershellTargets = (command: ShellCommand): readonly string[] | undefined
   return command.args.flatMap((arg, index) => {
     if (arg.startsWith("-") || /^\/[a-z]$/i.test(arg)) return [];
     const previous = command.args[index - 1] ?? "";
-    return previous.startsWith("-") && !PS_PATH.test(previous) && !PS_RECURSE.test(previous) && !/^-force$/i.test(previous) ? [] : arg.split(",");
+    return previous.startsWith("-") &&
+      !PS_PATH.test(previous) &&
+      !PS_RECURSE.test(previous) &&
+      !/^-force$/i.test(previous)
+      ? []
+      : arg.split(",");
   });
 };
 

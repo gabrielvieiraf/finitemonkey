@@ -25,7 +25,9 @@ export const journalPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(
 
 const headsOf = (value: unknown): Readonly<Record<string, string>> =>
   isRecord(value)
-    ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+    ? Object.fromEntries(
+        Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      )
     : {};
 
 export const parseJournalLine = (line: string): JournalEntry | undefined => {

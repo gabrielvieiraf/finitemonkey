@@ -40,7 +40,8 @@ const binaryFindings = (context: VerifyContext, pair: FilePair, path: string | u
   const { runtime, repo, inputs } = context;
   const result = path === undefined ? undefined : blobId(runtime, repo, inputs.result, path);
   const ours = pair.ours?.newPath === undefined ? undefined : blobId(runtime, repo, inputs.ours, pair.ours.newPath);
-  const theirs = pair.theirs?.newPath === undefined ? undefined : blobId(runtime, repo, inputs.theirs, pair.theirs.newPath);
+  const theirs =
+    pair.theirs?.newPath === undefined ? undefined : blobId(runtime, repo, inputs.theirs, pair.theirs.newPath);
   const file = path ?? pair.key;
   if (pair.ours !== undefined && pair.theirs !== undefined && ours !== theirs) {
     if (result === ours) return [finding("binary", file, "theirs", file)];
@@ -57,7 +58,12 @@ const elsewhereOf =
   (lines: readonly string[]): boolean =>
     context.resultFiles().some((path) => containsSequence(contentLines(context.resultText(path)), lines));
 
-const symbolFindings = (context: VerifyContext, pair: FilePair, path: string, text: string | undefined): readonly Finding[] => {
+const symbolFindings = (
+  context: VerifyContext,
+  pair: FilePair,
+  path: string,
+  text: string | undefined,
+): readonly Finding[] => {
   const present = (symbol: Parameters<typeof containsSymbol>[1]): boolean =>
     (text !== undefined && containsSymbol(text, symbol)) ||
     context.resultFiles().some((other) => containsSymbol(context.resultText(other) ?? "", symbol));
@@ -76,11 +82,18 @@ export const verifyFile = (context: VerifyContext, pair: FilePair): readonly Fin
   if (missing.length > 0) return missing;
   const copied = [pair.ours, pair.theirs].find((diff) => diff?.status === "copied");
   const baseSource = copied?.oldPath ?? (created(pair.ours) || created(pair.theirs) ? undefined : pair.key);
-  const baseText = baseSource === undefined ? undefined : blobText(context.runtime, context.repo, context.inputs.base, baseSource);
+  const baseText =
+    baseSource === undefined ? undefined : blobText(context.runtime, context.repo, context.inputs.base, baseSource);
   const text = path === undefined ? undefined : context.resultText(path);
   const file = path ?? pair.key;
   const lines = checkFile(
-    { path: file, base: contentLines(baseText), result: contentLines(text), ours: pair.ours?.hunks ?? [], theirs: pair.theirs?.hunks ?? [] },
+    {
+      path: file,
+      base: contentLines(baseText),
+      result: contentLines(text),
+      ours: pair.ours?.hunks ?? [],
+      theirs: pair.theirs?.hunks ?? [],
+    },
     elsewhereOf(context),
   );
   return [...lines, ...symbolFindings(context, pair, file, text)];

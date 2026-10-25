@@ -30,7 +30,10 @@ const optionalLine = (runtime: Runtime, repo: Repo, args: readonly string[]): st
 };
 
 const branchHeads = (runtime: Runtime, repo: Repo): Readonly<Record<string, string>> => {
-  const listed = runtime.git(["for-each-ref", "--format=%(refname) %(objectname)", "refs/heads", "refs/stash"], repo.root);
+  const listed = runtime.git(
+    ["for-each-ref", "--format=%(refname) %(objectname)", "refs/heads", "refs/stash"],
+    repo.root,
+  );
   if (!listed.ok) return {};
   return Object.fromEntries(
     listed.stdout.split("\n").flatMap((line) => {
@@ -48,14 +51,29 @@ const createRef = (runtime: Runtime, repo: Repo, base: string, commit: string): 
   return reject(`update-ref ${base}: could not create the backup ref`);
 };
 
-const snapshotCommit = (runtime: Runtime, repo: Repo, head: string | undefined, op: string, options: TreeOptions): Parsed<{ commit: string; index: string | undefined }> => {
+const snapshotCommit = (
+  runtime: Runtime,
+  repo: Repo,
+  head: string | undefined,
+  op: string,
+  options: TreeOptions,
+): Parsed<{ commit: string; index: string | undefined }> => {
   const tree = worktreeTree(runtime, repo, head, options);
   if (!tree.ok) return tree;
   const parents = head === undefined ? [] : [head];
   const staged = indexTree(runtime, repo, options);
-  const indexCommit = staged.ok ? commitTree(runtime, repo, staged.value, parents, `finitemonkey index: ${op}`, options) : undefined;
+  const indexCommit = staged.ok
+    ? commitTree(runtime, repo, staged.value, parents, `finitemonkey index: ${op}`, options)
+    : undefined;
   const index = indexCommit?.ok === true ? indexCommit.value : undefined;
-  const commit = commitTree(runtime, repo, tree.value, [...parents, ...(index === undefined ? [] : [index])], `finitemonkey snapshot: ${op}`, options);
+  const commit = commitTree(
+    runtime,
+    repo,
+    tree.value,
+    [...parents, ...(index === undefined ? [] : [index])],
+    `finitemonkey snapshot: ${op}`,
+    options,
+  );
   return commit.ok ? accept({ commit: commit.value, index }) : commit;
 };
 

@@ -6,7 +6,10 @@ const WSL_MOUNT = /^\/mnt\/([a-zA-Z])(\/|$)/;
 const DRIVE = /^([a-zA-Z]):(\/|$)/;
 
 export const pathKey = (path: string): string => {
-  const posixPath = toPosixPath(path).replace(WSL_MOUNT, (_match, letter: string, slash: string) => `${letter}:${slash || "/"}`);
+  const posixPath = toPosixPath(path).replace(
+    WSL_MOUNT,
+    (_match, letter: string, slash: string) => `${letter}:${slash || "/"}`,
+  );
   const drive = DRIVE.exec(posixPath);
   const normalized = posix.normalize(drive === null ? posixPath : posixPath.slice(2) || "/");
   const trimmed = normalized.length > 1 ? normalized.replace(/\/+$/, "") : normalized;

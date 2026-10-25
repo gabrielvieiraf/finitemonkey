@@ -39,7 +39,12 @@ export const readDirty = (runtime: Runtime, root: AbsolutePath): readonly DirtyE
 
 export const hashDirty = (runtime: Runtime, repo: Repo, entries: readonly DirtyEntry[]): Hashes => {
   const present = entries.filter((entry) => runtime.stat(toAbsolutePath(join(repo.root, entry.path)))?.kind === "file");
-  const hashed = present.length === 0 ? undefined : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, { input: `${present.map((entry) => entry.path).join("\n")}\n` });
+  const hashed =
+    present.length === 0
+      ? undefined
+      : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
+          input: `${present.map((entry) => entry.path).join("\n")}\n`,
+        });
   const shas = hashed?.ok === true ? hashed.stdout.split("\n") : [];
   return Object.fromEntries(
     entries.map((entry) => {
@@ -51,7 +56,9 @@ export const hashDirty = (runtime: Runtime, repo: Repo, entries: readonly DirtyE
 
 const hashesOf = (value: unknown): Hashes =>
   isRecord(value)
-    ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+    ? Object.fromEntries(
+        Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      )
     : {};
 
 const readObject = (runtime: Runtime, path: AbsolutePath): Parsed<Readonly<Record<string, unknown>>> => {
@@ -91,7 +98,12 @@ export const recordBaseline = (runtime: Runtime, repo: Repo, owner: string): Bas
   const entries = readDirty(runtime, repo.root);
   if (entries === undefined) return undefined;
   const head = runtime.git(["rev-parse", "--verify", "--quiet", "HEAD"], repo.root).stdout.trim();
-  const baseline: Baseline = { owner, at: runtime.now(), head: head === "" ? undefined : head, files: hashDirty(runtime, repo, entries) };
+  const baseline: Baseline = {
+    owner,
+    at: runtime.now(),
+    head: head === "" ? undefined : head,
+    files: hashDirty(runtime, repo, entries),
+  };
   write(runtime, fileOf(repo, "baseline", owner), baseline);
   write(runtime, fileOf(repo, "state", owner), { files: baseline.files });
   return baseline;
@@ -109,12 +121,19 @@ export const recordShellChanges = (runtime: Runtime, repo: Repo, owner: string):
   if (entries === undefined) return;
   const before = readHashes(runtime, repo, owner);
   const now = hashDirty(runtime, repo, entries);
-  const changed = Object.entries(now).filter(([path, hash]) => before[path] !== hash).map(([path]) => path);
+  const changed = Object.entries(now)
+    .filter(([path, hash]) => before[path] !== hash)
+    .map(([path]) => path);
   recordEdits(runtime, repo, owner, changed);
   write(runtime, fileOf(repo, "state", owner), { files: now });
 };
 
-export const foreignFiles = (runtime: Runtime, repo: Repo, owner: string, targets: readonly string[]): readonly ForeignFile[] => {
+export const foreignFiles = (
+  runtime: Runtime,
+  repo: Repo,
+  owner: string,
+  targets: readonly string[],
+): readonly ForeignFile[] => {
   const baseline = readBaseline(runtime, repo, owner);
   const edits = readEdits(runtime, repo, owner);
   return targets.flatMap((path): ForeignFile[] => {

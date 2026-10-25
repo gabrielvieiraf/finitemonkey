@@ -27,14 +27,33 @@ const LOCKFILES = new Set([
 
 const GENERATOR_TIMEOUT_MS = 300000;
 
+const DOUBLE_STAR = "\u0001";
+
 const globRegex = (pattern: string): RegExp =>
-  new RegExp(`^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\u0000").replace(/\*/g, "[^/]*").replace(/\u0000/g, ".*")}$`);
+  new RegExp(
+    `^${pattern
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .split("**")
+      .join(DOUBLE_STAR)
+      .replace(/\*/g, "[^/]*")
+      .split(DOUBLE_STAR)
+      .join(".*")}$`,
+  );
 
 export const generatorFor = (path: string, generators: Readonly<Record<string, string>>): string | undefined =>
-  Object.entries(generators).find(([pattern]) => globRegex(pattern).test(path) || globRegex(pattern).test(path.split("/").pop() ?? ""))?.[1];
+  Object.entries(generators).find(
+    ([pattern]) => globRegex(pattern).test(path) || globRegex(pattern).test(path.split("/").pop() ?? ""),
+  )?.[1];
 
-export const generatedPaths = (runtime: Runtime, repo: Repo, paths: readonly string[], generators: Readonly<Record<string, string>>): ReadonlySet<string> => {
-  const out = new Set(paths.filter((path) => LOCKFILES.has(path.split("/").pop() ?? "") || generatorFor(path, generators) !== undefined));
+export const generatedPaths = (
+  runtime: Runtime,
+  repo: Repo,
+  paths: readonly string[],
+  generators: Readonly<Record<string, string>>,
+): ReadonlySet<string> => {
+  const out = new Set(
+    paths.filter((path) => LOCKFILES.has(path.split("/").pop() ?? "") || generatorFor(path, generators) !== undefined),
+  );
   if (paths.length === 0) return out;
   const attrs = runtime.git(["check-attr", "linguist-generated", "--", ...paths], repo.root);
   if (!attrs.ok) return out;
@@ -47,7 +66,10 @@ export const generatedPaths = (runtime: Runtime, repo: Repo, paths: readonly str
 
 const resultCommit = (runtime: Runtime, repo: Repo, inputs: MergeInputs): Parsed<string> => {
   if (inputs.resultLabel !== "working tree") return accept(inputs.result);
-  return commitTree(runtime, repo, inputs.result, [inputs.ours, inputs.theirs], "finitemonkey merge verify", { timeoutMs: 30000, stamp: "verify" });
+  return commitTree(runtime, repo, inputs.result, [inputs.ours, inputs.theirs], "finitemonkey merge verify", {
+    timeoutMs: 30000,
+    stamp: "verify",
+  });
 };
 
 const runGenerator = (runtime: Runtime, dir: string, command: string): Parsed<undefined> => {
@@ -72,7 +94,8 @@ export const verifyGenerated = (
   const commit = resultCommit(runtime, repo, inputs);
   if (!commit.ok) return commit;
   const dir = join(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
-  if (!runtime.git(["worktree", "add", "--detach", dir, commit.value], repo.root).ok) return reject("could not check out the merge result");
+  if (!runtime.git(["worktree", "add", "--detach", dir, commit.value], repo.root).ok)
+    return reject("could not check out the merge result");
   try {
     for (const command of new Set(declared.map((item) => item.command))) {
       const ran = runGenerator(runtime, dir, command);

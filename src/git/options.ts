@@ -92,7 +92,11 @@ export const hasAny = (parsed: ParsedOptions, ...names: readonly string[]): bool
 export const valuesOf = (parsed: ParsedOptions, ...names: readonly string[]): readonly string[] =>
   names.flatMap((name) => parsed.values.get(name) ?? []);
 
-export const optionSpec = (known: readonly string[], withValue: readonly string[] = [], shortWithValue = ""): OptionSpec => ({
+export const optionSpec = (
+  known: readonly string[],
+  withValue: readonly string[] = [],
+  shortWithValue = "",
+): OptionSpec => ({
   known,
   withValue,
   shortWithValue,

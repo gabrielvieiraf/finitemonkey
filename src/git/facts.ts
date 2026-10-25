@@ -51,7 +51,7 @@ const PORCELAIN_FIELDS = { ordinary: 8, renamed: 9, unmerged: 10 } as const;
 const entryOf = (kind: DirtyKind, xy: string, path: string): DirtyEntry => ({
   path,
   kind,
-  staged: kind !== "untracked" && xy.charAt(0) !== ".",
+  staged: kind !== "untracked" && !xy.startsWith("."),
   unstaged: kind === "untracked" || xy.charAt(1) !== ".",
 });
 

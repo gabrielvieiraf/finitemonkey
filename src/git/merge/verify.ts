@@ -1,7 +1,7 @@
+import type { Runtime } from "../../core/runtime.js";
 import { memo, memoBy } from "../facts.js";
 import { configMap, loadProjectConfig } from "../project-config.js";
 import type { Repo } from "../repo.js";
-import type { Runtime } from "../../core/runtime.js";
 import { isDropped, loadDropped } from "./dropped.js";
 import { generatedPaths, verifyGenerated } from "./generated.js";
 import { blobText, resolveMergeInputs, sideDiff } from "./inputs.js";
@@ -87,8 +87,18 @@ export const verifyMerge = (runtime: Runtime, repo: Repo, options: VerifyOptions
   if (!theirs.ok) return failed(theirs.error, inputs.value);
   const pairs = pairsOf(ours.value, theirs.value);
   const generators = configMap(loadProjectConfig(runtime, repo.root), "merge", "generators");
-  const generated = generatedPaths(runtime, repo, pairs.map((pair) => pair.key), generators);
-  const context = contextOf(runtime, repo, inputs.value, pairs.filter((pair) => !generated.has(pair.key)));
+  const generated = generatedPaths(
+    runtime,
+    repo,
+    pairs.map((pair) => pair.key),
+    generators,
+  );
+  const context = contextOf(
+    runtime,
+    repo,
+    inputs.value,
+    pairs.filter((pair) => !generated.has(pair.key)),
+  );
   const regenerated = verifyGenerated(runtime, repo, inputs.value, [...generated], generators);
   if (!regenerated.ok) return failed(regenerated.error, inputs.value);
   const all = [

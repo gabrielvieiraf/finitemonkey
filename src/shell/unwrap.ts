@@ -88,7 +88,12 @@ const powershellScript = (stage: Stage, name: string): Unwrapped | undefined => 
   const at = args.findIndex((arg) => /^[-/](?:c|co|com|comm|comma|comman|command)$/i.test(arg));
   const encoded = args.findIndex((arg) => /^[-/](?:e|ec|enc|encodedcommand)$/i.test(arg));
   if (at >= 0) {
-    return { kind: "script", script: args.slice(at + 1).join(" "), dialect: "powershell", stage: shift(stage, 0, name) };
+    return {
+      kind: "script",
+      script: args.slice(at + 1).join(" "),
+      dialect: "powershell",
+      stage: shift(stage, 0, name),
+    };
   }
   const value = encoded >= 0 ? args[encoded + 1] : undefined;
   if (value !== undefined) {
@@ -129,7 +134,8 @@ const step = (stage: Stage, stdin: string | undefined): Step => {
     const skip = skipOptions(stage.argv.slice(1), wrapper);
     return skip === undefined ? { done: { kind: "none" } } : { next: shift(stage, 1 + skip, name) };
   }
-  if (name === "eval") return { done: { kind: "script", script: stage.argv.slice(1).join(" "), dialect: "bash", stage } };
+  if (name === "eval")
+    return { done: { kind: "script", script: stage.argv.slice(1).join(" "), dialect: "bash", stage } };
   const script = SHELLS.has(name)
     ? shellScript(stage, name, stdin)
     : POWERSHELLS.has(lower)

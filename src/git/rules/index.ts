@@ -2,14 +2,7 @@ import type { GitFacts } from "../facts.js";
 import type { GitInvocation } from "../invocation.js";
 import { type GitVerdict, PASS, worst } from "../verdict.js";
 import { branchVerdict, mergeSideVerdict, rebaseVerdict } from "./branch.js";
-import {
-  checkoutVerdict,
-  cleanVerdict,
-  resetVerdict,
-  restoreVerdict,
-  stashVerdict,
-  switchVerdict,
-} from "./discard.js";
+import { checkoutVerdict, cleanVerdict, resetVerdict, restoreVerdict, stashVerdict, switchVerdict } from "./discard.js";
 import { HISTORY_RULES } from "./history.js";
 import { protectedVerdict } from "./protected.js";
 import { pushVerdict } from "./push.js";

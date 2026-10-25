@@ -57,7 +57,15 @@ export const readUntil = (cursor: Cursor, terminator: string, escapes: boolean):
   return out;
 };
 
-const ANSI: Readonly<Record<string, string>> = { n: "\n", t: "\t", r: "\r", "\\": "\\", "'": "'", '"': '"', e: "\u001b" };
+const ANSI: Readonly<Record<string, string>> = {
+  n: "\n",
+  t: "\t",
+  r: "\r",
+  "\\": "\\",
+  "'": "'",
+  '"': '"',
+  e: "\u001b",
+};
 
 export const readAnsiC = (cursor: Cursor): string => {
   let out = "";

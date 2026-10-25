@@ -2,7 +2,20 @@ import type { ShellCommand } from "../shell/types.js";
 
 const SSH_VALUE = "bcDEeFIiJLlmOopQRSWwB";
 const SCP_VALUE = "cFiJloPSX";
-const RSYNC_LONG_VALUE = new Set(["--rsh", "--rsync-path", "--filter", "--exclude", "--include", "--port", "--password-file", "--chmod", "--log-file", "--exclude-from", "--include-from", "--files-from"]);
+const RSYNC_LONG_VALUE = new Set([
+  "--rsh",
+  "--rsync-path",
+  "--filter",
+  "--exclude",
+  "--include",
+  "--port",
+  "--password-file",
+  "--chmod",
+  "--log-file",
+  "--exclude-from",
+  "--include-from",
+  "--files-from",
+]);
 
 export interface SshCall {
   readonly destination: string;

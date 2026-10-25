@@ -3,7 +3,11 @@ import { hasAny, optionSpec, parseOptions, valuesOf } from "../options.js";
 import { block, type GitVerdict, PASS } from "../verdict.js";
 
 const GC = optionSpec(["--prune", "--no-prune", "--aggressive", "--auto", "--quiet", "--force", "--keep-largest-pack"]);
-const UPDATE_REF = optionSpec(["--delete", "--stdin", "--no-deref", "--create-reflog", "--message"], ["--message"], "m");
+const UPDATE_REF = optionSpec(
+  ["--delete", "--stdin", "--no-deref", "--create-reflog", "--message"],
+  ["--message"],
+  "m",
+);
 const PRUNE = optionSpec(["--dry-run", "--verbose", "--progress", "--expire"], ["--expire"]);
 const IMMEDIATE = new Set(["now", "all"]);
 
