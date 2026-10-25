@@ -20,10 +20,11 @@ import { withBlock } from "./gitignore-block.js";
 import { hashText } from "./hash.js";
 import { hookHandler, type HookHandlerJson, INSTALLED_HOOKS, type Runner } from "./hook-entries.js";
 import { DEFAULT_STYLE, parseSettings, renderJson, styleOf } from "./json-text.js";
-import { CONFIG_FILE, GITIGNORE_FILE, LOCK_FILE, type Preset, SETTINGS_FILE } from "./layout.js";
+import { CONFIG_FILE, GITIGNORE_FILE, LOCK_FILE, type Preset, SETTINGS_FILE, VENDOR_BIN } from "./layout.js";
 import { type EntryKind, type LockEntry, type LockFile, parseLock } from "./lock-file.js";
 import type { Project } from "./project.js";
 import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
+import { vendoredFiles } from "./vendor.js";
 
 export const ACTIONS = ["create", "merge", "update", "unchanged", "keep-edited", "skip-foreign"] as const;
 
@@ -59,6 +60,7 @@ export interface PlanInput {
   readonly bin: string | undefined;
   readonly version: string;
   readonly marketplace: boolean;
+  readonly bundle: string | undefined;
   readonly env: Env;
   readonly t: Translate;
 }
@@ -70,8 +72,10 @@ export interface Plan {
   readonly previous: LockFile | undefined;
 }
 
-export type PlanError =
-  { readonly kind: "settings"; readonly detail: string } | { readonly kind: "lock"; readonly detail: string };
+export interface PlanError {
+  readonly kind: "settings" | "lock" | "bundle";
+  readonly detail: string;
+}
 
 export const detect = (project: Project, gitRoot: boolean, input: PlanInput): Detection => ({
   root: project.root,
@@ -80,7 +84,7 @@ export const detect = (project: Project, gitRoot: boolean, input: PlanInput): De
   languages: detectLanguages(project),
   settings: settingsInfo(project.read(SETTINGS_FILE)),
   authorities: detectAuthorities(project, input.env),
-  runner: chooseRunner(project, input.bin, input.version),
+  runner: chooseRunner(project, input.bin),
   claude: detectClaude(project.runtime.probe),
 });
 
@@ -149,22 +153,31 @@ const gitignoreItem = (project: Project): PlanItem => {
   return { path: GITIGNORE_FILE, kind: "gitignore", action: actionFor(before, after, "merge"), before, after };
 };
 
-const configItem = (project: Project, input: PlanInput, previous: LockEntry | undefined): PlanItem => {
-  const before = project.read(CONFIG_FILE);
-  const template = configTemplate(input.t, input.preset, input.lang);
-  const base = { path: CONFIG_FILE, kind: "generated" as const, before };
+interface Generated {
+  readonly path: string;
+  readonly template: string;
+  readonly isOurs: (text: string) => boolean;
+}
+
+const generatedItem = (project: Project, file: Generated, previous: LockEntry | undefined): PlanItem => {
+  const before = project.read(file.path);
+  const { template } = file;
+  const base = { path: file.path, kind: "generated" as const, before };
   if (before === undefined) return { ...base, action: "create", after: template };
-  if (previous === undefined && !hasMarker(before)) {
+  if (previous === undefined && !file.isOurs(before)) {
     return { ...base, action: "skip-foreign", after: before, proposal: template };
   }
-  if (previous === undefined) {
+  if (hashText(before) !== previous?.hash) {
     return { ...base, action: before === template ? "unchanged" : "keep-edited", after: before, proposal: template };
   }
-  if (hashText(before) !== previous.hash) {
-    const action = before === template ? "unchanged" : "keep-edited";
-    return { ...base, action, after: before, proposal: template };
-  }
   return { ...base, action: actionFor(before, template, "update"), after: template };
+};
+
+const generatedFiles = (input: PlanInput, vendor: boolean): Parsed<readonly Generated[], PlanError> => {
+  const config = { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
+  if (!vendor) return accept([config]);
+  if (input.bundle === undefined) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
+  return accept([config, ...vendoredFiles(input.bundle, input.version)]);
 };
 
 const entryFor = (lock: LockFile | undefined, path: string): LockEntry | undefined =>
@@ -178,8 +191,16 @@ export const buildPlan = (
 ): Parsed<Plan, PlanError> => {
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
-  const items = [settings.value, gitignoreItem(project), configItem(project, input, entryFor(previous, CONFIG_FILE))];
-  return accept({ detection, preset: input.preset, items, previous });
+  const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== undefined;
+  const files = generatedFiles(input, vendor);
+  if (!files.ok) return files;
+  const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
+  return accept({
+    detection,
+    preset: input.preset,
+    items: [settings.value, gitignoreItem(project), ...generated],
+    previous,
+  });
 };
 
 export const hasChanges = (plan: Plan): boolean => plan.items.some((item) => CHANGING.includes(item.action));

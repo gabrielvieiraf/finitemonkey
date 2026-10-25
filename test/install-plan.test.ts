@@ -4,15 +4,20 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import { ExitCode } from "../src/exit-codes.js";
-import { CONFIG_FILE, LOCK_FILE, SETTINGS_FILE } from "../src/install/layout.js";
+import { CONFIG_FILE, LOCK_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../src/install/layout.js";
 import { memoryFs } from "./memory-fs.js";
-import { cli, cliJson, fakeRuntime, field, found, parseBody, stdinFrom } from "./support.js";
+import { BUNDLE, cli, cliJson, fakeRuntime, field, found, parseBody, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const at = (relative: string): string => join(ROOT, relative);
 
+const FAKE_BUNDLE = "#!/usr/bin/env node\nconsole.log('finitemonkey');\n";
+
 const repo = (files: Readonly<Record<string, string>> = {}): ReturnType<typeof memoryFs> =>
-  memoryFs(Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])), [at(".git")]);
+  memoryFs(
+    { [BUNDLE]: FAKE_BUNDLE, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
+    [at(".git")],
+  );
 
 const run = (fs: ReturnType<typeof memoryFs>, argv: readonly string[], version?: string) =>
   cliJson(argv, {
@@ -32,20 +37,20 @@ const settingsOf = (fs: ReturnType<typeof memoryFs>): unknown => parseBody(fs.fi
 
 describe("init detection matrix", () => {
   const cases = [
-    { name: "empty repo", files: {}, pm: null, languages: [], runner: "npx" },
+    { name: "empty repo", files: {}, pm: null, languages: [], runner: "vendored" },
     {
       name: "pnpm typescript",
       files: { "package.json": "{}", "pnpm-lock.yaml": "", "tsconfig.json": "{}" },
       pm: "pnpm",
       languages: ["typescript", "javascript"],
-      runner: "npx",
+      runner: "vendored",
     },
     {
       name: "packageManager field wins",
       files: { "package.json": '{"packageManager":"yarn@4.1.0"}', "package-lock.json": "{}" },
       pm: "yarn",
       languages: ["javascript"],
-      runner: "npx",
+      runner: "vendored",
     },
     {
       name: "bun and local bin",
@@ -59,7 +64,7 @@ describe("init detection matrix", () => {
       files: { "pyproject.toml": "", "go.mod": "" },
       pm: null,
       languages: ["python", "go"],
-      runner: "npx",
+      runner: "vendored",
     },
   ] as const;
   for (const { name, files, pm, languages, runner } of cases) {
@@ -98,7 +103,7 @@ describe("init detection matrix", () => {
   it("outside git it installs at the current folder and warns", async () => {
     const { body } = await cliJson(["init", "--dry-run"], {
       cwd: ROOT,
-      runtime: fakeRuntime({ fs: memoryFs() }),
+      runtime: fakeRuntime({ fs: memoryFs({ [BUNDLE]: FAKE_BUNDLE }) }),
       env: {},
     });
     assert.equal(field(body, "data", "detection", "gitRoot"), false);
@@ -117,6 +122,8 @@ describe("init writes only when asked", () => {
       [SETTINGS_FILE]: "create",
       ".gitignore": "merge",
       [CONFIG_FILE]: "create",
+      [VENDOR_BIN]: "create",
+      [VENDOR_PACKAGE]: "create",
     });
   });
 
@@ -256,7 +263,10 @@ describe("a teammate who clones an installed repository", () => {
     const first = repo();
     await run(first, ["init", "--yes"]);
     const committed = Object.fromEntries(
-      [SETTINGS_FILE, ".gitignore", CONFIG_FILE].map((path) => [path, first.files()[at(path)] ?? ""]),
+      [SETTINGS_FILE, ".gitignore", CONFIG_FILE, VENDOR_BIN, VENDOR_PACKAGE].map((path) => [
+        path,
+        first.files()[at(path)] ?? "",
+      ]),
     );
     const clone = repo(committed);
     const result = await run(clone, ["init", "--yes"]);

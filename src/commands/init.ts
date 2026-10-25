@@ -6,7 +6,14 @@ import { applyPlan } from "../install/apply.js";
 import { parsePreset, type Preset } from "../install/layout.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
 import { type PlanData, planData, planLines } from "../install/report.js";
-import { applyProblem, confirmProblem, invalidPreset, openProject, planProblem } from "../install/session.js";
+import {
+  applyProblem,
+  confirmProblem,
+  invalidPreset,
+  openProject,
+  planInputFor,
+  planProblem,
+} from "../install/session.js";
 import type { CommandSpec } from "./types.js";
 
 export type InstallMode = PlanData["mode"];
@@ -52,15 +59,7 @@ export const runInstall = (ctx: Ctx, request: InstallRequest, presetFallback: Pr
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = {
-    preset,
-    lang: ctx.lang,
-    bin: request.bin,
-    version: ctx.version,
-    marketplace: request.marketplace,
-    env: ctx.env,
-    t: ctx.t,
-  };
+  const input = planInputFor(ctx, preset, request.bin, request.marketplace);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);

@@ -9,6 +9,7 @@ export const DENY_FLOOR = {
   ],
   proof: [
     "Edit(./.finitemonkey/evidence/**)",
+    "Edit(./.finitemonkey/runtime/**)",
     "Edit(./.finitemonkey/lock.json)",
     "Edit(./.finitemonkey/log.jsonl)",
     "Edit(./.finitemonkey/state.md)",

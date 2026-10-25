@@ -131,9 +131,9 @@ export const detectAuthorities = (project: Project, env: Env): readonly Authorit
   })),
 ];
 
-export const chooseRunner = (project: Project, bin: string | undefined, version: string): Runner => {
+export const chooseRunner = (project: Project, bin: string | undefined): Runner => {
   if (bin !== undefined) return { kind: "path", path: bin };
-  return project.exists(LOCAL_BIN) ? { kind: "local" } : { kind: "npx", version };
+  return project.exists(LOCAL_BIN) ? { kind: "local" } : { kind: "vendored" };
 };
 
 export const isInstalled = (project: Project): boolean => project.exists(LOCK_FILE);

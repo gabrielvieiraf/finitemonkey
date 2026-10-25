@@ -4,7 +4,7 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { buildPlan, detect, hasChanges, readPreviousLock } from "../install/plan.js";
 import { type PlanData, planData, planLines } from "../install/report.js";
-import { notInstalled, openProject, planProblem } from "../install/session.js";
+import { notInstalled, openProject, planInputFor, planProblem } from "../install/session.js";
 import { runInstall } from "./init.js";
 import type { CommandSpec } from "./types.js";
 
@@ -13,15 +13,7 @@ const check = (ctx: Ctx, bin: string | undefined): CommandResult<PlanData> => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === undefined) return failureFrom(ctx.t, notInstalled());
-  const input = {
-    preset: previous.value.preset,
-    lang: ctx.lang,
-    bin,
-    version: ctx.version,
-    marketplace: false,
-    env: ctx.env,
-    t: ctx.t,
-  };
+  const input = planInputFor(ctx, previous.value.preset, bin, false);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const data = planData(ctx.t, plan.value, "update", false, undefined);

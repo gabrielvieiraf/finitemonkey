@@ -19,7 +19,7 @@ import { nodeLock } from "../src/core/node-fs.js";
 import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { ExitCode } from "../src/exit-codes.js";
-import { CONFIG_FILE, SETTINGS_FILE } from "../src/install/layout.js";
+import { CONFIG_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../src/install/layout.js";
 import { BUNDLE, cliJson, field, found, parseBody } from "./support.js";
 
 const base = mkdtempSync(join(tmpdir(), "fm-tree-"));
@@ -27,7 +27,7 @@ after(() => {
   rmSync(base, { recursive: true, force: true });
 });
 
-const runtime: Runtime = { ...nodeRuntime(), probe: () => found("2.1.300 (Claude Code)") };
+const runtime: Runtime = { ...nodeRuntime(), probe: () => found("2.1.300 (Claude Code)"), selfPath: BUNDLE };
 
 let counter = 0;
 const fresh = (files: Readonly<Record<string, string>>): AbsolutePath => {
@@ -122,7 +122,7 @@ describe("init then uninstall leaves the tree byte-identical", () => {
 });
 
 describe("update", () => {
-  it("re-pins the hook version and keeps an edited config, showing the diff", async () => {
+  it("re-pins the vendored CLI and keeps an edited config, showing the diff", async () => {
     const root = fresh({});
     await fm(root, ["init", "--yes"], "1.0.0");
     const config = join(root, CONFIG_FILE);
@@ -134,9 +134,8 @@ describe("update", () => {
     const updated = await fm(root, ["update", "--yes"], "1.1.0");
     assert.equal(updated.code, ExitCode.Ok);
     assert.match(readFileSync(config, "utf8"), /custom: true/);
-    const settings = readFileSync(join(root, SETTINGS_FILE), "utf8");
-    assert.match(settings, /finitemonkey@1\.1\.0 hook Stop/);
-    assert.doesNotMatch(settings, /finitemonkey@1\.0\.0/);
+    assert.equal(field(parseBody(readFileSync(join(root, VENDOR_PACKAGE), "utf8")), "version"), "1.1.0");
+    assert.equal(readFileSync(join(root, VENDOR_BIN), "utf8"), readFileSync(BUNDLE, "utf8"));
     const diff = field(updated.body, "data", "diff");
     assert.ok(Array.isArray(diff) && diff.some((line) => line === "+ custom: true" || line === "- custom: true"));
     assert.equal((await fm(root, ["update", "--check"], "1.1.0")).code, ExitCode.Ok);

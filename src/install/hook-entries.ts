@@ -1,11 +1,9 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { HookEvent } from "../hooks/events.js";
-import { LOCAL_BIN } from "./layout.js";
+import { LOCAL_BIN, VENDOR_BIN } from "./layout.js";
 
 export type Runner =
-  | { readonly kind: "local" }
-  | { readonly kind: "npx"; readonly version: string }
-  | { readonly kind: "path"; readonly path: string };
+  { readonly kind: "local" } | { readonly kind: "vendored" } | { readonly kind: "path"; readonly path: string };
 
 export interface HookSpec {
   readonly event: HookEvent;
@@ -26,31 +24,21 @@ export const INSTALLED_HOOKS: readonly HookSpec[] = [
 ];
 
 export const PROJECT_BIN = `\${CLAUDE_PROJECT_DIR}/${LOCAL_BIN}`;
+export const VENDORED_BIN = `\${CLAUDE_PROJECT_DIR}/${VENDOR_BIN}`;
 
 export type HookHandlerJson = JsonObject;
 
 const isScript = (path: string): boolean => /\.(c|m)?js$/i.test(path);
 
-type ExecRunner = Exclude<Runner, { readonly kind: "npx" }>;
-
-const execForm = (runner: ExecRunner, event: HookEvent): { command: string; args: readonly string[] } => {
+const execForm = (runner: Runner, event: HookEvent): { command: string; args: readonly string[] } => {
   if (runner.kind === "local") return { command: "node", args: [PROJECT_BIN, "hook", event] };
+  if (runner.kind === "vendored") return { command: "node", args: [VENDORED_BIN, "hook", event] };
   if (isScript(runner.path)) return { command: "node", args: [runner.path, "hook", event] };
   return { command: runner.path, args: ["hook", event] };
 };
 
-export const shellQuote = (value: string): string =>
-  /^[A-Za-z0-9_./:=@%+-]+$/.test(value) ? value : `"${value.replace(/(["\\$`])/g, "\\$1")}"`;
-
-export const npxCommand = (version: string, event: HookEvent, extra: readonly string[] = []): string =>
-  ["npx", "--yes", "--prefer-offline", `finitemonkey@${version}`, "hook", event, ...extra].map(shellQuote).join(" ");
-
 export const hookHandler = (runner: Runner, spec: HookSpec, failClosedSupported: boolean): HookHandlerJson => {
   const failure = spec.guard && failClosedSupported ? { onFailure: "block" } : {};
-  if (runner.kind === "npx") {
-    const command = npxCommand(runner.version, spec.event);
-    return { type: "command", command, timeout: spec.timeout, ...failure };
-  }
   const { command, args } = execForm(runner, spec.event);
   return { type: "command", command, args, timeout: spec.timeout, ...failure };
 };
