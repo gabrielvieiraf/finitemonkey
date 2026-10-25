@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.2](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.1...v0.1.0-next.2) (2026-10-25)
+
+### Features
+
+* **secrets:** trava de segredos na escrita, no comando, no prompt e no commit ([#9](https://github.com/gabrielvieiraf/finitemonkey/issues/9)) ([50d56dd](https://github.com/gabrielvieiraf/finitemonkey/commit/50d56dd5196fa104f28ead05cee7231bb36231a3))
+
 ## [0.1.0-next.1](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.0.0...v0.1.0-next.1) (2026-10-25)
 
 ### Features
