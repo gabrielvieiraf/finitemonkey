@@ -1,5 +1,6 @@
 import { ExitCode } from "../exit-codes.js";
 import type { Translate } from "../i18n/translate.js";
+import { maskDeep, maskText } from "../mask/mask.js";
 import type { Ctx } from "./context.js";
 import { FmError } from "./problem.js";
 import { type CommandResult, failureFrom, type FailureResult, toEnvelope } from "./result.js";
@@ -20,20 +21,24 @@ export const resultFromThrown = (thrown: unknown, t: Translate): FailureResult =
 
 const block = (items: readonly string[]): string => (items.length > 0 ? `${items.join("\n")}\n` : "");
 
+const write = (sink: Ctx["io"]["stdout"], text: string): void => {
+  if (text !== "") sink.write(maskText(text));
+};
+
 export const render = (ctx: Ctx, command: string, result: CommandResult): void => {
   if (result.raw !== undefined) {
-    ctx.io.stdout.write(result.raw.stdout);
-    ctx.io.stderr.write(result.raw.stderr);
+    write(ctx.io.stdout, result.raw.stdout);
+    write(ctx.io.stderr, result.raw.stderr);
     return;
   }
   if (ctx.json) {
-    ctx.io.stdout.write(`${JSON.stringify(toEnvelope(command, result))}\n`);
+    ctx.io.stdout.write(`${JSON.stringify(maskDeep(toEnvelope(command, result)))}\n`);
     return;
   }
-  ctx.io.stdout.write(block(result.human ?? []));
+  write(ctx.io.stdout, block(result.human ?? []));
   if (!result.ok) {
     const { message, fix } = result.error;
-    ctx.io.stderr.write(block([ctx.t("output.error", { message }), ctx.t("output.fix", { fix })]));
+    write(ctx.io.stderr, block([ctx.t("output.error", { message }), ctx.t("output.fix", { fix })]));
   }
-  if (result.next !== undefined) ctx.io.stdout.write(block([ctx.t("output.next", { next: result.next })]));
+  if (result.next !== undefined) write(ctx.io.stdout, block([ctx.t("output.next", { next: result.next })]));
 };

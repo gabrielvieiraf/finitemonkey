@@ -83,6 +83,41 @@
     "NeedsPerson": 4,
     "Internal": 5
   },
+  "secretsScan": {
+    "required": {
+      "schema": "string",
+      "mode": "string",
+      "baseline": "string",
+      "findings": "array",
+      "fixed": "array",
+      "incidents": "array",
+      "summary": "object"
+    },
+    "schema": "finitemonkey/secrets-scan@1"
+  },
+  "secretsFinding": {
+    "required": {
+      "id": "string",
+      "rule": "string",
+      "severity": "string",
+      "file": "string",
+      "line": "number",
+      "column": "number",
+      "fingerprint": "string",
+      "mask": "string",
+      "status": "string"
+    },
+    "optional": {
+      "commit": "string"
+    }
+  },
+  "secretsIncidents": {
+    "required": {
+      "schema": "string",
+      "incidents": "array"
+    },
+    "schema": "finitemonkey/secrets-incidents@1"
+  },
   "errorCodes": [
     "doctor_failed",
     "hook_blocked",
@@ -95,6 +130,13 @@
     "not_implemented",
     "unexpected_argument",
     "unknown_command",
-    "unknown_hook_event"
+    "unknown_hook_event",
+    "secrets_found",
+    "secrets_git_unavailable",
+    "secrets_baseline_invalid",
+    "secrets_finding_not_found",
+    "secrets_incident_not_found",
+    "secrets_not_rotated",
+    "secrets_write_failed"
   ]
 }

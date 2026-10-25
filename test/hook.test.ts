@@ -25,6 +25,7 @@ const options = (text: string | undefined, handlers: HookHandlers = {}, timer: T
   cwd: toAbsolutePath("/tmp"),
   t: createTranslator("en"),
   startTimer: fakeRuntime({ timer }).startTimer,
+  runtime: fakeRuntime({ timer }),
 });
 
 const boom = (): never => {

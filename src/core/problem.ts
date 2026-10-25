@@ -15,6 +15,13 @@ export const ERROR_CODES = [
   "unexpected_argument",
   "unknown_command",
   "unknown_hook_event",
+  "secrets_found",
+  "secrets_git_unavailable",
+  "secrets_baseline_invalid",
+  "secrets_finding_not_found",
+  "secrets_incident_not_found",
+  "secrets_not_rotated",
+  "secrets_write_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

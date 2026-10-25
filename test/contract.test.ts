@@ -61,6 +61,8 @@ describe("JSON output contract v1: fields may only be added", () => {
     { argv: ["i18n", "check"], command: "i18n check", data: "i18nCheck" },
     { argv: ["nope"], command: "nope", data: undefined },
     { argv: ["init"], command: "init", data: undefined },
+    { argv: ["secrets", "scan"], command: "secrets scan", data: "secretsScan" },
+    { argv: ["secrets", "incident"], command: "secrets incident", data: "secretsIncidents" },
   ] as const;
 
   for (const { argv, command, data } of cases) {
