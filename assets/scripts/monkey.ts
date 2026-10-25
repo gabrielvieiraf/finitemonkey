@@ -15,6 +15,8 @@ export interface Look {
   readonly longSleeves: boolean;
   readonly bounce: boolean;
   readonly gaze: { readonly x: number; readonly y: number };
+  readonly fur: string;
+  readonly furDark: string;
   readonly behindHead: string;
   readonly onHead: string;
   readonly mouth: string | undefined;
@@ -30,6 +32,8 @@ export const classicLook: Look = {
   longSleeves: false,
   bounce: true,
   gaze: { x: 3, y: 0 },
+  fur: palette.fur,
+  furDark: palette.furDark,
   behindHead: "",
   onHead: "",
   mouth: undefined,
@@ -155,17 +159,17 @@ function headphones(): string {
 function head(pose: Pose, look: Look): string {
   return (
     svg`<g>` +
-    svg`<circle cx="122" cy="${cy + 2}" r="18" fill="${palette.fur}"/><circle cx="122" cy="${cy + 2}" r="10" fill="${palette.faceShade}"/>` +
-    svg`<circle cx="228" cy="${cy + 2}" r="18" fill="${palette.fur}"/><circle cx="228" cy="${cy + 2}" r="10" fill="${palette.faceShade}"/>` +
-    svg`<circle cx="${cx}" cy="${cy}" r="52" fill="${palette.fur}"/>` +
-    svg`<path d="M162 90Q168 74 177 87Q184 72 192 90Z" fill="${palette.fur}"/>` +
-    svg`<path d="M166 94Q${cx} 102 186 94" fill="none" stroke="${palette.furDark}" stroke-width="2" stroke-linecap="round" opacity="0.6"/>` +
+    svg`<circle cx="122" cy="${cy + 2}" r="18" fill="${look.fur}"/><circle cx="122" cy="${cy + 2}" r="10" fill="${palette.faceShade}"/>` +
+    svg`<circle cx="228" cy="${cy + 2}" r="18" fill="${look.fur}"/><circle cx="228" cy="${cy + 2}" r="10" fill="${palette.faceShade}"/>` +
+    svg`<circle cx="${cx}" cy="${cy}" r="52" fill="${look.fur}"/>` +
+    svg`<path d="M162 90Q168 74 177 87Q184 72 192 90Z" fill="${look.fur}"/>` +
+    svg`<path d="M166 94Q${cx} 102 186 94" fill="none" stroke="${look.furDark}" stroke-width="2" stroke-linecap="round" opacity="0.6"/>` +
     svg`<circle cx="157" cy="${cy - 4}" r="23" fill="${palette.face}"/><circle cx="193" cy="${cy - 4}" r="23" fill="${palette.face}"/>` +
     svg`<ellipse cx="${cx}" cy="${cy + 24}" rx="34" ry="25" fill="${palette.face}"/>` +
     svg`<ellipse cx="146" cy="${cy + 20}" rx="7" ry="4" fill="${palette.blush}" opacity="0.55"/>` +
     svg`<ellipse cx="204" cy="${cy + 20}" rx="7" ry="4" fill="${palette.blush}" opacity="0.55"/>` +
     eyes(pose, look) +
-    brows(pose) +
+    brows(pose, look.furDark) +
     svg`<circle cx="170" cy="${cy + 15}" r="2" fill="${palette.faceShade}"/><circle cx="180" cy="${cy + 15}" r="2" fill="${palette.faceShade}"/>` +
     (look.mouth ?? mouth(pose)) +
     sweat(pose) +
@@ -192,9 +196,9 @@ function eyes(pose: Pose, look: Look): string {
   );
 }
 
-function brows(pose: Pose): string {
+function brows(pose: Pose, furDark: string): string {
   if (pose.mood !== "worried") return "";
-  return svg`<path d="M149 ${cy - 20}L165 ${cy - 24}M201 ${cy - 20}L185 ${cy - 24}" stroke="${palette.furDark}" stroke-width="3.5" stroke-linecap="round"/>`;
+  return svg`<path d="M149 ${cy - 20}L165 ${cy - 24}M201 ${cy - 20}L185 ${cy - 24}" stroke="${furDark}" stroke-width="3.5" stroke-linecap="round"/>`;
 }
 
 function mouth(pose: Pose): string {

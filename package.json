@@ -59,6 +59,8 @@
     "prepublishOnly": "npm run typecheck && npm run check:dist && npm test",
     "prepare": "husky",
     "gif": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts",
+    "gifs": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts --all",
+    "gifs:check": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/check.ts",
     "social": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/social.ts",
     "llms": "tsx scripts/build-llms.ts",
     "llms:check": "tsc -p scripts && tsx scripts/build-llms.ts --check",

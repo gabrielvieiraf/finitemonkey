@@ -8,7 +8,7 @@ import { bubble, greyLines, ink } from "./kit.ts";
 import { agent, type Agent, agentScale } from "./reins.ts";
 
 const reinHand = { x: 98, y: 300 } as const;
-const loop = 12;
+const loop = 8;
 const runners = [
   { center: 52, amp: 34, phase: 0 },
   { center: 172, amp: 56, phase: 5 },
@@ -18,6 +18,7 @@ const edge = 334;
 const dash = 4;
 const tighten = 3;
 const seats = [20, 52, 84] as const;
+const greyCoat = { fur: "#8e8a86", furDark: "#6b6763" } as const;
 const srMug = text("sr", 270, 303, 1.4, "#ffffff", 0.9);
 
 const escaped = (ctx: Ctx): number => since(ctx, (frame) => frame.phase === "intro");
@@ -54,6 +55,7 @@ function seniorLook(ctx: Ctx, pose: Pose): Look {
   const sipping = pose.mood === "celebrate";
   return {
     ...classicLook,
+    ...greyCoat,
     bounce: false,
     headShift: sipping && ctx.frame.step % 8 < 4 ? 3 : 0,
     onHead: greyFur() + readingGlasses(),
@@ -94,7 +96,7 @@ function sip(): string {
 }
 
 function worktrees(done: boolean): string {
-  return [18, 98, 178, 258]
+  return [30, 120, 210]
     .map((x) => {
       const box =
         svg`<rect x="${x}" y="30" width="40" height="28" rx="5" fill="${palette.terminal}" stroke="${palette.terminalEdge}" stroke-width="2"/>` +
@@ -120,14 +122,15 @@ function place(ctx: Ctx, runner: (typeof runners)[number], index: number): Agent
   if (seated(ctx)) {
     return { x: seats[index] ?? 26, facing: 1, stride: 0, sitting: true, taut: 0, check: true };
   }
-  const t = ((ctx.index + runner.phase) % loop) / loop;
+  const step = Math.floor(ctx.index / 2);
+  const t = ((step + runner.phase) % loop) / loop;
   const x = Math.round(runner.center + runner.amp * Math.sin(t * Math.PI * 2));
   const facing = Math.cos(t * Math.PI * 2) >= 0 ? 1 : -1;
-  const running = { x, facing, stride: ctx.index % 2, sitting: false, taut: 0, check: false } as const;
+  const running = { x, facing, stride: step % 2, sitting: false, taut: 0, check: false } as const;
   if (index !== 2) return running;
   const out = escaped(ctx);
   if (out < 0) return running;
-  const start = Math.round(runner.center + runner.amp * Math.sin((((ctx.index - out + runner.phase) % loop) / loop) * Math.PI * 2));
+  const start = Math.round(runner.center + runner.amp * Math.sin((((Math.floor((ctx.index - out) / 2) + runner.phase) % loop) / loop) * Math.PI * 2));
   const run = progress(out, dash);
   return {
     x: lerp(start, edge, run),
