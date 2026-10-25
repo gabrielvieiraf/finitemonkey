@@ -60,6 +60,10 @@ export default defineConfig([
     ...shared,
   },
   {
+    files: ["src/**/*.ts"],
+    rules: { "max-lines-per-function": ["error", { max: 50, skipBlankLines: true }] },
+  },
+  {
     files: ["eslint.config.mjs", "commitlint.config.mjs"],
     rules: { "no-restricted-syntax": "off" },
   },
