@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.3](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.2...v0.1.0-next.3) (2026-10-25)
+
+### Features
+
+* **install:** init, update e uninstall com backup e plugin para o claude code ([#11](https://github.com/gabrielvieiraf/finitemonkey/issues/11)) ([abf4d02](https://github.com/gabrielvieiraf/finitemonkey/commit/abf4d022bd601562b07adcbe5b9cdf5986c249b7))
+
 ## [0.1.0-next.2](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.1...v0.1.0-next.2) (2026-10-25)
 
 ### Features
