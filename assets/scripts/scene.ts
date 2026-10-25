@@ -1,6 +1,7 @@
-import { monkeyBody, raisedHand } from "./monkey.ts";
+import { monkeyBody } from "./monkey.ts";
 import { palette } from "./palette.ts";
-import { desk, laptop, mouseInHand, mouseOnDesk, mug } from "./props.ts";
+import type { Ctx, Persona } from "./persona.ts";
+import { desk } from "./props.ts";
 import { seeded } from "./random.ts";
 import { svg } from "./svg.ts";
 import { terminal } from "./terminal.ts";
@@ -10,24 +11,26 @@ import type { Frame } from "./timeline.ts";
 export const width = 720;
 export const height = 400;
 
-export function scene(frame: Frame): string {
-  const pose = { mood: frame.mood, beat: frame.beat };
-  const celebrating = frame.mood === "celebrate";
-  const hand = raisedHand(pose);
+export function scene(persona: Persona, frames: readonly Frame[], index: number): string {
+  const frame = frames[index];
+  if (frame === undefined) throw new Error("frame out of range");
+  const ctx: Ctx = { frames, index, frame };
+  const pose = { mood: persona.mood(ctx), beat: frame.beat };
+  const celebrating = pose.mood === "celebrate";
   return (
     svg`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     defs() +
     svg`<g clip-path="url(#card)">` +
     svg`<rect width="${width}" height="${height}" fill="url(#wall)"/>` +
     svg`<ellipse cx="528" cy="170" rx="260" ry="170" fill="url(#glow)" opacity="${celebrating ? 0.32 : 0.12}"/>` +
-    monkeyBody(pose) +
+    persona.back(ctx, pose) +
+    monkeyBody(pose, persona.look(ctx, pose)) +
     desk() +
-    laptop() +
-    mug(frame.beat) +
-    (celebrating ? mouseInHand(hand.x, hand.y) : mouseOnDesk()) +
+    persona.props(ctx, pose) +
     particles(frame) +
-    (celebrating ? confetti(frame.beat) : "") +
-    terminal(frame) +
+    (celebrating && persona.confetti ? confetti(frame.beat) : "") +
+    persona.front(ctx, pose) +
+    terminal(frame, persona.script.checks, persona.script.verdict) +
     svg`</g></svg>`
   );
 }

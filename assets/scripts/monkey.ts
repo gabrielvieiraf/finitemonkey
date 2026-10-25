@@ -7,12 +7,61 @@ export interface Pose {
   readonly beat: number;
 }
 
+export interface Look {
+  readonly headScale: number;
+  readonly bodyScale: number;
+  readonly headShift: number;
+  readonly headphones: boolean;
+  readonly longSleeves: boolean;
+  readonly bounce: boolean;
+  readonly gaze: { readonly x: number; readonly y: number };
+  readonly behindHead: string;
+  readonly onHead: string;
+  readonly mouth: string | undefined;
+  readonly leftArm: string | undefined;
+  readonly rightArm: string | undefined;
+}
+
+export const classicLook: Look = {
+  headScale: 1,
+  bodyScale: 1,
+  headShift: 0,
+  headphones: true,
+  longSleeves: false,
+  bounce: true,
+  gaze: { x: 3, y: 0 },
+  behindHead: "",
+  onHead: "",
+  mouth: undefined,
+  leftArm: undefined,
+  rightArm: undefined,
+};
+
 const cx = 175;
 const cy = 138;
+const neck = 210;
+const seat = 330;
 
-export function monkeyBody(pose: Pose): string {
-  const lift = bounce(pose);
-  return svg`<g transform="translate(0 ${lift})">${hood()}${torso()}${arms(pose)}${strings()}${headphones()}${head(pose)}</g>`;
+export function monkeyBody(pose: Pose, look: Look = classicLook): string {
+  const lift = look.bounce ? bounce(pose) : 0;
+  const body = hood() + torso() + arms(pose, look) + strings();
+  const top = (look.headphones ? headphones() : "") + look.behindHead + head(pose, look) + look.onHead;
+  return svg`<g transform="translate(0 ${lift})">${bodyGroup(body, look)}${headGroup(top, look)}</g>`;
+}
+
+export function neckY(look: Look): number {
+  return seat - (seat - neck) * look.bodyScale;
+}
+
+function bodyGroup(content: string, look: Look): string {
+  if (look.bodyScale === 1) return content;
+  return svg`<g transform="translate(${cx} ${seat}) scale(${look.bodyScale}) translate(${-cx} ${-seat})">${content}</g>`;
+}
+
+function headGroup(content: string, look: Look): string {
+  if (look.headScale === 1 && look.bodyScale === 1 && look.headShift === 0) return content;
+  const y = neckY(look) + look.headShift;
+  return svg`<g transform="translate(${cx} ${y}) scale(${look.headScale}) translate(${-cx} ${-neck})">${content}</g>`;
 }
 
 export function bounce(pose: Pose): number {
@@ -39,32 +88,46 @@ function torso(): string {
   );
 }
 
-function arms(pose: Pose): string {
+function arms(pose: Pose, look: Look): string {
+  const [leftSleeve, rightSleeve, leftPaw, rightPaw] = armParts(pose, look);
+  if (look.leftArm === undefined && look.rightArm === undefined) return leftSleeve + rightSleeve + leftPaw + rightPaw;
+  return (look.leftArm ?? leftSleeve + leftPaw) + (look.rightArm ?? rightSleeve + rightPaw);
+}
+
+function armParts(pose: Pose, look: Look): readonly [string, string, string, string] {
+  const hand = look.longSleeves ? cuff : paw;
   if (handsUp(pose)) {
-    const hand = raisedHand(pose);
+    const up = raisedHand(pose);
     const left = svg`M122 232Q90 196 98 ${150 + (pose.beat % 4 < 2 ? 3 : 0)}`;
-    const right = svg`M228 232Q262 192 ${hand.x} ${hand.y + 14}`;
-    return sleeve(left) + sleeve(right) + paw(98, 144 + (pose.beat % 4 < 2 ? 3 : 0)) + paw(hand.x, hand.y + 8);
+    const right = svg`M228 232Q262 192 ${up.x} ${up.y + 14}`;
+    return [sleeve(left), sleeve(right), hand(98, 144 + (pose.beat % 4 < 2 ? 3 : 0)), hand(up.x, up.y + 8)];
   }
   const typing = pose.mood === "typing";
   const leftLift = typing && pose.beat % 3 === 0 ? -6 : 0;
   const rightLift = typing && pose.beat % 3 === 1 ? -6 : 0;
+  return [
+    sleeve(svg`M122 234Q100 268 112 ${296 + leftLift}`),
+    sleeve(svg`M228 234Q250 268 238 ${296 + rightLift}`),
+    hand(114, 302 + leftLift),
+    hand(236, 302 + rightLift),
+  ];
+}
+
+export function cuff(x: number, y: number): string {
   return (
-    sleeve(svg`M122 234Q100 268 112 ${296 + leftLift}`) +
-    sleeve(svg`M228 234Q250 268 238 ${296 + rightLift}`) +
-    paw(114, 302 + leftLift) +
-    paw(236, 302 + rightLift)
+    svg`<ellipse cx="${x}" cy="${y}" rx="14" ry="12" fill="${palette.hoodieDark}"/>` +
+    svg`<ellipse cx="${x}" cy="${y - 1}" rx="10" ry="8" fill="${palette.hoodie}"/>`
   );
 }
 
-function sleeve(d: string): string {
+export function sleeve(d: string): string {
   return (
     svg`<path d="${d}" fill="none" stroke="${palette.hoodieDark}" stroke-width="24" stroke-linecap="round"/>` +
     svg`<path d="${d}" fill="none" stroke="${palette.hoodie}" stroke-width="18" stroke-linecap="round"/>`
   );
 }
 
-function paw(x: number, y: number): string {
+export function paw(x: number, y: number): string {
   return (
     svg`<ellipse cx="${x}" cy="${y}" rx="11" ry="10" fill="${palette.faceShade}"/>` +
     svg`<path d="M${x - 6} ${y - 5}v6M${x} ${y - 7}v7M${x + 6} ${y - 5}v6" stroke="${palette.fur}" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>`
@@ -89,7 +152,7 @@ function headphones(): string {
   );
 }
 
-function head(pose: Pose): string {
+function head(pose: Pose, look: Look): string {
   return (
     svg`<g>` +
     svg`<circle cx="122" cy="${cy + 2}" r="18" fill="${palette.fur}"/><circle cx="122" cy="${cy + 2}" r="10" fill="${palette.faceShade}"/>` +
@@ -101,16 +164,16 @@ function head(pose: Pose): string {
     svg`<ellipse cx="${cx}" cy="${cy + 24}" rx="34" ry="25" fill="${palette.face}"/>` +
     svg`<ellipse cx="146" cy="${cy + 20}" rx="7" ry="4" fill="${palette.blush}" opacity="0.55"/>` +
     svg`<ellipse cx="204" cy="${cy + 20}" rx="7" ry="4" fill="${palette.blush}" opacity="0.55"/>` +
-    eyes(pose) +
+    eyes(pose, look) +
     brows(pose) +
     svg`<circle cx="170" cy="${cy + 15}" r="2" fill="${palette.faceShade}"/><circle cx="180" cy="${cy + 15}" r="2" fill="${palette.faceShade}"/>` +
-    mouth(pose) +
+    (look.mouth ?? mouth(pose)) +
     sweat(pose) +
     svg`</g>`
   );
 }
 
-function eyes(pose: Pose): string {
+function eyes(pose: Pose, look: Look): string {
   const y = cy - 5;
   if (pose.mood === "celebrate" || pose.mood === "pleased") {
     const arc = (x: number): string => svg`M${x - 7} ${y + 2}Q${x} ${y - 7} ${x + 7} ${y + 2}`;
@@ -121,10 +184,11 @@ function eyes(pose: Pose): string {
     return svg`<path d="M151 ${y}h14M185 ${y}h14" stroke="${palette.eye}" stroke-width="3" stroke-linecap="round"/>`;
   }
   const size = pose.mood === "worried" ? 7 : 6;
-  const look = pose.mood === "typing" ? 3 : 0;
+  const dx = pose.mood === "typing" ? look.gaze.x : 0;
+  const dy = pose.mood === "typing" ? y + look.gaze.y : y;
   return (
-    svg`<circle cx="${158 + look}" cy="${y}" r="${size}" fill="${palette.eye}"/><circle cx="${192 + look}" cy="${y}" r="${size}" fill="${palette.eye}"/>` +
-    svg`<circle cx="${160 + look}" cy="${y - 2}" r="2" fill="#ffffff"/><circle cx="${194 + look}" cy="${y - 2}" r="2" fill="#ffffff"/>`
+    svg`<circle cx="${158 + dx}" cy="${dy}" r="${size}" fill="${palette.eye}"/><circle cx="${192 + dx}" cy="${dy}" r="${size}" fill="${palette.eye}"/>` +
+    svg`<circle cx="${160 + dx}" cy="${dy - 2}" r="2" fill="#ffffff"/><circle cx="${194 + dx}" cy="${dy - 2}" r="2" fill="#ffffff"/>`
   );
 }
 

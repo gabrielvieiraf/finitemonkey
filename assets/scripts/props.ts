@@ -12,23 +12,23 @@ export function desk(): string {
   );
 }
 
-export function laptop(): string {
+export function laptop(lid = banana(152, 284, -18, 0.9) + stickyNote(198, 256, 7)): string {
   return (
     svg`<rect x="104" y="${deskY - 6}" width="142" height="7" rx="3" fill="${palette.laptopDeck}"/>` +
     svg`<rect x="116" y="232" width="118" height="${deskY - 4 - 232}" rx="8" fill="${palette.laptop}"/>` +
     svg`<rect x="116" y="232" width="118" height="${deskY - 4 - 232}" rx="8" fill="none" stroke="${palette.laptopEdge}" stroke-width="2"/>` +
-    banana(152, 284, -18, 0.9) +
-    stickyNote(198, 256, 7)
+    lid
   );
 }
 
-export function stickyNote(x: number, y: number, angle: number): string {
+const shipIt = text("ship", -14, -6, 1.2, palette.noteInk) + text("it!", -11, 5, 1.2, palette.noteInk);
+
+export function stickyNote(x: number, y: number, angle: number, ink = shipIt): string {
   return (
     svg`<g transform="translate(${x} ${y}) rotate(${angle})">` +
     svg`<rect x="-19" y="-17" width="38" height="34" rx="2" fill="${palette.note}"/>` +
     svg`<rect x="-19" y="-17" width="38" height="7" rx="2" fill="${palette.mugDark}" opacity="0.3"/>` +
-    text("ship", -14, -6, 1.2, palette.noteInk) +
-    text("it!", -11, 5, 1.2, palette.noteInk) +
+    ink +
     svg`</g>`
   );
 }
@@ -44,7 +44,7 @@ export function banana(x: number, y: number, angle: number, scale: number): stri
   );
 }
 
-export function mug(beat: number): string {
+export function mug(beat: number, label = text("</>", 267, 303, 1.2, "#ffffff", 0.85)): string {
   const rise = (beat % 6) * 1.5;
   const wisp = (dx: number): string => svg`M${272 + dx} ${290 - rise}q-5 -6 0 -12q5 -6 0 -12`;
   return (
@@ -52,7 +52,7 @@ export function mug(beat: number): string {
     svg`<circle cx="292" cy="306" r="8" fill="none" stroke="${palette.mugDark}" stroke-width="5"/>` +
     svg`<rect x="262" y="292" width="28" height="${deskY - 292}" rx="5" fill="${palette.mug}"/>` +
     svg`<ellipse cx="276" cy="294" rx="12" ry="3" fill="${palette.coffee}"/>` +
-    text("</>", 267, 303, 1.2, "#ffffff", 0.85)
+    label
   );
 }
 

@@ -1,4 +1,4 @@
-import { checks } from "./checks.ts";
+import type { Check } from "./checks.ts";
 import { palette } from "./palette.ts";
 import { svg } from "./svg.ts";
 import { text, textWidth } from "./text.ts";
@@ -11,12 +11,12 @@ const cell = 6 * size;
 const firstRow = 128;
 const rowGap = 28;
 
-export function terminal(frame: Frame): string {
+export function terminal(frame: Frame, checks: readonly Check[], verdict: string): string {
   return (
     svg`<rect x="${box.x + 4}" y="${box.y + 8}" width="${box.width}" height="${box.height}" rx="14" fill="#000000" opacity="0.28"/>` +
     svg`<rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" rx="12" fill="${palette.terminal}" stroke="${palette.terminalEdge}" stroke-width="2"/>` +
     titleBar() +
-    svg`<g opacity="${frame.fade}">${promptLine(frame)}${header(frame)}${frame.rows.map((row, index) => checkRow(row, index)).join("")}${verdictLine(frame)}</g>`
+    svg`<g opacity="${frame.fade}">${promptLine(frame)}${header(frame, checks.length)}${frame.rows.map((row, index) => checkRow(row, checks[index], index)).join("")}${verdictLine(frame, verdict)}</g>`
   );
 }
 
@@ -47,11 +47,11 @@ function promptLine(frame: Frame): string {
   );
 }
 
-function header(frame: Frame): string {
+function header(frame: Frame, total: number): string {
   if (frame.run === 0) return "";
   const y = 92;
   const runLabel = svg`run #${frame.run}`;
-  const lockLabel = svg`${frame.locked}/${checks.length} locked`;
+  const lockLabel = svg`${frame.locked}/${total} locked`;
   const right = box.x + box.width - 18;
   return (
     text(runLabel, left, y, size, palette.dim) +
@@ -60,8 +60,7 @@ function header(frame: Frame): string {
   );
 }
 
-function checkRow(row: Row, index: number): string {
-  const check = checks[index];
+function checkRow(row: Row, check: Check | undefined, index: number): string {
   if (check === undefined || row.kind === "hidden") return "";
   const y = firstRow + index * rowGap;
   const labelX = left + cell * 2;
@@ -90,10 +89,11 @@ function lock(x: number, y: number): string {
   );
 }
 
-function verdictLine(frame: Frame): string {
+function verdictLine(frame: Frame, full: string): string {
   if (frame.verdict === "") return "";
   const y = 280;
-  const big = 2.5;
+  const room = box.width - 36 - 18 - 24;
+  const big = Math.min(2.5, Math.floor((room / (Array.from(full).length * 6 - 1)) * 20) / 20);
   const badge =
     frame.badge > 0
       ? svg`<g transform="translate(${box.x + box.width - 36} ${y + 8}) scale(${frame.badge})">` +
