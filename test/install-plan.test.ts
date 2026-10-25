@@ -6,7 +6,7 @@ import { toAbsolutePath } from "../src/core/brand.js";
 import { ExitCode } from "../src/exit-codes.js";
 import { CONFIG_FILE, LOCK_FILE, SETTINGS_FILE } from "../src/install/layout.js";
 import { memoryFs } from "./memory-fs.js";
-import { cliJson, fakeRuntime, field, found, parseBody } from "./support.js";
+import { cli, cliJson, fakeRuntime, field, found, parseBody, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const at = (relative: string): string => join(ROOT, relative);
@@ -203,5 +203,50 @@ describe("init is idempotent and merges without clobbering", () => {
     assert.equal(field(blocked.body, "error", "code"), "install_locked");
     fs.tick(10 * 60 * 1000);
     assert.equal((await run(fs, ["init", "--yes"])).code, ExitCode.Ok);
+  });
+});
+
+describe("marketplace registration and the plugin stepping aside", () => {
+  it("--marketplace registers the repository marketplace once and uninstall takes it back", async () => {
+    const fs = repo({ [SETTINGS_FILE]: '{"enabledPlugins":{"other@x":true}}\n' });
+    await run(fs, ["init", "--yes", "--marketplace"]);
+    const settings = settingsOf(fs);
+    assert.deepEqual(field(settings, "extraKnownMarketplaces", "finitemonkey"), {
+      source: { source: "github", repo: "gabrielvieiraf/finitemonkey" },
+    });
+    assert.equal(field(settings, "enabledPlugins", "finitemonkey@finitemonkey"), true);
+    const raw = fs.files()[at(SETTINGS_FILE)] ?? "";
+    fs.writeAtomic(toAbsolutePath(at(SETTINGS_FILE)), raw.replace('"other@x": true', '"other@x": false'));
+    await run(fs, ["uninstall", "--yes"]);
+    assert.deepEqual(settingsOf(fs), { enabledPlugins: { "other@x": false } });
+  });
+
+  it("without --marketplace nothing about plugins is written", async () => {
+    const fs = repo();
+    await run(fs, ["init", "--yes"]);
+    assert.equal(field(settingsOf(fs), "extraKnownMarketplaces"), undefined);
+    assert.equal(field(settingsOf(fs), "enabledPlugins"), undefined);
+  });
+
+  const plugin = (fs: ReturnType<typeof memoryFs>) =>
+    cli(["hook", "Stop", "--via", "plugin"], {
+      cwd: ROOT,
+      runtime: fakeRuntime({ fs }),
+      env: { CLAUDE_PROJECT_DIR: ROOT },
+      stdin: stdinFrom("not json"),
+    });
+
+  it("plugin hooks answer continue without reading stdin when the project has its own hooks", async () => {
+    const fs = repo();
+    await run(fs, ["init", "--yes"]);
+    const result = await plugin(fs);
+    assert.equal(result.code, ExitCode.Ok);
+    assert.equal(result.stdout, '{"continue":true}\n');
+  });
+
+  it("plugin hooks run normally when the project has none", async () => {
+    const result = await plugin(repo());
+    assert.equal(result.code, 2);
+    assert.match(result.stderr, /could not run/);
   });
 });

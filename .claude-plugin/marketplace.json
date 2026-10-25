@@ -1,0 +1,15 @@
+{
+  "name": "finitemonkey",
+  "description": "Finite Monkey: a gate that makes coding agents finish verified work.",
+  "owner": {
+    "name": "Gabriel Vieira",
+    "url": "https://github.com/gabrielvieiraf"
+  },
+  "plugins": [
+    {
+      "name": "finitemonkey",
+      "source": "./plugin",
+      "description": "Hooks that block a false \"done\", guard secrets and git, and skills Claude uses on its own: task, verify, look, finish."
+    }
+  ]
+}

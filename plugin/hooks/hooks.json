@@ -1,0 +1,106 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook SessionStart --via plugin",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook UserPromptSubmit --via plugin",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook PreToolUse --via plugin",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook PostToolUse --via plugin",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook Stop --via plugin",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook SubagentStart --via plugin",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook SubagentStop --via plugin",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook PreCompact --via plugin",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook ConfigChange --via plugin",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ]
+  }
+}
