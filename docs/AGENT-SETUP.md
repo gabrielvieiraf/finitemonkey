@@ -27,9 +27,9 @@ Both give the same hooks. Use one, or both: when a project has its own Finite Mo
    /plugin install finitemonkey@finitemonkey
    ```
 
-   The plugin brings the hooks and the skills (`task`, `verify`, `look`, `finish`) that Claude uses on its own. Its hooks call `npx --yes --prefer-offline finitemonkey@<exact version>`, the version written in the plugin's `plugin.json`, never `@latest`. The first session downloads the CLI once.
+   The plugin brings the hooks and the skills (`task`, `verify`, `look`, `finish`) that Claude uses on its own. It carries the CLI itself (`scripts/finitemonkey.mjs`, the same build as the version in its `plugin.json`), and every hook runs `node` on that file: no `npx`, no download, no network.
 
-2. **`npx finitemonkey init`** in the project (steps below). It writes the hooks, the `permissions.deny` floor and `.finitemonkey/config.yml` into the project, so they also hold where plugins do not load (cloud sessions of a repository read the committed `.claude/settings.json`). Add `--marketplace` to also register the plugin's marketplace in the project settings for everyone who trusts the folder; it is off unless the user asks.
+2. **`npx finitemonkey init`** in the project (steps below). It writes the hooks, the `permissions.deny` floor and `.finitemonkey/config.yml` into the project. The hooks run `node` on `node_modules/finitemonkey` when the project has it as a dependency; otherwise `init` copies the CLI that is running it into `.finitemonkey/runtime/` (committed, so teammates and cloud sessions get the same version) and the hooks run that copy. No hook calls `npx`. This also holds where plugins do not load (cloud sessions of a repository read the committed `.claude/settings.json`). Add `--marketplace` to also register the plugin's marketplace in the project settings for everyone who trusts the folder; it is off unless the user asks.
 
 ## What the user gets
 
