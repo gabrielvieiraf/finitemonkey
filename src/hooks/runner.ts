@@ -5,10 +5,10 @@ import type { Runtime } from "../core/runtime.js";
 import type { Translate } from "../i18n/translate.js";
 import { HOOK_POLICIES, type HookEvent } from "./events.js";
 import { allow, type HookDecision, type HookHandlers, type HookInput } from "./handlers.js";
-import { parseHookPayload } from "./payload.js";
+import { type HookPayload, parseHookPayload } from "./payload.js";
 import { readAll, withDeadline } from "./stdin.js";
 
-export type HookVerdict = "allow" | "block" | "failed_open" | "failed_closed";
+export type HookVerdict = "allow" | "block" | "failed_open" | "failed_closed" | "stop_released";
 
 export interface HookOutcome {
   readonly exitCode: 0 | 2;
@@ -26,7 +26,11 @@ export interface HookRunOptions {
   readonly startTimer: Runtime["startTimer"];
 }
 
-class HookInputError extends Error {}
+type Evaluation =
+  | { readonly kind: "decided"; readonly payload: HookPayload; readonly decision: HookDecision }
+  | { readonly kind: "failed"; readonly payload: HookPayload | undefined; readonly detail: string };
+
+const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 const decide = async (input: HookInput, handlers: HookHandlers): Promise<HookDecision> => {
   let output: JsonObject = {};
@@ -38,24 +42,35 @@ const decide = async (input: HookInput, handlers: HookHandlers): Promise<HookDec
   return { kind: "allow", output };
 };
 
-const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<HookDecision> => {
+const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Evaluation> => {
   const text = await readAll(options.stdin);
-  const payload = parseHookPayload(event, text, options.stdin.isTTY === true);
-  if (!payload.ok) throw new HookInputError(payload.error);
-  return decide({ event, payload: payload.value, cwd: options.cwd }, options.handlers);
+  const parsed = parseHookPayload(event, text, options.stdin.isTTY === true);
+  if (!parsed.ok) return { kind: "failed", payload: undefined, detail: parsed.error };
+  const payload = parsed.value;
+  try {
+    return { kind: "decided", payload, decision: await decide({ event, payload, cwd: options.cwd }, options.handlers) };
+  } catch (error) {
+    return { kind: "failed", payload, detail: messageOf(error) };
+  }
 };
 
-const fromDecision = (decision: HookDecision): HookOutcome =>
-  decision.kind === "block"
-    ? { exitCode: 2, stdout: "", stderr: `finitemonkey: ${decision.reason}\n`, verdict: "block" }
-    : {
-        exitCode: 0,
-        stdout: `${JSON.stringify({ continue: true, ...decision.output })}\n`,
-        stderr: "",
-        verdict: "allow",
-      };
+const ALLOW_STDOUT = `${JSON.stringify({ continue: true })}\n`;
 
-const fromFailure = (event: HookEvent, detail: string, t: Translate): HookOutcome =>
+const allowed = (output: JsonObject | undefined): HookOutcome => ({
+  exitCode: 0,
+  stdout: `${JSON.stringify({ continue: true, ...output })}\n`,
+  stderr: "",
+  verdict: "allow",
+});
+
+const released = (event: HookEvent, detail: string, t: Translate): HookOutcome => ({
+  exitCode: 0,
+  stdout: ALLOW_STDOUT,
+  stderr: `finitemonkey: ${t("hook.stop_released", { event, detail })}\n`,
+  verdict: "stop_released",
+});
+
+const failed = (event: HookEvent, detail: string, t: Translate): HookOutcome =>
   HOOK_POLICIES[event].failClosed
     ? {
         exitCode: 2,
@@ -70,10 +85,25 @@ const fromFailure = (event: HookEvent, detail: string, t: Translate): HookOutcom
         verdict: "failed_open",
       };
 
+const conclude = (event: HookEvent, evaluation: Evaluation, t: Translate): HookOutcome => {
+  const stopActive = evaluation.payload?.stopHookActive === true;
+  if (evaluation.kind === "failed") {
+    return stopActive ? released(event, evaluation.detail, t) : failed(event, evaluation.detail, t);
+  }
+  const { decision } = evaluation;
+  if (decision.kind === "allow") return allowed(decision.output);
+  if (stopActive) return released(event, decision.reason, t);
+  return { exitCode: 2, stdout: "", stderr: `finitemonkey: ${decision.reason}\n`, verdict: "block" };
+};
+
 export const runHook = async (event: HookEvent, options: HookRunOptions): Promise<HookOutcome> => {
   try {
-    return fromDecision(await withDeadline(evaluate(event, options), options.deadlineMs, options.startTimer));
+    return conclude(
+      event,
+      await withDeadline(evaluate(event, options), options.deadlineMs, options.startTimer),
+      options.t,
+    );
   } catch (error) {
-    return fromFailure(event, error instanceof Error ? error.message : String(error), options.t);
+    return failed(event, messageOf(error), options.t);
   }
 };

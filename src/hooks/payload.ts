@@ -5,10 +5,17 @@ export interface HookPayload {
   readonly hookEventName: string | undefined;
   readonly sessionId: string | undefined;
   readonly cwd: string | undefined;
+  readonly stopHookActive: boolean;
   readonly raw: JsonObject;
 }
 
-export const EMPTY_PAYLOAD: HookPayload = { hookEventName: undefined, sessionId: undefined, cwd: undefined, raw: {} };
+export const EMPTY_PAYLOAD: HookPayload = {
+  hookEventName: undefined,
+  sessionId: undefined,
+  cwd: undefined,
+  stopHookActive: false,
+  raw: {},
+};
 
 export const parseHookPayload = (event: HookEvent, text: string, interactive: boolean): Parsed<HookPayload> => {
   if (interactive && text.trim() === "") return accept(EMPTY_PAYLOAD);
@@ -18,6 +25,7 @@ export const parseHookPayload = (event: HookEvent, text: string, interactive: bo
     hookEventName: optionalString(parsed.value, "hook_event_name"),
     sessionId: optionalString(parsed.value, "session_id"),
     cwd: optionalString(parsed.value, "cwd"),
+    stopHookActive: parsed.value["stop_hook_active"] === true,
     raw: parsed.value,
   };
   if (payload.hookEventName !== undefined && payload.hookEventName !== event) {

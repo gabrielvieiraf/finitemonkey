@@ -95,6 +95,7 @@ describe("hook payload validator", () => {
     assert.equal(parsed.value.hookEventName, "PreToolUse");
     assert.equal(parsed.value.sessionId, undefined);
     assert.equal(parsed.value.cwd, "/tmp");
+    assert.equal(parsed.value.stopHookActive, false);
   });
 });
 
@@ -132,6 +133,27 @@ describe("hook runner", () => {
       assert.match(outcome.stderr, /finitemonkey doctor/);
     });
   }
+
+  const stopGuard = [
+    { name: "a blocking handler", handlers: { Stop: [() => ({ kind: "block", reason: "gate failed" }) as const] } },
+    { name: "a throwing handler", handlers: { Stop: [boom] } },
+  ] as const;
+  for (const { name, handlers } of stopGuard) {
+    it(`Stop with stop_hook_active never blocks again, even with ${name}`, async () => {
+      const outcome = await runHook("Stop", options(payload("Stop", { stop_hook_active: true }), handlers));
+      assert.equal(outcome.exitCode, 0);
+      assert.equal(outcome.verdict, "stop_released");
+      assert.deepEqual(parseBody(outcome.stdout), { continue: true });
+      assert.match(outcome.stderr, /already continuing from a stop hook/);
+    });
+  }
+
+  it("Stop without stop_hook_active still blocks", async () => {
+    const handlers: HookHandlers = { Stop: [() => ({ kind: "block", reason: "gate failed" })] };
+    const outcome = await runHook("Stop", options(payload("Stop", { stop_hook_active: false }), handlers));
+    assert.equal(outcome.exitCode, 2);
+    assert.equal(outcome.verdict, "block");
+  });
 
   it("a real timer stops a hook whose stdin never closes", async () => {
     const outcome = await runHook("PreToolUse", { ...options(undefined), deadlineMs: 30 });

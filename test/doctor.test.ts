@@ -64,7 +64,8 @@ describe("doctor checks", () => {
     },
   ];
   for (const { name, machine: spec, expect } of cases) {
-    it(name, () => {
+    const posixOnly = expect["path.wsl_mount"] !== undefined && process.platform === "win32";
+    it(name, { skip: posixOnly ? "a /mnt/c path does not exist on Windows" : false }, () => {
       const actual = statuses(machine(spec));
       for (const [check, status] of Object.entries(expect)) assert.equal(actual[check], status, check);
     });
