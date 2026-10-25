@@ -12,7 +12,25 @@
 
 > **Prelanzamiento.** Todavía no se puede instalar. El nombre `finitemonkey` en npm está reservado (la 0.0.0 es solo un marcador) y el código se está construyendo en abierto. Todo lo que sigue es el plan, no lo que pasa hoy. Dale una estrella o sigue el repositorio si quieres enterarte cuando salga la v0.1.
 
-Claude Code cierra un refactor con "¡Listo! Todos los tests pasan." Solo había ejecutado el linter. El único test que fallaba recibió un `.skip` a las dos de la madrugada, y la CI se puso en rojo veinte minutos después del merge. Finite Monkey es la puerta entre el mono y `main`: hooks de Claude Code que ejecutan tus comprobaciones por su cuenta cuando el agente intenta parar, y mantienen la sesión abierta hasta que pasan. El único mono aquí eres tú.
+Sé cómo es. Con la llegada de la IA, muchas cosas cambiaron.
+
+Unos se dan cabezazos contra el teclado esperando que Claude escupa por arte de magia el próximo SaaS millonario. Otros ya se cansaron de escribir código. Y hay quien tiene que entregar en días lo que antes exigía equipos enteros trabajando durante meses.
+
+El resultado casi siempre es el mismo: te conviertes en un mono frente a la computadora, sepultado bajo tanto por hacer que ya no sabes por dónde empezar, y mucho menos cómo terminar.
+
+Finite Monkey nació para ser la puerta entre ese mono y `main`.
+
+Escribe como quieras. Trabaja con la IA que prefieras. Produce código a la velocidad que puedas.
+
+Finite Monkey se ocupa primero de lo que no puede quedar a base de confianza: las verificaciones.
+
+Cada verificación aprobada queda registrada. Cada fallo sigue a la vista hasta que se resuelve. Y nada se considera listo sin pruebas de que realmente funciona.
+
+No importa cuánto código se generó, cuántos agentes trabajaron ni qué tan convincente parece la respuesta de la IA. Si no pasó las verificaciones, no está listo.
+
+Y la puerta es solo el comienzo: Finite Monkey también se da cuenta cuando estás dando vueltas, muestra lo que falta en un proyecto que te queda grande, sostiene las riendas de varios agentes a la vez y lo lleva todo a producción sin romper nada en el camino.
+
+Un mono. Tiempo finito. Trabajo que sale de verdad.
 
 ## Claude Code dice que terminó, pero no terminó
 

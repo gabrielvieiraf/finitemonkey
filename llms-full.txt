@@ -22,7 +22,25 @@ English | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/b
 
 > **Pre-release.** Nothing installs yet. The npm name `finitemonkey` is reserved (0.0.0 is a placeholder) and the code is being built in the open. Everything below is the plan, not today's behavior. Star or watch the repo if you want to know when v0.1 lands.
 
-Claude Code ends a refactor with "Done! All tests pass." It had only run the linter. The only failing test got a `.skip` at 2 a.m., and CI went red twenty minutes after the merge. Finite Monkey is the gate between the monkey and `main`: Claude Code hooks that run your checks themselves when the agent tries to stop, and keep the session open until they pass. The only monkey here is you.
+I know how it is. AI changed a lot of things.
+
+Some people bang their head on the keyboard waiting for Claude to magically spit out the next billion-dollar SaaS. Others got tired of typing code. And some have to deliver in days what used to take whole teams months.
+
+The result is almost always the same: you turn into a monkey in front of a computer, buried under so much to do that you no longer know where to start, let alone how to finish.
+
+Finite Monkey was made to be the gate between that monkey and `main`.
+
+Type however you want. Work with whichever AI you like. Write code as fast as you can.
+
+Finite Monkey first takes care of what can't run on trust: the checks.
+
+Every check that passes is recorded. Every failure stays visible until it's fixed. And nothing counts as done without evidence that it actually works.
+
+It doesn't matter how much code was generated, how many agents worked on it or how convincing the AI's answer sounds. If it didn't pass the checks, it isn't done.
+
+And the gate is only the start: Finite Monkey also notices when you're going in circles, shows what's missing in a project that's bigger than you, keeps the reins on several agents at once and takes it all to production without breaking things on the way.
+
+One monkey. Finite time. Work that actually ships.
 
 ## Claude Code says it's done, but it isn't
 
