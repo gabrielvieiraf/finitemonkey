@@ -1,12 +1,11 @@
 # Finite Monkey
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/finitemonkey/v/next"><img src="https://img.shields.io/npm/v/finitemonkey/next?label=npm%40next&color=f2a93b" alt="npm next"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml?query=branch%3Anext"><img src="https://img.shields.io/github/actions/workflow/status/gabrielvieiraf/finitemonkey/ci.yml?branch=next&label=CI" alt="CI"></a>
-  <a href="https://www.npmjs.com/package/finitemonkey/v/next#provenance"><img src="https://img.shields.io/badge/npm-provenance-2ea44f" alt="npm provenance"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/github/license/gabrielvieiraf/finitemonkey" alt="license"></a>
-  <img src="https://img.shields.io/node/v/finitemonkey/next" alt="node">
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md#install-planned"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757" alt="Claude Code plugin"></a>
+  <a href="https://www.npmjs.com/package/finitemonkey/v/next"><img src="https://img.shields.io/npm/v/finitemonkey/next?color=cb3837&logo=npm&label=npm%40next" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="npm downloads"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=next" alt="CI"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md#install-planned"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
 </p>
 
 <p align="center">
