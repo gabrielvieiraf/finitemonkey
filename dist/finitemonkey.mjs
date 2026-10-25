@@ -14,29 +14,120 @@ var isEntryPoint = (moduleUrl, argv1, realpath, platform) => {
 };
 
 // src/core/node-runtime.ts
-import { spawnSync } from "node:child_process";
+import { spawnSync as spawnSync2 } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
+
+// src/core/node-fs.ts
+import { closeSync, fsyncSync, mkdirSync, openSync, readdirSync, renameSync, rmSync, writeSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 
 // src/core/parsed.ts
 var accept = (value) => ({ ok: true, value });
 var reject = (error) => ({ ok: false, error });
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var parseJson = (text) => {
+var parseJson = (text2) => {
   try {
-    return accept(JSON.parse(text));
+    return accept(JSON.parse(text2));
   } catch (error) {
     return reject(error instanceof Error ? error.message : String(error));
   }
 };
-var parseJsonObject = (text) => {
-  const parsed = parseJson(text);
+var parseJsonObject = (text2) => {
+  const parsed = parseJson(text2);
   if (!parsed.ok) return parsed;
   return isRecord(parsed.value) ? accept(parsed.value) : reject("expected a JSON object");
 };
-var optionalString = (record, key) => {
-  const value = record[key];
+var optionalString = (record2, key) => {
+  const value = record2[key];
   return typeof value === "string" ? value : void 0;
 };
+
+// src/core/node-fs.ts
+var SKIPPED_DIRS = /* @__PURE__ */ new Set([".git", "node_modules"]);
+var messageOf = (error) => error instanceof Error ? error.message : String(error);
+var nodeWriteText = (path, text2) => {
+  const temp = `${path}.${String(process.pid)}.tmp`;
+  try {
+    mkdirSync(dirname(path), { recursive: true, mode: 448 });
+    const fd = openSync(temp, "w", 384);
+    try {
+      writeSync(fd, text2);
+      fsyncSync(fd);
+    } finally {
+      closeSync(fd);
+    }
+    renameSync(temp, path);
+    return accept(true);
+  } catch (error) {
+    rmSync(temp, { force: true });
+    return reject(messageOf(error));
+  }
+};
+var nodeListDir = (path) => {
+  try {
+    return accept(readdirSync(path).sort());
+  } catch (error) {
+    return reject(messageOf(error));
+  }
+};
+var walkInto = (root, dir, out) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (!SKIPPED_DIRS.has(entry.name)) walkInto(root, full, out);
+    } else if (entry.isFile()) {
+      out.push(relative(root, full).split("\\").join("/"));
+    }
+  }
+};
+var nodeWalkFiles = (root) => {
+  try {
+    const out = [];
+    walkInto(root, root, out);
+    return accept(out.sort());
+  } catch (error) {
+    return reject(messageOf(error));
+  }
+};
+
+// src/core/node-git.ts
+import { spawn, spawnSync } from "node:child_process";
+import { createInterface } from "node:readline";
+var MAX_BUFFER = 256 * 1024 * 1024;
+var GIT_ENV = { ...process.env, GIT_PAGER: "cat", GIT_TERMINAL_PROMPT: "0", LC_ALL: "C" };
+var notFound = (error) => error instanceof Error && "code" in error && error.code === "ENOENT";
+var nodeGit = (args, cwd) => {
+  const result = spawnSync("git", [...args], {
+    cwd,
+    encoding: "utf8",
+    maxBuffer: MAX_BUFFER,
+    windowsHide: true,
+    env: GIT_ENV
+  });
+  const stdout = result.stdout;
+  return {
+    found: !notFound(result.error),
+    ok: result.error === void 0 && result.status === 0,
+    stdout: typeof stdout === "string" ? stdout : ""
+  };
+};
+var nodeGitLines = (args, cwd, onLine) => new Promise((resolve2) => {
+  const child = spawn("git", [...args], {
+    cwd,
+    windowsHide: true,
+    env: GIT_ENV,
+    stdio: ["ignore", "pipe", "ignore"]
+  });
+  let found = true;
+  child.on("error", (error) => {
+    found = !notFound(error);
+  });
+  const lines = createInterface({ input: child.stdout, crlfDelay: Infinity });
+  lines.on("line", onLine);
+  child.on("close", (code) => {
+    resolve2({ found, ok: found && code === 0, stdout: "" });
+  });
+});
 
 // src/core/node-runtime.ts
 var SAFE_TOKEN = /^[A-Za-z0-9._-]+$/;
@@ -47,7 +138,7 @@ var errnoCode = (error) => {
 };
 var spawnProbe = (command, args, timeout) => {
   const options = { encoding: "utf8", timeout, windowsHide: true };
-  return process.platform === "win32" ? spawnSync([command, ...args].join(" "), { ...options, shell: true }) : spawnSync(command, [...args], options);
+  return process.platform === "win32" ? spawnSync2([command, ...args].join(" "), { ...options, shell: true }) : spawnSync2(command, [...args], options);
 };
 var nodeProbe = (command, args, timeoutMs) => {
   if (![command, ...args].every((token) => SAFE_TOKEN.test(token))) {
@@ -86,7 +177,13 @@ var nodeRuntime = () => ({
     return () => {
       clearTimeout(timer);
     };
-  }
+  },
+  writeText: nodeWriteText,
+  listDir: nodeListDir,
+  walkFiles: nodeWalkFiles,
+  now: () => (/* @__PURE__ */ new Date()).toISOString(),
+  git: nodeGit,
+  gitLines: nodeGitLines
 });
 
 // src/doctor/system.ts
@@ -301,6 +398,13 @@ var usageProblem = (code, messageKey, fix, params = {}) => ({
   fix,
   exitCode: ExitCode.Usage
 });
+var needsPersonProblem = (messageKey, fix, params = {}) => ({
+  code: "needs_confirmation",
+  messageKey,
+  params,
+  fix,
+  exitCode: ExitCode.NeedsPerson
+});
 var FmError = class extends Error {
   problem;
   constructor(problem) {
@@ -406,7 +510,7 @@ var GLOBAL_FLAGS = [
   { flag: "--help, -h", key: "flag.help" }
 ];
 var exitCodeHelp = (ctx) => EXIT_CODE_NAMES.map((name) => ({ code: ExitCode[name], name, summary: ctx.t(exitCodeDocs[ExitCode[name]]) }));
-var pad = (text, width) => text.padEnd(Math.max(width, text.length + 1));
+var pad = (text2, width) => text2.padEnd(Math.max(width, text2.length + 1));
 var describe = (ctx, spec) => ({
   name: commandName(spec),
   usage: spec.usage,
@@ -504,9 +608,1034 @@ var parseDeadline = (raw) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_HOOK_DEADLINE_MS;
 };
 
+// src/secrets/baseline.ts
+import { join as join2 } from "node:path";
+var BASELINE_FILE = ".finitemonkey/findings/baseline.json";
+var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
+var BASELINE_STATES = ["aceito", "falso-positivo"];
+var EXCEPTION_MAX_DAYS = 90;
+var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
+var baselinePath = (root) => toAbsolutePath(join2(root, BASELINE_FILE));
+var text = (record2, key) => {
+  const value = record2[key];
+  return typeof value === "string" && value !== "" ? value : void 0;
+};
+var stateOf = (value) => BASELINE_STATES.find((state) => state === value);
+var parseEntry = (value) => {
+  if (!isRecord(value)) return void 0;
+  const fields = ["id", "rule", "file", "fingerprint", "owner", "reason", "acceptedAt", "expiresAt"];
+  const [id, rule, file, fingerprint, owner, reason, acceptedAt, expiresAt] = fields.map((key) => text(value, key));
+  const state = stateOf(value["state"]);
+  const line = value["line"];
+  if (id === void 0 || rule === void 0 || file === void 0 || fingerprint === void 0) return void 0;
+  if (owner === void 0 || reason === void 0 || acceptedAt === void 0 || expiresAt === void 0)
+    return void 0;
+  if (state === void 0 || typeof line !== "number") return void 0;
+  return { id, rule, file, line, fingerprint, state, owner, reason, acceptedAt, expiresAt };
+};
+var parseBaseline = (raw) => {
+  const parsed = parseJsonObject(raw);
+  if (!parsed.ok) return parsed;
+  if (parsed.value["schema"] !== BASELINE_SCHEMA) return reject(`schema must be ${BASELINE_SCHEMA}`);
+  const list2 = parsed.value["entries"];
+  if (!Array.isArray(list2)) return reject("entries must be a list");
+  const entries = [];
+  for (const [index, item] of list2.entries()) {
+    const entry = parseEntry(item);
+    if (entry === void 0) return reject(`entry ${String(index)} is incomplete`);
+    entries.push(entry);
+  }
+  return accept({ schema: BASELINE_SCHEMA, entries });
+};
+var loadBaseline = (runtime, root) => {
+  const raw = runtime.readText(baselinePath(root));
+  return raw.ok ? parseBaseline(raw.value) : accept(EMPTY_BASELINE);
+};
+var serializeBaseline = (baseline) => `${JSON.stringify({ schema: baseline.schema, entries: [...baseline.entries].sort((a, b) => a.id.localeCompare(b.id)) }, null, 2)}
+`;
+var saveBaseline = (runtime, root, baseline) => runtime.writeText(baselinePath(root), serializeBaseline(baseline));
+var ratchet = (findings, baseline, now, inScope) => {
+  const byId = new Map(baseline.entries.map((entry) => [entry.id, entry]));
+  const seen = new Set(findings.map((finding) => finding.id));
+  const entryOf2 = (finding) => byId.get(finding.id);
+  return {
+    fresh: findings.filter((finding) => entryOf2(finding) === void 0),
+    known: findings.filter((finding) => (entryOf2(finding)?.expiresAt ?? "") >= now),
+    expired: findings.filter((finding) => {
+      const entry = entryOf2(finding);
+      return entry !== void 0 && entry.expiresAt < now;
+    }),
+    fixed: inScope === void 0 ? [] : baseline.entries.filter((entry) => !seen.has(entry.id) && inScope(entry.file))
+  };
+};
+var withoutFixed = (baseline, fixed) => {
+  const gone = new Set(fixed.map((entry) => entry.id));
+  return { schema: baseline.schema, entries: baseline.entries.filter((entry) => !gone.has(entry.id)) };
+};
+var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry) => entry.expiresAt >= now).map((entry) => entry.fingerprint));
+
+// src/secrets/allowlist.ts
+var PLACEHOLDER_WORDS = [
+  "example",
+  "placeholder",
+  "your_",
+  "your-",
+  "yourkey",
+  "yourtoken",
+  "yoursecret",
+  "_here",
+  "-here",
+  "changeme",
+  "change_me",
+  "change-me",
+  "replace",
+  "redacted",
+  "dummy",
+  "fake",
+  "sample",
+  "mock",
+  "fixture",
+  "test",
+  "todo",
+  "xxxx",
+  "****",
+  "....",
+  "…",
+  "<",
+  ">",
+  "${",
+  "{{",
+  "%s",
+  "process.env",
+  "secrets.",
+  "env("
+];
+var PLACEHOLDER_VALUES = /* @__PURE__ */ new Set([
+  "password",
+  "passwd",
+  "secret",
+  "token",
+  "apikey",
+  "api_key",
+  "admin",
+  "root",
+  "postgres",
+  "changeit",
+  "user",
+  "pass"
+]);
+var ENV_REFERENCE = /^\$\{?[A-Z_][A-Z0-9_]*\}?$/;
+var LOCKFILES = /(?:^|\/)(?:package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|go\.sum|Cargo\.lock|poetry\.lock|uv\.lock|composer\.lock|Gemfile\.lock)$/;
+var TEST_PATH = /(?:^|\/)(?:test|tests|__tests__|__fixtures__|fixtures|spec|testdata|examples?)\/|\.(?:test|spec)\.[A-Za-z0-9]+$/;
+var isPlaceholder = (value) => {
+  const lower = value.toLowerCase();
+  if (PLACEHOLDER_VALUES.has(lower) || ENV_REFERENCE.test(value)) return true;
+  if (PLACEHOLDER_WORDS.some((word) => lower.includes(word))) return true;
+  return new Set(lower).size < 4;
+};
+var isTestOrLockPath = (path) => path !== void 0 && (LOCKFILES.test(path) || TEST_PATH.test(path));
+
+// src/secrets/entropy.ts
+var shannonEntropy = (text2) => {
+  if (text2.length === 0) return 0;
+  const counts = /* @__PURE__ */ new Map();
+  for (const char of text2) counts.set(char, (counts.get(char) ?? 0) + 1);
+  let entropy = 0;
+  for (const count2 of counts.values()) {
+    const p = count2 / text2.length;
+    entropy -= p * Math.log2(p);
+  }
+  return entropy;
+};
+
+// src/secrets/fingerprint.ts
+import { createHash } from "node:crypto";
+var sha256Hex = (text2) => createHash("sha256").update(text2).digest("hex");
+var fingerprintOf = (secret) => sha256Hex(`finitemonkey:secret:${secret}`).slice(0, 16);
+var ALNUM = /[A-Za-z0-9]/g;
+var MIN_TAIL_LENGTH = 12;
+var tailOf = (secret) => {
+  const visible = (secret.match(ALNUM) ?? []).join("");
+  return visible.length >= MIN_TAIL_LENGTH ? visible.slice(-4) : "****";
+};
+
+// src/secrets/lines.ts
+var lineLocator = (text2) => {
+  const starts = [0];
+  for (let index = text2.indexOf("\n"); index !== -1; index = text2.indexOf("\n", index + 1)) starts.push(index + 1);
+  return (offset) => {
+    let low = 0;
+    let high = starts.length - 1;
+    while (low < high) {
+      const mid = low + high + 1 >> 1;
+      if ((starts[mid] ?? 0) <= offset) low = mid;
+      else high = mid - 1;
+    }
+    return { line: low + 1, column: offset - (starts[low] ?? 0) + 1 };
+  };
+};
+
+// src/secrets/rules/types.ts
+var defineRule = (spec) => ({
+  id: spec.id,
+  summary: spec.summary,
+  kind: spec.kind ?? "credential",
+  severity: spec.severity ?? "high",
+  keywords: spec.keywords.map((keyword) => keyword.toLowerCase()),
+  pattern: new RegExp(spec.source, `gd${spec.flags ?? ""}`),
+  minLength: spec.minLength ?? 8,
+  minEntropy: spec.minEntropy ?? 0,
+  requireDigit: spec.requireDigit ?? false,
+  minRandomRun: spec.minRandomRun ?? 0,
+  ignoredNames: (spec.ignoredNames ?? []).map((name) => name.toLowerCase()),
+  skipTestPaths: spec.skipTestPaths ?? false,
+  placeholders: spec.placeholders ?? true
+});
+
+// src/secrets/rules/providers.ts
+var PROVIDER_RULES = [
+  defineRule({
+    id: "aws-access-token",
+    summary: "AWS access key id (AKIA, ASIA, ABIA, ACCA, A3T)",
+    keywords: ["akia", "asia", "abia", "acca", "a3t"],
+    source: String.raw`\b(?<secret>(?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z2-7]{16})\b`,
+    minLength: 20,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "aws-secret-access-key",
+    summary: "AWS secret access key assigned to aws_secret_access_key or a similar name",
+    keywords: ["secret"],
+    source: String.raw`(?:aws_?)?secret_?access_?key["'\x60]?[ \t]*(?:=|:=|:|=>)[ \t]*["'\x60]?(?<secret>[A-Za-z0-9/+=]{40})(?![A-Za-z0-9/+=])`,
+    flags: "i",
+    minLength: 40,
+    minEntropy: 4
+  }),
+  defineRule({
+    id: "github-pat",
+    summary: "GitHub classic personal access token (ghp_)",
+    keywords: ["ghp_"],
+    source: String.raw`\b(?<secret>ghp_[A-Za-z0-9]{36})(?![A-Za-z0-9])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "github-oauth",
+    summary: "GitHub OAuth access token (gho_)",
+    keywords: ["gho_"],
+    source: String.raw`\b(?<secret>gho_[A-Za-z0-9]{36})(?![A-Za-z0-9])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "github-app-token",
+    summary: "GitHub App user or installation token (ghu_, ghs_)",
+    keywords: ["ghu_", "ghs_"],
+    source: String.raw`\b(?<secret>(?:ghu|ghs)_[A-Za-z0-9]{36})(?![A-Za-z0-9])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "github-refresh-token",
+    summary: "GitHub refresh token (ghr_)",
+    keywords: ["ghr_"],
+    source: String.raw`\b(?<secret>ghr_[A-Za-z0-9]{36})(?![A-Za-z0-9])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "github-fine-grained-pat",
+    summary: "GitHub fine-grained personal access token (github_pat_)",
+    keywords: ["github_pat_"],
+    source: String.raw`\b(?<secret>github_pat_[A-Za-z0-9_]{82})(?![A-Za-z0-9_])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "gitlab-pat",
+    summary: "GitLab personal access token (glpat-)",
+    keywords: ["glpat-"],
+    source: String.raw`\b(?<secret>glpat-[A-Za-z0-9_-]{20})(?![A-Za-z0-9_-])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "npm-access-token",
+    summary: "npm access token (npm_)",
+    keywords: ["npm_"],
+    source: String.raw`\b(?<secret>npm_[A-Za-z0-9]{36})(?![A-Za-z0-9])`,
+    flags: "i",
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "slack-bot-token",
+    summary: "Slack bot token (xoxb-)",
+    keywords: ["xoxb-"],
+    source: String.raw`\b(?<secret>xoxb-[0-9]{10,13}-[0-9]{10,13}[A-Za-z0-9-]*)`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "slack-user-token",
+    summary: "Slack user or export token (xoxp-, xoxe-)",
+    keywords: ["xoxp-", "xoxe-"],
+    source: String.raw`\b(?<secret>xox[pe](?:-[0-9]{10,13}){3}-[A-Za-z0-9-]{28,34})`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "slack-app-token",
+    summary: "Slack app-level token (xapp-)",
+    keywords: ["xapp-"],
+    source: String.raw`\b(?<secret>xapp-\d-[A-Z0-9]+-\d+-[a-z0-9]+)`,
+    flags: "i",
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "slack-webhook-url",
+    summary: "Slack incoming webhook URL",
+    keywords: ["hooks.slack.com"],
+    source: String.raw`(?<secret>hooks\.slack\.com/(?:services|workflows|triggers)/[A-Za-z0-9+/]{43,56})`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "stripe-access-token",
+    summary: "Stripe live secret or restricted key (sk_live_, rk_live_)",
+    keywords: ["sk_live_", "rk_live_", "sk_prod_", "rk_prod_"],
+    source: String.raw`\b(?<secret>(?:sk|rk)_(?:live|prod)_[A-Za-z0-9]{20,99})(?![A-Za-z0-9])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "anthropic-api-key",
+    summary: "Anthropic API or admin key (sk-ant-)",
+    keywords: ["sk-ant-"],
+    source: String.raw`\b(?<secret>sk-ant-(?:api|admin|oat)\d{2}-[A-Za-z0-9_-]{80,})`,
+    minEntropy: 3.5
+  }),
+  defineRule({
+    id: "openai-api-key",
+    summary: "OpenAI API key (sk-proj-, sk-svcacct-, sk-admin- or the T3BlbkFJ marker)",
+    keywords: ["t3blbkfj", "sk-proj-", "sk-svcacct-", "sk-admin-"],
+    source: String.raw`\b(?<secret>sk-(?:proj-|svcacct-|admin-)?[A-Za-z0-9_-]{20,}T3BlbkFJ[A-Za-z0-9_-]{20,}|sk-(?:proj|svcacct|admin)-[A-Za-z0-9_-]{58,})`,
+    minEntropy: 3.5
+  }),
+  defineRule({
+    id: "gcp-api-key",
+    summary: "Google API key (AIza)",
+    keywords: ["aiza"],
+    source: String.raw`\b(?<secret>AIza[0-9A-Za-z_-]{35})(?![0-9A-Za-z_-])`,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "asaas-api-key",
+    summary: "Asaas API key ($aact_, $aact_prod_, $aact_hmlg_) with a body; the bare prefix is a placeholder",
+    keywords: ["$aact_"],
+    source: String.raw`(?<secret>\$aact_(?:prod_|hmlg_)?[A-Za-z0-9+/=_:$-]{32,})`,
+    minLength: 40,
+    minEntropy: 3.5
+  })
+];
+
+// src/secrets/rules/structural.ts
+var STRUCTURAL_RULES = [
+  defineRule({
+    id: "private-key",
+    summary: "PEM private key block (RSA, EC, DSA, OPENSSH, PGP, PKCS#8)",
+    keywords: ["private key"],
+    source: String.raw`-----BEGIN[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----(?<secret>[\s\S]{64,16384}?)-----END[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----`,
+    minLength: 64,
+    minEntropy: 4
+  }),
+  defineRule({
+    id: "jwt",
+    summary: "JSON Web Token with a header, a payload and a signature, checked for entropy",
+    keywords: ["eyj"],
+    source: String.raw`\b(?<secret>eyJ[A-Za-z0-9_-]{17,}\.eyJ[A-Za-z0-9_-]{17,}\.[A-Za-z0-9_-]{10,})`,
+    minLength: 40,
+    minEntropy: 3
+  }),
+  defineRule({
+    id: "credential-in-url",
+    summary: "Password or token inside a URL (scheme://user:secret@host), including git remotes",
+    keywords: ["://"],
+    source: String.raw`\b[a-z][a-z0-9+.-]{1,20}://[^\s:/@"'\x60]{1,64}:(?<secret>[^\s:/@"'\x60]{6,128})@[A-Za-z0-9.-]`,
+    flags: "i",
+    minLength: 6,
+    minEntropy: 2.5
+  }),
+  defineRule({
+    id: "default-secret-fallback",
+    summary: "JavaScript secret variable with a constant fallback (process.env.X ?? 'constant')",
+    kind: "practice",
+    severity: "medium",
+    keywords: ["process.env."],
+    source: String.raw`process\.env\.[A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PWD)[A-Z0-9_]*[ \t]*(?:\?\?|\|\|)[ \t]*["'\x60](?<secret>[^"'\x60\n]{4,})["'\x60]`,
+    minLength: 4,
+    placeholders: false,
+    skipTestPaths: true
+  }),
+  defineRule({
+    id: "default-secret-fallback-python",
+    summary: "Python secret variable with a constant default (os.getenv('X', 'constant'))",
+    kind: "practice",
+    severity: "medium",
+    keywords: ["getenv", "environ.get"],
+    source: String.raw`os\.(?:getenv|environ\.get)\([ \t]*["'][A-Za-z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PWD)[A-Za-z0-9_]*["'][ \t]*,[ \t]*["'](?<secret>[^"'\n]{4,})["']`,
+    minLength: 4,
+    placeholders: false,
+    skipTestPaths: true
+  }),
+  defineRule({
+    id: "generic-api-key",
+    summary: "High-entropy value assigned to a name with key, secret, token or credential",
+    keywords: ["key", "secret", "token", "credential"],
+    source: String.raw`(?:key|secret|token|credential)s?[A-Za-z0-9_.-]{0,30}["'\x60]?[ \t]*(?:=|:=|:|=>)[ \t]*["'\x60]?(?<secret>[A-Za-z0-9_\-+/=.~$!@#%^&*]{16,200})(?![A-Za-z0-9_\-+/=.~$!@#%^&*(])`,
+    flags: "i",
+    minLength: 16,
+    minEntropy: 3.5,
+    requireDigit: true,
+    minRandomRun: 12,
+    ignoredNames: [
+      "key",
+      "keys",
+      "cachekey",
+      "querykey",
+      "storagekey",
+      "sortkey",
+      "idempotencykey",
+      "keyname",
+      "tokentype"
+    ],
+    skipTestPaths: true
+  }),
+  defineRule({
+    id: "password-assignment",
+    summary: "Literal value assigned to a password name (password, passwd, pwd, senha, contraseña)",
+    keywords: ["passw", "pwd", "senha", "contrase"],
+    source: String.raw`(?:password|passwd|pwd|senha|contrase[ñn]a)[A-Za-z0-9_.-]{0,20}["'\x60]?[ \t]*(?:=|:=|:|=>)[ \t]*["'\x60]?(?<secret>[^\s"'\x60,;()[\]{}<>]{8,128})`,
+    flags: "i",
+    minLength: 8,
+    minEntropy: 3,
+    requireDigit: true,
+    skipTestPaths: true
+  })
+];
+
+// src/secrets/rules/catalog.ts
+var RULES = [...PROVIDER_RULES, ...STRUCTURAL_RULES];
+var CREDENTIAL_RULES = RULES.filter((rule) => rule.kind === "credential");
+var ruleById = (id) => RULES.find((rule) => rule.id === id);
+
+// src/secrets/engine.ts
+var DIGIT = /[0-9]/;
+var LETTER = /[A-Za-z]/;
+var RUN_ENTROPY = 3;
+var hasRandomRun = (secret, length) => (secret.match(new RegExp(`[A-Za-z0-9]{${String(length)},}`, "g")) ?? []).some(
+  (run2) => DIGIT.test(run2) && LETTER.test(run2) && shannonEntropy(run2) >= RUN_ENTROPY
+);
+var accepted = (rule, secret) => secret.length >= rule.minLength && (!rule.requireDigit || DIGIT.test(secret)) && (rule.minRandomRun === 0 || hasRandomRun(secret, rule.minRandomRun)) && (!rule.placeholders || !isPlaceholder(secret)) && (rule.minEntropy === 0 || shannonEntropy(secret) >= rule.minEntropy);
+var NAME_CHAR = /[A-Za-z0-9_.-]/;
+var nameAround = (text2, at) => {
+  let start = at;
+  while (start > 0 && NAME_CHAR.test(text2.charAt(start - 1))) start -= 1;
+  let end = at;
+  while (end < text2.length && NAME_CHAR.test(text2.charAt(end))) end += 1;
+  return text2.slice(start, end).toLowerCase();
+};
+var ignoredName = (rule, match) => rule.ignoredNames.length > 0 && rule.ignoredNames.includes(nameAround(match.input, match.index));
+var spanOf = (rule, match) => {
+  const range = match.indices?.groups?.["secret"] ?? match.indices?.[0];
+  if (range === void 0 || ignoredName(rule, match)) return void 0;
+  const [start, end] = range;
+  const secret = match.input.slice(start, end);
+  return accepted(rule, secret) ? { rule, start, end, secret } : void 0;
+};
+var ruleSpans = (rule, text2) => {
+  const spans = [];
+  for (const match of text2.matchAll(rule.pattern)) {
+    const span = spanOf(rule, match);
+    if (span !== void 0) spans.push(span);
+  }
+  return spans;
+};
+var overlaps = (taken, span) => taken.some((other) => span.start < other.end && other.start < span.end);
+var applicable = (rules, lower, path) => {
+  const testPath = isTestOrLockPath(path);
+  return rules.filter(
+    (rule) => !(testPath && rule.skipTestPaths) && rule.keywords.some((keyword) => lower.includes(keyword))
+  );
+};
+var toFinding = (span, locate2) => {
+  const position = locate2(span.start);
+  return {
+    ruleId: span.rule.id,
+    severity: span.rule.severity,
+    line: position.line,
+    column: position.column,
+    start: span.start,
+    end: span.end,
+    fingerprint: fingerprintOf(span.secret),
+    tail: tailOf(span.secret)
+  };
+};
+var scanText = (text2, options = {}) => {
+  if (text2.length === 0) return [];
+  const rules = applicable(options.rules ?? RULES, text2.toLowerCase(), options.path);
+  if (rules.length === 0) return [];
+  const taken = [];
+  for (const rule of rules) {
+    for (const span of ruleSpans(rule, text2)) if (!overlaps(taken, span)) taken.push(span);
+  }
+  if (taken.length === 0) return [];
+  const locate2 = lineLocator(text2);
+  return taken.sort((a, b) => a.start - b.start).map((span) => toFinding(span, locate2));
+};
+
+// src/secrets/incidents.ts
+import { join as join3 } from "node:path";
+var INCIDENTS_DIR = ".finitemonkey/incidents";
+var INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"];
+var INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"];
+var ID = /^inc-[0-9a-f]{12}$/;
+var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint}`).slice(0, 12)}`;
+var incidentsDir = (root) => toAbsolutePath(join3(root, INCIDENTS_DIR));
+var incidentFile = (root, id) => toAbsolutePath(join3(incidentsDir(root), `${id}.json`));
+var pick = (options, value) => options.find((option) => option === value);
+var str = (record2, key) => {
+  const value = record2[key];
+  return typeof value === "string" ? value : void 0;
+};
+var parseEvent = (value) => {
+  if (!isRecord(value)) return void 0;
+  const state = pick(INCIDENT_STATES, value["state"]);
+  const at = str(value, "at");
+  const by = str(value, "by");
+  return state === void 0 || at === void 0 || by === void 0 ? void 0 : { state, at, by };
+};
+var parseHistory = (value) => {
+  if (!Array.isArray(value)) return void 0;
+  const events = value.map(parseEvent);
+  return events.every((event) => event !== void 0) ? events : void 0;
+};
+var parseIncident = (raw) => {
+  const parsed = parseJsonObject(raw);
+  if (!parsed.ok) return parsed;
+  const record2 = parsed.value;
+  const [id, rule, where, fingerprint, createdAt, updatedAt] = ["id", "rule", "where", "fingerprint", "createdAt", "updatedAt"].map((key) => str(record2, key));
+  const state = pick(INCIDENT_STATES, record2["state"]);
+  const source = pick(INCIDENT_SOURCES, record2["source"]);
+  const history = parseHistory(record2["history"]);
+  const firstCommit = str(record2, "firstCommit");
+  if (id === void 0 || !ID.test(id) || rule === void 0 || where === void 0) return reject("incomplete");
+  if (fingerprint === void 0 || createdAt === void 0 || updatedAt === void 0) return reject("incomplete");
+  if (state === void 0 || source === void 0 || history === void 0) return reject("incomplete");
+  const base = {
+    schemaVersion: 1,
+    id,
+    rule,
+    where,
+    fingerprint,
+    source,
+    state,
+    createdAt,
+    updatedAt,
+    history
+  };
+  return accept(firstCommit === void 0 ? base : { ...base, firstCommit });
+};
+var readIncident = (runtime, root, id) => {
+  if (!ID.test(id)) return reject("not an incident id");
+  const raw = runtime.readText(incidentFile(root, id));
+  return raw.ok ? parseIncident(raw.value) : reject(raw.error);
+};
+var listIncidents = (runtime, root) => {
+  const names = runtime.listDir(incidentsDir(root));
+  if (!names.ok) return [];
+  return names.value.filter((name) => name.endsWith(".json")).map((name) => readIncident(runtime, root, name.slice(0, -".json".length))).flatMap((parsed) => parsed.ok ? [parsed.value] : []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+};
+var saveIncident = (runtime, root, incident) => {
+  const ignore = runtime.writeText(toAbsolutePath(join3(incidentsDir(root), ".gitignore")), "*\n");
+  if (!ignore.ok) return ignore;
+  return runtime.writeText(incidentFile(root, incident.id), `${JSON.stringify(incident, null, 2)}
+`);
+};
+var created = (draft, now, by) => ({
+  schemaVersion: 1,
+  id: incidentId(draft.rule, draft.fingerprint),
+  rule: draft.rule,
+  where: draft.where,
+  fingerprint: draft.fingerprint,
+  source: draft.source,
+  state: draft.state,
+  createdAt: now,
+  updatedAt: now,
+  ...draft.firstCommit === void 0 ? {} : { firstCommit: draft.firstCommit },
+  history: [{ state: draft.state, at: now, by }]
+});
+var recordIncident = (runtime, root, draft, by) => {
+  const now = runtime.now();
+  const existing = readIncident(runtime, root, incidentId(draft.rule, draft.fingerprint));
+  if (existing.ok && existing.value.state !== "fechado") return existing;
+  const incident = existing.ok ? {
+    ...existing.value,
+    state: draft.state,
+    updatedAt: now,
+    history: [...existing.value.history, { state: draft.state, at: now, by }]
+  } : created(draft, now, by);
+  const saved = saveIncident(runtime, root, incident);
+  return saved.ok ? accept(incident) : reject(saved.error);
+};
+var ALLOWED_FROM = {
+  aberto: [],
+  "exposicao-local": [],
+  rotacionado: ["aberto", "exposicao-local"],
+  fechado: ["rotacionado"]
+};
+var canMove = (from, to) => ALLOWED_FROM[to].includes(from);
+var moveIncident = (incident, to, now, by) => ({
+  ...incident,
+  state: to,
+  updatedAt: now,
+  history: [...incident.history, { state: to, at: now, by }]
+});
+var isRotated = (incident) => incident.state === "rotacionado" || incident.state === "fechado";
+
+// src/secrets/guards/describe.ts
+var MAX_LISTED = 5;
+var describeFindings = (t, items) => {
+  const listed2 = items.slice(0, MAX_LISTED).map(({ ruleId, where }) => t("secrets.found_item", { rule: ruleId, where }));
+  const rest = items.length - listed2.length;
+  return rest > 0 ? `${listed2.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed2.join("; ");
+};
+var lineWhere = (t, finding) => t("secrets.where.line", { line: finding.line, column: finding.column });
+
+// src/secrets/guards/tool-input.ts
+var toolName = (payload) => optionalString(payload.raw, "tool_name") ?? "";
+var toolInput = (payload) => {
+  const input = payload.raw["tool_input"];
+  return isRecord(input) ? input : {};
+};
+var editTexts = (input, file) => {
+  const edits = input["edits"];
+  if (!Array.isArray(edits)) return [];
+  return edits.flatMap((edit) => {
+    if (!isRecord(edit)) return [];
+    const text2 = optionalString(edit, "new_string");
+    return text2 === void 0 ? [] : [{ file, text: text2, whole: false }];
+  });
+};
+var writtenTexts = (tool, input) => {
+  const file = optionalString(input, "file_path") ?? optionalString(input, "notebook_path") ?? "";
+  const single = (key, whole) => {
+    const text2 = optionalString(input, key);
+    return text2 === void 0 ? [] : [{ file, text: text2, whole }];
+  };
+  switch (tool) {
+    case "Write":
+      return single("content", true);
+    case "Edit":
+      return single("new_string", false);
+    case "MultiEdit":
+      return editTexts(input, file);
+    case "NotebookEdit":
+      return single("new_source", false);
+    default:
+      return [];
+  }
+};
+var stringLeaves = (value, out = []) => {
+  if (typeof value === "string") out.push(value);
+  else if (Array.isArray(value)) for (const item of value) stringLeaves(item, out);
+  else if (isRecord(value)) for (const item of Object.values(value)) stringLeaves(item, out);
+  return out;
+};
+
+// src/secrets/guards/exposure.ts
+var HOOK_ACTOR = "finitemonkey";
+var liveFindings = (input, texts) => {
+  const baseline = loadBaseline(input.runtime, input.cwd);
+  const accepted2 = acceptedFingerprints(baseline.ok ? baseline.value : EMPTY_BASELINE, input.runtime.now());
+  return texts.flatMap((text2) => scanText(text2, { rules: CREDENTIAL_RULES })).filter((finding) => !accepted2.has(finding.fingerprint));
+};
+var record = (input, findings, draft, where) => {
+  const ids = findings.map((finding) => {
+    const saved = recordIncident(
+      input.runtime,
+      input.cwd,
+      { ...draft, rule: finding.ruleId, fingerprint: finding.fingerprint, where: `${where}:${String(finding.line)}` },
+      HOOK_ACTOR
+    );
+    return saved.ok ? saved.value.id : input.t("secrets.incident.unsaved", { detail: saved.error });
+  });
+  return [...new Set(ids)].join(", ");
+};
+var secretsUserPromptSubmit = (input) => {
+  const prompt = optionalString(input.payload.raw, "prompt") ?? "";
+  const findings = liveFindings(input, [prompt]);
+  if (findings.length === 0) return { kind: "allow" };
+  const incident = record(input, findings, { source: "prompt", state: "exposicao-local" }, "prompt");
+  const items = findings.map((finding) => ({ ruleId: finding.ruleId, where: lineWhere(input.t, finding) }));
+  return {
+    kind: "block",
+    reason: input.t("secrets.block.prompt", { found: describeFindings(input.t, items), incident })
+  };
+};
+var secretsPostToolUse = (input) => {
+  const findings = liveFindings(input, stringLeaves(input.payload.raw["tool_response"]));
+  if (findings.length === 0) return { kind: "allow" };
+  const tool = toolName(input.payload) || "tool";
+  const incident = record(input, findings, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
+  const items = findings.map((finding) => ({ ruleId: finding.ruleId, where: lineWhere(input.t, finding) }));
+  const context = input.t("secrets.post.context", { tool, found: describeFindings(input.t, items), incident });
+  return {
+    kind: "allow",
+    output: { hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: context } }
+  };
+};
+
+// src/secrets/guards/pre-tool.ts
+import { relative as relative3 } from "node:path";
+
+// src/secrets/scan.ts
+import { join as join4, relative as relative2 } from "node:path";
+
+// src/secrets/located.ts
+var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
+var locate = (finding, file, line, commit) => ({
+  id: findingId(finding.ruleId, file, finding.fingerprint),
+  ruleId: finding.ruleId,
+  severity: finding.severity,
+  file,
+  line,
+  column: finding.column,
+  fingerprint: finding.fingerprint,
+  tail: finding.tail,
+  ...commit === void 0 ? {} : { commit }
+});
+var whereOf = (finding) => `${finding.file}:${String(finding.line)}`;
+
+// src/secrets/diff.ts
+var COMMIT = /^commit ([0-9a-f]{7,64})\b/;
+var HUNK = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
+var DEV_NULL = "/dev/null";
+var fresh = () => ({ file: void 0, inHunk: false, next: 0, text: [], lines: [] });
+var targetOf = (line) => {
+  const path = line.slice(4).replace(/\t.*$/, "");
+  if (path === DEV_NULL) return void 0;
+  return path.startsWith("b/") ? path.slice(2) : path;
+};
+var collect = (chunk, commit, found) => {
+  const { file } = chunk;
+  if (file === void 0 || chunk.text.length === 0) return;
+  for (const finding of scanText(chunk.text.join("\n"), { path: file })) {
+    const located = locate(finding, file, chunk.lines[finding.line - 1] ?? finding.line, commit);
+    found.set(located.id, located);
+  }
+};
+var addLine = (chunk, line) => {
+  const hunk = HUNK.exec(line);
+  if (hunk !== null) {
+    chunk.inHunk = true;
+    chunk.next = Number(hunk[1]);
+  } else if (!chunk.inHunk && line.startsWith("+++ ")) {
+    chunk.file = targetOf(line);
+  } else if (chunk.inHunk && line.startsWith("+")) {
+    chunk.text.push(line.slice(1));
+    chunk.lines.push(chunk.next);
+    chunk.next += 1;
+  } else if (chunk.inHunk && line.startsWith(" ")) {
+    chunk.next += 1;
+  }
+};
+var diffScanner = () => {
+  const found = /* @__PURE__ */ new Map();
+  let commit;
+  let chunk = fresh();
+  const flush2 = () => {
+    collect(chunk, commit, found);
+    chunk = fresh();
+  };
+  const header = (line) => {
+    const match = COMMIT.exec(line);
+    if (match !== null) {
+      flush2();
+      commit = match[1];
+      return true;
+    }
+    if (line.startsWith("diff --git ")) {
+      flush2();
+      return true;
+    }
+    return false;
+  };
+  return {
+    push: (line) => {
+      if (!header(line)) addLine(chunk, line);
+    },
+    end: () => {
+      flush2();
+      return [...found.values()];
+    }
+  };
+};
+
+// src/secrets/scan.ts
+var MAX_FILE_BYTES = 2 * 1024 * 1024;
+var SKIPPED = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
+var DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
+var binary = (text2) => text2.slice(0, 8e3).includes("\0");
+var posix = (path) => path.split("\\").join("/");
+var listed = (runtime, root, target) => {
+  const git = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target], root);
+  if (git.ok) return accept(git.stdout.split("\0").filter((name) => name !== ""));
+  const base = toAbsolutePath(target, root);
+  const walked = runtime.walkFiles(base);
+  if (!walked.ok) return walked;
+  return accept(walked.value.map((name) => posix(relative2(root, join4(base, name)))));
+};
+var scanFile = (runtime, root, file) => {
+  const text2 = runtime.readText(toAbsolutePath(file, root));
+  if (!text2.ok || text2.value.length > MAX_FILE_BYTES || binary(text2.value)) return [];
+  return scanText(text2.value, { path: file }).map((finding) => locate(finding, file, finding.line));
+};
+var scanPath = (runtime, root, target) => {
+  const files = listed(runtime, root, target);
+  if (!files.ok) return files;
+  return accept(files.value.filter((file) => !SKIPPED.test(file)).flatMap((file) => scanFile(runtime, root, file)));
+};
+var diffFindings = (diff) => {
+  const scanner = diffScanner();
+  for (const line of diff.split("\n")) scanner.push(line.endsWith("\r") ? line.slice(0, -1) : line);
+  return scanner.end().filter((finding) => !SKIPPED.test(finding.file));
+};
+var scanStaged = (runtime, root, includeUnstaged = false) => {
+  const args = includeUnstaged ? ["diff", "HEAD", ...DIFF_FLAGS] : ["diff", "--cached", ...DIFF_FLAGS];
+  const git = runtime.git(args, root);
+  if (!git.ok) return reject(git.found ? "git diff failed" : "git not found");
+  return accept(diffFindings(git.stdout));
+};
+var scanHistory = async (runtime, root) => {
+  const scanner = diffScanner();
+  const args = ["log", "-p", "--all", "--format=commit %H", ...DIFF_FLAGS];
+  const git = await runtime.gitLines(args, root, scanner.push);
+  if (!git.ok) return reject(git.found ? "git log failed" : "git not found");
+  return accept(scanner.end().filter((finding) => !SKIPPED.test(finding.file)));
+};
+
+// src/secrets/guards/paths.ts
+var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
+var ENV_FILE = /^\.env(?:\..+)?$/i;
+var KEY_FILE = /\.(?:pem|key|p12|pfx)$/i;
+var SSH_KEY = /^id_(?:rsa|dsa|ecdsa|ed25519)(?:_[A-Za-z0-9_-]+)?$/;
+var basename = (path) => path.split(/[\\/]/).pop() ?? path;
+var isSensitivePath = (path) => {
+  const name = basename(path.replace(/^["']|["']$/g, ""));
+  if (ENV_FILE.test(name)) return !SAFE_ENV.test(name);
+  return KEY_FILE.test(name) || SSH_KEY.test(name);
+};
+
+// src/secrets/guards/bash-rules.ts
+var READERS = /* @__PURE__ */ new Set([
+  "cat",
+  "bat",
+  "batcat",
+  "less",
+  "more",
+  "head",
+  "tail",
+  "nl",
+  "tac",
+  "strings",
+  "xxd",
+  "hexdump",
+  "od",
+  "grep",
+  "egrep",
+  "fgrep",
+  "rg",
+  "ag",
+  "ack",
+  "awk",
+  "gawk",
+  "sed",
+  "cut",
+  "sort",
+  "uniq",
+  "jq",
+  "yq",
+  "base64",
+  "type",
+  "get-content",
+  "gc",
+  "select-string",
+  "sls",
+  "diff",
+  "vim",
+  "vi",
+  "nano",
+  "view",
+  "dotenv"
+]);
+var SECRET_NAME = /(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PASS|PWD|CREDENTIAL)/i;
+var PERSON_ONLY = /\b(?:finitemonkey|fm)(?:\.mjs)?\s+secrets\s+(?:accept\b|incident\s+(?:rotated|close)\b)/;
+var LISTS_ENV = /* @__PURE__ */ new Set(["get-childitem", "gci", "dir", "ls"]);
+var onlyFlags = (args) => args.every((arg) => arg.startsWith("-"));
+var readTarget = (segment) => {
+  const redirected = segment.redirectedFrom.find(isSensitivePath);
+  if (redirected !== void 0) return redirected;
+  const program = segment.program.toLowerCase();
+  if (!READERS.has(program)) return void 0;
+  if (program === "sed" && segment.args.some((arg) => arg.startsWith("-i"))) return void 0;
+  return segment.args.find((arg) => !arg.startsWith("-") && isSensitivePath(arg));
+};
+var dumpsEnv = (segment) => {
+  const program = segment.program.toLowerCase();
+  if (program === "env" || program === "printenv") {
+    if (onlyFlags(segment.args)) return true;
+    return program === "printenv" && segment.args.some((arg) => SECRET_NAME.test(arg));
+  }
+  if (program === "set" || program === "export" || program === "declare") {
+    return segment.args.length === 0 || segment.args.every((arg) => arg === "-p" || arg === "-x");
+  }
+  return LISTS_ENV.has(program) && segment.args.some((arg) => /^env:/i.test(arg));
+};
+var bashFindings = (command, segments) => {
+  const person = PERSON_ONLY.exec(command);
+  if (person !== null) return [{ kind: "person-only", command: person[0] }];
+  return segments.flatMap((segment) => {
+    const target = readTarget(segment);
+    if (target !== void 0) return [{ kind: "read", target }];
+    if (dumpsEnv(segment)) return [{ kind: "env-dump", command: [segment.program, ...segment.args].join(" ") }];
+    return [];
+  });
+};
+var GIT_GLOBALS_WITH_VALUE = /* @__PURE__ */ new Set(["-C", "-c", "--git-dir", "--work-tree"]);
+var commitIntent = (segments) => {
+  for (const segment of segments) {
+    if (segment.program !== "git") continue;
+    let index = 0;
+    while (index < segment.args.length && (segment.args[index] ?? "").startsWith("-")) {
+      index += GIT_GLOBALS_WITH_VALUE.has(segment.args[index] ?? "") ? 2 : 1;
+    }
+    if (segment.args[index] !== "commit") continue;
+    const flags = segment.args.slice(index + 1);
+    const all = flags.some((flag2) => flag2 === "--all" || /^-[A-Za-z]*a[A-Za-z]*$/.test(flag2));
+    return { includeUnstaged: all };
+  }
+  return void 0;
+};
+
+// src/secrets/guards/shell.ts
+var SEPARATORS = /\|\||&&|[|;&\n]/;
+var TOKEN = /"((?:[^"\\]|\\.)*)"|'([^']*)'|(\S+)/g;
+var ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
+var OUTPUT_REDIRECT = /^(?:\d|&)?>{1,2}\|?$/;
+var OUTPUT_ATTACHED = /^(?:\d|&)?>{1,2}\|?\S/;
+var WRAPPERS = /* @__PURE__ */ new Set(["sudo", "command", "exec", "time", "nice", "nohup", "builtin"]);
+var tokensOf = (text2) => Array.from(text2.matchAll(TOKEN), (match) => match[1] ?? match[2] ?? match[3] ?? "");
+var splitRedirects = (tokens) => {
+  const words = [];
+  const inputs = [];
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index] ?? "";
+    if (OUTPUT_REDIRECT.test(token)) {
+      index += 1;
+    } else if (OUTPUT_ATTACHED.test(token)) {
+      continue;
+    } else if (token === "<") {
+      inputs.push(tokens[index + 1] ?? "");
+      index += 1;
+    } else if (token.startsWith("<") && !token.startsWith("<<")) {
+      inputs.push(token.slice(1));
+    } else {
+      words.push(token);
+    }
+  }
+  return { words, inputs };
+};
+var segmentOf = (text2) => {
+  const { words, inputs } = splitRedirects(tokensOf(text2));
+  let index = 0;
+  while (index < words.length && (ASSIGNMENT.test(words[index] ?? "") || WRAPPERS.has(words[index] ?? ""))) index += 1;
+  const program = words[index];
+  if (program === void 0) return inputs.length > 0 ? { program: "", args: [], redirectedFrom: inputs } : void 0;
+  return { program: program.split(/[\\/]/).pop() ?? program, args: words.slice(index + 1), redirectedFrom: inputs };
+};
+var segmentsOf = (command) => command.split(SEPARATORS).flatMap((part) => {
+  const segment = segmentOf(part);
+  return segment === void 0 ? [] : [segment];
+});
+
+// src/secrets/guards/pre-tool.ts
+var ALLOW = { kind: "allow" };
+var relativeFile = (cwd, file) => {
+  if (file === "") return file;
+  const rel = relative3(cwd, file).split("\\").join("/");
+  return rel.startsWith("..") || rel === "" ? file : rel;
+};
+var writeDecision = (input, tool) => {
+  const { t } = input;
+  for (const written of writtenTexts(tool, toolInput(input.payload))) {
+    const file = relativeFile(input.cwd, written.file);
+    const found = scanText(written.text, { path: file });
+    if (found.length === 0) continue;
+    const items = found.map((finding) => ({
+      ruleId: finding.ruleId,
+      where: written.whole ? t("secrets.where.file", { file, line: finding.line, column: finding.column }) : t("secrets.where.new_text", { file, line: finding.line })
+    }));
+    return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
+  }
+  return ALLOW;
+};
+var bashMessage = (t, finding) => {
+  switch (finding.kind) {
+    case "read":
+      return t("secrets.block.read", { target: finding.target });
+    case "env-dump":
+      return t("secrets.block.env_dump", { command: finding.command });
+    case "person-only":
+      return t("secrets.block.person_only", { command: finding.command });
+  }
+};
+var commitDecision = (input, includeUnstaged) => {
+  const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
+  if (!staged.ok || staged.value.length === 0) return ALLOW;
+  const items = staged.value.map((finding) => ({
+    ruleId: finding.ruleId,
+    where: input.t("secrets.where.file", { file: finding.file, line: finding.line, column: finding.column })
+  }));
+  return { kind: "block", reason: input.t("secrets.block.commit", { found: describeFindings(input.t, items) }) };
+};
+var bashDecision = (input) => {
+  const command = optionalString(toolInput(input.payload), "command") ?? "";
+  if (command === "") return ALLOW;
+  const segments = segmentsOf(command);
+  const [first] = bashFindings(command, segments);
+  if (first !== void 0) return { kind: "block", reason: bashMessage(input.t, first) };
+  const found = scanText(command);
+  if (found.length > 0) {
+    const items = found.map((finding) => ({ ruleId: finding.ruleId, where: lineWhere(input.t, finding) }));
+    return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
+  }
+  const commit = commitIntent(segments);
+  return commit === void 0 ? ALLOW : commitDecision(input, commit.includeUnstaged);
+};
+var readDecision = (input) => {
+  const inputs = toolInput(input.payload);
+  const target = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
+  if (target === "" || !isSensitivePath(target)) return ALLOW;
+  return { kind: "block", reason: input.t("secrets.block.read", { target: relativeFile(input.cwd, target) }) };
+};
+var WRITERS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
+var SHELLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
+var READS = /* @__PURE__ */ new Set(["Read", "Grep"]);
+var secretsPreToolUse = (input) => {
+  const tool = toolName(input.payload);
+  if (WRITERS.has(tool)) return writeDecision(input, tool);
+  if (SHELLS.has(tool)) return bashDecision(input);
+  if (READS.has(tool)) return readDecision(input);
+  return ALLOW;
+};
+
 // src/hooks/handlers.ts
 var allow = () => ({ kind: "allow" });
-var DEFAULT_HANDLERS = {};
+var DEFAULT_HANDLERS = {
+  PreToolUse: [secretsPreToolUse],
+  UserPromptSubmit: [secretsUserPromptSubmit],
+  PostToolUse: [secretsPostToolUse]
+};
 
 // src/hooks/payload.ts
 var EMPTY_PAYLOAD = {
@@ -516,9 +1645,9 @@ var EMPTY_PAYLOAD = {
   stopHookActive: false,
   raw: {}
 };
-var parseHookPayload = (event, text, interactive) => {
-  if (interactive && text.trim() === "") return accept(EMPTY_PAYLOAD);
-  const parsed = parseJsonObject(text);
+var parseHookPayload = (event, text2, interactive) => {
+  if (interactive && text2.trim() === "") return accept(EMPTY_PAYLOAD);
+  const parsed = parseJsonObject(text2);
   if (!parsed.ok) return reject(`stdin: ${parsed.error}`);
   const payload = {
     hookEventName: optionalString(parsed.value, "hook_event_name"),
@@ -574,7 +1703,7 @@ var withDeadline = (work, ms, startTimer) => new Promise((resolve2, reject2) => 
 });
 
 // src/hooks/runner.ts
-var messageOf = (error) => error instanceof Error ? error.message : String(error);
+var messageOf2 = (error) => error instanceof Error ? error.message : String(error);
 var decide = async (input, handlers) => {
   let output = {};
   for (const handler of handlers[input.event] ?? [allow]) {
@@ -585,14 +1714,21 @@ var decide = async (input, handlers) => {
   return { kind: "allow", output };
 };
 var evaluate = async (event, options) => {
-  const text = await readAll(options.stdin);
-  const parsed = parseHookPayload(event, text, options.stdin.isTTY === true);
+  const text2 = await readAll(options.stdin);
+  const parsed = parseHookPayload(event, text2, options.stdin.isTTY === true);
   if (!parsed.ok) return { kind: "failed", payload: void 0, detail: parsed.error };
   const payload = parsed.value;
   try {
-    return { kind: "decided", payload, decision: await decide({ event, payload, cwd: options.cwd }, options.handlers) };
+    return {
+      kind: "decided",
+      payload,
+      decision: await decide(
+        { event, payload, cwd: options.cwd, runtime: options.runtime, t: options.t },
+        options.handlers
+      )
+    };
   } catch (error) {
-    return { kind: "failed", payload, detail: messageOf(error) };
+    return { kind: "failed", payload, detail: messageOf2(error) };
   }
 };
 var ALLOW_STDOUT = `${JSON.stringify({ continue: true })}
@@ -643,7 +1779,7 @@ var runHook = async (event, options) => {
       options.t
     );
   } catch (error) {
-    return failed(event, messageOf(error), options.t);
+    return failed(event, messageOf2(error), options.t);
   }
 };
 
@@ -670,7 +1806,8 @@ var hookCommand = {
       handlers: DEFAULT_HANDLERS,
       cwd: ctx.cwd,
       t: ctx.t,
-      startTimer: ctx.runtime.startTimer
+      startTimer: ctx.runtime.startTimer,
+      runtime: ctx.runtime
     });
     const data = { event, verdict: outcome.verdict };
     const output = { stdout: outcome.stdout, stderr: outcome.stderr };
@@ -687,7 +1824,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join } from "node:path";
+import { join as join5 } from "node:path";
 
 // src/i18n/en.json
 var en_default = {
@@ -772,7 +1909,52 @@ var en_default = {
   "exit.internal": "5 internal error: Finite Monkey itself failed; please report it",
   "help.exit_codes": "Exit codes",
   "hook.stop_released": "the {event} hook would block again ({detail}), but Claude Code is already continuing from a stop hook, so it lets the session stop. Run `finitemonkey doctor`",
-  "error.needs_confirmation": '"{command}" needs your decision before it changes anything: {question}'
+  "error.needs_confirmation": '"{command}" needs your decision before it changes anything: {question}',
+  "secrets.command.scan": "Find secrets in files, the staged changes or the git history (local only)",
+  "secrets.command.accept": "Accept one finding into the baseline, with a reason and an expiry (the person only)",
+  "secrets.command.incident": "List secret incidents, mark them rotated or closed, and show the history purge steps",
+  "secrets.found_item": "{rule} at {where}",
+  "secrets.found_more": "and {count} more",
+  "secrets.where.line": "line {line}, column {column}",
+  "secrets.where.file": "{file}:{line}:{column}",
+  "secrets.where.new_text": "{file} (line {line} of the new text)",
+  "secrets.block.write": "blocked: the new text for {file} has a credential ({found}). Nothing was written. Keep the value in .env (outside git) and read it by its variable name. If the key is real, treat it as exposed and rotate it.",
+  "secrets.block.bash": "blocked: this command has a credential ({found}) and did not run. Read the value from an environment variable instead of writing it in the command. If the key is real, treat it as exposed and rotate it.",
+  "secrets.block.commit": "blocked: the staged changes have a credential ({found}), so the commit did not run. Remove it from the staged files, keep it in .env (outside git) and rotate it if it is real.",
+  "secrets.block.read": "blocked: {target} holds secrets, and reading it would put their values in the conversation. Ask the person for the variable names, or read .env.example.",
+  "secrets.block.env_dump": 'blocked: `{command}` prints every environment variable, secrets included. Print only the variable you need by name, or check that it exists with `test -n "$NAME"`.',
+  "secrets.block.person_only": "blocked: `{command}` is a decision for the person, not the model. Ask the person to run it in their own terminal.",
+  "secrets.block.prompt": "your message was not sent to the model: it has a credential ({found}). If this key was pasted anywhere else, treat it as exposed and rotate it. To use it, put it in .env and tell me only the variable name. Never paste keys into the chat. Incident: {incident}.",
+  "secrets.post.context": "Finite Monkey: the {tool} output contained a credential ({found}). Incident {incident} is open; rotating the key is the person's decision. Finite Monkey output never repeats the value.",
+  "secrets.incident.unsaved": "not recorded ({detail})",
+  "secrets.scan.title": "Secrets scan ({mode}): {total} found, {new} new, {known} known, {expired} expired, {fixed} fixed",
+  "secrets.scan.item": "  [{status}] {rule} {where} {mask}  id {id}",
+  "secrets.scan.clean": "No secrets found. The monkey keeps its bananas to itself.",
+  "secrets.accept.done": "Accepted {id} ({rule} at {where}) as {state} until {expires}, by {owner}.",
+  "secrets.action.accept": "accept a finding",
+  "secrets.action.rotated": "mark an incident as rotated",
+  "secrets.action.close": "close an incident",
+  "secrets.incident.title": "{count} incident(s)",
+  "secrets.incident.item": "  {id}  {state}  {rule}  {where}  since {created}",
+  "secrets.incident.none": "No secret incidents.",
+  "secrets.incident.marked": "Incident {id} is now {state}.",
+  "secrets.purge.title": "History purge for {id} ({where}, first commit {commit}). You run these steps; Finite Monkey never runs them:",
+  "secrets.purge.step1": "1. Confirm the old key is revoked at the provider and the new one works in every consumer.",
+  "secrets.purge.step2": "2. Outside the repository, write a replacements file with one line per leaked value: <value>==>REMOVED. Copy the value from your own records; Finite Monkey never stores or prints it.",
+  "secrets.purge.step3": "3. In a fresh mirror clone, run: git filter-repo --replace-text <replacements file>",
+  "secrets.purge.step4": "4. Relax branch protection yourself, push the rewritten refs, restore the protection and tell everyone with a clone to clone again.",
+  "secrets.purge.step5": "5. Close the incident: finitemonkey secrets incident close {id}",
+  "secrets.error.found": "{count} secret finding(s) outside the baseline or with an expired acceptance",
+  "secrets.error.one_mode": "Choose only one of --staged, --history and --path",
+  "secrets.error.git_unavailable": "The scan could not read git ({detail})",
+  "secrets.error.baseline_invalid": "The baseline {file} is invalid: {detail}",
+  "secrets.error.person_only": "Only the person can {action}, and this does not look like their terminal (no TTY, or running inside Claude Code)",
+  "secrets.error.reason_required": "--reason is required: say why this finding is acceptable",
+  "secrets.error.finding_not_found": "No current finding has the id {id}",
+  "secrets.error.incident_not_found": "No incident has the id {id}",
+  "secrets.error.not_rotated": "Incident {id} is {state}: rotate the key at the provider first, then mark it rotated",
+  "secrets.error.bad_transition": "Incident {id} cannot go from {from} to {to}",
+  "secrets.error.write_failed": "Could not write {file}: {detail}"
 };
 
 // src/i18n/es.json
@@ -858,7 +2040,52 @@ var es_default = {
   "exit.internal": "5 error interno: el propio Finite Monkey falló; por favor, repórtalo",
   "help.exit_codes": "Códigos de salida",
   "hook.stop_released": "el hook {event} bloquearía otra vez ({detail}), pero Claude Code ya está continuando por un hook de parada, así que deja que la sesión termine. Ejecuta `finitemonkey doctor`",
-  "error.needs_confirmation": '"{command}" necesita tu decisión antes de cambiar algo: {question}'
+  "error.needs_confirmation": '"{command}" necesita tu decisión antes de cambiar algo: {question}',
+  "secrets.command.scan": "Busca secretos en los archivos, en los cambios preparados o en el historial de git (solo local)",
+  "secrets.command.accept": "Acepta un hallazgo en el baseline, con motivo y vencimiento (solo la persona)",
+  "secrets.command.incident": "Lista incidentes de secretos, los marca como rotados o cerrados y muestra los pasos para limpiar el historial",
+  "secrets.found_item": "{rule} en {where}",
+  "secrets.found_more": "y {count} más",
+  "secrets.where.line": "línea {line}, columna {column}",
+  "secrets.where.file": "{file}:{line}:{column}",
+  "secrets.where.new_text": "{file} (línea {line} del texto nuevo)",
+  "secrets.block.write": "bloqueado: el texto nuevo de {file} tiene una credencial ({found}). No se escribió nada. Deja el valor en .env (fuera de git) y léelo por el nombre de la variable. Si la clave es real, trátala como expuesta y rótala.",
+  "secrets.block.bash": "bloqueado: este comando tiene una credencial ({found}) y no se ejecutó. Lee el valor de una variable de entorno en lugar de escribirlo en el comando. Si la clave es real, trátala como expuesta y rótala.",
+  "secrets.block.commit": "bloqueado: los cambios preparados tienen una credencial ({found}), así que el commit no se ejecutó. Quítala de los archivos preparados, déjala en .env (fuera de git) y rótala si es real.",
+  "secrets.block.read": "bloqueado: {target} guarda secretos, y leerlo pondría sus valores en la conversación. Pide a la persona los nombres de las variables, o lee .env.example.",
+  "secrets.block.env_dump": 'bloqueado: `{command}` imprime todas las variables de entorno, secretos incluidos. Imprime solo la variable que necesitas por su nombre, o comprueba que existe con `test -n "$NAME"`.',
+  "secrets.block.person_only": "bloqueado: `{command}` es una decisión de la persona, no del modelo. Pide a la persona que lo ejecute en su propia terminal.",
+  "secrets.block.prompt": "tu mensaje no se envió al modelo: tiene una credencial ({found}). Si esta clave se pegó en otro lugar, trátala como expuesta y rótala. Para usarla, ponla en .env y dime solo el nombre de la variable. Nunca pegues claves en el chat. Incidente: {incident}.",
+  "secrets.post.context": "Finite Monkey: la salida de {tool} contenía una credencial ({found}). El incidente {incident} está abierto; rotar la clave es decisión de la persona. La salida de Finite Monkey nunca repite el valor.",
+  "secrets.incident.unsaved": "no registrado ({detail})",
+  "secrets.scan.title": "Búsqueda de secretos ({mode}): {total} hallados, {new} nuevos, {known} conocidos, {expired} vencidos, {fixed} corregidos",
+  "secrets.scan.item": "  [{status}] {rule} {where} {mask}  id {id}",
+  "secrets.scan.clean": "No se encontraron secretos. El mono se guarda sus bananas.",
+  "secrets.accept.done": "Aceptado {id} ({rule} en {where}) como {state} hasta {expires}, por {owner}.",
+  "secrets.action.accept": "aceptar un hallazgo",
+  "secrets.action.rotated": "marcar un incidente como rotado",
+  "secrets.action.close": "cerrar un incidente",
+  "secrets.incident.title": "{count} incidente(s)",
+  "secrets.incident.item": "  {id}  {state}  {rule}  {where}  desde {created}",
+  "secrets.incident.none": "No hay incidentes de secretos.",
+  "secrets.incident.marked": "El incidente {id} ahora está {state}.",
+  "secrets.purge.title": "Limpieza del historial de {id} ({where}, primer commit {commit}). Estos pasos los ejecutas tú; Finite Monkey nunca los ejecuta:",
+  "secrets.purge.step1": "1. Confirma que la clave vieja está revocada en el proveedor y que la nueva funciona en todos los consumidores.",
+  "secrets.purge.step2": "2. Fuera del repositorio, escribe un archivo de reemplazos con una línea por valor filtrado: <valor>==>REMOVED. Copia el valor de tus propios registros; Finite Monkey nunca lo guarda ni lo imprime.",
+  "secrets.purge.step3": "3. En un clon espejo nuevo, ejecuta: git filter-repo --replace-text <archivo de reemplazos>",
+  "secrets.purge.step4": "4. Relaja tú la protección de la rama, envía las refs reescritas, restaura la protección y avisa a quien tenga un clon que vuelva a clonar.",
+  "secrets.purge.step5": "5. Cierra el incidente: finitemonkey secrets incident close {id}",
+  "secrets.error.found": "{count} hallazgo(s) de secretos fuera del baseline o con aceptación vencida",
+  "secrets.error.one_mode": "Elige solo uno entre --staged, --history y --path",
+  "secrets.error.git_unavailable": "La búsqueda no pudo leer git ({detail})",
+  "secrets.error.baseline_invalid": "El baseline {file} no es válido: {detail}",
+  "secrets.error.person_only": "Solo la persona puede {action}, y esto no parece su terminal (sin TTY, o dentro de Claude Code)",
+  "secrets.error.reason_required": "--reason es obligatorio: di por qué este hallazgo es aceptable",
+  "secrets.error.finding_not_found": "Ningún hallazgo actual tiene el id {id}",
+  "secrets.error.incident_not_found": "Ningún incidente tiene el id {id}",
+  "secrets.error.not_rotated": "El incidente {id} está {state}: rota la clave en el proveedor primero y luego márcalo como rotado",
+  "secrets.error.bad_transition": "El incidente {id} no puede pasar de {from} a {to}",
+  "secrets.error.write_failed": "No se pudo escribir {file}: {detail}"
 };
 
 // src/i18n/pt-BR.json
@@ -944,7 +2171,52 @@ var pt_BR_default = {
   "exit.internal": "5 erro interno: o próprio Finite Monkey falhou; por favor, reporte",
   "help.exit_codes": "Códigos de saída",
   "hook.stop_released": "o hook {event} bloquearia de novo ({detail}), mas o Claude Code já está continuando por causa de um hook de parada, então ele deixa a sessão parar. Rode `finitemonkey doctor`",
-  "error.needs_confirmation": '"{command}" precisa da sua decisão antes de mudar qualquer coisa: {question}'
+  "error.needs_confirmation": '"{command}" precisa da sua decisão antes de mudar qualquer coisa: {question}',
+  "secrets.command.scan": "Procura segredos nos arquivos, nas mudanças preparadas ou no histórico do git (só local)",
+  "secrets.command.accept": "Aceita um achado no baseline, com motivo e validade (só a pessoa)",
+  "secrets.command.incident": "Lista incidentes de segredo, marca como rotacionado ou fechado e mostra os passos de limpeza do histórico",
+  "secrets.found_item": "{rule} em {where}",
+  "secrets.found_more": "e mais {count}",
+  "secrets.where.line": "linha {line}, coluna {column}",
+  "secrets.where.file": "{file}:{line}:{column}",
+  "secrets.where.new_text": "{file} (linha {line} do texto novo)",
+  "secrets.block.write": "bloqueado: o texto novo de {file} tem uma credencial ({found}). Nada foi gravado. Deixe o valor no .env (fora do git) e leia pelo nome da variável. Se a chave é real, trate como exposta e troque.",
+  "secrets.block.bash": "bloqueado: este comando tem uma credencial ({found}) e não rodou. Leia o valor de uma variável de ambiente em vez de escrevê-lo no comando. Se a chave é real, trate como exposta e troque.",
+  "secrets.block.commit": "bloqueado: as mudanças preparadas têm uma credencial ({found}), então o commit não rodou. Tire-a dos arquivos preparados, deixe no .env (fora do git) e troque a chave se for real.",
+  "secrets.block.read": "bloqueado: {target} guarda segredos, e lê-lo colocaria os valores na conversa. Peça à pessoa os nomes das variáveis, ou leia o .env.example.",
+  "secrets.block.env_dump": 'bloqueado: `{command}` imprime todas as variáveis de ambiente, segredos inclusive. Imprima só a variável que precisa, pelo nome, ou confira que ela existe com `test -n "$NAME"`.',
+  "secrets.block.person_only": "bloqueado: `{command}` é decisão da pessoa, não do modelo. Peça à pessoa que rode no terminal dela.",
+  "secrets.block.prompt": "sua mensagem não foi enviada ao modelo: ela tem uma credencial ({found}). Se essa chave foi colada em outro lugar, trate como exposta e troque. Para usá-la, ponha no .env e me diga só o nome da variável. Nunca cole chaves na conversa. Incidente: {incident}.",
+  "secrets.post.context": "Finite Monkey: a saída de {tool} continha uma credencial ({found}). O incidente {incident} está aberto; trocar a chave é decisão da pessoa. A saída do Finite Monkey nunca repete o valor.",
+  "secrets.incident.unsaved": "não registrado ({detail})",
+  "secrets.scan.title": "Varredura de segredos ({mode}): {total} achados, {new} novos, {known} conhecidos, {expired} vencidos, {fixed} corrigidos",
+  "secrets.scan.item": "  [{status}] {rule} {where} {mask}  id {id}",
+  "secrets.scan.clean": "Nenhum segredo encontrado. O macaco guarda as bananas para si.",
+  "secrets.accept.done": "Aceito {id} ({rule} em {where}) como {state} até {expires}, por {owner}.",
+  "secrets.action.accept": "aceitar um achado",
+  "secrets.action.rotated": "marcar um incidente como rotacionado",
+  "secrets.action.close": "fechar um incidente",
+  "secrets.incident.title": "{count} incidente(s)",
+  "secrets.incident.item": "  {id}  {state}  {rule}  {where}  desde {created}",
+  "secrets.incident.none": "Nenhum incidente de segredo.",
+  "secrets.incident.marked": "O incidente {id} agora está {state}.",
+  "secrets.purge.title": "Limpeza do histórico de {id} ({where}, primeiro commit {commit}). Quem roda estes passos é você; o Finite Monkey nunca os roda:",
+  "secrets.purge.step1": "1. Confirme que a chave antiga foi revogada no provedor e que a nova funciona em todos os consumidores.",
+  "secrets.purge.step2": "2. Fora do repositório, escreva um arquivo de substituições com uma linha por valor vazado: <valor>==>REMOVED. Copie o valor dos seus registros; o Finite Monkey nunca o guarda nem imprime.",
+  "secrets.purge.step3": "3. Num clone espelho novo, rode: git filter-repo --replace-text <arquivo de substituições>",
+  "secrets.purge.step4": "4. Afrouxe a proteção da branch você mesmo, envie as refs reescritas, restaure a proteção e avise quem tem clone para clonar de novo.",
+  "secrets.purge.step5": "5. Feche o incidente: finitemonkey secrets incident close {id}",
+  "secrets.error.found": "{count} achado(s) de segredo fora do baseline ou com aceite vencido",
+  "secrets.error.one_mode": "Escolha só um entre --staged, --history e --path",
+  "secrets.error.git_unavailable": "A varredura não conseguiu ler o git ({detail})",
+  "secrets.error.baseline_invalid": "O baseline {file} é inválido: {detail}",
+  "secrets.error.person_only": "Só a pessoa pode {action}, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
+  "secrets.error.reason_required": "--reason é obrigatório: diga por que este achado é aceitável",
+  "secrets.error.finding_not_found": "Nenhum achado atual tem o id {id}",
+  "secrets.error.incident_not_found": "Nenhum incidente tem o id {id}",
+  "secrets.error.not_rotated": "O incidente {id} está {state}: troque a chave no provedor primeiro e depois marque como rotacionado",
+  "secrets.error.bad_transition": "O incidente {id} não pode ir de {from} para {to}",
+  "secrets.error.write_failed": "Não foi possível gravar {file}: {detail}"
 };
 
 // src/i18n/catalogs.ts
@@ -1022,10 +2294,10 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join(dir, `${lang}.json`));
-  const text = ctx.runtime.readText(file);
-  if (!text.ok) return reject(unreadable(dir, file, text.error));
-  const parsed = parseJsonObject(text.value);
+  const file = toAbsolutePath(join5(dir, `${lang}.json`));
+  const text2 = ctx.runtime.readText(file);
+  if (!text2.ok) return reject(unreadable(dir, file, text2.error));
+  const parsed = parseJsonObject(text2.value);
   return parsed.ok ? parsed : reject(unreadable(dir, file, parsed.error));
 };
 var loadCatalogs = (ctx, dir) => {
@@ -1104,6 +2376,382 @@ var uninstallCommand = planned("uninstall", "command.uninstall.summary", {
   "keep-generated": { type: "boolean" }
 });
 
+// src/secrets/project.ts
+var projectRoot = (ctx) => {
+  const top = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
+  const path = top.stdout.trim();
+  return top.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
+};
+var isPerson = (ctx) => ctx.io.stdin.isTTY === true && ctx.env["CLAUDECODE"] === void 0 && ctx.env["CLAUDE_CODE_ENTRYPOINT"] === void 0;
+var personName = (ctx) => {
+  const name = ctx.runtime.git(["config", "user.name"], ctx.cwd).stdout.trim();
+  return name !== "" ? name : ctx.env["USER"] ?? ctx.env["USERNAME"] ?? "person";
+};
+
+// src/commands/secrets-problems.ts
+var baselineInvalid = (detail) => ({
+  code: "secrets_baseline_invalid",
+  messageKey: "secrets.error.baseline_invalid",
+  params: { file: BASELINE_FILE, detail },
+  fix: `git checkout -- ${BASELINE_FILE}`,
+  exitCode: ExitCode.NotConfigured
+});
+var writeFailed = (file, detail) => ({
+  code: "secrets_write_failed",
+  messageKey: "secrets.error.write_failed",
+  params: { file, detail },
+  fix: "finitemonkey doctor",
+  exitCode: ExitCode.Internal
+});
+var gitUnavailable = (detail) => ({
+  code: "secrets_git_unavailable",
+  messageKey: "secrets.error.git_unavailable",
+  params: { detail },
+  fix: "finitemonkey doctor",
+  exitCode: ExitCode.NotConfigured
+});
+
+// src/commands/secrets-accept.ts
+var DAY_MS = 864e5;
+var daysOf = (values) => {
+  const raw = stringOption(values, "days");
+  if (raw === void 0) return EXCEPTION_MAX_DAYS;
+  const days = Number.parseInt(raw, 10);
+  return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
+};
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS).toISOString();
+var failure = (ctx, problem) => failureFrom(ctx.t, problem);
+var inputProblem = (ctx, id, reason, days) => {
+  const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
+  if (!isPerson(ctx)) {
+    return needsPersonProblem("secrets.error.person_only", fix, { action: ctx.t("secrets.action.accept") });
+  }
+  if (id === "") return usageProblem("invalid_arguments", "error.invalid_arguments", fix, { detail: "<id>" });
+  if (reason === void 0 || reason.trim() === "") {
+    return usageProblem("invalid_arguments", "secrets.error.reason_required", fix);
+  }
+  if (days === void 0) {
+    return usageProblem("invalid_arguments", "error.invalid_arguments", fix, {
+      detail: `--days 1-${String(EXCEPTION_MAX_DAYS)}`
+    });
+  }
+  return void 0;
+};
+var entryOf = (ctx, finding, args) => {
+  const now = ctx.runtime.now();
+  return {
+    id: finding.id,
+    rule: finding.ruleId,
+    file: finding.file,
+    line: finding.line,
+    fingerprint: finding.fingerprint,
+    state: args.falsePositive ? "falso-positivo" : "aceito",
+    owner: personName(ctx),
+    reason: args.reason,
+    acceptedAt: now,
+    expiresAt: plusDays(now, args.days)
+  };
+};
+var acceptEntry = (ctx, args) => {
+  const root = projectRoot(ctx);
+  const baseline = loadBaseline(ctx.runtime, root);
+  if (!baseline.ok) {
+    return failure(ctx, baselineInvalid(baseline.error));
+  }
+  const scanned = scanPath(ctx.runtime, root, ".");
+  const finding = scanned.ok ? scanned.value.find((item) => item.id === args.id) : void 0;
+  if (finding === void 0) {
+    return failure(
+      ctx,
+      usageProblem("secrets_finding_not_found", "secrets.error.finding_not_found", "finitemonkey secrets scan", {
+        id: args.id
+      })
+    );
+  }
+  const entry = entryOf(ctx, finding, args);
+  const entries = [...baseline.value.entries.filter((item) => item.id !== entry.id), entry];
+  const saved = saveBaseline(ctx.runtime, root, { schema: baseline.value.schema, entries });
+  if (!saved.ok) {
+    return failure(ctx, writeFailed(BASELINE_FILE, saved.error));
+  }
+  const line = ctx.t("secrets.accept.done", {
+    id: entry.id,
+    rule: entry.rule,
+    where: whereOf(finding),
+    state: entry.state,
+    expires: entry.expiresAt.slice(0, 10),
+    owner: entry.owner
+  });
+  return success(entry, [line]);
+};
+var secretsAcceptCommand = {
+  path: ["secrets", "accept"],
+  summaryKey: "secrets.command.accept",
+  usage: "finitemonkey secrets accept <finding-id> --reason <why> [--days 1-90] [--false-positive]",
+  status: "ready",
+  maxPositionals: 1,
+  options: { reason: { type: "string" }, days: { type: "string" }, "false-positive": { type: "boolean" } },
+  run: (ctx, args) => {
+    const id = args.positionals[0] ?? "";
+    const reason = stringOption(args.values, "reason");
+    const days = daysOf(args.values);
+    const problem = inputProblem(ctx, id, reason, days);
+    if (problem !== void 0 || reason === void 0 || days === void 0) {
+      return Promise.resolve(
+        failure(
+          ctx,
+          problem ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
+        )
+      );
+    }
+    return Promise.resolve(
+      acceptEntry(ctx, { id, reason, days, falsePositive: args.values["false-positive"] === true })
+    );
+  }
+};
+
+// src/commands/secrets-incident.ts
+var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
+var USAGE = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var TARGET = { rotated: "rotacionado", close: "fechado" };
+var PURGE_STEPS = [
+  "secrets.purge.step1",
+  "secrets.purge.step2",
+  "secrets.purge.step3",
+  "secrets.purge.step4",
+  "secrets.purge.step5"
+];
+var fail = (ctx, problem) => failureFrom(ctx.t, problem);
+var notFound2 = (ctx, id) => fail(
+  ctx,
+  usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
+    id
+  })
+);
+var itemLine = (ctx, incident) => ctx.t("secrets.incident.item", {
+  id: incident.id,
+  state: incident.state,
+  rule: incident.rule,
+  where: incident.where,
+  created: incident.createdAt.slice(0, 10)
+});
+var list = (ctx, root) => {
+  const incidents = listIncidents(ctx.runtime, root);
+  const human = incidents.length === 0 ? [ctx.t("secrets.incident.none")] : [ctx.t("secrets.incident.title", { count: incidents.length }), ...incidents.map((item) => itemLine(ctx, item))];
+  return success({ schema: "finitemonkey/secrets-incidents@1", incidents }, human);
+};
+var notRotated = (ctx, incident) => fail(ctx, {
+  code: "secrets_not_rotated",
+  messageKey: "secrets.error.not_rotated",
+  params: { id: incident.id, state: incident.state },
+  fix: `finitemonkey secrets incident rotated ${incident.id}`,
+  exitCode: ExitCode.NeedsPerson
+});
+var move = (ctx, root, incident, action) => {
+  const to = TARGET[action];
+  if (!isPerson(ctx)) {
+    return fail(
+      ctx,
+      needsPersonProblem("secrets.error.person_only", `finitemonkey secrets incident ${action} ${incident.id}`, {
+        action: ctx.t(`secrets.action.${action}`)
+      })
+    );
+  }
+  if (!canMove(incident.state, to))
+    return action === "close" ? notRotated(ctx, incident) : fail(
+      ctx,
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE, {
+        id: incident.id,
+        from: incident.state,
+        to
+      })
+    );
+  const moved = moveIncident(incident, to, ctx.runtime.now(), personName(ctx));
+  const saved = saveIncident(ctx.runtime, root, moved);
+  if (!saved.ok) {
+    return fail(ctx, writeFailed(incident.id, saved.error));
+  }
+  return success(moved, [ctx.t("secrets.incident.marked", { id: moved.id, state: moved.state })]);
+};
+var purge = (ctx, incident) => {
+  if (!isRotated(incident)) return notRotated(ctx, incident);
+  const params = { id: incident.id, where: incident.where, commit: incident.firstCommit ?? "?" };
+  const steps = PURGE_STEPS.map((key) => ctx.t(key, params));
+  return success({ id: incident.id, state: incident.state, steps }, [ctx.t("secrets.purge.title", params), ...steps]);
+};
+var actionOf = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "list"));
+var secretsIncidentCommand = {
+  path: ["secrets", "incident"],
+  summaryKey: "secrets.command.incident",
+  usage: USAGE,
+  status: "ready",
+  maxPositionals: 2,
+  run: (ctx, args) => {
+    const action = actionOf(args.positionals[0]);
+    const root = projectRoot(ctx);
+    if (action === void 0)
+      return Promise.resolve(
+        fail(
+          ctx,
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE, { detail: args.positionals[0] ?? "" })
+        )
+      );
+    if (action === "list") return Promise.resolve(list(ctx, root));
+    const id = args.positionals[1] ?? "";
+    const incident = readIncident(ctx.runtime, root, id);
+    if (!incident.ok) return Promise.resolve(notFound2(ctx, id));
+    return Promise.resolve(action === "purge" ? purge(ctx, incident.value) : move(ctx, root, incident.value, action));
+  }
+};
+
+// src/mask/mask.ts
+var maskToken = (finding) => `«secret:${finding.ruleId}:${finding.tail}»`;
+var maskText = (text2) => {
+  const findings = scanText(text2, { rules: CREDENTIAL_RULES });
+  if (findings.length === 0) return text2;
+  let out = "";
+  let cursor = 0;
+  for (const finding of findings) {
+    out += text2.slice(cursor, finding.start) + maskToken(finding);
+    cursor = finding.end;
+  }
+  return out + text2.slice(cursor);
+};
+var maskDeep = (value) => {
+  if (typeof value === "string") return maskText(value);
+  if (Array.isArray(value)) return value.map(maskDeep);
+  if (typeof value === "object" && value !== null) {
+    return Object.fromEntries(Object.entries(value).map(([key, inner]) => [maskText(key), maskDeep(inner)]));
+  }
+  return value;
+};
+
+// src/commands/secrets-scan.ts
+var SECRETS_SCAN_SCHEMA = "finitemonkey/secrets-scan@1";
+var view = (finding, status) => ({
+  id: finding.id,
+  rule: finding.ruleId,
+  severity: finding.severity,
+  file: finding.file,
+  line: finding.line,
+  column: finding.column,
+  fingerprint: finding.fingerprint,
+  mask: maskToken(finding),
+  status,
+  ...finding.commit === void 0 ? {} : { commit: finding.commit }
+});
+var modeOf = (values) => {
+  const chosen = [values["staged"] === true, values["history"] === true, stringOption(values, "path") !== void 0];
+  if (chosen.filter(Boolean).length > 1) return void 0;
+  if (chosen[0] === true) return "staged";
+  return chosen[1] === true ? "history" : "path";
+};
+var normalizedTarget = (target) => target.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
+var scopeOf = (target) => {
+  const prefix = normalizedTarget(target);
+  return (file) => prefix === "" || file === prefix || file.startsWith(`${prefix}/`);
+};
+var runScan = async (ctx, root, mode, target) => {
+  if (mode === "staged") return scanStaged(ctx.runtime, root);
+  if (mode === "history") return scanHistory(ctx.runtime, root);
+  return scanPath(ctx.runtime, root, normalizedTarget(target) || ".");
+};
+var historyIncidents = (ctx, root, fresh2) => fresh2.flatMap((finding) => {
+  if (ruleById(finding.ruleId)?.kind !== "credential") return [];
+  const draft = {
+    rule: finding.ruleId,
+    fingerprint: finding.fingerprint,
+    where: whereOf(finding),
+    source: "history",
+    state: "aberto",
+    ...finding.commit === void 0 ? {} : { firstCommit: finding.commit }
+  };
+  const saved = recordIncident(ctx.runtime, root, draft, HOOK_ACTOR);
+  return saved.ok ? [saved.value.id] : [];
+});
+var dataOf = (mode, outcome, incidents) => {
+  const findings = [
+    ...outcome.fresh.map((finding) => view(finding, "new")),
+    ...outcome.known.map((finding) => view(finding, "known")),
+    ...outcome.expired.map((finding) => view(finding, "expired"))
+  ];
+  return {
+    schema: SECRETS_SCAN_SCHEMA,
+    mode,
+    baseline: BASELINE_FILE,
+    findings,
+    fixed: outcome.fixed.map((entry) => entry.id),
+    incidents,
+    summary: {
+      total: findings.length,
+      new: outcome.fresh.length,
+      known: outcome.known.length,
+      expired: outcome.expired.length,
+      fixed: outcome.fixed.length
+    }
+  };
+};
+var humanOf = (ctx, data) => [
+  ctx.t("secrets.scan.title", { mode: data.mode, ...data.summary }),
+  ...data.findings.map(
+    (item) => ctx.t("secrets.scan.item", {
+      status: item.status,
+      rule: item.rule,
+      where: `${item.file}:${String(item.line)}`,
+      id: item.id,
+      mask: item.mask
+    })
+  ),
+  ...data.summary.total === 0 ? [ctx.t("secrets.scan.clean")] : []
+];
+var resultOf = (ctx, data) => {
+  const human = humanOf(ctx, data);
+  const failing = data.summary.new + data.summary.expired;
+  if (failing === 0) return success(data, human);
+  return failureFrom(
+    ctx.t,
+    {
+      code: "secrets_found",
+      messageKey: "secrets.error.found",
+      params: { count: failing },
+      fix: "finitemonkey secrets accept <id> --reason <why>",
+      exitCode: ExitCode.CheckFailed,
+      data
+    },
+    human
+  );
+};
+var prune = (ctx, root, baseline, outcome) => {
+  if (outcome.fixed.length > 0) saveBaseline(ctx.runtime, root, withoutFixed(baseline, outcome.fixed));
+};
+var secretsScanCommand = {
+  path: ["secrets", "scan"],
+  summaryKey: "secrets.command.scan",
+  usage: "finitemonkey secrets scan [--staged | --history | --path <dir>] [--json]",
+  status: "ready",
+  options: { staged: { type: "boolean" }, history: { type: "boolean" }, path: { type: "string" } },
+  run: async (ctx, args) => {
+    const mode = modeOf(args.values);
+    const fix = "finitemonkey help secrets scan";
+    if (mode === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.error.one_mode", fix));
+    const root = projectRoot(ctx);
+    const target = stringOption(args.values, "path") ?? ".";
+    const scanned = await runScan(ctx, root, mode, target);
+    if (!scanned.ok) return failureFrom(ctx.t, gitUnavailable(scanned.error));
+    const baseline = loadBaseline(ctx.runtime, root);
+    if (!baseline.ok) return failureFrom(ctx.t, baselineInvalid(baseline.error));
+    const outcome = ratchet(
+      scanned.value,
+      baseline.value,
+      ctx.runtime.now(),
+      mode === "path" ? scopeOf(target) : void 0
+    );
+    if (mode === "path") prune(ctx, root, baseline.value, outcome);
+    const incidents = mode === "history" ? historyIncidents(ctx, root, outcome.fresh) : [];
+    return resultOf(ctx, dataOf(mode, outcome, incidents));
+  }
+};
+
 // src/commands/version.ts
 var versionCommand = {
   path: ["version"],
@@ -1124,6 +2772,9 @@ var REGISTRY = [
   uninstallCommand,
   i18nCheckCommand,
   hookCommand,
+  secretsScanCommand,
+  secretsAcceptCommand,
+  secretsIncidentCommand,
   versionCommand,
   helpCommand
 ];
@@ -1205,23 +2856,26 @@ var resultFromThrown = (thrown, t) => {
 };
 var block = (items) => items.length > 0 ? `${items.join("\n")}
 ` : "";
+var write = (sink, text2) => {
+  if (text2 !== "") sink.write(maskText(text2));
+};
 var render = (ctx, command, result) => {
   if (result.raw !== void 0) {
-    ctx.io.stdout.write(result.raw.stdout);
-    ctx.io.stderr.write(result.raw.stderr);
+    write(ctx.io.stdout, result.raw.stdout);
+    write(ctx.io.stderr, result.raw.stderr);
     return;
   }
   if (ctx.json) {
-    ctx.io.stdout.write(`${JSON.stringify(toEnvelope(command, result))}
+    ctx.io.stdout.write(`${JSON.stringify(maskDeep(toEnvelope(command, result)))}
 `);
     return;
   }
-  ctx.io.stdout.write(block(result.human ?? []));
+  write(ctx.io.stdout, block(result.human ?? []));
   if (!result.ok) {
     const { message, fix } = result.error;
-    ctx.io.stderr.write(block([ctx.t("output.error", { message }), ctx.t("output.fix", { fix })]));
+    write(ctx.io.stderr, block([ctx.t("output.error", { message }), ctx.t("output.fix", { fix })]));
   }
-  if (result.next !== void 0) ctx.io.stdout.write(block([ctx.t("output.next", { next: result.next })]));
+  if (result.next !== void 0) write(ctx.io.stdout, block([ctx.t("output.next", { next: result.next })]));
 };
 
 // src/core/run.ts
@@ -1268,9 +2922,9 @@ var run = async (options) => {
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 var UNKNOWN_VERSION = "0.0.0-unknown";
 var readPackageVersion = (readText, moduleUrl) => {
-  const text = readText(toAbsolutePath(fileURLToPath2(new URL("../package.json", moduleUrl))));
-  if (!text.ok) return UNKNOWN_VERSION;
-  const parsed = parseJson(text.value);
+  const text2 = readText(toAbsolutePath(fileURLToPath2(new URL("../package.json", moduleUrl))));
+  if (!text2.ok) return UNKNOWN_VERSION;
+  const parsed = parseJson(text2.value);
   if (!parsed.ok || !isRecord(parsed.value)) return UNKNOWN_VERSION;
   const version = parsed.value["version"];
   return typeof version === "string" ? version : UNKNOWN_VERSION;
