@@ -1,6 +1,15 @@
 # Finite Monkey
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/finitemonkey/v/next"><img src="https://img.shields.io/npm/v/finitemonkey/next?label=npm%40next&color=f2a93b" alt="npm next"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml?query=branch%3Anext"><img src="https://img.shields.io/github/actions/workflow/status/gabrielvieiraf/finitemonkey/ci.yml?branch=next&label=CI" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/finitemonkey/v/next#provenance"><img src="https://img.shields.io/badge/npm-provenance-2ea44f" alt="npm provenance"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/github/license/gabrielvieiraf/finitemonkey" alt="license"></a>
+  <img src="https://img.shields.io/node/v/finitemonkey/next" alt="node">
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md#instala%C3%A7%C3%A3o-planejada"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757" alt="Claude Code plugin"></a>
+</p>
+
+<p align="center">
   <img src="assets/finitemonkey.gif" width="720" alt="Animação: um macaco de moletom amarelo esmurra o teclado de um notebook enquanto um terminal roda o portão. As verificações que falham ficam verdes e travam uma a uma até aparecer actually done, e o macaco comemora com uma banana.">
   <br>
   <sub>Ilustração do fluxo planejado, não é gravação. Na v0.1 entra uma captura real.</sub>
