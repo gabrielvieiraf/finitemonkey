@@ -1,0 +1,1 @@
+docs: badges com ícone do npm e downloads

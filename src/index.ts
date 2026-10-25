@@ -31,3 +31,8 @@ export type { Lang, LangSource } from "./i18n/languages.js";
 export { detectLang, LANGUAGES } from "./i18n/languages.js";
 export type { Params, Translate } from "./i18n/translate.js";
 export { createTranslator } from "./i18n/translate.js";
+export type { ProseFileReport, ProseGateStatus } from "./prose/gate.js";
+export { proseGateStatus } from "./prose/gate.js";
+export { isFlagged, scoreProse } from "./prose/score.js";
+export type { ProseHit, ProseReport, ProseRuleId, ProseSpan } from "./prose/types.js";
+export { PROSE_RULE_IDS } from "./prose/types.js";

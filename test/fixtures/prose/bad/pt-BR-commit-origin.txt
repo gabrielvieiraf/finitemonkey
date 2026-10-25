@@ -1,0 +1,1 @@
+docs: badges no estilo do julius2claude, com downloads do npm

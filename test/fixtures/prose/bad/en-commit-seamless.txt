@@ -1,0 +1,5 @@
+feat: seamless onboarding for new teams
+
+This change leverages the existing invite flow to deliver a robust, effortless first run.
+
+Less friction. More signups. Happy users.
