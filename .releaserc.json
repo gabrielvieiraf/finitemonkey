@@ -36,7 +36,11 @@
         "assets": [
           "package.json",
           "package-lock.json",
-          "CHANGELOG.md"
+          "CHANGELOG.md",
+          "plugin/.claude-plugin/plugin.json",
+          "plugin/hooks/hooks.json",
+          "plugin/skills/**/SKILL.md",
+          "plugin/commands/*.md"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
