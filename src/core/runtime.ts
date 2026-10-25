@@ -26,6 +26,30 @@ export type GitLines = (
   onLine: (line: string) => void,
 ) => Promise<GitResult>;
 
+export interface GitRunOptions {
+  readonly env?: Readonly<Record<string, string>>;
+  readonly input?: string;
+  readonly timeoutMs?: number;
+}
+
+export interface GitRun extends GitResult {
+  readonly stderr: string;
+  readonly timedOut: boolean;
+}
+
+export type GitWith = (args: readonly string[], cwd: AbsolutePath, options: GitRunOptions) => GitRun;
+
+export interface ExecResult {
+  readonly found: boolean;
+  readonly ok: boolean;
+  readonly status: number | null;
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly timedOut: boolean;
+}
+
+export type Exec = (command: string, args: readonly string[], cwd: AbsolutePath, timeoutMs: number) => ExecResult;
+
 export type FileKind = "file" | "dir";
 
 export interface FileStat {
@@ -58,4 +82,7 @@ export interface Runtime {
   readonly remove: (path: AbsolutePath) => Parsed<undefined>;
   readonly lock: (path: AbsolutePath, options: LockOptions) => Parsed<ReleaseLock>;
   readonly selfPath: AbsolutePath;
+  readonly gitWith: GitWith;
+  readonly exec: Exec;
+  readonly realpath: (path: string) => string;
 }

@@ -14,7 +14,7 @@ import {
   nodeWriteAtomic,
   nodeWriteText,
 } from "./node-fs.js";
-import { nodeGit, nodeGitLines } from "./node-git.js";
+import { nodeExec, nodeGit, nodeGitLines, nodeGitWith } from "./node-git.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Probe, Runtime } from "./runtime.js";
 
@@ -87,4 +87,7 @@ export const nodeRuntime = (): Runtime => ({
   remove: nodeRemove,
   lock: nodeLock,
   selfPath: toAbsolutePath(fileURLToPath(import.meta.url)),
+  gitWith: nodeGitWith,
+  exec: nodeExec,
+  realpath: nodeRealpath,
 });

@@ -35,6 +35,8 @@ export interface FakeRuntimeOptions {
   readonly gitLines?: (args: readonly string[]) => readonly string[] | undefined;
   readonly fs?: MemoryFs;
   readonly selfPath?: AbsolutePath;
+  readonly gitWith?: Runtime["gitWith"];
+  readonly exec?: Runtime["exec"];
 }
 
 export const gitMissing: GitResult = { found: false, ok: false, stdout: "" };
@@ -71,6 +73,9 @@ export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => ({
     return Promise.resolve({ found: true, ok: true, stdout: "" });
   },
   selfPath: options.selfPath ?? BUNDLE,
+  gitWith: options.gitWith ?? ((args) => ({ ...(options.git?.(args) ?? gitMissing), stderr: "", timedOut: false })),
+  exec: options.exec ?? (() => ({ found: false, ok: false, status: null, stdout: "", stderr: "", timedOut: false })),
+  realpath: (path) => path,
 });
 
 const sink = (): { readonly write: (chunk: string) => void; readonly text: () => string } => {
