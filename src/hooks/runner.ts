@@ -24,6 +24,7 @@ export interface HookRunOptions {
   readonly cwd: AbsolutePath;
   readonly t: Translate;
   readonly startTimer: Runtime["startTimer"];
+  readonly runtime: Runtime;
 }
 
 type Evaluation =
@@ -48,7 +49,14 @@ const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Eval
   if (!parsed.ok) return { kind: "failed", payload: undefined, detail: parsed.error };
   const payload = parsed.value;
   try {
-    return { kind: "decided", payload, decision: await decide({ event, payload, cwd: options.cwd }, options.handlers) };
+    return {
+      kind: "decided",
+      payload,
+      decision: await decide(
+        { event, payload, cwd: options.cwd, runtime: options.runtime, t: options.t },
+        options.handlers,
+      ),
+    };
   } catch (error) {
     return { kind: "failed", payload, detail: messageOf(error) };
   }

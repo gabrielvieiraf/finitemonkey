@@ -33,6 +33,7 @@ export const hookCommand: CommandSpec = {
       cwd: ctx.cwd,
       t: ctx.t,
       startTimer: ctx.runtime.startTimer,
+      runtime: ctx.runtime,
     });
     const data: HookData = { event, verdict: outcome.verdict };
     const output = { stdout: outcome.stdout, stderr: outcome.stderr };
