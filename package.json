@@ -2,6 +2,7 @@
   "name": "finitemonkey",
   "version": "0.0.0-development",
   "description": "Infinite monkeys not required. A gate that makes coding agents finish verified work.",
+  "type": "module",
   "license": "Apache-2.0",
   "author": "Gabriel Vieira",
   "repository": {
@@ -18,7 +19,12 @@
     "verification",
     "definition-of-done"
   ],
+  "bin": {
+    "finitemonkey": "dist/finitemonkey.mjs",
+    "fm": "dist/finitemonkey.mjs"
+  },
   "files": [
+    "dist",
     "LICENSE",
     "NOTICE",
     "README.md"
@@ -31,20 +37,38 @@
     "provenance": true
   },
   "scripts": {
-    "check": "npm pack --dry-run",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p .",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node scripts/test.mjs",
+    "check:dist": "node scripts/check-dist.mjs",
+    "i18n:check": "node dist/finitemonkey.mjs i18n check --dir src/i18n",
+    "bench:startup": "node scripts/bench-startup.mjs",
+    "smoke:install": "node scripts/smoke-install.mjs",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:dist && npm test && npm run i18n:check && npm pack --dry-run",
+    "prepublishOnly": "npm run typecheck && npm run check:dist && npm test",
     "prepare": "husky",
     "gif": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
+    "@eslint/js": "^10.0.1",
     "@resvg/resvg-js": "^2.6.2",
     "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/git": "^11.0.1",
-    "@types/node": "^26.6.5",
+    "@types/node": "^20.19.43",
     "conventional-changelog-conventionalcommits": "^10.4.1",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.13.0",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
     "husky": "^9.1.7",
+    "prettier": "^3.9.10",
     "semantic-release": "^25.0.9",
-    "typescript": "^7.0.2"
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0"
   }
 }

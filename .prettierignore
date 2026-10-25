@@ -1,0 +1,15 @@
+dist
+node_modules
+package.json
+package-lock.json
+CHANGELOG.md
+*.md
+llms.txt
+docs
+.github
+.husky
+LICENSE
+NOTICE
+.claude
+.releaserc.json
+commitlint.config.mjs
