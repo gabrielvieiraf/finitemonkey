@@ -35,7 +35,9 @@ const parseAdded = (value: unknown): SettingsAdded | undefined => {
   const deny = strings(value["deny"]);
   const { schema, attribution } = value;
   if (deny === undefined || typeof schema !== "boolean" || typeof attribution !== "boolean") return undefined;
-  return { schema, attribution, deny };
+  const marketplace = value["marketplace"] === true;
+  const plugin = value["plugin"] === true;
+  return { schema, attribution, deny, marketplace, plugin };
 };
 
 const parseEntry = (value: unknown): LockEntry | undefined => {

@@ -58,6 +58,7 @@ export interface PlanInput {
   readonly lang: Lang;
   readonly bin: string | undefined;
   readonly version: string;
+  readonly marketplace: boolean;
   readonly env: Env;
   readonly t: Translate;
 }
@@ -104,6 +105,8 @@ const joinAdded = (previous: SettingsAdded | undefined, next: SettingsAdded): Se
         schema: previous.schema || next.schema,
         attribution: previous.attribution || next.attribution,
         deny: union(previous.deny, next.deny),
+        marketplace: previous.marketplace || next.marketplace,
+        plugin: previous.plugin || next.plugin,
       };
 
 const wantedHooks = (detection: Detection): Readonly<Record<string, HookHandlerJson>> =>
@@ -114,14 +117,19 @@ const wantedHooks = (detection: Detection): Readonly<Record<string, HookHandlerJ
 const settingsItem = (
   project: Project,
   detection: Detection,
-  preset: Preset,
+  input: PlanInput,
   previous: LockEntry | undefined,
 ): Parsed<PlanItem, PlanError> => {
   const before = project.read(SETTINGS_FILE);
   const current = parseSettings(before);
   if (!current.ok) return reject({ kind: "settings", detail: current.error });
   const hooks = wantedHooks(detection);
-  const wanted = { hooks, deny: DENY_RULES, attributionOff: preset === "gabriel" };
+  const wanted = {
+    hooks,
+    deny: DENY_RULES,
+    attributionOff: input.preset === "gabriel",
+    marketplace: input.marketplace,
+  };
   const merged = mergeSettings(current.value, wanted, previous?.handlers ?? []);
   const after = renderJson(merged.settings, before === undefined ? DEFAULT_STYLE : styleOf(before));
   return accept({
@@ -163,7 +171,7 @@ export const buildPlan = (
   input: PlanInput,
   previous: LockFile | undefined,
 ): Parsed<Plan, PlanError> => {
-  const settings = settingsItem(project, detection, input.preset, entryFor(previous, SETTINGS_FILE));
+  const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
   const items = [settings.value, gitignoreItem(project), configItem(project, input, entryFor(previous, CONFIG_FILE))];
   return accept({ detection, preset: input.preset, items, previous });

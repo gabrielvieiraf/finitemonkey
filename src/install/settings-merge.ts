@@ -6,17 +6,31 @@ export const SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-set
 
 export const ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false } as const;
 
+export const MARKETPLACE_ENTRY = { source: { source: "github", repo: "gabrielvieiraf/finitemonkey" } } as const;
+export const MARKETPLACE_KEY = "finitemonkey";
+export const PLUGIN_ID = "finitemonkey@finitemonkey";
+
 export interface SettingsWanted {
   readonly hooks: Readonly<Record<string, HookHandlerJson>>;
   readonly deny: readonly string[];
   readonly attributionOff: boolean;
+  readonly marketplace: boolean;
 }
 
 export interface SettingsAdded {
   readonly schema: boolean;
   readonly deny: readonly string[];
   readonly attribution: boolean;
+  readonly marketplace: boolean;
+  readonly plugin: boolean;
 }
+
+const withEntry = (settings: JsonObject, key: string, name: string, value: unknown): JsonObject => {
+  const inner = setKey(asRecord(settings[key]), name, value);
+  return setKey(settings, key, Object.keys(inner).length === 0 ? undefined : inner);
+};
+
+const hasEntry = (settings: JsonObject, key: string, name: string): boolean => name in asRecord(settings[key]);
 
 type IsOwn = (handler: unknown) => boolean;
 
@@ -78,9 +92,13 @@ export const mergeSettings = (
   const existingDeny = asList(asRecord(base["permissions"])["deny"]);
   const deny = wanted.deny.filter((rule) => !existingDeny.includes(rule));
   const attribution = wanted.attributionOff && !("attribution" in base);
+  const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
+  const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
   let settings = withPermissions(withHooks(base, hooks), [...existingDeny, ...deny]);
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
-  return { settings, added: { schema, deny, attribution } };
+  if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
+  if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
+  return { settings, added: { schema, deny, attribution, marketplace, plugin } };
 };
 
 const sameAttribution = (value: unknown): boolean => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
@@ -98,6 +116,8 @@ export const unmergeSettings = (
   if (added.attribution && sameAttribution(settings["attribution"])) {
     settings = setKey(settings, "attribution", undefined);
   }
+  if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, undefined);
+  if (added.plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, undefined);
   if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
   return settings;
 };

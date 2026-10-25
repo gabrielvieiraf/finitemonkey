@@ -13,7 +13,15 @@ const check = (ctx: Ctx, bin: string | undefined): CommandResult<PlanData> => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === undefined) return failureFrom(ctx.t, notInstalled());
-  const input = { preset: previous.value.preset, lang: ctx.lang, bin, version: ctx.version, env: ctx.env, t: ctx.t };
+  const input = {
+    preset: previous.value.preset,
+    lang: ctx.lang,
+    bin,
+    version: ctx.version,
+    marketplace: false,
+    env: ctx.env,
+    t: ctx.t,
+  };
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const data = planData(ctx.t, plan.value, "update", false, undefined);
@@ -35,7 +43,8 @@ const runUpdate = (ctx: Ctx, args: CommandArgs): CommandResult<PlanData> => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === undefined) return failureFrom(ctx.t, notInstalled());
-  const request = { mode: "update" as const, preset: stringOption(args.values, "preset"), bin, showDiff: true };
+  const preset = stringOption(args.values, "preset");
+  const request = { mode: "update" as const, preset, bin, marketplace: false, showDiff: true };
   return runInstall(ctx, request, previous.value.preset);
 };
 

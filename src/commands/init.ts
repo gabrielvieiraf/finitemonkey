@@ -15,6 +15,7 @@ export interface InstallRequest {
   readonly mode: InstallMode;
   readonly preset: string | undefined;
   readonly bin: string | undefined;
+  readonly marketplace: boolean;
   readonly showDiff: boolean;
 }
 
@@ -23,6 +24,7 @@ const flagsFor = (request: InstallRequest, preset: Preset): string =>
     `finitemonkey ${request.mode} --yes`,
     ...(request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : []),
     ...(request.bin === undefined ? [] : [`--bin "${request.bin}"`]),
+    ...(request.marketplace ? ["--marketplace"] : []),
   ].join(" ");
 
 export const presentPlan = (ctx: Ctx, request: InstallRequest, plan: Plan): CommandResult<PlanData> => {
@@ -50,7 +52,15 @@ export const runInstall = (ctx: Ctx, request: InstallRequest, presetFallback: Pr
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = { preset, lang: ctx.lang, bin: request.bin, version: ctx.version, env: ctx.env, t: ctx.t };
+  const input = {
+    preset,
+    lang: ctx.lang,
+    bin: request.bin,
+    version: ctx.version,
+    marketplace: request.marketplace,
+    env: ctx.env,
+    t: ctx.t,
+  };
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   if (ctx.dryRun || !ctx.yes || !hasChanges(plan.value)) return presentPlan(ctx, request, plan.value);
@@ -61,14 +71,20 @@ const initRequest = (args: CommandArgs): InstallRequest => ({
   mode: "init",
   preset: stringOption(args.values, "preset"),
   bin: stringOption(args.values, "bin"),
+  marketplace: args.values["marketplace"] === true,
   showDiff: false,
 });
 
 export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--dry-run] [--yes]",
   status: "ready",
-  options: { preset: { type: "string" }, bin: { type: "string" }, github: { type: "boolean" } },
+  options: {
+    preset: { type: "string" },
+    bin: { type: "string" },
+    github: { type: "boolean" },
+    marketplace: { type: "boolean" },
+  },
   run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral")),
 };
