@@ -12,7 +12,12 @@ interface Box {
   readonly bottom: number;
 }
 
-export function patches(frames: readonly IndexedFrame[], width: number, height: number, transparent: number): readonly Patch[] {
+export function patches(
+  frames: readonly IndexedFrame[],
+  width: number,
+  height: number,
+  transparent: number,
+): readonly Patch[] {
   const out: Patch[] = [];
   let previous: Uint8Array | undefined;
   for (const frame of frames) {
@@ -51,7 +56,14 @@ function changed(before: Uint8Array, after: Uint8Array, width: number, height: n
   return right < 0 ? undefined : { left, top, right, bottom };
 }
 
-function crop(before: Uint8Array, after: Uint8Array, width: number, box: Box, transparent: number, delay: number): Patch {
+function crop(
+  before: Uint8Array,
+  after: Uint8Array,
+  width: number,
+  box: Box,
+  transparent: number,
+  delay: number,
+): Patch {
   const patchWidth = box.right - box.left + 1;
   const patchHeight = box.bottom - box.top + 1;
   const indices = new Uint8Array(patchWidth * patchHeight);

@@ -1,0 +1,100 @@
+{
+  "envelope": {
+    "required": {
+      "schemaVersion": "number",
+      "ok": "boolean",
+      "command": "string"
+    },
+    "optional": {
+      "data": "any",
+      "error": "object",
+      "next": "string"
+    }
+  },
+  "error": {
+    "required": {
+      "code": "string",
+      "message": "string",
+      "fix": "string"
+    }
+  },
+  "doctor": {
+    "required": {
+      "schema": "string",
+      "checks": "array",
+      "summary": "object"
+    },
+    "schema": "finitemonkey/doctor@1"
+  },
+  "doctorItem": {
+    "required": {
+      "check": "string",
+      "status": "string",
+      "detail": "string"
+    },
+    "optional": {
+      "fix": "string"
+    },
+    "statuses": ["ok", "warn", "fail"]
+  },
+  "doctorSummary": {
+    "required": {
+      "ok": "number",
+      "warn": "number",
+      "fail": "number"
+    }
+  },
+  "version": {
+    "required": {
+      "version": "string",
+      "node": "string",
+      "platform": "string"
+    }
+  },
+  "help": {
+    "required": {
+      "commands": "array",
+      "flags": "array",
+      "exitCodes": "array"
+    }
+  },
+  "helpCommand": {
+    "required": {
+      "name": "string",
+      "usage": "string",
+      "summary": "string",
+      "status": "string",
+      "options": "array"
+    }
+  },
+  "i18nCheck": {
+    "required": {
+      "languages": "array",
+      "keys": "number",
+      "problems": "array",
+      "source": "string"
+    }
+  },
+  "exitCodes": {
+    "Ok": 0,
+    "CheckFailed": 1,
+    "Usage": 2,
+    "NotConfigured": 3,
+    "NeedsPerson": 4,
+    "Internal": 5
+  },
+  "errorCodes": [
+    "doctor_failed",
+    "hook_blocked",
+    "i18n_catalog_unreadable",
+    "i18n_mismatch",
+    "internal_error",
+    "invalid_arguments",
+    "invalid_lang",
+    "needs_confirmation",
+    "not_implemented",
+    "unexpected_argument",
+    "unknown_command",
+    "unknown_hook_event"
+  ]
+}

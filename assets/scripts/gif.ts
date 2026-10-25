@@ -30,7 +30,15 @@ export function encodeGif(spec: GifSpec): Uint8Array {
   for (const patch of spec.patches) {
     parts.push(
       Uint8Array.from([0x21, 0xf9, 0x04, (doNotDispose << 2) | 1, ...word(patch.delay), spec.transparent, 0x00]),
-      Uint8Array.from([0x2c, ...word(patch.left), ...word(patch.top), ...word(patch.width), ...word(patch.height), 0x00, 0x08]),
+      Uint8Array.from([
+        0x2c,
+        ...word(patch.left),
+        ...word(patch.top),
+        ...word(patch.width),
+        ...word(patch.height),
+        0x00,
+        0x08,
+      ]),
       lzw(patch.indices, 8),
     );
   }
@@ -40,7 +48,9 @@ export function encodeGif(spec: GifSpec): Uint8Array {
 
 function colorTable(palette: readonly Rgb[]): Uint8Array {
   const table = new Uint8Array(256 * 3);
-  palette.slice(0, 256).forEach(([r, g, b], index) => table.set([r, g, b], index * 3));
+  palette.slice(0, 256).forEach(([r, g, b], index) => {
+    table.set([r, g, b], index * 3);
+  });
   return table;
 }
 
@@ -49,7 +59,7 @@ function word(value: number): readonly [number, number] {
 }
 
 function ascii(value: string): Uint8Array {
-  return Uint8Array.from([...value].map((char) => char.charCodeAt(0)));
+  return Uint8Array.from(Array.from(value, (char) => char.charCodeAt(0)));
 }
 
 function concat(parts: readonly Uint8Array[]): Uint8Array {

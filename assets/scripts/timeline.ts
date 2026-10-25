@@ -1,6 +1,6 @@
 import { checks, prompt, verdict } from "./checks.ts";
-import { pick, seeded, type Random } from "./random.ts";
 import { scramble } from "./glyphs.ts";
+import { pick, type Random, seeded } from "./random.ts";
 
 export type Mood = "typing" | "worried" | "pleased" | "celebrate";
 
@@ -45,55 +45,29 @@ interface Spawn {
   readonly drift: number;
 }
 
+type Still = Omit<Frame, "particles" | "beat">;
+
+const runs = Math.max(...checks.map((check) => check.passesAtRun));
+
+const base: Still = {
+  prompt: "",
+  cursor: false,
+  run: 0,
+  rows: checks.map((): Row => ({ kind: "hidden" })),
+  locked: 0,
+  verdict: "",
+  badge: 0,
+  mood: "typing",
+  fade: 1,
+};
+
 export function buildTimeline(seed: number): readonly Frame[] {
   const random = seeded(seed);
-  const frames: Omit<Frame, "particles" | "beat">[] = [];
-  const runs = Math.max(...checks.map((check) => check.passesAtRun));
-  const hiddenRows: readonly Row[] = checks.map(() => ({ kind: "hidden" }));
-
-  const base = { cursor: false, run: 0, rows: hiddenRows, locked: 0, verdict: "", badge: 0, mood: "typing" as Mood, fade: 1 };
-
-  for (let typed = 0; typed <= prompt.length; typed += 3) {
-    frames.push({ ...base, prompt: prompt.slice(0, typed), cursor: true });
-  }
-  frames.push({ ...base, prompt, cursor: true });
-
+  const frames: Still[] = [...intro()];
   for (let run = 1; run <= runs; run += 1) {
-    const lockedBefore = checks.filter((check) => check.passesAtRun < run).length;
-    for (let step = 0; step < rollingFrames; step += 1) {
-      const rows = checks.map((check): Row =>
-        check.passesAtRun < run
-          ? { kind: "pass", fresh: false }
-          : { kind: "rolling", noise: noise(random, check.fail.length), spinner: spinner[(step + run) % spinner.length] ?? "|" },
-      );
-      frames.push({ ...base, prompt, run, rows, locked: lockedBefore });
-    }
-    const passedNow = checks.filter((check) => check.passesAtRun === run).length;
-    for (let step = 0; step < resultFrames; step += 1) {
-      const rows = checks.map((check): Row => {
-        if (check.passesAtRun < run) return { kind: "pass", fresh: false };
-        if (check.passesAtRun === run) return { kind: "pass", fresh: step < 3 };
-        return { kind: "fail" };
-      });
-      const mood: Mood = passedNow > 0 ? "pleased" : "worried";
-      frames.push({ ...base, prompt, run, rows, locked: lockedBefore + passedNow, mood });
-    }
+    frames.push(...rolling(random, run), ...results(run));
   }
-
-  const allPassed: readonly Row[] = checks.map(() => ({ kind: "pass", fresh: false }));
-  const finale = { ...base, prompt, run: runs, rows: allPassed, locked: checks.length };
-  const revealSteps = Math.ceil(verdict.length / 3);
-  for (let step = 1; step <= revealSteps; step += 1) {
-    frames.push({ ...finale, verdict: verdict.slice(0, step * 3), mood: "pleased" });
-  }
-  const pop = [0.4, 0.85, 1.15, 1.05, 1];
-  for (let step = 0; step < celebrateFrames; step += 1) {
-    frames.push({ ...finale, verdict, badge: pop[step] ?? 1, mood: "celebrate" });
-  }
-  for (let step = 1; step <= fadeFrames; step += 1) {
-    frames.push({ ...finale, verdict, badge: 1, fade: 1 - step / fadeFrames, mood: "typing" });
-  }
-
+  frames.push(...finale());
   const spawns = spawnParticles(random, frames);
   return frames.map((frame, index) => ({
     ...frame,
@@ -102,11 +76,77 @@ export function buildTimeline(seed: number): readonly Frame[] {
   }));
 }
 
-function noise(random: Random, length: number): string {
-  return Array.from({ length }, () => pick(random, [...scramble])).join("");
+function intro(): readonly Still[] {
+  const frames: Still[] = [];
+  for (let typed = 0; typed <= prompt.length; typed += 3) {
+    frames.push({ ...base, prompt: prompt.slice(0, typed), cursor: true });
+  }
+  frames.push({ ...base, prompt, cursor: true });
+  return frames;
 }
 
-function spawnParticles(random: Random, frames: readonly Omit<Frame, "particles" | "beat">[]): readonly Spawn[] {
+function rolling(random: Random, run: number): readonly Still[] {
+  const locked = checks.filter((check) => check.passesAtRun < run).length;
+  const frames: Still[] = [];
+  for (let step = 0; step < rollingFrames; step += 1) {
+    const rows = checks.map((check): Row =>
+      check.passesAtRun < run
+        ? { kind: "pass", fresh: false }
+        : {
+            kind: "rolling",
+            noise: noise(random, check.fail.length),
+            spinner: spinner[(step + run) % spinner.length] ?? "|",
+          },
+    );
+    frames.push({ ...base, prompt, run, rows, locked });
+  }
+  return frames;
+}
+
+function results(run: number): readonly Still[] {
+  const lockedBefore = checks.filter((check) => check.passesAtRun < run).length;
+  const passedNow = checks.filter((check) => check.passesAtRun === run).length;
+  const mood: Mood = passedNow > 0 ? "pleased" : "worried";
+  const frames: Still[] = [];
+  for (let step = 0; step < resultFrames; step += 1) {
+    const rows = checks.map((check): Row => {
+      if (check.passesAtRun < run) return { kind: "pass", fresh: false };
+      if (check.passesAtRun === run) return { kind: "pass", fresh: step < 3 };
+      return { kind: "fail" };
+    });
+    frames.push({ ...base, prompt, run, rows, locked: lockedBefore + passedNow, mood });
+  }
+  return frames;
+}
+
+function finale(): readonly Still[] {
+  const done: Still = {
+    ...base,
+    prompt,
+    run: runs,
+    rows: checks.map((): Row => ({ kind: "pass", fresh: false })),
+    locked: checks.length,
+  };
+  const frames: Still[] = [];
+  const revealSteps = Math.ceil(verdict.length / 3);
+  for (let step = 1; step <= revealSteps; step += 1) {
+    frames.push({ ...done, verdict: verdict.slice(0, step * 3), mood: "pleased" });
+  }
+  const pop = [0.4, 0.85, 1.15, 1.05, 1];
+  for (let step = 0; step < celebrateFrames; step += 1) {
+    frames.push({ ...done, verdict, badge: pop[step] ?? 1, mood: "celebrate" });
+  }
+  for (let step = 1; step <= fadeFrames; step += 1) {
+    frames.push({ ...done, verdict, badge: 1, fade: 1 - step / fadeFrames, mood: "typing" });
+  }
+  return frames;
+}
+
+function noise(random: Random, length: number): string {
+  return Array.from({ length }, () => pick(random, Array.from(scramble))).join("");
+}
+
+function spawnParticles(random: Random, frames: readonly Still[]): readonly Spawn[] {
   const spawns: Spawn[] = [];
   frames.forEach((frame, index) => {
     const mashing = frame.mood === "typing" && frame.fade === 1;
@@ -115,7 +155,7 @@ function spawnParticles(random: Random, frames: readonly Omit<Frame, "particles"
     for (let n = 0; n < count; n += 1) {
       const left = random() < 0.5;
       spawns.push({
-        char: pick(random, [..."asdfjklqwe!?#$*"]),
+        char: pick(random, Array.from("asdfjklqwe!?#$*")),
         x: left ? 96 + random() * 26 : 228 + random() * 26,
         born: index,
         drift: (left ? -1 : 1) * (0.6 + random() * 1.4),
