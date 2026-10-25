@@ -34,7 +34,7 @@ describe("dispatch", () => {
     { argv: ["help", "i18n", "check"], text: /finitemonkey i18n check \[--dir <path>\]/ },
     { argv: ["doctor", "--help"], text: /Usage: finitemonkey doctor/ },
     { argv: ["uninstall", "-h"], text: /--purge, --keep-generated/ },
-    { argv: ["init", "--help"], text: /--preset, --bin, --github/ },
+    { argv: ["init", "--help"], text: /--preset, --bin, --marketplace/ },
   ] as const;
   for (const { argv, text } of topics) {
     it(`${argv.join(" ")} shows command help`, async () => {

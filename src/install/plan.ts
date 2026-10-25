@@ -4,7 +4,7 @@ import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
 import { type ClaudeInfo, detectClaude } from "./claude-version.js";
-import { configTemplate } from "./config-template.js";
+import { configTemplate, hasMarker } from "./config-template.js";
 import { DENY_RULES } from "./deny-floor.js";
 import {
   type Authority,
@@ -154,7 +154,12 @@ const configItem = (project: Project, input: PlanInput, previous: LockEntry | un
   const template = configTemplate(input.t, input.preset, input.lang);
   const base = { path: CONFIG_FILE, kind: "generated" as const, before };
   if (before === undefined) return { ...base, action: "create", after: template };
-  if (previous === undefined) return { ...base, action: "skip-foreign", after: before, proposal: template };
+  if (previous === undefined && !hasMarker(before)) {
+    return { ...base, action: "skip-foreign", after: before, proposal: template };
+  }
+  if (previous === undefined) {
+    return { ...base, action: before === template ? "unchanged" : "keep-edited", after: before, proposal: template };
+  }
   if (hashText(before) !== previous.hash) {
     const action = before === template ? "unchanged" : "keep-edited";
     return { ...base, action, after: before, proposal: template };
@@ -178,3 +183,5 @@ export const buildPlan = (
 };
 
 export const hasChanges = (plan: Plan): boolean => plan.items.some((item) => CHANGING.includes(item.action));
+
+export const needsWrite = (plan: Plan): boolean => hasChanges(plan) || plan.previous === undefined;

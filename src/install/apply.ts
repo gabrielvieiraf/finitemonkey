@@ -57,7 +57,8 @@ const entryOf = (plan: Plan, item: PlanItem, backupDir: string | undefined): Loc
   const previous = plan.previous?.entries.find((entry) => entry.path === item.path);
   const existed = previous?.existed ?? item.before !== undefined;
   const backup = previous?.backup ?? (existed && backupDir !== undefined ? `${backupDir}/${item.path}` : undefined);
-  const hash = item.action === "keep-edited" ? (previous?.hash ?? hashText(item.after)) : hashText(item.after);
+  const hash =
+    item.action === "keep-edited" ? (previous?.hash ?? hashText(item.proposal ?? item.after)) : hashText(item.after);
   return {
     path: item.path,
     kind: item.kind,

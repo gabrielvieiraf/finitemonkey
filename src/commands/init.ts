@@ -4,7 +4,7 @@ import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { applyPlan } from "../install/apply.js";
 import { parsePreset, type Preset } from "../install/layout.js";
-import { buildPlan, detect, hasChanges, type Plan, readPreviousLock } from "../install/plan.js";
+import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
 import { type PlanData, planData, planLines } from "../install/report.js";
 import { applyProblem, confirmProblem, invalidPreset, openProject, planProblem } from "../install/session.js";
 import type { CommandSpec } from "./types.js";
@@ -31,7 +31,7 @@ export const presentPlan = (ctx: Ctx, request: InstallRequest, plan: Plan): Comm
   const data = planData(ctx.t, plan, request.mode, false, undefined);
   const human = planLines(ctx.t, data, request.showDiff || ctx.dryRun);
   if (ctx.dryRun) return success(data, [...human, ctx.t("install.dry_run")]);
-  if (!hasChanges(plan)) return success(data, [...human, ctx.t("install.nothing_to_do")]);
+  if (!needsWrite(plan)) return success(data, [...human, ctx.t("install.nothing_to_do")]);
   const next = flagsFor(request, plan.preset);
   const problem = confirmProblem(request.mode, ctx.t("install.confirm_question"), next);
   return { ...failureFrom(ctx.t, { ...problem, data }, human), next };
@@ -63,7 +63,7 @@ export const runInstall = (ctx: Ctx, request: InstallRequest, presetFallback: Pr
   };
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
-  if (ctx.dryRun || !ctx.yes || !hasChanges(plan.value)) return presentPlan(ctx, request, plan.value);
+  if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
   return applyAndReport(ctx, request, plan.value);
 };
 
@@ -83,7 +83,6 @@ export const initCommand: CommandSpec = {
   options: {
     preset: { type: "string" },
     bin: { type: "string" },
-    github: { type: "boolean" },
     marketplace: { type: "boolean" },
   },
   run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral")),

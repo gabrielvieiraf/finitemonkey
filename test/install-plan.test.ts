@@ -250,3 +250,23 @@ describe("marketplace registration and the plugin stepping aside", () => {
     assert.match(result.stderr, /could not run/);
   });
 });
+
+describe("a teammate who clones an installed repository", () => {
+  it("adopts the committed config and settings instead of calling them foreign", async () => {
+    const first = repo();
+    await run(first, ["init", "--yes"]);
+    const committed = Object.fromEntries(
+      [SETTINGS_FILE, ".gitignore", CONFIG_FILE].map((path) => [path, first.files()[at(path)] ?? ""]),
+    );
+    const clone = repo(committed);
+    const result = await run(clone, ["init", "--yes"]);
+    assert.equal(result.code, ExitCode.Ok);
+    assert.ok(Object.values(actions(result.body)).every((action) => action === "unchanged"));
+    assert.ok(clone.files()[at(LOCK_FILE)] !== undefined);
+    const edited = repo({ ...committed, [CONFIG_FILE]: `${committed[CONFIG_FILE] ?? ""}custom: 1\n` });
+    const kept = await run(edited, ["init", "--yes"]);
+    assert.equal(actions(kept.body)[CONFIG_FILE], "keep-edited");
+    await run(edited, ["update", "--yes"], "2.0.0");
+    assert.match(edited.files()[at(CONFIG_FILE)] ?? "", /custom: 1/);
+  });
+});
