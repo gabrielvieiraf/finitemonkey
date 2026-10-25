@@ -3208,6 +3208,7 @@ var configTemplate = (t, preset, lang) => [
   `lang: ${lang}`,
   ""
 ].join("\n");
+var hasMarker = (text) => text.includes(GENERATED_MARKER);
 
 // src/install/deny-floor.ts
 var DENY_FLOOR = {
@@ -3417,7 +3418,12 @@ var configItem = (project, input, previous) => {
   const template = configTemplate(input.t, input.preset, input.lang);
   const base = { path: CONFIG_FILE, kind: "generated", before };
   if (before === void 0) return { ...base, action: "create", after: template };
-  if (previous === void 0) return { ...base, action: "skip-foreign", after: before, proposal: template };
+  if (previous === void 0 && !hasMarker(before)) {
+    return { ...base, action: "skip-foreign", after: before, proposal: template };
+  }
+  if (previous === void 0) {
+    return { ...base, action: before === template ? "unchanged" : "keep-edited", after: before, proposal: template };
+  }
   if (hashText(before) !== previous.hash) {
     const action = before === template ? "unchanged" : "keep-edited";
     return { ...base, action, after: before, proposal: template };
@@ -3432,6 +3438,7 @@ var buildPlan = (project, detection, input, previous) => {
   return accept({ detection, preset: input.preset, items, previous });
 };
 var hasChanges = (plan) => plan.items.some((item) => CHANGING.includes(item.action));
+var needsWrite = (plan) => hasChanges(plan) || plan.previous === void 0;
 
 // src/install/apply.ts
 var stamp = (iso) => iso.replace(/[:.]/g, "-");
@@ -3460,7 +3467,7 @@ var entryOf2 = (plan, item, backupDir) => {
   const previous = plan.previous?.entries.find((entry) => entry.path === item.path);
   const existed = previous?.existed ?? item.before !== void 0;
   const backup = previous?.backup ?? (existed && backupDir !== void 0 ? `${backupDir}/${item.path}` : void 0);
-  const hash = item.action === "keep-edited" ? previous?.hash ?? hashText(item.after) : hashText(item.after);
+  const hash = item.action === "keep-edited" ? previous?.hash ?? hashText(item.proposal ?? item.after) : hashText(item.after);
   return {
     path: item.path,
     kind: item.kind,
@@ -3709,7 +3716,7 @@ var presentPlan = (ctx, request, plan) => {
   const data = planData(ctx.t, plan, request.mode, false, void 0);
   const human = planLines(ctx.t, data, request.showDiff || ctx.dryRun);
   if (ctx.dryRun) return success(data, [...human, ctx.t("install.dry_run")]);
-  if (!hasChanges(plan)) return success(data, [...human, ctx.t("install.nothing_to_do")]);
+  if (!needsWrite(plan)) return success(data, [...human, ctx.t("install.nothing_to_do")]);
   const next = flagsFor(request, plan.preset);
   const problem2 = confirmProblem(request.mode, ctx.t("install.confirm_question"), next);
   return { ...failureFrom(ctx.t, { ...problem2, data }, human), next };
@@ -3739,7 +3746,7 @@ var runInstall = (ctx, request, presetFallback) => {
   };
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
-  if (ctx.dryRun || !ctx.yes || !hasChanges(plan.value)) return presentPlan(ctx, request, plan.value);
+  if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
   return applyAndReport(ctx, request, plan.value);
 };
 var initRequest = (args) => ({
@@ -3757,7 +3764,6 @@ var initCommand = {
   options: {
     preset: { type: "string" },
     bin: { type: "string" },
-    github: { type: "boolean" },
     marketplace: { type: "boolean" }
   },
   run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral"))
