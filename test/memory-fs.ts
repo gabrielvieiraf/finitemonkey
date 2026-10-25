@@ -2,6 +2,7 @@ import { posix } from "node:path";
 
 import type { AbsolutePath } from "../src/core/brand.js";
 import { accept, type Parsed, reject } from "../src/core/parsed.js";
+import { toPosixPath } from "../src/core/posix-path.js";
 import type { FileStat, LockOptions, ReleaseLock, Runtime } from "../src/core/runtime.js";
 
 type FsRuntime = Pick<
@@ -29,7 +30,7 @@ export interface MemoryFs extends FsRuntime {
 
 export const DEFAULT_NOW = "2026-10-25T12:00:00.000Z";
 
-export const fakeKey = (path: string): string => path.replace(/\\/g, "/");
+export const fakeKey = (path: string): string => toPosixPath(path);
 
 const parentsOf = (path: string): readonly string[] => {
   const parents: string[] = [];

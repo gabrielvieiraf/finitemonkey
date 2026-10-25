@@ -280,3 +280,26 @@ describe("a teammate who clones an installed repository", () => {
     assert.match(edited.read(at(CONFIG_FILE)) ?? "", /custom: 1/);
   });
 });
+
+describe("Windows-style paths in the fake file system", () => {
+  const windows = (path: string): string => path.replace(/\//g, "\\");
+
+  it("plan, apply and uninstall treat backslash and slash paths as the same file", async () => {
+    const original = '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"mine"}]}]}}\n';
+    const fs = memoryFs(
+      { [BUNDLE]: FAKE_BUNDLE, [windows(at(SETTINGS_FILE))]: original, [windows(at(".gitignore"))]: "x\r\n" },
+      [windows(at(".git"))],
+    );
+    const installed = await run(fs, ["init", "--yes"]);
+    assert.equal(installed.code, ExitCode.Ok);
+    assert.equal(actions(installed.body)[SETTINGS_FILE], "merge");
+    assert.match(fs.read(windows(at(SETTINGS_FILE))) ?? "", /"command": "mine"/);
+    assert.match(fs.read(windows(at(SETTINGS_FILE))) ?? "", /finitemonkey\.mjs/);
+    assert.ok(fs.read(windows(at(LOCK_FILE))) !== undefined);
+    assert.equal(Object.keys(fs.files()).filter((path) => path.includes("\\")).length, 0);
+    assert.equal((await run(fs, ["uninstall", "--yes", "--purge"])).code, ExitCode.Ok);
+    assert.equal(fs.read(at(SETTINGS_FILE)), original);
+    assert.equal(fs.read(windows(at(".gitignore"))), "x\r\n");
+    assert.equal(fs.read(at(CONFIG_FILE)), undefined);
+  });
+});
