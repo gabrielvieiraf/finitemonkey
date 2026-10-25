@@ -20,7 +20,7 @@ export function laptop(): string {
 export function stickyNote(x: number, y: number, angle: number): string {
   return `<g transform="translate(${x} ${y}) rotate(${angle})">` +
     `<rect x="-19" y="-17" width="38" height="34" rx="2" fill="${palette.note}"/>` +
-    `<rect x="-19" y="-17" width="38" height="7" rx="2" fill="${palette.bananaDark}" opacity="0.35"/>` +
+    `<rect x="-19" y="-17" width="38" height="7" rx="2" fill="${palette.mugDark}" opacity="0.3"/>` +
     text("ship", -14, -6, 1.2, palette.noteInk) +
     text("it!", -11, 5, 1.2, palette.noteInk) +
     `</g>`;

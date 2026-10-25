@@ -32,7 +32,7 @@ function hood(): string {
 }
 
 function torso(): string {
-  return `<path d="M96 330C96 252 122 210 ${cx} 210C228 210 254 252 254 330Z" fill="${palette.hoodie}"/>` +
+  return `<path d="M96 330C96 252 122 210 ${cx} 210C228 210 254 252 254 330Z" fill="${palette.hoodie}" stroke="${palette.hoodieDark}" stroke-width="3"/>` +
     `<path d="M140 296h70v22q0 6-6 6h-58q-6 0-6-6z" fill="${palette.hoodieDark}" opacity="0.55"/>`;
 }
 
@@ -72,8 +72,8 @@ function headphones(): string {
   return `<path d="M130 196Q${cx} 238 220 196" fill="none" stroke="${palette.headphone}" stroke-width="7" stroke-linecap="round"/>` +
     `<rect x="116" y="186" width="20" height="26" rx="8" fill="${palette.headphone}"/>` +
     `<rect x="214" y="186" width="20" height="26" rx="8" fill="${palette.headphone}"/>` +
-    `<rect x="121" y="192" width="10" height="14" rx="4" fill="${palette.amber}"/>` +
-    `<rect x="219" y="192" width="10" height="14" rx="4" fill="${palette.amber}"/>`;
+    `<rect x="121" y="192" width="10" height="14" rx="4" fill="${palette.pad}"/>` +
+    `<rect x="219" y="192" width="10" height="14" rx="4" fill="${palette.pad}"/>`;
 }
 
 function head(pose: Pose): string {
