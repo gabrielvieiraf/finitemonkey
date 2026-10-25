@@ -1,5 +1,6 @@
 import type { AbsolutePath } from "../core/brand.js";
 import { accept, type Parsed } from "../core/parsed.js";
+import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
 import { loadBaseline, ratchet } from "./baseline.js";
 import { type Incident, listIncidents } from "./incidents.js";
@@ -16,6 +17,7 @@ const untracked = (runtime: Runtime, root: AbsolutePath): readonly LocatedFindin
   if (!listed.ok) return [];
   return listed.stdout
     .split("\u0000")
+    .map(toPosixPath)
     .filter((file) => file !== "" && !file.startsWith(".finitemonkey/"))
     .flatMap((file) => scanFile(runtime, root, file));
 };

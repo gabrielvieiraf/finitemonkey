@@ -2,6 +2,7 @@ import { join, relative } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
 import { diffScanner } from "./diff.js";
 import { scanText } from "./engine.js";
@@ -19,15 +20,19 @@ const DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"] as con
 
 const binary = (text: string): boolean => text.slice(0, 8000).includes("\u0000");
 
-const posix = (path: string): string => path.split("\\").join("/");
-
 const listed = (runtime: Runtime, root: AbsolutePath, target: string): Parsed<readonly string[]> => {
   const git = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target], root);
-  if (git.ok) return accept(git.stdout.split("\u0000").filter((name) => name !== ""));
+  if (git.ok)
+    return accept(
+      git.stdout
+        .split("\u0000")
+        .filter((name) => name !== "")
+        .map(toPosixPath),
+    );
   const base = toAbsolutePath(target, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => posix(relative(root, join(base, name)))));
+  return accept(walked.value.map((name) => toPosixPath(relative(root, join(base, toPosixPath(name))))));
 };
 
 export const scanFile = (runtime: Runtime, root: AbsolutePath, file: string): readonly LocatedFinding[] => {
@@ -44,7 +49,7 @@ export const scanPath = (runtime: Runtime, root: AbsolutePath, target: string): 
 
 export const diffFindings = (diff: string): readonly LocatedFinding[] => {
   const scanner = diffScanner();
-  for (const line of diff.split("\n")) scanner.push(line.endsWith("\r") ? line.slice(0, -1) : line);
+  for (const line of diff.split("\n")) scanner.push(line);
   return scanner.end().filter((finding) => !SKIPPED.test(finding.file));
 };
 

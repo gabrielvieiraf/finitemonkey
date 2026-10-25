@@ -1,3 +1,5 @@
+import { toPosixPath } from "../core/posix-path.js";
+
 const PLACEHOLDER_WORDS = [
   "example",
   "placeholder",
@@ -65,4 +67,4 @@ export const isPlaceholder = (value: string): boolean => {
 };
 
 export const isTestOrLockPath = (path: string | undefined): boolean =>
-  path !== undefined && (LOCKFILES.test(path) || TEST_PATH.test(path));
+  path !== undefined && (LOCKFILES.test(toPosixPath(path)) || TEST_PATH.test(toPosixPath(path)));

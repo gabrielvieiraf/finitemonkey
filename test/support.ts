@@ -69,25 +69,29 @@ const timers: Readonly<Record<TimerMode, Runtime["startTimer"]>> = {
   never: () => () => undefined,
 };
 
+const fakeKey = (path: string): string => path.replace(/\\/g, "/");
+
 export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
-  const files = new Map<string, string>(Object.entries(options.files ?? {}));
+  const files = new Map<string, string>(
+    Object.entries(options.files ?? {}).map(([path, text]) => [fakeKey(path), text]),
+  );
   return {
     nodeVersion: options.nodeVersion ?? "22.11.0",
     readText: (path) => {
-      const text = files.get(path);
+      const text = files.get(fakeKey(path));
       return text === undefined ? reject(`ENOENT: ${path}`) : accept(text);
     },
     probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
     startTimer: timers[options.timer ?? "real"],
     writeText: (path, text) => {
-      files.set(path, text);
+      files.set(fakeKey(path), text);
       return accept(true);
     },
     listDir: (path) => {
-      const names = childrenOf(files, path);
+      const names = childrenOf(files, fakeKey(path));
       return names.length === 0 ? reject(`ENOENT: ${path}`) : accept(names);
     },
-    walkFiles: (root) => accept(walk(files, root)),
+    walkFiles: (root) => accept(walk(files, fakeKey(root))),
     now: () => options.now ?? "2026-10-25T12:00:00.000Z",
     git: (args) => options.git?.(args) ?? gitMissing,
     gitLines: (args, _cwd, onLine) => {

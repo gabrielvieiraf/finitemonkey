@@ -674,6 +674,10 @@ var withoutFixed = (baseline, fixed) => {
 };
 var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry) => entry.expiresAt >= now).map((entry) => entry.fingerprint));
 
+// src/core/posix-path.ts
+var toPosixPath = (path) => path.replace(/\\/g, "/");
+var withoutCarriageReturn = (line) => line.endsWith("\r") ? line.slice(0, -1) : line;
+
 // src/secrets/allowlist.ts
 var PLACEHOLDER_WORDS = [
   "example",
@@ -733,7 +737,7 @@ var isPlaceholder = (value) => {
   if (PLACEHOLDER_WORDS.some((word) => lower.includes(word))) return true;
   return new Set(lower).size < 4;
 };
-var isTestOrLockPath = (path) => path !== void 0 && (LOCKFILES.test(path) || TEST_PATH.test(path));
+var isTestOrLockPath = (path) => path !== void 0 && (LOCKFILES.test(toPosixPath(path)) || TEST_PATH.test(toPosixPath(path)));
 
 // src/secrets/entropy.ts
 var shannonEntropy = (text2) => {
@@ -1293,17 +1297,20 @@ import { join as join4, relative as relative2 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
-var locate = (finding, file, line, commit) => ({
-  id: findingId(finding.ruleId, file, finding.fingerprint),
-  ruleId: finding.ruleId,
-  severity: finding.severity,
-  file,
-  line,
-  column: finding.column,
-  fingerprint: finding.fingerprint,
-  tail: finding.tail,
-  ...commit === void 0 ? {} : { commit }
-});
+var locate = (finding, rawFile, line, commit) => {
+  const file = toPosixPath(rawFile);
+  return {
+    id: findingId(finding.ruleId, file, finding.fingerprint),
+    ruleId: finding.ruleId,
+    severity: finding.severity,
+    file,
+    line,
+    column: finding.column,
+    fingerprint: finding.fingerprint,
+    tail: finding.tail,
+    ...commit === void 0 ? {} : { commit }
+  };
+};
 var whereOf = (finding) => `${finding.file}:${String(finding.line)}`;
 
 // src/secrets/diff.ts
@@ -1361,7 +1368,8 @@ var diffScanner = () => {
     return false;
   };
   return {
-    push: (line) => {
+    push: (raw) => {
+      const line = withoutCarriageReturn(raw);
       if (!header(line)) addLine(chunk, line);
     },
     end: () => {
@@ -1376,14 +1384,16 @@ var MAX_FILE_BYTES = 2 * 1024 * 1024;
 var SKIPPED = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
 var DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var binary = (text2) => text2.slice(0, 8e3).includes("\0");
-var posix = (path) => path.split("\\").join("/");
 var listed = (runtime, root, target) => {
   const git = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target], root);
-  if (git.ok) return accept(git.stdout.split("\0").filter((name) => name !== ""));
+  if (git.ok)
+    return accept(
+      git.stdout.split("\0").filter((name) => name !== "").map(toPosixPath)
+    );
   const base = toAbsolutePath(target, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => posix(relative2(root, join4(base, name)))));
+  return accept(walked.value.map((name) => toPosixPath(relative2(root, join4(base, toPosixPath(name))))));
 };
 var scanFile = (runtime, root, file) => {
   const text2 = runtime.readText(toAbsolutePath(file, root));
@@ -1397,7 +1407,7 @@ var scanPath = (runtime, root, target) => {
 };
 var diffFindings = (diff) => {
   const scanner = diffScanner();
-  for (const line of diff.split("\n")) scanner.push(line.endsWith("\r") ? line.slice(0, -1) : line);
+  for (const line of diff.split("\n")) scanner.push(line);
   return scanner.end().filter((finding) => !SKIPPED.test(finding.file));
 };
 var scanStaged = (runtime, root, includeUnstaged = false) => {

@@ -1,3 +1,4 @@
+import { withoutCarriageReturn } from "../core/posix-path.js";
 import { scanText } from "./engine.js";
 import { locate, type LocatedFinding } from "./located.js";
 
@@ -73,7 +74,8 @@ export const diffScanner = (): DiffScanner => {
     return false;
   };
   return {
-    push: (line) => {
+    push: (raw) => {
+      const line = withoutCarriageReturn(raw);
       if (!header(line)) addLine(chunk, line);
     },
     end: () => {
