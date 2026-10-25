@@ -7,7 +7,7 @@ import { describe, it } from "node:test";
 
 import { isRecord } from "../src/core/parsed.js";
 import { INSTALLED_HOOKS } from "../src/install/hook-entries.js";
-import { MARKETPLACE_NAME, PLUGIN_DIR, PLUGIN_NAME, pluginHooks } from "../src/install/plugin-hooks.js";
+import { MARKETPLACE_NAME, PLUGIN_BIN, PLUGIN_DIR, PLUGIN_NAME, pluginHooks } from "../src/install/plugin-hooks.js";
 import { field, parseBody, ROOT } from "./support.js";
 
 const read = (...parts: readonly string[]): string => readFileSync(join(ROOT, ...parts), "utf8");
@@ -67,8 +67,8 @@ describe("plugin manifest", () => {
   });
 
   it("hooks.json is generated from the same table the project hooks use", () => {
-    assert.deepEqual(json(PLUGIN_DIR, "hooks", "hooks.json"), pluginHooks(version));
-    const hooks = field(pluginHooks(version), "hooks");
+    assert.deepEqual(json(PLUGIN_DIR, "hooks", "hooks.json"), pluginHooks());
+    const hooks = field(pluginHooks(), "hooks");
     const events = isRecord(hooks) ? Object.keys(hooks) : [];
     assert.deepEqual(
       events,
@@ -76,24 +76,24 @@ describe("plugin manifest", () => {
     );
   });
 
-  it("every CLI call in the plugin pins the exact version, never latest", () => {
-    const pins = walk(pluginRoot)
-      .filter((path) => /\.(json|md)$/.test(path))
-      .flatMap((path) => [...readFileSync(path, "utf8").matchAll(/finitemonkey@(\d[0-9A-Za-z.+-]*|latest|next)/g)])
-      .map((match) => match[1]);
-    assert.ok(pins.length >= INSTALLED_HOOKS.length + 4);
-    assert.deepEqual([...new Set(pins)], [version]);
+  it("hooks run the bundled CLI with node, with no npx and no network", () => {
+    const text = read(PLUGIN_DIR, "hooks", "hooks.json");
+    assert.doesNotMatch(text, /npx|npm |@latest|https?:/);
+    assert.equal(read(PLUGIN_DIR, "scripts", "finitemonkey.mjs"), read("dist", "finitemonkey.mjs"));
+    const skills = walk(join(pluginRoot, "skills")).map((path) => readFileSync(path, "utf8"));
+    assert.ok(skills.every((body) => !body.includes("npx")));
   });
 
   it("guards fail closed and every hook has a timeout", () => {
-    const hooks = field(pluginHooks(version), "hooks");
+    const hooks = field(pluginHooks(), "hooks");
     for (const spec of INSTALLED_HOOKS) {
       const groups = field(hooks, spec.event);
       const handlers = Array.isArray(groups) ? field(groups[0], "hooks") : undefined;
       const handler: unknown = Array.isArray(handlers) ? handlers[0] : undefined;
       assert.equal(field(handler, "timeout"), spec.timeout, spec.event);
       assert.equal(field(handler, "onFailure"), spec.guard ? "block" : undefined, spec.event);
-      assert.match(String(field(handler, "command")), new RegExp(` hook ${spec.event} --via plugin$`));
+      assert.equal(field(handler, "command"), "node");
+      assert.deepEqual(field(handler, "args"), [PLUGIN_BIN, "hook", spec.event, "--via", "plugin"]);
     }
   });
 
@@ -134,8 +134,6 @@ describe("plugin version stamping", () => {
       const stamped = walk(join(dir, PLUGIN_DIR))
         .map((path) => readFileSync(path, "utf8"))
         .join("\n");
-      assert.doesNotMatch(stamped, new RegExp(`finitemonkey@${version.replace(/\./g, "\\.")}`));
-      assert.match(stamped, /finitemonkey@4\.5\.6 hook Stop --via plugin/);
       assert.match(stamped, /"version": "4\.5\.6"/);
       assert.match(stamped, /finitemonkey@finitemonkey/);
     } finally {

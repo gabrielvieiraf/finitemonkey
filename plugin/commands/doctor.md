@@ -1,6 +1,5 @@
 ---
 description: Check the Finite Monkey setup and say how to fix each problem (optional shortcut; hooks and skills work without it)
-allowed-tools: Bash(npx --yes --prefer-offline finitemonkey@*)
 ---
 
-Run `npx --yes --prefer-offline finitemonkey@0.1.0-next.1 doctor --json`. Tell the person what Finite Monkey answered in one or two lines, keeping commands exactly as written. Do nothing else.
+Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" doctor --json`. Tell the person what Finite Monkey answered in one or two lines, keeping commands exactly as written. Do nothing else.

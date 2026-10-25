@@ -8,7 +8,7 @@ when_to_use: >-
 
 # Verify: evidence, not claims
 
-1. Run `npx --yes --prefer-offline finitemonkey@0.1.0-next.1 gate --fast --json`.
+1. Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" gate --fast --json`.
 2. Read `data`; for every failing item, fix the cause, never the check.
 3. Quote the command and its exit code when you report a result. A result from before your last edit no longer counts.
 

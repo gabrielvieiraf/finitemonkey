@@ -5,7 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook SessionStart --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "SessionStart", "--via", "plugin"],
             "timeout": 30
           }
         ]
@@ -16,7 +17,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook UserPromptSubmit --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "UserPromptSubmit", "--via", "plugin"],
             "timeout": 10,
             "onFailure": "block"
           }
@@ -28,7 +30,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook PreToolUse --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "PreToolUse", "--via", "plugin"],
             "timeout": 10,
             "onFailure": "block"
           }
@@ -40,7 +43,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook PostToolUse --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "PostToolUse", "--via", "plugin"],
             "timeout": 30
           }
         ]
@@ -51,7 +55,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook Stop --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "Stop", "--via", "plugin"],
             "timeout": 120
           }
         ]
@@ -62,7 +67,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook SubagentStart --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "SubagentStart", "--via", "plugin"],
             "timeout": 30
           }
         ]
@@ -73,7 +79,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook SubagentStop --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "SubagentStop", "--via", "plugin"],
             "timeout": 120
           }
         ]
@@ -84,7 +91,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook PreCompact --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "PreCompact", "--via", "plugin"],
             "timeout": 30
           }
         ]
@@ -95,7 +103,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook ConfigChange --via plugin",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "ConfigChange", "--via", "plugin"],
             "timeout": 10,
             "onFailure": "block"
           }

@@ -24,7 +24,7 @@ const shared = {
 };
 
 export default defineConfig([
-  globalIgnores(["dist", "node_modules", "coverage"]),
+  globalIgnores(["dist", "plugin/scripts", "node_modules", "coverage"]),
   {
     files: ["**/*.ts"],
     extends: [js.configs.recommended, tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
