@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose a capability or a change in behavior.
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Finite Monkey prefers mechanism over prose: a rule that must always hold should become a hook, a check or a CI step. Describe the failure you want to prevent, not only the solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What goes wrong today, in your own words. Include the literal message or behavior you see.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should happen instead. Remember that users should not need to remember a command for it to work.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: How it would be verified
+      description: The test or check that would prove the feature works and keeps working.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
