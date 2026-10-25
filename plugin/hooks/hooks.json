@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook SessionStart --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook SessionStart --via plugin",
             "timeout": 30
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook UserPromptSubmit --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook UserPromptSubmit --via plugin",
             "timeout": 10,
             "onFailure": "block"
           }
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook PreToolUse --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook PreToolUse --via plugin",
             "timeout": 10,
             "onFailure": "block"
           }
@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook PostToolUse --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook PostToolUse --via plugin",
             "timeout": 30
           }
         ]
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook Stop --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook Stop --via plugin",
             "timeout": 120
           }
         ]
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook SubagentStart --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook SubagentStart --via plugin",
             "timeout": 30
           }
         ]
@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook SubagentStop --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook SubagentStop --via plugin",
             "timeout": 120
           }
         ]
@@ -84,7 +84,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook PreCompact --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook PreCompact --via plugin",
             "timeout": 30
           }
         ]
@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx --yes --prefer-offline finitemonkey@0.0.0-development hook ConfigChange --via plugin",
+            "command": "npx --yes --prefer-offline finitemonkey@0.1.0-next.1 hook ConfigChange --via plugin",
             "timeout": 10,
             "onFailure": "block"
           }

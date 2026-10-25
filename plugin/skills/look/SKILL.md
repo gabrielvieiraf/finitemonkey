@@ -8,7 +8,7 @@ when_to_use: >-
 
 # Look: open the screens you changed
 
-1. Run `npx --yes --prefer-offline finitemonkey@0.0.0-development look --json`.
+1. Run `npx --yes --prefer-offline finitemonkey@0.1.0-next.1 look --json`.
 2. Open every image listed in `data` with the Read tool and check for horizontal overflow, cut text, overlap and console errors.
 3. Fix what you see, then run the command again. Report which screens you opened.
 
