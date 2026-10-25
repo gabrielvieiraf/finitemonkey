@@ -21,7 +21,7 @@ const unreadable = (dir: AbsolutePath, file: string, detail: string): Problem =>
   messageKey: "error.i18n_catalog_unreadable",
   params: { file, detail },
   fix: `finitemonkey i18n check --dir ${dir}`,
-  exitCode: ExitCode.Environment,
+  exitCode: ExitCode.NotConfigured,
 });
 
 const readCatalog = (ctx: Ctx, dir: AbsolutePath, lang: Lang): Parsed<JsonObject, Problem> => {

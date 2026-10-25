@@ -54,7 +54,8 @@
   "help": {
     "required": {
       "commands": "array",
-      "flags": "array"
+      "flags": "array",
+      "exitCodes": "array"
     }
   },
   "helpCommand": {
@@ -78,8 +79,9 @@
     "Ok": 0,
     "CheckFailed": 1,
     "Usage": 2,
-    "Environment": 3,
-    "Internal": 4
+    "NotConfigured": 3,
+    "NeedsPerson": 4,
+    "Internal": 5
   },
   "errorCodes": [
     "doctor_failed",
@@ -89,6 +91,7 @@
     "internal_error",
     "invalid_arguments",
     "invalid_lang",
+    "needs_confirmation",
     "not_implemented",
     "unexpected_argument",
     "unknown_command",

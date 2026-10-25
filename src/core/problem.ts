@@ -10,6 +10,7 @@ export const ERROR_CODES = [
   "internal_error",
   "invalid_arguments",
   "invalid_lang",
+  "needs_confirmation",
   "not_implemented",
   "unexpected_argument",
   "unknown_command",
@@ -33,6 +34,14 @@ export const usageProblem = (code: ErrorCode, messageKey: MessageKey, fix: strin
   params,
   fix,
   exitCode: ExitCode.Usage,
+});
+
+export const needsPersonProblem = (messageKey: MessageKey, fix: string, params: Params = {}): Problem => ({
+  code: "needs_confirmation",
+  messageKey,
+  params,
+  fix,
+  exitCode: ExitCode.NeedsPerson,
 });
 
 export class FmError extends Error {

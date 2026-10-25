@@ -71,5 +71,14 @@
   "doctor.path.wsl_mount": "O projeto está num disco do Windows montado no WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mova o projeto para a home do Linux (por exemplo ~/projetos) para ter git rápido e permissões corretas",
   "hook.failed_closed": "o hook {event} não conseguiu rodar ({detail}) e bloqueou por segurança. Rode `finitemonkey doctor`",
-  "hook.failed_open": "o hook {event} não conseguiu rodar ({detail}); seguindo sem ele. Rode `finitemonkey doctor`"
+  "hook.failed_open": "o hook {event} não conseguiu rodar ({detail}); seguindo sem ele. Rode `finitemonkey doctor`",
+  "exit.ok": "0 ok: o comando fez o que foi pedido",
+  "exit.check_failed": "1 verificação reprovada: o comando rodou e achou um problema",
+  "exit.usage": "2 erro de uso: comando ou opção desconhecidos, valor inválido ou comando ainda não disponível",
+  "exit.not_configured": "3 não configurado: falta instalação ou um pré-requisito (node, git, arquivos, permissões)",
+  "exit.needs_person": "4 precisa da pessoa: uma decisão ou aprovação é necessária antes de seguir",
+  "exit.internal": "5 erro interno: o próprio Finite Monkey falhou; por favor, reporte",
+  "help.exit_codes": "Códigos de saída",
+  "hook.stop_released": "o hook {event} bloquearia de novo ({detail}), mas o Claude Code já está continuando por causa de um hook de parada, então ele deixa a sessão parar. Rode `finitemonkey doctor`",
+  "error.needs_confirmation": "\"{command}\" precisa da sua decisão antes de mudar qualquer coisa: {question}"
 }

@@ -18,8 +18,8 @@ export type { CancelTimer, Probe, ProbeResult, Runtime } from "./core/runtime.js
 export type { DoctorItem, DoctorReport } from "./doctor/run.js";
 export { DOCTOR_SCHEMA } from "./doctor/run.js";
 export type { Check, CheckFinding, CheckStatus, DoctorEnv } from "./doctor/types.js";
-export type { ExitCodeValue, FailureExitCode } from "./exit-codes.js";
-export { ExitCode, exitCodeDocs } from "./exit-codes.js";
+export type { ExitCodeName, ExitCodeValue, FailureExitCode } from "./exit-codes.js";
+export { EXIT_CODE_NAMES, ExitCode, exitCodeDocs } from "./exit-codes.js";
 export type { HookEvent, HookPolicy } from "./hooks/events.js";
 export { HOOK_EVENTS, HOOK_POLICIES } from "./hooks/events.js";
 export type { HookDecision, HookHandler, HookHandlers, HookInput } from "./hooks/handlers.js";

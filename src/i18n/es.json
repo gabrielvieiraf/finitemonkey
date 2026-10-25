@@ -71,5 +71,14 @@
   "doctor.path.wsl_mount": "El proyecto está en un disco de Windows montado en WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mueve el proyecto a la home de Linux (por ejemplo ~/proyectos) para tener git rápido y permisos correctos",
   "hook.failed_closed": "el hook {event} no pudo ejecutarse ({detail}) y bloqueó por seguridad. Ejecuta `finitemonkey doctor`",
-  "hook.failed_open": "el hook {event} no pudo ejecutarse ({detail}); se sigue sin él. Ejecuta `finitemonkey doctor`"
+  "hook.failed_open": "el hook {event} no pudo ejecutarse ({detail}); se sigue sin él. Ejecuta `finitemonkey doctor`",
+  "exit.ok": "0 ok: el comando hizo lo que se pidió",
+  "exit.check_failed": "1 revisión fallida: el comando se ejecutó y encontró un problema",
+  "exit.usage": "2 error de uso: comando u opción desconocidos, valor inválido o comando aún no disponible",
+  "exit.not_configured": "3 no configurado: falta la instalación o un requisito previo (node, git, archivos, permisos)",
+  "exit.needs_person": "4 necesita a la persona: se requiere una decisión o aprobación antes de seguir",
+  "exit.internal": "5 error interno: el propio Finite Monkey falló; por favor, repórtalo",
+  "help.exit_codes": "Códigos de salida",
+  "hook.stop_released": "el hook {event} bloquearía otra vez ({detail}), pero Claude Code ya está continuando por un hook de parada, así que deja que la sesión termine. Ejecuta `finitemonkey doctor`",
+  "error.needs_confirmation": "\"{command}\" necesita tu decisión antes de cambiar algo: {question}"
 }

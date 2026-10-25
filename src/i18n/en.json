@@ -71,5 +71,14 @@
   "doctor.path.wsl_mount": "Project is on a Windows drive mounted in WSL: {path}",
   "doctor.path.fix_wsl_mount": "Move the project into the Linux home (for example ~/projects) for faster git and correct permissions",
   "hook.failed_closed": "the {event} hook could not run ({detail}), so it blocked to stay safe. Run `finitemonkey doctor`",
-  "hook.failed_open": "the {event} hook could not run ({detail}); continuing without it. Run `finitemonkey doctor`"
+  "hook.failed_open": "the {event} hook could not run ({detail}); continuing without it. Run `finitemonkey doctor`",
+  "exit.ok": "0 ok: the command did what it was asked",
+  "exit.check_failed": "1 check failed: the command ran and found a problem",
+  "exit.usage": "2 usage error: unknown command, unknown flag, bad value or command not available yet",
+  "exit.not_configured": "3 not configured: setup or a prerequisite (node, git, files, permissions) is missing",
+  "exit.needs_person": "4 needs a person: a decision or approval is required before going on",
+  "exit.internal": "5 internal error: Finite Monkey itself failed; please report it",
+  "help.exit_codes": "Exit codes",
+  "hook.stop_released": "the {event} hook would block again ({detail}), but Claude Code is already continuing from a stop hook, so it lets the session stop. Run `finitemonkey doctor`",
+  "error.needs_confirmation": "\"{command}\" needs your decision before it changes anything: {question}"
 }

@@ -2,6 +2,7 @@ import { resolveCommand } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success, type SuccessResult } from "../core/result.js";
+import { EXIT_CODE_NAMES, ExitCode, exitCodeDocs, type ExitCodeName, type ExitCodeValue } from "../exit-codes.js";
 import type { MessageKey } from "../i18n/catalogs.js";
 import { commandName, type CommandSpec, type CommandStatus } from "./types.js";
 
@@ -22,10 +23,20 @@ export interface CommandHelp {
   readonly options: readonly string[];
 }
 
+export interface ExitCodeHelp {
+  readonly code: ExitCodeValue;
+  readonly name: ExitCodeName;
+  readonly summary: string;
+}
+
 export interface HelpData {
   readonly commands: readonly CommandHelp[];
   readonly flags: readonly { readonly flag: string; readonly summary: string }[];
+  readonly exitCodes: readonly ExitCodeHelp[];
 }
+
+const exitCodeHelp = (ctx: Ctx): readonly ExitCodeHelp[] =>
+  EXIT_CODE_NAMES.map((name) => ({ code: ExitCode[name], name, summary: ctx.t(exitCodeDocs[ExitCode[name]]) }));
 
 const pad = (text: string, width: number): string => text.padEnd(Math.max(width, text.length + 1));
 
@@ -45,6 +56,7 @@ const overview = (ctx: Ctx, registry: readonly CommandSpec[]): SuccessResult<Hel
   const flags = GLOBAL_FLAGS.map(({ flag, key }) => ({ flag, summary: ctx.t(key) }));
   const width = Math.max(...commands.map(({ name }) => name.length)) + 2;
   const flagWidth = Math.max(...flags.map(({ flag }) => flag.length)) + 2;
+  const exitCodes = exitCodeHelp(ctx);
   const human = [
     `finitemonkey ${ctx.version}`,
     ctx.t("help.tagline"),
@@ -57,9 +69,12 @@ const overview = (ctx: Ctx, registry: readonly CommandSpec[]): SuccessResult<Hel
     `${ctx.t("help.flags")}:`,
     ...flags.map(({ flag, summary }) => `  ${pad(flag, flagWidth)}${summary}`),
     "",
+    `${ctx.t("help.exit_codes")}:`,
+    ...exitCodes.map(({ summary }) => `  ${summary}`),
+    "",
     ctx.t("help.more"),
   ];
-  return success({ commands, flags }, human);
+  return success({ commands, flags, exitCodes }, human);
 };
 
 export const helpFor = (ctx: Ctx, spec: CommandSpec): SuccessResult<{ readonly command: CommandHelp }> => {
