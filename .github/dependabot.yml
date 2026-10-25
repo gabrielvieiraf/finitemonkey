@@ -20,3 +20,6 @@ updates:
     groups:
       all:
         patterns: ['*']
+    ignore:
+      - dependency-name: conventional-changelog-conventionalcommits
+        update-types: ['version-update:semver-major']
