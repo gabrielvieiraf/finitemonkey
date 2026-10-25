@@ -1,8 +1,19 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
-import type { AbsolutePath } from "./brand.js";
-import { nodeListDir, nodeWalkFiles, nodeWriteText } from "./node-fs.js";
+import { type AbsolutePath, toAbsolutePath } from "./brand.js";
+import {
+  nodeListDir,
+  nodeLock,
+  nodeMkdir,
+  nodeRemove,
+  nodeRename,
+  nodeStat,
+  nodeWalkFiles,
+  nodeWriteAtomic,
+  nodeWriteText,
+} from "./node-fs.js";
 import { nodeGit, nodeGitLines } from "./node-git.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Probe, Runtime } from "./runtime.js";
@@ -69,4 +80,11 @@ export const nodeRuntime = (): Runtime => ({
   now: () => new Date().toISOString(),
   git: nodeGit,
   gitLines: nodeGitLines,
+  stat: nodeStat,
+  writeAtomic: nodeWriteAtomic,
+  rename: nodeRename,
+  mkdir: nodeMkdir,
+  remove: nodeRemove,
+  lock: nodeLock,
+  selfPath: toAbsolutePath(fileURLToPath(import.meta.url)),
 });

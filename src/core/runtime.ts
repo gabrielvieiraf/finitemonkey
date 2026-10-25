@@ -26,6 +26,20 @@ export type GitLines = (
   onLine: (line: string) => void,
 ) => Promise<GitResult>;
 
+export type FileKind = "file" | "dir";
+
+export interface FileStat {
+  readonly kind: FileKind;
+  readonly mtimeMs: number;
+}
+
+export interface LockOptions {
+  readonly staleMs: number;
+  readonly owner: string;
+}
+
+export type ReleaseLock = () => void;
+
 export interface Runtime {
   readonly nodeVersion: string;
   readonly readText: (path: AbsolutePath) => Parsed<string>;
@@ -37,4 +51,11 @@ export interface Runtime {
   readonly now: () => string;
   readonly git: Git;
   readonly gitLines: GitLines;
+  readonly stat: (path: AbsolutePath) => FileStat | undefined;
+  readonly writeAtomic: (path: AbsolutePath, content: string) => Parsed<undefined>;
+  readonly rename: (from: AbsolutePath, to: AbsolutePath) => Parsed<undefined>;
+  readonly mkdir: (path: AbsolutePath) => Parsed<undefined>;
+  readonly remove: (path: AbsolutePath) => Parsed<undefined>;
+  readonly lock: (path: AbsolutePath, options: LockOptions) => Parsed<ReleaseLock>;
+  readonly selfPath: AbsolutePath;
 }
