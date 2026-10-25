@@ -235,8 +235,25 @@ var ExitCode = {
   Ok: 0,
   CheckFailed: 1,
   Usage: 2,
-  Environment: 3,
-  Internal: 4
+  NotConfigured: 3,
+  NeedsPerson: 4,
+  Internal: 5
+};
+var EXIT_CODE_NAMES = [
+  "Ok",
+  "CheckFailed",
+  "Usage",
+  "NotConfigured",
+  "NeedsPerson",
+  "Internal"
+];
+var exitCodeDocs = {
+  0: "exit.ok",
+  1: "exit.check_failed",
+  2: "exit.usage",
+  3: "exit.not_configured",
+  4: "exit.needs_person",
+  5: "exit.internal"
 };
 
 // src/commands/doctor.ts
@@ -251,8 +268,8 @@ var doctorResult = (ctx, report) => {
     ...report.checks.flatMap((item) => itemLines(ctx, item)),
     ctx.t("doctor.summary", report.summary)
   ];
-  const failed = report.checks.find((item) => item.status === "fail");
-  if (failed === void 0) return { ok: true, exitCode: ExitCode.Ok, data: report, human };
+  const failed2 = report.checks.find((item) => item.status === "fail");
+  if (failed2 === void 0) return { ok: true, exitCode: ExitCode.Ok, data: report, human };
   return {
     ok: false,
     exitCode: ExitCode.CheckFailed,
@@ -261,7 +278,7 @@ var doctorResult = (ctx, report) => {
     error: {
       code: "doctor_failed",
       message: ctx.t("error.doctor_failed", { count: report.summary.fail }),
-      fix: failed.fix ?? "finitemonkey doctor"
+      fix: failed2.fix ?? "finitemonkey doctor"
     }
   };
 };
@@ -388,6 +405,7 @@ var GLOBAL_FLAGS = [
   { flag: "--version, -v", key: "flag.version" },
   { flag: "--help, -h", key: "flag.help" }
 ];
+var exitCodeHelp = (ctx) => EXIT_CODE_NAMES.map((name) => ({ code: ExitCode[name], name, summary: ctx.t(exitCodeDocs[ExitCode[name]]) }));
 var pad = (text, width) => text.padEnd(Math.max(width, text.length + 1));
 var describe = (ctx, spec) => ({
   name: commandName(spec),
@@ -402,6 +420,7 @@ var overview = (ctx, registry) => {
   const flags = GLOBAL_FLAGS.map(({ flag: flag2, key }) => ({ flag: flag2, summary: ctx.t(key) }));
   const width = Math.max(...commands.map(({ name }) => name.length)) + 2;
   const flagWidth = Math.max(...flags.map(({ flag: flag2 }) => flag2.length)) + 2;
+  const exitCodes = exitCodeHelp(ctx);
   const human = [
     `finitemonkey ${ctx.version}`,
     ctx.t("help.tagline"),
@@ -414,9 +433,12 @@ var overview = (ctx, registry) => {
     `${ctx.t("help.flags")}:`,
     ...flags.map(({ flag: flag2, summary }) => `  ${pad(flag2, flagWidth)}${summary}`),
     "",
+    `${ctx.t("help.exit_codes")}:`,
+    ...exitCodes.map(({ summary }) => `  ${summary}`),
+    "",
     ctx.t("help.more")
   ];
-  return success({ commands, flags }, human);
+  return success({ commands, flags, exitCodes }, human);
 };
 var helpFor = (ctx, spec) => {
   const help = describe(ctx, spec);
@@ -487,7 +509,13 @@ var allow = () => ({ kind: "allow" });
 var DEFAULT_HANDLERS = {};
 
 // src/hooks/payload.ts
-var EMPTY_PAYLOAD = { hookEventName: void 0, sessionId: void 0, cwd: void 0, raw: {} };
+var EMPTY_PAYLOAD = {
+  hookEventName: void 0,
+  sessionId: void 0,
+  cwd: void 0,
+  stopHookActive: false,
+  raw: {}
+};
 var parseHookPayload = (event, text, interactive) => {
   if (interactive && text.trim() === "") return accept(EMPTY_PAYLOAD);
   const parsed = parseJsonObject(text);
@@ -496,6 +524,7 @@ var parseHookPayload = (event, text, interactive) => {
     hookEventName: optionalString(parsed.value, "hook_event_name"),
     sessionId: optionalString(parsed.value, "session_id"),
     cwd: optionalString(parsed.value, "cwd"),
+    stopHookActive: parsed.value["stop_hook_active"] === true,
     raw: parsed.value
   };
   if (payload.hookEventName !== void 0 && payload.hookEventName !== event) {
@@ -545,8 +574,7 @@ var withDeadline = (work, ms, startTimer) => new Promise((resolve2, reject2) => 
 });
 
 // src/hooks/runner.ts
-var HookInputError = class extends Error {
-};
+var messageOf = (error) => error instanceof Error ? error.message : String(error);
 var decide = async (input, handlers) => {
   let output = {};
   for (const handler of handlers[input.event] ?? [allow]) {
@@ -558,19 +586,32 @@ var decide = async (input, handlers) => {
 };
 var evaluate = async (event, options) => {
   const text = await readAll(options.stdin);
-  const payload = parseHookPayload(event, text, options.stdin.isTTY === true);
-  if (!payload.ok) throw new HookInputError(payload.error);
-  return decide({ event, payload: payload.value, cwd: options.cwd }, options.handlers);
+  const parsed = parseHookPayload(event, text, options.stdin.isTTY === true);
+  if (!parsed.ok) return { kind: "failed", payload: void 0, detail: parsed.error };
+  const payload = parsed.value;
+  try {
+    return { kind: "decided", payload, decision: await decide({ event, payload, cwd: options.cwd }, options.handlers) };
+  } catch (error) {
+    return { kind: "failed", payload, detail: messageOf(error) };
+  }
 };
-var fromDecision = (decision) => decision.kind === "block" ? { exitCode: 2, stdout: "", stderr: `finitemonkey: ${decision.reason}
-`, verdict: "block" } : {
+var ALLOW_STDOUT = `${JSON.stringify({ continue: true })}
+`;
+var allowed = (output) => ({
   exitCode: 0,
-  stdout: `${JSON.stringify({ continue: true, ...decision.output })}
+  stdout: `${JSON.stringify({ continue: true, ...output })}
 `,
   stderr: "",
   verdict: "allow"
-};
-var fromFailure = (event, detail, t) => HOOK_POLICIES[event].failClosed ? {
+});
+var released = (event, detail, t) => ({
+  exitCode: 0,
+  stdout: ALLOW_STDOUT,
+  stderr: `finitemonkey: ${t("hook.stop_released", { event, detail })}
+`,
+  verdict: "stop_released"
+});
+var failed = (event, detail, t) => HOOK_POLICIES[event].failClosed ? {
   exitCode: 2,
   stdout: "",
   stderr: `finitemonkey: ${t("hook.failed_closed", { event, detail })}
@@ -583,11 +624,26 @@ var fromFailure = (event, detail, t) => HOOK_POLICIES[event].failClosed ? {
 `,
   verdict: "failed_open"
 };
+var conclude = (event, evaluation, t) => {
+  const stopActive = evaluation.payload?.stopHookActive === true;
+  if (evaluation.kind === "failed") {
+    return stopActive ? released(event, evaluation.detail, t) : failed(event, evaluation.detail, t);
+  }
+  const { decision } = evaluation;
+  if (decision.kind === "allow") return allowed(decision.output);
+  if (stopActive) return released(event, decision.reason, t);
+  return { exitCode: 2, stdout: "", stderr: `finitemonkey: ${decision.reason}
+`, verdict: "block" };
+};
 var runHook = async (event, options) => {
   try {
-    return fromDecision(await withDeadline(evaluate(event, options), options.deadlineMs, options.startTimer));
+    return conclude(
+      event,
+      await withDeadline(evaluate(event, options), options.deadlineMs, options.startTimer),
+      options.t
+    );
   } catch (error) {
-    return fromFailure(event, error instanceof Error ? error.message : String(error), options.t);
+    return failed(event, messageOf(error), options.t);
   }
 };
 
@@ -707,7 +763,16 @@ var en_default = {
   "doctor.path.wsl_mount": "Project is on a Windows drive mounted in WSL: {path}",
   "doctor.path.fix_wsl_mount": "Move the project into the Linux home (for example ~/projects) for faster git and correct permissions",
   "hook.failed_closed": "the {event} hook could not run ({detail}), so it blocked to stay safe. Run `finitemonkey doctor`",
-  "hook.failed_open": "the {event} hook could not run ({detail}); continuing without it. Run `finitemonkey doctor`"
+  "hook.failed_open": "the {event} hook could not run ({detail}); continuing without it. Run `finitemonkey doctor`",
+  "exit.ok": "0 ok: the command did what it was asked",
+  "exit.check_failed": "1 check failed: the command ran and found a problem",
+  "exit.usage": "2 usage error: unknown command, unknown flag, bad value or command not available yet",
+  "exit.not_configured": "3 not configured: setup or a prerequisite (node, git, files, permissions) is missing",
+  "exit.needs_person": "4 needs a person: a decision or approval is required before going on",
+  "exit.internal": "5 internal error: Finite Monkey itself failed; please report it",
+  "help.exit_codes": "Exit codes",
+  "hook.stop_released": "the {event} hook would block again ({detail}), but Claude Code is already continuing from a stop hook, so it lets the session stop. Run `finitemonkey doctor`",
+  "error.needs_confirmation": '"{command}" needs your decision before it changes anything: {question}'
 };
 
 // src/i18n/es.json
@@ -784,7 +849,16 @@ var es_default = {
   "doctor.path.wsl_mount": "El proyecto está en un disco de Windows montado en WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mueve el proyecto a la home de Linux (por ejemplo ~/proyectos) para tener git rápido y permisos correctos",
   "hook.failed_closed": "el hook {event} no pudo ejecutarse ({detail}) y bloqueó por seguridad. Ejecuta `finitemonkey doctor`",
-  "hook.failed_open": "el hook {event} no pudo ejecutarse ({detail}); se sigue sin él. Ejecuta `finitemonkey doctor`"
+  "hook.failed_open": "el hook {event} no pudo ejecutarse ({detail}); se sigue sin él. Ejecuta `finitemonkey doctor`",
+  "exit.ok": "0 ok: el comando hizo lo que se pidió",
+  "exit.check_failed": "1 revisión fallida: el comando se ejecutó y encontró un problema",
+  "exit.usage": "2 error de uso: comando u opción desconocidos, valor inválido o comando aún no disponible",
+  "exit.not_configured": "3 no configurado: falta la instalación o un requisito previo (node, git, archivos, permisos)",
+  "exit.needs_person": "4 necesita a la persona: se requiere una decisión o aprobación antes de seguir",
+  "exit.internal": "5 error interno: el propio Finite Monkey falló; por favor, repórtalo",
+  "help.exit_codes": "Códigos de salida",
+  "hook.stop_released": "el hook {event} bloquearía otra vez ({detail}), pero Claude Code ya está continuando por un hook de parada, así que deja que la sesión termine. Ejecuta `finitemonkey doctor`",
+  "error.needs_confirmation": '"{command}" necesita tu decisión antes de cambiar algo: {question}'
 };
 
 // src/i18n/pt-BR.json
@@ -861,7 +935,16 @@ var pt_BR_default = {
   "doctor.path.wsl_mount": "O projeto está num disco do Windows montado no WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mova o projeto para a home do Linux (por exemplo ~/projetos) para ter git rápido e permissões corretas",
   "hook.failed_closed": "o hook {event} não conseguiu rodar ({detail}) e bloqueou por segurança. Rode `finitemonkey doctor`",
-  "hook.failed_open": "o hook {event} não conseguiu rodar ({detail}); seguindo sem ele. Rode `finitemonkey doctor`"
+  "hook.failed_open": "o hook {event} não conseguiu rodar ({detail}); seguindo sem ele. Rode `finitemonkey doctor`",
+  "exit.ok": "0 ok: o comando fez o que foi pedido",
+  "exit.check_failed": "1 verificação reprovada: o comando rodou e achou um problema",
+  "exit.usage": "2 erro de uso: comando ou opção desconhecidos, valor inválido ou comando ainda não disponível",
+  "exit.not_configured": "3 não configurado: falta instalação ou um pré-requisito (node, git, arquivos, permissões)",
+  "exit.needs_person": "4 precisa da pessoa: uma decisão ou aprovação é necessária antes de seguir",
+  "exit.internal": "5 erro interno: o próprio Finite Monkey falhou; por favor, reporte",
+  "help.exit_codes": "Códigos de saída",
+  "hook.stop_released": "o hook {event} bloquearia de novo ({detail}), mas o Claude Code já está continuando por causa de um hook de parada, então ele deixa a sessão parar. Rode `finitemonkey doctor`",
+  "error.needs_confirmation": '"{command}" precisa da sua decisão antes de mudar qualquer coisa: {question}'
 };
 
 // src/i18n/catalogs.ts
@@ -936,7 +1019,7 @@ var unreadable = (dir, file, detail) => ({
   messageKey: "error.i18n_catalog_unreadable",
   params: { file, detail },
   fix: `finitemonkey i18n check --dir ${dir}`,
-  exitCode: ExitCode.Environment
+  exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
   const file = toAbsolutePath(join(dir, `${lang}.json`));
