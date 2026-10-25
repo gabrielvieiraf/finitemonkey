@@ -2736,382 +2736,6 @@ var i18nCheckCommand = {
   }
 };
 
-// src/secrets/project.ts
-var projectRoot = (ctx) => {
-  const top = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
-  const path = top.stdout.trim();
-  return top.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
-};
-var isPerson = (ctx) => ctx.io.stdin.isTTY === true && ctx.env["CLAUDECODE"] === void 0 && ctx.env["CLAUDE_CODE_ENTRYPOINT"] === void 0;
-var personName = (ctx) => {
-  const name = ctx.runtime.git(["config", "user.name"], ctx.cwd).stdout.trim();
-  return name !== "" ? name : ctx.env["USER"] ?? ctx.env["USERNAME"] ?? "person";
-};
-
-// src/commands/secrets-problems.ts
-var baselineInvalid = (detail) => ({
-  code: "secrets_baseline_invalid",
-  messageKey: "secrets.error.baseline_invalid",
-  params: { file: BASELINE_FILE, detail },
-  fix: `git checkout -- ${BASELINE_FILE}`,
-  exitCode: ExitCode.NotConfigured
-});
-var writeFailed = (file, detail) => ({
-  code: "secrets_write_failed",
-  messageKey: "secrets.error.write_failed",
-  params: { file, detail },
-  fix: "finitemonkey doctor",
-  exitCode: ExitCode.Internal
-});
-var gitUnavailable = (detail) => ({
-  code: "secrets_git_unavailable",
-  messageKey: "secrets.error.git_unavailable",
-  params: { detail },
-  fix: "finitemonkey doctor",
-  exitCode: ExitCode.NotConfigured
-});
-
-// src/commands/secrets-accept.ts
-var DAY_MS = 864e5;
-var daysOf = (values) => {
-  const raw = stringOption(values, "days");
-  if (raw === void 0) return EXCEPTION_MAX_DAYS;
-  const days = Number.parseInt(raw, 10);
-  return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
-};
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS).toISOString();
-var failure = (ctx, problem2) => failureFrom(ctx.t, problem2);
-var inputProblem = (ctx, id, reason, days) => {
-  const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
-  if (!isPerson(ctx)) {
-    return needsPersonProblem("secrets.error.person_only", fix, { action: ctx.t("secrets.action.accept") });
-  }
-  if (id === "") return usageProblem("invalid_arguments", "error.invalid_arguments", fix, { detail: "<id>" });
-  if (reason === void 0 || reason.trim() === "") {
-    return usageProblem("invalid_arguments", "secrets.error.reason_required", fix);
-  }
-  if (days === void 0) {
-    return usageProblem("invalid_arguments", "error.invalid_arguments", fix, {
-      detail: `--days 1-${String(EXCEPTION_MAX_DAYS)}`
-    });
-  }
-  return void 0;
-};
-var entryOf = (ctx, finding, args) => {
-  const now = ctx.runtime.now();
-  return {
-    id: finding.id,
-    rule: finding.ruleId,
-    file: finding.file,
-    line: finding.line,
-    fingerprint: finding.fingerprint,
-    state: args.falsePositive ? "falso-positivo" : "aceito",
-    owner: personName(ctx),
-    reason: args.reason,
-    acceptedAt: now,
-    expiresAt: plusDays(now, args.days)
-  };
-};
-var acceptEntry = (ctx, args) => {
-  const root = projectRoot(ctx);
-  const baseline = loadBaseline(ctx.runtime, root);
-  if (!baseline.ok) {
-    return failure(ctx, baselineInvalid(baseline.error));
-  }
-  const scanned = scanPath(ctx.runtime, root, ".");
-  const finding = scanned.ok ? scanned.value.find((item) => item.id === args.id) : void 0;
-  if (finding === void 0) {
-    return failure(
-      ctx,
-      usageProblem("secrets_finding_not_found", "secrets.error.finding_not_found", "finitemonkey secrets scan", {
-        id: args.id
-      })
-    );
-  }
-  const entry = entryOf(ctx, finding, args);
-  const entries = [...baseline.value.entries.filter((item) => item.id !== entry.id), entry];
-  const saved = saveBaseline(ctx.runtime, root, { schema: baseline.value.schema, entries });
-  if (!saved.ok) {
-    return failure(ctx, writeFailed(BASELINE_FILE, saved.error));
-  }
-  const line = ctx.t("secrets.accept.done", {
-    id: entry.id,
-    rule: entry.rule,
-    where: whereOf(finding),
-    state: entry.state,
-    expires: entry.expiresAt.slice(0, 10),
-    owner: entry.owner
-  });
-  return success(entry, [line]);
-};
-var secretsAcceptCommand = {
-  path: ["secrets", "accept"],
-  summaryKey: "secrets.command.accept",
-  usage: "finitemonkey secrets accept <finding-id> --reason <why> [--days 1-90] [--false-positive]",
-  status: "ready",
-  maxPositionals: 1,
-  options: { reason: { type: "string" }, days: { type: "string" }, "false-positive": { type: "boolean" } },
-  run: (ctx, args) => {
-    const id = args.positionals[0] ?? "";
-    const reason = stringOption(args.values, "reason");
-    const days = daysOf(args.values);
-    const problem2 = inputProblem(ctx, id, reason, days);
-    if (problem2 !== void 0 || reason === void 0 || days === void 0) {
-      return Promise.resolve(
-        failure(
-          ctx,
-          problem2 ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
-        )
-      );
-    }
-    return Promise.resolve(
-      acceptEntry(ctx, { id, reason, days, falsePositive: args.values["false-positive"] === true })
-    );
-  }
-};
-
-// src/commands/secrets-incident.ts
-var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
-var TARGET = { rotated: "rotacionado", close: "fechado" };
-var PURGE_STEPS = [
-  "secrets.purge.step1",
-  "secrets.purge.step2",
-  "secrets.purge.step3",
-  "secrets.purge.step4",
-  "secrets.purge.step5"
-];
-var fail = (ctx, problem2) => failureFrom(ctx.t, problem2);
-var notFound2 = (ctx, id) => fail(
-  ctx,
-  usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
-    id
-  })
-);
-var itemLine = (ctx, incident) => ctx.t("secrets.incident.item", {
-  id: incident.id,
-  state: incident.state,
-  rule: incident.rule,
-  where: incident.where,
-  created: incident.createdAt.slice(0, 10)
-});
-var list = (ctx, root) => {
-  const incidents = listIncidents(ctx.runtime, root);
-  const human = incidents.length === 0 ? [ctx.t("secrets.incident.none")] : [ctx.t("secrets.incident.title", { count: incidents.length }), ...incidents.map((item) => itemLine(ctx, item))];
-  return success({ schema: "finitemonkey/secrets-incidents@1", incidents }, human);
-};
-var notRotated = (ctx, incident) => fail(ctx, {
-  code: "secrets_not_rotated",
-  messageKey: "secrets.error.not_rotated",
-  params: { id: incident.id, state: incident.state },
-  fix: `finitemonkey secrets incident rotated ${incident.id}`,
-  exitCode: ExitCode.NeedsPerson
-});
-var move = (ctx, root, incident, action) => {
-  const to = TARGET[action];
-  if (!isPerson(ctx)) {
-    return fail(
-      ctx,
-      needsPersonProblem("secrets.error.person_only", `finitemonkey secrets incident ${action} ${incident.id}`, {
-        action: ctx.t(`secrets.action.${action}`)
-      })
-    );
-  }
-  if (!canMove(incident.state, to))
-    return action === "close" ? notRotated(ctx, incident) : fail(
-      ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE, {
-        id: incident.id,
-        from: incident.state,
-        to
-      })
-    );
-  const moved = moveIncident(incident, to, ctx.runtime.now(), personName(ctx));
-  const saved = saveIncident(ctx.runtime, root, moved);
-  if (!saved.ok) {
-    return fail(ctx, writeFailed(incident.id, saved.error));
-  }
-  return success(moved, [ctx.t("secrets.incident.marked", { id: moved.id, state: moved.state })]);
-};
-var purge = (ctx, incident) => {
-  if (!isRotated(incident)) return notRotated(ctx, incident);
-  const params = { id: incident.id, where: incident.where, commit: incident.firstCommit ?? "?" };
-  const steps = PURGE_STEPS.map((key) => ctx.t(key, params));
-  return success({ id: incident.id, state: incident.state, steps }, [ctx.t("secrets.purge.title", params), ...steps]);
-};
-var actionOf = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "list"));
-var secretsIncidentCommand = {
-  path: ["secrets", "incident"],
-  summaryKey: "secrets.command.incident",
-  usage: USAGE,
-  status: "ready",
-  maxPositionals: 2,
-  run: (ctx, args) => {
-    const action = actionOf(args.positionals[0]);
-    const root = projectRoot(ctx);
-    if (action === void 0)
-      return Promise.resolve(
-        fail(
-          ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE, { detail: args.positionals[0] ?? "" })
-        )
-      );
-    if (action === "list") return Promise.resolve(list(ctx, root));
-    const id = args.positionals[1] ?? "";
-    const incident = readIncident(ctx.runtime, root, id);
-    if (!incident.ok) return Promise.resolve(notFound2(ctx, id));
-    return Promise.resolve(action === "purge" ? purge(ctx, incident.value) : move(ctx, root, incident.value, action));
-  }
-};
-
-// src/mask/mask.ts
-var maskToken = (finding) => `«secret:${finding.ruleId}:${finding.tail}»`;
-var maskText = (text2) => {
-  const findings = scanText(text2, { rules: CREDENTIAL_RULES });
-  if (findings.length === 0) return text2;
-  let out = "";
-  let cursor = 0;
-  for (const finding of findings) {
-    out += text2.slice(cursor, finding.start) + maskToken(finding);
-    cursor = finding.end;
-  }
-  return out + text2.slice(cursor);
-};
-var maskDeep = (value) => {
-  if (typeof value === "string") return maskText(value);
-  if (Array.isArray(value)) return value.map(maskDeep);
-  if (typeof value === "object" && value !== null) {
-    return Object.fromEntries(Object.entries(value).map(([key, inner]) => [maskText(key), maskDeep(inner)]));
-  }
-  return value;
-};
-
-// src/commands/secrets-scan.ts
-var SECRETS_SCAN_SCHEMA = "finitemonkey/secrets-scan@1";
-var view = (finding, status) => ({
-  id: finding.id,
-  rule: finding.ruleId,
-  severity: finding.severity,
-  file: finding.file,
-  line: finding.line,
-  column: finding.column,
-  fingerprint: finding.fingerprint,
-  mask: maskToken(finding),
-  status,
-  ...finding.commit === void 0 ? {} : { commit: finding.commit }
-});
-var modeOf2 = (values) => {
-  const chosen = [values["staged"] === true, values["history"] === true, stringOption(values, "path") !== void 0];
-  if (chosen.filter(Boolean).length > 1) return void 0;
-  if (chosen[0] === true) return "staged";
-  return chosen[1] === true ? "history" : "path";
-};
-var normalizedTarget = (target) => target.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
-var scopeOf = (target) => {
-  const prefix = normalizedTarget(target);
-  return (file) => prefix === "" || file === prefix || file.startsWith(`${prefix}/`);
-};
-var runScan = async (ctx, root, mode, target) => {
-  if (mode === "staged") return scanStaged(ctx.runtime, root);
-  if (mode === "history") return scanHistory(ctx.runtime, root);
-  return scanPath(ctx.runtime, root, normalizedTarget(target) || ".");
-};
-var historyIncidents = (ctx, root, fresh2) => fresh2.flatMap((finding) => {
-  if (ruleById(finding.ruleId)?.kind !== "credential") return [];
-  const draft = {
-    rule: finding.ruleId,
-    fingerprint: finding.fingerprint,
-    where: whereOf(finding),
-    source: "history",
-    state: "aberto",
-    ...finding.commit === void 0 ? {} : { firstCommit: finding.commit }
-  };
-  const saved = recordIncident(ctx.runtime, root, draft, HOOK_ACTOR);
-  return saved.ok ? [saved.value.id] : [];
-});
-var dataOf = (mode, outcome, incidents) => {
-  const findings = [
-    ...outcome.fresh.map((finding) => view(finding, "new")),
-    ...outcome.known.map((finding) => view(finding, "known")),
-    ...outcome.expired.map((finding) => view(finding, "expired"))
-  ];
-  return {
-    schema: SECRETS_SCAN_SCHEMA,
-    mode,
-    baseline: BASELINE_FILE,
-    findings,
-    fixed: outcome.fixed.map((entry) => entry.id),
-    incidents,
-    summary: {
-      total: findings.length,
-      new: outcome.fresh.length,
-      known: outcome.known.length,
-      expired: outcome.expired.length,
-      fixed: outcome.fixed.length
-    }
-  };
-};
-var humanOf = (ctx, data) => [
-  ctx.t("secrets.scan.title", { mode: data.mode, ...data.summary }),
-  ...data.findings.map(
-    (item) => ctx.t("secrets.scan.item", {
-      status: item.status,
-      rule: item.rule,
-      where: `${item.file}:${String(item.line)}`,
-      id: item.id,
-      mask: item.mask
-    })
-  ),
-  ...data.summary.total === 0 ? [ctx.t("secrets.scan.clean")] : []
-];
-var resultOf = (ctx, data) => {
-  const human = humanOf(ctx, data);
-  const failing = data.summary.new + data.summary.expired;
-  if (failing === 0) return success(data, human);
-  return failureFrom(
-    ctx.t,
-    {
-      code: "secrets_found",
-      messageKey: "secrets.error.found",
-      params: { count: failing },
-      fix: "finitemonkey secrets accept <id> --reason <why>",
-      exitCode: ExitCode.CheckFailed,
-      data
-    },
-    human
-  );
-};
-var prune = (ctx, root, baseline, outcome) => {
-  if (outcome.fixed.length > 0) saveBaseline(ctx.runtime, root, withoutFixed(baseline, outcome.fixed));
-};
-var secretsScanCommand = {
-  path: ["secrets", "scan"],
-  summaryKey: "secrets.command.scan",
-  usage: "finitemonkey secrets scan [--staged | --history | --path <dir>] [--json]",
-  status: "ready",
-  options: { staged: { type: "boolean" }, history: { type: "boolean" }, path: { type: "string" } },
-  run: async (ctx, args) => {
-    const mode = modeOf2(args.values);
-    const fix = "finitemonkey help secrets scan";
-    if (mode === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.error.one_mode", fix));
-    const root = projectRoot(ctx);
-    const target = stringOption(args.values, "path") ?? ".";
-    const scanned = await runScan(ctx, root, mode, target);
-    if (!scanned.ok) return failureFrom(ctx.t, gitUnavailable(scanned.error));
-    const baseline = loadBaseline(ctx.runtime, root);
-    if (!baseline.ok) return failureFrom(ctx.t, baselineInvalid(baseline.error));
-    const outcome = ratchet(
-      scanned.value,
-      baseline.value,
-      ctx.runtime.now(),
-      mode === "path" ? scopeOf(target) : void 0
-    );
-    if (mode === "path") prune(ctx, root, baseline.value, outcome);
-    const incidents = mode === "history" ? historyIncidents(ctx, root, outcome.fresh) : [];
-    return resultOf(ctx, dataOf(mode, outcome, incidents));
-  }
-};
-
 // src/install/apply.ts
 import { dirname as dirname2 } from "node:path";
 
@@ -3486,7 +3110,7 @@ var backupItems = (project, dir, items) => {
   return writeText(project, `${dir}/manifest.json`, `${JSON.stringify(manifest, null, 2)}
 `);
 };
-var entryOf2 = (plan, item, backupDir) => {
+var entryOf = (plan, item, backupDir) => {
   const previous = plan.previous?.entries.find((entry) => entry.path === item.path);
   const existed = previous?.existed ?? item.before !== void 0;
   const backup = previous?.backup ?? (existed && backupDir !== void 0 ? `${backupDir}/${item.path}` : void 0);
@@ -3508,7 +3132,7 @@ var nextLock = (plan, version, now, backupDir, createdDirs) => ({
   installedAt: plan.previous?.installedAt ?? now,
   updatedAt: now,
   createdDirs: plan.previous?.createdDirs ?? createdDirs,
-  entries: plan.items.filter((item) => item.action !== "skip-foreign").map((item) => entryOf2(plan, item, backupDir))
+  entries: plan.items.filter((item) => item.action !== "skip-foreign").map((item) => entryOf(plan, item, backupDir))
 });
 var needsBackup = (plan, item) => item.before !== void 0 && plan.previous?.entries.find((entry) => entry.path === item.path)?.backup === void 0;
 var writeAll = (project, items) => {
@@ -3805,6 +3429,382 @@ var initCommand = {
     marketplace: { type: "boolean" }
   },
   run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral"))
+};
+
+// src/secrets/project.ts
+var projectRoot = (ctx) => {
+  const top = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
+  const path = top.stdout.trim();
+  return top.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
+};
+var isPerson = (ctx) => ctx.io.stdin.isTTY === true && ctx.env["CLAUDECODE"] === void 0 && ctx.env["CLAUDE_CODE_ENTRYPOINT"] === void 0;
+var personName = (ctx) => {
+  const name = ctx.runtime.git(["config", "user.name"], ctx.cwd).stdout.trim();
+  return name !== "" ? name : ctx.env["USER"] ?? ctx.env["USERNAME"] ?? "person";
+};
+
+// src/commands/secrets-problems.ts
+var baselineInvalid = (detail) => ({
+  code: "secrets_baseline_invalid",
+  messageKey: "secrets.error.baseline_invalid",
+  params: { file: BASELINE_FILE, detail },
+  fix: `git checkout -- ${BASELINE_FILE}`,
+  exitCode: ExitCode.NotConfigured
+});
+var writeFailed = (file, detail) => ({
+  code: "secrets_write_failed",
+  messageKey: "secrets.error.write_failed",
+  params: { file, detail },
+  fix: "finitemonkey doctor",
+  exitCode: ExitCode.Internal
+});
+var gitUnavailable = (detail) => ({
+  code: "secrets_git_unavailable",
+  messageKey: "secrets.error.git_unavailable",
+  params: { detail },
+  fix: "finitemonkey doctor",
+  exitCode: ExitCode.NotConfigured
+});
+
+// src/commands/secrets-accept.ts
+var DAY_MS = 864e5;
+var daysOf = (values) => {
+  const raw = stringOption(values, "days");
+  if (raw === void 0) return EXCEPTION_MAX_DAYS;
+  const days = Number.parseInt(raw, 10);
+  return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
+};
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS).toISOString();
+var failure = (ctx, problem2) => failureFrom(ctx.t, problem2);
+var inputProblem = (ctx, id, reason, days) => {
+  const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
+  if (!isPerson(ctx)) {
+    return needsPersonProblem("secrets.error.person_only", fix, { action: ctx.t("secrets.action.accept") });
+  }
+  if (id === "") return usageProblem("invalid_arguments", "error.invalid_arguments", fix, { detail: "<id>" });
+  if (reason === void 0 || reason.trim() === "") {
+    return usageProblem("invalid_arguments", "secrets.error.reason_required", fix);
+  }
+  if (days === void 0) {
+    return usageProblem("invalid_arguments", "error.invalid_arguments", fix, {
+      detail: `--days 1-${String(EXCEPTION_MAX_DAYS)}`
+    });
+  }
+  return void 0;
+};
+var entryOf2 = (ctx, finding, args) => {
+  const now = ctx.runtime.now();
+  return {
+    id: finding.id,
+    rule: finding.ruleId,
+    file: finding.file,
+    line: finding.line,
+    fingerprint: finding.fingerprint,
+    state: args.falsePositive ? "falso-positivo" : "aceito",
+    owner: personName(ctx),
+    reason: args.reason,
+    acceptedAt: now,
+    expiresAt: plusDays(now, args.days)
+  };
+};
+var acceptEntry = (ctx, args) => {
+  const root = projectRoot(ctx);
+  const baseline = loadBaseline(ctx.runtime, root);
+  if (!baseline.ok) {
+    return failure(ctx, baselineInvalid(baseline.error));
+  }
+  const scanned = scanPath(ctx.runtime, root, ".");
+  const finding = scanned.ok ? scanned.value.find((item) => item.id === args.id) : void 0;
+  if (finding === void 0) {
+    return failure(
+      ctx,
+      usageProblem("secrets_finding_not_found", "secrets.error.finding_not_found", "finitemonkey secrets scan", {
+        id: args.id
+      })
+    );
+  }
+  const entry = entryOf2(ctx, finding, args);
+  const entries = [...baseline.value.entries.filter((item) => item.id !== entry.id), entry];
+  const saved = saveBaseline(ctx.runtime, root, { schema: baseline.value.schema, entries });
+  if (!saved.ok) {
+    return failure(ctx, writeFailed(BASELINE_FILE, saved.error));
+  }
+  const line = ctx.t("secrets.accept.done", {
+    id: entry.id,
+    rule: entry.rule,
+    where: whereOf(finding),
+    state: entry.state,
+    expires: entry.expiresAt.slice(0, 10),
+    owner: entry.owner
+  });
+  return success(entry, [line]);
+};
+var secretsAcceptCommand = {
+  path: ["secrets", "accept"],
+  summaryKey: "secrets.command.accept",
+  usage: "finitemonkey secrets accept <finding-id> --reason <why> [--days 1-90] [--false-positive]",
+  status: "ready",
+  maxPositionals: 1,
+  options: { reason: { type: "string" }, days: { type: "string" }, "false-positive": { type: "boolean" } },
+  run: (ctx, args) => {
+    const id = args.positionals[0] ?? "";
+    const reason = stringOption(args.values, "reason");
+    const days = daysOf(args.values);
+    const problem2 = inputProblem(ctx, id, reason, days);
+    if (problem2 !== void 0 || reason === void 0 || days === void 0) {
+      return Promise.resolve(
+        failure(
+          ctx,
+          problem2 ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
+        )
+      );
+    }
+    return Promise.resolve(
+      acceptEntry(ctx, { id, reason, days, falsePositive: args.values["false-positive"] === true })
+    );
+  }
+};
+
+// src/commands/secrets-incident.ts
+var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
+var USAGE = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var TARGET = { rotated: "rotacionado", close: "fechado" };
+var PURGE_STEPS = [
+  "secrets.purge.step1",
+  "secrets.purge.step2",
+  "secrets.purge.step3",
+  "secrets.purge.step4",
+  "secrets.purge.step5"
+];
+var fail = (ctx, problem2) => failureFrom(ctx.t, problem2);
+var notFound2 = (ctx, id) => fail(
+  ctx,
+  usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
+    id
+  })
+);
+var itemLine = (ctx, incident) => ctx.t("secrets.incident.item", {
+  id: incident.id,
+  state: incident.state,
+  rule: incident.rule,
+  where: incident.where,
+  created: incident.createdAt.slice(0, 10)
+});
+var list = (ctx, root) => {
+  const incidents = listIncidents(ctx.runtime, root);
+  const human = incidents.length === 0 ? [ctx.t("secrets.incident.none")] : [ctx.t("secrets.incident.title", { count: incidents.length }), ...incidents.map((item) => itemLine(ctx, item))];
+  return success({ schema: "finitemonkey/secrets-incidents@1", incidents }, human);
+};
+var notRotated = (ctx, incident) => fail(ctx, {
+  code: "secrets_not_rotated",
+  messageKey: "secrets.error.not_rotated",
+  params: { id: incident.id, state: incident.state },
+  fix: `finitemonkey secrets incident rotated ${incident.id}`,
+  exitCode: ExitCode.NeedsPerson
+});
+var move = (ctx, root, incident, action) => {
+  const to = TARGET[action];
+  if (!isPerson(ctx)) {
+    return fail(
+      ctx,
+      needsPersonProblem("secrets.error.person_only", `finitemonkey secrets incident ${action} ${incident.id}`, {
+        action: ctx.t(`secrets.action.${action}`)
+      })
+    );
+  }
+  if (!canMove(incident.state, to))
+    return action === "close" ? notRotated(ctx, incident) : fail(
+      ctx,
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE, {
+        id: incident.id,
+        from: incident.state,
+        to
+      })
+    );
+  const moved = moveIncident(incident, to, ctx.runtime.now(), personName(ctx));
+  const saved = saveIncident(ctx.runtime, root, moved);
+  if (!saved.ok) {
+    return fail(ctx, writeFailed(incident.id, saved.error));
+  }
+  return success(moved, [ctx.t("secrets.incident.marked", { id: moved.id, state: moved.state })]);
+};
+var purge = (ctx, incident) => {
+  if (!isRotated(incident)) return notRotated(ctx, incident);
+  const params = { id: incident.id, where: incident.where, commit: incident.firstCommit ?? "?" };
+  const steps = PURGE_STEPS.map((key) => ctx.t(key, params));
+  return success({ id: incident.id, state: incident.state, steps }, [ctx.t("secrets.purge.title", params), ...steps]);
+};
+var actionOf = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "list"));
+var secretsIncidentCommand = {
+  path: ["secrets", "incident"],
+  summaryKey: "secrets.command.incident",
+  usage: USAGE,
+  status: "ready",
+  maxPositionals: 2,
+  run: (ctx, args) => {
+    const action = actionOf(args.positionals[0]);
+    const root = projectRoot(ctx);
+    if (action === void 0)
+      return Promise.resolve(
+        fail(
+          ctx,
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE, { detail: args.positionals[0] ?? "" })
+        )
+      );
+    if (action === "list") return Promise.resolve(list(ctx, root));
+    const id = args.positionals[1] ?? "";
+    const incident = readIncident(ctx.runtime, root, id);
+    if (!incident.ok) return Promise.resolve(notFound2(ctx, id));
+    return Promise.resolve(action === "purge" ? purge(ctx, incident.value) : move(ctx, root, incident.value, action));
+  }
+};
+
+// src/mask/mask.ts
+var maskToken = (finding) => `«secret:${finding.ruleId}:${finding.tail}»`;
+var maskText = (text2) => {
+  const findings = scanText(text2, { rules: CREDENTIAL_RULES });
+  if (findings.length === 0) return text2;
+  let out = "";
+  let cursor = 0;
+  for (const finding of findings) {
+    out += text2.slice(cursor, finding.start) + maskToken(finding);
+    cursor = finding.end;
+  }
+  return out + text2.slice(cursor);
+};
+var maskDeep = (value) => {
+  if (typeof value === "string") return maskText(value);
+  if (Array.isArray(value)) return value.map(maskDeep);
+  if (typeof value === "object" && value !== null) {
+    return Object.fromEntries(Object.entries(value).map(([key, inner]) => [maskText(key), maskDeep(inner)]));
+  }
+  return value;
+};
+
+// src/commands/secrets-scan.ts
+var SECRETS_SCAN_SCHEMA = "finitemonkey/secrets-scan@1";
+var view = (finding, status) => ({
+  id: finding.id,
+  rule: finding.ruleId,
+  severity: finding.severity,
+  file: finding.file,
+  line: finding.line,
+  column: finding.column,
+  fingerprint: finding.fingerprint,
+  mask: maskToken(finding),
+  status,
+  ...finding.commit === void 0 ? {} : { commit: finding.commit }
+});
+var modeOf2 = (values) => {
+  const chosen = [values["staged"] === true, values["history"] === true, stringOption(values, "path") !== void 0];
+  if (chosen.filter(Boolean).length > 1) return void 0;
+  if (chosen[0] === true) return "staged";
+  return chosen[1] === true ? "history" : "path";
+};
+var normalizedTarget = (target) => target.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
+var scopeOf = (target) => {
+  const prefix = normalizedTarget(target);
+  return (file) => prefix === "" || file === prefix || file.startsWith(`${prefix}/`);
+};
+var runScan = async (ctx, root, mode, target) => {
+  if (mode === "staged") return scanStaged(ctx.runtime, root);
+  if (mode === "history") return scanHistory(ctx.runtime, root);
+  return scanPath(ctx.runtime, root, normalizedTarget(target) || ".");
+};
+var historyIncidents = (ctx, root, fresh2) => fresh2.flatMap((finding) => {
+  if (ruleById(finding.ruleId)?.kind !== "credential") return [];
+  const draft = {
+    rule: finding.ruleId,
+    fingerprint: finding.fingerprint,
+    where: whereOf(finding),
+    source: "history",
+    state: "aberto",
+    ...finding.commit === void 0 ? {} : { firstCommit: finding.commit }
+  };
+  const saved = recordIncident(ctx.runtime, root, draft, HOOK_ACTOR);
+  return saved.ok ? [saved.value.id] : [];
+});
+var dataOf = (mode, outcome, incidents) => {
+  const findings = [
+    ...outcome.fresh.map((finding) => view(finding, "new")),
+    ...outcome.known.map((finding) => view(finding, "known")),
+    ...outcome.expired.map((finding) => view(finding, "expired"))
+  ];
+  return {
+    schema: SECRETS_SCAN_SCHEMA,
+    mode,
+    baseline: BASELINE_FILE,
+    findings,
+    fixed: outcome.fixed.map((entry) => entry.id),
+    incidents,
+    summary: {
+      total: findings.length,
+      new: outcome.fresh.length,
+      known: outcome.known.length,
+      expired: outcome.expired.length,
+      fixed: outcome.fixed.length
+    }
+  };
+};
+var humanOf = (ctx, data) => [
+  ctx.t("secrets.scan.title", { mode: data.mode, ...data.summary }),
+  ...data.findings.map(
+    (item) => ctx.t("secrets.scan.item", {
+      status: item.status,
+      rule: item.rule,
+      where: `${item.file}:${String(item.line)}`,
+      id: item.id,
+      mask: item.mask
+    })
+  ),
+  ...data.summary.total === 0 ? [ctx.t("secrets.scan.clean")] : []
+];
+var resultOf = (ctx, data) => {
+  const human = humanOf(ctx, data);
+  const failing = data.summary.new + data.summary.expired;
+  if (failing === 0) return success(data, human);
+  return failureFrom(
+    ctx.t,
+    {
+      code: "secrets_found",
+      messageKey: "secrets.error.found",
+      params: { count: failing },
+      fix: "finitemonkey secrets accept <id> --reason <why>",
+      exitCode: ExitCode.CheckFailed,
+      data
+    },
+    human
+  );
+};
+var prune = (ctx, root, baseline, outcome) => {
+  if (outcome.fixed.length > 0) saveBaseline(ctx.runtime, root, withoutFixed(baseline, outcome.fixed));
+};
+var secretsScanCommand = {
+  path: ["secrets", "scan"],
+  summaryKey: "secrets.command.scan",
+  usage: "finitemonkey secrets scan [--staged | --history | --path <dir>] [--json]",
+  status: "ready",
+  options: { staged: { type: "boolean" }, history: { type: "boolean" }, path: { type: "string" } },
+  run: async (ctx, args) => {
+    const mode = modeOf2(args.values);
+    const fix = "finitemonkey help secrets scan";
+    if (mode === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.error.one_mode", fix));
+    const root = projectRoot(ctx);
+    const target = stringOption(args.values, "path") ?? ".";
+    const scanned = await runScan(ctx, root, mode, target);
+    if (!scanned.ok) return failureFrom(ctx.t, gitUnavailable(scanned.error));
+    const baseline = loadBaseline(ctx.runtime, root);
+    if (!baseline.ok) return failureFrom(ctx.t, baselineInvalid(baseline.error));
+    const outcome = ratchet(
+      scanned.value,
+      baseline.value,
+      ctx.runtime.now(),
+      mode === "path" ? scopeOf(target) : void 0
+    );
+    if (mode === "path") prune(ctx, root, baseline.value, outcome);
+    const incidents = mode === "history" ? historyIncidents(ctx, root, outcome.fresh) : [];
+    return resultOf(ctx, dataOf(mode, outcome, incidents));
+  }
 };
 
 // src/install/uninstall.ts
