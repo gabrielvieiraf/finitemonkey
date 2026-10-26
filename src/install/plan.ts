@@ -68,7 +68,21 @@ export interface Detection {
   readonly authorities: readonly Authority[];
   readonly runner: Runner;
   readonly claude: ClaudeInfo;
+  readonly location: Location;
 }
+
+export interface Location {
+  readonly wslMount: boolean;
+  readonly synced: boolean;
+}
+
+const WSL_MOUNT = /^\/mnt\/[a-z](\/|$)/i;
+const SYNCED = /(OneDrive|Dropbox|iCloud ?Drive|Mobile Documents|Google ?Drive)/i;
+
+export const locationOf = (root: string, env: Env): Location => ({
+  wslMount: WSL_MOUNT.test(root) && (env["WSL_DISTRO_NAME"] !== undefined || env["WSL_INTEROP"] !== undefined),
+  synced: SYNCED.test(root),
+});
 
 export interface PlanInput {
   readonly preset: Preset;
@@ -103,6 +117,7 @@ export const detect = (project: Project, gitRoot: boolean, input: PlanInput): De
   authorities: detectAuthorities(project, input.env),
   runner: chooseRunner(project, input.bin),
   claude: detectClaude(project.runtime.probe),
+  location: locationOf(project.root, input.env),
 });
 
 export const readPreviousLock = (project: Project): Parsed<LockFile | undefined, PlanError> => {

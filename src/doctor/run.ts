@@ -5,6 +5,7 @@ import { checkClaudeSettings } from "./claude-settings.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkHooks } from "./hooks.js";
 import { checkInstructions } from "./instructions.js";
+import { checkLineEndings } from "./line-endings.js";
 import { checkAgentsFile } from "./memory.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkOs, checkPath } from "./system.js";
@@ -25,6 +26,7 @@ export const CHECKS: readonly Check[] = [
   checkClaudeSettings,
   checkInstructions,
   checkProjectFiles,
+  checkLineEndings,
   checkAgentsFile,
   checkHooks,
 ];

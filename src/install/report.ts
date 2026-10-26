@@ -65,6 +65,12 @@ export const planWarnings = (t: Translate, plan: Plan): readonly Warning[] => [
   ...(plan.detection.claude.failClosed
     ? []
     : [{ code: "fail_open", message: t("install.warn.fail_open", { version: plan.detection.claude.version ?? "?" }) }]),
+  ...(plan.detection.location.wslMount
+    ? [{ code: "wsl_mount", message: t("install.warn.wsl_mount", { path: plan.detection.root }) }]
+    : []),
+  ...(plan.detection.location.synced
+    ? [{ code: "synced_folder", message: t("install.warn.synced_folder", { path: plan.detection.root }) }]
+    : []),
   ...plan.detection.authorities.map((authority) => authorityWarning(t, authority)),
   ...plan.items.flatMap((item) => itemWarning(t, item)),
 ];

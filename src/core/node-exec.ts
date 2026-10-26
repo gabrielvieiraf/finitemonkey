@@ -1,10 +1,11 @@
 import { spawn, spawnSync } from "node:child_process";
-import { appendFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 import type { AbsolutePath } from "./brand.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Exec } from "./runtime.js";
+import { resolveWindowsCommand, windowsCommandLine } from "./windows-command.js";
 
 const SHELL_NOT_FOUND = new Set([127, 9009]);
 const CMD_NOT_FOUND =
@@ -31,10 +32,16 @@ export const nodeExec: Exec = (request) => {
       Object.entries({ ...process.env, ...request.env }).filter(([name]) => !(request.unset ?? []).includes(name)),
     ),
   } as const;
+  const resolved =
+    process.platform === "win32" && request.shell !== true
+      ? resolveWindowsCommand(request.command, options.env, existsSync)
+      : undefined;
   const result =
     request.shell === true
       ? spawnSync([request.command, ...request.args].join(" "), { ...options, shell: true })
-      : spawnSync(request.command, [...request.args], options);
+      : resolved?.shell === true
+        ? spawnSync(windowsCommandLine(resolved, request.args), { ...options, shell: true })
+        : spawnSync(resolved?.command ?? request.command, [...request.args], options);
   const code = errnoCode(result.error);
   const exitCode = result.status;
   const shellMissing =
