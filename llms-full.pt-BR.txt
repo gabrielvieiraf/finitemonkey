@@ -524,6 +524,8 @@ npx finitemonkey doctor --json
 
 Cada item tem `check`, `status` e `fix`. Se algum item não estiver `ok`, rode o comando de `fix` quando for seguro e não cair na regra de conduta 5, e rode o `doctor` de novo. Relate o que sobrou.
 
+`npx finitemonkey doctor --fix` repara os arquivos do projeto que são dele (hooks, regras de deny, o bloco do `.gitignore`) com o mesmo backup e a mesma trava do `init`, e nunca mexe nos settings do usuário nem no perfil do shell. Se o usuário quiser abrir um bug, `npx finitemonkey doctor --report` grava um arquivo Markdown mascarado em `.finitemonkey/reports/` para anexar na issue.
+
 ### 6. Conte para a pessoa
 
 Em uma ou duas frases: o que foi instalado, o que o `doctor` não conseguiu corrigir e que ela já pode seguir trabalhando sem nenhum comando novo.

@@ -2,6 +2,7 @@ import { stringOption } from "../core/args.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom } from "../core/result.js";
 import { deadlineFor, HOOK_EVENTS, type HookEvent, parseHookEvent } from "../hooks/events.js";
+import { logHookFailure } from "../hooks/failure-log.js";
 import { DEFAULT_HANDLERS } from "../hooks/handlers.js";
 import { type HookVerdict, runHook } from "../hooks/runner.js";
 import { PLUGIN_VIA, projectOwnsHooks, YIELD_STDOUT } from "../install/plugin-yield.js";
@@ -42,6 +43,7 @@ export const hookCommand: CommandSpec = {
       runtime: ctx.runtime,
       env: ctx.env,
     });
+    logHookFailure(ctx, event, outcome);
     const data: HookData = { event, verdict: outcome.verdict };
     const output = { stdout: outcome.stdout, stderr: outcome.stderr };
     if (outcome.exitCode === 0) return { ok: true, exitCode: 0, data, raw: output };

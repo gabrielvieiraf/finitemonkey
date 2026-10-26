@@ -77,6 +77,7 @@ const nextLock = (
   now: string,
   backupDir: string | undefined,
   createdDirs: readonly string[],
+  only?: readonly string[],
 ): LockFile => ({
   schema: LOCK_SCHEMA,
   version,
@@ -84,7 +85,13 @@ const nextLock = (
   installedAt: plan.previous?.installedAt ?? now,
   updatedAt: now,
   createdDirs: [...new Set([...(plan.previous?.createdDirs ?? []), ...createdDirs])],
-  entries: plan.items.filter((item) => item.action !== "skip-foreign").map((item) => entryOf(plan, item, backupDir)),
+  entries: plan.items
+    .filter((item) => item.action !== "skip-foreign")
+    .flatMap((item) => {
+      if (only === undefined || only.includes(item.path)) return [entryOf(plan, item, backupDir)];
+      const kept = plan.previous?.entries.find((entry) => entry.path === item.path);
+      return kept === undefined ? [] : [kept];
+    }),
 });
 
 const needsBackup = (plan: Plan, item: PlanItem): boolean =>
@@ -112,9 +119,12 @@ const commit = (
   plan: Plan,
   version: string,
   createdDirs: readonly string[],
+  only?: readonly string[],
 ): Parsed<Applied, ApplyFailure> => {
   const now = project.runtime.now();
-  const changing = plan.items.filter((item) => CHANGING.includes(item.action));
+  const changing = plan.items.filter(
+    (item) => CHANGING.includes(item.action) && (only === undefined || only.includes(item.path)),
+  );
   const toBackup = changing.filter((item) => needsBackup(plan, item));
   const backupDir = toBackup.length === 0 ? undefined : `${BACKUPS_DIR}/${stamp(now)}`;
   if (backupDir !== undefined) {
@@ -123,7 +133,7 @@ const commit = (
   }
   const written = writeAll(project, changing);
   if (!written.ok) return written;
-  const lock = nextLock(plan, version, now, backupDir, createdDirs);
+  const lock = nextLock(plan, version, now, backupDir, createdDirs, only);
   const locked = writeText(project, LOCK_FILE, renderLock(lock));
   if (!locked.ok) {
     restore(project, changing);
@@ -147,7 +157,12 @@ export const withInstallLock = <T>(project: Project, work: () => Parsed<T, Apply
   }
 };
 
-export const applyPlan = (project: Project, plan: Plan, version: string): Parsed<Applied, ApplyFailure> => {
+export const applyPlan = (
+  project: Project,
+  plan: Plan,
+  version: string,
+  only?: readonly string[],
+): Parsed<Applied, ApplyFailure> => {
   const created = createdBy(project);
-  return withInstallLock(project, () => commit(project, plan, version, created));
+  return withInstallLock(project, () => commit(project, plan, version, created, only));
 };
