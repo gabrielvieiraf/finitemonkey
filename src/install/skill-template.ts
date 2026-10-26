@@ -4,8 +4,7 @@ import { isScript, type Runner } from "./hook-entries.js";
 import { GENERATED_MARKER, LOCAL_BIN, VENDOR_BIN } from "./layout.js";
 import { TEMPLATES } from "./templates/index.js";
 
-const gateCommand = (runner: Runner): string => {
-  const args = "gate --fast --json";
+export const cliCommand = (runner: Runner, args: string): string => {
   if (runner.kind === "local") return `node ${LOCAL_BIN} ${args}`;
   if (runner.kind === "vendored") return `node ${VENDOR_BIN} ${args}`;
   return isScript(runner.path) ? `node "${runner.path}" ${args}` : `"${runner.path}" ${args}`;
@@ -24,7 +23,7 @@ export const verifySkillTemplate = (runner: Runner, lang: Lang): string => {
     "",
     `# ${skill.title}`,
     "",
-    ...skill.steps(gateCommand(runner)).map((step, index) => `${String(index + 1)}. ${step}`),
+    ...skill.steps(cliCommand(runner, "gate --fast --json")).map((step, index) => `${String(index + 1)}. ${step}`),
     "",
     `<!-- ${GENERATED_MARKER} -->`,
     "",

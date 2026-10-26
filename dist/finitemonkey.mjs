@@ -753,10 +753,10 @@ var ruleFor = (raw) => {
   const line2 = withoutCarriageReturn(raw).trim();
   if (line2 === "" || line2.startsWith("#") || line2.startsWith("!") || line2.includes(")")) return void 0;
   const anchored = line2.startsWith("/");
-  const body = (anchored ? line2.slice(1) : line2).replace(/\/+$/, "");
-  if (body === "" || body === "*" || body === "**") return void 0;
-  const path = line2.endsWith("/") ? `${body}/**` : body;
-  return `Read(${anchored || body.includes("/") ? "./" : ""}${path})`;
+  const body2 = (anchored ? line2.slice(1) : line2).replace(/\/+$/, "");
+  if (body2 === "" || body2 === "*" || body2 === "**") return void 0;
+  const path = line2.endsWith("/") ? `${body2}/**` : body2;
+  return `Read(${anchored || body2.includes("/") ? "./" : ""}${path})`;
 };
 var claudeignoreRules = (texts) => [
   ...new Set(
@@ -878,8 +878,143 @@ var checkInstructions = (env) => {
   ];
 };
 
-// src/doctor/project-files.ts
+// src/doctor/memory.ts
+import { join as join7 } from "node:path";
+
+// src/git/project-config.ts
 import { join as join6 } from "node:path";
+var CONFIG_FILE = ".finitemonkey/config.yml";
+var unquote = (value) => value.trim().replace(/^(["'])(.*)\1$/s, "$2");
+var stripComment = (line2) => {
+  let quote;
+  for (let index = 0; index < line2.length; index += 1) {
+    const char = line2.charAt(index);
+    if (quote === void 0 && (char === '"' || char === "'")) quote = char;
+    else if (char === quote) quote = void 0;
+    else if (quote === void 0 && char === "#" && (index === 0 || /\s/.test(line2.charAt(index - 1)))) {
+      return line2.slice(0, index);
+    }
+  }
+  return line2;
+};
+var flowList = (value) => {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return void 0;
+  return trimmed.slice(1, -1).split(",").map(unquote).filter((item) => item !== "");
+};
+var keyValue = (body2) => {
+  const match = /^("[^"]*"|'[^']*'|[^:]+?)\s*:(?:\s+(.*))?$/.exec(body2);
+  if (match === null) return void 0;
+  return { key: unquote(match[1] ?? ""), value: match[2] ?? "" };
+};
+var addItem = (frame, item) => {
+  if (frame.key === void 0) return;
+  const parent = frame.tree[frame.key];
+  if (Array.isArray(parent)) parent.push(item);
+  else frame.tree[frame.key] = [item];
+};
+var placeLine = (stack, indent, body2) => {
+  while (stack.length > 1 && (stack[stack.length - 1]?.indent ?? 0) >= indent && !body2.startsWith("- ")) stack.pop();
+  const top = stack[stack.length - 1];
+  if (top === void 0) return;
+  if (body2.startsWith("- ")) {
+    addItem(top, unquote(body2.slice(2)));
+    return;
+  }
+  const pair = keyValue(body2);
+  if (pair === void 0) return;
+  const parentTree = top.key === void 0 ? top.tree : ensureTree(top.tree, top.key);
+  if (pair.value === "") {
+    stack.push({ indent, tree: parentTree, key: pair.key });
+    return;
+  }
+  parentTree[pair.key] = flowList(pair.value) ?? unquote(pair.value);
+};
+var ensureTree = (tree, key) => {
+  const existing = tree[key];
+  if (existing !== void 0 && typeof existing !== "string" && !Array.isArray(existing)) return existing;
+  const fresh3 = {};
+  tree[key] = fresh3;
+  return fresh3;
+};
+var parseConfigYaml = (text6) => {
+  const root = {};
+  const stack = [{ indent: -1, tree: root, key: void 0 }];
+  for (const raw of text6.split(/\r?\n/)) {
+    const line2 = stripComment(raw).trimEnd();
+    if (line2.trim() === "" || line2.trim() === "---") continue;
+    const indent = line2.length - line2.trimStart().length;
+    placeLine(stack, indent, line2.trim());
+  }
+  return root;
+};
+var isTree = (node) => typeof node === "object" && !Array.isArray(node);
+var configAt = (tree, ...path) => path.reduce((node, key) => isTree(node) ? node[key] : void 0, tree);
+var configList = (tree, ...path) => {
+  const node = configAt(tree, ...path);
+  if (typeof node === "string") return node === "" ? [] : [node];
+  return Array.isArray(node) ? node.filter((item) => typeof item === "string") : [];
+};
+var configMap = (tree, ...path) => {
+  const node = configAt(tree, ...path);
+  if (!isTree(node)) return {};
+  return Object.fromEntries(
+    Object.entries(node).filter((entry2) => typeof entry2[1] === "string")
+  );
+};
+var loadProjectConfig = (runtime, root) => {
+  const text6 = runtime.readText(toAbsolutePath(join6(root, CONFIG_FILE)));
+  return text6.ok ? parseConfigYaml(text6.value) : {};
+};
+
+// src/install/layout.ts
+var STATE_DIR = ".finitemonkey";
+var SETTINGS_FILE = ".claude/settings.json";
+var GITIGNORE_FILE = ".gitignore";
+var CONFIG_FILE2 = ".finitemonkey/config.yml";
+var LOCK_FILE = ".finitemonkey/lock.json";
+var BACKUPS_DIR = ".finitemonkey/backups";
+var LOCKS_DIR = ".finitemonkey/locks";
+var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
+var VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
+var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
+var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
+var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
+var LOCK_SCHEMA = "finitemonkey/lock@1";
+var PLAN_SCHEMA = "finitemonkey/install-plan@1";
+var GENERATED_MARKER = "finitemonkey:generated v=1";
+var BLOCK_BEGIN = "# finitemonkey:begin v=1";
+var BLOCK_END = "# finitemonkey:end";
+var MD_BLOCK_BEGIN = "<!-- finitemonkey:begin v=1 -->";
+var MD_BLOCK_END = "<!-- finitemonkey:end -->";
+var AGENTS_FILE = "AGENTS.md";
+var CLAUDE_FILE = "CLAUDE.md";
+var AGENTS_IMPORT = "@AGENTS.md";
+var AGENTS_MAX_LINES = 60;
+var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
+var PRESETS = ["neutral", "gabriel"];
+var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
+var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
+
+// src/doctor/memory.ts
+var ceilingOf = (config) => {
+  const value = configAt(parseConfigYaml(config ?? ""), "memory", "maxLines");
+  const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : AGENTS_MAX_LINES;
+};
+var lineCount2 = (text6) => text6.replace(/\r?\n$/, "").split(/\r?\n/).length;
+var checkAgentsFile = ({ root, runtime }) => {
+  const text6 = runtime.readText(toAbsolutePath(join7(root, AGENTS_FILE)));
+  if (!text6.ok) return [];
+  const config = runtime.readText(toAbsolutePath(join7(root, CONFIG_FILE2)));
+  const max = ceilingOf(config.ok ? config.value : void 0);
+  const lines3 = lineCount2(text6.value);
+  const params2 = { file: AGENTS_FILE, lines: lines3, max };
+  return lines3 > max ? [finding("memory.agents_lines", "fail", "doctor.memory.too_long", params2, "doctor.memory.fix_too_long")] : [finding("memory.agents_lines", "ok", "doctor.memory.lines", params2)];
+};
+
+// src/doctor/project-files.ts
+import { join as join8 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
 var SCRIPT = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
@@ -910,7 +1045,7 @@ var CONFIG_GROUPS = [
     files: [...variants("commitlint.config", SCRIPT), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
-var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join6(env.root, file)))?.kind === "file");
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join8(env.root, file)))?.kind === "file");
 var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
   const found = present(env, files);
   return found.length > 1 ? [build(name, found.join(", "))] : [];
@@ -1066,7 +1201,8 @@ var CHECKS = [
   checkAuthVariables,
   checkClaudeSettings,
   checkInstructions,
-  checkProjectFiles
+  checkProjectFiles,
+  checkAgentsFile
 ];
 var doctorEnvFrom = (ctx) => ({
   platform: ctx.platform,
@@ -2204,11 +2340,11 @@ var runShellCheck = (check2, run3, ctx) => {
 var commandCheck = (check2, ctx) => check2.run === void 0 ? unverified("not_implemented") : runShellCheck(check2, check2.run, ctx);
 
 // src/task/paths.ts
-import { join as join7 } from "node:path";
+import { join as join9 } from "node:path";
 var FM_DIR = ".finitemonkey";
 var fmPaths = (root) => {
-  const dir = toAbsolutePath(join7(root, FM_DIR));
-  const at = (...parts) => toAbsolutePath(join7(dir, ...parts));
+  const dir = toAbsolutePath(join9(root, FM_DIR));
+  const at = (...parts) => toAbsolutePath(join9(dir, ...parts));
   return {
     root,
     dir,
@@ -2326,7 +2462,7 @@ var aheadOfUpstream = (git) => {
 };
 
 // src/gate/prepare.ts
-import { join as join8 } from "node:path";
+import { join as join10 } from "node:path";
 
 // src/secrets/allowlist.ts
 var PLACEHOLDER_WORDS = [
@@ -2761,17 +2897,17 @@ var ESCAPES = {
   "0": "\0"
 };
 var HEX4 = /^[0-9a-fA-F]{4}$/;
-var unescapeDouble = (body) => {
+var unescapeDouble = (body2) => {
   let out = "";
-  for (let index = 0; index < body.length; index += 1) {
-    const char = body[index] ?? "";
+  for (let index = 0; index < body2.length; index += 1) {
+    const char = body2[index] ?? "";
     if (char !== "\\") {
       out += char;
       continue;
     }
-    const next2 = body[index + 1] ?? "";
+    const next2 = body2[index + 1] ?? "";
     if (next2 === "u") {
-      const hex = body.slice(index + 2, index + 6);
+      const hex = body2.slice(index + 2, index + 6);
       if (!HEX4.test(hex)) return reject(`bad \\u escape`);
       out += String.fromCharCode(Number.parseInt(hex, 16));
       index += 5;
@@ -2804,8 +2940,8 @@ var quotedEnd = (text6, start) => {
 var parseQuoted = (text6) => {
   const end = quotedEnd(text6, 0);
   if (end !== text6.length - 1) return reject(`unterminated or trailing text after quoted string`);
-  const body = text6.slice(1, -1);
-  return text6.startsWith('"') ? unescapeDouble(body) : accept(body.replace(/''/g, "'"));
+  const body2 = text6.slice(1, -1);
+  return text6.startsWith('"') ? unescapeDouble(body2) : accept(body2.replace(/''/g, "'"));
 };
 var NUMBER = /^-?(0|[1-9]\d*)(\.\d+)?([eE][-+]?\d+)?$/;
 var UNSUPPORTED = /^[&*!|>%@`]/;
@@ -2819,25 +2955,25 @@ var parsePlain = (text6) => {
 
 // src/core/yaml/flow.ts
 var OPEN = { "[": "]", "{": "}" };
-var splitTop = (body) => {
+var splitTop = (body2) => {
   const parts = [];
   let depth = 0;
   let start = 0;
-  for (let index = 0; index < body.length; index += 1) {
-    const char = body[index] ?? "";
+  for (let index = 0; index < body2.length; index += 1) {
+    const char = body2[index] ?? "";
     if (char === '"' || char === "'") {
-      const end = quotedEnd(body, index);
+      const end = quotedEnd(body2, index);
       if (end < 0) return reject("unterminated quoted string");
       index = end;
     } else if (char in OPEN) depth += 1;
     else if (char === "]" || char === "}") depth -= 1;
     else if (char === "," && depth === 0) {
-      parts.push(body.slice(start, index));
+      parts.push(body2.slice(start, index));
       start = index + 1;
     }
   }
   if (depth !== 0) return reject("unbalanced brackets");
-  const last = body.slice(start);
+  const last = body2.slice(start);
   if (last.trim() !== "" || parts.length > 0) parts.push(last);
   return accept(parts.map((part2) => part2.trim()));
 };
@@ -2894,7 +3030,7 @@ var parseValue = (text6) => {
 
 // src/core/yaml/parse.ts
 var BOM = new RegExp(`^${String.fromCharCode(65279)}`);
-var stripComment = (text6) => {
+var stripComment2 = (text6) => {
   for (let index = 0; index < text6.length; index += 1) {
     const char = text6[index];
     if (char === '"' || char === "'") {
@@ -2909,14 +3045,14 @@ var toLines = (source) => {
   const lines3 = [];
   const raw = source.replace(BOM, "").split(/\r?\n/);
   for (const [index, full] of raw.entries()) {
-    const text6 = stripComment(full).trimEnd();
-    const body = text6.trimStart();
-    if (body === "" || body === "---" && lines3.length === 0) continue;
-    const indentText = text6.slice(0, text6.length - body.length);
+    const text6 = stripComment2(full).trimEnd();
+    const body2 = text6.trimStart();
+    if (body2 === "" || body2 === "---" && lines3.length === 0) continue;
+    const indentText = text6.slice(0, text6.length - body2.length);
     if (indentText.includes("	")) return reject({ line: index + 1, message: "tabs are not allowed for indentation" });
-    if (body === "---" || body === "...")
+    if (body2 === "---" || body2 === "...")
       return reject({ line: index + 1, message: "only one YAML document is allowed" });
-    lines3.push({ number: index + 1, indent: indentText.length, text: body });
+    lines3.push({ number: index + 1, indent: indentText.length, text: body2 });
   }
   return accept(lines3);
 };
@@ -3347,10 +3483,10 @@ var conflictFiles = (git, base) => {
 // src/gate/prepare.ts
 var diskFiles = (runtime, root) => ({
   read: (relative9) => {
-    const text6 = runtime.readText(toAbsolutePath(join8(root, relative9)));
+    const text6 = runtime.readText(toAbsolutePath(join10(root, relative9)));
     return text6.ok ? text6.value : void 0;
   },
-  exists: (relative9) => runtime.stat(toAbsolutePath(join8(root, relative9))) !== void 0
+  exists: (relative9) => runtime.stat(toAbsolutePath(join10(root, relative9))) !== void 0
 });
 var baseFiles = (git, base, disk) => ({
   read: (relative9) => base === EMPTY_TREE ? disk.read(relative9) : fileAt(git, base, relative9),
@@ -3442,14 +3578,14 @@ var runBaseline = (options) => {
 };
 
 // src/gate/hooks/common.ts
-import { dirname as dirname4, join as join9 } from "node:path";
+import { dirname as dirname4, join as join11 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
 var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
 var MAX_DEPTH2 = 64;
 var findRepoRoot = (runtime, start) => {
   let current = start;
   for (let depth = 0; depth < MAX_DEPTH2; depth += 1) {
-    if (runtime.stat(toAbsolutePath(join9(current, ".git"))) !== void 0) return current;
+    if (runtime.stat(toAbsolutePath(join11(current, ".git"))) !== void 0) return current;
     const parent = toAbsolutePath(dirname4(current));
     if (parent === current) return void 0;
     current = parent;
@@ -3984,7 +4120,10 @@ var en_default = {
   "gate.merge.unavailable": "could not read the merges of the session",
   "gate.merge.unanalyzed": "merge {commit} could not be analyzed: {detail}",
   "gate.merge.lost": "merge {commit} lost changes: {findings}",
-  "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost"
+  "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost",
+  "doctor.memory.lines": "{file}: {lines, plural, one {# line} other {# lines}} of {max}. Edits made during a session apply only after /clear, /compact or a restart.",
+  "doctor.memory.too_long": "{file}: {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
+  "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml"
 };
 
 // src/i18n/es.json
@@ -4439,7 +4578,10 @@ var es_default = {
   "gate.merge.unavailable": "no se pudieron leer las fusiones de la sesión",
   "gate.merge.unanalyzed": "la fusión {commit} no se pudo analizar: {detail}",
   "gate.merge.lost": "la fusión {commit} perdió cambios: {findings}",
-  "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada"
+  "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada",
+  "doctor.memory.lines": "{file}: {lines, plural, one {# línea} other {# líneas}} de {max}. Los cambios hechos durante una sesión solo se aplican tras /clear, /compact o reiniciar.",
+  "doctor.memory.too_long": "{file}: {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
+  "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml"
 };
 
 // src/i18n/pt-BR.json
@@ -4894,7 +5036,10 @@ var pt_BR_default = {
   "gate.merge.unavailable": "não foi possível ler as mesclas da sessão",
   "gate.merge.unanalyzed": "a mescla {commit} não pôde ser analisada: {detail}",
   "gate.merge.lost": "a mescla {commit} perdeu mudanças: {findings}",
-  "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu"
+  "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu",
+  "doctor.memory.lines": "{file}: {lines, plural, one {# linha} other {# linhas}} de {max}. Edições feitas durante a sessão só valem depois de /clear, /compact ou reiniciar.",
+  "doctor.memory.too_long": "{file}: {lines, plural, one {# linha} other {# linhas}}, acima do teto de {max}; arquivo de instruções longo é menos seguido",
+  "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml"
 };
 
 // src/i18n/review.json
@@ -4973,6 +5118,45 @@ var review_default = {
     "doctor.path.fix_synced": "machine",
     "doctor.path.wsl_mount": "machine",
     "doctor.path.fix_wsl_mount": "machine",
+    "doctor.node.unsupported": "machine",
+    "doctor.node.fix_unsupported": "machine",
+    "doctor.claude.old": "machine",
+    "doctor.claude.fix_old": "machine",
+    "doctor.sandbox.ok": "machine",
+    "doctor.sandbox.windows": "machine",
+    "doctor.sandbox.fix_windows": "machine",
+    "doctor.sandbox.missing": "machine",
+    "doctor.sandbox.fix_missing": "machine",
+    "doctor.path.copies": "machine",
+    "doctor.path.fix_copies": "machine",
+    "doctor.auth.env": "machine",
+    "doctor.auth.fix_env": "machine",
+    "doctor.settings.disable_all_hooks": "machine",
+    "doctor.settings.fix_disable_all_hooks": "machine",
+    "doctor.settings.managed_hooks_only": "machine",
+    "doctor.settings.fix_managed_hooks_only": "machine",
+    "doctor.settings.plugin_only": "machine",
+    "doctor.settings.fix_plugin_only": "machine",
+    "doctor.settings.agent_teams": "machine",
+    "doctor.settings.fix_agent_teams": "machine",
+    "doctor.settings.loop_plugins": "machine",
+    "doctor.settings.fix_loop_plugins": "machine",
+    "doctor.settings.cleanup_period": "machine",
+    "doctor.settings.fix_cleanup_period": "machine",
+    "doctor.instructions.claudeignore": "machine",
+    "doctor.instructions.fix_claudeignore": "machine",
+    "doctor.instructions.denied": "machine",
+    "doctor.instructions.fix_denied": "machine",
+    "doctor.instructions.local": "machine",
+    "doctor.instructions.fix_local": "machine",
+    "doctor.instructions.size": "machine",
+    "doctor.instructions.fix_size": "machine",
+    "doctor.instructions.duplicated": "machine",
+    "doctor.instructions.fix_duplicated": "machine",
+    "doctor.project.lockfiles": "machine",
+    "doctor.project.fix_lockfiles": "machine",
+    "doctor.project.configs": "machine",
+    "doctor.project.fix_configs": "machine",
     "hook.failed_closed": "machine",
     "hook.failed_open": "machine",
     "exit.ok": "machine",
@@ -5312,45 +5496,9 @@ var review_default = {
     "gate.merge.unanalyzed": "machine",
     "gate.merge.lost": "machine",
     "gate.merge.clean": "machine",
-    "doctor.node.unsupported": "machine",
-    "doctor.node.fix_unsupported": "machine",
-    "doctor.claude.old": "machine",
-    "doctor.claude.fix_old": "machine",
-    "doctor.sandbox.ok": "machine",
-    "doctor.sandbox.windows": "machine",
-    "doctor.sandbox.fix_windows": "machine",
-    "doctor.sandbox.missing": "machine",
-    "doctor.sandbox.fix_missing": "machine",
-    "doctor.path.copies": "machine",
-    "doctor.path.fix_copies": "machine",
-    "doctor.auth.env": "machine",
-    "doctor.auth.fix_env": "machine",
-    "doctor.settings.disable_all_hooks": "machine",
-    "doctor.settings.fix_disable_all_hooks": "machine",
-    "doctor.settings.managed_hooks_only": "machine",
-    "doctor.settings.fix_managed_hooks_only": "machine",
-    "doctor.settings.plugin_only": "machine",
-    "doctor.settings.fix_plugin_only": "machine",
-    "doctor.settings.agent_teams": "machine",
-    "doctor.settings.fix_agent_teams": "machine",
-    "doctor.settings.loop_plugins": "machine",
-    "doctor.settings.fix_loop_plugins": "machine",
-    "doctor.settings.cleanup_period": "machine",
-    "doctor.settings.fix_cleanup_period": "machine",
-    "doctor.instructions.claudeignore": "machine",
-    "doctor.instructions.fix_claudeignore": "machine",
-    "doctor.instructions.denied": "machine",
-    "doctor.instructions.fix_denied": "machine",
-    "doctor.instructions.local": "machine",
-    "doctor.instructions.fix_local": "machine",
-    "doctor.instructions.size": "machine",
-    "doctor.instructions.fix_size": "machine",
-    "doctor.instructions.duplicated": "machine",
-    "doctor.instructions.fix_duplicated": "machine",
-    "doctor.project.lockfiles": "machine",
-    "doctor.project.fix_lockfiles": "machine",
-    "doctor.project.configs": "machine",
-    "doctor.project.fix_configs": "machine"
+    "doctor.memory.lines": "machine",
+    "doctor.memory.too_long": "machine",
+    "doctor.memory.fix_too_long": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -5426,6 +5574,45 @@ var review_default = {
     "doctor.path.fix_synced": "machine",
     "doctor.path.wsl_mount": "machine",
     "doctor.path.fix_wsl_mount": "machine",
+    "doctor.node.unsupported": "machine",
+    "doctor.node.fix_unsupported": "machine",
+    "doctor.claude.old": "machine",
+    "doctor.claude.fix_old": "machine",
+    "doctor.sandbox.ok": "machine",
+    "doctor.sandbox.windows": "machine",
+    "doctor.sandbox.fix_windows": "machine",
+    "doctor.sandbox.missing": "machine",
+    "doctor.sandbox.fix_missing": "machine",
+    "doctor.path.copies": "machine",
+    "doctor.path.fix_copies": "machine",
+    "doctor.auth.env": "machine",
+    "doctor.auth.fix_env": "machine",
+    "doctor.settings.disable_all_hooks": "machine",
+    "doctor.settings.fix_disable_all_hooks": "machine",
+    "doctor.settings.managed_hooks_only": "machine",
+    "doctor.settings.fix_managed_hooks_only": "machine",
+    "doctor.settings.plugin_only": "machine",
+    "doctor.settings.fix_plugin_only": "machine",
+    "doctor.settings.agent_teams": "machine",
+    "doctor.settings.fix_agent_teams": "machine",
+    "doctor.settings.loop_plugins": "machine",
+    "doctor.settings.fix_loop_plugins": "machine",
+    "doctor.settings.cleanup_period": "machine",
+    "doctor.settings.fix_cleanup_period": "machine",
+    "doctor.instructions.claudeignore": "machine",
+    "doctor.instructions.fix_claudeignore": "machine",
+    "doctor.instructions.denied": "machine",
+    "doctor.instructions.fix_denied": "machine",
+    "doctor.instructions.local": "machine",
+    "doctor.instructions.fix_local": "machine",
+    "doctor.instructions.size": "machine",
+    "doctor.instructions.fix_size": "machine",
+    "doctor.instructions.duplicated": "machine",
+    "doctor.instructions.fix_duplicated": "machine",
+    "doctor.project.lockfiles": "machine",
+    "doctor.project.fix_lockfiles": "machine",
+    "doctor.project.configs": "machine",
+    "doctor.project.fix_configs": "machine",
     "hook.failed_closed": "machine",
     "hook.failed_open": "machine",
     "exit.ok": "machine",
@@ -5765,45 +5952,9 @@ var review_default = {
     "gate.merge.unanalyzed": "machine",
     "gate.merge.lost": "machine",
     "gate.merge.clean": "machine",
-    "doctor.node.unsupported": "machine",
-    "doctor.node.fix_unsupported": "machine",
-    "doctor.claude.old": "machine",
-    "doctor.claude.fix_old": "machine",
-    "doctor.sandbox.ok": "machine",
-    "doctor.sandbox.windows": "machine",
-    "doctor.sandbox.fix_windows": "machine",
-    "doctor.sandbox.missing": "machine",
-    "doctor.sandbox.fix_missing": "machine",
-    "doctor.path.copies": "machine",
-    "doctor.path.fix_copies": "machine",
-    "doctor.auth.env": "machine",
-    "doctor.auth.fix_env": "machine",
-    "doctor.settings.disable_all_hooks": "machine",
-    "doctor.settings.fix_disable_all_hooks": "machine",
-    "doctor.settings.managed_hooks_only": "machine",
-    "doctor.settings.fix_managed_hooks_only": "machine",
-    "doctor.settings.plugin_only": "machine",
-    "doctor.settings.fix_plugin_only": "machine",
-    "doctor.settings.agent_teams": "machine",
-    "doctor.settings.fix_agent_teams": "machine",
-    "doctor.settings.loop_plugins": "machine",
-    "doctor.settings.fix_loop_plugins": "machine",
-    "doctor.settings.cleanup_period": "machine",
-    "doctor.settings.fix_cleanup_period": "machine",
-    "doctor.instructions.claudeignore": "machine",
-    "doctor.instructions.fix_claudeignore": "machine",
-    "doctor.instructions.denied": "machine",
-    "doctor.instructions.fix_denied": "machine",
-    "doctor.instructions.local": "machine",
-    "doctor.instructions.fix_local": "machine",
-    "doctor.instructions.size": "machine",
-    "doctor.instructions.fix_size": "machine",
-    "doctor.instructions.duplicated": "machine",
-    "doctor.instructions.fix_duplicated": "machine",
-    "doctor.project.lockfiles": "machine",
-    "doctor.project.fix_lockfiles": "machine",
-    "doctor.project.configs": "machine",
-    "doctor.project.fix_configs": "machine"
+    "doctor.memory.lines": "machine",
+    "doctor.memory.too_long": "machine",
+    "doctor.memory.fix_too_long": "machine"
   }
 };
 
@@ -5975,10 +6126,10 @@ var latestFor = (entries, check2, treeHash2, command) => entries.findLast(
 var hasStale = (entries, check2, treeHash2) => entries.some((entry2) => entry2.check === check2 && entry2.treeHash !== treeHash2);
 
 // src/gate/checks/diff.ts
-import { join as join10 } from "node:path";
+import { join as join12 } from "node:path";
 var MAX_LISTED = 10;
 var untrackedLines = (ctx) => ctx.changes.filter((change) => change.status === "A").reduce((sum, change) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join10(ctx.paths.root, change.path)));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join12(ctx.paths.root, change.path)));
   return sum + (text6.ok ? text6.value.split("\n").length : 0);
 }, 0);
 var diffCheck = (_check, ctx) => {
@@ -6077,7 +6228,7 @@ var manualCheck = (check2, ctx) => {
 };
 
 // src/gate/checks/placeholders.ts
-import { join as join11 } from "node:path";
+import { join as join13 } from "node:path";
 
 // src/guards/tests/patterns.ts
 var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)tests?\/.*\.[cm]?[jt]sx?$/;
@@ -6115,7 +6266,7 @@ var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHAN
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines3) => lines3.filter((line2) => !isTestFile(line2.path) && !SKIP_FILES.test(line2.path) && PLACEHOLDER.test(line2.text));
 var untrackedAdded = (ctx) => ctx.changes.filter((change) => change.status === "A" && !SKIP_FILES.test(change.path)).flatMap((change) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join11(ctx.paths.root, change.path)));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join13(ctx.paths.root, change.path)));
   return text6.ok ? text6.value.split("\n").map((line2, index) => ({ path: change.path, line: index + 1, text: line2 })) : [];
 });
 var placeholdersCheck = (_check, ctx) => {
@@ -6173,34 +6324,11 @@ var prOutcome = (check2, ctx) => {
   }
 };
 
-// src/install/layout.ts
-var STATE_DIR = ".finitemonkey";
-var SETTINGS_FILE = ".claude/settings.json";
-var GITIGNORE_FILE = ".gitignore";
-var CONFIG_FILE = ".finitemonkey/config.yml";
-var LOCK_FILE = ".finitemonkey/lock.json";
-var BACKUPS_DIR = ".finitemonkey/backups";
-var LOCKS_DIR = ".finitemonkey/locks";
-var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
-var VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
-var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
-var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
-var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
-var LOCK_SCHEMA = "finitemonkey/lock@1";
-var PLAN_SCHEMA = "finitemonkey/install-plan@1";
-var GENERATED_MARKER = "finitemonkey:generated v=1";
-var BLOCK_BEGIN = "# finitemonkey:begin v=1";
-var BLOCK_END = "# finitemonkey:end";
-var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
-var PRESETS = ["neutral", "gabriel"];
-var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
-var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
-
 // src/prose/preset.ts
 var PRESET_LINE = /^preset:\s*([A-Za-z0-9_-]+)\s*$/m;
 var presetFromConfig = (text6) => parsePreset(PRESET_LINE.exec(text6)?.[1]) ?? "neutral";
 var projectPreset = (runtime, root) => {
-  const config = runtime.readText(toAbsolutePath(CONFIG_FILE, root));
+  const config = runtime.readText(toAbsolutePath(CONFIG_FILE2, root));
   return config.ok ? presetFromConfig(config.value) : "neutral";
 };
 
@@ -6837,13 +6965,13 @@ var proseOutcome = (status) => {
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
 // src/secrets/baseline.ts
-import { join as join12 } from "node:path";
+import { join as join14 } from "node:path";
 var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
 var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
 var BASELINE_STATES = ["aceito", "falso-positivo"];
 var EXCEPTION_MAX_DAYS = 90;
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
-var baselinePath = (root) => toAbsolutePath(join12(root, BASELINE_FILE2));
+var baselinePath = (root) => toAbsolutePath(join14(root, BASELINE_FILE2));
 var text4 = (record2, key) => {
   const value = record2[key];
   return typeof value === "string" && value !== "" ? value : void 0;
@@ -6903,14 +7031,14 @@ var withoutFixed = (baseline, fixed) => {
 var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry2) => entry2.expiresAt >= now).map((entry2) => entry2.fingerprint));
 
 // src/secrets/incidents.ts
-import { join as join13 } from "node:path";
+import { join as join15 } from "node:path";
 var INCIDENTS_DIR = ".finitemonkey/incidents";
 var INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"];
 var INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"];
 var ID = /^inc-[0-9a-f]{12}$/;
 var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint}`).slice(0, 12)}`;
-var incidentsDir = (root) => toAbsolutePath(join13(root, INCIDENTS_DIR));
-var incidentFile = (root, id) => toAbsolutePath(join13(incidentsDir(root), `${id}.json`));
+var incidentsDir = (root) => toAbsolutePath(join15(root, INCIDENTS_DIR));
+var incidentFile = (root, id) => toAbsolutePath(join15(incidentsDir(root), `${id}.json`));
 var pick2 = (options, value) => options.find((option) => option === value);
 var str2 = (record2, key) => {
   const value = record2[key];
@@ -6965,7 +7093,7 @@ var listIncidents = (runtime, root) => {
   return names.value.filter((name) => name.endsWith(".json")).map((name) => readIncident(runtime, root, name.slice(0, -".json".length))).flatMap((parsed) => parsed.ok ? [parsed.value] : []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 };
 var saveIncident = (runtime, root, incident) => {
-  const ignore = runtime.writeText(toAbsolutePath(join13(incidentsDir(root), ".gitignore")), "*\n");
+  const ignore = runtime.writeText(toAbsolutePath(join15(incidentsDir(root), ".gitignore")), "*\n");
   if (!ignore.ok) return ignore;
   return runtime.writeText(incidentFile(root, incident.id), `${JSON.stringify(incident, null, 2)}
 `);
@@ -7012,7 +7140,7 @@ var moveIncident = (incident, to, now, by) => ({
 var isRotated = (incident) => incident.state === "rotacionado" || incident.state === "fechado";
 
 // src/secrets/scan.ts
-import { join as join14, relative as relative2 } from "node:path";
+import { join as join16, relative as relative2 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
@@ -7112,7 +7240,7 @@ var listed2 = (runtime, root, target) => {
   const base = toAbsolutePath(target, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => toPosixPath(relative2(root, join14(base, toPosixPath(name))))));
+  return accept(walked.value.map((name) => toPosixPath(relative2(root, join16(base, toPosixPath(name))))));
 };
 var scanFile = (runtime, root, file) => {
   const text6 = runtime.readText(toAbsolutePath(file, root));
@@ -7180,7 +7308,7 @@ var secretsCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/tests.ts
-import { join as join15 } from "node:path";
+import { join as join17 } from "node:path";
 
 // src/guards/tests/scan.ts
 var skipQuoted2 = (source, start, quote) => {
@@ -7341,7 +7469,7 @@ var treeViolations = (ctx) => {
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
     after: (path) => {
-      const text6 = ctx.runtime.readText(toAbsolutePath(join15(ctx.paths.root, path)));
+      const text6 = ctx.runtime.readText(toAbsolutePath(join17(ctx.paths.root, path)));
       return text6.ok ? text6.value : void 0;
     },
     acceptedConfigs: ctx.trust.configs,
@@ -7362,7 +7490,7 @@ var testsCheck = (check2, ctx) => {
 };
 
 // src/git/tree.ts
-import { join as join16 } from "node:path";
+import { join as join18 } from "node:path";
 
 // src/secrets/guards/paths.ts
 var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
@@ -7401,7 +7529,7 @@ var dropSensitive = (runtime, repo, env, options) => {
   return removed.ok ? accept(void 0) : removed;
 };
 var withTempIndex = (runtime, repo, options, work) => {
-  const path = toAbsolutePath(join16(repo.gitDir, `finitemonkey-${options.stamp}.index`));
+  const path = toAbsolutePath(join18(repo.gitDir, `finitemonkey-${options.stamp}.index`));
   const env = { GIT_INDEX_FILE: path, GIT_OPTIONAL_LOCKS: "0" };
   try {
     return work(env);
@@ -7652,94 +7780,8 @@ var parsePorcelainV2 = (stdout) => {
   return out.filter((entry2) => entry2.path !== "" && !entry2.path.startsWith(STATE_PREFIX));
 };
 
-// src/git/project-config.ts
-import { join as join17 } from "node:path";
-var CONFIG_FILE2 = ".finitemonkey/config.yml";
-var unquote = (value) => value.trim().replace(/^(["'])(.*)\1$/s, "$2");
-var stripComment2 = (line2) => {
-  let quote;
-  for (let index = 0; index < line2.length; index += 1) {
-    const char = line2.charAt(index);
-    if (quote === void 0 && (char === '"' || char === "'")) quote = char;
-    else if (char === quote) quote = void 0;
-    else if (quote === void 0 && char === "#" && (index === 0 || /\s/.test(line2.charAt(index - 1)))) {
-      return line2.slice(0, index);
-    }
-  }
-  return line2;
-};
-var flowList = (value) => {
-  const trimmed = value.trim();
-  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return void 0;
-  return trimmed.slice(1, -1).split(",").map(unquote).filter((item) => item !== "");
-};
-var keyValue = (body) => {
-  const match = /^("[^"]*"|'[^']*'|[^:]+?)\s*:(?:\s+(.*))?$/.exec(body);
-  if (match === null) return void 0;
-  return { key: unquote(match[1] ?? ""), value: match[2] ?? "" };
-};
-var addItem = (frame, item) => {
-  if (frame.key === void 0) return;
-  const parent = frame.tree[frame.key];
-  if (Array.isArray(parent)) parent.push(item);
-  else frame.tree[frame.key] = [item];
-};
-var placeLine = (stack, indent, body) => {
-  while (stack.length > 1 && (stack[stack.length - 1]?.indent ?? 0) >= indent && !body.startsWith("- ")) stack.pop();
-  const top = stack[stack.length - 1];
-  if (top === void 0) return;
-  if (body.startsWith("- ")) {
-    addItem(top, unquote(body.slice(2)));
-    return;
-  }
-  const pair = keyValue(body);
-  if (pair === void 0) return;
-  const parentTree = top.key === void 0 ? top.tree : ensureTree(top.tree, top.key);
-  if (pair.value === "") {
-    stack.push({ indent, tree: parentTree, key: pair.key });
-    return;
-  }
-  parentTree[pair.key] = flowList(pair.value) ?? unquote(pair.value);
-};
-var ensureTree = (tree, key) => {
-  const existing = tree[key];
-  if (existing !== void 0 && typeof existing !== "string" && !Array.isArray(existing)) return existing;
-  const fresh3 = {};
-  tree[key] = fresh3;
-  return fresh3;
-};
-var parseConfigYaml = (text6) => {
-  const root = {};
-  const stack = [{ indent: -1, tree: root, key: void 0 }];
-  for (const raw of text6.split(/\r?\n/)) {
-    const line2 = stripComment2(raw).trimEnd();
-    if (line2.trim() === "" || line2.trim() === "---") continue;
-    const indent = line2.length - line2.trimStart().length;
-    placeLine(stack, indent, line2.trim());
-  }
-  return root;
-};
-var isTree = (node) => typeof node === "object" && !Array.isArray(node);
-var configAt = (tree, ...path) => path.reduce((node, key) => isTree(node) ? node[key] : void 0, tree);
-var configList = (tree, ...path) => {
-  const node = configAt(tree, ...path);
-  if (typeof node === "string") return node === "" ? [] : [node];
-  return Array.isArray(node) ? node.filter((item) => typeof item === "string") : [];
-};
-var configMap = (tree, ...path) => {
-  const node = configAt(tree, ...path);
-  if (!isTree(node)) return {};
-  return Object.fromEntries(
-    Object.entries(node).filter((entry2) => typeof entry2[1] === "string")
-  );
-};
-var loadProjectConfig = (runtime, root) => {
-  const text6 = runtime.readText(toAbsolutePath(join17(root, CONFIG_FILE2)));
-  return text6.ok ? parseConfigYaml(text6.value) : {};
-};
-
 // src/git/merge/dropped.ts
-import { join as join18 } from "node:path";
+import { join as join19 } from "node:path";
 
 // src/git/merge/lines.ts
 var normalizeLine = (line2) => line2.replace(/\r$/, "").trim().replace(/\s*,$/, "");
@@ -7819,7 +7861,7 @@ var parseDropped = (text6) => {
   return accept({ items, invalid });
 };
 var loadDropped = (runtime, root, file) => {
-  const path = toAbsolutePath(file ?? join18(root, DROPPED_FILE), root);
+  const path = toAbsolutePath(file ?? join19(root, DROPPED_FILE), root);
   const text6 = runtime.readText(path);
   if (!text6.ok) return file === void 0 ? accept({ items: [], invalid: [] }) : reject(`${file}: ${text6.error}`);
   return parseDropped(text6.value);
@@ -7829,7 +7871,7 @@ var isDropped = (finding3, items) => items.some(
 );
 
 // src/git/merge/generated.ts
-import { join as join19 } from "node:path";
+import { join as join20 } from "node:path";
 var LOCKFILES3 = /* @__PURE__ */ new Set([
   "package-lock.json",
   "npm-shrinkwrap.json",
@@ -7892,7 +7934,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
   if (declared.length === 0) return accept([]);
   const commit2 = resultCommit(runtime, repo, inputs);
   if (!commit2.ok) return commit2;
-  const dir = join19(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
+  const dir = join20(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
   if (!runtime.git(["worktree", "add", "--detach", dir, commit2.value], repo.root).ok)
     return reject("could not check out the merge result");
   try {
@@ -7902,7 +7944,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
     }
     return accept(
       declared.flatMap(({ path }) => {
-        const fresh3 = runtime.readText(toAbsolutePath(join19(dir, path)));
+        const fresh3 = runtime.readText(toAbsolutePath(join20(dir, path)));
         const merged = blobText(runtime, repo, commit2.value, path);
         if (fresh3.ok && fresh3.value === merged) return [];
         return [{ kind: "generated-differs", file: path, side: void 0, line: void 0, text: path, weak: false }];
@@ -8188,19 +8230,19 @@ var verifyMerge = (runtime, repo, options = {}) => {
 };
 
 // src/git/ownership.ts
-import { join as join20 } from "node:path";
+import { join as join21 } from "node:path";
 var OWNERSHIP_DIR = ".finitemonkey/git";
 var ownerKey = (raw) => {
   const cleaned = (raw ?? "").replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 80);
   return cleaned === "" ? "unknown" : cleaned;
 };
-var fileOf = (repo, kind, owner) => toAbsolutePath(join20(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
+var fileOf = (repo, kind, owner) => toAbsolutePath(join21(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
 var readDirty = (runtime, root) => {
   const status = runtime.git(["status", "--porcelain=v2", "-z", "--untracked-files=all"], root);
   return status.ok ? parsePorcelainV2(status.stdout) : void 0;
 };
 var hashDirty = (runtime, repo, entries) => {
-  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join20(repo.root, entry2.path)))?.kind === "file");
+  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join21(repo.root, entry2.path)))?.kind === "file");
   const hashed = present2.length === 0 ? void 0 : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
     input: `${present2.map((entry2) => entry2.path).join("\n")}
 `
@@ -8885,10 +8927,10 @@ var rescueCommand = {
 };
 
 // src/git/journal.ts
-import { join as join21 } from "node:path";
+import { join as join22 } from "node:path";
 var JOURNAL_FILE = ".finitemonkey/git-journal.jsonl";
 var JOURNAL_SCHEMA = "finitemonkey/git-journal@1";
-var journalPath = (root) => toAbsolutePath(join21(root, JOURNAL_FILE));
+var journalPath = (root) => toAbsolutePath(join22(root, JOURNAL_FILE));
 var headsOf = (value) => isRecord(value) ? Object.fromEntries(
   Object.entries(value).filter((entry2) => typeof entry2[1] === "string")
 ) : {};
@@ -8924,7 +8966,7 @@ var readJournal = (runtime, root) => {
 };
 var appendJournal = (runtime, root, entry2) => {
   const path = journalPath(root);
-  const made = runtime.mkdir(toAbsolutePath(join21(root, ".finitemonkey")));
+  const made = runtime.mkdir(toAbsolutePath(join22(root, ".finitemonkey")));
   if (!made.ok) return made;
   const previous = runtime.readText(path);
   const before = previous.ok ? previous.value : "";
@@ -9011,7 +9053,7 @@ var listSnapshots = (runtime, repo) => {
 };
 
 // src/git/undo.ts
-import { basename as basename3, dirname as dirname5, join as join22 } from "node:path";
+import { basename as basename3, dirname as dirname5, join as join23 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args) => {
   const result = runtime.git(args, repo.root);
@@ -9054,7 +9096,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join22(dirname5(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join23(dirname5(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -9526,7 +9568,7 @@ var selfGuard = (input) => {
 };
 
 // src/guards/tests/hook.ts
-import { join as join23, relative as relative4 } from "node:path";
+import { join as join24, relative as relative4 } from "node:path";
 var localPath = (root, path) => toPosixPath(relative4(root, toAbsolutePath(path, root)));
 var read = (input, path) => {
   const text6 = input.runtime.readText(path);
@@ -9555,7 +9597,7 @@ var shellViolations = (input, root) => {
   return parseShell(command).flatMap(
     (simple) => writtenPaths(simple).flatMap((path) => {
       const local = localPath(root, path);
-      const exists = input.runtime.stat(toAbsolutePath(join23(root, local))) !== void 0;
+      const exists = input.runtime.stat(toAbsolutePath(join24(root, local))) !== void 0;
       if (!exists) return [];
       if (isProtectedConfig(local)) return [{ kind: "config_changed", path: local }];
       return isTestFile(local) ? [{ kind: "test_removed", path: local }] : [];
@@ -9575,7 +9617,7 @@ var testsGuard = (input) => {
 };
 
 // src/gate/hooks/config.ts
-import { join as join24 } from "node:path";
+import { join as join25 } from "node:path";
 var CONFIG_FILE3 = "config-hooks.json";
 var GUARDED_SOURCES = /* @__PURE__ */ new Set(["user_settings", "project_settings", "local_settings"]);
 var countIn = (value) => {
@@ -9590,9 +9632,9 @@ var censusOf = (text6) => {
   return { hooks: countIn(parsed.value["hooks"]), disabled: parsed.value["disableAllHooks"] === true };
 };
 var settingsFiles = (paths, env) => [
-  toAbsolutePath(join24(paths.root, ".claude", "settings.json")),
-  toAbsolutePath(join24(paths.root, ".claude", "settings.local.json")),
-  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join24(env["HOME"], ".claude", "settings.json"))]
+  toAbsolutePath(join25(paths.root, ".claude", "settings.json")),
+  toAbsolutePath(join25(paths.root, ".claude", "settings.local.json")),
+  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join25(env["HOME"], ".claude", "settings.json"))]
 ];
 var read2 = (runtime, path) => {
   const text6 = runtime.readText(path);
@@ -9995,7 +10037,7 @@ var isOwnWorktree = (input) => {
 var subagentStopGate = (input) => isOwnWorktree(input) ? stopGate(input) : { kind: "allow" };
 
 // src/gate/hooks/subagent.ts
-import { join as join25 } from "node:path";
+import { join as join26 } from "node:path";
 var NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
 var KNOWN_KINDS = /* @__PURE__ */ new Set([
   "command",
@@ -10029,12 +10071,12 @@ var subagentStart = (input) => {
   const active = readState(runtime, paths).active;
   if (active === void 0) return { kind: "allow" };
   const disk = (relative9) => {
-    const text6 = runtime.readText(toAbsolutePath(join25(paths.root, relative9)));
+    const text6 = runtime.readText(toAbsolutePath(join26(paths.root, relative9)));
     return text6.ok ? text6.value : void 0;
   };
   const loaded = loadTask(runtime, paths, { disk, base: () => void 0 }, active);
   if (!loaded.ok) return { kind: "allow" };
-  const briefing = runtime.stat(toAbsolutePath(join25(paths.dir, "briefing.md"))) !== void 0;
+  const briefing = runtime.stat(toAbsolutePath(join26(paths.dir, "briefing.md"))) !== void 0;
   return { kind: "allow", output: contextOutput("SubagentStart", contractFacts(t, loaded.value.contract, briefing)) };
 };
 
@@ -10051,7 +10093,7 @@ var PORTAO_HANDLERS = {
 };
 
 // src/prod/guard.ts
-import { join as join27 } from "node:path";
+import { join as join28 } from "node:path";
 
 // src/git/command-text.ts
 var MAX_SHOWN = 160;
@@ -10393,7 +10435,7 @@ var remoteHostsOf = (command) => {
 };
 
 // src/prod/targets.ts
-import { join as join26 } from "node:path";
+import { join as join27 } from "node:path";
 var DEPLOY_FILES = [
   "deploy.sh",
   "scripts/deploy.sh",
@@ -10417,12 +10459,12 @@ var hostsInText = (text6) => {
   return [...urls, ...keyed, ...commands].filter((host) => host !== "" && !host.includes("$"));
 };
 var workflowFiles = (runtime, root) => {
-  const listed4 = runtime.listDir(toAbsolutePath(join26(root, ".github", "workflows")));
+  const listed4 = runtime.listDir(toAbsolutePath(join27(root, ".github", "workflows")));
   if (!listed4.ok) return [];
   return listed4.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
 };
 var detectedHosts = (runtime, root, files) => files.flatMap((file) => {
-  const text6 = runtime.readText(toAbsolutePath(join26(root, file)));
+  const text6 = runtime.readText(toAbsolutePath(join27(root, file)));
   return text6.ok ? hostsInText(text6.value) : [];
 });
 var loadProdTargets = (runtime, root, config) => {
@@ -10434,7 +10476,7 @@ var loadProdTargets = (runtime, root, config) => {
     ...detectedHosts(runtime, root, deployFiles)
   ];
   const declaredDeploy = configAt(config, "prod", "deploy");
-  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join26(root, file))) !== void 0);
+  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join27(root, file))) !== void 0);
   return {
     hosts: new Set(hosts.map(hostKey).filter((host) => host !== "")),
     kubeContexts: configList(config, "prod", "kube_contexts"),
@@ -10611,8 +10653,8 @@ var recordEvidence = (runtime, root, owner, reads) => {
     ] : []
   );
   if (lines3.length === 0) return;
-  const path = toAbsolutePath(join27(root, EVIDENCE_FILE));
-  runtime.mkdir(toAbsolutePath(join27(root, ".finitemonkey")));
+  const path = toAbsolutePath(join28(root, EVIDENCE_FILE));
+  runtime.mkdir(toAbsolutePath(join28(root, ".finitemonkey")));
   const before = runtime.readText(path);
   const text6 = before.ok ? before.value : "";
   runtime.writeAtomic(path, `${text6}${text6 === "" || text6.endsWith("\n") ? "" : "\n"}${lines3.join("\n")}
@@ -11590,8 +11632,8 @@ var ASSIGNMENT3 = /^[A-Za-z_][A-Za-z0-9_]*=/;
 var WRAPPERS2 = /* @__PURE__ */ new Set(["sudo", "command", "exec", "time", "nice", "nohup", "builtin", "env"]);
 var liftHeredocs = (command) => {
   const heredocs = [];
-  const text6 = command.replace(HEREDOC2, (_match, _quote, _tag, body) => {
-    heredocs.push(body);
+  const text6 = command.replace(HEREDOC2, (_match, _quote, _tag, body2) => {
+    heredocs.push(body2);
     return `<<__FM_HEREDOC_${String(heredocs.length - 1)}__`;
   });
   return { text: text6, heredocs };
@@ -12282,7 +12324,7 @@ var runHook = async (event, options) => {
 };
 
 // src/install/plugin-yield.ts
-import { join as join28 } from "node:path";
+import { join as join29 } from "node:path";
 
 // src/install/hook-entries.ts
 var INSTALLED_HOOKS = [
@@ -12433,7 +12475,7 @@ var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
 `;
 var projectOwnsHooks = (ctx) => {
   const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
-  const text6 = ctx.runtime.readText(toAbsolutePath(join28(root, ...SETTINGS_FILE.split("/"))));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join29(root, ...SETTINGS_FILE.split("/"))));
   if (!text6.ok) return false;
   const parsed = parseJsonObject(text6.value);
   return parsed.ok && ownHandlersIn(parsed.value) > 0;
@@ -12485,7 +12527,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join29 } from "node:path";
+import { join as join30 } from "node:path";
 
 // src/i18n/languages.ts
 var LANGUAGES = ["en", "pt-BR", "es"];
@@ -12539,17 +12581,17 @@ var closingBrace = (cursor) => {
   }
   return -1;
 };
-var parseBranches = (body, inPlural) => {
+var parseBranches = (body2, inPlural) => {
   const branches = {};
-  const cursor = { source: body, index: 0 };
+  const cursor = { source: body2, index: 0 };
   for (; ; ) {
-    const rest = body.slice(cursor.index);
+    const rest = body2.slice(cursor.index);
     const head = /^\s*(=?[a-zA-Z0-9_]+)\s*\{/.exec(rest);
     if (head === null) return rest.trim() === "" && "other" in branches ? branches : void 0;
     cursor.index += head[0].length;
     const end = closingBrace(cursor);
     if (end < 0) return void 0;
-    branches[head[1] ?? ""] = parseNodes(body.slice(cursor.index, end), inPlural);
+    branches[head[1] ?? ""] = parseNodes(body2.slice(cursor.index, end), inPlural);
     cursor.index = end + 1;
   }
 };
@@ -12725,7 +12767,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join29(dir, `${lang}.json`));
+  const file = toAbsolutePath(join30(dir, `${lang}.json`));
   const text6 = ctx.runtime.readText(file);
   if (!text6.ok) return reject(unreadable(dir, file, text6.error));
   const parsed = parseJsonObject(text6.value);
@@ -12748,7 +12790,7 @@ var describeProblem = (ctx, problem4) => {
   return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join29(dir, "review.json")));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join30(dir, "review.json")));
   const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -12796,7 +12838,7 @@ import { createHash as createHash2 } from "node:crypto";
 var hashText = (text6) => `sha256:${createHash2("sha256").update(text6, "utf8").digest("hex")}`;
 
 // src/install/lock-file.ts
-var ENTRY_KINDS = ["settings", "gitignore", "generated"];
+var ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown"];
 var strings2 = (value) => Array.isArray(value) && value.every((item) => typeof item === "string") ? value : void 0;
 var parseAdded = (value) => {
   if (!isRecord(value)) return void 0;
@@ -12856,6 +12898,153 @@ var parseLock = (text6) => {
 var renderLock = (lock) => `${JSON.stringify(lock, null, 2)}
 `;
 
+// src/install/managed-block.ts
+var lineBreak = (text6) => text6.includes("\r\n") ? "\r\n" : "\n";
+var blockRange = (lines3, markers) => {
+  const start = lines3.findIndex((line2) => line2.trimEnd() === markers.begin);
+  if (start < 0) return void 0;
+  const end = lines3.findIndex((line2, index) => index > start && line2.trimEnd() === markers.end);
+  return end < 0 ? void 0 : { start, end };
+};
+var withManagedBlock = (text6, markers, body2) => {
+  const eol = text6 === void 0 ? "\n" : lineBreak(text6);
+  const block4 = [markers.begin, ...body2, markers.end];
+  if (text6 === void 0 || text6 === "") return `${block4.join(eol)}${eol}`;
+  const lines3 = text6.split(eol);
+  const range = blockRange(lines3, markers);
+  if (range !== void 0) return [...lines3.slice(0, range.start), ...block4, ...lines3.slice(range.end + 1)].join(eol);
+  const separator = text6.endsWith(eol) ? "" : eol;
+  return `${text6}${separator}${block4.join(eol)}${eol}`;
+};
+var withoutManagedBlock = (text6, markers) => {
+  const eol = lineBreak(text6);
+  const lines3 = text6.split(eol);
+  const range = blockRange(lines3, markers);
+  if (range === void 0) return text6;
+  return [...lines3.slice(0, range.start), ...lines3.slice(range.end + 1)].join(eol);
+};
+
+// src/install/templates/en.ts
+var en = {
+  configHeader: "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
+  agentsBlock: ({ gate, doctor }) => [
+    "## Finite Monkey",
+    "",
+    `- Before saying a task is done, and before each commit, run \`${gate}\` and fix what fails. Never weaken, skip or delete a check to make it pass.`,
+    "- When a hook blocks an action, read its reason and fix the cause instead of working around it.",
+    `- If something in the setup looks wrong, run \`${doctor}\` and report what it says.`
+  ],
+  verifySkill: {
+    description: "Use before every commit and before telling the person something works. Runs the fast gate through Finite Monkey so the result is recorded as evidence for the current tree instead of being taken on your word.",
+    whenToUse: "Trigger phrases include commit, run the tests, check it works, roda os testes, confere, verifica, prueba.",
+    title: "Verify: evidence, not claims",
+    steps: (command) => [
+      `From the project root, run \`${command}\`.`,
+      "Read `data`; for every failing item, fix the cause, never the check.",
+      "Quote the command and its exit code when you report a result. A result from before your last edit no longer counts."
+    ]
+  }
+};
+
+// src/install/templates/es.ts
+var es = {
+  configHeader: "Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.",
+  agentsBlock: ({ gate, doctor }) => [
+    "## Finite Monkey",
+    "",
+    `- Antes de decir que una tarea está terminada, y antes de cada commit, ejecuta \`${gate}\` y corrige lo que falle. Nunca debilites, saltes ni borres una verificación para que pase.`,
+    "- Cuando un hook bloquee una acción, lee el motivo y corrige la causa en lugar de esquivarlo.",
+    `- Si algo de la configuración parece mal, ejecuta \`${doctor}\` e informa lo que diga.`
+  ],
+  verifySkill: {
+    description: "Úsala antes de cada commit y antes de decirle a la persona que algo funciona. Ejecuta la compuerta rápida de Finite Monkey para que el resultado quede registrado como evidencia del árbol actual, en lugar de valer por tu palabra.",
+    whenToUse: "Frases que la activan: commit, ejecuta las pruebas, comprueba que funciona, verifica, prueba, run the tests.",
+    title: "Verificar: evidencia, no promesas",
+    steps: (command) => [
+      `Desde la raíz del proyecto, ejecuta \`${command}\`.`,
+      "Lee `data`; para cada elemento que falló, corrige la causa, nunca la verificación.",
+      "Cita el comando y su código de salida al informar un resultado. Un resultado de antes de tu última edición ya no cuenta."
+    ]
+  }
+};
+
+// src/install/templates/pt-BR.ts
+var ptBR = {
+  configHeader: "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
+  agentsBlock: ({ gate, doctor }) => [
+    "## Finite Monkey",
+    "",
+    `- Antes de dizer que uma tarefa está pronta, e antes de cada commit, rode \`${gate}\` e corrija o que falhar. Nunca enfraqueça, pule ou apague uma checagem para ela passar.`,
+    "- Quando um hook bloquear uma ação, leia o motivo e corrija a causa em vez de contornar.",
+    `- Se algo na configuração parecer errado, rode \`${doctor}\` e relate o que ele disser.`
+  ],
+  verifySkill: {
+    description: "Use antes de todo commit e antes de dizer à pessoa que algo funciona. Roda o portão rápido do Finite Monkey para que o resultado fique registrado como evidência da árvore atual, em vez de valer pela sua palavra.",
+    whenToUse: "Frases que disparam: commit, roda os testes, confere se funciona, verifica, run the tests, prueba.",
+    title: "Verificar: evidência, não promessa",
+    steps: (command) => [
+      `Na raiz do projeto, rode \`${command}\`.`,
+      "Leia `data`; para cada item que falhou, corrija a causa, nunca a checagem.",
+      "Cite o comando e o código de saída ao relatar um resultado. Resultado de antes da sua última edição não vale mais."
+    ]
+  }
+};
+
+// src/install/templates/index.ts
+var TEMPLATES = { en, "pt-BR": ptBR, es };
+
+// src/install/config-template.ts
+var configTemplate = (preset, lang) => [
+  `# ${GENERATED_MARKER}`,
+  `# ${TEMPLATES[lang].configHeader}`,
+  "schemaVersion: 1",
+  `preset: ${preset}`,
+  `lang: ${lang}`,
+  ""
+].join("\n");
+var hasMarker = (text6) => text6.includes(GENERATED_MARKER);
+
+// src/install/skill-template.ts
+var cliCommand = (runner, args) => {
+  if (runner.kind === "local") return `node ${LOCAL_BIN} ${args}`;
+  if (runner.kind === "vendored") return `node ${VENDOR_BIN} ${args}`;
+  return isScript(runner.path) ? `node "${runner.path}" ${args}` : `"${runner.path}" ${args}`;
+};
+var verifySkillTemplate = (runner, lang) => {
+  const skill = TEMPLATES[lang].verifySkill;
+  return [
+    "---",
+    "name: verify",
+    "description: >-",
+    `  ${skill.description}`,
+    "when_to_use: >-",
+    `  ${skill.whenToUse}`,
+    "---",
+    "",
+    `# ${skill.title}`,
+    "",
+    ...skill.steps(cliCommand(runner, "gate --fast --json")).map((step3, index) => `${String(index + 1)}. ${step3}`),
+    "",
+    `<!-- ${GENERATED_MARKER} -->`,
+    ""
+  ].join("\n");
+};
+var isOwnSkill = hasMarker;
+
+// src/install/agents-block.ts
+var MARKDOWN_MARKERS = { begin: MD_BLOCK_BEGIN, end: MD_BLOCK_END };
+var IMPORT_LINE = /^@AGENTS\.md[ \t]*$/m;
+var withAgentsBlock = (text6, runner, lang) => withManagedBlock(
+  text6,
+  MARKDOWN_MARKERS,
+  TEMPLATES[lang].agentsBlock({
+    gate: cliCommand(runner, "gate --fast --json"),
+    doctor: cliCommand(runner, "doctor --json")
+  })
+);
+var withAgentsImport = (text6) => text6 !== void 0 && IMPORT_LINE.test(withoutManagedBlock(text6, MARKDOWN_MARKERS)) ? text6 : withManagedBlock(text6, MARKDOWN_MARKERS, [AGENTS_IMPORT]);
+var withoutMarkdownBlock = (text6) => withoutManagedBlock(text6, MARKDOWN_MARKERS);
+
 // src/install/ask-floor.ts
 var DEFAULT_BRANCHES = ["main", "master"];
 var pushTo = (branch) => [
@@ -12892,65 +13081,6 @@ var ASK_FLOOR = {
 };
 var ASK_RULES = [...ASK_FLOOR.push, ...ASK_FLOOR.deploy];
 
-// src/install/templates/en.ts
-var en = {
-  configHeader: "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
-  verifySkill: {
-    description: "Use before every commit and before telling the person something works. Runs the fast gate through Finite Monkey so the result is recorded as evidence for the current tree instead of being taken on your word.",
-    whenToUse: "Trigger phrases include commit, run the tests, check it works, roda os testes, confere, verifica, prueba.",
-    title: "Verify: evidence, not claims",
-    steps: (command) => [
-      `From the project root, run \`${command}\`.`,
-      "Read `data`; for every failing item, fix the cause, never the check.",
-      "Quote the command and its exit code when you report a result. A result from before your last edit no longer counts."
-    ]
-  }
-};
-
-// src/install/templates/es.ts
-var es = {
-  configHeader: "Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.",
-  verifySkill: {
-    description: "Úsala antes de cada commit y antes de decirle a la persona que algo funciona. Ejecuta la compuerta rápida de Finite Monkey para que el resultado quede registrado como evidencia del árbol actual, en lugar de valer por tu palabra.",
-    whenToUse: "Frases que la activan: commit, ejecuta las pruebas, comprueba que funciona, verifica, prueba, run the tests.",
-    title: "Verificar: evidencia, no promesas",
-    steps: (command) => [
-      `Desde la raíz del proyecto, ejecuta \`${command}\`.`,
-      "Lee `data`; para cada elemento que falló, corrige la causa, nunca la verificación.",
-      "Cita el comando y su código de salida al informar un resultado. Un resultado de antes de tu última edición ya no cuenta."
-    ]
-  }
-};
-
-// src/install/templates/pt-BR.ts
-var ptBR = {
-  configHeader: "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
-  verifySkill: {
-    description: "Use antes de todo commit e antes de dizer à pessoa que algo funciona. Roda o portão rápido do Finite Monkey para que o resultado fique registrado como evidência da árvore atual, em vez de valer pela sua palavra.",
-    whenToUse: "Frases que disparam: commit, roda os testes, confere se funciona, verifica, run the tests, prueba.",
-    title: "Verificar: evidência, não promessa",
-    steps: (command) => [
-      `Na raiz do projeto, rode \`${command}\`.`,
-      "Leia `data`; para cada item que falhou, corrija a causa, nunca a checagem.",
-      "Cite o comando e o código de saída ao relatar um resultado. Resultado de antes da sua última edição não vale mais."
-    ]
-  }
-};
-
-// src/install/templates/index.ts
-var TEMPLATES = { en, "pt-BR": ptBR, es };
-
-// src/install/config-template.ts
-var configTemplate = (preset, lang) => [
-  `# ${GENERATED_MARKER}`,
-  `# ${TEMPLATES[lang].configHeader}`,
-  "schemaVersion: 1",
-  `preset: ${preset}`,
-  `lang: ${lang}`,
-  ""
-].join("\n");
-var hasMarker = (text6) => text6.includes(GENERATED_MARKER);
-
 // src/install/deny-floor.ts
 var DENY_FLOOR = {
   secrets: ["Read(./.env)", "Read(./.env.*)", "Read(./**/.env)", "Read(./**/.env.*)", "Read(./**/*.pem)"],
@@ -12976,7 +13106,7 @@ var DENY_FLOOR = {
 var DENY_RULES = [...DENY_FLOOR.secrets, ...DENY_FLOOR.git, ...DENY_FLOOR.proof];
 
 // src/install/detect.ts
-import { join as join30 } from "node:path";
+import { join as join31 } from "node:path";
 var PACKAGE_MANAGERS = [
   { name: "pnpm", files: ["pnpm-lock.yaml"] },
   { name: "yarn", files: ["yarn.lock"] },
@@ -13047,7 +13177,7 @@ var scopeAuthorities = (text6, source) => {
 var userSettingsText = (project, env) => {
   const home = env["CLAUDE_CONFIG_DIR"] ?? env["HOME"] ?? env["USERPROFILE"];
   if (home === void 0) return void 0;
-  const file = env["CLAUDE_CONFIG_DIR"] === void 0 ? join30(home, ".claude", "settings.json") : join30(home, "settings.json");
+  const file = env["CLAUDE_CONFIG_DIR"] === void 0 ? join31(home, ".claude", "settings.json") : join31(home, "settings.json");
   const text6 = project.runtime.readText(toAbsolutePath(file));
   return text6.ok ? text6.value : void 0;
 };
@@ -13067,64 +13197,10 @@ var chooseRunner = (project, bin) => {
 };
 
 // src/install/gitignore-block.ts
-var gitignoreBlock = () => [
-  BLOCK_BEGIN,
-  `${STATE_DIR}/*`,
-  ...COMMITTED_STATE.map((path) => `!${STATE_DIR}/${path}`),
-  BLOCK_END
-];
-var lineBreak = (text6) => text6.includes("\r\n") ? "\r\n" : "\n";
-var blockRange = (lines3) => {
-  const start = lines3.findIndex((line2) => line2.trimEnd() === BLOCK_BEGIN);
-  if (start < 0) return void 0;
-  const end = lines3.findIndex((line2, index) => index > start && line2.trimEnd() === BLOCK_END);
-  return end < 0 ? void 0 : { start, end };
-};
-var withBlock = (text6) => {
-  const eol = text6 === void 0 ? "\n" : lineBreak(text6);
-  const block4 = gitignoreBlock();
-  if (text6 === void 0 || text6 === "") return `${block4.join(eol)}${eol}`;
-  const lines3 = text6.split(eol);
-  const range = blockRange(lines3);
-  if (range !== void 0) return [...lines3.slice(0, range.start), ...block4, ...lines3.slice(range.end + 1)].join(eol);
-  const separator = text6.endsWith(eol) ? "" : eol;
-  return `${text6}${separator}${block4.join(eol)}${eol}`;
-};
-var withoutBlock = (text6) => {
-  const eol = lineBreak(text6);
-  const lines3 = text6.split(eol);
-  const range = blockRange(lines3);
-  if (range === void 0) return text6;
-  return [...lines3.slice(0, range.start), ...lines3.slice(range.end + 1)].join(eol);
-};
-
-// src/install/skill-template.ts
-var gateCommand2 = (runner) => {
-  const args = "gate --fast --json";
-  if (runner.kind === "local") return `node ${LOCAL_BIN} ${args}`;
-  if (runner.kind === "vendored") return `node ${VENDOR_BIN} ${args}`;
-  return isScript(runner.path) ? `node "${runner.path}" ${args}` : `"${runner.path}" ${args}`;
-};
-var verifySkillTemplate = (runner, lang) => {
-  const skill = TEMPLATES[lang].verifySkill;
-  return [
-    "---",
-    "name: verify",
-    "description: >-",
-    `  ${skill.description}`,
-    "when_to_use: >-",
-    `  ${skill.whenToUse}`,
-    "---",
-    "",
-    `# ${skill.title}`,
-    "",
-    ...skill.steps(gateCommand2(runner)).map((step3, index) => `${String(index + 1)}. ${step3}`),
-    "",
-    `<!-- ${GENERATED_MARKER} -->`,
-    ""
-  ].join("\n");
-};
-var isOwnSkill = hasMarker;
+var MARKERS = { begin: BLOCK_BEGIN, end: BLOCK_END };
+var body = () => [`${STATE_DIR}/*`, ...COMMITTED_STATE.map((path) => `!${STATE_DIR}/${path}`)];
+var withBlock = (text6) => withManagedBlock(text6, MARKERS, body());
+var withoutBlock = (text6) => withoutManagedBlock(text6, MARKERS);
 
 // src/install/vendor.ts
 var isBundle = (text6) => text6.startsWith("#!/usr/bin/env node") && text6.includes("finitemonkey");
@@ -13201,6 +13277,14 @@ var settingsItem = (project, detection, input, previous) => {
     handlers: Object.values(hooks)
   });
 };
+var markdownItems = (project, runner, lang) => [
+  { path: AGENTS_FILE, render: (text6) => withAgentsBlock(text6, runner, lang) },
+  { path: CLAUDE_FILE, render: withAgentsImport }
+].map(({ path, render: render3 }) => {
+  const before = project.read(path);
+  const after = render3(before);
+  return { path, kind: "markdown", action: actionFor(before, after, "merge"), before, after };
+});
 var gitignoreItem = (project) => {
   const before = project.read(GITIGNORE_FILE);
   const after = withBlock(before);
@@ -13221,7 +13305,7 @@ var generatedItem = (project, file, previous) => {
 };
 var generatedFiles = (input, runner, vendor) => {
   const own = [
-    { path: CONFIG_FILE, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
+    { path: CONFIG_FILE2, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
     { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill }
   ];
   if (!vendor) return accept(own);
@@ -13239,7 +13323,12 @@ var buildPlan = (project, detection, input, previous) => {
   return accept({
     detection,
     preset: input.preset,
-    items: [settings.value, gitignoreItem(project), ...generated],
+    items: [
+      settings.value,
+      gitignoreItem(project),
+      ...markdownItems(project, detection.runner, input.lang),
+      ...generated
+    ],
     previous
   });
 };
@@ -14052,7 +14141,7 @@ var secretsScanCommand = {
 };
 
 // src/task/create.ts
-import { join as join31 } from "node:path";
+import { join as join32 } from "node:path";
 
 // src/core/yaml/write.ts
 var PLAIN_SAFE = /^[A-Za-z_./][A-Za-z0-9_./ ()-]*$/;
@@ -14136,10 +14225,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative9) => {
-      const text6 = runtime.readText(toAbsolutePath(join31(paths.root, relative9)));
+      const text6 = runtime.readText(toAbsolutePath(join32(paths.root, relative9)));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative9) => runtime.stat(toAbsolutePath(join31(paths.root, relative9))) !== void 0
+    exists: (relative9) => runtime.stat(toAbsolutePath(join32(paths.root, relative9))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -14342,8 +14431,8 @@ var taskDoneCommand = {
 
 // src/install/uninstall.ts
 var structural = (entry2, current) => {
-  if (entry2.kind === "gitignore") {
-    const text6 = withoutBlock(current);
+  if (entry2.kind === "gitignore" || entry2.kind === "markdown") {
+    const text6 = entry2.kind === "gitignore" ? withoutBlock(current) : withoutMarkdownBlock(current);
     return text6 === "" && !entry2.existed ? void 0 : text6;
   }
   const parsed = parseSettings(current);
@@ -14534,7 +14623,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join32 } from "node:path";
+import { join as join33 } from "node:path";
 var read3 = (runtime, path) => {
   const text6 = runtime.readText(toAbsolutePath(path));
   return text6.ok ? text6.value : void 0;
@@ -14549,14 +14638,14 @@ var languageIn = (text6) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join32(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join33(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join32(root, CONFIG_FILE)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join33(root, CONFIG_FILE2)) ?? "");
   const claudeFiles = [
-    join32(root, ".claude", "settings.local.json"),
-    join32(root, ".claude", "settings.json"),
-    join32(claudeDir(runtime, env), "settings.json")
+    join33(root, ".claude", "settings.local.json"),
+    join33(root, ".claude", "settings.json"),
+    join33(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

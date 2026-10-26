@@ -3,6 +3,13 @@ import type { GeneratedTemplates } from "./types.js";
 export const es: GeneratedTemplates = {
   configHeader:
     "Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.",
+  agentsBlock: ({ gate, doctor }) => [
+    "## Finite Monkey",
+    "",
+    `- Antes de decir que una tarea está terminada, y antes de cada commit, ejecuta \`${gate}\` y corrige lo que falle. Nunca debilites, saltes ni borres una verificación para que pase.`,
+    "- Cuando un hook bloquee una acción, lee el motivo y corrige la causa en lugar de esquivarlo.",
+    `- Si algo de la configuración parece mal, ejecuta \`${doctor}\` e informa lo que diga.`,
+  ],
   verifySkill: {
     description:
       "Úsala antes de cada commit y antes de decirle a la persona que algo funciona. Ejecuta la compuerta rápida de Finite Monkey para que el resultado quede registrado como evidencia del árbol actual, en lugar de valer por tu palabra.",

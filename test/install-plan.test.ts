@@ -103,6 +103,8 @@ describe("init writes only when asked", () => {
     assert.deepEqual(actions(result.body), {
       [SETTINGS_FILE]: "create",
       ".gitignore": "merge",
+      "AGENTS.md": "create",
+      "CLAUDE.md": "create",
       [CONFIG_FILE]: "create",
       [VERIFY_SKILL]: "create",
       [VENDOR_BIN]: "create",
@@ -246,10 +248,16 @@ describe("a teammate who clones an installed repository", () => {
     const first = repo();
     await run(first, ["init", "--yes"]);
     const committed = Object.fromEntries(
-      [SETTINGS_FILE, ".gitignore", CONFIG_FILE, VERIFY_SKILL, VENDOR_BIN, VENDOR_PACKAGE].map((path) => [
-        path,
-        first.read(at(path)) ?? "",
-      ]),
+      [
+        SETTINGS_FILE,
+        ".gitignore",
+        "AGENTS.md",
+        "CLAUDE.md",
+        CONFIG_FILE,
+        VERIFY_SKILL,
+        VENDOR_BIN,
+        VENDOR_PACKAGE,
+      ].map((path) => [path, first.read(at(path)) ?? ""]),
     );
     const clone = repo(committed);
     const result = await run(clone, ["init", "--yes"]);

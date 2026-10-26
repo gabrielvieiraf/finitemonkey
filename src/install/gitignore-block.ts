@@ -1,38 +1,14 @@
 import { BLOCK_BEGIN, BLOCK_END, COMMITTED_STATE, STATE_DIR } from "./layout.js";
+import { hasManagedBlock, type Markers, withManagedBlock, withoutManagedBlock } from "./managed-block.js";
 
-export const gitignoreBlock = (): readonly string[] => [
-  BLOCK_BEGIN,
-  `${STATE_DIR}/*`,
-  ...COMMITTED_STATE.map((path) => `!${STATE_DIR}/${path}`),
-  BLOCK_END,
-];
+const MARKERS: Markers = { begin: BLOCK_BEGIN, end: BLOCK_END };
 
-const lineBreak = (text: string): string => (text.includes("\r\n") ? "\r\n" : "\n");
+const body = (): readonly string[] => [`${STATE_DIR}/*`, ...COMMITTED_STATE.map((path) => `!${STATE_DIR}/${path}`)];
 
-const blockRange = (lines: readonly string[]): { start: number; end: number } | undefined => {
-  const start = lines.findIndex((line) => line.trimEnd() === BLOCK_BEGIN);
-  if (start < 0) return undefined;
-  const end = lines.findIndex((line, index) => index > start && line.trimEnd() === BLOCK_END);
-  return end < 0 ? undefined : { start, end };
-};
+export const gitignoreBlock = (): readonly string[] => [BLOCK_BEGIN, ...body(), BLOCK_END];
 
-export const withBlock = (text: string | undefined): string => {
-  const eol = text === undefined ? "\n" : lineBreak(text);
-  const block = gitignoreBlock();
-  if (text === undefined || text === "") return `${block.join(eol)}${eol}`;
-  const lines = text.split(eol);
-  const range = blockRange(lines);
-  if (range !== undefined) return [...lines.slice(0, range.start), ...block, ...lines.slice(range.end + 1)].join(eol);
-  const separator = text.endsWith(eol) ? "" : eol;
-  return `${text}${separator}${block.join(eol)}${eol}`;
-};
+export const withBlock = (text: string | undefined): string => withManagedBlock(text, MARKERS, body());
 
-export const withoutBlock = (text: string): string => {
-  const eol = lineBreak(text);
-  const lines = text.split(eol);
-  const range = blockRange(lines);
-  if (range === undefined) return text;
-  return [...lines.slice(0, range.start), ...lines.slice(range.end + 1)].join(eol);
-};
+export const withoutBlock = (text: string): string => withoutManagedBlock(text, MARKERS);
 
-export const hasBlock = (text: string): boolean => blockRange(text.split(lineBreak(text))) !== undefined;
+export const hasBlock = (text: string): boolean => hasManagedBlock(text, MARKERS);
