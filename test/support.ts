@@ -38,6 +38,7 @@ export interface FakeRuntimeOptions {
   readonly exec?: (request: ExecRequest) => ExecResult | undefined;
   readonly spawned?: string[][];
   readonly gitWith?: Runtime["gitWith"];
+  readonly systemLocale?: string;
 }
 
 export const execResult = (exitCode: number | null, stdout = "", stderr = ""): ExecResult => ({
@@ -103,6 +104,7 @@ export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
     gitWith: options.gitWith ?? ((args) => ({ ...(options.git?.(args) ?? gitMissing), stderr: "", timedOut: false })),
     realpath: (path) => path,
     homeDir: () => "/home/test",
+    systemLocale: () => options.systemLocale,
   };
 };
 
