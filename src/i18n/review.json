@@ -653,7 +653,19 @@
     "statusline.gate.red": "machine",
     "statusline.gate.incomplete": "machine",
     "statusline.gate.did_not_run": "machine",
-    "statusline.context": "machine"
+    "statusline.context": "machine",
+    "command.gain.summary": "machine",
+    "gain.title": "machine",
+    "gain.row.blocks": "machine",
+    "gain.row.saves": "machine",
+    "gain.row.false_positives": "machine",
+    "gain.row.gate_runs": "machine",
+    "gain.row.gate_failed": "machine",
+    "gain.row.gate_unverified": "machine",
+    "gain.row.gate_time": "machine",
+    "gain.up": "machine",
+    "gain.down": "machine",
+    "gain.footer": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1309,6 +1321,18 @@
     "statusline.gate.red": "machine",
     "statusline.gate.incomplete": "machine",
     "statusline.gate.did_not_run": "machine",
-    "statusline.context": "machine"
+    "statusline.context": "machine",
+    "command.gain.summary": "machine",
+    "gain.title": "machine",
+    "gain.row.blocks": "machine",
+    "gain.row.saves": "machine",
+    "gain.row.false_positives": "machine",
+    "gain.row.gate_runs": "machine",
+    "gain.row.gate_failed": "machine",
+    "gain.row.gate_unverified": "machine",
+    "gain.row.gate_time": "machine",
+    "gain.up": "machine",
+    "gain.down": "machine",
+    "gain.footer": "machine"
   }
 }

@@ -34,6 +34,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey gate --json`.",
   },
   {
+    name: "gain@1",
+    file: "src/gain/gain.ts",
+    type: "GainReport",
+    describes: "`data` of `finitemonkey gain --json`.",
+  },
+  {
     name: "merge-verify@1",
     file: "src/git/merge/verify.ts",
     type: "VerifyReport",

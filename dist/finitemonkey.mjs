@@ -3239,6 +3239,36 @@ var deadlineFor = (event, raw) => {
   return EVENT_DEADLINES[event] ?? DEFAULT_HOOK_DEADLINE_MS;
 };
 
+// src/gate/hooks/common.ts
+import { dirname as dirname5, join as join11 } from "node:path";
+var DEFAULT_GATE_BUDGET_MS = 3e5;
+var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
+var MAX_DEPTH = 64;
+var findRepoRoot = (runtime, start) => {
+  let current2 = start;
+  for (let depth = 0; depth < MAX_DEPTH; depth += 1) {
+    if (runtime.stat(toAbsolutePath(join11(current2, ".git"))) !== void 0) return current2;
+    const parent = toAbsolutePath(dirname5(current2));
+    if (parent === current2) return void 0;
+    current2 = parent;
+  }
+  return void 0;
+};
+var projectPaths = (input) => {
+  const root = findRepoRoot(input.runtime, sessionCwd(input));
+  return root === void 0 ? void 0 : fmPaths(root);
+};
+var gateBudget = (input) => {
+  const parsed = Number.parseInt(input.env["FINITEMONKEY_GATE_BUDGET_MS"] ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_GATE_BUDGET_MS;
+};
+var allowWith = (output) => ({ kind: "allow", output });
+var contextOutput = (event, additionalContext, systemMessage) => ({
+  hookSpecificOutput: { hookEventName: event, additionalContext },
+  ...systemMessage === void 0 ? {} : { systemMessage }
+});
+var human = (text8) => `finitemonkey: ${text8}`;
+
 // src/hooks/fields.ts
 var textField = (record3, ...names) => {
   for (const name of names) {
@@ -4005,7 +4035,7 @@ var unwrap = (initial, stdin) => {
 };
 
 // src/shell/normalize.ts
-var MAX_DEPTH = 8;
+var MAX_DEPTH2 = 8;
 var ASSIGNMENT2 = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
 var PS_ENV = /^\$env:([A-Za-z_][A-Za-z0-9_]*)=?(.*)$/is;
 var CHANGES_DIR = /* @__PURE__ */ new Set(["cd", "pushd", "set-location", "push-location"]);
@@ -4081,7 +4111,7 @@ var visit = (raw, language, context, depth, collector) => {
   for (const extra of result.extra) emit(extra, raw, language, context, collector);
 };
 var collect = (text8, language, context, depth, collector) => {
-  if (depth > MAX_DEPTH) {
+  if (depth > MAX_DEPTH2) {
     collector.incomplete = true;
     return;
   }
@@ -4310,7 +4340,7 @@ var selfGuard = (input) => {
 };
 
 // src/guards/tests/hook.ts
-import { join as join11, relative as relative3 } from "node:path";
+import { join as join12, relative as relative3 } from "node:path";
 
 // src/guards/tests/patterns.ts
 var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)tests?\/.*\.[cm]?[jt]sx?$/;
@@ -4500,7 +4530,7 @@ var shellViolations = (input, root) => {
   return parseShell(command).flatMap(
     (simple) => writtenPaths(simple).flatMap((path) => {
       const local = localPath(root, path);
-      const exists = input.runtime.stat(toAbsolutePath(join11(root, local))) !== void 0;
+      const exists = input.runtime.stat(toAbsolutePath(join12(root, local))) !== void 0;
       if (!exists) return [];
       if (isProtectedConfig(local)) return [{ kind: "config_changed", path: local }];
       return isTestFile(local) ? [{ kind: "test_removed", path: local }] : [];
@@ -4521,38 +4551,6 @@ var testsGuard = (input) => {
 
 // src/look/reads.ts
 import { relative as relative4 } from "node:path";
-
-// src/gate/hooks/common.ts
-import { dirname as dirname5, join as join12 } from "node:path";
-var DEFAULT_GATE_BUDGET_MS = 3e5;
-var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
-var MAX_DEPTH2 = 64;
-var findRepoRoot = (runtime, start) => {
-  let current2 = start;
-  for (let depth = 0; depth < MAX_DEPTH2; depth += 1) {
-    if (runtime.stat(toAbsolutePath(join12(current2, ".git"))) !== void 0) return current2;
-    const parent = toAbsolutePath(dirname5(current2));
-    if (parent === current2) return void 0;
-    current2 = parent;
-  }
-  return void 0;
-};
-var projectPaths = (input) => {
-  const root = findRepoRoot(input.runtime, sessionCwd(input));
-  return root === void 0 ? void 0 : fmPaths(root);
-};
-var gateBudget = (input) => {
-  const parsed = Number.parseInt(input.env["FINITEMONKEY_GATE_BUDGET_MS"] ?? "", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_GATE_BUDGET_MS;
-};
-var allowWith = (output) => ({ kind: "allow", output });
-var contextOutput = (event, additionalContext, systemMessage) => ({
-  hookSpecificOutput: { hookEventName: event, additionalContext },
-  ...systemMessage === void 0 ? {} : { systemMessage }
-});
-var human = (text8) => `finitemonkey: ${text8}`;
-
-// src/look/reads.ts
 var READS_FILE = "look-reads.json";
 var KEEP = 500;
 var readLookReads = (runtime, paths) => {
@@ -6585,7 +6583,19 @@ var en_default = {
   "statusline.gate.red": "gate red",
   "statusline.gate.incomplete": "gate incomplete",
   "statusline.gate.did_not_run": "gate did not run",
-  "statusline.context": "ctx {percent}%"
+  "statusline.context": "ctx {percent}%",
+  "command.gain.summary": "What the guards did: saves next to false alarms and gate failures",
+  "gain.title": "Finite Monkey, last {days, plural, one {# day} other {# days}} (from .finitemonkey/log.jsonl and the evidence ledgers):",
+  "gain.row.blocks": "{count, plural, one {# block} other {# blocks}} by the guards",
+  "gain.row.saves": "{count, plural, one {# block} other {# blocks}} followed by a green gate within a day",
+  "gain.row.false_positives": "{count, plural, one {# false alarm} other {# false alarms}} (releases typed by the person, and false positives recorded)",
+  "gain.row.gate_runs": "{count, plural, one {# gate run} other {# gate runs}}",
+  "gain.row.gate_failed": "{count, plural, one {# gate run} other {# gate runs}} failed",
+  "gain.row.gate_unverified": "{count, plural, one {# gate run} other {# gate runs}} ended not verified",
+  "gain.row.gate_time": "{minutes, plural, one {# minute} other {# minutes}} spent in the gate",
+  "gain.up": "up {delta} on the window before",
+  "gain.down": "down {delta} on the window before",
+  "gain.footer": "Counts come from local files only; a save is a block followed by a passing gate, not proof that the block caused it."
 };
 
 // src/i18n/es.json
@@ -7243,7 +7253,19 @@ var es_default = {
   "statusline.gate.red": "compuerta roja",
   "statusline.gate.incomplete": "compuerta incompleta",
   "statusline.gate.did_not_run": "la compuerta no se ejecutó",
-  "statusline.context": "ctx {percent}%"
+  "statusline.context": "ctx {percent}%",
+  "command.gain.summary": "Lo que hicieron los bloqueos: aciertos junto a falsas alarmas y fallos de la compuerta",
+  "gain.title": "Finite Monkey, {days, plural, one {último # día} other {últimos # días}} (de .finitemonkey/log.jsonl y los ledgers de evidencia):",
+  "gain.row.blocks": "{count, plural, one {# bloqueo} other {# bloqueos}} de los guards",
+  "gain.row.saves": "{count, plural, one {# bloqueo seguido} other {# bloqueos seguidos}} de una compuerta en verde en menos de un día",
+  "gain.row.false_positives": "{count, plural, one {# falsa alarma} other {# falsas alarmas}} (liberaciones escritas por la persona y falsos positivos registrados)",
+  "gain.row.gate_runs": "{count, plural, one {# ejecución de la compuerta} other {# ejecuciones de la compuerta}}",
+  "gain.row.gate_failed": "{count, plural, one {# ejecución de la compuerta falló} other {# ejecuciones de la compuerta fallaron}}",
+  "gain.row.gate_unverified": "{count, plural, one {# ejecución de la compuerta terminó} other {# ejecuciones de la compuerta terminaron}} sin verificar",
+  "gain.row.gate_time": "{minutes, plural, one {# minuto} other {# minutos}} en la compuerta",
+  "gain.up": "+{delta} respecto a la ventana anterior",
+  "gain.down": "-{delta} respecto a la ventana anterior",
+  "gain.footer": "Los conteos salen solo de archivos locales; un acierto es un bloqueo seguido de una compuerta en verde, no prueba de que el bloqueo lo causara."
 };
 
 // src/i18n/pt-BR.json
@@ -7901,7 +7923,19 @@ var pt_BR_default = {
   "statusline.gate.red": "portão vermelho",
   "statusline.gate.incomplete": "portão incompleto",
   "statusline.gate.did_not_run": "portão não rodou",
-  "statusline.context": "ctx {percent}%"
+  "statusline.context": "ctx {percent}%",
+  "command.gain.summary": "O que as travas fizeram: acertos ao lado dos alarmes falsos e das falhas do portão",
+  "gain.title": "Finite Monkey, últimos {days, plural, one {# dia} other {# dias}} (de .finitemonkey/log.jsonl e dos ledgers de evidência):",
+  "gain.row.blocks": "{count, plural, one {# bloqueio} other {# bloqueios}} das travas",
+  "gain.row.saves": "{count, plural, one {# bloqueio seguido} other {# bloqueios seguidos}} de portão verde em até um dia",
+  "gain.row.false_positives": "{count, plural, one {# alarme falso} other {# alarmes falsos}} (liberações digitadas pela pessoa e falsos positivos registrados)",
+  "gain.row.gate_runs": "{count, plural, one {# execução do portão} other {# execuções do portão}}",
+  "gain.row.gate_failed": "{count, plural, one {# execução do portão reprovou} other {# execuções do portão reprovaram}}",
+  "gain.row.gate_unverified": "{count, plural, one {# execução do portão terminou} other {# execuções do portão terminaram}} sem verificar",
+  "gain.row.gate_time": "{minutes, plural, one {# minuto} other {# minutos}} no portão",
+  "gain.up": "+{delta} em relação à janela anterior",
+  "gain.down": "-{delta} em relação à janela anterior",
+  "gain.footer": "As contagens vêm só de arquivos locais; um acerto é um bloqueio seguido de portão verde, não prova de que o bloqueio causou isso."
 };
 
 // src/i18n/review.json
@@ -8560,7 +8594,19 @@ var review_default = {
     "statusline.gate.red": "machine",
     "statusline.gate.incomplete": "machine",
     "statusline.gate.did_not_run": "machine",
-    "statusline.context": "machine"
+    "statusline.context": "machine",
+    "command.gain.summary": "machine",
+    "gain.title": "machine",
+    "gain.row.blocks": "machine",
+    "gain.row.saves": "machine",
+    "gain.row.false_positives": "machine",
+    "gain.row.gate_runs": "machine",
+    "gain.row.gate_failed": "machine",
+    "gain.row.gate_unverified": "machine",
+    "gain.row.gate_time": "machine",
+    "gain.up": "machine",
+    "gain.down": "machine",
+    "gain.footer": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -9216,7 +9262,19 @@ var review_default = {
     "statusline.gate.red": "machine",
     "statusline.gate.incomplete": "machine",
     "statusline.gate.did_not_run": "machine",
-    "statusline.context": "machine"
+    "statusline.context": "machine",
+    "command.gain.summary": "machine",
+    "gain.title": "machine",
+    "gain.row.blocks": "machine",
+    "gain.row.saves": "machine",
+    "gain.row.false_positives": "machine",
+    "gain.row.gate_runs": "machine",
+    "gain.row.gate_failed": "machine",
+    "gain.row.gate_unverified": "machine",
+    "gain.row.gate_time": "machine",
+    "gain.up": "machine",
+    "gain.down": "machine",
+    "gain.footer": "machine"
   }
 };
 
@@ -14958,7 +15016,18 @@ var mergeOutputs = (left, right) => {
   if (specific !== void 0) merged2["hookSpecificOutput"] = specific;
   return merged2;
 };
+var recordBlock = (input, decision) => {
+  const paths = projectPaths(input);
+  if (paths === void 0) return;
+  logEvent(input.runtime, paths, "guard_block", {
+    hook: input.event,
+    tool: toolName2(input.payload),
+    sessionId: input.payload.sessionId ?? null,
+    claim: (decision.reason.split("\n")[0] ?? "").slice(0, 200)
+  });
+};
 var shaped = (input, decision) => {
+  recordBlock(input, decision);
   if (input.event !== "PreToolUse" || decision.output !== void 0) return decision;
   const reason = capReason(decision.reason);
   return {
@@ -15914,6 +15983,100 @@ var doctorCommand = {
   run: (ctx, args2) => Promise.resolve(runDoctor(ctx, args2.values["fix"] === true, args2.values["report"] === true))
 };
 
+// src/gain/gain.ts
+import { join as join39 } from "node:path";
+var GAIN_SCHEMA = "finitemonkey/gain@1";
+var DAY_MS2 = 864e5;
+var SAVE_WINDOW_MS = DAY_MS2;
+var readLog = (runtime, paths) => {
+  const text8 = runtime.readText(paths.log);
+  if (!text8.ok) return [];
+  return text8.value.split("\n").flatMap((line2) => {
+    const parsed = parseJsonObject(line2);
+    if (!parsed.ok || !isRecord(parsed.value)) return [];
+    const { at, event } = parsed.value;
+    const time = typeof at === "string" ? Date.parse(at) : Number.NaN;
+    return typeof event === "string" && Number.isFinite(time) ? [{ at: time, event }] : [];
+  });
+};
+var readGates = (runtime, paths) => {
+  const listed4 = runtime.listDir(toAbsolutePath(join39(paths.dir, "evidence")));
+  const files = listed4.ok ? listed4.value.filter((name) => name.endsWith(".jsonl")) : [];
+  return files.flatMap((name) => readLedger(runtime, paths.evidence(name.replace(/\.jsonl$/, "")))).filter((entry2) => entry2.check === GATE_CHECK);
+};
+var countsIn = (log, gates, from, to) => {
+  const inWindow = (at) => at >= from && at < to;
+  const lines3 = log.filter((line2) => inWindow(line2.at));
+  const runs = gates.filter((entry2) => inWindow(Date.parse(entry2.at)));
+  const passedAt = gates.filter((entry2) => entry2.status === "passed").map((entry2) => Date.parse(entry2.at));
+  const blocks = lines3.filter((line2) => line2.event === "guard_block");
+  return {
+    blocks: blocks.length,
+    saves: blocks.filter((block4) => passedAt.some((at) => at > block4.at && at - block4.at <= SAVE_WINDOW_MS)).length,
+    releases: lines3.filter((line2) => line2.event === "person.allow").length,
+    falsePositives: lines3.filter((line2) => line2.event === "person.allow").length + lines3.filter((line2) => line2.event === "guard_false_positive").length,
+    gateRuns: runs.length,
+    gateFailed: runs.filter((entry2) => entry2.status === "failed").length,
+    gateUnverified: runs.filter((entry2) => entry2.status === "unverified").length,
+    gateMs: runs.reduce((sum, entry2) => sum + (entry2.durationMs ?? 0), 0)
+  };
+};
+var gainReport = (runtime, paths, days) => {
+  const to = Date.parse(runtime.now());
+  const from = to - days * DAY_MS2;
+  const log = readLog(runtime, paths);
+  const gates = readGates(runtime, paths);
+  return {
+    schema: GAIN_SCHEMA,
+    days,
+    from: new Date(from).toISOString(),
+    to: new Date(to).toISOString(),
+    current: countsIn(log, gates, from, to + 1),
+    previous: countsIn(log, gates, from - days * DAY_MS2, from)
+  };
+};
+
+// src/commands/gain.ts
+var DEFAULT_DAYS = 30;
+var trend = (ctx, now, before) => now === before ? "" : ` (${ctx.t(now > before ? "gain.up" : "gain.down", { delta: Math.abs(now - before) })})`;
+var ROWS = [
+  { key: "gain.row.blocks", pick: (counts) => counts.blocks },
+  { key: "gain.row.saves", pick: (counts) => counts.saves },
+  { key: "gain.row.false_positives", pick: (counts) => counts.falsePositives },
+  { key: "gain.row.gate_runs", pick: (counts) => counts.gateRuns },
+  { key: "gain.row.gate_failed", pick: (counts) => counts.gateFailed },
+  { key: "gain.row.gate_unverified", pick: (counts) => counts.gateUnverified }
+];
+var linesOf = (ctx, report2) => [
+  ctx.t("gain.title", { days: report2.days }),
+  ...ROWS.map(
+    ({ key, pick: pick4 }) => `  ${ctx.t(key, { count: pick4(report2.current) })}${trend(ctx, pick4(report2.current), pick4(report2.previous))}`
+  ),
+  `  ${ctx.t("gain.row.gate_time", { minutes: Math.round(report2.current.gateMs / 6e4) })}`,
+  ctx.t("gain.footer")
+];
+var runGain = (ctx, rawDays) => {
+  const days = rawDays === void 0 ? DEFAULT_DAYS : Number.parseInt(rawDays, 10);
+  if (!Number.isInteger(days) || days < 1 || days > 365) {
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", "finitemonkey gain --days 30", {
+        detail: "--days 1-365"
+      })
+    );
+  }
+  const report2 = gainReport(ctx.runtime, fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd), days);
+  return success(report2, linesOf(ctx, report2));
+};
+var gainCommand = {
+  path: ["gain"],
+  summaryKey: "command.gain.summary",
+  usage: "finitemonkey gain [--days 1-365]",
+  status: "ready",
+  options: { days: { type: "string" } },
+  run: (ctx, args2) => Promise.resolve(runGain(ctx, stringOption(args2.values, "days")))
+};
+
 // src/gate/baseline-run.ts
 var runBaseline = (options) => {
   const ready = prepareGate({ ...options, noSkip: true });
@@ -16355,11 +16518,11 @@ var mergeVerifyCommand = {
 var REFLOG_LIMIT = 300;
 var LIST_LIMIT = 50;
 var SHA = /^[0-9a-f]{40,64}$/;
-var linesOf = (text8) => text8.split("\n").filter((line2) => line2.trim() !== "");
+var linesOf2 = (text8) => text8.split("\n").filter((line2) => line2.trim() !== "");
 var reflogLines = (runtime, repo) => {
   const result = runtime.git(["reflog", "show", "--all", `-n${String(REFLOG_LIMIT)}`, "--format=%H %gD"], repo.root);
   if (!result.ok) return [];
-  return linesOf(result.stdout).flatMap((line2) => {
+  return linesOf2(result.stdout).flatMap((line2) => {
     const [sha, ref] = line2.split(" ");
     return sha === void 0 || ref === void 0 || !SHA.test(sha) || ref.startsWith("refs/finitemonkey/") ? [] : [{ sha, ref }];
   });
@@ -16367,11 +16530,11 @@ var reflogLines = (runtime, repo) => {
 var unreachable = (runtime, repo, shas) => {
   if (shas.length === 0) return /* @__PURE__ */ new Set();
   const result = runtime.git(["rev-list", ...shas, "--not", "--branches", "--tags", "--remotes"], repo.root);
-  return new Set(result.ok ? linesOf(result.stdout) : []);
+  return new Set(result.ok ? linesOf2(result.stdout) : []);
 };
 var fsckDangling = (runtime, repo) => {
   const result = runtime.git(["fsck", "--no-reflogs", "--no-progress", "--dangling"], repo.root);
-  const lines3 = linesOf(result.stdout);
+  const lines3 = linesOf2(result.stdout);
   const pick4 = (kind) => lines3.flatMap((line2) => {
     const [label2, type, sha] = line2.split(" ");
     return label2 === "dangling" && type === kind && sha !== void 0 ? [sha] : [];
@@ -16382,7 +16545,7 @@ var describe = (runtime, repo, shas) => {
   if (shas.length === 0) return /* @__PURE__ */ new Map();
   const result = runtime.git(["log", "--no-walk=unsorted", "--format=%H%x09%cr%x09%s", ...shas], repo.root);
   return new Map(
-    linesOf(result.stdout).flatMap((line2) => {
+    linesOf2(result.stdout).flatMap((line2) => {
       const [sha, when, ...subject2] = line2.split("	");
       return sha === void 0 ? [] : [[sha, [when ?? "", subject2.join("	")]]];
     })
@@ -16476,7 +16639,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename3, dirname as dirname8, join as join39 } from "node:path";
+import { basename as basename3, dirname as dirname8, join as join40 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args2) => {
   const result = runtime.git(args2, repo.root);
@@ -16519,7 +16682,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join39(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join40(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -16754,7 +16917,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join40 } from "node:path";
+import { join as join41 } from "node:path";
 
 // src/i18n/message.ts
 var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
@@ -16980,7 +17143,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join40(dir, `${lang}.json`));
+  const file = toAbsolutePath(join41(dir, `${lang}.json`));
   const text8 = ctx.runtime.readText(file);
   if (!text8.ok) return reject(unreadable(dir, file, text8.error));
   const parsed = parseJsonObject(text8.value);
@@ -17003,7 +17166,7 @@ var describeProblem = (ctx, problem4) => {
   return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text8 = ctx.runtime.readText(toAbsolutePath(join40(dir, "review.json")));
+  const text8 = ctx.runtime.readText(toAbsolutePath(join41(dir, "review.json")));
   const parsed = text8.ok ? parseJsonObject(text8.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -17044,7 +17207,7 @@ var i18nCheckCommand = {
 };
 
 // src/history/look-back.ts
-import { join as join41 } from "node:path";
+import { join as join42 } from "node:path";
 
 // src/history/patterns.ts
 import { posix as posix5 } from "node:path";
@@ -17180,7 +17343,7 @@ var parseTranscript = (jsonl) => {
 // src/history/look-back.ts
 var SAMPLES = 3;
 var projectLogKey = (root) => root.replace(/[^A-Za-z0-9-]/g, "-");
-var projectLogDir = (runtime, root, env) => join41(env["CLAUDE_CONFIG_DIR"] ?? join41(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
+var projectLogDir = (runtime, root, env) => join42(env["CLAUDE_CONFIG_DIR"] ?? join42(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
 var lookBack = (runtime, root, env) => {
   const dir = projectLogDir(runtime, root, env);
   const listed4 = runtime.listDir(toAbsolutePath(dir));
@@ -17201,7 +17364,7 @@ var lookBack = (runtime, root, env) => {
   };
   let turns = 0;
   for (const name of files) {
-    const text8 = runtime.readText(toAbsolutePath(join41(dir, name)));
+    const text8 = runtime.readText(toAbsolutePath(join42(dir, name)));
     if (!text8.ok) continue;
     for (const turn of parseTranscript(text8.value)) {
       turns += 1;
@@ -17453,7 +17616,7 @@ var applyAllows = (findings, allows, decided) => {
 
 // src/look/node-capture.ts
 import { mkdirSync as mkdirSync3 } from "node:fs";
-import { join as join42 } from "node:path";
+import { join as join43 } from "node:path";
 
 // src/look/measure.ts
 var measurePage = (doc) => {
@@ -17529,7 +17692,7 @@ var captureOne = async (browser, request, route, viewport) => {
   const context = await browser.newContext({ viewport: { width: viewport, height: HEIGHT }, reducedMotion: "reduce" });
   const page = await context.newPage();
   const events = watch(page);
-  const path = join42(request.dir, `${slugOf(route)}-${String(viewport)}.png`);
+  const path = join43(request.dir, `${slugOf(route)}-${String(viewport)}.png`);
   const loadError = await loadAndShoot(page, `${request.baseUrl}${route}`, path, request.timeoutMs);
   const measure = loadError === void 0 ? parseMeasure(await page.evaluate(MEASURE_SCRIPT)) : void 0;
   await context.close();
@@ -17546,7 +17709,7 @@ var captureAll = async (browser, request) => {
 
 // src/look/node-playwright.ts
 import { createRequire } from "node:module";
-import { join as join43 } from "node:path";
+import { join as join44 } from "node:path";
 import { fileURLToPath as fileURLToPath3, pathToFileURL } from "node:url";
 var NAMES = ["playwright", "playwright-core"];
 var isPlaywright = (value) => isRecord(value) && isRecord(value["chromium"]) && typeof value["chromium"]["launch"] === "function";
@@ -17561,7 +17724,7 @@ var tryLoad = async (base, name) => {
   }
 };
 var loadPlaywright = async (root) => {
-  for (const base of [join43(root, "package.json"), fileURLToPath3(import.meta.url)]) {
+  for (const base of [join44(root, "package.json"), fileURLToPath3(import.meta.url)]) {
     for (const name of NAMES) {
       const found = await tryLoad(base, name);
       if (found !== void 0) return found;
@@ -17582,7 +17745,7 @@ var launchBrowser = async (playwright) => {
 
 // src/look/node-sheet.ts
 import { readFileSync as readFileSync2 } from "node:fs";
-import { join as join44 } from "node:path";
+import { join as join45 } from "node:path";
 var escapeHtml = (text8) => text8.replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char] ?? char);
 var card = (result) => {
   const image = (() => {
@@ -17605,7 +17768,7 @@ var contactSheet = async (browser, results, dir) => {
   if (shown3.length === 0) return void 0;
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   await page.setContent(`<!doctype html><style>${STYLE}</style>${shown3.map(card).join("")}`);
-  const path = join44(dir, "contact-sheet.png");
+  const path = join45(dir, "contact-sheet.png");
   await page.screenshot({ path, fullPage: true });
   await page.close();
   return path;
@@ -17945,12 +18108,12 @@ var proseCheckCommand = {
 };
 
 // src/review/packet.ts
-import { join as join45 } from "node:path";
+import { join as join46 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
 var FULL_ROUNDS = 3;
 var REVIEW_FILE_MAX_LINES = 200;
 var LEDGER_MAX_LINES = 100;
-var statePath = (root) => toAbsolutePath(join45(root, REVIEW_STATE_FILE));
+var statePath = (root) => toAbsolutePath(join46(root, REVIEW_STATE_FILE));
 var readReviewState = (runtime, root) => {
   const raw = runtime.readText(statePath(root));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
@@ -17972,7 +18135,7 @@ var taskSections = (runtime, root) => {
   const active = readState(runtime, paths).active;
   if (active === void 0)
     return [section("Contract", void 0, "(no active task)"), section("Evidence ledger", void 0, "(none)")];
-  const contract = runtime.readText(toAbsolutePath(join45(root, taskRelative(active))));
+  const contract = runtime.readText(toAbsolutePath(join46(root, taskRelative(active))));
   const ledger = runtime.readText(paths.evidence(active));
   return [
     section("Contract", contract.ok ? contract.value : void 0, "(contract file missing)"),
@@ -18002,7 +18165,7 @@ var buildPacket = (runtime, root, base, head) => {
     ...taskSections(runtime, root),
     ...owners === void 0 ? [] : [section("REVIEW.md (base branch)", owners, "")]
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join45(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join46(root, ".finitemonkey", "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}
 `);
   return { round: state.rounds, base, head, range, text: text8 };
@@ -18058,14 +18221,14 @@ var gitUnavailable = (detail) => ({
 });
 
 // src/commands/secrets-accept.ts
-var DAY_MS2 = 864e5;
+var DAY_MS3 = 864e5;
 var daysOf = (values) => {
   const raw = stringOption(values, "days");
   if (raw === void 0) return EXCEPTION_MAX_DAYS;
   const days = Number.parseInt(raw, 10);
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS2).toISOString();
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS3).toISOString();
 var failure3 = (ctx, problem4) => failureFrom(ctx.t, problem4);
 var inputProblem = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
@@ -18157,7 +18320,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname9, join as join46 } from "node:path";
+import { dirname as dirname9, join as join47 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -18179,7 +18342,7 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join46(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join47(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
@@ -18739,7 +18902,7 @@ var statuslineCommand = {
 };
 
 // src/task/create.ts
-import { join as join47 } from "node:path";
+import { join as join48 } from "node:path";
 
 // src/core/yaml/write.ts
 var PLAIN_SAFE = /^[A-Za-z_./][A-Za-z0-9_./ ()-]*$/;
@@ -18828,10 +18991,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative11) => {
-      const text8 = runtime.readText(toAbsolutePath(join47(paths.root, relative11)));
+      const text8 = runtime.readText(toAbsolutePath(join48(paths.root, relative11)));
       return text8.ok ? text8.value : void 0;
     },
-    exists: (relative11) => runtime.stat(toAbsolutePath(join47(paths.root, relative11))) !== void 0
+    exists: (relative11) => runtime.stat(toAbsolutePath(join48(paths.root, relative11))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -18846,7 +19009,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
-    ...runtime.stat(toAbsolutePath(join47(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
+    ...runtime.stat(toAbsolutePath(join48(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
     ...draft.git.length > 0 ? [{ id: "git", kind: "git", require: draft.git }] : [],
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index) => ({
@@ -19126,7 +19289,7 @@ var dataOf3 = (root, plan, applied) => ({
   kept: plan.items.filter((item2) => item2.action.startsWith("keep")).map(({ path }) => path),
   outside: OUTSIDE.map(({ command }) => command)
 });
-var linesOf2 = (ctx, data) => [
+var linesOf3 = (ctx, data) => [
   ctx.t("install.uninstall.title", { root: data.root }),
   ...data.actions.map(({ path, action }) => `  ${action.padEnd(15)}${path}`),
   ...data.purge ? [ctx.t("install.uninstall.purge")] : [ctx.t("install.uninstall.keeps_state")],
@@ -19147,16 +19310,16 @@ var runUninstall = (ctx, args2) => {
   const options = { purge: args2.values["purge"] === true, keepGenerated: args2.values["keep-generated"] === true };
   const plan = planRemoval(project, lock.value, options);
   const preview = dataOf3(project.root, plan, false);
-  if (ctx.dryRun) return success(preview, [...linesOf2(ctx, preview), ctx.t("install.dry_run")]);
+  if (ctx.dryRun) return success(preview, [...linesOf3(ctx, preview), ctx.t("install.dry_run")]);
   if (!ctx.yes) {
     const next2 = fixFor(args2);
     const problem4 = confirmProblem("uninstall", ctx.t("install.uninstall.question"), next2);
-    return { ...failureFrom(ctx.t, { ...problem4, data: preview }, linesOf2(ctx, preview)), next: next2 };
+    return { ...failureFrom(ctx.t, { ...problem4, data: preview }, linesOf3(ctx, preview)), next: next2 };
   }
   const removed = applyRemoval(project, plan);
   if (!removed.ok) return failureFrom(ctx.t, applyProblem(removed.error));
   const data = dataOf3(project.root, plan, true);
-  return success(data, [...linesOf2(ctx, data), ctx.t("install.uninstall.done")]);
+  return success(data, [...linesOf3(ctx, data), ctx.t("install.uninstall.done")]);
 };
 var uninstallCommand = {
   path: ["uninstall"],
@@ -19236,6 +19399,7 @@ var REGISTRY = [
   policyFalsePositiveCommand,
   offCommand,
   onCommand,
+  gainCommand,
   secretsIncidentCommand,
   secretsLiveCommand,
   proseCheckCommand,
@@ -19255,7 +19419,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join48 } from "node:path";
+import { join as join49 } from "node:path";
 var read3 = (runtime, path) => {
   const text8 = runtime.readText(toAbsolutePath(path));
   return text8.ok ? text8.value : void 0;
@@ -19270,14 +19434,14 @@ var languageIn = (text8) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join48(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join49(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join48(root, CONFIG_FILE)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join49(root, CONFIG_FILE)) ?? "");
   const claudeFiles = [
-    join48(root, ".claude", "settings.local.json"),
-    join48(root, ".claude", "settings.json"),
-    join48(claudeDir(runtime, env), "settings.json")
+    join49(root, ".claude", "settings.local.json"),
+    join49(root, ".claude", "settings.json"),
+    join49(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

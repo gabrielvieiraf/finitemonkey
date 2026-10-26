@@ -652,5 +652,17 @@
   "statusline.gate.red": "compuerta roja",
   "statusline.gate.incomplete": "compuerta incompleta",
   "statusline.gate.did_not_run": "la compuerta no se ejecutó",
-  "statusline.context": "ctx {percent}%"
+  "statusline.context": "ctx {percent}%",
+  "command.gain.summary": "Lo que hicieron los bloqueos: aciertos junto a falsas alarmas y fallos de la compuerta",
+  "gain.title": "Finite Monkey, {days, plural, one {último # día} other {últimos # días}} (de .finitemonkey/log.jsonl y los ledgers de evidencia):",
+  "gain.row.blocks": "{count, plural, one {# bloqueo} other {# bloqueos}} de los guards",
+  "gain.row.saves": "{count, plural, one {# bloqueo seguido} other {# bloqueos seguidos}} de una compuerta en verde en menos de un día",
+  "gain.row.false_positives": "{count, plural, one {# falsa alarma} other {# falsas alarmas}} (liberaciones escritas por la persona y falsos positivos registrados)",
+  "gain.row.gate_runs": "{count, plural, one {# ejecución de la compuerta} other {# ejecuciones de la compuerta}}",
+  "gain.row.gate_failed": "{count, plural, one {# ejecución de la compuerta falló} other {# ejecuciones de la compuerta fallaron}}",
+  "gain.row.gate_unverified": "{count, plural, one {# ejecución de la compuerta terminó} other {# ejecuciones de la compuerta terminaron}} sin verificar",
+  "gain.row.gate_time": "{minutes, plural, one {# minuto} other {# minutos}} en la compuerta",
+  "gain.up": "+{delta} respecto a la ventana anterior",
+  "gain.down": "-{delta} respecto a la ventana anterior",
+  "gain.footer": "Los conteos salen solo de archivos locales; un acierto es un bloqueo seguido de una compuerta en verde, no prueba de que el bloqueo lo causara."
 }

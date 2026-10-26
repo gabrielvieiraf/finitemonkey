@@ -652,5 +652,17 @@
   "statusline.gate.red": "gate red",
   "statusline.gate.incomplete": "gate incomplete",
   "statusline.gate.did_not_run": "gate did not run",
-  "statusline.context": "ctx {percent}%"
+  "statusline.context": "ctx {percent}%",
+  "command.gain.summary": "What the guards did: saves next to false alarms and gate failures",
+  "gain.title": "Finite Monkey, last {days, plural, one {# day} other {# days}} (from .finitemonkey/log.jsonl and the evidence ledgers):",
+  "gain.row.blocks": "{count, plural, one {# block} other {# blocks}} by the guards",
+  "gain.row.saves": "{count, plural, one {# block} other {# blocks}} followed by a green gate within a day",
+  "gain.row.false_positives": "{count, plural, one {# false alarm} other {# false alarms}} (releases typed by the person, and false positives recorded)",
+  "gain.row.gate_runs": "{count, plural, one {# gate run} other {# gate runs}}",
+  "gain.row.gate_failed": "{count, plural, one {# gate run} other {# gate runs}} failed",
+  "gain.row.gate_unverified": "{count, plural, one {# gate run} other {# gate runs}} ended not verified",
+  "gain.row.gate_time": "{minutes, plural, one {# minute} other {# minutes}} spent in the gate",
+  "gain.up": "up {delta} on the window before",
+  "gain.down": "down {delta} on the window before",
+  "gain.footer": "Counts come from local files only; a save is a block followed by a passing gate, not proof that the block caused it."
 }

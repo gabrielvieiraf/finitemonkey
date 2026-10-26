@@ -2,6 +2,8 @@ import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { logEvent } from "../evidence/log.js";
+import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
@@ -10,6 +12,7 @@ import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
+import { toolName } from "../secrets/guards/tool-input.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 import { capReason } from "./reason.js";
@@ -71,7 +74,19 @@ export const mergeOutputs = (left: JsonObject, right: JsonObject | undefined): J
   return merged;
 };
 
+const recordBlock = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): void => {
+  const paths = projectPaths(input);
+  if (paths === undefined) return;
+  logEvent(input.runtime, paths, "guard_block", {
+    hook: input.event,
+    tool: toolName(input.payload),
+    sessionId: input.payload.sessionId ?? null,
+    claim: (decision.reason.split("\n")[0] ?? "").slice(0, 200),
+  });
+};
+
 const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
+  recordBlock(input, decision);
   if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
   const reason = capReason(decision.reason);
   return {
