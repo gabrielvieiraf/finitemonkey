@@ -2227,8 +2227,28 @@ var reportMarkdown = (env, ctx, envelope) => {
 };
 var reportPath = (env) => toAbsolutePath(join5(env.root, ...REPORTS_DIR.split("/"), `doctor-${stamp(env.runtime.now())}.md`));
 
-// src/doctor/settings.ts
+// src/install/plugin-yield.ts
 import { join as join6 } from "node:path";
+var PLUGIN_VIA = "plugin";
+var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
+`;
+var projectOwnsHooks = (ctx) => {
+  const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
+  const text6 = ctx.runtime.readText(toAbsolutePath(join6(root, ...SETTINGS_FILE.split("/"))));
+  if (!text6.ok) return false;
+  const parsed = parseJsonObject(text6.value);
+  return parsed.ok && ownHandlersIn(parsed.value) > 0;
+};
+
+// src/install/plugin-hooks.ts
+var PLUGIN_NAME = "finitemonkey";
+var MARKETPLACE_NAME = "finitemonkey";
+var NEXT_MARKETPLACE_NAME = "finitemonkey-next";
+var STABLE_PLUGIN_ID = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
+var NEXT_PLUGIN_ID = `${PLUGIN_NAME}@${NEXT_MARKETPLACE_NAME}`;
+
+// src/doctor/settings.ts
+import { join as join7 } from "node:path";
 var MANAGED = {
   darwin: "/Library/Application Support/ClaudeCode/managed-settings.json",
   linux: "/etc/claude-code/managed-settings.json",
@@ -2237,7 +2257,7 @@ var MANAGED = {
 var userSettingsPath = ({ env, runtime }) => {
   const configDir = env["CLAUDE_CONFIG_DIR"];
   return toAbsolutePath(
-    configDir === void 0 ? join6(runtime.homeDir(), ".claude", "settings.json") : join6(configDir, "settings.json")
+    configDir === void 0 ? join7(runtime.homeDir(), ".claude", "settings.json") : join7(configDir, "settings.json")
   );
 };
 var settingsPaths = (env) => {
@@ -2245,8 +2265,8 @@ var settingsPaths = (env) => {
   return [
     ...managed === void 0 ? [] : [{ scope: "managed", path: toAbsolutePath(managed) }],
     { scope: "user", path: userSettingsPath(env) },
-    { scope: "project", path: toAbsolutePath(join6(env.root, ".claude", "settings.json")) },
-    { scope: "local", path: toAbsolutePath(join6(env.root, ".claude", "settings.local.json")) }
+    { scope: "project", path: toAbsolutePath(join7(env.root, ".claude", "settings.json")) },
+    { scope: "local", path: toAbsolutePath(join7(env.root, ".claude", "settings.local.json")) }
   ];
 };
 var readSettings = (env) => settingsPaths(env).flatMap(({ scope: scope2, path }) => {
@@ -2358,6 +2378,21 @@ var cleanupPeriod = (env, all) => {
     )
   ];
 };
+var PRECEDENCE = ["user", "project", "local", "managed"];
+var pluginOn = (all, id) => {
+  const ordered = PRECEDENCE.flatMap((scope2) => all.filter((item) => item.scope === scope2));
+  const values = ordered.map(({ settings }) => settings["enabledPlugins"]).map((plugins) => isRecord(plugins) ? plugins[id] : void 0).filter((value) => typeof value === "boolean");
+  return values.at(-1) === true;
+};
+var pluginChannels = (all) => pluginOn(all, STABLE_PLUGIN_ID) && pluginOn(all, NEXT_PLUGIN_ID) ? [
+  finding(
+    "settings.plugin_channels",
+    "fail",
+    "doctor.settings.plugin_channels",
+    { stable: STABLE_PLUGIN_ID, next: NEXT_PLUGIN_ID },
+    "doctor.settings.fix_plugin_channels"
+  )
+] : [];
 var checkClaudeSettings = (env) => {
   const all = readSettings(env);
   const plugins = enabledPlugins(all);
@@ -2367,6 +2402,7 @@ var checkClaudeSettings = (env) => {
       all,
       plugins.some((id) => id.startsWith("finitemonkey@"))
     ),
+    ...pluginChannels(all),
     ...agentTeams(env, all),
     ...loopPlugins(plugins),
     ...cleanupPeriod(env, all)
@@ -2374,7 +2410,7 @@ var checkClaudeSettings = (env) => {
 };
 
 // src/doctor/environment.ts
-import { join as join7 } from "node:path";
+import { join as join8 } from "node:path";
 var AUTH_VARIABLES = [
   "ANTHROPIC_API_KEY",
   "ANTHROPIC_AUTH_TOKEN",
@@ -2412,7 +2448,7 @@ var pathDirs = ({ env, platform }) => {
 var copiesOnPath = (env) => {
   const names = EXECUTABLES[env.platform] ?? ["finitemonkey"];
   const found = pathDirs(env).flatMap(
-    (dir) => names.map((name) => toAbsolutePath(join7(dir, name))).filter((path) => env.runtime.stat(path)?.kind === "file").map((path) => env.runtime.realpath(path))
+    (dir) => names.map((name) => toAbsolutePath(join8(dir, name))).filter((path) => env.runtime.stat(path)?.kind === "file").map((path) => env.runtime.realpath(path))
   );
   const byDir = new Map(found.map((path) => [path.replace(/\.(cmd|exe|ps1)$/i, ""), path]));
   return [...byDir.values()];
@@ -2446,7 +2482,7 @@ var checkAuthVariables = ({ env, platform }) => {
 };
 
 // src/doctor/hooks.ts
-import { join as join28 } from "node:path";
+import { join as join29 } from "node:path";
 
 // src/hooks/events.ts
 var HOOK_EVENTS = [
@@ -3509,7 +3545,7 @@ var selfGuard = (input) => {
 };
 
 // src/guards/tests/hook.ts
-import { join as join8, relative as relative3 } from "node:path";
+import { join as join9, relative as relative3 } from "node:path";
 
 // src/guards/tests/patterns.ts
 var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)tests?\/.*\.[cm]?[jt]sx?$/;
@@ -3699,7 +3735,7 @@ var shellViolations = (input, root) => {
   return parseShell(command).flatMap(
     (simple) => writtenPaths(simple).flatMap((path) => {
       const local = localPath(root, path);
-      const exists = input.runtime.stat(toAbsolutePath(join8(root, local))) !== void 0;
+      const exists = input.runtime.stat(toAbsolutePath(join9(root, local))) !== void 0;
       if (!exists) return [];
       if (isProtectedConfig(local)) return [{ kind: "config_changed", path: local }];
       return isTestFile(local) ? [{ kind: "test_removed", path: local }] : [];
@@ -3719,17 +3755,17 @@ var testsGuard = (input) => {
 };
 
 // src/gate/hooks/config.ts
-import { join as join10 } from "node:path";
+import { join as join11 } from "node:path";
 
 // src/gate/hooks/common.ts
-import { dirname as dirname5, join as join9 } from "node:path";
+import { dirname as dirname5, join as join10 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
 var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
 var MAX_DEPTH2 = 64;
 var findRepoRoot = (runtime, start) => {
   let current = start;
   for (let depth = 0; depth < MAX_DEPTH2; depth += 1) {
-    if (runtime.stat(toAbsolutePath(join9(current, ".git"))) !== void 0) return current;
+    if (runtime.stat(toAbsolutePath(join10(current, ".git"))) !== void 0) return current;
     const parent = toAbsolutePath(dirname5(current));
     if (parent === current) return void 0;
     current = parent;
@@ -3766,9 +3802,9 @@ var censusOf = (text6) => {
   return { hooks: countIn(parsed.value["hooks"]), disabled: parsed.value["disableAllHooks"] === true };
 };
 var settingsFiles = (paths, env) => [
-  toAbsolutePath(join10(paths.root, ".claude", "settings.json")),
-  toAbsolutePath(join10(paths.root, ".claude", "settings.local.json")),
-  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join10(env["HOME"], ".claude", "settings.json"))]
+  toAbsolutePath(join11(paths.root, ".claude", "settings.json")),
+  toAbsolutePath(join11(paths.root, ".claude", "settings.local.json")),
+  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join11(env["HOME"], ".claude", "settings.json"))]
 ];
 var read2 = (runtime, path) => {
   const text6 = runtime.readText(path);
@@ -3912,7 +3948,7 @@ var implicitContract = (files) => {
 };
 
 // src/gate/prepare.ts
-import { join as join11 } from "node:path";
+import { join as join12 } from "node:path";
 
 // src/core/yaml/scalar.ts
 var ESCAPES = {
@@ -4585,10 +4621,10 @@ var conflictFiles = (git, base) => {
 // src/gate/prepare.ts
 var diskFiles = (runtime, root) => ({
   read: (relative9) => {
-    const text6 = runtime.readText(toAbsolutePath(join11(root, relative9)));
+    const text6 = runtime.readText(toAbsolutePath(join12(root, relative9)));
     return text6.ok ? text6.value : void 0;
   },
-  exists: (relative9) => runtime.stat(toAbsolutePath(join11(root, relative9))) !== void 0
+  exists: (relative9) => runtime.stat(toAbsolutePath(join12(root, relative9))) !== void 0
 });
 var baseFiles = (git, base, disk) => ({
   read: (relative9) => base === EMPTY_TREE ? disk.read(relative9) : fileAt(git, base, relative9),
@@ -5006,6 +5042,8 @@ var en_default = {
   "doctor.settings.fix_managed_hooks_only": "Ask the administrator of the managed settings to add the Finite Monkey hooks there, or to turn allowManagedHooksOnly off",
   "doctor.settings.plugin_only": "strictPluginOnlyCustomization is on ({scopes}) and the finitemonkey plugin is not enabled; the project hooks do not load",
   "doctor.settings.fix_plugin_only": "Install the plugin: finitemonkey init --marketplace --yes, then /plugin install finitemonkey@finitemonkey in Claude Code",
+  "doctor.settings.plugin_channels": "Both {stable} and {next} are enabled. They share the plugin name, so Claude Code keeps only one set of hooks",
+  "doctor.settings.fix_plugin_channels": "To stay on stable run claude plugin disable {next}; to test next run claude plugin disable {stable}",
   "doctor.settings.agent_teams": "{name} is on; teammates run in their own sessions, and Finite Monkey does not check their work before they report done",
   "doctor.settings.fix_agent_teams": "Run `finitemonkey gate` before accepting a teammate's result, or unset the variable",
   "doctor.settings.loop_plugins": "{names} enabled: it sends the agent back to work at Stop, and its loop has no guard of its own",
@@ -5517,6 +5555,8 @@ var es_default = {
   "doctor.settings.fix_managed_hooks_only": "Pide al administrador de los settings gestionados que añada allí los hooks de Finite Monkey, o que desactive allowManagedHooksOnly",
   "doctor.settings.plugin_only": "strictPluginOnlyCustomization está activado ({scopes}) y el plugin finitemonkey no está activo; los hooks del proyecto no se cargan",
   "doctor.settings.fix_plugin_only": "Instala el plugin: finitemonkey init --marketplace --yes, después /plugin install finitemonkey@finitemonkey en Claude Code",
+  "doctor.settings.plugin_channels": "{stable} y {next} están activos a la vez. Comparten el nombre del plugin, así que Claude Code se queda con un solo conjunto de hooks",
+  "doctor.settings.fix_plugin_channels": "Para quedarte en la versión estable ejecuta claude plugin disable {next}; para probar next ejecuta claude plugin disable {stable}",
   "doctor.settings.agent_teams": "{name} está activado; los compañeros de equipo corren en sesiones propias, y Finite Monkey no revisa su trabajo antes de que digan que terminaron",
   "doctor.settings.fix_agent_teams": "Ejecuta `finitemonkey gate` antes de aceptar el resultado de un compañero, o quita la variable",
   "doctor.settings.loop_plugins": "{names} activo: devuelve al agente al trabajo en Stop, y su bucle no tiene guardia propia",
@@ -6028,6 +6068,8 @@ var pt_BR_default = {
   "doctor.settings.fix_managed_hooks_only": "Peça ao administrador dos settings gerenciados para incluir os hooks do Finite Monkey lá, ou para desligar allowManagedHooksOnly",
   "doctor.settings.plugin_only": "strictPluginOnlyCustomization está ligado ({scopes}) e o plugin finitemonkey não está ativo; os hooks do projeto não carregam",
   "doctor.settings.fix_plugin_only": "Instale o plugin: finitemonkey init --marketplace --yes, depois /plugin install finitemonkey@finitemonkey no Claude Code",
+  "doctor.settings.plugin_channels": "{stable} e {next} estão ativos ao mesmo tempo. Os dois têm o mesmo nome de plugin, então o Claude Code fica com só um conjunto de hooks",
+  "doctor.settings.fix_plugin_channels": "Para ficar no estável rode claude plugin disable {next}; para testar o next rode claude plugin disable {stable}",
   "doctor.settings.agent_teams": "{name} está ligado; os colegas de equipe rodam em sessões próprias, e o Finite Monkey não confere o trabalho deles antes de dizerem que terminaram",
   "doctor.settings.fix_agent_teams": "Rode `finitemonkey gate` antes de aceitar o resultado de um colega, ou remova a variável",
   "doctor.settings.loop_plugins": "{names} ativo: ele manda o agente de volta ao trabalho no Stop, e o laço dele não tem guarda própria",
@@ -6540,6 +6582,8 @@ var review_default = {
     "doctor.settings.fix_managed_hooks_only": "machine",
     "doctor.settings.plugin_only": "machine",
     "doctor.settings.fix_plugin_only": "machine",
+    "doctor.settings.plugin_channels": "machine",
+    "doctor.settings.fix_plugin_channels": "machine",
     "doctor.settings.agent_teams": "machine",
     "doctor.settings.fix_agent_teams": "machine",
     "doctor.settings.loop_plugins": "machine",
@@ -7049,6 +7093,8 @@ var review_default = {
     "doctor.settings.fix_managed_hooks_only": "machine",
     "doctor.settings.plugin_only": "machine",
     "doctor.settings.fix_plugin_only": "machine",
+    "doctor.settings.plugin_channels": "machine",
+    "doctor.settings.fix_plugin_channels": "machine",
     "doctor.settings.agent_teams": "machine",
     "doctor.settings.fix_agent_teams": "machine",
     "doctor.settings.loop_plugins": "machine",
@@ -7861,7 +7907,7 @@ var runShellCheck = (check2, run4, ctx) => {
 var commandCheck = (check2, ctx) => check2.run === void 0 ? unverified("not_implemented") : runShellCheck(check2, check2.run, ctx);
 
 // src/gate/checks/diff.ts
-import { join as join12 } from "node:path";
+import { join as join13 } from "node:path";
 
 // src/core/glob.ts
 var escape = (char) => /[.+^${}()|[\]\\]/.test(char) ? `\\${char}` : char;
@@ -7888,7 +7934,7 @@ var matchesAny = (path, globs) => {
 // src/gate/checks/diff.ts
 var MAX_LISTED = 10;
 var untrackedLines = (ctx) => ctx.changes.filter((change) => change.status === "A").reduce((sum, change) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join12(ctx.paths.root, change.path)));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join13(ctx.paths.root, change.path)));
   return sum + (text6.ok ? text6.value.split("\n").length : 0);
 }, 0);
 var diffCheck = (_check, ctx) => {
@@ -7947,13 +7993,13 @@ var manualCheck = (check2, ctx) => {
 };
 
 // src/gate/checks/placeholders.ts
-import { join as join13 } from "node:path";
+import { join as join14 } from "node:path";
 var MAX_LISTED2 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines3) => lines3.filter((line2) => !isTestFile(line2.path) && !SKIP_FILES.test(line2.path) && PLACEHOLDER.test(line2.text));
 var untrackedAdded = (ctx) => ctx.changes.filter((change) => change.status === "A" && !SKIP_FILES.test(change.path)).flatMap((change) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join13(ctx.paths.root, change.path)));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join14(ctx.paths.root, change.path)));
   return text6.ok ? text6.value.split("\n").map((line2, index) => ({ path: change.path, line: index + 1, text: line2 })) : [];
 });
 var placeholdersCheck = (_check, ctx) => {
@@ -8652,13 +8698,13 @@ var proseOutcome = (status) => {
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
 // src/secrets/baseline.ts
-import { join as join14 } from "node:path";
+import { join as join15 } from "node:path";
 var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
 var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
 var BASELINE_STATES = ["aceito", "falso-positivo"];
 var EXCEPTION_MAX_DAYS = 90;
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
-var baselinePath = (root) => toAbsolutePath(join14(root, BASELINE_FILE2));
+var baselinePath = (root) => toAbsolutePath(join15(root, BASELINE_FILE2));
 var text5 = (record2, key) => {
   const value = record2[key];
   return typeof value === "string" && value !== "" ? value : void 0;
@@ -8718,14 +8764,14 @@ var withoutFixed = (baseline, fixed) => {
 var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry2) => entry2.expiresAt >= now).map((entry2) => entry2.fingerprint));
 
 // src/secrets/incidents.ts
-import { join as join15 } from "node:path";
+import { join as join16 } from "node:path";
 var INCIDENTS_DIR = ".finitemonkey/incidents";
 var INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"];
 var INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"];
 var ID = /^inc-[0-9a-f]{12}$/;
 var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint}`).slice(0, 12)}`;
-var incidentsDir = (root) => toAbsolutePath(join15(root, INCIDENTS_DIR));
-var incidentFile = (root, id) => toAbsolutePath(join15(incidentsDir(root), `${id}.json`));
+var incidentsDir = (root) => toAbsolutePath(join16(root, INCIDENTS_DIR));
+var incidentFile = (root, id) => toAbsolutePath(join16(incidentsDir(root), `${id}.json`));
 var pick2 = (options, value) => options.find((option) => option === value);
 var str2 = (record2, key) => {
   const value = record2[key];
@@ -8780,7 +8826,7 @@ var listIncidents = (runtime, root) => {
   return names.value.filter((name) => name.endsWith(".json")).map((name) => readIncident(runtime, root, name.slice(0, -".json".length))).flatMap((parsed) => parsed.ok ? [parsed.value] : []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 };
 var saveIncident = (runtime, root, incident) => {
-  const ignore = runtime.writeText(toAbsolutePath(join15(incidentsDir(root), ".gitignore")), "*\n");
+  const ignore = runtime.writeText(toAbsolutePath(join16(incidentsDir(root), ".gitignore")), "*\n");
   if (!ignore.ok) return ignore;
   return runtime.writeText(incidentFile(root, incident.id), `${JSON.stringify(incident, null, 2)}
 `);
@@ -8827,7 +8873,7 @@ var moveIncident = (incident, to, now, by) => ({
 var isRotated = (incident) => incident.state === "rotacionado" || incident.state === "fechado";
 
 // src/secrets/scan.ts
-import { join as join16, relative as relative4 } from "node:path";
+import { join as join17, relative as relative4 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
@@ -8927,7 +8973,7 @@ var listed2 = (runtime, root, target) => {
   const base = toAbsolutePath(target, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => toPosixPath(relative4(root, join16(base, toPosixPath(name))))));
+  return accept(walked.value.map((name) => toPosixPath(relative4(root, join17(base, toPosixPath(name))))));
 };
 var scanFile = (runtime, root, file) => {
   const text6 = runtime.readText(toAbsolutePath(file, root));
@@ -8995,7 +9041,7 @@ var secretsCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/tests.ts
-import { join as join17 } from "node:path";
+import { join as join18 } from "node:path";
 
 // src/guards/tests/tree.ts
 var outOfScope = (input, change) => input.testsProtected && input.scopePaths.length > 0 && change.status !== "A" && isTestFile(change.path) && !matchesAny(change.path, input.scopePaths) ? [{ kind: "out_of_scope", path: change.path }] : [];
@@ -9027,7 +9073,7 @@ var treeViolations = (ctx) => {
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
     after: (path) => {
-      const text6 = ctx.runtime.readText(toAbsolutePath(join17(ctx.paths.root, path)));
+      const text6 = ctx.runtime.readText(toAbsolutePath(join18(ctx.paths.root, path)));
       return text6.ok ? text6.value : void 0;
     },
     acceptedConfigs: ctx.trust.configs,
@@ -9048,7 +9094,7 @@ var testsCheck = (check2, ctx) => {
 };
 
 // src/git/tree.ts
-import { join as join18 } from "node:path";
+import { join as join19 } from "node:path";
 
 // src/secrets/guards/paths.ts
 var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
@@ -9087,7 +9133,7 @@ var dropSensitive = (runtime, repo, env, options) => {
   return removed.ok ? accept(void 0) : removed;
 };
 var withTempIndex = (runtime, repo, options, work) => {
-  const path = toAbsolutePath(join18(repo.gitDir, `finitemonkey-${options.stamp}.index`));
+  const path = toAbsolutePath(join19(repo.gitDir, `finitemonkey-${options.stamp}.index`));
   const env = { GIT_INDEX_FILE: path, GIT_OPTIONAL_LOCKS: "0" };
   try {
     return work(env);
@@ -9339,7 +9385,7 @@ var parsePorcelainV2 = (stdout) => {
 };
 
 // src/git/project-config.ts
-import { join as join19 } from "node:path";
+import { join as join20 } from "node:path";
 var CONFIG_FILE3 = ".finitemonkey/config.yml";
 var unquote = (value) => value.trim().replace(/^(["'])(.*)\1$/s, "$2");
 var stripComment2 = (line2) => {
@@ -9420,12 +9466,12 @@ var configMap = (tree, ...path) => {
   );
 };
 var loadProjectConfig = (runtime, root) => {
-  const text6 = runtime.readText(toAbsolutePath(join19(root, CONFIG_FILE3)));
+  const text6 = runtime.readText(toAbsolutePath(join20(root, CONFIG_FILE3)));
   return text6.ok ? parseConfigYaml(text6.value) : {};
 };
 
 // src/git/merge/dropped.ts
-import { join as join20 } from "node:path";
+import { join as join21 } from "node:path";
 
 // src/git/merge/lines.ts
 var normalizeLine = (line2) => line2.replace(/\r$/, "").trim().replace(/\s*,$/, "");
@@ -9505,7 +9551,7 @@ var parseDropped = (text6) => {
   return accept({ items, invalid });
 };
 var loadDropped = (runtime, root, file) => {
-  const path = toAbsolutePath(file ?? join20(root, DROPPED_FILE), root);
+  const path = toAbsolutePath(file ?? join21(root, DROPPED_FILE), root);
   const text6 = runtime.readText(path);
   if (!text6.ok) return file === void 0 ? accept({ items: [], invalid: [] }) : reject(`${file}: ${text6.error}`);
   return parseDropped(text6.value);
@@ -9515,7 +9561,7 @@ var isDropped = (finding3, items) => items.some(
 );
 
 // src/git/merge/generated.ts
-import { join as join21 } from "node:path";
+import { join as join22 } from "node:path";
 var LOCKFILES3 = /* @__PURE__ */ new Set([
   "package-lock.json",
   "npm-shrinkwrap.json",
@@ -9578,7 +9624,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
   if (declared.length === 0) return accept([]);
   const commit2 = resultCommit(runtime, repo, inputs);
   if (!commit2.ok) return commit2;
-  const dir = join21(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
+  const dir = join22(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
   if (!runtime.git(["worktree", "add", "--detach", dir, commit2.value], repo.root).ok)
     return reject("could not check out the merge result");
   try {
@@ -9588,7 +9634,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
     }
     return accept(
       declared.flatMap(({ path }) => {
-        const fresh3 = runtime.readText(toAbsolutePath(join21(dir, path)));
+        const fresh3 = runtime.readText(toAbsolutePath(join22(dir, path)));
         const merged = blobText(runtime, repo, commit2.value, path);
         if (fresh3.ok && fresh3.value === merged) return [];
         return [{ kind: "generated-differs", file: path, side: void 0, line: void 0, text: path, weak: false }];
@@ -9874,19 +9920,19 @@ var verifyMerge = (runtime, repo, options = {}) => {
 };
 
 // src/git/ownership.ts
-import { join as join22 } from "node:path";
+import { join as join23 } from "node:path";
 var OWNERSHIP_DIR = ".finitemonkey/git";
 var ownerKey = (raw) => {
   const cleaned = (raw ?? "").replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 80);
   return cleaned === "" ? "unknown" : cleaned;
 };
-var fileOf = (repo, kind, owner) => toAbsolutePath(join22(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
+var fileOf = (repo, kind, owner) => toAbsolutePath(join23(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
 var readDirty = (runtime, root) => {
   const status = runtime.git(["status", "--porcelain=v2", "-z", "--untracked-files=all"], root);
   return status.ok ? parsePorcelainV2(status.stdout) : void 0;
 };
 var hashDirty = (runtime, repo, entries) => {
-  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join22(repo.root, entry2.path)))?.kind === "file");
+  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join23(repo.root, entry2.path)))?.kind === "file");
   const hashed = present2.length === 0 ? void 0 : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
     input: `${present2.map((entry2) => entry2.path).join("\n")}
 `
@@ -10321,7 +10367,7 @@ var isOwnWorktree = (input) => {
 var subagentStopGate = (input) => isOwnWorktree(input) ? stopGate(input) : { kind: "allow" };
 
 // src/gate/hooks/subagent.ts
-import { join as join23 } from "node:path";
+import { join as join24 } from "node:path";
 var NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
 var KNOWN_KINDS = /* @__PURE__ */ new Set([
   "command",
@@ -10355,12 +10401,12 @@ var subagentStart = (input) => {
   const active = readState(runtime, paths).active;
   if (active === void 0) return { kind: "allow" };
   const disk = (relative9) => {
-    const text6 = runtime.readText(toAbsolutePath(join23(paths.root, relative9)));
+    const text6 = runtime.readText(toAbsolutePath(join24(paths.root, relative9)));
     return text6.ok ? text6.value : void 0;
   };
   const loaded = loadTask(runtime, paths, { disk, base: () => void 0 }, active);
   if (!loaded.ok) return { kind: "allow" };
-  const briefing = runtime.stat(toAbsolutePath(join23(paths.dir, "briefing.md"))) !== void 0;
+  const briefing = runtime.stat(toAbsolutePath(join24(paths.dir, "briefing.md"))) !== void 0;
   return { kind: "allow", output: contextOutput("SubagentStart", contractFacts(t, loaded.value.contract, briefing)) };
 };
 
@@ -10377,7 +10423,7 @@ var PORTAO_HANDLERS = {
 };
 
 // src/prod/guard.ts
-import { join as join25 } from "node:path";
+import { join as join26 } from "node:path";
 
 // src/git/command-text.ts
 var MAX_SHOWN = 160;
@@ -10719,7 +10765,7 @@ var remoteHostsOf = (command) => {
 };
 
 // src/prod/targets.ts
-import { join as join24 } from "node:path";
+import { join as join25 } from "node:path";
 var DEPLOY_FILES = [
   "deploy.sh",
   "scripts/deploy.sh",
@@ -10743,12 +10789,12 @@ var hostsInText = (text6) => {
   return [...urls, ...keyed, ...commands].filter((host) => host !== "" && !host.includes("$"));
 };
 var workflowFiles = (runtime, root) => {
-  const listed4 = runtime.listDir(toAbsolutePath(join24(root, ".github", "workflows")));
+  const listed4 = runtime.listDir(toAbsolutePath(join25(root, ".github", "workflows")));
   if (!listed4.ok) return [];
   return listed4.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
 };
 var detectedHosts = (runtime, root, files) => files.flatMap((file) => {
-  const text6 = runtime.readText(toAbsolutePath(join24(root, file)));
+  const text6 = runtime.readText(toAbsolutePath(join25(root, file)));
   return text6.ok ? hostsInText(text6.value) : [];
 });
 var loadProdTargets = (runtime, root, config) => {
@@ -10760,7 +10806,7 @@ var loadProdTargets = (runtime, root, config) => {
     ...detectedHosts(runtime, root, deployFiles)
   ];
   const declaredDeploy = configAt(config, "prod", "deploy");
-  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join24(root, file))) !== void 0);
+  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join25(root, file))) !== void 0);
   return {
     hosts: new Set(hosts.map(hostKey).filter((host) => host !== "")),
     kubeContexts: configList(config, "prod", "kube_contexts"),
@@ -10937,8 +10983,8 @@ var recordEvidence = (runtime, root, owner, reads) => {
     ] : []
   );
   if (lines3.length === 0) return;
-  const path = toAbsolutePath(join25(root, EVIDENCE_FILE));
-  runtime.mkdir(toAbsolutePath(join25(root, ".finitemonkey")));
+  const path = toAbsolutePath(join26(root, EVIDENCE_FILE));
+  runtime.mkdir(toAbsolutePath(join26(root, ".finitemonkey")));
   const before = runtime.readText(path);
   const text6 = before.ok ? before.value : "";
   runtime.writeAtomic(path, `${text6}${text6 === "" || text6.endsWith("\n") ? "" : "\n"}${lines3.join("\n")}
@@ -11750,10 +11796,10 @@ var listWorktrees = (runtime, cwd) => {
 };
 
 // src/git/journal.ts
-import { join as join26 } from "node:path";
+import { join as join27 } from "node:path";
 var JOURNAL_FILE = ".finitemonkey/git-journal.jsonl";
 var JOURNAL_SCHEMA = "finitemonkey/git-journal@1";
-var journalPath = (root) => toAbsolutePath(join26(root, JOURNAL_FILE));
+var journalPath = (root) => toAbsolutePath(join27(root, JOURNAL_FILE));
 var headsOf = (value) => isRecord(value) ? Object.fromEntries(
   Object.entries(value).filter((entry2) => typeof entry2[1] === "string")
 ) : {};
@@ -11789,7 +11835,7 @@ var readJournal = (runtime, root) => {
 };
 var appendJournal = (runtime, root, entry2) => {
   const path = journalPath(root);
-  const made = runtime.mkdir(toAbsolutePath(join26(root, ".finitemonkey")));
+  const made = runtime.mkdir(toAbsolutePath(join27(root, ".finitemonkey")));
   if (!made.ok) return made;
   const previous = runtime.readText(path);
   const before = previous.ok ? previous.value : "";
@@ -13012,7 +13058,7 @@ var hookSchemaProblems = (hooks, claude) => {
 };
 
 // src/doctor/hook-sources.ts
-import { join as join27 } from "node:path";
+import { join as join28 } from "node:path";
 var entriesOf = (source, hooks, own) => Object.entries(asRecord(hooks)).flatMap(
   ([event, groups]) => asList(groups).flatMap((group) => {
     const record2 = asRecord(group);
@@ -13025,7 +13071,7 @@ var projectHookFiles = (env) => readSettings(env).flatMap(({ scope: scope2, path
   const source = PROJECT_SCOPES[scope2];
   return source === void 0 || !("hooks" in settings) ? [] : [{ source, path, hooks: settings["hooks"] }];
 });
-var pluginsDir = ({ env, runtime }) => join27(env["CLAUDE_CONFIG_DIR"] ?? join27(runtime.homeDir(), ".claude"), "plugins");
+var pluginsDir = ({ env, runtime }) => join28(env["CLAUDE_CONFIG_DIR"] ?? join28(runtime.homeDir(), ".claude"), "plugins");
 var installRecord = (value, root) => {
   const records = Array.isArray(value) ? value.filter(isRecord) : isRecord(value) ? [value] : [];
   return records.find((record2) => record2["projectPath"] === root) ?? records[0];
@@ -13036,13 +13082,13 @@ var readJson = (env, path) => {
   return parsed?.ok === true ? parsed.value : void 0;
 };
 var installedPlugin = (env) => {
-  const index = readJson(env, toAbsolutePath(join27(pluginsDir(env), "installed_plugins.json")));
+  const index = readJson(env, toAbsolutePath(join28(pluginsDir(env), "installed_plugins.json")));
   const record2 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
   const installPath = record2 === void 0 ? void 0 : optionalString(record2, "installPath");
   if (record2 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
-  const manifest = readJson(env, toAbsolutePath(join27(root, ".claude-plugin", "plugin.json")));
-  const hooksPath = toAbsolutePath(join27(root, "hooks", "hooks.json"));
+  const manifest = readJson(env, toAbsolutePath(join28(root, ".claude-plugin", "plugin.json")));
+  const hooksPath = toAbsolutePath(join28(root, "hooks", "hooks.json"));
   const text6 = env.runtime.readText(hooksPath);
   const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
   return {
@@ -13052,10 +13098,10 @@ var installedPlugin = (env) => {
     hooksText: text6.ok ? text6.value : void 0
   };
 };
-var PRECEDENCE = ["managed", "local", "project", "user"];
+var PRECEDENCE2 = ["managed", "local", "project", "user"];
 var pluginEnabled = (env) => {
   const all = readSettings(env);
-  for (const scope2 of PRECEDENCE) {
+  for (const scope2 of PRECEDENCE2) {
     const value = asRecord(all.find((item) => item.scope === scope2)?.settings["enabledPlugins"])[PLUGIN_ID];
     if (typeof value === "boolean") return { value, scope: scope2 };
   }
@@ -13087,7 +13133,7 @@ var schemaFindings = (env, plugin, claude) => {
   const files = [...projectHookFiles(env), ...plugin?.hooksFile === void 0 ? [] : [plugin.hooksFile]];
   const invalidJson = [
     ...unreadableProjectFiles(env),
-    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join28(plugin.root, "hooks", "hooks.json"))] : []
+    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join29(plugin.root, "hooks", "hooks.json"))] : []
   ];
   return [
     ...invalidJson.flatMap((file) => schemaFinding(file, ["not valid JSON"], label2)),
@@ -13108,7 +13154,7 @@ var pluginFindings = (env, projectOwn) => {
   ];
 };
 var coverageFindings = (env, entries) => {
-  const installed = env.runtime.stat(toAbsolutePath(join28(env.root, ...LOCK_FILE.split("/")))) !== void 0;
+  const installed = env.runtime.stat(toAbsolutePath(join29(env.root, ...LOCK_FILE.split("/")))) !== void 0;
   if (entries.length === 0 && !installed) {
     return [finding("hooks.registered", "warn", "doctor.hooks.none", {}, "doctor.hooks.fix_none")];
   }
@@ -13160,17 +13206,17 @@ var checkHooks = (env) => {
 };
 
 // src/doctor/instructions.ts
-import { join as join29 } from "node:path";
+import { join as join30 } from "node:path";
 var INSTRUCTION_LINE_CEILING = 200;
 var TOP_INSTRUCTIONS = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"];
 var RULES_DIR = ".claude/rules";
 var SHOWN = 3;
 var readProjectFile = (env, relative9) => {
-  const text6 = env.runtime.readText(toAbsolutePath(join29(env.root, ...relative9.split("/"))));
+  const text6 = env.runtime.readText(toAbsolutePath(join30(env.root, ...relative9.split("/"))));
   return text6.ok ? text6.value : void 0;
 };
 var instructionFiles = (env) => {
-  const listed4 = env.runtime.listDir(toAbsolutePath(join29(env.root, ...RULES_DIR.split("/"))));
+  const listed4 = env.runtime.listDir(toAbsolutePath(join30(env.root, ...RULES_DIR.split("/"))));
   const rules = listed4.ok ? listed4.value.filter((name) => name.endsWith(".md")).map((name) => `${RULES_DIR}/${name}`) : [];
   return [...TOP_INSTRUCTIONS, ...rules].flatMap((path) => {
     const text6 = readProjectFile(env, path);
@@ -13275,12 +13321,12 @@ var checkInstructions = (env) => {
 };
 
 // src/doctor/line-endings.ts
-import { join as join30 } from "node:path";
+import { join as join31 } from "node:path";
 var LF_RULE = /^\*\s.*\beol=lf\b/m;
 var checkLineEndings = ({ root, runtime }) => {
   const autocrlf = runtime.git(["config", "--get", "core.autocrlf"], root);
   if (!autocrlf.ok || autocrlf.stdout.trim().toLowerCase() !== "true") return [];
-  const attributes = runtime.readText(toAbsolutePath(join30(root, ".gitattributes")));
+  const attributes = runtime.readText(toAbsolutePath(join31(root, ".gitattributes")));
   if (attributes.ok && LF_RULE.test(attributes.value)) return [];
   return [
     finding("git.autocrlf", "warn", "doctor.git.autocrlf", { file: ".gitattributes" }, "doctor.git.fix_autocrlf")
@@ -13288,7 +13334,7 @@ var checkLineEndings = ({ root, runtime }) => {
 };
 
 // src/doctor/memory.ts
-import { join as join31 } from "node:path";
+import { join as join32 } from "node:path";
 var ceilingOf = (config) => {
   const value = configAt(parseConfigYaml(config ?? ""), "memory", "maxLines");
   const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
@@ -13296,9 +13342,9 @@ var ceilingOf = (config) => {
 };
 var lineCount2 = (text6) => text6.replace(/\r?\n$/, "").split(/\r?\n/).length;
 var checkAgentsFile = ({ root, runtime }) => {
-  const text6 = runtime.readText(toAbsolutePath(join31(root, AGENTS_FILE)));
+  const text6 = runtime.readText(toAbsolutePath(join32(root, AGENTS_FILE)));
   if (!text6.ok) return [];
-  const config = runtime.readText(toAbsolutePath(join31(root, CONFIG_FILE)));
+  const config = runtime.readText(toAbsolutePath(join32(root, CONFIG_FILE)));
   const max = ceilingOf(config.ok ? config.value : void 0);
   const lines3 = lineCount2(text6.value);
   const params2 = { file: AGENTS_FILE, lines: lines3, max };
@@ -13306,7 +13352,7 @@ var checkAgentsFile = ({ root, runtime }) => {
 };
 
 // src/doctor/project-files.ts
-import { join as join32 } from "node:path";
+import { join as join33 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
 var SCRIPT = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
@@ -13337,7 +13383,7 @@ var CONFIG_GROUPS = [
     files: [...variants("commitlint.config", SCRIPT), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
-var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join32(env.root, file)))?.kind === "file");
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join33(env.root, file)))?.kind === "file");
 var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
   const found = present(env, files);
   return found.length > 1 ? [build(name, found.join(", "))] : [];
@@ -13903,7 +13949,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename3, dirname as dirname8, join as join33 } from "node:path";
+import { basename as basename3, dirname as dirname8, join as join34 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args) => {
   const result = runtime.git(args, repo.root);
@@ -13946,7 +13992,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join33(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join34(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -14132,19 +14178,6 @@ var helpCommand = {
   run: (ctx, args, registry) => Promise.resolve(
     args.positionals.length === 0 ? overview(ctx, registry) : topicHelp(ctx, registry, args.positionals)
   )
-};
-
-// src/install/plugin-yield.ts
-import { join as join34 } from "node:path";
-var PLUGIN_VIA = "plugin";
-var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
-`;
-var projectOwnsHooks = (ctx) => {
-  const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
-  const text6 = ctx.runtime.readText(toAbsolutePath(join34(root, ...SETTINGS_FILE.split("/"))));
-  if (!text6.ok) return false;
-  const parsed = parseJsonObject(text6.value);
-  return parsed.ok && ownHandlersIn(parsed.value) > 0;
 };
 
 // src/commands/hook.ts

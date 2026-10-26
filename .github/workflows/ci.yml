@@ -52,6 +52,9 @@ jobs:
         run: npm run build && git diff --exit-code dist/
       - name: installed bins run from a prefix with spaces and accents
         run: npm run smoke:install
+      - name: stable and next marketplaces pass claude plugin validate --strict
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 24
+        run: npm install --global @anthropic-ai/claude-code && npm run plugin:validate
 
   budgets:
     name: context and latency budgets

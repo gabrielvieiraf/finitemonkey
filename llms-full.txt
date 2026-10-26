@@ -497,6 +497,13 @@ Both give the same hooks. Use one, or both: when a project has its own Finite Mo
    /plugin install finitemonkey@finitemonkey
    ```
 
+   To test the `next` channel, add the marketplace from the `next` branch instead. It has its own name (`finitemonkey-next`), so it can be added next to the stable one, but keep only one of the two enabled: both plugins are called `finitemonkey`, and Claude Code keeps a single set of hooks. `doctor` fails and prints the `claude plugin disable` command when both are enabled.
+
+   ```
+   /plugin marketplace add gabrielvieiraf/finitemonkey#next
+   /plugin install finitemonkey@finitemonkey-next
+   ```
+
    The plugin brings the hooks and the skills (`task`, `verify`, `look`, `finish`) that Claude uses on its own. It carries the CLI itself (`scripts/finitemonkey.mjs`, the same build as the version in its `plugin.json`), and every hook runs `node` on that file: no `npx` and no download.
 
 2. **`npx finitemonkey init`** in the project (steps below). It writes the hooks, the `permissions.deny` floor (plus a `Read` deny rule for each `.claudeignore` pattern), `ask` rules for pushes to `main`/`master` and for publish and deploy commands, `permissions.blockReadsOutsideWorkingDirectories: true`, `.finitemonkey/config.yml`, a project `verify` skill (`.claude/skills/verify/SKILL.md`, which runs the fast gate before each commit), and a short managed block in `AGENTS.md` that `CLAUDE.md` imports with `@AGENTS.md` (each file is created when absent; everything outside the block stays as it was) into the project. It never sets `defaultMode` or `autoMode`, only adds rules the settings do not already have, and leaves a `verify` skill the project already has as it is. The hooks run `node` on `node_modules/finitemonkey` when the project has it as a dependency; otherwise `init` copies the CLI that is running it into `.finitemonkey/runtime/` (committed, so teammates and cloud sessions get the same version) and the hooks run that copy. No hook calls `npx`. This also holds where plugins do not load (cloud sessions of a repository read the committed `.claude/settings.json`). Add `--marketplace` to also register the plugin's marketplace in the project settings for everyone who trusts the folder; it is off unless the user asks.

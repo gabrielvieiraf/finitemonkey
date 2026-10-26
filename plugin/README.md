@@ -11,4 +11,11 @@ Install from the repository marketplace:
 /plugin install finitemonkey@finitemonkey
 ```
 
+The `next` channel has its own marketplace, from the `next` branch. Enable only one of the two, since both plugins are called `finitemonkey`:
+
+```
+/plugin marketplace add gabrielvieiraf/finitemonkey#next
+/plugin install finitemonkey@finitemonkey-next
+```
+
 When a project also ran `npx finitemonkey init`, the project's own hooks take over and the plugin's hooks step aside, so nothing runs twice. Every hook runs `node` on that bundled file: no download and no network, in any hook. Licensed under Apache-2.0.

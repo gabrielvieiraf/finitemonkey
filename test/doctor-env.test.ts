@@ -86,6 +86,21 @@ const CASES: Readonly<Record<string, Case>> = {
       project: { ".claude/settings.json": settings({ enabledPlugins: { "finitemonkey@finitemonkey": true } }) },
     },
   },
+  "stable and next plugins both enabled": {
+    check: "settings.plugin_channels",
+    status: "fail",
+    fire: {
+      files: { [USER_SETTINGS]: settings({ enabledPlugins: { "finitemonkey@finitemonkey": true } }) },
+      project: { ".claude/settings.json": settings({ enabledPlugins: { "finitemonkey@finitemonkey-next": true } }) },
+    },
+    quiet: {
+      files: { [USER_SETTINGS]: settings({ enabledPlugins: { "finitemonkey@finitemonkey": true } }) },
+      project: {
+        ".claude/settings.json": settings({ enabledPlugins: { "finitemonkey@finitemonkey-next": true } }),
+        ".claude/settings.local.json": settings({ enabledPlugins: { "finitemonkey@finitemonkey": false } }),
+      },
+    },
+  },
   "agent teams variable": {
     check: "settings.agent_teams",
     status: "warn",
@@ -219,6 +234,17 @@ describe("doctor environment checks", () => {
     const failing = machine(CASES["disableAllHooks"]?.fire);
     const result = doctorResult(ctx, buildReport(ctx, runChecks(failing)));
     assert.equal(result.exitCode, 1);
+  });
+
+  it("stable and next plugins both enabled turn doctor red with the command that fixes it", () => {
+    const ctx = fakeCtx();
+    const both = CASES["stable and next plugins both enabled"]?.fire;
+    const result = doctorResult(ctx, buildReport(ctx, runChecks(machine(both))));
+    assert.equal(result.exitCode, 1);
+    assert.ok(!result.ok);
+    const fix = result.error.fix;
+    assert.match(fix, /claude plugin disable finitemonkey@finitemonkey-next/);
+    assert.match(fix, /claude plugin disable finitemonkey@finitemonkey(?!-)/);
   });
 
   it("has every message and fix in en, pt-BR and es", () => {
