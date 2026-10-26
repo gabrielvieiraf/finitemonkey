@@ -14891,15 +14891,15 @@ var walk2 = (a, b) => {
 };
 var splitLines = (text6) => text6 === "" ? [] : text6.replace(/\r?\n$/, "").split(/\r?\n/);
 var sharedPrefix = (a, b) => {
-  let count3 = 0;
-  while (count3 < a.length && count3 < b.length && a[count3] === b[count3]) count3 += 1;
-  return count3;
+  let count4 = 0;
+  while (count4 < a.length && count4 < b.length && a[count4] === b[count4]) count4 += 1;
+  return count4;
 };
 var sharedSuffix = (a, b, prefix) => {
-  let count3 = 0;
-  while (count3 < a.length - prefix && count3 < b.length - prefix && a[a.length - 1 - count3] === b[b.length - 1 - count3])
-    count3 += 1;
-  return count3;
+  let count4 = 0;
+  while (count4 < a.length - prefix && count4 < b.length - prefix && a[a.length - 1 - count4] === b[b.length - 1 - count4])
+    count4 += 1;
+  return count4;
 };
 var changedOps = (a, b) => {
   const prefix = sharedPrefix(a, b);
