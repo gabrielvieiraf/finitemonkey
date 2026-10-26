@@ -4611,6 +4611,7 @@ var LOCK_FILE = ".finitemonkey/lock.json";
 var BACKUPS_DIR = ".finitemonkey/backups";
 var LOCKS_DIR = ".finitemonkey/locks";
 var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
+var VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
 var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
 var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
 var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
@@ -11277,6 +11278,33 @@ var withoutBlock = (text6) => {
   return [...lines3.slice(0, range.start), ...lines3.slice(range.end + 1)].join(eol);
 };
 
+// src/install/skill-template.ts
+var gateCommand2 = (runner) => {
+  const args = "gate --fast --json";
+  if (runner.kind === "local") return `node ${LOCAL_BIN} ${args}`;
+  if (runner.kind === "vendored") return `node ${VENDOR_BIN} ${args}`;
+  return isScript(runner.path) ? `node "${runner.path}" ${args}` : `"${runner.path}" ${args}`;
+};
+var verifySkillTemplate = (runner) => [
+  "---",
+  "name: verify",
+  "description: >-",
+  "  Use before every commit and before telling the person something works. Runs the fast gate through Finite Monkey so the result is recorded as evidence for the current tree instead of being taken on your word.",
+  "when_to_use: >-",
+  "  Trigger phrases include commit, run the tests, check it works, roda os testes, confere, verifica, prueba.",
+  "---",
+  "",
+  "# Verify: evidence, not claims",
+  "",
+  `1. From the project root, run \`${gateCommand2(runner)}\`.`,
+  "2. Read `data`; for every failing item, fix the cause, never the check.",
+  "3. Quote the command and its exit code when you report a result. A result from before your last edit no longer counts.",
+  "",
+  `<!-- ${GENERATED_MARKER} -->`,
+  ""
+].join("\n");
+var isOwnSkill = hasMarker;
+
 // src/install/vendor.ts
 var isBundle = (text6) => text6.startsWith("#!/usr/bin/env node") && text6.includes("finitemonkey");
 var isOwnPackage = (text6) => {
@@ -11365,18 +11393,21 @@ var generatedItem = (project, file, previous) => {
   }
   return { ...base, action: actionFor(before, template, "update"), after: template };
 };
-var generatedFiles = (input, vendor) => {
-  const config = { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
-  if (!vendor) return accept([config]);
+var generatedFiles = (input, runner, vendor) => {
+  const own = [
+    { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker },
+    { path: VERIFY_SKILL, template: verifySkillTemplate(runner), isOurs: isOwnSkill }
+  ];
+  if (!vendor) return accept(own);
   if (input.bundle === void 0) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
-  return accept([config, ...vendoredFiles(input.bundle, input.version)]);
+  return accept([...own, ...vendoredFiles(input.bundle, input.version)]);
 };
 var entryFor = (lock, path) => lock?.entries.find((entry2) => entry2.path === path);
 var buildPlan = (project, detection, input, previous) => {
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
   const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== void 0;
-  const files = generatedFiles(input, vendor);
+  const files = generatedFiles(input, detection.runner, vendor);
   if (!files.ok) return files;
   const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
   return accept({
@@ -11433,7 +11464,7 @@ var nextLock = (plan, version, now, backupDir, createdDirs) => ({
   preset: plan.preset,
   installedAt: plan.previous?.installedAt ?? now,
   updatedAt: now,
-  createdDirs: plan.previous?.createdDirs ?? createdDirs,
+  createdDirs: [.../* @__PURE__ */ new Set([...plan.previous?.createdDirs ?? [], ...createdDirs])],
   entries: plan.items.filter((item) => item.action !== "skip-foreign").map((item) => entryOf2(plan, item, backupDir))
 });
 var needsBackup = (plan, item) => item.before !== void 0 && plan.previous?.entries.find((entry2) => entry2.path === item.path)?.backup === void 0;
@@ -11449,7 +11480,8 @@ var writeAll = (project, items) => {
   }
   return accept(void 0);
 };
-var createdBy = (project) => [".claude", STATE_DIR].filter((dir) => !project.exists(dir));
+var OWN_DIRS = [dirname6(dirname6(VERIFY_SKILL)), dirname6(VERIFY_SKILL), ".claude", STATE_DIR];
+var createdBy = (project) => OWN_DIRS.filter((dir) => !project.exists(dir));
 var commit = (project, plan, version, createdDirs) => {
   const now = project.runtime.now();
   const changing = plan.items.filter((item) => CHANGING.includes(item.action));
@@ -12539,7 +12571,7 @@ var removalFor = (project, entry2, options) => {
 var planRemoval = (project, lock, options) => ({
   items: lock.entries.map((entry2) => removalFor(project, entry2, options)),
   purge: options.purge,
-  removeDirs: lock.createdDirs.filter((dir) => dir !== STATE_DIR)
+  removeDirs: lock.createdDirs.filter((dir) => dir !== STATE_DIR).toSorted((a, b) => b.split("/").length - a.split("/").length)
 });
 var applyItem = (project, item) => {
   if (item.action === "delete") {

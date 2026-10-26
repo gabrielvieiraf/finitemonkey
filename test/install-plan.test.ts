@@ -1,37 +1,19 @@
 import assert from "node:assert/strict";
-import { join } from "node:path";
 import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import { ExitCode } from "../src/exit-codes.js";
-import { CONFIG_FILE, LOCK_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../src/install/layout.js";
+import {
+  CONFIG_FILE,
+  LOCK_FILE,
+  SETTINGS_FILE,
+  VENDOR_BIN,
+  VENDOR_PACKAGE,
+  VERIFY_SKILL,
+} from "../src/install/layout.js";
+import { actions, at, FAKE_BUNDLE, repo, ROOT, run } from "./install-support.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, cli, cliJson, fakeRuntime, field, found, parseBody, stdinFrom } from "./support.js";
-
-const ROOT = toAbsolutePath("/home/ana/project");
-const at = (relative: string): string => join(ROOT, relative);
-
-const FAKE_BUNDLE = "#!/usr/bin/env node\nconsole.log('finitemonkey');\n";
-
-const repo = (files: Readonly<Record<string, string>> = {}): ReturnType<typeof memoryFs> =>
-  memoryFs(
-    { [BUNDLE]: FAKE_BUNDLE, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
-    [at(".git")],
-  );
-
-const run = (fs: ReturnType<typeof memoryFs>, argv: readonly string[], version?: string) =>
-  cliJson(argv, {
-    cwd: ROOT,
-    runtime: fakeRuntime({ fs, tools: { claude: found("2.1.300 (Claude Code)") } }),
-    env: {},
-    ...(version === undefined ? {} : { version }),
-  });
-
-const actions = (body: unknown): Readonly<Record<string, unknown>> => {
-  const list = field(body, "data", "actions");
-  const items: readonly unknown[] = Array.isArray(list) ? list : [];
-  return Object.fromEntries(items.map((item) => [String(field(item, "path")), field(item, "action")]));
-};
+import { BUNDLE, cli, cliJson, fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 
 const settingsOf = (fs: ReturnType<typeof memoryFs>): unknown => parseBody(fs.read(at(SETTINGS_FILE)) ?? "{}");
 
@@ -122,6 +104,7 @@ describe("init writes only when asked", () => {
       [SETTINGS_FILE]: "create",
       ".gitignore": "merge",
       [CONFIG_FILE]: "create",
+      [VERIFY_SKILL]: "create",
       [VENDOR_BIN]: "create",
       [VENDOR_PACKAGE]: "create",
     });
@@ -263,7 +246,7 @@ describe("a teammate who clones an installed repository", () => {
     const first = repo();
     await run(first, ["init", "--yes"]);
     const committed = Object.fromEntries(
-      [SETTINGS_FILE, ".gitignore", CONFIG_FILE, VENDOR_BIN, VENDOR_PACKAGE].map((path) => [
+      [SETTINGS_FILE, ".gitignore", CONFIG_FILE, VERIFY_SKILL, VENDOR_BIN, VENDOR_PACKAGE].map((path) => [
         path,
         first.read(at(path)) ?? "",
       ]),

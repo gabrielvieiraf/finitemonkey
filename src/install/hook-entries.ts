@@ -28,7 +28,7 @@ export const VENDORED_BIN = `\${CLAUDE_PROJECT_DIR}/${VENDOR_BIN}`;
 
 export type HookHandlerJson = JsonObject;
 
-const isScript = (path: string): boolean => /\.(c|m)?js$/i.test(path);
+export const isScript = (path: string): boolean => /\.(c|m)?js$/i.test(path);
 
 const execForm = (runner: Runner, event: HookEvent): { command: string; args: readonly string[] } => {
   if (runner.kind === "local") return { command: "node", args: [PROJECT_BIN, "hook", event] };
