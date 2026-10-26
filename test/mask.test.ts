@@ -7,7 +7,7 @@ import { type CommandResult, success } from "../src/core/result.js";
 import { ExitCode } from "../src/exit-codes.js";
 import { maskDeep, maskText } from "../src/mask/mask.js";
 import { SAMPLES } from "./secret-samples.js";
-import { cli, stdinFrom } from "./support.js";
+import { cli, reasonText, stdinFrom } from "./support.js";
 
 const PLANTED = [SAMPLES.githubPat, SAMPLES.awsAccessKey, SAMPLES.anthropic, SAMPLES.privateKey, SAMPLES.jwt] as const;
 
@@ -79,8 +79,8 @@ describe("every CLI printer goes through the masker", () => {
       tool_input: { file_path: "/home/ana/project/src/config.ts", content: `export const t = "${SAMPLES.githubPat}";` },
     });
     const run = await cli(["hook", "PreToolUse"], { stdin: stdinFrom(payload) });
-    assert.equal(run.code, 2);
-    assert.match(run.stderr, /github-pat/);
+    assert.equal(run.code, 0);
+    assert.match(reasonText(run), /github-pat/);
     assert.deepEqual(leaks(`${run.stdout}${run.stderr}`), []);
   });
 });

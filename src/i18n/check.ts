@@ -3,7 +3,16 @@ import { type Lang, LANGUAGES, SOURCE_LANG } from "./languages.js";
 import { choicesOf, requiredPluralBranches } from "./message.js";
 import { placeholdersOf } from "./translate.js";
 
-export const PROBLEM_KINDS = ["missing", "extra", "placeholder", "plural", "empty", "not_string", "status"] as const;
+export const PROBLEM_KINDS = [
+  "missing",
+  "extra",
+  "placeholder",
+  "plural",
+  "empty",
+  "not_string",
+  "status",
+  "release_hint",
+] as const;
 
 export const REVIEW_STATUSES = ["machine", "reviewed"] as const;
 
@@ -92,14 +101,47 @@ const sourceProblems = (catalog: JsonObject): CatalogProblem[] =>
       return typeof value === "string" ? pluralProblems(SOURCE_LANG, key, value, value) : [];
     });
 
+export const MODEL_FACING = /\.(claim|requires|not)$|^gate\.tests\.|^reason\.label\./;
+
+const RELEASE_HINTS: readonly RegExp[] = [
+  /--yes\b/,
+  /\b(finitemonkey|fm)\b[^\n]{0,20}\b(allow|off|on|trust|approve)\b/i,
+  /\ballow\s+(bypass|tests|self|config)\b/i,
+  /\bFINITEMONKEY_[A-Z_]+/,
+  /\b[A-Z][A-Z0-9_]{2,}=/,
+];
+
+export const releaseHints = (text: string): readonly string[] =>
+  RELEASE_HINTS.flatMap((pattern) => {
+    const match = pattern.exec(text);
+    return match === null ? [] : [match[0]];
+  });
+
+const hintProblems = (lang: Lang, catalog: JsonObject): CatalogProblem[] =>
+  Object.keys(catalog)
+    .filter((key) => MODEL_FACING.test(key))
+    .sort()
+    .flatMap((key): CatalogProblem[] => {
+      const value = catalog[key];
+      const found = typeof value === "string" ? releaseHints(value) : [];
+      return found.length === 0 ? [] : [{ lang, key, kind: "release_hint", actual: found }];
+    });
+
 export const checkCatalogs = (input: RawCatalogs, review?: RawReview): CatalogReport => {
   const reference = input[SOURCE_LANG];
   const problems = LANGUAGES.flatMap((lang) => {
-    if (lang === SOURCE_LANG) return [...valueProblems(lang, input[lang], reference), ...sourceProblems(reference)];
+    if (lang === SOURCE_LANG) {
+      return [
+        ...valueProblems(lang, input[lang], reference),
+        ...sourceProblems(reference),
+        ...hintProblems(lang, reference),
+      ];
+    }
     const statuses = review?.[lang];
     return [
       ...valueProblems(lang, input[lang], reference),
       ...parityProblems(lang, input[lang], reference),
+      ...hintProblems(lang, input[lang]),
       ...(review === undefined ? [] : statusProblems(lang, input[lang], statuses ?? {})),
     ];
   });

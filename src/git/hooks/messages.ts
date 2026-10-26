@@ -1,10 +1,10 @@
-import type { MessageKey } from "../../i18n/catalogs.js";
+import { modelReason, type ReasonBase } from "../../hooks/reason.js";
 import type { Translate } from "../../i18n/translate.js";
 import type { GuardOutcome } from "../guard.js";
 import type { ForeignFile } from "../ownership.js";
 import type { GitBlockRule } from "../verdict.js";
 
-const RULE_KEYS: Readonly<Record<GitBlockRule, MessageKey>> = {
+const RULE_KEYS: Readonly<Record<GitBlockRule, ReasonBase>> = {
   "force-push": "git.block.force_push",
   "lease-not-own": "git.block.lease_not_own",
   "push-delete": "git.block.push_delete",
@@ -26,7 +26,7 @@ const RULE_KEYS: Readonly<Record<GitBlockRule, MessageKey>> = {
 const MAX_FILES = 8;
 
 export const ruleMessage = (t: Translate, rule: GitBlockRule, command: string, subject: string): string =>
-  t(RULE_KEYS[rule], { command, subject: subject === "" ? command : subject });
+  modelReason(t, RULE_KEYS[rule], { command, subject: subject === "" ? command : subject });
 
 export const fileList = (items: readonly string[]): string => {
   const head = items.slice(0, MAX_FILES).join(", ");
@@ -41,12 +41,12 @@ export const outcomeMessage = (t: Translate, outcome: GuardOutcome): string | un
     case "block":
       return ruleMessage(t, outcome.rule, outcome.command, outcome.subject);
     case "foreign":
-      return t("git.block.foreign", {
+      return modelReason(t, "git.block.foreign", {
         command: outcome.command,
         files: fileList(outcome.files.map((file) => foreignLabel(t, file))),
       });
     case "unknown":
-      return t("git.block.unknown", { command: outcome.command });
+      return modelReason(t, "git.block.unknown", { command: outcome.command });
     case "pass":
     case "snapshot":
       return undefined;

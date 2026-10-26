@@ -12,6 +12,7 @@ import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
+import { capReason } from "./reason.js";
 
 export interface HookInput {
   readonly event: HookEvent;
@@ -27,6 +28,7 @@ export type HookDecision =
   | {
       readonly kind: "block";
       readonly reason: string;
+      readonly human?: string;
       readonly output?: JsonObject;
       readonly persistent?: boolean;
     };
@@ -69,11 +71,24 @@ export const mergeOutputs = (left: JsonObject, right: JsonObject | undefined): J
   return merged;
 };
 
+const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
+  if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
+  const reason = capReason(decision.reason);
+  return {
+    ...decision,
+    reason,
+    output: {
+      hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
+      systemMessage: `finitemonkey: ${decision.human ?? input.t("reason.human.generic")}`,
+    },
+  };
+};
+
 export const composeDecisions = async (input: HookInput, handlers: readonly HookHandler[]): Promise<HookDecision> => {
   let output: JsonObject = {};
   for (const handler of handlers) {
     const decision = await handler(input);
-    if (decision.kind === "block") return decision;
+    if (decision.kind === "block") return shaped(input, decision);
     output = mergeOutputs(output, decision.output);
   }
   return { kind: "allow", output };

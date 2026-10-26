@@ -1,5 +1,6 @@
 import { toAbsolutePath } from "../../core/brand.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
+import { modelReason } from "../../hooks/reason.js";
 import { PROD_PROGRAMS, type ProdDecision, prodGuard, recordEvidence } from "../../prod/guard.js";
 import { toolName } from "../../secrets/guards/tool-input.js";
 import { dialectOf, normalizeCommand } from "../../shell/normalize.js";
@@ -33,7 +34,8 @@ const snapshotsOf = (input: HookInput, owner: string, pending: readonly Snapshot
     if (!taken.ok) {
       return {
         kind: "block",
-        reason: input.t("git.block.snapshot_failed", { command: item.command, detail: taken.error }),
+        reason: modelReason(input.t, "git.block.snapshot_failed", { command: item.command, detail: taken.error }),
+        human: input.t("git.block.human"),
       };
     }
     done.set(item.repo.root, input.t("git.snapshot.context", { command: item.command, ref: taken.value.ref }));
@@ -45,6 +47,7 @@ const snapshotsOf = (input: HookInput, owner: string, pending: readonly Snapshot
 
 interface Review {
   readonly blocked: string | undefined;
+  readonly human?: "git.block.human" | "prod.block.human";
   readonly snapshots: readonly SnapshotOutcome[];
   readonly reads: readonly ProdDecision[];
 }
@@ -58,13 +61,13 @@ const review = (input: HookInput, commands: readonly ShellCommand[], owner: stri
   const chain = { branch: undefined };
   for (const command of commands) {
     const removal = rmOutcome(input, command, worktrees);
-    if (removal !== undefined) return { blocked: removal, snapshots, reads };
+    if (removal !== undefined) return { blocked: removal, human: "git.block.human", snapshots, reads };
     const decision = PROD_PROGRAMS.has(command.program) ? prod().decide(command) : undefined;
-    if (decision?.kind === "block") return { blocked: decision.reason, snapshots, reads };
+    if (decision?.kind === "block") return { blocked: decision.reason, human: "prod.block.human", snapshots, reads };
     if (decision !== undefined) reads.push(decision);
     for (const outcome of guardGitCommand({ runtime: input.runtime, cwd: input.cwd, owner, chain }, command)) {
       const message = outcomeMessage(input.t, outcome);
-      if (message !== undefined) return { blocked: message, snapshots, reads };
+      if (message !== undefined) return { blocked: message, human: "git.block.human", snapshots, reads };
       if (outcome.kind === "snapshot") snapshots.push(outcome);
     }
   }
@@ -78,7 +81,9 @@ export const gitPreToolUse: HookHandler = (input) => {
   if (commands.length === 0) return ALLOW;
   const owner = ownerOf(input.payload);
   const result = review(input, commands, owner);
-  if (result.blocked !== undefined) return { kind: "block", reason: result.blocked };
+  if (result.blocked !== undefined) {
+    return { kind: "block", reason: result.blocked, human: input.t(result.human ?? "git.block.human") };
+  }
   if (result.reads.length > 0) {
     recordEvidence(
       input.runtime,

@@ -135,8 +135,9 @@ describe("hooks accept CRLF input", () => {
           USERPROFILE: repoDir.root,
         },
       });
-      assert.equal(run.status, 2, run.stdout + run.stderr);
-      assert.match(run.stderr, /--force/);
+      assert.equal(run.status, 0, run.stdout + run.stderr);
+      assert.match(run.stdout, /"permissionDecision":"deny"/);
+      assert.match(run.stdout, /--force/);
     } finally {
       repoDir.dispose();
     }

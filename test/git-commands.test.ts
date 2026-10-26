@@ -132,7 +132,7 @@ describe("merge verify command", () => {
 });
 
 describe("hooks through the CLI", () => {
-  it("PreToolUse blocks git push --force with exit 2", () => {
+  it("PreToolUse denies git push --force with a JSON decision", () => {
     const repo = tempRepo();
     try {
       const payload = JSON.stringify({
@@ -142,8 +142,9 @@ describe("hooks through the CLI", () => {
         tool_input: { command: "git push --force origin main" },
       });
       const run = fm(repo.root, ["hook", "PreToolUse"], payload);
-      assert.equal(run.code, 2, run.stdout);
-      assert.match(run.stderr, /--force/);
+      assert.equal(run.code, 0, run.stdout);
+      assert.match(run.stdout, /"permissionDecision":"deny"/);
+      assert.match(run.stdout, /--force/);
     } finally {
       repo.dispose();
     }
@@ -173,8 +174,8 @@ describe("hooks through the CLI", () => {
           tool_name: "Bash",
           tool_input: { command: "git rebase origin/main" },
         });
-      assert.equal(fm(repo.root, ["hook", "PreToolUse"], payload("s1"), author).code, 0);
-      assert.equal(fm(repo.root, ["hook", "PreToolUse"], payload("s2")).code, 2);
+      assert.doesNotMatch(fm(repo.root, ["hook", "PreToolUse"], payload("s1"), author).stdout, /"deny"/);
+      assert.match(fm(repo.root, ["hook", "PreToolUse"], payload("s2")).stdout, /"permissionDecision":"deny"/);
     } finally {
       repo.dispose();
       rmSync(remote, { recursive: true, force: true });

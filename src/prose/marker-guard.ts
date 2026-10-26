@@ -4,6 +4,7 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord, type JsonObject, optionalString } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
+import { modelReason } from "../hooks/reason.js";
 import { toolInput, toolName } from "../secrets/guards/tool-input.js";
 import { ALLOW_COMMENT, markerCount } from "./marker.js";
 import { shellWords } from "./shell-words.js";
@@ -56,7 +57,8 @@ const shown = (cwd: AbsolutePath, file: string): string => {
 
 const blocked = (input: HookInput, file: string): HookDecision => ({
   kind: "block",
-  reason: input.t("prose.block.marker", { marker: ALLOW_COMMENT, file }),
+  reason: modelReason(input.t, "prose.block.marker", { marker: ALLOW_COMMENT, file }),
+  human: input.t("prose.block.human"),
 });
 
 export const proseMarkerGuard: HookHandler = (input) => {
@@ -64,7 +66,11 @@ export const proseMarkerGuard: HookHandler = (input) => {
   const inputs = toolInput(input.payload);
   if (SHELLS.has(tool)) {
     if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW;
-    return { kind: "block", reason: input.t("prose.block.marker_shell", { marker: ALLOW_COMMENT }) };
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "prose.block.marker_shell", { marker: ALLOW_COMMENT }),
+      human: input.t("prose.block.human"),
+    };
   }
   const file = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path") ?? "";
   return addsMarker(input, tool, inputs, file) ? blocked(input, shown(input.cwd, file)) : ALLOW;

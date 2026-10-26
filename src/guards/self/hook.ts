@@ -1,5 +1,6 @@
 import { textField, toolInput, toolName } from "../../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
+import { modelReason } from "../../hooks/reason.js";
 import { deny, FILE_TOOLS, grantFor, guardRoot, SHELL_TOOLS } from "../context.js";
 import { bashSelfTargets, type SelfKind, selfTarget } from "./protected.js";
 
@@ -21,10 +22,13 @@ export const selfGuard: HookHandler = (input): HookDecision => {
   const { t } = input;
   if (store !== undefined)
     return deny(
-      t("gate.guard.self.allow_store", { file: store.path }),
+      modelReason(t, "gate.guard.self.allow_store", { file: store.path }),
       t("gate.guard.self.human", { file: store.path }),
     );
   const first = found[0];
   if (first === undefined || grantFor(input, "self") !== undefined) return { kind: "allow" };
-  return deny(t("gate.guard.self.policy", { file: first.path }), t("gate.guard.self.human", { file: first.path }));
+  return deny(
+    modelReason(t, "gate.guard.self.policy", { file: first.path }),
+    t("gate.guard.self.human", { file: first.path }),
+  );
 };

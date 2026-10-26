@@ -2,6 +2,7 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { nowMs } from "../core/clock.js";
 import type { JsonObject } from "../core/parsed.js";
 import type { HookDecision, HookInput } from "../hooks/handlers.js";
+import { capReason } from "../hooks/reason.js";
 import { fmPaths } from "../task/paths.js";
 import { activeGrant, type Grant } from "./release/grants.js";
 
@@ -16,7 +17,8 @@ export const grantFor = (input: HookInput, guard: string): Grant | undefined => 
   return activeGrant(runtime, fmPaths(guardRoot(input)), guard, nowMs(runtime), input.payload.sessionId);
 };
 
-export const deny = (reason: string, humanText: string): HookDecision => {
+export const deny = (fullReason: string, humanText: string): HookDecision => {
+  const reason = capReason(fullReason);
   const output: JsonObject = {
     hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
     systemMessage: `finitemonkey: ${humanText}`,

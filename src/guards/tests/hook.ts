@@ -4,6 +4,7 @@ import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
 import { toPosixPath } from "../../core/posix-path.js";
 import { applyEdits, editsOf, textField, toolInput, toolName } from "../../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
+import { modelReason } from "../../hooks/reason.js";
 import { fmPaths } from "../../task/paths.js";
 import { readTrust } from "../../task/state.js";
 import { deny, FILE_TOOLS, grantFor, guardRoot, SHELL_TOOLS } from "../context.js";
@@ -65,5 +66,5 @@ export const testsGuard: HookHandler = (input): HookDecision => {
   const { t } = input;
   const params = { file: first.path, before: first.before ?? 0, after: first.after ?? 0 };
   const reason = SHELL_TOOLS.has(tool) ? t("gate.guard.tests.shell", params) : t(`gate.tests.${first.kind}`, params);
-  return deny(t("gate.guard.tests.model", { detail: reason }), t("gate.guard.tests.human", { detail: reason }));
+  return deny(modelReason(t, "gate.guard.tests", { detail: reason }), t("gate.guard.tests.human", { detail: reason }));
 };

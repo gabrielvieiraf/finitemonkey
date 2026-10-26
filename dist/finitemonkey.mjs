@@ -3141,6 +3141,36 @@ var applyEdits = (before, edits) => edits.reduce(
   before
 );
 
+// src/hooks/reason.ts
+var REASON_LIMIT = 1e4;
+var familyOf = (base) => {
+  const families = [
+    "gate.guard.bypass",
+    "gate.guard.self",
+    "gate.guard.tests",
+    "secrets.block",
+    "git.block",
+    "prod.block",
+    "prose.block"
+  ];
+  const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
+  if (found === void 0) throw new Error(`no reason family for ${base}`);
+  return found;
+};
+var capReason = (text7) => text7.length <= REASON_LIMIT ? text7 : `${text7.slice(0, REASON_LIMIT - 1)}…`;
+var modelReason = (t, base, params2 = {}) => {
+  const claim = `${base}.claim`;
+  const requires = `${base}.requires`;
+  const not = `${familyOf(base)}.not`;
+  return capReason(
+    [
+      `${t("reason.label.blocked")}: ${t(claim, params2)}.`,
+      `${t("reason.label.requires")}: ${t(requires, params2)}.`,
+      `${t("reason.label.not")}: ${t(not, params2)}.`
+    ].join("\n")
+  );
+};
+
 // src/core/clock.ts
 var nowMs = (runtime) => Date.parse(runtime.now());
 
@@ -3254,7 +3284,8 @@ var grantFor = (input, guard) => {
   const { runtime } = input;
   return activeGrant(runtime, fmPaths(guardRoot(input)), guard, nowMs(runtime), input.payload.sessionId);
 };
-var deny = (reason, humanText) => {
+var deny = (fullReason, humanText) => {
+  const reason = capReason(fullReason);
   const output = {
     hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
     systemMessage: `finitemonkey: ${humanText}`
@@ -4044,7 +4075,7 @@ var bypassGuard = (input) => {
   if (first === void 0 || grantFor(input, "bypass") !== void 0) return { kind: "allow" };
   const { t } = input;
   return deny(
-    t(`gate.guard.bypass.${first.kind}`, { detail: first.detail }),
+    modelReason(t, `gate.guard.bypass.${first.kind}`, { detail: first.detail }),
     t("gate.guard.bypass.human", { detail: first.detail })
   );
 };
@@ -4127,12 +4158,15 @@ var selfGuard = (input) => {
   const { t } = input;
   if (store !== void 0)
     return deny(
-      t("gate.guard.self.allow_store", { file: store.path }),
+      modelReason(t, "gate.guard.self.allow_store", { file: store.path }),
       t("gate.guard.self.human", { file: store.path })
     );
   const first = found[0];
   if (first === void 0 || grantFor(input, "self") !== void 0) return { kind: "allow" };
-  return deny(t("gate.guard.self.policy", { file: first.path }), t("gate.guard.self.human", { file: first.path }));
+  return deny(
+    modelReason(t, "gate.guard.self.policy", { file: first.path }),
+    t("gate.guard.self.human", { file: first.path })
+  );
 };
 
 // src/guards/tests/hook.ts
@@ -4342,7 +4376,7 @@ var testsGuard = (input) => {
   const { t } = input;
   const params2 = { file: first.path, before: first.before ?? 0, after: first.after ?? 0 };
   const reason = SHELL_TOOLS.has(tool) ? t("gate.guard.tests.shell", params2) : t(`gate.tests.${first.kind}`, params2);
-  return deny(t("gate.guard.tests.model", { detail: reason }), t("gate.guard.tests.human", { detail: reason }));
+  return deny(modelReason(t, "gate.guard.tests", { detail: reason }), t("gate.guard.tests.human", { detail: reason }));
 };
 
 // src/look/reads.ts
@@ -5802,6 +5836,7 @@ var en_default = {
   "i18n.problem.placeholder": "placeholders differ (expected: {expected}; found: {actual})",
   "i18n.problem.plural": "plural branches missing (needs: {expected}; found: {actual})",
   "i18n.problem.status": "no review status (use: {expected})",
+  "i18n.problem.release_hint": "release instructions in text the model reads ({actual}); move them to a key the person reads",
   "i18n.problem.empty": "empty text",
   "i18n.problem.not_string": "value is not text",
   "doctor.title": "finitemonkey doctor ({version})",
@@ -5928,12 +5963,20 @@ var en_default = {
   "secrets.where.line": "line {line}, column {column}",
   "secrets.where.file": "{file}:{line}:{column}",
   "secrets.where.new_text": "{file} (line {line} of the new text)",
-  "secrets.block.write": "blocked: the new text for {file} has a credential ({found}). Nothing was written. Keep the value in .env (outside git) and read it by its variable name. If the key is real, treat it as exposed and rotate it.",
-  "secrets.block.bash": "blocked: this command has a credential ({found}) and did not run. Read the value from an environment variable instead of writing it in the command. If the key is real, treat it as exposed and rotate it.",
-  "secrets.block.commit": "blocked: the staged changes have a credential ({found}), so the commit did not run. Remove it from the staged files, keep it in .env (outside git) and rotate it if it is real.",
-  "secrets.block.read": "blocked: {target} holds secrets, and reading it would put their values in the conversation. Ask the person for the variable names, or read .env.example.",
-  "secrets.block.env_dump": 'blocked: `{command}` prints every environment variable, secrets included. Print only the variable you need by name, or check that it exists with `test -n "$NAME"`.',
-  "secrets.block.person_only": "blocked: `{command}` is a decision for the person, not the model. Ask the person to run it in their own terminal.",
+  "secrets.block.write.claim": "the new text for {file} has a credential ({found})",
+  "secrets.block.write.requires": "Nothing was written. Keep the value in .env (outside git) and read it by its variable name. If the key is real, treat it as exposed and rotate it",
+  "secrets.block.not": "an encoded, split, commented or renamed copy of the same value",
+  "secrets.block.human": "Kept a credential out of a file, command or commit.",
+  "secrets.block.bash.claim": "this command has a credential ({found}) and did not run",
+  "secrets.block.bash.requires": "Read the value from an environment variable instead of writing it in the command. If the key is real, treat it as exposed and rotate it",
+  "secrets.block.commit.claim": "the staged changes have a credential ({found}), so the commit did not run",
+  "secrets.block.commit.requires": "Remove it from the staged files, keep it in .env (outside git) and rotate it if it is real",
+  "secrets.block.read.claim": "{target} holds secrets, and reading it would put their values in the conversation",
+  "secrets.block.read.requires": "Ask the person for the variable names, or read .env.example",
+  "secrets.block.env_dump.claim": "`{command}` prints every environment variable, secrets included",
+  "secrets.block.env_dump.requires": 'Print only the variable you need by name, or check that it exists with `test -n "$NAME"`',
+  "secrets.block.person_only.claim": "`{command}` is a decision for the person, not the model",
+  "secrets.block.person_only.requires": "Ask the person to run it in their own terminal",
   "secrets.block.prompt": "your message was not sent to the model: it has a credential ({found}). If this key was pasted anywhere else, treat it as exposed and rotate it. To use it, put it in .env and tell me only the variable name. Never paste keys into the chat. Incident: {incident}.",
   "secrets.post.context": "Finite Monkey: the {tool} output contained a credential ({found}). Incident {incident} is open; rotating the key is the person's decision. Finite Monkey output never repeats the value.",
   "secrets.incident.unsaved": "not recorded ({detail})",
@@ -6126,16 +6169,27 @@ var en_default = {
   "gate.config.disabled": "Finite Monkey: this change sets disableAllHooks in {file}; it was not applied.",
   "gate.config.human": "Kept the Finite Monkey hooks in {file}. If you meant it, type on its own line: finitemonkey: allow config <reason>",
   "gate.config.released": "Config change to {file} accepted under your release.",
-  "gate.guard.bypass.no_verify": "Finite Monkey: blocked: {detail} skips the git hooks. requires: the hooks run on every commit and push.",
-  "gate.guard.bypass.hooks_path": "Finite Monkey: blocked: {detail} points git away from the project hooks. requires: core.hooksPath stays as configured.",
-  "gate.guard.bypass.hook_env": "Finite Monkey: blocked: {detail} turns hooks or guards off. requires: hooks and guards stay on.",
-  "gate.guard.bypass.fm_allow": "Finite Monkey: blocked: releases are made by the person, not by a tool call.",
-  "gate.guard.bypass.fm_pause": "Finite Monkey: blocked: only the person pauses or resumes the gate, by typing `fm off` or `fm on` as the whole prompt.",
+  "gate.guard.bypass.no_verify.claim": "{detail} skips the git hooks",
+  "gate.guard.bypass.no_verify.requires": "the hooks run on every commit and push",
+  "gate.guard.bypass.not": "the same switch through another variable, flag, alias or script",
+  "gate.guard.bypass.hooks_path.claim": "{detail} points git away from the project hooks",
+  "gate.guard.bypass.hooks_path.requires": "core.hooksPath stays as configured",
+  "gate.guard.bypass.hook_env.claim": "{detail} turns hooks or guards off",
+  "gate.guard.bypass.hook_env.requires": "hooks and guards stay on",
+  "gate.guard.bypass.fm_allow.claim": "releases are made by the person, not by a tool call",
+  "gate.guard.bypass.fm_allow.requires": "a release comes from the person typing it in the prompt",
+  "gate.guard.bypass.fm_pause.claim": "only the person pauses or resumes the gate",
+  "gate.guard.bypass.fm_pause.requires": "the gate stays on unless the person pauses it",
   "gate.guard.bypass.human": "Blocked {detail}: it would switch the safety net off. If you really want it, type on its own line: finitemonkey: allow bypass <reason>",
-  "gate.guard.self.policy": "Finite Monkey: blocked: {file} is written only by the finitemonkey executable (evidence, policy and state). requires: change it through finitemonkey commands.",
-  "gate.guard.self.allow_store": "Finite Monkey: blocked: {file} records what the person released; tools never write it.",
+  "gate.guard.self.policy.claim": "{file} is written only by the finitemonkey executable (evidence, policy and state)",
+  "gate.guard.self.policy.requires": "change it through finitemonkey commands",
+  "gate.guard.self.not": "a copy, move, redirect or script that writes the same file",
+  "gate.guard.self.allow_store.claim": "{file} records what the person released; tools never write it",
+  "gate.guard.self.allow_store.requires": "leave this file to the person",
   "gate.guard.self.human": "Kept {file} out of reach: the monkey does not grade its own homework.",
-  "gate.guard.tests.model": "Finite Monkey: blocked: {detail}. requires: make the code pass the tests as they are.",
+  "gate.guard.tests.claim": "{detail}",
+  "gate.guard.tests.requires": "make the code pass the tests as they are",
+  "gate.guard.tests.not": "a test that still runs but no longer checks the behavior",
   "gate.guard.tests.shell": "a shell command writes or deletes {file}",
   "gate.guard.tests.human": "Blocked: {detail}. Tests are the only witness we have. Fix the code, not the witness. If the change is intended, type on its own line: finitemonkey: allow tests <reason>",
   "gate.release.allowed": "Released {guard} until {until}, by your request.",
@@ -6171,9 +6225,14 @@ var en_default = {
   "prose.span": "lines {start}-{end}: {rules}",
   "prose.fix_item": "{rule}: {fix}",
   "prose.warn.command": "{target} reads as machine-written ({spans}). Rewrite it before sending. {fixes}. If it is brand text written on purpose, show the person two alternatives.",
-  "prose.block.command": "blocked: {target} reads as machine-written ({spans}), and this project's preset does not send it. {fixes}. Rewrite it and run the command again.",
-  "prose.block.unreadable": "blocked: could not read {file} to check its text ({detail}). Check the path and run the command again.",
-  "prose.block.marker": "blocked: this would add the marker {marker} to {file}, and only the person can add it. Rewrite the passage instead, or ask the person to add the marker in their own editor.",
+  "prose.block.command.claim": "{target} reads as machine-written ({spans}), and this project's preset does not send it. {fixes}",
+  "prose.block.command.requires": "Rewrite it and run the command again",
+  "prose.block.not": "the same text with a few words swapped",
+  "prose.block.human": "Held back text that reads as machine-written.",
+  "prose.block.unreadable.claim": "could not read {file} to check its text ({detail})",
+  "prose.block.unreadable.requires": "Check the path and run the command again",
+  "prose.block.marker.claim": "this would add the marker {marker} to {file}, and only the person can add it",
+  "prose.block.marker.requires": "Rewrite the passage instead, or ask the person to add the marker in their own editor",
   "prose.check.file": "{file}: {count, plural, one {# passage that reads} other {# passages that read}} as machine-written",
   "prose.check.span": "  {file}:{start}-{end} score {score}: {rules}",
   "prose.check.fix": "    do instead: {fix}",
@@ -6182,7 +6241,8 @@ var en_default = {
   "prose.error.found": "{count, plural, one {# passage reads} other {# passages read}} as machine-written",
   "prose.error.no_input": "nothing to check: pass files, --stdin, or run it inside a git repository to check the changed Markdown files",
   "prose.error.unreadable": "could not read {file} ({detail})",
-  "prose.block.marker_shell": "blocked: this command writes the marker {marker}, and only the person can add it. Rewrite the passage instead, or ask the person to add the marker in their own editor.",
+  "prose.block.marker_shell.claim": "this command writes the marker {marker}, and only the person can add it",
+  "prose.block.marker_shell.requires": "Rewrite the passage instead, or ask the person to add the marker in their own editor",
   "prose.rule.requester-reference": "state the technical reason for the change; leave out who asked for it",
   "prose.rule.person-as-reason": "name the property of the change instead of a person",
   "prose.rule.origin-project": "describe the technical property you copied instead of naming where it came from",
@@ -6197,30 +6257,55 @@ var en_default = {
   "git.command.undo": "List the snapshots or restore one, into a new worktree by default",
   "git.command.rescue": "List lost commits from the reflog and fsck, and restore one into a new branch",
   "git.command.merge_verify": "Check that a merge kept every change from both sides",
-  "git.block.force_push": "blocked: `{command}` rewrites the remote branch and can erase commits someone else pushed. Fetch, integrate the remote commits and push normally. On your own branch after a rebase, use `git push --force-with-lease=<branch>:<expected sha> --force-if-includes`.",
-  "git.block.lease_not_own": "blocked: `{command}` forces a push onto {subject}, which is not the branch you are working on or is protected. A forced push is only for your own branch, with an explicit lease.",
-  "git.block.push_delete": "blocked: `{command}` deletes {subject} on the remote. Deleting a remote branch is for the person to do.",
-  "git.block.push_mirror": "blocked: `{command}` overwrites every remote ref and would publish the backup refs. Push the branch you need by name.",
-  "git.block.clean": "blocked: `{command}` deletes untracked files for good; they are in no commit. Run `git clean -n` to see the list, then move what should go into .finitemonkey/trash/ or ask the person.",
-  "git.block.stash_drop": "blocked: `{command}` throws away stashed work that exists nowhere else. Apply it with `git stash apply` or leave it; dropping a stash is for the person to do.",
-  "git.block.branch_unmerged": "blocked: `{command}` deletes {subject}, whose commits are neither in its upstream nor in the default branch. Push or merge it first; `git branch -d` works once it is merged.",
-  "git.block.worktree_force": "blocked: `{command}` removes a worktree even with uncommitted changes. Commit or archive its work first; plain `git worktree remove` refuses a dirty tree on purpose.",
-  "git.block.rm_worktree": "blocked: `{command}` deletes {subject}, which is a git worktree or repository; uncommitted work in it would be lost. Commit or archive it, then use `git worktree remove` without --force.",
-  "git.block.rm_root": "blocked: `{command}` recursively deletes {subject}, a root or home directory. Name the exact folder to remove.",
-  "git.block.rebase_protected": "blocked: `{command}` rewrites {subject}, a protected branch. Change it through a pull request.",
-  "git.block.rebase_shared": "blocked: `{command}` rewrites {subject}, which already has someone else's commits on the remote. Merge the base into it instead of rebasing.",
-  "git.block.merge_side": "blocked: `{command}` resolves conflicts by taking one side whole ({subject}), which silently drops the other side's changes. Resolve each conflict by hand and run `finitemonkey merge verify` before committing.",
-  "git.block.history": "blocked: `{command}` deletes history or reflog entries that undo and rescue depend on. Rewriting history is for the person to do.",
-  "git.block.protected_commit": "blocked: `{command}` would commit straight onto {subject}, a protected branch. Create a branch with `git switch -c <type>/<name>` and open a pull request.",
-  "git.block.protected_push": "blocked: `{command}` pushes to {subject}, a protected branch. Push your own branch and open a pull request.",
-  "git.block.foreign": "blocked: `{command}` would discard changes this session did not make: {files}. Undo only your own lines with Edit.",
+  "git.block.force_push.claim": "`{command}` rewrites the remote branch and can erase commits someone else pushed",
+  "git.block.force_push.requires": "Fetch, integrate the remote commits and push normally. On your own branch after a rebase, use `git push --force-with-lease=<branch>:<expected sha> --force-if-includes`",
+  "git.block.not": "the same effect through another git command, an alias, a script or a nested shell",
+  "git.block.human": "Stopped a git command that could lose work or rewrite shared history.",
+  "git.block.lease_not_own.claim": "`{command}` forces a push onto {subject}, which is not the branch you are working on or is protected",
+  "git.block.lease_not_own.requires": "A forced push is only for your own branch, with an explicit lease",
+  "git.block.push_delete.claim": "`{command}` deletes {subject} on the remote",
+  "git.block.push_delete.requires": "Deleting a remote branch is for the person to do",
+  "git.block.push_mirror.claim": "`{command}` overwrites every remote ref and would publish the backup refs",
+  "git.block.push_mirror.requires": "Push the branch you need by name",
+  "git.block.clean.claim": "`{command}` deletes untracked files for good; they are in no commit",
+  "git.block.clean.requires": "Run `git clean -n` to see the list, then move what should go into .finitemonkey/trash/ or ask the person",
+  "git.block.stash_drop.claim": "`{command}` throws away stashed work that exists nowhere else",
+  "git.block.stash_drop.requires": "Apply it with `git stash apply` or leave it; dropping a stash is for the person to do",
+  "git.block.branch_unmerged.claim": "`{command}` deletes {subject}, whose commits are neither in its upstream nor in the default branch",
+  "git.block.branch_unmerged.requires": "Push or merge it first; `git branch -d` works once it is merged",
+  "git.block.worktree_force.claim": "`{command}` removes a worktree even with uncommitted changes",
+  "git.block.worktree_force.requires": "Commit or archive its work first; plain `git worktree remove` refuses a dirty tree on purpose",
+  "git.block.rm_worktree.claim": "`{command}` deletes {subject}, which is a git worktree or repository; uncommitted work in it would be lost",
+  "git.block.rm_worktree.requires": "Commit or archive it, then use `git worktree remove` without --force",
+  "git.block.rm_root.claim": "`{command}` recursively deletes {subject}, a root or home directory",
+  "git.block.rm_root.requires": "Name the exact folder to remove",
+  "git.block.rebase_protected.claim": "`{command}` rewrites {subject}, a protected branch",
+  "git.block.rebase_protected.requires": "Change it through a pull request",
+  "git.block.rebase_shared.claim": "`{command}` rewrites {subject}, which already has someone else's commits on the remote",
+  "git.block.rebase_shared.requires": "Merge the base into it instead of rebasing",
+  "git.block.merge_side.claim": "`{command}` resolves conflicts by taking one side whole ({subject}), which silently drops the other side's changes",
+  "git.block.merge_side.requires": "Resolve each conflict by hand and run `finitemonkey merge verify` before committing",
+  "git.block.history.claim": "`{command}` deletes history or reflog entries that undo and rescue depend on",
+  "git.block.history.requires": "Rewriting history is for the person to do",
+  "git.block.protected_commit.claim": "`{command}` would commit straight onto {subject}, a protected branch",
+  "git.block.protected_commit.requires": "Create a branch with `git switch -c <type>/<name>` and open a pull request",
+  "git.block.protected_push.claim": "`{command}` pushes to {subject}, a protected branch",
+  "git.block.protected_push.requires": "Push your own branch and open a pull request",
+  "git.block.foreign.claim": "`{command}` would discard changes this session did not make: {files}",
+  "git.block.foreign.requires": "Undo only your own lines with Edit",
   "git.foreign.before": "{path} (had changes before you started)",
   "git.foreign.other": "{path} (changed outside this session)",
-  "git.block.unknown": "blocked: `{command}` discards changes, and `git status` failed, so there is no telling whose they are. Fix the repository and try again.",
-  "git.block.snapshot_failed": "blocked: `{command}` is risky and the safety snapshot before it failed ({detail}), so it did not run. Fix the cause and try again.",
+  "git.block.unknown.claim": "`{command}` discards changes, and `git status` failed, so there is no telling whose they are",
+  "git.block.unknown.requires": "Fix the repository and try again",
+  "git.block.snapshot_failed.claim": "`{command}` is risky and the safety snapshot before it failed ({detail}), so it did not run",
+  "git.block.snapshot_failed.requires": "Fix the cause and try again",
   "git.snapshot.context": "finitemonkey saved a snapshot before `{command}`: {ref}. `finitemonkey undo {ref}` brings the previous state back.",
-  "prod.block.effect": "blocked: `{command}` changes production ({target}) by hand, and a server edited by hand drifts from the repository. Change it through the deploy path ({deploy}): commit, open a pull request and let the deploy run.",
-  "prod.block.interactive": "blocked: `{command}` opens an interactive session on production ({target}), where nothing typed can be checked first. Run one read-only command at a time, such as `ssh {target} docker ps`.",
+  "prod.block.effect.claim": "`{command}` changes production ({target}) by hand, and a server edited by hand drifts from the repository",
+  "prod.block.effect.requires": "Change it through the deploy path ({deploy}): commit, open a pull request and let the deploy run",
+  "prod.block.not": "the same change through another tool, a script or a nested shell",
+  "prod.block.human": "Stopped a hand edit to production; changes go through the deploy.",
+  "prod.block.interactive.claim": "`{command}` opens an interactive session on production ({target}), where nothing typed can be checked first",
+  "prod.block.interactive.requires": "Run one read-only command at a time, such as `ssh {target} docker ps`",
   "prod.deploy.unknown": "the project's declared deploy",
   "git.snapshot.done": "snapshot saved: {ref} ({commit}). `finitemonkey undo {ref}` restores it.",
   "git.undo.list_title": "{count, plural, one {# snapshot:} other {# snapshots, newest first:}}",
@@ -6347,7 +6432,11 @@ var en_default = {
   "gate.look.allow_ignored": "exception ignored, its decision is not recorded: {entry}",
   "gate.look.unopened": "{count, plural, one {# capture} other {# captures}} not opened after the last edit to a screen file",
   "gate.look.open": "open with Read: {file}",
-  "gate.look.ok": "{count, plural, one {# capture} other {# captures}}, no failure, all opened"
+  "gate.look.ok": "{count, plural, one {# capture} other {# captures}}, no failure, all opened",
+  "reason.label.blocked": "blocked",
+  "reason.label.requires": "requires",
+  "reason.label.not": "does not count",
+  "reason.human.generic": "Blocked a tool call; the reason went to Claude."
 };
 
 // src/i18n/es.json
@@ -6396,6 +6485,7 @@ var es_default = {
   "i18n.problem.placeholder": "marcadores distintos (esperado: {expected}; encontrado: {actual})",
   "i18n.problem.plural": "faltan ramas de plural (necesita: {expected}; encontradas: {actual})",
   "i18n.problem.status": "sin estado de revisión (use: {expected})",
+  "i18n.problem.release_hint": "instrucción de liberación en texto que lee el modelo ({actual}); muévela a una clave que lee la persona",
   "i18n.problem.empty": "texto vacío",
   "i18n.problem.not_string": "el valor no es texto",
   "doctor.title": "finitemonkey doctor ({version})",
@@ -6522,12 +6612,20 @@ var es_default = {
   "secrets.where.line": "línea {line}, columna {column}",
   "secrets.where.file": "{file}:{line}:{column}",
   "secrets.where.new_text": "{file} (línea {line} del texto nuevo)",
-  "secrets.block.write": "bloqueado: el texto nuevo de {file} tiene una credencial ({found}). No se escribió nada. Deja el valor en .env (fuera de git) y léelo por el nombre de la variable. Si la clave es real, trátala como expuesta y rótala.",
-  "secrets.block.bash": "bloqueado: este comando tiene una credencial ({found}) y no se ejecutó. Lee el valor de una variable de entorno en lugar de escribirlo en el comando. Si la clave es real, trátala como expuesta y rótala.",
-  "secrets.block.commit": "bloqueado: los cambios preparados tienen una credencial ({found}), así que el commit no se ejecutó. Quítala de los archivos preparados, déjala en .env (fuera de git) y rótala si es real.",
-  "secrets.block.read": "bloqueado: {target} guarda secretos, y leerlo pondría sus valores en la conversación. Pide a la persona los nombres de las variables, o lee .env.example.",
-  "secrets.block.env_dump": 'bloqueado: `{command}` imprime todas las variables de entorno, secretos incluidos. Imprime solo la variable que necesitas por su nombre, o comprueba que existe con `test -n "$NAME"`.',
-  "secrets.block.person_only": "bloqueado: `{command}` es una decisión de la persona, no del modelo. Pide a la persona que lo ejecute en su propia terminal.",
+  "secrets.block.write.claim": "el texto nuevo de {file} tiene una credencial ({found})",
+  "secrets.block.write.requires": "No se escribió nada. Deja el valor en .env (fuera de git) y léelo por el nombre de la variable. Si la clave es real, trátala como expuesta y rótala",
+  "secrets.block.not": "una copia codificada, partida, comentada o renombrada del mismo valor",
+  "secrets.block.human": "Mantuve una credencial fuera de un archivo, comando o commit.",
+  "secrets.block.bash.claim": "este comando tiene una credencial ({found}) y no se ejecutó",
+  "secrets.block.bash.requires": "Lee el valor de una variable de entorno en lugar de escribirlo en el comando. Si la clave es real, trátala como expuesta y rótala",
+  "secrets.block.commit.claim": "los cambios preparados tienen una credencial ({found}), así que el commit no se ejecutó",
+  "secrets.block.commit.requires": "Quítala de los archivos preparados, déjala en .env (fuera de git) y rótala si es real",
+  "secrets.block.read.claim": "{target} guarda secretos, y leerlo pondría sus valores en la conversación",
+  "secrets.block.read.requires": "Pide a la persona los nombres de las variables, o lee .env.example",
+  "secrets.block.env_dump.claim": "`{command}` imprime todas las variables de entorno, secretos incluidos",
+  "secrets.block.env_dump.requires": 'Imprime solo la variable que necesitas por su nombre, o comprueba que existe con `test -n "$NAME"`',
+  "secrets.block.person_only.claim": "`{command}` es una decisión de la persona, no del modelo",
+  "secrets.block.person_only.requires": "Pide a la persona que lo ejecute en su propia terminal",
   "secrets.block.prompt": "tu mensaje no se envió al modelo: tiene una credencial ({found}). Si esta clave se pegó en otro lugar, trátala como expuesta y rótala. Para usarla, ponla en .env y dime solo el nombre de la variable. Nunca pegues claves en el chat. Incidente: {incident}.",
   "secrets.post.context": "Finite Monkey: la salida de {tool} contenía una credencial ({found}). El incidente {incident} está abierto; rotar la clave es decisión de la persona. La salida de Finite Monkey nunca repite el valor.",
   "secrets.incident.unsaved": "no registrado ({detail})",
@@ -6720,16 +6818,27 @@ var es_default = {
   "gate.config.disabled": "Finite Monkey: este cambio activa disableAllHooks en {file}; no se aplicó.",
   "gate.config.human": "Mantuve los hooks de Finite Monkey en {file}. Si fue a propósito, escriba en una línea: finitemonkey: allow config <motivo>",
   "gate.config.released": "Cambio de config en {file} aceptado por su liberación.",
-  "gate.guard.bypass.no_verify": "Finite Monkey: bloqueado: {detail} se salta los git hooks. exige: los hooks corren en cada commit y push.",
-  "gate.guard.bypass.hooks_path": "Finite Monkey: bloqueado: {detail} desvía git de los hooks del proyecto. exige: core.hooksPath queda como está configurado.",
-  "gate.guard.bypass.hook_env": "Finite Monkey: bloqueado: {detail} apaga hooks o guardas. exige: hooks y guardas quedan encendidos.",
-  "gate.guard.bypass.fm_allow": "Finite Monkey: bloqueado: las liberaciones las hace la persona, no una llamada de herramienta.",
-  "gate.guard.bypass.fm_pause": "Finite Monkey: bloqueado: solo la persona pausa o reanuda la compuerta, escribiendo `fm off` o `fm on` como el prompt completo.",
+  "gate.guard.bypass.no_verify.claim": "{detail} se salta los git hooks",
+  "gate.guard.bypass.no_verify.requires": "los hooks corren en cada commit y push",
+  "gate.guard.bypass.not": "el mismo interruptor con otra variable, flag, alias o script",
+  "gate.guard.bypass.hooks_path.claim": "{detail} desvía git de los hooks del proyecto",
+  "gate.guard.bypass.hooks_path.requires": "core.hooksPath queda como está configurado",
+  "gate.guard.bypass.hook_env.claim": "{detail} apaga hooks o guardas",
+  "gate.guard.bypass.hook_env.requires": "hooks y guardas quedan encendidos",
+  "gate.guard.bypass.fm_allow.claim": "las liberaciones las hace la persona, no una llamada de herramienta",
+  "gate.guard.bypass.fm_allow.requires": "la liberación viene de la persona escribiéndola en el prompt",
+  "gate.guard.bypass.fm_pause.claim": "solo la persona pausa o reanuda la compuerta",
+  "gate.guard.bypass.fm_pause.requires": "la compuerta sigue activa salvo que la persona la pause",
   "gate.guard.bypass.human": "Bloqueé {detail}: apagaría la red de seguridad. Si de verdad lo quiere, escriba en una línea: finitemonkey: allow bypass <motivo>",
-  "gate.guard.self.policy": "Finite Monkey: bloqueado: {file} solo lo escribe el ejecutable finitemonkey (evidencia, política y estado). exige: cambiarlo con los comandos de finitemonkey.",
-  "gate.guard.self.allow_store": "Finite Monkey: bloqueado: {file} registra lo que la persona liberó; ninguna herramienta lo escribe.",
+  "gate.guard.self.policy.claim": "{file} solo lo escribe el ejecutable finitemonkey (evidencia, política y estado)",
+  "gate.guard.self.policy.requires": "cambiarlo con los comandos de finitemonkey",
+  "gate.guard.self.not": "una copia, movimiento, redirección o script que escribe el mismo archivo",
+  "gate.guard.self.allow_store.claim": "{file} registra lo que la persona liberó; ninguna herramienta lo escribe",
+  "gate.guard.self.allow_store.requires": "dejar este archivo a la persona",
   "gate.guard.self.human": "Dejé {file} fuera de alcance: el mono no corrige su propio examen.",
-  "gate.guard.tests.model": "Finite Monkey: bloqueado: {detail}. exige: hacer que el código pase las pruebas como están.",
+  "gate.guard.tests.claim": "{detail}",
+  "gate.guard.tests.requires": "hacer que el código pase las pruebas como están",
+  "gate.guard.tests.not": "una prueba que sigue corriendo pero ya no comprueba el comportamiento",
   "gate.guard.tests.shell": "un comando de shell escribe o borra {file}",
   "gate.guard.tests.human": "Bloqueado: {detail}. La prueba es el único testigo que tenemos. Corrija el código, no al testigo. Si el cambio es a propósito, escriba en una línea: finitemonkey: allow tests <motivo>",
   "gate.release.allowed": "Liberé {guard} hasta {until}, a su pedido.",
@@ -6765,9 +6874,14 @@ var es_default = {
   "prose.span": "líneas {start}-{end}: {rules}",
   "prose.fix_item": "{rule}: {fix}",
   "prose.warn.command": "{target} parece escrito por IA ({spans}). Reescríbelo antes de enviarlo. {fixes}. Si es texto de marca escrito a propósito, muéstrale dos alternativas a la persona.",
-  "prose.block.command": "bloqueado: {target} parece escrito por IA ({spans}), y el preset de este proyecto no deja enviarlo. {fixes}. Reescríbelo y vuelve a ejecutar el comando.",
-  "prose.block.unreadable": "bloqueado: no se pudo leer {file} para revisar el texto ({detail}). Revisa la ruta y vuelve a ejecutar el comando.",
-  "prose.block.marker": "bloqueado: esto añadiría el marcador {marker} en {file}, y solo la persona puede ponerlo. Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor.",
+  "prose.block.command.claim": "{target} parece escrito por IA ({spans}), y el preset de este proyecto no deja enviarlo. {fixes}",
+  "prose.block.command.requires": "Reescríbelo y vuelve a ejecutar el comando",
+  "prose.block.not": "el mismo texto con algunas palabras cambiadas",
+  "prose.block.human": "Retuve un texto que parece escrito por una máquina.",
+  "prose.block.unreadable.claim": "no se pudo leer {file} para revisar el texto ({detail})",
+  "prose.block.unreadable.requires": "Revisa la ruta y vuelve a ejecutar el comando",
+  "prose.block.marker.claim": "esto añadiría el marcador {marker} en {file}, y solo la persona puede ponerlo",
+  "prose.block.marker.requires": "Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor",
   "prose.check.file": "{file}: {count, plural, one {# pasaje que parece escrito} other {# pasajes que parecen escritos}} por IA",
   "prose.check.span": "  {file}:{start}-{end} puntos {score}: {rules}",
   "prose.check.fix": "    haz en su lugar: {fix}",
@@ -6776,7 +6890,8 @@ var es_default = {
   "prose.error.found": "{count, plural, one {# pasaje parece escrito} other {# pasajes parecen escritos}} por IA",
   "prose.error.no_input": "nada que revisar: pasa archivos, --stdin, o ejecútalo dentro de un repositorio git para revisar los Markdown modificados",
   "prose.error.unreadable": "no se pudo leer {file} ({detail})",
-  "prose.block.marker_shell": "bloqueado: este comando escribe el marcador {marker}, y solo la persona puede ponerlo. Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor.",
+  "prose.block.marker_shell.claim": "este comando escribe el marcador {marker}, y solo la persona puede ponerlo",
+  "prose.block.marker_shell.requires": "Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor",
   "prose.rule.requester-reference": "di el motivo técnico del cambio, sin decir quién lo pidió",
   "prose.rule.person-as-reason": "nombra la propiedad del cambio en lugar de la persona",
   "prose.rule.origin-project": "describe la propiedad técnica, sin citar de dónde salió",
@@ -6791,30 +6906,55 @@ var es_default = {
   "git.command.undo": "Lista las instantáneas o restaura una, por defecto en un worktree nuevo",
   "git.command.rescue": "Lista commits perdidos por el reflog y el fsck, y restaura uno en una rama nueva",
   "git.command.merge_verify": "Comprueba que una fusión conservó cada cambio de los dos lados",
-  "git.block.force_push": "bloqueado: `{command}` reescribe la rama remota y puede borrar commits que otra persona subió. Trae e integra los commits remotos y sube normalmente. En tu propia rama después de un rebase, usa `git push --force-with-lease=<rama>:<sha esperado> --force-if-includes`.",
-  "git.block.lease_not_own": "bloqueado: `{command}` fuerza un push sobre {subject}, que no es la rama en la que trabajas o está protegida. El push forzado solo vale en tu propia rama, con lease explícito.",
-  "git.block.push_delete": "bloqueado: `{command}` borra {subject} en el remoto. Borrar una rama remota le toca a la persona.",
-  "git.block.push_mirror": "bloqueado: `{command}` sobrescribe todas las refs del remoto y publicaría las refs de respaldo. Sube por nombre la rama que necesitas.",
-  "git.block.clean": "bloqueado: `{command}` borra para siempre archivos sin seguimiento, que no están en ningún commit. Corre `git clean -n` para ver la lista y mueve lo que deba irse a .finitemonkey/trash/, o pregunta a la persona.",
-  "git.block.stash_drop": "bloqueado: `{command}` tira trabajo guardado en el stash que no existe en otro lugar. Aplícalo con `git stash apply` o déjalo; descartar un stash le toca a la persona.",
-  "git.block.branch_unmerged": "bloqueado: `{command}` borra {subject}, cuyos commits no están en su upstream ni en la rama por defecto. Súbela o fusiónala antes; `git branch -d` funciona cuando ya está fusionada.",
-  "git.block.worktree_force": "bloqueado: `{command}` elimina un worktree aunque tenga cambios sin commit. Haz commit o archiva su trabajo antes; `git worktree remove` sin forzar rechaza un árbol sucio a propósito.",
-  "git.block.rm_worktree": "bloqueado: `{command}` borra {subject}, que es un worktree o repositorio git; el trabajo sin commit se perdería. Haz commit o archívalo y luego usa `git worktree remove` sin --force.",
-  "git.block.rm_root": "bloqueado: `{command}` borra de forma recursiva {subject}, una carpeta raíz o la carpeta personal. Indica la carpeta exacta a eliminar.",
-  "git.block.rebase_protected": "bloqueado: `{command}` reescribe {subject}, una rama protegida. Cámbiala con un pull request.",
-  "git.block.rebase_shared": "bloqueado: `{command}` reescribe {subject}, que ya tiene commits de otra persona en el remoto. Fusiona la base en ella en lugar de hacer rebase.",
-  "git.block.merge_side": "bloqueado: `{command}` resuelve conflictos tomando un lado entero ({subject}), lo que descarta en silencio los cambios del otro lado. Resuelve cada conflicto a mano y corre `finitemonkey merge verify` antes del commit.",
-  "git.block.history": "bloqueado: `{command}` borra historial o entradas del reflog de las que dependen undo y rescue. Reescribir el historial le toca a la persona.",
-  "git.block.protected_commit": "bloqueado: `{command}` haría commit directo en {subject}, una rama protegida. Crea una rama con `git switch -c <tipo>/<nombre>` y abre un pull request.",
-  "git.block.protected_push": "bloqueado: `{command}` sube a {subject}, una rama protegida. Sube tu propia rama y abre un pull request.",
-  "git.block.foreign": "bloqueado: `{command}` descartaría cambios que esta sesión no hizo: {files}. Deshaz solo tus líneas con Edit.",
+  "git.block.force_push.claim": "`{command}` reescribe la rama remota y puede borrar commits que otra persona subió",
+  "git.block.force_push.requires": "Trae e integra los commits remotos y sube normalmente. En tu propia rama después de un rebase, usa `git push --force-with-lease=<rama>:<sha esperado> --force-if-includes`",
+  "git.block.not": "el mismo efecto con otro comando git, un alias, un script o un shell anidado",
+  "git.block.human": "Detuve un comando git que podía perder trabajo o reescribir historia compartida.",
+  "git.block.lease_not_own.claim": "`{command}` fuerza un push sobre {subject}, que no es la rama en la que trabajas o está protegida",
+  "git.block.lease_not_own.requires": "El push forzado solo vale en tu propia rama, con lease explícito",
+  "git.block.push_delete.claim": "`{command}` borra {subject} en el remoto",
+  "git.block.push_delete.requires": "Borrar una rama remota le toca a la persona",
+  "git.block.push_mirror.claim": "`{command}` sobrescribe todas las refs del remoto y publicaría las refs de respaldo",
+  "git.block.push_mirror.requires": "Sube por nombre la rama que necesitas",
+  "git.block.clean.claim": "`{command}` borra para siempre archivos sin seguimiento, que no están en ningún commit",
+  "git.block.clean.requires": "Corre `git clean -n` para ver la lista y mueve lo que deba irse a .finitemonkey/trash/, o pregunta a la persona",
+  "git.block.stash_drop.claim": "`{command}` tira trabajo guardado en el stash que no existe en otro lugar",
+  "git.block.stash_drop.requires": "Aplícalo con `git stash apply` o déjalo; descartar un stash le toca a la persona",
+  "git.block.branch_unmerged.claim": "`{command}` borra {subject}, cuyos commits no están en su upstream ni en la rama por defecto",
+  "git.block.branch_unmerged.requires": "Súbela o fusiónala antes; `git branch -d` funciona cuando ya está fusionada",
+  "git.block.worktree_force.claim": "`{command}` elimina un worktree aunque tenga cambios sin commit",
+  "git.block.worktree_force.requires": "Haz commit o archiva su trabajo antes; `git worktree remove` sin forzar rechaza un árbol sucio a propósito",
+  "git.block.rm_worktree.claim": "`{command}` borra {subject}, que es un worktree o repositorio git; el trabajo sin commit se perdería",
+  "git.block.rm_worktree.requires": "Haz commit o archívalo y luego usa `git worktree remove` sin --force",
+  "git.block.rm_root.claim": "`{command}` borra de forma recursiva {subject}, una carpeta raíz o la carpeta personal",
+  "git.block.rm_root.requires": "Indica la carpeta exacta a eliminar",
+  "git.block.rebase_protected.claim": "`{command}` reescribe {subject}, una rama protegida",
+  "git.block.rebase_protected.requires": "Cámbiala con un pull request",
+  "git.block.rebase_shared.claim": "`{command}` reescribe {subject}, que ya tiene commits de otra persona en el remoto",
+  "git.block.rebase_shared.requires": "Fusiona la base en ella en lugar de hacer rebase",
+  "git.block.merge_side.claim": "`{command}` resuelve conflictos tomando un lado entero ({subject}), lo que descarta en silencio los cambios del otro lado",
+  "git.block.merge_side.requires": "Resuelve cada conflicto a mano y corre `finitemonkey merge verify` antes del commit",
+  "git.block.history.claim": "`{command}` borra historial o entradas del reflog de las que dependen undo y rescue",
+  "git.block.history.requires": "Reescribir el historial le toca a la persona",
+  "git.block.protected_commit.claim": "`{command}` haría commit directo en {subject}, una rama protegida",
+  "git.block.protected_commit.requires": "Crea una rama con `git switch -c <tipo>/<nombre>` y abre un pull request",
+  "git.block.protected_push.claim": "`{command}` sube a {subject}, una rama protegida",
+  "git.block.protected_push.requires": "Sube tu propia rama y abre un pull request",
+  "git.block.foreign.claim": "`{command}` descartaría cambios que esta sesión no hizo: {files}",
+  "git.block.foreign.requires": "Deshaz solo tus líneas con Edit",
   "git.foreign.before": "{path} (tenía cambios antes de que empezaras)",
   "git.foreign.other": "{path} (cambiado fuera de esta sesión)",
-  "git.block.unknown": "bloqueado: `{command}` descarta cambios y `git status` falló, así que no hay forma de saber de quién son. Arregla el repositorio e inténtalo de nuevo.",
-  "git.block.snapshot_failed": "bloqueado: `{command}` es arriesgado y la instantánea de seguridad previa falló ({detail}), así que no se ejecutó. Corrige la causa e inténtalo de nuevo.",
+  "git.block.unknown.claim": "`{command}` descarta cambios y `git status` falló, así que no hay forma de saber de quién son",
+  "git.block.unknown.requires": "Arregla el repositorio e inténtalo de nuevo",
+  "git.block.snapshot_failed.claim": "`{command}` es arriesgado y la instantánea de seguridad previa falló ({detail}), así que no se ejecutó",
+  "git.block.snapshot_failed.requires": "Corrige la causa e inténtalo de nuevo",
   "git.snapshot.context": "finitemonkey guardó una instantánea antes de `{command}`: {ref}. `finitemonkey undo {ref}` devuelve el estado anterior.",
-  "prod.block.effect": "bloqueado: `{command}` cambia producción ({target}) a mano, y un servidor editado a mano se aparta del repositorio. Cámbialo por el camino de deploy ({deploy}): commit, pull request y que corra el deploy.",
-  "prod.block.interactive": "bloqueado: `{command}` abre una sesión interactiva en producción ({target}), donde nada de lo que se escriba se revisa antes. Corre un comando de solo lectura a la vez, como `ssh {target} docker ps`.",
+  "prod.block.effect.claim": "`{command}` cambia producción ({target}) a mano, y un servidor editado a mano se aparta del repositorio",
+  "prod.block.effect.requires": "Cámbialo por el camino de deploy ({deploy}): commit, pull request y que corra el deploy",
+  "prod.block.not": "el mismo cambio con otra herramienta, un script o un shell anidado",
+  "prod.block.human": "Detuve una edición a mano en producción; los cambios van por el despliegue.",
+  "prod.block.interactive.claim": "`{command}` abre una sesión interactiva en producción ({target}), donde nada de lo que se escriba se revisa antes",
+  "prod.block.interactive.requires": "Corre un comando de solo lectura a la vez, como `ssh {target} docker ps`",
   "prod.deploy.unknown": "el deploy declarado del proyecto",
   "git.snapshot.done": "instantánea guardada: {ref} ({commit}). `finitemonkey undo {ref}` la restaura.",
   "git.undo.list_title": "{count, plural, one {# instantánea:} other {# instantáneas, de la más nueva a la más vieja:}}",
@@ -6941,7 +7081,11 @@ var es_default = {
   "gate.look.allow_ignored": "excepción ignorada, su decisión no está registrada: {entry}",
   "gate.look.unopened": "{count, plural, one {# captura sin abrir} other {# capturas sin abrir}} después de la última edición de un archivo de pantalla",
   "gate.look.open": "abre con Read: {file}",
-  "gate.look.ok": "{count, plural, one {# captura} other {# capturas}}, ningún fallo, todas abiertas"
+  "gate.look.ok": "{count, plural, one {# captura} other {# capturas}}, ningún fallo, todas abiertas",
+  "reason.label.blocked": "bloqueado",
+  "reason.label.requires": "exige",
+  "reason.label.not": "no cuenta",
+  "reason.human.generic": "Bloqueé una llamada de herramienta; el motivo fue a Claude."
 };
 
 // src/i18n/pt-BR.json
@@ -6990,6 +7134,7 @@ var pt_BR_default = {
   "i18n.problem.placeholder": "marcadores diferentes (esperado: {expected}; encontrado: {actual})",
   "i18n.problem.plural": "faltam ramos de plural (precisa: {expected}; achados: {actual})",
   "i18n.problem.status": "sem status de revisão (use: {expected})",
+  "i18n.problem.release_hint": "instrução de liberação em texto que o modelo lê ({actual}); leve para uma chave que a pessoa lê",
   "i18n.problem.empty": "texto vazio",
   "i18n.problem.not_string": "valor não é texto",
   "doctor.title": "finitemonkey doctor ({version})",
@@ -7116,12 +7261,20 @@ var pt_BR_default = {
   "secrets.where.line": "linha {line}, coluna {column}",
   "secrets.where.file": "{file}:{line}:{column}",
   "secrets.where.new_text": "{file} (linha {line} do texto novo)",
-  "secrets.block.write": "bloqueado: o texto novo de {file} tem uma credencial ({found}). Nada foi gravado. Deixe o valor no .env (fora do git) e leia pelo nome da variável. Se a chave é real, trate como exposta e troque.",
-  "secrets.block.bash": "bloqueado: este comando tem uma credencial ({found}) e não rodou. Leia o valor de uma variável de ambiente em vez de escrevê-lo no comando. Se a chave é real, trate como exposta e troque.",
-  "secrets.block.commit": "bloqueado: as mudanças preparadas têm uma credencial ({found}), então o commit não rodou. Tire-a dos arquivos preparados, deixe no .env (fora do git) e troque a chave se for real.",
-  "secrets.block.read": "bloqueado: {target} guarda segredos, e lê-lo colocaria os valores na conversa. Peça à pessoa os nomes das variáveis, ou leia o .env.example.",
-  "secrets.block.env_dump": 'bloqueado: `{command}` imprime todas as variáveis de ambiente, segredos inclusive. Imprima só a variável que precisa, pelo nome, ou confira que ela existe com `test -n "$NAME"`.',
-  "secrets.block.person_only": "bloqueado: `{command}` é decisão da pessoa, não do modelo. Peça à pessoa que rode no terminal dela.",
+  "secrets.block.write.claim": "o texto novo de {file} tem uma credencial ({found})",
+  "secrets.block.write.requires": "Nada foi gravado. Deixe o valor no .env (fora do git) e leia pelo nome da variável. Se a chave é real, trate como exposta e troque",
+  "secrets.block.not": "uma cópia codificada, partida, comentada ou renomeada do mesmo valor",
+  "secrets.block.human": "Mantive uma credencial fora de um arquivo, comando ou commit.",
+  "secrets.block.bash.claim": "este comando tem uma credencial ({found}) e não rodou",
+  "secrets.block.bash.requires": "Leia o valor de uma variável de ambiente em vez de escrevê-lo no comando. Se a chave é real, trate como exposta e troque",
+  "secrets.block.commit.claim": "as mudanças preparadas têm uma credencial ({found}), então o commit não rodou",
+  "secrets.block.commit.requires": "Tire-a dos arquivos preparados, deixe no .env (fora do git) e troque a chave se for real",
+  "secrets.block.read.claim": "{target} guarda segredos, e lê-lo colocaria os valores na conversa",
+  "secrets.block.read.requires": "Peça à pessoa os nomes das variáveis, ou leia o .env.example",
+  "secrets.block.env_dump.claim": "`{command}` imprime todas as variáveis de ambiente, segredos inclusive",
+  "secrets.block.env_dump.requires": 'Imprima só a variável que precisa, pelo nome, ou confira que ela existe com `test -n "$NAME"`',
+  "secrets.block.person_only.claim": "`{command}` é decisão da pessoa, não do modelo",
+  "secrets.block.person_only.requires": "Peça à pessoa que rode no terminal dela",
   "secrets.block.prompt": "sua mensagem não foi enviada ao modelo: ela tem uma credencial ({found}). Se essa chave foi colada em outro lugar, trate como exposta e troque. Para usá-la, ponha no .env e me diga só o nome da variável. Nunca cole chaves na conversa. Incidente: {incident}.",
   "secrets.post.context": "Finite Monkey: a saída de {tool} continha uma credencial ({found}). O incidente {incident} está aberto; trocar a chave é decisão da pessoa. A saída do Finite Monkey nunca repete o valor.",
   "secrets.incident.unsaved": "não registrado ({detail})",
@@ -7314,16 +7467,27 @@ var pt_BR_default = {
   "gate.config.disabled": "Finite Monkey: esta mudança liga disableAllHooks em {file}; ela não foi aplicada.",
   "gate.config.human": "Mantive os hooks do Finite Monkey em {file}. Se foi de propósito, digite numa linha: finitemonkey: allow config <motivo>",
   "gate.config.released": "Mudança de config em {file} aceita pela sua liberação.",
-  "gate.guard.bypass.no_verify": "Finite Monkey: barrado: {detail} pula os git hooks. exige: os hooks rodam em todo commit e push.",
-  "gate.guard.bypass.hooks_path": "Finite Monkey: barrado: {detail} desvia o git dos hooks do projeto. exige: core.hooksPath fica como está configurado.",
-  "gate.guard.bypass.hook_env": "Finite Monkey: barrado: {detail} desliga hooks ou travas. exige: hooks e travas ficam ligados.",
-  "gate.guard.bypass.fm_allow": "Finite Monkey: barrado: liberação é feita pela pessoa, não por chamada de ferramenta.",
-  "gate.guard.bypass.fm_pause": "Finite Monkey: bloqueado: só a pessoa pausa ou retoma o portão, digitando `fm off` ou `fm on` como o prompt inteiro.",
+  "gate.guard.bypass.no_verify.claim": "{detail} pula os git hooks",
+  "gate.guard.bypass.no_verify.requires": "os hooks rodam em todo commit e push",
+  "gate.guard.bypass.not": "a mesma chave por outra variável, flag, alias ou script",
+  "gate.guard.bypass.hooks_path.claim": "{detail} desvia o git dos hooks do projeto",
+  "gate.guard.bypass.hooks_path.requires": "core.hooksPath fica como está configurado",
+  "gate.guard.bypass.hook_env.claim": "{detail} desliga hooks ou travas",
+  "gate.guard.bypass.hook_env.requires": "hooks e travas ficam ligados",
+  "gate.guard.bypass.fm_allow.claim": "liberação é feita pela pessoa, não por chamada de ferramenta",
+  "gate.guard.bypass.fm_allow.requires": "a liberação vem da pessoa digitando no prompt",
+  "gate.guard.bypass.fm_pause.claim": "só a pessoa pausa ou retoma o portão",
+  "gate.guard.bypass.fm_pause.requires": "o portão fica ligado a menos que a pessoa o pause",
   "gate.guard.bypass.human": "Barrei {detail}: desligaria a rede de proteção. Se quiser mesmo, digite numa linha: finitemonkey: allow bypass <motivo>",
-  "gate.guard.self.policy": "Finite Monkey: barrado: {file} só é escrito pelo executável finitemonkey (evidência, política e estado). exige: mudar pelos comandos do finitemonkey.",
-  "gate.guard.self.allow_store": "Finite Monkey: barrado: {file} registra o que a pessoa liberou; ferramenta nunca escreve nele.",
+  "gate.guard.self.policy.claim": "{file} só é escrito pelo executável finitemonkey (evidência, política e estado)",
+  "gate.guard.self.policy.requires": "mudar pelos comandos do finitemonkey",
+  "gate.guard.self.not": "uma cópia, move, redirecionamento ou script que grava o mesmo arquivo",
+  "gate.guard.self.allow_store.claim": "{file} registra o que a pessoa liberou; ferramenta nunca escreve nele",
+  "gate.guard.self.allow_store.requires": "deixar este arquivo para a pessoa",
   "gate.guard.self.human": "Deixei {file} fora do alcance: o macaco não corrige a própria prova.",
-  "gate.guard.tests.model": "Finite Monkey: barrado: {detail}. exige: fazer o código passar nos testes como estão.",
+  "gate.guard.tests.claim": "{detail}",
+  "gate.guard.tests.requires": "fazer o código passar nos testes como estão",
+  "gate.guard.tests.not": "um teste que ainda roda mas não confere mais o comportamento",
   "gate.guard.tests.shell": "um comando de shell escreve ou apaga {file}",
   "gate.guard.tests.human": "Barrado: {detail}. O teste é a única testemunha que temos. Corrija o código, não a testemunha. Se a mudança é de propósito, digite numa linha: finitemonkey: allow tests <motivo>",
   "gate.release.allowed": "Liberei {guard} até {until}, a seu pedido.",
@@ -7359,9 +7523,14 @@ var pt_BR_default = {
   "prose.span": "linhas {start}-{end}: {rules}",
   "prose.fix_item": "{rule}: {fix}",
   "prose.warn.command": "{target} tem cara de texto de IA ({spans}). Reescreva antes de enviar. {fixes}. Se for texto de marca escrito de propósito, mostre duas alternativas à pessoa.",
-  "prose.block.command": "bloqueado: {target} tem cara de texto de IA ({spans}), e o preset deste projeto não deixa enviar. {fixes}. Reescreva e rode o comando de novo.",
-  "prose.block.unreadable": "bloqueado: não deu para ler {file} para conferir o texto ({detail}). Confira o caminho e rode o comando de novo.",
-  "prose.block.marker": "bloqueado: isto acrescentaria o marcador {marker} em {file}, e só a pessoa pode pôr esse marcador. Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela.",
+  "prose.block.command.claim": "{target} tem cara de texto de IA ({spans}), e o preset deste projeto não deixa enviar. {fixes}",
+  "prose.block.command.requires": "Reescreva e rode o comando de novo",
+  "prose.block.not": "o mesmo texto com algumas palavras trocadas",
+  "prose.block.human": "Segurei um texto com cara de escrito por máquina.",
+  "prose.block.unreadable.claim": "não deu para ler {file} para conferir o texto ({detail})",
+  "prose.block.unreadable.requires": "Confira o caminho e rode o comando de novo",
+  "prose.block.marker.claim": "isto acrescentaria o marcador {marker} em {file}, e só a pessoa pode pôr esse marcador",
+  "prose.block.marker.requires": "Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela",
   "prose.check.file": "{file}: {count, plural, one {# trecho} other {# trechos}} com cara de texto de IA",
   "prose.check.span": "  {file}:{start}-{end} pontos {score}: {rules}",
   "prose.check.fix": "    faça no lugar: {fix}",
@@ -7370,7 +7539,8 @@ var pt_BR_default = {
   "prose.error.found": "{count, plural, one {# trecho} other {# trechos}} com cara de texto de IA",
   "prose.error.no_input": "nada para conferir: passe arquivos, --stdin, ou rode dentro de um repositório git para conferir os Markdown alterados",
   "prose.error.unreadable": "não deu para ler {file} ({detail})",
-  "prose.block.marker_shell": "bloqueado: este comando escreve o marcador {marker}, e só a pessoa pode pôr esse marcador. Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela.",
+  "prose.block.marker_shell.claim": "este comando escreve o marcador {marker}, e só a pessoa pode pôr esse marcador",
+  "prose.block.marker_shell.requires": "Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela",
   "prose.rule.requester-reference": "diga o motivo técnico da mudança, sem dizer quem pediu",
   "prose.rule.person-as-reason": "nomeie a propriedade da mudança no lugar da pessoa",
   "prose.rule.origin-project": "descreva a propriedade técnica, sem citar de onde veio",
@@ -7385,30 +7555,55 @@ var pt_BR_default = {
   "git.command.undo": "Lista as fotografias ou restaura uma, por padrão num worktree novo",
   "git.command.rescue": "Lista commits perdidos pelo reflog e pelo fsck, e restaura um numa branch nova",
   "git.command.merge_verify": "Confere que uma mescla manteve toda mudança dos dois lados",
-  "git.block.force_push": "bloqueado: `{command}` reescreve a branch remota e pode apagar commits que outra pessoa enviou. Busque, integre os commits remotos e envie normalmente. Na sua própria branch depois de um rebase, use `git push --force-with-lease=<branch>:<sha esperado> --force-if-includes`.",
-  "git.block.lease_not_own": "bloqueado: `{command}` força um push em {subject}, que não é a branch em que você trabalha ou é protegida. Push forçado só vale na sua própria branch, com lease explícito.",
-  "git.block.push_delete": "bloqueado: `{command}` apaga {subject} no remoto. Apagar branch remota é com a pessoa.",
-  "git.block.push_mirror": "bloqueado: `{command}` sobrescreve todas as refs do remoto e publicaria as refs de backup. Envie pelo nome a branch de que precisa.",
-  "git.block.clean": "bloqueado: `{command}` apaga de vez arquivos não rastreados, que não estão em commit nenhum. Rode `git clean -n` para ver a lista e mova o que deve sair para .finitemonkey/trash/, ou pergunte à pessoa.",
-  "git.block.stash_drop": "bloqueado: `{command}` joga fora trabalho guardado no stash que não existe em outro lugar. Aplique com `git stash apply` ou deixe como está; descartar stash é com a pessoa.",
-  "git.block.branch_unmerged": "bloqueado: `{command}` apaga {subject}, cujos commits não estão no upstream nem na branch padrão. Envie ou mescle antes; `git branch -d` funciona depois de mesclada.",
-  "git.block.worktree_force": "bloqueado: `{command}` remove um worktree mesmo com mudança sem commit. Commite ou arquive o trabalho antes; o `git worktree remove` sem força recusa árvore suja de propósito.",
-  "git.block.rm_worktree": "bloqueado: `{command}` apaga {subject}, que é um worktree ou repositório git; o trabalho sem commit iria junto. Commite ou arquive e depois use `git worktree remove` sem --force.",
-  "git.block.rm_root": "bloqueado: `{command}` apaga recursivamente {subject}, uma pasta raiz ou a pasta pessoal. Diga a pasta exata a remover.",
-  "git.block.rebase_protected": "bloqueado: `{command}` reescreve {subject}, uma branch protegida. Mude por pull request.",
-  "git.block.rebase_shared": "bloqueado: `{command}` reescreve {subject}, que já tem commits de outra pessoa no remoto. Mescle a base nela em vez de fazer rebase.",
-  "git.block.merge_side": "bloqueado: `{command}` resolve conflito escolhendo um lado inteiro ({subject}), o que descarta calado as mudanças do outro lado. Resolva cada conflito à mão e rode `finitemonkey merge verify` antes do commit.",
-  "git.block.history": "bloqueado: `{command}` apaga histórico ou entradas do reflog de que o undo e o rescue dependem. Reescrever histórico é com a pessoa.",
-  "git.block.protected_commit": "bloqueado: `{command}` faria commit direto em {subject}, uma branch protegida. Crie uma branch com `git switch -c <tipo>/<nome>` e abra um pull request.",
-  "git.block.protected_push": "bloqueado: `{command}` envia para {subject}, uma branch protegida. Envie a sua branch e abra um pull request.",
-  "git.block.foreign": "bloqueado: `{command}` descartaria mudanças que esta sessão não fez: {files}. Desfaça só as suas linhas com Edit.",
+  "git.block.force_push.claim": "`{command}` reescreve a branch remota e pode apagar commits que outra pessoa enviou",
+  "git.block.force_push.requires": "Busque, integre os commits remotos e envie normalmente. Na sua própria branch depois de um rebase, use `git push --force-with-lease=<branch>:<sha esperado> --force-if-includes`",
+  "git.block.not": "o mesmo efeito por outro comando git, um alias, um script ou um shell aninhado",
+  "git.block.human": "Parei um comando git que podia perder trabalho ou reescrever histórico compartilhado.",
+  "git.block.lease_not_own.claim": "`{command}` força um push em {subject}, que não é a branch em que você trabalha ou é protegida",
+  "git.block.lease_not_own.requires": "Push forçado só vale na sua própria branch, com lease explícito",
+  "git.block.push_delete.claim": "`{command}` apaga {subject} no remoto",
+  "git.block.push_delete.requires": "Apagar branch remota é com a pessoa",
+  "git.block.push_mirror.claim": "`{command}` sobrescreve todas as refs do remoto e publicaria as refs de backup",
+  "git.block.push_mirror.requires": "Envie pelo nome a branch de que precisa",
+  "git.block.clean.claim": "`{command}` apaga de vez arquivos não rastreados, que não estão em commit nenhum",
+  "git.block.clean.requires": "Rode `git clean -n` para ver a lista e mova o que deve sair para .finitemonkey/trash/, ou pergunte à pessoa",
+  "git.block.stash_drop.claim": "`{command}` joga fora trabalho guardado no stash que não existe em outro lugar",
+  "git.block.stash_drop.requires": "Aplique com `git stash apply` ou deixe como está; descartar stash é com a pessoa",
+  "git.block.branch_unmerged.claim": "`{command}` apaga {subject}, cujos commits não estão no upstream nem na branch padrão",
+  "git.block.branch_unmerged.requires": "Envie ou mescle antes; `git branch -d` funciona depois de mesclada",
+  "git.block.worktree_force.claim": "`{command}` remove um worktree mesmo com mudança sem commit",
+  "git.block.worktree_force.requires": "Commite ou arquive o trabalho antes; o `git worktree remove` sem força recusa árvore suja de propósito",
+  "git.block.rm_worktree.claim": "`{command}` apaga {subject}, que é um worktree ou repositório git; o trabalho sem commit iria junto",
+  "git.block.rm_worktree.requires": "Commite ou arquive e depois use `git worktree remove` sem --force",
+  "git.block.rm_root.claim": "`{command}` apaga recursivamente {subject}, uma pasta raiz ou a pasta pessoal",
+  "git.block.rm_root.requires": "Diga a pasta exata a remover",
+  "git.block.rebase_protected.claim": "`{command}` reescreve {subject}, uma branch protegida",
+  "git.block.rebase_protected.requires": "Mude por pull request",
+  "git.block.rebase_shared.claim": "`{command}` reescreve {subject}, que já tem commits de outra pessoa no remoto",
+  "git.block.rebase_shared.requires": "Mescle a base nela em vez de fazer rebase",
+  "git.block.merge_side.claim": "`{command}` resolve conflito escolhendo um lado inteiro ({subject}), o que descarta calado as mudanças do outro lado",
+  "git.block.merge_side.requires": "Resolva cada conflito à mão e rode `finitemonkey merge verify` antes do commit",
+  "git.block.history.claim": "`{command}` apaga histórico ou entradas do reflog de que o undo e o rescue dependem",
+  "git.block.history.requires": "Reescrever histórico é com a pessoa",
+  "git.block.protected_commit.claim": "`{command}` faria commit direto em {subject}, uma branch protegida",
+  "git.block.protected_commit.requires": "Crie uma branch com `git switch -c <tipo>/<nome>` e abra um pull request",
+  "git.block.protected_push.claim": "`{command}` envia para {subject}, uma branch protegida",
+  "git.block.protected_push.requires": "Envie a sua branch e abra um pull request",
+  "git.block.foreign.claim": "`{command}` descartaria mudanças que esta sessão não fez: {files}",
+  "git.block.foreign.requires": "Desfaça só as suas linhas com Edit",
   "git.foreign.before": "{path} (tinha mudança antes de você começar)",
   "git.foreign.other": "{path} (mudado fora desta sessão)",
-  "git.block.unknown": "bloqueado: `{command}` descarta mudanças, e o `git status` falhou, então não dá para saber de quem elas são. Conserte o repositório e tente de novo.",
-  "git.block.snapshot_failed": "bloqueado: `{command}` é arriscado e a fotografia de segurança antes dele falhou ({detail}), então ele não rodou. Resolva a causa e tente de novo.",
+  "git.block.unknown.claim": "`{command}` descarta mudanças, e o `git status` falhou, então não dá para saber de quem elas são",
+  "git.block.unknown.requires": "Conserte o repositório e tente de novo",
+  "git.block.snapshot_failed.claim": "`{command}` é arriscado e a fotografia de segurança antes dele falhou ({detail}), então ele não rodou",
+  "git.block.snapshot_failed.requires": "Resolva a causa e tente de novo",
   "git.snapshot.context": "o finitemonkey salvou uma fotografia antes de `{command}`: {ref}. `finitemonkey undo {ref}` traz o estado anterior de volta.",
-  "prod.block.effect": "bloqueado: `{command}` mexe em produção ({target}) na mão, e servidor editado na mão diverge do repositório. Mude pelo caminho de deploy ({deploy}): commit, pull request e o deploy roda.",
-  "prod.block.interactive": "bloqueado: `{command}` abre sessão interativa em produção ({target}), onde nada do que for digitado passa por conferência. Rode um comando de leitura por vez, como `ssh {target} docker ps`.",
+  "prod.block.effect.claim": "`{command}` mexe em produção ({target}) na mão, e servidor editado na mão diverge do repositório",
+  "prod.block.effect.requires": "Mude pelo caminho de deploy ({deploy}): commit, pull request e o deploy roda",
+  "prod.block.not": "a mesma mudança por outra ferramenta, um script ou um shell aninhado",
+  "prod.block.human": "Parei uma edição na mão em produção; mudança vai pelo deploy.",
+  "prod.block.interactive.claim": "`{command}` abre sessão interativa em produção ({target}), onde nada do que for digitado passa por conferência",
+  "prod.block.interactive.requires": "Rode um comando de leitura por vez, como `ssh {target} docker ps`",
   "prod.deploy.unknown": "o deploy declarado do projeto",
   "git.snapshot.done": "fotografia salva: {ref} ({commit}). `finitemonkey undo {ref}` restaura.",
   "git.undo.list_title": "{count, plural, one {# fotografia:} other {# fotografias, da mais nova para a mais antiga:}}",
@@ -7535,7 +7730,11 @@ var pt_BR_default = {
   "gate.look.allow_ignored": "exceção ignorada, a decisão não foi registrada: {entry}",
   "gate.look.unopened": "{count, plural, one {# captura não aberta} other {# capturas não abertas}} depois da última edição de arquivo de tela",
   "gate.look.open": "abra com Read: {file}",
-  "gate.look.ok": "{count, plural, one {# captura} other {# capturas}}, nenhuma falha, todas abertas"
+  "gate.look.ok": "{count, plural, one {# captura} other {# capturas}}, nenhuma falha, todas abertas",
+  "reason.label.blocked": "bloqueado",
+  "reason.label.requires": "exige",
+  "reason.label.not": "não vale",
+  "reason.human.generic": "Bloqueei uma chamada de ferramenta; o motivo foi para o Claude."
 };
 
 // src/i18n/review.json
@@ -7585,6 +7784,7 @@ var review_default = {
     "i18n.problem.placeholder": "machine",
     "i18n.problem.plural": "machine",
     "i18n.problem.status": "machine",
+    "i18n.problem.release_hint": "machine",
     "i18n.problem.empty": "machine",
     "i18n.problem.not_string": "machine",
     "doctor.title": "machine",
@@ -7711,12 +7911,20 @@ var review_default = {
     "secrets.where.line": "machine",
     "secrets.where.file": "machine",
     "secrets.where.new_text": "machine",
-    "secrets.block.write": "machine",
-    "secrets.block.bash": "machine",
-    "secrets.block.commit": "machine",
-    "secrets.block.read": "machine",
-    "secrets.block.env_dump": "machine",
-    "secrets.block.person_only": "machine",
+    "secrets.block.write.claim": "machine",
+    "secrets.block.write.requires": "machine",
+    "secrets.block.not": "machine",
+    "secrets.block.human": "machine",
+    "secrets.block.bash.claim": "machine",
+    "secrets.block.bash.requires": "machine",
+    "secrets.block.commit.claim": "machine",
+    "secrets.block.commit.requires": "machine",
+    "secrets.block.read.claim": "machine",
+    "secrets.block.read.requires": "machine",
+    "secrets.block.env_dump.claim": "machine",
+    "secrets.block.env_dump.requires": "machine",
+    "secrets.block.person_only.claim": "machine",
+    "secrets.block.person_only.requires": "machine",
     "secrets.block.prompt": "machine",
     "secrets.post.context": "machine",
     "secrets.incident.unsaved": "machine",
@@ -7909,16 +8117,27 @@ var review_default = {
     "gate.config.disabled": "machine",
     "gate.config.human": "machine",
     "gate.config.released": "machine",
-    "gate.guard.bypass.no_verify": "machine",
-    "gate.guard.bypass.hooks_path": "machine",
-    "gate.guard.bypass.hook_env": "machine",
-    "gate.guard.bypass.fm_allow": "machine",
-    "gate.guard.bypass.fm_pause": "machine",
+    "gate.guard.bypass.no_verify.claim": "machine",
+    "gate.guard.bypass.no_verify.requires": "machine",
+    "gate.guard.bypass.not": "machine",
+    "gate.guard.bypass.hooks_path.claim": "machine",
+    "gate.guard.bypass.hooks_path.requires": "machine",
+    "gate.guard.bypass.hook_env.claim": "machine",
+    "gate.guard.bypass.hook_env.requires": "machine",
+    "gate.guard.bypass.fm_allow.claim": "machine",
+    "gate.guard.bypass.fm_allow.requires": "machine",
+    "gate.guard.bypass.fm_pause.claim": "machine",
+    "gate.guard.bypass.fm_pause.requires": "machine",
     "gate.guard.bypass.human": "machine",
-    "gate.guard.self.policy": "machine",
-    "gate.guard.self.allow_store": "machine",
+    "gate.guard.self.policy.claim": "machine",
+    "gate.guard.self.policy.requires": "machine",
+    "gate.guard.self.not": "machine",
+    "gate.guard.self.allow_store.claim": "machine",
+    "gate.guard.self.allow_store.requires": "machine",
     "gate.guard.self.human": "machine",
-    "gate.guard.tests.model": "machine",
+    "gate.guard.tests.claim": "machine",
+    "gate.guard.tests.requires": "machine",
+    "gate.guard.tests.not": "machine",
     "gate.guard.tests.shell": "machine",
     "gate.guard.tests.human": "machine",
     "gate.release.allowed": "machine",
@@ -7954,9 +8173,14 @@ var review_default = {
     "prose.span": "machine",
     "prose.fix_item": "machine",
     "prose.warn.command": "machine",
-    "prose.block.command": "machine",
-    "prose.block.unreadable": "machine",
-    "prose.block.marker": "machine",
+    "prose.block.command.claim": "machine",
+    "prose.block.command.requires": "machine",
+    "prose.block.not": "machine",
+    "prose.block.human": "machine",
+    "prose.block.unreadable.claim": "machine",
+    "prose.block.unreadable.requires": "machine",
+    "prose.block.marker.claim": "machine",
+    "prose.block.marker.requires": "machine",
     "prose.check.file": "machine",
     "prose.check.span": "machine",
     "prose.check.fix": "machine",
@@ -7965,7 +8189,8 @@ var review_default = {
     "prose.error.found": "machine",
     "prose.error.no_input": "machine",
     "prose.error.unreadable": "machine",
-    "prose.block.marker_shell": "machine",
+    "prose.block.marker_shell.claim": "machine",
+    "prose.block.marker_shell.requires": "machine",
     "prose.rule.requester-reference": "machine",
     "prose.rule.person-as-reason": "machine",
     "prose.rule.origin-project": "machine",
@@ -7980,30 +8205,55 @@ var review_default = {
     "git.command.undo": "machine",
     "git.command.rescue": "machine",
     "git.command.merge_verify": "machine",
-    "git.block.force_push": "machine",
-    "git.block.lease_not_own": "machine",
-    "git.block.push_delete": "machine",
-    "git.block.push_mirror": "machine",
-    "git.block.clean": "machine",
-    "git.block.stash_drop": "machine",
-    "git.block.branch_unmerged": "machine",
-    "git.block.worktree_force": "machine",
-    "git.block.rm_worktree": "machine",
-    "git.block.rm_root": "machine",
-    "git.block.rebase_protected": "machine",
-    "git.block.rebase_shared": "machine",
-    "git.block.merge_side": "machine",
-    "git.block.history": "machine",
-    "git.block.protected_commit": "machine",
-    "git.block.protected_push": "machine",
-    "git.block.foreign": "machine",
+    "git.block.force_push.claim": "machine",
+    "git.block.force_push.requires": "machine",
+    "git.block.not": "machine",
+    "git.block.human": "machine",
+    "git.block.lease_not_own.claim": "machine",
+    "git.block.lease_not_own.requires": "machine",
+    "git.block.push_delete.claim": "machine",
+    "git.block.push_delete.requires": "machine",
+    "git.block.push_mirror.claim": "machine",
+    "git.block.push_mirror.requires": "machine",
+    "git.block.clean.claim": "machine",
+    "git.block.clean.requires": "machine",
+    "git.block.stash_drop.claim": "machine",
+    "git.block.stash_drop.requires": "machine",
+    "git.block.branch_unmerged.claim": "machine",
+    "git.block.branch_unmerged.requires": "machine",
+    "git.block.worktree_force.claim": "machine",
+    "git.block.worktree_force.requires": "machine",
+    "git.block.rm_worktree.claim": "machine",
+    "git.block.rm_worktree.requires": "machine",
+    "git.block.rm_root.claim": "machine",
+    "git.block.rm_root.requires": "machine",
+    "git.block.rebase_protected.claim": "machine",
+    "git.block.rebase_protected.requires": "machine",
+    "git.block.rebase_shared.claim": "machine",
+    "git.block.rebase_shared.requires": "machine",
+    "git.block.merge_side.claim": "machine",
+    "git.block.merge_side.requires": "machine",
+    "git.block.history.claim": "machine",
+    "git.block.history.requires": "machine",
+    "git.block.protected_commit.claim": "machine",
+    "git.block.protected_commit.requires": "machine",
+    "git.block.protected_push.claim": "machine",
+    "git.block.protected_push.requires": "machine",
+    "git.block.foreign.claim": "machine",
+    "git.block.foreign.requires": "machine",
     "git.foreign.before": "machine",
     "git.foreign.other": "machine",
-    "git.block.unknown": "machine",
-    "git.block.snapshot_failed": "machine",
+    "git.block.unknown.claim": "machine",
+    "git.block.unknown.requires": "machine",
+    "git.block.snapshot_failed.claim": "machine",
+    "git.block.snapshot_failed.requires": "machine",
     "git.snapshot.context": "machine",
-    "prod.block.effect": "machine",
-    "prod.block.interactive": "machine",
+    "prod.block.effect.claim": "machine",
+    "prod.block.effect.requires": "machine",
+    "prod.block.not": "machine",
+    "prod.block.human": "machine",
+    "prod.block.interactive.claim": "machine",
+    "prod.block.interactive.requires": "machine",
     "prod.deploy.unknown": "machine",
     "git.snapshot.done": "machine",
     "git.undo.list_title": "machine",
@@ -8130,7 +8380,11 @@ var review_default = {
     "gate.look.allow_ignored": "machine",
     "gate.look.unopened": "machine",
     "gate.look.open": "machine",
-    "gate.look.ok": "machine"
+    "gate.look.ok": "machine",
+    "reason.label.blocked": "machine",
+    "reason.label.requires": "machine",
+    "reason.label.not": "machine",
+    "reason.human.generic": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -8177,6 +8431,7 @@ var review_default = {
     "i18n.problem.placeholder": "machine",
     "i18n.problem.plural": "machine",
     "i18n.problem.status": "machine",
+    "i18n.problem.release_hint": "machine",
     "i18n.problem.empty": "machine",
     "i18n.problem.not_string": "machine",
     "doctor.title": "machine",
@@ -8303,12 +8558,20 @@ var review_default = {
     "secrets.where.line": "machine",
     "secrets.where.file": "machine",
     "secrets.where.new_text": "machine",
-    "secrets.block.write": "machine",
-    "secrets.block.bash": "machine",
-    "secrets.block.commit": "machine",
-    "secrets.block.read": "machine",
-    "secrets.block.env_dump": "machine",
-    "secrets.block.person_only": "machine",
+    "secrets.block.write.claim": "machine",
+    "secrets.block.write.requires": "machine",
+    "secrets.block.not": "machine",
+    "secrets.block.human": "machine",
+    "secrets.block.bash.claim": "machine",
+    "secrets.block.bash.requires": "machine",
+    "secrets.block.commit.claim": "machine",
+    "secrets.block.commit.requires": "machine",
+    "secrets.block.read.claim": "machine",
+    "secrets.block.read.requires": "machine",
+    "secrets.block.env_dump.claim": "machine",
+    "secrets.block.env_dump.requires": "machine",
+    "secrets.block.person_only.claim": "machine",
+    "secrets.block.person_only.requires": "machine",
     "secrets.block.prompt": "machine",
     "secrets.post.context": "machine",
     "secrets.incident.unsaved": "machine",
@@ -8501,16 +8764,27 @@ var review_default = {
     "gate.config.disabled": "machine",
     "gate.config.human": "machine",
     "gate.config.released": "machine",
-    "gate.guard.bypass.no_verify": "machine",
-    "gate.guard.bypass.hooks_path": "machine",
-    "gate.guard.bypass.hook_env": "machine",
-    "gate.guard.bypass.fm_allow": "machine",
-    "gate.guard.bypass.fm_pause": "machine",
+    "gate.guard.bypass.no_verify.claim": "machine",
+    "gate.guard.bypass.no_verify.requires": "machine",
+    "gate.guard.bypass.not": "machine",
+    "gate.guard.bypass.hooks_path.claim": "machine",
+    "gate.guard.bypass.hooks_path.requires": "machine",
+    "gate.guard.bypass.hook_env.claim": "machine",
+    "gate.guard.bypass.hook_env.requires": "machine",
+    "gate.guard.bypass.fm_allow.claim": "machine",
+    "gate.guard.bypass.fm_allow.requires": "machine",
+    "gate.guard.bypass.fm_pause.claim": "machine",
+    "gate.guard.bypass.fm_pause.requires": "machine",
     "gate.guard.bypass.human": "machine",
-    "gate.guard.self.policy": "machine",
-    "gate.guard.self.allow_store": "machine",
+    "gate.guard.self.policy.claim": "machine",
+    "gate.guard.self.policy.requires": "machine",
+    "gate.guard.self.not": "machine",
+    "gate.guard.self.allow_store.claim": "machine",
+    "gate.guard.self.allow_store.requires": "machine",
     "gate.guard.self.human": "machine",
-    "gate.guard.tests.model": "machine",
+    "gate.guard.tests.claim": "machine",
+    "gate.guard.tests.requires": "machine",
+    "gate.guard.tests.not": "machine",
     "gate.guard.tests.shell": "machine",
     "gate.guard.tests.human": "machine",
     "gate.release.allowed": "machine",
@@ -8546,9 +8820,14 @@ var review_default = {
     "prose.span": "machine",
     "prose.fix_item": "machine",
     "prose.warn.command": "machine",
-    "prose.block.command": "machine",
-    "prose.block.unreadable": "machine",
-    "prose.block.marker": "machine",
+    "prose.block.command.claim": "machine",
+    "prose.block.command.requires": "machine",
+    "prose.block.not": "machine",
+    "prose.block.human": "machine",
+    "prose.block.unreadable.claim": "machine",
+    "prose.block.unreadable.requires": "machine",
+    "prose.block.marker.claim": "machine",
+    "prose.block.marker.requires": "machine",
     "prose.check.file": "machine",
     "prose.check.span": "machine",
     "prose.check.fix": "machine",
@@ -8557,7 +8836,8 @@ var review_default = {
     "prose.error.found": "machine",
     "prose.error.no_input": "machine",
     "prose.error.unreadable": "machine",
-    "prose.block.marker_shell": "machine",
+    "prose.block.marker_shell.claim": "machine",
+    "prose.block.marker_shell.requires": "machine",
     "prose.rule.requester-reference": "machine",
     "prose.rule.person-as-reason": "machine",
     "prose.rule.origin-project": "machine",
@@ -8572,30 +8852,55 @@ var review_default = {
     "git.command.undo": "machine",
     "git.command.rescue": "machine",
     "git.command.merge_verify": "machine",
-    "git.block.force_push": "machine",
-    "git.block.lease_not_own": "machine",
-    "git.block.push_delete": "machine",
-    "git.block.push_mirror": "machine",
-    "git.block.clean": "machine",
-    "git.block.stash_drop": "machine",
-    "git.block.branch_unmerged": "machine",
-    "git.block.worktree_force": "machine",
-    "git.block.rm_worktree": "machine",
-    "git.block.rm_root": "machine",
-    "git.block.rebase_protected": "machine",
-    "git.block.rebase_shared": "machine",
-    "git.block.merge_side": "machine",
-    "git.block.history": "machine",
-    "git.block.protected_commit": "machine",
-    "git.block.protected_push": "machine",
-    "git.block.foreign": "machine",
+    "git.block.force_push.claim": "machine",
+    "git.block.force_push.requires": "machine",
+    "git.block.not": "machine",
+    "git.block.human": "machine",
+    "git.block.lease_not_own.claim": "machine",
+    "git.block.lease_not_own.requires": "machine",
+    "git.block.push_delete.claim": "machine",
+    "git.block.push_delete.requires": "machine",
+    "git.block.push_mirror.claim": "machine",
+    "git.block.push_mirror.requires": "machine",
+    "git.block.clean.claim": "machine",
+    "git.block.clean.requires": "machine",
+    "git.block.stash_drop.claim": "machine",
+    "git.block.stash_drop.requires": "machine",
+    "git.block.branch_unmerged.claim": "machine",
+    "git.block.branch_unmerged.requires": "machine",
+    "git.block.worktree_force.claim": "machine",
+    "git.block.worktree_force.requires": "machine",
+    "git.block.rm_worktree.claim": "machine",
+    "git.block.rm_worktree.requires": "machine",
+    "git.block.rm_root.claim": "machine",
+    "git.block.rm_root.requires": "machine",
+    "git.block.rebase_protected.claim": "machine",
+    "git.block.rebase_protected.requires": "machine",
+    "git.block.rebase_shared.claim": "machine",
+    "git.block.rebase_shared.requires": "machine",
+    "git.block.merge_side.claim": "machine",
+    "git.block.merge_side.requires": "machine",
+    "git.block.history.claim": "machine",
+    "git.block.history.requires": "machine",
+    "git.block.protected_commit.claim": "machine",
+    "git.block.protected_commit.requires": "machine",
+    "git.block.protected_push.claim": "machine",
+    "git.block.protected_push.requires": "machine",
+    "git.block.foreign.claim": "machine",
+    "git.block.foreign.requires": "machine",
     "git.foreign.before": "machine",
     "git.foreign.other": "machine",
-    "git.block.unknown": "machine",
-    "git.block.snapshot_failed": "machine",
+    "git.block.unknown.claim": "machine",
+    "git.block.unknown.requires": "machine",
+    "git.block.snapshot_failed.claim": "machine",
+    "git.block.snapshot_failed.requires": "machine",
     "git.snapshot.context": "machine",
-    "prod.block.effect": "machine",
-    "prod.block.interactive": "machine",
+    "prod.block.effect.claim": "machine",
+    "prod.block.effect.requires": "machine",
+    "prod.block.not": "machine",
+    "prod.block.human": "machine",
+    "prod.block.interactive.claim": "machine",
+    "prod.block.interactive.requires": "machine",
     "prod.deploy.unknown": "machine",
     "git.snapshot.done": "machine",
     "git.undo.list_title": "machine",
@@ -8722,7 +9027,11 @@ var review_default = {
     "gate.look.allow_ignored": "machine",
     "gate.look.unopened": "machine",
     "gate.look.open": "machine",
-    "gate.look.ok": "machine"
+    "gate.look.ok": "machine",
+    "reason.label.blocked": "machine",
+    "reason.label.requires": "machine",
+    "reason.label.not": "machine",
+    "reason.human.generic": "machine"
   }
 };
 
@@ -12634,7 +12943,11 @@ var isProdHostOf = (runtime, root, targets2) => memoBy((raw) => {
 });
 var blockOf = (t, hit3, command, deploy) => ({
   kind: "block",
-  reason: hit3.effect === "interactive" ? t("prod.block.interactive", { command, target: hit3.target }) : t("prod.block.effect", { command, target: hit3.target, deploy: deploy ?? t("prod.deploy.unknown") })
+  reason: hit3.effect === "interactive" ? modelReason(t, "prod.block.interactive", { command, target: hit3.target }) : modelReason(t, "prod.block.effect", {
+    command,
+    target: hit3.target,
+    deploy: deploy ?? t("prod.deploy.unknown")
+  })
 });
 var prodGuard = (runtime, root, t) => {
   const targets2 = memo2(() => loadProdTargets(runtime, root, loadProjectConfig(runtime, root)));
@@ -13629,7 +13942,7 @@ var RULE_KEYS = {
   "protected-push": "git.block.protected_push"
 };
 var MAX_FILES2 = 8;
-var ruleMessage = (t, rule, command, subject2) => t(RULE_KEYS[rule], { command, subject: subject2 === "" ? command : subject2 });
+var ruleMessage = (t, rule, command, subject2) => modelReason(t, RULE_KEYS[rule], { command, subject: subject2 === "" ? command : subject2 });
 var fileList = (items) => {
   const head = items.slice(0, MAX_FILES2).join(", ");
   return items.length > MAX_FILES2 ? `${head} (+${String(items.length - MAX_FILES2)})` : head;
@@ -13640,12 +13953,12 @@ var outcomeMessage = (t, outcome2) => {
     case "block":
       return ruleMessage(t, outcome2.rule, outcome2.command, outcome2.subject);
     case "foreign":
-      return t("git.block.foreign", {
+      return modelReason(t, "git.block.foreign", {
         command: outcome2.command,
         files: fileList(outcome2.files.map((file) => foreignLabel(t, file)))
       });
     case "unknown":
-      return t("git.block.unknown", { command: outcome2.command });
+      return modelReason(t, "git.block.unknown", { command: outcome2.command });
     case "pass":
     case "snapshot":
       return void 0;
@@ -13667,7 +13980,8 @@ var snapshotsOf = (input, owner, pending) => {
     if (!taken.ok) {
       return {
         kind: "block",
-        reason: input.t("git.block.snapshot_failed", { command: item2.command, detail: taken.error })
+        reason: modelReason(input.t, "git.block.snapshot_failed", { command: item2.command, detail: taken.error }),
+        human: input.t("git.block.human")
       };
     }
     done.set(item2.repo.root, input.t("git.snapshot.context", { command: item2.command, ref: taken.value.ref }));
@@ -13685,13 +13999,13 @@ var review = (input, commands, owner) => {
   const chain = { branch: void 0 };
   for (const command of commands) {
     const removal = rmOutcome(input, command, worktrees);
-    if (removal !== void 0) return { blocked: removal, snapshots, reads };
+    if (removal !== void 0) return { blocked: removal, human: "git.block.human", snapshots, reads };
     const decision = PROD_PROGRAMS.has(command.program) ? prod().decide(command) : void 0;
-    if (decision?.kind === "block") return { blocked: decision.reason, snapshots, reads };
+    if (decision?.kind === "block") return { blocked: decision.reason, human: "prod.block.human", snapshots, reads };
     if (decision !== void 0) reads.push(decision);
     for (const outcome2 of guardGitCommand({ runtime: input.runtime, cwd: input.cwd, owner, chain }, command)) {
       const message = outcomeMessage(input.t, outcome2);
-      if (message !== void 0) return { blocked: message, snapshots, reads };
+      if (message !== void 0) return { blocked: message, human: "git.block.human", snapshots, reads };
       if (outcome2.kind === "snapshot") snapshots.push(outcome2);
     }
   }
@@ -13704,7 +14018,9 @@ var gitPreToolUse = (input) => {
   if (commands.length === 0) return ALLOW;
   const owner = ownerOf2(input.payload);
   const result = review(input, commands, owner);
-  if (result.blocked !== void 0) return { kind: "block", reason: result.blocked };
+  if (result.blocked !== void 0) {
+    return { kind: "block", reason: result.blocked, human: input.t(result.human ?? "git.block.human") };
+  }
   if (result.reads.length > 0) {
     recordEvidence(
       input.runtime,
@@ -13947,14 +14263,19 @@ var shown2 = (cwd, file) => {
 };
 var blocked = (input, file) => ({
   kind: "block",
-  reason: input.t("prose.block.marker", { marker: ALLOW_COMMENT, file })
+  reason: modelReason(input.t, "prose.block.marker", { marker: ALLOW_COMMENT, file }),
+  human: input.t("prose.block.human")
 });
 var proseMarkerGuard = (input) => {
   const tool = toolName2(input.payload);
   const inputs = toolInput2(input.payload);
   if (SHELLS2.has(tool)) {
     if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW3;
-    return { kind: "block", reason: input.t("prose.block.marker_shell", { marker: ALLOW_COMMENT }) };
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "prose.block.marker_shell", { marker: ALLOW_COMMENT }),
+      human: input.t("prose.block.human")
+    };
   }
   const file = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path") ?? "";
   return addsMarker(input, tool, inputs, file) ? blocked(input, shown2(input.cwd, file)) : ALLOW3;
@@ -14097,7 +14418,11 @@ var textOf2 = (input, found) => {
 var decisionFor = (input, found, blocking2) => {
   const text7 = textOf2(input, found);
   if (!text7.ok) {
-    return blocking2 ? { kind: "block", reason: input.t("prose.block.unreadable", { ...text7.error }) } : void 0;
+    return blocking2 ? {
+      kind: "block",
+      reason: modelReason(input.t, "prose.block.unreadable", { ...text7.error }),
+      human: input.t("prose.block.human")
+    } : void 0;
   }
   const report2 = scoreProse(text7.value, { context: "record" });
   if (report2.allowed || report2.spans.length === 0) return void 0;
@@ -14106,7 +14431,12 @@ var decisionFor = (input, found, blocking2) => {
     spans: describeSpans(input.t, report2.spans),
     fixes: describeFixes(input.t, report2.spans)
   };
-  if (blocking2) return { kind: "block", reason: input.t("prose.block.command", params2) };
+  if (blocking2)
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "prose.block.command", params2),
+      human: input.t("prose.block.human")
+    };
   const additionalContext = `finitemonkey: ${input.t("prose.warn.command", params2)}`;
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext } } };
 };
@@ -14303,18 +14633,22 @@ var writeDecision = (input, tool) => {
       ruleId: finding4.ruleId,
       where: written.whole ? t("secrets.where.file", { file, line: finding4.line, column: finding4.column }) : t("secrets.where.new_text", { file, line: finding4.line })
     }));
-    return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
+    return {
+      kind: "block",
+      reason: modelReason(t, "secrets.block.write", { file, found: describeFindings(t, items) }),
+      human: t("secrets.block.human")
+    };
   }
   return warningDecision(t, warnings);
 };
 var bashMessage = (t, finding4) => {
   switch (finding4.kind) {
     case "read":
-      return t("secrets.block.read", { target: finding4.target });
+      return modelReason(t, "secrets.block.read", { target: finding4.target });
     case "env-dump":
-      return t("secrets.block.env_dump", { command: finding4.command });
+      return modelReason(t, "secrets.block.env_dump", { command: finding4.command });
     case "person-only":
-      return t("secrets.block.person_only", { command: finding4.command });
+      return modelReason(t, "secrets.block.person_only", { command: finding4.command });
   }
 };
 var commitDecision = (input, includeUnstaged) => {
@@ -14325,7 +14659,11 @@ var commitDecision = (input, includeUnstaged) => {
     ruleId: finding4.ruleId,
     where: input.t("secrets.where.file", { file: finding4.file, line: finding4.line, column: finding4.column })
   }));
-  return { kind: "block", reason: input.t("secrets.block.commit", { found: describeFindings(input.t, items) }) };
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "secrets.block.commit", { found: describeFindings(input.t, items) }),
+    human: input.t("secrets.block.human")
+  };
 };
 var bashDecision = (input) => {
   const command = optionalString(toolInput2(input.payload), "command") ?? "";
@@ -14336,7 +14674,11 @@ var bashDecision = (input) => {
   const found = blocking(scanText(command));
   if (found.length > 0) {
     const items = found.map((finding4) => ({ ruleId: finding4.ruleId, where: lineWhere(input.t, finding4) }));
-    return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "secrets.block.bash", { found: describeFindings(input.t, items) }),
+      human: input.t("secrets.block.human")
+    };
   }
   const commit2 = commitIntent(segments);
   return commit2 === void 0 ? ALLOW5 : commitDecision(input, commit2.includeUnstaged);
@@ -14345,7 +14687,11 @@ var readDecision = (input) => {
   const inputs = toolInput2(input.payload);
   const target2 = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
   if (target2 === "" || !isSensitivePath(target2)) return ALLOW5;
-  return { kind: "block", reason: input.t("secrets.block.read", { target: relativeFile(input.cwd, target2) }) };
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "secrets.block.read", { target: relativeFile(input.cwd, target2) }),
+    human: input.t("secrets.block.human")
+  };
 };
 var WRITERS2 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELLS4 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
@@ -14427,11 +14773,23 @@ var mergeOutputs = (left, right) => {
   if (specific !== void 0) merged2["hookSpecificOutput"] = specific;
   return merged2;
 };
+var shaped = (input, decision) => {
+  if (input.event !== "PreToolUse" || decision.output !== void 0) return decision;
+  const reason = capReason(decision.reason);
+  return {
+    ...decision,
+    reason,
+    output: {
+      hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
+      systemMessage: `finitemonkey: ${decision.human ?? input.t("reason.human.generic")}`
+    }
+  };
+};
 var composeDecisions = async (input, handlers) => {
   let output = {};
   for (const handler of handlers) {
     const decision = await handler(input);
-    if (decision.kind === "block") return decision;
+    if (decision.kind === "block") return shaped(input, decision);
     output = mergeOutputs(output, decision.output);
   }
   return { kind: "allow", output };
@@ -16390,14 +16748,38 @@ var sourceProblems = (catalog) => Object.keys(catalog).sort().flatMap((key) => {
   const value = catalog[key];
   return typeof value === "string" ? pluralProblems(SOURCE_LANG, key, value, value) : [];
 });
+var MODEL_FACING = /\.(claim|requires|not)$|^gate\.tests\.|^reason\.label\./;
+var RELEASE_HINTS = [
+  /--yes\b/,
+  /\b(finitemonkey|fm)\b[^\n]{0,20}\b(allow|off|on|trust|approve)\b/i,
+  /\ballow\s+(bypass|tests|self|config)\b/i,
+  /\bFINITEMONKEY_[A-Z_]+/,
+  /\b[A-Z][A-Z0-9_]{2,}=/
+];
+var releaseHints = (text7) => RELEASE_HINTS.flatMap((pattern) => {
+  const match = pattern.exec(text7);
+  return match === null ? [] : [match[0]];
+});
+var hintProblems = (lang, catalog) => Object.keys(catalog).filter((key) => MODEL_FACING.test(key)).sort().flatMap((key) => {
+  const value = catalog[key];
+  const found = typeof value === "string" ? releaseHints(value) : [];
+  return found.length === 0 ? [] : [{ lang, key, kind: "release_hint", actual: found }];
+});
 var checkCatalogs = (input, review2) => {
   const reference = input[SOURCE_LANG];
   const problems = LANGUAGES.flatMap((lang) => {
-    if (lang === SOURCE_LANG) return [...valueProblems(lang, input[lang], reference), ...sourceProblems(reference)];
+    if (lang === SOURCE_LANG) {
+      return [
+        ...valueProblems(lang, input[lang], reference),
+        ...sourceProblems(reference),
+        ...hintProblems(lang, reference)
+      ];
+    }
     const statuses = review2?.[lang];
     return [
       ...valueProblems(lang, input[lang], reference),
       ...parityProblems(lang, input[lang], reference),
+      ...hintProblems(lang, input[lang]),
       ...review2 === void 0 ? [] : statusProblems(lang, input[lang], statuses ?? {})
     ];
   });

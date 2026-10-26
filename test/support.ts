@@ -206,3 +206,11 @@ export const fakeCtx = (overrides: Partial<Ctx> = {}): Ctx => {
     ...overrides,
   };
 };
+
+export const reasonText = (outcome: { readonly stdout: string; readonly stderr: string }): string => {
+  if (outcome.stdout.trim() === "") return outcome.stderr;
+  const body = parseJsonObject(outcome.stdout);
+  if (!body.ok) return outcome.stderr;
+  const reason = field(body.value, "hookSpecificOutput", "permissionDecisionReason");
+  return typeof reason === "string" ? reason : outcome.stderr;
+};

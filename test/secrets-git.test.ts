@@ -90,8 +90,9 @@ describe("secrets scan against a real git repository", () => {
       tool_input: { command: 'git commit -m "feat: deploy"' },
     });
     const run = fm(repo, ["hook", "PreToolUse"], payload);
-    assert.equal(run.code, 2);
-    assert.match(run.stderr, /npm-access-token at deploy\.sh:1:18/);
+    assert.equal(run.code, 0);
+    assert.match(run.stdout, /"permissionDecision":"deny"/);
+    assert.match(run.stdout, /npm-access-token at deploy\.sh:1:18/);
     assert.ok(!leaked(run.stdout + run.stderr));
   });
 });
