@@ -514,7 +514,12 @@
     "gate.size.grew": "machine",
     "gate.size.sensitive": "machine",
     "gate.review.missing": "machine",
-    "gate.review.done": "machine"
+    "gate.review.done": "machine",
+    "secrets.warn.write": "machine",
+    "gate.secrets.warning": "machine",
+    "doctor.secrets.remote_credential": "machine",
+    "doctor.secrets.fix_remote_credential": "machine",
+    "secrets.session.remote_credential": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1031,6 +1036,11 @@
     "gate.size.grew": "machine",
     "gate.size.sensitive": "machine",
     "gate.review.missing": "machine",
-    "gate.review.done": "machine"
+    "gate.review.done": "machine",
+    "secrets.warn.write": "machine",
+    "gate.secrets.warning": "machine",
+    "doctor.secrets.remote_credential": "machine",
+    "doctor.secrets.fix_remote_credential": "machine",
+    "secrets.session.remote_credential": "machine"
   }
 }

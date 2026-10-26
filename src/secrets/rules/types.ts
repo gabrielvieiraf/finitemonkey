@@ -1,4 +1,4 @@
-export const SEVERITIES = ["high", "medium"] as const;
+export const SEVERITIES = ["high", "medium", "warning"] as const;
 
 export type Severity = (typeof SEVERITIES)[number];
 
@@ -43,3 +43,8 @@ export const defineRule = (spec: RuleSpec): SecretRule => ({
   skipTestPaths: spec.skipTestPaths ?? false,
   placeholders: spec.placeholders ?? true,
 });
+
+export const isWarning = (finding: { readonly severity: Severity }): boolean => finding.severity === "warning";
+
+export const blocking = <T extends { readonly severity: Severity }>(findings: readonly T[]): readonly T[] =>
+  findings.filter((finding) => !isWarning(finding));

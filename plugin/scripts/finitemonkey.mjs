@@ -1670,6 +1670,35 @@ var defineRule = (spec2) => ({
   skipTestPaths: spec2.skipTestPaths ?? false,
   placeholders: spec2.placeholders ?? true
 });
+var isWarning = (finding3) => finding3.severity === "warning";
+var blocking = (findings) => findings.filter((finding3) => !isWarning(finding3));
+
+// src/secrets/rules/exposure.ts
+var ARGUMENT_CONTEXT = String.raw`(?:^|\n)[ \t-]*(?:command|entrypoint|CMD|ENTRYPOINT|RUN|ExecStart(?:Pre|Post)?|ExecReload)\b[^\n]*?`;
+var SECRET_FLAG = String.raw`(?<=[\s"'\[,])--?[A-Za-z0-9_-]*(?:password|passwd|pass|secret|token|requirepass|api-?key)`;
+var EXPOSURE_RULES = [
+  defineRule({
+    id: "secret-in-process-args",
+    summary: "Literal password, token or key passed as a command-line argument in compose, a Dockerfile or a systemd unit (visible in ps and docker inspect)",
+    kind: "practice",
+    severity: "warning",
+    keywords: ["command", "entrypoint", "cmd", "run", "execstart", "execreload"],
+    source: String.raw`${ARGUMENT_CONTEXT}${SECRET_FLAG}(?:=["']?|["'][ \t]*,[ \t]*["']|[ \t]+["']?)(?<secret>[^\s"',\]$\x60/][^\s"',\]\x60]{3,127})`,
+    flags: "i",
+    minLength: 4
+  }),
+  defineRule({
+    id: "tls-disabled",
+    summary: "TLS verification turned off in code: sslmode set to disable, rejectUnauthorized or InsecureSkipVerify set to skip checks, Python verify set to False, NODE_TLS_REJECT_UNAUTHORIZED set to 0",
+    kind: "practice",
+    severity: "warning",
+    keywords: ["sslmode", "rejectunauthorized", "verify", "insecureskipverify", "node_tls_reject_unauthorized"],
+    source: String.raw`(?<secret>\bsslmode[ \t]*=[ \t]*["']?disable\b|\brejectUnauthorized["']?[ \t]*:[ \t]*false\b|\bverify[ \t]*=[ \t]*False\b|\bInsecureSkipVerify[ \t]*:[ \t]*true\b|\bNODE_TLS_REJECT_UNAUTHORIZED["']?[ \t]*(?:=|:)[ \t]*["']?0\b)`,
+    minLength: 1,
+    placeholders: false,
+    skipTestPaths: true
+  })
+];
 
 // src/secrets/rules/providers.ts
 var PROVIDER_RULES = [
@@ -1893,7 +1922,7 @@ var STRUCTURAL_RULES = [
 ];
 
 // src/secrets/rules/catalog.ts
-var RULES = [...PROVIDER_RULES, ...STRUCTURAL_RULES];
+var RULES = [...PROVIDER_RULES, ...STRUCTURAL_RULES, ...EXPOSURE_RULES];
 var CREDENTIAL_RULES = RULES.filter((rule) => rule.kind === "credential");
 var ruleById = (id) => RULES.find((rule) => rule.id === id);
 
@@ -5672,7 +5701,12 @@ var en_default = {
   "gate.size.grew": "declared {declared}, the diff makes it {effective}: {files, plural, one {# file} other {# files}}, {lines, plural, one {# line} other {# lines}}",
   "gate.size.sensitive": "sensitive path touched: {file}",
   "gate.review.missing": "no review of the current state: run a reviewer subagent on the diff, or the person writes `fm: approve {check} <reason>` in the chat",
-  "gate.review.done": "reviewed by {agent} at {at}"
+  "gate.review.done": "reviewed by {agent} at {at}",
+  "secrets.warn.write": "Finite Monkey warning (the write went through): {found}. A secret passed as a command-line argument shows in ps and docker inspect; disabled TLS verification lets anyone on the path read the traffic. Move the value to an environment variable or a secret file, and keep TLS checks on outside tests.",
+  "gate.secrets.warning": "warning: {rule} at {file}:{line}",
+  "doctor.secrets.remote_credential": "git remote {remotes} has a credential in its URL, stored in plain text in .git/config",
+  "doctor.secrets.fix_remote_credential": "run `git remote set-url {remote} <url without user:token@>`, use a credential helper or SSH, and rotate the token",
+  "secrets.session.remote_credential": "git remote {remotes} has a credential in its URL (plain text in .git/config). Ask the person to run `git remote set-url {remote} <url without user:token@>` and rotate the token; do not print the URL."
 };
 
 // src/i18n/es.json
@@ -6191,7 +6225,12 @@ var es_default = {
   "gate.size.grew": "declarada {declared}, el diff la vuelve {effective}: {files, plural, one {# archivo} other {# archivos}}, {lines, plural, one {# línea} other {# líneas}}",
   "gate.size.sensitive": "ruta sensible tocada: {file}",
   "gate.review.missing": "ninguna revisión del estado actual: ejecuta un subagente revisor sobre el diff, o la persona escribe `fm: approve {check} <motivo>` en el chat",
-  "gate.review.done": "revisado por {agent} en {at}"
+  "gate.review.done": "revisado por {agent} en {at}",
+  "secrets.warn.write": "Aviso de Finite Monkey (la escritura se hizo): {found}. Un secreto pasado como argumento de línea de comandos aparece en ps y en docker inspect; la verificación TLS desactivada deja que cualquiera en el camino lea el tráfico. Lleva el valor a una variable de entorno o a un archivo de secreto y mantén el TLS verificado fuera de las pruebas.",
+  "gate.secrets.warning": "aviso: {rule} en {file}:{line}",
+  "doctor.secrets.remote_credential": "el remoto git {remotes} tiene una credencial en la URL, guardada en texto plano en .git/config",
+  "doctor.secrets.fix_remote_credential": "ejecuta `git remote set-url {remote} <url sin usuario:token@>`, usa un credential helper o SSH y rota el token",
+  "secrets.session.remote_credential": "el remoto git {remotes} tiene una credencial en la URL (texto plano en .git/config). Pide a la persona que ejecute `git remote set-url {remote} <url sin usuario:token@>` y rote el token; no imprimas la URL."
 };
 
 // src/i18n/pt-BR.json
@@ -6710,7 +6749,12 @@ var pt_BR_default = {
   "gate.size.grew": "declarada {declared}, o diff a torna {effective}: {files, plural, one {# arquivo} other {# arquivos}}, {lines, plural, one {# linha} other {# linhas}}",
   "gate.size.sensitive": "caminho sensível alterado: {file}",
   "gate.review.missing": "nenhuma revisão do estado atual: rode um subagente revisor no diff, ou a pessoa escreve `fm: approve {check} <motivo>` no chat",
-  "gate.review.done": "revisado por {agent} em {at}"
+  "gate.review.done": "revisado por {agent} em {at}",
+  "secrets.warn.write": "Aviso do Finite Monkey (a escrita foi feita): {found}. Segredo passado como argumento de linha de comando aparece no ps e no docker inspect; verificação TLS desligada deixa qualquer um no caminho ler o tráfego. Leve o valor para uma variável de ambiente ou um arquivo de segredo e mantenha o TLS verificado fora dos testes.",
+  "gate.secrets.warning": "aviso: {rule} em {file}:{line}",
+  "doctor.secrets.remote_credential": "o remoto git {remotes} tem uma credencial na URL, guardada em texto puro no .git/config",
+  "doctor.secrets.fix_remote_credential": "rode `git remote set-url {remote} <url sem usuario:token@>`, use um credential helper ou SSH e rotacione o token",
+  "secrets.session.remote_credential": "o remoto git {remotes} tem uma credencial na URL (texto puro no .git/config). Peça para a pessoa rodar `git remote set-url {remote} <url sem usuario:token@>` e rotacionar o token; não imprima a URL."
 };
 
 // src/i18n/review.json
@@ -7230,7 +7274,12 @@ var review_default = {
     "gate.size.grew": "machine",
     "gate.size.sensitive": "machine",
     "gate.review.missing": "machine",
-    "gate.review.done": "machine"
+    "gate.review.done": "machine",
+    "secrets.warn.write": "machine",
+    "gate.secrets.warning": "machine",
+    "doctor.secrets.remote_credential": "machine",
+    "doctor.secrets.fix_remote_credential": "machine",
+    "secrets.session.remote_credential": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -7747,7 +7796,12 @@ var review_default = {
     "gate.size.grew": "machine",
     "gate.size.sensitive": "machine",
     "gate.review.missing": "machine",
-    "gate.review.done": "machine"
+    "gate.review.done": "machine",
+    "secrets.warn.write": "machine",
+    "gate.secrets.warning": "machine",
+    "doctor.secrets.remote_credential": "machine",
+    "doctor.secrets.fix_remote_credential": "machine",
+    "secrets.session.remote_credential": "machine"
   }
 };
 
@@ -8918,11 +8972,11 @@ var MAX_LISTED3 = 10;
 var rulesOf = (span) => [...new Set(span.hits.map((hit3) => hit3.rule))].join(", ");
 var proseOutcome = (status) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
-  const { files, flagged, blocking } = status.value;
-  const key = blocking ? "gate.prose.finding" : "gate.prose.warning";
+  const { files, flagged, blocking: blocking2 } = status.value;
+  const key = blocking2 ? "gate.prose.finding" : "gate.prose.warning";
   const notes2 = flagged.flatMap((item) => item.report.spans.map((span) => ({ file: item.file, span }))).slice(0, MAX_LISTED3).map(({ file, span }) => note(key, { file, line: span.startLine, rules: rulesOf(span) }));
   if (notes2.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
-  return blocking ? failed(notes2) : passed(notes2);
+  return blocking2 ? failed(notes2) : passed(notes2);
 };
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
@@ -9295,11 +9349,13 @@ var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings, openIncidents } = status.value;
+  const warnings = findings.filter(isWarning).slice(0, MAX_LISTED4).map((finding3) => note("gate.secrets.warning", { file: finding3.file, line: finding3.line, rule: finding3.ruleId }));
   const notes2 = [
-    ...findings.slice(0, MAX_LISTED4).map((finding3) => note("gate.secrets.finding", { file: finding3.file, line: finding3.line, rule: finding3.ruleId })),
+    ...blocking(findings).slice(0, MAX_LISTED4).map((finding3) => note("gate.secrets.finding", { file: finding3.file, line: finding3.line, rule: finding3.ruleId })),
     ...openIncidents.slice(0, MAX_LISTED4).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
-  return notes2.length > 0 ? failed(notes2) : passed([note("gate.secrets.clean")]);
+  if (notes2.length > 0) return failed([...notes2, ...warnings]);
+  return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
 };
 
 // src/gate/checks/tests.ts
@@ -12526,10 +12582,10 @@ var textOf2 = (input, found) => {
   }
   return accept(parts.join("\n\n"));
 };
-var decisionFor = (input, found, blocking) => {
+var decisionFor = (input, found, blocking2) => {
   const text6 = textOf2(input, found);
   if (!text6.ok) {
-    return blocking ? { kind: "block", reason: input.t("prose.block.unreadable", { ...text6.error }) } : void 0;
+    return blocking2 ? { kind: "block", reason: input.t("prose.block.unreadable", { ...text6.error }) } : void 0;
   }
   const report2 = scoreProse(text6.value, { context: "record" });
   if (report2.allowed || report2.spans.length === 0) return void 0;
@@ -12538,7 +12594,7 @@ var decisionFor = (input, found, blocking) => {
     spans: describeSpans(input.t, report2.spans),
     fixes: describeFixes(input.t, report2.spans)
   };
-  if (blocking) return { kind: "block", reason: input.t("prose.block.command", params2) };
+  if (blocking2) return { kind: "block", reason: input.t("prose.block.command", params2) };
   const additionalContext = `finitemonkey: ${input.t("prose.warn.command", params2)}`;
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext } } };
 };
@@ -12546,9 +12602,9 @@ var proseCommandGuard = (input) => {
   if (!SHELLS3.has(toolName2(input.payload))) return ALLOW4;
   const found = proseInCommand(optionalString(toolInput2(input.payload), "command") ?? "");
   if (found.length === 0) return ALLOW4;
-  const blocking = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
+  const blocking2 = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
   for (const item of found) {
-    const decision = decisionFor(input, item, blocking);
+    const decision = decisionFor(input, item, blocking2);
     if (decision !== void 0) return decision;
   }
   return ALLOW4;
@@ -12712,11 +12768,24 @@ var relativeFile = (cwd, file) => {
   const rel = relative7(cwd, file).split("\\").join("/");
   return rel.startsWith("..") || rel === "" ? file : rel;
 };
+var warningDecision = (t, warnings) => {
+  if (warnings.length === 0) return ALLOW5;
+  const context = t("secrets.warn.write", { found: describeFindings(t, warnings) });
+  return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
+};
 var writeDecision = (input, tool) => {
   const { t } = input;
+  const warnings = [];
   for (const written of writtenTexts(tool, toolInput2(input.payload))) {
     const file = relativeFile(input.cwd, written.file);
-    const found = scanText(written.text, { path: file });
+    const all = scanText(written.text, { path: file });
+    warnings.push(
+      ...all.filter(isWarning).map((finding3) => ({
+        ruleId: finding3.ruleId,
+        where: t("secrets.where.file", { file, line: finding3.line, column: finding3.column })
+      }))
+    );
+    const found = blocking(all);
     if (found.length === 0) continue;
     const items = found.map((finding3) => ({
       ruleId: finding3.ruleId,
@@ -12724,7 +12793,7 @@ var writeDecision = (input, tool) => {
     }));
     return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
   }
-  return ALLOW5;
+  return warningDecision(t, warnings);
 };
 var bashMessage = (t, finding3) => {
   switch (finding3.kind) {
@@ -12738,8 +12807,9 @@ var bashMessage = (t, finding3) => {
 };
 var commitDecision = (input, includeUnstaged) => {
   const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
-  if (!staged.ok || staged.value.length === 0) return ALLOW5;
-  const items = staged.value.map((finding3) => ({
+  const found = staged.ok ? blocking(staged.value) : [];
+  if (found.length === 0) return ALLOW5;
+  const items = found.map((finding3) => ({
     ruleId: finding3.ruleId,
     where: input.t("secrets.where.file", { file: finding3.file, line: finding3.line, column: finding3.column })
   }));
@@ -12751,7 +12821,7 @@ var bashDecision = (input) => {
   const segments = segmentsOf(command);
   const [first] = bashFindings(command, segments);
   if (first !== void 0) return { kind: "block", reason: bashMessage(input.t, first) };
-  const found = scanText(command);
+  const found = blocking(scanText(command));
   if (found.length > 0) {
     const items = found.map((finding3) => ({ ruleId: finding3.ruleId, where: lineWhere(input.t, finding3) }));
     return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
@@ -12774,6 +12844,44 @@ var secretsPreToolUse = (input) => {
   if (SHELLS4.has(tool)) return bashDecision(input);
   if (READS.has(tool)) return readDecision(input);
   return ALLOW5;
+};
+
+// src/secrets/remotes.ts
+var USER_AND_SECRET = /^[a-z][a-z0-9+.-]*:\/\/[^\s/@:]+:[^\s/@]+@/i;
+var USERINFO = /^[a-z][a-z0-9+.-]*:\/\/(?<user>[^\s/@]+)@/i;
+var hasCredential = (url) => {
+  if (USER_AND_SECRET.test(url)) return true;
+  const user = USERINFO.exec(url)?.groups?.["user"];
+  return user !== void 0 && scanText(user, { rules: CREDENTIAL_RULES }).length > 0;
+};
+var parseRemotes = (output) => {
+  const remotes = /* @__PURE__ */ new Map();
+  for (const line2 of output.split(/\r?\n/)) {
+    const [name, url] = line2.trim().split(/\s+/);
+    if (name === void 0 || url === void 0 || name === "") continue;
+    remotes.set(name, [...remotes.get(name) ?? [], url]);
+  }
+  return remotes;
+};
+var remotesWithCredentials = (runtime, root) => {
+  const listed4 = runtime.git(["remote", "-v"], root);
+  if (!listed4.ok) return [];
+  return [...parseRemotes(listed4.stdout)].filter(([, urls]) => urls.some(hasCredential)).map(([name]) => name).sort();
+};
+
+// src/secrets/guards/session.ts
+var secretsSessionStart = (input) => {
+  const remotes = remotesWithCredentials(input.runtime, input.cwd);
+  if (remotes.length === 0) return { kind: "allow" };
+  const params2 = { remotes: remotes.join(", "), remote: remotes[0] ?? "origin" };
+  const text6 = input.t("secrets.session.remote_credential", params2);
+  return {
+    kind: "allow",
+    output: {
+      systemMessage: `finitemonkey: ${text6}`,
+      hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: text6 }
+    }
+  };
 };
 
 // src/hooks/handlers.ts
@@ -12829,7 +12937,8 @@ var mergeHandlers = (...sets) => {
 var SECRETS_HANDLERS = {
   PreToolUse: [secretsPreToolUse],
   UserPromptSubmit: [secretsUserPromptSubmit],
-  PostToolUse: [secretsPostToolUse]
+  PostToolUse: [secretsPostToolUse],
+  SessionStart: [secretsSessionStart]
 };
 var DEFAULT_HANDLERS = mergeHandlers(
   SECRETS_HANDLERS,
@@ -13596,6 +13705,22 @@ var checkProjectFiles = (env) => [
   )
 ];
 
+// src/doctor/remotes.ts
+var checkRemoteCredentials = ({ root, runtime }) => {
+  const remotes = remotesWithCredentials(runtime, root);
+  if (remotes.length === 0) return [];
+  const params2 = { remotes: remotes.join(", "), remote: remotes[0] ?? "origin" };
+  return [
+    finding(
+      "secrets.remote_credential",
+      "warn",
+      "doctor.secrets.remote_credential",
+      params2,
+      "doctor.secrets.fix_remote_credential"
+    )
+  ];
+};
+
 // src/doctor/run.ts
 var DOCTOR_SCHEMA = "finitemonkey/doctor@1";
 var CHECKS = [
@@ -13611,6 +13736,7 @@ var CHECKS = [
   checkInstructions,
   checkProjectFiles,
   checkLineEndings,
+  checkRemoteCredentials,
   checkAgentsFile,
   checkHooks
 ];
@@ -15483,7 +15609,7 @@ var humanOf2 = (ctx, data) => [
 ];
 var resultOf3 = (ctx, data) => {
   const human2 = humanOf2(ctx, data);
-  const failing = data.summary.new + data.summary.expired;
+  const failing = data.findings.filter((item) => item.status !== "known" && item.severity !== "warning").length;
   if (failing === 0) return success(data, human2);
   return failureFrom(
     ctx.t,

@@ -5,6 +5,7 @@ import { optionalString } from "../../core/parsed.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
 import { scanText } from "../engine.js";
+import { blocking, isWarning } from "../rules/types.js";
 import { scanStaged } from "../scan.js";
 import { type BashFinding, bashFindings, commitIntent } from "./bash-rules.js";
 import { describeFindings, lineWhere, type Located } from "./describe.js";
@@ -20,11 +21,25 @@ const relativeFile = (cwd: AbsolutePath, file: string): string => {
   return rel.startsWith("..") || rel === "" ? file : rel;
 };
 
+const warningDecision = (t: Translate, warnings: readonly Located[]): HookDecision => {
+  if (warnings.length === 0) return ALLOW;
+  const context = t("secrets.warn.write", { found: describeFindings(t, warnings) });
+  return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
+};
+
 const writeDecision = (input: HookInput, tool: string): HookDecision => {
   const { t } = input;
+  const warnings: Located[] = [];
   for (const written of writtenTexts(tool, toolInput(input.payload))) {
     const file = relativeFile(input.cwd, written.file);
-    const found = scanText(written.text, { path: file });
+    const all = scanText(written.text, { path: file });
+    warnings.push(
+      ...all.filter(isWarning).map((finding) => ({
+        ruleId: finding.ruleId,
+        where: t("secrets.where.file", { file, line: finding.line, column: finding.column }),
+      })),
+    );
+    const found = blocking(all);
     if (found.length === 0) continue;
     const items: Located[] = found.map((finding) => ({
       ruleId: finding.ruleId,
@@ -34,7 +49,7 @@ const writeDecision = (input: HookInput, tool: string): HookDecision => {
     }));
     return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
   }
-  return ALLOW;
+  return warningDecision(t, warnings);
 };
 
 const bashMessage = (t: Translate, finding: BashFinding): string => {
@@ -50,8 +65,9 @@ const bashMessage = (t: Translate, finding: BashFinding): string => {
 
 const commitDecision = (input: HookInput, includeUnstaged: boolean): HookDecision => {
   const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
-  if (!staged.ok || staged.value.length === 0) return ALLOW;
-  const items = staged.value.map((finding) => ({
+  const found = staged.ok ? blocking(staged.value) : [];
+  if (found.length === 0) return ALLOW;
+  const items = found.map((finding) => ({
     ruleId: finding.ruleId,
     where: input.t("secrets.where.file", { file: finding.file, line: finding.line, column: finding.column }),
   }));
@@ -64,7 +80,7 @@ const bashDecision = (input: HookInput): HookDecision => {
   const segments = segmentsOf(command);
   const [first] = bashFindings(command, segments);
   if (first !== undefined) return { kind: "block", reason: bashMessage(input.t, first) };
-  const found = scanText(command);
+  const found = blocking(scanText(command));
   if (found.length > 0) {
     const items = found.map((finding) => ({ ruleId: finding.ruleId, where: lineWhere(input.t, finding) }));
     return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };

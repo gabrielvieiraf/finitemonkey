@@ -513,5 +513,10 @@
   "gate.size.grew": "declarada {declared}, o diff a torna {effective}: {files, plural, one {# arquivo} other {# arquivos}}, {lines, plural, one {# linha} other {# linhas}}",
   "gate.size.sensitive": "caminho sensível alterado: {file}",
   "gate.review.missing": "nenhuma revisão do estado atual: rode um subagente revisor no diff, ou a pessoa escreve `fm: approve {check} <motivo>` no chat",
-  "gate.review.done": "revisado por {agent} em {at}"
+  "gate.review.done": "revisado por {agent} em {at}",
+  "secrets.warn.write": "Aviso do Finite Monkey (a escrita foi feita): {found}. Segredo passado como argumento de linha de comando aparece no ps e no docker inspect; verificação TLS desligada deixa qualquer um no caminho ler o tráfego. Leve o valor para uma variável de ambiente ou um arquivo de segredo e mantenha o TLS verificado fora dos testes.",
+  "gate.secrets.warning": "aviso: {rule} em {file}:{line}",
+  "doctor.secrets.remote_credential": "o remoto git {remotes} tem uma credencial na URL, guardada em texto puro no .git/config",
+  "doctor.secrets.fix_remote_credential": "rode `git remote set-url {remote} <url sem usuario:token@>`, use um credential helper ou SSH e rotacione o token",
+  "secrets.session.remote_credential": "o remoto git {remotes} tem uma credencial na URL (texto puro no .git/config). Peça para a pessoa rodar `git remote set-url {remote} <url sem usuario:token@>` e rotacionar o token; não imprima a URL."
 }

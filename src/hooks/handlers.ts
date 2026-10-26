@@ -8,6 +8,7 @@ import type { Translate } from "../i18n/translate.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
+import { secretsSessionStart } from "../secrets/guards/session.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 
@@ -92,6 +93,7 @@ export const SECRETS_HANDLERS: HookHandlers = {
   PreToolUse: [secretsPreToolUse],
   UserPromptSubmit: [secretsUserPromptSubmit],
   PostToolUse: [secretsPostToolUse],
+  SessionStart: [secretsSessionStart],
 };
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

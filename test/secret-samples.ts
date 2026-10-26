@@ -92,6 +92,7 @@ export const SAMPLES = {
   urlPassword: randomText(20, ALNUM, 44),
   genericValue: randomText(32, ALNUM, 45),
   password: join(randomText(10, ALNUM, 46), "9#q"),
+  argValue: randomText(18, ALNUM, 47),
 } as const;
 
 export type SampleName = keyof typeof SAMPLES;

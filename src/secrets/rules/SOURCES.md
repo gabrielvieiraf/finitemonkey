@@ -1,6 +1,6 @@
 # Secret rules: ids and sources
 
-Every rule lives in `providers.ts` or `structural.ts` as data (`defineRule`). The id is the stable name used in block messages, in the masker (`«secret:<id>:<last4>»`), in `.finitemonkey/findings/baseline.json` and in incidents. Ids never change meaning; a rule that changes behavior gets a new id.
+Every rule lives in `providers.ts`, `structural.ts` or `exposure.ts` as data (`defineRule`). The id is the stable name used in block messages, in the masker (`«secret:<id>:<last4>»`), in `.finitemonkey/findings/baseline.json` and in incidents. Ids never change meaning; a rule that changes behavior gets a new id.
 
 Several rules mirror the default rule set of [gitleaks](https://github.com/gitleaks/gitleaks) (MIT, `config/gitleaks.toml`). Where a rule mirrors one, the gitleaks id is listed and the Finite Monkey id is the same, so a finding reads the same in both engines (spec 4.26.2: same corpus, same result). The patterns were rewritten for JavaScript regular expressions and tuned against the corpus in `test/secrets-rules.test.ts`; they are not a copy of the TOML.
 
@@ -31,11 +31,21 @@ Several rules mirror the default rule set of [gitleaks](https://github.com/gitle
 | `default-secret-fallback-python` | `os.getenv("X", "constant")` when X has a secret name | practice | Finite Monkey (spec 4.26.2, finding PA2) |
 | `generic-api-key` | High-entropy value assigned to a name with key, secret, token or credential | credential | gitleaks `generic-api-key`, with a random-run check and ignored names |
 | `password-assignment` | Literal assigned to password, passwd, pwd, senha, contraseña | credential | Finite Monkey |
+| `secret-in-process-args` | Literal password, token or key passed as an argument in compose `command:`/`entrypoint:`, Dockerfile `CMD`/`ENTRYPOINT`/`RUN` or systemd `ExecStart=` (it shows in `ps` and `docker inspect`) | practice, warning | Finite Monkey (spec 4.26.2) |
+| `tls-disabled` | `sslmode` set to `disable`, `rejectUnauthorized` set to `false`, Python `verify` set to `False`, Go `InsecureSkipVerify` set to `true`, `NODE_TLS_REJECT_UNAUTHORIZED` set to `0` | practice, warning | Finite Monkey (spec 4.26.2) |
 
 ## Kinds
 
 - `credential`: a value that works as a key. The prompt guard, the PostToolUse guard and the masker use only these.
 - `practice`: code that is unsafe even when the value is not a live key. Write guards and scans report it; the masker does not mask it.
+
+## Severity
+
+`high` and `medium` findings block a write, a commit and the gate. `warning` findings never block: the write goes through with a note to the model, `secrets scan` lists them without failing, and the gate report shows them as notes on a passing secrets check. Documentation files get no exception; `tls-disabled` skips test paths because tests often talk to a local server with a self-signed certificate.
+
+## Credentials in git remotes
+
+`doctor` and the `SessionStart` hook read `git remote -v` and warn when a remote URL carries `user:token@` (or a bare token as the user). They print the remote name only, never the URL. The fix is `git remote set-url <name> <url without credentials>`, a credential helper or SSH, and rotating the token.
 
 ## Thresholds and allowlists
 
@@ -44,4 +54,4 @@ Several rules mirror the default rule set of [gitleaks](https://github.com/gitle
 - `minRandomRun` (generic rule only): the value needs a run of at least 12 letters and digits that mixes both and has entropy of at least 3, so identifiers such as `error.i18n_catalog_unreadable` pass.
 - `ignoredNames` (generic rule only): exact names such as `key` and `idempotencyKey` are object keys, not secrets.
 - A value is a placeholder when it contains a placeholder word (`example`, `your_`, `_here`, `changeme`, `dummy`, `fake`, `sample`, `mock`, `fixture`, `test`, `xxxx`, `...`, `<`, `${`, `process.env` and others), is an environment reference such as `$TOKEN` or `${TOKEN}`, is a bare word such as `password`, or has fewer than four distinct characters. `practice` rules skip this check on purpose: a constant fallback is the problem even when it is zeros.
-- Rules with `skipTestPaths` (`generic-api-key`, `password-assignment` and the two `default-secret-fallback` rules) do not run on lockfiles or under test, fixture and example paths. Provider rules run everywhere: a real `ghp_` token in a test file is still a leak.
+- Rules with `skipTestPaths` (`generic-api-key`, `password-assignment`, `tls-disabled` and the two `default-secret-fallback` rules) do not run on lockfiles or under test, fixture and example paths. Provider rules run everywhere: a real `ghp_` token in a test file is still a leak.
