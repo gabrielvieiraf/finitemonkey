@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.8](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.7...v0.1.0-next.8) (2026-10-26)
+
+### Features
+
+* **install:** init writes a project verify skill that runs the fast gate ([#130](https://github.com/gabrielvieiraf/finitemonkey/issues/130)) ([2f2fc44](https://github.com/gabrielvieiraf/finitemonkey/commit/2f2fc44dbb07dde6113f65ad7586b4f1573c592d)), closes [#43](https://github.com/gabrielvieiraf/finitemonkey/issues/43)
+
 ## [0.1.0-next.7](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.6...v0.1.0-next.7) (2026-10-26)
 
 ### Bug Fixes
