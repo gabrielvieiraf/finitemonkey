@@ -22,4 +22,26 @@ These describe how Finite Monkey is being built. Each one will be backed by a te
 - Secrets are never printed in output, logs, reports or pull requests; they are referenced by file and line.
 - Guards fail closed: if a check cannot run, the action is blocked and the reason is shown.
 - Packages are published only from CI, with npm provenance.
-- A generated list of exactly what Finite Monkey reads, writes and sends over the network will be added to this file before the first release.
+
+<!-- generated:footprint:start -->
+## What it reads, writes and sends
+
+Generated from `src/core/footprint.ts`, the list the tests hold the code to. No telemetry. Paths are relative to the project unless they start with `~`.
+
+| | What | Why |
+|---|---|---|
+| Reads | `stdin` | The event Claude Code passes to each hook: the tool call, the prompt or the stop request. |
+| Reads | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | Claude Code settings, to check that the hooks are installed and nothing switches them off. `$CLAUDE_CONFIG_DIR` replaces `~/.claude` when set. |
+| Reads | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Instruction files, read by `doctor` to report rules that exist only as text. |
+| Reads | `.git/` | The repository through the `git` command: status, diffs, refs and the reflog. |
+| Reads | `git diff` | Changed files, scanned for secrets, test skips, placeholders and prose patterns. |
+| Reads | `.finitemonkey/config.yml`, `.finitemonkey/briefing.md` | Project configuration and the optional briefing for subagents. |
+| Writes | `.claude/settings.json`, `.claude/skills/verify/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.finitemonkey/config.yml`, `.finitemonkey/lock.json`, `.finitemonkey/locks/`, `.finitemonkey/runtime/`, `.finitemonkey/backups/` | `init` and `update`: hook settings, the verify skill, a short managed block in `AGENTS.md` that `CLAUDE.md` imports, one `.gitignore` line, the pinned runtime and a backup of every file it changes. |
+| Writes | `.finitemonkey/tasks/`, `.finitemonkey/state.json` | Task contracts and which task is active. |
+| Writes | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | Evidence of each check, tied to the tree hash, and the gate log. |
+| Writes | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Approvals and grants typed by the person, and a short-lived cache of open pull requests. |
+| Writes | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | The accepted-findings baseline and exposure incidents. Both hold fingerprints and masks, never a secret value. |
+| Writes | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots before destructive git commands, the journal that `undo` reads and dropped-line decisions from merges. |
+| Writes | `.finitemonkey/reports/` | Masked bug reports that `doctor --report` writes, only when asked. |
+| Sends | `api.github.com` | Through `gh`, only when it is installed and logged in: the state of the pull request named in a task, and your open pull requests for the session line. Code is never uploaded. |
+<!-- generated:footprint:end -->

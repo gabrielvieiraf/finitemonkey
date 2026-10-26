@@ -27,7 +27,7 @@ Os dois instalam os mesmos hooks. Use um ou os dois: quando o projeto tem os pr�
    /plugin install finitemonkey@finitemonkey
    ```
 
-   O plugin traz os hooks e as skills (`task`, `verify`, `look`, `finish`) que o Claude usa sozinho. Ele carrega a própria CLI (`scripts/finitemonkey.mjs`, o mesmo build da versão em `plugin.json`), e cada hook roda `node` nesse arquivo: sem `npx`, sem download, sem rede.
+   O plugin traz os hooks e as skills (`task`, `verify`, `look`, `finish`) que o Claude usa sozinho. Ele carrega a própria CLI (`scripts/finitemonkey.mjs`, o mesmo build da versão em `plugin.json`), e cada hook roda `node` nesse arquivo: sem `npx` e sem download.
 
 2. **`npx finitemonkey init`** no projeto (passos abaixo). Ele grava no projeto os hooks, o piso de `permissions.deny` (mais uma regra `Read` de bloqueio para cada padrão do `.claudeignore`), regras `ask` para push em `main`/`master` e para comandos de publicação e deploy, `permissions.blockReadsOutsideWorkingDirectories: true`, `.finitemonkey/config.yml`, uma skill `verify` do projeto (`.claude/skills/verify/SKILL.md`, que roda o portão rápido antes de cada commit) e um bloco gerenciado curto no `AGENTS.md`, que o `CLAUDE.md` importa com `@AGENTS.md` (cada arquivo é criado se não existir; tudo fora do bloco fica como estava). Ele nunca define `defaultMode` nem `autoMode`, só acrescenta regras que as configurações ainda não têm e deixa como está uma skill `verify` que o projeto já tenha. Os hooks rodam `node` em `node_modules/finitemonkey` quando o projeto tem o pacote como dependência; senão, o `init` copia a CLI que está rodando para `.finitemonkey/runtime/` (versionada, para que o time e as sessões na nuvem usem a mesma versão) e os hooks rodam essa cópia. Nenhum hook chama `npx`. Isso vale também onde plugins não carregam (sessões na nuvem de um repositório leem o `.claude/settings.json` versionado). Acrescente `--marketplace` para registrar também o marketplace do plugin nas configurações do projeto, para todo mundo que confiar na pasta; fica desligado a não ser que a pessoa peça.
 
@@ -116,4 +116,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:c31369133138 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:4c13eb9ff547 -->
