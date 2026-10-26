@@ -123,6 +123,28 @@ La comparación completa, con fuentes, está en [docs/compare.es.md](docs/compar
 - **Métodos como superpowers, GSD, Spec Kit u OpenSpec** le dicen al agente cómo planificar y construir. Finite Monkey no los sustituye: comprueba el resultado al final, uses el método que uses.
 - **Guardas sueltos como tdd-guard, cc-safety-net o dcg** hacen un trabajo cada uno, y lo hacen bien. Finite Monkey cubre cuatro daños con un control, una instalación y un `undo`. Si solo necesitas uno de esos trabajos, un guarda suelto puede ser lo más sencillo.
 
+<!-- generated:footprint:start -->
+## Qué lee, escribe y envía
+
+Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código. Sin telemetría. Las rutas son relativas al proyecto salvo las que empiezan con `~`.
+
+| | Qué | Para qué |
+|---|---|---|
+| Lee | `stdin` | El evento que Claude Code pasa a cada hook: la llamada a la herramienta, el prompt o la petición de parada. |
+| Lee | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | La configuración de Claude Code, para comprobar que los hooks están instalados y que nada los desactiva. `$CLAUDE_CONFIG_DIR` reemplaza `~/.claude` si está definido. |
+| Lee | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Archivos de instrucciones, que `doctor` lee para señalar reglas que solo existen como texto. |
+| Lee | `.git/` | El repositorio a través del comando `git`: estado, diffs, refs y el reflog. |
+| Lee | `git diff` | Archivos modificados, revisados en busca de secretos, tests saltados, placeholders y patrones de prosa. |
+| Lee | `.finitemonkey/config.yml`, `.finitemonkey/briefing.md` | La configuración del proyecto y el briefing opcional para subagentes. |
+| Escribe | `.claude/settings.json`, `.claude/skills/verify/SKILL.md`, `.gitignore`, `.finitemonkey/config.yml`, `.finitemonkey/lock.json`, `.finitemonkey/locks/`, `.finitemonkey/runtime/`, `.finitemonkey/backups/` | `init` y `update`: la configuración de los hooks, la skill verify, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian. |
+| Escribe | `.finitemonkey/tasks/`, `.finitemonkey/state.json` | Contratos de tarea y cuál tarea está activa. |
+| Escribe | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | La evidencia de cada comprobación, ligada al hash del árbol, y el log de la puerta. |
+| Escribe | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Aprobaciones y permisos escritos por la persona, y una caché breve de los pull requests abiertos. |
+| Escribe | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto. |
+| Escribe | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots antes de comandos git destructivos, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges. |
+| Envía | `api.github.com` | A través de `gh`, solo si está instalado y con sesión iniciada: el estado del pull request indicado en una tarea y tus pull requests abiertos para la línea de la sesión. El código nunca se sube. |
+<!-- generated:footprint:end -->
+
 ## Preguntas frecuentes
 
 Más preguntas, una por cada búsqueda real, en [docs/faq.es.md](docs/faq.es.md).
@@ -131,7 +153,7 @@ Más preguntas, una por cada búsqueda real, en [docs/faq.es.md](docs/faq.es.md)
 No. Son hooks y comprobaciones que se ejecutan aunque el modelo no se acuerde.
 
 **¿Envía mi código a algún sitio?**
-No. Por defecto nada sale de tu máquina. Sin telemetría.
+No. Tu código nunca sale de tu máquina y no hay telemetría. La única llamada de red es `gh` preguntando a GitHub por pull requests, y solo si `gh` tiene sesión iniciada. La lista completa está en [Qué lee, escribe y envía](#qué-lee-escribe-y-envía).
 
 **¿Me va a ralentizar?**
 Las tareas pequeñas no tienen ceremonia, solo el control al final. Los hooks rápidos siguen siendo rápidos; la comprobación costosa va en `Stop`. El CI rechaza un pull request que lleve un guard de `PreToolUse` por encima de 50 ms en el p95 o que agregue contexto al inicio de la sesión; los límites están en [budgets.json](budgets.json). Publicaremos los tiempos de punta a punta junto con el benchmark.
