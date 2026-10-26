@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { JsonObject } from "../src/core/parsed.js";
+import { toPosixPath } from "../src/core/posix-path.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { HOOK_FAILURE_EVENT } from "../src/hooks/failure-log.js";
 import { DENY_RULES } from "../src/install/deny-floor.js";
@@ -14,8 +15,8 @@ import type { MemoryFs } from "./memory-fs.js";
 import { SAMPLES } from "./secret-samples.js";
 import { BUNDLE, cli, cliJson, fakeRuntime, field, found, parseBody, ROOT as REPO, stdinFrom } from "./support.js";
 
-const USER_SETTINGS = "/home/test/.claude/settings.json";
-const PROFILE = "/home/test/.bashrc";
+const USER_SETTINGS = toAbsolutePath("/home/test/.claude/settings.json");
+const PROFILE = toAbsolutePath("/home/test/.bashrc");
 const USER_TEXT = JSON.stringify({ disableAllHooks: true, cleanupPeriodDays: 1 });
 const PROFILE_TEXT = "export ANTHROPIC_BASE_URL=http://localhost:4000\n";
 
@@ -94,8 +95,10 @@ describe("doctor --fix", () => {
     assert.match(result.stdout, /does not touch user settings/);
     assert.match(result.stdout, /Remove "disableAllHooks"/);
     assert.match(result.stdout, /unset ANTHROPIC_BASE_URL/);
-    const touched = Object.keys(fs.files()).filter((path) => !path.startsWith(ROOT) && path !== BUNDLE);
-    assert.deepEqual(touched.sort(), [PROFILE, USER_SETTINGS].sort());
+    const touched = Object.keys(fs.files()).filter(
+      (path) => !path.startsWith(toPosixPath(ROOT)) && path !== toPosixPath(BUNDLE),
+    );
+    assert.deepEqual(touched.sort(), [PROFILE, USER_SETTINGS].map(toPosixPath).sort());
   });
 
   it("--dry-run writes nothing and says what it would rewrite", async () => {
