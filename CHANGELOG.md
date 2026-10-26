@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.9](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.8...v0.1.0-next.9) (2026-10-26)
+
+### Features
+
+* **install:** ask before default-branch pushes and deploys, block reads outside the project ([#131](https://github.com/gabrielvieiraf/finitemonkey/issues/131)) ([816e2fb](https://github.com/gabrielvieiraf/finitemonkey/commit/816e2fb6e6172b0999da887f67fd2f297d29b055)), closes [#51](https://github.com/gabrielvieiraf/finitemonkey/issues/51)
+
 ## [0.1.0-next.8](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.7...v0.1.0-next.8) (2026-10-26)
 
 ### Features
