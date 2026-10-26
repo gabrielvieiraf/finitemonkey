@@ -9,6 +9,7 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { readAll } from "../hooks/stdin.js";
 import { changedMarkdown, type ProseFileReport, scoreFiles } from "../prose/gate.js";
+import { ALLOW_COMMENT } from "../prose/marker.js";
 import { scoreProse } from "../prose/score.js";
 import { projectRoot } from "../secrets/project.js";
 import { type ProseCheckData, proseCheckData, proseCheckHuman } from "./prose-view.js";
@@ -92,7 +93,7 @@ const resultOf = (ctx: Ctx, reports: readonly ProseFileReport[]): CommandResult<
       code: "prose_found",
       messageKey: "prose.error.found",
       params: { count: data.summary.spans },
-      fix: "rewrite the listed passages; for deliberate brand text, the person adds <!-- finitemonkey:prose-allow -->",
+      fix: `rewrite the listed passages; for deliberate brand text, the person adds ${ALLOW_COMMENT}`,
       exitCode: ExitCode.CheckFailed,
       data,
     },

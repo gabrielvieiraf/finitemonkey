@@ -116,7 +116,7 @@ describe("the allow marker is the person's, never the model's", () => {
       },
     },
     { name: "echo into a file", input: bash(`echo '${MARKER}' >> README.md`) },
-    { name: "a commit message", input: bash(`git commit -m "brand line finitemonkey:prose-allow"`) },
+    { name: "a commit message", input: bash(`git commit -m "brand line ${MARKER}"`) },
   ];
   for (const { name, input } of blocked) {
     it(`blocks: ${name}`, async () => {
@@ -141,6 +141,16 @@ describe("the allow marker is the person's, never the model's", () => {
       files: {},
     },
     { name: "grep for the marker", input: bash("grep -rn finitemonkey:prose-allow docs"), files: {} },
+    {
+      name: "a PR body that names the marker in inline code",
+      input: bash("gh pr create --title t --body 'the person adds `finitemonkey:prose-allow-file`'"),
+      files: {},
+    },
+    {
+      name: "docs that mention the marker without the comment",
+      input: { tool_name: "Write", tool_input: { file_path: readme, content: "Add finitemonkey:prose-allow." } },
+      files: {},
+    },
   ];
   for (const { name, input, files } of allowed) {
     it(`allows: ${name}`, async () => {

@@ -143,6 +143,12 @@ describe("allow markers that only the person adds", () => {
   it("a marker at the end of a line skips that line", () => {
     assert.equal(scoreProse(`${bad} <!-- finitemonkey:prose-allow -->\n`).hits.length, 0);
   });
+
+  it("ignores a marker named outside an HTML comment", () => {
+    const report = scoreProse(`The person adds \`finitemonkey:prose-allow-file\`.\n\n${bad}\n`);
+    assert.ok(!report.allowed);
+    assert.ok(isFlagged(report));
+  });
 });
 
 describe("record rules for commits, PRs, issues and changelogs", () => {

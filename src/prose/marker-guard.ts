@@ -5,7 +5,7 @@ import { isRecord, type JsonObject, optionalString } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { toolInput, toolName } from "../secrets/guards/tool-input.js";
-import { ALLOW_MARKER, markerCount } from "./marker.js";
+import { ALLOW_COMMENT, markerCount } from "./marker.js";
 import { shellWords } from "./shell-words.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
@@ -46,7 +46,7 @@ const isReadOnly = (program: string, args: readonly string[]): boolean =>
   READ_ONLY.has(program) || (program === "git" && GIT_READ_ONLY.has(args[0] ?? ""));
 
 const shellAddsMarker = (command: string): boolean =>
-  command.includes(ALLOW_MARKER) &&
+  markerCount(command) > 0 &&
   shellWords(command).segments.some((segment) => !isReadOnly(segment.program, segment.args));
 
 const shown = (cwd: AbsolutePath, file: string): string => {
@@ -56,7 +56,7 @@ const shown = (cwd: AbsolutePath, file: string): string => {
 
 const blocked = (input: HookInput, file: string): HookDecision => ({
   kind: "block",
-  reason: input.t("prose.block.marker", { marker: ALLOW_MARKER, file }),
+  reason: input.t("prose.block.marker", { marker: ALLOW_COMMENT, file }),
 });
 
 export const proseMarkerGuard: HookHandler = (input) => {
@@ -64,7 +64,7 @@ export const proseMarkerGuard: HookHandler = (input) => {
   const inputs = toolInput(input.payload);
   if (SHELLS.has(tool)) {
     if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW;
-    return { kind: "block", reason: input.t("prose.block.marker_shell", { marker: ALLOW_MARKER }) };
+    return { kind: "block", reason: input.t("prose.block.marker_shell", { marker: ALLOW_COMMENT }) };
   }
   const file = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path") ?? "";
   return addsMarker(input, tool, inputs, file) ? blocked(input, shown(input.cwd, file)) : ALLOW;

@@ -1,7 +1,7 @@
 import type { Translate } from "../i18n/translate.js";
 import { RULE_FIX_KEYS, rulesOf, spanRules } from "../prose/describe.js";
 import type { ProseFileReport } from "../prose/gate.js";
-import { ALLOW_MARKER } from "../prose/marker.js";
+import { ALLOW_FILE_COMMENT } from "../prose/marker.js";
 import type { ProseHit, ProseRuleId, ProseSpan } from "../prose/types.js";
 
 export const PROSE_CHECK_SCHEMA = "finitemonkey/prose-check@1";
@@ -52,7 +52,7 @@ export const proseCheckData = (reports: readonly ProseFileReport[]): ProseCheckD
 };
 
 const fileLines = (t: Translate, report: ProseFileReport): readonly string[] => {
-  if (report.report.allowed) return [t("prose.check.allowed", { file: report.file, marker: ALLOW_MARKER })];
+  if (report.report.allowed) return [t("prose.check.allowed", { file: report.file, marker: ALLOW_FILE_COMMENT })];
   const { spans } = report.report;
   if (spans.length === 0) return [];
   return [
