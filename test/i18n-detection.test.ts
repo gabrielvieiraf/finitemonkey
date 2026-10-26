@@ -12,6 +12,7 @@ import { BUNDLE, cliJson, fakeRuntime, field, found, parseBody } from "./support
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const at = (relative: string): string => join(ROOT, relative);
+const abs = (path: string): string => toAbsolutePath(path);
 
 describe("language detection order", () => {
   const full = { config: "es", claude: "portuguese", system: "es-MX" };
@@ -71,7 +72,7 @@ describe("where the language settings come from", () => {
         [at(CONFIG_FILE)]: "# finitemonkey:generated v=1\nlang: es # chosen\n",
         [at(".claude/settings.local.json")]: '{"language":"portuguese"}',
         [at(SETTINGS_FILE)]: '{"language":"spanish"}',
-        "/home/test/.claude/settings.json": '{"language":"english"}',
+        [abs("/home/test/.claude/settings.json")]: '{"language":"english"}',
       },
       "linux",
       "pt-BR",
@@ -83,8 +84,8 @@ describe("where the language settings come from", () => {
     const runtime = fakeRuntime({
       fs: memoryFs(
         {
-          "/home/test/.claude/settings.json": '{"language":"spanish"}',
-          "/cfg/settings.json": '{"language":"english"}',
+          [abs("/home/test/.claude/settings.json")]: '{"language":"spanish"}',
+          [abs("/cfg/settings.json")]: '{"language":"english"}',
         },
         [at(".git")],
       ),
