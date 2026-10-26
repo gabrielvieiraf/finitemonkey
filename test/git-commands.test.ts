@@ -4,7 +4,7 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { git, tempRepo, write } from "./git-support.js";
+import { git, tempDir, tempRepo, write } from "./git-support.js";
 import { BUNDLE, field, parseBody } from "./support.js";
 
 interface Run {
@@ -13,12 +13,12 @@ interface Run {
   readonly stderr: string;
 }
 
-const fm = (cwd: string, args: readonly string[], input?: string): Run => {
+const fm = (cwd: string, args: readonly string[], input?: string, extraEnv: NodeJS.ProcessEnv = {}): Run => {
   const result = spawnSync(process.execPath, [BUNDLE, ...args], {
     cwd,
     input,
     encoding: "utf8",
-    env: { PATH: process.env["PATH"], SystemRoot: process.env["SystemRoot"], HOME: cwd, USERPROFILE: cwd },
+    env: { PATH: process.env["PATH"], SystemRoot: process.env["SystemRoot"], HOME: cwd, USERPROFILE: cwd, ...extraEnv },
     timeout: 30000,
   });
   return { code: result.status, stdout: result.stdout, stderr: result.stderr };
@@ -146,6 +146,38 @@ describe("hooks through the CLI", () => {
       assert.match(run.stderr, /--force/);
     } finally {
       repo.dispose();
+    }
+  });
+
+  it("commits authored through GIT_AUTHOR_EMAIL count as the user's own", () => {
+    const repo = tempRepo();
+    const remote = tempDir("fm-remote-");
+    const author = { GIT_AUTHOR_NAME: "Bia", GIT_AUTHOR_EMAIL: "bia@example.com" };
+    try {
+      git(remote, "init", "-q", "--bare", "-b", "main");
+      git(repo.root, "remote", "add", "origin", remote);
+      git(repo.root, "push", "-q", "-u", "origin", "main");
+      git(repo.root, "switch", "-q", "-c", "feat/env");
+      write(repo.root, "env.txt", "env\n");
+      git(repo.root, "add", "env.txt");
+      const commit = spawnSync("git", ["-c", "commit.gpgsign=false", "commit", "-q", "-m", "env"], {
+        cwd: repo.root,
+        env: { ...process.env, ...author },
+      });
+      assert.equal(commit.status, 0);
+      git(repo.root, "push", "-q", "-u", "origin", "feat/env");
+      const payload = (session: string): string =>
+        JSON.stringify({
+          hook_event_name: "PreToolUse",
+          session_id: session,
+          tool_name: "Bash",
+          tool_input: { command: "git rebase origin/main" },
+        });
+      assert.equal(fm(repo.root, ["hook", "PreToolUse"], payload("s1"), author).code, 0);
+      assert.equal(fm(repo.root, ["hook", "PreToolUse"], payload("s2")).code, 2);
+    } finally {
+      repo.dispose();
+      rmSync(remote, { recursive: true, force: true });
     }
   });
 
