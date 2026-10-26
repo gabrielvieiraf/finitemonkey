@@ -1,0 +1,72 @@
+name: Claude Code latest
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-latest
+  cancel-in-progress: false
+
+jobs:
+  latest:
+    name: hooks against the newest Claude Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: install the newest Claude Code
+        run: npm install --global @anthropic-ai/claude-code@latest
+      - name: record claude --version
+        id: version
+        run: echo "version=$(claude --version)" >> "$GITHUB_OUTPUT"
+      - name: every flag the package uses is still in --help
+        run: node scripts/claude-surface.mjs
+      - name: hook suite against the fake claude
+        run: node --import tsx --test test/fake-claude.test.ts test/plugin.test.ts test/hook.test.ts test/stop.test.ts
+      - name: Stop blocks through the plugin, project settings, and with the plugin disabled
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error title=Missing secret::ANTHROPIC_API_KEY is not set for this repository, so the Stop integration cannot run."
+            exit 1
+          fi
+          npm run e2e:claude
+
+  report:
+    name: open or update the tracking issue
+    needs: latest
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: one issue for every failing week
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          VERSION: ${{ needs.latest.outputs.version }}
+        run: |
+          title="Weekly run against the latest Claude Code is failing"
+          body="The scheduled run failed with Claude Code ${VERSION:-unknown}: $RUN_URL"
+          number=$(gh issue list --state open --search "in:title \"$title\"" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
