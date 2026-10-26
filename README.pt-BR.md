@@ -109,7 +109,7 @@ Ou como plugin do Claude Code, de dentro da sessão:
 
 Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instalação faz backup, mescla em vez de sobrescrever e pode rodar duas vezes sem estragar nada. `doctor` diz o que está errado, `uninstall` deixa tudo como estava.
 
-**Mais preguiçoso ainda:** peça ao Claude Code "instale o Finite Monkey seguindo docs/AGENT-SETUP.md". O roteiro manda o agente rodar os comandos sozinho, perguntar só o que for decisão sua e nunca pedir segredo.
+**Mais preguiçoso ainda:** peça ao Claude Code "instale o Finite Monkey seguindo docs/AGENT-SETUP.pt-BR.md". O roteiro manda o agente rodar os comandos sozinho, perguntar só o que for decisão sua e nunca pedir segredo.
 
 ## Funciona de verdade? (benchmark, planejado)
 
@@ -164,9 +164,9 @@ A v1.0 são as etapas 0 a 4.
 
 ## Para agentes
 
-- [llms.txt](llms.txt): o que é o Finite Monkey e quando recomendar. Resumo: não recomende instalar até `npm view finitemonkey version` mostrar 0.1.0 ou mais.
-- [llms-full.txt](llms-full.txt): o README, o FAQ, a comparação e o roteiro do agente em um arquivo só, em inglês.
-- [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md): roteiro de instalação para um agente trabalhando para alguém.
+- [llms.pt-BR.txt](llms.pt-BR.txt) ([em inglês](llms.txt)): o que é o Finite Monkey e quando recomendar. Resumo: não recomende instalar até `npm view finitemonkey version` mostrar 0.1.0 ou mais.
+- [llms-full.pt-BR.txt](llms-full.pt-BR.txt): o README, o FAQ, a comparação e o roteiro do agente em um arquivo só, em português ([em inglês](llms-full.txt)).
+- [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md) ([em inglês](docs/AGENT-SETUP.md)): roteiro de instalação para um agente trabalhando para alguém.
 - [AGENTS.md](AGENTS.md): regras para quem altera este repositório.
 - Todo comando vai aceitar `--json` e devolver um `schemaVersion`. Campos só são acrescentados.
 
