@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/prose-check@1.json",
+  "title": "finitemonkey/prose-check@1",
+  "description": "`data` of `finitemonkey prose check --json`. Generated from ProseCheckData in src/commands/prose-view.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/prose-check@1"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "spans": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "startLine": {
+                  "type": "number"
+                },
+                "endLine": {
+                  "type": "number"
+                },
+                "score": {
+                  "type": "number"
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "opener-routine",
+                      "reassurance",
+                      "slogan-closer",
+                      "rhythmic-triplet",
+                      "imperative-fragment",
+                      "antithesis",
+                      "abstract-noun",
+                      "crutch-word",
+                      "colon-heading",
+                      "decorative-emoji",
+                      "em-dash-series",
+                      "requester-reference",
+                      "person-as-reason",
+                      "origin-project",
+                      "first-person",
+                      "padding"
+                    ]
+                  }
+                },
+                "hits": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "rule": {
+                        "type": "string",
+                        "enum": [
+                          "opener-routine",
+                          "reassurance",
+                          "slogan-closer",
+                          "rhythmic-triplet",
+                          "imperative-fragment",
+                          "antithesis",
+                          "abstract-noun",
+                          "crutch-word",
+                          "colon-heading",
+                          "decorative-emoji",
+                          "em-dash-series",
+                          "requester-reference",
+                          "person-as-reason",
+                          "origin-project",
+                          "first-person",
+                          "padding"
+                        ]
+                      },
+                      "line": {
+                        "type": "number"
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "excerpt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "rule",
+                      "line",
+                      "weight",
+                      "excerpt"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "startLine",
+                "endLine",
+                "score",
+                "rules",
+                "hits"
+              ]
+            }
+          }
+        },
+        "required": [
+          "file",
+          "allowed",
+          "spans"
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "number"
+        },
+        "flagged": {
+          "type": "number"
+        },
+        "spans": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "files",
+        "flagged",
+        "spans"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "files",
+    "summary"
+  ]
+}

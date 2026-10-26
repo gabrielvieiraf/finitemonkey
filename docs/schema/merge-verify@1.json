@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/merge-verify@1.json",
+  "title": "finitemonkey/merge-verify@1",
+  "description": "Report of one merge checked by `finitemonkey merge verify`. Generated from VerifyReport in src/git/merge/verify.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/merge-verify@1"
+    },
+    "exit": {
+      "type": "number",
+      "enum": [
+        0,
+        1,
+        2
+      ]
+    },
+    "base": {
+      "type": "string"
+    },
+    "ours": {
+      "type": "string"
+    },
+    "theirs": {
+      "type": "string"
+    },
+    "result": {
+      "type": "string"
+    },
+    "bases": {
+      "type": "number"
+    },
+    "files": {
+      "type": "number"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "missing-addition",
+              "removal-not-honored",
+              "count",
+              "missing-file",
+              "missing-symbol",
+              "binary",
+              "generated-differs",
+              "invalid-dropped"
+            ]
+          },
+          "file": {
+            "type": "string"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "ours",
+              "theirs"
+            ]
+          },
+          "line": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "weak": {
+            "type": "boolean"
+          },
+          "expected": {
+            "type": "number"
+          },
+          "actual": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "file",
+          "text",
+          "weak"
+        ]
+      }
+    },
+    "justified": {
+      "type": "number"
+    },
+    "generated": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "exit",
+    "bases",
+    "files",
+    "findings",
+    "justified",
+    "generated"
+  ]
+}

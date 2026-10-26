@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/evidence@1.json",
+  "title": "finitemonkey/evidence@1",
+  "description": "One line of `.finitemonkey/evidence/<task>.jsonl`. Generated from Evidence in src/evidence/types.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/evidence@1"
+    },
+    "task": {
+      "type": "string"
+    },
+    "check": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "failed", "unverified"]
+    },
+    "treeHash": {
+      "type": "string"
+    },
+    "at": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        },
+        "required": ["key", "params"]
+      }
+    },
+    "command": {
+      "type": "string"
+    },
+    "exitCode": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "stdoutSha256": {
+      "type": "string"
+    },
+    "durationMs": {
+      "type": "number"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "not_implemented",
+        "tool_missing",
+        "timeout",
+        "rate_limited",
+        "budget",
+        "no_gh",
+        "network",
+        "pending",
+        "untrusted",
+        "rewriter",
+        "awaiting_person",
+        "no_evidence",
+        "no_baseline"
+      ]
+    },
+    "releasedBy": {
+      "type": "string"
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "testCount": {
+      "type": "number"
+    }
+  },
+  "required": ["schema", "task", "check", "kind", "status", "treeHash", "at", "notes"]
+}

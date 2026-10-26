@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/gate@1.json",
+  "title": "finitemonkey/gate@1",
+  "description": "`data` of `finitemonkey gate --json`. Generated from GateReport in src/gate/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/gate@1"
+    },
+    "task": {
+      "type": "string"
+    },
+    "implicit": {
+      "type": "boolean"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "treeHash": {
+      "type": "string"
+    },
+    "base": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "lock",
+        "base",
+        "disk",
+        "implicit"
+      ]
+    },
+    "contractEdited": {
+      "type": "boolean"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "incomplete"
+      ]
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "passed": {
+          "type": "number"
+        },
+        "failed": {
+          "type": "number"
+        },
+        "unverified": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "passed",
+        "failed",
+        "unverified"
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "unverified"
+            ]
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "params": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "key",
+                "params"
+              ]
+            }
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "not_implemented",
+              "tool_missing",
+              "timeout",
+              "rate_limited",
+              "budget",
+              "no_gh",
+              "network",
+              "pending",
+              "untrusted",
+              "rewriter",
+              "awaiting_person",
+              "no_evidence",
+              "no_baseline"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "exitCode": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "releasedBy": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "notes",
+          "stale"
+        ]
+      }
+    },
+    "decisionsNeeded": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fastPath": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema",
+    "task",
+    "implicit",
+    "goal",
+    "treeHash",
+    "base",
+    "source",
+    "contractEdited",
+    "verdict",
+    "counts",
+    "items",
+    "decisionsNeeded",
+    "fastPath"
+  ]
+}

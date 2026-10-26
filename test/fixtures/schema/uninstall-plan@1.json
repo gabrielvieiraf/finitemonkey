@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/uninstall-plan@1.json",
+  "title": "finitemonkey/uninstall-plan@1",
+  "description": "`data` of `finitemonkey uninstall --json`. Generated from UninstallData in src/commands/uninstall.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/uninstall-plan@1"
+    },
+    "applied": {
+      "type": "boolean"
+    },
+    "purge": {
+      "type": "boolean"
+    },
+    "root": {
+      "type": "string"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": ["path", "action"]
+      }
+    },
+    "kept": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "outside": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["schema", "applied", "purge", "root", "actions", "kept", "outside"]
+}
