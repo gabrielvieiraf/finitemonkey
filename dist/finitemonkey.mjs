@@ -14855,6 +14855,7 @@ var lookBack = (runtime, root, env) => {
 
 // src/install/diff.ts
 var MAX_DIFF_LINES = 120;
+var MAX_LCS_CELLS = 4e6;
 var table = (a, b) => {
   const rows = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
   for (let i = a.length - 1; i >= 0; i -= 1) {
@@ -14889,8 +14890,27 @@ var walk2 = (a, b) => {
   return ops;
 };
 var splitLines = (text6) => text6 === "" ? [] : text6.replace(/\r?\n$/, "").split(/\r?\n/);
+var sharedPrefix = (a, b) => {
+  let count3 = 0;
+  while (count3 < a.length && count3 < b.length && a[count3] === b[count3]) count3 += 1;
+  return count3;
+};
+var sharedSuffix = (a, b, prefix) => {
+  let count3 = 0;
+  while (count3 < a.length - prefix && count3 < b.length - prefix && a[a.length - 1 - count3] === b[b.length - 1 - count3])
+    count3 += 1;
+  return count3;
+};
+var changedOps = (a, b) => {
+  const prefix = sharedPrefix(a, b);
+  const suffix = sharedSuffix(a, b, prefix);
+  const left = a.slice(prefix, a.length - suffix);
+  const right = b.slice(prefix, b.length - suffix);
+  if (left.length * right.length <= MAX_LCS_CELLS) return walk2(left, right).filter(([op]) => op !== "=");
+  return [...left.map((line2) => ["-", line2]), ...right.map((line2) => ["+", line2])];
+};
 var lineDiff = (path, before, after) => {
-  const changes = walk2(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
+  const changes = changedOps(splitLines(before), splitLines(after));
   if (changes.length === 0) return [];
   const lines3 = changes.map(([op, line2]) => `${op} ${line2}`);
   const shown3 = lines3.slice(0, MAX_DIFF_LINES);

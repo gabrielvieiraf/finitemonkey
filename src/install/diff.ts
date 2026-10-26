@@ -1,4 +1,5 @@
 export const MAX_DIFF_LINES = 120;
+export const MAX_LCS_CELLS = 4_000_000;
 
 type Op = readonly ["=" | "-" | "+", string];
 
@@ -39,8 +40,30 @@ const walk = (a: readonly string[], b: readonly string[]): readonly Op[] => {
 
 const splitLines = (text: string): readonly string[] => (text === "" ? [] : text.replace(/\r?\n$/, "").split(/\r?\n/));
 
+const sharedPrefix = (a: readonly string[], b: readonly string[]): number => {
+  let count = 0;
+  while (count < a.length && count < b.length && a[count] === b[count]) count += 1;
+  return count;
+};
+
+const sharedSuffix = (a: readonly string[], b: readonly string[], prefix: number): number => {
+  let count = 0;
+  while (count < a.length - prefix && count < b.length - prefix && a[a.length - 1 - count] === b[b.length - 1 - count])
+    count += 1;
+  return count;
+};
+
+const changedOps = (a: readonly string[], b: readonly string[]): readonly Op[] => {
+  const prefix = sharedPrefix(a, b);
+  const suffix = sharedSuffix(a, b, prefix);
+  const left = a.slice(prefix, a.length - suffix);
+  const right = b.slice(prefix, b.length - suffix);
+  if (left.length * right.length <= MAX_LCS_CELLS) return walk(left, right).filter(([op]) => op !== "=");
+  return [...left.map((line): Op => ["-", line]), ...right.map((line): Op => ["+", line])];
+};
+
 export const lineDiff = (path: string, before: string, after: string): readonly string[] => {
-  const changes = walk(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
+  const changes = changedOps(splitLines(before), splitLines(after));
   if (changes.length === 0) return [];
   const lines = changes.map(([op, line]) => `${op} ${line}`);
   const shown = lines.slice(0, MAX_DIFF_LINES);
