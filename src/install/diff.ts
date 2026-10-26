@@ -39,8 +39,23 @@ const walk = (a: readonly string[], b: readonly string[]): readonly Op[] => {
 
 const splitLines = (text: string): readonly string[] => (text === "" ? [] : text.replace(/\r?\n$/, "").split(/\r?\n/));
 
+const commonEdges = (a: readonly string[], b: readonly string[]): { readonly head: number; readonly tail: number } => {
+  let head = 0;
+  while (head < a.length && head < b.length && a[head] === b[head]) head += 1;
+  let tail = 0;
+  while (tail < a.length - head && tail < b.length - head && a[a.length - 1 - tail] === b[b.length - 1 - tail])
+    tail += 1;
+  return { head, tail };
+};
+
+const changedOps = (a: readonly string[], b: readonly string[]): readonly Op[] => {
+  const { head, tail } = commonEdges(a, b);
+  return walk(a.slice(head, a.length - tail), b.slice(head, b.length - tail));
+};
+
 export const lineDiff = (path: string, before: string, after: string): readonly string[] => {
-  const changes = walk(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
+  if (before === after) return [];
+  const changes = changedOps(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
   if (changes.length === 0) return [];
   const lines = changes.map(([op, line]) => `${op} ${line}`);
   const shown = lines.slice(0, MAX_DIFF_LINES);

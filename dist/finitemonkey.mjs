@@ -14700,8 +14700,21 @@ var walk2 = (a, b) => {
   return ops;
 };
 var splitLines = (text6) => text6 === "" ? [] : text6.replace(/\r?\n$/, "").split(/\r?\n/);
+var commonEdges = (a, b) => {
+  let head = 0;
+  while (head < a.length && head < b.length && a[head] === b[head]) head += 1;
+  let tail2 = 0;
+  while (tail2 < a.length - head && tail2 < b.length - head && a[a.length - 1 - tail2] === b[b.length - 1 - tail2])
+    tail2 += 1;
+  return { head, tail: tail2 };
+};
+var changedOps = (a, b) => {
+  const { head, tail: tail2 } = commonEdges(a, b);
+  return walk2(a.slice(head, a.length - tail2), b.slice(head, b.length - tail2));
+};
 var lineDiff = (path, before, after) => {
-  const changes = walk2(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
+  if (before === after) return [];
+  const changes = changedOps(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
   if (changes.length === 0) return [];
   const lines3 = changes.map(([op, line2]) => `${op} ${line2}`);
   const shown3 = lines3.slice(0, MAX_DIFF_LINES);
