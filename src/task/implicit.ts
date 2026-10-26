@@ -64,6 +64,8 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       { id: "placeholders", kind: "placeholders" },
       { id: "secrets", kind: "secrets" },
       { id: "prose", kind: "prose" },
+      { id: "worktree", kind: "worktree" },
+      { id: "merge", kind: "merge" },
       { id: "pr", kind: "pr", requireOpen: false },
     ],
     decisionsNeeded: [],

@@ -38,6 +38,12 @@ export const ERROR_CODES = [
   "prose_found",
   "prose_no_input",
   "prose_unreadable",
+  "git_snapshot_failed",
+  "git_nothing_to_undo",
+  "git_undo_failed",
+  "git_rescue_failed",
+  "merge_lost_work",
+  "merge_unanalyzable",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

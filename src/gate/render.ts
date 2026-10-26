@@ -56,6 +56,8 @@ const REQUIRE_KEYS: Readonly<Record<string, MessageKey>> = {
   pr: "gate.require.pr",
   manual: "gate.require.manual",
   secrets: "gate.require.secrets",
+  worktree: "gate.require.worktree",
+  merge: "gate.require.merge",
 };
 
 const requirement = (t: Translate, item: ReportItem): string =>

@@ -37,6 +37,7 @@ export interface FakeRuntimeOptions {
   readonly selfPath?: AbsolutePath;
   readonly exec?: (request: ExecRequest) => ExecResult | undefined;
   readonly spawned?: string[][];
+  readonly gitWith?: Runtime["gitWith"];
 }
 
 export const execResult = (exitCode: number | null, stdout = "", stderr = ""): ExecResult => ({
@@ -99,6 +100,9 @@ export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
       options.spawned?.push([...args]);
       return true;
     },
+    gitWith: options.gitWith ?? ((args) => ({ ...(options.git?.(args) ?? gitMissing), stderr: "", timedOut: false })),
+    realpath: (path) => path,
+    homeDir: () => "/home/test",
   };
 };
 

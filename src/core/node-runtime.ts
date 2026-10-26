@@ -1,5 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { type AbsolutePath, toAbsolutePath } from "./brand.js";
@@ -15,7 +16,7 @@ import {
   nodeWriteAtomic,
   nodeWriteText,
 } from "./node-fs.js";
-import { nodeGit, nodeGitLines } from "./node-git.js";
+import { nodeGit, nodeGitLines, nodeGitWith } from "./node-git.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Probe, Runtime } from "./runtime.js";
 
@@ -59,7 +60,7 @@ export const nodeReadText = (path: AbsolutePath): Parsed<string> => {
 
 export const nodeRealpath = (path: string): string => {
   try {
-    return realpathSync(path);
+    return realpathSync.native(path);
   } catch {
     return path;
   }
@@ -93,4 +94,7 @@ export const nodeRuntime = (): Runtime => ({
   exec: nodeExec,
   appendText: nodeAppendText,
   spawnSelf: nodeSpawnSelf(SELF_PATH),
+  gitWith: nodeGitWith,
+  realpath: nodeRealpath,
+  homeDir: homedir,
 });

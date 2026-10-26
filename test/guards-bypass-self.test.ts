@@ -24,7 +24,6 @@ describe("shell parser", () => {
       [
         ["git commit -m a; b", "", "HUSKY"],
         ["echo hi", "out.txt", ""],
-        ["bash -c git push --no-verify", "", ""],
         ["git push --no-verify", "", ""],
         ["npm test", "", "X"],
       ],

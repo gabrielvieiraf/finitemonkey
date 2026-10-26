@@ -8,6 +8,7 @@ import { prOutcome } from "./pr.js";
 import { proseCheck } from "./prose.js";
 import { secretsCheck } from "./secrets.js";
 import { testsCheck } from "./tests.js";
+import { mergeCheck, worktreeCheck } from "./worktree.js";
 
 export const DEFAULT_CHECKS: CheckRegistry = {
   command: commandCheck,
@@ -19,4 +20,6 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   manual: manualCheck,
   secrets: secretsCheck,
   prose: proseCheck,
+  worktree: worktreeCheck,
+  merge: mergeCheck,
 };
