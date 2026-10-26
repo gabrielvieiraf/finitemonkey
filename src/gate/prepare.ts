@@ -5,12 +5,14 @@ import { nowMs } from "../core/clock.js";
 import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { loadProjectConfig } from "../git/project-config.js";
 import { maskText } from "../mask/mask.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { activeTaskId, type LoadedContract, loadImplicit, type LoadProblem, loadTask } from "../task/load.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { type GateTrust, readTrust } from "../task/state.js";
 import { readBaseline, readSession } from "./baseline.js";
+import { diffShape } from "./diff-shape.js";
 import {
   type Change,
   changedFiles,
@@ -23,6 +25,8 @@ import {
   treeHash,
 } from "./git.js";
 import { type PrStatus, prStatus } from "./pr.js";
+import { sizeConfig, type SizeVerdict, sizeVerdict } from "./size.js";
+import { applySize } from "./size-contract.js";
 import type { Baseline, GateContext } from "./types.js";
 
 export interface GateOptions {
@@ -106,6 +110,15 @@ export const skipReason = (
     : undefined;
 };
 
+const measureSize = (
+  runtime: Runtime,
+  git: Git,
+  base: string,
+  changes: readonly Change[],
+  contract: LoadedContract["contract"],
+): SizeVerdict =>
+  sizeVerdict(contract.size, diffShape(runtime, git, base, changes), sizeConfig(loadProjectConfig(runtime, git.cwd)));
+
 export type PrepareResult =
   | { readonly kind: "ready"; readonly prepared: Prepared }
   | { readonly kind: "skipped"; readonly reason: GateSkip }
@@ -135,11 +148,13 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
       : skipReason(options.runtime, paths, loaded.value, changes, tree, options.sessionId);
   if (skip !== undefined) return { kind: "skipped", reason: skip };
   const pr = memo((): PrStatus => prStatus(options.runtime, git, paths));
+  const size = measureSize(options.runtime, git, base, changes, loaded.value.contract);
   const ctx: GateContext = {
     runtime: options.runtime,
     git,
     paths,
-    contract: loaded.value.contract,
+    contract: applySize(loaded.value.contract, size),
+    size,
     trusted: loaded.value.trusted,
     treeHash: tree,
     base,

@@ -507,5 +507,11 @@
   "history.pattern.no_verify": "{count, plural, one {# git command} other {# git commands}} with --no-verify",
   "history.pattern.force_push": "{count, plural, one {# force push} other {# force pushes}}",
   "history.pattern.test_skip": "{count, plural, one {# test edit} other {# test edits}} that added .skip, .only or a skip marker",
-  "history.estimate": "These are estimates from pattern matching, not evidence; nothing was saved and nothing left this machine."
+  "history.estimate": "These are estimates from pattern matching, not evidence; nothing was saved and nothing left this machine.",
+  "gate.require.review": "a reviewer subagent read the change at its current state",
+  "gate.size.declared": "size {effective}: {files, plural, one {# file} other {# files}}, {lines, plural, one {# line} other {# lines}}",
+  "gate.size.grew": "declared {declared}, the diff makes it {effective}: {files, plural, one {# file} other {# files}}, {lines, plural, one {# line} other {# lines}}",
+  "gate.size.sensitive": "sensitive path touched: {file}",
+  "gate.review.missing": "no review of the current state: run a reviewer subagent on the diff, or the person writes `fm: approve {check} <reason>` in the chat",
+  "gate.review.done": "reviewed by {agent} at {at}"
 }
