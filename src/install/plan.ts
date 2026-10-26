@@ -35,6 +35,8 @@ import {
   VERIFY_SKILL,
 } from "./layout.js";
 import { type EntryKind, type LockEntry, type LockFile, parseLock } from "./lock-file.js";
+import { applyMigrations } from "./migrate.js";
+import { type Migration, MIGRATIONS } from "./migrations/index.js";
 import type { Project } from "./project.js";
 import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
 import { isOwnSkill, verifySkillTemplate } from "./skill-template.js";
@@ -221,6 +223,7 @@ export const buildPlan = (
   detection: Detection,
   input: PlanInput,
   previous: LockFile | undefined,
+  migrations: readonly Migration[] = MIGRATIONS,
 ): Parsed<Plan, PlanError> => {
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
@@ -231,12 +234,12 @@ export const buildPlan = (
   return accept({
     detection,
     preset: input.preset,
-    items: [
-      settings.value,
-      gitignoreItem(project),
-      ...markdownItems(project, detection.runner, input.lang),
-      ...generated,
-    ],
+    items: applyMigrations(
+      [settings.value, gitignoreItem(project), ...markdownItems(project, detection.runner, input.lang), ...generated],
+      previous,
+      input.version,
+      migrations,
+    ),
     previous,
   });
 };

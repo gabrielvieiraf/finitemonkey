@@ -58,19 +58,29 @@ export const planProblem = (error: PlanError): Problem => {
       );
 };
 
+const PERMISSION = /\b(EACCES|EPERM)\b/;
+
 export const applyProblem = (failure: ApplyFailure): Problem =>
-  failure.detail.startsWith("locked:")
+  PERMISSION.test(failure.detail)
     ? problem(
-        "install_locked",
-        "error.install_locked",
-        "wait for the other finitemonkey run to finish, then try again",
-        ExitCode.CheckFailed,
-        { path: failure.path },
+        "install_permission_denied",
+        "error.install_permission_denied",
+        `give your user write access to ${failure.path} (check its owner and mode with: ls -l ${failure.path}), then run the same command again`,
+        ExitCode.NotConfigured,
+        { path: failure.path, detail: failure.detail },
       )
-    : problem("install_failed", "error.install_failed", "finitemonkey doctor", ExitCode.NotConfigured, {
-        path: failure.path,
-        detail: failure.detail,
-      });
+    : failure.detail.startsWith("locked:")
+      ? problem(
+          "install_locked",
+          "error.install_locked",
+          "wait for the other finitemonkey run to finish, then try again",
+          ExitCode.CheckFailed,
+          { path: failure.path },
+        )
+      : problem("install_failed", "error.install_failed", "finitemonkey doctor", ExitCode.NotConfigured, {
+          path: failure.path,
+          detail: failure.detail,
+        });
 
 export const notInstalled = (): Problem =>
   problem("not_installed", "error.not_installed", "finitemonkey init", ExitCode.NotConfigured, {});

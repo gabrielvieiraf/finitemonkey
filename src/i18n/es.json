@@ -192,6 +192,7 @@
   "error.lock_unreadable": ".finitemonkey/lock.json no se puede leer ({detail})",
   "error.install_locked": "otra ejecución de finitemonkey tiene {path}",
   "error.install_failed": "no se pudo escribir {path} ({detail}); se restauró cada archivo escrito en esta ejecución",
+  "error.install_permission_denied": "sin permiso para escribir {path} ({detail}); no se cambió nada",
   "error.not_installed": "Finite Monkey no está instalado en este proyecto (no hay .finitemonkey/lock.json)",
   "error.install_outdated": "los archivos que gestiona Finite Monkey difieren de esta versión",
   "error.invalid_preset": "Preset desconocido \"{preset}\". Usa neutral o gabriel",

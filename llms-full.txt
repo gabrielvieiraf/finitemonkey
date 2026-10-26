@@ -549,7 +549,7 @@ npx finitemonkey update --check --json
 npx finitemonkey update --yes --json
 ```
 
-`--check` exits 1 when the managed files differ from this version and 0 when they match. `update` re-pins the hooks to the new version and refreshes generated files the user did not edit. A generated file the user edited is kept, and the new template is shown in `data.diff` as a proposal.
+`--check` exits 1 when the managed files differ from this version and 0 when they match. `update` re-pins the hooks to the new version and refreshes generated files the user did not edit. When a newer version changed the format of a managed file, `update` also runs that version's migration, in semver order, over files the user did not edit. A generated file the user edited is kept, and the new template or migrated text is shown in `data.diff` as a proposal. A file that cannot be written for lack of permission returns `install_permission_denied` with the `fix`.
 
 ## Undo
 

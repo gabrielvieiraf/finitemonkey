@@ -192,6 +192,7 @@
   "error.lock_unreadable": ".finitemonkey/lock.json está ilegível ({detail})",
   "error.install_locked": "outra execução do finitemonkey está segurando {path}",
   "error.install_failed": "não foi possível gravar {path} ({detail}); todo arquivo gravado nesta execução foi restaurado",
+  "error.install_permission_denied": "sem permissão para gravar {path} ({detail}); nada foi alterado",
   "error.not_installed": "O Finite Monkey não está instalado neste projeto (sem .finitemonkey/lock.json)",
   "error.install_outdated": "os arquivos que o Finite Monkey gerencia diferem desta versão",
   "error.invalid_preset": "Preset desconhecido \"{preset}\". Use neutral ou gabriel",

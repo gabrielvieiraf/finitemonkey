@@ -3863,6 +3863,7 @@ var en_default = {
   "error.lock_unreadable": ".finitemonkey/lock.json is unreadable ({detail})",
   "error.install_locked": "another finitemonkey run holds {path}",
   "error.install_failed": "could not write {path} ({detail}); every file written in this run was put back",
+  "error.install_permission_denied": "no permission to write {path} ({detail}); nothing was changed",
   "error.not_installed": "Finite Monkey is not installed in this project (no .finitemonkey/lock.json)",
   "error.install_outdated": "the files Finite Monkey manages differ from this version",
   "error.invalid_preset": 'Unknown preset "{preset}". Use neutral or gabriel',
@@ -4321,6 +4322,7 @@ var es_default = {
   "error.lock_unreadable": ".finitemonkey/lock.json no se puede leer ({detail})",
   "error.install_locked": "otra ejecución de finitemonkey tiene {path}",
   "error.install_failed": "no se pudo escribir {path} ({detail}); se restauró cada archivo escrito en esta ejecución",
+  "error.install_permission_denied": "sin permiso para escribir {path} ({detail}); no se cambió nada",
   "error.not_installed": "Finite Monkey no está instalado en este proyecto (no hay .finitemonkey/lock.json)",
   "error.install_outdated": "los archivos que gestiona Finite Monkey difieren de esta versión",
   "error.invalid_preset": 'Preset desconocido "{preset}". Usa neutral o gabriel',
@@ -4779,6 +4781,7 @@ var pt_BR_default = {
   "error.lock_unreadable": ".finitemonkey/lock.json está ilegível ({detail})",
   "error.install_locked": "outra execução do finitemonkey está segurando {path}",
   "error.install_failed": "não foi possível gravar {path} ({detail}); todo arquivo gravado nesta execução foi restaurado",
+  "error.install_permission_denied": "sem permissão para gravar {path} ({detail}); nada foi alterado",
   "error.not_installed": "O Finite Monkey não está instalado neste projeto (sem .finitemonkey/lock.json)",
   "error.install_outdated": "os arquivos que o Finite Monkey gerencia diferem desta versão",
   "error.invalid_preset": 'Preset desconhecido "{preset}". Use neutral ou gabriel',
@@ -5238,6 +5241,7 @@ var review_default = {
     "error.lock_unreadable": "machine",
     "error.install_locked": "machine",
     "error.install_failed": "machine",
+    "error.install_permission_denied": "machine",
     "error.not_installed": "machine",
     "error.install_outdated": "machine",
     "error.invalid_preset": "machine",
@@ -5694,6 +5698,7 @@ var review_default = {
     "error.lock_unreadable": "machine",
     "error.install_locked": "machine",
     "error.install_failed": "machine",
+    "error.install_permission_denied": "machine",
     "error.not_installed": "machine",
     "error.install_outdated": "machine",
     "error.invalid_preset": "machine",
@@ -13202,6 +13207,73 @@ var body = () => [`${STATE_DIR}/*`, ...COMMITTED_STATE.map((path) => `!${STATE_D
 var withBlock = (text6) => withManagedBlock(text6, MARKERS, body());
 var withoutBlock = (text6) => withoutManagedBlock(text6, MARKERS);
 
+// src/core/semver.ts
+var SEMVER = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
+var parseSemver = (raw) => {
+  const match = SEMVER.exec(raw.trim());
+  if (match === null) return void 0;
+  const prerelease = (match[4] ?? "").split(".").filter((part2) => part2 !== "").map((part2) => /^\d+$/.test(part2) ? Number(part2) : part2);
+  return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), prerelease };
+};
+var sign = (value) => value < 0 ? -1 : value > 0 ? 1 : 0;
+var comparePart = (a, b) => {
+  if (typeof a === "number" && typeof b === "number") return sign(a - b);
+  if (typeof a === "number") return -1;
+  if (typeof b === "number") return 1;
+  return a === b ? 0 : a < b ? -1 : 1;
+};
+var comparePrerelease = (a, b) => {
+  if (a.length === 0 || b.length === 0) return sign(b.length - a.length);
+  for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
+    const left = a[index];
+    const right = b[index];
+    if (left === void 0) return -1;
+    if (right === void 0) return 1;
+    const order = comparePart(left, right);
+    if (order !== 0) return order;
+  }
+  return 0;
+};
+var compareSemver = (a, b) => sign(a.major - b.major) || sign(a.minor - b.minor) || sign(a.patch - b.patch) || comparePrerelease(a.prerelease, b.prerelease);
+
+// src/install/migrate.ts
+var pendingMigrations = (migrations, from, to) => {
+  const low = parseSemver(from);
+  const high = parseSemver(to);
+  if (low === void 0 || high === void 0) return [];
+  return migrations.flatMap((migration) => {
+    const version = parseSemver(migration.version);
+    return version === void 0 ? [] : [{ migration, version }];
+  }).filter(({ version }) => compareSemver(version, low) > 0 && compareSemver(version, high) <= 0).sort((a, b) => compareSemver(a.version, b.version)).map(({ migration }) => migration);
+};
+var migrateItem = (item, previous, steps) => {
+  if (steps.length === 0 || item.before === void 0) return item;
+  const migrated = steps.reduce((text6, step3) => step3(text6), item.after);
+  if (migrated === item.after) return item;
+  const recorded = previous.entries.find((entry2) => entry2.path === item.path)?.hash;
+  if (recorded !== hashText(item.before)) {
+    return { ...item, action: "keep-edited", after: item.before, proposal: migrated };
+  }
+  return { ...item, action: migrated === item.before ? "unchanged" : "update", after: migrated };
+};
+var applyMigrations = (items, previous, version, migrations) => {
+  if (previous === void 0) return items;
+  const pending = pendingMigrations(migrations, previous.version, version);
+  if (pending.length === 0) return items;
+  return items.map(
+    (item) => migrateItem(
+      item,
+      previous,
+      pending.flatMap(
+        (migration) => migration.files.filter((file) => file.path === item.path).map((file) => file.migrate)
+      )
+    )
+  );
+};
+
+// src/install/migrations/index.ts
+var MIGRATIONS = [];
+
 // src/install/vendor.ts
 var isBundle = (text6) => text6.startsWith("#!/usr/bin/env node") && text6.includes("finitemonkey");
 var isOwnPackage = (text6) => {
@@ -13313,7 +13385,7 @@ var generatedFiles = (input, runner, vendor) => {
   return accept([...own, ...vendoredFiles(input.bundle, input.version)]);
 };
 var entryFor = (lock, path) => lock?.entries.find((entry2) => entry2.path === path);
-var buildPlan = (project, detection, input, previous) => {
+var buildPlan = (project, detection, input, previous, migrations = MIGRATIONS) => {
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
   const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== void 0;
@@ -13323,12 +13395,12 @@ var buildPlan = (project, detection, input, previous) => {
   return accept({
     detection,
     preset: input.preset,
-    items: [
-      settings.value,
-      gitignoreItem(project),
-      ...markdownItems(project, detection.runner, input.lang),
-      ...generated
-    ],
+    items: applyMigrations(
+      [settings.value, gitignoreItem(project), ...markdownItems(project, detection.runner, input.lang), ...generated],
+      previous,
+      input.version,
+      migrations
+    ),
     previous
   });
 };
@@ -13567,7 +13639,14 @@ var planProblem = (error) => {
     { detail: error.detail }
   );
 };
-var applyProblem = (failure4) => failure4.detail.startsWith("locked:") ? problem(
+var PERMISSION = /\b(EACCES|EPERM)\b/;
+var applyProblem = (failure4) => PERMISSION.test(failure4.detail) ? problem(
+  "install_permission_denied",
+  "error.install_permission_denied",
+  `give your user write access to ${failure4.path} (check its owner and mode with: ls -l ${failure4.path}), then run the same command again`,
+  ExitCode.NotConfigured,
+  { path: failure4.path, detail: failure4.detail }
+) : failure4.detail.startsWith("locked:") ? problem(
   "install_locked",
   "error.install_locked",
   "wait for the other finitemonkey run to finish, then try again",

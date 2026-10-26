@@ -24,7 +24,7 @@ export interface MemoryFs extends FsRuntime {
   readonly files: () => Readonly<Record<string, string>>;
   readonly read: (path: string) => string | undefined;
   readonly writes: () => number;
-  readonly failWritesTo: (path: string) => void;
+  readonly failWritesTo: (path: string, code?: string) => void;
   readonly tick: (ms: number) => void;
 }
 
@@ -50,6 +50,7 @@ interface State {
   clock: number;
   writes: number;
   failing: string | undefined;
+  failCode: string;
 }
 
 const putFile = (state: State, path: string, content: string): void => {
@@ -88,7 +89,7 @@ const removePath = (state: State, path: string): void => {
 };
 
 const write = (state: State, path: string, content: string): Parsed<undefined> => {
-  if (state.failing !== undefined && path === state.failing) return reject(`EIO: ${path}`);
+  if (state.failing !== undefined && path === state.failing) return reject(`${state.failCode}: ${path}`);
   if (statOf(state, path)?.kind === "dir") return reject(`EISDIR: ${path}`);
   state.writes += 1;
   putFile(state, path, content);
@@ -157,7 +158,14 @@ export const memoryFs = (
   dirs: readonly string[] = [],
   now: string = DEFAULT_NOW,
 ): MemoryFs => {
-  const state: State = { files: new Map(), dirs: new Set(), clock: Date.parse(now), writes: 0, failing: undefined };
+  const state: State = {
+    files: new Map(),
+    dirs: new Set(),
+    clock: Date.parse(now),
+    writes: 0,
+    failing: undefined,
+    failCode: "EIO",
+  };
   for (const [path, content] of Object.entries(seed)) putFile(state, fakeKey(path), content);
   for (const dir of dirs) addDir(state, fakeKey(dir));
   return {
@@ -165,8 +173,9 @@ export const memoryFs = (
     files: () => Object.fromEntries([...state.files].map(([path, file]) => [path, file.content])),
     read: (path) => state.files.get(fakeKey(path))?.content,
     writes: () => state.writes,
-    failWritesTo: (path) => {
+    failWritesTo: (path, code = "EIO") => {
       state.failing = fakeKey(path);
+      state.failCode = code;
     },
     tick: (ms) => {
       state.clock += ms;

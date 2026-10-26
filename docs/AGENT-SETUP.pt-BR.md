@@ -103,7 +103,7 @@ npx finitemonkey update --check --json
 npx finitemonkey update --yes --json
 ```
 
-O `--check` sai com 1 quando os arquivos gerenciados diferem desta versão e com 0 quando batem. O `update` fixa os hooks na versão nova e renova os arquivos gerados que a pessoa não editou. Um arquivo gerado que ela editou é mantido, e o template novo aparece em `data.diff` como proposta.
+O `--check` sai com 1 quando os arquivos gerenciados diferem desta versão e com 0 quando batem. O `update` fixa os hooks na versão nova e renova os arquivos gerados que a pessoa não editou. Quando uma versão nova mudou o formato de um arquivo gerenciado, o `update` também roda a migração dessa versão, em ordem de semver, nos arquivos que a pessoa não editou. Um arquivo gerado que ela editou é mantido, e o template novo ou o texto migrado aparece em `data.diff` como proposta. Um arquivo que não pode ser gravado por falta de permissão devolve `install_permission_denied` com o `fix`.
 
 ## Desfazer
 
@@ -114,4 +114,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:e48595b57438 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:04f4327c64ec -->

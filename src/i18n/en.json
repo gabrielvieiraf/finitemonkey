@@ -192,6 +192,7 @@
   "error.lock_unreadable": ".finitemonkey/lock.json is unreadable ({detail})",
   "error.install_locked": "another finitemonkey run holds {path}",
   "error.install_failed": "could not write {path} ({detail}); every file written in this run was put back",
+  "error.install_permission_denied": "no permission to write {path} ({detail}); nothing was changed",
   "error.not_installed": "Finite Monkey is not installed in this project (no .finitemonkey/lock.json)",
   "error.install_outdated": "the files Finite Monkey manages differ from this version",
   "error.invalid_preset": "Unknown preset \"{preset}\". Use neutral or gabriel",
