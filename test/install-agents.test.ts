@@ -7,7 +7,7 @@ import { ExitCode } from "../src/exit-codes.js";
 import { MARKDOWN_MARKERS, withAgentsImport } from "../src/install/agents-block.js";
 import { CONFIG_FILE } from "../src/install/layout.js";
 import { at, repo, ROOT, run } from "./install-support.js";
-import { fakeRuntime } from "./support.js";
+import { fakeRuntime, TEST_VERSION } from "./support.js";
 
 const blockOf = (text: string): string => {
   const start = text.indexOf(MARKDOWN_MARKERS.begin);
@@ -75,7 +75,14 @@ describe("init writes a managed block in AGENTS.md and imports it from CLAUDE.md
 
 describe("doctor checks the AGENTS.md line ceiling", () => {
   const doctor = (files: Readonly<Record<string, string>>) =>
-    checkAgentsFile({ platform: "linux", env: {}, cwd: ROOT, root: ROOT, runtime: fakeRuntime({ files }) });
+    checkAgentsFile({
+      platform: "linux",
+      env: {},
+      cwd: ROOT,
+      root: ROOT,
+      version: TEST_VERSION,
+      runtime: fakeRuntime({ files }),
+    });
   const lines = (count: number): string =>
     `${Array.from({ length: count }, (_, index) => `line ${String(index)}`).join("\n")}\n`;
 

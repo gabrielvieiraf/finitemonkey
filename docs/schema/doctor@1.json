@@ -38,6 +38,40 @@
         ]
       }
     },
+    "hooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded",
+              "broken"
+            ]
+          },
+          "fix": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "check",
+          "status",
+          "fix"
+        ]
+      }
+    },
     "summary": {
       "type": "object",
       "properties": {
@@ -61,6 +95,7 @@
   "required": [
     "schema",
     "checks",
+    "hooks",
     "summary"
   ]
 }
