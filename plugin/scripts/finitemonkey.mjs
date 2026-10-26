@@ -383,7 +383,8 @@ var nodeRuntime = () => ({
   spawnSelf: nodeSpawnSelf(SELF_PATH),
   gitWith: nodeGitWith,
   realpath: nodeRealpath,
-  homeDir: homedir
+  homeDir: homedir,
+  systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale
 });
 
 // src/doctor/system.ts
@@ -5840,8 +5841,8 @@ var withTempIndex = (runtime, repo, options, work) => {
   }
 };
 var worktreeTree = (runtime, repo, head, options) => withTempIndex(runtime, repo, options, (env) => {
-  const read3 = run(runtime, repo, head === void 0 ? ["read-tree", "--empty"] : ["read-tree", head], env, options);
-  if (!read3.ok) return read3;
+  const read4 = run(runtime, repo, head === void 0 ? ["read-tree", "--empty"] : ["read-tree", head], env, options);
+  if (!read4.ok) return read4;
   const added = run(runtime, repo, ["add", "-A", "--", ":/", ":(exclude,top).finitemonkey"], env, options);
   if (!added.ok) return added;
   const cleaned = dropSensitive(runtime, repo, env, options);
@@ -5854,8 +5855,8 @@ var indexTree = (runtime, repo, options) => {
   if (!staged.ok) return staged;
   const entries = staged.value.split("\0").filter((entry2) => STAGE_ZERO.test(entry2));
   return withTempIndex(runtime, repo, { ...options, stamp: `${options.stamp}-index` }, (env) => {
-    const read3 = run(runtime, repo, ["read-tree", "--empty"], env, options);
-    if (!read3.ok) return read3;
+    const read4 = run(runtime, repo, ["read-tree", "--empty"], env, options);
+    if (!read4.ok) return read4;
     if (entries.length === 0) return run(runtime, repo, ["write-tree"], env, options);
     const info = entries.map((entry2) => entry2.replace(/^(\d+ [0-9a-f]+) 0\t/, "$1	")).join("\0");
     const filled = run(runtime, repo, ["update-index", "-z", "--index-info"], env, options, `${info}\0`);
@@ -9029,13 +9030,13 @@ var prodGuard = (runtime, root, t) => {
 };
 var recordEvidence = (runtime, root, owner, reads) => {
   const lines3 = reads.flatMap(
-    (read3) => read3.kind === "read" ? [
+    (read4) => read4.kind === "read" ? [
       JSON.stringify({
         at: runtime.now(),
         owner,
-        tool: read3.hit.tool,
-        target: read3.hit.target,
-        command: read3.command
+        tool: read4.hit.tool,
+        target: read4.hit.target,
+        command: read4.command
       })
     ] : []
   );
@@ -10091,8 +10092,8 @@ var GIT_READ_ONLY = /* @__PURE__ */ new Set(["grep", "log", "show", "diff", "sta
 var counted2 = (input, key) => markerCount(optionalString(input, key) ?? "");
 var existingCount = (input, file) => {
   if (file === "") return 0;
-  const read3 = input.runtime.readText(toAbsolutePath(file, input.cwd));
-  return read3.ok ? markerCount(read3.value) : 0;
+  const read4 = input.runtime.readText(toAbsolutePath(file, input.cwd));
+  return read4.ok ? markerCount(read4.value) : 0;
 };
 var editPairs = (input) => {
   const edits = input["edits"];
@@ -10244,15 +10245,15 @@ var TARGET_KEYS = {
 };
 var readSource = (input, source) => {
   if (source.kind === "inline") return accept(source.text);
-  const read3 = input.runtime.readText(toAbsolutePath(source.path, input.cwd));
-  return read3.ok ? read3 : reject({ file: source.path, detail: read3.error });
+  const read4 = input.runtime.readText(toAbsolutePath(source.path, input.cwd));
+  return read4.ok ? read4 : reject({ file: source.path, detail: read4.error });
 };
 var textOf2 = (input, found) => {
   const parts = [];
   for (const source of [...found.title === void 0 ? [] : [found.title], ...found.bodies]) {
-    const read3 = readSource(input, source);
-    if (!read3.ok) return read3;
-    parts.push(read3.value);
+    const read4 = readSource(input, source);
+    if (!read4.ok) return read4;
+    parts.push(read4.value);
   }
   return accept(parts.join("\n\n"));
 };
@@ -10841,6 +10842,7 @@ var mergeSettings = (current, wanted, recorded) => {
   const attribution = wanted.attributionOff && !("attribution" in base);
   const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
   const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
+  const language = "language" in base ? void 0 : wanted.language;
   let settings = withPermissions(withHooks(base, hooks), {
     deny: [...existingDeny, ...deny2],
     ask: [...existingAsk, ...ask],
@@ -10849,7 +10851,9 @@ var mergeSettings = (current, wanted, recorded) => {
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
   if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
   if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
-  return { settings, added: { schema, deny: deny2, ask, blockReads, attribution, marketplace, plugin } };
+  if (language !== void 0) settings = { ...settings, language };
+  const added = { schema, deny: deny2, ask, blockReads, attribution, marketplace, plugin };
+  return { settings, added: language === void 0 ? added : { ...added, language } };
 };
 var sameAttribution = (value) => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
 var unmergeSettings = (current, added, recorded) => {
@@ -10865,6 +10869,9 @@ var unmergeSettings = (current, added, recorded) => {
   }
   if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, void 0);
   if (added.plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, void 0);
+  if (added.language !== void 0 && settings["language"] === added.language) {
+    settings = setKey(settings, "language", void 0);
+  }
   if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
   return settings;
 };
@@ -10941,14 +10948,30 @@ var normalizeLang = (raw) => {
   if (base === "en" || base.startsWith("en-")) return "en";
   return void 0;
 };
-var LANG_ENV_ORDER = ["FINITEMONKEY_LANG", "LC_ALL", "LC_MESSAGES", "LANG"];
-var detectLang = (flag2, env) => {
-  const fromFlag = normalizeLang(flag2);
-  if (fromFlag) return { lang: fromFlag, source: "flag" };
-  for (const name of LANG_ENV_ORDER) {
-    const lang = normalizeLang(env[name]);
-    if (lang) return { lang, source: name };
-  }
+var CLAUDE_LANGUAGE = {
+  en: "english",
+  "pt-BR": "brazilian portuguese",
+  es: "spanish"
+};
+var claudeLanguageToLang = (raw) => {
+  if (raw === void 0) return void 0;
+  const name = raw.trim().toLowerCase();
+  if (name.includes("portug")) return "pt-BR";
+  if (/^(spanish|espa(ñ|n)ol|castellano)\b/.test(name)) return "es";
+  if (/^(english|ingl(ê|e)s)\b/.test(name)) return "en";
+  return normalizeLang(name);
+};
+var LOCALE_ENV_ORDER = ["LC_ALL", "LC_MESSAGES", "LANG"];
+var detectLang = (flag2, env, settings = {}) => {
+  const candidates = [
+    ["flag", normalizeLang(flag2)],
+    ["FINITEMONKEY_LANG", normalizeLang(env["FINITEMONKEY_LANG"])],
+    ["config", normalizeLang(settings.config)],
+    ["claude-settings", claudeLanguageToLang(settings.claude)],
+    ...LOCALE_ENV_ORDER.map((name) => [name, normalizeLang(env[name])]),
+    ["system", normalizeLang(settings.system)]
+  ];
+  for (const [source, lang] of candidates) if (lang !== void 0) return { lang, source };
   return { lang: SOURCE_LANG, source: "default" };
 };
 
@@ -11069,7 +11092,9 @@ var parseAdded = (value) => {
   const blockReads = value["blockReads"] === true;
   const marketplace = value["marketplace"] === true;
   const plugin = value["plugin"] === true;
-  return { schema, attribution, deny: deny2, ask, blockReads, marketplace, plugin };
+  const language = value["language"];
+  const added = { schema, attribution, deny: deny2, ask, blockReads, marketplace, plugin };
+  return typeof language === "string" ? { ...added, language } : added;
 };
 var parseEntry2 = (value) => {
   if (!isRecord(value)) return void 0;
@@ -11419,7 +11444,8 @@ var joinAdded = (previous, next2) => previous === void 0 ? next2 : {
   ask: union(previous.ask, next2.ask),
   blockReads: previous.blockReads || next2.blockReads,
   marketplace: previous.marketplace || next2.marketplace,
-  plugin: previous.plugin || next2.plugin
+  plugin: previous.plugin || next2.plugin,
+  ...(previous.language ?? next2.language) === void 0 ? {} : { language: previous.language ?? next2.language }
 };
 var wantedHooks = (detection) => Object.fromEntries(
   INSTALLED_HOOKS.map((spec2) => [spec2.event, hookHandler(detection.runner, spec2, detection.claude.failClosed)])
@@ -11434,7 +11460,8 @@ var settingsItem = (project, detection, input, previous) => {
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
     attributionOff: input.preset === "gabriel",
-    marketplace: input.marketplace
+    marketplace: input.marketplace,
+    language: input.claudeLanguage
   };
   const merged = mergeSettings(current.value, wanted, previous?.handlers ?? []);
   const after = renderJson(merged.settings, before === void 0 ? DEFAULT_STYLE : styleOf(before));
@@ -11771,9 +11798,11 @@ var selfBundle = (ctx) => {
   const text6 = ctx.runtime.readText(ctx.runtime.selfPath);
   return text6.ok ? text6.value : void 0;
 };
+var INHERITED = /* @__PURE__ */ new Set(["default", "config", "claude-settings"]);
 var planInputFor = (ctx, preset, bin, marketplace) => ({
   preset,
   lang: ctx.lang,
+  claudeLanguage: INHERITED.has(ctx.langSource) ? void 0 : CLAUDE_LANGUAGE[ctx.lang],
   bin,
   version: ctx.version,
   marketplace,
@@ -12804,6 +12833,34 @@ var REGISTRY = [
   helpCommand
 ];
 
+// src/i18n/lang-settings.ts
+import { join as join28 } from "node:path";
+var read3 = (runtime, path) => {
+  const text6 = runtime.readText(toAbsolutePath(path));
+  return text6.ok ? text6.value : void 0;
+};
+var configLang = (text6) => /^lang:[ \t]*["']?([A-Za-z_-]+)["']?[ \t]*(?:#.*)?$/m.exec(text6 ?? "")?.[1];
+var languageIn = (text6) => {
+  if (text6 === void 0) return void 0;
+  const parsed = parseJsonObject(text6);
+  const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
+  return typeof value === "string" && value.trim() !== "" ? value : void 0;
+};
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join28(runtime.homeDir(), ".claude");
+var langSettings = (runtime, cwd, env, platform) => {
+  const root = findGitRoot(cwd, runtime) ?? cwd;
+  const claudeFiles = [
+    join28(root, ".claude", "settings.local.json"),
+    join28(root, ".claude", "settings.json"),
+    join28(claudeDir(runtime, env), "settings.json")
+  ];
+  return {
+    config: configLang(read3(runtime, join28(root, CONFIG_FILE))),
+    claude: claudeFiles.map((path) => languageIn(read3(runtime, path))).find((value) => value !== void 0),
+    system: platform === "win32" ? runtime.systemLocale() : void 0
+  };
+};
+
 // src/core/suggest.ts
 var distance = (a, b) => {
   const row = Array.from({ length: b.length + 1 }, (_, index) => index);
@@ -12906,7 +12963,8 @@ var render = (ctx, command, result) => {
 // src/core/run.ts
 var run2 = async (options) => {
   const loose = looseArgs(options.argv);
-  const detected = detectLang(loose.lang, options.env);
+  const settings = langSettings(options.runtime, options.cwd, options.env, options.platform);
+  const detected = detectLang(loose.lang, options.env, settings);
   const t = createTranslator(detected.lang);
   const ctx = {
     lang: detected.lang,

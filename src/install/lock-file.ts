@@ -39,7 +39,9 @@ const parseAdded = (value: unknown): SettingsAdded | undefined => {
   const blockReads = value["blockReads"] === true;
   const marketplace = value["marketplace"] === true;
   const plugin = value["plugin"] === true;
-  return { schema, attribution, deny, ask, blockReads, marketplace, plugin };
+  const language = value["language"];
+  const added = { schema, attribution, deny, ask, blockReads, marketplace, plugin };
+  return typeof language === "string" ? { ...added, language } : added;
 };
 
 const parseEntry = (value: unknown): LockEntry | undefined => {

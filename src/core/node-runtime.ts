@@ -97,4 +97,5 @@ export const nodeRuntime = (): Runtime => ({
   gitWith: nodeGitWith,
   realpath: nodeRealpath,
   homeDir: homedir,
+  systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale,
 });

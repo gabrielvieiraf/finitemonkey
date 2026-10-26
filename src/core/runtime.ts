@@ -99,4 +99,5 @@ export interface Runtime {
   readonly gitWith: GitWith;
   readonly realpath: (path: string) => string;
   readonly homeDir: () => string;
+  readonly systemLocale: () => string | undefined;
 }

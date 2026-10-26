@@ -16,6 +16,7 @@ export interface SettingsWanted {
   readonly ask: readonly string[];
   readonly attributionOff: boolean;
   readonly marketplace: boolean;
+  readonly language: string | undefined;
 }
 
 export interface SettingsAdded {
@@ -26,6 +27,7 @@ export interface SettingsAdded {
   readonly attribution: boolean;
   readonly marketplace: boolean;
   readonly plugin: boolean;
+  readonly language?: string;
 }
 
 const withEntry = (settings: JsonObject, key: string, name: string, value: unknown): JsonObject => {
@@ -117,6 +119,7 @@ export const mergeSettings = (
   const attribution = wanted.attributionOff && !("attribution" in base);
   const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
   const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
+  const language = "language" in base ? undefined : wanted.language;
   let settings = withPermissions(withHooks(base, hooks), {
     deny: [...existingDeny, ...deny],
     ask: [...existingAsk, ...ask],
@@ -125,7 +128,9 @@ export const mergeSettings = (
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
   if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
   if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
-  return { settings, added: { schema, deny, ask, blockReads, attribution, marketplace, plugin } };
+  if (language !== undefined) settings = { ...settings, language };
+  const added = { schema, deny, ask, blockReads, attribution, marketplace, plugin };
+  return { settings, added: language === undefined ? added : { ...added, language } };
 };
 
 const sameAttribution = (value: unknown): boolean => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
@@ -147,6 +152,9 @@ export const unmergeSettings = (
   }
   if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, undefined);
   if (added.plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, undefined);
+  if (added.language !== undefined && settings["language"] === added.language) {
+    settings = setKey(settings, "language", undefined);
+  }
   if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
   return settings;
 };

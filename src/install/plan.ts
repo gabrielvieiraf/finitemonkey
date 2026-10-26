@@ -68,6 +68,7 @@ export interface Detection {
 export interface PlanInput {
   readonly preset: Preset;
   readonly lang: Lang;
+  readonly claudeLanguage: string | undefined;
   readonly bin: string | undefined;
   readonly version: string;
   readonly marketplace: boolean;
@@ -124,6 +125,7 @@ const joinAdded = (previous: SettingsAdded | undefined, next: SettingsAdded): Se
         blockReads: previous.blockReads || next.blockReads,
         marketplace: previous.marketplace || next.marketplace,
         plugin: previous.plugin || next.plugin,
+        ...((previous.language ?? next.language) === undefined ? {} : { language: previous.language ?? next.language }),
       };
 
 const wantedHooks = (detection: Detection): Readonly<Record<string, HookHandlerJson>> =>
@@ -147,6 +149,7 @@ const settingsItem = (
     ask: ASK_RULES,
     attributionOff: input.preset === "gabriel",
     marketplace: input.marketplace,
+    language: input.claudeLanguage,
   };
   const merged = mergeSettings(current.value, wanted, previous?.handlers ?? []);
   const after = renderJson(merged.settings, before === undefined ? DEFAULT_STYLE : styleOf(before));

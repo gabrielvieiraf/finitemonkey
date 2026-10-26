@@ -15,21 +15,52 @@ export const normalizeLang = (raw: string | undefined): Lang | undefined => {
   return undefined;
 };
 
-export const LANG_ENV_ORDER = ["FINITEMONKEY_LANG", "LC_ALL", "LC_MESSAGES", "LANG"] as const;
+export const CLAUDE_LANGUAGE: Readonly<Record<Lang, string>> = {
+  en: "english",
+  "pt-BR": "brazilian portuguese",
+  es: "spanish",
+};
 
-export type LangSource = "flag" | (typeof LANG_ENV_ORDER)[number] | "default";
+export const claudeLanguageToLang = (raw: string | undefined): Lang | undefined => {
+  if (raw === undefined) return undefined;
+  const name = raw.trim().toLowerCase();
+  if (name.includes("portug")) return "pt-BR";
+  if (/^(spanish|espa(ñ|n)ol|castellano)\b/.test(name)) return "es";
+  if (/^(english|ingl(ê|e)s)\b/.test(name)) return "en";
+  return normalizeLang(name);
+};
+
+export const LOCALE_ENV_ORDER = ["LC_ALL", "LC_MESSAGES", "LANG"] as const;
+
+export type LangSource =
+  | "flag"
+  | "FINITEMONKEY_LANG"
+  | "config"
+  | "claude-settings"
+  | (typeof LOCALE_ENV_ORDER)[number]
+  | "system"
+  | "default";
 
 export interface DetectedLang {
   readonly lang: Lang;
   readonly source: LangSource;
 }
 
-export const detectLang = (flag: string | undefined, env: Env): DetectedLang => {
-  const fromFlag = normalizeLang(flag);
-  if (fromFlag) return { lang: fromFlag, source: "flag" };
-  for (const name of LANG_ENV_ORDER) {
-    const lang = normalizeLang(env[name]);
-    if (lang) return { lang, source: name };
-  }
+export interface LangSettings {
+  readonly config?: string | undefined;
+  readonly claude?: string | undefined;
+  readonly system?: string | undefined;
+}
+
+export const detectLang = (flag: string | undefined, env: Env, settings: LangSettings = {}): DetectedLang => {
+  const candidates: readonly (readonly [LangSource, Lang | undefined])[] = [
+    ["flag", normalizeLang(flag)],
+    ["FINITEMONKEY_LANG", normalizeLang(env["FINITEMONKEY_LANG"])],
+    ["config", normalizeLang(settings.config)],
+    ["claude-settings", claudeLanguageToLang(settings.claude)],
+    ...LOCALE_ENV_ORDER.map((name) => [name, normalizeLang(env[name])] as const),
+    ["system", normalizeLang(settings.system)],
+  ];
+  for (const [source, lang] of candidates) if (lang !== undefined) return { lang, source };
   return { lang: SOURCE_LANG, source: "default" };
 };

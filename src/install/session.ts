@@ -2,6 +2,7 @@ import type { Ctx } from "../core/context.js";
 import type { Problem } from "../core/problem.js";
 import { ExitCode } from "../exit-codes.js";
 import type { MessageKey } from "../i18n/catalogs.js";
+import { CLAUDE_LANGUAGE, type LangSource } from "../i18n/languages.js";
 import type { Params } from "../i18n/translate.js";
 import type { ApplyFailure } from "./apply.js";
 import type { Preset } from "./layout.js";
@@ -88,9 +89,12 @@ const selfBundle = (ctx: Ctx): string | undefined => {
   return text.ok ? text.value : undefined;
 };
 
+const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "claude-settings"]);
+
 export const planInputFor = (ctx: Ctx, preset: Preset, bin: string | undefined, marketplace: boolean): PlanInput => ({
   preset,
   lang: ctx.lang,
+  claudeLanguage: INHERITED.has(ctx.langSource) ? undefined : CLAUDE_LANGUAGE[ctx.lang],
   bin,
   version: ctx.version,
   marketplace,
