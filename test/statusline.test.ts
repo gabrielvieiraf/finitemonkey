@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
@@ -19,8 +20,8 @@ import { FakeClaude } from "./fake-claude.js";
 import { BUNDLE, cli, cliJson, found, stdinFrom } from "./support.js";
 
 const base = mkdtempSync(join(tmpdir(), "fm-status-"));
-after(() => {
-  rmSync(base, { recursive: true, force: true });
+after(async () => {
+  await rm(base, { recursive: true, force: true, maxRetries: 40, retryDelay: 250 });
 });
 
 let clock = Date.parse("2026-10-26T12:00:00.000Z");
@@ -131,7 +132,7 @@ describe("statusline", () => {
     const root = fresh({
       "wrapped.js": [
         'const fs = require("node:fs");',
-        'if (fs.existsSync("slow")) setTimeout(() => {}, 10000);',
+        'if (fs.existsSync("slow")) setTimeout(() => {}, 4000);',
         'else process.stdout.write("cached line");',
         "",
       ].join("\n"),
