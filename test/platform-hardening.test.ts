@@ -89,6 +89,7 @@ describe("doctor suggests pinning LF when core.autocrlf would break hooks", () =
       env: {},
       cwd: ROOT,
       root: ROOT,
+      version: "1.0.0",
       runtime: fakeRuntime({
         files: attributes === undefined ? {} : { [at(".gitattributes")]: attributes },
         git: (args) =>
