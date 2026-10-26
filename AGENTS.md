@@ -49,5 +49,6 @@ Do not break these. Every invariant names the check that enforces it. When you a
 | `SECURITY.md` | How to report a vulnerability |
 | `docs/schema/` | JSON Schema of every named `--json` payload, generated from the TypeScript types |
 | `.github/workflows/ci.yml` | Checks and the release job |
+| `budgets.json` | Ceilings for fixed context bytes and `PreToolUse` p95 latency per guard, checked by `npm run budgets` in CI |
 | `.github/workflows/sem-atribuicao.yml` | The no-attribution check (I3) |
 | `.releaserc.json` | semantic-release configuration |

@@ -1,0 +1,16 @@
+{
+  "context": {
+    "sessionStartBytes": 0,
+    "subagentStartBytes": 0,
+    "userPromptSubmitBytes": 0,
+    "postToolUseBytes": 0,
+    "descriptionBytesMax": 2000,
+    "descriptionBytesTotal": 2400,
+    "skillBodyBytesMax": 20000,
+    "agentsBlockBytes": 600
+  },
+  "latency": {
+    "preToolUseP95MsPerGuard": 50,
+    "runs": 20
+  }
+}

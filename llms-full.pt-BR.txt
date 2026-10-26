@@ -144,7 +144,7 @@ Não. São hooks e checagens que rodam lembrando o modelo ou não.
 Não. Por padrão nada sai da sua máquina. Sem telemetria.
 
 **Vai me deixar mais lento?**
-Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. Os tempos saem junto com o benchmark.
+Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/main/budgets.json). Os tempos de ponta a ponta saem junto com o benchmark.
 
 **E se ele barrar algo que não devia?**
 Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é tratado como bug e contado em público.
