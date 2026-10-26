@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.6](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.5...v0.1.0-next.6) (2026-10-26)
+
+### Features
+
+* **git:** destructive git guard, snapshot, undo, rescue, merge verify and prod-edit guard ([#120](https://github.com/gabrielvieiraf/finitemonkey/issues/120)) ([67884b4](https://github.com/gabrielvieiraf/finitemonkey/commit/67884b4fd8ec297d8bc415552df08ac7cffe2d94))
+
 ## [0.1.0-next.5](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.4...v0.1.0-next.5) (2026-10-26)
 
 ### Features
