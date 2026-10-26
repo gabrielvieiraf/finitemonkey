@@ -3923,10 +3923,21 @@ var gitFindings = (args2) => {
   return found;
 };
 var FM_NAMES = /* @__PURE__ */ new Set(["finitemonkey", "fm"]);
+var FM_SCRIPT = /(^|[\\/])(finitemonkey|fm)(\.c?m?js)?$/;
+var RUNNERS = /* @__PURE__ */ new Set(["npx", "pnpm", "bunx", "yarn"]);
+var fmStart = (argv) => {
+  const first = argv[0] ?? "";
+  if (RUNNERS.has(first)) return argv.findIndex((arg) => FM_NAMES.has(arg.replace(/@.*$/, "")));
+  if (first === "node" || first === "bun" || first === "deno") return FM_SCRIPT.test(argv[1] ?? "") ? 1 : -1;
+  return FM_SCRIPT.test(first) ? 0 : -1;
+};
 var fmFindings = (argv) => {
-  const start = argv[0] === "npx" || argv[0] === "pnpm" || argv[0] === "bunx" ? argv.findIndex((arg) => FM_NAMES.has(arg.replace(/@.*$/, ""))) : 0;
-  const name = (argv[start] ?? "").replace(/@.*$/, "");
-  return start >= 0 && FM_NAMES.has(name) && argv[start + 1] === "allow" ? [{ kind: "fm_allow", detail: "finitemonkey allow" }] : [];
+  const start = fmStart(argv);
+  if (start < 0) return [];
+  const sub = argv[start + 1];
+  if (sub === "allow") return [{ kind: "fm_allow", detail: "finitemonkey allow" }];
+  if (sub === "off" || sub === "on") return [{ kind: "fm_pause", detail: `finitemonkey ${sub}` }];
+  return [];
 };
 var detectBypass = (commandLine) => parseShell(commandLine).flatMap((command) => [
   ...envFindings(command),
@@ -4244,9 +4255,6 @@ var testsGuard = (input) => {
   return deny(t("gate.guard.tests.model", { detail: reason }), t("gate.guard.tests.human", { detail: reason }));
 };
 
-// src/gate/hooks/config.ts
-import { join as join13 } from "node:path";
-
 // src/gate/hooks/common.ts
 import { dirname as dirname5, join as join12 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
@@ -4277,7 +4285,90 @@ var contextOutput = (event, additionalContext, systemMessage) => ({
 });
 var human = (text6) => `finitemonkey: ${text6}`;
 
+// src/guards/release/markers.ts
+var LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust)\s+(\S+)(?:\s+(.*))?$/i;
+var NAME = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,80}$/;
+var NOT_FROM_PERSON = [
+  /<task-notification\b/i,
+  /<agent-message\b/i,
+  /^\s*\[julius2claude\]/,
+  /\[Subagent hand-back\]/i
+];
+var comesFromPerson = (prompt) => !NOT_FROM_PERSON.some((pattern) => pattern.test(prompt));
+var toMarker = (verb, target, rest) => {
+  if (!NAME.test(target)) return void 0;
+  if (verb === "trust") return { type: "trust", task: target };
+  if (verb === "allow") {
+    return rest.length >= 3 ? { type: "allow", guard: target.toLowerCase(), reason: rest } : void 0;
+  }
+  const slash = target.indexOf("/");
+  const task = slash < 0 ? void 0 : target.slice(0, slash);
+  const check2 = slash < 0 ? target : target.slice(slash + 1);
+  if (check2 === "") return void 0;
+  return { type: "approve", check: check2, reason: rest, ...task === void 0 || task === "" ? {} : { task } };
+};
+var parseMarkers = (prompt) => {
+  if (!comesFromPerson(prompt)) return [];
+  return prompt.split(/\r?\n/).flatMap((line2) => {
+    const match = LINE.exec(line2);
+    if (match === null) return [];
+    const marker = toMarker((match[1] ?? "").toLowerCase(), match[2] ?? "", (match[3] ?? "").trim());
+    return marker === void 0 ? [] : [marker];
+  });
+};
+
+// src/policy/pause.ts
+var PAUSE_FILE = "pause.json";
+var readPause = (runtime, paths) => {
+  const text6 = runtime.readText(paths.cache(PAUSE_FILE));
+  const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
+  if (parsed?.ok !== true || !isRecord(parsed.value)) return void 0;
+  const { sessionId, since, by } = parsed.value;
+  if (typeof sessionId !== "string" || typeof since !== "string") return void 0;
+  return { sessionId, since, by: by === "terminal" ? "terminal" : "prompt" };
+};
+var pausedFor = (runtime, paths, sessionId) => {
+  const pause = readPause(runtime, paths);
+  return pause !== void 0 && sessionId !== void 0 && pause.sessionId === sessionId ? pause : void 0;
+};
+var setPause = (runtime, paths, sessionId, by) => {
+  const pause = { sessionId, since: runtime.now(), by };
+  runtime.writeText(paths.cache(PAUSE_FILE), `${JSON.stringify(pause)}
+`);
+  logEvent(runtime, paths, "gate_paused", { sessionId, by });
+  return pause;
+};
+var clearPause = (runtime, paths, by) => {
+  const pause = readPause(runtime, paths);
+  if (pause === void 0) return void 0;
+  runtime.remove(paths.cache(PAUSE_FILE));
+  logEvent(runtime, paths, "gate_resumed", { sessionId: pause.sessionId, since: pause.since, by });
+  return pause;
+};
+
+// src/policy/pause-hooks.ts
+var COMMAND = /^\s*(fm|finitemonkey)\s+(off|on)\s*$/i;
+var pausePrompt = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  const match = COMMAND.exec(prompt);
+  if (match === null || !comesFromPerson(prompt)) return { kind: "allow" };
+  const paths = projectPaths(input);
+  const sessionId = input.payload.sessionId;
+  if (paths === void 0 || sessionId === void 0) return { kind: "allow" };
+  const off = (match[2] ?? "").toLowerCase() === "off";
+  if (off) setPause(input.runtime, paths, sessionId, "prompt");
+  else clearPause(input.runtime, paths, "prompt");
+  return { kind: "block", reason: human(input.t(off ? "pause.off" : "pause.on")) };
+};
+var unlessPaused = (handler) => (input) => {
+  const paths = projectPaths(input);
+  const pause = paths === void 0 ? void 0 : pausedFor(input.runtime, paths, input.payload.sessionId);
+  if (pause === void 0) return handler(input);
+  return allowWith({ systemMessage: human(input.t("pause.report", { since: pause.since })) });
+};
+
 // src/gate/hooks/config.ts
+import { join as join13 } from "node:path";
 var CONFIG_FILE3 = "config-hooks.json";
 var GUARDED_SOURCES = /* @__PURE__ */ new Set(["user_settings", "project_settings", "local_settings"]);
 var countIn = (value) => {
@@ -4341,38 +4432,6 @@ var configChange = (input) => {
     reason,
     output: { decision: "block", reason, systemMessage: human(t("gate.config.human", { file })) }
   };
-};
-
-// src/guards/release/markers.ts
-var LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust)\s+(\S+)(?:\s+(.*))?$/i;
-var NAME = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,80}$/;
-var NOT_FROM_PERSON = [
-  /<task-notification\b/i,
-  /<agent-message\b/i,
-  /^\s*\[julius2claude\]/,
-  /\[Subagent hand-back\]/i
-];
-var comesFromPerson = (prompt) => !NOT_FROM_PERSON.some((pattern) => pattern.test(prompt));
-var toMarker = (verb, target, rest) => {
-  if (!NAME.test(target)) return void 0;
-  if (verb === "trust") return { type: "trust", task: target };
-  if (verb === "allow") {
-    return rest.length >= 3 ? { type: "allow", guard: target.toLowerCase(), reason: rest } : void 0;
-  }
-  const slash = target.indexOf("/");
-  const task = slash < 0 ? void 0 : target.slice(0, slash);
-  const check2 = slash < 0 ? target : target.slice(slash + 1);
-  if (check2 === "") return void 0;
-  return { type: "approve", check: check2, reason: rest, ...task === void 0 || task === "" ? {} : { task } };
-};
-var parseMarkers = (prompt) => {
-  if (!comesFromPerson(prompt)) return [];
-  return prompt.split(/\r?\n/).flatMap((line2) => {
-    const match = LINE.exec(line2);
-    if (match === null) return [];
-    const marker = toMarker((match[1] ?? "").toLowerCase(), match[2] ?? "", (match[3] ?? "").trim());
-    return marker === void 0 ? [] : [marker];
-  });
 };
 
 // src/task/implicit.ts
@@ -5953,6 +6012,7 @@ var en_default = {
   "gate.guard.bypass.hooks_path": "Finite Monkey: blocked: {detail} points git away from the project hooks. requires: core.hooksPath stays as configured.",
   "gate.guard.bypass.hook_env": "Finite Monkey: blocked: {detail} turns hooks or guards off. requires: hooks and guards stay on.",
   "gate.guard.bypass.fm_allow": "Finite Monkey: blocked: releases are made by the person, not by a tool call.",
+  "gate.guard.bypass.fm_pause": "Finite Monkey: blocked: only the person pauses or resumes the gate, by typing `fm off` or `fm on` as the whole prompt.",
   "gate.guard.bypass.human": "Blocked {detail}: it would switch the safety net off. If you really want it, type on its own line: finitemonkey: allow bypass <reason>",
   "gate.guard.self.policy": "Finite Monkey: blocked: {file} is written only by the finitemonkey executable (evidence, policy and state). requires: change it through finitemonkey commands.",
   "gate.guard.self.allow_store": "Finite Monkey: blocked: {file} records what the person released; tools never write it.",
@@ -6129,7 +6189,14 @@ var en_default = {
   "gate.runtime.body_mismatch": '{route} did not contain "{body}"',
   "gate.runtime.request_failed": "the request to {route} failed: {detail}",
   "gate.runtime.orphan": "the app on port {port} could not be stopped",
-  "gate.runtime.probe_failed": "the app check did not report a result: {line}"
+  "gate.runtime.probe_failed": "the app check did not report a result: {line}",
+  "command.off.summary": "Pause the gate and warnings for the current Claude Code session (the person only)",
+  "command.on.summary": "Resume the gate after fm off",
+  "pause.off": "Gate paused for this session by the person. Secrets, production and destructive git guards stay on. Type `fm on` to resume.",
+  "pause.on": "Gate resumed.",
+  "pause.report": "The gate did not check this stop: the person paused it with fm off at {since}.",
+  "pause.no_session": "No Claude Code session is recorded for this project yet; start one, then run this again or type `fm off` there.",
+  "pause.error.person_only": "Only the person can pause or resume the gate, and this does not look like their terminal (no TTY, or running inside Claude Code)"
 };
 
 // src/i18n/es.json
@@ -6506,6 +6573,7 @@ var es_default = {
   "gate.guard.bypass.hooks_path": "Finite Monkey: bloqueado: {detail} desvía git de los hooks del proyecto. exige: core.hooksPath queda como está configurado.",
   "gate.guard.bypass.hook_env": "Finite Monkey: bloqueado: {detail} apaga hooks o guardas. exige: hooks y guardas quedan encendidos.",
   "gate.guard.bypass.fm_allow": "Finite Monkey: bloqueado: las liberaciones las hace la persona, no una llamada de herramienta.",
+  "gate.guard.bypass.fm_pause": "Finite Monkey: bloqueado: solo la persona pausa o reanuda la compuerta, escribiendo `fm off` o `fm on` como el prompt completo.",
   "gate.guard.bypass.human": "Bloqueé {detail}: apagaría la red de seguridad. Si de verdad lo quiere, escriba en una línea: finitemonkey: allow bypass <motivo>",
   "gate.guard.self.policy": "Finite Monkey: bloqueado: {file} solo lo escribe el ejecutable finitemonkey (evidencia, política y estado). exige: cambiarlo con los comandos de finitemonkey.",
   "gate.guard.self.allow_store": "Finite Monkey: bloqueado: {file} registra lo que la persona liberó; ninguna herramienta lo escribe.",
@@ -6682,7 +6750,14 @@ var es_default = {
   "gate.runtime.body_mismatch": '{route} no contenía "{body}"',
   "gate.runtime.request_failed": "la petición a {route} falló: {detail}",
   "gate.runtime.orphan": "no se pudo detener la app del puerto {port}",
-  "gate.runtime.probe_failed": "la comprobación de la app no devolvió resultado: {line}"
+  "gate.runtime.probe_failed": "la comprobación de la app no devolvió resultado: {line}",
+  "command.off.summary": "Pausa la compuerta y los avisos en la sesión actual de Claude Code (solo la persona)",
+  "command.on.summary": "Reanuda la compuerta después de fm off",
+  "pause.off": "Compuerta pausada en esta sesión por la persona. Los bloqueos de secretos, producción y git destructivo siguen activos. Escribe `fm on` para reanudar.",
+  "pause.on": "Compuerta reanudada.",
+  "pause.report": "La compuerta no revisó esta parada: la persona la pausó con fm off a las {since}.",
+  "pause.no_session": "Todavía no hay una sesión de Claude Code registrada en este proyecto; abre una y vuelve a ejecutarlo, o escribe `fm off` allí.",
+  "pause.error.person_only": "Solo la persona puede pausar o reanudar la compuerta, y esto no parece su terminal (sin TTY, o dentro de Claude Code)"
 };
 
 // src/i18n/pt-BR.json
@@ -7059,6 +7134,7 @@ var pt_BR_default = {
   "gate.guard.bypass.hooks_path": "Finite Monkey: barrado: {detail} desvia o git dos hooks do projeto. exige: core.hooksPath fica como está configurado.",
   "gate.guard.bypass.hook_env": "Finite Monkey: barrado: {detail} desliga hooks ou travas. exige: hooks e travas ficam ligados.",
   "gate.guard.bypass.fm_allow": "Finite Monkey: barrado: liberação é feita pela pessoa, não por chamada de ferramenta.",
+  "gate.guard.bypass.fm_pause": "Finite Monkey: bloqueado: só a pessoa pausa ou retoma o portão, digitando `fm off` ou `fm on` como o prompt inteiro.",
   "gate.guard.bypass.human": "Barrei {detail}: desligaria a rede de proteção. Se quiser mesmo, digite numa linha: finitemonkey: allow bypass <motivo>",
   "gate.guard.self.policy": "Finite Monkey: barrado: {file} só é escrito pelo executável finitemonkey (evidência, política e estado). exige: mudar pelos comandos do finitemonkey.",
   "gate.guard.self.allow_store": "Finite Monkey: barrado: {file} registra o que a pessoa liberou; ferramenta nunca escreve nele.",
@@ -7235,7 +7311,14 @@ var pt_BR_default = {
   "gate.runtime.body_mismatch": '{route} não continha "{body}"',
   "gate.runtime.request_failed": "a requisição para {route} falhou: {detail}",
   "gate.runtime.orphan": "o app na porta {port} não pôde ser parado",
-  "gate.runtime.probe_failed": "a checagem do app não devolveu resultado: {line}"
+  "gate.runtime.probe_failed": "a checagem do app não devolveu resultado: {line}",
+  "command.off.summary": "Pausa o portão e os avisos na sessão atual do Claude Code (só a pessoa)",
+  "command.on.summary": "Retoma o portão depois de fm off",
+  "pause.off": "Portão pausado nesta sessão pela pessoa. As travas de segredos, produção e git destrutivo continuam ligadas. Digite `fm on` para retomar.",
+  "pause.on": "Portão retomado.",
+  "pause.report": "O portão não conferiu esta parada: a pessoa pausou com fm off em {since}.",
+  "pause.no_session": "Ainda não há sessão do Claude Code registrada neste projeto; abra uma e rode de novo, ou digite `fm off` nela.",
+  "pause.error.person_only": "Só a pessoa pode pausar ou retomar o portão, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)"
 };
 
 // src/i18n/review.json
@@ -7613,6 +7696,7 @@ var review_default = {
     "gate.guard.bypass.hooks_path": "machine",
     "gate.guard.bypass.hook_env": "machine",
     "gate.guard.bypass.fm_allow": "machine",
+    "gate.guard.bypass.fm_pause": "machine",
     "gate.guard.bypass.human": "machine",
     "gate.guard.self.policy": "machine",
     "gate.guard.self.allow_store": "machine",
@@ -7789,7 +7873,14 @@ var review_default = {
     "gate.runtime.body_mismatch": "machine",
     "gate.runtime.request_failed": "machine",
     "gate.runtime.orphan": "machine",
-    "gate.runtime.probe_failed": "machine"
+    "gate.runtime.probe_failed": "machine",
+    "command.off.summary": "machine",
+    "command.on.summary": "machine",
+    "pause.off": "machine",
+    "pause.on": "machine",
+    "pause.report": "machine",
+    "pause.no_session": "machine",
+    "pause.error.person_only": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -8164,6 +8255,7 @@ var review_default = {
     "gate.guard.bypass.hooks_path": "machine",
     "gate.guard.bypass.hook_env": "machine",
     "gate.guard.bypass.fm_allow": "machine",
+    "gate.guard.bypass.fm_pause": "machine",
     "gate.guard.bypass.human": "machine",
     "gate.guard.self.policy": "machine",
     "gate.guard.self.allow_store": "machine",
@@ -8340,7 +8432,14 @@ var review_default = {
     "gate.runtime.body_mismatch": "machine",
     "gate.runtime.request_failed": "machine",
     "gate.runtime.orphan": "machine",
-    "gate.runtime.probe_failed": "machine"
+    "gate.runtime.probe_failed": "machine",
+    "command.off.summary": "machine",
+    "command.on.summary": "machine",
+    "pause.off": "machine",
+    "pause.on": "machine",
+    "pause.report": "machine",
+    "pause.no_session": "machine",
+    "pause.error.person_only": "machine"
   }
 };
 
@@ -11566,9 +11665,9 @@ var subagentStart = (input) => {
 // src/gate/hooks/index.ts
 var PORTAO_HANDLERS = {
   PreToolUse: [selfGuard, bypassGuard, testsGuard],
-  UserPromptSubmit: [promptRelease],
-  Stop: [stopGate],
-  SubagentStop: [subagentStopGate],
+  UserPromptSubmit: [pausePrompt, promptRelease],
+  Stop: [unlessPaused(stopGate)],
+  SubagentStop: [unlessPaused(subagentStopGate)],
   SubagentStart: [subagentStart],
   PreCompact: [preCompact],
   SessionStart: [sessionStart],
@@ -13289,6 +13388,7 @@ var recordShadow = (input, paths, set, policy, reason) => {
 var governed = (set, handler) => async (input) => {
   const paths = projectPaths(input);
   if (paths === void 0) return handler(input);
+  if (pausedFor(input.runtime, paths, input.payload.sessionId) !== void 0) return { kind: "allow" };
   const policy = loadPolicy(input.runtime, paths.root);
   const mode = modeOf2(set, policy, readShadow(input.runtime, paths));
   if (mode === "off") return { kind: "allow" };
@@ -16081,6 +16181,35 @@ var initCommand = {
   }
 };
 
+// src/commands/pause.ts
+var toggle = (ctx, off) => {
+  const command = off ? "finitemonkey off" : "finitemonkey on";
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("pause.error.person_only", command));
+  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+  if (!off) {
+    const ended = clearPause(ctx.runtime, paths, "terminal");
+    return success({ paused: false, sessionId: ended?.sessionId ?? null }, [ctx.t("pause.on")]);
+  }
+  const session = readSession(ctx.runtime, paths);
+  if (session === void 0) return success({ paused: false, sessionId: null }, [ctx.t("pause.no_session")]);
+  setPause(ctx.runtime, paths, session.sessionId, "terminal");
+  return success({ paused: true, sessionId: session.sessionId }, [ctx.t("pause.off")]);
+};
+var offCommand = {
+  path: ["off"],
+  summaryKey: "command.off.summary",
+  usage: "finitemonkey off",
+  status: "ready",
+  run: (ctx) => Promise.resolve(toggle(ctx, true))
+};
+var onCommand = {
+  path: ["on"],
+  summaryKey: "command.on.summary",
+  usage: "finitemonkey on",
+  status: "ready",
+  run: (ctx) => Promise.resolve(toggle(ctx, false))
+};
+
 // src/commands/policy.ts
 var FIX = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
 var recordFalsePositive = (ctx, guard) => {
@@ -17069,6 +17198,8 @@ var REGISTRY = [
   secretsScanCommand,
   secretsAcceptCommand,
   policyFalsePositiveCommand,
+  offCommand,
+  onCommand,
   secretsIncidentCommand,
   proseCheckCommand,
   snapshotCommand,

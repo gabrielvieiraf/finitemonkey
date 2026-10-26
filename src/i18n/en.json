@@ -371,6 +371,7 @@
   "gate.guard.bypass.hooks_path": "Finite Monkey: blocked: {detail} points git away from the project hooks. requires: core.hooksPath stays as configured.",
   "gate.guard.bypass.hook_env": "Finite Monkey: blocked: {detail} turns hooks or guards off. requires: hooks and guards stay on.",
   "gate.guard.bypass.fm_allow": "Finite Monkey: blocked: releases are made by the person, not by a tool call.",
+  "gate.guard.bypass.fm_pause": "Finite Monkey: blocked: only the person pauses or resumes the gate, by typing `fm off` or `fm on` as the whole prompt.",
   "gate.guard.bypass.human": "Blocked {detail}: it would switch the safety net off. If you really want it, type on its own line: finitemonkey: allow bypass <reason>",
   "gate.guard.self.policy": "Finite Monkey: blocked: {file} is written only by the finitemonkey executable (evidence, policy and state). requires: change it through finitemonkey commands.",
   "gate.guard.self.allow_store": "Finite Monkey: blocked: {file} records what the person released; tools never write it.",
@@ -547,5 +548,12 @@
   "gate.runtime.body_mismatch": "{route} did not contain \"{body}\"",
   "gate.runtime.request_failed": "the request to {route} failed: {detail}",
   "gate.runtime.orphan": "the app on port {port} could not be stopped",
-  "gate.runtime.probe_failed": "the app check did not report a result: {line}"
+  "gate.runtime.probe_failed": "the app check did not report a result: {line}",
+  "command.off.summary": "Pause the gate and warnings for the current Claude Code session (the person only)",
+  "command.on.summary": "Resume the gate after fm off",
+  "pause.off": "Gate paused for this session by the person. Secrets, production and destructive git guards stay on. Type `fm on` to resume.",
+  "pause.on": "Gate resumed.",
+  "pause.report": "The gate did not check this stop: the person paused it with fm off at {since}.",
+  "pause.no_session": "No Claude Code session is recorded for this project yet; start one, then run this again or type `fm off` there.",
+  "pause.error.person_only": "Only the person can pause or resume the gate, and this does not look like their terminal (no TTY, or running inside Claude Code)"
 }
