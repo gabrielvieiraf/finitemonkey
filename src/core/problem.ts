@@ -26,6 +26,7 @@ export const ERROR_CODES = [
   "lock_unreadable",
   "install_locked",
   "install_failed",
+  "install_permission_denied",
   "not_installed",
   "install_outdated",
   "gate_failed",

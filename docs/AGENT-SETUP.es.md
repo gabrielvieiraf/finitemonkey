@@ -103,7 +103,7 @@ npx finitemonkey update --check --json
 npx finitemonkey update --yes --json
 ```
 
-`--check` sale con 1 cuando los archivos gestionados difieren de esta versión y con 0 cuando coinciden. `update` fija los hooks en la versión nueva y renueva los archivos generados que la persona no editó. Un archivo generado que la persona editó se conserva, y la plantilla nueva aparece en `data.diff` como propuesta.
+`--check` sale con 1 cuando los archivos gestionados difieren de esta versión y con 0 cuando coinciden. `update` fija los hooks en la versión nueva y renueva los archivos generados que la persona no editó. Cuando una versión nueva cambió el formato de un archivo gestionado, `update` también ejecuta la migración de esa versión, en orden de semver, sobre los archivos que la persona no editó. Un archivo generado que la persona editó se conserva, y la plantilla nueva o el texto migrado aparece en `data.diff` como propuesta. Un archivo que no se puede escribir por falta de permisos devuelve `install_permission_denied` con el `fix`.
 
 ## Deshacer
 
@@ -114,4 +114,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:e48595b57438 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:04f4327c64ec -->

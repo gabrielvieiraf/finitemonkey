@@ -548,7 +548,7 @@ npx finitemonkey update --check --json
 npx finitemonkey update --yes --json
 ```
 
-O `--check` sai com 1 quando os arquivos gerenciados diferem desta versão e com 0 quando batem. O `update` fixa os hooks na versão nova e renova os arquivos gerados que a pessoa não editou. Um arquivo gerado que ela editou é mantido, e o template novo aparece em `data.diff` como proposta.
+O `--check` sai com 1 quando os arquivos gerenciados diferem desta versão e com 0 quando batem. O `update` fixa os hooks na versão nova e renova os arquivos gerados que a pessoa não editou. Quando uma versão nova mudou o formato de um arquivo gerenciado, o `update` também roda a migração dessa versão, em ordem de semver, nos arquivos que a pessoa não editou. Um arquivo gerado que ela editou é mantido, e o template novo ou o texto migrado aparece em `data.diff` como proposta. Um arquivo que não pode ser gravado por falta de permissão devolve `install_permission_denied` com o `fix`.
 
 ## Desfazer
 
