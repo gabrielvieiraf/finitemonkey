@@ -9,6 +9,10 @@ const checkYaml = (check: AcceptanceCheck): YamlValue => ({
   ...(check.require === undefined ? {} : { require: [...check.require] }),
   ...(check.requireOpen === undefined ? {} : { require_open: check.requireOpen }),
   ...(check.description === undefined ? {} : { description: check.description }),
+  ...(check.port === undefined ? {} : { port: check.port }),
+  ...(check.route === undefined ? {} : { route: check.route }),
+  ...(check.status === undefined ? {} : { status: check.status }),
+  ...(check.body === undefined ? {} : { body: check.body }),
 });
 
 export const contractYaml = (contract: TaskContract): YamlValue => ({

@@ -98,7 +98,10 @@ describe("footprint list matches the code", () => {
   });
 
   it("src opens no socket of its own", () => {
-    const direct = sources().filter((text) => /from "node:(?:https?|net|tls|dgram)"|\bfetch\(/.test(text));
+    const local = new Set([join("app", "node-process.ts"), join("app", "node-probe.ts")]);
+    const direct = readdirSync(join(ROOT, "src"), { recursive: true, encoding: "utf8" })
+      .filter((file) => file.endsWith(".ts") && !local.has(file))
+      .filter((file) => /from "node:(?:https?|net|tls|dgram)"|\bfetch\(/.test(read(join("src", file)) ?? ""));
     assert.equal(direct.length, 0);
   });
 });

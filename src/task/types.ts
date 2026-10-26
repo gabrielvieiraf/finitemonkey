@@ -35,6 +35,10 @@ export interface AcceptanceCheck {
   readonly require?: readonly GitRequirement[];
   readonly requireOpen?: boolean;
   readonly description?: string;
+  readonly port?: number;
+  readonly route?: string;
+  readonly status?: number;
+  readonly body?: string;
 }
 
 export interface DiffBudget {

@@ -52,6 +52,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey prose check --json`.",
   },
   {
+    name: "app-check@1",
+    file: "src/commands/app-check.ts",
+    type: "AppCheckData",
+    describes: "`data` of `finitemonkey app check --json`.",
+  },
+  {
     name: "uninstall-plan@1",
     file: "src/commands/uninstall.ts",
     type: "UninstallData",

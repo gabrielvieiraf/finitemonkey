@@ -87,6 +87,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Pelo `gh`, só quando ele está instalado e logado: o estado do pull request citado numa tarefa e os seus pull requests abertos para a linha da sessão. Código nunca é enviado.",
     es: "A través de `gh`, solo si está instalado y con sesión iniciada: el estado del pull request indicado en una tarea y tus pull requests abiertos para la línea de la sesión. El código nunca se sube.",
   },
+  "local-app": {
+    en: "One request to your own app on the port a `runtime` check declares, after starting it or finding it running. Nothing goes past this machine.",
+    "pt-BR":
+      "Uma requisição ao seu próprio app na porta que a checagem `runtime` declara, depois de subir o app ou achá-lo rodando. Nada sai desta máquina.",
+    es: "Una petición a tu propia app en el puerto que declara la comprobación `runtime`, después de arrancarla o encontrarla en marcha. Nada sale de esta máquina.",
+  },
 };
 
 export const SECTION_TEXT: Readonly<

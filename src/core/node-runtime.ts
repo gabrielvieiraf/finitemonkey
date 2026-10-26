@@ -94,6 +94,8 @@ export const nodeRuntime = (): Runtime => ({
   exec: nodeExec,
   appendText: nodeAppendText,
   spawnSelf: nodeSpawnSelf(SELF_PATH),
+  execSelf: (args, cwd, timeoutMs) =>
+    nodeExec({ command: process.execPath, args: [SELF_PATH, ...args], cwd, timeoutMs }),
   gitWith: nodeGitWith,
   realpath: nodeRealpath,
   homeDir: homedir,
