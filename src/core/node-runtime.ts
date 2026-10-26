@@ -60,7 +60,7 @@ export const nodeReadText = (path: AbsolutePath): Parsed<string> => {
 
 export const nodeRealpath = (path: string): string => {
   try {
-    return realpathSync(path);
+    return realpathSync.native(path);
   } catch {
     return path;
   }

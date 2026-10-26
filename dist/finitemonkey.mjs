@@ -349,7 +349,7 @@ var nodeReadText = (path) => {
 };
 var nodeRealpath = (path) => {
   try {
-    return realpathSync(path);
+    return realpathSync.native(path);
   } catch {
     return path;
   }
