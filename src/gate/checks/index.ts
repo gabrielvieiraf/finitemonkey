@@ -1,4 +1,5 @@
 import type { CheckRegistry } from "../types.js";
+import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
@@ -24,4 +25,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   worktree: worktreeCheck,
   merge: mergeCheck,
   review: reviewCheck,
+  callers: callersCheck,
 };

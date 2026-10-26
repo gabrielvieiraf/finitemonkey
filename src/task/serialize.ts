@@ -23,6 +23,7 @@ export const contractYaml = (contract: TaskContract): YamlValue => ({
   },
   acceptance: contract.acceptance.map(checkYaml),
   decisions_needed: [...contract.decisionsNeeded],
+  ...(contract.callersIgnore === undefined ? {} : { callers_ignore: [...contract.callersIgnore] }),
 });
 
 export const contractJson = (contract: TaskContract): Readonly<Record<string, unknown>> => ({

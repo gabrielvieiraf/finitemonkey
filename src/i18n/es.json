@@ -518,5 +518,10 @@
   "gate.secrets.warning": "aviso: {rule} en {file}:{line}",
   "doctor.secrets.remote_credential": "el remoto git {remotes} tiene una credencial en la URL, guardada en texto plano en .git/config",
   "doctor.secrets.fix_remote_credential": "ejecuta `git remote set-url {remote} <url sin usuario:token@>`, usa un credential helper o SSH y rota el token",
-  "secrets.session.remote_credential": "el remoto git {remotes} tiene una credencial en la URL (texto plano en .git/config). Pide a la persona que ejecute `git remote set-url {remote} <url sin usuario:token@>` y rote el token; no imprimas la URL."
+  "secrets.session.remote_credential": "el remoto git {remotes} tiene una credencial en la URL (texto plano en .git/config). Pide a la persona que ejecute `git remote set-url {remote} <url sin usuario:token@>` y rote el token; no imprimas la URL.",
+  "gate.require.callers": "ningún símbolo eliminado o renombrado sigue siendo llamado",
+  "gate.callers.none": "{count, plural, one {# definición eliminada} other {# definiciones eliminadas}}, ningún llamador quedó",
+  "gate.callers.open": "{name} ya no existe, pero se llama en {count, plural, one {# lugar} other {# lugares}}",
+  "gate.callers.at": "{name} llamado en {file}:{line}",
+  "gate.callers.warning": "solo aviso: {percent}% de los hallazgos de callers se liberaron con callers_ignore ({released} de {total}), por encima del techo de 5%"
 }

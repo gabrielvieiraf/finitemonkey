@@ -56,6 +56,7 @@ export interface TaskContract {
   readonly scope: TaskScope;
   readonly acceptance: readonly AcceptanceCheck[];
   readonly decisionsNeeded: readonly string[];
+  readonly callersIgnore?: readonly string[];
   readonly implicit: boolean;
 }
 
