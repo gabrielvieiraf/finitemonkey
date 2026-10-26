@@ -498,5 +498,12 @@
   "doctor.memory.too_long": "{file}: {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
   "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml",
   "doctor.git.autocrlf": "git convierte los saltos de línea a CRLF al hacer checkout (core.autocrlf=true) y {file} no fija LF; los hooks y scripts de shell con CRLF fallan con \"bad interpreter\"",
-  "doctor.git.fix_autocrlf": "añade `* text=auto eol=lf` a {file}, haz commit y ejecuta `git add --renormalize .`"
+  "doctor.git.fix_autocrlf": "añade `* text=auto eol=lf` a {file}, haz commit y ejecuta `git add --renormalize .`",
+  "history.title": "Revisando las sesiones locales de Claude Code en este proyecto: {sessions, plural, one {# sesión} other {# sesiones}}, {turns, plural, one {# turno} other {# turnos}}.",
+  "history.pattern.done_after_failing_tests": "{count, plural, one {# turno terminó} other {# turnos terminaron}} con \"terminado\" justo después de pruebas fallidas",
+  "history.pattern.env_read": "{count, plural, one {# lectura} other {# lecturas}} de un archivo .env",
+  "history.pattern.no_verify": "{count, plural, one {# comando git} other {# comandos git}} con --no-verify",
+  "history.pattern.force_push": "{count, plural, one {# push forzado} other {# push forzados}}",
+  "history.pattern.test_skip": "{count, plural, one {# edición} other {# ediciones}} de pruebas que añadieron .skip, .only o una marca para saltar",
+  "history.estimate": "Son estimaciones por patrones de texto, no evidencia; no se guardó nada y nada salió de esta máquina."
 }

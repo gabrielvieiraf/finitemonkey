@@ -530,6 +530,7 @@ Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada 
 
 - Preset: `neutral` (padrão) ou `gabriel` (acrescenta as convenções do autor, como desligar a atribuição de IA em commits e PRs quando o projeto ainda não definiu isso).
 - Se registra o marketplace do plugin no projeto (`--marketplace`).
+- Se olha uma vez as sessões locais do Claude Code neste projeto (`--look-back`). Ele lê os logs de sessão desta máquina e mostra contagens estimadas do que o Finite Monkey teria bloqueado, com segredos mascarados. Nada é salvo nem enviado. Sem a flag, nenhum log de sessão é lido.
 
 ### 4. Instale
 

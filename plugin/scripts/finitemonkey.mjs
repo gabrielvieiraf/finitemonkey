@@ -5413,7 +5413,14 @@ var en_default = {
   "doctor.memory.too_long": "{file}: {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
   "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml",
   "doctor.git.autocrlf": 'git converts line endings to CRLF on checkout (core.autocrlf=true) and {file} does not pin LF; shell hooks and scripts checked out with CRLF fail with "bad interpreter"',
-  "doctor.git.fix_autocrlf": "add `* text=auto eol=lf` to {file}, commit it, then run `git add --renormalize .`"
+  "doctor.git.fix_autocrlf": "add `* text=auto eol=lf` to {file}, commit it, then run `git add --renormalize .`",
+  "history.title": "Looking back at this project's local Claude Code sessions: {sessions, plural, one {# session} other {# sessions}}, {turns, plural, one {# turn} other {# turns}}.",
+  "history.pattern.done_after_failing_tests": '{count, plural, one {# turn} other {# turns}} ended with "done" right after a failing test run',
+  "history.pattern.env_read": "{count, plural, one {# read} other {# reads}} of a .env file",
+  "history.pattern.no_verify": "{count, plural, one {# git command} other {# git commands}} with --no-verify",
+  "history.pattern.force_push": "{count, plural, one {# force push} other {# force pushes}}",
+  "history.pattern.test_skip": "{count, plural, one {# test edit} other {# test edits}} that added .skip, .only or a skip marker",
+  "history.estimate": "These are estimates from pattern matching, not evidence; nothing was saved and nothing left this machine."
 };
 
 // src/i18n/es.json
@@ -5917,7 +5924,14 @@ var es_default = {
   "doctor.memory.too_long": "{file}: {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
   "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml",
   "doctor.git.autocrlf": 'git convierte los saltos de línea a CRLF al hacer checkout (core.autocrlf=true) y {file} no fija LF; los hooks y scripts de shell con CRLF fallan con "bad interpreter"',
-  "doctor.git.fix_autocrlf": "añade `* text=auto eol=lf` a {file}, haz commit y ejecuta `git add --renormalize .`"
+  "doctor.git.fix_autocrlf": "añade `* text=auto eol=lf` a {file}, haz commit y ejecuta `git add --renormalize .`",
+  "history.title": "Revisando las sesiones locales de Claude Code en este proyecto: {sessions, plural, one {# sesión} other {# sesiones}}, {turns, plural, one {# turno} other {# turnos}}.",
+  "history.pattern.done_after_failing_tests": '{count, plural, one {# turno terminó} other {# turnos terminaron}} con "terminado" justo después de pruebas fallidas',
+  "history.pattern.env_read": "{count, plural, one {# lectura} other {# lecturas}} de un archivo .env",
+  "history.pattern.no_verify": "{count, plural, one {# comando git} other {# comandos git}} con --no-verify",
+  "history.pattern.force_push": "{count, plural, one {# push forzado} other {# push forzados}}",
+  "history.pattern.test_skip": "{count, plural, one {# edición} other {# ediciones}} de pruebas que añadieron .skip, .only o una marca para saltar",
+  "history.estimate": "Son estimaciones por patrones de texto, no evidencia; no se guardó nada y nada salió de esta máquina."
 };
 
 // src/i18n/pt-BR.json
@@ -6421,7 +6435,14 @@ var pt_BR_default = {
   "doctor.memory.too_long": "{file}: {lines, plural, one {# linha} other {# linhas}}, acima do teto de {max}; arquivo de instruções longo é menos seguido",
   "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml",
   "doctor.git.autocrlf": 'o git converte quebras de linha para CRLF no checkout (core.autocrlf=true) e o {file} não fixa LF; hooks e scripts de shell com CRLF falham com "bad interpreter"',
-  "doctor.git.fix_autocrlf": "acrescente `* text=auto eol=lf` ao {file}, faça commit e rode `git add --renormalize .`"
+  "doctor.git.fix_autocrlf": "acrescente `* text=auto eol=lf` ao {file}, faça commit e rode `git add --renormalize .`",
+  "history.title": "Olhando as sessões locais do Claude Code neste projeto: {sessions, plural, one {# sessão} other {# sessões}}, {turns, plural, one {# turno} other {# turnos}}.",
+  "history.pattern.done_after_failing_tests": '{count, plural, one {# turno terminou} other {# turnos terminaram}} com "pronto" logo depois de testes falhando',
+  "history.pattern.env_read": "{count, plural, one {# leitura} other {# leituras}} de arquivo .env",
+  "history.pattern.no_verify": "{count, plural, one {# comando git} other {# comandos git}} com --no-verify",
+  "history.pattern.force_push": "{count, plural, one {# push forçado} other {# pushes forçados}}",
+  "history.pattern.test_skip": "{count, plural, one {# edição} other {# edições}} de teste que acrescentaram .skip, .only ou marcador de pular",
+  "history.estimate": "São estimativas por padrão de texto, não evidência; nada foi salvo e nada saiu desta máquina."
 };
 
 // src/i18n/review.json
@@ -6926,7 +6947,14 @@ var review_default = {
     "doctor.memory.too_long": "machine",
     "doctor.memory.fix_too_long": "machine",
     "doctor.git.autocrlf": "machine",
-    "doctor.git.fix_autocrlf": "machine"
+    "doctor.git.fix_autocrlf": "machine",
+    "history.title": "machine",
+    "history.pattern.done_after_failing_tests": "machine",
+    "history.pattern.env_read": "machine",
+    "history.pattern.no_verify": "machine",
+    "history.pattern.force_push": "machine",
+    "history.pattern.test_skip": "machine",
+    "history.estimate": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -7428,7 +7456,14 @@ var review_default = {
     "doctor.memory.too_long": "machine",
     "doctor.memory.fix_too_long": "machine",
     "doctor.git.autocrlf": "machine",
-    "doctor.git.fix_autocrlf": "machine"
+    "doctor.git.fix_autocrlf": "machine",
+    "history.title": "machine",
+    "history.pattern.done_after_failing_tests": "machine",
+    "history.pattern.env_read": "machine",
+    "history.pattern.no_verify": "machine",
+    "history.pattern.force_push": "machine",
+    "history.pattern.test_skip": "machine",
+    "history.estimate": "machine"
   }
 };
 
@@ -14424,6 +14459,178 @@ var i18nCheckCommand = {
   }
 };
 
+// src/history/look-back.ts
+import { join as join36 } from "node:path";
+
+// src/history/patterns.ts
+import { posix as posix4 } from "node:path";
+var PATTERNS = ["done_after_failing_tests", "env_read", "no_verify", "force_push", "test_skip"];
+var TEST_COMMAND = /(^|[\s;&|(])((npm|pnpm|yarn|bun)\s+(run\s+)?(test|check)\b|npx\s+(vitest|jest)\b|vitest\b|jest\b|pytest\b|go\s+test\b|cargo\s+test\b|node\s+--test\b|mocha\b)/;
+var DONE_CLAIM = /\b(done|all (tests|checks) (pass|passed|are passing)|everything (passes|works)|it works|pronto|feito|conclu[ií]do|listo|terminado)\b/i;
+var ENV_FILE2 = /(^|[\s"'=/])\.env(\.[A-Za-z0-9_-]+)?(?=$|[\s"';|&)])/;
+var ENV_TEMPLATE = /\.env\.(example|sample|template|dist|defaults)\b/;
+var READ_COMMAND = /(^|[\s;&|(])(cat|less|more|head|tail|bat|type|Get-Content|source|\.)\s/;
+var PUSH = /(^|[\s;&|(])git\s+push\b([^;&|\n]*)/;
+var FORCE = /\s(--force(-with-lease)?(=\S*)?|-f|-[A-Za-z]*f[A-Za-z]*)(?=\s|$)|\s\+\S/;
+var NO_VERIFY = /(^|[\s;&|(])git\s+(commit|push|merge|rebase|am|cherry-pick)\b[^;&|\n]*\s--no-verify\b/;
+var TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)__tests__\/|_test\.(go|py)$|(^|\/)test_[^/]+\.py$)/;
+var SKIP = /\b(it|test|describe)\.skip\s*\(|\bx(it|describe|test)\s*\(|@pytest\.mark\.skip|\bt\.Skip\(|\.only\s*\(/;
+var commandOf = (tool) => {
+  if (tool.name !== "Bash" && tool.name !== "PowerShell") return void 0;
+  const command = tool.input["command"];
+  return typeof command === "string" ? command : void 0;
+};
+var stringField = (tool, name) => {
+  const value = tool.input[name];
+  return typeof value === "string" ? value : "";
+};
+var isEnvPath = (path) => {
+  const name = posix4.basename(path.replace(/\\/g, "/"));
+  return /^\.env(\.[A-Za-z0-9_-]+)?$/.test(name) && !ENV_TEMPLATE.test(name);
+};
+var envRead = (tool) => {
+  if (tool.name === "Read") return isEnvPath(stringField(tool, "file_path"));
+  const command = commandOf(tool);
+  if (command === void 0 || !READ_COMMAND.test(command)) return false;
+  const match = ENV_FILE2.exec(command);
+  return match !== null && !ENV_TEMPLATE.test(command.slice(match.index, match.index + match[0].length + 12));
+};
+var forcePush = (command) => {
+  const match = PUSH.exec(command);
+  return match !== null && FORCE.test(match[2] ?? "");
+};
+var addedSkip = (tool) => {
+  const path = stringField(tool, "file_path");
+  if (!TEST_FILE.test(path.replace(/\\/g, "/"))) return false;
+  if (tool.name === "Write") return SKIP.test(stringField(tool, "content"));
+  if (tool.name === "Edit")
+    return SKIP.test(stringField(tool, "new_string")) && !SKIP.test(stringField(tool, "old_string"));
+  if (tool.name !== "MultiEdit") return false;
+  const edits = tool.input["edits"];
+  return Array.isArray(edits) && edits.some((edit) => {
+    if (typeof edit !== "object" || edit === null) return false;
+    const next2 = "new_string" in edit && typeof edit.new_string === "string" ? edit.new_string : "";
+    const before = "old_string" in edit && typeof edit.old_string === "string" ? edit.old_string : "";
+    return SKIP.test(next2) && !SKIP.test(before);
+  });
+};
+var doneAfterFailure = (turn) => {
+  const runs = turn.tools.filter((tool) => TEST_COMMAND.test(commandOf(tool) ?? ""));
+  const last = runs.at(-1);
+  if (last === void 0 || turn.results.get(last.id)?.failed !== true) return void 0;
+  return DONE_CLAIM.test(turn.finalText) ? last : void 0;
+};
+var sampleOf = (tool) => (commandOf(tool) ?? stringField(tool, "file_path")).split("\n")[0]?.slice(0, 120) ?? "";
+var hitsIn = (turn) => {
+  const hits = [];
+  const done = doneAfterFailure(turn);
+  if (done !== void 0) hits.push({ pattern: "done_after_failing_tests", sample: sampleOf(done) });
+  for (const tool of turn.tools) {
+    const command = commandOf(tool);
+    if (envRead(tool)) hits.push({ pattern: "env_read", sample: sampleOf(tool) });
+    if (command !== void 0 && NO_VERIFY.test(command)) hits.push({ pattern: "no_verify", sample: sampleOf(tool) });
+    if (command !== void 0 && forcePush(command)) hits.push({ pattern: "force_push", sample: sampleOf(tool) });
+    if (addedSkip(tool)) hits.push({ pattern: "test_skip", sample: sampleOf(tool) });
+  }
+  return hits;
+};
+
+// src/history/transcript.ts
+var blocksOf = (message) => {
+  if (!isRecord(message)) return [];
+  const content = message["content"];
+  if (typeof content === "string") return [{ type: "text", text: content }];
+  return Array.isArray(content) ? content : [];
+};
+var textOf3 = (value) => {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.map(textOf3).join("\n");
+  return isRecord(value) && typeof value["text"] === "string" ? value["text"] : "";
+};
+var FAILED_EXIT = /^Exit code [1-9]\d*/m;
+var startTurn = (prompt) => ({ prompt, tools: [], results: /* @__PURE__ */ new Map(), finalText: "" });
+var addAssistant = (draft, blocks) => {
+  for (const block4 of blocks) {
+    if (!isRecord(block4)) continue;
+    if (block4["type"] === "text" && typeof block4["text"] === "string" && block4["text"].trim() !== "") {
+      draft.finalText = block4["text"];
+    }
+    const { id, name, input } = block4;
+    if (block4["type"] === "tool_use" && typeof id === "string" && typeof name === "string" && isRecord(input)) {
+      draft.tools.push({ id, name, input });
+    }
+  }
+};
+var addResults = (draft, blocks) => {
+  let any = false;
+  for (const block4 of blocks) {
+    if (!isRecord(block4) || block4["type"] !== "tool_result" || typeof block4["tool_use_id"] !== "string") continue;
+    const text6 = textOf3(block4["content"]);
+    draft.results.set(block4["tool_use_id"], { failed: block4["is_error"] === true || FAILED_EXIT.test(text6), text: text6 });
+    any = true;
+  }
+  return any;
+};
+var parseTranscript = (jsonl) => {
+  const turns = [];
+  let current;
+  for (const line2 of jsonl.split(/\r?\n/)) {
+    if (line2.trim() === "") continue;
+    const parsed = parseJsonObject(line2);
+    if (!parsed.ok) continue;
+    const entry2 = parsed.value;
+    const blocks = blocksOf(entry2["message"]);
+    if (entry2["type"] === "user") {
+      if (current !== void 0 && addResults(current, blocks)) continue;
+      const prompt = blocks.map(textOf3).join("\n").trim();
+      if (prompt === "") continue;
+      current = startTurn(prompt);
+      turns.push(current);
+    } else if (entry2["type"] === "assistant" && current !== void 0) {
+      addAssistant(current, blocks);
+    }
+  }
+  return turns;
+};
+
+// src/history/look-back.ts
+var SAMPLES = 3;
+var projectLogKey = (root) => root.replace(/[^A-Za-z0-9-]/g, "-");
+var projectLogDir = (runtime, root, env) => join36(env["CLAUDE_CONFIG_DIR"] ?? join36(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
+var lookBack = (runtime, root, env) => {
+  const dir = projectLogDir(runtime, root, env);
+  const listed4 = runtime.listDir(toAbsolutePath(dir));
+  const files = listed4.ok ? listed4.value.filter((name) => name.endsWith(".jsonl")).sort() : [];
+  const counts = {
+    done_after_failing_tests: 0,
+    env_read: 0,
+    no_verify: 0,
+    force_push: 0,
+    test_skip: 0
+  };
+  const samples = {
+    done_after_failing_tests: [],
+    env_read: [],
+    no_verify: [],
+    force_push: [],
+    test_skip: []
+  };
+  let turns = 0;
+  for (const name of files) {
+    const text6 = runtime.readText(toAbsolutePath(join36(dir, name)));
+    if (!text6.ok) continue;
+    for (const turn of parseTranscript(text6.value)) {
+      turns += 1;
+      for (const hit3 of hitsIn(turn)) {
+        counts[hit3.pattern] += 1;
+        const list4 = samples[hit3.pattern];
+        if (list4.length < SAMPLES) list4.push(maskText(hit3.sample));
+      }
+    }
+  }
+  return { estimate: true, sessions: files.length, turns, counts, samples };
+};
+
 // src/install/diff.ts
 var MAX_DIFF_LINES = 120;
 var table = (a, b) => {
@@ -14578,17 +14785,32 @@ var initRequest = (args) => ({
   marketplace: args.values["marketplace"] === true,
   showDiff: false
 });
+var withLookBack = (ctx, result) => {
+  if (!result.ok) return result;
+  const root = openProject(ctx).project.root;
+  const found = lookBack(ctx.runtime, root, ctx.env);
+  const lines3 = [
+    ctx.t("history.title", { sessions: found.sessions, turns: found.turns }),
+    ...PATTERNS.map((pattern) => `  ${ctx.t(`history.pattern.${pattern}`, { count: found.counts[pattern] })}`),
+    ctx.t("history.estimate")
+  ];
+  return { ...result, data: { ...result.data, lookBack: found }, human: [...result.human ?? [], ...lines3] };
+};
 var initCommand = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--look-back] [--dry-run] [--yes]",
   status: "ready",
   options: {
     preset: { type: "string" },
     bin: { type: "string" },
-    marketplace: { type: "boolean" }
+    marketplace: { type: "boolean" },
+    "look-back": { type: "boolean" }
   },
-  run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral"))
+  run: (ctx, args) => {
+    const result = runInstall(ctx, initRequest(args), "neutral");
+    return Promise.resolve(args.values["look-back"] === true ? withLookBack(ctx, result) : result);
+  }
 };
 
 // src/commands/prose-check.ts
@@ -15066,7 +15288,7 @@ var secretsScanCommand = {
 };
 
 // src/task/create.ts
-import { join as join36 } from "node:path";
+import { join as join37 } from "node:path";
 
 // src/core/yaml/write.ts
 var PLAIN_SAFE = /^[A-Za-z_./][A-Za-z0-9_./ ()-]*$/;
@@ -15150,10 +15372,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative9) => {
-      const text6 = runtime.readText(toAbsolutePath(join36(paths.root, relative9)));
+      const text6 = runtime.readText(toAbsolutePath(join37(paths.root, relative9)));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative9) => runtime.stat(toAbsolutePath(join36(paths.root, relative9))) !== void 0
+    exists: (relative9) => runtime.stat(toAbsolutePath(join37(paths.root, relative9))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -15557,7 +15779,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join37 } from "node:path";
+import { join as join38 } from "node:path";
 var read3 = (runtime, path) => {
   const text6 = runtime.readText(toAbsolutePath(path));
   return text6.ok ? text6.value : void 0;
@@ -15572,14 +15794,14 @@ var languageIn = (text6) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join37(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join38(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join37(root, CONFIG_FILE)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join38(root, CONFIG_FILE)) ?? "");
   const claudeFiles = [
-    join37(root, ".claude", "settings.local.json"),
-    join37(root, ".claude", "settings.json"),
-    join37(claudeDir(runtime, env), "settings.json")
+    join38(root, ".claude", "settings.local.json"),
+    join38(root, ".claude", "settings.json"),
+    join38(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

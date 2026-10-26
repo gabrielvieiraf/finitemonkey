@@ -62,6 +62,7 @@ This reads the project and returns the plan without writing anything: `data.acti
 
 - Preset: `neutral` (default) or `gabriel` (adds the author's conventions, such as turning off AI attribution in commits and PRs when the project has not set it).
 - Whether to register the plugin marketplace in the project (`--marketplace`).
+- Whether to look back once at this project's local Claude Code sessions (`--look-back`). It reads the session logs on this machine and prints estimated counts of what Finite Monkey would have blocked, with secrets masked. Nothing is saved or sent. Without the flag, no session log is read.
 
 ### 4. Install
 
