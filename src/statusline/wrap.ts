@@ -3,6 +3,7 @@ import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
+import { nodeShell, type Shell } from "./node-shell.js";
 
 export const WRAP_CACHE = "statusline.json";
 const KEEP = 20;
@@ -32,21 +33,15 @@ export interface WrapRequest {
   readonly session: string;
 }
 
-export const runWrapped = (
-  runtime: Pick<Runtime, "exec" | "readText" | "writeText">,
+export const runWrapped = async (
+  runtime: Pick<Runtime, "readText" | "writeText">,
   paths: FmPaths | undefined,
   request: WrapRequest,
-): string => {
-  const result = runtime.exec({
-    command: request.command,
-    args: [],
-    cwd: request.cwd,
-    timeoutMs: request.timeoutMs,
-    shell: true,
-    input: request.input,
-  });
-  const text = result.stdout.replace(/\s+$/, "");
-  if (!result.timedOut && result.found) {
+  shell: Shell = nodeShell,
+): Promise<string> => {
+  const result = await shell(request.command, request.input, request.cwd, request.timeoutMs);
+  if (result.text !== undefined) {
+    const text = result.text.replace(/\s+$/, "");
     if (paths !== undefined) remember(runtime, paths, request.session, text);
     return text;
   }

@@ -29,7 +29,7 @@ const columnsOf = (ctx: Ctx): number | undefined => {
   return Number.isInteger(columns) && columns > 0 ? columns : undefined;
 };
 
-const lineFor = (ctx: Ctx, input: StatusInput): string => {
+const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
   const start = input.dir === undefined ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
   const root = findGitRoot(start, ctx.runtime);
   const paths = root === undefined ? undefined : fmPaths(root);
@@ -37,7 +37,7 @@ const lineFor = (ctx: Ctx, input: StatusInput): string => {
   const wrapped =
     wrap === undefined || root === undefined
       ? ""
-      : runWrapped(ctx.runtime, paths, {
+      : await runWrapped(ctx.runtime, paths, {
           command: wrap,
           input: input.raw,
           cwd: root,
@@ -55,7 +55,7 @@ const lineFor = (ctx: Ctx, input: StatusInput): string => {
 export const renderStatusLine = async (ctx: Ctx): Promise<string> => {
   try {
     const raw = await withDeadline(readAll(ctx.io.stdin), STDIN_MS, ctx.runtime.startTimer).catch(() => "");
-    return lineFor(ctx, parseStatusInput(raw));
+    return await lineFor(ctx, parseStatusInput(raw));
   } catch {
     return "fm";
   }

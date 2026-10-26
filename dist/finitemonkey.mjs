@@ -18626,6 +18626,47 @@ var composeLine = (wrapped, segment, columns) => {
   return [...lines3, joined].map((line2) => fit(line2, columns)).join("\n");
 };
 
+// src/statusline/node-shell.ts
+import { spawn as spawn4 } from "node:child_process";
+var killTree = (child2) => {
+  const pid = child2.pid;
+  if (pid === void 0) return;
+  try {
+    if (process.platform === "win32") {
+      spawn4("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true }).unref();
+    } else process.kill(-pid, "SIGKILL");
+  } catch {
+    child2.kill("SIGKILL");
+  }
+};
+var nodeShell = (command, input, cwd, timeoutMs) => new Promise((resolve2) => {
+  const child2 = spawn4(command, {
+    cwd,
+    shell: true,
+    detached: process.platform !== "win32",
+    windowsHide: true,
+    stdio: ["pipe", "pipe", "ignore"]
+  });
+  let out = "";
+  const timer = setTimeout(() => {
+    killTree(child2);
+    resolve2({ text: void 0, timedOut: true });
+  }, timeoutMs);
+  child2.stdout.on("data", (chunk) => {
+    out += chunk.toString("utf8");
+  });
+  child2.once("error", () => {
+    clearTimeout(timer);
+    resolve2({ text: void 0, timedOut: false });
+  });
+  child2.once("close", () => {
+    clearTimeout(timer);
+    resolve2({ text: out, timedOut: false });
+  });
+  child2.stdin.on("error", () => void 0);
+  child2.stdin.end(input);
+});
+
 // src/statusline/wrap.ts
 var WRAP_CACHE = "statusline.json";
 var KEEP3 = 20;
@@ -18637,17 +18678,10 @@ var remember = (runtime, paths, session, text8) => {
   const sessions = Object.entries({ ...cached2(runtime, paths), [session]: text8 }).slice(-KEEP3);
   writeJsonFile(runtime, paths.cache(WRAP_CACHE), { sessions: Object.fromEntries(sessions) });
 };
-var runWrapped = (runtime, paths, request) => {
-  const result = runtime.exec({
-    command: request.command,
-    args: [],
-    cwd: request.cwd,
-    timeoutMs: request.timeoutMs,
-    shell: true,
-    input: request.input
-  });
-  const text8 = result.stdout.replace(/\s+$/, "");
-  if (!result.timedOut && result.found) {
+var runWrapped = async (runtime, paths, request, shell = nodeShell) => {
+  const result = await shell(request.command, request.input, request.cwd, request.timeoutMs);
+  if (result.text !== void 0) {
+    const text8 = result.text.replace(/\s+$/, "");
     if (paths !== void 0) remember(runtime, paths, request.session, text8);
     return text8;
   }
@@ -18667,12 +18701,12 @@ var columnsOf = (ctx) => {
   const columns = Number.parseInt(ctx.env["COLUMNS"] ?? "", 10);
   return Number.isInteger(columns) && columns > 0 ? columns : void 0;
 };
-var lineFor = (ctx, input) => {
+var lineFor = async (ctx, input) => {
   const start = input.dir === void 0 ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
   const root = findGitRoot(start, ctx.runtime);
   const paths = root === void 0 ? void 0 : fmPaths(root);
   const wrap = root === void 0 ? void 0 : wrapOf(ctx, root);
-  const wrapped = wrap === void 0 || root === void 0 ? "" : runWrapped(ctx.runtime, paths, {
+  const wrapped = wrap === void 0 || root === void 0 ? "" : await runWrapped(ctx.runtime, paths, {
     command: wrap,
     input: input.raw,
     cwd: root,
@@ -18689,7 +18723,7 @@ var lineFor = (ctx, input) => {
 var renderStatusLine = async (ctx) => {
   try {
     const raw = await withDeadline(readAll(ctx.io.stdin), STDIN_MS, ctx.runtime.startTimer).catch(() => "");
-    return lineFor(ctx, parseStatusInput(raw));
+    return await lineFor(ctx, parseStatusInput(raw));
   } catch {
     return "fm";
   }
