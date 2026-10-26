@@ -118,6 +118,30 @@
     },
     "schema": "finitemonkey/secrets-incidents@1"
   },
+  "proseCheck": {
+    "required": {
+      "schema": "string",
+      "files": "array",
+      "summary": "object"
+    },
+    "schema": "finitemonkey/prose-check@1"
+  },
+  "proseFile": {
+    "required": {
+      "file": "string",
+      "allowed": "boolean",
+      "spans": "array"
+    }
+  },
+  "proseSpan": {
+    "required": {
+      "startLine": "number",
+      "endLine": "number",
+      "score": "number",
+      "rules": "array",
+      "hits": "array"
+    }
+  },
   "errorCodes": [
     "doctor_failed",
     "hook_blocked",
@@ -150,7 +174,10 @@
     "not_a_git_repo",
     "task_exists",
     "task_invalid",
-    "task_not_found"
+    "task_not_found",
+    "prose_found",
+    "prose_no_input",
+    "prose_unreadable"
   ],
   "gate": {
     "required": {

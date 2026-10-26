@@ -63,6 +63,7 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       ...(hasTests ? [] : [{ id: "tests", kind: "tests" as const }]),
       { id: "placeholders", kind: "placeholders" },
       { id: "secrets", kind: "secrets" },
+      { id: "prose", kind: "prose" },
       { id: "pr", kind: "pr", requireOpen: false },
     ],
     decisionsNeeded: [],

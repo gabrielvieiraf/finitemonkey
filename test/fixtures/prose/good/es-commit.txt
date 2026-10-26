@@ -1,0 +1,3 @@
+fix(hooks): el hook Stop ya no se repite al reanudar la sesión
+
+Al reanudar, el payload trae stop_hook_active y el portón lo respetaba solo en la primera vuelta.

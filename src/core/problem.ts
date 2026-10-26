@@ -35,6 +35,9 @@ export const ERROR_CODES = [
   "task_exists",
   "task_invalid",
   "task_not_found",
+  "prose_found",
+  "prose_no_input",
+  "prose_unreadable",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

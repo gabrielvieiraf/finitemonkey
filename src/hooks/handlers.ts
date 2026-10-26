@@ -4,6 +4,7 @@ import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
+import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
@@ -92,4 +93,4 @@ export const SECRETS_HANDLERS: HookHandlers = {
   PostToolUse: [secretsPostToolUse],
 };
 
-export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(SECRETS_HANDLERS, PORTAO_HANDLERS);
+export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(SECRETS_HANDLERS, PORTAO_HANDLERS, PROSE_HANDLERS);

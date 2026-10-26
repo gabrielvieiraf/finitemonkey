@@ -1,0 +1,3 @@
+fix(install): keep an empty hooks array when merging settings
+
+The merge dropped empty arrays, so a user who disabled every hook got them back on update.
