@@ -686,7 +686,13 @@
     "critique.error.invalid": "machine",
     "critique.error.must_fix": "machine",
     "install.warn.sandbox_offer": "machine",
-    "install.warn.sandbox_unsupported": "machine"
+    "install.warn.sandbox_unsupported": "machine",
+    "gate.guard.rewrite.claim": "machine",
+    "gate.guard.rewrite.requires": "machine",
+    "gate.guard.rewrite.not": "machine",
+    "gate.guard.rewrite.human": "machine",
+    "doctor.hooks.rewriters": "machine",
+    "doctor.hooks.fix_rewriters": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1375,6 +1381,12 @@
     "critique.error.invalid": "machine",
     "critique.error.must_fix": "machine",
     "install.warn.sandbox_offer": "machine",
-    "install.warn.sandbox_unsupported": "machine"
+    "install.warn.sandbox_unsupported": "machine",
+    "gate.guard.rewrite.claim": "machine",
+    "gate.guard.rewrite.requires": "machine",
+    "gate.guard.rewrite.not": "machine",
+    "gate.guard.rewrite.human": "machine",
+    "doctor.hooks.rewriters": "machine",
+    "doctor.hooks.fix_rewriters": "machine"
   }
 }
