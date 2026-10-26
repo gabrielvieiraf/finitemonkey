@@ -39,10 +39,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "La configuración del proyecto y el briefing opcional para subagentes.",
   },
   install: {
-    en: "`init` and `update`: hook settings, the verify skill, one `.gitignore` line, the pinned runtime and a backup of every file it changes.",
+    en: "`init` and `update`: hook settings, the verify skill, a short managed block in `AGENTS.md` that `CLAUDE.md` imports, one `.gitignore` line, the pinned runtime and a backup of every file it changes.",
     "pt-BR":
-      "`init` e `update`: configuração dos hooks, a skill verify, uma linha no `.gitignore`, o runtime fixado e um backup de cada arquivo que alteram.",
-    es: "`init` y `update`: la configuración de los hooks, la skill verify, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
+      "`init` e `update`: configuração dos hooks, a skill verify, um bloco gerenciado curto no `AGENTS.md` que o `CLAUDE.md` importa, uma linha no `.gitignore`, o runtime fixado e um backup de cada arquivo que alteram.",
+    es: "`init` y `update`: la configuración de los hooks, la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
   },
   tasks: {
     en: "Task contracts and which task is active.",

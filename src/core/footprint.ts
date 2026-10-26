@@ -30,6 +30,8 @@ export const FOOTPRINT = [
     targets: [
       ".claude/settings.json",
       ".claude/skills/verify/SKILL.md",
+      "AGENTS.md",
+      "CLAUDE.md",
       ".gitignore",
       ".finitemonkey/config.yml",
       ".finitemonkey/lock.json",
