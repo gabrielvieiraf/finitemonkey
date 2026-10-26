@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-next.15](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.14...v0.1.0-next.15) (2026-10-26)
+
+### Features
+
+* **gate:** compute task size from the real diff and touched paths ([#148](https://github.com/gabrielvieiraf/finitemonkey/issues/148)) ([f271bdd](https://github.com/gabrielvieiraf/finitemonkey/commit/f271bdd03ebeaaf3f047a5f77c8c8d74329a52cd)), closes [#52](https://github.com/gabrielvieiraf/finitemonkey/issues/52)
+* **secrets:** warn on secrets in process args, disabled TLS and credentials in git remotes ([#149](https://github.com/gabrielvieiraf/finitemonkey/issues/149)) ([e821dd7](https://github.com/gabrielvieiraf/finitemonkey/commit/e821dd7a4a2806678e100c062f5d27d172f5dd9a)), closes [#50](https://github.com/gabrielvieiraf/finitemonkey/issues/50)
+
 ## [0.1.0-next.14](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.13...v0.1.0-next.14) (2026-10-26)
 
 ### Features
