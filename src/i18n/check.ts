@@ -1,8 +1,13 @@
 import type { JsonObject } from "../core/parsed.js";
 import { type Lang, LANGUAGES, SOURCE_LANG } from "./languages.js";
+import { choicesOf, requiredPluralBranches } from "./message.js";
 import { placeholdersOf } from "./translate.js";
 
-export const PROBLEM_KINDS = ["missing", "extra", "placeholder", "empty", "not_string"] as const;
+export const PROBLEM_KINDS = ["missing", "extra", "placeholder", "plural", "empty", "not_string", "status"] as const;
+
+export const REVIEW_STATUSES = ["machine", "reviewed"] as const;
+
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
 
 export type ProblemKind = (typeof PROBLEM_KINDS)[number];
 
@@ -22,6 +27,8 @@ export interface CatalogReport {
 
 export type RawCatalogs = Readonly<Record<Lang, JsonObject>>;
 
+export type RawReview = Readonly<Partial<Record<Lang, JsonObject>>>;
+
 const sameList = (a: readonly string[], b: readonly string[]): boolean =>
   a.length === b.length && a.every((value, index) => value === b[index]);
 
@@ -37,6 +44,17 @@ const valueProblems = (lang: Lang, catalog: JsonObject, reference: JsonObject): 
       return problems;
     });
 
+const pluralProblems = (lang: Lang, key: string, value: string, source: string): CatalogProblem[] => {
+  const own = choicesOf(value);
+  return choicesOf(source).flatMap((choice): CatalogProblem[] => {
+    const found = own.find((item) => item.name === choice.name && item.kind === choice.kind);
+    const expected = choice.kind === "plural" ? requiredPluralBranches(lang) : choice.branches;
+    const actual = found?.branches ?? [];
+    const missingBranch = expected.some((branch) => !actual.includes(branch));
+    return missingBranch ? [{ lang, key, kind: "plural", expected, actual }] : [];
+  });
+};
+
 const parityProblems = (lang: Lang, catalog: JsonObject, reference: JsonObject): CatalogProblem[] =>
   Object.keys(reference)
     .sort()
@@ -47,15 +65,43 @@ const parityProblems = (lang: Lang, catalog: JsonObject, reference: JsonObject):
       if (typeof value !== "string" || typeof source !== "string") return [];
       const expected = placeholdersOf(source);
       const actual = placeholdersOf(value);
-      return sameList(expected, actual) ? [] : [{ lang, key, kind: "placeholder", expected, actual }];
+      const placeholders: CatalogProblem[] = sameList(expected, actual)
+        ? []
+        : [{ lang, key, kind: "placeholder", expected, actual }];
+      return [...placeholders, ...pluralProblems(lang, key, value, source)];
     });
 
-export const checkCatalogs = (input: RawCatalogs): CatalogReport => {
+const isStatus = (value: unknown): value is ReviewStatus => REVIEW_STATUSES.some((status) => status === value);
+
+const statusProblems = (lang: Lang, catalog: JsonObject, review: JsonObject): CatalogProblem[] => [
+  ...Object.keys(catalog)
+    .sort()
+    .filter((key) => !isStatus(review[key]))
+    .map((key): CatalogProblem => ({ lang, key, kind: "status", expected: [...REVIEW_STATUSES] })),
+  ...Object.keys(review)
+    .sort()
+    .filter((key) => !(key in catalog))
+    .map((key): CatalogProblem => ({ lang, key, kind: "extra" })),
+];
+
+const sourceProblems = (catalog: JsonObject): CatalogProblem[] =>
+  Object.keys(catalog)
+    .sort()
+    .flatMap((key) => {
+      const value = catalog[key];
+      return typeof value === "string" ? pluralProblems(SOURCE_LANG, key, value, value) : [];
+    });
+
+export const checkCatalogs = (input: RawCatalogs, review?: RawReview): CatalogReport => {
   const reference = input[SOURCE_LANG];
-  const problems = LANGUAGES.flatMap((lang) =>
-    lang === SOURCE_LANG
-      ? valueProblems(lang, input[lang], reference)
-      : [...valueProblems(lang, input[lang], reference), ...parityProblems(lang, input[lang], reference)],
-  );
+  const problems = LANGUAGES.flatMap((lang) => {
+    if (lang === SOURCE_LANG) return [...valueProblems(lang, input[lang], reference), ...sourceProblems(reference)];
+    const statuses = review?.[lang];
+    return [
+      ...valueProblems(lang, input[lang], reference),
+      ...parityProblems(lang, input[lang], reference),
+      ...(review === undefined ? [] : statusProblems(lang, input[lang], statuses ?? {})),
+    ];
+  });
   return { languages: LANGUAGES, keys: Object.keys(reference).length, problems };
 };

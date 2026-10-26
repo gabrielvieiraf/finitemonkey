@@ -1,0 +1,5 @@
+# finitemonkey:generated v=1
+# Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.
+schemaVersion: 1
+preset: neutral
+lang: es

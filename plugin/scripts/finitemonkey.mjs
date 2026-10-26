@@ -3007,8 +3007,8 @@ var en_default = {
   "error.not_implemented": '"{command}" is not available in this version yet',
   "error.invalid_lang": 'Unsupported language "{lang}". Use one of: {languages}',
   "error.i18n_catalog_unreadable": "Could not read catalog {file}: {detail}",
-  "error.i18n_mismatch": "{count} catalog problem(s) found",
-  "error.doctor_failed": "{count} check(s) failed",
+  "error.i18n_mismatch": "{count, plural, one {# catalog problem found} other {# catalog problems found}}",
+  "error.doctor_failed": "{count, plural, one {# check failed} other {# checks failed}}",
   "error.unknown_hook_event": 'Unknown hook event "{event}". Use one of: {events}',
   "i18n.summary": "Languages: {languages}. Keys: {keys}.",
   "i18n.ok": "All catalogs match.",
@@ -3016,10 +3016,12 @@ var en_default = {
   "i18n.problem.missing": "missing key",
   "i18n.problem.extra": "key not in en.json",
   "i18n.problem.placeholder": "placeholders differ (expected: {expected}; found: {actual})",
+  "i18n.problem.plural": "plural branches missing (needs: {expected}; found: {actual})",
+  "i18n.problem.status": "no review status (use: {expected})",
   "i18n.problem.empty": "empty text",
   "i18n.problem.not_string": "value is not text",
   "doctor.title": "finitemonkey doctor ({version})",
-  "doctor.summary": "{ok} ok, {warn} warning(s), {fail} failure(s)",
+  "doctor.summary": "{ok} ok, {warn, plural, one {# warning} other {# warnings}}, {fail, plural, one {# failure} other {# failures}}",
   "doctor.node.ok": "Node.js {version}",
   "doctor.node.old": "Node.js {version} is older than the minimum {min}",
   "doctor.node.fix": "Install Node.js 20 or newer from https://nodejs.org",
@@ -3080,7 +3082,7 @@ var en_default = {
   "secrets.action.accept": "accept a finding",
   "secrets.action.rotated": "mark an incident as rotated",
   "secrets.action.close": "close an incident",
-  "secrets.incident.title": "{count} incident(s)",
+  "secrets.incident.title": "{count, plural, one {# incident} other {# incidents}}",
   "secrets.incident.item": "  {id}  {state}  {rule}  {where}  since {created}",
   "secrets.incident.none": "No secret incidents.",
   "secrets.incident.marked": "Incident {id} is now {state}.",
@@ -3090,7 +3092,7 @@ var en_default = {
   "secrets.purge.step3": "3. In a fresh mirror clone, run: git filter-repo --replace-text <replacements file>",
   "secrets.purge.step4": "4. Relax branch protection yourself, push the rewritten refs, restore the protection and tell everyone with a clone to clone again.",
   "secrets.purge.step5": "5. Close the incident: finitemonkey secrets incident close {id}",
-  "secrets.error.found": "{count} secret finding(s) outside the baseline or with an expired acceptance",
+  "secrets.error.found": "{count, plural, one {# secret finding} other {# secret findings}} outside the baseline or with an expired acceptance",
   "secrets.error.one_mode": "Choose only one of --staged, --history and --path",
   "secrets.error.git_unavailable": "The scan could not read git ({detail})",
   "secrets.error.baseline_invalid": "The baseline {file} is invalid: {detail}",
@@ -3101,7 +3103,6 @@ var en_default = {
   "secrets.error.not_rotated": "Incident {id} is {state}: rotate the key at the provider first, then mark it rotated",
   "secrets.error.bad_transition": "Incident {id} cannot go from {from} to {to}",
   "secrets.error.write_failed": "Could not write {file}: {detail}",
-  "install.config.header": "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
   "install.plan.title": "Finite Monkey plan for {root} (preset {preset}):",
   "install.warning": "warning: {message}",
   "install.warn.not_git": "this folder is not inside a git repository; installing here anyway",
@@ -3134,8 +3135,8 @@ var en_default = {
   "command.task_new.summary": "Create a done contract for a task",
   "command.task_show.summary": "Show a task contract and its evidence",
   "command.task_done.summary": "Run the gate and close the task when it passes",
-  "error.gate_failed": "The gate failed: {failed} check(s) failed, {unverified} not verified",
-  "error.gate_incomplete": "The gate is incomplete: {unverified} check(s) not verified",
+  "error.gate_failed": "The gate failed: {failed, plural, one {# check failed} other {# checks failed}}, {unverified} not verified",
+  "error.gate_incomplete": "The gate is incomplete: {unverified, plural, one {# check not verified} other {# checks not verified}}",
   "error.gate_not_run": "The gate could not run: {detail}",
   "error.not_a_git_repo": "This folder is not inside a git repository",
   "error.task_exists": 'Task "{task}" already exists',
@@ -3174,10 +3175,10 @@ var en_default = {
   "gate.note.exit": "exit {code}",
   "gate.note.output": "last line: {line}",
   "gate.note.new_failure": "new failure: {name}",
-  "gate.note.baseline": "{count} failure(s) already failed before this session (baseline)",
+  "gate.note.baseline": "{count, plural, one {# failure already failed} other {# failures already failed}} before this session (baseline)",
   "gate.note.trivial": '"{command}" does not check code or tests',
   "gate.note.zero_tests": '"{command}" ran zero test cases',
-  "gate.note.tests_ran": "{count} test(s) ran",
+  "gate.note.tests_ran": "{count, plural, one {# test ran} other {# tests ran}}",
   "gate.note.not_implemented": "the {kind} check is not available in this version",
   "gate.note.released": "released by the person for {guard}: {reason}",
   "gate.tests.test_file_deleted": "test file deleted: {file}",
@@ -3193,12 +3194,12 @@ var en_default = {
   "gate.diff.outside": "outside the scope: {file}",
   "gate.diff.too_many_files": "{count} files changed, budget {max}",
   "gate.diff.too_many_lines": "{count} lines changed, budget {max}",
-  "gate.diff.within": "{files} file(s), {lines} line(s), inside scope and budget",
+  "gate.diff.within": "{files, plural, one {# file} other {# files}}, {lines, plural, one {# line} other {# lines}}, inside scope and budget",
   "gate.placeholders.clean": "no placeholder in new code",
   "gate.placeholders.found": "placeholder at {file}:{line}",
-  "gate.git.uncommitted": "{count} file(s) not committed, first: {file}",
+  "gate.git.uncommitted": "{count, plural, one {# file not committed} other {# files not committed}}, first: {file}",
   "gate.git.no_upstream": "the branch has no upstream",
-  "gate.git.unpushed": "{count} commit(s) not pushed",
+  "gate.git.unpushed": "{count, plural, one {# commit not pushed} other {# commits not pushed}}",
   "gate.git.no_pr": "no open pull request for this branch",
   "gate.git.ok": "{require}: ok",
   "gate.manual.waiting": "waiting for the person to approve: {description}",
@@ -3234,11 +3235,11 @@ var en_default = {
   "gate.fail.ledger_unwritable": "could not write the evidence ledger",
   "gate.fail.contract_missing": "task {task} has no contract{issues}",
   "gate.fail.contract_invalid": "the contract of task {task} is invalid: {issues}",
-  "gate.human.held": 'Held the "done". Claude did not run the checks; I did. {count} check(s) failed.',
+  "gate.human.held": 'Held the "done". Claude did not run the checks; I did. {count, plural, one {# check failed.} other {# checks failed.}}',
   "gate.human.witness": "Fix the code, not the witness.",
-  "gate.human.not_done": "NOT DONE after {blocks} block(s) without a green gate. Missing: {list}. The session may stop, but this is not done.",
+  "gate.human.not_done": "NOT DONE after {blocks, plural, one {# block} other {# blocks}} without a green gate. Missing: {list}. The session may stop, but this is not done.",
   "gate.human.incomplete": "Not proven yet: {list}. Not marked as done.",
-  "gate.human.passed": "Gate green: {count} check(s) passed on this tree. One monkey, finite time, work finished.",
+  "gate.human.passed": "Gate green: {count, plural, one {# check passed} other {# checks passed}} on this tree. One monkey, finite time, work finished.",
   "gate.human.not_run": "GATE DID NOT RUN: {detail}. This is not green; run `finitemonkey doctor`.",
   "gate.human.last_not_run": "The gate did not run at the last stop ({at}): {detail}.",
   "gate.human.last_not_done": "The last session ended NOT DONE ({at}): {detail}.",
@@ -3303,12 +3304,12 @@ var en_default = {
   "prose.block.command": "blocked: {target} reads as machine-written ({spans}), and this project's preset does not send it. {fixes}. Rewrite it and run the command again.",
   "prose.block.unreadable": "blocked: could not read {file} to check its text ({detail}). Check the path and run the command again.",
   "prose.block.marker": "blocked: this would add the marker {marker} to {file}, and only the person can add it. Rewrite the passage instead, or ask the person to add the marker in their own editor.",
-  "prose.check.file": "{file}: {count} passage(s) that read as machine-written",
+  "prose.check.file": "{file}: {count, plural, one {# passage that reads} other {# passages that read}} as machine-written",
   "prose.check.span": "  {file}:{start}-{end} score {score}: {rules}",
   "prose.check.fix": "    do instead: {fix}",
   "prose.check.allowed": "{file}: skipped, the person marked it with {marker}",
-  "prose.check.clean": "{count} file(s) checked, nothing reads as machine-written. The monkey wrote this one itself.",
-  "prose.error.found": "{count} passage(s) read as machine-written",
+  "prose.check.clean": "{count, plural, one {# file checked} other {# files checked}}, nothing reads as machine-written. The monkey wrote this one itself.",
+  "prose.error.found": "{count, plural, one {# passage reads} other {# passages read}} as machine-written",
   "prose.error.no_input": "nothing to check: pass files, --stdin, or run it inside a git repository to check the changed Markdown files",
   "prose.error.unreadable": "could not read {file} ({detail})",
   "prose.block.marker_shell": "blocked: this command writes the marker {marker}, and only the person can add it. Rewrite the passage instead, or ask the person to add the marker in their own editor.",
@@ -3321,7 +3322,7 @@ var en_default = {
   "gate.prose.unavailable": "could not read the changed Markdown files (git unavailable)",
   "gate.prose.finding": "{file}:{line} reads as machine-written ({rules})",
   "gate.prose.warning": "warning only in this preset: {file}:{line} reads as machine-written ({rules})",
-  "gate.prose.clean": "{count} changed Markdown file(s), none reads as machine-written",
+  "gate.prose.clean": "{count, plural, one {# changed Markdown file, it does not read} other {# changed Markdown files, none reads}} as machine-written",
   "git.command.snapshot": "Save the working tree, index and untracked files to a backup ref without touching them",
   "git.command.undo": "List the snapshots or restore one, into a new worktree by default",
   "git.command.rescue": "List lost commits from the reflog and fsck, and restore one into a new branch",
@@ -3352,7 +3353,7 @@ var en_default = {
   "prod.block.interactive": "blocked: `{command}` opens an interactive session on production ({target}), where nothing typed can be checked first. Run one read-only command at a time, such as `ssh {target} docker ps`.",
   "prod.deploy.unknown": "the project's declared deploy",
   "git.snapshot.done": "snapshot saved: {ref} ({commit}). `finitemonkey undo {ref}` restores it.",
-  "git.undo.list_title": "{count} snapshot(s), newest first:",
+  "git.undo.list_title": "{count, plural, one {# snapshot:} other {# snapshots, newest first:}}",
   "git.undo.list_item": "{index}. {at}  {op}  {ref}",
   "git.undo.worktree": "restored {ref} into a new worktree at {path}. Compare it with your tree and copy what you need; `git worktree remove {path}` removes it. The state before this undo is in {backup}.",
   "git.undo.in_place": "restored {ref} in place. The state before this undo is in {backup}; `finitemonkey undo {backup}` brings it back.",
@@ -3360,12 +3361,12 @@ var en_default = {
   "git.rescue.title": "recovery candidates (read-only, nothing changed):",
   "git.rescue.reflog": "reflog {ref}: {sha} {when} {subject}",
   "git.rescue.dangling": "lost commit {sha} {when} {subject}",
-  "git.rescue.blobs": "{count} staged file content(s) are lost but recoverable; `git fsck --lost-found` writes them to .git/lost-found/other.",
+  "git.rescue.blobs": "{count, plural, one {# staged file content is lost but recoverable} other {# staged file contents are lost but recoverable}}; `git fsck --lost-found` writes them to .git/lost-found/other.",
   "git.rescue.never_staged": "a file that was never staged nor committed cannot be recovered from git.",
   "git.rescue.next": "restore one with `finitemonkey rescue --restore <sha> --branch <name>`.",
   "git.rescue.restored": "created branch {branch} at {sha}.",
-  "git.merge.ok": "nothing lost: {files} file(s) checked between {base} and {result}, {justified} justified drop(s).",
-  "git.merge.lost": "{count} change(s) lost between {base} and {result}:",
+  "git.merge.ok": "nothing lost: {files, plural, one {# file} other {# files}} checked between {base} and {result}, {justified, plural, one {# justified drop} other {# justified drops}}.",
+  "git.merge.lost": "{count, plural, one {# change lost} other {# changes lost}} between {base} and {result}:",
   "git.merge.finding": "{where} [{kind}] {side}: {text}",
   "git.merge.limits": "this proves the changes are present, not that the merged code works; the tests of both sides still have to pass.",
   "git.merge.none": "no merge to check: {detail}",
@@ -3373,18 +3374,18 @@ var en_default = {
   "git.error.nothing_to_undo": "no snapshot found for {ref}.",
   "git.error.undo_failed": "the undo failed: {detail}",
   "git.error.rescue_failed": "rescue failed: {detail}",
-  "git.error.merge_lost": "{count} change(s) were lost in the merge and are not justified in the dropped list.",
+  "git.error.merge_lost": "{count, plural, one {# change was lost in the merge and is not justified} other {# changes were lost in the merge and are not justified}} in the dropped list.",
   "git.error.merge_unanalyzable": "the merge could not be analyzed: {detail}",
   "gate.require.worktree": "every file changed in the session committed, and the commits pushed or with a declared destination",
   "gate.require.merge": "every merge since the start kept the changes of both sides",
   "gate.worktree.unavailable": "could not read the git state of the worktree",
   "gate.worktree.dirty": "files changed in this session are not committed: {files}",
-  "gate.worktree.unpushed": "{count} commit(s) on {branch} exist only on this machine",
+  "gate.worktree.unpushed": "{count, plural, one {# commit on {branch} exists only on this machine} other {# commits on {branch} exist only on this machine}}",
   "gate.worktree.clean": "the session's changes are committed and pushed",
   "gate.merge.unavailable": "could not read the merges of the session",
   "gate.merge.unanalyzed": "merge {commit} could not be analyzed: {detail}",
   "gate.merge.lost": "merge {commit} lost changes: {findings}",
-  "gate.merge.clean": "{count} merge(s) checked, nothing lost"
+  "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost"
 };
 
 // src/i18n/es.json
@@ -3422,8 +3423,8 @@ var es_default = {
   "error.not_implemented": '"{command}" aún no está disponible en esta versión',
   "error.invalid_lang": 'Idioma no soportado "{lang}". Usa uno de estos: {languages}',
   "error.i18n_catalog_unreadable": "No se pudo leer el catálogo {file}: {detail}",
-  "error.i18n_mismatch": "{count} problema(s) en los catálogos",
-  "error.doctor_failed": "{count} revisión(es) fallaron",
+  "error.i18n_mismatch": "{count, plural, one {# problema en los catálogos} other {# problemas en los catálogos}}",
+  "error.doctor_failed": "{count, plural, one {# revisión falló} other {# revisiones fallaron}}",
   "error.unknown_hook_event": 'Evento de hook desconocido "{event}". Usa uno de estos: {events}',
   "i18n.summary": "Idiomas: {languages}. Claves: {keys}.",
   "i18n.ok": "Todos los catálogos coinciden.",
@@ -3431,10 +3432,12 @@ var es_default = {
   "i18n.problem.missing": "falta la clave",
   "i18n.problem.extra": "clave que no existe en en.json",
   "i18n.problem.placeholder": "marcadores distintos (esperado: {expected}; encontrado: {actual})",
+  "i18n.problem.plural": "faltan ramas de plural (necesita: {expected}; encontradas: {actual})",
+  "i18n.problem.status": "sin estado de revisión (use: {expected})",
   "i18n.problem.empty": "texto vacío",
   "i18n.problem.not_string": "el valor no es texto",
   "doctor.title": "finitemonkey doctor ({version})",
-  "doctor.summary": "{ok} ok, {warn} aviso(s), {fail} falla(s)",
+  "doctor.summary": "{ok} ok, {warn, plural, one {# aviso} other {# avisos}}, {fail, plural, one {# falla} other {# fallas}}",
   "doctor.node.ok": "Node.js {version}",
   "doctor.node.old": "Node.js {version} es más antiguo que el mínimo {min}",
   "doctor.node.fix": "Instala Node.js 20 o más nuevo desde https://nodejs.org",
@@ -3495,7 +3498,7 @@ var es_default = {
   "secrets.action.accept": "aceptar un hallazgo",
   "secrets.action.rotated": "marcar un incidente como rotado",
   "secrets.action.close": "cerrar un incidente",
-  "secrets.incident.title": "{count} incidente(s)",
+  "secrets.incident.title": "{count, plural, one {# incidente} other {# incidentes}}",
   "secrets.incident.item": "  {id}  {state}  {rule}  {where}  desde {created}",
   "secrets.incident.none": "No hay incidentes de secretos.",
   "secrets.incident.marked": "El incidente {id} ahora está {state}.",
@@ -3505,7 +3508,7 @@ var es_default = {
   "secrets.purge.step3": "3. En un clon espejo nuevo, ejecuta: git filter-repo --replace-text <archivo de reemplazos>",
   "secrets.purge.step4": "4. Relaja tú la protección de la rama, envía las refs reescritas, restaura la protección y avisa a quien tenga un clon que vuelva a clonar.",
   "secrets.purge.step5": "5. Cierra el incidente: finitemonkey secrets incident close {id}",
-  "secrets.error.found": "{count} hallazgo(s) de secretos fuera del baseline o con aceptación vencida",
+  "secrets.error.found": "{count, plural, one {# hallazgo de secretos} other {# hallazgos de secretos}} fuera del baseline o con aceptación vencida",
   "secrets.error.one_mode": "Elige solo uno entre --staged, --history y --path",
   "secrets.error.git_unavailable": "La búsqueda no pudo leer git ({detail})",
   "secrets.error.baseline_invalid": "El baseline {file} no es válido: {detail}",
@@ -3516,7 +3519,6 @@ var es_default = {
   "secrets.error.not_rotated": "El incidente {id} está {state}: rota la clave en el proveedor primero y luego márcalo como rotado",
   "secrets.error.bad_transition": "El incidente {id} no puede pasar de {from} a {to}",
   "secrets.error.write_failed": "No se pudo escribir {file}: {detail}",
-  "install.config.header": "Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.",
   "install.plan.title": "Plan de Finite Monkey para {root} (preset {preset}):",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta carpeta no está dentro de un repositorio git; se instala aquí de todos modos",
@@ -3549,8 +3551,8 @@ var es_default = {
   "command.task_new.summary": "Crea un contrato de terminado para una tarea",
   "command.task_show.summary": "Muestra el contrato de una tarea y su evidencia",
   "command.task_done.summary": "Ejecuta la compuerta y cierra la tarea cuando pasa",
-  "error.gate_failed": "La compuerta reprobó: {failed} verificación(es) fallida(s), {unverified} sin verificar",
-  "error.gate_incomplete": "La compuerta quedó incompleta: {unverified} verificación(es) sin verificar",
+  "error.gate_failed": "La compuerta reprobó: {failed, plural, one {# verificación fallida} other {# verificaciones fallidas}}, {unverified} sin verificar",
+  "error.gate_incomplete": "La compuerta quedó incompleta: {unverified, plural, one {# verificación sin verificar} other {# verificaciones sin verificar}}",
   "error.gate_not_run": "La compuerta no se ejecutó: {detail}",
   "error.not_a_git_repo": "Esta carpeta no está dentro de un repositorio git",
   "error.task_exists": 'La tarea "{task}" ya existe',
@@ -3589,10 +3591,10 @@ var es_default = {
   "gate.note.exit": "salida {code}",
   "gate.note.output": "última línea: {line}",
   "gate.note.new_failure": "falla nueva: {name}",
-  "gate.note.baseline": "{count} falla(s) ya fallaba(n) antes de esta sesión (línea base)",
+  "gate.note.baseline": "{count, plural, one {# falla ya fallaba} other {# fallas ya fallaban}} antes de esta sesión (línea base)",
   "gate.note.trivial": '"{command}" no verifica código ni pruebas',
   "gate.note.zero_tests": '"{command}" ejecutó cero casos de prueba',
-  "gate.note.tests_ran": "{count} prueba(s) se ejecutaron",
+  "gate.note.tests_ran": "{count, plural, one {# prueba se ejecutó} other {# pruebas se ejecutaron}}",
   "gate.note.not_implemented": "la verificación {kind} aún no existe en esta versión",
   "gate.note.released": "liberado por la persona para {guard}: {reason}",
   "gate.tests.test_file_deleted": "archivo de prueba borrado: {file}",
@@ -3608,12 +3610,12 @@ var es_default = {
   "gate.diff.outside": "fuera del alcance: {file}",
   "gate.diff.too_many_files": "{count} archivos cambiaron, presupuesto {max}",
   "gate.diff.too_many_lines": "{count} líneas cambiaron, presupuesto {max}",
-  "gate.diff.within": "{files} archivo(s), {lines} línea(s), dentro del alcance y del presupuesto",
+  "gate.diff.within": "{files, plural, one {# archivo} other {# archivos}}, {lines, plural, one {# línea} other {# líneas}}, dentro del alcance y del presupuesto",
   "gate.placeholders.clean": "ningún placeholder en el código nuevo",
   "gate.placeholders.found": "placeholder en {file}:{line}",
-  "gate.git.uncommitted": "{count} archivo(s) sin commit, primero: {file}",
+  "gate.git.uncommitted": "{count, plural, one {# archivo sin commit} other {# archivos sin commit}}, primero: {file}",
   "gate.git.no_upstream": "la rama no tiene upstream",
-  "gate.git.unpushed": "{count} commit(s) sin enviar",
+  "gate.git.unpushed": "{count, plural, one {# commit sin enviar} other {# commits sin enviar}}",
   "gate.git.no_pr": "ningún pull request abierto para esta rama",
   "gate.git.ok": "{require}: ok",
   "gate.manual.waiting": "esperando que la persona apruebe: {description}",
@@ -3649,11 +3651,11 @@ var es_default = {
   "gate.fail.ledger_unwritable": "no se pudo escribir el libro de evidencias",
   "gate.fail.contract_missing": "la tarea {task} no tiene contrato{issues}",
   "gate.fail.contract_invalid": "el contrato de la tarea {task} no es válido: {issues}",
-  "gate.human.held": 'Retuve el "terminado". Claude no ejecutó las verificaciones; yo sí. {count} verificación(es) fallaron.',
+  "gate.human.held": 'Retuve el "terminado". Claude no ejecutó las verificaciones; yo sí. {count, plural, one {# verificación falló.} other {# verificaciones fallaron.}}',
   "gate.human.witness": "Corrija el código, no al testigo.",
-  "gate.human.not_done": "NO TERMINADO tras {blocks} bloqueo(s) sin compuerta en verde. Falta: {list}. La sesión puede parar, pero esto no está terminado.",
+  "gate.human.not_done": "NO TERMINADO tras {blocks, plural, one {# bloqueo} other {# bloqueos}} sin compuerta en verde. Falta: {list}. La sesión puede parar, pero esto no está terminado.",
   "gate.human.incomplete": "Aún no probado: {list}. No lo marqué como terminado.",
-  "gate.human.passed": "Compuerta en verde: {count} verificación(es) pasaron en este árbol. Un mono, tiempo finito, trabajo terminado.",
+  "gate.human.passed": "Compuerta en verde: {count, plural, one {# verificación pasó} other {# verificaciones pasaron}} en este árbol. Un mono, tiempo finito, trabajo terminado.",
   "gate.human.not_run": "LA COMPUERTA NO SE EJECUTÓ: {detail}. Esto no es verde; ejecute `finitemonkey doctor`.",
   "gate.human.last_not_run": "La compuerta no se ejecutó en la última parada ({at}): {detail}.",
   "gate.human.last_not_done": "La última sesión terminó NO TERMINADA ({at}): {detail}.",
@@ -3718,12 +3720,12 @@ var es_default = {
   "prose.block.command": "bloqueado: {target} parece escrito por IA ({spans}), y el preset de este proyecto no deja enviarlo. {fixes}. Reescríbelo y vuelve a ejecutar el comando.",
   "prose.block.unreadable": "bloqueado: no se pudo leer {file} para revisar el texto ({detail}). Revisa la ruta y vuelve a ejecutar el comando.",
   "prose.block.marker": "bloqueado: esto añadiría el marcador {marker} en {file}, y solo la persona puede ponerlo. Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor.",
-  "prose.check.file": "{file}: {count} pasaje(s) que parecen escritos por IA",
+  "prose.check.file": "{file}: {count, plural, one {# pasaje que parece escrito} other {# pasajes que parecen escritos}} por IA",
   "prose.check.span": "  {file}:{start}-{end} puntos {score}: {rules}",
   "prose.check.fix": "    haz en su lugar: {fix}",
   "prose.check.allowed": "{file}: omitido, la persona lo marcó con {marker}",
-  "prose.check.clean": "{count} archivo(s) revisado(s), nada parece escrito por IA. Este lo escribió el mono solo.",
-  "prose.error.found": "{count} pasaje(s) parecen escritos por IA",
+  "prose.check.clean": "{count, plural, one {# archivo revisado} other {# archivos revisados}}, nada parece escrito por IA. Este lo escribió el mono solo.",
+  "prose.error.found": "{count, plural, one {# pasaje parece escrito} other {# pasajes parecen escritos}} por IA",
   "prose.error.no_input": "nada que revisar: pasa archivos, --stdin, o ejecútalo dentro de un repositorio git para revisar los Markdown modificados",
   "prose.error.unreadable": "no se pudo leer {file} ({detail})",
   "prose.block.marker_shell": "bloqueado: este comando escribe el marcador {marker}, y solo la persona puede ponerlo. Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor.",
@@ -3736,7 +3738,7 @@ var es_default = {
   "gate.prose.unavailable": "no se pudieron leer los archivos Markdown cambiados (git no disponible)",
   "gate.prose.finding": "{file}:{line} parece escrito por una máquina ({rules})",
   "gate.prose.warning": "solo aviso en este preset: {file}:{line} parece escrito por una máquina ({rules})",
-  "gate.prose.clean": "{count} archivo(s) Markdown cambiado(s), ninguno parece escrito por una máquina",
+  "gate.prose.clean": "{count, plural, one {# archivo Markdown cambiado, no parece escrito} other {# archivos Markdown cambiados, ninguno parece escrito}} por una máquina",
   "git.command.snapshot": "Guarda el árbol de trabajo, el índice y los archivos sin seguimiento en una ref de respaldo sin tocarlos",
   "git.command.undo": "Lista las instantáneas o restaura una, por defecto en un worktree nuevo",
   "git.command.rescue": "Lista commits perdidos por el reflog y el fsck, y restaura uno en una rama nueva",
@@ -3767,7 +3769,7 @@ var es_default = {
   "prod.block.interactive": "bloqueado: `{command}` abre una sesión interactiva en producción ({target}), donde nada de lo que se escriba se revisa antes. Corre un comando de solo lectura a la vez, como `ssh {target} docker ps`.",
   "prod.deploy.unknown": "el deploy declarado del proyecto",
   "git.snapshot.done": "instantánea guardada: {ref} ({commit}). `finitemonkey undo {ref}` la restaura.",
-  "git.undo.list_title": "{count} instantánea(s), de la más nueva a la más vieja:",
+  "git.undo.list_title": "{count, plural, one {# instantánea:} other {# instantáneas, de la más nueva a la más vieja:}}",
   "git.undo.list_item": "{index}. {at}  {op}  {ref}",
   "git.undo.worktree": "{ref} restaurada en un worktree nuevo en {path}. Compárala con tu árbol y copia lo que necesites; `git worktree remove {path}` lo elimina. El estado anterior a este undo está en {backup}.",
   "git.undo.in_place": "{ref} restaurada en su lugar. El estado anterior a este undo está en {backup}; `finitemonkey undo {backup}` lo devuelve.",
@@ -3775,12 +3777,12 @@ var es_default = {
   "git.rescue.title": "candidatos a recuperación (solo lectura, nada cambió):",
   "git.rescue.reflog": "reflog {ref}: {sha} {when} {subject}",
   "git.rescue.dangling": "commit perdido {sha} {when} {subject}",
-  "git.rescue.blobs": "{count} contenido(s) de archivo preparado(s) están perdidos pero se pueden recuperar; `git fsck --lost-found` los escribe en .git/lost-found/other.",
+  "git.rescue.blobs": "{count, plural, one {# contenido de archivo preparado está perdido pero se puede recuperar} other {# contenidos de archivo preparados están perdidos pero se pueden recuperar}}; `git fsck --lost-found` los escribe en .git/lost-found/other.",
   "git.rescue.never_staged": "un archivo que nunca se preparó ni se hizo commit no se recupera con git.",
   "git.rescue.next": "restaura uno con `finitemonkey rescue --restore <sha> --branch <nombre>`.",
   "git.rescue.restored": "rama {branch} creada en {sha}.",
-  "git.merge.ok": "nada se perdió: {files} archivo(s) revisado(s) entre {base} y {result}, {justified} descarte(s) justificado(s).",
-  "git.merge.lost": "{count} cambio(s) perdido(s) entre {base} y {result}:",
+  "git.merge.ok": "nada se perdió: {files, plural, one {# archivo revisado} other {# archivos revisados}} entre {base} y {result}, {justified, plural, one {# descarte justificado} other {# descartes justificados}}.",
+  "git.merge.lost": "{count, plural, one {# cambio perdido} other {# cambios perdidos}} entre {base} y {result}:",
   "git.merge.finding": "{where} [{kind}] {side}: {text}",
   "git.merge.limits": "esto prueba que los cambios están, no que el código fusionado funcione; las pruebas de los dos lados siguen siendo obligatorias.",
   "git.merge.none": "ninguna fusión que revisar: {detail}",
@@ -3788,18 +3790,18 @@ var es_default = {
   "git.error.nothing_to_undo": "no se encontró ninguna instantánea para {ref}.",
   "git.error.undo_failed": "el undo falló: {detail}",
   "git.error.rescue_failed": "rescue falló: {detail}",
-  "git.error.merge_lost": "{count} cambio(s) se perdieron en la fusión y no están justificados en la lista de descartes.",
+  "git.error.merge_lost": "{count, plural, one {# cambio se perdió en la fusión y no está justificado} other {# cambios se perdieron en la fusión y no están justificados}} en la lista de descartes.",
   "git.error.merge_unanalyzable": "no se pudo analizar la fusión: {detail}",
   "gate.require.worktree": "todo archivo cambiado en la sesión con commit, y los commits enviados o con destino declarado",
   "gate.require.merge": "toda fusión desde el inicio mantuvo los cambios de ambos lados",
   "gate.worktree.unavailable": "no se pudo leer el estado git del worktree",
   "gate.worktree.dirty": "archivos cambiados en esta sesión sin commit: {files}",
-  "gate.worktree.unpushed": "{count} commit(s) en {branch} existen solo en esta máquina",
+  "gate.worktree.unpushed": "{count, plural, one {# commit en {branch} existe solo en esta máquina} other {# commits en {branch} existen solo en esta máquina}}",
   "gate.worktree.clean": "los cambios de la sesión tienen commit y están enviados",
   "gate.merge.unavailable": "no se pudieron leer las fusiones de la sesión",
   "gate.merge.unanalyzed": "la fusión {commit} no se pudo analizar: {detail}",
   "gate.merge.lost": "la fusión {commit} perdió cambios: {findings}",
-  "gate.merge.clean": "{count} fusión(es) revisada(s), no se perdió nada"
+  "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada"
 };
 
 // src/i18n/pt-BR.json
@@ -3837,8 +3839,8 @@ var pt_BR_default = {
   "error.not_implemented": '"{command}" ainda não está disponível nesta versão',
   "error.invalid_lang": 'Idioma não suportado "{lang}". Use um destes: {languages}',
   "error.i18n_catalog_unreadable": "Não foi possível ler o catálogo {file}: {detail}",
-  "error.i18n_mismatch": "{count} problema(s) nos catálogos",
-  "error.doctor_failed": "{count} verificação(ões) falharam",
+  "error.i18n_mismatch": "{count, plural, one {# problema nos catálogos} other {# problemas nos catálogos}}",
+  "error.doctor_failed": "{count, plural, one {# verificação falhou} other {# verificações falharam}}",
   "error.unknown_hook_event": 'Evento de hook desconhecido "{event}". Use um destes: {events}',
   "i18n.summary": "Idiomas: {languages}. Chaves: {keys}.",
   "i18n.ok": "Todos os catálogos batem.",
@@ -3846,10 +3848,12 @@ var pt_BR_default = {
   "i18n.problem.missing": "chave faltando",
   "i18n.problem.extra": "chave que não existe no en.json",
   "i18n.problem.placeholder": "marcadores diferentes (esperado: {expected}; encontrado: {actual})",
+  "i18n.problem.plural": "faltam ramos de plural (precisa: {expected}; achados: {actual})",
+  "i18n.problem.status": "sem status de revisão (use: {expected})",
   "i18n.problem.empty": "texto vazio",
   "i18n.problem.not_string": "valor não é texto",
   "doctor.title": "finitemonkey doctor ({version})",
-  "doctor.summary": "{ok} ok, {warn} aviso(s), {fail} falha(s)",
+  "doctor.summary": "{ok} ok, {warn, plural, one {# aviso} other {# avisos}}, {fail, plural, one {# falha} other {# falhas}}",
   "doctor.node.ok": "Node.js {version}",
   "doctor.node.old": "Node.js {version} é mais antigo que o mínimo {min}",
   "doctor.node.fix": "Instale o Node.js 20 ou mais novo em https://nodejs.org",
@@ -3910,7 +3914,7 @@ var pt_BR_default = {
   "secrets.action.accept": "aceitar um achado",
   "secrets.action.rotated": "marcar um incidente como rotacionado",
   "secrets.action.close": "fechar um incidente",
-  "secrets.incident.title": "{count} incidente(s)",
+  "secrets.incident.title": "{count, plural, one {# incidente} other {# incidentes}}",
   "secrets.incident.item": "  {id}  {state}  {rule}  {where}  desde {created}",
   "secrets.incident.none": "Nenhum incidente de segredo.",
   "secrets.incident.marked": "O incidente {id} agora está {state}.",
@@ -3920,7 +3924,7 @@ var pt_BR_default = {
   "secrets.purge.step3": "3. Num clone espelho novo, rode: git filter-repo --replace-text <arquivo de substituições>",
   "secrets.purge.step4": "4. Afrouxe a proteção da branch você mesmo, envie as refs reescritas, restaure a proteção e avise quem tem clone para clonar de novo.",
   "secrets.purge.step5": "5. Feche o incidente: finitemonkey secrets incident close {id}",
-  "secrets.error.found": "{count} achado(s) de segredo fora do baseline ou com aceite vencido",
+  "secrets.error.found": "{count, plural, one {# achado de segredo} other {# achados de segredo}} fora do baseline ou com aceite vencido",
   "secrets.error.one_mode": "Escolha só um entre --staged, --history e --path",
   "secrets.error.git_unavailable": "A varredura não conseguiu ler o git ({detail})",
   "secrets.error.baseline_invalid": "O baseline {file} é inválido: {detail}",
@@ -3931,7 +3935,6 @@ var pt_BR_default = {
   "secrets.error.not_rotated": "O incidente {id} está {state}: troque a chave no provedor primeiro e depois marque como rotacionado",
   "secrets.error.bad_transition": "O incidente {id} não pode ir de {from} para {to}",
   "secrets.error.write_failed": "Não foi possível gravar {file}: {detail}",
-  "install.config.header": "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
   "install.plan.title": "Plano do Finite Monkey para {root} (preset {preset}):",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta pasta não está dentro de um repositório git; instalando aqui mesmo assim",
@@ -3964,8 +3967,8 @@ var pt_BR_default = {
   "command.task_new.summary": "Cria um contrato de pronto para uma tarefa",
   "command.task_show.summary": "Mostra o contrato de uma tarefa e a evidência dele",
   "command.task_done.summary": "Roda o portão e fecha a tarefa quando passa",
-  "error.gate_failed": "O portão reprovou: {failed} checagem(ns) reprovada(s), {unverified} não verificada(s)",
-  "error.gate_incomplete": "O portão ficou incompleto: {unverified} checagem(ns) não verificada(s)",
+  "error.gate_failed": "O portão reprovou: {failed, plural, one {# checagem reprovada} other {# checagens reprovadas}}, {unverified, plural, one {# não verificada} other {# não verificadas}}",
+  "error.gate_incomplete": "O portão ficou incompleto: {unverified, plural, one {# checagem não verificada} other {# checagens não verificadas}}",
   "error.gate_not_run": "O portão não rodou: {detail}",
   "error.not_a_git_repo": "Esta pasta não está dentro de um repositório git",
   "error.task_exists": 'A tarefa "{task}" já existe',
@@ -4004,10 +4007,10 @@ var pt_BR_default = {
   "gate.note.exit": "saída {code}",
   "gate.note.output": "última linha: {line}",
   "gate.note.new_failure": "falha nova: {name}",
-  "gate.note.baseline": "{count} falha(s) já falhava(m) antes desta sessão (linha de base)",
+  "gate.note.baseline": "{count, plural, one {# falha já falhava} other {# falhas já falhavam}} antes desta sessão (linha de base)",
   "gate.note.trivial": '"{command}" não confere código nem teste',
   "gate.note.zero_tests": '"{command}" rodou zero casos de teste',
-  "gate.note.tests_ran": "{count} teste(s) rodaram",
+  "gate.note.tests_ran": "{count, plural, one {# teste rodou} other {# testes rodaram}}",
   "gate.note.not_implemented": "a checagem {kind} ainda não existe nesta versão",
   "gate.note.released": "liberado pela pessoa para {guard}: {reason}",
   "gate.tests.test_file_deleted": "arquivo de teste apagado: {file}",
@@ -4023,12 +4026,12 @@ var pt_BR_default = {
   "gate.diff.outside": "fora do escopo: {file}",
   "gate.diff.too_many_files": "{count} arquivos mudaram, orçamento {max}",
   "gate.diff.too_many_lines": "{count} linhas mudaram, orçamento {max}",
-  "gate.diff.within": "{files} arquivo(s), {lines} linha(s), dentro do escopo e do orçamento",
+  "gate.diff.within": "{files, plural, one {# arquivo} other {# arquivos}}, {lines, plural, one {# linha} other {# linhas}}, dentro do escopo e do orçamento",
   "gate.placeholders.clean": "nenhum placeholder no código novo",
   "gate.placeholders.found": "placeholder em {file}:{line}",
-  "gate.git.uncommitted": "{count} arquivo(s) sem commit, primeiro: {file}",
+  "gate.git.uncommitted": "{count, plural, one {# arquivo sem commit} other {# arquivos sem commit}}, primeiro: {file}",
   "gate.git.no_upstream": "a branch não tem upstream",
-  "gate.git.unpushed": "{count} commit(s) não enviado(s)",
+  "gate.git.unpushed": "{count, plural, one {# commit não enviado} other {# commits não enviados}}",
   "gate.git.no_pr": "nenhum pull request aberto para esta branch",
   "gate.git.ok": "{require}: ok",
   "gate.manual.waiting": "esperando a pessoa aprovar: {description}",
@@ -4064,11 +4067,11 @@ var pt_BR_default = {
   "gate.fail.ledger_unwritable": "não deu para gravar o livro de evidências",
   "gate.fail.contract_missing": "a tarefa {task} não tem contrato{issues}",
   "gate.fail.contract_invalid": "o contrato da tarefa {task} é inválido: {issues}",
-  "gate.human.held": 'Segurei o "pronto". O Claude não rodou as checagens; eu rodei. {count} checagem(ns) reprovada(s).',
+  "gate.human.held": 'Segurei o "pronto". O Claude não rodou as checagens; eu rodei. {count, plural, one {# checagem reprovada.} other {# checagens reprovadas.}}',
   "gate.human.witness": "Corrija o código, não a testemunha.",
-  "gate.human.not_done": "NÃO TERMINADO depois de {blocks} bloqueio(s) sem portão verde. Falta: {list}. A sessão pode parar, mas isto não está pronto.",
+  "gate.human.not_done": "NÃO TERMINADO depois de {blocks, plural, one {# bloqueio} other {# bloqueios}} sem portão verde. Falta: {list}. A sessão pode parar, mas isto não está pronto.",
   "gate.human.incomplete": "Ainda não provado: {list}. Não marquei como pronto.",
-  "gate.human.passed": "Portão verde: {count} checagem(ns) passaram nesta árvore. Um macaco, tempo finito, trabalho terminado.",
+  "gate.human.passed": "Portão verde: {count, plural, one {# checagem passou} other {# checagens passaram}} nesta árvore. Um macaco, tempo finito, trabalho terminado.",
   "gate.human.not_run": "PORTÃO NÃO RODOU: {detail}. Isto não é verde; rode `finitemonkey doctor`.",
   "gate.human.last_not_run": "O portão não rodou na última parada ({at}): {detail}.",
   "gate.human.last_not_done": "A última sessão terminou NÃO TERMINADA ({at}): {detail}.",
@@ -4133,12 +4136,12 @@ var pt_BR_default = {
   "prose.block.command": "bloqueado: {target} tem cara de texto de IA ({spans}), e o preset deste projeto não deixa enviar. {fixes}. Reescreva e rode o comando de novo.",
   "prose.block.unreadable": "bloqueado: não deu para ler {file} para conferir o texto ({detail}). Confira o caminho e rode o comando de novo.",
   "prose.block.marker": "bloqueado: isto acrescentaria o marcador {marker} em {file}, e só a pessoa pode pôr esse marcador. Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela.",
-  "prose.check.file": "{file}: {count} trecho(s) com cara de texto de IA",
+  "prose.check.file": "{file}: {count, plural, one {# trecho} other {# trechos}} com cara de texto de IA",
   "prose.check.span": "  {file}:{start}-{end} pontos {score}: {rules}",
   "prose.check.fix": "    faça no lugar: {fix}",
   "prose.check.allowed": "{file}: pulado, a pessoa marcou com {marker}",
-  "prose.check.clean": "{count} arquivo(s) conferido(s), nada com cara de IA. Esse o macaco escreveu sozinho.",
-  "prose.error.found": "{count} trecho(s) com cara de texto de IA",
+  "prose.check.clean": "{count, plural, one {# arquivo conferido} other {# arquivos conferidos}}, nada com cara de IA. Esse o macaco escreveu sozinho.",
+  "prose.error.found": "{count, plural, one {# trecho} other {# trechos}} com cara de texto de IA",
   "prose.error.no_input": "nada para conferir: passe arquivos, --stdin, ou rode dentro de um repositório git para conferir os Markdown alterados",
   "prose.error.unreadable": "não deu para ler {file} ({detail})",
   "prose.block.marker_shell": "bloqueado: este comando escreve o marcador {marker}, e só a pessoa pode pôr esse marcador. Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela.",
@@ -4151,7 +4154,7 @@ var pt_BR_default = {
   "gate.prose.unavailable": "não deu para ler os arquivos Markdown alterados (git indisponível)",
   "gate.prose.finding": "{file}:{line} tem cara de texto de máquina ({rules})",
   "gate.prose.warning": "só aviso neste preset: {file}:{line} tem cara de texto de máquina ({rules})",
-  "gate.prose.clean": "{count} arquivo(s) Markdown alterado(s), nenhum com cara de texto de máquina",
+  "gate.prose.clean": "{count, plural, one {# arquivo Markdown alterado, sem cara} other {# arquivos Markdown alterados, nenhum com cara}} de texto de máquina",
   "git.command.snapshot": "Salva árvore de trabalho, índice e arquivos não rastreados numa ref de backup sem mexer neles",
   "git.command.undo": "Lista as fotografias ou restaura uma, por padrão num worktree novo",
   "git.command.rescue": "Lista commits perdidos pelo reflog e pelo fsck, e restaura um numa branch nova",
@@ -4182,7 +4185,7 @@ var pt_BR_default = {
   "prod.block.interactive": "bloqueado: `{command}` abre sessão interativa em produção ({target}), onde nada do que for digitado passa por conferência. Rode um comando de leitura por vez, como `ssh {target} docker ps`.",
   "prod.deploy.unknown": "o deploy declarado do projeto",
   "git.snapshot.done": "fotografia salva: {ref} ({commit}). `finitemonkey undo {ref}` restaura.",
-  "git.undo.list_title": "{count} fotografia(s), da mais nova para a mais antiga:",
+  "git.undo.list_title": "{count, plural, one {# fotografia:} other {# fotografias, da mais nova para a mais antiga:}}",
   "git.undo.list_item": "{index}. {at}  {op}  {ref}",
   "git.undo.worktree": "{ref} restaurada num worktree novo em {path}. Compare com a sua árvore e copie o que precisar; `git worktree remove {path}` remove. O estado antes deste undo está em {backup}.",
   "git.undo.in_place": "{ref} restaurada no lugar. O estado antes deste undo está em {backup}; `finitemonkey undo {backup}` traz de volta.",
@@ -4190,12 +4193,12 @@ var pt_BR_default = {
   "git.rescue.title": "candidatos a recuperação (só leitura, nada mudou):",
   "git.rescue.reflog": "reflog {ref}: {sha} {when} {subject}",
   "git.rescue.dangling": "commit perdido {sha} {when} {subject}",
-  "git.rescue.blobs": "{count} conteúdo(s) de arquivo preparado(s) estão perdidos mas recuperáveis; `git fsck --lost-found` grava em .git/lost-found/other.",
+  "git.rescue.blobs": "{count, plural, one {# conteúdo de arquivo preparado está perdido mas recuperável} other {# conteúdos de arquivo preparados estão perdidos mas recuperáveis}}; `git fsck --lost-found` grava em .git/lost-found/other.",
   "git.rescue.never_staged": "arquivo que nunca foi preparado nem commitado não volta pelo git.",
   "git.rescue.next": "restaure um com `finitemonkey rescue --restore <sha> --branch <nome>`.",
   "git.rescue.restored": "branch {branch} criada em {sha}.",
-  "git.merge.ok": "nada se perdeu: {files} arquivo(s) conferido(s) entre {base} e {result}, {justified} descarte(s) justificado(s).",
-  "git.merge.lost": "{count} mudança(s) perdida(s) entre {base} e {result}:",
+  "git.merge.ok": "nada se perdeu: {files, plural, one {# arquivo conferido} other {# arquivos conferidos}} entre {base} e {result}, {justified, plural, one {# descarte justificado} other {# descartes justificados}}.",
+  "git.merge.lost": "{count, plural, one {# mudança perdida} other {# mudanças perdidas}} entre {base} e {result}:",
   "git.merge.finding": "{where} [{kind}] {side}: {text}",
   "git.merge.limits": "isto prova que as mudanças estão lá, não que o código mesclado funciona; os testes dos dois lados continuam obrigatórios.",
   "git.merge.none": "nenhuma mescla para conferir: {detail}",
@@ -4203,18 +4206,850 @@ var pt_BR_default = {
   "git.error.nothing_to_undo": "nenhuma fotografia encontrada para {ref}.",
   "git.error.undo_failed": "o undo falhou: {detail}",
   "git.error.rescue_failed": "o rescue falhou: {detail}",
-  "git.error.merge_lost": "{count} mudança(s) se perderam na mescla e não estão justificadas na lista de descartes.",
+  "git.error.merge_lost": "{count, plural, one {# mudança se perdeu na mescla e não está justificada} other {# mudanças se perderam na mescla e não estão justificadas}} na lista de descartes.",
   "git.error.merge_unanalyzable": "não deu para analisar a mescla: {detail}",
   "gate.require.worktree": "todo arquivo mudado na sessão commitado, e os commits enviados ou com destino declarado",
   "gate.require.merge": "toda mescla desde o início manteve as mudanças dos dois lados",
   "gate.worktree.unavailable": "não foi possível ler o estado git do worktree",
   "gate.worktree.dirty": "arquivos mudados nesta sessão sem commit: {files}",
-  "gate.worktree.unpushed": "{count} commit(s) em {branch} existem só nesta máquina",
+  "gate.worktree.unpushed": "{count, plural, one {# commit em {branch} existe só nesta máquina} other {# commits em {branch} existem só nesta máquina}}",
   "gate.worktree.clean": "as mudanças da sessão estão commitadas e enviadas",
   "gate.merge.unavailable": "não foi possível ler as mesclas da sessão",
   "gate.merge.unanalyzed": "a mescla {commit} não pôde ser analisada: {detail}",
   "gate.merge.lost": "a mescla {commit} perdeu mudanças: {findings}",
-  "gate.merge.clean": "{count} mescla(s) conferida(s), nada se perdeu"
+  "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu"
+};
+
+// src/i18n/review.json
+var review_default = {
+  "pt-BR": {
+    "command.init.summary": "machine",
+    "command.doctor.summary": "machine",
+    "command.update.summary": "machine",
+    "command.uninstall.summary": "machine",
+    "command.i18n_check.summary": "machine",
+    "command.hook.summary": "machine",
+    "command.version.summary": "machine",
+    "command.help.summary": "machine",
+    "help.tagline": "machine",
+    "help.usage": "machine",
+    "help.command": "machine",
+    "help.commands": "machine",
+    "help.flags": "machine",
+    "help.options": "machine",
+    "help.planned": "machine",
+    "help.more": "machine",
+    "flag.json": "machine",
+    "flag.lang": "machine",
+    "flag.yes": "machine",
+    "flag.dry_run": "machine",
+    "flag.version": "machine",
+    "flag.help": "machine",
+    "output.error": "machine",
+    "output.fix": "machine",
+    "output.next": "machine",
+    "error.internal": "machine",
+    "error.invalid_arguments": "machine",
+    "error.unexpected_argument": "machine",
+    "error.unknown_command": "machine",
+    "error.unknown_command_suggest": "machine",
+    "error.not_implemented": "machine",
+    "error.invalid_lang": "machine",
+    "error.i18n_catalog_unreadable": "machine",
+    "error.i18n_mismatch": "machine",
+    "error.doctor_failed": "machine",
+    "error.unknown_hook_event": "machine",
+    "i18n.summary": "machine",
+    "i18n.ok": "machine",
+    "i18n.fix": "machine",
+    "i18n.problem.missing": "machine",
+    "i18n.problem.extra": "machine",
+    "i18n.problem.placeholder": "machine",
+    "i18n.problem.plural": "machine",
+    "i18n.problem.status": "machine",
+    "i18n.problem.empty": "machine",
+    "i18n.problem.not_string": "machine",
+    "doctor.title": "machine",
+    "doctor.summary": "machine",
+    "doctor.node.ok": "machine",
+    "doctor.node.old": "machine",
+    "doctor.node.fix": "machine",
+    "doctor.git.ok": "machine",
+    "doctor.git.missing": "machine",
+    "doctor.git.fix": "machine",
+    "doctor.git.old": "machine",
+    "doctor.git.fix_old": "machine",
+    "doctor.claude.ok": "machine",
+    "doctor.claude.missing": "machine",
+    "doctor.claude.fix": "machine",
+    "doctor.claude.timeout": "machine",
+    "doctor.claude.fix_timeout": "machine",
+    "doctor.os.linux": "machine",
+    "doctor.os.wsl": "machine",
+    "doctor.os.macos": "machine",
+    "doctor.os.windows": "machine",
+    "doctor.os.other": "machine",
+    "doctor.path.plain": "machine",
+    "doctor.path.chars": "machine",
+    "doctor.path.fix_chars": "machine",
+    "doctor.path.synced": "machine",
+    "doctor.path.fix_synced": "machine",
+    "doctor.path.wsl_mount": "machine",
+    "doctor.path.fix_wsl_mount": "machine",
+    "hook.failed_closed": "machine",
+    "hook.failed_open": "machine",
+    "exit.ok": "machine",
+    "exit.check_failed": "machine",
+    "exit.usage": "machine",
+    "exit.not_configured": "machine",
+    "exit.needs_person": "machine",
+    "exit.internal": "machine",
+    "help.exit_codes": "machine",
+    "hook.stop_released": "machine",
+    "error.needs_confirmation": "machine",
+    "secrets.command.scan": "machine",
+    "secrets.command.accept": "machine",
+    "secrets.command.incident": "machine",
+    "secrets.found_item": "machine",
+    "secrets.found_more": "machine",
+    "secrets.where.line": "machine",
+    "secrets.where.file": "machine",
+    "secrets.where.new_text": "machine",
+    "secrets.block.write": "machine",
+    "secrets.block.bash": "machine",
+    "secrets.block.commit": "machine",
+    "secrets.block.read": "machine",
+    "secrets.block.env_dump": "machine",
+    "secrets.block.person_only": "machine",
+    "secrets.block.prompt": "machine",
+    "secrets.post.context": "machine",
+    "secrets.incident.unsaved": "machine",
+    "secrets.scan.title": "machine",
+    "secrets.scan.item": "machine",
+    "secrets.scan.clean": "machine",
+    "secrets.accept.done": "machine",
+    "secrets.action.accept": "machine",
+    "secrets.action.rotated": "machine",
+    "secrets.action.close": "machine",
+    "secrets.incident.title": "machine",
+    "secrets.incident.item": "machine",
+    "secrets.incident.none": "machine",
+    "secrets.incident.marked": "machine",
+    "secrets.purge.title": "machine",
+    "secrets.purge.step1": "machine",
+    "secrets.purge.step2": "machine",
+    "secrets.purge.step3": "machine",
+    "secrets.purge.step4": "machine",
+    "secrets.purge.step5": "machine",
+    "secrets.error.found": "machine",
+    "secrets.error.one_mode": "machine",
+    "secrets.error.git_unavailable": "machine",
+    "secrets.error.baseline_invalid": "machine",
+    "secrets.error.person_only": "machine",
+    "secrets.error.reason_required": "machine",
+    "secrets.error.finding_not_found": "machine",
+    "secrets.error.incident_not_found": "machine",
+    "secrets.error.not_rotated": "machine",
+    "secrets.error.bad_transition": "machine",
+    "secrets.error.write_failed": "machine",
+    "install.plan.title": "machine",
+    "install.warning": "machine",
+    "install.warn.not_git": "machine",
+    "install.warn.fail_open": "machine",
+    "install.warn.authority": "machine",
+    "install.warn.plugin": "machine",
+    "install.warn.foreign": "machine",
+    "install.warn.edited": "machine",
+    "install.warn.edited_kept": "machine",
+    "install.dry_run": "machine",
+    "install.nothing_to_do": "machine",
+    "install.up_to_date": "machine",
+    "install.confirm_question": "machine",
+    "install.done_init": "machine",
+    "install.done_update": "machine",
+    "install.uninstall.title": "machine",
+    "install.uninstall.keeps_state": "machine",
+    "install.uninstall.purge": "machine",
+    "install.uninstall.outside": "machine",
+    "install.uninstall.question": "machine",
+    "install.uninstall.done": "machine",
+    "error.settings_unreadable": "machine",
+    "error.lock_unreadable": "machine",
+    "error.install_locked": "machine",
+    "error.install_failed": "machine",
+    "error.not_installed": "machine",
+    "error.install_outdated": "machine",
+    "error.invalid_preset": "machine",
+    "command.gate.summary": "machine",
+    "command.task_new.summary": "machine",
+    "command.task_show.summary": "machine",
+    "command.task_done.summary": "machine",
+    "error.gate_failed": "machine",
+    "error.gate_incomplete": "machine",
+    "error.gate_not_run": "machine",
+    "error.not_a_git_repo": "machine",
+    "error.task_exists": "machine",
+    "error.task_invalid": "machine",
+    "error.task_not_found": "machine",
+    "task.created": "machine",
+    "task.done": "machine",
+    "gate.status.passed": "machine",
+    "gate.status.failed": "machine",
+    "gate.status.unverified": "machine",
+    "gate.report.title": "machine",
+    "gate.report.title_implicit": "machine",
+    "gate.report.contract_edited": "machine",
+    "gate.verdict.passed": "machine",
+    "gate.verdict.failed": "machine",
+    "gate.verdict.incomplete": "machine",
+    "gate.reason.tool_missing": "machine",
+    "gate.reason.timeout": "machine",
+    "gate.reason.rate_limited": "machine",
+    "gate.reason.budget": "machine",
+    "gate.reason.not_implemented": "machine",
+    "gate.reason.no_gh": "machine",
+    "gate.reason.network": "machine",
+    "gate.reason.pending": "machine",
+    "gate.reason.untrusted": "machine",
+    "gate.reason.rewriter": "machine",
+    "gate.reason.awaiting_person": "machine",
+    "gate.reason.no_evidence": "machine",
+    "gate.reason.no_baseline": "machine",
+    "gate.note.untrusted": "machine",
+    "gate.note.rewriter": "machine",
+    "gate.note.budget": "machine",
+    "gate.note.tool_missing": "machine",
+    "gate.note.timeout": "machine",
+    "gate.note.rate_limited": "machine",
+    "gate.note.exit": "machine",
+    "gate.note.output": "machine",
+    "gate.note.new_failure": "machine",
+    "gate.note.baseline": "machine",
+    "gate.note.trivial": "machine",
+    "gate.note.zero_tests": "machine",
+    "gate.note.tests_ran": "machine",
+    "gate.note.not_implemented": "machine",
+    "gate.note.released": "machine",
+    "gate.tests.test_file_deleted": "machine",
+    "gate.tests.test_removed": "machine",
+    "gate.tests.skip_added": "machine",
+    "gate.tests.assertion_removed": "machine",
+    "gate.tests.snapshot_changed": "machine",
+    "gate.tests.config_changed": "machine",
+    "gate.tests.out_of_scope": "machine",
+    "gate.tests.fix": "machine",
+    "gate.tests.clean": "machine",
+    "gate.diff.no_scope": "machine",
+    "gate.diff.outside": "machine",
+    "gate.diff.too_many_files": "machine",
+    "gate.diff.too_many_lines": "machine",
+    "gate.diff.within": "machine",
+    "gate.placeholders.clean": "machine",
+    "gate.placeholders.found": "machine",
+    "gate.git.uncommitted": "machine",
+    "gate.git.no_upstream": "machine",
+    "gate.git.unpushed": "machine",
+    "gate.git.no_pr": "machine",
+    "gate.git.ok": "machine",
+    "gate.manual.waiting": "machine",
+    "gate.manual.approved": "machine",
+    "gate.pr.found": "machine",
+    "gate.pr.behind": "machine",
+    "gate.pr.stale_head": "machine",
+    "gate.pr.conflict": "machine",
+    "gate.pr.conflict_file": "machine",
+    "gate.pr.conflict_next": "machine",
+    "gate.pr.ci_failed": "machine",
+    "gate.pr.ci_pending": "machine",
+    "gate.pr.no_gh": "machine",
+    "gate.pr.network": "machine",
+    "gate.pr.no_branch": "machine",
+    "gate.pr.none": "machine",
+    "gate.pr.none_required": "machine",
+    "gate.require.command": "machine",
+    "gate.require.tests": "machine",
+    "gate.require.diff": "machine",
+    "gate.require.placeholders": "machine",
+    "gate.require.git": "machine",
+    "gate.require.pr": "machine",
+    "gate.require.manual": "machine",
+    "gate.require.other": "machine",
+    "gate.model.title": "machine",
+    "gate.model.claim": "machine",
+    "gate.model.no_claim": "machine",
+    "gate.model.requires": "machine",
+    "gate.model.not_enough": "machine",
+    "gate.fail.not_a_repo": "machine",
+    "gate.fail.no_tree_hash": "machine",
+    "gate.fail.ledger_unwritable": "machine",
+    "gate.fail.contract_missing": "machine",
+    "gate.fail.contract_invalid": "machine",
+    "gate.human.held": "machine",
+    "gate.human.witness": "machine",
+    "gate.human.not_done": "machine",
+    "gate.human.incomplete": "machine",
+    "gate.human.passed": "machine",
+    "gate.human.not_run": "machine",
+    "gate.human.last_not_run": "machine",
+    "gate.human.last_not_done": "machine",
+    "gate.context.state": "machine",
+    "gate.context.state_implicit": "machine",
+    "gate.context.front": "machine",
+    "gate.context.done_means": "machine",
+    "gate.context.scope": "machine",
+    "gate.context.briefing": "machine",
+    "gate.prs.line": "machine",
+    "gate.prs.conflict": "machine",
+    "gate.prs.behind": "machine",
+    "gate.prs.ok": "machine",
+    "gate.config.removed": "machine",
+    "gate.config.disabled": "machine",
+    "gate.config.human": "machine",
+    "gate.config.released": "machine",
+    "gate.guard.bypass.no_verify": "machine",
+    "gate.guard.bypass.hooks_path": "machine",
+    "gate.guard.bypass.hook_env": "machine",
+    "gate.guard.bypass.fm_allow": "machine",
+    "gate.guard.bypass.human": "machine",
+    "gate.guard.self.policy": "machine",
+    "gate.guard.self.allow_store": "machine",
+    "gate.guard.self.human": "machine",
+    "gate.guard.tests.model": "machine",
+    "gate.guard.tests.shell": "machine",
+    "gate.guard.tests.human": "machine",
+    "gate.release.allowed": "machine",
+    "gate.release.unknown_guard": "machine",
+    "gate.release.approved": "machine",
+    "gate.release.trusted": "machine",
+    "gate.release.trust_failed": "machine",
+    "gate.skipped.no_repo": "machine",
+    "gate.skipped.no_changes": "machine",
+    "gate.skipped.no_session_edits": "machine",
+    "gate.baseline.recorded": "machine",
+    "gate.baseline.skipped": "machine",
+    "gate.secrets.unavailable": "machine",
+    "gate.secrets.finding": "machine",
+    "gate.secrets.incident": "machine",
+    "gate.secrets.clean": "machine",
+    "gate.require.secrets": "machine",
+    "prose.command.check": "machine",
+    "prose.rule.opener-routine": "machine",
+    "prose.rule.reassurance": "machine",
+    "prose.rule.slogan-closer": "machine",
+    "prose.rule.rhythmic-triplet": "machine",
+    "prose.rule.imperative-fragment": "machine",
+    "prose.rule.antithesis": "machine",
+    "prose.rule.abstract-noun": "machine",
+    "prose.rule.crutch-word": "machine",
+    "prose.rule.colon-heading": "machine",
+    "prose.rule.decorative-emoji": "machine",
+    "prose.rule.em-dash-series": "machine",
+    "prose.target.commit": "machine",
+    "prose.target.pr": "machine",
+    "prose.target.issue": "machine",
+    "prose.span": "machine",
+    "prose.fix_item": "machine",
+    "prose.warn.command": "machine",
+    "prose.block.command": "machine",
+    "prose.block.unreadable": "machine",
+    "prose.block.marker": "machine",
+    "prose.check.file": "machine",
+    "prose.check.span": "machine",
+    "prose.check.fix": "machine",
+    "prose.check.allowed": "machine",
+    "prose.check.clean": "machine",
+    "prose.error.found": "machine",
+    "prose.error.no_input": "machine",
+    "prose.error.unreadable": "machine",
+    "prose.block.marker_shell": "machine",
+    "prose.rule.requester-reference": "machine",
+    "prose.rule.person-as-reason": "machine",
+    "prose.rule.origin-project": "machine",
+    "prose.rule.first-person": "machine",
+    "prose.rule.padding": "machine",
+    "gate.require.prose": "machine",
+    "gate.prose.unavailable": "machine",
+    "gate.prose.finding": "machine",
+    "gate.prose.warning": "machine",
+    "gate.prose.clean": "machine",
+    "git.command.snapshot": "machine",
+    "git.command.undo": "machine",
+    "git.command.rescue": "machine",
+    "git.command.merge_verify": "machine",
+    "git.block.force_push": "machine",
+    "git.block.lease_not_own": "machine",
+    "git.block.push_delete": "machine",
+    "git.block.push_mirror": "machine",
+    "git.block.clean": "machine",
+    "git.block.stash_drop": "machine",
+    "git.block.branch_unmerged": "machine",
+    "git.block.worktree_force": "machine",
+    "git.block.rm_worktree": "machine",
+    "git.block.rm_root": "machine",
+    "git.block.rebase_protected": "machine",
+    "git.block.rebase_shared": "machine",
+    "git.block.merge_side": "machine",
+    "git.block.history": "machine",
+    "git.block.protected_commit": "machine",
+    "git.block.protected_push": "machine",
+    "git.block.foreign": "machine",
+    "git.foreign.before": "machine",
+    "git.foreign.other": "machine",
+    "git.block.unknown": "machine",
+    "git.block.snapshot_failed": "machine",
+    "git.snapshot.context": "machine",
+    "prod.block.effect": "machine",
+    "prod.block.interactive": "machine",
+    "prod.deploy.unknown": "machine",
+    "git.snapshot.done": "machine",
+    "git.undo.list_title": "machine",
+    "git.undo.list_item": "machine",
+    "git.undo.worktree": "machine",
+    "git.undo.in_place": "machine",
+    "git.undo.confirm": "machine",
+    "git.rescue.title": "machine",
+    "git.rescue.reflog": "machine",
+    "git.rescue.dangling": "machine",
+    "git.rescue.blobs": "machine",
+    "git.rescue.never_staged": "machine",
+    "git.rescue.next": "machine",
+    "git.rescue.restored": "machine",
+    "git.merge.ok": "machine",
+    "git.merge.lost": "machine",
+    "git.merge.finding": "machine",
+    "git.merge.limits": "machine",
+    "git.merge.none": "machine",
+    "git.error.snapshot_failed": "machine",
+    "git.error.nothing_to_undo": "machine",
+    "git.error.undo_failed": "machine",
+    "git.error.rescue_failed": "machine",
+    "git.error.merge_lost": "machine",
+    "git.error.merge_unanalyzable": "machine",
+    "gate.require.worktree": "machine",
+    "gate.require.merge": "machine",
+    "gate.worktree.unavailable": "machine",
+    "gate.worktree.dirty": "machine",
+    "gate.worktree.unpushed": "machine",
+    "gate.worktree.clean": "machine",
+    "gate.merge.unavailable": "machine",
+    "gate.merge.unanalyzed": "machine",
+    "gate.merge.lost": "machine",
+    "gate.merge.clean": "machine"
+  },
+  es: {
+    "command.init.summary": "machine",
+    "command.doctor.summary": "machine",
+    "command.update.summary": "machine",
+    "command.uninstall.summary": "machine",
+    "command.i18n_check.summary": "machine",
+    "command.hook.summary": "machine",
+    "command.version.summary": "machine",
+    "command.help.summary": "machine",
+    "help.tagline": "machine",
+    "help.usage": "machine",
+    "help.command": "machine",
+    "help.commands": "machine",
+    "help.flags": "machine",
+    "help.options": "machine",
+    "help.planned": "machine",
+    "help.more": "machine",
+    "flag.json": "machine",
+    "flag.lang": "machine",
+    "flag.yes": "machine",
+    "flag.dry_run": "machine",
+    "flag.version": "machine",
+    "flag.help": "machine",
+    "output.error": "machine",
+    "output.fix": "machine",
+    "output.next": "machine",
+    "error.internal": "machine",
+    "error.invalid_arguments": "machine",
+    "error.unexpected_argument": "machine",
+    "error.unknown_command": "machine",
+    "error.unknown_command_suggest": "machine",
+    "error.not_implemented": "machine",
+    "error.invalid_lang": "machine",
+    "error.i18n_catalog_unreadable": "machine",
+    "error.i18n_mismatch": "machine",
+    "error.doctor_failed": "machine",
+    "error.unknown_hook_event": "machine",
+    "i18n.summary": "machine",
+    "i18n.ok": "machine",
+    "i18n.fix": "machine",
+    "i18n.problem.missing": "machine",
+    "i18n.problem.extra": "machine",
+    "i18n.problem.placeholder": "machine",
+    "i18n.problem.plural": "machine",
+    "i18n.problem.status": "machine",
+    "i18n.problem.empty": "machine",
+    "i18n.problem.not_string": "machine",
+    "doctor.title": "machine",
+    "doctor.summary": "machine",
+    "doctor.node.ok": "machine",
+    "doctor.node.old": "machine",
+    "doctor.node.fix": "machine",
+    "doctor.git.ok": "machine",
+    "doctor.git.missing": "machine",
+    "doctor.git.fix": "machine",
+    "doctor.git.old": "machine",
+    "doctor.git.fix_old": "machine",
+    "doctor.claude.ok": "machine",
+    "doctor.claude.missing": "machine",
+    "doctor.claude.fix": "machine",
+    "doctor.claude.timeout": "machine",
+    "doctor.claude.fix_timeout": "machine",
+    "doctor.os.linux": "machine",
+    "doctor.os.wsl": "machine",
+    "doctor.os.macos": "machine",
+    "doctor.os.windows": "machine",
+    "doctor.os.other": "machine",
+    "doctor.path.plain": "machine",
+    "doctor.path.chars": "machine",
+    "doctor.path.fix_chars": "machine",
+    "doctor.path.synced": "machine",
+    "doctor.path.fix_synced": "machine",
+    "doctor.path.wsl_mount": "machine",
+    "doctor.path.fix_wsl_mount": "machine",
+    "hook.failed_closed": "machine",
+    "hook.failed_open": "machine",
+    "exit.ok": "machine",
+    "exit.check_failed": "machine",
+    "exit.usage": "machine",
+    "exit.not_configured": "machine",
+    "exit.needs_person": "machine",
+    "exit.internal": "machine",
+    "help.exit_codes": "machine",
+    "hook.stop_released": "machine",
+    "error.needs_confirmation": "machine",
+    "secrets.command.scan": "machine",
+    "secrets.command.accept": "machine",
+    "secrets.command.incident": "machine",
+    "secrets.found_item": "machine",
+    "secrets.found_more": "machine",
+    "secrets.where.line": "machine",
+    "secrets.where.file": "machine",
+    "secrets.where.new_text": "machine",
+    "secrets.block.write": "machine",
+    "secrets.block.bash": "machine",
+    "secrets.block.commit": "machine",
+    "secrets.block.read": "machine",
+    "secrets.block.env_dump": "machine",
+    "secrets.block.person_only": "machine",
+    "secrets.block.prompt": "machine",
+    "secrets.post.context": "machine",
+    "secrets.incident.unsaved": "machine",
+    "secrets.scan.title": "machine",
+    "secrets.scan.item": "machine",
+    "secrets.scan.clean": "machine",
+    "secrets.accept.done": "machine",
+    "secrets.action.accept": "machine",
+    "secrets.action.rotated": "machine",
+    "secrets.action.close": "machine",
+    "secrets.incident.title": "machine",
+    "secrets.incident.item": "machine",
+    "secrets.incident.none": "machine",
+    "secrets.incident.marked": "machine",
+    "secrets.purge.title": "machine",
+    "secrets.purge.step1": "machine",
+    "secrets.purge.step2": "machine",
+    "secrets.purge.step3": "machine",
+    "secrets.purge.step4": "machine",
+    "secrets.purge.step5": "machine",
+    "secrets.error.found": "machine",
+    "secrets.error.one_mode": "machine",
+    "secrets.error.git_unavailable": "machine",
+    "secrets.error.baseline_invalid": "machine",
+    "secrets.error.person_only": "machine",
+    "secrets.error.reason_required": "machine",
+    "secrets.error.finding_not_found": "machine",
+    "secrets.error.incident_not_found": "machine",
+    "secrets.error.not_rotated": "machine",
+    "secrets.error.bad_transition": "machine",
+    "secrets.error.write_failed": "machine",
+    "install.plan.title": "machine",
+    "install.warning": "machine",
+    "install.warn.not_git": "machine",
+    "install.warn.fail_open": "machine",
+    "install.warn.authority": "machine",
+    "install.warn.plugin": "machine",
+    "install.warn.foreign": "machine",
+    "install.warn.edited": "machine",
+    "install.warn.edited_kept": "machine",
+    "install.dry_run": "machine",
+    "install.nothing_to_do": "machine",
+    "install.up_to_date": "machine",
+    "install.confirm_question": "machine",
+    "install.done_init": "machine",
+    "install.done_update": "machine",
+    "install.uninstall.title": "machine",
+    "install.uninstall.keeps_state": "machine",
+    "install.uninstall.purge": "machine",
+    "install.uninstall.outside": "machine",
+    "install.uninstall.question": "machine",
+    "install.uninstall.done": "machine",
+    "error.settings_unreadable": "machine",
+    "error.lock_unreadable": "machine",
+    "error.install_locked": "machine",
+    "error.install_failed": "machine",
+    "error.not_installed": "machine",
+    "error.install_outdated": "machine",
+    "error.invalid_preset": "machine",
+    "command.gate.summary": "machine",
+    "command.task_new.summary": "machine",
+    "command.task_show.summary": "machine",
+    "command.task_done.summary": "machine",
+    "error.gate_failed": "machine",
+    "error.gate_incomplete": "machine",
+    "error.gate_not_run": "machine",
+    "error.not_a_git_repo": "machine",
+    "error.task_exists": "machine",
+    "error.task_invalid": "machine",
+    "error.task_not_found": "machine",
+    "task.created": "machine",
+    "task.done": "machine",
+    "gate.status.passed": "machine",
+    "gate.status.failed": "machine",
+    "gate.status.unverified": "machine",
+    "gate.report.title": "machine",
+    "gate.report.title_implicit": "machine",
+    "gate.report.contract_edited": "machine",
+    "gate.verdict.passed": "machine",
+    "gate.verdict.failed": "machine",
+    "gate.verdict.incomplete": "machine",
+    "gate.reason.tool_missing": "machine",
+    "gate.reason.timeout": "machine",
+    "gate.reason.rate_limited": "machine",
+    "gate.reason.budget": "machine",
+    "gate.reason.not_implemented": "machine",
+    "gate.reason.no_gh": "machine",
+    "gate.reason.network": "machine",
+    "gate.reason.pending": "machine",
+    "gate.reason.untrusted": "machine",
+    "gate.reason.rewriter": "machine",
+    "gate.reason.awaiting_person": "machine",
+    "gate.reason.no_evidence": "machine",
+    "gate.reason.no_baseline": "machine",
+    "gate.note.untrusted": "machine",
+    "gate.note.rewriter": "machine",
+    "gate.note.budget": "machine",
+    "gate.note.tool_missing": "machine",
+    "gate.note.timeout": "machine",
+    "gate.note.rate_limited": "machine",
+    "gate.note.exit": "machine",
+    "gate.note.output": "machine",
+    "gate.note.new_failure": "machine",
+    "gate.note.baseline": "machine",
+    "gate.note.trivial": "machine",
+    "gate.note.zero_tests": "machine",
+    "gate.note.tests_ran": "machine",
+    "gate.note.not_implemented": "machine",
+    "gate.note.released": "machine",
+    "gate.tests.test_file_deleted": "machine",
+    "gate.tests.test_removed": "machine",
+    "gate.tests.skip_added": "machine",
+    "gate.tests.assertion_removed": "machine",
+    "gate.tests.snapshot_changed": "machine",
+    "gate.tests.config_changed": "machine",
+    "gate.tests.out_of_scope": "machine",
+    "gate.tests.fix": "machine",
+    "gate.tests.clean": "machine",
+    "gate.diff.no_scope": "machine",
+    "gate.diff.outside": "machine",
+    "gate.diff.too_many_files": "machine",
+    "gate.diff.too_many_lines": "machine",
+    "gate.diff.within": "machine",
+    "gate.placeholders.clean": "machine",
+    "gate.placeholders.found": "machine",
+    "gate.git.uncommitted": "machine",
+    "gate.git.no_upstream": "machine",
+    "gate.git.unpushed": "machine",
+    "gate.git.no_pr": "machine",
+    "gate.git.ok": "machine",
+    "gate.manual.waiting": "machine",
+    "gate.manual.approved": "machine",
+    "gate.pr.found": "machine",
+    "gate.pr.behind": "machine",
+    "gate.pr.stale_head": "machine",
+    "gate.pr.conflict": "machine",
+    "gate.pr.conflict_file": "machine",
+    "gate.pr.conflict_next": "machine",
+    "gate.pr.ci_failed": "machine",
+    "gate.pr.ci_pending": "machine",
+    "gate.pr.no_gh": "machine",
+    "gate.pr.network": "machine",
+    "gate.pr.no_branch": "machine",
+    "gate.pr.none": "machine",
+    "gate.pr.none_required": "machine",
+    "gate.require.command": "machine",
+    "gate.require.tests": "machine",
+    "gate.require.diff": "machine",
+    "gate.require.placeholders": "machine",
+    "gate.require.git": "machine",
+    "gate.require.pr": "machine",
+    "gate.require.manual": "machine",
+    "gate.require.other": "machine",
+    "gate.model.title": "machine",
+    "gate.model.claim": "machine",
+    "gate.model.no_claim": "machine",
+    "gate.model.requires": "machine",
+    "gate.model.not_enough": "machine",
+    "gate.fail.not_a_repo": "machine",
+    "gate.fail.no_tree_hash": "machine",
+    "gate.fail.ledger_unwritable": "machine",
+    "gate.fail.contract_missing": "machine",
+    "gate.fail.contract_invalid": "machine",
+    "gate.human.held": "machine",
+    "gate.human.witness": "machine",
+    "gate.human.not_done": "machine",
+    "gate.human.incomplete": "machine",
+    "gate.human.passed": "machine",
+    "gate.human.not_run": "machine",
+    "gate.human.last_not_run": "machine",
+    "gate.human.last_not_done": "machine",
+    "gate.context.state": "machine",
+    "gate.context.state_implicit": "machine",
+    "gate.context.front": "machine",
+    "gate.context.done_means": "machine",
+    "gate.context.scope": "machine",
+    "gate.context.briefing": "machine",
+    "gate.prs.line": "machine",
+    "gate.prs.conflict": "machine",
+    "gate.prs.behind": "machine",
+    "gate.prs.ok": "machine",
+    "gate.config.removed": "machine",
+    "gate.config.disabled": "machine",
+    "gate.config.human": "machine",
+    "gate.config.released": "machine",
+    "gate.guard.bypass.no_verify": "machine",
+    "gate.guard.bypass.hooks_path": "machine",
+    "gate.guard.bypass.hook_env": "machine",
+    "gate.guard.bypass.fm_allow": "machine",
+    "gate.guard.bypass.human": "machine",
+    "gate.guard.self.policy": "machine",
+    "gate.guard.self.allow_store": "machine",
+    "gate.guard.self.human": "machine",
+    "gate.guard.tests.model": "machine",
+    "gate.guard.tests.shell": "machine",
+    "gate.guard.tests.human": "machine",
+    "gate.release.allowed": "machine",
+    "gate.release.unknown_guard": "machine",
+    "gate.release.approved": "machine",
+    "gate.release.trusted": "machine",
+    "gate.release.trust_failed": "machine",
+    "gate.skipped.no_repo": "machine",
+    "gate.skipped.no_changes": "machine",
+    "gate.skipped.no_session_edits": "machine",
+    "gate.baseline.recorded": "machine",
+    "gate.baseline.skipped": "machine",
+    "gate.secrets.unavailable": "machine",
+    "gate.secrets.finding": "machine",
+    "gate.secrets.incident": "machine",
+    "gate.secrets.clean": "machine",
+    "gate.require.secrets": "machine",
+    "prose.command.check": "machine",
+    "prose.rule.opener-routine": "machine",
+    "prose.rule.reassurance": "machine",
+    "prose.rule.slogan-closer": "machine",
+    "prose.rule.rhythmic-triplet": "machine",
+    "prose.rule.imperative-fragment": "machine",
+    "prose.rule.antithesis": "machine",
+    "prose.rule.abstract-noun": "machine",
+    "prose.rule.crutch-word": "machine",
+    "prose.rule.colon-heading": "machine",
+    "prose.rule.decorative-emoji": "machine",
+    "prose.rule.em-dash-series": "machine",
+    "prose.target.commit": "machine",
+    "prose.target.pr": "machine",
+    "prose.target.issue": "machine",
+    "prose.span": "machine",
+    "prose.fix_item": "machine",
+    "prose.warn.command": "machine",
+    "prose.block.command": "machine",
+    "prose.block.unreadable": "machine",
+    "prose.block.marker": "machine",
+    "prose.check.file": "machine",
+    "prose.check.span": "machine",
+    "prose.check.fix": "machine",
+    "prose.check.allowed": "machine",
+    "prose.check.clean": "machine",
+    "prose.error.found": "machine",
+    "prose.error.no_input": "machine",
+    "prose.error.unreadable": "machine",
+    "prose.block.marker_shell": "machine",
+    "prose.rule.requester-reference": "machine",
+    "prose.rule.person-as-reason": "machine",
+    "prose.rule.origin-project": "machine",
+    "prose.rule.first-person": "machine",
+    "prose.rule.padding": "machine",
+    "gate.require.prose": "machine",
+    "gate.prose.unavailable": "machine",
+    "gate.prose.finding": "machine",
+    "gate.prose.warning": "machine",
+    "gate.prose.clean": "machine",
+    "git.command.snapshot": "machine",
+    "git.command.undo": "machine",
+    "git.command.rescue": "machine",
+    "git.command.merge_verify": "machine",
+    "git.block.force_push": "machine",
+    "git.block.lease_not_own": "machine",
+    "git.block.push_delete": "machine",
+    "git.block.push_mirror": "machine",
+    "git.block.clean": "machine",
+    "git.block.stash_drop": "machine",
+    "git.block.branch_unmerged": "machine",
+    "git.block.worktree_force": "machine",
+    "git.block.rm_worktree": "machine",
+    "git.block.rm_root": "machine",
+    "git.block.rebase_protected": "machine",
+    "git.block.rebase_shared": "machine",
+    "git.block.merge_side": "machine",
+    "git.block.history": "machine",
+    "git.block.protected_commit": "machine",
+    "git.block.protected_push": "machine",
+    "git.block.foreign": "machine",
+    "git.foreign.before": "machine",
+    "git.foreign.other": "machine",
+    "git.block.unknown": "machine",
+    "git.block.snapshot_failed": "machine",
+    "git.snapshot.context": "machine",
+    "prod.block.effect": "machine",
+    "prod.block.interactive": "machine",
+    "prod.deploy.unknown": "machine",
+    "git.snapshot.done": "machine",
+    "git.undo.list_title": "machine",
+    "git.undo.list_item": "machine",
+    "git.undo.worktree": "machine",
+    "git.undo.in_place": "machine",
+    "git.undo.confirm": "machine",
+    "git.rescue.title": "machine",
+    "git.rescue.reflog": "machine",
+    "git.rescue.dangling": "machine",
+    "git.rescue.blobs": "machine",
+    "git.rescue.never_staged": "machine",
+    "git.rescue.next": "machine",
+    "git.rescue.restored": "machine",
+    "git.merge.ok": "machine",
+    "git.merge.lost": "machine",
+    "git.merge.finding": "machine",
+    "git.merge.limits": "machine",
+    "git.merge.none": "machine",
+    "git.error.snapshot_failed": "machine",
+    "git.error.nothing_to_undo": "machine",
+    "git.error.undo_failed": "machine",
+    "git.error.rescue_failed": "machine",
+    "git.error.merge_lost": "machine",
+    "git.error.merge_unanalyzable": "machine",
+    "gate.require.worktree": "machine",
+    "gate.require.merge": "machine",
+    "gate.worktree.unavailable": "machine",
+    "gate.worktree.dirty": "machine",
+    "gate.worktree.unpushed": "machine",
+    "gate.worktree.clean": "machine",
+    "gate.merge.unavailable": "machine",
+    "gate.merge.unanalyzed": "machine",
+    "gate.merge.lost": "machine",
+    "gate.merge.clean": "machine"
+  }
 };
 
 // src/i18n/catalogs.ts
@@ -4224,6 +5059,10 @@ var catalogs = {
   "pt-BR": exact(pt_BR_default),
   es: exact(es_default)
 };
+var reviewStatus = review_default;
+var reviewedKeys = (lang, source = reviewStatus) => new Set(
+  Object.entries(source[lang] ?? {}).filter(([, status]) => status === "reviewed").map(([key]) => key)
+);
 
 // src/gate/render.ts
 var STATUS_KEYS = {
@@ -10975,16 +11814,145 @@ var detectLang = (flag2, env, settings = {}) => {
   return { lang: SOURCE_LANG, source: "default" };
 };
 
+// src/i18n/message.ts
+var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
+var closingBrace = (cursor) => {
+  let depth = 0;
+  for (let index = cursor.index; index < cursor.source.length; index += 1) {
+    const char = cursor.source.charAt(index);
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      if (depth === 0) return index;
+      depth -= 1;
+    }
+  }
+  return -1;
+};
+var parseBranches = (body, inPlural) => {
+  const branches = {};
+  const cursor = { source: body, index: 0 };
+  for (; ; ) {
+    const rest = body.slice(cursor.index);
+    const head = /^\s*(=?[a-zA-Z0-9_]+)\s*\{/.exec(rest);
+    if (head === null) return rest.trim() === "" && "other" in branches ? branches : void 0;
+    cursor.index += head[0].length;
+    const end = closingBrace(cursor);
+    if (end < 0) return void 0;
+    branches[head[1] ?? ""] = parseNodes(body.slice(cursor.index, end), inPlural);
+    cursor.index = end + 1;
+  }
+};
+var parseNodes = (source, inPlural) => {
+  const nodes = [];
+  let text6 = "";
+  const flush2 = () => {
+    if (text6 !== "") nodes.push({ kind: "text", text: text6 });
+    text6 = "";
+  };
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source.charAt(index);
+    if (char === "#" && inPlural) {
+      flush2();
+      nodes.push({ kind: "count" });
+      continue;
+    }
+    if (char !== "{") {
+      text6 += char;
+      continue;
+    }
+    const cursor = { source, index: index + 1 };
+    const end = closingBrace(cursor);
+    const inner = end < 0 ? void 0 : source.slice(index + 1, end);
+    const match = inner === void 0 ? null : ARG.exec(inner);
+    if (inner === void 0 || match === null) {
+      text6 += char;
+      continue;
+    }
+    const name = match[1] ?? "";
+    const type = match[2] === "plural" || match[2] === "select" ? match[2] : void 0;
+    if (type === void 0 && match[0].trim().length !== inner.trim().length) {
+      text6 += char;
+      continue;
+    }
+    const branches = type === void 0 ? void 0 : parseBranches(inner.slice(match[0].length), type === "plural");
+    if (type !== void 0 && branches === void 0) {
+      text6 += char;
+      continue;
+    }
+    flush2();
+    nodes.push(type === void 0 || branches === void 0 ? { kind: "arg", name } : { kind: type, name, branches });
+    index = end;
+  }
+  flush2();
+  return nodes;
+};
+var parseMessage = (source) => parseNodes(source, false);
+var pluralRules = /* @__PURE__ */ new Map();
+var rulesFor = (locale) => {
+  const known2 = pluralRules.get(locale);
+  if (known2 !== void 0) return known2;
+  const rules = new Intl.PluralRules(locale);
+  pluralRules.set(locale, rules);
+  return rules;
+};
+var branchFor = (node, value, locale) => {
+  const { branches } = node;
+  if (node.kind === "select") return branches[String(value)] ?? branches["other"];
+  const count3 = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(count3)) return branches["other"];
+  return branches[`=${String(count3)}`] ?? branches[rulesFor(locale).select(count3)] ?? branches["other"];
+};
+var render = (nodes, params2, locale, count3) => nodes.map((node) => {
+  if (node.kind === "text") return node.text;
+  if (node.kind === "count") return count3 === void 0 ? "#" : String(count3);
+  const value = params2[node.name];
+  if (node.kind === "arg") return value === void 0 ? `{${node.name}}` : String(value);
+  const branch = branchFor(node, value, locale) ?? [];
+  return render(branch, params2, locale, node.kind === "plural" ? value : count3);
+}).join("");
+var formatMessage = (source, params2, locale) => render(parseMessage(source), params2, locale, void 0);
+var walk = (nodes, visit2) => {
+  for (const node of nodes) {
+    visit2(node);
+    if (node.kind === "plural" || node.kind === "select") {
+      for (const branch of Object.values(node.branches)) walk(branch, visit2);
+    }
+  }
+};
+var argumentsOf = (source) => {
+  const names = /* @__PURE__ */ new Set();
+  walk(parseMessage(source), (node) => {
+    if (node.kind === "arg" || node.kind === "plural" || node.kind === "select") names.add(node.name);
+  });
+  return [...names].sort();
+};
+var choicesOf = (source) => {
+  const choices = [];
+  walk(parseMessage(source), (node) => {
+    if (node.kind === "plural" || node.kind === "select") {
+      choices.push({ name: node.name, kind: node.kind, branches: Object.keys(node.branches).sort() });
+    }
+  });
+  return choices;
+};
+var requiredPluralBranches = (locale) => {
+  const rules = rulesFor(locale);
+  const seen = /* @__PURE__ */ new Set(["other"]);
+  for (let count3 = 0; count3 <= 1e3; count3 += 1) seen.add(rules.select(count3));
+  return [...seen].sort();
+};
+
 // src/i18n/translate.ts
-var PLACEHOLDER2 = /\{([a-zA-Z][a-zA-Z0-9_]*)\}/g;
-var interpolate = (template, params2 = {}) => template.replace(PLACEHOLDER2, (match, name) => {
-  const value = params2[name];
-  return value === void 0 ? match : String(value);
-});
-var placeholdersOf = (template) => [...new Set(Array.from(template.matchAll(PLACEHOLDER2), (match) => match[1] ?? ""))].sort();
-var createTranslator = (lang, source = catalogs) => (key, params2) => interpolate(source[lang][key] ?? source[SOURCE_LANG][key] ?? key, params2);
+var interpolate = (template, params2 = {}, lang = SOURCE_LANG) => formatMessage(template, params2, lang);
+var placeholdersOf = (template) => argumentsOf(template);
+var createTranslator = (lang, source = catalogs, options = {}) => (key, params2) => {
+  const usable = lang === SOURCE_LANG || options.reviewed === void 0 || options.reviewed.has(key);
+  const own = usable ? source[lang][key] : void 0;
+  return own === void 0 ? interpolate(source[SOURCE_LANG][key] ?? key, params2, SOURCE_LANG) : interpolate(own, params2, lang);
+};
 
 // src/i18n/check.ts
+var REVIEW_STATUSES = ["machine", "reviewed"];
 var sameList = (a, b) => a.length === b.length && a.every((value, index) => value === b[index]);
 var valueProblems = (lang, catalog, reference) => Object.keys(catalog).sort().flatMap((key) => {
   const value = catalog[key];
@@ -10994,6 +11962,16 @@ var valueProblems = (lang, catalog, reference) => Object.keys(catalog).sort().fl
   if (!(key in reference)) problems.push({ lang, key, kind: "extra" });
   return problems;
 });
+var pluralProblems = (lang, key, value, source) => {
+  const own = choicesOf(value);
+  return choicesOf(source).flatMap((choice) => {
+    const found = own.find((item) => item.name === choice.name && item.kind === choice.kind);
+    const expected = choice.kind === "plural" ? requiredPluralBranches(lang) : choice.branches;
+    const actual = found?.branches ?? [];
+    const missingBranch = expected.some((branch) => !actual.includes(branch));
+    return missingBranch ? [{ lang, key, kind: "plural", expected, actual }] : [];
+  });
+};
 var parityProblems = (lang, catalog, reference) => Object.keys(reference).sort().flatMap((key) => {
   const value = catalog[key];
   const source = reference[key];
@@ -11001,13 +11979,29 @@ var parityProblems = (lang, catalog, reference) => Object.keys(reference).sort()
   if (typeof value !== "string" || typeof source !== "string") return [];
   const expected = placeholdersOf(source);
   const actual = placeholdersOf(value);
-  return sameList(expected, actual) ? [] : [{ lang, key, kind: "placeholder", expected, actual }];
+  const placeholders = sameList(expected, actual) ? [] : [{ lang, key, kind: "placeholder", expected, actual }];
+  return [...placeholders, ...pluralProblems(lang, key, value, source)];
 });
-var checkCatalogs = (input) => {
+var isStatus = (value) => REVIEW_STATUSES.some((status) => status === value);
+var statusProblems = (lang, catalog, review2) => [
+  ...Object.keys(catalog).sort().filter((key) => !isStatus(review2[key])).map((key) => ({ lang, key, kind: "status", expected: [...REVIEW_STATUSES] })),
+  ...Object.keys(review2).sort().filter((key) => !(key in catalog)).map((key) => ({ lang, key, kind: "extra" }))
+];
+var sourceProblems = (catalog) => Object.keys(catalog).sort().flatMap((key) => {
+  const value = catalog[key];
+  return typeof value === "string" ? pluralProblems(SOURCE_LANG, key, value, value) : [];
+});
+var checkCatalogs = (input, review2) => {
   const reference = input[SOURCE_LANG];
-  const problems = LANGUAGES.flatMap(
-    (lang) => lang === SOURCE_LANG ? valueProblems(lang, input[lang], reference) : [...valueProblems(lang, input[lang], reference), ...parityProblems(lang, input[lang], reference)]
-  );
+  const problems = LANGUAGES.flatMap((lang) => {
+    if (lang === SOURCE_LANG) return [...valueProblems(lang, input[lang], reference), ...sourceProblems(reference)];
+    const statuses = review2?.[lang];
+    return [
+      ...valueProblems(lang, input[lang], reference),
+      ...parityProblems(lang, input[lang], reference),
+      ...review2 === void 0 ? [] : statusProblems(lang, input[lang], statuses ?? {})
+    ];
+  });
   return { languages: LANGUAGES, keys: Object.keys(reference).length, problems };
 };
 
@@ -11027,13 +12021,13 @@ var readCatalog = (ctx, dir, lang) => {
   return parsed.ok ? parsed : reject(unreadable(dir, file, parsed.error));
 };
 var loadCatalogs = (ctx, dir) => {
-  const en = readCatalog(ctx, dir, "en");
-  if (!en.ok) return en;
-  const ptBR = readCatalog(ctx, dir, "pt-BR");
-  if (!ptBR.ok) return ptBR;
-  const es = readCatalog(ctx, dir, "es");
-  if (!es.ok) return es;
-  return accept({ en: en.value, "pt-BR": ptBR.value, es: es.value });
+  const en2 = readCatalog(ctx, dir, "en");
+  if (!en2.ok) return en2;
+  const ptBR2 = readCatalog(ctx, dir, "pt-BR");
+  if (!ptBR2.ok) return ptBR2;
+  const es2 = readCatalog(ctx, dir, "es");
+  if (!es2.ok) return es2;
+  return accept({ en: en2.value, "pt-BR": ptBR2.value, es: es2.value });
 };
 var describeProblem = (ctx, problem4) => {
   const kind = ctx.t(`i18n.problem.${problem4.kind}`, {
@@ -11042,10 +12036,20 @@ var describeProblem = (ctx, problem4) => {
   });
   return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
+var loadReview = (ctx, dir) => {
+  const text6 = ctx.runtime.readText(toAbsolutePath(join24(dir, "review.json")));
+  const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
+  if (parsed?.ok !== true) return void 0;
+  const statuses = (lang) => {
+    const value = parsed.value[lang];
+    return isRecord(value) ? value : void 0;
+  };
+  return { "pt-BR": statuses("pt-BR") ?? {}, es: statuses("es") ?? {} };
+};
 var runI18nCheck = (ctx, dir) => {
   const input = dir === void 0 ? accept(catalogs) : loadCatalogs(ctx, dir);
   if (!input.ok) return failureFrom(ctx.t, input.error);
-  const report2 = checkCatalogs(input.value);
+  const report2 = checkCatalogs(input.value, dir === void 0 ? reviewStatus : loadReview(ctx, dir));
   const data = { ...report2, source: dir ?? "bundled" };
   const summary = ctx.t("i18n.summary", { languages: report2.languages.join(", "), keys: report2.keys });
   if (report2.problems.length === 0) return success(data, [summary, ctx.t("i18n.ok")]);
@@ -11215,10 +12219,58 @@ var claudeignoreRules = (texts) => [
   )
 ];
 
+// src/install/templates/en.ts
+var en = {
+  configHeader: "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
+  verifySkill: {
+    description: "Use before every commit and before telling the person something works. Runs the fast gate through Finite Monkey so the result is recorded as evidence for the current tree instead of being taken on your word.",
+    whenToUse: "Trigger phrases include commit, run the tests, check it works, roda os testes, confere, verifica, prueba.",
+    title: "Verify: evidence, not claims",
+    steps: (command) => [
+      `From the project root, run \`${command}\`.`,
+      "Read `data`; for every failing item, fix the cause, never the check.",
+      "Quote the command and its exit code when you report a result. A result from before your last edit no longer counts."
+    ]
+  }
+};
+
+// src/install/templates/es.ts
+var es = {
+  configHeader: "Configuración de Finite Monkey en este proyecto. Versiona este archivo. `finitemonkey update` conserva tus cambios.",
+  verifySkill: {
+    description: "Úsala antes de cada commit y antes de decirle a la persona que algo funciona. Ejecuta la compuerta rápida de Finite Monkey para que el resultado quede registrado como evidencia del árbol actual, en lugar de valer por tu palabra.",
+    whenToUse: "Frases que la activan: commit, ejecuta las pruebas, comprueba que funciona, verifica, prueba, run the tests.",
+    title: "Verificar: evidencia, no promesas",
+    steps: (command) => [
+      `Desde la raíz del proyecto, ejecuta \`${command}\`.`,
+      "Lee `data`; para cada elemento que falló, corrige la causa, nunca la verificación.",
+      "Cita el comando y su código de salida al informar un resultado. Un resultado de antes de tu última edición ya no cuenta."
+    ]
+  }
+};
+
+// src/install/templates/pt-BR.ts
+var ptBR = {
+  configHeader: "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
+  verifySkill: {
+    description: "Use antes de todo commit e antes de dizer à pessoa que algo funciona. Roda o portão rápido do Finite Monkey para que o resultado fique registrado como evidência da árvore atual, em vez de valer pela sua palavra.",
+    whenToUse: "Frases que disparam: commit, roda os testes, confere se funciona, verifica, run the tests, prueba.",
+    title: "Verificar: evidência, não promessa",
+    steps: (command) => [
+      `Na raiz do projeto, rode \`${command}\`.`,
+      "Leia `data`; para cada item que falhou, corrija a causa, nunca a checagem.",
+      "Cite o comando e o código de saída ao relatar um resultado. Resultado de antes da sua última edição não vale mais."
+    ]
+  }
+};
+
+// src/install/templates/index.ts
+var TEMPLATES = { en, "pt-BR": ptBR, es };
+
 // src/install/config-template.ts
-var configTemplate = (t, preset, lang) => [
+var configTemplate = (preset, lang) => [
   `# ${GENERATED_MARKER}`,
-  `# ${t("install.config.header")}`,
+  `# ${TEMPLATES[lang].configHeader}`,
   "schemaVersion: 1",
   `preset: ${preset}`,
   `lang: ${lang}`,
@@ -11380,24 +12432,25 @@ var gateCommand2 = (runner) => {
   if (runner.kind === "vendored") return `node ${VENDOR_BIN} ${args}`;
   return isScript(runner.path) ? `node "${runner.path}" ${args}` : `"${runner.path}" ${args}`;
 };
-var verifySkillTemplate = (runner) => [
-  "---",
-  "name: verify",
-  "description: >-",
-  "  Use before every commit and before telling the person something works. Runs the fast gate through Finite Monkey so the result is recorded as evidence for the current tree instead of being taken on your word.",
-  "when_to_use: >-",
-  "  Trigger phrases include commit, run the tests, check it works, roda os testes, confere, verifica, prueba.",
-  "---",
-  "",
-  "# Verify: evidence, not claims",
-  "",
-  `1. From the project root, run \`${gateCommand2(runner)}\`.`,
-  "2. Read `data`; for every failing item, fix the cause, never the check.",
-  "3. Quote the command and its exit code when you report a result. A result from before your last edit no longer counts.",
-  "",
-  `<!-- ${GENERATED_MARKER} -->`,
-  ""
-].join("\n");
+var verifySkillTemplate = (runner, lang) => {
+  const skill = TEMPLATES[lang].verifySkill;
+  return [
+    "---",
+    "name: verify",
+    "description: >-",
+    `  ${skill.description}`,
+    "when_to_use: >-",
+    `  ${skill.whenToUse}`,
+    "---",
+    "",
+    `# ${skill.title}`,
+    "",
+    ...skill.steps(gateCommand2(runner)).map((step3, index) => `${String(index + 1)}. ${step3}`),
+    "",
+    `<!-- ${GENERATED_MARKER} -->`,
+    ""
+  ].join("\n");
+};
 var isOwnSkill = hasMarker;
 
 // src/install/vendor.ts
@@ -11495,8 +12548,8 @@ var generatedItem = (project, file, previous) => {
 };
 var generatedFiles = (input, runner, vendor) => {
   const own = [
-    { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker },
-    { path: VERIFY_SKILL, template: verifySkillTemplate(runner), isOurs: isOwnSkill }
+    { path: CONFIG_FILE, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
+    { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill }
   ];
   if (!vendor) return accept(own);
   if (input.bundle === void 0) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
@@ -11633,7 +12686,7 @@ var table = (a, b) => {
   }
   return rows;
 };
-var walk = (a, b) => {
+var walk2 = (a, b) => {
   const lcs = table(a, b);
   const ops = [];
   let i = 0;
@@ -11657,7 +12710,7 @@ var walk = (a, b) => {
 };
 var splitLines = (text6) => text6 === "" ? [] : text6.replace(/\r?\n$/, "").split(/\r?\n/);
 var lineDiff = (path, before, after) => {
-  const changes = walk(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
+  const changes = walk2(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
   if (changes.length === 0) return [];
   const lines3 = changes.map(([op, line2]) => `${op} ${line2}`);
   const shown3 = lines3.slice(0, MAX_DIFF_LINES);
@@ -12839,7 +13892,10 @@ var read3 = (runtime, path) => {
   const text6 = runtime.readText(toAbsolutePath(path));
   return text6.ok ? text6.value : void 0;
 };
-var configLang = (text6) => /^lang:[ \t]*["']?([A-Za-z_-]+)["']?[ \t]*(?:#.*)?$/m.exec(text6 ?? "")?.[1];
+var configText = (tree, ...path) => {
+  const value = configAt(tree, ...path);
+  return typeof value === "string" && value !== "" ? value : void 0;
+};
 var languageIn = (text6) => {
   if (text6 === void 0) return void 0;
   const parsed = parseJsonObject(text6);
@@ -12849,13 +13905,15 @@ var languageIn = (text6) => {
 var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join28(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
+  const config = parseConfigYaml(read3(runtime, join28(root, CONFIG_FILE)) ?? "");
   const claudeFiles = [
     join28(root, ".claude", "settings.local.json"),
     join28(root, ".claude", "settings.json"),
     join28(claudeDir(runtime, env), "settings.json")
   ];
   return {
-    config: configLang(read3(runtime, join28(root, CONFIG_FILE))),
+    config: configText(config, "lang"),
+    reviewedOnly: configText(config, "i18n", "fallback") === "reviewed-only",
     claude: claudeFiles.map((path) => languageIn(read3(runtime, path))).find((value) => value !== void 0),
     system: platform === "win32" ? runtime.systemLocale() : void 0
   };
@@ -12941,7 +13999,7 @@ var block3 = (items) => items.length > 0 ? `${items.join("\n")}
 var write2 = (sink, text6) => {
   if (text6 !== "") sink.write(maskText(text6));
 };
-var render = (ctx, command, result) => {
+var render2 = (ctx, command, result) => {
   if (result.raw !== void 0) {
     write2(ctx.io.stdout, result.raw.stdout);
     write2(ctx.io.stderr, result.raw.stderr);
@@ -12965,7 +14023,9 @@ var run2 = async (options) => {
   const loose = looseArgs(options.argv);
   const settings = langSettings(options.runtime, options.cwd, options.env, options.platform);
   const detected = detectLang(loose.lang, options.env, settings);
-  const t = createTranslator(detected.lang);
+  const t = createTranslator(detected.lang, catalogs, {
+    reviewed: settings.reviewedOnly === true ? reviewedKeys(detected.lang) : void 0
+  });
   const ctx = {
     lang: detected.lang,
     langSource: detected.source,
@@ -12997,7 +14057,7 @@ var run2 = async (options) => {
   } catch (thrown) {
     result = resultFromThrown(thrown, t);
   }
-  render(ctx, name, result);
+  render2(ctx, name, result);
   return result.exitCode;
 };
 
