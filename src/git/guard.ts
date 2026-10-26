@@ -9,8 +9,8 @@ import { type ForeignFile, foreignFiles } from "./ownership.js";
 import { resolveFrom } from "./path-key.js";
 import { matchPathspecs } from "./pathspec.js";
 import { openRepo, type Repo, repoFacts } from "./repo.js";
-import { switchTarget } from "./switch-target.js";
 import { BUILTIN_SUBCOMMANDS, gitVerdict } from "./rules/index.js";
+import { switchTarget } from "./switch-target.js";
 import type { DiscardSpec, GitBlockRule, GitVerdict } from "./verdict.js";
 
 export type GuardOutcome =
