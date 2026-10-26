@@ -65,6 +65,7 @@
     "llms:stamp": "tsx scripts/build-llms.ts --stamp",
     "schema": "tsx scripts/build-schemas.ts",
     "schema:check": "tsx scripts/build-schemas.ts --check",
+    "budgets": "tsx scripts/budgets.ts",
     "plugin:sync": "node scripts/plugin-sync.mjs",
     "plugin:validate": "node scripts/plugin-validate.mjs",
     "version": "node scripts/plugin-sync.mjs"

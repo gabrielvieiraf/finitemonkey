@@ -144,7 +144,7 @@ No. It is hooks and checks that run whether or not the model remembers them.
 No. Nothing leaves your machine by default. No telemetry.
 
 **Will it slow me down?**
-Small tasks get no ceremony, only the gate at the end. Fast hooks stay fast; the expensive check runs at `Stop`. We'll publish timings with the benchmark.
+Small tasks get no ceremony, only the gate at the end. Fast hooks stay fast; the expensive check runs at `Stop`. CI fails a pull request that pushes a `PreToolUse` guard past 50 ms at p95 or adds context at session start; the ceilings are in [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/main/budgets.json). We'll publish end-to-end timings with the benchmark.
 
 **What if it blocks something it shouldn't?**
 Open an issue with the "Blocked something it should not have" template. False positives are treated as bugs and counted in public.

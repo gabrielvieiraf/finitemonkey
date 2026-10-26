@@ -53,8 +53,23 @@ jobs:
       - name: installed bins run from a prefix with spaces and accents
         run: npm run smoke:install
 
+  budgets:
+    name: context and latency budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: context bytes and PreToolUse p95 per guard against budgets.json
+        run: npm run budgets
+
   release:
-    needs: check
+    needs: [check, budgets]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
     runs-on: ubuntu-latest
     timeout-minutes: 15
