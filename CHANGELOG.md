@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.12](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.11...v0.1.0-next.12) (2026-10-26)
+
+### Features
+
+* **platform:** resolve .cmd shims, warn on WSL mounts and synced folders, check autocrlf ([#144](https://github.com/gabrielvieiraf/finitemonkey/issues/144)) ([15d38f1](https://github.com/gabrielvieiraf/finitemonkey/commit/15d38f168e4cc9291ac48d659846714ddf85b8b6)), closes [#31](https://github.com/gabrielvieiraf/finitemonkey/issues/31)
+
 ## [0.1.0-next.11](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.10...v0.1.0-next.11) (2026-10-26)
 
 ### Features
