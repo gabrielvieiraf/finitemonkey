@@ -136,7 +136,7 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Lê | `~/.claude/projects/` | Os logs locais de sessão do Claude Code deste projeto, lidos uma vez e só com `init --look-back`. |
 | Lê | `.git/` | O repositório pelo comando `git`: status, diffs, refs e o reflog. |
 | Lê | `git diff` | Arquivos alterados, varridos atrás de segredos, testes pulados, placeholders e padrões de prosa. |
-| Lê | `.finitemonkey/config.yml`, `.finitemonkey/briefing.md` | A configuração do projeto e o briefing opcional para subagentes. |
+| Lê | `.finitemonkey/config.yml`, `.finitemonkey/policy.yml`, `.finitemonkey/briefing.md` | A configuração do projeto, a política dos guards e o briefing opcional para subagentes. |
 | Grava | `.claude/settings.json`, `.claude/skills/verify/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.finitemonkey/config.yml`, `.finitemonkey/lock.json`, `.finitemonkey/locks/`, `.finitemonkey/runtime/`, `.finitemonkey/backups/` | `init` e `update`: configuração dos hooks, a skill verify, um bloco gerenciado curto no `AGENTS.md` que o `CLAUDE.md` importa, uma linha no `.gitignore`, o runtime fixado e um backup de cada arquivo que alteram. |
 | Grava | `.finitemonkey/tasks/`, `.finitemonkey/state.json` | Contratos de tarefa e qual tarefa está ativa. |
 | Grava | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | A evidência de cada checagem, ligada ao hash da árvore, e o log do portão. |

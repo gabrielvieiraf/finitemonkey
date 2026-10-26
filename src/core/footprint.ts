@@ -24,7 +24,11 @@ export const FOOTPRINT = [
   { id: "session-logs", kind: "reads", targets: ["~/.claude/projects/"] },
   { id: "git", kind: "reads", targets: [".git/"], via: "git" },
   { id: "changed-files", kind: "reads", targets: ["git diff"], via: "git" },
-  { id: "config", kind: "reads", targets: [".finitemonkey/config.yml", ".finitemonkey/briefing.md"] },
+  {
+    id: "config",
+    kind: "reads",
+    targets: [".finitemonkey/config.yml", ".finitemonkey/policy.yml", ".finitemonkey/briefing.md"],
+  },
   {
     id: "install",
     kind: "writes",

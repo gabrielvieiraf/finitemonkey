@@ -523,5 +523,8 @@
   "gate.callers.none": "{count, plural, one {# definição removida} other {# definições removidas}}, nenhum chamador sobrou",
   "gate.callers.open": "{name} saiu, mas é chamado em {count, plural, one {# lugar} other {# lugares}}",
   "gate.callers.at": "{name} chamado em {file}:{line}",
-  "gate.callers.warning": "só aviso: {percent}% dos achados de callers foram liberados com callers_ignore ({released} de {total}), acima do teto de 5%"
+  "gate.callers.warning": "só aviso: {percent}% dos achados de callers foram liberados com callers_ignore ({released} de {total}), acima do teto de 5%",
+  "command.policy_false_positive.summary": "Registra um falso positivo de um guard em shadow para ele não ser promovido",
+  "policy.error.person_only": "Só a pessoa pode registrar um falso positivo, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
+  "policy.false_positive.recorded": "Registrado para {guard}: {count, plural, one {# falso positivo} other {# falsos positivos}}; ele fica em shadow até você definir o modo em .finitemonkey/policy.yml."
 }
