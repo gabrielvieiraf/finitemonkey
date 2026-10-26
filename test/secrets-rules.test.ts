@@ -45,6 +45,15 @@ const positives = [
   { rule: "generic-api-key", text: `MAILGUN_KEY: ${SAMPLES.genericValue}` },
   { rule: "password-assignment", text: `DB_PASSWORD=${SAMPLES.password}` },
   { rule: "password-assignment", text: `{"senha": "${SAMPLES.password}"}` },
+  { rule: "secret-in-process-args", text: `    command: redis-server --requirepass ${SAMPLES.argValue}` },
+  { rule: "secret-in-process-args", text: `    command: ["redis-server", "--requirepass", "${SAMPLES.argValue}"]` },
+  { rule: "secret-in-process-args", text: `CMD ["server", "--api-key", "${SAMPLES.argValue}"]` },
+  { rule: "secret-in-process-args", text: `ExecStart=/usr/bin/app --token ${SAMPLES.argValue}` },
+  { rule: "tls-disabled", text: 'const url = "postgres://db.internal/app?sslmode=disable";' },
+  { rule: "tls-disabled", text: "https.request({ host, rejectUnauthorized: false });" },
+  { rule: "tls-disabled", text: "requests.get(url, verify=False)" },
+  { rule: "tls-disabled", text: "cfg := &tls.Config{InsecureSkipVerify: true}" },
+  { rule: "tls-disabled", text: "NODE_TLS_REJECT_UNAUTHORIZED=0 node server.js" },
 ] as const;
 
 describe("secret rules: each rule finds its true positive", () => {
@@ -97,6 +106,14 @@ const negatives = [
     text: "passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID || 'pass.com.example.event',",
   },
   { name: "prose", text: "Rotate the key, then update the secret in the vault and the token in CI." },
+  { name: "process argument from a variable", text: "    command: redis-server --requirepass ${REDIS_PASSWORD}" },
+  { name: "process argument from a shell variable", text: "ExecStart=/usr/bin/app --token $APP_TOKEN" },
+  { name: "process argument pointing at a secret file", text: "command: app --password-file /run/secrets/db" },
+  { name: "process argument with a secret path", text: "CMD app --password /run/secrets/db_password" },
+  { name: "process argument placeholder", text: "command: redis-server --requirepass changeme" },
+  { name: "build script name with token in it", text: "RUN npm run build-token-cache" },
+  { name: "TLS required", text: 'const url = "postgres://db.internal/app?sslmode=require";' },
+  { name: "TLS verified", text: "https.request({ host, rejectUnauthorized: true }); requests.get(url, verify=True)" },
 ] as const;
 
 describe("secret rules: placeholders and fixtures are not secrets", () => {
@@ -114,6 +131,22 @@ describe("secret rules: placeholders and fixtures are not secrets", () => {
     assert.deepEqual(rulesOf(generic, "src/modules/identity/examples/usage.ts"), []);
     assert.deepEqual(rulesOf(generic, "src/config.ts"), ["generic-api-key"]);
     assert.deepEqual(rulesOf(SAMPLES.githubPat, "test/fixtures/config.ts"), ["github-pat"]);
+  });
+
+  it("disabled TLS is allowed in tests but not in production code or docs", () => {
+    const text = "requests.get(url, verify=False)";
+    assert.deepEqual(rulesOf(text, "tests/test_client.py"), []);
+    assert.deepEqual(rulesOf(text, "app/client.py"), ["tls-disabled"]);
+    assert.deepEqual(rulesOf(text, "docs/SETUP.md"), ["tls-disabled"]);
+    const args = `command: redis-server --requirepass ${SAMPLES.argValue}`;
+    assert.deepEqual(rulesOf(args, "README.md"), ["secret-in-process-args"]);
+  });
+
+  it("process arguments and disabled TLS are warnings, credentials are not", () => {
+    const severity = (id: string): string | undefined => RULES.find((rule) => rule.id === id)?.severity;
+    assert.equal(severity("secret-in-process-args"), "warning");
+    assert.equal(severity("tls-disabled"), "warning");
+    assert.equal(severity("github-pat"), "high");
   });
 });
 

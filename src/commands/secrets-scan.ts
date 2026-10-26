@@ -154,7 +154,7 @@ const humanOf = (ctx: Ctx, data: SecretsScanData): readonly string[] => [
 
 const resultOf = (ctx: Ctx, data: SecretsScanData): CommandResult<SecretsScanData> => {
   const human = humanOf(ctx, data);
-  const failing = data.summary.new + data.summary.expired;
+  const failing = data.findings.filter((item) => item.status !== "known" && item.severity !== "warning").length;
   if (failing === 0) return success(data, human);
   return failureFrom(
     ctx.t,

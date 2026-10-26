@@ -513,5 +513,10 @@
   "gate.size.grew": "declared {declared}, the diff makes it {effective}: {files, plural, one {# file} other {# files}}, {lines, plural, one {# line} other {# lines}}",
   "gate.size.sensitive": "sensitive path touched: {file}",
   "gate.review.missing": "no review of the current state: run a reviewer subagent on the diff, or the person writes `fm: approve {check} <reason>` in the chat",
-  "gate.review.done": "reviewed by {agent} at {at}"
+  "gate.review.done": "reviewed by {agent} at {at}",
+  "secrets.warn.write": "Finite Monkey warning (the write went through): {found}. A secret passed as a command-line argument shows in ps and docker inspect; disabled TLS verification lets anyone on the path read the traffic. Move the value to an environment variable or a secret file, and keep TLS checks on outside tests.",
+  "gate.secrets.warning": "warning: {rule} at {file}:{line}",
+  "doctor.secrets.remote_credential": "git remote {remotes} has a credential in its URL, stored in plain text in .git/config",
+  "doctor.secrets.fix_remote_credential": "run `git remote set-url {remote} <url without user:token@>`, use a credential helper or SSH, and rotate the token",
+  "secrets.session.remote_credential": "git remote {remotes} has a credential in its URL (plain text in .git/config). Ask the person to run `git remote set-url {remote} <url without user:token@>` and rotate the token; do not print the URL."
 }
