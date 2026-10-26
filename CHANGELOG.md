@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.14](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.13...v0.1.0-next.14) (2026-10-26)
+
+### Features
+
+* **plugin:** next channel as its own marketplace, and doctor flags both enabled ([#146](https://github.com/gabrielvieiraf/finitemonkey/issues/146)) ([0328318](https://github.com/gabrielvieiraf/finitemonkey/commit/03283183abefbe25e1cd3be9091f394292257ea0)), closes [#28](https://github.com/gabrielvieiraf/finitemonkey/issues/28)
+
 ## [0.1.0-next.13](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.12...v0.1.0-next.13) (2026-10-26)
 
 ### Features
