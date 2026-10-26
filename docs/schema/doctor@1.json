@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/doctor@1.json",
+  "title": "finitemonkey/doctor@1",
+  "description": "`data` of `finitemonkey doctor --json`. Generated from DoctorReport in src/doctor/run.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/doctor@1"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "fail"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "check",
+          "status",
+          "detail"
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "number"
+        },
+        "warn": {
+          "type": "number"
+        },
+        "fail": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "ok",
+        "warn",
+        "fail"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "checks",
+    "summary"
+  ]
+}
