@@ -68,7 +68,8 @@
             "githook_failed",
             "ci_gate_failed",
             "look_failed",
-            "look_unavailable"
+            "look_unavailable",
+            "critique_must_fix"
           ]
         },
         "message": {

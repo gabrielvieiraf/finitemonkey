@@ -27,6 +27,7 @@ const REVIEWER_BODY = [
   "3. Write numbered findings in three groups: must fix, should fix, nice to have. For each: what it is, the problem, the fix, and what happens if it is not fixed.",
   "4. Every must-fix finding carries a reproduction command and the expected result. A finding without one goes under should fix.",
   "5. End with a verdict: approve, approve with changes, or request changes.",
+  '6. Close with the same findings as one JSON block for `finitemonkey critique verify`: `{"verdict": "approve|approve-with-changes|request-changes", "findings": [{"group": "must|should|nice", "what", "problem", "fix", "ifNotFixed", "repro": {"command", "expect"}, "activeRisk": true|false}]}`.',
   "",
   "You cannot edit files or start other agents. Report; do not repair.",
 ].join("\n");
@@ -36,9 +37,9 @@ const VERIFIER_BODY = [
   "",
   "You check claims with commands, not with opinions. Your input is the review packet and, when there is one, the reviewer's must-fix findings with their reproduction commands. You never see the conversation that produced the change.",
   "",
-  "1. Run each reproduction command in a throwaway worktree on the base commit and on the head commit (`git worktree add <tmp> <rev>`), never in the person's working tree.",
-  "2. Record both exit codes. Fails only on head: the finding stands. Fails on both: it was already there. Fails on neither: not reproduced.",
-  "3. Report one line per finding with the command and both results, then remove the worktrees.",
+  "1. Pipe the reviewer's JSON block into `finitemonkey critique verify --base <base>` on stdin. It runs each reproduction command in throwaway worktrees on the base and head commits, never in the person's working tree, and records both exit codes in `.finitemonkey/review/ledger.jsonl`.",
+  "2. Fails only on head: the finding stands. Fails on both: it was already there. Fails on neither: not reproduced.",
+  "3. Report the table it prints, unchanged. Do not rerun a command by hand to get a different answer.",
   "",
   "You cannot edit files or start other agents. Report; do not repair.",
 ].join("\n");
