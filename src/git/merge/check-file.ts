@@ -84,7 +84,8 @@ const expectations = (file: FileCase, hunks: readonly SideHunk[], removal: Remov
     const right = countOf(theirs, line);
     const kept = countOf(base, line) - countOf(removal.union, line);
     const combined = isWeak(line) ? left + right : Math.max(left, right);
-    const side: Side | undefined = left > 0 ? "ours" : right > 0 ? "theirs" : undefined;
+    const side: Side | undefined =
+      left > 0 && right > 0 ? undefined : left > 0 ? "ours" : right > 0 ? "theirs" : undefined;
     return { line, expected: kept + combined, ceiling: kept + left + right, side };
   });
 };

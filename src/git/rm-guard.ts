@@ -6,7 +6,7 @@ import { block, type GitVerdict, PASS } from "./verdict.js";
 
 const RECURSIVE_SHORT = /^-[A-Za-z]*[rR][A-Za-z]*$/;
 const PS_RECURSE = /^-r(?:e(?:c(?:u(?:r(?:s(?:e)?)?)?)?)?)?$/i;
-const PS_PATH = /^-(?:path|literalpath|lp|pspath)$/i;
+const PS_VALUE_PARAMS = ["filter", "include", "exclude", "credential", "stream"] as const;
 const GLOB = /[*?[]/;
 
 export interface RmContext {
@@ -24,18 +24,17 @@ const posixTargets = (command: ShellCommand): readonly string[] | undefined => {
   return dashdash < 0 ? operands : [...operands, ...command.args.slice(dashdash + 1)];
 };
 
+const takesValue = (previous: string): boolean => {
+  const name = previous.startsWith("-") ? previous.slice(1).toLowerCase() : "";
+  return name.length >= 2 && PS_VALUE_PARAMS.some((param) => param.startsWith(name));
+};
+
 const powershellTargets = (command: ShellCommand): readonly string[] | undefined => {
   const recursive = command.args.some((arg) => PS_RECURSE.test(arg) || /^\/s$/i.test(arg));
   if (!recursive) return undefined;
   return command.args.flatMap((arg, index) => {
     if (arg.startsWith("-") || /^\/[a-z]$/i.test(arg)) return [];
-    const previous = command.args[index - 1] ?? "";
-    return previous.startsWith("-") &&
-      !PS_PATH.test(previous) &&
-      !PS_RECURSE.test(previous) &&
-      !/^-force$/i.test(previous)
-      ? []
-      : arg.split(",");
+    return takesValue(command.args[index - 1] ?? "") ? [] : arg.split(",");
   });
 };
 

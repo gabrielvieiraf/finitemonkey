@@ -1920,7 +1920,7 @@ var expectations = (file, hunks, removal) => {
     const right = countOf(theirs, line2);
     const kept = countOf(base, line2) - countOf(removal.union, line2);
     const combined = isWeak(line2) ? left + right : Math.max(left, right);
-    const side = left > 0 ? "ours" : right > 0 ? "theirs" : void 0;
+    const side = left > 0 && right > 0 ? void 0 : left > 0 ? "ours" : right > 0 ? "theirs" : void 0;
     return { line: line2, expected: kept + combined, ceiling: kept + left + right, side };
   });
 };
@@ -4358,7 +4358,7 @@ var guardGitCommand = (context, command, depth = 0) => {
 // src/git/rm-guard.ts
 var RECURSIVE_SHORT = /^-[A-Za-z]*[rR][A-Za-z]*$/;
 var PS_RECURSE = /^-r(?:e(?:c(?:u(?:r(?:s(?:e)?)?)?)?)?)?$/i;
-var PS_PATH = /^-(?:path|literalpath|lp|pspath)$/i;
+var PS_VALUE_PARAMS = ["filter", "include", "exclude", "credential", "stream"];
 var GLOB2 = /[*?[]/;
 var posixTargets = (command) => {
   const dashdash = command.args.indexOf("--");
@@ -4368,13 +4368,16 @@ var posixTargets = (command) => {
   const operands2 = options.filter((arg) => !arg.startsWith("-"));
   return dashdash < 0 ? operands2 : [...operands2, ...command.args.slice(dashdash + 1)];
 };
+var takesValue = (previous) => {
+  const name = previous.startsWith("-") ? previous.slice(1).toLowerCase() : "";
+  return name.length >= 2 && PS_VALUE_PARAMS.some((param) => param.startsWith(name));
+};
 var powershellTargets = (command) => {
   const recursive = command.args.some((arg) => PS_RECURSE.test(arg) || /^\/s$/i.test(arg));
   if (!recursive) return void 0;
   return command.args.flatMap((arg, index) => {
     if (arg.startsWith("-") || /^\/[a-z]$/i.test(arg)) return [];
-    const previous = command.args[index - 1] ?? "";
-    return previous.startsWith("-") && !PS_PATH.test(previous) && !PS_RECURSE.test(previous) && !/^-force$/i.test(previous) ? [] : arg.split(",");
+    return takesValue(command.args[index - 1] ?? "") ? [] : arg.split(",");
   });
 };
 var removalTargets = (command) => {
