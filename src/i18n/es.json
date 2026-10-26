@@ -643,5 +643,8 @@
   "reason.label.blocked": "bloqueado",
   "reason.label.requires": "exige",
   "reason.label.not": "no cuenta",
-  "reason.human.generic": "Bloqueé una llamada de herramienta; el motivo fue a Claude."
+  "reason.human.generic": "Bloqueé una llamada de herramienta; el motivo fue a Claude.",
+  "review.command.packet": "Muestra el paquete de revisión para los agentes revisor y verificador: diff, contrato de la tarea, registro de evidencias y REVIEW.md, nunca la conversación",
+  "review.guard.read_only": "bloqueado: el agente {agent} es de solo lectura y no puede usar {tool}. Informa el hallazgo; la sesión principal hace el cambio.",
+  "review.error.no_base": "la base {detail} no es un commit aquí"
 }

@@ -13,6 +13,7 @@ import { lookCommand } from "./look.js";
 import { offCommand, onCommand } from "./pause.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { proseCheckCommand } from "./prose-check.js";
+import { reviewPacketCommand } from "./review.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
@@ -51,6 +52,7 @@ export const REGISTRY = [
   pushCheckCommand,
   ciGateCommand,
   lookCommand,
+  reviewPacketCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -1,10 +1,12 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { configAt, parseConfigYaml } from "../git/project-config.js";
 import { gitHookItems } from "../githooks/install.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
 import { POLICY_FILE } from "../policy/policy.js";
+import { agentMarkdown, VERIFIER, withPlaywright } from "../review/agents.js";
 import { withAgentsBlock, withAgentsImport } from "./agents-block.js";
 import { ASK_RULES } from "./ask-floor.js";
 import { type ClaudeInfo, detectClaude } from "./claude-version.js";
@@ -29,6 +31,7 @@ import {
   AGENTS_FILE,
   CLAUDE_FILE,
   CONFIG_FILE,
+  GENERATED_MARKER,
   GITIGNORE_FILE,
   LOCK_FILE,
   type Preset,
@@ -223,11 +226,26 @@ const generatedItem = (project: Project, file: Generated, previous: LockEntry | 
   return { ...base, action: actionFor(before, template, "update"), after: template };
 };
 
-const generatedFiles = (input: PlanInput, runner: Runner, vendor: boolean): Parsed<readonly Generated[], PlanError> => {
+export const PLAYWRIGHT_VERIFIER = ".claude/agents/verifier.md";
+
+const playwrightVerifier = (project: Project): readonly Generated[] => {
+  const wanted = configAt(parseConfigYaml(project.read(CONFIG_FILE) ?? ""), "review", "playwright") === "true";
+  if (!wanted) return [];
+  const template = agentMarkdown(withPlaywright(VERIFIER), GENERATED_MARKER);
+  return [{ path: PLAYWRIGHT_VERIFIER, template, isOurs: (text: string) => text.includes(GENERATED_MARKER) }];
+};
+
+const generatedFiles = (
+  project: Project,
+  input: PlanInput,
+  runner: Runner,
+  vendor: boolean,
+): Parsed<readonly Generated[], PlanError> => {
   const own = [
     { path: CONFIG_FILE, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
     { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill },
     { path: POLICY_FILE, template: policyTemplate(input.lang), isOurs: hasMarker },
+    ...playwrightVerifier(project),
   ];
   if (!vendor) return accept(own);
   if (input.bundle === undefined) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
@@ -247,7 +265,7 @@ export const buildPlan = (
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
   const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== undefined;
-  const files = generatedFiles(input, detection.runner, vendor);
+  const files = generatedFiles(project, input, detection.runner, vendor);
   if (!files.ok) return files;
   const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
   return accept({
