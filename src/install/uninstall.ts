@@ -64,7 +64,9 @@ const removalFor = (project: Project, entry: LockEntry, options: RemovalOptions)
 export const planRemoval = (project: Project, lock: LockFile, options: RemovalOptions): RemovalPlan => ({
   items: lock.entries.map((entry) => removalFor(project, entry, options)),
   purge: options.purge,
-  removeDirs: lock.createdDirs.filter((dir) => dir !== STATE_DIR),
+  removeDirs: lock.createdDirs
+    .filter((dir) => dir !== STATE_DIR)
+    .toSorted((a, b) => b.split("/").length - a.split("/").length),
 });
 
 const applyItem = (project: Project, item: RemovalItem): Parsed<undefined, ApplyFailure> => {

@@ -10,6 +10,7 @@ import {
   LOCK_SCHEMA,
   LOCKS_DIR,
   STATE_DIR,
+  VERIFY_SKILL,
 } from "./layout.js";
 import { type LockEntry, type LockFile, renderLock } from "./lock-file.js";
 import { CHANGING, type Plan, type PlanItem } from "./plan.js";
@@ -82,7 +83,7 @@ const nextLock = (
   preset: plan.preset,
   installedAt: plan.previous?.installedAt ?? now,
   updatedAt: now,
-  createdDirs: plan.previous?.createdDirs ?? createdDirs,
+  createdDirs: [...new Set([...(plan.previous?.createdDirs ?? []), ...createdDirs])],
   entries: plan.items.filter((item) => item.action !== "skip-foreign").map((item) => entryOf(plan, item, backupDir)),
 });
 
@@ -102,7 +103,9 @@ const writeAll = (project: Project, items: readonly PlanItem[]): Parsed<undefine
   return accept(undefined);
 };
 
-const createdBy = (project: Project): readonly string[] => [".claude", STATE_DIR].filter((dir) => !project.exists(dir));
+const OWN_DIRS = [dirname(dirname(VERIFY_SKILL)), dirname(VERIFY_SKILL), ".claude", STATE_DIR] as const;
+
+const createdBy = (project: Project): readonly string[] => OWN_DIRS.filter((dir) => !project.exists(dir));
 
 const commit = (
   project: Project,

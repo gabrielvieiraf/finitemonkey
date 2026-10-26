@@ -20,10 +20,19 @@ import { withBlock } from "./gitignore-block.js";
 import { hashText } from "./hash.js";
 import { hookHandler, type HookHandlerJson, INSTALLED_HOOKS, type Runner } from "./hook-entries.js";
 import { DEFAULT_STYLE, parseSettings, renderJson, styleOf } from "./json-text.js";
-import { CONFIG_FILE, GITIGNORE_FILE, LOCK_FILE, type Preset, SETTINGS_FILE, VENDOR_BIN } from "./layout.js";
+import {
+  CONFIG_FILE,
+  GITIGNORE_FILE,
+  LOCK_FILE,
+  type Preset,
+  SETTINGS_FILE,
+  VENDOR_BIN,
+  VERIFY_SKILL,
+} from "./layout.js";
 import { type EntryKind, type LockEntry, type LockFile, parseLock } from "./lock-file.js";
 import type { Project } from "./project.js";
 import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
+import { isOwnSkill, verifySkillTemplate } from "./skill-template.js";
 import { vendoredFiles } from "./vendor.js";
 
 export const ACTIONS = ["create", "merge", "update", "unchanged", "keep-edited", "skip-foreign"] as const;
@@ -173,11 +182,14 @@ const generatedItem = (project: Project, file: Generated, previous: LockEntry | 
   return { ...base, action: actionFor(before, template, "update"), after: template };
 };
 
-const generatedFiles = (input: PlanInput, vendor: boolean): Parsed<readonly Generated[], PlanError> => {
-  const config = { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
-  if (!vendor) return accept([config]);
+const generatedFiles = (input: PlanInput, runner: Runner, vendor: boolean): Parsed<readonly Generated[], PlanError> => {
+  const own = [
+    { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker },
+    { path: VERIFY_SKILL, template: verifySkillTemplate(runner), isOurs: isOwnSkill },
+  ];
+  if (!vendor) return accept(own);
   if (input.bundle === undefined) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
-  return accept([config, ...vendoredFiles(input.bundle, input.version)]);
+  return accept([...own, ...vendoredFiles(input.bundle, input.version)]);
 };
 
 const entryFor = (lock: LockFile | undefined, path: string): LockEntry | undefined =>
@@ -192,7 +204,7 @@ export const buildPlan = (
   const settings = settingsItem(project, detection, input, entryFor(previous, SETTINGS_FILE));
   if (!settings.ok) return settings;
   const vendor = detection.runner.kind === "vendored" || entryFor(previous, VENDOR_BIN) !== undefined;
-  const files = generatedFiles(input, vendor);
+  const files = generatedFiles(input, detection.runner, vendor);
   if (!files.ok) return files;
   const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
   return accept({

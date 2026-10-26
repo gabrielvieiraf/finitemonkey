@@ -6,6 +6,7 @@ export const LOCK_FILE = ".finitemonkey/lock.json";
 export const BACKUPS_DIR = ".finitemonkey/backups";
 export const LOCKS_DIR = ".finitemonkey/locks";
 export const INSTALL_LOCK = ".finitemonkey/locks/install.lock";
+export const VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
 export const LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
 export const VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
 export const VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
