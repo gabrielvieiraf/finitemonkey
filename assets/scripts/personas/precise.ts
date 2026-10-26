@@ -25,7 +25,7 @@ export const precise: Persona = {
     ],
     prompt: "$ finitemonkey gate",
     verdict: "✓ 7/7 with proof",
-    gagFrames: 20,
+    gagFrames: 18,
     celebrateFrames: 16,
     keys: typingKeys,
     gagKeys: typingKeys,

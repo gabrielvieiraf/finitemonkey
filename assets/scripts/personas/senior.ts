@@ -31,7 +31,7 @@ export const senior: Persona = {
       { label: "front a", fail: "ready", pass: "merged", passesAtRun: 2 },
       { label: "front b", fail: "conflict", pass: "merged c5", passesAtRun: 3 },
       { label: "front c", fail: "dirty wt", pass: "saved, kept", passesAtRun: 2 },
-      { label: "lines", fail: "1 } lost", pass: "0 lost", passesAtRun: 4 },
+      { label: "lines", fail: "1 lost", pass: "0 lost", passesAtRun: 4 },
       { label: "report", fail: "1 mismatch", pass: "matches", passesAtRun: 5 },
     ],
     prompt: "$ fm merge verify",

@@ -20,7 +20,7 @@ for (const target of [main, ...personaTargets]) {
   else if (sha(readFileSync(target.output)) !== digest) problems.push(`${id}: ${target.output} is stale, run npm run gifs`);
   if (target !== main && first.gif.length >= maxBytes)
     problems.push(`${id}: ${String(first.gif.length)} bytes, limit ${String(maxBytes)}`);
-  if (target !== main && first.frames > maxFrames)
+  if (target !== main && first.frames >= maxFrames)
     problems.push(`${id}: ${String(first.frames)} frames, limit ${String(maxFrames)}`);
   process.stdout.write(`${id}: ${String(first.frames)} frames, ${String(first.gif.length)} bytes, sha256 ${digest}\n`);
 }
