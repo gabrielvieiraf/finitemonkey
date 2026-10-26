@@ -58,12 +58,15 @@ const removalOf = (ours: readonly Hunk[], theirs: readonly Hunk[], paired: reado
   return { union: tally(union.values()), honored: tally(honored), conflicted };
 };
 
-const missingAdditions = (hunks: readonly SideHunk[], file: FileCase, elsewhere: Elsewhere): Finding[] =>
-  hunks.flatMap(({ side, hunk, added }): Finding[] => {
-    const strong = added.find((line) => !isWeak(line));
-    if (strong === undefined || containsSequence(file.result, added) || elsewhere(added)) return [];
-    return [{ kind: "missing-addition", file: file.path, side, line: hunk.newStart, text: strong, weak: false }];
+const missingAdditions = (hunks: readonly SideHunk[], file: FileCase, elsewhere: Elsewhere): Finding[] => {
+  const present = new Set(file.result);
+  return hunks.flatMap(({ side, hunk, added }): Finding[] => {
+    const text = added.find((line) => !isWeak(line) && !present.has(line));
+    if (text === undefined || containsSequence(file.result, added) || elsewhere(added)) return [];
+    const offset = Math.max(0, hunk.added.findIndex((line) => normalizeLine(line) === text));
+    return [{ kind: "missing-addition", file: file.path, side, line: hunk.newStart + offset, text, weak: false }];
   });
+};
 
 interface Expectation {
   readonly line: string;

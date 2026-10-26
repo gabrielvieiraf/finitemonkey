@@ -4801,7 +4801,7 @@ var loadProjectConfig = (runtime, root) => {
 import { join as join13 } from "node:path";
 
 // src/git/merge/lines.ts
-var normalizeLine = (line2) => line2.replace(/\r$/, "").trimEnd().trim();
+var normalizeLine = (line2) => line2.replace(/\r$/, "").trim().replace(/\s*,$/, "");
 var WEAK = /^[\p{P}\p{S}\s]+$/u;
 var isWeak = (line2) => WEAK.test(line2);
 var meaningful = (lines3) => lines3.map(normalizeLine).filter((line2) => line2 !== "");
@@ -5675,11 +5675,15 @@ var removalOf = (ours, theirs, paired) => {
   }
   return { union: tally(union2.values()), honored: tally(honored), conflicted };
 };
-var missingAdditions = (hunks, file, elsewhere) => hunks.flatMap(({ side, hunk, added }) => {
-  const strong = added.find((line2) => !isWeak(line2));
-  if (strong === void 0 || containsSequence(file.result, added) || elsewhere(added)) return [];
-  return [{ kind: "missing-addition", file: file.path, side, line: hunk.newStart, text: strong, weak: false }];
-});
+var missingAdditions = (hunks, file, elsewhere) => {
+  const present = new Set(file.result);
+  return hunks.flatMap(({ side, hunk, added }) => {
+    const text6 = added.find((line2) => !isWeak(line2) && !present.has(line2));
+    if (text6 === void 0 || containsSequence(file.result, added) || elsewhere(added)) return [];
+    const offset = Math.max(0, hunk.added.findIndex((line2) => normalizeLine(line2) === text6));
+    return [{ kind: "missing-addition", file: file.path, side, line: hunk.newStart + offset, text: text6, weak: false }];
+  });
+};
 var expectations = (file, hunks, removal) => {
   const base = countLines(file.base);
   const addsOf = (side) => tally(hunks.filter((item) => item.side === side).flatMap((item) => item.added));

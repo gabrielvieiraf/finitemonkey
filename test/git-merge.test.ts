@@ -115,7 +115,7 @@ describe("merge verify (nothing lost)", () => {
     });
     assert.equal(report.exit, 1);
     assert.ok(
-      report.findings.some((finding) => finding.file === FILE && finding.text.trim() === "},"),
+      report.findings.some((finding) => finding.file === FILE && finding.weak && finding.text === "}"),
       JSON.stringify(report.findings),
     );
   });
@@ -129,6 +129,32 @@ describe("merge verify (nothing lost)", () => {
     });
     assert.equal(report.exit, 1);
     assert.ok(report.findings.some((finding) => finding.side === "theirs" && finding.text.includes("/plans")));
+  });
+
+  it("passes when both sides append after a last entry that had no trailing comma", () => {
+    const base = "export const LIMITS = {\n  a: 1\n};\n";
+    const report = mergeWith({
+      base,
+      ours: "export const LIMITS = {\n  a: 1,\n  b: 2\n};\n",
+      theirs: "export const LIMITS = {\n  a: 1,\n  c: 3\n};\n",
+      result: "export const LIMITS = {\n  a: 1,\n  b: 2,\n  c: 3\n};\n",
+    });
+    assert.equal(report.exit, 0, JSON.stringify(report.findings));
+  });
+
+  it("reports the first lost line of a partially kept hunk at its own line number", () => {
+    const report = mergeWith({
+      base: "a\n",
+      ours: "a\n\nfoo\nbar\n",
+      theirs: "a\nbaz\n",
+      result: "a\n\nfoo\nbaz\n",
+    });
+    assert.equal(report.exit, 1);
+    const lost = report.findings.find((finding) => finding.kind === "missing-addition");
+    assert.ok(lost, JSON.stringify(report.findings));
+    assert.equal(lost.text, "bar");
+    assert.equal(lost.side, "ours");
+    assert.equal(lost.line, 4);
   });
 
   it("fails when a closing brace between new functions of both sides is lost (case 7)", () => {

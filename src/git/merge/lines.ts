@@ -1,4 +1,8 @@
-export const normalizeLine = (line: string): string => line.replace(/\r$/, "").trimEnd().trim();
+export const normalizeLine = (line: string): string =>
+  line
+    .replace(/\r$/, "")
+    .trim()
+    .replace(/\s*,$/, "");
 
 const WEAK = /^[\p{P}\p{S}\s]+$/u;
 
