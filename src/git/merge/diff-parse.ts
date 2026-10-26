@@ -38,13 +38,13 @@ const finish = (draft: Draft | undefined, out: FileDiff[]): void => {
 const headerLine = (draft: Draft, line: string): void => {
   if (line.startsWith("new file mode")) draft.status = "added";
   else if (line.startsWith("deleted file mode")) draft.status = "deleted";
-  else if (line.startsWith("rename from ")) {
+  else if (line.startsWith(`rename from `)) {
     draft.status = "renamed";
-    draft.oldPath = line.slice("rename from ".length);
+    draft.oldPath = line.slice(`rename from `.length);
   } else if (line.startsWith("rename to ")) draft.newPath = line.slice("rename to ".length);
-  else if (line.startsWith("copy from ")) {
+  else if (line.startsWith(`copy from `)) {
     draft.status = "copied";
-    draft.oldPath = line.slice("copy from ".length);
+    draft.oldPath = line.slice(`copy from `.length);
   } else if (line.startsWith("copy to ")) draft.newPath = line.slice("copy to ".length);
   else if (line.startsWith("--- ")) draft.oldPath = pathAfter(line, "--- ");
   else if (line.startsWith("+++ ")) draft.newPath = pathAfter(line, "+++ ");

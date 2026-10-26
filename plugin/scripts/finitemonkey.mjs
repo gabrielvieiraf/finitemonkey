@@ -760,13 +760,13 @@ var finish = (draft, out) => {
 var headerLine = (draft, line2) => {
   if (line2.startsWith("new file mode")) draft.status = "added";
   else if (line2.startsWith("deleted file mode")) draft.status = "deleted";
-  else if (line2.startsWith("rename from ")) {
+  else if (line2.startsWith(`rename from `)) {
     draft.status = "renamed";
-    draft.oldPath = line2.slice("rename from ".length);
+    draft.oldPath = line2.slice(`rename from `.length);
   } else if (line2.startsWith("rename to ")) draft.newPath = line2.slice("rename to ".length);
-  else if (line2.startsWith("copy from ")) {
+  else if (line2.startsWith(`copy from `)) {
     draft.status = "copied";
-    draft.oldPath = line2.slice("copy from ".length);
+    draft.oldPath = line2.slice(`copy from `.length);
   } else if (line2.startsWith("copy to ")) draft.newPath = line2.slice("copy to ".length);
   else if (line2.startsWith("--- ")) draft.oldPath = pathAfter(line2, "--- ");
   else if (line2.startsWith("+++ ")) draft.newPath = pathAfter(line2, "+++ ");
