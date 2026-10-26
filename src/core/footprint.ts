@@ -66,6 +66,7 @@ export const FOOTPRINT = [
       "refs/finitemonkey/backup/",
     ],
   },
+  { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
 ] as const satisfies readonly FootprintEntry[];
 

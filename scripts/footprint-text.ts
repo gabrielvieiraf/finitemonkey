@@ -65,6 +65,11 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "A baseline de achados aceitos e os incidentes de exposição. Os dois guardam impressões e máscaras, nunca o valor de um segredo.",
     es: "La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto.",
   },
+  reports: {
+    en: "Masked bug reports that `doctor --report` writes, only when asked.",
+    "pt-BR": "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido.",
+    es: "Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide.",
+  },
   "git-safety": {
     en: "Snapshots before destructive git commands, the journal that `undo` reads and dropped-line decisions from merges.",
     "pt-BR":
