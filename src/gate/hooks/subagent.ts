@@ -24,6 +24,7 @@ const KNOWN_KINDS = new Set([
   "worktree",
   "merge",
   "review",
+  "callers",
 ]);
 
 const requirementText = (t: Translate, check: AcceptanceCheck): string => {

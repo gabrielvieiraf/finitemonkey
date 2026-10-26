@@ -518,5 +518,10 @@
   "gate.secrets.warning": "warning: {rule} at {file}:{line}",
   "doctor.secrets.remote_credential": "git remote {remotes} has a credential in its URL, stored in plain text in .git/config",
   "doctor.secrets.fix_remote_credential": "run `git remote set-url {remote} <url without user:token@>`, use a credential helper or SSH, and rotate the token",
-  "secrets.session.remote_credential": "git remote {remotes} has a credential in its URL (plain text in .git/config). Ask the person to run `git remote set-url {remote} <url without user:token@>` and rotate the token; do not print the URL."
+  "secrets.session.remote_credential": "git remote {remotes} has a credential in its URL (plain text in .git/config). Ask the person to run `git remote set-url {remote} <url without user:token@>` and rotate the token; do not print the URL.",
+  "gate.require.callers": "no removed or renamed symbol is still called",
+  "gate.callers.none": "{count, plural, one {# removed definition} other {# removed definitions}}, no caller left",
+  "gate.callers.open": "{name} is gone but still called in {count, plural, one {# place} other {# places}}",
+  "gate.callers.at": "{name} called at {file}:{line}",
+  "gate.callers.warning": "warning only: {percent}% of callers findings were released with callers_ignore ({released} of {total}), above the 5% ceiling"
 }

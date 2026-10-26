@@ -519,7 +519,12 @@
     "gate.secrets.warning": "machine",
     "doctor.secrets.remote_credential": "machine",
     "doctor.secrets.fix_remote_credential": "machine",
-    "secrets.session.remote_credential": "machine"
+    "secrets.session.remote_credential": "machine",
+    "gate.require.callers": "machine",
+    "gate.callers.none": "machine",
+    "gate.callers.open": "machine",
+    "gate.callers.at": "machine",
+    "gate.callers.warning": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1041,6 +1046,11 @@
     "gate.secrets.warning": "machine",
     "doctor.secrets.remote_credential": "machine",
     "doctor.secrets.fix_remote_credential": "machine",
-    "secrets.session.remote_credential": "machine"
+    "secrets.session.remote_credential": "machine",
+    "gate.require.callers": "machine",
+    "gate.callers.none": "machine",
+    "gate.callers.open": "machine",
+    "gate.callers.at": "machine",
+    "gate.callers.warning": "machine"
   }
 }

@@ -136,6 +136,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
   const contractScope = scope(value["scope"], issues);
   const checks = acceptance(value["acceptance"], issues);
   const decisionsNeeded = strings(value["decisions_needed"], "decisions_needed", issues);
+  const callersIgnore = strings(value["callers_ignore"], "callers_ignore", issues);
   if (issues.length > 0 || id === undefined || goal === undefined || size === undefined) return reject(issues);
   return accept({
     id,
@@ -145,6 +146,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
     scope: contractScope,
     acceptance: checks,
     decisionsNeeded,
+    ...(callersIgnore.length === 0 ? {} : { callersIgnore }),
     implicit,
   });
 };

@@ -58,6 +58,7 @@ export const draftChecks = (
     { id: "prose", kind: "prose" },
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },
+    { id: "callers", kind: "callers" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
     ...(draft.git.length > 0 ? [{ id: "git", kind: "git" as const, require: draft.git }] : []),
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
