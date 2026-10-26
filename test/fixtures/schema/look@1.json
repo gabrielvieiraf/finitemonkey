@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/look@1.json",
+  "title": "finitemonkey/look@1",
+  "description": "`data` of `finitemonkey look --json`. Generated from LookData in src/commands/look.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/look@1"
+    },
+    "treeHash": {
+      "type": "string"
+    },
+    "failures": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "number"
+    },
+    "captures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contactSheet": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string",
+            "enum": [
+              "look/overflow",
+              "look/console-error",
+              "look/request-failed",
+              "look/i18n-key",
+              "look/broken-image",
+              "look/touch-target"
+            ]
+          },
+          "route": {
+            "type": "string"
+          },
+          "viewport": {
+            "type": "number"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "blocking": {
+            "type": "boolean"
+          }
+        },
+        "required": ["rule", "route", "viewport", "detail", "blocking"]
+      }
+    }
+  },
+  "required": ["schema", "treeHash", "failures", "notes", "captures", "contactSheet", "summary", "findings"]
+}

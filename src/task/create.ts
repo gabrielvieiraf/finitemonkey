@@ -4,6 +4,7 @@ import { toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { stringifyYaml } from "../core/yaml/write.js";
+import { LOOK_CONFIG } from "../look/config.js";
 import { detectChecks } from "./implicit.js";
 import { contractHash } from "./load.js";
 import type { FmPaths } from "./paths.js";
@@ -60,6 +61,9 @@ export const draftChecks = (
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
+    ...(runtime.stat(toAbsolutePath(join(paths.root, LOOK_CONFIG))) === undefined
+      ? []
+      : [{ id: "look", kind: "look" as const }]),
     ...(draft.git.length > 0 ? [{ id: "git", kind: "git" as const, require: draft.git }] : []),
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index): AcceptanceCheck => ({

@@ -572,5 +572,21 @@
   "githooks.pass": "ok {check}",
   "githooks.fail": "FALLÓ {check}: {detail}. Arreglo: {fix}",
   "githooks.error.failed": "{count, plural, one {# revisión falló} other {# revisiones fallaron}}",
-  "githooks.error.no_base": "la base {detail} no existe aquí; tráela antes (actions/checkout necesita fetch-depth: 0)"
+  "githooks.error.no_base": "la base {detail} no existe aquí; tráela antes (actions/checkout necesita fetch-depth: 0)",
+  "command.look.summary": "Captura las pantallas de .finitemonkey/look.yml a 1440 y 390 px y las mide",
+  "look.done": "{count, plural, one {# captura} other {# capturas}}, {failures, plural, one {# fallo} other {# fallos}}. Abre cada captura con Read.",
+  "look.recorded": "{captures} capturas, {failures} fallos",
+  "look.error.not_a_repo": "look se ejecuta dentro de un repositorio git",
+  "look.error.not_configured": ".finitemonkey/look.yml no existe o no tiene port",
+  "look.error.playwright_missing": "Playwright no está instalado en este proyecto",
+  "look.error.browser_missing": "no se pudo abrir ningún Chromium, Chrome o Edge",
+  "look.error.app_failed": "la app no arrancó: {detail}",
+  "gate.require.look": "pantallas cambiadas capturadas sin fallos y cada captura abierta después de la última edición",
+  "gate.look.not_run": "ninguna captura del árbol actual: ejecuta `finitemonkey look`",
+  "gate.look.no_captures": "la última ejecución de look no produjo capturas",
+  "gate.look.finding": "{rule} en {route} a {viewport}px: {detail}",
+  "gate.look.allow_ignored": "excepción ignorada, su decisión no está registrada: {entry}",
+  "gate.look.unopened": "{count, plural, one {# captura sin abrir} other {# capturas sin abrir}} después de la última edición de un archivo de pantalla",
+  "gate.look.open": "abre con Read: {file}",
+  "gate.look.ok": "{count, plural, one {# captura} other {# capturas}}, ningún fallo, todas abiertas"
 }

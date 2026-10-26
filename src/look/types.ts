@@ -1,0 +1,49 @@
+export const LOOK_RULES = [
+  "look/overflow",
+  "look/console-error",
+  "look/request-failed",
+  "look/i18n-key",
+  "look/broken-image",
+  "look/touch-target",
+] as const;
+
+export type LookRule = (typeof LOOK_RULES)[number];
+
+export const BLOCKING_RULES: readonly LookRule[] = [
+  "look/overflow",
+  "look/console-error",
+  "look/request-failed",
+  "look/i18n-key",
+  "look/broken-image",
+];
+
+export const VIEWPORTS = [1440, 390] as const;
+
+export interface LookFinding {
+  readonly rule: LookRule;
+  readonly route: string;
+  readonly viewport: number;
+  readonly detail: string;
+  readonly blocking: boolean;
+  readonly allowedBy?: string;
+}
+
+export interface LookCapture {
+  readonly route: string;
+  readonly viewport: number;
+  readonly path: string;
+}
+
+export interface LookSummary {
+  readonly schema: "finitemonkey/look@1";
+  readonly treeHash: string;
+  readonly at: string;
+  readonly failures: number;
+  readonly notes: number;
+  readonly captures: readonly LookCapture[];
+  readonly contactSheet: string | null;
+  readonly findings: readonly LookFinding[];
+  readonly ignoredAllows: readonly string[];
+}
+
+export const LOOK_SCHEMA = "finitemonkey/look@1";

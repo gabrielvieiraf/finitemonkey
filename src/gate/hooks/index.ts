@@ -3,6 +3,7 @@ import { selfGuard } from "../../guards/self/hook.js";
 import { testsGuard } from "../../guards/tests/hook.js";
 import type { HookHandlers } from "../../hooks/handlers.js";
 import { pausePrompt, unlessPaused } from "../../policy/pause-hooks.js";
+import { lookReadTracker } from "../../look/reads.js";
 import { configChange } from "./config.js";
 import { promptRelease } from "./prompt.js";
 import { preCompact, sessionStart } from "./session.js";
@@ -18,4 +19,5 @@ export const PORTAO_HANDLERS: HookHandlers = {
   PreCompact: [preCompact],
   SessionStart: [sessionStart],
   ConfigChange: [configChange],
+  PostToolUse: [lookReadTracker],
 };

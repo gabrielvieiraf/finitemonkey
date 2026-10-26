@@ -88,6 +88,7 @@
     "eslint": "^10.13.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "husky": "^9.1.7",
+    "playwright-core": "^1.64.1",
     "prettier": "^3.9.10",
     "semantic-release": "^25.0.9",
     "tsx": "^4.23.15",

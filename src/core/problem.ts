@@ -49,6 +49,8 @@ export const ERROR_CODES = [
   "app_check_failed",
   "githook_failed",
   "ci_gate_failed",
+  "look_failed",
+  "look_unavailable",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

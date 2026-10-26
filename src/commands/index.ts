@@ -11,6 +11,7 @@ import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
 import { offCommand, onCommand } from "./pause.js";
 import { policyFalsePositiveCommand } from "./policy.js";
+import { lookCommand } from "./look.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
@@ -49,6 +50,7 @@ export const REGISTRY = [
   commitMsgCommand,
   pushCheckCommand,
   ciGateCommand,
+  lookCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
