@@ -1,3 +1,5 @@
+import { isRecord } from "../core/parsed.js";
+import { NEXT_PLUGIN_ID, STABLE_PLUGIN_ID } from "../install/plugin-hooks.js";
 import { enabledPlugins, isOn, readSettings, type ScopedSettings, scopesWith, settingsEnv } from "./settings.js";
 import { type Check, type CheckFinding, type DoctorEnv, finding } from "./types.js";
 
@@ -114,6 +116,30 @@ const cleanupPeriod = (env: DoctorEnv, all: readonly ScopedSettings[]): readonly
   ];
 };
 
+const PRECEDENCE = ["user", "project", "local", "managed"] as const;
+
+const pluginOn = (all: readonly ScopedSettings[], id: string): boolean => {
+  const ordered = PRECEDENCE.flatMap((scope) => all.filter((item) => item.scope === scope));
+  const values = ordered
+    .map(({ settings }) => settings["enabledPlugins"])
+    .map((plugins) => (isRecord(plugins) ? plugins[id] : undefined))
+    .filter((value): value is boolean => typeof value === "boolean");
+  return values.at(-1) === true;
+};
+
+const pluginChannels = (all: readonly ScopedSettings[]): readonly CheckFinding[] =>
+  pluginOn(all, STABLE_PLUGIN_ID) && pluginOn(all, NEXT_PLUGIN_ID)
+    ? [
+        finding(
+          "settings.plugin_channels",
+          "fail",
+          "doctor.settings.plugin_channels",
+          { stable: STABLE_PLUGIN_ID, next: NEXT_PLUGIN_ID },
+          "doctor.settings.fix_plugin_channels",
+        ),
+      ]
+    : [];
+
 export const checkClaudeSettings: Check = (env) => {
   const all = readSettings(env);
   const plugins = enabledPlugins(all);
@@ -123,6 +149,7 @@ export const checkClaudeSettings: Check = (env) => {
       all,
       plugins.some((id) => id.startsWith("finitemonkey@")),
     ),
+    ...pluginChannels(all),
     ...agentTeams(env, all),
     ...loopPlugins(plugins),
     ...cleanupPeriod(env, all),

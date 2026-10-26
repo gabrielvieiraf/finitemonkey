@@ -37,6 +37,7 @@
           "package.json",
           "package-lock.json",
           "CHANGELOG.md",
+          ".claude-plugin/marketplace.json",
           "plugin/.claude-plugin/plugin.json",
           "plugin/hooks/hooks.json",
           "plugin/skills/**/SKILL.md",

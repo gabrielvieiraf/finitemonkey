@@ -91,6 +91,8 @@
   "doctor.settings.fix_managed_hooks_only": "Peça ao administrador dos settings gerenciados para incluir os hooks do Finite Monkey lá, ou para desligar allowManagedHooksOnly",
   "doctor.settings.plugin_only": "strictPluginOnlyCustomization está ligado ({scopes}) e o plugin finitemonkey não está ativo; os hooks do projeto não carregam",
   "doctor.settings.fix_plugin_only": "Instale o plugin: finitemonkey init --marketplace --yes, depois /plugin install finitemonkey@finitemonkey no Claude Code",
+  "doctor.settings.plugin_channels": "{stable} e {next} estão ativos ao mesmo tempo. Os dois têm o mesmo nome de plugin, então o Claude Code fica com só um conjunto de hooks",
+  "doctor.settings.fix_plugin_channels": "Para ficar no estável rode claude plugin disable {next}; para testar o next rode claude plugin disable {stable}",
   "doctor.settings.agent_teams": "{name} está ligado; os colegas de equipe rodam em sessões próprias, e o Finite Monkey não confere o trabalho deles antes de dizerem que terminaram",
   "doctor.settings.fix_agent_teams": "Rode `finitemonkey gate` antes de aceitar o resultado de um colega, ou remova a variável",
   "doctor.settings.loop_plugins": "{names} ativo: ele manda o agente de volta ao trabalho no Stop, e o laço dele não tem guarda própria",

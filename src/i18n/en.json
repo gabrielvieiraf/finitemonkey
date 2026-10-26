@@ -91,6 +91,8 @@
   "doctor.settings.fix_managed_hooks_only": "Ask the administrator of the managed settings to add the Finite Monkey hooks there, or to turn allowManagedHooksOnly off",
   "doctor.settings.plugin_only": "strictPluginOnlyCustomization is on ({scopes}) and the finitemonkey plugin is not enabled; the project hooks do not load",
   "doctor.settings.fix_plugin_only": "Install the plugin: finitemonkey init --marketplace --yes, then /plugin install finitemonkey@finitemonkey in Claude Code",
+  "doctor.settings.plugin_channels": "Both {stable} and {next} are enabled. They share the plugin name, so Claude Code keeps only one set of hooks",
+  "doctor.settings.fix_plugin_channels": "To stay on stable run claude plugin disable {next}; to test next run claude plugin disable {stable}",
   "doctor.settings.agent_teams": "{name} is on; teammates run in their own sessions, and Finite Monkey does not check their work before they report done",
   "doctor.settings.fix_agent_teams": "Run `finitemonkey gate` before accepting a teammate's result, or unset the variable",
   "doctor.settings.loop_plugins": "{names} enabled: it sends the agent back to work at Stop, and its loop has no guard of its own",

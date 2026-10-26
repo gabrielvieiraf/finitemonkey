@@ -8,7 +8,15 @@ import { describe, it } from "node:test";
 import { isRecord } from "../src/core/parsed.js";
 import { deadlineFor } from "../src/hooks/events.js";
 import { INSTALLED_HOOKS } from "../src/install/hook-entries.js";
-import { MARKETPLACE_NAME, PLUGIN_BIN, PLUGIN_DIR, PLUGIN_NAME, pluginHooks } from "../src/install/plugin-hooks.js";
+import {
+  MARKETPLACE_NAME,
+  marketplaceFor,
+  NEXT_MARKETPLACE_NAME,
+  PLUGIN_BIN,
+  PLUGIN_DIR,
+  PLUGIN_NAME,
+  pluginHooks,
+} from "../src/install/plugin-hooks.js";
 import { field, parseBody, ROOT } from "./support.js";
 
 const read = (...parts: readonly string[]): string => readFileSync(join(ROOT, ...parts), "utf8");
@@ -57,7 +65,7 @@ describe("plugin manifest", () => {
   });
 
   it("the marketplace at the repo root lists the plugin from ./plugin without a second version", () => {
-    assert.equal(field(market, "name"), MARKETPLACE_NAME);
+    assert.equal(field(market, "name"), marketplaceFor(version));
     assert.equal(typeof field(market, "owner", "name"), "string");
     const plugins = field(market, "plugins");
     assert.ok(Array.isArray(plugins) && plugins.length === 1);
@@ -147,4 +155,27 @@ describe("plugin version stamping", () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  for (const [stamp, name] of [
+    ["4.5.6", MARKETPLACE_NAME],
+    ["4.6.0-next.3", NEXT_MARKETPLACE_NAME],
+  ] as const) {
+    it(`names the marketplace ${name} for version ${stamp}`, () => {
+      const dir = mkdtempSync(join(tmpdir(), "fm-channel-"));
+      try {
+        cpSync(join(ROOT, ".claude-plugin"), join(dir, ".claude-plugin"), { recursive: true });
+        cpSync(pluginRoot, join(dir, PLUGIN_DIR), { recursive: true });
+        writeFileSync(join(dir, "package.json"), JSON.stringify({ version: stamp }));
+        const result = spawnSync(process.execPath, [join(ROOT, "scripts", "plugin-sync.mjs"), dir], {
+          encoding: "utf8",
+        });
+        assert.equal(result.status, 0, result.stderr);
+        const market = parseBody(readFileSync(join(dir, ".claude-plugin", "marketplace.json"), "utf8"));
+        assert.equal(field(market, "name"), name);
+        assert.equal(marketplaceFor(stamp), name);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  }
 });

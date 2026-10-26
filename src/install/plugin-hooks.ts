@@ -4,6 +4,12 @@ import { PLUGIN_VIA } from "./plugin-yield.js";
 
 export const PLUGIN_NAME = "finitemonkey";
 export const MARKETPLACE_NAME = "finitemonkey";
+export const NEXT_MARKETPLACE_NAME = "finitemonkey-next";
+export const STABLE_PLUGIN_ID = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
+export const NEXT_PLUGIN_ID = `${PLUGIN_NAME}@${NEXT_MARKETPLACE_NAME}`;
+
+export const marketplaceFor = (version: string): string =>
+  /^\d+\.\d+\.\d+-next\./.test(version) ? NEXT_MARKETPLACE_NAME : MARKETPLACE_NAME;
 export const PLUGIN_DIR = "plugin";
 export const PLUGIN_BIN = "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs";
 
