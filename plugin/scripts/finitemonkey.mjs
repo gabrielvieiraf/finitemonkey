@@ -387,6 +387,212 @@ var nodeRuntime = () => ({
   systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale
 });
 
+// src/install/project.ts
+import { dirname as dirname3, join as join2 } from "node:path";
+var projectAt = (root, runtime) => {
+  const abs = (relative9) => toAbsolutePath(join2(root, ...relative9.split("/")));
+  return {
+    root,
+    runtime,
+    abs,
+    read: (relative9) => {
+      const text6 = runtime.readText(abs(relative9));
+      return text6.ok ? text6.value : void 0;
+    },
+    exists: (relative9) => runtime.stat(abs(relative9)) !== void 0,
+    isDir: (relative9) => runtime.stat(abs(relative9))?.kind === "dir"
+  };
+};
+var findGitRoot = (start, runtime) => {
+  let current = start;
+  for (; ; ) {
+    if (runtime.stat(toAbsolutePath(join2(current, ".git"))) !== void 0) return toAbsolutePath(current);
+    const parent = dirname3(current);
+    if (parent === current) return void 0;
+    current = parent;
+  }
+};
+
+// src/doctor/settings.ts
+import { join as join3 } from "node:path";
+
+// src/install/json-text.ts
+var DEFAULT_STYLE = { indent: "  ", finalNewline: true };
+var styleOf = (text6) => {
+  const indented = /\n([ \t]+)\S/.exec(text6);
+  return { indent: indented?.[1] ?? DEFAULT_STYLE.indent, finalNewline: text6.endsWith("\n") };
+};
+var renderJson = (value, style) => `${JSON.stringify(value, null, style.indent)}${style.finalNewline ? "\n" : ""}`;
+var parseSettings = (text6) => text6 === void 0 || text6.trim() === "" ? { ok: true, value: {} } : parseJsonObject(text6);
+var asList = (value) => Array.isArray(value) ? value : [];
+var asRecord = (value) => isRecord(value) ? value : {};
+var setKey = (record2, key, value) => {
+  if (!(key in record2)) return value === void 0 ? record2 : { ...record2, [key]: value };
+  return Object.fromEntries(
+    Object.entries(record2).flatMap(([name, current]) => {
+      if (name !== key) return [[name, current]];
+      return value === void 0 ? [] : [[name, value]];
+    })
+  );
+};
+
+// src/doctor/settings.ts
+var MANAGED = {
+  darwin: "/Library/Application Support/ClaudeCode/managed-settings.json",
+  linux: "/etc/claude-code/managed-settings.json",
+  win32: "C:\\Program Files\\ClaudeCode\\managed-settings.json"
+};
+var userSettingsPath = ({ env, runtime }) => {
+  const configDir = env["CLAUDE_CONFIG_DIR"];
+  return toAbsolutePath(
+    configDir === void 0 ? join3(runtime.homeDir(), ".claude", "settings.json") : join3(configDir, "settings.json")
+  );
+};
+var settingsPaths = (env) => {
+  const managed = MANAGED[env.platform];
+  return [
+    ...managed === void 0 ? [] : [{ scope: "managed", path: toAbsolutePath(managed) }],
+    { scope: "user", path: userSettingsPath(env) },
+    { scope: "project", path: toAbsolutePath(join3(env.root, ".claude", "settings.json")) },
+    { scope: "local", path: toAbsolutePath(join3(env.root, ".claude", "settings.local.json")) }
+  ];
+};
+var readSettings = (env) => settingsPaths(env).flatMap(({ scope: scope2, path }) => {
+  const text6 = env.runtime.readText(path);
+  const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
+  return parsed?.ok === true ? [{ scope: scope2, path, settings: parsed.value }] : [];
+});
+var scopesWith = (all, test) => all.filter(({ settings }) => test(settings)).map(({ scope: scope2 }) => scope2);
+var isOn = (key) => (settings) => settings[key] === true;
+var denyRules = (all) => all.flatMap(
+  ({ settings }) => asList(asRecord(settings["permissions"])["deny"]).filter((rule) => typeof rule === "string")
+);
+var settingsEnv = (all, name) => all.map(({ settings }) => settings["env"]).map((env) => isRecord(env) ? env[name] : void 0).find((value) => typeof value === "string");
+var enabledPlugins = (all) => all.flatMap(
+  ({ settings }) => Object.entries(asRecord(settings["enabledPlugins"])).filter(([, on]) => on === true).map(([id]) => id)
+);
+
+// src/doctor/types.ts
+var finding = (check2, status, messageKey, params2, fixKey) => ({
+  check: check2,
+  status,
+  messageKey,
+  ...params2 === void 0 ? {} : { params: params2 },
+  ...fixKey === void 0 ? {} : { fixKey }
+});
+
+// src/doctor/claude-settings.ts
+var AGENT_TEAMS_VAR = "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS";
+var LOOP_PLUGINS = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
+var DAY_MS = 24 * 60 * 60 * 1e3;
+var scopeCheck = (all, key, build) => {
+  const scopes = scopesWith(all, isOn(key));
+  return scopes.length === 0 ? [] : [build(scopes.join(", "))];
+};
+var hookSwitches = (all) => [
+  ...scopeCheck(
+    all,
+    "disableAllHooks",
+    (scopes) => finding(
+      "settings.disable_all_hooks",
+      "fail",
+      "doctor.settings.disable_all_hooks",
+      { scopes },
+      "doctor.settings.fix_disable_all_hooks"
+    )
+  ),
+  ...scopeCheck(
+    all,
+    "allowManagedHooksOnly",
+    (scopes) => finding(
+      "settings.managed_hooks_only",
+      "fail",
+      "doctor.settings.managed_hooks_only",
+      { scopes },
+      "doctor.settings.fix_managed_hooks_only"
+    )
+  )
+];
+var pluginOnly = (all, pluginEnabled) => pluginEnabled ? [] : scopeCheck(
+  all,
+  "strictPluginOnlyCustomization",
+  (scopes) => finding(
+    "settings.plugin_only",
+    "fail",
+    "doctor.settings.plugin_only",
+    { scopes },
+    "doctor.settings.fix_plugin_only"
+  )
+);
+var isTruthy = (value) => value !== void 0 && /^(1|true|yes|on)$/i.test(value);
+var agentTeams = (env, all) => isTruthy(env.env[AGENT_TEAMS_VAR]) || isTruthy(settingsEnv(all, AGENT_TEAMS_VAR)) ? [
+  finding(
+    "settings.agent_teams",
+    "warn",
+    "doctor.settings.agent_teams",
+    { name: AGENT_TEAMS_VAR },
+    "doctor.settings.fix_agent_teams"
+  )
+] : [];
+var loopPlugins = (plugins) => {
+  const names = plugins.map((id) => id.split("@")[0] ?? id).filter((name) => LOOP_PLUGINS.includes(name));
+  if (names.length === 0) return [];
+  const list4 = [...new Set(names)].join(", ");
+  return [
+    finding(
+      "settings.loop_plugins",
+      "warn",
+      "doctor.settings.loop_plugins",
+      { names: list4 },
+      "doctor.settings.fix_loop_plugins"
+    )
+  ];
+};
+var shortestCleanup = (all) => {
+  const values = all.map(({ settings }) => settings["cleanupPeriodDays"]).filter((v) => typeof v === "number");
+  return values.length === 0 ? void 0 : Math.min(...values);
+};
+var projectAgeDays = (env) => {
+  const result = env.runtime.git(["log", "--max-parents=0", "--format=%ct", "HEAD"], env.root);
+  if (!result.found || !result.ok) return void 0;
+  const seconds = result.stdout.split(/\s+/).filter((part2) => /^\d+$/.test(part2)).map(Number);
+  if (seconds.length === 0) return void 0;
+  const now = Date.parse(env.runtime.now());
+  return Math.floor((now - Math.min(...seconds) * 1e3) / DAY_MS);
+};
+var cleanupPeriod = (env, all) => {
+  const days = shortestCleanup(all);
+  if (days === void 0) return [];
+  const age = projectAgeDays(env);
+  if (age === void 0 || days >= age) return [];
+  return [
+    finding(
+      "settings.cleanup_period",
+      "warn",
+      "doctor.settings.cleanup_period",
+      { days, age },
+      "doctor.settings.fix_cleanup_period"
+    )
+  ];
+};
+var checkClaudeSettings = (env) => {
+  const all = readSettings(env);
+  const plugins = enabledPlugins(all);
+  return [
+    ...hookSwitches(all),
+    ...pluginOnly(
+      all,
+      plugins.some((id) => id.startsWith("finitemonkey@"))
+    ),
+    ...agentTeams(env, all),
+    ...loopPlugins(plugins),
+    ...cleanupPeriod(env, all)
+  ];
+};
+
+// src/doctor/environment.ts
+import { join as join4 } from "node:path";
+
 // src/doctor/system.ts
 var detectOs = ({ platform, env, runtime }) => {
   if (platform === "darwin") return "macos";
@@ -441,6 +647,314 @@ var checkPath = ({ cwd }) => {
   return [chars, ...synced];
 };
 
+// src/doctor/environment.ts
+var AUTH_VARIABLES = [
+  "ANTHROPIC_API_KEY",
+  "ANTHROPIC_AUTH_TOKEN",
+  "ANTHROPIC_BASE_URL",
+  "CLAUDE_CODE_USE_BEDROCK",
+  "CLAUDE_CODE_USE_VERTEX"
+];
+var SANDBOX_TOOLS = [
+  { command: "bwrap", args: ["--version"] },
+  { command: "socat", args: ["-V"] }
+];
+var PROBE_MS = 5e3;
+var checkSandbox = (env) => {
+  const os = detectOs(env);
+  if (os === "windows") {
+    return [finding("sandbox", "warn", "doctor.sandbox.windows", {}, "doctor.sandbox.fix_windows")];
+  }
+  if (os === "macos") return [finding("sandbox", "ok", "doctor.sandbox.ok")];
+  if (os === "other") return [];
+  const missing2 = SANDBOX_TOOLS.filter(({ command, args }) => !env.runtime.probe(command, args, PROBE_MS).found).map(
+    ({ command }) => command
+  );
+  if (missing2.length === 0) return [finding("sandbox", "ok", "doctor.sandbox.ok")];
+  return [
+    finding("sandbox", "warn", "doctor.sandbox.missing", { tools: missing2.join(", ") }, "doctor.sandbox.fix_missing")
+  ];
+};
+var EXECUTABLES = {
+  win32: ["finitemonkey.cmd", "finitemonkey.exe", "finitemonkey.ps1"]
+};
+var pathDirs = ({ env, platform }) => {
+  const raw = env["PATH"] ?? env["Path"] ?? "";
+  return [...new Set(raw.split(platform === "win32" ? ";" : ":").filter((dir) => dir !== ""))];
+};
+var copiesOnPath = (env) => {
+  const names = EXECUTABLES[env.platform] ?? ["finitemonkey"];
+  const found = pathDirs(env).flatMap(
+    (dir) => names.map((name) => toAbsolutePath(join4(dir, name))).filter((path) => env.runtime.stat(path)?.kind === "file").map((path) => env.runtime.realpath(path))
+  );
+  const byDir = new Map(found.map((path) => [path.replace(/\.(cmd|exe|ps1)$/i, ""), path]));
+  return [...byDir.values()];
+};
+var checkPathCopies = (env) => {
+  const copies = copiesOnPath(env);
+  if (copies.length < 2) return [];
+  return [
+    finding(
+      "path.copies",
+      "warn",
+      "doctor.path.copies",
+      { count: copies.length, paths: copies.join(", ") },
+      "doctor.path.fix_copies"
+    )
+  ];
+};
+var unsetCommand = (platform, names) => platform === "win32" ? names.map((name) => `Remove-Item Env:${name}`).join("; ") : `unset ${names.join(" ")}`;
+var checkAuthVariables = ({ env, platform }) => {
+  const set = AUTH_VARIABLES.filter((name) => (env[name] ?? "") !== "");
+  if (set.length === 0) return [];
+  return [
+    finding(
+      "auth.env",
+      "warn",
+      "doctor.auth.env",
+      { names: set.join(", "), command: unsetCommand(platform, set) },
+      "doctor.auth.fix_env"
+    )
+  ];
+};
+
+// src/doctor/instructions.ts
+import { join as join5 } from "node:path";
+
+// src/core/posix-path.ts
+var toPosixPath = (path) => path.replace(/\\/g, "/");
+var withoutCarriageReturn = (line2) => line2.endsWith("\r") ? line2.slice(0, -1) : line2;
+
+// src/core/glob.ts
+var escape = (char) => /[.+^${}()|[\]\\]/.test(char) ? `\\${char}` : char;
+var globToRegExp = (glob) => {
+  const pattern = glob.replace(/^\.\//, "");
+  let out = "";
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index] ?? "";
+    if (char === "*" && pattern[index + 1] === "*") {
+      const slash = pattern[index + 2] === "/";
+      out += slash ? "(?:.*/)?" : ".*";
+      index += slash ? 2 : 1;
+    } else if (char === "*") out += "[^/]*";
+    else if (char === "?") out += "[^/]";
+    else out += escape(char);
+  }
+  return new RegExp(`^${out}${pattern.endsWith("/") ? ".*" : ""}$`);
+};
+var matchesAny = (path, globs) => {
+  const normalized = toPosixPath(path);
+  return globs.some((glob) => globToRegExp(glob).test(normalized));
+};
+
+// src/install/claudeignore.ts
+var CLAUDEIGNORE_FILES = [".claudeignore", ".claude/.claudeignore"];
+var ruleFor = (raw) => {
+  const line2 = withoutCarriageReturn(raw).trim();
+  if (line2 === "" || line2.startsWith("#") || line2.startsWith("!") || line2.includes(")")) return void 0;
+  const anchored = line2.startsWith("/");
+  const body = (anchored ? line2.slice(1) : line2).replace(/\/+$/, "");
+  if (body === "" || body === "*" || body === "**") return void 0;
+  const path = line2.endsWith("/") ? `${body}/**` : body;
+  return `Read(${anchored || body.includes("/") ? "./" : ""}${path})`;
+};
+var claudeignoreRules = (texts) => [
+  ...new Set(
+    texts.flatMap((text6) => (text6 ?? "").split("\n")).map(ruleFor).filter((rule) => rule !== void 0)
+  )
+];
+
+// src/doctor/instructions.ts
+var INSTRUCTION_LINE_CEILING = 200;
+var TOP_INSTRUCTIONS = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"];
+var RULES_DIR = ".claude/rules";
+var SHOWN = 3;
+var readProjectFile = (env, relative9) => {
+  const text6 = env.runtime.readText(toAbsolutePath(join5(env.root, ...relative9.split("/"))));
+  return text6.ok ? text6.value : void 0;
+};
+var instructionFiles = (env) => {
+  const listed4 = env.runtime.listDir(toAbsolutePath(join5(env.root, ...RULES_DIR.split("/"))));
+  const rules = listed4.ok ? listed4.value.filter((name) => name.endsWith(".md")).map((name) => `${RULES_DIR}/${name}`) : [];
+  return [...TOP_INSTRUCTIONS, ...rules].flatMap((path) => {
+    const text6 = readProjectFile(env, path);
+    return text6 === void 0 ? [] : [{ path, text: text6 }];
+  });
+};
+var shortList = (items) => items.length <= SHOWN ? items.join(", ") : `${items.slice(0, SHOWN).join(", ")} (+${String(items.length - SHOWN)})`;
+var claudeignore = (env, deny2) => {
+  const present2 = CLAUDEIGNORE_FILES.filter((path) => readProjectFile(env, path) !== void 0);
+  if (present2.length === 0) return [];
+  const missing2 = claudeignoreRules(present2.map((path) => readProjectFile(env, path))).filter(
+    (rule) => !deny2.includes(rule)
+  );
+  if (missing2.length === 0) return [];
+  return [
+    finding(
+      "instructions.claudeignore",
+      "warn",
+      "doctor.instructions.claudeignore",
+      { file: present2.join(", "), rules: shortList(missing2) },
+      "doctor.instructions.fix_claudeignore"
+    )
+  ];
+};
+var READ_RULE = /^Read(?:\((.*)\))?$/;
+var readGlob = (rule) => {
+  const match = READ_RULE.exec(rule.trim());
+  if (match === null) return void 0;
+  const glob = match[1] ?? "**";
+  if (glob.startsWith("//") || glob.startsWith("~")) return void 0;
+  return glob.replace(/^\.?\//, "");
+};
+var hides = (glob, path) => {
+  if (globToRegExp(glob).test(path)) return true;
+  return !glob.includes("/") && globToRegExp(glob).test(path.split("/").pop() ?? path);
+};
+var hiddenInstructions = (env, deny2) => {
+  const globs = deny2.map(readGlob).filter((glob) => glob !== void 0);
+  const hidden = instructionFiles(env).map(({ path }) => path).filter((path) => globs.some((glob) => hides(glob, path)));
+  if (hidden.length === 0) return [];
+  return [
+    finding(
+      "instructions.denied",
+      "fail",
+      "doctor.instructions.denied",
+      { files: shortList(hidden) },
+      "doctor.instructions.fix_denied"
+    )
+  ];
+};
+var localFile = (env) => readProjectFile(env, "CLAUDE.local.md") === void 0 ? [] : [finding("instructions.local", "warn", "doctor.instructions.local", {}, "doctor.instructions.fix_local")];
+var lineCount = (text6) => text6.split("\n").length - (text6.endsWith("\n") ? 1 : 0);
+var oversized = (env) => ["AGENTS.md", "CLAUDE.md"].flatMap((file) => {
+  const text6 = readProjectFile(env, file);
+  const lines3 = text6 === void 0 ? 0 : lineCount(text6);
+  if (lines3 <= INSTRUCTION_LINE_CEILING) return [];
+  return [
+    finding(
+      "instructions.size",
+      "warn",
+      "doctor.instructions.size",
+      { file, lines: lines3, max: INSTRUCTION_LINE_CEILING },
+      "doctor.instructions.fix_size"
+    )
+  ];
+});
+var MIN_RULE_WORDS = 6;
+var ruleLines = (text6) => text6.split("\n").map((raw) => withoutCarriageReturn(raw).trim()).filter((line2) => !/^(#|\||```|@|>)/.test(line2)).map(
+  (line2) => line2.replace(/^([-*+]|\d+[.)])\s+/, "").replace(/\s+/g, " ").toLowerCase()
+).filter((line2) => line2.split(" ").length >= MIN_RULE_WORDS);
+var duplicatedRules = (files) => {
+  const seen = /* @__PURE__ */ new Map();
+  for (const { path, text: text6 } of files) {
+    for (const line2 of ruleLines(text6)) seen.set(line2, (seen.get(line2) ?? /* @__PURE__ */ new Set()).add(path));
+  }
+  return [...seen].filter(([, paths]) => paths.size > 1).map(([line2]) => line2);
+};
+var duplicates = (env) => {
+  const files = instructionFiles(env).filter(({ path }) => path !== "CLAUDE.local.md");
+  const lines3 = duplicatedRules(files);
+  const first = lines3[0];
+  if (first === void 0) return [];
+  return [
+    finding(
+      "instructions.duplicated",
+      "warn",
+      "doctor.instructions.duplicated",
+      { count: lines3.length, example: first.length > 60 ? `${first.slice(0, 57)}...` : first },
+      "doctor.instructions.fix_duplicated"
+    )
+  ];
+};
+var checkInstructions = (env) => {
+  const deny2 = denyRules(readSettings(env));
+  return [
+    ...claudeignore(env, deny2),
+    ...hiddenInstructions(env, deny2),
+    ...localFile(env),
+    ...oversized(env),
+    ...duplicates(env)
+  ];
+};
+
+// src/doctor/project-files.ts
+import { join as join6 } from "node:path";
+var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
+var SCRIPT = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
+var DATA = ["", ".json", ".yml", ".yaml"];
+var LOCKFILE_GROUPS = [
+  {
+    name: "JavaScript",
+    files: ["package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "bun.lock", "bun.lockb"]
+  },
+  { name: "Python", files: ["poetry.lock", "uv.lock", "Pipfile.lock", "pdm.lock"] }
+];
+var CONFIG_GROUPS = [
+  { name: "ESLint", files: [...variants("eslint.config", SCRIPT), ...variants(".eslintrc", [...DATA, ".js", ".cjs"])] },
+  {
+    name: "Prettier",
+    files: [
+      ...variants(".prettierrc", [...DATA, ".json5", ".toml", ".js", ".cjs", ".mjs"]),
+      ...variants("prettier.config", SCRIPT)
+    ]
+  },
+  {
+    name: "Babel",
+    files: [...variants(".babelrc", ["", ".json", ".js"]), ...variants("babel.config", [...SCRIPT, ".json"])]
+  },
+  { name: "Jest", files: [...variants("jest.config", SCRIPT), "jest.config.json"] },
+  { name: "Vitest", files: variants("vitest.config", SCRIPT) },
+  {
+    name: "commitlint",
+    files: [...variants("commitlint.config", SCRIPT), ...variants(".commitlintrc", [...DATA, ".js"])]
+  }
+];
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join6(env.root, file)))?.kind === "file");
+var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
+  const found = present(env, files);
+  return found.length > 1 ? [build(name, found.join(", "))] : [];
+});
+var checkProjectFiles = (env) => [
+  ...crowded(
+    env,
+    LOCKFILE_GROUPS,
+    (ecosystem, files) => finding(
+      "project.lockfiles",
+      "warn",
+      "doctor.project.lockfiles",
+      { ecosystem, files },
+      "doctor.project.fix_lockfiles"
+    )
+  ),
+  ...crowded(
+    env,
+    CONFIG_GROUPS,
+    (tool, files) => finding("project.configs", "warn", "doctor.project.configs", { tool, files }, "doctor.project.fix_configs")
+  )
+];
+
+// src/install/claude-version.ts
+var ON_FAILURE_MIN = [2, 1, 295];
+var PROBE_MS2 = 8e3;
+var parseClaudeVersion = (output) => {
+  const match = /(\d+)\.(\d+)\.(\d+)/.exec(output);
+  return match === null ? void 0 : [Number(match[1]), Number(match[2]), Number(match[3])];
+};
+var atLeast = (version, min) => {
+  for (const [index, part2] of min.entries()) {
+    const value = version[index] ?? 0;
+    if (value !== part2) return value > part2;
+  }
+  return true;
+};
+var detectClaude = (probe) => {
+  const result = probe("claude", ["--version"], PROBE_MS2);
+  const parsed = result.ok ? parseClaudeVersion(result.stdout) : void 0;
+  if (parsed === void 0) return { version: void 0, failClosed: true };
+  return { version: parsed.join("."), failClosed: atLeast(parsed, ON_FAILURE_MIN) };
+};
+
 // src/doctor/tools.ts
 var MIN_NODE_MAJOR = 20;
 var MIN_GIT = { major: 2, minor: 38 };
@@ -451,6 +965,22 @@ var parseGitVersion = (output) => {
   return { major: Number(match[1]), minor: Number(match[2]) };
 };
 var isOlder = (version, min) => version.major < min.major || version.major === min.major && version.minor < min.minor;
+var NODE_END_OF_LIFE = {
+  18: "2025-04-30",
+  19: "2023-06-01",
+  20: "2026-04-30",
+  21: "2024-06-01",
+  22: "2027-04-30",
+  23: "2025-06-01",
+  24: "2028-04-30",
+  25: "2026-06-01",
+  26: "2029-04-30"
+};
+var endOfLife = (major, now, version) => {
+  const date = NODE_END_OF_LIFE[major];
+  if (date === void 0 || Date.parse(now) <= Date.parse(`${date}T23:59:59Z`)) return [];
+  return [finding("node.support", "warn", "doctor.node.unsupported", { version, date }, "doctor.node.fix_unsupported")];
+};
 var checkNode = ({ runtime }) => {
   const version = runtime.nodeVersion.replace(/^v/, "");
   const major = Number.parseInt(version.split(".")[0] ?? "", 10);
@@ -465,7 +995,10 @@ var checkNode = ({ runtime }) => {
       }
     ];
   }
-  return [{ check: "node", status: "ok", messageKey: "doctor.node.ok", params: { version } }];
+  return [
+    { check: "node", status: "ok", messageKey: "doctor.node.ok", params: { version } },
+    ...endOfLife(major, runtime.now(), version)
+  ];
 };
 var checkGit = ({ runtime }) => {
   const result = runtime.probe("git", ["--version"], PROBE_TIMEOUT_MS.git);
@@ -488,6 +1021,21 @@ var checkGit = ({ runtime }) => {
   }
   return [{ check: "git", status: "ok", messageKey: "doctor.git.ok", params: { version } }];
 };
+var isBelow = (version, min) => {
+  for (const [index, part2] of min.entries()) {
+    const value = version[index] ?? 0;
+    if (value !== part2) return value < part2;
+  }
+  return false;
+};
+var CLAUDE_MIN = ON_FAILURE_MIN.join(".");
+var claudeMinimum = (stdout, version) => {
+  const parsed = parseClaudeVersion(stdout);
+  if (parsed === void 0 || !isBelow(parsed, ON_FAILURE_MIN)) return [];
+  return [
+    finding("claude.version", "warn", "doctor.claude.old", { version, min: CLAUDE_MIN }, "doctor.claude.fix_old")
+  ];
+};
 var checkClaude = ({ runtime }) => {
   const result = runtime.probe("claude", ["--version"], PROBE_TIMEOUT_MS.claude);
   if (result.timedOut) {
@@ -499,28 +1047,44 @@ var checkClaude = ({ runtime }) => {
     return [{ check: "claude", status: "warn", messageKey: "doctor.claude.missing", fixKey: "doctor.claude.fix" }];
   }
   const version = /\d+\.\d+\.\d+/.exec(result.stdout)?.[0] ?? result.stdout;
-  return [{ check: "claude", status: "ok", messageKey: "doctor.claude.ok", params: { version } }];
+  return [
+    { check: "claude", status: "ok", messageKey: "doctor.claude.ok", params: { version } },
+    ...claudeMinimum(result.stdout, version)
+  ];
 };
 
 // src/doctor/run.ts
 var DOCTOR_SCHEMA = "finitemonkey/doctor@1";
-var CHECKS = [checkNode, checkGit, checkClaude, checkOs, checkPath];
+var CHECKS = [
+  checkNode,
+  checkGit,
+  checkClaude,
+  checkOs,
+  checkPath,
+  checkSandbox,
+  checkPathCopies,
+  checkAuthVariables,
+  checkClaudeSettings,
+  checkInstructions,
+  checkProjectFiles
+];
 var doctorEnvFrom = (ctx) => ({
   platform: ctx.platform,
   env: ctx.env,
   cwd: ctx.cwd,
+  root: findGitRoot(ctx.cwd, ctx.runtime) ?? ctx.cwd,
   runtime: ctx.runtime
 });
 var runChecks = (env, checks = CHECKS) => checks.flatMap((check2) => check2(env));
-var toItem = (ctx, finding2) => ({
-  check: finding2.check,
-  status: finding2.status,
-  detail: ctx.t(finding2.messageKey, finding2.params),
-  ...finding2.fixKey === void 0 ? {} : { fix: ctx.t(finding2.fixKey, finding2.params) }
+var toItem = (ctx, finding3) => ({
+  check: finding3.check,
+  status: finding3.status,
+  detail: ctx.t(finding3.messageKey, finding3.params),
+  ...finding3.fixKey === void 0 ? {} : { fix: ctx.t(finding3.fixKey, finding3.params) }
 });
 var count = (items, status) => items.filter((item) => item.status === status).length;
 var buildReport = (ctx, findings) => {
-  const checks = findings.map((finding2) => toItem(ctx, finding2));
+  const checks = findings.map((finding3) => toItem(ctx, finding3));
   return {
     schema: DOCTOR_SCHEMA,
     checks,
@@ -794,10 +1358,6 @@ var nowMs = (runtime) => Date.parse(runtime.now());
 
 // src/shell/normalize.ts
 import { posix } from "node:path";
-
-// src/core/posix-path.ts
-var toPosixPath = (path) => path.replace(/\\/g, "/");
-var withoutCarriageReturn = (line2) => line2.endsWith("\r") ? line2.slice(0, -1) : line2;
 
 // src/shell/scan.ts
 var cursorOf = (text6) => ({ text: text6, pos: 0, incomplete: false, subs: [] });
@@ -1644,11 +2204,11 @@ var runShellCheck = (check2, run3, ctx) => {
 var commandCheck = (check2, ctx) => check2.run === void 0 ? unverified("not_implemented") : runShellCheck(check2, check2.run, ctx);
 
 // src/task/paths.ts
-import { join as join2 } from "node:path";
+import { join as join7 } from "node:path";
 var FM_DIR = ".finitemonkey";
 var fmPaths = (root) => {
-  const dir = toAbsolutePath(join2(root, FM_DIR));
-  const at = (...parts) => toAbsolutePath(join2(dir, ...parts));
+  const dir = toAbsolutePath(join7(root, FM_DIR));
+  const at = (...parts) => toAbsolutePath(join7(dir, ...parts));
   return {
     root,
     dir,
@@ -1766,7 +2326,7 @@ var aheadOfUpstream = (git) => {
 };
 
 // src/gate/prepare.ts
-import { join as join3 } from "node:path";
+import { join as join8 } from "node:path";
 
 // src/secrets/allowlist.ts
 var PLACEHOLDER_WORDS = [
@@ -2167,15 +2727,15 @@ var scanText = (text6, options = {}) => {
 };
 
 // src/mask/mask.ts
-var maskToken = (finding2) => `«secret:${finding2.ruleId}:${finding2.tail}»`;
+var maskToken = (finding3) => `«secret:${finding3.ruleId}:${finding3.tail}»`;
 var maskText = (text6) => {
   const findings = scanText(text6, { rules: CREDENTIAL_RULES });
   if (findings.length === 0) return text6;
   let out = "";
   let cursor = 0;
-  for (const finding2 of findings) {
-    out += text6.slice(cursor, finding2.start) + maskToken(finding2);
-    cursor = finding2.end;
+  for (const finding3 of findings) {
+    out += text6.slice(cursor, finding3.start) + maskToken(finding3);
+    cursor = finding3.end;
   }
   return out + text6.slice(cursor);
 };
@@ -2787,10 +3347,10 @@ var conflictFiles = (git, base) => {
 // src/gate/prepare.ts
 var diskFiles = (runtime, root) => ({
   read: (relative9) => {
-    const text6 = runtime.readText(toAbsolutePath(join3(root, relative9)));
+    const text6 = runtime.readText(toAbsolutePath(join8(root, relative9)));
     return text6.ok ? text6.value : void 0;
   },
-  exists: (relative9) => runtime.stat(toAbsolutePath(join3(root, relative9))) !== void 0
+  exists: (relative9) => runtime.stat(toAbsolutePath(join8(root, relative9))) !== void 0
 });
 var baseFiles = (git, base, disk) => ({
   read: (relative9) => base === EMPTY_TREE ? disk.read(relative9) : fileAt(git, base, relative9),
@@ -2882,15 +3442,15 @@ var runBaseline = (options) => {
 };
 
 // src/gate/hooks/common.ts
-import { dirname as dirname3, join as join4 } from "node:path";
+import { dirname as dirname4, join as join9 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
 var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
 var MAX_DEPTH2 = 64;
 var findRepoRoot = (runtime, start) => {
   let current = start;
   for (let depth = 0; depth < MAX_DEPTH2; depth += 1) {
-    if (runtime.stat(toAbsolutePath(join4(current, ".git"))) !== void 0) return current;
-    const parent = toAbsolutePath(dirname3(current));
+    if (runtime.stat(toAbsolutePath(join9(current, ".git"))) !== void 0) return current;
+    const parent = toAbsolutePath(dirname4(current));
     if (parent === current) return void 0;
     current = parent;
   }
@@ -3047,6 +3607,45 @@ var en_default = {
   "doctor.path.fix_synced": "Move the project out of the synced folder to avoid sync conflicts and slow git",
   "doctor.path.wsl_mount": "Project is on a Windows drive mounted in WSL: {path}",
   "doctor.path.fix_wsl_mount": "Move the project into the Linux home (for example ~/projects) for faster git and correct permissions",
+  "doctor.node.unsupported": "Node.js {version} stopped getting security fixes on {date}",
+  "doctor.node.fix_unsupported": "Install a supported Node.js LTS from https://nodejs.org",
+  "doctor.claude.old": "Claude Code {version} is older than {min}; a guard that crashes lets the action through instead of blocking it",
+  "doctor.claude.fix_old": "Run `claude update`, then `finitemonkey update --yes`",
+  "doctor.sandbox.ok": "The Claude Code sandbox can run on this system",
+  "doctor.sandbox.windows": "Native Windows has no Claude Code sandbox; commands run with your full permissions",
+  "doctor.sandbox.fix_windows": "Use Claude Code inside WSL 2: wsl --install",
+  "doctor.sandbox.missing": "The Claude Code sandbox cannot run here: missing {tools}",
+  "doctor.sandbox.fix_missing": "Install the tools: sudo apt-get install bubblewrap socat (or your distribution's equivalent)",
+  "doctor.path.copies": "{count, plural, one {# copy} other {# copies}} of finitemonkey on PATH; the first one wins, and it may be an old version: {paths}",
+  "doctor.path.fix_copies": "Keep one: npm uninstall -g finitemonkey, and use the copy the project installs",
+  "doctor.auth.env": "{names} set in the shell; Claude Code switches account or endpoint when it sees them",
+  "doctor.auth.fix_env": "If that was not on purpose, remove them from the shell profile and run: {command}",
+  "doctor.settings.disable_all_hooks": "disableAllHooks is on ({scopes}); no Finite Monkey hook runs",
+  "doctor.settings.fix_disable_all_hooks": 'Remove "disableAllHooks" from the settings file of that scope, or run /hooks in Claude Code to turn hooks back on',
+  "doctor.settings.managed_hooks_only": "allowManagedHooksOnly is on ({scopes}); Claude Code ignores the hooks in the project settings",
+  "doctor.settings.fix_managed_hooks_only": "Ask the administrator of the managed settings to add the Finite Monkey hooks there, or to turn allowManagedHooksOnly off",
+  "doctor.settings.plugin_only": "strictPluginOnlyCustomization is on ({scopes}) and the finitemonkey plugin is not enabled; the project hooks do not load",
+  "doctor.settings.fix_plugin_only": "Install the plugin: finitemonkey init --marketplace --yes, then /plugin install finitemonkey@finitemonkey in Claude Code",
+  "doctor.settings.agent_teams": "{name} is on; teammates run in their own sessions, and Finite Monkey does not check their work before they report done",
+  "doctor.settings.fix_agent_teams": "Run `finitemonkey gate` before accepting a teammate's result, or unset the variable",
+  "doctor.settings.loop_plugins": "{names} enabled: it sends the agent back to work at Stop, and its loop has no guard of its own",
+  "doctor.settings.fix_loop_plugins": "Disable it in this project with /plugin in Claude Code, or keep it and let the Finite Monkey Stop hook decide",
+  "doctor.settings.cleanup_period": "cleanupPeriodDays is {days}, but the project is {age, plural, one {# day} other {# days}} old; Claude Code deletes session transcripts before the history they explain",
+  "doctor.settings.fix_cleanup_period": 'Raise "cleanupPeriodDays" in ~/.claude/settings.json to at least the age of the project',
+  "doctor.instructions.claudeignore": "{file} has no effect in Claude Code; these deny rules are missing: {rules}",
+  "doctor.instructions.fix_claudeignore": "Run `finitemonkey update --yes` (or `finitemonkey init` on a new project) to add them to .claude/settings.json",
+  "doctor.instructions.denied": "A Read deny rule hides instruction files from the agent: {files}",
+  "doctor.instructions.fix_denied": "Narrow the matching Read rule in permissions.deny so it no longer covers AGENTS.md, CLAUDE.md or .claude/rules",
+  "doctor.instructions.local": "CLAUDE.local.md exists; it loads only on this machine and can override AGENTS.md without anyone else seeing it",
+  "doctor.instructions.fix_local": "Move the rules the team needs into AGENTS.md, then delete CLAUDE.local.md",
+  "doctor.instructions.size": "{file} has {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
+  "doctor.instructions.fix_size": "Move detail into .claude/rules or linked docs until the file is under the ceiling",
+  "doctor.instructions.duplicated": '{count, plural, one {# rule line repeats} other {# rule lines repeat}} across AGENTS.md, CLAUDE.md and .claude/rules, for example: "{example}"',
+  "doctor.instructions.fix_duplicated": "Keep each rule in one file; copies drift apart and then contradict each other",
+  "doctor.project.lockfiles": "More than one {ecosystem} lockfile: {files}; installs depend on which tool runs",
+  "doctor.project.fix_lockfiles": "Keep the lockfile of the package manager the project uses and delete the others with git rm",
+  "doctor.project.configs": "More than one {tool} config file: {files}; only one of them is read",
+  "doctor.project.fix_configs": "Merge them into one file and delete the rest with git rm",
   "hook.failed_closed": "the {event} hook could not run ({detail}), so it blocked to stay safe. Run `finitemonkey doctor`",
   "hook.failed_open": "the {event} hook could not run ({detail}); continuing without it. Run `finitemonkey doctor`",
   "exit.ok": "0 ok: the command did what it was asked",
@@ -3463,6 +4062,45 @@ var es_default = {
   "doctor.path.fix_synced": "Mueve el proyecto fuera de la carpeta sincronizada para evitar conflictos de sincronización y git lento",
   "doctor.path.wsl_mount": "El proyecto está en un disco de Windows montado en WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mueve el proyecto a la home de Linux (por ejemplo ~/proyectos) para tener git rápido y permisos correctos",
+  "doctor.node.unsupported": "Node.js {version} dejó de recibir correcciones de seguridad el {date}",
+  "doctor.node.fix_unsupported": "Instala un Node.js LTS con soporte desde https://nodejs.org",
+  "doctor.claude.old": "Claude Code {version} es más antiguo que {min}; un guardia que falla deja pasar la acción en vez de bloquearla",
+  "doctor.claude.fix_old": "Ejecuta `claude update` y después `finitemonkey update --yes`",
+  "doctor.sandbox.ok": "El sandbox de Claude Code puede ejecutarse en este sistema",
+  "doctor.sandbox.windows": "Windows nativo no tiene sandbox de Claude Code; los comandos se ejecutan con todos tus permisos",
+  "doctor.sandbox.fix_windows": "Usa Claude Code dentro de WSL 2: wsl --install",
+  "doctor.sandbox.missing": "El sandbox de Claude Code no puede ejecutarse aquí: falta {tools}",
+  "doctor.sandbox.fix_missing": "Instala las herramientas: sudo apt-get install bubblewrap socat (o el equivalente de tu distribución)",
+  "doctor.path.copies": "{count, plural, one {# copia} other {# copias}} de finitemonkey en el PATH; gana la primera, que puede ser una versión antigua: {paths}",
+  "doctor.path.fix_copies": "Deja una: npm uninstall -g finitemonkey, y usa la copia que instala el proyecto",
+  "doctor.auth.env": "{names} definida(s) en la shell; Claude Code cambia de cuenta o de endpoint cuando las ve",
+  "doctor.auth.fix_env": "Si no fue a propósito, quítalas del perfil de la shell y ejecuta: {command}",
+  "doctor.settings.disable_all_hooks": "disableAllHooks está activado ({scopes}); no se ejecuta ningún hook de Finite Monkey",
+  "doctor.settings.fix_disable_all_hooks": 'Quita "disableAllHooks" del archivo de settings de ese ámbito, o ejecuta /hooks en Claude Code para reactivar los hooks',
+  "doctor.settings.managed_hooks_only": "allowManagedHooksOnly está activado ({scopes}); Claude Code ignora los hooks de los settings del proyecto",
+  "doctor.settings.fix_managed_hooks_only": "Pide al administrador de los settings gestionados que añada allí los hooks de Finite Monkey, o que desactive allowManagedHooksOnly",
+  "doctor.settings.plugin_only": "strictPluginOnlyCustomization está activado ({scopes}) y el plugin finitemonkey no está activo; los hooks del proyecto no se cargan",
+  "doctor.settings.fix_plugin_only": "Instala el plugin: finitemonkey init --marketplace --yes, después /plugin install finitemonkey@finitemonkey en Claude Code",
+  "doctor.settings.agent_teams": "{name} está activado; los compañeros de equipo corren en sesiones propias, y Finite Monkey no revisa su trabajo antes de que digan que terminaron",
+  "doctor.settings.fix_agent_teams": "Ejecuta `finitemonkey gate` antes de aceptar el resultado de un compañero, o quita la variable",
+  "doctor.settings.loop_plugins": "{names} activo: devuelve al agente al trabajo en Stop, y su bucle no tiene guardia propia",
+  "doctor.settings.fix_loop_plugins": "Desactívalo en este proyecto con /plugin en Claude Code, o mantenlo y deja que el hook Stop de Finite Monkey decida",
+  "doctor.settings.cleanup_period": "cleanupPeriodDays es {days}, pero el proyecto tiene {age, plural, one {# día} other {# días}}; Claude Code borra las transcripciones de sesión antes que el historial que explican",
+  "doctor.settings.fix_cleanup_period": 'Sube "cleanupPeriodDays" en ~/.claude/settings.json al menos a la edad del proyecto',
+  "doctor.instructions.claudeignore": "{file} no tiene efecto en Claude Code; faltan estas reglas de deny: {rules}",
+  "doctor.instructions.fix_claudeignore": "Ejecuta `finitemonkey update --yes` (o `finitemonkey init` en un proyecto nuevo) para añadirlas a .claude/settings.json",
+  "doctor.instructions.denied": "Una regla de deny de Read oculta archivos de instrucciones al agente: {files}",
+  "doctor.instructions.fix_denied": "Restringe la regla de Read en permissions.deny para que ya no cubra AGENTS.md, CLAUDE.md ni .claude/rules",
+  "doctor.instructions.local": "CLAUDE.local.md existe; solo se carga en esta máquina y puede contradecir AGENTS.md sin que nadie más lo vea",
+  "doctor.instructions.fix_local": "Pasa a AGENTS.md las reglas que necesita el equipo y borra CLAUDE.local.md",
+  "doctor.instructions.size": "{file} tiene {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
+  "doctor.instructions.fix_size": "Mueve el detalle a .claude/rules o a documentos enlazados hasta que el archivo quede bajo el techo",
+  "doctor.instructions.duplicated": '{count, plural, one {# línea de regla se repite} other {# líneas de regla se repiten}} entre AGENTS.md, CLAUDE.md y .claude/rules, por ejemplo: "{example}"',
+  "doctor.instructions.fix_duplicated": "Deja cada regla en un solo archivo; las copias se separan y después se contradicen",
+  "doctor.project.lockfiles": "Más de un lockfile de {ecosystem}: {files}; la instalación depende de qué herramienta se ejecute",
+  "doctor.project.fix_lockfiles": "Deja el lockfile del gestor de paquetes que usa el proyecto y borra los demás con git rm",
+  "doctor.project.configs": "Más de un archivo de configuración de {tool}: {files}; solo se lee uno",
+  "doctor.project.fix_configs": "Únelos en un solo archivo y borra el resto con git rm",
   "hook.failed_closed": "el hook {event} no pudo ejecutarse ({detail}) y bloqueó por seguridad. Ejecuta `finitemonkey doctor`",
   "hook.failed_open": "el hook {event} no pudo ejecutarse ({detail}); se sigue sin él. Ejecuta `finitemonkey doctor`",
   "exit.ok": "0 ok: el comando hizo lo que se pidió",
@@ -3879,6 +4517,45 @@ var pt_BR_default = {
   "doctor.path.fix_synced": "Mova o projeto para fora da pasta sincronizada para evitar conflito de sincronização e git lento",
   "doctor.path.wsl_mount": "O projeto está num disco do Windows montado no WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mova o projeto para a home do Linux (por exemplo ~/projetos) para ter git rápido e permissões corretas",
+  "doctor.node.unsupported": "O Node.js {version} deixou de receber correções de segurança em {date}",
+  "doctor.node.fix_unsupported": "Instale um Node.js LTS com suporte em https://nodejs.org",
+  "doctor.claude.old": "O Claude Code {version} é mais antigo que {min}; um guarda que quebra deixa a ação passar em vez de bloquear",
+  "doctor.claude.fix_old": "Rode `claude update` e depois `finitemonkey update --yes`",
+  "doctor.sandbox.ok": "O sandbox do Claude Code consegue rodar neste sistema",
+  "doctor.sandbox.windows": "O Windows nativo não tem sandbox do Claude Code; os comandos rodam com todas as suas permissões",
+  "doctor.sandbox.fix_windows": "Use o Claude Code dentro do WSL 2: wsl --install",
+  "doctor.sandbox.missing": "O sandbox do Claude Code não roda aqui: falta {tools}",
+  "doctor.sandbox.fix_missing": "Instale as ferramentas: sudo apt-get install bubblewrap socat (ou o equivalente da sua distribuição)",
+  "doctor.path.copies": "{count, plural, one {# cópia} other {# cópias}} do finitemonkey no PATH; vale a primeira, que pode ser uma versão antiga: {paths}",
+  "doctor.path.fix_copies": "Mantenha uma: npm uninstall -g finitemonkey, e use a cópia que o projeto instala",
+  "doctor.auth.env": "{names} definida(s) no shell; o Claude Code troca de conta ou de endpoint quando as vê",
+  "doctor.auth.fix_env": "Se não foi de propósito, tire do perfil do shell e rode: {command}",
+  "doctor.settings.disable_all_hooks": "disableAllHooks está ligado ({scopes}); nenhum hook do Finite Monkey roda",
+  "doctor.settings.fix_disable_all_hooks": 'Tire "disableAllHooks" do arquivo de settings desse escopo, ou rode /hooks no Claude Code para religar os hooks',
+  "doctor.settings.managed_hooks_only": "allowManagedHooksOnly está ligado ({scopes}); o Claude Code ignora os hooks dos settings do projeto",
+  "doctor.settings.fix_managed_hooks_only": "Peça ao administrador dos settings gerenciados para incluir os hooks do Finite Monkey lá, ou para desligar allowManagedHooksOnly",
+  "doctor.settings.plugin_only": "strictPluginOnlyCustomization está ligado ({scopes}) e o plugin finitemonkey não está ativo; os hooks do projeto não carregam",
+  "doctor.settings.fix_plugin_only": "Instale o plugin: finitemonkey init --marketplace --yes, depois /plugin install finitemonkey@finitemonkey no Claude Code",
+  "doctor.settings.agent_teams": "{name} está ligado; os colegas de equipe rodam em sessões próprias, e o Finite Monkey não confere o trabalho deles antes de dizerem que terminaram",
+  "doctor.settings.fix_agent_teams": "Rode `finitemonkey gate` antes de aceitar o resultado de um colega, ou remova a variável",
+  "doctor.settings.loop_plugins": "{names} ativo: ele manda o agente de volta ao trabalho no Stop, e o laço dele não tem guarda própria",
+  "doctor.settings.fix_loop_plugins": "Desative neste projeto com /plugin no Claude Code, ou mantenha e deixe o hook Stop do Finite Monkey decidir",
+  "doctor.settings.cleanup_period": "cleanupPeriodDays é {days}, mas o projeto tem {age, plural, one {# dia} other {# dias}}; o Claude Code apaga as transcrições de sessão antes do histórico que elas explicam",
+  "doctor.settings.fix_cleanup_period": 'Aumente "cleanupPeriodDays" em ~/.claude/settings.json para pelo menos a idade do projeto',
+  "doctor.instructions.claudeignore": "{file} não tem efeito no Claude Code; faltam estas regras de deny: {rules}",
+  "doctor.instructions.fix_claudeignore": "Rode `finitemonkey update --yes` (ou `finitemonkey init` num projeto novo) para incluí-las em .claude/settings.json",
+  "doctor.instructions.denied": "Uma regra de deny de Read esconde arquivos de instrução do agente: {files}",
+  "doctor.instructions.fix_denied": "Restrinja a regra de Read em permissions.deny para ela não cobrir mais AGENTS.md, CLAUDE.md nem .claude/rules",
+  "doctor.instructions.local": "CLAUDE.local.md existe; ele só carrega nesta máquina e pode sobrepor o AGENTS.md sem ninguém mais ver",
+  "doctor.instructions.fix_local": "Passe as regras que o time precisa para o AGENTS.md e apague o CLAUDE.local.md",
+  "doctor.instructions.size": "{file} tem {lines, plural, one {# linha} other {# linhas}}, acima do teto de {max}; arquivo de instrução longo é menos seguido",
+  "doctor.instructions.fix_size": "Mova o detalhe para .claude/rules ou para documentos linkados até o arquivo ficar abaixo do teto",
+  "doctor.instructions.duplicated": '{count, plural, one {# linha de regra se repete} other {# linhas de regra se repetem}} entre AGENTS.md, CLAUDE.md e .claude/rules, por exemplo: "{example}"',
+  "doctor.instructions.fix_duplicated": "Deixe cada regra num arquivo só; cópias se afastam e depois se contradizem",
+  "doctor.project.lockfiles": "Mais de um lockfile de {ecosystem}: {files}; a instalação depende de qual ferramenta roda",
+  "doctor.project.fix_lockfiles": "Mantenha o lockfile do gerenciador de pacotes que o projeto usa e apague os outros com git rm",
+  "doctor.project.configs": "Mais de um arquivo de configuração de {tool}: {files}; só um deles é lido",
+  "doctor.project.fix_configs": "Junte tudo num arquivo só e apague o resto com git rm",
   "hook.failed_closed": "o hook {event} não conseguiu rodar ({detail}) e bloqueou por segurança. Rode `finitemonkey doctor`",
   "hook.failed_open": "o hook {event} não conseguiu rodar ({detail}); seguindo sem ele. Rode `finitemonkey doctor`",
   "exit.ok": "0 ok: o comando fez o que foi pedido",
@@ -4634,7 +5311,46 @@ var review_default = {
     "gate.merge.unavailable": "machine",
     "gate.merge.unanalyzed": "machine",
     "gate.merge.lost": "machine",
-    "gate.merge.clean": "machine"
+    "gate.merge.clean": "machine",
+    "doctor.node.unsupported": "machine",
+    "doctor.node.fix_unsupported": "machine",
+    "doctor.claude.old": "machine",
+    "doctor.claude.fix_old": "machine",
+    "doctor.sandbox.ok": "machine",
+    "doctor.sandbox.windows": "machine",
+    "doctor.sandbox.fix_windows": "machine",
+    "doctor.sandbox.missing": "machine",
+    "doctor.sandbox.fix_missing": "machine",
+    "doctor.path.copies": "machine",
+    "doctor.path.fix_copies": "machine",
+    "doctor.auth.env": "machine",
+    "doctor.auth.fix_env": "machine",
+    "doctor.settings.disable_all_hooks": "machine",
+    "doctor.settings.fix_disable_all_hooks": "machine",
+    "doctor.settings.managed_hooks_only": "machine",
+    "doctor.settings.fix_managed_hooks_only": "machine",
+    "doctor.settings.plugin_only": "machine",
+    "doctor.settings.fix_plugin_only": "machine",
+    "doctor.settings.agent_teams": "machine",
+    "doctor.settings.fix_agent_teams": "machine",
+    "doctor.settings.loop_plugins": "machine",
+    "doctor.settings.fix_loop_plugins": "machine",
+    "doctor.settings.cleanup_period": "machine",
+    "doctor.settings.fix_cleanup_period": "machine",
+    "doctor.instructions.claudeignore": "machine",
+    "doctor.instructions.fix_claudeignore": "machine",
+    "doctor.instructions.denied": "machine",
+    "doctor.instructions.fix_denied": "machine",
+    "doctor.instructions.local": "machine",
+    "doctor.instructions.fix_local": "machine",
+    "doctor.instructions.size": "machine",
+    "doctor.instructions.fix_size": "machine",
+    "doctor.instructions.duplicated": "machine",
+    "doctor.instructions.fix_duplicated": "machine",
+    "doctor.project.lockfiles": "machine",
+    "doctor.project.fix_lockfiles": "machine",
+    "doctor.project.configs": "machine",
+    "doctor.project.fix_configs": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -5048,7 +5764,46 @@ var review_default = {
     "gate.merge.unavailable": "machine",
     "gate.merge.unanalyzed": "machine",
     "gate.merge.lost": "machine",
-    "gate.merge.clean": "machine"
+    "gate.merge.clean": "machine",
+    "doctor.node.unsupported": "machine",
+    "doctor.node.fix_unsupported": "machine",
+    "doctor.claude.old": "machine",
+    "doctor.claude.fix_old": "machine",
+    "doctor.sandbox.ok": "machine",
+    "doctor.sandbox.windows": "machine",
+    "doctor.sandbox.fix_windows": "machine",
+    "doctor.sandbox.missing": "machine",
+    "doctor.sandbox.fix_missing": "machine",
+    "doctor.path.copies": "machine",
+    "doctor.path.fix_copies": "machine",
+    "doctor.auth.env": "machine",
+    "doctor.auth.fix_env": "machine",
+    "doctor.settings.disable_all_hooks": "machine",
+    "doctor.settings.fix_disable_all_hooks": "machine",
+    "doctor.settings.managed_hooks_only": "machine",
+    "doctor.settings.fix_managed_hooks_only": "machine",
+    "doctor.settings.plugin_only": "machine",
+    "doctor.settings.fix_plugin_only": "machine",
+    "doctor.settings.agent_teams": "machine",
+    "doctor.settings.fix_agent_teams": "machine",
+    "doctor.settings.loop_plugins": "machine",
+    "doctor.settings.fix_loop_plugins": "machine",
+    "doctor.settings.cleanup_period": "machine",
+    "doctor.settings.fix_cleanup_period": "machine",
+    "doctor.instructions.claudeignore": "machine",
+    "doctor.instructions.fix_claudeignore": "machine",
+    "doctor.instructions.denied": "machine",
+    "doctor.instructions.fix_denied": "machine",
+    "doctor.instructions.local": "machine",
+    "doctor.instructions.fix_local": "machine",
+    "doctor.instructions.size": "machine",
+    "doctor.instructions.fix_size": "machine",
+    "doctor.instructions.duplicated": "machine",
+    "doctor.instructions.fix_duplicated": "machine",
+    "doctor.project.lockfiles": "machine",
+    "doctor.project.fix_lockfiles": "machine",
+    "doctor.project.configs": "machine",
+    "doctor.project.fix_configs": "machine"
   }
 };
 
@@ -5220,34 +5975,10 @@ var latestFor = (entries, check2, treeHash2, command) => entries.findLast(
 var hasStale = (entries, check2, treeHash2) => entries.some((entry2) => entry2.check === check2 && entry2.treeHash !== treeHash2);
 
 // src/gate/checks/diff.ts
-import { join as join5 } from "node:path";
-
-// src/core/glob.ts
-var escape = (char) => /[.+^${}()|[\]\\]/.test(char) ? `\\${char}` : char;
-var globToRegExp = (glob) => {
-  const pattern = glob.replace(/^\.\//, "");
-  let out = "";
-  for (let index = 0; index < pattern.length; index += 1) {
-    const char = pattern[index] ?? "";
-    if (char === "*" && pattern[index + 1] === "*") {
-      const slash = pattern[index + 2] === "/";
-      out += slash ? "(?:.*/)?" : ".*";
-      index += slash ? 2 : 1;
-    } else if (char === "*") out += "[^/]*";
-    else if (char === "?") out += "[^/]";
-    else out += escape(char);
-  }
-  return new RegExp(`^${out}${pattern.endsWith("/") ? ".*" : ""}$`);
-};
-var matchesAny = (path, globs) => {
-  const normalized = toPosixPath(path);
-  return globs.some((glob) => globToRegExp(glob).test(normalized));
-};
-
-// src/gate/checks/diff.ts
+import { join as join10 } from "node:path";
 var MAX_LISTED = 10;
 var untrackedLines = (ctx) => ctx.changes.filter((change) => change.status === "A").reduce((sum, change) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join5(ctx.paths.root, change.path)));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join10(ctx.paths.root, change.path)));
   return sum + (text6.ok ? text6.value.split("\n").length : 0);
 }, 0);
 var diffCheck = (_check, ctx) => {
@@ -5346,7 +6077,7 @@ var manualCheck = (check2, ctx) => {
 };
 
 // src/gate/checks/placeholders.ts
-import { join as join6 } from "node:path";
+import { join as join11 } from "node:path";
 
 // src/guards/tests/patterns.ts
 var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)tests?\/.*\.[cm]?[jt]sx?$/;
@@ -5384,7 +6115,7 @@ var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHAN
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines3) => lines3.filter((line2) => !isTestFile(line2.path) && !SKIP_FILES.test(line2.path) && PLACEHOLDER.test(line2.text));
 var untrackedAdded = (ctx) => ctx.changes.filter((change) => change.status === "A" && !SKIP_FILES.test(change.path)).flatMap((change) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join6(ctx.paths.root, change.path)));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join11(ctx.paths.root, change.path)));
   return text6.ok ? text6.value.split("\n").map((line2, index) => ({ path: change.path, line: index + 1, text: line2 })) : [];
 });
 var placeholdersCheck = (_check, ctx) => {
@@ -6106,13 +6837,13 @@ var proseOutcome = (status) => {
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
 // src/secrets/baseline.ts
-import { join as join7 } from "node:path";
+import { join as join12 } from "node:path";
 var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
 var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
 var BASELINE_STATES = ["aceito", "falso-positivo"];
 var EXCEPTION_MAX_DAYS = 90;
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
-var baselinePath = (root) => toAbsolutePath(join7(root, BASELINE_FILE2));
+var baselinePath = (root) => toAbsolutePath(join12(root, BASELINE_FILE2));
 var text4 = (record2, key) => {
   const value = record2[key];
   return typeof value === "string" && value !== "" ? value : void 0;
@@ -6153,13 +6884,13 @@ var serializeBaseline = (baseline) => `${JSON.stringify({ schema: baseline.schem
 var saveBaseline = (runtime, root, baseline) => runtime.writeText(baselinePath(root), serializeBaseline(baseline));
 var ratchet = (findings, baseline, now, inScope) => {
   const byId = new Map(baseline.entries.map((entry2) => [entry2.id, entry2]));
-  const seen = new Set(findings.map((finding2) => finding2.id));
-  const entryOf4 = (finding2) => byId.get(finding2.id);
+  const seen = new Set(findings.map((finding3) => finding3.id));
+  const entryOf4 = (finding3) => byId.get(finding3.id);
   return {
-    fresh: findings.filter((finding2) => entryOf4(finding2) === void 0),
-    known: findings.filter((finding2) => (entryOf4(finding2)?.expiresAt ?? "") >= now),
-    expired: findings.filter((finding2) => {
-      const entry2 = entryOf4(finding2);
+    fresh: findings.filter((finding3) => entryOf4(finding3) === void 0),
+    known: findings.filter((finding3) => (entryOf4(finding3)?.expiresAt ?? "") >= now),
+    expired: findings.filter((finding3) => {
+      const entry2 = entryOf4(finding3);
       return entry2 !== void 0 && entry2.expiresAt < now;
     }),
     fixed: inScope === void 0 ? [] : baseline.entries.filter((entry2) => !seen.has(entry2.id) && inScope(entry2.file))
@@ -6172,14 +6903,14 @@ var withoutFixed = (baseline, fixed) => {
 var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry2) => entry2.expiresAt >= now).map((entry2) => entry2.fingerprint));
 
 // src/secrets/incidents.ts
-import { join as join8 } from "node:path";
+import { join as join13 } from "node:path";
 var INCIDENTS_DIR = ".finitemonkey/incidents";
 var INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"];
 var INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"];
 var ID = /^inc-[0-9a-f]{12}$/;
 var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint}`).slice(0, 12)}`;
-var incidentsDir = (root) => toAbsolutePath(join8(root, INCIDENTS_DIR));
-var incidentFile = (root, id) => toAbsolutePath(join8(incidentsDir(root), `${id}.json`));
+var incidentsDir = (root) => toAbsolutePath(join13(root, INCIDENTS_DIR));
+var incidentFile = (root, id) => toAbsolutePath(join13(incidentsDir(root), `${id}.json`));
 var pick2 = (options, value) => options.find((option) => option === value);
 var str2 = (record2, key) => {
   const value = record2[key];
@@ -6234,7 +6965,7 @@ var listIncidents = (runtime, root) => {
   return names.value.filter((name) => name.endsWith(".json")).map((name) => readIncident(runtime, root, name.slice(0, -".json".length))).flatMap((parsed) => parsed.ok ? [parsed.value] : []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 };
 var saveIncident = (runtime, root, incident) => {
-  const ignore = runtime.writeText(toAbsolutePath(join8(incidentsDir(root), ".gitignore")), "*\n");
+  const ignore = runtime.writeText(toAbsolutePath(join13(incidentsDir(root), ".gitignore")), "*\n");
   if (!ignore.ok) return ignore;
   return runtime.writeText(incidentFile(root, incident.id), `${JSON.stringify(incident, null, 2)}
 `);
@@ -6281,25 +7012,25 @@ var moveIncident = (incident, to, now, by) => ({
 var isRotated = (incident) => incident.state === "rotacionado" || incident.state === "fechado";
 
 // src/secrets/scan.ts
-import { join as join9, relative as relative2 } from "node:path";
+import { join as join14, relative as relative2 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
-var locate = (finding2, rawFile, line2, commit2) => {
+var locate = (finding3, rawFile, line2, commit2) => {
   const file = toPosixPath(rawFile);
   return {
-    id: findingId(finding2.ruleId, file, finding2.fingerprint),
-    ruleId: finding2.ruleId,
-    severity: finding2.severity,
+    id: findingId(finding3.ruleId, file, finding3.fingerprint),
+    ruleId: finding3.ruleId,
+    severity: finding3.severity,
     file,
     line: line2,
-    column: finding2.column,
-    fingerprint: finding2.fingerprint,
-    tail: finding2.tail,
+    column: finding3.column,
+    fingerprint: finding3.fingerprint,
+    tail: finding3.tail,
     ...commit2 === void 0 ? {} : { commit: commit2 }
   };
 };
-var whereOf = (finding2) => `${finding2.file}:${String(finding2.line)}`;
+var whereOf = (finding3) => `${finding3.file}:${String(finding3.line)}`;
 
 // src/secrets/diff.ts
 var COMMIT = /^commit ([0-9a-f]{7,64})\b/;
@@ -6314,8 +7045,8 @@ var targetOf = (line2) => {
 var collect2 = (chunk, commit2, found) => {
   const { file } = chunk;
   if (file === void 0 || chunk.text.length === 0) return;
-  for (const finding2 of scanText(chunk.text.join("\n"), { path: file })) {
-    const located = locate(finding2, file, chunk.lines[finding2.line - 1] ?? finding2.line, commit2);
+  for (const finding3 of scanText(chunk.text.join("\n"), { path: file })) {
+    const located = locate(finding3, file, chunk.lines[finding3.line - 1] ?? finding3.line, commit2);
     found.set(located.id, located);
   }
 };
@@ -6381,12 +7112,12 @@ var listed2 = (runtime, root, target) => {
   const base = toAbsolutePath(target, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => toPosixPath(relative2(root, join9(base, toPosixPath(name))))));
+  return accept(walked.value.map((name) => toPosixPath(relative2(root, join14(base, toPosixPath(name))))));
 };
 var scanFile = (runtime, root, file) => {
   const text6 = runtime.readText(toAbsolutePath(file, root));
   if (!text6.ok || text6.value.length > MAX_FILE_BYTES || binary(text6.value)) return [];
-  return scanText(text6.value, { path: file }).map((finding2) => locate(finding2, file, finding2.line));
+  return scanText(text6.value, { path: file }).map((finding3) => locate(finding3, file, finding3.line));
 };
 var scanPath = (runtime, root, target) => {
   const files = listed2(runtime, root, target);
@@ -6396,7 +7127,7 @@ var scanPath = (runtime, root, target) => {
 var diffFindings = (diff) => {
   const scanner = diffScanner();
   for (const line2 of diff.split("\n")) scanner.push(line2);
-  return scanner.end().filter((finding2) => !SKIPPED.test(finding2.file));
+  return scanner.end().filter((finding3) => !SKIPPED.test(finding3.file));
 };
 var scanStaged = (runtime, root, includeUnstaged = false) => {
   const args = includeUnstaged ? ["diff", "HEAD", ...DIFF_FLAGS] : ["diff", "--cached", ...DIFF_FLAGS];
@@ -6409,7 +7140,7 @@ var scanHistory = async (runtime, root) => {
   const args = ["log", "-p", "--all", "--format=commit %H", ...DIFF_FLAGS];
   const git = await runtime.gitLines(args, root, scanner.push);
   if (!git.ok) return reject(git.found ? "git log failed" : "git not found");
-  return accept(scanner.end().filter((finding2) => !SKIPPED.test(finding2.file)));
+  return accept(scanner.end().filter((finding3) => !SKIPPED.test(finding3.file)));
 };
 
 // src/secrets/gate.ts
@@ -6442,14 +7173,14 @@ var secretsCheck = (_check, ctx) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings, openIncidents } = status.value;
   const notes2 = [
-    ...findings.slice(0, MAX_LISTED4).map((finding2) => note("gate.secrets.finding", { file: finding2.file, line: finding2.line, rule: finding2.ruleId })),
+    ...findings.slice(0, MAX_LISTED4).map((finding3) => note("gate.secrets.finding", { file: finding3.file, line: finding3.line, rule: finding3.ruleId })),
     ...openIncidents.slice(0, MAX_LISTED4).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
   return notes2.length > 0 ? failed(notes2) : passed([note("gate.secrets.clean")]);
 };
 
 // src/gate/checks/tests.ts
-import { join as join10 } from "node:path";
+import { join as join15 } from "node:path";
 
 // src/guards/tests/scan.ts
 var skipQuoted2 = (source, start, quote) => {
@@ -6610,7 +7341,7 @@ var treeViolations = (ctx) => {
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
     after: (path) => {
-      const text6 = ctx.runtime.readText(toAbsolutePath(join10(ctx.paths.root, path)));
+      const text6 = ctx.runtime.readText(toAbsolutePath(join15(ctx.paths.root, path)));
       return text6.ok ? text6.value : void 0;
     },
     acceptedConfigs: ctx.trust.configs,
@@ -6631,7 +7362,7 @@ var testsCheck = (check2, ctx) => {
 };
 
 // src/git/tree.ts
-import { join as join11 } from "node:path";
+import { join as join16 } from "node:path";
 
 // src/secrets/guards/paths.ts
 var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
@@ -6670,7 +7401,7 @@ var dropSensitive = (runtime, repo, env, options) => {
   return removed.ok ? accept(void 0) : removed;
 };
 var withTempIndex = (runtime, repo, options, work) => {
-  const path = toAbsolutePath(join11(repo.gitDir, `finitemonkey-${options.stamp}.index`));
+  const path = toAbsolutePath(join16(repo.gitDir, `finitemonkey-${options.stamp}.index`));
   const env = { GIT_INDEX_FILE: path, GIT_OPTIONAL_LOCKS: "0" };
   try {
     return work(env);
@@ -6922,7 +7653,7 @@ var parsePorcelainV2 = (stdout) => {
 };
 
 // src/git/project-config.ts
-import { join as join12 } from "node:path";
+import { join as join17 } from "node:path";
 var CONFIG_FILE2 = ".finitemonkey/config.yml";
 var unquote = (value) => value.trim().replace(/^(["'])(.*)\1$/s, "$2");
 var stripComment2 = (line2) => {
@@ -7003,12 +7734,12 @@ var configMap = (tree, ...path) => {
   );
 };
 var loadProjectConfig = (runtime, root) => {
-  const text6 = runtime.readText(toAbsolutePath(join12(root, CONFIG_FILE2)));
+  const text6 = runtime.readText(toAbsolutePath(join17(root, CONFIG_FILE2)));
   return text6.ok ? parseConfigYaml(text6.value) : {};
 };
 
 // src/git/merge/dropped.ts
-import { join as join13 } from "node:path";
+import { join as join18 } from "node:path";
 
 // src/git/merge/lines.ts
 var normalizeLine = (line2) => line2.replace(/\r$/, "").trim().replace(/\s*,$/, "");
@@ -7088,17 +7819,17 @@ var parseDropped = (text6) => {
   return accept({ items, invalid });
 };
 var loadDropped = (runtime, root, file) => {
-  const path = toAbsolutePath(file ?? join13(root, DROPPED_FILE), root);
+  const path = toAbsolutePath(file ?? join18(root, DROPPED_FILE), root);
   const text6 = runtime.readText(path);
   if (!text6.ok) return file === void 0 ? accept({ items: [], invalid: [] }) : reject(`${file}: ${text6.error}`);
   return parseDropped(text6.value);
 };
-var isDropped = (finding2, items) => items.some(
-  (item) => item.file === finding2.file && (item.side === void 0 || finding2.side === void 0 || item.side === finding2.side) && (item.text === void 0 || normalizeLine(item.text) === finding2.text)
+var isDropped = (finding3, items) => items.some(
+  (item) => item.file === finding3.file && (item.side === void 0 || finding3.side === void 0 || item.side === finding3.side) && (item.text === void 0 || normalizeLine(item.text) === finding3.text)
 );
 
 // src/git/merge/generated.ts
-import { join as join14 } from "node:path";
+import { join as join19 } from "node:path";
 var LOCKFILES3 = /* @__PURE__ */ new Set([
   "package-lock.json",
   "npm-shrinkwrap.json",
@@ -7161,7 +7892,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
   if (declared.length === 0) return accept([]);
   const commit2 = resultCommit(runtime, repo, inputs);
   if (!commit2.ok) return commit2;
-  const dir = join14(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
+  const dir = join19(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
   if (!runtime.git(["worktree", "add", "--detach", dir, commit2.value], repo.root).ok)
     return reject("could not check out the merge result");
   try {
@@ -7171,7 +7902,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
     }
     return accept(
       declared.flatMap(({ path }) => {
-        const fresh3 = runtime.readText(toAbsolutePath(join14(dir, path)));
+        const fresh3 = runtime.readText(toAbsolutePath(join19(dir, path)));
         const merged = blobText(runtime, repo, commit2.value, path);
         if (fresh3.ok && fresh3.value === merged) return [];
         return [{ kind: "generated-differs", file: path, side: void 0, line: void 0, text: path, weak: false }];
@@ -7212,9 +7943,9 @@ var removalOf = (ours, theirs, paired) => {
   return { union: tally(union2.values()), honored: tally(honored), conflicted };
 };
 var missingAdditions = (hunks, file, elsewhere) => {
-  const present = new Set(file.result);
+  const present2 = new Set(file.result);
   return hunks.flatMap(({ side, hunk, added }) => {
-    const text6 = added.find((line2) => !isWeak(line2) && !present.has(line2));
+    const text6 = added.find((line2) => !isWeak(line2) && !present2.has(line2));
     if (text6 === void 0 || containsSequence(file.result, added) || elsewhere(added)) return [];
     const offset = Math.max(
       0,
@@ -7295,12 +8026,12 @@ var symbolsOf = (line2) => {
 };
 var escapeRegex = (text6) => text6.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var containsSymbol = (text6, symbol) => symbol.test ? text6.includes(symbol.name) : new RegExp(`(?<![\\w$])${escapeRegex(symbol.name)}(?![\\w$])`).test(text6);
-var missingSymbols = (file, side, hunks, present) => {
+var missingSymbols = (file, side, hunks, present2) => {
   const seen = /* @__PURE__ */ new Set();
   return hunks.flatMap(
     (hunk) => hunk.added.flatMap((raw, offset) => {
       return symbolsOf(raw.trim()).flatMap((symbol) => {
-        if (seen.has(symbol.name) || present(symbol)) return [];
+        if (seen.has(symbol.name) || present2(symbol)) return [];
         seen.add(symbol.name);
         return [{ kind: "missing-symbol", file, side, line: hunk.newStart + offset, text: symbol.name, weak: false }];
       });
@@ -7313,7 +8044,7 @@ var created2 = (diff) => diff?.status === "added" || diff?.status === "copied";
 var resultPathOf = (context, pair) => [pair.ours?.newPath, pair.theirs?.newPath, pair.key].find(
   (path) => path !== void 0 && context.resultText(path) !== void 0
 );
-var finding = (kind, file, side, text6) => ({
+var finding2 = (kind, file, side, text6) => ({
   kind,
   file,
   side,
@@ -7328,27 +8059,27 @@ var binaryFindings = (context, pair, path) => {
   const theirs = pair.theirs?.newPath === void 0 ? void 0 : blobId(runtime, repo, inputs.theirs, pair.theirs.newPath);
   const file = path ?? pair.key;
   if (pair.ours !== void 0 && pair.theirs !== void 0 && ours !== theirs) {
-    if (result === ours) return [finding("binary", file, "theirs", file)];
-    if (result === theirs) return [finding("binary", file, "ours", file)];
-    return [finding("binary", file, void 0, file)];
+    if (result === ours) return [finding2("binary", file, "theirs", file)];
+    if (result === theirs) return [finding2("binary", file, "ours", file)];
+    return [finding2("binary", file, void 0, file)];
   }
   const side = pair.ours === void 0 ? "theirs" : "ours";
   const expected = side === "ours" ? ours : theirs;
-  return result === expected ? [] : [finding("binary", file, side, file)];
+  return result === expected ? [] : [finding2("binary", file, side, file)];
 };
 var elsewhereOf = (context) => (lines3) => context.resultFiles().some((path) => containsSequence(contentLines(context.resultText(path)), lines3));
 var symbolFindings = (context, pair, path, text6) => {
-  const present = (symbol) => text6 !== void 0 && containsSymbol(text6, symbol) || context.resultFiles().some((other) => containsSymbol(context.resultText(other) ?? "", symbol));
+  const present2 = (symbol) => text6 !== void 0 && containsSymbol(text6, symbol) || context.resultFiles().some((other) => containsSymbol(context.resultText(other) ?? "", symbol));
   return [
-    ...missingSymbols(path, "ours", pair.ours?.hunks ?? [], present),
-    ...missingSymbols(path, "theirs", pair.theirs?.hunks ?? [], present)
+    ...missingSymbols(path, "ours", pair.ours?.hunks ?? [], present2),
+    ...missingSymbols(path, "theirs", pair.theirs?.hunks ?? [], present2)
   ];
 };
 var verifyFile = (context, pair) => {
   const path = resultPathOf(context, pair);
   if (pair.ours?.binary === true || pair.theirs?.binary === true) return binaryFindings(context, pair, path);
   const missing2 = ["ours", "theirs"].flatMap(
-    (side) => created2(pair[side]) && path === void 0 ? [finding("missing-file", pair.key, side, pair.key)] : []
+    (side) => created2(pair[side]) && path === void 0 ? [finding2("missing-file", pair.key, side, pair.key)] : []
   );
   if (missing2.length > 0) return missing2;
   const copied = [pair.ours, pair.theirs].find((diff) => diff?.status === "copied");
@@ -7457,27 +8188,27 @@ var verifyMerge = (runtime, repo, options = {}) => {
 };
 
 // src/git/ownership.ts
-import { join as join15 } from "node:path";
+import { join as join20 } from "node:path";
 var OWNERSHIP_DIR = ".finitemonkey/git";
 var ownerKey = (raw) => {
   const cleaned = (raw ?? "").replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 80);
   return cleaned === "" ? "unknown" : cleaned;
 };
-var fileOf = (repo, kind, owner) => toAbsolutePath(join15(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
+var fileOf = (repo, kind, owner) => toAbsolutePath(join20(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
 var readDirty = (runtime, root) => {
   const status = runtime.git(["status", "--porcelain=v2", "-z", "--untracked-files=all"], root);
   return status.ok ? parsePorcelainV2(status.stdout) : void 0;
 };
 var hashDirty = (runtime, repo, entries) => {
-  const present = entries.filter((entry2) => runtime.stat(toAbsolutePath(join15(repo.root, entry2.path)))?.kind === "file");
-  const hashed = present.length === 0 ? void 0 : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
-    input: `${present.map((entry2) => entry2.path).join("\n")}
+  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join20(repo.root, entry2.path)))?.kind === "file");
+  const hashed = present2.length === 0 ? void 0 : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
+    input: `${present2.map((entry2) => entry2.path).join("\n")}
 `
   });
   const shas = hashed?.ok === true ? hashed.stdout.split("\n") : [];
   return Object.fromEntries(
     entries.map((entry2) => {
-      const index = present.indexOf(entry2);
+      const index = present2.indexOf(entry2);
       return [entry2.path, index < 0 ? "deleted" : shas[index] ?? "unknown"];
     })
   );
@@ -7576,9 +8307,9 @@ var mergeGateStatus = (runtime, repo, owner) => {
   const commits = since === void 0 ? [] : mergeCommitsSince(runtime, repo, since);
   return [...pending, ...commits.map((commit2) => ({ commit: commit2, report: verifyMerge(runtime, repo, { rev: commit2 }) }))];
 };
-var findingLabel = (finding2) => {
-  const where = finding2.line === void 0 ? finding2.file : `${finding2.file}:${String(finding2.line)}`;
-  return `${where} ${finding2.text === "" ? finding2.kind : `"${finding2.text}"`}`;
+var findingLabel = (finding3) => {
+  const where = finding3.line === void 0 ? finding3.file : `${finding3.file}:${String(finding3.line)}`;
+  return `${where} ${finding3.text === "" ? finding3.kind : `"${finding3.text}"`}`;
 };
 
 // src/git/repo.ts
@@ -7959,11 +8690,11 @@ var humanOf = (ctx, item) => {
   return [
     ctx.t("git.merge.lost", { ...range, count: report2.findings.length }),
     ...report2.findings.map(
-      (finding2) => ctx.t("git.merge.finding", {
-        where: findingLabel(finding2),
-        kind: finding2.kind,
-        side: finding2.side ?? "-",
-        text: finding2.text
+      (finding3) => ctx.t("git.merge.finding", {
+        where: findingLabel(finding3),
+        kind: finding3.kind,
+        side: finding3.side ?? "-",
+        text: finding3.text
       })
     )
   ];
@@ -8154,10 +8885,10 @@ var rescueCommand = {
 };
 
 // src/git/journal.ts
-import { join as join16 } from "node:path";
+import { join as join21 } from "node:path";
 var JOURNAL_FILE = ".finitemonkey/git-journal.jsonl";
 var JOURNAL_SCHEMA = "finitemonkey/git-journal@1";
-var journalPath = (root) => toAbsolutePath(join16(root, JOURNAL_FILE));
+var journalPath = (root) => toAbsolutePath(join21(root, JOURNAL_FILE));
 var headsOf = (value) => isRecord(value) ? Object.fromEntries(
   Object.entries(value).filter((entry2) => typeof entry2[1] === "string")
 ) : {};
@@ -8193,7 +8924,7 @@ var readJournal = (runtime, root) => {
 };
 var appendJournal = (runtime, root, entry2) => {
   const path = journalPath(root);
-  const made = runtime.mkdir(toAbsolutePath(join16(root, ".finitemonkey")));
+  const made = runtime.mkdir(toAbsolutePath(join21(root, ".finitemonkey")));
   if (!made.ok) return made;
   const previous = runtime.readText(path);
   const before = previous.ok ? previous.value : "";
@@ -8280,7 +9011,7 @@ var listSnapshots = (runtime, repo) => {
 };
 
 // src/git/undo.ts
-import { basename as basename3, dirname as dirname4, join as join17 } from "node:path";
+import { basename as basename3, dirname as dirname5, join as join22 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args) => {
   const result = runtime.git(args, repo.root);
@@ -8323,7 +9054,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join17(dirname4(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join22(dirname5(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -8795,7 +9526,7 @@ var selfGuard = (input) => {
 };
 
 // src/guards/tests/hook.ts
-import { join as join18, relative as relative4 } from "node:path";
+import { join as join23, relative as relative4 } from "node:path";
 var localPath = (root, path) => toPosixPath(relative4(root, toAbsolutePath(path, root)));
 var read = (input, path) => {
   const text6 = input.runtime.readText(path);
@@ -8824,7 +9555,7 @@ var shellViolations = (input, root) => {
   return parseShell(command).flatMap(
     (simple) => writtenPaths(simple).flatMap((path) => {
       const local = localPath(root, path);
-      const exists = input.runtime.stat(toAbsolutePath(join18(root, local))) !== void 0;
+      const exists = input.runtime.stat(toAbsolutePath(join23(root, local))) !== void 0;
       if (!exists) return [];
       if (isProtectedConfig(local)) return [{ kind: "config_changed", path: local }];
       return isTestFile(local) ? [{ kind: "test_removed", path: local }] : [];
@@ -8844,7 +9575,7 @@ var testsGuard = (input) => {
 };
 
 // src/gate/hooks/config.ts
-import { join as join19 } from "node:path";
+import { join as join24 } from "node:path";
 var CONFIG_FILE3 = "config-hooks.json";
 var GUARDED_SOURCES = /* @__PURE__ */ new Set(["user_settings", "project_settings", "local_settings"]);
 var countIn = (value) => {
@@ -8859,9 +9590,9 @@ var censusOf = (text6) => {
   return { hooks: countIn(parsed.value["hooks"]), disabled: parsed.value["disableAllHooks"] === true };
 };
 var settingsFiles = (paths, env) => [
-  toAbsolutePath(join19(paths.root, ".claude", "settings.json")),
-  toAbsolutePath(join19(paths.root, ".claude", "settings.local.json")),
-  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join19(env["HOME"], ".claude", "settings.json"))]
+  toAbsolutePath(join24(paths.root, ".claude", "settings.json")),
+  toAbsolutePath(join24(paths.root, ".claude", "settings.local.json")),
+  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join24(env["HOME"], ".claude", "settings.json"))]
 ];
 var read2 = (runtime, path) => {
   const text6 = runtime.readText(path);
@@ -9264,7 +9995,7 @@ var isOwnWorktree = (input) => {
 var subagentStopGate = (input) => isOwnWorktree(input) ? stopGate(input) : { kind: "allow" };
 
 // src/gate/hooks/subagent.ts
-import { join as join20 } from "node:path";
+import { join as join25 } from "node:path";
 var NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
 var KNOWN_KINDS = /* @__PURE__ */ new Set([
   "command",
@@ -9298,12 +10029,12 @@ var subagentStart = (input) => {
   const active = readState(runtime, paths).active;
   if (active === void 0) return { kind: "allow" };
   const disk = (relative9) => {
-    const text6 = runtime.readText(toAbsolutePath(join20(paths.root, relative9)));
+    const text6 = runtime.readText(toAbsolutePath(join25(paths.root, relative9)));
     return text6.ok ? text6.value : void 0;
   };
   const loaded = loadTask(runtime, paths, { disk, base: () => void 0 }, active);
   if (!loaded.ok) return { kind: "allow" };
-  const briefing = runtime.stat(toAbsolutePath(join20(paths.dir, "briefing.md"))) !== void 0;
+  const briefing = runtime.stat(toAbsolutePath(join25(paths.dir, "briefing.md"))) !== void 0;
   return { kind: "allow", output: contextOutput("SubagentStart", contractFacts(t, loaded.value.contract, briefing)) };
 };
 
@@ -9320,7 +10051,7 @@ var PORTAO_HANDLERS = {
 };
 
 // src/prod/guard.ts
-import { join as join22 } from "node:path";
+import { join as join27 } from "node:path";
 
 // src/git/command-text.ts
 var MAX_SHOWN = 160;
@@ -9662,7 +10393,7 @@ var remoteHostsOf = (command) => {
 };
 
 // src/prod/targets.ts
-import { join as join21 } from "node:path";
+import { join as join26 } from "node:path";
 var DEPLOY_FILES = [
   "deploy.sh",
   "scripts/deploy.sh",
@@ -9686,12 +10417,12 @@ var hostsInText = (text6) => {
   return [...urls, ...keyed, ...commands].filter((host) => host !== "" && !host.includes("$"));
 };
 var workflowFiles = (runtime, root) => {
-  const listed4 = runtime.listDir(toAbsolutePath(join21(root, ".github", "workflows")));
+  const listed4 = runtime.listDir(toAbsolutePath(join26(root, ".github", "workflows")));
   if (!listed4.ok) return [];
   return listed4.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
 };
 var detectedHosts = (runtime, root, files) => files.flatMap((file) => {
-  const text6 = runtime.readText(toAbsolutePath(join21(root, file)));
+  const text6 = runtime.readText(toAbsolutePath(join26(root, file)));
   return text6.ok ? hostsInText(text6.value) : [];
 });
 var loadProdTargets = (runtime, root, config) => {
@@ -9703,7 +10434,7 @@ var loadProdTargets = (runtime, root, config) => {
     ...detectedHosts(runtime, root, deployFiles)
   ];
   const declaredDeploy = configAt(config, "prod", "deploy");
-  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join21(root, file))) !== void 0);
+  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join26(root, file))) !== void 0);
   return {
     hosts: new Set(hosts.map(hostKey).filter((host) => host !== "")),
     kubeContexts: configList(config, "prod", "kube_contexts"),
@@ -9880,8 +10611,8 @@ var recordEvidence = (runtime, root, owner, reads) => {
     ] : []
   );
   if (lines3.length === 0) return;
-  const path = toAbsolutePath(join22(root, EVIDENCE_FILE));
-  runtime.mkdir(toAbsolutePath(join22(root, ".finitemonkey")));
+  const path = toAbsolutePath(join27(root, EVIDENCE_FILE));
+  runtime.mkdir(toAbsolutePath(join27(root, ".finitemonkey")));
   const before = runtime.readText(path);
   const text6 = before.ok ? before.value : "";
   runtime.writeAtomic(path, `${text6}${text6 === "" || text6.endsWith("\n") ? "" : "\n"}${lines3.join("\n")}
@@ -10809,7 +11540,7 @@ var gitPreToolUse = (input) => {
 };
 
 // src/git/hooks/session.ts
-import { dirname as dirname5, relative as relative5 } from "node:path";
+import { dirname as dirname6, relative as relative5 } from "node:path";
 var ALLOW2 = { kind: "allow" };
 var EDIT_TOOLS = /* @__PURE__ */ new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
 var gitSessionStart = (input) => {
@@ -10822,7 +11553,7 @@ var editedPath = (input) => {
   const raw = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path");
   if (raw === void 0 || raw === "") return void 0;
   const file = toAbsolutePath(raw, input.cwd);
-  const repo = openRepo(input.runtime, toAbsolutePath(dirname5(file))) ?? openRepo(input.runtime, input.cwd);
+  const repo = openRepo(input.runtime, toAbsolutePath(dirname6(file))) ?? openRepo(input.runtime, input.cwd);
   if (repo === void 0) return void 0;
   const path = toPosixPath(relative5(input.runtime.realpath(repo.root), input.runtime.realpath(file)));
   return path === "" || path.startsWith("..") || path.startsWith(STATE_PREFIX) ? void 0 : { repo, path };
@@ -11136,21 +11867,21 @@ var describeFindings = (t, items) => {
   const rest = items.length - listed4.length;
   return rest > 0 ? `${listed4.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed4.join("; ");
 };
-var lineWhere = (t, finding2) => t("secrets.where.line", { line: finding2.line, column: finding2.column });
+var lineWhere = (t, finding3) => t("secrets.where.line", { line: finding3.line, column: finding3.column });
 
 // src/secrets/guards/exposure.ts
 var HOOK_ACTOR = "finitemonkey";
 var liveFindings = (input, texts) => {
   const baseline = loadBaseline(input.runtime, input.cwd);
   const accepted2 = acceptedFingerprints(baseline.ok ? baseline.value : EMPTY_BASELINE, input.runtime.now());
-  return texts.flatMap((text6) => scanText(text6, { rules: CREDENTIAL_RULES })).filter((finding2) => !accepted2.has(finding2.fingerprint));
+  return texts.flatMap((text6) => scanText(text6, { rules: CREDENTIAL_RULES })).filter((finding3) => !accepted2.has(finding3.fingerprint));
 };
 var record = (input, findings, draft, where) => {
-  const ids2 = findings.map((finding2) => {
+  const ids2 = findings.map((finding3) => {
     const saved = recordIncident(
       input.runtime,
       input.cwd,
-      { ...draft, rule: finding2.ruleId, fingerprint: finding2.fingerprint, where: `${where}:${String(finding2.line)}` },
+      { ...draft, rule: finding3.ruleId, fingerprint: finding3.fingerprint, where: `${where}:${String(finding3.line)}` },
       HOOK_ACTOR
     );
     return saved.ok ? saved.value.id : input.t("secrets.incident.unsaved", { detail: saved.error });
@@ -11162,7 +11893,7 @@ var secretsUserPromptSubmit = (input) => {
   const findings = liveFindings(input, [prompt]);
   if (findings.length === 0) return { kind: "allow" };
   const incident = record(input, findings, { source: "prompt", state: "exposicao-local" }, "prompt");
-  const items = findings.map((finding2) => ({ ruleId: finding2.ruleId, where: lineWhere(input.t, finding2) }));
+  const items = findings.map((finding3) => ({ ruleId: finding3.ruleId, where: lineWhere(input.t, finding3) }));
   return {
     kind: "block",
     reason: input.t("secrets.block.prompt", { found: describeFindings(input.t, items), incident })
@@ -11173,7 +11904,7 @@ var secretsPostToolUse = (input) => {
   if (findings.length === 0) return { kind: "allow" };
   const tool = toolName2(input.payload) || "tool";
   const incident = record(input, findings, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
-  const items = findings.map((finding2) => ({ ruleId: finding2.ruleId, where: lineWhere(input.t, finding2) }));
+  const items = findings.map((finding3) => ({ ruleId: finding3.ruleId, where: lineWhere(input.t, finding3) }));
   const context = input.t("secrets.post.context", { tool, found: describeFindings(input.t, items), incident });
   return {
     kind: "allow",
@@ -11288,30 +12019,30 @@ var writeDecision = (input, tool) => {
     const file = relativeFile(input.cwd, written.file);
     const found = scanText(written.text, { path: file });
     if (found.length === 0) continue;
-    const items = found.map((finding2) => ({
-      ruleId: finding2.ruleId,
-      where: written.whole ? t("secrets.where.file", { file, line: finding2.line, column: finding2.column }) : t("secrets.where.new_text", { file, line: finding2.line })
+    const items = found.map((finding3) => ({
+      ruleId: finding3.ruleId,
+      where: written.whole ? t("secrets.where.file", { file, line: finding3.line, column: finding3.column }) : t("secrets.where.new_text", { file, line: finding3.line })
     }));
     return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
   }
   return ALLOW5;
 };
-var bashMessage = (t, finding2) => {
-  switch (finding2.kind) {
+var bashMessage = (t, finding3) => {
+  switch (finding3.kind) {
     case "read":
-      return t("secrets.block.read", { target: finding2.target });
+      return t("secrets.block.read", { target: finding3.target });
     case "env-dump":
-      return t("secrets.block.env_dump", { command: finding2.command });
+      return t("secrets.block.env_dump", { command: finding3.command });
     case "person-only":
-      return t("secrets.block.person_only", { command: finding2.command });
+      return t("secrets.block.person_only", { command: finding3.command });
   }
 };
 var commitDecision = (input, includeUnstaged) => {
   const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
   if (!staged.ok || staged.value.length === 0) return ALLOW5;
-  const items = staged.value.map((finding2) => ({
-    ruleId: finding2.ruleId,
-    where: input.t("secrets.where.file", { file: finding2.file, line: finding2.line, column: finding2.column })
+  const items = staged.value.map((finding3) => ({
+    ruleId: finding3.ruleId,
+    where: input.t("secrets.where.file", { file: finding3.file, line: finding3.line, column: finding3.column })
   }));
   return { kind: "block", reason: input.t("secrets.block.commit", { found: describeFindings(input.t, items) }) };
 };
@@ -11323,7 +12054,7 @@ var bashDecision = (input) => {
   if (first !== void 0) return { kind: "block", reason: bashMessage(input.t, first) };
   const found = scanText(command);
   if (found.length > 0) {
-    const items = found.map((finding2) => ({ ruleId: finding2.ruleId, where: lineWhere(input.t, finding2) }));
+    const items = found.map((finding3) => ({ ruleId: finding3.ruleId, where: lineWhere(input.t, finding3) }));
     return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
   }
   const commit2 = commitIntent(segments);
@@ -11551,7 +12282,7 @@ var runHook = async (event, options) => {
 };
 
 // src/install/plugin-yield.ts
-import { join as join23 } from "node:path";
+import { join as join28 } from "node:path";
 
 // src/install/hook-entries.ts
 var INSTALLED_HOOKS = [
@@ -11592,26 +12323,6 @@ var isOwnHandler = (handler) => {
   if (hookAt < 0) return false;
   const target = hookAt === 0 ? command : args[hookAt - 1] ?? "";
   return OWN_SCRIPT.test(target);
-};
-
-// src/install/json-text.ts
-var DEFAULT_STYLE = { indent: "  ", finalNewline: true };
-var styleOf = (text6) => {
-  const indented = /\n([ \t]+)\S/.exec(text6);
-  return { indent: indented?.[1] ?? DEFAULT_STYLE.indent, finalNewline: text6.endsWith("\n") };
-};
-var renderJson = (value, style) => `${JSON.stringify(value, null, style.indent)}${style.finalNewline ? "\n" : ""}`;
-var parseSettings = (text6) => text6 === void 0 || text6.trim() === "" ? { ok: true, value: {} } : parseJsonObject(text6);
-var asList = (value) => Array.isArray(value) ? value : [];
-var asRecord = (value) => isRecord(value) ? value : {};
-var setKey = (record2, key, value) => {
-  if (!(key in record2)) return value === void 0 ? record2 : { ...record2, [key]: value };
-  return Object.fromEntries(
-    Object.entries(record2).flatMap(([name, current]) => {
-      if (name !== key) return [[name, current]];
-      return value === void 0 ? [] : [[name, value]];
-    })
-  );
 };
 
 // src/install/settings-merge.ts
@@ -11722,7 +12433,7 @@ var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
 `;
 var projectOwnsHooks = (ctx) => {
   const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
-  const text6 = ctx.runtime.readText(toAbsolutePath(join23(root, ...SETTINGS_FILE.split("/"))));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join28(root, ...SETTINGS_FILE.split("/"))));
   if (!text6.ok) return false;
   const parsed = parseJsonObject(text6.value);
   return parsed.ok && ownHandlersIn(parsed.value) > 0;
@@ -11774,7 +12485,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join24 } from "node:path";
+import { join as join29 } from "node:path";
 
 // src/i18n/languages.ts
 var LANGUAGES = ["en", "pt-BR", "es"];
@@ -12014,7 +12725,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join24(dir, `${lang}.json`));
+  const file = toAbsolutePath(join29(dir, `${lang}.json`));
   const text6 = ctx.runtime.readText(file);
   if (!text6.ok) return reject(unreadable(dir, file, text6.error));
   const parsed = parseJsonObject(text6.value);
@@ -12037,7 +12748,7 @@ var describeProblem = (ctx, problem4) => {
   return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join24(dir, "review.json")));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join29(dir, "review.json")));
   const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -12078,7 +12789,7 @@ var i18nCheckCommand = {
 };
 
 // src/install/apply.ts
-import { dirname as dirname6 } from "node:path";
+import { dirname as dirname7 } from "node:path";
 
 // src/install/hash.ts
 import { createHash as createHash2 } from "node:crypto";
@@ -12181,44 +12892,6 @@ var ASK_FLOOR = {
 };
 var ASK_RULES = [...ASK_FLOOR.push, ...ASK_FLOOR.deploy];
 
-// src/install/claude-version.ts
-var ON_FAILURE_MIN = [2, 1, 295];
-var PROBE_MS = 8e3;
-var parseClaudeVersion = (output) => {
-  const match = /(\d+)\.(\d+)\.(\d+)/.exec(output);
-  return match === null ? void 0 : [Number(match[1]), Number(match[2]), Number(match[3])];
-};
-var atLeast = (version, min) => {
-  for (const [index, part2] of min.entries()) {
-    const value = version[index] ?? 0;
-    if (value !== part2) return value > part2;
-  }
-  return true;
-};
-var detectClaude = (probe) => {
-  const result = probe("claude", ["--version"], PROBE_MS);
-  const parsed = result.ok ? parseClaudeVersion(result.stdout) : void 0;
-  if (parsed === void 0) return { version: void 0, failClosed: true };
-  return { version: parsed.join("."), failClosed: atLeast(parsed, ON_FAILURE_MIN) };
-};
-
-// src/install/claudeignore.ts
-var CLAUDEIGNORE_FILES = [".claudeignore", ".claude/.claudeignore"];
-var ruleFor = (raw) => {
-  const line2 = withoutCarriageReturn(raw).trim();
-  if (line2 === "" || line2.startsWith("#") || line2.startsWith("!") || line2.includes(")")) return void 0;
-  const anchored = line2.startsWith("/");
-  const body = (anchored ? line2.slice(1) : line2).replace(/\/+$/, "");
-  if (body === "" || body === "*" || body === "**") return void 0;
-  const path = line2.endsWith("/") ? `${body}/**` : body;
-  return `Read(${anchored || body.includes("/") ? "./" : ""}${path})`;
-};
-var claudeignoreRules = (texts) => [
-  ...new Set(
-    texts.flatMap((text6) => (text6 ?? "").split("\n")).map(ruleFor).filter((rule) => rule !== void 0)
-  )
-];
-
 // src/install/templates/en.ts
 var en = {
   configHeader: "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
@@ -12303,7 +12976,7 @@ var DENY_FLOOR = {
 var DENY_RULES = [...DENY_FLOOR.secrets, ...DENY_FLOOR.git, ...DENY_FLOOR.proof];
 
 // src/install/detect.ts
-import { join as join25 } from "node:path";
+import { join as join30 } from "node:path";
 var PACKAGE_MANAGERS = [
   { name: "pnpm", files: ["pnpm-lock.yaml"] },
   { name: "yarn", files: ["yarn.lock"] },
@@ -12319,7 +12992,7 @@ var LANGUAGE_MARKERS = [
   { name: "ruby", files: ["Gemfile"] },
   { name: "java", files: ["pom.xml", "build.gradle", "build.gradle.kts"] }
 ];
-var LOOP_PLUGINS = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
+var LOOP_PLUGINS2 = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
 var WORKFLOW_DIRS = [
   { dir: ".planning", name: "gsd" },
   { dir: ".bmad-core", name: "bmad" },
@@ -12357,7 +13030,7 @@ var pluginAuthorities = (settings, source) => {
   if (!isRecord(enabled)) return [];
   return Object.entries(enabled).filter(([, on]) => on === true).map(([id]) => id.split("@")[0] ?? id).flatMap((name) => {
     if (name === "finitemonkey") return [{ kind: "finitemonkey-plugin", source, name }];
-    return LOOP_PLUGINS.includes(name) ? [{ kind: "loop-plugin", source, name }] : [];
+    return LOOP_PLUGINS2.includes(name) ? [{ kind: "loop-plugin", source, name }] : [];
   });
 };
 var scopeAuthorities = (text6, source) => {
@@ -12374,7 +13047,7 @@ var scopeAuthorities = (text6, source) => {
 var userSettingsText = (project, env) => {
   const home = env["CLAUDE_CONFIG_DIR"] ?? env["HOME"] ?? env["USERPROFILE"];
   if (home === void 0) return void 0;
-  const file = env["CLAUDE_CONFIG_DIR"] === void 0 ? join25(home, ".claude", "settings.json") : join25(home, "settings.json");
+  const file = env["CLAUDE_CONFIG_DIR"] === void 0 ? join30(home, ".claude", "settings.json") : join30(home, "settings.json");
   const text6 = project.runtime.readText(toAbsolutePath(file));
   return text6.ok ? text6.value : void 0;
 };
@@ -12575,7 +13248,7 @@ var needsWrite = (plan) => hasChanges(plan) || plan.previous === void 0;
 
 // src/install/apply.ts
 var stamp = (iso) => iso.replace(/[:.]/g, "-");
-var ensureParent = (project, relative9) => project.runtime.mkdir(project.abs(dirname6(relative9)));
+var ensureParent = (project, relative9) => project.runtime.mkdir(project.abs(dirname7(relative9)));
 var writeText = (project, relative9, text6) => {
   const parent = ensureParent(project, relative9);
   const written = parent.ok ? project.runtime.writeAtomic(project.abs(relative9), text6) : parent;
@@ -12633,7 +13306,7 @@ var writeAll = (project, items) => {
   }
   return accept(void 0);
 };
-var OWN_DIRS = [dirname6(dirname6(VERIFY_SKILL)), dirname6(VERIFY_SKILL), ".claude", STATE_DIR];
+var OWN_DIRS = [dirname7(dirname7(VERIFY_SKILL)), dirname7(VERIFY_SKILL), ".claude", STATE_DIR];
 var createdBy = (project) => OWN_DIRS.filter((dir) => !project.exists(dir));
 var commit = (project, plan, version, createdDirs) => {
   const now = project.runtime.now();
@@ -12771,32 +13444,6 @@ var planLines = (t, data, withDiff) => [
   ...data.warnings.map(({ message }) => t("install.warning", { message })),
   ...withDiff ? data.diff : []
 ];
-
-// src/install/project.ts
-import { dirname as dirname7, join as join26 } from "node:path";
-var projectAt = (root, runtime) => {
-  const abs = (relative9) => toAbsolutePath(join26(root, ...relative9.split("/")));
-  return {
-    root,
-    runtime,
-    abs,
-    read: (relative9) => {
-      const text6 = runtime.readText(abs(relative9));
-      return text6.ok ? text6.value : void 0;
-    },
-    exists: (relative9) => runtime.stat(abs(relative9)) !== void 0,
-    isDir: (relative9) => runtime.stat(abs(relative9))?.kind === "dir"
-  };
-};
-var findGitRoot = (start, runtime) => {
-  let current = start;
-  for (; ; ) {
-    if (runtime.stat(toAbsolutePath(join26(current, ".git"))) !== void 0) return toAbsolutePath(current);
-    const parent = dirname7(current);
-    if (parent === current) return void 0;
-    current = parent;
-  }
-};
 
 // src/install/session.ts
 var openProject = (ctx) => {
@@ -13086,14 +13733,14 @@ var gitUnavailable = (detail) => ({
 });
 
 // src/commands/secrets-accept.ts
-var DAY_MS = 864e5;
+var DAY_MS2 = 864e5;
 var daysOf = (values) => {
   const raw = stringOption(values, "days");
   if (raw === void 0) return EXCEPTION_MAX_DAYS;
   const days = Number.parseInt(raw, 10);
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS).toISOString();
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS2).toISOString();
 var failure3 = (ctx, problem4) => failureFrom(ctx.t, problem4);
 var inputProblem = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
@@ -13111,14 +13758,14 @@ var inputProblem = (ctx, id, reason, days) => {
   }
   return void 0;
 };
-var entryOf3 = (ctx, finding2, args) => {
+var entryOf3 = (ctx, finding3, args) => {
   const now = ctx.runtime.now();
   return {
-    id: finding2.id,
-    rule: finding2.ruleId,
-    file: finding2.file,
-    line: finding2.line,
-    fingerprint: finding2.fingerprint,
+    id: finding3.id,
+    rule: finding3.ruleId,
+    file: finding3.file,
+    line: finding3.line,
+    fingerprint: finding3.fingerprint,
     state: args.falsePositive ? "falso-positivo" : "aceito",
     owner: personName(ctx),
     reason: args.reason,
@@ -13133,8 +13780,8 @@ var acceptEntry = (ctx, args) => {
     return failure3(ctx, baselineInvalid(baseline.error));
   }
   const scanned = scanPath(ctx.runtime, root, ".");
-  const finding2 = scanned.ok ? scanned.value.find((item) => item.id === args.id) : void 0;
-  if (finding2 === void 0) {
+  const finding3 = scanned.ok ? scanned.value.find((item) => item.id === args.id) : void 0;
+  if (finding3 === void 0) {
     return failure3(
       ctx,
       usageProblem("secrets_finding_not_found", "secrets.error.finding_not_found", "finitemonkey secrets scan", {
@@ -13142,7 +13789,7 @@ var acceptEntry = (ctx, args) => {
       })
     );
   }
-  const entry2 = entryOf3(ctx, finding2, args);
+  const entry2 = entryOf3(ctx, finding3, args);
   const entries = [...baseline.value.entries.filter((item) => item.id !== entry2.id), entry2];
   const saved = saveBaseline(ctx.runtime, root, { schema: baseline.value.schema, entries });
   if (!saved.ok) {
@@ -13151,7 +13798,7 @@ var acceptEntry = (ctx, args) => {
   const line2 = ctx.t("secrets.accept.done", {
     id: entry2.id,
     rule: entry2.rule,
-    where: whereOf(finding2),
+    where: whereOf(finding3),
     state: entry2.state,
     expires: entry2.expiresAt.slice(0, 10),
     owner: entry2.owner
@@ -13280,17 +13927,17 @@ var secretsIncidentCommand = {
 
 // src/commands/secrets-scan.ts
 var SECRETS_SCAN_SCHEMA = "finitemonkey/secrets-scan@1";
-var view = (finding2, status) => ({
-  id: finding2.id,
-  rule: finding2.ruleId,
-  severity: finding2.severity,
-  file: finding2.file,
-  line: finding2.line,
-  column: finding2.column,
-  fingerprint: finding2.fingerprint,
-  mask: maskToken(finding2),
+var view = (finding3, status) => ({
+  id: finding3.id,
+  rule: finding3.ruleId,
+  severity: finding3.severity,
+  file: finding3.file,
+  line: finding3.line,
+  column: finding3.column,
+  fingerprint: finding3.fingerprint,
+  mask: maskToken(finding3),
   status,
-  ...finding2.commit === void 0 ? {} : { commit: finding2.commit }
+  ...finding3.commit === void 0 ? {} : { commit: finding3.commit }
 });
 var modeOf2 = (values) => {
   const chosen = [values["staged"] === true, values["history"] === true, stringOption(values, "path") !== void 0];
@@ -13308,24 +13955,24 @@ var runScan = async (ctx, root, mode, target) => {
   if (mode === "history") return scanHistory(ctx.runtime, root);
   return scanPath(ctx.runtime, root, normalizedTarget(target) || ".");
 };
-var historyIncidents = (ctx, root, fresh3) => fresh3.flatMap((finding2) => {
-  if (ruleById(finding2.ruleId)?.kind !== "credential") return [];
+var historyIncidents = (ctx, root, fresh3) => fresh3.flatMap((finding3) => {
+  if (ruleById(finding3.ruleId)?.kind !== "credential") return [];
   const draft = {
-    rule: finding2.ruleId,
-    fingerprint: finding2.fingerprint,
-    where: whereOf(finding2),
+    rule: finding3.ruleId,
+    fingerprint: finding3.fingerprint,
+    where: whereOf(finding3),
     source: "history",
     state: "aberto",
-    ...finding2.commit === void 0 ? {} : { firstCommit: finding2.commit }
+    ...finding3.commit === void 0 ? {} : { firstCommit: finding3.commit }
   };
   const saved = recordIncident(ctx.runtime, root, draft, HOOK_ACTOR);
   return saved.ok ? [saved.value.id] : [];
 });
 var dataOf = (mode, outcome, incidents) => {
   const findings = [
-    ...outcome.fresh.map((finding2) => view(finding2, "new")),
-    ...outcome.known.map((finding2) => view(finding2, "known")),
-    ...outcome.expired.map((finding2) => view(finding2, "expired"))
+    ...outcome.fresh.map((finding3) => view(finding3, "new")),
+    ...outcome.known.map((finding3) => view(finding3, "known")),
+    ...outcome.expired.map((finding3) => view(finding3, "expired"))
   ];
   return {
     schema: SECRETS_SCAN_SCHEMA,
@@ -13405,7 +14052,7 @@ var secretsScanCommand = {
 };
 
 // src/task/create.ts
-import { join as join27 } from "node:path";
+import { join as join31 } from "node:path";
 
 // src/core/yaml/write.ts
 var PLAIN_SAFE = /^[A-Za-z_./][A-Za-z0-9_./ ()-]*$/;
@@ -13489,10 +14136,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative9) => {
-      const text6 = runtime.readText(toAbsolutePath(join27(paths.root, relative9)));
+      const text6 = runtime.readText(toAbsolutePath(join31(paths.root, relative9)));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative9) => runtime.stat(toAbsolutePath(join27(paths.root, relative9))) !== void 0
+    exists: (relative9) => runtime.stat(toAbsolutePath(join31(paths.root, relative9))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -13887,7 +14534,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join28 } from "node:path";
+import { join as join32 } from "node:path";
 var read3 = (runtime, path) => {
   const text6 = runtime.readText(toAbsolutePath(path));
   return text6.ok ? text6.value : void 0;
@@ -13902,14 +14549,14 @@ var languageIn = (text6) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join28(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join32(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join28(root, CONFIG_FILE)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join32(root, CONFIG_FILE)) ?? "");
   const claudeFiles = [
-    join28(root, ".claude", "settings.local.json"),
-    join28(root, ".claude", "settings.json"),
-    join28(claudeDir(runtime, env), "settings.json")
+    join32(root, ".claude", "settings.local.json"),
+    join32(root, ".claude", "settings.json"),
+    join32(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),
