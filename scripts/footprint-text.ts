@@ -38,6 +38,11 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR": "A configuração do projeto e o briefing opcional para subagentes.",
     es: "La configuración del proyecto y el briefing opcional para subagentes.",
   },
+  "session-logs": {
+    en: "This project's local Claude Code session logs, read once and only with `init --look-back`.",
+    "pt-BR": "Os logs locais de sessão do Claude Code deste projeto, lidos uma vez e só com `init --look-back`.",
+    es: "Los logs locales de sesión de Claude Code de este proyecto, leídos una vez y solo con `init --look-back`.",
+  },
   install: {
     en: "`init` and `update`: hook settings, the verify skill, a short managed block in `AGENTS.md` that `CLAUDE.md` imports, one `.gitignore` line, the pinned runtime and a backup of every file it changes.",
     "pt-BR":
