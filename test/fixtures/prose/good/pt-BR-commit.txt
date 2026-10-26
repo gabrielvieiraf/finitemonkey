@@ -1,0 +1,5 @@
+fix(install): não sobrescreve settings.json editado à mão
+
+O update comparava só o hash do bloco gerenciado e trocava o arquivo
+inteiro quando o resto tinha mudado. Agora o arquivo editado vira uma
+proposta de diff e fica intocado.

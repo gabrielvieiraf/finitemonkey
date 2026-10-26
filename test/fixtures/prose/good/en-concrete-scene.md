@@ -1,0 +1,1 @@
+Claude Code ends a refactor with "Done! All tests pass." It had only run the linter. The only failing test got a `.skip` at 2 a.m., and CI went red twenty minutes after the merge. Finite Monkey is planned as Claude Code hooks that run your checks themselves when the agent tries to stop, and keep the session open until they pass. The monkey in the yellow hoodie is you.

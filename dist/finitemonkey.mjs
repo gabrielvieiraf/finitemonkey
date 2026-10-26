@@ -607,10 +607,10 @@ var needsPersonProblem = (messageKey, fix, params2 = {}) => ({
 });
 var FmError = class extends Error {
   problem;
-  constructor(problem3) {
-    super(problem3.code);
+  constructor(problem4) {
+    super(problem4.code);
     this.name = "FmError";
-    this.problem = problem3;
+    this.problem = problem4;
   }
 };
 
@@ -681,11 +681,11 @@ var success = (data, human2 = []) => ({
   data,
   human: human2
 });
-var failureFrom = (t, problem3, human2) => ({
+var failureFrom = (t, problem4, human2) => ({
   ok: false,
-  exitCode: problem3.exitCode,
-  error: { code: problem3.code, message: t(problem3.messageKey, problem3.params), fix: problem3.fix },
-  ...problem3.data === void 0 ? {} : { data: problem3.data },
+  exitCode: problem4.exitCode,
+  error: { code: problem4.code, message: t(problem4.messageKey, problem4.params), fix: problem4.fix },
+  ...problem4.data === void 0 ? {} : { data: problem4.data },
   ...human2 === void 0 ? {} : { human: human2 }
 });
 var toEnvelope = (command, result) => ({
@@ -791,106 +791,695 @@ var writeBaseline = (runtime, paths, treeHash2, checks) => writeJsonFile(runtime
 // src/core/clock.ts
 var nowMs = (runtime) => Date.parse(runtime.now());
 
-// src/guards/shell.ts
-var SEPARATORS = /* @__PURE__ */ new Set([";", "&&", "||", "|", "&", "\n", "|&"]);
-var REDIRECT = /^(?:\d*|&)(>>?|<)$/;
-var ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
-var SHELLS = /* @__PURE__ */ new Set(["sh", "bash", "zsh", "dash", "ksh"]);
-var WRAPPERS = /* @__PURE__ */ new Set(["sudo", "nohup", "time", "command", "exec", "nice", "timeout", "xargs"]);
-var operatorAt = (text6, index) => {
-  const two = text6.slice(index, index + 2);
-  if (two === "&&" || two === "||" || two === ">>" || two === "|&") return two;
-  const one = text6[index] ?? "";
-  return ";|&\n><".includes(one) ? one : void 0;
-};
-var readQuoted = (text6, start) => {
-  const quote = text6[start];
-  let value = "";
-  let index = start + 1;
-  for (; index < text6.length && text6[index] !== quote; index += 1) {
-    if (quote === '"' && text6[index] === "\\" && index + 1 < text6.length) index += 1;
-    value += text6[index] ?? "";
+// src/shell/normalize.ts
+import { posix } from "node:path";
+
+// src/core/posix-path.ts
+var toPosixPath = (path) => path.replace(/\\/g, "/");
+var withoutCarriageReturn = (line2) => line2.endsWith("\r") ? line2.slice(0, -1) : line2;
+
+// src/shell/scan.ts
+var cursorOf = (text6) => ({ text: text6, pos: 0, incomplete: false, subs: [] });
+var peek = (cursor, offset = 0) => cursor.text.charAt(cursor.pos + offset);
+var atEnd = (cursor) => cursor.pos >= cursor.text.length;
+var skipQuoted = (cursor, quote) => {
+  cursor.pos += 1;
+  while (!atEnd(cursor) && peek(cursor) !== quote) {
+    cursor.pos += quote === '"' && peek(cursor) === "\\" ? 2 : 1;
   }
-  return { value, end: index };
+  cursor.pos += 1;
 };
-var tokenize = (text6) => {
-  const tokens = [];
-  let word2;
-  const flush2 = () => {
-    if (word2 !== void 0) tokens.push(word2);
-    word2 = void 0;
-  };
-  for (let index = 0; index < text6.length; index += 1) {
-    const char = text6[index] ?? "";
-    if (char === "'" || char === '"') {
-      const quoted = readQuoted(text6, index);
-      word2 = (word2 ?? "") + quoted.value;
-      index = quoted.end;
-    } else if (char === "\\" && index + 1 < text6.length) {
-      word2 = (word2 ?? "") + (text6[index + 1] ?? "");
-      index += 1;
-    } else if (char === " " || char === "	") flush2();
+var readBalanced = (cursor, open, close2) => {
+  const start = cursor.pos;
+  let depth = 1;
+  while (!atEnd(cursor)) {
+    const char = peek(cursor);
+    if (char === "\\") cursor.pos += 2;
+    else if (char === "'" || char === '"') skipQuoted(cursor, char);
     else {
-      const operator = operatorAt(text6, index);
-      if (operator === void 0) word2 = (word2 ?? "") + char;
-      else {
-        const digits = word2 !== void 0 && /^\d+$/.test(word2) && (operator === ">" || operator === ">>");
-        if (!digits) flush2();
-        tokens.push(digits ? `${word2 ?? ""}${operator}` : operator);
-        if (digits) word2 = void 0;
-        index += operator.length - 1;
+      if (char === open) depth += 1;
+      if (char === close2) depth -= 1;
+      if (depth === 0) {
+        const inner = cursor.text.slice(start, cursor.pos);
+        cursor.pos += 1;
+        return inner;
       }
+      cursor.pos += 1;
     }
   }
-  flush2();
-  return tokens;
+  cursor.incomplete = true;
+  return cursor.text.slice(start);
 };
-var build = (tokens) => {
-  const env = {};
-  const argv = [];
-  const redirects = [];
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index] ?? "";
-    const assignment = ASSIGNMENT.exec(token);
-    if (REDIRECT.test(token)) {
-      redirects.push(tokens[index + 1] ?? "");
+var readUntil = (cursor, terminator, escapes) => {
+  let out = "";
+  while (!atEnd(cursor) && peek(cursor) !== terminator) {
+    if (escapes && peek(cursor) === "\\" && cursor.pos + 1 < cursor.text.length) {
+      out += peek(cursor, 1);
+      cursor.pos += 2;
+    } else {
+      out += peek(cursor);
+      cursor.pos += 1;
+    }
+  }
+  if (atEnd(cursor)) cursor.incomplete = true;
+  cursor.pos += 1;
+  return out;
+};
+var ANSI = {
+  n: "\n",
+  t: "	",
+  r: "\r",
+  "\\": "\\",
+  "'": "'",
+  '"': '"',
+  e: "\x1B"
+};
+var readAnsiC = (cursor) => {
+  let out = "";
+  while (!atEnd(cursor) && peek(cursor) !== "'") {
+    if (peek(cursor) === "\\") {
+      const next2 = peek(cursor, 1);
+      const hex = /^x([0-9a-fA-F]{1,2})/.exec(cursor.text.slice(cursor.pos + 1, cursor.pos + 4));
+      if (hex !== null) {
+        out += String.fromCharCode(Number.parseInt(hex[1] ?? "0", 16));
+        cursor.pos += 1 + hex[0].length;
+        continue;
+      }
+      out += ANSI[next2] ?? next2;
+      cursor.pos += 2;
+    } else {
+      out += peek(cursor);
+      cursor.pos += 1;
+    }
+  }
+  if (atEnd(cursor)) cursor.incomplete = true;
+  cursor.pos += 1;
+  return out;
+};
+
+// src/shell/lexer.ts
+var OPERATORS = ["&&", "||", ";;", "|&", "|", "&", ";", "(", ")", "\n"];
+var REDIRECT = /^(\d*)(<<<|<<-|<<|<>|<&|>>|>&|>\||<|>)|^(&>>|&>)/;
+var BOUNDARY = /* @__PURE__ */ new Set([" ", "	", "\n", "|", "&", ";", "(", ")", "<", ">"]);
+var dollar = (cursor, state, inDouble) => {
+  const next2 = peek(cursor, 1);
+  state.dynamic = true;
+  if (next2 === "(" && peek(cursor, 2) === "(") {
+    cursor.pos += 3;
+    state.text += `$((${readBalanced(cursor, "(", ")")})`;
+    if (peek(cursor) === ")") cursor.pos += 1;
+  } else if (next2 === "(") {
+    cursor.pos += 2;
+    const inner = readBalanced(cursor, "(", ")");
+    cursor.subs.push(inner);
+    state.text += `$(${inner})`;
+  } else if (next2 === "{") {
+    cursor.pos += 2;
+    state.text += `\${${readBalanced(cursor, "{", "}")}}`;
+  } else if (next2 === "'" && !inDouble) {
+    cursor.pos += 2;
+    state.dynamic = false;
+    state.quoted = true;
+    state.text += readAnsiC(cursor);
+  } else {
+    cursor.pos += 1;
+    state.text += "$";
+  }
+};
+var backtick = (cursor, state) => {
+  cursor.pos += 1;
+  const inner = readUntil(cursor, "`", true);
+  cursor.subs.push(inner);
+  state.text += `\`${inner}\``;
+  state.dynamic = true;
+};
+var DOUBLE_ESCAPES = /* @__PURE__ */ new Set(["$", "`", '"', "\\", "\n"]);
+var doubleQuoted = (cursor, state) => {
+  cursor.pos += 1;
+  state.quoted = true;
+  while (!atEnd(cursor) && peek(cursor) !== '"') {
+    const char = peek(cursor);
+    if (char === "\\" && DOUBLE_ESCAPES.has(peek(cursor, 1))) {
+      if (peek(cursor, 1) !== "\n") state.text += peek(cursor, 1);
+      cursor.pos += 2;
+    } else if (char === "$") dollar(cursor, state, true);
+    else if (char === "`") backtick(cursor, state);
+    else {
+      state.text += char;
+      cursor.pos += 1;
+    }
+  }
+  if (atEnd(cursor)) cursor.incomplete = true;
+  cursor.pos += 1;
+};
+var wordPart = (cursor, state) => {
+  const char = peek(cursor);
+  if (char === "\\") {
+    if (peek(cursor, 1) !== "\n") state.text += peek(cursor, 1);
+    cursor.pos += 2;
+  } else if (char === "'") {
+    cursor.pos += 1;
+    state.quoted = true;
+    state.text += readUntil(cursor, "'", false);
+  } else if (char === '"') doubleQuoted(cursor, state);
+  else if (char === "$") dollar(cursor, state, false);
+  else if (char === "`") backtick(cursor, state);
+  else {
+    state.text += char;
+    cursor.pos += 1;
+  }
+};
+var readWord = (cursor) => {
+  const state = { text: "", quoted: false, dynamic: false };
+  while (!atEnd(cursor) && !BOUNDARY.has(peek(cursor))) wordPart(cursor, state);
+  return { kind: "word", ...state };
+};
+var skipBlank = (cursor) => {
+  while (peek(cursor) === " " || peek(cursor) === "	" || peek(cursor) === "\\" && peek(cursor, 1) === "\n") {
+    cursor.pos += peek(cursor) === "\\" ? 2 : 1;
+  }
+};
+var heredocBody = (cursor, delimiter, stripTabs) => {
+  const lines3 = [];
+  while (!atEnd(cursor)) {
+    const end = cursor.text.indexOf("\n", cursor.pos);
+    const line2 = cursor.text.slice(cursor.pos, end < 0 ? void 0 : end);
+    cursor.pos = end < 0 ? cursor.text.length : end + 1;
+    const compared = stripTabs ? line2.replace(/^\t+/, "") : line2;
+    if (compared === delimiter) return lines3.join("\n");
+    lines3.push(compared);
+  }
+  cursor.incomplete = true;
+  return lines3.join("\n");
+};
+var readRedirect = (cursor, match) => {
+  const op = match[2] ?? match[3] ?? "";
+  cursor.pos += match[0].length;
+  skipBlank(cursor);
+  const processSub = peek(cursor) === "(" && op === "<";
+  const target = processSub ? "" : readWord(cursor).text;
+  return { kind: "redirect", op, fd: match[1] ?? "", target, body: void 0 };
+};
+var processSubstitution = (cursor) => {
+  if (peek(cursor) !== "<" && peek(cursor) !== ">" || peek(cursor, 1) !== "(") return false;
+  cursor.pos += 2;
+  cursor.subs.push(readBalanced(cursor, "(", ")"));
+  return true;
+};
+var flushHeredocs = (cursor, tokens, pending) => {
+  for (const { index, token } of pending.splice(0)) {
+    tokens[index] = { ...token, body: heredocBody(cursor, token.target, token.op === "<<-") };
+  }
+};
+var nextToken = (cursor, tokens, pending) => {
+  if (peek(cursor) === "#") {
+    const end = cursor.text.indexOf("\n", cursor.pos);
+    cursor.pos = end < 0 ? cursor.text.length : end;
+    return;
+  }
+  if (processSubstitution(cursor)) return;
+  const redirect = REDIRECT.exec(cursor.text.slice(cursor.pos, cursor.pos + 4));
+  if (redirect !== null) {
+    const token = readRedirect(cursor, redirect);
+    if (token.op === "<<" || token.op === "<<-") pending.push({ index: tokens.length, token });
+    tokens.push(token);
+    return;
+  }
+  const op = OPERATORS.find((candidate) => cursor.text.startsWith(candidate, cursor.pos));
+  if (op === void 0) {
+    tokens.push(readWord(cursor));
+    return;
+  }
+  cursor.pos += op.length;
+  tokens.push({ kind: "op", text: op });
+  if (op === "\n") flushHeredocs(cursor, tokens, pending);
+};
+var lexBash = (text6) => {
+  const cursor = cursorOf(text6.replace(/\r\n/g, "\n"));
+  const tokens = [];
+  const pending = [];
+  skipBlank(cursor);
+  while (!atEnd(cursor)) {
+    nextToken(cursor, tokens, pending);
+    skipBlank(cursor);
+  }
+  flushHeredocs(cursor, tokens, pending);
+  return { tokens, substitutions: cursor.subs, incomplete: cursor.incomplete };
+};
+
+// src/shell/parse.ts
+var PREFIX_WORDS = /* @__PURE__ */ new Set(["!", "{", "}", "if", "then", "elif", "else", "do", "while", "until"]);
+var SKIP_WORDS = /* @__PURE__ */ new Set(["fi", "done", "esac", "}", "for", "case", "select", "function", "in"]);
+var trimKeywords = (words) => {
+  let start = 0;
+  while (start < words.length && !words[start]?.quoted && PREFIX_WORDS.has(words[start]?.text ?? "")) start += 1;
+  const rest = words.slice(start);
+  const first = rest[0];
+  if (first !== void 0 && !first.quoted && SKIP_WORDS.has(first.text)) return [];
+  return rest;
+};
+var fresh = () => ({ words: [], redirects: [], stdin: void 0 });
+var close = (building, out) => {
+  const words = trimKeywords(building.words);
+  if (words.length > 0 || building.redirects.length > 0 || building.stdin !== void 0) {
+    out.push({ words, redirects: building.redirects, stdin: building.stdin });
+  }
+};
+var rawCommands = (tokens) => {
+  const out = [];
+  let building = fresh();
+  for (const token of tokens) {
+    if (token.kind === "op") {
+      close(building, out);
+      building = fresh();
+    } else if (token.kind === "word") {
+      building.words.push(token);
+    } else {
+      building.redirects.push({ op: token.op, fd: token.fd, target: token.target });
+      if (token.body !== void 0) building.stdin = token.body;
+      else if (token.op === "<<<") building.stdin = token.target;
+    }
+  }
+  close(building, out);
+  return out;
+};
+
+// src/shell/powershell.ts
+var OPERATORS2 = ["&&", "||", ";", "|", "\n", "(", ")", "{", "}"];
+var REDIRECT2 = /^(\*|\d)?(>>|>)(&\d)?/;
+var BOUNDARY2 = /* @__PURE__ */ new Set([" ", "	", "\n", ";", "|", "(", ")", "{", "}", ">"]);
+var single = (cursor, state) => {
+  cursor.pos += 1;
+  state.quoted = true;
+  while (!atEnd(cursor)) {
+    if (peek(cursor) === "'" && peek(cursor, 1) === "'") {
+      state.text += "'";
+      cursor.pos += 2;
+    } else if (peek(cursor) === "'") {
+      cursor.pos += 1;
+      return;
+    } else {
+      state.text += peek(cursor);
+      cursor.pos += 1;
+    }
+  }
+  cursor.incomplete = true;
+};
+var subexpression = (cursor, state) => {
+  cursor.pos += 2;
+  const inner = readBalanced(cursor, "(", ")");
+  cursor.subs.push(inner);
+  state.text += `$(${inner})`;
+  state.dynamic = true;
+};
+var double = (cursor, state) => {
+  cursor.pos += 1;
+  state.quoted = true;
+  while (!atEnd(cursor)) {
+    const char = peek(cursor);
+    if (char === "`") {
+      state.text += peek(cursor, 1);
+      cursor.pos += 2;
+    } else if (char === '"' && peek(cursor, 1) === '"') {
+      state.text += '"';
+      cursor.pos += 2;
+    } else if (char === '"') {
+      cursor.pos += 1;
+      return;
+    } else if (char === "$" && peek(cursor, 1) === "(") subexpression(cursor, state);
+    else {
+      if (char === "$") state.dynamic = true;
+      state.text += char;
+      cursor.pos += 1;
+    }
+  }
+  cursor.incomplete = true;
+};
+var part = (cursor, state) => {
+  const char = peek(cursor);
+  if (char === "`") {
+    state.text += peek(cursor, 1);
+    cursor.pos += 2;
+  } else if (char === "'") single(cursor, state);
+  else if (char === '"') double(cursor, state);
+  else if (char === "$" && peek(cursor, 1) === "(") subexpression(cursor, state);
+  else {
+    if (char === "$") state.dynamic = true;
+    state.text += char;
+    cursor.pos += 1;
+  }
+};
+var word = (cursor, ampersandSplits) => {
+  const state = { text: "", quoted: false, dynamic: false };
+  while (!atEnd(cursor) && !BOUNDARY2.has(peek(cursor)) && !(ampersandSplits && peek(cursor) === "&")) {
+    part(cursor, state);
+  }
+  return { kind: "word", ...state };
+};
+var skipComment = (cursor) => {
+  if (cursor.text.startsWith("<#", cursor.pos)) {
+    const end2 = cursor.text.indexOf("#>", cursor.pos);
+    cursor.pos = end2 < 0 ? cursor.text.length : end2 + 2;
+    return true;
+  }
+  if (peek(cursor) !== "#") return false;
+  const end = cursor.text.indexOf("\n", cursor.pos);
+  cursor.pos = end < 0 ? cursor.text.length : end;
+  return true;
+};
+var commandStart = (tokens) => {
+  const last = tokens[tokens.length - 1];
+  return last === void 0 || last.kind === "op";
+};
+var next = (cursor, tokens, cmd) => {
+  if (skipComment(cursor)) return;
+  const redirect = REDIRECT2.exec(cursor.text.slice(cursor.pos, cursor.pos + 5));
+  if (redirect !== null) {
+    cursor.pos += redirect[0].length;
+    while (peek(cursor) === " ") cursor.pos += 1;
+    const target = redirect[3] ?? word(cursor, cmd).text;
+    tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target, body: void 0 });
+    return;
+  }
+  const op = OPERATORS2.find((candidate) => cursor.text.startsWith(candidate, cursor.pos));
+  if (op !== void 0 || cmd && peek(cursor) === "&") {
+    const text6 = op ?? "&";
+    cursor.pos += text6.length;
+    tokens.push({ kind: "op", text: text6 });
+    return;
+  }
+  if ((peek(cursor) === "&" || peek(cursor) === ".") && peek(cursor, 1) === " " && commandStart(tokens)) {
+    cursor.pos += 2;
+    return;
+  }
+  tokens.push(word(cursor, cmd));
+};
+var lexPowerShell = (text6, cmd = false) => {
+  const cursor = cursorOf(text6.replace(/\r\n/g, "\n"));
+  const tokens = [];
+  const skip = () => {
+    while (peek(cursor) === " " || peek(cursor) === "	") cursor.pos += 1;
+  };
+  skip();
+  while (!atEnd(cursor)) {
+    next(cursor, tokens, cmd);
+    skip();
+  }
+  return { tokens, substitutions: cursor.subs, incomplete: cursor.incomplete };
+};
+var ALIASES = {
+  ri: "remove-item",
+  rm: "remove-item",
+  rmdir: "remove-item",
+  del: "remove-item",
+  erase: "remove-item",
+  rd: "remove-item",
+  cd: "set-location",
+  chdir: "set-location",
+  sl: "set-location",
+  pushd: "push-location"
+};
+var powershellProgram = (name) => ALIASES[name.toLowerCase()] ?? name.toLowerCase();
+
+// src/shell/wrappers.ts
+var spec = (withValue, positionals = 0, queries = []) => ({
+  withValue: new Set(withValue),
+  positionals,
+  queries: new Set(queries)
+});
+var WRAPPERS = {
+  sudo: spec(["-u", "-g", "-h", "-p", "-C", "-D", "-r", "-t", "-U", "-T", "--user", "--group", "--host", "--prompt"]),
+  doas: spec(["-u", "-C"]),
+  command: spec([], 0, ["-v", "-V"]),
+  builtin: spec([]),
+  exec: spec(["-a"]),
+  nohup: spec([]),
+  time: spec(["-f", "-o", "--format", "--output"]),
+  nice: spec(["-n", "--adjustment"]),
+  ionice: spec(["-c", "-n", "-p", "--class", "--classdata"]),
+  timeout: spec(["-s", "-k", "--signal", "--kill-after"], 1),
+  stdbuf: spec(["-i", "-o", "-e", "--input", "--output", "--error"]),
+  xargs: spec([
+    "-I",
+    "-n",
+    "-P",
+    "-d",
+    "-L",
+    "-E",
+    "-s",
+    "-a",
+    "--max-args",
+    "--max-procs",
+    "--delimiter",
+    "--arg-file"
+  ]),
+  watch: spec(["-n", "--interval"]),
+  chronic: spec([]),
+  unbuffer: spec([]),
+  npx: spec(["-p", "--package", "-c", "--call"]),
+  bunx: spec([]),
+  "run-one": spec([])
+};
+var SHELLS = /* @__PURE__ */ new Set(["sh", "bash", "zsh", "dash", "ksh", "ash", "fish", "busybox"]);
+var SHELL_WITH_VALUE = /* @__PURE__ */ new Set(["-o", "+o", "-O", "+O", "--rcfile", "--init-file"]);
+var POWERSHELLS = /* @__PURE__ */ new Set(["powershell", "pwsh", "powershell.exe", "pwsh.exe"]);
+
+// src/shell/unwrap.ts
+var ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
+var EXECUTABLE_SUFFIX = /\.(?:exe|cmd|bat|com)$/i;
+var MAX_LAYERS = 16;
+var programName = (word2) => {
+  const base = word2.split(/[\\/]/).pop() ?? word2;
+  return EXECUTABLE_SUFFIX.test(base) ? base.replace(EXECUTABLE_SUFFIX, "").toLowerCase() : base;
+};
+var withAssignments = (stage) => {
+  const env = { ...stage.env };
+  let index = 0;
+  for (; index < stage.argv.length; index += 1) {
+    const match = ASSIGNMENT.exec(stage.argv[index] ?? "");
+    if (match === null) break;
+    env[match[1] ?? ""] = match[2] ?? "";
+  }
+  return { ...stage, argv: stage.argv.slice(index), env };
+};
+var skipOptions = (args, wrapper) => {
+  let index = 0;
+  while (index < args.length) {
+    const arg = args[index] ?? "";
+    if (arg === "--") return index + 1 + wrapper.positionals;
+    if (!arg.startsWith("-") || arg === "-") break;
+    if (wrapper.queries.has(arg)) return void 0;
+    index += wrapper.withValue.has(arg) ? 2 : 1;
+  }
+  return index + wrapper.positionals;
+};
+var shift = (stage, count3, name) => ({
+  ...stage,
+  argv: stage.argv.slice(count3),
+  via: [...stage.via, name]
+});
+var envCommand = (stage) => {
+  let index = 1;
+  while (index < stage.argv.length && (stage.argv[index] ?? "").startsWith("-")) {
+    const arg = stage.argv[index] ?? "";
+    if (arg === "-S" || arg === "--split-string") {
+      return { kind: "script", script: stage.argv.slice(index + 1).join(" "), dialect: "bash", stage };
+    }
+    if (arg === "--") {
       index += 1;
-    } else if (argv.length === 0 && assignment !== null) env[assignment[1] ?? ""] = assignment[2] ?? "";
-    else argv.push(token);
+      break;
+    }
+    index += arg === "-u" || arg === "-C" || arg === "--unset" || arg === "--chdir" ? 2 : 1;
   }
-  return { env, argv, redirects };
+  const printsEnvironment = stage.argv.slice(index).every((arg) => ASSIGNMENT.test(arg));
+  return printsEnvironment ? { kind: "command", stage, extra: [] } : shift(stage, index, "env");
 };
-var unwrap = (command, depth) => {
-  const [head = "", ...rest] = command.argv;
-  const name = head.split("/").pop() ?? head;
+var shellScript = (stage, name, stdin) => {
+  const args = stage.argv.slice(1);
+  let index = 0;
+  let command = false;
+  while (index < args.length && /^[-+]/.test(args[index] ?? "")) {
+    const arg = args[index] ?? "";
+    if (/^-[A-Za-z]*c[A-Za-z]*$/.test(arg)) command = true;
+    index += SHELL_WITH_VALUE.has(arg) ? 2 : 1;
+  }
+  const script = args[index];
+  if (command && script !== void 0) return { kind: "script", script, dialect: "bash", stage: shift(stage, 0, name) };
+  if (script === void 0 && stdin !== void 0) return { kind: "script", script: stdin, dialect: "bash", stage };
+  return void 0;
+};
+var decodeEncoded = (value) => Buffer.from(value, "base64").toString("utf16le");
+var powershellScript = (stage, name) => {
+  const args = stage.argv.slice(1);
+  const at = args.findIndex((arg) => /^[-/](?:c|co|com|comm|comma|comman|command)$/i.test(arg));
+  const encoded = args.findIndex((arg) => /^[-/](?:e|ec|enc|encodedcommand)$/i.test(arg));
+  if (at >= 0) {
+    return {
+      kind: "script",
+      script: args.slice(at + 1).join(" "),
+      dialect: "powershell",
+      stage: shift(stage, 0, name)
+    };
+  }
+  const value = encoded >= 0 ? args[encoded + 1] : void 0;
+  if (value !== void 0) {
+    return { kind: "script", script: decodeEncoded(value), dialect: "powershell", stage: shift(stage, 0, name) };
+  }
+  return void 0;
+};
+var cmdScript = (stage) => {
+  const at = stage.argv.findIndex((arg, index) => index > 0 && /^\/[ck]$/i.test(arg));
+  if (at < 0) return void 0;
+  return { kind: "script", script: stage.argv.slice(at + 1).join(" "), dialect: "cmd", stage: shift(stage, 0, "cmd") };
+};
+var findExec = (stage) => {
+  const extra = [];
+  stage.argv.forEach((arg, index) => {
+    if (!["-exec", "-execdir", "-ok", "-okdir"].includes(arg)) return;
+    const rest = stage.argv.slice(index + 1);
+    const end = rest.findIndex((word2) => word2 === ";" || word2 === "+");
+    extra.push({ ...stage, argv: end < 0 ? rest : rest.slice(0, end), via: [...stage.via, "find -exec"] });
+  });
+  return extra;
+};
+var step = (stage, stdin) => {
+  const name = programName(stage.argv[0] ?? "");
+  const lower = name.toLowerCase();
   if (name === "env") {
-    const inner = build(rest.filter((arg) => !arg.startsWith("-")));
-    return unwrap(
-      { ...inner, env: { ...command.env, ...inner.env }, redirects: [...command.redirects, ...inner.redirects] },
-      depth
-    );
+    const result = envCommand(stage);
+    return "kind" in result ? { done: result } : { next: result };
   }
-  if (WRAPPERS.has(name)) {
-    const skip = rest.findIndex((arg) => !arg.startsWith("-") && !/^\d+[smh]?$/.test(arg));
-    return skip < 0 ? [command] : unwrap({ ...command, argv: rest.slice(skip) }, depth);
+  if (name === "busybox") return { next: shift(stage, 1, name) };
+  const wrapper = WRAPPERS[name];
+  if (wrapper !== void 0) {
+    const skip = skipOptions(stage.argv.slice(1), wrapper);
+    return skip === void 0 ? { done: { kind: "none" } } : { next: shift(stage, 1 + skip, name) };
   }
-  const script = rest[rest.indexOf("-c") + 1];
-  if (SHELLS.has(name) && rest.includes("-c") && script !== void 0 && depth < 4) {
-    return [
-      command,
-      ...parseShell(script, depth + 1).map((inner) => ({ ...inner, env: { ...command.env, ...inner.env } }))
-    ];
-  }
-  return [{ ...command, argv: [name, ...rest] }];
+  if (name === "eval")
+    return { done: { kind: "script", script: stage.argv.slice(1).join(" "), dialect: "bash", stage } };
+  const script = SHELLS.has(name) ? shellScript(stage, name, stdin) : POWERSHELLS.has(lower) ? powershellScript(stage, name) : lower === "cmd" ? cmdScript(stage) : void 0;
+  if (script !== void 0) return { done: script };
+  return { done: { kind: "command", stage, extra: name === "find" ? findExec(stage) : [] } };
 };
-var parseShell = (text6, depth = 0) => {
-  const groups = [[]];
-  for (const token of tokenize(text6)) {
-    if (SEPARATORS.has(token)) groups.push([]);
-    else groups[groups.length - 1]?.push(token);
+var unwrap = (initial, stdin) => {
+  let stage = initial;
+  for (let layer = 0; layer < MAX_LAYERS; layer += 1) {
+    stage = withAssignments(stage);
+    if (stage.argv.length === 0) return { kind: "none" };
+    const result = step(stage, stdin);
+    if ("done" in result) return result.done;
+    stage = result.next;
   }
-  return groups.filter((group) => group.length > 0).flatMap((group) => unwrap(build(group), depth));
+  return { kind: "command", stage, extra: [] };
 };
+
+// src/shell/normalize.ts
+var MAX_DEPTH = 8;
+var ASSIGNMENT2 = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
+var PS_ENV = /^\$env:([A-Za-z_][A-Za-z0-9_]*)=?(.*)$/is;
+var CHANGES_DIR = /* @__PURE__ */ new Set(["cd", "pushd", "set-location", "push-location"]);
+var lex = (text6, language) => language === "bash" ? lexBash(text6) : lexPowerShell(text6, language === "cmd");
+var isWindowsAbsolute = (path) => /^[A-Za-z]:\//.test(path);
+var joinDir = (current, target) => {
+  const next2 = toPosixPath(target);
+  if (next2.startsWith("/") || isWindowsAbsolute(next2) || next2.startsWith("~")) return next2;
+  return current === void 0 ? posix.normalize(next2) : posix.join(current, next2);
+};
+var assignments = (words, language) => {
+  if (language !== "bash") {
+    const [first, second, third] = words;
+    const match = first === void 0 ? null : PS_ENV.exec(first);
+    if (match === null) return void 0;
+    const value = second === "=" ? third ?? "" : match[2] ?? "";
+    return { [match[1] ?? ""]: value };
+  }
+  const list4 = words[0] === "export" || words[0] === "declare" ? words.slice(1) : words;
+  if (list4.length === 0 || !list4.every((word2) => ASSIGNMENT2.test(word2) || word2.startsWith("-"))) return void 0;
+  const found = list4.flatMap((word2) => {
+    const match = ASSIGNMENT2.exec(word2);
+    return match === null ? [] : [[match[1] ?? "", match[2] ?? ""]];
+  });
+  return found.length === 0 ? void 0 : Object.fromEntries(found);
+};
+var track = (words, language, context) => {
+  const assigned = assignments(words, language);
+  if (assigned !== void 0) context.env = { ...context.env, ...assigned };
+  const program = language === "bash" ? words[0] ?? "" : powershellProgram(words[0] ?? "");
+  if (!CHANGES_DIR.has(program)) return;
+  const target = words.slice(1).find((word2) => !word2.startsWith("-"));
+  context.dir = target === void 0 || target === "-" ? "~" : joinDir(context.dir, target);
+};
+var emit = (stage, raw, language, context, collector) => {
+  const first = stage.argv[0] ?? "";
+  const name = programName(first);
+  collector.out.push({
+    program: language === "bash" ? name : powershellProgram(name),
+    args: stage.argv.slice(1),
+    env: stage.env,
+    redirects: raw.redirects,
+    stdin: raw.stdin,
+    dir: context.dir,
+    via: stage.via,
+    dynamic: raw.words.some((word2) => word2.dynamic)
+  });
+};
+var emptyCommand = (raw, context) => ({
+  program: "",
+  args: [],
+  env: context.env,
+  redirects: raw.redirects,
+  stdin: raw.stdin,
+  dir: context.dir,
+  via: context.via,
+  dynamic: false
+});
+var visit = (raw, language, context, depth, collector) => {
+  const words = raw.words.map((word2) => word2.text);
+  track(words, language, context);
+  const result = unwrap({ argv: words, env: context.env, via: context.via }, raw.stdin);
+  if (result.kind === "none") {
+    if (raw.redirects.length > 0) collector.out.push(emptyCommand(raw, context));
+    return;
+  }
+  if (result.kind === "script") {
+    const nested = { env: result.stage.env, dir: context.dir, via: result.stage.via };
+    collect(result.script, result.dialect, nested, depth + 1, collector);
+    return;
+  }
+  emit(result.stage, raw, language, context, collector);
+  for (const extra of result.extra) emit(extra, raw, language, context, collector);
+};
+var collect = (text6, language, context, depth, collector) => {
+  if (depth > MAX_DEPTH) {
+    collector.incomplete = true;
+    return;
+  }
+  const lexed = lex(text6, language);
+  if (lexed.incomplete) collector.incomplete = true;
+  for (const substitution of lexed.substitutions) {
+    collect(substitution, language, { ...context }, depth + 1, collector);
+  }
+  for (const raw of rawCommands(lexed.tokens)) visit(raw, language, context, depth, collector);
+};
+var normalizeCommand = (text6, dialect = "bash") => {
+  const collector = { out: [], incomplete: false };
+  collect(text6, dialect, { env: {}, dir: void 0, via: [] }, 0, collector);
+  return { commands: collector.out, incomplete: collector.incomplete };
+};
+var dialectOf = (toolName3) => toolName3 === "PowerShell" ? "powershell" : "bash";
+var segmentsOf = (command) => normalizeCommand(command).commands.map((item) => ({
+  program: item.program,
+  args: item.args,
+  redirectedFrom: item.redirects.filter((redirect) => redirect.op === "<").map((redirect) => redirect.target)
+}));
+
+// src/guards/shell.ts
+var HEREDOC = /^<<[-<]?$/;
+var parseShell = (text6) => normalizeCommand(text6).commands.map((command) => ({
+  env: command.env,
+  argv: command.program === "" ? [] : [command.program, ...command.args],
+  redirects: command.redirects.filter((redirect) => !HEREDOC.test(redirect.op)).map((redirect) => redirect.target)
+}));
 
 // src/secrets/fingerprint.ts
 import { createHash } from "node:crypto";
@@ -904,7 +1493,7 @@ var tailOf = (secret) => {
 };
 
 // src/gate/test-summary.ts
-var ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
+var ANSI2 = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
 var COUNTERS = [
   { total: /^# tests (\d+)$/m, failed: /^# fail (\d+)$/m },
   { total: /^ℹ tests (\d+)$/m, failed: /^ℹ fail (\d+)$/m },
@@ -945,7 +1534,7 @@ var counted = (text6) => {
   return py === void 0 ? {} : { total: py };
 };
 var parseTestSummary = (output) => {
-  const text6 = output.replace(ANSI, "");
+  const text6 = output.replace(ANSI2, "");
   const failures = [
     ...new Set(FAILURE_LINES.flatMap((pattern) => [...text6.matchAll(pattern)].map((match) => (match[1] ?? "").trim())))
   ].filter((name) => name !== "" && !/^failing tests:?$/i.test(name));
@@ -1177,10 +1766,6 @@ var aheadOfUpstream = (git) => {
 
 // src/gate/prepare.ts
 import { join as join3 } from "node:path";
-
-// src/core/posix-path.ts
-var toPosixPath = (path) => path.replace(/\\/g, "/");
-var withoutCarriageReturn = (line2) => line2.endsWith("\r") ? line2.slice(0, -1) : line2;
 
 // src/secrets/allowlist.ts
 var PLACEHOLDER_WORDS = [
@@ -1907,6 +2492,7 @@ var implicitContract = (files) => {
       ...hasTests ? [] : [{ id: "tests", kind: "tests" }],
       { id: "placeholders", kind: "placeholders" },
       { id: "secrets", kind: "secrets" },
+      { id: "prose", kind: "prose" },
       { id: "worktree", kind: "worktree" },
       { id: "merge", kind: "merge" },
       { id: "pr", kind: "pr", requireOpen: false }
@@ -1931,7 +2517,8 @@ var CHECK_KINDS = [
   "secrets",
   "worktree",
   "merge",
-  "prod"
+  "prod",
+  "prose"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -2179,8 +2766,8 @@ var fetchView = (runtime, git, branch) => {
 var prStatus = (runtime, git, paths, ttlMs = PR_CACHE_TTL_MS) => {
   const branch = currentBranch(git);
   if (branch === void 0) return { kind: "no_branch" };
-  const hit2 = cached(runtime, paths, branch, ttlMs);
-  if (hit2 !== void 0) return { kind: "found", branch, pr: hit2, localHead: headSha(git) };
+  const hit3 = cached(runtime, paths, branch, ttlMs);
+  if (hit3 !== void 0) return { kind: "found", branch, pr: hit3, localHead: headSha(git) };
   const status = fetchView(runtime, git, branch);
   if (status.kind !== "fetched") return status;
   writeJsonFile(runtime, paths.cache("pr.json"), { fetchedAt: nowMs(runtime), branch, view: status.view });
@@ -2198,21 +2785,21 @@ var conflictFiles = (git, base) => {
 
 // src/gate/prepare.ts
 var diskFiles = (runtime, root) => ({
-  read: (relative7) => {
-    const text6 = runtime.readText(toAbsolutePath(join3(root, relative7)));
+  read: (relative9) => {
+    const text6 = runtime.readText(toAbsolutePath(join3(root, relative9)));
     return text6.ok ? text6.value : void 0;
   },
-  exists: (relative7) => runtime.stat(toAbsolutePath(join3(root, relative7))) !== void 0
+  exists: (relative9) => runtime.stat(toAbsolutePath(join3(root, relative9))) !== void 0
 });
 var baseFiles = (git, base, disk) => ({
-  read: (relative7) => base === EMPTY_TREE ? disk.read(relative7) : fileAt(git, base, relative7),
+  read: (relative9) => base === EMPTY_TREE ? disk.read(relative9) : fileAt(git, base, relative9),
   exists: disk.exists
 });
 var loadContract = (options, paths, git, base) => {
   const disk = diskFiles(options.runtime, paths.root);
   const id = activeTaskId(options.runtime, paths, options.taskId);
   if (id === void 0) return accept(loadImplicit(options.runtime, paths, baseFiles(git, base, disk)));
-  return loadTask(options.runtime, paths, { disk: disk.read, base: (relative7) => fileAt(git, base, relative7) }, id);
+  return loadTask(options.runtime, paths, { disk: disk.read, base: (relative9) => fileAt(git, base, relative9) }, id);
 };
 var memo = (make) => {
   let value;
@@ -2297,10 +2884,10 @@ var runBaseline = (options) => {
 import { dirname as dirname3, join as join4 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
 var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
-var MAX_DEPTH = 64;
+var MAX_DEPTH2 = 64;
 var findRepoRoot = (runtime, start) => {
   let current = start;
-  for (let depth = 0; depth < MAX_DEPTH; depth += 1) {
+  for (let depth = 0; depth < MAX_DEPTH2; depth += 1) {
     if (runtime.stat(toAbsolutePath(join4(current, ".git"))) !== void 0) return current;
     const parent = toAbsolutePath(dirname3(current));
     if (parent === current) return void 0;
@@ -2694,6 +3281,46 @@ var en_default = {
   "gate.secrets.incident": "secret incident {id} is {state}",
   "gate.secrets.clean": "no new secret in the changes and no open incident",
   "gate.require.secrets": "no new secret and no secret incident left open",
+  "prose.command.check": "Check text for patterns readers recognize as machine-written (local only)",
+  "prose.rule.opener-routine": "open with what happened to someone: a command, a time, an error message",
+  "prose.rule.reassurance": "cut the consolation line; describe the problem and let the reader judge",
+  "prose.rule.slogan-closer": "end on a fact or the next step instead of a slogan",
+  "prose.rule.rhythmic-triplet": "join the short sentences into one that says what each part does",
+  "prose.rule.imperative-fragment": "replace the loose commands with one sentence about what the product does",
+  "prose.rule.antithesis": "say what it is; drop the contrast with what it is not",
+  "prose.rule.abstract-noun": "swap the abstract noun for the scene: who did what, where",
+  "prose.rule.crutch-word": "use the plain word, or a number that proves the claim",
+  "prose.rule.colon-heading": "make the heading the question or the task the reader has",
+  "prose.rule.decorative-emoji": "remove the emoji; the heading carries the meaning",
+  "prose.rule.em-dash-series": "use a period, a comma or parentheses instead of dashes",
+  "prose.target.commit": "The commit message",
+  "prose.target.pr": "The PR text",
+  "prose.target.issue": "The issue text",
+  "prose.span": "lines {start}-{end}: {rules}",
+  "prose.fix_item": "{rule}: {fix}",
+  "prose.warn.command": "{target} reads as machine-written ({spans}). Rewrite it before sending. {fixes}. If it is brand text written on purpose, show the person two alternatives.",
+  "prose.block.command": "blocked: {target} reads as machine-written ({spans}), and this project's preset does not send it. {fixes}. Rewrite it and run the command again.",
+  "prose.block.unreadable": "blocked: could not read {file} to check its text ({detail}). Check the path and run the command again.",
+  "prose.block.marker": "blocked: this would add the marker {marker} to {file}, and only the person can add it. Rewrite the passage instead, or ask the person to add the marker in their own editor.",
+  "prose.check.file": "{file}: {count} passage(s) that read as machine-written",
+  "prose.check.span": "  {file}:{start}-{end} score {score}: {rules}",
+  "prose.check.fix": "    do instead: {fix}",
+  "prose.check.allowed": "{file}: skipped, the person marked it with {marker}",
+  "prose.check.clean": "{count} file(s) checked, nothing reads as machine-written. The monkey wrote this one itself.",
+  "prose.error.found": "{count} passage(s) read as machine-written",
+  "prose.error.no_input": "nothing to check: pass files, --stdin, or run it inside a git repository to check the changed Markdown files",
+  "prose.error.unreadable": "could not read {file} ({detail})",
+  "prose.block.marker_shell": "blocked: this command writes the marker {marker}, and only the person can add it. Rewrite the passage instead, or ask the person to add the marker in their own editor.",
+  "prose.rule.requester-reference": "state the technical reason for the change; leave out who asked for it",
+  "prose.rule.person-as-reason": "name the property of the change instead of a person",
+  "prose.rule.origin-project": "describe the technical property you copied instead of naming where it came from",
+  "prose.rule.first-person": "write what the change does, in the present tense, without I or you",
+  "prose.rule.padding": "cut the preamble and start with what changed",
+  "gate.require.prose": "changed Markdown does not read as machine-written",
+  "gate.prose.unavailable": "could not read the changed Markdown files (git unavailable)",
+  "gate.prose.finding": "{file}:{line} reads as machine-written ({rules})",
+  "gate.prose.warning": "warning only in this preset: {file}:{line} reads as machine-written ({rules})",
+  "gate.prose.clean": "{count} changed Markdown file(s), none reads as machine-written",
   "git.command.snapshot": "Save the working tree, index and untracked files to a backup ref without touching them",
   "git.command.undo": "List the snapshots or restore one, into a new worktree by default",
   "git.command.rescue": "List lost commits from the reflog and fsck, and restore one into a new branch",
@@ -3069,6 +3696,46 @@ var es_default = {
   "gate.secrets.incident": "incidente de secreto {id} está {state}",
   "gate.secrets.clean": "ningún secreto nuevo en los cambios y ningún incidente abierto",
   "gate.require.secrets": "ningún secreto nuevo y ningún incidente de secreto abierto",
+  "prose.command.check": "Revisa si el texto tiene patrones que el lector reconoce como escritura de IA (solo local)",
+  "prose.rule.opener-routine": "empieza con lo que le pasó a alguien: un comando, una hora, un mensaje de error",
+  "prose.rule.reassurance": "quita la frase de consuelo; describe el problema y deja que el lector juzgue",
+  "prose.rule.slogan-closer": "termina con un hecho o con el siguiente paso, sin eslogan",
+  "prose.rule.rhythmic-triplet": "une las frases cortas en una que diga qué hace cada parte",
+  "prose.rule.imperative-fragment": "cambia las órdenes sueltas por una frase sobre lo que hace el producto",
+  "prose.rule.antithesis": "di lo que es y quita el contraste con lo que no es",
+  "prose.rule.abstract-noun": "cambia el sustantivo abstracto por la escena: quién hizo qué, dónde",
+  "prose.rule.crutch-word": "usa la palabra simple, o un número que pruebe lo que dices",
+  "prose.rule.colon-heading": "haz del título la pregunta o la tarea de quien lee",
+  "prose.rule.decorative-emoji": "quita el emoji; el título ya lleva el sentido",
+  "prose.rule.em-dash-series": "usa punto, coma o paréntesis en lugar de las rayas",
+  "prose.target.commit": "El mensaje de commit",
+  "prose.target.pr": "El texto del PR",
+  "prose.target.issue": "El texto de la issue",
+  "prose.span": "líneas {start}-{end}: {rules}",
+  "prose.fix_item": "{rule}: {fix}",
+  "prose.warn.command": "{target} parece escrito por IA ({spans}). Reescríbelo antes de enviarlo. {fixes}. Si es texto de marca escrito a propósito, muéstrale dos alternativas a la persona.",
+  "prose.block.command": "bloqueado: {target} parece escrito por IA ({spans}), y el preset de este proyecto no deja enviarlo. {fixes}. Reescríbelo y vuelve a ejecutar el comando.",
+  "prose.block.unreadable": "bloqueado: no se pudo leer {file} para revisar el texto ({detail}). Revisa la ruta y vuelve a ejecutar el comando.",
+  "prose.block.marker": "bloqueado: esto añadiría el marcador {marker} en {file}, y solo la persona puede ponerlo. Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor.",
+  "prose.check.file": "{file}: {count} pasaje(s) que parecen escritos por IA",
+  "prose.check.span": "  {file}:{start}-{end} puntos {score}: {rules}",
+  "prose.check.fix": "    haz en su lugar: {fix}",
+  "prose.check.allowed": "{file}: omitido, la persona lo marcó con {marker}",
+  "prose.check.clean": "{count} archivo(s) revisado(s), nada parece escrito por IA. Este lo escribió el mono solo.",
+  "prose.error.found": "{count} pasaje(s) parecen escritos por IA",
+  "prose.error.no_input": "nada que revisar: pasa archivos, --stdin, o ejecútalo dentro de un repositorio git para revisar los Markdown modificados",
+  "prose.error.unreadable": "no se pudo leer {file} ({detail})",
+  "prose.block.marker_shell": "bloqueado: este comando escribe el marcador {marker}, y solo la persona puede ponerlo. Reescribe el pasaje, o pide a la persona que ponga el marcador en su propio editor.",
+  "prose.rule.requester-reference": "di el motivo técnico del cambio, sin decir quién lo pidió",
+  "prose.rule.person-as-reason": "nombra la propiedad del cambio en lugar de la persona",
+  "prose.rule.origin-project": "describe la propiedad técnica, sin citar de dónde salió",
+  "prose.rule.first-person": "escribe lo que hace el cambio, en presente, sin yo ni tú",
+  "prose.rule.padding": "quita el preámbulo y empieza por lo que cambió",
+  "gate.require.prose": "el Markdown cambiado no parece escrito por una máquina",
+  "gate.prose.unavailable": "no se pudieron leer los archivos Markdown cambiados (git no disponible)",
+  "gate.prose.finding": "{file}:{line} parece escrito por una máquina ({rules})",
+  "gate.prose.warning": "solo aviso en este preset: {file}:{line} parece escrito por una máquina ({rules})",
+  "gate.prose.clean": "{count} archivo(s) Markdown cambiado(s), ninguno parece escrito por una máquina",
   "git.command.snapshot": "Guarda el árbol de trabajo, el índice y los archivos sin seguimiento en una ref de respaldo sin tocarlos",
   "git.command.undo": "Lista las instantáneas o restaura una, por defecto en un worktree nuevo",
   "git.command.rescue": "Lista commits perdidos por el reflog y el fsck, y restaura uno en una rama nueva",
@@ -3444,6 +4111,46 @@ var pt_BR_default = {
   "gate.secrets.incident": "incidente de segredo {id} está {state}",
   "gate.secrets.clean": "nenhum segredo novo nas mudanças e nenhum incidente aberto",
   "gate.require.secrets": "nenhum segredo novo e nenhum incidente de segredo aberto",
+  "prose.command.check": "Confere se o texto tem padrões que o leitor reconhece como escrita de IA (só local)",
+  "prose.rule.opener-routine": "abra com o que aconteceu com alguém: um comando, um horário, uma mensagem de erro",
+  "prose.rule.reassurance": "corte a frase de consolo; descreva o problema e deixe o leitor julgar",
+  "prose.rule.slogan-closer": "termine num fato ou no próximo passo, sem slogan",
+  "prose.rule.rhythmic-triplet": "junte as frases curtas numa só que diga o que cada parte faz",
+  "prose.rule.imperative-fragment": "troque as ordens soltas por uma frase sobre o que o produto faz",
+  "prose.rule.antithesis": "diga o que é e tire o contraste com o que não é",
+  "prose.rule.abstract-noun": "troque o substantivo abstrato pela cena: quem fez o quê, onde",
+  "prose.rule.crutch-word": "use a palavra simples, ou um número que prove o que diz",
+  "prose.rule.colon-heading": "faça do título a pergunta ou a tarefa de quem lê",
+  "prose.rule.decorative-emoji": "tire o emoji; o título já carrega o sentido",
+  "prose.rule.em-dash-series": "use ponto, vírgula ou parênteses no lugar dos travessões",
+  "prose.target.commit": "A mensagem de commit",
+  "prose.target.pr": "O texto do PR",
+  "prose.target.issue": "O texto da issue",
+  "prose.span": "linhas {start}-{end}: {rules}",
+  "prose.fix_item": "{rule}: {fix}",
+  "prose.warn.command": "{target} tem cara de texto de IA ({spans}). Reescreva antes de enviar. {fixes}. Se for texto de marca escrito de propósito, mostre duas alternativas à pessoa.",
+  "prose.block.command": "bloqueado: {target} tem cara de texto de IA ({spans}), e o preset deste projeto não deixa enviar. {fixes}. Reescreva e rode o comando de novo.",
+  "prose.block.unreadable": "bloqueado: não deu para ler {file} para conferir o texto ({detail}). Confira o caminho e rode o comando de novo.",
+  "prose.block.marker": "bloqueado: isto acrescentaria o marcador {marker} em {file}, e só a pessoa pode pôr esse marcador. Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela.",
+  "prose.check.file": "{file}: {count} trecho(s) com cara de texto de IA",
+  "prose.check.span": "  {file}:{start}-{end} pontos {score}: {rules}",
+  "prose.check.fix": "    faça no lugar: {fix}",
+  "prose.check.allowed": "{file}: pulado, a pessoa marcou com {marker}",
+  "prose.check.clean": "{count} arquivo(s) conferido(s), nada com cara de IA. Esse o macaco escreveu sozinho.",
+  "prose.error.found": "{count} trecho(s) com cara de texto de IA",
+  "prose.error.no_input": "nada para conferir: passe arquivos, --stdin, ou rode dentro de um repositório git para conferir os Markdown alterados",
+  "prose.error.unreadable": "não deu para ler {file} ({detail})",
+  "prose.block.marker_shell": "bloqueado: este comando escreve o marcador {marker}, e só a pessoa pode pôr esse marcador. Reescreva o trecho, ou peça à pessoa que ponha o marcador no editor dela.",
+  "prose.rule.requester-reference": "diga o motivo técnico da mudança, sem dizer quem pediu",
+  "prose.rule.person-as-reason": "nomeie a propriedade da mudança no lugar da pessoa",
+  "prose.rule.origin-project": "descreva a propriedade técnica, sem citar de onde veio",
+  "prose.rule.first-person": "escreva o que a mudança faz, no presente, sem eu nem você",
+  "prose.rule.padding": "corte o preâmbulo e comece pelo que mudou",
+  "gate.require.prose": "Markdown alterado sem cara de texto de máquina",
+  "gate.prose.unavailable": "não deu para ler os arquivos Markdown alterados (git indisponível)",
+  "gate.prose.finding": "{file}:{line} tem cara de texto de máquina ({rules})",
+  "gate.prose.warning": "só aviso neste preset: {file}:{line} tem cara de texto de máquina ({rules})",
+  "gate.prose.clean": "{count} arquivo(s) Markdown alterado(s), nenhum com cara de texto de máquina",
   "git.command.snapshot": "Salva árvore de trabalho, índice e arquivos não rastreados numa ref de backup sem mexer neles",
   "git.command.undo": "Lista as fotografias ou restaura uma, por padrão num worktree novo",
   "git.command.rescue": "Lista commits perdidos pelo reflog e pelo fsck, e restaura um numa branch nova",
@@ -3735,8 +4442,8 @@ var requirement2 = (want, ctx) => {
 var gitCheck = (check2, ctx) => {
   const wants = check2.require ?? ["committed"];
   const missing = wants.flatMap((want) => {
-    const problem3 = requirement2(want, ctx);
-    return problem3 === void 0 ? [] : [problem3];
+    const problem4 = requirement2(want, ctx);
+    return problem4 === void 0 ? [] : [problem4];
   });
   return missing.length > 0 ? failed(missing) : passed([note("gate.git.ok", { require: wants.join(", ") })]);
 };
@@ -3894,6 +4601,668 @@ var prOutcome = (check2, ctx) => {
       return foundOutcome(status, ctx);
   }
 };
+
+// src/install/layout.ts
+var STATE_DIR = ".finitemonkey";
+var SETTINGS_FILE = ".claude/settings.json";
+var GITIGNORE_FILE = ".gitignore";
+var CONFIG_FILE = ".finitemonkey/config.yml";
+var LOCK_FILE = ".finitemonkey/lock.json";
+var BACKUPS_DIR = ".finitemonkey/backups";
+var LOCKS_DIR = ".finitemonkey/locks";
+var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
+var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
+var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
+var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
+var LOCK_SCHEMA = "finitemonkey/lock@1";
+var PLAN_SCHEMA = "finitemonkey/install-plan@1";
+var GENERATED_MARKER = "finitemonkey:generated v=1";
+var BLOCK_BEGIN = "# finitemonkey:begin v=1";
+var BLOCK_END = "# finitemonkey:end";
+var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
+var PRESETS = ["neutral", "gabriel"];
+var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
+var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
+
+// src/prose/preset.ts
+var PRESET_LINE = /^preset:\s*([A-Za-z0-9_-]+)\s*$/m;
+var presetFromConfig = (text6) => parsePreset(PRESET_LINE.exec(text6)?.[1]) ?? "neutral";
+var projectPreset = (runtime, root) => {
+  const config = runtime.readText(toAbsolutePath(CONFIG_FILE, root));
+  return config.ok ? presetFromConfig(config.value) : "neutral";
+};
+
+// src/prose/catalog.ts
+var lazy = (build) => {
+  let value;
+  return () => value ??= build();
+};
+var bounded = (alternatives, flags) => new RegExp(`(?<![\\p{L}\\p{N}])(?:${alternatives.join("|")})(?![\\p{L}\\p{N}])`, flags);
+var phrases = (...alternatives) => bounded(alternatives, "iu");
+var casedPhrases = (...alternatives) => bounded(alternatives, "u");
+var OPENER = () => [
+  phrases("you know the (?:routine|drill)", "we've all been there", "we all know the feeling", "sound familiar\\?"),
+  phrases(
+    "(?:você )?(?:já )?conhece (?:a rotina|o roteiro|o esquema)",
+    "todo mundo já passou por isso",
+    "soa familiar\\?"
+  ),
+  phrases(
+    "(?:ya )?conoces (?:la rutina|el guion|el procedimiento)",
+    "todos hemos pasado por (?:eso|esto)",
+    "¿te suena\\?"
+  )
+];
+var REASSURANCE = () => [
+  phrases(
+    "(?:is|it's|that's|that is) not a character flaw",
+    "nobody(?:'s| is)(?: here)? (?:lazy|to blame)",
+    "no one(?:'s| is)(?: here)? (?:lazy|to blame)",
+    "it(?:'s| is) not your fault",
+    "you(?:'re| are) not alone"
+  ),
+  phrases(
+    "não é (?:um )?defeito de caráter",
+    "ninguém (?:aqui )?é preguiçoso",
+    "a culpa não é sua",
+    "não é culpa sua",
+    "você não está sozinh[oa]"
+  ),
+  phrases("no es un defecto de carácter", "(?:aquí )?nadie es vago", "no es (?:tu|su) culpa", "no estás sol[oa]")
+];
+var SLOGAN = () => [
+  phrases("and that changes everything", "that's the whole point", "simple as that", "it's that simple"),
+  phrases("e isso muda tudo", "simples assim", "é simples assim", "e ponto final"),
+  phrases("y eso lo cambia todo", "así de simple", "así de fácil", "y punto")
+];
+var ABSTRACT = () => [
+  phrases(
+    "the (?:pace|speed|rhythm|nature|reality) of (?:the )?(?:work|modern work|software|development)",
+    "the reality is",
+    "in today's (?:fast-paced|digital|modern) world"
+  ),
+  phrases(
+    "(?:o|a) (?:ritmo|velocidade|natureza|realidade) do (?:trabalho|desenvolvimento)",
+    "a realidade é que",
+    "no mundo (?:atual|de hoje)"
+  ),
+  phrases(
+    "(?:el|la) (?:ritmo|velocidad|naturaleza|realidad) del (?:trabajo|desarrollo)",
+    "la realidad es que",
+    "en el mundo (?:actual|de hoy)"
+  )
+];
+var CRUTCH = () => [
+  phrases(
+    "delv(?:e|es|ed|ing)",
+    "seamless(?:ly)?",
+    "robust(?:ness)?",
+    "leverag(?:e|es|ed|ing)",
+    "game[- ]chang(?:er|ers|ing)",
+    "it(?:'s| is) worth noting",
+    "cutting[- ]edge",
+    "unlock the (?:full )?(?:power|potential)",
+    "supercharg(?:e|ed|es)",
+    "effortless(?:ly)?",
+    "in conclusion",
+    "at the end of the day",
+    "navigate the (?:complexities|landscape)"
+  ),
+  phrases(
+    "vale (?:ressaltar|destacar|lembrar que)",
+    "cabe (?:destacar|ressaltar)",
+    "é importante (?:ressaltar|destacar|notar)",
+    "em (?:resumo|suma)",
+    "robust(?:o|a|os|as|ez)",
+    "alavanc(?:ar|a|ando|ado)",
+    "divisor de águas",
+    "sem esforço",
+    "potencializ(?:ar|a|ando)",
+    "de forma fluida"
+  ),
+  phrases(
+    "en (?:resumen|conclusión)",
+    "cabe (?:destacar|señalar|mencionar)",
+    "vale la pena (?:destacar|mencionar|señalar)",
+    "es importante (?:destacar|señalar)",
+    "robust(?:o|a|os|as|ez)",
+    "apalanc(?:ar|a|ando)",
+    "sin fisuras",
+    "sin esfuerzo",
+    "cambia las reglas del juego"
+  )
+];
+var phraseRules = lazy(() => [
+  { rule: "opener-routine", weight: 3, patterns: OPENER() },
+  { rule: "reassurance", weight: 3, patterns: REASSURANCE() },
+  { rule: "slogan-closer", weight: 2, patterns: SLOGAN() },
+  { rule: "abstract-noun", weight: 2, patterns: ABSTRACT() },
+  { rule: "crutch-word", weight: 3, patterns: CRUTCH() }
+]);
+var IMPERATIVE_VERBS = /* @__PURE__ */ new Set([
+  "type",
+  "ship",
+  "work",
+  "write",
+  "let",
+  "build",
+  "go",
+  "stop",
+  "start",
+  "keep",
+  "make",
+  "focus",
+  "forget",
+  "trust",
+  "code",
+  "digite",
+  "trabalhe",
+  "produza",
+  "deixe",
+  "escreva",
+  "faça",
+  "pare",
+  "comece",
+  "entregue",
+  "esqueça",
+  "confie",
+  "foque",
+  "programe",
+  "escribe",
+  "teclea",
+  "trabaja",
+  "produce",
+  "deja",
+  "haz",
+  "empieza",
+  "olvida",
+  "confía",
+  "programa",
+  "entrega"
+]);
+var STRUCTURE_WEIGHTS = {
+  triplet: 1,
+  imperative: 1,
+  closer: 1,
+  antithesis: 1,
+  antithesisPair: 2,
+  heading: 1,
+  emoji: 1,
+  dash: 1,
+  dashSeries: 2
+};
+
+// src/prose/marker.ts
+var ALLOW_MARKER = "finitemonkey:prose-allow";
+var ALLOW_FILE_MARKER = "finitemonkey:prose-allow-file";
+var ALLOW_COMMENT = `<!-- ${ALLOW_MARKER} -->`;
+var ALLOW_FILE_COMMENT = `<!-- ${ALLOW_FILE_MARKER} -->`;
+var LINE_MARKER = /<!--\s*finitemonkey:prose-allow\s*-->/;
+var FILE_MARKER = /<!--\s*finitemonkey:prose-allow-file\s*-->/;
+var ANY_MARKER = /<!--\s*finitemonkey:prose-allow(?:-file)?\s*-->/g;
+var INLINE_CODE = /`[^`]*`/g;
+var FENCE = /^\s*(```|~~~)/;
+var outsideCode = (line2) => line2.replace(INLINE_CODE, "");
+var unfencedLines = (text6) => {
+  let fenced = false;
+  return text6.split("\n").filter((line2) => {
+    if (FENCE.test(line2)) fenced = !fenced;
+    return !fenced && !FENCE.test(line2);
+  });
+};
+var allowsWholeFile = (text6) => unfencedLines(text6).some((line2) => FILE_MARKER.test(outsideCode(line2)));
+var allowsLine = (line2) => LINE_MARKER.test(outsideCode(line2));
+var markerCount = (text6) => text6.match(ANY_MARKER)?.length ?? 0;
+var isMarkerOnlyLine = (line2) => allowsLine(line2) && outsideCode(line2).replace(LINE_MARKER, "").trim() === "";
+
+// src/prose/extract.ts
+var FENCE2 = /^\s*(```|~~~)/;
+var HEADING = /^#{1,6}\s+/;
+var ITEM = /^\s*(?:[-*+]|\d+[.)])\s+/;
+var SKIPPED_LINE = /^\s*[|>]|^\s*<(?!!--)/;
+var INDENTED_CODE = /^(?: {4}|\t)/;
+var SENTENCE_END = /(?<=[.!?…])\s+/;
+var MASKS = [
+  [/!\[[^\]]*\]\([^)]*\)/g, ""],
+  [/\[[^\]]*\]\([^)]*\)/g, "x"],
+  [/\[[^\]]+\]\[[^\]]*\]/g, "x"],
+  [/`[^`]*`/g, "x"],
+  [/https?:\/\/\S+/g, "x"],
+  [/"[^"]*"|“[^”]*”|«[^»]*»/g, "x"],
+  [/<[^>]+>/g, ""],
+  [/\*\*|__/g, ""]
+];
+var maskInline = (line2) => MASKS.reduce((text6, [pattern, replacement]) => text6.replace(pattern, replacement), line2);
+var BlockReader = class {
+  blocks = [];
+  current;
+  skipNext = false;
+  flush() {
+    const block4 = this.current;
+    this.current = void 0;
+    if (block4 === void 0 || block4.pieces.length === 0) return;
+    if (this.skipNext) {
+      this.skipNext = false;
+      return;
+    }
+    this.blocks.push(block4);
+  }
+  skipNextBlock() {
+    this.flush();
+    this.skipNext = true;
+  }
+  start(kind, piece) {
+    this.flush();
+    this.current = { kind, pieces: [piece] };
+    if (kind === "heading") this.flush();
+  }
+  append(piece) {
+    this.current ??= { kind: "sentence", pieces: [] };
+    this.current.pieces.push(piece);
+  }
+  get open() {
+    return this.current !== void 0;
+  }
+};
+var readLine = (reader, raw, line2) => {
+  if (raw.trim() === "") {
+    reader.flush();
+  } else if (isMarkerOnlyLine(raw)) {
+    reader.skipNextBlock();
+  } else if (allowsLine(raw)) {
+    return;
+  } else if (HEADING.test(raw)) {
+    reader.start("heading", { text: raw.replace(HEADING, ""), line: line2 });
+  } else if (SKIPPED_LINE.test(raw) || raw.trim().startsWith("<!--")) {
+    reader.flush();
+  } else if (ITEM.test(raw)) {
+    reader.start("item", { text: raw.replace(ITEM, ""), line: line2 });
+  } else if (INDENTED_CODE.test(raw) && !reader.open) {
+    return;
+  } else {
+    reader.append({ text: raw.trim(), line: line2 });
+  }
+};
+var skipFrontmatter = (lines3) => {
+  if (lines3[0]?.trim() !== "---") return 0;
+  const end = lines3.findIndex((line2, index) => index > 0 && line2.trim() === "---");
+  return end < 0 ? 0 : end + 1;
+};
+var readBlocks = (lines3) => {
+  const reader = new BlockReader();
+  let fenced = false;
+  let commented = false;
+  for (let index = skipFrontmatter(lines3); index < lines3.length; index += 1) {
+    const raw = lines3[index] ?? "";
+    if (FENCE2.test(raw)) {
+      fenced = !fenced;
+      reader.flush();
+    } else if (commented) {
+      commented = !raw.includes("-->");
+    } else if (!fenced) {
+      if (raw.trim().startsWith("<!--") && !raw.includes("-->")) commented = true;
+      readLine(reader, raw, index + 1);
+    }
+  }
+  reader.flush();
+  return reader.blocks;
+};
+var splitBlock = (block4) => {
+  if (block4.kind === "heading") return block4.pieces.map((piece) => ({ ...piece, text: maskInline(piece.text) }));
+  const starts = [];
+  let joined = "";
+  for (const piece of block4.pieces) {
+    starts.push(joined.length);
+    joined += `${maskInline(piece.text)} `;
+  }
+  const lineAt = (offset2) => {
+    const index = starts.findLastIndex((start) => start <= offset2);
+    return block4.pieces[Math.max(index, 0)]?.line ?? 0;
+  };
+  let offset = 0;
+  return joined.split(SENTENCE_END).flatMap((sentence) => {
+    const at = joined.indexOf(sentence, offset);
+    offset = at + sentence.length;
+    const text6 = sentence.trim();
+    return text6 === "" ? [] : [{ text: text6, line: lineAt(at) }];
+  });
+};
+var unitsOf = (blocks) => {
+  let section = 0;
+  return blocks.flatMap((block4, paragraph) => {
+    if (block4.kind === "heading") section += 1;
+    const pieces = splitBlock(block4);
+    const next2 = blocks[paragraph + 1];
+    const closesSection = block4.kind === "sentence" && (next2 === void 0 || next2.kind === "heading");
+    return pieces.map((piece, index) => ({
+      text: piece.text,
+      line: piece.line,
+      paragraph,
+      section,
+      kind: block4.kind,
+      lastInParagraph: index === pieces.length - 1,
+      closesSection
+    }));
+  });
+};
+var extractProse = (text6) => {
+  if (allowsWholeFile(text6)) return { units: [], allowed: true };
+  const lines3 = text6.split("\n").map(withoutCarriageReturn);
+  return { units: unitsOf(readBlocks(lines3)), allowed: false };
+};
+
+// src/prose/types.ts
+var DENSITY_WINDOW = 6;
+var DENSITY_THRESHOLD = 4;
+
+// src/prose/record-catalog.ts
+var TECH_NOUNS = [
+  "readme",
+  "commit",
+  "pr",
+  "issue",
+  "botão",
+  "erro",
+  "aviso",
+  "bloqueio",
+  "hook",
+  "portão",
+  "prompt",
+  "modal",
+  "rodapé",
+  "cabeçalho",
+  "título",
+  "menu",
+  "banner",
+  "changelog",
+  "site",
+  "app",
+  "formulário",
+  "plugin",
+  "comando",
+  "contrato",
+  "relatório",
+  "projeto",
+  "arquivo",
+  "código",
+  "pacote",
+  "repositório",
+  "produto",
+  "módulo",
+  "sistema"
+].join("|");
+var REQUESTER = () => [
+  phrases(
+    "as requested",
+    "per (?:your|the user's|their) request",
+    "as you (?:asked|requested|wanted)",
+    "the user (?:asked|wants|wanted|requested)",
+    "as discussed",
+    "as agreed",
+    "per (?:the|our) (?:conversation|discussion|chat)"
+  ),
+  phrases(
+    "conforme (?:solicitado|pedido|combinado)",
+    "a pedido d[oa]",
+    "como (?:pedido|solicitado|combinado|conversado)",
+    "como você (?:pediu|quer|queria)",
+    "o usuário (?:pediu|quer|queria)"
+  ),
+  phrases(
+    "según lo (?:pedido|solicitado|acordado)",
+    "a (?:pedido|petición) de",
+    "como (?:pediste|se pidió|acordamos)",
+    "el usuario (?:pidió|quiere|quería)"
+  )
+];
+var PERSON = () => [
+  casedPhrases("\\p{Lu}\\p{Ll}+'s (?:text|request|idea|suggestion|wording|preference|feedback)"),
+  phrases(`(?:texto|pedido|ideia|sugestão|preferência|gosto) d[oa] (?!(?:${TECH_NOUNS})(?![\\p{L}\\p{N}]))\\p{L}+`),
+  casedPhrases("(?:texto|pedido|idea|sugerencia|preferencia) de \\p{Lu}\\p{Ll}+")
+];
+var ORIGIN = () => [
+  phrases("in the style of", "(?:just )?like \\S+ does", "inspired by", "copied from"),
+  phrases("no estilo d[oa]", "igual a[oà]s?", "inspirad[oa] n[oa]", "como o \\S+ faz"),
+  phrases("al estilo de", "igual que", "como hace \\S+", "inspirad[oa] en")
+];
+var FIRST_PERSON = () => [
+  phrases("I (?:changed|added|fixed|made|updated|removed|did|think|decided)", "you (?:asked|wanted|requested)"),
+  phrases(
+    "fiz",
+    "eu (?:mudei|troquei|adicionei|corrigi|fiz|acho)",
+    "mudei",
+    "troquei",
+    "adicionei",
+    "corrigi",
+    "você (?:pediu|quis)"
+  ),
+  phrases("hice", "cambié", "añadí", "arreglé", "corregí", "pediste", "(?:tú|usted) (?:pediste|pidió)")
+];
+var PADDING = () => [
+  phrases(
+    "this commit",
+    "this (?:PR|pull request) (?:aims|is meant|is intended|seeks|tries) to",
+    "the (?:purpose|goal) of this (?:PR|pull request|commit)"
+  ),
+  phrases("este commit", "este PR (?:tem como objetivo|visa|busca|pretende)", "o objetivo deste (?:PR|commit)"),
+  phrases("este commit", "este PR (?:tiene como objetivo|busca|pretende)", "el objetivo de este (?:PR|commit)")
+];
+var recordRules = lazy(() => [
+  { rule: "requester-reference", weight: DENSITY_THRESHOLD, patterns: REQUESTER() },
+  { rule: "person-as-reason", weight: DENSITY_THRESHOLD, patterns: PERSON() },
+  { rule: "origin-project", weight: DENSITY_THRESHOLD, patterns: ORIGIN() },
+  { rule: "first-person", weight: DENSITY_THRESHOLD, patterns: FIRST_PERSON() },
+  { rule: "padding", weight: DENSITY_THRESHOLD, patterns: PADDING() }
+]);
+
+// src/prose/structure.ts
+var SHORT_SENTENCE = 6;
+var SHORT_IMPERATIVE = 8;
+var SHORT_CLOSER = 8;
+var TRIAD_PART = 5;
+var WORD = /[\p{L}\p{N}]/u;
+var EMOJI = new RegExp("\\p{Extended_Pictographic}", "u");
+var COLON_HEADING = /^[^:]{1,40}:\s+\S/;
+var ANTITHESIS_TAIL = /,\s+(?:not|never|não|nunca|no)\s+([^,;:]+)$/iu;
+var NOT_BUT = /(?<![\p{L}])(?:not\s[^,.;]{1,40},\s*but|não\s[^,.;]{1,40},\s*mas|no\s[^,.;]{1,40},\s*sino)(?![\p{L}])/iu;
+var NEGATION = /(?<![\p{L}])(?:is not|isn't|it's not|that's not|that is not|não é|no es)(?![\p{L}])/iu;
+var AFFIRMATION = /^(?:it is|it's|this is|é|es|isso é|eso es)(?![\p{L}])/iu;
+var CONNECTIVES = new Set(
+  "with in on at by for of to from if is are was never not x por em en com con de do da del se si é es são son nunca não no para que como".split(
+    " "
+  )
+);
+var wordsOf = (text6) => text6.split(/\s+/).filter((word2) => WORD.test(word2));
+var hit = (rule, units, index, weight) => {
+  const unit = units[index];
+  return { rule, unit: index, line: unit?.line ?? 0, weight, excerpt: unit?.text ?? "" };
+};
+var isProse = (unit) => unit?.kind === "sentence";
+var samePara = (units, from, count3) => {
+  const first = units[from];
+  if (!isProse(first)) return false;
+  return units.slice(from, from + count3).every((unit) => isProse(unit) && unit.paragraph === first.paragraph);
+};
+var runsOf = (units, size, matches) => {
+  const starts = [];
+  for (let index = 0; index + size <= units.length; index += 1) {
+    const window = units.slice(index, index + size);
+    if (!samePara(units, index, size) || !window.every(matches)) continue;
+    if (starts.at(-1) !== void 0 && index - (starts.at(-1) ?? 0) < size) continue;
+    starts.push(index);
+  }
+  return starts;
+};
+var isShort = (limit) => (unit) => wordsOf(unit.text).length <= limit;
+var isImperative = (unit) => {
+  const [first] = wordsOf(unit.text);
+  return isShort(SHORT_IMPERATIVE)(unit) && IMPERATIVE_VERBS.has((first ?? "").toLowerCase());
+};
+var isPhrase = (part2) => {
+  const words = wordsOf(part2);
+  return words.length >= 2 && words.length <= TRIAD_PART && !CONNECTIVES.has((words[0] ?? "").toLowerCase());
+};
+var isCommaTriad = (unit) => {
+  const parts = unit.text.replace(/[.!?…]+$/, "").split(/,\s*|\s+(?:and|e|y)\s+/);
+  return parts.length === 3 && parts.every(isPhrase);
+};
+var triplets = (units) => [
+  ...runsOf(units, 3, isShort(SHORT_SENTENCE)).map(
+    (index) => hit("rhythmic-triplet", units, index, STRUCTURE_WEIGHTS.triplet)
+  ),
+  ...units.flatMap(
+    (unit, index) => isProse(unit) && unit.lastInParagraph && isCommaTriad(unit) ? [hit("rhythmic-triplet", units, index, STRUCTURE_WEIGHTS.triplet)] : []
+  )
+];
+var imperatives = (units) => runsOf(units, 2, isImperative).map((index) => hit("imperative-fragment", units, index, STRUCTURE_WEIGHTS.imperative));
+var closers = (units) => units.flatMap((unit, index) => {
+  const isCloser = isProse(unit) && unit.lastInParagraph && unit.closesSection && index > 0 && isShort(SHORT_CLOSER)(unit) && !/\d/.test(unit.text);
+  return isCloser ? [hit("slogan-closer", units, index, STRUCTURE_WEIGHTS.closer)] : [];
+});
+var antitheses = (units) => units.flatMap((unit, index) => {
+  if (unit.kind === "heading") return [];
+  const tail2 = ANTITHESIS_TAIL.exec(unit.text)?.[1];
+  if (tail2 !== void 0 && wordsOf(tail2).length <= SHORT_SENTENCE || NOT_BUT.test(unit.text)) {
+    return [hit("antithesis", units, index, STRUCTURE_WEIGHTS.antithesis)];
+  }
+  const next2 = units[index + 1];
+  const paired = NEGATION.test(unit.text) && next2?.paragraph === unit.paragraph && AFFIRMATION.test(next2.text);
+  return paired ? [hit("antithesis", units, index, STRUCTURE_WEIGHTS.antithesisPair)] : [];
+});
+var headings = (units) => units.flatMap(
+  (unit, index) => unit.kind === "heading" && COLON_HEADING.test(unit.text) ? [hit("colon-heading", units, index, STRUCTURE_WEIGHTS.heading)] : []
+);
+var emoji = (units) => units.flatMap(
+  (unit, index) => EMOJI.test(unit.text) ? [hit("decorative-emoji", units, index, STRUCTURE_WEIGHTS.emoji)] : []
+);
+var dashes = (units) => {
+  const perParagraph = /* @__PURE__ */ new Map();
+  for (const unit of units) {
+    const count3 = unit.text.split("—").length - 1;
+    perParagraph.set(unit.paragraph, (perParagraph.get(unit.paragraph) ?? 0) + count3);
+  }
+  return [...perParagraph].flatMap(([paragraph, count3]) => {
+    if (count3 === 0) return [];
+    const index = units.findIndex((unit) => unit.paragraph === paragraph && unit.text.includes("—"));
+    const weight = count3 >= 2 ? STRUCTURE_WEIGHTS.dashSeries : STRUCTURE_WEIGHTS.dash;
+    return [hit("em-dash-series", units, index, weight)];
+  });
+};
+var structureHits = (units) => [
+  ...triplets(units),
+  ...imperatives(units),
+  ...closers(units),
+  ...antitheses(units),
+  ...headings(units),
+  ...emoji(units),
+  ...dashes(units)
+];
+
+// src/prose/score.ts
+var phraseHits = (units, catalog) => units.flatMap(
+  (unit, index) => catalog.flatMap(({ rule, weight, patterns }) => {
+    const match = patterns.map((pattern) => pattern.exec(unit.text)).find((found) => found !== null);
+    return match === void 0 ? [] : [{ rule, unit: index, line: unit.line, weight, excerpt: match[0] }];
+  })
+);
+var windowEnd = (units, from, size) => {
+  const section = units[from]?.section;
+  let to = from;
+  while (to + 1 < Math.min(units.length, from + size) && units[to + 1]?.section === section) to += 1;
+  return to;
+};
+var windowScore = (hits, window) => hits.filter((item) => item.unit >= window.from && item.unit <= window.to).reduce((sum, item) => sum + item.weight, 0);
+var hotWindows = (hits, units, size, threshold) => {
+  const windows = [];
+  for (let from = 0; from < units.length; from += 1) {
+    const window = { from, to: windowEnd(units, from, size) };
+    if (windowScore(hits, window) >= threshold) windows.push(window);
+  }
+  return windows;
+};
+var spanOf2 = (hits, from, to) => {
+  const inside = hits.filter((item) => item.unit >= from && item.unit <= to);
+  const lines3 = inside.map((item) => item.line);
+  return {
+    startLine: Math.min(...lines3),
+    endLine: Math.max(...lines3),
+    score: inside.reduce((sum, item) => sum + item.weight, 0),
+    hits: inside
+  };
+};
+var mergeSpans = (hits, windows) => {
+  const ranges = [];
+  for (const { from, to } of windows) {
+    const previous = ranges.at(-1);
+    if (previous !== void 0 && from <= previous[1] + 1) previous[1] = Math.max(previous[1], to);
+    else ranges.push([from, to]);
+  }
+  return ranges.map(([from, to]) => spanOf2(hits, from, to)).filter((span) => span.hits.length > 0);
+};
+var byPosition = (left, right) => left.unit - right.unit || left.line - right.line;
+var scoreProse = (text6, options = {}) => {
+  const { units, allowed: allowed2 } = extractProse(text6);
+  const size = options.window ?? DENSITY_WINDOW;
+  const threshold = options.threshold ?? DENSITY_THRESHOLD;
+  const catalog = options.context === "record" ? [...phraseRules(), ...recordRules()] : phraseRules();
+  const hits = [...phraseHits(units, catalog), ...structureHits(units)].sort(byPosition);
+  const spans = mergeSpans(hits, hotWindows(hits, units, size, threshold));
+  return { hits, spans, allowed: allowed2 };
+};
+var isFlagged = (report2) => report2.spans.length > 0;
+
+// src/prose/gate.ts
+var MARKDOWN = /\.(?:md|markdown|mdx)$/i;
+var RECORD_FILE = /(?:^|\/)(?:CHANGELOG|RELEASE[-_]?NOTES|HISTORY)[^/]*$/i;
+var contextOf = (file) => RECORD_FILE.test(toPosixPath(file)) ? "record" : "docs";
+var listed = (runtime, root, args) => {
+  const result = runtime.git(args, root);
+  if (!result.ok) return reject(`git ${args.join(" ")} failed`);
+  return accept(result.stdout.split("\0").map(toPosixPath));
+};
+var changedMarkdown = (runtime, root) => {
+  const tracked = listed(runtime, root, ["diff", "--name-only", "-z", "--diff-filter=ACMR", "HEAD"]);
+  if (!tracked.ok) return tracked;
+  const untracked3 = listed(runtime, root, ["ls-files", "-z", "--others", "--exclude-standard"]);
+  if (!untracked3.ok) return untracked3;
+  const files = [...tracked.value, ...untracked3.value].filter(
+    (file) => MARKDOWN.test(file) && !file.startsWith(".finitemonkey/")
+  );
+  return accept([...new Set(files)].sort());
+};
+var scoreFiles = (runtime, root, files, forced) => {
+  const reports = [];
+  for (const file of files) {
+    const text6 = runtime.readText(toAbsolutePath(file, root));
+    if (!text6.ok) return reject(`${file}: ${text6.error}`);
+    reports.push({ file: toPosixPath(file), report: scoreProse(text6.value, { context: forced ?? contextOf(file) }) });
+  }
+  return accept(reports);
+};
+var proseGateStatus = (runtime, root) => {
+  const changed = changedMarkdown(runtime, root);
+  if (!changed.ok) return changed;
+  const files = scoreFiles(runtime, root, changed.value);
+  if (!files.ok) return files;
+  return accept({
+    files: files.value,
+    flagged: files.value.filter((item) => isFlagged(item.report)),
+    blocking: projectPreset(runtime, root) === "gabriel"
+  });
+};
+
+// src/gate/checks/prose.ts
+var MAX_LISTED3 = 10;
+var rulesOf = (span) => [...new Set(span.hits.map((hit3) => hit3.rule))].join(", ");
+var proseOutcome = (status) => {
+  if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
+  const { files, flagged, blocking } = status.value;
+  const key = blocking ? "gate.prose.finding" : "gate.prose.warning";
+  const notes2 = flagged.flatMap((item) => item.report.spans.map((span) => ({ file: item.file, span }))).slice(0, MAX_LISTED3).map(({ file, span }) => note(key, { file, line: span.startLine, rules: rulesOf(span) }));
+  if (notes2.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
+  return blocking ? failed(notes2) : passed(notes2);
+};
+var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
 // src/secrets/baseline.ts
 import { join as join7 } from "node:path";
@@ -4095,13 +5464,13 @@ var whereOf = (finding2) => `${finding2.file}:${String(finding2.line)}`;
 var COMMIT = /^commit ([0-9a-f]{7,64})\b/;
 var HUNK2 = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
 var DEV_NULL = "/dev/null";
-var fresh = () => ({ file: void 0, inHunk: false, next: 0, text: [], lines: [] });
+var fresh2 = () => ({ file: void 0, inHunk: false, next: 0, text: [], lines: [] });
 var targetOf = (line2) => {
   const path = line2.slice(4).replace(/\t.*$/, "");
   if (path === DEV_NULL) return void 0;
   return path.startsWith("b/") ? path.slice(2) : path;
 };
-var collect = (chunk, commit2, found) => {
+var collect2 = (chunk, commit2, found) => {
   const { file } = chunk;
   if (file === void 0 || chunk.text.length === 0) return;
   for (const finding2 of scanText(chunk.text.join("\n"), { path: file })) {
@@ -4127,10 +5496,10 @@ var addLine = (chunk, line2) => {
 var diffScanner = () => {
   const found = /* @__PURE__ */ new Map();
   let commit2;
-  let chunk = fresh();
+  let chunk = fresh2();
   const flush2 = () => {
-    collect(chunk, commit2, found);
-    chunk = fresh();
+    collect2(chunk, commit2, found);
+    chunk = fresh2();
   };
   const header = (line2) => {
     const match = COMMIT.exec(line2);
@@ -4162,7 +5531,7 @@ var MAX_FILE_BYTES = 2 * 1024 * 1024;
 var SKIPPED = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
 var DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var binary = (text6) => text6.slice(0, 8e3).includes("\0");
-var listed = (runtime, root, target) => {
+var listed2 = (runtime, root, target) => {
   const git = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target], root);
   if (git.ok)
     return accept(
@@ -4179,7 +5548,7 @@ var scanFile = (runtime, root, file) => {
   return scanText(text6.value, { path: file }).map((finding2) => locate(finding2, file, finding2.line));
 };
 var scanPath = (runtime, root, target) => {
-  const files = listed(runtime, root, target);
+  const files = listed2(runtime, root, target);
   if (!files.ok) return files;
   return accept(files.value.filter((file) => !SKIPPED.test(file)).flatMap((file) => scanFile(runtime, root, file)));
 };
@@ -4204,9 +5573,9 @@ var scanHistory = async (runtime, root) => {
 
 // src/secrets/gate.ts
 var untracked2 = (runtime, root) => {
-  const listed3 = runtime.git(["ls-files", "-z", "--others", "--exclude-standard"], root);
-  if (!listed3.ok) return [];
-  return listed3.stdout.split("\0").map(toPosixPath).filter((file) => file !== "" && !file.startsWith(".finitemonkey/")).flatMap((file) => scanFile(runtime, root, file));
+  const listed4 = runtime.git(["ls-files", "-z", "--others", "--exclude-standard"], root);
+  if (!listed4.ok) return [];
+  return listed4.stdout.split("\0").map(toPosixPath).filter((file) => file !== "" && !file.startsWith(".finitemonkey/")).flatMap((file) => scanFile(runtime, root, file));
 };
 var secretsGateStatus = (runtime, root, since) => {
   const changed = scanStaged(runtime, root, true);
@@ -4221,7 +5590,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED3 = 10;
+var MAX_LISTED4 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -4232,8 +5601,8 @@ var secretsCheck = (_check, ctx) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings, openIncidents } = status.value;
   const notes2 = [
-    ...findings.slice(0, MAX_LISTED3).map((finding2) => note("gate.secrets.finding", { file: finding2.file, line: finding2.line, rule: finding2.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED3).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
+    ...findings.slice(0, MAX_LISTED4).map((finding2) => note("gate.secrets.finding", { file: finding2.file, line: finding2.line, rule: finding2.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED4).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
   return notes2.length > 0 ? failed(notes2) : passed([note("gate.secrets.clean")]);
 };
@@ -4242,7 +5611,7 @@ var secretsCheck = (_check, ctx) => {
 import { join as join10 } from "node:path";
 
 // src/guards/tests/scan.ts
-var skipQuoted = (source, start, quote) => {
+var skipQuoted2 = (source, start, quote) => {
   for (let index = start + 1; index < source.length; index += 1) {
     const char = source[index];
     if (char === "\\") index += 1;
@@ -4251,7 +5620,7 @@ var skipQuoted = (source, start, quote) => {
   }
   return source.length;
 };
-var skipComment = (source, start) => {
+var skipComment2 = (source, start) => {
   if (source[start + 1] === "/") {
     const end2 = source.indexOf("\n", start);
     return end2 < 0 ? source.length : end2 - 1;
@@ -4265,10 +5634,10 @@ var stripJs = (source) => {
     const char = source[index] ?? "";
     const next2 = source[index + 1];
     if (char === "/" && (next2 === "/" || next2 === "*")) {
-      index = skipComment(source, index);
+      index = skipComment2(source, index);
       out += " ";
     } else if (char === '"' || char === "'" || char === "`") {
-      index = skipQuoted(source, index, char);
+      index = skipQuoted2(source, index, char);
       out += `${char}${char}`;
     } else out += char;
   }
@@ -4386,7 +5755,7 @@ var forChange = (input, change) => {
 var analyzeTree = (input) => input.changes.flatMap((change) => forChange(input, change));
 
 // src/gate/checks/tests.ts
-var MAX_LISTED4 = 10;
+var MAX_LISTED5 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -4411,7 +5780,7 @@ var treeViolations = (ctx) => {
 var testsCheck = (check2, ctx) => {
   const violations = treeViolations(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes2 = violations.slice(0, MAX_LISTED4).map(violationNote);
+  const notes2 = violations.slice(0, MAX_LISTED5).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed([...notes2, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes2, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -4452,9 +5821,9 @@ var run = (runtime, repo, args, env, options, input) => {
   return result.ok ? accept(result.stdout.trim()) : reject(failure(args[0] ?? "git", result));
 };
 var dropSensitive = (runtime, repo, env, options) => {
-  const listed3 = run(runtime, repo, ["ls-files", "-z"], env, options);
-  if (!listed3.ok) return listed3;
-  const sensitive = listed3.value.split("\0").filter((path) => path !== "" && isSensitivePath(path));
+  const listed4 = run(runtime, repo, ["ls-files", "-z"], env, options);
+  if (!listed4.ok) return listed4;
+  const sensitive = listed4.value.split("\0").filter((path) => path !== "" && isSensitivePath(path));
   if (sensitive.length === 0) return accept(void 0);
   const removed = run(runtime, repo, ["rm", "--cached", "-q", "--ignore-unmatch", "--", ...sensitive], env, options);
   return removed.ok ? accept(void 0) : removed;
@@ -4678,8 +6047,8 @@ var memo2 = (compute) => {
 var memoBy = (compute) => {
   const cache = /* @__PURE__ */ new Map();
   return (key) => {
-    const hit2 = cache.get(key);
-    if (hit2 !== void 0) return hit2.value;
+    const hit3 = cache.get(key);
+    if (hit3 !== void 0) return hit3.value;
     const value = compute(key);
     cache.set(key, { value });
     return value;
@@ -4713,7 +6082,7 @@ var parsePorcelainV2 = (stdout) => {
 
 // src/git/project-config.ts
 import { join as join12 } from "node:path";
-var CONFIG_FILE = ".finitemonkey/config.yml";
+var CONFIG_FILE2 = ".finitemonkey/config.yml";
 var unquote = (value) => value.trim().replace(/^(["'])(.*)\1$/s, "$2");
 var stripComment2 = (line2) => {
   let quote;
@@ -4793,7 +6162,7 @@ var configMap = (tree, ...path) => {
   );
 };
 var loadProjectConfig = (runtime, root) => {
-  const text6 = runtime.readText(toAbsolutePath(join12(root, CONFIG_FILE)));
+  const text6 = runtime.readText(toAbsolutePath(join12(root, CONFIG_FILE2)));
   return text6.ok ? parseConfigYaml(text6.value) : {};
 };
 
@@ -4833,7 +6202,7 @@ var DROPPED_REASONS = [
 // src/git/merge/dropped.ts
 var DROPPED_FILE = ".finitemonkey/merge-dropped.json";
 var REASONS = new Set(DROPPED_REASONS);
-var ALIASES = {
+var ALIASES2 = {
   same_intent_other_side: "mesma_intencao_outro_lado",
   reverted_on_purpose: "revertido_de_proposito",
   regenerated: "regenerado",
@@ -4850,7 +6219,7 @@ var itemOf = (value) => {
     file,
     side: sideOf(optionalString(value, "side")),
     text: optionalString(value, "line") ?? optionalString(value, "text") ?? optionalString(value, "symbol"),
-    reason: ALIASES[reason] ?? reason,
+    reason: ALIASES2[reason] ?? reason,
     approvedBy: optionalString(value, "approved_by")
   };
 };
@@ -4889,680 +6258,6 @@ var isDropped = (finding2, items) => items.some(
 
 // src/git/merge/generated.ts
 import { join as join14 } from "node:path";
-
-// src/shell/normalize.ts
-import { posix } from "node:path";
-
-// src/shell/scan.ts
-var cursorOf = (text6) => ({ text: text6, pos: 0, incomplete: false, subs: [] });
-var peek = (cursor, offset = 0) => cursor.text.charAt(cursor.pos + offset);
-var atEnd = (cursor) => cursor.pos >= cursor.text.length;
-var skipQuoted2 = (cursor, quote) => {
-  cursor.pos += 1;
-  while (!atEnd(cursor) && peek(cursor) !== quote) {
-    cursor.pos += quote === '"' && peek(cursor) === "\\" ? 2 : 1;
-  }
-  cursor.pos += 1;
-};
-var readBalanced = (cursor, open, close2) => {
-  const start = cursor.pos;
-  let depth = 1;
-  while (!atEnd(cursor)) {
-    const char = peek(cursor);
-    if (char === "\\") cursor.pos += 2;
-    else if (char === "'" || char === '"') skipQuoted2(cursor, char);
-    else {
-      if (char === open) depth += 1;
-      if (char === close2) depth -= 1;
-      if (depth === 0) {
-        const inner = cursor.text.slice(start, cursor.pos);
-        cursor.pos += 1;
-        return inner;
-      }
-      cursor.pos += 1;
-    }
-  }
-  cursor.incomplete = true;
-  return cursor.text.slice(start);
-};
-var readUntil = (cursor, terminator, escapes) => {
-  let out = "";
-  while (!atEnd(cursor) && peek(cursor) !== terminator) {
-    if (escapes && peek(cursor) === "\\" && cursor.pos + 1 < cursor.text.length) {
-      out += peek(cursor, 1);
-      cursor.pos += 2;
-    } else {
-      out += peek(cursor);
-      cursor.pos += 1;
-    }
-  }
-  if (atEnd(cursor)) cursor.incomplete = true;
-  cursor.pos += 1;
-  return out;
-};
-var ANSI2 = {
-  n: "\n",
-  t: "	",
-  r: "\r",
-  "\\": "\\",
-  "'": "'",
-  '"': '"',
-  e: "\x1B"
-};
-var readAnsiC = (cursor) => {
-  let out = "";
-  while (!atEnd(cursor) && peek(cursor) !== "'") {
-    if (peek(cursor) === "\\") {
-      const next2 = peek(cursor, 1);
-      const hex = /^x([0-9a-fA-F]{1,2})/.exec(cursor.text.slice(cursor.pos + 1, cursor.pos + 4));
-      if (hex !== null) {
-        out += String.fromCharCode(Number.parseInt(hex[1] ?? "0", 16));
-        cursor.pos += 1 + hex[0].length;
-        continue;
-      }
-      out += ANSI2[next2] ?? next2;
-      cursor.pos += 2;
-    } else {
-      out += peek(cursor);
-      cursor.pos += 1;
-    }
-  }
-  if (atEnd(cursor)) cursor.incomplete = true;
-  cursor.pos += 1;
-  return out;
-};
-
-// src/shell/lexer.ts
-var OPERATORS = ["&&", "||", ";;", "|&", "|", "&", ";", "(", ")", "\n"];
-var REDIRECT2 = /^(\d*)(<<<|<<-|<<|<>|<&|>>|>&|>\||<|>)|^(&>>|&>)/;
-var BOUNDARY = /* @__PURE__ */ new Set([" ", "	", "\n", "|", "&", ";", "(", ")", "<", ">"]);
-var dollar = (cursor, state, inDouble) => {
-  const next2 = peek(cursor, 1);
-  state.dynamic = true;
-  if (next2 === "(" && peek(cursor, 2) === "(") {
-    cursor.pos += 3;
-    state.text += `$((${readBalanced(cursor, "(", ")")})`;
-    if (peek(cursor) === ")") cursor.pos += 1;
-  } else if (next2 === "(") {
-    cursor.pos += 2;
-    const inner = readBalanced(cursor, "(", ")");
-    cursor.subs.push(inner);
-    state.text += `$(${inner})`;
-  } else if (next2 === "{") {
-    cursor.pos += 2;
-    state.text += `\${${readBalanced(cursor, "{", "}")}}`;
-  } else if (next2 === "'" && !inDouble) {
-    cursor.pos += 2;
-    state.dynamic = false;
-    state.quoted = true;
-    state.text += readAnsiC(cursor);
-  } else {
-    cursor.pos += 1;
-    state.text += "$";
-  }
-};
-var backtick = (cursor, state) => {
-  cursor.pos += 1;
-  const inner = readUntil(cursor, "`", true);
-  cursor.subs.push(inner);
-  state.text += `\`${inner}\``;
-  state.dynamic = true;
-};
-var DOUBLE_ESCAPES = /* @__PURE__ */ new Set(["$", "`", '"', "\\", "\n"]);
-var doubleQuoted = (cursor, state) => {
-  cursor.pos += 1;
-  state.quoted = true;
-  while (!atEnd(cursor) && peek(cursor) !== '"') {
-    const char = peek(cursor);
-    if (char === "\\" && DOUBLE_ESCAPES.has(peek(cursor, 1))) {
-      if (peek(cursor, 1) !== "\n") state.text += peek(cursor, 1);
-      cursor.pos += 2;
-    } else if (char === "$") dollar(cursor, state, true);
-    else if (char === "`") backtick(cursor, state);
-    else {
-      state.text += char;
-      cursor.pos += 1;
-    }
-  }
-  if (atEnd(cursor)) cursor.incomplete = true;
-  cursor.pos += 1;
-};
-var wordPart = (cursor, state) => {
-  const char = peek(cursor);
-  if (char === "\\") {
-    if (peek(cursor, 1) !== "\n") state.text += peek(cursor, 1);
-    cursor.pos += 2;
-  } else if (char === "'") {
-    cursor.pos += 1;
-    state.quoted = true;
-    state.text += readUntil(cursor, "'", false);
-  } else if (char === '"') doubleQuoted(cursor, state);
-  else if (char === "$") dollar(cursor, state, false);
-  else if (char === "`") backtick(cursor, state);
-  else {
-    state.text += char;
-    cursor.pos += 1;
-  }
-};
-var readWord = (cursor) => {
-  const state = { text: "", quoted: false, dynamic: false };
-  while (!atEnd(cursor) && !BOUNDARY.has(peek(cursor))) wordPart(cursor, state);
-  return { kind: "word", ...state };
-};
-var skipBlank = (cursor) => {
-  while (peek(cursor) === " " || peek(cursor) === "	" || peek(cursor) === "\\" && peek(cursor, 1) === "\n") {
-    cursor.pos += peek(cursor) === "\\" ? 2 : 1;
-  }
-};
-var heredocBody = (cursor, delimiter, stripTabs) => {
-  const lines3 = [];
-  while (!atEnd(cursor)) {
-    const end = cursor.text.indexOf("\n", cursor.pos);
-    const line2 = cursor.text.slice(cursor.pos, end < 0 ? void 0 : end);
-    cursor.pos = end < 0 ? cursor.text.length : end + 1;
-    const compared = stripTabs ? line2.replace(/^\t+/, "") : line2;
-    if (compared === delimiter) return lines3.join("\n");
-    lines3.push(compared);
-  }
-  cursor.incomplete = true;
-  return lines3.join("\n");
-};
-var readRedirect = (cursor, match) => {
-  const op = match[2] ?? match[3] ?? "";
-  cursor.pos += match[0].length;
-  skipBlank(cursor);
-  const processSub = peek(cursor) === "(" && op === "<";
-  const target = processSub ? "" : readWord(cursor).text;
-  return { kind: "redirect", op, fd: match[1] ?? "", target, body: void 0 };
-};
-var processSubstitution = (cursor) => {
-  if (peek(cursor) !== "<" && peek(cursor) !== ">" || peek(cursor, 1) !== "(") return false;
-  cursor.pos += 2;
-  cursor.subs.push(readBalanced(cursor, "(", ")"));
-  return true;
-};
-var flushHeredocs = (cursor, tokens, pending) => {
-  for (const { index, token } of pending.splice(0)) {
-    tokens[index] = { ...token, body: heredocBody(cursor, token.target, token.op === "<<-") };
-  }
-};
-var nextToken = (cursor, tokens, pending) => {
-  if (peek(cursor) === "#") {
-    const end = cursor.text.indexOf("\n", cursor.pos);
-    cursor.pos = end < 0 ? cursor.text.length : end;
-    return;
-  }
-  if (processSubstitution(cursor)) return;
-  const redirect = REDIRECT2.exec(cursor.text.slice(cursor.pos, cursor.pos + 4));
-  if (redirect !== null) {
-    const token = readRedirect(cursor, redirect);
-    if (token.op === "<<" || token.op === "<<-") pending.push({ index: tokens.length, token });
-    tokens.push(token);
-    return;
-  }
-  const op = OPERATORS.find((candidate) => cursor.text.startsWith(candidate, cursor.pos));
-  if (op === void 0) {
-    tokens.push(readWord(cursor));
-    return;
-  }
-  cursor.pos += op.length;
-  tokens.push({ kind: "op", text: op });
-  if (op === "\n") flushHeredocs(cursor, tokens, pending);
-};
-var lexBash = (text6) => {
-  const cursor = cursorOf(text6.replace(/\r\n/g, "\n"));
-  const tokens = [];
-  const pending = [];
-  skipBlank(cursor);
-  while (!atEnd(cursor)) {
-    nextToken(cursor, tokens, pending);
-    skipBlank(cursor);
-  }
-  flushHeredocs(cursor, tokens, pending);
-  return { tokens, substitutions: cursor.subs, incomplete: cursor.incomplete };
-};
-
-// src/shell/parse.ts
-var PREFIX_WORDS = /* @__PURE__ */ new Set(["!", "{", "}", "if", "then", "elif", "else", "do", "while", "until"]);
-var SKIP_WORDS = /* @__PURE__ */ new Set(["fi", "done", "esac", "}", "for", "case", "select", "function", "in"]);
-var trimKeywords = (words) => {
-  let start = 0;
-  while (start < words.length && !words[start]?.quoted && PREFIX_WORDS.has(words[start]?.text ?? "")) start += 1;
-  const rest = words.slice(start);
-  const first = rest[0];
-  if (first !== void 0 && !first.quoted && SKIP_WORDS.has(first.text)) return [];
-  return rest;
-};
-var fresh2 = () => ({ words: [], redirects: [], stdin: void 0 });
-var close = (building, out) => {
-  const words = trimKeywords(building.words);
-  if (words.length > 0 || building.redirects.length > 0 || building.stdin !== void 0) {
-    out.push({ words, redirects: building.redirects, stdin: building.stdin });
-  }
-};
-var rawCommands = (tokens) => {
-  const out = [];
-  let building = fresh2();
-  for (const token of tokens) {
-    if (token.kind === "op") {
-      close(building, out);
-      building = fresh2();
-    } else if (token.kind === "word") {
-      building.words.push(token);
-    } else {
-      building.redirects.push({ op: token.op, fd: token.fd, target: token.target });
-      if (token.body !== void 0) building.stdin = token.body;
-      else if (token.op === "<<<") building.stdin = token.target;
-    }
-  }
-  close(building, out);
-  return out;
-};
-
-// src/shell/powershell.ts
-var OPERATORS2 = ["&&", "||", ";", "|", "\n", "(", ")", "{", "}"];
-var REDIRECT3 = /^(\*|\d)?(>>|>)(&\d)?/;
-var BOUNDARY2 = /* @__PURE__ */ new Set([" ", "	", "\n", ";", "|", "(", ")", "{", "}", ">"]);
-var single = (cursor, state) => {
-  cursor.pos += 1;
-  state.quoted = true;
-  while (!atEnd(cursor)) {
-    if (peek(cursor) === "'" && peek(cursor, 1) === "'") {
-      state.text += "'";
-      cursor.pos += 2;
-    } else if (peek(cursor) === "'") {
-      cursor.pos += 1;
-      return;
-    } else {
-      state.text += peek(cursor);
-      cursor.pos += 1;
-    }
-  }
-  cursor.incomplete = true;
-};
-var subexpression = (cursor, state) => {
-  cursor.pos += 2;
-  const inner = readBalanced(cursor, "(", ")");
-  cursor.subs.push(inner);
-  state.text += `$(${inner})`;
-  state.dynamic = true;
-};
-var double = (cursor, state) => {
-  cursor.pos += 1;
-  state.quoted = true;
-  while (!atEnd(cursor)) {
-    const char = peek(cursor);
-    if (char === "`") {
-      state.text += peek(cursor, 1);
-      cursor.pos += 2;
-    } else if (char === '"' && peek(cursor, 1) === '"') {
-      state.text += '"';
-      cursor.pos += 2;
-    } else if (char === '"') {
-      cursor.pos += 1;
-      return;
-    } else if (char === "$" && peek(cursor, 1) === "(") subexpression(cursor, state);
-    else {
-      if (char === "$") state.dynamic = true;
-      state.text += char;
-      cursor.pos += 1;
-    }
-  }
-  cursor.incomplete = true;
-};
-var part = (cursor, state) => {
-  const char = peek(cursor);
-  if (char === "`") {
-    state.text += peek(cursor, 1);
-    cursor.pos += 2;
-  } else if (char === "'") single(cursor, state);
-  else if (char === '"') double(cursor, state);
-  else if (char === "$" && peek(cursor, 1) === "(") subexpression(cursor, state);
-  else {
-    if (char === "$") state.dynamic = true;
-    state.text += char;
-    cursor.pos += 1;
-  }
-};
-var word = (cursor, ampersandSplits) => {
-  const state = { text: "", quoted: false, dynamic: false };
-  while (!atEnd(cursor) && !BOUNDARY2.has(peek(cursor)) && !(ampersandSplits && peek(cursor) === "&")) {
-    part(cursor, state);
-  }
-  return { kind: "word", ...state };
-};
-var skipComment2 = (cursor) => {
-  if (cursor.text.startsWith("<#", cursor.pos)) {
-    const end2 = cursor.text.indexOf("#>", cursor.pos);
-    cursor.pos = end2 < 0 ? cursor.text.length : end2 + 2;
-    return true;
-  }
-  if (peek(cursor) !== "#") return false;
-  const end = cursor.text.indexOf("\n", cursor.pos);
-  cursor.pos = end < 0 ? cursor.text.length : end;
-  return true;
-};
-var commandStart = (tokens) => {
-  const last = tokens[tokens.length - 1];
-  return last === void 0 || last.kind === "op";
-};
-var next = (cursor, tokens, cmd) => {
-  if (skipComment2(cursor)) return;
-  const redirect = REDIRECT3.exec(cursor.text.slice(cursor.pos, cursor.pos + 5));
-  if (redirect !== null) {
-    cursor.pos += redirect[0].length;
-    while (peek(cursor) === " ") cursor.pos += 1;
-    const target = redirect[3] ?? word(cursor, cmd).text;
-    tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target, body: void 0 });
-    return;
-  }
-  const op = OPERATORS2.find((candidate) => cursor.text.startsWith(candidate, cursor.pos));
-  if (op !== void 0 || cmd && peek(cursor) === "&") {
-    const text6 = op ?? "&";
-    cursor.pos += text6.length;
-    tokens.push({ kind: "op", text: text6 });
-    return;
-  }
-  if ((peek(cursor) === "&" || peek(cursor) === ".") && peek(cursor, 1) === " " && commandStart(tokens)) {
-    cursor.pos += 2;
-    return;
-  }
-  tokens.push(word(cursor, cmd));
-};
-var lexPowerShell = (text6, cmd = false) => {
-  const cursor = cursorOf(text6.replace(/\r\n/g, "\n"));
-  const tokens = [];
-  const skip = () => {
-    while (peek(cursor) === " " || peek(cursor) === "	") cursor.pos += 1;
-  };
-  skip();
-  while (!atEnd(cursor)) {
-    next(cursor, tokens, cmd);
-    skip();
-  }
-  return { tokens, substitutions: cursor.subs, incomplete: cursor.incomplete };
-};
-var ALIASES2 = {
-  ri: "remove-item",
-  rm: "remove-item",
-  rmdir: "remove-item",
-  del: "remove-item",
-  erase: "remove-item",
-  rd: "remove-item",
-  cd: "set-location",
-  chdir: "set-location",
-  sl: "set-location",
-  pushd: "push-location"
-};
-var powershellProgram = (name) => ALIASES2[name.toLowerCase()] ?? name.toLowerCase();
-
-// src/shell/wrappers.ts
-var spec = (withValue, positionals = 0, queries = []) => ({
-  withValue: new Set(withValue),
-  positionals,
-  queries: new Set(queries)
-});
-var WRAPPERS2 = {
-  sudo: spec(["-u", "-g", "-h", "-p", "-C", "-D", "-r", "-t", "-U", "-T", "--user", "--group", "--host", "--prompt"]),
-  doas: spec(["-u", "-C"]),
-  command: spec([], 0, ["-v", "-V"]),
-  builtin: spec([]),
-  exec: spec(["-a"]),
-  nohup: spec([]),
-  time: spec(["-f", "-o", "--format", "--output"]),
-  nice: spec(["-n", "--adjustment"]),
-  ionice: spec(["-c", "-n", "-p", "--class", "--classdata"]),
-  timeout: spec(["-s", "-k", "--signal", "--kill-after"], 1),
-  stdbuf: spec(["-i", "-o", "-e", "--input", "--output", "--error"]),
-  xargs: spec([
-    "-I",
-    "-n",
-    "-P",
-    "-d",
-    "-L",
-    "-E",
-    "-s",
-    "-a",
-    "--max-args",
-    "--max-procs",
-    "--delimiter",
-    "--arg-file"
-  ]),
-  watch: spec(["-n", "--interval"]),
-  chronic: spec([]),
-  unbuffer: spec([]),
-  npx: spec(["-p", "--package", "-c", "--call"]),
-  bunx: spec([]),
-  "run-one": spec([])
-};
-var SHELLS2 = /* @__PURE__ */ new Set(["sh", "bash", "zsh", "dash", "ksh", "ash", "fish", "busybox"]);
-var SHELL_WITH_VALUE = /* @__PURE__ */ new Set(["-o", "+o", "-O", "+O", "--rcfile", "--init-file"]);
-var POWERSHELLS = /* @__PURE__ */ new Set(["powershell", "pwsh", "powershell.exe", "pwsh.exe"]);
-
-// src/shell/unwrap.ts
-var ASSIGNMENT2 = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
-var EXECUTABLE_SUFFIX = /\.(?:exe|cmd|bat|com)$/i;
-var MAX_LAYERS = 16;
-var programName = (word2) => {
-  const base = word2.split(/[\\/]/).pop() ?? word2;
-  return EXECUTABLE_SUFFIX.test(base) ? base.replace(EXECUTABLE_SUFFIX, "").toLowerCase() : base;
-};
-var withAssignments = (stage) => {
-  const env = { ...stage.env };
-  let index = 0;
-  for (; index < stage.argv.length; index += 1) {
-    const match = ASSIGNMENT2.exec(stage.argv[index] ?? "");
-    if (match === null) break;
-    env[match[1] ?? ""] = match[2] ?? "";
-  }
-  return { ...stage, argv: stage.argv.slice(index), env };
-};
-var skipOptions = (args, wrapper) => {
-  let index = 0;
-  while (index < args.length) {
-    const arg = args[index] ?? "";
-    if (arg === "--") return index + 1 + wrapper.positionals;
-    if (!arg.startsWith("-") || arg === "-") break;
-    if (wrapper.queries.has(arg)) return void 0;
-    index += wrapper.withValue.has(arg) ? 2 : 1;
-  }
-  return index + wrapper.positionals;
-};
-var shift = (stage, count3, name) => ({
-  ...stage,
-  argv: stage.argv.slice(count3),
-  via: [...stage.via, name]
-});
-var envCommand = (stage) => {
-  let index = 1;
-  while (index < stage.argv.length && (stage.argv[index] ?? "").startsWith("-")) {
-    const arg = stage.argv[index] ?? "";
-    if (arg === "-S" || arg === "--split-string") {
-      return { kind: "script", script: stage.argv.slice(index + 1).join(" "), dialect: "bash", stage };
-    }
-    if (arg === "--") {
-      index += 1;
-      break;
-    }
-    index += arg === "-u" || arg === "-C" || arg === "--unset" || arg === "--chdir" ? 2 : 1;
-  }
-  return shift(stage, index, "env");
-};
-var shellScript = (stage, name, stdin) => {
-  const args = stage.argv.slice(1);
-  let index = 0;
-  let command = false;
-  while (index < args.length && /^[-+]/.test(args[index] ?? "")) {
-    const arg = args[index] ?? "";
-    if (/^-[A-Za-z]*c[A-Za-z]*$/.test(arg)) command = true;
-    index += SHELL_WITH_VALUE.has(arg) ? 2 : 1;
-  }
-  const script = args[index];
-  if (command && script !== void 0) return { kind: "script", script, dialect: "bash", stage: shift(stage, 0, name) };
-  if (script === void 0 && stdin !== void 0) return { kind: "script", script: stdin, dialect: "bash", stage };
-  return void 0;
-};
-var decodeEncoded = (value) => Buffer.from(value, "base64").toString("utf16le");
-var powershellScript = (stage, name) => {
-  const args = stage.argv.slice(1);
-  const at = args.findIndex((arg) => /^[-/](?:c|co|com|comm|comma|comman|command)$/i.test(arg));
-  const encoded = args.findIndex((arg) => /^[-/](?:e|ec|enc|encodedcommand)$/i.test(arg));
-  if (at >= 0) {
-    return {
-      kind: "script",
-      script: args.slice(at + 1).join(" "),
-      dialect: "powershell",
-      stage: shift(stage, 0, name)
-    };
-  }
-  const value = encoded >= 0 ? args[encoded + 1] : void 0;
-  if (value !== void 0) {
-    return { kind: "script", script: decodeEncoded(value), dialect: "powershell", stage: shift(stage, 0, name) };
-  }
-  return void 0;
-};
-var cmdScript = (stage) => {
-  const at = stage.argv.findIndex((arg, index) => index > 0 && /^\/[ck]$/i.test(arg));
-  if (at < 0) return void 0;
-  return { kind: "script", script: stage.argv.slice(at + 1).join(" "), dialect: "cmd", stage: shift(stage, 0, "cmd") };
-};
-var findExec = (stage) => {
-  const extra = [];
-  stage.argv.forEach((arg, index) => {
-    if (!["-exec", "-execdir", "-ok", "-okdir"].includes(arg)) return;
-    const rest = stage.argv.slice(index + 1);
-    const end = rest.findIndex((word2) => word2 === ";" || word2 === "+");
-    extra.push({ ...stage, argv: end < 0 ? rest : rest.slice(0, end), via: [...stage.via, "find -exec"] });
-  });
-  return extra;
-};
-var step = (stage, stdin) => {
-  const name = programName(stage.argv[0] ?? "");
-  const lower = name.toLowerCase();
-  if (name === "env") {
-    const result = envCommand(stage);
-    return "kind" in result ? { done: result } : { next: result };
-  }
-  if (name === "busybox") return { next: shift(stage, 1, name) };
-  const wrapper = WRAPPERS2[name];
-  if (wrapper !== void 0) {
-    const skip = skipOptions(stage.argv.slice(1), wrapper);
-    return skip === void 0 ? { done: { kind: "none" } } : { next: shift(stage, 1 + skip, name) };
-  }
-  if (name === "eval")
-    return { done: { kind: "script", script: stage.argv.slice(1).join(" "), dialect: "bash", stage } };
-  const script = SHELLS2.has(name) ? shellScript(stage, name, stdin) : POWERSHELLS.has(lower) ? powershellScript(stage, name) : lower === "cmd" ? cmdScript(stage) : void 0;
-  if (script !== void 0) return { done: script };
-  return { done: { kind: "command", stage, extra: name === "find" ? findExec(stage) : [] } };
-};
-var unwrap2 = (initial, stdin) => {
-  let stage = initial;
-  for (let layer = 0; layer < MAX_LAYERS; layer += 1) {
-    stage = withAssignments(stage);
-    if (stage.argv.length === 0) return { kind: "none" };
-    const result = step(stage, stdin);
-    if ("done" in result) return result.done;
-    stage = result.next;
-  }
-  return { kind: "command", stage, extra: [] };
-};
-
-// src/shell/normalize.ts
-var MAX_DEPTH2 = 8;
-var ASSIGNMENT3 = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
-var PS_ENV = /^\$env:([A-Za-z_][A-Za-z0-9_]*)=?(.*)$/is;
-var CHANGES_DIR = /* @__PURE__ */ new Set(["cd", "pushd", "set-location", "push-location"]);
-var lex = (text6, language) => language === "bash" ? lexBash(text6) : lexPowerShell(text6, language === "cmd");
-var isWindowsAbsolute = (path) => /^[A-Za-z]:\//.test(path);
-var joinDir = (current, target) => {
-  const next2 = toPosixPath(target);
-  if (next2.startsWith("/") || isWindowsAbsolute(next2) || next2.startsWith("~")) return next2;
-  return current === void 0 ? posix.normalize(next2) : posix.join(current, next2);
-};
-var assignments = (words, language) => {
-  if (language !== "bash") {
-    const [first, second, third] = words;
-    const match = first === void 0 ? null : PS_ENV.exec(first);
-    if (match === null) return void 0;
-    const value = second === "=" ? third ?? "" : match[2] ?? "";
-    return { [match[1] ?? ""]: value };
-  }
-  const list4 = words[0] === "export" || words[0] === "declare" ? words.slice(1) : words;
-  if (list4.length === 0 || !list4.every((word2) => ASSIGNMENT3.test(word2) || word2.startsWith("-"))) return void 0;
-  const found = list4.flatMap((word2) => {
-    const match = ASSIGNMENT3.exec(word2);
-    return match === null ? [] : [[match[1] ?? "", match[2] ?? ""]];
-  });
-  return found.length === 0 ? void 0 : Object.fromEntries(found);
-};
-var track = (words, language, context) => {
-  const assigned = assignments(words, language);
-  if (assigned !== void 0) context.env = { ...context.env, ...assigned };
-  const program = language === "bash" ? words[0] ?? "" : powershellProgram(words[0] ?? "");
-  if (!CHANGES_DIR.has(program)) return;
-  const target = words.slice(1).find((word2) => !word2.startsWith("-"));
-  context.dir = target === void 0 || target === "-" ? "~" : joinDir(context.dir, target);
-};
-var emit = (stage, raw, language, context, collector) => {
-  const first = stage.argv[0] ?? "";
-  const name = programName(first);
-  collector.out.push({
-    program: language === "bash" ? name : powershellProgram(name),
-    args: stage.argv.slice(1),
-    env: stage.env,
-    redirects: raw.redirects,
-    stdin: raw.stdin,
-    dir: context.dir,
-    via: stage.via,
-    dynamic: raw.words.some((word2) => word2.dynamic)
-  });
-};
-var emptyCommand = (raw, context) => ({
-  program: "",
-  args: [],
-  env: context.env,
-  redirects: raw.redirects,
-  stdin: raw.stdin,
-  dir: context.dir,
-  via: context.via,
-  dynamic: false
-});
-var visit = (raw, language, context, depth, collector) => {
-  const words = raw.words.map((word2) => word2.text);
-  track(words, language, context);
-  const result = unwrap2({ argv: words, env: context.env, via: context.via }, raw.stdin);
-  if (result.kind === "none") {
-    if (raw.redirects.length > 0) collector.out.push(emptyCommand(raw, context));
-    return;
-  }
-  if (result.kind === "script") {
-    const nested = { env: result.stage.env, dir: context.dir, via: result.stage.via };
-    collect2(result.script, result.dialect, nested, depth + 1, collector);
-    return;
-  }
-  emit(result.stage, raw, language, context, collector);
-  for (const extra of result.extra) emit(extra, raw, language, context, collector);
-};
-var collect2 = (text6, language, context, depth, collector) => {
-  if (depth > MAX_DEPTH2) {
-    collector.incomplete = true;
-    return;
-  }
-  const lexed = lex(text6, language);
-  if (lexed.incomplete) collector.incomplete = true;
-  for (const substitution of lexed.substitutions) {
-    collect2(substitution, language, { ...context }, depth + 1, collector);
-  }
-  for (const raw of rawCommands(lexed.tokens)) visit(raw, language, context, depth, collector);
-};
-var normalizeCommand = (text6, dialect = "bash") => {
-  const collector = { out: [], incomplete: false };
-  collect2(text6, dialect, { env: {}, dir: void 0, via: [] }, 0, collector);
-  return { commands: collector.out, incomplete: collector.incomplete };
-};
-var dialectOf = (toolName3) => toolName3 === "PowerShell" ? "powershell" : "bash";
-
-// src/git/merge/generated.ts
 var LOCKFILES3 = /* @__PURE__ */ new Set([
   "package-lock.json",
   "npm-shrinkwrap.json",
@@ -5680,7 +6375,10 @@ var missingAdditions = (hunks, file, elsewhere) => {
   return hunks.flatMap(({ side, hunk, added }) => {
     const text6 = added.find((line2) => !isWeak(line2) && !present.has(line2));
     if (text6 === void 0 || containsSequence(file.result, added) || elsewhere(added)) return [];
-    const offset = Math.max(0, hunk.added.findIndex((line2) => normalizeLine(line2) === text6));
+    const offset = Math.max(
+      0,
+      hunk.added.findIndex((line2) => normalizeLine(line2) === text6)
+    );
     return [{ kind: "missing-addition", file: file.path, side, line: hunk.newStart + offset, text: text6, weak: false }];
   });
 };
@@ -5855,7 +6553,7 @@ var pairsOf = (ours, theirs) => {
     theirs: theirs.find((diff) => keyOf(diff) === key)
   }));
 };
-var contextOf = (runtime, repo, inputs, pairs) => {
+var contextOf2 = (runtime, repo, inputs, pairs) => {
   const resultText = memoBy((path) => blobText(runtime, repo, inputs.result, path));
   const context = {
     runtime,
@@ -5888,7 +6586,7 @@ var verifyMerge = (runtime, repo, options = {}) => {
     pairs.map((pair) => pair.key),
     generators
   );
-  const context = contextOf(
+  const context = contextOf2(
     runtime,
     repo,
     inputs.value,
@@ -6123,10 +6821,10 @@ var repoFacts = (runtime, repo, config = loadProjectConfig(runtime, repo.root)) 
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED5 = 8;
-var listed2 = (items) => {
-  const head = items.slice(0, MAX_LISTED5).join(", ");
-  return items.length > MAX_LISTED5 ? `${head} (+${String(items.length - MAX_LISTED5)})` : head;
+var MAX_LISTED6 = 8;
+var listed3 = (items) => {
+  const head = items.slice(0, MAX_LISTED6).join(", ");
+  return items.length > MAX_LISTED6 ? `${head} (+${String(items.length - MAX_LISTED6)})` : head;
 };
 var repoOf = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf = (ctx) => ownerKey(ctx.sessionId);
@@ -6137,7 +6835,7 @@ var worktreeCheck = (_check, ctx) => {
   const status = worktreeGateStatus(ctx.runtime, repo, ownerOf(ctx));
   const unpushed = declaresDestination(ctx) ? [] : status.unpushed;
   const notes2 = [
-    ...status.dirty.length > 0 ? [note("gate.worktree.dirty", { files: listed2(status.dirty) })] : [],
+    ...status.dirty.length > 0 ? [note("gate.worktree.dirty", { files: listed3(status.dirty) })] : [],
     ...unpushed.length > 0 ? [note("gate.worktree.unpushed", { count: unpushed.length, branch: status.branch ?? "HEAD" })] : []
   ];
   return notes2.length > 0 ? failed(notes2) : passed([note("gate.worktree.clean")]);
@@ -6162,7 +6860,7 @@ var mergeCheck = (_check, ctx) => {
       lost.map(
         (item) => note("gate.merge.lost", {
           commit: short2(item.commit),
-          findings: listed2(item.report.findings.map(findingLabel))
+          findings: listed3(item.report.findings.map(findingLabel))
         })
       )
     );
@@ -6180,6 +6878,7 @@ var DEFAULT_CHECKS = {
   pr: prOutcome,
   manual: manualCheck,
   secrets: secretsCheck,
+  prose: proseCheck,
   worktree: worktreeCheck,
   merge: mergeCheck
 };
@@ -6444,8 +7143,8 @@ var resultOf = (ctx, checked) => {
   const broken = checked.find((item) => item.report.exit === 2);
   if (broken !== void 0) {
     const detail = broken.report.error ?? "";
-    const problem3 = gitProblem("merge_unanalyzable", "git.error.merge_unanalyzable", detail, "git status");
-    return failureFrom(ctx.t, { ...problem3, exitCode: ExitCode.Usage, data }, human2);
+    const problem4 = gitProblem("merge_unanalyzable", "git.error.merge_unanalyzable", detail, "git status");
+    return failureFrom(ctx.t, { ...problem4, exitCode: ExitCode.Usage, data }, human2);
   }
   const lost = checked.reduce((count3, item) => count3 + item.report.findings.length, 0);
   if (lost === 0) return success(data, human2);
@@ -6674,13 +7373,13 @@ var optionalLine = (runtime, repo, args) => {
   return result.ok && value !== "" ? value : void 0;
 };
 var branchHeads = (runtime, repo) => {
-  const listed3 = runtime.git(
+  const listed4 = runtime.git(
     ["for-each-ref", "--format=%(refname) %(objectname)", "refs/heads", "refs/stash"],
     repo.root
   );
-  if (!listed3.ok) return {};
+  if (!listed4.ok) return {};
   return Object.fromEntries(
-    listed3.stdout.split("\n").flatMap((line2) => {
+    listed4.stdout.split("\n").flatMap((line2) => {
       const [ref, sha] = line2.split(" ");
       return ref === void 0 || sha === void 0 || ref === "" ? [] : [[ref, sha]];
     })
@@ -6735,8 +7434,8 @@ var takeSnapshot = (runtime, repo, request) => {
   return logged.ok ? accept(entry2) : reject(`journal: ${logged.error}`);
 };
 var listSnapshots = (runtime, repo) => {
-  const listed3 = runtime.git(["for-each-ref", "--sort=-refname", "--format=%(refname)", BACKUP_PREFIX], repo.root);
-  return listed3.ok ? listed3.stdout.split("\n").filter((line2) => line2 !== "") : [];
+  const listed4 = runtime.git(["for-each-ref", "--sort=-refname", "--format=%(refname)", BACKUP_PREFIX], repo.root);
+  return listed4.ok ? listed4.stdout.split("\n").filter((line2) => line2 !== "") : [];
 };
 
 // src/git/undo.ts
@@ -6749,8 +7448,8 @@ var gitLine = (runtime, repo, args) => {
 };
 var failure2 = (step3, result) => `${step3}: ${result.stderr.trim() || "git failed"}`;
 var parentsOf2 = (runtime, repo, commit2) => {
-  const listed3 = gitLine(runtime, repo, ["rev-list", "--parents", "-n", "1", commit2])?.split(" ").slice(1) ?? [];
-  return listed3.reduce((found, parent) => {
+  const listed4 = gitLine(runtime, repo, ["rev-list", "--parents", "-n", "1", commit2])?.split(" ").slice(1) ?? [];
+  return listed4.reduce((found, parent) => {
     const subject2 = gitLine(runtime, repo, ["log", "-1", "--format=%s", parent]) ?? "";
     return subject2.startsWith(INDEX_SUBJECT) ? { ...found, index: parent } : { ...found, head: parent };
   }, {});
@@ -6967,10 +7666,10 @@ var helpFor = (ctx, spec2) => {
 var topicHelp = (ctx, registry, topic) => {
   const resolved = resolveCommand(registry, topic);
   if (resolved !== void 0) return helpFor(ctx, resolved.spec);
-  const problem3 = usageProblem("unknown_command", "error.unknown_command", "finitemonkey help", {
+  const problem4 = usageProblem("unknown_command", "error.unknown_command", "finitemonkey help", {
     command: topic.join(" ")
   });
-  return failureFrom(ctx.t, problem3);
+  return failureFrom(ctx.t, problem4);
 };
 var helpCommand = {
   path: ["help"],
@@ -7305,7 +8004,7 @@ var testsGuard = (input) => {
 
 // src/gate/hooks/config.ts
 import { join as join19 } from "node:path";
-var CONFIG_FILE2 = "config-hooks.json";
+var CONFIG_FILE3 = "config-hooks.json";
 var GUARDED_SOURCES = /* @__PURE__ */ new Set(["user_settings", "project_settings", "local_settings"]);
 var countIn = (value) => {
   if (typeof value === "string") return /\bfinitemonkey\b|\bfm hook\b/.test(value) ? 1 : 0;
@@ -7328,11 +8027,11 @@ var read2 = (runtime, path) => {
   return text6.ok ? text6.value : void 0;
 };
 var known = (runtime, paths) => {
-  const raw = readJsonFile(runtime, paths.cache(CONFIG_FILE2))?.["hooks"];
+  const raw = readJsonFile(runtime, paths.cache(CONFIG_FILE3))?.["hooks"];
   return isRecord(raw) ? Object.fromEntries(Object.entries(raw).filter((entry2) => typeof entry2[1] === "number")) : {};
 };
 var save = (runtime, paths, counts) => {
-  writeJsonFile(runtime, paths.cache(CONFIG_FILE2), { hooks: { ...counts } });
+  writeJsonFile(runtime, paths.cache(CONFIG_FILE3), { hooks: { ...counts } });
 };
 var recordConfigHooks = (runtime, paths, env) => {
   const counts = Object.fromEntries(
@@ -7726,20 +8425,22 @@ var subagentStopGate = (input) => isOwnWorktree(input) ? stopGate(input) : { kin
 // src/gate/hooks/subagent.ts
 import { join as join20 } from "node:path";
 var NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
+var KNOWN_KINDS = /* @__PURE__ */ new Set([
+  "command",
+  "tests",
+  "diff",
+  "placeholders",
+  "git",
+  "pr",
+  "manual",
+  "secrets",
+  "prose",
+  "worktree",
+  "merge"
+]);
 var requirementText = (t, check2) => {
   const key = `gate.require.${check2.kind}`;
-  const known2 = [
-    "command",
-    "tests",
-    "diff",
-    "placeholders",
-    "git",
-    "pr",
-    "manual",
-    "secrets",
-    "worktree",
-    "merge"
-  ].includes(check2.kind);
+  const known2 = KNOWN_KINDS.has(check2.kind);
   return `${check2.id} ${t(known2 ? key : "gate.require.other", { command: check2.run ?? check2.kind, kind: check2.kind })}`;
 };
 var contractFacts = (t, contract, briefing) => [
@@ -7755,8 +8456,8 @@ var subagentStart = (input) => {
   const { runtime, t } = input;
   const active = readState(runtime, paths).active;
   if (active === void 0) return { kind: "allow" };
-  const disk = (relative7) => {
-    const text6 = runtime.readText(toAbsolutePath(join20(paths.root, relative7)));
+  const disk = (relative9) => {
+    const text6 = runtime.readText(toAbsolutePath(join20(paths.root, relative9)));
     return text6.ok ? text6.value : void 0;
   };
   const loaded = loadTask(runtime, paths, { disk, base: () => void 0 }, active);
@@ -8144,9 +8845,9 @@ var hostsInText = (text6) => {
   return [...urls, ...keyed, ...commands].filter((host) => host !== "" && !host.includes("$"));
 };
 var workflowFiles = (runtime, root) => {
-  const listed3 = runtime.listDir(toAbsolutePath(join21(root, ".github", "workflows")));
-  if (!listed3.ok) return [];
-  return listed3.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
+  const listed4 = runtime.listDir(toAbsolutePath(join21(root, ".github", "workflows")));
+  if (!listed4.ok) return [];
+  return listed4.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
 };
 var detectedHosts = (runtime, root, files) => files.flatMap((file) => {
   const text6 = runtime.readText(toAbsolutePath(join21(root, file)));
@@ -8172,23 +8873,23 @@ var loadProdTargets = (runtime, root, config) => {
 var isProdContext = (name, declared) => declared.includes(name) || /(?:^|[-_.:/])(?:prod|production)(?:$|[-_.:/])/i.test(name);
 
 // src/prod/classify.ts
-var hit = (effect, target, tool) => ({ effect, target, tool });
+var hit2 = (effect, target, tool) => ({ effect, target, tool });
 var sshHit = (command, isProd) => {
   const call = parseSsh(command);
   if (call === void 0 || !isProd(call.destination)) return void 0;
   const host = hostKey(call.destination);
   if (call.remote.length === 0) {
-    if (command.stdin !== void 0) return hit(readOnlyScript(command.stdin) ? "read" : "effect", host, "ssh");
-    return hit(call.noCommand ? "read" : "interactive", host, "ssh");
+    if (command.stdin !== void 0) return hit2(readOnlyScript(command.stdin) ? "read" : "effect", host, "ssh");
+    return hit2(call.noCommand ? "read" : "interactive", host, "ssh");
   }
-  return hit(readOnlyScript(call.remote.join(" ")) ? "read" : "effect", host, "ssh");
+  return hit2(readOnlyScript(call.remote.join(" ")) ? "read" : "effect", host, "ssh");
 };
 var copyHit = (command, isProd) => {
   const call = parseCopy(command);
   const targetHost = call.target === void 0 ? void 0 : remoteHostOf(call.target);
-  if (targetHost !== void 0 && isProd(targetHost)) return hit("effect", hostKey(targetHost), command.program);
+  if (targetHost !== void 0 && isProd(targetHost)) return hit2("effect", hostKey(targetHost), command.program);
   const source = call.sources.map(remoteHostOf).find((host) => host !== void 0 && isProd(host));
-  return source === void 0 ? void 0 : hit("read", hostKey(source), command.program);
+  return source === void 0 ? void 0 : hit2("read", hostKey(source), command.program);
 };
 var valueAfter = (args, ...names) => {
   for (let index = 0; index < args.length; index += 1) {
@@ -8205,21 +8906,21 @@ var dockerHit = (command, targets2, isProd) => {
   const remote = host === void 0 ? void 0 : host.replace(/^(?:ssh|tcp|https?):\/\//, "");
   const switching = command.args[0] === "context" && command.args[1] === "use" ? command.args[2] : void 0;
   if (switching !== void 0 && isProdContext(switching, targets2.dockerContexts))
-    return hit("effect", switching, "docker context");
+    return hit2("effect", switching, "docker context");
   const prodHost = remote !== void 0 && isProd(remote) ? hostKey(remote) : void 0;
   const prodContext = context !== void 0 && isProdContext(context, targets2.dockerContexts) ? context : void 0;
   const target = prodHost ?? prodContext;
   if (target === void 0) return void 0;
-  return hit(dockerReadOnly(command.args) ? "read" : "effect", target, "docker");
+  return hit2(dockerReadOnly(command.args) ? "read" : "effect", target, "docker");
 };
 var kubeHit = (command, targets2) => {
   const context = valueAfter(command.args, "--context", "--kube-context");
   const [verb, object, name] = command.args.filter((arg) => !arg.startsWith("-"));
   if (verb === "config" && object === "use-context" && name !== void 0 && isProdContext(name, targets2.kubeContexts)) {
-    return hit("effect", name, command.program);
+    return hit2("effect", name, command.program);
   }
   if (context === void 0 || !isProdContext(context, targets2.kubeContexts)) return void 0;
-  return hit(kubectlReadOnly(command.program, command.args) ? "read" : "effect", context, command.program);
+  return hit2(kubectlReadOnly(command.program, command.args) ? "read" : "effect", context, command.program);
 };
 var URL_HOST = /^(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?):\/\/(?:[^@/]*@)?([^/:?,]+)/i;
 var DATABASE_TOOLS = /* @__PURE__ */ new Set([
@@ -8252,7 +8953,7 @@ var databaseReadOnly = (command) => {
 var databaseHit = (command, isProd) => {
   const host = databaseHost(command);
   if (host === void 0 || !isProd(host)) return void 0;
-  return hit(databaseReadOnly(command) ? "read" : "effect", hostKey(host), command.program);
+  return hit2(databaseReadOnly(command) ? "read" : "effect", hostKey(host), command.program);
 };
 var prodHit = (command, targets2, isProd) => {
   switch (command.program) {
@@ -8308,9 +9009,9 @@ var isProdHostOf = (runtime, root, targets2) => memoBy((raw) => {
   const resolved = sshHostname(runtime, root, raw.replace(/^[^@]*@/, ""));
   return resolved !== void 0 && hosts.has(resolved);
 });
-var blockOf = (t, hit2, command, deploy) => ({
+var blockOf = (t, hit3, command, deploy) => ({
   kind: "block",
-  reason: hit2.effect === "interactive" ? t("prod.block.interactive", { command, target: hit2.target }) : t("prod.block.effect", { command, target: hit2.target, deploy: deploy ?? t("prod.deploy.unknown") })
+  reason: hit3.effect === "interactive" ? t("prod.block.interactive", { command, target: hit3.target }) : t("prod.block.effect", { command, target: hit3.target, deploy: deploy ?? t("prod.deploy.unknown") })
 });
 var prodGuard = (runtime, root, t) => {
   const targets2 = memo2(() => loadProdTargets(runtime, root, loadProjectConfig(runtime, root)));
@@ -8318,10 +9019,10 @@ var prodGuard = (runtime, root, t) => {
   return {
     decide: (command) => {
       if (!PROD_PROGRAMS.has(command.program)) return void 0;
-      const hit2 = prodHit(command, targets2(), isProd);
-      if (hit2 === void 0) return void 0;
+      const hit3 = prodHit(command, targets2(), isProd);
+      if (hit3 === void 0) return void 0;
       const text6 = commandText(command);
-      return hit2.effect === "read" ? { kind: "read", hit: hit2, command: text6 } : blockOf(t, hit2, text6, targets2().deployPath);
+      return hit3.effect === "read" ? { kind: "read", hit: hit3, command: text6 } : blockOf(t, hit3, text6, targets2().deployPath);
     }
   };
 };
@@ -8937,8 +9638,8 @@ var pushVerdict2 = (invocation, facts) => {
   if (hasAny(parsed, "--dry-run", "-n")) return PASS;
   const destinations = pushDestinations(parsed, facts);
   if (destinations === "all") return block2("protected-push", facts.defaultBranch());
-  const hit2 = destinations.find((name) => facts.isProtected(name));
-  return hit2 === void 0 ? PASS : block2("protected-push", hit2);
+  const hit3 = destinations.find((name) => facts.isProtected(name));
+  return hit3 === void 0 ? PASS : block2("protected-push", hit3);
 };
 var protectedVerdict = (invocation, facts) => {
   if (invocation.subcommand === "push") return pushVerdict2(invocation, facts);
@@ -9145,9 +9846,9 @@ var rmVerdict = (runtime, context, command) => {
   return PASS;
 };
 var listWorktrees = (runtime, cwd) => {
-  const listed3 = runtime.git(["worktree", "list", "--porcelain"], toAbsolutePath(cwd));
-  if (!listed3.ok) return [];
-  return listed3.stdout.split("\n").filter((line2) => line2.startsWith("worktree ")).map((line2) => pathKey(line2.slice("worktree ".length)));
+  const listed4 = runtime.git(["worktree", "list", "--porcelain"], toAbsolutePath(cwd));
+  if (!listed4.ok) return [];
+  return listed4.stdout.split("\n").filter((line2) => line2.startsWith("worktree ")).map((line2) => pathKey(line2.slice("worktree ".length)));
 };
 
 // src/git/hooks/context.ts
@@ -9306,12 +10007,293 @@ var GIT_HANDLERS = {
   PostToolUse: [gitPostToolUse]
 };
 
+// src/prose/marker-guard.ts
+import { relative as relative6 } from "node:path";
+
+// src/prose/shell-words.ts
+var HEREDOC2 = /<<-?[ \t]*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[^\n]*\n([\s\S]*?)\n[ \t]*\2[ \t]*(?=\n|$)/g;
+var HEREDOC_REF = /<<__FM_HEREDOC_(\d+)__/;
+var SEPARATOR = /[;&|\n]/;
+var ASSIGNMENT3 = /^[A-Za-z_][A-Za-z0-9_]*=/;
+var WRAPPERS2 = /* @__PURE__ */ new Set(["sudo", "command", "exec", "time", "nice", "nohup", "builtin", "env"]);
+var liftHeredocs = (command) => {
+  const heredocs = [];
+  const text6 = command.replace(HEREDOC2, (_match, _quote, _tag, body) => {
+    heredocs.push(body);
+    return `<<__FM_HEREDOC_${String(heredocs.length - 1)}__`;
+  });
+  return { text: text6, heredocs };
+};
+var endWord = (scan) => {
+  if (scan.word !== void 0) scan.words.push(scan.word);
+  scan.word = void 0;
+};
+var endSegment = (scan) => {
+  endWord(scan);
+  if (scan.words.length > 0) scan.segments.push(scan.words);
+  scan.words = [];
+};
+var quotedEnd2 = (text6, from, quote) => {
+  let index = from;
+  while (index < text6.length && text6[index] !== quote) index += quote === '"' && text6[index] === "\\" ? 2 : 1;
+  return index;
+};
+var unescape = (value) => value.replace(/\\(["\\$`])/g, "$1");
+var splitWords = (text6) => {
+  const scan = { words: [], segments: [], word: void 0 };
+  for (let index = 0; index < text6.length; index += 1) {
+    const char = text6[index] ?? "";
+    if (char === '"' || char === "'") {
+      const end = quotedEnd2(text6, index + 1, char);
+      const inner = text6.slice(index + 1, end);
+      scan.word = (scan.word ?? "") + (char === '"' ? unescape(inner) : inner);
+      index = end;
+    } else if (char === "\\" && index + 1 < text6.length) {
+      scan.word = (scan.word ?? "") + (text6[index + 1] === "\n" ? "" : text6[index + 1] ?? "");
+      index += 1;
+    } else if (SEPARATOR.test(char)) {
+      endSegment(scan);
+    } else if (/\s/.test(char)) {
+      endWord(scan);
+    } else {
+      scan.word = (scan.word ?? "") + char;
+    }
+  }
+  endSegment(scan);
+  return scan.segments;
+};
+var segmentOf = (words) => {
+  let index = 0;
+  while (index < words.length && (ASSIGNMENT3.test(words[index] ?? "") || WRAPPERS2.has(words[index] ?? ""))) index += 1;
+  const program = words[index];
+  if (program === void 0) return void 0;
+  return { program: program.split(/[\\/]/).pop() ?? program, args: words.slice(index + 1) };
+};
+var shellWords = (command) => {
+  const { text: text6, heredocs } = liftHeredocs(command);
+  const segments = splitWords(text6).flatMap((words) => {
+    const segment = segmentOf(words);
+    return segment === void 0 ? [] : [segment];
+  });
+  return { segments, heredocs };
+};
+var heredocIn = (value, heredocs) => {
+  const index = HEREDOC_REF.exec(value)?.[1];
+  return index === void 0 ? void 0 : heredocs[Number(index)];
+};
+
+// src/prose/marker-guard.ts
+var ALLOW3 = { kind: "allow" };
+var SHELLS2 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
+var READ_ONLY = /* @__PURE__ */ new Set(["grep", "rg", "cat", "less", "head", "tail", "ls", "wc", "finitemonkey", "fm"]);
+var GIT_READ_ONLY = /* @__PURE__ */ new Set(["grep", "log", "show", "diff", "status", "blame"]);
+var counted2 = (input, key) => markerCount(optionalString(input, key) ?? "");
+var existingCount = (input, file) => {
+  if (file === "") return 0;
+  const read3 = input.runtime.readText(toAbsolutePath(file, input.cwd));
+  return read3.ok ? markerCount(read3.value) : 0;
+};
+var editPairs = (input) => {
+  const edits = input["edits"];
+  if (!Array.isArray(edits)) return [];
+  return edits.flatMap((edit) => isRecord(edit) ? [[counted2(edit, "old_string"), counted2(edit, "new_string")]] : []);
+};
+var addsMarker = (input, tool, inputs, file) => {
+  switch (tool) {
+    case "Write":
+      return counted2(inputs, "content") > existingCount(input, file);
+    case "Edit":
+      return counted2(inputs, "new_string") > counted2(inputs, "old_string");
+    case "MultiEdit":
+      return editPairs(inputs).reduce((sum, [before, after]) => sum + after - before, 0) > 0;
+    case "NotebookEdit":
+      return counted2(inputs, "new_source") > 0;
+    default:
+      return false;
+  }
+};
+var isReadOnly = (program, args) => READ_ONLY.has(program) || program === "git" && GIT_READ_ONLY.has(args[0] ?? "");
+var shellAddsMarker = (command) => markerCount(command) > 0 && shellWords(command).segments.some((segment) => !isReadOnly(segment.program, segment.args));
+var shown2 = (cwd, file) => {
+  const rel = toPosixPath(relative6(cwd, file));
+  return file === "" || rel.startsWith("..") ? toPosixPath(file) : rel;
+};
+var blocked = (input, file) => ({
+  kind: "block",
+  reason: input.t("prose.block.marker", { marker: ALLOW_COMMENT, file })
+});
+var proseMarkerGuard = (input) => {
+  const tool = toolName2(input.payload);
+  const inputs = toolInput2(input.payload);
+  if (SHELLS2.has(tool)) {
+    if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW3;
+    return { kind: "block", reason: input.t("prose.block.marker_shell", { marker: ALLOW_COMMENT }) };
+  }
+  const file = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path") ?? "";
+  return addsMarker(input, tool, inputs, file) ? blocked(input, shown2(input.cwd, file)) : ALLOW3;
+};
+
+// src/prose/command-text.ts
+var GIT_FLAGS = { title: [], body: ["-m", "--message"], file: ["-F", "--file"] };
+var GH_FLAGS = { title: ["-t", "--title"], body: ["-b", "--body"], file: ["-F", "--body-file"] };
+var GIT_GLOBAL_WITH_VALUE = /* @__PURE__ */ new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace"]);
+var CLUSTER_WITH_MESSAGE = /^-[a-zA-Z]*m$/;
+var flagValues = (args, spec2) => {
+  const known2 = [...spec2.title, ...spec2.body, ...spec2.file];
+  const out = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index] ?? "";
+    const equals = arg.indexOf("=");
+    const name = arg.startsWith("--") && equals > 0 ? arg.slice(0, equals) : arg;
+    if (name !== arg && known2.includes(name)) {
+      out.push({ flag: name, value: arg.slice(equals + 1) });
+    } else if (known2.includes(arg) || spec2 === GIT_FLAGS && CLUSTER_WITH_MESSAGE.test(arg)) {
+      out.push({ flag: known2.includes(arg) ? arg : "-m", value: args[index + 1] ?? "" });
+      index += 1;
+    }
+  }
+  return out;
+};
+var sourceOf = (value, isFile, segment, heredocs) => {
+  const inline3 = heredocIn(value, heredocs);
+  if (inline3 !== void 0) return { kind: "inline", text: inline3 };
+  if (!isFile) return { kind: "inline", text: value };
+  if (value !== "-") return { kind: "file", path: value };
+  const piped = segment.args.map((arg) => heredocIn(arg, heredocs)).find((text6) => text6 !== void 0);
+  return { kind: "inline", text: piped ?? "" };
+};
+var collect3 = (target, segment, args, spec2, heredocs) => {
+  const values = flagValues(args, spec2);
+  if (values.length === 0) return void 0;
+  const title = values.find((item) => spec2.title.includes(item.flag));
+  const bodies = values.filter((item) => !spec2.title.includes(item.flag)).map((item) => sourceOf(item.value, spec2.file.includes(item.flag), segment, heredocs));
+  return { target, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies };
+};
+var gitSubcommand = (args) => {
+  let index = 0;
+  while (index < args.length && (args[index] ?? "").startsWith("-")) {
+    index += GIT_GLOBAL_WITH_VALUE.has(args[index] ?? "") ? 2 : 1;
+  }
+  return index;
+};
+var fromSegment = (segment, heredocs) => {
+  if (segment.program === "git") {
+    const at = gitSubcommand(segment.args);
+    if (segment.args[at] !== "commit") return void 0;
+    return collect3("commit", segment, segment.args.slice(at + 1), GIT_FLAGS, heredocs);
+  }
+  if (segment.program !== "gh") return void 0;
+  const [noun, verb] = segment.args;
+  const isPr = noun === "pr" && (verb === "create" || verb === "edit");
+  const isIssue = noun === "issue" && (verb === "create" || verb === "edit");
+  if (!isPr && !isIssue) return void 0;
+  return collect3(isPr ? "pr" : "issue", segment, segment.args.slice(2), GH_FLAGS, heredocs);
+};
+var proseInCommand = (command) => {
+  const { segments, heredocs } = shellWords(command);
+  return segments.flatMap((segment) => {
+    const found = fromSegment(segment, heredocs);
+    return found === void 0 ? [] : [found];
+  });
+};
+
+// src/prose/describe.ts
+var RULE_FIX_KEYS = {
+  "opener-routine": "prose.rule.opener-routine",
+  reassurance: "prose.rule.reassurance",
+  "slogan-closer": "prose.rule.slogan-closer",
+  "rhythmic-triplet": "prose.rule.rhythmic-triplet",
+  "imperative-fragment": "prose.rule.imperative-fragment",
+  antithesis: "prose.rule.antithesis",
+  "abstract-noun": "prose.rule.abstract-noun",
+  "crutch-word": "prose.rule.crutch-word",
+  "colon-heading": "prose.rule.colon-heading",
+  "decorative-emoji": "prose.rule.decorative-emoji",
+  "em-dash-series": "prose.rule.em-dash-series",
+  "requester-reference": "prose.rule.requester-reference",
+  "person-as-reason": "prose.rule.person-as-reason",
+  "origin-project": "prose.rule.origin-project",
+  "first-person": "prose.rule.first-person",
+  padding: "prose.rule.padding"
+};
+var MAX_SPANS = 3;
+var MAX_FIXES = 3;
+var rulesOf2 = (spans) => {
+  const weights = /* @__PURE__ */ new Map();
+  for (const hit3 of spans.flatMap((span) => span.hits))
+    weights.set(hit3.rule, (weights.get(hit3.rule) ?? 0) + hit3.weight);
+  return [...weights].sort((left, right) => right[1] - left[1]).map(([rule]) => rule);
+};
+var spanRules = (span) => {
+  const seen = /* @__PURE__ */ new Set();
+  return span.hits.filter((hit3) => !seen.has(hit3.rule) && seen.add(hit3.rule)).map(
+    (hit3) => hit3.rule === "crutch-word" || hit3.rule === "opener-routine" ? `${hit3.rule} "${hit3.excerpt}"` : hit3.rule
+  ).join(", ");
+};
+var describeSpans = (t, spans) => spans.slice(0, MAX_SPANS).map((span) => t("prose.span", { start: span.startLine, end: span.endLine, rules: spanRules(span) })).join("; ");
+var describeFixes = (t, spans) => rulesOf2(spans).slice(0, MAX_FIXES).map((rule) => t("prose.fix_item", { rule, fix: t(RULE_FIX_KEYS[rule]) })).join("; ");
+
+// src/prose/text-guard.ts
+var ALLOW4 = { kind: "allow" };
+var SHELLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
+var TARGET_KEYS = {
+  commit: "prose.target.commit",
+  pr: "prose.target.pr",
+  issue: "prose.target.issue"
+};
+var readSource = (input, source) => {
+  if (source.kind === "inline") return accept(source.text);
+  const read3 = input.runtime.readText(toAbsolutePath(source.path, input.cwd));
+  return read3.ok ? read3 : reject({ file: source.path, detail: read3.error });
+};
+var textOf2 = (input, found) => {
+  const parts = [];
+  for (const source of [...found.title === void 0 ? [] : [found.title], ...found.bodies]) {
+    const read3 = readSource(input, source);
+    if (!read3.ok) return read3;
+    parts.push(read3.value);
+  }
+  return accept(parts.join("\n\n"));
+};
+var decisionFor = (input, found, blocking) => {
+  const text6 = textOf2(input, found);
+  if (!text6.ok) {
+    return blocking ? { kind: "block", reason: input.t("prose.block.unreadable", { ...text6.error }) } : void 0;
+  }
+  const report2 = scoreProse(text6.value, { context: "record" });
+  if (report2.allowed || report2.spans.length === 0) return void 0;
+  const params2 = {
+    target: input.t(TARGET_KEYS[found.target]),
+    spans: describeSpans(input.t, report2.spans),
+    fixes: describeFixes(input.t, report2.spans)
+  };
+  if (blocking) return { kind: "block", reason: input.t("prose.block.command", params2) };
+  const additionalContext = `finitemonkey: ${input.t("prose.warn.command", params2)}`;
+  return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext } } };
+};
+var proseCommandGuard = (input) => {
+  if (!SHELLS3.has(toolName2(input.payload))) return ALLOW4;
+  const found = proseInCommand(optionalString(toolInput2(input.payload), "command") ?? "");
+  if (found.length === 0) return ALLOW4;
+  const blocking = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
+  for (const item of found) {
+    const decision = decisionFor(input, item, blocking);
+    if (decision !== void 0) return decision;
+  }
+  return ALLOW4;
+};
+
+// src/prose/hooks.ts
+var PROSE_HANDLERS = {
+  PreToolUse: [proseMarkerGuard, proseCommandGuard]
+};
+
 // src/secrets/guards/describe.ts
-var MAX_LISTED6 = 5;
+var MAX_LISTED7 = 5;
 var describeFindings = (t, items) => {
-  const listed3 = items.slice(0, MAX_LISTED6).map(({ ruleId, where }) => t("secrets.found_item", { rule: ruleId, where }));
-  const rest = items.length - listed3.length;
-  return rest > 0 ? `${listed3.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed3.join("; ");
+  const listed4 = items.slice(0, MAX_LISTED7).map(({ ruleId, where }) => t("secrets.found_item", { rule: ruleId, where }));
+  const rest = items.length - listed4.length;
+  return rest > 0 ? `${listed4.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed4.join("; ");
 };
 var lineWhere = (t, finding2) => t("secrets.where.line", { line: finding2.line, column: finding2.column });
 
@@ -9359,7 +10341,7 @@ var secretsPostToolUse = (input) => {
 };
 
 // src/secrets/guards/pre-tool.ts
-import { relative as relative6 } from "node:path";
+import { relative as relative7 } from "node:path";
 
 // src/secrets/guards/bash-rules.ts
 var READERS = /* @__PURE__ */ new Set([
@@ -9452,52 +10434,11 @@ var commitIntent = (segments) => {
   return void 0;
 };
 
-// src/secrets/guards/shell.ts
-var SEPARATORS2 = /\|\||&&|[|;&\n]/;
-var TOKEN = /"((?:[^"\\]|\\.)*)"|'([^']*)'|(\S+)/g;
-var ASSIGNMENT4 = /^[A-Za-z_][A-Za-z0-9_]*=/;
-var OUTPUT_REDIRECT = /^(?:\d|&)?>{1,2}\|?$/;
-var OUTPUT_ATTACHED = /^(?:\d|&)?>{1,2}\|?\S/;
-var WRAPPERS3 = /* @__PURE__ */ new Set(["sudo", "command", "exec", "time", "nice", "nohup", "builtin"]);
-var tokensOf = (text6) => Array.from(text6.matchAll(TOKEN), (match) => match[1] ?? match[2] ?? match[3] ?? "");
-var splitRedirects = (tokens) => {
-  const words = [];
-  const inputs = [];
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index] ?? "";
-    if (OUTPUT_REDIRECT.test(token)) {
-      index += 1;
-    } else if (OUTPUT_ATTACHED.test(token)) {
-      continue;
-    } else if (token === "<") {
-      inputs.push(tokens[index + 1] ?? "");
-      index += 1;
-    } else if (token.startsWith("<") && !token.startsWith("<<")) {
-      inputs.push(token.slice(1));
-    } else {
-      words.push(token);
-    }
-  }
-  return { words, inputs };
-};
-var segmentOf = (text6) => {
-  const { words, inputs } = splitRedirects(tokensOf(text6));
-  let index = 0;
-  while (index < words.length && (ASSIGNMENT4.test(words[index] ?? "") || WRAPPERS3.has(words[index] ?? ""))) index += 1;
-  const program = words[index];
-  if (program === void 0) return inputs.length > 0 ? { program: "", args: [], redirectedFrom: inputs } : void 0;
-  return { program: program.split(/[\\/]/).pop() ?? program, args: words.slice(index + 1), redirectedFrom: inputs };
-};
-var segmentsOf = (command) => command.split(SEPARATORS2).flatMap((part2) => {
-  const segment = segmentOf(part2);
-  return segment === void 0 ? [] : [segment];
-});
-
 // src/secrets/guards/pre-tool.ts
-var ALLOW3 = { kind: "allow" };
+var ALLOW5 = { kind: "allow" };
 var relativeFile = (cwd, file) => {
   if (file === "") return file;
-  const rel = relative6(cwd, file).split("\\").join("/");
+  const rel = relative7(cwd, file).split("\\").join("/");
   return rel.startsWith("..") || rel === "" ? file : rel;
 };
 var writeDecision = (input, tool) => {
@@ -9512,7 +10453,7 @@ var writeDecision = (input, tool) => {
     }));
     return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
   }
-  return ALLOW3;
+  return ALLOW5;
 };
 var bashMessage = (t, finding2) => {
   switch (finding2.kind) {
@@ -9526,7 +10467,7 @@ var bashMessage = (t, finding2) => {
 };
 var commitDecision = (input, includeUnstaged) => {
   const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
-  if (!staged.ok || staged.value.length === 0) return ALLOW3;
+  if (!staged.ok || staged.value.length === 0) return ALLOW5;
   const items = staged.value.map((finding2) => ({
     ruleId: finding2.ruleId,
     where: input.t("secrets.where.file", { file: finding2.file, line: finding2.line, column: finding2.column })
@@ -9535,7 +10476,7 @@ var commitDecision = (input, includeUnstaged) => {
 };
 var bashDecision = (input) => {
   const command = optionalString(toolInput2(input.payload), "command") ?? "";
-  if (command === "") return ALLOW3;
+  if (command === "") return ALLOW5;
   const segments = segmentsOf(command);
   const [first] = bashFindings(command, segments);
   if (first !== void 0) return { kind: "block", reason: bashMessage(input.t, first) };
@@ -9545,23 +10486,23 @@ var bashDecision = (input) => {
     return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
   }
   const commit2 = commitIntent(segments);
-  return commit2 === void 0 ? ALLOW3 : commitDecision(input, commit2.includeUnstaged);
+  return commit2 === void 0 ? ALLOW5 : commitDecision(input, commit2.includeUnstaged);
 };
 var readDecision = (input) => {
   const inputs = toolInput2(input.payload);
   const target = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
-  if (target === "" || !isSensitivePath(target)) return ALLOW3;
+  if (target === "" || !isSensitivePath(target)) return ALLOW5;
   return { kind: "block", reason: input.t("secrets.block.read", { target: relativeFile(input.cwd, target) }) };
 };
 var WRITERS2 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
-var SHELLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
+var SHELLS4 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var READS = /* @__PURE__ */ new Set(["Read", "Grep"]);
 var secretsPreToolUse = (input) => {
   const tool = toolName2(input.payload);
   if (WRITERS2.has(tool)) return writeDecision(input, tool);
-  if (SHELLS3.has(tool)) return bashDecision(input);
+  if (SHELLS4.has(tool)) return bashDecision(input);
   if (READS.has(tool)) return readDecision(input);
-  return ALLOW3;
+  return ALLOW5;
 };
 
 // src/hooks/handlers.ts
@@ -9619,7 +10560,12 @@ var SECRETS_HANDLERS = {
   UserPromptSubmit: [secretsUserPromptSubmit],
   PostToolUse: [secretsPostToolUse]
 };
-var DEFAULT_HANDLERS = mergeHandlers(SECRETS_HANDLERS, PORTAO_HANDLERS, GIT_HANDLERS);
+var DEFAULT_HANDLERS = mergeHandlers(
+  SECRETS_HANDLERS,
+  PORTAO_HANDLERS,
+  PROSE_HANDLERS,
+  GIT_HANDLERS
+);
 
 // src/hooks/payload.ts
 var EMPTY_PAYLOAD = {
@@ -9765,28 +10711,6 @@ var runHook = async (event, options) => {
 
 // src/install/plugin-yield.ts
 import { join as join23 } from "node:path";
-
-// src/install/layout.ts
-var STATE_DIR = ".finitemonkey";
-var SETTINGS_FILE = ".claude/settings.json";
-var GITIGNORE_FILE = ".gitignore";
-var CONFIG_FILE3 = ".finitemonkey/config.yml";
-var LOCK_FILE = ".finitemonkey/lock.json";
-var BACKUPS_DIR = ".finitemonkey/backups";
-var LOCKS_DIR = ".finitemonkey/locks";
-var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
-var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
-var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
-var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
-var LOCK_SCHEMA = "finitemonkey/lock@1";
-var PLAN_SCHEMA = "finitemonkey/install-plan@1";
-var GENERATED_MARKER = "finitemonkey:generated v=1";
-var BLOCK_BEGIN = "# finitemonkey:begin v=1";
-var BLOCK_END = "# finitemonkey:end";
-var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
-var PRESETS = ["neutral", "gabriel"];
-var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
-var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
 
 // src/install/hook-entries.ts
 var INSTALLED_HOOKS = [
@@ -10072,12 +10996,12 @@ var loadCatalogs = (ctx, dir) => {
   if (!es.ok) return es;
   return accept({ en: en.value, "pt-BR": ptBR.value, es: es.value });
 };
-var describeProblem = (ctx, problem3) => {
-  const kind = ctx.t(`i18n.problem.${problem3.kind}`, {
-    expected: (problem3.expected ?? []).join(", "),
-    actual: (problem3.actual ?? []).join(", ")
+var describeProblem = (ctx, problem4) => {
+  const kind = ctx.t(`i18n.problem.${problem4.kind}`, {
+    expected: (problem4.expected ?? []).join(", "),
+    actual: (problem4.actual ?? []).join(", ")
   });
-  return `  ${problem3.lang}  ${problem3.key}  ${kind}`;
+  return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
 var runI18nCheck = (ctx, dir) => {
   const input = dir === void 0 ? accept(catalogs) : loadCatalogs(ctx, dir);
@@ -10090,7 +11014,7 @@ var runI18nCheck = (ctx, dir) => {
     ok: false,
     exitCode: ExitCode.CheckFailed,
     data,
-    human: [summary, ...report2.problems.map((problem3) => describeProblem(ctx, problem3))],
+    human: [summary, ...report2.problems.map((problem4) => describeProblem(ctx, problem4))],
     error: {
       code: "i18n_mismatch",
       message: ctx.t("error.i18n_mismatch", { count: report2.problems.length }),
@@ -10442,7 +11366,7 @@ var generatedItem = (project, file, previous) => {
   return { ...base, action: actionFor(before, template, "update"), after: template };
 };
 var generatedFiles = (input, vendor) => {
-  const config = { path: CONFIG_FILE3, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
+  const config = { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker };
   if (!vendor) return accept([config]);
   if (input.bundle === void 0) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });
   return accept([config, ...vendoredFiles(input.bundle, input.version)]);
@@ -10467,11 +11391,11 @@ var needsWrite = (plan) => hasChanges(plan) || plan.previous === void 0;
 
 // src/install/apply.ts
 var stamp = (iso) => iso.replace(/[:.]/g, "-");
-var ensureParent = (project, relative7) => project.runtime.mkdir(project.abs(dirname6(relative7)));
-var writeText = (project, relative7, text6) => {
-  const parent = ensureParent(project, relative7);
-  const written = parent.ok ? project.runtime.writeAtomic(project.abs(relative7), text6) : parent;
-  return written.ok ? accept(void 0) : reject({ path: relative7, detail: written.error });
+var ensureParent = (project, relative9) => project.runtime.mkdir(project.abs(dirname6(relative9)));
+var writeText = (project, relative9, text6) => {
+  const parent = ensureParent(project, relative9);
+  const written = parent.ok ? project.runtime.writeAtomic(project.abs(relative9), text6) : parent;
+  return written.ok ? accept(void 0) : reject({ path: relative9, detail: written.error });
 };
 var restore = (project, items) => {
   for (const item of items) {
@@ -10604,9 +11528,9 @@ var lineDiff = (path, before, after) => {
   const changes = walk(splitLines(before), splitLines(after)).filter(([op]) => op !== "=");
   if (changes.length === 0) return [];
   const lines3 = changes.map(([op, line2]) => `${op} ${line2}`);
-  const shown2 = lines3.slice(0, MAX_DIFF_LINES);
-  const hidden = lines3.length - shown2.length;
-  return [`--- ${path}`, `+++ ${path}`, ...shown2, ...hidden > 0 ? [`… ${String(hidden)} more`] : []];
+  const shown3 = lines3.slice(0, MAX_DIFF_LINES);
+  const hidden = lines3.length - shown3.length;
+  return [`--- ${path}`, `+++ ${path}`, ...shown3, ...hidden > 0 ? [`… ${String(hidden)} more`] : []];
 };
 
 // src/install/report.ts
@@ -10666,17 +11590,17 @@ var planLines = (t, data, withDiff) => [
 // src/install/project.ts
 import { dirname as dirname7, join as join26 } from "node:path";
 var projectAt = (root, runtime) => {
-  const abs = (relative7) => toAbsolutePath(join26(root, ...relative7.split("/")));
+  const abs = (relative9) => toAbsolutePath(join26(root, ...relative9.split("/")));
   return {
     root,
     runtime,
     abs,
-    read: (relative7) => {
-      const text6 = runtime.readText(abs(relative7));
+    read: (relative9) => {
+      const text6 = runtime.readText(abs(relative9));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative7) => runtime.stat(abs(relative7)) !== void 0,
-    isDir: (relative7) => runtime.stat(abs(relative7))?.kind === "dir"
+    exists: (relative9) => runtime.stat(abs(relative9)) !== void 0,
+    isDir: (relative9) => runtime.stat(abs(relative9))?.kind === "dir"
   };
 };
 var findGitRoot = (start, runtime) => {
@@ -10775,8 +11699,8 @@ var presentPlan = (ctx, request, plan) => {
   if (ctx.dryRun) return success(data, [...human2, ctx.t("install.dry_run")]);
   if (!needsWrite(plan)) return success(data, [...human2, ctx.t("install.nothing_to_do")]);
   const next2 = flagsFor(request, plan.preset);
-  const problem3 = confirmProblem(request.mode, ctx.t("install.confirm_question"), next2);
-  return { ...failureFrom(ctx.t, { ...problem3, data }, human2), next: next2 };
+  const problem4 = confirmProblem(request.mode, ctx.t("install.confirm_question"), next2);
+  return { ...failureFrom(ctx.t, { ...problem4, data }, human2), next: next2 };
 };
 var applyAndReport = (ctx, request, plan) => {
   const project = openProject(ctx).project;
@@ -10819,6 +11743,138 @@ var initCommand = {
   run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral"))
 };
 
+// src/commands/prose-check.ts
+import { relative as relative8 } from "node:path";
+
+// src/commands/prose-view.ts
+var PROSE_CHECK_SCHEMA = "finitemonkey/prose-check@1";
+var spanView = (span) => ({
+  startLine: span.startLine,
+  endLine: span.endLine,
+  score: span.score,
+  rules: rulesOf2([span]),
+  hits: span.hits.map(({ rule, line: line2, weight, excerpt }) => ({ rule, line: line2, weight, excerpt }))
+});
+var proseCheckData = (reports) => {
+  const files = reports.map(({ file, report: report2 }) => ({
+    file,
+    allowed: report2.allowed,
+    spans: report2.spans.map(spanView)
+  }));
+  return {
+    schema: PROSE_CHECK_SCHEMA,
+    files,
+    summary: {
+      files: files.length,
+      flagged: files.filter((file) => file.spans.length > 0).length,
+      spans: files.reduce((sum, file) => sum + file.spans.length, 0)
+    }
+  };
+};
+var fileLines = (t, report2) => {
+  if (report2.report.allowed) return [t("prose.check.allowed", { file: report2.file, marker: ALLOW_FILE_COMMENT })];
+  const { spans } = report2.report;
+  if (spans.length === 0) return [];
+  return [
+    t("prose.check.file", { file: report2.file, count: spans.length }),
+    ...spans.flatMap((span) => [
+      t("prose.check.span", {
+        file: report2.file,
+        start: span.startLine,
+        end: span.endLine,
+        score: span.score,
+        rules: spanRules(span)
+      }),
+      ...rulesOf2([span]).map((rule) => t("prose.check.fix", { fix: `${rule}: ${t(RULE_FIX_KEYS[rule])}` }))
+    ])
+  ];
+};
+var proseCheckHuman = (t, reports, data) => [
+  ...reports.flatMap((report2) => fileLines(t, report2)),
+  ...data.summary.spans === 0 ? [t("prose.check.clean", { count: data.summary.files })] : []
+];
+
+// src/commands/prose-check.ts
+var TEXT_FILE = /\.(?:md|markdown|mdx|txt)$/i;
+var STDIN_LABEL = "<stdin>";
+var problem2 = (code, messageKey, params2) => ({
+  code,
+  messageKey,
+  params: params2,
+  fix: "finitemonkey help prose check",
+  exitCode: ExitCode.Usage
+});
+var underRoot = (root, path) => toPosixPath(relative8(root, path));
+var expand = (ctx, root, target) => {
+  const path = toAbsolutePath(target, ctx.cwd);
+  const stat = ctx.runtime.stat(path);
+  if (stat === void 0)
+    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target, detail: "not found" }));
+  if (stat.kind === "file") return accept([underRoot(root, path)]);
+  const walked = ctx.runtime.walkFiles(path);
+  if (!walked.ok)
+    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target, detail: walked.error }));
+  return accept(
+    walked.value.map((name) => underRoot(root, toAbsolutePath(toPosixPath(name), path))).filter((name) => TEXT_FILE.test(name) && !/(?:^|\/)(?:node_modules|\.git)\//.test(name)).sort()
+  );
+};
+var targetsOf3 = (ctx, root, paths) => {
+  if (paths.length === 0) {
+    const changed = changedMarkdown(ctx.runtime, root);
+    return changed.ok ? changed : reject(problem2("prose_no_input", "prose.error.no_input", {}));
+  }
+  const files = [];
+  for (const path of paths) {
+    const expanded = expand(ctx, root, path);
+    if (!expanded.ok) return expanded;
+    files.push(...expanded.value);
+  }
+  return accept([...new Set(files)]);
+};
+var reportsOf = async (ctx, root, paths, mode) => {
+  const forced = mode.record ? "record" : void 0;
+  if (mode.stdin) {
+    const report2 = scoreProse(await readAll(ctx.io.stdin), { context: forced ?? "docs" });
+    return accept([{ file: STDIN_LABEL, report: report2 }]);
+  }
+  const targets2 = targetsOf3(ctx, root, paths);
+  if (!targets2.ok) return targets2;
+  const scored = scoreFiles(ctx.runtime, root, targets2.value, forced);
+  return scored.ok ? scored : reject(problem2("prose_unreadable", "prose.error.unreadable", { file: "", detail: scored.error }));
+};
+var resultOf2 = (ctx, reports) => {
+  const data = proseCheckData(reports);
+  const human2 = proseCheckHuman(ctx.t, reports, data);
+  if (data.summary.spans === 0) return success(data, human2);
+  return failureFrom(
+    ctx.t,
+    {
+      code: "prose_found",
+      messageKey: "prose.error.found",
+      params: { count: data.summary.spans },
+      fix: `rewrite the listed passages; for deliberate brand text, the person adds ${ALLOW_COMMENT}`,
+      exitCode: ExitCode.CheckFailed,
+      data
+    },
+    human2
+  );
+};
+var proseCheckCommand = {
+  path: ["prose", "check"],
+  summaryKey: "prose.command.check",
+  usage: "finitemonkey prose check [paths...] [--stdin] [--record] [--json]",
+  status: "ready",
+  options: { stdin: { type: "boolean" }, record: { type: "boolean" } },
+  maxPositionals: 1e3,
+  run: async (ctx, args) => {
+    const root = projectRoot(ctx);
+    const mode = { stdin: args.values["stdin"] === true, record: args.values["record"] === true };
+    const reports = await reportsOf(ctx, root, args.positionals, mode);
+    if (!reports.ok) return failureFrom(ctx.t, reports.error);
+    return resultOf2(ctx, reports.value);
+  }
+};
+
 // src/commands/secrets-problems.ts
 var baselineInvalid = (detail) => ({
   code: "secrets_baseline_invalid",
@@ -10851,7 +11907,7 @@ var daysOf = (values) => {
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
 var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS).toISOString();
-var failure3 = (ctx, problem3) => failureFrom(ctx.t, problem3);
+var failure3 = (ctx, problem4) => failureFrom(ctx.t, problem4);
 var inputProblem = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
   if (!isPerson(ctx)) {
@@ -10926,12 +11982,12 @@ var secretsAcceptCommand = {
     const id = args.positionals[0] ?? "";
     const reason = stringOption(args.values, "reason");
     const days = daysOf(args.values);
-    const problem3 = inputProblem(ctx, id, reason, days);
-    if (problem3 !== void 0 || reason === void 0 || days === void 0) {
+    const problem4 = inputProblem(ctx, id, reason, days);
+    if (problem4 !== void 0 || reason === void 0 || days === void 0) {
       return Promise.resolve(
         failure3(
           ctx,
-          problem3 ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
+          problem4 ?? usageProblem("invalid_arguments", "secrets.error.reason_required", "finitemonkey help secrets accept")
         )
       );
     }
@@ -10952,7 +12008,7 @@ var PURGE_STEPS = [
   "secrets.purge.step4",
   "secrets.purge.step5"
 ];
-var fail2 = (ctx, problem3) => failureFrom(ctx.t, problem3);
+var fail2 = (ctx, problem4) => failureFrom(ctx.t, problem4);
 var notFound2 = (ctx, id) => fail2(
   ctx,
   usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
@@ -11113,7 +12169,7 @@ var humanOf2 = (ctx, data) => [
   ),
   ...data.summary.total === 0 ? [ctx.t("secrets.scan.clean")] : []
 ];
-var resultOf2 = (ctx, data) => {
+var resultOf3 = (ctx, data) => {
   const human2 = humanOf2(ctx, data);
   const failing = data.summary.new + data.summary.expired;
   if (failing === 0) return success(data, human2);
@@ -11157,7 +12213,7 @@ var secretsScanCommand = {
     );
     if (mode === "path") prune(ctx, root, baseline.value, outcome);
     const incidents = mode === "history" ? historyIncidents(ctx, root, outcome.fresh) : [];
-    return resultOf2(ctx, dataOf(mode, outcome, incidents));
+    return resultOf3(ctx, dataOf(mode, outcome, incidents));
   }
 };
 
@@ -11245,11 +12301,11 @@ var explicitChecks = (draft) => [
 ];
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
-    read: (relative7) => {
-      const text6 = runtime.readText(toAbsolutePath(join27(paths.root, relative7)));
+    read: (relative9) => {
+      const text6 = runtime.readText(toAbsolutePath(join27(paths.root, relative9)));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative7) => runtime.stat(toAbsolutePath(join27(paths.root, relative7))) !== void 0
+    exists: (relative9) => runtime.stat(toAbsolutePath(join27(paths.root, relative9))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -11259,6 +12315,7 @@ var draftChecks = (runtime, paths, draft) => {
     ...hasTests ? [] : [{ id: "tests", kind: "tests" }],
     { id: "placeholders", kind: "placeholders" },
     { id: "secrets", kind: "secrets" },
+    { id: "prose", kind: "prose" },
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
@@ -11303,7 +12360,7 @@ var createTask = (runtime, paths, draft) => {
 };
 
 // src/commands/task.ts
-var problem2 = (code, messageKey, fix, params2 = {}, exitCode = ExitCode.Usage) => ({
+var problem3 = (code, messageKey, fix, params2 = {}, exitCode = ExitCode.Usage) => ({
   code,
   messageKey,
   params: params2,
@@ -11314,7 +12371,7 @@ var projectOf = (ctx) => {
   const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
   return root === void 0 ? void 0 : fmPaths(root);
 };
-var noRepo = (ctx) => failureFrom(ctx.t, problem2("not_a_git_repo", "error.not_a_git_repo", "git init", {}, ExitCode.NotConfigured));
+var noRepo = (ctx) => failureFrom(ctx.t, problem3("not_a_git_repo", "error.not_a_git_repo", "git init", {}, ExitCode.NotConfigured));
 var list3 = (values, name) => {
   const value = values[name];
   const raw = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
@@ -11346,17 +12403,17 @@ var createFailure = (ctx, failure4) => {
   if (failure4.kind === "exists") {
     return failureFrom(
       ctx.t,
-      problem2("task_exists", "error.task_exists", `finitemonkey task show ${failure4.id}`, { task: failure4.id })
+      problem3("task_exists", "error.task_exists", `finitemonkey task show ${failure4.id}`, { task: failure4.id })
     );
   }
   const detail = failure4.kind === "invalid" ? failure4.issues.join("; ") : failure4.detail;
-  return failureFrom(ctx.t, problem2("task_invalid", "error.task_invalid", "finitemonkey help task new", { detail }));
+  return failureFrom(ctx.t, problem3("task_invalid", "error.task_invalid", "finitemonkey help task new", { detail }));
 };
 var newTask = (ctx, id, values) => {
   if (id === void 0)
     return failureFrom(
       ctx.t,
-      problem2("invalid_arguments", "error.invalid_arguments", "finitemonkey help task new", { detail: "missing <id>" })
+      problem3("invalid_arguments", "error.invalid_arguments", "finitemonkey help task new", { detail: "missing <id>" })
     );
   const paths = projectOf(ctx);
   if (paths === void 0) return noRepo(ctx);
@@ -11382,7 +12439,7 @@ var showTask = (ctx, id) => {
   if (report2 === void 0) {
     return failureFrom(
       ctx.t,
-      problem2(
+      problem3(
         "task_not_found",
         "error.task_not_found",
         "finitemonkey task new <id> --goal <text>",
@@ -11492,9 +12549,9 @@ var applyItem = (project, item) => {
   if (item.after === void 0 || item.action === "gone" || item.action.startsWith("keep")) return accept(void 0);
   return writeText(project, item.path, item.after);
 };
-var isEmptyDir = (project, relative7) => {
-  const listed3 = project.runtime.listDir(project.abs(relative7));
-  return listed3.ok && listed3.value.length === 0;
+var isEmptyDir = (project, relative9) => {
+  const listed4 = project.runtime.listDir(project.abs(relative9));
+  return listed4.ok && listed4.value.length === 0;
 };
 var finish2 = (project, plan) => {
   const target = plan.purge ? STATE_DIR : LOCK_FILE;
@@ -11549,8 +12606,8 @@ var runUninstall = (ctx, args) => {
   if (ctx.dryRun) return success(preview, [...linesOf2(ctx, preview), ctx.t("install.dry_run")]);
   if (!ctx.yes) {
     const next2 = fixFor(args);
-    const problem3 = confirmProblem("uninstall", ctx.t("install.uninstall.question"), next2);
-    return { ...failureFrom(ctx.t, { ...problem3, data: preview }, linesOf2(ctx, preview)), next: next2 };
+    const problem4 = confirmProblem("uninstall", ctx.t("install.uninstall.question"), next2);
+    return { ...failureFrom(ctx.t, { ...problem4, data: preview }, linesOf2(ctx, preview)), next: next2 };
   }
   const removed = applyRemoval(project, plan);
   if (!removed.ok) return failureFrom(ctx.t, applyProblem(removed.error));
@@ -11633,6 +12690,7 @@ var REGISTRY = [
   secretsScanCommand,
   secretsAcceptCommand,
   secretsIncidentCommand,
+  proseCheckCommand,
   snapshotCommand,
   undoCommand,
   rescueCommand,
@@ -11676,9 +12734,9 @@ var unknownCommand = (registry, attempted) => {
     suggestion
   });
 };
-var failWith = (ctx, name, problem3) => ({
+var failWith = (ctx, name, problem4) => ({
   name,
-  execute: () => Promise.resolve(failureFrom(ctx.t, problem3))
+  execute: () => Promise.resolve(failureFrom(ctx.t, problem4))
 });
 var invoke = (ctx, argv, spec2, registry) => {
   const name = commandName(spec2);
@@ -11763,11 +12821,11 @@ var run2 = async (options) => {
   let result;
   try {
     if (loose.lang !== void 0 && normalizeLang(loose.lang) === void 0) {
-      const problem3 = usageProblem("invalid_lang", "error.invalid_lang", "finitemonkey --lang en", {
+      const problem4 = usageProblem("invalid_lang", "error.invalid_lang", "finitemonkey --lang en", {
         lang: loose.lang,
         languages: LANGUAGES.join(", ")
       });
-      result = failureFrom(t, problem3);
+      result = failureFrom(t, problem4);
     } else {
       const dispatched = dispatch(ctx, options.argv, loose, options.registry ?? REGISTRY);
       name = dispatched.name;
@@ -11784,8 +12842,8 @@ var run2 = async (options) => {
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 var UNKNOWN_VERSION = "0.0.0-unknown";
 var VERSION_SOURCES = ["../package.json", "../.claude-plugin/plugin.json"];
-var versionAt = (readText, moduleUrl, relative7) => {
-  const text6 = readText(toAbsolutePath(fileURLToPath3(new URL(relative7, moduleUrl))));
+var versionAt = (readText, moduleUrl, relative9) => {
+  const text6 = readText(toAbsolutePath(fileURLToPath3(new URL(relative9, moduleUrl))));
   if (!text6.ok) return void 0;
   const parsed = parseJson(text6.value);
   if (!parsed.ok || !isRecord(parsed.value)) return void 0;
@@ -11793,8 +12851,8 @@ var versionAt = (readText, moduleUrl, relative7) => {
   return typeof version === "string" ? version : void 0;
 };
 var readPackageVersion = (readText, moduleUrl) => {
-  for (const relative7 of VERSION_SOURCES) {
-    const version = versionAt(readText, moduleUrl, relative7);
+  for (const relative9 of VERSION_SOURCES) {
+    const version = versionAt(readText, moduleUrl, relative9);
     if (version !== void 0) return version;
   }
   return UNKNOWN_VERSION;

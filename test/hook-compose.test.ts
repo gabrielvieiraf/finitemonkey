@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
+import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { configDigest } from "../src/guards/tests/analyze.js";
 import {
   composeDecisions,
@@ -15,6 +16,9 @@ import {
 import { EMPTY_PAYLOAD } from "../src/hooks/payload.js";
 import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
+import { proseMarkerGuard } from "../src/prose/marker-guard.js";
+import { proseCommandGuard } from "../src/prose/text-guard.js";
+import { secretsPreToolUse } from "../src/secrets/guards/pre-tool.js";
 import { fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
@@ -100,6 +104,21 @@ describe("guard composition", () => {
     assert.deepEqual(merged.PreToolUse, [one, two]);
     assert.deepEqual(merged.Stop, [one]);
     assert.ok((DEFAULT_HANDLERS.PreToolUse?.length ?? 0) >= 3);
+  });
+
+  it("secrets, prose and git guards all run on PreToolUse, in that order", () => {
+    const list = DEFAULT_HANDLERS.PreToolUse ?? [];
+    const order = [secretsPreToolUse, proseMarkerGuard, proseCommandGuard, gitPreToolUse].map((guard) =>
+      list.indexOf(guard),
+    );
+    assert.ok(
+      order.every((index) => index >= 0),
+      JSON.stringify(order),
+    );
+    assert.deepEqual(
+      order,
+      [...order].sort((left, right) => left - right),
+    );
   });
 });
 

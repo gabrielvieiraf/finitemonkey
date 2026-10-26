@@ -46,6 +46,8 @@ Releases are fully automated. Nobody edits `version` in `package.json` or `CHANG
 
 Publishing happens only from CI, through npm trusted publishing with provenance. No one publishes from a laptop.
 
+For an editorial summary accompanying a release, start with the [release notes template](.github/RELEASE_NOTES_TEMPLATE.md). Describe what changed for users and the case behind it. Keep any humor to one line.
+
 ## Reporting bugs and asking for features
 
 Use the issue forms. For security problems, do not open a public issue; follow [SECURITY.md](SECURITY.md).

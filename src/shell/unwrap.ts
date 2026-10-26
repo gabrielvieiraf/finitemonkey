@@ -63,7 +63,8 @@ const envCommand = (stage: Stage): Stage | Unwrapped => {
     }
     index += arg === "-u" || arg === "-C" || arg === "--unset" || arg === "--chdir" ? 2 : 1;
   }
-  return shift(stage, index, "env");
+  const printsEnvironment = stage.argv.slice(index).every((arg) => ASSIGNMENT.test(arg));
+  return printsEnvironment ? { kind: "command", stage, extra: [] } : shift(stage, index, "env");
 };
 
 const shellScript = (stage: Stage, name: string, stdin: string | undefined): Unwrapped | undefined => {

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.5](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.4...v0.1.0-next.5) (2026-10-26)
+
+### Features
+
+* **prose:** check for machine-written text patterns in docs, commits, PRs and issues ([#36](https://github.com/gabrielvieiraf/finitemonkey/issues/36)) ([683662f](https://github.com/gabrielvieiraf/finitemonkey/commit/683662f809ed3d6915e54d7ae7ec2fb6aaeafb9b))
+
 ## [0.1.0-next.4](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.3...v0.1.0-next.4) (2026-10-26)
 
 ### Features

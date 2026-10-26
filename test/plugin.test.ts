@@ -117,7 +117,7 @@ describe("plugin manifest", () => {
 });
 
 describe("plugin skills", () => {
-  const required = ["finish", "task", "verify", "look"];
+  const required = ["finish", "task", "verify", "look", "write"];
   for (const name of required) {
     it(`${name} is auto-invocable with a description that fits the listing`, () => {
       const meta = frontmatter(read(PLUGIN_DIR, "skills", name, "SKILL.md"));

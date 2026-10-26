@@ -51,6 +51,9 @@ const CASES: readonly Case[] = [
       ["git", "push", "--force"],
     ],
   },
+  { input: "env | grep -i aws", expected: [["env"], ["grep", "-i", "aws"]] },
+  { input: "env -i FOO=1", expected: [["env", "-i", "FOO=1"]] },
+  { input: "env FOO=1 git push", expected: [["git", "push"]] },
   { input: 'cmd /c "git reset --hard"', dialect: "powershell", expected: [["git", "reset", "--hard"]] },
 ];
 

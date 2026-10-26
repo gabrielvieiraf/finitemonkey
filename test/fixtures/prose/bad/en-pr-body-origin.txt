@@ -1,0 +1,3 @@
+feat(gate): checks in the style of Danger
+
+This PR aims to make every check report its own name.

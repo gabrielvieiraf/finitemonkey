@@ -11,20 +11,23 @@ import { contextOutput, projectPaths } from "./common.js";
 
 export const NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
 
+const KNOWN_KINDS = new Set([
+  "command",
+  "tests",
+  "diff",
+  "placeholders",
+  "git",
+  "pr",
+  "manual",
+  "secrets",
+  "prose",
+  "worktree",
+  "merge",
+]);
+
 const requirementText = (t: Translate, check: AcceptanceCheck): string => {
   const key = `gate.require.${check.kind}` as const;
-  const known = [
-    "command",
-    "tests",
-    "diff",
-    "placeholders",
-    "git",
-    "pr",
-    "manual",
-    "secrets",
-    "worktree",
-    "merge",
-  ].includes(check.kind);
+  const known = KNOWN_KINDS.has(check.kind);
   return `${check.id} ${t(known ? (key as "gate.require.command") : "gate.require.other", { command: check.run ?? check.kind, kind: check.kind })}`;
 };
 

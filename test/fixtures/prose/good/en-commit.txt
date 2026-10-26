@@ -1,0 +1,5 @@
+fix(secrets): read the baseline before scanning history
+
+An accepted finding came back as new on every --history run, so the
+command exited 1 on a clean repository. The scan now loads the baseline
+first and only reports fingerprints that are not in it.

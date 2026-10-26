@@ -55,6 +55,7 @@ export const draftChecks = (
     ...(hasTests ? [] : [{ id: "tests", kind: "tests" as const }]),
     { id: "placeholders", kind: "placeholders" },
     { id: "secrets", kind: "secrets" },
+    { id: "prose", kind: "prose" },
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),

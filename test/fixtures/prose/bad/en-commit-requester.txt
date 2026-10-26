@@ -1,0 +1,3 @@
+fix(install): keep the empty body as requested by the user
+
+I changed the merge so an empty hooks array is written back.
