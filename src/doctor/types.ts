@@ -16,11 +16,31 @@ export interface CheckFinding {
   readonly fixKey?: MessageKey;
 }
 
+export type DoctorRuntime = Pick<
+  Runtime,
+  "nodeVersion" | "probe" | "readText" | "stat" | "listDir" | "git" | "now" | "realpath" | "homeDir"
+>;
+
 export interface DoctorEnv {
   readonly platform: NodeJS.Platform;
   readonly env: Env;
   readonly cwd: AbsolutePath;
-  readonly runtime: Pick<Runtime, "nodeVersion" | "probe" | "readText">;
+  readonly root: AbsolutePath;
+  readonly runtime: DoctorRuntime;
 }
 
 export type Check = (env: DoctorEnv) => readonly CheckFinding[];
+
+export const finding = (
+  check: string,
+  status: CheckStatus,
+  messageKey: MessageKey,
+  params?: Params,
+  fixKey?: MessageKey,
+): CheckFinding => ({
+  check,
+  status,
+  messageKey,
+  ...(params === undefined ? {} : { params }),
+  ...(fixKey === undefined ? {} : { fixKey }),
+});

@@ -23,6 +23,7 @@ const machine = (spec: Machine = {}): DoctorEnv => ({
   platform: spec.platform ?? "linux",
   env: spec.env ?? {},
   cwd: toAbsolutePath(spec.cwd ?? "/home/ana/project"),
+  root: toAbsolutePath(spec.cwd ?? "/home/ana/project"),
   runtime: fakeRuntime({
     ...(spec.nodeVersion === undefined ? {} : { nodeVersion: spec.nodeVersion }),
     ...(spec.tools === undefined ? {} : { tools: spec.tools }),
@@ -103,7 +104,13 @@ describe("doctor result", () => {
   });
 
   it("warnings alone still exit 0", () => {
-    const result = doctorResult(ctx, buildReport(ctx, runChecks(machine({ tools: { claude: missing } }))));
+    const result = doctorResult(
+      ctx,
+      buildReport(
+        ctx,
+        runChecks(machine({ tools: { claude: missing, bwrap: found("bubblewrap 0.9.0"), socat: found("socat 1.8") } })),
+      ),
+    );
     assert.equal(result.exitCode, 0);
     assert.ok(result.ok);
     assert.equal(result.data.summary.warn, 1);

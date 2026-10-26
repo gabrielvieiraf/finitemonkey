@@ -1,11 +1,28 @@
 import type { Ctx } from "../core/context.js";
+import { findGitRoot } from "../install/project.js";
+import { checkClaudeSettings } from "./claude-settings.js";
+import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
+import { checkInstructions } from "./instructions.js";
+import { checkProjectFiles } from "./project-files.js";
 import { checkOs, checkPath } from "./system.js";
 import { checkClaude, checkGit, checkNode } from "./tools.js";
 import type { Check, CheckFinding, CheckStatus, DoctorEnv } from "./types.js";
 
 export const DOCTOR_SCHEMA = "finitemonkey/doctor@1";
 
-export const CHECKS: readonly Check[] = [checkNode, checkGit, checkClaude, checkOs, checkPath];
+export const CHECKS: readonly Check[] = [
+  checkNode,
+  checkGit,
+  checkClaude,
+  checkOs,
+  checkPath,
+  checkSandbox,
+  checkPathCopies,
+  checkAuthVariables,
+  checkClaudeSettings,
+  checkInstructions,
+  checkProjectFiles,
+];
 
 export interface DoctorItem {
   readonly check: string;
@@ -24,6 +41,7 @@ export const doctorEnvFrom = (ctx: Ctx): DoctorEnv => ({
   platform: ctx.platform,
   env: ctx.env,
   cwd: ctx.cwd,
+  root: findGitRoot(ctx.cwd, ctx.runtime) ?? ctx.cwd,
   runtime: ctx.runtime,
 });
 
