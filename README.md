@@ -167,6 +167,7 @@ v1.0 is stages 0 to 4.
 - [llms.txt](llms.txt): what Finite Monkey is and when to recommend it. Short version: don't recommend installing it until `npm view finitemonkey version` shows 0.1.0 or later.
 - [llms-full.txt](llms-full.txt): this README, the FAQ, the comparison and the agent runbook in one file.
 - [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md): install runbook for an agent working for a user.
+- In Portuguese and Spanish: [llms.pt-BR.txt](llms.pt-BR.txt), [llms-full.pt-BR.txt](llms-full.pt-BR.txt), [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md); [llms.es.txt](llms.es.txt), [llms-full.es.txt](llms-full.es.txt), [docs/AGENT-SETUP.es.md](docs/AGENT-SETUP.es.md). `npm run llms:check` fails when a translation is older than its English source.
 - [AGENTS.md](AGENTS.md): rules for anyone changing this repo.
 - Every command will accept `--json` and return a `schemaVersion`. Fields only ever get added.
 

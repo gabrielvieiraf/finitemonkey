@@ -62,6 +62,7 @@
     "social": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/social.ts",
     "llms": "tsx scripts/build-llms.ts",
     "llms:check": "tsc -p scripts && tsx scripts/build-llms.ts --check",
+    "llms:stamp": "tsx scripts/build-llms.ts --stamp",
     "plugin:sync": "node scripts/plugin-sync.mjs",
     "plugin:validate": "node scripts/plugin-validate.mjs",
     "version": "node scripts/plugin-sync.mjs"

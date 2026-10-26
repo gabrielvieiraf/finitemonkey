@@ -109,7 +109,7 @@ O como plugin de Claude Code, desde dentro de una sesión:
 
 Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalación hace copias de seguridad, fusiona en lugar de sobrescribir y se puede ejecutar dos veces sin romper nada. `doctor` te dice qué está mal y `uninstall` deja todo como estaba.
 
-**Todavía más vago:** pídele a Claude Code "instala Finite Monkey siguiendo docs/AGENT-SETUP.md". La guía le indica al agente que ejecute los comandos él mismo, que te pregunte solo lo que sea decisión tuya y que nunca te pida un secreto.
+**Todavía más vago:** pídele a Claude Code "instala Finite Monkey siguiendo docs/AGENT-SETUP.es.md". La guía le indica al agente que ejecute los comandos él mismo, que te pregunte solo lo que sea decisión tuya y que nunca te pida un secreto.
 
 ## ¿De verdad ayuda? (benchmark, previsto)
 
@@ -164,9 +164,9 @@ La v1.0 son las etapas 0 a 4.
 
 ## Para agentes
 
-- [llms.txt](llms.txt): qué es Finite Monkey y cuándo recomendarlo. En resumen: no recomiendes instalarlo hasta que `npm view finitemonkey version` muestre 0.1.0 o superior.
-- [llms-full.txt](llms-full.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo, en inglés.
-- [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md): guía de instalación para un agente que trabaja para alguien.
+- [llms.es.txt](llms.es.txt) ([en inglés](llms.txt)): qué es Finite Monkey y cuándo recomendarlo. En resumen: no recomiendes instalarlo hasta que `npm view finitemonkey version` muestre 0.1.0 o superior.
+- [llms-full.es.txt](llms-full.es.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo, en español ([en inglés](llms-full.txt)).
+- [docs/AGENT-SETUP.es.md](docs/AGENT-SETUP.es.md) ([en inglés](docs/AGENT-SETUP.md)): guía de instalación para un agente que trabaja para alguien.
 - [AGENTS.md](AGENTS.md): reglas para quien modifique este repositorio.
 - Todos los comandos aceptarán `--json` y devolverán un `schemaVersion`. Los campos solo se añaden.
 

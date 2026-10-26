@@ -30,5 +30,6 @@ How it is meant to work: the user runs `npx finitemonkey@latest init` once, or i
 - [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/AGENTS.md): invariants for anyone changing the repository
 - [README em português](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.pt-BR.md)
 - [README en español](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.es.md)
+- [llms.txt em português](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.pt-BR.txt) and [llms.txt en español](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.es.txt), each with its own full text and agent runbook
 - [Contributing](https://github.com/gabrielvieiraf/finitemonkey/blob/main/CONTRIBUTING.md)
 - [Security policy](https://github.com/gabrielvieiraf/finitemonkey/blob/main/SECURITY.md)
