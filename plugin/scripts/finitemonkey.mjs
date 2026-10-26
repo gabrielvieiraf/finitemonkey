@@ -3856,7 +3856,11 @@ var en_default = {
   "install.uninstall.title": "Removing Finite Monkey from {root}:",
   "install.uninstall.keeps_state": ".finitemonkey/ stays (backups and evidence). Add --purge to delete it too.",
   "install.uninstall.purge": ".finitemonkey/ will be deleted, including backups and evidence.",
-  "install.uninstall.outside": "Not touched here, remove it yourself if you installed it: {command}",
+  "install.uninstall.outside": "Not touched here; remove what you set up yourself:",
+  "install.uninstall.outside_plugin": "the Claude Code plugin: {command}",
+  "install.uninstall.outside_completion": "shell completion, if you added a finitemonkey line to {command}: delete that line",
+  "install.uninstall.outside_ruleset": "a GitHub ruleset created for this repository: Settings > Rules on GitHub, or list them with `{command}`",
+  "install.uninstall.outside_refs": "git snapshots under refs/finitemonkey/: {command}",
   "install.uninstall.question": "remove what Finite Monkey added and restore the backups?",
   "install.uninstall.done": "Removed. The project is back to how it was, except files you edited.",
   "error.settings_unreadable": ".claude/settings.json is not valid JSON ({detail}), so it was not changed",
@@ -4314,7 +4318,11 @@ var es_default = {
   "install.uninstall.title": "Quitando Finite Monkey de {root}:",
   "install.uninstall.keeps_state": ".finitemonkey/ se queda (respaldos y evidencias). Usa --purge para borrarlo también.",
   "install.uninstall.purge": ".finitemonkey/ se borrará, incluidos respaldos y evidencias.",
-  "install.uninstall.outside": "No se toca aquí, quítalo tú si lo instalaste: {command}",
+  "install.uninstall.outside": "No se tocó aquí; quita tú lo que configuraste:",
+  "install.uninstall.outside_plugin": "el plugin de Claude Code: {command}",
+  "install.uninstall.outside_completion": "el autocompletado del shell, si añadiste una línea de finitemonkey a {command}: borra esa línea",
+  "install.uninstall.outside_ruleset": "un ruleset de GitHub creado para este repositorio: Settings > Rules en GitHub, o lístalos con `{command}`",
+  "install.uninstall.outside_refs": "instantáneas de git en refs/finitemonkey/: {command}",
   "install.uninstall.question": "¿quitar lo que agregó Finite Monkey y restaurar los respaldos?",
   "install.uninstall.done": "Quitado. El proyecto volvió a como estaba, salvo los archivos que editaste.",
   "error.settings_unreadable": ".claude/settings.json no es JSON válido ({detail}), así que no se cambió",
@@ -4772,7 +4780,11 @@ var pt_BR_default = {
   "install.uninstall.title": "Removendo o Finite Monkey de {root}:",
   "install.uninstall.keeps_state": ".finitemonkey/ fica (backups e evidências). Use --purge para apagar também.",
   "install.uninstall.purge": ".finitemonkey/ será apagado, inclusive backups e evidências.",
-  "install.uninstall.outside": "Não mexido aqui, remova você mesmo se instalou: {command}",
+  "install.uninstall.outside": "Não mexi aqui; tire você o que configurou:",
+  "install.uninstall.outside_plugin": "o plugin do Claude Code: {command}",
+  "install.uninstall.outside_completion": "o autocompletar do shell, se você pôs uma linha do finitemonkey em {command}: apague essa linha",
+  "install.uninstall.outside_ruleset": "um ruleset do GitHub criado para este repositório: Settings > Rules no GitHub, ou liste com `{command}`",
+  "install.uninstall.outside_refs": "fotografias do git em refs/finitemonkey/: {command}",
   "install.uninstall.question": "remover o que o Finite Monkey acrescentou e restaurar os backups?",
   "install.uninstall.done": "Removido. O projeto voltou ao que era, exceto os arquivos que você editou.",
   "error.settings_unreadable": ".claude/settings.json não é JSON válido ({detail}), então não foi alterado",
@@ -5232,6 +5244,10 @@ var review_default = {
     "install.uninstall.keeps_state": "machine",
     "install.uninstall.purge": "machine",
     "install.uninstall.outside": "machine",
+    "install.uninstall.outside_plugin": "machine",
+    "install.uninstall.outside_completion": "machine",
+    "install.uninstall.outside_ruleset": "machine",
+    "install.uninstall.outside_refs": "machine",
     "install.uninstall.question": "machine",
     "install.uninstall.done": "machine",
     "error.settings_unreadable": "machine",
@@ -5688,6 +5704,10 @@ var review_default = {
     "install.uninstall.keeps_state": "machine",
     "install.uninstall.purge": "machine",
     "install.uninstall.outside": "machine",
+    "install.uninstall.outside_plugin": "machine",
+    "install.uninstall.outside_completion": "machine",
+    "install.uninstall.outside_ruleset": "machine",
+    "install.uninstall.outside_refs": "machine",
     "install.uninstall.question": "machine",
     "install.uninstall.done": "machine",
     "error.settings_unreadable": "machine",
@@ -14496,7 +14516,15 @@ var applyRemoval = (project, plan) => {
 
 // src/commands/uninstall.ts
 var UNINSTALL_SCHEMA = "finitemonkey/uninstall-plan@1";
-var OUTSIDE = ["claude plugin uninstall finitemonkey@finitemonkey"];
+var OUTSIDE = [
+  { key: "install.uninstall.outside_plugin", command: "claude plugin uninstall finitemonkey@finitemonkey" },
+  { key: "install.uninstall.outside_completion", command: "~/.bashrc, ~/.zshrc, $PROFILE" },
+  { key: "install.uninstall.outside_ruleset", command: "gh api repos/{owner}/{repo}/rulesets" },
+  {
+    key: "install.uninstall.outside_refs",
+    command: "git for-each-ref --format='delete %(refname)' refs/finitemonkey/ | git update-ref --stdin"
+  }
+];
 var dataOf2 = (root, plan, applied) => ({
   schema: UNINSTALL_SCHEMA,
   applied,
@@ -14504,14 +14532,15 @@ var dataOf2 = (root, plan, applied) => ({
   root,
   actions: plan.items.map(({ path, action }) => ({ path, action })),
   kept: plan.items.filter((item) => item.action.startsWith("keep")).map(({ path }) => path),
-  outside: OUTSIDE
+  outside: OUTSIDE.map(({ command }) => command)
 });
 var linesOf2 = (ctx, data) => [
   ctx.t("install.uninstall.title", { root: data.root }),
   ...data.actions.map(({ path, action }) => `  ${action.padEnd(15)}${path}`),
   ...data.purge ? [ctx.t("install.uninstall.purge")] : [ctx.t("install.uninstall.keeps_state")],
   ...data.kept.map((path) => ctx.t("install.warn.edited_kept", { path })),
-  ctx.t("install.uninstall.outside", { command: OUTSIDE.join(", ") })
+  ctx.t("install.uninstall.outside"),
+  ...OUTSIDE.map(({ key, command }) => `  ${ctx.t(key, { command })}`)
 ];
 var fixFor = (args) => [
   "finitemonkey uninstall --yes",

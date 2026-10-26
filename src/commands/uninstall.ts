@@ -18,7 +18,15 @@ export interface UninstallData {
   readonly outside: readonly string[];
 }
 
-const OUTSIDE = ["claude plugin uninstall finitemonkey@finitemonkey"] as const;
+const OUTSIDE = [
+  { key: "install.uninstall.outside_plugin", command: "claude plugin uninstall finitemonkey@finitemonkey" },
+  { key: "install.uninstall.outside_completion", command: "~/.bashrc, ~/.zshrc, $PROFILE" },
+  { key: "install.uninstall.outside_ruleset", command: "gh api repos/{owner}/{repo}/rulesets" },
+  {
+    key: "install.uninstall.outside_refs",
+    command: "git for-each-ref --format='delete %(refname)' refs/finitemonkey/ | git update-ref --stdin",
+  },
+] as const;
 
 const dataOf = (root: string, plan: RemovalPlan, applied: boolean): UninstallData => ({
   schema: UNINSTALL_SCHEMA,
@@ -27,7 +35,7 @@ const dataOf = (root: string, plan: RemovalPlan, applied: boolean): UninstallDat
   root,
   actions: plan.items.map(({ path, action }) => ({ path, action })),
   kept: plan.items.filter((item) => item.action.startsWith("keep")).map(({ path }) => path),
-  outside: OUTSIDE,
+  outside: OUTSIDE.map(({ command }) => command),
 });
 
 const linesOf = (ctx: Ctx, data: UninstallData): readonly string[] => [
@@ -35,7 +43,8 @@ const linesOf = (ctx: Ctx, data: UninstallData): readonly string[] => [
   ...data.actions.map(({ path, action }) => `  ${action.padEnd(15)}${path}`),
   ...(data.purge ? [ctx.t("install.uninstall.purge")] : [ctx.t("install.uninstall.keeps_state")]),
   ...data.kept.map((path) => ctx.t("install.warn.edited_kept", { path })),
-  ctx.t("install.uninstall.outside", { command: OUTSIDE.join(", ") }),
+  ctx.t("install.uninstall.outside"),
+  ...OUTSIDE.map(({ key, command }) => `  ${ctx.t(key, { command })}`),
 ];
 
 const fixFor = (args: CommandArgs): string =>
