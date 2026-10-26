@@ -13,6 +13,7 @@ import { policyFalsePositiveCommand } from "./policy.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
+import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
 import type { CommandSpec } from "./types.js";
@@ -37,6 +38,7 @@ export const REGISTRY = [
   offCommand,
   onCommand,
   secretsIncidentCommand,
+  secretsLiveCommand,
   proseCheckCommand,
   snapshotCommand,
   undoCommand,

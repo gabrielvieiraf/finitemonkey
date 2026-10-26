@@ -44,7 +44,8 @@ const READERS = new Set([
 ]);
 
 const SECRET_NAME = /(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PASS|PWD|CREDENTIAL)/i;
-const PERSON_ONLY = /\b(?:finitemonkey|fm)(?:\.mjs)?\s+secrets\s+(?:accept\b|incident\s+(?:rotated|close)\b)/;
+const PERSON_ONLY =
+  /\b(?:finitemonkey|fm)(?:\.mjs)?\s+secrets\s+(?:accept\b|incident\s+(?:rotated|close)\b|live\b[^;&|\n]*\s--send\b)/;
 const LISTS_ENV = new Set(["get-childitem", "gci", "dir", "ls"]);
 
 export type BashFinding =

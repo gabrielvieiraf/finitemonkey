@@ -1156,8 +1156,8 @@ var isOwnHandler = (handler) => {
   if (args2.length === 0) return OWN_SHELL.test(`${command} `);
   const hookAt = args2.indexOf("hook");
   if (hookAt < 0) return false;
-  const target = hookAt === 0 ? command : args2[hookAt - 1] ?? "";
-  return OWN_SCRIPT.test(target);
+  const target2 = hookAt === 0 ? command : args2[hookAt - 1] ?? "";
+  return OWN_SCRIPT.test(target2);
 };
 
 // src/install/skill-template.ts
@@ -3356,8 +3356,8 @@ var readRedirect = (cursor, match) => {
   cursor.pos += match[0].length;
   skipBlank(cursor);
   const processSub = peek(cursor) === "(" && op === "<";
-  const target = processSub ? "" : readWord(cursor).text;
-  return { kind: "redirect", op, fd: match[1] ?? "", target, body: void 0 };
+  const target2 = processSub ? "" : readWord(cursor).text;
+  return { kind: "redirect", op, fd: match[1] ?? "", target: target2, body: void 0 };
 };
 var processSubstitution = (cursor) => {
   if (peek(cursor) !== "<" && peek(cursor) !== ">" || peek(cursor, 1) !== "(") return false;
@@ -3536,8 +3536,8 @@ var next = (cursor, tokens, cmd) => {
   if (redirect !== null) {
     cursor.pos += redirect[0].length;
     while (peek(cursor) === " ") cursor.pos += 1;
-    const target = redirect[3] ?? word(cursor, cmd).text;
-    tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target, body: void 0 });
+    const target2 = redirect[3] ?? word(cursor, cmd).text;
+    tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target: target2, body: void 0 });
     return;
   }
   const op = OPERATORS2.find((candidate) => cursor.text.startsWith(candidate, cursor.pos));
@@ -3759,8 +3759,8 @@ var PS_ENV = /^\$env:([A-Za-z_][A-Za-z0-9_]*)=?(.*)$/is;
 var CHANGES_DIR = /* @__PURE__ */ new Set(["cd", "pushd", "set-location", "push-location"]);
 var lex = (text6, language) => language === "bash" ? lexBash(text6) : lexPowerShell(text6, language === "cmd");
 var isWindowsAbsolute = (path) => /^[A-Za-z]:\//.test(path);
-var joinDir = (current2, target) => {
-  const next2 = toPosixPath(target);
+var joinDir = (current2, target2) => {
+  const next2 = toPosixPath(target2);
   if (next2.startsWith("/") || isWindowsAbsolute(next2) || next2.startsWith("~")) return next2;
   return current2 === void 0 ? posix.normalize(next2) : posix.join(current2, next2);
 };
@@ -3785,8 +3785,8 @@ var track = (words, language, context) => {
   if (assigned !== void 0) context.env = { ...context.env, ...assigned };
   const program = language === "bash" ? words[0] ?? "" : powershellProgram(words[0] ?? "");
   if (!CHANGES_DIR.has(program)) return;
-  const target = words.slice(1).find((word2) => !word2.startsWith("-"));
-  context.dir = target === void 0 || target === "-" ? "~" : joinDir(context.dir, target);
+  const target2 = words.slice(1).find((word2) => !word2.startsWith("-"));
+  context.dir = target2 === void 0 || target2 === "-" ? "~" : joinDir(context.dir, target2);
 };
 var emit = (stage, raw, language, context, collector) => {
   const first = stage.argv[0] ?? "";
@@ -4295,15 +4295,15 @@ var NOT_FROM_PERSON = [
   /\[Subagent hand-back\]/i
 ];
 var comesFromPerson = (prompt) => !NOT_FROM_PERSON.some((pattern) => pattern.test(prompt));
-var toMarker = (verb, target, rest) => {
-  if (!NAME.test(target)) return void 0;
-  if (verb === "trust") return { type: "trust", task: target };
+var toMarker = (verb, target2, rest) => {
+  if (!NAME.test(target2)) return void 0;
+  if (verb === "trust") return { type: "trust", task: target2 };
   if (verb === "allow") {
-    return rest.length >= 3 ? { type: "allow", guard: target.toLowerCase(), reason: rest } : void 0;
+    return rest.length >= 3 ? { type: "allow", guard: target2.toLowerCase(), reason: rest } : void 0;
   }
-  const slash = target.indexOf("/");
-  const task = slash < 0 ? void 0 : target.slice(0, slash);
-  const check2 = slash < 0 ? target : target.slice(slash + 1);
+  const slash = target2.indexOf("/");
+  const task = slash < 0 ? void 0 : target2.slice(0, slash);
+  const check2 = slash < 0 ? target2 : target2.slice(slash + 1);
   if (check2 === "") return void 0;
   return { type: "approve", check: check2, reason: rest, ...task === void 0 || task === "" ? {} : { task } };
 };
@@ -5191,9 +5191,9 @@ var prStatus = (runtime, git, paths, ttlMs = PR_CACHE_TTL_MS) => {
   return { kind: "found", branch, pr: status.pr, localHead: headSha(git) };
 };
 var conflictFiles = (git, base) => {
-  for (const target of [`origin/${base}`, base]) {
-    if (git.out(["rev-parse", "--verify", "-q", `${target}^{commit}`]) === void 0) continue;
-    const result = git.run(["merge-tree", "--write-tree", "--name-only", "--no-messages", target, "HEAD"]);
+  for (const target2 of [`origin/${base}`, base]) {
+    if (git.out(["rev-parse", "--verify", "-q", `${target2}^{commit}`]) === void 0) continue;
+    const result = git.run(["merge-tree", "--write-tree", "--name-only", "--no-messages", target2, "HEAD"]);
     if (result.found && result.exitCode === 1) return parseMergeTreeConflicts(result.stdout);
     if (result.found && result.exitCode === 0) return [];
   }
@@ -6196,7 +6196,17 @@ var en_default = {
   "pause.on": "Gate resumed.",
   "pause.report": "The gate did not check this stop: the person paused it with fm off at {since}.",
   "pause.no_session": "No Claude Code session is recorded for this project yet; start one, then run this again or type `fm off` there.",
-  "pause.error.person_only": "Only the person can pause or resume the gate, and this does not look like their terminal (no TTY, or running inside Claude Code)"
+  "pause.error.person_only": "Only the person can pause or resume the gate, and this does not look like their terminal (no TTY, or running inside Claude Code)",
+  "secrets.incident.runbook": "    runbook: {link}",
+  "secrets.command.live": "Check whether a key still works with its provider (off by default; sends only with --send, and prints the host first)",
+  "secrets.action.live": "send a key to its provider",
+  "secrets.live.dry": "Nothing was sent. With --send, the value of ${variable} would go to {host} ({url}) to check whether the {provider} key still works. Run it yourself, in your own terminal, with --send.",
+  "secrets.live.contacting": "Contacting {host} ({url}) with the key; the value is passed to curl on stdin, never as an argument.",
+  "secrets.live.live": "The key in ${variable} still works at {host} (HTTP {status}). Revoke it now: see the runbook in `finitemonkey secrets incident`.",
+  "secrets.live.rejected": "{host} rejected the key in ${variable} (HTTP {status}): it no longer works.",
+  "secrets.live.unknown": "{host} answered HTTP {status}; that does not say whether the key in ${variable} works. Check it in the provider's console.",
+  "secrets.live.unreachable": "Could not reach {host} with curl, so the key in ${variable} was not checked.",
+  "secrets.live.no_value": "${variable} is empty or not set in this terminal; export it first, nothing was sent"
 };
 
 // src/i18n/es.json
@@ -6757,7 +6767,17 @@ var es_default = {
   "pause.on": "Compuerta reanudada.",
   "pause.report": "La compuerta no revisó esta parada: la persona la pausó con fm off a las {since}.",
   "pause.no_session": "Todavía no hay una sesión de Claude Code registrada en este proyecto; abre una y vuelve a ejecutarlo, o escribe `fm off` allí.",
-  "pause.error.person_only": "Solo la persona puede pausar o reanudar la compuerta, y esto no parece su terminal (sin TTY, o dentro de Claude Code)"
+  "pause.error.person_only": "Solo la persona puede pausar o reanudar la compuerta, y esto no parece su terminal (sin TTY, o dentro de Claude Code)",
+  "secrets.incident.runbook": "    guía: {link}",
+  "secrets.command.live": "Comprueba si una clave aún funciona en su proveedor (apagado por defecto; solo envía con --send y muestra el host antes)",
+  "secrets.action.live": "enviar una clave a su proveedor",
+  "secrets.live.dry": "No se envió nada. Con --send, el valor de ${variable} iría a {host} ({url}) para comprobar si la clave de {provider} aún funciona. Ejecútalo tú, en tu terminal, con --send.",
+  "secrets.live.contacting": "Contactando {host} ({url}) con la clave; el valor va a curl por la entrada estándar, nunca como argumento.",
+  "secrets.live.live": "La clave en ${variable} aún funciona en {host} (HTTP {status}). Revócala ya: mira la guía en `finitemonkey secrets incident`.",
+  "secrets.live.rejected": "{host} rechazó la clave en ${variable} (HTTP {status}): ya no funciona.",
+  "secrets.live.unknown": "{host} respondió HTTP {status}; eso no dice si la clave en ${variable} funciona. Revísala en la consola del proveedor.",
+  "secrets.live.unreachable": "No se pudo llegar a {host} con curl, así que la clave en ${variable} no se comprobó.",
+  "secrets.live.no_value": "${variable} está vacía o no existe en esta terminal; expórtala antes, no se envió nada"
 };
 
 // src/i18n/pt-BR.json
@@ -7318,7 +7338,17 @@ var pt_BR_default = {
   "pause.on": "Portão retomado.",
   "pause.report": "O portão não conferiu esta parada: a pessoa pausou com fm off em {since}.",
   "pause.no_session": "Ainda não há sessão do Claude Code registrada neste projeto; abra uma e rode de novo, ou digite `fm off` nela.",
-  "pause.error.person_only": "Só a pessoa pode pausar ou retomar o portão, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)"
+  "pause.error.person_only": "Só a pessoa pode pausar ou retomar o portão, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
+  "secrets.incident.runbook": "    passo a passo: {link}",
+  "secrets.command.live": "Verifica se uma chave ainda funciona no provedor (desligado por padrão; só envia com --send e mostra o host antes)",
+  "secrets.action.live": "enviar uma chave ao provedor",
+  "secrets.live.dry": "Nada foi enviado. Com --send, o valor de ${variable} iria para {host} ({url}) para ver se a chave {provider} ainda funciona. Rode você mesmo, no seu terminal, com --send.",
+  "secrets.live.contacting": "Contatando {host} ({url}) com a chave; o valor vai para o curl pela entrada padrão, nunca como argumento.",
+  "secrets.live.live": "A chave em ${variable} ainda funciona em {host} (HTTP {status}). Revogue agora: veja o passo a passo em `finitemonkey secrets incident`.",
+  "secrets.live.rejected": "{host} recusou a chave em ${variable} (HTTP {status}): ela não funciona mais.",
+  "secrets.live.unknown": "{host} respondeu HTTP {status}; isso não diz se a chave em ${variable} funciona. Confira no painel do provedor.",
+  "secrets.live.unreachable": "Não deu para alcançar {host} com o curl, então a chave em ${variable} não foi verificada.",
+  "secrets.live.no_value": "${variable} está vazia ou não existe neste terminal; exporte antes, nada foi enviado"
 };
 
 // src/i18n/review.json
@@ -7880,7 +7910,17 @@ var review_default = {
     "pause.on": "machine",
     "pause.report": "machine",
     "pause.no_session": "machine",
-    "pause.error.person_only": "machine"
+    "pause.error.person_only": "machine",
+    "secrets.incident.runbook": "machine",
+    "secrets.command.live": "machine",
+    "secrets.action.live": "machine",
+    "secrets.live.dry": "machine",
+    "secrets.live.contacting": "machine",
+    "secrets.live.live": "machine",
+    "secrets.live.rejected": "machine",
+    "secrets.live.unknown": "machine",
+    "secrets.live.unreachable": "machine",
+    "secrets.live.no_value": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -8439,7 +8479,17 @@ var review_default = {
     "pause.on": "machine",
     "pause.report": "machine",
     "pause.no_session": "machine",
-    "pause.error.person_only": "machine"
+    "pause.error.person_only": "machine",
+    "secrets.incident.runbook": "machine",
+    "secrets.command.live": "machine",
+    "secrets.action.live": "machine",
+    "secrets.live.dry": "machine",
+    "secrets.live.contacting": "machine",
+    "secrets.live.live": "machine",
+    "secrets.live.rejected": "machine",
+    "secrets.live.unknown": "machine",
+    "secrets.live.unreachable": "machine",
+    "secrets.live.no_value": "machine"
   }
 };
 
@@ -8736,8 +8786,8 @@ var callersRate = (runtime, paths) => {
     const parsed = line2.trim() === "" ? void 0 : parseJsonObject(line2);
     if (parsed === void 0 || !parsed.ok || !isRecord(parsed.value)) continue;
     const event = parsed.value["event"];
-    const target = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
-    if (target !== void 0) for (const pair of pairs(parsed.value)) target.add(pair);
+    const target2 = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
+    if (target2 !== void 0) for (const pair of pairs(parsed.value)) target2.add(pair);
   }
   const total = (/* @__PURE__ */ new Set([...flagged, ...released2])).size;
   const rate = total === 0 ? 0 : released2.size / total;
@@ -8759,13 +8809,13 @@ var JS_EXTENSION = /\.(?:[cm]?[jt]sx?)$/;
 var stripModule = (path) => path.replace(JS_EXTENSION, "").replace(/\/index$/, "");
 var jsSpecifiers = (text6) => [...text6.matchAll(JS_SPECIFIER)].map((match) => match[1] ?? "");
 var jsImports = (callerPath, callerText, origin) => {
-  const target = stripModule(origin);
+  const target2 = stripModule(origin);
   return jsSpecifiers(callerText).some((specifier) => {
     if (specifier.startsWith(".")) {
-      return stripModule(posix2.normalize(posix2.join(posix2.dirname(callerPath), specifier))) === target;
+      return stripModule(posix2.normalize(posix2.join(posix2.dirname(callerPath), specifier))) === target2;
     }
     const bare = stripModule(specifier.replace(/^[@~#]\//, ""));
-    return target === bare || target.endsWith(`/${bare}`);
+    return target2 === bare || target2.endsWith(`/${bare}`);
   });
 };
 var pyImports = (callerText, origin) => {
@@ -10283,13 +10333,13 @@ var MAX_FILE_BYTES = 2 * 1024 * 1024;
 var SKIPPED = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
 var DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var binary = (text6) => text6.slice(0, 8e3).includes("\0");
-var listed2 = (runtime, root, target) => {
-  const git = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target], root);
+var listed2 = (runtime, root, target2) => {
+  const git = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target2], root);
   if (git.ok)
     return accept(
       git.stdout.split("\0").filter((name) => name !== "").map(toPosixPath)
     );
-  const base = toAbsolutePath(target, root);
+  const base = toAbsolutePath(target2, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
   return accept(walked.value.map((name) => toPosixPath(relative4(root, join20(base, toPosixPath(name))))));
@@ -10299,8 +10349,8 @@ var scanFile = (runtime, root, file) => {
   if (!text6.ok || text6.value.length > MAX_FILE_BYTES || binary(text6.value)) return [];
   return scanText(text6.value, { path: file }).map((finding3) => locate(finding3, file, finding3.line));
 };
-var scanPath = (runtime, root, target) => {
-  const files = listed2(runtime, root, target);
+var scanPath = (runtime, root, target2) => {
+  const files = listed2(runtime, root, target2);
   if (!files.ok) return files;
   return accept(files.value.filter((file) => !SKIPPED.test(file)).flatMap((file) => scanFile(runtime, root, file)));
 };
@@ -11320,7 +11370,7 @@ var integrationRefs = (runtime, root, defaultBranch) => [`refs/heads/${defaultBr
 var contained = (runtime, root, branch, targets2) => {
   const tip = line(runtime, root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`]);
   if (tip === void 0) return true;
-  return targets2.filter((target) => target !== `refs/heads/${branch}`).some((target) => runtime.git(["merge-base", "--is-ancestor", tip, target], root).ok);
+  return targets2.filter((target2) => target2 !== `refs/heads/${branch}`).some((target2) => runtime.git(["merge-base", "--is-ancestor", tip, target2], root).ok);
 };
 var shared = (runtime, root, upstream, base) => {
   if (upstream === void 0 || !refExists(runtime, root, upstream.remoteRef)) return false;
@@ -12069,7 +12119,7 @@ var loadProdTargets = (runtime, root, config) => {
 var isProdContext = (name, declared) => declared.includes(name) || /(?:^|[-_.:/])(?:prod|production)(?:$|[-_.:/])/i.test(name);
 
 // src/prod/classify.ts
-var hit2 = (effect, target, tool) => ({ effect, target, tool });
+var hit2 = (effect, target2, tool) => ({ effect, target: target2, tool });
 var sshHit = (command, isProd) => {
   const call = parseSsh(command);
   if (call === void 0 || !isProd(call.destination)) return void 0;
@@ -12105,9 +12155,9 @@ var dockerHit = (command, targets2, isProd) => {
     return hit2("effect", switching, "docker context");
   const prodHost = remote !== void 0 && isProd(remote) ? hostKey(remote) : void 0;
   const prodContext = context !== void 0 && isProdContext(context, targets2.dockerContexts) ? context : void 0;
-  const target = prodHost ?? prodContext;
-  if (target === void 0) return void 0;
-  return hit2(dockerReadOnly(command.args) ? "read" : "effect", target, "docker");
+  const target2 = prodHost ?? prodContext;
+  if (target2 === void 0) return void 0;
+  return hit2(dockerReadOnly(command.args) ? "read" : "effect", target2, "docker");
 };
 var kubeHit = (command, targets2) => {
   const context = valueAfter(command.args, "--context", "--kube-context");
@@ -12792,8 +12842,8 @@ var pushDestinations = (parsed, facts) => {
     return [facts.upstream(current2)?.branch ?? current2];
   }
   return refspecs.flatMap((refspec) => {
-    const target = refspecTarget(refspec, current2);
-    return target === void 0 ? [] : [target];
+    const target2 = refspecTarget(refspec, current2);
+    return target2 === void 0 ? [] : [target2];
   });
 };
 var leaseVerdict = (parsed, facts) => {
@@ -12973,8 +13023,8 @@ var guardGitCommand = (context, command, depth = 0) => {
   if (repo === void 0) return [];
   const facts = withChain(context.facts?.(repo) ?? repoFacts(context.runtime, repo), context.chain);
   const expanded = expandAlias(context.runtime, repo, invocation);
-  const target = switchTarget(expanded, facts);
-  if (target !== void 0 && context.chain !== void 0) context.chain.branch = target;
+  const target2 = switchTarget(expanded, facts);
+  if (target2 !== void 0 && context.chain !== void 0) context.chain.branch = target2;
   const nested = depth < MAX_ALIAS_DEPTH ? shellAliasCommands(expanded, context.runtime, repo).flatMap(
     (inner) => guardGitCommand(context, inner, depth + 1)
   ) : [];
@@ -13011,11 +13061,11 @@ var removalTargets = (command) => {
   if (command.program === "remove-item") return powershellTargets(command);
   return void 0;
 };
-var globBase = (target) => {
-  const at = target.search(GLOB2);
-  if (at < 0) return target;
-  const slash = target.lastIndexOf("/", at);
-  return slash < 0 ? "." : target.slice(0, slash) || "/";
+var globBase = (target2) => {
+  const at = target2.search(GLOB2);
+  if (at < 0) return target2;
+  const slash = target2.lastIndexOf("/", at);
+  return slash < 0 ? "." : target2.slice(0, slash) || "/";
 };
 var containsGitDir = (runtime, path) => runtime.stat(toAbsolutePath(resolveFrom(path, ".git"))) !== void 0;
 var targetVerdict = (runtime, context, command, raw) => {
@@ -13035,8 +13085,8 @@ var targetVerdict = (runtime, context, command, raw) => {
 var rmVerdict = (runtime, context, command) => {
   const targets2 = removalTargets(command);
   if (targets2 === void 0) return PASS;
-  for (const target of targets2) {
-    const verdict = targetVerdict(runtime, context, command, target);
+  for (const target2 of targets2) {
+    const verdict = targetVerdict(runtime, context, command, target2);
     if (verdict.kind === "block") return verdict;
   }
   return PASS;
@@ -13574,12 +13624,12 @@ var sourceOf = (value, isFile, segment, heredocs) => {
   const piped = segment.args.map((arg) => heredocIn(arg, heredocs)).find((text6) => text6 !== void 0);
   return { kind: "inline", text: piped ?? "" };
 };
-var collect3 = (target, segment, args2, spec2, heredocs) => {
+var collect3 = (target2, segment, args2, spec2, heredocs) => {
   const values = flagValues(args2, spec2);
   if (values.length === 0) return void 0;
   const title = values.find((item) => spec2.title.includes(item.flag));
   const bodies = values.filter((item) => !spec2.title.includes(item.flag)).map((item) => sourceOf(item.value, spec2.file.includes(item.flag), segment, heredocs));
-  return { target, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies };
+  return { target: target2, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies };
 };
 var gitSubcommand = (args2) => {
   let index = 0;
@@ -13798,7 +13848,7 @@ var READERS = /* @__PURE__ */ new Set([
   "dotenv"
 ]);
 var SECRET_NAME = /(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PASS|PWD|CREDENTIAL)/i;
-var PERSON_ONLY = /\b(?:finitemonkey|fm)(?:\.mjs)?\s+secrets\s+(?:accept\b|incident\s+(?:rotated|close)\b)/;
+var PERSON_ONLY = /\b(?:finitemonkey|fm)(?:\.mjs)?\s+secrets\s+(?:accept\b|incident\s+(?:rotated|close)\b|live\b[^;&|\n]*\s--send\b)/;
 var LISTS_ENV = /* @__PURE__ */ new Set(["get-childitem", "gci", "dir", "ls"]);
 var onlyFlags = (args2) => args2.every((arg) => arg.startsWith("-"));
 var readTarget = (segment) => {
@@ -13824,8 +13874,8 @@ var bashFindings = (command, segments) => {
   const person = PERSON_ONLY.exec(command);
   if (person !== null) return [{ kind: "person-only", command: person[0] }];
   return segments.flatMap((segment) => {
-    const target = readTarget(segment);
-    if (target !== void 0) return [{ kind: "read", target }];
+    const target2 = readTarget(segment);
+    if (target2 !== void 0) return [{ kind: "read", target: target2 }];
     if (dumpsEnv(segment)) return [{ kind: "env-dump", command: [segment.program, ...segment.args].join(" ") }];
     return [];
   });
@@ -13916,9 +13966,9 @@ var bashDecision = (input) => {
 };
 var readDecision = (input) => {
   const inputs = toolInput2(input.payload);
-  const target = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
-  if (target === "" || !isSensitivePath(target)) return ALLOW5;
-  return { kind: "block", reason: input.t("secrets.block.read", { target: relativeFile(input.cwd, target) }) };
+  const target2 = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
+  if (target2 === "" || !isSensitivePath(target2)) return ALLOW5;
+  return { kind: "block", reason: input.t("secrets.block.read", { target: relativeFile(input.cwd, target2) }) };
 };
 var WRITERS2 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELLS4 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
@@ -16298,15 +16348,15 @@ var problem2 = (code, messageKey, params2) => ({
   exitCode: ExitCode.Usage
 });
 var underRoot = (root, path) => toPosixPath(relative8(root, path));
-var expand2 = (ctx, root, target) => {
-  const path = toAbsolutePath(target, ctx.cwd);
+var expand2 = (ctx, root, target2) => {
+  const path = toAbsolutePath(target2, ctx.cwd);
   const stat = ctx.runtime.stat(path);
   if (stat === void 0)
-    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target, detail: "not found" }));
+    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target2, detail: "not found" }));
   if (stat.kind === "file") return accept([underRoot(root, path)]);
   const walked = ctx.runtime.walkFiles(path);
   if (!walked.ok)
-    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target, detail: walked.error }));
+    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target2, detail: walked.error }));
   return accept(
     walked.value.map((name) => underRoot(root, toAbsolutePath(toPosixPath(name), path))).filter((name) => TEXT_FILE.test(name) && !/(?:^|\/)(?:node_modules|\.git)\//.test(name)).sort()
   );
@@ -16490,6 +16540,33 @@ var secretsAcceptCommand = {
   }
 };
 
+// src/secrets/runbooks.ts
+import { dirname as dirname9, join as join39 } from "node:path";
+var PROVIDER_OF_RULE = {
+  "aws-access-token": "aws",
+  "aws-secret-access-key": "aws",
+  "github-pat": "github",
+  "github-oauth": "github",
+  "github-app-token": "github",
+  "github-refresh-token": "github",
+  "github-fine-grained-pat": "github",
+  "stripe-access-token": "stripe",
+  "anthropic-api-key": "anthropic",
+  "openai-api-key": "openai",
+  "gcp-api-key": "google",
+  "asaas-api-key": "asaas",
+  "credential-in-url": "database",
+  "password-assignment": "database",
+  "secret-in-process-args": "database"
+};
+var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/runbooks";
+var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
+var runbookLink = (runtime, rule) => {
+  const file = `${runbookProvider(rule)}.md`;
+  const local = toAbsolutePath(join39(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
+  return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
+};
+
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
 var USAGE = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
@@ -16515,9 +16592,19 @@ var itemLine = (ctx, incident) => ctx.t("secrets.incident.item", {
   where: incident.where,
   created: incident.createdAt.slice(0, 10)
 });
+var itemLines2 = (ctx, incident) => [
+  itemLine(ctx, incident),
+  ctx.t("secrets.incident.runbook", { link: incident.runbook })
+];
 var list2 = (ctx, root) => {
-  const incidents = listIncidents(ctx.runtime, root);
-  const human2 = incidents.length === 0 ? [ctx.t("secrets.incident.none")] : [ctx.t("secrets.incident.title", { count: incidents.length }), ...incidents.map((item) => itemLine(ctx, item))];
+  const incidents = listIncidents(ctx.runtime, root).map((incident) => ({
+    ...incident,
+    runbook: runbookLink(ctx.runtime, incident.rule)
+  }));
+  const human2 = incidents.length === 0 ? [ctx.t("secrets.incident.none")] : [
+    ctx.t("secrets.incident.title", { count: incidents.length }),
+    ...incidents.flatMap((item) => itemLines2(ctx, item))
+  ];
   return success({ schema: "finitemonkey/secrets-incidents@1", incidents }, human2);
 };
 var notRotated = (ctx, incident) => fail2(ctx, {
@@ -16584,6 +16671,133 @@ var secretsIncidentCommand = {
   }
 };
 
+// src/secrets/live.ts
+var bearer = (key) => [`Authorization: Bearer ${key}`];
+var LIVE_PROBES = {
+  github: {
+    host: "api.github.com",
+    path: "/user",
+    headers: (key) => [...bearer(key), "User-Agent: finitemonkey"]
+  },
+  stripe: { host: "api.stripe.com", path: "/v1/balance", headers: bearer },
+  openai: { host: "api.openai.com", path: "/v1/models", headers: bearer },
+  anthropic: {
+    host: "api.anthropic.com",
+    path: "/v1/models",
+    headers: (key) => [`x-api-key: ${key}`, "anthropic-version: 2023-06-01"]
+  },
+  digitalocean: { host: "api.digitalocean.com", path: "/v2/account", headers: bearer },
+  cloudflare: { host: "api.cloudflare.com", path: "/client/v4/user/tokens/verify", headers: bearer },
+  asaas: {
+    host: "api.asaas.com",
+    path: "/v3/finance/balance",
+    headers: (key) => [`access_token: ${key}`, "User-Agent: finitemonkey"]
+  }
+};
+var LIVE_PROVIDERS = Object.keys(LIVE_PROBES).filter((name) => name in LIVE_PROBES);
+var LIVE_HOSTS = LIVE_PROVIDERS.map((name) => LIVE_PROBES[name].host);
+var liveProvider = (name) => LIVE_PROVIDERS.find((provider) => provider === name);
+var LIVE_TIMEOUT_MS = 15e3;
+var liveRequest = (provider, key, cwd) => {
+  const probe = LIVE_PROBES[provider];
+  return {
+    command: "curl",
+    args: [
+      "--silent",
+      "--show-error",
+      "--proto",
+      "=https",
+      "--max-time",
+      "10",
+      "--header",
+      "@-",
+      "--write-out",
+      "\n%{http_code}",
+      `https://${probe.host}${probe.path}`
+    ],
+    cwd,
+    timeoutMs: LIVE_TIMEOUT_MS,
+    input: `${probe.headers(key).join("\n")}
+`
+  };
+};
+var liveOutcome = (result) => {
+  if (!result.found || result.exitCode !== 0) return { verdict: "unreachable" };
+  const status = Number.parseInt(result.stdout.trimEnd().split("\n").at(-1) ?? "", 10);
+  if (!Number.isInteger(status) || status === 0) return { verdict: "unreachable" };
+  if (status >= 200 && status < 300) return { verdict: "live", status };
+  if (status === 401 || status === 403) return { verdict: "rejected", status };
+  return { verdict: "unknown", status };
+};
+
+// src/commands/secrets-live.ts
+var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
+var USAGE2 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
+var target = (provider) => {
+  const probe = LIVE_PROBES[provider];
+  return { host: probe.host, url: `https://${probe.host}${probe.path}` };
+};
+var dryRun = (ctx, provider, variable) => {
+  const { host, url: url2 } = target(provider);
+  const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url: url2, variable, sent: false };
+  return success(data, [ctx.t("secrets.live.dry", { host, url: url2, variable, provider })]);
+};
+var send = (ctx, provider, variable, key) => {
+  const { host, url: url2 } = target(provider);
+  ctx.io.stderr.write(`${ctx.t("secrets.live.contacting", { host, url: url2 })}
+`);
+  const outcome2 = liveOutcome(ctx.runtime.exec(liveRequest(provider, key, ctx.cwd)));
+  const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url: url2, variable, sent: true, ...outcome2 };
+  const line2 = ctx.t(`secrets.live.${outcome2.verdict}`, { host, status: outcome2.status ?? 0, variable });
+  if (outcome2.verdict !== "unreachable") return success(data, [line2]);
+  return failureFrom(ctx.t, {
+    code: "secrets_live_unreachable",
+    messageKey: "secrets.live.unreachable",
+    params: { host, status: 0, variable },
+    fix: "install curl or check the network, then run the command again",
+    exitCode: ExitCode.CheckFailed,
+    data
+  });
+};
+var secretsLiveCommand = {
+  path: ["secrets", "live"],
+  summaryKey: "secrets.command.live",
+  usage: USAGE2,
+  status: "ready",
+  maxPositionals: 1,
+  options: { env: { type: "string" }, send: { type: "boolean" } },
+  run: (ctx, args2) => {
+    const provider = liveProvider(args2.positionals[0]);
+    const variable = stringOption(args2.values, "env") ?? "";
+    if (provider === void 0 || !ENV_NAME.test(variable))
+      return Promise.resolve(
+        failureFrom(
+          ctx.t,
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE2, {
+            detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
+          })
+        )
+      );
+    if (args2.values["send"] !== true) return Promise.resolve(dryRun(ctx, provider, variable));
+    if (!isPerson(ctx))
+      return Promise.resolve(
+        failureFrom(
+          ctx.t,
+          needsPersonProblem("secrets.error.person_only", `${USAGE2.replace(" [--send]", "")} --send`, {
+            action: ctx.t("secrets.action.live")
+          })
+        )
+      );
+    const key = ctx.env[variable] ?? "";
+    if (key === "")
+      return Promise.resolve(
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE2, { variable }))
+      );
+    return Promise.resolve(send(ctx, provider, variable, key));
+  }
+};
+
 // src/commands/secrets-scan.ts
 var SECRETS_SCAN_SCHEMA = "finitemonkey/secrets-scan@1";
 var view = (finding3, status) => ({
@@ -16604,15 +16818,15 @@ var modeOf3 = (values) => {
   if (chosen[0] === true) return "staged";
   return chosen[1] === true ? "history" : "path";
 };
-var normalizedTarget = (target) => target.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
-var scopeOf = (target) => {
-  const prefix = normalizedTarget(target);
+var normalizedTarget = (target2) => target2.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
+var scopeOf = (target2) => {
+  const prefix = normalizedTarget(target2);
   return (file) => prefix === "" || file === prefix || file.startsWith(`${prefix}/`);
 };
-var runScan = async (ctx, root, mode, target) => {
+var runScan = async (ctx, root, mode, target2) => {
   if (mode === "staged") return scanStaged(ctx.runtime, root);
   if (mode === "history") return scanHistory(ctx.runtime, root);
-  return scanPath(ctx.runtime, root, normalizedTarget(target) || ".");
+  return scanPath(ctx.runtime, root, normalizedTarget(target2) || ".");
 };
 var historyIncidents = (ctx, root, fresh3) => fresh3.flatMap((finding3) => {
   if (ruleById(finding3.ruleId)?.kind !== "credential") return [];
@@ -16693,8 +16907,8 @@ var secretsScanCommand = {
     const fix = "finitemonkey help secrets scan";
     if (mode === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.error.one_mode", fix));
     const root = projectRoot(ctx);
-    const target = stringOption(args2.values, "path") ?? ".";
-    const scanned = await runScan(ctx, root, mode, target);
+    const target2 = stringOption(args2.values, "path") ?? ".";
+    const scanned = await runScan(ctx, root, mode, target2);
     if (!scanned.ok) return failureFrom(ctx.t, gitUnavailable(scanned.error));
     const baseline = loadBaseline(ctx.runtime, root);
     if (!baseline.ok) return failureFrom(ctx.t, baselineInvalid(baseline.error));
@@ -16702,7 +16916,7 @@ var secretsScanCommand = {
       scanned.value,
       baseline.value,
       ctx.runtime.now(),
-      mode === "path" ? scopeOf(target) : void 0
+      mode === "path" ? scopeOf(target2) : void 0
     );
     if (mode === "path") prune(ctx, root, baseline.value, outcome2);
     const incidents = mode === "history" ? historyIncidents(ctx, root, outcome2.fresh) : [];
@@ -16711,7 +16925,7 @@ var secretsScanCommand = {
 };
 
 // src/task/create.ts
-import { join as join39 } from "node:path";
+import { join as join40 } from "node:path";
 
 // src/core/yaml/write.ts
 var PLAIN_SAFE = /^[A-Za-z_./][A-Za-z0-9_./ ()-]*$/;
@@ -16800,10 +17014,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative9) => {
-      const text6 = runtime.readText(toAbsolutePath(join39(paths.root, relative9)));
+      const text6 = runtime.readText(toAbsolutePath(join40(paths.root, relative9)));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative9) => runtime.stat(toAbsolutePath(join39(paths.root, relative9))) !== void 0
+    exists: (relative9) => runtime.stat(toAbsolutePath(join40(paths.root, relative9))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -16933,8 +17147,8 @@ var showTask = (ctx, id) => {
   const paths = projectOf(ctx);
   if (paths === void 0) return noRepo(ctx);
   const active = readState(ctx.runtime, paths).active;
-  const target = id ?? active;
-  const report2 = currentReport(ctx.runtime, paths, void 0, target);
+  const target2 = id ?? active;
+  const report2 = currentReport(ctx.runtime, paths, void 0, target2);
   if (report2 === void 0) {
     return failureFrom(
       ctx.t,
@@ -16942,7 +17156,7 @@ var showTask = (ctx, id) => {
         "task_not_found",
         "error.task_not_found",
         "finitemonkey task new <id> --goal <text>",
-        { task: target ?? "-" },
+        { task: target2 ?? "-" },
         ExitCode.NotConfigured
       )
     );
@@ -16952,7 +17166,7 @@ var showTask = (ctx, id) => {
 var doneTask = (ctx, id) => {
   const paths = projectOf(ctx);
   if (paths === void 0) return noRepo(ctx);
-  const target = id ?? readState(ctx.runtime, paths).active;
+  const target2 = id ?? readState(ctx.runtime, paths).active;
   const run4 = runGate({
     runtime: ctx.runtime,
     cwd: ctx.cwd,
@@ -16961,7 +17175,7 @@ var doneTask = (ctx, id) => {
     budgetMs: DEFAULT_GATE_BUDGET_MS,
     fast: false,
     noSkip: true,
-    ...target === void 0 ? {} : { taskId: target }
+    ...target2 === void 0 ? {} : { taskId: target2 }
   });
   const result = runResult(ctx, run4, true);
   if (!result.ok || run4.kind !== "done" || run4.report.implicit) return result;
@@ -17053,9 +17267,9 @@ var isEmptyDir = (project, relative9) => {
   return listed4.ok && listed4.value.length === 0;
 };
 var finish3 = (project, plan) => {
-  const target = plan.purge ? STATE_DIR : LOCK_FILE;
-  const removed = project.runtime.remove(project.abs(target));
-  if (!removed.ok) return reject({ path: target, detail: removed.error });
+  const target2 = plan.purge ? STATE_DIR : LOCK_FILE;
+  const removed = project.runtime.remove(project.abs(target2));
+  if (!removed.ok) return reject({ path: target2, detail: removed.error });
   for (const dir of plan.removeDirs) if (isEmptyDir(project, dir)) project.runtime.remove(project.abs(dir));
   return accept(void 0);
 };
@@ -17201,6 +17415,7 @@ var REGISTRY = [
   offCommand,
   onCommand,
   secretsIncidentCommand,
+  secretsLiveCommand,
   proseCheckCommand,
   snapshotCommand,
   undoCommand,
@@ -17212,7 +17427,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join40 } from "node:path";
+import { join as join41 } from "node:path";
 var read3 = (runtime, path) => {
   const text6 = runtime.readText(toAbsolutePath(path));
   return text6.ok ? text6.value : void 0;
@@ -17227,14 +17442,14 @@ var languageIn = (text6) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join40(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join41(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join40(root, CONFIG_FILE)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join41(root, CONFIG_FILE)) ?? "");
   const claudeFiles = [
-    join40(root, ".claude", "settings.local.json"),
-    join40(root, ".claude", "settings.json"),
-    join40(claudeDir(runtime, env), "settings.json")
+    join41(root, ".claude", "settings.local.json"),
+    join41(root, ".claude", "settings.json"),
+    join41(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

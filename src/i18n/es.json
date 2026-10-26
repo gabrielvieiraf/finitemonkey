@@ -555,5 +555,15 @@
   "pause.on": "Compuerta reanudada.",
   "pause.report": "La compuerta no revisó esta parada: la persona la pausó con fm off a las {since}.",
   "pause.no_session": "Todavía no hay una sesión de Claude Code registrada en este proyecto; abre una y vuelve a ejecutarlo, o escribe `fm off` allí.",
-  "pause.error.person_only": "Solo la persona puede pausar o reanudar la compuerta, y esto no parece su terminal (sin TTY, o dentro de Claude Code)"
+  "pause.error.person_only": "Solo la persona puede pausar o reanudar la compuerta, y esto no parece su terminal (sin TTY, o dentro de Claude Code)",
+  "secrets.incident.runbook": "    guía: {link}",
+  "secrets.command.live": "Comprueba si una clave aún funciona en su proveedor (apagado por defecto; solo envía con --send y muestra el host antes)",
+  "secrets.action.live": "enviar una clave a su proveedor",
+  "secrets.live.dry": "No se envió nada. Con --send, el valor de ${variable} iría a {host} ({url}) para comprobar si la clave de {provider} aún funciona. Ejecútalo tú, en tu terminal, con --send.",
+  "secrets.live.contacting": "Contactando {host} ({url}) con la clave; el valor va a curl por la entrada estándar, nunca como argumento.",
+  "secrets.live.live": "La clave en ${variable} aún funciona en {host} (HTTP {status}). Revócala ya: mira la guía en `finitemonkey secrets incident`.",
+  "secrets.live.rejected": "{host} rechazó la clave en ${variable} (HTTP {status}): ya no funciona.",
+  "secrets.live.unknown": "{host} respondió HTTP {status}; eso no dice si la clave en ${variable} funciona. Revísala en la consola del proveedor.",
+  "secrets.live.unreachable": "No se pudo llegar a {host} con curl, así que la clave en ${variable} no se comprobó.",
+  "secrets.live.no_value": "${variable} está vacía o no existe en esta terminal; expórtala antes, no se envió nada"
 }

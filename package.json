@@ -33,6 +33,7 @@
   },
   "files": [
     "dist",
+    "runbooks",
     "LICENSE",
     "NOTICE",
     "README.md"
@@ -55,7 +56,7 @@
     "i18n:check": "node dist/finitemonkey.mjs i18n check --dir src/i18n",
     "bench:startup": "node scripts/bench-startup.mjs",
     "smoke:install": "node scripts/smoke-install.mjs",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:dist && npm test && npm run i18n:check && npm run plugin:validate && npm pack --dry-run && npm run llms:check && npm run schema:check && npm run docs:check",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:dist && npm test && npm run i18n:check && npm run plugin:validate && npm pack --dry-run && npm run llms:check && npm run schema:check && npm run docs:check && npm run runbooks:check",
     "prepublishOnly": "npm run typecheck && npm run check:dist && npm test",
     "prepare": "husky",
     "gif": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts",
@@ -68,6 +69,7 @@
     "budgets": "tsx scripts/budgets.ts",
     "docs": "tsx scripts/build-docs.ts",
     "docs:check": "tsc -p scripts && tsx scripts/build-docs.ts --check",
+    "runbooks:check": "tsx scripts/check-runbooks.ts",
     "e2e:claude": "node --import tsx --test --test-concurrency=1 test/e2e/claude-stop.e2e.ts",
     "plugin:sync": "node scripts/plugin-sync.mjs",
     "plugin:validate": "node scripts/plugin-validate.mjs",
