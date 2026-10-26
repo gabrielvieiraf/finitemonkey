@@ -14,6 +14,7 @@ import { BUNDLE, cli, cliJson, found } from "./support.js";
 
 const runtime = { ...nodeRt, probe: () => found("2.1.300 (Claude Code)"), selfPath: BUNDLE };
 const BIN = toPosixPath(BUNDLE);
+const HOOKS = ["pre-commit", "commit-msg", "pre-push"] as const;
 
 interface Attempt {
   readonly status: number | null;
@@ -39,14 +40,14 @@ const sandbox = async (): Promise<Sandbox> => {
     ["user.name", "Ana"],
     ["user.email", "ana@example.com"],
     ["core.autocrlf", "false"],
-    ["core.hooksPath", ".husky"],
+    ["core.hooksPath", ".husky/_"],
   ] as const)
     git(repo, "config", key, value);
   git(repo, "remote", "add", "origin", "../remote.git");
-  write(repo, ".husky/.keep", "");
+  for (const hook of HOOKS) write(repo, `.husky/_/${hook}`, `#!/bin/sh\nexec sh "$(dirname "$0")/../${hook}" "$@"\n`);
   const init = await cliJson(["init", "--yes", "--bin", BIN], { cwd: toAbsolutePath(repo), runtime, env: {} });
   assert.equal(init.code, 0, init.stdout);
-  for (const name of readdirSync(join(repo, ".husky"))) chmodSync(join(repo, ".husky", name), 0o755);
+  for (const name of readdirSync(join(repo, ".husky", "_"))) chmodSync(join(repo, ".husky", "_", name), 0o755);
   git(repo, "add", "-A");
   git(repo, "commit", "-q", "-m", "chore: install finite monkey");
   git(repo, "push", "-q", "origin", "main");
@@ -66,9 +67,7 @@ after(() => {
 
 describe("init adds steps to the husky hooks", () => {
   it("each hook file has one managed block calling finitemonkey", () => {
-    const hooks = ["pre-commit", "commit-msg", "pre-push"].map((name) =>
-      readFileSync(join(box.repo, ".husky", name), "utf8"),
-    );
+    const hooks = HOOKS.map((name) => readFileSync(join(box.repo, ".husky", name), "utf8"));
     assert.match(hooks[0] ?? "", /secrets scan --staged/);
     assert.match(hooks[1] ?? "", /commit-msg "\$1"/);
     assert.match(hooks[2] ?? "", /push check "\$1"/);

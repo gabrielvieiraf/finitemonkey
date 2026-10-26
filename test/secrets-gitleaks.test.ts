@@ -33,7 +33,21 @@ const MIRRORED = new Set([
 
 const ALIASES: Readonly<Record<string, string>> = { "anthropic-admin-api-key": "anthropic-api-key" };
 
-const KNOWN_DIFFERENCES: ReadonlySet<string> = new Set([]);
+const KNOWN_DIFFERENCES: ReadonlyMap<string, string> = new Map([
+  [
+    "positive 1 (aws-secret-access-key): generic-api-key only gitleaks",
+    "gitleaks has no AWS secret rule and reports it as generic; Finite Monkey reports aws-secret-access-key",
+  ],
+  [
+    "positive 15 (openai-api-key): openai-api-key only Finite Monkey",
+    "the Finite Monkey rule also covers sk-proj- keys; gitleaks matches only the older layout",
+  ],
+  [
+    "positive 15 (openai-api-key): generic-api-key only gitleaks",
+    "same key as above, reported by the gitleaks generic rule",
+  ],
+  ["negative Stripe test key: stripe-access-token only gitleaks", "Finite Monkey flags only live Stripe keys"],
+]);
 
 interface Case {
   readonly id: string;
@@ -75,8 +89,7 @@ const divergences = (found: ReadonlyMap<string, ReadonlySet<string>>): readonly 
     const theirs = new Set([...(found.get(fileOf(index)) ?? [])].filter((id) => MIRRORED.has(id)));
     return [...MIRRORED]
       .filter((rule) => ours.has(rule) !== theirs.has(rule))
-      .map((rule) => `${item.id}: ${rule} ${ours.has(rule) ? "only Finite Monkey" : "only gitleaks"}`)
-      .filter((line) => !KNOWN_DIFFERENCES.has(line));
+      .map((rule) => `${item.id}: ${rule} ${ours.has(rule) ? "only Finite Monkey" : "only gitleaks"}`);
   });
 
 const available = spawnSync("gitleaks", ["version"], { encoding: "utf8" }).status === 0;
@@ -96,8 +109,11 @@ describe("embedded secret rules and gitleaks agree on the shared corpus", () => 
       const report = join(dir, "..", `${String(process.pid)}-gitleaks.json`);
       const found = gitleaksFindings(dir, report);
       rmSync(report, { force: true });
-      const diff = divergences(found);
-      assert.deepEqual(diff, [], `rule divergence:\n${diff.join("\n")}`);
+      const all = divergences(found);
+      const unexpected = all.filter((line) => !KNOWN_DIFFERENCES.has(line));
+      assert.deepEqual(unexpected, [], `rule divergence:\n${unexpected.join("\n")}`);
+      const stale = [...KNOWN_DIFFERENCES.keys()].filter((line) => !all.includes(line));
+      assert.deepEqual(stale, [], `known differences that no longer happen:\n${stale.join("\n")}`);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
