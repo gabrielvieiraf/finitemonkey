@@ -18,6 +18,7 @@ import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
+import { statuslineCommand } from "./statusline.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
@@ -53,6 +54,7 @@ export const REGISTRY = [
   ciGateCommand,
   lookCommand,
   reviewPacketCommand,
+  statuslineCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

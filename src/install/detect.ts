@@ -111,7 +111,7 @@ const scopeAuthorities = (text: string | undefined, source: SettingsScope): read
   return [...stops, ...pluginAuthorities(parsed.value, source)];
 };
 
-const userSettingsText = (project: Project, env: Env): string | undefined => {
+export const userSettingsText = (project: Project, env: Env): string | undefined => {
   const home = env["CLAUDE_CONFIG_DIR"] ?? env["HOME"] ?? env["USERPROFILE"];
   if (home === undefined) return undefined;
   const file =

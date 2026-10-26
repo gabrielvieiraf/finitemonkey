@@ -647,7 +647,13 @@
     "reason.human.generic": "machine",
     "review.command.packet": "machine",
     "review.guard.read_only": "machine",
-    "review.error.no_base": "machine"
+    "review.error.no_base": "machine",
+    "command.statusline.summary": "machine",
+    "statusline.gate.green": "machine",
+    "statusline.gate.red": "machine",
+    "statusline.gate.incomplete": "machine",
+    "statusline.gate.did_not_run": "machine",
+    "statusline.context": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1297,6 +1303,12 @@
     "reason.human.generic": "machine",
     "review.command.packet": "machine",
     "review.guard.read_only": "machine",
-    "review.error.no_base": "machine"
+    "review.error.no_base": "machine",
+    "command.statusline.summary": "machine",
+    "statusline.gate.green": "machine",
+    "statusline.gate.red": "machine",
+    "statusline.gate.incomplete": "machine",
+    "statusline.gate.did_not_run": "machine",
+    "statusline.context": "machine"
   }
 }

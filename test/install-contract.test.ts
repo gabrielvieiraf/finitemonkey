@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import type { ExecRequest } from "../src/core/runtime.js";
 import { ExitCode } from "../src/exit-codes.js";
 import { LOCK_FILE, SETTINGS_FILE } from "../src/install/layout.js";
+import { isOwnStatusLine } from "../src/install/statusline.js";
 import { at, repo, ROOT } from "./install-support.js";
 import { cliJson, fakeRuntime, field, found, missing, parseBody } from "./support.js";
 
@@ -62,14 +63,11 @@ describe("install and uninstall contract for known failure patterns", () => {
     assert.equal(ownHandlers(settings), events.length);
   });
 
-  it("a statusline the person set survives init and uninstall, and none of ours is left behind", async () => {
+  it("a statusline the person set is wrapped by init and comes back on uninstall, and none of ours is left behind", async () => {
     const original = `${JSON.stringify({ statusLine: { type: "command", command: "my-status" } }, null, 2)}\n`;
     const fs = repo({ [SETTINGS_FILE]: original });
     await runWith(fs, ["init", "--yes"]);
-    assert.deepEqual(field(parseBody(fs.read(at(SETTINGS_FILE)) ?? "{}"), "statusLine"), {
-      type: "command",
-      command: "my-status",
-    });
+    assert.ok(isOwnStatusLine(field(parseBody(fs.read(at(SETTINGS_FILE)) ?? "{}"), "statusLine")));
     await runWith(fs, ["uninstall", "--yes", "--purge"]);
     assert.equal(fs.read(at(SETTINGS_FILE)), original);
     const bare = repo();
