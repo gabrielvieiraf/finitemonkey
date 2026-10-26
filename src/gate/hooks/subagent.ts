@@ -23,6 +23,7 @@ const KNOWN_KINDS = new Set([
   "prose",
   "worktree",
   "merge",
+  "review",
 ]);
 
 const requirementText = (t: Translate, check: AcceptanceCheck): string => {

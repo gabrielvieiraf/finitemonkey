@@ -6,6 +6,7 @@ import type { GateTrust } from "../task/state.js";
 import type { AcceptanceCheck, CheckKind, TaskContract } from "../task/types.js";
 import type { Change, Git } from "./git.js";
 import type { PrStatus } from "./pr.js";
+import type { SizeVerdict } from "./size.js";
 
 export interface BaselineEntry {
   readonly exitCode: number | null;
@@ -30,6 +31,7 @@ export interface GateContext {
   readonly pr: () => PrStatus;
   readonly mask: (text: string) => string;
   readonly baseline: Baseline | undefined;
+  readonly size?: SizeVerdict;
 }
 
 export interface CheckOutcome {

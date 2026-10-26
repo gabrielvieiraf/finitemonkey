@@ -508,7 +508,13 @@
     "history.pattern.no_verify": "machine",
     "history.pattern.force_push": "machine",
     "history.pattern.test_skip": "machine",
-    "history.estimate": "machine"
+    "history.estimate": "machine",
+    "gate.require.review": "machine",
+    "gate.size.declared": "machine",
+    "gate.size.grew": "machine",
+    "gate.size.sensitive": "machine",
+    "gate.review.missing": "machine",
+    "gate.review.done": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1019,6 +1025,12 @@
     "history.pattern.no_verify": "machine",
     "history.pattern.force_push": "machine",
     "history.pattern.test_skip": "machine",
-    "history.estimate": "machine"
+    "history.estimate": "machine",
+    "gate.require.review": "machine",
+    "gate.size.declared": "machine",
+    "gate.size.grew": "machine",
+    "gate.size.sensitive": "machine",
+    "gate.review.missing": "machine",
+    "gate.review.done": "machine"
   }
 }

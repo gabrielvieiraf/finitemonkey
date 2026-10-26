@@ -507,5 +507,11 @@
   "history.pattern.no_verify": "{count, plural, one {# comando git} other {# comandos git}} com --no-verify",
   "history.pattern.force_push": "{count, plural, one {# push forçado} other {# pushes forçados}}",
   "history.pattern.test_skip": "{count, plural, one {# edição} other {# edições}} de teste que acrescentaram .skip, .only ou marcador de pular",
-  "history.estimate": "São estimativas por padrão de texto, não evidência; nada foi salvo e nada saiu desta máquina."
+  "history.estimate": "São estimativas por padrão de texto, não evidência; nada foi salvo e nada saiu desta máquina.",
+  "gate.require.review": "um subagente revisor leu a mudança no estado atual",
+  "gate.size.declared": "tamanho {effective}: {files, plural, one {# arquivo} other {# arquivos}}, {lines, plural, one {# linha} other {# linhas}}",
+  "gate.size.grew": "declarada {declared}, o diff a torna {effective}: {files, plural, one {# arquivo} other {# arquivos}}, {lines, plural, one {# linha} other {# linhas}}",
+  "gate.size.sensitive": "caminho sensível alterado: {file}",
+  "gate.review.missing": "nenhuma revisão do estado atual: rode um subagente revisor no diff, ou a pessoa escreve `fm: approve {check} <motivo>` no chat",
+  "gate.review.done": "revisado por {agent} em {at}"
 }

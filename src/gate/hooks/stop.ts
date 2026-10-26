@@ -3,9 +3,11 @@ import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.
 import type { Translate } from "../../i18n/translate.js";
 import { fmPaths } from "../../task/paths.js";
 import { closeTask, readState, writeState } from "../../task/state.js";
+import { gitAt, treeHash } from "../git.js";
 import type { GateFailure } from "../prepare.js";
 import { blockReason, itemDetails, unverifiedSummary } from "../render.js";
 import type { GateReport } from "../report.js";
+import { recordReview, REVIEWER_AGENT } from "../review.js";
 import { type GateRun, runGate } from "../run.js";
 import { allowWith, findRepoRoot, gateBudget, human, sessionCwd } from "./common.js";
 import { nextBlock, readCounter, saveCounter } from "./counter.js";
@@ -126,4 +128,16 @@ const isOwnWorktree = (input: HookInput): boolean => {
   return front !== undefined && main !== undefined && front !== main;
 };
 
-export const subagentStopGate: HookHandler = (input) => (isOwnWorktree(input) ? stopGate(input) : { kind: "allow" });
+const noteReview = (input: HookInput): void => {
+  const agent = textField(input.payload.raw, "agent_type") ?? "";
+  if (!REVIEWER_AGENT.test(agent)) return;
+  const root = findRepoRoot(input.runtime, sessionCwd(input));
+  if (root === undefined) return;
+  const tree = treeHash(gitAt(input.runtime, root));
+  if (tree !== undefined) recordReview(input.runtime, fmPaths(root), tree, agent);
+};
+
+export const subagentStopGate: HookHandler = (input) => {
+  noteReview(input);
+  return isOwnWorktree(input) ? stopGate(input) : { kind: "allow" };
+};
