@@ -16,9 +16,9 @@ export const INSTALLED_HOOKS: readonly HookSpec[] = [
   { event: "UserPromptSubmit", timeout: 10, guard: true },
   { event: "PreToolUse", timeout: 10, guard: true },
   { event: "PostToolUse", timeout: 30, guard: false },
-  { event: "Stop", timeout: 120, guard: false },
+  { event: "Stop", timeout: 600, guard: false },
   { event: "SubagentStart", timeout: 30, guard: false },
-  { event: "SubagentStop", timeout: 120, guard: false },
+  { event: "SubagentStop", timeout: 600, guard: false },
   { event: "PreCompact", timeout: 30, guard: false },
   { event: "ConfigChange", timeout: 10, guard: true },
 ];

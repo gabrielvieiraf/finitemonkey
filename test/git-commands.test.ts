@@ -139,7 +139,7 @@ describe("hooks through the CLI", () => {
         hook_event_name: "PreToolUse",
         session_id: "s1",
         tool_name: "Bash",
-        tool_input: { command: "HUSKY=0 git push --force origin main" },
+        tool_input: { command: "git push --force origin main" },
       });
       const run = fm(repo.root, ["hook", "PreToolUse"], payload);
       assert.equal(run.code, 2, run.stdout);

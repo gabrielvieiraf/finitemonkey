@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import {
+  deadlineFor,
   DEFAULT_HOOK_DEADLINE_MS,
   HOOK_EVENTS,
   HOOK_POLICIES,
@@ -181,4 +182,18 @@ describe("finitemonkey hook", () => {
     assert.equal(result.code, 0);
     assert.equal(field(result.body, "continue"), true);
   });
+});
+describe("hook deadlines per event", () => {
+  const cases = [
+    ["Stop", undefined, 570_000],
+    ["SubagentStop", undefined, 570_000],
+    ["SessionStart", undefined, 20_000],
+    ["PreToolUse", undefined, DEFAULT_HOOK_DEADLINE_MS],
+    ["Stop", "1500", 1500],
+  ] as const;
+  for (const [event, raw, ms] of cases) {
+    it(`${event} with ${String(raw)} waits ${String(ms)} ms`, () => {
+      assert.equal(deadlineFor(event, raw), ms);
+    });
+  }
 });

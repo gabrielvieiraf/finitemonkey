@@ -144,12 +144,85 @@
     "install_failed",
     "not_installed",
     "install_outdated",
-    "git_not_repository",
+    "gate_failed",
+    "gate_incomplete",
+    "gate_not_run",
+    "not_a_git_repo",
+    "task_exists",
+    "task_invalid",
+    "task_not_found",
     "git_snapshot_failed",
     "git_nothing_to_undo",
     "git_undo_failed",
     "git_rescue_failed",
     "merge_lost_work",
     "merge_unanalyzable"
-  ]
+  ],
+  "gate": {
+    "required": {
+      "schema": "string",
+      "task": "string",
+      "implicit": "boolean",
+      "goal": "string",
+      "treeHash": "string",
+      "base": "string",
+      "source": "string",
+      "contractEdited": "boolean",
+      "verdict": "string",
+      "counts": "object",
+      "items": "array",
+      "decisionsNeeded": "array",
+      "fastPath": "boolean"
+    },
+    "schema": "finitemonkey/gate@1",
+    "verdicts": ["passed", "failed", "incomplete"]
+  },
+  "gateItem": {
+    "required": {
+      "id": "string",
+      "kind": "string",
+      "status": "string",
+      "notes": "array",
+      "stale": "boolean"
+    },
+    "optional": {
+      "reason": "string",
+      "command": "string",
+      "durationMs": "number",
+      "releasedBy": "string",
+      "at": "string"
+    },
+    "statuses": ["passed", "failed", "unverified"]
+  },
+  "evidence": {
+    "required": {
+      "schema": "string",
+      "task": "string",
+      "check": "string",
+      "kind": "string",
+      "status": "string",
+      "treeHash": "string",
+      "at": "string",
+      "notes": "array"
+    },
+    "optional": {
+      "command": "string",
+      "stdoutSha256": "string",
+      "durationMs": "number",
+      "reason": "string",
+      "releasedBy": "string",
+      "failures": "array",
+      "testCount": "number"
+    },
+    "schema": "finitemonkey/evidence@1"
+  },
+  "taskNew": {
+    "required": {
+      "schema": "string",
+      "file": "string",
+      "active": "boolean",
+      "contract": "object"
+    },
+    "schema": "finitemonkey/task@1"
+  }
 }

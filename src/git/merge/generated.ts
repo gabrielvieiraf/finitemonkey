@@ -73,10 +73,17 @@ const resultCommit = (runtime: Runtime, repo: Repo, inputs: MergeInputs): Parsed
 };
 
 const runGenerator = (runtime: Runtime, dir: string, command: string): Parsed<undefined> => {
-  const [first] = normalizeCommand(command).commands;
-  if (first === undefined) return reject(`empty generator: ${command}`);
-  const result = runtime.exec(first.program, first.args, toAbsolutePath(dir), GENERATOR_TIMEOUT_MS);
-  return result.ok ? accept(undefined) : reject(`generator failed: ${command}: ${result.stderr.trim().slice(0, 200)}`);
+  if (normalizeCommand(command).commands.length === 0) return reject(`empty generator: ${command}`);
+  const result = runtime.exec({
+    command,
+    args: [],
+    cwd: toAbsolutePath(dir),
+    timeoutMs: GENERATOR_TIMEOUT_MS,
+    shell: true,
+  });
+  return result.exitCode === 0
+    ? accept(undefined)
+    : reject(`generator failed: ${command}: ${result.stderr.trim().slice(0, 200)}`);
 };
 
 export const verifyGenerated = (

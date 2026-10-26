@@ -9,7 +9,7 @@ import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import type { Ctx, Env, TextSource } from "../src/core/context.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../src/core/parsed.js";
 import { run } from "../src/core/run.js";
-import type { GitResult, ProbeResult, Runtime } from "../src/core/runtime.js";
+import type { ExecRequest, ExecResult, GitResult, ProbeResult, Runtime } from "../src/core/runtime.js";
 import { detectLang } from "../src/i18n/languages.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { type MemoryFs, memoryFs } from "./memory-fs.js";
@@ -35,9 +35,28 @@ export interface FakeRuntimeOptions {
   readonly gitLines?: (args: readonly string[]) => readonly string[] | undefined;
   readonly fs?: MemoryFs;
   readonly selfPath?: AbsolutePath;
+  readonly exec?: (request: ExecRequest) => ExecResult | undefined;
+  readonly spawned?: string[][];
   readonly gitWith?: Runtime["gitWith"];
-  readonly exec?: Runtime["exec"];
 }
+
+export const execResult = (exitCode: number | null, stdout = "", stderr = ""): ExecResult => ({
+  found: true,
+  exitCode,
+  stdout,
+  stderr,
+  timedOut: false,
+  durationMs: 1,
+});
+
+export const execMissing: ExecResult = { ...execResult(null), found: false };
+
+const appendTo =
+  (fs: Pick<Runtime, "readText" | "writeText">): Runtime["appendText"] =>
+  (path, text) => {
+    const before = fs.readText(path);
+    return fs.writeText(path, `${before.ok ? before.value : ""}${text}`);
+  };
 
 export const gitMissing: GitResult = { found: false, ok: false, stdout: "" };
 
@@ -60,24 +79,32 @@ const timers: Readonly<Record<TimerMode, Runtime["startTimer"]>> = {
   never: () => () => undefined,
 };
 
-export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => ({
-  ...(options.fs ?? memoryFs({ [BUNDLE]: BUNDLE_TEXT, ...options.files }, [], options.now)),
-  nodeVersion: options.nodeVersion ?? "22.11.0",
-  probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
-  startTimer: timers[options.timer ?? "real"],
-  git: (args) => options.git?.(args) ?? gitMissing,
-  gitLines: (args, _cwd, onLine) => {
-    const lines = options.gitLines?.(args);
-    if (lines === undefined) return Promise.resolve(gitMissing);
-    for (const line of lines) onLine(line);
-    return Promise.resolve({ found: true, ok: true, stdout: "" });
-  },
-  selfPath: options.selfPath ?? BUNDLE,
-  gitWith: options.gitWith ?? ((args) => ({ ...(options.git?.(args) ?? gitMissing), stderr: "", timedOut: false })),
-  exec: options.exec ?? (() => ({ found: false, ok: false, status: null, stdout: "", stderr: "", timedOut: false })),
-  realpath: (path) => path,
-  homeDir: () => "/home/test",
-});
+export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
+  const fs = options.fs ?? memoryFs({ [BUNDLE]: BUNDLE_TEXT, ...options.files }, [], options.now);
+  return {
+    ...fs,
+    nodeVersion: options.nodeVersion ?? "22.11.0",
+    probe: (command) => options.tools?.[command] ?? DEFAULT_TOOLS[command] ?? missing,
+    startTimer: timers[options.timer ?? "real"],
+    git: (args) => options.git?.(args) ?? gitMissing,
+    gitLines: (args, _cwd, onLine) => {
+      const lines = options.gitLines?.(args);
+      if (lines === undefined) return Promise.resolve(gitMissing);
+      for (const line of lines) onLine(line);
+      return Promise.resolve({ found: true, ok: true, stdout: "" });
+    },
+    selfPath: options.selfPath ?? BUNDLE,
+    exec: (request) => options.exec?.(request) ?? execMissing,
+    appendText: appendTo(fs),
+    spawnSelf: (args) => {
+      options.spawned?.push([...args]);
+      return true;
+    },
+    gitWith: options.gitWith ?? ((args) => ({ ...(options.git?.(args) ?? gitMissing), stderr: "", timedOut: false })),
+    realpath: (path) => path,
+    homeDir: () => "/home/test",
+  };
+};
 
 const sink = (): { readonly write: (chunk: string) => void; readonly text: () => string } => {
   const chunks: string[] = [];

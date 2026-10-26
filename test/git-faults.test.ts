@@ -6,10 +6,12 @@ import { describe, it } from "node:test";
 
 import type { AbsolutePath } from "../src/core/brand.js";
 import { reject } from "../src/core/parsed.js";
+import { worktreeGateStatus } from "../src/git/gate-status.js";
 import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { gitPostToolUse, gitSessionStart } from "../src/git/hooks/session.js";
-import { gitStop } from "../src/git/hooks/stop.js";
 import { JOURNAL_FILE } from "../src/git/journal.js";
+import { ownerKey } from "../src/git/ownership.js";
+import { openRepo } from "../src/git/repo.js";
 import { BACKUP_PREFIX } from "../src/git/snapshot.js";
 import { bash, edit, git, hook, initRepo, reasonOf, runtime, SESSION, t, tempDir, write } from "./git-support.js";
 
@@ -56,30 +58,36 @@ const backups = (root: string): readonly string[] =>
     .filter((line) => line !== "");
 
 describe("git fault injection (spec 4.16, Etapa 1)", () => {
-  it("case 10: Stop refuses done with session changes uncommitted, then unpushed, then passes", async () => {
+  const status = (root: AbsolutePath) => {
+    const repo = openRepo(runtime, root);
+    assert.ok(repo);
+    return worktreeGateStatus(runtime, repo, ownerKey(SESSION));
+  };
+
+  it("case 10: the worktree check sees session changes uncommitted, then unpushed, then clean", async () => {
     const box = sandbox();
     try {
       await hook(gitSessionStart, "SessionStart", box.root);
       await edited(box.root, "src/app.ts", "export const app = 2;\n");
-      const dirty = await hook(gitStop, "Stop", box.root);
-      assert.equal(dirty.kind, "block");
-      assert.match(reasonOf(dirty), /src\/app\.ts/);
+      assert.deepEqual(status(box.root).dirty, ["src/app.ts"]);
       git(box.root, "commit", "-q", "-am", "feat: app 2");
-      const unpushed = await hook(gitStop, "Stop", box.root);
-      assert.match(reasonOf(unpushed), /1 commit\(s\)/);
+      const committed = status(box.root);
+      assert.deepEqual(committed.dirty, []);
+      assert.equal(committed.unpushed.length, 1);
+      assert.equal(committed.branch, "feat/task");
       git(box.root, "push", "-q");
-      assert.equal((await hook(gitStop, "Stop", box.root)).kind, "allow");
+      assert.deepEqual(status(box.root), { branch: "feat/task", dirty: [], unpushed: [] });
     } finally {
       box.dispose();
     }
   });
 
-  it("case 10: Stop ignores files that were dirty before the session started", async () => {
+  it("case 10: the worktree check ignores files that were dirty before the session started", async () => {
     const box = sandbox();
     try {
       write(box.root, "notes.txt", "mine\n");
       await hook(gitSessionStart, "SessionStart", box.root);
-      assert.equal((await hook(gitStop, "Stop", box.root)).kind, "allow");
+      assert.deepEqual(status(box.root).dirty, []);
     } finally {
       box.dispose();
     }
@@ -208,6 +216,7 @@ describe("git fault injection (spec 4.16, Etapa 1)", () => {
         cwd: box.root,
         runtime: broken,
         t,
+        env: {},
         payload: {
           hookEventName: "PreToolUse",
           sessionId: SESSION,

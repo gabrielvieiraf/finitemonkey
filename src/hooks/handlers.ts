@@ -1,13 +1,13 @@
 import type { AbsolutePath } from "../core/brand.js";
-import type { JsonObject } from "../core/parsed.js";
+import type { Env } from "../core/context.js";
+import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
-import { gitPreToolUse } from "../git/hooks/pre-tool.js";
-import { gitPostToolUse, gitSessionStart } from "../git/hooks/session.js";
-import { gitStop } from "../git/hooks/stop.js";
+import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
+import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
-import type { HookEvent } from "./events.js";
+import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 
 export interface HookInput {
@@ -16,10 +16,17 @@ export interface HookInput {
   readonly cwd: AbsolutePath;
   readonly runtime: Runtime;
   readonly t: Translate;
+  readonly env: Env;
 }
 
 export type HookDecision =
-  { readonly kind: "allow"; readonly output?: JsonObject } | { readonly kind: "block"; readonly reason: string };
+  | { readonly kind: "allow"; readonly output?: JsonObject }
+  | {
+      readonly kind: "block";
+      readonly reason: string;
+      readonly output?: JsonObject;
+      readonly persistent?: boolean;
+    };
 
 export type HookHandler = (input: HookInput) => HookDecision | Promise<HookDecision>;
 
@@ -27,12 +34,63 @@ export type HookHandlers = Readonly<Partial<Record<HookEvent, readonly HookHandl
 
 export const allow: HookHandler = () => ({ kind: "allow" });
 
-export const DEFAULT_HANDLERS: HookHandlers = {
-  SessionStart: [gitSessionStart],
-  SubagentStart: [gitSessionStart],
-  PreToolUse: [secretsPreToolUse, gitPreToolUse],
-  UserPromptSubmit: [secretsUserPromptSubmit],
-  PostToolUse: [secretsPostToolUse, gitPostToolUse],
-  Stop: [gitStop],
-  SubagentStop: [gitStop],
+const DECISION_RANK: Readonly<Record<string, number>> = { allow: 0, defer: 0, ask: 1, deny: 2 };
+
+const joinText = (left: unknown, right: unknown): unknown => {
+  if (typeof left !== "string" || left === "") return right;
+  if (typeof right !== "string" || right === "") return left;
+  return `${left}\n${right}`;
 };
+
+const mergeSpecific = (left: unknown, right: unknown): unknown => {
+  if (!isRecord(left)) return right;
+  if (!isRecord(right)) return left;
+  const merged: Record<string, unknown> = { ...left, ...right };
+  merged["additionalContext"] = joinText(left["additionalContext"], right["additionalContext"]);
+  const leftRank = DECISION_RANK[String(left["permissionDecision"])] ?? -1;
+  const rightRank = DECISION_RANK[String(right["permissionDecision"])] ?? -1;
+  if (leftRank > rightRank) {
+    merged["permissionDecision"] = left["permissionDecision"];
+    merged["permissionDecisionReason"] = left["permissionDecisionReason"];
+  }
+  return Object.fromEntries(Object.entries(merged).filter(([, value]) => value !== undefined));
+};
+
+export const mergeOutputs = (left: JsonObject, right: JsonObject | undefined): JsonObject => {
+  if (right === undefined) return left;
+  const merged: Record<string, unknown> = { ...left, ...right };
+  const systemMessage = joinText(left["systemMessage"], right["systemMessage"]);
+  if (systemMessage !== undefined) merged["systemMessage"] = systemMessage;
+  const specific = mergeSpecific(left["hookSpecificOutput"], right["hookSpecificOutput"]);
+  if (specific !== undefined) merged["hookSpecificOutput"] = specific;
+  return merged;
+};
+
+export const composeDecisions = async (input: HookInput, handlers: readonly HookHandler[]): Promise<HookDecision> => {
+  let output: JsonObject = {};
+  for (const handler of handlers) {
+    const decision = await handler(input);
+    if (decision.kind === "block") return decision;
+    output = mergeOutputs(output, decision.output);
+  }
+  return { kind: "allow", output };
+};
+
+export const mergeHandlers = (...sets: readonly HookHandlers[]): HookHandlers => {
+  const merged: Partial<Record<HookEvent, readonly HookHandler[]>> = {};
+  for (const set of sets) {
+    for (const event of HOOK_EVENTS) {
+      const list = set[event];
+      if (list !== undefined) merged[event] = [...(merged[event] ?? []), ...list];
+    }
+  }
+  return merged;
+};
+
+export const SECRETS_HANDLERS: HookHandlers = {
+  PreToolUse: [secretsPreToolUse],
+  UserPromptSubmit: [secretsUserPromptSubmit],
+  PostToolUse: [secretsPostToolUse],
+};
+
+export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(SECRETS_HANDLERS, PORTAO_HANDLERS, GIT_HANDLERS);

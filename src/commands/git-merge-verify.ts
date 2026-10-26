@@ -2,7 +2,7 @@ import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
-import { findingLabel } from "../git/hooks/stop.js";
+import { findingLabel } from "../git/gate-status.js";
 import { mergeCommitsSince, mergeInProgress } from "../git/merge/inputs.js";
 import { verifyMerge, type VerifyReport } from "../git/merge/verify.js";
 import type { Repo } from "../git/repo.js";

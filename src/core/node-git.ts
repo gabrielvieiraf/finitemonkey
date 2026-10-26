@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { createInterface } from "node:readline";
 
-import type { Exec, Git, GitLines, GitResult, GitWith } from "./runtime.js";
+import type { Git, GitLines, GitResult, GitWith } from "./runtime.js";
 
 const MAX_BUFFER = 256 * 1024 * 1024;
 const GIT_ENV = { ...process.env, GIT_PAGER: "cat", GIT_TERMINAL_PROMPT: "0", LC_ALL: "C" };
@@ -59,26 +59,6 @@ export const nodeGitWith: GitWith = (args, cwd, options) => {
   return {
     found: !notFound(result.error),
     ok: result.error === undefined && result.status === 0,
-    stdout: textOf(result.stdout),
-    stderr: textOf(result.stderr),
-    timedOut,
-  };
-};
-
-export const nodeExec: Exec = (command, args, cwd, timeoutMs) => {
-  const result = spawnSync(command, [...args], {
-    cwd,
-    encoding: "utf8",
-    maxBuffer: MAX_BUFFER,
-    windowsHide: true,
-    timeout: timeoutMs,
-    shell: process.platform === "win32",
-  });
-  const timedOut = result.error instanceof Error && "code" in result.error && result.error.code === "ETIMEDOUT";
-  return {
-    found: !notFound(result.error),
-    ok: result.error === undefined && result.status === 0,
-    status: result.status,
     stdout: textOf(result.stdout),
     stderr: textOf(result.stderr),
     timedOut,

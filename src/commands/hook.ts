@@ -1,7 +1,7 @@
 import { stringOption } from "../core/args.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom } from "../core/result.js";
-import { HOOK_EVENTS, type HookEvent, parseDeadline, parseHookEvent } from "../hooks/events.js";
+import { deadlineFor, HOOK_EVENTS, type HookEvent, parseHookEvent } from "../hooks/events.js";
 import { DEFAULT_HANDLERS } from "../hooks/handlers.js";
 import { type HookVerdict, runHook } from "../hooks/runner.js";
 import { PLUGIN_VIA, projectOwnsHooks, YIELD_STDOUT } from "../install/plugin-yield.js";
@@ -34,12 +34,13 @@ export const hookCommand: CommandSpec = {
     }
     const outcome = await runHook(event, {
       stdin: ctx.io.stdin,
-      deadlineMs: parseDeadline(ctx.env["FINITEMONKEY_HOOK_DEADLINE_MS"]),
+      deadlineMs: deadlineFor(event, ctx.env["FINITEMONKEY_HOOK_DEADLINE_MS"]),
       handlers: DEFAULT_HANDLERS,
       cwd: ctx.cwd,
       t: ctx.t,
       startTimer: ctx.runtime.startTimer,
       runtime: ctx.runtime,
+      env: ctx.env,
     });
     const data: HookData = { event, verdict: outcome.verdict };
     const output = { stdout: outcome.stdout, stderr: outcome.stderr };

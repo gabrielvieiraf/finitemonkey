@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { type AbsolutePath, toAbsolutePath } from "./brand.js";
+import { nodeAppendText, nodeExec, nodeSpawnSelf } from "./node-exec.js";
 import {
   nodeListDir,
   nodeLock,
@@ -15,7 +16,7 @@ import {
   nodeWriteAtomic,
   nodeWriteText,
 } from "./node-fs.js";
-import { nodeExec, nodeGit, nodeGitLines, nodeGitWith } from "./node-git.js";
+import { nodeGit, nodeGitLines, nodeGitWith } from "./node-git.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Probe, Runtime } from "./runtime.js";
 
@@ -65,6 +66,8 @@ export const nodeRealpath = (path: string): string => {
   }
 };
 
+const SELF_PATH = toAbsolutePath(fileURLToPath(import.meta.url));
+
 export const nodeRuntime = (): Runtime => ({
   nodeVersion: process.versions.node,
   readText: nodeReadText,
@@ -87,9 +90,11 @@ export const nodeRuntime = (): Runtime => ({
   mkdir: nodeMkdir,
   remove: nodeRemove,
   lock: nodeLock,
-  selfPath: toAbsolutePath(fileURLToPath(import.meta.url)),
-  gitWith: nodeGitWith,
+  selfPath: SELF_PATH,
   exec: nodeExec,
+  appendText: nodeAppendText,
+  spawnSelf: nodeSpawnSelf(SELF_PATH),
+  gitWith: nodeGitWith,
   realpath: nodeRealpath,
   homeDir: homedir,
 });

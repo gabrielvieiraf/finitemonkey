@@ -5,8 +5,8 @@ import { openRepo, type Repo } from "../git/repo.js";
 import type { MessageKey } from "../i18n/catalogs.js";
 
 export const notRepository = (dir: string): Problem => ({
-  code: "git_not_repository",
-  messageKey: "git.error.not_repository",
+  code: "not_a_git_repo",
+  messageKey: "error.not_a_git_repo",
   params: { dir },
   fix: "git init",
   exitCode: ExitCode.NotConfigured,

@@ -43,8 +43,8 @@ export interface ProdGuard {
 
 const sshHostname = (runtime: Runtime, root: AbsolutePath, destination: string): string | undefined => {
   if (!/^[A-Za-z0-9._@-]+$/.test(destination)) return undefined;
-  const result = runtime.exec("ssh", ["-G", destination], root, SSH_LOOKUP_MS);
-  if (!result.ok) return undefined;
+  const result = runtime.exec({ command: "ssh", args: ["-G", destination], cwd: root, timeoutMs: SSH_LOOKUP_MS });
+  if (result.exitCode !== 0) return undefined;
   const line = result.stdout.split("\n").find((entry) => entry.startsWith("hostname "));
   return line === undefined ? undefined : hostKey(line.slice("hostname ".length));
 };

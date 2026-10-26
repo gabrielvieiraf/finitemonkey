@@ -57,7 +57,7 @@
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "Stop", "--via", "plugin"],
-            "timeout": 120
+            "timeout": 600
           }
         ]
       }
@@ -81,7 +81,7 @@
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "SubagentStop", "--via", "plugin"],
-            "timeout": 120
+            "timeout": 600
           }
         ]
       }

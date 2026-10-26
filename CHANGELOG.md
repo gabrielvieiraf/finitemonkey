@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.4](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.3...v0.1.0-next.4) (2026-10-26)
+
+### Features
+
+* **gate:** done gate with task contract, self-run evidence and test guards ([#20](https://github.com/gabrielvieiraf/finitemonkey/issues/20)) ([32a2372](https://github.com/gabrielvieiraf/finitemonkey/commit/32a237295e68021955148af7fe70804626d48731))
+
 ## [0.1.0-next.3](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.2...v0.1.0-next.3) (2026-10-25)
 
 ### Features

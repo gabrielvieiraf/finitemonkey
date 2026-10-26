@@ -67,6 +67,7 @@ export const hook = async (
     cwd,
     runtime,
     t,
+    env: {},
     payload: {
       hookEventName: event,
       sessionId: SESSION,

@@ -1,0 +1,41 @@
+import type { YamlValue } from "../core/yaml/scalar.js";
+import type { AcceptanceCheck, TaskContract } from "./types.js";
+
+const checkYaml = (check: AcceptanceCheck): YamlValue => ({
+  id: check.id,
+  check: check.kind,
+  ...(check.run === undefined ? {} : { run: check.run }),
+  ...(check.timeoutS === undefined ? {} : { timeout_s: check.timeoutS }),
+  ...(check.require === undefined ? {} : { require: [...check.require] }),
+  ...(check.requireOpen === undefined ? {} : { require_open: check.requireOpen }),
+  ...(check.description === undefined ? {} : { description: check.description }),
+});
+
+export const contractYaml = (contract: TaskContract): YamlValue => ({
+  id: contract.id,
+  goal: contract.goal,
+  size: contract.size,
+  ...(contract.base === undefined ? {} : { base: contract.base }),
+  scope: {
+    paths: [...contract.scope.paths],
+    ...(contract.scope.diffBudget === undefined ? {} : { diff_budget: { ...contract.scope.diffBudget } }),
+    tests_protected: contract.scope.testsProtected,
+  },
+  acceptance: contract.acceptance.map(checkYaml),
+  decisions_needed: [...contract.decisionsNeeded],
+});
+
+export const contractJson = (contract: TaskContract): Readonly<Record<string, unknown>> => ({
+  id: contract.id,
+  goal: contract.goal,
+  size: contract.size,
+  base: contract.base ?? null,
+  implicit: contract.implicit,
+  scope: {
+    paths: contract.scope.paths,
+    diffBudget: contract.scope.diffBudget ?? null,
+    testsProtected: contract.scope.testsProtected,
+  },
+  acceptance: contract.acceptance.map((check) => ({ ...check })),
+  decisionsNeeded: contract.decisionsNeeded,
+});
