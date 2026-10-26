@@ -17,7 +17,7 @@ import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 
-const ROOT = "/home/ana/project";
+const ROOT = toAbsolutePath("/home/ana/project");
 const t = createTranslator("en");
 
 const input = (runtime: Runtime = fakeRuntime()): HookInput => ({

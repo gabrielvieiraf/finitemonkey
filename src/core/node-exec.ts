@@ -7,6 +7,8 @@ import { accept, type Parsed, reject } from "./parsed.js";
 import type { Exec } from "./runtime.js";
 
 const SHELL_NOT_FOUND = new Set([127, 9009]);
+const CMD_NOT_FOUND =
+  /is not recognized as an internal or external command|não é reconhecido como um comando interno|no se reconoce como un comando interno/i;
 const MAX_BUFFER = 64 * 1024 * 1024;
 
 const errnoCode = (error: unknown): string | undefined => {
@@ -34,7 +36,11 @@ export const nodeExec: Exec = (request) => {
       : spawnSync(request.command, [...request.args], options);
   const code = errnoCode(result.error);
   const exitCode = result.status;
-  const notFound = code === "ENOENT" || (request.shell === true && exitCode !== null && SHELL_NOT_FOUND.has(exitCode));
+  const shellMissing =
+    request.shell === true &&
+    exitCode !== null &&
+    (SHELL_NOT_FOUND.has(exitCode) || (exitCode === 1 && CMD_NOT_FOUND.test(text(result.stderr))));
+  const notFound = code === "ENOENT" || shellMissing;
   return {
     found: !notFound,
     exitCode,

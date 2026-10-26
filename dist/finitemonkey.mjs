@@ -46,6 +46,7 @@ var optionalString = (record2, key) => {
 
 // src/core/node-exec.ts
 var SHELL_NOT_FOUND = /* @__PURE__ */ new Set([127, 9009]);
+var CMD_NOT_FOUND = /is not recognized as an internal or external command|não é reconhecido como um comando interno|no se reconoce como un comando interno/i;
 var MAX_BUFFER = 64 * 1024 * 1024;
 var errnoCode = (error) => {
   if (!(error instanceof Error) || !("code" in error)) return void 0;
@@ -67,7 +68,8 @@ var nodeExec = (request) => {
   const result = request.shell === true ? spawnSync([request.command, ...request.args].join(" "), { ...options, shell: true }) : spawnSync(request.command, [...request.args], options);
   const code = errnoCode(result.error);
   const exitCode = result.status;
-  const notFound3 = code === "ENOENT" || request.shell === true && exitCode !== null && SHELL_NOT_FOUND.has(exitCode);
+  const shellMissing = request.shell === true && exitCode !== null && (SHELL_NOT_FOUND.has(exitCode) || exitCode === 1 && CMD_NOT_FOUND.test(text(result.stderr)));
+  const notFound3 = code === "ENOENT" || shellMissing;
   return {
     found: !notFound3,
     exitCode,
