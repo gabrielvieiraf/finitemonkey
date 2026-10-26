@@ -35,9 +35,11 @@ const parseAdded = (value: unknown): SettingsAdded | undefined => {
   const deny = strings(value["deny"]);
   const { schema, attribution } = value;
   if (deny === undefined || typeof schema !== "boolean" || typeof attribution !== "boolean") return undefined;
+  const ask = strings(value["ask"]) ?? [];
+  const blockReads = value["blockReads"] === true;
   const marketplace = value["marketplace"] === true;
   const plugin = value["plugin"] === true;
-  return { schema, attribution, deny, marketplace, plugin };
+  return { schema, attribution, deny, ask, blockReads, marketplace, plugin };
 };
 
 const parseEntry = (value: unknown): LockEntry | undefined => {
