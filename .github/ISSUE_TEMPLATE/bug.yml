@@ -56,5 +56,5 @@ body:
   - type: textarea
     id: doctor
     attributes:
-      label: Output of `npx finitemonkey doctor --json`
-      render: json
+      label: Doctor report
+      description: Run `npx finitemonkey doctor --report` in the project and attach the Markdown file it writes under `.finitemonkey/reports/`. It has the versions, the OS, the `doctor --json` output and the last hook failures, with secrets masked. Read it before you attach it.

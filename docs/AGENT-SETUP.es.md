@@ -79,6 +79,8 @@ npx finitemonkey doctor --json
 
 Cada elemento tiene `check`, `status` y `fix`. Si alguno no está en `ok`, ejecuta el comando de `fix` cuando sea seguro y no caiga en la regla de conducta 5, y vuelve a ejecutar `doctor`. Informa lo que quede.
 
+`npx finitemonkey doctor --fix` repara los archivos del proyecto que le pertenecen (hooks, reglas de deny, el bloque del `.gitignore`) con la misma copia de seguridad y el mismo bloqueo que `init`, y nunca toca los settings del usuario ni el perfil de la shell. Si el usuario quiere reportar un bug, `npx finitemonkey doctor --report` guarda un archivo Markdown enmascarado en `.finitemonkey/reports/` para adjuntarlo a la issue.
+
 ### 6. Cuéntaselo a la persona
 
 En una o dos frases: qué se instaló, lo que `doctor` no pudo corregir y que ya puede seguir trabajando sin ningún comando nuevo.
@@ -114,4 +116,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:04f4327c64ec -->
+<!-- translation of docs/AGENT-SETUP.md sha256:c31369133138 -->

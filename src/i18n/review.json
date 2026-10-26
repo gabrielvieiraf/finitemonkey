@@ -484,7 +484,14 @@
     "doctor.hooks.fix_version_plugin": "machine",
     "doctor.hooks.version_cli": "machine",
     "doctor.hooks.fix_version_cli": "machine",
-    "doctor.hooks.fix_version_cli_plugin": "machine"
+    "doctor.hooks.fix_version_cli_plugin": "machine",
+    "doctor.fix.not_installed": "machine",
+    "doctor.fix.nothing": "machine",
+    "doctor.fix.would": "machine",
+    "doctor.fix.applied": "machine",
+    "doctor.fix.backup": "machine",
+    "doctor.fix.manual": "machine",
+    "doctor.report.written": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -971,6 +978,13 @@
     "doctor.hooks.fix_version_plugin": "machine",
     "doctor.hooks.version_cli": "machine",
     "doctor.hooks.fix_version_cli": "machine",
-    "doctor.hooks.fix_version_cli_plugin": "machine"
+    "doctor.hooks.fix_version_cli_plugin": "machine",
+    "doctor.fix.not_installed": "machine",
+    "doctor.fix.nothing": "machine",
+    "doctor.fix.would": "machine",
+    "doctor.fix.applied": "machine",
+    "doctor.fix.backup": "machine",
+    "doctor.fix.manual": "machine",
+    "doctor.report.written": "machine"
   }
 }

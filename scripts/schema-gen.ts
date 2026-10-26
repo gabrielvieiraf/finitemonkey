@@ -23,8 +23,8 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
   },
   {
     name: "doctor@1",
-    file: "src/doctor/run.ts",
-    type: "DoctorReport",
+    file: "src/commands/doctor.ts",
+    type: "DoctorData",
     describes: "`data` of `finitemonkey doctor --json`.",
   },
   {
