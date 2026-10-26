@@ -76,7 +76,7 @@ const shared = (
   base: readonly string[],
 ): boolean => {
   if (upstream === undefined || !refExists(runtime, root, upstream.remoteRef)) return false;
-  const own = line(runtime, root, ["config", "--get", "user.email"]) ?? "";
+  const own = /<([^>]*)>/.exec(line(runtime, root, ["var", "GIT_AUTHOR_IDENT"]) ?? "")?.[1] ?? "";
   const log = runtime.git(["log", "--format=%ae", upstream.remoteRef, ...base.map((ref) => `^${ref}`)], root);
   return log.ok && log.stdout.split("\n").some((email) => email.trim() !== "" && email.trim() !== own);
 };

@@ -11,11 +11,15 @@ const names = readdirSync(dir)
   .filter((name) => name.endsWith(".test.ts"))
   .sort();
 
+const IDENTITY = /^GIT_(?:AUTHOR|COMMITTER)_(?:NAME|EMAIL|DATE)$/;
+const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !IDENTITY.test(name)));
+
 const run = (files, extra) =>
   files.length === 0
     ? 0
     : (spawnSync(process.execPath, ["--import", "tsx", "--test", ...extra, ...files, ...process.argv.slice(2)], {
         cwd: ROOT,
+        env,
         stdio: "inherit",
       }).status ?? 1);
 
