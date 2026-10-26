@@ -1,0 +1,109 @@
+import type { AbsolutePath } from "../core/brand.js";
+import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
+import type { Runtime } from "../core/runtime.js";
+import type { Params } from "../i18n/translate.js";
+import { type Evidence, EVIDENCE_SCHEMA, EVIDENCE_STATUSES, type Note, UNVERIFIED_REASONS } from "./types.js";
+
+const oneOf = <T extends string>(options: readonly T[], value: unknown): T | undefined =>
+  options.find((option) => option === value);
+
+const params = (value: unknown): Params =>
+  isRecord(value)
+    ? Object.fromEntries(
+        Object.entries(value).filter(
+          (entry): entry is [string, string | number] => typeof entry[1] === "string" || typeof entry[1] === "number",
+        ),
+      )
+    : {};
+
+const notes = (value: unknown): readonly Note[] =>
+  Array.isArray(value)
+    ? value.flatMap((item: unknown) =>
+        isRecord(item) && typeof item["key"] === "string" ? [{ key: item["key"], params: params(item["params"]) }] : [],
+      )
+    : [];
+
+const text = (record: JsonObject, key: string): string | undefined => {
+  const value = record[key];
+  return typeof value === "string" ? value : undefined;
+};
+
+const optional = (record: JsonObject): Partial<Evidence> => {
+  const exitCode = record["exitCode"];
+  const durationMs = record["durationMs"];
+  const command = text(record, "command");
+  const stdoutSha256 = text(record, "stdoutSha256");
+  const releasedBy = text(record, "releasedBy");
+  const reason = oneOf(UNVERIFIED_REASONS, record["reason"]);
+  const failures = record["failures"];
+  const testCount = record["testCount"];
+  return {
+    ...(command === undefined ? {} : { command }),
+    ...(typeof exitCode === "number" || exitCode === null ? { exitCode } : {}),
+    ...(stdoutSha256 === undefined ? {} : { stdoutSha256 }),
+    ...(typeof durationMs === "number" ? { durationMs } : {}),
+    ...(reason === undefined ? {} : { reason }),
+    ...(releasedBy === undefined ? {} : { releasedBy }),
+    ...(Array.isArray(failures)
+      ? { failures: failures.filter((item): item is string => typeof item === "string") }
+      : {}),
+    ...(typeof testCount === "number" ? { testCount } : {}),
+  };
+};
+
+export const parseEvidence = (line: string): Evidence | undefined => {
+  const parsed = parseJsonObject(line);
+  if (!parsed.ok) return undefined;
+  const record = parsed.value;
+  const status = oneOf(EVIDENCE_STATUSES, record["status"]);
+  const task = text(record, "task");
+  const check = text(record, "check");
+  const kind = text(record, "kind");
+  const treeHash = text(record, "treeHash");
+  const at = text(record, "at");
+  if (record["schema"] !== EVIDENCE_SCHEMA || status === undefined) return undefined;
+  if (task === undefined || check === undefined || kind === undefined || treeHash === undefined || at === undefined) {
+    return undefined;
+  }
+  return {
+    schema: EVIDENCE_SCHEMA,
+    task,
+    check,
+    kind,
+    status,
+    treeHash,
+    at,
+    notes: notes(record["notes"]),
+    ...optional(record),
+  };
+};
+
+export const readLedger = (runtime: Pick<Runtime, "readText">, path: AbsolutePath): readonly Evidence[] => {
+  const content = runtime.readText(path);
+  if (!content.ok) return [];
+  return content.value.split("\n").flatMap((line) => {
+    const entry = line.trim() === "" ? undefined : parseEvidence(line);
+    return entry === undefined ? [] : [entry];
+  });
+};
+
+export const appendEvidence = (
+  runtime: Pick<Runtime, "appendText">,
+  path: AbsolutePath,
+  entries: readonly Evidence[],
+): boolean =>
+  entries.length === 0 || runtime.appendText(path, entries.map((entry) => `${JSON.stringify(entry)}\n`).join("")).ok;
+
+export const latestFor = (
+  entries: readonly Evidence[],
+  check: string,
+  treeHash: string,
+  command?: string,
+): Evidence | undefined =>
+  entries.findLast(
+    (entry) =>
+      entry.check === check && entry.treeHash === treeHash && (command === undefined || entry.command === command),
+  );
+
+export const hasStale = (entries: readonly Evidence[], check: string, treeHash: string): boolean =>
+  entries.some((entry) => entry.check === check && entry.treeHash !== treeHash);

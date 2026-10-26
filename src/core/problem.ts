@@ -28,6 +28,13 @@ export const ERROR_CODES = [
   "install_failed",
   "not_installed",
   "install_outdated",
+  "gate_failed",
+  "gate_incomplete",
+  "gate_not_run",
+  "not_a_git_repo",
+  "task_exists",
+  "task_invalid",
+  "task_not_found",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

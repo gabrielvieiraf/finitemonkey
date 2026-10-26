@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 
 import { isRecord } from "../src/core/parsed.js";
+import { deadlineFor } from "../src/hooks/events.js";
 import { INSTALLED_HOOKS } from "../src/install/hook-entries.js";
 import { MARKETPLACE_NAME, PLUGIN_BIN, PLUGIN_DIR, PLUGIN_NAME, pluginHooks } from "../src/install/plugin-hooks.js";
 import { field, parseBody, ROOT } from "./support.js";
@@ -94,6 +95,12 @@ describe("plugin manifest", () => {
       assert.equal(field(handler, "onFailure"), spec.guard ? "block" : undefined, spec.event);
       assert.equal(field(handler, "command"), "node");
       assert.deepEqual(field(handler, "args"), [PLUGIN_BIN, "hook", spec.event, "--via", "plugin"]);
+    }
+  });
+
+  it("gives each hook more wall time than its own internal deadline", () => {
+    for (const spec of INSTALLED_HOOKS) {
+      assert.ok(spec.timeout * 1000 > deadlineFor(spec.event, undefined), spec.event);
     }
   });
 

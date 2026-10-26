@@ -20,6 +20,9 @@ import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { ExitCode } from "../src/exit-codes.js";
 import { CONFIG_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../src/install/layout.js";
+import { implicitContract } from "../src/task/implicit.js";
+import { contractHash, loadImplicit } from "../src/task/load.js";
+import { fmPaths } from "../src/task/paths.js";
 import { BUNDLE, cliJson, field, found, parseBody } from "./support.js";
 
 const base = mkdtempSync(join(tmpdir(), "fm-tree-"));
@@ -178,5 +181,20 @@ describe("generated hook commands survive spaces and accents", () => {
     const ran = spawnSync(process.execPath, args.map(String), { cwd: root, input, encoding: "utf8" });
     assert.equal(ran.status, 0, ran.stderr);
     assert.match(ran.stdout, /"continue":true/);
+  });
+});
+
+describe("init trusts the project's own check commands", () => {
+  it("records the implicit contract hash so the gate runs the detected commands", async () => {
+    const root = fresh({ "package.json": JSON.stringify({ scripts: { test: "node --test" } }) });
+    assert.equal((await fm(root, ["init", "--yes"])).code, ExitCode.Ok);
+    const trust = parseBody(readFileSync(join(root, ".finitemonkey", "trust.json"), "utf8"));
+    const files = {
+      read: (path: string) =>
+        path === "package.json" ? JSON.stringify({ scripts: { test: "node --test" } }) : undefined,
+      exists: () => false,
+    };
+    assert.equal(field(trust, "contracts", "implicit"), contractHash(implicitContract(files)));
+    assert.equal(loadImplicit(runtime, fmPaths(root), files).trusted, true);
   });
 });
