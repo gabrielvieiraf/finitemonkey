@@ -6,6 +6,7 @@ import { describe, it } from "node:test";
 
 import type { AbsolutePath } from "../src/core/brand.js";
 import { reject } from "../src/core/parsed.js";
+import { toPosixPath } from "../src/core/posix-path.js";
 import { worktreeGateStatus } from "../src/git/gate-status.js";
 import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { gitPostToolUse, gitSessionStart } from "../src/git/hooks/session.js";
@@ -96,19 +97,20 @@ describe("git fault injection (spec 4.16, Etapa 1)", () => {
   it("cases 11, 16, 18: a dirty worktree on a merged branch cannot be force-removed or rm -rf'd", async () => {
     const box = sandbox();
     const tree = `${box.root}-wt`;
+    const shellTree = toPosixPath(tree);
     try {
       git(box.root, "worktree", "add", "-q", tree, "-b", "feat/paginas", "main");
       write(tree, "src/api/endpoints.ts", "export const e = 1;\n");
       write(tree, "src/api/hooks/index.ts", "export {};\n");
       await hook(gitSessionStart, "SessionStart", box.root);
       for (const command of [
-        `git worktree remove --force ${tree}`,
-        `git worktree remove -f ${tree}`,
-        `rm -rf ${tree}`,
-        `rm -rf ${tree}/`,
-        `cd .. && rm -fr ${tree}`,
-        `sh -c 'rm -rf ${tree}'`,
-        `rm -rf ${tree}/.git`,
+        `git worktree remove --force ${shellTree}`,
+        `git worktree remove -f ${shellTree}`,
+        `rm -rf ${shellTree}`,
+        `rm -rf ${shellTree}/`,
+        `cd .. && rm -fr ${shellTree}`,
+        `sh -c 'rm -rf ${shellTree}'`,
+        `rm -rf ${shellTree}/.git`,
       ]) {
         const decision = await pre(box.root, command);
         assert.equal(decision.kind, "block", command);
