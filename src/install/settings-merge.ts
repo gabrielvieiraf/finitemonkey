@@ -13,6 +13,7 @@ export const PLUGIN_ID = "finitemonkey@finitemonkey";
 export interface SettingsWanted {
   readonly hooks: Readonly<Record<string, HookHandlerJson>>;
   readonly deny: readonly string[];
+  readonly ask: readonly string[];
   readonly attributionOff: boolean;
   readonly marketplace: boolean;
 }
@@ -20,6 +21,8 @@ export interface SettingsWanted {
 export interface SettingsAdded {
   readonly schema: boolean;
   readonly deny: readonly string[];
+  readonly ask: readonly string[];
+  readonly blockReads: boolean;
   readonly attribution: boolean;
   readonly marketplace: boolean;
   readonly plugin: boolean;
@@ -70,11 +73,27 @@ const withHooks = (settings: JsonObject, hooks: JsonObject): JsonObject => {
   return setKey(settings, "hooks", Object.keys(hooks).length === 0 ? undefined : hooks);
 };
 
-const withPermissions = (settings: JsonObject, deny: readonly unknown[]): JsonObject => {
+const BLOCK_READS = "blockReadsOutsideWorkingDirectories";
+
+interface PermissionLists {
+  readonly deny: readonly unknown[];
+  readonly ask: readonly unknown[];
+  readonly blockReads: unknown;
+}
+
+const withPermissions = (settings: JsonObject, lists: PermissionLists): JsonObject => {
   const permissions = asRecord(settings["permissions"]);
-  const next = setKey(permissions, "deny", deny.length === 0 ? undefined : deny);
+  const withDeny = setKey(permissions, "deny", lists.deny.length === 0 ? undefined : lists.deny);
+  const withAsk = setKey(withDeny, "ask", lists.ask.length === 0 ? undefined : lists.ask);
+  const next = setKey(withAsk, BLOCK_READS, lists.blockReads);
   return setKey(settings, "permissions", Object.keys(next).length === 0 ? undefined : next);
 };
+
+const missing = (wanted: readonly string[], existing: readonly unknown[]): readonly string[] =>
+  wanted.filter((rule) => !existing.includes(rule));
+
+const withoutAdded = (existing: readonly unknown[], added: readonly string[]): readonly unknown[] =>
+  existing.filter((rule) => typeof rule !== "string" || !added.includes(rule));
 
 export const ownHookMatcher =
   (recorded: readonly HookHandlerJson[]) =>
@@ -89,16 +108,24 @@ export const mergeSettings = (
   const schema = Object.keys(current).length === 0;
   const base = schema ? { $schema: SETTINGS_SCHEMA_URL } : current;
   const hooks = mergeHooks(asRecord(base["hooks"]), ownHookMatcher(recorded), wanted.hooks);
-  const existingDeny = asList(asRecord(base["permissions"])["deny"]);
-  const deny = wanted.deny.filter((rule) => !existingDeny.includes(rule));
+  const permissions = asRecord(base["permissions"]);
+  const existingDeny = asList(permissions["deny"]);
+  const existingAsk = asList(permissions["ask"]);
+  const deny = missing(wanted.deny, existingDeny);
+  const ask = missing(wanted.ask, existingAsk);
+  const blockReads = !(BLOCK_READS in permissions);
   const attribution = wanted.attributionOff && !("attribution" in base);
   const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
   const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
-  let settings = withPermissions(withHooks(base, hooks), [...existingDeny, ...deny]);
+  let settings = withPermissions(withHooks(base, hooks), {
+    deny: [...existingDeny, ...deny],
+    ask: [...existingAsk, ...ask],
+    blockReads: blockReads ? true : permissions[BLOCK_READS],
+  });
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
   if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
   if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
-  return { settings, added: { schema, deny, attribution, marketplace, plugin } };
+  return { settings, added: { schema, deny, ask, blockReads, attribution, marketplace, plugin } };
 };
 
 const sameAttribution = (value: unknown): boolean => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
@@ -109,10 +136,12 @@ export const unmergeSettings = (
   recorded: readonly HookHandlerJson[],
 ): JsonObject => {
   const hooks = mergeHooks(asRecord(current["hooks"]), ownHookMatcher(recorded), {});
-  const deny = asList(asRecord(current["permissions"])["deny"]).filter(
-    (rule) => typeof rule !== "string" || !added.deny.includes(rule),
-  );
-  let settings = withPermissions(withHooks(current, hooks), deny);
+  const permissions = asRecord(current["permissions"]);
+  let settings = withPermissions(withHooks(current, hooks), {
+    deny: withoutAdded(asList(permissions["deny"]), added.deny),
+    ask: withoutAdded(asList(permissions["ask"]), added.ask),
+    blockReads: added.blockReads && permissions[BLOCK_READS] === true ? undefined : permissions[BLOCK_READS],
+  });
   if (added.attribution && sameAttribution(settings["attribution"])) {
     settings = setKey(settings, "attribution", undefined);
   }

@@ -3,7 +3,9 @@ import type { Env } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
+import { ASK_RULES } from "./ask-floor.js";
 import { type ClaudeInfo, detectClaude } from "./claude-version.js";
+import { CLAUDEIGNORE_FILES, claudeignoreRules } from "./claudeignore.js";
 import { configTemplate, hasMarker } from "./config-template.js";
 import { DENY_RULES } from "./deny-floor.js";
 import {
@@ -118,6 +120,8 @@ const joinAdded = (previous: SettingsAdded | undefined, next: SettingsAdded): Se
         schema: previous.schema || next.schema,
         attribution: previous.attribution || next.attribution,
         deny: union(previous.deny, next.deny),
+        ask: union(previous.ask, next.ask),
+        blockReads: previous.blockReads || next.blockReads,
         marketplace: previous.marketplace || next.marketplace,
         plugin: previous.plugin || next.plugin,
       };
@@ -139,7 +143,8 @@ const settingsItem = (
   const hooks = wantedHooks(detection);
   const wanted = {
     hooks,
-    deny: DENY_RULES,
+    deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
+    ask: ASK_RULES,
     attributionOff: input.preset === "gabriel",
     marketplace: input.marketplace,
   };

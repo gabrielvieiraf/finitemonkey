@@ -4441,11 +4441,11 @@ var requirement2 = (want, ctx) => {
 };
 var gitCheck = (check2, ctx) => {
   const wants = check2.require ?? ["committed"];
-  const missing = wants.flatMap((want) => {
+  const missing2 = wants.flatMap((want) => {
     const problem4 = requirement2(want, ctx);
     return problem4 === void 0 ? [] : [problem4];
   });
-  return missing.length > 0 ? failed(missing) : passed([note("gate.git.ok", { require: wants.join(", ") })]);
+  return missing2.length > 0 ? failed(missing2) : passed([note("gate.git.ok", { require: wants.join(", ") })]);
 };
 
 // src/guards/release/grants.ts
@@ -6507,10 +6507,10 @@ var symbolFindings = (context, pair, path, text6) => {
 var verifyFile = (context, pair) => {
   const path = resultPathOf(context, pair);
   if (pair.ours?.binary === true || pair.theirs?.binary === true) return binaryFindings(context, pair, path);
-  const missing = ["ours", "theirs"].flatMap(
+  const missing2 = ["ours", "theirs"].flatMap(
     (side) => created2(pair[side]) && path === void 0 ? [finding("missing-file", pair.key, side, pair.key)] : []
   );
-  if (missing.length > 0) return missing;
+  if (missing2.length > 0) return missing2;
   const copied = [pair.ours, pair.theirs].find((diff) => diff?.status === "copied");
   const baseSource = copied?.oldPath ?? (created2(pair.ours) || created2(pair.theirs) ? void 0 : pair.key);
   const baseText = baseSource === void 0 ? void 0 : blobText(context.runtime, context.repo, context.inputs.base, baseSource);
@@ -10817,34 +10817,49 @@ var mergeHooks = (hooks, isOwn, wanted) => {
 var withHooks = (settings, hooks) => {
   return setKey(settings, "hooks", Object.keys(hooks).length === 0 ? void 0 : hooks);
 };
-var withPermissions = (settings, deny2) => {
+var BLOCK_READS = "blockReadsOutsideWorkingDirectories";
+var withPermissions = (settings, lists) => {
   const permissions = asRecord(settings["permissions"]);
-  const next2 = setKey(permissions, "deny", deny2.length === 0 ? void 0 : deny2);
+  const withDeny = setKey(permissions, "deny", lists.deny.length === 0 ? void 0 : lists.deny);
+  const withAsk = setKey(withDeny, "ask", lists.ask.length === 0 ? void 0 : lists.ask);
+  const next2 = setKey(withAsk, BLOCK_READS, lists.blockReads);
   return setKey(settings, "permissions", Object.keys(next2).length === 0 ? void 0 : next2);
 };
+var missing = (wanted, existing) => wanted.filter((rule) => !existing.includes(rule));
+var withoutAdded = (existing, added) => existing.filter((rule) => typeof rule !== "string" || !added.includes(rule));
 var ownHookMatcher = (recorded) => (handler) => isOwnHandler(handler) || recorded.some((own) => JSON.stringify(own) === JSON.stringify(handler));
 var mergeSettings = (current, wanted, recorded) => {
   const schema = Object.keys(current).length === 0;
   const base = schema ? { $schema: SETTINGS_SCHEMA_URL } : current;
   const hooks = mergeHooks(asRecord(base["hooks"]), ownHookMatcher(recorded), wanted.hooks);
-  const existingDeny = asList(asRecord(base["permissions"])["deny"]);
-  const deny2 = wanted.deny.filter((rule) => !existingDeny.includes(rule));
+  const permissions = asRecord(base["permissions"]);
+  const existingDeny = asList(permissions["deny"]);
+  const existingAsk = asList(permissions["ask"]);
+  const deny2 = missing(wanted.deny, existingDeny);
+  const ask = missing(wanted.ask, existingAsk);
+  const blockReads = !(BLOCK_READS in permissions);
   const attribution = wanted.attributionOff && !("attribution" in base);
   const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
   const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
-  let settings = withPermissions(withHooks(base, hooks), [...existingDeny, ...deny2]);
+  let settings = withPermissions(withHooks(base, hooks), {
+    deny: [...existingDeny, ...deny2],
+    ask: [...existingAsk, ...ask],
+    blockReads: blockReads ? true : permissions[BLOCK_READS]
+  });
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
   if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
   if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
-  return { settings, added: { schema, deny: deny2, attribution, marketplace, plugin } };
+  return { settings, added: { schema, deny: deny2, ask, blockReads, attribution, marketplace, plugin } };
 };
 var sameAttribution = (value) => JSON.stringify(value) === JSON.stringify(ATTRIBUTION_OFF);
 var unmergeSettings = (current, added, recorded) => {
   const hooks = mergeHooks(asRecord(current["hooks"]), ownHookMatcher(recorded), {});
-  const deny2 = asList(asRecord(current["permissions"])["deny"]).filter(
-    (rule) => typeof rule !== "string" || !added.deny.includes(rule)
-  );
-  let settings = withPermissions(withHooks(current, hooks), deny2);
+  const permissions = asRecord(current["permissions"]);
+  let settings = withPermissions(withHooks(current, hooks), {
+    deny: withoutAdded(asList(permissions["deny"]), added.deny),
+    ask: withoutAdded(asList(permissions["ask"]), added.ask),
+    blockReads: added.blockReads && permissions[BLOCK_READS] === true ? void 0 : permissions[BLOCK_READS]
+  });
   if (added.attribution && sameAttribution(settings["attribution"])) {
     settings = setKey(settings, "attribution", void 0);
   }
@@ -11050,9 +11065,11 @@ var parseAdded = (value) => {
   const deny2 = strings2(value["deny"]);
   const { schema, attribution } = value;
   if (deny2 === void 0 || typeof schema !== "boolean" || typeof attribution !== "boolean") return void 0;
+  const ask = strings2(value["ask"]) ?? [];
+  const blockReads = value["blockReads"] === true;
   const marketplace = value["marketplace"] === true;
   const plugin = value["plugin"] === true;
-  return { schema, attribution, deny: deny2, marketplace, plugin };
+  return { schema, attribution, deny: deny2, ask, blockReads, marketplace, plugin };
 };
 var parseEntry2 = (value) => {
   if (!isRecord(value)) return void 0;
@@ -11099,6 +11116,42 @@ var parseLock = (text6) => {
 var renderLock = (lock) => `${JSON.stringify(lock, null, 2)}
 `;
 
+// src/install/ask-floor.ts
+var DEFAULT_BRANCHES = ["main", "master"];
+var pushTo = (branch) => [
+  `Bash(git push * ${branch})`,
+  `Bash(git push * ${branch} *)`,
+  `Bash(git push *:${branch})`,
+  `Bash(git push *:${branch} *)`
+];
+var ASK_FLOOR = {
+  push: DEFAULT_BRANCHES.flatMap(pushTo),
+  deploy: [
+    "Bash(npm publish *)",
+    "Bash(pnpm publish *)",
+    "Bash(yarn publish *)",
+    "Bash(yarn npm publish *)",
+    "Bash(bun publish *)",
+    "Bash(vercel * --prod*)",
+    "Bash(vercel --prod*)",
+    "Bash(netlify deploy * --prod*)",
+    "Bash(fly deploy *)",
+    "Bash(flyctl deploy *)",
+    "Bash(firebase deploy *)",
+    "Bash(wrangler deploy *)",
+    "Bash(serverless deploy *)",
+    "Bash(sls deploy *)",
+    "Bash(cdk deploy *)",
+    "Bash(terraform apply *)",
+    "Bash(tofu apply *)",
+    "Bash(pulumi up *)",
+    "Bash(kubectl apply *)",
+    "Bash(helm install *)",
+    "Bash(helm upgrade *)"
+  ]
+};
+var ASK_RULES = [...ASK_FLOOR.push, ...ASK_FLOOR.deploy];
+
 // src/install/claude-version.ts
 var ON_FAILURE_MIN = [2, 1, 295];
 var PROBE_MS = 8e3;
@@ -11119,6 +11172,23 @@ var detectClaude = (probe) => {
   if (parsed === void 0) return { version: void 0, failClosed: true };
   return { version: parsed.join("."), failClosed: atLeast(parsed, ON_FAILURE_MIN) };
 };
+
+// src/install/claudeignore.ts
+var CLAUDEIGNORE_FILES = [".claudeignore", ".claude/.claudeignore"];
+var ruleFor = (raw) => {
+  const line2 = withoutCarriageReturn(raw).trim();
+  if (line2 === "" || line2.startsWith("#") || line2.startsWith("!") || line2.includes(")")) return void 0;
+  const anchored = line2.startsWith("/");
+  const body = (anchored ? line2.slice(1) : line2).replace(/\/+$/, "");
+  if (body === "" || body === "*" || body === "**") return void 0;
+  const path = line2.endsWith("/") ? `${body}/**` : body;
+  return `Read(${anchored || body.includes("/") ? "./" : ""}${path})`;
+};
+var claudeignoreRules = (texts) => [
+  ...new Set(
+    texts.flatMap((text6) => (text6 ?? "").split("\n")).map(ruleFor).filter((rule) => rule !== void 0)
+  )
+];
 
 // src/install/config-template.ts
 var configTemplate = (t, preset, lang) => [
@@ -11346,6 +11416,8 @@ var joinAdded = (previous, next2) => previous === void 0 ? next2 : {
   schema: previous.schema || next2.schema,
   attribution: previous.attribution || next2.attribution,
   deny: union(previous.deny, next2.deny),
+  ask: union(previous.ask, next2.ask),
+  blockReads: previous.blockReads || next2.blockReads,
   marketplace: previous.marketplace || next2.marketplace,
   plugin: previous.plugin || next2.plugin
 };
@@ -11359,7 +11431,8 @@ var settingsItem = (project, detection, input, previous) => {
   const hooks = wantedHooks(detection);
   const wanted = {
     hooks,
-    deny: DENY_RULES,
+    deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
+    ask: ASK_RULES,
     attributionOff: input.preset === "gabriel",
     marketplace: input.marketplace
   };
