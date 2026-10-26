@@ -53,4 +53,6 @@ Do not break these. Every invariant names the check that enforces it. When you a
 | `.github/workflows/ci.yml` | Checks and the release job |
 | `budgets.json` | Ceilings for fixed context bytes and `PreToolUse` p95 latency per guard, checked by `npm run budgets` in CI |
 | `.github/workflows/sem-atribuicao.yml` | The no-attribution check (I3) |
+| `.github/workflows/claude-latest.yml` | Weekly run against the newest Claude Code: version, flags still in `--help`, and three real `Stop` sessions (`npm run e2e:claude`, needs the `ANTHROPIC_API_KEY` secret) |
+| `test/fake-claude.ts` | A scriptable fake `claude` that runs the configured hooks, writes transcripts, feeds the statusline and sends SIGINT |
 | `.releaserc.json` | semantic-release configuration |
