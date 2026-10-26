@@ -3,7 +3,7 @@ import type { HookHandlerJson } from "./hook-entries.js";
 import { LOCK_SCHEMA, type Preset, PRESETS } from "./layout.js";
 import type { SettingsAdded } from "./settings-merge.js";
 
-export const ENTRY_KINDS = ["settings", "gitignore", "generated"] as const;
+export const ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown"] as const;
 
 export type EntryKind = (typeof ENTRY_KINDS)[number];
 

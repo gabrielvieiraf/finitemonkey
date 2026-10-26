@@ -449,5 +449,8 @@
   "gate.merge.unavailable": "não foi possível ler as mesclas da sessão",
   "gate.merge.unanalyzed": "a mescla {commit} não pôde ser analisada: {detail}",
   "gate.merge.lost": "a mescla {commit} perdeu mudanças: {findings}",
-  "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu"
+  "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu",
+  "doctor.memory.lines": "{file}: {lines, plural, one {# linha} other {# linhas}} de {max}. Edições feitas durante a sessão só valem depois de /clear, /compact ou reiniciar.",
+  "doctor.memory.too_long": "{file}: {lines, plural, one {# linha} other {# linhas}}, acima do teto de {max}; arquivo de instruções longo é menos seguido",
+  "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml"
 }

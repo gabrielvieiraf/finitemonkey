@@ -3,6 +3,7 @@ import { findGitRoot } from "../install/project.js";
 import { checkClaudeSettings } from "./claude-settings.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkInstructions } from "./instructions.js";
+import { checkAgentsFile } from "./memory.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkOs, checkPath } from "./system.js";
 import { checkClaude, checkGit, checkNode } from "./tools.js";
@@ -22,6 +23,7 @@ export const CHECKS: readonly Check[] = [
   checkClaudeSettings,
   checkInstructions,
   checkProjectFiles,
+  checkAgentsFile,
 ];
 
 export interface DoctorItem {

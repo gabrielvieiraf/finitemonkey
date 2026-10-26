@@ -449,5 +449,8 @@
   "gate.merge.unavailable": "no se pudieron leer las fusiones de la sesión",
   "gate.merge.unanalyzed": "la fusión {commit} no se pudo analizar: {detail}",
   "gate.merge.lost": "la fusión {commit} perdió cambios: {findings}",
-  "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada"
+  "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada",
+  "doctor.memory.lines": "{file}: {lines, plural, one {# línea} other {# líneas}} de {max}. Los cambios hechos durante una sesión solo se aplican tras /clear, /compact o reiniciar.",
+  "doctor.memory.too_long": "{file}: {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
+  "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml"
 }

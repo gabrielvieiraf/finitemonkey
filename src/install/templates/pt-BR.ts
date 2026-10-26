@@ -3,6 +3,13 @@ import type { GeneratedTemplates } from "./types.js";
 export const ptBR: GeneratedTemplates = {
   configHeader:
     "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
+  agentsBlock: ({ gate, doctor }) => [
+    "## Finite Monkey",
+    "",
+    `- Antes de dizer que uma tarefa está pronta, e antes de cada commit, rode \`${gate}\` e corrija o que falhar. Nunca enfraqueça, pule ou apague uma checagem para ela passar.`,
+    "- Quando um hook bloquear uma ação, leia o motivo e corrija a causa em vez de contornar.",
+    `- Se algo na configuração parecer errado, rode \`${doctor}\` e relate o que ele disser.`,
+  ],
   verifySkill: {
     description:
       "Use antes de todo commit e antes de dizer à pessoa que algo funciona. Roda o portão rápido do Finite Monkey para que o resultado fique registrado como evidência da árvore atual, em vez de valer pela sua palavra.",

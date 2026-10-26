@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { LANGUAGES } from "../src/i18n/languages.js";
+import { withAgentsBlock } from "../src/install/agents-block.js";
 import { configTemplate } from "../src/install/config-template.js";
 import { verifySkillTemplate } from "../src/install/skill-template.js";
 
@@ -13,6 +14,10 @@ const UPDATE = process.env["UPDATE_SNAPSHOTS"] === "1";
 
 const GENERATED = [
   { name: "config.yml", render: (lang: (typeof LANGUAGES)[number]) => configTemplate("neutral", lang) },
+  {
+    name: "AGENTS.md",
+    render: (lang: (typeof LANGUAGES)[number]) => withAgentsBlock(undefined, { kind: "vendored" }, lang),
+  },
   {
     name: "verify-SKILL.md",
     render: (lang: (typeof LANGUAGES)[number]) => verifySkillTemplate({ kind: "vendored" }, lang),

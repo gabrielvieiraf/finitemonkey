@@ -3,6 +3,7 @@ import type { Env } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
+import { withAgentsBlock, withAgentsImport } from "./agents-block.js";
 import { ASK_RULES } from "./ask-floor.js";
 import { type ClaudeInfo, detectClaude } from "./claude-version.js";
 import { CLAUDEIGNORE_FILES, claudeignoreRules } from "./claudeignore.js";
@@ -23,6 +24,8 @@ import { hashText } from "./hash.js";
 import { hookHandler, type HookHandlerJson, INSTALLED_HOOKS, type Runner } from "./hook-entries.js";
 import { DEFAULT_STYLE, parseSettings, renderJson, styleOf } from "./json-text.js";
 import {
+  AGENTS_FILE,
+  CLAUDE_FILE,
   CONFIG_FILE,
   GITIGNORE_FILE,
   LOCK_FILE,
@@ -164,6 +167,16 @@ const settingsItem = (
   });
 };
 
+const markdownItems = (project: Project, runner: Runner, lang: Lang): readonly PlanItem[] =>
+  [
+    { path: AGENTS_FILE, render: (text: string | undefined) => withAgentsBlock(text, runner, lang) },
+    { path: CLAUDE_FILE, render: withAgentsImport },
+  ].map(({ path, render }) => {
+    const before = project.read(path);
+    const after = render(before);
+    return { path, kind: "markdown", action: actionFor(before, after, "merge"), before, after };
+  });
+
 const gitignoreItem = (project: Project): PlanItem => {
   const before = project.read(GITIGNORE_FILE);
   const after = withBlock(before);
@@ -218,7 +231,12 @@ export const buildPlan = (
   return accept({
     detection,
     preset: input.preset,
-    items: [settings.value, gitignoreItem(project), ...generated],
+    items: [
+      settings.value,
+      gitignoreItem(project),
+      ...markdownItems(project, detection.runner, input.lang),
+      ...generated,
+    ],
     previous,
   });
 };

@@ -449,5 +449,8 @@
   "gate.merge.unavailable": "could not read the merges of the session",
   "gate.merge.unanalyzed": "merge {commit} could not be analyzed: {detail}",
   "gate.merge.lost": "merge {commit} lost changes: {findings}",
-  "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost"
+  "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost",
+  "doctor.memory.lines": "{file}: {lines, plural, one {# line} other {# lines}} of {max}. Edits made during a session apply only after /clear, /compact or a restart.",
+  "doctor.memory.too_long": "{file}: {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
+  "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml"
 }

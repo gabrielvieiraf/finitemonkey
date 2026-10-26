@@ -1,4 +1,5 @@
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { withoutMarkdownBlock } from "./agents-block.js";
 import { type ApplyFailure, withInstallLock, writeText } from "./apply.js";
 import { withoutBlock } from "./gitignore-block.js";
 import { hashText } from "./hash.js";
@@ -30,8 +31,8 @@ export interface RemovalPlan {
 }
 
 const structural = (entry: LockEntry, current: string): string | undefined => {
-  if (entry.kind === "gitignore") {
-    const text = withoutBlock(current);
+  if (entry.kind === "gitignore" || entry.kind === "markdown") {
+    const text = entry.kind === "gitignore" ? withoutBlock(current) : withoutMarkdownBlock(current);
     return text === "" && !entry.existed ? undefined : text;
   }
   const parsed = parseSettings(current);
