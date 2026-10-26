@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-next.10](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.9...v0.1.0-next.10) (2026-10-26)
+
+### Features
+
+* **i18n:** full language detection order and the Claude Code language setting ([#132](https://github.com/gabrielvieiraf/finitemonkey/issues/132)) ([44fbd16](https://github.com/gabrielvieiraf/finitemonkey/commit/44fbd16bdcc1a198971bc163b454d089333aa58b)), closes [#17](https://github.com/gabrielvieiraf/finitemonkey/issues/17)
+* **i18n:** plural forms, review status per key and per-language generated files ([#133](https://github.com/gabrielvieiraf/finitemonkey/issues/133)) ([a04d053](https://github.com/gabrielvieiraf/finitemonkey/commit/a04d053ac118873de407a977edc2249aefb5ecaf)), closes [#18](https://github.com/gabrielvieiraf/finitemonkey/issues/18)
+
 ## [0.1.0-next.9](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.8...v0.1.0-next.9) (2026-10-26)
 
 ### Features
