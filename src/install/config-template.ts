@@ -1,11 +1,11 @@
 import type { Lang } from "../i18n/languages.js";
-import type { Translate } from "../i18n/translate.js";
 import { GENERATED_MARKER, type Preset } from "./layout.js";
+import { TEMPLATES } from "./templates/index.js";
 
-export const configTemplate = (t: Translate, preset: Preset, lang: Lang): string =>
+export const configTemplate = (preset: Preset, lang: Lang): string =>
   [
     `# ${GENERATED_MARKER}`,
-    `# ${t("install.config.header")}`,
+    `# ${TEMPLATES[lang].configHeader}`,
     "schemaVersion: 1",
     `preset: ${preset}`,
     `lang: ${lang}`,

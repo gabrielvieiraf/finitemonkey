@@ -50,6 +50,7 @@ export interface LangSettings {
   readonly config?: string | undefined;
   readonly claude?: string | undefined;
   readonly system?: string | undefined;
+  readonly reviewedOnly?: boolean;
 }
 
 export const detectLang = (flag: string | undefined, env: Env, settings: LangSettings = {}): DetectedLang => {

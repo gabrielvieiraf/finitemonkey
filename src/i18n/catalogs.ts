@@ -2,6 +2,7 @@ import en from "./en.json" with { type: "json" };
 import es from "./es.json" with { type: "json" };
 import type { Lang } from "./languages.js";
 import ptBR from "./pt-BR.json" with { type: "json" };
+import review from "./review.json" with { type: "json" };
 
 export type MessageKey = keyof typeof en;
 
@@ -18,3 +19,14 @@ export const catalogs = {
 } as const satisfies Readonly<Record<Lang, Catalog>>;
 
 export type CatalogSource = Readonly<Record<Lang, Readonly<Partial<Record<MessageKey, string>>>>>;
+
+export type ReviewSource = Readonly<Partial<Record<Lang, Readonly<Record<string, string>>>>>;
+
+export const reviewStatus: ReviewSource = review;
+
+export const reviewedKeys = (lang: Lang, source: ReviewSource = reviewStatus): ReadonlySet<string> =>
+  new Set(
+    Object.entries(source[lang] ?? {})
+      .filter(([, status]) => status === "reviewed")
+      .map(([key]) => key),
+  );

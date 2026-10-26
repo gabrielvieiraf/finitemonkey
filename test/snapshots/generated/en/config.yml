@@ -1,0 +1,5 @@
+# finitemonkey:generated v=1
+# Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.
+schemaVersion: 1
+preset: neutral
+lang: en

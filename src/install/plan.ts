@@ -192,8 +192,8 @@ const generatedItem = (project: Project, file: Generated, previous: LockEntry | 
 
 const generatedFiles = (input: PlanInput, runner: Runner, vendor: boolean): Parsed<readonly Generated[], PlanError> => {
   const own = [
-    { path: CONFIG_FILE, template: configTemplate(input.t, input.preset, input.lang), isOurs: hasMarker },
-    { path: VERIFY_SKILL, template: verifySkillTemplate(runner), isOurs: isOwnSkill },
+    { path: CONFIG_FILE, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
+    { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill },
   ];
   if (!vendor) return accept(own);
   if (input.bundle === undefined) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });

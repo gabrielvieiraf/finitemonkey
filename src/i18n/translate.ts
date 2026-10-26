@@ -1,22 +1,26 @@
 import { catalogs, type CatalogSource, type MessageKey } from "./catalogs.js";
 import { type Lang, SOURCE_LANG } from "./languages.js";
+import { argumentsOf, formatMessage, type Params } from "./message.js";
 
-export type Params = Readonly<Record<string, string | number>>;
+export type { Params } from "./message.js";
 
 export type Translate = (key: MessageKey, params?: Params) => string;
 
-const PLACEHOLDER = /\{([a-zA-Z][a-zA-Z0-9_]*)\}/g;
+export const interpolate = (template: string, params: Params = {}, lang: Lang = SOURCE_LANG): string =>
+  formatMessage(template, params, lang);
 
-export const interpolate = (template: string, params: Params = {}): string =>
-  template.replace(PLACEHOLDER, (match, name: string) => {
-    const value = params[name];
-    return value === undefined ? match : String(value);
-  });
+export const placeholdersOf = (template: string): readonly string[] => argumentsOf(template);
 
-export const placeholdersOf = (template: string): readonly string[] =>
-  [...new Set(Array.from(template.matchAll(PLACEHOLDER), (match) => match[1] ?? ""))].sort();
+export interface TranslatorOptions {
+  readonly reviewed?: ReadonlySet<string> | undefined;
+}
 
 export const createTranslator =
-  (lang: Lang, source: CatalogSource = catalogs): Translate =>
-  (key, params) =>
-    interpolate(source[lang][key] ?? source[SOURCE_LANG][key] ?? key, params);
+  (lang: Lang, source: CatalogSource = catalogs, options: TranslatorOptions = {}): Translate =>
+  (key, params) => {
+    const usable = lang === SOURCE_LANG || options.reviewed === undefined || options.reviewed.has(key);
+    const own = usable ? source[lang][key] : undefined;
+    return own === undefined
+      ? interpolate(source[SOURCE_LANG][key] ?? key, params, SOURCE_LANG)
+      : interpolate(own, params, lang);
+  };

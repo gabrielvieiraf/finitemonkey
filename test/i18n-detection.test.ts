@@ -77,7 +77,7 @@ describe("where the language settings come from", () => {
       "linux",
       "pt-BR",
     );
-    assert.deepEqual(settings, { config: "es", claude: "portuguese", system: undefined });
+    assert.deepEqual(settings, { config: "es", reviewedOnly: false, claude: "portuguese", system: undefined });
   });
 
   it("falls back to the user settings, honoring CLAUDE_CONFIG_DIR", () => {

@@ -1,6 +1,8 @@
+import type { Lang } from "../i18n/languages.js";
 import { hasMarker } from "./config-template.js";
 import { isScript, type Runner } from "./hook-entries.js";
 import { GENERATED_MARKER, LOCAL_BIN, VENDOR_BIN } from "./layout.js";
+import { TEMPLATES } from "./templates/index.js";
 
 const gateCommand = (runner: Runner): string => {
   const args = "gate --fast --json";
@@ -9,24 +11,24 @@ const gateCommand = (runner: Runner): string => {
   return isScript(runner.path) ? `node "${runner.path}" ${args}` : `"${runner.path}" ${args}`;
 };
 
-export const verifySkillTemplate = (runner: Runner): string =>
-  [
+export const verifySkillTemplate = (runner: Runner, lang: Lang): string => {
+  const skill = TEMPLATES[lang].verifySkill;
+  return [
     "---",
     "name: verify",
     "description: >-",
-    "  Use before every commit and before telling the person something works. Runs the fast gate through Finite Monkey so the result is recorded as evidence for the current tree instead of being taken on your word.",
+    `  ${skill.description}`,
     "when_to_use: >-",
-    "  Trigger phrases include commit, run the tests, check it works, roda os testes, confere, verifica, prueba.",
+    `  ${skill.whenToUse}`,
     "---",
     "",
-    "# Verify: evidence, not claims",
+    `# ${skill.title}`,
     "",
-    `1. From the project root, run \`${gateCommand(runner)}\`.`,
-    "2. Read `data`; for every failing item, fix the cause, never the check.",
-    "3. Quote the command and its exit code when you report a result. A result from before your last edit no longer counts.",
+    ...skill.steps(gateCommand(runner)).map((step, index) => `${String(index + 1)}. ${step}`),
     "",
     `<!-- ${GENERATED_MARKER} -->`,
     "",
   ].join("\n");
+};
 
 export const isOwnSkill = hasMarker;

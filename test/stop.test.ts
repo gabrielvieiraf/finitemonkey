@@ -118,10 +118,7 @@ describe("Stop gate", () => {
     let outcome: HookOutcome | undefined;
     for (let round = 0; round < 4; round += 1) outcome = await stop(repo, { active: round > 0 });
     const message = String(field(parseBody(outcome?.stdout ?? "{}"), "systemMessage"));
-    assert.match(
-      message,
-      /NOT DONE after 3 block\(s\).*Missing: tests \(skip, only or todo added in test\/a\.test\.js/,
-    );
+    assert.match(message, /NOT DONE after 3 blocks.*Missing: tests \(skip, only or todo added in test\/a\.test\.js/);
     assert.equal(readGateStatus(repoRuntime(), fmPaths(repo.root))?.status, "not_done");
   });
 

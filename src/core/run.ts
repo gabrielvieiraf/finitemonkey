@@ -1,5 +1,6 @@
 import { REGISTRY } from "../commands/index.js";
 import type { CommandSpec } from "../commands/types.js";
+import { catalogs, reviewedKeys } from "../i18n/catalogs.js";
 import { langSettings } from "../i18n/lang-settings.js";
 import { detectLang, LANGUAGES, normalizeLang } from "../i18n/languages.js";
 import { createTranslator } from "../i18n/translate.js";
@@ -27,7 +28,9 @@ export const run = async (options: RunOptions): Promise<number> => {
   const loose = looseArgs(options.argv);
   const settings = langSettings(options.runtime, options.cwd, options.env, options.platform);
   const detected = detectLang(loose.lang, options.env, settings);
-  const t = createTranslator(detected.lang);
+  const t = createTranslator(detected.lang, catalogs, {
+    reviewed: settings.reviewedOnly === true ? reviewedKeys(detected.lang) : undefined,
+  });
   const ctx: Ctx = {
     lang: detected.lang,
     langSource: detected.source,
