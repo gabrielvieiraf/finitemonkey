@@ -23,6 +23,7 @@ const machine = (spec: Machine = {}): DoctorEnv => ({
   platform: spec.platform ?? "linux",
   env: spec.env ?? {},
   cwd: toAbsolutePath(spec.cwd ?? "/home/ana/project"),
+  version: "9.9.9-test",
   root: toAbsolutePath(spec.cwd ?? "/home/ana/project"),
   runtime: fakeRuntime({
     ...(spec.nodeVersion === undefined ? {} : { nodeVersion: spec.nodeVersion }),
@@ -104,16 +105,11 @@ describe("doctor result", () => {
   });
 
   it("warnings alone still exit 0", () => {
-    const result = doctorResult(
-      ctx,
-      buildReport(
-        ctx,
-        runChecks(machine({ tools: { claude: missing, bwrap: found("bubblewrap 0.9.0"), socat: found("socat 1.8") } })),
-      ),
-    );
+    const result = doctorResult(ctx, buildReport(ctx, runChecks(machine({ tools: { claude: missing } }))));
     assert.equal(result.exitCode, 0);
     assert.ok(result.ok);
-    assert.equal(result.data.summary.warn, 1);
+    assert.equal(result.data.summary.fail, 0);
+    assert.equal(result.data.checks.find((item) => item.check === "claude")?.status, "warn");
   });
 
   it("bundle doctor --json follows the contract on this machine", () => {

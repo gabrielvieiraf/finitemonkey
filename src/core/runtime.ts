@@ -62,6 +62,7 @@ export interface ExecRequest {
   readonly shell?: boolean;
   readonly env?: Env;
   readonly unset?: readonly string[];
+  readonly input?: string;
 }
 
 export interface ExecResult {

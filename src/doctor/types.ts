@@ -8,7 +8,12 @@ export const CHECK_STATUSES = ["ok", "warn", "fail"] as const;
 
 export type CheckStatus = (typeof CHECK_STATUSES)[number];
 
+export const HOOK_HEALTH = ["ok", "degraded", "broken"] as const;
+
+export type HookHealth = (typeof HOOK_HEALTH)[number];
+
 export interface CheckFinding {
+  readonly hook?: HookHealth;
   readonly check: string;
   readonly status: CheckStatus;
   readonly messageKey: MessageKey;
@@ -18,7 +23,7 @@ export interface CheckFinding {
 
 export type DoctorRuntime = Pick<
   Runtime,
-  "nodeVersion" | "probe" | "readText" | "stat" | "listDir" | "git" | "now" | "realpath" | "homeDir"
+  "nodeVersion" | "probe" | "readText" | "stat" | "listDir" | "git" | "now" | "realpath" | "homeDir" | "exec"
 >;
 
 export interface DoctorEnv {
@@ -26,6 +31,7 @@ export interface DoctorEnv {
   readonly env: Env;
   readonly cwd: AbsolutePath;
   readonly root: AbsolutePath;
+  readonly version: string;
   readonly runtime: DoctorRuntime;
 }
 

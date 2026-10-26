@@ -5,62 +5,13 @@ import { describe, it } from "node:test";
 
 import { doctorResult } from "../src/commands/doctor.js";
 import { toAbsolutePath } from "../src/core/brand.js";
-import type { GitResult, ProbeResult } from "../src/core/runtime.js";
+import type { GitResult } from "../src/core/runtime.js";
 import { buildReport, runChecks } from "../src/doctor/run.js";
-import type { CheckFinding, DoctorEnv } from "../src/doctor/types.js";
+import type { CheckFinding } from "../src/doctor/types.js";
 import { catalogs } from "../src/i18n/catalogs.js";
 import { LANGUAGES } from "../src/i18n/languages.js";
-import { fakeCtx, fakeRuntime, found, missing, ROOT } from "./support.js";
-
-const PROJECT = "/home/ana/project";
-const USER_SETTINGS = "/home/test/.claude/settings.json";
-const MANAGED = "/etc/claude-code/managed-settings.json";
-
-interface Fixture {
-  readonly platform?: NodeJS.Platform;
-  readonly nodeVersion?: string;
-  readonly env?: Readonly<Record<string, string>>;
-  readonly files?: Readonly<Record<string, string>>;
-  readonly project?: Readonly<Record<string, string>>;
-  readonly tools?: Readonly<Record<string, ProbeResult>>;
-  readonly git?: (args: readonly string[]) => GitResult;
-}
-
-const HEALTHY_TOOLS: Readonly<Record<string, ProbeResult>> = {
-  git: found("git version 2.47.1"),
-  claude: found("2.1.300 (Claude Code)"),
-  bwrap: found("bubblewrap 0.9.0"),
-  socat: found("socat version 1.8"),
-};
-
-const projectPath = (relative: string): string => toAbsolutePath(join(PROJECT, ...relative.split("/")));
-
-const machine = (fixture: Fixture = {}): DoctorEnv => {
-  const files: Readonly<Record<string, string>> = Object.fromEntries([
-    [toAbsolutePath("/proc/version"), "Linux version 6.8.0-generic"] as const,
-    ...Object.entries(fixture.files ?? {}).map(([path, text]) => [toAbsolutePath(path), text] as const),
-    ...Object.entries(fixture.project ?? {}).map(([path, text]) => [projectPath(path), text] as const),
-  ]);
-  return {
-    platform: fixture.platform ?? "linux",
-    env: { PATH: "/usr/local/bin:/usr/bin", ...fixture.env },
-    cwd: toAbsolutePath(PROJECT),
-    root: toAbsolutePath(PROJECT),
-    runtime: fakeRuntime({
-      nodeVersion: fixture.nodeVersion ?? "22.11.0",
-      tools: { ...HEALTHY_TOOLS, ...fixture.tools },
-      files,
-      ...(fixture.git === undefined ? {} : { git: fixture.git }),
-    }),
-  };
-};
-
-const settings = (value: object): string => JSON.stringify(value);
-
-const NOT_OK = (finding: CheckFinding): boolean => finding.status !== "ok";
-
-const firing = (fixture: Fixture, check: string): readonly CheckFinding[] =>
-  runChecks(machine(fixture)).filter((finding) => finding.check === check && NOT_OK(finding));
+import { firing, type Fixture, machine, MANAGED, NOT_OK, settings, USER_SETTINGS } from "./doctor-support.js";
+import { fakeCtx, found, missing, ROOT } from "./support.js";
 
 const firstCommit =
   (daysAgo: number) =>

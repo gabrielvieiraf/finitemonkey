@@ -8,6 +8,8 @@ import { allow, composeDecisions, type HookDecision, type HookHandlers, type Hoo
 import { type HookPayload, parseHookPayload } from "./payload.js";
 import { readAll, withDeadline } from "./stdin.js";
 
+export const HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
+
 export type HookVerdict = "allow" | "block" | "failed_open" | "failed_closed" | "stop_released";
 
 export interface HookOutcome {
@@ -42,6 +44,7 @@ const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Eval
   const parsed = parseHookPayload(event, text, options.stdin.isTTY === true);
   if (!parsed.ok) return { kind: "failed", payload: undefined, detail: parsed.error };
   const payload = parsed.value;
+  if (options.env?.[HOOK_PROBE_ENV] === "1") return { kind: "decided", payload, decision: { kind: "allow" } };
   try {
     return {
       kind: "decided",

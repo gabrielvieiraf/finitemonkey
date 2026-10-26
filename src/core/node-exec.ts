@@ -26,6 +26,7 @@ export const nodeExec: Exec = (request) => {
     timeout: request.timeoutMs,
     windowsHide: true,
     maxBuffer: MAX_BUFFER,
+    ...(request.input === undefined ? {} : { input: request.input }),
     env: Object.fromEntries(
       Object.entries({ ...process.env, ...request.env }).filter(([name]) => !(request.unset ?? []).includes(name)),
     ),
