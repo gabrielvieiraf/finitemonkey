@@ -131,6 +131,7 @@ export interface CliOptions {
   readonly cwd?: AbsolutePath;
   readonly runtime?: Runtime;
   readonly version?: string;
+  readonly platform?: NodeJS.Platform;
 }
 
 export interface CliRun {
@@ -146,7 +147,7 @@ export const cli = async (argv: readonly string[], options: CliOptions = {}): Pr
     argv,
     env: options.env ?? {},
     cwd: options.cwd ?? toAbsolutePath("/home/ana/project"),
-    platform: "linux",
+    platform: options.platform ?? "linux",
     io: { stdout, stderr, stdin: options.stdin ?? Readable.from([]) },
     version: options.version ?? TEST_VERSION,
     runtime: options.runtime ?? fakeRuntime(),

@@ -69,6 +69,7 @@ Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada 
 
 - Preset: `neutral` (padrão) ou `gabriel` (acrescenta as convenções do autor, como desligar a atribuição de IA em commits e PRs quando o projeto ainda não definiu isso).
 - Se registra o marketplace do plugin no projeto (`--marketplace`).
+- Se liga o sandbox do Claude Code para esta pessoa (`--sandbox`, só macOS, Linux e WSL2). Ele vai para o `.claude/settings.local.json`, não para as configurações versionadas: o Claude Code passa a se recusar a iniciar sem o sandbox, os comandos no sandbox não leem `~/.ssh`, `~/.aws` nem os `.env` do projeto, e só chegam aos hosts de `sandbox.hosts` no `config.yml` (npm e GitHub por padrão).
 - Se olha uma vez as sessões locais do Claude Code neste projeto (`--look-back`). Ele lê os logs de sessão desta máquina e mostra contagens estimadas do que o Finite Monkey teria bloqueado, com segredos mascarados. Nada é salvo nem enviado. Sem a flag, nenhum log de sessão é lido.
 
 ### 4. Instale
@@ -124,4 +125,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:8d65cc2e11da -->
+<!-- translation of docs/AGENT-SETUP.md sha256:c21405741464 -->

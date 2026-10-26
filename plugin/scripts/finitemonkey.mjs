@@ -1371,7 +1371,7 @@ var parseStatusLineAdded = (value) => {
 };
 
 // src/install/lock-file.ts
-var ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown", "githook"];
+var ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown", "githook", "sandbox"];
 var strings = (value) => Array.isArray(value) && value.every((item2) => typeof item2 === "string") ? value : void 0;
 var parseAdded = (value) => {
   if (!isRecord(value)) return void 0;
@@ -1405,6 +1405,7 @@ var parseEntry = (value) => {
   }
   const added = parseAdded(value["added"]);
   const handlers = Array.isArray(value["handlers"]) ? value["handlers"].filter(isRecord) : void 0;
+  const sandbox = isRecord(value["sandbox"]) ? value["sandbox"] : void 0;
   return {
     path,
     kind: known2,
@@ -1412,7 +1413,8 @@ var parseEntry = (value) => {
     hash,
     ...typeof backup === "string" ? { backup } : {},
     ...added === void 0 ? {} : { added },
-    ...handlers === void 0 ? {} : { handlers }
+    ...handlers === void 0 ? {} : { handlers },
+    ...sandbox === void 0 ? {} : { sandbox }
   };
 };
 var parseEntries = (value) => {
@@ -2087,6 +2089,37 @@ var policyTemplate = (lang) => [
   ""
 ].join("\n");
 
+// src/install/sandbox.ts
+var SANDBOX_FILE = ".claude/settings.local.json";
+var DEFAULT_HOSTS = [
+  "registry.npmjs.org",
+  "github.com",
+  "api.github.com",
+  "codeload.github.com",
+  "objects.githubusercontent.com"
+];
+var SANDBOX_PLATFORMS = ["darwin", "linux"];
+var sandboxBlock = (root, hosts) => ({
+  enabled: true,
+  failIfUnavailable: true,
+  filesystem: { denyRead: ["~/.ssh", "~/.aws", `${root}/.env`, `${root}/.env.*`] },
+  network: { allowedDomains: [...hosts] }
+});
+var withSandbox = (text9, block4) => {
+  const parsed = parseSettings(text9);
+  if (!parsed.ok) return void 0;
+  if ("sandbox" in parsed.value) return text9;
+  return renderJson({ ...parsed.value, sandbox: block4 }, text9 === void 0 ? DEFAULT_STYLE : styleOf(text9));
+};
+var withoutSandbox = (text9, added) => {
+  const parsed = parseSettings(text9);
+  if (!parsed.ok) return text9;
+  const current2 = parsed.value["sandbox"];
+  if (!isRecord(current2) || JSON.stringify(current2) !== JSON.stringify(added)) return text9;
+  const rest = Object.fromEntries(Object.entries(parsed.value).filter(([key]) => key !== "sandbox"));
+  return Object.keys(rest).length === 0 ? void 0 : renderJson(rest, styleOf(text9));
+};
+
 // src/install/settings-merge.ts
 var SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
 var ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false };
@@ -2306,6 +2339,17 @@ var markdownItems = (project, runner, lang) => [
   const after = render3(before);
   return { path, kind: "markdown", action: actionFor(before, after, "merge"), before, after };
 });
+var sandboxItems = (project, input) => {
+  if (!input.sandbox || !SANDBOX_PLATFORMS.includes(input.platform)) return [];
+  const declared = configList(parseConfigYaml(project.read(CONFIG_FILE2) ?? ""), "sandbox", "hosts");
+  const block4 = sandboxBlock(project.root, declared.length > 0 ? declared : DEFAULT_HOSTS);
+  const before = project.read(SANDBOX_FILE);
+  const after = withSandbox(before, block4);
+  if (after === void 0) return [];
+  return [
+    { path: SANDBOX_FILE, kind: "sandbox", action: actionFor(before, after, "merge"), before, after, sandbox: block4 }
+  ];
+};
 var gitignoreItem = (project) => {
   const before = project.read(GITIGNORE_FILE);
   const after = withBlock(before);
@@ -2350,14 +2394,18 @@ var buildPlan = (project, detection, input, previous, migrations = MIGRATIONS) =
   const files = generatedFiles(project, input, detection.runner, vendor);
   if (!files.ok) return files;
   const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
+  const sandboxSupported = SANDBOX_PLATFORMS.includes(input.platform);
+  const sandbox = input.sandbox ? sandboxSupported ? "added" : "unsupported" : input.offerSandbox ? "offer" : "none";
   return accept({
     detection,
+    sandbox,
     preset: input.preset,
     items: applyMigrations(
       [
         settings.value,
         gitignoreItem(project),
         ...markdownItems(project, detection.runner, input.lang),
+        ...sandboxItems(project, input),
         ...generated,
         ...gitHookItems(project, detection.runner)
       ],
@@ -2406,7 +2454,8 @@ var entryOf2 = (plan, item2, backupDir) => {
     hash,
     ...backup === void 0 ? {} : { backup },
     ...item2.added === void 0 ? {} : { added: item2.added },
-    ...item2.handlers === void 0 ? {} : { handlers: item2.handlers }
+    ...item2.handlers === void 0 ? {} : { handlers: item2.handlers },
+    ...item2.sandbox === void 0 ? {} : { sandbox: item2.sandbox }
   };
 };
 var nextLock = (plan, version, now, backupDir, createdDirs, only) => ({
@@ -2602,13 +2651,16 @@ var selfBundle = (ctx) => {
   return text9.ok ? text9.value : void 0;
 };
 var INHERITED = /* @__PURE__ */ new Set(["default", "config", "claude-settings"]);
-var planInputFor = (ctx, preset, bin, marketplace) => ({
+var planInputFor = (ctx, preset, bin, marketplace, sandbox = false) => ({
   preset,
   lang: ctx.lang,
   claudeLanguage: INHERITED.has(ctx.langSource) ? void 0 : CLAUDE_LANGUAGE[ctx.lang],
   bin,
   version: ctx.version,
   marketplace,
+  sandbox,
+  offerSandbox: !sandbox && SANDBOX_PLATFORMS.includes(ctx.platform) && (ctx.io.stdin.isTTY === true || ctx.yes),
+  platform: ctx.platform,
   bundle: selfBundle(ctx),
   env: ctx.env,
   t: ctx.t
@@ -7020,7 +7072,9 @@ var en_default = {
   "critique.decision": "Decision needed: finding {id} ({what}) already fails on the base branch and is an active risk.",
   "critique.verdict": "Verdict: {verdict}",
   "critique.error.invalid": "the findings file is not valid: {detail}",
-  "critique.error.must_fix": "{count, plural, one {# must-fix finding reproduced on head only} other {# must-fix findings reproduced on head only}}"
+  "critique.error.must_fix": "{count, plural, one {# must-fix finding reproduced on head only} other {# must-fix findings reproduced on head only}}",
+  "install.warn.sandbox_offer": "The Claude Code sandbox runs here. Add --sandbox to turn it on for you only, in .claude/settings.local.json: it fails to start without the sandbox, hides ~/.ssh, ~/.aws and .env files from commands, and lets them reach only the hosts in sandbox.hosts.",
+  "install.warn.sandbox_unsupported": "--sandbox was ignored: native Windows has no Claude Code sandbox, so the guards are the only protection here. Run Claude Code inside WSL2 to use it."
 };
 
 // src/i18n/es.json
@@ -7709,7 +7763,9 @@ var es_default = {
   "critique.decision": "Decisión necesaria: el hallazgo {id} ({what}) ya falla en la rama base y es un riesgo activo.",
   "critique.verdict": "Veredicto: {verdict}",
   "critique.error.invalid": "el archivo de hallazgos no es válido: {detail}",
-  "critique.error.must_fix": "{count, plural, one {# hallazgo obligatorio reproducido solo en head} other {# hallazgos obligatorios reproducidos solo en head}}"
+  "critique.error.must_fix": "{count, plural, one {# hallazgo obligatorio reproducido solo en head} other {# hallazgos obligatorios reproducidos solo en head}}",
+  "install.warn.sandbox_offer": "El sandbox de Claude Code funciona aquí. Añade --sandbox para activarlo solo para ti, en .claude/settings.local.json: no arranca sin el sandbox, oculta ~/.ssh, ~/.aws y los archivos .env a los comandos y solo deja llegar a los hosts de sandbox.hosts.",
+  "install.warn.sandbox_unsupported": "Se ignoró --sandbox: Windows nativo no tiene sandbox de Claude Code, así que aquí solo protegen los bloqueos. Ejecuta Claude Code dentro de WSL2 para usarlo."
 };
 
 // src/i18n/pt-BR.json
@@ -8398,7 +8454,9 @@ var pt_BR_default = {
   "critique.decision": "Decisão necessária: o achado {id} ({what}) já falha na branch base e é um risco ativo.",
   "critique.verdict": "Veredito: {verdict}",
   "critique.error.invalid": "o arquivo de achados não é válido: {detail}",
-  "critique.error.must_fix": "{count, plural, one {# achado obrigatório reproduzido só no head} other {# achados obrigatórios reproduzidos só no head}}"
+  "critique.error.must_fix": "{count, plural, one {# achado obrigatório reproduzido só no head} other {# achados obrigatórios reproduzidos só no head}}",
+  "install.warn.sandbox_offer": "O sandbox do Claude Code roda aqui. Acrescente --sandbox para ligar só para você, em .claude/settings.local.json: ele se recusa a iniciar sem o sandbox, esconde ~/.ssh, ~/.aws e os arquivos .env dos comandos e só deixa chegar aos hosts de sandbox.hosts.",
+  "install.warn.sandbox_unsupported": "--sandbox foi ignorado: o Windows nativo não tem sandbox do Claude Code, então aqui só as travas protegem. Rode o Claude Code dentro do WSL2 para usar."
 };
 
 // src/i18n/review.json
@@ -9088,7 +9146,9 @@ var review_default = {
     "critique.decision": "machine",
     "critique.verdict": "machine",
     "critique.error.invalid": "machine",
-    "critique.error.must_fix": "machine"
+    "critique.error.must_fix": "machine",
+    "install.warn.sandbox_offer": "machine",
+    "install.warn.sandbox_unsupported": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -9775,7 +9835,9 @@ var review_default = {
     "critique.decision": "machine",
     "critique.verdict": "machine",
     "critique.error.invalid": "machine",
-    "critique.error.must_fix": "machine"
+    "critique.error.must_fix": "machine",
+    "install.warn.sandbox_offer": "machine",
+    "install.warn.sandbox_unsupported": "machine"
   }
 };
 
@@ -17794,11 +17856,18 @@ var itemWarning = (t, item2) => {
     return [{ code: "edited_file", message: t("install.warn.edited", { path: item2.path }) }];
   return [];
 };
+var sandboxWarnings = (t, plan) => {
+  if (plan.sandbox === "unsupported")
+    return [{ code: "sandbox_unsupported", message: t("install.warn.sandbox_unsupported") }];
+  if (plan.sandbox === "offer") return [{ code: "sandbox_offer", message: t("install.warn.sandbox_offer") }];
+  return [];
+};
 var planWarnings = (t, plan) => [
   ...plan.detection.gitRoot ? [] : [{ code: "not_git", message: t("install.warn.not_git") }],
   ...plan.detection.claude.failClosed ? [] : [{ code: "fail_open", message: t("install.warn.fail_open", { version: plan.detection.claude.version ?? "?" }) }],
   ...plan.detection.location.wslMount ? [{ code: "wsl_mount", message: t("install.warn.wsl_mount", { path: plan.detection.root }) }] : [],
   ...plan.detection.location.synced ? [{ code: "synced_folder", message: t("install.warn.synced_folder", { path: plan.detection.root }) }] : [],
+  ...sandboxWarnings(t, plan),
   ...plan.detection.authorities.map((authority) => authorityWarning(t, authority)),
   ...plan.items.flatMap((item2) => itemWarning(t, item2))
 ];
@@ -17839,7 +17908,8 @@ var flagsFor = (request, preset) => [
   `finitemonkey ${request.mode} --yes`,
   ...request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : [],
   ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`],
-  ...request.marketplace ? ["--marketplace"] : []
+  ...request.marketplace ? ["--marketplace"] : [],
+  ...request.sandbox === true ? ["--sandbox"] : []
 ].join(" ");
 var presentPlan = (ctx, request, plan) => {
   const data = planData(ctx.t, plan, request.mode, false, void 0);
@@ -17865,7 +17935,7 @@ var runInstall = (ctx, request, presetFallback) => {
   const { project, gitRoot: gitRoot2 } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = planInputFor(ctx, preset, request.bin, request.marketplace);
+  const input = planInputFor(ctx, preset, request.bin, request.marketplace, request.sandbox === true);
   const plan = buildPlan(project, detect(project, gitRoot2, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
@@ -17876,6 +17946,7 @@ var initRequest = (args2) => ({
   preset: stringOption(args2.values, "preset"),
   bin: stringOption(args2.values, "bin"),
   marketplace: args2.values["marketplace"] === true,
+  sandbox: args2.values["sandbox"] === true,
   showDiff: false
 });
 var withLookBack = (ctx, result) => {
@@ -17892,12 +17963,13 @@ var withLookBack = (ctx, result) => {
 var initCommand = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--look-back] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--dry-run] [--yes]",
   status: "ready",
   options: {
     preset: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
+    sandbox: { type: "boolean" },
     "look-back": { type: "boolean" }
   },
   run: (ctx, args2) => {
@@ -19535,6 +19607,10 @@ var structural = (entry2, current2) => {
   if (entry2.kind === "gitignore" || entry2.kind === "markdown" || entry2.kind === "githook") {
     const text9 = blockless(entry2.kind, current2);
     return text9.trim() === "" && !entry2.existed ? void 0 : text9;
+  }
+  if (entry2.kind === "sandbox") {
+    const text9 = withoutSandbox(current2, entry2.sandbox ?? {});
+    return text9 === void 0 && entry2.existed ? "{}\n" : text9;
   }
   const parsed = parseSettings(current2);
   if (!parsed.ok || entry2.added === void 0) return current2;

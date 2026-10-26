@@ -8,6 +8,7 @@ import { parseSettings, renderJson, styleOf } from "./json-text.js";
 import { LOCK_FILE, STATE_DIR } from "./layout.js";
 import type { LockEntry, LockFile } from "./lock-file.js";
 import type { Project } from "./project.js";
+import { withoutSandbox } from "./sandbox.js";
 import { unmergeSettings } from "./settings-merge.js";
 
 export const REMOVAL_ACTIONS = ["restore", "delete", "unmerge", "keep-edited", "gone", "keep-generated"] as const;
@@ -40,6 +41,10 @@ const structural = (entry: LockEntry, current: string): string | undefined => {
   if (entry.kind === "gitignore" || entry.kind === "markdown" || entry.kind === "githook") {
     const text = blockless(entry.kind, current);
     return text.trim() === "" && !entry.existed ? undefined : text;
+  }
+  if (entry.kind === "sandbox") {
+    const text = withoutSandbox(current, entry.sandbox ?? {});
+    return text === undefined && entry.existed ? "{}\n" : text;
   }
   const parsed = parseSettings(current);
   if (!parsed.ok || entry.added === undefined) return current;

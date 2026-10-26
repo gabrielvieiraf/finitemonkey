@@ -4,7 +4,7 @@ import { LOCK_SCHEMA, type Preset, PRESETS } from "./layout.js";
 import type { SettingsAdded } from "./settings-merge.js";
 import { parseStatusLineAdded } from "./statusline.js";
 
-export const ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown", "githook"] as const;
+export const ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown", "githook", "sandbox"] as const;
 
 export type EntryKind = (typeof ENTRY_KINDS)[number];
 
@@ -16,6 +16,7 @@ export interface LockEntry {
   readonly backup?: string;
   readonly added?: SettingsAdded;
   readonly handlers?: readonly HookHandlerJson[];
+  readonly sandbox?: JsonObject;
 }
 
 export interface LockFile {
@@ -64,6 +65,7 @@ const parseEntry = (value: unknown): LockEntry | undefined => {
   }
   const added = parseAdded(value["added"]);
   const handlers = Array.isArray(value["handlers"]) ? value["handlers"].filter(isRecord) : undefined;
+  const sandbox = isRecord(value["sandbox"]) ? value["sandbox"] : undefined;
   return {
     path,
     kind: known,
@@ -72,6 +74,7 @@ const parseEntry = (value: unknown): LockEntry | undefined => {
     ...(typeof backup === "string" ? { backup } : {}),
     ...(added === undefined ? {} : { added }),
     ...(handlers === undefined ? {} : { handlers }),
+    ...(sandbox === undefined ? {} : { sandbox }),
   };
 };
 

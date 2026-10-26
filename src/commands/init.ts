@@ -30,6 +30,7 @@ export interface InstallRequest {
   readonly preset: string | undefined;
   readonly bin: string | undefined;
   readonly marketplace: boolean;
+  readonly sandbox?: boolean;
   readonly showDiff: boolean;
 }
 
@@ -39,6 +40,7 @@ const flagsFor = (request: InstallRequest, preset: Preset): string =>
     ...(request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : []),
     ...(request.bin === undefined ? [] : [`--bin "${request.bin}"`]),
     ...(request.marketplace ? ["--marketplace"] : []),
+    ...(request.sandbox === true ? ["--sandbox"] : []),
   ].join(" ");
 
 export const presentPlan = (ctx: Ctx, request: InstallRequest, plan: Plan): CommandResult<PlanData> => {
@@ -67,7 +69,7 @@ export const runInstall = (ctx: Ctx, request: InstallRequest, presetFallback: Pr
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = planInputFor(ctx, preset, request.bin, request.marketplace);
+  const input = planInputFor(ctx, preset, request.bin, request.marketplace, request.sandbox === true);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
@@ -79,6 +81,7 @@ const initRequest = (args: CommandArgs): InstallRequest => ({
   preset: stringOption(args.values, "preset"),
   bin: stringOption(args.values, "bin"),
   marketplace: args.values["marketplace"] === true,
+  sandbox: args.values["sandbox"] === true,
   showDiff: false,
 });
 
@@ -98,12 +101,13 @@ export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--look-back] [--dry-run] [--yes]",
+    "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--dry-run] [--yes]",
   status: "ready",
   options: {
     preset: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
+    sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
   },
   run: (ctx, args) => {

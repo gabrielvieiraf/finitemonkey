@@ -683,5 +683,7 @@
   "critique.decision": "Decision needed: finding {id} ({what}) already fails on the base branch and is an active risk.",
   "critique.verdict": "Verdict: {verdict}",
   "critique.error.invalid": "the findings file is not valid: {detail}",
-  "critique.error.must_fix": "{count, plural, one {# must-fix finding reproduced on head only} other {# must-fix findings reproduced on head only}}"
+  "critique.error.must_fix": "{count, plural, one {# must-fix finding reproduced on head only} other {# must-fix findings reproduced on head only}}",
+  "install.warn.sandbox_offer": "The Claude Code sandbox runs here. Add --sandbox to turn it on for you only, in .claude/settings.local.json: it fails to start without the sandbox, hides ~/.ssh, ~/.aws and .env files from commands, and lets them reach only the hosts in sandbox.hosts.",
+  "install.warn.sandbox_unsupported": "--sandbox was ignored: native Windows has no Claude Code sandbox, so the guards are the only protection here. Run Claude Code inside WSL2 to use it."
 }

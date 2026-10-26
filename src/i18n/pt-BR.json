@@ -683,5 +683,7 @@
   "critique.decision": "Decisão necessária: o achado {id} ({what}) já falha na branch base e é um risco ativo.",
   "critique.verdict": "Veredito: {verdict}",
   "critique.error.invalid": "o arquivo de achados não é válido: {detail}",
-  "critique.error.must_fix": "{count, plural, one {# achado obrigatório reproduzido só no head} other {# achados obrigatórios reproduzidos só no head}}"
+  "critique.error.must_fix": "{count, plural, one {# achado obrigatório reproduzido só no head} other {# achados obrigatórios reproduzidos só no head}}",
+  "install.warn.sandbox_offer": "O sandbox do Claude Code roda aqui. Acrescente --sandbox para ligar só para você, em .claude/settings.local.json: ele se recusa a iniciar sem o sandbox, esconde ~/.ssh, ~/.aws e os arquivos .env dos comandos e só deixa chegar aos hosts de sandbox.hosts.",
+  "install.warn.sandbox_unsupported": "--sandbox foi ignorado: o Windows nativo não tem sandbox do Claude Code, então aqui só as travas protegem. Rode o Claude Code dentro do WSL2 para usar."
 }

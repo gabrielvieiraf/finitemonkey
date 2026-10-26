@@ -39,6 +39,7 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: [
       ".claude/settings.json",
+      ".claude/settings.local.json",
       ".claude/skills/verify/SKILL.md",
       "AGENTS.md",
       "CLAUDE.md",
