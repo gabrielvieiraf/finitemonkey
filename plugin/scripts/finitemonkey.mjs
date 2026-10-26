@@ -21,7 +21,7 @@ import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // src/core/node-exec.ts
 import { spawn, spawnSync } from "node:child_process";
-import { appendFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 // src/core/parsed.ts
@@ -45,6 +45,32 @@ var optionalString = (record2, key) => {
   return typeof value === "string" ? value : void 0;
 };
 
+// src/core/windows-command.ts
+import { win32 } from "node:path";
+var DEFAULT_PATHEXT = ".COM;.EXE;.BAT;.CMD";
+var NEEDS_SHELL = /\.(cmd|bat)$/i;
+var NEEDS_QUOTES = /[\s"&|<>^()%!]/;
+var envValue = (env, name) => {
+  const key = Object.keys(env).find((candidate) => candidate.toUpperCase() === name);
+  return key === void 0 ? void 0 : env[key];
+};
+var quoteForCmd = (arg) => arg !== "" && !NEEDS_QUOTES.test(arg) ? arg : `"${arg.replace(/"/g, '""')}"`;
+var resolveWindowsCommand = (command, env, exists) => {
+  if (/[\\/]/.test(command) || win32.extname(command) !== "") {
+    return { command, shell: NEEDS_SHELL.test(command) };
+  }
+  const dirs = (envValue(env, "PATH") ?? "").split(";").filter((dir) => dir !== "");
+  const extensions = (envValue(env, "PATHEXT") ?? DEFAULT_PATHEXT).split(";").filter((ext) => ext !== "");
+  for (const dir of dirs) {
+    for (const ext of extensions) {
+      const candidate = win32.join(dir, `${command}${ext.toLowerCase()}`);
+      if (exists(candidate)) return { command: candidate, shell: NEEDS_SHELL.test(candidate) };
+    }
+  }
+  return { command, shell: false };
+};
+var windowsCommandLine = (resolved, args) => [quoteForCmd(resolved.command), ...args.map(quoteForCmd)].join(" ");
+
 // src/core/node-exec.ts
 var SHELL_NOT_FOUND = /* @__PURE__ */ new Set([127, 9009]);
 var CMD_NOT_FOUND = /is not recognized as an internal or external command|não é reconhecido como um comando interno|no se reconoce como un comando interno/i;
@@ -67,7 +93,8 @@ var nodeExec = (request) => {
       Object.entries({ ...process.env, ...request.env }).filter(([name]) => !(request.unset ?? []).includes(name))
     )
   };
-  const result = request.shell === true ? spawnSync([request.command, ...request.args].join(" "), { ...options, shell: true }) : spawnSync(request.command, [...request.args], options);
+  const resolved = process.platform === "win32" && request.shell !== true ? resolveWindowsCommand(request.command, options.env, existsSync) : void 0;
+  const result = request.shell === true ? spawnSync([request.command, ...request.args].join(" "), { ...options, shell: true }) : resolved?.shell === true ? spawnSync(windowsCommandLine(resolved, request.args), { ...options, shell: true }) : spawnSync(resolved?.command ?? request.command, [...request.args], options);
   const code = errnoCode(result.error);
   const exitCode = result.status;
   const shellMissing = request.shell === true && exitCode !== null && (SHELL_NOT_FOUND.has(exitCode) || exitCode === 1 && CMD_NOT_FOUND.test(text(result.stderr)));
@@ -1132,6 +1159,12 @@ var isBundlePath = (path) => path.endsWith(".mjs");
 
 // src/install/plan.ts
 var CHANGING = ["create", "merge", "update"];
+var WSL_MOUNT = /^\/mnt\/[a-z](\/|$)/i;
+var SYNCED = /(OneDrive|Dropbox|iCloud ?Drive|Mobile Documents|Google ?Drive)/i;
+var locationOf = (root, env) => ({
+  wslMount: WSL_MOUNT.test(root) && (env["WSL_DISTRO_NAME"] !== void 0 || env["WSL_INTEROP"] !== void 0),
+  synced: SYNCED.test(root)
+});
 var detect = (project, gitRoot2, input) => ({
   root: project.root,
   gitRoot: gitRoot2,
@@ -1140,7 +1173,8 @@ var detect = (project, gitRoot2, input) => ({
   settings: settingsInfo(project.read(SETTINGS_FILE)),
   authorities: detectAuthorities(project, input.env),
   runner: chooseRunner(project, input.bin),
-  claude: detectClaude(project.runtime.probe)
+  claude: detectClaude(project.runtime.probe),
+  location: locationOf(project.root, input.env)
 });
 var readPreviousLock = (project) => {
   const text6 = project.read(LOCK_FILE);
@@ -1996,20 +2030,20 @@ var detectOs = ({ platform, env, runtime }) => {
   const version = runtime.readText(toAbsolutePath("/proc/version"));
   return version.ok && /microsoft/i.test(version.value) ? "wsl" : "linux";
 };
-var WSL_MOUNT = /^\/mnt\/[a-z](\/|$)/i;
-var SYNCED = /(OneDrive|Dropbox|iCloud ?Drive|Mobile Documents|Google ?Drive)/i;
+var WSL_MOUNT2 = /^\/mnt\/[a-z](\/|$)/i;
+var SYNCED2 = /(OneDrive|Dropbox|iCloud ?Drive|Mobile Documents|Google ?Drive)/i;
 var NON_ASCII = /[^\x20-\x7e]/;
 var pathTraits = (path) => ({
   spaces: path.includes(" "),
   nonAscii: NON_ASCII.test(path),
-  synced: SYNCED.test(path)
+  synced: SYNCED2.test(path)
 });
 var checkOs = (env) => {
   const os = detectOs(env);
   const findings = [
     { check: "os", status: "ok", messageKey: `doctor.os.${os}`, params: { platform: env.platform } }
   ];
-  if (os === "wsl" && WSL_MOUNT.test(env.cwd)) {
+  if (os === "wsl" && WSL_MOUNT2.test(env.cwd)) {
     findings.push({
       check: "path.wsl_mount",
       status: "warn",
@@ -5088,6 +5122,8 @@ var en_default = {
   "install.plan.title": "Finite Monkey plan for {root} (preset {preset}):",
   "install.warning": "warning: {message}",
   "install.warn.not_git": "this folder is not inside a git repository; installing here anyway",
+  "install.warn.wsl_mount": "{path} is on a Windows drive mounted in WSL: git and hooks run several times slower and file watching misses changes; move the project to the Linux disk (for example ~/projects) and run init there",
+  "install.warn.synced_folder": "{path} is inside a synced folder (OneDrive, Dropbox, iCloud or Google Drive): sync can lock or rewrite files while git and hooks use them; move the project out of the synced folder",
   "install.warn.fail_open": "Claude Code {version} cannot block an action when a hook crashes (needs 2.1.295 or newer); guards fail open until you update Claude Code",
   "install.warn.authority": "{name} ({source}) also decides when a session may stop; Finite Monkey works alongside it and never turns it off",
   "install.warn.plugin": "the finitemonkey plugin is enabled ({source}); its hooks step aside while this project has its own Finite Monkey hooks",
@@ -5375,7 +5411,9 @@ var en_default = {
   "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost",
   "doctor.memory.lines": "{file}: {lines, plural, one {# line} other {# lines}} of {max}. Edits made during a session apply only after /clear, /compact or a restart.",
   "doctor.memory.too_long": "{file}: {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
-  "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml"
+  "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml",
+  "doctor.git.autocrlf": 'git converts line endings to CRLF on checkout (core.autocrlf=true) and {file} does not pin LF; shell hooks and scripts checked out with CRLF fail with "bad interpreter"',
+  "doctor.git.fix_autocrlf": "add `* text=auto eol=lf` to {file}, commit it, then run `git add --renormalize .`"
 };
 
 // src/i18n/es.json
@@ -5588,6 +5626,8 @@ var es_default = {
   "install.plan.title": "Plan de Finite Monkey para {root} (preset {preset}):",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta carpeta no está dentro de un repositorio git; se instala aquí de todos modos",
+  "install.warn.wsl_mount": "{path} está en un disco de Windows montado en WSL: git y los hooks van varias veces más lentos y la vigilancia de archivos pierde cambios; mueve el proyecto al disco de Linux (por ejemplo ~/proyectos) y ejecuta init allí",
+  "install.warn.synced_folder": "{path} está dentro de una carpeta sincronizada (OneDrive, Dropbox, iCloud o Google Drive): la sincronización puede bloquear o reescribir archivos mientras git y los hooks los usan; saca el proyecto de la carpeta sincronizada",
   "install.warn.fail_open": "Claude Code {version} no puede bloquear la acción cuando un hook falla (necesita 2.1.295 o más nueva); los guardas fallan abiertos hasta que actualices Claude Code",
   "install.warn.authority": "{name} ({source}) también decide cuándo puede terminar la sesión; Finite Monkey convive con él y nunca lo desactiva",
   "install.warn.plugin": "el plugin finitemonkey está habilitado ({source}); sus hooks ceden el paso mientras este proyecto tenga sus propios hooks de Finite Monkey",
@@ -5875,7 +5915,9 @@ var es_default = {
   "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada",
   "doctor.memory.lines": "{file}: {lines, plural, one {# línea} other {# líneas}} de {max}. Los cambios hechos durante una sesión solo se aplican tras /clear, /compact o reiniciar.",
   "doctor.memory.too_long": "{file}: {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
-  "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml"
+  "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml",
+  "doctor.git.autocrlf": 'git convierte los saltos de línea a CRLF al hacer checkout (core.autocrlf=true) y {file} no fija LF; los hooks y scripts de shell con CRLF fallan con "bad interpreter"',
+  "doctor.git.fix_autocrlf": "añade `* text=auto eol=lf` a {file}, haz commit y ejecuta `git add --renormalize .`"
 };
 
 // src/i18n/pt-BR.json
@@ -6088,6 +6130,8 @@ var pt_BR_default = {
   "install.plan.title": "Plano do Finite Monkey para {root} (preset {preset}):",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta pasta não está dentro de um repositório git; instalando aqui mesmo assim",
+  "install.warn.wsl_mount": "{path} está num disco do Windows montado no WSL: git e hooks ficam várias vezes mais lentos e a observação de arquivos perde mudanças; mova o projeto para o disco do Linux (por exemplo ~/projetos) e rode o init lá",
+  "install.warn.synced_folder": "{path} está dentro de uma pasta sincronizada (OneDrive, Dropbox, iCloud ou Google Drive): a sincronização pode travar ou reescrever arquivos enquanto o git e os hooks os usam; tire o projeto da pasta sincronizada",
   "install.warn.fail_open": "o Claude Code {version} não consegue barrar a ação quando um hook quebra (precisa da 2.1.295 ou mais nova); as travas falham abertas até você atualizar o Claude Code",
   "install.warn.authority": "{name} ({source}) também decide quando a sessão pode parar; o Finite Monkey convive com ele e nunca o desliga",
   "install.warn.plugin": "o plugin finitemonkey está habilitado ({source}); os hooks dele cedem a vez enquanto este projeto tiver os próprios hooks do Finite Monkey",
@@ -6375,7 +6419,9 @@ var pt_BR_default = {
   "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu",
   "doctor.memory.lines": "{file}: {lines, plural, one {# linha} other {# linhas}} de {max}. Edições feitas durante a sessão só valem depois de /clear, /compact ou reiniciar.",
   "doctor.memory.too_long": "{file}: {lines, plural, one {# linha} other {# linhas}}, acima do teto de {max}; arquivo de instruções longo é menos seguido",
-  "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml"
+  "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml",
+  "doctor.git.autocrlf": 'o git converte quebras de linha para CRLF no checkout (core.autocrlf=true) e o {file} não fixa LF; hooks e scripts de shell com CRLF falham com "bad interpreter"',
+  "doctor.git.fix_autocrlf": "acrescente `* text=auto eol=lf` ao {file}, faça commit e rode `git add --renormalize .`"
 };
 
 // src/i18n/review.json
@@ -6589,6 +6635,8 @@ var review_default = {
     "install.plan.title": "machine",
     "install.warning": "machine",
     "install.warn.not_git": "machine",
+    "install.warn.wsl_mount": "machine",
+    "install.warn.synced_folder": "machine",
     "install.warn.fail_open": "machine",
     "install.warn.authority": "machine",
     "install.warn.plugin": "machine",
@@ -6876,7 +6924,9 @@ var review_default = {
     "gate.merge.clean": "machine",
     "doctor.memory.lines": "machine",
     "doctor.memory.too_long": "machine",
-    "doctor.memory.fix_too_long": "machine"
+    "doctor.memory.fix_too_long": "machine",
+    "doctor.git.autocrlf": "machine",
+    "doctor.git.fix_autocrlf": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -7087,6 +7137,8 @@ var review_default = {
     "install.plan.title": "machine",
     "install.warning": "machine",
     "install.warn.not_git": "machine",
+    "install.warn.wsl_mount": "machine",
+    "install.warn.synced_folder": "machine",
     "install.warn.fail_open": "machine",
     "install.warn.authority": "machine",
     "install.warn.plugin": "machine",
@@ -7374,7 +7426,9 @@ var review_default = {
     "gate.merge.clean": "machine",
     "doctor.memory.lines": "machine",
     "doctor.memory.too_long": "machine",
-    "doctor.memory.fix_too_long": "machine"
+    "doctor.memory.fix_too_long": "machine",
+    "doctor.git.autocrlf": "machine",
+    "doctor.git.fix_autocrlf": "machine"
   }
 };
 
@@ -10952,11 +11006,11 @@ var withAlias = (invocation, expansion) => ({
 
 // src/git/path-key.ts
 import { posix as posix2 } from "node:path";
-var WSL_MOUNT2 = /^\/mnt\/([a-zA-Z])(\/|$)/;
+var WSL_MOUNT3 = /^\/mnt\/([a-zA-Z])(\/|$)/;
 var DRIVE = /^([a-zA-Z]):(\/|$)/;
 var pathKey = (path) => {
   const posixPath = toPosixPath(path).replace(
-    WSL_MOUNT2,
+    WSL_MOUNT3,
     (_match, letter, slash) => `${letter}:${slash || "/"}`
   );
   const drive = DRIVE.exec(posixPath);
@@ -13185,8 +13239,21 @@ var checkInstructions = (env) => {
   ];
 };
 
-// src/doctor/memory.ts
+// src/doctor/line-endings.ts
 import { join as join30 } from "node:path";
+var LF_RULE = /^\*\s.*\beol=lf\b/m;
+var checkLineEndings = ({ root, runtime }) => {
+  const autocrlf = runtime.git(["config", "--get", "core.autocrlf"], root);
+  if (!autocrlf.ok || autocrlf.stdout.trim().toLowerCase() !== "true") return [];
+  const attributes = runtime.readText(toAbsolutePath(join30(root, ".gitattributes")));
+  if (attributes.ok && LF_RULE.test(attributes.value)) return [];
+  return [
+    finding("git.autocrlf", "warn", "doctor.git.autocrlf", { file: ".gitattributes" }, "doctor.git.fix_autocrlf")
+  ];
+};
+
+// src/doctor/memory.ts
+import { join as join31 } from "node:path";
 var ceilingOf = (config) => {
   const value = configAt(parseConfigYaml(config ?? ""), "memory", "maxLines");
   const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
@@ -13194,9 +13261,9 @@ var ceilingOf = (config) => {
 };
 var lineCount2 = (text6) => text6.replace(/\r?\n$/, "").split(/\r?\n/).length;
 var checkAgentsFile = ({ root, runtime }) => {
-  const text6 = runtime.readText(toAbsolutePath(join30(root, AGENTS_FILE)));
+  const text6 = runtime.readText(toAbsolutePath(join31(root, AGENTS_FILE)));
   if (!text6.ok) return [];
-  const config = runtime.readText(toAbsolutePath(join30(root, CONFIG_FILE)));
+  const config = runtime.readText(toAbsolutePath(join31(root, CONFIG_FILE)));
   const max = ceilingOf(config.ok ? config.value : void 0);
   const lines3 = lineCount2(text6.value);
   const params2 = { file: AGENTS_FILE, lines: lines3, max };
@@ -13204,7 +13271,7 @@ var checkAgentsFile = ({ root, runtime }) => {
 };
 
 // src/doctor/project-files.ts
-import { join as join31 } from "node:path";
+import { join as join32 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
 var SCRIPT = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
@@ -13235,7 +13302,7 @@ var CONFIG_GROUPS = [
     files: [...variants("commitlint.config", SCRIPT), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
-var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join31(env.root, file)))?.kind === "file");
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join32(env.root, file)))?.kind === "file");
 var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
   const found = present(env, files);
   return found.length > 1 ? [build(name, found.join(", "))] : [];
@@ -13273,6 +13340,7 @@ var CHECKS = [
   checkClaudeSettings,
   checkInstructions,
   checkProjectFiles,
+  checkLineEndings,
   checkAgentsFile,
   checkHooks
 ];
@@ -13800,7 +13868,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename3, dirname as dirname8, join as join32 } from "node:path";
+import { basename as basename3, dirname as dirname8, join as join33 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args) => {
   const result = runtime.git(args, repo.root);
@@ -13843,7 +13911,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join32(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join33(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -14032,13 +14100,13 @@ var helpCommand = {
 };
 
 // src/install/plugin-yield.ts
-import { join as join33 } from "node:path";
+import { join as join34 } from "node:path";
 var PLUGIN_VIA = "plugin";
 var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
 `;
 var projectOwnsHooks = (ctx) => {
   const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
-  const text6 = ctx.runtime.readText(toAbsolutePath(join33(root, ...SETTINGS_FILE.split("/"))));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join34(root, ...SETTINGS_FILE.split("/"))));
   if (!text6.ok) return false;
   const parsed = parseJsonObject(text6.value);
   return parsed.ok && ownHandlersIn(parsed.value) > 0;
@@ -14091,7 +14159,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join34 } from "node:path";
+import { join as join35 } from "node:path";
 
 // src/i18n/message.ts
 var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
@@ -14293,7 +14361,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join34(dir, `${lang}.json`));
+  const file = toAbsolutePath(join35(dir, `${lang}.json`));
   const text6 = ctx.runtime.readText(file);
   if (!text6.ok) return reject(unreadable(dir, file, text6.error));
   const parsed = parseJsonObject(text6.value);
@@ -14316,7 +14384,7 @@ var describeProblem = (ctx, problem4) => {
   return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text6 = ctx.runtime.readText(toAbsolutePath(join34(dir, "review.json")));
+  const text6 = ctx.runtime.readText(toAbsolutePath(join35(dir, "review.json")));
   const parsed = text6.ok ? parseJsonObject(text6.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -14429,6 +14497,8 @@ var itemWarning = (t, item) => {
 var planWarnings = (t, plan) => [
   ...plan.detection.gitRoot ? [] : [{ code: "not_git", message: t("install.warn.not_git") }],
   ...plan.detection.claude.failClosed ? [] : [{ code: "fail_open", message: t("install.warn.fail_open", { version: plan.detection.claude.version ?? "?" }) }],
+  ...plan.detection.location.wslMount ? [{ code: "wsl_mount", message: t("install.warn.wsl_mount", { path: plan.detection.root }) }] : [],
+  ...plan.detection.location.synced ? [{ code: "synced_folder", message: t("install.warn.synced_folder", { path: plan.detection.root }) }] : [],
   ...plan.detection.authorities.map((authority) => authorityWarning(t, authority)),
   ...plan.items.flatMap((item) => itemWarning(t, item))
 ];
@@ -14996,7 +15066,7 @@ var secretsScanCommand = {
 };
 
 // src/task/create.ts
-import { join as join35 } from "node:path";
+import { join as join36 } from "node:path";
 
 // src/core/yaml/write.ts
 var PLAIN_SAFE = /^[A-Za-z_./][A-Za-z0-9_./ ()-]*$/;
@@ -15080,10 +15150,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative9) => {
-      const text6 = runtime.readText(toAbsolutePath(join35(paths.root, relative9)));
+      const text6 = runtime.readText(toAbsolutePath(join36(paths.root, relative9)));
       return text6.ok ? text6.value : void 0;
     },
-    exists: (relative9) => runtime.stat(toAbsolutePath(join35(paths.root, relative9))) !== void 0
+    exists: (relative9) => runtime.stat(toAbsolutePath(join36(paths.root, relative9))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -15487,7 +15557,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join36 } from "node:path";
+import { join as join37 } from "node:path";
 var read3 = (runtime, path) => {
   const text6 = runtime.readText(toAbsolutePath(path));
   return text6.ok ? text6.value : void 0;
@@ -15502,14 +15572,14 @@ var languageIn = (text6) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join36(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join37(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join36(root, CONFIG_FILE)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join37(root, CONFIG_FILE)) ?? "");
   const claudeFiles = [
-    join36(root, ".claude", "settings.local.json"),
-    join36(root, ".claude", "settings.json"),
-    join36(claudeDir(runtime, env), "settings.json")
+    join37(root, ".claude", "settings.local.json"),
+    join37(root, ".claude", "settings.json"),
+    join37(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

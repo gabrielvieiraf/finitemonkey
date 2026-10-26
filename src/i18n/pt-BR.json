@@ -207,6 +207,8 @@
   "install.plan.title": "Plano do Finite Monkey para {root} (preset {preset}):",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta pasta não está dentro de um repositório git; instalando aqui mesmo assim",
+  "install.warn.wsl_mount": "{path} está num disco do Windows montado no WSL: git e hooks ficam várias vezes mais lentos e a observação de arquivos perde mudanças; mova o projeto para o disco do Linux (por exemplo ~/projetos) e rode o init lá",
+  "install.warn.synced_folder": "{path} está dentro de uma pasta sincronizada (OneDrive, Dropbox, iCloud ou Google Drive): a sincronização pode travar ou reescrever arquivos enquanto o git e os hooks os usam; tire o projeto da pasta sincronizada",
   "install.warn.fail_open": "o Claude Code {version} não consegue barrar a ação quando um hook quebra (precisa da 2.1.295 ou mais nova); as travas falham abertas até você atualizar o Claude Code",
   "install.warn.authority": "{name} ({source}) também decide quando a sessão pode parar; o Finite Monkey convive com ele e nunca o desliga",
   "install.warn.plugin": "o plugin finitemonkey está habilitado ({source}); os hooks dele cedem a vez enquanto este projeto tiver os próprios hooks do Finite Monkey",
@@ -494,5 +496,7 @@
   "gate.merge.clean": "{count, plural, one {# mescla conferida} other {# mesclas conferidas}}, nada se perdeu",
   "doctor.memory.lines": "{file}: {lines, plural, one {# linha} other {# linhas}} de {max}. Edições feitas durante a sessão só valem depois de /clear, /compact ou reiniciar.",
   "doctor.memory.too_long": "{file}: {lines, plural, one {# linha} other {# linhas}}, acima do teto de {max}; arquivo de instruções longo é menos seguido",
-  "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml"
+  "doctor.memory.fix_too_long": "Leve detalhes de {file} para docs ou skills até ficar com no máximo {max} linhas, ou aumente memory.maxLines em .finitemonkey/config.yml",
+  "doctor.git.autocrlf": "o git converte quebras de linha para CRLF no checkout (core.autocrlf=true) e o {file} não fixa LF; hooks e scripts de shell com CRLF falham com \"bad interpreter\"",
+  "doctor.git.fix_autocrlf": "acrescente `* text=auto eol=lf` ao {file}, faça commit e rode `git add --renormalize .`"
 }

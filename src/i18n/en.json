@@ -207,6 +207,8 @@
   "install.plan.title": "Finite Monkey plan for {root} (preset {preset}):",
   "install.warning": "warning: {message}",
   "install.warn.not_git": "this folder is not inside a git repository; installing here anyway",
+  "install.warn.wsl_mount": "{path} is on a Windows drive mounted in WSL: git and hooks run several times slower and file watching misses changes; move the project to the Linux disk (for example ~/projects) and run init there",
+  "install.warn.synced_folder": "{path} is inside a synced folder (OneDrive, Dropbox, iCloud or Google Drive): sync can lock or rewrite files while git and hooks use them; move the project out of the synced folder",
   "install.warn.fail_open": "Claude Code {version} cannot block an action when a hook crashes (needs 2.1.295 or newer); guards fail open until you update Claude Code",
   "install.warn.authority": "{name} ({source}) also decides when a session may stop; Finite Monkey works alongside it and never turns it off",
   "install.warn.plugin": "the finitemonkey plugin is enabled ({source}); its hooks step aside while this project has its own Finite Monkey hooks",
@@ -494,5 +496,7 @@
   "gate.merge.clean": "{count, plural, one {# merge checked} other {# merges checked}}, nothing lost",
   "doctor.memory.lines": "{file}: {lines, plural, one {# line} other {# lines}} of {max}. Edits made during a session apply only after /clear, /compact or a restart.",
   "doctor.memory.too_long": "{file}: {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
-  "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml"
+  "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml",
+  "doctor.git.autocrlf": "git converts line endings to CRLF on checkout (core.autocrlf=true) and {file} does not pin LF; shell hooks and scripts checked out with CRLF fail with \"bad interpreter\"",
+  "doctor.git.fix_autocrlf": "add `* text=auto eol=lf` to {file}, commit it, then run `git add --renormalize .`"
 }

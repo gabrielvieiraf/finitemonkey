@@ -207,6 +207,8 @@
   "install.plan.title": "Plan de Finite Monkey para {root} (preset {preset}):",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta carpeta no está dentro de un repositorio git; se instala aquí de todos modos",
+  "install.warn.wsl_mount": "{path} está en un disco de Windows montado en WSL: git y los hooks van varias veces más lentos y la vigilancia de archivos pierde cambios; mueve el proyecto al disco de Linux (por ejemplo ~/proyectos) y ejecuta init allí",
+  "install.warn.synced_folder": "{path} está dentro de una carpeta sincronizada (OneDrive, Dropbox, iCloud o Google Drive): la sincronización puede bloquear o reescribir archivos mientras git y los hooks los usan; saca el proyecto de la carpeta sincronizada",
   "install.warn.fail_open": "Claude Code {version} no puede bloquear la acción cuando un hook falla (necesita 2.1.295 o más nueva); los guardas fallan abiertos hasta que actualices Claude Code",
   "install.warn.authority": "{name} ({source}) también decide cuándo puede terminar la sesión; Finite Monkey convive con él y nunca lo desactiva",
   "install.warn.plugin": "el plugin finitemonkey está habilitado ({source}); sus hooks ceden el paso mientras este proyecto tenga sus propios hooks de Finite Monkey",
@@ -494,5 +496,7 @@
   "gate.merge.clean": "{count, plural, one {# fusión revisada} other {# fusiones revisadas}}, no se perdió nada",
   "doctor.memory.lines": "{file}: {lines, plural, one {# línea} other {# líneas}} de {max}. Los cambios hechos durante una sesión solo se aplican tras /clear, /compact o reiniciar.",
   "doctor.memory.too_long": "{file}: {lines, plural, one {# línea} other {# líneas}}, por encima del techo de {max}; un archivo de instrucciones largo se sigue menos",
-  "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml"
+  "doctor.memory.fix_too_long": "Lleva detalles de {file} a docs o skills hasta que tenga como máximo {max} líneas, o sube memory.maxLines en .finitemonkey/config.yml",
+  "doctor.git.autocrlf": "git convierte los saltos de línea a CRLF al hacer checkout (core.autocrlf=true) y {file} no fija LF; los hooks y scripts de shell con CRLF fallan con \"bad interpreter\"",
+  "doctor.git.fix_autocrlf": "añade `* text=auto eol=lf` a {file}, haz commit y ejecuta `git add --renormalize .`"
 }

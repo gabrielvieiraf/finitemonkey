@@ -208,6 +208,8 @@
     "install.plan.title": "machine",
     "install.warning": "machine",
     "install.warn.not_git": "machine",
+    "install.warn.wsl_mount": "machine",
+    "install.warn.synced_folder": "machine",
     "install.warn.fail_open": "machine",
     "install.warn.authority": "machine",
     "install.warn.plugin": "machine",
@@ -495,7 +497,9 @@
     "gate.merge.clean": "machine",
     "doctor.memory.lines": "machine",
     "doctor.memory.too_long": "machine",
-    "doctor.memory.fix_too_long": "machine"
+    "doctor.memory.fix_too_long": "machine",
+    "doctor.git.autocrlf": "machine",
+    "doctor.git.fix_autocrlf": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -706,6 +710,8 @@
     "install.plan.title": "machine",
     "install.warning": "machine",
     "install.warn.not_git": "machine",
+    "install.warn.wsl_mount": "machine",
+    "install.warn.synced_folder": "machine",
     "install.warn.fail_open": "machine",
     "install.warn.authority": "machine",
     "install.warn.plugin": "machine",
@@ -993,6 +999,8 @@
     "gate.merge.clean": "machine",
     "doctor.memory.lines": "machine",
     "doctor.memory.too_long": "machine",
-    "doctor.memory.fix_too_long": "machine"
+    "doctor.memory.fix_too_long": "machine",
+    "doctor.git.autocrlf": "machine",
+    "doctor.git.fix_autocrlf": "machine"
   }
 }
