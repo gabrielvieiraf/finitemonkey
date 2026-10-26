@@ -10,11 +10,25 @@ const LINE_MARKER = /<!--\s*finitemonkey:prose-allow\s*-->/;
 const FILE_MARKER = /<!--\s*finitemonkey:prose-allow-file\s*-->/;
 const ANY_MARKER = /<!--\s*finitemonkey:prose-allow(?:-file)?\s*-->/g;
 
-export const allowsWholeFile = (text: string): boolean => FILE_MARKER.test(text);
+const INLINE_CODE = /`[^`]*`/g;
+const FENCE = /^\s*(```|~~~)/;
 
-export const allowsLine = (line: string): boolean => LINE_MARKER.test(line);
+const outsideCode = (line: string): string => line.replace(INLINE_CODE, "");
+
+const unfencedLines = (text: string): readonly string[] => {
+  let fenced = false;
+  return text.split("\n").filter((line) => {
+    if (FENCE.test(line)) fenced = !fenced;
+    return !fenced && !FENCE.test(line);
+  });
+};
+
+export const allowsWholeFile = (text: string): boolean =>
+  unfencedLines(text).some((line) => FILE_MARKER.test(outsideCode(line)));
+
+export const allowsLine = (line: string): boolean => LINE_MARKER.test(outsideCode(line));
 
 export const markerCount = (text: string): number => text.match(ANY_MARKER)?.length ?? 0;
 
 export const isMarkerOnlyLine = (line: string): boolean =>
-  allowsLine(line) && line.replace(LINE_MARKER, "").trim() === "";
+  allowsLine(line) && outsideCode(line).replace(LINE_MARKER, "").trim() === "";

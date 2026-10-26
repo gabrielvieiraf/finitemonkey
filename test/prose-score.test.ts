@@ -149,6 +149,19 @@ describe("allow markers that only the person adds", () => {
     assert.ok(!report.allowed);
     assert.ok(isFlagged(report));
   });
+
+  it("ignores a marker quoted in inline code or a code block", () => {
+    const texts = [
+      `Add \`<!-- finitemonkey:prose-allow-file -->\` to skip a file.\n\n${bad}\n`,
+      `\`\`\`md\n<!-- finitemonkey:prose-allow-file -->\n\`\`\`\n\n${bad}\n`,
+      `${bad} \`<!-- finitemonkey:prose-allow -->\`\n`,
+    ];
+    for (const text of texts) {
+      const report = scoreProse(text);
+      assert.ok(!report.allowed, text);
+      assert.ok(isFlagged(report), text);
+    }
+  });
 });
 
 describe("record rules for commits, PRs, issues and changelogs", () => {
