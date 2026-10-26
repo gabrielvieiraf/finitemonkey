@@ -69,7 +69,9 @@ describe("look back at past sessions", () => {
       .map((line) => JSON.stringify(line))
       .join("\n");
     const runtime = fakeRuntime({
-      files: { [join(projectLogDir({ homeDir: () => "/home/test" }, ROOT, {}), "s.jsonl")]: transcript },
+      files: {
+        [toAbsolutePath(join(projectLogDir({ homeDir: () => "/home/test" }, ROOT, {}), "s.jsonl"))]: transcript,
+      },
     });
     const result = lookBack(runtime, ROOT, {});
     assert.equal(result.counts.env_read, 1);
