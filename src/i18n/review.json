@@ -566,7 +566,14 @@
     "secrets.live.rejected": "machine",
     "secrets.live.unknown": "machine",
     "secrets.live.unreachable": "machine",
-    "secrets.live.no_value": "machine"
+    "secrets.live.no_value": "machine",
+    "githooks.command.commit_msg": "machine",
+    "githooks.command.push_check": "machine",
+    "githooks.command.ci_gate": "machine",
+    "githooks.pass": "machine",
+    "githooks.fail": "machine",
+    "githooks.error.failed": "machine",
+    "githooks.error.no_base": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1135,6 +1142,13 @@
     "secrets.live.rejected": "machine",
     "secrets.live.unknown": "machine",
     "secrets.live.unreachable": "machine",
-    "secrets.live.no_value": "machine"
+    "secrets.live.no_value": "machine",
+    "githooks.command.commit_msg": "machine",
+    "githooks.command.push_check": "machine",
+    "githooks.command.ci_gate": "machine",
+    "githooks.pass": "machine",
+    "githooks.fail": "machine",
+    "githooks.error.failed": "machine",
+    "githooks.error.no_base": "machine"
   }
 }

@@ -1,6 +1,7 @@
 import { appCheckCommand } from "./app-check.js";
 import { doctorCommand } from "./doctor.js";
 import { gateCommand } from "./gate.js";
+import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
 import { mergeVerifyCommand } from "./git-merge-verify.js";
 import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
@@ -45,6 +46,9 @@ export const REGISTRY = [
   rescueCommand,
   mergeVerifyCommand,
   appCheckCommand,
+  commitMsgCommand,
+  pushCheckCommand,
+  ciGateCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
