@@ -1,7 +1,7 @@
 {
   "name": "finitemonkey",
   "displayName": "Finite Monkey",
-  "version": "0.1.0-next.6",
+  "version": "0.1.0-next.7",
   "description": "Infinite monkeys not required. A gate that makes coding agents finish verified work: hooks call the finitemonkey CLI pinned to this exact version.",
   "author": {
     "name": "Gabriel Vieira",

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.7](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.6...v0.1.0-next.7) (2026-10-26)
+
+### Bug Fixes
+
+* **git:** take the user's identity from git var so GIT_AUTHOR_EMAIL counts as their own ([#128](https://github.com/gabrielvieiraf/finitemonkey/issues/128)) ([ca4196a](https://github.com/gabrielvieiraf/finitemonkey/commit/ca4196ad64ac044c7d22709b0d7887f3e93dcd2e))
+
 ## [0.1.0-next.6](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.5...v0.1.0-next.6) (2026-10-26)
 
 ### Features
