@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0-next.11](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.10...v0.1.0-next.11) (2026-10-26)
+
+### Features
+
+* **doctor:** add doctor --fix and doctor --report ([#140](https://github.com/gabrielvieiraf/finitemonkey/issues/140)) ([1385876](https://github.com/gabrielvieiraf/finitemonkey/commit/13858768780089c38bd314d2f006da16c161f65e)), closes [#23](https://github.com/gabrielvieiraf/finitemonkey/issues/23) [#137](https://github.com/gabrielvieiraf/finitemonkey/issues/137) [#21](https://github.com/gabrielvieiraf/finitemonkey/issues/21) [#137](https://github.com/gabrielvieiraf/finitemonkey/issues/137)
+* **doctor:** fire each registered hook with a synthetic event and validate hooks.json ([#137](https://github.com/gabrielvieiraf/finitemonkey/issues/137)) ([bd289e1](https://github.com/gabrielvieiraf/finitemonkey/commit/bd289e1178d313ac2bc381ead0a84164b9673fb9)), closes [#21](https://github.com/gabrielvieiraf/finitemonkey/issues/21) [#134](https://github.com/gabrielvieiraf/finitemonkey/issues/134) [#22](https://github.com/gabrielvieiraf/finitemonkey/issues/22) [#136](https://github.com/gabrielvieiraf/finitemonkey/issues/136)
+* **doctor:** report the settings, tools and files that weaken the guards ([#134](https://github.com/gabrielvieiraf/finitemonkey/issues/134)) ([6de28a7](https://github.com/gabrielvieiraf/finitemonkey/commit/6de28a7b03bc688d386c59e279538dbcfe2cff9b)), closes [#22](https://github.com/gabrielvieiraf/finitemonkey/issues/22)
+* **install:** managed block in AGENTS.md imported from CLAUDE.md, and a doctor line ceiling ([#136](https://github.com/gabrielvieiraf/finitemonkey/issues/136)) ([4cec779](https://github.com/gabrielvieiraf/finitemonkey/commit/4cec779c4a7fe4f330782230fded94bc3081a4fa)), closes [#24](https://github.com/gabrielvieiraf/finitemonkey/issues/24)
+* **schema:** publish JSON schemas generated from the types, with add-only tests ([#139](https://github.com/gabrielvieiraf/finitemonkey/issues/139)) ([01e1e2c](https://github.com/gabrielvieiraf/finitemonkey/commit/01e1e2c8bb47c7b3681913929432b599261830e8)), closes [#26](https://github.com/gabrielvieiraf/finitemonkey/issues/26)
+* **update:** per-version migrations applied in semver order with backup ([#138](https://github.com/gabrielvieiraf/finitemonkey/issues/138)) ([99e5e1b](https://github.com/gabrielvieiraf/finitemonkey/commit/99e5e1b2f7fbc7ca55d64f8a97c9b6e05094915c)), closes [#19](https://github.com/gabrielvieiraf/finitemonkey/issues/19)
+
 ## [0.1.0-next.10](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.9...v0.1.0-next.10) (2026-10-26)
 
 ### Features
