@@ -133,6 +133,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Lee | `stdin` | El evento que Claude Code pasa a cada hook: la llamada a la herramienta, el prompt o la petición de parada. |
 | Lee | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | La configuración de Claude Code, para comprobar que los hooks están instalados y que nada los desactiva. `$CLAUDE_CONFIG_DIR` reemplaza `~/.claude` si está definido. |
 | Lee | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Archivos de instrucciones, que `doctor` lee para señalar reglas que solo existen como texto. |
+| Lee | `~/.claude/projects/` | Los logs locales de sesión de Claude Code de este proyecto, leídos una vez y solo con `init --look-back`. |
 | Lee | `.git/` | El repositorio a través del comando `git`: estado, diffs, refs y el reflog. |
 | Lee | `git diff` | Archivos modificados, revisados en busca de secretos, tests saltados, placeholders y patrones de prosa. |
 | Lee | `.finitemonkey/config.yml`, `.finitemonkey/briefing.md` | La configuración del proyecto y el briefing opcional para subagentes. |

@@ -143,6 +143,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Reads | `stdin` | The event Claude Code passes to each hook: the tool call, the prompt or the stop request. |
 | Reads | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | Claude Code settings, to check that the hooks are installed and nothing switches them off. `$CLAUDE_CONFIG_DIR` replaces `~/.claude` when set. |
 | Reads | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Instruction files, read by `doctor` to report rules that exist only as text. |
+| Reads | `~/.claude/projects/` | This project's local Claude Code session logs, read once and only with `init --look-back`. |
 | Reads | `.git/` | The repository through the `git` command: status, diffs, refs and the reflog. |
 | Reads | `git diff` | Changed files, scanned for secrets, test skips, placeholders and prose patterns. |
 | Reads | `.finitemonkey/config.yml`, `.finitemonkey/briefing.md` | Project configuration and the optional briefing for subagents. |
@@ -531,6 +532,7 @@ This reads the project and returns the plan without writing anything: `data.acti
 
 - Preset: `neutral` (default) or `gabriel` (adds the author's conventions, such as turning off AI attribution in commits and PRs when the project has not set it).
 - Whether to register the plugin marketplace in the project (`--marketplace`).
+- Whether to look back once at this project's local Claude Code sessions (`--look-back`). It reads the session logs on this machine and prints estimated counts of what Finite Monkey would have blocked, with secrets masked. Nothing is saved or sent. Without the flag, no session log is read.
 
 ### 4. Install
 

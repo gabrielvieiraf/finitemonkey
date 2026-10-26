@@ -2,6 +2,8 @@ import type { CommandArgs } from "../core/args.js";
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { type LookBack, lookBack } from "../history/look-back.js";
+import { PATTERNS } from "../history/patterns.js";
 import { applyPlan } from "../install/apply.js";
 import { parsePreset, type Preset } from "../install/layout.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
@@ -18,6 +20,10 @@ import { trustImplicit } from "../task/trust.js";
 import type { CommandSpec } from "./types.js";
 
 export type InstallMode = PlanData["mode"];
+
+export interface LookBackData extends PlanData {
+  readonly lookBack: LookBack;
+}
 
 export interface InstallRequest {
   readonly mode: InstallMode;
@@ -76,15 +82,32 @@ const initRequest = (args: CommandArgs): InstallRequest => ({
   showDiff: false,
 });
 
+const withLookBack = (ctx: Ctx, result: CommandResult<PlanData>): CommandResult<PlanData | LookBackData> => {
+  if (!result.ok) return result;
+  const root = openProject(ctx).project.root;
+  const found = lookBack(ctx.runtime, root, ctx.env);
+  const lines = [
+    ctx.t("history.title", { sessions: found.sessions, turns: found.turns }),
+    ...PATTERNS.map((pattern) => `  ${ctx.t(`history.pattern.${pattern}`, { count: found.counts[pattern] })}`),
+    ctx.t("history.estimate"),
+  ];
+  return { ...result, data: { ...result.data, lookBack: found }, human: [...(result.human ?? []), ...lines] };
+};
+
 export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--dry-run] [--yes]",
+  usage:
+    "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--look-back] [--dry-run] [--yes]",
   status: "ready",
   options: {
     preset: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
+    "look-back": { type: "boolean" },
   },
-  run: (ctx, args) => Promise.resolve(runInstall(ctx, initRequest(args), "neutral")),
+  run: (ctx, args) => {
+    const result = runInstall(ctx, initRequest(args), "neutral");
+    return Promise.resolve(args.values["look-back"] === true ? withLookBack(ctx, result) : result);
+  },
 };

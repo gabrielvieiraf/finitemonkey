@@ -62,6 +62,7 @@ Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada 
 
 - Preset: `neutral` (padrão) ou `gabriel` (acrescenta as convenções do autor, como desligar a atribuição de IA em commits e PRs quando o projeto ainda não definiu isso).
 - Se registra o marketplace do plugin no projeto (`--marketplace`).
+- Se olha uma vez as sessões locais do Claude Code neste projeto (`--look-back`). Ele lê os logs de sessão desta máquina e mostra contagens estimadas do que o Finite Monkey teria bloqueado, com segredos mascarados. Nada é salvo nem enviado. Sem a flag, nenhum log de sessão é lido.
 
 ### 4. Instale
 
@@ -116,4 +117,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:4c13eb9ff547 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:f162e2b11afc -->

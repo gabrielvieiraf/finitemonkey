@@ -498,5 +498,12 @@
   "doctor.memory.too_long": "{file}: {lines, plural, one {# line} other {# lines}}, above the ceiling of {max}; long instruction files get followed less",
   "doctor.memory.fix_too_long": "Move details out of {file} into docs or skills until it has at most {max} lines, or raise memory.maxLines in .finitemonkey/config.yml",
   "doctor.git.autocrlf": "git converts line endings to CRLF on checkout (core.autocrlf=true) and {file} does not pin LF; shell hooks and scripts checked out with CRLF fail with \"bad interpreter\"",
-  "doctor.git.fix_autocrlf": "add `* text=auto eol=lf` to {file}, commit it, then run `git add --renormalize .`"
+  "doctor.git.fix_autocrlf": "add `* text=auto eol=lf` to {file}, commit it, then run `git add --renormalize .`",
+  "history.title": "Looking back at this project's local Claude Code sessions: {sessions, plural, one {# session} other {# sessions}}, {turns, plural, one {# turn} other {# turns}}.",
+  "history.pattern.done_after_failing_tests": "{count, plural, one {# turn} other {# turns}} ended with \"done\" right after a failing test run",
+  "history.pattern.env_read": "{count, plural, one {# read} other {# reads}} of a .env file",
+  "history.pattern.no_verify": "{count, plural, one {# git command} other {# git commands}} with --no-verify",
+  "history.pattern.force_push": "{count, plural, one {# force push} other {# force pushes}}",
+  "history.pattern.test_skip": "{count, plural, one {# test edit} other {# test edits}} that added .skip, .only or a skip marker",
+  "history.estimate": "These are estimates from pattern matching, not evidence; nothing was saved and nothing left this machine."
 }

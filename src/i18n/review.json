@@ -499,7 +499,14 @@
     "doctor.memory.too_long": "machine",
     "doctor.memory.fix_too_long": "machine",
     "doctor.git.autocrlf": "machine",
-    "doctor.git.fix_autocrlf": "machine"
+    "doctor.git.fix_autocrlf": "machine",
+    "history.title": "machine",
+    "history.pattern.done_after_failing_tests": "machine",
+    "history.pattern.env_read": "machine",
+    "history.pattern.no_verify": "machine",
+    "history.pattern.force_push": "machine",
+    "history.pattern.test_skip": "machine",
+    "history.estimate": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1001,6 +1008,13 @@
     "doctor.memory.too_long": "machine",
     "doctor.memory.fix_too_long": "machine",
     "doctor.git.autocrlf": "machine",
-    "doctor.git.fix_autocrlf": "machine"
+    "doctor.git.fix_autocrlf": "machine",
+    "history.title": "machine",
+    "history.pattern.done_after_failing_tests": "machine",
+    "history.pattern.env_read": "machine",
+    "history.pattern.no_verify": "machine",
+    "history.pattern.force_push": "machine",
+    "history.pattern.test_skip": "machine",
+    "history.estimate": "machine"
   }
 }
