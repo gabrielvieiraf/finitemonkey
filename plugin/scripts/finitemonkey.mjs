@@ -4345,6 +4345,9 @@ var testsGuard = (input) => {
   return deny(t("gate.guard.tests.model", { detail: reason }), t("gate.guard.tests.human", { detail: reason }));
 };
 
+// src/look/reads.ts
+import { relative as relative4 } from "node:path";
+
 // src/gate/hooks/common.ts
 import { dirname as dirname5, join as join12 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
@@ -4374,6 +4377,31 @@ var contextOutput = (event, additionalContext, systemMessage) => ({
   ...systemMessage === void 0 ? {} : { systemMessage }
 });
 var human = (text7) => `finitemonkey: ${text7}`;
+
+// src/look/reads.ts
+var READS_FILE = "look-reads.json";
+var KEEP = 500;
+var readLookReads = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(READS_FILE))?.["reads"];
+  return isRecord(raw) ? Object.fromEntries(Object.entries(raw).filter((entry2) => typeof entry2[1] === "string")) : {};
+};
+var recordLookRead = (runtime, paths, path) => {
+  const entries = Object.entries({ ...readLookReads(runtime, paths), [path]: runtime.now() }).slice(-KEEP);
+  return writeJsonFile(runtime, paths.cache(READS_FILE), { reads: Object.fromEntries(entries) }).ok;
+};
+var lookCaptureOf = (paths, file) => {
+  const relativePath = toPosixPath(relative4(paths.root, toAbsolutePath(file, paths.root)));
+  return relativePath.startsWith(".finitemonkey/look/") && relativePath.endsWith(".png") ? relativePath : void 0;
+};
+var lookReadTracker = (input) => {
+  if (toolName(input.payload.raw) !== "Read") return { kind: "allow" };
+  const file = textField(toolInput(input.payload.raw), "file_path");
+  const paths = projectPaths(input);
+  if (file === void 0 || paths === void 0) return { kind: "allow" };
+  const capture2 = lookCaptureOf(paths, file);
+  if (capture2 !== void 0) recordLookRead(input.runtime, paths, capture2);
+  return { kind: "allow" };
+};
 
 // src/guards/release/markers.ts
 var LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust)\s+(\S+)(?:\s+(.*))?$/i;
@@ -4455,32 +4483,6 @@ var unlessPaused = (handler) => (input) => {
   const pause = paths === void 0 ? void 0 : pausedFor(input.runtime, paths, input.payload.sessionId);
   if (pause === void 0) return handler(input);
   return allowWith({ systemMessage: human(input.t("pause.report", { since: pause.since })) });
-};
-
-// src/look/reads.ts
-import { relative as relative4 } from "node:path";
-var READS_FILE = "look-reads.json";
-var KEEP = 500;
-var readLookReads = (runtime, paths) => {
-  const raw = readJsonFile(runtime, paths.cache(READS_FILE))?.["reads"];
-  return isRecord(raw) ? Object.fromEntries(Object.entries(raw).filter((entry2) => typeof entry2[1] === "string")) : {};
-};
-var recordLookRead = (runtime, paths, path) => {
-  const entries = Object.entries({ ...readLookReads(runtime, paths), [path]: runtime.now() }).slice(-KEEP);
-  return writeJsonFile(runtime, paths.cache(READS_FILE), { reads: Object.fromEntries(entries) }).ok;
-};
-var lookCaptureOf = (paths, file) => {
-  const relativePath = toPosixPath(relative4(paths.root, toAbsolutePath(file, paths.root)));
-  return relativePath.startsWith(".finitemonkey/look/") && relativePath.endsWith(".png") ? relativePath : void 0;
-};
-var lookReadTracker = (input) => {
-  if (toolName(input.payload.raw) !== "Read") return { kind: "allow" };
-  const file = textField(toolInput(input.payload.raw), "file_path");
-  const paths = projectPaths(input);
-  if (file === void 0 || paths === void 0) return { kind: "allow" };
-  const capture2 = lookCaptureOf(paths, file);
-  if (capture2 !== void 0) recordLookRead(input.runtime, paths, capture2);
-  return { kind: "allow" };
 };
 
 // src/gate/hooks/config.ts
@@ -16848,61 +16850,6 @@ var initCommand = {
   }
 };
 
-// src/commands/pause.ts
-var toggle = (ctx, off) => {
-  const command = off ? "finitemonkey off" : "finitemonkey on";
-  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("pause.error.person_only", command));
-  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
-  if (!off) {
-    const ended = clearPause(ctx.runtime, paths, "terminal");
-    return success({ paused: false, sessionId: ended?.sessionId ?? null }, [ctx.t("pause.on")]);
-  }
-  const session = readSession(ctx.runtime, paths);
-  if (session === void 0) return success({ paused: false, sessionId: null }, [ctx.t("pause.no_session")]);
-  setPause(ctx.runtime, paths, session.sessionId, "terminal");
-  return success({ paused: true, sessionId: session.sessionId }, [ctx.t("pause.off")]);
-};
-var offCommand = {
-  path: ["off"],
-  summaryKey: "command.off.summary",
-  usage: "finitemonkey off",
-  status: "ready",
-  run: (ctx) => Promise.resolve(toggle(ctx, true))
-};
-var onCommand = {
-  path: ["on"],
-  summaryKey: "command.on.summary",
-  usage: "finitemonkey on",
-  status: "ready",
-  run: (ctx) => Promise.resolve(toggle(ctx, false))
-};
-
-// src/commands/policy.ts
-var FIX = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
-var recordFalsePositive = (ctx, guard) => {
-  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX));
-  if (!OPTIONAL_GUARDS.some((id) => id === guard)) {
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", FIX, { detail: guard }));
-  }
-  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
-  const state = readShadow(ctx.runtime, paths);
-  const before = state[guard] ?? { firings: 0, falsePositives: 0, promoted: false };
-  const falsePositives = before.falsePositives + 1;
-  writeShadow(ctx.runtime, paths, { ...state, [guard]: { ...before, falsePositives } });
-  logEvent(ctx.runtime, paths, "guard_false_positive", { guard, falsePositives });
-  return success({ guard, falsePositives }, [
-    ctx.t("policy.false_positive.recorded", { guard, count: falsePositives })
-  ]);
-};
-var policyFalsePositiveCommand = {
-  path: ["policy", "false-positive"],
-  summaryKey: "command.policy_false_positive.summary",
-  usage: FIX,
-  status: "ready",
-  maxPositionals: 1,
-  run: (ctx, args2) => Promise.resolve(recordFalsePositive(ctx, args2.positionals[0] ?? ""))
-};
-
 // src/look/findings.ts
 var MAX_PER_RULE = 5;
 var finding3 = (result, rule, detail) => ({
@@ -16976,6 +16923,7 @@ var parseMeasure = (value) => {
 // src/look/node-capture.ts
 var HEIGHT = 900;
 var MAX_EVENTS = 20;
+var RESOURCE_ERROR = /^Failed to load resource\b/;
 var slugOf = (route) => {
   const slug2 = route.replace(/^\//, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return slug2 === "" ? "root" : slug2.slice(0, 80);
@@ -16987,7 +16935,7 @@ var watch = (page) => {
     if (list4.length < MAX_EVENTS) list4.push(text7.slice(0, 200));
   };
   page.on("console", (message) => {
-    if (message.type() === "error") push(errors, message.text());
+    if (message.type() === "error" && !RESOURCE_ERROR.test(message.text())) push(errors, message.text());
   });
   page.on("pageerror", (error) => {
     push(errors, error.message);
@@ -17240,6 +17188,61 @@ var lookCommand = {
     const run4 = await runLook(ctx.runtime, ctx.cwd);
     return run4.kind === "done" ? doneResult(ctx, dataOf(run4)) : setupError(ctx, run4);
   }
+};
+
+// src/commands/pause.ts
+var toggle = (ctx, off) => {
+  const command = off ? "finitemonkey off" : "finitemonkey on";
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("pause.error.person_only", command));
+  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+  if (!off) {
+    const ended = clearPause(ctx.runtime, paths, "terminal");
+    return success({ paused: false, sessionId: ended?.sessionId ?? null }, [ctx.t("pause.on")]);
+  }
+  const session = readSession(ctx.runtime, paths);
+  if (session === void 0) return success({ paused: false, sessionId: null }, [ctx.t("pause.no_session")]);
+  setPause(ctx.runtime, paths, session.sessionId, "terminal");
+  return success({ paused: true, sessionId: session.sessionId }, [ctx.t("pause.off")]);
+};
+var offCommand = {
+  path: ["off"],
+  summaryKey: "command.off.summary",
+  usage: "finitemonkey off",
+  status: "ready",
+  run: (ctx) => Promise.resolve(toggle(ctx, true))
+};
+var onCommand = {
+  path: ["on"],
+  summaryKey: "command.on.summary",
+  usage: "finitemonkey on",
+  status: "ready",
+  run: (ctx) => Promise.resolve(toggle(ctx, false))
+};
+
+// src/commands/policy.ts
+var FIX = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
+var recordFalsePositive = (ctx, guard) => {
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX));
+  if (!OPTIONAL_GUARDS.some((id) => id === guard)) {
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", FIX, { detail: guard }));
+  }
+  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+  const state = readShadow(ctx.runtime, paths);
+  const before = state[guard] ?? { firings: 0, falsePositives: 0, promoted: false };
+  const falsePositives = before.falsePositives + 1;
+  writeShadow(ctx.runtime, paths, { ...state, [guard]: { ...before, falsePositives } });
+  logEvent(ctx.runtime, paths, "guard_false_positive", { guard, falsePositives });
+  return success({ guard, falsePositives }, [
+    ctx.t("policy.false_positive.recorded", { guard, count: falsePositives })
+  ]);
+};
+var policyFalsePositiveCommand = {
+  path: ["policy", "false-positive"],
+  summaryKey: "command.policy_false_positive.summary",
+  usage: FIX,
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => Promise.resolve(recordFalsePositive(ctx, args2.positionals[0] ?? ""))
 };
 
 // src/commands/prose-check.ts

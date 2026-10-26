@@ -27,7 +27,12 @@ export const FOOTPRINT = [
   {
     id: "config",
     kind: "reads",
-    targets: [".finitemonkey/config.yml", ".finitemonkey/policy.yml", ".finitemonkey/briefing.md", ".finitemonkey/look.yml"],
+    targets: [
+      ".finitemonkey/config.yml",
+      ".finitemonkey/policy.yml",
+      ".finitemonkey/briefing.md",
+      ".finitemonkey/look.yml",
+    ],
   },
   {
     id: "install",

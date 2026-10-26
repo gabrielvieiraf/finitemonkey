@@ -7,6 +7,7 @@ import { MEASURE_SCRIPT, type PageMeasure, parseMeasure } from "./measure.js";
 
 const HEIGHT = 900;
 const MAX_EVENTS = 20;
+const RESOURCE_ERROR = /^Failed to load resource\b/;
 
 export interface PageResult {
   readonly route: string;
@@ -33,7 +34,7 @@ const watch = (page: Page): { readonly errors: string[]; readonly failed: string
     if (list.length < MAX_EVENTS) list.push(text.slice(0, 200));
   };
   page.on("console", (message) => {
-    if (message.type() === "error") push(errors, message.text());
+    if (message.type() === "error" && !RESOURCE_ERROR.test(message.text())) push(errors, message.text());
   });
   page.on("pageerror", (error) => {
     push(errors, error.message);
