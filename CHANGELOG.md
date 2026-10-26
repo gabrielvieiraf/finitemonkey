@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.13](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.12...v0.1.0-next.13) (2026-10-26)
+
+### Features
+
+* **init:** optional look back at past local Claude Code sessions ([#145](https://github.com/gabrielvieiraf/finitemonkey/issues/145)) ([66852fb](https://github.com/gabrielvieiraf/finitemonkey/commit/66852fb8f4e3cd6bde7c307cd87778154e7b1d72)), closes [#30](https://github.com/gabrielvieiraf/finitemonkey/issues/30)
+
 ## [0.1.0-next.12](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.11...v0.1.0-next.12) (2026-10-26)
 
 ### Features
