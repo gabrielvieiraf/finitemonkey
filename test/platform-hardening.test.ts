@@ -54,9 +54,11 @@ describe("init warns about WSL drive mounts and synced folders", () => {
     assert.deepEqual(locationOf("/home/ana/app", { WSL_DISTRO_NAME: "Ubuntu" }), { wslMount: false, synced: false });
   });
 
-  const messages = { en: /Windows drive/, "pt-BR": /disco do Windows/, es: /disco de Windows/ } as const;
+  const synced = { en: /synced folder/, "pt-BR": /pasta sincronizada/, es: /carpeta sincronizada/ } as const;
+  const mounted = { en: /Windows drive/, "pt-BR": /disco do Windows/, es: /disco de Windows/ } as const;
+  const posix = process.platform !== "win32";
   for (const lang of ["en", "pt-BR", "es"] as const) {
-    it(`init --dry-run shows both warnings in ${lang}`, async () => {
+    it(`init --dry-run shows the warnings in ${lang}`, async () => {
       const root = toAbsolutePath("/mnt/c/Users/ana/OneDrive/app");
       const result = await cliJson(["init", "--dry-run", "--lang", lang], {
         cwd: root,
@@ -69,8 +71,13 @@ describe("init warns about WSL drive mounts and synced folders", () => {
       const warnings = field(result.body, "data", "warnings");
       assert.ok(Array.isArray(warnings));
       const codes = warnings.map((warning: unknown) => field(warning, "code"));
-      assert.ok(codes.includes("wsl_mount") && codes.includes("synced_folder"), String(codes));
-      assert.match(JSON.stringify(warnings), messages[lang]);
+      const text = JSON.stringify(warnings);
+      assert.ok(codes.includes("synced_folder"), String(codes));
+      assert.match(text, synced[lang]);
+      if (posix) {
+        assert.ok(codes.includes("wsl_mount"), String(codes));
+        assert.match(text, mounted[lang]);
+      }
     });
   }
 });
