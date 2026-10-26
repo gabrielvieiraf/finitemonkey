@@ -106,7 +106,7 @@ describe("implicit contract from the project", () => {
     const contract = implicitContract(files({}));
     assert.deepEqual(
       contract.acceptance.map((check) => check.kind),
-      ["tests", "placeholders", "secrets", "pr"],
+      ["tests", "placeholders", "secrets", "prose", "pr"],
     );
     assert.equal(contract.implicit, true);
   });
@@ -134,7 +134,7 @@ describe("task new", () => {
     assert.ok(created.ok);
     assert.deepEqual(
       created.value.contract.acceptance.map((check) => check.id),
-      ["C1", "tests", "placeholders", "secrets", "diff", "git", "pr", "M1"],
+      ["C1", "tests", "placeholders", "secrets", "prose", "diff", "git", "pr", "M1"],
     );
     assert.equal(readState(runtime, paths).active, "t1");
     assert.equal(readTrust(runtime, paths).approved["t1"], fs.read(paths.task("t1")));

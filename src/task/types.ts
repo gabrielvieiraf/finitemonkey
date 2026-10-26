@@ -13,6 +13,7 @@ export const CHECK_KINDS = [
   "worktree",
   "merge",
   "prod",
+  "prose",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

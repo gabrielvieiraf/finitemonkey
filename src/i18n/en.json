@@ -341,5 +341,10 @@
   "prose.rule.person-as-reason": "name the property of the change instead of a person",
   "prose.rule.origin-project": "describe the technical property you copied instead of naming where it came from",
   "prose.rule.first-person": "write what the change does, in the present tense, without I or you",
-  "prose.rule.padding": "cut the preamble and start with what changed"
+  "prose.rule.padding": "cut the preamble and start with what changed",
+  "gate.require.prose": "changed Markdown does not read as machine-written",
+  "gate.prose.unavailable": "could not read the changed Markdown files (git unavailable)",
+  "gate.prose.finding": "{file}:{line} reads as machine-written ({rules})",
+  "gate.prose.warning": "warning only in this preset: {file}:{line} reads as machine-written ({rules})",
+  "gate.prose.clean": "{count} changed Markdown file(s), none reads as machine-written"
 }

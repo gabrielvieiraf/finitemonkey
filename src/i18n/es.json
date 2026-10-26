@@ -341,5 +341,10 @@
   "prose.rule.person-as-reason": "nombra la propiedad del cambio en lugar de la persona",
   "prose.rule.origin-project": "describe la propiedad técnica, sin citar de dónde salió",
   "prose.rule.first-person": "escribe lo que hace el cambio, en presente, sin yo ni tú",
-  "prose.rule.padding": "quita el preámbulo y empieza por lo que cambió"
+  "prose.rule.padding": "quita el preámbulo y empieza por lo que cambió",
+  "gate.require.prose": "el Markdown cambiado no parece escrito por una máquina",
+  "gate.prose.unavailable": "no se pudieron leer los archivos Markdown cambiados (git no disponible)",
+  "gate.prose.finding": "{file}:{line} parece escrito por una máquina ({rules})",
+  "gate.prose.warning": "solo aviso en este preset: {file}:{line} parece escrito por una máquina ({rules})",
+  "gate.prose.clean": "{count} archivo(s) Markdown cambiado(s), ninguno parece escrito por una máquina"
 }

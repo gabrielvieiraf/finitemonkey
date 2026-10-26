@@ -341,5 +341,10 @@
   "prose.rule.person-as-reason": "nomeie a propriedade da mudança no lugar da pessoa",
   "prose.rule.origin-project": "descreva a propriedade técnica, sem citar de onde veio",
   "prose.rule.first-person": "escreva o que a mudança faz, no presente, sem eu nem você",
-  "prose.rule.padding": "corte o preâmbulo e comece pelo que mudou"
+  "prose.rule.padding": "corte o preâmbulo e comece pelo que mudou",
+  "gate.require.prose": "Markdown alterado sem cara de texto de máquina",
+  "gate.prose.unavailable": "não deu para ler os arquivos Markdown alterados (git indisponível)",
+  "gate.prose.finding": "{file}:{line} tem cara de texto de máquina ({rules})",
+  "gate.prose.warning": "só aviso neste preset: {file}:{line} tem cara de texto de máquina ({rules})",
+  "gate.prose.clean": "{count} arquivo(s) Markdown alterado(s), nenhum com cara de texto de máquina"
 }

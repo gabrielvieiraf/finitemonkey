@@ -5,6 +5,8 @@ import { describe, it } from "node:test";
 import { toAbsolutePath } from "../src/core/brand.js";
 import { isRecord } from "../src/core/parsed.js";
 import type { GitResult } from "../src/core/runtime.js";
+import { DEFAULT_CHECKS } from "../src/gate/checks/index.js";
+import { proseOutcome } from "../src/gate/checks/prose.js";
 import { proseGateStatus } from "../src/prose/gate.js";
 import { cli, cliJson, fakeRuntime, field, gitMissing, stdinFrom } from "./support.js";
 
@@ -108,5 +110,44 @@ describe("proseGateStatus for the Stop gate", () => {
 
   it("without git it reports an error instead of passing", () => {
     assert.equal(proseGateStatus(fakeRuntime({ files }), ROOT).ok, false);
+  });
+});
+
+describe("prose check in the gate", () => {
+  const config = { [`${ROOT}/.finitemonkey/config.yml`]: "preset: gabriel\n" };
+  const outcome = (extra: Record<string, string>, git = changed) =>
+    proseOutcome(proseGateStatus(fakeRuntime({ files: { ...files, ...extra }, git }), ROOT));
+
+  it("is registered for the prose kind", () => {
+    assert.equal(typeof DEFAULT_CHECKS.prose, "function");
+  });
+
+  it("fails in the gabriel preset and names file, line and rules", () => {
+    const result = outcome(config);
+    assert.equal(result.status, "failed");
+    assert.equal(result.notes[0]?.key, "gate.prose.finding");
+    assert.equal(result.notes[0].params["file"], "README.md");
+    assert.equal(result.notes[0].params["line"], 1);
+  });
+
+  it("passes with a warning in the neutral preset", () => {
+    const result = outcome({});
+    assert.equal(result.status, "passed");
+    assert.equal(result.notes[0]?.key, "gate.prose.warning");
+  });
+
+  it("passes clean when the changed Markdown reads fine", () => {
+    const onlyGuide = (args: readonly string[]): GitResult =>
+      args[0] === "diff" || args[0] === "ls-files"
+        ? { found: true, ok: true, stdout: "docs/guide.md\u0000" }
+        : gitMissing;
+    const result = outcome(config, onlyGuide);
+    assert.equal(result.status, "passed");
+    assert.equal(result.notes[0]?.key, "gate.prose.clean");
+  });
+
+  it("is not verified, never passed, without git", () => {
+    const result = proseOutcome(proseGateStatus(fakeRuntime({ files }), ROOT));
+    assert.equal(result.status, "unverified");
   });
 });

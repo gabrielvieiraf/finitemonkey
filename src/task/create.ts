@@ -55,6 +55,7 @@ export const draftChecks = (
     ...(hasTests ? [] : [{ id: "tests", kind: "tests" as const }]),
     { id: "placeholders", kind: "placeholders" },
     { id: "secrets", kind: "secrets" },
+    { id: "prose", kind: "prose" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
     ...(draft.git.length > 0 ? [{ id: "git", kind: "git" as const, require: draft.git }] : []),
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
