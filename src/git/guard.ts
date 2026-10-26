@@ -2,12 +2,14 @@ import { toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { normalizeCommand } from "../shell/normalize.js";
 import type { ShellCommand } from "../shell/types.js";
+import { commandText } from "./command-text.js";
 import type { DirtyEntry, GitFacts } from "./facts.js";
 import { type GitInvocation, gitInvocation, withAlias } from "./invocation.js";
 import { type ForeignFile, foreignFiles } from "./ownership.js";
 import { resolveFrom } from "./path-key.js";
 import { matchPathspecs } from "./pathspec.js";
 import { openRepo, type Repo, repoFacts } from "./repo.js";
+import { switchTarget } from "./switch-target.js";
 import { BUILTIN_SUBCOMMANDS, gitVerdict } from "./rules/index.js";
 import type { DiscardSpec, GitBlockRule, GitVerdict } from "./verdict.js";
 
@@ -19,8 +21,6 @@ export type GuardOutcome =
   | { readonly kind: "snapshot"; readonly repo: Repo; readonly op: string; readonly command: string };
 
 const MAX_ALIAS_DEPTH = 3;
-
-const commandText = (command: ShellCommand): string => [command.program, ...command.args].join(" ");
 
 const expandAlias = (runtime: Runtime, repo: Repo, invocation: GitInvocation, depth = 0): GitInvocation => {
   if (depth >= MAX_ALIAS_DEPTH || BUILTIN_SUBCOMMANDS.has(invocation.subcommand) || invocation.subcommand === "")
@@ -55,7 +55,17 @@ export interface GuardContext {
   readonly cwd: string;
   readonly owner: string;
   readonly facts?: (repo: Repo) => GitFacts;
+  readonly chain?: ChainState;
 }
+
+export interface ChainState {
+  branch: string | undefined;
+}
+
+const withChain = (facts: GitFacts, chain: ChainState | undefined): GitFacts => {
+  const branch = chain?.branch;
+  return branch === undefined ? facts : { ...facts, currentBranch: () => branch };
+};
 
 const decide = (
   context: GuardContext,
@@ -93,8 +103,10 @@ export const guardGitCommand = (context: GuardContext, command: ShellCommand, de
   const dir = resolveFrom(context.cwd, command.dir, ...invocation.dirs);
   const repo = openRepo(context.runtime, toAbsolutePath(dir));
   if (repo === undefined) return [];
-  const facts = context.facts?.(repo) ?? repoFacts(context.runtime, repo);
+  const facts = withChain(context.facts?.(repo) ?? repoFacts(context.runtime, repo), context.chain);
   const expanded = expandAlias(context.runtime, repo, invocation);
+  const target = switchTarget(expanded, facts);
+  if (target !== undefined && context.chain !== undefined) context.chain.branch = target;
   const nested =
     depth < MAX_ALIAS_DEPTH
       ? shellAliasCommands(expanded, context.runtime, repo).flatMap((inner) =>

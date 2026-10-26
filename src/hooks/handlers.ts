@@ -1,6 +1,9 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { gitPreToolUse } from "../git/hooks/pre-tool.js";
+import { gitPostToolUse, gitSessionStart } from "../git/hooks/session.js";
+import { gitStop } from "../git/hooks/stop.js";
 import type { Translate } from "../i18n/translate.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
@@ -25,7 +28,11 @@ export type HookHandlers = Readonly<Partial<Record<HookEvent, readonly HookHandl
 export const allow: HookHandler = () => ({ kind: "allow" });
 
 export const DEFAULT_HANDLERS: HookHandlers = {
-  PreToolUse: [secretsPreToolUse],
+  SessionStart: [gitSessionStart],
+  SubagentStart: [gitSessionStart],
+  PreToolUse: [secretsPreToolUse, gitPreToolUse],
   UserPromptSubmit: [secretsUserPromptSubmit],
-  PostToolUse: [secretsPostToolUse],
+  PostToolUse: [secretsPostToolUse, gitPostToolUse],
+  Stop: [gitStop],
+  SubagentStop: [gitStop],
 };

@@ -85,4 +85,5 @@ export interface Runtime {
   readonly gitWith: GitWith;
   readonly exec: Exec;
   readonly realpath: (path: string) => string;
+  readonly homeDir: () => string;
 }

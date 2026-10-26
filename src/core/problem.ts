@@ -28,6 +28,13 @@ export const ERROR_CODES = [
   "install_failed",
   "not_installed",
   "install_outdated",
+  "git_not_repository",
+  "git_snapshot_failed",
+  "git_nothing_to_undo",
+  "git_undo_failed",
+  "git_rescue_failed",
+  "merge_lost_work",
+  "merge_unanalyzable",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

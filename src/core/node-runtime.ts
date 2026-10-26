@@ -1,5 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { type AbsolutePath, toAbsolutePath } from "./brand.js";
@@ -90,4 +91,5 @@ export const nodeRuntime = (): Runtime => ({
   gitWith: nodeGitWith,
   exec: nodeExec,
   realpath: nodeRealpath,
+  homeDir: homedir,
 });
