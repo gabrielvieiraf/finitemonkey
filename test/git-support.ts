@@ -49,7 +49,7 @@ export const tempRepo = (files: Readonly<Record<string, string>> = { "README.md"
   return {
     root,
     dispose: () => {
-      rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(root, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
     },
   };
 };
