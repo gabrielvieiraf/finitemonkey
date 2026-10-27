@@ -773,7 +773,13 @@
     "appsec.rule.ssrf": "machine",
     "appsec.rule.cors-credentials": "machine",
     "appsec.rule.rate-limit": "machine",
-    "appsec.rule.sql-concat": "machine"
+    "appsec.rule.sql-concat": "machine",
+    "datamap.command": "machine",
+    "datamap.written": "machine",
+    "datamap.open": "machine",
+    "gate.datamap.missing": "machine",
+    "gate.datamap.incomplete": "machine",
+    "gate.datamap.ai": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1549,6 +1555,12 @@
     "appsec.rule.ssrf": "machine",
     "appsec.rule.cors-credentials": "machine",
     "appsec.rule.rate-limit": "machine",
-    "appsec.rule.sql-concat": "machine"
+    "appsec.rule.sql-concat": "machine",
+    "datamap.command": "machine",
+    "datamap.written": "machine",
+    "datamap.open": "machine",
+    "gate.datamap.missing": "machine",
+    "gate.datamap.incomplete": "machine",
+    "gate.datamap.ai": "machine"
   }
 }

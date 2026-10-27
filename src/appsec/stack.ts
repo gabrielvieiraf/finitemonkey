@@ -48,4 +48,4 @@ export const detectStack = (read: Read): Stack => {
   return { frameworks, orms };
 };
 
-export const hasWebStack = (stack: Stack): boolean => stack.frameworks.length > 0;
+export const hasWebStack = (stack: Stack): boolean => stack.frameworks.length > 0 || stack.orms.length > 0;

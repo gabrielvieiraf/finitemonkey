@@ -80,7 +80,7 @@ export const FOOTPRINT = [
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
-  { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/"] },
+  { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/", ".finitemonkey/data-map.yml"] },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },
