@@ -9,12 +9,13 @@ import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import { toPosixPath } from "../src/core/posix-path.js";
 import { selfGuard } from "../src/guards/self/hook.js";
 import { selfTarget } from "../src/guards/self/protected.js";
+import { adoptWorktrees, mayHaveLinkedWorktrees } from "../src/wt/adopt.js";
 import { wtPostToolUse, wtSessionStart } from "../src/wt/hooks.js";
 import { defaultPlace, placeProblems } from "../src/wt/place.js";
 import { allocatePorts } from "../src/wt/ports.js";
 import { commonDirOf, readRegistry, registryPath } from "../src/wt/store.js";
 import { bash, edit, git, hook, runtime, tempRepo, write } from "./git-support.js";
-import { BUNDLE, field, parseBody, ROOT } from "./support.js";
+import { BUNDLE, fakeRuntime, field, parseBody, ROOT } from "./support.js";
 
 const registryOf = (root: AbsolutePath) => {
   const common = commonDirOf(runtime, root);
@@ -33,6 +34,36 @@ const fm = (cwd: string, args: readonly string[]) => {
   });
   return { code: result.status, stdout: result.stdout, stderr: result.stderr };
 };
+
+describe("worktree registry: cheap SessionStart", () => {
+  const root = toAbsolutePath("/repo");
+  const sub = toAbsolutePath("/repo/src/app");
+
+  it("skips git entirely in a repository without linked worktrees", () => {
+    const calls: string[][] = [];
+    const fake = fakeRuntime({
+      files: { [toAbsolutePath("/repo/.git/HEAD")]: "ref: refs/heads/main\n" },
+      git: (args) => {
+        calls.push([...args]);
+        return { found: true, ok: false, stdout: "" };
+      },
+    });
+    assert.equal(mayHaveLinkedWorktrees(fake, sub), false);
+    const adopted = adoptWorktrees(fake, sub);
+    assert.ok(adopted.ok);
+    assert.deepEqual(adopted.value, []);
+    assert.deepEqual(calls, []);
+  });
+
+  it("still looks when .git/worktrees exists or when inside a linked worktree", () => {
+    const withLinked = fakeRuntime({ files: { [toAbsolutePath("/repo/.git/worktrees/x/HEAD")]: "x\n" } });
+    assert.equal(mayHaveLinkedWorktrees(withLinked, root), true);
+    const insideLinked = fakeRuntime({
+      files: { [toAbsolutePath("/repo/.git")]: "gitdir: /main/.git/worktrees/repo\n" },
+    });
+    assert.equal(mayHaveLinkedWorktrees(insideLinked, root), true);
+  });
+});
 
 describe("worktree registry: adoption", () => {
   it("adopts worktrees created elsewhere and never deletes or prunes anything", async () => {

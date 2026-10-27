@@ -13,7 +13,7 @@ export const REGISTRY_DIR = "finitemonkey";
 export const REGISTRY_FILE = "worktrees.yml";
 
 const LOCK_STALE_MS = 15_000;
-const LOCK_WAIT_MS = 5_000;
+const LOCK_WAIT_MS = 15_000;
 const LOCK_STEP_MS = 15;
 const BUSY = /^(locked|EPERM|EACCES|EBUSY)/;
 
