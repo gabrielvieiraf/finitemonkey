@@ -15,7 +15,8 @@ export type Detector =
   | { readonly kind: "path"; readonly path: string; readonly tools: readonly string[] }
   | { readonly kind: "text"; readonly pattern: string; readonly on: readonly TextTarget[] }
   | { readonly kind: "lint"; readonly lint: string }
-  | { readonly kind: "check"; readonly check: string };
+  | { readonly kind: "check"; readonly check: string }
+  | { readonly kind: "attribution" };
 
 export interface ProjectRule {
   readonly id: string;
@@ -41,6 +42,7 @@ const list = (value: unknown): readonly string[] =>
       : [];
 
 const detectorOf = (value: unknown): Detector | undefined => {
+  if (value === "attribution") return { kind: "attribution" };
   if (!isRecord(value)) return undefined;
   const command = str(value, "command");
   if (command !== undefined) return { kind: "command", command };
@@ -60,8 +62,12 @@ const detectorOf = (value: unknown): Detector | undefined => {
   return check === undefined ? undefined : { kind: "check", check };
 };
 
-const ruleOf = (value: YamlValue, index: number): Parsed<ProjectRule> => {
+export type PresetRules = Readonly<Record<string, ProjectRule>>;
+
+const ruleOf = (value: YamlValue, index: number, presets: PresetRules): Parsed<ProjectRule> => {
   if (!isRecord(value)) return reject(`rule ${String(index)} is not a map`);
+  const preset = typeof value["preset"] === "string" ? presets[value["preset"]] : undefined;
+  if (preset !== undefined) return accept({ ...preset, origin: str(value, "origin") ?? preset.origin });
   const id = str(value, "id");
   const text = str(value, "text");
   const severity = SEVERITIES.find((item) => item === value["severity"]);
@@ -80,7 +86,7 @@ const ruleOf = (value: YamlValue, index: number): Parsed<ProjectRule> => {
   });
 };
 
-export const parseRules = (source: string): Parsed<readonly ProjectRule[]> => {
+export const parseRules = (source: string, presets: PresetRules = {}): Parsed<readonly ProjectRule[]> => {
   const parsed = parseYaml(source);
   if (!parsed.ok) return reject(`line ${String(parsed.error.line)}: ${parsed.error.message}`);
   const raw = isRecord(parsed.value) ? parsed.value["rules"] : undefined;
@@ -88,7 +94,7 @@ export const parseRules = (source: string): Parsed<readonly ProjectRule[]> => {
   const rules: ProjectRule[] = [];
   const items: readonly YamlValue[] = raw;
   for (const [index, item] of items.entries()) {
-    const rule = ruleOf(item, index);
+    const rule = ruleOf(item, index, presets);
     if (!rule.ok) return rule;
     if (rules.some((known) => known.id === rule.value.id)) return reject(`rule ${rule.value.id} appears twice`);
     rules.push(rule.value);
@@ -96,7 +102,11 @@ export const parseRules = (source: string): Parsed<readonly ProjectRule[]> => {
   return accept(rules);
 };
 
-export const loadRules = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): Parsed<readonly ProjectRule[]> => {
+export const loadRules = (
+  runtime: Pick<Runtime, "readText">,
+  root: AbsolutePath,
+  presets: PresetRules = {},
+): Parsed<readonly ProjectRule[]> => {
   const text = runtime.readText(toAbsolutePath(RULES_FILE, root));
-  return text.ok ? parseRules(text.value) : accept([]);
+  return text.ok ? parseRules(text.value, presets) : accept([]);
 };

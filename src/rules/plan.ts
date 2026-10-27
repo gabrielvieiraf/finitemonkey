@@ -21,6 +21,8 @@ export const applicableSurfaces = (rule: ProjectRule): readonly Surface[] => {
         return ["ci"];
       case "check":
         return ["guard", "ci"];
+      case "attribution":
+        return ["guard", "git", "ci"];
     }
   })();
   return [...new Set([...bySurface, ...settings])];
