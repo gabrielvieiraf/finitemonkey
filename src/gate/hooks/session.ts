@@ -1,5 +1,6 @@
 import { nowMs } from "../../core/clock.js";
 import type { Runtime } from "../../core/runtime.js";
+import { loadBaseline } from "../../findings/baseline.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
@@ -33,7 +34,13 @@ const markSession = (input: HookInput, paths: FmPaths): void => {
   if (sessionId === undefined || headSha(git) === undefined) return;
   const tree = treeHash(git);
   if (tree === undefined) return;
-  writeSession(runtime, paths, { sessionId, startTree: tree, at: nowMs(runtime) });
+  const findings = loadBaseline(runtime, paths.root);
+  writeSession(runtime, paths, {
+    sessionId,
+    startTree: tree,
+    at: nowMs(runtime),
+    ...(findings.ok ? { findings: findings.value.entries.length } : {}),
+  });
   startBaseline(runtime, paths, tree);
   if (cachedPrs(runtime, paths) === undefined) runtime.spawnSelf(["gate", "--prs"], paths.root);
 };

@@ -1002,5 +1002,13 @@
   "parity.issue.no_destination": "no destination: {detail}",
   "parity.issue.no_test": "no parity test: {detail}",
   "parity.issue.not_green": "parity test not green: {detail}",
-  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}"
+  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}",
+  "findings.command.accept": "Accept a finding from any check into the shared baseline, with owner, reason and expiry (person only)",
+  "findings.command.list": "List the accepted findings of every check, with owner and expiry",
+  "findings.accept.done": "Accepted {id} ({check}, {rule}) at {where}, owned by {owner} until {expires}.",
+  "findings.error.not_found": "No current finding has the id {id}",
+  "findings.list.empty": "The findings baseline is empty.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, until {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, expired on {expires}; it blocks again",
+  "gate.findings.grew": "The findings baseline grew from {before} to {after} entries during this session; accepted findings need a reason the person can defend."
 }

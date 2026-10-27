@@ -1003,7 +1003,15 @@
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2009,6 +2017,14 @@
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   }
 }

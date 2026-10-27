@@ -3714,7 +3714,15 @@ var en_default = {
   "parity.issue.no_destination": "no destination: {detail}",
   "parity.issue.no_test": "no parity test: {detail}",
   "parity.issue.not_green": "parity test not green: {detail}",
-  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}"
+  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}",
+  "findings.command.accept": "Accept a finding from any check into the shared baseline, with owner, reason and expiry (person only)",
+  "findings.command.list": "List the accepted findings of every check, with owner and expiry",
+  "findings.accept.done": "Accepted {id} ({check}, {rule}) at {where}, owned by {owner} until {expires}.",
+  "findings.error.not_found": "No current finding has the id {id}",
+  "findings.list.empty": "The findings baseline is empty.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, until {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, expired on {expires}; it blocks again",
+  "gate.findings.grew": "The findings baseline grew from {before} to {after} entries during this session; accepted findings need a reason the person can defend."
 };
 
 // src/i18n/es.json
@@ -4722,7 +4730,15 @@ var es_default = {
   "parity.issue.no_destination": "sin destino: {detail}",
   "parity.issue.no_test": "sin test de paridad: {detail}",
   "parity.issue.not_green": "test de paridad no está green: {detail}",
-  "parity.issue.removed_without_decision": "eliminado sin registro de decisión enlazado: {detail}"
+  "parity.issue.removed_without_decision": "eliminado sin registro de decisión enlazado: {detail}",
+  "findings.command.accept": "Acepta un hallazgo de cualquier comprobación en el baseline compartido, con responsable, motivo y vencimiento (solo la persona)",
+  "findings.command.list": "Lista los hallazgos aceptados de todas las comprobaciones, con responsable y vencimiento",
+  "findings.accept.done": "{id} ({check}, {rule}) en {where} aceptado, con {owner} como responsable hasta {expires}.",
+  "findings.error.not_found": "Ningún hallazgo actual tiene el id {id}",
+  "findings.list.empty": "El baseline de hallazgos está vacío.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, hasta {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, venció el {expires}; vuelve a bloquear",
+  "gate.findings.grew": "El baseline de hallazgos pasó de {before} a {after} entradas en esta sesión; un hallazgo aceptado necesita un motivo que la persona pueda defender."
 };
 
 // src/i18n/pt-BR.json
@@ -5730,7 +5746,15 @@ var pt_BR_default = {
   "parity.issue.no_destination": "sem destino: {detail}",
   "parity.issue.no_test": "sem teste de paridade: {detail}",
   "parity.issue.not_green": "teste de paridade não está green: {detail}",
-  "parity.issue.removed_without_decision": "removido sem registro de decisão ligado: {detail}"
+  "parity.issue.removed_without_decision": "removido sem registro de decisão ligado: {detail}",
+  "findings.command.accept": "Aceita um achado de qualquer checagem no baseline compartilhado, com dono, motivo e validade (só a pessoa)",
+  "findings.command.list": "Lista os achados aceitos de todas as checagens, com dono e validade",
+  "findings.accept.done": "{id} ({check}, {rule}) em {where} aceito, com {owner} como dono até {expires}.",
+  "findings.error.not_found": "Nenhum achado atual tem o id {id}",
+  "findings.list.empty": "O baseline de achados está vazio.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, até {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, venceu em {expires}; volta a bloquear",
+  "gate.findings.grew": "O baseline de achados cresceu de {before} para {after} entradas nesta sessão; achado aceito precisa de um motivo que a pessoa defenda."
 };
 
 // src/i18n/review.json
@@ -6739,7 +6763,15 @@ var review_default = {
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -7745,7 +7777,15 @@ var review_default = {
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   }
 };
 
@@ -13263,7 +13303,9 @@ var readSession = (runtime, paths) => {
   const sessionId = raw?.["sessionId"];
   const startTree = raw?.["startTree"];
   const at = raw?.["at"];
-  return typeof sessionId === "string" && typeof startTree === "string" && typeof at === "number" ? { sessionId, startTree, at } : void 0;
+  const findings2 = raw?.["findings"];
+  if (typeof sessionId !== "string" || typeof startTree !== "string" || typeof at !== "number") return void 0;
+  return { sessionId, startTree, at, ...typeof findings2 === "number" ? { findings: findings2 } : {} };
 };
 var writeSession = (runtime, paths, mark) => writeJsonFile(runtime, paths.cache(SESSION_FILE), { ...mark }).ok;
 var entry = (value) => {
@@ -13774,6 +13816,91 @@ var promptRelease = (input) => {
   return allowWith({ systemMessage: human(apply(input, paths, markers).join(" ")) });
 };
 
+// src/findings/baseline.ts
+import { join as join26 } from "node:path";
+var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
+var BASELINE_SCHEMA = "finitemonkey/findings-baseline@1";
+var LEGACY_SECRETS_SCHEMA = "finitemonkey/secrets-baseline@1";
+var BASELINE_STATES = ["aceito", "falso-positivo"];
+var EXCEPTION_MAX_DAYS = 90;
+var SECRETS_CHECK = "secrets";
+var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
+var baselinePath = (root) => toAbsolutePath(join26(root, BASELINE_FILE2));
+var text4 = (record4, key2) => {
+  const value = record4[key2];
+  return typeof value === "string" && value !== "" ? value : void 0;
+};
+var stateOf = (value) => BASELINE_STATES.find((state) => state === value);
+var parseEntry2 = (value) => {
+  if (!isRecord(value)) return void 0;
+  const fields = ["id", "rule", "file", "fingerprint", "owner", "reason", "acceptedAt", "expiresAt"];
+  const [id, rule, file, fingerprint, owner, reason, acceptedAt, expiresAt] = fields.map((key2) => text4(value, key2));
+  const state = stateOf(value["state"]);
+  const line7 = value["line"];
+  if (id === void 0 || rule === void 0 || file === void 0 || fingerprint === void 0) return void 0;
+  if (owner === void 0 || reason === void 0 || acceptedAt === void 0 || expiresAt === void 0)
+    return void 0;
+  if (state === void 0 || typeof line7 !== "number") return void 0;
+  const check2 = text4(value, "check") ?? SECRETS_CHECK;
+  return { check: check2, id, rule, file, line: line7, fingerprint, state, owner, reason, acceptedAt, expiresAt };
+};
+var parseBaseline = (raw) => {
+  const parsed = parseJsonObject(raw);
+  if (!parsed.ok) return parsed;
+  const schema = parsed.value["schema"];
+  if (schema !== BASELINE_SCHEMA && schema !== LEGACY_SECRETS_SCHEMA)
+    return reject(`schema must be ${BASELINE_SCHEMA}`);
+  const list5 = parsed.value["entries"];
+  if (!Array.isArray(list5)) return reject("entries must be a list");
+  const entries = [];
+  for (const [index, item2] of list5.entries()) {
+    const entry2 = parseEntry2(item2);
+    if (entry2 === void 0) return reject(`entry ${String(index)} is incomplete`);
+    entries.push(entry2);
+  }
+  return accept({ schema: BASELINE_SCHEMA, entries });
+};
+var loadBaseline = (runtime, root) => {
+  const raw = runtime.readText(baselinePath(root));
+  return raw.ok ? parseBaseline(raw.value) : accept(EMPTY_BASELINE);
+};
+var serializeBaseline = (baseline) => `${JSON.stringify(
+  {
+    schema: BASELINE_SCHEMA,
+    entries: [...baseline.entries].sort((a, b) => a.check.localeCompare(b.check) || a.id.localeCompare(b.id))
+  },
+  null,
+  2
+)}
+`;
+var saveBaseline = (runtime, root, baseline) => runtime.writeText(baselinePath(root), serializeBaseline(baseline));
+var ratchetFor = (check2, findings2, baseline, now, inScope2) => {
+  const mine = baseline.entries.filter((entry2) => entry2.check === check2);
+  const byId = new Map(mine.map((entry2) => [entry2.id, entry2]));
+  const seen = new Set(findings2.map((finding5) => finding5.id));
+  const entryOf5 = (finding5) => byId.get(finding5.id);
+  return {
+    fresh: findings2.filter((finding5) => entryOf5(finding5) === void 0),
+    known: findings2.filter((finding5) => (entryOf5(finding5)?.expiresAt ?? "") >= now),
+    expired: findings2.filter((finding5) => {
+      const entry2 = entryOf5(finding5);
+      return entry2 !== void 0 && entry2.expiresAt < now;
+    }),
+    fixed: inScope2 === void 0 ? [] : mine.filter((entry2) => !seen.has(entry2.id) && inScope2(entry2.file))
+  };
+};
+var withoutFixed = (baseline, fixed) => {
+  const gone = new Set(fixed.map((entry2) => `${entry2.check}\0${entry2.id}`));
+  return {
+    schema: BASELINE_SCHEMA,
+    entries: baseline.entries.filter((entry2) => !gone.has(`${entry2.check}\0${entry2.id}`))
+  };
+};
+var withEntry2 = (baseline, entry2) => ({
+  schema: BASELINE_SCHEMA,
+  entries: [...baseline.entries.filter((item2) => !(item2.check === entry2.check && item2.id === entry2.id)), entry2]
+});
+
 // src/gate/hooks/prs.ts
 var PRS_CACHE_MS = 10 * 6e4;
 var PRS_TIMEOUT_MS = 3e3;
@@ -13865,16 +13992,16 @@ var params = (value) => isRecord(value) ? Object.fromEntries(
 var notes = (value) => Array.isArray(value) ? value.flatMap(
   (item2) => isRecord(item2) && typeof item2["key"] === "string" ? [{ key: item2["key"], params: params(item2["params"]) }] : []
 ) : [];
-var text4 = (record4, key2) => {
+var text5 = (record4, key2) => {
   const value = record4[key2];
   return typeof value === "string" ? value : void 0;
 };
 var optional = (record4) => {
   const exitCode = record4["exitCode"];
   const durationMs = record4["durationMs"];
-  const command = text4(record4, "command");
-  const stdoutSha256 = text4(record4, "stdoutSha256");
-  const releasedBy = text4(record4, "releasedBy");
+  const command = text5(record4, "command");
+  const stdoutSha256 = text5(record4, "stdoutSha256");
+  const releasedBy = text5(record4, "releasedBy");
   const reason = oneOf2(UNVERIFIED_REASONS, record4["reason"]);
   const failures = record4["failures"];
   const testCount = record4["testCount"];
@@ -13894,11 +14021,11 @@ var parseEvidence = (line7) => {
   if (!parsed.ok) return void 0;
   const record4 = parsed.value;
   const status = oneOf2(EVIDENCE_STATUSES, record4["status"]);
-  const task = text4(record4, "task");
-  const check2 = text4(record4, "check");
-  const kind = text4(record4, "kind");
-  const treeHash2 = text4(record4, "treeHash");
-  const at = text4(record4, "at");
+  const task = text5(record4, "task");
+  const check2 = text5(record4, "check");
+  const kind = text5(record4, "kind");
+  const treeHash2 = text5(record4, "treeHash");
+  const at = text5(record4, "at");
   if (record4["schema"] !== EVIDENCE_SCHEMA || status === void 0) return void 0;
   if (task === void 0 || check2 === void 0 || kind === void 0 || treeHash2 === void 0 || at === void 0) {
     return void 0;
@@ -14097,22 +14224,22 @@ var saveSnapshot = (runtime, paths, t, sessionId) => {
   const snapshot2 = snapshotOf(t, currentReport(runtime, paths, sessionId), grants, new Date(now).toISOString());
   return writeState(runtime, paths, { ...readState(runtime, paths), snapshot: snapshot2 }).ok;
 };
-var text5 = (snapshot2, key2) => {
+var text6 = (snapshot2, key2) => {
   const value = snapshot2[key2];
   return typeof value === "string" ? value : "";
 };
 var snapshotFacts = (t, snapshot2) => {
-  if (snapshot2 === void 0 || text5(snapshot2, "at") === "") return void 0;
-  const task = text5(snapshot2, "task");
+  if (snapshot2 === void 0 || text6(snapshot2, "at") === "") return void 0;
+  const task = text6(snapshot2, "task");
   return t(task === "" || task === "implicit" ? "gate.context.state_implicit" : "gate.context.state", {
-    at: text5(snapshot2, "at"),
+    at: text6(snapshot2, "at"),
     task,
-    goal: text5(snapshot2, "goal"),
-    tree: text5(snapshot2, "tree"),
-    passed: text5(snapshot2, "passed"),
-    failed: text5(snapshot2, "failed"),
-    unverified: text5(snapshot2, "unverified"),
-    grants: text5(snapshot2, "grants")
+    goal: text6(snapshot2, "goal"),
+    tree: text6(snapshot2, "tree"),
+    passed: text6(snapshot2, "passed"),
+    failed: text6(snapshot2, "failed"),
+    unverified: text6(snapshot2, "unverified"),
+    grants: text6(snapshot2, "grants")
   });
 };
 
@@ -14149,7 +14276,13 @@ var markSession = (input, paths) => {
   if (sessionId === void 0 || headSha(git3) === void 0) return;
   const tree = treeHash(git3);
   if (tree === void 0) return;
-  writeSession(runtime, paths, { sessionId, startTree: tree, at: nowMs(runtime) });
+  const findings2 = loadBaseline(runtime, paths.root);
+  writeSession(runtime, paths, {
+    sessionId,
+    startTree: tree,
+    at: nowMs(runtime),
+    ...findings2.ok ? { findings: findings2.value.entries.length } : {}
+  });
   startBaseline(runtime, paths, tree);
   if (cachedPrs(runtime, paths) === void 0) runtime.spawnSelf(["gate", "--prs"], paths.root);
 };
@@ -14225,7 +14358,7 @@ var callersRate = (runtime, paths) => {
 };
 
 // src/gate/callers/scan.ts
-import { join as join26 } from "node:path";
+import { join as join27 } from "node:path";
 
 // src/gate/callers/imports.ts
 import { posix as posix3 } from "node:path";
@@ -14349,7 +14482,7 @@ var definesName = (language, line7, name) => language.definitions.some((pattern)
 // src/gate/callers/scan.ts
 var MAX_SYMBOLS = 200;
 var current = (runtime, root, path) => {
-  const text10 = runtime.readText(toAbsolutePath(join26(root, path)));
+  const text10 = runtime.readText(toAbsolutePath(join27(root, path)));
   return text10.ok ? text10.value : "";
 };
 var keyOf = (language, name) => `${language.id}\0${name}`;
@@ -14744,7 +14877,7 @@ var changedSince = (runtime, dir, hash, covered) => {
   const untracked3 = linesOf2(git3.out(["ls-files", "--others", "--exclude-standard", "--", ...spec2]));
   return [.../* @__PURE__ */ new Set([...tracked, ...untracked3])].sort();
 };
-var stateOf = (runtime, root, name) => {
+var stateOf2 = (runtime, root, name) => {
   const text10 = runtime.readText(planPath(root, name));
   const front = text10.ok ? readFront(text10.value).data : void 0;
   if (front?.["schema"] !== INVENTORY_SCHEMA) return void 0;
@@ -14758,7 +14891,7 @@ var stateOf = (runtime, root, name) => {
   }
   return { kind: "fresh", report: report2 };
 };
-var inventoryStates = (runtime, root) => planFiles(runtime, root).filter((name) => TODAY.test(name)).flatMap((name) => stateOf(runtime, root, name) ?? []);
+var inventoryStates = (runtime, root) => planFiles(runtime, root).filter((name) => TODAY.test(name)).flatMap((name) => stateOf2(runtime, root, name) ?? []);
 
 // src/gate/checks/inventory.ts
 var MAX_PATHS = 5;
@@ -14782,10 +14915,10 @@ var inventoryOutcome = (states) => {
 var inventoryCheck = (_check, ctx) => inventoryOutcome(inventoryStates(ctx.runtime, ctx.paths.root));
 
 // src/gate/checks/look.ts
-import { join as join29 } from "node:path";
+import { join as join30 } from "node:path";
 
 // src/look/config.ts
-import { join as join27 } from "node:path";
+import { join as join28 } from "node:path";
 
 // src/look/types.ts
 var LOOK_RULES = [
@@ -14820,7 +14953,7 @@ var DEFAULT_SCREENS = [
   "**/*.sass",
   "**/*.less"
 ];
-var text6 = (value) => typeof value === "string" && value !== "" ? value : void 0;
+var text7 = (value) => typeof value === "string" && value !== "" ? value : void 0;
 var number = (value) => {
   const parsed = typeof value === "string" ? Number(value) : Number.NaN;
   return Number.isInteger(parsed) && parsed > 0 ? parsed : void 0;
@@ -14837,8 +14970,8 @@ var parseLookConfig = (source) => {
   const top = configMap(tree);
   return {
     port: number(top["port"]),
-    start: text6(top["start"]),
-    host: text6(top["host"]) ?? "127.0.0.1",
+    start: text7(top["start"]),
+    host: text7(top["host"]) ?? "127.0.0.1",
     routes: configList(tree, "routes").length === 0 ? ["/"] : configList(tree, "routes"),
     mocks: configList(tree, "mocks"),
     screens: screens === void 0 ? DEFAULT_SCREENS : configList(tree, "screens"),
@@ -14847,18 +14980,18 @@ var parseLookConfig = (source) => {
   };
 };
 var loadLookConfig = (runtime, root) => {
-  const source = runtime.readText(toAbsolutePath(join27(root, LOOK_CONFIG)));
+  const source = runtime.readText(toAbsolutePath(join28(root, LOOK_CONFIG)));
   return source.ok ? parseLookConfig(source.value) : void 0;
 };
 var withMock = (route, mock) => `${route}${route.includes("?") ? "&" : "?"}mock=${encodeURIComponent(mock)}`;
 var lookRoutes = (config) => config.routes.flatMap((route) => [route, ...config.mocks.map((mock) => withMock(route, mock))]);
 
 // src/look/paths.ts
-import { join as join28, relative as relative5 } from "node:path";
+import { join as join29, relative as relative5 } from "node:path";
 var LOOK_DIR = "look";
 var SUMMARY_FILE = "summary.json";
-var lookDir = (paths, treeHash2) => toAbsolutePath(join28(paths.dir, LOOK_DIR, treeHash2));
-var summaryPath = (paths, treeHash2) => toAbsolutePath(join28(lookDir(paths, treeHash2), SUMMARY_FILE));
+var lookDir = (paths, treeHash2) => toAbsolutePath(join29(paths.dir, LOOK_DIR, treeHash2));
+var summaryPath = (paths, treeHash2) => toAbsolutePath(join29(lookDir(paths, treeHash2), SUMMARY_FILE));
 var projectRelative = (paths, absolute) => toPosixPath(relative5(paths.root, absolute));
 
 // src/gate/checks/look.ts
@@ -14893,7 +15026,7 @@ var readSummary = (ctx) => {
 var lastScreenEdit = (ctx) => {
   const screens = loadLookConfig(ctx.runtime, ctx.paths.root)?.screens ?? DEFAULT_SCREENS;
   return ctx.changes.filter((change) => change.status !== "D" && matchesAny(change.path, screens)).reduce((latest, change) => {
-    const stat = ctx.runtime.stat(toAbsolutePath(join29(ctx.paths.root, change.path)));
+    const stat = ctx.runtime.stat(toAbsolutePath(join30(ctx.paths.root, change.path)));
     return Math.max(latest, stat?.mtimeMs ?? 0);
   }, 0);
 };
@@ -15009,13 +15142,13 @@ var parityCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/placeholders.ts
-import { join as join30 } from "node:path";
+import { join as join31 } from "node:path";
 var MAX_LISTED6 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines4) => lines4.filter((line7) => !isTestFile(line7.path) && !SKIP_FILES.test(line7.path) && PLACEHOLDER.test(line7.text));
 var untrackedAdded = (ctx) => ctx.changes.filter((change) => change.status === "A" && !SKIP_FILES.test(change.path)).flatMap((change) => {
-  const text10 = ctx.runtime.readText(toAbsolutePath(join30(ctx.paths.root, change.path)));
+  const text10 = ctx.runtime.readText(toAbsolutePath(join31(ctx.paths.root, change.path)));
   return text10.ok ? text10.value.split("\n").map((line7, index) => ({ path: change.path, line: index + 1, text: line7 })) : [];
 });
 var placeholdersCheck = (_check, ctx) => {
@@ -16170,70 +16303,10 @@ ${run4.stderr}`)) })]);
 };
 
 // src/secrets/baseline.ts
-import { join as join31 } from "node:path";
-var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
-var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
-var BASELINE_STATES = ["aceito", "falso-positivo"];
-var EXCEPTION_MAX_DAYS = 90;
-var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
-var baselinePath = (root) => toAbsolutePath(join31(root, BASELINE_FILE2));
-var text7 = (record4, key2) => {
-  const value = record4[key2];
-  return typeof value === "string" && value !== "" ? value : void 0;
-};
-var stateOf2 = (value) => BASELINE_STATES.find((state) => state === value);
-var parseEntry2 = (value) => {
-  if (!isRecord(value)) return void 0;
-  const fields = ["id", "rule", "file", "fingerprint", "owner", "reason", "acceptedAt", "expiresAt"];
-  const [id, rule, file, fingerprint, owner, reason, acceptedAt, expiresAt] = fields.map((key2) => text7(value, key2));
-  const state = stateOf2(value["state"]);
-  const line7 = value["line"];
-  if (id === void 0 || rule === void 0 || file === void 0 || fingerprint === void 0) return void 0;
-  if (owner === void 0 || reason === void 0 || acceptedAt === void 0 || expiresAt === void 0)
-    return void 0;
-  if (state === void 0 || typeof line7 !== "number") return void 0;
-  return { id, rule, file, line: line7, fingerprint, state, owner, reason, acceptedAt, expiresAt };
-};
-var parseBaseline = (raw) => {
-  const parsed = parseJsonObject(raw);
-  if (!parsed.ok) return parsed;
-  if (parsed.value["schema"] !== BASELINE_SCHEMA) return reject(`schema must be ${BASELINE_SCHEMA}`);
-  const list5 = parsed.value["entries"];
-  if (!Array.isArray(list5)) return reject("entries must be a list");
-  const entries = [];
-  for (const [index, item2] of list5.entries()) {
-    const entry2 = parseEntry2(item2);
-    if (entry2 === void 0) return reject(`entry ${String(index)} is incomplete`);
-    entries.push(entry2);
-  }
-  return accept({ schema: BASELINE_SCHEMA, entries });
-};
-var loadBaseline = (runtime, root) => {
-  const raw = runtime.readText(baselinePath(root));
-  return raw.ok ? parseBaseline(raw.value) : accept(EMPTY_BASELINE);
-};
-var serializeBaseline = (baseline) => `${JSON.stringify({ schema: baseline.schema, entries: [...baseline.entries].sort((a, b) => a.id.localeCompare(b.id)) }, null, 2)}
-`;
-var saveBaseline = (runtime, root, baseline) => runtime.writeText(baselinePath(root), serializeBaseline(baseline));
-var ratchet = (findings2, baseline, now, inScope2) => {
-  const byId = new Map(baseline.entries.map((entry2) => [entry2.id, entry2]));
-  const seen = new Set(findings2.map((finding5) => finding5.id));
-  const entryOf5 = (finding5) => byId.get(finding5.id);
-  return {
-    fresh: findings2.filter((finding5) => entryOf5(finding5) === void 0),
-    known: findings2.filter((finding5) => (entryOf5(finding5)?.expiresAt ?? "") >= now),
-    expired: findings2.filter((finding5) => {
-      const entry2 = entryOf5(finding5);
-      return entry2 !== void 0 && entry2.expiresAt < now;
-    }),
-    fixed: inScope2 === void 0 ? [] : baseline.entries.filter((entry2) => !seen.has(entry2.id) && inScope2(entry2.file))
-  };
-};
-var withoutFixed = (baseline, fixed) => {
-  const gone = new Set(fixed.map((entry2) => entry2.id));
-  return { schema: baseline.schema, entries: baseline.entries.filter((entry2) => !gone.has(entry2.id)) };
-};
-var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry2) => entry2.expiresAt >= now).map((entry2) => entry2.fingerprint));
+var ratchet = (findings2, baseline, now, inScope2) => ratchetFor(SECRETS_CHECK, findings2, baseline, now, inScope2);
+var acceptedFingerprints = (baseline, now) => new Set(
+  baseline.entries.filter((entry2) => entry2.check === SECRETS_CHECK && entry2.expiresAt >= now).map((entry2) => entry2.fingerprint)
+);
 
 // src/secrets/incidents.ts
 import { join as join32 } from "node:path";
@@ -16501,11 +16574,20 @@ var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
   return session === void 0 ? EPOCH : new Date(session.at).toISOString();
 };
+var grewNotes = (ctx) => {
+  const before = readSession(ctx.runtime, ctx.paths)?.findings;
+  const now = loadBaseline(ctx.runtime, ctx.paths.root);
+  if (before === void 0 || !now.ok || now.value.entries.length <= before) return [];
+  return [note("gate.findings.grew", { before, after: now.value.entries.length })];
+};
 var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings: findings2, openIncidents } = status.value;
-  const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
+  const warnings = [
+    ...grewNotes(ctx),
+    ...findings2.filter(isWarning).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }))
+  ];
   const notes2 = [
     ...blocking(findings2).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
     ...openIncidents.slice(0, MAX_LISTED10).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
@@ -20865,11 +20947,164 @@ var doctorCommand = {
   run: (ctx, args2) => Promise.resolve(runDoctor(ctx, args2.values["fix"] === true, args2.values["report"] === true))
 };
 
+// src/findings/sources.ts
+var secretsSource = {
+  check: SECRETS_CHECK,
+  scan: (runtime, root) => {
+    const scanned = scanPath(runtime, root, ".");
+    return scanned.ok ? scanned.value.map((item2) => ({
+      id: item2.id,
+      check: SECRETS_CHECK,
+      rule: item2.ruleId,
+      file: item2.file,
+      line: item2.line,
+      fingerprint: item2.fingerprint
+    })) : [];
+  }
+};
+var FINDING_SOURCES = [secretsSource];
+var findFinding = (runtime, root, id, sources = FINDING_SOURCES) => {
+  for (const source of sources) {
+    const found = source.scan(runtime, root).find((item2) => item2.id === id);
+    if (found !== void 0) return found;
+  }
+  return void 0;
+};
+
+// src/commands/secrets-problems.ts
+var baselineInvalid = (detail) => ({
+  code: "secrets_baseline_invalid",
+  messageKey: "secrets.error.baseline_invalid",
+  params: { file: BASELINE_FILE2, detail },
+  fix: `git checkout -- ${BASELINE_FILE2}`,
+  exitCode: ExitCode.NotConfigured
+});
+var writeFailed = (file, detail) => ({
+  code: "secrets_write_failed",
+  messageKey: "secrets.error.write_failed",
+  params: { file, detail },
+  fix: "finitemonkey doctor",
+  exitCode: ExitCode.Internal
+});
+var gitUnavailable = (detail) => ({
+  code: "secrets_git_unavailable",
+  messageKey: "secrets.error.git_unavailable",
+  params: { detail },
+  fix: "finitemonkey doctor",
+  exitCode: ExitCode.NotConfigured
+});
+
+// src/commands/findings.ts
+var FINDINGS_LIST_SCHEMA = "finitemonkey/findings-list@1";
+var DAY_MS5 = 864e5;
+var ACCEPT_USAGE = "finitemonkey findings accept <finding-id> --reason <why> [--days 1-90] [--owner <name>] [--false-positive]";
+var fail2 = (ctx, problem5) => failureFrom(ctx.t, problem5);
+var daysOf = (raw) => {
+  if (raw === void 0) return EXCEPTION_MAX_DAYS;
+  const days = Number.parseInt(raw, 10);
+  return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS && String(days) === raw.trim() ? days : void 0;
+};
+var inputProblem = (ctx, id, reason, days) => {
+  if (!isPerson(ctx))
+    return needsPersonProblem("secrets.error.person_only", ACCEPT_USAGE, { action: ctx.t("secrets.action.accept") });
+  if (id === "") return usageProblem("invalid_arguments", "error.invalid_arguments", ACCEPT_USAGE, { detail: "<id>" });
+  if (reason.trim() === "") return usageProblem("invalid_arguments", "secrets.error.reason_required", ACCEPT_USAGE);
+  if (days === void 0)
+    return usageProblem("invalid_arguments", "error.invalid_arguments", ACCEPT_USAGE, {
+      detail: `--days 1-${String(EXCEPTION_MAX_DAYS)}`
+    });
+  return void 0;
+};
+var accept2 = (ctx, id, reason, days, owner, falsePositive) => {
+  const root = projectRoot(ctx);
+  const baseline = loadBaseline(ctx.runtime, root);
+  if (!baseline.ok) return fail2(ctx, baselineInvalid(baseline.error));
+  const finding5 = findFinding(ctx.runtime, root, id);
+  if (finding5 === void 0)
+    return fail2(
+      ctx,
+      usageProblem("findings_not_found", "findings.error.not_found", "finitemonkey findings list", { id })
+    );
+  const now = ctx.runtime.now();
+  const entry2 = {
+    ...finding5,
+    state: falsePositive ? "falso-positivo" : "aceito",
+    owner,
+    reason,
+    acceptedAt: now,
+    expiresAt: new Date(Date.parse(now) + days * DAY_MS5).toISOString()
+  };
+  const saved = saveBaseline(ctx.runtime, root, withEntry2(baseline.value, entry2));
+  if (!saved.ok) return fail2(ctx, writeFailed(BASELINE_FILE2, saved.error));
+  return success(entry2, [
+    ctx.t("findings.accept.done", {
+      id: entry2.id,
+      check: entry2.check,
+      rule: entry2.rule,
+      where: `${entry2.file}:${String(entry2.line)}`,
+      owner: entry2.owner,
+      expires: entry2.expiresAt.slice(0, 10)
+    })
+  ]);
+};
+var findingsAcceptCommand = {
+  path: ["findings", "accept"],
+  summaryKey: "findings.command.accept",
+  usage: ACCEPT_USAGE,
+  status: "ready",
+  maxPositionals: 1,
+  options: {
+    reason: { type: "string" },
+    days: { type: "string" },
+    owner: { type: "string" },
+    "false-positive": { type: "boolean" }
+  },
+  run: (ctx, args2) => {
+    const id = args2.positionals[0] ?? "";
+    const reason = stringOption(args2.values, "reason") ?? "";
+    const days = daysOf(stringOption(args2.values, "days"));
+    const problem5 = inputProblem(ctx, id, reason, days);
+    if (problem5 !== void 0 || days === void 0)
+      return Promise.resolve(
+        fail2(
+          ctx,
+          problem5 ?? usageProblem("invalid_arguments", "error.invalid_arguments", ACCEPT_USAGE, { detail: "--days" })
+        )
+      );
+    const owner = stringOption(args2.values, "owner") ?? personName(ctx);
+    return Promise.resolve(accept2(ctx, id, reason, days, owner, args2.values["false-positive"] === true));
+  }
+};
+var findingsListCommand = {
+  path: ["findings", "list"],
+  summaryKey: "findings.command.list",
+  usage: "finitemonkey findings list",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => {
+    const baseline = loadBaseline(ctx.runtime, projectRoot(ctx));
+    if (!baseline.ok) return Promise.resolve(fail2(ctx, baselineInvalid(baseline.error)));
+    const now = ctx.runtime.now();
+    const entries = baseline.value.entries.map((entry2) => ({ ...entry2, expired: entry2.expiresAt < now }));
+    const data = { schema: FINDINGS_LIST_SCHEMA, entries };
+    const human2 = entries.length === 0 ? [ctx.t("findings.list.empty")] : entries.map(
+      (entry2) => ctx.t(entry2.expired ? "findings.list.expired" : "findings.list.entry", {
+        id: entry2.id,
+        check: entry2.check,
+        where: `${entry2.file}:${String(entry2.line)}`,
+        owner: entry2.owner,
+        expires: entry2.expiresAt.slice(0, 10)
+      })
+    );
+    return Promise.resolve(success(data, human2));
+  }
+};
+
 // src/gain/gain.ts
 import { join as join51 } from "node:path";
 var GAIN_SCHEMA = "finitemonkey/gain@1";
-var DAY_MS5 = 864e5;
-var SAVE_WINDOW_MS = DAY_MS5;
+var DAY_MS6 = 864e5;
+var SAVE_WINDOW_MS = DAY_MS6;
 var readLog = (runtime, paths) => {
   const text10 = runtime.readText(paths.log);
   if (!text10.ok) return [];
@@ -20905,7 +21140,7 @@ var countsIn = (log, gates, from, to) => {
 };
 var gainReport = (runtime, paths, days) => {
   const to = Date.parse(runtime.now());
-  const from = to - days * DAY_MS5;
+  const from = to - days * DAY_MS6;
   const log = readLog(runtime, paths);
   const gates = readGates(runtime, paths);
   return {
@@ -20914,7 +21149,7 @@ var gainReport = (runtime, paths, days) => {
     from: new Date(from).toISOString(),
     to: new Date(to).toISOString(),
     current: countsIn(log, gates, from, to + 1),
-    previous: countsIn(log, gates, from - days * DAY_MS5, from)
+    previous: countsIn(log, gates, from - days * DAY_MS6, from)
   };
 };
 
@@ -24806,7 +25041,7 @@ var CLEANUP_CLASSES = [
   "open"
 ];
 var NEVER_REMOVED = /* @__PURE__ */ new Set(["dirty", "locked", "running", "recent", "unpushed"]);
-var DAY_MS6 = 864e5;
+var DAY_MS7 = 864e5;
 var dirtyFiles = (runtime, path, generated) => {
   const status = runtime.gitWith(["status", "--porcelain=v2", "-z", "--untracked-files=all"], path, {
     env: { GIT_OPTIONAL_LOCKS: "0" }
@@ -24821,7 +25056,7 @@ var pidsInside = (context, path) => {
 var isRecent = (context, activityAt) => {
   if (activityAt === null) return false;
   const age = Date.parse(context.runtime.now()) - Date.parse(activityAt);
-  return Number.isFinite(age) && age < context.staleDays * DAY_MS6;
+  return Number.isFinite(age) && age < context.staleDays * DAY_MS7;
 };
 var branchClass = (context, tip, target2) => {
   if (tip === null) return "open";
@@ -25521,40 +25756,17 @@ var reviewPacketCommand = {
   }
 };
 
-// src/commands/secrets-problems.ts
-var baselineInvalid = (detail) => ({
-  code: "secrets_baseline_invalid",
-  messageKey: "secrets.error.baseline_invalid",
-  params: { file: BASELINE_FILE2, detail },
-  fix: `git checkout -- ${BASELINE_FILE2}`,
-  exitCode: ExitCode.NotConfigured
-});
-var writeFailed = (file, detail) => ({
-  code: "secrets_write_failed",
-  messageKey: "secrets.error.write_failed",
-  params: { file, detail },
-  fix: "finitemonkey doctor",
-  exitCode: ExitCode.Internal
-});
-var gitUnavailable = (detail) => ({
-  code: "secrets_git_unavailable",
-  messageKey: "secrets.error.git_unavailable",
-  params: { detail },
-  fix: "finitemonkey doctor",
-  exitCode: ExitCode.NotConfigured
-});
-
 // src/commands/secrets-accept.ts
-var DAY_MS7 = 864e5;
-var daysOf = (values) => {
+var DAY_MS8 = 864e5;
+var daysOf2 = (values) => {
   const raw = stringOption(values, "days");
   if (raw === void 0) return EXCEPTION_MAX_DAYS;
   const days = Number.parseInt(raw, 10);
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS7).toISOString();
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS8).toISOString();
 var failure3 = (ctx, problem5) => failureFrom(ctx.t, problem5);
-var inputProblem = (ctx, id, reason, days) => {
+var inputProblem2 = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
   if (!isPerson(ctx)) {
     return needsPersonProblem("secrets.error.person_only", fix, { action: ctx.t("secrets.action.accept") });
@@ -25573,6 +25785,7 @@ var inputProblem = (ctx, id, reason, days) => {
 var entryOf4 = (ctx, finding5, args2) => {
   const now = ctx.runtime.now();
   return {
+    check: "secrets",
     id: finding5.id,
     rule: finding5.ruleId,
     file: finding5.file,
@@ -25627,8 +25840,8 @@ var secretsAcceptCommand = {
   run: (ctx, args2) => {
     const id = args2.positionals[0] ?? "";
     const reason = stringOption(args2.values, "reason");
-    const days = daysOf(args2.values);
-    const problem5 = inputProblem(ctx, id, reason, days);
+    const days = daysOf2(args2.values);
+    const problem5 = inputProblem2(ctx, id, reason, days);
     if (problem5 !== void 0 || reason === void 0 || days === void 0) {
       return Promise.resolve(
         failure3(
@@ -25681,8 +25894,8 @@ var PURGE_STEPS = [
   "secrets.purge.step4",
   "secrets.purge.step5"
 ];
-var fail2 = (ctx, problem5) => failureFrom(ctx.t, problem5);
-var notFound2 = (ctx, id) => fail2(
+var fail3 = (ctx, problem5) => failureFrom(ctx.t, problem5);
+var notFound2 = (ctx, id) => fail3(
   ctx,
   usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
     id
@@ -25710,7 +25923,7 @@ var list3 = (ctx, root) => {
   ];
   return success({ schema: "finitemonkey/secrets-incidents@1", incidents }, human2);
 };
-var notRotated = (ctx, incident) => fail2(ctx, {
+var notRotated = (ctx, incident) => fail3(ctx, {
   code: "secrets_not_rotated",
   messageKey: "secrets.error.not_rotated",
   params: { id: incident.id, state: incident.state },
@@ -25720,7 +25933,7 @@ var notRotated = (ctx, incident) => fail2(ctx, {
 var move = (ctx, root, incident, action) => {
   const to = TARGET[action];
   if (!isPerson(ctx)) {
-    return fail2(
+    return fail3(
       ctx,
       needsPersonProblem("secrets.error.person_only", `finitemonkey secrets incident ${action} ${incident.id}`, {
         action: ctx.t(`secrets.action.${action}`)
@@ -25728,7 +25941,7 @@ var move = (ctx, root, incident, action) => {
     );
   }
   if (!canMove(incident.state, to))
-    return action === "close" ? notRotated(ctx, incident) : fail2(
+    return action === "close" ? notRotated(ctx, incident) : fail3(
       ctx,
       usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE4, {
         id: incident.id,
@@ -25739,7 +25952,7 @@ var move = (ctx, root, incident, action) => {
   const moved = moveIncident(incident, to, ctx.runtime.now(), personName(ctx));
   const saved = saveIncident(ctx.runtime, root, moved);
   if (!saved.ok) {
-    return fail2(ctx, writeFailed(incident.id, saved.error));
+    return fail3(ctx, writeFailed(incident.id, saved.error));
   }
   return success(moved, [ctx.t("secrets.incident.marked", { id: moved.id, state: moved.state })]);
 };
@@ -25761,7 +25974,7 @@ var secretsIncidentCommand = {
     const root = projectRoot(ctx);
     if (action === void 0)
       return Promise.resolve(
-        fail2(
+        fail3(
           ctx,
           usageProblem("invalid_arguments", "error.invalid_arguments", USAGE4, { detail: args2.positionals[0] ?? "" })
         )
@@ -26879,7 +27092,7 @@ var applyClean = (inventory, include, reapRunning) => {
 
 // src/wt/purge.ts
 var DEFAULT_ARCHIVE_DAYS = 30;
-var DAY_MS8 = 864e5;
+var DAY_MS9 = 864e5;
 var safetyRefs = (runtime, root, days) => {
   const listed5 = runtime.git(
     ["for-each-ref", "--format=%(refname) %(committerdate:iso-strict)", ARCHIVE_PREFIX, BACKUP_PREFIX],
@@ -26891,7 +27104,7 @@ var safetyRefs = (runtime, root, days) => {
     const [ref = "", at = ""] = line7.split(" ");
     if (ref === "") return [];
     const age = now - Date.parse(at);
-    return [{ ref, at, expired: Number.isFinite(age) && age > days * DAY_MS8 }];
+    return [{ ref, at, expired: Number.isFinite(age) && age > days * DAY_MS9 }];
   });
 };
 var purgeRefs = (runtime, root, refs) => refs.filter((item2) => item2.expired && runtime.git(["update-ref", "-d", item2.ref], root).ok).map((item2) => item2.ref);
@@ -27164,6 +27377,8 @@ var REGISTRY2 = [
   taskDoneCommand,
   secretsScanCommand,
   secretsAcceptCommand,
+  findingsAcceptCommand,
+  findingsListCommand,
   policyFalsePositiveCommand,
   offCommand,
   onCommand,
