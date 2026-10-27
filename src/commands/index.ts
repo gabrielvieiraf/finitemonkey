@@ -1,5 +1,8 @@
 import { appCheckCommand } from "./app-check.js";
 import { critiqueVerifyCommand } from "./critique.js";
+import { depsCheckCommand } from "./deps-check.js";
+import { depsConfigCommand } from "./deps-config.js";
+import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
@@ -61,6 +64,9 @@ export const REGISTRY = [
   statuslineCommand,
   critiqueVerifyCommand,
   inventoryCommand,
+  depsCheckCommand,
+  depsScanCommand,
+  depsConfigCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

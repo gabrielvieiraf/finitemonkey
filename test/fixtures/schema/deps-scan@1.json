@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/deps-scan@1.json",
+  "title": "finitemonkey/deps-scan@1",
+  "description": "`data` of `finitemonkey deps scan --json`. Generated from DepsScanData in src/commands/deps-scan.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/deps-scan@1"
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": ["warn", "block"]
+          },
+          "firstSeen": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ecosystem": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "unknown"]
+          },
+          "fixed": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "verdict",
+          "firstSeen",
+          "deadline",
+          "id",
+          "aliases",
+          "ecosystem",
+          "name",
+          "version",
+          "severity",
+          "source"
+        ]
+      }
+    },
+    "blocking": {
+      "type": "number"
+    }
+  },
+  "required": ["schema", "vulnerabilities", "blocking"]
+}
