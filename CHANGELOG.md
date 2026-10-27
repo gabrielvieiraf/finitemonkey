@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.29](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.28...v0.1.0-next.29) (2026-10-27)
+
+### Features
+
+* **deps:** warn about new packages before they are installed ([#168](https://github.com/gabrielvieiraf/finitemonkey/issues/168)) ([45f192b](https://github.com/gabrielvieiraf/finitemonkey/commit/45f192b4b88941a090a7421dc16340c41a9f2556)), closes [#64](https://github.com/gabrielvieiraf/finitemonkey/issues/64)
+
 ## [0.1.0-next.28](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.27...v0.1.0-next.28) (2026-10-27)
 
 ### Features
