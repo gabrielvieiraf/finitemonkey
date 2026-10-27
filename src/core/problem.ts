@@ -53,6 +53,9 @@ export const ERROR_CODES = [
   "look_unavailable",
   "critique_must_fix",
   "plan_write_failed",
+  "wt_taken",
+  "wt_bad_place",
+  "wt_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

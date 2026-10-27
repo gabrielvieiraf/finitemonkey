@@ -4,15 +4,18 @@ import type { AbsolutePath } from "../../core/brand.js";
 import { toPosixPath } from "../../core/posix-path.js";
 import { parseShell, type SimpleCommand } from "../shell.js";
 
-export const SELF_KINDS = ["policy", "allow_store"] as const;
+export const SELF_KINDS = ["policy", "allow_store", "registry"] as const;
 
 export type SelfKind = (typeof SELF_KINDS)[number];
+
+const REGISTRY = /\.git\/(?:worktrees\/[^/]+\/)?finitemonkey(\/|$)/;
 
 const normalize = (path: string): string => toPosixPath(path).replace(/^\.\//, "");
 
 export const selfTarget = (root: AbsolutePath, path: string): SelfKind | undefined => {
   const raw = normalize(path);
   const local = raw.startsWith("/") || /^[A-Za-z]:\//.test(raw) ? normalize(relative(root, path)) : raw;
+  if (REGISTRY.test(raw) || REGISTRY.test(local)) return "registry";
   const inFm = /(^|\/)\.finitemonkey(\/|$)/.test(local);
   if (inFm && /(^|\/)\.finitemonkey\/allow(\/|$)/.test(local)) return "allow_store";
   if (inFm || /(^|\/)\.gitleaksignore$/.test(local)) return "policy";
@@ -61,6 +64,7 @@ export const writtenPaths = (command: SimpleCommand): readonly string[] => {
 };
 
 const mentioned = (text: string): SelfKind | undefined => {
+  if (/\.git[\\/]finitemonkey/.test(text)) return "registry";
   if (/\.finitemonkey[\\/]allow/.test(text)) return "allow_store";
   if (/\.finitemonkey|\.gitleaksignore/.test(text)) return "policy";
   return undefined;

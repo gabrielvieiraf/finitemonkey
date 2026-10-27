@@ -742,5 +742,20 @@
   "gate.inventory.missing": "no inventory in docs/plan; run finitemonkey inventory <topic>",
   "gate.inventory.expired": "{report} expired: {count, plural, one {# covered path changed} other {# covered paths changed}} since {hash} ({paths}); run finitemonkey inventory {topic} for the delta",
   "gate.inventory.unknown": "{report} cites {hash} in {repo}, a commit this clone cannot read",
-  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths"
+  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths",
+  "wt.command.new": "Create a worktree with its branch, a 10-port range and a registry entry",
+  "wt.command.adopt": "Register worktrees created by other tools, without touching them",
+  "wt.error.needs_purpose": "wt new needs an id and a --purpose",
+  "wt.error.bad_id": "\"{id}\" is not a valid worktree id (letters, digits, dot, dash and underscore)",
+  "wt.error.taken": "The registry already has a worktree with id {id}",
+  "wt.error.bad_place": "{path} is not a place for a worktree ({problems})",
+  "wt.error.no_ports": "No free 10-port range left in the registry",
+  "wt.error.git": "Could not create the worktree: {detail}",
+  "wt.new.done": "Worktree {id} at {path} on branch {branch}, locked while active",
+  "wt.new.ports": "Ports from {port}: export FINITEMONKEY_PORT={port} PORT={port}",
+  "wt.adopt.title": "{count, plural, one {# worktree} other {# worktrees}}, {adopted} newly registered; nothing was moved or deleted",
+  "wt.adopt.row": "{state}  {branch}  {path}  last activity {activity}",
+  "wt.adopt.registry_failed": "The registry was not updated: {detail}",
+  "gate.guard.self.registry.claim": "{file} is the worktree registry, written only by the finitemonkey executable",
+  "gate.guard.self.registry.requires": "change it through finitemonkey wt commands"
 }

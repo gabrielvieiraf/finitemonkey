@@ -44,6 +44,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | The accepted-findings baseline and exposure incidents. Both hold fingerprints and masks, never a secret value. |
 | Writes | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots before destructive git commands, the journal that `undo` reads and dropped-line decisions from merges. |
 | Writes | `.finitemonkey/reports/` | Masked bug reports that `doctor --report` writes, only when asked. |
+| Writes | `.git/finitemonkey/worktrees.yml`, `.git/info/exclude`, `.claude/worktrees/`, `~/.finitemonkey/worktrees/` | The worktree registry in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. |
 | Writes | `.finitemonkey/look/` | Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash. |
 | Writes | `docs/plan/` | Plan documents you ask for: the inventory of what the code does today, written under `docs/plan/`. |
 | Writes | `.finitemonkey/review/`, `.claude/agents/verifier.md` | The review round count used by `review packet`, and, only when `review.playwright: true` is set in the config, a verifier agent with the Playwright MCP. |
