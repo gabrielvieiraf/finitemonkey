@@ -1,3 +1,5 @@
+import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
+import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
@@ -36,6 +38,7 @@ export type HookDecision =
       readonly human?: string;
       readonly output?: JsonObject;
       readonly persistent?: boolean;
+      readonly concept?: TonedConcept;
     };
 
 export type HookHandler = (input: HookInput) => HookDecision | Promise<HookDecision>;
@@ -87,16 +90,24 @@ const recordBlock = (input: HookInput, decision: Extract<HookDecision, { kind: "
   });
 };
 
+const toned = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): string | undefined => {
+  const paths = projectPaths(input);
+  if (decision.concept === undefined || decision.human === undefined || paths === undefined) return decision.human;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return decision.human;
+  return tonedHuman(input.runtime, paths, input.t, decision.concept, decision.human);
+};
+
 const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
   recordBlock(input, decision);
   if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
+  const human = toned(input, decision);
   const reason = capReason(decision.reason);
   return {
     ...decision,
     reason,
     output: {
       hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
-      systemMessage: `finitemonkey: ${decision.human ?? input.t("reason.human.generic")}`,
+      systemMessage: `finitemonkey: ${human ?? input.t("reason.human.generic")}`,
     },
   };
 };
@@ -136,6 +147,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
   { id: "perfil", damage: false, handlers: PERFIL_HANDLERS },
+  { id: "conceitos", damage: false, handlers: CONCEITOS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
