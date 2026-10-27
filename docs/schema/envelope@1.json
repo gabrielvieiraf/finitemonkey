@@ -71,7 +71,8 @@
             "look_unavailable",
             "critique_must_fix",
             "plan_write_failed",
-            "findings_not_found"
+            "findings_not_found",
+            "appsec_found"
           ]
         },
         "message": {
