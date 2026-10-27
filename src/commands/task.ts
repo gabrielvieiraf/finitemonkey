@@ -2,6 +2,7 @@ import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, type Problem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { recordShortcuts } from "../debt/ledger.js";
 import { ExitCode } from "../exit-codes.js";
 import { gitAt, gitRoot, headSha } from "../gate/git.js";
 import { DEFAULT_GATE_BUDGET_MS } from "../gate/hooks/common.js";
@@ -12,6 +13,7 @@ import { initPlan } from "../plan/master.js";
 import { spendLine } from "../spend/hook.js";
 import { blocksNewTask, budgetStatus } from "../spend/status.js";
 import { type CreateProblem, createTask, type TaskDraft } from "../task/create.js";
+import { parseContract } from "../task/load.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { contractJson } from "../task/serialize.js";
 import { closeTask, readState, writeState } from "../task/state.js";
@@ -144,6 +146,16 @@ const showTask = (ctx: Ctx, id: string | undefined): CommandResult => {
   return success({ schema: TASK_SCHEMA, active: active ?? null, report }, reportLines(ctx.t, report));
 };
 
+const closeShortcuts = (ctx: Ctx, paths: FmPaths, id: string): readonly string[] => {
+  const text = ctx.runtime.readText(paths.task(id));
+  const parsed = text.ok ? parseContract(id, text.value) : undefined;
+  const shortcuts = parsed?.ok === true ? (parsed.value.shortcuts ?? []) : [];
+  recordShortcuts(ctx.runtime, paths, id, shortcuts);
+  return shortcuts
+    .filter((item) => item.trigger === undefined)
+    .map((item) => ctx.t("debt.no_trigger", { what: item.what }));
+};
+
 const doneTask = (ctx: Ctx, id: string | undefined): CommandResult => {
   const paths = projectOf(ctx);
   if (paths === undefined) return noRepo(ctx);
@@ -161,7 +173,14 @@ const doneTask = (ctx: Ctx, id: string | undefined): CommandResult => {
   const result = runResult(ctx, run, true);
   if (!result.ok || run.kind !== "done" || run.report.implicit) return result;
   writeState(ctx.runtime, paths, closeTask(readState(ctx.runtime, paths), run.report.task));
-  return { ...result, human: [...(result.human ?? []), ctx.t("task.done", { task: run.report.task })] };
+  return {
+    ...result,
+    human: [
+      ...(result.human ?? []),
+      ctx.t("task.done", { task: run.report.task }),
+      ...closeShortcuts(ctx, paths, run.report.task),
+    ],
+  };
 };
 
 const TASK_OPTIONS = {

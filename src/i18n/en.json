@@ -1011,5 +1011,9 @@
   "audit.state.only_report": "Only in a report, not in the master plan ({count}):",
   "audit.state.lost": "Lost, in no document ({count}):",
   "audit.incidents": "Credentials pasted in past sessions opened incidents: {list}",
-  "audit.error.open": "{count, plural, one {# item is} other {# items are}} lost or contradicted"
+  "audit.error.open": "{count, plural, one {# item is} other {# items are}} lost or contradicted",
+  "command.debt.summary": "List the deliberate shortcuts across tasks and mark those without a trigger or past it",
+  "debt.title": "{count, plural, one {# shortcut} other {# shortcuts}}:",
+  "debt.row": "  [{state}] {what} (task {task}, at {where}, {detail})",
+  "debt.no_trigger": "Shortcut without a trigger to revisit it: {what}"
 }

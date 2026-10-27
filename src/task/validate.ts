@@ -1,5 +1,6 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { parseShortcuts } from "./shortcuts.js";
 import {
   type AcceptanceCheck,
   CHECK_KINDS,
@@ -154,6 +155,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
   const checks = acceptance(value["acceptance"], issues);
   const decisionsNeeded = strings(value["decisions_needed"], "decisions_needed", issues);
   const callersIgnore = strings(value["callers_ignore"], "callers_ignore", issues);
+  const shortcuts = parseShortcuts(value["shortcuts"], checks, issues);
   if (issues.length > 0 || id === undefined || goal === undefined || size === undefined) return reject(issues);
   return accept({
     id,
@@ -164,6 +166,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
     acceptance: checks,
     decisionsNeeded,
     ...(callersIgnore.length === 0 ? {} : { callersIgnore }),
+    ...(shortcuts.length === 0 ? {} : { shortcuts }),
     implicit,
   });
 };
