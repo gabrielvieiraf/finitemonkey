@@ -5,24 +5,24 @@ export interface GrepPattern {
 
 export const ROUTES: GrepPattern = {
   pattern:
-    "\\b(app|router|server|api|route|r)\\.(get|post|put|patch|delete|all|route)\\(|@(Get|Post|Put|Patch|Delete|Request)(Mapping)?\\(|@(app|router|bp|blueprint)\\.(route|get|post|put|patch|delete)\\(|\\bpath\\([\"']|\\bHandleFunc\\(",
+    "(^|[^A-Za-z0-9_])(app|router|server|api|route|r)\\.(get|post|put|patch|delete|all|route)\\(|@(Get|Post|Put|Patch|Delete|Request)(Mapping)?\\(|@(app|router|bp|blueprint)\\.(route|get|post|put|patch|delete)\\(|(^|[^A-Za-z0-9_])path\\([\"']|HandleFunc\\(",
 };
 
 export const TABLES: GrepPattern = {
   pattern:
-    "create table|\\b(pg|sqlite|mysql)Table\\(|^model [A-Z][A-Za-z0-9_]* *\\{|__tablename__|@Entity\\(|\\bcreateTable\\(|\\bdefine\\([\"'][A-Za-z_]+[\"'], *\\{",
+    "create table|(pg|sqlite|mysql)Table\\(|^model [A-Z][A-Za-z0-9_]* *\\{|__tablename__|@Entity\\(|createTable\\(|(^|[^A-Za-z0-9_])define\\([\"'][A-Za-z_]+[\"'], *\\{",
   ignoreCase: true,
 };
 
 export const QUEUES: GrepPattern = {
   pattern:
-    "new (Queue|Worker|QueueScheduler)\\(|\\bcreateQueue\\(|@Processor\\(|\\.consume\\(|\\bsqs\\b|SendMessageCommand|\\bkafka\\b|\\bamqp\\b|\\bpubsub\\b|@shared_task|@celery",
+    "new (Queue|Worker|QueueScheduler)\\(|createQueue\\(|@Processor\\(|\\.consume\\(|(^|[^A-Za-z0-9_])sqs([^A-Za-z0-9_]|$)|SendMessageCommand|(^|[^A-Za-z0-9_])kafka([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_])amqp([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_])pubsub([^A-Za-z0-9_]|$)|@shared_task|@celery",
   ignoreCase: true,
 };
 
 export const JOBS: GrepPattern = {
   pattern:
-    "cron\\.schedule\\(|new CronJob\\(|@Cron\\(|@Scheduled\\(|^\\s*-? *cron: |\\bschedule\\.every\\(|setInterval\\(",
+    "cron\\.schedule\\(|new CronJob\\(|@Cron\\(|@Scheduled\\(|^[[:space:]]*-? *cron: |schedule\\.every\\(|setInterval\\(",
 };
 
 export const ENV: GrepPattern = {
