@@ -18,6 +18,7 @@ import { inventoryCommand } from "./inventory.js";
 import { lookCommand } from "./look.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
+import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { policyFalsePositiveCommand } from "./policy.js";
@@ -94,6 +95,9 @@ export const REGISTRY = [
   costCheckCommand,
   costReconcileCommand,
   budgetCommand,
+  parityInitCommand,
+  parityUpdateCommand,
+  parityCheckCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

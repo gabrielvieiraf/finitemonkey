@@ -988,5 +988,19 @@
   "budget.reconcile.missing": "{tool} não está instalado ou não respondeu; nada foi comparado",
   "budget.reconcile.done": "Comparado com {tool}; as diferenças foram para {file} (nosso, deles, diferença):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.parity_init.summary": "Grava docs/plan/parity.csv com o que o código a ser trocado faz hoje",
+  "command.parity_update.summary": "Acrescenta linhas para capacidades que o código antigo ganhou desde a matriz",
+  "command.parity_check.summary": "Falha em linhas de paridade sem destino, teste ou estado green, e remoções sem decisão",
+  "parity.written": "docs/plan/parity.csv tem {rows, plural, one {# linha} other {# linhas}} ({added} novas).",
+  "parity.clean": "{count, plural, one {# linha de paridade tem} other {# linhas de paridade têm}} destino, teste e green, ou foram removidas por decisão",
+  "parity.error.check": "{count, plural, one {# linha de paridade não está pronta} other {# linhas de paridade não estão prontas}}",
+  "parity.error.ref": "{ref} não é um commit",
+  "parity.error.exists": "docs/plan/parity.csv já existe; use finitemonkey parity update",
+  "parity.error.missing": "ainda não há matriz de paridade; rode finitemonkey parity init",
+  "parity.issue.no_matrix": "sem matriz de paridade ({detail}); rode finitemonkey parity init",
+  "parity.issue.no_destination": "sem destino: {detail}",
+  "parity.issue.no_test": "sem teste de paridade: {detail}",
+  "parity.issue.not_green": "teste de paridade não está green: {detail}",
+  "parity.issue.removed_without_decision": "removido sem registro de decisão ligado: {detail}"
 }

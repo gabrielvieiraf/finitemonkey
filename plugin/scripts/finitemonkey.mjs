@@ -2160,28 +2160,28 @@ var nextCell = (line7, start) => {
     const end = comma === -1 ? line7.length : comma;
     return { cell: line7.slice(start, end), end };
   }
-  let cell2 = "";
+  let cell3 = "";
   let index = start + 1;
   while (index < line7.length) {
     const char = line7.charAt(index);
     if (char === '"' && line7.charAt(index + 1) === '"') {
-      cell2 += '"';
+      cell3 += '"';
       index += 2;
     } else if (char === '"') {
-      return { cell: cell2, end: index + 1 };
+      return { cell: cell3, end: index + 1 };
     } else {
-      cell2 += char;
+      cell3 += char;
       index += 1;
     }
   }
-  return { cell: cell2, end: index };
+  return { cell: cell3, end: index };
 };
 var parseCsvLine = (line7) => {
   const cells = [];
   let index = 0;
   for (; ; ) {
-    const { cell: cell2, end } = nextCell(line7, index);
-    cells.push(cell2);
+    const { cell: cell3, end } = nextCell(line7, index);
+    cells.push(cell3);
     if (end >= line7.length) return cells;
     index = end + 1;
   }
@@ -3700,7 +3700,21 @@ var en_default = {
   "budget.reconcile.missing": "{tool} is not installed or did not answer; nothing was compared",
   "budget.reconcile.done": "Compared with {tool}; the differences went to {file} (ours, theirs, difference):",
   "statusline.budget": "spend {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.parity_init.summary": "Write docs/plan/parity.csv with what the code being replaced does today",
+  "command.parity_update.summary": "Add rows for capabilities the old code gained since the matrix was written",
+  "command.parity_check.summary": "Fail on parity rows without destination, test or green state, and removals without a decision",
+  "parity.written": "docs/plan/parity.csv has {rows, plural, one {# row} other {# rows}} ({added} new).",
+  "parity.clean": "{count, plural, one {# parity row is} other {# parity rows are}} placed, tested and green or removed by a decision",
+  "parity.error.check": "{count, plural, one {# parity row is} other {# parity rows are}} not done",
+  "parity.error.ref": "{ref} is not a commit",
+  "parity.error.exists": "docs/plan/parity.csv already exists; use finitemonkey parity update",
+  "parity.error.missing": "no parity matrix yet; run finitemonkey parity init",
+  "parity.issue.no_matrix": "no parity matrix ({detail}); run finitemonkey parity init",
+  "parity.issue.no_destination": "no destination: {detail}",
+  "parity.issue.no_test": "no parity test: {detail}",
+  "parity.issue.not_green": "parity test not green: {detail}",
+  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}"
 };
 
 // src/i18n/es.json
@@ -4694,7 +4708,21 @@ var es_default = {
   "budget.reconcile.missing": "{tool} no está instalado o no respondió; no se comparó nada",
   "budget.reconcile.done": "Comparado con {tool}; las diferencias fueron a {file} (nuestro, de ellos, diferencia):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.parity_init.summary": "Escribe docs/plan/parity.csv con lo que hace hoy el código que se reemplaza",
+  "command.parity_update.summary": "Añade filas para capacidades que el código viejo ganó desde la matriz",
+  "command.parity_check.summary": "Falla en filas de paridad sin destino, test o estado green, y eliminaciones sin decisión",
+  "parity.written": "docs/plan/parity.csv tiene {rows, plural, one {# fila} other {# filas}} ({added} nuevas).",
+  "parity.clean": "{count, plural, one {# fila de paridad tiene} other {# filas de paridad tienen}} destino, test y green, o se eliminaron por decisión",
+  "parity.error.check": "{count, plural, one {# fila de paridad no está lista} other {# filas de paridad no están listas}}",
+  "parity.error.ref": "{ref} no es un commit",
+  "parity.error.exists": "docs/plan/parity.csv ya existe; usa finitemonkey parity update",
+  "parity.error.missing": "todavía no hay matriz de paridad; ejecuta finitemonkey parity init",
+  "parity.issue.no_matrix": "sin matriz de paridad ({detail}); ejecuta finitemonkey parity init",
+  "parity.issue.no_destination": "sin destino: {detail}",
+  "parity.issue.no_test": "sin test de paridad: {detail}",
+  "parity.issue.not_green": "test de paridad no está green: {detail}",
+  "parity.issue.removed_without_decision": "eliminado sin registro de decisión enlazado: {detail}"
 };
 
 // src/i18n/pt-BR.json
@@ -5688,7 +5716,21 @@ var pt_BR_default = {
   "budget.reconcile.missing": "{tool} não está instalado ou não respondeu; nada foi comparado",
   "budget.reconcile.done": "Comparado com {tool}; as diferenças foram para {file} (nosso, deles, diferença):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.parity_init.summary": "Grava docs/plan/parity.csv com o que o código a ser trocado faz hoje",
+  "command.parity_update.summary": "Acrescenta linhas para capacidades que o código antigo ganhou desde a matriz",
+  "command.parity_check.summary": "Falha em linhas de paridade sem destino, teste ou estado green, e remoções sem decisão",
+  "parity.written": "docs/plan/parity.csv tem {rows, plural, one {# linha} other {# linhas}} ({added} novas).",
+  "parity.clean": "{count, plural, one {# linha de paridade tem} other {# linhas de paridade têm}} destino, teste e green, ou foram removidas por decisão",
+  "parity.error.check": "{count, plural, one {# linha de paridade não está pronta} other {# linhas de paridade não estão prontas}}",
+  "parity.error.ref": "{ref} não é um commit",
+  "parity.error.exists": "docs/plan/parity.csv já existe; use finitemonkey parity update",
+  "parity.error.missing": "ainda não há matriz de paridade; rode finitemonkey parity init",
+  "parity.issue.no_matrix": "sem matriz de paridade ({detail}); rode finitemonkey parity init",
+  "parity.issue.no_destination": "sem destino: {detail}",
+  "parity.issue.no_test": "sem teste de paridade: {detail}",
+  "parity.issue.not_green": "teste de paridade não está green: {detail}",
+  "parity.issue.removed_without_decision": "removido sem registro de decisão ligado: {detail}"
 };
 
 // src/i18n/review.json
@@ -6683,7 +6725,21 @@ var review_default = {
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.parity_init.summary": "machine",
+    "command.parity_update.summary": "machine",
+    "command.parity_check.summary": "machine",
+    "parity.written": "machine",
+    "parity.clean": "machine",
+    "parity.error.check": "machine",
+    "parity.error.ref": "machine",
+    "parity.error.exists": "machine",
+    "parity.error.missing": "machine",
+    "parity.issue.no_matrix": "machine",
+    "parity.issue.no_destination": "machine",
+    "parity.issue.no_test": "machine",
+    "parity.issue.not_green": "machine",
+    "parity.issue.removed_without_decision": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -7675,7 +7731,21 @@ var review_default = {
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.parity_init.summary": "machine",
+    "command.parity_update.summary": "machine",
+    "command.parity_check.summary": "machine",
+    "parity.written": "machine",
+    "parity.clean": "machine",
+    "parity.error.check": "machine",
+    "parity.error.ref": "machine",
+    "parity.error.exists": "machine",
+    "parity.error.missing": "machine",
+    "parity.issue.no_matrix": "machine",
+    "parity.issue.no_destination": "machine",
+    "parity.issue.no_test": "machine",
+    "parity.issue.not_green": "machine",
+    "parity.issue.removed_without_decision": "machine"
   }
 };
 
@@ -8129,7 +8199,7 @@ var structureIssues = (sections) => {
 var linesOf = (sections, id) => sections.find((section3) => idOf(section3) === id)?.lines ?? [];
 var factIssues = (sections) => sections.flatMap((section3) => section3.lines).filter((line7) => FACT.test(line7.text) && !(SOURCE.test(line7.text.replace(FACT, "")) && DATE2.test(line7.text))).map((line7) => ({ kind: "fact_without_source", line: line7.line, detail: line7.text.trim() }));
 var rowsOf = (lines4) => lines4.filter((line7) => line7.text.trim().startsWith("|")).slice(1).map(
-  (line7) => line7.text.trim().replace(/^\||\|$/g, "").split("|").map((cell2) => cell2.trim())
+  (line7) => line7.text.trim().replace(/^\||\|$/g, "").split("|").map((cell3) => cell3.trim())
 ).filter((cells) => !/^-{3}/.test(cells[0] ?? ""));
 var contentIssues = (sections) => {
   const alternatives = linesOf(sections, "alternatives").map((line7) => line7.text.toLowerCase()).join("\n");
@@ -8142,7 +8212,7 @@ var contentIssues = (sections) => {
   const head = sections[0]?.line ?? 1;
   return [
     ...anyLang("decision.do_nothing").some((text10) => alternatives.includes(text10)) ? [] : [{ kind: "no_do_nothing", line: head, detail: catalogs.en["decision.do_nothing"] }],
-    ...criteria.length > 0 && criteria.every((cells) => cells.length >= 3 && cells.slice(0, 3).every((cell2) => cell2 !== "")) ? [] : [{ kind: "criteria_incomplete", line: head, detail: String(criteria.length) }],
+    ...criteria.length > 0 && criteria.every((cells) => cells.length >= 3 && cells.slice(0, 3).every((cell3) => cell3 !== "")) ? [] : [{ kind: "criteria_incomplete", line: head, detail: String(criteria.length) }],
     ...removals.map((line7) => ({ kind: "removal_without_parity", line: line7.line, detail: line7.text.trim() }))
   ];
 };
@@ -11235,18 +11305,18 @@ var distance = (left, right) => {
     { length: left.length + 1 },
     (_, row2) => Array.from({ length: right.length + 1 }, (_2, column2) => row2 === 0 ? column2 : column2 === 0 ? row2 : 0)
   );
-  const cell2 = (row2, column2) => rows[row2]?.[column2] ?? Number.POSITIVE_INFINITY;
+  const cell3 = (row2, column2) => rows[row2]?.[column2] ?? Number.POSITIVE_INFINITY;
   for (let row2 = 1; row2 <= left.length; row2 += 1) {
     const current2 = rows[row2] ?? [];
     for (let column2 = 1; column2 <= right.length; column2 += 1) {
       const cost = left[row2 - 1] === right[column2 - 1] ? 0 : 1;
-      let best = Math.min(cell2(row2 - 1, column2) + 1, cell2(row2, column2 - 1) + 1, cell2(row2 - 1, column2 - 1) + cost);
+      let best = Math.min(cell3(row2 - 1, column2) + 1, cell3(row2, column2 - 1) + 1, cell3(row2 - 1, column2 - 1) + cost);
       const swapped = left[row2 - 1] === right[column2 - 2] && left[row2 - 2] === right[column2 - 1];
-      if (row2 > 1 && column2 > 1 && swapped) best = Math.min(best, cell2(row2 - 2, column2 - 2) + 1);
+      if (row2 > 1 && column2 > 1 && swapped) best = Math.min(best, cell3(row2 - 2, column2 - 2) + 1);
       current2[column2] = best;
     }
   }
-  return cell2(left.length, right.length);
+  return cell3(left.length, right.length);
 };
 var squash2 = (name) => name.replace(/^@[^/]+\//, "").replace(/[-_.]/g, "");
 var closePopular = (ecosystem, name) => {
@@ -12991,7 +13061,8 @@ var CHECK_KINDS = [
   "plan",
   "decision",
   "research",
-  "cost"
+  "cost",
+  "parity"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -14868,9 +14939,78 @@ var manualCheck = (check2, ctx) => {
   };
 };
 
+// src/parity/table.ts
+var PARITY_FILE = "parity.csv";
+var PARITY_STATE_FILE = "parity.json";
+var PARITY_COLUMNS = [
+  "id",
+  "capability",
+  "where_today",
+  "destination",
+  "parity_test",
+  "state",
+  "decision"
+];
+var cell2 = (value) => /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+var renderParity = (rows) => [
+  PARITY_COLUMNS.join(","),
+  ...rows.map(
+    (row2) => [row2.id, row2.capability, row2.whereToday, row2.destination, row2.parityTest, row2.state, row2.decision].map(cell2).join(",")
+  )
+].join("\n") + "\n";
+var parseParity = (text10) => {
+  const [header2 = [], ...body2] = parseCsv(text10);
+  const at = (name) => header2.indexOf(name);
+  const get = (cells, name) => (cells[at(name)] ?? "").trim();
+  return body2.map((cells) => ({
+    id: get(cells, "id"),
+    capability: get(cells, "capability"),
+    whereToday: get(cells, "where_today"),
+    destination: get(cells, "destination"),
+    parityTest: get(cells, "parity_test"),
+    state: get(cells, "state"),
+    decision: get(cells, "decision")
+  }));
+};
+var nextId = (rows) => Math.max(0, ...rows.map((row2) => Number.parseInt(row2.id.replace(/^P/i, ""), 10)).filter(Number.isFinite)) + 1;
+
+// src/parity/check.ts
+var DECISION2 = /(^|\/)\d{2,}-decision-[^/]+\.md$/;
+var checkParity = (runtime, root) => {
+  const file = `${PLAN_DIR}/${PARITY_FILE}`;
+  const text10 = runtime.readText(planPath(root, PARITY_FILE));
+  if (!text10.ok) return { file, rows: 0, issues: [{ kind: "no_matrix", line: 1, detail: file }] };
+  const rows = parseParity(text10.value);
+  const issues = rows.flatMap((row2, index) => {
+    const line7 = index + 2;
+    const label2 = `${row2.id} ${row2.capability}`;
+    if (row2.destination === "") return [{ kind: "no_destination", line: line7, detail: label2 }];
+    if (row2.destination.toLowerCase() === "removed") {
+      const decision = row2.decision.replace(/^docs\/plan\//, "");
+      const linked = DECISION2.test(row2.decision) && runtime.readText(planPath(root, decision)).ok;
+      return linked ? [] : [{ kind: "removed_without_decision", line: line7, detail: label2 }];
+    }
+    if (row2.parityTest === "") return [{ kind: "no_test", line: line7, detail: label2 }];
+    return row2.state.toLowerCase() === "green" ? [] : [{ kind: "not_green", line: line7, detail: `${label2} (${row2.state || "-"})` }];
+  });
+  return { file, rows: rows.length, issues };
+};
+
+// src/gate/checks/parity.ts
+var MAX_LISTED5 = 10;
+var parityCheck = (_check, ctx) => {
+  const result = checkParity(ctx.runtime, ctx.paths.root);
+  if (result.issues.length === 0) return passed([note("parity.clean", { count: result.rows })]);
+  return failed(
+    result.issues.slice(0, MAX_LISTED5).map(
+      (item2) => note(`parity.issue.${item2.kind}`, { detail: `${result.file}:${String(item2.line)} ${item2.detail}` })
+    )
+  );
+};
+
 // src/gate/checks/placeholders.ts
 import { join as join30 } from "node:path";
-var MAX_LISTED5 = 10;
+var MAX_LISTED6 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines4) => lines4.filter((line7) => !isTestFile(line7.path) && !SKIP_FILES.test(line7.path) && PLACEHOLDER.test(line7.text));
@@ -14884,7 +15024,7 @@ var placeholdersCheck = (_check, ctx) => {
   const found = findPlaceholders([...tracked, ...untrackedAdded(ctx).filter((line7) => !seen.has(line7.path))]);
   if (found.length === 0) return passed([note("gate.placeholders.clean")]);
   return failed(
-    found.slice(0, MAX_LISTED5).map((line7) => note("gate.placeholders.found", { file: line7.path, line: line7.line }))
+    found.slice(0, MAX_LISTED6).map((line7) => note("gate.placeholders.found", { file: line7.path, line: line7.line }))
   );
 };
 
@@ -14962,7 +15102,7 @@ var decisionIssues = (master, sections, reports, reportLines2) => [
 ];
 var NOBODY = /* @__PURE__ */ new Set(["", "-", "?", "none", "nobody", "tbd", "ninguém", "nenhum", "nadie", "ninguno"]);
 var SEVERAL = /,|;|\/|&|\+|\s(and|e|y)\s/i;
-var cellsOf = (text10) => text10.trim().replace(/^\||\|$/g, "").split("|").map((cell2) => cell2.trim());
+var cellsOf = (text10) => text10.trim().replace(/^\||\|$/g, "").split("|").map((cell3) => cell3.trim());
 var ownerIssues = (master, sections) => {
   const rows = linesIn(sections, "responsibilities").filter((line7) => line7.text.trim().startsWith("|"));
   const owners = /* @__PURE__ */ new Map();
@@ -15018,12 +15158,12 @@ var checkPlan = (runtime, root) => {
 };
 
 // src/gate/checks/plan.ts
-var MAX_LISTED6 = 10;
+var MAX_LISTED7 = 10;
 var planCheck = (_check, ctx) => {
   const result = checkPlan(ctx.runtime, ctx.paths.root);
   if (result.issues.length === 0) return passed([note("gate.plan.clean", { count: result.reports })]);
   return failed(
-    result.issues.slice(0, MAX_LISTED6).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
+    result.issues.slice(0, MAX_LISTED7).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
   );
 };
 
@@ -15700,21 +15840,21 @@ var proseGateStatus = (runtime, root) => {
 };
 
 // src/gate/checks/prose.ts
-var MAX_LISTED7 = 10;
+var MAX_LISTED8 = 10;
 var rulesOf = (span) => [...new Set(span.hits.map((hit3) => hit3.rule))].join(", ");
 var proseOutcome = (status) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
   const { files, flagged, blocking: blocking2 } = status.value;
   const key2 = blocking2 ? "gate.prose.finding" : "gate.prose.warning";
-  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED7).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
+  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED8).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
   if (notes2.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
   return blocking2 ? failed(notes2) : passed(notes2);
 };
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
 // src/plan/table.ts
-var cellsOf2 = (text10) => text10.trim().replace(/^\||\|$/g, "").split("|").map((cell2) => cell2.trim());
-var tableRows = (lines4) => lines4.filter((line7) => line7.text.trim().startsWith("|")).slice(1).map((line7) => ({ cells: cellsOf2(line7.text), line: line7.line })).filter((row2) => !/^:?-{3}/.test(row2.cells[0] ?? "") && row2.cells.some((cell2) => cell2 !== ""));
+var cellsOf2 = (text10) => text10.trim().replace(/^\||\|$/g, "").split("|").map((cell3) => cell3.trim());
+var tableRows = (lines4) => lines4.filter((line7) => line7.text.trim().startsWith("|")).slice(1).map((line7) => ({ cells: cellsOf2(line7.text), line: line7.line })).filter((row2) => !/^:?-{3}/.test(row2.cells[0] ?? "") && row2.cells.some((cell3) => cell3 !== ""));
 
 // src/research/sections.ts
 var RESEARCH_SCHEMA = "finitemonkey/research@1";
@@ -15853,7 +15993,7 @@ var addedDependencies = (ctx) => ctx.changes.filter((change) => change.status !=
 });
 
 // src/gate/checks/research.ts
-var MAX_LISTED8 = 10;
+var MAX_LISTED9 = 10;
 var required = (ctx) => projectPreset(ctx.runtime, ctx.paths.root) === "gabriel" || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records = researchRecords(ctx.runtime, ctx.paths.root);
@@ -15873,7 +16013,7 @@ var findings = (ctx) => {
         paths: rules.slice(0, 3).map((change) => change.path).join(", ")
       })
     ] : []
-  ].slice(0, MAX_LISTED8);
+  ].slice(0, MAX_LISTED9);
 };
 var researchCheck = (_check, ctx) => {
   const notes2 = findings(ctx);
@@ -16355,7 +16495,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED9 = 10;
+var MAX_LISTED10 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -16365,10 +16505,10 @@ var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings: findings2, openIncidents } = status.value;
-  const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED9).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
+  const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
   const notes2 = [
-    ...blocking(findings2).slice(0, MAX_LISTED9).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED9).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
+    ...blocking(findings2).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED10).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
   if (notes2.length > 0) return failed([...notes2, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
@@ -16393,7 +16533,7 @@ var forChange = (input, change) => {
 var analyzeTree = (input) => input.changes.flatMap((change) => forChange(input, change));
 
 // src/gate/checks/tests.ts
-var MAX_LISTED10 = 10;
+var MAX_LISTED11 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -16418,7 +16558,7 @@ var treeViolations = (ctx) => {
 var testsCheck = (check2, ctx) => {
   const violations = treeViolations(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes2 = violations.slice(0, MAX_LISTED10).map(violationNote);
+  const notes2 = violations.slice(0, MAX_LISTED11).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed([...notes2, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes2, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -17249,10 +17389,10 @@ var findingLabel = (finding5) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED11 = 8;
+var MAX_LISTED12 = 8;
 var listed3 = (items) => {
-  const head = items.slice(0, MAX_LISTED11).join(", ");
-  return items.length > MAX_LISTED11 ? `${head} (+${String(items.length - MAX_LISTED11)})` : head;
+  const head = items.slice(0, MAX_LISTED12).join(", ");
+  return items.length > MAX_LISTED12 ? `${head} (+${String(items.length - MAX_LISTED12)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf = (ctx) => ownerKey(ctx.sessionId);
@@ -17317,7 +17457,8 @@ var DEFAULT_CHECKS = {
   plan: planCheck,
   decision: decisionCheck,
   research: researchCheck,
-  cost: costCheck
+  cost: costCheck,
+  parity: parityCheck
 };
 
 // src/gate/run.ts
@@ -19444,9 +19585,9 @@ var PROSE_HANDLERS = {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED12 = 5;
+var MAX_LISTED13 = 5;
 var describeFindings = (t, items) => {
-  const listed5 = items.slice(0, MAX_LISTED12).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
+  const listed5 = items.slice(0, MAX_LISTED13).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
   const rest = items.length - listed5.length;
   return rest > 0 ? `${listed5.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed5.join("; ");
 };
@@ -21056,10 +21197,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED13 = 5;
+var MAX_LISTED14 = 5;
 var detailOf = (check2) => {
-  const listed5 = check2.failures.slice(0, MAX_LISTED13).join("; ");
-  const rest = check2.failures.length - MAX_LISTED13;
+  const listed5 = check2.failures.slice(0, MAX_LISTED14).join("; ");
+  const rest = check2.failures.length - MAX_LISTED14;
   return rest > 0 ? `${listed5}; +${String(rest)}` : listed5;
 };
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf(check2), fix: check2.fix });
@@ -22219,8 +22360,8 @@ var readRepo = (git3, path, ref, hash, covered) => {
 };
 
 // src/inventory/render.ts
-var MAX_LISTED14 = 40;
-var capped = (t, lines4) => lines4.length > MAX_LISTED14 ? [...lines4.slice(0, MAX_LISTED14), `- ${t("inventory.more", { count: lines4.length - MAX_LISTED14 })}`] : lines4;
+var MAX_LISTED15 = 40;
+var capped = (t, lines4) => lines4.length > MAX_LISTED15 ? [...lines4.slice(0, MAX_LISTED15), `- ${t("inventory.more", { count: lines4.length - MAX_LISTED15 })}`] : lines4;
 var listed4 = (t, lines4) => lines4.length === 0 ? [t("inventory.none")] : capped(t, lines4);
 var hitLines = (t, hits) => listed4(
   t,
@@ -22385,8 +22526,81 @@ var runInventory = (runtime, t, root, request) => {
   return accept({ file: `${PLAN_DIR}/${name}`, inventory });
 };
 
+// src/parity/capabilities.ts
+var EXPORTS = {
+  pattern: "^export +(default +)?(async +)?(function|const|class) +[A-Za-z_$]|^def +[a-z][A-Za-z0-9_]*|^func +[A-Z]"
+};
+var MAX_TEXT2 = 100;
+var capabilitiesAt = (git3, hash, covered) => {
+  const hits = [ROUTES, TABLES, QUEUES, JOBS, EXPORTS].flatMap(
+    (pattern) => grepAt(git3, hash, pattern, covered)
+  );
+  const seen = /* @__PURE__ */ new Set();
+  return hits.filter((hit3) => !TEST_FILE2.test(hit3.file)).flatMap((hit3) => {
+    const text10 = maskText(hit3.text.replace(/\s*\{\s*$/, "")).slice(0, MAX_TEXT2);
+    if (seen.has(text10)) return [];
+    seen.add(text10);
+    return [{ text: text10, where: `${hit3.file}:${String(hit3.line)}` }];
+  });
+};
+
+// src/parity/run.ts
+var PARITY_SCHEMA = "finitemonkey/parity@1";
+var rowOf = (id, capability, state) => ({
+  id: `P${String(id)}`,
+  capability: capability.text,
+  whereToday: capability.where,
+  destination: "",
+  parityTest: "",
+  state,
+  decision: ""
+});
+var save2 = (runtime, root, rows, state) => {
+  const made = runtime.mkdir(planDir(root));
+  const table3 = made.ok && runtime.writeText(planPath(root, PARITY_FILE), renderParity(rows)).ok;
+  const json = JSON.stringify({ schema: PARITY_SCHEMA, ...state }, null, 2);
+  return table3 && runtime.writeText(planPath(root, PARITY_STATE_FILE), `${json}
+`).ok;
+};
+var initParity = (runtime, root, ref, covered) => {
+  if (runtime.readText(planPath(root, PARITY_FILE)).ok) return reject("exists");
+  const git3 = gitAt(runtime, root);
+  const hash = resolveCommit(git3, ref);
+  if (hash === void 0) return reject("ref");
+  const rows = capabilitiesAt(git3, hash, covered).map((capability, index) => rowOf(index + 1, capability, "pending"));
+  if (!save2(runtime, root, rows, { hash, covered: covered.length === 0 ? ["."] : covered })) return reject("write");
+  return accept({ rows: rows.length, added: rows.length, hash });
+};
+var readState2 = (runtime, root) => {
+  const text10 = runtime.readText(planPath(root, PARITY_STATE_FILE));
+  const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
+  if (parsed?.ok !== true || !isRecord(parsed.value)) return void 0;
+  const hash = parsed.value["hash"];
+  return typeof hash === "string" ? { hash, covered: textList(parsed.value, "covered") } : void 0;
+};
+var updateParity = (runtime, root, ref) => {
+  const table3 = runtime.readText(planPath(root, PARITY_FILE));
+  const state = readState2(runtime, root);
+  if (!table3.ok || state === void 0) return reject("missing");
+  const git3 = gitAt(runtime, root);
+  const hash = resolveCommit(git3, ref);
+  if (hash === void 0) return reject("ref");
+  const rows = parseParity(table3.value);
+  const changed = new Set(
+    linesOf2(git3.out(["diff", "--name-only", state.hash, hash, "--", ...pathspecOf(state.covered)]))
+  );
+  const known2 = new Set(rows.map((row2) => row2.capability));
+  const fresh3 = capabilitiesAt(git3, hash, state.covered).filter(
+    (capability) => changed.has(capability.where.replace(/:\d+$/, "")) && !known2.has(capability.text)
+  );
+  const first = nextId(rows);
+  const next2 = [...rows, ...fresh3.map((capability, index) => rowOf(first + index, capability, "new"))];
+  if (!save2(runtime, root, next2, { hash, covered: state.covered })) return reject("write");
+  return accept({ rows: next2.length, added: fresh3.length, hash });
+};
+
 // src/commands/inventory.ts
-var USAGE2 = "finitemonkey inventory <topic> [--ref <ref>] [--path <dir>]... [--repo <dir>]...";
+var USAGE2 = "finitemonkey inventory <topic> [--ref <ref>] [--path <dir>]... [--repo <dir>]... [--parity]";
 var problemResult = (ctx, problem5) => {
   if (problem5.kind === "repo") return failureFrom(ctx.t, notRepository(problem5.repo));
   if (problem5.kind === "ref")
@@ -22402,6 +22616,11 @@ var problemResult = (ctx, problem5) => {
     exitCode: ExitCode.CheckFailed
   });
 };
+var parityFor = (ctx, root, ref, covered) => {
+  const started = initParity(ctx.runtime, root, ref, covered);
+  const written = !started.ok && started.error === "exists" ? updateParity(ctx.runtime, root, ref) : started;
+  return written.ok ? [ctx.t("parity.written", { rows: written.value.rows, added: written.value.added })] : [];
+};
 var inventoryCommand = {
   path: ["inventory"],
   summaryKey: "command.inventory.summary",
@@ -22411,7 +22630,8 @@ var inventoryCommand = {
   options: {
     ref: { type: "string" },
     path: { type: "string", multiple: true },
-    repo: { type: "string", multiple: true }
+    repo: { type: "string", multiple: true },
+    parity: { type: "boolean" }
   },
   run: (ctx, args2) => {
     const repo = repoOf(ctx);
@@ -22428,10 +22648,12 @@ var inventoryCommand = {
     if (!written.ok) return Promise.resolve(problemResult(ctx, written.error));
     const { file, inventory } = written.value;
     const repos = inventory.repos.map((item2) => ({ path: item2.path, ref: item2.ref, hash: item2.hash }));
+    const parity = args2.values["parity"] === true ? parityFor(ctx, repo.root, inventory.repos[0]?.ref ?? "HEAD", inventory.covered) : [];
     return Promise.resolve(
       success({ schema: INVENTORY_SCHEMA, file, topic, covered: inventory.covered, repos, delta: inventory.delta }, [
         ctx.t("inventory.written", { file, count: repos.length }),
-        ...repos.map((item2) => `  ${item2.path} ${item2.hash}`)
+        ...repos.map((item2) => `  ${item2.path} ${item2.hash}`),
+        ...parity
       ])
     );
   }
@@ -24150,6 +24372,77 @@ var mergeCommand = {
   }
 };
 
+// src/commands/parity.ts
+var inRepo4 = (ctx, run4) => {
+  const repo = repoOf(ctx);
+  return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
+};
+var parityResult = (ctx, written, ref) => {
+  if (written.ok)
+    return success({ schema: PARITY_SCHEMA, file: "docs/plan/parity.csv", ...written.value }, [
+      ctx.t("parity.written", { rows: written.value.rows, added: written.value.added })
+    ]);
+  if (written.error === "write")
+    return failureFrom(ctx.t, {
+      code: "plan_write_failed",
+      messageKey: "plan.error.write",
+      params: { detail: "docs/plan/parity.csv" },
+      fix: "check that docs/plan can be written",
+      exitCode: ExitCode.CheckFailed
+    });
+  return failureFrom(
+    ctx.t,
+    usageProblem("invalid_arguments", `parity.error.${written.error}`, "finitemonkey help parity", { ref })
+  );
+};
+var parityInitCommand = {
+  path: ["parity", "init"],
+  summaryKey: "command.parity_init.summary",
+  usage: "finitemonkey parity init [--ref <ref>] [--path <dir>]...",
+  status: "ready",
+  options: { ref: { type: "string" }, path: { type: "string", multiple: true } },
+  run: (ctx, args2) => inRepo4(ctx, (root) => {
+    const ref = stringOption(args2.values, "ref") ?? "HEAD";
+    return parityResult(ctx, initParity(ctx.runtime, root, ref, listOption(args2.values, "path")), ref);
+  })
+};
+var parityUpdateCommand = {
+  path: ["parity", "update"],
+  summaryKey: "command.parity_update.summary",
+  usage: "finitemonkey parity update [--ref <ref>]",
+  status: "ready",
+  options: { ref: { type: "string" } },
+  run: (ctx, args2) => inRepo4(ctx, (root) => {
+    const ref = stringOption(args2.values, "ref") ?? "HEAD";
+    return parityResult(ctx, updateParity(ctx.runtime, root, ref), ref);
+  })
+};
+var parityCheckCommand = {
+  path: ["parity", "check"],
+  summaryKey: "command.parity_check.summary",
+  usage: "finitemonkey parity check",
+  status: "ready",
+  run: (ctx) => inRepo4(ctx, (root) => {
+    const checked = checkParity(ctx.runtime, root);
+    const data = { schema: PARITY_SCHEMA, ...checked };
+    if (checked.issues.length === 0) return success(data, [ctx.t("parity.clean", { count: checked.rows })]);
+    return failureFrom(
+      ctx.t,
+      {
+        code: "parity_check_failed",
+        messageKey: "parity.error.check",
+        params: { count: checked.issues.length },
+        fix: "give each row a destination, a parity test and a green state, or mark it removed with its decision",
+        exitCode: ExitCode.CheckFailed,
+        data
+      },
+      checked.issues.map(
+        (item2) => `  ${checked.file}:${String(item2.line)} ${ctx.t(`parity.issue.${item2.kind}`, { detail: item2.detail })}`
+      )
+    );
+  })
+};
+
 // src/commands/pause.ts
 var toggle = (ctx, off) => {
   const command = off ? "finitemonkey off" : "finitemonkey on";
@@ -24282,7 +24575,7 @@ var checkResult = (ctx, check2, before = []) => {
     [...before, ...check2.issues.map((item2) => `  ${issueLine(ctx, item2)}`)]
   );
 };
-var inRepo4 = (ctx, run4) => {
+var inRepo5 = (ctx, run4) => {
   const repo = repoOf(ctx);
   return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
 };
@@ -24291,7 +24584,7 @@ var planInitCommand = {
   summaryKey: "command.plan_init.summary",
   usage: "finitemonkey plan init",
   status: "ready",
-  run: (ctx) => inRepo4(ctx, (root) => {
+  run: (ctx) => inRepo5(ctx, (root) => {
     const made = initPlan(ctx.runtime, ctx.t, root);
     if (!made.ok) return failureFrom(ctx.t, writeProblem3(made.error));
     const key2 = made.value.created ? "plan.created" : "plan.exists";
@@ -24303,7 +24596,7 @@ var planCheckCommand = {
   summaryKey: "command.plan_check.summary",
   usage: "finitemonkey plan check",
   status: "ready",
-  run: (ctx) => inRepo4(ctx, (root) => checkResult(ctx, checkPlan(ctx.runtime, root)))
+  run: (ctx) => inRepo5(ctx, (root) => checkResult(ctx, checkPlan(ctx.runtime, root)))
 };
 var finishConsolidation = (ctx, root) => {
   const { previous, diff } = masterDiff(ctx.runtime, root);
@@ -24316,7 +24609,7 @@ var planConsolidateCommand = {
   usage: "finitemonkey plan consolidate [--done]",
   status: "ready",
   options: { done: { type: "boolean" } },
-  run: (ctx, args2) => inRepo4(ctx, (root) => {
+  run: (ctx, args2) => inRepo5(ctx, (root) => {
     if (args2.values["done"] === true) return finishConsolidation(ctx, root);
     const started = startConsolidation(ctx.runtime, root, ctx.runtime.now().slice(0, 10));
     if (!started.ok && started.error === "no_master")
@@ -25057,7 +25350,7 @@ var renderResearch = (t, topic, date) => {
 };
 
 // src/commands/research.ts
-var inRepo5 = (ctx, run4) => {
+var inRepo6 = (ctx, run4) => {
   const repo = repoOf(ctx);
   return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
 };
@@ -25106,7 +25399,7 @@ var researchNewCommand = {
           usageProblem("invalid_arguments", "inventory.error.topic", "finitemonkey research new <topic>")
         )
       );
-    return inRepo5(ctx, (root) => newRecord2(ctx, root, topic));
+    return inRepo6(ctx, (root) => newRecord2(ctx, root, topic));
   }
 };
 var researchCheckCommand = {
@@ -25115,7 +25408,7 @@ var researchCheckCommand = {
   usage: "finitemonkey research check [<docs/plan/NNb-state-of-the-art-topic.md>]",
   status: "ready",
   maxPositionals: 1,
-  run: (ctx, args2) => inRepo5(ctx, (root) => {
+  run: (ctx, args2) => inRepo6(ctx, (root) => {
     const only = args2.positionals[0]?.replace(/^.*[\\/]/, "");
     const records = researchRecords(ctx.runtime, root, only);
     const issues = records.flatMap((record4) => record4.issues);
@@ -26913,6 +27206,9 @@ var REGISTRY2 = [
   costCheckCommand,
   costReconcileCommand,
   budgetCommand,
+  parityInitCommand,
+  parityUpdateCommand,
+  parityCheckCommand,
   versionCommand,
   helpCommand
 ];
