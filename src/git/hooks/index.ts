@@ -1,3 +1,5 @@
+import { fileLockGuard, fileLockRelease } from "../../guards/files/hook.js";
+import { scopeCopyGuard } from "../../guards/scope/copy.js";
 import type { HookHandlers } from "../../hooks/handlers.js";
 import { plainMergeAbort } from "../../merge/abort-hook.js";
 import { prPreToolUse } from "../../pr/hooks.js";
@@ -9,6 +11,8 @@ import { gitPostToolUse, gitSessionStart } from "./session.js";
 export const GIT_HANDLERS: HookHandlers = {
   SessionStart: [gitSessionStart, wtSessionStart],
   SubagentStart: [gitSessionStart],
-  PreToolUse: [gitPreToolUse, prPreToolUse, levelPreToolUse],
+  PreToolUse: [gitPreToolUse, prPreToolUse, levelPreToolUse, fileLockGuard, scopeCopyGuard],
+  SubagentStop: [fileLockRelease],
+  SessionEnd: [fileLockRelease],
   PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort],
 };
