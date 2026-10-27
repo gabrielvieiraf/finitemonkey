@@ -1,4 +1,7 @@
+import { basename, dirname, join } from "node:path";
+
 import { toAbsolutePath } from "../../core/brand.js";
+import type { Runtime } from "../../core/runtime.js";
 import { textField, toolInput, toolName } from "../../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
 import { modelReason } from "../../hooks/reason.js";
@@ -34,10 +37,23 @@ const insideLinked = (trees: Trees, path: string): boolean => trees.linked.some(
 
 const intoMain = (trees: Trees, path: string): boolean => isWithinPath(trees.main, path) && !insideLinked(trees, path);
 
+const canonical = (runtime: Runtime, path: string): string => {
+  let head = path;
+  const tail: string[] = [];
+  while (runtime.stat(toAbsolutePath(head)) === undefined) {
+    const parent = dirname(head);
+    if (parent === head) return path;
+    tail.unshift(basename(head));
+    head = parent;
+  }
+  return join(runtime.realpath(head), ...tail);
+};
+
 const crossing = (input: HookInput, trees: Trees, transfer: Transfer): string | undefined => {
-  const resolve = (path: string): string => toAbsolutePath(path, input.cwd);
+  const resolve = (path: string): string => canonical(input.runtime, toAbsolutePath(path, input.cwd));
   const fromFront =
-    insideLinked(trees, input.cwd) || transfer.sources.some((source) => insideLinked(trees, resolve(source)));
+    insideLinked(trees, canonical(input.runtime, input.cwd)) ||
+    transfer.sources.some((source) => insideLinked(trees, resolve(source)));
   if (!fromFront) return undefined;
   return transfer.targets.find((target) => intoMain(trees, resolve(target)));
 };
@@ -52,7 +68,11 @@ export const scopeCopyGuard: HookHandler = (input) => {
   const listed = gitWorktrees(input.runtime, input.cwd);
   const main = listed?.find((tree) => tree.main);
   if (listed === undefined || main === undefined) return ALLOW;
-  const trees: Trees = { main: main.path, linked: listed.filter((tree) => !tree.main).map((tree) => tree.path) };
+  const real = (path: string): string => canonical(input.runtime, path);
+  const trees: Trees = {
+    main: real(main.path),
+    linked: listed.filter((tree) => !tree.main).map((tree) => real(tree.path)),
+  };
   if (trees.linked.length === 0) return ALLOW;
   for (const transfer of transfers) {
     const target = crossing(input, trees, transfer);
