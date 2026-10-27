@@ -46,7 +46,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.finitemonkey/reports/` | Masked bug reports that `doctor --report` writes, only when asked. |
 | Writes | `.git/finitemonkey/worktrees.yml`, `.git/info/exclude`, `.claude/worktrees/`, `~/.finitemonkey/worktrees/` | The worktree registry in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. |
 | Writes | `.finitemonkey/look/` | Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash. |
-| Writes | `docs/plan/` | Plan documents you ask for: the inventory of what the code does today, written under `docs/plan/`. |
+| Writes | `docs/plan/` | Plan documents under `docs/plan/`: the inventory of what the code does today, the master plan from the first L task and the copy of it kept before each consolidation. |
 | Writes | `.finitemonkey/map.txt` | The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash. |
 | Writes | `.finitemonkey/review/`, `.claude/agents/verifier.md` | The review round count used by `review packet`, and, only when `review.playwright: true` is set in the config, a verifier agent with the Playwright MCP. |
 | Sends | `api.github.com` | Through `gh`, only when it is installed and logged in: the state of the pull request named in a task, and your open pull requests for the session line. Code is never uploaded. |

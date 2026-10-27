@@ -49,6 +49,12 @@ const CASES: Readonly<Record<string, Case>> = {
     fire: { project: { "AGENTS.md": "# Rules\n", "CLAUDE.local.md": "# Mine\n" } },
     quiet: { project: { "AGENTS.md": "# Rules\n", "CLAUDE.md": "@AGENTS.md\n" } },
   },
+  "plan folder imported into AGENTS.md": {
+    check: "instructions.plan_import",
+    status: "warn",
+    fire: { project: { "AGENTS.md": "# Rules\n\n@docs/plan/MASTER.md\n" } },
+    quiet: { project: { "AGENTS.md": "# Rules\n\nThe plan is in docs/plan/MASTER.md.\n" } },
+  },
   "deny rule that hides AGENTS.md": {
     check: "instructions.denied",
     status: "fail",

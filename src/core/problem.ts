@@ -57,6 +57,7 @@ export const ERROR_CODES = [
   "wt_bad_place",
   "wt_failed",
   "map_unavailable",
+  "plan_check_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

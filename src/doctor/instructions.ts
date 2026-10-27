@@ -144,6 +144,24 @@ const duplicates = (env: DoctorEnv): readonly CheckFinding[] => {
   ];
 };
 
+const PLAN_IMPORT = /^\s*@(?:\.\/)?docs\/plan\//m;
+
+const planImports = (env: DoctorEnv): readonly CheckFinding[] => {
+  const files = instructionFiles(env)
+    .filter(({ text }) => PLAN_IMPORT.test(text))
+    .map(({ path }) => path);
+  if (files.length === 0) return [];
+  return [
+    finding(
+      "instructions.plan_import",
+      "warn",
+      "doctor.instructions.plan_import",
+      { files: shortList(files) },
+      "doctor.instructions.fix_plan_import",
+    ),
+  ];
+};
+
 export const checkInstructions: Check = (env) => {
   const deny = denyRules(readSettings(env));
   return [
@@ -152,5 +170,6 @@ export const checkInstructions: Check = (env) => {
     ...localFile(env),
     ...oversized(env),
     ...duplicates(env),
+    ...planImports(env),
   ];
 };

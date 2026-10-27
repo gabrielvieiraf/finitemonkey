@@ -15,6 +15,8 @@ Skip this for a question, a one-line fix or pure exploration.
 3. Before writing a helper, a hook or a service, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" map` and reuse what it lists. It prints one line per folder with its top-level definitions and is cached until the code changes.
 4. Acceptance checks must be runnable: a command with an exit code, tests that must not shrink, a screen to look at, a git state. "Works" is not a check.
 
+For an L task (a replacement, a rewrite, several modules): `task new --size L` creates `docs/plan/MASTER.md`. Write reports in `docs/plan/` with a "Text for the plan" section. To bring them in, run `plan consolidate` (it saves the previous master plan with its date and prints the texts), edit `MASTER.md` keeping its section order, then run `plan consolidate --done` and fix what `plan check` lists. Never import `docs/plan/` files into `AGENTS.md` or `CLAUDE.md`.
+
 Example of the shape the contract takes:
 
 ```yaml

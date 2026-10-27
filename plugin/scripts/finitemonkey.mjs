@@ -2037,8 +2037,8 @@ var comparePrerelease = (a, b) => {
     const right = b[index];
     if (left === void 0) return -1;
     if (right === void 0) return 1;
-    const order = comparePart(left, right);
-    if (order !== 0) return order;
+    const order2 = comparePart(left, right);
+    if (order2 !== 0) return order2;
   }
   return 0;
 };
@@ -5488,8 +5488,8 @@ var programReadOnly = (command) => {
 };
 var readOnlyCommand = (command) => !writesFile(command) && programReadOnly(command);
 var readOnlyScript = (script) => {
-  const normalized = normalizeCommand(script);
-  return !normalized.incomplete && normalized.commands.every(readOnlyCommand);
+  const normalized2 = normalizeCommand(script);
+  return !normalized2.incomplete && normalized2.commands.every(readOnlyCommand);
 };
 var SQL_READ = /^\s*(?:select|show|explain|describe|desc|with|\\d\S*|\\l|\\dt|\\x|table)\b/i;
 var SQL_WRITE = /\b(?:insert|update|delete|drop|alter|truncate|create|grant|revoke|copy|merge|call|do|vacuum|reindex|cluster|lock|set\s+role)\b/i;
@@ -6016,10 +6016,10 @@ var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)t
 var PY_TEST = /(^|\/)test_[^/]*\.py$|_test\.py$|(^|\/)tests\/.*\.py$/;
 var SNAPSHOT = /\.snap$|(^|\/)__snapshots__\//;
 var testLanguage = (path) => {
-  const normalized = toPosixPath(path);
-  if (normalized.endsWith("_test.go")) return "go";
-  if (PY_TEST.test(normalized)) return "py";
-  if (JS_TEST.test(normalized)) return "js";
+  const normalized2 = toPosixPath(path);
+  if (normalized2.endsWith("_test.go")) return "go";
+  if (PY_TEST.test(normalized2)) return "py";
+  if (JS_TEST.test(normalized2)) return "js";
   return void 0;
 };
 var isSnapshot = (path) => SNAPSHOT.test(toPosixPath(path));
@@ -6035,9 +6035,9 @@ var CONFIG_NAMES = [
 ];
 var HOOK_DIRS = /(^|\/)\.husky\//;
 var isProtectedConfig = (path) => {
-  const normalized = toPosixPath(path);
-  if (HOOK_DIRS.test(normalized)) return true;
-  const name = normalized.split("/").pop() ?? "";
+  const normalized2 = toPosixPath(path);
+  if (HOOK_DIRS.test(normalized2)) return true;
+  const name = normalized2.split("/").pop() ?? "";
   return name === "package.json" || name === "pyproject.toml" || CONFIG_NAMES.some((pattern) => pattern.test(name));
 };
 
@@ -6730,7 +6730,8 @@ var CHECK_KINDS = [
   "prod",
   "prose",
   "review",
-  "inventory"
+  "inventory",
+  "plan"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -7178,8 +7179,8 @@ var globToRegExp = (glob) => {
   return new RegExp(`^${out}${pattern.endsWith("/") ? ".*" : ""}$`);
 };
 var matchesAny = (path, globs) => {
-  const normalized = toPosixPath(path);
-  return globs.some((glob) => globToRegExp(glob).test(normalized));
+  const normalized2 = toPosixPath(path);
+  return globs.some((glob) => globToRegExp(glob).test(normalized2));
 };
 
 // src/gate/size.ts
@@ -8361,7 +8362,46 @@ var en_default = {
   "gate.guard.self.registry.requires": "change it through finitemonkey wt commands",
   "command.map.summary": "Print one line per folder with its top-level definitions, cached by tree hash",
   "map.empty": "No top-level definitions found in tracked code.",
-  "map.error.git": "could not read the tree in {detail} (git unavailable)"
+  "map.error.git": "could not read the tree in {detail} (git unavailable)",
+  "command.plan_init.summary": "Create docs/plan/MASTER.md with the fixed section order",
+  "command.plan_check.summary": "Find contradictions in docs/plan: uncited numbers, unindexed reports, double decisions and owners",
+  "command.plan_consolidate.summary": "Save the master plan with its date and list the reports to bring into it",
+  "plan.master.title": "Master plan",
+  "plan.section.goal": "Goal",
+  "plan.section.decisions": "Decisions",
+  "plan.section.responsibilities": "Responsibilities",
+  "plan.section.numbers": "Numbers",
+  "plan.section.risks": "Risks",
+  "plan.section.questions": "Open questions",
+  "plan.section.reports": "Reports",
+  "plan.text_for_plan": "Text for the plan",
+  "plan.col.responsibility": "Responsibility",
+  "plan.col.owner": "Owner",
+  "plan.hint.decisions": "One line per decision: `- topic: choice (NN-report.md)`.",
+  "plan.hint.numbers": "Every line with a number cites the report it comes from.",
+  "plan.hint.reports": "Every report in this folder, one per line.",
+  "plan.created": "Created {file}.",
+  "plan.exists": "{file} already exists; nothing changed.",
+  "plan.clean": "The plan has no contradictions ({count, plural, one {# report} other {# reports}}).",
+  "plan.error.check": "{count, plural, one {# problem} other {# problems}} in docs/plan",
+  "plan.error.no_master": "there is no master plan yet",
+  "plan.issue.no_master": "no master plan ({detail}); run finitemonkey plan init",
+  "plan.issue.order": "the sections are not in the fixed order (goal, decisions, responsibilities, numbers, risks, open questions, reports); found: {detail}",
+  "plan.issue.number_without_report": "a number cites no report: {detail}",
+  "plan.issue.missing_report": "cites {detail}, which is not in docs/plan",
+  "plan.issue.not_indexed": "{detail} is missing from the Reports section",
+  "plan.issue.decided_twice": "decided two ways: {detail}",
+  "plan.issue.two_owners": "more than one owner: {detail}",
+  "plan.issue.no_owner": "no owner: {detail}",
+  "plan.issue.revoked_without_banner": "{detail} is revoked but has no banner pointing to what replaced it",
+  "plan.issue.grew_without_previous": "the master plan grew ({detail} lines) without saving the previous version; run finitemonkey plan consolidate",
+  "plan.consolidate.saved": "Saved the current master plan as {file}.",
+  "plan.consolidate.ask": "{count, plural, =0 {No new report to bring in.} one {Bring the text below into MASTER.md, keeping the section order, and list the report under Reports. Then run finitemonkey plan consolidate --done.} other {Bring the # texts below into MASTER.md, keeping the section order, and list each report under Reports. Then run finitemonkey plan consolidate --done.}}",
+  "plan.consolidate.no_text": '(no "Text for the plan" section; read the report)',
+  "plan.consolidate.diff": "Changes since {file}:",
+  "gate.plan.clean": "docs/plan has no contradictions ({count, plural, one {# report} other {# reports}})",
+  "doctor.instructions.plan_import": "{files} imports files from docs/plan; plan reports would load into every session",
+  "doctor.instructions.fix_plan_import": "Remove the @docs/plan/ lines; the plan is read on demand"
 };
 
 // src/i18n/es.json
@@ -9127,7 +9167,46 @@ var es_default = {
   "gate.guard.self.registry.requires": "cambiarlo con los comandos finitemonkey wt",
   "command.map.summary": "Muestra una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol",
   "map.empty": "No se encontraron definiciones de nivel superior en el código versionado.",
-  "map.error.git": "no se pudo leer el árbol en {detail} (git no disponible)"
+  "map.error.git": "no se pudo leer el árbol en {detail} (git no disponible)",
+  "command.plan_init.summary": "Crea docs/plan/MASTER.md con el orden fijo de secciones",
+  "command.plan_check.summary": "Encuentra contradicciones en docs/plan: números sin fuente, informes fuera del índice, decisiones y dueños dobles",
+  "command.plan_consolidate.summary": "Guarda el plan maestro con su fecha y lista los informes a incorporar",
+  "plan.master.title": "Plan maestro",
+  "plan.section.goal": "Objetivo",
+  "plan.section.decisions": "Decisiones",
+  "plan.section.responsibilities": "Responsabilidades",
+  "plan.section.numbers": "Números",
+  "plan.section.risks": "Riesgos",
+  "plan.section.questions": "Preguntas abiertas",
+  "plan.section.reports": "Informes",
+  "plan.text_for_plan": "Texto para el plan",
+  "plan.col.responsibility": "Responsabilidad",
+  "plan.col.owner": "Dueño",
+  "plan.hint.decisions": "Una línea por decisión: `- tema: elección (NN-informe.md)`.",
+  "plan.hint.numbers": "Toda línea con un número cita el informe del que viene.",
+  "plan.hint.reports": "Todos los informes de esta carpeta, uno por línea.",
+  "plan.created": "Creado {file}.",
+  "plan.exists": "{file} ya existe; nada cambió.",
+  "plan.clean": "El plan no tiene contradicciones ({count, plural, one {# informe} other {# informes}}).",
+  "plan.error.check": "{count, plural, one {# problema} other {# problemas}} en docs/plan",
+  "plan.error.no_master": "todavía no hay plan maestro",
+  "plan.issue.no_master": "sin plan maestro ({detail}); ejecuta finitemonkey plan init",
+  "plan.issue.order": "las secciones no siguen el orden fijo (objetivo, decisiones, responsabilidades, números, riesgos, preguntas abiertas, informes); encontrado: {detail}",
+  "plan.issue.number_without_report": "un número no cita ningún informe: {detail}",
+  "plan.issue.missing_report": "cita {detail}, que no está en docs/plan",
+  "plan.issue.not_indexed": "{detail} falta en la sección Informes",
+  "plan.issue.decided_twice": "decidido de dos maneras: {detail}",
+  "plan.issue.two_owners": "más de un dueño: {detail}",
+  "plan.issue.no_owner": "sin dueño: {detail}",
+  "plan.issue.revoked_without_banner": "{detail} está revocado pero no tiene el aviso que apunta a lo que lo reemplazó",
+  "plan.issue.grew_without_previous": "el plan maestro creció ({detail} líneas) sin guardar la versión anterior; ejecuta finitemonkey plan consolidate",
+  "plan.consolidate.saved": "Plan maestro actual guardado como {file}.",
+  "plan.consolidate.ask": "{count, plural, =0 {Ningún informe nuevo para incorporar.} one {Lleva el texto de abajo a MASTER.md, manteniendo el orden de las secciones, y lista el informe en Informes. Luego ejecuta finitemonkey plan consolidate --done.} other {Lleva los # textos de abajo a MASTER.md, manteniendo el orden de las secciones, y lista cada informe en Informes. Luego ejecuta finitemonkey plan consolidate --done.}}",
+  "plan.consolidate.no_text": '(sin sección "Texto para el plan"; lee el informe)',
+  "plan.consolidate.diff": "Cambios desde {file}:",
+  "gate.plan.clean": "docs/plan sin contradicciones ({count, plural, one {# informe} other {# informes}})",
+  "doctor.instructions.plan_import": "{files} importa archivos de docs/plan; los informes del plan entrarían en cada sesión",
+  "doctor.instructions.fix_plan_import": "Quita las líneas @docs/plan/; el plan se lee cuando hace falta"
 };
 
 // src/i18n/pt-BR.json
@@ -9893,7 +9972,46 @@ var pt_BR_default = {
   "gate.guard.self.registry.requires": "mudar pelos comandos finitemonkey wt",
   "command.map.summary": "Mostra uma linha por pasta com as definições de topo, em cache pelo hash da árvore",
   "map.empty": "Nenhuma definição de topo encontrada no código versionado.",
-  "map.error.git": "não deu para ler a árvore em {detail} (git indisponível)"
+  "map.error.git": "não deu para ler a árvore em {detail} (git indisponível)",
+  "command.plan_init.summary": "Cria docs/plan/MASTER.md com a ordem fixa de seções",
+  "command.plan_check.summary": "Acha contradições em docs/plan: números sem fonte, relatórios fora do índice, decisões e donos em dobro",
+  "command.plan_consolidate.summary": "Guarda o plano mestre com a data e lista os relatórios a trazer para ele",
+  "plan.master.title": "Plano mestre",
+  "plan.section.goal": "Objetivo",
+  "plan.section.decisions": "Decisões",
+  "plan.section.responsibilities": "Responsabilidades",
+  "plan.section.numbers": "Números",
+  "plan.section.risks": "Riscos",
+  "plan.section.questions": "Perguntas em aberto",
+  "plan.section.reports": "Relatórios",
+  "plan.text_for_plan": "Texto para o plano",
+  "plan.col.responsibility": "Responsabilidade",
+  "plan.col.owner": "Dono",
+  "plan.hint.decisions": "Uma linha por decisão: `- tema: escolha (NN-relatorio.md)`.",
+  "plan.hint.numbers": "Toda linha com número cita o relatório de onde veio.",
+  "plan.hint.reports": "Todo relatório desta pasta, um por linha.",
+  "plan.created": "Criado {file}.",
+  "plan.exists": "{file} já existe; nada mudou.",
+  "plan.clean": "O plano não tem contradições ({count, plural, one {# relatório} other {# relatórios}}).",
+  "plan.error.check": "{count, plural, one {# problema} other {# problemas}} em docs/plan",
+  "plan.error.no_master": "ainda não há plano mestre",
+  "plan.issue.no_master": "sem plano mestre ({detail}); rode finitemonkey plan init",
+  "plan.issue.order": "as seções não estão na ordem fixa (objetivo, decisões, responsabilidades, números, riscos, perguntas em aberto, relatórios); encontrado: {detail}",
+  "plan.issue.number_without_report": "um número não cita relatório: {detail}",
+  "plan.issue.missing_report": "cita {detail}, que não está em docs/plan",
+  "plan.issue.not_indexed": "{detail} falta na seção Relatórios",
+  "plan.issue.decided_twice": "decidido de dois jeitos: {detail}",
+  "plan.issue.two_owners": "mais de um dono: {detail}",
+  "plan.issue.no_owner": "sem dono: {detail}",
+  "plan.issue.revoked_without_banner": "{detail} foi revogado mas não tem a faixa apontando o que o substituiu",
+  "plan.issue.grew_without_previous": "o plano mestre cresceu ({detail} linhas) sem guardar a versão anterior; rode finitemonkey plan consolidate",
+  "plan.consolidate.saved": "Plano mestre atual guardado como {file}.",
+  "plan.consolidate.ask": "{count, plural, =0 {Nenhum relatório novo para trazer.} one {Traga o texto abaixo para o MASTER.md, mantendo a ordem das seções, e liste o relatório em Relatórios. Depois rode finitemonkey plan consolidate --done.} other {Traga os # textos abaixo para o MASTER.md, mantendo a ordem das seções, e liste cada relatório em Relatórios. Depois rode finitemonkey plan consolidate --done.}}",
+  "plan.consolidate.no_text": '(sem seção "Texto para o plano"; leia o relatório)',
+  "plan.consolidate.diff": "Mudanças desde {file}:",
+  "gate.plan.clean": "docs/plan sem contradições ({count, plural, one {# relatório} other {# relatórios}})",
+  "doctor.instructions.plan_import": "{files} importa arquivos de docs/plan; os relatórios do plano entrariam em toda sessão",
+  "doctor.instructions.fix_plan_import": "Remova as linhas @docs/plan/; o plano é lido quando preciso"
 };
 
 // src/i18n/review.json
@@ -10660,7 +10778,46 @@ var review_default = {
     "gate.guard.self.registry.requires": "machine",
     "command.map.summary": "machine",
     "map.empty": "machine",
-    "map.error.git": "machine"
+    "map.error.git": "machine",
+    "command.plan_init.summary": "machine",
+    "command.plan_check.summary": "machine",
+    "command.plan_consolidate.summary": "machine",
+    "plan.master.title": "machine",
+    "plan.section.goal": "machine",
+    "plan.section.decisions": "machine",
+    "plan.section.responsibilities": "machine",
+    "plan.section.numbers": "machine",
+    "plan.section.risks": "machine",
+    "plan.section.questions": "machine",
+    "plan.section.reports": "machine",
+    "plan.text_for_plan": "machine",
+    "plan.col.responsibility": "machine",
+    "plan.col.owner": "machine",
+    "plan.hint.decisions": "machine",
+    "plan.hint.numbers": "machine",
+    "plan.hint.reports": "machine",
+    "plan.created": "machine",
+    "plan.exists": "machine",
+    "plan.clean": "machine",
+    "plan.error.check": "machine",
+    "plan.error.no_master": "machine",
+    "plan.issue.no_master": "machine",
+    "plan.issue.order": "machine",
+    "plan.issue.number_without_report": "machine",
+    "plan.issue.missing_report": "machine",
+    "plan.issue.not_indexed": "machine",
+    "plan.issue.decided_twice": "machine",
+    "plan.issue.two_owners": "machine",
+    "plan.issue.no_owner": "machine",
+    "plan.issue.revoked_without_banner": "machine",
+    "plan.issue.grew_without_previous": "machine",
+    "plan.consolidate.saved": "machine",
+    "plan.consolidate.ask": "machine",
+    "plan.consolidate.no_text": "machine",
+    "plan.consolidate.diff": "machine",
+    "gate.plan.clean": "machine",
+    "doctor.instructions.plan_import": "machine",
+    "doctor.instructions.fix_plan_import": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -11424,7 +11581,46 @@ var review_default = {
     "gate.guard.self.registry.requires": "machine",
     "command.map.summary": "machine",
     "map.empty": "machine",
-    "map.error.git": "machine"
+    "map.error.git": "machine",
+    "command.plan_init.summary": "machine",
+    "command.plan_check.summary": "machine",
+    "command.plan_consolidate.summary": "machine",
+    "plan.master.title": "machine",
+    "plan.section.goal": "machine",
+    "plan.section.decisions": "machine",
+    "plan.section.responsibilities": "machine",
+    "plan.section.numbers": "machine",
+    "plan.section.risks": "machine",
+    "plan.section.questions": "machine",
+    "plan.section.reports": "machine",
+    "plan.text_for_plan": "machine",
+    "plan.col.responsibility": "machine",
+    "plan.col.owner": "machine",
+    "plan.hint.decisions": "machine",
+    "plan.hint.numbers": "machine",
+    "plan.hint.reports": "machine",
+    "plan.created": "machine",
+    "plan.exists": "machine",
+    "plan.clean": "machine",
+    "plan.error.check": "machine",
+    "plan.error.no_master": "machine",
+    "plan.issue.no_master": "machine",
+    "plan.issue.order": "machine",
+    "plan.issue.number_without_report": "machine",
+    "plan.issue.missing_report": "machine",
+    "plan.issue.not_indexed": "machine",
+    "plan.issue.decided_twice": "machine",
+    "plan.issue.two_owners": "machine",
+    "plan.issue.no_owner": "machine",
+    "plan.issue.revoked_without_banner": "machine",
+    "plan.issue.grew_without_previous": "machine",
+    "plan.consolidate.saved": "machine",
+    "plan.consolidate.ask": "machine",
+    "plan.consolidate.no_text": "machine",
+    "plan.consolidate.diff": "machine",
+    "gate.plan.clean": "machine",
+    "doctor.instructions.plan_import": "machine",
+    "doctor.instructions.fix_plan_import": "machine"
   }
 };
 
@@ -12194,16 +12390,16 @@ var stringifyYaml = (value) => `${lines(value, "").join("\n")}
 // src/plan/front.ts
 var FENCE2 = "---";
 var readFront = (text10) => {
-  const normalized = text10.replace(/\r\n/g, "\n");
-  if (!normalized.startsWith(`${FENCE2}
-`)) return { data: void 0, body: normalized };
-  const end = normalized.indexOf(`
+  const normalized2 = text10.replace(/\r\n/g, "\n");
+  if (!normalized2.startsWith(`${FENCE2}
+`)) return { data: void 0, body: normalized2 };
+  const end = normalized2.indexOf(`
 ${FENCE2}
 `, FENCE2.length);
-  if (end === -1) return { data: void 0, body: normalized };
-  const parsed = parseYaml(normalized.slice(FENCE2.length + 1, end + 1));
+  if (end === -1) return { data: void 0, body: normalized2 };
+  const parsed = parseYaml(normalized2.slice(FENCE2.length + 1, end + 1));
   const data = parsed.ok && isRecord(parsed.value) ? parsed.value : void 0;
-  return { data, body: normalized.slice(end + FENCE2.length + 2).replace(/^\n/, "") };
+  return { data, body: normalized2.slice(end + FENCE2.length + 2).replace(/^\n/, "") };
 };
 var writeFront = (data, body2) => `${FENCE2}
 ${stringifyYaml(data)}${FENCE2}
@@ -12522,6 +12718,180 @@ var placeholdersCheck = (_check, ctx) => {
   );
 };
 
+// src/plan/reports.ts
+var MASTER_FILE = "MASTER.md";
+var PREVIOUS_PREFIX = "MASTER-previous-";
+var REPORT = /^\d{2,}[a-z]?-.+\.md$/;
+var REVOKED_STATUS = /^\s*(?:[-*]\s*)?\**status\**\s*:\s*\**\s*(revoked|revogad[oa]|revocad[oa])\b/im;
+var BANNER = /^>\s*\**\s*(revoked|revogad[oa]|revocad[oa])\b/im;
+var isReportName = (name) => REPORT.test(name);
+var readReport = (runtime, root, name) => {
+  const text10 = runtime.readText(planPath(root, name));
+  if (!text10.ok) return void 0;
+  const { data, body: body2 } = readFront(text10.value);
+  const status = data?.["status"];
+  const revoked = typeof status === "string" && /^(revoked|revogad[oa]|revocad[oa])$/i.test(status) || REVOKED_STATUS.test(body2);
+  return { name, text: text10.value, body: body2, revoked, banner: BANNER.test(body2) };
+};
+var planReports = (runtime, root) => planFiles(runtime, root).filter(isReportName).flatMap((name) => readReport(runtime, root, name) ?? []);
+var previousVersions = (names) => names.filter((name) => name.startsWith(PREVIOUS_PREFIX) && name.endsWith(".md")).sort();
+var CITATION = /\b\d{2,}[a-z]?-[\w.-]+?\.md\b/g;
+var citationsIn = (line3) => [...line3.matchAll(CITATION)].map((match) => match[0]);
+
+// src/plan/sections.ts
+var MASTER_SECTIONS = [
+  "goal",
+  "decisions",
+  "responsibilities",
+  "numbers",
+  "risks",
+  "questions",
+  "reports"
+];
+var SECTION_KEYS = {
+  goal: "plan.section.goal",
+  decisions: "plan.section.decisions",
+  responsibilities: "plan.section.responsibilities",
+  numbers: "plan.section.numbers",
+  risks: "plan.section.risks",
+  questions: "plan.section.questions",
+  reports: "plan.section.reports"
+};
+var headingsOf = (key2) => LANGUAGES.map((lang) => catalogs[lang][key2].trim().toLowerCase());
+var matchesHeading = (heading, key2) => headingsOf(key2).includes(heading.trim().toLowerCase());
+var HEADING = /^##\s+(.+?)\s*#*\s*$/;
+var sectionsOf = (body2, offset = 0) => {
+  const sections = [];
+  body2.split("\n").forEach((raw, index) => {
+    const text10 = raw.replace(/\r$/, "");
+    const heading = HEADING.exec(text10)?.[1];
+    if (heading !== void 0) sections.push({ heading, line: index + 1 + offset, lines: [] });
+    else sections.at(-1)?.lines.push({ text: text10, line: index + 1 + offset });
+  });
+  return sections;
+};
+var sectionOf = (sections, key2) => sections.find((section3) => matchesHeading(section3.heading, key2));
+var masterSectionOf = (heading) => MASTER_SECTIONS.find((id) => matchesHeading(heading, SECTION_KEYS[id]));
+
+// src/plan/rules.ts
+var issue = (kind, file, line3, detail) => ({
+  kind,
+  file,
+  line: line3,
+  detail
+});
+var linesIn = (sections, id) => sections.filter((section3) => masterSectionOf(section3.heading) === id).flatMap((section3) => section3.lines);
+var orderIssues = (master, sections) => {
+  const ids2 = sections.flatMap((section3) => masterSectionOf(section3.heading) ?? []);
+  const inOrder = ids2.length === MASTER_SECTIONS.length && ids2.every((id, index) => id === MASTER_SECTIONS[index]);
+  return inOrder ? [] : [issue("order", master, sections[0]?.line ?? 1, ids2.join(", "))];
+};
+var NOISE = [
+  /\[[^\]]*\]\([^)]*\)/g,
+  /\b\d{2,}[a-z]?-[\w.-]+?\.md\b/g,
+  /\b\d{4}-\d{2}-\d{2}\b/g,
+  /^\s*(?:[-*+]|\d+[.)])\s+/
+];
+var hasNumber = (text10) => /\d/.test(NOISE.reduce((rest, pattern) => rest.replace(pattern, " "), text10));
+var numberIssues = (master, sections, reports) => sections.filter((section3) => masterSectionOf(section3.heading) !== "reports").flatMap((section3) => section3.lines).filter((line3) => !/^\s*\|?\s*-{3}/.test(line3.text) && hasNumber(line3.text)).flatMap((line3) => {
+  const cited = citationsIn(line3.text);
+  if (cited.length === 0) return [issue("number_without_report", master, line3.line, line3.text.trim())];
+  return cited.filter((name) => !reports.has(name)).map((name) => issue("missing_report", master, line3.line, name));
+});
+var indexIssues = (master, sections, reports) => {
+  const listed5 = new Set(linesIn(sections, "reports").flatMap((line3) => citationsIn(line3.text)));
+  return reports.filter((name) => !listed5.has(name)).map((name) => issue("not_indexed", master, 1, name));
+};
+var clean = (text10) => text10.replace(/[*`_]/g, "").replace(/\([^)]*\.md\)|\[[^\]]*\]\([^)]*\)/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+var DECIDES = /^\s*(?:[-*]\s*)?\**(?:decides|decide|decisão|decisión)\**\s*:\s*(.+?)\s*(?:=|->|→)\s*(.+?)\s*$/i;
+var BULLET = /^\s*[-*]\s+(.+?):\s+(.+)$/;
+var conflicts = (choices) => {
+  const first = /* @__PURE__ */ new Map();
+  return choices.flatMap((item2) => {
+    const seen = first.get(item2.topic);
+    if (seen === void 0) first.set(item2.topic, item2);
+    if (seen === void 0 || seen.choice === item2.choice) return [];
+    return [issue("decided_twice", item2.file, item2.line, `${item2.topic}: ${seen.file}:${String(seen.line)}`)];
+  });
+};
+var choiceOf = (pattern, file, line3) => {
+  const match = pattern.exec(line3.text);
+  if (match?.[1] === void 0 || match[2] === void 0) return void 0;
+  return { topic: clean(match[1]), choice: clean(match[2]), file, line: line3.line };
+};
+var decisionIssues = (master, sections, reports, reportLines2) => [
+  ...conflicts(linesIn(sections, "decisions").flatMap((line3) => choiceOf(BULLET, master, line3) ?? [])),
+  ...conflicts(
+    reports.filter((report2) => !report2.revoked).flatMap((report2) => reportLines2(report2).flatMap((line3) => choiceOf(DECIDES, report2.name, line3) ?? []))
+  )
+];
+var NOBODY = /* @__PURE__ */ new Set(["", "-", "?", "none", "nobody", "tbd", "ninguém", "nenhum", "nadie", "ninguno"]);
+var SEVERAL = /,|;|\/|&|\+|\s(and|e|y)\s/i;
+var cellsOf = (text10) => text10.trim().replace(/^\||\|$/g, "").split("|").map((cell2) => cell2.trim());
+var ownerIssues = (master, sections) => {
+  const rows = linesIn(sections, "responsibilities").filter((line3) => line3.text.trim().startsWith("|"));
+  const owners = /* @__PURE__ */ new Map();
+  return rows.slice(1).flatMap((row2) => {
+    const [name = "", owner = ""] = cellsOf(row2.text);
+    if (/^-{3}/.test(name) || clean(name) === "") return [];
+    if (NOBODY.has(clean(owner))) return [issue("no_owner", master, row2.line, name)];
+    if (SEVERAL.test(owner)) return [issue("two_owners", master, row2.line, `${name}: ${owner}`)];
+    const before = owners.get(clean(name));
+    owners.set(clean(name), clean(owner));
+    return before !== void 0 && before !== clean(owner) ? [issue("two_owners", master, row2.line, `${name}: ${owner}`)] : [];
+  });
+};
+var revokedIssues = (reports) => reports.filter((report2) => report2.revoked && !report2.banner).map((report2) => issue("revoked_without_banner", report2.name, 1, report2.name));
+
+// src/plan/check.ts
+var normalized = (text10) => text10.replace(/\r\n/g, "\n").trimEnd();
+var lineCount = (text10) => normalized(text10).split("\n").length;
+var growthIssues = (runtime, root, master, current2) => {
+  const git2 = gitAt(runtime, root);
+  const commits = linesOf(git2.out(["log", "--format=%H", "-n", "20", "--", master]));
+  const previous = commits.map((commit2) => git2.out(["show", `${commit2}:${master}`])).find((text10) => text10 !== void 0 && normalized(text10) !== normalized(current2));
+  if (previous === void 0 || lineCount(current2) <= lineCount(previous)) return [];
+  const saved = previousVersions(planFiles(runtime, root)).some((name) => {
+    const text10 = runtime.readText(planPath(root, name));
+    return text10.ok && normalized(text10.value) === normalized(previous);
+  });
+  const detail = `${String(lineCount(previous))} -> ${String(lineCount(current2))}`;
+  return saved ? [] : [{ kind: "grew_without_previous", file: MASTER_FILE, line: 1, detail }];
+};
+var checkPlan = (runtime, root) => {
+  const master = `${PLAN_DIR}/${MASTER_FILE}`;
+  const text10 = runtime.readText(planPath(root, MASTER_FILE));
+  const reports = planReports(runtime, root);
+  if (!text10.ok)
+    return { master, reports: reports.length, issues: [{ kind: "no_master", file: master, line: 1, detail: master }] };
+  const sections = sectionsOf(text10.value);
+  const names = reports.map((report2) => report2.name);
+  const bodyLines = (report2) => readFront(report2.text).body.split("\n").map((line3, index) => ({ text: line3, line: index + 1 }));
+  return {
+    master,
+    reports: reports.length,
+    issues: [
+      ...orderIssues(MASTER_FILE, sections),
+      ...numberIssues(MASTER_FILE, sections, new Set(names)),
+      ...indexIssues(MASTER_FILE, sections, names),
+      ...decisionIssues(MASTER_FILE, sections, reports, bodyLines),
+      ...ownerIssues(MASTER_FILE, sections),
+      ...revokedIssues(reports),
+      ...growthIssues(runtime, root, master, text10.value)
+    ]
+  };
+};
+
+// src/gate/checks/plan.ts
+var MAX_LISTED4 = 10;
+var planCheck = (_check, ctx) => {
+  const result = checkPlan(ctx.runtime, ctx.paths.root);
+  if (result.issues.length === 0) return passed([note("gate.plan.clean", { count: result.reports })]);
+  return failed(
+    result.issues.slice(0, MAX_LISTED4).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
+  );
+};
+
 // src/gate/checks/pr.ts
 var MAX_FILES = 10;
 var conflictNotes = (pr, ctx) => {
@@ -12760,7 +13130,7 @@ var isMarkerOnlyLine = (line3) => allowsLine(line3) && outsideCode(line3).replac
 
 // src/prose/extract.ts
 var FENCE4 = /^\s*(```|~~~)/;
-var HEADING = /^#{1,6}\s+/;
+var HEADING2 = /^#{1,6}\s+/;
 var ITEM = /^\s*(?:[-*+]|\d+[.)])\s+/;
 var SKIPPED_LINE = /^\s*[|>]|^\s*<(?!!--)/;
 var INDENTED_CODE = /^(?: {4}|\t)/;
@@ -12814,8 +13184,8 @@ var readLine = (reader, raw, line3) => {
     reader.skipNextBlock();
   } else if (allowsLine(raw)) {
     return;
-  } else if (HEADING.test(raw)) {
-    reader.start("heading", { text: raw.replace(HEADING, ""), line: line3 });
+  } else if (HEADING2.test(raw)) {
+    reader.start("heading", { text: raw.replace(HEADING2, ""), line: line3 });
   } else if (SKIPPED_LINE.test(raw) || raw.trim().startsWith("<!--")) {
     reader.flush();
   } else if (ITEM.test(raw)) {
@@ -13195,13 +13565,13 @@ var proseGateStatus = (runtime, root) => {
 };
 
 // src/gate/checks/prose.ts
-var MAX_LISTED4 = 10;
+var MAX_LISTED5 = 10;
 var rulesOf = (span) => [...new Set(span.hits.map((hit3) => hit3.rule))].join(", ");
 var proseOutcome = (status) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
   const { files, flagged, blocking: blocking2 } = status.value;
   const key2 = blocking2 ? "gate.prose.finding" : "gate.prose.warning";
-  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED4).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
+  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED5).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
   if (notes2.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
   return blocking2 ? failed(notes2) : passed(notes2);
 };
@@ -13681,7 +14051,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED5 = 10;
+var MAX_LISTED6 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -13691,10 +14061,10 @@ var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings, openIncidents } = status.value;
-  const warnings = findings.filter(isWarning).slice(0, MAX_LISTED5).map((finding4) => note("gate.secrets.warning", { file: finding4.file, line: finding4.line, rule: finding4.ruleId }));
+  const warnings = findings.filter(isWarning).slice(0, MAX_LISTED6).map((finding4) => note("gate.secrets.warning", { file: finding4.file, line: finding4.line, rule: finding4.ruleId }));
   const notes2 = [
-    ...blocking(findings).slice(0, MAX_LISTED5).map((finding4) => note("gate.secrets.finding", { file: finding4.file, line: finding4.line, rule: finding4.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED5).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
+    ...blocking(findings).slice(0, MAX_LISTED6).map((finding4) => note("gate.secrets.finding", { file: finding4.file, line: finding4.line, rule: finding4.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED6).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
   if (notes2.length > 0) return failed([...notes2, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
@@ -13719,7 +14089,7 @@ var forChange = (input, change) => {
 var analyzeTree = (input) => input.changes.flatMap((change) => forChange(input, change));
 
 // src/gate/checks/tests.ts
-var MAX_LISTED6 = 10;
+var MAX_LISTED7 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -13744,7 +14114,7 @@ var treeViolations = (ctx) => {
 var testsCheck = (check2, ctx) => {
   const violations = treeViolations(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes2 = violations.slice(0, MAX_LISTED6).map(violationNote);
+  const notes2 = violations.slice(0, MAX_LISTED7).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed([...notes2, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes2, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -14575,10 +14945,10 @@ var findingLabel = (finding4) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED7 = 8;
+var MAX_LISTED8 = 8;
 var listed3 = (items) => {
-  const head = items.slice(0, MAX_LISTED7).join(", ");
-  return items.length > MAX_LISTED7 ? `${head} (+${String(items.length - MAX_LISTED7)})` : head;
+  const head = items.slice(0, MAX_LISTED8).join(", ");
+  return items.length > MAX_LISTED8 ? `${head} (+${String(items.length - MAX_LISTED8)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf = (ctx) => ownerKey(ctx.sessionId);
@@ -14639,7 +15009,8 @@ var DEFAULT_CHECKS = {
   callers: callersCheck,
   runtime: runtimeCheck,
   look: lookCheck,
-  inventory: inventoryCheck
+  inventory: inventoryCheck,
+  plan: planCheck
 };
 
 // src/gate/run.ts
@@ -15170,11 +15541,11 @@ var upsertEntry = (registry, entry2) => {
 var UNKNOWN_OWNER = { kind: "unknown", agentId: null, sessionId: null };
 var sameTree = (left, right) => isWithinPath(left, right) && isWithinPath(right, left);
 var freeId = (taken, wanted) => {
-  const clean = wanted.replace(/[^A-Za-z0-9._-]/g, "-").replace(/^-+|-+$/g, "") || "worktree";
-  if (!taken.has(clean)) return clean;
+  const clean2 = wanted.replace(/[^A-Za-z0-9._-]/g, "-").replace(/^-+|-+$/g, "") || "worktree";
+  if (!taken.has(clean2)) return clean2;
   let suffix = 2;
-  while (taken.has(`${clean}-${String(suffix)}`)) suffix += 1;
-  return `${clean}-${String(suffix)}`;
+  while (taken.has(`${clean2}-${String(suffix)}`)) suffix += 1;
+  return `${clean2}-${String(suffix)}`;
 };
 var adoptable = (registry, trees) => trees.filter(
   (tree) => !tree.main && !tree.bare && !registry.worktrees.some((item2) => sameTree(item2.path, tree.path))
@@ -15254,8 +15625,8 @@ var pathKey = (path) => {
     (_match, letter, slash) => `${letter}:${slash || "/"}`
   );
   const drive = DRIVE.exec(posixPath);
-  const normalized = posix3.normalize(drive === null ? posixPath : posixPath.slice(2) || "/");
-  const trimmed = normalized.length > 1 ? normalized.replace(/\/+$/, "") : normalized;
+  const normalized2 = posix3.normalize(drive === null ? posixPath : posixPath.slice(2) || "/");
+  const trimmed = normalized2.length > 1 ? normalized2.replace(/\/+$/, "") : normalized2;
   return drive === null ? trimmed : `${(drive[1] ?? "").toLowerCase()}:${trimmed}`.toLowerCase();
 };
 var isWithin = (child2, parent) => {
@@ -16625,9 +16996,9 @@ var PROSE_HANDLERS = {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED8 = 5;
+var MAX_LISTED9 = 5;
 var describeFindings = (t, items) => {
-  const listed5 = items.slice(0, MAX_LISTED8).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
+  const listed5 = items.slice(0, MAX_LISTED9).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
   const rest = items.length - listed5.length;
   return rest > 0 ? `${listed5.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed5.join("; ");
 };
@@ -17576,10 +17947,10 @@ var hiddenInstructions = (env, deny2) => {
   ];
 };
 var localFile = (env) => readProjectFile(env, "CLAUDE.local.md") === void 0 ? [] : [finding("instructions.local", "warn", "doctor.instructions.local", {}, "doctor.instructions.fix_local")];
-var lineCount = (text10) => text10.split("\n").length - (text10.endsWith("\n") ? 1 : 0);
+var lineCount2 = (text10) => text10.split("\n").length - (text10.endsWith("\n") ? 1 : 0);
 var oversized = (env) => ["AGENTS.md", "CLAUDE.md"].flatMap((file) => {
   const text10 = readProjectFile(env, file);
-  const lines3 = text10 === void 0 ? 0 : lineCount(text10);
+  const lines3 = text10 === void 0 ? 0 : lineCount2(text10);
   if (lines3 <= INSTRUCTION_LINE_CEILING) return [];
   return [
     finding(
@@ -17617,6 +17988,20 @@ var duplicates = (env) => {
     )
   ];
 };
+var PLAN_IMPORT = /^\s*@(?:\.\/)?docs\/plan\//m;
+var planImports = (env) => {
+  const files = instructionFiles(env).filter(({ text: text10 }) => PLAN_IMPORT.test(text10)).map(({ path }) => path);
+  if (files.length === 0) return [];
+  return [
+    finding(
+      "instructions.plan_import",
+      "warn",
+      "doctor.instructions.plan_import",
+      { files: shortList(files) },
+      "doctor.instructions.fix_plan_import"
+    )
+  ];
+};
 var checkInstructions = (env) => {
   const deny2 = denyRules(readSettings(env));
   return [
@@ -17624,7 +18009,8 @@ var checkInstructions = (env) => {
     ...hiddenInstructions(env, deny2),
     ...localFile(env),
     ...oversized(env),
-    ...duplicates(env)
+    ...duplicates(env),
+    ...planImports(env)
   ];
 };
 
@@ -17648,13 +18034,13 @@ var ceilingOf = (config) => {
   const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
   return Number.isInteger(parsed) && parsed > 0 ? parsed : AGENTS_MAX_LINES;
 };
-var lineCount2 = (text10) => text10.replace(/\r?\n$/, "").split(/\r?\n/).length;
+var lineCount3 = (text10) => text10.replace(/\r?\n$/, "").split(/\r?\n/).length;
 var checkAgentsFile = ({ root, runtime }) => {
   const text10 = runtime.readText(toAbsolutePath(join43(root, AGENTS_FILE)));
   if (!text10.ok) return [];
   const config = runtime.readText(toAbsolutePath(join43(root, CONFIG_FILE2)));
   const max = ceilingOf(config.ok ? config.value : void 0);
-  const lines3 = lineCount2(text10.value);
+  const lines3 = lineCount3(text10.value);
   const params2 = { file: AGENTS_FILE, lines: lines3, max };
   return lines3 > max ? [finding("memory.agents_lines", "fail", "doctor.memory.too_long", params2, "doctor.memory.fix_too_long")] : [finding("memory.agents_lines", "ok", "doctor.memory.lines", params2)];
 };
@@ -18222,10 +18608,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED9 = 5;
+var MAX_LISTED10 = 5;
 var detailOf = (check2) => {
-  const listed5 = check2.failures.slice(0, MAX_LISTED9).join("; ");
-  const rest = check2.failures.length - MAX_LISTED9;
+  const listed5 = check2.failures.slice(0, MAX_LISTED10).join("; ");
+  const rest = check2.failures.length - MAX_LISTED10;
   return rest > 0 ? `${listed5}; +${String(rest)}` : listed5;
 };
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf(check2), fix: check2.fix });
@@ -19608,8 +19994,8 @@ var section = (heading, lines3) => [
 ];
 
 // src/inventory/render.ts
-var MAX_LISTED10 = 40;
-var capped = (t, lines3) => lines3.length > MAX_LISTED10 ? [...lines3.slice(0, MAX_LISTED10), `- ${t("inventory.more", { count: lines3.length - MAX_LISTED10 })}`] : lines3;
+var MAX_LISTED11 = 40;
+var capped = (t, lines3) => lines3.length > MAX_LISTED11 ? [...lines3.slice(0, MAX_LISTED11), `- ${t("inventory.more", { count: lines3.length - MAX_LISTED11 })}`] : lines3;
 var listed4 = (t, lines3) => lines3.length === 0 ? [t("inventory.none")] : capped(t, lines3);
 var hitLines = (t, hits) => listed4(
   t,
@@ -20403,6 +20789,164 @@ var onCommand = {
   usage: "finitemonkey on",
   status: "ready",
   run: (ctx) => Promise.resolve(toggle(ctx, false))
+};
+
+// src/plan/master.ts
+var HINTS = {
+  decisions: "plan.hint.decisions",
+  numbers: "plan.hint.numbers",
+  reports: "plan.hint.reports"
+};
+var renderMaster = (t) => [
+  `# ${t("plan.master.title")}`,
+  "",
+  ...MASTER_SECTIONS.flatMap((id) => {
+    const hint = HINTS[id];
+    const table3 = id === "responsibilities" ? [`| ${t("plan.col.responsibility")} | ${t("plan.col.owner")} |`, "|---|---|", ""] : [];
+    return [`## ${t(SECTION_KEYS[id])}`, "", ...hint === void 0 ? [] : [t(hint), ""], ...table3];
+  })
+].join("\n");
+var initPlan = (runtime, t, root) => {
+  const file = `${PLAN_DIR}/${MASTER_FILE}`;
+  if (runtime.readText(planPath(root, MASTER_FILE)).ok) return accept({ file, created: false });
+  const made = runtime.mkdir(planDir(root));
+  if (!made.ok) return made;
+  const written = runtime.writeText(planPath(root, MASTER_FILE), renderMaster(t));
+  return written.ok ? accept({ file, created: true }) : written;
+};
+var PREVIOUS = /^MASTER-previous-(\d{4}-\d{2}-\d{2})(?:-(\d+))?\.md$/;
+var order = (name) => {
+  const match = PREVIOUS.exec(name);
+  return `${match?.[1] ?? ""}-${(match?.[2] ?? "1").padStart(4, "0")}`;
+};
+var latestPrevious = (names) => [...previousVersions(names)].sort((a, b) => order(a).localeCompare(order(b))).at(-1);
+var previousName = (runtime, root, date, current2) => {
+  for (let index = 1; ; index += 1) {
+    const name = `${PREVIOUS_PREFIX}${date}${index === 1 ? "" : `-${String(index)}`}.md`;
+    const text10 = runtime.readText(planPath(root, name));
+    if (!text10.ok || text10.value === current2) return name;
+  }
+};
+var startConsolidation = (runtime, root, date) => {
+  const current2 = runtime.readText(planPath(root, MASTER_FILE));
+  if (!current2.ok) return reject("no_master");
+  const name = previousName(runtime, root, date, current2.value);
+  const saved = runtime.writeText(planPath(root, name), current2.value);
+  if (!saved.ok) return saved;
+  const reports = planReports(runtime, root);
+  const missing2 = new Set(
+    indexIssues(
+      MASTER_FILE,
+      sectionsOf(current2.value),
+      reports.map((report2) => report2.name)
+    ).map((item2) => item2.detail)
+  );
+  return accept({
+    previous: `${PLAN_DIR}/${name}`,
+    reports: reports.filter((report2) => missing2.has(report2.name)).map((report2) => ({
+      file: `${PLAN_DIR}/${report2.name}`,
+      text: (sectionOf(sectionsOf(report2.body), "plan.text_for_plan")?.lines ?? []).map((line3) => line3.text).join("\n").trim()
+    }))
+  });
+};
+var masterDiff = (runtime, root) => {
+  const previous = latestPrevious(planFiles(runtime, root));
+  if (previous === void 0) return { diff: "" };
+  const result = gitAt(runtime, root).run([
+    "diff",
+    "--no-index",
+    "--no-color",
+    "--",
+    `${PLAN_DIR}/${previous}`,
+    `${PLAN_DIR}/${MASTER_FILE}`
+  ]);
+  return { previous: `${PLAN_DIR}/${previous}`, diff: result.stdout };
+};
+
+// src/commands/plan.ts
+var PLAN_SCHEMA2 = "finitemonkey/plan@1";
+var writeProblem = (detail) => ({
+  code: "plan_write_failed",
+  messageKey: "plan.error.write",
+  params: { detail },
+  fix: "check that docs/plan can be written",
+  exitCode: ExitCode.CheckFailed
+});
+var issueLine = (ctx, item2) => `${item2.file}:${String(item2.line)} ${ctx.t(`plan.issue.${item2.kind}`, { detail: item2.detail })}`;
+var checkResult = (ctx, check2, before = []) => {
+  const data = { schema: PLAN_SCHEMA2, ...check2 };
+  if (check2.issues.length === 0) return success(data, [...before, ctx.t("plan.clean", { count: check2.reports })]);
+  return failureFrom(
+    ctx.t,
+    {
+      code: "plan_check_failed",
+      messageKey: "plan.error.check",
+      params: { count: check2.issues.length },
+      fix: "fix each line listed, then run finitemonkey plan check again",
+      exitCode: ExitCode.CheckFailed,
+      data
+    },
+    [...before, ...check2.issues.map((item2) => `  ${issueLine(ctx, item2)}`)]
+  );
+};
+var inRepo = (ctx, run4) => {
+  const repo = repoOf(ctx);
+  return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
+};
+var planInitCommand = {
+  path: ["plan", "init"],
+  summaryKey: "command.plan_init.summary",
+  usage: "finitemonkey plan init",
+  status: "ready",
+  run: (ctx) => inRepo(ctx, (root) => {
+    const made = initPlan(ctx.runtime, ctx.t, root);
+    if (!made.ok) return failureFrom(ctx.t, writeProblem(made.error));
+    const key2 = made.value.created ? "plan.created" : "plan.exists";
+    return success({ schema: PLAN_SCHEMA2, ...made.value }, [ctx.t(key2, { file: made.value.file })]);
+  })
+};
+var planCheckCommand = {
+  path: ["plan", "check"],
+  summaryKey: "command.plan_check.summary",
+  usage: "finitemonkey plan check",
+  status: "ready",
+  run: (ctx) => inRepo(ctx, (root) => checkResult(ctx, checkPlan(ctx.runtime, root)))
+};
+var finishConsolidation = (ctx, root) => {
+  const { previous, diff } = masterDiff(ctx.runtime, root);
+  const head = previous === void 0 ? [] : [ctx.t("plan.consolidate.diff", { file: previous }), ...diff.trimEnd().split("\n")];
+  return checkResult(ctx, checkPlan(ctx.runtime, root), head);
+};
+var planConsolidateCommand = {
+  path: ["plan", "consolidate"],
+  summaryKey: "command.plan_consolidate.summary",
+  usage: "finitemonkey plan consolidate [--done]",
+  status: "ready",
+  options: { done: { type: "boolean" } },
+  run: (ctx, args2) => inRepo(ctx, (root) => {
+    if (args2.values["done"] === true) return finishConsolidation(ctx, root);
+    const started = startConsolidation(ctx.runtime, root, ctx.runtime.now().slice(0, 10));
+    if (!started.ok && started.error === "no_master")
+      return failureFrom(ctx.t, {
+        ...writeProblem("docs/plan/MASTER.md"),
+        code: "plan_check_failed",
+        messageKey: "plan.error.no_master",
+        fix: "finitemonkey plan init"
+      });
+    if (!started.ok) return failureFrom(ctx.t, writeProblem(started.error));
+    const { previous, reports } = started.value;
+    return {
+      ...success({ schema: PLAN_SCHEMA2, ...started.value }, [
+        ctx.t("plan.consolidate.saved", { file: previous }),
+        ctx.t("plan.consolidate.ask", { count: reports.length }),
+        ...reports.flatMap((report2) => [
+          `## ${report2.file}`,
+          report2.text === "" ? ctx.t("plan.consolidate.no_text") : report2.text
+        ])
+      ]),
+      next: "finitemonkey plan consolidate --done"
+    };
+  })
 };
 
 // src/commands/policy.ts
@@ -21530,6 +22074,8 @@ var newTask = (ctx, id, values) => {
   if (paths === void 0) return noRepo(ctx);
   const created3 = createTask(ctx.runtime, paths, draftFrom(ctx, paths, id, values));
   if (!created3.ok) return createFailure(ctx, created3.error);
+  const plan = created3.value.contract.size === "L" ? initPlan(ctx.runtime, ctx.t, paths.root) : void 0;
+  const planLine = plan?.ok === true && plan.value.created ? [ctx.t("plan.created", { file: plan.value.file })] : [];
   const data = {
     schema: TASK_SCHEMA,
     file: paths.task(id),
@@ -21537,7 +22083,11 @@ var newTask = (ctx, id, values) => {
     contract: contractJson(created3.value.contract)
   };
   return {
-    ...success(data, [ctx.t("task.created", { task: id, file: paths.task(id) }), created3.value.text.trimEnd()]),
+    ...success(data, [
+      ctx.t("task.created", { task: id, file: paths.task(id) }),
+      created3.value.text.trimEnd(),
+      ...planLine
+    ]),
     next: "finitemonkey gate"
   };
 };
@@ -22072,6 +22622,9 @@ var REGISTRY2 = [
   wtNewCommand,
   wtAdoptCommand,
   mapCommand,
+  planInitCommand,
+  planCheckCommand,
+  planConsolidateCommand,
   versionCommand,
   helpCommand
 ];

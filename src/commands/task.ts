@@ -8,6 +8,7 @@ import { DEFAULT_GATE_BUDGET_MS } from "../gate/hooks/common.js";
 import { currentReport } from "../gate/hooks/snapshot.js";
 import { reportLines } from "../gate/render.js";
 import { runGate } from "../gate/run.js";
+import { initPlan } from "../plan/master.js";
 import { type CreateProblem, createTask, type TaskDraft } from "../task/create.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { contractJson } from "../task/serialize.js";
@@ -96,6 +97,8 @@ const newTask = (ctx: Ctx, id: string | undefined, values: OptionValues): Comman
   if (paths === undefined) return noRepo(ctx);
   const created = createTask(ctx.runtime, paths, draftFrom(ctx, paths, id, values));
   if (!created.ok) return createFailure(ctx, created.error);
+  const plan = created.value.contract.size === "L" ? initPlan(ctx.runtime, ctx.t, paths.root) : undefined;
+  const planLine = plan?.ok === true && plan.value.created ? [ctx.t("plan.created", { file: plan.value.file })] : [];
   const data = {
     schema: TASK_SCHEMA,
     file: paths.task(id),
@@ -103,7 +106,11 @@ const newTask = (ctx: Ctx, id: string | undefined, values: OptionValues): Comman
     contract: contractJson(created.value.contract),
   };
   return {
-    ...success(data, [ctx.t("task.created", { task: id, file: paths.task(id) }), created.value.text.trimEnd()]),
+    ...success(data, [
+      ctx.t("task.created", { task: id, file: paths.task(id) }),
+      created.value.text.trimEnd(),
+      ...planLine,
+    ]),
     next: "finitemonkey gate",
   };
 };
