@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.23](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.22...v0.1.0-next.23) (2026-10-27)
+
+### Features
+
+* **review:** read-only reviewer and verifier agents fed by a review packet ([#160](https://github.com/gabrielvieiraf/finitemonkey/issues/160)) ([aba4b5a](https://github.com/gabrielvieiraf/finitemonkey/commit/aba4b5a978d9187d7dd6a1921ef385af11d3a3a8)), closes [#151](https://github.com/gabrielvieiraf/finitemonkey/issues/151) [#151](https://github.com/gabrielvieiraf/finitemonkey/issues/151) [#37](https://github.com/gabrielvieiraf/finitemonkey/issues/37)
+
 ## [0.1.0-next.22](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.21...v0.1.0-next.22) (2026-10-27)
 
 ### Features
