@@ -12,7 +12,8 @@ Skip this for a question, a one-line fix or pure exploration.
 
 1. Propose the contract and show it to the person in five lines or fewer: goal, size (S, M or L), paths in scope, and acceptance checks.
 2. Create it with `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" task new --json` and follow its `next` field.
-3. Acceptance checks must be runnable: a command with an exit code, tests that must not shrink, a screen to look at, a git state. "Works" is not a check.
+3. Before writing a helper, a hook or a service, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" map` and reuse what it lists. It prints one line per folder with its top-level definitions and is cached until the code changes.
+4. Acceptance checks must be runnable: a command with an exit code, tests that must not shrink, a screen to look at, a git state. "Works" is not a check.
 
 Example of the shape the contract takes:
 
