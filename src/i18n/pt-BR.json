@@ -652,5 +652,17 @@
   "statusline.gate.red": "portão vermelho",
   "statusline.gate.incomplete": "portão incompleto",
   "statusline.gate.did_not_run": "portão não rodou",
-  "statusline.context": "ctx {percent}%"
+  "statusline.context": "ctx {percent}%",
+  "command.gain.summary": "O que as travas fizeram: acertos ao lado dos alarmes falsos e das falhas do portão",
+  "gain.title": "Finite Monkey, últimos {days, plural, one {# dia} other {# dias}} (de .finitemonkey/log.jsonl e dos ledgers de evidência):",
+  "gain.row.blocks": "{count, plural, one {# bloqueio} other {# bloqueios}} das travas",
+  "gain.row.saves": "{count, plural, one {# bloqueio seguido} other {# bloqueios seguidos}} de portão verde em até um dia",
+  "gain.row.false_positives": "{count, plural, one {# alarme falso} other {# alarmes falsos}} (liberações digitadas pela pessoa e falsos positivos registrados)",
+  "gain.row.gate_runs": "{count, plural, one {# execução do portão} other {# execuções do portão}}",
+  "gain.row.gate_failed": "{count, plural, one {# execução do portão reprovou} other {# execuções do portão reprovaram}}",
+  "gain.row.gate_unverified": "{count, plural, one {# execução do portão terminou} other {# execuções do portão terminaram}} sem verificar",
+  "gain.row.gate_time": "{minutes, plural, one {# minuto} other {# minutos}} no portão",
+  "gain.up": "+{delta} em relação à janela anterior",
+  "gain.down": "-{delta} em relação à janela anterior",
+  "gain.footer": "As contagens vêm só de arquivos locais; um acerto é um bloqueio seguido de portão verde, não prova de que o bloqueio causou isso."
 }

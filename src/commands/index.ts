@@ -1,5 +1,6 @@
 import { appCheckCommand } from "./app-check.js";
 import { doctorCommand } from "./doctor.js";
+import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
 import { mergeVerifyCommand } from "./git-merge-verify.js";
@@ -41,6 +42,7 @@ export const REGISTRY = [
   policyFalsePositiveCommand,
   offCommand,
   onCommand,
+  gainCommand,
   secretsIncidentCommand,
   secretsLiveCommand,
   proseCheckCommand,

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/gain@1.json",
+  "title": "finitemonkey/gain@1",
+  "description": "`data` of `finitemonkey gain --json`. Generated from GainReport in src/gain/gain.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/gain@1"
+    },
+    "days": {
+      "type": "number"
+    },
+    "from": {
+      "type": "string"
+    },
+    "to": {
+      "type": "string"
+    },
+    "current": {
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "type": "number"
+        },
+        "saves": {
+          "type": "number"
+        },
+        "releases": {
+          "type": "number"
+        },
+        "falsePositives": {
+          "type": "number"
+        },
+        "gateRuns": {
+          "type": "number"
+        },
+        "gateFailed": {
+          "type": "number"
+        },
+        "gateUnverified": {
+          "type": "number"
+        },
+        "gateMs": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "blocks",
+        "saves",
+        "releases",
+        "falsePositives",
+        "gateRuns",
+        "gateFailed",
+        "gateUnverified",
+        "gateMs"
+      ]
+    },
+    "previous": {
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "type": "number"
+        },
+        "saves": {
+          "type": "number"
+        },
+        "releases": {
+          "type": "number"
+        },
+        "falsePositives": {
+          "type": "number"
+        },
+        "gateRuns": {
+          "type": "number"
+        },
+        "gateFailed": {
+          "type": "number"
+        },
+        "gateUnverified": {
+          "type": "number"
+        },
+        "gateMs": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "blocks",
+        "saves",
+        "releases",
+        "falsePositives",
+        "gateRuns",
+        "gateFailed",
+        "gateUnverified",
+        "gateMs"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "days",
+    "from",
+    "to",
+    "current",
+    "previous"
+  ]
+}
