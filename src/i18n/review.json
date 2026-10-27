@@ -1003,7 +1003,16 @@
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "command.audit.summary": "machine",
+    "audit.title": "machine",
+    "audit.state.contradicted": "machine",
+    "audit.state.superseded": "machine",
+    "audit.state.in_master": "machine",
+    "audit.state.only_report": "machine",
+    "audit.state.lost": "machine",
+    "audit.incidents": "machine",
+    "audit.error.open": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2009,6 +2018,15 @@
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "command.audit.summary": "machine",
+    "audit.title": "machine",
+    "audit.state.contradicted": "machine",
+    "audit.state.superseded": "machine",
+    "audit.state.in_master": "machine",
+    "audit.state.only_report": "machine",
+    "audit.state.lost": "machine",
+    "audit.incidents": "machine",
+    "audit.error.open": "machine"
   }
 }

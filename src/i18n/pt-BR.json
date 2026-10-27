@@ -1002,5 +1002,14 @@
   "parity.issue.no_destination": "sem destino: {detail}",
   "parity.issue.no_test": "sem teste de paridade: {detail}",
   "parity.issue.not_green": "teste de paridade não está green: {detail}",
-  "parity.issue.removed_without_decision": "removido sem registro de decisão ligado: {detail}"
+  "parity.issue.removed_without_decision": "removido sem registro de decisão ligado: {detail}",
+  "command.audit.summary": "Acha pedidos, decisões, correções e números da conversa que nunca chegaram a um documento",
+  "audit.title": "{count, plural, one {# item} other {# itens}} das mensagens da pessoa (fonte: {source}):",
+  "audit.state.contradicted": "Contrariado por um documento ({count}):",
+  "audit.state.superseded": "Substituído por uma mensagem posterior ({count}):",
+  "audit.state.in_master": "No plano mestre ({count}):",
+  "audit.state.only_report": "Só em um relatório, fora do plano mestre ({count}):",
+  "audit.state.lost": "Perdido, em nenhum documento ({count}):",
+  "audit.incidents": "Credenciais coladas em sessões passadas abriram incidentes: {list}",
+  "audit.error.open": "{count, plural, one {# item está perdido ou contrariado} other {# itens estão perdidos ou contrariados}}"
 }

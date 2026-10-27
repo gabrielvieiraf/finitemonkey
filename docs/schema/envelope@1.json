@@ -87,7 +87,8 @@
             "pr_conflict",
             "pr_outside_scope",
             "reconcile_unavailable",
-            "parity_check_failed"
+            "parity_check_failed",
+            "audit_findings"
           ]
         },
         "message": {

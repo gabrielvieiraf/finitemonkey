@@ -81,11 +81,13 @@ const loopPlugins = (plugins: readonly string[]): readonly CheckFinding[] => {
   ];
 };
 
-const shortestCleanup = (all: readonly ScopedSettings[]): number | undefined => {
+export const DEFAULT_CLEANUP_DAYS = 30;
+
+const shortestCleanup = (all: readonly ScopedSettings[]): number => {
   const values = all
     .map(({ settings }) => settings["cleanupPeriodDays"])
     .filter((v): v is number => typeof v === "number");
-  return values.length === 0 ? undefined : Math.min(...values);
+  return values.length === 0 ? DEFAULT_CLEANUP_DAYS : Math.min(...values);
 };
 
 export const projectAgeDays = (env: DoctorEnv): number | undefined => {
@@ -102,7 +104,6 @@ export const projectAgeDays = (env: DoctorEnv): number | undefined => {
 
 const cleanupPeriod = (env: DoctorEnv, all: readonly ScopedSettings[]): readonly CheckFinding[] => {
   const days = shortestCleanup(all);
-  if (days === undefined) return [];
   const age = projectAgeDays(env);
   if (age === undefined || days >= age) return [];
   return [

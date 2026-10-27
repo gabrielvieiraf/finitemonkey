@@ -70,6 +70,7 @@ export const ERROR_CODES = [
   "pr_outside_scope",
   "reconcile_unavailable",
   "parity_check_failed",
+  "audit_findings",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
