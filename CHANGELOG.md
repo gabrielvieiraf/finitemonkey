@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.17](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.16...v0.1.0-next.17) (2026-10-27)
+
+### Features
+
+* **gate:** runtime check starts the app and calls one route ([#154](https://github.com/gabrielvieiraf/finitemonkey/issues/154)) ([36ac3ba](https://github.com/gabrielvieiraf/finitemonkey/commit/36ac3ba04810e57b88c40e7ee593fcf55af579d9)), closes [#40](https://github.com/gabrielvieiraf/finitemonkey/issues/40) [#151](https://github.com/gabrielvieiraf/finitemonkey/issues/151)
+
 ## [0.1.0-next.16](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.15...v0.1.0-next.16) (2026-10-27)
 
 ### Features
