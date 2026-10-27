@@ -27,7 +27,12 @@ export const FOOTPRINT = [
   {
     id: "config",
     kind: "reads",
-    targets: [".finitemonkey/config.yml", ".finitemonkey/policy.yml", ".finitemonkey/briefing.md"],
+    targets: [
+      ".finitemonkey/config.yml",
+      ".finitemonkey/policy.yml",
+      ".finitemonkey/briefing.md",
+      ".finitemonkey/look.yml",
+    ],
   },
   {
     id: "install",
@@ -72,6 +77,7 @@ export const FOOTPRINT = [
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
+  { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
   {

@@ -70,6 +70,11 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "A baseline de achados aceitos e os incidentes de exposição. Os dois guardam impressões e máscaras, nunca o valor de um segredo.",
     es: "La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto.",
   },
+  look: {
+    en: "Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash.",
+    "pt-BR": "Capturas de tela, a folha de contato e o resumo JSON que o `look` grava por hash da árvore.",
+    es: "Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol.",
+  },
   reports: {
     en: "Masked bug reports that `doctor --report` writes, only when asked.",
     "pt-BR": "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido.",

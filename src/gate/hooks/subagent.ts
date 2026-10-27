@@ -26,6 +26,7 @@ const KNOWN_KINDS = new Set([
   "review",
   "callers",
   "runtime",
+  "look",
 ]);
 
 const requirementText = (t: Translate, check: AcceptanceCheck): string => {

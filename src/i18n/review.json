@@ -573,7 +573,23 @@
     "githooks.pass": "machine",
     "githooks.fail": "machine",
     "githooks.error.failed": "machine",
-    "githooks.error.no_base": "machine"
+    "githooks.error.no_base": "machine",
+    "command.look.summary": "machine",
+    "look.done": "machine",
+    "look.recorded": "machine",
+    "look.error.not_a_repo": "machine",
+    "look.error.not_configured": "machine",
+    "look.error.playwright_missing": "machine",
+    "look.error.browser_missing": "machine",
+    "look.error.app_failed": "machine",
+    "gate.require.look": "machine",
+    "gate.look.not_run": "machine",
+    "gate.look.no_captures": "machine",
+    "gate.look.finding": "machine",
+    "gate.look.allow_ignored": "machine",
+    "gate.look.unopened": "machine",
+    "gate.look.open": "machine",
+    "gate.look.ok": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1149,6 +1165,22 @@
     "githooks.pass": "machine",
     "githooks.fail": "machine",
     "githooks.error.failed": "machine",
-    "githooks.error.no_base": "machine"
+    "githooks.error.no_base": "machine",
+    "command.look.summary": "machine",
+    "look.done": "machine",
+    "look.recorded": "machine",
+    "look.error.not_a_repo": "machine",
+    "look.error.not_configured": "machine",
+    "look.error.playwright_missing": "machine",
+    "look.error.browser_missing": "machine",
+    "look.error.app_failed": "machine",
+    "gate.require.look": "machine",
+    "gate.look.not_run": "machine",
+    "gate.look.no_captures": "machine",
+    "gate.look.finding": "machine",
+    "gate.look.allow_ignored": "machine",
+    "gate.look.unopened": "machine",
+    "gate.look.open": "machine",
+    "gate.look.ok": "machine"
   }
 }
