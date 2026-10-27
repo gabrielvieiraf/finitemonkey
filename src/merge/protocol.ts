@@ -18,7 +18,7 @@ import {
   writeReport,
 } from "./report.js";
 import { decisionOf, type FileResolution, resolveFile } from "./resolve-file.js";
-import { loadScope, type Scopes } from "./scope.js";
+import { loadScope, type Scopes, type SideScope } from "./scope.js";
 import { sameSymbolBothSides } from "./semantic.js";
 import { conflictedStageIds, fileInputs } from "./stages.js";
 import { commitsTouching, traceHunks } from "./trace.js";
@@ -31,6 +31,8 @@ export interface MergeRequest {
   readonly sourceContract: string | undefined;
   readonly declaredRemovals: readonly string[];
   readonly owner: WorktreeOwner;
+  readonly sourceScope?: SideScope;
+  readonly targetScope?: SideScope;
 }
 
 interface Run {
@@ -50,7 +52,8 @@ const resolveAll = (run: Run, request: MergeRequest): readonly FileResolution[] 
   const { runtime, integration } = run;
   const generators = configMap(loadProjectConfig(runtime, run.cwd), "merge", "generators");
   const gitDir = toAbsolutePath(runtime.git(["rev-parse", "--absolute-git-dir"], integration.path).stdout.trim());
-  const context = { scopes: run.scopes, declaredRemovals: new Set(request.declaredRemovals) };
+  const hints = configMap(loadProjectConfig(runtime, run.cwd), "merge", "policies");
+  const context = { scopes: run.scopes, declaredRemovals: new Set(request.declaredRemovals), hints };
   return [...conflictedStageIds(runtime, integration.path)].map(([path, ids]) =>
     resolveFile(fileInputs(runtime, integration.path, gitDir, path, ids, generators), context),
   );
@@ -69,6 +72,7 @@ const fileReport = (run: Run, file: FileResolution, proposal: boolean): FileRepo
     rule: file.rule,
     decision: file.decision,
     proposal: proposal ? "rerere" : null,
+    hint: file.hint,
     hunks: traceHunks(file.stages, file.hunks, commits, (hunk) => decisionOf(hunk.verdict)),
   };
 };
@@ -148,8 +152,12 @@ const prepare = (runtime: Runtime, cwd: AbsolutePath, env: Env, request: MergeRe
   if (!integration.ok) return integration;
   const base = sides.value.bases[0] ?? sides.value.targetSha;
   const scopes: Scopes = {
-    ours: loadScope(runtime, cwd, request.targetContract, diffNames(runtime, cwd, base, sides.value.targetSha)),
-    theirs: loadScope(runtime, cwd, request.sourceContract, diffNames(runtime, cwd, base, sides.value.sourceSha)),
+    ours:
+      request.targetScope ??
+      loadScope(runtime, cwd, request.targetContract, diffNames(runtime, cwd, base, sides.value.targetSha)),
+    theirs:
+      request.sourceScope ??
+      loadScope(runtime, cwd, request.sourceContract, diffNames(runtime, cwd, base, sides.value.sourceSha)),
   };
   const run: Run = { runtime, cwd, sides: sides.value, integration: integration.value, scopes };
   return accept({ run, stamp, snapshots, commonDir, base });

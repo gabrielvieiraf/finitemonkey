@@ -77,7 +77,7 @@ export const openIntegration = (
 ): Parsed<Integration> => {
   const stamp = stampOf(runtime.now());
   const made = newWorktree(runtime, cwd, env, {
-    id: `integrate-${stamp.slice(0, 19)}`,
+    id: `integrate-${slug(sides.sourceRef).slice(0, 24)}-${stamp.slice(0, 19)}`,
     purpose: `merge ${sides.sourceRef} into ${sides.targetRef}`,
     base: sides.targetSha,
     branch: `integrate/${slug(sides.targetRef)}-${slug(sides.sourceRef)}-${stamp}`,

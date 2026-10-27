@@ -1035,7 +1035,10 @@
     "fronts.block.report.requires": "machine",
     "fronts.block.report_human": "machine",
     "fronts.notify.valid": "machine",
-    "fronts.notify.invalid": "machine"
+    "fronts.notify.invalid": "machine",
+    "fronts.command.merge": "machine",
+    "fronts.error.merge": "machine",
+    "fronts.merge.done": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2073,6 +2076,9 @@
     "fronts.block.report.requires": "machine",
     "fronts.block.report_human": "machine",
     "fronts.notify.valid": "machine",
-    "fronts.notify.invalid": "machine"
+    "fronts.notify.invalid": "machine",
+    "fronts.command.merge": "machine",
+    "fronts.error.merge": "machine",
+    "fronts.merge.done": "machine"
   }
 }

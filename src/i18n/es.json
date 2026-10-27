@@ -1034,5 +1034,8 @@
   "fronts.block.report.requires": "Corrige el informe o el trabajo, ejecuta finitemonkey gate en el worktree y escribe de nuevo .finitemonkey/reports/{front}.json; parar antes vale con finished: false y left_out lleno",
   "fronts.block.report_human": "La frente {front} dijo terminado sin un informe que coincida con la evidencia; sigue trabajando.",
   "fronts.notify.valid": "Informe de frente revisado contra el worktree y el registro: {summary}",
-  "fronts.notify.invalid": "La frente {front} entregó informe, pero no se sostiene: {problems}"
+  "fronts.notify.invalid": "La frente {front} entregó informe, pero no se sostiene: {problems}",
+  "fronts.command.merge": "Fusiona las frentes de la ola en wave/<n> con el protocolo de fusión, tras revisar cada informe",
+  "fronts.error.merge": "La ola no se fusionó: {detail}",
+  "fronts.merge.done": "{count, plural, one {# frente fusionada} other {# frentes fusionadas}} en {branch} en {head}; abre un pull request desde ella"
 }
