@@ -860,50 +860,6 @@ var appCheckCommand = {
   }
 };
 
-// src/git/facts.ts
-var memo = (compute) => {
-  let cached3;
-  return () => {
-    cached3 ??= { value: compute() };
-    return cached3.value;
-  };
-};
-var memoBy = (compute) => {
-  const cache = /* @__PURE__ */ new Map();
-  return (key2) => {
-    const hit3 = cache.get(key2);
-    if (hit3 !== void 0) return hit3.value;
-    const value = compute(key2);
-    cache.set(key2, { value });
-    return value;
-  };
-};
-var STATE_PREFIX = ".finitemonkey/";
-var PORCELAIN_FIELDS = { ordinary: 8, renamed: 9, unmerged: 10 };
-var entryOf = (kind, xy, path) => ({
-  path,
-  kind,
-  staged: kind !== "untracked" && !xy.startsWith("."),
-  unstaged: kind === "untracked" || xy.charAt(1) !== "."
-});
-var afterFields = (record4, count4) => record4.split(" ").slice(count4).join(" ");
-var parsePorcelainV2 = (stdout) => {
-  const records = stdout.split("\0");
-  const out = [];
-  for (let index = 0; index < records.length; index += 1) {
-    const record4 = records[index] ?? "";
-    const xy = record4.split(" ")[1] ?? "..";
-    if (record4.startsWith("1 ")) out.push(entryOf("changed", xy, afterFields(record4, PORCELAIN_FIELDS.ordinary)));
-    else if (record4.startsWith("2 ")) {
-      out.push(entryOf("changed", xy, afterFields(record4, PORCELAIN_FIELDS.renamed)));
-      index += 1;
-    } else if (record4.startsWith("u ")) {
-      out.push(entryOf("unmerged", xy, afterFields(record4, PORCELAIN_FIELDS.unmerged)));
-    } else if (record4.startsWith("? ")) out.push(entryOf("untracked", "??", record4.slice(2)));
-  }
-  return out.filter((entry2) => entry2.path !== "" && !entry2.path.startsWith(STATE_PREFIX));
-};
-
 // src/git/project-config.ts
 import { join as join3 } from "node:path";
 var CONFIG_FILE = ".finitemonkey/config.yml";
@@ -990,6 +946,301 @@ var loadProjectConfig = (runtime, root) => {
   return text10.ok ? parseConfigYaml(text10.value) : {};
 };
 
+// src/plan/folder.ts
+import { join as join4 } from "node:path";
+var PLAN_DIR = "docs/plan";
+var NUMBERED = /^(\d{2,})([a-z]?)-/;
+var planDir = (root) => toAbsolutePath(join4(root, ...PLAN_DIR.split("/")));
+var planPath = (root, name) => toAbsolutePath(join4(planDir(root), name));
+var planFiles = (runtime, root) => {
+  const listed5 = runtime.listDir(planDir(root));
+  return listed5.ok ? [...listed5.value].sort() : [];
+};
+var numberOf = (name) => {
+  const match = NUMBERED.exec(name);
+  return match?.[1] === void 0 ? void 0 : Number.parseInt(match[1], 10);
+};
+var nextNumber = (names) => {
+  const highest = Math.max(0, ...names.map((name) => numberOf(name) ?? 0));
+  return String(highest + 1).padStart(2, "0");
+};
+var slugOf = (topic) => {
+  const slug2 = topic.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).replace(/-+$/, "");
+  return slug2 === "" ? "topic" : slug2;
+};
+var findByKind = (names, kind, topic) => names.find((name) => NUMBERED.test(name) && name.endsWith(`-${kind}-${slugOf(topic)}.md`));
+
+// src/cost/csv.ts
+var nextCell = (line4, start) => {
+  if (line4.charAt(start) !== '"') {
+    const comma = line4.indexOf(",", start);
+    const end = comma === -1 ? line4.length : comma;
+    return { cell: line4.slice(start, end), end };
+  }
+  let cell2 = "";
+  let index = start + 1;
+  while (index < line4.length) {
+    const char = line4.charAt(index);
+    if (char === '"' && line4.charAt(index + 1) === '"') {
+      cell2 += '"';
+      index += 2;
+    } else if (char === '"') {
+      return { cell: cell2, end: index + 1 };
+    } else {
+      cell2 += char;
+      index += 1;
+    }
+  }
+  return { cell: cell2, end: index };
+};
+var parseCsvLine = (line4) => {
+  const cells = [];
+  let index = 0;
+  for (; ; ) {
+    const { cell: cell2, end } = nextCell(line4, index);
+    cells.push(cell2);
+    if (end >= line4.length) return cells;
+    index = end + 1;
+  }
+};
+var parseCsv = (text10) => text10.replace(/\r\n/g, "\n").split("\n").filter((line4) => line4.trim() !== "").map(parseCsvLine);
+
+// src/cost/check.ts
+var COST_SCHEMA = "finitemonkey/cost@1";
+var DEFAULT_VALIDITY_DAYS = 90;
+var DATE = /^\d{4}-\d{2}-\d{2}$/;
+var DAY_MS = 864e5;
+var column = (header2, name) => header2.indexOf(name);
+var sourced = (row2, header2, line4, label2, oldest) => {
+  const source = (row2[column(header2, "source")] ?? "").trim();
+  const date = (row2[column(header2, "date")] ?? "").trim();
+  if (source === "") return [{ kind: "missing_source", line: line4, detail: label2 }];
+  if (!DATE.test(date) || Number.isNaN(Date.parse(date))) return [{ kind: "missing_date", line: line4, detail: label2 }];
+  return Date.parse(date) < oldest ? [{ kind: "expired", line: line4, detail: `${label2} (${date})` }] : [];
+};
+var modelIssues = (rows, oldest) => {
+  const [header2 = [], ...body2] = rows;
+  if (column(header2, "type") === -1 || column(header2, "source") === -1 || column(header2, "date") === -1)
+    return [{ kind: "unreadable", line: 1, detail: "id,unit,type,source,date" }];
+  return body2.flatMap(
+    (row2, index) => row2[column(header2, "type")] === "FACT" ? sourced(row2, header2, index + 2, row2[0] ?? "", oldest) : []
+  );
+};
+var limitIssues = (rows, oldest) => {
+  const [header2 = [], ...body2] = rows;
+  if (column(header2, "accepted") === -1 || column(header2, "next_value") === -1)
+    return [
+      { kind: "unreadable", line: 1, detail: "provider,limit,value,unit,accepted,next_layer,next_value,source,date" }
+    ];
+  return body2.flatMap((row2, index) => {
+    const label2 = `${row2[0] ?? ""} ${row2[1] ?? ""}`.trim();
+    const accepted2 = Number(row2[column(header2, "accepted")]);
+    const next2 = Number(row2[column(header2, "next_value")]);
+    const over = Number.isFinite(accepted2) && Number.isFinite(next2) && accepted2 > next2;
+    return [
+      ...sourced(row2, header2, index + 2, label2, oldest),
+      ...over ? [
+        {
+          kind: "limit_exceeds_next_layer",
+          line: index + 2,
+          detail: `${label2}: ${String(accepted2)} > ${String(next2)} (${row2[column(header2, "next_layer")] ?? ""})`
+        }
+      ] : []
+    ];
+  });
+};
+var validityDays = (runtime, root) => {
+  const value = configAt(loadProjectConfig(runtime, root), "cost", "validity_days");
+  const parsed = typeof value === "string" ? Number(value) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_VALIDITY_DAYS;
+};
+var checkCost = (runtime, root) => {
+  const days = validityDays(runtime, root);
+  const oldest = Date.parse(runtime.now()) - days * DAY_MS;
+  const names = planFiles(runtime, root).filter(
+    (name) => name.endsWith("-cost-model.csv") || name.endsWith("-cost-limits.csv")
+  );
+  const issues = names.flatMap((name) => {
+    const text10 = runtime.readText(planPath(root, name));
+    const rows = text10.ok ? parseCsv(text10.value) : [];
+    const found = name.endsWith("-cost-model.csv") ? modelIssues(rows, oldest) : limitIssues(rows, oldest);
+    return found.map((item2) => ({ ...item2, file: `${PLAN_DIR}/${name}` }));
+  });
+  return { files: names.length, validityDays: days, issues };
+};
+
+// src/cost/template.ts
+var SCRIPT = String.raw`import { writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const SELF = fileURLToPath(import.meta.url);
+const STEM = SELF.replace(/\.mjs$/, "");
+const TEXT = __TEXT__;
+const DATE = "__DATE__";
+
+const inputs = [
+  { id: "fx_usd_brl", base: 5.4, unit: "BRL per USD", type: "FACT", source: "https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes", date: DATE },
+  { id: "tax_on_foreign_services", base: 0.0638, unit: "ratio", type: "FACT", source: "https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/tributos/iof", date: DATE },
+  { id: "price_per_call_usd", base: 0.002, conservative: 0.003, unit: "USD per call", type: "FACT", source: "https://replace-with-the-provider-pricing-page", date: DATE },
+  { id: "calls_per_operation", base: 3, conservative: 5, unit: "calls", type: "ASSUMPTION", source: "", date: DATE },
+  { id: "operations_per_month", base: 10000, conservative: 25000, unit: "operations per month", type: "ASSUMPTION", source: "", date: DATE },
+  { id: "platform_fixed_brl", base: 300, unit: "BRL per month", type: "FACT", source: "https://replace-with-the-hosting-pricing-page", date: DATE },
+  { id: "price_per_operation_brl", base: 0.5, unit: "BRL per operation", type: "OPINION", source: "", date: DATE },
+];
+
+const computed = [
+  { id: "unit_cost_brl", unit: "BRL per operation", readable: "price_per_call_usd * calls_per_operation * fx_usd_brl * (1 + tax_on_foreign_services)" },
+  { id: "variable_cost_brl", unit: "BRL per month", readable: "unit_cost_brl * operations_per_month" },
+  { id: "total_cost_brl", unit: "BRL per month", readable: "variable_cost_brl + platform_fixed_brl" },
+  { id: "break_even_operations", unit: "operations per month", readable: "platform_fixed_brl / (price_per_operation_brl - unit_cost_brl)" },
+];
+
+const limits = [
+  { provider: "provider", limit: "request size", value: 10, unit: "MB", accepted: 10, next_layer: "reverse proxy body limit", next_value: 10, source: "https://replace-with-the-provider-limits-page", date: DATE },
+];
+
+const measure = ["calls_per_operation", "operations_per_month", "unit_cost_brl"];
+
+const KEYS = { unit: "unit_cost_brl", fixed: "platform_fixed_brl", breakEven: "break_even_operations" };
+const SCENARIOS = { base: "F", conservative: "G" };
+const SAFE = /^[A-Za-z0-9_+\-*/(). ]+$/;
+const rows = [...inputs, ...computed];
+const rowOf = new Map(rows.map((row, index) => [row.id, index + 2]));
+
+const substitute = (expr, pick) =>
+  expr.replace(/[A-Za-z_][A-Za-z0-9_]*/g, (id) => {
+    if (!rowOf.has(id)) throw new Error("unknown id " + id + " in " + expr);
+    return pick(id);
+  });
+
+const evaluate = (scenario) => {
+  const values = new Map(inputs.map((row) => [row.id, row[scenario] ?? row.base]));
+  for (const row of computed) {
+    if (!SAFE.test(row.readable)) throw new Error("only arithmetic is allowed in " + row.id);
+    values.set(row.id, Function("return (" + substitute(row.readable, (id) => "(" + values.get(id) + ")") + ")")());
+  }
+  return values;
+};
+
+const values = { base: evaluate("base"), conservative: evaluate("conservative") };
+const csvCell = (value) => {
+  const text = String(value ?? "");
+  return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+};
+const csv = (lines) => lines.map((line) => line.map(csvCell).join(",")).join("\n") + "\n";
+const formula = (row, column) => "=" + substitute(row.readable, (id) => column + rowOf.get(id));
+
+writeFileSync(
+  STEM + ".csv",
+  csv([
+    ["id", "unit", "type", "source", "date", "base", "conservative", "readable"],
+    ...inputs.map((row) => [row.id, row.unit, row.type, row.source, row.date, row.base, row.conservative ?? row.base, ""]),
+    ...computed.map((row) => [row.id, row.unit, "COMPUTED", "", "", formula(row, SCENARIOS.base), formula(row, SCENARIOS.conservative), row.readable]),
+  ]),
+);
+
+const fits = (item) => item.accepted <= item.next_value;
+writeFileSync(
+  STEM.replace(/-cost-model$/, "-cost-limits") + ".csv",
+  csv([
+    ["provider", "limit", "value", "unit", "accepted", "next_layer", "next_value", "source", "date"],
+    ...limits.map((item) => [item.provider, item.limit, item.value, item.unit, item.accepted, item.next_layer, item.next_value, item.source, item.date]),
+  ]),
+);
+
+const round = (value) => (Number.isFinite(value) ? Math.round(value * 10000) / 10000 : String(value));
+const marked = (row) => (row.type === "ASSUMPTION" ? "**ASSUMPTION** " : row.type === "OPINION" ? "**OPINION** " : "");
+const pair = (id) => round(values.base.get(id)) + " / " + round(values.conservative.get(id));
+const table = (header, body) => ["| " + header.join(" | ") + " |", "|" + header.map(() => "---").join("|") + "|", ...body.map((line) => "| " + line.join(" | ") + " |")];
+
+writeFileSync(
+  STEM + ".md",
+  [
+    "# " + TEXT.title,
+    "",
+    TEXT.intro.replace("{file}", SELF.replace(/^.*[\\/]/, "")).replace("{date}", DATE),
+    "",
+    "## " + TEXT.unit, "", pair(KEYS.unit), "",
+    "## " + TEXT.fixed, "", pair(KEYS.fixed), "",
+    "## " + TEXT.breakEven, "", pair(KEYS.breakEven), "",
+    "## " + TEXT.scenarios, "",
+    ...table(["id", TEXT.base, TEXT.conservative, "type", "unit"], rows.map((row) => [marked(row) + row.id, round(values.base.get(row.id)), round(values.conservative.get(row.id)), row.type ?? "COMPUTED", row.unit])),
+    "",
+    "## " + TEXT.assumptions, "",
+    ...inputs.filter((row) => row.type !== "FACT").map((row) => "- " + marked(row) + row.id + " = " + pair(row.id) + " " + row.unit),
+    "",
+    "## " + TEXT.limits, "",
+    ...table(["provider", "limit", "value", "accepted", "next layer", "next layer handles", "ok"], limits.map((item) => [item.provider, item.limit, item.value + " " + item.unit, item.accepted, item.next_layer, item.next_value, fits(item) ? "yes" : "NO"])),
+    "",
+    "## " + TEXT.measure, "",
+    ...measure.map((id) => "- " + id),
+    "",
+  ].join("\n"),
+);
+
+if (!limits.every(fits)) process.exitCode = 1;
+`;
+var costScript = (t, topic, date) => SCRIPT.replace(
+  "__TEXT__",
+  JSON.stringify({
+    title: t("cost.report.title", { topic }),
+    intro: t("cost.report.intro"),
+    unit: t("cost.report.unit"),
+    fixed: t("cost.report.fixed"),
+    breakEven: t("cost.report.break_even"),
+    scenarios: t("cost.report.scenarios"),
+    base: t("cost.report.base"),
+    conservative: t("cost.report.conservative"),
+    assumptions: t("cost.report.assumptions"),
+    limits: t("cost.report.limits"),
+    measure: t("cost.report.measure")
+  })
+).replace("__DATE__", date);
+
+// src/git/facts.ts
+var memo = (compute) => {
+  let cached3;
+  return () => {
+    cached3 ??= { value: compute() };
+    return cached3.value;
+  };
+};
+var memoBy = (compute) => {
+  const cache = /* @__PURE__ */ new Map();
+  return (key2) => {
+    const hit3 = cache.get(key2);
+    if (hit3 !== void 0) return hit3.value;
+    const value = compute(key2);
+    cache.set(key2, { value });
+    return value;
+  };
+};
+var STATE_PREFIX = ".finitemonkey/";
+var PORCELAIN_FIELDS = { ordinary: 8, renamed: 9, unmerged: 10 };
+var entryOf = (kind, xy, path) => ({
+  path,
+  kind,
+  staged: kind !== "untracked" && !xy.startsWith("."),
+  unstaged: kind === "untracked" || xy.charAt(1) !== "."
+});
+var afterFields = (record4, count4) => record4.split(" ").slice(count4).join(" ");
+var parsePorcelainV2 = (stdout) => {
+  const records = stdout.split("\0");
+  const out = [];
+  for (let index = 0; index < records.length; index += 1) {
+    const record4 = records[index] ?? "";
+    const xy = record4.split(" ")[1] ?? "..";
+    if (record4.startsWith("1 ")) out.push(entryOf("changed", xy, afterFields(record4, PORCELAIN_FIELDS.ordinary)));
+    else if (record4.startsWith("2 ")) {
+      out.push(entryOf("changed", xy, afterFields(record4, PORCELAIN_FIELDS.renamed)));
+      index += 1;
+    } else if (record4.startsWith("u ")) {
+      out.push(entryOf("unmerged", xy, afterFields(record4, PORCELAIN_FIELDS.unmerged)));
+    } else if (record4.startsWith("? ")) out.push(entryOf("untracked", "??", record4.slice(2)));
+  }
+  return out.filter((entry2) => entry2.path !== "" && !entry2.path.startsWith(STATE_PREFIX));
+};
+
 // src/git/repo.ts
 var DEFAULT_PROTECTED = ["main", "master", "release/*", "prod", "production", "rc-*"];
 var openRepo = (runtime, dir) => {
@@ -1068,6 +1319,76 @@ var repoFacts = (runtime, repo, config = loadProjectConfig(runtime, repo.root)) 
     upstream,
     sharedBranch: memoBy((branch) => shared(runtime, root, upstream(branch), integration()))
   };
+};
+
+// src/commands/git-problems.ts
+var notRepository = (dir) => ({
+  code: "not_a_git_repo",
+  messageKey: "error.not_a_git_repo",
+  params: { dir },
+  fix: "git init",
+  exitCode: ExitCode.NotConfigured
+});
+var gitProblem = (code2, messageKey, detail, fix, exitCode = ExitCode.CheckFailed) => ({ code: code2, messageKey, params: { detail }, fix, exitCode });
+var repoOf = (ctx) => openRepo(ctx.runtime, ctx.cwd);
+
+// src/commands/cost.ts
+var inRepo = (ctx, run4) => {
+  const repo = repoOf(ctx);
+  return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
+};
+var writeProblem = (detail) => ({
+  code: "plan_write_failed",
+  messageKey: "plan.error.write",
+  params: { detail },
+  fix: "check that docs/plan can be written",
+  exitCode: ExitCode.CheckFailed
+});
+var initModel = (ctx, root, topic) => {
+  const name = `${nextNumber(planFiles(ctx.runtime, root))}-cost-model.mjs`;
+  const made = ctx.runtime.mkdir(planDir(root));
+  const script = costScript(ctx.t, topic, ctx.runtime.now().slice(0, 10));
+  const written = made.ok ? ctx.runtime.writeText(planPath(root, name), script) : made;
+  if (!written.ok) return failureFrom(ctx.t, writeProblem(written.error));
+  const file = `${PLAN_DIR}/${name}`;
+  return { ...success({ schema: COST_SCHEMA, file, topic }, [ctx.t("cost.created", { file })]), next: `node ${file}` };
+};
+var costInitCommand = {
+  path: ["cost", "init"],
+  summaryKey: "command.cost_init.summary",
+  usage: "finitemonkey cost init [<topic>]",
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => {
+    const topic = args2.positionals[0]?.trim() ?? "";
+    return inRepo(ctx, (root) => initModel(ctx, root, topic === "" ? "cost" : topic));
+  }
+};
+var costCheckCommand = {
+  path: ["cost", "check"],
+  summaryKey: "command.cost_check.summary",
+  usage: "finitemonkey cost check",
+  status: "ready",
+  run: (ctx) => inRepo(ctx, (root) => {
+    const checked = checkCost(ctx.runtime, root);
+    const data = { schema: COST_SCHEMA, ...checked };
+    if (checked.issues.length === 0)
+      return success(data, [ctx.t("cost.clean", { count: checked.files, days: checked.validityDays })]);
+    return failureFrom(
+      ctx.t,
+      {
+        code: "cost_check_failed",
+        messageKey: "cost.error.check",
+        params: { count: checked.issues.length },
+        fix: "add the source and date of each FACT row, refresh expired prices, then rerun the cost model script",
+        exitCode: ExitCode.CheckFailed,
+        data
+      },
+      checked.issues.map(
+        (item2) => `  ${item2.file}:${String(item2.line)} ${ctx.t(`cost.issue.${item2.kind}`, { detail: item2.detail, days: checked.validityDays })}`
+      )
+    );
+  })
 };
 
 // src/hooks/stdin.ts
@@ -1158,10 +1479,10 @@ var parseCritique = (value) => {
 };
 
 // src/review/report.ts
-import { join as join5 } from "node:path";
+import { join as join6 } from "node:path";
 
 // src/review/reproduce.ts
-import { join as join4 } from "node:path";
+import { join as join5 } from "node:path";
 var REVIEW_LEDGER = ".finitemonkey/review/ledger.jsonl";
 var REPRO_TIMEOUT_MS = 12e4;
 var fails = (run4) => run4 !== void 0 && run4.exitCode !== 0;
@@ -1170,7 +1491,7 @@ var outcomeOf = (base, head) => {
   if (fails(head) && !fails(base)) return "head-only";
   return fails(head) && fails(base) ? "already-there" : "not-reproduced";
 };
-var worktreeDir = (root, side) => toAbsolutePath(join4(root, ".finitemonkey", "review", `worktree-${side}`));
+var worktreeDir = (root, side) => toAbsolutePath(join5(root, ".finitemonkey", "review", `worktree-${side}`));
 var runAt = (runtime, root, side, rev, findings2) => {
   const dir = worktreeDir(root, side);
   runtime.git(["worktree", "remove", "--force", dir], root);
@@ -1197,9 +1518,9 @@ var reproduce = (runtime, root, sides, findings2) => {
   const musts = findings2.filter((finding5) => finding5.group === "must");
   const runs = [...runAt(runtime, root, "base", sides.base, musts), ...runAt(runtime, root, "head", sides.head, musts)];
   if (runs.length > 0) {
-    runtime.mkdir(toAbsolutePath(join4(root, ".finitemonkey", "review")));
+    runtime.mkdir(toAbsolutePath(join5(root, ".finitemonkey", "review")));
     runtime.appendText(
-      toAbsolutePath(join4(root, REVIEW_LEDGER)),
+      toAbsolutePath(join5(root, REVIEW_LEDGER)),
       runs.map((run4) => `${JSON.stringify(run4)}
 `).join("")
     );
@@ -1226,7 +1547,7 @@ var settle = (item2) => {
 
 // src/review/report.ts
 var readLedger = (runtime, root) => {
-  const raw = runtime.readText(toAbsolutePath(join5(root, REVIEW_LEDGER)));
+  const raw = runtime.readText(toAbsolutePath(join6(root, REVIEW_LEDGER)));
   if (!raw.ok) return [];
   return raw.value.split("\n").flatMap((line4) => {
     const parsed = line4.trim() === "" ? void 0 : parseJsonObject(line4);
@@ -1285,17 +1606,6 @@ var critiqueLines = (t, critique, checked, ledger) => {
     t("critique.verdict", { verdict: critique.verdict })
   ];
 };
-
-// src/commands/git-problems.ts
-var notRepository = (dir) => ({
-  code: "not_a_git_repo",
-  messageKey: "error.not_a_git_repo",
-  params: { dir },
-  fix: "git init",
-  exitCode: ExitCode.NotConfigured
-});
-var gitProblem = (code2, messageKey, detail, fix, exitCode = ExitCode.CheckFailed) => ({ code: code2, messageKey, params: { detail }, fix, exitCode });
-var repoOf = (ctx) => openRepo(ctx.runtime, ctx.cwd);
 
 // src/commands/critique.ts
 var CRITIQUE_SCHEMA = "finitemonkey/critique@1";
@@ -2271,7 +2581,29 @@ var en_default = {
   "gate.research.clean": "new dependencies and rules have research records with primary sources",
   "gate.research.warning_only": "warning only in this preset (research.required is off)",
   "gate.research.dependency": "new dependency {name} has no research record that names it; run finitemonkey research new {name}",
-  "gate.research.rule": "business rule paths changed ({paths}) and no research record with a primary source changed with them"
+  "gate.research.rule": "business rule paths changed ({paths}) and no research record with a primary source changed with them",
+  "command.cost_init.summary": "Write docs/plan/NN-cost-model.mjs, a dependency-free cost model that writes a recalculating CSV",
+  "command.cost_check.summary": "Fail on FACT rows without source or date, expired prices and limits above the next layer",
+  "cost.created": "Created {file}. Replace the example rows, then run it with node.",
+  "cost.clean": "{count, plural, one {# cost file has} other {# cost files have}} sources and dates within {days} days",
+  "cost.error.check": "{count, plural, one {# problem} other {# problems}} in the cost files",
+  "cost.issue.missing_source": "FACT without a source: {detail}",
+  "cost.issue.missing_date": "FACT without a date (YYYY-MM-DD): {detail}",
+  "cost.issue.expired": "price older than {days} days: {detail}",
+  "cost.issue.limit_exceeds_next_layer": "the product accepts more than the next layer handles: {detail}",
+  "cost.issue.unreadable": "the CSV lacks the expected columns ({detail}); rerun the cost model script",
+  "gate.cost.missing": "no cost model CSV in docs/plan; run finitemonkey cost init, then the script",
+  "cost.report.title": "Cost model: {topic}",
+  "cost.report.intro": "Generated by {file} on {date}. Rows marked ASSUMPTION or OPINION are not facts.",
+  "cost.report.unit": "Unit cost per operation (base / conservative)",
+  "cost.report.fixed": "Fixed platform cost (base / conservative)",
+  "cost.report.break_even": "Break-even (base / conservative)",
+  "cost.report.scenarios": "Scenarios",
+  "cost.report.base": "base",
+  "cost.report.conservative": "conservative",
+  "cost.report.assumptions": "Assumptions",
+  "cost.report.limits": "Provider limits",
+  "cost.report.measure": "What to measure in production"
 };
 
 // src/i18n/es.json
@@ -3194,7 +3526,29 @@ var es_default = {
   "gate.research.clean": "las dependencias y reglas nuevas tienen registro de investigación con fuente primaria",
   "gate.research.warning_only": "solo aviso en este preset (research.required desactivado)",
   "gate.research.dependency": "la dependencia nueva {name} no tiene registro de investigación que la nombre; ejecuta finitemonkey research new {name}",
-  "gate.research.rule": "rutas de reglas de negocio cambiaron ({paths}) y ningún registro de investigación con fuente primaria cambió con ellas"
+  "gate.research.rule": "rutas de reglas de negocio cambiaron ({paths}) y ningún registro de investigación con fuente primaria cambió con ellas",
+  "command.cost_init.summary": "Escribe docs/plan/NN-cost-model.mjs, un modelo de costo sin dependencias que genera un CSV que recalcula",
+  "command.cost_check.summary": "Falla en filas FACT sin fuente o fecha, precios vencidos y límites por encima de la siguiente capa",
+  "cost.created": "Creado {file}. Reemplaza las filas de ejemplo y ejecútalo con node.",
+  "cost.clean": "{count, plural, one {# archivo de costo tiene} other {# archivos de costo tienen}} fuente y fecha dentro de {days} días",
+  "cost.error.check": "{count, plural, one {# problema} other {# problemas}} en los archivos de costo",
+  "cost.issue.missing_source": "FACT sin fuente: {detail}",
+  "cost.issue.missing_date": "FACT sin fecha (AAAA-MM-DD): {detail}",
+  "cost.issue.expired": "precio con más de {days} días: {detail}",
+  "cost.issue.limit_exceeds_next_layer": "el producto acepta más de lo que soporta la siguiente capa: {detail}",
+  "cost.issue.unreadable": "el CSV no tiene las columnas esperadas ({detail}); vuelve a ejecutar el script del modelo de costo",
+  "gate.cost.missing": "ningún CSV de modelo de costo en docs/plan; ejecuta finitemonkey cost init y luego el script",
+  "cost.report.title": "Modelo de costo: {topic}",
+  "cost.report.intro": "Generado por {file} el {date}. Las filas marcadas ASSUMPTION u OPINION no son hechos.",
+  "cost.report.unit": "Costo unitario por operación (base / conservador)",
+  "cost.report.fixed": "Costo fijo de la plataforma (base / conservador)",
+  "cost.report.break_even": "Punto de equilibrio (base / conservador)",
+  "cost.report.scenarios": "Escenarios",
+  "cost.report.base": "base",
+  "cost.report.conservative": "conservador",
+  "cost.report.assumptions": "Supuestos",
+  "cost.report.limits": "Límites de los proveedores",
+  "cost.report.measure": "Qué medir en producción"
 };
 
 // src/i18n/pt-BR.json
@@ -4117,7 +4471,29 @@ var pt_BR_default = {
   "gate.research.clean": "dependências e regras novas têm registro de pesquisa com fonte primária",
   "gate.research.warning_only": "só aviso neste preset (research.required desligado)",
   "gate.research.dependency": "a dependência nova {name} não tem registro de pesquisa que a cite; rode finitemonkey research new {name}",
-  "gate.research.rule": "caminhos de regra de negócio mudaram ({paths}) e nenhum registro de pesquisa com fonte primária mudou junto"
+  "gate.research.rule": "caminhos de regra de negócio mudaram ({paths}) e nenhum registro de pesquisa com fonte primária mudou junto",
+  "command.cost_init.summary": "Grava docs/plan/NN-cost-model.mjs, um modelo de custo sem dependências que gera um CSV que recalcula",
+  "command.cost_check.summary": "Falha em linhas FACT sem fonte ou data, preços vencidos e limites acima da próxima camada",
+  "cost.created": "Criado {file}. Troque as linhas de exemplo e rode com node.",
+  "cost.clean": "{count, plural, one {# arquivo de custo tem} other {# arquivos de custo têm}} fonte e data dentro de {days} dias",
+  "cost.error.check": "{count, plural, one {# problema} other {# problemas}} nos arquivos de custo",
+  "cost.issue.missing_source": "FACT sem fonte: {detail}",
+  "cost.issue.missing_date": "FACT sem data (AAAA-MM-DD): {detail}",
+  "cost.issue.expired": "preço com mais de {days} dias: {detail}",
+  "cost.issue.limit_exceeds_next_layer": "o produto aceita mais do que a próxima camada aguenta: {detail}",
+  "cost.issue.unreadable": "o CSV não tem as colunas esperadas ({detail}); rode de novo o script do modelo de custo",
+  "gate.cost.missing": "nenhum CSV de modelo de custo em docs/plan; rode finitemonkey cost init e depois o script",
+  "cost.report.title": "Modelo de custo: {topic}",
+  "cost.report.intro": "Gerado por {file} em {date}. Linhas marcadas ASSUMPTION ou OPINION não são fatos.",
+  "cost.report.unit": "Custo unitário por operação (base / conservador)",
+  "cost.report.fixed": "Custo fixo da plataforma (base / conservador)",
+  "cost.report.break_even": "Ponto de equilíbrio (base / conservador)",
+  "cost.report.scenarios": "Cenários",
+  "cost.report.base": "base",
+  "cost.report.conservative": "conservador",
+  "cost.report.assumptions": "Premissas",
+  "cost.report.limits": "Limites dos provedores",
+  "cost.report.measure": "O que medir em produção"
 };
 
 // src/i18n/review.json
@@ -5041,7 +5417,29 @@ var review_default = {
     "gate.research.clean": "machine",
     "gate.research.warning_only": "machine",
     "gate.research.dependency": "machine",
-    "gate.research.rule": "machine"
+    "gate.research.rule": "machine",
+    "command.cost_init.summary": "machine",
+    "command.cost_check.summary": "machine",
+    "cost.created": "machine",
+    "cost.clean": "machine",
+    "cost.error.check": "machine",
+    "cost.issue.missing_source": "machine",
+    "cost.issue.missing_date": "machine",
+    "cost.issue.expired": "machine",
+    "cost.issue.limit_exceeds_next_layer": "machine",
+    "cost.issue.unreadable": "machine",
+    "gate.cost.missing": "machine",
+    "cost.report.title": "machine",
+    "cost.report.intro": "machine",
+    "cost.report.unit": "machine",
+    "cost.report.fixed": "machine",
+    "cost.report.break_even": "machine",
+    "cost.report.scenarios": "machine",
+    "cost.report.base": "machine",
+    "cost.report.conservative": "machine",
+    "cost.report.assumptions": "machine",
+    "cost.report.limits": "machine",
+    "cost.report.measure": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -5962,7 +6360,29 @@ var review_default = {
     "gate.research.clean": "machine",
     "gate.research.warning_only": "machine",
     "gate.research.dependency": "machine",
-    "gate.research.rule": "machine"
+    "gate.research.rule": "machine",
+    "command.cost_init.summary": "machine",
+    "command.cost_check.summary": "machine",
+    "cost.created": "machine",
+    "cost.clean": "machine",
+    "cost.error.check": "machine",
+    "cost.issue.missing_source": "machine",
+    "cost.issue.missing_date": "machine",
+    "cost.issue.expired": "machine",
+    "cost.issue.limit_exceeds_next_layer": "machine",
+    "cost.issue.unreadable": "machine",
+    "gate.cost.missing": "machine",
+    "cost.report.title": "machine",
+    "cost.report.intro": "machine",
+    "cost.report.unit": "machine",
+    "cost.report.fixed": "machine",
+    "cost.report.break_even": "machine",
+    "cost.report.scenarios": "machine",
+    "cost.report.base": "machine",
+    "cost.report.conservative": "machine",
+    "cost.report.assumptions": "machine",
+    "cost.report.limits": "machine",
+    "cost.report.measure": "machine"
   }
 };
 
@@ -6015,30 +6435,6 @@ var detectLang = (flag2, env, settings = {}) => {
   for (const [source, lang] of candidates) if (lang !== void 0) return { lang, source };
   return { lang: SOURCE_LANG, source: "default" };
 };
-
-// src/plan/folder.ts
-import { join as join6 } from "node:path";
-var PLAN_DIR = "docs/plan";
-var NUMBERED = /^(\d{2,})([a-z]?)-/;
-var planDir = (root) => toAbsolutePath(join6(root, ...PLAN_DIR.split("/")));
-var planPath = (root, name) => toAbsolutePath(join6(planDir(root), name));
-var planFiles = (runtime, root) => {
-  const listed5 = runtime.listDir(planDir(root));
-  return listed5.ok ? [...listed5.value].sort() : [];
-};
-var numberOf = (name) => {
-  const match = NUMBERED.exec(name);
-  return match?.[1] === void 0 ? void 0 : Number.parseInt(match[1], 10);
-};
-var nextNumber = (names) => {
-  const highest = Math.max(0, ...names.map((name) => numberOf(name) ?? 0));
-  return String(highest + 1).padStart(2, "0");
-};
-var slugOf = (topic) => {
-  const slug2 = topic.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).replace(/-+$/, "");
-  return slug2 === "" ? "topic" : slug2;
-};
-var findByKind = (names, kind, topic) => names.find((name) => NUMBERED.test(name) && name.endsWith(`-${kind}-${slugOf(topic)}.md`));
 
 // src/core/yaml/scalar.ts
 var ESCAPES = {
@@ -6416,7 +6812,7 @@ var questionKey = (label2) => `decision.ask.${label2}`;
 var DECISION_FILE = /^\d{2,}-decision-.+\.md$/;
 var FACT = /^\s*(?:[-*|]\s*)?\**FACT\**\s*[:|]/;
 var SOURCE = /https?:\/\/\S+|[\w./-]*[A-Za-z_/-][\w./-]*\.[A-Za-z]{1,6}(?::\d+)?\b|\bsource\s*:\s*\S/i;
-var DATE = /\b\d{4}-\d{2}-\d{2}\b/;
+var DATE2 = /\b\d{4}-\d{2}-\d{2}\b/;
 var PARITY = /parity|\bP\d+\b/i;
 var anyLang = (key2) => LANGUAGES.map((lang) => catalogs[lang][key2].toLowerCase());
 var idOf = (section3) => DECISION_SECTIONS.find((id) => matchesHeading(section3.heading, decisionKey(id)));
@@ -6438,7 +6834,7 @@ var structureIssues = (sections) => {
   ];
 };
 var linesOf = (sections, id) => sections.find((section3) => idOf(section3) === id)?.lines ?? [];
-var factIssues = (sections) => sections.flatMap((section3) => section3.lines).filter((line4) => FACT.test(line4.text) && !(SOURCE.test(line4.text.replace(FACT, "")) && DATE.test(line4.text))).map((line4) => ({ kind: "fact_without_source", line: line4.line, detail: line4.text.trim() }));
+var factIssues = (sections) => sections.flatMap((section3) => section3.lines).filter((line4) => FACT.test(line4.text) && !(SOURCE.test(line4.text.replace(FACT, "")) && DATE2.test(line4.text))).map((line4) => ({ kind: "fact_without_source", line: line4.line, detail: line4.text.trim() }));
 var rowsOf = (lines4) => lines4.filter((line4) => line4.text.trim().startsWith("|")).slice(1).map(
   (line4) => line4.text.trim().replace(/^\||\|$/g, "").split("|").map((cell2) => cell2.trim())
 ).filter((cells) => !/^-{3}/.test(cells[0] ?? ""));
@@ -6576,11 +6972,11 @@ var renderDecision = (t, topic, date) => {
 };
 
 // src/commands/decide.ts
-var inRepo = (ctx, run4) => {
+var inRepo2 = (ctx, run4) => {
   const repo = repoOf(ctx);
   return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
 };
-var writeProblem = (detail) => ({
+var writeProblem2 = (detail) => ({
   code: "plan_write_failed",
   messageKey: "plan.error.write",
   params: { detail },
@@ -6594,7 +6990,7 @@ var newRecord = (ctx, root, topic) => {
   const name = `${nextNumber(names)}-decision-${slugOf(topic)}.md`;
   const made = ctx.runtime.mkdir(planDir(root));
   const written = made.ok ? ctx.runtime.writeText(planPath(root, name), renderDecision(ctx.t, topic, ctx.runtime.now().slice(0, 10))) : made;
-  if (!written.ok) return failureFrom(ctx.t, writeProblem(written.error));
+  if (!written.ok) return failureFrom(ctx.t, writeProblem2(written.error));
   const file = `${PLAN_DIR}/${name}`;
   return {
     ...success({ schema: DECISION_SCHEMA, file, topic }, [ctx.t("decision.created", { file })]),
@@ -6616,7 +7012,7 @@ var decideNewCommand = {
           usageProblem("invalid_arguments", "inventory.error.topic", "finitemonkey decide new <topic>")
         )
       );
-    return inRepo(ctx, (root) => newRecord(ctx, root, topic));
+    return inRepo2(ctx, (root) => newRecord(ctx, root, topic));
   }
 };
 var decideCheckCommand = {
@@ -6625,7 +7021,7 @@ var decideCheckCommand = {
   usage: "finitemonkey decide check [<docs/plan/NN-decision-topic.md>]",
   status: "ready",
   maxPositionals: 1,
-  run: (ctx, args2) => inRepo(ctx, (root) => {
+  run: (ctx, args2) => inRepo2(ctx, (root) => {
     const only = args2.positionals[0] === void 0 ? void 0 : baseName(args2.positionals[0]);
     const checked = checkDecisions(ctx.runtime, root, only);
     const data = { schema: DECISION_SCHEMA, ...checked };
@@ -6659,14 +7055,14 @@ var decideRevokeCommand = {
       return Promise.resolve(
         failureFrom(ctx.t, usageProblem("invalid_arguments", "decision.error.revoke_usage", usage))
       );
-    return inRepo(ctx, (root) => {
+    return inRepo2(ctx, (root) => {
       const revoked = revokeDecision(ctx.runtime, ctx.t, root, baseName(target2), baseName(by));
       if (revoked.ok)
         return success(
           { schema: DECISION_SCHEMA, file: `${PLAN_DIR}/${revoked.value}`, replacedBy: `${PLAN_DIR}/${baseName(by)}` },
           [ctx.t("decision.revoked_done", { file: revoked.value, by: baseName(by) })]
         );
-      if (revoked.error === "write_failed") return failureFrom(ctx.t, writeProblem(target2));
+      if (revoked.error === "write_failed") return failureFrom(ctx.t, writeProblem2(target2));
       return failureFrom(
         ctx.t,
         usageProblem("invalid_arguments", `decision.error.${revoked.error}`, usage, {
@@ -8849,7 +9245,7 @@ var enabledPlugins = (all) => all.flatMap(
 // src/doctor/claude-settings.ts
 var AGENT_TEAMS_VAR = "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS";
 var LOOP_PLUGINS2 = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
-var DAY_MS = 24 * 60 * 60 * 1e3;
+var DAY_MS2 = 24 * 60 * 60 * 1e3;
 var scopeCheck = (all, key2, build) => {
   const scopes = scopesWith(all, isOn(key2));
   return scopes.length === 0 ? [] : [build(scopes.join(", "))];
@@ -8923,7 +9319,7 @@ var projectAgeDays = (env) => {
   const seconds = result.stdout.split(/\s+/).filter((part2) => /^\d+$/.test(part2)).map(Number);
   if (seconds.length === 0) return void 0;
   const now = Date.parse(env.runtime.now());
-  return Math.floor((now - Math.min(...seconds) * 1e3) / DAY_MS);
+  return Math.floor((now - Math.min(...seconds) * 1e3) / DAY_MS2);
 };
 var cleanupPeriod = (env, all) => {
   const days = shortestCleanup(all);
@@ -10130,17 +10526,17 @@ var POPULAR = { npm: NPM, pypi: PYPI };
 var distance = (left, right) => {
   const rows = Array.from(
     { length: left.length + 1 },
-    (_, row2) => Array.from({ length: right.length + 1 }, (_2, column) => row2 === 0 ? column : column === 0 ? row2 : 0)
+    (_, row2) => Array.from({ length: right.length + 1 }, (_2, column2) => row2 === 0 ? column2 : column2 === 0 ? row2 : 0)
   );
-  const cell2 = (row2, column) => rows[row2]?.[column] ?? Number.POSITIVE_INFINITY;
+  const cell2 = (row2, column2) => rows[row2]?.[column2] ?? Number.POSITIVE_INFINITY;
   for (let row2 = 1; row2 <= left.length; row2 += 1) {
     const current2 = rows[row2] ?? [];
-    for (let column = 1; column <= right.length; column += 1) {
-      const cost = left[row2 - 1] === right[column - 1] ? 0 : 1;
-      let best = Math.min(cell2(row2 - 1, column) + 1, cell2(row2, column - 1) + 1, cell2(row2 - 1, column - 1) + cost);
-      const swapped = left[row2 - 1] === right[column - 2] && left[row2 - 2] === right[column - 1];
-      if (row2 > 1 && column > 1 && swapped) best = Math.min(best, cell2(row2 - 2, column - 2) + 1);
-      current2[column] = best;
+    for (let column2 = 1; column2 <= right.length; column2 += 1) {
+      const cost = left[row2 - 1] === right[column2 - 1] ? 0 : 1;
+      let best = Math.min(cell2(row2 - 1, column2) + 1, cell2(row2, column2 - 1) + 1, cell2(row2 - 1, column2 - 1) + cost);
+      const swapped = left[row2 - 1] === right[column2 - 2] && left[row2 - 2] === right[column2 - 1];
+      if (row2 > 1 && column2 > 1 && swapped) best = Math.min(best, cell2(row2 - 2, column2 - 2) + 1);
+      current2[column2] = best;
     }
   }
   return cell2(left.length, right.length);
@@ -10159,19 +10555,19 @@ var closePopular = (ecosystem, name) => {
 // src/deps/assess.ts
 var MIN_HISTORY_DAYS = 30;
 var MIN_VERSION_AGE_DAYS = 3;
-var DAY_MS2 = 864e5;
+var DAY_MS3 = 864e5;
 var HOUR_MS = 36e5;
 var registryFindings = (pkg, lookup2, nowMs2) => {
   if (lookup2.kind === "missing") return [{ kind: "missing", name: pkg.name, ecosystem: pkg.ecosystem }];
   if (lookup2.kind === "unreachable") return [{ kind: "unchecked", name: pkg.name, ecosystem: pkg.ecosystem }];
   const { facts } = lookup2;
   const out = [];
-  if (facts.createdMs !== void 0 && nowMs2 - facts.createdMs < MIN_HISTORY_DAYS * DAY_MS2) {
-    const days = Math.max(0, Math.floor((nowMs2 - facts.createdMs) / DAY_MS2));
+  if (facts.createdMs !== void 0 && nowMs2 - facts.createdMs < MIN_HISTORY_DAYS * DAY_MS3) {
+    const days = Math.max(0, Math.floor((nowMs2 - facts.createdMs) / DAY_MS3));
     out.push({ kind: "young", name: pkg.name, days, count: facts.versionCount });
   }
   const { version, versionMs } = facts;
-  if (version !== void 0 && versionMs !== void 0 && nowMs2 - versionMs < MIN_VERSION_AGE_DAYS * DAY_MS2) {
+  if (version !== void 0 && versionMs !== void 0 && nowMs2 - versionMs < MIN_VERSION_AGE_DAYS * DAY_MS3) {
     out.push({ kind: "fresh", name: pkg.name, version, hours: Math.max(0, Math.floor((nowMs2 - versionMs) / HOUR_MS)) });
   }
   if (version !== void 0 && facts.installScript && !facts.previousInstallScript) {
@@ -11868,7 +12264,8 @@ var CHECK_KINDS = [
   "inventory",
   "plan",
   "decision",
-  "research"
+  "research",
+  "cost"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -13388,21 +13785,38 @@ var runShellCheck = (check2, run4, ctx) => {
 };
 var commandCheck = (check2, ctx) => check2.run === void 0 ? unverified("not_implemented") : runShellCheck(check2, check2.run, ctx);
 
-// src/gate/checks/decision.ts
+// src/gate/checks/cost.ts
 var MAX_LISTED = 10;
+var costCheck = (_check, ctx) => {
+  const result = checkCost(ctx.runtime, ctx.paths.root);
+  if (result.files === 0) return failed([note("gate.cost.missing")]);
+  if (result.issues.length === 0)
+    return passed([note("cost.clean", { count: result.files, days: result.validityDays })]);
+  return failed(
+    result.issues.slice(0, MAX_LISTED).map(
+      (item2) => note(`cost.issue.${item2.kind}`, {
+        detail: `${item2.file}:${String(item2.line)} ${item2.detail}`,
+        days: result.validityDays
+      })
+    )
+  );
+};
+
+// src/gate/checks/decision.ts
+var MAX_LISTED2 = 10;
 var decisionCheck = (_check, ctx) => {
   const result = checkDecisions(ctx.runtime, ctx.paths.root);
   if (result.records === 0) return failed([note("gate.decision.missing")]);
   if (result.issues.length === 0) return passed([note("decision.clean", { count: result.records })]);
   return failed(
-    result.issues.slice(0, MAX_LISTED).map(
+    result.issues.slice(0, MAX_LISTED2).map(
       (item2) => note(`decision.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` })
     )
   );
 };
 
 // src/gate/checks/diff.ts
-var MAX_LISTED2 = 10;
+var MAX_LISTED3 = 10;
 var diffCheck = (_check, ctx) => {
   const { paths, diffBudget } = ctx.contract.scope;
   if (paths.length === 0 && diffBudget === void 0) return passed([note("gate.diff.no_scope")]);
@@ -13410,7 +13824,7 @@ var diffCheck = (_check, ctx) => {
   const files = ctx.changes.length;
   const lines4 = diffShape(ctx.runtime, ctx.git, ctx.base, ctx.changes).lines;
   const notes2 = [
-    ...outside.slice(0, MAX_LISTED2).map((change) => note("gate.diff.outside", { file: change.path })),
+    ...outside.slice(0, MAX_LISTED3).map((change) => note("gate.diff.outside", { file: change.path })),
     ...diffBudget?.files !== void 0 && files > diffBudget.files ? [note("gate.diff.too_many_files", { count: files, max: diffBudget.files })] : [],
     ...diffBudget?.lines !== void 0 && lines4 > diffBudget.lines ? [note("gate.diff.too_many_lines", { count: lines4, max: diffBudget.lines })] : []
   ];
@@ -13651,7 +14065,7 @@ var summaryPath = (paths, treeHash2) => toAbsolutePath(join24(lookDir(paths, tre
 var projectRelative = (paths, absolute) => toPosixPath(relative5(paths.root, absolute));
 
 // src/gate/checks/look.ts
-var MAX_LISTED3 = 10;
+var MAX_LISTED4 = 10;
 var findingNote = (value) => {
   if (!isRecord(value) || value["blocking"] !== true) return [];
   const { rule, route, viewport, detail } = value;
@@ -13697,14 +14111,14 @@ var unopened = (ctx, captures) => {
 var lookCheck = (_check, ctx) => {
   const summary = readSummary(ctx);
   if (summary === void 0) return failed([note("gate.look.not_run")]);
-  const ignored = summary.ignored.slice(0, MAX_LISTED3).map((entry2) => note("gate.look.allow_ignored", { entry: entry2 }));
-  if (summary.blocking.length > 0) return failed([...summary.blocking.slice(0, MAX_LISTED3), ...ignored]);
+  const ignored = summary.ignored.slice(0, MAX_LISTED4).map((entry2) => note("gate.look.allow_ignored", { entry: entry2 }));
+  if (summary.blocking.length > 0) return failed([...summary.blocking.slice(0, MAX_LISTED4), ...ignored]);
   if (summary.captures.length === 0) return failed([note("gate.look.no_captures"), ...ignored]);
   const closed = unopened(ctx, summary.captures);
   if (closed.length > 0) {
     return failed([
       note("gate.look.unopened", { count: closed.length }),
-      ...closed.slice(0, MAX_LISTED3).map((file) => note("gate.look.open", { file })),
+      ...closed.slice(0, MAX_LISTED4).map((file) => note("gate.look.open", { file })),
       ...ignored
     ]);
   }
@@ -13730,7 +14144,7 @@ var manualCheck = (check2, ctx) => {
 
 // src/gate/checks/placeholders.ts
 import { join as join26 } from "node:path";
-var MAX_LISTED4 = 10;
+var MAX_LISTED5 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines4) => lines4.filter((line4) => !isTestFile(line4.path) && !SKIP_FILES.test(line4.path) && PLACEHOLDER.test(line4.text));
@@ -13744,7 +14158,7 @@ var placeholdersCheck = (_check, ctx) => {
   const found = findPlaceholders([...tracked, ...untrackedAdded(ctx).filter((line4) => !seen.has(line4.path))]);
   if (found.length === 0) return passed([note("gate.placeholders.clean")]);
   return failed(
-    found.slice(0, MAX_LISTED4).map((line4) => note("gate.placeholders.found", { file: line4.path, line: line4.line }))
+    found.slice(0, MAX_LISTED5).map((line4) => note("gate.placeholders.found", { file: line4.path, line: line4.line }))
   );
 };
 
@@ -13878,12 +14292,12 @@ var checkPlan = (runtime, root) => {
 };
 
 // src/gate/checks/plan.ts
-var MAX_LISTED5 = 10;
+var MAX_LISTED6 = 10;
 var planCheck = (_check, ctx) => {
   const result = checkPlan(ctx.runtime, ctx.paths.root);
   if (result.issues.length === 0) return passed([note("gate.plan.clean", { count: result.reports })]);
   return failed(
-    result.issues.slice(0, MAX_LISTED5).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
+    result.issues.slice(0, MAX_LISTED6).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
   );
 };
 
@@ -14560,13 +14974,13 @@ var proseGateStatus = (runtime, root) => {
 };
 
 // src/gate/checks/prose.ts
-var MAX_LISTED6 = 10;
+var MAX_LISTED7 = 10;
 var rulesOf = (span) => [...new Set(span.hits.map((hit3) => hit3.rule))].join(", ");
 var proseOutcome = (status) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
   const { files, flagged, blocking: blocking2 } = status.value;
   const key2 = blocking2 ? "gate.prose.finding" : "gate.prose.warning";
-  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED6).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
+  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED7).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
   if (notes2.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
   return blocking2 ? failed(notes2) : passed(notes2);
 };
@@ -14594,7 +15008,7 @@ var STRENGTHS = ["strong", "medium", "weak"];
 var RESEARCH_FILE = /^\d{2,}[a-z]?-state-of-the-art-.+\.md$/;
 
 // src/research/check.ts
-var DATE2 = /\b\d{4}-\d{2}-\d{2}\b/;
+var DATE3 = /\b\d{4}-\d{2}-\d{2}\b/;
 var URL2 = /https?:\/\/\S+/;
 var idOf2 = (section3) => RESEARCH_SECTIONS.find((id) => matchesHeading(section3.heading, researchKey(id)));
 var rowsIn = (sections, id) => tableRows(sections.find((section3) => idOf2(section3) === id)?.lines ?? []);
@@ -14618,7 +15032,7 @@ var sourceIssues = (rows) => rows.flatMap(({ cells, line: line4 }) => {
   const known2 = SOURCE_KINDS.find((item2) => item2 === kind.toLowerCase());
   return [
     ...URL2.test(url2) ? [] : [{ kind: "source_without_url", line: line4, detail: id }],
-    ...DATE2.test(accessed) ? [] : [{ kind: "source_without_date", line: line4, detail: id }],
+    ...DATE3.test(accessed) ? [] : [{ kind: "source_without_date", line: line4, detail: id }],
     ...known2 === void 0 ? [{ kind: "unknown_kind", line: line4, detail: `${id}: ${kind}` }] : [],
     ...known2 === "index" && version === "" ? [{ kind: "index_without_version", line: line4, detail: id }] : []
   ];
@@ -14645,7 +15059,7 @@ var findingIssues = (rows, kinds) => rows.flatMap(({ cells, line: line4 }) => {
 });
 var versionIssues = (rows) => rows.flatMap(({ cells, line: line4 }) => {
   const [name = "", version = "", checkedIn = "", date = ""] = cells;
-  return version === "" || checkedIn === "" || !DATE2.test(date) ? [{ kind: "version_unchecked", line: line4, detail: name }] : [];
+  return version === "" || checkedIn === "" || !DATE3.test(date) ? [{ kind: "version_unchecked", line: line4, detail: name }] : [];
 });
 var readResearch = (file, text10) => {
   const { body: body2 } = readFront(text10);
@@ -14713,7 +15127,7 @@ var addedDependencies = (ctx) => ctx.changes.filter((change) => change.status !=
 });
 
 // src/gate/checks/research.ts
-var MAX_LISTED7 = 10;
+var MAX_LISTED8 = 10;
 var required = (ctx) => projectPreset(ctx.runtime, ctx.paths.root) === "gabriel" || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records = researchRecords(ctx.runtime, ctx.paths.root);
@@ -14733,7 +15147,7 @@ var findings = (ctx) => {
         paths: rules.slice(0, 3).map((change) => change.path).join(", ")
       })
     ] : []
-  ].slice(0, MAX_LISTED7);
+  ].slice(0, MAX_LISTED8);
 };
 var researchCheck = (_check, ctx) => {
   const notes2 = findings(ctx);
@@ -15215,7 +15629,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED8 = 10;
+var MAX_LISTED9 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -15225,10 +15639,10 @@ var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings: findings2, openIncidents } = status.value;
-  const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED8).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
+  const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED9).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
   const notes2 = [
-    ...blocking(findings2).slice(0, MAX_LISTED8).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED8).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
+    ...blocking(findings2).slice(0, MAX_LISTED9).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED9).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
   if (notes2.length > 0) return failed([...notes2, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
@@ -15253,7 +15667,7 @@ var forChange = (input, change) => {
 var analyzeTree = (input) => input.changes.flatMap((change) => forChange(input, change));
 
 // src/gate/checks/tests.ts
-var MAX_LISTED9 = 10;
+var MAX_LISTED10 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -15278,7 +15692,7 @@ var treeViolations = (ctx) => {
 var testsCheck = (check2, ctx) => {
   const violations = treeViolations(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes2 = violations.slice(0, MAX_LISTED9).map(violationNote);
+  const notes2 = violations.slice(0, MAX_LISTED10).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed([...notes2, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes2, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -16109,10 +16523,10 @@ var findingLabel = (finding5) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED10 = 8;
+var MAX_LISTED11 = 8;
 var listed3 = (items) => {
-  const head = items.slice(0, MAX_LISTED10).join(", ");
-  return items.length > MAX_LISTED10 ? `${head} (+${String(items.length - MAX_LISTED10)})` : head;
+  const head = items.slice(0, MAX_LISTED11).join(", ");
+  return items.length > MAX_LISTED11 ? `${head} (+${String(items.length - MAX_LISTED11)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf = (ctx) => ownerKey(ctx.sessionId);
@@ -16176,7 +16590,8 @@ var DEFAULT_CHECKS = {
   inventory: inventoryCheck,
   plan: planCheck,
   decision: decisionCheck,
-  research: researchCheck
+  research: researchCheck,
+  cost: costCheck
 };
 
 // src/gate/run.ts
@@ -17140,8 +17555,8 @@ var restoreVerdict = (invocation) => {
   if (!worktree || hasAny(parsed, "--patch", "-p")) return PASS;
   const paths = [...parsed.positionals, ...parsed.paths];
   if (choosesSide(parsed, paths)) return block2("merge-side", `restore --ours/--theirs ${paths.join(" ")}`);
-  const sourced = hasAny(parsed, "--source", "-s");
-  return discard("restore", sourced ? "all" : staged ? "tracked" : "worktree", paths);
+  const sourced2 = hasAny(parsed, "--source", "-s");
+  return discard("restore", sourced2 ? "all" : staged ? "tracked" : "worktree", paths);
 };
 var switchVerdict = (invocation, facts) => {
   const parsed = parseOptions(invocation.args, SWITCH);
@@ -18177,9 +18592,9 @@ var PROSE_HANDLERS = {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED11 = 5;
+var MAX_LISTED12 = 5;
 var describeFindings = (t, items) => {
-  const listed5 = items.slice(0, MAX_LISTED11).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
+  const listed5 = items.slice(0, MAX_LISTED12).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
   const rest = items.length - listed5.length;
   return rest > 0 ? `${listed5.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed5.join("; ");
 };
@@ -19229,7 +19644,7 @@ var checkAgentsFile = ({ root, runtime }) => {
 // src/doctor/project-files.ts
 import { join as join45 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
-var SCRIPT = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
+var SCRIPT2 = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
 var LOCKFILE_GROUPS = [
   {
@@ -19239,23 +19654,23 @@ var LOCKFILE_GROUPS = [
   { name: "Python", files: ["poetry.lock", "uv.lock", "Pipfile.lock", "pdm.lock"] }
 ];
 var CONFIG_GROUPS = [
-  { name: "ESLint", files: [...variants("eslint.config", SCRIPT), ...variants(".eslintrc", [...DATA, ".js", ".cjs"])] },
+  { name: "ESLint", files: [...variants("eslint.config", SCRIPT2), ...variants(".eslintrc", [...DATA, ".js", ".cjs"])] },
   {
     name: "Prettier",
     files: [
       ...variants(".prettierrc", [...DATA, ".json5", ".toml", ".js", ".cjs", ".mjs"]),
-      ...variants("prettier.config", SCRIPT)
+      ...variants("prettier.config", SCRIPT2)
     ]
   },
   {
     name: "Babel",
-    files: [...variants(".babelrc", ["", ".json", ".js"]), ...variants("babel.config", [...SCRIPT, ".json"])]
+    files: [...variants(".babelrc", ["", ".json", ".js"]), ...variants("babel.config", [...SCRIPT2, ".json"])]
   },
-  { name: "Jest", files: [...variants("jest.config", SCRIPT), "jest.config.json"] },
-  { name: "Vitest", files: variants("vitest.config", SCRIPT) },
+  { name: "Jest", files: [...variants("jest.config", SCRIPT2), "jest.config.json"] },
+  { name: "Vitest", files: variants("vitest.config", SCRIPT2) },
   {
     name: "commitlint",
-    files: [...variants("commitlint.config", SCRIPT), ...variants(".commitlintrc", [...DATA, ".js"])]
+    files: [...variants("commitlint.config", SCRIPT2), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
 var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join45(env.root, file)))?.kind === "file");
@@ -19460,8 +19875,8 @@ var doctorCommand = {
 // src/gain/gain.ts
 import { join as join46 } from "node:path";
 var GAIN_SCHEMA = "finitemonkey/gain@1";
-var DAY_MS3 = 864e5;
-var SAVE_WINDOW_MS = DAY_MS3;
+var DAY_MS4 = 864e5;
+var SAVE_WINDOW_MS = DAY_MS4;
 var readLog = (runtime, paths) => {
   const text10 = runtime.readText(paths.log);
   if (!text10.ok) return [];
@@ -19497,7 +19912,7 @@ var countsIn = (log, gates, from, to) => {
 };
 var gainReport = (runtime, paths, days) => {
   const to = Date.parse(runtime.now());
-  const from = to - days * DAY_MS3;
+  const from = to - days * DAY_MS4;
   const log = readLog(runtime, paths);
   const gates = readGates(runtime, paths);
   return {
@@ -19506,7 +19921,7 @@ var gainReport = (runtime, paths, days) => {
     from: new Date(from).toISOString(),
     to: new Date(to).toISOString(),
     current: countsIn(log, gates, from, to + 1),
-    previous: countsIn(log, gates, from - days * DAY_MS3, from)
+    previous: countsIn(log, gates, from - days * DAY_MS4, from)
   };
 };
 
@@ -19789,10 +20204,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED12 = 5;
+var MAX_LISTED13 = 5;
 var detailOf = (check2) => {
-  const listed5 = check2.failures.slice(0, MAX_LISTED12).join("; ");
-  const rest = check2.failures.length - MAX_LISTED12;
+  const listed5 = check2.failures.slice(0, MAX_LISTED13).join("; ");
+  const rest = check2.failures.length - MAX_LISTED13;
   return rest > 0 ? `${listed5}; +${String(rest)}` : listed5;
 };
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf(check2), fix: check2.fix });
@@ -21124,8 +21539,8 @@ var readRepo = (git2, path, ref, hash, covered) => {
 };
 
 // src/inventory/render.ts
-var MAX_LISTED13 = 40;
-var capped = (t, lines4) => lines4.length > MAX_LISTED13 ? [...lines4.slice(0, MAX_LISTED13), `- ${t("inventory.more", { count: lines4.length - MAX_LISTED13 })}`] : lines4;
+var MAX_LISTED14 = 40;
+var capped = (t, lines4) => lines4.length > MAX_LISTED14 ? [...lines4.slice(0, MAX_LISTED14), `- ${t("inventory.more", { count: lines4.length - MAX_LISTED14 })}`] : lines4;
 var listed4 = (t, lines4) => lines4.length === 0 ? [t("inventory.none")] : capped(t, lines4);
 var hitLines = (t, hits) => listed4(
   t,
@@ -22000,7 +22415,7 @@ var masterDiff = (runtime, root) => {
 
 // src/commands/plan.ts
 var PLAN_SCHEMA2 = "finitemonkey/plan@1";
-var writeProblem2 = (detail) => ({
+var writeProblem3 = (detail) => ({
   code: "plan_write_failed",
   messageKey: "plan.error.write",
   params: { detail },
@@ -22024,7 +22439,7 @@ var checkResult = (ctx, check2, before = []) => {
     [...before, ...check2.issues.map((item2) => `  ${issueLine(ctx, item2)}`)]
   );
 };
-var inRepo2 = (ctx, run4) => {
+var inRepo3 = (ctx, run4) => {
   const repo = repoOf(ctx);
   return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
 };
@@ -22033,9 +22448,9 @@ var planInitCommand = {
   summaryKey: "command.plan_init.summary",
   usage: "finitemonkey plan init",
   status: "ready",
-  run: (ctx) => inRepo2(ctx, (root) => {
+  run: (ctx) => inRepo3(ctx, (root) => {
     const made = initPlan(ctx.runtime, ctx.t, root);
-    if (!made.ok) return failureFrom(ctx.t, writeProblem2(made.error));
+    if (!made.ok) return failureFrom(ctx.t, writeProblem3(made.error));
     const key2 = made.value.created ? "plan.created" : "plan.exists";
     return success({ schema: PLAN_SCHEMA2, ...made.value }, [ctx.t(key2, { file: made.value.file })]);
   })
@@ -22045,7 +22460,7 @@ var planCheckCommand = {
   summaryKey: "command.plan_check.summary",
   usage: "finitemonkey plan check",
   status: "ready",
-  run: (ctx) => inRepo2(ctx, (root) => checkResult(ctx, checkPlan(ctx.runtime, root)))
+  run: (ctx) => inRepo3(ctx, (root) => checkResult(ctx, checkPlan(ctx.runtime, root)))
 };
 var finishConsolidation = (ctx, root) => {
   const { previous, diff } = masterDiff(ctx.runtime, root);
@@ -22058,17 +22473,17 @@ var planConsolidateCommand = {
   usage: "finitemonkey plan consolidate [--done]",
   status: "ready",
   options: { done: { type: "boolean" } },
-  run: (ctx, args2) => inRepo2(ctx, (root) => {
+  run: (ctx, args2) => inRepo3(ctx, (root) => {
     if (args2.values["done"] === true) return finishConsolidation(ctx, root);
     const started = startConsolidation(ctx.runtime, root, ctx.runtime.now().slice(0, 10));
     if (!started.ok && started.error === "no_master")
       return failureFrom(ctx.t, {
-        ...writeProblem2("docs/plan/MASTER.md"),
+        ...writeProblem3("docs/plan/MASTER.md"),
         code: "plan_check_failed",
         messageKey: "plan.error.no_master",
         fix: "finitemonkey plan init"
       });
-    if (!started.ok) return failureFrom(ctx.t, writeProblem2(started.error));
+    if (!started.ok) return failureFrom(ctx.t, writeProblem3(started.error));
     const { previous, reports } = started.value;
     return {
       ...success({ schema: PLAN_SCHEMA2, ...started.value }, [
@@ -22261,11 +22676,11 @@ var renderResearch = (t, topic, date) => {
 };
 
 // src/commands/research.ts
-var inRepo3 = (ctx, run4) => {
+var inRepo4 = (ctx, run4) => {
   const repo = repoOf(ctx);
   return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
 };
-var writeProblem3 = (detail) => ({
+var writeProblem4 = (detail) => ({
   code: "plan_write_failed",
   messageKey: "plan.error.write",
   params: { detail },
@@ -22288,7 +22703,7 @@ var newRecord2 = (ctx, root, topic) => {
     ]);
   const made = ctx.runtime.mkdir(planDir(root));
   const written = made.ok ? ctx.runtime.writeText(planPath(root, name), renderResearch(ctx.t, topic, ctx.runtime.now().slice(0, 10))) : made;
-  if (!written.ok) return failureFrom(ctx.t, writeProblem3(written.error));
+  if (!written.ok) return failureFrom(ctx.t, writeProblem4(written.error));
   const file = `${PLAN_DIR}/${name}`;
   return {
     ...success({ schema: RESEARCH_SCHEMA, file, topic, created: true }, [ctx.t("research.created", { file })]),
@@ -22310,7 +22725,7 @@ var researchNewCommand = {
           usageProblem("invalid_arguments", "inventory.error.topic", "finitemonkey research new <topic>")
         )
       );
-    return inRepo3(ctx, (root) => newRecord2(ctx, root, topic));
+    return inRepo4(ctx, (root) => newRecord2(ctx, root, topic));
   }
 };
 var researchCheckCommand = {
@@ -22319,7 +22734,7 @@ var researchCheckCommand = {
   usage: "finitemonkey research check [<docs/plan/NNb-state-of-the-art-topic.md>]",
   status: "ready",
   maxPositionals: 1,
-  run: (ctx, args2) => inRepo3(ctx, (root) => {
+  run: (ctx, args2) => inRepo4(ctx, (root) => {
     const only = args2.positionals[0]?.replace(/^.*[\\/]/, "");
     const records = researchRecords(ctx.runtime, root, only);
     const issues = records.flatMap((record4) => record4.issues);
@@ -22456,14 +22871,14 @@ var gitUnavailable = (detail) => ({
 });
 
 // src/commands/secrets-accept.ts
-var DAY_MS4 = 864e5;
+var DAY_MS5 = 864e5;
 var daysOf = (values) => {
   const raw = stringOption(values, "days");
   if (raw === void 0) return EXCEPTION_MAX_DAYS;
   const days = Number.parseInt(raw, 10);
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS4).toISOString();
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS5).toISOString();
 var failure3 = (ctx, problem4) => failureFrom(ctx.t, problem4);
 var inputProblem = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
@@ -23948,7 +24363,7 @@ var CLEANUP_CLASSES = [
   "open"
 ];
 var NEVER_REMOVED = /* @__PURE__ */ new Set(["dirty", "locked", "running", "recent", "unpushed"]);
-var DAY_MS5 = 864e5;
+var DAY_MS6 = 864e5;
 var dirtyFiles = (runtime, path, generated) => {
   const status = runtime.gitWith(["status", "--porcelain=v2", "-z", "--untracked-files=all"], path, {
     env: { GIT_OPTIONAL_LOCKS: "0" }
@@ -23963,7 +24378,7 @@ var pidsInside = (context, path) => {
 var isRecent = (context, activityAt) => {
   if (activityAt === null) return false;
   const age = Date.parse(context.runtime.now()) - Date.parse(activityAt);
-  return Number.isFinite(age) && age < context.staleDays * DAY_MS5;
+  return Number.isFinite(age) && age < context.staleDays * DAY_MS6;
 };
 var branchClass = (context, tip, target2) => {
   if (tip === null) return "open";
@@ -24154,7 +24569,7 @@ var applyClean = (inventory, include, reapRunning) => {
 
 // src/wt/purge.ts
 var DEFAULT_ARCHIVE_DAYS = 30;
-var DAY_MS6 = 864e5;
+var DAY_MS7 = 864e5;
 var safetyRefs = (runtime, root, days) => {
   const listed5 = runtime.git(
     ["for-each-ref", "--format=%(refname) %(committerdate:iso-strict)", ARCHIVE_PREFIX, BACKUP_PREFIX],
@@ -24166,7 +24581,7 @@ var safetyRefs = (runtime, root, days) => {
     const [ref = "", at = ""] = line4.split(" ");
     if (ref === "") return [];
     const age = now - Date.parse(at);
-    return [{ ref, at, expired: Number.isFinite(age) && age > days * DAY_MS6 }];
+    return [{ ref, at, expired: Number.isFinite(age) && age > days * DAY_MS7 }];
   });
 };
 var purgeRefs = (runtime, root, refs) => refs.filter((item2) => item2.expired && runtime.git(["update-ref", "-d", item2.ref], root).ok).map((item2) => item2.ref);
@@ -24475,6 +24890,8 @@ var REGISTRY2 = [
   decideRevokeCommand,
   researchNewCommand,
   researchCheckCommand,
+  costInitCommand,
+  costCheckCommand,
   versionCommand,
   helpCommand
 ];

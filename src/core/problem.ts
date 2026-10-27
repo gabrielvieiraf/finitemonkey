@@ -61,6 +61,7 @@ export const ERROR_CODES = [
   "wt_not_found",
   "decision_invalid",
   "research_invalid",
+  "cost_check_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

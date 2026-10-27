@@ -1,0 +1,4 @@
+id,unit,type,source,date,base,conservative,readable
+price_per_call_usd,USD per call,FACT,,2026-10-01,0.002,0.003,
+calls_per_operation,calls,ASSUMPTION,,2026-10-01,3,5,
+unit_cost_usd,USD per operation,COMPUTED,,,=F2*F3,=G2*G3,price_per_call_usd * calls_per_operation

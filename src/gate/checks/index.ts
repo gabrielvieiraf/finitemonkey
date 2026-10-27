@@ -1,6 +1,7 @@
 import type { CheckRegistry } from "../types.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
+import { costCheck } from "./cost.js";
 import { decisionCheck } from "./decision.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
@@ -38,4 +39,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   plan: planCheck,
   decision: decisionCheck,
   research: researchCheck,
+  cost: costCheck,
 };

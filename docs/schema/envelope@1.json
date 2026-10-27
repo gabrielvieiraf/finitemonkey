@@ -78,7 +78,8 @@
             "plan_check_failed",
             "wt_not_found",
             "decision_invalid",
-            "research_invalid"
+            "research_invalid",
+            "cost_check_failed"
           ]
         },
         "message": {
