@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.18](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.17...v0.1.0-next.18) (2026-10-27)
+
+### Features
+
+* **gate:** fm off and fm on typed by the person pause the gate for one session ([#155](https://github.com/gabrielvieiraf/finitemonkey/issues/155)) ([a9be0bb](https://github.com/gabrielvieiraf/finitemonkey/commit/a9be0bb38637e13297fa324ed81e0edbac9b2138)), closes [#47](https://github.com/gabrielvieiraf/finitemonkey/issues/47) [#152](https://github.com/gabrielvieiraf/finitemonkey/issues/152) [#152](https://github.com/gabrielvieiraf/finitemonkey/issues/152)
+
 ## [0.1.0-next.17](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.16...v0.1.0-next.17) (2026-10-27)
 
 ### Features
