@@ -87,7 +87,12 @@
             "pr_conflict",
             "pr_outside_scope",
             "reconcile_unavailable",
-            "parity_check_failed"
+            "parity_check_failed",
+            "deps_check_failed",
+            "deps_scanner_missing",
+            "deps_scan_failed",
+            "deps_vulnerable",
+            "deps_write_failed"
           ]
         },
         "message": {

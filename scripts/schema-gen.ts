@@ -52,6 +52,18 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey secrets scan --json`.",
   },
   {
+    name: "deps-check@1",
+    file: "src/commands/deps-check.ts",
+    type: "DepsCheckData",
+    describes: "`data` of `finitemonkey deps check --json`.",
+  },
+  {
+    name: "deps-scan@1",
+    file: "src/commands/deps-scan.ts",
+    type: "DepsScanData",
+    describes: "`data` of `finitemonkey deps scan --json`.",
+  },
+  {
     name: "prose-check@1",
     file: "src/commands/prose-view.ts",
     type: "ProseCheckData",

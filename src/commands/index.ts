@@ -3,6 +3,9 @@ import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { depsCheckCommand } from "./deps-check.js";
+import { depsConfigCommand } from "./deps-config.js";
+import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
@@ -98,6 +101,9 @@ export const REGISTRY = [
   parityInitCommand,
   parityUpdateCommand,
   parityCheckCommand,
+  depsCheckCommand,
+  depsScanCommand,
+  depsConfigCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
