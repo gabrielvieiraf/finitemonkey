@@ -253,4 +253,31 @@ describe("per-file policies are class hints", () => {
       box.dispose();
     }
   });
+
+  it("case 17: an append-only registry that would lose a line is C7, never a union", () => {
+    const routes = 'export const routes = [\n  "/home",\n  "/about",\n];\n';
+    const box = sandbox({
+      "src/routes.ts": routes,
+      "contracts/target.yml": "scope:\n  paths: [src/home/**]\n  shared:\n    append: [src/routes.ts]\n",
+      "contracts/source.yml": "scope:\n  paths: [src/pay/**]\n  shared:\n    append: [src/routes.ts]\n",
+    });
+    try {
+      sides(
+        box,
+        { "src/routes.ts": routes.replace('  "/about",\n', '  "/a",\n') },
+        { "src/routes.ts": routes.replace('"/about",', '"/about",\n  "/b",') },
+      );
+      const report = merge(
+        box,
+        "--target-contract",
+        "contracts/target.yml",
+        "--source-contract",
+        "contracts/source.yml",
+      );
+      assert.equal(report["outcome"], "stopped");
+      assert.deepEqual(hunksOf(report, "src/routes.ts"), [{ cls: "C7", rule: "append-only-registry-would-lose-line" }]);
+    } finally {
+      box.dispose();
+    }
+  });
 });
