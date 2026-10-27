@@ -64,6 +64,10 @@ export const ERROR_CODES = [
   "cost_check_failed",
   "merge_failed",
   "merge_stopped",
+  "pr_failed",
+  "pr_parent_open",
+  "pr_conflict",
+  "pr_outside_scope",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

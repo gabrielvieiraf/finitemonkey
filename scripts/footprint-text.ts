@@ -92,6 +92,11 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR": "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido.",
     es: "Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide.",
   },
+  "pr-scope": {
+    en: "Who accepted files outside the task scope in `pr open`, when and why, one file per branch.",
+    "pt-BR": "Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch.",
+    es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
+  },
   worktrees: {
     en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`.",
     "pt-BR":

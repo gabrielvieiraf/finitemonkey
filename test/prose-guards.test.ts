@@ -39,9 +39,13 @@ const commands = [
   { name: "git commit -m twice", command: `git commit -m "feat: onboarding" -m "${BAD}"`, target: "commit" },
   { name: "git commit with a heredoc", command: heredocCommit, target: "commit" },
   { name: "git -C dir commit -am", command: `git -C app commit -am "${BAD}"`, target: "commit" },
-  { name: "gh pr create --body", command: `gh pr create --title "feat: x" --body "${BAD}"`, target: "PR" },
+  {
+    name: "finitemonkey pr open --body",
+    command: `finitemonkey pr open --title "feat: x" --body "${BAD}"`,
+    target: "PR",
+  },
   { name: "gh pr edit --body=", command: `gh pr edit 3 --body="${BAD}"`, target: "PR" },
-  { name: "gh pr create --body-file -", command: `gh pr create -t x --body-file - <<'EOF'\n${BAD}\nEOF`, target: "PR" },
+  { name: "gh pr edit --body-file -", command: `gh pr edit 7 -t x --body-file - <<'EOF'\n${BAD}\nEOF`, target: "PR" },
   { name: "gh issue create -b", command: `cd app && gh issue create -t "bug" -b '${BAD}'`, target: "issue" },
 ] as const;
 
@@ -74,19 +78,19 @@ describe("prose check on commit, PR and issue text", () => {
 
   it("reads --body-file from disk", async () => {
     const runtime = fakeRuntime({ files: { ...GABRIEL, [`${ROOT}/body.md`]: `## Summary\n\n${BAD}\n` } });
-    const outcome = await fire(bash("gh pr create --title x --body-file body.md"), runtime);
+    const outcome = await fire(bash("finitemonkey pr open --title x --body-file body.md"), runtime);
     assert.equal(outcome.verdict, "block");
   });
 
   it("a missing --body-file blocks in the gabriel preset and passes in neutral", async () => {
-    const command = bash("gh pr create --title x --body-file missing.md");
+    const command = bash("finitemonkey pr open --title x --body-file missing.md");
     assert.match(reasonText(await fire(command, fakeRuntime({ files: GABRIEL }))), /could not read missing\.md/);
     assert.equal((await fire(command)).verdict, "allow");
   });
 
   const clean = [
     `git commit -m "fix(secrets): read the baseline first" -m "${GOOD}"`,
-    `gh pr create --title "fix: baseline" --body "${GOOD}"`,
+    `finitemonkey pr open --title "fix: baseline" --body "${GOOD}"`,
     "git commit --amend --no-edit",
     "git log --oneline -5",
     `echo "${BAD}"`,
@@ -146,7 +150,7 @@ describe("the allow marker is the person's, never the model's", () => {
     { name: "grep for the marker", input: bash("grep -rn finitemonkey:prose-allow docs"), files: {} },
     {
       name: "a PR body that names the marker in inline code",
-      input: bash("gh pr create --title t --body 'the person adds `finitemonkey:prose-allow-file`'"),
+      input: bash("finitemonkey pr open --title t --body 'the person adds `finitemonkey:prose-allow-file`'"),
       files: {},
     },
     {

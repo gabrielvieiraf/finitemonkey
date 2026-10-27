@@ -95,7 +95,9 @@ export const writeReport = (runtime: Runtime, report: MergeReport): Parsed<undef
   const made = runtime.mkdir(toAbsolutePath(join(path, "..")));
   if (!made.ok) return made;
   const written = runtime.writeAtomic(path, `${JSON.stringify(report, null, 2)}\n`);
-  return written.ok ? accept(undefined) : written;
+  if (!written.ok) return written;
+  const summary = runtime.writeAtomic(toAbsolutePath(path.replace(/\.json$/, ".md")), `${reportMarkdown(report)}\n`);
+  return summary.ok ? accept(undefined) : summary;
 };
 
 const classCounts = (report: MergeReport): string => {
