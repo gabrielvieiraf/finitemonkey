@@ -758,7 +758,10 @@
     "wt.adopt.row": "machine",
     "wt.adopt.registry_failed": "machine",
     "gate.guard.self.registry.claim": "machine",
-    "gate.guard.self.registry.requires": "machine"
+    "gate.guard.self.registry.requires": "machine",
+    "command.map.summary": "machine",
+    "map.empty": "machine",
+    "map.error.git": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1519,6 +1522,9 @@
     "wt.adopt.row": "machine",
     "wt.adopt.registry_failed": "machine",
     "gate.guard.self.registry.claim": "machine",
-    "gate.guard.self.registry.requires": "machine"
+    "gate.guard.self.registry.requires": "machine",
+    "command.map.summary": "machine",
+    "map.empty": "machine",
+    "map.error.git": "machine"
   }
 }

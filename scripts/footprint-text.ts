@@ -54,6 +54,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR": "Documentos de plano que você pede: o inventário do que o código faz hoje, gravado em `docs/plan/`.",
     es: "Documentos de plan que pides: el inventario de lo que hace el código hoy, escrito en `docs/plan/`.",
   },
+  map: {
+    en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash.",
+    "pt-BR":
+      "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore.",
+    es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol.",
+  },
   tasks: {
     en: "Task contracts and which task is active.",
     "pt-BR": "Contratos de tarefa e qual tarefa está ativa.",

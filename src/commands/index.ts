@@ -13,6 +13,7 @@ import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
 import { inventoryCommand } from "./inventory.js";
 import { lookCommand } from "./look.js";
+import { mapCommand } from "./map.js";
 import { offCommand, onCommand } from "./pause.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { proseCheckCommand } from "./prose-check.js";
@@ -64,6 +65,7 @@ export const REGISTRY = [
   inventoryCommand,
   wtNewCommand,
   wtAdoptCommand,
+  mapCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

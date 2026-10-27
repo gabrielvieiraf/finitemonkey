@@ -8358,7 +8358,10 @@ var en_default = {
   "wt.adopt.row": "{state}  {branch}  {path}  last activity {activity}",
   "wt.adopt.registry_failed": "The registry was not updated: {detail}",
   "gate.guard.self.registry.claim": "{file} is the worktree registry, written only by the finitemonkey executable",
-  "gate.guard.self.registry.requires": "change it through finitemonkey wt commands"
+  "gate.guard.self.registry.requires": "change it through finitemonkey wt commands",
+  "command.map.summary": "Print one line per folder with its top-level definitions, cached by tree hash",
+  "map.empty": "No top-level definitions found in tracked code.",
+  "map.error.git": "could not read the tree in {detail} (git unavailable)"
 };
 
 // src/i18n/es.json
@@ -9121,7 +9124,10 @@ var es_default = {
   "wt.adopt.row": "{state}  {branch}  {path}  última actividad {activity}",
   "wt.adopt.registry_failed": "El registro no se actualizó: {detail}",
   "gate.guard.self.registry.claim": "{file} es el registro de worktrees, escrito solo por el ejecutable finitemonkey",
-  "gate.guard.self.registry.requires": "cambiarlo con los comandos finitemonkey wt"
+  "gate.guard.self.registry.requires": "cambiarlo con los comandos finitemonkey wt",
+  "command.map.summary": "Muestra una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol",
+  "map.empty": "No se encontraron definiciones de nivel superior en el código versionado.",
+  "map.error.git": "no se pudo leer el árbol en {detail} (git no disponible)"
 };
 
 // src/i18n/pt-BR.json
@@ -9884,7 +9890,10 @@ var pt_BR_default = {
   "wt.adopt.row": "{state}  {branch}  {path}  última atividade {activity}",
   "wt.adopt.registry_failed": "O registro não foi atualizado: {detail}",
   "gate.guard.self.registry.claim": "{file} é o registro de worktrees, escrito só pelo executável finitemonkey",
-  "gate.guard.self.registry.requires": "mudar pelos comandos finitemonkey wt"
+  "gate.guard.self.registry.requires": "mudar pelos comandos finitemonkey wt",
+  "command.map.summary": "Mostra uma linha por pasta com as definições de topo, em cache pelo hash da árvore",
+  "map.empty": "Nenhuma definição de topo encontrada no código versionado.",
+  "map.error.git": "não deu para ler a árvore em {detail} (git indisponível)"
 };
 
 // src/i18n/review.json
@@ -10648,7 +10657,10 @@ var review_default = {
     "wt.adopt.row": "machine",
     "wt.adopt.registry_failed": "machine",
     "gate.guard.self.registry.claim": "machine",
-    "gate.guard.self.registry.requires": "machine"
+    "gate.guard.self.registry.requires": "machine",
+    "command.map.summary": "machine",
+    "map.empty": "machine",
+    "map.error.git": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -11409,7 +11421,10 @@ var review_default = {
     "wt.adopt.row": "machine",
     "wt.adopt.registry_failed": "machine",
     "gate.guard.self.registry.claim": "machine",
-    "gate.guard.self.registry.requires": "machine"
+    "gate.guard.self.registry.requires": "machine",
+    "command.map.summary": "machine",
+    "map.empty": "machine",
+    "map.error.git": "machine"
   }
 };
 
@@ -11903,9 +11918,9 @@ var callSites = (runtime, git2, symbols) => {
 // src/gate/checks/callers.ts
 var MAX_SITES = 10;
 var byName = (sites) => {
-  const grouped = /* @__PURE__ */ new Map();
-  for (const site of sites) grouped.set(site.name, [...grouped.get(site.name) ?? [], site]);
-  return grouped;
+  const grouped2 = /* @__PURE__ */ new Map();
+  for (const site of sites) grouped2.set(site.name, [...grouped2.get(site.name) ?? [], site]);
+  return grouped2;
 };
 var siteNotes = (open) => [
   ...[...open].map(([name, sites]) => note("gate.callers.open", { name, count: sites.length })),
@@ -11916,13 +11931,13 @@ var record2 = (ctx, event, names) => {
 };
 var callersCheck = (_check, ctx) => {
   const symbols = removedSymbols(ctx.runtime, ctx.git, ctx.base, ctx.changes);
-  const grouped = byName(callSites(ctx.runtime, ctx.git, symbols));
+  const grouped2 = byName(callSites(ctx.runtime, ctx.git, symbols));
   const ignore = new Set(ctx.contract.callersIgnore ?? []);
-  const open = new Map([...grouped].filter(([name]) => !ignore.has(name)));
+  const open = new Map([...grouped2].filter(([name]) => !ignore.has(name)));
   record2(
     ctx,
     RELEASED_EVENT,
-    [...grouped.keys()].filter((name) => ignore.has(name))
+    [...grouped2.keys()].filter((name) => ignore.has(name))
   );
   record2(ctx, FLAGGED_EVENT, [...open.keys()]);
   if (open.size === 0) return passed([note("gate.callers.none", { count: symbols.length })]);
@@ -20151,6 +20166,216 @@ var lookCommand = {
   }
 };
 
+// src/map/build.ts
+import { join as join52, posix as posix6 } from "node:path";
+
+// src/map/defs.ts
+var SKIPPED_PATH = /(^|\/)(node_modules|dist|build|out|vendor|coverage|generated|__generated__|tests?|__tests__|spec|fixtures)\/|\.(test|spec)\.[a-z]+$|\.d\.ts$|\.min\.js$|\.generated\.[a-z]+$|_pb2\.py$|\.pb\.go$|_test\.go$|(^|\/)test_[^/]+\.py$|^\.finitemonkey\//;
+var CODE_FILES = ["ts", "tsx", "js", "jsx", "mjs", "cjs", "py", "go", "rs", "rb"];
+var AST_FILES = /* @__PURE__ */ new Set(["ts", "tsx", "js", "jsx", "mjs", "cjs", "py"]);
+var GREP_PATTERN = "^(export +(default +)?(async +)?(function|const|let|var|class|interface|type|enum|abstract +class) |(async +)?function\\*? *[A-Za-z_$]|class +[A-Za-z_]|def +[A-Za-z_]|func +|type +[A-Z][A-Za-z0-9_]* +(struct|interface)|pub +(fn|struct|enum|trait) +|module +[A-Z])";
+var NAMES2 = [
+  /^export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|var|class|interface|type|enum|abstract\s+class)\s+([A-Za-z_$][\w$]*)/,
+  /^(?:async\s+)?function\*?\s*([A-Za-z_$][\w$]*)/,
+  /^class\s+([A-Za-z_$][\w$]*)/,
+  /^def\s+([A-Za-z_]\w*[?!]?)/,
+  /^func\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/,
+  /^type\s+([A-Z]\w*)\s+(?:struct|interface)/,
+  /^pub\s+(?:fn|struct|enum|trait)\s+([A-Za-z_]\w*)/,
+  /^module\s+([A-Z]\w*)/
+];
+var nameIn = (line3) => {
+  for (const pattern of NAMES2) {
+    const name = pattern.exec(line3)?.[1];
+    if (name !== void 0) return name;
+  }
+  return void 0;
+};
+var extensionOf = (file) => {
+  const dot = file.lastIndexOf(".");
+  return dot === -1 ? "" : file.slice(dot + 1);
+};
+var isCode = (file) => CODE_FILES.includes(extensionOf(file)) && !SKIPPED_PATH.test(file);
+
+// src/map/sources.ts
+var AST_GREP = "ast-grep";
+var TIMEOUT_MS = 3e4;
+var PROBE_MS3 = 3e3;
+var SCRIPT_RULES = [
+  "export function $N($$$) { $$$ }",
+  "export async function $N($$$) { $$$ }",
+  "export const $N = $V",
+  "export class $N { $$$ }"
+];
+var TYPED_RULES = ["export interface $N { $$$ }", "export type $N = $V"];
+var AST_RULES = [
+  ...[...SCRIPT_RULES, ...TYPED_RULES].map((rule) => ["ts", rule]),
+  ...[...SCRIPT_RULES, ...TYPED_RULES].map((rule) => ["tsx", rule]),
+  ...SCRIPT_RULES.map((rule) => ["js", rule]),
+  ["py", "def $N($$$): $$$"],
+  ["py", "class $N: $$$"],
+  ["py", "class $N($$$): $$$"]
+];
+var topLevelMatch = (line3) => {
+  const parsed = parseJson(line3);
+  if (!parsed.ok || !isRecord(parsed.value)) return void 0;
+  const { file, range, metaVariables } = parsed.value;
+  const start = isRecord(range) ? range["start"] : void 0;
+  const single2 = isRecord(metaVariables) ? metaVariables["single"] : void 0;
+  const variable = isRecord(single2) ? single2["N"] : void 0;
+  const name = isRecord(variable) ? variable["text"] : void 0;
+  if (typeof file !== "string" || typeof name !== "string") return void 0;
+  return isRecord(start) && start["column"] === 0 ? { file: toPosixPath(file), name } : void 0;
+};
+var astGrepFound = (runtime) => runtime.probe(AST_GREP, ["--version"], PROBE_MS3).found;
+var astGrepDefinitions = (runtime, root) => AST_RULES.flatMap(([lang, pattern]) => {
+  const result = runtime.exec({
+    command: AST_GREP,
+    args: ["run", "--pattern", pattern, "--lang", lang, "--json=stream", "."],
+    cwd: root,
+    timeoutMs: TIMEOUT_MS
+  });
+  if (!result.found) return [];
+  return result.stdout.split("\n").map(withoutCarriageReturn).filter((line3) => line3 !== "").flatMap((line3) => topLevelMatch(line3) ?? []).filter((item2) => isCode(item2.file));
+});
+var GREP_LINE2 = /^(.+?):\d+:(.*)$/;
+var grepDefinitions = (runtime, root, skipAstFiles) => {
+  const extensions = CODE_FILES.filter((ext) => !(skipAstFiles && AST_FILES.has(ext)));
+  const spec2 = extensions.map((ext) => `:(glob)**/*.${ext}`);
+  const out = gitAt(runtime, root).out(["grep", "--untracked", "-n", "-I", "-E", "-e", GREP_PATTERN, "--", ...spec2]) ?? "";
+  return out.split("\n").map(withoutCarriageReturn).flatMap((line3) => {
+    const match = GREP_LINE2.exec(line3);
+    const file = match?.[1];
+    const name = nameIn(match?.[2] ?? "");
+    return file === void 0 || name === void 0 || !isCode(file) ? [] : [{ file, name }];
+  }).filter((item2) => !(skipAstFiles && AST_FILES.has(extensionOf(item2.file))));
+};
+
+// src/map/build.ts
+var MAP_FILE = "map.txt";
+var DEFAULT_MAP_BUDGET = 4e3;
+var SHARED_FOLDERS = ["lib", "utils", "services", "components", "hooks", "api"];
+var HEADER2 = /^# finitemonkey map tree=(\S+) budget=(\d+) source=(ast-grep|git-grep) folders=(\d+) shown=(\d+)\n/;
+var MORE_RESERVE = 40;
+var rank2 = (folder) => {
+  const segments = folder.split("/");
+  const index = SHARED_FOLDERS.findIndex((name) => segments.includes(name));
+  return index === -1 ? SHARED_FOLDERS.length : index;
+};
+var grouped = (definitions) => {
+  const folders = /* @__PURE__ */ new Map();
+  for (const { file, name } of definitions) {
+    const folder = posix6.dirname(file);
+    folders.set(folder, (folders.get(folder) ?? /* @__PURE__ */ new Set()).add(name));
+  }
+  return [...folders].map(([folder, names]) => [folder, [...names].sort((a, b) => a.localeCompare(b))]).sort(([a], [b]) => rank2(a) - rank2(b) || a.localeCompare(b));
+};
+var fitLine = (folder, names, room) => {
+  let line3 = `${folder}: ${names[0] ?? ""}`;
+  if (line3.length > room) return void 0;
+  for (const name of names.slice(1)) {
+    if (line3.length + name.length + 2 > room) return line3;
+    line3 = `${line3}, ${name}`;
+  }
+  return line3;
+};
+var renderMap = (definitions, budget) => {
+  const folders = grouped(definitions);
+  const lines3 = [];
+  let used = 0;
+  for (const [folder, names] of folders) {
+    const line3 = fitLine(folder, names, budget - used - MORE_RESERVE - 1);
+    if (line3 === void 0) break;
+    lines3.push(line3);
+    used += line3.length + 1;
+  }
+  const hidden = folders.length - lines3.length;
+  const tail2 = hidden > 0 ? [`… ${String(hidden)} more folders`] : [];
+  return { text: [...lines3, ...tail2].join("\n"), folders: folders.length, shown: lines3.length };
+};
+var mapBudget = (runtime, root, override) => {
+  if (override !== void 0) return override;
+  const value = configAt(loadProjectConfig(runtime, root), "map", "budget");
+  const parsed = typeof value === "string" ? Number(value) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_MAP_BUDGET;
+};
+var mapPath = (root) => toAbsolutePath(join52(fmPaths(root).dir, MAP_FILE));
+var headerOf = (map) => `# finitemonkey map tree=${map.tree} budget=${String(map.budget)} source=${map.source} folders=${String(map.folders)} shown=${String(map.shown)}
+`;
+var fromCache = (runtime, root, tree, budget) => {
+  const text10 = runtime.readText(mapPath(root));
+  if (!text10.ok) return void 0;
+  const match = HEADER2.exec(text10.value);
+  if (match?.[1] !== tree || Number(match[2]) !== budget) return void 0;
+  return {
+    text: text10.value.slice(match[0].length).replace(/\n$/, ""),
+    tree,
+    budget,
+    source: match[3] === "ast-grep" ? "ast-grep" : "git-grep",
+    cached: true,
+    folders: Number(match[4]),
+    shown: Number(match[5])
+  };
+};
+var definitionsOf = (runtime, root) => {
+  if (!astGrepFound(runtime)) return { source: "git-grep", definitions: grepDefinitions(runtime, root, false) };
+  return {
+    source: "ast-grep",
+    definitions: [...astGrepDefinitions(runtime, root), ...grepDefinitions(runtime, root, true)]
+  };
+};
+var buildMap = (runtime, root, budget) => {
+  const tree = treeHash(gitAt(runtime, root));
+  if (tree === void 0) return void 0;
+  const cached3 = fromCache(runtime, root, tree, budget);
+  if (cached3 !== void 0) return cached3;
+  const { source, definitions } = definitionsOf(runtime, root);
+  const rendered = renderMap(definitions, budget);
+  const map = { ...rendered, tree, budget, source, cached: false };
+  const made = runtime.mkdir(fmPaths(root).dir);
+  if (made.ok) runtime.writeText(mapPath(root), `${headerOf(map)}${map.text}
+`);
+  return map;
+};
+
+// src/commands/map.ts
+var MAP_SCHEMA = "finitemonkey/map@1";
+var USAGE3 = "finitemonkey map [--budget <characters>]";
+var MIN_BUDGET = 200;
+var budgetOf = (raw) => {
+  if (raw === void 0) return void 0;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed >= MIN_BUDGET ? parsed : "invalid";
+};
+var mapCommand = {
+  path: ["map"],
+  summaryKey: "command.map.summary",
+  usage: USAGE3,
+  status: "ready",
+  options: { budget: { type: "string" } },
+  run: (ctx, args2) => {
+    const repo = repoOf(ctx);
+    if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
+    const override = budgetOf(stringOption(args2.values, "budget"));
+    if (override === "invalid")
+      return Promise.resolve(
+        failureFrom(
+          ctx.t,
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE3, {
+            detail: `--budget >= ${String(MIN_BUDGET)}`
+          })
+        )
+      );
+    const map = buildMap(ctx.runtime, repo.root, mapBudget(ctx.runtime, repo.root, override));
+    if (map === void 0)
+      return Promise.resolve(
+        failureFrom(ctx.t, gitProblem("map_unavailable", "map.error.git", repo.root, "git status"))
+      );
+    const data = { schema: MAP_SCHEMA, file: `${FM_DIR}/${MAP_FILE}`, ...map };
+    return Promise.resolve(success(data, map.text === "" ? [ctx.t("map.empty")] : map.text.split("\n")));
+  }
+};
+
 // src/commands/pause.ts
 var toggle = (ctx, off) => {
   const command = off ? "finitemonkey off" : "finitemonkey on";
@@ -20339,12 +20564,12 @@ var proseCheckCommand = {
 };
 
 // src/review/packet.ts
-import { join as join52 } from "node:path";
+import { join as join53 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
 var FULL_ROUNDS = 3;
 var REVIEW_FILE_MAX_LINES = 200;
 var LEDGER_MAX_LINES = 100;
-var statePath = (root) => toAbsolutePath(join52(root, REVIEW_STATE_FILE));
+var statePath = (root) => toAbsolutePath(join53(root, REVIEW_STATE_FILE));
 var readReviewState = (runtime, root) => {
   const raw = runtime.readText(statePath(root));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
@@ -20366,7 +20591,7 @@ var taskSections = (runtime, root) => {
   const active = readState(runtime, paths).active;
   if (active === void 0)
     return [section2("Contract", void 0, "(no active task)"), section2("Evidence ledger", void 0, "(none)")];
-  const contract = runtime.readText(toAbsolutePath(join52(root, taskRelative(active))));
+  const contract = runtime.readText(toAbsolutePath(join53(root, taskRelative(active))));
   const ledger = runtime.readText(paths.evidence(active));
   return [
     section2("Contract", contract.ok ? contract.value : void 0, "(contract file missing)"),
@@ -20396,7 +20621,7 @@ var buildPacket = (runtime, root, base, head) => {
     ...taskSections(runtime, root),
     ...owners === void 0 ? [] : [section2("REVIEW.md (base branch)", owners, "")]
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join52(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join53(root, ".finitemonkey", "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}
 `);
   return { round: state.rounds, base, head, range, text: text10 };
@@ -20551,7 +20776,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname9, join as join53 } from "node:path";
+import { dirname as dirname9, join as join54 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -20573,13 +20798,13 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join53(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join54(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE3 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var USAGE4 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
 var TARGET = { rotated: "rotacionado", close: "fechado" };
 var PURGE_STEPS = [
   "secrets.purge.step1",
@@ -20637,7 +20862,7 @@ var move = (ctx, root, incident, action) => {
   if (!canMove(incident.state, to))
     return action === "close" ? notRotated(ctx, incident) : fail2(
       ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE3, {
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE4, {
         id: incident.id,
         from: incident.state,
         to
@@ -20660,7 +20885,7 @@ var actionOf = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "li
 var secretsIncidentCommand = {
   path: ["secrets", "incident"],
   summaryKey: "secrets.command.incident",
-  usage: USAGE3,
+  usage: USAGE4,
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args2) => {
@@ -20670,7 +20895,7 @@ var secretsIncidentCommand = {
       return Promise.resolve(
         fail2(
           ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE3, { detail: args2.positionals[0] ?? "" })
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE4, { detail: args2.positionals[0] ?? "" })
         )
       );
     if (action === "list") return Promise.resolve(list2(ctx, root));
@@ -20742,7 +20967,7 @@ var liveOutcome = (result) => {
 
 // src/commands/secrets-live.ts
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
-var USAGE4 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var USAGE5 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
 var target = (provider) => {
   const probe = LIVE_PROBES[provider];
@@ -20773,7 +20998,7 @@ var send = (ctx, provider, variable, key2) => {
 var secretsLiveCommand = {
   path: ["secrets", "live"],
   summaryKey: "secrets.command.live",
-  usage: USAGE4,
+  usage: USAGE5,
   status: "ready",
   maxPositionals: 1,
   options: { env: { type: "string" }, send: { type: "boolean" } },
@@ -20784,7 +21009,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE4, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE5, {
             detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
           })
         )
@@ -20794,7 +21019,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          needsPersonProblem("secrets.error.person_only", `${USAGE4.replace(" [--send]", "")} --send`, {
+          needsPersonProblem("secrets.error.person_only", `${USAGE5.replace(" [--send]", "")} --send`, {
             action: ctx.t("secrets.action.live")
           })
         )
@@ -20802,7 +21027,7 @@ var secretsLiveCommand = {
     const key2 = ctx.env[variable] ?? "";
     if (key2 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE4, { variable }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE5, { variable }))
       );
     return Promise.resolve(send(ctx, provider, variable, key2));
   }
@@ -21133,7 +21358,7 @@ var statuslineCommand = {
 };
 
 // src/task/create.ts
-import { join as join54 } from "node:path";
+import { join as join55 } from "node:path";
 
 // src/task/serialize.ts
 var checkYaml = (check2) => ({
@@ -21186,10 +21411,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative12) => {
-      const text10 = runtime.readText(toAbsolutePath(join54(paths.root, relative12)));
+      const text10 = runtime.readText(toAbsolutePath(join55(paths.root, relative12)));
       return text10.ok ? text10.value : void 0;
     },
-    exists: (relative12) => runtime.stat(toAbsolutePath(join54(paths.root, relative12))) !== void 0
+    exists: (relative12) => runtime.stat(toAbsolutePath(join55(paths.root, relative12))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -21204,7 +21429,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
-    ...runtime.stat(toAbsolutePath(join54(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
+    ...runtime.stat(toAbsolutePath(join55(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
     ...draft.git.length > 0 ? [{ id: "git", kind: "git", require: draft.git }] : [],
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index) => ({
@@ -21582,7 +21807,7 @@ var versionCommand = {
 };
 
 // src/wt/create.ts
-import { join as join55 } from "node:path";
+import { join as join56 } from "node:path";
 
 // src/wt/ports.ts
 var DEFAULT_PORT_BASE = 5174;
@@ -21613,8 +21838,8 @@ var line2 = (runtime, cwd, args2) => {
 };
 var ensureIgnored = (runtime, mainRoot, commonDir) => {
   if (runtime.git(["check-ignore", "-q", `${OFFICIAL_DIR}/x`], mainRoot).ok) return;
-  const exclude = toAbsolutePath(join55(commonDir, "info", "exclude"));
-  runtime.mkdir(toAbsolutePath(join55(commonDir, "info")));
+  const exclude = toAbsolutePath(join56(commonDir, "info", "exclude"));
+  runtime.mkdir(toAbsolutePath(join56(commonDir, "info")));
   runtime.appendText(exclude, `
 /${OFFICIAL_DIR}/
 `);
@@ -21846,12 +22071,13 @@ var REGISTRY2 = [
   inventoryCommand,
   wtNewCommand,
   wtAdoptCommand,
+  mapCommand,
   versionCommand,
   helpCommand
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join56 } from "node:path";
+import { join as join57 } from "node:path";
 var read3 = (runtime, path) => {
   const text10 = runtime.readText(toAbsolutePath(path));
   return text10.ok ? text10.value : void 0;
@@ -21866,14 +22092,14 @@ var languageIn = (text10) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join56(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join57(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join56(root, CONFIG_FILE2)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join57(root, CONFIG_FILE2)) ?? "");
   const claudeFiles = [
-    join56(root, ".claude", "settings.local.json"),
-    join56(root, ".claude", "settings.json"),
-    join56(claudeDir(runtime, env), "settings.json")
+    join57(root, ".claude", "settings.local.json"),
+    join57(root, ".claude", "settings.json"),
+    join57(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

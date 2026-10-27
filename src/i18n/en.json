@@ -757,5 +757,8 @@
   "wt.adopt.row": "{state}  {branch}  {path}  last activity {activity}",
   "wt.adopt.registry_failed": "The registry was not updated: {detail}",
   "gate.guard.self.registry.claim": "{file} is the worktree registry, written only by the finitemonkey executable",
-  "gate.guard.self.registry.requires": "change it through finitemonkey wt commands"
+  "gate.guard.self.registry.requires": "change it through finitemonkey wt commands",
+  "command.map.summary": "Print one line per folder with its top-level definitions, cached by tree hash",
+  "map.empty": "No top-level definitions found in tracked code.",
+  "map.error.git": "could not read the tree in {detail} (git unavailable)"
 }

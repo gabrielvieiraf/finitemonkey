@@ -757,5 +757,8 @@
   "wt.adopt.row": "{state}  {branch}  {path}  última atividade {activity}",
   "wt.adopt.registry_failed": "O registro não foi atualizado: {detail}",
   "gate.guard.self.registry.claim": "{file} é o registro de worktrees, escrito só pelo executável finitemonkey",
-  "gate.guard.self.registry.requires": "mudar pelos comandos finitemonkey wt"
+  "gate.guard.self.registry.requires": "mudar pelos comandos finitemonkey wt",
+  "command.map.summary": "Mostra uma linha por pasta com as definições de topo, em cache pelo hash da árvore",
+  "map.empty": "Nenhuma definição de topo encontrada no código versionado.",
+  "map.error.git": "não deu para ler a árvore em {detail} (git indisponível)"
 }
