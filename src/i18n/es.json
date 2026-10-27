@@ -565,5 +565,12 @@
   "secrets.live.rejected": "{host} rechazó la clave en ${variable} (HTTP {status}): ya no funciona.",
   "secrets.live.unknown": "{host} respondió HTTP {status}; eso no dice si la clave en ${variable} funciona. Revísala en la consola del proveedor.",
   "secrets.live.unreachable": "No se pudo llegar a {host} con curl, así que la clave en ${variable} no se comprobó.",
-  "secrets.live.no_value": "${variable} está vacía o no existe en esta terminal; expórtala antes, no se envió nada"
+  "secrets.live.no_value": "${variable} está vacía o no existe en esta terminal; expórtala antes, no se envió nada",
+  "githooks.command.commit_msg": "Revisa un mensaje de commit: encabezado Conventional Commits y ninguna atribución a IA (para el hook commit-msg de git)",
+  "githooks.command.push_check": "Revisa lo que envía un push: secretos, mensajes de commit, merges que perdieron líneas y ramas protegidas (para el hook pre-push de git)",
+  "githooks.command.ci_gate": "Ejecuta las mismas revisiones en los commits de un pull request en CI, una línea por revisión fallida con su arreglo",
+  "githooks.pass": "ok {check}",
+  "githooks.fail": "FALLÓ {check}: {detail}. Arreglo: {fix}",
+  "githooks.error.failed": "{count, plural, one {# revisión falló} other {# revisiones fallaron}}",
+  "githooks.error.no_base": "la base {detail} no existe aquí; tráela antes (actions/checkout necesita fetch-depth: 0)"
 }

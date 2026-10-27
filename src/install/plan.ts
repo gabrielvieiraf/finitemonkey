@@ -1,6 +1,7 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { gitHookItems } from "../githooks/install.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
 import { POLICY_FILE } from "../policy/policy.js";
@@ -253,7 +254,13 @@ export const buildPlan = (
     detection,
     preset: input.preset,
     items: applyMigrations(
-      [settings.value, gitignoreItem(project), ...markdownItems(project, detection.runner, input.lang), ...generated],
+      [
+        settings.value,
+        gitignoreItem(project),
+        ...markdownItems(project, detection.runner, input.lang),
+        ...generated,
+        ...gitHookItems(project, detection.runner),
+      ],
       previous,
       input.version,
       migrations,

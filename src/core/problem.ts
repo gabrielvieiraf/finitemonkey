@@ -47,6 +47,8 @@ export const ERROR_CODES = [
   "merge_lost_work",
   "merge_unanalyzable",
   "app_check_failed",
+  "githook_failed",
+  "ci_gate_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

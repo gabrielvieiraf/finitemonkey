@@ -1,6 +1,7 @@
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import { withoutMarkdownBlock } from "./agents-block.js";
 import { type ApplyFailure, withInstallLock, writeText } from "./apply.js";
+import { withoutHookBlock } from "./githook-block.js";
 import { withoutBlock } from "./gitignore-block.js";
 import { hashText } from "./hash.js";
 import { parseSettings, renderJson, styleOf } from "./json-text.js";
@@ -30,10 +31,15 @@ export interface RemovalPlan {
   readonly removeDirs: readonly string[];
 }
 
+const blockless = (kind: "gitignore" | "markdown" | "githook", current: string): string => {
+  if (kind === "gitignore") return withoutBlock(current);
+  return kind === "markdown" ? withoutMarkdownBlock(current) : withoutHookBlock(current);
+};
+
 const structural = (entry: LockEntry, current: string): string | undefined => {
-  if (entry.kind === "gitignore" || entry.kind === "markdown") {
-    const text = entry.kind === "gitignore" ? withoutBlock(current) : withoutMarkdownBlock(current);
-    return text === "" && !entry.existed ? undefined : text;
+  if (entry.kind === "gitignore" || entry.kind === "markdown" || entry.kind === "githook") {
+    const text = blockless(entry.kind, current);
+    return text.trim() === "" && !entry.existed ? undefined : text;
   }
   const parsed = parseSettings(current);
   if (!parsed.ok || entry.added === undefined) return current;

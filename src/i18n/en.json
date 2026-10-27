@@ -565,5 +565,12 @@
   "secrets.live.rejected": "{host} rejected the key in ${variable} (HTTP {status}): it no longer works.",
   "secrets.live.unknown": "{host} answered HTTP {status}; that does not say whether the key in ${variable} works. Check it in the provider's console.",
   "secrets.live.unreachable": "Could not reach {host} with curl, so the key in ${variable} was not checked.",
-  "secrets.live.no_value": "${variable} is empty or not set in this terminal; export it first, nothing was sent"
+  "secrets.live.no_value": "${variable} is empty or not set in this terminal; export it first, nothing was sent",
+  "githooks.command.commit_msg": "Check a commit message: Conventional Commits header and no AI attribution (for the commit-msg git hook)",
+  "githooks.command.push_check": "Check what a push sends: secrets, commit messages, merges that dropped lines and protected branches (for the pre-push git hook)",
+  "githooks.command.ci_gate": "Run the same checks on a pull request's commits in CI, one line per failing check with its fix",
+  "githooks.pass": "ok {check}",
+  "githooks.fail": "FAIL {check}: {detail}. Fix: {fix}",
+  "githooks.error.failed": "{count, plural, one {# check failed} other {# checks failed}}",
+  "githooks.error.no_base": "the base {detail} does not exist here; fetch it first (actions/checkout needs fetch-depth: 0)"
 }
