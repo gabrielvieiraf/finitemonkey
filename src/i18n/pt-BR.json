@@ -988,5 +988,6 @@
   "budget.reconcile.missing": "{tool} não está instalado ou não respondeu; nada foi comparado",
   "budget.reconcile.done": "Comparado com {tool}; as diferenças foram para {file} (nosso, deles, diferença):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "reuse.warning": "finitemonkey reuse: `{name}` novo em `{file}`; `{existingName}` existe em `{existing}`."
 }

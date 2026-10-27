@@ -989,7 +989,8 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "reuse.warning": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1981,6 +1982,7 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "reuse.warning": "machine"
   }
 }

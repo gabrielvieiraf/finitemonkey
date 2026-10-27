@@ -95,7 +95,7 @@ export const FOOTPRINT = [
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },
-  { id: "map", kind: "writes", targets: [".finitemonkey/map.txt"] },
+  { id: "map", kind: "writes", targets: [".finitemonkey/map.txt", ".finitemonkey/reuse.json"] },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
