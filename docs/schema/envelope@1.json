@@ -86,7 +86,9 @@
             "pr_parent_open",
             "pr_conflict",
             "pr_outside_scope",
-            "reconcile_unavailable"
+            "reconcile_unavailable",
+            "rules_uncovered",
+            "rules_write_failed"
           ]
         },
         "message": {

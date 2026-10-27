@@ -69,6 +69,8 @@ export const ERROR_CODES = [
   "pr_conflict",
   "pr_outside_scope",
   "reconcile_unavailable",
+  "rules_uncovered",
+  "rules_write_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

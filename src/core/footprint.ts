@@ -32,6 +32,7 @@ export const FOOTPRINT = [
       ".finitemonkey/policy.yml",
       ".finitemonkey/briefing.md",
       ".finitemonkey/look.yml",
+      ".finitemonkey/rules.yml",
     ],
   },
   {
@@ -91,6 +92,11 @@ export const FOOTPRINT = [
       "~/.finitemonkey/archive/",
       "refs/finitemonkey/archive/",
     ],
+  },
+  {
+    id: "rules",
+    kind: "writes",
+    targets: [".finitemonkey/rules-compiled.json", ".github/workflows/finitemonkey-rules.yml"],
   },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },

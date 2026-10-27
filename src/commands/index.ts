@@ -25,6 +25,7 @@ import { prOpenCommand } from "./pr-open.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
+import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
@@ -71,6 +72,9 @@ export const REGISTRY = [
   ciGateCommand,
   lookCommand,
   reviewPacketCommand,
+  rulesCompileCommand,
+  rulesCoverageCommand,
+  rulesCheckCommand,
   statuslineCommand,
   critiqueVerifyCommand,
   inventoryCommand,
