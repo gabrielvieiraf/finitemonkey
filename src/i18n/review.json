@@ -684,7 +684,9 @@
     "critique.decision": "machine",
     "critique.verdict": "machine",
     "critique.error.invalid": "machine",
-    "critique.error.must_fix": "machine"
+    "critique.error.must_fix": "machine",
+    "install.warn.sandbox_offer": "machine",
+    "install.warn.sandbox_unsupported": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1371,6 +1373,8 @@
     "critique.decision": "machine",
     "critique.verdict": "machine",
     "critique.error.invalid": "machine",
-    "critique.error.must_fix": "machine"
+    "critique.error.must_fix": "machine",
+    "install.warn.sandbox_offer": "machine",
+    "install.warn.sandbox_unsupported": "machine"
   }
 }

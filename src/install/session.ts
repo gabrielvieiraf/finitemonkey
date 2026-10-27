@@ -8,6 +8,7 @@ import type { ApplyFailure } from "./apply.js";
 import type { Preset } from "./layout.js";
 import type { PlanError, PlanInput } from "./plan.js";
 import { findGitRoot, type Project, projectAt } from "./project.js";
+import { SANDBOX_PLATFORMS } from "./sandbox.js";
 import { isBundlePath } from "./vendor.js";
 
 export interface Opened {
@@ -101,13 +102,22 @@ const selfBundle = (ctx: Ctx): string | undefined => {
 
 const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "claude-settings"]);
 
-export const planInputFor = (ctx: Ctx, preset: Preset, bin: string | undefined, marketplace: boolean): PlanInput => ({
+export const planInputFor = (
+  ctx: Ctx,
+  preset: Preset,
+  bin: string | undefined,
+  marketplace: boolean,
+  sandbox = false,
+): PlanInput => ({
   preset,
   lang: ctx.lang,
   claudeLanguage: INHERITED.has(ctx.langSource) ? undefined : CLAUDE_LANGUAGE[ctx.lang],
   bin,
   version: ctx.version,
   marketplace,
+  sandbox,
+  offerSandbox: !sandbox && SANDBOX_PLATFORMS.includes(ctx.platform) && (ctx.io.stdin.isTTY === true || ctx.yes),
+  platform: ctx.platform,
   bundle: selfBundle(ctx),
   env: ctx.env,
   t: ctx.t,

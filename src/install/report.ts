@@ -60,6 +60,13 @@ const itemWarning = (t: Translate, item: PlanItem): readonly Warning[] => {
   return [];
 };
 
+const sandboxWarnings = (t: Translate, plan: Plan): readonly Warning[] => {
+  if (plan.sandbox === "unsupported")
+    return [{ code: "sandbox_unsupported", message: t("install.warn.sandbox_unsupported") }];
+  if (plan.sandbox === "offer") return [{ code: "sandbox_offer", message: t("install.warn.sandbox_offer") }];
+  return [];
+};
+
 export const planWarnings = (t: Translate, plan: Plan): readonly Warning[] => [
   ...(plan.detection.gitRoot ? [] : [{ code: "not_git", message: t("install.warn.not_git") }]),
   ...(plan.detection.claude.failClosed
@@ -71,6 +78,7 @@ export const planWarnings = (t: Translate, plan: Plan): readonly Warning[] => [
   ...(plan.detection.location.synced
     ? [{ code: "synced_folder", message: t("install.warn.synced_folder", { path: plan.detection.root }) }]
     : []),
+  ...sandboxWarnings(t, plan),
   ...plan.detection.authorities.map((authority) => authorityWarning(t, authority)),
   ...plan.items.flatMap((item) => itemWarning(t, item)),
 ];

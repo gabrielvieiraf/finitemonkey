@@ -147,7 +147,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Reads | `.git/` | The repository through the `git` command: status, diffs, refs and the reflog. |
 | Reads | `git diff` | Changed files, scanned for secrets, test skips, placeholders and prose patterns. |
 | Reads | `.finitemonkey/config.yml`, `.finitemonkey/policy.yml`, `.finitemonkey/briefing.md`, `.finitemonkey/look.yml` | Project configuration, the guard policy and the optional briefing for subagents. |
-| Writes | `.claude/settings.json`, `.claude/skills/verify/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.finitemonkey/config.yml`, `.finitemonkey/lock.json`, `.finitemonkey/locks/`, `.finitemonkey/runtime/`, `.finitemonkey/backups/` | `init` and `update`: hook settings, the verify skill, a short managed block in `AGENTS.md` that `CLAUDE.md` imports, one `.gitignore` line, the pinned runtime and a backup of every file it changes. |
+| Writes | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/skills/verify/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.finitemonkey/config.yml`, `.finitemonkey/lock.json`, `.finitemonkey/locks/`, `.finitemonkey/runtime/`, `.finitemonkey/backups/` | `init` and `update`: hook settings (and, with `--sandbox`, the sandbox in your local settings), the verify skill, a short managed block in `AGENTS.md` that `CLAUDE.md` imports, one `.gitignore` line, the pinned runtime and a backup of every file it changes. |
 | Writes | `.finitemonkey/tasks/`, `.finitemonkey/state.json` | Task contracts and which task is active. |
 | Writes | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | Evidence of each check, tied to the tree hash, and the gate log. |
 | Writes | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Approvals and grants typed by the person, and a short-lived cache of open pull requests. |
@@ -543,6 +543,7 @@ This reads the project and returns the plan without writing anything: `data.acti
 
 - Preset: `neutral` (default) or `gabriel` (adds the author's conventions, such as turning off AI attribution in commits and PRs when the project has not set it).
 - Whether to register the plugin marketplace in the project (`--marketplace`).
+- Whether to turn on the Claude Code sandbox for this user (`--sandbox`, macOS, Linux and WSL2 only). It goes into `.claude/settings.local.json`, not the committed settings: Claude Code then refuses to start without the sandbox, sandboxed commands cannot read `~/.ssh`, `~/.aws` or the project's `.env` files, and they reach only the hosts in `sandbox.hosts` of `config.yml` (npm and GitHub by default).
 - Whether to look back once at this project's local Claude Code sessions (`--look-back`). It reads the session logs on this machine and prints estimated counts of what Finite Monkey would have blocked, with secrets masked. Nothing is saved or sent. Without the flag, no session log is read.
 
 ### 4. Install

@@ -683,5 +683,7 @@
   "critique.decision": "Decisión necesaria: el hallazgo {id} ({what}) ya falla en la rama base y es un riesgo activo.",
   "critique.verdict": "Veredicto: {verdict}",
   "critique.error.invalid": "el archivo de hallazgos no es válido: {detail}",
-  "critique.error.must_fix": "{count, plural, one {# hallazgo obligatorio reproducido solo en head} other {# hallazgos obligatorios reproducidos solo en head}}"
+  "critique.error.must_fix": "{count, plural, one {# hallazgo obligatorio reproducido solo en head} other {# hallazgos obligatorios reproducidos solo en head}}",
+  "install.warn.sandbox_offer": "El sandbox de Claude Code funciona aquí. Añade --sandbox para activarlo solo para ti, en .claude/settings.local.json: no arranca sin el sandbox, oculta ~/.ssh, ~/.aws y los archivos .env a los comandos y solo deja llegar a los hosts de sandbox.hosts.",
+  "install.warn.sandbox_unsupported": "Se ignoró --sandbox: Windows nativo no tiene sandbox de Claude Code, así que aquí solo protegen los bloqueos. Ejecuta Claude Code dentro de WSL2 para usarlo."
 }

@@ -68,6 +68,8 @@ npx finitemonkey@latest init --dry-run --json
 Esto lee el proyecto y devuelve el plan sin escribir nada: `data.actions` lista cada archivo con `create`, `merge`, `update`, `unchanged`, `keep-edited` o `skip-foreign`; `data.warnings` lista lo que la persona debe saber (otro plugin que también decide cuándo termina la sesión, un Claude Code demasiado antiguo para bloquear cuando un hook falla, un archivo que no es de Finite Monkey); y `data.diff` muestra el cambio exacto. Resume el plan para la persona en pocas líneas. Pregunta solo estas decisiones:
 
 - Preset: `neutral` (por defecto) o `gabriel` (añade las convenciones del autor, como desactivar la atribución de IA en commits y PRs cuando el proyecto no la ha definido).
+- Si registrar el marketplace del plugin en el proyecto (`--marketplace`).
+- Si activar el sandbox de Claude Code para esta persona (`--sandbox`, solo macOS, Linux y WSL2). Va a `.claude/settings.local.json`, no a la configuración versionada: Claude Code se niega a arrancar sin el sandbox, los comandos en el sandbox no leen `~/.ssh`, `~/.aws` ni los `.env` del proyecto, y solo llegan a los hosts de `sandbox.hosts` en `config.yml` (npm y GitHub por defecto).
 - Si revisar una vez las sesiones locales de Claude Code en este proyecto (`--look-back`). Lee los logs de sesión de esta máquina y muestra conteos estimados de lo que Finite Monkey habría bloqueado, con los secretos enmascarados. No se guarda ni se envía nada. Sin la opción, no se lee ningún log de sesión.
 
 ### 4. Instala
@@ -123,4 +125,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:8d65cc2e11da -->
+<!-- translation of docs/AGENT-SETUP.md sha256:c21405741464 -->

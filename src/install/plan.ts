@@ -1,7 +1,7 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
-import { accept, type Parsed, reject } from "../core/parsed.js";
-import { configAt, parseConfigYaml } from "../git/project-config.js";
+import { accept, type JsonObject, type Parsed, reject } from "../core/parsed.js";
+import { configAt, configList, parseConfigYaml } from "../git/project-config.js";
 import { gitHookItems } from "../githooks/install.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
@@ -44,6 +44,7 @@ import { applyMigrations } from "./migrate.js";
 import { type Migration, MIGRATIONS } from "./migrations/index.js";
 import { policyTemplate } from "./policy-template.js";
 import type { Project } from "./project.js";
+import { DEFAULT_HOSTS, SANDBOX_FILE, SANDBOX_PLATFORMS, sandboxBlock, withSandbox } from "./sandbox.js";
 import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
 import { isOwnSkill, verifySkillTemplate } from "./skill-template.js";
 import { ownStatusLine } from "./statusline.js";
@@ -65,6 +66,7 @@ export interface PlanItem {
   readonly proposal?: string;
   readonly added?: SettingsAdded;
   readonly handlers?: readonly HookHandlerJson[];
+  readonly sandbox?: JsonObject;
 }
 
 export interface Detection {
@@ -99,13 +101,19 @@ export interface PlanInput {
   readonly bin: string | undefined;
   readonly version: string;
   readonly marketplace: boolean;
+  readonly sandbox: boolean;
+  readonly offerSandbox: boolean;
+  readonly platform: NodeJS.Platform;
   readonly bundle: string | undefined;
   readonly env: Env;
   readonly t: Translate;
 }
 
+export type SandboxState = "added" | "offer" | "unsupported" | "none";
+
 export interface Plan {
   readonly detection: Detection;
+  readonly sandbox?: SandboxState;
   readonly preset: Preset;
   readonly items: readonly PlanItem[];
   readonly previous: LockFile | undefined;
@@ -206,6 +214,18 @@ const markdownItems = (project: Project, runner: Runner, lang: Lang): readonly P
     return { path, kind: "markdown", action: actionFor(before, after, "merge"), before, after };
   });
 
+const sandboxItems = (project: Project, input: PlanInput): readonly PlanItem[] => {
+  if (!input.sandbox || !SANDBOX_PLATFORMS.includes(input.platform)) return [];
+  const declared = configList(parseConfigYaml(project.read(CONFIG_FILE) ?? ""), "sandbox", "hosts");
+  const block = sandboxBlock(project.root, declared.length > 0 ? declared : DEFAULT_HOSTS);
+  const before = project.read(SANDBOX_FILE);
+  const after = withSandbox(before, block);
+  if (after === undefined) return [];
+  return [
+    { path: SANDBOX_FILE, kind: "sandbox", action: actionFor(before, after, "merge"), before, after, sandbox: block },
+  ];
+};
+
 const gitignoreItem = (project: Project): PlanItem => {
   const before = project.read(GITIGNORE_FILE);
   const after = withBlock(before);
@@ -274,14 +294,24 @@ export const buildPlan = (
   const files = generatedFiles(project, input, detection.runner, vendor);
   if (!files.ok) return files;
   const generated = files.value.map((file) => generatedItem(project, file, entryFor(previous, file.path)));
+  const sandboxSupported = SANDBOX_PLATFORMS.includes(input.platform);
+  const sandbox: SandboxState = input.sandbox
+    ? sandboxSupported
+      ? "added"
+      : "unsupported"
+    : input.offerSandbox
+      ? "offer"
+      : "none";
   return accept({
     detection,
+    sandbox,
     preset: input.preset,
     items: applyMigrations(
       [
         settings.value,
         gitignoreItem(project),
         ...markdownItems(project, detection.runner, input.lang),
+        ...sandboxItems(project, input),
         ...generated,
         ...gitHookItems(project, detection.runner),
       ],

@@ -68,6 +68,7 @@ const entryOf = (plan: Plan, item: PlanItem, backupDir: string | undefined): Loc
     ...(backup === undefined ? {} : { backup }),
     ...(item.added === undefined ? {} : { added: item.added }),
     ...(item.handlers === undefined ? {} : { handlers: item.handlers }),
+    ...(item.sandbox === undefined ? {} : { sandbox: item.sandbox }),
   };
 };
 
