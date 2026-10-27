@@ -7,7 +7,7 @@ import { toAbsolutePath } from "../src/core/brand.js";
 import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
-import { agentMarkdown, FORBIDDEN_TOOLS, REVIEWER, VERIFIER } from "../src/review/agents.js";
+import { agentMarkdown, FORBIDDEN_TOOLS, RESEARCHER, REVIEWER, VERIFIER } from "../src/review/agents.js";
 import { createTask } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
@@ -60,8 +60,8 @@ const guard = async (agentType: string, tool: string) => {
   });
 };
 
-describe("reviewer and verifier agents cannot edit files or spawn agents", () => {
-  for (const spec of [REVIEWER, VERIFIER]) {
+describe("reviewer, verifier and researcher agents cannot edit files or spawn agents", () => {
+  for (const spec of [REVIEWER, VERIFIER, RESEARCHER]) {
     it(`${spec.name}: the plugin file is generated from the spec, with no edit or agent tool`, () => {
       const text = plugin(spec.name);
       assert.equal(text, agentMarkdown(spec));
@@ -86,6 +86,12 @@ describe("reviewer and verifier agents cannot edit files or spawn agents", () =>
       });
     }
   }
+
+  it("researcher: no shell either, so it cannot write files through a command", () => {
+    const tools = listOf(frontmatter(plugin("researcher"))["tools"]);
+    assert.ok(!tools.includes("Bash") && !tools.includes("PowerShell"));
+    assert.ok(tools.includes("WebFetch"));
+  });
 
   it("the main session and other agents keep their tools", async () => {
     assert.notEqual((await guard("", "Edit")).verdict, "block");

@@ -50,10 +50,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`init` y `update`: la configuración de los hooks (y, con `--sandbox`, el sandbox en tu configuración local), la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
   },
   plan: {
-    en: "Plan documents under `docs/plan/`: the inventory of what the code does today, decision records, the master plan from the first L task and the copy of it kept before each consolidation.",
+    en: "Plan documents under `docs/plan/`: the inventory of what the code does today, decision records, research records, the master plan from the first L task and the copy of it kept before each consolidation.",
     "pt-BR":
-      "Documentos de plano em `docs/plan/`: o inventário do que o código faz hoje, registros de decisão, o plano mestre a partir da primeira tarefa L e a cópia dele guardada antes de cada consolidação.",
-    es: "Documentos de plan en `docs/plan/`: el inventario de lo que hace el código hoy, registros de decisión, el plan maestro desde la primera tarea L y la copia que se guarda antes de cada consolidación.",
+      "Documentos de plano em `docs/plan/`: o inventário do que o código faz hoje, registros de decisão, registros de pesquisa, o plano mestre a partir da primeira tarefa L e a cópia dele guardada antes de cada consolidação.",
+    es: "Documentos de plan en `docs/plan/`: el inventario de lo que hace el código hoy, registros de decisión, registros de investigación, el plan maestro desde la primera tarea L y la copia que se guarda antes de cada consolidación.",
   },
   map: {
     en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash.",
