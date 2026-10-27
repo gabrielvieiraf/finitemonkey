@@ -19,6 +19,7 @@ import { offCommand, onCommand } from "./pause.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { proseCheckCommand } from "./prose-check.js";
+import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
@@ -81,6 +82,8 @@ export const REGISTRY = [
   decideNewCommand,
   decideCheckCommand,
   decideRevokeCommand,
+  researchNewCommand,
+  researchCheckCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -34,7 +34,7 @@ const fromLines = (file: string, text: string, pattern: RegExp): readonly Depend
     return [{ name: match[1], version: match[2] ?? "", at: `${file}:${String(index + 1)}` }];
   });
 
-const parseManifest = (file: string, text: string): readonly Dependency[] => {
+export const parseManifest = (file: string, text: string): readonly Dependency[] => {
   if (file.endsWith("package.json")) return fromPackage(file, text);
   return fromLines(file, text, file.endsWith("go.mod") ? GO_REQUIRE : REQUIREMENT);
 };

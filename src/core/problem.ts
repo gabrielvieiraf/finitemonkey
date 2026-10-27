@@ -60,6 +60,7 @@ export const ERROR_CODES = [
   "plan_check_failed",
   "wt_not_found",
   "decision_invalid",
+  "research_invalid",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

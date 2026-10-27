@@ -1171,13 +1171,13 @@ var outcomeOf = (base, head) => {
   return fails(head) && fails(base) ? "already-there" : "not-reproduced";
 };
 var worktreeDir = (root, side) => toAbsolutePath(join4(root, ".finitemonkey", "review", `worktree-${side}`));
-var runAt = (runtime, root, side, rev, findings) => {
+var runAt = (runtime, root, side, rev, findings2) => {
   const dir = worktreeDir(root, side);
   runtime.git(["worktree", "remove", "--force", dir], root);
   const added = runtime.git(["worktree", "add", "--detach", "--force", dir, rev], root);
   if (!added.ok) return [];
   try {
-    return findings.flatMap((finding5) => {
+    return findings2.flatMap((finding5) => {
       if (finding5.repro === void 0) return [];
       const result = runtime.exec({
         command: finding5.repro.command,
@@ -1193,8 +1193,8 @@ var runAt = (runtime, root, side, rev, findings) => {
     runtime.git(["worktree", "remove", "--force", dir], root);
   }
 };
-var reproduce = (runtime, root, sides, findings) => {
-  const musts = findings.filter((finding5) => finding5.group === "must");
+var reproduce = (runtime, root, sides, findings2) => {
+  const musts = findings2.filter((finding5) => finding5.group === "must");
   const runs = [...runAt(runtime, root, "base", sides.base, musts), ...runAt(runtime, root, "head", sides.head, musts)];
   if (runs.length > 0) {
     runtime.mkdir(toAbsolutePath(join4(root, ".finitemonkey", "review")));
@@ -1204,7 +1204,7 @@ var reproduce = (runtime, root, sides, findings) => {
 `).join("")
     );
   }
-  return findings.map((finding5) => {
+  return findings2.map((finding5) => {
     if (finding5.group !== "must") return { finding: finding5, outcome: "not-run" };
     const base = runs.find((run4) => run4.finding === finding5.id && run4.side === "base");
     const head = runs.find((run4) => run4.finding === finding5.id && run4.side === "head");
@@ -2237,7 +2237,41 @@ var en_default = {
   "decision.issue.removal_without_parity": "a removal points to no parity row: {detail}",
   "decision.issue.question_incomplete": "the question for the person lacks: {detail} (Decision, Options, Recommendation, Cost, Risk)",
   "decision.issue.unknown_status": 'status "{detail}" is not proposed, needs-person, accepted or revoked',
-  "gate.decision.missing": "no decision record in docs/plan; run finitemonkey decide new <topic>"
+  "gate.decision.missing": "no decision record in docs/plan; run finitemonkey decide new <topic>",
+  "command.research_new.summary": "Write docs/plan/NNb-state-of-the-art-<topic>.md for sources with dates and strength",
+  "command.research_check.summary": "Check research records: dated sources, known kinds, strength and checked versions",
+  "research.title": "State of the art: {topic}",
+  "research.section.not_read": "Not read",
+  "research.section.not_verified": "Not verified",
+  "research.section.question": "Question",
+  "research.section.unlocks": "Decision it unlocks",
+  "research.section.sources": "Sources",
+  "research.section.findings": "Findings",
+  "research.section.versions": "Library versions",
+  "research.hint.not_read": "Sources found but not read, one per line.",
+  "research.hint.not_verified": "Claims you could not check, one per line.",
+  "research.hint.sources": "Primary first. Kind: primary, secondary, vendor or index. Accessed: YYYY-MM-DD. Version: required for an index.",
+  "research.hint.findings": "Strength: strong, medium or weak. Sources: IDs from the table above.",
+  "research.hint.versions": "Checked in the registry, the changelog or the code, with the date.",
+  "research.created": "Created {file}. Fill the question, then hand it to the researcher agent.",
+  "research.clean": "{count, plural, one {# research record has} other {# research records have}} dated sources and checked versions",
+  "research.error.invalid": "{count, plural, one {# problem} other {# problems}} in the research records",
+  "research.issue.missing_sections": "required sections missing: {detail}",
+  "research.issue.lists_not_on_top": '"Not read" and "Not verified" must be the first sections ({detail})',
+  "research.issue.source_without_url": "source {detail} has no URL",
+  "research.issue.source_without_date": "source {detail} has no access date (YYYY-MM-DD)",
+  "research.issue.unknown_kind": "source kind must be primary, secondary, vendor or index ({detail})",
+  "research.issue.index_without_version": "documentation index {detail} has no version",
+  "research.issue.unknown_strength": "strength must be strong, medium or weak ({detail})",
+  "research.issue.unknown_source": "finding cites no source from the table ({detail})",
+  "research.issue.index_alone_strong": "a documentation index alone cannot make a finding strong: {detail}",
+  "research.issue.vendor_alone_strong": "a vendor source alone cannot make a finding strong: {detail}",
+  "research.issue.version_unchecked": "version of {detail} without where it was checked or the date",
+  "research.issue.no_primary": "no primary source in {detail}",
+  "gate.research.clean": "new dependencies and rules have research records with primary sources",
+  "gate.research.warning_only": "warning only in this preset (research.required is off)",
+  "gate.research.dependency": "new dependency {name} has no research record that names it; run finitemonkey research new {name}",
+  "gate.research.rule": "business rule paths changed ({paths}) and no research record with a primary source changed with them"
 };
 
 // src/i18n/es.json
@@ -3126,7 +3160,41 @@ var es_default = {
   "decision.issue.removal_without_parity": "una eliminación no apunta a ninguna fila de paridad: {detail}",
   "decision.issue.question_incomplete": "a la pregunta para la persona le falta: {detail} (Decisión, Opciones, Recomendación, Costo, Riesgo)",
   "decision.issue.unknown_status": 'el estado "{detail}" no es proposed, needs-person, accepted ni revoked',
-  "gate.decision.missing": "ningún registro de decisión en docs/plan; ejecuta finitemonkey decide new <tema>"
+  "gate.decision.missing": "ningún registro de decisión en docs/plan; ejecuta finitemonkey decide new <tema>",
+  "command.research_new.summary": "Escribe docs/plan/NNb-state-of-the-art-<tema>.md para fuentes con fecha y fuerza",
+  "command.research_check.summary": "Comprueba registros de investigación: fuentes con fecha, tipo, fuerza y versiones comprobadas",
+  "research.title": "Estado del arte: {topic}",
+  "research.section.not_read": "No leído",
+  "research.section.not_verified": "No verificado",
+  "research.section.question": "Pregunta",
+  "research.section.unlocks": "Decisión que desbloquea",
+  "research.section.sources": "Fuentes",
+  "research.section.findings": "Hallazgos",
+  "research.section.versions": "Versiones de bibliotecas",
+  "research.hint.not_read": "Fuentes encontradas pero no leídas, una por línea.",
+  "research.hint.not_verified": "Afirmaciones que no se pudieron comprobar, una por línea.",
+  "research.hint.sources": "Primarias primero. Tipo: primary, secondary, vendor o index. Acceso: AAAA-MM-DD. Versión: obligatoria para index.",
+  "research.hint.findings": "Fuerza: strong, medium o weak. Fuentes: IDs de la tabla de arriba.",
+  "research.hint.versions": "Comprobadas en el registro, el changelog o el código, con la fecha.",
+  "research.created": "Creado {file}. Completa la pregunta y pásala al agente researcher.",
+  "research.clean": "{count, plural, one {# registro de investigación tiene} other {# registros de investigación tienen}} fuentes con fecha y versiones comprobadas",
+  "research.error.invalid": "{count, plural, one {# problema} other {# problemas}} en los registros de investigación",
+  "research.issue.missing_sections": "faltan secciones obligatorias: {detail}",
+  "research.issue.lists_not_on_top": '"No leído" y "No verificado" deben ser las primeras secciones ({detail})',
+  "research.issue.source_without_url": "la fuente {detail} no tiene URL",
+  "research.issue.source_without_date": "la fuente {detail} no tiene fecha de acceso (AAAA-MM-DD)",
+  "research.issue.unknown_kind": "el tipo de fuente debe ser primary, secondary, vendor o index ({detail})",
+  "research.issue.index_without_version": "el índice de documentación {detail} no tiene versión",
+  "research.issue.unknown_strength": "la fuerza debe ser strong, medium o weak ({detail})",
+  "research.issue.unknown_source": "el hallazgo no cita fuentes de la tabla ({detail})",
+  "research.issue.index_alone_strong": "un índice de documentación solo no hace strong un hallazgo: {detail}",
+  "research.issue.vendor_alone_strong": "una fuente del proveedor sola no hace strong un hallazgo: {detail}",
+  "research.issue.version_unchecked": "versión de {detail} sin dónde se comprobó o la fecha",
+  "research.issue.no_primary": "ninguna fuente primaria en {detail}",
+  "gate.research.clean": "las dependencias y reglas nuevas tienen registro de investigación con fuente primaria",
+  "gate.research.warning_only": "solo aviso en este preset (research.required desactivado)",
+  "gate.research.dependency": "la dependencia nueva {name} no tiene registro de investigación que la nombre; ejecuta finitemonkey research new {name}",
+  "gate.research.rule": "rutas de reglas de negocio cambiaron ({paths}) y ningún registro de investigación con fuente primaria cambió con ellas"
 };
 
 // src/i18n/pt-BR.json
@@ -4015,7 +4083,41 @@ var pt_BR_default = {
   "decision.issue.removal_without_parity": "uma remoção não aponta linha de paridade: {detail}",
   "decision.issue.question_incomplete": "a pergunta para a pessoa não tem: {detail} (Decisão, Opções, Recomendação, Custo, Risco)",
   "decision.issue.unknown_status": 'status "{detail}" não é proposed, needs-person, accepted nem revoked',
-  "gate.decision.missing": "nenhum registro de decisão em docs/plan; rode finitemonkey decide new <tema>"
+  "gate.decision.missing": "nenhum registro de decisão em docs/plan; rode finitemonkey decide new <tema>",
+  "command.research_new.summary": "Grava docs/plan/NNb-state-of-the-art-<tema>.md para fontes com data e força",
+  "command.research_check.summary": "Confere registros de pesquisa: fontes com data, tipo, força e versões conferidas",
+  "research.title": "Estado da arte: {topic}",
+  "research.section.not_read": "Não lido",
+  "research.section.not_verified": "Não verificado",
+  "research.section.question": "Pergunta",
+  "research.section.unlocks": "Decisão que destrava",
+  "research.section.sources": "Fontes",
+  "research.section.findings": "Achados",
+  "research.section.versions": "Versões de bibliotecas",
+  "research.hint.not_read": "Fontes achadas mas não lidas, uma por linha.",
+  "research.hint.not_verified": "Afirmações que não deu para conferir, uma por linha.",
+  "research.hint.sources": "Primárias primeiro. Tipo: primary, secondary, vendor ou index. Acesso: AAAA-MM-DD. Versão: obrigatória para index.",
+  "research.hint.findings": "Força: strong, medium ou weak. Fontes: IDs da tabela acima.",
+  "research.hint.versions": "Conferidas no registro, no changelog ou no código, com a data.",
+  "research.created": "Criado {file}. Preencha a pergunta e passe para o agente researcher.",
+  "research.clean": "{count, plural, one {# registro de pesquisa tem} other {# registros de pesquisa têm}} fontes com data e versões conferidas",
+  "research.error.invalid": "{count, plural, one {# problema} other {# problemas}} nos registros de pesquisa",
+  "research.issue.missing_sections": "seções obrigatórias faltando: {detail}",
+  "research.issue.lists_not_on_top": '"Não lido" e "Não verificado" precisam ser as primeiras seções ({detail})',
+  "research.issue.source_without_url": "a fonte {detail} não tem URL",
+  "research.issue.source_without_date": "a fonte {detail} não tem data de acesso (AAAA-MM-DD)",
+  "research.issue.unknown_kind": "o tipo da fonte precisa ser primary, secondary, vendor ou index ({detail})",
+  "research.issue.index_without_version": "o índice de documentação {detail} não tem versão",
+  "research.issue.unknown_strength": "a força precisa ser strong, medium ou weak ({detail})",
+  "research.issue.unknown_source": "achado não cita fonte da tabela ({detail})",
+  "research.issue.index_alone_strong": "um índice de documentação sozinho não torna um achado strong: {detail}",
+  "research.issue.vendor_alone_strong": "uma fonte do fornecedor sozinha não torna um achado strong: {detail}",
+  "research.issue.version_unchecked": "versão de {detail} sem onde foi conferida ou a data",
+  "research.issue.no_primary": "nenhuma fonte primária em {detail}",
+  "gate.research.clean": "dependências e regras novas têm registro de pesquisa com fonte primária",
+  "gate.research.warning_only": "só aviso neste preset (research.required desligado)",
+  "gate.research.dependency": "a dependência nova {name} não tem registro de pesquisa que a cite; rode finitemonkey research new {name}",
+  "gate.research.rule": "caminhos de regra de negócio mudaram ({paths}) e nenhum registro de pesquisa com fonte primária mudou junto"
 };
 
 // src/i18n/review.json
@@ -4905,7 +5007,41 @@ var review_default = {
     "decision.issue.removal_without_parity": "machine",
     "decision.issue.question_incomplete": "machine",
     "decision.issue.unknown_status": "machine",
-    "gate.decision.missing": "machine"
+    "gate.decision.missing": "machine",
+    "command.research_new.summary": "machine",
+    "command.research_check.summary": "machine",
+    "research.title": "machine",
+    "research.section.not_read": "machine",
+    "research.section.not_verified": "machine",
+    "research.section.question": "machine",
+    "research.section.unlocks": "machine",
+    "research.section.sources": "machine",
+    "research.section.findings": "machine",
+    "research.section.versions": "machine",
+    "research.hint.not_read": "machine",
+    "research.hint.not_verified": "machine",
+    "research.hint.sources": "machine",
+    "research.hint.findings": "machine",
+    "research.hint.versions": "machine",
+    "research.created": "machine",
+    "research.clean": "machine",
+    "research.error.invalid": "machine",
+    "research.issue.missing_sections": "machine",
+    "research.issue.lists_not_on_top": "machine",
+    "research.issue.source_without_url": "machine",
+    "research.issue.source_without_date": "machine",
+    "research.issue.unknown_kind": "machine",
+    "research.issue.index_without_version": "machine",
+    "research.issue.unknown_strength": "machine",
+    "research.issue.unknown_source": "machine",
+    "research.issue.index_alone_strong": "machine",
+    "research.issue.vendor_alone_strong": "machine",
+    "research.issue.version_unchecked": "machine",
+    "research.issue.no_primary": "machine",
+    "gate.research.clean": "machine",
+    "gate.research.warning_only": "machine",
+    "gate.research.dependency": "machine",
+    "gate.research.rule": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -5792,7 +5928,41 @@ var review_default = {
     "decision.issue.removal_without_parity": "machine",
     "decision.issue.question_incomplete": "machine",
     "decision.issue.unknown_status": "machine",
-    "gate.decision.missing": "machine"
+    "gate.decision.missing": "machine",
+    "command.research_new.summary": "machine",
+    "command.research_check.summary": "machine",
+    "research.title": "machine",
+    "research.section.not_read": "machine",
+    "research.section.not_verified": "machine",
+    "research.section.question": "machine",
+    "research.section.unlocks": "machine",
+    "research.section.sources": "machine",
+    "research.section.findings": "machine",
+    "research.section.versions": "machine",
+    "research.hint.not_read": "machine",
+    "research.hint.not_verified": "machine",
+    "research.hint.sources": "machine",
+    "research.hint.findings": "machine",
+    "research.hint.versions": "machine",
+    "research.created": "machine",
+    "research.clean": "machine",
+    "research.error.invalid": "machine",
+    "research.issue.missing_sections": "machine",
+    "research.issue.lists_not_on_top": "machine",
+    "research.issue.source_without_url": "machine",
+    "research.issue.source_without_date": "machine",
+    "research.issue.unknown_kind": "machine",
+    "research.issue.index_without_version": "machine",
+    "research.issue.unknown_strength": "machine",
+    "research.issue.unknown_source": "machine",
+    "research.issue.index_alone_strong": "machine",
+    "research.issue.vendor_alone_strong": "machine",
+    "research.issue.version_unchecked": "machine",
+    "research.issue.no_primary": "machine",
+    "gate.research.clean": "machine",
+    "gate.research.warning_only": "machine",
+    "gate.research.dependency": "machine",
+    "gate.research.rule": "machine"
   }
 };
 
@@ -6963,7 +7133,7 @@ var loadPolicy = (runtime, root) => {
 };
 
 // src/review/agents.ts
-var REVIEW_AGENTS = ["reviewer", "verifier"];
+var REVIEW_AGENTS = ["reviewer", "verifier", "researcher"];
 var FORBIDDEN_TOOLS = ["Edit", "Write", "MultiEdit", "NotebookEdit", "Agent", "Task"];
 var reviewAgentOf = (agentType) => REVIEW_AGENTS.find((name) => agentType === name || agentType.endsWith(`:${name}`));
 var REVIEWER_BODY = [
@@ -6999,6 +7169,20 @@ var VERIFIER = {
   maxTurns: 60,
   body: VERIFIER_BODY
 };
+var RESEARCHER_BODY = [
+  "# Researcher",
+  "",
+  "You answer one question with sources, in a clean context. Your input is the question, the decision it unlocks and, when present, the output of `finitemonkey map` and the inventory under `docs/plan/`. You never see the conversation.",
+  "",
+  "1. Read primary sources first: the official documentation, the changelog, the code or the registry entry. Then secondary ones.",
+  "2. For every source give an ID (S1, S2...), the URL, the date you read it (YYYY-MM-DD), its kind (primary, secondary, vendor, index) and, for a documentation index from a third party, the version it covers.",
+  "3. For every finding give its strength: strong, medium or weak. A vendor number is marked vendor. A documentation index alone never makes a finding strong.",
+  "4. Check every library version in the registry, the changelog or the code. Never state a version from memory.",
+  "5. List what you did not read and what you could not verify, first.",
+  "6. Answer with the tables of the state-of-the-art record: Sources (ID | Source | URL | Accessed | Kind | Version), Findings (Finding | Strength | Sources), Versions (Library | Version | Checked in | Date).",
+  "",
+  "You cannot edit files, run commands or start other agents. Report; the main session writes the record."
+].join("\n");
 var PLAYWRIGHT_SERVER = "playwright";
 var withPlaywright = (spec2) => ({
   ...spec2,
@@ -8020,7 +8204,7 @@ var defineRule = (spec2) => ({
   placeholders: spec2.placeholders ?? true
 });
 var isWarning = (finding5) => finding5.severity === "warning";
-var blocking = (findings) => findings.filter((finding5) => !isWarning(finding5));
+var blocking = (findings2) => findings2.filter((finding5) => !isWarning(finding5));
 
 // src/secrets/rules/exposure.ts
 var ARGUMENT_CONTEXT = String.raw`(?:^|\n)[ \t-]*(?:command|entrypoint|CMD|ENTRYPOINT|RUN|ExecStart(?:Pre|Post)?|ExecReload)\b[^\n]*?`;
@@ -8343,11 +8527,11 @@ var scanText = (text10, options = {}) => {
 // src/mask/mask.ts
 var maskToken = (finding5) => `«secret:${finding5.ruleId}:${finding5.tail}»`;
 var maskText = (text10) => {
-  const findings = scanText(text10, { rules: CREDENTIAL_RULES });
-  if (findings.length === 0) return text10;
+  const findings2 = scanText(text10, { rules: CREDENTIAL_RULES });
+  if (findings2.length === 0) return text10;
   let out = "";
   let cursor = 0;
-  for (const finding5 of findings) {
+  for (const finding5 of findings2) {
     out += text10.slice(cursor, finding5.start) + maskToken(finding5);
     cursor = finding5.end;
   }
@@ -8418,11 +8602,11 @@ var pathTraits = (path) => ({
 });
 var checkOs = (env) => {
   const os = detectOs(env);
-  const findings = [
+  const findings2 = [
     { check: "os", status: "ok", messageKey: `doctor.os.${os}`, params: { platform: env.platform } }
   ];
   if (os === "wsl" && WSL_MOUNT2.test(env.cwd)) {
-    findings.push({
+    findings2.push({
       check: "path.wsl_mount",
       status: "warn",
       messageKey: "doctor.path.wsl_mount",
@@ -8430,7 +8614,7 @@ var checkOs = (env) => {
       fixKey: "doctor.path.fix_wsl_mount"
     });
   }
-  return findings;
+  return findings2;
 };
 var checkPath = ({ cwd }) => {
   const traits = pathTraits(cwd);
@@ -10269,16 +10453,16 @@ var depsGuard = (input) => {
   const deadline = Date.now() + NETWORK_BUDGET_MS;
   const offline = isOffline(input.env);
   const now = nowMs(input.runtime);
-  const findings = packages.flatMap((pkg) => assessPackage(pkg, lookup(input, pkg, deadline, offline), now));
-  if (findings.length === 0) return ALLOW;
-  const lines4 = findings.map((finding5) => `- ${describe(input.t, finding5)}`);
+  const findings2 = packages.flatMap((pkg) => assessPackage(pkg, lookup(input, pkg, deadline, offline), now));
+  if (findings2.length === 0) return ALLOW;
+  const lines4 = findings2.map((finding5) => `- ${describe(input.t, finding5)}`);
   const additionalContext = `finitemonkey: ${input.t("deps.warn.header")}
 ${lines4.join("\n")}`;
   return {
     kind: "allow",
     output: {
       hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext },
-      systemMessage: `finitemonkey: ${input.t("deps.warn.human", { count: findings.length })}`
+      systemMessage: `finitemonkey: ${input.t("deps.warn.human", { count: findings2.length })}`
     }
   };
 };
@@ -10443,8 +10627,8 @@ var detectBypass = (commandLine) => parseShell(commandLine).flatMap((command) =>
 var bypassGuard = (input) => {
   if (!SHELL_TOOLS.has(toolName2(input.payload.raw))) return { kind: "allow" };
   const command = textField(toolInput2(input.payload.raw), "command") ?? "";
-  const findings = detectBypass(command);
-  const first = findings[0];
+  const findings2 = detectBypass(command);
+  const first = findings2[0];
   if (first === void 0 || grantFor(input, "bypass") !== void 0) return { kind: "allow" };
   const { t } = input;
   return deny(
@@ -11683,7 +11867,8 @@ var CHECK_KINDS = [
   "review",
   "inventory",
   "plan",
-  "decision"
+  "decision",
+  "research"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -11691,10 +11876,10 @@ var TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 var TASK_SCHEMA = "finitemonkey/task@1";
 
 // src/task/validate.ts
-var str = (record4, key2, at, issues, required) => {
+var str = (record4, key2, at, issues, required2) => {
   const value = record4[key2];
   if (value === void 0 || value === null) {
-    if (required) issues.push(`${at}${key2}: required`);
+    if (required2) issues.push(`${at}${key2}: required`);
     return void 0;
   }
   if (typeof value !== "string" || value.trim() === "") {
@@ -13483,14 +13668,14 @@ var readSummary = (ctx) => {
   const text10 = ctx.runtime.readText(summaryPath(ctx.paths, ctx.treeHash));
   const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
   if (!parsed?.ok) return void 0;
-  const { at, captures, findings, ignoredAllows } = parsed.value;
-  if (typeof at !== "string" || !Array.isArray(captures) || !Array.isArray(findings)) return void 0;
+  const { at, captures, findings: findings2, ignoredAllows } = parsed.value;
+  if (typeof at !== "string" || !Array.isArray(captures) || !Array.isArray(findings2)) return void 0;
   return {
     at,
     captures: captures.flatMap(
       (item2) => isRecord(item2) && typeof item2["path"] === "string" ? [item2["path"]] : []
     ),
-    blocking: findings.flatMap(findingNote),
+    blocking: findings2.flatMap(findingNote),
     ignored: Array.isArray(ignoredAllows) ? ignoredAllows.filter((item2) => typeof item2 === "string") : []
   };
 };
@@ -14387,6 +14572,175 @@ var proseOutcome = (status) => {
 };
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
+// src/plan/table.ts
+var cellsOf2 = (text10) => text10.trim().replace(/^\||\|$/g, "").split("|").map((cell2) => cell2.trim());
+var tableRows = (lines4) => lines4.filter((line4) => line4.text.trim().startsWith("|")).slice(1).map((line4) => ({ cells: cellsOf2(line4.text), line: line4.line })).filter((row2) => !/^:?-{3}/.test(row2.cells[0] ?? "") && row2.cells.some((cell2) => cell2 !== ""));
+
+// src/research/sections.ts
+var RESEARCH_SCHEMA = "finitemonkey/research@1";
+var RESEARCH_SECTIONS = [
+  "not_read",
+  "not_verified",
+  "question",
+  "unlocks",
+  "sources",
+  "findings",
+  "versions",
+  "plan_text"
+];
+var researchKey = (id) => id === "plan_text" ? "plan.text_for_plan" : `research.section.${id}`;
+var SOURCE_KINDS = ["primary", "secondary", "vendor", "index"];
+var STRENGTHS = ["strong", "medium", "weak"];
+var RESEARCH_FILE = /^\d{2,}[a-z]?-state-of-the-art-.+\.md$/;
+
+// src/research/check.ts
+var DATE2 = /\b\d{4}-\d{2}-\d{2}\b/;
+var URL2 = /https?:\/\/\S+/;
+var idOf2 = (section3) => RESEARCH_SECTIONS.find((id) => matchesHeading(section3.heading, researchKey(id)));
+var rowsIn = (sections, id) => tableRows(sections.find((section3) => idOf2(section3) === id)?.lines ?? []);
+var structure = (sections) => {
+  const ids2 = sections.flatMap((section3) => idOf2(section3) ?? []);
+  const missing2 = RESEARCH_SECTIONS.filter((id) => !ids2.includes(id));
+  const top = ids2[0] === "not_read" && ids2[1] === "not_verified";
+  return [
+    ...missing2.length === 0 ? [] : [
+      {
+        kind: "missing_sections",
+        line: 1,
+        detail: missing2.map((id) => catalogs.en[researchKey(id)]).join(", ")
+      }
+    ],
+    ...top || missing2.includes("not_read") || missing2.includes("not_verified") ? [] : [{ kind: "lists_not_on_top", line: sections[0]?.line ?? 1, detail: ids2.join(", ") }]
+  ];
+};
+var sourceIssues = (rows) => rows.flatMap(({ cells, line: line4 }) => {
+  const [id = "", , url2 = "", accessed = "", kind = "", version = ""] = cells;
+  const known2 = SOURCE_KINDS.find((item2) => item2 === kind.toLowerCase());
+  return [
+    ...URL2.test(url2) ? [] : [{ kind: "source_without_url", line: line4, detail: id }],
+    ...DATE2.test(accessed) ? [] : [{ kind: "source_without_date", line: line4, detail: id }],
+    ...known2 === void 0 ? [{ kind: "unknown_kind", line: line4, detail: `${id}: ${kind}` }] : [],
+    ...known2 === "index" && version === "" ? [{ kind: "index_without_version", line: line4, detail: id }] : []
+  ];
+});
+var kindsOf = (rows) => new Map(
+  rows.flatMap(({ cells }) => {
+    const kind = SOURCE_KINDS.find((item2) => item2 === (cells[4] ?? "").toLowerCase());
+    return kind === void 0 ? [] : [[(cells[0] ?? "").toUpperCase(), kind]];
+  })
+);
+var findingIssues = (rows, kinds) => rows.flatMap(({ cells, line: line4 }) => {
+  const [finding5 = "", strength = "", cited = ""] = cells;
+  const ids2 = cited.split(/[,\s]+/).map((id) => id.toUpperCase()).filter((id) => id !== "");
+  const unknown = ids2.filter((id) => !kinds.has(id));
+  const backing = ids2.flatMap((id) => kinds.get(id) ?? []);
+  const strong = strength.toLowerCase() === "strong";
+  const alone = (kind) => strong && backing.length > 0 && backing.every((item2) => item2 === kind);
+  return [
+    ...STRENGTHS.some((item2) => item2 === strength.toLowerCase()) ? [] : [{ kind: "unknown_strength", line: line4, detail: `${finding5}: ${strength}` }],
+    ...ids2.length === 0 || unknown.length > 0 ? [{ kind: "unknown_source", line: line4, detail: `${finding5}: ${unknown.join(", ") || "-"}` }] : [],
+    ...alone("index") ? [{ kind: "index_alone_strong", line: line4, detail: finding5 }] : [],
+    ...alone("vendor") ? [{ kind: "vendor_alone_strong", line: line4, detail: finding5 }] : []
+  ];
+});
+var versionIssues = (rows) => rows.flatMap(({ cells, line: line4 }) => {
+  const [name = "", version = "", checkedIn = "", date = ""] = cells;
+  return version === "" || checkedIn === "" || !DATE2.test(date) ? [{ kind: "version_unchecked", line: line4, detail: name }] : [];
+});
+var readResearch = (file, text10) => {
+  const { body: body2 } = readFront(text10);
+  const offset = text10.replace(/\r\n/g, "\n").split("\n").length - body2.split("\n").length;
+  const sections = sectionsOf(body2, offset);
+  const sources = rowsIn(sections, "sources");
+  const kinds = kindsOf(sources);
+  const primary = [...kinds.values()].includes("primary");
+  const issues = [
+    ...structure(sections),
+    ...sourceIssues(sources),
+    ...findingIssues(rowsIn(sections, "findings"), kinds),
+    ...versionIssues(rowsIn(sections, "versions")),
+    ...primary ? [] : [{ kind: "no_primary", line: 1, detail: file }]
+  ];
+  return { file, text: text10, kinds, issues: issues.map((item2) => ({ ...item2, file })) };
+};
+var researchRecords = (runtime, root, only) => planFiles(runtime, root).filter((name) => RESEARCH_FILE.test(name) && (only === void 0 || name === only)).flatMap((name) => {
+  const text10 = runtime.readText(planPath(root, name));
+  return text10.ok ? [readResearch(`${PLAN_DIR}/${name}`, text10.value)] : [];
+});
+
+// src/inventory/dependencies.ts
+var MANIFESTS = /(^|\/)(package\.json|requirements\.txt|go\.mod)$/;
+var MAX_MANIFESTS = 8;
+var PACKAGE_SECTIONS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
+var REQUIREMENT = /^([A-Za-z0-9_.-]+)\s*(?:[=<>~!]=?\s*([^\s;#]+))?/;
+var GO_REQUIRE = /^\s*(?:require\s+)?([\w.-]+\.[\w./-]+)\s+(v[\w.+-]+)/;
+var lineOf = (lines4, needle) => lines4.findIndex((line4) => line4.includes(needle)) + 1;
+var fromPackage = (file, text10) => {
+  const parsed = parseJsonObject(text10);
+  if (!parsed.ok) return [];
+  const lines4 = text10.split("\n");
+  return PACKAGE_SECTIONS.flatMap((section3) => {
+    const block4 = parsed.value[section3];
+    if (!isRecord(block4)) return [];
+    return Object.entries(block4).map(([name, version]) => ({
+      name,
+      version: typeof version === "string" ? version : "",
+      at: `${file}:${String(lineOf(lines4, `"${name}"`))}`
+    }));
+  });
+};
+var fromLines = (file, text10, pattern) => text10.split("\n").flatMap((line4, index) => {
+  const match = pattern.exec(line4.trim() === "" || line4.trimStart().startsWith("#") ? "" : line4);
+  if (match?.[1] === void 0) return [];
+  return [{ name: match[1], version: match[2] ?? "", at: `${file}:${String(index + 1)}` }];
+});
+var parseManifest = (file, text10) => {
+  if (file.endsWith("package.json")) return fromPackage(file, text10);
+  return fromLines(file, text10, file.endsWith("go.mod") ? GO_REQUIRE : REQUIREMENT);
+};
+var dependenciesAt = (git2, hash, files) => files.filter((file) => MANIFESTS.test(file)).slice(0, MAX_MANIFESTS).flatMap((file) => {
+  const text10 = showAt(git2, hash, file);
+  return text10 === void 0 ? [] : parseManifest(file, text10);
+});
+
+// src/research/dependencies.ts
+var MANIFEST = /(^|\/)(package\.json|requirements\.txt|go\.mod)$/;
+var namesIn = (file, text10) => new Set(text10 === void 0 ? [] : parseManifest(file, text10).map((item2) => item2.name));
+var addedDependencies = (ctx) => ctx.changes.filter((change) => change.status !== "D" && MANIFEST.test(change.path)).flatMap((change) => {
+  const before = namesIn(change.path, fileAt(ctx.git, ctx.base, change.oldPath ?? change.path));
+  const now = ctx.runtime.readText(toAbsolutePath(change.path, ctx.paths.root));
+  return [...namesIn(change.path, now.ok ? now.value : void 0)].filter((name) => !before.has(name));
+});
+
+// src/gate/checks/research.ts
+var MAX_LISTED7 = 10;
+var required = (ctx) => projectPreset(ctx.runtime, ctx.paths.root) === "gabriel" || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
+var findings = (ctx) => {
+  const records = researchRecords(ctx.runtime, ctx.paths.root);
+  const valid = records.filter((record4) => record4.issues.length === 0);
+  const rulePaths = configList(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "rule_paths");
+  const rules = rulePaths.length === 0 ? [] : ctx.changes.filter((change) => matchesAny(change.path, rulePaths));
+  const backed = valid.some((record4) => ctx.changes.some((change) => change.path === record4.file));
+  return [
+    ...records.flatMap(
+      (record4) => record4.issues.map(
+        (item2) => note(`research.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` })
+      )
+    ),
+    ...addedDependencies(ctx).filter((name) => !valid.some((record4) => record4.text.includes(name))).map((name) => note("gate.research.dependency", { name })),
+    ...rules.length > 0 && !backed ? [
+      note("gate.research.rule", {
+        paths: rules.slice(0, 3).map((change) => change.path).join(", ")
+      })
+    ] : []
+  ].slice(0, MAX_LISTED7);
+};
+var researchCheck = (_check, ctx) => {
+  const notes2 = findings(ctx);
+  if (notes2.length === 0) return passed([note("gate.research.clean")]);
+  return required(ctx) ? failed(notes2) : passed([note("gate.research.warning_only"), ...notes2]);
+};
+
 // src/gate/checks/review.ts
 var MAX_SENSITIVE = 5;
 var sizeNotes = (ctx) => {
@@ -14581,14 +14935,14 @@ var loadBaseline = (runtime, root) => {
 var serializeBaseline = (baseline) => `${JSON.stringify({ schema: baseline.schema, entries: [...baseline.entries].sort((a, b) => a.id.localeCompare(b.id)) }, null, 2)}
 `;
 var saveBaseline = (runtime, root, baseline) => runtime.writeText(baselinePath(root), serializeBaseline(baseline));
-var ratchet = (findings, baseline, now, inScope) => {
+var ratchet = (findings2, baseline, now, inScope) => {
   const byId = new Map(baseline.entries.map((entry2) => [entry2.id, entry2]));
-  const seen = new Set(findings.map((finding5) => finding5.id));
+  const seen = new Set(findings2.map((finding5) => finding5.id));
   const entryOf5 = (finding5) => byId.get(finding5.id);
   return {
-    fresh: findings.filter((finding5) => entryOf5(finding5) === void 0),
-    known: findings.filter((finding5) => (entryOf5(finding5)?.expiresAt ?? "") >= now),
-    expired: findings.filter((finding5) => {
+    fresh: findings2.filter((finding5) => entryOf5(finding5) === void 0),
+    known: findings2.filter((finding5) => (entryOf5(finding5)?.expiresAt ?? "") >= now),
+    expired: findings2.filter((finding5) => {
       const entry2 = entryOf5(finding5);
       return entry2 !== void 0 && entry2.expiresAt < now;
     }),
@@ -14861,7 +15215,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED7 = 10;
+var MAX_LISTED8 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -14870,11 +15224,11 @@ var sinceOf = (ctx) => {
 var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
-  const { findings, openIncidents } = status.value;
-  const warnings = findings.filter(isWarning).slice(0, MAX_LISTED7).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
+  const { findings: findings2, openIncidents } = status.value;
+  const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED8).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
   const notes2 = [
-    ...blocking(findings).slice(0, MAX_LISTED7).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED7).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
+    ...blocking(findings2).slice(0, MAX_LISTED8).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED8).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
   ];
   if (notes2.length > 0) return failed([...notes2, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
@@ -14899,7 +15253,7 @@ var forChange = (input, change) => {
 var analyzeTree = (input) => input.changes.flatMap((change) => forChange(input, change));
 
 // src/gate/checks/tests.ts
-var MAX_LISTED8 = 10;
+var MAX_LISTED9 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -14924,7 +15278,7 @@ var treeViolations = (ctx) => {
 var testsCheck = (check2, ctx) => {
   const violations = treeViolations(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes2 = violations.slice(0, MAX_LISTED8).map(violationNote);
+  const notes2 = violations.slice(0, MAX_LISTED9).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed([...notes2, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes2, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -15755,10 +16109,10 @@ var findingLabel = (finding5) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED9 = 8;
+var MAX_LISTED10 = 8;
 var listed3 = (items) => {
-  const head = items.slice(0, MAX_LISTED9).join(", ");
-  return items.length > MAX_LISTED9 ? `${head} (+${String(items.length - MAX_LISTED9)})` : head;
+  const head = items.slice(0, MAX_LISTED10).join(", ");
+  return items.length > MAX_LISTED10 ? `${head} (+${String(items.length - MAX_LISTED10)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf = (ctx) => ownerKey(ctx.sessionId);
@@ -15821,7 +16175,8 @@ var DEFAULT_CHECKS = {
   look: lookCheck,
   inventory: inventoryCheck,
   plan: planCheck,
-  decision: decisionCheck
+  decision: decisionCheck,
+  research: researchCheck
 };
 
 // src/gate/run.ts
@@ -17690,8 +18045,8 @@ var collect3 = (target2, segment, args2, spec2, heredocs) => {
   const values = flagValues(args2, spec2);
   if (values.length === 0) return void 0;
   const title = values.find((item2) => spec2.title.includes(item2.flag));
-  const bodies2 = values.filter((item2) => !spec2.title.includes(item2.flag)).map((item2) => sourceOf(item2.value, spec2.file.includes(item2.flag), segment, heredocs));
-  return { target: target2, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies: bodies2 };
+  const bodies3 = values.filter((item2) => !spec2.title.includes(item2.flag)).map((item2) => sourceOf(item2.value, spec2.file.includes(item2.flag), segment, heredocs));
+  return { target: target2, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies: bodies3 };
 };
 var gitSubcommand = (args2) => {
   let index = 0;
@@ -17822,9 +18177,9 @@ var PROSE_HANDLERS = {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED10 = 5;
+var MAX_LISTED11 = 5;
 var describeFindings = (t, items) => {
-  const listed5 = items.slice(0, MAX_LISTED10).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
+  const listed5 = items.slice(0, MAX_LISTED11).map(({ ruleId, where: where2 }) => t("secrets.found_item", { rule: ruleId, where: where2 }));
   const rest = items.length - listed5.length;
   return rest > 0 ? `${listed5.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed5.join("; ");
 };
@@ -17837,8 +18192,8 @@ var liveFindings = (input, texts2) => {
   const accepted2 = acceptedFingerprints(baseline.ok ? baseline.value : EMPTY_BASELINE, input.runtime.now());
   return texts2.flatMap((text10) => scanText(text10, { rules: CREDENTIAL_RULES })).filter((finding5) => !accepted2.has(finding5.fingerprint));
 };
-var record3 = (input, findings, draft, where2) => {
-  const ids2 = findings.map((finding5) => {
+var record3 = (input, findings2, draft, where2) => {
+  const ids2 = findings2.map((finding5) => {
     const saved = recordIncident(
       input.runtime,
       input.cwd,
@@ -17851,21 +18206,21 @@ var record3 = (input, findings, draft, where2) => {
 };
 var secretsUserPromptSubmit = (input) => {
   const prompt = optionalString(input.payload.raw, "prompt") ?? "";
-  const findings = liveFindings(input, [prompt]);
-  if (findings.length === 0) return { kind: "allow" };
-  const incident = record3(input, findings, { source: "prompt", state: "exposicao-local" }, "prompt");
-  const items = findings.map((finding5) => ({ ruleId: finding5.ruleId, where: lineWhere(input.t, finding5) }));
+  const findings2 = liveFindings(input, [prompt]);
+  if (findings2.length === 0) return { kind: "allow" };
+  const incident = record3(input, findings2, { source: "prompt", state: "exposicao-local" }, "prompt");
+  const items = findings2.map((finding5) => ({ ruleId: finding5.ruleId, where: lineWhere(input.t, finding5) }));
   return {
     kind: "block",
     reason: input.t("secrets.block.prompt", { found: describeFindings(input.t, items), incident })
   };
 };
 var secretsPostToolUse = (input) => {
-  const findings = liveFindings(input, stringLeaves(input.payload.raw["tool_response"]));
-  if (findings.length === 0) return { kind: "allow" };
+  const findings2 = liveFindings(input, stringLeaves(input.payload.raw["tool_response"]));
+  if (findings2.length === 0) return { kind: "allow" };
   const tool = toolName(input.payload) || "tool";
-  const incident = record3(input, findings, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
-  const items = findings.map((finding5) => ({ ruleId: finding5.ruleId, where: lineWhere(input.t, finding5) }));
+  const incident = record3(input, findings2, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
+  const items = findings2.map((finding5) => ({ ruleId: finding5.ruleId, where: lineWhere(input.t, finding5) }));
   const context = input.t("secrets.post.context", { tool, found: describeFindings(input.t, items), incident });
   return {
     kind: "allow",
@@ -19009,7 +19364,7 @@ var toItem = (ctx, finding5) => ({
   ...finding5.fixKey === void 0 ? {} : { fix: ctx.t(finding5.fixKey, finding5.params) }
 });
 var count3 = (items, status) => items.filter((item2) => item2.status === status).length;
-var hookItems = (ctx, findings) => findings.flatMap(
+var hookItems = (ctx, findings2) => findings2.flatMap(
   (finding5) => finding5.hook === void 0 ? [] : [
     {
       check: finding5.check,
@@ -19018,12 +19373,12 @@ var hookItems = (ctx, findings) => findings.flatMap(
     }
   ]
 );
-var buildReport2 = (ctx, findings) => {
-  const checks = findings.map((finding5) => toItem(ctx, finding5));
+var buildReport2 = (ctx, findings2) => {
+  const checks = findings2.map((finding5) => toItem(ctx, finding5));
   return {
     schema: DOCTOR_SCHEMA,
     checks,
-    hooks: hookItems(ctx, findings),
+    hooks: hookItems(ctx, findings2),
     summary: { ok: count3(checks, "ok"), warn: count3(checks, "warn"), fail: count3(checks, "fail") }
   };
 };
@@ -19434,10 +19789,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED11 = 5;
+var MAX_LISTED12 = 5;
 var detailOf = (check2) => {
-  const listed5 = check2.failures.slice(0, MAX_LISTED11).join("; ");
-  const rest = check2.failures.length - MAX_LISTED11;
+  const listed5 = check2.failures.slice(0, MAX_LISTED12).join("; ");
+  const rest = check2.failures.length - MAX_LISTED12;
   return rest > 0 ? `${listed5}; +${String(rest)}` : listed5;
 };
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf(check2), fix: check2.fix });
@@ -20701,41 +21056,6 @@ var initCommand = {
 // src/inventory/run.ts
 import { relative as relative10 } from "node:path";
 
-// src/inventory/dependencies.ts
-var MANIFESTS = /(^|\/)(package\.json|requirements\.txt|go\.mod)$/;
-var MAX_MANIFESTS = 8;
-var PACKAGE_SECTIONS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
-var REQUIREMENT = /^([A-Za-z0-9_.-]+)\s*(?:[=<>~!]=?\s*([^\s;#]+))?/;
-var GO_REQUIRE = /^\s*(?:require\s+)?([\w.-]+\.[\w./-]+)\s+(v[\w.+-]+)/;
-var lineOf = (lines4, needle) => lines4.findIndex((line4) => line4.includes(needle)) + 1;
-var fromPackage = (file, text10) => {
-  const parsed = parseJsonObject(text10);
-  if (!parsed.ok) return [];
-  const lines4 = text10.split("\n");
-  return PACKAGE_SECTIONS.flatMap((section3) => {
-    const block4 = parsed.value[section3];
-    if (!isRecord(block4)) return [];
-    return Object.entries(block4).map(([name, version]) => ({
-      name,
-      version: typeof version === "string" ? version : "",
-      at: `${file}:${String(lineOf(lines4, `"${name}"`))}`
-    }));
-  });
-};
-var fromLines = (file, text10, pattern) => text10.split("\n").flatMap((line4, index) => {
-  const match = pattern.exec(line4.trim() === "" || line4.trimStart().startsWith("#") ? "" : line4);
-  if (match?.[1] === void 0) return [];
-  return [{ name: match[1], version: match[2] ?? "", at: `${file}:${String(index + 1)}` }];
-});
-var parseManifest = (file, text10) => {
-  if (file.endsWith("package.json")) return fromPackage(file, text10);
-  return fromLines(file, text10, file.endsWith("go.mod") ? GO_REQUIRE : REQUIREMENT);
-};
-var dependenciesAt = (git2, hash, files) => files.filter((file) => MANIFESTS.test(file)).slice(0, MAX_MANIFESTS).flatMap((file) => {
-  const text10 = showAt(git2, hash, file);
-  return text10 === void 0 ? [] : parseManifest(file, text10);
-});
-
 // src/inventory/read.ts
 var MAX_TEXT = 120;
 var HOTSPOT_COMMITS = 300;
@@ -20804,8 +21124,8 @@ var readRepo = (git2, path, ref, hash, covered) => {
 };
 
 // src/inventory/render.ts
-var MAX_LISTED12 = 40;
-var capped = (t, lines4) => lines4.length > MAX_LISTED12 ? [...lines4.slice(0, MAX_LISTED12), `- ${t("inventory.more", { count: lines4.length - MAX_LISTED12 })}`] : lines4;
+var MAX_LISTED13 = 40;
+var capped = (t, lines4) => lines4.length > MAX_LISTED13 ? [...lines4.slice(0, MAX_LISTED13), `- ${t("inventory.more", { count: lines4.length - MAX_LISTED13 })}`] : lines4;
 var listed4 = (t, lines4) => lines4.length === 0 ? [t("inventory.none")] : capped(t, lines4);
 var hitLines = (t, hits) => listed4(
   t,
@@ -21044,12 +21364,12 @@ var pageFindings = (result) => {
     ...many(result, "look/touch-target", measure?.small ?? [])
   ];
 };
-var applyAllows = (findings, allows, decided) => {
+var applyAllows = (findings2, allows, decided) => {
   const accepted2 = allows.filter((allow2) => decided(allow2.decision));
   const ignored = allows.filter((allow2) => !decided(allow2.decision)).map((allow2) => `${allow2.rule} ${allow2.route} ${allow2.decision}`);
   return {
     ignored,
-    findings: findings.map((item2) => {
+    findings: findings2.map((item2) => {
       const allow2 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
       return allow2 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow2.decision };
     })
@@ -21922,6 +22242,106 @@ var proseCheckCommand = {
   }
 };
 
+// src/research/template.ts
+var bodies2 = (t) => ({
+  not_read: [t("research.hint.not_read")],
+  not_verified: [t("research.hint.not_verified")],
+  sources: [t("research.hint.sources"), "", ...table(["ID", "Source", "URL", "Accessed", "Kind", "Version"], [])],
+  findings: [t("research.hint.findings"), "", ...table(["Finding", "Strength", "Sources"], [])],
+  versions: [t("research.hint.versions"), "", ...table(["Library", "Version", "Checked in", "Date"], [])]
+});
+var renderResearch = (t, topic, date) => {
+  const filled = bodies2(t);
+  const body2 = [
+    `# ${t("research.title", { topic })}`,
+    "",
+    ...RESEARCH_SECTIONS.flatMap((id) => [`## ${t(researchKey(id))}`, "", ...filled[id] ?? [], ""])
+  ].join("\n");
+  return writeFront({ schema: RESEARCH_SCHEMA, topic, date }, body2);
+};
+
+// src/commands/research.ts
+var inRepo3 = (ctx, run4) => {
+  const repo = repoOf(ctx);
+  return Promise.resolve(repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : run4(repo.root));
+};
+var writeProblem3 = (detail) => ({
+  code: "plan_write_failed",
+  messageKey: "plan.error.write",
+  params: { detail },
+  fix: "check that docs/plan can be written",
+  exitCode: ExitCode.CheckFailed
+});
+var recordName = (names, topic) => {
+  const slug2 = slugOf(topic);
+  const today = names.find((name) => name.endsWith(`-today-${slug2}.md`));
+  const number2 = today === void 0 ? void 0 : numberOf(today);
+  const prefix2 = number2 === void 0 ? nextNumber(names) : String(number2).padStart(2, "0");
+  return `${prefix2}b-state-of-the-art-${slug2}.md`;
+};
+var newRecord2 = (ctx, root, topic) => {
+  const names = planFiles(ctx.runtime, root);
+  const name = recordName(names, topic);
+  if (names.includes(name))
+    return success({ schema: RESEARCH_SCHEMA, file: `${PLAN_DIR}/${name}`, topic, created: false }, [
+      ctx.t("plan.exists", { file: `${PLAN_DIR}/${name}` })
+    ]);
+  const made = ctx.runtime.mkdir(planDir(root));
+  const written = made.ok ? ctx.runtime.writeText(planPath(root, name), renderResearch(ctx.t, topic, ctx.runtime.now().slice(0, 10))) : made;
+  if (!written.ok) return failureFrom(ctx.t, writeProblem3(written.error));
+  const file = `${PLAN_DIR}/${name}`;
+  return {
+    ...success({ schema: RESEARCH_SCHEMA, file, topic, created: true }, [ctx.t("research.created", { file })]),
+    next: `finitemonkey research check ${file}`
+  };
+};
+var researchNewCommand = {
+  path: ["research", "new"],
+  summaryKey: "command.research_new.summary",
+  usage: "finitemonkey research new <topic>",
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => {
+    const topic = args2.positionals[0]?.trim() ?? "";
+    if (topic === "")
+      return Promise.resolve(
+        failureFrom(
+          ctx.t,
+          usageProblem("invalid_arguments", "inventory.error.topic", "finitemonkey research new <topic>")
+        )
+      );
+    return inRepo3(ctx, (root) => newRecord2(ctx, root, topic));
+  }
+};
+var researchCheckCommand = {
+  path: ["research", "check"],
+  summaryKey: "command.research_check.summary",
+  usage: "finitemonkey research check [<docs/plan/NNb-state-of-the-art-topic.md>]",
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => inRepo3(ctx, (root) => {
+    const only = args2.positionals[0]?.replace(/^.*[\\/]/, "");
+    const records = researchRecords(ctx.runtime, root, only);
+    const issues = records.flatMap((record4) => record4.issues);
+    const data = { schema: RESEARCH_SCHEMA, records: records.length, issues };
+    if (issues.length === 0) return success(data, [ctx.t("research.clean", { count: records.length })]);
+    return failureFrom(
+      ctx.t,
+      {
+        code: "research_invalid",
+        messageKey: "research.error.invalid",
+        params: { count: issues.length },
+        fix: "date every source, mark its kind and fix each line listed, then run finitemonkey research check again",
+        exitCode: ExitCode.CheckFailed,
+        data
+      },
+      issues.map(
+        (item2) => `  ${item2.file}:${String(item2.line)} ${ctx.t(`research.issue.${item2.kind}`, { detail: item2.detail })}`
+      )
+    );
+  })
+};
+
 // src/review/packet.ts
 import { join as join54 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
@@ -22436,7 +22856,7 @@ var historyIncidents = (ctx, root, fresh3) => fresh3.flatMap((finding5) => {
   return saved.ok ? [saved.value.id] : [];
 });
 var dataOf2 = (mode, outcome2, incidents) => {
-  const findings = [
+  const findings2 = [
     ...outcome2.fresh.map((finding5) => view(finding5, "new")),
     ...outcome2.known.map((finding5) => view(finding5, "known")),
     ...outcome2.expired.map((finding5) => view(finding5, "expired"))
@@ -22445,11 +22865,11 @@ var dataOf2 = (mode, outcome2, incidents) => {
     schema: SECRETS_SCAN_SCHEMA,
     mode,
     baseline: BASELINE_FILE2,
-    findings,
+    findings: findings2,
     fixed: outcome2.fixed.map((entry2) => entry2.id),
     incidents,
     summary: {
-      total: findings.length,
+      total: findings2.length,
       new: outcome2.fresh.length,
       known: outcome2.known.length,
       expired: outcome2.expired.length,
@@ -23861,19 +24281,19 @@ var wtDoctorCommand = {
   run: (ctx, args2) => {
     const inventory = inventoryOf(ctx, args2.values);
     if (inventory === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
-    const findings = wtDoctor(inventory, ctx.env);
-    const data = { schema: "finitemonkey/wt-doctor@1", findings };
+    const findings2 = wtDoctor(inventory, ctx.env);
+    const data = { schema: "finitemonkey/wt-doctor@1", findings: findings2 };
     const human2 = [
-      ctx.t("wt.doctor.title", { count: findings.length }),
-      ...findings.map((item2) => findingLine(ctx, item2))
+      ctx.t("wt.doctor.title", { count: findings2.length }),
+      ...findings2.map((item2) => findingLine(ctx, item2))
     ];
-    if (findings.length === 0) return Promise.resolve(success(data, human2));
+    if (findings2.length === 0) return Promise.resolve(success(data, human2));
     return Promise.resolve({
       ok: false,
       exitCode: ExitCode.CheckFailed,
       error: {
         code: "doctor_failed",
-        message: ctx.t("wt.doctor.title", { count: findings.length }),
+        message: ctx.t("wt.doctor.title", { count: findings2.length }),
         fix: "finitemonkey wt clean"
       },
       data,
@@ -24053,6 +24473,8 @@ var REGISTRY2 = [
   decideNewCommand,
   decideCheckCommand,
   decideRevokeCommand,
+  researchNewCommand,
+  researchCheckCommand,
   versionCommand,
   helpCommand
 ];

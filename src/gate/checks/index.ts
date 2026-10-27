@@ -11,6 +11,7 @@ import { placeholdersCheck } from "./placeholders.js";
 import { planCheck } from "./plan.js";
 import { prOutcome } from "./pr.js";
 import { proseCheck } from "./prose.js";
+import { researchCheck } from "./research.js";
 import { reviewCheck } from "./review.js";
 import { runtimeCheck } from "./runtime.js";
 import { secretsCheck } from "./secrets.js";
@@ -36,4 +37,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   inventory: inventoryCheck,
   plan: planCheck,
   decision: decisionCheck,
+  research: researchCheck,
 };
