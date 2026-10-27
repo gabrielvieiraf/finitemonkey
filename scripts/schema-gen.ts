@@ -82,6 +82,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey wt list --json`.",
   },
   {
+    name: "merge-report@1",
+    file: "src/merge/report.ts",
+    type: "MergeReport",
+    describes: "Report of one merge run by `finitemonkey merge`, also `data` of its `--json` output.",
+  },
+  {
     name: "evidence@1",
     file: "src/evidence/types.ts",
     type: "Evidence",

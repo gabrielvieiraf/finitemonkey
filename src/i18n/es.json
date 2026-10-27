@@ -939,5 +939,16 @@
   "cost.report.conservative": "conservador",
   "cost.report.assumptions": "Supuestos",
   "cost.report.limits": "Límites de los proveedores",
-  "cost.report.measure": "Qué medir en producción"
+  "cost.report.measure": "Qué medir en producción",
+  "merge.command": "Fusiona una rama en un worktree de integración, clasificando cada trozo en conflicto de C0 a C8",
+  "merge.done": "{source} fusionada en {target} en {branch}; abre un pull request desde ella",
+  "merge.stopped": "La fusión de {source} en {target} se detuvo por {count, plural, one {# motivo} other {# motivos}}; no se hizo commit en {branch}",
+  "merge.file": "{cls}  {path}  {rule}: {decision}",
+  "merge.stop": "parada: {reason} ({path})",
+  "merge.semantic": "candidato semántico: {symbol} en {file} ({reason})",
+  "merge.report": "Informe: {path}",
+  "merge.error.needs_source": "merge necesita la rama a fusionar",
+  "merge.error.failed": "La fusión no pudo empezar: {detail}",
+  "merge.hook.aborted": "Un git merge directo se detuvo con conflictos en {files}. Finite Monkey guardó la instantánea {ref} y ejecutó git merge --abort. Fusiona con finitemonkey merge <rama>, que clasifica cada trozo y nunca elige un lado entero.",
+  "merge.hook.not_aborted": "Un git merge directo se detuvo con conflictos en {files} y no se pudo abortar con seguridad; resuélvelo con finitemonkey merge <rama>."
 }

@@ -939,5 +939,16 @@
   "cost.report.conservative": "conservador",
   "cost.report.assumptions": "Premissas",
   "cost.report.limits": "Limites dos provedores",
-  "cost.report.measure": "O que medir em produção"
+  "cost.report.measure": "O que medir em produção",
+  "merge.command": "Mescla uma branch num worktree de integração, classificando cada trecho de conflito de C0 a C8",
+  "merge.done": "{source} mesclada em {target} na {branch}; abra um pull request a partir dela",
+  "merge.stopped": "A mescla de {source} em {target} parou com {count, plural, one {# motivo} other {# motivos}}; nada foi commitado em {branch}",
+  "merge.file": "{cls}  {path}  {rule}: {decision}",
+  "merge.stop": "parada: {reason} ({path})",
+  "merge.semantic": "candidato semântico: {symbol} em {file} ({reason})",
+  "merge.report": "Relatório: {path}",
+  "merge.error.needs_source": "merge precisa da branch a mesclar",
+  "merge.error.failed": "A mescla não pôde começar: {detail}",
+  "merge.hook.aborted": "Um git merge direto parou com conflito em {files}. O Finite Monkey guardou a fotografia {ref} e rodou git merge --abort. Mescle com finitemonkey merge <branch>, que classifica cada trecho e nunca escolhe um lado inteiro.",
+  "merge.hook.not_aborted": "Um git merge direto parou com conflito em {files} e não deu para abortar com segurança; resolva pelo finitemonkey merge <branch>."
 }
