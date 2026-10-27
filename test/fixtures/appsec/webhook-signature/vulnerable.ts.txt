@@ -1,0 +1,6 @@
+app.post("/webhooks/payments", async (req, res) => {
+  const signature = req.headers["x-signature"];
+  if (signature !== expected(req.body)) return res.status(401).end();
+  await markPaid(req.body.event.id);
+  res.end();
+});

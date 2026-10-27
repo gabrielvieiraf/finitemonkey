@@ -32,6 +32,8 @@ export const FOOTPRINT = [
       ".finitemonkey/policy.yml",
       ".finitemonkey/briefing.md",
       ".finitemonkey/look.yml",
+      ".finitemonkey/appsec.yml",
+      ".finitemonkey/routes-public.yml",
     ],
   },
   {
@@ -92,6 +94,7 @@ export const FOOTPRINT = [
       "refs/finitemonkey/archive/",
     ],
   },
+  { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/"] },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },

@@ -88,7 +88,8 @@
             "pr_outside_scope",
             "reconcile_unavailable",
             "parity_check_failed",
-            "findings_not_found"
+            "findings_not_found",
+            "appsec_found"
           ]
         },
         "message": {
