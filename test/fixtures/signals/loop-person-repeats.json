@@ -1,0 +1,53 @@
+{
+  "expect": "loop",
+  "loopedBy": "person",
+  "description": "The person sends nearly the same request three times.",
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Make the login button work on mobile"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/login.tsx",
+          "old_string": "onClick",
+          "new_string": "onPointerUp"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Make the login button work on mobile please"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/login.tsx",
+          "old_string": "onPointerUp",
+          "new_string": "onTouchEnd"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Please make the login button work on mobile"
+      }
+    }
+  ]
+}

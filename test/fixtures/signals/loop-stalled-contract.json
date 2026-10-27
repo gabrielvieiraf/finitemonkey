@@ -1,0 +1,41 @@
+{
+  "expect": "loop",
+  "loopedBy": "model",
+  "description": "Five different requests while the active contract keeps failing on the same item.",
+  "files": {
+    ".finitemonkey/state.json": "{\"schemaVersion\":1,\"active\":\"t-cart\"}\n",
+    ".finitemonkey/cache/gate-status.json": "{\"schemaVersion\":1,\"status\":\"failed\",\"task\":\"t-cart\",\"detail\":\"C-tests (exit 1)\",\"at\":\"2026-10-25T11:00:00.000Z\"}\n"
+  },
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Make the cart keep items after a reload"
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Store the cart in local storage"
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Read it back when the page opens"
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Also clear it after payment"
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "And show a badge with the count"
+      }
+    }
+  ]
+}

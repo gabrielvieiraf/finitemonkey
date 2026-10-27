@@ -1,0 +1,140 @@
+{
+  "expect": "quiet",
+  "description": "Different requests, reads and one error that shows up twice.",
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Where is the session cookie set?"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Read",
+        "tool_input": {
+          "file_path": "src/auth/session.ts"
+        },
+        "tool_response": {}
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Read",
+        "tool_input": {
+          "file_path": "src/auth/cookie.ts"
+        },
+        "tool_response": {}
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Set SameSite to lax on that cookie"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/auth/cookie.ts",
+          "old_string": "sameSite: 'strict'",
+          "new_string": "sameSite: 'lax'"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test"
+        },
+        "error": "FAIL test/cookie.test.ts > sets lax\n Error: expected 'strict' to be 'lax'"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "test/cookie.test.ts",
+          "old_string": "'strict'",
+          "new_string": "'lax'"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test"
+        },
+        "error": "FAIL test/cookie.test.ts > sets lax\n Error: expected 'strict' to be 'lax'"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/auth/cookie.ts",
+          "old_string": "sameSite",
+          "new_string": "sameSite: 'lax' as const, other"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test"
+        },
+        "tool_response": {
+          "stdout": "ok",
+          "stderr": "",
+          "exitCode": 0
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Add a test for logout too"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "test/logout.test.ts",
+          "old_string": "",
+          "new_string": "it('logs out', () => {})"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Update the README with the cookie policy"
+      }
+    }
+  ]
+}
