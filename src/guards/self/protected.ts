@@ -16,6 +16,7 @@ export const selfTarget = (root: AbsolutePath, path: string): SelfKind | undefin
   const raw = normalize(path);
   const local = raw.startsWith("/") || /^[A-Za-z]:\//.test(raw) ? normalize(relative(root, path)) : raw;
   if (REGISTRY.test(raw) || REGISTRY.test(local)) return "registry";
+  if (/(^|\/)\.finitemonkey\/reports\/[^/]+\.json$/.test(local)) return undefined;
   const inFm = /(^|\/)\.finitemonkey(\/|$)/.test(local);
   if (inFm && /(^|\/)\.finitemonkey\/allow(\/|$)/.test(local)) return "allow_store";
   if (inFm || /(^|\/)\.gitleaksignore$/.test(local)) return "policy";
@@ -63,7 +64,10 @@ export const writtenPaths = (command: SimpleCommand): readonly string[] => {
   return command.redirects;
 };
 
+const FRONT_REPORT = /\.finitemonkey[\\/]reports[\\/][^\\/]+\.json$/;
+
 const mentioned = (text: string): SelfKind | undefined => {
+  if (FRONT_REPORT.test(text)) return undefined;
   if (/\.git[\\/]finitemonkey/.test(text)) return "registry";
   if (/\.finitemonkey[\\/]allow/.test(text)) return "allow_store";
   if (/\.finitemonkey|\.gitleaksignore/.test(text)) return "policy";

@@ -1026,7 +1026,16 @@
     "fronts.context.report": "machine",
     "doctor.briefing.long": "machine",
     "doctor.briefing.fix": "machine",
-    "doctor.briefing.ok": "machine"
+    "doctor.briefing.ok": "machine",
+    "fronts.command.close": "machine",
+    "fronts.error.unknown_front": "machine",
+    "fronts.error.report": "machine",
+    "fronts.close.done": "machine",
+    "fronts.block.report.claim": "machine",
+    "fronts.block.report.requires": "machine",
+    "fronts.block.report_human": "machine",
+    "fronts.notify.valid": "machine",
+    "fronts.notify.invalid": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2055,6 +2064,15 @@
     "fronts.context.report": "machine",
     "doctor.briefing.long": "machine",
     "doctor.briefing.fix": "machine",
-    "doctor.briefing.ok": "machine"
+    "doctor.briefing.ok": "machine",
+    "fronts.command.close": "machine",
+    "fronts.error.unknown_front": "machine",
+    "fronts.error.report": "machine",
+    "fronts.close.done": "machine",
+    "fronts.block.report.claim": "machine",
+    "fronts.block.report.requires": "machine",
+    "fronts.block.report_human": "machine",
+    "fronts.notify.valid": "machine",
+    "fronts.notify.invalid": "machine"
   }
 }
