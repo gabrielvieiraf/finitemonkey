@@ -70,7 +70,8 @@
             "look_failed",
             "look_unavailable",
             "critique_must_fix",
-            "plan_write_failed"
+            "plan_write_failed",
+            "creds_write_failed"
           ]
         },
         "message": {
