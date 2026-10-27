@@ -1032,5 +1032,11 @@
   "appsec.rule.ssrf": "{file}:{line}: the server fetches a URL that comes from the request ({detail}); allow-list the destination",
   "appsec.rule.cors-credentials": "{file}:{line}: CORS allows any origin together with credentials",
   "appsec.rule.rate-limit": "{file}:{line}: sensitive route {detail} has no rate limiter",
-  "appsec.rule.sql-concat": "{file}:{line}: SQL is built by concatenation; pass the values as parameters"
+  "appsec.rule.sql-concat": "{file}:{line}: SQL is built by concatenation; pass the values as parameters",
+  "datamap.command": "Write .finitemonkey/data-map.yml with a row per personal field in the Prisma, Drizzle or SQLAlchemy schema",
+  "datamap.written": "{file}: {count, plural, one {# personal field} other {# personal fields}}, {added} new.",
+  "datamap.open": "Fill legalBasis, retention and deletedIn for: {fields}.",
+  "gate.datamap.missing": "{file}:{line}: personal field {field} has no row in .finitemonkey/data-map.yml; run finitemonkey data-map and fill it",
+  "gate.datamap.incomplete": "{file}:{line}: personal field {field} has no legal basis, retention or deletion path in .finitemonkey/data-map.yml",
+  "gate.datamap.ai": "{file}:{line}: {field} goes to an AI provider without a recorded decision (the ai column of .finitemonkey/data-map.yml)"
 }

@@ -95,6 +95,7 @@ export const FOOTPRINT = [
     ],
   },
   { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/"] },
+  { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/", ".finitemonkey/data-map.yml"] },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },

@@ -3,6 +3,7 @@ import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { critiqueVerifyCommand } from "./critique.js";
+import { dataMapCommand } from "./data-map.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { doctorCommand } from "./doctor.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
@@ -73,6 +74,7 @@ export const REGISTRY = [
   appCheckCommand,
   appsecScanCommand,
   appsecRulesCommand,
+  dataMapCommand,
   commitMsgCommand,
   pushCheckCommand,
   ciGateCommand,
