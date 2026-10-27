@@ -45,6 +45,7 @@ export const ERROR_CODES = [
   "git_rescue_failed",
   "merge_lost_work",
   "merge_unanalyzable",
+  "app_check_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

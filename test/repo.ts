@@ -2,11 +2,15 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { ExecRequest, ExecResult, Runtime } from "../src/core/runtime.js";
 import { execResult } from "./support.js";
+
+const TSX = import.meta.resolve("tsx");
+const CLI_SOURCE = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
 export interface Repo {
   readonly root: AbsolutePath;
@@ -94,6 +98,8 @@ export const repoRuntime = (options: RepoRuntimeOptions = {}): Runtime => {
       options.spawned?.push([...args]);
       return true;
     },
+    execSelf: (args, cwd, timeoutMs) =>
+      base.exec({ command: process.execPath, args: ["--import", TSX, CLI_SOURCE, ...args], cwd, timeoutMs }),
   };
 };
 

@@ -8,6 +8,7 @@ import { placeholdersCheck } from "./placeholders.js";
 import { prOutcome } from "./pr.js";
 import { proseCheck } from "./prose.js";
 import { reviewCheck } from "./review.js";
+import { runtimeCheck } from "./runtime.js";
 import { secretsCheck } from "./secrets.js";
 import { testsCheck } from "./tests.js";
 import { mergeCheck, worktreeCheck } from "./worktree.js";
@@ -26,4 +27,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   merge: mergeCheck,
   review: reviewCheck,
   callers: callersCheck,
+  runtime: runtimeCheck,
 };

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/app-check@1.json",
+  "title": "finitemonkey/app-check@1",
+  "description": "`data` of `finitemonkey app check --json`. Generated from AppCheckData in src/commands/app-check.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/app-check@1"
+    },
+    "url": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["ok", "crashed", "no_port", "wrong_status", "body_mismatch", "request_failed", "no_start"]
+    },
+    "reused": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "number"
+    },
+    "exitCode": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "output": {
+      "type": "string"
+    },
+    "bodyExcerpt": {
+      "type": "string"
+    },
+    "stopped": {
+      "type": "boolean"
+    },
+    "durationMs": {
+      "type": "number"
+    }
+  },
+  "required": ["schema", "url", "kind", "reused", "output", "stopped", "durationMs"]
+}

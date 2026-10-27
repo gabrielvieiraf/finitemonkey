@@ -101,6 +101,8 @@ export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
       options.spawned?.push([...args]);
       return true;
     },
+    execSelf: (args, cwd, timeoutMs) =>
+      options.exec?.({ command: "finitemonkey", args, cwd, timeoutMs }) ?? execResult(1, "", "no self"),
     gitWith: options.gitWith ?? ((args) => ({ ...(options.git?.(args) ?? gitMissing), stderr: "", timedOut: false })),
     realpath: (path) => path,
     homeDir: () => "/home/test",

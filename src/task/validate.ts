@@ -54,11 +54,27 @@ const gitRequire = (value: unknown, at: string, issues: Issues): readonly GitReq
   return known.filter((item): item is GitRequirement => item !== undefined);
 };
 
+const appFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issues): Partial<AcceptanceCheck> => {
+  const port = positive(record, "port", at, issues);
+  if (kind === "runtime" && port === undefined) issues.push(`${at}port: required`);
+  if (port !== undefined && port > 65535) issues.push(`${at}port: must be at most 65535`);
+  const status = positive(record, "status", at, issues);
+  const route = str(record, "route", at, issues, false);
+  const body = str(record, "body", at, issues, false);
+  return {
+    ...(port === undefined ? {} : { port }),
+    ...(route === undefined ? {} : { route }),
+    ...(status === undefined ? {} : { status }),
+    ...(body === undefined ? {} : { body }),
+  };
+};
+
 const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issues): Partial<AcceptanceCheck> => {
   const run = str(record, "run", at, issues, kind === "command");
   const timeoutS = positive(record, "timeout_s", at, issues);
   const description = str(record, "description", at, issues, kind === "manual");
   const require = kind === "git" ? gitRequire(record["require"] ?? ["committed"], `${at}require`, issues) : undefined;
+  const app = appFields(record, kind, at, issues);
   const open = record["require_open"];
   if (open !== undefined && typeof open !== "boolean") issues.push(`${at}require_open: must be true or false`);
   return {
@@ -67,6 +83,7 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
     ...(description === undefined ? {} : { description }),
     ...(require === undefined ? {} : { require }),
     ...(typeof open === "boolean" ? { requireOpen: open } : {}),
+    ...app,
   };
 };
 

@@ -97,6 +97,7 @@ export interface Runtime {
   readonly exec: Exec;
   readonly appendText: (path: AbsolutePath, text: string) => Parsed<true>;
   readonly spawnSelf: (args: readonly string[], cwd: AbsolutePath) => boolean;
+  readonly execSelf: (args: readonly string[], cwd: AbsolutePath, timeoutMs: number) => ExecResult;
   readonly gitWith: GitWith;
   readonly realpath: (path: string) => string;
   readonly homeDir: () => string;

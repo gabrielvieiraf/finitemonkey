@@ -1,3 +1,4 @@
+import { appCheckCommand } from "./app-check.js";
 import { doctorCommand } from "./doctor.js";
 import { gateCommand } from "./gate.js";
 import { mergeVerifyCommand } from "./git-merge-verify.js";
@@ -38,6 +39,7 @@ export const REGISTRY = [
   undoCommand,
   rescueCommand,
   mergeVerifyCommand,
+  appCheckCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
