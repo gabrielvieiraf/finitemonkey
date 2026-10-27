@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.25](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.24...v0.1.0-next.25) (2026-10-27)
+
+### Features
+
+* **gain:** an honest scoreboard from the local log and evidence ledgers ([#162](https://github.com/gabrielvieiraf/finitemonkey/issues/162)) ([3e29cc3](https://github.com/gabrielvieiraf/finitemonkey/commit/3e29cc32fcf406bd426d845fc8ec73e3e8ee7726)), closes [#46](https://github.com/gabrielvieiraf/finitemonkey/issues/46) [#159](https://github.com/gabrielvieiraf/finitemonkey/issues/159) [#155](https://github.com/gabrielvieiraf/finitemonkey/issues/155) [#41](https://github.com/gabrielvieiraf/finitemonkey/issues/41)
+
 ## [0.1.0-next.24](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.23...v0.1.0-next.24) (2026-10-27)
 
 ### Features
