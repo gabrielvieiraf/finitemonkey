@@ -11,7 +11,13 @@
 <p align="center">
   <img src="assets/finitemonkey.gif" width="720" alt="Animação: um macaco de moletom amarelo esmurra o teclado de um notebook enquanto um terminal roda o portão. As verificações que falham ficam verdes e travam uma a uma até aparecer actually done, e o macaco comemora com uma banana.">
   <br>
-  <sub>Ilustração do fluxo planejado, não é gravação. Na v0.1 entra uma captura real.</sub>
+  <sub>Ilustração. A gravação abaixo é a ferramenta de verdade.</sub>
+</p>
+
+<p align="center">
+  <img src="assets/gate.gif" width="720" alt="Gravação de uma sessão do Claude Code. Pedem para ele somar um cupom ao carrinho sem rodar os testes; ele roda o portão mesmo assim, vê o teste total rounds to cents falhar, arredonda o resultado e roda de novo. O hook de Stop então informa: portão verde, 10 checagens passaram nesta árvore.">
+  <br>
+  <sub>Gravação real, finitemonkey 0.1.0-next.27 com Claude Code 2.1.283, acelerada 1,3×. Fonte: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **Infinitos macacos não são necessários. Um basta: você.**

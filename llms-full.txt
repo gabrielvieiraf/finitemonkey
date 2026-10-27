@@ -21,7 +21,13 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.md
 <p align="center">
   <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/main/assets/finitemonkey.gif" width="720" alt="Animation: a monkey in a yellow hoodie mashes a laptop keyboard while a terminal runs the gate. Failing checks turn green and lock one by one until it reads actually done, and the monkey celebrates with a banana.">
   <br>
-  <sub>Illustration of the planned flow, not a recording. A real capture replaces it at v0.1.</sub>
+  <sub>Illustration. The recording below is the real tool.</sub>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/main/assets/gate.gif" width="720" alt="Recording of a Claude Code session. Asked to add a coupon total and skip the tests, Claude runs the gate anyway, sees the test total rounds to cents fail, rounds the result and runs it again. The Stop hook then reports: gate green, 10 checks passed on this tree.">
+  <br>
+  <sub>Real recording, finitemonkey 0.1.0-next.27 with Claude Code 2.1.283, sped up 1.3×. Source: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **Infinite monkeys not required. One is enough: you.**
