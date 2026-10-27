@@ -65,6 +65,17 @@ const acquire = (runtime: Runtime, path: AbsolutePath, owner: string): Parsed<Re
   }
 };
 
+const WRITE_ATTEMPTS = 8;
+
+const writeWithRetry = (runtime: Runtime, path: AbsolutePath, text: string): Parsed<undefined> => {
+  let written = runtime.writeAtomic(path, text);
+  for (let attempt = 1; !written.ok && attempt < WRITE_ATTEMPTS; attempt += 1) {
+    pause(LOCK_STEP_MS * attempt);
+    written = runtime.writeAtomic(path, text);
+  }
+  return written;
+};
+
 export type RegistryChange<T, E> = (
   registry: Registry,
 ) => Parsed<{ readonly registry: Registry; readonly result: T }, E>;
@@ -86,7 +97,7 @@ export const updateRegistry = <T, E = string>(
     const next = change(current.value);
     if (!next.ok) return next;
     if (next.value.registry === current.value) return accept(next.value.result);
-    const written = runtime.writeAtomic(path, serializeRegistry(next.value.registry));
+    const written = writeWithRetry(runtime, path, serializeRegistry(next.value.registry));
     return written.ok ? accept(next.value.result) : reject(written.error);
   } finally {
     lock.value();

@@ -15118,6 +15118,15 @@ var acquire = (runtime, path, owner) => {
     pause(LOCK_STEP_MS + attempt2 % 3 * 5);
   }
 };
+var WRITE_ATTEMPTS = 8;
+var writeWithRetry = (runtime, path, text10) => {
+  let written = runtime.writeAtomic(path, text10);
+  for (let attempt2 = 1; !written.ok && attempt2 < WRITE_ATTEMPTS; attempt2 += 1) {
+    pause(LOCK_STEP_MS * attempt2);
+    written = runtime.writeAtomic(path, text10);
+  }
+  return written;
+};
 var updateRegistry = (runtime, commonDir, owner, change) => {
   const made = runtime.mkdir(registryDir(commonDir));
   if (!made.ok) return made;
@@ -15130,7 +15139,7 @@ var updateRegistry = (runtime, commonDir, owner, change) => {
     const next2 = change(current2.value);
     if (!next2.ok) return next2;
     if (next2.value.registry === current2.value) return accept(next2.value.result);
-    const written = runtime.writeAtomic(path, serializeRegistry(next2.value.registry));
+    const written = writeWithRetry(runtime, path, serializeRegistry(next2.value.registry));
     return written.ok ? accept(next2.value.result) : reject(written.error);
   } finally {
     lock.value();
