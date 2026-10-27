@@ -1011,5 +1011,17 @@
   "signals.error.person_only": "Solo la persona puede calibrar el detector de vueltas, y esto no parece su terminal (sin TTY, o ejecutándose dentro de Claude Code)",
   "command.signals.summary": "Muestra el índice de vueltas de la última sesión con su evidencia",
   "command.signals_not_loop.summary": "Registra que el último aviso de vuelta no era una vuelta y sube el umbral",
-  "command.signals_forget.summary": "Borra las señales locales, el índice de vueltas y los umbrales"
+  "command.signals_forget.summary": "Borra las señales locales, el índice de vueltas y los umbrales",
+  "signals.protocol": "La skill ricochete tiene el protocolo de esta frontera.",
+  "ricochete.horizon.reason": "El mensaje final amplía el horizonte (preguntas de experto o un pedido reescrito) mientras esta sesión tiene una señal de juicio, y no nombra ninguna comprobación del contrato de {task} como criterio de juicio (nombradas: {named}; comprobaciones en el contrato: {checks}). Agrega una línea \"Criterio de juicio: <id de la comprobación>\" con la comprobación que prueba el resultado, o propón esa comprobación a la persona si ninguna sirve.",
+  "ricochete.horizon.human": "ayuda de horizonte detenida hasta que nombre una comprobación del contrato de {task} como criterio de juicio.",
+  "ricochete.perturbation.reason": "La tarea {task} se está cerrando con señales de juicio en esta sesión. Agrega al informe final las preguntas de perturbación de abajo, con la comprobación que cubre cada una, y di cuáles quedan abiertas:",
+  "ricochete.perturbation.human": "preguntas de perturbación agregadas al informe de {task}.",
+  "ricochete.perturbation.covered": "- {question} Cubierta por: {checks}.",
+  "ricochete.perturbation.open": "- {question} Ninguna comprobación del contrato la cubre.",
+  "ricochete.perturbation.requirement": "¿Y si cambia el requisito?",
+  "ricochete.perturbation.invalid": "¿Y si la entrada no es válida?",
+  "ricochete.perturbation.empty": "¿Y si los datos llegan vacíos o faltan?",
+  "ricochete.perturbation.twice": "¿Y si se ejecuta dos veces o al mismo tiempo?",
+  "ricochete.perturbation.outside": "¿Y si un servicio externo falla o tarda demasiado?"
 }

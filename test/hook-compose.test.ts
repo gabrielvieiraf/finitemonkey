@@ -113,7 +113,7 @@ describe("guard composition", () => {
     const list = DEFAULT_HANDLERS.PreToolUse ?? [];
     assert.deepEqual(
       GUARD_SETS.map((set) => set.id),
-      ["secrets", "gate", "prose", "git", "deps", "signals"],
+      ["secrets", "gate", "prose", "git", "deps", "signals", "ricochete"],
     );
     const secrets = list.indexOf(secretsPreToolUse);
     const git = list.indexOf(gitPreToolUse);

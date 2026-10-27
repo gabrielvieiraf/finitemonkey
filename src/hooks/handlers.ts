@@ -10,6 +10,7 @@ import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
+import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
@@ -136,6 +137,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
   { id: "signals", damage: false, handlers: SIGNALS_HANDLERS },
+  { id: "ricochete", damage: false, handlers: RICOCHETE_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

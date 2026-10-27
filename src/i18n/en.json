@@ -1011,5 +1011,17 @@
   "signals.error.person_only": "Only the person can calibrate the loop detector, and this does not look like their terminal (no TTY, or running inside Claude Code)",
   "command.signals.summary": "Show the loop index of the last session with its evidence",
   "command.signals_not_loop.summary": "Record that the last loop warning was not a loop and raise the threshold",
-  "command.signals_forget.summary": "Delete the local signals, loop index and thresholds"
+  "command.signals_forget.summary": "Delete the local signals, loop index and thresholds",
+  "signals.protocol": "The ricochete skill holds the protocol for this frontier.",
+  "ricochete.horizon.reason": "The final message widens the horizon (expert questions or a rewritten request) while this session has a judgment signal, and it names no contract check of {task} as the judgment criterion (named: {named}; checks in the contract: {checks}). Add a line \"Judgment criterion: <check id>\" naming the check that proves the result, or propose that check to the person if none fits.",
+  "ricochete.horizon.human": "horizon help held until it names a contract check of {task} as its judgment criterion.",
+  "ricochete.perturbation.reason": "Task {task} is closing with judgment signals in this session. Add to the final report the perturbation questions below, with the check that covers each one, and say which stay open:",
+  "ricochete.perturbation.human": "perturbation questions added to the report of {task}.",
+  "ricochete.perturbation.covered": "- {question} Covered by: {checks}.",
+  "ricochete.perturbation.open": "- {question} No contract check covers it.",
+  "ricochete.perturbation.requirement": "What if the requirement changes?",
+  "ricochete.perturbation.invalid": "What if the input is invalid?",
+  "ricochete.perturbation.empty": "What if the data is empty or missing?",
+  "ricochete.perturbation.twice": "What if it runs twice or at the same time?",
+  "ricochete.perturbation.outside": "What if an outside service fails or times out?"
 }

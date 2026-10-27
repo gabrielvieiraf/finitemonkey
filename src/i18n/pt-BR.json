@@ -1011,5 +1011,17 @@
   "signals.error.person_only": "Só a pessoa pode calibrar o detector de voltas, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
   "command.signals.summary": "Mostra o índice de voltas da última sessão com a evidência",
   "command.signals_not_loop.summary": "Registra que o último aviso de volta não era volta e sobe o limiar",
-  "command.signals_forget.summary": "Apaga os sinais locais, o índice de voltas e os limiares"
+  "command.signals_forget.summary": "Apaga os sinais locais, o índice de voltas e os limiares",
+  "signals.protocol": "A skill ricochete tem o protocolo desta fronteira.",
+  "ricochete.horizon.reason": "A mensagem final amplia o horizonte (perguntas de especialista ou pedido reescrito) enquanto esta sessão tem sinal de julgamento, e não cita nenhuma checagem do contrato de {task} como critério de julgamento (citadas: {named}; checagens no contrato: {checks}). Acrescente uma linha \"Critério de julgamento: <id da checagem>\" com a checagem que prova o resultado, ou proponha essa checagem à pessoa se nenhuma servir.",
+  "ricochete.horizon.human": "ajuda de horizonte segurada até citar uma checagem do contrato de {task} como critério de julgamento.",
+  "ricochete.perturbation.reason": "A tarefa {task} está fechando com sinais de julgamento nesta sessão. Ponha no relatório final as perguntas de perturbação abaixo, com a checagem que cobre cada uma, e diga quais ficam em aberto:",
+  "ricochete.perturbation.human": "perguntas de perturbação acrescentadas ao relatório de {task}.",
+  "ricochete.perturbation.covered": "- {question} Coberta por: {checks}.",
+  "ricochete.perturbation.open": "- {question} Nenhuma checagem do contrato cobre.",
+  "ricochete.perturbation.requirement": "E se o requisito mudar?",
+  "ricochete.perturbation.invalid": "E se a entrada for inválida?",
+  "ricochete.perturbation.empty": "E se os dados vierem vazios ou faltando?",
+  "ricochete.perturbation.twice": "E se rodar duas vezes ou ao mesmo tempo?",
+  "ricochete.perturbation.outside": "E se um serviço de fora falhar ou demorar demais?"
 }
