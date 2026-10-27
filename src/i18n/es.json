@@ -970,5 +970,7 @@
   "git.block.branch_name.claim": "El nombre de rama {subject} no sigue <tipo>/<issue>-<slug> ni front/<id>",
   "git.block.branch_name.requires": "Usa un nombre como feat/123-slug-corto, fix/45-slug o front/F1-nombre",
   "git.block.pr_headless.claim": "`{subject}` acepta archivos fuera del alcance sin una persona que lo apruebe",
-  "git.block.pr_headless.requires": "Quita los archivos de la rama, amplía el alcance del contrato o deja la decisión a una persona en una sesión interactiva"
+  "git.block.pr_headless.requires": "Quita los archivos de la rama, amplía el alcance del contrato o deja la decisión a una persona en una sesión interactiva",
+  "supervisor.resumed": "Esta sesión se reanudó tras un cambio de cuenta mientras la puerta retenía la parada ({detail}). La puerta corre de nuevo ahora; termina lo que pidió antes de parar.",
+  "gain.supervisor": "Uso informado por el supervisor de cuentas: {usage}"
 }

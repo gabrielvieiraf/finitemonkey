@@ -163,6 +163,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.finitemonkey/reports/` | Masked bug reports that `doctor --report` writes, only when asked. |
 | Writes | `.finitemonkey/pr/` | Who accepted files outside the task scope in `pr open`, when and why, one file per branch. |
 | Writes | `.git/finitemonkey/worktrees.yml`, `.git/finitemonkey/merges/`, `.git/info/exclude`, `.claude/worktrees/`, `~/.finitemonkey/worktrees/`, `~/.finitemonkey/archive/`, `refs/finitemonkey/archive/` | The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`. |
+| Writes | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Only with `supervisor: enabled: true` in the config: a short-lived hold file per session in the directory an account-switching supervisor announces, while the gate runs or holds the stop. `gain` reads that directory's `usage.json`. |
 | Writes | `.finitemonkey/look/` | Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash. |
 | Writes | `docs/plan/` | Plan documents under `docs/plan/`: the inventory of what the code does today, decision records, research records, cost models, the master plan from the first L task and the copy of it kept before each consolidation. |
 | Writes | `.finitemonkey/map.txt` | The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash. |
@@ -322,6 +323,12 @@ Yes. A `Stop` hook can run your test command and, if it fails, block the stop wi
 Yes, several, and some are good at one job. tdd-guard enforces test-first edits; cc-safety-net and dcg block destructive shell and git commands. Methods like Superpowers, GSD and Spec Kit add process. The [comparison page](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.md) lists what each one enforces by mechanism and what it leaves to prose, with sources.
 
 - **Planned:** Finite Monkey aims to cover four damages (false "done", leaked secrets, hand edits to production, lost git work) with one gate, one install and one `undo`. Whether that beats a single guard for you is what the planned benchmark is for.
+
+## Does it work with tools that switch Claude Code accounts when a limit hits?
+
+Yes, if the switcher reads a hold file. A supervisor that restarts Claude Code on another account can cut the gate in the middle of a `Stop`, and the resumed session waits for you with the work half checked.
+
+To opt in, add `supervisor:` with `enabled: true` to `.finitemonkey/config.yml`, and have the supervisor set `FINITEMONKEY_HOLD_DIR` to a directory it watches. While the gate runs or holds the stop, Finite Monkey keeps `<session>.hold.json` there, with an `until` time; the supervisor should not switch while `until` is in the future. The file expires on its own (10 minutes for a run, 15 for a held stop) and is deleted when the gate passes. When the session resumes on the new account, `SessionStart` tells Claude what the gate was waiting for and runs the gate again. Resume messages that start with `[supervisor]` are not taken as yours, and a `usage.json` in the same directory shows up in `finitemonkey gain`.
 
 ---
 

@@ -92,6 +92,11 @@ export const FOOTPRINT = [
       "refs/finitemonkey/archive/",
     ],
   },
+  {
+    id: "supervisor",
+    kind: "writes",
+    targets: ["$FINITEMONKEY_HOLD_DIR/<session>.hold.json"],
+  },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },
   { id: "map", kind: "writes", targets: [".finitemonkey/map.txt"] },

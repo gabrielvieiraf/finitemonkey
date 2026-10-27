@@ -970,5 +970,7 @@
   "git.block.branch_name.claim": "Branch name {subject} does not follow <type>/<issue>-<slug> or front/<id>",
   "git.block.branch_name.requires": "Name it like feat/123-short-slug, fix/45-slug or front/F1-name",
   "git.block.pr_headless.claim": "`{subject}` accepts files outside the task scope with no person to approve it",
-  "git.block.pr_headless.requires": "Remove the files from the branch, widen the contract scope, or leave the decision to a person in an interactive session"
+  "git.block.pr_headless.requires": "Remove the files from the branch, widen the contract scope, or leave the decision to a person in an interactive session",
+  "supervisor.resumed": "This session was resumed after an account switch while the gate was holding the stop ({detail}). The gate runs again now; finish what it asked before stopping.",
+  "gain.supervisor": "Account supervisor usage: {usage}"
 }

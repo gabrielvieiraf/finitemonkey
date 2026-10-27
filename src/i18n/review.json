@@ -971,7 +971,9 @@
     "git.block.branch_name.claim": "machine",
     "git.block.branch_name.requires": "machine",
     "git.block.pr_headless.claim": "machine",
-    "git.block.pr_headless.requires": "machine"
+    "git.block.pr_headless.requires": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1945,6 +1947,8 @@
     "git.block.branch_name.claim": "machine",
     "git.block.branch_name.requires": "machine",
     "git.block.pr_headless.claim": "machine",
-    "git.block.pr_headless.requires": "machine"
+    "git.block.pr_headless.requires": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   }
 }

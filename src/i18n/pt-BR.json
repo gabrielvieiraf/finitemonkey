@@ -970,5 +970,7 @@
   "git.block.branch_name.claim": "O nome de branch {subject} não segue <tipo>/<issue>-<slug> nem front/<id>",
   "git.block.branch_name.requires": "Use um nome como feat/123-slug-curto, fix/45-slug ou front/F1-nome",
   "git.block.pr_headless.claim": "`{subject}` aceita arquivos fora do escopo sem uma pessoa para aprovar",
-  "git.block.pr_headless.requires": "Tire os arquivos da branch, amplie o escopo do contrato ou deixe a decisão para uma pessoa numa sessão interativa"
+  "git.block.pr_headless.requires": "Tire os arquivos da branch, amplie o escopo do contrato ou deixe a decisão para uma pessoa numa sessão interativa",
+  "supervisor.resumed": "Esta sessão voltou depois de uma troca de conta enquanto o portão segurava a parada ({detail}). O portão roda de novo agora; termine o que ele pediu antes de parar.",
+  "gain.supervisor": "Uso informado pelo supervisor de contas: {usage}"
 }
