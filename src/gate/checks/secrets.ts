@@ -1,3 +1,4 @@
+import { envHygiene, type HygieneProblem } from "../../creds/hygiene.js";
 import { secretsGateStatus } from "../../secrets/gate.js";
 import { blocking, isWarning } from "../../secrets/rules/types.js";
 import type { AcceptanceCheck } from "../../task/types.js";
@@ -14,6 +15,18 @@ const sinceOf = (ctx: SecretsGateContext): string => {
   return session === undefined ? EPOCH : new Date(session.at).toISOString();
 };
 
+const envNote = (problem: HygieneProblem): ReturnType<typeof note> | undefined => {
+  if (problem.kind === "unignored") return note("env.unignored", { file: problem.file });
+  if (problem.kind === "public") return note("env.public", { name: problem.name, where: problem.where });
+  return undefined;
+};
+
+const envNotes = (ctx: SecretsGateContext): readonly ReturnType<typeof note>[] =>
+  envHygiene(ctx.runtime, ctx.paths.root, { full: false }).flatMap((problem) => {
+    const found = envNote(problem);
+    return found === undefined ? [] : [found];
+  });
+
 export const secretsCheck = (_check: AcceptanceCheck, ctx: SecretsGateContext): CheckOutcome => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
@@ -29,6 +42,7 @@ export const secretsCheck = (_check: AcceptanceCheck, ctx: SecretsGateContext): 
     ...openIncidents
       .slice(0, MAX_LISTED)
       .map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state })),
+    ...envNotes(ctx).slice(0, MAX_LISTED),
   ];
   if (notes.length > 0) return failed([...notes, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
