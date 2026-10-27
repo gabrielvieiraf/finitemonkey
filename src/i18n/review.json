@@ -644,7 +644,10 @@
     "reason.label.blocked": "machine",
     "reason.label.requires": "machine",
     "reason.label.not": "machine",
-    "reason.human.generic": "machine"
+    "reason.human.generic": "machine",
+    "review.command.packet": "machine",
+    "review.guard.read_only": "machine",
+    "review.error.no_base": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1291,6 +1294,9 @@
     "reason.label.blocked": "machine",
     "reason.label.requires": "machine",
     "reason.label.not": "machine",
-    "reason.human.generic": "machine"
+    "reason.human.generic": "machine",
+    "review.command.packet": "machine",
+    "review.guard.read_only": "machine",
+    "review.error.no_base": "machine"
   }
 }

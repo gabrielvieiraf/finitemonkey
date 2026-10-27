@@ -643,5 +643,8 @@
   "reason.label.blocked": "blocked",
   "reason.label.requires": "requires",
   "reason.label.not": "does not count",
-  "reason.human.generic": "Blocked a tool call; the reason went to Claude."
+  "reason.human.generic": "Blocked a tool call; the reason went to Claude.",
+  "review.command.packet": "Print the review packet for the reviewer and verifier agents: diff, task contract, evidence ledger and REVIEW.md, never the conversation",
+  "review.guard.read_only": "blocked: the {agent} agent is read-only and cannot use {tool}. Report the finding; the main session makes the change.",
+  "review.error.no_base": "the base {detail} is not a commit here"
 }

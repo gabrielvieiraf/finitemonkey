@@ -1,4 +1,5 @@
 import { bypassGuard } from "../../guards/bypass/hook.js";
+import { reviewAgentGuard } from "../../guards/review/hook.js";
 import { selfGuard } from "../../guards/self/hook.js";
 import { testsGuard } from "../../guards/tests/hook.js";
 import type { HookHandlers } from "../../hooks/handlers.js";
@@ -11,7 +12,7 @@ import { stopGate, subagentStopGate } from "./stop.js";
 import { subagentStart } from "./subagent.js";
 
 export const PORTAO_HANDLERS: HookHandlers = {
-  PreToolUse: [selfGuard, bypassGuard, testsGuard],
+  PreToolUse: [reviewAgentGuard, selfGuard, bypassGuard, testsGuard],
   UserPromptSubmit: [pausePrompt, promptRelease],
   Stop: [unlessPaused(stopGate)],
   SubagentStop: [unlessPaused(subagentStopGate)],
