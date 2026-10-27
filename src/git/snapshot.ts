@@ -5,7 +5,7 @@ import type { Repo } from "./repo.js";
 import { commitTree, indexTree, type TreeOptions, worktreeTree } from "./tree.js";
 
 export const BACKUP_PREFIX = "refs/finitemonkey/backup/";
-export const DEFAULT_SNAPSHOT_TIMEOUT_MS = 2500;
+export const DEFAULT_SNAPSHOT_TIMEOUT_MS = 5000;
 
 export interface SnapshotRequest {
   readonly op: string;

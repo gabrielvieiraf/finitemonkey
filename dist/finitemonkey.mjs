@@ -13099,7 +13099,7 @@ var appendJournal = (runtime, root, entry2) => {
 
 // src/git/snapshot.ts
 var BACKUP_PREFIX = "refs/finitemonkey/backup/";
-var DEFAULT_SNAPSHOT_TIMEOUT_MS = 2500;
+var DEFAULT_SNAPSHOT_TIMEOUT_MS = 5e3;
 var stampOf = (iso) => iso.replace(/[:.]/g, "-");
 var slug = (op) => op.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "manual";
 var optionalLine = (runtime, repo, args2) => {
