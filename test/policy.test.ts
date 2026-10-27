@@ -129,7 +129,7 @@ describe("the four-damage guards ignore off", () => {
     }
     assert.deepEqual(
       GUARD_SETS.filter((guard) => guard.damage).map((guard) => guard.id),
-      ["secrets", "gate", "git"],
+      ["secrets", "gate", "git", "rules"],
     );
     assert.equal(modeOf({ id: "prose", damage: false }, DEFAULT_POLICY, {}), "active");
   });

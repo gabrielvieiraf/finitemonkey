@@ -7,6 +7,8 @@ import { commitMessageProblems } from "../githooks/commit-msg.js";
 import { parsePushUpdates, prePushChecks, updatesFromEnv } from "../githooks/pre-push.js";
 import { checksResult } from "../githooks/render.js";
 import { readAll } from "../hooks/stdin.js";
+import { commitRuleCheck, compiledFor } from "../rules/checks.js";
+import { projectRoot } from "../secrets/project.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -42,7 +44,10 @@ export const commitMsgCommand: CommandSpec = {
     const failures = commitMessageProblems(text.value);
     const fix = "git commit --amend, using type(scope): subject and no AI attribution lines";
     return Promise.resolve(
-      checksResult(ctx.t, COMMIT_MSG_SCHEMA, "githook_failed", [{ id: "commit-messages", failures, fix }]),
+      checksResult(ctx.t, COMMIT_MSG_SCHEMA, "githook_failed", [
+        { id: "commit-messages", failures, fix },
+        commitRuleCheck(compiledFor(ctx.runtime, projectRoot(ctx), "git"), text.value),
+      ]),
     );
   },
 };
