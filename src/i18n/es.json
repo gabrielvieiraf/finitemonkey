@@ -646,5 +646,11 @@
   "reason.human.generic": "Bloqueé una llamada de herramienta; el motivo fue a Claude.",
   "review.command.packet": "Muestra el paquete de revisión para los agentes revisor y verificador: diff, contrato de la tarea, registro de evidencias y REVIEW.md, nunca la conversación",
   "review.guard.read_only": "bloqueado: el agente {agent} es de solo lectura y no puede usar {tool}. Informa el hallazgo; la sesión principal hace el cambio.",
-  "review.error.no_base": "la base {detail} no es un commit aquí"
+  "review.error.no_base": "la base {detail} no es un commit aquí",
+  "command.statusline.summary": "Imprime la línea de estado: tarea activa, estado de la compuerta y uso del contexto",
+  "statusline.gate.green": "compuerta verde",
+  "statusline.gate.red": "compuerta roja",
+  "statusline.gate.incomplete": "compuerta incompleta",
+  "statusline.gate.did_not_run": "la compuerta no se ejecutó",
+  "statusline.context": "ctx {percent}%"
 }

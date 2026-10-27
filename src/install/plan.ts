@@ -46,6 +46,8 @@ import { policyTemplate } from "./policy-template.js";
 import type { Project } from "./project.js";
 import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
 import { isOwnSkill, verifySkillTemplate } from "./skill-template.js";
+import { ownStatusLine } from "./statusline.js";
+import { existingStatusLine } from "./statusline-search.js";
 import { vendoredFiles } from "./vendor.js";
 
 export const ACTIONS = ["create", "merge", "update", "unchanged", "keep-edited", "skip-foreign"] as const;
@@ -152,6 +154,9 @@ const joinAdded = (previous: SettingsAdded | undefined, next: SettingsAdded): Se
         marketplace: previous.marketplace || next.marketplace,
         plugin: previous.plugin || next.plugin,
         ...((previous.language ?? next.language) === undefined ? {} : { language: previous.language ?? next.language }),
+        ...((previous.statusLine ?? next.statusLine) === undefined
+          ? {}
+          : { statusLine: previous.statusLine ?? next.statusLine }),
       };
 
 const wantedHooks = (detection: Detection): Readonly<Record<string, HookHandlerJson>> =>
@@ -176,6 +181,7 @@ const settingsItem = (
     attributionOff: input.preset === "gabriel",
     marketplace: input.marketplace,
     language: input.claudeLanguage,
+    statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current.value, input.env) },
   };
   const merged = mergeSettings(current.value, wanted, previous?.handlers ?? []);
   const after = renderJson(merged.settings, before === undefined ? DEFAULT_STYLE : styleOf(before));

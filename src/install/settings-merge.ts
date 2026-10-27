@@ -1,6 +1,7 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { type HookHandlerJson, isOwnHandler } from "./hook-entries.js";
 import { asList, asRecord, setKey } from "./json-text.js";
+import { isOwnStatusLine, type StatusLineAdded } from "./statusline.js";
 
 export const SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
 
@@ -17,6 +18,7 @@ export interface SettingsWanted {
   readonly attributionOff: boolean;
   readonly marketplace: boolean;
   readonly language: string | undefined;
+  readonly statusLine?: { readonly entry: JsonObject; readonly wrap: string | undefined };
 }
 
 export interface SettingsAdded {
@@ -28,6 +30,7 @@ export interface SettingsAdded {
   readonly marketplace: boolean;
   readonly plugin: boolean;
   readonly language?: string;
+  readonly statusLine?: StatusLineAdded;
 }
 
 const withEntry = (settings: JsonObject, key: string, name: string, value: unknown): JsonObject => {
@@ -102,6 +105,17 @@ export const ownHookMatcher =
   (handler: unknown): boolean =>
     isOwnHandler(handler) || recorded.some((own) => JSON.stringify(own) === JSON.stringify(handler));
 
+const statusLineFor = (base: JsonObject, wanted: SettingsWanted): StatusLineAdded | undefined => {
+  if (wanted.statusLine === undefined || isOwnStatusLine(base["statusLine"])) return undefined;
+  return { previous: base["statusLine"] ?? null, wrap: wanted.statusLine.wrap ?? null };
+};
+
+const restoreStatusLine = (settings: JsonObject, added: SettingsAdded): JsonObject => {
+  if (added.statusLine === undefined || !isOwnStatusLine(settings["statusLine"])) return settings;
+  const previous = added.statusLine.previous;
+  return setKey(settings, "statusLine", previous === null ? undefined : previous);
+};
+
 export const mergeSettings = (
   current: JsonObject,
   wanted: SettingsWanted,
@@ -129,7 +143,18 @@ export const mergeSettings = (
   if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
   if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
   if (language !== undefined) settings = { ...settings, language };
-  const added = { schema, deny, ask, blockReads, attribution, marketplace, plugin };
+  const status = statusLineFor(base, wanted);
+  if (status !== undefined) settings = { ...settings, statusLine: wanted.statusLine?.entry };
+  const added = {
+    schema,
+    deny,
+    ask,
+    blockReads,
+    attribution,
+    marketplace,
+    plugin,
+    ...(status === undefined ? {} : { statusLine: status }),
+  };
   return { settings, added: language === undefined ? added : { ...added, language } };
 };
 
@@ -155,6 +180,7 @@ export const unmergeSettings = (
   if (added.language !== undefined && settings["language"] === added.language) {
     settings = setKey(settings, "language", undefined);
   }
+  settings = restoreStatusLine(settings, added);
   if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
   return settings;
 };

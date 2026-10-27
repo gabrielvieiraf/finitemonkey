@@ -646,5 +646,11 @@
   "reason.human.generic": "Blocked a tool call; the reason went to Claude.",
   "review.command.packet": "Print the review packet for the reviewer and verifier agents: diff, task contract, evidence ledger and REVIEW.md, never the conversation",
   "review.guard.read_only": "blocked: the {agent} agent is read-only and cannot use {tool}. Report the finding; the main session makes the change.",
-  "review.error.no_base": "the base {detail} is not a commit here"
+  "review.error.no_base": "the base {detail} is not a commit here",
+  "command.statusline.summary": "Print the status line: active task, gate state and context use",
+  "statusline.gate.green": "gate green",
+  "statusline.gate.red": "gate red",
+  "statusline.gate.incomplete": "gate incomplete",
+  "statusline.gate.did_not_run": "gate did not run",
+  "statusline.context": "ctx {percent}%"
 }

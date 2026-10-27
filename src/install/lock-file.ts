@@ -2,6 +2,7 @@ import { accept, isRecord, type JsonObject, type Parsed, parseJsonObject, reject
 import type { HookHandlerJson } from "./hook-entries.js";
 import { LOCK_SCHEMA, type Preset, PRESETS } from "./layout.js";
 import type { SettingsAdded } from "./settings-merge.js";
+import { parseStatusLineAdded } from "./statusline.js";
 
 export const ENTRY_KINDS = ["settings", "gitignore", "generated", "markdown", "githook"] as const;
 
@@ -40,7 +41,17 @@ const parseAdded = (value: unknown): SettingsAdded | undefined => {
   const marketplace = value["marketplace"] === true;
   const plugin = value["plugin"] === true;
   const language = value["language"];
-  const added = { schema, attribution, deny, ask, blockReads, marketplace, plugin };
+  const statusLine = parseStatusLineAdded(value["statusLine"]);
+  const added = {
+    schema,
+    attribution,
+    deny,
+    ask,
+    blockReads,
+    marketplace,
+    plugin,
+    ...(statusLine === undefined ? {} : { statusLine }),
+  };
   return typeof language === "string" ? { ...added, language } : added;
 };
 

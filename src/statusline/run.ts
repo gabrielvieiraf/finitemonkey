@@ -1,0 +1,62 @@
+import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import type { Ctx } from "../core/context.js";
+import { readAll, withDeadline } from "../hooks/stdin.js";
+import { LOCK_FILE } from "../install/layout.js";
+import { parseLock } from "../install/lock-file.js";
+import { findGitRoot } from "../install/project.js";
+import { fmPaths } from "../task/paths.js";
+import { readState } from "../task/state.js";
+import { gateLight } from "./gate-state.js";
+import { parseStatusInput, type StatusInput } from "./input.js";
+import { composeLine, segmentText } from "./render.js";
+import { runWrapped } from "./wrap.js";
+
+export const STDIN_MS = 300;
+export const WRAP_MS = 700;
+export const CEILING_MS = 1500;
+
+const wrapOf = (ctx: Ctx, root: AbsolutePath): string | undefined => {
+  const text = ctx.runtime.readText(toAbsolutePath(`${root}/${LOCK_FILE}`));
+  const lock = text.ok ? parseLock(text.value) : undefined;
+  if (!lock?.ok) return undefined;
+  return (
+    lock.value.entries.find((entry) => entry.added?.statusLine !== undefined)?.added?.statusLine?.wrap ?? undefined
+  );
+};
+
+const columnsOf = (ctx: Ctx): number | undefined => {
+  const columns = Number.parseInt(ctx.env["COLUMNS"] ?? "", 10);
+  return Number.isInteger(columns) && columns > 0 ? columns : undefined;
+};
+
+const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
+  const start = input.dir === undefined ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
+  const root = findGitRoot(start, ctx.runtime);
+  const paths = root === undefined ? undefined : fmPaths(root);
+  const wrap = root === undefined ? undefined : wrapOf(ctx, root);
+  const wrapped =
+    wrap === undefined || root === undefined
+      ? ""
+      : await runWrapped(ctx.runtime, paths, {
+          command: wrap,
+          input: input.raw,
+          cwd: root,
+          timeoutMs: WRAP_MS,
+          session: input.sessionId ?? "none",
+        });
+  const segment = segmentText(ctx.t, {
+    task: paths === undefined ? undefined : readState(ctx.runtime, paths).active,
+    gate: paths === undefined ? "none" : gateLight(ctx.runtime, paths),
+    contextPercent: input.contextPercent,
+  });
+  return composeLine(wrapped, segment, columnsOf(ctx));
+};
+
+export const renderStatusLine = async (ctx: Ctx): Promise<string> => {
+  try {
+    const raw = await withDeadline(readAll(ctx.io.stdin), STDIN_MS, ctx.runtime.startTimer).catch(() => "");
+    return await lineFor(ctx, parseStatusInput(raw));
+  } catch {
+    return "fm";
+  }
+};
