@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.26](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.25...v0.1.0-next.26) (2026-10-27)
+
+### Features
+
+* **review:** critique skill with reproducible must-fix findings checked on base and head ([#163](https://github.com/gabrielvieiraf/finitemonkey/issues/163)) ([82811ad](https://github.com/gabrielvieiraf/finitemonkey/commit/82811ade845d02ca5a29986d84201f829659c22b)), closes [#160](https://github.com/gabrielvieiraf/finitemonkey/issues/160) [#38](https://github.com/gabrielvieiraf/finitemonkey/issues/38)
+
 ## [0.1.0-next.25](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.24...v0.1.0-next.25) (2026-10-27)
 
 ### Features
