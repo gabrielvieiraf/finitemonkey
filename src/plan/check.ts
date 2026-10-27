@@ -15,6 +15,7 @@ import {
   revokedIssues,
 } from "./rules.js";
 import { sectionsOf } from "./sections.js";
+import { taskMapIssues } from "./task-map.js";
 
 export interface PlanCheck {
   readonly master: string;
@@ -64,6 +65,7 @@ export const checkPlan = (runtime: Runtime, root: AbsolutePath): PlanCheck => {
       ...ownerIssues(MASTER_FILE, sections),
       ...revokedIssues(reports),
       ...growthIssues(runtime, root, master, text.value),
+      ...taskMapIssues(runtime, root),
     ],
   };
 };

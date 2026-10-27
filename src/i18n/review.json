@@ -1045,7 +1045,12 @@
     "fronts.block.relaunch.claim": "machine",
     "fronts.block.relaunch.requires": "machine",
     "fronts.block.isolation.claim": "machine",
-    "fronts.block.isolation.requires": "machine"
+    "fronts.block.isolation.requires": "machine",
+    "fronts.command.sync": "machine",
+    "fronts.sync.github": "machine",
+    "fronts.sync.local": "machine",
+    "plan.issue.issue_without_row": "machine",
+    "plan.issue.row_without_issue": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2093,6 +2098,11 @@
     "fronts.block.relaunch.claim": "machine",
     "fronts.block.relaunch.requires": "machine",
     "fronts.block.isolation.claim": "machine",
-    "fronts.block.isolation.requires": "machine"
+    "fronts.block.isolation.requires": "machine",
+    "fronts.command.sync": "machine",
+    "fronts.sync.github": "machine",
+    "fronts.sync.local": "machine",
+    "plan.issue.issue_without_row": "machine",
+    "plan.issue.row_without_issue": "machine"
   }
 }
