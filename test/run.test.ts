@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
-import { defaultShell, invocationFor } from "../src/runlog/shell.js";
+import { defaultShell, invocationFor, powershellLine } from "../src/runlog/shell.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { SAMPLES } from "./secret-samples.js";
 import { cli, field, parseBody } from "./support.js";
@@ -82,9 +82,16 @@ describe("finitemonkey run: PowerShell", () => {
     assert.equal(defaultShell("linux"), "sh");
     assert.deepEqual(invocationFor("powershell", ["Get-ChildItem; exit 4"]), {
       command: "powershell",
-      args: ["-NoProfile", "-NonInteractive", "-Command", "Get-ChildItem; exit 4"],
+      args: ["-NoProfile", "-NonInteractive", "-Command", powershellLine("Get-ChildItem; exit 4")],
       shell: false,
     });
+  });
+
+  it("passes a native command's exit code through PowerShell", () => {
+    const line = powershellLine("node fail.js");
+    assert.match(line, /^\$global:LASTEXITCODE = \$null; node fail\.js; /);
+    assert.match(line, /if \(\$null -ne \$LASTEXITCODE\) \{ exit \$LASTEXITCODE \}/);
+    assert.match(line, /if \(-not \$fmOk\) \{ exit 1 \}$/);
   });
 
   it(

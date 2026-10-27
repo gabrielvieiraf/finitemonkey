@@ -20,12 +20,19 @@ export const quoteArg = (arg: string): string => (SAFE.test(arg) ? arg : `"${arg
 export const commandLine = (words: readonly string[]): string =>
   words.length === 1 ? (words[0] ?? "") : words.map(quoteArg).join(" ");
 
+export const powershellLine = (line: string): string =>
+  `$global:LASTEXITCODE = $null; ${line}; $fmOk = $?; if ($null -ne $LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $fmOk) { exit 1 }`;
+
 export const invocationFor = (choice: ShellChoice, words: readonly string[]): Invocation => {
   const line = commandLine(words);
   switch (choice) {
     case "powershell":
     case "pwsh":
-      return { command: choice, args: ["-NoProfile", "-NonInteractive", "-Command", line], shell: false };
+      return {
+        command: choice,
+        args: ["-NoProfile", "-NonInteractive", "-Command", powershellLine(line)],
+        shell: false,
+      };
     case "cmd":
       return { command: "cmd.exe", args: ["/d", "/s", "/c", line], shell: false };
     case "bash":

@@ -25258,12 +25258,17 @@ var defaultShell = (platform) => platform === "win32" ? "powershell" : "sh";
 var SAFE = /^[\w@%+=:,./-]+$/;
 var quoteArg = (arg) => SAFE.test(arg) ? arg : `"${arg.replace(/(["\\$`])/g, "\\$1")}"`;
 var commandLine = (words) => words.length === 1 ? words[0] ?? "" : words.map(quoteArg).join(" ");
+var powershellLine = (line7) => `$global:LASTEXITCODE = $null; ${line7}; $fmOk = $?; if ($null -ne $LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $fmOk) { exit 1 }`;
 var invocationFor = (choice, words) => {
   const line7 = commandLine(words);
   switch (choice) {
     case "powershell":
     case "pwsh":
-      return { command: choice, args: ["-NoProfile", "-NonInteractive", "-Command", line7], shell: false };
+      return {
+        command: choice,
+        args: ["-NoProfile", "-NonInteractive", "-Command", powershellLine(line7)],
+        shell: false
+      };
     case "cmd":
       return { command: "cmd.exe", args: ["/d", "/s", "/c", line7], shell: false };
     case "bash":
