@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.21](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.20...v0.1.0-next.21) (2026-10-27)
+
+### Features
+
+* **look:** capture changed screens at 1440 and 390 px and the look gate check ([#158](https://github.com/gabrielvieiraf/finitemonkey/issues/158)) ([4af3906](https://github.com/gabrielvieiraf/finitemonkey/commit/4af39061cacf5ceadd057c2377a89ed3373240a6)), closes [#34](https://github.com/gabrielvieiraf/finitemonkey/issues/34) [#154](https://github.com/gabrielvieiraf/finitemonkey/issues/154) [#154](https://github.com/gabrielvieiraf/finitemonkey/issues/154)
+
 ## [0.1.0-next.20](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.19...v0.1.0-next.20) (2026-10-27)
 
 ### Features
