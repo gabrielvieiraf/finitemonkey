@@ -1030,5 +1030,10 @@
   "gate.reopened": "{check} se reabrió y vuelve a correr",
   "gate.guard.self.amend.claim": "{file} cambia el contrato de terminado, y solo la persona puede hacerlo",
   "gate.guard.self.amend.requires": "pide a la persona que lo ejecute",
-  "gate.guard.amend.human": "El agente intentó enmendar el contrato de terminado. Ejecuta finitemonkey task amend tú mismo si estás de acuerdo, o escribe fm: allow self <motivo>."
+  "gate.guard.amend.human": "El agente intentó enmendar el contrato de terminado. Ejecuta finitemonkey task amend tú mismo si estás de acuerdo, o escribe fm: allow self <motivo>.",
+  "command.task_from_spec.summary": "Propone un contrato de terminado a partir de un tasks.md de Spec Kit u OpenSpec sin modificarlo",
+  "spec.error.read": "no se pudo leer {file}",
+  "spec.error.empty": "{file} no tiene tareas ni criterios para convertir en comprobaciones",
+  "spec.proposed": "Contrato propuesto desde {format}: {count, plural, one {# criterio} other {# criterios}}, {unchecked} sin comprobación ejecutable.",
+  "spec.unchecked": "sin comprobación ejecutable: {id} ({from}) {text}"
 }

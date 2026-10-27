@@ -1030,5 +1030,10 @@
   "gate.reopened": "{check} foi reaberto e roda de novo",
   "gate.guard.self.amend.claim": "{file} muda o contrato de pronto, e só a pessoa pode fazer isso",
   "gate.guard.self.amend.requires": "peça para a pessoa rodar",
-  "gate.guard.amend.human": "O agente tentou emendar o contrato de pronto. Rode finitemonkey task amend você mesmo se concordar, ou digite fm: allow self <motivo>."
+  "gate.guard.amend.human": "O agente tentou emendar o contrato de pronto. Rode finitemonkey task amend você mesmo se concordar, ou digite fm: allow self <motivo>.",
+  "command.task_from_spec.summary": "Propõe um contrato de pronto a partir de um tasks.md do Spec Kit ou OpenSpec sem alterá-lo",
+  "spec.error.read": "não deu para ler {file}",
+  "spec.error.empty": "{file} não tem tarefa nem critério para virar checagem",
+  "spec.proposed": "Contrato proposto a partir de {format}: {count, plural, one {# critério} other {# critérios}}, {unchecked} sem checagem executável.",
+  "spec.unchecked": "sem checagem executável: {id} ({from}) {text}"
 }

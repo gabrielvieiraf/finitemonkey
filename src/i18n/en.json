@@ -1030,5 +1030,10 @@
   "gate.reopened": "{check} was reopened and runs again",
   "gate.guard.self.amend.claim": "{file} changes the done contract, which only the person can do",
   "gate.guard.self.amend.requires": "ask the person to run it themselves",
-  "gate.guard.amend.human": "The agent tried to amend the done contract. Run finitemonkey task amend yourself if you agree, or type fm: allow self <reason>."
+  "gate.guard.amend.human": "The agent tried to amend the done contract. Run finitemonkey task amend yourself if you agree, or type fm: allow self <reason>.",
+  "command.task_from_spec.summary": "Propose a done contract from a Spec Kit or OpenSpec tasks.md without changing it",
+  "spec.error.read": "could not read {file}",
+  "spec.error.empty": "{file} has no task or criterion to turn into a check",
+  "spec.proposed": "Proposed contract from {format}: {count, plural, one {# criterion} other {# criteria}}, {unchecked} without an executable check.",
+  "spec.unchecked": "no executable check: {id} ({from}) {text}"
 }
