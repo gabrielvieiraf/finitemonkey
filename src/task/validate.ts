@@ -1,5 +1,6 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { BLUEPRINT_TYPES, parseBlueprintType } from "../planta/types.js";
 import {
   type AcceptanceCheck,
   CHECK_KINDS,
@@ -154,6 +155,10 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
   const checks = acceptance(value["acceptance"], issues);
   const decisionsNeeded = strings(value["decisions_needed"], "decisions_needed", issues);
   const callersIgnore = strings(value["callers_ignore"], "callers_ignore", issues);
+  const blueprint = parseBlueprintType(str(value, "blueprint", "", issues, false));
+  if (value["blueprint"] !== undefined && blueprint === undefined) {
+    issues.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
+  }
   if (issues.length > 0 || id === undefined || goal === undefined || size === undefined) return reject(issues);
   return accept({
     id,
@@ -164,6 +169,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
     acceptance: checks,
     decisionsNeeded,
     ...(callersIgnore.length === 0 ? {} : { callersIgnore }),
+    ...(blueprint === undefined ? {} : { blueprint }),
     implicit,
   });
 };

@@ -970,5 +970,19 @@
   "git.block.branch_name.claim": "El nombre de rama {subject} no sigue <tipo>/<issue>-<slug> ni front/<id>",
   "git.block.branch_name.requires": "Usa un nombre como feat/123-slug-corto, fix/45-slug o front/F1-nombre",
   "git.block.pr_headless.claim": "`{subject}` acepta archivos fuera del alcance sin una persona que lo apruebe",
-  "git.block.pr_headless.requires": "Quita los archivos de la rama, amplía el alcance del contrato o deja la decisión a una persona en una sesión interactiva"
+  "git.block.pr_headless.requires": "Quita los archivos de la rama, amplía el alcance del contrato o deja la decisión a una persona en una sesión interactiva",
+  "command.planta.summary": "Instala el plano del proyecto (saas, landing) y muestra cuántos de sus elementos están en verde",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "página de aterrizaje",
+  "planta.bar": "Tu {label} tiene {green} de {total, plural, one {# elemento} other {# elementos}}.",
+  "planta.next": "Siguiente: {title} ({id})",
+  "planta.minimum": "Mínimo: {text}",
+  "planta.how.files": "Se comprueba con: existe una de estas rutas: {list}",
+  "planta.how.grep": "Se comprueba con: el código coincide con {list}",
+  "planta.how.deps": "Se comprueba con: una dependencia como {list}",
+  "planta.how.contract": "Se comprueba con: la comprobación {kind} del contrato pasa en este árbol",
+  "planta.how.manual": "Manual: la persona lo confirma con la línea fm: approve planta/{id} <cómo lo comprobó>",
+  "planta.installed.task": "Plano {type} registrado en el contrato de {task}.",
+  "planta.installed.project": "Plano {type} registrado para el proyecto; no hay una tarea activa donde registrarlo.",
+  "statusline.planta": "{type} {green}/{total}"
 }

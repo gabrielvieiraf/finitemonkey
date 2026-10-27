@@ -4,11 +4,12 @@ import { readAll, withDeadline } from "../hooks/stdin.js";
 import { LOCK_FILE } from "../install/layout.js";
 import { parseLock } from "../install/lock-file.js";
 import { findGitRoot } from "../install/project.js";
+import { readCachedBar } from "../planta/store.js";
 import { fmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 import { gateLight } from "./gate-state.js";
 import { parseStatusInput, type StatusInput } from "./input.js";
-import { composeLine, segmentText } from "./render.js";
+import { composeLine, type Segment, segmentText } from "./render.js";
 import { runWrapped } from "./wrap.js";
 
 export const STDIN_MS = 300;
@@ -27,6 +28,11 @@ const wrapOf = (ctx: Ctx, root: AbsolutePath): string | undefined => {
 const columnsOf = (ctx: Ctx): number | undefined => {
   const columns = Number.parseInt(ctx.env["COLUMNS"] ?? "", 10);
   return Number.isInteger(columns) && columns > 0 ? columns : undefined;
+};
+
+const blueprintOf = (ctx: Ctx, paths: ReturnType<typeof fmPaths> | undefined): Segment["blueprint"] => {
+  const bar = paths === undefined ? undefined : readCachedBar(ctx.runtime, paths);
+  return bar === undefined ? undefined : { type: bar.type, green: bar.green, total: bar.total };
 };
 
 const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
@@ -48,6 +54,7 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
     task: paths === undefined ? undefined : readState(ctx.runtime, paths).active,
     gate: paths === undefined ? "none" : gateLight(ctx.runtime, paths),
     contextPercent: input.contextPercent,
+    blueprint: blueprintOf(ctx, paths),
   });
   return composeLine(wrapped, segment, columnsOf(ctx));
 };

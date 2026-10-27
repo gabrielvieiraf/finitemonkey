@@ -2634,7 +2634,21 @@ var en_default = {
   "git.block.branch_name.claim": "Branch name {subject} does not follow <type>/<issue>-<slug> or front/<id>",
   "git.block.branch_name.requires": "Name it like feat/123-short-slug, fix/45-slug or front/F1-name",
   "git.block.pr_headless.claim": "`{subject}` accepts files outside the task scope with no person to approve it",
-  "git.block.pr_headless.requires": "Remove the files from the branch, widen the contract scope, or leave the decision to a person in an interactive session"
+  "git.block.pr_headless.requires": "Remove the files from the branch, widen the contract scope, or leave the decision to a person in an interactive session",
+  "command.planta.summary": "Install a project blueprint (saas, landing) and show how many of its items are green",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "landing page",
+  "planta.bar": "Your {label} has {green} of {total, plural, one {# item} other {# items}}.",
+  "planta.next": "Next: {title} ({id})",
+  "planta.minimum": "Minimum: {text}",
+  "planta.how.files": "Checked by: one of these paths exists: {list}",
+  "planta.how.grep": "Checked by: the code matches {list}",
+  "planta.how.deps": "Checked by: a dependency such as {list}",
+  "planta.how.contract": "Checked by: the contract check {kind} passes on this tree",
+  "planta.how.manual": "Manual: the person confirms it with the line fm: approve planta/{id} <how it was checked>",
+  "planta.installed.task": "Blueprint {type} recorded in the contract of {task}.",
+  "planta.installed.project": "Blueprint {type} recorded for the project; no active task to record it in.",
+  "statusline.planta": "{type} {green}/{total}"
 };
 
 // src/i18n/es.json
@@ -3610,7 +3624,21 @@ var es_default = {
   "git.block.branch_name.claim": "El nombre de rama {subject} no sigue <tipo>/<issue>-<slug> ni front/<id>",
   "git.block.branch_name.requires": "Usa un nombre como feat/123-slug-corto, fix/45-slug o front/F1-nombre",
   "git.block.pr_headless.claim": "`{subject}` acepta archivos fuera del alcance sin una persona que lo apruebe",
-  "git.block.pr_headless.requires": "Quita los archivos de la rama, amplía el alcance del contrato o deja la decisión a una persona en una sesión interactiva"
+  "git.block.pr_headless.requires": "Quita los archivos de la rama, amplía el alcance del contrato o deja la decisión a una persona en una sesión interactiva",
+  "command.planta.summary": "Instala el plano del proyecto (saas, landing) y muestra cuántos de sus elementos están en verde",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "página de aterrizaje",
+  "planta.bar": "Tu {label} tiene {green} de {total, plural, one {# elemento} other {# elementos}}.",
+  "planta.next": "Siguiente: {title} ({id})",
+  "planta.minimum": "Mínimo: {text}",
+  "planta.how.files": "Se comprueba con: existe una de estas rutas: {list}",
+  "planta.how.grep": "Se comprueba con: el código coincide con {list}",
+  "planta.how.deps": "Se comprueba con: una dependencia como {list}",
+  "planta.how.contract": "Se comprueba con: la comprobación {kind} del contrato pasa en este árbol",
+  "planta.how.manual": "Manual: la persona lo confirma con la línea fm: approve planta/{id} <cómo lo comprobó>",
+  "planta.installed.task": "Plano {type} registrado en el contrato de {task}.",
+  "planta.installed.project": "Plano {type} registrado para el proyecto; no hay una tarea activa donde registrarlo.",
+  "statusline.planta": "{type} {green}/{total}"
 };
 
 // src/i18n/pt-BR.json
@@ -4586,7 +4614,21 @@ var pt_BR_default = {
   "git.block.branch_name.claim": "O nome de branch {subject} não segue <tipo>/<issue>-<slug> nem front/<id>",
   "git.block.branch_name.requires": "Use um nome como feat/123-slug-curto, fix/45-slug ou front/F1-nome",
   "git.block.pr_headless.claim": "`{subject}` aceita arquivos fora do escopo sem uma pessoa para aprovar",
-  "git.block.pr_headless.requires": "Tire os arquivos da branch, amplie o escopo do contrato ou deixe a decisão para uma pessoa numa sessão interativa"
+  "git.block.pr_headless.requires": "Tire os arquivos da branch, amplie o escopo do contrato ou deixe a decisão para uma pessoa numa sessão interativa",
+  "command.planta.summary": "Instala a planta do projeto (saas, landing) e mostra quantos itens estão verdes",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "página de venda",
+  "planta.bar": "Seu {label} tem {green} de {total, plural, one {# item} other {# itens}}.",
+  "planta.next": "Próximo: {title} ({id})",
+  "planta.minimum": "Mínimo: {text}",
+  "planta.how.files": "Conferido por: um destes caminhos existe: {list}",
+  "planta.how.grep": "Conferido por: o código casa com {list}",
+  "planta.how.deps": "Conferido por: uma dependência como {list}",
+  "planta.how.contract": "Conferido por: a checagem {kind} do contrato passa nesta árvore",
+  "planta.how.manual": "Manual: a pessoa confirma com a linha fm: approve planta/{id} <como conferiu>",
+  "planta.installed.task": "Planta {type} registrada no contrato de {task}.",
+  "planta.installed.project": "Planta {type} registrada para o projeto; não há tarefa ativa para registrar.",
+  "statusline.planta": "{type} {green}/{total}"
 };
 
 // src/i18n/review.json
@@ -5563,7 +5605,21 @@ var review_default = {
     "git.block.branch_name.claim": "machine",
     "git.block.branch_name.requires": "machine",
     "git.block.pr_headless.claim": "machine",
-    "git.block.pr_headless.requires": "machine"
+    "git.block.pr_headless.requires": "machine",
+    "command.planta.summary": "machine",
+    "planta.type.saas": "machine",
+    "planta.type.landing": "machine",
+    "planta.bar": "machine",
+    "planta.next": "machine",
+    "planta.minimum": "machine",
+    "planta.how.files": "machine",
+    "planta.how.grep": "machine",
+    "planta.how.deps": "machine",
+    "planta.how.contract": "machine",
+    "planta.how.manual": "machine",
+    "planta.installed.task": "machine",
+    "planta.installed.project": "machine",
+    "statusline.planta": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -6537,7 +6593,21 @@ var review_default = {
     "git.block.branch_name.claim": "machine",
     "git.block.branch_name.requires": "machine",
     "git.block.pr_headless.claim": "machine",
-    "git.block.pr_headless.requires": "machine"
+    "git.block.pr_headless.requires": "machine",
+    "command.planta.summary": "machine",
+    "planta.type.saas": "machine",
+    "planta.type.landing": "machine",
+    "planta.bar": "machine",
+    "planta.next": "machine",
+    "planta.minimum": "machine",
+    "planta.how.files": "machine",
+    "planta.how.grep": "machine",
+    "planta.how.deps": "machine",
+    "planta.how.contract": "machine",
+    "planta.how.manual": "machine",
+    "planta.installed.task": "machine",
+    "planta.installed.project": "machine",
+    "statusline.planta": "machine"
   }
 };
 
@@ -9595,7 +9665,7 @@ var checkAuthVariables = ({ env, platform }) => {
 };
 
 // src/doctor/hooks.ts
-import { join as join42 } from "node:path";
+import { join as join43 } from "node:path";
 
 // src/hooks/events.ts
 var HOOK_EVENTS = [
@@ -12427,6 +12497,10 @@ var SIZES = ["S", "M", "L"];
 var TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 var TASK_SCHEMA = "finitemonkey/task@1";
 
+// src/planta/types.ts
+var BLUEPRINT_TYPES = ["saas", "landing"];
+var parseBlueprintType = (raw) => BLUEPRINT_TYPES.find((type) => type === raw?.toLowerCase());
+
 // src/task/validate.ts
 var str = (record4, key2, at, issues, required2) => {
   const value = record4[key2];
@@ -12553,6 +12627,10 @@ var validateContract = (value, implicit = false) => {
   const checks = acceptance(value["acceptance"], issues);
   const decisionsNeeded = strings2(value["decisions_needed"], "decisions_needed", issues);
   const callersIgnore = strings2(value["callers_ignore"], "callers_ignore", issues);
+  const blueprint = parseBlueprintType(str(value, "blueprint", "", issues, false));
+  if (value["blueprint"] !== void 0 && blueprint === void 0) {
+    issues.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
+  }
   if (issues.length > 0 || id === void 0 || goal === void 0 || size === void 0) return reject(issues);
   return accept({
     id,
@@ -12563,6 +12641,7 @@ var validateContract = (value, implicit = false) => {
     acceptance: checks,
     decisionsNeeded,
     ...callersIgnore.length === 0 ? {} : { callersIgnore },
+    ...blueprint === void 0 ? {} : { blueprint },
     implicit
   });
 };
@@ -18483,6 +18562,368 @@ var GIT_HANDLERS = {
   PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort]
 };
 
+// src/planta/blueprints.ts
+var MIGRATIONS2 = [
+  "migrations/",
+  "**/migrations/",
+  "prisma/schema.prisma",
+  "db/migrate/",
+  "drizzle/",
+  "alembic/",
+  "supabase/migrations/"
+];
+var SAAS = [
+  { id: "problem", area: "product", after: [], probe: { type: "manual" } },
+  {
+    id: "rules",
+    area: "product",
+    after: [],
+    probe: { type: "files", any: ["docs/plan/", "docs/rules*", "docs/business*", "docs/decisions/"] }
+  },
+  { id: "pricing", area: "product", after: ["problem"], probe: { type: "manual" } },
+  {
+    id: "api",
+    area: "application",
+    after: [],
+    probe: {
+      type: "files",
+      any: ["api/", "src/api/", "app/api/", "pages/api/", "server/", "src/server/", "backend/", "src/routes/"]
+    }
+  },
+  { id: "database", area: "application", after: [], probe: { type: "files", any: MIGRATIONS2 } },
+  {
+    id: "auth",
+    area: "application",
+    after: ["database"],
+    probe: {
+      type: "deps",
+      any: ["next-auth", "@auth/core", "@clerk/nextjs", "lucia", "passport", "better-auth", "@supabase/supabase-js"],
+      orGrep: "sign_?in|log_?in|authenticate"
+    }
+  },
+  {
+    id: "password-reset",
+    area: "application",
+    after: ["auth"],
+    probe: { type: "grep", all: ["(reset|forgot)[-_ ]?password|password[-_ ]?reset"] }
+  },
+  {
+    id: "tenants",
+    area: "application",
+    after: ["auth"],
+    probe: { type: "grep", all: ["tenant|organization_?id|org_?id|workspace_?id"] }
+  },
+  { id: "states", area: "application", after: ["api"], probe: { type: "grep", all: ["loading", "empty", "error"] } },
+  {
+    id: "billing",
+    area: "money",
+    after: ["auth"],
+    probe: {
+      type: "deps",
+      any: ["stripe", "asaas", "mercadopago", "@paddle/paddle-node-sdk", "@lemonsqueezy/lemonsqueezy.js"],
+      orGrep: "checkout|subscription"
+    }
+  },
+  { id: "webhooks", area: "money", after: ["billing"], probe: { type: "grep", all: ["idempoten"] } },
+  { id: "renewal-refund", area: "money", after: ["billing"], probe: { type: "grep", all: ["refund", "renew"] } },
+  { id: "cents", area: "money", after: ["billing"], probe: { type: "grep", all: ["cents|centavos|minor_?units"] } },
+  {
+    id: "types",
+    area: "quality",
+    after: [],
+    probe: { type: "files", any: ["tsconfig.json", "mypy.ini", "pyrightconfig.json", "go.mod", "Cargo.toml"] }
+  },
+  {
+    id: "lint",
+    area: "quality",
+    after: [],
+    probe: {
+      type: "files",
+      any: ["eslint.config.*", ".eslintrc*", "biome.json", "ruff.toml", ".ruff.toml", ".golangci.yml"]
+    }
+  },
+  { id: "tests", area: "quality", after: [], probe: { type: "contract", kind: "tests" } },
+  {
+    id: "ci",
+    area: "quality",
+    after: ["tests"],
+    probe: {
+      type: "files",
+      any: [".github/workflows/*.yml", ".github/workflows/*.yaml", ".gitlab-ci.yml", ".circleci/config.yml"]
+    }
+  },
+  { id: "secrets", area: "security", after: [], probe: { type: "contract", kind: "secrets" } },
+  { id: "rate-limit", area: "security", after: ["api"], probe: { type: "grep", all: ["rate[-_ ]?limit|throttl"] } },
+  {
+    id: "privacy",
+    area: "security",
+    after: ["auth"],
+    probe: { type: "grep", all: ["delete[-_ ]?account|account[-_ ]?deletion|data[-_ ]?export|lgpd|gdpr"] }
+  },
+  { id: "backup", area: "security", after: ["database"], probe: { type: "manual" } },
+  {
+    id: "environments",
+    area: "operation",
+    after: [],
+    probe: { type: "files", any: [".env.example", ".env.sample", "**/.env.example"] }
+  },
+  { id: "rollback", area: "operation", after: ["environments"], probe: { type: "manual" } },
+  {
+    id: "logs",
+    area: "operation",
+    after: ["api"],
+    probe: { type: "deps", any: ["@sentry/node", "@sentry/nextjs", "@sentry/react", "sentry-sdk", "pino", "winston"] }
+  },
+  {
+    id: "terms",
+    area: "legal",
+    after: [],
+    probe: { type: "files", any: ["**/terms*", "**/privacy*", "**/termos*", "**/privacidade*"] }
+  }
+];
+var LANDING = [
+  { id: "message", area: "product", after: [], probe: { type: "manual" } },
+  { id: "call-to-action", area: "application", after: ["message"], probe: { type: "grep", all: ["<button|<a "] } },
+  { id: "contact", area: "application", after: [], probe: { type: "grep", all: ["<form|mailto:|wa\\.me/"] } },
+  { id: "responsive", area: "application", after: [], probe: { type: "grep", all: ["@media|viewport"] } },
+  { id: "metadata", area: "application", after: [], probe: { type: "grep", all: ["<title|og:title|metadata"] } },
+  { id: "analytics", area: "operation", after: [], probe: { type: "grep", all: ["gtag|plausible|posthog|analytics"] } },
+  { id: "visual-check", area: "quality", after: ["responsive"], probe: { type: "contract", kind: "look" } },
+  {
+    id: "landing-terms",
+    area: "legal",
+    after: ["contact"],
+    probe: { type: "files", any: ["**/privacy*", "**/privacidade*", "**/privacidad*"] }
+  },
+  { id: "domain", area: "operation", after: [], probe: { type: "manual" } }
+];
+var BLUEPRINTS = {
+  saas: SAAS,
+  landing: LANDING
+};
+
+// src/planta/evaluate.ts
+var APPROVAL_TASK = "planta";
+var escape3 = (text10) => text10.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+var globRegex4 = (pattern) => {
+  const directory = pattern.endsWith("/");
+  const body2 = (directory ? pattern.slice(0, -1) : pattern).split("**/").map((part2) => escape3(part2).replace(/\*/g, "[^/]*")).join("(?:.*/)?");
+  return new RegExp(`^${body2}${directory ? "/" : "$"}`, "i");
+};
+var hasDependency = (manifests, name) => {
+  const quoted = new RegExp(`["']${escape3(name)}["']`, "i");
+  const line7 = new RegExp(`^\\s*${escape3(name)}(?:\\s|[=<>~\\[;]|$)`, "im");
+  return quoted.test(manifests) || line7.test(manifests);
+};
+var probeGreen = (probe, view2) => {
+  switch (probe.type) {
+    case "files":
+      return probe.any.map(globRegex4).some((pattern) => view2.files.some((file) => pattern.test(file)));
+    case "grep":
+      return probe.all.every((pattern) => view2.grep(pattern));
+    case "deps":
+      return probe.any.some((name) => hasDependency(view2.manifests, name)) || probe.orGrep !== void 0 && view2.grep(probe.orGrep);
+    case "contract":
+      return view2.passed(probe.kind);
+    case "manual":
+      return false;
+  }
+};
+var statusOf = (item2, view2, approved) => {
+  if (item2.probe.type === "manual") return approved.has(item2.id) ? "green" : "manual";
+  return probeGreen(item2.probe, view2) ? "green" : "missing";
+};
+var nextItem = (items, results) => {
+  const green = new Set(results.filter((result) => result.status === "green").map((result) => result.id));
+  const open = items.filter((item2) => !green.has(item2.id));
+  return (open.find((item2) => item2.after.every((id) => green.has(id))) ?? open[0])?.id;
+};
+var evaluateBlueprint = (type, view2, approved = /* @__PURE__ */ new Set()) => {
+  const items = BLUEPRINTS[type];
+  const results = items.map((item2) => ({
+    id: item2.id,
+    area: item2.area,
+    status: statusOf(item2, view2, approved),
+    check: item2.probe.type
+  }));
+  return {
+    type,
+    green: results.filter((result) => result.status === "green").length,
+    total: results.length,
+    items: results,
+    next: nextItem(items, results),
+    tree: view2.tree
+  };
+};
+
+// src/task/serialize.ts
+var checkYaml = (check2) => ({
+  id: check2.id,
+  check: check2.kind,
+  ...check2.run === void 0 ? {} : { run: check2.run },
+  ...check2.timeoutS === void 0 ? {} : { timeout_s: check2.timeoutS },
+  ...check2.require === void 0 ? {} : { require: [...check2.require] },
+  ...check2.requireOpen === void 0 ? {} : { require_open: check2.requireOpen },
+  ...check2.description === void 0 ? {} : { description: check2.description },
+  ...check2.port === void 0 ? {} : { port: check2.port },
+  ...check2.route === void 0 ? {} : { route: check2.route },
+  ...check2.status === void 0 ? {} : { status: check2.status },
+  ...check2.body === void 0 ? {} : { body: check2.body }
+});
+var contractYaml = (contract) => ({
+  id: contract.id,
+  goal: contract.goal,
+  size: contract.size,
+  ...contract.base === void 0 ? {} : { base: contract.base },
+  scope: {
+    paths: [...contract.scope.paths],
+    ...contract.scope.diffBudget === void 0 ? {} : { diff_budget: { ...contract.scope.diffBudget } },
+    tests_protected: contract.scope.testsProtected
+  },
+  acceptance: contract.acceptance.map(checkYaml),
+  decisions_needed: [...contract.decisionsNeeded],
+  ...contract.callersIgnore === void 0 ? {} : { callers_ignore: [...contract.callersIgnore] },
+  ...contract.blueprint === void 0 ? {} : { blueprint: contract.blueprint }
+});
+var contractJson = (contract) => ({
+  id: contract.id,
+  goal: contract.goal,
+  size: contract.size,
+  base: contract.base ?? null,
+  implicit: contract.implicit,
+  scope: {
+    paths: contract.scope.paths,
+    diffBudget: contract.scope.diffBudget ?? null,
+    testsProtected: contract.scope.testsProtected
+  },
+  acceptance: contract.acceptance.map((check2) => ({ ...check2 })),
+  decisionsNeeded: contract.decisionsNeeded,
+  blueprint: contract.blueprint ?? null
+});
+
+// src/planta/store.ts
+var PLANTA_CACHE = "planta.json";
+var readCachedBar = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(PLANTA_CACHE));
+  const type = parseBlueprintType(typeof raw?.["type"] === "string" ? raw["type"] : void 0);
+  const green = raw?.["green"];
+  const total = raw?.["total"];
+  if (type === void 0 || typeof green !== "number" || typeof total !== "number") return void 0;
+  const next2 = raw?.["next"];
+  const tree = raw?.["tree"];
+  return {
+    type,
+    green,
+    total,
+    next: typeof next2 === "string" ? next2 : void 0,
+    tree: typeof tree === "string" ? tree : void 0
+  };
+};
+var writeCachedBar = (runtime, paths, bar) => writeJsonFile(runtime, paths.cache(PLANTA_CACHE), {
+  type: bar.type,
+  green: bar.green,
+  total: bar.total,
+  next: bar.next ?? null,
+  tree: bar.tree ?? null
+}).ok;
+var approvedItems = (runtime, paths) => new Set(
+  readApprovals(runtime, paths).filter((approval) => approval.task === APPROVAL_TASK).map((approval) => approval.check)
+);
+var contractText = (runtime, paths, task) => {
+  const approved = readTrust(runtime, paths).approved[task];
+  if (approved !== void 0) return approved;
+  const disk = runtime.readText(paths.task(task));
+  return disk.ok ? disk.value : void 0;
+};
+var activeBlueprint = (runtime, paths) => {
+  const task = readState(runtime, paths).active;
+  const text10 = task === void 0 ? void 0 : contractText(runtime, paths, task);
+  if (task === void 0 || text10 === void 0) return void 0;
+  const parsed = parseContract(task, text10);
+  return parsed.ok ? parsed.value.blueprint : void 0;
+};
+var recordInContract = (runtime, paths, type) => {
+  const task = readState(runtime, paths).active;
+  const text10 = task === void 0 ? void 0 : contractText(runtime, paths, task);
+  if (task === void 0 || text10 === void 0) return void 0;
+  const parsed = parseContract(task, text10);
+  if (!parsed.ok) return void 0;
+  const updated = stringifyYaml(contractYaml({ ...parsed.value, blueprint: type }));
+  if (!runtime.writeText(paths.task(task), updated).ok) return void 0;
+  const lock = readTrust(runtime, paths);
+  if (lock.approved[task] !== void 0)
+    writeTrust(runtime, paths, { ...lock, approved: { ...lock.approved, [task]: updated } });
+  return task;
+};
+
+// src/planta/view.ts
+import { join as join41 } from "node:path";
+var MANIFESTS2 = ["package.json", "requirements.txt", "pyproject.toml", "Gemfile", "go.mod", "composer.json"];
+var IGNORED = ":(exclude)node_modules";
+var listFiles = (runtime, root) => (gitAt(runtime, root).out(["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", ".", EXCLUDE_FM]) ?? "").split("\0").filter((path) => path !== "");
+var grepper = (runtime, root) => {
+  const git3 = gitAt(runtime, root);
+  const cache = /* @__PURE__ */ new Map();
+  return (pattern) => {
+    const known2 = cache.get(pattern);
+    if (known2 !== void 0) return known2;
+    const result = git3.run([
+      "grep",
+      "-q",
+      "-I",
+      "-i",
+      "-E",
+      "--untracked",
+      "-e",
+      pattern,
+      "--",
+      ".",
+      EXCLUDE_FM,
+      IGNORED
+    ]);
+    const found = result.found && result.exitCode === 0;
+    cache.set(pattern, found);
+    return found;
+  };
+};
+var manifestText = (runtime, root) => MANIFESTS2.map((name) => {
+  const text10 = runtime.readText(toAbsolutePath(join41(root, name)));
+  return text10.ok ? text10.value : "";
+}).join("\n");
+var passedChecks = (runtime, root, tree) => {
+  const paths = fmPaths(root);
+  const task = readState(runtime, paths).active;
+  if (task === void 0 || tree === void 0) return () => false;
+  const ledger = readLedger2(runtime, paths.evidence(task));
+  return (kind) => ledger.findLast((entry2) => entry2.kind === kind && entry2.treeHash === tree)?.status === "passed";
+};
+var projectView = (runtime, root) => {
+  const tree = treeHash(gitAt(runtime, root));
+  return {
+    files: listFiles(runtime, root),
+    grep: grepper(runtime, root),
+    manifests: manifestText(runtime, root),
+    passed: passedChecks(runtime, root, tree),
+    tree
+  };
+};
+
+// src/planta/hooks.ts
+var refreshBar = (input) => {
+  const root = findRepoRoot(input.runtime, sessionCwd(input));
+  if (root === void 0) return { kind: "allow" };
+  const paths = fmPaths(root);
+  const type = activeBlueprint(input.runtime, paths) ?? readCachedBar(input.runtime, paths)?.type;
+  if (type === void 0) return { kind: "allow" };
+  writeCachedBar(
+    input.runtime,
+    paths,
+    evaluateBlueprint(type, projectView(input.runtime, root), approvedItems(input.runtime, paths))
+  );
+  return { kind: "allow" };
+};
+var PLANTA_HANDLERS = { Stop: [refreshBar] };
+
 // src/policy/guards.ts
 var SHADOW_FILE = "shadow.json";
 var numberOf2 = (value) => typeof value === "number" && Number.isInteger(value) ? value : 0;
@@ -19241,7 +19682,8 @@ var GUARD_SETS = [
   { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
-  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } }
+  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
+  { id: "planta", damage: false, handlers: PLANTA_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy));
 
@@ -19614,7 +20056,7 @@ var hookSchemaProblems = (hooks, claude) => {
 };
 
 // src/doctor/hook-sources.ts
-import { join as join41 } from "node:path";
+import { join as join42 } from "node:path";
 var entriesOf = (source, hooks, own) => Object.entries(asRecord(hooks)).flatMap(
   ([event, groups]) => asList(groups).flatMap((group) => {
     const record4 = asRecord(group);
@@ -19627,7 +20069,7 @@ var projectHookFiles = (env) => readSettings(env).flatMap(({ scope: scope2, path
   const source = PROJECT_SCOPES[scope2];
   return source === void 0 || !("hooks" in settings) ? [] : [{ source, path, hooks: settings["hooks"] }];
 });
-var pluginsDir = ({ env, runtime }) => join41(env["CLAUDE_CONFIG_DIR"] ?? join41(runtime.homeDir(), ".claude"), "plugins");
+var pluginsDir = ({ env, runtime }) => join42(env["CLAUDE_CONFIG_DIR"] ?? join42(runtime.homeDir(), ".claude"), "plugins");
 var installRecord = (value, root) => {
   const records = Array.isArray(value) ? value.filter(isRecord) : isRecord(value) ? [value] : [];
   return records.find((record4) => record4["projectPath"] === root) ?? records[0];
@@ -19638,13 +20080,13 @@ var readJson = (env, path) => {
   return parsed?.ok === true ? parsed.value : void 0;
 };
 var installedPlugin = (env) => {
-  const index = readJson(env, toAbsolutePath(join41(pluginsDir(env), "installed_plugins.json")));
+  const index = readJson(env, toAbsolutePath(join42(pluginsDir(env), "installed_plugins.json")));
   const record4 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
   const installPath = record4 === void 0 ? void 0 : optionalString(record4, "installPath");
   if (record4 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
-  const manifest = readJson(env, toAbsolutePath(join41(root, ".claude-plugin", "plugin.json")));
-  const hooksPath = toAbsolutePath(join41(root, "hooks", "hooks.json"));
+  const manifest = readJson(env, toAbsolutePath(join42(root, ".claude-plugin", "plugin.json")));
+  const hooksPath = toAbsolutePath(join42(root, "hooks", "hooks.json"));
   const text10 = env.runtime.readText(hooksPath);
   const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
   return {
@@ -19689,7 +20131,7 @@ var schemaFindings = (env, plugin, claude) => {
   const files = [...projectHookFiles(env), ...plugin?.hooksFile === void 0 ? [] : [plugin.hooksFile]];
   const invalidJson = [
     ...unreadableProjectFiles(env),
-    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join42(plugin.root, "hooks", "hooks.json"))] : []
+    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join43(plugin.root, "hooks", "hooks.json"))] : []
   ];
   return [
     ...invalidJson.flatMap((file) => schemaFinding(file, ["not valid JSON"], label2)),
@@ -19710,7 +20152,7 @@ var pluginFindings = (env, projectOwn) => {
   ];
 };
 var coverageFindings = (env, entries) => {
-  const installed = env.runtime.stat(toAbsolutePath(join42(env.root, ...LOCK_FILE.split("/")))) !== void 0;
+  const installed = env.runtime.stat(toAbsolutePath(join43(env.root, ...LOCK_FILE.split("/")))) !== void 0;
   if (entries.length === 0 && !installed) {
     return [finding("hooks.registered", "warn", "doctor.hooks.none", {}, "doctor.hooks.fix_none")];
   }
@@ -19762,17 +20204,17 @@ var checkHooks = (env) => {
 };
 
 // src/doctor/instructions.ts
-import { join as join43 } from "node:path";
+import { join as join44 } from "node:path";
 var INSTRUCTION_LINE_CEILING = 200;
 var TOP_INSTRUCTIONS = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"];
 var RULES_DIR = ".claude/rules";
 var SHOWN = 3;
 var readProjectFile = (env, relative12) => {
-  const text10 = env.runtime.readText(toAbsolutePath(join43(env.root, ...relative12.split("/"))));
+  const text10 = env.runtime.readText(toAbsolutePath(join44(env.root, ...relative12.split("/"))));
   return text10.ok ? text10.value : void 0;
 };
 var instructionFiles = (env) => {
-  const listed5 = env.runtime.listDir(toAbsolutePath(join43(env.root, ...RULES_DIR.split("/"))));
+  const listed5 = env.runtime.listDir(toAbsolutePath(join44(env.root, ...RULES_DIR.split("/"))));
   const rules = listed5.ok ? listed5.value.filter((name) => name.endsWith(".md")).map((name) => `${RULES_DIR}/${name}`) : [];
   return [...TOP_INSTRUCTIONS, ...rules].flatMap((path) => {
     const text10 = readProjectFile(env, path);
@@ -19892,12 +20334,12 @@ var checkInstructions = (env) => {
 };
 
 // src/doctor/line-endings.ts
-import { join as join44 } from "node:path";
+import { join as join45 } from "node:path";
 var LF_RULE = /^\*\s.*\beol=lf\b/m;
 var checkLineEndings = ({ root, runtime }) => {
   const autocrlf = runtime.git(["config", "--get", "core.autocrlf"], root);
   if (!autocrlf.ok || autocrlf.stdout.trim().toLowerCase() !== "true") return [];
-  const attributes = runtime.readText(toAbsolutePath(join44(root, ".gitattributes")));
+  const attributes = runtime.readText(toAbsolutePath(join45(root, ".gitattributes")));
   if (attributes.ok && LF_RULE.test(attributes.value)) return [];
   return [
     finding("git.autocrlf", "warn", "doctor.git.autocrlf", { file: ".gitattributes" }, "doctor.git.fix_autocrlf")
@@ -19905,7 +20347,7 @@ var checkLineEndings = ({ root, runtime }) => {
 };
 
 // src/doctor/memory.ts
-import { join as join45 } from "node:path";
+import { join as join46 } from "node:path";
 var ceilingOf = (config) => {
   const value = configAt(parseConfigYaml(config ?? ""), "memory", "maxLines");
   const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
@@ -19913,9 +20355,9 @@ var ceilingOf = (config) => {
 };
 var lineCount3 = (text10) => text10.replace(/\r?\n$/, "").split(/\r?\n/).length;
 var checkAgentsFile = ({ root, runtime }) => {
-  const text10 = runtime.readText(toAbsolutePath(join45(root, AGENTS_FILE)));
+  const text10 = runtime.readText(toAbsolutePath(join46(root, AGENTS_FILE)));
   if (!text10.ok) return [];
-  const config = runtime.readText(toAbsolutePath(join45(root, CONFIG_FILE2)));
+  const config = runtime.readText(toAbsolutePath(join46(root, CONFIG_FILE2)));
   const max = ceilingOf(config.ok ? config.value : void 0);
   const lines4 = lineCount3(text10.value);
   const params2 = { file: AGENTS_FILE, lines: lines4, max };
@@ -19923,7 +20365,7 @@ var checkAgentsFile = ({ root, runtime }) => {
 };
 
 // src/doctor/project-files.ts
-import { join as join46 } from "node:path";
+import { join as join47 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
 var SCRIPT2 = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
@@ -19954,7 +20396,7 @@ var CONFIG_GROUPS = [
     files: [...variants("commitlint.config", SCRIPT2), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
-var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join46(env.root, file)))?.kind === "file");
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join47(env.root, file)))?.kind === "file");
 var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
   const found = present(env, files);
   return found.length > 1 ? [build(name, found.join(", "))] : [];
@@ -20154,7 +20596,7 @@ var doctorCommand = {
 };
 
 // src/gain/gain.ts
-import { join as join47 } from "node:path";
+import { join as join48 } from "node:path";
 var GAIN_SCHEMA = "finitemonkey/gain@1";
 var DAY_MS4 = 864e5;
 var SAVE_WINDOW_MS = DAY_MS4;
@@ -20170,7 +20612,7 @@ var readLog = (runtime, paths) => {
   });
 };
 var readGates = (runtime, paths) => {
-  const listed5 = runtime.listDir(toAbsolutePath(join47(paths.dir, "evidence")));
+  const listed5 = runtime.listDir(toAbsolutePath(join48(paths.dir, "evidence")));
   const files = listed5.ok ? listed5.value.filter((name) => name.endsWith(".jsonl")) : [];
   return files.flatMap((name) => readLedger2(runtime, paths.evidence(name.replace(/\.jsonl$/, "")))).filter((entry2) => entry2.check === GATE_CHECK);
 };
@@ -20798,7 +21240,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename5, dirname as dirname10, join as join48 } from "node:path";
+import { basename as basename5, dirname as dirname10, join as join49 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args2) => {
   const result = runtime.git(args2, repo.root);
@@ -20841,7 +21283,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join48(dirname10(repo.root), `${basename5(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join49(dirname10(repo.root), `${basename5(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -21076,7 +21518,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join49 } from "node:path";
+import { join as join50 } from "node:path";
 
 // src/i18n/message.ts
 var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
@@ -21302,20 +21744,20 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join49(dir, `${lang}.json`));
+  const file = toAbsolutePath(join50(dir, `${lang}.json`));
   const text10 = ctx.runtime.readText(file);
   if (!text10.ok) return reject(unreadable(dir, file, text10.error));
   const parsed = parseJsonObject(text10.value);
   return parsed.ok ? parsed : reject(unreadable(dir, file, parsed.error));
 };
 var loadCatalogs = (ctx, dir) => {
-  const en2 = readCatalog(ctx, dir, "en");
-  if (!en2.ok) return en2;
-  const ptBR2 = readCatalog(ctx, dir, "pt-BR");
-  if (!ptBR2.ok) return ptBR2;
-  const es2 = readCatalog(ctx, dir, "es");
-  if (!es2.ok) return es2;
-  return accept({ en: en2.value, "pt-BR": ptBR2.value, es: es2.value });
+  const en3 = readCatalog(ctx, dir, "en");
+  if (!en3.ok) return en3;
+  const ptBR3 = readCatalog(ctx, dir, "pt-BR");
+  if (!ptBR3.ok) return ptBR3;
+  const es3 = readCatalog(ctx, dir, "es");
+  if (!es3.ok) return es3;
+  return accept({ en: en3.value, "pt-BR": ptBR3.value, es: es3.value });
 };
 var describeProblem = (ctx, problem5) => {
   const kind = ctx.t(`i18n.problem.${problem5.kind}`, {
@@ -21325,7 +21767,7 @@ var describeProblem = (ctx, problem5) => {
   return `  ${problem5.lang}  ${problem5.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text10 = ctx.runtime.readText(toAbsolutePath(join49(dir, "review.json")));
+  const text10 = ctx.runtime.readText(toAbsolutePath(join50(dir, "review.json")));
   const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -21366,7 +21808,7 @@ var i18nCheckCommand = {
 };
 
 // src/history/look-back.ts
-import { join as join50 } from "node:path";
+import { join as join51 } from "node:path";
 
 // src/history/patterns.ts
 import { posix as posix5 } from "node:path";
@@ -21502,7 +21944,7 @@ var parseTranscript = (jsonl) => {
 // src/history/look-back.ts
 var SAMPLES = 3;
 var projectLogKey = (root) => root.replace(/[^A-Za-z0-9-]/g, "-");
-var projectLogDir = (runtime, root, env) => join50(env["CLAUDE_CONFIG_DIR"] ?? join50(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
+var projectLogDir = (runtime, root, env) => join51(env["CLAUDE_CONFIG_DIR"] ?? join51(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
 var lookBack = (runtime, root, env) => {
   const dir = projectLogDir(runtime, root, env);
   const listed5 = runtime.listDir(toAbsolutePath(dir));
@@ -21523,7 +21965,7 @@ var lookBack = (runtime, root, env) => {
   };
   let turns = 0;
   for (const name of files) {
-    const text10 = runtime.readText(toAbsolutePath(join50(dir, name)));
+    const text10 = runtime.readText(toAbsolutePath(join51(dir, name)));
     if (!text10.ok) continue;
     for (const turn of parseTranscript(text10.value)) {
       turns += 1;
@@ -22074,7 +22516,7 @@ var applyAllows = (findings2, allows, decided) => {
 
 // src/look/node-capture.ts
 import { mkdirSync as mkdirSync4 } from "node:fs";
-import { join as join51 } from "node:path";
+import { join as join52 } from "node:path";
 
 // src/look/measure.ts
 var measurePage = (doc) => {
@@ -22150,7 +22592,7 @@ var captureOne = async (browser, request, route, viewport) => {
   const context = await browser.newContext({ viewport: { width: viewport, height: HEIGHT }, reducedMotion: "reduce" });
   const page = await context.newPage();
   const events = watch(page);
-  const path = join51(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
+  const path = join52(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
   const loadError = await loadAndShoot(page, `${request.baseUrl}${route}`, path, request.timeoutMs);
   const measure = loadError === void 0 ? parseMeasure(await page.evaluate(MEASURE_SCRIPT)) : void 0;
   await context.close();
@@ -22167,7 +22609,7 @@ var captureAll = async (browser, request) => {
 
 // src/look/node-playwright.ts
 import { createRequire } from "node:module";
-import { join as join52 } from "node:path";
+import { join as join53 } from "node:path";
 import { fileURLToPath as fileURLToPath3, pathToFileURL } from "node:url";
 var NAMES = ["playwright", "playwright-core"];
 var isPlaywright = (value) => isRecord(value) && isRecord(value["chromium"]) && typeof value["chromium"]["launch"] === "function";
@@ -22182,7 +22624,7 @@ var tryLoad = async (base, name) => {
   }
 };
 var loadPlaywright = async (root) => {
-  for (const base of [join52(root, "package.json"), fileURLToPath3(import.meta.url)]) {
+  for (const base of [join53(root, "package.json"), fileURLToPath3(import.meta.url)]) {
     for (const name of NAMES) {
       const found = await tryLoad(base, name);
       if (found !== void 0) return found;
@@ -22203,7 +22645,7 @@ var launchBrowser = async (playwright) => {
 
 // src/look/node-sheet.ts
 import { readFileSync as readFileSync2 } from "node:fs";
-import { join as join53 } from "node:path";
+import { join as join54 } from "node:path";
 var escapeHtml = (text10) => text10.replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char] ?? char);
 var card = (result) => {
   const image = (() => {
@@ -22226,7 +22668,7 @@ var contactSheet = async (browser, results, dir) => {
   if (shown4.length === 0) return void 0;
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   await page.setContent(`<!doctype html><style>${STYLE}</style>${shown4.map(card).join("")}`);
-  const path = join53(dir, "contact-sheet.png");
+  const path = join54(dir, "contact-sheet.png");
   await page.screenshot({ path, fullPage: true });
   await page.close();
   return path;
@@ -22379,7 +22821,7 @@ var lookCommand = {
 };
 
 // src/map/build.ts
-import { join as join54, posix as posix6 } from "node:path";
+import { join as join55, posix as posix6 } from "node:path";
 
 // src/map/defs.ts
 var SKIPPED_PATH = /(^|\/)(node_modules|dist|build|out|vendor|coverage|generated|__generated__|tests?|__tests__|spec|fixtures)\/|\.(test|spec)\.[a-z]+$|\.d\.ts$|\.min\.js$|\.generated\.[a-z]+$|_pb2\.py$|\.pb\.go$|_test\.go$|(^|\/)test_[^/]+\.py$|^\.finitemonkey\//;
@@ -22511,7 +22953,7 @@ var mapBudget = (runtime, root, override) => {
   const parsed = typeof value === "string" ? Number(value) : Number.NaN;
   return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_MAP_BUDGET;
 };
-var mapPath = (root) => toAbsolutePath(join54(fmPaths(root).dir, MAP_FILE));
+var mapPath = (root) => toAbsolutePath(join55(fmPaths(root).dir, MAP_FILE));
 var headerOf = (map) => `# finitemonkey map tree=${map.tree} budget=${String(map.budget)} source=${map.source} folders=${String(map.folders)} shown=${String(map.shown)}
 `;
 var fromCache = (runtime, root, tree, budget) => {
@@ -22589,7 +23031,7 @@ var mapCommand = {
 };
 
 // src/merge/apply.ts
-import { join as join55 } from "node:path";
+import { join as join56 } from "node:path";
 var GENERATOR_TIMEOUT_MS2 = 3e5;
 var git = (runtime, dir, args2) => {
   const result = runtime.gitWith(args2, dir, {});
@@ -22599,7 +23041,7 @@ var applyOne = (runtime, dir, file) => {
   const { action, path } = file;
   switch (action.kind) {
     case "write": {
-      const written = runtime.writeText(toAbsolutePath(join55(dir, path)), action.text);
+      const written = runtime.writeText(toAbsolutePath(join56(dir, path)), action.text);
       return written.ok ? git(runtime, dir, ["add", "--", path]) : written.error;
     }
     case "delete":
@@ -22616,7 +23058,7 @@ var applyResolutions = (runtime, dir, files) => files.flatMap((file) => {
 });
 var runGenerator2 = (runtime, dir, command) => runtime.exec({ command, args: [], cwd: dir, timeoutMs: GENERATOR_TIMEOUT_MS2, shell: true }).exitCode === 0;
 var read3 = (runtime, dir, path) => {
-  const text10 = runtime.readText(toAbsolutePath(join55(dir, path)));
+  const text10 = runtime.readText(toAbsolutePath(join56(dir, path)));
   return text10.ok ? text10.value : void 0;
 };
 var regenerate = (runtime, dir, files) => files.flatMap((file) => {
@@ -22631,7 +23073,7 @@ var regenerate = (runtime, dir, files) => files.flatMap((file) => {
 });
 
 // src/merge/finish.ts
-import { join as join56 } from "node:path";
+import { join as join57 } from "node:path";
 
 // src/merge/semantic.ts
 var HUNK_HEADER = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/;
@@ -22688,8 +23130,8 @@ var openCallers = (runtime, dir, base) => {
 var CHECK_TIMEOUT_MS = 6e5;
 var writeDropped = (runtime, dir, dropped) => {
   if (dropped.length === 0) return void 0;
-  const path = toAbsolutePath(join56(dir, DROPPED_FILE));
-  runtime.mkdir(toAbsolutePath(join56(dir, ".finitemonkey")));
+  const path = toAbsolutePath(join57(dir, DROPPED_FILE));
+  runtime.mkdir(toAbsolutePath(join57(dir, ".finitemonkey")));
   const items = dropped.map((item2) => ({ ...item2, approved_by: "declared removal" }));
   runtime.writeText(path, `${JSON.stringify({ dropped: items }, null, 2)}
 `);
@@ -22731,7 +23173,7 @@ var commitMerge = (runtime, dir) => {
 };
 
 // src/wt/create.ts
-import { join as join57 } from "node:path";
+import { join as join58 } from "node:path";
 
 // src/wt/ports.ts
 var DEFAULT_PORT_BASE = 5174;
@@ -22762,8 +23204,8 @@ var line2 = (runtime, cwd, args2) => {
 };
 var ensureIgnored = (runtime, mainRoot, commonDir) => {
   if (runtime.git(["check-ignore", "-q", `${OFFICIAL_DIR}/x`], mainRoot).ok) return;
-  const exclude = toAbsolutePath(join57(commonDir, "info", "exclude"));
-  runtime.mkdir(toAbsolutePath(join57(commonDir, "info")));
+  const exclude = toAbsolutePath(join58(commonDir, "info", "exclude"));
+  runtime.mkdir(toAbsolutePath(join58(commonDir, "info")));
   runtime.appendText(exclude, `
 /${OFFICIAL_DIR}/
 `);
@@ -22900,12 +23342,12 @@ var openIntegration = (runtime, cwd, env, sides, owner) => {
 };
 
 // src/merge/report.ts
-import { join as join58 } from "node:path";
+import { join as join59 } from "node:path";
 var MERGE_REPORT_SCHEMA = "finitemonkey/merge-report@1";
-var reportPathFor = (commonDir, stamp2) => toAbsolutePath(join58(registryDir(commonDir), "merges", `${stamp2}.json`));
+var reportPathFor = (commonDir, stamp2) => toAbsolutePath(join59(registryDir(commonDir), "merges", `${stamp2}.json`));
 var writeReport2 = (runtime, report2) => {
   const path = toAbsolutePath(report2.reportPath);
-  const made = runtime.mkdir(toAbsolutePath(join58(path, "..")));
+  const made = runtime.mkdir(toAbsolutePath(join59(path, "..")));
   if (!made.ok) return made;
   const written = runtime.writeAtomic(path, `${JSON.stringify(report2, null, 2)}
 `);
@@ -23321,7 +23763,7 @@ var resolveFile = (inputs, context) => ({
 });
 
 // src/merge/stages.ts
-import { join as join59 } from "node:path";
+import { join as join60 } from "node:path";
 var STAGE_NAMES = { "1": "base", "2": "ours", "3": "theirs" };
 var conflictedStageIds = (runtime, dir) => {
   const listed5 = runtime.gitWith(["ls-files", "-u", "-z"], dir, {});
@@ -23343,9 +23785,9 @@ var blob = (runtime, dir, sha) => {
 };
 var diff3 = (runtime, gitDir, stages) => {
   if (stages.ours === void 0 || stages.theirs === void 0) return void 0;
-  const scratch = toAbsolutePath(join59(gitDir, "finitemonkey-merge"));
+  const scratch = toAbsolutePath(join60(gitDir, "finitemonkey-merge"));
   runtime.mkdir(scratch);
-  const file = (name) => toAbsolutePath(join59(scratch, name));
+  const file = (name) => toAbsolutePath(join60(scratch, name));
   runtime.writeText(file("ours"), stages.ours);
   runtime.writeText(file("base"), stages.base ?? "");
   runtime.writeText(file("theirs"), stages.theirs);
@@ -23381,7 +23823,7 @@ var fileInputs = (runtime, dir, gitDir, path, ids2, generators) => {
     ours: blob(runtime, dir, ids2.ours),
     theirs: blob(runtime, dir, ids2.theirs)
   };
-  const current2 = runtime.readText(toAbsolutePath(join59(dir, path)));
+  const current2 = runtime.readText(toAbsolutePath(join60(dir, path)));
   return {
     stages,
     merged: diff3(runtime, gitDir, stages),
@@ -23943,6 +24385,619 @@ var planConsolidateCommand = {
   })
 };
 
+// src/planta/text/en.ts
+var en2 = {
+  problem: {
+    title: "Problem and audience written down",
+    why: "Without a named problem and person, every feature looks equally urgent.",
+    minimum: "One paragraph: who has the problem, what it costs them today, how they solve it now."
+  },
+  rules: {
+    title: "Business rules written",
+    why: "Rules that live only in someone's head get coded differently in each screen.",
+    minimum: "A document under docs/ with the rules the code must follow, one per line."
+  },
+  pricing: {
+    title: "Plans and prices",
+    why: "Billing, limits and the landing page all depend on what each plan includes.",
+    minimum: "A table of plans with price, period and what each one unlocks."
+  },
+  api: {
+    title: "API separate from the screens",
+    why: "Rules inside screens cannot be tested, reused or protected on the server.",
+    minimum: "Server routes in their own folder, called by the screens."
+  },
+  database: {
+    title: "Database with migrations",
+    why: "Changing tables by hand in production loses data and cannot be repeated.",
+    minimum: "A migrations folder or schema file that creates every table from zero."
+  },
+  auth: {
+    title: "Accounts and sign-in",
+    why: "Without accounts, anyone sees anyone's data.",
+    minimum: "Sign-up, sign-in and sign-out through a maintained library."
+  },
+  "password-reset": {
+    title: "Password recovery",
+    why: "People forget passwords on the first week; without recovery they leave.",
+    minimum: "A reset link by email that expires and works once."
+  },
+  tenants: {
+    title: "Separation between customer companies (B2B)",
+    why: "In B2B, one company seeing another's records ends the contract.",
+    minimum: "Every query filtered by the company or workspace id."
+  },
+  states: {
+    title: "Loading, empty and error states",
+    why: "A screen that shows nothing while loading or failing looks broken.",
+    minimum: "Each data screen has loading, empty and error states besides the normal one."
+  },
+  billing: {
+    title: "Billing",
+    why: "Without charging, it is a free tool, not a SaaS.",
+    minimum: "Checkout through a payment provider tied to the account."
+  },
+  webhooks: {
+    title: "Idempotent payment webhooks",
+    why: "Providers resend events; without idempotency a payment is applied twice.",
+    minimum: "Each event id is stored and a repeated one is ignored."
+  },
+  "renewal-refund": {
+    title: "Renewal and refund",
+    why: "Subscriptions renew and people ask for money back; both change access.",
+    minimum: "Renewal extends access, a refund removes it, both recorded."
+  },
+  cents: {
+    title: "Money in cents",
+    why: "Floating point turns 0.1 + 0.2 into 0.30000000000000004 on an invoice.",
+    minimum: "Amounts stored and computed as integer cents."
+  },
+  types: {
+    title: "Type checking",
+    why: "Types catch wrong fields and missing values before the user does.",
+    minimum: "A type checker configured and running on the whole project."
+  },
+  lint: {
+    title: "Linter",
+    why: "A linter finds unused code and common bugs on every change.",
+    minimum: "A linter configured for the project's language."
+  },
+  tests: {
+    title: "Tests of the business rules",
+    why: "Without tests, every change can silently break billing or access.",
+    minimum: "Tests for the rules that move money or permissions, passing on this tree."
+  },
+  ci: {
+    title: "Continuous integration",
+    why: "Checks that only run on one laptop stop running.",
+    minimum: "A CI workflow that runs types, lint and tests on every push."
+  },
+  secrets: {
+    title: "Secrets out of the code",
+    why: "A key committed once stays in the history for anyone with the repository.",
+    minimum: "Keys only in environment variables; the secrets check passes on this tree."
+  },
+  "rate-limit": {
+    title: "Request limits",
+    why: "Without limits, one script can take down the service or test passwords forever.",
+    minimum: "A limit on sign-in and on the public routes."
+  },
+  privacy: {
+    title: "Personal data: legal basis and deletion",
+    why: "Data protection laws require a way to delete or export a person's data.",
+    minimum: "An account deletion or data export path."
+  },
+  backup: {
+    title: "Tested backup",
+    why: "A backup never restored is a guess.",
+    minimum: "Automatic database backup and one restore done and written down."
+  },
+  environments: {
+    title: "Test and production environments",
+    why: "Testing in production breaks it for real users.",
+    minimum: "Separate settings per environment, documented in .env.example."
+  },
+  rollback: {
+    title: "Deploy with a way back",
+    why: "A bad deploy without rollback keeps the site down while someone fixes it live.",
+    minimum: "Deploys from a pipeline, and the previous version can be restored in minutes."
+  },
+  logs: {
+    title: "Logs and alerts",
+    why: "Without logs, the first report of an error comes from an angry customer.",
+    minimum: "Errors logged with context and an alert on spikes."
+  },
+  terms: {
+    title: "Terms of use and privacy policy",
+    why: "Charging money and storing personal data without them is a legal risk.",
+    minimum: "Terms and privacy pages linked from sign-up."
+  },
+  message: {
+    title: "One clear promise",
+    why: "Visitors decide in seconds whether the page is for them.",
+    minimum: "A headline that says who it is for and what they get."
+  },
+  "call-to-action": {
+    title: "Call to action",
+    why: "A page without a next step only gets read.",
+    minimum: "One main button or link that leads to the next step."
+  },
+  contact: {
+    title: "Way to reach you",
+    why: "Interested visitors with no way to reply are lost.",
+    minimum: "A form, email or chat link that reaches a person."
+  },
+  responsive: {
+    title: "Works on phones",
+    why: "Most visits to a landing page come from a phone.",
+    minimum: "Layout that adapts to narrow screens, with a viewport tag."
+  },
+  metadata: {
+    title: "Title and share preview",
+    why: "The title and preview are what people see in search and when the link is shared.",
+    minimum: "A page title, description and share image."
+  },
+  analytics: {
+    title: "Visit measurement",
+    why: "Without numbers, nobody knows whether the page converts.",
+    minimum: "An analytics script counting visits and clicks on the main button."
+  },
+  "visual-check": {
+    title: "Visual check",
+    why: "Overflow and broken layouts only show on a real render.",
+    minimum: "The look check passes on this tree."
+  },
+  "landing-terms": {
+    title: "Privacy notice",
+    why: "A form that collects email or phone collects personal data.",
+    minimum: "A privacy page linked next to the form."
+  },
+  domain: {
+    title: "Own domain with HTTPS",
+    why: "A temporary address and a browser warning cost trust.",
+    minimum: "The page served on its own domain over HTTPS."
+  }
+};
+
+// src/planta/text/es.ts
+var es2 = {
+  problem: {
+    title: "Problema y público por escrito",
+    why: "Sin un problema y una persona con nombre, toda funcionalidad parece igual de urgente.",
+    minimum: "Un párrafo: quién tiene el problema, cuánto le cuesta hoy, cómo lo resuelve ahora."
+  },
+  rules: {
+    title: "Reglas de negocio por escrito",
+    why: "Una regla que solo vive en la cabeza de alguien se programa distinta en cada pantalla.",
+    minimum: "Un documento en docs/ con las reglas que el código debe seguir, una por línea."
+  },
+  pricing: {
+    title: "Planes y precios",
+    why: "El cobro, los límites y la página de venta dependen de lo que incluye cada plan.",
+    minimum: "Una tabla de planes con precio, período y lo que libera cada uno."
+  },
+  api: {
+    title: "API separada de las pantallas",
+    why: "Las reglas dentro de las pantallas no se pueden probar, reutilizar ni proteger en el servidor.",
+    minimum: "Rutas de servidor en su propia carpeta, llamadas por las pantallas."
+  },
+  database: {
+    title: "Base de datos con migraciones",
+    why: "Cambiar tablas a mano en producción pierde datos y no se puede repetir.",
+    minimum: "Una carpeta de migraciones o un archivo de esquema que crea todas las tablas desde cero."
+  },
+  auth: {
+    title: "Cuentas e inicio de sesión",
+    why: "Sin cuentas, cualquiera ve los datos de cualquiera.",
+    minimum: "Registro, inicio y cierre de sesión con una biblioteca mantenida."
+  },
+  "password-reset": {
+    title: "Recuperación de contraseña",
+    why: "La gente olvida la contraseña la primera semana; sin recuperación se va.",
+    minimum: "Un enlace de cambio por correo que caduca y sirve una sola vez."
+  },
+  tenants: {
+    title: "Separación entre empresas clientes (B2B)",
+    why: "En B2B, que una empresa vea los registros de otra termina el contrato.",
+    minimum: "Cada consulta filtrada por el id de la empresa o del espacio de trabajo."
+  },
+  states: {
+    title: "Estados de carga, vacío y error",
+    why: "Una pantalla que no muestra nada mientras carga o falla parece rota.",
+    minimum: "Cada pantalla de datos tiene carga, vacío y error además del estado normal."
+  },
+  billing: {
+    title: "Cobro",
+    why: "Sin cobrar, es una herramienta gratuita, no un SaaS.",
+    minimum: "Checkout con un proveedor de pagos ligado a la cuenta."
+  },
+  webhooks: {
+    title: "Webhooks de pago idempotentes",
+    why: "Los proveedores reenvían eventos; sin idempotencia un pago se aplica dos veces.",
+    minimum: "Cada id de evento queda guardado y el repetido se ignora."
+  },
+  "renewal-refund": {
+    title: "Renovación y reembolso",
+    why: "Las suscripciones se renuevan y la gente pide su dinero; las dos cosas cambian el acceso.",
+    minimum: "La renovación extiende el acceso, el reembolso lo quita, ambos registrados."
+  },
+  cents: {
+    title: "Dinero en centavos",
+    why: "El punto flotante convierte 0,1 + 0,2 en 0,30000000000000004 en una factura.",
+    minimum: "Importes guardados y calculados como centavos enteros."
+  },
+  types: {
+    title: "Comprobación de tipos",
+    why: "Los tipos detectan campos equivocados y valores faltantes antes que el usuario.",
+    minimum: "Un comprobador de tipos configurado y ejecutándose en todo el proyecto."
+  },
+  lint: {
+    title: "Linter",
+    why: "Un linter encuentra código sin uso y errores comunes en cada cambio.",
+    minimum: "Un linter configurado para el lenguaje del proyecto."
+  },
+  tests: {
+    title: "Pruebas de las reglas de negocio",
+    why: "Sin pruebas, cualquier cambio puede romper el cobro o el acceso sin que nadie lo vea.",
+    minimum: "Pruebas de las reglas que mueven dinero o permisos, pasando en este árbol."
+  },
+  ci: {
+    title: "Integración continua",
+    why: "Las comprobaciones que solo corren en un portátil dejan de correr.",
+    minimum: "Un workflow de CI que ejecuta tipos, lint y pruebas en cada push."
+  },
+  secrets: {
+    title: "Secretos fuera del código",
+    why: "Una clave subida una vez queda en el historial para cualquiera con el repositorio.",
+    minimum: "Claves solo en variables de entorno; la comprobación de secretos pasa en este árbol."
+  },
+  "rate-limit": {
+    title: "Límite de peticiones",
+    why: "Sin límites, un script tumba el servicio o prueba contraseñas sin parar.",
+    minimum: "Un límite en el inicio de sesión y en las rutas públicas."
+  },
+  privacy: {
+    title: "Datos personales: base legal y borrado",
+    why: "Las leyes de protección de datos exigen una forma de borrar o exportar los datos de una persona.",
+    minimum: "Un camino de borrado de cuenta o de exportación de datos."
+  },
+  backup: {
+    title: "Copia de seguridad probada",
+    why: "Una copia nunca restaurada es una suposición.",
+    minimum: "Copia automática de la base de datos y una restauración hecha y anotada."
+  },
+  environments: {
+    title: "Entornos de prueba y producción",
+    why: "Probar en producción la rompe para usuarios reales.",
+    minimum: "Configuración separada por entorno, documentada en .env.example."
+  },
+  rollback: {
+    title: "Despliegue con vuelta atrás",
+    why: "Un mal despliegue sin vuelta atrás deja el sitio caído mientras alguien lo arregla en vivo.",
+    minimum: "Despliegues desde un pipeline, y la versión anterior vuelve en minutos."
+  },
+  logs: {
+    title: "Logs y alertas",
+    why: "Sin logs, el primer aviso de un error llega de un cliente enfadado.",
+    minimum: "Errores registrados con contexto y una alerta cuando se disparan."
+  },
+  terms: {
+    title: "Términos de uso y política de privacidad",
+    why: "Cobrar y guardar datos personales sin ellos es un riesgo legal.",
+    minimum: "Páginas de términos y privacidad enlazadas desde el registro."
+  },
+  message: {
+    title: "Una promesa clara",
+    why: "Quien visita decide en segundos si la página es para él.",
+    minimum: "Un titular que dice para quién es y qué obtiene."
+  },
+  "call-to-action": {
+    title: "Llamada a la acción",
+    why: "Una página sin siguiente paso solo se lee.",
+    minimum: "Un botón o enlace principal que lleva al siguiente paso."
+  },
+  contact: {
+    title: "Forma de contactarte",
+    why: "Un visitante interesado sin forma de responder se pierde.",
+    minimum: "Un formulario, correo o enlace de chat que llega a una persona."
+  },
+  responsive: {
+    title: "Funciona en el móvil",
+    why: "La mayoría de las visitas a una página de venta vienen del móvil.",
+    minimum: "Un diseño que se adapta a pantallas estrechas, con la etiqueta viewport."
+  },
+  metadata: {
+    title: "Título y vista previa al compartir",
+    why: "El título y la vista previa son lo que se ve en la búsqueda y al compartir el enlace.",
+    minimum: "Título de la página, descripción e imagen para compartir."
+  },
+  analytics: {
+    title: "Medición de visitas",
+    why: "Sin números, nadie sabe si la página convierte.",
+    minimum: "Un script de analítica que cuenta visitas y clics en el botón principal."
+  },
+  "visual-check": {
+    title: "Revisión visual",
+    why: "Los desbordes y los diseños rotos solo aparecen al renderizar de verdad.",
+    minimum: "La comprobación look pasa en este árbol."
+  },
+  "landing-terms": {
+    title: "Aviso de privacidad",
+    why: "Un formulario que pide correo o teléfono recoge datos personales.",
+    minimum: "Una página de privacidad enlazada junto al formulario."
+  },
+  domain: {
+    title: "Dominio propio con HTTPS",
+    why: "Una dirección provisional y un aviso del navegador cuestan confianza.",
+    minimum: "La página servida en su propio dominio por HTTPS."
+  }
+};
+
+// src/planta/text/pt-BR.ts
+var ptBR2 = {
+  problem: {
+    title: "Problema e público escritos",
+    why: "Sem um problema e uma pessoa com nome, toda funcionalidade parece igualmente urgente.",
+    minimum: "Um parágrafo: quem tem o problema, quanto custa hoje, como resolve agora."
+  },
+  rules: {
+    title: "Regras de negócio escritas",
+    why: "Regra que só existe na cabeça de alguém é programada diferente em cada tela.",
+    minimum: "Um documento em docs/ com as regras que o código precisa seguir, uma por linha."
+  },
+  pricing: {
+    title: "Planos e preço",
+    why: "Cobrança, limites e a página de venda dependem do que cada plano inclui.",
+    minimum: "Uma tabela de planos com preço, período e o que cada um libera."
+  },
+  api: {
+    title: "API separada da tela",
+    why: "Regra dentro da tela não dá para testar, reaproveitar nem proteger no servidor.",
+    minimum: "Rotas de servidor numa pasta própria, chamadas pelas telas."
+  },
+  database: {
+    title: "Banco com migrações",
+    why: "Mudar tabela na mão em produção perde dado e não dá para repetir.",
+    minimum: "Uma pasta de migrações ou arquivo de schema que cria todas as tabelas do zero."
+  },
+  auth: {
+    title: "Contas e login",
+    why: "Sem contas, qualquer um vê os dados de qualquer um.",
+    minimum: "Cadastro, login e logout por uma biblioteca mantida."
+  },
+  "password-reset": {
+    title: "Recuperação de senha",
+    why: "As pessoas esquecem a senha na primeira semana; sem recuperação, vão embora.",
+    minimum: "Um link de troca por e-mail que expira e vale uma vez."
+  },
+  tenants: {
+    title: "Separação entre empresas clientes (B2B)",
+    why: "Em B2B, uma empresa ver os registros de outra encerra o contrato.",
+    minimum: "Toda consulta filtrada pelo id da empresa ou do espaço de trabalho."
+  },
+  states: {
+    title: "Estados de carregando, vazio e erro",
+    why: "Tela que não mostra nada enquanto carrega ou falha parece quebrada.",
+    minimum: "Cada tela de dados tem carregando, vazio e erro além do estado normal."
+  },
+  billing: {
+    title: "Cobrança",
+    why: "Sem cobrar, é uma ferramenta gratuita, não um SaaS.",
+    minimum: "Checkout por um provedor de pagamento ligado à conta."
+  },
+  webhooks: {
+    title: "Webhooks de pagamento idempotentes",
+    why: "Provedores reenviam eventos; sem idempotência, um pagamento é aplicado duas vezes.",
+    minimum: "Cada id de evento fica gravado e o repetido é ignorado."
+  },
+  "renewal-refund": {
+    title: "Renovação e reembolso",
+    why: "Assinaturas renovam e pessoas pedem o dinheiro de volta; os dois mudam o acesso.",
+    minimum: "Renovação estende o acesso, reembolso tira, os dois registrados."
+  },
+  cents: {
+    title: "Dinheiro em centavos",
+    why: "Ponto flutuante transforma 0,1 + 0,2 em 0,30000000000000004 numa fatura.",
+    minimum: "Valores gravados e calculados como centavos inteiros."
+  },
+  types: {
+    title: "Checagem de tipos",
+    why: "Tipos pegam campo errado e valor faltando antes do usuário.",
+    minimum: "Um verificador de tipos configurado e rodando no projeto inteiro."
+  },
+  lint: {
+    title: "Linter",
+    why: "O linter acha código sem uso e bugs comuns a cada mudança.",
+    minimum: "Um linter configurado para a linguagem do projeto."
+  },
+  tests: {
+    title: "Testes das regras de negócio",
+    why: "Sem testes, qualquer mudança pode quebrar cobrança ou acesso sem ninguém ver.",
+    minimum: "Testes das regras que mexem com dinheiro ou permissão, passando nesta árvore."
+  },
+  ci: {
+    title: "Integração contínua",
+    why: "Checagem que só roda num notebook para de rodar.",
+    minimum: "Um workflow de CI que roda tipos, lint e testes a cada push."
+  },
+  secrets: {
+    title: "Segredos fora do código",
+    why: "Chave commitada uma vez fica no histórico para quem tiver o repositório.",
+    minimum: "Chaves só em variáveis de ambiente; a checagem de segredos passa nesta árvore."
+  },
+  "rate-limit": {
+    title: "Limite de requisições",
+    why: "Sem limite, um script derruba o serviço ou testa senhas sem parar.",
+    minimum: "Um limite no login e nas rotas públicas."
+  },
+  privacy: {
+    title: "Dados pessoais: base legal e exclusão",
+    why: "A LGPD exige um jeito de apagar ou exportar os dados de uma pessoa.",
+    minimum: "Um caminho de exclusão de conta ou de exportação de dados."
+  },
+  backup: {
+    title: "Backup testado",
+    why: "Backup nunca restaurado é um palpite.",
+    minimum: "Backup automático do banco e uma restauração feita e anotada."
+  },
+  environments: {
+    title: "Ambientes de teste e produção",
+    why: "Testar em produção quebra para usuários de verdade.",
+    minimum: "Configurações separadas por ambiente, documentadas no .env.example."
+  },
+  rollback: {
+    title: "Deploy com volta atrás",
+    why: "Deploy ruim sem volta deixa o site fora do ar enquanto alguém conserta ao vivo.",
+    minimum: "Deploy por pipeline, e a versão anterior volta em minutos."
+  },
+  logs: {
+    title: "Logs e alerta",
+    why: "Sem log, o primeiro aviso de erro vem de um cliente bravo.",
+    minimum: "Erros gravados com contexto e um alerta quando disparam."
+  },
+  terms: {
+    title: "Termos de uso e política de privacidade",
+    why: "Cobrar e guardar dado pessoal sem eles é risco jurídico.",
+    minimum: "Páginas de termos e privacidade com link no cadastro."
+  },
+  message: {
+    title: "Uma promessa clara",
+    why: "Quem visita decide em segundos se a página é para ela.",
+    minimum: "Um título que diz para quem é e o que a pessoa ganha."
+  },
+  "call-to-action": {
+    title: "Chamada para ação",
+    why: "Página sem próximo passo só é lida.",
+    minimum: "Um botão ou link principal que leva ao próximo passo."
+  },
+  contact: {
+    title: "Jeito de falar com você",
+    why: "Visitante interessado sem como responder se perde.",
+    minimum: "Um formulário, e-mail ou link de conversa que chega a uma pessoa."
+  },
+  responsive: {
+    title: "Funciona no celular",
+    why: "A maior parte das visitas a uma página de venda vem do celular.",
+    minimum: "Layout que se ajusta a telas estreitas, com a tag de viewport."
+  },
+  metadata: {
+    title: "Título e prévia de compartilhamento",
+    why: "Título e prévia são o que aparece na busca e quando o link é compartilhado.",
+    minimum: "Título da página, descrição e imagem de compartilhamento."
+  },
+  analytics: {
+    title: "Medição de visitas",
+    why: "Sem números, ninguém sabe se a página converte.",
+    minimum: "Um script de analytics contando visitas e cliques no botão principal."
+  },
+  "visual-check": {
+    title: "Conferência visual",
+    why: "Estouro e layout quebrado só aparecem renderizando de verdade.",
+    minimum: "A checagem look passa nesta árvore."
+  },
+  "landing-terms": {
+    title: "Aviso de privacidade",
+    why: "Formulário que pede e-mail ou telefone coleta dado pessoal.",
+    minimum: "Uma página de privacidade com link ao lado do formulário."
+  },
+  domain: {
+    title: "Domínio próprio com HTTPS",
+    why: "Endereço provisório e aviso do navegador custam confiança.",
+    minimum: "A página servida no próprio domínio por HTTPS."
+  }
+};
+
+// src/planta/text/index.ts
+var BLUEPRINT_TEXT = { en: en2, "pt-BR": ptBR2, es: es2 };
+
+// src/planta/render.ts
+var itemText = (lang, id) => BLUEPRINT_TEXT[lang][id];
+var typeLabel = (t, type) => type === "saas" ? t("planta.type.saas") : t("planta.type.landing");
+var howChecked = (t, id, probe) => {
+  switch (probe.type) {
+    case "files":
+      return t("planta.how.files", { list: probe.any.join(", ") });
+    case "grep":
+      return t("planta.how.grep", { list: probe.all.join(" + ") });
+    case "deps":
+      return t("planta.how.deps", { list: probe.any.join(", ") });
+    case "contract":
+      return t("planta.how.contract", { kind: probe.kind });
+    case "manual":
+      return t("planta.how.manual", { id });
+  }
+};
+var probeOf = (type, id) => BLUEPRINTS[type].find((item2) => item2.id === id)?.probe;
+var MARK2 = { green: "✓", missing: "✗", manual: "·" };
+var barLine = (t, bar) => t("planta.bar", { label: typeLabel(t, bar.type), green: bar.green, total: bar.total });
+var barLines = (t, lang, bar) => {
+  const next2 = bar.next;
+  const nextProbe = next2 === void 0 ? void 0 : probeOf(bar.type, next2);
+  const nextLines = next2 === void 0 || nextProbe === void 0 ? [] : [
+    t("planta.next", { title: itemText(lang, next2).title, id: next2 }),
+    `  ${itemText(lang, next2).why}`,
+    `  ${t("planta.minimum", { text: itemText(lang, next2).minimum })}`,
+    `  ${howChecked(t, next2, nextProbe)}`
+  ];
+  return [
+    barLine(t, bar),
+    ...nextLines,
+    ...bar.items.map((item2) => `${MARK2[item2.status]} ${item2.id}: ${itemText(lang, item2.id).title}`)
+  ];
+};
+
+// src/commands/planta.ts
+var PLANTA_SCHEMA = "finitemonkey/planta@1";
+var USAGE4 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
+var itemsJson = (ctx, bar) => bar.items.map((item2) => {
+  const probe = BLUEPRINTS[bar.type].find((entry2) => entry2.id === item2.id)?.probe;
+  return {
+    ...item2,
+    ...itemText(ctx.lang, item2.id),
+    how: probe === void 0 ? "" : howChecked(ctx.t, item2.id, probe)
+  };
+});
+var chosenType = (ctx, raw, paths) => raw === void 0 ? activeBlueprint(ctx.runtime, paths) ?? readCachedBar(ctx.runtime, paths)?.type : parseBlueprintType(raw);
+var runPlanta = (ctx, raw) => {
+  const repo = repoOf(ctx);
+  if (repo === void 0) return failureFrom(ctx.t, notRepository(ctx.cwd));
+  const paths = fmPaths(repo.root);
+  const type = chosenType(ctx, raw, paths);
+  if (type === void 0) {
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE4, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
+    );
+  }
+  const task = raw === void 0 ? void 0 : recordInContract(ctx.runtime, paths, type);
+  const bar = evaluateBlueprint(type, projectView(ctx.runtime, repo.root), approvedItems(ctx.runtime, paths));
+  writeCachedBar(ctx.runtime, paths, bar);
+  const installed = raw === void 0 ? [] : [
+    task === void 0 ? ctx.t("planta.installed.project", { type }) : ctx.t("planta.installed.task", { type, task })
+  ];
+  return success(
+    {
+      schema: PLANTA_SCHEMA,
+      type,
+      task: task ?? null,
+      green: bar.green,
+      total: bar.total,
+      next: bar.next ?? null,
+      tree: bar.tree ?? null,
+      items: itemsJson(ctx, bar)
+    },
+    [...installed, ...barLines(ctx.t, ctx.lang, bar)]
+  );
+};
+var plantaCommand = {
+  path: ["planta"],
+  summaryKey: "command.planta.summary",
+  usage: USAGE4,
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => Promise.resolve(runPlanta(ctx, args2.positionals[0]))
+};
+
 // src/commands/policy.ts
 var FIX = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
 var recordFalsePositive = (ctx, guard) => {
@@ -23970,7 +25025,7 @@ var policyFalsePositiveCommand = {
 };
 
 // src/pr/open.ts
-import { join as join61 } from "node:path";
+import { join as join62 } from "node:path";
 
 // src/pr/checklist.ts
 import { basename as basename7 } from "node:path";
@@ -23983,7 +25038,7 @@ var API_CONTRACT = [
   "**/api/contract*/**",
   "**/schema.graphql"
 ];
-var MIGRATIONS2 = ["**/migrations/**", "**/migrate/**", "**/*.sql"];
+var MIGRATIONS3 = ["**/migrations/**", "**/migrate/**", "**/*.sql"];
 var I18N = ["**/locales/**", "**/i18n/**", "**/lang/**", "**/translations/**"];
 var ownerPattern = (pattern) => {
   const anchored = pattern.startsWith("/") ? pattern.slice(1) : pattern.includes("/") ? pattern : `**/${pattern}`;
@@ -24009,7 +25064,7 @@ var checklistLines = (runtime, root, input) => {
       box(false, `API contract changed: ${path}; review by ${who.length === 0 ? "the contract owner" : who.join(" ")}`)
     );
   }
-  for (const path of paths.filter((item2) => matchesAny(item2, MIGRATIONS2)))
+  for (const path of paths.filter((item2) => matchesAny(item2, MIGRATIONS3)))
     lines4.push(box(false, `Migration ${path}: how to roll it back is written below`));
   for (const path of paths.filter((item2) => matchesAny(item2, I18N) && /\.(json|ya?ml|po|properties)$/.test(item2))) {
     lines4.push(box(false, `i18n file ${path}: new keys exist in every language`));
@@ -24052,7 +25107,7 @@ var prBody = (runtime, root, input) => {
 };
 
 // src/pr/scope.ts
-import { join as join60 } from "node:path";
+import { join as join61 } from "node:path";
 
 // src/wt/branch-state.ts
 var lines3 = (runtime, root, args2) => {
@@ -24243,7 +25298,7 @@ var contractFor = (runtime, root, explicit) => {
   const fromRegistry = registryContract(runtime, root);
   if (fromRegistry !== void 0) return fromRegistry;
   const active = readState(runtime, fmPaths(root)).active;
-  return active === void 0 ? void 0 : toPosixPath(join60(".finitemonkey", "tasks", `${active}.yml`));
+  return active === void 0 ? void 0 : toPosixPath(join61(".finitemonkey", "tasks", `${active}.yml`));
 };
 var declaredOf = (scope2) => scope2 === void 0 ? [] : [...scope2.paths, ...scope2.append, ...scope2.generated];
 var checkScope = (runtime, root, files, explicit) => {
@@ -24332,20 +25387,20 @@ var snapshotsFor = (runtime, root, branch) => readJournal(runtime, root).filter(
 var mergeSummary = (runtime, root, branch) => {
   const common = commonDirOf(runtime, root);
   if (common === void 0) return void 0;
-  const dir = toAbsolutePath(join61(registryDir(common), "merges"));
+  const dir = toAbsolutePath(join62(registryDir(common), "merges"));
   const names2 = runtime.listDir(dir);
   const reports = (names2.ok ? names2.value : []).filter((name) => name.endsWith(".json")).sort().reverse();
   const match = reports.find((name) => {
-    const text10 = runtime.readText(toAbsolutePath(join61(dir, name)));
+    const text10 = runtime.readText(toAbsolutePath(join62(dir, name)));
     const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
     return parsed?.ok === true && JSON.stringify(parsed.value["integration"] ?? {}).includes(`"branch":"${branch}"`);
   });
-  const summary = match === void 0 ? void 0 : runtime.readText(toAbsolutePath(join61(dir, match.replace(/\.json$/, ".md"))));
+  const summary = match === void 0 ? void 0 : runtime.readText(toAbsolutePath(join62(dir, match.replace(/\.json$/, ".md"))));
   return summary?.ok === true ? summary.value.trim() : void 0;
 };
 var recordAcceptance = (runtime, root, branch, acceptance2, files) => {
-  const path = toAbsolutePath(join61(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
-  runtime.mkdir(toAbsolutePath(join61(root, ".finitemonkey", "pr")));
+  const path = toAbsolutePath(join62(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
+  runtime.mkdir(toAbsolutePath(join62(root, ".finitemonkey", "pr")));
   const record4 = {
     schema: "finitemonkey/pr-scope@1",
     branch,
@@ -24406,7 +25461,7 @@ var openPr = (runtime, cwd, request) => {
     timeoutMs: NETWORK_TIMEOUT_MS
   });
   if (!pushed.ok) return reject({ kind: "push", detail: pushed.stderr.trim() });
-  const bodyFile = toAbsolutePath(join61(repo.gitDir, "finitemonkey-pr-body.md"));
+  const bodyFile = toAbsolutePath(join62(repo.gitDir, "finitemonkey-pr-body.md"));
   runtime.writeText(bodyFile, body2);
   const title = request.title ?? line5(runtime, repo.root, ["log", "-1", "--format=%s"]) ?? branch;
   const args2 = [
@@ -24740,12 +25795,12 @@ var researchCheckCommand = {
 };
 
 // src/review/packet.ts
-import { join as join62 } from "node:path";
+import { join as join63 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
 var FULL_ROUNDS = 3;
 var REVIEW_FILE_MAX_LINES = 200;
 var LEDGER_MAX_LINES = 100;
-var statePath = (root) => toAbsolutePath(join62(root, REVIEW_STATE_FILE));
+var statePath = (root) => toAbsolutePath(join63(root, REVIEW_STATE_FILE));
 var readReviewState = (runtime, root) => {
   const raw = runtime.readText(statePath(root));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
@@ -24767,7 +25822,7 @@ var taskSections = (runtime, root) => {
   const active = readState(runtime, paths).active;
   if (active === void 0)
     return [section2("Contract", void 0, "(no active task)"), section2("Evidence ledger", void 0, "(none)")];
-  const contract = runtime.readText(toAbsolutePath(join62(root, taskRelative(active))));
+  const contract = runtime.readText(toAbsolutePath(join63(root, taskRelative(active))));
   const ledger = runtime.readText(paths.evidence(active));
   return [
     section2("Contract", contract.ok ? contract.value : void 0, "(contract file missing)"),
@@ -24797,7 +25852,7 @@ var buildPacket = (runtime, root, base, head) => {
     ...taskSections(runtime, root),
     ...owners === void 0 ? [] : [section2("REVIEW.md (base branch)", owners, "")]
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join62(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join63(root, ".finitemonkey", "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}
 `);
   return { round: state.rounds, base, head, range, text: text10 };
@@ -24952,7 +26007,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname11, join as join63 } from "node:path";
+import { dirname as dirname11, join as join64 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -24974,13 +26029,13 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join63(dirname11(dirname11(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join64(dirname11(dirname11(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE4 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var USAGE5 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
 var TARGET = { rotated: "rotacionado", close: "fechado" };
 var PURGE_STEPS = [
   "secrets.purge.step1",
@@ -25038,7 +26093,7 @@ var move = (ctx, root, incident, action) => {
   if (!canMove(incident.state, to))
     return action === "close" ? notRotated(ctx, incident) : fail2(
       ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE4, {
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE5, {
         id: incident.id,
         from: incident.state,
         to
@@ -25061,7 +26116,7 @@ var actionOf = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "li
 var secretsIncidentCommand = {
   path: ["secrets", "incident"],
   summaryKey: "secrets.command.incident",
-  usage: USAGE4,
+  usage: USAGE5,
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args2) => {
@@ -25071,7 +26126,7 @@ var secretsIncidentCommand = {
       return Promise.resolve(
         fail2(
           ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE4, { detail: args2.positionals[0] ?? "" })
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE5, { detail: args2.positionals[0] ?? "" })
         )
       );
     if (action === "list") return Promise.resolve(list3(ctx, root));
@@ -25143,7 +26198,7 @@ var liveOutcome = (result) => {
 
 // src/commands/secrets-live.ts
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
-var USAGE5 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var USAGE6 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
 var target = (provider) => {
   const probe = LIVE_PROBES[provider];
@@ -25174,7 +26229,7 @@ var send = (ctx, provider, variable, key2) => {
 var secretsLiveCommand = {
   path: ["secrets", "live"],
   summaryKey: "secrets.command.live",
-  usage: USAGE5,
+  usage: USAGE6,
   status: "ready",
   maxPositionals: 1,
   options: { env: { type: "string" }, send: { type: "boolean" } },
@@ -25185,7 +26240,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE5, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE6, {
             detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
           })
         )
@@ -25195,7 +26250,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          needsPersonProblem("secrets.error.person_only", `${USAGE5.replace(" [--send]", "")} --send`, {
+          needsPersonProblem("secrets.error.person_only", `${USAGE6.replace(" [--send]", "")} --send`, {
             action: ctx.t("secrets.action.live")
           })
         )
@@ -25203,7 +26258,7 @@ var secretsLiveCommand = {
     const key2 = ctx.env[variable] ?? "";
     if (key2 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE5, { variable }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE6, { variable }))
       );
     return Promise.resolve(send(ctx, provider, variable, key2));
   }
@@ -25405,6 +26460,7 @@ var segmentText = (t, segment) => [
   "fm",
   ...segment.task === void 0 ? [] : [segment.task],
   ...segment.gate === "none" ? [] : [t(`statusline.gate.${segment.gate}`)],
+  ...segment.blueprint === void 0 ? [] : [t("statusline.planta", { ...segment.blueprint })],
   ...segment.contextPercent === void 0 ? [] : [t("statusline.context", { percent: segment.contextPercent })]
 ].join(" · ");
 var ANSI3 = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[A-Za-z]`, "g");
@@ -25496,6 +26552,10 @@ var columnsOf = (ctx) => {
   const columns = Number.parseInt(ctx.env["COLUMNS"] ?? "", 10);
   return Number.isInteger(columns) && columns > 0 ? columns : void 0;
 };
+var blueprintOf = (ctx, paths) => {
+  const bar = paths === void 0 ? void 0 : readCachedBar(ctx.runtime, paths);
+  return bar === void 0 ? void 0 : { type: bar.type, green: bar.green, total: bar.total };
+};
 var lineFor = async (ctx, input) => {
   const start = input.dir === void 0 ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
   const root = findGitRoot(start, ctx.runtime);
@@ -25511,7 +26571,8 @@ var lineFor = async (ctx, input) => {
   const segment = segmentText(ctx.t, {
     task: paths === void 0 ? void 0 : readState(ctx.runtime, paths).active,
     gate: paths === void 0 ? "none" : gateLight(ctx.runtime, paths),
-    contextPercent: input.contextPercent
+    contextPercent: input.contextPercent,
+    blueprint: blueprintOf(ctx, paths)
   });
   return composeLine(wrapped, segment, columnsOf(ctx));
 };
@@ -25534,52 +26595,7 @@ var statuslineCommand = {
 };
 
 // src/task/create.ts
-import { join as join64 } from "node:path";
-
-// src/task/serialize.ts
-var checkYaml = (check2) => ({
-  id: check2.id,
-  check: check2.kind,
-  ...check2.run === void 0 ? {} : { run: check2.run },
-  ...check2.timeoutS === void 0 ? {} : { timeout_s: check2.timeoutS },
-  ...check2.require === void 0 ? {} : { require: [...check2.require] },
-  ...check2.requireOpen === void 0 ? {} : { require_open: check2.requireOpen },
-  ...check2.description === void 0 ? {} : { description: check2.description },
-  ...check2.port === void 0 ? {} : { port: check2.port },
-  ...check2.route === void 0 ? {} : { route: check2.route },
-  ...check2.status === void 0 ? {} : { status: check2.status },
-  ...check2.body === void 0 ? {} : { body: check2.body }
-});
-var contractYaml = (contract) => ({
-  id: contract.id,
-  goal: contract.goal,
-  size: contract.size,
-  ...contract.base === void 0 ? {} : { base: contract.base },
-  scope: {
-    paths: [...contract.scope.paths],
-    ...contract.scope.diffBudget === void 0 ? {} : { diff_budget: { ...contract.scope.diffBudget } },
-    tests_protected: contract.scope.testsProtected
-  },
-  acceptance: contract.acceptance.map(checkYaml),
-  decisions_needed: [...contract.decisionsNeeded],
-  ...contract.callersIgnore === void 0 ? {} : { callers_ignore: [...contract.callersIgnore] }
-});
-var contractJson = (contract) => ({
-  id: contract.id,
-  goal: contract.goal,
-  size: contract.size,
-  base: contract.base ?? null,
-  implicit: contract.implicit,
-  scope: {
-    paths: contract.scope.paths,
-    diffBudget: contract.scope.diffBudget ?? null,
-    testsProtected: contract.scope.testsProtected
-  },
-  acceptance: contract.acceptance.map((check2) => ({ ...check2 })),
-  decisionsNeeded: contract.decisionsNeeded
-});
-
-// src/task/create.ts
+import { join as join65 } from "node:path";
 var explicitChecks = (draft) => [
   ...draft.runs.map((run4, index) => ({ id: `C${String(index + 1)}`, kind: "command", run: run4 })),
   draft.tests === void 0 ? { id: "tests", kind: "tests" } : { id: "tests", kind: "tests", run: draft.tests }
@@ -25587,10 +26603,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative12) => {
-      const text10 = runtime.readText(toAbsolutePath(join64(paths.root, relative12)));
+      const text10 = runtime.readText(toAbsolutePath(join65(paths.root, relative12)));
       return text10.ok ? text10.value : void 0;
     },
-    exists: (relative12) => runtime.stat(toAbsolutePath(join64(paths.root, relative12))) !== void 0
+    exists: (relative12) => runtime.stat(toAbsolutePath(join65(paths.root, relative12))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -25605,7 +26621,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
-    ...runtime.stat(toAbsolutePath(join64(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
+    ...runtime.stat(toAbsolutePath(join65(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
     ...draft.git.length > 0 ? [{ id: "git", kind: "git", require: draft.git }] : [],
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index) => ({
@@ -25989,7 +27005,7 @@ var versionCommand = {
 };
 
 // src/wt/archive.ts
-import { basename as basename8, join as join65 } from "node:path";
+import { basename as basename8, join as join66 } from "node:path";
 var ARCHIVE_PREFIX = "refs/finitemonkey/archive/";
 var stampOf4 = (iso) => iso.replace(/[:.]/g, "-");
 var refName = (request, stamp2) => `${ARCHIVE_PREFIX}${(request.branch ?? request.id).replace(/[^A-Za-z0-9._/-]/g, "-")}/${stamp2}`;
@@ -26007,7 +27023,7 @@ var ignoredFiles = (runtime, repo, generated) => {
 };
 var copyIgnored = (runtime, repo, files, target2) => {
   const secrets = files.filter((file) => isSensitivePath(file) || scanFile(runtime, repo.root, file).length > 0);
-  const copied = files.filter((file) => !secrets.includes(file)).filter((file) => runtime.copyFile(toAbsolutePath(join65(repo.root, file)), toAbsolutePath(join65(target2, file))).ok);
+  const copied = files.filter((file) => !secrets.includes(file)).filter((file) => runtime.copyFile(toAbsolutePath(join66(repo.root, file)), toAbsolutePath(join66(target2, file))).ok);
   return { copied, secrets };
 };
 var snapshotTree = (runtime, repo, head, stamp2) => worktreeTree(runtime, repo, head, { timeoutMs: DEFAULT_SNAPSHOT_TIMEOUT_MS, stamp: stamp2 });
@@ -26036,7 +27052,7 @@ var archiveWorktree = (runtime, request) => {
     return reject(`update-ref ${ref}: could not create the archive ref`);
   }
   const target2 = toAbsolutePath(
-    join65(runtime.homeDir(), ".finitemonkey", "archive", basename8(request.mainRoot), request.id, stamp2)
+    join66(runtime.homeDir(), ".finitemonkey", "archive", basename8(request.mainRoot), request.id, stamp2)
   );
   const kept = copyIgnored(runtime, repo, ignoredFiles(runtime, repo, request.generated), target2);
   const again = snapshotTree(runtime, repo, head, `${stamp2}-b`);
@@ -26482,12 +27498,13 @@ var REGISTRY2 = [
   researchCheckCommand,
   costInitCommand,
   costCheckCommand,
+  plantaCommand,
   versionCommand,
   helpCommand
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join66 } from "node:path";
+import { join as join67 } from "node:path";
 var read4 = (runtime, path) => {
   const text10 = runtime.readText(toAbsolutePath(path));
   return text10.ok ? text10.value : void 0;
@@ -26502,14 +27519,14 @@ var languageIn = (text10) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join66(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join67(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read4(runtime, join66(root, CONFIG_FILE2)) ?? "");
+  const config = parseConfigYaml(read4(runtime, join67(root, CONFIG_FILE2)) ?? "");
   const claudeFiles = [
-    join66(root, ".claude", "settings.local.json"),
-    join66(root, ".claude", "settings.json"),
-    join66(claudeDir(runtime, env), "settings.json")
+    join67(root, ".claude", "settings.local.json"),
+    join67(root, ".claude", "settings.json"),
+    join67(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

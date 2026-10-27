@@ -971,7 +971,21 @@
     "git.block.branch_name.claim": "machine",
     "git.block.branch_name.requires": "machine",
     "git.block.pr_headless.claim": "machine",
-    "git.block.pr_headless.requires": "machine"
+    "git.block.pr_headless.requires": "machine",
+    "command.planta.summary": "machine",
+    "planta.type.saas": "machine",
+    "planta.type.landing": "machine",
+    "planta.bar": "machine",
+    "planta.next": "machine",
+    "planta.minimum": "machine",
+    "planta.how.files": "machine",
+    "planta.how.grep": "machine",
+    "planta.how.deps": "machine",
+    "planta.how.contract": "machine",
+    "planta.how.manual": "machine",
+    "planta.installed.task": "machine",
+    "planta.installed.project": "machine",
+    "statusline.planta": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1945,6 +1959,20 @@
     "git.block.branch_name.claim": "machine",
     "git.block.branch_name.requires": "machine",
     "git.block.pr_headless.claim": "machine",
-    "git.block.pr_headless.requires": "machine"
+    "git.block.pr_headless.requires": "machine",
+    "command.planta.summary": "machine",
+    "planta.type.saas": "machine",
+    "planta.type.landing": "machine",
+    "planta.bar": "machine",
+    "planta.next": "machine",
+    "planta.minimum": "machine",
+    "planta.how.files": "machine",
+    "planta.how.grep": "machine",
+    "planta.how.deps": "machine",
+    "planta.how.contract": "machine",
+    "planta.how.manual": "machine",
+    "planta.installed.task": "machine",
+    "planta.installed.project": "machine",
+    "statusline.planta": "machine"
   }
 }

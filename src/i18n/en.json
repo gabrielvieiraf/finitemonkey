@@ -970,5 +970,19 @@
   "git.block.branch_name.claim": "Branch name {subject} does not follow <type>/<issue>-<slug> or front/<id>",
   "git.block.branch_name.requires": "Name it like feat/123-short-slug, fix/45-slug or front/F1-name",
   "git.block.pr_headless.claim": "`{subject}` accepts files outside the task scope with no person to approve it",
-  "git.block.pr_headless.requires": "Remove the files from the branch, widen the contract scope, or leave the decision to a person in an interactive session"
+  "git.block.pr_headless.requires": "Remove the files from the branch, widen the contract scope, or leave the decision to a person in an interactive session",
+  "command.planta.summary": "Install a project blueprint (saas, landing) and show how many of its items are green",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "landing page",
+  "planta.bar": "Your {label} has {green} of {total, plural, one {# item} other {# items}}.",
+  "planta.next": "Next: {title} ({id})",
+  "planta.minimum": "Minimum: {text}",
+  "planta.how.files": "Checked by: one of these paths exists: {list}",
+  "planta.how.grep": "Checked by: the code matches {list}",
+  "planta.how.deps": "Checked by: a dependency such as {list}",
+  "planta.how.contract": "Checked by: the contract check {kind} passes on this tree",
+  "planta.how.manual": "Manual: the person confirms it with the line fm: approve planta/{id} <how it was checked>",
+  "planta.installed.task": "Blueprint {type} recorded in the contract of {task}.",
+  "planta.installed.project": "Blueprint {type} recorded for the project; no active task to record it in.",
+  "statusline.planta": "{type} {green}/{total}"
 }

@@ -28,6 +28,7 @@ export const contractYaml = (contract: TaskContract): YamlValue => ({
   acceptance: contract.acceptance.map(checkYaml),
   decisions_needed: [...contract.decisionsNeeded],
   ...(contract.callersIgnore === undefined ? {} : { callers_ignore: [...contract.callersIgnore] }),
+  ...(contract.blueprint === undefined ? {} : { blueprint: contract.blueprint }),
 });
 
 export const contractJson = (contract: TaskContract): Readonly<Record<string, unknown>> => ({
@@ -43,4 +44,5 @@ export const contractJson = (contract: TaskContract): Readonly<Record<string, un
   },
   acceptance: contract.acceptance.map((check) => ({ ...check })),
   decisionsNeeded: contract.decisionsNeeded,
+  blueprint: contract.blueprint ?? null,
 });

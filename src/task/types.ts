@@ -1,3 +1,5 @@
+import type { BlueprintType } from "../planta/types.js";
+
 export const CHECK_KINDS = [
   "command",
   "tests",
@@ -66,6 +68,7 @@ export interface TaskContract {
   readonly acceptance: readonly AcceptanceCheck[];
   readonly decisionsNeeded: readonly string[];
   readonly callersIgnore?: readonly string[];
+  readonly blueprint?: BlueprintType;
   readonly implicit: boolean;
 }
 
