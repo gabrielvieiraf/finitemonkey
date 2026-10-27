@@ -613,10 +613,10 @@ var ask = async (request, deadline) => {
     return { kind: "request_failed", bodyExcerpt: error instanceof Error ? error.message : String(error) };
   }
 };
-var finish = async (app, answer, started) => {
+var finish = async (app, answer2, started) => {
   const stopped = app === void 0 ? true : await stopApp(app);
   return {
-    ...answer,
+    ...answer2,
     reused: app === void 0,
     output: app?.output() ?? "",
     stopped,
@@ -1373,19 +1373,19 @@ var hasRandomRun = (secret, length) => (secret.match(new RegExp(`[A-Za-z0-9]{${S
 var accepted = (rule, secret) => secret.length >= rule.minLength && (!rule.requireDigit || DIGIT.test(secret)) && (rule.minRandomRun === 0 || hasRandomRun(secret, rule.minRandomRun)) && (!rule.placeholders || !isPlaceholder(secret)) && (rule.minEntropy === 0 || shannonEntropy(secret) >= rule.minEntropy);
 var NAME_CHAR = /[A-Za-z0-9_.-]/;
 var nameAround = (text10, at) => {
-  let start = at;
-  while (start > 0 && NAME_CHAR.test(text10.charAt(start - 1))) start -= 1;
+  let start2 = at;
+  while (start2 > 0 && NAME_CHAR.test(text10.charAt(start2 - 1))) start2 -= 1;
   let end = at;
   while (end < text10.length && NAME_CHAR.test(text10.charAt(end))) end += 1;
-  return text10.slice(start, end).toLowerCase();
+  return text10.slice(start2, end).toLowerCase();
 };
 var ignoredName = (rule, match) => rule.ignoredNames.length > 0 && rule.ignoredNames.includes(nameAround(match.input, match.index));
 var spanOf = (rule, match) => {
   const range = match.indices?.groups?.["secret"] ?? match.indices?.[0];
   if (range === void 0 || ignoredName(rule, match)) return void 0;
-  const [start, end] = range;
-  const secret = match.input.slice(start, end);
-  return accepted(rule, secret) ? { rule, start, end, secret } : void 0;
+  const [start2, end] = range;
+  const secret = match.input.slice(start2, end);
+  return accepted(rule, secret) ? { rule, start: start2, end, secret } : void 0;
 };
 var ruleSpans = (rule, text10) => {
   const spans = [];
@@ -2154,14 +2154,14 @@ var slugOf = (topic) => {
 var findByKind = (names2, kind, topic) => names2.find((name) => NUMBERED.test(name) && name.endsWith(`-${kind}-${slugOf(topic)}.md`));
 
 // src/cost/csv.ts
-var nextCell = (line7, start) => {
-  if (line7.charAt(start) !== '"') {
-    const comma = line7.indexOf(",", start);
+var nextCell = (line7, start2) => {
+  if (line7.charAt(start2) !== '"') {
+    const comma = line7.indexOf(",", start2);
     const end = comma === -1 ? line7.length : comma;
-    return { cell: line7.slice(start, end), end };
+    return { cell: line7.slice(start2, end), end };
   }
   let cell2 = "";
-  let index = start + 1;
+  let index = start2 + 1;
   while (index < line7.length) {
     const char = line7.charAt(index);
     if (char === '"' && line7.charAt(index + 1) === '"') {
@@ -3700,7 +3700,57 @@ var en_default = {
   "budget.reconcile.missing": "{tool} is not installed or did not answer; nothing was compared",
   "budget.reconcile.done": "Compared with {tool}; the differences went to {file} (ours, theirs, difference):",
   "statusline.budget": "spend {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.perfil.summary": "Show the per-domain profile used to tune explanations",
+  "command.perfil_start.summary": "Answer six practical questions to set the profile (optional)",
+  "command.perfil_set.summary": "Correct the level of a domain; a practical question confirms it",
+  "command.perfil_answer.summary": "Answer the practical question asked by perfil set",
+  "command.perfil_forget.summary": "Delete the local profile",
+  "perfil.domain.product": "product and business",
+  "perfil.domain.interface": "interface",
+  "perfil.domain.backend": "backend and data",
+  "perfil.domain.infrastructure": "infrastructure and operation",
+  "perfil.domain.security": "security",
+  "perfil.level.beginner": "beginner",
+  "perfil.level.intermediate": "intermediate",
+  "perfil.level.advanced": "advanced",
+  "perfil.show.line": "{domain}: tool {tool}, domain {knowledge}",
+  "perfil.show.none": "No profile yet: everything starts at intermediate. finitemonkey perfil start asks six practical questions.",
+  "perfil.start.intro": "Six practical questions. Answer a, b or c; Enter skips one, q skips the rest.",
+  "perfil.start.done": "Profile saved in .finitemonkey/perfil.yml, outside git.",
+  "perfil.start.skipped": "Quick start skipped: everything starts at intermediate and adjusts as you work.",
+  "perfil.set.same": "The profile already says {level}.",
+  "perfil.set.question": "One practical question about {domain} before changing it:",
+  "perfil.set.how": "Answer with: {command}",
+  "perfil.answer.right": "Right. The profile now says {level}.",
+  "perfil.answer.kept": "The profile stays at {level} for now and keeps adjusting as you work.",
+  "perfil.forget.done": "Deleted the local profile.",
+  "perfil.error.person_only": "Only the person can change the profile, and this does not look like their terminal (no TTY, or running inside Claude Code)",
+  "perfil.q.product": "A customer pays monthly and cancels on day 10. Nothing else is written about it. What happens to their access?",
+  "perfil.q.product.a": "It ends right away",
+  "perfil.q.product.b": "It lasts until the end of the paid month",
+  "perfil.q.product.c": "It depends on a rule someone has to decide and write down",
+  "perfil.q.interface": "A list takes 3 seconds to come from the server. What should the screen show during those 3 seconds?",
+  "perfil.q.interface.a": "Nothing, it fills in when ready",
+  "perfil.q.interface.b": "A loading sign, then the list, an empty message or an error",
+  "perfil.q.interface.c": "The previous page until it finishes",
+  "perfil.q.backend": "The payment provider sends the same payment confirmation twice. What should the system do?",
+  "perfil.q.backend.a": "Record two payments",
+  "perfil.q.backend.b": "Record it once and ignore the repeat",
+  "perfil.q.backend.c": "Reject both to be safe",
+  "perfil.q.infrastructure": "A new version breaks the site right after going live. What is the fastest safe step?",
+  "perfil.q.infrastructure.a": "Fix the code directly on the server",
+  "perfil.q.infrastructure.b": "Put the previous version back, then fix it calmly",
+  "perfil.q.infrastructure.c": "Wait for users to report details",
+  "perfil.q.security": "Where should the payment provider's secret key live?",
+  "perfil.q.security.a": "In the code, since the repository is private",
+  "perfil.q.security.b": "In an environment variable or a secret store outside the code",
+  "perfil.q.security.c": "In a file committed with the project",
+  "perfil.q.tool": "When the assistant changes code, what do you usually do before accepting it?",
+  "perfil.q.tool.a": "Read the change and run the tests or commands myself",
+  "perfil.q.tool.b": "Try the app to see if it works",
+  "perfil.q.tool.c": "Accept it and move on",
+  "install.perfil_hint": "Optional: finitemonkey perfil start asks six practical questions so explanations match what you already know."
 };
 
 // src/i18n/es.json
@@ -4694,7 +4744,57 @@ var es_default = {
   "budget.reconcile.missing": "{tool} no está instalado o no respondió; no se comparó nada",
   "budget.reconcile.done": "Comparado con {tool}; las diferencias fueron a {file} (nuestro, de ellos, diferencia):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.perfil.summary": "Muestra el perfil por dominio usado para ajustar las explicaciones",
+  "command.perfil_start.summary": "Responde seis preguntas prácticas para armar el perfil (opcional)",
+  "command.perfil_set.summary": "Corrige el nivel de un dominio; una pregunta práctica lo confirma",
+  "command.perfil_answer.summary": "Responde la pregunta práctica que hizo perfil set",
+  "command.perfil_forget.summary": "Borra el perfil local",
+  "perfil.domain.product": "producto y negocio",
+  "perfil.domain.interface": "interfaz",
+  "perfil.domain.backend": "backend y datos",
+  "perfil.domain.infrastructure": "infraestructura y operación",
+  "perfil.domain.security": "seguridad",
+  "perfil.level.beginner": "principiante",
+  "perfil.level.intermediate": "intermedio",
+  "perfil.level.advanced": "avanzado",
+  "perfil.show.line": "{domain}: herramienta {tool}, dominio {knowledge}",
+  "perfil.show.none": "Todavía no hay perfil: todo empieza en intermedio. finitemonkey perfil start hace seis preguntas prácticas.",
+  "perfil.start.intro": "Seis preguntas prácticas. Responde a, b o c; Enter salta una, q salta el resto.",
+  "perfil.start.done": "Perfil guardado en .finitemonkey/perfil.yml, fuera de git.",
+  "perfil.start.skipped": "Inicio rápido omitido: todo empieza en intermedio y se ajusta mientras trabajas.",
+  "perfil.set.same": "El perfil ya dice {level}.",
+  "perfil.set.question": "Una pregunta práctica sobre {domain} antes de cambiarlo:",
+  "perfil.set.how": "Responde con: {command}",
+  "perfil.answer.right": "Correcto. El perfil ahora dice {level}.",
+  "perfil.answer.kept": "El perfil se queda en {level} por ahora y se sigue ajustando mientras trabajas.",
+  "perfil.forget.done": "Perfil local borrado.",
+  "perfil.error.person_only": "Solo la persona puede cambiar el perfil, y esto no parece su terminal (sin TTY, o ejecutándose dentro de Claude Code)",
+  "perfil.q.product": "Un cliente paga por mes y cancela el día 10. No hay nada más escrito sobre eso. ¿Qué pasa con su acceso?",
+  "perfil.q.product.a": "Termina en el momento",
+  "perfil.q.product.b": "Dura hasta el fin del mes pagado",
+  "perfil.q.product.c": "Depende de una regla que alguien tiene que decidir y escribir",
+  "perfil.q.interface": "Una lista tarda 3 segundos en llegar del servidor. ¿Qué muestra la pantalla en esos 3 segundos?",
+  "perfil.q.interface.a": "Nada, se llena cuando llegue",
+  "perfil.q.interface.b": "Una señal de carga, después la lista, un aviso de vacío o un error",
+  "perfil.q.interface.c": "La página anterior hasta que termine",
+  "perfil.q.backend": "El proveedor de pagos envía la misma confirmación de pago dos veces. ¿Qué hace el sistema?",
+  "perfil.q.backend.a": "Registra dos pagos",
+  "perfil.q.backend.b": "Lo registra una vez e ignora la repetición",
+  "perfil.q.backend.c": "Rechaza las dos por seguridad",
+  "perfil.q.infrastructure": "Una versión nueva rompe el sitio justo después de publicarse. ¿Cuál es el paso seguro más rápido?",
+  "perfil.q.infrastructure.a": "Corregir el código directamente en el servidor",
+  "perfil.q.infrastructure.b": "Volver a la versión anterior y después corregir con calma",
+  "perfil.q.infrastructure.c": "Esperar a que los usuarios manden detalles",
+  "perfil.q.security": "¿Dónde va la clave secreta del proveedor de pagos?",
+  "perfil.q.security.a": "En el código, ya que el repositorio es privado",
+  "perfil.q.security.b": "En una variable de entorno o un almacén de secretos fuera del código",
+  "perfil.q.security.c": "En un archivo subido junto con el proyecto",
+  "perfil.q.tool": "Cuando el asistente cambia el código, ¿qué sueles hacer antes de aceptarlo?",
+  "perfil.q.tool.a": "Leo el cambio y ejecuto las pruebas o comandos yo mismo",
+  "perfil.q.tool.b": "Pruebo la aplicación para ver si funciona",
+  "perfil.q.tool.c": "Lo acepto y sigo",
+  "install.perfil_hint": "Opcional: finitemonkey perfil start hace seis preguntas prácticas para que las explicaciones encajen con lo que ya sabes."
 };
 
 // src/i18n/pt-BR.json
@@ -5688,7 +5788,57 @@ var pt_BR_default = {
   "budget.reconcile.missing": "{tool} não está instalado ou não respondeu; nada foi comparado",
   "budget.reconcile.done": "Comparado com {tool}; as diferenças foram para {file} (nosso, deles, diferença):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.perfil.summary": "Mostra o perfil por domínio usado para ajustar as explicações",
+  "command.perfil_start.summary": "Responde seis perguntas práticas para montar o perfil (opcional)",
+  "command.perfil_set.summary": "Corrige o nível de um domínio; uma pergunta prática confirma",
+  "command.perfil_answer.summary": "Responde a pergunta prática feita pelo perfil set",
+  "command.perfil_forget.summary": "Apaga o perfil local",
+  "perfil.domain.product": "produto e negócio",
+  "perfil.domain.interface": "interface",
+  "perfil.domain.backend": "backend e dados",
+  "perfil.domain.infrastructure": "infraestrutura e operação",
+  "perfil.domain.security": "segurança",
+  "perfil.level.beginner": "iniciante",
+  "perfil.level.intermediate": "intermediário",
+  "perfil.level.advanced": "avançado",
+  "perfil.show.line": "{domain}: ferramenta {tool}, domínio {knowledge}",
+  "perfil.show.none": "Ainda sem perfil: tudo começa em intermediário. finitemonkey perfil start faz seis perguntas práticas.",
+  "perfil.start.intro": "Seis perguntas práticas. Responda a, b ou c; Enter pula uma, q pula o resto.",
+  "perfil.start.done": "Perfil salvo em .finitemonkey/perfil.yml, fora do git.",
+  "perfil.start.skipped": "Começo rápido pulado: tudo começa em intermediário e se ajusta conforme você trabalha.",
+  "perfil.set.same": "O perfil já diz {level}.",
+  "perfil.set.question": "Uma pergunta prática sobre {domain} antes de mudar:",
+  "perfil.set.how": "Responda com: {command}",
+  "perfil.answer.right": "Certo. O perfil agora diz {level}.",
+  "perfil.answer.kept": "O perfil fica em {level} por enquanto e continua se ajustando conforme você trabalha.",
+  "perfil.forget.done": "Perfil local apagado.",
+  "perfil.error.person_only": "Só a pessoa pode mudar o perfil, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
+  "perfil.q.product": "Um cliente paga por mês e cancela no dia 10. Não há mais nada escrito sobre isso. O que acontece com o acesso dele?",
+  "perfil.q.product.a": "Acaba na hora",
+  "perfil.q.product.b": "Vai até o fim do mês pago",
+  "perfil.q.product.c": "Depende de uma regra que alguém precisa decidir e escrever",
+  "perfil.q.interface": "Uma lista leva 3 segundos para chegar do servidor. O que a tela mostra nesses 3 segundos?",
+  "perfil.q.interface.a": "Nada, ela preenche quando chegar",
+  "perfil.q.interface.b": "Um sinal de carregando, depois a lista, um aviso de vazio ou um erro",
+  "perfil.q.interface.c": "A página anterior até terminar",
+  "perfil.q.backend": "O provedor de pagamento manda a mesma confirmação de pagamento duas vezes. O que o sistema faz?",
+  "perfil.q.backend.a": "Grava dois pagamentos",
+  "perfil.q.backend.b": "Grava uma vez e ignora a repetição",
+  "perfil.q.backend.c": "Recusa as duas por segurança",
+  "perfil.q.infrastructure": "Uma versão nova quebra o site logo depois de entrar no ar. Qual o passo seguro mais rápido?",
+  "perfil.q.infrastructure.a": "Corrigir o código direto no servidor",
+  "perfil.q.infrastructure.b": "Voltar a versão anterior e depois corrigir com calma",
+  "perfil.q.infrastructure.c": "Esperar os usuários mandarem detalhes",
+  "perfil.q.security": "Onde fica a chave secreta do provedor de pagamento?",
+  "perfil.q.security.a": "No código, já que o repositório é privado",
+  "perfil.q.security.b": "Numa variável de ambiente ou num cofre de segredos fora do código",
+  "perfil.q.security.c": "Num arquivo commitado junto com o projeto",
+  "perfil.q.tool": "Quando o assistente muda o código, o que você costuma fazer antes de aceitar?",
+  "perfil.q.tool.a": "Leio a mudança e rodo os testes ou comandos eu mesmo",
+  "perfil.q.tool.b": "Testo o app para ver se funciona",
+  "perfil.q.tool.c": "Aceito e sigo",
+  "install.perfil_hint": "Opcional: finitemonkey perfil start faz seis perguntas práticas para as explicações baterem com o que você já sabe."
 };
 
 // src/i18n/review.json
@@ -6683,7 +6833,57 @@ var review_default = {
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.perfil.summary": "machine",
+    "command.perfil_start.summary": "machine",
+    "command.perfil_set.summary": "machine",
+    "command.perfil_answer.summary": "machine",
+    "command.perfil_forget.summary": "machine",
+    "perfil.domain.product": "machine",
+    "perfil.domain.interface": "machine",
+    "perfil.domain.backend": "machine",
+    "perfil.domain.infrastructure": "machine",
+    "perfil.domain.security": "machine",
+    "perfil.level.beginner": "machine",
+    "perfil.level.intermediate": "machine",
+    "perfil.level.advanced": "machine",
+    "perfil.show.line": "machine",
+    "perfil.show.none": "machine",
+    "perfil.start.intro": "machine",
+    "perfil.start.done": "machine",
+    "perfil.start.skipped": "machine",
+    "perfil.set.same": "machine",
+    "perfil.set.question": "machine",
+    "perfil.set.how": "machine",
+    "perfil.answer.right": "machine",
+    "perfil.answer.kept": "machine",
+    "perfil.forget.done": "machine",
+    "perfil.error.person_only": "machine",
+    "perfil.q.product": "machine",
+    "perfil.q.product.a": "machine",
+    "perfil.q.product.b": "machine",
+    "perfil.q.product.c": "machine",
+    "perfil.q.interface": "machine",
+    "perfil.q.interface.a": "machine",
+    "perfil.q.interface.b": "machine",
+    "perfil.q.interface.c": "machine",
+    "perfil.q.backend": "machine",
+    "perfil.q.backend.a": "machine",
+    "perfil.q.backend.b": "machine",
+    "perfil.q.backend.c": "machine",
+    "perfil.q.infrastructure": "machine",
+    "perfil.q.infrastructure.a": "machine",
+    "perfil.q.infrastructure.b": "machine",
+    "perfil.q.infrastructure.c": "machine",
+    "perfil.q.security": "machine",
+    "perfil.q.security.a": "machine",
+    "perfil.q.security.b": "machine",
+    "perfil.q.security.c": "machine",
+    "perfil.q.tool": "machine",
+    "perfil.q.tool.a": "machine",
+    "perfil.q.tool.b": "machine",
+    "perfil.q.tool.c": "machine",
+    "install.perfil_hint": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -7675,7 +7875,57 @@ var review_default = {
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.perfil.summary": "machine",
+    "command.perfil_start.summary": "machine",
+    "command.perfil_set.summary": "machine",
+    "command.perfil_answer.summary": "machine",
+    "command.perfil_forget.summary": "machine",
+    "perfil.domain.product": "machine",
+    "perfil.domain.interface": "machine",
+    "perfil.domain.backend": "machine",
+    "perfil.domain.infrastructure": "machine",
+    "perfil.domain.security": "machine",
+    "perfil.level.beginner": "machine",
+    "perfil.level.intermediate": "machine",
+    "perfil.level.advanced": "machine",
+    "perfil.show.line": "machine",
+    "perfil.show.none": "machine",
+    "perfil.start.intro": "machine",
+    "perfil.start.done": "machine",
+    "perfil.start.skipped": "machine",
+    "perfil.set.same": "machine",
+    "perfil.set.question": "machine",
+    "perfil.set.how": "machine",
+    "perfil.answer.right": "machine",
+    "perfil.answer.kept": "machine",
+    "perfil.forget.done": "machine",
+    "perfil.error.person_only": "machine",
+    "perfil.q.product": "machine",
+    "perfil.q.product.a": "machine",
+    "perfil.q.product.b": "machine",
+    "perfil.q.product.c": "machine",
+    "perfil.q.interface": "machine",
+    "perfil.q.interface.a": "machine",
+    "perfil.q.interface.b": "machine",
+    "perfil.q.interface.c": "machine",
+    "perfil.q.backend": "machine",
+    "perfil.q.backend.a": "machine",
+    "perfil.q.backend.b": "machine",
+    "perfil.q.backend.c": "machine",
+    "perfil.q.infrastructure": "machine",
+    "perfil.q.infrastructure.a": "machine",
+    "perfil.q.infrastructure.b": "machine",
+    "perfil.q.infrastructure.c": "machine",
+    "perfil.q.security": "machine",
+    "perfil.q.security.a": "machine",
+    "perfil.q.security.b": "machine",
+    "perfil.q.security.c": "machine",
+    "perfil.q.tool": "machine",
+    "perfil.q.tool.a": "machine",
+    "perfil.q.tool.b": "machine",
+    "perfil.q.tool.c": "machine",
+    "install.perfil_hint": "machine"
   }
 };
 
@@ -7765,9 +8015,9 @@ var unescapeDouble = (body2) => {
   }
   return accept(out);
 };
-var quotedEnd = (text10, start) => {
-  const quote = text10[start];
-  for (let index = start + 1; index < text10.length; index += 1) {
+var quotedEnd = (text10, start2) => {
+  const quote = text10[start2];
+  for (let index = start2 + 1; index < text10.length; index += 1) {
     const char = text10[index];
     if (quote === '"' && char === "\\") {
       index += 1;
@@ -7803,7 +8053,7 @@ var OPEN = { "[": "]", "{": "}" };
 var splitTop = (body2) => {
   const parts = [];
   let depth = 0;
-  let start = 0;
+  let start2 = 0;
   for (let index = 0; index < body2.length; index += 1) {
     const char = body2[index] ?? "";
     if (char === '"' || char === "'") {
@@ -7813,12 +8063,12 @@ var splitTop = (body2) => {
     } else if (char in OPEN) depth += 1;
     else if (char === "]" || char === "}") depth -= 1;
     else if (char === "," && depth === 0) {
-      parts.push(body2.slice(start, index));
-      start = index + 1;
+      parts.push(body2.slice(start2, index));
+      start2 = index + 1;
     }
   }
   if (depth !== 0) return reject("unbalanced brackets");
-  const last = body2.slice(start);
+  const last = body2.slice(start2);
   if (last.trim() !== "" || parts.length > 0) parts.push(last);
   return accept(parts.map((part2) => part2.trim()));
 };
@@ -7913,9 +8163,9 @@ var child = (lines4, index, parent, sameIndentSeq) => {
   if (sameIndentSeq && next2?.indent === parent.indent && isItem(next2.text)) return block(lines4, index, next2.indent);
   return accept({ value: null, next: index });
 };
-var sequence = (lines4, start, indent) => {
+var sequence = (lines4, start2, indent) => {
   const out = [];
-  let index = start;
+  let index = start2;
   for (let line7 = lines4[index]; line7?.indent === indent && isItem(line7.text); line7 = lines4[index]) {
     const rest = line7.text.slice(1).trimStart();
     if (rest === "") {
@@ -7940,9 +8190,9 @@ var sequence = (lines4, start, indent) => {
   }
   return accept({ value: out, next: index });
 };
-var mapping = (lines4, start, indent) => {
+var mapping = (lines4, start2, indent) => {
   const out = {};
-  let index = start;
+  let index = start2;
   for (let line7 = lines4[index]; line7?.indent === indent && !isItem(line7.text); line7 = lines4[index]) {
     const pair = splitKey(line7.text);
     if (pair === void 0) return fail(line7, `expected "key: value", got "${line7.text}"`);
@@ -7963,10 +8213,10 @@ var mapping = (lines4, start, indent) => {
   }
   return accept({ value: out, next: index });
 };
-var block = (lines4, start, indent) => {
-  const line7 = lines4[start];
-  if (line7 === void 0) return accept({ value: null, next: start });
-  return isItem(line7.text) ? sequence(lines4, start, indent) : mapping(lines4, start, indent);
+var block = (lines4, start2, indent) => {
+  const line7 = lines4[start2];
+  if (line7 === void 0) return accept({ value: null, next: start2 });
+  return isItem(line7.text) ? sequence(lines4, start2, indent) : mapping(lines4, start2, indent);
 };
 var parseYaml = (source) => {
   const parsed = toLines(source);
@@ -8153,8 +8403,8 @@ var questionIssues = (sections, status) => {
     const names2 = anyLang(questionKey(label2));
     return !lines4.some((text10) => {
       const match = /^\s*[-*]?\s*\**([^:*]+?)\**\s*:(.*)$/.exec(text10);
-      const answer = (match?.[2] ?? "").replace(/\*/g, "").trim();
-      return match !== null && names2.includes((match[1] ?? "").trim().toLowerCase()) && answer !== "";
+      const answer2 = (match?.[2] ?? "").replace(/\*/g, "").trim();
+      return match !== null && names2.includes((match[1] ?? "").trim().toLowerCase()) && answer2 !== "";
     });
   });
   return missing2.length === 0 ? [] : [{ kind: "question_incomplete", line: sections[0]?.line ?? 1, detail: missing2.join(", ") }];
@@ -8552,10 +8802,10 @@ var renderLock = (lock) => `${JSON.stringify(lock, null, 2)}
 // src/install/managed-block.ts
 var lineBreak = (text10) => text10.includes("\r\n") ? "\r\n" : "\n";
 var blockRange = (lines4, markers) => {
-  const start = lines4.findIndex((line7) => line7.trimEnd() === markers.begin);
-  if (start < 0) return void 0;
-  const end = lines4.findIndex((line7, index) => index > start && line7.trimEnd() === markers.end);
-  return end < 0 ? void 0 : { start, end };
+  const start2 = lines4.findIndex((line7) => line7.trimEnd() === markers.begin);
+  if (start2 < 0) return void 0;
+  const end = lines4.findIndex((line7, index) => index > start2 && line7.trimEnd() === markers.end);
+  return end < 0 ? void 0 : { start: start2, end };
 };
 var withManagedBlock = (text10, markers, body2) => {
   const eol = text10 === void 0 ? "\n" : lineBreak(text10);
@@ -9658,8 +9908,8 @@ var projectAt = (root, runtime) => {
     isDir: (relative12) => runtime.stat(abs(relative12))?.kind === "dir"
   };
 };
-var findGitRoot = (start, runtime) => {
-  let current2 = start;
+var findGitRoot = (start2, runtime) => {
+  let current2 = start2;
   for (; ; ) {
     if (runtime.stat(toAbsolutePath(join14(current2, ".git"))) !== void 0) return toAbsolutePath(current2);
     const parent = dirname5(current2);
@@ -10236,21 +10486,21 @@ var checkPathCopies = (env) => {
 };
 var unsetCommand = (platform, names2) => platform === "win32" ? names2.map((name) => `Remove-Item Env:${name}`).join("; ") : `unset ${names2.join(" ")}`;
 var checkAuthVariables = ({ env, platform }) => {
-  const set = AUTH_VARIABLES.filter((name) => (env[name] ?? "") !== "");
-  if (set.length === 0) return [];
+  const set2 = AUTH_VARIABLES.filter((name) => (env[name] ?? "") !== "");
+  if (set2.length === 0) return [];
   return [
     finding(
       "auth.env",
       "warn",
       "doctor.auth.env",
-      { names: set.join(", "), command: unsetCommand(platform, set) },
+      { names: set2.join(", "), command: unsetCommand(platform, set2) },
       "doctor.auth.fix_env"
     )
   ];
 };
 
 // src/doctor/hooks.ts
-import { join as join46 } from "node:path";
+import { join as join47 } from "node:path";
 
 // src/hooks/events.ts
 var HOOK_EVENTS = [
@@ -10404,7 +10654,7 @@ var skipQuoted = (cursor, quote) => {
   cursor.pos += 1;
 };
 var readBalanced = (cursor, open, close2) => {
-  const start = cursor.pos;
+  const start2 = cursor.pos;
   let depth = 1;
   while (!atEnd(cursor)) {
     const char = peek(cursor);
@@ -10414,7 +10664,7 @@ var readBalanced = (cursor, open, close2) => {
       if (char === open) depth += 1;
       if (char === close2) depth -= 1;
       if (depth === 0) {
-        const inner = cursor.text.slice(start, cursor.pos);
+        const inner = cursor.text.slice(start2, cursor.pos);
         cursor.pos += 1;
         return inner;
       }
@@ -10422,7 +10672,7 @@ var readBalanced = (cursor, open, close2) => {
     }
   }
   cursor.incomplete = true;
-  return cursor.text.slice(start);
+  return cursor.text.slice(start2);
 };
 var readUntil = (cursor, terminator, escapes) => {
   let out = "";
@@ -10625,9 +10875,9 @@ var lexBash = (text10) => {
 var PREFIX_WORDS = /* @__PURE__ */ new Set(["!", "{", "}", "if", "then", "elif", "else", "do", "while", "until"]);
 var SKIP_WORDS = /* @__PURE__ */ new Set(["fi", "done", "esac", "}", "for", "case", "select", "function", "in"]);
 var trimKeywords = (words) => {
-  let start = 0;
-  while (start < words.length && !words[start]?.quoted && PREFIX_WORDS.has(words[start]?.text ?? "")) start += 1;
-  const rest = words.slice(start);
+  let start2 = 0;
+  while (start2 < words.length && !words[start2]?.quoted && PREFIX_WORDS.has(words[start2]?.text ?? "")) start2 += 1;
+  const rest = words.slice(start2);
   const first = rest[0];
   if (first !== void 0 && !first.quoted && SKIP_WORDS.has(first.text)) return [];
   return rest;
@@ -11575,8 +11825,8 @@ import { dirname as dirname6, join as join19 } from "node:path";
 var DEFAULT_GATE_BUDGET_MS = 3e5;
 var sessionCwd = (input) => input.payload.cwd === void 0 ? input.cwd : toAbsolutePath(input.payload.cwd, input.cwd);
 var MAX_DEPTH2 = 64;
-var findRepoRoot = (runtime, start) => {
-  let current2 = start;
+var findRepoRoot = (runtime, start2) => {
+  let current2 = start2;
   for (let depth = 0; depth < MAX_DEPTH2; depth += 1) {
     if (runtime.stat(toAbsolutePath(join19(current2, ".git"))) !== void 0) return current2;
     const parent = toAbsolutePath(dirname6(current2));
@@ -11713,9 +11963,9 @@ var fmStart = (argv) => {
   return FM_SCRIPT.test(first) ? 0 : -1;
 };
 var fmFindings = (argv) => {
-  const start = fmStart(argv);
-  if (start < 0) return [];
-  const sub = argv[start + 1];
+  const start2 = fmStart(argv);
+  if (start2 < 0) return [];
+  const sub = argv[start2 + 1];
   if (sub === "allow") return [{ kind: "fm_allow", detail: "finitemonkey allow" }];
   if (sub === "off" || sub === "on") return [{ kind: "fm_pause", detail: `finitemonkey ${sub}` }];
   return [];
@@ -12533,8 +12783,8 @@ var isProtectedConfig = (path) => {
 };
 
 // src/guards/tests/scan.ts
-var skipQuoted2 = (source, start, quote) => {
-  for (let index = start + 1; index < source.length; index += 1) {
+var skipQuoted2 = (source, start2, quote) => {
+  for (let index = start2 + 1; index < source.length; index += 1) {
     const char = source[index];
     if (char === "\\") index += 1;
     else if (char === quote) return index;
@@ -12542,12 +12792,12 @@ var skipQuoted2 = (source, start, quote) => {
   }
   return source.length;
 };
-var skipComment2 = (source, start) => {
-  if (source[start + 1] === "/") {
-    const end2 = source.indexOf("\n", start);
+var skipComment2 = (source, start2) => {
+  if (source[start2 + 1] === "/") {
+    const end2 = source.indexOf("\n", start2);
     return end2 < 0 ? source.length : end2 - 1;
   }
-  const end = source.indexOf("*/", start + 2);
+  const end = source.indexOf("*/", start2 + 2);
   return end < 0 ? source.length : end + 1;
 };
 var stripJs = (source) => {
@@ -15364,7 +15614,7 @@ var splitBlock = (block5) => {
     joined += `${maskInline(piece.text)} `;
   }
   const lineAt = (offset2) => {
-    const index = starts.findLastIndex((start) => start <= offset2);
+    const index = starts.findLastIndex((start2) => start2 <= offset2);
     return block5.pieces[Math.max(index, 0)]?.line ?? 0;
   };
   let offset = 0;
@@ -16577,12 +16827,12 @@ var parseUnifiedDiff = (text10) => {
   let draft;
   for (const raw of text10.split("\n")) {
     const line7 = withoutCarriageReturn(raw);
-    const start = DIFF_GIT.exec(line7);
-    if (start !== null) {
+    const start2 = DIFF_GIT.exec(line7);
+    if (start2 !== null) {
       finish2(draft, out);
       draft = {
-        oldPath: start[1],
-        newPath: start[2],
+        oldPath: start2[1],
+        newPath: start2[2],
         status: "modified",
         binary: false,
         hunks: [],
@@ -16692,8 +16942,8 @@ var countOf = (counts, line7) => counts.get(line7) ?? 0;
 var containsSequence = (haystack, needle) => {
   if (needle.length === 0) return true;
   const first = needle[0];
-  for (let start = haystack.indexOf(first ?? ""); start >= 0; start = haystack.indexOf(first ?? "", start + 1)) {
-    if (needle.every((line7, offset) => haystack[start + offset] === line7)) return true;
+  for (let start2 = haystack.indexOf(first ?? ""); start2 >= 0; start2 = haystack.indexOf(first ?? "", start2 + 1)) {
+    if (needle.every((line7, offset) => haystack[start2 + offset] === line7)) return true;
   }
   return false;
 };
@@ -19054,6 +19304,188 @@ var GIT_HANDLERS = {
   PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort]
 };
 
+// src/perfil/store.ts
+import { join as join45 } from "node:path";
+
+// src/perfil/types.ts
+var DOMAINS = ["product", "interface", "backend", "infrastructure", "security"];
+var LEVELS2 = ["beginner", "intermediate", "advanced"];
+var START_SCORE = 50;
+var MIN_SCORE = 0;
+var MAX_SCORE = 100;
+var levelOf2 = (score) => {
+  if (score < 35) return "beginner";
+  if (score < 70) return "intermediate";
+  return "advanced";
+};
+var scoreOf = (level) => {
+  if (level === "beginner") return 25;
+  if (level === "intermediate") return START_SCORE;
+  return 80;
+};
+var clampScore = (score) => Math.min(MAX_SCORE, Math.max(MIN_SCORE, Math.round(score)));
+var parseDomain = (raw) => DOMAINS.find((domain) => domain === raw?.toLowerCase());
+var parseLevel = (raw) => LEVELS2.find((level) => level === raw?.toLowerCase());
+var startingProfile = (at) => ({
+  domains: {
+    product: { tool: START_SCORE, knowledge: START_SCORE },
+    interface: { tool: START_SCORE, knowledge: START_SCORE },
+    backend: { tool: START_SCORE, knowledge: START_SCORE },
+    infrastructure: { tool: START_SCORE, knowledge: START_SCORE },
+    security: { tool: START_SCORE, knowledge: START_SCORE }
+  },
+  quickStart: "never",
+  updatedAt: at
+});
+
+// src/perfil/store.ts
+var PERFIL_FILE = "perfil.yml";
+var AGENT_COMMITS_FILE = "perfil-commits.json";
+var perfilPath = (paths) => toAbsolutePath(join45(paths.dir, PERFIL_FILE));
+var agentCommitsPath = (paths) => toAbsolutePath(join45(paths.dir, AGENT_COMMITS_FILE));
+var scoreAt = (raw, key2) => {
+  const value = isRecord(raw) ? raw[key2] : void 0;
+  const parsed = typeof value === "number" ? value : Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) ? clampScore(parsed) : START_SCORE;
+};
+var domainFrom = (raw) => {
+  const claimed = parseLevel(isRecord(raw) && typeof raw["claimed"] === "string" ? raw["claimed"] : void 0);
+  return {
+    tool: scoreAt(raw, "tool"),
+    knowledge: scoreAt(raw, "knowledge"),
+    ...claimed === void 0 ? {} : { claimed }
+  };
+};
+var parseProfile = (text10, at) => {
+  const parsed = parseYaml(text10);
+  if (!parsed.ok || !isRecord(parsed.value)) return startingProfile(at);
+  const root = parsed.value;
+  const domains = isRecord(root["domains"]) ? root["domains"] : {};
+  const quick = root["quick_start"];
+  return {
+    domains: {
+      product: domainFrom(domains["product"]),
+      interface: domainFrom(domains["interface"]),
+      backend: domainFrom(domains["backend"]),
+      infrastructure: domainFrom(domains["infrastructure"]),
+      security: domainFrom(domains["security"])
+    },
+    quickStart: quick === "done" || quick === "skipped" ? quick : "never",
+    updatedAt: typeof root["updated_at"] === "string" ? root["updated_at"] : at
+  };
+};
+var readProfile = (runtime, paths) => {
+  const text10 = runtime.readText(perfilPath(paths));
+  return text10.ok ? parseProfile(text10.value, runtime.now()) : void 0;
+};
+var profileOrStart = (runtime, paths) => readProfile(runtime, paths) ?? startingProfile(runtime.now());
+var writeProfile = (runtime, paths, profile) => runtime.writeText(
+  perfilPath(paths),
+  stringifyYaml({
+    schema: "finitemonkey/perfil@1",
+    updated_at: runtime.now(),
+    quick_start: profile.quickStart,
+    domains: Object.fromEntries(
+      DOMAINS.map((domain) => {
+        const entry2 = profile.domains[domain];
+        return [
+          domain,
+          {
+            tool: entry2.tool,
+            knowledge: entry2.knowledge,
+            ...entry2.claimed === void 0 ? {} : { claimed: entry2.claimed }
+          }
+        ];
+      })
+    )
+  })
+).ok;
+var updateDomain = (profile, domain, change) => ({ ...profile, domains: { ...profile.domains, [domain]: change(profile.domains[domain]) } });
+
+// src/perfil/vocabulary.ts
+var TERMS = {
+  product: /\b(?:churn|mrr|arr|ltv|cac|pricing|persona|onboarding|funnel|funil|embudo|retention|reten[cç][aã]o|retenci[oó]n|jobs to be done)\b/i,
+  interface: /\b(?:flexbox|grid|aria|a11y|breakpoint|viewport|component|componente|props|state|estado|hydration|css|tailwind|layout|responsive|responsivo)\b/i,
+  backend: /\b(?:migration|migra[cç][aã]o|migraci[oó]n|foreign key|chave estrangeira|clave for[aá]nea|index|[ií]ndice|transaction|transa[cç][aã]o|transacci[oó]n|orm|endpoint|idempot\w*|webhook|query|sql|n\+1)\b/i,
+  infrastructure: /\b(?:docker|kubernetes|k8s|deploy|ci|cd|pipeline|dns|cdn|nginx|terraform|rollback|staging|load balancer|cron|container|cont[eê]iner)\b/i,
+  security: /\b(?:xss|csrf|ssrf|oauth|jwt|cors|rbac|least privilege|secret|segredo|secreto|hash|bcrypt|rate limit|injection|inje[cç][aã]o|inyecci[oó]n|mfa|2fa)\b/i
+};
+var MECHANISM = /\b(?:why|how does|how do|por que|por quê|porque|como funciona|c[oó]mo funciona|por qu[eé])\b/i;
+var domainsMentioned = (text10) => Object.keys(TERMS).filter((domain) => TERMS[domain].test(text10));
+var asksMechanism = (text10) => MECHANISM.test(text10);
+
+// src/perfil/hooks.ts
+var allow = { kind: "allow" };
+var VOCABULARY_STEP = 2;
+var MECHANISM_STEP = 1;
+var PERSON_COMMIT_STEP = 2;
+var KEEP_COMMITS = 200;
+var SCAN_COMMITS = 20;
+var fromPrompt = (profile, prompt) => {
+  const step3 = VOCABULARY_STEP + (asksMechanism(prompt) ? MECHANISM_STEP : 0);
+  return domainsMentioned(prompt).reduce(
+    (current2, domain) => updateDomain(current2, domain, (entry2) => ({ ...entry2, knowledge: clampScore(entry2.knowledge + step3) })),
+    profile
+  );
+};
+var perfilPrompt = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  const paths = projectPaths(input);
+  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
+  writeProfile(input.runtime, paths, fromPrompt(profileOrStart(input.runtime, paths), prompt));
+  return allow;
+};
+var COMMIT2 = /\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b/;
+var knownCommits = (raw) => Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
+var perfilAgentCommit = (input) => {
+  const raw = input.payload.raw;
+  if (!["Bash", "PowerShell"].includes(toolName2(raw))) return allow;
+  if (!COMMIT2.test(textField(toolInput2(raw), "command") ?? "")) return allow;
+  const paths = projectPaths(input);
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
+  const head = gitAt(input.runtime, paths.root).out(["rev-parse", "HEAD"])?.trim();
+  if (head === void 0 || head === "") return allow;
+  const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
+  writeJsonFile(input.runtime, agentCommitsPath(paths), {
+    agent: [...knownCommits(stored?.["agent"]), head].slice(-KEEP_COMMITS),
+    seen: knownCommits(stored?.["seen"])
+  });
+  return allow;
+};
+var personCommits = (log, agent, seen) => log.split("\n").map((line7) => line7.trim()).filter((sha) => sha !== "" && !agent.has(sha) && !seen.has(sha));
+var perfilSession = (input) => {
+  const paths = projectPaths(input);
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
+  const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
+  const agent = new Set(knownCommits(stored?.["agent"]));
+  const seen = new Set(knownCommits(stored?.["seen"]));
+  if (agent.size === 0 && seen.size === 0) {
+    const log2 = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
+    writeJsonFile(input.runtime, agentCommitsPath(paths), { agent: [], seen: personCommits(log2, agent, seen) });
+    return allow;
+  }
+  const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
+  const fresh3 = personCommits(log, agent, seen);
+  if (fresh3.length === 0) return allow;
+  writeJsonFile(input.runtime, agentCommitsPath(paths), {
+    agent: [...agent],
+    seen: [...seen, ...fresh3].slice(-KEEP_COMMITS)
+  });
+  const step3 = Math.min(fresh3.length, 3) * PERSON_COMMIT_STEP;
+  const profile = DOMAINS.reduce(
+    (current2, domain) => updateDomain(current2, domain, (entry2) => ({ ...entry2, tool: clampScore(entry2.tool + step3) })),
+    profileOrStart(input.runtime, paths)
+  );
+  writeProfile(input.runtime, paths, profile);
+  return allow;
+};
+var PERFIL_HANDLERS = {
+  UserPromptSubmit: [perfilPrompt],
+  PostToolUse: [perfilAgentCommit],
+  SessionStart: [perfilSession]
+};
+
 // src/policy/guards.ts
 var SHADOW_FILE = "shadow.json";
 var numberOf2 = (value) => typeof value === "number" && Number.isInteger(value) ? value : 0;
@@ -19080,22 +19512,22 @@ var writeShadow = (runtime, paths, state) => {
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}
 `);
 };
-var modeOf2 = (set, policy, shadow) => {
-  if (set.damage) return "active";
-  const chosen = policy.guards[set.id];
+var modeOf2 = (set2, policy, shadow) => {
+  if (set2.damage) return "active";
+  const chosen = policy.guards[set2.id];
   if (chosen !== void 0) return chosen;
   if (!policy.exists) return "active";
-  return shadow[set.id]?.promoted === true ? "active" : "shadow";
+  return shadow[set2.id]?.promoted === true ? "active" : "shadow";
 };
-var recordShadow = (input, paths, set, policy, reason) => {
+var recordShadow = (input, paths, set2, policy, reason) => {
   const { runtime } = input;
   const state = readShadow(runtime, paths);
-  const before = state[set.id] ?? { firings: 0, falsePositives: 0, promoted: false };
+  const before = state[set2.id] ?? { firings: 0, falsePositives: 0, promoted: false };
   const firings = before.firings + 1;
   const promoted = !before.promoted && firings >= policy.promoteAfter && before.falsePositives === 0;
-  writeShadow(runtime, paths, { ...state, [set.id]: { ...before, firings, promoted: before.promoted || promoted } });
+  writeShadow(runtime, paths, { ...state, [set2.id]: { ...before, firings, promoted: before.promoted || promoted } });
   logEvent(runtime, paths, "guard_shadow", {
-    guard: set.id,
+    guard: set2.id,
     hook: input.event,
     tool: toolName(input.payload),
     wouldHave: "block",
@@ -19103,31 +19535,31 @@ var recordShadow = (input, paths, set, policy, reason) => {
   });
   if (promoted) {
     logEvent(runtime, paths, "guard_promoted", {
-      guard: set.id,
+      guard: set2.id,
       firings,
       falsePositives: before.falsePositives,
       promoteAfter: policy.promoteAfter
     });
   }
 };
-var governed = (set, handler) => async (input) => {
+var governed = (set2, handler) => async (input) => {
   const paths = projectPaths(input);
   if (paths === void 0) return handler(input);
   if (pausedFor(input.runtime, paths, input.payload.sessionId) !== void 0) return { kind: "allow" };
   const policy = loadPolicy(input.runtime, paths.root);
-  const mode = modeOf2(set, policy, readShadow(input.runtime, paths));
+  const mode = modeOf2(set2, policy, readShadow(input.runtime, paths));
   if (mode === "off") return { kind: "allow" };
   const decision = await handler(input);
   if (mode === "active" || decision.kind !== "block") return decision;
-  recordShadow(input, paths, set, policy, decision.reason);
+  recordShadow(input, paths, set2, policy, decision.reason);
   return { kind: "allow" };
 };
-var withPolicy = (set) => {
-  if (set.damage) return set.handlers;
+var withPolicy = (set2) => {
+  if (set2.damage) return set2.handlers;
   const wrapped = {};
   for (const event of HOOK_EVENTS) {
-    const list5 = set.handlers[event];
-    if (list5 !== void 0) wrapped[event] = list5.map((handler) => governed(set, handler));
+    const list5 = set2.handlers[event];
+    if (list5 !== void 0) wrapped[event] = list5.map((handler) => governed(set2, handler));
   }
   return wrapped;
 };
@@ -19729,7 +20161,7 @@ var secretsSessionStart = (input) => {
 };
 
 // src/hooks/handlers.ts
-var allow = () => ({ kind: "allow" });
+var allow2 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -19793,9 +20225,9 @@ var composeDecisions = async (input, handlers) => {
 };
 var mergeHandlers = (...sets) => {
   const merged2 = {};
-  for (const set of sets) {
+  for (const set2 of sets) {
     for (const event of HOOK_EVENTS) {
-      const list5 = set[event];
+      const list5 = set2[event];
       if (list5 !== void 0) merged2[event] = [...merged2[event] ?? [], ...list5];
     }
   }
@@ -19812,7 +20244,8 @@ var GUARD_SETS = [
   { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
-  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } }
+  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
+  { id: "perfil", damage: false, handlers: PERFIL_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy));
 
@@ -19844,7 +20277,7 @@ var parseHookPayload = (event, text10, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf3 = (error) => error instanceof Error ? error.message : String(error);
-var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow]);
+var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow2]);
 var evaluate = async (event, options) => {
   const text10 = await readAll(options.stdin);
   const parsed = parseHookPayload(event, text10, options.stdin.isTTY === true);
@@ -19980,8 +20413,8 @@ var classify2 = (result) => {
   if (result.exitCode !== 0) {
     return { kind: "failed", problem: "exit", detail: `${String(result.exitCode)}: ${firstLine(result.stderr)}` };
   }
-  const answer = parseJsonObject(result.stdout.trim());
-  if (!answer.ok) return { kind: "failed", problem: "output", detail: firstLine(result.stdout) };
+  const answer2 = parseJsonObject(result.stdout.trim());
+  if (!answer2.ok) return { kind: "failed", problem: "output", detail: firstLine(result.stdout) };
   return { kind: "answered", durationMs: result.durationMs };
 };
 var fireHook = (exec, entry2, invocation, cwd, env) => classify2(run2(exec, invocation, cwd, env, syntheticPayload(entry2.event, cwd)));
@@ -20185,7 +20618,7 @@ var hookSchemaProblems = (hooks, claude) => {
 };
 
 // src/doctor/hook-sources.ts
-import { join as join45 } from "node:path";
+import { join as join46 } from "node:path";
 var entriesOf = (source, hooks, own) => Object.entries(asRecord(hooks)).flatMap(
   ([event, groups]) => asList(groups).flatMap((group) => {
     const record4 = asRecord(group);
@@ -20198,7 +20631,7 @@ var projectHookFiles = (env) => readSettings(env).flatMap(({ scope: scope2, path
   const source = PROJECT_SCOPES[scope2];
   return source === void 0 || !("hooks" in settings) ? [] : [{ source, path, hooks: settings["hooks"] }];
 });
-var pluginsDir = ({ env, runtime }) => join45(env["CLAUDE_CONFIG_DIR"] ?? join45(runtime.homeDir(), ".claude"), "plugins");
+var pluginsDir = ({ env, runtime }) => join46(env["CLAUDE_CONFIG_DIR"] ?? join46(runtime.homeDir(), ".claude"), "plugins");
 var installRecord = (value, root) => {
   const records = Array.isArray(value) ? value.filter(isRecord) : isRecord(value) ? [value] : [];
   return records.find((record4) => record4["projectPath"] === root) ?? records[0];
@@ -20209,13 +20642,13 @@ var readJson = (env, path) => {
   return parsed?.ok === true ? parsed.value : void 0;
 };
 var installedPlugin = (env) => {
-  const index = readJson(env, toAbsolutePath(join45(pluginsDir(env), "installed_plugins.json")));
+  const index = readJson(env, toAbsolutePath(join46(pluginsDir(env), "installed_plugins.json")));
   const record4 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
   const installPath = record4 === void 0 ? void 0 : optionalString(record4, "installPath");
   if (record4 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
-  const manifest = readJson(env, toAbsolutePath(join45(root, ".claude-plugin", "plugin.json")));
-  const hooksPath = toAbsolutePath(join45(root, "hooks", "hooks.json"));
+  const manifest = readJson(env, toAbsolutePath(join46(root, ".claude-plugin", "plugin.json")));
+  const hooksPath = toAbsolutePath(join46(root, "hooks", "hooks.json"));
   const text10 = env.runtime.readText(hooksPath);
   const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
   return {
@@ -20260,7 +20693,7 @@ var schemaFindings = (env, plugin, claude) => {
   const files = [...projectHookFiles(env), ...plugin?.hooksFile === void 0 ? [] : [plugin.hooksFile]];
   const invalidJson = [
     ...unreadableProjectFiles(env),
-    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join46(plugin.root, "hooks", "hooks.json"))] : []
+    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join47(plugin.root, "hooks", "hooks.json"))] : []
   ];
   return [
     ...invalidJson.flatMap((file) => schemaFinding(file, ["not valid JSON"], label2)),
@@ -20281,7 +20714,7 @@ var pluginFindings = (env, projectOwn) => {
   ];
 };
 var coverageFindings = (env, entries) => {
-  const installed = env.runtime.stat(toAbsolutePath(join46(env.root, ...LOCK_FILE.split("/")))) !== void 0;
+  const installed = env.runtime.stat(toAbsolutePath(join47(env.root, ...LOCK_FILE.split("/")))) !== void 0;
   if (entries.length === 0 && !installed) {
     return [finding("hooks.registered", "warn", "doctor.hooks.none", {}, "doctor.hooks.fix_none")];
   }
@@ -20333,17 +20766,17 @@ var checkHooks = (env) => {
 };
 
 // src/doctor/instructions.ts
-import { join as join47 } from "node:path";
+import { join as join48 } from "node:path";
 var INSTRUCTION_LINE_CEILING = 200;
 var TOP_INSTRUCTIONS = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"];
 var RULES_DIR = ".claude/rules";
 var SHOWN = 3;
 var readProjectFile = (env, relative12) => {
-  const text10 = env.runtime.readText(toAbsolutePath(join47(env.root, ...relative12.split("/"))));
+  const text10 = env.runtime.readText(toAbsolutePath(join48(env.root, ...relative12.split("/"))));
   return text10.ok ? text10.value : void 0;
 };
 var instructionFiles = (env) => {
-  const listed5 = env.runtime.listDir(toAbsolutePath(join47(env.root, ...RULES_DIR.split("/"))));
+  const listed5 = env.runtime.listDir(toAbsolutePath(join48(env.root, ...RULES_DIR.split("/"))));
   const rules = listed5.ok ? listed5.value.filter((name) => name.endsWith(".md")).map((name) => `${RULES_DIR}/${name}`) : [];
   return [...TOP_INSTRUCTIONS, ...rules].flatMap((path) => {
     const text10 = readProjectFile(env, path);
@@ -20463,12 +20896,12 @@ var checkInstructions = (env) => {
 };
 
 // src/doctor/line-endings.ts
-import { join as join48 } from "node:path";
+import { join as join49 } from "node:path";
 var LF_RULE = /^\*\s.*\beol=lf\b/m;
 var checkLineEndings = ({ root, runtime }) => {
   const autocrlf = runtime.git(["config", "--get", "core.autocrlf"], root);
   if (!autocrlf.ok || autocrlf.stdout.trim().toLowerCase() !== "true") return [];
-  const attributes = runtime.readText(toAbsolutePath(join48(root, ".gitattributes")));
+  const attributes = runtime.readText(toAbsolutePath(join49(root, ".gitattributes")));
   if (attributes.ok && LF_RULE.test(attributes.value)) return [];
   return [
     finding("git.autocrlf", "warn", "doctor.git.autocrlf", { file: ".gitattributes" }, "doctor.git.fix_autocrlf")
@@ -20476,7 +20909,7 @@ var checkLineEndings = ({ root, runtime }) => {
 };
 
 // src/doctor/memory.ts
-import { join as join49 } from "node:path";
+import { join as join50 } from "node:path";
 var ceilingOf = (config) => {
   const value = configAt(parseConfigYaml(config ?? ""), "memory", "maxLines");
   const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
@@ -20484,9 +20917,9 @@ var ceilingOf = (config) => {
 };
 var lineCount3 = (text10) => text10.replace(/\r?\n$/, "").split(/\r?\n/).length;
 var checkAgentsFile = ({ root, runtime }) => {
-  const text10 = runtime.readText(toAbsolutePath(join49(root, AGENTS_FILE)));
+  const text10 = runtime.readText(toAbsolutePath(join50(root, AGENTS_FILE)));
   if (!text10.ok) return [];
-  const config = runtime.readText(toAbsolutePath(join49(root, CONFIG_FILE2)));
+  const config = runtime.readText(toAbsolutePath(join50(root, CONFIG_FILE2)));
   const max = ceilingOf(config.ok ? config.value : void 0);
   const lines4 = lineCount3(text10.value);
   const params2 = { file: AGENTS_FILE, lines: lines4, max };
@@ -20494,7 +20927,7 @@ var checkAgentsFile = ({ root, runtime }) => {
 };
 
 // src/doctor/project-files.ts
-import { join as join50 } from "node:path";
+import { join as join51 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
 var SCRIPT2 = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
@@ -20525,7 +20958,7 @@ var CONFIG_GROUPS = [
     files: [...variants("commitlint.config", SCRIPT2), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
-var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join50(env.root, file)))?.kind === "file");
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join51(env.root, file)))?.kind === "file");
 var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
   const found = present(env, files);
   return found.length > 1 ? [build(name, found.join(", "))] : [];
@@ -20725,7 +21158,7 @@ var doctorCommand = {
 };
 
 // src/gain/gain.ts
-import { join as join51 } from "node:path";
+import { join as join52 } from "node:path";
 var GAIN_SCHEMA = "finitemonkey/gain@1";
 var DAY_MS5 = 864e5;
 var SAVE_WINDOW_MS = DAY_MS5;
@@ -20741,7 +21174,7 @@ var readLog = (runtime, paths) => {
   });
 };
 var readGates = (runtime, paths) => {
-  const listed5 = runtime.listDir(toAbsolutePath(join51(paths.dir, "evidence")));
+  const listed5 = runtime.listDir(toAbsolutePath(join52(paths.dir, "evidence")));
   const files = listed5.ok ? listed5.value.filter((name) => name.endsWith(".jsonl")) : [];
   return files.flatMap((name) => readLedger3(runtime, paths.evidence(name.replace(/\.jsonl$/, "")))).filter((entry2) => entry2.check === GATE_CHECK);
 };
@@ -21369,7 +21802,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename5, dirname as dirname10, join as join52 } from "node:path";
+import { basename as basename5, dirname as dirname10, join as join53 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args2) => {
   const result = runtime.git(args2, repo.root);
@@ -21412,7 +21845,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join52(dirname10(repo.root), `${basename5(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join53(dirname10(repo.root), `${basename5(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -21647,7 +22080,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join53 } from "node:path";
+import { join as join54 } from "node:path";
 
 // src/i18n/message.ts
 var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
@@ -21873,7 +22306,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join53(dir, `${lang}.json`));
+  const file = toAbsolutePath(join54(dir, `${lang}.json`));
   const text10 = ctx.runtime.readText(file);
   if (!text10.ok) return reject(unreadable(dir, file, text10.error));
   const parsed = parseJsonObject(text10.value);
@@ -21896,7 +22329,7 @@ var describeProblem = (ctx, problem5) => {
   return `  ${problem5.lang}  ${problem5.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text10 = ctx.runtime.readText(toAbsolutePath(join53(dir, "review.json")));
+  const text10 = ctx.runtime.readText(toAbsolutePath(join54(dir, "review.json")));
   const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -22097,7 +22530,8 @@ var applyAndReport = (ctx, request, plan) => {
   trustImplicit(ctx.runtime, project.root, project);
   const data = planData(ctx.t, plan, request.mode, true, applied.value.backup);
   const done = ctx.t(request.mode === "init" ? "install.done_init" : "install.done_update");
-  return success(data, [...planLines(ctx.t, data, request.showDiff), done]);
+  const hint = request.mode === "init" ? [ctx.t("install.perfil_hint")] : [];
+  return success(data, [...planLines(ctx.t, data, request.showDiff), done, ...hint]);
 };
 var runInstall = (ctx, request, presetFallback) => {
   const preset = request.preset === void 0 ? presetFallback : parsePreset(request.preset);
@@ -22460,20 +22894,20 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided) => {
-  const accepted2 = allows.filter((allow2) => decided(allow2.decision));
-  const ignored = allows.filter((allow2) => !decided(allow2.decision)).map((allow2) => `${allow2.rule} ${allow2.route} ${allow2.decision}`);
+  const accepted2 = allows.filter((allow3) => decided(allow3.decision));
+  const ignored = allows.filter((allow3) => !decided(allow3.decision)).map((allow3) => `${allow3.rule} ${allow3.route} ${allow3.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow2 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow2 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow2.decision };
+      const allow3 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow3 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow3.decision };
     })
   };
 };
 
 // src/look/node-capture.ts
 import { mkdirSync as mkdirSync4 } from "node:fs";
-import { join as join54 } from "node:path";
+import { join as join55 } from "node:path";
 
 // src/look/measure.ts
 var measurePage = (doc) => {
@@ -22549,7 +22983,7 @@ var captureOne = async (browser, request, route, viewport) => {
   const context = await browser.newContext({ viewport: { width: viewport, height: HEIGHT }, reducedMotion: "reduce" });
   const page = await context.newPage();
   const events = watch(page);
-  const path = join54(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
+  const path = join55(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
   const loadError = await loadAndShoot(page, `${request.baseUrl}${route}`, path, request.timeoutMs);
   const measure = loadError === void 0 ? parseMeasure(await page.evaluate(MEASURE_SCRIPT)) : void 0;
   await context.close();
@@ -22566,7 +23000,7 @@ var captureAll = async (browser, request) => {
 
 // src/look/node-playwright.ts
 import { createRequire } from "node:module";
-import { join as join55 } from "node:path";
+import { join as join56 } from "node:path";
 import { fileURLToPath as fileURLToPath3, pathToFileURL } from "node:url";
 var NAMES = ["playwright", "playwright-core"];
 var isPlaywright = (value) => isRecord(value) && isRecord(value["chromium"]) && typeof value["chromium"]["launch"] === "function";
@@ -22581,7 +23015,7 @@ var tryLoad = async (base, name) => {
   }
 };
 var loadPlaywright = async (root) => {
-  for (const base of [join55(root, "package.json"), fileURLToPath3(import.meta.url)]) {
+  for (const base of [join56(root, "package.json"), fileURLToPath3(import.meta.url)]) {
     for (const name of NAMES) {
       const found = await tryLoad(base, name);
       if (found !== void 0) return found;
@@ -22602,7 +23036,7 @@ var launchBrowser = async (playwright) => {
 
 // src/look/node-sheet.ts
 import { readFileSync as readFileSync2 } from "node:fs";
-import { join as join56 } from "node:path";
+import { join as join57 } from "node:path";
 var escapeHtml = (text10) => text10.replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char] ?? char);
 var card = (result) => {
   const image = (() => {
@@ -22625,7 +23059,7 @@ var contactSheet = async (browser, results, dir) => {
   if (shown4.length === 0) return void 0;
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   await page.setContent(`<!doctype html><style>${STYLE}</style>${shown4.map(card).join("")}`);
-  const path = join56(dir, "contact-sheet.png");
+  const path = join57(dir, "contact-sheet.png");
   await page.screenshot({ path, fullPage: true });
   await page.close();
   return path;
@@ -22778,7 +23212,7 @@ var lookCommand = {
 };
 
 // src/map/build.ts
-import { join as join57, posix as posix6 } from "node:path";
+import { join as join58, posix as posix6 } from "node:path";
 
 // src/map/defs.ts
 var SKIPPED_PATH = /(^|\/)(node_modules|dist|build|out|vendor|coverage|generated|__generated__|tests?|__tests__|spec|fixtures)\/|\.(test|spec)\.[a-z]+$|\.d\.ts$|\.min\.js$|\.generated\.[a-z]+$|_pb2\.py$|\.pb\.go$|_test\.go$|(^|\/)test_[^/]+\.py$|^\.finitemonkey\//;
@@ -22831,12 +23265,12 @@ var topLevelMatch = (line7) => {
   const parsed = parseJson(line7);
   if (!parsed.ok || !isRecord(parsed.value)) return void 0;
   const { file, range, metaVariables } = parsed.value;
-  const start = isRecord(range) ? range["start"] : void 0;
+  const start2 = isRecord(range) ? range["start"] : void 0;
   const single2 = isRecord(metaVariables) ? metaVariables["single"] : void 0;
   const variable = isRecord(single2) ? single2["N"] : void 0;
   const name = isRecord(variable) ? variable["text"] : void 0;
   if (typeof file !== "string" || typeof name !== "string") return void 0;
-  return isRecord(start) && start["column"] === 0 ? { file: toPosixPath(file), name } : void 0;
+  return isRecord(start2) && start2["column"] === 0 ? { file: toPosixPath(file), name } : void 0;
 };
 var astGrepFound = (runtime) => runtime.probe(AST_GREP, ["--version"], PROBE_MS3).found;
 var astGrepDefinitions = (runtime, root) => AST_RULES.flatMap(([lang, pattern]) => {
@@ -22910,7 +23344,7 @@ var mapBudget = (runtime, root, override) => {
   const parsed = typeof value === "string" ? Number(value) : Number.NaN;
   return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_MAP_BUDGET;
 };
-var mapPath = (root) => toAbsolutePath(join57(fmPaths(root).dir, MAP_FILE));
+var mapPath = (root) => toAbsolutePath(join58(fmPaths(root).dir, MAP_FILE));
 var headerOf = (map) => `# finitemonkey map tree=${map.tree} budget=${String(map.budget)} source=${map.source} folders=${String(map.folders)} shown=${String(map.shown)}
 `;
 var fromCache = (runtime, root, tree, budget) => {
@@ -22988,7 +23422,7 @@ var mapCommand = {
 };
 
 // src/merge/apply.ts
-import { join as join58 } from "node:path";
+import { join as join59 } from "node:path";
 var GENERATOR_TIMEOUT_MS2 = 3e5;
 var git = (runtime, dir, args2) => {
   const result = runtime.gitWith(args2, dir, {});
@@ -22998,7 +23432,7 @@ var applyOne = (runtime, dir, file) => {
   const { action, path } = file;
   switch (action.kind) {
     case "write": {
-      const written = runtime.writeText(toAbsolutePath(join58(dir, path)), action.text);
+      const written = runtime.writeText(toAbsolutePath(join59(dir, path)), action.text);
       return written.ok ? git(runtime, dir, ["add", "--", path]) : written.error;
     }
     case "delete":
@@ -23015,7 +23449,7 @@ var applyResolutions = (runtime, dir, files) => files.flatMap((file) => {
 });
 var runGenerator2 = (runtime, dir, command) => runtime.exec({ command, args: [], cwd: dir, timeoutMs: GENERATOR_TIMEOUT_MS2, shell: true }).exitCode === 0;
 var read3 = (runtime, dir, path) => {
-  const text10 = runtime.readText(toAbsolutePath(join58(dir, path)));
+  const text10 = runtime.readText(toAbsolutePath(join59(dir, path)));
   return text10.ok ? text10.value : void 0;
 };
 var regenerate = (runtime, dir, files) => files.flatMap((file) => {
@@ -23030,7 +23464,7 @@ var regenerate = (runtime, dir, files) => files.flatMap((file) => {
 });
 
 // src/merge/finish.ts
-import { join as join59 } from "node:path";
+import { join as join60 } from "node:path";
 
 // src/merge/semantic.ts
 var HUNK_HEADER = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/;
@@ -23054,9 +23488,9 @@ var touched = (runtime, dir, base, tip, path) => {
   for (const header2 of diff.split("\n")) {
     const match = HUNK_HEADER.exec(header2);
     if (match === null) continue;
-    const start = Number(match[1] ?? "0");
+    const start2 = Number(match[1] ?? "0");
     const count5 = Number(match[2] ?? "1");
-    for (let line7 = start; line7 < start + Math.max(count5, 1); line7 += 1) {
+    for (let line7 = start2; line7 < start2 + Math.max(count5, 1); line7 += 1) {
       const name = enclosing(language, text10, line7);
       if (name !== void 0) symbols.add(name);
     }
@@ -23087,8 +23521,8 @@ var openCallers = (runtime, dir, base) => {
 var CHECK_TIMEOUT_MS = 6e5;
 var writeDropped = (runtime, dir, dropped) => {
   if (dropped.length === 0) return void 0;
-  const path = toAbsolutePath(join59(dir, DROPPED_FILE));
-  runtime.mkdir(toAbsolutePath(join59(dir, ".finitemonkey")));
+  const path = toAbsolutePath(join60(dir, DROPPED_FILE));
+  runtime.mkdir(toAbsolutePath(join60(dir, ".finitemonkey")));
   const items = dropped.map((item2) => ({ ...item2, approved_by: "declared removal" }));
   runtime.writeText(path, `${JSON.stringify({ dropped: items }, null, 2)}
 `);
@@ -23130,7 +23564,7 @@ var commitMerge = (runtime, dir) => {
 };
 
 // src/wt/create.ts
-import { join as join60 } from "node:path";
+import { join as join61 } from "node:path";
 
 // src/wt/ports.ts
 var DEFAULT_PORT_BASE = 5174;
@@ -23161,8 +23595,8 @@ var line2 = (runtime, cwd, args2) => {
 };
 var ensureIgnored = (runtime, mainRoot, commonDir) => {
   if (runtime.git(["check-ignore", "-q", `${OFFICIAL_DIR}/x`], mainRoot).ok) return;
-  const exclude = toAbsolutePath(join60(commonDir, "info", "exclude"));
-  runtime.mkdir(toAbsolutePath(join60(commonDir, "info")));
+  const exclude = toAbsolutePath(join61(commonDir, "info", "exclude"));
+  runtime.mkdir(toAbsolutePath(join61(commonDir, "info")));
   runtime.appendText(exclude, `
 /${OFFICIAL_DIR}/
 `);
@@ -23299,12 +23733,12 @@ var openIntegration = (runtime, cwd, env, sides, owner) => {
 };
 
 // src/merge/report.ts
-import { join as join61 } from "node:path";
+import { join as join62 } from "node:path";
 var MERGE_REPORT_SCHEMA = "finitemonkey/merge-report@1";
-var reportPathFor = (commonDir, stamp2) => toAbsolutePath(join61(registryDir(commonDir), "merges", `${stamp2}.json`));
+var reportPathFor = (commonDir, stamp2) => toAbsolutePath(join62(registryDir(commonDir), "merges", `${stamp2}.json`));
 var writeReport2 = (runtime, report2) => {
   const path = toAbsolutePath(report2.reportPath);
-  const made = runtime.mkdir(toAbsolutePath(join61(path, "..")));
+  const made = runtime.mkdir(toAbsolutePath(join62(path, "..")));
   if (!made.ok) return made;
   const written = runtime.writeAtomic(path, `${JSON.stringify(report2, null, 2)}
 `);
@@ -23720,7 +24154,7 @@ var resolveFile = (inputs, context) => ({
 });
 
 // src/merge/stages.ts
-import { join as join62 } from "node:path";
+import { join as join63 } from "node:path";
 var STAGE_NAMES = { "1": "base", "2": "ours", "3": "theirs" };
 var conflictedStageIds = (runtime, dir) => {
   const listed5 = runtime.gitWith(["ls-files", "-u", "-z"], dir, {});
@@ -23742,9 +24176,9 @@ var blob = (runtime, dir, sha) => {
 };
 var diff3 = (runtime, gitDir, stages) => {
   if (stages.ours === void 0 || stages.theirs === void 0) return void 0;
-  const scratch = toAbsolutePath(join62(gitDir, "finitemonkey-merge"));
+  const scratch = toAbsolutePath(join63(gitDir, "finitemonkey-merge"));
   runtime.mkdir(scratch);
-  const file = (name) => toAbsolutePath(join62(scratch, name));
+  const file = (name) => toAbsolutePath(join63(scratch, name));
   runtime.writeText(file("ours"), stages.ours);
   runtime.writeText(file("base"), stages.base ?? "");
   runtime.writeText(file("theirs"), stages.theirs);
@@ -23780,7 +24214,7 @@ var fileInputs = (runtime, dir, gitDir, path, ids2, generators) => {
     ours: blob(runtime, dir, ids2.ours),
     theirs: blob(runtime, dir, ids2.theirs)
   };
-  const current2 = runtime.readText(toAbsolutePath(join62(dir, path)));
+  const current2 = runtime.readText(toAbsolutePath(join63(dir, path)));
   return {
     stages,
     merged: diff3(runtime, gitDir, stages),
@@ -23793,8 +24227,8 @@ var fileInputs = (runtime, dir, gitDir, path, ids2, generators) => {
 // src/merge/trace.ts
 var MAX_COMMITS = 5;
 var indexFrom = (lines4, needle, from) => {
-  for (let start = from; start + needle.length <= lines4.length; start += 1) {
-    if (needle.every((line7, offset) => lines4[start + offset] === line7)) return start;
+  for (let start2 = from; start2 + needle.length <= lines4.length; start2 += 1) {
+    if (needle.every((line7, offset) => lines4[start2 + offset] === line7)) return start2;
   }
   return -1;
 };
@@ -24179,6 +24613,258 @@ var onCommand = {
   run: (ctx) => Promise.resolve(toggle(ctx, false))
 };
 
+// src/perfil/questions.ts
+var OPTIONS = ["a", "b", "c"];
+var DOMAIN_QUESTIONS = {
+  product: {
+    text: "perfil.q.product",
+    options: { a: "perfil.q.product.a", b: "perfil.q.product.b", c: "perfil.q.product.c" },
+    correct: "c"
+  },
+  interface: {
+    text: "perfil.q.interface",
+    options: { a: "perfil.q.interface.a", b: "perfil.q.interface.b", c: "perfil.q.interface.c" },
+    correct: "b"
+  },
+  backend: {
+    text: "perfil.q.backend",
+    options: { a: "perfil.q.backend.a", b: "perfil.q.backend.b", c: "perfil.q.backend.c" },
+    correct: "b"
+  },
+  infrastructure: {
+    text: "perfil.q.infrastructure",
+    options: { a: "perfil.q.infrastructure.a", b: "perfil.q.infrastructure.b", c: "perfil.q.infrastructure.c" },
+    correct: "b"
+  },
+  security: {
+    text: "perfil.q.security",
+    options: { a: "perfil.q.security.a", b: "perfil.q.security.b", c: "perfil.q.security.c" },
+    correct: "b"
+  }
+};
+var TOOL_QUESTION = {
+  text: "perfil.q.tool",
+  options: { a: "perfil.q.tool.a", b: "perfil.q.tool.b", c: "perfil.q.tool.c" }
+};
+var TOOL_SCORES = { a: 75, b: 55, c: 30 };
+var CORRECT_SCORE = 70;
+var WRONG_SCORE = 30;
+var parseOption = (raw) => OPTIONS.find((option) => option === raw?.trim().toLowerCase());
+
+// src/perfil/lines.ts
+var lineReader = (source) => {
+  const ready = [];
+  const waiting = [];
+  let buffer = "";
+  let ended = false;
+  const push = (line7) => {
+    const next2 = waiting.shift();
+    if (next2 !== void 0) next2(line7);
+    else if (line7 !== void 0) ready.push(line7);
+  };
+  source.setEncoding?.("utf8");
+  source.on("data", (chunk) => {
+    buffer += typeof chunk === "string" ? chunk : chunk.toString("utf8");
+    const parts = buffer.split(/\r?\n/);
+    buffer = parts.pop() ?? "";
+    for (const part2 of parts) push(part2);
+  });
+  const finish5 = () => {
+    if (ended) return;
+    ended = true;
+    if (buffer !== "") push(buffer);
+    buffer = "";
+    while (waiting.length > 0) push(void 0);
+  };
+  source.on("end", finish5);
+  source.on("error", finish5);
+  return () => {
+    const line7 = ready.shift();
+    if (line7 !== void 0) return Promise.resolve(line7);
+    if (ended) return Promise.resolve(void 0);
+    return new Promise((resolve2) => {
+      waiting.push(resolve2);
+    });
+  };
+};
+
+// src/perfil/quick-start.ts
+var questionLines = (ctx, question) => [
+  ctx.t(question.text),
+  ...OPTIONS.map((option) => `  ${option}) ${ctx.t(question.options[option])}`)
+];
+var STOP = /* @__PURE__ */ new Set(["q", "quit", "sair", "salir"]);
+var runQuickStart = async (ctx, start2) => {
+  if (ctx.io.stdin.isTTY !== true) return { kind: "skipped" };
+  const ask3 = lineReader(ctx.io.stdin);
+  const say = (lines4) => {
+    ctx.io.stderr.write(`${lines4.join("\n")}
+`);
+  };
+  say([ctx.t("perfil.start.intro")]);
+  let profile = start2;
+  let answered = 0;
+  for (const domain of DOMAINS) {
+    const question = DOMAIN_QUESTIONS[domain];
+    say(questionLines(ctx, question));
+    const line7 = (await ask3())?.trim().toLowerCase();
+    if (line7 === void 0 || STOP.has(line7)) break;
+    const option = parseOption(line7);
+    if (option === void 0) continue;
+    answered += 1;
+    const knowledge = option === question.correct ? CORRECT_SCORE : WRONG_SCORE;
+    profile = updateDomain(profile, domain, (entry2) => ({ ...entry2, knowledge }));
+  }
+  say(questionLines(ctx, TOOL_QUESTION));
+  const tool = parseOption(await ask3());
+  if (tool !== void 0) {
+    answered += 1;
+    profile = DOMAINS.reduce(
+      (current2, domain) => updateDomain(current2, domain, (entry2) => ({ ...entry2, tool: TOOL_SCORES[tool] })),
+      profile
+    );
+  }
+  return answered === 0 ? { kind: "skipped" } : { kind: "done", profile: { ...profile, quickStart: "done" } };
+};
+
+// src/commands/perfil.ts
+var PERFIL_SCHEMA = "finitemonkey/perfil@1";
+var pathsOf = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+var profileJson = (profile) => ({
+  schema: PERFIL_SCHEMA,
+  quickStart: profile.quickStart,
+  domains: Object.fromEntries(
+    DOMAINS.map((domain) => {
+      const entry2 = profile.domains[domain];
+      return [
+        domain,
+        {
+          tool: { score: entry2.tool, level: levelOf2(entry2.tool) },
+          knowledge: { score: entry2.knowledge, level: levelOf2(entry2.knowledge) },
+          claimed: entry2.claimed ?? null
+        }
+      ];
+    })
+  )
+});
+var profileLines = (ctx, profile) => DOMAINS.map((domain) => {
+  const entry2 = profile.domains[domain];
+  return ctx.t("perfil.show.line", {
+    domain: ctx.t(`perfil.domain.${domain}`),
+    tool: ctx.t(`perfil.level.${levelOf2(entry2.tool)}`),
+    knowledge: ctx.t(`perfil.level.${levelOf2(entry2.knowledge)}`)
+  });
+});
+var show = (ctx) => {
+  const stored = readProfile(ctx.runtime, pathsOf(ctx));
+  const profile = stored ?? profileOrStart(ctx.runtime, pathsOf(ctx));
+  const header2 = stored === void 0 ? [ctx.t("perfil.show.none")] : [];
+  return success(profileJson(profile), [...header2, ...profileLines(ctx, profile)]);
+};
+var start = async (ctx) => {
+  const paths = pathsOf(ctx);
+  const before = profileOrStart(ctx.runtime, paths);
+  const outcome2 = await runQuickStart(ctx, before);
+  const profile = outcome2.kind === "done" ? outcome2.profile : { ...before, quickStart: "skipped" };
+  writeProfile(ctx.runtime, paths, profile);
+  const head = ctx.t(outcome2.kind === "done" ? "perfil.start.done" : "perfil.start.skipped");
+  return success(profileJson(profile), [head, ...profileLines(ctx, profile)]);
+};
+var SET_USAGE = `finitemonkey perfil set <${DOMAINS.join("|")}> <beginner|intermediate|advanced>`;
+var ANSWER_USAGE = `finitemonkey perfil answer <${DOMAINS.join("|")}> <a|b|c>`;
+var set = (ctx, rawDomain, rawLevel) => {
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("perfil.error.person_only", SET_USAGE));
+  const domain = parseDomain(rawDomain);
+  const level = parseLevel(rawLevel);
+  if (domain === void 0 || level === void 0) {
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", SET_USAGE, {
+        detail: `${rawDomain ?? ""} ${rawLevel ?? ""}`
+      })
+    );
+  }
+  const paths = pathsOf(ctx);
+  const profile = profileOrStart(ctx.runtime, paths);
+  const observed = levelOf2(profile.domains[domain].knowledge);
+  if (observed === level)
+    return success(profileJson(profile), [ctx.t("perfil.set.same", { level: ctx.t(`perfil.level.${level}`) })]);
+  const updated = updateDomain(profile, domain, (entry2) => ({ ...entry2, claimed: level }));
+  writeProfile(ctx.runtime, paths, updated);
+  return success(profileJson(updated), [
+    ctx.t("perfil.set.question", { domain: ctx.t(`perfil.domain.${domain}`) }),
+    ...questionLines(ctx, DOMAIN_QUESTIONS[domain]),
+    ctx.t("perfil.set.how", { command: `finitemonkey perfil answer ${domain} <a|b|c>` })
+  ]);
+};
+var answer = (ctx, rawDomain, rawOption) => {
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("perfil.error.person_only", ANSWER_USAGE));
+  const domain = parseDomain(rawDomain);
+  const option = parseOption(rawOption);
+  if (domain === void 0 || option === void 0) {
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", ANSWER_USAGE, {
+        detail: `${rawDomain ?? ""} ${rawOption ?? ""}`
+      })
+    );
+  }
+  const paths = pathsOf(ctx);
+  const profile = profileOrStart(ctx.runtime, paths);
+  const entry2 = profile.domains[domain];
+  const right = option === DOMAIN_QUESTIONS[domain].correct;
+  const claimedScore = entry2.claimed === void 0 ? CORRECT_SCORE : scoreOf(entry2.claimed);
+  const knowledge = right ? claimedScore : entry2.knowledge;
+  const updated = updateDomain(profile, domain, () => ({ tool: entry2.tool, knowledge }));
+  writeProfile(ctx.runtime, paths, updated);
+  const key2 = right ? "perfil.answer.right" : "perfil.answer.kept";
+  return success(profileJson(updated), [ctx.t(key2, { level: ctx.t(`perfil.level.${levelOf2(knowledge)}`) })]);
+};
+var forget = (ctx) => {
+  const paths = pathsOf(ctx);
+  const removed = [perfilPath(paths), agentCommitsPath(paths)].filter(
+    (path) => ctx.runtime.stat(path) !== void 0 && ctx.runtime.remove(path).ok
+  );
+  return success({ schema: PERFIL_SCHEMA, removed: removed.length }, [ctx.t("perfil.forget.done")]);
+};
+var perfilCommand = {
+  path: ["perfil"],
+  summaryKey: "command.perfil.summary",
+  usage: "finitemonkey perfil",
+  status: "ready",
+  run: (ctx) => Promise.resolve(show(ctx))
+};
+var perfilStartCommand = {
+  path: ["perfil", "start"],
+  summaryKey: "command.perfil_start.summary",
+  usage: "finitemonkey perfil start",
+  status: "ready",
+  run: (ctx) => start(ctx)
+};
+var perfilSetCommand = {
+  path: ["perfil", "set"],
+  summaryKey: "command.perfil_set.summary",
+  usage: SET_USAGE,
+  status: "ready",
+  maxPositionals: 2,
+  run: (ctx, args2) => Promise.resolve(set(ctx, args2.positionals[0], args2.positionals[1]))
+};
+var perfilAnswerCommand = {
+  path: ["perfil", "answer"],
+  summaryKey: "command.perfil_answer.summary",
+  usage: ANSWER_USAGE,
+  status: "ready",
+  maxPositionals: 2,
+  run: (ctx, args2) => Promise.resolve(answer(ctx, args2.positionals[0], args2.positionals[1]))
+};
+var perfilForgetCommand = {
+  path: ["perfil", "forget"],
+  summaryKey: "command.perfil_forget.summary",
+  usage: "finitemonkey perfil forget",
+  status: "ready",
+  run: (ctx) => Promise.resolve(forget(ctx))
+};
+
 // src/plan/master.ts
 var HINTS = {
   decisions: "plan.hint.decisions",
@@ -24369,7 +25055,7 @@ var policyFalsePositiveCommand = {
 };
 
 // src/pr/open.ts
-import { join as join64 } from "node:path";
+import { join as join65 } from "node:path";
 
 // src/pr/checklist.ts
 import { basename as basename7 } from "node:path";
@@ -24451,7 +25137,7 @@ var prBody = (runtime, root, input) => {
 };
 
 // src/pr/scope.ts
-import { join as join63 } from "node:path";
+import { join as join64 } from "node:path";
 
 // src/wt/branch-state.ts
 var lines3 = (runtime, root, args2) => {
@@ -24642,7 +25328,7 @@ var contractFor = (runtime, root, explicit) => {
   const fromRegistry = registryContract(runtime, root);
   if (fromRegistry !== void 0) return fromRegistry;
   const active = readState(runtime, fmPaths(root)).active;
-  return active === void 0 ? void 0 : toPosixPath(join63(".finitemonkey", "tasks", `${active}.yml`));
+  return active === void 0 ? void 0 : toPosixPath(join64(".finitemonkey", "tasks", `${active}.yml`));
 };
 var declaredOf = (scope2) => scope2 === void 0 ? [] : [...scope2.paths, ...scope2.append, ...scope2.generated];
 var checkScope = (runtime, root, files, explicit) => {
@@ -24731,20 +25417,20 @@ var snapshotsFor = (runtime, root, branch) => readJournal(runtime, root).filter(
 var mergeSummary = (runtime, root, branch) => {
   const common = commonDirOf(runtime, root);
   if (common === void 0) return void 0;
-  const dir = toAbsolutePath(join64(registryDir(common), "merges"));
+  const dir = toAbsolutePath(join65(registryDir(common), "merges"));
   const names2 = runtime.listDir(dir);
   const reports = (names2.ok ? names2.value : []).filter((name) => name.endsWith(".json")).sort().reverse();
   const match = reports.find((name) => {
-    const text10 = runtime.readText(toAbsolutePath(join64(dir, name)));
+    const text10 = runtime.readText(toAbsolutePath(join65(dir, name)));
     const parsed = text10.ok ? parseJsonObject(text10.value) : void 0;
     return parsed?.ok === true && JSON.stringify(parsed.value["integration"] ?? {}).includes(`"branch":"${branch}"`);
   });
-  const summary = match === void 0 ? void 0 : runtime.readText(toAbsolutePath(join64(dir, match.replace(/\.json$/, ".md"))));
+  const summary = match === void 0 ? void 0 : runtime.readText(toAbsolutePath(join65(dir, match.replace(/\.json$/, ".md"))));
   return summary?.ok === true ? summary.value.trim() : void 0;
 };
 var recordAcceptance = (runtime, root, branch, acceptance2, files) => {
-  const path = toAbsolutePath(join64(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
-  runtime.mkdir(toAbsolutePath(join64(root, ".finitemonkey", "pr")));
+  const path = toAbsolutePath(join65(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
+  runtime.mkdir(toAbsolutePath(join65(root, ".finitemonkey", "pr")));
   const record4 = {
     schema: "finitemonkey/pr-scope@1",
     branch,
@@ -24805,7 +25491,7 @@ var openPr = (runtime, cwd, request) => {
     timeoutMs: NETWORK_TIMEOUT_MS
   });
   if (!pushed.ok) return reject({ kind: "push", detail: pushed.stderr.trim() });
-  const bodyFile = toAbsolutePath(join64(repo.gitDir, "finitemonkey-pr-body.md"));
+  const bodyFile = toAbsolutePath(join65(repo.gitDir, "finitemonkey-pr-body.md"));
   runtime.writeText(bodyFile, body2);
   const title = request.title ?? line5(runtime, repo.root, ["log", "-1", "--format=%s"]) ?? branch;
   const args2 = [
@@ -25139,12 +25825,12 @@ var researchCheckCommand = {
 };
 
 // src/review/packet.ts
-import { join as join65 } from "node:path";
+import { join as join66 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
 var FULL_ROUNDS = 3;
 var REVIEW_FILE_MAX_LINES = 200;
 var LEDGER_MAX_LINES = 100;
-var statePath = (root) => toAbsolutePath(join65(root, REVIEW_STATE_FILE));
+var statePath = (root) => toAbsolutePath(join66(root, REVIEW_STATE_FILE));
 var readReviewState = (runtime, root) => {
   const raw = runtime.readText(statePath(root));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
@@ -25166,7 +25852,7 @@ var taskSections = (runtime, root) => {
   const active = readState(runtime, paths).active;
   if (active === void 0)
     return [section2("Contract", void 0, "(no active task)"), section2("Evidence ledger", void 0, "(none)")];
-  const contract = runtime.readText(toAbsolutePath(join65(root, taskRelative(active))));
+  const contract = runtime.readText(toAbsolutePath(join66(root, taskRelative(active))));
   const ledger = runtime.readText(paths.evidence(active));
   return [
     section2("Contract", contract.ok ? contract.value : void 0, "(contract file missing)"),
@@ -25196,7 +25882,7 @@ var buildPacket = (runtime, root, base, head) => {
     ...taskSections(runtime, root),
     ...owners === void 0 ? [] : [section2("REVIEW.md (base branch)", owners, "")]
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join65(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join66(root, ".finitemonkey", "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}
 `);
   return { round: state.rounds, base, head, range, text: text10 };
@@ -25351,7 +26037,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname11, join as join66 } from "node:path";
+import { dirname as dirname11, join as join67 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -25373,7 +26059,7 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join66(dirname11(dirname11(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join67(dirname11(dirname11(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
@@ -25919,8 +26605,8 @@ var spendSegment = (ctx, paths, input) => {
   return { spend: ctx.t("statusline.budget", { percent: Math.round(Math.max(...ratios) * 100) }) };
 };
 var lineFor = async (ctx, input) => {
-  const start = input.dir === void 0 ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
-  const root = findGitRoot(start, ctx.runtime);
+  const start2 = input.dir === void 0 ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
+  const root = findGitRoot(start2, ctx.runtime);
   const paths = root === void 0 ? void 0 : fmPaths(root);
   const wrap = root === void 0 ? void 0 : wrapOf(ctx, root);
   const wrapped = wrap === void 0 || root === void 0 ? "" : await runWrapped(ctx.runtime, paths, {
@@ -25957,7 +26643,7 @@ var statuslineCommand = {
 };
 
 // src/task/create.ts
-import { join as join67 } from "node:path";
+import { join as join68 } from "node:path";
 
 // src/task/serialize.ts
 var checkYaml = (check2) => ({
@@ -26010,10 +26696,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative12) => {
-      const text10 = runtime.readText(toAbsolutePath(join67(paths.root, relative12)));
+      const text10 = runtime.readText(toAbsolutePath(join68(paths.root, relative12)));
       return text10.ok ? text10.value : void 0;
     },
-    exists: (relative12) => runtime.stat(toAbsolutePath(join67(paths.root, relative12))) !== void 0
+    exists: (relative12) => runtime.stat(toAbsolutePath(join68(paths.root, relative12))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -26028,7 +26714,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
-    ...runtime.stat(toAbsolutePath(join67(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
+    ...runtime.stat(toAbsolutePath(join68(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
     ...draft.git.length > 0 ? [{ id: "git", kind: "git", require: draft.git }] : [],
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index) => ({
@@ -26418,7 +27104,7 @@ var versionCommand = {
 };
 
 // src/wt/archive.ts
-import { basename as basename8, join as join68 } from "node:path";
+import { basename as basename8, join as join69 } from "node:path";
 var ARCHIVE_PREFIX = "refs/finitemonkey/archive/";
 var stampOf4 = (iso) => iso.replace(/[:.]/g, "-");
 var refName = (request, stamp2) => `${ARCHIVE_PREFIX}${(request.branch ?? request.id).replace(/[^A-Za-z0-9._/-]/g, "-")}/${stamp2}`;
@@ -26436,7 +27122,7 @@ var ignoredFiles = (runtime, repo, generated) => {
 };
 var copyIgnored = (runtime, repo, files, target2) => {
   const secrets = files.filter((file) => isSensitivePath(file) || scanFile(runtime, repo.root, file).length > 0);
-  const copied = files.filter((file) => !secrets.includes(file)).filter((file) => runtime.copyFile(toAbsolutePath(join68(repo.root, file)), toAbsolutePath(join68(target2, file))).ok);
+  const copied = files.filter((file) => !secrets.includes(file)).filter((file) => runtime.copyFile(toAbsolutePath(join69(repo.root, file)), toAbsolutePath(join69(target2, file))).ok);
   return { copied, secrets };
 };
 var snapshotTree = (runtime, repo, head, stamp2) => worktreeTree(runtime, repo, head, { timeoutMs: DEFAULT_SNAPSHOT_TIMEOUT_MS, stamp: stamp2 });
@@ -26465,7 +27151,7 @@ var archiveWorktree = (runtime, request) => {
     return reject(`update-ref ${ref}: could not create the archive ref`);
   }
   const target2 = toAbsolutePath(
-    join68(runtime.homeDir(), ".finitemonkey", "archive", basename8(request.mainRoot), request.id, stamp2)
+    join69(runtime.homeDir(), ".finitemonkey", "archive", basename8(request.mainRoot), request.id, stamp2)
   );
   const kept = copyIgnored(runtime, repo, ignoredFiles(runtime, repo, request.generated), target2);
   const again = snapshotTree(runtime, repo, head, `${stamp2}-b`);
@@ -26913,12 +27599,17 @@ var REGISTRY2 = [
   costCheckCommand,
   costReconcileCommand,
   budgetCommand,
+  perfilCommand,
+  perfilStartCommand,
+  perfilSetCommand,
+  perfilAnswerCommand,
+  perfilForgetCommand,
   versionCommand,
   helpCommand
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join69 } from "node:path";
+import { join as join70 } from "node:path";
 var read4 = (runtime, path) => {
   const text10 = runtime.readText(toAbsolutePath(path));
   return text10.ok ? text10.value : void 0;
@@ -26933,14 +27624,14 @@ var languageIn = (text10) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join69(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join70(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read4(runtime, join69(root, CONFIG_FILE2)) ?? "");
+  const config = parseConfigYaml(read4(runtime, join70(root, CONFIG_FILE2)) ?? "");
   const claudeFiles = [
-    join69(root, ".claude", "settings.local.json"),
-    join69(root, ".claude", "settings.json"),
-    join69(claudeDir(runtime, env), "settings.json")
+    join70(root, ".claude", "settings.local.json"),
+    join70(root, ".claude", "settings.json"),
+    join70(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),
