@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.30](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.29...v0.1.0-next.30) (2026-10-27)
+
+### Features
+
+* **plan:** inventory of what the code does today and the inventory gate check ([#169](https://github.com/gabrielvieiraf/finitemonkey/issues/169)) ([c40962f](https://github.com/gabrielvieiraf/finitemonkey/commit/c40962f39b9f5ee7366411f76ba8bc426e23f359)), closes [#54](https://github.com/gabrielvieiraf/finitemonkey/issues/54)
+
 ## [0.1.0-next.29](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.28...v0.1.0-next.29) (2026-10-27)
 
 ### Features
