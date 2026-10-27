@@ -1023,7 +1023,13 @@
     "doctor.github.codeowners_size": "machine",
     "doctor.github.codeowners_invalid": "machine",
     "doctor.github.fix_codeowners": "machine",
-    "doctor.github.codeowners_ok": "machine"
+    "doctor.github.codeowners_ok": "machine",
+    "git.block.file_in_use.claim": "machine",
+    "git.block.file_in_use.requires": "machine",
+    "git.block.backup_failed.claim": "machine",
+    "git.block.backup_failed.requires": "machine",
+    "git.block.scope_copy.claim": "machine",
+    "git.block.scope_copy.requires": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2049,6 +2055,12 @@
     "doctor.github.codeowners_size": "machine",
     "doctor.github.codeowners_invalid": "machine",
     "doctor.github.fix_codeowners": "machine",
-    "doctor.github.codeowners_ok": "machine"
+    "doctor.github.codeowners_ok": "machine",
+    "git.block.file_in_use.claim": "machine",
+    "git.block.file_in_use.requires": "machine",
+    "git.block.backup_failed.claim": "machine",
+    "git.block.backup_failed.requires": "machine",
+    "git.block.scope_copy.claim": "machine",
+    "git.block.scope_copy.requires": "machine"
   }
 }
