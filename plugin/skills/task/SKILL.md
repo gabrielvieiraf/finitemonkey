@@ -13,7 +13,8 @@ Skip this for a question, a one-line fix or pure exploration.
 1. Propose the contract and show it to the person in five lines or fewer: goal, size (S, M or L), paths in scope, and acceptance checks.
 2. Create it with `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" task new --json` and follow its `next` field.
 3. Before writing a helper, a hook or a service, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" map` and reuse what it lists. It prints one line per folder with its top-level definitions and is cached until the code changes.
-4. Acceptance checks must be runnable: a command with an exit code, tests that must not shrink, a screen to look at, a git state. "Works" is not a check.
+4. For a build, a test suite or any command with long output, run it as `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" run -- <command>`: the full output goes to a file under `.finitemonkey/runs/`, and you get the `ERROR` lines, the exit code and the path. Read the file only when the summary is not enough.
+5. Acceptance checks must be runnable: a command with an exit code, tests that must not shrink, a screen to look at, a git state. "Works" is not a check.
 
 For an L task (a replacement, a rewrite, several modules): `task new --size L` creates `docs/plan/MASTER.md`. Write reports in `docs/plan/` with a "Text for the plan" section. To bring them in, run `plan consolidate` (it saves the previous master plan with its date and prints the texts), edit `MASTER.md` keeping its section order, then run `plan consolidate --done` and fix what `plan check` lists. Never import `docs/plan/` files into `AGENTS.md` or `CLAUDE.md`.
 

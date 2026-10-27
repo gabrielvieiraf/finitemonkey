@@ -989,7 +989,11 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.run.summary": "machine",
+    "run.summary": "machine",
+    "run.timed_out": "machine",
+    "run.failed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1981,6 +1985,10 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.run.summary": "machine",
+    "run.summary": "machine",
+    "run.timed_out": "machine",
+    "run.failed": "machine"
   }
 }

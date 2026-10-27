@@ -68,6 +68,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore.",
     es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol.",
   },
+  runs: {
+    en: "The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept.",
+    "pt-BR":
+      "A saída inteira dos comandos rodados por `finitemonkey run`, com segredos mascarados; ficam as 30 mais recentes.",
+    es: "La salida completa de los comandos ejecutados con `finitemonkey run`, con los secretos enmascarados; se guardan las 30 más recientes.",
+  },
   tasks: {
     en: "Task contracts and which task is active.",
     "pt-BR": "Contratos de tarefa e qual tarefa está ativa.",

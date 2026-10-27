@@ -988,5 +988,9 @@
   "budget.reconcile.missing": "{tool} is not installed or did not answer; nothing was compared",
   "budget.reconcile.done": "Compared with {tool}; the differences went to {file} (ours, theirs, difference):",
   "statusline.budget": "spend {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.run.summary": "Run a command, keep its full output in a file and print a short summary with the errors",
+  "run.summary": "exit {exit} in {ms} ms; full output: {file}",
+  "run.timed_out": "stopped after {seconds} s",
+  "run.failed": "the command exited with {exit}"
 }
