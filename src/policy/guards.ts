@@ -6,6 +6,7 @@ import { HOOK_EVENTS, type HookEvent } from "../hooks/events.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import type { FmPaths } from "../task/paths.js";
+import { pausedFor } from "./pause.js";
 import { type GuardMode, loadPolicy, type Policy } from "./policy.js";
 
 export interface GuardSet {
@@ -89,6 +90,7 @@ const governed =
   async (input): Promise<HookDecision> => {
     const paths = projectPaths(input);
     if (paths === undefined) return handler(input);
+    if (pausedFor(input.runtime, paths, input.payload.sessionId) !== undefined) return { kind: "allow" };
     const policy = loadPolicy(input.runtime, paths.root);
     const mode = modeOf(set, policy, readShadow(input.runtime, paths));
     if (mode === "off") return { kind: "allow" };

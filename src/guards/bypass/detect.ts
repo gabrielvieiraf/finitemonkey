@@ -1,6 +1,6 @@
 import { parseShell, type SimpleCommand } from "../shell.js";
 
-export const BYPASS_KINDS = ["no_verify", "hooks_path", "hook_env", "fm_allow"] as const;
+export const BYPASS_KINDS = ["no_verify", "hooks_path", "hook_env", "fm_allow", "fm_pause"] as const;
 
 export type BypassKind = (typeof BYPASS_KINDS)[number];
 
@@ -83,15 +83,23 @@ const gitFindings = (args: readonly string[]): readonly BypassFinding[] => {
 
 const FM_NAMES = new Set(["finitemonkey", "fm"]);
 
+const FM_SCRIPT = /(^|[\\/])(finitemonkey|fm)(\.c?m?js)?$/;
+const RUNNERS = new Set(["npx", "pnpm", "bunx", "yarn"]);
+
+const fmStart = (argv: readonly string[]): number => {
+  const first = argv[0] ?? "";
+  if (RUNNERS.has(first)) return argv.findIndex((arg) => FM_NAMES.has(arg.replace(/@.*$/, "")));
+  if (first === "node" || first === "bun" || first === "deno") return FM_SCRIPT.test(argv[1] ?? "") ? 1 : -1;
+  return FM_SCRIPT.test(first) ? 0 : -1;
+};
+
 const fmFindings = (argv: readonly string[]): readonly BypassFinding[] => {
-  const start =
-    argv[0] === "npx" || argv[0] === "pnpm" || argv[0] === "bunx"
-      ? argv.findIndex((arg) => FM_NAMES.has(arg.replace(/@.*$/, "")))
-      : 0;
-  const name = (argv[start] ?? "").replace(/@.*$/, "");
-  return start >= 0 && FM_NAMES.has(name) && argv[start + 1] === "allow"
-    ? [{ kind: "fm_allow", detail: "finitemonkey allow" }]
-    : [];
+  const start = fmStart(argv);
+  if (start < 0) return [];
+  const sub = argv[start + 1];
+  if (sub === "allow") return [{ kind: "fm_allow", detail: "finitemonkey allow" }];
+  if (sub === "off" || sub === "on") return [{ kind: "fm_pause", detail: `finitemonkey ${sub}` }];
+  return [];
 };
 
 export const detectBypass = (commandLine: string): readonly BypassFinding[] =>

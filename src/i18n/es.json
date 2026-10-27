@@ -371,6 +371,7 @@
   "gate.guard.bypass.hooks_path": "Finite Monkey: bloqueado: {detail} desvía git de los hooks del proyecto. exige: core.hooksPath queda como está configurado.",
   "gate.guard.bypass.hook_env": "Finite Monkey: bloqueado: {detail} apaga hooks o guardas. exige: hooks y guardas quedan encendidos.",
   "gate.guard.bypass.fm_allow": "Finite Monkey: bloqueado: las liberaciones las hace la persona, no una llamada de herramienta.",
+  "gate.guard.bypass.fm_pause": "Finite Monkey: bloqueado: solo la persona pausa o reanuda la compuerta, escribiendo `fm off` o `fm on` como el prompt completo.",
   "gate.guard.bypass.human": "Bloqueé {detail}: apagaría la red de seguridad. Si de verdad lo quiere, escriba en una línea: finitemonkey: allow bypass <motivo>",
   "gate.guard.self.policy": "Finite Monkey: bloqueado: {file} solo lo escribe el ejecutable finitemonkey (evidencia, política y estado). exige: cambiarlo con los comandos de finitemonkey.",
   "gate.guard.self.allow_store": "Finite Monkey: bloqueado: {file} registra lo que la persona liberó; ninguna herramienta lo escribe.",
@@ -547,5 +548,12 @@
   "gate.runtime.body_mismatch": "{route} no contenía \"{body}\"",
   "gate.runtime.request_failed": "la petición a {route} falló: {detail}",
   "gate.runtime.orphan": "no se pudo detener la app del puerto {port}",
-  "gate.runtime.probe_failed": "la comprobación de la app no devolvió resultado: {line}"
+  "gate.runtime.probe_failed": "la comprobación de la app no devolvió resultado: {line}",
+  "command.off.summary": "Pausa la compuerta y los avisos en la sesión actual de Claude Code (solo la persona)",
+  "command.on.summary": "Reanuda la compuerta después de fm off",
+  "pause.off": "Compuerta pausada en esta sesión por la persona. Los bloqueos de secretos, producción y git destructivo siguen activos. Escribe `fm on` para reanudar.",
+  "pause.on": "Compuerta reanudada.",
+  "pause.report": "La compuerta no revisó esta parada: la persona la pausó con fm off a las {since}.",
+  "pause.no_session": "Todavía no hay una sesión de Claude Code registrada en este proyecto; abre una y vuelve a ejecutarlo, o escribe `fm off` allí.",
+  "pause.error.person_only": "Solo la persona puede pausar o reanudar la compuerta, y esto no parece su terminal (sin TTY, o dentro de Claude Code)"
 }

@@ -371,6 +371,7 @@
   "gate.guard.bypass.hooks_path": "Finite Monkey: barrado: {detail} desvia o git dos hooks do projeto. exige: core.hooksPath fica como está configurado.",
   "gate.guard.bypass.hook_env": "Finite Monkey: barrado: {detail} desliga hooks ou travas. exige: hooks e travas ficam ligados.",
   "gate.guard.bypass.fm_allow": "Finite Monkey: barrado: liberação é feita pela pessoa, não por chamada de ferramenta.",
+  "gate.guard.bypass.fm_pause": "Finite Monkey: bloqueado: só a pessoa pausa ou retoma o portão, digitando `fm off` ou `fm on` como o prompt inteiro.",
   "gate.guard.bypass.human": "Barrei {detail}: desligaria a rede de proteção. Se quiser mesmo, digite numa linha: finitemonkey: allow bypass <motivo>",
   "gate.guard.self.policy": "Finite Monkey: barrado: {file} só é escrito pelo executável finitemonkey (evidência, política e estado). exige: mudar pelos comandos do finitemonkey.",
   "gate.guard.self.allow_store": "Finite Monkey: barrado: {file} registra o que a pessoa liberou; ferramenta nunca escreve nele.",
@@ -547,5 +548,12 @@
   "gate.runtime.body_mismatch": "{route} não continha \"{body}\"",
   "gate.runtime.request_failed": "a requisição para {route} falhou: {detail}",
   "gate.runtime.orphan": "o app na porta {port} não pôde ser parado",
-  "gate.runtime.probe_failed": "a checagem do app não devolveu resultado: {line}"
+  "gate.runtime.probe_failed": "a checagem do app não devolveu resultado: {line}",
+  "command.off.summary": "Pausa o portão e os avisos na sessão atual do Claude Code (só a pessoa)",
+  "command.on.summary": "Retoma o portão depois de fm off",
+  "pause.off": "Portão pausado nesta sessão pela pessoa. As travas de segredos, produção e git destrutivo continuam ligadas. Digite `fm on` para retomar.",
+  "pause.on": "Portão retomado.",
+  "pause.report": "O portão não conferiu esta parada: a pessoa pausou com fm off em {since}.",
+  "pause.no_session": "Ainda não há sessão do Claude Code registrada neste projeto; abra uma e rode de novo, ou digite `fm off` nela.",
+  "pause.error.person_only": "Só a pessoa pode pausar ou retomar o portão, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)"
 }

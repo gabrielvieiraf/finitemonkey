@@ -372,6 +372,7 @@
     "gate.guard.bypass.hooks_path": "machine",
     "gate.guard.bypass.hook_env": "machine",
     "gate.guard.bypass.fm_allow": "machine",
+    "gate.guard.bypass.fm_pause": "machine",
     "gate.guard.bypass.human": "machine",
     "gate.guard.self.policy": "machine",
     "gate.guard.self.allow_store": "machine",
@@ -548,7 +549,14 @@
     "gate.runtime.body_mismatch": "machine",
     "gate.runtime.request_failed": "machine",
     "gate.runtime.orphan": "machine",
-    "gate.runtime.probe_failed": "machine"
+    "gate.runtime.probe_failed": "machine",
+    "command.off.summary": "machine",
+    "command.on.summary": "machine",
+    "pause.off": "machine",
+    "pause.on": "machine",
+    "pause.report": "machine",
+    "pause.no_session": "machine",
+    "pause.error.person_only": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -923,6 +931,7 @@
     "gate.guard.bypass.hooks_path": "machine",
     "gate.guard.bypass.hook_env": "machine",
     "gate.guard.bypass.fm_allow": "machine",
+    "gate.guard.bypass.fm_pause": "machine",
     "gate.guard.bypass.human": "machine",
     "gate.guard.self.policy": "machine",
     "gate.guard.self.allow_store": "machine",
@@ -1099,6 +1108,13 @@
     "gate.runtime.body_mismatch": "machine",
     "gate.runtime.request_failed": "machine",
     "gate.runtime.orphan": "machine",
-    "gate.runtime.probe_failed": "machine"
+    "gate.runtime.probe_failed": "machine",
+    "command.off.summary": "machine",
+    "command.on.summary": "machine",
+    "pause.off": "machine",
+    "pause.on": "machine",
+    "pause.report": "machine",
+    "pause.no_session": "machine",
+    "pause.error.person_only": "machine"
   }
 }
