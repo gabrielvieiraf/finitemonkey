@@ -25,6 +25,7 @@ after(() => {
 
 interface Setup {
   readonly repo: Repo;
+  readonly top: string;
   readonly env: Readonly<Record<string, string>>;
   readonly log: (file: string, lines: readonly object[]) => void;
 }
@@ -40,7 +41,7 @@ const setup = (config: string): Setup => {
     mkdirSync(join(dir, file, ".."), { recursive: true });
     writeFileSync(join(dir, file), lines.map((line) => `${JSON.stringify(line)}\n`).join(""), { flag: "a" });
   };
-  return { repo, env: { CLAUDE_CONFIG_DIR: home }, log };
+  return { repo, top, env: { CLAUDE_CONFIG_DIR: home }, log };
 };
 
 const assistant = (id: string, output: number, at = "2026-10-27T11:00:00.000Z") => ({
@@ -55,25 +56,26 @@ const assistant = (id: string, output: number, at = "2026-10-27T11:00:00.000Z") 
 
 const runtime = (): Runtime => repoRuntime({ now: () => NOW });
 
-const total = (repo: Repo, env: Readonly<Record<string, string>>): number => {
-  const ledger = ingest({ runtime: runtime(), paths: fmPaths(repo.root), env });
+const total = ({ top, env }: Pick<Setup, "top" | "env">): number => {
+  const ledger = ingest({ runtime: runtime(), paths: fmPaths(toAbsolutePath(top)), env });
   return Object.values(ledger.messages).reduce((sum, message) => sum + message.usd, 0);
 };
 
 describe("agent spend from the session transcripts", () => {
   it("a restart does not double count: cursors per file, dedup by message id, subagents included", () => {
-    const { repo, env, log } = setup("budget:\n  day_usd: 100\n");
+    const ready = setup("budget:\n  day_usd: 100\n");
+    const { repo, log } = ready;
     log("s1.jsonl", [assistant("m1", 1000), assistant("m1", 2000), assistant("m2", 1000)]);
     log("s1/subagents/agent-a.jsonl", [assistant("m3", 1000)]);
-    const first = total(repo, env);
+    const first = total(ready);
     const expected = (1000 * 5 + 2000 * 25 + 2 * (1000 * 5 + 1000 * 25)) / 1_000_000;
     assert.ok(Math.abs(first - expected) < 1e-9, String(first));
-    assert.ok(Math.abs(total(repo, env) - first) < 1e-12);
+    assert.ok(Math.abs(total(ready) - first) < 1e-12);
     log("s1.jsonl", [assistant("m2", 1000)]);
-    assert.ok(Math.abs(total(repo, env) - first) < 1e-12);
+    assert.ok(Math.abs(total(ready) - first) < 1e-12);
     const spend = repo.read(".finitemonkey/spend.json");
     repo.write(".finitemonkey/spend.json", spend.replace(/"cursors": \{[^}]*\}/, '"cursors": {}'));
-    assert.ok(Math.abs(total(repo, env) - first) < 1e-12);
+    assert.ok(Math.abs(total(ready) - first) < 1e-12);
   });
 
   it("crossing 100% blocks a new task, and the person can release it", async () => {
@@ -110,7 +112,8 @@ describe("agent spend from the session transcripts", () => {
   });
 
   it("reconcile records the divergence instead of overwriting", async () => {
-    const { repo, env, log } = setup("budget:\n  day_usd: 10\n");
+    const ready = setup("budget:\n  day_usd: 10\n");
+    const { repo, env, log } = ready;
     log("s1.jsonl", [assistant("m1", 3000)]);
     const base = runtime();
     const withTool: Runtime = {
@@ -122,13 +125,13 @@ describe("agent spend from the session transcripts", () => {
           ? execResult(0, JSON.stringify({ daily: [{ date: "2026-10-27", totalCost: 0.1 }] }))
           : base.exec(request),
     };
-    const before = total(repo, env);
+    const before = total(ready);
     const run = await cliJson(["cost", "reconcile"], { cwd: repo.root, runtime: withTool, env });
     assert.equal(run.code, 0, JSON.stringify(run.body));
     await cliJson(["cost", "reconcile"], { cwd: repo.root, runtime: withTool, env });
     const records = repo.read(".finitemonkey/spend-reconcile.jsonl").trim().split("\n");
     assert.equal(records.length, 2);
     assert.match(records[0] ?? "", /"date":"2026-10-27","ours":0\.08,"theirs":0\.1,"diff":-0\.02/);
-    assert.ok(Math.abs(total(repo, env) - before) < 1e-12);
+    assert.ok(Math.abs(total(ready) - before) < 1e-12);
   });
 });
