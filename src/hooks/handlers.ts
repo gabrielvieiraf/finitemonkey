@@ -2,6 +2,7 @@ import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { credsStaticGuard } from "../creds/static-guard.js";
 import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
@@ -134,6 +135,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
+  { id: "creds-static", damage: false, handlers: { PreToolUse: [credsStaticGuard] } },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

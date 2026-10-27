@@ -2,6 +2,7 @@ import type { Ctx } from "../core/context.js";
 import type { Probe, ProbeResult } from "../core/runtime.js";
 import { findGitRoot } from "../install/project.js";
 import { checkClaudeSettings } from "./claude-settings.js";
+import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkHooks } from "./hooks.js";
 import { checkInstructions } from "./instructions.js";
@@ -32,6 +33,7 @@ export const CHECKS: readonly Check[] = [
   checkRemoteCredentials,
   checkAgentsFile,
   checkRewriters,
+  checkEnvHygiene,
   checkHooks,
 ];
 

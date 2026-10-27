@@ -109,16 +109,16 @@ describe("guard composition", () => {
     assert.ok((DEFAULT_HANDLERS.PreToolUse?.length ?? 0) >= 3);
   });
 
-  it("secrets, prose, git and deps guards all run on PreToolUse, in that order", () => {
+  it("secrets, prose, git, deps and creds-static guards all run on PreToolUse, in that order", () => {
     const list = DEFAULT_HANDLERS.PreToolUse ?? [];
     assert.deepEqual(
       GUARD_SETS.map((set) => set.id),
-      ["secrets", "gate", "prose", "git", "deps"],
+      ["secrets", "gate", "prose", "git", "deps", "creds-static"],
     );
     const secrets = list.indexOf(secretsPreToolUse);
     const git = list.indexOf(gitPreToolUse);
     assert.ok(secrets >= 0 && git > secrets, JSON.stringify({ secrets, git }));
-    assert.equal(list.length - git, (GIT_HANDLERS.PreToolUse ?? []).length + 1);
+    assert.equal(list.length - git, (GIT_HANDLERS.PreToolUse ?? []).length + 2);
     assert.equal(
       git - secrets - 1,
       (PORTAO_HANDLERS.PreToolUse ?? []).length + (PROSE_HANDLERS.PreToolUse ?? []).length,
