@@ -29,6 +29,85 @@
     "reportPath": {
       "type": "string"
     },
+    "hookInventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "matcher": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "ours": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "failMode": {
+            "type": "string",
+            "enum": [
+              "fail-closed",
+              "fail-open"
+            ]
+          },
+          "latencyMs": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "outputBytes": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "blocksStop": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "source",
+          "owner",
+          "event",
+          "matcher",
+          "command",
+          "ours",
+          "enabled",
+          "failMode",
+          "latencyMs",
+          "outputBytes",
+          "blocksStop"
+        ]
+      }
+    },
     "schema": {
       "const": "finitemonkey/doctor@1"
     },

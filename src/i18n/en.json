@@ -742,5 +742,18 @@
   "gate.inventory.missing": "no inventory in docs/plan; run finitemonkey inventory <topic>",
   "gate.inventory.expired": "{report} expired: {count, plural, one {# covered path changed} other {# covered paths changed}} since {hash} ({paths}); run finitemonkey inventory {topic} for the delta",
   "gate.inventory.unknown": "{report} cites {hash} in {repo}, a commit this clone cannot read",
-  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths"
+  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths",
+  "doctor.hooks.inventory": "{count, plural, one {# hook} other {# hooks}} from plugins and settings (event, source, failure mode, latency, output, Stop authority, command):",
+  "doctor.coexist.authorities": "Another loop authority also hooks Stop: {others}. Claude Code runs every Stop hook and any block keeps the session going.",
+  "doctor.coexist.fix_authorities": "Keep one exit criterion: the task contract checked by the gate. Turn off the other plugin's Stop hook in its own settings; finitemonkey does not change it.",
+  "doctor.coexist.duplicate": "The same hook runs twice, from a plugin and from settings: {hooks}.",
+  "doctor.coexist.fix_duplicate": "Remove the copy in settings and keep the plugin's, or disable the plugin.",
+  "doctor.coexist.disabled_plugin": "Plugin {plugin} is disabled, but a hook in settings still runs its files.",
+  "doctor.coexist.fix_disabled_plugin": "Remove that hook from settings, or enable the plugin again.",
+  "doctor.coexist.proxy": "ANTHROPIC_BASE_URL points to a proxy on this machine; it sees and can change every request and answer.",
+  "doctor.coexist.fix_proxy": "Unset ANTHROPIC_BASE_URL unless the proxy is yours and trusted.",
+  "doctor.coexist.output_rewriter": "Hooks from {owners} run after tools and can rewrite what the model reads as evidence.",
+  "doctor.coexist.fix_output_rewriter": "Check that those hooks only add context; the gate trusts its own runs, not tool output.",
+  "doctor.coexist.memory_tool": "{file} was edited by a memory tool ({tool}) since finitemonkey installed it.",
+  "doctor.coexist.fix_memory_tool": "Review the added lines; instruction files should hold rules, not session notes."
 }

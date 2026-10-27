@@ -22,6 +22,7 @@ export const FOOTPRINT = [
     targets: ["CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", ".claude/rules/", ".claudeignore"],
   },
   { id: "session-logs", kind: "reads", targets: ["~/.claude/projects/"] },
+  { id: "hook-sources", kind: "reads", targets: ["~/.claude/plugins/", "~/.claude/debug/latest"] },
   { id: "git", kind: "reads", targets: [".git/"], via: "git" },
   { id: "changed-files", kind: "reads", targets: ["git diff"], via: "git" },
   {

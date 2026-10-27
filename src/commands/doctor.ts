@@ -1,9 +1,10 @@
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, toEnvelope } from "../core/result.js";
 import { applyFixes, type Fixed } from "../doctor/fix.js";
+import { hookInventory, type HookRow, withDebugLog } from "../doctor/hook-inventory.js";
 import { reportMarkdown, reportPath } from "../doctor/report-file.js";
 import { buildReport, doctorEnvFrom, type DoctorItem, type DoctorReport, runChecks } from "../doctor/run.js";
 import { ExitCode } from "../exit-codes.js";
@@ -20,7 +21,24 @@ const itemLines = (ctx: Pick<Ctx, "t">, item: DoctorItem): readonly string[] => 
 export interface DoctorData extends DoctorReport {
   readonly fixed?: Fixed;
   readonly reportPath?: string;
+  readonly hookInventory?: readonly HookRow[];
 }
+
+const debugLog = (ctx: Ctx): string | undefined => {
+  const dir = ctx.env["CLAUDE_CONFIG_DIR"] ?? join(ctx.runtime.homeDir(), ".claude");
+  const text = ctx.runtime.readText(toAbsolutePath(join(dir, "debug", "latest")));
+  return text.ok ? text.value : undefined;
+};
+
+const cellOf = (value: number | null, unit: string): string => (value === null ? "?" : `${String(value)} ${unit}`);
+
+const inventoryLines = (ctx: Ctx, rows: readonly HookRow[]): readonly string[] => [
+  ctx.t("doctor.hooks.inventory", { count: rows.length }),
+  ...rows.map(
+    (row) =>
+      `  ${row.event.padEnd(17)}${row.source.padEnd(28)}${row.failMode.padEnd(12)}${cellOf(row.latencyMs, "ms").padEnd(9)}${cellOf(row.outputBytes, "B").padEnd(9)}${row.blocksStop ? "stop " : "     "}${row.enabled ? "" : "(disabled) "}${row.command}`,
+  ),
+];
 
 export const doctorResult = (
   ctx: Pick<Ctx, "t" | "version">,
@@ -73,7 +91,7 @@ const writeReport = (ctx: Ctx, data: DoctorData, result: CommandResult<DoctorDat
   return { ...result, data: { ...data, reportPath: path }, human };
 };
 
-const runDoctor = (ctx: Ctx, fix: boolean, report: boolean): CommandResult<DoctorData> => {
+const runDoctor = (ctx: Ctx, fix: boolean, report: boolean, hooks: boolean): CommandResult<DoctorData> => {
   let extra: readonly string[] = [];
   let fixed: Fixed | undefined;
   if (fix) {
@@ -86,17 +104,27 @@ const runDoctor = (ctx: Ctx, fix: boolean, report: boolean): CommandResult<Docto
     fixed = applied.value;
     extra = fixLines(ctx, fixed);
   }
-  const checked = buildReport(ctx, runChecks(doctorEnvFrom(ctx)));
-  const data: DoctorData = fixed === undefined ? checked : { ...checked, fixed };
-  const result = doctorResult(ctx, data, fix ? [...extra, ...manualLines(ctx, checked)] : extra);
+  const env = doctorEnvFrom(ctx);
+  const checked = buildReport(ctx, runChecks(env));
+  const rows = hooks ? withDebugLog(hookInventory(env), debugLog(ctx)) : undefined;
+  const base: DoctorData = rows === undefined ? checked : { ...checked, hookInventory: rows };
+  const data: DoctorData = fixed === undefined ? base : { ...base, fixed };
+  const lines = [
+    ...(fix ? [...extra, ...manualLines(ctx, checked)] : extra),
+    ...(rows === undefined ? [] : inventoryLines(ctx, rows)),
+  ];
+  const result = doctorResult(ctx, data, lines);
   return report ? writeReport(ctx, data, result) : result;
 };
 
 export const doctorCommand: CommandSpec = {
   path: ["doctor"],
   summaryKey: "command.doctor.summary",
-  usage: "finitemonkey doctor [--fix] [--report] [--dry-run] [--json]",
+  usage: "finitemonkey doctor [--hooks] [--fix] [--report] [--dry-run] [--json]",
   status: "ready",
-  options: { fix: { type: "boolean" }, report: { type: "boolean" } },
-  run: (ctx, args) => Promise.resolve(runDoctor(ctx, args.values["fix"] === true, args.values["report"] === true)),
+  options: { fix: { type: "boolean" }, report: { type: "boolean" }, hooks: { type: "boolean" } },
+  run: (ctx, args) =>
+    Promise.resolve(
+      runDoctor(ctx, args.values["fix"] === true, args.values["report"] === true, args.values["hooks"] === true),
+    ),
 };
