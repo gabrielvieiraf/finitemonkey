@@ -51,6 +51,7 @@ export const ERROR_CODES = [
   "ci_gate_failed",
   "look_failed",
   "look_unavailable",
+  "critique_must_fix",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

@@ -1,4 +1,5 @@
 import { appCheckCommand } from "./app-check.js";
+import { critiqueVerifyCommand } from "./critique.js";
 import { doctorCommand } from "./doctor.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
@@ -57,6 +58,7 @@ export const REGISTRY = [
   lookCommand,
   reviewPacketCommand,
   statuslineCommand,
+  critiqueVerifyCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
