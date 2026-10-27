@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.32](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.31...v0.1.0-next.32) (2026-10-27)
+
+### Features
+
+* **plan:** plan init, plan check and plan consolidate for the docs/plan folder ([#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173)) ([c1ec428](https://github.com/gabrielvieiraf/finitemonkey/commit/c1ec428682c349a0c6c0556a5d472d8245163158)), closes [#169](https://github.com/gabrielvieiraf/finitemonkey/issues/169) [#169](https://github.com/gabrielvieiraf/finitemonkey/issues/169) [#61](https://github.com/gabrielvieiraf/finitemonkey/issues/61)
+
 ## [0.1.0-next.31](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.30...v0.1.0-next.31) (2026-10-27)
 
 ### Features
