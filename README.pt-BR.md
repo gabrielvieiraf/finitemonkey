@@ -98,6 +98,7 @@ Você roda um comando, uma vez. Depois disso o Finite Monkey age pelo contexto, 
 - **Hooks** fazem a parte de obrigar: `SessionStart` recupera o estado da tarefa, `UserPromptSubmit` percebe o que você pediu, `PreToolUse` barra a ação perigosa antes de acontecer, `Stop` não deixa terminar enquanto a definição de pronto falha, e `SubagentStop` confere o que os subagentes relatam.
 - **Skills** são acionadas pelo próprio Claude quando a situação pede.
 - **Comandos com barra** são atalhos opcionais. Nenhum fluxo depende de você lembrar de um.
+- **O estilo de saída `report`** é opcional e vem desligado. Escolha com `/output-style report` se quiser toda resposta no formato do relatório final: resultado primeiro, depois verificado, não verificado e pendente, com FATO, OPINIÃO e INFERÊNCIA marcados. Ele mantém as instruções de programação do Claude Code (`keep-coding-instructions: true`).
 
 ## Instalação (planejada)
 
