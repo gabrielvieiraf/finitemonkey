@@ -9,7 +9,15 @@ import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import type { Ctx, Env, TextSource } from "../src/core/context.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../src/core/parsed.js";
 import { run } from "../src/core/run.js";
-import type { ExecRequest, ExecResult, GitResult, ProbeResult, Runtime } from "../src/core/runtime.js";
+import type {
+  ExecRequest,
+  ExecResult,
+  GitResult,
+  ProbeResult,
+  ProcessInfo,
+  Runtime,
+  StopSignal,
+} from "../src/core/runtime.js";
 import { detectLang } from "../src/i18n/languages.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { type MemoryFs, memoryFs } from "./memory-fs.js";
@@ -39,6 +47,8 @@ export interface FakeRuntimeOptions {
   readonly spawned?: string[][];
   readonly gitWith?: Runtime["gitWith"];
   readonly systemLocale?: string;
+  readonly processes?: readonly ProcessInfo[];
+  readonly signals?: { pid: number; signal: StopSignal }[];
 }
 
 export const execResult = (exitCode: number | null, stdout = "", stderr = ""): ExecResult => ({
@@ -107,6 +117,17 @@ export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
     realpath: (path) => path,
     homeDir: () => "/home/test",
     systemLocale: () => options.systemLocale,
+    processes: () => options.processes ?? [],
+    signal: (pid, signal) => {
+      options.signals?.push({ pid, signal });
+      return true;
+    },
+    alive: () => false,
+    exclusiveBytes: () => undefined,
+    copyFile: (from, to) => {
+      const text = fs.readText(from);
+      return text.ok ? fs.writeAtomic(to, text.value) : text;
+    },
   };
 };
 

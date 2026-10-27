@@ -30,6 +30,8 @@ import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
 import { versionCommand } from "./version.js";
 import { wtAdoptCommand, wtNewCommand } from "./wt.js";
+import { wtArchiveCommand, wtCleanCommand, wtPurgeCommand } from "./wt-clean.js";
+import { wtDoctorCommand, wtListCommand } from "./wt-list.js";
 
 export const REGISTRY = [
   initCommand,
@@ -70,6 +72,11 @@ export const REGISTRY = [
   planInitCommand,
   planCheckCommand,
   planConsolidateCommand,
+  wtListCommand,
+  wtCleanCommand,
+  wtArchiveCommand,
+  wtPurgeCommand,
+  wtDoctorCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

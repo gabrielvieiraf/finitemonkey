@@ -2,6 +2,8 @@ import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { accept, isRecord, type Parsed, reject } from "../core/parsed.js";
+import { pause } from "../core/pause.js";
+import { toPosixPath } from "../core/posix-path.js";
 import type { ReleaseLock, Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
 import { stringifyYaml } from "../core/yaml/write.js";
@@ -51,10 +53,6 @@ export const readRegistry = (runtime: Runtime, commonDir: AbsolutePath): Parsed<
   if (runtime.stat(path) === undefined) return accept(EMPTY_REGISTRY);
   const text = runtime.readText(path);
   return text.ok ? parseRegistry(text.value) : reject(text.error);
-};
-
-const pause = (ms: number): void => {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 };
 
 const acquire = (runtime: Runtime, path: AbsolutePath, owner: string): Parsed<ReleaseLock> => {
@@ -109,3 +107,20 @@ export const upsertEntry = (registry: Registry, entry: WorktreeEntry): Registry 
   const others = registry.worktrees.filter((item) => item.id !== entry.id);
   return { worktrees: [...others, entry] };
 };
+
+export const patchEntry = (
+  runtime: Runtime,
+  commonDir: AbsolutePath,
+  path: string,
+  patch: Partial<Pick<WorktreeEntry, "status" | "archive">>,
+): Parsed<undefined> =>
+  updateRegistry(runtime, commonDir, "finitemonkey", (registry) =>
+    accept({
+      registry: {
+        worktrees: registry.worktrees.map((entry) =>
+          toPosixPath(entry.path) === toPosixPath(path) ? { ...entry, ...patch } : entry,
+        ),
+      },
+      result: undefined,
+    }),
+  );

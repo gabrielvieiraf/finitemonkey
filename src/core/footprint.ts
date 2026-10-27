@@ -86,6 +86,8 @@ export const FOOTPRINT = [
       ".git/info/exclude",
       ".claude/worktrees/",
       "~/.finitemonkey/worktrees/",
+      "~/.finitemonkey/archive/",
+      "refs/finitemonkey/archive/",
     ],
   },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },

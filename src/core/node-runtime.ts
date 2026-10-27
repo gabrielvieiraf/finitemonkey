@@ -17,6 +17,7 @@ import {
   nodeWriteText,
 } from "./node-fs.js";
 import { nodeGit, nodeGitLines, nodeGitWith } from "./node-git.js";
+import { nodeAlive, nodeCopyFile, nodeExclusiveBytes, nodeProcesses, nodeSignal } from "./node-system.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Probe, Runtime } from "./runtime.js";
 
@@ -100,4 +101,9 @@ export const nodeRuntime = (): Runtime => ({
   realpath: nodeRealpath,
   homeDir: homedir,
   systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale,
+  processes: nodeProcesses,
+  signal: nodeSignal,
+  alive: nodeAlive,
+  exclusiveBytes: nodeExclusiveBytes,
+  copyFile: nodeCopyFile,
 });

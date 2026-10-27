@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/wt-list@1.json",
+  "title": "finitemonkey/wt-list@1",
+  "description": "`data` of `finitemonkey wt list --json`. Generated from WtListData in src/commands/wt-list.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/wt-list@1"
+    },
+    "worktrees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "orphan",
+              "dirty",
+              "locked",
+              "running",
+              "recent",
+              "contained",
+              "equivalent",
+              "unpushed",
+              "open"
+            ]
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "subagent",
+              "session",
+              "human",
+              "unknown"
+            ]
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "const": "active"
+              },
+              {
+                "const": "done"
+              },
+              {
+                "const": "merged"
+              },
+              {
+                "const": "abandoned"
+              },
+              {
+                "const": "archived"
+              },
+              {
+                "const": "removed"
+              },
+              {
+                "const": "adopted"
+              }
+            ]
+          },
+          "activityAt": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "ageDays": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "exclusiveBytes": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "pr": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "dirty": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "class",
+          "branch",
+          "owner",
+          "purpose",
+          "port",
+          "status",
+          "activityAt",
+          "ageDays",
+          "exclusiveBytes",
+          "pr",
+          "dirty"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "worktrees"
+  ]
+}
