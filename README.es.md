@@ -11,7 +11,13 @@
 <p align="center">
   <img src="assets/finitemonkey.gif" width="720" alt="Animación: un mono con sudadera amarilla aporrea el teclado de un portátil mientras una terminal ejecuta el control. Las comprobaciones que fallan se ponen en verde y se bloquean una a una hasta que aparece actually done, y el mono lo celebra con un plátano.">
   <br>
-  <sub>Ilustración del flujo previsto, no es una grabación. En la v0.1 la reemplaza una captura real.</sub>
+  <sub>Ilustración. La grabación de abajo es la herramienta real.</sub>
+</p>
+
+<p align="center">
+  <img src="assets/gate.gif" width="720" alt="Grabación de una sesión de Claude Code. Le piden sumar un cupón al carrito sin ejecutar las pruebas; ejecuta el control de todos modos, ve fallar la prueba total rounds to cents, redondea el resultado y lo ejecuta otra vez. El hook de Stop informa entonces: control en verde, 10 comprobaciones pasaron en este árbol.">
+  <br>
+  <sub>Grabación real, finitemonkey 0.1.0-next.27 con Claude Code 2.1.283, acelerada 1,3×. Fuente: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **No hacen falta infinitos monos. Con uno basta: tú.**
