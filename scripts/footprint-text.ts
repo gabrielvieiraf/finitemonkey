@@ -104,6 +104,18 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR": "Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch.",
     es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
   },
+  profile: {
+    en: "The person's level per domain; the infrastructure level picks the git defaults (intermediate when missing).",
+    "pt-BR":
+      "O nível da pessoa por domínio; o nível de infraestrutura escolhe os padrões de git (intermediário quando falta).",
+    es: "El nivel de la persona por dominio; el nivel de infraestructura elige los valores de git (intermedio si falta).",
+  },
+  "github-ruleset": {
+    en: "The ruleset `init --github` proposes when the default branch has none; it is sent to GitHub only after the person says yes.",
+    "pt-BR":
+      "O ruleset que o `init --github` propõe quando a branch padrão não tem nenhum; só vai para o GitHub depois do sim da pessoa.",
+    es: "El ruleset que `init --github` propone cuando la rama por defecto no tiene ninguno; solo se envía a GitHub tras el sí de la persona.",
+  },
   worktrees: {
     en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`.",
     "pt-BR":

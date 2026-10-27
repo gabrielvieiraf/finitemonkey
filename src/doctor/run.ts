@@ -3,6 +3,7 @@ import type { Probe, ProbeResult } from "../core/runtime.js";
 import { findGitRoot } from "../install/project.js";
 import { checkClaudeSettings } from "./claude-settings.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
+import { checkGithubRules } from "./github.js";
 import { checkHooks } from "./hooks.js";
 import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
@@ -30,6 +31,7 @@ export const CHECKS: readonly Check[] = [
   checkProjectFiles,
   checkLineEndings,
   checkRemoteCredentials,
+  checkGithubRules,
   checkAgentsFile,
   checkRewriters,
   checkHooks,

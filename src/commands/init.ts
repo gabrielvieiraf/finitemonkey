@@ -2,6 +2,7 @@ import type { CommandArgs } from "../core/args.js";
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { githubLines, type GithubStep, githubStep } from "../github/step.js";
 import { type LookBack, lookBack } from "../history/look-back.js";
 import { PATTERNS } from "../history/patterns.js";
 import { applyPlan } from "../install/apply.js";
@@ -16,6 +17,7 @@ import {
   planInputFor,
   planProblem,
 } from "../install/session.js";
+import { isPerson } from "../secrets/project.js";
 import { trustImplicit } from "../task/trust.js";
 import type { CommandSpec } from "./types.js";
 
@@ -97,11 +99,23 @@ const withLookBack = (ctx: Ctx, result: CommandResult<PlanData>): CommandResult<
   return { ...result, data: { ...result.data, lookBack: found }, human: [...(result.human ?? []), ...lines] };
 };
 
+export type GithubInitData = (PlanData | LookBackData) & { readonly github: GithubStep };
+
+const withGithub = (
+  ctx: Ctx,
+  result: CommandResult<PlanData | LookBackData>,
+): CommandResult<PlanData | LookBackData | GithubInitData> => {
+  const root = openProject(ctx).project.root;
+  const step = githubStep(ctx.runtime, root, ctx.yes && isPerson(ctx));
+  const human = [...(result.human ?? []), ...githubLines(ctx.t, step)];
+  return result.ok ? { ...result, data: { ...result.data, github: step }, human } : { ...result, human };
+};
+
 export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--dry-run] [--yes]",
+    "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
   status: "ready",
   options: {
     preset: { type: "string" },
@@ -109,9 +123,11 @@ export const initCommand: CommandSpec = {
     marketplace: { type: "boolean" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
+    github: { type: "boolean" },
   },
   run: (ctx, args) => {
     const result = runInstall(ctx, initRequest(args), "neutral");
-    return Promise.resolve(args.values["look-back"] === true ? withLookBack(ctx, result) : result);
+    const looked = args.values["look-back"] === true ? withLookBack(ctx, result) : result;
+    return Promise.resolve(args.values["github"] === true ? withGithub(ctx, looked) : looked);
   },
 };
