@@ -10,7 +10,8 @@ import { proseInCommand, type TextSource } from "../prose/command-text.js";
 import { dialectOf } from "../shell/normalize.js";
 import { readManifest } from "./manifest.js";
 import { commandMatches, pathMatches, textMatches } from "./match.js";
-import { loadRules, type ProjectRule } from "./types.js";
+import { effectiveRules } from "./preset.js";
+import type { ProjectRule } from "./types.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
 
@@ -46,7 +47,7 @@ export const rulesGuard: HookHandler = (input) => {
   const root = guardRoot(input);
   const manifest = readManifest(input.runtime, root);
   if (Object.keys(manifest.rules).length === 0) return ALLOW;
-  const rules = loadRules(input.runtime, root);
+  const rules = effectiveRules(input.runtime, root);
   if (!rules.ok) return ALLOW;
   const hit = rules.value.find(
     (rule) => manifest.rules[rule.id]?.surfaces.includes("guard") === true && broken(input, rule),

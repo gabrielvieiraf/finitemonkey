@@ -9,7 +9,8 @@ import { ciRuleCheck } from "../rules/checks.js";
 import { compileRules } from "../rules/compile.js";
 import { type RuleCoverage, ruleCoverage } from "../rules/coverage.js";
 import { type SURFACES } from "../rules/manifest.js";
-import { loadRules, type ProjectRule, RULES_FILE } from "../rules/types.js";
+import { effectiveRules } from "../rules/preset.js";
+import { type ProjectRule, RULES_FILE } from "../rules/types.js";
 import { projectRoot } from "../secrets/project.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
@@ -30,7 +31,7 @@ const invalid = (ctx: Ctx, detail: string): CommandResult =>
   );
 
 const withRules = (ctx: Ctx, run: (rules: readonly ProjectRule[]) => CommandResult): CommandResult => {
-  const rules = loadRules(ctx.runtime, projectRoot(ctx));
+  const rules = effectiveRules(ctx.runtime, projectRoot(ctx));
   return rules.ok ? run(rules.value) : invalid(ctx, rules.error);
 };
 

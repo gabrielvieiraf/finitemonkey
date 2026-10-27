@@ -16368,6 +16368,46 @@ var readManifest = (runtime, root) => {
 var writeManifest = (runtime, root, manifest) => runtime.writeText(toAbsolutePath(MANIFEST_FILE, root), `${JSON.stringify(manifest, null, 2)}
 `);
 
+// src/githooks/commit-msg.ts
+var COMMIT_TYPES = [
+  "feat",
+  "fix",
+  "docs",
+  "style",
+  "refactor",
+  "perf",
+  "test",
+  "build",
+  "ci",
+  "chore",
+  "revert"
+];
+var MAX_HEADER = 100;
+var HEADER = new RegExp(`^(?:${COMMIT_TYPES.join("|")})(?:\\([^()\\r\\n]+\\))?!?: \\S`);
+var EXEMPT = /^(?:Merge |Revert "|fixup! |squash! |amend! |Initial commit$)/;
+var AI_NAMES = /claude|anthropic|copilot|chatgpt|openai|cursor|gemini|codex|devin|aider/i;
+var ATTRIBUTION = [
+  /^co-authored-by:.*$/gim,
+  /generated (?:with|by) \[?(?:claude|copilot|chatgpt|cursor|gemini|codex)/i,
+  /🤖 generated/i,
+  /claude\.ai\/code\//i
+];
+var meaningful2 = (message) => message.replace(/\r\n/g, "\n").split("\n").filter((line2) => !line2.startsWith("#"));
+var hasAttribution = (body2) => {
+  const [coAuthor, ...rest] = ATTRIBUTION;
+  const coAuthors = coAuthor === void 0 ? [] : body2.match(coAuthor) ?? [];
+  return coAuthors.some((line2) => AI_NAMES.test(line2)) || rest.some((pattern) => pattern.test(body2));
+};
+var commitMessageProblems = (message) => {
+  const lines3 = meaningful2(message);
+  const header2 = lines3.find((line2) => line2.trim() !== "") ?? "";
+  const problems = [];
+  if (!EXEMPT.test(header2) && !HEADER.test(header2)) problems.push("header");
+  if (header2.length > MAX_HEADER) problems.push("header_length");
+  if (hasAttribution(lines3.join("\n"))) problems.push("attribution");
+  return problems;
+};
+
 // src/rules/match.ts
 var isSubsequence = (wanted, args2) => {
   let position = 0;
@@ -16395,7 +16435,13 @@ var patternOf = (source) => {
   }
 };
 var withoutCodeBlocks = (text9) => text9.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
+var ROBOT = "🤖";
+var attributionIn = (target2, text9) => {
+  const visible = target2 === "pr" ? withoutCodeBlocks(text9) : text9;
+  return hasAttribution(visible) || visible.includes(ROBOT);
+};
 var textMatches = (rule, target2, text9) => {
+  if (rule.detector?.kind === "attribution") return attributionIn(target2, text9);
   if (rule.detector?.kind !== "text" || !rule.detector.on.includes(target2)) return false;
   const pattern = patternOf(rule.detector.pattern);
   return pattern?.test(target2 === "pr" ? withoutCodeBlocks(text9) : text9) === true;
@@ -16411,6 +16457,7 @@ var str3 = (record4, key) => {
 };
 var list2 = (value) => typeof value === "string" ? [value] : Array.isArray(value) ? value.filter((item2) => typeof item2 === "string") : [];
 var detectorOf = (value) => {
+  if (value === "attribution") return { kind: "attribution" };
   if (!isRecord(value)) return void 0;
   const command = str3(value, "command");
   if (command !== void 0) return { kind: "command", command };
@@ -16429,8 +16476,10 @@ var detectorOf = (value) => {
   const check2 = str3(value, "check");
   return check2 === void 0 ? void 0 : { kind: "check", check: check2 };
 };
-var ruleOf = (value, index) => {
+var ruleOf = (value, index, presets) => {
   if (!isRecord(value)) return reject(`rule ${String(index)} is not a map`);
+  const preset = typeof value["preset"] === "string" ? presets[value["preset"]] : void 0;
+  if (preset !== void 0) return accept({ ...preset, origin: str3(value, "origin") ?? preset.origin });
   const id = str3(value, "id");
   const text9 = str3(value, "text");
   const severity = SEVERITIES2.find((item2) => item2 === value["severity"]);
@@ -16448,7 +16497,7 @@ var ruleOf = (value, index) => {
     settings: isRecord(settings) ? settings : void 0
   });
 };
-var parseRules = (source) => {
+var parseRules = (source, presets = {}) => {
   const parsed = parseYaml(source);
   if (!parsed.ok) return reject(`line ${String(parsed.error.line)}: ${parsed.error.message}`);
   const raw = isRecord(parsed.value) ? parsed.value["rules"] : void 0;
@@ -16456,16 +16505,35 @@ var parseRules = (source) => {
   const rules = [];
   const items = raw;
   for (const [index, item2] of items.entries()) {
-    const rule = ruleOf(item2, index);
+    const rule = ruleOf(item2, index, presets);
     if (!rule.ok) return rule;
     if (rules.some((known2) => known2.id === rule.value.id)) return reject(`rule ${rule.value.id} appears twice`);
     rules.push(rule.value);
   }
   return accept(rules);
 };
-var loadRules = (runtime, root) => {
+var loadRules = (runtime, root, presets = {}) => {
   const text9 = runtime.readText(toAbsolutePath(RULES_FILE, root));
-  return text9.ok ? parseRules(text9.value) : accept([]);
+  return text9.ok ? parseRules(text9.value, presets) : accept([]);
+};
+
+// src/rules/preset.ts
+var NO_ATTRIBUTION = {
+  id: "no-attribution",
+  text: "No AI attribution in commits or pull requests: no Co-Authored-By for AI tools, no Generated with footer, no robot emoji",
+  origin: "finitemonkey preset",
+  severity: "never",
+  detector: { kind: "attribution" },
+  settings: { attribution: { ...ATTRIBUTION_OFF } }
+};
+var PRESET_RULES = { attribution: NO_ATTRIBUTION };
+var effectiveRules = (runtime, root) => {
+  const declared = loadRules(runtime, root, PRESET_RULES);
+  if (!declared.ok) return declared;
+  const config = runtime.readText(toAbsolutePath(CONFIG_FILE2, root));
+  const strict = config.ok && presetFromConfig(config.value) !== "neutral";
+  const missing2 = strict && !declared.value.some((rule) => rule.id === NO_ATTRIBUTION.id);
+  return accept(missing2 ? [...declared.value, NO_ATTRIBUTION] : declared.value);
 };
 
 // src/rules/guard.ts
@@ -16498,7 +16566,7 @@ var rulesGuard = (input) => {
   const root = guardRoot(input);
   const manifest = readManifest(input.runtime, root);
   if (Object.keys(manifest.rules).length === 0) return ALLOW6;
-  const rules = loadRules(input.runtime, root);
+  const rules = effectiveRules(input.runtime, root);
   if (!rules.ok) return ALLOW6;
   const hit3 = rules.value.find(
     (rule) => manifest.rules[rule.id]?.surfaces.includes("guard") === true && broken(input, rule)
@@ -17738,6 +17806,8 @@ var applicableSurfaces = (rule) => {
         return ["ci"];
       case "check":
         return ["guard", "ci"];
+      case "attribution":
+        return ["guard", "git", "ci"];
     }
   })();
   return [.../* @__PURE__ */ new Set([...bySurface, ...settings])];
@@ -17836,7 +17906,7 @@ var ciRequirement = (runtime, root) => {
 
 // src/doctor/rules.ts
 var checkRules = ({ root, runtime }) => {
-  const rules = loadRules(runtime, root);
+  const rules = effectiveRules(runtime, root);
   if (!rules.ok)
     return [
       finding("rules.file", "fail", "rules.error.invalid", { file: ".finitemonkey/rules.yml", detail: rules.error })
@@ -18191,46 +18261,6 @@ var gateCommand = {
   }
 };
 
-// src/githooks/commit-msg.ts
-var COMMIT_TYPES = [
-  "feat",
-  "fix",
-  "docs",
-  "style",
-  "refactor",
-  "perf",
-  "test",
-  "build",
-  "ci",
-  "chore",
-  "revert"
-];
-var MAX_HEADER = 100;
-var HEADER = new RegExp(`^(?:${COMMIT_TYPES.join("|")})(?:\\([^()\\r\\n]+\\))?!?: \\S`);
-var EXEMPT = /^(?:Merge |Revert "|fixup! |squash! |amend! |Initial commit$)/;
-var AI_NAMES = /claude|anthropic|copilot|chatgpt|openai|cursor|gemini|codex|devin|aider/i;
-var ATTRIBUTION = [
-  /^co-authored-by:.*$/gim,
-  /generated (?:with|by) \[?(?:claude|copilot|chatgpt|cursor|gemini|codex)/i,
-  /🤖 generated/i,
-  /claude\.ai\/code\//i
-];
-var meaningful2 = (message) => message.replace(/\r\n/g, "\n").split("\n").filter((line2) => !line2.startsWith("#"));
-var hasAttribution = (body2) => {
-  const [coAuthor, ...rest] = ATTRIBUTION;
-  const coAuthors = coAuthor === void 0 ? [] : body2.match(coAuthor) ?? [];
-  return coAuthors.some((line2) => AI_NAMES.test(line2)) || rest.some((pattern) => pattern.test(body2));
-};
-var commitMessageProblems = (message) => {
-  const lines3 = meaningful2(message);
-  const header2 = lines3.find((line2) => line2.trim() !== "") ?? "";
-  const problems = [];
-  if (!EXEMPT.test(header2) && !HEADER.test(header2)) problems.push("header");
-  if (header2.length > MAX_HEADER) problems.push("header_length");
-  if (hasAttribution(lines3.join("\n"))) problems.push("attribution");
-  return problems;
-};
-
 // src/githooks/checks.ts
 var DIFF_FLAGS2 = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var short = (sha) => sha.slice(0, 12);
@@ -18362,7 +18392,7 @@ var FIX = "follow the project rule named in the failure, or change it in .finite
 var RECORD2 = "";
 var compiledFor = (runtime, root, surface) => {
   const manifest = readManifest(runtime, root);
-  const rules = loadRules(runtime, root);
+  const rules = effectiveRules(runtime, root);
   return rules.ok ? rules.value.filter((rule) => manifest.rules[rule.id]?.surfaces.includes(surface) === true) : [];
 };
 var failure2 = (rule, where2) => `${where2}: rule ${rule.id} (${rule.text})`;
@@ -20682,7 +20712,7 @@ var invalid = (ctx, detail) => failureFrom(
   usageProblem("invalid_arguments", "rules.error.invalid", `edit ${RULES_FILE}`, { file: RULES_FILE, detail })
 );
 var withRules = (ctx, run4) => {
-  const rules = loadRules(ctx.runtime, projectRoot(ctx));
+  const rules = effectiveRules(ctx.runtime, projectRoot(ctx));
   return rules.ok ? run4(rules.value) : invalid(ctx, rules.error);
 };
 var cell2 = (item2, surface) => {
