@@ -1300,7 +1300,7 @@ var num = (record5, key2) => {
 };
 var strings = (value) => Array.isArray(value) ? value.filter((item2) => typeof item2 === "string") : [];
 var inboxOf = (value) => Array.isArray(value) ? value.flatMap(
-  (item2) => isRecord(item2) && typeof item2["at"] === "string" && typeof item2["text"] === "string" ? [{ at: item2["at"], text: item2["text"] }] : []
+  (item2) => isRecord(item2) && typeof item2["at"] === "string" && typeof item2["text"] === "string" ? [{ at: item2["at"], text: item2["text"], kind: typeof item2["kind"] === "string" ? item2["kind"] : "message" }] : []
 ) : [];
 var statusOf = (value) => FRONT_STATUSES.find((status) => status === value) ?? "planned";
 var record = (value) => isRecord(value) ? value : {};
@@ -1348,7 +1348,7 @@ var frontYaml = (front) => ({
   agent: { id: front.agentId, kind: front.agentKind },
   status: front.status,
   blocked_by: [...front.blockedBy],
-  inbox: front.inbox.map((item2) => ({ at: item2.at, text: item2.text })),
+  inbox: front.inbox.map((item2) => ({ at: item2.at, text: item2.text, kind: item2.kind ?? "message" })),
   last_report: front.lastReport,
   cost_usd: front.costUsd,
   started_at: front.startedAt
@@ -4228,7 +4228,14 @@ var en_default = {
   "fronts.notify.invalid": "Front {front} reported, but the report does not hold: {problems}",
   "fronts.command.merge": "Merge the reported fronts of the wave into wave/<n> through the merge protocol, after checking every report",
   "fronts.error.merge": "The wave did not merge: {detail}",
-  "fronts.merge.done": "{count, plural, one {# front} other {# fronts}} merged into {branch} at {head}; open a pull request from it"
+  "fronts.merge.done": "{count, plural, one {# front} other {# fronts}} merged into {branch} at {head}; open a pull request from it",
+  "fronts.command.route": "Add a message from the person to a front's inbox, or record it as a contract change with --contract",
+  "fronts.route.message": "Added to the inbox of {front}; send it with SendMessage and do not relaunch the front",
+  "fronts.route.contract": "Recorded as a contract change of {front}; send it with SendMessage next",
+  "fronts.block.relaunch.claim": "Front {front} is already running; launching it again throws away its context and cost",
+  "fronts.block.relaunch.requires": "Send the correction to the running front with SendMessage",
+  "fronts.block.isolation.claim": 'Front {front} is launched without isolation: "worktree", so it would write in the main checkout',
+  "fronts.block.isolation.requires": 'Pass isolation: "worktree" on the Agent call'
 };
 
 // src/i18n/es.json
@@ -5271,7 +5278,14 @@ var es_default = {
   "fronts.notify.invalid": "La frente {front} entregó informe, pero no se sostiene: {problems}",
   "fronts.command.merge": "Fusiona las frentes de la ola en wave/<n> con el protocolo de fusión, tras revisar cada informe",
   "fronts.error.merge": "La ola no se fusionó: {detail}",
-  "fronts.merge.done": "{count, plural, one {# frente fusionada} other {# frentes fusionadas}} en {branch} en {head}; abre un pull request desde ella"
+  "fronts.merge.done": "{count, plural, one {# frente fusionada} other {# frentes fusionadas}} en {branch} en {head}; abre un pull request desde ella",
+  "fronts.command.route": "Agrega un mensaje de la persona al inbox de una frente, o lo registra como cambio de contrato con --contract",
+  "fronts.route.message": "Agregado al inbox de {front}; envíalo con SendMessage y no relances la frente",
+  "fronts.route.contract": "Registrado como cambio de contrato de {front}; envíalo con SendMessage a continuación",
+  "fronts.block.relaunch.claim": "La frente {front} ya está en curso; lanzarla otra vez tira su contexto y su costo",
+  "fronts.block.relaunch.requires": "Envía la corrección a la frente en curso con SendMessage",
+  "fronts.block.isolation.claim": 'La frente {front} se lanza sin isolation: "worktree" y escribiría en el checkout principal',
+  "fronts.block.isolation.requires": 'Pasa isolation: "worktree" en la llamada Agent'
 };
 
 // src/i18n/pt-BR.json
@@ -6314,7 +6328,14 @@ var pt_BR_default = {
   "fronts.notify.invalid": "A frente {front} entregou relatório, mas ele não se sustenta: {problems}",
   "fronts.command.merge": "Mescla as frentes da onda em wave/<n> pelo protocolo de mescla, depois de conferir cada relatório",
   "fronts.error.merge": "A onda não foi mesclada: {detail}",
-  "fronts.merge.done": "{count, plural, one {# frente mesclada} other {# frentes mescladas}} em {branch} em {head}; abra um pull request a partir dela"
+  "fronts.merge.done": "{count, plural, one {# frente mesclada} other {# frentes mescladas}} em {branch} em {head}; abra um pull request a partir dela",
+  "fronts.command.route": "Acrescenta uma mensagem da pessoa ao inbox da frente, ou registra como mudança de contrato com --contract",
+  "fronts.route.message": "Acrescentado ao inbox de {front}; envie por SendMessage e não relance a frente",
+  "fronts.route.contract": "Registrado como mudança de contrato de {front}; envie por SendMessage em seguida",
+  "fronts.block.relaunch.claim": "A frente {front} já está rodando; lançar de novo joga fora o contexto e o custo dela",
+  "fronts.block.relaunch.requires": "Mande a correção para a frente que está rodando por SendMessage",
+  "fronts.block.isolation.claim": 'A frente {front} está sendo lançada sem isolation: "worktree" e escreveria no checkout principal',
+  "fronts.block.isolation.requires": 'Passe isolation: "worktree" na chamada Agent'
 };
 
 // src/i18n/review.json
@@ -7358,7 +7379,14 @@ var review_default = {
     "fronts.notify.invalid": "machine",
     "fronts.command.merge": "machine",
     "fronts.error.merge": "machine",
-    "fronts.merge.done": "machine"
+    "fronts.merge.done": "machine",
+    "fronts.command.route": "machine",
+    "fronts.route.message": "machine",
+    "fronts.route.contract": "machine",
+    "fronts.block.relaunch.claim": "machine",
+    "fronts.block.relaunch.requires": "machine",
+    "fronts.block.isolation.claim": "machine",
+    "fronts.block.isolation.requires": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -8399,7 +8427,14 @@ var review_default = {
     "fronts.notify.invalid": "machine",
     "fronts.command.merge": "machine",
     "fronts.error.merge": "machine",
-    "fronts.merge.done": "machine"
+    "fronts.merge.done": "machine",
+    "fronts.command.route": "machine",
+    "fronts.route.message": "machine",
+    "fronts.route.contract": "machine",
+    "fronts.block.relaunch.claim": "machine",
+    "fronts.block.relaunch.requires": "machine",
+    "fronts.block.isolation.claim": "machine",
+    "fronts.block.isolation.requires": "machine"
   }
 };
 
@@ -18775,6 +18810,21 @@ var ask2 = (input) => ({
     }
   }
 });
+var launchProblem = (input, front) => {
+  if (front.status === "running") {
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "fronts.block.relaunch", { front: front.id }),
+      human: input.t("fronts.block.human")
+    };
+  }
+  if (textField(toolInput2(input.payload.raw), "isolation") === "worktree") return void 0;
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "fronts.block.isolation", { front: front.id }),
+    human: input.t("fronts.block.human")
+  };
+};
 var frontsPreToolUse = (input) => {
   const tool = toolName2(input.payload.raw);
   if (!AGENT_TOOLS.has(tool) && !WORKFLOW_TOOLS.has(tool)) return ALLOW2;
@@ -18782,6 +18832,11 @@ var frontsPreToolUse = (input) => {
   if (state === void 0) return ALLOW2;
   const running = runningWriteFronts(state);
   if (WORKFLOW_TOOLS.has(tool)) return running.length > 0 ? ask2(input) : ALLOW2;
+  const named = frontNamed(state, agentText(input));
+  if (named !== void 0) {
+    const misuse = launchProblem(input, named);
+    if (misuse !== void 0) return misuse;
+  }
   const type = textField(toolInput2(input.payload.raw), "subagent_type") ?? "general-purpose";
   if (READ_ONLY_AGENTS.has(type) || running.length < state.maxConcurrent) return ALLOW2;
   return {
@@ -19122,11 +19177,13 @@ var checkReport = (runtime, root, front) => {
   if (parsed.report === void 0)
     return { front: front.id, file, report: void 0, problems: parsed.issues.map((issue2) => `report: ${issue2}`) };
   const naming = parsed.report.front === front.id ? [] : [`front: the report is for ${parsed.report.front}`];
+  const answered = new Set((parsed.report.inbox ?? []).map((item2) => item2.text.trim()));
+  const unanswered = front.inbox.filter((item2) => !answered.has(item2.text.trim())).map((item2) => `inbox: the message from ${item2.at} ("${item2.text.slice(0, 60)}") is not in the report`);
   return {
     front: front.id,
     file,
     report: parsed.report,
-    problems: [...naming, ...worktreeProblems(runtime, front, parsed.report)]
+    problems: [...naming, ...unanswered, ...worktreeProblems(runtime, front, parsed.report)]
   };
 };
 var reportSummary = (check2) => {
@@ -19242,6 +19299,58 @@ var frontNotification = (input) => {
   };
 };
 
+// src/fronts/routing.ts
+var ALLOW4 = { kind: "allow" };
+var SEND_TOOLS = /* @__PURE__ */ new Set(["SendMessage"]);
+var NOT_PERSON = [NOTIFICATION, /^\s*\[julius2claude\]/, /<other-session-message>|<session-message>/];
+var isPersonPrompt = (prompt) => !NOT_PERSON.some((pattern) => pattern.test(prompt));
+var ACTIVE = /* @__PURE__ */ new Set(["running", "blocked", "reported"]);
+var routingBlock = (state) => {
+  const active = state.fronts.filter((front) => ACTIVE.has(front.status));
+  if (active.length === 0) return void 0;
+  const lines4 = active.map((front) => `${front.id} [${front.status}] ${front.paths.join(", ") || front.goal}`);
+  return [
+    `finitemonkey: wave ${String(state.wave)} has ${String(active.length)} fronts (orchestrate skill routes messages):`,
+    ...lines4
+  ].join("\n");
+};
+var frontsPrompt = (input) => {
+  const prompt = textField(input.payload.raw, "prompt") ?? "";
+  if (prompt.trim() === "" || !isPersonPrompt(prompt)) return ALLOW4;
+  const state = readFronts(input.runtime, guardRoot(input));
+  const block5 = state.ok ? routingBlock(state.value) : void 0;
+  if (block5 === void 0) return ALLOW4;
+  return {
+    kind: "allow",
+    output: { hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: block5 } }
+  };
+};
+var appendInbox = (runtime, root, front, text11, kind) => {
+  updateFronts(
+    runtime,
+    root,
+    (state) => accept({
+      state: withFront(state, front, (item2) => ({
+        ...item2,
+        inbox: [...item2.inbox, { at: runtime.now(), text: text11, kind }]
+      })),
+      result: void 0
+    })
+  );
+};
+var recipientOf = (state, to) => state.fronts.find((front) => front.agentId === to || front.id === to);
+var frontsSendMessage = (input) => {
+  if (!SEND_TOOLS.has(toolName2(input.payload.raw))) return ALLOW4;
+  const args2 = toolInput2(input.payload.raw);
+  const to = textField(args2, "to", "recipient", "agent_id", "name");
+  const message = textField(args2, "message", "content", "text");
+  if (to === void 0 || message === void 0) return ALLOW4;
+  const state = readFronts(input.runtime, guardRoot(input));
+  const front = state.ok ? recipientOf(state.value, to) : void 0;
+  if (front !== void 0) appendInbox(input.runtime, guardRoot(input), front.id, message, "message");
+  return ALLOW4;
+};
+
 // src/guards/files/hook.ts
 import { dirname as dirname8, join as join50 } from "node:path";
 
@@ -19289,7 +19398,7 @@ var releaseOwner = (runtime, root, owner) => {
 
 // src/guards/files/hook.ts
 var BACKUPS_DIR2 = ".finitemonkey/backups";
-var ALLOW4 = { kind: "allow" };
+var ALLOW5 = { kind: "allow" };
 var existingDir = (runtime, path) => {
   let dir = dirname8(path);
   while (runtime.stat(toAbsolutePath(dir))?.kind !== "dir") {
@@ -19327,11 +19436,11 @@ var backup = (input, root, path) => {
   };
 };
 var fileLockGuard = (input) => {
-  if (!FILE_TOOLS.has(toolName2(input.payload.raw))) return ALLOW4;
+  if (!FILE_TOOLS.has(toolName2(input.payload.raw))) return ALLOW5;
   const raw = textField(toolInput2(input.payload.raw), "file_path", "notebook_path") ?? "";
-  if (raw === "") return ALLOW4;
+  if (raw === "") return ALLOW5;
   const path = toAbsolutePath(raw, input.cwd);
-  if (!isOutsideGit(input.runtime, path)) return ALLOW4;
+  if (!isOutsideGit(input.runtime, path)) return ALLOW5;
   const root = guardRoot(input);
   const claim = claimFile(input.runtime, root, path, ownerOfInput(input));
   if (claim.kind === "taken") {
@@ -19341,18 +19450,18 @@ var fileLockGuard = (input) => {
       human: input.t("git.block.human")
     };
   }
-  return backup(input, root, path) ?? ALLOW4;
+  return backup(input, root, path) ?? ALLOW5;
 };
 var fileLockRelease = (input) => {
   const agent = optionalString(input.payload.raw, "agent_id");
   const owner = input.event === "SubagentStop" ? agent : agent ?? input.payload.sessionId;
   if (owner !== void 0) releaseOwner(input.runtime, guardRoot(input), owner);
-  return ALLOW4;
+  return ALLOW5;
 };
 
 // src/guards/scope/copy.ts
 import { basename as basename6, dirname as dirname9, join as join51 } from "node:path";
-var ALLOW5 = { kind: "allow" };
+var ALLOW6 = { kind: "allow" };
 var COPIERS2 = /* @__PURE__ */ new Set(["cp", "mv", "rsync", "install", "ln", "scp"]);
 var transferOf = (command) => {
   const [name = "", ...args2] = command.argv;
@@ -19384,18 +19493,18 @@ var crossing = (input, trees, transfer) => {
 };
 var scopeCopyGuard = (input) => {
   const tool = toolName2(input.payload.raw);
-  if (!SHELL_TOOLS.has(tool)) return ALLOW5;
+  if (!SHELL_TOOLS.has(tool)) return ALLOW6;
   const transfers = parseShell(textField(toolInput2(input.payload.raw), "command") ?? "").map(transferOf).filter((transfer) => transfer.targets.length > 0);
-  if (transfers.length === 0) return ALLOW5;
+  if (transfers.length === 0) return ALLOW6;
   const listed5 = gitWorktrees(input.runtime, input.cwd);
   const main2 = listed5?.find((tree) => tree.main);
-  if (listed5 === void 0 || main2 === void 0) return ALLOW5;
+  if (listed5 === void 0 || main2 === void 0) return ALLOW6;
   const real = (path) => canonical(input.runtime, path);
   const trees = {
     main: real(main2.path),
     linked: listed5.filter((tree) => !tree.main).map((tree) => real(tree.path))
   };
-  if (trees.linked.length === 0) return ALLOW5;
+  if (trees.linked.length === 0) return ALLOW6;
   for (const transfer of transfers) {
     const target2 = crossing(input, trees, transfer);
     if (target2 !== void 0) {
@@ -19406,7 +19515,7 @@ var scopeCopyGuard = (input) => {
       };
     }
   }
-  return ALLOW5;
+  return ALLOW6;
 };
 
 // src/git/invocation.ts
@@ -19589,7 +19698,7 @@ var listSnapshots = (runtime, repo) => {
 };
 
 // src/merge/abort-hook.ts
-var ALLOW6 = { kind: "allow" };
+var ALLOW7 = { kind: "allow" };
 var SHELL = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var MERGING = /* @__PURE__ */ new Set(["merge", "pull"]);
 var INTEGRATION_PREFIX = "integrate/";
@@ -19599,15 +19708,15 @@ var runsMerge = (text11, tool) => normalizeCommand(text11, dialectOf(tool)).comm
 });
 var plainMergeAbort = (input) => {
   const tool = toolName(input.payload);
-  if (!SHELL.has(tool)) return ALLOW6;
-  if (!runsMerge(optionalString(toolInput(input.payload), "command") ?? "", tool)) return ALLOW6;
+  if (!SHELL.has(tool)) return ALLOW7;
+  if (!runsMerge(optionalString(toolInput(input.payload), "command") ?? "", tool)) return ALLOW7;
   const repo = openRepo(input.runtime, input.cwd);
-  if (repo === void 0) return ALLOW6;
+  if (repo === void 0) return ALLOW7;
   const { runtime } = input;
   const conflicted = runtime.git(["diff", "--name-only", "--diff-filter=U"], repo.root).stdout.trim();
   const merging = runtime.git(["rev-parse", "--verify", "--quiet", "MERGE_HEAD"], repo.root).ok;
   const branch = runtime.git(["symbolic-ref", "--quiet", "--short", "HEAD"], repo.root).stdout.trim();
-  if (!merging || conflicted === "" || branch.startsWith(INTEGRATION_PREFIX)) return ALLOW6;
+  if (!merging || conflicted === "" || branch.startsWith(INTEGRATION_PREFIX)) return ALLOW7;
   const snapshot2 = takeSnapshot(runtime, repo, { op: "plain merge with conflicts", command: "git merge" });
   const files = conflicted.split("\n").slice(0, 8).join(", ");
   const aborted = snapshot2.ok && runtime.git(["merge", "--abort"], repo.root).ok ? snapshot2.value.ref : void 0;
@@ -19683,7 +19792,7 @@ var createdBranch = (invocation) => {
 };
 
 // src/pr/hooks.ts
-var ALLOW7 = { kind: "allow" };
+var ALLOW8 = { kind: "allow" };
 var SHELL2 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var MCP_CREATE_PR = /^mcp__.*github.*__create_pull_request$/i;
 var FM = /* @__PURE__ */ new Set(["finitemonkey", "fm"]);
@@ -19715,7 +19824,7 @@ var mergeDecision = (input, command, text11) => {
   return void 0;
 };
 var branchDecision = (input, name) => {
-  if (isConventionalBranch(name)) return ALLOW7;
+  if (isConventionalBranch(name)) return ALLOW8;
   if (projectPreset(input.runtime, input.cwd) === "gabriel") return block2(input, "git.block.branch_name", name);
   const context = input.t("pr.warn.branch", { name });
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
@@ -19733,17 +19842,17 @@ var commandDecision = (input, command, text11) => {
 var prPreToolUse = (input) => {
   const tool = toolName(input.payload);
   if (MCP_CREATE_PR.test(tool)) return block2(input, "git.block.pr_create", tool);
-  if (!SHELL2.has(tool)) return ALLOW7;
+  if (!SHELL2.has(tool)) return ALLOW8;
   const text11 = optionalString(toolInput(input.payload), "command") ?? "";
   for (const command of normalizeCommand(text11, dialectOf(tool)).commands) {
     const decision2 = commandDecision(input, command, text11);
     if (decision2 !== void 0) return decision2;
   }
-  return ALLOW7;
+  return ALLOW8;
 };
 
 // src/profile/git-hook.ts
-var ALLOW8 = { kind: "allow" };
+var ALLOW9 = { kind: "allow" };
 var SHELL3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var REBASE_CONTROL = /* @__PURE__ */ new Set(["--abort", "--continue", "--skip", "--quit", "--edit-todo", "--show-current-patch"]);
 var isLease = (command) => {
@@ -19768,12 +19877,12 @@ var ask4 = (input, text11) => ({
 });
 var levelPreToolUse = (input) => {
   const tool = toolName(input.payload);
-  if (!SHELL3.has(tool)) return ALLOW8;
+  if (!SHELL3.has(tool)) return ALLOW9;
   const text11 = optionalString(toolInput(input.payload), "command") ?? "";
   const commands = normalizeCommand(text11, dialectOf(tool)).commands;
   const lease = commands.some(isLease);
   const rebase = commands.some(isRebaseUpdate);
-  if (!lease && !rebase) return ALLOW8;
+  if (!lease && !rebase) return ALLOW9;
   const rules2 = levelRules(input.runtime, input.cwd);
   if (rebase && rules2.update === "merge") {
     return {
@@ -19782,11 +19891,11 @@ var levelPreToolUse = (input) => {
       human: input.t("git.block.human")
     };
   }
-  return lease && rules2.leaseOwnBranch === "ask" ? ask4(input, text11) : ALLOW8;
+  return lease && rules2.leaseOwnBranch === "ask" ? ask4(input, text11) : ALLOW9;
 };
 
 // src/wt/hooks.ts
-var ALLOW9 = { kind: "allow" };
+var ALLOW10 = { kind: "allow" };
 var SHELL4 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var hookOwner = (payload) => {
   const agentId = optionalString(payload.raw, "agent_id") ?? null;
@@ -19798,15 +19907,15 @@ var addsWorktree = (text11, tool) => normalizeCommand(text11, dialectOf(tool)).c
 });
 var adopt = (input) => {
   adoptWorktrees(input.runtime, input.cwd, hookOwner(input.payload));
-  return ALLOW9;
+  return ALLOW10;
 };
 var wtSessionStart = (input) => adopt(input);
 var wtPostToolUse = (input) => {
   const tool = toolName(input.payload);
   if (tool === "EnterWorktree") return adopt(input);
-  if (!SHELL4.has(tool)) return ALLOW9;
+  if (!SHELL4.has(tool)) return ALLOW10;
   const command = optionalString(toolInput(input.payload), "command") ?? "";
-  return addsWorktree(command, tool) ? adopt(input) : ALLOW9;
+  return addsWorktree(command, tool) ? adopt(input) : ALLOW10;
 };
 
 // src/git/path-key.ts
@@ -20572,7 +20681,7 @@ var outcomeMessage = (t, outcome2) => {
 };
 
 // src/git/hooks/pre-tool.ts
-var ALLOW10 = { kind: "allow" };
+var ALLOW11 = { kind: "allow" };
 var rmOutcome = (input, command, worktrees) => {
   if (removalTargets(command) === void 0) return void 0;
   const verdict2 = rmVerdict(input.runtime, { cwd: input.cwd, home: input.runtime.homeDir(), worktrees }, command);
@@ -20592,7 +20701,7 @@ var snapshotsOf = (input, owner, pending) => {
     }
     done.set(item2.repo.root, input.t("git.snapshot.context", { command: item2.command, ref: taken.value.ref }));
   }
-  if (done.size === 0) return ALLOW10;
+  if (done.size === 0) return ALLOW11;
   const context = [...done.values()].join("\n");
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
 };
@@ -20619,9 +20728,9 @@ var review = (input, commands, owner) => {
 };
 var gitPreToolUse = (input) => {
   const text11 = shellText(input.payload);
-  if (text11 === void 0) return ALLOW10;
+  if (text11 === void 0) return ALLOW11;
   const commands = normalizeCommand(text11, dialectOf(toolName(input.payload))).commands;
-  if (commands.length === 0) return ALLOW10;
+  if (commands.length === 0) return ALLOW11;
   const owner = ownerOf3(input.payload);
   const result = review(input, commands, owner);
   if (result.blocked !== void 0) {
@@ -20640,12 +20749,12 @@ var gitPreToolUse = (input) => {
 
 // src/git/hooks/session.ts
 import { dirname as dirname10, relative as relative7 } from "node:path";
-var ALLOW11 = { kind: "allow" };
+var ALLOW12 = { kind: "allow" };
 var EDIT_TOOLS = /* @__PURE__ */ new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
 var gitSessionStart = (input) => {
   const repo = openRepo(input.runtime, input.cwd);
   if (repo !== void 0) recordBaseline(input.runtime, repo, ownerOf3(input.payload));
-  return ALLOW11;
+  return ALLOW12;
 };
 var editedPath = (input) => {
   const inputs = toolInput(input.payload);
@@ -20662,12 +20771,12 @@ var gitPostToolUse = (input) => {
   if (EDIT_TOOLS.has(tool)) {
     const edited = editedPath(input);
     if (edited !== void 0) recordEdits(input.runtime, edited.repo, ownerOf3(input.payload), [edited.path]);
-    return ALLOW11;
+    return ALLOW12;
   }
-  if (!SHELL_TOOLS2.has(tool)) return ALLOW11;
+  if (!SHELL_TOOLS2.has(tool)) return ALLOW12;
   const repo = openRepo(input.runtime, input.cwd);
   if (repo !== void 0) recordShellChanges(input.runtime, repo, ownerOf3(input.payload));
-  return ALLOW11;
+  return ALLOW12;
 };
 
 // src/git/hooks/index.ts
@@ -20684,9 +20793,9 @@ var GIT_HANDLERS = {
     frontReportHandback
   ],
   SubagentStop: [frontReportStop, fileLockRelease],
-  UserPromptSubmit: [frontNotification],
+  UserPromptSubmit: [frontNotification, frontsPrompt],
   SessionEnd: [fileLockRelease],
-  PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort, frontsPostToolUse]
+  PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort, frontsPostToolUse, frontsSendMessage]
 };
 
 // src/policy/guards.ts
@@ -20843,7 +20952,7 @@ var heredocIn = (value, heredocs) => {
 };
 
 // src/prose/marker-guard.ts
-var ALLOW12 = { kind: "allow" };
+var ALLOW13 = { kind: "allow" };
 var SHELLS2 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var READ_ONLY2 = /* @__PURE__ */ new Set(["grep", "rg", "cat", "less", "head", "tail", "ls", "wc", "finitemonkey", "fm"]);
 var GIT_READ_ONLY = /* @__PURE__ */ new Set(["grep", "log", "show", "diff", "status", "blame"]);
@@ -20887,7 +20996,7 @@ var proseMarkerGuard = (input) => {
   const tool = toolName(input.payload);
   const inputs = toolInput(input.payload);
   if (SHELLS2.has(tool)) {
-    if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW12;
+    if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW13;
     return {
       kind: "block",
       reason: modelReason(input.t, "prose.block.marker_shell", { marker: ALLOW_COMMENT }),
@@ -20895,7 +21004,7 @@ var proseMarkerGuard = (input) => {
     };
   }
   const file = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path") ?? "";
-  return addsMarker(input, tool, inputs, file) ? blocked2(input, shown2(input.cwd, file)) : ALLOW12;
+  return addsMarker(input, tool, inputs, file) ? blocked2(input, shown2(input.cwd, file)) : ALLOW13;
 };
 
 // src/secrets/project.ts
@@ -21015,7 +21124,7 @@ var describeSpans = (t, spans) => spans.slice(0, MAX_SPANS).map((span) => t("pro
 var describeFixes = (t, spans) => rulesOf2(spans).slice(0, MAX_FIXES).map((rule) => t("prose.fix_item", { rule, fix: t(RULE_FIX_KEYS[rule]) })).join("; ");
 
 // src/prose/text-guard.ts
-var ALLOW13 = { kind: "allow" };
+var ALLOW14 = { kind: "allow" };
 var SHELLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var TARGET_KEYS = {
   commit: "prose.target.commit",
@@ -21062,15 +21171,15 @@ var decisionFor = (input, found, blocking2) => {
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext } } };
 };
 var proseCommandGuard = (input) => {
-  if (!SHELLS3.has(toolName(input.payload))) return ALLOW13;
+  if (!SHELLS3.has(toolName(input.payload))) return ALLOW14;
   const found = proseInCommand(optionalString(toolInput(input.payload), "command") ?? "");
-  if (found.length === 0) return ALLOW13;
+  if (found.length === 0) return ALLOW14;
   const blocking2 = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
   for (const item2 of found) {
     const decision2 = decisionFor(input, item2, blocking2);
     if (decision2 !== void 0) return decision2;
   }
-  return ALLOW13;
+  return ALLOW14;
 };
 
 // src/prose/hooks.ts
@@ -21225,14 +21334,14 @@ var commitIntent = (segments) => {
 };
 
 // src/secrets/guards/pre-tool.ts
-var ALLOW14 = { kind: "allow" };
+var ALLOW15 = { kind: "allow" };
 var relativeFile = (cwd, file) => {
   if (file === "") return file;
   const rel = relative9(cwd, file).split("\\").join("/");
   return rel.startsWith("..") || rel === "" ? file : rel;
 };
 var warningDecision = (t, warnings) => {
-  if (warnings.length === 0) return ALLOW14;
+  if (warnings.length === 0) return ALLOW15;
   const context = t("secrets.warn.write", { found: describeFindings(t, warnings) });
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
 };
@@ -21275,7 +21384,7 @@ var bashMessage = (t, finding5) => {
 var commitDecision = (input, includeUnstaged) => {
   const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
   const found = staged.ok ? blocking(staged.value) : [];
-  if (found.length === 0) return ALLOW14;
+  if (found.length === 0) return ALLOW15;
   const items = found.map((finding5) => ({
     ruleId: finding5.ruleId,
     where: input.t("secrets.where.file", { file: finding5.file, line: finding5.line, column: finding5.column })
@@ -21288,7 +21397,7 @@ var commitDecision = (input, includeUnstaged) => {
 };
 var bashDecision = (input) => {
   const command = optionalString(toolInput(input.payload), "command") ?? "";
-  if (command === "") return ALLOW14;
+  if (command === "") return ALLOW15;
   const segments = segmentsOf(command);
   const [first] = bashFindings(command, segments);
   if (first !== void 0) return { kind: "block", reason: bashMessage(input.t, first) };
@@ -21302,12 +21411,12 @@ var bashDecision = (input) => {
     };
   }
   const commit2 = commitIntent(segments);
-  return commit2 === void 0 ? ALLOW14 : commitDecision(input, commit2.includeUnstaged);
+  return commit2 === void 0 ? ALLOW15 : commitDecision(input, commit2.includeUnstaged);
 };
 var readDecision = (input) => {
   const inputs = toolInput(input.payload);
   const target2 = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
-  if (target2 === "" || !isSensitivePath(target2)) return ALLOW14;
+  if (target2 === "" || !isSensitivePath(target2)) return ALLOW15;
   return {
     kind: "block",
     reason: modelReason(input.t, "secrets.block.read", { target: relativeFile(input.cwd, target2) }),
@@ -21322,7 +21431,7 @@ var secretsPreToolUse = (input) => {
   if (WRITERS2.has(tool)) return writeDecision(input, tool);
   if (SHELLS4.has(tool)) return bashDecision(input);
   if (READS.has(tool)) return readDecision(input);
-  return ALLOW14;
+  return ALLOW15;
 };
 
 // src/secrets/remotes.ts
@@ -23561,6 +23670,38 @@ var frontsMergeCommand = {
           count: wave.value.merges.length
         }),
         ...personLines(wave.value.checks)
+      ])
+    );
+  }
+};
+
+// src/commands/fronts-route.ts
+var FRONTS_ROUTE_SCHEMA = "finitemonkey/fronts-route@1";
+var frontsRouteCommand = {
+  path: ["fronts", "route"],
+  summaryKey: "fronts.command.route",
+  usage: 'finitemonkey fronts route <front> "<message>" [--contract] [--json]',
+  status: "ready",
+  options: { contract: { type: "boolean" } },
+  maxPositionals: 2,
+  run: (ctx, args2) => {
+    const [id = "", message = ""] = args2.positionals;
+    const root = mainRoot(ctx);
+    const state = readFronts(ctx.runtime, root);
+    const front = state.ok ? state.value.fronts.find((item2) => item2.id === id) : void 0;
+    if (front === void 0 || message.trim() === "") {
+      return Promise.resolve(
+        failureFrom(
+          ctx.t,
+          usageProblem("fronts_failed", "fronts.error.unknown_front", "finitemonkey fronts status", { id })
+        )
+      );
+    }
+    const kind = args2.values["contract"] === true ? "contract" : "message";
+    appendInbox(ctx.runtime, root, id, message.trim(), kind);
+    return Promise.resolve(
+      success({ schema: FRONTS_ROUTE_SCHEMA, front: id, kind, message: message.trim() }, [
+        ctx.t(kind === "contract" ? "fronts.route.contract" : "fronts.route.message", { front: id })
       ])
     );
   }
@@ -28657,6 +28798,7 @@ var REGISTRY2 = [
   briefCommand,
   frontsCloseCommand,
   frontsMergeCommand,
+  frontsRouteCommand,
   appCheckCommand,
   commitMsgCommand,
   pushCheckCommand,

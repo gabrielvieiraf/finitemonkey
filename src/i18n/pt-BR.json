@@ -1037,5 +1037,12 @@
   "fronts.notify.invalid": "A frente {front} entregou relatório, mas ele não se sustenta: {problems}",
   "fronts.command.merge": "Mescla as frentes da onda em wave/<n> pelo protocolo de mescla, depois de conferir cada relatório",
   "fronts.error.merge": "A onda não foi mesclada: {detail}",
-  "fronts.merge.done": "{count, plural, one {# frente mesclada} other {# frentes mescladas}} em {branch} em {head}; abra um pull request a partir dela"
+  "fronts.merge.done": "{count, plural, one {# frente mesclada} other {# frentes mescladas}} em {branch} em {head}; abra um pull request a partir dela",
+  "fronts.command.route": "Acrescenta uma mensagem da pessoa ao inbox da frente, ou registra como mudança de contrato com --contract",
+  "fronts.route.message": "Acrescentado ao inbox de {front}; envie por SendMessage e não relance a frente",
+  "fronts.route.contract": "Registrado como mudança de contrato de {front}; envie por SendMessage em seguida",
+  "fronts.block.relaunch.claim": "A frente {front} já está rodando; lançar de novo joga fora o contexto e o custo dela",
+  "fronts.block.relaunch.requires": "Mande a correção para a frente que está rodando por SendMessage",
+  "fronts.block.isolation.claim": "A frente {front} está sendo lançada sem isolation: \"worktree\" e escreveria no checkout principal",
+  "fronts.block.isolation.requires": "Passe isolation: \"worktree\" na chamada Agent"
 }

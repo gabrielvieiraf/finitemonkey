@@ -1037,5 +1037,12 @@
   "fronts.notify.invalid": "La frente {front} entregó informe, pero no se sostiene: {problems}",
   "fronts.command.merge": "Fusiona las frentes de la ola en wave/<n> con el protocolo de fusión, tras revisar cada informe",
   "fronts.error.merge": "La ola no se fusionó: {detail}",
-  "fronts.merge.done": "{count, plural, one {# frente fusionada} other {# frentes fusionadas}} en {branch} en {head}; abre un pull request desde ella"
+  "fronts.merge.done": "{count, plural, one {# frente fusionada} other {# frentes fusionadas}} en {branch} en {head}; abre un pull request desde ella",
+  "fronts.command.route": "Agrega un mensaje de la persona al inbox de una frente, o lo registra como cambio de contrato con --contract",
+  "fronts.route.message": "Agregado al inbox de {front}; envíalo con SendMessage y no relances la frente",
+  "fronts.route.contract": "Registrado como cambio de contrato de {front}; envíalo con SendMessage a continuación",
+  "fronts.block.relaunch.claim": "La frente {front} ya está en curso; lanzarla otra vez tira su contexto y su costo",
+  "fronts.block.relaunch.requires": "Envía la corrección a la frente en curso con SendMessage",
+  "fronts.block.isolation.claim": "La frente {front} se lanza sin isolation: \"worktree\" y escribiría en el checkout principal",
+  "fronts.block.isolation.requires": "Pasa isolation: \"worktree\" en la llamada Agent"
 }

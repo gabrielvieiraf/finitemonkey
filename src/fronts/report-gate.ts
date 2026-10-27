@@ -92,11 +92,15 @@ export const checkReport = (runtime: Runtime, root: AbsolutePath, front: Front):
   if (parsed.report === undefined)
     return { front: front.id, file, report: undefined, problems: parsed.issues.map((issue) => `report: ${issue}`) };
   const naming = parsed.report.front === front.id ? [] : [`front: the report is for ${parsed.report.front}`];
+  const answered = new Set((parsed.report.inbox ?? []).map((item) => item.text.trim()));
+  const unanswered = front.inbox
+    .filter((item) => !answered.has(item.text.trim()))
+    .map((item) => `inbox: the message from ${item.at} ("${item.text.slice(0, 60)}") is not in the report`);
   return {
     front: front.id,
     file,
     report: parsed.report,
-    problems: [...naming, ...worktreeProblems(runtime, front, parsed.report)],
+    problems: [...naming, ...unanswered, ...worktreeProblems(runtime, front, parsed.report)],
   };
 };
 

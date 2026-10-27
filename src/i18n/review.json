@@ -1038,7 +1038,14 @@
     "fronts.notify.invalid": "machine",
     "fronts.command.merge": "machine",
     "fronts.error.merge": "machine",
-    "fronts.merge.done": "machine"
+    "fronts.merge.done": "machine",
+    "fronts.command.route": "machine",
+    "fronts.route.message": "machine",
+    "fronts.route.contract": "machine",
+    "fronts.block.relaunch.claim": "machine",
+    "fronts.block.relaunch.requires": "machine",
+    "fronts.block.isolation.claim": "machine",
+    "fronts.block.isolation.requires": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2079,6 +2086,13 @@
     "fronts.notify.invalid": "machine",
     "fronts.command.merge": "machine",
     "fronts.error.merge": "machine",
-    "fronts.merge.done": "machine"
+    "fronts.merge.done": "machine",
+    "fronts.command.route": "machine",
+    "fronts.route.message": "machine",
+    "fronts.route.contract": "machine",
+    "fronts.block.relaunch.claim": "machine",
+    "fronts.block.relaunch.requires": "machine",
+    "fronts.block.isolation.claim": "machine",
+    "fronts.block.isolation.requires": "machine"
   }
 }

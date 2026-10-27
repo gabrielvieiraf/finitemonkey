@@ -1,5 +1,6 @@
 import { frontsPostToolUse, frontsPreToolUse, frontsSubagentStart } from "../../fronts/hooks.js";
 import { frontNotification, frontReportHandback, frontReportStop } from "../../fronts/report-hooks.js";
+import { frontsPrompt, frontsSendMessage } from "../../fronts/routing.js";
 import { fileLockGuard, fileLockRelease } from "../../guards/files/hook.js";
 import { scopeCopyGuard } from "../../guards/scope/copy.js";
 import type { HookHandlers } from "../../hooks/handlers.js";
@@ -23,7 +24,7 @@ export const GIT_HANDLERS: HookHandlers = {
     frontReportHandback,
   ],
   SubagentStop: [frontReportStop, fileLockRelease],
-  UserPromptSubmit: [frontNotification],
+  UserPromptSubmit: [frontNotification, frontsPrompt],
   SessionEnd: [fileLockRelease],
-  PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort, frontsPostToolUse],
+  PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort, frontsPostToolUse, frontsSendMessage],
 };

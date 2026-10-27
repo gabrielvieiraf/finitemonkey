@@ -52,6 +52,22 @@ const ask = (input: HookInput): HookDecision => ({
   },
 });
 
+const launchProblem = (input: HookInput, front: Front): HookDecision | undefined => {
+  if (front.status === "running") {
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "fronts.block.relaunch", { front: front.id }),
+      human: input.t("fronts.block.human"),
+    };
+  }
+  if (textField(toolInput(input.payload.raw), "isolation") === "worktree") return undefined;
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "fronts.block.isolation", { front: front.id }),
+    human: input.t("fronts.block.human"),
+  };
+};
+
 export const frontsPreToolUse: HookHandler = (input) => {
   const tool = toolName(input.payload.raw);
   if (!AGENT_TOOLS.has(tool) && !WORKFLOW_TOOLS.has(tool)) return ALLOW;
@@ -59,6 +75,11 @@ export const frontsPreToolUse: HookHandler = (input) => {
   if (state === undefined) return ALLOW;
   const running = runningWriteFronts(state);
   if (WORKFLOW_TOOLS.has(tool)) return running.length > 0 ? ask(input) : ALLOW;
+  const named = frontNamed(state, agentText(input));
+  if (named !== undefined) {
+    const misuse = launchProblem(input, named);
+    if (misuse !== undefined) return misuse;
+  }
   const type = textField(toolInput(input.payload.raw), "subagent_type") ?? "general-purpose";
   if (READ_ONLY_AGENTS.has(type) || running.length < state.maxConcurrent) return ALLOW;
   return {

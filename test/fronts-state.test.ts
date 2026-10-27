@@ -103,7 +103,7 @@ const fire = async (handler: HookHandler, event: HookEvent, root: AbsolutePath, 
 
 const agent = (prompt: string, type = "general-purpose"): JsonObject => ({
   tool_name: "Agent",
-  tool_input: { prompt, description: "front", subagent_type: type },
+  tool_input: { prompt, description: "front", subagent_type: type, isolation: "worktree" },
 });
 
 describe("fronts hooks", () => {
