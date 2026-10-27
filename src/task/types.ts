@@ -15,6 +15,7 @@ export const CHECK_KINDS = [
   "prod",
   "prose",
   "review",
+  "inventory",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

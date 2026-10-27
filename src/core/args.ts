@@ -93,3 +93,9 @@ export const stringOption = (values: OptionValues, name: string): string | undef
   const value = values[name];
   return typeof value === "string" ? value : undefined;
 };
+
+export const listOption = (values: OptionValues, name: string): readonly string[] => {
+  const value = values[name];
+  const raw = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
+  return raw.filter((item): item is string => typeof item === "string" && item.trim() !== "");
+};
