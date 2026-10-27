@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.28](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.27...v0.1.0-next.28) (2026-10-27)
+
+### Features
+
+* **guards:** catch sensitive commands another hook rewrote after the check ([#165](https://github.com/gabrielvieiraf/finitemonkey/issues/165)) ([3acace6](https://github.com/gabrielvieiraf/finitemonkey/commit/3acace63c3c670d5fb7ea90453a50f5b8a56f276)), closes [#48](https://github.com/gabrielvieiraf/finitemonkey/issues/48) [#162](https://github.com/gabrielvieiraf/finitemonkey/issues/162) [#159](https://github.com/gabrielvieiraf/finitemonkey/issues/159) [#155](https://github.com/gabrielvieiraf/finitemonkey/issues/155) [#152](https://github.com/gabrielvieiraf/finitemonkey/issues/152) [#159](https://github.com/gabrielvieiraf/finitemonkey/issues/159) [#45](https://github.com/gabrielvieiraf/finitemonkey/issues/45)
+
 ## [0.1.0-next.27](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.26...v0.1.0-next.27) (2026-10-27)
 
 ### Features
