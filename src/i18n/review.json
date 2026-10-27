@@ -974,7 +974,15 @@
     "signals.error.person_only": "machine",
     "command.signals.summary": "machine",
     "command.signals_not_loop.summary": "machine",
-    "command.signals_forget.summary": "machine"
+    "command.signals_forget.summary": "machine",
+    "signals.fourth.claim": "machine",
+    "signals.fourth.requires": "machine",
+    "signals.fourth.not": "machine",
+    "signals.fourth.human": "machine",
+    "signals.fourth.warning": "machine",
+    "signals.release.done": "machine",
+    "signals.show.fourth": "machine",
+    "command.signals_release.summary": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1951,6 +1959,14 @@
     "signals.error.person_only": "machine",
     "command.signals.summary": "machine",
     "command.signals_not_loop.summary": "machine",
-    "command.signals_forget.summary": "machine"
+    "command.signals_forget.summary": "machine",
+    "signals.fourth.claim": "machine",
+    "signals.fourth.requires": "machine",
+    "signals.fourth.not": "machine",
+    "signals.fourth.human": "machine",
+    "signals.fourth.warning": "machine",
+    "signals.release.done": "machine",
+    "signals.show.fourth": "machine",
+    "command.signals_release.summary": "machine"
   }
 }

@@ -27,7 +27,7 @@ import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
-import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand } from "./signals.js";
+import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
 import { statuslineCommand } from "./statusline.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
 import type { CommandSpec } from "./types.js";
@@ -92,6 +92,7 @@ export const REGISTRY = [
   costCheckCommand,
   signalsCommand,
   signalsNotLoopCommand,
+  signalsReleaseCommand,
   signalsForgetCommand,
   versionCommand,
   helpCommand,

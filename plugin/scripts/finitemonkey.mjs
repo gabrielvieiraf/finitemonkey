@@ -2637,7 +2637,15 @@ var en_default = {
   "signals.error.person_only": "Only the person can calibrate the loop detector, and this does not look like their terminal (no TTY, or running inside Claude Code)",
   "command.signals.summary": "Show the loop index of the last session with its evidence",
   "command.signals_not_loop.summary": "Record that the last loop warning was not a loop and raise the threshold",
-  "command.signals_forget.summary": "Delete the local signals, loop index and thresholds"
+  "command.signals_forget.summary": "Delete the local signals, loop index and thresholds",
+  "signals.fourth.claim": "fourth correction on error signature {sig} after {count, plural, one {# failed attempt} other {# failed attempts}} ({sample})",
+  "signals.fourth.requires": "research the error first with the researcher agent, which returns sources and dates, or the person runs finitemonkey signals release {sig}",
+  "signals.fourth.not": "another variation of the same fix, or writing the file through Bash or PowerShell",
+  "signals.fourth.human": "fourth try on error {sig} held. Research runs first, or run finitemonkey signals release {sig}.",
+  "signals.fourth.warning": "finitemonkey signals: this write is the fourth correction on error signature {sig} after {count, plural, one {# failed attempt} other {# failed attempts}} ({sample}). Research with the researcher agent clears it; once the fourth-attempt guard is active, the write is blocked until then.",
+  "signals.release.done": "Released error signature {sig}: the next correction goes through, and the release is recorded in the log.",
+  "signals.show.fourth": "Fourth attempts: {count, plural, one {# held or warned} other {# held or warned}}, {solved} of them solved the error.",
+  "command.signals_release.summary": "Release the fourth-attempt hold on an error signature"
 };
 
 // src/i18n/es.json
@@ -3616,7 +3624,15 @@ var es_default = {
   "signals.error.person_only": "Solo la persona puede calibrar el detector de vueltas, y esto no parece su terminal (sin TTY, o ejecutándose dentro de Claude Code)",
   "command.signals.summary": "Muestra el índice de vueltas de la última sesión con su evidencia",
   "command.signals_not_loop.summary": "Registra que el último aviso de vuelta no era una vuelta y sube el umbral",
-  "command.signals_forget.summary": "Borra las señales locales, el índice de vueltas y los umbrales"
+  "command.signals_forget.summary": "Borra las señales locales, el índice de vueltas y los umbrales",
+  "signals.fourth.claim": "cuarta corrección sobre la firma de error {sig} después de {count, plural, one {# intento fallido} other {# intentos fallidos}} ({sample})",
+  "signals.fourth.requires": "investigar el error antes con el agente researcher, que trae fuentes y fechas, o que la persona ejecute finitemonkey signals release {sig}",
+  "signals.fourth.not": "otra variación del mismo arreglo, ni escribir el archivo con Bash o PowerShell",
+  "signals.fourth.human": "cuarto intento sobre el error {sig} detenido. Primero se investiga, o ejecuta finitemonkey signals release {sig}.",
+  "signals.fourth.warning": "finitemonkey signals: esta escritura es la cuarta corrección sobre la firma de error {sig} después de {count, plural, one {# intento fallido} other {# intentos fallidos}} ({sample}). Investigar con el agente researcher la libera; cuando la guarda fourth-attempt esté activa, la escritura queda bloqueada hasta entonces.",
+  "signals.release.done": "Firma de error {sig} liberada: la próxima corrección pasa, y la liberación queda registrada en el log.",
+  "signals.show.fourth": "Cuartos intentos: {count, plural, one {# detenido o avisado} other {# detenidos o avisados}}, {solved} de ellos resolvieron el error.",
+  "command.signals_release.summary": "Libera la guarda del cuarto intento en una firma de error"
 };
 
 // src/i18n/pt-BR.json
@@ -4595,7 +4611,15 @@ var pt_BR_default = {
   "signals.error.person_only": "Só a pessoa pode calibrar o detector de voltas, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
   "command.signals.summary": "Mostra o índice de voltas da última sessão com a evidência",
   "command.signals_not_loop.summary": "Registra que o último aviso de volta não era volta e sobe o limiar",
-  "command.signals_forget.summary": "Apaga os sinais locais, o índice de voltas e os limiares"
+  "command.signals_forget.summary": "Apaga os sinais locais, o índice de voltas e os limiares",
+  "signals.fourth.claim": "quarta correção na assinatura de erro {sig} depois de {count, plural, one {# tentativa que falhou} other {# tentativas que falharam}} ({sample})",
+  "signals.fourth.requires": "pesquisar o erro antes com o agente researcher, que traz fontes e datas, ou a pessoa roda finitemonkey signals release {sig}",
+  "signals.fourth.not": "outra variação da mesma correção, nem gravar o arquivo por Bash ou PowerShell",
+  "signals.fourth.human": "quarta tentativa no erro {sig} segurada. A pesquisa roda antes, ou rode finitemonkey signals release {sig}.",
+  "signals.fourth.warning": "finitemonkey signals: esta escrita é a quarta correção na assinatura de erro {sig} depois de {count, plural, one {# tentativa que falhou} other {# tentativas que falharam}} ({sample}). Pesquisar com o agente researcher libera; quando a trava fourth-attempt estiver ativa, a escrita fica barrada até lá.",
+  "signals.release.done": "Assinatura de erro {sig} liberada: a próxima correção passa, e a liberação fica registrada no log.",
+  "signals.show.fourth": "Quartas tentativas: {count, plural, one {# segurada ou avisada} other {# seguradas ou avisadas}}, {solved} delas resolveram o erro.",
+  "command.signals_release.summary": "Libera a trava da quarta tentativa numa assinatura de erro"
 };
 
 // src/i18n/review.json
@@ -5575,7 +5599,15 @@ var review_default = {
     "signals.error.person_only": "machine",
     "command.signals.summary": "machine",
     "command.signals_not_loop.summary": "machine",
-    "command.signals_forget.summary": "machine"
+    "command.signals_forget.summary": "machine",
+    "signals.fourth.claim": "machine",
+    "signals.fourth.requires": "machine",
+    "signals.fourth.not": "machine",
+    "signals.fourth.human": "machine",
+    "signals.fourth.warning": "machine",
+    "signals.release.done": "machine",
+    "signals.show.fourth": "machine",
+    "command.signals_release.summary": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -6552,7 +6584,15 @@ var review_default = {
     "signals.error.person_only": "machine",
     "command.signals.summary": "machine",
     "command.signals_not_loop.summary": "machine",
-    "command.signals_forget.summary": "machine"
+    "command.signals_forget.summary": "machine",
+    "signals.fourth.claim": "machine",
+    "signals.fourth.requires": "machine",
+    "signals.fourth.not": "machine",
+    "signals.fourth.human": "machine",
+    "signals.fourth.warning": "machine",
+    "signals.release.done": "machine",
+    "signals.show.fourth": "machine",
+    "command.signals_release.summary": "machine"
   }
 };
 
@@ -7667,7 +7707,8 @@ var GUARD_MODES = ["off", "shadow", "active"];
 var LEVELS = ["light", "standard", "strict"];
 var SEVERITIES = ["low", "medium", "high"];
 var DEFAULT_PROMOTE_AFTER = 20;
-var OPTIONAL_GUARDS = ["prose", "deps", "signals"];
+var OPTIONAL_GUARDS = ["prose", "deps", "signals", "fourth-attempt"];
+var STARTS_IN_SHADOW = /* @__PURE__ */ new Set(["fourth-attempt"]);
 var DEFAULT_POLICY = {
   exists: false,
   level: "standard",
@@ -8084,7 +8125,7 @@ var policyTemplate = (lang) => [
   "severity: medium",
   `promoteAfter: ${String(DEFAULT_PROMOTE_AFTER)}`,
   "guards:",
-  ...OPTIONAL_GUARDS.map((id) => `  ${id}: active`),
+  ...OPTIONAL_GUARDS.filter((id) => !STARTS_IN_SHADOW.has(id)).map((id) => `  ${id}: active`),
   ""
 ].join("\n");
 
@@ -9676,7 +9717,8 @@ var familyOf = (base) => {
     "secrets.block",
     "git.block",
     "prod.block",
-    "prose.block"
+    "prose.block",
+    "signals.fourth"
   ];
   const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
   if (found === void 0) throw new Error(`no reason family for ${base}`);
@@ -18460,7 +18502,7 @@ var modeOf2 = (set, policy, shadow) => {
   if (set.damage) return "active";
   const chosen = policy.guards[set.id];
   if (chosen !== void 0) return chosen;
-  if (!policy.exists) return "active";
+  if (!policy.exists && !STARTS_IN_SHADOW.has(set.id)) return "active";
   return shadow[set.id]?.promoted === true ? "active" : "shadow";
 };
 var recordShadow = (input, paths, set, policy, reason) => {
@@ -18496,7 +18538,7 @@ var governed = (set, handler) => async (input) => {
   const decision = await handler(input);
   if (mode === "active" || decision.kind !== "block") return decision;
   recordShadow(input, paths, set, policy, decision.reason);
-  return { kind: "allow" };
+  return decision.warning === void 0 ? { kind: "allow" } : { kind: "allow", output: contextOutput(input.event, decision.warning) };
 };
 var withPolicy = (set) => {
   if (set.damage) return set.handlers;
@@ -19100,6 +19142,29 @@ var secretsSessionStart = (input) => {
   };
 };
 
+// src/signals/attempts.ts
+var clears = (entry2, sig) => entry2.kind === "research" || entry2.kind === "release" && entry2.sig === sig;
+var pendingAttempt = (entries, threshold2) => {
+  const last = entries.findLast((entry2) => entry2.kind === "error");
+  if (last?.kind !== "error") return void 0;
+  const cleared = entries.findLastIndex((entry2) => clears(entry2, last.sig));
+  const failed4 = entries.slice(cleared + 1).filter((entry2) => entry2.kind === "error" && entry2.sig === last.sig).length;
+  return failed4 >= threshold2 ? { sig: last.sig, failed: failed4, sample: last.sample } : void 0;
+};
+var solvedAfter = (entries, index, sig) => {
+  const rest = entries.slice(index + 1);
+  const returned = rest.some((entry2) => entry2.kind === "error" && entry2.sig === sig);
+  const settled = rest.some((entry2) => entry2.kind === "prompt" || entry2.kind === "error");
+  return settled && !returned;
+};
+var fourthOutcomes = (entries) => {
+  const fired = entries.flatMap((entry2, index) => entry2.kind === "fourth" ? [{ sig: entry2.sig, index }] : []);
+  return {
+    fired: fired.length,
+    solved: fired.filter(({ sig, index }) => solvedAfter(entries, index, sig)).length
+  };
+};
+
 // src/signals/context.ts
 import { relative as relative10 } from "node:path";
 
@@ -19256,6 +19321,12 @@ var parseEntry4 = (raw) => {
         ms: count3(raw, "ms"),
         fast: raw["fast"] === true
       };
+    case "research":
+      return { ...base, kind: "research", agent: text9(raw, "agent") };
+    case "release":
+      return { ...base, kind: "release", sig: text9(raw, "sig") };
+    case "fourth":
+      return { ...base, kind: "fourth", sig: text9(raw, "sig"), mode: text9(raw, "mode") };
     default:
       return void 0;
   }
@@ -19340,6 +19411,91 @@ var indexOf = (scope2) => computeIndex(
   gateFailedAt(scope2)
 );
 
+// src/signals/writes.ts
+var FILE_WRITERS = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
+var POWERSHELL_WRITERS = /* @__PURE__ */ new Set([
+  "set-content",
+  "add-content",
+  "clear-content",
+  "out-file",
+  "new-item",
+  "copy-item",
+  "move-item",
+  "rename-item",
+  "remove-item",
+  "tee-object"
+]);
+var DISCARDED = /^(?:\/dev\/null|&\d|\$null|nul)$/i;
+var realTargets = (targets2) => targets2.filter((target2) => target2 !== "" && !DISCARDED.test(target2));
+var powershellWrites = (command) => normalizeCommand(command, "powershell").commands.some(
+  (item2) => POWERSHELL_WRITERS.has(item2.program) || realTargets(item2.redirects.filter((redirect) => redirect.op !== "<").map((redirect) => redirect.target)).length > 0
+);
+var bashWrites = (command) => parseShell(command).some((item2) => realTargets(writtenPaths(item2)).length > 0);
+var writesFiles = (raw) => {
+  const tool = toolName2(raw);
+  if (FILE_WRITERS.has(tool)) return true;
+  const command = textField(toolInput2(raw), "command") ?? "";
+  if (tool === "PowerShell") return powershellWrites(command);
+  return tool === "Bash" && bashWrites(command);
+};
+
+// src/signals/fourth.ts
+var FOURTH_ATTEMPT_GUARD = "fourth-attempt";
+var allow = { kind: "allow" };
+var RESEARCHER = /(?:^|:)researcher$/i;
+var AGENT_TOOLS = /* @__PURE__ */ new Set(["Agent", "Task"]);
+var alreadyNoted = (scope2, sig) => {
+  const entries = sessionEntries(scope2.entries, scope2.session);
+  const lastError = entries.findLastIndex((entry2) => entry2.kind === "error");
+  return entries.slice(lastError + 1).some((entry2) => entry2.kind === "fourth" && entry2.sig === sig);
+};
+var modeNow = (scope2) => {
+  const { runtime } = scope2.input;
+  return modeOf2(
+    { id: FOURTH_ATTEMPT_GUARD, damage: false },
+    loadPolicy(runtime, scope2.paths.root),
+    readShadow(runtime, scope2.paths)
+  );
+};
+var noteFourth = (scope2, sig, failed4, mode) => {
+  const { runtime } = scope2.input;
+  record4(scope2, { ...baseOf(scope2), kind: "fourth", sig, mode });
+  logEvent(runtime, scope2.paths, "signals.fourth_attempt", {
+    sig,
+    failed: failed4,
+    mode,
+    tool: toolName2(scope2.input.payload.raw)
+  });
+};
+var fourthAttemptGuard = (input) => {
+  if (!writesFiles(input.payload.raw)) return allow;
+  const scope2 = scopeOf(input);
+  if (scope2 === void 0) return allow;
+  const threshold2 = readProfile(input.runtime, scope2.files).threshold;
+  const pending = pendingAttempt(sessionEntries(scope2.entries, scope2.session), threshold2);
+  if (pending === void 0) return allow;
+  const mode = modeNow(scope2);
+  const noted = alreadyNoted(scope2, pending.sig);
+  if (noted && mode !== "active") return allow;
+  if (!noted) noteFourth(scope2, pending.sig, pending.failed, mode);
+  const { t } = input;
+  const params2 = { sig: pending.sig, count: pending.failed, sample: pending.sample };
+  const blocked2 = deny(modelReason(t, "signals.fourth", params2), t("signals.fourth.human", params2));
+  return blocked2.kind === "block" ? { ...blocked2, warning: t("signals.fourth.warning", params2) } : blocked2;
+};
+var researcherOf = (raw) => {
+  const tool = toolName2(raw);
+  const agent = AGENT_TOOLS.has(tool) ? textField(toolInput2(raw), "subagent_type") : tool === "" ? textField(raw, "agent_type") : void 0;
+  return agent !== void 0 && RESEARCHER.test(agent) ? agent : void 0;
+};
+var researchRecorder = (input) => {
+  const agent = researcherOf(input.payload.raw);
+  if (agent === void 0) return allow;
+  const scope2 = scopeOf(input);
+  if (scope2 !== void 0) record4(scope2, { ...baseOf(scope2), kind: "research", agent });
+  return allow;
+};
+
 // src/signals/render.ts
 var evidenceLines = (t, index, thresholds) => [
   ...index.error !== void 0 && index.error.count >= Math.min(2, thresholds.errors) ? [t("signals.evidence.error", { sig: index.error.sig, count: index.error.count, sample: index.error.sample })] : [],
@@ -19408,13 +19564,13 @@ var writeIndex = (scope2, notice = readNotice(scope2)) => {
 };
 
 // src/signals/prompt.ts
-var allow = { kind: "allow" };
+var allow2 = { kind: "allow" };
 var CLEAR_AFTER = 2;
 var signalsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow;
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow2;
   const before = scopeOf(input);
-  if (before === void 0) return allow;
+  if (before === void 0) return allow2;
   const scope2 = record4(before, {
     ...baseOf(before),
     turn: before.turn + 1,
@@ -19425,7 +19581,7 @@ var signalsPrompt = (input) => {
   const notice = readNotice(scope2);
   const index = writeIndex(scope2, notice);
   const key2 = loopKey(index);
-  if (!index.firing || key2 === notice.lastKey) return allow;
+  if (!index.firing || key2 === notice.lastKey) return allow2;
   const injections = notice.injections + 1;
   writeIndex(scope2, { injections, lastKey: key2 });
   const { t } = input;
@@ -19442,7 +19598,7 @@ var signalsPrompt = (input) => {
 var EDIT_TOOLS2 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var FAST_ACCEPT_MS = 5e3;
 var LARGE_DIFF_LINES = 30;
-var allow2 = { kind: "allow" };
+var allow3 = { kind: "allow" };
 var permissionKey = (raw) => {
   const id = textField(raw, "tool_use_id");
   if (id !== void 0 && id !== "") return id;
@@ -19512,38 +19668,40 @@ var recordError = (scope2, raw, output) => {
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow2;
+  if (scope2 === void 0) return allow3;
   const raw = input.payload.raw;
   const output = failedOutput(raw);
   const after = EDIT_TOOLS2.has(toolName2(raw)) ? recordEdit(scope2, raw) : output === void 0 ? scope2 : recordError(scope2, raw, output);
   if (after !== scope2) writeIndex(after);
-  return allow2;
+  return allow3;
 };
 var signalsPostToolUseFailure = (input) => {
   const scope2 = scopeOf(input);
   const raw = input.payload.raw;
-  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow2;
+  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow3;
   const after = recordError(scope2, raw, textField(raw, "error") ?? "");
   if (after !== scope2) writeIndex(after);
-  return allow2;
+  return allow3;
 };
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
     record4(scope2, { ...baseOf(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
-  return allow2;
+  return allow3;
 };
 
 // src/signals/hooks.ts
 var SIGNALS_HANDLERS = {
   UserPromptSubmit: [signalsPrompt],
-  PostToolUse: [signalsPostToolUse],
+  PostToolUse: [signalsPostToolUse, researchRecorder],
+  SubagentStop: [researchRecorder],
   PostToolUseFailure: [signalsPostToolUseFailure],
   PermissionRequest: [signalsPermissionRequest]
 };
+var FOURTH_ATTEMPT_HANDLERS = { PreToolUse: [fourthAttemptGuard] };
 
 // src/hooks/handlers.ts
-var allow3 = () => ({ kind: "allow" });
+var allow4 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -19627,7 +19785,8 @@ var GUARD_SETS = [
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
-  { id: "signals", damage: false, handlers: SIGNALS_HANDLERS }
+  { id: "signals", damage: false, handlers: SIGNALS_HANDLERS },
+  { id: "fourth-attempt", damage: false, handlers: FOURTH_ATTEMPT_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy));
 
@@ -19659,7 +19818,7 @@ var parseHookPayload = (event, text11, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf2 = (error) => error instanceof Error ? error.message : String(error);
-var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow3]);
+var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow4]);
 var evaluate = async (event, options) => {
   const text11 = await readAll(options.stdin);
   const parsed = parseHookPayload(event, text11, options.stdin.isTTY === true);
@@ -22447,13 +22606,13 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided) => {
-  const accepted2 = allows.filter((allow4) => decided(allow4.decision));
-  const ignored = allows.filter((allow4) => !decided(allow4.decision)).map((allow4) => `${allow4.rule} ${allow4.route} ${allow4.decision}`);
+  const accepted2 = allows.filter((allow5) => decided(allow5.decision));
+  const ignored = allows.filter((allow5) => !decided(allow5.decision)).map((allow5) => `${allow5.rule} ${allow5.route} ${allow5.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow4 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow4 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow4.decision };
+      const allow5 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow5 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow5.decision };
     })
   };
 };
@@ -25168,9 +25327,13 @@ var showSignals = (ctx) => {
   const entries = sessionEntries(readEntries(ctx.runtime, files), session);
   const stored = recordOf(readIndexFile(ctx.runtime, files)["index"]);
   const index = computeIndex(entries, thresholds);
-  const human2 = index.firing ? [contextLine(ctx.t, index, thresholds)] : [ctx.t("signals.show.quiet", { count: entries.length, score: index.score.toFixed(2) })];
+  const fourth = fourthOutcomes(readEntries(ctx.runtime, files));
+  const human2 = [
+    index.firing ? contextLine(ctx.t, index, thresholds) : ctx.t("signals.show.quiet", { count: entries.length, score: index.score.toFixed(2) }),
+    ...fourth.fired === 0 ? [] : [ctx.t("signals.show.fourth", { count: fourth.fired, solved: fourth.solved })]
+  ];
   return success(
-    { schema: SIGNALS_SCHEMA, session, signals: entries.length, threshold: profile.threshold, index, stored },
+    { schema: SIGNALS_SCHEMA, session, signals: entries.length, threshold: profile.threshold, index, stored, fourth },
     human2
   );
 };
@@ -25185,6 +25348,23 @@ var notLoop = (ctx) => {
   return success({ schema: SIGNALS_SCHEMA, ...profile }, [
     ctx.t("signals.not_loop.recorded", { threshold: profile.threshold })
   ]);
+};
+var RELEASE_USAGE = "finitemonkey signals release <signature>";
+var release2 = (ctx, sig) => {
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("signals.error.person_only", RELEASE_USAGE));
+  if (!/^[0-9a-f]{4}$/.test(sig)) {
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", RELEASE_USAGE, { detail: sig })
+    );
+  }
+  const { paths, files } = locate3(ctx);
+  const session = lastSession(ctx, files);
+  const entries = readEntries(ctx.runtime, files);
+  const turn = entries.filter((entry2) => entry2.session === session && entry2.kind === "prompt").length;
+  appendEntry(ctx.runtime, files, { at: ctx.runtime.now(), session, turn, kind: "release", sig }, entries);
+  logEvent(ctx.runtime, paths, "signals.release", { sig, session });
+  return success({ schema: SIGNALS_SCHEMA, sig, session }, [ctx.t("signals.release.done", { sig })]);
 };
 var forget = (ctx) => {
   const { files } = locate3(ctx);
@@ -25206,6 +25386,14 @@ var signalsNotLoopCommand = {
   usage: PERSON_FIX,
   status: "ready",
   run: (ctx) => Promise.resolve(notLoop(ctx))
+};
+var signalsReleaseCommand = {
+  path: ["signals", "release"],
+  summaryKey: "command.signals_release.summary",
+  usage: RELEASE_USAGE,
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => Promise.resolve(release2(ctx, (args2.positionals[0] ?? "").toLowerCase()))
 };
 var signalsForgetCommand = {
   path: ["signals", "forget"],
@@ -26528,6 +26716,7 @@ var REGISTRY2 = [
   costCheckCommand,
   signalsCommand,
   signalsNotLoopCommand,
+  signalsReleaseCommand,
   signalsForgetCommand,
   versionCommand,
   helpCommand

@@ -1,13 +1,13 @@
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { logEvent } from "../evidence/log.js";
-import { projectPaths } from "../gate/hooks/common.js";
+import { contextOutput, projectPaths } from "../gate/hooks/common.js";
 import { HOOK_EVENTS, type HookEvent } from "../hooks/events.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import type { FmPaths } from "../task/paths.js";
 import { pausedFor } from "./pause.js";
-import { type GuardMode, loadPolicy, type Policy } from "./policy.js";
+import { type GuardMode, loadPolicy, type Policy, STARTS_IN_SHADOW } from "./policy.js";
 
 export interface GuardSet {
   readonly id: string;
@@ -57,7 +57,7 @@ export const modeOf = (set: Pick<GuardSet, "id" | "damage">, policy: Policy, sha
   if (set.damage) return "active";
   const chosen = policy.guards[set.id];
   if (chosen !== undefined) return chosen;
-  if (!policy.exists) return "active";
+  if (!policy.exists && !STARTS_IN_SHADOW.has(set.id)) return "active";
   return shadow[set.id]?.promoted === true ? "active" : "shadow";
 };
 
@@ -97,7 +97,9 @@ const governed =
     const decision = await handler(input);
     if (mode === "active" || decision.kind !== "block") return decision;
     recordShadow(input, paths, set, policy, decision.reason);
-    return { kind: "allow" };
+    return decision.warning === undefined
+      ? { kind: "allow" }
+      : { kind: "allow", output: contextOutput(input.event, decision.warning) };
   };
 
 export const withPolicy = (set: GuardSet): HookHandlers => {

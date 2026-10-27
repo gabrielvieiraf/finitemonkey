@@ -973,5 +973,13 @@
   "signals.error.person_only": "Only the person can calibrate the loop detector, and this does not look like their terminal (no TTY, or running inside Claude Code)",
   "command.signals.summary": "Show the loop index of the last session with its evidence",
   "command.signals_not_loop.summary": "Record that the last loop warning was not a loop and raise the threshold",
-  "command.signals_forget.summary": "Delete the local signals, loop index and thresholds"
+  "command.signals_forget.summary": "Delete the local signals, loop index and thresholds",
+  "signals.fourth.claim": "fourth correction on error signature {sig} after {count, plural, one {# failed attempt} other {# failed attempts}} ({sample})",
+  "signals.fourth.requires": "research the error first with the researcher agent, which returns sources and dates, or the person runs finitemonkey signals release {sig}",
+  "signals.fourth.not": "another variation of the same fix, or writing the file through Bash or PowerShell",
+  "signals.fourth.human": "fourth try on error {sig} held. Research runs first, or run finitemonkey signals release {sig}.",
+  "signals.fourth.warning": "finitemonkey signals: this write is the fourth correction on error signature {sig} after {count, plural, one {# failed attempt} other {# failed attempts}} ({sample}). Research with the researcher agent clears it; once the fourth-attempt guard is active, the write is blocked until then.",
+  "signals.release.done": "Released error signature {sig}: the next correction goes through, and the release is recorded in the log.",
+  "signals.show.fourth": "Fourth attempts: {count, plural, one {# held or warned} other {# held or warned}}, {solved} of them solved the error.",
+  "command.signals_release.summary": "Release the fourth-attempt hold on an error signature"
 }
