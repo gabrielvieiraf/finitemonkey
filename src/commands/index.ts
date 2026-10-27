@@ -7,6 +7,7 @@ import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
+import { policyFalsePositiveCommand } from "./policy.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
@@ -30,6 +31,7 @@ export const REGISTRY = [
   taskDoneCommand,
   secretsScanCommand,
   secretsAcceptCommand,
+  policyFalsePositiveCommand,
   secretsIncidentCommand,
   proseCheckCommand,
   snapshotCommand,

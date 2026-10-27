@@ -524,7 +524,10 @@
     "gate.callers.none": "machine",
     "gate.callers.open": "machine",
     "gate.callers.at": "machine",
-    "gate.callers.warning": "machine"
+    "gate.callers.warning": "machine",
+    "command.policy_false_positive.summary": "machine",
+    "policy.error.person_only": "machine",
+    "policy.false_positive.recorded": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1051,6 +1054,9 @@
     "gate.callers.none": "machine",
     "gate.callers.open": "machine",
     "gate.callers.at": "machine",
-    "gate.callers.warning": "machine"
+    "gate.callers.warning": "machine",
+    "command.policy_false_positive.summary": "machine",
+    "policy.error.person_only": "machine",
+    "policy.false_positive.recorded": "machine"
   }
 }

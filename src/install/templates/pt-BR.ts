@@ -3,6 +3,11 @@ import type { GeneratedTemplates } from "./types.js";
 export const ptBR: GeneratedTemplates = {
   configHeader:
     "Configuração do Finite Monkey neste projeto. Versione este arquivo. O `finitemonkey update` mantém suas edições.",
+  policyHeader: [
+    "Política dos guards deste projeto. Modos: off, shadow (registra o que bloquearia), active.",
+    "Os guards de segredos, produção, trabalho de git perdido e falso pronto ficam ativos, diga o que disser este arquivo.",
+    "Um guard que não está nesta lista começa em shadow e é promovido depois de promoteAfter disparos sem falso positivo.",
+  ],
   agentsBlock: ({ gate, doctor }) => [
     "## Finite Monkey",
     "",

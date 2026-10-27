@@ -3,6 +3,7 @@ import type { Env } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Lang } from "../i18n/languages.js";
 import type { Translate } from "../i18n/translate.js";
+import { POLICY_FILE } from "../policy/policy.js";
 import { withAgentsBlock, withAgentsImport } from "./agents-block.js";
 import { ASK_RULES } from "./ask-floor.js";
 import { type ClaudeInfo, detectClaude } from "./claude-version.js";
@@ -37,6 +38,7 @@ import {
 import { type EntryKind, type LockEntry, type LockFile, parseLock } from "./lock-file.js";
 import { applyMigrations } from "./migrate.js";
 import { type Migration, MIGRATIONS } from "./migrations/index.js";
+import { policyTemplate } from "./policy-template.js";
 import type { Project } from "./project.js";
 import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
 import { isOwnSkill, verifySkillTemplate } from "./skill-template.js";
@@ -224,6 +226,7 @@ const generatedFiles = (input: PlanInput, runner: Runner, vendor: boolean): Pars
   const own = [
     { path: CONFIG_FILE, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
     { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill },
+    { path: POLICY_FILE, template: policyTemplate(input.lang), isOurs: hasMarker },
   ];
   if (!vendor) return accept(own);
   if (input.bundle === undefined) return reject({ kind: "bundle", detail: "the running finitemonkey is not a bundle" });

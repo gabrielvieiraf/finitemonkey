@@ -34,9 +34,9 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Archivos modificados, revisados en busca de secretos, tests saltados, placeholders y patrones de prosa.",
   },
   config: {
-    en: "Project configuration and the optional briefing for subagents.",
-    "pt-BR": "A configuração do projeto e o briefing opcional para subagentes.",
-    es: "La configuración del proyecto y el briefing opcional para subagentes.",
+    en: "Project configuration, the guard policy and the optional briefing for subagents.",
+    "pt-BR": "A configuração do projeto, a política dos guards e o briefing opcional para subagentes.",
+    es: "La configuración del proyecto, la política de los guards y el briefing opcional para subagentes.",
   },
   "session-logs": {
     en: "This project's local Claude Code session logs, read once and only with `init --look-back`.",

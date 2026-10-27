@@ -5,6 +5,7 @@ import type { Runtime } from "../core/runtime.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
+import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
@@ -96,9 +97,11 @@ export const SECRETS_HANDLERS: HookHandlers = {
   SessionStart: [secretsSessionStart],
 };
 
-export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(
-  SECRETS_HANDLERS,
-  PORTAO_HANDLERS,
-  PROSE_HANDLERS,
-  GIT_HANDLERS,
-);
+export const GUARD_SETS: readonly GuardSet[] = [
+  { id: "secrets", damage: true, handlers: SECRETS_HANDLERS },
+  { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
+  { id: "prose", damage: false, handlers: PROSE_HANDLERS },
+  { id: "git", damage: true, handlers: GIT_HANDLERS },
+];
+
+export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

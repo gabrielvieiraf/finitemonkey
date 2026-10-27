@@ -107,6 +107,7 @@ describe("init writes only when asked", () => {
       "CLAUDE.md": "create",
       [CONFIG_FILE]: "create",
       [VERIFY_SKILL]: "create",
+      ".finitemonkey/policy.yml": "create",
       [VENDOR_BIN]: "create",
       [VENDOR_PACKAGE]: "create",
     });
@@ -254,6 +255,7 @@ describe("a teammate who clones an installed repository", () => {
         "AGENTS.md",
         "CLAUDE.md",
         CONFIG_FILE,
+        ".finitemonkey/policy.yml",
         VERIFY_SKILL,
         VENDOR_BIN,
         VENDOR_PACKAGE,

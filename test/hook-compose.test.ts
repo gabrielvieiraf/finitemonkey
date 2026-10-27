@@ -3,11 +3,13 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
+import { PORTAO_HANDLERS } from "../src/gate/hooks/index.js";
 import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { configDigest } from "../src/guards/tests/analyze.js";
 import {
   composeDecisions,
   DEFAULT_HANDLERS,
+  GUARD_SETS,
   type HookHandler,
   type HookInput,
   mergeHandlers,
@@ -16,8 +18,7 @@ import {
 import { EMPTY_PAYLOAD } from "../src/hooks/payload.js";
 import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
-import { proseMarkerGuard } from "../src/prose/marker-guard.js";
-import { proseCommandGuard } from "../src/prose/text-guard.js";
+import { PROSE_HANDLERS } from "../src/prose/hooks.js";
 import { secretsPreToolUse } from "../src/secrets/guards/pre-tool.js";
 import { fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 
@@ -108,16 +109,17 @@ describe("guard composition", () => {
 
   it("secrets, prose and git guards all run on PreToolUse, in that order", () => {
     const list = DEFAULT_HANDLERS.PreToolUse ?? [];
-    const order = [secretsPreToolUse, proseMarkerGuard, proseCommandGuard, gitPreToolUse].map((guard) =>
-      list.indexOf(guard),
-    );
-    assert.ok(
-      order.every((index) => index >= 0),
-      JSON.stringify(order),
-    );
     assert.deepEqual(
-      order,
-      [...order].sort((left, right) => left - right),
+      GUARD_SETS.map((set) => set.id),
+      ["secrets", "gate", "prose", "git"],
+    );
+    const secrets = list.indexOf(secretsPreToolUse);
+    const git = list.indexOf(gitPreToolUse);
+    assert.ok(secrets >= 0 && git > secrets, JSON.stringify({ secrets, git }));
+    assert.equal(list.length - git - 1, 0);
+    assert.equal(
+      git - secrets - 1,
+      (PORTAO_HANDLERS.PreToolUse ?? []).length + (PROSE_HANDLERS.PreToolUse ?? []).length,
     );
   });
 });
