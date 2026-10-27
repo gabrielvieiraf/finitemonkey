@@ -1,3 +1,4 @@
+import { scanRepo } from "../appsec/scan.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { scanPath } from "../secrets/scan.js";
@@ -25,7 +26,9 @@ const secretsSource: FindingSource = {
   },
 };
 
-export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource];
+const appsecSource: FindingSource = { check: "appsec", scan: scanRepo };
+
+export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource, appsecSource];
 
 export const findFinding = (
   runtime: Runtime,

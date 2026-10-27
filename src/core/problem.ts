@@ -54,6 +54,7 @@ export const ERROR_CODES = [
   "critique_must_fix",
   "plan_write_failed",
   "findings_not_found",
+  "appsec_found",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

@@ -1,0 +1,7 @@
+import { requireUser } from "./auth";
+
+router.get("/invoices/:id", async (req, res) => {
+  await requireUser(req);
+  const invoice = await prisma.invoice.findUnique({ where: { id: req.params.id } });
+  res.json(invoice);
+});

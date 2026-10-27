@@ -1,3 +1,4 @@
+import { detectStack, hasWebStack } from "../appsec/stack.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { AcceptanceCheck, TaskContract } from "./types.js";
 
@@ -63,6 +64,7 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       ...(hasTests ? [] : [{ id: "tests", kind: "tests" as const }]),
       { id: "placeholders", kind: "placeholders" },
       { id: "secrets", kind: "secrets" },
+      ...(hasWebStack(detectStack(files.read)) ? [{ id: "appsec", kind: "appsec" as const }] : []),
       { id: "prose", kind: "prose" },
       { id: "worktree", kind: "worktree" },
       { id: "merge", kind: "merge" },
