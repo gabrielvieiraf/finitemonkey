@@ -6,7 +6,8 @@ import type { Runtime } from "../core/runtime.js";
 import type { HookCheck } from "../githooks/checks.js";
 import { readManifest, type Surface } from "./manifest.js";
 import { pathMatches, textMatches } from "./match.js";
-import { loadRules, type ProjectRule } from "./types.js";
+import { effectiveRules } from "./preset.js";
+import type { ProjectRule } from "./types.js";
 
 const FIX = "follow the project rule named in the failure, or change it in .finitemonkey/rules.yml";
 const RECORD = "\u0001";
@@ -17,7 +18,7 @@ export const compiledFor = (
   surface: Surface,
 ): readonly ProjectRule[] => {
   const manifest = readManifest(runtime, root);
-  const rules = loadRules(runtime, root);
+  const rules = effectiveRules(runtime, root);
   return rules.ok ? rules.value.filter((rule) => manifest.rules[rule.id]?.surfaces.includes(surface) === true) : [];
 };
 
