@@ -108,6 +108,7 @@ You run one command, once. After that, Finite Monkey works from context inside C
 - **Hooks** do the enforcing: `SessionStart` restores task state, `UserPromptSubmit` notices what you asked for, `PreToolUse` blocks dangerous actions before they happen, `Stop` refuses to finish while the definition of done fails, and `SubagentStop` checks what subagents report.
 - **Skills** get picked up by Claude on its own when the situation calls for them.
 - **Slash commands** are optional shortcuts. No workflow depends on you remembering one.
+- **The `report` output style** is optional and off by default. Choose it with `/output-style report` if you want every answer in the shape of the final report: result first, then verified, not verified and pending, with FACT, OPINION and INFERENCE marked. It keeps Claude Code's coding instructions (`keep-coding-instructions: true`).
 
 ## Install (planned)
 
