@@ -742,5 +742,20 @@
   "gate.inventory.missing": "nenhum inventário em docs/plan; rode finitemonkey inventory <tema>",
   "gate.inventory.expired": "{report} venceu: {count, plural, one {# caminho coberto mudou} other {# caminhos cobertos mudaram}} desde {hash} ({paths}); rode finitemonkey inventory {topic} para o delta",
   "gate.inventory.unknown": "{report} cita {hash} em {repo}, um commit que este clone não lê",
-  "gate.inventory.fresh": "{count, plural, one {# inventário confere} other {# inventários conferem}} com os caminhos cobertos"
+  "gate.inventory.fresh": "{count, plural, one {# inventário confere} other {# inventários conferem}} com os caminhos cobertos",
+  "wt.command.new": "Cria um worktree com branch, faixa de 10 portas e registro",
+  "wt.command.adopt": "Registra worktrees criados por outras ferramentas, sem mexer neles",
+  "wt.error.needs_purpose": "wt new precisa de um id e de --purpose",
+  "wt.error.bad_id": "\"{id}\" não é um id de worktree válido (letras, dígitos, ponto, hífen e sublinhado)",
+  "wt.error.taken": "O registro já tem um worktree com o id {id}",
+  "wt.error.bad_place": "{path} não é lugar para worktree ({problems})",
+  "wt.error.no_ports": "Não sobrou faixa livre de 10 portas no registro",
+  "wt.error.git": "Não deu para criar o worktree: {detail}",
+  "wt.new.done": "Worktree {id} em {path} na branch {branch}, travado enquanto ativo",
+  "wt.new.ports": "Portas a partir de {port}: export FINITEMONKEY_PORT={port} PORT={port}",
+  "wt.adopt.title": "{count, plural, one {# worktree} other {# worktrees}}, {adopted} registrados agora; nada foi movido nem apagado",
+  "wt.adopt.row": "{state}  {branch}  {path}  última atividade {activity}",
+  "wt.adopt.registry_failed": "O registro não foi atualizado: {detail}",
+  "gate.guard.self.registry.claim": "{file} é o registro de worktrees, escrito só pelo executável finitemonkey",
+  "gate.guard.self.registry.requires": "mudar pelos comandos finitemonkey wt"
 }

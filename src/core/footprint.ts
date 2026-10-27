@@ -78,6 +78,16 @@ export const FOOTPRINT = [
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
+  {
+    id: "worktrees",
+    kind: "writes",
+    targets: [
+      ".git/finitemonkey/worktrees.yml",
+      ".git/info/exclude",
+      ".claude/worktrees/",
+      "~/.finitemonkey/worktrees/",
+    ],
+  },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },

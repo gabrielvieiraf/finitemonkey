@@ -19,7 +19,13 @@ const targets = (input: HookInput): readonly { readonly kind: SelfKind; readonly
 export const selfGuard: HookHandler = (input): HookDecision => {
   const found = targets(input);
   const store = found.find((item) => item.kind === "allow_store");
+  const registry = found.find((item) => item.kind === "registry");
   const { t } = input;
+  if (registry !== undefined)
+    return deny(
+      modelReason(t, "gate.guard.self.registry", { file: registry.path }),
+      t("gate.guard.self.human", { file: registry.path }),
+    );
   if (store !== undefined)
     return deny(
       modelReason(t, "gate.guard.self.allow_store", { file: store.path }),

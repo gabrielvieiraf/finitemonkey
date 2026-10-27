@@ -743,7 +743,22 @@
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "wt.command.new": "machine",
+    "wt.command.adopt": "machine",
+    "wt.error.needs_purpose": "machine",
+    "wt.error.bad_id": "machine",
+    "wt.error.taken": "machine",
+    "wt.error.bad_place": "machine",
+    "wt.error.no_ports": "machine",
+    "wt.error.git": "machine",
+    "wt.new.done": "machine",
+    "wt.new.ports": "machine",
+    "wt.adopt.title": "machine",
+    "wt.adopt.row": "machine",
+    "wt.adopt.registry_failed": "machine",
+    "gate.guard.self.registry.claim": "machine",
+    "gate.guard.self.registry.requires": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1489,6 +1504,21 @@
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "wt.command.new": "machine",
+    "wt.command.adopt": "machine",
+    "wt.error.needs_purpose": "machine",
+    "wt.error.bad_id": "machine",
+    "wt.error.taken": "machine",
+    "wt.error.bad_place": "machine",
+    "wt.error.no_ports": "machine",
+    "wt.error.git": "machine",
+    "wt.new.done": "machine",
+    "wt.new.ports": "machine",
+    "wt.adopt.title": "machine",
+    "wt.adopt.row": "machine",
+    "wt.adopt.registry_failed": "machine",
+    "gate.guard.self.registry.claim": "machine",
+    "gate.guard.self.registry.requires": "machine"
   }
 }

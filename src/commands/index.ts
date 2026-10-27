@@ -27,6 +27,7 @@ import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
 import { versionCommand } from "./version.js";
+import { wtAdoptCommand, wtNewCommand } from "./wt.js";
 
 export const REGISTRY = [
   initCommand,
@@ -61,6 +62,8 @@ export const REGISTRY = [
   statuslineCommand,
   critiqueVerifyCommand,
   inventoryCommand,
+  wtNewCommand,
+  wtAdoptCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
