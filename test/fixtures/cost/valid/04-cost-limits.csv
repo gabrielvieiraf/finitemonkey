@@ -1,0 +1,2 @@
+provider,limit,value,unit,accepted,next_layer,next_value,source,date
+storage,upload size,50,MB,10,proxy body limit,10,https://example.com/limits,2026-10-01
