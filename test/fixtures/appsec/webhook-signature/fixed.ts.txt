@@ -1,0 +1,8 @@
+import { timingSafeEqual } from "node:crypto";
+
+app.post("/webhooks/payments", async (req, res) => {
+  const given = Buffer.from(String(req.headers["x-signature"]));
+  if (!timingSafeEqual(given, expected(req.body))) return res.status(401).end();
+  await markPaid(req.body.event.id);
+  res.end();
+});

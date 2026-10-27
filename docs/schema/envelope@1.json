@@ -70,7 +70,8 @@
             "look_failed",
             "look_unavailable",
             "critique_must_fix",
-            "findings_not_found"
+            "findings_not_found",
+            "appsec_found"
           ]
         },
         "message": {

@@ -1,4 +1,5 @@
 import { appCheckCommand } from "./app-check.js";
+import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { doctorCommand } from "./doctor.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
@@ -55,6 +56,8 @@ export const REGISTRY = [
   rescueCommand,
   mergeVerifyCommand,
   appCheckCommand,
+  appsecScanCommand,
+  appsecRulesCommand,
   commitMsgCommand,
   pushCheckCommand,
   ciGateCommand,
