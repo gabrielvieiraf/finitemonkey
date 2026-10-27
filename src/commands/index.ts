@@ -18,6 +18,13 @@ import { lookCommand } from "./look.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { offCommand, onCommand } from "./pause.js";
+import {
+  perfilAnswerCommand,
+  perfilCommand,
+  perfilForgetCommand,
+  perfilSetCommand,
+  perfilStartCommand,
+} from "./perfil.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
@@ -91,6 +98,11 @@ export const REGISTRY = [
   researchCheckCommand,
   costInitCommand,
   costCheckCommand,
+  perfilCommand,
+  perfilStartCommand,
+  perfilSetCommand,
+  perfilAnswerCommand,
+  perfilForgetCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

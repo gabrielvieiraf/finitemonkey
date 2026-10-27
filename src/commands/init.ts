@@ -60,7 +60,8 @@ const applyAndReport = (ctx: Ctx, request: InstallRequest, plan: Plan): CommandR
   trustImplicit(ctx.runtime, project.root, project);
   const data = planData(ctx.t, plan, request.mode, true, applied.value.backup);
   const done = ctx.t(request.mode === "init" ? "install.done_init" : "install.done_update");
-  return success(data, [...planLines(ctx.t, data, request.showDiff), done]);
+  const hint = request.mode === "init" ? [ctx.t("install.perfil_hint")] : [];
+  return success(data, [...planLines(ctx.t, data, request.showDiff), done, ...hint]);
 };
 
 export const runInstall = (ctx: Ctx, request: InstallRequest, presetFallback: Preset): CommandResult<PlanData> => {
