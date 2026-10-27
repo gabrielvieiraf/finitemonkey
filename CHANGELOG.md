@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.0-next.19](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.18...v0.1.0-next.19) (2026-10-27)
+
+### Features
+
+* **secrets:** provider runbooks for incidents and an opt-in live-key check ([#156](https://github.com/gabrielvieiraf/finitemonkey/issues/156)) ([725d59e](https://github.com/gabrielvieiraf/finitemonkey/commit/725d59e1eca07fddb081140cdb939fd7827666bc)), closes [#151](https://github.com/gabrielvieiraf/finitemonkey/issues/151) [#151](https://github.com/gabrielvieiraf/finitemonkey/issues/151) [#49](https://github.com/gabrielvieiraf/finitemonkey/issues/49)
+
+### Bug Fixes
+
+* **git:** give the safety snapshot and the Windows hook timing more room ([#166](https://github.com/gabrielvieiraf/finitemonkey/issues/166)) ([81c5e2d](https://github.com/gabrielvieiraf/finitemonkey/commit/81c5e2d03a7cdb4e0a7c30a7ef11e91aa4c89c06))
+
 ## [0.1.0-next.18](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.17...v0.1.0-next.18) (2026-10-27)
 
 ### Features
