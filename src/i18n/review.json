@@ -1003,7 +1003,20 @@
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "doctor.hooks.inventory": "machine",
+    "doctor.coexist.authorities": "machine",
+    "doctor.coexist.fix_authorities": "machine",
+    "doctor.coexist.duplicate": "machine",
+    "doctor.coexist.fix_duplicate": "machine",
+    "doctor.coexist.disabled_plugin": "machine",
+    "doctor.coexist.fix_disabled_plugin": "machine",
+    "doctor.coexist.proxy": "machine",
+    "doctor.coexist.fix_proxy": "machine",
+    "doctor.coexist.output_rewriter": "machine",
+    "doctor.coexist.fix_output_rewriter": "machine",
+    "doctor.coexist.memory_tool": "machine",
+    "doctor.coexist.fix_memory_tool": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2009,6 +2022,19 @@
     "parity.issue.no_destination": "machine",
     "parity.issue.no_test": "machine",
     "parity.issue.not_green": "machine",
-    "parity.issue.removed_without_decision": "machine"
+    "parity.issue.removed_without_decision": "machine",
+    "doctor.hooks.inventory": "machine",
+    "doctor.coexist.authorities": "machine",
+    "doctor.coexist.fix_authorities": "machine",
+    "doctor.coexist.duplicate": "machine",
+    "doctor.coexist.fix_duplicate": "machine",
+    "doctor.coexist.disabled_plugin": "machine",
+    "doctor.coexist.fix_disabled_plugin": "machine",
+    "doctor.coexist.proxy": "machine",
+    "doctor.coexist.fix_proxy": "machine",
+    "doctor.coexist.output_rewriter": "machine",
+    "doctor.coexist.fix_output_rewriter": "machine",
+    "doctor.coexist.memory_tool": "machine",
+    "doctor.coexist.fix_memory_tool": "machine"
   }
 }

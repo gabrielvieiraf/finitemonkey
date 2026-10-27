@@ -1002,5 +1002,18 @@
   "parity.issue.no_destination": "sin destino: {detail}",
   "parity.issue.no_test": "sin test de paridad: {detail}",
   "parity.issue.not_green": "test de paridad no está green: {detail}",
-  "parity.issue.removed_without_decision": "eliminado sin registro de decisión enlazado: {detail}"
+  "parity.issue.removed_without_decision": "eliminado sin registro de decisión enlazado: {detail}",
+  "doctor.hooks.inventory": "{count, plural, one {# hook} other {# hooks}} de plugins y configuración (evento, origen, modo de fallo, latencia, salida, autoridad en Stop, comando):",
+  "doctor.coexist.authorities": "Otra autoridad de bucle también usa Stop: {others}. Claude Code ejecuta todos los hooks de Stop y cualquier bloqueo mantiene la sesión en marcha.",
+  "doctor.coexist.fix_authorities": "Deja un solo criterio de salida: el contrato de la tarea que revisa la puerta. Apaga el hook de Stop del otro plugin en su propia configuración; finitemonkey no lo cambia.",
+  "doctor.coexist.duplicate": "El mismo hook corre dos veces, desde un plugin y desde la configuración: {hooks}.",
+  "doctor.coexist.fix_duplicate": "Quita la copia de la configuración y deja la del plugin, o desactiva el plugin.",
+  "doctor.coexist.disabled_plugin": "El plugin {plugin} está desactivado, pero un hook de la configuración aún ejecuta sus archivos.",
+  "doctor.coexist.fix_disabled_plugin": "Quita ese hook de la configuración o vuelve a activar el plugin.",
+  "doctor.coexist.proxy": "ANTHROPIC_BASE_URL apunta a un proxy en esta máquina; ve y puede cambiar cada petición y respuesta.",
+  "doctor.coexist.fix_proxy": "Quita ANTHROPIC_BASE_URL salvo que el proxy sea tuyo y de confianza.",
+  "doctor.coexist.output_rewriter": "Hooks de {owners} corren después de las herramientas y pueden reescribir lo que el modelo lee como evidencia.",
+  "doctor.coexist.fix_output_rewriter": "Comprueba que esos hooks solo añaden contexto; la puerta confía en sus propias ejecuciones, no en la salida de las herramientas.",
+  "doctor.coexist.memory_tool": "{file} lo editó una herramienta de memoria ({tool}) después de que finitemonkey lo instalara.",
+  "doctor.coexist.fix_memory_tool": "Revisa las líneas añadidas; un archivo de instrucciones guarda reglas, no notas de sesión."
 }
