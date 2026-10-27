@@ -78,11 +78,17 @@ export const FOOTPRINT = [
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
+  {
+    id: "supply-chain",
+    kind: "writes",
+    targets: [".finitemonkey/findings/osv.json", ".github/dependabot.yml", "renovate.json"],
+  },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
   { id: "deps-registry", kind: "sends", targets: ["registry.npmjs.org", "pypi.org"], via: "curl" },
+  { id: "osv", kind: "sends", targets: ["api.osv.dev"], via: "osv-scanner" },
   {
     id: "secrets-live",
     kind: "sends",
