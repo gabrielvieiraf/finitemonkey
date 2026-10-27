@@ -85,7 +85,9 @@
             "pr_failed",
             "pr_parent_open",
             "pr_conflict",
-            "pr_outside_scope"
+            "pr_outside_scope",
+            "fronts_refused",
+            "fronts_failed"
           ]
         },
         "message": {

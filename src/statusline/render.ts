@@ -5,6 +5,7 @@ export interface Segment {
   readonly task: string | undefined;
   readonly gate: GateLight;
   readonly contextPercent: number | undefined;
+  readonly fronts?: string | undefined;
 }
 
 const SEPARATOR = " | ";
@@ -14,6 +15,7 @@ export const segmentText = (t: Translate, segment: Segment): string =>
     "fm",
     ...(segment.task === undefined ? [] : [segment.task]),
     ...(segment.gate === "none" ? [] : [t(`statusline.gate.${segment.gate}`)]),
+    ...(segment.fronts === undefined ? [] : [segment.fronts]),
     ...(segment.contextPercent === undefined ? [] : [t("statusline.context", { percent: segment.contextPercent })]),
   ].join(" · ");
 

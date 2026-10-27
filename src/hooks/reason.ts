@@ -15,7 +15,8 @@ export type ReasonFamily =
   | "gate.guard.bypass"
   | "gate.guard.self"
   | "gate.guard.tests"
-  | "gate.guard.rewrite";
+  | "gate.guard.rewrite"
+  | "fronts.block";
 
 export type HumanFamily = Extract<`${ReasonFamily}.human`, MessageKey>;
 
@@ -25,6 +26,7 @@ const familyOf = (base: ReasonBase): ReasonFamily => {
     "gate.guard.self",
     "gate.guard.tests",
     "gate.guard.rewrite",
+    "fronts.block",
     "secrets.block",
     "git.block",
     "prod.block",
@@ -58,6 +60,7 @@ export const humanFamilyKey = (base: ReasonBase): HumanFamily | undefined => {
     "git.block.human",
     "prod.block.human",
     "prose.block.human",
+    "fronts.block.human",
   ];
   return known.find((candidate) => candidate === key);
 };

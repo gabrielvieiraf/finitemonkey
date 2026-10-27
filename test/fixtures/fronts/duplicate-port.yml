@@ -1,0 +1,7 @@
+fronts:
+  - id: F1
+    paths: [src/checkout/**]
+    port: 5174
+  - id: F2
+    paths: [src/invites/**]
+    port: 5174

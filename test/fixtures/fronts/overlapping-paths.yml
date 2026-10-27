@@ -1,0 +1,5 @@
+fronts:
+  - id: F1
+    paths: [src/**]
+  - id: F2
+    paths: [src/invites/**]

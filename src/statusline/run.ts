@@ -1,5 +1,7 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { readFronts } from "../fronts/state.js";
+import { statusSegment } from "../fronts/status.js";
 import { readAll, withDeadline } from "../hooks/stdin.js";
 import { LOCK_FILE } from "../install/layout.js";
 import { parseLock } from "../install/lock-file.js";
@@ -29,6 +31,11 @@ const columnsOf = (ctx: Ctx): number | undefined => {
   return Number.isInteger(columns) && columns > 0 ? columns : undefined;
 };
 
+const frontsSegment = (ctx: Ctx, root: AbsolutePath): string | undefined => {
+  const state = readFronts(ctx.runtime, root);
+  return state.ok ? statusSegment(state.value) : undefined;
+};
+
 const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
   const start = input.dir === undefined ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
   const root = findGitRoot(start, ctx.runtime);
@@ -48,6 +55,7 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
     task: paths === undefined ? undefined : readState(ctx.runtime, paths).active,
     gate: paths === undefined ? "none" : gateLight(ctx.runtime, paths),
     contextPercent: input.contextPercent,
+    fronts: root === undefined ? undefined : frontsSegment(ctx, root),
   });
   return composeLine(wrapped, segment, columnsOf(ctx));
 };

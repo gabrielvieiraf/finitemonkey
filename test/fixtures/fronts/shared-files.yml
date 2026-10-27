@@ -1,0 +1,7 @@
+fronts:
+  - id: F1
+    paths: [src/checkout/**]
+    shared_files: [src/app.ts, src/theme.css]
+  - id: F2
+    paths: [src/invites/**]
+    shared_files: [src/app.ts]

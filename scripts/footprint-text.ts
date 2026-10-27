@@ -97,6 +97,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR": "Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch.",
     es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
   },
+  fronts: {
+    en: "The state of a wave of parallel fronts: scope, worktree, branch, port, agent, status and inbox of each front. Local, never committed.",
+    "pt-BR":
+      "O estado de uma onda de frentes paralelas: escopo, worktree, branch, porta, agente, status e inbox de cada frente. Local, nunca vai para commit.",
+    es: "El estado de una ola de frentes paralelas: alcance, worktree, rama, puerto, agente, estado e inbox de cada frente. Local, nunca se commitea.",
+  },
   profile: {
     en: "The person's level per domain; the infrastructure level picks the git defaults (intermediate when missing).",
     "pt-BR":

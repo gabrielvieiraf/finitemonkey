@@ -3,6 +3,7 @@ import { costCheckCommand, costInitCommand } from "./cost.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { doctorCommand } from "./doctor.js";
+import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
@@ -64,6 +65,8 @@ export const REGISTRY = [
   mergeVerifyCommand,
   mergeCommand,
   prOpenCommand,
+  frontsPlanCommand,
+  frontsStatusCommand,
   appCheckCommand,
   commitMsgCommand,
   pushCheckCommand,

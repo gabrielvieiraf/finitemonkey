@@ -68,6 +68,8 @@ export const ERROR_CODES = [
   "pr_parent_open",
   "pr_conflict",
   "pr_outside_scope",
+  "fronts_refused",
+  "fronts_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
