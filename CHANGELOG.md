@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.24](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.23...v0.1.0-next.24) (2026-10-27)
+
+### Features
+
+* **statusline:** gate state, active task and "gate did not run" in the status bar ([#161](https://github.com/gabrielvieiraf/finitemonkey/issues/161)) ([6523377](https://github.com/gabrielvieiraf/finitemonkey/commit/6523377ef36684c907eaac75377688d0c8818834)), closes [#41](https://github.com/gabrielvieiraf/finitemonkey/issues/41) [#151](https://github.com/gabrielvieiraf/finitemonkey/issues/151)
+
 ## [0.1.0-next.23](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.22...v0.1.0-next.23) (2026-10-27)
 
 ### Features
