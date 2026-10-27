@@ -743,7 +743,15 @@
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1489,6 +1497,14 @@
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   }
 }

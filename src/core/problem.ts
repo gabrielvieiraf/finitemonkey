@@ -53,6 +53,7 @@ export const ERROR_CODES = [
   "look_unavailable",
   "critique_must_fix",
   "plan_write_failed",
+  "findings_not_found",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

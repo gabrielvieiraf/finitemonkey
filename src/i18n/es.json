@@ -742,5 +742,13 @@
   "gate.inventory.missing": "ningún inventario en docs/plan; ejecuta finitemonkey inventory <tema>",
   "gate.inventory.expired": "{report} venció: {count, plural, one {# ruta cubierta cambió} other {# rutas cubiertas cambiaron}} desde {hash} ({paths}); ejecuta finitemonkey inventory {topic} para el delta",
   "gate.inventory.unknown": "{report} cita {hash} en {repo}, un commit que este clon no puede leer",
-  "gate.inventory.fresh": "{count, plural, one {# inventario coincide} other {# inventarios coinciden}} con las rutas cubiertas"
+  "gate.inventory.fresh": "{count, plural, one {# inventario coincide} other {# inventarios coinciden}} con las rutas cubiertas",
+  "findings.command.accept": "Acepta un hallazgo de cualquier comprobación en el baseline compartido, con responsable, motivo y vencimiento (solo la persona)",
+  "findings.command.list": "Lista los hallazgos aceptados de todas las comprobaciones, con responsable y vencimiento",
+  "findings.accept.done": "{id} ({check}, {rule}) en {where} aceptado, con {owner} como responsable hasta {expires}.",
+  "findings.error.not_found": "Ningún hallazgo actual tiene el id {id}",
+  "findings.list.empty": "El baseline de hallazgos está vacío.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, hasta {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, venció el {expires}; vuelve a bloquear",
+  "gate.findings.grew": "El baseline de hallazgos pasó de {before} a {after} entradas en esta sesión; un hallazgo aceptado necesita un motivo que la persona pueda defender."
 }

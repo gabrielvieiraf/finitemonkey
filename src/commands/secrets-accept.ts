@@ -60,6 +60,7 @@ interface AcceptArgs {
 const entryOf = (ctx: Ctx, finding: LocatedFinding, args: AcceptArgs): BaselineEntry => {
   const now = ctx.runtime.now();
   return {
+    check: "secrets",
     id: finding.id,
     rule: finding.ruleId,
     file: finding.file,
