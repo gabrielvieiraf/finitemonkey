@@ -989,7 +989,16 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "routine.header": "machine",
+    "routine.cwd": "machine",
+    "routine.state": "machine",
+    "routine.gate_none": "machine",
+    "routine.commits": "machine",
+    "routine.start": "machine",
+    "routine.start_unknown": "machine",
+    "routine.check": "machine",
+    "routine.check_unknown": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1981,6 +1990,15 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "routine.header": "machine",
+    "routine.cwd": "machine",
+    "routine.state": "machine",
+    "routine.gate_none": "machine",
+    "routine.commits": "machine",
+    "routine.start": "machine",
+    "routine.start_unknown": "machine",
+    "routine.check": "machine",
+    "routine.check_unknown": "machine"
   }
 }

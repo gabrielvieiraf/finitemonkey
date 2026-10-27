@@ -8,6 +8,7 @@ import { lookReadTracker } from "../../look/reads.js";
 import { pausePrompt, unlessPaused } from "../../policy/pause-hooks.js";
 import { budgetPrompt } from "../../spend/hook.js";
 import { configChange } from "./config.js";
+import { permissionDenied } from "./permission.js";
 import { promptRelease } from "./prompt.js";
 import { preCompact, sessionStart } from "./session.js";
 import { stopGate, subagentStopGate } from "./stop.js";
@@ -23,4 +24,5 @@ export const PORTAO_HANDLERS: HookHandlers = {
   PreCompact: [preCompact],
   SessionStart: [sessionStart],
   ConfigChange: [configChange],
+  PermissionDenied: [permissionDenied],
 };

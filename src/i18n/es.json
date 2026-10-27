@@ -988,5 +988,14 @@
   "budget.reconcile.missing": "{tool} no está instalado o no respondió; no se comparó nada",
   "budget.reconcile.done": "Comparado con {tool}; las diferencias fueron a {file} (nuestro, de ellos, diferencia):",
   "statusline.budget": "gasto {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "routine.header": "finitemonkey: la tarea {task} (tamaño {size}) está activa. Antes de editar, comprueba que la base funciona:",
+  "routine.cwd": "- directorio de trabajo: {dir}",
+  "routine.state": "- tarea: {goal}; última puerta: {gate}",
+  "routine.gate_none": "todavía no se ejecutó",
+  "routine.commits": "- últimos commits: {list}",
+  "routine.start": "- arrancar la aplicación: {command}",
+  "routine.start_unknown": "- arrancar la aplicación: no hay comando de inicio en el contrato ni en .finitemonkey/look.yml",
+  "routine.check": "- una comprobación de punta a punta antes de la primera edición: {command}",
+  "routine.check_unknown": "- una comprobación de punta a punta antes de la primera edición: el contrato no tiene una comprobación ejecutable; arranca la aplicación y prueba el flujo principal una vez"
 }
