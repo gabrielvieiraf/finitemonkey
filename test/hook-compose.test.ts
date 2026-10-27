@@ -85,7 +85,8 @@ describe("guard composition", () => {
         return block ? { kind: "block", reason: name } : { kind: "allow", output: { systemMessage: name } };
       };
     const decision = await composeDecisions(input(), [guard("a", false), guard("b", true), guard("c", true)]);
-    assert.deepEqual(decision, { kind: "block", reason: "b" });
+    assert.equal(decision.kind, "block");
+    assert.equal(decision.reason, "b");
     assert.deepEqual(ran, ["a", "b"]);
   });
 

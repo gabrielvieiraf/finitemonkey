@@ -7,7 +7,7 @@ import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { type HookOutcome, runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { proseInCommand } from "../src/prose/command-text.js";
-import { fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
+import { fakeRuntime, field, parseBody, reasonText, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const GABRIEL = { [`${ROOT}/.finitemonkey/config.yml`]: "schemaVersion: 1\npreset: gabriel\nlang: en\n" };
@@ -57,7 +57,10 @@ describe("prose check on commit, PR and issue text", () => {
     it(`${name}: blocks in the gabriel preset`, async () => {
       const outcome = await fire(bash(command), fakeRuntime({ files: GABRIEL }));
       assert.equal(outcome.verdict, "block");
-      assert.match(outcome.stderr, /blocked: .*reads as machine-written .*Rewrite it and run the command again/);
+      assert.match(
+        reasonText(outcome),
+        /blocked: [\s\S]*reads as machine-written [\s\S]*Rewrite it and run the command again/,
+      );
     });
   }
 
@@ -65,7 +68,7 @@ describe("prose check on commit, PR and issue text", () => {
     const command = bash(`git commit -m "docs: introdução do readme com o texto do gabriel"`);
     const outcome = await fire(command, fakeRuntime({ files: GABRIEL }));
     assert.equal(outcome.verdict, "block");
-    assert.match(outcome.stderr, /person-as-reason/);
+    assert.match(reasonText(outcome), /person-as-reason/);
     assert.match(context(await fire(command)), /person-as-reason/);
   });
 
@@ -77,7 +80,7 @@ describe("prose check on commit, PR and issue text", () => {
 
   it("a missing --body-file blocks in the gabriel preset and passes in neutral", async () => {
     const command = bash("gh pr create --title x --body-file missing.md");
-    assert.match((await fire(command, fakeRuntime({ files: GABRIEL }))).stderr, /could not read missing\.md/);
+    assert.match(reasonText(await fire(command, fakeRuntime({ files: GABRIEL }))), /could not read missing\.md/);
     assert.equal((await fire(command)).verdict, "allow");
   });
 
@@ -122,7 +125,7 @@ describe("the allow marker is the person's, never the model's", () => {
     it(`blocks: ${name}`, async () => {
       const outcome = await fire(input);
       assert.equal(outcome.verdict, "block");
-      assert.match(outcome.stderr, /only the person can add it/);
+      assert.match(reasonText(outcome), /only the person can add it/);
     });
   }
 

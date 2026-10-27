@@ -15,7 +15,16 @@ import { recordIncident } from "../src/secrets/incidents.js";
 import { RUNBOOK_SECTIONS, runbookProblems } from "../src/secrets/runbook-check.js";
 import { RUNBOOK_PROVIDERS, runbookLink, runbookProvider } from "../src/secrets/runbooks.js";
 import { SAMPLES } from "./secret-samples.js";
-import { cliJson, execResult, fakeRuntime, field, ROOT as REPO, stdinFrom, TEST_VERSION } from "./support.js";
+import {
+  cliJson,
+  execResult,
+  fakeRuntime,
+  field,
+  reasonText,
+  ROOT as REPO,
+  stdinFrom,
+  TEST_VERSION,
+} from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const RUNBOOKS = join(REPO, "runbooks");
@@ -182,7 +191,7 @@ describe("optional live-key check", () => {
       runtime,
     });
     assert.equal(outcome.verdict, "block");
-    assert.match(outcome.stderr, /decision for the person/);
+    assert.match(reasonText(outcome), /decision for the person/);
   });
 
   it("never runs from a hook: only the command module imports the live check", () => {

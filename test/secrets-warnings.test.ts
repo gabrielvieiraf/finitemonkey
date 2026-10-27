@@ -13,7 +13,7 @@ import { remotesWithCredentials } from "../src/secrets/remotes.js";
 import { fmPaths } from "../src/task/paths.js";
 import { git, hook, tempRepo } from "./git-support.js";
 import { SAMPLES } from "./secret-samples.js";
-import { cliJson, fakeRuntime, field, gitMissing, stdinFrom } from "./support.js";
+import { cliJson, fakeRuntime, field, gitMissing, reasonText, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const t = createTranslator("en");
@@ -56,7 +56,7 @@ describe("warning rules do not block a write", () => {
   it("a credential next to a warning still blocks", async () => {
     const outcome = await writeHook("compose.yaml", `${ARG_LINE}\nTOKEN=${SAMPLES.githubPat}\n`);
     assert.equal(outcome.verdict, "block");
-    assert.match(outcome.stderr, /github-pat/);
+    assert.match(reasonText(outcome), /github-pat/);
   });
 });
 

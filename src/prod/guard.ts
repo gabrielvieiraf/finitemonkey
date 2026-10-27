@@ -5,6 +5,7 @@ import type { Runtime } from "../core/runtime.js";
 import { commandText } from "../git/command-text.js";
 import { memo, memoBy } from "../git/facts.js";
 import { loadProjectConfig } from "../git/project-config.js";
+import { modelReason } from "../hooks/reason.js";
 import type { Translate } from "../i18n/translate.js";
 import type { ShellCommand } from "../shell/types.js";
 import { type IsProdHost, type ProdHit, prodHit } from "./classify.js";
@@ -63,8 +64,12 @@ const blockOf = (t: Translate, hit: ProdHit, command: string, deploy: string | u
   kind: "block",
   reason:
     hit.effect === "interactive"
-      ? t("prod.block.interactive", { command, target: hit.target })
-      : t("prod.block.effect", { command, target: hit.target, deploy: deploy ?? t("prod.deploy.unknown") }),
+      ? modelReason(t, "prod.block.interactive", { command, target: hit.target })
+      : modelReason(t, "prod.block.effect", {
+          command,
+          target: hit.target,
+          deploy: deploy ?? t("prod.deploy.unknown"),
+        }),
 });
 
 export const prodGuard = (runtime: Runtime, root: AbsolutePath, t: Translate): ProdGuard => {

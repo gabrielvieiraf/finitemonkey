@@ -3,6 +3,7 @@ import { relative } from "node:path";
 import type { AbsolutePath } from "../../core/brand.js";
 import { optionalString } from "../../core/parsed.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
+import { modelReason } from "../../hooks/reason.js";
 import type { Translate } from "../../i18n/translate.js";
 import { scanText } from "../engine.js";
 import { blocking, isWarning } from "../rules/types.js";
@@ -47,7 +48,11 @@ const writeDecision = (input: HookInput, tool: string): HookDecision => {
         ? t("secrets.where.file", { file, line: finding.line, column: finding.column })
         : t("secrets.where.new_text", { file, line: finding.line }),
     }));
-    return { kind: "block", reason: t("secrets.block.write", { file, found: describeFindings(t, items) }) };
+    return {
+      kind: "block",
+      reason: modelReason(t, "secrets.block.write", { file, found: describeFindings(t, items) }),
+      human: t("secrets.block.human"),
+    };
   }
   return warningDecision(t, warnings);
 };
@@ -55,11 +60,11 @@ const writeDecision = (input: HookInput, tool: string): HookDecision => {
 const bashMessage = (t: Translate, finding: BashFinding): string => {
   switch (finding.kind) {
     case "read":
-      return t("secrets.block.read", { target: finding.target });
+      return modelReason(t, "secrets.block.read", { target: finding.target });
     case "env-dump":
-      return t("secrets.block.env_dump", { command: finding.command });
+      return modelReason(t, "secrets.block.env_dump", { command: finding.command });
     case "person-only":
-      return t("secrets.block.person_only", { command: finding.command });
+      return modelReason(t, "secrets.block.person_only", { command: finding.command });
   }
 };
 
@@ -71,7 +76,11 @@ const commitDecision = (input: HookInput, includeUnstaged: boolean): HookDecisio
     ruleId: finding.ruleId,
     where: input.t("secrets.where.file", { file: finding.file, line: finding.line, column: finding.column }),
   }));
-  return { kind: "block", reason: input.t("secrets.block.commit", { found: describeFindings(input.t, items) }) };
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "secrets.block.commit", { found: describeFindings(input.t, items) }),
+    human: input.t("secrets.block.human"),
+  };
 };
 
 const bashDecision = (input: HookInput): HookDecision => {
@@ -83,7 +92,11 @@ const bashDecision = (input: HookInput): HookDecision => {
   const found = blocking(scanText(command));
   if (found.length > 0) {
     const items = found.map((finding) => ({ ruleId: finding.ruleId, where: lineWhere(input.t, finding) }));
-    return { kind: "block", reason: input.t("secrets.block.bash", { found: describeFindings(input.t, items) }) };
+    return {
+      kind: "block",
+      reason: modelReason(input.t, "secrets.block.bash", { found: describeFindings(input.t, items) }),
+      human: input.t("secrets.block.human"),
+    };
   }
   const commit = commitIntent(segments);
   return commit === undefined ? ALLOW : commitDecision(input, commit.includeUnstaged);
@@ -93,7 +106,11 @@ const readDecision = (input: HookInput): HookDecision => {
   const inputs = toolInput(input.payload);
   const target = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
   if (target === "" || !isSensitivePath(target)) return ALLOW;
-  return { kind: "block", reason: input.t("secrets.block.read", { target: relativeFile(input.cwd, target) }) };
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "secrets.block.read", { target: relativeFile(input.cwd, target) }),
+    human: input.t("secrets.block.human"),
+  };
 };
 
 const WRITERS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);

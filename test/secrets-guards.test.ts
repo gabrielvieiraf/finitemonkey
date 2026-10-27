@@ -8,7 +8,7 @@ import { type HookOutcome, runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { listIncidents } from "../src/secrets/incidents.js";
 import { SAMPLES } from "./secret-samples.js";
-import { fakeRuntime, stdinFrom } from "./support.js";
+import { fakeRuntime, reasonText, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 
@@ -94,9 +94,9 @@ describe("PreToolUse secrets guard: writes", () => {
         return;
       }
       assert.equal(outcome.verdict, "block");
-      assert.equal(outcome.exitCode, 2);
-      assert.match(outcome.stderr, block);
-      assert.match(outcome.stderr, /Nothing was written/);
+      assert.equal(outcome.exitCode, 0);
+      assert.match(reasonText(outcome), block);
+      assert.match(reasonText(outcome), /Nothing was written/);
     });
   }
 });
@@ -153,7 +153,7 @@ describe("PreToolUse secrets guard: Bash", () => {
       const outcome = await fire("PreToolUse", tool("Bash", { command }));
       assertNoLeak(outcome);
       if (block === undefined) assert.equal(outcome.verdict, "allow", outcome.stderr);
-      else assert.match(outcome.stderr, block);
+      else assert.match(reasonText(outcome), block);
     });
   }
 
@@ -179,14 +179,14 @@ describe("PreToolUse secrets guard: Bash", () => {
   it("git commit with a staged secret is blocked with file and line", async () => {
     const runtime = fakeRuntime({ git: gitWith(diff(SAMPLES.githubPat), "") });
     const outcome = await fire("PreToolUse", tool("Bash", { command: 'git commit -m "feat: x"' }), runtime);
-    assert.match(outcome.stderr, /staged changes have a credential \(github-pat at src\/a\.ts:5:12\)/);
+    assert.match(reasonText(outcome), /staged changes have a credential \(github-pat at src\/a\.ts:5:12\)/);
     assertNoLeak(outcome);
   });
 
   it("git commit -am also looks at unstaged tracked changes", async () => {
     const runtime = fakeRuntime({ git: gitWith("", diff(SAMPLES.npmToken)) });
     const outcome = await fire("PreToolUse", tool("Bash", { command: 'git -C . commit -am "fix: y"' }), runtime);
-    assert.match(outcome.stderr, /npm-access-token at src\/a\.ts:5/);
+    assert.match(reasonText(outcome), /npm-access-token at src\/a\.ts:5/);
   });
 
   it("git commit with clean staged changes passes", async () => {
