@@ -556,7 +556,17 @@
     "pause.on": "machine",
     "pause.report": "machine",
     "pause.no_session": "machine",
-    "pause.error.person_only": "machine"
+    "pause.error.person_only": "machine",
+    "secrets.incident.runbook": "machine",
+    "secrets.command.live": "machine",
+    "secrets.action.live": "machine",
+    "secrets.live.dry": "machine",
+    "secrets.live.contacting": "machine",
+    "secrets.live.live": "machine",
+    "secrets.live.rejected": "machine",
+    "secrets.live.unknown": "machine",
+    "secrets.live.unreachable": "machine",
+    "secrets.live.no_value": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1115,6 +1125,16 @@
     "pause.on": "machine",
     "pause.report": "machine",
     "pause.no_session": "machine",
-    "pause.error.person_only": "machine"
+    "pause.error.person_only": "machine",
+    "secrets.incident.runbook": "machine",
+    "secrets.command.live": "machine",
+    "secrets.action.live": "machine",
+    "secrets.live.dry": "machine",
+    "secrets.live.contacting": "machine",
+    "secrets.live.live": "machine",
+    "secrets.live.rejected": "machine",
+    "secrets.live.unknown": "machine",
+    "secrets.live.unreachable": "machine",
+    "secrets.live.no_value": "machine"
   }
 }

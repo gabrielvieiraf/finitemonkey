@@ -14,6 +14,7 @@ import {
   saveIncident,
 } from "../secrets/incidents.js";
 import { isPerson, personName, projectRoot } from "../secrets/project.js";
+import { runbookLink } from "../secrets/runbooks.js";
 import { writeFailed } from "./secrets-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -52,12 +53,23 @@ const itemLine = (ctx: Ctx, incident: Incident): string =>
     created: incident.createdAt.slice(0, 10),
   });
 
+const itemLines = (ctx: Ctx, incident: Incident & { readonly runbook: string }): readonly string[] => [
+  itemLine(ctx, incident),
+  ctx.t("secrets.incident.runbook", { link: incident.runbook }),
+];
+
 const list = (ctx: Ctx, root: AbsolutePath): CommandResult => {
-  const incidents = listIncidents(ctx.runtime, root);
+  const incidents = listIncidents(ctx.runtime, root).map((incident) => ({
+    ...incident,
+    runbook: runbookLink(ctx.runtime, incident.rule),
+  }));
   const human =
     incidents.length === 0
       ? [ctx.t("secrets.incident.none")]
-      : [ctx.t("secrets.incident.title", { count: incidents.length }), ...incidents.map((item) => itemLine(ctx, item))];
+      : [
+          ctx.t("secrets.incident.title", { count: incidents.length }),
+          ...incidents.flatMap((item) => itemLines(ctx, item)),
+        ];
   return success({ schema: "finitemonkey/secrets-incidents@1", incidents }, human);
 };
 

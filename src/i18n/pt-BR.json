@@ -555,5 +555,15 @@
   "pause.on": "Portão retomado.",
   "pause.report": "O portão não conferiu esta parada: a pessoa pausou com fm off em {since}.",
   "pause.no_session": "Ainda não há sessão do Claude Code registrada neste projeto; abra uma e rode de novo, ou digite `fm off` nela.",
-  "pause.error.person_only": "Só a pessoa pode pausar ou retomar o portão, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)"
+  "pause.error.person_only": "Só a pessoa pode pausar ou retomar o portão, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
+  "secrets.incident.runbook": "    passo a passo: {link}",
+  "secrets.command.live": "Verifica se uma chave ainda funciona no provedor (desligado por padrão; só envia com --send e mostra o host antes)",
+  "secrets.action.live": "enviar uma chave ao provedor",
+  "secrets.live.dry": "Nada foi enviado. Com --send, o valor de ${variable} iria para {host} ({url}) para ver se a chave {provider} ainda funciona. Rode você mesmo, no seu terminal, com --send.",
+  "secrets.live.contacting": "Contatando {host} ({url}) com a chave; o valor vai para o curl pela entrada padrão, nunca como argumento.",
+  "secrets.live.live": "A chave em ${variable} ainda funciona em {host} (HTTP {status}). Revogue agora: veja o passo a passo em `finitemonkey secrets incident`.",
+  "secrets.live.rejected": "{host} recusou a chave em ${variable} (HTTP {status}): ela não funciona mais.",
+  "secrets.live.unknown": "{host} respondeu HTTP {status}; isso não diz se a chave em ${variable} funciona. Confira no painel do provedor.",
+  "secrets.live.unreachable": "Não deu para alcançar {host} com o curl, então a chave em ${variable} não foi verificada.",
+  "secrets.live.no_value": "${variable} está vazia ou não existe neste terminal; exporte antes, nada foi enviado"
 }

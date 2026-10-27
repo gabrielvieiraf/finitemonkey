@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import { ExitCode } from "../src/exit-codes.js";
+import { lineDiff } from "../src/install/diff.js";
 import {
   CONFIG_FILE,
   LOCK_FILE,
@@ -294,5 +295,20 @@ describe("Windows-style paths in the fake file system", () => {
     assert.equal(fs.read(at(SETTINGS_FILE)), original);
     assert.equal(fs.read(windows(at(".gitignore"))), "x\r\n");
     assert.equal(fs.read(at(CONFIG_FILE)), undefined);
+  });
+});
+
+describe("line diff of a large vendored file", () => {
+  const big = Array.from({ length: 40_000 }, (_, index) => `const line${String(index)} = ${String(index)};`);
+
+  it("is empty for identical text and only shows the changed middle otherwise", () => {
+    const text = big.join("\n");
+    assert.deepEqual(lineDiff("dist/x.mjs", text, text), []);
+    const changed = [...big.slice(0, 20_000), "const added = true;", ...big.slice(20_000)].join("\n");
+    assert.deepEqual(lineDiff("dist/x.mjs", text, changed), [
+      "--- dist/x.mjs",
+      "+++ dist/x.mjs",
+      "+ const added = true;",
+    ]);
   });
 });

@@ -22,6 +22,7 @@ export const ERROR_CODES = [
   "secrets_incident_not_found",
   "secrets_not_rotated",
   "secrets_write_failed",
+  "secrets_live_unreachable",
   "settings_unreadable",
   "lock_unreadable",
   "install_locked",

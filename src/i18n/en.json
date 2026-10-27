@@ -555,5 +555,15 @@
   "pause.on": "Gate resumed.",
   "pause.report": "The gate did not check this stop: the person paused it with fm off at {since}.",
   "pause.no_session": "No Claude Code session is recorded for this project yet; start one, then run this again or type `fm off` there.",
-  "pause.error.person_only": "Only the person can pause or resume the gate, and this does not look like their terminal (no TTY, or running inside Claude Code)"
+  "pause.error.person_only": "Only the person can pause or resume the gate, and this does not look like their terminal (no TTY, or running inside Claude Code)",
+  "secrets.incident.runbook": "    runbook: {link}",
+  "secrets.command.live": "Check whether a key still works with its provider (off by default; sends only with --send, and prints the host first)",
+  "secrets.action.live": "send a key to its provider",
+  "secrets.live.dry": "Nothing was sent. With --send, the value of ${variable} would go to {host} ({url}) to check whether the {provider} key still works. Run it yourself, in your own terminal, with --send.",
+  "secrets.live.contacting": "Contacting {host} ({url}) with the key; the value is passed to curl on stdin, never as an argument.",
+  "secrets.live.live": "The key in ${variable} still works at {host} (HTTP {status}). Revoke it now: see the runbook in `finitemonkey secrets incident`.",
+  "secrets.live.rejected": "{host} rejected the key in ${variable} (HTTP {status}): it no longer works.",
+  "secrets.live.unknown": "{host} answered HTTP {status}; that does not say whether the key in ${variable} works. Check it in the provider's console.",
+  "secrets.live.unreachable": "Could not reach {host} with curl, so the key in ${variable} was not checked.",
+  "secrets.live.no_value": "${variable} is empty or not set in this terminal; export it first, nothing was sent"
 }
