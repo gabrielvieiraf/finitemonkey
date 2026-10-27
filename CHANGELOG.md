@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.22](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.21...v0.1.0-next.22) (2026-10-27)
+
+### Features
+
+* **hooks:** three-line factual reasons for the model, a human line for the person ([#159](https://github.com/gabrielvieiraf/finitemonkey/issues/159)) ([a83072b](https://github.com/gabrielvieiraf/finitemonkey/commit/a83072be216a6e93eb560bc64106a79ac38748f6)), closes [#45](https://github.com/gabrielvieiraf/finitemonkey/issues/45) [#155](https://github.com/gabrielvieiraf/finitemonkey/issues/155) [#155](https://github.com/gabrielvieiraf/finitemonkey/issues/155)
+
 ## [0.1.0-next.21](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.20...v0.1.0-next.21) (2026-10-27)
 
 ### Features
