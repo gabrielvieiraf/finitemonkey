@@ -1,6 +1,7 @@
 import { appCheckCommand } from "./app-check.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { doctorCommand } from "./doctor.js";
+import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
@@ -40,6 +41,8 @@ export const REGISTRY = [
   taskDoneCommand,
   secretsScanCommand,
   secretsAcceptCommand,
+  findingsAcceptCommand,
+  findingsListCommand,
   policyFalsePositiveCommand,
   offCommand,
   onCommand,

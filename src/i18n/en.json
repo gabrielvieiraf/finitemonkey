@@ -699,5 +699,13 @@
   "deps.finding.young": "{name} has little history: first published {days, plural, one {# day} other {# days}} ago, {count, plural, one {# version} other {# versions}}.",
   "deps.finding.fresh": "{name}@{version} was published {hours, plural, one {# hour} other {# hours}} ago; prefer a version at least {days, plural, one {# day} other {# days}} old.",
   "deps.finding.script": "{name}@{version} adds an install script that the previous version did not have; read it before installing.",
-  "deps.finding.unchecked": "{name} was not checked on {registry} (offline or no answer in time), so only the spelling was checked."
+  "deps.finding.unchecked": "{name} was not checked on {registry} (offline or no answer in time), so only the spelling was checked.",
+  "findings.command.accept": "Accept a finding from any check into the shared baseline, with owner, reason and expiry (person only)",
+  "findings.command.list": "List the accepted findings of every check, with owner and expiry",
+  "findings.accept.done": "Accepted {id} ({check}, {rule}) at {where}, owned by {owner} until {expires}.",
+  "findings.error.not_found": "No current finding has the id {id}",
+  "findings.list.empty": "The findings baseline is empty.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, until {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, expired on {expires}; it blocks again",
+  "gate.findings.grew": "The findings baseline grew from {before} to {after} entries during this session; accepted findings need a reason the person can defend."
 }

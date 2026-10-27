@@ -12,8 +12,8 @@ import {
   type InScope,
   loadBaseline,
   ratchet,
-  type RatchetResult,
   saveBaseline,
+  type SecretsRatchet,
   withoutFixed,
 } from "../secrets/baseline.js";
 import { HOOK_ACTOR } from "../secrets/guards/exposure.js";
@@ -115,7 +115,7 @@ const historyIncidents = (ctx: Ctx, root: AbsolutePath, fresh: readonly LocatedF
     return saved.ok ? [saved.value.id] : [];
   });
 
-const dataOf = (mode: ScanMode, outcome: RatchetResult, incidents: readonly string[]): SecretsScanData => {
+const dataOf = (mode: ScanMode, outcome: SecretsRatchet, incidents: readonly string[]): SecretsScanData => {
   const findings = [
     ...outcome.fresh.map((finding) => view(finding, "new")),
     ...outcome.known.map((finding) => view(finding, "known")),
@@ -170,7 +170,7 @@ const resultOf = (ctx: Ctx, data: SecretsScanData): CommandResult<SecretsScanDat
   );
 };
 
-const prune = (ctx: Ctx, root: AbsolutePath, baseline: Baseline, outcome: RatchetResult): void => {
+const prune = (ctx: Ctx, root: AbsolutePath, baseline: Baseline, outcome: SecretsRatchet): void => {
   if (outcome.fixed.length > 0) saveBaseline(ctx.runtime, root, withoutFixed(baseline, outcome.fixed));
 };
 

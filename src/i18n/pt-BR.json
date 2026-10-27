@@ -699,5 +699,13 @@
   "deps.finding.young": "{name} tem pouco histórico: publicado pela primeira vez há {days, plural, one {# dia} other {# dias}}, {count, plural, one {# versão} other {# versões}}.",
   "deps.finding.fresh": "{name}@{version} saiu há {hours, plural, one {# hora} other {# horas}}; prefira uma versão com pelo menos {days, plural, one {# dia} other {# dias}}.",
   "deps.finding.script": "{name}@{version} traz um script de instalação que a versão anterior não tinha; leia antes de instalar.",
-  "deps.finding.unchecked": "{name} não foi conferido no {registry} (sem rede ou sem resposta a tempo), então só a grafia foi checada."
+  "deps.finding.unchecked": "{name} não foi conferido no {registry} (sem rede ou sem resposta a tempo), então só a grafia foi checada.",
+  "findings.command.accept": "Aceita um achado de qualquer checagem no baseline compartilhado, com dono, motivo e validade (só a pessoa)",
+  "findings.command.list": "Lista os achados aceitos de todas as checagens, com dono e validade",
+  "findings.accept.done": "{id} ({check}, {rule}) em {where} aceito, com {owner} como dono até {expires}.",
+  "findings.error.not_found": "Nenhum achado atual tem o id {id}",
+  "findings.list.empty": "O baseline de achados está vazio.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, até {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, venceu em {expires}; volta a bloquear",
+  "gate.findings.grew": "O baseline de achados cresceu de {before} para {after} entradas nesta sessão; achado aceito precisa de um motivo que a pessoa defenda."
 }

@@ -700,7 +700,15 @@
     "deps.finding.young": "machine",
     "deps.finding.fresh": "machine",
     "deps.finding.script": "machine",
-    "deps.finding.unchecked": "machine"
+    "deps.finding.unchecked": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1403,6 +1411,14 @@
     "deps.finding.young": "machine",
     "deps.finding.fresh": "machine",
     "deps.finding.script": "machine",
-    "deps.finding.unchecked": "machine"
+    "deps.finding.unchecked": "machine",
+    "findings.command.accept": "machine",
+    "findings.command.list": "machine",
+    "findings.accept.done": "machine",
+    "findings.error.not_found": "machine",
+    "findings.list.empty": "machine",
+    "findings.list.entry": "machine",
+    "findings.list.expired": "machine",
+    "gate.findings.grew": "machine"
   }
 }
