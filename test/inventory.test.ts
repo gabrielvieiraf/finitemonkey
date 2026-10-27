@@ -3,6 +3,7 @@ import { after, describe, it } from "node:test";
 
 import { inventoryOutcome } from "../src/gate/checks/inventory.js";
 import { inventoryStates } from "../src/inventory/expiry.js";
+import { CREDENTIAL_HINTS, ENV, JOBS, QUEUES, ROUTES, TABLES } from "../src/inventory/patterns.js";
 import { readFront } from "../src/plan/front.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { SAMPLES } from "./secret-samples.js";
@@ -35,6 +36,12 @@ const inventory = async (repo: Repo, ...args: readonly string[]) =>
 const gateStatus = (repo: Repo): string => inventoryOutcome(inventoryStates(repoRuntime(), repo.root)).status;
 
 describe("finitemonkey inventory", () => {
+  it("uses only POSIX ERE in git grep patterns, so macOS finds the same lines", () => {
+    for (const grep of [ROUTES, TABLES, QUEUES, JOBS, ENV, CREDENTIAL_HINTS]) {
+      assert.doesNotMatch(grep.pattern, /\\[bBdDsSwW<>]/, grep.pattern);
+    }
+  });
+
   it("starts the report with the hash of every repo read", async () => {
     const main = app();
     const other = makeRepo({ "lib/a.js": "export const a = 1;\n" });
