@@ -3,6 +3,7 @@ import { optionalString } from "../core/parsed.js";
 import { gitInvocation } from "../git/invocation.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
+import { levelRules } from "../profile/level.js";
 import { projectPreset } from "../prose/preset.js";
 import { toolInput, toolName } from "../secrets/guards/tool-input.js";
 import { dialectOf, normalizeCommand } from "../shell/normalize.js";
@@ -33,7 +34,12 @@ const isPrOpenAccepting = (command: ShellCommand): boolean =>
   command.args.includes("open") &&
   command.args.some((arg) => arg === "--accept-outside" || arg.startsWith("--accept-outside="));
 
-type PrBlock = "git.block.pr_create" | "git.block.pr_merge" | "git.block.branch_name" | "git.block.pr_headless";
+type PrBlock =
+  | "git.block.pr_create"
+  | "git.block.pr_merge"
+  | "git.block.pr_merge_beginner"
+  | "git.block.branch_name"
+  | "git.block.pr_headless";
 
 const block = (input: HookInput, key: PrBlock, subject: string): HookDecision => ({
   kind: "block",
@@ -52,6 +58,13 @@ const ask = (input: HookInput, subject: string): HookDecision => ({
   },
 });
 
+const mergeDecision = (input: HookInput, command: ShellCommand, text: string): HookDecision | undefined => {
+  const rule = levelRules(input.runtime, input.cwd).mergeDefault;
+  if (rule === "never") return block(input, "git.block.pr_merge_beginner", text);
+  if (rule === "pr-auto" && !command.args.includes("--auto")) return block(input, "git.block.pr_merge", text);
+  return undefined;
+};
+
 const branchDecision = (input: HookInput, name: string): HookDecision => {
   if (isConventionalBranch(name)) return ALLOW;
   if (projectPreset(input.runtime, input.cwd) === "gabriel") return block(input, "git.block.branch_name", name);
@@ -62,7 +75,7 @@ const branchDecision = (input: HookInput, name: string): HookDecision => {
 const commandDecision = (input: HookInput, command: ShellCommand, text: string): HookDecision | undefined => {
   const sub = ghPr(command);
   if (sub === "create") return block(input, "git.block.pr_create", text);
-  if (sub === "merge" && !command.args.includes("--auto")) return block(input, "git.block.pr_merge", text);
+  if (sub === "merge") return mergeDecision(input, command, text);
   if (isPrOpenAccepting(command))
     return isHeadless(input) ? block(input, "git.block.pr_headless", text) : ask(input, text);
   const invocation = gitInvocation(command);
