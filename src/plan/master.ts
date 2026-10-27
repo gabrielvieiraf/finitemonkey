@@ -70,6 +70,15 @@ export interface Consolidation {
   readonly reports: readonly NewReport[];
 }
 
+const textForPlan = (body: string): string => {
+  const sections = sectionsOf(body);
+  const section = sectionOf(sections, "plan.text_for_plan") ?? sectionOf(sections, "decision.section.plan_change");
+  return (section?.lines ?? [])
+    .map((line) => line.text)
+    .join("\n")
+    .trim();
+};
+
 export const startConsolidation = (runtime: Runtime, root: AbsolutePath, date: string): Parsed<Consolidation> => {
   const current = runtime.readText(planPath(root, MASTER_FILE));
   if (!current.ok) return reject("no_master");
@@ -90,10 +99,7 @@ export const startConsolidation = (runtime: Runtime, root: AbsolutePath, date: s
       .filter((report) => missing.has(report.name))
       .map((report) => ({
         file: `${PLAN_DIR}/${report.name}`,
-        text: (sectionOf(sectionsOf(report.body), "plan.text_for_plan")?.lines ?? [])
-          .map((line) => line.text)
-          .join("\n")
-          .trim(),
+        text: textForPlan(report.body),
       })),
   });
 };

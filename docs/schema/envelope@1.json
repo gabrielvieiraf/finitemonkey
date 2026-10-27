@@ -76,7 +76,8 @@
             "wt_failed",
             "map_unavailable",
             "plan_check_failed",
-            "wt_not_found"
+            "wt_not_found",
+            "decision_invalid"
           ]
         },
         "message": {

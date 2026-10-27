@@ -1,5 +1,6 @@
 import { appCheckCommand } from "./app-check.js";
 import { critiqueVerifyCommand } from "./critique.js";
+import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { doctorCommand } from "./doctor.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
@@ -77,6 +78,9 @@ export const REGISTRY = [
   wtArchiveCommand,
   wtPurgeCommand,
   wtDoctorCommand,
+  decideNewCommand,
+  decideCheckCommand,
+  decideRevokeCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
