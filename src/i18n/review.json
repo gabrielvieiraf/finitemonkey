@@ -989,7 +989,13 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "relay.note.found": "machine",
+    "relay.marker.chat": "machine",
+    "relay.marker.placeholder": "machine",
+    "relay.marker.missing_import": "machine",
+    "relay.marker.own_output": "machine",
+    "relay.note.source": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1981,6 +1987,12 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "relay.note.found": "machine",
+    "relay.marker.chat": "machine",
+    "relay.marker.placeholder": "machine",
+    "relay.marker.missing_import": "machine",
+    "relay.marker.own_output": "machine",
+    "relay.note.source": "machine"
   }
 }
