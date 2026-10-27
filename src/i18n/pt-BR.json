@@ -984,5 +984,13 @@
   "planta.how.manual": "Manual: a pessoa confirma com a linha fm: approve planta/{id} <como conferiu>",
   "planta.installed.task": "Planta {type} registrada no contrato de {task}.",
   "planta.installed.project": "Planta {type} registrada para o projeto; não há tarefa ativa para registrar.",
-  "statusline.planta": "{type} {green}/{total}"
+  "statusline.planta": "{type} {green}/{total}",
+  "planta.lang": "pt-BR",
+  "planta.label.artifact.screens": "um protótipo de tela (telas sem servidor, banco ou contas)",
+  "planta.label.artifact.no_accounts": "um app sem contas",
+  "planta.label.artifact.unfinished": "um app que ainda não tem itens mínimos da planta",
+  "planta.label.artifact.landing": "uma página de venda",
+  "planta.label.reason": "A mensagem final usa o rótulo \"{label}\" (\"{phrase}\"), mas a planta do projeto diz que isto é {artifact}. Falta para esse rótulo ({count}): {list}. Reescreva a mensagem final dizendo o que foi feito e o que falta, sem o rótulo, ou construa antes o que falta. finitemonkey planta mostra a barra.",
+  "planta.label.human": "rótulo \"{label}\" segurado: isto é {artifact}. Falta: {list}.",
+  "planta.label.exhausted": "o rótulo \"{label}\" foi segurado vezes demais seguidas; o turno pode terminar. Isto é {artifact}. Falta: {list}."
 }

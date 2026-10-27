@@ -985,7 +985,15 @@
     "planta.how.manual": "machine",
     "planta.installed.task": "machine",
     "planta.installed.project": "machine",
-    "statusline.planta": "machine"
+    "statusline.planta": "machine",
+    "planta.lang": "machine",
+    "planta.label.artifact.screens": "machine",
+    "planta.label.artifact.no_accounts": "machine",
+    "planta.label.artifact.unfinished": "machine",
+    "planta.label.artifact.landing": "machine",
+    "planta.label.reason": "machine",
+    "planta.label.human": "machine",
+    "planta.label.exhausted": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1973,6 +1981,14 @@
     "planta.how.manual": "machine",
     "planta.installed.task": "machine",
     "planta.installed.project": "machine",
-    "statusline.planta": "machine"
+    "statusline.planta": "machine",
+    "planta.lang": "machine",
+    "planta.label.artifact.screens": "machine",
+    "planta.label.artifact.no_accounts": "machine",
+    "planta.label.artifact.unfinished": "machine",
+    "planta.label.artifact.landing": "machine",
+    "planta.label.reason": "machine",
+    "planta.label.human": "machine",
+    "planta.label.exhausted": "machine"
   }
 }

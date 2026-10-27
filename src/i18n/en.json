@@ -984,5 +984,13 @@
   "planta.how.manual": "Manual: the person confirms it with the line fm: approve planta/{id} <how it was checked>",
   "planta.installed.task": "Blueprint {type} recorded in the contract of {task}.",
   "planta.installed.project": "Blueprint {type} recorded for the project; no active task to record it in.",
-  "statusline.planta": "{type} {green}/{total}"
+  "statusline.planta": "{type} {green}/{total}",
+  "planta.lang": "en",
+  "planta.label.artifact.screens": "a screen prototype (screens without a server, database or accounts)",
+  "planta.label.artifact.no_accounts": "an app without accounts",
+  "planta.label.artifact.unfinished": "an app that still misses minimum items of its blueprint",
+  "planta.label.artifact.landing": "a landing page",
+  "planta.label.reason": "The final message uses the label \"{label}\" (\"{phrase}\"), but the project blueprint says this is {artifact}. Missing for that label ({count}): {list}. Rewrite the final message to say what was built and what is missing, without the label, or build the missing items first. finitemonkey planta shows the bar.",
+  "planta.label.human": "label \"{label}\" held: this is {artifact}. Missing: {list}.",
+  "planta.label.exhausted": "the label \"{label}\" was held too many times in a row; letting the turn end. This is {artifact}. Missing: {list}."
 }

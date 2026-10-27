@@ -984,5 +984,13 @@
   "planta.how.manual": "Manual: la persona lo confirma con la línea fm: approve planta/{id} <cómo lo comprobó>",
   "planta.installed.task": "Plano {type} registrado en el contrato de {task}.",
   "planta.installed.project": "Plano {type} registrado para el proyecto; no hay una tarea activa donde registrarlo.",
-  "statusline.planta": "{type} {green}/{total}"
+  "statusline.planta": "{type} {green}/{total}",
+  "planta.lang": "es",
+  "planta.label.artifact.screens": "un prototipo de pantallas (pantallas sin servidor, base de datos ni cuentas)",
+  "planta.label.artifact.no_accounts": "una aplicación sin cuentas",
+  "planta.label.artifact.unfinished": "una aplicación a la que aún le faltan elementos mínimos de su plano",
+  "planta.label.artifact.landing": "una página de aterrizaje",
+  "planta.label.reason": "El mensaje final usa la etiqueta \"{label}\" (\"{phrase}\"), pero el plano del proyecto dice que esto es {artifact}. Falta para esa etiqueta ({count}): {list}. Reescribe el mensaje final diciendo qué se construyó y qué falta, sin la etiqueta, o construye antes lo que falta. finitemonkey planta muestra la barra.",
+  "planta.label.human": "etiqueta \"{label}\" detenida: esto es {artifact}. Falta: {list}.",
+  "planta.label.exhausted": "la etiqueta \"{label}\" se detuvo demasiadas veces seguidas; el turno puede terminar. Esto es {artifact}. Falta: {list}."
 }

@@ -79,8 +79,20 @@ export const SAAS: readonly BlueprintItem<SaasItemId>[] = [
     after: ["database"],
     probe: {
       type: "deps",
-      any: ["next-auth", "@auth/core", "@clerk/nextjs", "lucia", "passport", "better-auth", "@supabase/supabase-js"],
-      orGrep: "sign_?in|log_?in|authenticate",
+      any: [
+        "next-auth",
+        "@auth/core",
+        "@clerk/nextjs",
+        "@clerk/clerk-react",
+        "lucia",
+        "passport",
+        "better-auth",
+        "@supabase/supabase-js",
+        "firebase",
+        "django-allauth",
+        "devise",
+        "flask-login",
+      ],
     },
   },
   {
@@ -103,7 +115,6 @@ export const SAAS: readonly BlueprintItem<SaasItemId>[] = [
     probe: {
       type: "deps",
       any: ["stripe", "asaas", "mercadopago", "@paddle/paddle-node-sdk", "@lemonsqueezy/lemonsqueezy.js"],
-      orGrep: "checkout|subscription",
     },
   },
   { id: "webhooks", area: "money", after: ["billing"], probe: { type: "grep", all: ["idempoten"] } },

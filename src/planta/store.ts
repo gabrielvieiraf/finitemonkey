@@ -58,12 +58,20 @@ const contractText = (runtime: Pick<Runtime, "readText">, paths: FmPaths, task: 
   return disk.ok ? disk.value : undefined;
 };
 
-export const activeBlueprint = (runtime: Pick<Runtime, "readText">, paths: FmPaths): BlueprintType | undefined => {
-  const task = readState(runtime, paths).active;
-  const text = task === undefined ? undefined : contractText(runtime, paths, task);
-  if (task === undefined || text === undefined) return undefined;
+export const blueprintOfTask = (
+  runtime: Pick<Runtime, "readText">,
+  paths: FmPaths,
+  task: string,
+): BlueprintType | undefined => {
+  const text = contractText(runtime, paths, task);
+  if (text === undefined) return undefined;
   const parsed = parseContract(task, text);
   return parsed.ok ? parsed.value.blueprint : undefined;
+};
+
+export const activeBlueprint = (runtime: Pick<Runtime, "readText">, paths: FmPaths): BlueprintType | undefined => {
+  const task = readState(runtime, paths).active;
+  return task === undefined ? undefined : blueprintOfTask(runtime, paths, task);
 };
 
 export const recordInContract = (
