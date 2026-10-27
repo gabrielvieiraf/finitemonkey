@@ -1,0 +1,103 @@
+{
+  "expect": "loop",
+  "loopedBy": "person",
+  "description": "The same build error comes back after each new request.",
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Add the Pix payment button"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/pay.tsx",
+          "old_string": "<Card />",
+          "new_string": "<Card /><Pix />"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm run build"
+        },
+        "error": "src/pay.tsx(3,9): error TS2304: Cannot find name 'Pix'."
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Import the Pix component then"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/pay.tsx",
+          "old_string": "import { Card }",
+          "new_string": "import { Card, Pix }"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm run build"
+        },
+        "error": "src/pay.tsx(3,15): error TS2304: Cannot find name 'Pix'."
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Maybe it lives in another folder, check it"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/pay.tsx",
+          "old_string": "import { Card, Pix } from './card'",
+          "new_string": "import { Card, Pix } from '../card'"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm run build"
+        },
+        "error": "src/pay.tsx(4,15): error TS2304: Cannot find name 'Pix'."
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Try once more"
+      }
+    }
+  ]
+}
