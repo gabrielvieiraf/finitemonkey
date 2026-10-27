@@ -1016,7 +1016,22 @@
     "command.debt.summary": "machine",
     "debt.title": "machine",
     "debt.row": "machine",
-    "debt.no_trigger": "machine"
+    "debt.no_trigger": "machine",
+    "command.task_reopen.summary": "machine",
+    "command.task_amend.summary": "machine",
+    "task.reopen.usage": "machine",
+    "task.reopen.failed": "machine",
+    "task.reopen.done": "machine",
+    "task.amend.needs_reason": "machine",
+    "task.amend.not_found": "machine",
+    "task.amend.unknown_criterion": "machine",
+    "task.amend.no_change": "machine",
+    "task.amend.write": "machine",
+    "task.amend.done": "machine",
+    "gate.reopened": "machine",
+    "gate.guard.self.amend.claim": "machine",
+    "gate.guard.self.amend.requires": "machine",
+    "gate.guard.amend.human": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2035,6 +2050,21 @@
     "command.debt.summary": "machine",
     "debt.title": "machine",
     "debt.row": "machine",
-    "debt.no_trigger": "machine"
+    "debt.no_trigger": "machine",
+    "command.task_reopen.summary": "machine",
+    "command.task_amend.summary": "machine",
+    "task.reopen.usage": "machine",
+    "task.reopen.failed": "machine",
+    "task.reopen.done": "machine",
+    "task.amend.needs_reason": "machine",
+    "task.amend.not_found": "machine",
+    "task.amend.unknown_criterion": "machine",
+    "task.amend.no_change": "machine",
+    "task.amend.write": "machine",
+    "task.amend.done": "machine",
+    "gate.reopened": "machine",
+    "gate.guard.self.amend.claim": "machine",
+    "gate.guard.self.amend.requires": "machine",
+    "gate.guard.amend.human": "machine"
   }
 }

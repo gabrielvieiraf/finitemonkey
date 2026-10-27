@@ -1015,5 +1015,20 @@
   "command.debt.summary": "Lista los atajos deliberados entre tareas y marca los que no tienen disparador o ya vencieron",
   "debt.title": "{count, plural, one {# atajo} other {# atajos}}:",
   "debt.row": "  [{state}] {what} (tarea {task}, en {where}, {detail})",
-  "debt.no_trigger": "Atajo sin disparador para revisarlo: {what}"
+  "debt.no_trigger": "Atajo sin disparador para revisarlo: {what}",
+  "command.task_reopen.summary": "Invalida la evidencia de algunos criterios de una tarea y los vuelve a comprobar",
+  "command.task_amend.summary": "Cambia un criterio de aceptación con motivo y evidencia; cuenta cuando la persona confía en la tarea",
+  "task.reopen.usage": "indica la tarea y al menos un criterio",
+  "task.reopen.failed": "no se pudo reabrir: {detail}",
+  "task.reopen.done": "Reabiertos {criteria} de {task}; los otros criterios mantienen su evidencia.",
+  "task.amend.needs_reason": "una enmienda necesita el criterio, --reason y --evidence",
+  "task.amend.not_found": "la tarea {task} no tiene contrato",
+  "task.amend.unknown_criterion": "{task} no tiene el criterio {criterion}",
+  "task.amend.no_change": "nada que cambiar en {criterion}: pasa --run o --description",
+  "task.amend.write": "no se pudo escribir el contrato de {task}",
+  "task.amend.done": "Enmendado {criterion} de {task}. Cuenta cuando la persona escriba: fm: trust {task}",
+  "gate.reopened": "{check} se reabrió y vuelve a correr",
+  "gate.guard.self.amend.claim": "{file} cambia el contrato de terminado, y solo la persona puede hacerlo",
+  "gate.guard.self.amend.requires": "pide a la persona que lo ejecute",
+  "gate.guard.amend.human": "El agente intentó enmendar el contrato de terminado. Ejecuta finitemonkey task amend tú mismo si estás de acuerdo, o escribe fm: allow self <motivo>."
 }

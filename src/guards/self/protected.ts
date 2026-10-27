@@ -2,9 +2,10 @@ import { relative } from "node:path";
 
 import type { AbsolutePath } from "../../core/brand.js";
 import { toPosixPath } from "../../core/posix-path.js";
+import { fmArguments } from "../bypass/detect.js";
 import { parseShell, type SimpleCommand } from "../shell.js";
 
-export const SELF_KINDS = ["policy", "allow_store", "registry"] as const;
+export const SELF_KINDS = ["policy", "allow_store", "registry", "amend"] as const;
 
 export type SelfKind = (typeof SELF_KINDS)[number];
 
@@ -70,13 +71,19 @@ const mentioned = (text: string): SelfKind | undefined => {
   return undefined;
 };
 
+const amends = (command: SimpleCommand): readonly { readonly kind: SelfKind; readonly path: string }[] => {
+  const args = fmArguments(command.argv);
+  return args?.[0] === "task" && args[1] === "amend" ? [{ kind: "amend", path: "finitemonkey task amend" }] : [];
+};
+
 export const bashSelfTargets = (
   root: AbsolutePath,
   commandLine: string,
 ): readonly { readonly kind: SelfKind; readonly path: string }[] =>
-  parseShell(commandLine).flatMap((command) =>
-    writtenPaths(command).flatMap((path) => {
+  parseShell(commandLine).flatMap((command) => [
+    ...writtenPaths(command).flatMap((path) => {
       const kind = selfTarget(root, path) ?? mentioned(path);
       return kind === undefined ? [] : [{ kind, path }];
     }),
-  );
+    ...amends(command),
+  ]);

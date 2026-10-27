@@ -1015,5 +1015,20 @@
   "command.debt.summary": "Lista os atalhos deliberados entre tarefas e marca os sem gatilho ou já vencidos",
   "debt.title": "{count, plural, one {# atalho} other {# atalhos}}:",
   "debt.row": "  [{state}] {what} (tarefa {task}, em {where}, {detail})",
-  "debt.no_trigger": "Atalho sem gatilho para revisitar: {what}"
+  "debt.no_trigger": "Atalho sem gatilho para revisitar: {what}",
+  "command.task_reopen.summary": "Invalida a evidência de alguns critérios de uma tarefa e confere de novo",
+  "command.task_amend.summary": "Muda um critério de aceite com motivo e evidência; vale depois que a pessoa confiar na tarefa",
+  "task.reopen.usage": "diga a tarefa e ao menos um critério",
+  "task.reopen.failed": "não deu para reabrir: {detail}",
+  "task.reopen.done": "Reabertos {criteria} de {task}; os outros critérios mantêm a evidência.",
+  "task.amend.needs_reason": "uma emenda precisa do critério, de --reason e de --evidence",
+  "task.amend.not_found": "a tarefa {task} não tem contrato",
+  "task.amend.unknown_criterion": "{task} não tem o critério {criterion}",
+  "task.amend.no_change": "nada a mudar em {criterion}: passe --run ou --description",
+  "task.amend.write": "não deu para gravar o contrato de {task}",
+  "task.amend.done": "Emendado {criterion} de {task}. Vale depois que a pessoa digitar: fm: trust {task}",
+  "gate.reopened": "{check} foi reaberto e roda de novo",
+  "gate.guard.self.amend.claim": "{file} muda o contrato de pronto, e só a pessoa pode fazer isso",
+  "gate.guard.self.amend.requires": "peça para a pessoa rodar",
+  "gate.guard.amend.human": "O agente tentou emendar o contrato de pronto. Rode finitemonkey task amend você mesmo se concordar, ou digite fm: allow self <motivo>."
 }

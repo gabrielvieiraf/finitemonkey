@@ -4,6 +4,7 @@ import { type Approval, expiryFrom, type Grant, saveRelease } from "../../guards
 import { comesFromPerson, type Marker, parseMarkers } from "../../guards/release/markers.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
+import { approveAmendments } from "../../task/amend.js";
 import { IMPLICIT_ID } from "../../task/implicit.js";
 import type { FmPaths } from "../../task/paths.js";
 import { readState, readTrust, writeTrust } from "../../task/state.js";
@@ -36,6 +37,12 @@ const trust = (input: HookInput, paths: FmPaths, task: string): boolean => {
   }).ok;
 };
 
+const trustAndApprove = (input: HookInput, paths: FmPaths, task: string): boolean => {
+  const trusted = trust(input, paths, task);
+  if (trusted) approveAmendments(input.runtime, paths, task, `person@${input.runtime.now()}`);
+  return trusted;
+};
+
 const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): readonly string[] => {
   const { runtime, t } = input;
   const now = nowMs(runtime);
@@ -61,7 +68,7 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
       said.push(t("gate.release.approved", { task: marker.task ?? active, check: marker.check }));
     } else
       said.push(
-        t(trust(input, paths, marker.task) ? "gate.release.trusted" : "gate.release.trust_failed", {
+        t(trustAndApprove(input, paths, marker.task) ? "gate.release.trusted" : "gate.release.trust_failed", {
           task: marker.task,
         }),
       );

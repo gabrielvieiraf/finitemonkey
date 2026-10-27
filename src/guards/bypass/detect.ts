@@ -93,6 +93,11 @@ const fmStart = (argv: readonly string[]): number => {
   return FM_SCRIPT.test(first) ? 0 : -1;
 };
 
+export const fmArguments = (argv: readonly string[]): readonly string[] | undefined => {
+  const start = fmStart(argv);
+  return start < 0 ? undefined : argv.slice(start + 1);
+};
+
 const fmFindings = (argv: readonly string[]): readonly BypassFinding[] => {
   const start = fmStart(argv);
   if (start < 0) return [];
