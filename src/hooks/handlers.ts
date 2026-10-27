@@ -2,6 +2,7 @@ import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
@@ -132,6 +133,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
+  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

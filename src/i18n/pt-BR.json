@@ -691,5 +691,13 @@
   "gate.guard.rewrite.not": "uma reescrita que parece equivalente, ou rodar o mesmo comando de novo pelo mesmo hook",
   "gate.guard.rewrite.human": "Outro hook mudou um comando sensível depois que o Finite Monkey o conferiu; as duas versões estão em .finitemonkey/log.jsonl.",
   "doctor.hooks.rewriters": "{hooks, plural, one {# outro hook vê} other {# outros hooks veem}} comandos de shell antes de rodarem e podem reescrevê-los ({list}); um comando sensível que eles mudarem reprova o portão",
-  "doctor.hooks.fix_rewriters": "Se um hook reescreve comandos (updatedInput), faça ele pular comandos de git, rm, ssh, kubectl e .env, ou remova o hook"
+  "doctor.hooks.fix_rewriters": "Se um hook reescreve comandos (updatedInput), faça ele pular comandos de git, rm, ssh, kubectl e .env, ou remova o hook",
+  "deps.warn.header": "Confira estes pacotes novos antes de instalar (é um aviso, nada foi bloqueado):",
+  "deps.warn.human": "{count, plural, one {# aviso sobre pacote novo} other {# avisos sobre pacotes novos}}; veja os detalhes antes de instalar.",
+  "deps.finding.missing": "{name} não existe no {registry}; o nome pode ter sido inventado.",
+  "deps.finding.typo": "{name} está a uma ou duas letras do pacote popular {popular}; confira a grafia.",
+  "deps.finding.young": "{name} tem pouco histórico: publicado pela primeira vez há {days, plural, one {# dia} other {# dias}}, {count, plural, one {# versão} other {# versões}}.",
+  "deps.finding.fresh": "{name}@{version} saiu há {hours, plural, one {# hora} other {# horas}}; prefira uma versão com pelo menos {days, plural, one {# dia} other {# dias}}.",
+  "deps.finding.script": "{name}@{version} traz um script de instalação que a versão anterior não tinha; leia antes de instalar.",
+  "deps.finding.unchecked": "{name} não foi conferido no {registry} (sem rede ou sem resposta a tempo), então só a grafia foi checada."
 }

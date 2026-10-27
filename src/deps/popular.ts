@@ -1,0 +1,196 @@
+import type { Ecosystem } from "./install-command.js";
+
+const NPM = [
+  "react",
+  "react-dom",
+  "preact",
+  "next",
+  "vue",
+  "svelte",
+  "angular",
+  "express",
+  "fastify",
+  "koa",
+  "lodash",
+  "underscore",
+  "axios",
+  "request",
+  "chalk",
+  "commander",
+  "yargs",
+  "debug",
+  "dotenv",
+  "moment",
+  "dayjs",
+  "date-fns",
+  "uuid",
+  "nanoid",
+  "zod",
+  "yup",
+  "joi",
+  "typescript",
+  "eslint",
+  "prettier",
+  "webpack",
+  "vite",
+  "rollup",
+  "esbuild",
+  "babel-core",
+  "jest",
+  "mocha",
+  "vitest",
+  "chai",
+  "sinon",
+  "cross-env",
+  "rimraf",
+  "glob",
+  "minimist",
+  "semver",
+  "async",
+  "bluebird",
+  "classnames",
+  "jquery",
+  "redux",
+  "mobx",
+  "graphql",
+  "mongoose",
+  "sequelize",
+  "prisma",
+  "drizzle-orm",
+  "pg",
+  "mysql",
+  "mysql2",
+  "redis",
+  "ioredis",
+  "socket.io",
+  "ws",
+  "jsonwebtoken",
+  "bcrypt",
+  "bcryptjs",
+  "passport",
+  "cors",
+  "helmet",
+  "body-parser",
+  "cookie-parser",
+  "multer",
+  "nodemon",
+  "tailwindcss",
+  "postcss",
+  "autoprefixer",
+  "sass",
+  "styled-components",
+  "openai",
+  "stripe",
+  "puppeteer",
+  "playwright",
+  "cheerio",
+  "node-fetch",
+  "form-data",
+  "colors",
+  "inquirer",
+  "ora",
+  "execa",
+  "fs-extra",
+  "tslib",
+  "core-js",
+  "rxjs",
+  "electron",
+  "three",
+  "d3",
+  "socket.io-client",
+] as const;
+
+const PYPI = [
+  "requests",
+  "numpy",
+  "pandas",
+  "django",
+  "flask",
+  "fastapi",
+  "uvicorn",
+  "pydantic",
+  "sqlalchemy",
+  "alembic",
+  "celery",
+  "redis",
+  "boto3",
+  "botocore",
+  "urllib3",
+  "certifi",
+  "setuptools",
+  "wheel",
+  "pip",
+  "six",
+  "python-dateutil",
+  "pytz",
+  "pyyaml",
+  "jinja2",
+  "click",
+  "rich",
+  "typer",
+  "httpx",
+  "aiohttp",
+  "beautifulsoup4",
+  "lxml",
+  "scipy",
+  "matplotlib",
+  "seaborn",
+  "scikit-learn",
+  "tensorflow",
+  "torch",
+  "keras",
+  "transformers",
+  "openai",
+  "anthropic",
+  "langchain",
+  "pillow",
+  "opencv-python",
+  "psycopg2",
+  "psycopg2-binary",
+  "pymongo",
+  "pytest",
+  "black",
+  "flake8",
+  "mypy",
+  "ruff",
+  "cryptography",
+  "pyjwt",
+  "paramiko",
+  "selenium",
+  "colorama",
+  "tqdm",
+  "python-dotenv",
+  "gunicorn",
+] as const;
+
+export const POPULAR: Readonly<Record<Ecosystem, readonly string[]>> = { npm: NPM, pypi: PYPI };
+
+const distance = (left: string, right: string): number => {
+  const rows = Array.from({ length: left.length + 1 }, (_, row) =>
+    Array.from({ length: right.length + 1 }, (_, column) => (row === 0 ? column : column === 0 ? row : 0)),
+  );
+  const cell = (row: number, column: number): number => rows[row]?.[column] ?? Number.POSITIVE_INFINITY;
+  for (let row = 1; row <= left.length; row += 1) {
+    const current = rows[row] ?? [];
+    for (let column = 1; column <= right.length; column += 1) {
+      const cost = left[row - 1] === right[column - 1] ? 0 : 1;
+      let best = Math.min(cell(row - 1, column) + 1, cell(row, column - 1) + 1, cell(row - 1, column - 1) + cost);
+      const swapped = left[row - 1] === right[column - 2] && left[row - 2] === right[column - 1];
+      if (row > 1 && column > 1 && swapped) best = Math.min(best, cell(row - 2, column - 2) + 1);
+      current[column] = best;
+    }
+  }
+  return cell(left.length, right.length);
+};
+
+const squash = (name: string): string => name.replace(/^@[^/]+\//, "").replace(/[-_.]/g, "");
+
+export const closePopular = (ecosystem: Ecosystem, name: string): string | undefined => {
+  const list = POPULAR[ecosystem];
+  if (list.includes(name)) return undefined;
+  const limit = name.length <= 4 ? 0 : name.length <= 8 ? 1 : 2;
+  return list.find((popular) => {
+    if (squash(popular) === squash(name)) return true;
+    return Math.abs(popular.length - name.length) <= limit && distance(popular, name) <= limit;
+  });
+};
