@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.20](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.19...v0.1.0-next.20) (2026-10-27)
+
+### Features
+
+* **git:** git hooks through husky, lefthook or pre-commit, and finitemonkey ci gate ([#157](https://github.com/gabrielvieiraf/finitemonkey/issues/157)) ([c90ac3c](https://github.com/gabrielvieiraf/finitemonkey/commit/c90ac3c8817b9f2a5922f3c740211f0a07b90ddb)), closes [#149](https://github.com/gabrielvieiraf/finitemonkey/issues/149) [#42](https://github.com/gabrielvieiraf/finitemonkey/issues/42)
+
 ## [0.1.0-next.19](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.18...v0.1.0-next.19) (2026-10-27)
 
 ### Features
