@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.33](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.32...v0.1.0-next.33) (2026-10-27)
+
+### Features
+
+* **git:** wt list, clean, archive, purge and doctor with cleanup classes ([#174](https://github.com/gabrielvieiraf/finitemonkey/issues/174)) ([b0e1b93](https://github.com/gabrielvieiraf/finitemonkey/commit/b0e1b93387205e0b1b0933e00fc53724e524c137)), closes [#71](https://github.com/gabrielvieiraf/finitemonkey/issues/71) [#170](https://github.com/gabrielvieiraf/finitemonkey/issues/170)
+
 ## [0.1.0-next.32](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.31...v0.1.0-next.32) (2026-10-27)
 
 ### Features
