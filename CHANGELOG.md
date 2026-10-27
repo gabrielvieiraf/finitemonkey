@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.27](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.26...v0.1.0-next.27) (2026-10-27)
+
+### Features
+
+* **install:** opt-in sandbox in the person's local settings with --sandbox ([#164](https://github.com/gabrielvieiraf/finitemonkey/issues/164)) ([c296548](https://github.com/gabrielvieiraf/finitemonkey/commit/c296548506d0c2277e7cb8a8c3af35795d36e56f)), closes [#51](https://github.com/gabrielvieiraf/finitemonkey/issues/51) [#131](https://github.com/gabrielvieiraf/finitemonkey/issues/131) [#51](https://github.com/gabrielvieiraf/finitemonkey/issues/51) [#131](https://github.com/gabrielvieiraf/finitemonkey/issues/131)
+
 ## [0.1.0-next.26](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.25...v0.1.0-next.26) (2026-10-27)
 
 ### Features
