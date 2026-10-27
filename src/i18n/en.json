@@ -685,5 +685,11 @@
   "critique.error.invalid": "the findings file is not valid: {detail}",
   "critique.error.must_fix": "{count, plural, one {# must-fix finding reproduced on head only} other {# must-fix findings reproduced on head only}}",
   "install.warn.sandbox_offer": "The Claude Code sandbox runs here. Add --sandbox to turn it on for you only, in .claude/settings.local.json: it fails to start without the sandbox, hides ~/.ssh, ~/.aws and .env files from commands, and lets them reach only the hosts in sandbox.hosts.",
-  "install.warn.sandbox_unsupported": "--sandbox was ignored: native Windows has no Claude Code sandbox, so the guards are the only protection here. Run Claude Code inside WSL2 to use it."
+  "install.warn.sandbox_unsupported": "--sandbox was ignored: native Windows has no Claude Code sandbox, so the guards are the only protection here. Run Claude Code inside WSL2 to use it.",
+  "gate.guard.rewrite.claim": "the command that ran is not the one Finite Monkey checked; another hook rewrote it (checked: `{checked}`; ran: `{ran}`)",
+  "gate.guard.rewrite.requires": "a sensitive command runs exactly as it was checked; find the hook that rewrites it and stop it from changing this command",
+  "gate.guard.rewrite.not": "a rewrite that looks equivalent, or running the same command again through the same hook",
+  "gate.guard.rewrite.human": "Another hook changed a sensitive command after Finite Monkey checked it; both versions are in .finitemonkey/log.jsonl.",
+  "doctor.hooks.rewriters": "{hooks, plural, one {# other hook sees} other {# other hooks see}} shell commands before they run and can rewrite them ({list}); a sensitive command they change fails the gate",
+  "doctor.hooks.fix_rewriters": "If a hook rewrites commands (updatedInput), make it skip git, rm, ssh, kubectl and .env commands, or remove it"
 }

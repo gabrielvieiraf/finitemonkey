@@ -3767,6 +3767,7 @@ var familyOf = (base) => {
     "gate.guard.bypass",
     "gate.guard.self",
     "gate.guard.tests",
+    "gate.guard.rewrite",
     "secrets.block",
     "git.block",
     "prod.block",
@@ -3796,8 +3797,8 @@ var nowMs = (runtime) => Date.parse(runtime.now());
 // src/task/state.ts
 var toCounter = (value) => {
   if (!isRecord(value)) return void 0;
-  const { task, signature, consecutive, same } = value;
-  return typeof task === "string" && typeof signature === "string" && typeof consecutive === "number" && typeof same === "number" ? { task, signature, consecutive, same } : void 0;
+  const { task, signature, consecutive, same: same2 } = value;
+  return typeof task === "string" && typeof signature === "string" && typeof consecutive === "number" && typeof same2 === "number" ? { task, signature, consecutive, same: same2 } : void 0;
 };
 var textRecord = (value) => isRecord(value) ? Object.fromEntries(
   Object.entries(value).filter((entry2) => typeof entry2[1] === "string")
@@ -4708,6 +4709,699 @@ var reviewAgentGuard = (input) => {
   return { kind: "block", reason: input.t("review.guard.read_only", { agent, tool }) };
 };
 
+// src/secrets/guards/tool-input.ts
+var toolName2 = (payload) => optionalString(payload.raw, "tool_name") ?? "";
+var toolInput2 = (payload) => {
+  const input = payload.raw["tool_input"];
+  return isRecord(input) ? input : {};
+};
+var editTexts = (input, file) => {
+  const edits = input["edits"];
+  if (!Array.isArray(edits)) return [];
+  return edits.flatMap((edit) => {
+    if (!isRecord(edit)) return [];
+    const text9 = optionalString(edit, "new_string");
+    return text9 === void 0 ? [] : [{ file, text: text9, whole: false }];
+  });
+};
+var writtenTexts = (tool, input) => {
+  const file = optionalString(input, "file_path") ?? optionalString(input, "notebook_path") ?? "";
+  const single2 = (key, whole) => {
+    const text9 = optionalString(input, key);
+    return text9 === void 0 ? [] : [{ file, text: text9, whole }];
+  };
+  switch (tool) {
+    case "Write":
+      return single2("content", true);
+    case "Edit":
+      return single2("new_string", false);
+    case "MultiEdit":
+      return editTexts(input, file);
+    case "NotebookEdit":
+      return single2("new_source", false);
+    default:
+      return [];
+  }
+};
+var stringLeaves = (value, out = []) => {
+  if (typeof value === "string") out.push(value);
+  else if (Array.isArray(value)) for (const item2 of value) stringLeaves(item2, out);
+  else if (isRecord(value)) for (const item2 of Object.values(value)) stringLeaves(item2, out);
+  return out;
+};
+
+// src/prod/guard.ts
+import { join as join15 } from "node:path";
+
+// src/git/command-text.ts
+var MAX_SHOWN = 160;
+var shown = (text9) => {
+  const flat = text9.replace(/\s+/g, " ").trim();
+  return flat.length > MAX_SHOWN ? `${flat.slice(0, MAX_SHOWN - 3)}...` : flat;
+};
+var commandText = (command) => shown([command.program, ...command.args].join(" "));
+
+// src/prod/readonly.ts
+var READ_PROGRAMS = /* @__PURE__ */ new Set([
+  "cat",
+  "less",
+  "more",
+  "head",
+  "tail",
+  "grep",
+  "egrep",
+  "fgrep",
+  "zgrep",
+  "zcat",
+  "rg",
+  "ls",
+  "ll",
+  "df",
+  "du",
+  "free",
+  "uptime",
+  "whoami",
+  "id",
+  "hostname",
+  "uname",
+  "ps",
+  "pgrep",
+  "pidof",
+  "journalctl",
+  "stat",
+  "file",
+  "wc",
+  "date",
+  "echo",
+  "pwd",
+  "which",
+  "type",
+  "lsof",
+  "netstat",
+  "ss",
+  "dig",
+  "nslookup",
+  "ping",
+  "top",
+  "htop",
+  "vmstat",
+  "iostat",
+  "nproc",
+  "lscpu",
+  "lsblk",
+  "w",
+  "last",
+  "history",
+  "true",
+  "test",
+  "[",
+  "sort",
+  "uniq",
+  "cut",
+  "awk",
+  "jq",
+  "dmesg",
+  "tree",
+  "realpath",
+  "readlink",
+  "basename",
+  "dirname",
+  "sha256sum",
+  "md5sum"
+]);
+var GIT_READ = /* @__PURE__ */ new Set(["status", "log", "diff", "show", "rev-parse", "describe", "ls-files", "blame", "shortlog"]);
+var GIT_LIST = /* @__PURE__ */ new Set(["remote", "branch", "tag", "stash"]);
+var DOCKER_READ = /* @__PURE__ */ new Set([
+  "ps",
+  "logs",
+  "images",
+  "inspect",
+  "info",
+  "version",
+  "stats",
+  "top",
+  "events",
+  "port",
+  "diff",
+  "history",
+  "ls",
+  "df",
+  "show",
+  "config"
+]);
+var DOCKER_GROUPS = /* @__PURE__ */ new Set([
+  "container",
+  "image",
+  "compose",
+  "system",
+  "volume",
+  "network",
+  "context",
+  "builder",
+  "node",
+  "service",
+  "stack"
+]);
+var SYSTEMCTL_READ = /* @__PURE__ */ new Set([
+  "status",
+  "is-active",
+  "is-enabled",
+  "is-failed",
+  "list-units",
+  "list-unit-files",
+  "show",
+  "cat",
+  "list-timers"
+]);
+var KUBECTL_READ = /* @__PURE__ */ new Set([
+  "get",
+  "describe",
+  "logs",
+  "top",
+  "explain",
+  "version",
+  "api-resources",
+  "api-versions",
+  "cluster-info",
+  "diff",
+  "events",
+  "auth"
+]);
+var HELM_READ = /* @__PURE__ */ new Set([
+  "list",
+  "ls",
+  "status",
+  "get",
+  "history",
+  "show",
+  "template",
+  "lint",
+  "version",
+  "search",
+  "env"
+]);
+var CURL_WRITE = /^(?:-X|--request|-d|--data.*|-F|--form|-T|--upload-file|-o|--output|-O|--remote-name)$/;
+var firstPositional = (args2, valueFlags = /* @__PURE__ */ new Set()) => {
+  const out = [];
+  for (let index = 0; index < args2.length; index += 1) {
+    const arg = args2[index] ?? "";
+    if (arg.startsWith("-")) {
+      if (valueFlags.has(arg)) index += 1;
+    } else out.push(arg);
+  }
+  return out;
+};
+var DOCKER_VALUE_FLAGS = /* @__PURE__ */ new Set([
+  "-H",
+  "--host",
+  "-c",
+  "--context",
+  "--config",
+  "-l",
+  "--log-level",
+  "-f",
+  "--file",
+  "-p",
+  "--project-name"
+]);
+var KUBE_VALUE_FLAGS = /* @__PURE__ */ new Set([
+  "--context",
+  "-n",
+  "--namespace",
+  "--kubeconfig",
+  "--cluster",
+  "--user",
+  "-o",
+  "--output",
+  "-l",
+  "--selector",
+  "-c",
+  "--container",
+  "--kube-context"
+]);
+var dockerReadOnly = (args2) => {
+  const words = firstPositional(args2, DOCKER_VALUE_FLAGS);
+  const [first, second] = words;
+  if (first === void 0) return true;
+  if (DOCKER_GROUPS.has(first))
+    return second === void 0 || DOCKER_READ.has(second) || first === "compose" && second === "top";
+  return DOCKER_READ.has(first);
+};
+var kubectlReadOnly = (program, args2) => {
+  const [verb, object] = firstPositional(args2, KUBE_VALUE_FLAGS);
+  if (verb === void 0) return true;
+  if (program === "helm") return HELM_READ.has(verb);
+  if (verb === "config") return object === "view" || object === "get-contexts" || object === "current-context";
+  if (verb === "rollout") return object === "status" || object === "history";
+  return KUBECTL_READ.has(verb);
+};
+var writesFile = (command) => command.redirects.some(
+  (redirect) => (redirect.op === ">" || redirect.op === ">>" || redirect.op === ">|") && !/^(?:\/dev\/null|&?\d)$/.test(redirect.target) && !redirect.op.startsWith("<")
+);
+var gitReadOnly = (args2) => {
+  const [verb, ...rest] = firstPositional(args2, /* @__PURE__ */ new Set(["-C", "-c"]));
+  if (verb === void 0) return true;
+  if (GIT_READ.has(verb)) return true;
+  return GIT_LIST.has(verb) && (rest.length === 0 || verb === "stash" && rest[0] === "list");
+};
+var programReadOnly = (command) => {
+  const { program, args: args2 } = command;
+  if (program === "git") return gitReadOnly(args2);
+  if (program === "docker" || program === "docker-compose")
+    return dockerReadOnly(program === "docker-compose" ? ["compose", ...args2] : args2);
+  if (program === "systemctl") return SYSTEMCTL_READ.has(firstPositional(args2)[0] ?? "status");
+  if (program === "kubectl" || program === "helm") return kubectlReadOnly(program, args2);
+  if (program === "curl") return !args2.some((arg) => CURL_WRITE.test(arg));
+  if (program === "find")
+    return !args2.some((arg) => arg === "-delete" || arg.startsWith("-exec") || arg.startsWith("-ok"));
+  if (program === "sed") return !args2.some((arg) => arg.startsWith("-i") || arg === "--in-place");
+  if (program === "awk") return !args2.some((arg) => arg.includes("system(") || arg.includes(">"));
+  return READ_PROGRAMS.has(program);
+};
+var readOnlyCommand = (command) => !writesFile(command) && programReadOnly(command);
+var readOnlyScript = (script) => {
+  const normalized = normalizeCommand(script);
+  return !normalized.incomplete && normalized.commands.every(readOnlyCommand);
+};
+var SQL_READ = /^\s*(?:select|show|explain|describe|desc|with|\\d\S*|\\l|\\dt|\\x|table)\b/i;
+var SQL_WRITE = /\b(?:insert|update|delete|drop|alter|truncate|create|grant|revoke|copy|merge|call|do|vacuum|reindex|cluster|lock|set\s+role)\b/i;
+var readOnlySql = (sql) => sql.split(";").map((statement) => statement.trim()).filter((statement) => statement !== "").every((statement) => SQL_READ.test(statement) && !SQL_WRITE.test(statement));
+var REDIS_READ = /* @__PURE__ */ new Set([
+  "get",
+  "mget",
+  "keys",
+  "scan",
+  "info",
+  "ttl",
+  "pttl",
+  "type",
+  "exists",
+  "strlen",
+  "hget",
+  "hgetall",
+  "hkeys",
+  "lrange",
+  "llen",
+  "smembers",
+  "scard",
+  "zrange",
+  "zcard",
+  "ping",
+  "dbsize",
+  "config"
+]);
+var readOnlyRedis = (words) => {
+  const [first, second] = words;
+  if (first === void 0) return false;
+  if (first.toLowerCase() === "config") return (second ?? "").toLowerCase() === "get";
+  return REDIS_READ.has(first.toLowerCase());
+};
+
+// src/prod/remote.ts
+var SSH_VALUE = "bcDEeFIiJLlmOopQRSWwB";
+var SCP_VALUE = "cFiJloPSX";
+var RSYNC_LONG_VALUE = /* @__PURE__ */ new Set([
+  "--rsh",
+  "--rsync-path",
+  "--filter",
+  "--exclude",
+  "--include",
+  "--port",
+  "--password-file",
+  "--chmod",
+  "--log-file",
+  "--exclude-from",
+  "--include-from",
+  "--files-from"
+]);
+var parseSsh = (command) => {
+  const { args: args2 } = command;
+  let index = 0;
+  let noCommand = false;
+  while (index < args2.length && (args2[index] ?? "").startsWith("-")) {
+    const arg = args2[index] ?? "";
+    if (arg === "--") {
+      index += 1;
+      break;
+    }
+    if (arg.includes("N")) noCommand = true;
+    const last = arg.charAt(arg.length - 1);
+    index += arg.length === 2 && SSH_VALUE.includes(last) ? 2 : 1;
+  }
+  const destination = args2[index];
+  if (destination === void 0) return void 0;
+  return { destination: destination.replace(/^ssh:\/\//, ""), remote: args2.slice(index + 1), noCommand };
+};
+var REMOTE_PATH = /^(?:(?:scp|rsync|sftp):\/\/)?(?:[^@/:\s]+@)?(\[[^\]]+\]|[A-Za-z0-9][A-Za-z0-9.-]*)(?::|::|\/)/;
+var remoteHostOf = (operand) => {
+  if (/^[A-Za-z]:[\\/]/.test(operand) || operand.startsWith("/") || operand.startsWith(".")) return void 0;
+  const url2 = /^(?:scp|rsync|sftp):\/\//.test(operand);
+  const match = REMOTE_PATH.exec(operand);
+  if (match === null) return void 0;
+  if (!url2 && !operand.slice(match[0].length - 1).startsWith(":")) return void 0;
+  return (match[1] ?? "").replace(/^\[|\]$/g, "");
+};
+var copyOperands = (command, shortValue) => {
+  const out = [];
+  for (let index = 0; index < command.args.length; index += 1) {
+    const arg = command.args[index] ?? "";
+    if (arg.startsWith("--")) {
+      if (!arg.includes("=") && RSYNC_LONG_VALUE.has(arg)) index += 1;
+    } else if (arg.startsWith("-") && arg.length > 1) {
+      if (arg.length === 2 && shortValue.includes(arg.charAt(1))) index += 1;
+    } else out.push(arg);
+  }
+  return out;
+};
+var parseCopy = (command) => {
+  const operands2 = copyOperands(command, command.program === "scp" ? SCP_VALUE : "efTB");
+  return { sources: operands2.slice(0, -1), target: operands2[operands2.length - 1] };
+};
+var remoteHostsOf = (command) => {
+  if (command.program === "ssh") {
+    const call = parseSsh(command);
+    return call === void 0 ? [] : [call.destination];
+  }
+  if (command.program === "scp" || command.program === "rsync") {
+    const call = parseCopy(command);
+    return [...call.sources, ...call.target === void 0 ? [] : [call.target]].flatMap((operand) => {
+      const host = remoteHostOf(operand);
+      return host === void 0 ? [] : [host];
+    });
+  }
+  return [];
+};
+
+// src/prod/targets.ts
+import { join as join14 } from "node:path";
+var DEPLOY_FILES = [
+  "deploy.sh",
+  "scripts/deploy.sh",
+  "docker-compose.prod.yml",
+  "docker-compose.production.yml",
+  "compose.prod.yml",
+  "compose.production.yml"
+];
+var SSH_URL = /ssh:\/\/(?:[^@\s/]+@)?([A-Za-z0-9.-]+)/g;
+var HOST_KEY = /^\s*-?\s*(?:host|hostname|server|ssh_host|deploy_host|remote_host)\s*:\s*["']?([A-Za-z0-9][A-Za-z0-9.-]*)["']?\s*$/i;
+var hostKey = (raw) => raw.trim().toLowerCase().replace(/^[^@]*@/, "").replace(/^\[([^\]]+)\].*$/, "$1").replace(/:\d+$/, "").replace(/\.$/, "");
+var shellLine = (line2) => line2.replace(/^\s*(?:-\s*)?(?:run:\s*\|?)?/, "");
+var hostsInText = (text9) => {
+  const urls = [...text9.matchAll(SSH_URL)].map((match) => match[1] ?? "");
+  const lines3 = text9.split(/\r?\n/);
+  const keyed = lines3.flatMap((line2) => {
+    const match = HOST_KEY.exec(line2);
+    return match?.[1] === void 0 ? [] : [match[1]];
+  });
+  const commands = lines3.flatMap((line2) => normalizeCommand(shellLine(line2)).commands.flatMap(remoteHostsOf));
+  return [...urls, ...keyed, ...commands].filter((host) => host !== "" && !host.includes("$"));
+};
+var workflowFiles = (runtime, root) => {
+  const listed4 = runtime.listDir(toAbsolutePath(join14(root, ".github", "workflows")));
+  if (!listed4.ok) return [];
+  return listed4.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
+};
+var detectedHosts = (runtime, root, files) => files.flatMap((file) => {
+  const text9 = runtime.readText(toAbsolutePath(join14(root, file)));
+  return text9.ok ? hostsInText(text9.value) : [];
+});
+var loadProdTargets = (runtime, root, config) => {
+  const workflows = workflowFiles(runtime, root);
+  const deployFiles = [...workflows, ...DEPLOY_FILES];
+  const hosts = [
+    ...configList(config, "prod", "hosts"),
+    ...configList(config, "prod", "databases"),
+    ...detectedHosts(runtime, root, deployFiles)
+  ];
+  const declaredDeploy = configAt(config, "prod", "deploy");
+  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join14(root, file))) !== void 0);
+  return {
+    hosts: new Set(hosts.map(hostKey).filter((host) => host !== "")),
+    kubeContexts: configList(config, "prod", "kube_contexts"),
+    dockerContexts: configList(config, "prod", "docker_contexts"),
+    deployPath: typeof declaredDeploy === "string" ? declaredDeploy : existing
+  };
+};
+var isProdContext = (name, declared) => declared.includes(name) || /(?:^|[-_.:/])(?:prod|production)(?:$|[-_.:/])/i.test(name);
+
+// src/prod/classify.ts
+var hit = (effect, target2, tool) => ({ effect, target: target2, tool });
+var sshHit = (command, isProd) => {
+  const call = parseSsh(command);
+  if (call === void 0 || !isProd(call.destination)) return void 0;
+  const host = hostKey(call.destination);
+  if (call.remote.length === 0) {
+    if (command.stdin !== void 0) return hit(readOnlyScript(command.stdin) ? "read" : "effect", host, "ssh");
+    return hit(call.noCommand ? "read" : "interactive", host, "ssh");
+  }
+  return hit(readOnlyScript(call.remote.join(" ")) ? "read" : "effect", host, "ssh");
+};
+var copyHit = (command, isProd) => {
+  const call = parseCopy(command);
+  const targetHost = call.target === void 0 ? void 0 : remoteHostOf(call.target);
+  if (targetHost !== void 0 && isProd(targetHost)) return hit("effect", hostKey(targetHost), command.program);
+  const source = call.sources.map(remoteHostOf).find((host) => host !== void 0 && isProd(host));
+  return source === void 0 ? void 0 : hit("read", hostKey(source), command.program);
+};
+var valueAfter = (args2, ...names) => {
+  for (let index = 0; index < args2.length; index += 1) {
+    const arg = args2[index] ?? "";
+    const equals = names.find((name) => arg.startsWith(`${name}=`));
+    if (equals !== void 0) return arg.slice(equals.length + 1);
+    if (names.includes(arg)) return args2[index + 1];
+  }
+  return void 0;
+};
+var dockerHit = (command, targets2, isProd) => {
+  const host = valueAfter(command.args, "-H", "--host") ?? command.env["DOCKER_HOST"];
+  const context = valueAfter(command.args, "-c", "--context") ?? command.env["DOCKER_CONTEXT"];
+  const remote = host === void 0 ? void 0 : host.replace(/^(?:ssh|tcp|https?):\/\//, "");
+  const switching = command.args[0] === "context" && command.args[1] === "use" ? command.args[2] : void 0;
+  if (switching !== void 0 && isProdContext(switching, targets2.dockerContexts))
+    return hit("effect", switching, "docker context");
+  const prodHost = remote !== void 0 && isProd(remote) ? hostKey(remote) : void 0;
+  const prodContext = context !== void 0 && isProdContext(context, targets2.dockerContexts) ? context : void 0;
+  const target2 = prodHost ?? prodContext;
+  if (target2 === void 0) return void 0;
+  return hit(dockerReadOnly(command.args) ? "read" : "effect", target2, "docker");
+};
+var kubeHit = (command, targets2) => {
+  const context = valueAfter(command.args, "--context", "--kube-context");
+  const [verb, object, name] = command.args.filter((arg) => !arg.startsWith("-"));
+  if (verb === "config" && object === "use-context" && name !== void 0 && isProdContext(name, targets2.kubeContexts)) {
+    return hit("effect", name, command.program);
+  }
+  if (context === void 0 || !isProdContext(context, targets2.kubeContexts)) return void 0;
+  return hit(kubectlReadOnly(command.program, command.args) ? "read" : "effect", context, command.program);
+};
+var URL_HOST = /^(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?):\/\/(?:[^@/]*@)?([^/:?,]+)/i;
+var DATABASE_TOOLS = /* @__PURE__ */ new Set([
+  "psql",
+  "mysql",
+  "mariadb",
+  "mongosh",
+  "mongo",
+  "redis-cli",
+  "pg_dump",
+  "mysqldump",
+  "pg_restore"
+]);
+var DUMPS = /* @__PURE__ */ new Set(["pg_dump", "mysqldump"]);
+var databaseHost = (command) => {
+  const flag2 = valueAfter(command.args, "-h", "--host");
+  if (flag2 !== void 0) return flag2;
+  const url2 = [...command.args, command.env["DATABASE_URL"] ?? ""].map((arg) => URL_HOST.exec(arg)?.[1]).find((host) => host !== void 0);
+  return url2 ?? command.env["PGHOST"];
+};
+var databaseReadOnly = (command) => {
+  if (DUMPS.has(command.program)) return true;
+  if (command.program === "redis-cli")
+    return readOnlyRedis(
+      command.args.filter((arg, index) => !arg.startsWith("-") && !(command.args[index - 1] ?? "").startsWith("-"))
+    );
+  const sql = valueAfter(command.args, "-c", "--command", "-e", "--execute", "--eval");
+  return sql !== void 0 && readOnlySql(sql);
+};
+var databaseHit = (command, isProd) => {
+  const host = databaseHost(command);
+  if (host === void 0 || !isProd(host)) return void 0;
+  return hit(databaseReadOnly(command) ? "read" : "effect", hostKey(host), command.program);
+};
+var prodHit = (command, targets2, isProd) => {
+  switch (command.program) {
+    case "ssh":
+      return sshHit(command, isProd);
+    case "scp":
+    case "rsync":
+      return copyHit(command, isProd);
+    case "docker":
+    case "docker-compose":
+      return dockerHit(command, targets2, isProd);
+    case "kubectl":
+    case "helm":
+      return kubeHit(command, targets2);
+    default:
+      return DATABASE_TOOLS.has(command.program) ? databaseHit(command, isProd) : void 0;
+  }
+};
+
+// src/prod/guard.ts
+var PROD_PROGRAMS = /* @__PURE__ */ new Set([
+  "ssh",
+  "scp",
+  "rsync",
+  "docker",
+  "docker-compose",
+  "kubectl",
+  "helm",
+  "psql",
+  "mysql",
+  "mariadb",
+  "mongosh",
+  "mongo",
+  "redis-cli",
+  "pg_dump",
+  "mysqldump",
+  "pg_restore"
+]);
+var EVIDENCE_FILE = ".finitemonkey/prod-evidence.jsonl";
+var SSH_LOOKUP_MS = 1500;
+var sshHostname = (runtime, root, destination) => {
+  if (!/^[A-Za-z0-9._@-]+$/.test(destination)) return void 0;
+  const result = runtime.exec({ command: "ssh", args: ["-G", destination], cwd: root, timeoutMs: SSH_LOOKUP_MS });
+  if (result.exitCode !== 0) return void 0;
+  const line2 = result.stdout.split("\n").find((entry2) => entry2.startsWith("hostname "));
+  return line2 === void 0 ? void 0 : hostKey(line2.slice("hostname ".length));
+};
+var isProdHostOf = (runtime, root, targets2) => memoBy((raw) => {
+  const { hosts } = targets2();
+  if (hosts.size === 0) return false;
+  const key = hostKey(raw);
+  if (hosts.has(key)) return true;
+  const resolved = sshHostname(runtime, root, raw.replace(/^[^@]*@/, ""));
+  return resolved !== void 0 && hosts.has(resolved);
+});
+var blockOf = (t, hit3, command, deploy) => ({
+  kind: "block",
+  reason: hit3.effect === "interactive" ? modelReason(t, "prod.block.interactive", { command, target: hit3.target }) : modelReason(t, "prod.block.effect", {
+    command,
+    target: hit3.target,
+    deploy: deploy ?? t("prod.deploy.unknown")
+  })
+});
+var prodGuard = (runtime, root, t) => {
+  const targets2 = memo(() => loadProdTargets(runtime, root, loadProjectConfig(runtime, root)));
+  const isProd = isProdHostOf(runtime, root, targets2);
+  return {
+    decide: (command) => {
+      if (!PROD_PROGRAMS.has(command.program)) return void 0;
+      const hit3 = prodHit(command, targets2(), isProd);
+      if (hit3 === void 0) return void 0;
+      const text9 = commandText(command);
+      return hit3.effect === "read" ? { kind: "read", hit: hit3, command: text9 } : blockOf(t, hit3, text9, targets2().deployPath);
+    }
+  };
+};
+var recordEvidence = (runtime, root, owner, reads) => {
+  const lines3 = reads.flatMap(
+    (read4) => read4.kind === "read" ? [
+      JSON.stringify({
+        at: runtime.now(),
+        owner,
+        tool: read4.hit.tool,
+        target: read4.hit.target,
+        command: read4.command
+      })
+    ] : []
+  );
+  if (lines3.length === 0) return;
+  const path = toAbsolutePath(join15(root, EVIDENCE_FILE));
+  runtime.mkdir(toAbsolutePath(join15(root, ".finitemonkey")));
+  const before = runtime.readText(path);
+  const text9 = before.ok ? before.value : "";
+  runtime.writeAtomic(path, `${text9}${text9 === "" || text9.endsWith("\n") ? "" : "\n"}${lines3.join("\n")}
+`);
+};
+
+// src/guards/rewrite/sensitive.ts
+var READ_ONLY_GIT = /* @__PURE__ */ new Set(["status", "log", "diff", "show", "blame", "describe", "rev-parse", "ls-files", "fetch"]);
+var REMOVERS = /* @__PURE__ */ new Set(["rm", "rmdir", "remove-item", "del", "rd"]);
+var ENV_FILE = /(^|[\s"'=/])\.env(\.[A-Za-z0-9_-]+)?(?=$|[\s"';|&)])/;
+var isSensitiveCommand = (text9, dialect = "bash") => {
+  if (detectBypass(text9).length > 0 || ENV_FILE.test(text9)) return true;
+  return normalizeCommand(text9, dialect).commands.some((command) => {
+    if (PROD_PROGRAMS.has(command.program) || REMOVERS.has(command.program)) return true;
+    if (command.program !== "git") return false;
+    const sub = command.args.find((arg) => !arg.startsWith("-")) ?? "";
+    return sub !== "" && !READ_ONLY_GIT.has(sub);
+  });
+};
+
+// src/guards/rewrite/hooks.ts
+var REWRITTEN = "rewritten.json";
+var toolUseId = (input) => {
+  const id = optionalString(input.payload.raw, "tool_use_id");
+  return id !== void 0 && /^[A-Za-z0-9_-]{1,120}$/.test(id) ? id : void 0;
+};
+var commandOf = (input) => SHELL_TOOLS.has(toolName2(input.payload)) ? optionalString(toolInput2(input.payload), "command") : void 0;
+var checkedPath = (paths, id) => paths.cache(`checked-${id}.json`);
+var same = (left, right) => left.trim().replace(/\s+/g, " ") === right.trim().replace(/\s+/g, " ");
+var recordChecked = (input) => {
+  const id = toolUseId(input);
+  const command = commandOf(input);
+  const paths = projectPaths(input);
+  if (id === void 0 || command === void 0 || paths === void 0) return { kind: "allow" };
+  if (!isSensitiveCommand(command, dialectOf(toolName2(input.payload)))) return { kind: "allow" };
+  input.runtime.writeText(checkedPath(paths, id), `${JSON.stringify({ command })}
+`);
+  return { kind: "allow" };
+};
+var compareRan = (input) => {
+  const id = toolUseId(input);
+  const paths = projectPaths(input);
+  if (id === void 0 || paths === void 0) return { kind: "allow" };
+  const stored = input.runtime.readText(checkedPath(paths, id));
+  if (!stored.ok) return { kind: "allow" };
+  input.runtime.remove(checkedPath(paths, id));
+  const parsed = parseJsonObject(stored.value);
+  const checked = parsed.ok ? optionalString(parsed.value, "command") : void 0;
+  const ran = commandOf(input) ?? "";
+  if (checked === void 0 || same(checked, ran)) return { kind: "allow" };
+  const record3 = {
+    tool: toolName2(input.payload),
+    checked: maskText(checked),
+    ran: maskText(ran),
+    sessionId: input.payload.sessionId ?? null
+  };
+  logEvent(input.runtime, paths, "input_rewritten", record3);
+  input.runtime.writeText(paths.cache(REWRITTEN), `${JSON.stringify(record3)}
+`);
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "gate.guard.rewrite", { checked: record3.checked, ran: record3.ran }),
+    human: input.t("gate.guard.rewrite.human")
+  };
+};
+var rewriteStop = (input) => {
+  const paths = projectPaths(input);
+  if (paths === void 0) return { kind: "allow" };
+  const stored = input.runtime.readText(paths.cache(REWRITTEN));
+  const parsed = stored.ok ? parseJsonObject(stored.value) : void 0;
+  if (parsed?.ok !== true || !isRecord(parsed.value)) return { kind: "allow" };
+  const sessionId = optionalString(parsed.value, "sessionId");
+  if (sessionId === void 0 || sessionId !== input.payload.sessionId) return { kind: "allow" };
+  const params2 = {
+    checked: optionalString(parsed.value, "checked") ?? "",
+    ran: optionalString(parsed.value, "ran") ?? ""
+  };
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "gate.guard.rewrite", params2),
+    output: { systemMessage: human(input.t("gate.guard.rewrite.human")) },
+    persistent: true
+  };
+};
+
 // src/guards/self/protected.ts
 import { relative as relative2 } from "node:path";
 var normalize = (path) => toPosixPath(path).replace(/^\.\//, "");
@@ -4798,7 +5492,7 @@ var selfGuard = (input) => {
 };
 
 // src/guards/tests/hook.ts
-import { join as join14, relative as relative3 } from "node:path";
+import { join as join16, relative as relative3 } from "node:path";
 
 // src/guards/tests/patterns.ts
 var JS_TEST = /(^|\/)(__tests__|__test__)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)tests?\/.*\.[cm]?[jt]sx?$/;
@@ -4988,7 +5682,7 @@ var shellViolations = (input, root) => {
   return parseShell(command).flatMap(
     (simple) => writtenPaths(simple).flatMap((path) => {
       const local = localPath(root, path);
-      const exists = input.runtime.stat(toAbsolutePath(join14(root, local))) !== void 0;
+      const exists = input.runtime.stat(toAbsolutePath(join16(root, local))) !== void 0;
       if (!exists) return [];
       if (isProtectedConfig(local)) return [{ kind: "config_changed", path: local }];
       return isTestFile(local) ? [{ kind: "test_removed", path: local }] : [];
@@ -5116,7 +5810,7 @@ var unlessPaused = (handler) => (input) => {
 };
 
 // src/gate/hooks/config.ts
-import { join as join15 } from "node:path";
+import { join as join17 } from "node:path";
 var CONFIG_FILE3 = "config-hooks.json";
 var GUARDED_SOURCES = /* @__PURE__ */ new Set(["user_settings", "project_settings", "local_settings"]);
 var countIn = (value) => {
@@ -5131,9 +5825,9 @@ var censusOf = (text9) => {
   return { hooks: countIn(parsed.value["hooks"]), disabled: parsed.value["disableAllHooks"] === true };
 };
 var settingsFiles = (paths, env) => [
-  toAbsolutePath(join15(paths.root, ".claude", "settings.json")),
-  toAbsolutePath(join15(paths.root, ".claude", "settings.local.json")),
-  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join15(env["HOME"], ".claude", "settings.json"))]
+  toAbsolutePath(join17(paths.root, ".claude", "settings.json")),
+  toAbsolutePath(join17(paths.root, ".claude", "settings.local.json")),
+  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join17(env["HOME"], ".claude", "settings.json"))]
 ];
 var read2 = (runtime, path) => {
   const text9 = runtime.readText(path);
@@ -5246,7 +5940,7 @@ var implicitContract = (files) => {
 };
 
 // src/gate/prepare.ts
-import { join as join17 } from "node:path";
+import { join as join19 } from "node:path";
 
 // src/core/yaml/scalar.ts
 var ESCAPES = {
@@ -5743,7 +6437,7 @@ var readBaseline = (runtime, paths) => {
 var writeBaseline = (runtime, paths, treeHash2, checks) => writeJsonFile(runtime, paths.cache(BASELINE_FILE), { treeHash: treeHash2, checks: { ...checks } }).ok;
 
 // src/gate/diff-shape.ts
-import { join as join16 } from "node:path";
+import { join as join18 } from "node:path";
 
 // src/gate/git.ts
 var EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
@@ -5850,7 +6544,7 @@ var aheadOfUpstream = (git2) => {
 
 // src/gate/diff-shape.ts
 var untrackedLines = (runtime, root, changes) => changes.filter((change) => change.status === "A").reduce((sum, change) => {
-  const text9 = runtime.readText(toAbsolutePath(join16(root, change.path)));
+  const text9 = runtime.readText(toAbsolutePath(join18(root, change.path)));
   return sum + (text9.ok ? text9.value.split("\n").length : 0);
 }, 0);
 var diffShape = (runtime, git2, base, changes) => ({
@@ -6056,10 +6750,10 @@ var applySize = (contract, verdict) => {
 // src/gate/prepare.ts
 var diskFiles = (runtime, root) => ({
   read: (relative11) => {
-    const text9 = runtime.readText(toAbsolutePath(join17(root, relative11)));
+    const text9 = runtime.readText(toAbsolutePath(join19(root, relative11)));
     return text9.ok ? text9.value : void 0;
   },
-  exists: (relative11) => runtime.stat(toAbsolutePath(join17(root, relative11))) !== void 0
+  exists: (relative11) => runtime.stat(toAbsolutePath(join19(root, relative11))) !== void 0
 });
 var baseFiles = (git2, base, disk) => ({
   read: (relative11) => base === EMPTY_TREE ? disk.read(relative11) : fileAt(git2, base, relative11),
@@ -6152,9 +6846,9 @@ var nextBlock = (previous, report2, env) => {
   const signature = failureSignature(report2);
   const sameTask = previous?.task === report2.task;
   const consecutive = (sameTask ? previous.consecutive : 0) + 1;
-  const same = sameTask && previous.signature === signature ? previous.same + 1 : 1;
-  if (consecutive > maxBlocks(env) || same > NO_PROGRESS_MAX) return { kind: "exhausted", blocks: consecutive - 1 };
-  return { kind: "block", counter: { task: report2.task, signature, consecutive, same } };
+  const same2 = sameTask && previous.signature === signature ? previous.same + 1 : 1;
+  if (consecutive > maxBlocks(env) || same2 > NO_PROGRESS_MAX) return { kind: "exhausted", blocks: consecutive - 1 };
+  return { kind: "block", counter: { task: report2.task, signature, consecutive, same: same2 } };
 };
 var saveCounter = (store, paths, counter) => {
   return writeState(store, paths, withBlocks(readState(store, paths), counter)).ok;
@@ -7074,7 +7768,13 @@ var en_default = {
   "critique.error.invalid": "the findings file is not valid: {detail}",
   "critique.error.must_fix": "{count, plural, one {# must-fix finding reproduced on head only} other {# must-fix findings reproduced on head only}}",
   "install.warn.sandbox_offer": "The Claude Code sandbox runs here. Add --sandbox to turn it on for you only, in .claude/settings.local.json: it fails to start without the sandbox, hides ~/.ssh, ~/.aws and .env files from commands, and lets them reach only the hosts in sandbox.hosts.",
-  "install.warn.sandbox_unsupported": "--sandbox was ignored: native Windows has no Claude Code sandbox, so the guards are the only protection here. Run Claude Code inside WSL2 to use it."
+  "install.warn.sandbox_unsupported": "--sandbox was ignored: native Windows has no Claude Code sandbox, so the guards are the only protection here. Run Claude Code inside WSL2 to use it.",
+  "gate.guard.rewrite.claim": "the command that ran is not the one Finite Monkey checked; another hook rewrote it (checked: `{checked}`; ran: `{ran}`)",
+  "gate.guard.rewrite.requires": "a sensitive command runs exactly as it was checked; find the hook that rewrites it and stop it from changing this command",
+  "gate.guard.rewrite.not": "a rewrite that looks equivalent, or running the same command again through the same hook",
+  "gate.guard.rewrite.human": "Another hook changed a sensitive command after Finite Monkey checked it; both versions are in .finitemonkey/log.jsonl.",
+  "doctor.hooks.rewriters": "{hooks, plural, one {# other hook sees} other {# other hooks see}} shell commands before they run and can rewrite them ({list}); a sensitive command they change fails the gate",
+  "doctor.hooks.fix_rewriters": "If a hook rewrites commands (updatedInput), make it skip git, rm, ssh, kubectl and .env commands, or remove it"
 };
 
 // src/i18n/es.json
@@ -7765,7 +8465,13 @@ var es_default = {
   "critique.error.invalid": "el archivo de hallazgos no es válido: {detail}",
   "critique.error.must_fix": "{count, plural, one {# hallazgo obligatorio reproducido solo en head} other {# hallazgos obligatorios reproducidos solo en head}}",
   "install.warn.sandbox_offer": "El sandbox de Claude Code funciona aquí. Añade --sandbox para activarlo solo para ti, en .claude/settings.local.json: no arranca sin el sandbox, oculta ~/.ssh, ~/.aws y los archivos .env a los comandos y solo deja llegar a los hosts de sandbox.hosts.",
-  "install.warn.sandbox_unsupported": "Se ignoró --sandbox: Windows nativo no tiene sandbox de Claude Code, así que aquí solo protegen los bloqueos. Ejecuta Claude Code dentro de WSL2 para usarlo."
+  "install.warn.sandbox_unsupported": "Se ignoró --sandbox: Windows nativo no tiene sandbox de Claude Code, así que aquí solo protegen los bloqueos. Ejecuta Claude Code dentro de WSL2 para usarlo.",
+  "gate.guard.rewrite.claim": "el comando que se ejecutó no es el que Finite Monkey revisó; otro hook lo reescribió (revisado: `{checked}`; ejecutado: `{ran}`)",
+  "gate.guard.rewrite.requires": "un comando sensible se ejecuta exactamente como se revisó; busca el hook que lo reescribe e impide que cambie este comando",
+  "gate.guard.rewrite.not": "una reescritura que parece equivalente, o ejecutar el mismo comando otra vez por el mismo hook",
+  "gate.guard.rewrite.human": "Otro hook cambió un comando sensible después de que Finite Monkey lo revisara; las dos versiones están en .finitemonkey/log.jsonl.",
+  "doctor.hooks.rewriters": "{hooks, plural, one {# otro hook ve} other {# otros hooks ven}} los comandos de shell antes de ejecutarse y pueden reescribirlos ({list}); un comando sensible que cambien hace fallar la compuerta",
+  "doctor.hooks.fix_rewriters": "Si un hook reescribe comandos (updatedInput), haz que ignore los comandos de git, rm, ssh, kubectl y .env, o quítalo"
 };
 
 // src/i18n/pt-BR.json
@@ -8456,7 +9162,13 @@ var pt_BR_default = {
   "critique.error.invalid": "o arquivo de achados não é válido: {detail}",
   "critique.error.must_fix": "{count, plural, one {# achado obrigatório reproduzido só no head} other {# achados obrigatórios reproduzidos só no head}}",
   "install.warn.sandbox_offer": "O sandbox do Claude Code roda aqui. Acrescente --sandbox para ligar só para você, em .claude/settings.local.json: ele se recusa a iniciar sem o sandbox, esconde ~/.ssh, ~/.aws e os arquivos .env dos comandos e só deixa chegar aos hosts de sandbox.hosts.",
-  "install.warn.sandbox_unsupported": "--sandbox foi ignorado: o Windows nativo não tem sandbox do Claude Code, então aqui só as travas protegem. Rode o Claude Code dentro do WSL2 para usar."
+  "install.warn.sandbox_unsupported": "--sandbox foi ignorado: o Windows nativo não tem sandbox do Claude Code, então aqui só as travas protegem. Rode o Claude Code dentro do WSL2 para usar.",
+  "gate.guard.rewrite.claim": "o comando que rodou não é o que o Finite Monkey conferiu; outro hook o reescreveu (conferido: `{checked}`; rodou: `{ran}`)",
+  "gate.guard.rewrite.requires": "um comando sensível roda exatamente como foi conferido; ache o hook que o reescreve e impeça que ele mude este comando",
+  "gate.guard.rewrite.not": "uma reescrita que parece equivalente, ou rodar o mesmo comando de novo pelo mesmo hook",
+  "gate.guard.rewrite.human": "Outro hook mudou um comando sensível depois que o Finite Monkey o conferiu; as duas versões estão em .finitemonkey/log.jsonl.",
+  "doctor.hooks.rewriters": "{hooks, plural, one {# outro hook vê} other {# outros hooks veem}} comandos de shell antes de rodarem e podem reescrevê-los ({list}); um comando sensível que eles mudarem reprova o portão",
+  "doctor.hooks.fix_rewriters": "Se um hook reescreve comandos (updatedInput), faça ele pular comandos de git, rm, ssh, kubectl e .env, ou remova o hook"
 };
 
 // src/i18n/review.json
@@ -9148,7 +9860,13 @@ var review_default = {
     "critique.error.invalid": "machine",
     "critique.error.must_fix": "machine",
     "install.warn.sandbox_offer": "machine",
-    "install.warn.sandbox_unsupported": "machine"
+    "install.warn.sandbox_unsupported": "machine",
+    "gate.guard.rewrite.claim": "machine",
+    "gate.guard.rewrite.requires": "machine",
+    "gate.guard.rewrite.not": "machine",
+    "gate.guard.rewrite.human": "machine",
+    "doctor.hooks.rewriters": "machine",
+    "doctor.hooks.fix_rewriters": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -9837,7 +10555,13 @@ var review_default = {
     "critique.error.invalid": "machine",
     "critique.error.must_fix": "machine",
     "install.warn.sandbox_offer": "machine",
-    "install.warn.sandbox_unsupported": "machine"
+    "install.warn.sandbox_unsupported": "machine",
+    "gate.guard.rewrite.claim": "machine",
+    "gate.guard.rewrite.requires": "machine",
+    "gate.guard.rewrite.not": "machine",
+    "gate.guard.rewrite.human": "machine",
+    "doctor.hooks.rewriters": "machine",
+    "doctor.hooks.fix_rewriters": "machine"
   }
 };
 
@@ -10148,7 +10872,7 @@ var callersRate = (runtime, paths) => {
 };
 
 // src/gate/callers/scan.ts
-import { join as join18 } from "node:path";
+import { join as join20 } from "node:path";
 
 // src/gate/callers/imports.ts
 import { posix as posix2 } from "node:path";
@@ -10272,7 +10996,7 @@ var definesName = (language, line2, name) => language.definitions.some((pattern)
 // src/gate/callers/scan.ts
 var MAX_SYMBOLS = 200;
 var current = (runtime, root, path) => {
-  const text9 = runtime.readText(toAbsolutePath(join18(root, path)));
+  const text9 = runtime.readText(toAbsolutePath(join20(root, path)));
   return text9.ok ? text9.value : "";
 };
 var keyOf = (language, name) => `${language.id}\0${name}`;
@@ -10545,10 +11269,10 @@ var gitCheck = (check2, ctx) => {
 };
 
 // src/gate/checks/look.ts
-import { join as join21 } from "node:path";
+import { join as join23 } from "node:path";
 
 // src/look/config.ts
-import { join as join19 } from "node:path";
+import { join as join21 } from "node:path";
 
 // src/look/types.ts
 var LOOK_RULES = [
@@ -10610,18 +11334,18 @@ var parseLookConfig = (source) => {
   };
 };
 var loadLookConfig = (runtime, root) => {
-  const source = runtime.readText(toAbsolutePath(join19(root, LOOK_CONFIG)));
+  const source = runtime.readText(toAbsolutePath(join21(root, LOOK_CONFIG)));
   return source.ok ? parseLookConfig(source.value) : void 0;
 };
 var withMock = (route, mock) => `${route}${route.includes("?") ? "&" : "?"}mock=${encodeURIComponent(mock)}`;
 var lookRoutes = (config) => config.routes.flatMap((route) => [route, ...config.mocks.map((mock) => withMock(route, mock))]);
 
 // src/look/paths.ts
-import { join as join20, relative as relative5 } from "node:path";
+import { join as join22, relative as relative5 } from "node:path";
 var LOOK_DIR = "look";
 var SUMMARY_FILE = "summary.json";
-var lookDir = (paths, treeHash2) => toAbsolutePath(join20(paths.dir, LOOK_DIR, treeHash2));
-var summaryPath = (paths, treeHash2) => toAbsolutePath(join20(lookDir(paths, treeHash2), SUMMARY_FILE));
+var lookDir = (paths, treeHash2) => toAbsolutePath(join22(paths.dir, LOOK_DIR, treeHash2));
+var summaryPath = (paths, treeHash2) => toAbsolutePath(join22(lookDir(paths, treeHash2), SUMMARY_FILE));
 var projectRelative = (paths, absolute) => toPosixPath(relative5(paths.root, absolute));
 
 // src/gate/checks/look.ts
@@ -10656,7 +11380,7 @@ var readSummary = (ctx) => {
 var lastScreenEdit = (ctx) => {
   const screens = loadLookConfig(ctx.runtime, ctx.paths.root)?.screens ?? DEFAULT_SCREENS;
   return ctx.changes.filter((change) => change.status !== "D" && matchesAny(change.path, screens)).reduce((latest, change) => {
-    const stat = ctx.runtime.stat(toAbsolutePath(join21(ctx.paths.root, change.path)));
+    const stat = ctx.runtime.stat(toAbsolutePath(join23(ctx.paths.root, change.path)));
     return Math.max(latest, stat?.mtimeMs ?? 0);
   }, 0);
 };
@@ -10703,13 +11427,13 @@ var manualCheck = (check2, ctx) => {
 };
 
 // src/gate/checks/placeholders.ts
-import { join as join22 } from "node:path";
+import { join as join24 } from "node:path";
 var MAX_LISTED3 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines3) => lines3.filter((line2) => !isTestFile(line2.path) && !SKIP_FILES.test(line2.path) && PLACEHOLDER.test(line2.text));
 var untrackedAdded = (ctx) => ctx.changes.filter((change) => change.status === "A" && !SKIP_FILES.test(change.path)).flatMap((change) => {
-  const text9 = ctx.runtime.readText(toAbsolutePath(join22(ctx.paths.root, change.path)));
+  const text9 = ctx.runtime.readText(toAbsolutePath(join24(ctx.paths.root, change.path)));
   return text9.ok ? text9.value.split("\n").map((line2, index) => ({ path: change.path, line: index + 1, text: line2 })) : [];
 });
 var placeholdersCheck = (_check, ctx) => {
@@ -11216,7 +11940,7 @@ var CONNECTIVES = new Set(
   )
 );
 var wordsOf = (text9) => text9.split(/\s+/).filter((word2) => WORD.test(word2));
-var hit = (rule, units, index, weight) => {
+var hit2 = (rule, units, index, weight) => {
   const unit = units[index];
   return { rule, unit: index, line: unit?.line ?? 0, weight, excerpt: unit?.text ?? "" };
 };
@@ -11251,32 +11975,32 @@ var isCommaTriad = (unit) => {
 };
 var triplets = (units) => [
   ...runsOf(units, 3, isShort(SHORT_SENTENCE)).map(
-    (index) => hit("rhythmic-triplet", units, index, STRUCTURE_WEIGHTS.triplet)
+    (index) => hit2("rhythmic-triplet", units, index, STRUCTURE_WEIGHTS.triplet)
   ),
   ...units.flatMap(
-    (unit, index) => isProse(unit) && unit.lastInParagraph && isCommaTriad(unit) ? [hit("rhythmic-triplet", units, index, STRUCTURE_WEIGHTS.triplet)] : []
+    (unit, index) => isProse(unit) && unit.lastInParagraph && isCommaTriad(unit) ? [hit2("rhythmic-triplet", units, index, STRUCTURE_WEIGHTS.triplet)] : []
   )
 ];
-var imperatives = (units) => runsOf(units, 2, isImperative).map((index) => hit("imperative-fragment", units, index, STRUCTURE_WEIGHTS.imperative));
+var imperatives = (units) => runsOf(units, 2, isImperative).map((index) => hit2("imperative-fragment", units, index, STRUCTURE_WEIGHTS.imperative));
 var closers = (units) => units.flatMap((unit, index) => {
   const isCloser = isProse(unit) && unit.lastInParagraph && unit.closesSection && index > 0 && isShort(SHORT_CLOSER)(unit) && !/\d/.test(unit.text);
-  return isCloser ? [hit("slogan-closer", units, index, STRUCTURE_WEIGHTS.closer)] : [];
+  return isCloser ? [hit2("slogan-closer", units, index, STRUCTURE_WEIGHTS.closer)] : [];
 });
 var antitheses = (units) => units.flatMap((unit, index) => {
   if (unit.kind === "heading") return [];
   const tail2 = ANTITHESIS_TAIL.exec(unit.text)?.[1];
   if (tail2 !== void 0 && wordsOf(tail2).length <= SHORT_SENTENCE || NOT_BUT.test(unit.text)) {
-    return [hit("antithesis", units, index, STRUCTURE_WEIGHTS.antithesis)];
+    return [hit2("antithesis", units, index, STRUCTURE_WEIGHTS.antithesis)];
   }
   const next2 = units[index + 1];
   const paired = NEGATION.test(unit.text) && next2?.paragraph === unit.paragraph && AFFIRMATION.test(next2.text);
-  return paired ? [hit("antithesis", units, index, STRUCTURE_WEIGHTS.antithesisPair)] : [];
+  return paired ? [hit2("antithesis", units, index, STRUCTURE_WEIGHTS.antithesisPair)] : [];
 });
 var headings = (units) => units.flatMap(
-  (unit, index) => unit.kind === "heading" && COLON_HEADING.test(unit.text) ? [hit("colon-heading", units, index, STRUCTURE_WEIGHTS.heading)] : []
+  (unit, index) => unit.kind === "heading" && COLON_HEADING.test(unit.text) ? [hit2("colon-heading", units, index, STRUCTURE_WEIGHTS.heading)] : []
 );
 var emoji = (units) => units.flatMap(
-  (unit, index) => EMOJI.test(unit.text) ? [hit("decorative-emoji", units, index, STRUCTURE_WEIGHTS.emoji)] : []
+  (unit, index) => EMOJI.test(unit.text) ? [hit2("decorative-emoji", units, index, STRUCTURE_WEIGHTS.emoji)] : []
 );
 var dashes = (units) => {
   const perParagraph = /* @__PURE__ */ new Map();
@@ -11288,7 +12012,7 @@ var dashes = (units) => {
     if (count4 === 0) return [];
     const index = units.findIndex((unit) => unit.paragraph === paragraph && unit.text.includes("—"));
     const weight = count4 >= 2 ? STRUCTURE_WEIGHTS.dashSeries : STRUCTURE_WEIGHTS.dash;
-    return [hit("em-dash-series", units, index, weight)];
+    return [hit2("em-dash-series", units, index, weight)];
   });
 };
 var structureHits = (units) => [
@@ -11556,13 +12280,13 @@ ${run4.stderr}`)) })]);
 };
 
 // src/secrets/baseline.ts
-import { join as join23 } from "node:path";
+import { join as join25 } from "node:path";
 var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
 var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
 var BASELINE_STATES = ["aceito", "falso-positivo"];
 var EXCEPTION_MAX_DAYS = 90;
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
-var baselinePath = (root) => toAbsolutePath(join23(root, BASELINE_FILE2));
+var baselinePath = (root) => toAbsolutePath(join25(root, BASELINE_FILE2));
 var text7 = (record3, key) => {
   const value = record3[key];
   return typeof value === "string" && value !== "" ? value : void 0;
@@ -11622,14 +12346,14 @@ var withoutFixed = (baseline, fixed) => {
 var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry2) => entry2.expiresAt >= now).map((entry2) => entry2.fingerprint));
 
 // src/secrets/incidents.ts
-import { join as join24 } from "node:path";
+import { join as join26 } from "node:path";
 var INCIDENTS_DIR = ".finitemonkey/incidents";
 var INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"];
 var INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"];
 var ID = /^inc-[0-9a-f]{12}$/;
 var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint}`).slice(0, 12)}`;
-var incidentsDir = (root) => toAbsolutePath(join24(root, INCIDENTS_DIR));
-var incidentFile = (root, id) => toAbsolutePath(join24(incidentsDir(root), `${id}.json`));
+var incidentsDir = (root) => toAbsolutePath(join26(root, INCIDENTS_DIR));
+var incidentFile = (root, id) => toAbsolutePath(join26(incidentsDir(root), `${id}.json`));
 var pick3 = (options, value) => options.find((option) => option === value);
 var str2 = (record3, key) => {
   const value = record3[key];
@@ -11684,7 +12408,7 @@ var listIncidents = (runtime, root) => {
   return names.value.filter((name) => name.endsWith(".json")).map((name) => readIncident(runtime, root, name.slice(0, -".json".length))).flatMap((parsed) => parsed.ok ? [parsed.value] : []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 };
 var saveIncident = (runtime, root, incident) => {
-  const ignore = runtime.writeText(toAbsolutePath(join24(incidentsDir(root), ".gitignore")), "*\n");
+  const ignore = runtime.writeText(toAbsolutePath(join26(incidentsDir(root), ".gitignore")), "*\n");
   if (!ignore.ok) return ignore;
   return runtime.writeText(incidentFile(root, incident.id), `${JSON.stringify(incident, null, 2)}
 `);
@@ -11731,7 +12455,7 @@ var moveIncident = (incident, to, now, by) => ({
 var isRotated = (incident) => incident.state === "rotacionado" || incident.state === "fechado";
 
 // src/secrets/scan.ts
-import { join as join25, relative as relative6 } from "node:path";
+import { join as join27, relative as relative6 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
@@ -11831,7 +12555,7 @@ var listed2 = (runtime, root, target2) => {
   const base = toAbsolutePath(target2, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => toPosixPath(relative6(root, join25(base, toPosixPath(name))))));
+  return accept(walked.value.map((name) => toPosixPath(relative6(root, join27(base, toPosixPath(name))))));
 };
 var scanFile = (runtime, root, file) => {
   const text9 = runtime.readText(toAbsolutePath(file, root));
@@ -11901,7 +12625,7 @@ var secretsCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/tests.ts
-import { join as join26 } from "node:path";
+import { join as join28 } from "node:path";
 
 // src/guards/tests/tree.ts
 var outOfScope = (input, change) => input.testsProtected && input.scopePaths.length > 0 && change.status !== "A" && isTestFile(change.path) && !matchesAny(change.path, input.scopePaths) ? [{ kind: "out_of_scope", path: change.path }] : [];
@@ -11933,7 +12657,7 @@ var treeViolations = (ctx) => {
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
     after: (path) => {
-      const text9 = ctx.runtime.readText(toAbsolutePath(join26(ctx.paths.root, path)));
+      const text9 = ctx.runtime.readText(toAbsolutePath(join28(ctx.paths.root, path)));
       return text9.ok ? text9.value : void 0;
     },
     acceptedConfigs: ctx.trust.configs,
@@ -11954,17 +12678,17 @@ var testsCheck = (check2, ctx) => {
 };
 
 // src/git/tree.ts
-import { join as join27 } from "node:path";
+import { join as join29 } from "node:path";
 
 // src/secrets/guards/paths.ts
 var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
-var ENV_FILE = /^\.env(?:\..+)?$/i;
+var ENV_FILE2 = /^\.env(?:\..+)?$/i;
 var KEY_FILE = /\.(?:pem|key|p12|pfx)$/i;
 var SSH_KEY = /^id_(?:rsa|dsa|ecdsa|ed25519)(?:_[A-Za-z0-9_-]+)?$/;
 var basename2 = (path) => path.split(/[\\/]/).pop() ?? path;
 var isSensitivePath = (path) => {
   const name = basename2(path.replace(/^["']|["']$/g, ""));
-  if (ENV_FILE.test(name)) return !SAFE_ENV.test(name);
+  if (ENV_FILE2.test(name)) return !SAFE_ENV.test(name);
   return KEY_FILE.test(name) || SSH_KEY.test(name);
 };
 
@@ -11993,7 +12717,7 @@ var dropSensitive = (runtime, repo, env, options) => {
   return removed.ok ? accept(void 0) : removed;
 };
 var withTempIndex = (runtime, repo, options, work) => {
-  const path = toAbsolutePath(join27(repo.gitDir, `finitemonkey-${options.stamp}.index`));
+  const path = toAbsolutePath(join29(repo.gitDir, `finitemonkey-${options.stamp}.index`));
   const env = { GIT_INDEX_FILE: path, GIT_OPTIONAL_LOCKS: "0" };
   try {
     return work(env);
@@ -12201,7 +12925,7 @@ var mergeCommitsSince = (runtime, repo, since) => {
 var mergeInProgress = (runtime, repo) => revParse(runtime, repo, "MERGE_HEAD") !== void 0;
 
 // src/git/merge/dropped.ts
-import { join as join28 } from "node:path";
+import { join as join30 } from "node:path";
 
 // src/git/merge/lines.ts
 var normalizeLine = (line2) => line2.replace(/\r$/, "").trim().replace(/\s*,$/, "");
@@ -12281,7 +13005,7 @@ var parseDropped = (text9) => {
   return accept({ items, invalid });
 };
 var loadDropped = (runtime, root, file) => {
-  const path = toAbsolutePath(file ?? join28(root, DROPPED_FILE), root);
+  const path = toAbsolutePath(file ?? join30(root, DROPPED_FILE), root);
   const text9 = runtime.readText(path);
   if (!text9.ok) return file === void 0 ? accept({ items: [], invalid: [] }) : reject(`${file}: ${text9.error}`);
   return parseDropped(text9.value);
@@ -12291,7 +13015,7 @@ var isDropped = (finding4, items) => items.some(
 );
 
 // src/git/merge/generated.ts
-import { join as join29 } from "node:path";
+import { join as join31 } from "node:path";
 var LOCKFILES3 = /* @__PURE__ */ new Set([
   "package-lock.json",
   "npm-shrinkwrap.json",
@@ -12354,7 +13078,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
   if (declared.length === 0) return accept([]);
   const commit2 = resultCommit(runtime, repo, inputs);
   if (!commit2.ok) return commit2;
-  const dir = join29(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
+  const dir = join31(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
   if (!runtime.git(["worktree", "add", "--detach", dir, commit2.value], repo.root).ok)
     return reject("could not check out the merge result");
   try {
@@ -12364,7 +13088,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
     }
     return accept(
       declared.flatMap(({ path }) => {
-        const fresh3 = runtime.readText(toAbsolutePath(join29(dir, path)));
+        const fresh3 = runtime.readText(toAbsolutePath(join31(dir, path)));
         const merged2 = blobText(runtime, repo, commit2.value, path);
         if (fresh3.ok && fresh3.value === merged2) return [];
         return [{ kind: "generated-differs", file: path, side: void 0, line: void 0, text: path, weak: false }];
@@ -12650,19 +13374,19 @@ var verifyMerge = (runtime, repo, options = {}) => {
 };
 
 // src/git/ownership.ts
-import { join as join30 } from "node:path";
+import { join as join32 } from "node:path";
 var OWNERSHIP_DIR = ".finitemonkey/git";
 var ownerKey = (raw) => {
   const cleaned = (raw ?? "").replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 80);
   return cleaned === "" ? "unknown" : cleaned;
 };
-var fileOf = (repo, kind, owner) => toAbsolutePath(join30(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
+var fileOf = (repo, kind, owner) => toAbsolutePath(join32(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
 var readDirty = (runtime, root) => {
   const status = runtime.git(["status", "--porcelain=v2", "-z", "--untracked-files=all"], root);
   return status.ok ? parsePorcelainV2(status.stdout) : void 0;
 };
 var hashDirty = (runtime, repo, entries) => {
-  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join30(repo.root, entry2.path)))?.kind === "file");
+  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join32(repo.root, entry2.path)))?.kind === "file");
   const hashed = present2.length === 0 ? void 0 : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
     input: `${present2.map((entry2) => entry2.path).join("\n")}
 `
@@ -13032,7 +13756,7 @@ var subagentStopGate = (input) => {
 };
 
 // src/gate/hooks/subagent.ts
-import { join as join31 } from "node:path";
+import { join as join33 } from "node:path";
 var NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
 var KNOWN_KINDS = /* @__PURE__ */ new Set([
   "command",
@@ -13070,640 +13794,26 @@ var subagentStart = (input) => {
   const active = readState(runtime, paths).active;
   if (active === void 0) return { kind: "allow" };
   const disk = (relative11) => {
-    const text9 = runtime.readText(toAbsolutePath(join31(paths.root, relative11)));
+    const text9 = runtime.readText(toAbsolutePath(join33(paths.root, relative11)));
     return text9.ok ? text9.value : void 0;
   };
   const loaded = loadTask(runtime, paths, { disk, base: () => void 0 }, active);
   if (!loaded.ok) return { kind: "allow" };
-  const briefing = runtime.stat(toAbsolutePath(join31(paths.dir, "briefing.md"))) !== void 0;
+  const briefing = runtime.stat(toAbsolutePath(join33(paths.dir, "briefing.md"))) !== void 0;
   return { kind: "allow", output: contextOutput("SubagentStart", contractFacts(t, loaded.value.contract, briefing)) };
 };
 
 // src/gate/hooks/index.ts
 var PORTAO_HANDLERS = {
-  PreToolUse: [reviewAgentGuard, selfGuard, bypassGuard, testsGuard],
+  PreToolUse: [reviewAgentGuard, selfGuard, bypassGuard, testsGuard, recordChecked],
+  PostToolUse: [compareRan, lookReadTracker],
   UserPromptSubmit: [pausePrompt, promptRelease],
-  Stop: [unlessPaused(stopGate)],
+  Stop: [rewriteStop, unlessPaused(stopGate)],
   SubagentStop: [unlessPaused(subagentStopGate)],
   SubagentStart: [subagentStart],
   PreCompact: [preCompact],
   SessionStart: [sessionStart],
-  ConfigChange: [configChange],
-  PostToolUse: [lookReadTracker]
-};
-
-// src/prod/guard.ts
-import { join as join33 } from "node:path";
-
-// src/git/command-text.ts
-var MAX_SHOWN = 160;
-var shown = (text9) => {
-  const flat = text9.replace(/\s+/g, " ").trim();
-  return flat.length > MAX_SHOWN ? `${flat.slice(0, MAX_SHOWN - 3)}...` : flat;
-};
-var commandText = (command) => shown([command.program, ...command.args].join(" "));
-
-// src/prod/readonly.ts
-var READ_PROGRAMS = /* @__PURE__ */ new Set([
-  "cat",
-  "less",
-  "more",
-  "head",
-  "tail",
-  "grep",
-  "egrep",
-  "fgrep",
-  "zgrep",
-  "zcat",
-  "rg",
-  "ls",
-  "ll",
-  "df",
-  "du",
-  "free",
-  "uptime",
-  "whoami",
-  "id",
-  "hostname",
-  "uname",
-  "ps",
-  "pgrep",
-  "pidof",
-  "journalctl",
-  "stat",
-  "file",
-  "wc",
-  "date",
-  "echo",
-  "pwd",
-  "which",
-  "type",
-  "lsof",
-  "netstat",
-  "ss",
-  "dig",
-  "nslookup",
-  "ping",
-  "top",
-  "htop",
-  "vmstat",
-  "iostat",
-  "nproc",
-  "lscpu",
-  "lsblk",
-  "w",
-  "last",
-  "history",
-  "true",
-  "test",
-  "[",
-  "sort",
-  "uniq",
-  "cut",
-  "awk",
-  "jq",
-  "dmesg",
-  "tree",
-  "realpath",
-  "readlink",
-  "basename",
-  "dirname",
-  "sha256sum",
-  "md5sum"
-]);
-var GIT_READ = /* @__PURE__ */ new Set(["status", "log", "diff", "show", "rev-parse", "describe", "ls-files", "blame", "shortlog"]);
-var GIT_LIST = /* @__PURE__ */ new Set(["remote", "branch", "tag", "stash"]);
-var DOCKER_READ = /* @__PURE__ */ new Set([
-  "ps",
-  "logs",
-  "images",
-  "inspect",
-  "info",
-  "version",
-  "stats",
-  "top",
-  "events",
-  "port",
-  "diff",
-  "history",
-  "ls",
-  "df",
-  "show",
-  "config"
-]);
-var DOCKER_GROUPS = /* @__PURE__ */ new Set([
-  "container",
-  "image",
-  "compose",
-  "system",
-  "volume",
-  "network",
-  "context",
-  "builder",
-  "node",
-  "service",
-  "stack"
-]);
-var SYSTEMCTL_READ = /* @__PURE__ */ new Set([
-  "status",
-  "is-active",
-  "is-enabled",
-  "is-failed",
-  "list-units",
-  "list-unit-files",
-  "show",
-  "cat",
-  "list-timers"
-]);
-var KUBECTL_READ = /* @__PURE__ */ new Set([
-  "get",
-  "describe",
-  "logs",
-  "top",
-  "explain",
-  "version",
-  "api-resources",
-  "api-versions",
-  "cluster-info",
-  "diff",
-  "events",
-  "auth"
-]);
-var HELM_READ = /* @__PURE__ */ new Set([
-  "list",
-  "ls",
-  "status",
-  "get",
-  "history",
-  "show",
-  "template",
-  "lint",
-  "version",
-  "search",
-  "env"
-]);
-var CURL_WRITE = /^(?:-X|--request|-d|--data.*|-F|--form|-T|--upload-file|-o|--output|-O|--remote-name)$/;
-var firstPositional = (args2, valueFlags = /* @__PURE__ */ new Set()) => {
-  const out = [];
-  for (let index = 0; index < args2.length; index += 1) {
-    const arg = args2[index] ?? "";
-    if (arg.startsWith("-")) {
-      if (valueFlags.has(arg)) index += 1;
-    } else out.push(arg);
-  }
-  return out;
-};
-var DOCKER_VALUE_FLAGS = /* @__PURE__ */ new Set([
-  "-H",
-  "--host",
-  "-c",
-  "--context",
-  "--config",
-  "-l",
-  "--log-level",
-  "-f",
-  "--file",
-  "-p",
-  "--project-name"
-]);
-var KUBE_VALUE_FLAGS = /* @__PURE__ */ new Set([
-  "--context",
-  "-n",
-  "--namespace",
-  "--kubeconfig",
-  "--cluster",
-  "--user",
-  "-o",
-  "--output",
-  "-l",
-  "--selector",
-  "-c",
-  "--container",
-  "--kube-context"
-]);
-var dockerReadOnly = (args2) => {
-  const words = firstPositional(args2, DOCKER_VALUE_FLAGS);
-  const [first, second] = words;
-  if (first === void 0) return true;
-  if (DOCKER_GROUPS.has(first))
-    return second === void 0 || DOCKER_READ.has(second) || first === "compose" && second === "top";
-  return DOCKER_READ.has(first);
-};
-var kubectlReadOnly = (program, args2) => {
-  const [verb, object] = firstPositional(args2, KUBE_VALUE_FLAGS);
-  if (verb === void 0) return true;
-  if (program === "helm") return HELM_READ.has(verb);
-  if (verb === "config") return object === "view" || object === "get-contexts" || object === "current-context";
-  if (verb === "rollout") return object === "status" || object === "history";
-  return KUBECTL_READ.has(verb);
-};
-var writesFile = (command) => command.redirects.some(
-  (redirect) => (redirect.op === ">" || redirect.op === ">>" || redirect.op === ">|") && !/^(?:\/dev\/null|&?\d)$/.test(redirect.target) && !redirect.op.startsWith("<")
-);
-var gitReadOnly = (args2) => {
-  const [verb, ...rest] = firstPositional(args2, /* @__PURE__ */ new Set(["-C", "-c"]));
-  if (verb === void 0) return true;
-  if (GIT_READ.has(verb)) return true;
-  return GIT_LIST.has(verb) && (rest.length === 0 || verb === "stash" && rest[0] === "list");
-};
-var programReadOnly = (command) => {
-  const { program, args: args2 } = command;
-  if (program === "git") return gitReadOnly(args2);
-  if (program === "docker" || program === "docker-compose")
-    return dockerReadOnly(program === "docker-compose" ? ["compose", ...args2] : args2);
-  if (program === "systemctl") return SYSTEMCTL_READ.has(firstPositional(args2)[0] ?? "status");
-  if (program === "kubectl" || program === "helm") return kubectlReadOnly(program, args2);
-  if (program === "curl") return !args2.some((arg) => CURL_WRITE.test(arg));
-  if (program === "find")
-    return !args2.some((arg) => arg === "-delete" || arg.startsWith("-exec") || arg.startsWith("-ok"));
-  if (program === "sed") return !args2.some((arg) => arg.startsWith("-i") || arg === "--in-place");
-  if (program === "awk") return !args2.some((arg) => arg.includes("system(") || arg.includes(">"));
-  return READ_PROGRAMS.has(program);
-};
-var readOnlyCommand = (command) => !writesFile(command) && programReadOnly(command);
-var readOnlyScript = (script) => {
-  const normalized = normalizeCommand(script);
-  return !normalized.incomplete && normalized.commands.every(readOnlyCommand);
-};
-var SQL_READ = /^\s*(?:select|show|explain|describe|desc|with|\\d\S*|\\l|\\dt|\\x|table)\b/i;
-var SQL_WRITE = /\b(?:insert|update|delete|drop|alter|truncate|create|grant|revoke|copy|merge|call|do|vacuum|reindex|cluster|lock|set\s+role)\b/i;
-var readOnlySql = (sql) => sql.split(";").map((statement) => statement.trim()).filter((statement) => statement !== "").every((statement) => SQL_READ.test(statement) && !SQL_WRITE.test(statement));
-var REDIS_READ = /* @__PURE__ */ new Set([
-  "get",
-  "mget",
-  "keys",
-  "scan",
-  "info",
-  "ttl",
-  "pttl",
-  "type",
-  "exists",
-  "strlen",
-  "hget",
-  "hgetall",
-  "hkeys",
-  "lrange",
-  "llen",
-  "smembers",
-  "scard",
-  "zrange",
-  "zcard",
-  "ping",
-  "dbsize",
-  "config"
-]);
-var readOnlyRedis = (words) => {
-  const [first, second] = words;
-  if (first === void 0) return false;
-  if (first.toLowerCase() === "config") return (second ?? "").toLowerCase() === "get";
-  return REDIS_READ.has(first.toLowerCase());
-};
-
-// src/prod/remote.ts
-var SSH_VALUE = "bcDEeFIiJLlmOopQRSWwB";
-var SCP_VALUE = "cFiJloPSX";
-var RSYNC_LONG_VALUE = /* @__PURE__ */ new Set([
-  "--rsh",
-  "--rsync-path",
-  "--filter",
-  "--exclude",
-  "--include",
-  "--port",
-  "--password-file",
-  "--chmod",
-  "--log-file",
-  "--exclude-from",
-  "--include-from",
-  "--files-from"
-]);
-var parseSsh = (command) => {
-  const { args: args2 } = command;
-  let index = 0;
-  let noCommand = false;
-  while (index < args2.length && (args2[index] ?? "").startsWith("-")) {
-    const arg = args2[index] ?? "";
-    if (arg === "--") {
-      index += 1;
-      break;
-    }
-    if (arg.includes("N")) noCommand = true;
-    const last = arg.charAt(arg.length - 1);
-    index += arg.length === 2 && SSH_VALUE.includes(last) ? 2 : 1;
-  }
-  const destination = args2[index];
-  if (destination === void 0) return void 0;
-  return { destination: destination.replace(/^ssh:\/\//, ""), remote: args2.slice(index + 1), noCommand };
-};
-var REMOTE_PATH = /^(?:(?:scp|rsync|sftp):\/\/)?(?:[^@/:\s]+@)?(\[[^\]]+\]|[A-Za-z0-9][A-Za-z0-9.-]*)(?::|::|\/)/;
-var remoteHostOf = (operand) => {
-  if (/^[A-Za-z]:[\\/]/.test(operand) || operand.startsWith("/") || operand.startsWith(".")) return void 0;
-  const url2 = /^(?:scp|rsync|sftp):\/\//.test(operand);
-  const match = REMOTE_PATH.exec(operand);
-  if (match === null) return void 0;
-  if (!url2 && !operand.slice(match[0].length - 1).startsWith(":")) return void 0;
-  return (match[1] ?? "").replace(/^\[|\]$/g, "");
-};
-var copyOperands = (command, shortValue) => {
-  const out = [];
-  for (let index = 0; index < command.args.length; index += 1) {
-    const arg = command.args[index] ?? "";
-    if (arg.startsWith("--")) {
-      if (!arg.includes("=") && RSYNC_LONG_VALUE.has(arg)) index += 1;
-    } else if (arg.startsWith("-") && arg.length > 1) {
-      if (arg.length === 2 && shortValue.includes(arg.charAt(1))) index += 1;
-    } else out.push(arg);
-  }
-  return out;
-};
-var parseCopy = (command) => {
-  const operands2 = copyOperands(command, command.program === "scp" ? SCP_VALUE : "efTB");
-  return { sources: operands2.slice(0, -1), target: operands2[operands2.length - 1] };
-};
-var remoteHostsOf = (command) => {
-  if (command.program === "ssh") {
-    const call = parseSsh(command);
-    return call === void 0 ? [] : [call.destination];
-  }
-  if (command.program === "scp" || command.program === "rsync") {
-    const call = parseCopy(command);
-    return [...call.sources, ...call.target === void 0 ? [] : [call.target]].flatMap((operand) => {
-      const host = remoteHostOf(operand);
-      return host === void 0 ? [] : [host];
-    });
-  }
-  return [];
-};
-
-// src/prod/targets.ts
-import { join as join32 } from "node:path";
-var DEPLOY_FILES = [
-  "deploy.sh",
-  "scripts/deploy.sh",
-  "docker-compose.prod.yml",
-  "docker-compose.production.yml",
-  "compose.prod.yml",
-  "compose.production.yml"
-];
-var SSH_URL = /ssh:\/\/(?:[^@\s/]+@)?([A-Za-z0-9.-]+)/g;
-var HOST_KEY = /^\s*-?\s*(?:host|hostname|server|ssh_host|deploy_host|remote_host)\s*:\s*["']?([A-Za-z0-9][A-Za-z0-9.-]*)["']?\s*$/i;
-var hostKey = (raw) => raw.trim().toLowerCase().replace(/^[^@]*@/, "").replace(/^\[([^\]]+)\].*$/, "$1").replace(/:\d+$/, "").replace(/\.$/, "");
-var shellLine = (line2) => line2.replace(/^\s*(?:-\s*)?(?:run:\s*\|?)?/, "");
-var hostsInText = (text9) => {
-  const urls = [...text9.matchAll(SSH_URL)].map((match) => match[1] ?? "");
-  const lines3 = text9.split(/\r?\n/);
-  const keyed = lines3.flatMap((line2) => {
-    const match = HOST_KEY.exec(line2);
-    return match?.[1] === void 0 ? [] : [match[1]];
-  });
-  const commands = lines3.flatMap((line2) => normalizeCommand(shellLine(line2)).commands.flatMap(remoteHostsOf));
-  return [...urls, ...keyed, ...commands].filter((host) => host !== "" && !host.includes("$"));
-};
-var workflowFiles = (runtime, root) => {
-  const listed4 = runtime.listDir(toAbsolutePath(join32(root, ".github", "workflows")));
-  if (!listed4.ok) return [];
-  return listed4.value.filter((name) => /deploy/i.test(name) && /\.ya?ml$/i.test(name)).map((name) => `.github/workflows/${name}`);
-};
-var detectedHosts = (runtime, root, files) => files.flatMap((file) => {
-  const text9 = runtime.readText(toAbsolutePath(join32(root, file)));
-  return text9.ok ? hostsInText(text9.value) : [];
-});
-var loadProdTargets = (runtime, root, config) => {
-  const workflows = workflowFiles(runtime, root);
-  const deployFiles = [...workflows, ...DEPLOY_FILES];
-  const hosts = [
-    ...configList(config, "prod", "hosts"),
-    ...configList(config, "prod", "databases"),
-    ...detectedHosts(runtime, root, deployFiles)
-  ];
-  const declaredDeploy = configAt(config, "prod", "deploy");
-  const existing = deployFiles.find((file) => runtime.stat(toAbsolutePath(join32(root, file))) !== void 0);
-  return {
-    hosts: new Set(hosts.map(hostKey).filter((host) => host !== "")),
-    kubeContexts: configList(config, "prod", "kube_contexts"),
-    dockerContexts: configList(config, "prod", "docker_contexts"),
-    deployPath: typeof declaredDeploy === "string" ? declaredDeploy : existing
-  };
-};
-var isProdContext = (name, declared) => declared.includes(name) || /(?:^|[-_.:/])(?:prod|production)(?:$|[-_.:/])/i.test(name);
-
-// src/prod/classify.ts
-var hit2 = (effect, target2, tool) => ({ effect, target: target2, tool });
-var sshHit = (command, isProd) => {
-  const call = parseSsh(command);
-  if (call === void 0 || !isProd(call.destination)) return void 0;
-  const host = hostKey(call.destination);
-  if (call.remote.length === 0) {
-    if (command.stdin !== void 0) return hit2(readOnlyScript(command.stdin) ? "read" : "effect", host, "ssh");
-    return hit2(call.noCommand ? "read" : "interactive", host, "ssh");
-  }
-  return hit2(readOnlyScript(call.remote.join(" ")) ? "read" : "effect", host, "ssh");
-};
-var copyHit = (command, isProd) => {
-  const call = parseCopy(command);
-  const targetHost = call.target === void 0 ? void 0 : remoteHostOf(call.target);
-  if (targetHost !== void 0 && isProd(targetHost)) return hit2("effect", hostKey(targetHost), command.program);
-  const source = call.sources.map(remoteHostOf).find((host) => host !== void 0 && isProd(host));
-  return source === void 0 ? void 0 : hit2("read", hostKey(source), command.program);
-};
-var valueAfter = (args2, ...names) => {
-  for (let index = 0; index < args2.length; index += 1) {
-    const arg = args2[index] ?? "";
-    const equals = names.find((name) => arg.startsWith(`${name}=`));
-    if (equals !== void 0) return arg.slice(equals.length + 1);
-    if (names.includes(arg)) return args2[index + 1];
-  }
-  return void 0;
-};
-var dockerHit = (command, targets2, isProd) => {
-  const host = valueAfter(command.args, "-H", "--host") ?? command.env["DOCKER_HOST"];
-  const context = valueAfter(command.args, "-c", "--context") ?? command.env["DOCKER_CONTEXT"];
-  const remote = host === void 0 ? void 0 : host.replace(/^(?:ssh|tcp|https?):\/\//, "");
-  const switching = command.args[0] === "context" && command.args[1] === "use" ? command.args[2] : void 0;
-  if (switching !== void 0 && isProdContext(switching, targets2.dockerContexts))
-    return hit2("effect", switching, "docker context");
-  const prodHost = remote !== void 0 && isProd(remote) ? hostKey(remote) : void 0;
-  const prodContext = context !== void 0 && isProdContext(context, targets2.dockerContexts) ? context : void 0;
-  const target2 = prodHost ?? prodContext;
-  if (target2 === void 0) return void 0;
-  return hit2(dockerReadOnly(command.args) ? "read" : "effect", target2, "docker");
-};
-var kubeHit = (command, targets2) => {
-  const context = valueAfter(command.args, "--context", "--kube-context");
-  const [verb, object, name] = command.args.filter((arg) => !arg.startsWith("-"));
-  if (verb === "config" && object === "use-context" && name !== void 0 && isProdContext(name, targets2.kubeContexts)) {
-    return hit2("effect", name, command.program);
-  }
-  if (context === void 0 || !isProdContext(context, targets2.kubeContexts)) return void 0;
-  return hit2(kubectlReadOnly(command.program, command.args) ? "read" : "effect", context, command.program);
-};
-var URL_HOST = /^(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?):\/\/(?:[^@/]*@)?([^/:?,]+)/i;
-var DATABASE_TOOLS = /* @__PURE__ */ new Set([
-  "psql",
-  "mysql",
-  "mariadb",
-  "mongosh",
-  "mongo",
-  "redis-cli",
-  "pg_dump",
-  "mysqldump",
-  "pg_restore"
-]);
-var DUMPS = /* @__PURE__ */ new Set(["pg_dump", "mysqldump"]);
-var databaseHost = (command) => {
-  const flag2 = valueAfter(command.args, "-h", "--host");
-  if (flag2 !== void 0) return flag2;
-  const url2 = [...command.args, command.env["DATABASE_URL"] ?? ""].map((arg) => URL_HOST.exec(arg)?.[1]).find((host) => host !== void 0);
-  return url2 ?? command.env["PGHOST"];
-};
-var databaseReadOnly = (command) => {
-  if (DUMPS.has(command.program)) return true;
-  if (command.program === "redis-cli")
-    return readOnlyRedis(
-      command.args.filter((arg, index) => !arg.startsWith("-") && !(command.args[index - 1] ?? "").startsWith("-"))
-    );
-  const sql = valueAfter(command.args, "-c", "--command", "-e", "--execute", "--eval");
-  return sql !== void 0 && readOnlySql(sql);
-};
-var databaseHit = (command, isProd) => {
-  const host = databaseHost(command);
-  if (host === void 0 || !isProd(host)) return void 0;
-  return hit2(databaseReadOnly(command) ? "read" : "effect", hostKey(host), command.program);
-};
-var prodHit = (command, targets2, isProd) => {
-  switch (command.program) {
-    case "ssh":
-      return sshHit(command, isProd);
-    case "scp":
-    case "rsync":
-      return copyHit(command, isProd);
-    case "docker":
-    case "docker-compose":
-      return dockerHit(command, targets2, isProd);
-    case "kubectl":
-    case "helm":
-      return kubeHit(command, targets2);
-    default:
-      return DATABASE_TOOLS.has(command.program) ? databaseHit(command, isProd) : void 0;
-  }
-};
-
-// src/prod/guard.ts
-var PROD_PROGRAMS = /* @__PURE__ */ new Set([
-  "ssh",
-  "scp",
-  "rsync",
-  "docker",
-  "docker-compose",
-  "kubectl",
-  "helm",
-  "psql",
-  "mysql",
-  "mariadb",
-  "mongosh",
-  "mongo",
-  "redis-cli",
-  "pg_dump",
-  "mysqldump",
-  "pg_restore"
-]);
-var EVIDENCE_FILE = ".finitemonkey/prod-evidence.jsonl";
-var SSH_LOOKUP_MS = 1500;
-var sshHostname = (runtime, root, destination) => {
-  if (!/^[A-Za-z0-9._@-]+$/.test(destination)) return void 0;
-  const result = runtime.exec({ command: "ssh", args: ["-G", destination], cwd: root, timeoutMs: SSH_LOOKUP_MS });
-  if (result.exitCode !== 0) return void 0;
-  const line2 = result.stdout.split("\n").find((entry2) => entry2.startsWith("hostname "));
-  return line2 === void 0 ? void 0 : hostKey(line2.slice("hostname ".length));
-};
-var isProdHostOf = (runtime, root, targets2) => memoBy((raw) => {
-  const { hosts } = targets2();
-  if (hosts.size === 0) return false;
-  const key = hostKey(raw);
-  if (hosts.has(key)) return true;
-  const resolved = sshHostname(runtime, root, raw.replace(/^[^@]*@/, ""));
-  return resolved !== void 0 && hosts.has(resolved);
-});
-var blockOf = (t, hit3, command, deploy) => ({
-  kind: "block",
-  reason: hit3.effect === "interactive" ? modelReason(t, "prod.block.interactive", { command, target: hit3.target }) : modelReason(t, "prod.block.effect", {
-    command,
-    target: hit3.target,
-    deploy: deploy ?? t("prod.deploy.unknown")
-  })
-});
-var prodGuard = (runtime, root, t) => {
-  const targets2 = memo(() => loadProdTargets(runtime, root, loadProjectConfig(runtime, root)));
-  const isProd = isProdHostOf(runtime, root, targets2);
-  return {
-    decide: (command) => {
-      if (!PROD_PROGRAMS.has(command.program)) return void 0;
-      const hit3 = prodHit(command, targets2(), isProd);
-      if (hit3 === void 0) return void 0;
-      const text9 = commandText(command);
-      return hit3.effect === "read" ? { kind: "read", hit: hit3, command: text9 } : blockOf(t, hit3, text9, targets2().deployPath);
-    }
-  };
-};
-var recordEvidence = (runtime, root, owner, reads) => {
-  const lines3 = reads.flatMap(
-    (read4) => read4.kind === "read" ? [
-      JSON.stringify({
-        at: runtime.now(),
-        owner,
-        tool: read4.hit.tool,
-        target: read4.hit.target,
-        command: read4.command
-      })
-    ] : []
-  );
-  if (lines3.length === 0) return;
-  const path = toAbsolutePath(join33(root, EVIDENCE_FILE));
-  runtime.mkdir(toAbsolutePath(join33(root, ".finitemonkey")));
-  const before = runtime.readText(path);
-  const text9 = before.ok ? before.value : "";
-  runtime.writeAtomic(path, `${text9}${text9 === "" || text9.endsWith("\n") ? "" : "\n"}${lines3.join("\n")}
-`);
-};
-
-// src/secrets/guards/tool-input.ts
-var toolName2 = (payload) => optionalString(payload.raw, "tool_name") ?? "";
-var toolInput2 = (payload) => {
-  const input = payload.raw["tool_input"];
-  return isRecord(input) ? input : {};
-};
-var editTexts = (input, file) => {
-  const edits = input["edits"];
-  if (!Array.isArray(edits)) return [];
-  return edits.flatMap((edit) => {
-    if (!isRecord(edit)) return [];
-    const text9 = optionalString(edit, "new_string");
-    return text9 === void 0 ? [] : [{ file, text: text9, whole: false }];
-  });
-};
-var writtenTexts = (tool, input) => {
-  const file = optionalString(input, "file_path") ?? optionalString(input, "notebook_path") ?? "";
-  const single2 = (key, whole) => {
-    const text9 = optionalString(input, key);
-    return text9 === void 0 ? [] : [{ file, text: text9, whole }];
-  };
-  switch (tool) {
-    case "Write":
-      return single2("content", true);
-    case "Edit":
-      return single2("new_string", false);
-    case "MultiEdit":
-      return editTexts(input, file);
-    case "NotebookEdit":
-      return single2("new_source", false);
-    default:
-      return [];
-  }
-};
-var stringLeaves = (value, out = []) => {
-  if (typeof value === "string") out.push(value);
-  else if (Array.isArray(value)) for (const item2 of value) stringLeaves(item2, out);
-  else if (isRecord(value)) for (const item2 of Object.values(value)) stringLeaves(item2, out);
-  return out;
+  ConfigChange: [configChange]
 };
 
 // src/git/invocation.ts
@@ -16245,6 +16355,27 @@ var checkRemoteCredentials = ({ root, runtime }) => {
   ];
 };
 
+// src/doctor/rewriters.ts
+var seesShell = (matcher) => matcher === void 0 || matcher === "" || matcher === "*" || /\b(Bash|PowerShell)\b/.test(matcher);
+var nameOf = (handler) => {
+  const command = handler["command"];
+  return typeof command === "string" ? (command.split(/\s+/)[0] ?? command).slice(0, 60) : "?";
+};
+var checkRewriters = (env) => {
+  const foreign = projectHookFiles(env).flatMap((file) => entriesOf(file.source, file.hooks, (handler) => !isOwnHandler(handler))).filter((entry2) => entry2.event === "PreToolUse" && seesShell(entry2.matcher));
+  if (foreign.length === 0) return [];
+  const list4 = [...new Set(foreign.map((entry2) => nameOf(entry2.handler)))].join(", ");
+  return [
+    finding(
+      "hooks.rewriters",
+      "warn",
+      "doctor.hooks.rewriters",
+      { hooks: foreign.length, list: list4 },
+      "doctor.hooks.fix_rewriters"
+    )
+  ];
+};
+
 // src/doctor/run.ts
 var DOCTOR_SCHEMA = "finitemonkey/doctor@1";
 var CHECKS = [
@@ -16262,6 +16393,7 @@ var CHECKS = [
   checkLineEndings,
   checkRemoteCredentials,
   checkAgentsFile,
+  checkRewriters,
   checkHooks
 ];
 var probeOnce = (probe) => {
@@ -17602,7 +17734,7 @@ import { posix as posix5 } from "node:path";
 var PATTERNS = ["done_after_failing_tests", "env_read", "no_verify", "force_push", "test_skip"];
 var TEST_COMMAND = /(^|[\s;&|(])((npm|pnpm|yarn|bun)\s+(run\s+)?(test|check)\b|npx\s+(vitest|jest)\b|vitest\b|jest\b|pytest\b|go\s+test\b|cargo\s+test\b|node\s+--test\b|mocha\b)/;
 var DONE_CLAIM = /\b(done|all (tests|checks) (pass|passed|are passing)|everything (passes|works)|it works|pronto|feito|conclu[ií]do|listo|terminado)\b/i;
-var ENV_FILE2 = /(^|[\s"'=/])\.env(\.[A-Za-z0-9_-]+)?(?=$|[\s"';|&)])/;
+var ENV_FILE3 = /(^|[\s"'=/])\.env(\.[A-Za-z0-9_-]+)?(?=$|[\s"';|&)])/;
 var ENV_TEMPLATE = /\.env\.(example|sample|template|dist|defaults)\b/;
 var READ_COMMAND = /(^|[\s;&|(])(cat|less|more|head|tail|bat|type|Get-Content|source|\.)\s/;
 var PUSH = /(^|[\s;&|(])git\s+push\b([^;&|\n]*)/;
@@ -17610,7 +17742,7 @@ var FORCE = /\s(--force(-with-lease)?(=\S*)?|-f|-[A-Za-z]*f[A-Za-z]*)(?=\s|$)|\s
 var NO_VERIFY = /(^|[\s;&|(])git\s+(commit|push|merge|rebase|am|cherry-pick)\b[^;&|\n]*\s--no-verify\b/;
 var TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)__tests__\/|_test\.(go|py)$|(^|\/)test_[^/]+\.py$)/;
 var SKIP = /\b(it|test|describe)\.skip\s*\(|\bx(it|describe|test)\s*\(|@pytest\.mark\.skip|\bt\.Skip\(|\.only\s*\(/;
-var commandOf = (tool) => {
+var commandOf2 = (tool) => {
   if (tool.name !== "Bash" && tool.name !== "PowerShell") return void 0;
   const command = tool.input["command"];
   return typeof command === "string" ? command : void 0;
@@ -17625,9 +17757,9 @@ var isEnvPath = (path) => {
 };
 var envRead = (tool) => {
   if (tool.name === "Read") return isEnvPath(stringField(tool, "file_path"));
-  const command = commandOf(tool);
+  const command = commandOf2(tool);
   if (command === void 0 || !READ_COMMAND.test(command)) return false;
-  const match = ENV_FILE2.exec(command);
+  const match = ENV_FILE3.exec(command);
   return match !== null && !ENV_TEMPLATE.test(command.slice(match.index, match.index + match[0].length + 12));
 };
 var forcePush = (command) => {
@@ -17650,18 +17782,18 @@ var addedSkip = (tool) => {
   });
 };
 var doneAfterFailure = (turn) => {
-  const runs = turn.tools.filter((tool) => TEST_COMMAND.test(commandOf(tool) ?? ""));
+  const runs = turn.tools.filter((tool) => TEST_COMMAND.test(commandOf2(tool) ?? ""));
   const last = runs.at(-1);
   if (last === void 0 || turn.results.get(last.id)?.failed !== true) return void 0;
   return DONE_CLAIM.test(turn.finalText) ? last : void 0;
 };
-var sampleOf = (tool) => (commandOf(tool) ?? stringField(tool, "file_path")).split("\n")[0]?.slice(0, 120) ?? "";
+var sampleOf = (tool) => (commandOf2(tool) ?? stringField(tool, "file_path")).split("\n")[0]?.slice(0, 120) ?? "";
 var hitsIn = (turn) => {
   const hits = [];
   const done = doneAfterFailure(turn);
   if (done !== void 0) hits.push({ pattern: "done_after_failing_tests", sample: sampleOf(done) });
   for (const tool of turn.tools) {
-    const command = commandOf(tool);
+    const command = commandOf2(tool);
     if (envRead(tool)) hits.push({ pattern: "env_read", sample: sampleOf(tool) });
     if (command !== void 0 && NO_VERIFY.test(command)) hits.push({ pattern: "no_verify", sample: sampleOf(tool) });
     if (command !== void 0 && forcePush(command)) hits.push({ pattern: "force_push", sample: sampleOf(tool) });

@@ -685,5 +685,11 @@
   "critique.error.invalid": "o arquivo de achados não é válido: {detail}",
   "critique.error.must_fix": "{count, plural, one {# achado obrigatório reproduzido só no head} other {# achados obrigatórios reproduzidos só no head}}",
   "install.warn.sandbox_offer": "O sandbox do Claude Code roda aqui. Acrescente --sandbox para ligar só para você, em .claude/settings.local.json: ele se recusa a iniciar sem o sandbox, esconde ~/.ssh, ~/.aws e os arquivos .env dos comandos e só deixa chegar aos hosts de sandbox.hosts.",
-  "install.warn.sandbox_unsupported": "--sandbox foi ignorado: o Windows nativo não tem sandbox do Claude Code, então aqui só as travas protegem. Rode o Claude Code dentro do WSL2 para usar."
+  "install.warn.sandbox_unsupported": "--sandbox foi ignorado: o Windows nativo não tem sandbox do Claude Code, então aqui só as travas protegem. Rode o Claude Code dentro do WSL2 para usar.",
+  "gate.guard.rewrite.claim": "o comando que rodou não é o que o Finite Monkey conferiu; outro hook o reescreveu (conferido: `{checked}`; rodou: `{ran}`)",
+  "gate.guard.rewrite.requires": "um comando sensível roda exatamente como foi conferido; ache o hook que o reescreve e impeça que ele mude este comando",
+  "gate.guard.rewrite.not": "uma reescrita que parece equivalente, ou rodar o mesmo comando de novo pelo mesmo hook",
+  "gate.guard.rewrite.human": "Outro hook mudou um comando sensível depois que o Finite Monkey o conferiu; as duas versões estão em .finitemonkey/log.jsonl.",
+  "doctor.hooks.rewriters": "{hooks, plural, one {# outro hook vê} other {# outros hooks veem}} comandos de shell antes de rodarem e podem reescrevê-los ({list}); um comando sensível que eles mudarem reprova o portão",
+  "doctor.hooks.fix_rewriters": "Se um hook reescreve comandos (updatedInput), faça ele pular comandos de git, rm, ssh, kubectl e .env, ou remova o hook"
 }

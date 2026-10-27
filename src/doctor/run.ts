@@ -9,6 +9,7 @@ import { checkLineEndings } from "./line-endings.js";
 import { checkAgentsFile } from "./memory.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
+import { checkRewriters } from "./rewriters.js";
 import { checkOs, checkPath } from "./system.js";
 import { checkClaude, checkGit, checkNode } from "./tools.js";
 import type { Check, CheckFinding, CheckStatus, DoctorEnv, HookHealth } from "./types.js";
@@ -30,6 +31,7 @@ export const CHECKS: readonly Check[] = [
   checkLineEndings,
   checkRemoteCredentials,
   checkAgentsFile,
+  checkRewriters,
   checkHooks,
 ];
 
