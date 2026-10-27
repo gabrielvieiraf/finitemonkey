@@ -79,7 +79,9 @@
             "wt_not_found",
             "decision_invalid",
             "research_invalid",
-            "cost_check_failed"
+            "cost_check_failed",
+            "merge_failed",
+            "merge_stopped"
           ]
         },
         "message": {

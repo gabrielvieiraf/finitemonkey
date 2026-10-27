@@ -940,7 +940,18 @@
     "cost.report.conservative": "machine",
     "cost.report.assumptions": "machine",
     "cost.report.limits": "machine",
-    "cost.report.measure": "machine"
+    "cost.report.measure": "machine",
+    "merge.command": "machine",
+    "merge.done": "machine",
+    "merge.stopped": "machine",
+    "merge.file": "machine",
+    "merge.stop": "machine",
+    "merge.semantic": "machine",
+    "merge.report": "machine",
+    "merge.error.needs_source": "machine",
+    "merge.error.failed": "machine",
+    "merge.hook.aborted": "machine",
+    "merge.hook.not_aborted": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1883,6 +1894,17 @@
     "cost.report.conservative": "machine",
     "cost.report.assumptions": "machine",
     "cost.report.limits": "machine",
-    "cost.report.measure": "machine"
+    "cost.report.measure": "machine",
+    "merge.command": "machine",
+    "merge.done": "machine",
+    "merge.stopped": "machine",
+    "merge.file": "machine",
+    "merge.stop": "machine",
+    "merge.semantic": "machine",
+    "merge.report": "machine",
+    "merge.error.needs_source": "machine",
+    "merge.error.failed": "machine",
+    "merge.hook.aborted": "machine",
+    "merge.hook.not_aborted": "machine"
   }
 }

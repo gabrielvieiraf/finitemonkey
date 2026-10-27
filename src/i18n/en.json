@@ -939,5 +939,16 @@
   "cost.report.conservative": "conservative",
   "cost.report.assumptions": "Assumptions",
   "cost.report.limits": "Provider limits",
-  "cost.report.measure": "What to measure in production"
+  "cost.report.measure": "What to measure in production",
+  "merge.command": "Merge a branch through an integration worktree, classing every conflict hunk C0 to C8",
+  "merge.done": "Merged {source} into {target} on {branch}; open a pull request from it",
+  "merge.stopped": "Merge of {source} into {target} stopped with {count, plural, one {# reason} other {# reasons}}; nothing was committed on {branch}",
+  "merge.file": "{cls}  {path}  {rule}: {decision}",
+  "merge.stop": "stop: {reason} ({path})",
+  "merge.semantic": "semantic candidate: {symbol} in {file} ({reason})",
+  "merge.report": "Report: {path}",
+  "merge.error.needs_source": "merge needs the branch to merge",
+  "merge.error.failed": "The merge could not start: {detail}",
+  "merge.hook.aborted": "A plain git merge stopped with conflicts in {files}. Finite Monkey saved snapshot {ref} and ran git merge --abort. Merge with finitemonkey merge <branch>, which classes each hunk and never picks a whole side.",
+  "merge.hook.not_aborted": "A plain git merge stopped with conflicts in {files} and could not be aborted safely; resolve it through finitemonkey merge <branch>."
 }

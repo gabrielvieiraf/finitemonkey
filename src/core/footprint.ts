@@ -83,6 +83,7 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: [
       ".git/finitemonkey/worktrees.yml",
+      ".git/finitemonkey/merges/",
       ".git/info/exclude",
       ".claude/worktrees/",
       "~/.finitemonkey/worktrees/",

@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/merge-report@1.json",
+  "title": "finitemonkey/merge-report@1",
+  "description": "Report of one merge run by `finitemonkey merge`, also `data` of its `--json` output. Generated from MergeReport in src/merge/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/merge-report@1"
+    },
+    "at": {
+      "type": "string"
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "sha": {
+          "type": "string"
+        }
+      },
+      "required": ["ref", "sha"]
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "sha": {
+          "type": "string"
+        }
+      },
+      "required": ["ref", "sha"]
+    },
+    "bases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "virtualBase": {
+      "type": "boolean"
+    },
+    "integration": {
+      "type": "object",
+      "properties": {
+        "branch": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": ["branch", "path", "id"]
+    },
+    "snapshots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "class": {
+            "type": "string",
+            "enum": ["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8"]
+          },
+          "rule": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "proposal": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "hunks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number"
+                },
+                "class": {
+                  "type": "string",
+                  "enum": ["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8"]
+                },
+                "rule": {
+                  "type": "string"
+                },
+                "decision": {
+                  "type": "string"
+                },
+                "trace": {
+                  "type": "object",
+                  "properties": {
+                    "base": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "number"
+                        },
+                        "count": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["start", "count"]
+                    },
+                    "ours": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "number"
+                        },
+                        "count": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["start", "count"]
+                    },
+                    "theirs": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "number"
+                        },
+                        "count": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["start", "count"]
+                    },
+                    "oursCommits": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "theirsCommits": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": ["base", "ours", "theirs", "oursCommits", "theirsCommits"]
+                }
+              },
+              "required": ["index", "class", "rule", "decision", "trace"]
+            }
+          }
+        },
+        "required": ["path", "class", "rule", "decision", "proposal", "hunks"]
+      }
+    },
+    "dropped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "side": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["file", "side", "reason"]
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": ["name", "command", "ok", "detail"]
+      }
+    },
+    "semanticCandidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": ["file", "symbol", "reason"]
+      }
+    },
+    "stops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": ["reason", "path"]
+      }
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["merged", "stopped"]
+    },
+    "commit": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "conclusion": {
+      "type": "string",
+      "enum": ["pull-request", "fast-forward-allowed", "none"]
+    },
+    "undo": {
+      "type": "string"
+    },
+    "reportPath": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "at",
+    "target",
+    "source",
+    "bases",
+    "virtualBase",
+    "integration",
+    "snapshots",
+    "files",
+    "dropped",
+    "checks",
+    "semanticCandidates",
+    "stops",
+    "outcome",
+    "commit",
+    "conclusion",
+    "undo",
+    "reportPath"
+  ]
+}
