@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-next.31](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.30...v0.1.0-next.31) (2026-10-27)
+
+### Features
+
+* **git:** worktree registry with capture and adoption of every worktree ([#170](https://github.com/gabrielvieiraf/finitemonkey/issues/170)) ([8f3aca7](https://github.com/gabrielvieiraf/finitemonkey/commit/8f3aca7bc484ef643549d98cd36cb9645f3eb96a)), closes [#70](https://github.com/gabrielvieiraf/finitemonkey/issues/70)
+* **map:** on-demand code map of top-level definitions cached by tree hash ([#171](https://github.com/gabrielvieiraf/finitemonkey/issues/171)) ([bd0b57c](https://github.com/gabrielvieiraf/finitemonkey/commit/bd0b57c88ac2752b203482a49a6063904df256e5)), closes [#55](https://github.com/gabrielvieiraf/finitemonkey/issues/55)
+
 ## [0.1.0-next.30](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.29...v0.1.0-next.30) (2026-10-27)
 
 ### Features
