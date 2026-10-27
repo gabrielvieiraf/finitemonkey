@@ -49,6 +49,11 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "`init` e `update`: configuração dos hooks (e, com `--sandbox`, o sandbox nas suas configurações locais), a skill verify, um bloco gerenciado curto no `AGENTS.md` que o `CLAUDE.md` importa, uma linha no `.gitignore`, o runtime fixado e um backup de cada arquivo que alteram.",
     es: "`init` y `update`: la configuración de los hooks (y, con `--sandbox`, el sandbox en tu configuración local), la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
   },
+  plan: {
+    en: "Plan documents you ask for: the inventory of what the code does today, written under `docs/plan/`.",
+    "pt-BR": "Documentos de plano que você pede: o inventário do que o código faz hoje, gravado em `docs/plan/`.",
+    es: "Documentos de plan que pides: el inventario de lo que hace el código hoy, escrito en `docs/plan/`.",
+  },
   tasks: {
     en: "Task contracts and which task is active.",
     "pt-BR": "Contratos de tarefa e qual tarefa está ativa.",

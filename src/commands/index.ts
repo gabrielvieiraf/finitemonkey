@@ -11,6 +11,7 @@ import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
+import { inventoryCommand } from "./inventory.js";
 import { lookCommand } from "./look.js";
 import { offCommand, onCommand } from "./pause.js";
 import { policyFalsePositiveCommand } from "./policy.js";
@@ -59,6 +60,7 @@ export const REGISTRY = [
   reviewPacketCommand,
   statuslineCommand,
   critiqueVerifyCommand,
+  inventoryCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

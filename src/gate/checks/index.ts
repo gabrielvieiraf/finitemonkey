@@ -3,6 +3,7 @@ import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
+import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
 import { placeholdersCheck } from "./placeholders.js";
@@ -30,4 +31,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   callers: callersCheck,
   runtime: runtimeCheck,
   look: lookCheck,
+  inventory: inventoryCheck,
 };
