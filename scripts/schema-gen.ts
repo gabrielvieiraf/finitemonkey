@@ -76,6 +76,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey uninstall --json`.",
   },
   {
+    name: "wt-list@1",
+    file: "src/commands/wt-list.ts",
+    type: "WtListData",
+    describes: "`data` of `finitemonkey wt list --json`.",
+  },
+  {
     name: "evidence@1",
     file: "src/evidence/types.ts",
     type: "Evidence",

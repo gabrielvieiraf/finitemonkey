@@ -76,6 +76,13 @@ export interface ExecResult {
 
 export type Exec = (request: ExecRequest) => ExecResult;
 
+export interface ProcessInfo {
+  readonly pid: number;
+  readonly cwd: string;
+}
+
+export type StopSignal = "SIGTERM" | "SIGKILL";
+
 export interface Runtime {
   readonly nodeVersion: string;
   readonly readText: (path: AbsolutePath) => Parsed<string>;
@@ -102,4 +109,9 @@ export interface Runtime {
   readonly realpath: (path: string) => string;
   readonly homeDir: () => string;
   readonly systemLocale: () => string | undefined;
+  readonly processes: () => readonly ProcessInfo[];
+  readonly signal: (pid: number, signal: StopSignal) => boolean;
+  readonly alive: (pid: number) => boolean;
+  readonly exclusiveBytes: (dir: AbsolutePath) => number | undefined;
+  readonly copyFile: (from: AbsolutePath, to: AbsolutePath) => Parsed<undefined>;
 }
