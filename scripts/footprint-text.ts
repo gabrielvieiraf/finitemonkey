@@ -50,9 +50,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`init` y `update`: la configuración de los hooks (y, con `--sandbox`, el sandbox en tu configuración local), la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
   },
   plan: {
-    en: "Plan documents you ask for: the inventory of what the code does today, written under `docs/plan/`.",
-    "pt-BR": "Documentos de plano que você pede: o inventário do que o código faz hoje, gravado em `docs/plan/`.",
-    es: "Documentos de plan que pides: el inventario de lo que hace el código hoy, escrito en `docs/plan/`.",
+    en: "Plan documents under `docs/plan/`: the inventory of what the code does today, the master plan from the first L task and the copy of it kept before each consolidation.",
+    "pt-BR":
+      "Documentos de plano em `docs/plan/`: o inventário do que o código faz hoje, o plano mestre a partir da primeira tarefa L e a cópia dele guardada antes de cada consolidação.",
+    es: "Documentos de plan en `docs/plan/`: el inventario de lo que hace el código hoy, el plan maestro desde la primera tarea L y la copia que se guarda antes de cada consolidación.",
   },
   map: {
     en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash.",

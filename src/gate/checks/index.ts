@@ -7,6 +7,7 @@ import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
 import { placeholdersCheck } from "./placeholders.js";
+import { planCheck } from "./plan.js";
 import { prOutcome } from "./pr.js";
 import { proseCheck } from "./prose.js";
 import { reviewCheck } from "./review.js";
@@ -32,4 +33,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   runtime: runtimeCheck,
   look: lookCheck,
   inventory: inventoryCheck,
+  plan: planCheck,
 };

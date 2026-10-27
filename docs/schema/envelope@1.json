@@ -74,7 +74,8 @@
             "wt_taken",
             "wt_bad_place",
             "wt_failed",
-            "map_unavailable"
+            "map_unavailable",
+            "plan_check_failed"
           ]
         },
         "message": {
