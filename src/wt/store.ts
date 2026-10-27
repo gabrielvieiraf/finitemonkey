@@ -13,6 +13,7 @@ export const REGISTRY_FILE = "worktrees.yml";
 const LOCK_STALE_MS = 15_000;
 const LOCK_WAIT_MS = 5_000;
 const LOCK_STEP_MS = 15;
+const BUSY = /^(locked|EPERM|EACCES|EBUSY)/;
 
 export interface Registry {
   readonly worktrees: readonly WorktreeEntry[];
@@ -60,7 +61,7 @@ const acquire = (runtime: Runtime, path: AbsolutePath, owner: string): Parsed<Re
   const attempts = Math.ceil(LOCK_WAIT_MS / LOCK_STEP_MS);
   for (let attempt = 1; ; attempt += 1) {
     const lock = runtime.lock(path, { staleMs: LOCK_STALE_MS, owner });
-    if (lock.ok || !lock.error.startsWith("locked") || attempt >= attempts) return lock;
+    if (lock.ok || !BUSY.test(lock.error) || attempt >= attempts) return lock;
     pause(LOCK_STEP_MS + (attempt % 3) * 5);
   }
 };

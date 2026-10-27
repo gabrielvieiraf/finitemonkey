@@ -15082,6 +15082,7 @@ var REGISTRY_FILE = "worktrees.yml";
 var LOCK_STALE_MS = 15e3;
 var LOCK_WAIT_MS = 5e3;
 var LOCK_STEP_MS = 15;
+var BUSY = /^(locked|EPERM|EACCES|EBUSY)/;
 var EMPTY_REGISTRY = { worktrees: [] };
 var commonDirOf = (runtime, cwd) => {
   const result = runtime.git(["rev-parse", "--path-format=absolute", "--git-common-dir"], cwd);
@@ -15114,7 +15115,7 @@ var acquire = (runtime, path, owner) => {
   const attempts = Math.ceil(LOCK_WAIT_MS / LOCK_STEP_MS);
   for (let attempt2 = 1; ; attempt2 += 1) {
     const lock = runtime.lock(path, { staleMs: LOCK_STALE_MS, owner });
-    if (lock.ok || !lock.error.startsWith("locked") || attempt2 >= attempts) return lock;
+    if (lock.ok || !BUSY.test(lock.error) || attempt2 >= attempts) return lock;
     pause(LOCK_STEP_MS + attempt2 % 3 * 5);
   }
 };
