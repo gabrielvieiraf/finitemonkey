@@ -150,6 +150,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Escribe | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto. |
 | Escribe | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots antes de comandos git destructivos, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges. |
 | Escribe | `.finitemonkey/reports/` | Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide. |
+| Escribe | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Solo con `supervisor: enabled: true` en la configuración: un archivo de espera de vida corta por sesión en el directorio que anuncia un supervisor de cambio de cuenta, mientras la puerta corre o retiene la parada. `gain` lee el `usage.json` de ese directorio. |
 | Escribe | `.finitemonkey/look/` | Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol. |
 | Escribe | `docs/plan/` | Documentos de plan que pides: el inventario de lo que hace el código hoy, escrito en `docs/plan/`. |
 | Escribe | `.finitemonkey/review/`, `.claude/agents/verifier.md` | El conteo de rondas de revisión que usa `review packet` y, solo cuando `review.playwright: true` está en la configuración, un agente verificador con el MCP de Playwright. |

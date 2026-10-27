@@ -742,5 +742,7 @@
   "gate.inventory.missing": "no inventory in docs/plan; run finitemonkey inventory <topic>",
   "gate.inventory.expired": "{report} expired: {count, plural, one {# covered path changed} other {# covered paths changed}} since {hash} ({paths}); run finitemonkey inventory {topic} for the delta",
   "gate.inventory.unknown": "{report} cites {hash} in {repo}, a commit this clone cannot read",
-  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths"
+  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths",
+  "supervisor.resumed": "This session was resumed after an account switch while the gate was holding the stop ({detail}). The gate runs again now; finish what it asked before stopping.",
+  "gain.supervisor": "Account supervisor usage: {usage}"
 }

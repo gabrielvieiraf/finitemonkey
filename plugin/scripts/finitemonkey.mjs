@@ -946,7 +946,7 @@ var integrationRefs = (runtime, root, defaultBranch) => [`refs/heads/${defaultBr
 var contained = (runtime, root, branch, targets2) => {
   const tip = line(runtime, root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`]);
   if (tip === void 0) return true;
-  return targets2.filter((target2) => target2 !== `refs/heads/${branch}`).some((target2) => runtime.git(["merge-base", "--is-ancestor", tip, target2], root).ok);
+  return targets2.filter((target3) => target3 !== `refs/heads/${branch}`).some((target3) => runtime.git(["merge-base", "--is-ancestor", tip, target3], root).ok);
 };
 var shared = (runtime, root, upstream, base) => {
   if (upstream === void 0 || !refExists(runtime, root, upstream.remoteRef)) return false;
@@ -1342,8 +1342,8 @@ var isOwnHandler = (handler) => {
   if (args2.length === 0) return OWN_SHELL.test(`${command} `);
   const hookAt = args2.indexOf("hook");
   if (hookAt < 0) return false;
-  const target2 = hookAt === 0 ? command : args2[hookAt - 1] ?? "";
-  return OWN_SCRIPT.test(target2);
+  const target3 = hookAt === 0 ? command : args2[hookAt - 1] ?? "";
+  return OWN_SCRIPT.test(target3);
 };
 
 // src/install/statusline.ts
@@ -3656,7 +3656,7 @@ var checkAuthVariables = ({ env, platform }) => {
 };
 
 // src/doctor/hooks.ts
-import { join as join37 } from "node:path";
+import { join as join38 } from "node:path";
 
 // src/hooks/events.ts
 var HOOK_EVENTS = [
@@ -4080,8 +4080,8 @@ var readRedirect = (cursor, match) => {
   cursor.pos += match[0].length;
   skipBlank(cursor);
   const processSub = peek(cursor) === "(" && op === "<";
-  const target2 = processSub ? "" : readWord(cursor).text;
-  return { kind: "redirect", op, fd: match[1] ?? "", target: target2, body: void 0 };
+  const target3 = processSub ? "" : readWord(cursor).text;
+  return { kind: "redirect", op, fd: match[1] ?? "", target: target3, body: void 0 };
 };
 var processSubstitution = (cursor) => {
   if (peek(cursor) !== "<" && peek(cursor) !== ">" || peek(cursor, 1) !== "(") return false;
@@ -4260,8 +4260,8 @@ var next = (cursor, tokens, cmd) => {
   if (redirect !== null) {
     cursor.pos += redirect[0].length;
     while (peek(cursor) === " ") cursor.pos += 1;
-    const target2 = redirect[3] ?? word(cursor, cmd).text;
-    tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target: target2, body: void 0 });
+    const target3 = redirect[3] ?? word(cursor, cmd).text;
+    tokens.push({ kind: "redirect", op: redirect[2] ?? ">", fd: redirect[1] ?? "", target: target3, body: void 0 });
     return;
   }
   const op = OPERATORS2.find((candidate) => cursor.text.startsWith(candidate, cursor.pos));
@@ -4483,8 +4483,8 @@ var PS_ENV = /^\$env:([A-Za-z_][A-Za-z0-9_]*)=?(.*)$/is;
 var CHANGES_DIR = /* @__PURE__ */ new Set(["cd", "pushd", "set-location", "push-location"]);
 var lex = (text9, language) => language === "bash" ? lexBash(text9) : lexPowerShell(text9, language === "cmd");
 var isWindowsAbsolute = (path) => /^[A-Za-z]:\//.test(path);
-var joinDir = (current2, target2) => {
-  const next2 = toPosixPath(target2);
+var joinDir = (current2, target3) => {
+  const next2 = toPosixPath(target3);
   if (next2.startsWith("/") || isWindowsAbsolute(next2) || next2.startsWith("~")) return next2;
   return current2 === void 0 ? posix.normalize(next2) : posix.join(current2, next2);
 };
@@ -4509,8 +4509,8 @@ var track = (words, language, context) => {
   if (assigned !== void 0) context.env = { ...context.env, ...assigned };
   const program = language === "bash" ? words[0] ?? "" : powershellProgram(words[0] ?? "");
   if (!CHANGES_DIR.has(program)) return;
-  const target2 = words.slice(1).find((word2) => !word2.startsWith("-"));
-  context.dir = target2 === void 0 || target2 === "-" ? "~" : joinDir(context.dir, target2);
+  const target3 = words.slice(1).find((word2) => !word2.startsWith("-"));
+  context.dir = target3 === void 0 || target3 === "-" ? "~" : joinDir(context.dir, target3);
 };
 var emit = (stage, raw, language, context, collector) => {
   const first = stage.argv[0] ?? "";
@@ -5653,7 +5653,7 @@ var loadProdTargets = (runtime, root, config) => {
 var isProdContext = (name, declared) => declared.includes(name) || /(?:^|[-_.:/])(?:prod|production)(?:$|[-_.:/])/i.test(name);
 
 // src/prod/classify.ts
-var hit = (effect, target2, tool) => ({ effect, target: target2, tool });
+var hit = (effect, target3, tool) => ({ effect, target: target3, tool });
 var sshHit = (command, isProd) => {
   const call = parseSsh(command);
   if (call === void 0 || !isProd(call.destination)) return void 0;
@@ -5689,9 +5689,9 @@ var dockerHit = (command, targets2, isProd) => {
     return hit("effect", switching, "docker context");
   const prodHost = remote !== void 0 && isProd(remote) ? hostKey(remote) : void 0;
   const prodContext = context !== void 0 && isProdContext(context, targets2.dockerContexts) ? context : void 0;
-  const target2 = prodHost ?? prodContext;
-  if (target2 === void 0) return void 0;
-  return hit(dockerReadOnly(command.args) ? "read" : "effect", target2, "docker");
+  const target3 = prodHost ?? prodContext;
+  if (target3 === void 0) return void 0;
+  return hit(dockerReadOnly(command.args) ? "read" : "effect", target3, "docker");
 };
 var kubeHit = (command, targets2) => {
   const context = valueAfter(command.args, "--context", "--kube-context");
@@ -6242,18 +6242,19 @@ var NOT_FROM_PERSON = [
   /<task-notification\b/i,
   /<agent-message\b/i,
   /^\s*\[julius2claude\]/,
-  /\[Subagent hand-back\]/i
+  /\[Subagent hand-back\]/i,
+  /^\s*\[(?:supervisor|account[- ]?switch(?:er)?)\]/i
 ];
 var comesFromPerson = (prompt) => !NOT_FROM_PERSON.some((pattern) => pattern.test(prompt));
-var toMarker = (verb, target2, rest) => {
-  if (!NAME.test(target2)) return void 0;
-  if (verb === "trust") return { type: "trust", task: target2 };
+var toMarker = (verb, target3, rest) => {
+  if (!NAME.test(target3)) return void 0;
+  if (verb === "trust") return { type: "trust", task: target3 };
   if (verb === "allow") {
-    return rest.length >= 3 ? { type: "allow", guard: target2.toLowerCase(), reason: rest } : void 0;
+    return rest.length >= 3 ? { type: "allow", guard: target3.toLowerCase(), reason: rest } : void 0;
   }
-  const slash = target2.indexOf("/");
-  const task = slash < 0 ? void 0 : target2.slice(0, slash);
-  const check2 = slash < 0 ? target2 : target2.slice(slash + 1);
+  const slash = target3.indexOf("/");
+  const task = slash < 0 ? void 0 : target3.slice(0, slash);
+  const check2 = slash < 0 ? target3 : target3.slice(slash + 1);
   if (check2 === "") return void 0;
   return { type: "approve", check: check2, reason: rest, ...task === void 0 || task === "" ? {} : { task } };
 };
@@ -6317,8 +6318,103 @@ var unlessPaused = (handler) => (input) => {
   return allowWith({ systemMessage: human(input.t("pause.report", { since: pause.since })) });
 };
 
-// src/gate/hooks/config.ts
+// src/supervisor/hold.ts
 import { join as join17 } from "node:path";
+var HOLD_DIR_ENV = "FINITEMONKEY_HOLD_DIR";
+var USAGE_FILE = "usage.json";
+var GATE_HOLD_MS = 10 * 6e4;
+var BLOCK_HOLD_MS = 15 * 6e4;
+var SAFE_ID = /^[A-Za-z0-9._-]{1,128}$/;
+var supervisorEnabled = (runtime, root) => {
+  const text9 = runtime.readText(toAbsolutePath(CONFIG_FILE2, root));
+  return text9.ok && configAt(parseConfigYaml(text9.value), "supervisor", "enabled") === "true";
+};
+var holdDir = (runtime, root, env) => {
+  if (!supervisorEnabled(runtime, root)) return void 0;
+  const announced = env[HOLD_DIR_ENV];
+  if (announced !== void 0 && announced !== "") return toAbsolutePath(announced, root);
+  const text9 = runtime.readText(toAbsolutePath(CONFIG_FILE2, root));
+  const configured = text9.ok ? configAt(parseConfigYaml(text9.value), "supervisor", "holdDir") : void 0;
+  return typeof configured === "string" && configured !== "" ? toAbsolutePath(configured, root) : void 0;
+};
+var holdPath = (dir, sessionId) => SAFE_ID.test(sessionId) ? toAbsolutePath(join17(dir, `${sessionId}.hold.json`)) : void 0;
+var writeHold = (runtime, dir, hold, ttlMs) => {
+  const path = holdPath(dir, hold.sessionId);
+  if (path === void 0) return false;
+  const now = runtime.now();
+  const until = new Date(Date.parse(now) + ttlMs).toISOString();
+  runtime.mkdir(dir);
+  return runtime.writeText(path, `${JSON.stringify({ schemaVersion: 1, ...hold, since: now, until }, null, 2)}
+`).ok;
+};
+var readHold = (runtime, dir, sessionId) => {
+  const path = holdPath(dir, sessionId);
+  const text9 = path === void 0 ? void 0 : runtime.readText(path);
+  const parsed = text9?.ok === true ? parseJsonObject(text9.value) : void 0;
+  if (parsed?.ok !== true || !isRecord(parsed.value)) return void 0;
+  const { reason, since, until, project, detail } = parsed.value;
+  if (reason !== "gate" && reason !== "block" || typeof since !== "string" || typeof until !== "string")
+    return void 0;
+  return {
+    schemaVersion: 1,
+    sessionId,
+    project: typeof project === "string" ? project : "",
+    reason,
+    since,
+    until,
+    detail: typeof detail === "string" ? detail : ""
+  };
+};
+var releaseHold = (runtime, dir, sessionId) => {
+  const path = holdPath(dir, sessionId);
+  if (path !== void 0) runtime.remove(path);
+};
+
+// src/supervisor/hooks.ts
+var DETAIL_LIMIT = 400;
+var target = (input) => {
+  const sessionId = input.payload.sessionId;
+  const root = findRepoRoot(input.runtime, sessionCwd(input));
+  if (sessionId === void 0 || root === void 0) return void 0;
+  const dir = holdDir(input.runtime, root, input.env);
+  return dir === void 0 ? void 0 : { sessionId, root, dir };
+};
+var holdingStop = (gate) => async (input) => {
+  const where2 = target(input);
+  if (where2 === void 0) return gate(input);
+  const { runtime } = input;
+  writeHold(
+    runtime,
+    where2.dir,
+    { sessionId: where2.sessionId, project: where2.root, reason: "gate", detail: "" },
+    GATE_HOLD_MS
+  );
+  const decision = await gate(input);
+  if (decision.kind === "block") {
+    const detail = (decision.reason.split("\n")[0] ?? "").slice(0, DETAIL_LIMIT);
+    writeHold(
+      runtime,
+      where2.dir,
+      { sessionId: where2.sessionId, project: where2.root, reason: "block", detail },
+      BLOCK_HOLD_MS
+    );
+  } else releaseHold(runtime, where2.dir, where2.sessionId);
+  return decision;
+};
+var supervisorResume = (input) => {
+  if (textField(input.payload.raw, "source") !== "resume") return { kind: "allow" };
+  const where2 = target(input);
+  if (where2 === void 0) return { kind: "allow" };
+  const hold = readHold(input.runtime, where2.dir, where2.sessionId);
+  if (hold?.reason !== "block") return { kind: "allow" };
+  writeHold(input.runtime, where2.dir, { ...hold, reason: "block" }, BLOCK_HOLD_MS);
+  input.runtime.spawnSelf(["gate"], where2.root);
+  const additionalContext = `finitemonkey: ${input.t("supervisor.resumed", { detail: hold.detail })}`;
+  return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "SessionStart", additionalContext } } };
+};
+
+// src/gate/hooks/config.ts
+import { join as join18 } from "node:path";
 var CONFIG_FILE3 = "config-hooks.json";
 var GUARDED_SOURCES = /* @__PURE__ */ new Set(["user_settings", "project_settings", "local_settings"]);
 var countIn = (value) => {
@@ -6333,9 +6429,9 @@ var censusOf = (text9) => {
   return { hooks: countIn(parsed.value["hooks"]), disabled: parsed.value["disableAllHooks"] === true };
 };
 var settingsFiles = (paths, env) => [
-  toAbsolutePath(join17(paths.root, ".claude", "settings.json")),
-  toAbsolutePath(join17(paths.root, ".claude", "settings.local.json")),
-  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join17(env["HOME"], ".claude", "settings.json"))]
+  toAbsolutePath(join18(paths.root, ".claude", "settings.json")),
+  toAbsolutePath(join18(paths.root, ".claude", "settings.local.json")),
+  ...env["HOME"] === void 0 ? [] : [toAbsolutePath(join18(env["HOME"], ".claude", "settings.json"))]
 ];
 var read2 = (runtime, path) => {
   const text9 = runtime.readText(path);
@@ -6448,7 +6544,7 @@ var implicitContract = (files) => {
 };
 
 // src/gate/prepare.ts
-import { join as join19 } from "node:path";
+import { join as join20 } from "node:path";
 
 // src/core/yaml/scalar.ts
 var ESCAPES = {
@@ -6946,7 +7042,7 @@ var readBaseline = (runtime, paths) => {
 var writeBaseline = (runtime, paths, treeHash2, checks) => writeJsonFile(runtime, paths.cache(BASELINE_FILE), { treeHash: treeHash2, checks: { ...checks } }).ok;
 
 // src/gate/diff-shape.ts
-import { join as join18 } from "node:path";
+import { join as join19 } from "node:path";
 
 // src/gate/git.ts
 var EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
@@ -7053,7 +7149,7 @@ var aheadOfUpstream = (git2) => {
 
 // src/gate/diff-shape.ts
 var untrackedLines = (runtime, root, changes) => changes.filter((change) => change.status === "A").reduce((sum, change) => {
-  const text9 = runtime.readText(toAbsolutePath(join18(root, change.path)));
+  const text9 = runtime.readText(toAbsolutePath(join19(root, change.path)));
   return sum + (text9.ok ? text9.value.split("\n").length : 0);
 }, 0);
 var diffShape = (runtime, git2, base, changes) => ({
@@ -7142,9 +7238,9 @@ var prStatus = (runtime, git2, paths, ttlMs = PR_CACHE_TTL_MS) => {
   return { kind: "found", branch, pr: status.pr, localHead: headSha(git2) };
 };
 var conflictFiles = (git2, base) => {
-  for (const target2 of [`origin/${base}`, base]) {
-    if (git2.out(["rev-parse", "--verify", "-q", `${target2}^{commit}`]) === void 0) continue;
-    const result = git2.run(["merge-tree", "--write-tree", "--name-only", "--no-messages", target2, "HEAD"]);
+  for (const target3 of [`origin/${base}`, base]) {
+    if (git2.out(["rev-parse", "--verify", "-q", `${target3}^{commit}`]) === void 0) continue;
+    const result = git2.run(["merge-tree", "--write-tree", "--name-only", "--no-messages", target3, "HEAD"]);
     if (result.found && result.exitCode === 1) return parseMergeTreeConflicts(result.stdout);
     if (result.found && result.exitCode === 0) return [];
   }
@@ -7259,10 +7355,10 @@ var applySize = (contract, verdict) => {
 // src/gate/prepare.ts
 var diskFiles = (runtime, root) => ({
   read: (relative12) => {
-    const text9 = runtime.readText(toAbsolutePath(join19(root, relative12)));
+    const text9 = runtime.readText(toAbsolutePath(join20(root, relative12)));
     return text9.ok ? text9.value : void 0;
   },
-  exists: (relative12) => runtime.stat(toAbsolutePath(join19(root, relative12))) !== void 0
+  exists: (relative12) => runtime.stat(toAbsolutePath(join20(root, relative12))) !== void 0
 });
 var baseFiles = (git2, base, disk) => ({
   read: (relative12) => base === EMPTY_TREE ? disk.read(relative12) : fileAt(git2, base, relative12),
@@ -8334,7 +8430,9 @@ var en_default = {
   "gate.inventory.missing": "no inventory in docs/plan; run finitemonkey inventory <topic>",
   "gate.inventory.expired": "{report} expired: {count, plural, one {# covered path changed} other {# covered paths changed}} since {hash} ({paths}); run finitemonkey inventory {topic} for the delta",
   "gate.inventory.unknown": "{report} cites {hash} in {repo}, a commit this clone cannot read",
-  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths"
+  "gate.inventory.fresh": "{count, plural, one {# inventory matches} other {# inventories match}} the covered paths",
+  "supervisor.resumed": "This session was resumed after an account switch while the gate was holding the stop ({detail}). The gate runs again now; finish what it asked before stopping.",
+  "gain.supervisor": "Account supervisor usage: {usage}"
 };
 
 // src/i18n/es.json
@@ -9082,7 +9180,9 @@ var es_default = {
   "gate.inventory.missing": "ningún inventario en docs/plan; ejecuta finitemonkey inventory <tema>",
   "gate.inventory.expired": "{report} venció: {count, plural, one {# ruta cubierta cambió} other {# rutas cubiertas cambiaron}} desde {hash} ({paths}); ejecuta finitemonkey inventory {topic} para el delta",
   "gate.inventory.unknown": "{report} cita {hash} en {repo}, un commit que este clon no puede leer",
-  "gate.inventory.fresh": "{count, plural, one {# inventario coincide} other {# inventarios coinciden}} con las rutas cubiertas"
+  "gate.inventory.fresh": "{count, plural, one {# inventario coincide} other {# inventarios coinciden}} con las rutas cubiertas",
+  "supervisor.resumed": "Esta sesión se reanudó tras un cambio de cuenta mientras la puerta retenía la parada ({detail}). La puerta corre de nuevo ahora; termina lo que pidió antes de parar.",
+  "gain.supervisor": "Uso informado por el supervisor de cuentas: {usage}"
 };
 
 // src/i18n/pt-BR.json
@@ -9830,7 +9930,9 @@ var pt_BR_default = {
   "gate.inventory.missing": "nenhum inventário em docs/plan; rode finitemonkey inventory <tema>",
   "gate.inventory.expired": "{report} venceu: {count, plural, one {# caminho coberto mudou} other {# caminhos cobertos mudaram}} desde {hash} ({paths}); rode finitemonkey inventory {topic} para o delta",
   "gate.inventory.unknown": "{report} cita {hash} em {repo}, um commit que este clone não lê",
-  "gate.inventory.fresh": "{count, plural, one {# inventário confere} other {# inventários conferem}} com os caminhos cobertos"
+  "gate.inventory.fresh": "{count, plural, one {# inventário confere} other {# inventários conferem}} com os caminhos cobertos",
+  "supervisor.resumed": "Esta sessão voltou depois de uma troca de conta enquanto o portão segurava a parada ({detail}). O portão roda de novo agora; termine o que ele pediu antes de parar.",
+  "gain.supervisor": "Uso informado pelo supervisor de contas: {usage}"
 };
 
 // src/i18n/review.json
@@ -10579,7 +10681,9 @@ var review_default = {
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -11325,7 +11429,9 @@ var review_default = {
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   }
 };
 
@@ -11622,8 +11728,8 @@ var callersRate = (runtime, paths) => {
     const parsed = line2.trim() === "" ? void 0 : parseJsonObject(line2);
     if (parsed === void 0 || !parsed.ok || !isRecord(parsed.value)) continue;
     const event = parsed.value["event"];
-    const target2 = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
-    if (target2 !== void 0) for (const pair of pairs(parsed.value)) target2.add(pair);
+    const target3 = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
+    if (target3 !== void 0) for (const pair of pairs(parsed.value)) target3.add(pair);
   }
   const total = (/* @__PURE__ */ new Set([...flagged, ...released2])).size;
   const rate = total === 0 ? 0 : released2.size / total;
@@ -11636,7 +11742,7 @@ var callersRate = (runtime, paths) => {
 };
 
 // src/gate/callers/scan.ts
-import { join as join20 } from "node:path";
+import { join as join21 } from "node:path";
 
 // src/gate/callers/imports.ts
 import { posix as posix2 } from "node:path";
@@ -11645,13 +11751,13 @@ var JS_EXTENSION = /\.(?:[cm]?[jt]sx?)$/;
 var stripModule = (path) => path.replace(JS_EXTENSION, "").replace(/\/index$/, "");
 var jsSpecifiers = (text9) => [...text9.matchAll(JS_SPECIFIER)].map((match) => match[1] ?? "");
 var jsImports = (callerPath, callerText, origin) => {
-  const target2 = stripModule(origin);
+  const target3 = stripModule(origin);
   return jsSpecifiers(callerText).some((specifier) => {
     if (specifier.startsWith(".")) {
-      return stripModule(posix2.normalize(posix2.join(posix2.dirname(callerPath), specifier))) === target2;
+      return stripModule(posix2.normalize(posix2.join(posix2.dirname(callerPath), specifier))) === target3;
     }
     const bare = stripModule(specifier.replace(/^[@~#]\//, ""));
-    return target2 === bare || target2.endsWith(`/${bare}`);
+    return target3 === bare || target3.endsWith(`/${bare}`);
   });
 };
 var pyImports = (callerText, origin) => {
@@ -11760,7 +11866,7 @@ var definesName = (language, line2, name) => language.definitions.some((pattern)
 // src/gate/callers/scan.ts
 var MAX_SYMBOLS = 200;
 var current = (runtime, root, path) => {
-  const text9 = runtime.readText(toAbsolutePath(join20(root, path)));
+  const text9 = runtime.readText(toAbsolutePath(join21(root, path)));
   return text9.ok ? text9.value : "";
 };
 var keyOf = (language, name) => `${language.id}\0${name}`;
@@ -12033,11 +12139,11 @@ var gitCheck = (check2, ctx) => {
 };
 
 // src/plan/folder.ts
-import { join as join21 } from "node:path";
+import { join as join22 } from "node:path";
 var PLAN_DIR = "docs/plan";
 var NUMBERED = /^(\d{2,})([a-z]?)-/;
-var planDir = (root) => toAbsolutePath(join21(root, ...PLAN_DIR.split("/")));
-var planPath = (root, name) => toAbsolutePath(join21(planDir(root), name));
+var planDir = (root) => toAbsolutePath(join22(root, ...PLAN_DIR.split("/")));
+var planPath = (root, name) => toAbsolutePath(join22(planDir(root), name));
 var planFiles = (runtime, root) => {
   const listed5 = runtime.listDir(planDir(root));
   return listed5.ok ? [...listed5.value].sort() : [];
@@ -12246,10 +12352,10 @@ var inventoryOutcome = (states) => {
 var inventoryCheck = (_check, ctx) => inventoryOutcome(inventoryStates(ctx.runtime, ctx.paths.root));
 
 // src/gate/checks/look.ts
-import { join as join24 } from "node:path";
+import { join as join25 } from "node:path";
 
 // src/look/config.ts
-import { join as join22 } from "node:path";
+import { join as join23 } from "node:path";
 
 // src/look/types.ts
 var LOOK_RULES = [
@@ -12311,18 +12417,18 @@ var parseLookConfig = (source) => {
   };
 };
 var loadLookConfig = (runtime, root) => {
-  const source = runtime.readText(toAbsolutePath(join22(root, LOOK_CONFIG)));
+  const source = runtime.readText(toAbsolutePath(join23(root, LOOK_CONFIG)));
   return source.ok ? parseLookConfig(source.value) : void 0;
 };
 var withMock = (route, mock) => `${route}${route.includes("?") ? "&" : "?"}mock=${encodeURIComponent(mock)}`;
 var lookRoutes = (config) => config.routes.flatMap((route) => [route, ...config.mocks.map((mock) => withMock(route, mock))]);
 
 // src/look/paths.ts
-import { join as join23, relative as relative5 } from "node:path";
+import { join as join24, relative as relative5 } from "node:path";
 var LOOK_DIR = "look";
 var SUMMARY_FILE = "summary.json";
-var lookDir = (paths, treeHash2) => toAbsolutePath(join23(paths.dir, LOOK_DIR, treeHash2));
-var summaryPath = (paths, treeHash2) => toAbsolutePath(join23(lookDir(paths, treeHash2), SUMMARY_FILE));
+var lookDir = (paths, treeHash2) => toAbsolutePath(join24(paths.dir, LOOK_DIR, treeHash2));
+var summaryPath = (paths, treeHash2) => toAbsolutePath(join24(lookDir(paths, treeHash2), SUMMARY_FILE));
 var projectRelative = (paths, absolute) => toPosixPath(relative5(paths.root, absolute));
 
 // src/gate/checks/look.ts
@@ -12357,7 +12463,7 @@ var readSummary = (ctx) => {
 var lastScreenEdit = (ctx) => {
   const screens = loadLookConfig(ctx.runtime, ctx.paths.root)?.screens ?? DEFAULT_SCREENS;
   return ctx.changes.filter((change) => change.status !== "D" && matchesAny(change.path, screens)).reduce((latest, change) => {
-    const stat = ctx.runtime.stat(toAbsolutePath(join24(ctx.paths.root, change.path)));
+    const stat = ctx.runtime.stat(toAbsolutePath(join25(ctx.paths.root, change.path)));
     return Math.max(latest, stat?.mtimeMs ?? 0);
   }, 0);
 };
@@ -12404,13 +12510,13 @@ var manualCheck = (check2, ctx) => {
 };
 
 // src/gate/checks/placeholders.ts
-import { join as join25 } from "node:path";
+import { join as join26 } from "node:path";
 var MAX_LISTED3 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines3) => lines3.filter((line2) => !isTestFile(line2.path) && !SKIP_FILES.test(line2.path) && PLACEHOLDER.test(line2.text));
 var untrackedAdded = (ctx) => ctx.changes.filter((change) => change.status === "A" && !SKIP_FILES.test(change.path)).flatMap((change) => {
-  const text9 = ctx.runtime.readText(toAbsolutePath(join25(ctx.paths.root, change.path)));
+  const text9 = ctx.runtime.readText(toAbsolutePath(join26(ctx.paths.root, change.path)));
   return text9.ok ? text9.value.split("\n").map((line2, index) => ({ path: change.path, line: index + 1, text: line2 })) : [];
 });
 var placeholdersCheck = (_check, ctx) => {
@@ -13257,13 +13363,13 @@ ${run4.stderr}`)) })]);
 };
 
 // src/secrets/baseline.ts
-import { join as join26 } from "node:path";
+import { join as join27 } from "node:path";
 var BASELINE_FILE2 = ".finitemonkey/findings/baseline.json";
 var BASELINE_SCHEMA = "finitemonkey/secrets-baseline@1";
 var BASELINE_STATES = ["aceito", "falso-positivo"];
 var EXCEPTION_MAX_DAYS = 90;
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
-var baselinePath = (root) => toAbsolutePath(join26(root, BASELINE_FILE2));
+var baselinePath = (root) => toAbsolutePath(join27(root, BASELINE_FILE2));
 var text7 = (record4, key) => {
   const value = record4[key];
   return typeof value === "string" && value !== "" ? value : void 0;
@@ -13323,14 +13429,14 @@ var withoutFixed = (baseline, fixed) => {
 var acceptedFingerprints = (baseline, now) => new Set(baseline.entries.filter((entry2) => entry2.expiresAt >= now).map((entry2) => entry2.fingerprint));
 
 // src/secrets/incidents.ts
-import { join as join27 } from "node:path";
+import { join as join28 } from "node:path";
 var INCIDENTS_DIR = ".finitemonkey/incidents";
 var INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"];
 var INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"];
 var ID = /^inc-[0-9a-f]{12}$/;
 var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint}`).slice(0, 12)}`;
-var incidentsDir = (root) => toAbsolutePath(join27(root, INCIDENTS_DIR));
-var incidentFile = (root, id) => toAbsolutePath(join27(incidentsDir(root), `${id}.json`));
+var incidentsDir = (root) => toAbsolutePath(join28(root, INCIDENTS_DIR));
+var incidentFile = (root, id) => toAbsolutePath(join28(incidentsDir(root), `${id}.json`));
 var pick3 = (options, value) => options.find((option) => option === value);
 var str2 = (record4, key) => {
   const value = record4[key];
@@ -13385,7 +13491,7 @@ var listIncidents = (runtime, root) => {
   return names.value.filter((name) => name.endsWith(".json")).map((name) => readIncident(runtime, root, name.slice(0, -".json".length))).flatMap((parsed) => parsed.ok ? [parsed.value] : []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 };
 var saveIncident = (runtime, root, incident) => {
-  const ignore = runtime.writeText(toAbsolutePath(join27(incidentsDir(root), ".gitignore")), "*\n");
+  const ignore = runtime.writeText(toAbsolutePath(join28(incidentsDir(root), ".gitignore")), "*\n");
   if (!ignore.ok) return ignore;
   return runtime.writeText(incidentFile(root, incident.id), `${JSON.stringify(incident, null, 2)}
 `);
@@ -13432,7 +13538,7 @@ var moveIncident = (incident, to, now, by) => ({
 var isRotated = (incident) => incident.state === "rotacionado" || incident.state === "fechado";
 
 // src/secrets/scan.ts
-import { join as join28, relative as relative6 } from "node:path";
+import { join as join29, relative as relative6 } from "node:path";
 
 // src/secrets/located.ts
 var findingId = (ruleId, file, fingerprint) => `fm-${sha256Hex(`${ruleId}\0${file}\0${fingerprint}`).slice(0, 16)}`;
@@ -13523,24 +13629,24 @@ var MAX_FILE_BYTES = 2 * 1024 * 1024;
 var SKIPPED2 = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
 var DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var binary = (text9) => text9.slice(0, 8e3).includes("\0");
-var listed2 = (runtime, root, target2) => {
-  const git2 = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target2], root);
+var listed2 = (runtime, root, target3) => {
+  const git2 = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", target3], root);
   if (git2.ok)
     return accept(
       git2.stdout.split("\0").filter((name) => name !== "").map(toPosixPath)
     );
-  const base = toAbsolutePath(target2, root);
+  const base = toAbsolutePath(target3, root);
   const walked = runtime.walkFiles(base);
   if (!walked.ok) return walked;
-  return accept(walked.value.map((name) => toPosixPath(relative6(root, join28(base, toPosixPath(name))))));
+  return accept(walked.value.map((name) => toPosixPath(relative6(root, join29(base, toPosixPath(name))))));
 };
 var scanFile = (runtime, root, file) => {
   const text9 = runtime.readText(toAbsolutePath(file, root));
   if (!text9.ok || text9.value.length > MAX_FILE_BYTES || binary(text9.value)) return [];
   return scanText(text9.value, { path: file }).map((finding4) => locate(finding4, file, finding4.line));
 };
-var scanPath = (runtime, root, target2) => {
-  const files = listed2(runtime, root, target2);
+var scanPath = (runtime, root, target3) => {
+  const files = listed2(runtime, root, target3);
   if (!files.ok) return files;
   return accept(files.value.filter((file) => !SKIPPED2.test(file)).flatMap((file) => scanFile(runtime, root, file)));
 };
@@ -13602,7 +13708,7 @@ var secretsCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/tests.ts
-import { join as join29 } from "node:path";
+import { join as join30 } from "node:path";
 
 // src/guards/tests/tree.ts
 var outOfScope = (input, change) => input.testsProtected && input.scopePaths.length > 0 && change.status !== "A" && isTestFile(change.path) && !matchesAny(change.path, input.scopePaths) ? [{ kind: "out_of_scope", path: change.path }] : [];
@@ -13634,7 +13740,7 @@ var treeViolations = (ctx) => {
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
     after: (path) => {
-      const text9 = ctx.runtime.readText(toAbsolutePath(join29(ctx.paths.root, path)));
+      const text9 = ctx.runtime.readText(toAbsolutePath(join30(ctx.paths.root, path)));
       return text9.ok ? text9.value : void 0;
     },
     acceptedConfigs: ctx.trust.configs,
@@ -13655,7 +13761,7 @@ var testsCheck = (check2, ctx) => {
 };
 
 // src/git/tree.ts
-import { join as join30 } from "node:path";
+import { join as join31 } from "node:path";
 
 // src/secrets/guards/paths.ts
 var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
@@ -13694,7 +13800,7 @@ var dropSensitive = (runtime, repo, env, options) => {
   return removed.ok ? accept(void 0) : removed;
 };
 var withTempIndex = (runtime, repo, options, work) => {
-  const path = toAbsolutePath(join30(repo.gitDir, `finitemonkey-${options.stamp}.index`));
+  const path = toAbsolutePath(join31(repo.gitDir, `finitemonkey-${options.stamp}.index`));
   const env = { GIT_INDEX_FILE: path, GIT_OPTIONAL_LOCKS: "0" };
   try {
     return work(env);
@@ -13902,7 +14008,7 @@ var mergeCommitsSince = (runtime, repo, since) => {
 var mergeInProgress = (runtime, repo) => revParse(runtime, repo, "MERGE_HEAD") !== void 0;
 
 // src/git/merge/dropped.ts
-import { join as join31 } from "node:path";
+import { join as join32 } from "node:path";
 
 // src/git/merge/lines.ts
 var normalizeLine = (line2) => line2.replace(/\r$/, "").trim().replace(/\s*,$/, "");
@@ -13982,7 +14088,7 @@ var parseDropped = (text9) => {
   return accept({ items, invalid });
 };
 var loadDropped = (runtime, root, file) => {
-  const path = toAbsolutePath(file ?? join31(root, DROPPED_FILE), root);
+  const path = toAbsolutePath(file ?? join32(root, DROPPED_FILE), root);
   const text9 = runtime.readText(path);
   if (!text9.ok) return file === void 0 ? accept({ items: [], invalid: [] }) : reject(`${file}: ${text9.error}`);
   return parseDropped(text9.value);
@@ -13992,7 +14098,7 @@ var isDropped = (finding4, items) => items.some(
 );
 
 // src/git/merge/generated.ts
-import { join as join32 } from "node:path";
+import { join as join33 } from "node:path";
 var LOCKFILES3 = /* @__PURE__ */ new Set([
   "package-lock.json",
   "npm-shrinkwrap.json",
@@ -14055,7 +14161,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
   if (declared.length === 0) return accept([]);
   const commit2 = resultCommit(runtime, repo, inputs);
   if (!commit2.ok) return commit2;
-  const dir = join32(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
+  const dir = join33(repo.gitDir, `finitemonkey-generate-${runtime.now().replace(/[:.]/g, "-")}`);
   if (!runtime.git(["worktree", "add", "--detach", dir, commit2.value], repo.root).ok)
     return reject("could not check out the merge result");
   try {
@@ -14065,7 +14171,7 @@ var verifyGenerated = (runtime, repo, inputs, paths, generators) => {
     }
     return accept(
       declared.flatMap(({ path }) => {
-        const fresh3 = runtime.readText(toAbsolutePath(join32(dir, path)));
+        const fresh3 = runtime.readText(toAbsolutePath(join33(dir, path)));
         const merged2 = blobText(runtime, repo, commit2.value, path);
         if (fresh3.ok && fresh3.value === merged2) return [];
         return [{ kind: "generated-differs", file: path, side: void 0, line: void 0, text: path, weak: false }];
@@ -14351,19 +14457,19 @@ var verifyMerge = (runtime, repo, options = {}) => {
 };
 
 // src/git/ownership.ts
-import { join as join33 } from "node:path";
+import { join as join34 } from "node:path";
 var OWNERSHIP_DIR = ".finitemonkey/git";
 var ownerKey = (raw) => {
   const cleaned = (raw ?? "").replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 80);
   return cleaned === "" ? "unknown" : cleaned;
 };
-var fileOf = (repo, kind, owner) => toAbsolutePath(join33(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
+var fileOf = (repo, kind, owner) => toAbsolutePath(join34(repo.root, OWNERSHIP_DIR, kind, `${ownerKey(owner)}.json`));
 var readDirty = (runtime, root) => {
   const status = runtime.git(["status", "--porcelain=v2", "-z", "--untracked-files=all"], root);
   return status.ok ? parsePorcelainV2(status.stdout) : void 0;
 };
 var hashDirty = (runtime, repo, entries) => {
-  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join33(repo.root, entry2.path)))?.kind === "file");
+  const present2 = entries.filter((entry2) => runtime.stat(toAbsolutePath(join34(repo.root, entry2.path)))?.kind === "file");
   const hashed = present2.length === 0 ? void 0 : runtime.gitWith(["hash-object", "--stdin-paths"], repo.root, {
     input: `${present2.map((entry2) => entry2.path).join("\n")}
 `
@@ -14734,7 +14840,7 @@ var subagentStopGate = (input) => {
 };
 
 // src/gate/hooks/subagent.ts
-import { join as join34 } from "node:path";
+import { join as join35 } from "node:path";
 var NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
 var KNOWN_KINDS = /* @__PURE__ */ new Set([
   "command",
@@ -14772,12 +14878,12 @@ var subagentStart = (input) => {
   const active = readState(runtime, paths).active;
   if (active === void 0) return { kind: "allow" };
   const disk = (relative12) => {
-    const text9 = runtime.readText(toAbsolutePath(join34(paths.root, relative12)));
+    const text9 = runtime.readText(toAbsolutePath(join35(paths.root, relative12)));
     return text9.ok ? text9.value : void 0;
   };
   const loaded = loadTask(runtime, paths, { disk, base: () => void 0 }, active);
   if (!loaded.ok) return { kind: "allow" };
-  const briefing = runtime.stat(toAbsolutePath(join34(paths.dir, "briefing.md"))) !== void 0;
+  const briefing = runtime.stat(toAbsolutePath(join35(paths.dir, "briefing.md"))) !== void 0;
   return { kind: "allow", output: contextOutput("SubagentStart", contractFacts(t, loaded.value.contract, briefing)) };
 };
 
@@ -14786,11 +14892,11 @@ var PORTAO_HANDLERS = {
   PreToolUse: [reviewAgentGuard, selfGuard, bypassGuard, testsGuard, recordChecked],
   PostToolUse: [compareRan, lookReadTracker],
   UserPromptSubmit: [pausePrompt, promptRelease],
-  Stop: [rewriteStop, unlessPaused(stopGate)],
+  Stop: [rewriteStop, unlessPaused(holdingStop(stopGate))],
   SubagentStop: [unlessPaused(subagentStopGate)],
   SubagentStart: [subagentStart],
   PreCompact: [preCompact],
-  SessionStart: [sessionStart],
+  SessionStart: [sessionStart, supervisorResume],
   ConfigChange: [configChange]
 };
 
@@ -15302,8 +15408,8 @@ var pushDestinations = (parsed, facts) => {
     return [facts.upstream(current2)?.branch ?? current2];
   }
   return refspecs.flatMap((refspec) => {
-    const target2 = refspecTarget(refspec, current2);
-    return target2 === void 0 ? [] : [target2];
+    const target3 = refspecTarget(refspec, current2);
+    return target3 === void 0 ? [] : [target3];
   });
 };
 var leaseVerdict = (parsed, facts) => {
@@ -15483,8 +15589,8 @@ var guardGitCommand = (context, command, depth = 0) => {
   if (repo === void 0) return [];
   const facts = withChain(context.facts?.(repo) ?? repoFacts(context.runtime, repo), context.chain);
   const expanded = expandAlias(context.runtime, repo, invocation);
-  const target2 = switchTarget(expanded, facts);
-  if (target2 !== void 0 && context.chain !== void 0) context.chain.branch = target2;
+  const target3 = switchTarget(expanded, facts);
+  if (target3 !== void 0 && context.chain !== void 0) context.chain.branch = target3;
   const nested = depth < MAX_ALIAS_DEPTH ? shellAliasCommands(expanded, context.runtime, repo).flatMap(
     (inner) => guardGitCommand(context, inner, depth + 1)
   ) : [];
@@ -15521,11 +15627,11 @@ var removalTargets = (command) => {
   if (command.program === "remove-item") return powershellTargets(command);
   return void 0;
 };
-var globBase = (target2) => {
-  const at = target2.search(GLOB2);
-  if (at < 0) return target2;
-  const slash = target2.lastIndexOf("/", at);
-  return slash < 0 ? "." : target2.slice(0, slash) || "/";
+var globBase = (target3) => {
+  const at = target3.search(GLOB2);
+  if (at < 0) return target3;
+  const slash = target3.lastIndexOf("/", at);
+  return slash < 0 ? "." : target3.slice(0, slash) || "/";
 };
 var containsGitDir = (runtime, path) => runtime.stat(toAbsolutePath(resolveFrom(path, ".git"))) !== void 0;
 var targetVerdict = (runtime, context, command, raw) => {
@@ -15545,8 +15651,8 @@ var targetVerdict = (runtime, context, command, raw) => {
 var rmVerdict = (runtime, context, command) => {
   const targets2 = removalTargets(command);
   if (targets2 === void 0) return PASS;
-  for (const target2 of targets2) {
-    const verdict = targetVerdict(runtime, context, command, target2);
+  for (const target3 of targets2) {
+    const verdict = targetVerdict(runtime, context, command, target3);
     if (verdict.kind === "block") return verdict;
   }
   return PASS;
@@ -15558,10 +15664,10 @@ var listWorktrees = (runtime, cwd) => {
 };
 
 // src/git/journal.ts
-import { join as join35 } from "node:path";
+import { join as join36 } from "node:path";
 var JOURNAL_FILE = ".finitemonkey/git-journal.jsonl";
 var JOURNAL_SCHEMA = "finitemonkey/git-journal@1";
-var journalPath = (root) => toAbsolutePath(join35(root, JOURNAL_FILE));
+var journalPath = (root) => toAbsolutePath(join36(root, JOURNAL_FILE));
 var headsOf = (value) => isRecord(value) ? Object.fromEntries(
   Object.entries(value).filter((entry2) => typeof entry2[1] === "string")
 ) : {};
@@ -15597,7 +15703,7 @@ var readJournal = (runtime, root) => {
 };
 var appendJournal = (runtime, root, entry2) => {
   const path = journalPath(root);
-  const made = runtime.mkdir(toAbsolutePath(join35(root, ".finitemonkey")));
+  const made = runtime.mkdir(toAbsolutePath(join36(root, ".finitemonkey")));
   if (!made.ok) return made;
   const previous = runtime.readText(path);
   const before = previous.ok ? previous.value : "";
@@ -16092,12 +16198,12 @@ var sourceOf = (value, isFile, segment, heredocs) => {
   const piped = segment.args.map((arg) => heredocIn(arg, heredocs)).find((text9) => text9 !== void 0);
   return { kind: "inline", text: piped ?? "" };
 };
-var collect3 = (target2, segment, args2, spec2, heredocs) => {
+var collect3 = (target3, segment, args2, spec2, heredocs) => {
   const values = flagValues(args2, spec2);
   if (values.length === 0) return void 0;
   const title = values.find((item2) => spec2.title.includes(item2.flag));
   const bodies = values.filter((item2) => !spec2.title.includes(item2.flag)).map((item2) => sourceOf(item2.value, spec2.file.includes(item2.flag), segment, heredocs));
-  return { target: target2, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies };
+  return { target: target3, title: title === void 0 ? void 0 : sourceOf(title.value, false, segment, heredocs), bodies };
 };
 var gitSubcommand = (args2) => {
   let index = 0;
@@ -16351,8 +16457,8 @@ var bashFindings = (command, segments) => {
   const person = PERSON_ONLY.exec(command);
   if (person !== null) return [{ kind: "person-only", command: person[0] }];
   return segments.flatMap((segment) => {
-    const target2 = readTarget(segment);
-    if (target2 !== void 0) return [{ kind: "read", target: target2 }];
+    const target3 = readTarget(segment);
+    if (target3 !== void 0) return [{ kind: "read", target: target3 }];
     if (dumpsEnv(segment)) return [{ kind: "env-dump", command: [segment.program, ...segment.args].join(" ") }];
     return [];
   });
@@ -16455,11 +16561,11 @@ var bashDecision = (input) => {
 };
 var readDecision = (input) => {
   const inputs = toolInput(input.payload);
-  const target2 = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
-  if (target2 === "" || !isSensitivePath(target2)) return ALLOW6;
+  const target3 = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
+  if (target3 === "" || !isSensitivePath(target3)) return ALLOW6;
   return {
     kind: "block",
-    reason: modelReason(input.t, "secrets.block.read", { target: relativeFile(input.cwd, target2) }),
+    reason: modelReason(input.t, "secrets.block.read", { target: relativeFile(input.cwd, target3) }),
     human: input.t("secrets.block.human")
   };
 };
@@ -16969,7 +17075,7 @@ var hookSchemaProblems = (hooks, claude) => {
 };
 
 // src/doctor/hook-sources.ts
-import { join as join36 } from "node:path";
+import { join as join37 } from "node:path";
 var entriesOf = (source, hooks, own) => Object.entries(asRecord(hooks)).flatMap(
   ([event, groups]) => asList(groups).flatMap((group) => {
     const record4 = asRecord(group);
@@ -16982,7 +17088,7 @@ var projectHookFiles = (env) => readSettings(env).flatMap(({ scope: scope2, path
   const source = PROJECT_SCOPES[scope2];
   return source === void 0 || !("hooks" in settings) ? [] : [{ source, path, hooks: settings["hooks"] }];
 });
-var pluginsDir = ({ env, runtime }) => join36(env["CLAUDE_CONFIG_DIR"] ?? join36(runtime.homeDir(), ".claude"), "plugins");
+var pluginsDir = ({ env, runtime }) => join37(env["CLAUDE_CONFIG_DIR"] ?? join37(runtime.homeDir(), ".claude"), "plugins");
 var installRecord = (value, root) => {
   const records = Array.isArray(value) ? value.filter(isRecord) : isRecord(value) ? [value] : [];
   return records.find((record4) => record4["projectPath"] === root) ?? records[0];
@@ -16993,13 +17099,13 @@ var readJson = (env, path) => {
   return parsed?.ok === true ? parsed.value : void 0;
 };
 var installedPlugin = (env) => {
-  const index = readJson(env, toAbsolutePath(join36(pluginsDir(env), "installed_plugins.json")));
+  const index = readJson(env, toAbsolutePath(join37(pluginsDir(env), "installed_plugins.json")));
   const record4 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
   const installPath = record4 === void 0 ? void 0 : optionalString(record4, "installPath");
   if (record4 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
-  const manifest = readJson(env, toAbsolutePath(join36(root, ".claude-plugin", "plugin.json")));
-  const hooksPath = toAbsolutePath(join36(root, "hooks", "hooks.json"));
+  const manifest = readJson(env, toAbsolutePath(join37(root, ".claude-plugin", "plugin.json")));
+  const hooksPath = toAbsolutePath(join37(root, "hooks", "hooks.json"));
   const text9 = env.runtime.readText(hooksPath);
   const parsed = text9.ok ? parseJsonObject(text9.value) : void 0;
   return {
@@ -17044,7 +17150,7 @@ var schemaFindings = (env, plugin, claude) => {
   const files = [...projectHookFiles(env), ...plugin?.hooksFile === void 0 ? [] : [plugin.hooksFile]];
   const invalidJson = [
     ...unreadableProjectFiles(env),
-    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join37(plugin.root, "hooks", "hooks.json"))] : []
+    ...plugin?.hooksText !== void 0 && plugin.hooksFile === void 0 ? [toAbsolutePath(join38(plugin.root, "hooks", "hooks.json"))] : []
   ];
   return [
     ...invalidJson.flatMap((file) => schemaFinding(file, ["not valid JSON"], label2)),
@@ -17065,7 +17171,7 @@ var pluginFindings = (env, projectOwn) => {
   ];
 };
 var coverageFindings = (env, entries) => {
-  const installed = env.runtime.stat(toAbsolutePath(join37(env.root, ...LOCK_FILE.split("/")))) !== void 0;
+  const installed = env.runtime.stat(toAbsolutePath(join38(env.root, ...LOCK_FILE.split("/")))) !== void 0;
   if (entries.length === 0 && !installed) {
     return [finding("hooks.registered", "warn", "doctor.hooks.none", {}, "doctor.hooks.fix_none")];
   }
@@ -17117,17 +17223,17 @@ var checkHooks = (env) => {
 };
 
 // src/doctor/instructions.ts
-import { join as join38 } from "node:path";
+import { join as join39 } from "node:path";
 var INSTRUCTION_LINE_CEILING = 200;
 var TOP_INSTRUCTIONS = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"];
 var RULES_DIR = ".claude/rules";
 var SHOWN = 3;
 var readProjectFile = (env, relative12) => {
-  const text9 = env.runtime.readText(toAbsolutePath(join38(env.root, ...relative12.split("/"))));
+  const text9 = env.runtime.readText(toAbsolutePath(join39(env.root, ...relative12.split("/"))));
   return text9.ok ? text9.value : void 0;
 };
 var instructionFiles = (env) => {
-  const listed5 = env.runtime.listDir(toAbsolutePath(join38(env.root, ...RULES_DIR.split("/"))));
+  const listed5 = env.runtime.listDir(toAbsolutePath(join39(env.root, ...RULES_DIR.split("/"))));
   const rules = listed5.ok ? listed5.value.filter((name) => name.endsWith(".md")).map((name) => `${RULES_DIR}/${name}`) : [];
   return [...TOP_INSTRUCTIONS, ...rules].flatMap((path) => {
     const text9 = readProjectFile(env, path);
@@ -17232,12 +17338,12 @@ var checkInstructions = (env) => {
 };
 
 // src/doctor/line-endings.ts
-import { join as join39 } from "node:path";
+import { join as join40 } from "node:path";
 var LF_RULE = /^\*\s.*\beol=lf\b/m;
 var checkLineEndings = ({ root, runtime }) => {
   const autocrlf = runtime.git(["config", "--get", "core.autocrlf"], root);
   if (!autocrlf.ok || autocrlf.stdout.trim().toLowerCase() !== "true") return [];
-  const attributes = runtime.readText(toAbsolutePath(join39(root, ".gitattributes")));
+  const attributes = runtime.readText(toAbsolutePath(join40(root, ".gitattributes")));
   if (attributes.ok && LF_RULE.test(attributes.value)) return [];
   return [
     finding("git.autocrlf", "warn", "doctor.git.autocrlf", { file: ".gitattributes" }, "doctor.git.fix_autocrlf")
@@ -17245,7 +17351,7 @@ var checkLineEndings = ({ root, runtime }) => {
 };
 
 // src/doctor/memory.ts
-import { join as join40 } from "node:path";
+import { join as join41 } from "node:path";
 var ceilingOf = (config) => {
   const value = configAt(parseConfigYaml(config ?? ""), "memory", "maxLines");
   const parsed = typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
@@ -17253,9 +17359,9 @@ var ceilingOf = (config) => {
 };
 var lineCount2 = (text9) => text9.replace(/\r?\n$/, "").split(/\r?\n/).length;
 var checkAgentsFile = ({ root, runtime }) => {
-  const text9 = runtime.readText(toAbsolutePath(join40(root, AGENTS_FILE)));
+  const text9 = runtime.readText(toAbsolutePath(join41(root, AGENTS_FILE)));
   if (!text9.ok) return [];
-  const config = runtime.readText(toAbsolutePath(join40(root, CONFIG_FILE2)));
+  const config = runtime.readText(toAbsolutePath(join41(root, CONFIG_FILE2)));
   const max = ceilingOf(config.ok ? config.value : void 0);
   const lines3 = lineCount2(text9.value);
   const params2 = { file: AGENTS_FILE, lines: lines3, max };
@@ -17263,7 +17369,7 @@ var checkAgentsFile = ({ root, runtime }) => {
 };
 
 // src/doctor/project-files.ts
-import { join as join41 } from "node:path";
+import { join as join42 } from "node:path";
 var variants = (base, extensions) => extensions.map((extension) => `${base}${extension}`);
 var SCRIPT = [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"];
 var DATA = ["", ".json", ".yml", ".yaml"];
@@ -17294,7 +17400,7 @@ var CONFIG_GROUPS = [
     files: [...variants("commitlint.config", SCRIPT), ...variants(".commitlintrc", [...DATA, ".js"])]
   }
 ];
-var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join41(env.root, file)))?.kind === "file");
+var present = (env, files) => files.filter((file) => env.runtime.stat(toAbsolutePath(join42(env.root, file)))?.kind === "file");
 var crowded = (env, groups, build) => groups.flatMap(({ name, files }) => {
   const found = present(env, files);
   return found.length > 1 ? [build(name, found.join(", "))] : [];
@@ -17493,8 +17599,11 @@ var doctorCommand = {
   run: (ctx, args2) => Promise.resolve(runDoctor(ctx, args2.values["fix"] === true, args2.values["report"] === true))
 };
 
+// src/commands/gain.ts
+import { join as join44 } from "node:path";
+
 // src/gain/gain.ts
-import { join as join42 } from "node:path";
+import { join as join43 } from "node:path";
 var GAIN_SCHEMA = "finitemonkey/gain@1";
 var DAY_MS3 = 864e5;
 var SAVE_WINDOW_MS = DAY_MS3;
@@ -17510,7 +17619,7 @@ var readLog = (runtime, paths) => {
   });
 };
 var readGates = (runtime, paths) => {
-  const listed5 = runtime.listDir(toAbsolutePath(join42(paths.dir, "evidence")));
+  const listed5 = runtime.listDir(toAbsolutePath(join43(paths.dir, "evidence")));
   const files = listed5.ok ? listed5.value.filter((name) => name.endsWith(".jsonl")) : [];
   return files.flatMap((name) => readLedger2(runtime, paths.evidence(name.replace(/\.jsonl$/, "")))).filter((entry2) => entry2.check === GATE_CHECK);
 };
@@ -17531,7 +17640,15 @@ var countsIn = (log, gates, from, to) => {
     gateMs: runs.reduce((sum, entry2) => sum + (entry2.durationMs ?? 0), 0)
   };
 };
-var gainReport = (runtime, paths, days) => {
+var numbersIn = (text9) => {
+  const parsed = text9 === void 0 ? void 0 : parseJsonObject(text9);
+  if (parsed?.ok !== true) return void 0;
+  const entries = Object.entries(parsed.value).filter(
+    (entry2) => typeof entry2[1] === "number" && Number.isFinite(entry2[1])
+  );
+  return entries.length === 0 ? void 0 : Object.fromEntries(entries);
+};
+var gainReport = (runtime, paths, days, usageText) => {
   const to = Date.parse(runtime.now());
   const from = to - days * DAY_MS3;
   const log = readLog(runtime, paths);
@@ -17542,7 +17659,11 @@ var gainReport = (runtime, paths, days) => {
     from: new Date(from).toISOString(),
     to: new Date(to).toISOString(),
     current: countsIn(log, gates, from, to + 1),
-    previous: countsIn(log, gates, from - days * DAY_MS3, from)
+    previous: countsIn(log, gates, from - days * DAY_MS3, from),
+    ...(() => {
+      const usage = numbersIn(usageText);
+      return usage === void 0 ? {} : { supervisorUsage: usage };
+    })()
   };
 };
 
@@ -17563,6 +17684,11 @@ var linesOf2 = (ctx, report2) => [
     ({ key, pick: pick4 }) => `  ${ctx.t(key, { count: pick4(report2.current) })}${trend(ctx, pick4(report2.current), pick4(report2.previous))}`
   ),
   `  ${ctx.t("gain.row.gate_time", { minutes: Math.round(report2.current.gateMs / 6e4) })}`,
+  ...report2.supervisorUsage === void 0 ? [] : [
+    `  ${ctx.t("gain.supervisor", {
+      usage: Object.entries(report2.supervisorUsage).map(([name, value]) => `${name} ${String(value)}`).join(", ")
+    })}`
+  ],
   ctx.t("gain.footer")
 ];
 var runGain = (ctx, rawDays) => {
@@ -17575,7 +17701,10 @@ var runGain = (ctx, rawDays) => {
       })
     );
   }
-  const report2 = gainReport(ctx.runtime, fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd), days);
+  const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
+  const dir = holdDir(ctx.runtime, root, ctx.env);
+  const usage = dir === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(join44(dir, USAGE_FILE)));
+  const report2 = gainReport(ctx.runtime, fmPaths(root), days, usage?.ok === true ? usage.value : void 0);
   return success(report2, linesOf2(ctx, report2));
 };
 var gainCommand = {
@@ -17764,8 +17893,8 @@ var failing = (checks) => checks.filter((check2) => check2.failures.length > 0);
 // src/githooks/ci.ts
 var ciBase = (runtime, repo, env, base) => {
   if (base !== void 0 && base !== "") return base;
-  const target2 = env["GITHUB_BASE_REF"];
-  if (target2 !== void 0 && target2 !== "") return `origin/${target2}`;
+  const target3 = env["GITHUB_BASE_REF"];
+  if (target3 !== void 0 && target3 !== "") return `origin/${target3}`;
   return `origin/${repoFacts(runtime, repo).defaultBranch()}`;
 };
 var baseExists = (runtime, repo, base) => runtime.git(["rev-parse", "--verify", "--quiet", `${base}^{commit}`], repo.root).ok;
@@ -18138,7 +18267,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename3, dirname as dirname8, join as join43 } from "node:path";
+import { basename as basename3, dirname as dirname8, join as join45 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args2) => {
   const result = runtime.git(args2, repo.root);
@@ -18181,7 +18310,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf2 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join43(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
+  const base = join45(dirname8(repo.root), `${basename3(repo.root)}-undo-${stampOf2(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -18416,7 +18545,7 @@ var hookCommand = {
 };
 
 // src/commands/i18n-check.ts
-import { join as join44 } from "node:path";
+import { join as join46 } from "node:path";
 
 // src/i18n/message.ts
 var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
@@ -18642,7 +18771,7 @@ var unreadable = (dir, file, detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var readCatalog = (ctx, dir, lang) => {
-  const file = toAbsolutePath(join44(dir, `${lang}.json`));
+  const file = toAbsolutePath(join46(dir, `${lang}.json`));
   const text9 = ctx.runtime.readText(file);
   if (!text9.ok) return reject(unreadable(dir, file, text9.error));
   const parsed = parseJsonObject(text9.value);
@@ -18665,7 +18794,7 @@ var describeProblem = (ctx, problem4) => {
   return `  ${problem4.lang}  ${problem4.key}  ${kind}`;
 };
 var loadReview = (ctx, dir) => {
-  const text9 = ctx.runtime.readText(toAbsolutePath(join44(dir, "review.json")));
+  const text9 = ctx.runtime.readText(toAbsolutePath(join46(dir, "review.json")));
   const parsed = text9.ok ? parseJsonObject(text9.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const statuses = (lang) => {
@@ -18706,7 +18835,7 @@ var i18nCheckCommand = {
 };
 
 // src/history/look-back.ts
-import { join as join45 } from "node:path";
+import { join as join47 } from "node:path";
 
 // src/history/patterns.ts
 import { posix as posix5 } from "node:path";
@@ -18842,7 +18971,7 @@ var parseTranscript = (jsonl) => {
 // src/history/look-back.ts
 var SAMPLES = 3;
 var projectLogKey = (root) => root.replace(/[^A-Za-z0-9-]/g, "-");
-var projectLogDir = (runtime, root, env) => join45(env["CLAUDE_CONFIG_DIR"] ?? join45(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
+var projectLogDir = (runtime, root, env) => join47(env["CLAUDE_CONFIG_DIR"] ?? join47(runtime.homeDir(), ".claude"), "projects", projectLogKey(root));
 var lookBack = (runtime, root, env) => {
   const dir = projectLogDir(runtime, root, env);
   const listed5 = runtime.listDir(toAbsolutePath(dir));
@@ -18863,7 +18992,7 @@ var lookBack = (runtime, root, env) => {
   };
   let turns = 0;
   for (const name of files) {
-    const text9 = runtime.readText(toAbsolutePath(join45(dir, name)));
+    const text9 = runtime.readText(toAbsolutePath(join47(dir, name)));
     if (!text9.ok) continue;
     for (const turn of parseTranscript(text9.value)) {
       turns += 1;
@@ -19368,11 +19497,11 @@ var runInventory = (runtime, t, root, request) => {
   }
   const names = planFiles(runtime, root);
   const name = findByKind(names, "today", request.topic) ?? `${nextNumber(names)}a-today-${slugOf(request.topic)}.md`;
-  const target2 = planPath(root, name);
-  const before = runtime.readText(target2);
+  const target3 = planPath(root, name);
+  const before = runtime.readText(target3);
   const inventory = assemble2(runtime, root, request, repos, before.ok ? before.value : void 0);
   const made = runtime.mkdir(planDir(root));
-  const written = made.ok ? runtime.writeText(target2, writeFront(frontOf(inventory), renderInventory(t, inventory))) : made;
+  const written = made.ok ? runtime.writeText(target3, writeFront(frontOf(inventory), renderInventory(t, inventory))) : made;
   if (!written.ok) return reject({ kind: "write", detail: written.error });
   return accept({ file: `${PLAN_DIR}/${name}`, inventory });
 };
@@ -19465,7 +19594,7 @@ var applyAllows = (findings, allows, decided) => {
 
 // src/look/node-capture.ts
 import { mkdirSync as mkdirSync3 } from "node:fs";
-import { join as join46 } from "node:path";
+import { join as join48 } from "node:path";
 
 // src/look/measure.ts
 var measurePage = (doc) => {
@@ -19541,7 +19670,7 @@ var captureOne = async (browser, request, route, viewport) => {
   const context = await browser.newContext({ viewport: { width: viewport, height: HEIGHT }, reducedMotion: "reduce" });
   const page = await context.newPage();
   const events = watch(page);
-  const path = join46(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
+  const path = join48(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
   const loadError = await loadAndShoot(page, `${request.baseUrl}${route}`, path, request.timeoutMs);
   const measure = loadError === void 0 ? parseMeasure(await page.evaluate(MEASURE_SCRIPT)) : void 0;
   await context.close();
@@ -19558,7 +19687,7 @@ var captureAll = async (browser, request) => {
 
 // src/look/node-playwright.ts
 import { createRequire } from "node:module";
-import { join as join47 } from "node:path";
+import { join as join49 } from "node:path";
 import { fileURLToPath as fileURLToPath3, pathToFileURL } from "node:url";
 var NAMES = ["playwright", "playwright-core"];
 var isPlaywright = (value) => isRecord(value) && isRecord(value["chromium"]) && typeof value["chromium"]["launch"] === "function";
@@ -19573,7 +19702,7 @@ var tryLoad = async (base, name) => {
   }
 };
 var loadPlaywright = async (root) => {
-  for (const base of [join47(root, "package.json"), fileURLToPath3(import.meta.url)]) {
+  for (const base of [join49(root, "package.json"), fileURLToPath3(import.meta.url)]) {
     for (const name of NAMES) {
       const found = await tryLoad(base, name);
       if (found !== void 0) return found;
@@ -19594,7 +19723,7 @@ var launchBrowser = async (playwright) => {
 
 // src/look/node-sheet.ts
 import { readFileSync as readFileSync2 } from "node:fs";
-import { join as join48 } from "node:path";
+import { join as join50 } from "node:path";
 var escapeHtml = (text9) => text9.replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char] ?? char);
 var card = (result) => {
   const image = (() => {
@@ -19617,7 +19746,7 @@ var contactSheet = async (browser, results, dir) => {
   if (shown4.length === 0) return void 0;
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   await page.setContent(`<!doctype html><style>${STYLE}</style>${shown4.map(card).join("")}`);
-  const path = join48(dir, "contact-sheet.png");
+  const path = join50(dir, "contact-sheet.png");
   await page.screenshot({ path, fullPage: true });
   await page.close();
   return path;
@@ -19886,15 +20015,15 @@ var problem2 = (code2, messageKey, params2) => ({
   exitCode: ExitCode.Usage
 });
 var underRoot = (root, path) => toPosixPath(relative11(root, path));
-var expand2 = (ctx, root, target2) => {
-  const path = toAbsolutePath(target2, ctx.cwd);
+var expand2 = (ctx, root, target3) => {
+  const path = toAbsolutePath(target3, ctx.cwd);
   const stat = ctx.runtime.stat(path);
   if (stat === void 0)
-    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target2, detail: "not found" }));
+    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target3, detail: "not found" }));
   if (stat.kind === "file") return accept([underRoot(root, path)]);
   const walked = ctx.runtime.walkFiles(path);
   if (!walked.ok)
-    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target2, detail: walked.error }));
+    return reject(problem2("prose_unreadable", "prose.error.unreadable", { file: target3, detail: walked.error }));
   return accept(
     walked.value.map((name) => underRoot(root, toAbsolutePath(toPosixPath(name), path))).filter((name) => TEXT_FILE.test(name) && !/(?:^|\/)(?:node_modules|\.git)\//.test(name)).sort()
   );
@@ -19957,12 +20086,12 @@ var proseCheckCommand = {
 };
 
 // src/review/packet.ts
-import { join as join49 } from "node:path";
+import { join as join51 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
 var FULL_ROUNDS = 3;
 var REVIEW_FILE_MAX_LINES = 200;
 var LEDGER_MAX_LINES = 100;
-var statePath = (root) => toAbsolutePath(join49(root, REVIEW_STATE_FILE));
+var statePath = (root) => toAbsolutePath(join51(root, REVIEW_STATE_FILE));
 var readReviewState = (runtime, root) => {
   const raw = runtime.readText(statePath(root));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
@@ -19984,7 +20113,7 @@ var taskSections = (runtime, root) => {
   const active = readState(runtime, paths).active;
   if (active === void 0)
     return [section2("Contract", void 0, "(no active task)"), section2("Evidence ledger", void 0, "(none)")];
-  const contract = runtime.readText(toAbsolutePath(join49(root, taskRelative(active))));
+  const contract = runtime.readText(toAbsolutePath(join51(root, taskRelative(active))));
   const ledger = runtime.readText(paths.evidence(active));
   return [
     section2("Contract", contract.ok ? contract.value : void 0, "(contract file missing)"),
@@ -20014,7 +20143,7 @@ var buildPacket = (runtime, root, base, head) => {
     ...taskSections(runtime, root),
     ...owners === void 0 ? [] : [section2("REVIEW.md (base branch)", owners, "")]
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join49(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join51(root, ".finitemonkey", "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}
 `);
   return { round: state.rounds, base, head, range, text: text9 };
@@ -20169,7 +20298,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname9, join as join50 } from "node:path";
+import { dirname as dirname9, join as join52 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -20191,7 +20320,7 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join50(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join52(dirname9(dirname9(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
@@ -20362,17 +20491,17 @@ var liveOutcome = (result) => {
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
 var USAGE4 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
-var target = (provider) => {
+var target2 = (provider) => {
   const probe = LIVE_PROBES[provider];
   return { host: probe.host, url: `https://${probe.host}${probe.path}` };
 };
 var dryRun = (ctx, provider, variable) => {
-  const { host, url: url2 } = target(provider);
+  const { host, url: url2 } = target2(provider);
   const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url: url2, variable, sent: false };
   return success(data, [ctx.t("secrets.live.dry", { host, url: url2, variable, provider })]);
 };
 var send = (ctx, provider, variable, key) => {
-  const { host, url: url2 } = target(provider);
+  const { host, url: url2 } = target2(provider);
   ctx.io.stderr.write(`${ctx.t("secrets.live.contacting", { host, url: url2 })}
 `);
   const outcome2 = liveOutcome(ctx.runtime.exec(liveRequest(provider, key, ctx.cwd)));
@@ -20446,15 +20575,15 @@ var modeOf3 = (values) => {
   if (chosen[0] === true) return "staged";
   return chosen[1] === true ? "history" : "path";
 };
-var normalizedTarget = (target2) => target2.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
-var scopeOf = (target2) => {
-  const prefix2 = normalizedTarget(target2);
+var normalizedTarget = (target3) => target3.replace(/\\/g, "/").replace(/^\.\/?/, "").replace(/\/$/, "");
+var scopeOf = (target3) => {
+  const prefix2 = normalizedTarget(target3);
   return (file) => prefix2 === "" || file === prefix2 || file.startsWith(`${prefix2}/`);
 };
-var runScan = async (ctx, root, mode, target2) => {
+var runScan = async (ctx, root, mode, target3) => {
   if (mode === "staged") return scanStaged(ctx.runtime, root);
   if (mode === "history") return scanHistory(ctx.runtime, root);
-  return scanPath(ctx.runtime, root, normalizedTarget(target2) || ".");
+  return scanPath(ctx.runtime, root, normalizedTarget(target3) || ".");
 };
 var historyIncidents = (ctx, root, fresh3) => fresh3.flatMap((finding4) => {
   if (ruleById(finding4.ruleId)?.kind !== "credential") return [];
@@ -20535,8 +20664,8 @@ var secretsScanCommand = {
     const fix = "finitemonkey help secrets scan";
     if (mode === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.error.one_mode", fix));
     const root = projectRoot(ctx);
-    const target2 = stringOption(args2.values, "path") ?? ".";
-    const scanned = await runScan(ctx, root, mode, target2);
+    const target3 = stringOption(args2.values, "path") ?? ".";
+    const scanned = await runScan(ctx, root, mode, target3);
     if (!scanned.ok) return failureFrom(ctx.t, gitUnavailable(scanned.error));
     const baseline = loadBaseline(ctx.runtime, root);
     if (!baseline.ok) return failureFrom(ctx.t, baselineInvalid(baseline.error));
@@ -20544,7 +20673,7 @@ var secretsScanCommand = {
       scanned.value,
       baseline.value,
       ctx.runtime.now(),
-      mode === "path" ? scopeOf(target2) : void 0
+      mode === "path" ? scopeOf(target3) : void 0
     );
     if (mode === "path") prune(ctx, root, baseline.value, outcome2);
     const incidents = mode === "history" ? historyIncidents(ctx, root, outcome2.fresh) : [];
@@ -20751,7 +20880,7 @@ var statuslineCommand = {
 };
 
 // src/task/create.ts
-import { join as join51 } from "node:path";
+import { join as join53 } from "node:path";
 
 // src/task/serialize.ts
 var checkYaml = (check2) => ({
@@ -20804,10 +20933,10 @@ var explicitChecks = (draft) => [
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative12) => {
-      const text9 = runtime.readText(toAbsolutePath(join51(paths.root, relative12)));
+      const text9 = runtime.readText(toAbsolutePath(join53(paths.root, relative12)));
       return text9.ok ? text9.value : void 0;
     },
-    exists: (relative12) => runtime.stat(toAbsolutePath(join51(paths.root, relative12))) !== void 0
+    exists: (relative12) => runtime.stat(toAbsolutePath(join53(paths.root, relative12))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -20822,7 +20951,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
-    ...runtime.stat(toAbsolutePath(join51(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
+    ...runtime.stat(toAbsolutePath(join53(paths.root, LOOK_CONFIG))) === void 0 ? [] : [{ id: "look", kind: "look" }],
     ...draft.git.length > 0 ? [{ id: "git", kind: "git", require: draft.git }] : [],
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index) => ({
@@ -20938,8 +21067,8 @@ var showTask = (ctx, id) => {
   const paths = projectOf(ctx);
   if (paths === void 0) return noRepo(ctx);
   const active = readState(ctx.runtime, paths).active;
-  const target2 = id ?? active;
-  const report2 = currentReport(ctx.runtime, paths, void 0, target2);
+  const target3 = id ?? active;
+  const report2 = currentReport(ctx.runtime, paths, void 0, target3);
   if (report2 === void 0) {
     return failureFrom(
       ctx.t,
@@ -20947,7 +21076,7 @@ var showTask = (ctx, id) => {
         "task_not_found",
         "error.task_not_found",
         "finitemonkey task new <id> --goal <text>",
-        { task: target2 ?? "-" },
+        { task: target3 ?? "-" },
         ExitCode.NotConfigured
       )
     );
@@ -20957,7 +21086,7 @@ var showTask = (ctx, id) => {
 var doneTask = (ctx, id) => {
   const paths = projectOf(ctx);
   if (paths === void 0) return noRepo(ctx);
-  const target2 = id ?? readState(ctx.runtime, paths).active;
+  const target3 = id ?? readState(ctx.runtime, paths).active;
   const run4 = runGate({
     runtime: ctx.runtime,
     cwd: ctx.cwd,
@@ -20966,7 +21095,7 @@ var doneTask = (ctx, id) => {
     budgetMs: DEFAULT_GATE_BUDGET_MS,
     fast: false,
     noSkip: true,
-    ...target2 === void 0 ? {} : { taskId: target2 }
+    ...target3 === void 0 ? {} : { taskId: target3 }
   });
   const result = runResult(ctx, run4, true);
   if (!result.ok || run4.kind !== "done" || run4.report.implicit) return result;
@@ -21069,9 +21198,9 @@ var isEmptyDir = (project, relative12) => {
   return listed5.ok && listed5.value.length === 0;
 };
 var finish3 = (project, plan) => {
-  const target2 = plan.purge ? STATE_DIR : LOCK_FILE;
-  const removed = project.runtime.remove(project.abs(target2));
-  if (!removed.ok) return reject({ path: target2, detail: removed.error });
+  const target3 = plan.purge ? STATE_DIR : LOCK_FILE;
+  const removed = project.runtime.remove(project.abs(target3));
+  if (!removed.ok) return reject({ path: target3, detail: removed.error });
   for (const dir of plan.removeDirs) if (isEmptyDir(project, dir)) project.runtime.remove(project.abs(dir));
   return accept(void 0);
 };
@@ -21238,7 +21367,7 @@ var REGISTRY = [
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join52 } from "node:path";
+import { join as join54 } from "node:path";
 var read3 = (runtime, path) => {
   const text9 = runtime.readText(toAbsolutePath(path));
   return text9.ok ? text9.value : void 0;
@@ -21253,14 +21382,14 @@ var languageIn = (text9) => {
   const value = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join52(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join54(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read3(runtime, join52(root, CONFIG_FILE2)) ?? "");
+  const config = parseConfigYaml(read3(runtime, join54(root, CONFIG_FILE2)) ?? "");
   const claudeFiles = [
-    join52(root, ".claude", "settings.local.json"),
-    join52(root, ".claude", "settings.json"),
-    join52(claudeDir(runtime, env), "settings.json")
+    join54(root, ".claude", "settings.local.json"),
+    join54(root, ".claude", "settings.json"),
+    join54(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText(config, "lang"),

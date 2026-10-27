@@ -742,5 +742,7 @@
   "gate.inventory.missing": "ningún inventario en docs/plan; ejecuta finitemonkey inventory <tema>",
   "gate.inventory.expired": "{report} venció: {count, plural, one {# ruta cubierta cambió} other {# rutas cubiertas cambiaron}} desde {hash} ({paths}); ejecuta finitemonkey inventory {topic} para el delta",
   "gate.inventory.unknown": "{report} cita {hash} en {repo}, un commit que este clon no puede leer",
-  "gate.inventory.fresh": "{count, plural, one {# inventario coincide} other {# inventarios coinciden}} con las rutas cubiertas"
+  "gate.inventory.fresh": "{count, plural, one {# inventario coincide} other {# inventarios coinciden}} con las rutas cubiertas",
+  "supervisor.resumed": "Esta sesión se reanudó tras un cambio de cuenta mientras la puerta retenía la parada ({detail}). La puerta corre de nuevo ahora; termina lo que pidió antes de parar.",
+  "gain.supervisor": "Uso informado por el supervisor de cuentas: {usage}"
 }

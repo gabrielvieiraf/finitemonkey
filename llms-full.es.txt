@@ -160,6 +160,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Escribe | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto. |
 | Escribe | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots antes de comandos git destructivos, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges. |
 | Escribe | `.finitemonkey/reports/` | Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide. |
+| Escribe | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Solo con `supervisor: enabled: true` en la configuración: un archivo de espera de vida corta por sesión en el directorio que anuncia un supervisor de cambio de cuenta, mientras la puerta corre o retiene la parada. `gain` lee el `usage.json` de ese directorio. |
 | Escribe | `.finitemonkey/look/` | Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol. |
 | Escribe | `docs/plan/` | Documentos de plan que pides: el inventario de lo que hace el código hoy, escrito en `docs/plan/`. |
 | Escribe | `.finitemonkey/review/`, `.claude/agents/verifier.md` | El conteo de rondas de revisión que usa `review packet` y, solo cuando `review.playwright: true` está en la configuración, un agente verificador con el MCP de Playwright. |
@@ -317,6 +318,12 @@ Sí. Un hook `Stop` puede ejecutar tu comando de tests y, si falla, bloquear el 
 Hay varios, y algunos son muy buenos en una sola tarea. tdd-guard obliga a escribir el test primero; cc-safety-net y dcg bloquean comandos destructivos de shell y git. Métodos como Superpowers, GSD y Spec Kit añaden proceso. La [página de comparación](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.es.md) muestra qué garantiza cada uno por mecanismo y qué deja en prosa, con fuentes.
 
 - **Previsto:** Finite Monkey pretende cubrir cuatro daños ("listo" falso, secretos filtrados, cambios a mano en producción, trabajo perdido en git) con un control, una instalación y un `undo`. Si eso te compensa frente a un guarda suelto es lo que responderá el benchmark previsto.
+
+## ¿Funciona con herramientas que cambian la cuenta de Claude Code cuando se acaba el límite?
+
+Sí, si la herramienta lee un archivo de espera. Un supervisor que reinicia Claude Code en otra cuenta puede cortar la puerta en medio de un `Stop`, y la sesión reanudada te espera con el trabajo a medio revisar.
+
+Para activarlo, agrega `supervisor:` con `enabled: true` a `.finitemonkey/config.yml` y haz que el supervisor defina `FINITEMONKEY_HOLD_DIR` con un directorio que vigile. Mientras la puerta corre o retiene la parada, Finite Monkey mantiene ahí `<sesión>.hold.json`, con una hora `until`; el supervisor no debe cambiar de cuenta mientras `until` esté en el futuro. El archivo vence solo (10 minutos para una ejecución, 15 para una parada retenida) y se borra cuando la puerta pasa. Cuando la sesión vuelve en la cuenta nueva, `SessionStart` le cuenta a Claude qué esperaba la puerta y la ejecuta otra vez. Los mensajes de reanudación que empiezan con `[supervisor]` no cuentan como tuyos, y un `usage.json` en el mismo directorio aparece en `finitemonkey gain`.
 
 ---
 

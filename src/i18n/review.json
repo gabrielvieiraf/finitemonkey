@@ -743,7 +743,9 @@
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1489,6 +1491,8 @@
     "gate.inventory.missing": "machine",
     "gate.inventory.expired": "machine",
     "gate.inventory.unknown": "machine",
-    "gate.inventory.fresh": "machine"
+    "gate.inventory.fresh": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   }
 }
