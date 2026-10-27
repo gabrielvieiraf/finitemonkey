@@ -98,10 +98,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
   },
   fronts: {
-    en: "The state of a wave of parallel fronts: scope, worktree, branch, port, agent, status and inbox of each front. Local, never committed.",
+    en: "The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed.",
     "pt-BR":
-      "O estado de uma onda de frentes paralelas: escopo, worktree, branch, porta, agente, status e inbox de cada frente. Local, nunca vai para commit.",
-    es: "El estado de una ola de frentes paralelas: alcance, worktree, rama, puerto, agente, estado e inbox de cada frente. Local, nunca se commitea.",
+      "O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit.",
+    es: "El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea.",
   },
   profile: {
     en: "The person's level per domain; the infrastructure level picks the git defaults (intermediate when missing).",

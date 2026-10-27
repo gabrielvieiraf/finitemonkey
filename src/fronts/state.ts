@@ -218,3 +218,9 @@ export const withFront = (state: FrontsState, id: string, change: (front: Front)
 
 export const runningWriteFronts = (state: FrontsState): readonly Front[] =>
   state.fronts.filter((front) => front.status === "running");
+
+export const isFrontAgent = (runtime: Runtime, root: AbsolutePath, agentId: string | undefined): boolean => {
+  const state = readFronts(runtime, root);
+  if (!state.ok || agentId === undefined) return false;
+  return state.value.pending.length > 0 || state.value.fronts.some((front) => front.agentId === agentId);
+};

@@ -1014,5 +1014,16 @@
   "fronts.block.limit.claim": "{max} frentes de escrita já estão rodando ({running}); uma nova passaria do limite da onda",
   "fronts.block.limit.requires": "Espere uma frente entregar o relatório ou use um agente só leitura (Explore, Plan, researcher)",
   "fronts.block.not": "lançar o mesmo trabalho com outro tipo de agente, um workflow ou um agente aninhado",
-  "fronts.block.human": "Segurei uma frente nova: a onda está no limite."
+  "fronts.block.human": "Segurei uma frente nova: a onda está no limite.",
+  "fronts.command.brief": "Grava .finitemonkey/briefing.md, o briefing único que todo prompt de frente cita, e mostra os prompts de quatro linhas",
+  "fronts.brief.done": "Gravei {file} ({lines} de no máximo {ceiling} linhas)",
+  "fronts.context.front": "Frente {id}: {goal}. Worktree {path}, branch {branch}, porta {port}, prefixo de captura {prefix}.",
+  "fronts.context.scope": "Escopo: {paths}. Só acréscimo: {append}. Namespace i18n: {ns}.",
+  "fronts.context.contract": "Contrato: {file}.",
+  "fronts.context.contract_missing": "O contrato {file} não existe; o escopo acima é o contrato.",
+  "fronts.context.inbox": "Mensagem da pessoa às {at}: {text}",
+  "fronts.context.report": "Pronto quer dizer um .finitemonkey/reports/{id}.json válido; o formato está em {briefing}.",
+  "doctor.briefing.long": "O briefing tem {lines} linhas, acima do teto de {ceiling}",
+  "doctor.briefing.fix": "Gere de novo com finitemonkey brief e mova o material longo para arquivos citados",
+  "doctor.briefing.ok": "O briefing tem {lines} de no máximo {ceiling} linhas"
 }

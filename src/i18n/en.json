@@ -1014,5 +1014,16 @@
   "fronts.block.limit.claim": "{max} write fronts are already running ({running}); a new one would pass the wave limit",
   "fronts.block.limit.requires": "Wait for a front to report, or use a read-only agent (Explore, Plan, researcher)",
   "fronts.block.not": "launching the same work under another agent type, a workflow or a nested agent",
-  "fronts.block.human": "Held a new front: the wave is at its limit."
+  "fronts.block.human": "Held a new front: the wave is at its limit.",
+  "fronts.command.brief": "Write .finitemonkey/briefing.md, the one briefing every front prompt cites, and print the four-line prompts",
+  "fronts.brief.done": "Wrote {file} ({lines} of at most {ceiling} lines)",
+  "fronts.context.front": "Front {id}: {goal}. Worktree {path}, branch {branch}, port {port}, capture prefix {prefix}.",
+  "fronts.context.scope": "Scope: {paths}. Append-only: {append}. i18n namespace: {ns}.",
+  "fronts.context.contract": "Contract: {file}.",
+  "fronts.context.contract_missing": "Contract {file} is missing; the scope above is the contract.",
+  "fronts.context.inbox": "Message from the person at {at}: {text}",
+  "fronts.context.report": "Done means a valid .finitemonkey/reports/{id}.json; the format is in {briefing}.",
+  "doctor.briefing.long": "The briefing has {lines} lines, above the ceiling of {ceiling}",
+  "doctor.briefing.fix": "Regenerate it with finitemonkey brief and move long material to files it cites",
+  "doctor.briefing.ok": "The briefing has {lines} of at most {ceiling} lines"
 }

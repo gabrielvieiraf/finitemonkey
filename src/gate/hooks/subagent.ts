@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../../core/brand.js";
+import { isFrontAgent } from "../../fronts/state.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
@@ -9,7 +10,8 @@ import { readState } from "../../task/state.js";
 import type { AcceptanceCheck, TaskContract } from "../../task/types.js";
 import { contextOutput, projectPaths } from "./common.js";
 
-export const NO_CONTRACT_AGENTS = /(^|:)(reviewer|verifier|explore|plan|claude-code-guide|statusline-setup)$/i;
+export const NO_CONTRACT_AGENTS =
+  /(^|:)(reviewer|verifier|researcher|explore|plan|claude-code-guide|statusline-setup)$/i;
 
 const KNOWN_KINDS = new Set([
   "command",
@@ -48,6 +50,7 @@ export const subagentStart: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined || NO_CONTRACT_AGENTS.test(agentType)) return { kind: "allow" };
   const { runtime, t } = input;
+  if (isFrontAgent(runtime, paths.root, textField(input.payload.raw, "agent_id"))) return { kind: "allow" };
   const active = readState(runtime, paths).active;
   if (active === undefined) return { kind: "allow" };
   const disk = (relative: string): string | undefined => {

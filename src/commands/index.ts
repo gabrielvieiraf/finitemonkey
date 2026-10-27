@@ -1,4 +1,5 @@
 import { appCheckCommand } from "./app-check.js";
+import { briefCommand } from "./brief.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
@@ -67,6 +68,7 @@ export const REGISTRY = [
   prOpenCommand,
   frontsPlanCommand,
   frontsStatusCommand,
+  briefCommand,
   appCheckCommand,
   commitMsgCommand,
   pushCheckCommand,
