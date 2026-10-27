@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-next.16](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.15...v0.1.0-next.16) (2026-10-27)
+
+### Features
+
+* **gate:** callers check for removed or renamed symbols that are still called ([#150](https://github.com/gabrielvieiraf/finitemonkey/issues/150)) ([4c5f335](https://github.com/gabrielvieiraf/finitemonkey/commit/4c5f335cd4c431f603710345b3e5f4199054e746)), closes [#39](https://github.com/gabrielvieiraf/finitemonkey/issues/39)
+* **policy:** guard modes off, shadow and active from a project policy file ([#152](https://github.com/gabrielvieiraf/finitemonkey/issues/152)) ([767bbe2](https://github.com/gabrielvieiraf/finitemonkey/commit/767bbe2edcefca4dc787ee8c71b5457bde26e6c8)), closes [#44](https://github.com/gabrielvieiraf/finitemonkey/issues/44)
+
 ## [0.1.0-next.15](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.14...v0.1.0-next.15) (2026-10-26)
 
 ### Features
