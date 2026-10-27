@@ -5,6 +5,7 @@ export interface Segment {
   readonly task: string | undefined;
   readonly gate: GateLight;
   readonly contextPercent: number | undefined;
+  readonly spend?: string;
 }
 
 const SEPARATOR = " | ";
@@ -15,6 +16,7 @@ export const segmentText = (t: Translate, segment: Segment): string =>
     ...(segment.task === undefined ? [] : [segment.task]),
     ...(segment.gate === "none" ? [] : [t(`statusline.gate.${segment.gate}`)]),
     ...(segment.contextPercent === undefined ? [] : [t("statusline.context", { percent: segment.contextPercent })]),
+    ...(segment.spend === undefined ? [] : [segment.spend]),
   ].join(" · ");
 
 const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[A-Za-z]`, "g");
