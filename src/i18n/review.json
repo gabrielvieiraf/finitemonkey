@@ -1267,7 +1267,21 @@
     "ricochete.perturbation.invalid": "machine",
     "ricochete.perturbation.empty": "machine",
     "ricochete.perturbation.twice": "machine",
-    "ricochete.perturbation.outside": "machine"
+    "ricochete.perturbation.outside": "machine",
+    "command.planta.summary": "machine",
+    "planta.type.saas": "machine",
+    "planta.type.landing": "machine",
+    "planta.bar": "machine",
+    "planta.next": "machine",
+    "planta.minimum": "machine",
+    "planta.how.files": "machine",
+    "planta.how.grep": "machine",
+    "planta.how.deps": "machine",
+    "planta.how.contract": "machine",
+    "planta.how.manual": "machine",
+    "planta.installed.task": "machine",
+    "planta.installed.project": "machine",
+    "statusline.planta": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2537,6 +2551,20 @@
     "ricochete.perturbation.invalid": "machine",
     "ricochete.perturbation.empty": "machine",
     "ricochete.perturbation.twice": "machine",
-    "ricochete.perturbation.outside": "machine"
+    "ricochete.perturbation.outside": "machine",
+    "command.planta.summary": "machine",
+    "planta.type.saas": "machine",
+    "planta.type.landing": "machine",
+    "planta.bar": "machine",
+    "planta.next": "machine",
+    "planta.minimum": "machine",
+    "planta.how.files": "machine",
+    "planta.how.grep": "machine",
+    "planta.how.deps": "machine",
+    "planta.how.contract": "machine",
+    "planta.how.manual": "machine",
+    "planta.installed.task": "machine",
+    "planta.installed.project": "machine",
+    "statusline.planta": "machine"
   }
 }

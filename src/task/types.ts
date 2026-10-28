@@ -1,3 +1,4 @@
+import type { BlueprintType } from "../planta/types.js";
 import type { Shortcut } from "./shortcuts.js";
 
 export const CHECK_KINDS = [
@@ -71,6 +72,7 @@ export interface TaskContract {
   readonly decisionsNeeded: readonly string[];
   readonly callersIgnore?: readonly string[];
   readonly shortcuts?: readonly Shortcut[];
+  readonly blueprint?: BlueprintType;
   readonly implicit: boolean;
 }
 

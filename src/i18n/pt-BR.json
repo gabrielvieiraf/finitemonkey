@@ -1306,5 +1306,19 @@
   "ricochete.perturbation.invalid": "E se a entrada for inválida?",
   "ricochete.perturbation.empty": "E se os dados vierem vazios ou faltando?",
   "ricochete.perturbation.twice": "E se rodar duas vezes ou ao mesmo tempo?",
-  "ricochete.perturbation.outside": "E se um serviço de fora falhar ou demorar demais?"
+  "ricochete.perturbation.outside": "E se um serviço de fora falhar ou demorar demais?",
+  "command.planta.summary": "Instala a planta do projeto (saas, landing) e mostra quantos itens estão verdes",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "página de venda",
+  "planta.bar": "Seu {label} tem {green} de {total, plural, one {# item} other {# itens}}.",
+  "planta.next": "Próximo: {title} ({id})",
+  "planta.minimum": "Mínimo: {text}",
+  "planta.how.files": "Conferido por: um destes caminhos existe: {list}",
+  "planta.how.grep": "Conferido por: o código casa com {list}",
+  "planta.how.deps": "Conferido por: uma dependência como {list}",
+  "planta.how.contract": "Conferido por: a checagem {kind} do contrato passa nesta árvore",
+  "planta.how.manual": "Manual: a pessoa confirma com a linha fm: approve planta/{id} <como conferiu>",
+  "planta.installed.task": "Planta {type} registrada no contrato de {task}.",
+  "planta.installed.project": "Planta {type} registrada para o projeto; não há tarefa ativa para registrar.",
+  "statusline.planta": "{type} {green}/{total}"
 }

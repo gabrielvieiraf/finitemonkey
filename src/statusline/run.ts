@@ -6,12 +6,13 @@ import { readAll, withDeadline } from "../hooks/stdin.js";
 import { LOCK_FILE } from "../install/layout.js";
 import { parseLock } from "../install/lock-file.js";
 import { findGitRoot } from "../install/project.js";
+import { readCachedBar } from "../planta/store.js";
 import { budgetStatus } from "../spend/status.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 import { gateLight } from "./gate-state.js";
 import { parseStatusInput, type StatusInput } from "./input.js";
-import { composeLine, segmentText } from "./render.js";
+import { composeLine, type Segment, segmentText } from "./render.js";
 import { runWrapped } from "./wrap.js";
 
 export const STDIN_MS = 300;
@@ -57,6 +58,11 @@ const frontsSegment = (ctx: Ctx, root: AbsolutePath): string | undefined => {
   return state.ok ? statusSegment(state.value) : undefined;
 };
 
+const blueprintOf = (ctx: Ctx, paths: ReturnType<typeof fmPaths> | undefined): Segment["blueprint"] => {
+  const bar = paths === undefined ? undefined : readCachedBar(ctx.runtime, paths);
+  return bar === undefined ? undefined : { type: bar.type, green: bar.green, total: bar.total };
+};
+
 const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
   const start = input.dir === undefined ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
   const root = findGitRoot(start, ctx.runtime);
@@ -78,6 +84,7 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
     contextPercent: input.contextPercent,
     ...spendSegment(ctx, paths, input),
     fronts: root === undefined ? undefined : frontsSegment(ctx, root),
+    blueprint: blueprintOf(ctx, paths),
   });
   return composeLine(wrapped, segment, columnsOf(ctx));
 };

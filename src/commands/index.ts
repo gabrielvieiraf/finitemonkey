@@ -6,8 +6,8 @@ import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
-import { debtCommand } from "./debt.js";
 import { dataMapCommand } from "./data-map.js";
+import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
@@ -36,6 +36,7 @@ import { mergeCommand } from "./merge.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
+import { plantaCommand } from "./planta.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
 import { proseCheckCommand } from "./prose-check.js";
@@ -145,6 +146,7 @@ export const REGISTRY = [
   signalsNotLoopCommand,
   signalsReleaseCommand,
   signalsForgetCommand,
+  plantaCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

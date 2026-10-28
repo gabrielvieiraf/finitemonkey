@@ -10,10 +10,11 @@ import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
+import { PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
-import { rulesGuard } from "../rules/guard.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
+import { rulesGuard } from "../rules/guard.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
@@ -146,6 +147,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "signals", damage: false, handlers: SIGNALS_HANDLERS },
   { id: "fourth-attempt", damage: false, handlers: FOURTH_ATTEMPT_HANDLERS },
   { id: "ricochete", damage: false, handlers: RICOCHETE_HANDLERS },
+  { id: "planta", damage: false, handlers: PLANTA_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

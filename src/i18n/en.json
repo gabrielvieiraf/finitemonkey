@@ -1306,5 +1306,19 @@
   "ricochete.perturbation.invalid": "What if the input is invalid?",
   "ricochete.perturbation.empty": "What if the data is empty or missing?",
   "ricochete.perturbation.twice": "What if it runs twice or at the same time?",
-  "ricochete.perturbation.outside": "What if an outside service fails or times out?"
+  "ricochete.perturbation.outside": "What if an outside service fails or times out?",
+  "command.planta.summary": "Install a project blueprint (saas, landing) and show how many of its items are green",
+  "planta.type.saas": "SaaS",
+  "planta.type.landing": "landing page",
+  "planta.bar": "Your {label} has {green} of {total, plural, one {# item} other {# items}}.",
+  "planta.next": "Next: {title} ({id})",
+  "planta.minimum": "Minimum: {text}",
+  "planta.how.files": "Checked by: one of these paths exists: {list}",
+  "planta.how.grep": "Checked by: the code matches {list}",
+  "planta.how.deps": "Checked by: a dependency such as {list}",
+  "planta.how.contract": "Checked by: the contract check {kind} passes on this tree",
+  "planta.how.manual": "Manual: the person confirms it with the line fm: approve planta/{id} <how it was checked>",
+  "planta.installed.task": "Blueprint {type} recorded in the contract of {task}.",
+  "planta.installed.project": "Blueprint {type} recorded for the project; no active task to record it in.",
+  "statusline.planta": "{type} {green}/{total}"
 }
