@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.0-next.34](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.33...v0.1.0-next.34) (2026-10-28)
+
+### Features
+
+* **cost:** cost model script with a recalculating CSV, provider limits and cost check ([#182](https://github.com/gabrielvieiraf/finitemonkey/issues/182)) ([d4e009b](https://github.com/gabrielvieiraf/finitemonkey/commit/d4e009bc74a7e0702c189d1c7c1220ed836e53f9)), closes [#179](https://github.com/gabrielvieiraf/finitemonkey/issues/179) [#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176) [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#58](https://github.com/gabrielvieiraf/finitemonkey/issues/58)
+* **decide:** decision records with criteria before options and the decision check ([#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176)) ([e9583c2](https://github.com/gabrielvieiraf/finitemonkey/commit/e9583c222a745b87a7500573e66c58d7d8c8cf9d)), closes [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#57](https://github.com/gabrielvieiraf/finitemonkey/issues/57)
+* **git:** merge protocol with integration worktree, classes C0 to C8 and stops ([#180](https://github.com/gabrielvieiraf/finitemonkey/issues/180)) ([e68939f](https://github.com/gabrielvieiraf/finitemonkey/commit/e68939fb1aaba9764964a2c8a025f298a5470d6a)), closes [#72](https://github.com/gabrielvieiraf/finitemonkey/issues/72) [#174](https://github.com/gabrielvieiraf/finitemonkey/issues/174) [#74](https://github.com/gabrielvieiraf/finitemonkey/issues/74)
+* **plugin:** optional report output style that keeps the coding instructions ([#229](https://github.com/gabrielvieiraf/finitemonkey/issues/229)) ([8427c13](https://github.com/gabrielvieiraf/finitemonkey/commit/8427c138ea8f8426d47c9103944138def5d52c97)), closes [#98](https://github.com/gabrielvieiraf/finitemonkey/issues/98)
+* **research:** research skill, read-only researcher agent and the research check ([#179](https://github.com/gabrielvieiraf/finitemonkey/issues/179)) ([f22bca1](https://github.com/gabrielvieiraf/finitemonkey/commit/f22bca1484e3bbf0c7e7099d4bef5e268015f6ae)), closes [#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176) [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#56](https://github.com/gabrielvieiraf/finitemonkey/issues/56)
+
+### Bug Fixes
+
+* **wt:** keep SessionStart off git without linked worktrees, wait longer for the lock ([#232](https://github.com/gabrielvieiraf/finitemonkey/issues/232)) ([fa1ae6c](https://github.com/gabrielvieiraf/finitemonkey/commit/fa1ae6c71e0e491d82433599429cb82539b96dec)), closes [#170](https://github.com/gabrielvieiraf/finitemonkey/issues/170)
+
 ## [0.1.0-next.33](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.32...v0.1.0-next.33) (2026-10-27)
 
 ### Features
