@@ -1787,5 +1787,19 @@
   "observe.off": "observability is off in .finitemonkey/policy.yml.",
   "observe.no_signup": "Finite Monkey signs up for no service: accounts, monitors and alert channels are created by the team.",
   "gate.fail.isolated": "isolated run stopped at {step}: {detail}",
-  "gate.isolated.off": "gate-isolated is off in .finitemonkey/policy.yml"
+  "gate.isolated.off": "gate-isolated is off in .finitemonkey/policy.yml",
+  "command.golden_accept.summary": "Record the current output of golden cases as their expected output (person only)",
+  "golden.error.person_only": "Only the person can update golden expectations, from a terminal outside the agent.",
+  "golden.accepted": "{check}: expected output of {case} recorded",
+  "golden.skipped": "{check}: {case} not recorded, its command failed",
+  "gate.golden.off": "golden cases are off in .finitemonkey/policy.yml",
+  "gate.golden.no_spec": "a golden check needs `cases` and a `run` command with the case placeholder",
+  "gate.golden.no_cases": "no cases found in {dir}",
+  "gate.golden.missing": "{case}: no expected output recorded yet",
+  "gate.golden.exit": "{case}: the command exited with {code}",
+  "gate.golden.number": "{case} line {line}: expected {expected}, got {actual} (difference {delta}, over the tolerance)",
+  "gate.golden.text": "{case} line {line}: expected \"{expected}\", got \"{actual}\"",
+  "gate.golden.clean": "{count, plural, one {# golden case matches} other {# golden cases match}}",
+  "gate.golden.shadow": "{count, plural, one {# golden case differs} other {# golden cases differ}} (shadow mode, not blocking)",
+  "gate.golden.fix": "fix the code; if the new output is right, the person runs `finitemonkey golden accept {id}`"
 }

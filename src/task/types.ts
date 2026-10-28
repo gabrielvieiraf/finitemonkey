@@ -32,6 +32,7 @@ export const CHECK_KINDS = [
   "migrations",
   "deploy",
   "headers",
+  "golden",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];
@@ -58,6 +59,8 @@ export interface AcceptanceCheck {
   readonly body?: string;
   readonly versionUrl?: string;
   readonly field?: string;
+  readonly cases?: string;
+  readonly tolerance?: number;
 }
 
 export interface DiffBudget {

@@ -36,6 +36,7 @@ import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.
 import { mergeVerifyCommand } from "./git-merge-verify.js";
 import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
+import { goldenAcceptCommand } from "./golden.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
@@ -227,6 +228,7 @@ export const REGISTRY = [
   deployGenerateCommand,
   deployCheckCommand,
   observeCommand,
+  goldenAcceptCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

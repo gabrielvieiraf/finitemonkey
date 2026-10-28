@@ -9,6 +9,7 @@ import { deployCheck } from "./deploy.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
 import { headersCheck } from "./headers.js";
+import { goldenCheck } from "./golden.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
@@ -60,4 +61,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   migrations: migrationsCheck,
   deploy: deployCheck,
   headers: headersCheck,
+  golden: goldenCheck,
 };

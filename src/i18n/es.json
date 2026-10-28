@@ -1787,5 +1787,19 @@
   "observe.off": "observability está apagado en .finitemonkey/policy.yml.",
   "observe.no_signup": "Finite Monkey no se registra en ningún servicio: las cuentas, los monitores y los canales de alerta los crea el equipo.",
   "gate.fail.isolated": "la ejecución aislada se detuvo en {step}: {detail}",
-  "gate.isolated.off": "gate-isolated está apagado en .finitemonkey/policy.yml"
+  "gate.isolated.off": "gate-isolated está apagado en .finitemonkey/policy.yml",
+  "command.golden_accept.summary": "Guarda la salida actual de los casos golden como la salida esperada (solo la persona)",
+  "golden.error.person_only": "Solo la persona puede actualizar las expectativas golden, en una terminal fuera del agente.",
+  "golden.accepted": "{check}: salida esperada de {case} guardada",
+  "golden.skipped": "{check}: {case} no se guardó, su comando falló",
+  "gate.golden.off": "los casos golden están apagados en .finitemonkey/policy.yml",
+  "gate.golden.no_spec": "un check golden necesita `cases` y un comando `run` con el marcador del caso",
+  "gate.golden.no_cases": "no se encontraron casos en {dir}",
+  "gate.golden.missing": "{case}: todavía no hay salida esperada guardada",
+  "gate.golden.exit": "{case}: el comando salió con {code}",
+  "gate.golden.number": "{case} línea {line}: se esperaba {expected}, salió {actual} (diferencia {delta}, por encima de la tolerancia)",
+  "gate.golden.text": "{case} línea {line}: se esperaba \"{expected}\", salió \"{actual}\"",
+  "gate.golden.clean": "{count, plural, one {# caso golden coincide} other {# casos golden coinciden}}",
+  "gate.golden.shadow": "{count, plural, one {# caso golden difiere} other {# casos golden difieren}} (modo sombra, sin bloquear)",
+  "gate.golden.fix": "corrige el código; si la salida nueva es correcta, la persona ejecuta `finitemonkey golden accept {id}`"
 }

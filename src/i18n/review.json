@@ -1788,7 +1788,21 @@
     "observe.off": "machine",
     "observe.no_signup": "machine",
     "gate.fail.isolated": "machine",
-    "gate.isolated.off": "machine"
+    "gate.isolated.off": "machine",
+    "command.golden_accept.summary": "machine",
+    "golden.error.person_only": "machine",
+    "golden.accepted": "machine",
+    "golden.skipped": "machine",
+    "gate.golden.off": "machine",
+    "gate.golden.no_spec": "machine",
+    "gate.golden.no_cases": "machine",
+    "gate.golden.missing": "machine",
+    "gate.golden.exit": "machine",
+    "gate.golden.number": "machine",
+    "gate.golden.text": "machine",
+    "gate.golden.clean": "machine",
+    "gate.golden.shadow": "machine",
+    "gate.golden.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3579,6 +3593,20 @@
     "observe.off": "machine",
     "observe.no_signup": "machine",
     "gate.fail.isolated": "machine",
-    "gate.isolated.off": "machine"
+    "gate.isolated.off": "machine",
+    "command.golden_accept.summary": "machine",
+    "golden.error.person_only": "machine",
+    "golden.accepted": "machine",
+    "golden.skipped": "machine",
+    "gate.golden.off": "machine",
+    "gate.golden.no_spec": "machine",
+    "gate.golden.no_cases": "machine",
+    "gate.golden.missing": "machine",
+    "gate.golden.exit": "machine",
+    "gate.golden.number": "machine",
+    "gate.golden.text": "machine",
+    "gate.golden.clean": "machine",
+    "gate.golden.shadow": "machine",
+    "gate.golden.fix": "machine"
   }
 }
