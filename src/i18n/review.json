@@ -1620,7 +1620,12 @@
     "ownership.no_plan": "machine",
     "ownership.fill_owner": "machine",
     "plan.issue.ownership_gap": "machine",
-    "plan.issue.ownership_overlap": "machine"
+    "plan.issue.ownership_overlap": "machine",
+    "ci.command.gen": "machine",
+    "ci.gen.deploy_command": "machine",
+    "ci.gen.reviewers": "machine",
+    "ci.gen.release": "machine",
+    "ci.gen.review": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3243,6 +3248,11 @@
     "ownership.no_plan": "machine",
     "ownership.fill_owner": "machine",
     "plan.issue.ownership_gap": "machine",
-    "plan.issue.ownership_overlap": "machine"
+    "plan.issue.ownership_overlap": "machine",
+    "ci.command.gen": "machine",
+    "ci.gen.deploy_command": "machine",
+    "ci.gen.reviewers": "machine",
+    "ci.gen.release": "machine",
+    "ci.gen.review": "machine"
   }
 }

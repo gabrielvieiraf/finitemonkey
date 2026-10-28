@@ -1619,5 +1619,10 @@
   "ownership.no_plan": "Sem docs/plan/MASTER.md: as peças vêm das pastas de código e a checagem de vocabulário fica de fora.",
   "ownership.fill_owner": "Algumas peças ainda não têm dono. Preencha em {file} ou passe --owner; a CI falha em peça sem dono.",
   "plan.issue.ownership_gap": "responsabilidade sem peça no arquivo de donos: {detail}",
-  "plan.issue.ownership_overlap": "dois donos para a mesma responsabilidade: {detail}"
+  "plan.issue.ownership_overlap": "dois donos para a mesma responsabilidade: {detail}",
+  "ci.command.gen": "Gera workflows de CI, segurança e Dependabot com padrões seguros; deploy, release e revisão quando pedidos",
+  "ci.gen.deploy_command": "O deploy.yml falha até o passo de deploy ter um comando: escreva-o lá, ou crie scripts/deploy.sh e gere de novo.",
+  "ci.gen.reviewers": "Projeto no nível {level}: dê revisores obrigatórios ao ambiente production (`finitemonkey ci protect`).",
+  "ci.gen.release": "O release.yml roda numa tag v* que o GitHub mostra como verificada; assine as tags com `git tag -s`.",
+  "ci.gen.review": "O workflow de revisão só roda quando um membro comenta {trigger} num pull request. Ele precisa de um GitHub App (variável REVIEW_APP_CLIENT_ID, segredo REVIEW_APP_PRIVATE_KEY) e do segredo ANTHROPIC_API_KEY, e nunca é checagem obrigatória."
 }

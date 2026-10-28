@@ -1619,5 +1619,10 @@
   "ownership.no_plan": "No docs/plan/MASTER.md: components come from the source folders and the vocabulary check is skipped.",
   "ownership.fill_owner": "Some components have no owner yet. Fill them in {file} or pass --owner; CI fails on a component without owner.",
   "plan.issue.ownership_gap": "responsibility with no component in the ownership file: {detail}",
-  "plan.issue.ownership_overlap": "two owners for the same responsibility: {detail}"
+  "plan.issue.ownership_overlap": "two owners for the same responsibility: {detail}",
+  "ci.command.gen": "Generate CI, security and Dependabot workflows with safe defaults; deploy, release and review on request",
+  "ci.gen.deploy_command": "deploy.yml fails until its deploy step has a command: write it there, or add scripts/deploy.sh and generate again.",
+  "ci.gen.reviewers": "Project level {level}: give the production environment required reviewers (`finitemonkey ci protect`).",
+  "ci.gen.release": "release.yml runs on a v* tag that GitHub shows as verified; sign tags with `git tag -s`.",
+  "ci.gen.review": "The review workflow runs only when a member comments {trigger} on a pull request. It needs a GitHub App (variable REVIEW_APP_CLIENT_ID, secret REVIEW_APP_PRIVATE_KEY) and the ANTHROPIC_API_KEY secret, and it is never a required check."
 }
