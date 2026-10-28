@@ -35,7 +35,6 @@ export const FOOTPRINT = [
       ".finitemonkey/look.yml",
       ".finitemonkey/appsec.yml",
       ".finitemonkey/routes-public.yml",
-  },
       ".finitemonkey/rules.yml",
     ],
   },
@@ -111,7 +110,6 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: ["$FINITEMONKEY_HOLD_DIR/<session>.hold.json"],
   },
-  { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/"] },
   { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/", ".finitemonkey/data-map.yml"] },
   {
     id: "rules",
