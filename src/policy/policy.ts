@@ -9,7 +9,7 @@ export const GUARD_MODES = ["off", "shadow", "active"] as const;
 export const LEVELS = ["light", "standard", "strict"] as const;
 export const SEVERITIES = ["low", "medium", "high"] as const;
 export const DEFAULT_PROMOTE_AFTER = 20;
-export const OPTIONAL_GUARDS = ["prose", "deps", "creds-static", "appsec"] as const;
+export const OPTIONAL_GUARDS = ["prose", "deps", "creds-static", "appsec", "signals"] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 
 export type GuardMode = (typeof GUARD_MODES)[number];

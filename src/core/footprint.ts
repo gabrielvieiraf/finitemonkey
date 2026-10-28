@@ -123,6 +123,11 @@ export const FOOTPRINT = [
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },
   { id: "map", kind: "writes", targets: [".finitemonkey/map.txt"] },
+  {
+    id: "signals",
+    kind: "writes",
+    targets: [".finitemonkey/signals.jsonl", ".finitemonkey/signals-index.json", ".finitemonkey/signals-profile.json"],
+  },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },

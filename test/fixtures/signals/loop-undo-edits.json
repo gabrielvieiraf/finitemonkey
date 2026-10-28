@@ -1,0 +1,75 @@
+{
+  "expect": "loop",
+  "loopedBy": "model",
+  "description": "Edits flip the same line back and forth.",
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Fix the date shown on the invoice"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/invoice.ts",
+          "old_string": "toLocaleDateString('en-US')",
+          "new_string": "toISOString()"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/invoice.ts",
+          "old_string": "toISOString()",
+          "new_string": "toLocaleDateString('en-US')"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/invoice.ts",
+          "old_string": "toLocaleDateString('en-US')",
+          "new_string": "toISOString()"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/invoice.ts",
+          "old_string": "toISOString()",
+          "new_string": "toLocaleDateString('en-US')"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Is it fixed?"
+      }
+    }
+  ]
+}

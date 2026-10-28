@@ -17,6 +17,7 @@ import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/e
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
+import { SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 import { capReason } from "./reason.js";
@@ -140,6 +141,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "creds-static", damage: false, handlers: { PreToolUse: [credsStaticGuard] } },
   { id: "appsec", damage: false, handlers: { PreToolUse: [appsecEditWarning] } },
   { id: "rules", damage: true, handlers: { PreToolUse: [rulesGuard] } },
+  { id: "signals", damage: false, handlers: SIGNALS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

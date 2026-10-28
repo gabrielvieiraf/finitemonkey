@@ -1,0 +1,72 @@
+{
+  "expect": "quiet",
+  "description": "Reading and running commands with no failures.",
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Explain how billing works in this project"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Read",
+        "tool_input": {
+          "file_path": "src/billing/index.ts"
+        },
+        "tool_response": {}
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Read",
+        "tool_input": {
+          "file_path": "src/billing/webhook.ts"
+        },
+        "tool_response": {}
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "git log --oneline -5"
+        },
+        "tool_response": {
+          "stdout": "ok",
+          "stderr": "",
+          "exitCode": 0
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Which tests cover refunds?"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test -- refunds"
+        },
+        "tool_response": {
+          "stdout": "ok",
+          "stderr": "",
+          "exitCode": 0
+        }
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "What happens when a webhook arrives twice?"
+      }
+    }
+  ]
+}
