@@ -18,6 +18,7 @@ import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { rulesGuard } from "../rules/guard.js";
+import { RELAY_HANDLERS } from "../relay/hook.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
@@ -163,6 +164,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "label", damage: false, handlers: LABEL_HANDLERS },
   { id: "perfil", damage: false, handlers: PERFIL_HANDLERS },
   { id: "conceitos", damage: false, handlers: CONCEITOS_HANDLERS },
+  { id: "relay", damage: false, handlers: RELAY_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
