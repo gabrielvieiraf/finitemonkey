@@ -34,6 +34,7 @@ import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { statuslineCommand } from "./statusline.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
+import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
@@ -53,6 +54,8 @@ export const REGISTRY = [
   taskNewCommand,
   taskShowCommand,
   taskDoneCommand,
+  taskReopenCommand,
+  taskAmendCommand,
   secretsScanCommand,
   secretsAcceptCommand,
   policyFalsePositiveCommand,

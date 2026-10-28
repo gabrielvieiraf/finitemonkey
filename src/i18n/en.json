@@ -1015,5 +1015,20 @@
   "command.debt.summary": "List the deliberate shortcuts across tasks and mark those without a trigger or past it",
   "debt.title": "{count, plural, one {# shortcut} other {# shortcuts}}:",
   "debt.row": "  [{state}] {what} (task {task}, at {where}, {detail})",
-  "debt.no_trigger": "Shortcut without a trigger to revisit it: {what}"
+  "debt.no_trigger": "Shortcut without a trigger to revisit it: {what}",
+  "command.task_reopen.summary": "Invalidate the evidence of some criteria of a task and check them again",
+  "command.task_amend.summary": "Change one acceptance criterion with a reason and evidence; it counts after the person trusts the task",
+  "task.reopen.usage": "name the task and at least one criterion",
+  "task.reopen.failed": "could not reopen: {detail}",
+  "task.reopen.done": "Reopened {criteria} of {task}; the other criteria keep their evidence.",
+  "task.amend.needs_reason": "an amendment needs the criterion, --reason and --evidence",
+  "task.amend.not_found": "task {task} has no contract",
+  "task.amend.unknown_criterion": "{task} has no criterion {criterion}",
+  "task.amend.no_change": "nothing to change in {criterion}: pass --run or --description",
+  "task.amend.write": "could not write the contract of {task}",
+  "task.amend.done": "Amended {criterion} of {task}. It counts after the person types: fm: trust {task}",
+  "gate.reopened": "{check} was reopened and runs again",
+  "gate.guard.self.amend.claim": "{file} changes the done contract, which only the person can do",
+  "gate.guard.self.amend.requires": "ask the person to run it themselves",
+  "gate.guard.amend.human": "The agent tried to amend the done contract. Run finitemonkey task amend yourself if you agree, or type fm: allow self <reason>."
 }
