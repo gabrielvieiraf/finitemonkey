@@ -51,6 +51,7 @@ import { proseCheckCommand } from "./prose-check.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
+import { runCommandSpec } from "./run.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
@@ -164,6 +165,7 @@ export const REGISTRY = [
   conceitosExportCommand,
   conceitosUpdateCommand,
   conceitosMarkCommand,
+  runCommandSpec,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

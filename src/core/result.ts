@@ -19,6 +19,7 @@ interface ResultBase {
   readonly human?: readonly string[];
   readonly next?: string;
   readonly raw?: RawOutput;
+  readonly passthroughExit?: number;
 }
 
 export interface SuccessResult<TData = unknown> extends ResultBase {

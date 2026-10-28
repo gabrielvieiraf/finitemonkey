@@ -1368,7 +1368,11 @@
     "relay.marker.placeholder": "machine",
     "relay.marker.missing_import": "machine",
     "relay.marker.own_output": "machine",
-    "relay.note.source": "machine"
+    "relay.note.source": "machine",
+    "command.run.summary": "machine",
+    "run.summary": "machine",
+    "run.timed_out": "machine",
+    "run.failed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2739,6 +2743,10 @@
     "relay.marker.placeholder": "machine",
     "relay.marker.missing_import": "machine",
     "relay.marker.own_output": "machine",
-    "relay.note.source": "machine"
+    "relay.note.source": "machine",
+    "command.run.summary": "machine",
+    "run.summary": "machine",
+    "run.timed_out": "machine",
+    "run.failed": "machine"
   }
 }

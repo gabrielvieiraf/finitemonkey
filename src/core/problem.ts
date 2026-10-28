@@ -85,6 +85,7 @@ export const ERROR_CODES = [
   "appsec_found",
   "rules_uncovered",
   "rules_write_failed",
+  "run_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

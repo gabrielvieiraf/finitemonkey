@@ -92,6 +92,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta e conhecimento do domínio, que sobem com palavras técnicas nos pedidos e com commits feitos fora da sessão, e o livro de conceitos com o nível mostrado em cada conceito visto no projeto. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
     es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta y conocimiento del dominio, que suben con palabras técnicas en los pedidos y con commits hechos fuera de la sesión, y el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
   },
+  runs: {
+    en: "The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept.",
+    "pt-BR":
+      "A saída inteira dos comandos rodados por `finitemonkey run`, com segredos mascarados; ficam as 30 mais recentes.",
+    es: "La salida completa de los comandos ejecutados con `finitemonkey run`, con los secretos enmascarados; se guardan las 30 más recientes.",
+  },
   tasks: {
     en: "Task contracts and which task is active.",
     "pt-BR": "Contratos de tarefa e qual tarefa está ativa.",
