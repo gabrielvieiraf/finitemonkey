@@ -1373,7 +1373,16 @@
     "run.summary": "machine",
     "run.timed_out": "machine",
     "run.failed": "machine",
-    "reuse.warning": "machine"
+    "reuse.warning": "machine",
+    "routine.header": "machine",
+    "routine.cwd": "machine",
+    "routine.state": "machine",
+    "routine.gate_none": "machine",
+    "routine.commits": "machine",
+    "routine.start": "machine",
+    "routine.start_unknown": "machine",
+    "routine.check": "machine",
+    "routine.check_unknown": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2749,6 +2758,15 @@
     "run.summary": "machine",
     "run.timed_out": "machine",
     "run.failed": "machine",
-    "reuse.warning": "machine"
+    "reuse.warning": "machine",
+    "routine.header": "machine",
+    "routine.cwd": "machine",
+    "routine.state": "machine",
+    "routine.gate_none": "machine",
+    "routine.commits": "machine",
+    "routine.start": "machine",
+    "routine.start_unknown": "machine",
+    "routine.check": "machine",
+    "routine.check_unknown": "machine"
   }
 }

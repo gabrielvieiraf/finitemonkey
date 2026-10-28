@@ -1412,5 +1412,14 @@
   "run.summary": "saída {exit} em {ms} ms; saída inteira: {file}",
   "run.timed_out": "interrompido depois de {seconds} s",
   "run.failed": "o comando saiu com {exit}",
-  "reuse.warning": "finitemonkey reuse: `{name}` novo em `{file}`; `{existingName}` existe em `{existing}`."
+  "reuse.warning": "finitemonkey reuse: `{name}` novo em `{file}`; `{existingName}` existe em `{existing}`.",
+  "routine.header": "finitemonkey: a tarefa {task} (tamanho {size}) está ativa. Antes de editar, confira que a base funciona:",
+  "routine.cwd": "- diretório de trabalho: {dir}",
+  "routine.state": "- tarefa: {goal}; último portão: {gate}",
+  "routine.gate_none": "ainda não rodou",
+  "routine.commits": "- últimos commits: {list}",
+  "routine.start": "- subir o app: {command}",
+  "routine.start_unknown": "- subir o app: não há comando de início no contrato nem em .finitemonkey/look.yml",
+  "routine.check": "- uma checagem de ponta a ponta antes da primeira edição: {command}",
+  "routine.check_unknown": "- uma checagem de ponta a ponta antes da primeira edição: o contrato não tem checagem executável; suba o app e teste o fluxo principal uma vez"
 }

@@ -43,6 +43,7 @@ const PAYLOADS: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
     error: "Exit code 1\nFAIL test/checkout.test.ts > pays\nAssertionError: expected 1 to be 2",
   },
   PermissionRequest: { tool_name: "Edit", tool_input: { file_path: "src/page/checkout.tsx" } },
+  PermissionDenied: { tool_name: "Bash", tool_input: { command: "git push" }, reason: "denied by auto mode" },
   Stop: { stop_hook_active: false, last_assistant_message: "Done: checkout works and tests pass." },
   SubagentStart: { agent_id: "a1", agent_type: "general-purpose" },
   SubagentStop: { agent_id: "a1", agent_type: "general-purpose", stop_hook_active: false },

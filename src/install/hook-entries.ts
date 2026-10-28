@@ -18,6 +18,7 @@ export const INSTALLED_HOOKS: readonly HookSpec[] = [
   { event: "PostToolUse", timeout: 30, guard: false },
   { event: "PostToolUseFailure", timeout: 30, guard: false },
   { event: "PermissionRequest", timeout: 10, guard: false },
+  { event: "PermissionDenied", timeout: 10, guard: false },
   { event: "Stop", timeout: 600, guard: false },
   { event: "SubagentStart", timeout: 30, guard: false },
   { event: "SubagentStop", timeout: 600, guard: false },

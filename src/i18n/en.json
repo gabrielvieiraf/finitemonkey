@@ -1412,5 +1412,14 @@
   "run.summary": "exit {exit} in {ms} ms; full output: {file}",
   "run.timed_out": "stopped after {seconds} s",
   "run.failed": "the command exited with {exit}",
-  "reuse.warning": "finitemonkey reuse: `{name}` new in `{file}`; `{existingName}` exists in `{existing}`."
+  "reuse.warning": "finitemonkey reuse: `{name}` new in `{file}`; `{existingName}` exists in `{existing}`.",
+  "routine.header": "finitemonkey: task {task} (size {size}) is active. Before editing, check that the base works:",
+  "routine.cwd": "- working directory: {dir}",
+  "routine.state": "- task: {goal}; last gate: {gate}",
+  "routine.gate_none": "not run yet",
+  "routine.commits": "- last commits: {list}",
+  "routine.start": "- start the app: {command}",
+  "routine.start_unknown": "- start the app: no start command in the contract or in .finitemonkey/look.yml",
+  "routine.check": "- one end-to-end check before the first edit: {command}",
+  "routine.check_unknown": "- one end-to-end check before the first edit: the contract has no runnable check; run the app and try the main flow once"
 }

@@ -11,6 +11,7 @@ import { gitAt, headSha, treeHash } from "../git.js";
 import { allowWith, contextOutput, human, projectPaths } from "./common.js";
 import { recordConfigHooks } from "./config.js";
 import { cachedPrs, openPrsLine } from "./prs.js";
+import { startupRoutine } from "./routine.js";
 import { saveSnapshot, snapshotFacts } from "./snapshot.js";
 import { readGateStatus } from "./status.js";
 
@@ -54,8 +55,10 @@ export const sessionStart: HookHandler = (input) => {
   recordConfigHooks(runtime, paths, input.env);
   const lines = [...notRunLine(t, runtime, paths), ...openPrsLine(t, runtime, paths)];
   const systemMessage = lines.length === 0 ? undefined : human(lines.join(" "));
-  const facts = REINJECT_SOURCES.has(source) ? snapshotFacts(t, readState(runtime, paths).snapshot) : undefined;
-  if (facts !== undefined) return allowWith(contextOutput("SessionStart", facts, systemMessage));
+  const snapshot = REINJECT_SOURCES.has(source) ? snapshotFacts(t, readState(runtime, paths).snapshot) : undefined;
+  const routine = startupRoutine(input, paths);
+  const facts = [snapshot, routine].filter((part): part is string => part !== undefined).join("\n");
+  if (facts !== "") return allowWith(contextOutput("SessionStart", facts, systemMessage));
   return systemMessage === undefined ? { kind: "allow" } : allowWith({ systemMessage });
 };
 
