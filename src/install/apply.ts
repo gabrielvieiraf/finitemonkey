@@ -82,7 +82,6 @@ const nextLock = (
 ): LockFile => ({
   schema: LOCK_SCHEMA,
   version,
-  preset: plan.preset,
   installedAt: plan.previous?.installedAt ?? now,
   updatedAt: now,
   createdDirs: [...new Set([...(plan.previous?.createdDirs ?? []), ...createdDirs])],

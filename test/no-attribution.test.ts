@@ -10,7 +10,8 @@ import { at, repo, ROOT, run } from "./install-support.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cliJson, fakeRuntime, field, stdinFrom } from "./support.js";
 
-const STRICT = { ".finitemonkey/config.yml": "schemaVersion: 1\npreset: gabriel\nlang: en\n" };
+const STRICT = { ".finitemonkey/config.yml": "schemaVersion: 1\nlang: en\n" };
+const OFF = { ".finitemonkey/config.yml": "schemaVersion: 1\nlang: en\ndefaults:\n  no-attribution: off\n" };
 const DECLARED = { ".finitemonkey/rules.yml": "rules:\n  - id: no-attribution\n    preset: attribution\n" };
 const CO_AUTHOR = "Co-Authored-By: Claude Opus <noreply@anthropic.com>";
 
@@ -38,10 +39,15 @@ const ids = async (fs: ReturnType<typeof repo>): Promise<readonly string[]> => {
   return Array.isArray(rules) ? rules.map((rule: unknown) => String(field(rule, "id"))) : [];
 };
 
-describe("no-attribution: presets", () => {
-  it("is off in the neutral preset and on in the strict preset", async () => {
-    assert.deepEqual(await ids(repo({})), []);
-    assert.deepEqual(await ids(repo(STRICT)), ["no-attribution"]);
+describe("no-attribution: a default", () => {
+  it("is compiled by default, left out when turned off, and listed when declared", async () => {
+    const byDefault = repo(STRICT);
+    assert.deepEqual(await ids(byDefault), []);
+    await run(byDefault, ["rules", "compile"]);
+    assert.deepEqual(await ids(byDefault), ["no-attribution"]);
+    const off = repo(OFF);
+    await run(off, ["rules", "compile"]);
+    assert.deepEqual(await ids(off), []);
     assert.deepEqual(await ids(repo(DECLARED)), ["no-attribution"]);
   });
 });

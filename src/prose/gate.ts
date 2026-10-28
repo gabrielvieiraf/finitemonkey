@@ -2,8 +2,9 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
-import { projectPreset } from "./preset.js";
+import { defaultOn } from "../defaults/items.js";
 import { isFlagged, scoreProse } from "./score.js";
+import { PLAN_OR_REPORT } from "./time-estimate.js";
 import type { ProseContext, ProseReport } from "./types.js";
 
 export interface ProseFileReport {
@@ -46,10 +47,15 @@ export const scoreFiles = (
   forced?: ProseContext,
 ): Parsed<readonly ProseFileReport[]> => {
   const reports: ProseFileReport[] = [];
+  const estimates = defaultOn(runtime, root, "no-time-estimates");
   for (const file of files) {
     const text = runtime.readText(toAbsolutePath(file, root));
     if (!text.ok) return reject(`${file}: ${text.error}`);
-    reports.push({ file: toPosixPath(file), report: scoreProse(text.value, { context: forced ?? contextOf(file) }) });
+    const options = {
+      context: forced ?? contextOf(file),
+      timeEstimates: estimates && PLAN_OR_REPORT.test(toPosixPath(file)),
+    };
+    reports.push({ file: toPosixPath(file), report: scoreProse(text.value, options) });
   }
   return accept(reports);
 };
@@ -62,6 +68,6 @@ export const proseGateStatus = (runtime: Runtime, root: AbsolutePath): Parsed<Pr
   return accept({
     files: files.value,
     flagged: files.value.filter((item) => isFlagged(item.report)),
-    blocking: projectPreset(runtime, root) === "gabriel",
+    blocking: defaultOn(runtime, root, "prose-blocks"),
   });
 };

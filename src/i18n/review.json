@@ -250,7 +250,6 @@
     "error.install_permission_denied": "machine",
     "error.not_installed": "machine",
     "error.install_outdated": "machine",
-    "error.invalid_preset": "machine",
     "command.gate.summary": "machine",
     "command.task_new.summary": "machine",
     "command.task_show.summary": "machine",
@@ -1579,7 +1578,11 @@
     "learnings.error.unknown": "machine",
     "learnings.error.add": "machine",
     "learnings.changed": "machine",
-    "learnings.added": "machine"
+    "learnings.added": "machine",
+    "prose.rule.time-estimate": "machine",
+    "defaults.question.commits": "machine",
+    "defaults.question.commits_pending": "machine",
+    "defaults.error.commits": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1832,7 +1835,6 @@
     "error.install_permission_denied": "machine",
     "error.not_installed": "machine",
     "error.install_outdated": "machine",
-    "error.invalid_preset": "machine",
     "command.gate.summary": "machine",
     "command.task_new.summary": "machine",
     "command.task_show.summary": "machine",
@@ -3161,6 +3163,10 @@
     "learnings.error.unknown": "machine",
     "learnings.error.add": "machine",
     "learnings.changed": "machine",
-    "learnings.added": "machine"
+    "learnings.added": "machine",
+    "prose.rule.time-estimate": "machine",
+    "defaults.question.commits": "machine",
+    "defaults.question.commits_pending": "machine",
+    "defaults.error.commits": "machine"
   }
 }

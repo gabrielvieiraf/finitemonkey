@@ -10,7 +10,8 @@ import { proseInCommand } from "../src/prose/command-text.js";
 import { fakeRuntime, field, parseBody, reasonText, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
-const GABRIEL = { [`${ROOT}/.finitemonkey/config.yml`]: "schemaVersion: 1\npreset: gabriel\nlang: en\n" };
+const DEFAULTS = { [`${ROOT}/.finitemonkey/config.yml`]: "schemaVersion: 1\nlang: en\n" };
+const OFF = { [`${ROOT}/.finitemonkey/config.yml`]: "schemaVersion: 1\nlang: en\ndefaults:\n  prose-blocks: off\n" };
 const BAD = "This change leverages the invite flow for a seamless, robust first run. Nobody is lazy here.";
 const GOOD = "An accepted finding came back as new on every run, so the command exited 1 on a clean repository.";
 const MARKER = "<!-- finitemonkey:prose-allow -->";
@@ -51,15 +52,15 @@ const commands = [
 
 describe("prose check on commit, PR and issue text", () => {
   for (const { name, command, target } of commands) {
-    it(`${name}: warns in the neutral preset`, async () => {
-      const outcome = await fire(bash(command));
+    it(`${name}: warns when prose-blocks is off`, async () => {
+      const outcome = await fire(bash(command), fakeRuntime({ files: OFF }));
       assert.equal(outcome.verdict, "allow");
       assert.match(context(outcome), new RegExp(`The ${target} (message|text) reads as machine-written`));
       assert.match(context(outcome), /crutch-word "leverages"/);
     });
 
-    it(`${name}: blocks in the gabriel preset`, async () => {
-      const outcome = await fire(bash(command), fakeRuntime({ files: GABRIEL }));
+    it(`${name}: blocks by default`, async () => {
+      const outcome = await fire(bash(command), fakeRuntime({ files: DEFAULTS }));
       assert.equal(outcome.verdict, "block");
       assert.match(
         reasonText(outcome),
@@ -68,24 +69,24 @@ describe("prose check on commit, PR and issue text", () => {
     });
   }
 
-  it("a commit that names a person as the reason is blocked in the gabriel preset", async () => {
+  it("a commit that names a person as the reason is blocked by default", async () => {
     const command = bash(`git commit -m "docs: introdução do readme com o texto do gabriel"`);
-    const outcome = await fire(command, fakeRuntime({ files: GABRIEL }));
+    const outcome = await fire(command, fakeRuntime({ files: DEFAULTS }));
     assert.equal(outcome.verdict, "block");
     assert.match(reasonText(outcome), /person-as-reason/);
-    assert.match(context(await fire(command)), /person-as-reason/);
+    assert.match(context(await fire(command, fakeRuntime({ files: OFF }))), /person-as-reason/);
   });
 
   it("reads --body-file from disk", async () => {
-    const runtime = fakeRuntime({ files: { ...GABRIEL, [`${ROOT}/body.md`]: `## Summary\n\n${BAD}\n` } });
+    const runtime = fakeRuntime({ files: { ...DEFAULTS, [`${ROOT}/body.md`]: `## Summary\n\n${BAD}\n` } });
     const outcome = await fire(bash("finitemonkey pr open --title x --body-file body.md"), runtime);
     assert.equal(outcome.verdict, "block");
   });
 
-  it("a missing --body-file blocks in the gabriel preset and passes in neutral", async () => {
+  it("a missing --body-file blocks by default and passes when prose-blocks is off", async () => {
     const command = bash("finitemonkey pr open --title x --body-file missing.md");
-    assert.match(reasonText(await fire(command, fakeRuntime({ files: GABRIEL }))), /could not read missing\.md/);
-    assert.equal((await fire(command)).verdict, "allow");
+    assert.match(reasonText(await fire(command, fakeRuntime({ files: DEFAULTS }))), /could not read missing\.md/);
+    assert.equal((await fire(command, fakeRuntime({ files: OFF }))).verdict, "allow");
   });
 
   const clean = [
@@ -97,7 +98,7 @@ describe("prose check on commit, PR and issue text", () => {
   ];
   for (const command of clean) {
     it(`passes quietly: ${command.slice(0, 50)}`, async () => {
-      const outcome = await fire(bash(command), fakeRuntime({ files: GABRIEL }));
+      const outcome = await fire(bash(command), fakeRuntime({ files: DEFAULTS }));
       assert.equal(outcome.verdict, "allow");
       assert.equal(context(outcome), "");
     });

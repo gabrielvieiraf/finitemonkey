@@ -130,6 +130,22 @@ La comparación completa, con fuentes, está en [docs/compare.es.md](docs/compar
 - **Métodos como superpowers, GSD, Spec Kit u OpenSpec** le dicen al agente cómo planificar y construir. Finite Monkey no los sustituye: comprueba el resultado al final, uses el método que uses.
 - **Guardas sueltos como tdd-guard, cc-safety-net o dcg** hacen un trabajo cada uno, y lo hacen bien. Finite Monkey cubre cuatro daños con un control, una instalación y un `undo`. Si solo necesitas uno de esos trabajos, un guarda suelto puede ser lo más sencillo.
 
+<!-- generated:defaults:start -->
+## Valores predeterminados y su evidencia
+
+Un solo conjunto de valores predeterminados para todos, generado desde `src/defaults/items.ts`. Cada elemento viene de prácticas encontradas en 78 sesiones locales y tres repositorios. Una guía que ayuda a quien empieza puede frenar a quien ya domina (efecto de reversión de la experticia, Kalyuga et al. 2003), así que cualquier elemento se apaga con `defaults: <item>: off` en `.finitemonkey/config.yml`, y una convención del repositorio distinta de un predeterminado genera una pregunta, una sola vez.
+
+| Predeterminado | Qué hace | Evidencia |
+|---|---|---|
+| `no-attribution` | Sin crédito de IA en commits y pull requests: `attribution` se vacía en la configuración cuando no está definido, y el guard y el hook `commit-msg` bloquean líneas `Co-Authored-By` de herramientas de IA y pies `Generated with`. | Presente en los tres repositorios estudiados y corregido a mano en las sesiones locales: el commit es trabajo de la persona. Regla I3 de este repositorio. |
+| `branch-names` | Una rama nueva debe llamarse `tipo/issue-descripcion`; cualquier otro nombre se bloquea en vez de solo avisar. | Un pull request por issue, encontrado por el nombre de su rama, en los tres repositorios. |
+| `prose-blocks` | El texto de commits, pull requests e issues y el Markdown cambiado que parecen escritos por una máquina se bloquean en vez de solo avisar. | Corregido en las sesiones locales y presente en los tres repositorios. Cada patrón está en el catálogo de prosa con su corpus de prueba. |
+| `research-first` | Una dependencia nueva necesita un registro de investigación antes de que pase la compuerta. | Investigación antes del diseño, con registro de decisión, en las sesiones locales y los tres repositorios. |
+| `no-comments` | Los comentarios `TODO` y `FIXME` no se listan como deuda; la deuda vive en el registro que se escribe al cerrar una tarea. | Sin comentarios en el código en los tres repositorios. Regla I1 de este repositorio. |
+| `no-time-estimates` | La revisión de prosa marca estimaciones de tiempo en planes (`docs/plan/`) e informes. | Práctica de las sesiones locales: planes e informes dicen qué está hecho, qué falta y qué lo bloquea, sin estimaciones. |
+| `conventional-commits` | Los encabezados de commit siguen Conventional Commits, revisados por los hooks `commit-msg` y `pre-push` y por la CI. Cuando la mayoría de los commits recientes es distinta, `init` pregunta una vez y guarda la respuesta en `conventions.commits`. | Usado en los tres repositorios, donde la versión sale de los tipos de commit. Regla I4 de este repositorio. |
+<!-- generated:defaults:end -->
+
 <!-- generated:footprint:start -->
 ## Qué lee, escribe y envía
 

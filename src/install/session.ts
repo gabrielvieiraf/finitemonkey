@@ -1,11 +1,11 @@
 import type { Ctx } from "../core/context.js";
 import type { Problem } from "../core/problem.js";
+import type { ProjectDefaults } from "../defaults/items.js";
 import { ExitCode } from "../exit-codes.js";
 import type { MessageKey } from "../i18n/catalogs.js";
 import { CLAUDE_LANGUAGE, type LangSource } from "../i18n/languages.js";
 import type { Params } from "../i18n/translate.js";
 import type { ApplyFailure } from "./apply.js";
-import type { Preset } from "./layout.js";
 import type { PlanError, PlanInput } from "./plan.js";
 import { findGitRoot, type Project, projectAt } from "./project.js";
 import { SANDBOX_PLATFORMS } from "./sandbox.js";
@@ -89,11 +89,6 @@ export const notInstalled = (): Problem =>
 export const confirmProblem = (command: string, question: string, fix: string): Problem =>
   problem("needs_confirmation", "error.needs_confirmation", fix, ExitCode.NeedsPerson, { command, question });
 
-export const invalidPreset = (raw: string): Problem =>
-  problem("invalid_arguments", "error.invalid_preset", "finitemonkey init --preset neutral", ExitCode.Usage, {
-    preset: raw,
-  });
-
 const selfBundle = (ctx: Ctx): string | undefined => {
   if (!isBundlePath(ctx.runtime.selfPath)) return undefined;
   const text = ctx.runtime.readText(ctx.runtime.selfPath);
@@ -104,12 +99,12 @@ const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "claude
 
 export const planInputFor = (
   ctx: Ctx,
-  preset: Preset,
+  defaults: ProjectDefaults,
   bin: string | undefined,
   marketplace: boolean,
   sandbox = false,
 ): PlanInput => ({
-  preset,
+  defaults,
   lang: ctx.lang,
   claudeLanguage: INHERITED.has(ctx.langSource) ? undefined : CLAUDE_LANGUAGE[ctx.lang],
   bin,

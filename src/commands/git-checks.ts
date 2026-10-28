@@ -2,6 +2,7 @@ import { stringOption } from "../core/args.js";
 import { toAbsolutePath } from "../core/brand.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom } from "../core/result.js";
+import { defaultOn } from "../defaults/items.js";
 import { baseExists, ciBase, ciChecks } from "../githooks/ci.js";
 import { commitMessageProblems } from "../githooks/commit-msg.js";
 import { parsePushUpdates, prePushChecks, updatesFromEnv } from "../githooks/pre-push.js";
@@ -41,7 +42,10 @@ export const commitMsgCommand: CommandSpec = {
           usageProblem("invalid_arguments", "error.invalid_arguments", COMMIT_MSG_USAGE, { detail: file }),
         ),
       );
-    const failures = commitMessageProblems(text.value);
+    const failures = commitMessageProblems(
+      text.value,
+      defaultOn(ctx.runtime, projectRoot(ctx), "conventional-commits"),
+    );
     const fix = "git commit --amend, using type(scope): subject and no AI attribution lines";
     return Promise.resolve(
       checksResult(ctx.t, COMMIT_MSG_SCHEMA, "githook_failed", [

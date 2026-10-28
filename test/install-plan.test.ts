@@ -116,15 +116,15 @@ describe("init writes only when asked", () => {
 
   it("without --yes it shows the plan, writes nothing and exits 4 with next", async () => {
     const fs = repo();
-    const result = await run(fs, ["init", "--preset", "gabriel"]);
+    const result = await run(fs, ["init", "--commits", "free"]);
     assert.equal(result.code, ExitCode.NeedsPerson);
     assert.equal(field(result.body, "error", "code"), "needs_confirmation");
-    assert.equal(field(result.body, "next"), "finitemonkey init --yes --preset gabriel");
+    assert.equal(field(result.body, "next"), "finitemonkey init --yes --commits free");
     assert.equal(fs.writes(), 0);
   });
 
-  it("an unknown preset is a usage error", async () => {
-    const result = await run(repo(), ["init", "--preset", "loud", "--yes"]);
+  it("an unknown commit style is a usage error", async () => {
+    const result = await run(repo(), ["init", "--commits", "loud", "--yes"]);
     assert.equal(result.code, ExitCode.Usage);
   });
 
@@ -155,7 +155,7 @@ describe("init is idempotent and merges without clobbering", () => {
       hooks: { PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "my-guard" }] }] },
     };
     const fs = repo({ [SETTINGS_FILE]: JSON.stringify(user, null, 2) });
-    await run(fs, ["init", "--yes", "--preset", "gabriel"]);
+    await run(fs, ["init", "--yes"]);
     const settings = settingsOf(fs);
     assert.deepEqual(field(settings, "attribution"), { commit: "made by me" });
     assert.deepEqual(field(settings, "permissions", "allow"), ["Bash(ls)"]);
@@ -169,13 +169,13 @@ describe("init is idempotent and merges without clobbering", () => {
     assert.equal(field(Array.isArray(ours) ? ours[0] : undefined, "onFailure"), "block");
   });
 
-  it("the neutral preset never touches attribution and gabriel only fills it when absent", async () => {
-    const neutral = repo();
-    await run(neutral, ["init", "--yes"]);
-    assert.equal(field(settingsOf(neutral), "attribution"), undefined);
-    const gabriel = repo();
-    await run(gabriel, ["init", "--yes", "--preset", "gabriel"]);
-    assert.deepEqual(field(settingsOf(gabriel), "attribution"), { commit: "", pr: "", sessionUrl: false });
+  it("attribution is filled when absent by default and never touched when no-attribution is off", async () => {
+    const off = repo({ [CONFIG_FILE]: "schemaVersion: 1\ndefaults:\n  no-attribution: off\n" });
+    await run(off, ["init", "--yes"]);
+    assert.equal(field(settingsOf(off), "attribution"), undefined);
+    const byDefault = repo();
+    await run(byDefault, ["init", "--yes"]);
+    assert.deepEqual(field(settingsOf(byDefault), "attribution"), { commit: "", pr: "", sessionUrl: false });
   });
 
   it("a failed write puts every file back and says which one failed", async () => {

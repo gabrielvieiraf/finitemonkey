@@ -3129,41 +3129,60 @@ var auditCommand = {
 // src/fronts/brief.ts
 import { join as join12 } from "node:path";
 
-// src/install/layout.ts
-var STATE_DIR = ".finitemonkey";
-var SETTINGS_FILE = ".claude/settings.json";
-var GITIGNORE_FILE = ".gitignore";
-var CONFIG_FILE2 = ".finitemonkey/config.yml";
-var LOCK_FILE = ".finitemonkey/lock.json";
-var BACKUPS_DIR = ".finitemonkey/backups";
-var LOCKS_DIR = ".finitemonkey/locks";
-var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
-var VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
-var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
-var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
-var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
-var LOCK_SCHEMA = "finitemonkey/lock@1";
-var PLAN_SCHEMA = "finitemonkey/install-plan@1";
-var GENERATED_MARKER = "finitemonkey:generated v=1";
-var BLOCK_BEGIN = "# finitemonkey:begin v=1";
-var BLOCK_END = "# finitemonkey:end";
-var MD_BLOCK_BEGIN = "<!-- finitemonkey:begin v=1 -->";
-var MD_BLOCK_END = "<!-- finitemonkey:end -->";
-var AGENTS_FILE = "AGENTS.md";
-var CLAUDE_FILE = "CLAUDE.md";
-var AGENTS_IMPORT = "@AGENTS.md";
-var AGENTS_MAX_LINES = 60;
-var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
-var PRESETS = ["neutral", "gabriel"];
-var parsePreset = (raw) => raw === void 0 ? "neutral" : PRESETS.find((preset) => preset === raw);
-var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
-
-// src/prose/preset.ts
-var PRESET_LINE = /^preset:\s*([A-Za-z0-9_-]+)\s*$/m;
-var presetFromConfig = (text22) => parsePreset(PRESET_LINE.exec(text22)?.[1]) ?? "neutral";
-var projectPreset = (runtime, root) => {
-  const config = runtime.readText(toAbsolutePath(CONFIG_FILE2, root));
-  return config.ok ? presetFromConfig(config.value) : "neutral";
+// src/defaults/items.ts
+var DEFAULT_ITEMS = [
+  "no-attribution",
+  "branch-names",
+  "prose-blocks",
+  "research-first",
+  "no-comments",
+  "no-time-estimates",
+  "conventional-commits"
+];
+var COMMIT_STYLES = ["conventional", "free"];
+var LEGACY_NEUTRAL_OFF = [
+  "no-attribution",
+  "branch-names",
+  "prose-blocks",
+  "research-first",
+  "no-comments"
+];
+var ALL_ON = { off: [], commits: void 0 };
+var LEGACY_NEUTRAL = /^preset:\s*neutral\s*$/m;
+var OFF = /* @__PURE__ */ new Set(["off", "false", "no"]);
+var ON = /* @__PURE__ */ new Set(["on", "true", "yes"]);
+var defaultsFromConfig = (text22) => {
+  const tree = parseConfigYaml(text22);
+  const chosen = configMap(tree, "defaults");
+  const legacy = LEGACY_NEUTRAL.test(text22) ? LEGACY_NEUTRAL_OFF : [];
+  const raw = configAt(tree, "conventions", "commits");
+  const commits = COMMIT_STYLES.find((style) => style === raw);
+  const off = DEFAULT_ITEMS.filter((item2) => {
+    const value = chosen[item2];
+    if (value !== void 0 && OFF.has(value)) return true;
+    if (value !== void 0 && ON.has(value)) return false;
+    return legacy.includes(item2) || item2 === "conventional-commits" && commits === "free";
+  });
+  return { off, commits };
+};
+var isOn = (defaults, item2) => !defaults.off.includes(item2);
+var projectDefaults = (runtime, root) => {
+  const text22 = runtime.readText(toAbsolutePath(CONFIG_FILE, root));
+  return text22.ok ? defaultsFromConfig(text22.value) : ALL_ON;
+};
+var defaultOn = (runtime, root, item2) => isOn(projectDefaults(runtime, root), item2);
+var defaultsYaml = (defaults) => {
+  const off = defaults.off.filter((item2) => item2 !== "conventional-commits");
+  return [
+    ...off.length === 0 ? [] : ["defaults:", ...off.map((item2) => `  ${item2}: off`)],
+    ...defaults.commits === void 0 ? [] : ["conventions:", `  commits: ${defaults.commits}`]
+  ];
+};
+var withoutLegacyPreset = (text22) => {
+  if (!/^preset:/m.test(text22) || /^defaults:/m.test(text22)) return text22.replace(/^preset:.*\n?/m, "");
+  const lines6 = defaultsYaml({ off: LEGACY_NEUTRAL.test(text22) ? LEGACY_NEUTRAL_OFF : [], commits: void 0 });
+  return text22.replace(/^preset:.*\n?/m, lines6.length === 0 ? "" : `${lines6.join("\n")}
+`);
 };
 
 // src/fronts/brief.ts
@@ -3187,7 +3206,7 @@ var rules = (runtime, root) => [
   "- Never copy, move or redirect files into the main checkout; the scope guard blocks it.",
   "- A file outside git used by another front is locked; write a separate file and say so in the report.",
   "- Never resolve a conflict by picking a whole side; integration goes through `finitemonkey merge`.",
-  ...projectPreset(runtime, root) === "gabriel" ? ["- No AI attribution in commits or pull requests."] : []
+  ...defaultOn(runtime, root, "no-attribution") ? ["- No AI attribution in commits or pull requests."] : []
 ];
 var reading = (runtime, root) => [
   ...READING.filter((path) => exists(runtime, root, path)).map((path) => `- \`${path}\``),
@@ -6586,7 +6605,7 @@ var listDebt = (runtime, paths) => {
     ...row2.trigger === void 0 ? {} : { trigger: row2.trigger },
     ...row2.where === void 0 ? {} : { where: row2.where }
   }));
-  const markers = projectPreset(runtime, paths.root) === "neutral" ? markerItems(runtime, paths) : [];
+  const markers = defaultOn(runtime, paths.root, "no-comments") ? [] : markerItems(runtime, paths);
   return [...closed, ...openItems(runtime, paths), ...markers].map((item2) => {
     const result = evaluateTrigger(runtime, paths.root, item2.trigger);
     return { ...item2, state: result.state, detail: result.detail };
@@ -6837,7 +6856,7 @@ var en_default = {
   "secrets.error.not_rotated": "Incident {id} is {state}: rotate the key at the provider first, then mark it rotated",
   "secrets.error.bad_transition": "Incident {id} cannot go from {from} to {to}",
   "secrets.error.write_failed": "Could not write {file}: {detail}",
-  "install.plan.title": "Finite Monkey plan for {root} (preset {preset}):",
+  "install.plan.title": "Finite Monkey plan for {root}:",
   "install.warning": "warning: {message}",
   "install.warn.not_git": "this folder is not inside a git repository; installing here anyway",
   "install.warn.wsl_mount": "{path} is on a Windows drive mounted in WSL: git and hooks run several times slower and file watching misses changes; move the project to the Linux disk (for example ~/projects) and run init there",
@@ -6871,7 +6890,6 @@ var en_default = {
   "error.install_permission_denied": "no permission to write {path} ({detail}); nothing was changed",
   "error.not_installed": "Finite Monkey is not installed in this project (no .finitemonkey/lock.json)",
   "error.install_outdated": "the files Finite Monkey manages differ from this version",
-  "error.invalid_preset": 'Unknown preset "{preset}". Use neutral or gabriel',
   "command.gate.summary": "Run the done contract and record evidence",
   "command.task_new.summary": "Create a done contract for a task",
   "command.task_show.summary": "Show a task contract and its evidence",
@@ -7054,7 +7072,7 @@ var en_default = {
   "prose.span": "lines {start}-{end}: {rules}",
   "prose.fix_item": "{rule}: {fix}",
   "prose.warn.command": "{target} reads as machine-written ({spans}). Rewrite it before sending. {fixes}. If it is brand text written on purpose, show the person two alternatives.",
-  "prose.block.command.claim": "{target} reads as machine-written ({spans}), and this project's preset does not send it. {fixes}",
+  "prose.block.command.claim": "{target} reads as machine-written ({spans}), and this project blocks it (default prose-blocks). {fixes}",
   "prose.block.command.requires": "Rewrite it and run the command again",
   "prose.block.not": "the same text with a few words swapped",
   "prose.block.human": "Held back text that reads as machine-written.",
@@ -7080,7 +7098,7 @@ var en_default = {
   "gate.require.prose": "changed Markdown does not read as machine-written",
   "gate.prose.unavailable": "could not read the changed Markdown files (git unavailable)",
   "gate.prose.finding": "{file}:{line} reads as machine-written ({rules})",
-  "gate.prose.warning": "warning only in this preset: {file}:{line} reads as machine-written ({rules})",
+  "gate.prose.warning": "warning only, prose-blocks is off in .finitemonkey/config.yml: {file}:{line} reads as machine-written ({rules})",
   "gate.prose.clean": "{count, plural, one {# changed Markdown file, it does not read} other {# changed Markdown files, none reads}} as machine-written",
   "git.command.snapshot": "Save the working tree, index and untracked files to a backup ref without touching them",
   "git.command.undo": "List the snapshots or restore one, into a new worktree by default",
@@ -7537,7 +7555,7 @@ var en_default = {
   "research.issue.version_unchecked": "version of {detail} without where it was checked or the date",
   "research.issue.no_primary": "no primary source in {detail}",
   "gate.research.clean": "new dependencies and rules have research records with primary sources",
-  "gate.research.warning_only": "warning only in this preset (research.required is off)",
+  "gate.research.warning_only": "warning only (research-first is off and research.required is not set)",
   "gate.research.dependency": "new dependency {name} has no research record that names it; run finitemonkey research new {name}",
   "gate.research.rule": "business rule paths changed ({paths}) and no research record with a primary source changed with them",
   "command.cost_init.summary": "Write docs/plan/NN-cost-model.mjs, a dependency-free cost model that writes a recalculating CSV",
@@ -8200,7 +8218,11 @@ var en_default = {
   "learnings.error.unknown": "There is no lesson {id}",
   "learnings.error.add": "A lesson needs --text and a key: --paths, --sig or both; --source is correction, advisor or person",
   "learnings.changed": "Lesson {id} updated.",
-  "learnings.added": "Lesson {id} added."
+  "learnings.added": "Lesson {id} added.",
+  "prose.rule.time-estimate": "drop the time estimate; say what is done, what is left and what blocks it",
+  "defaults.question.commits": "{conventional} of the last {total} commits here follow Conventional Commits. Use Conventional Commits from now on? [Y/n]",
+  "defaults.question.commits_pending": "Question for the person: only {conventional} of the last {total} commits follow Conventional Commits, the default here. Keep the repository's style with `finitemonkey init --yes --commits free`, or adopt the default with `--commits conventional`.",
+  "defaults.error.commits": 'Unknown commit style "{value}". Use conventional or free'
 };
 
 // src/i18n/es.json
@@ -8421,7 +8443,7 @@ var es_default = {
   "secrets.error.not_rotated": "El incidente {id} está {state}: rota la clave en el proveedor primero y luego márcalo como rotado",
   "secrets.error.bad_transition": "El incidente {id} no puede pasar de {from} a {to}",
   "secrets.error.write_failed": "No se pudo escribir {file}: {detail}",
-  "install.plan.title": "Plan de Finite Monkey para {root} (preset {preset}):",
+  "install.plan.title": "Plan de Finite Monkey para {root}:",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta carpeta no está dentro de un repositorio git; se instala aquí de todos modos",
   "install.warn.wsl_mount": "{path} está en un disco de Windows montado en WSL: git y los hooks van varias veces más lentos y la vigilancia de archivos pierde cambios; mueve el proyecto al disco de Linux (por ejemplo ~/proyectos) y ejecuta init allí",
@@ -8455,7 +8477,6 @@ var es_default = {
   "error.install_permission_denied": "sin permiso para escribir {path} ({detail}); no se cambió nada",
   "error.not_installed": "Finite Monkey no está instalado en este proyecto (no hay .finitemonkey/lock.json)",
   "error.install_outdated": "los archivos que gestiona Finite Monkey difieren de esta versión",
-  "error.invalid_preset": 'Preset desconocido "{preset}". Usa neutral o gabriel',
   "command.gate.summary": "Ejecuta el contrato de terminado y registra la evidencia",
   "command.task_new.summary": "Crea un contrato de terminado para una tarea",
   "command.task_show.summary": "Muestra el contrato de una tarea y su evidencia",
@@ -8638,7 +8659,7 @@ var es_default = {
   "prose.span": "líneas {start}-{end}: {rules}",
   "prose.fix_item": "{rule}: {fix}",
   "prose.warn.command": "{target} parece escrito por IA ({spans}). Reescríbelo antes de enviarlo. {fixes}. Si es texto de marca escrito a propósito, muéstrale dos alternativas a la persona.",
-  "prose.block.command.claim": "{target} parece escrito por IA ({spans}), y el preset de este proyecto no deja enviarlo. {fixes}",
+  "prose.block.command.claim": "{target} parece escrito por IA ({spans}), y este proyecto lo bloquea (predeterminado prose-blocks). {fixes}",
   "prose.block.command.requires": "Reescríbelo y vuelve a ejecutar el comando",
   "prose.block.not": "el mismo texto con algunas palabras cambiadas",
   "prose.block.human": "Retuve un texto que parece escrito por una máquina.",
@@ -8664,7 +8685,7 @@ var es_default = {
   "gate.require.prose": "el Markdown cambiado no parece escrito por una máquina",
   "gate.prose.unavailable": "no se pudieron leer los archivos Markdown cambiados (git no disponible)",
   "gate.prose.finding": "{file}:{line} parece escrito por una máquina ({rules})",
-  "gate.prose.warning": "solo aviso en este preset: {file}:{line} parece escrito por una máquina ({rules})",
+  "gate.prose.warning": "solo aviso, prose-blocks está apagado en .finitemonkey/config.yml: {file}:{line} parece escrito por una máquina ({rules})",
   "gate.prose.clean": "{count, plural, one {# archivo Markdown cambiado, no parece escrito} other {# archivos Markdown cambiados, ninguno parece escrito}} por una máquina",
   "git.command.snapshot": "Guarda el árbol de trabajo, el índice y los archivos sin seguimiento en una ref de respaldo sin tocarlos",
   "git.command.undo": "Lista las instantáneas o restaura una, por defecto en un worktree nuevo",
@@ -9121,7 +9142,7 @@ var es_default = {
   "research.issue.version_unchecked": "versión de {detail} sin dónde se comprobó o la fecha",
   "research.issue.no_primary": "ninguna fuente primaria en {detail}",
   "gate.research.clean": "las dependencias y reglas nuevas tienen registro de investigación con fuente primaria",
-  "gate.research.warning_only": "solo aviso en este preset (research.required desactivado)",
+  "gate.research.warning_only": "solo aviso (research-first apagado y research.required sin definir)",
   "gate.research.dependency": "la dependencia nueva {name} no tiene registro de investigación que la nombre; ejecuta finitemonkey research new {name}",
   "gate.research.rule": "rutas de reglas de negocio cambiaron ({paths}) y ningún registro de investigación con fuente primaria cambió con ellas",
   "command.cost_init.summary": "Escribe docs/plan/NN-cost-model.mjs, un modelo de costo sin dependencias que genera un CSV que recalcula",
@@ -9784,7 +9805,11 @@ var es_default = {
   "learnings.error.unknown": "No existe la lección {id}",
   "learnings.error.add": "Una lección necesita --text y una clave: --paths, --sig o ambas; --source es correction, advisor o person",
   "learnings.changed": "Lección {id} actualizada.",
-  "learnings.added": "Lección {id} agregada."
+  "learnings.added": "Lección {id} agregada.",
+  "prose.rule.time-estimate": "quita la estimación de tiempo; di qué está hecho, qué falta y qué lo bloquea",
+  "defaults.question.commits": "{conventional} de los últimos {total} commits aquí siguen Conventional Commits. ¿Usar Conventional Commits de ahora en adelante? [S/n]",
+  "defaults.question.commits_pending": "Pregunta para la persona: solo {conventional} de los últimos {total} commits siguen Conventional Commits, el predeterminado aquí. Mantén el estilo del repositorio con `finitemonkey init --yes --commits free`, o adopta el predeterminado con `--commits conventional`.",
+  "defaults.error.commits": 'Estilo de commit desconocido "{value}". Usa conventional o free'
 };
 
 // src/i18n/pt-BR.json
@@ -10005,7 +10030,7 @@ var pt_BR_default = {
   "secrets.error.not_rotated": "O incidente {id} está {state}: troque a chave no provedor primeiro e depois marque como rotacionado",
   "secrets.error.bad_transition": "O incidente {id} não pode ir de {from} para {to}",
   "secrets.error.write_failed": "Não foi possível gravar {file}: {detail}",
-  "install.plan.title": "Plano do Finite Monkey para {root} (preset {preset}):",
+  "install.plan.title": "Plano do Finite Monkey para {root}:",
   "install.warning": "aviso: {message}",
   "install.warn.not_git": "esta pasta não está dentro de um repositório git; instalando aqui mesmo assim",
   "install.warn.wsl_mount": "{path} está num disco do Windows montado no WSL: git e hooks ficam várias vezes mais lentos e a observação de arquivos perde mudanças; mova o projeto para o disco do Linux (por exemplo ~/projetos) e rode o init lá",
@@ -10039,7 +10064,6 @@ var pt_BR_default = {
   "error.install_permission_denied": "sem permissão para gravar {path} ({detail}); nada foi alterado",
   "error.not_installed": "O Finite Monkey não está instalado neste projeto (sem .finitemonkey/lock.json)",
   "error.install_outdated": "os arquivos que o Finite Monkey gerencia diferem desta versão",
-  "error.invalid_preset": 'Preset desconhecido "{preset}". Use neutral ou gabriel',
   "command.gate.summary": "Roda o contrato de pronto e grava a evidência",
   "command.task_new.summary": "Cria um contrato de pronto para uma tarefa",
   "command.task_show.summary": "Mostra o contrato de uma tarefa e a evidência dele",
@@ -10222,7 +10246,7 @@ var pt_BR_default = {
   "prose.span": "linhas {start}-{end}: {rules}",
   "prose.fix_item": "{rule}: {fix}",
   "prose.warn.command": "{target} tem cara de texto de IA ({spans}). Reescreva antes de enviar. {fixes}. Se for texto de marca escrito de propósito, mostre duas alternativas à pessoa.",
-  "prose.block.command.claim": "{target} tem cara de texto de IA ({spans}), e o preset deste projeto não deixa enviar. {fixes}",
+  "prose.block.command.claim": "{target} tem cara de texto de IA ({spans}), e este projeto bloqueia isso (padrão prose-blocks). {fixes}",
   "prose.block.command.requires": "Reescreva e rode o comando de novo",
   "prose.block.not": "o mesmo texto com algumas palavras trocadas",
   "prose.block.human": "Segurei um texto com cara de escrito por máquina.",
@@ -10248,7 +10272,7 @@ var pt_BR_default = {
   "gate.require.prose": "Markdown alterado sem cara de texto de máquina",
   "gate.prose.unavailable": "não deu para ler os arquivos Markdown alterados (git indisponível)",
   "gate.prose.finding": "{file}:{line} tem cara de texto de máquina ({rules})",
-  "gate.prose.warning": "só aviso neste preset: {file}:{line} tem cara de texto de máquina ({rules})",
+  "gate.prose.warning": "só aviso, prose-blocks está desligado em .finitemonkey/config.yml: {file}:{line} tem cara de texto de máquina ({rules})",
   "gate.prose.clean": "{count, plural, one {# arquivo Markdown alterado, sem cara} other {# arquivos Markdown alterados, nenhum com cara}} de texto de máquina",
   "git.command.snapshot": "Salva árvore de trabalho, índice e arquivos não rastreados numa ref de backup sem mexer neles",
   "git.command.undo": "Lista as fotografias ou restaura uma, por padrão num worktree novo",
@@ -10705,7 +10729,7 @@ var pt_BR_default = {
   "research.issue.version_unchecked": "versão de {detail} sem onde foi conferida ou a data",
   "research.issue.no_primary": "nenhuma fonte primária em {detail}",
   "gate.research.clean": "dependências e regras novas têm registro de pesquisa com fonte primária",
-  "gate.research.warning_only": "só aviso neste preset (research.required desligado)",
+  "gate.research.warning_only": "só aviso (research-first desligado e research.required não definido)",
   "gate.research.dependency": "a dependência nova {name} não tem registro de pesquisa que a cite; rode finitemonkey research new {name}",
   "gate.research.rule": "caminhos de regra de negócio mudaram ({paths}) e nenhum registro de pesquisa com fonte primária mudou junto",
   "command.cost_init.summary": "Grava docs/plan/NN-cost-model.mjs, um modelo de custo sem dependências que gera um CSV que recalcula",
@@ -11368,7 +11392,11 @@ var pt_BR_default = {
   "learnings.error.unknown": "Não existe a lição {id}",
   "learnings.error.add": "Uma lição precisa de --text e de uma chave: --paths, --sig ou os dois; --source é correction, advisor ou person",
   "learnings.changed": "Lição {id} atualizada.",
-  "learnings.added": "Lição {id} adicionada."
+  "learnings.added": "Lição {id} adicionada.",
+  "prose.rule.time-estimate": "tire a estimativa de tempo; diga o que está pronto, o que falta e o que bloqueia",
+  "defaults.question.commits": "{conventional} dos últimos {total} commits aqui seguem Conventional Commits. Usar Conventional Commits daqui em diante? [S/n]",
+  "defaults.question.commits_pending": "Pergunta para a pessoa: só {conventional} dos últimos {total} commits seguem Conventional Commits, o padrão aqui. Mantenha o estilo do repositório com `finitemonkey init --yes --commits free`, ou adote o padrão com `--commits conventional`.",
+  "defaults.error.commits": 'Estilo de commit desconhecido "{value}". Use conventional ou free'
 };
 
 // src/i18n/review.json
@@ -11624,7 +11652,6 @@ var review_default = {
     "error.install_permission_denied": "machine",
     "error.not_installed": "machine",
     "error.install_outdated": "machine",
-    "error.invalid_preset": "machine",
     "command.gate.summary": "machine",
     "command.task_new.summary": "machine",
     "command.task_show.summary": "machine",
@@ -12953,7 +12980,11 @@ var review_default = {
     "learnings.error.unknown": "machine",
     "learnings.error.add": "machine",
     "learnings.changed": "machine",
-    "learnings.added": "machine"
+    "learnings.added": "machine",
+    "prose.rule.time-estimate": "machine",
+    "defaults.question.commits": "machine",
+    "defaults.question.commits_pending": "machine",
+    "defaults.error.commits": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -13206,7 +13237,6 @@ var review_default = {
     "error.install_permission_denied": "machine",
     "error.not_installed": "machine",
     "error.install_outdated": "machine",
-    "error.invalid_preset": "machine",
     "command.gate.summary": "machine",
     "command.task_new.summary": "machine",
     "command.task_show.summary": "machine",
@@ -14535,7 +14565,11 @@ var review_default = {
     "learnings.error.unknown": "machine",
     "learnings.error.add": "machine",
     "learnings.changed": "machine",
-    "learnings.added": "machine"
+    "learnings.added": "machine",
+    "prose.rule.time-estimate": "machine",
+    "defaults.question.commits": "machine",
+    "defaults.question.commits_pending": "machine",
+    "defaults.error.commits": "machine"
   }
 };
 
@@ -15605,6 +15639,33 @@ import { dirname as dirname6 } from "node:path";
 import { createHash as createHash2 } from "node:crypto";
 var hashText = (text22) => `sha256:${createHash2("sha256").update(text22, "utf8").digest("hex")}`;
 
+// src/install/layout.ts
+var STATE_DIR = ".finitemonkey";
+var SETTINGS_FILE = ".claude/settings.json";
+var GITIGNORE_FILE = ".gitignore";
+var CONFIG_FILE2 = ".finitemonkey/config.yml";
+var LOCK_FILE = ".finitemonkey/lock.json";
+var BACKUPS_DIR = ".finitemonkey/backups";
+var LOCKS_DIR = ".finitemonkey/locks";
+var INSTALL_LOCK = ".finitemonkey/locks/install.lock";
+var VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
+var LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
+var VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
+var VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
+var LOCK_SCHEMA = "finitemonkey/lock@1";
+var PLAN_SCHEMA = "finitemonkey/install-plan@1";
+var GENERATED_MARKER = "finitemonkey:generated v=1";
+var BLOCK_BEGIN = "# finitemonkey:begin v=1";
+var BLOCK_END = "# finitemonkey:end";
+var MD_BLOCK_BEGIN = "<!-- finitemonkey:begin v=1 -->";
+var MD_BLOCK_END = "<!-- finitemonkey:end -->";
+var AGENTS_FILE = "AGENTS.md";
+var CLAUDE_FILE = "CLAUDE.md";
+var AGENTS_IMPORT = "@AGENTS.md";
+var AGENTS_MAX_LINES = 60;
+var INSTALL_LOCK_STALE_MS = 5 * 60 * 1e3;
+var COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"];
+
 // src/install/hook-entries.ts
 var INSTALLED_HOOKS = [
   { event: "SessionStart", timeout: 30, guard: false },
@@ -15734,18 +15795,15 @@ var parseEntries = (value) => {
   return entries2.every((entry2) => entry2 !== void 0) ? entries2 : void 0;
 };
 var fromRecord = (record7) => {
-  const { schema, version, preset, installedAt, updatedAt } = record7;
-  const known3 = PRESETS.find((item2) => item2 === preset);
+  const { schema, version, installedAt, updatedAt } = record7;
   const entries2 = parseEntries(record7["entries"]);
   const createdDirs = strings6(record7["createdDirs"]);
   if (schema !== LOCK_SCHEMA) return reject(`schema is not ${LOCK_SCHEMA}`);
   if (typeof version !== "string" || typeof installedAt !== "string" || typeof updatedAt !== "string") {
     return reject("version, installedAt and updatedAt must be text");
   }
-  if (known3 === void 0 || entries2 === void 0 || createdDirs === void 0) {
-    return reject("preset, entries or createdDirs is malformed");
-  }
-  return accept({ schema, version, preset: known3, installedAt, updatedAt, createdDirs, entries: entries2 });
+  if (entries2 === void 0 || createdDirs === void 0) return reject("entries or createdDirs is malformed");
+  return accept({ schema, version, installedAt, updatedAt, createdDirs, entries: entries2 });
 };
 var parseLock = (text22) => {
   const parsed = parseJsonObject(text22);
@@ -15865,12 +15923,12 @@ var ptBR = {
 var TEMPLATES = { en, "pt-BR": ptBR, es };
 
 // src/install/config-template.ts
-var configTemplate = (preset, lang) => [
+var configTemplate = (defaults, lang) => [
   `# ${GENERATED_MARKER}`,
   `# ${TEMPLATES[lang].configHeader}`,
   "schemaVersion: 1",
-  `preset: ${preset}`,
   `lang: ${lang}`,
+  ...defaultsYaml(defaults),
   ""
 ].join("\n");
 var hasMarker = (text22) => text22.includes(GENERATED_MARKER);
@@ -16424,7 +16482,9 @@ var applyMigrations = (items, previous, version, migrations) => {
 };
 
 // src/install/migrations/index.ts
-var MIGRATIONS = [];
+var MIGRATIONS = [
+  { version: "0.1.0-next.40", files: [{ path: CONFIG_FILE2, migrate: withoutLegacyPreset }] }
+];
 
 // src/install/policy-template.ts
 var policyTemplate = (lang) => [
@@ -16663,7 +16723,7 @@ var settingsItem = (project, detection, input, previous) => {
     hooks,
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
-    attributionOff: input.preset === "gabriel",
+    attributionOff: isOn(input.defaults, "no-attribution"),
     marketplace: input.marketplace,
     language: input.claudeLanguage,
     statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current2.value, input.env) }
@@ -16726,7 +16786,7 @@ var playwrightVerifier = (project) => {
 };
 var generatedFiles = (project, input, runner, vendor) => {
   const own = [
-    { path: CONFIG_FILE2, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
+    { path: CONFIG_FILE2, template: configTemplate(input.defaults, input.lang), isOurs: hasMarker },
     { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill },
     { path: POLICY_FILE, template: policyTemplate(input.lang), isOurs: hasMarker },
     ...playwrightVerifier(project)
@@ -16748,7 +16808,7 @@ var buildPlan = (project, detection, input, previous, migrations = MIGRATIONS) =
   return accept({
     detection,
     sandbox,
-    preset: input.preset,
+    defaults: input.defaults,
     items: applyMigrations(
       [
         settings.value,
@@ -16810,7 +16870,6 @@ var entryOf4 = (plan, item2, backupDir) => {
 var nextLock = (plan, version, now, backupDir, createdDirs, only3) => ({
   schema: LOCK_SCHEMA,
   version,
-  preset: plan.preset,
   installedAt: plan.previous?.installedAt ?? now,
   updatedAt: now,
   createdDirs: [.../* @__PURE__ */ new Set([...plan.previous?.createdDirs ?? [], ...createdDirs])],
@@ -16953,17 +17012,14 @@ var applyProblem = (failure5) => PERMISSION.test(failure5.detail) ? problem(
 });
 var notInstalled = () => problem("not_installed", "error.not_installed", "finitemonkey init", ExitCode.NotConfigured, {});
 var confirmProblem = (command, question, fix) => problem("needs_confirmation", "error.needs_confirmation", fix, ExitCode.NeedsPerson, { command, question });
-var invalidPreset = (raw) => problem("invalid_arguments", "error.invalid_preset", "finitemonkey init --preset neutral", ExitCode.Usage, {
-  preset: raw
-});
 var selfBundle = (ctx) => {
   if (!isBundlePath(ctx.runtime.selfPath)) return void 0;
   const text22 = ctx.runtime.readText(ctx.runtime.selfPath);
   return text22.ok ? text22.value : void 0;
 };
 var INHERITED = /* @__PURE__ */ new Set(["default", "config", "claude-settings"]);
-var planInputFor = (ctx, preset, bin, marketplace, sandbox = false) => ({
-  preset,
+var planInputFor = (ctx, defaults, bin, marketplace, sandbox = false) => ({
+  defaults,
   lang: ctx.lang,
   claudeLanguage: INHERITED.has(ctx.langSource) ? void 0 : CLAUDE_LANGUAGE[ctx.lang],
   bin,
@@ -16985,7 +17041,7 @@ var applyFixes = (ctx, write4) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return reject({ kind: "plan", error: previous.error });
   if (previous.value === void 0) return accept({ installed: false, written: [], backup: void 0 });
-  const input = planInputFor(ctx, previous.value.preset, void 0, false);
+  const input = planInputFor(ctx, projectDefaults(ctx.runtime, project.root), void 0, false);
   const plan = buildPlan(project, detect(project, gitRoot2, input), input, previous.value);
   if (!plan.ok) return reject({ kind: "plan", error: plan.error });
   const pending = plan.value.items.filter((item2) => CHANGING.includes(item2.action) && fixable.includes(item2.path));
@@ -17028,7 +17084,7 @@ var readSettings = (env) => settingsPaths(env).flatMap(({ scope: scope2, path })
   return parsed?.ok === true ? [{ scope: scope2, path, settings: parsed.value }] : [];
 });
 var scopesWith = (all, test) => all.filter(({ settings }) => test(settings)).map(({ scope: scope2 }) => scope2);
-var isOn = (key2) => (settings) => settings[key2] === true;
+var isOn2 = (key2) => (settings) => settings[key2] === true;
 var denyRules = (all) => all.flatMap(
   ({ settings }) => asList(asRecord(settings["permissions"])["deny"]).filter((rule) => typeof rule === "string")
 );
@@ -17398,7 +17454,7 @@ var AGENT_TEAMS_VAR = "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS";
 var LOOP_PLUGINS2 = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
 var DAY_MS5 = 24 * 60 * 60 * 1e3;
 var scopeCheck = (all, key2, build) => {
-  const scopes = scopesWith(all, isOn(key2));
+  const scopes = scopesWith(all, isOn2(key2));
   return scopes.length === 0 ? [] : [build(scopes.join(", "))];
 };
 var hookSwitches = (all) => [
@@ -25203,6 +25259,48 @@ var structureHits = (units) => [
   ...dashes(units)
 ];
 
+// src/prose/time-estimate.ts
+var CUE = [
+  "eta",
+  "estimated? (?:at )?",
+  "estimates?",
+  "takes?",
+  "will take",
+  "should take",
+  "would take",
+  "about",
+  "around",
+  "roughly",
+  "approximately",
+  "~",
+  "leva",
+  "levará",
+  "levaria",
+  "deve levar",
+  "cerca de",
+  "aproximadamente",
+  "estimativa(?: de)?",
+  "prazo(?: de)?",
+  "tarda",
+  "tardará",
+  "lleva",
+  "llevará",
+  "estimación(?: de)?",
+  "plazo(?: de)?",
+  "unos",
+  "unas"
+].join("|");
+var UNIT = "minutes?|mins?|hours?|hrs?|h|days?|weeks?|months?|sprints?|minutos?|horas?|dias?|días?|semanas?|meses|mês";
+var AMOUNT = "\\d+(?:[.,]\\d+)?(?:\\s*(?:-|–|to|a|ou|or|o)\\s*\\d+(?:[.,]\\d+)?)?";
+var timeEstimateRules = lazy(() => [
+  {
+    rule: "time-estimate",
+    weight: DENSITY_THRESHOLD,
+    patterns: [phrases(`(?:${CUE})\\s*:?\\s*${AMOUNT}\\s*(?:${UNIT})`), phrases("eta:?")]
+  }
+]);
+var PLAN_OR_REPORT = /(?:^|\/)(?:docs\/plan|reports?)\/|(?:^|\/)[^/]*(?:PLAN|REPORT|RELATORIO|RELATÓRIO|INFORME)[^/]*$/i;
+
 // src/prose/score.ts
 var phraseHits = (units, catalog) => units.flatMap(
   (unit, index) => catalog.flatMap(({ rule, weight: weight2, patterns }) => {
@@ -25249,7 +25347,11 @@ var scoreProse = (text22, options = {}) => {
   const { units, allowed: allowed2 } = extractProse(text22);
   const size = options.window ?? DENSITY_WINDOW;
   const threshold2 = options.threshold ?? DENSITY_THRESHOLD;
-  const catalog = options.context === "record" ? [...phraseRules(), ...recordRules()] : phraseRules();
+  const catalog = [
+    ...phraseRules(),
+    ...options.context === "record" ? recordRules() : [],
+    ...options.timeEstimates === true ? timeEstimateRules() : []
+  ];
   const hits = [...phraseHits(units, catalog), ...structureHits(units)].sort(byPosition);
   const spans = mergeSpans(hits, hotWindows(hits, units, size, threshold2));
   return { hits, spans, allowed: allowed2 };
@@ -25277,10 +25379,15 @@ var changedMarkdown = (runtime, root) => {
 };
 var scoreFiles = (runtime, root, files, forced) => {
   const reports = [];
+  const estimates = defaultOn(runtime, root, "no-time-estimates");
   for (const file of files) {
     const text22 = runtime.readText(toAbsolutePath(file, root));
     if (!text22.ok) return reject(`${file}: ${text22.error}`);
-    reports.push({ file: toPosixPath(file), report: scoreProse(text22.value, { context: forced ?? contextOf(file) }) });
+    const options = {
+      context: forced ?? contextOf(file),
+      timeEstimates: estimates && PLAN_OR_REPORT.test(toPosixPath(file))
+    };
+    reports.push({ file: toPosixPath(file), report: scoreProse(text22.value, options) });
   }
   return accept(reports);
 };
@@ -25292,7 +25399,7 @@ var proseGateStatus = (runtime, root) => {
   return accept({
     files: files.value,
     flagged: files.value.filter((item2) => isFlagged(item2.report)),
-    blocking: projectPreset(runtime, root) === "gabriel"
+    blocking: defaultOn(runtime, root, "prose-blocks")
   });
 };
 
@@ -25816,7 +25923,7 @@ var addedDependencies = (ctx) => ctx.changes.filter((change2) => change2.status 
 
 // src/gate/checks/research.ts
 var MAX_LISTED12 = 10;
-var required = (ctx) => projectPreset(ctx.runtime, ctx.paths.root) === "gabriel" || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
+var required = (ctx) => defaultOn(ctx.runtime, ctx.paths.root, "research-first") || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records2 = researchRecords(ctx.runtime, ctx.paths.root);
   const valid = records2.filter((record7) => record7.issues.length === 0);
@@ -28921,7 +29028,7 @@ var mergeDecision = (input, command, text22) => {
 };
 var branchDecision = (input, name) => {
   if (isConventionalBranch(name)) return ALLOW12;
-  if (projectPreset(input.runtime, input.cwd) === "gabriel") return block2(input, "git.block.branch_name", name);
+  if (defaultOn(input.runtime, input.cwd, "branch-names")) return block2(input, "git.block.branch_name", name);
   const context = input.t("pr.warn.branch", { name });
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
 };
@@ -31337,7 +31444,8 @@ var RULE_FIX_KEYS = {
   "person-as-reason": "prose.rule.person-as-reason",
   "origin-project": "prose.rule.origin-project",
   "first-person": "prose.rule.first-person",
-  padding: "prose.rule.padding"
+  padding: "prose.rule.padding",
+  "time-estimate": "prose.rule.time-estimate"
 };
 var MAX_SPANS = 3;
 var MAX_FIXES = 3;
@@ -31407,7 +31515,7 @@ var proseCommandGuard = (input) => {
   if (!SHELLS4.has(toolName2(input.payload))) return ALLOW20;
   const found = proseInCommand(optionalString(toolInput2(input.payload), "command") ?? "");
   if (found.length === 0) return ALLOW20;
-  const blocking3 = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
+  const blocking3 = defaultOn(input.runtime, projectRoot(input), "prose-blocks");
   for (const item2 of found) {
     const decision2 = decisionFor(input, item2, blocking3);
     if (decision2 !== void 0) return decision2;
@@ -31648,6 +31756,43 @@ var RELAY_HANDLERS = { UserPromptSubmit: [relayDetector] };
 // src/reminders/hooks.ts
 import { dirname as dirname13, relative as relative14 } from "node:path";
 
+// src/rules/manifest.ts
+var MANIFEST_FILE = ".finitemonkey/rules-compiled.json";
+var SURFACES = ["guard", "config", "git", "ci", "text"];
+var EMPTY_MANIFEST = { schemaVersion: 1, rules: {}, presenceHook: false, workflow: void 0 };
+var strings9 = (value) => Array.isArray(value) ? value.filter((item2) => typeof item2 === "string") : [];
+var compiledOf = (value) => {
+  if (!isRecord(value)) return void 0;
+  const settings = value["settings"];
+  return {
+    surfaces: strings9(value["surfaces"]).filter(
+      (item2) => SURFACES.some((surface) => surface === item2)
+    ),
+    deny: strings9(value["deny"]),
+    settings: isRecord(settings) ? settings : {}
+  };
+};
+var readManifest = (runtime, root) => {
+  const text22 = runtime.readText(toAbsolutePath(MANIFEST_FILE, root));
+  const parsed = text22.ok ? parseJsonObject(text22.value) : void 0;
+  if (parsed?.ok !== true) return EMPTY_MANIFEST;
+  const rules2 = isRecord(parsed.value["rules"]) ? parsed.value["rules"] : {};
+  const workflow = parsed.value["workflow"];
+  return {
+    schemaVersion: 1,
+    rules: Object.fromEntries(
+      Object.entries(rules2).flatMap(([id, value]) => {
+        const compiled = compiledOf(value);
+        return compiled === void 0 ? [] : [[id, compiled]];
+      })
+    ),
+    presenceHook: parsed.value["presenceHook"] === true,
+    workflow: typeof workflow === "string" ? workflow : void 0
+  };
+};
+var writeManifest = (runtime, root, manifest) => runtime.writeText(toAbsolutePath(MANIFEST_FILE, root), `${JSON.stringify(manifest, null, 2)}
+`);
+
 // src/rules/types.ts
 var RULES_FILE = ".finitemonkey/rules.yml";
 var SEVERITIES3 = ["never", "must", "prefer"];
@@ -31734,7 +31879,7 @@ var loadRules = (runtime, root, presets = {}) => {
 var NO_ATTRIBUTION = {
   id: "no-attribution",
   text: "No AI attribution in commits or pull requests: no Co-Authored-By for AI tools, no Generated with footer, no robot emoji",
-  origin: "finitemonkey preset",
+  origin: "finitemonkey default",
   severity: "never",
   detector: { kind: "attribution" },
   settings: { attribution: { ...ATTRIBUTION_OFF } },
@@ -31746,11 +31891,10 @@ var PRESET_RULES = { attribution: NO_ATTRIBUTION };
 var effectiveRules = (runtime, root) => {
   const declared = loadRules(runtime, root, PRESET_RULES);
   if (!declared.ok) return declared;
-  const config = runtime.readText(toAbsolutePath(CONFIG_FILE2, root));
-  const strict = config.ok && presetFromConfig(config.value) !== "neutral";
-  const missing3 = strict && !declared.value.some((rule) => rule.id === NO_ATTRIBUTION.id);
+  const missing3 = defaultOn(runtime, root, "no-attribution") && !declared.value.some((rule) => rule.id === NO_ATTRIBUTION.id);
   return accept(missing3 ? [...declared.value, NO_ATTRIBUTION] : declared.value);
 };
+var coverageRules = (runtime, root) => runtime.readText(toAbsolutePath(MANIFEST_FILE, root)).ok ? effectiveRules(runtime, root) : loadRules(runtime, root, PRESET_RULES);
 
 // src/rules/violations.ts
 import { join as join84 } from "node:path";
@@ -32354,43 +32498,6 @@ var RICOCHETE_HANDLERS = { Stop: [horizonGuard, perturbationReport] };
 // src/rules/guard.ts
 import { join as join88, relative as relative16 } from "node:path";
 
-// src/rules/manifest.ts
-var MANIFEST_FILE = ".finitemonkey/rules-compiled.json";
-var SURFACES = ["guard", "config", "git", "ci", "text"];
-var EMPTY_MANIFEST = { schemaVersion: 1, rules: {}, presenceHook: false, workflow: void 0 };
-var strings9 = (value) => Array.isArray(value) ? value.filter((item2) => typeof item2 === "string") : [];
-var compiledOf = (value) => {
-  if (!isRecord(value)) return void 0;
-  const settings = value["settings"];
-  return {
-    surfaces: strings9(value["surfaces"]).filter(
-      (item2) => SURFACES.some((surface) => surface === item2)
-    ),
-    deny: strings9(value["deny"]),
-    settings: isRecord(settings) ? settings : {}
-  };
-};
-var readManifest = (runtime, root) => {
-  const text22 = runtime.readText(toAbsolutePath(MANIFEST_FILE, root));
-  const parsed = text22.ok ? parseJsonObject(text22.value) : void 0;
-  if (parsed?.ok !== true) return EMPTY_MANIFEST;
-  const rules2 = isRecord(parsed.value["rules"]) ? parsed.value["rules"] : {};
-  const workflow = parsed.value["workflow"];
-  return {
-    schemaVersion: 1,
-    rules: Object.fromEntries(
-      Object.entries(rules2).flatMap(([id, value]) => {
-        const compiled = compiledOf(value);
-        return compiled === void 0 ? [] : [[id, compiled]];
-      })
-    ),
-    presenceHook: parsed.value["presenceHook"] === true,
-    workflow: typeof workflow === "string" ? workflow : void 0
-  };
-};
-var writeManifest = (runtime, root, manifest) => runtime.writeText(toAbsolutePath(MANIFEST_FILE, root), `${JSON.stringify(manifest, null, 2)}
-`);
-
 // src/githooks/commit-msg.ts
 var COMMIT_TYPES = [
   "feat",
@@ -32421,11 +32528,12 @@ var hasAttribution = (body2) => {
   const coAuthors = coAuthor === void 0 ? [] : body2.match(coAuthor) ?? [];
   return coAuthors.some((line11) => AI_NAMES.test(line11)) || rest.some((pattern) => pattern.test(body2));
 };
-var commitMessageProblems = (message) => {
+var isConventionalHeader = (header2) => EXEMPT.test(header2) || HEADER2.test(header2);
+var commitMessageProblems = (message, conventional = true) => {
   const lines6 = meaningful2(message);
   const header2 = lines6.find((line11) => line11.trim() !== "") ?? "";
   const problems = [];
-  if (!EXEMPT.test(header2) && !HEADER2.test(header2)) problems.push("header");
+  if (conventional && !isConventionalHeader(header2)) problems.push("header");
   if (header2.length > MAX_HEADER) problems.push("header_length");
   if (hasAttribution(lines6.join("\n"))) problems.push("attribution");
   return problems;
@@ -35423,7 +35531,7 @@ var confirmable = (proposal) => proposal.kind === "new" || proposal.detector !==
 
 // src/doctor/rules.ts
 var checkRules = ({ root, runtime }) => {
-  const rules2 = effectiveRules(runtime, root);
+  const rules2 = coverageRules(runtime, root);
   if (!rules2.ok)
     return [
       finding("rules.file", "fail", "rules.error.invalid", { file: ".finitemonkey/rules.yml", detail: rules2.error })
@@ -37365,9 +37473,10 @@ var secretsInRange = (runtime, root, range) => {
 var RECORD = "";
 var commitMessagesInRange = (runtime, root, range) => {
   const log = runtime.git(["log", "--no-merges", `--format=%H%x00%B${RECORD}`, ...range, "--"], root);
+  const conventional = defaultOn(runtime, root, "conventional-commits");
   const failures = log.ok ? log.stdout.split(RECORD).map((record7) => record7.replace(/^\n/, "")).filter((record7) => record7.includes("\0")).flatMap((record7) => {
     const [sha = "", body2 = ""] = record7.split("\0");
-    return commitMessageProblems(body2).map((problem5) => `${short2(sha)} ${problem5}`);
+    return commitMessageProblems(body2, conventional).map((problem5) => `${short2(sha)} ${problem5}`);
   }) : [`git log ${range.join(" ")} failed`];
   return { id: "commit-messages", failures, fix: "git rebase -i <base> and reword the listed commits" };
 };
@@ -37555,7 +37664,10 @@ var commitMsgCommand = {
           usageProblem("invalid_arguments", "error.invalid_arguments", COMMIT_MSG_USAGE, { detail: file })
         )
       );
-    const failures = commitMessageProblems(text22.value);
+    const failures = commitMessageProblems(
+      text22.value,
+      defaultOn(ctx.runtime, projectRoot(ctx), "conventional-commits")
+    );
     const fix = "git commit --amend, using type(scope): subject and no AI attribution lines";
     return Promise.resolve(
       checksResult(ctx.t, COMMIT_MSG_SCHEMA, "githook_failed", [
@@ -38384,6 +38496,80 @@ var i18nCheckCommand = {
   }
 };
 
+// src/perfil/lines.ts
+var lineReader = (source) => {
+  const ready = [];
+  const waiting = [];
+  let buffer = "";
+  let ended = false;
+  const push = (line11) => {
+    const next2 = waiting.shift();
+    if (next2 !== void 0) next2(line11);
+    else if (line11 !== void 0) ready.push(line11);
+  };
+  source.setEncoding?.("utf8");
+  source.on("data", (chunk) => {
+    buffer += typeof chunk === "string" ? chunk : chunk.toString("utf8");
+    const parts = buffer.split(/\r?\n/);
+    buffer = parts.pop() ?? "";
+    for (const part2 of parts) push(part2);
+  });
+  const finish5 = () => {
+    if (ended) return;
+    ended = true;
+    if (buffer !== "") push(buffer);
+    buffer = "";
+    while (waiting.length > 0) push(void 0);
+  };
+  source.on("end", finish5);
+  source.on("error", finish5);
+  return () => {
+    const line11 = ready.shift();
+    if (line11 !== void 0) return Promise.resolve(line11);
+    if (ended) return Promise.resolve(void 0);
+    return new Promise((resolve4) => {
+      waiting.push(resolve4);
+    });
+  };
+};
+
+// src/defaults/detect.ts
+var SAMPLE_COMMITS = 30;
+var MIN_COMMITS = 10;
+var CONVENTIONAL_SHARE = 0.5;
+var detectCommitStyle = (runtime, root) => {
+  const log = runtime.git(["log", "-n", String(SAMPLE_COMMITS), "--no-merges", "--format=%s"], root);
+  if (!log.ok) return void 0;
+  const subjects = log.stdout.split("\n").filter((line11) => line11.trim() !== "");
+  if (subjects.length < MIN_COMMITS) return void 0;
+  const conventional = subjects.filter(isConventionalHeader).length;
+  const style = conventional / subjects.length >= CONVENTIONAL_SHARE ? "conventional" : "free";
+  return { style, conventional, total: subjects.length };
+};
+
+// src/defaults/question.ts
+var NO = /* @__PURE__ */ new Set(["n", "no", "não", "nao"]);
+var parseCommitStyle = (raw) => COMMIT_STYLES.find((style) => style === raw);
+var commitsAnswer = async (ctx, flag2) => {
+  if (flag2 !== void 0) return { kind: "given", style: flag2 };
+  const root = projectRoot(ctx);
+  if (projectDefaults(ctx.runtime, root).commits !== void 0) return { kind: "none" };
+  const detected = detectCommitStyle(ctx.runtime, root);
+  if (detected?.style !== "free") return { kind: "none" };
+  if (!isPerson(ctx)) return { kind: "pending", detected };
+  ctx.io.stderr.write(`${ctx.t("defaults.question.commits", { ...detected })} `);
+  const answer2 = (await lineReader(ctx.io.stdin)())?.trim().toLowerCase() ?? "";
+  return { kind: "given", style: NO.has(answer2) ? "free" : "conventional" };
+};
+var withCommits = (defaults, answer2) => {
+  if (answer2.kind !== "given") return defaults;
+  const off = defaults.off.filter((item2) => item2 !== "conventional-commits");
+  return {
+    off: answer2.style === "free" ? [...off, "conventional-commits"] : off,
+    commits: answer2.style
+  };
+};
+
 // src/github/step.ts
 var githubStep = (runtime, root, confirmed) => {
   const state = readGithub(runtime, root);
@@ -38526,7 +38712,8 @@ var planData = (t, plan, mode, applied2, backup2) => ({
   mode,
   applied: applied2,
   root: plan.detection.root,
-  preset: plan.preset,
+  preset: "defaults",
+  defaultsOff: plan.defaults.off,
   detection: jsonDetection(plan.detection),
   actions: plan.items.map(({ path, action }) => ({ path, action })),
   warnings: planWarnings(t, plan),
@@ -38535,7 +38722,7 @@ var planData = (t, plan, mode, applied2, backup2) => ({
 });
 var pad3 = (text22, width) => text22.padEnd(width);
 var planLines = (t, data, withDiff) => [
-  t("install.plan.title", { root: data.root, preset: data.preset }),
+  t("install.plan.title", { root: data.root }),
   ...data.actions.map(({ path, action }) => `  ${pad3(action, 13)}${path}`),
   ...data.warnings.map(({ message }) => t("install.warning", { message })),
   ...withDiff ? data.diff : []
@@ -38551,9 +38738,9 @@ var trustImplicit = (runtime, root, files) => {
 };
 
 // src/commands/init.ts
-var flagsFor = (request, preset) => [
+var flagsFor = (request) => [
   `finitemonkey ${request.mode} --yes`,
-  ...request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : [],
+  ...request.commits.kind === "given" ? [`--commits ${request.commits.style}`] : [],
   ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`],
   ...request.marketplace ? ["--marketplace"] : [],
   ...request.sandbox === true ? ["--sandbox"] : []
@@ -38563,7 +38750,7 @@ var presentPlan = (ctx, request, plan) => {
   const human2 = planLines(ctx.t, data, request.showDiff || ctx.dryRun);
   if (ctx.dryRun) return success(data, [...human2, ctx.t("install.dry_run")]);
   if (!needsWrite(plan)) return success(data, [...human2, ctx.t("install.nothing_to_do")]);
-  const next2 = flagsFor(request, plan.preset);
+  const next2 = flagsFor(request);
   const problem5 = confirmProblem(request.mode, ctx.t("install.confirm_question"), next2);
   return { ...failureFrom(ctx.t, { ...problem5, data }, human2), next: next2 };
 };
@@ -38577,21 +38764,33 @@ var applyAndReport = (ctx, request, plan) => {
   const hint = request.mode === "init" ? [ctx.t("install.perfil_hint")] : [];
   return success(data, [...planLines(ctx.t, data, request.showDiff), done, ...hint]);
 };
-var runInstall = (ctx, request, presetFallback) => {
-  const preset = request.preset === void 0 ? presetFallback : parsePreset(request.preset);
-  if (preset === void 0) return failureFrom(ctx.t, invalidPreset(request.preset ?? ""));
+var withQuestions = (ctx, result, answer2) => {
+  if (answer2.kind !== "pending") return result;
+  const question = {
+    id: "commits",
+    detected: answer2.detected.style,
+    conventional: answer2.detected.conventional,
+    total: answer2.detected.total,
+    options: ["--commits free", "--commits conventional"]
+  };
+  const human2 = [...result.human ?? [], ctx.t("defaults.question.commits_pending", { ...answer2.detected })];
+  if (result.ok) return { ...result, data: { ...result.data, questions: [question] }, human: human2 };
+  return result.data === void 0 ? { ...result, human: human2 } : { ...result, data: { ...result.data, questions: [question] }, human: human2 };
+};
+var runInstall = (ctx, request) => {
   const { project, gitRoot: gitRoot2 } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = planInputFor(ctx, preset, request.bin, request.marketplace, request.sandbox === true);
+  const defaults = withCommits(projectDefaults(ctx.runtime, project.root), request.commits);
+  const input = planInputFor(ctx, defaults, request.bin, request.marketplace, request.sandbox === true);
   const plan = buildPlan(project, detect(project, gitRoot2, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
-  if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
-  return applyAndReport(ctx, request, plan.value);
+  const result = ctx.dryRun || !ctx.yes || !needsWrite(plan.value) ? presentPlan(ctx, request, plan.value) : applyAndReport(ctx, request, plan.value);
+  return withQuestions(ctx, result, request.commits);
 };
-var initRequest = (args2) => ({
+var initRequest = (args2, commits) => ({
   mode: "init",
-  preset: stringOption(args2.values, "preset"),
+  commits,
   bin: stringOption(args2.values, "bin"),
   marketplace: args2.values["marketplace"] === true,
   sandbox: args2.values["sandbox"] === true,
@@ -38617,20 +38816,29 @@ var withGithub = (ctx, result) => {
 var initCommand = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
   status: "ready",
   options: {
-    preset: { type: "string" },
+    commits: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
     github: { type: "boolean" }
   },
-  run: (ctx, args2) => {
-    const result = runInstall(ctx, initRequest(args2), "neutral");
+  run: async (ctx, args2) => {
+    const raw = stringOption(args2.values, "commits");
+    const flag2 = parseCommitStyle(raw);
+    if (raw !== void 0 && flag2 === void 0)
+      return failureFrom(
+        ctx.t,
+        usageProblem("invalid_arguments", "defaults.error.commits", "finitemonkey init --commits conventional", {
+          value: raw
+        })
+      );
+    const result = runInstall(ctx, initRequest(args2, await commitsAnswer(ctx, flag2)));
     const looked = args2.values["look-back"] === true ? withLookBack(ctx, result) : result;
-    return Promise.resolve(args2.values["github"] === true ? withGithub(ctx, looked) : looked);
+    return args2.values["github"] === true ? withGithub(ctx, looked) : looked;
   }
 };
 
@@ -40185,43 +40393,6 @@ var CORRECT_SCORE = 70;
 var WRONG_SCORE = 30;
 var parseOption = (raw) => OPTIONS.find((option3) => option3 === raw?.trim().toLowerCase());
 
-// src/perfil/lines.ts
-var lineReader = (source) => {
-  const ready = [];
-  const waiting = [];
-  let buffer = "";
-  let ended = false;
-  const push = (line11) => {
-    const next2 = waiting.shift();
-    if (next2 !== void 0) next2(line11);
-    else if (line11 !== void 0) ready.push(line11);
-  };
-  source.setEncoding?.("utf8");
-  source.on("data", (chunk) => {
-    buffer += typeof chunk === "string" ? chunk : chunk.toString("utf8");
-    const parts = buffer.split(/\r?\n/);
-    buffer = parts.pop() ?? "";
-    for (const part2 of parts) push(part2);
-  });
-  const finish5 = () => {
-    if (ended) return;
-    ended = true;
-    if (buffer !== "") push(buffer);
-    buffer = "";
-    while (waiting.length > 0) push(void 0);
-  };
-  source.on("end", finish5);
-  source.on("error", finish5);
-  return () => {
-    const line11 = ready.shift();
-    if (line11 !== void 0) return Promise.resolve(line11);
-    if (ended) return Promise.resolve(void 0);
-    return new Promise((resolve4) => {
-      waiting.push(resolve4);
-    });
-  };
-};
-
 // src/perfil/quick-start.ts
 var questionLines = (ctx, question) => [
   ctx.t(question.text),
@@ -41502,8 +41673,8 @@ var invalid = (ctx, detail) => failureFrom(
   ctx.t,
   usageProblem("invalid_arguments", "rules.error.invalid", `edit ${RULES_FILE}`, { file: RULES_FILE, detail })
 );
-var withRules = (ctx, run6) => {
-  const rules2 = effectiveRules(ctx.runtime, projectRoot(ctx));
+var withRules = (ctx, run6, load = effectiveRules) => {
+  const rules2 = load(ctx.runtime, projectRoot(ctx));
   return rules2.ok ? run6(rules2.value) : invalid(ctx, rules2.error);
 };
 var cell3 = (item2, surface) => {
@@ -41529,30 +41700,34 @@ var rulesCoverageCommand = {
   status: "ready",
   maxPositionals: 0,
   run: (ctx) => Promise.resolve(
-    withRules(ctx, (rules2) => {
-      const items = ruleCoverage(ctx.runtime, projectRoot(ctx), rules2);
-      const buckets = bucketCounts(rules2);
-      const data = { schema: RULES_COVERAGE_SCHEMA, rules: items, buckets };
-      const human2 = items.length === 0 ? [ctx.t("rules.coverage.empty", { file: RULES_FILE })] : [
-        ...items.map((item2) => coverageLine(ctx, item2)),
-        ctx.t("rules.coverage.buckets", { ...buckets }),
-        ...buckets.enforced > DETERMINISTIC_CEILING ? [ctx.t("rules.coverage.too_many", { count: buckets.enforced, max: DETERMINISTIC_CEILING })] : []
-      ];
-      const uncovered = items.filter((item2) => item2.severity === "never" && !item2.covered).length;
-      if (uncovered === 0) return success(data, human2);
-      return failureFrom(
-        ctx.t,
-        {
-          code: "rules_uncovered",
-          messageKey: "rules.coverage.uncovered",
-          params: { count: uncovered },
-          fix: "finitemonkey rules compile --ci",
-          exitCode: ExitCode.CheckFailed,
-          data
-        },
-        human2
-      );
-    })
+    withRules(
+      ctx,
+      (rules2) => {
+        const items = ruleCoverage(ctx.runtime, projectRoot(ctx), rules2);
+        const buckets = bucketCounts(rules2);
+        const data = { schema: RULES_COVERAGE_SCHEMA, rules: items, buckets };
+        const human2 = items.length === 0 ? [ctx.t("rules.coverage.empty", { file: RULES_FILE })] : [
+          ...items.map((item2) => coverageLine(ctx, item2)),
+          ctx.t("rules.coverage.buckets", { ...buckets }),
+          ...buckets.enforced > DETERMINISTIC_CEILING ? [ctx.t("rules.coverage.too_many", { count: buckets.enforced, max: DETERMINISTIC_CEILING })] : []
+        ];
+        const uncovered = items.filter((item2) => item2.severity === "never" && !item2.covered).length;
+        if (uncovered === 0) return success(data, human2);
+        return failureFrom(
+          ctx.t,
+          {
+            code: "rules_uncovered",
+            messageKey: "rules.coverage.uncovered",
+            params: { count: uncovered },
+            fix: "finitemonkey rules compile --ci",
+            exitCode: ExitCode.CheckFailed,
+            data
+          },
+          human2
+        );
+      },
+      coverageRules
+    )
   )
 };
 var rulesCompileCommand = {
@@ -43699,7 +43874,7 @@ var check = (ctx, bin) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
-  const input = planInputFor(ctx, previous.value.preset, bin, false);
+  const input = planInputFor(ctx, projectDefaults(ctx.runtime, project.root), bin, false);
   const plan = buildPlan(project, detect(project, gitRoot2, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const data = planData(ctx.t, plan.value, "update", false, void 0);
@@ -43720,16 +43895,21 @@ var runUpdate = (ctx, args2) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   if (previous.value === void 0) return failureFrom(ctx.t, notInstalled());
-  const preset = stringOption(args2.values, "preset");
-  const request = { mode: "update", preset, bin, marketplace: false, showDiff: true };
-  return runInstall(ctx, request, previous.value.preset);
+  const request = {
+    mode: "update",
+    commits: { kind: "none" },
+    bin,
+    marketplace: false,
+    showDiff: true
+  };
+  return runInstall(ctx, request);
 };
 var updateCommand = {
   path: ["update"],
   summaryKey: "command.update.summary",
-  usage: "finitemonkey update [--check] [--preset neutral|gabriel] [--bin <path>] [--yes]",
+  usage: "finitemonkey update [--check] [--bin <path>] [--yes]",
   status: "ready",
-  options: { check: { type: "boolean" }, preset: { type: "string" }, bin: { type: "string" } },
+  options: { check: { type: "boolean" }, bin: { type: "string" } },
   run: (ctx, args2) => Promise.resolve(runUpdate(ctx, args2))
 };
 

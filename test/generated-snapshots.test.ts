@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { ALL_ON } from "../src/defaults/items.js";
 import { LANGUAGES } from "../src/i18n/languages.js";
 import { withAgentsBlock } from "../src/install/agents-block.js";
 import { configTemplate } from "../src/install/config-template.js";
@@ -13,7 +14,7 @@ const SNAPSHOTS = join(dirname(fileURLToPath(import.meta.url)), "snapshots", "ge
 const UPDATE = process.env["UPDATE_SNAPSHOTS"] === "1";
 
 const GENERATED = [
-  { name: "config.yml", render: (lang: (typeof LANGUAGES)[number]) => configTemplate("neutral", lang) },
+  { name: "config.yml", render: (lang: (typeof LANGUAGES)[number]) => configTemplate(ALL_ON, lang) },
   {
     name: "AGENTS.md",
     render: (lang: (typeof LANGUAGES)[number]) => withAgentsBlock(undefined, { kind: "vendored" }, lang),

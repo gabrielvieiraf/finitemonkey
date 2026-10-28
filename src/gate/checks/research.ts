@@ -1,7 +1,7 @@
 import { matchesAny } from "../../core/glob.js";
+import { defaultOn } from "../../defaults/items.js";
 import type { Note } from "../../evidence/types.js";
 import { configAt, configList, loadProjectConfig } from "../../git/project-config.js";
-import { projectPreset } from "../../prose/preset.js";
 import { researchRecords } from "../../research/check.js";
 import { addedDependencies } from "../../research/dependencies.js";
 import type { AcceptanceCheck } from "../../task/types.js";
@@ -10,7 +10,7 @@ import { type CheckOutcome, failed, type GateContext, note, passed } from "../ty
 const MAX_LISTED = 10;
 
 const required = (ctx: GateContext): boolean =>
-  projectPreset(ctx.runtime, ctx.paths.root) === "gabriel" ||
+  defaultOn(ctx.runtime, ctx.paths.root, "research-first") ||
   configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 
 const findings = (ctx: GateContext): readonly Note[] => {

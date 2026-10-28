@@ -95,17 +95,17 @@ describe("finitemonkey prose check", () => {
 });
 
 describe("proseGateStatus for the Stop gate", () => {
-  it("lists flagged changed Markdown and blocks only in the gabriel preset", () => {
-    const neutral = proseGateStatus(fakeRuntime({ files, git: changed }), ROOT);
+  it("lists flagged changed Markdown and blocks unless prose-blocks is off", () => {
+    const off = { [`${ROOT}/.finitemonkey/config.yml`]: "defaults:\n  prose-blocks: off\n" };
+    const neutral = proseGateStatus(fakeRuntime({ files: { ...files, ...off }, git: changed }), ROOT);
     assert.ok(neutral.ok);
     assert.deepEqual(
       neutral.value.flagged.map((item) => item.file),
       ["README.md"],
     );
     assert.equal(neutral.value.blocking, false);
-    const config = { [`${ROOT}/.finitemonkey/config.yml`]: "preset: gabriel\n" };
-    const gabriel = proseGateStatus(fakeRuntime({ files: { ...files, ...config }, git: changed }), ROOT);
-    assert.ok(gabriel.ok && gabriel.value.blocking);
+    const byDefault = proseGateStatus(fakeRuntime({ files, git: changed }), ROOT);
+    assert.ok(byDefault.ok && byDefault.value.blocking);
   });
 
   it("without git it reports an error instead of passing", () => {
@@ -114,7 +114,8 @@ describe("proseGateStatus for the Stop gate", () => {
 });
 
 describe("prose check in the gate", () => {
-  const config = { [`${ROOT}/.finitemonkey/config.yml`]: "preset: gabriel\n" };
+  const config = {};
+  const off = { [`${ROOT}/.finitemonkey/config.yml`]: "defaults:\n  prose-blocks: off\n" };
   const outcome = (extra: Record<string, string>, git = changed) =>
     proseOutcome(proseGateStatus(fakeRuntime({ files: { ...files, ...extra }, git }), ROOT));
 
@@ -122,7 +123,7 @@ describe("prose check in the gate", () => {
     assert.equal(typeof DEFAULT_CHECKS.prose, "function");
   });
 
-  it("fails in the gabriel preset and names file, line and rules", () => {
+  it("fails by default and names file, line and rules", () => {
     const result = outcome(config);
     assert.equal(result.status, "failed");
     assert.equal(result.notes[0]?.key, "gate.prose.finding");
@@ -130,8 +131,8 @@ describe("prose check in the gate", () => {
     assert.equal(result.notes[0].params["line"], 1);
   });
 
-  it("passes with a warning in the neutral preset", () => {
-    const result = outcome({});
+  it("passes with a warning when prose-blocks is off", () => {
+    const result = outcome(off);
     assert.equal(result.status, "passed");
     assert.equal(result.notes[0]?.key, "gate.prose.warning");
   });

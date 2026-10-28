@@ -23,11 +23,4 @@ export const AGENTS_IMPORT = "@AGENTS.md";
 export const AGENTS_MAX_LINES = 60;
 export const INSTALL_LOCK_STALE_MS = 5 * 60 * 1000;
 
-export const PRESETS = ["neutral", "gabriel"] as const;
-
-export type Preset = (typeof PRESETS)[number];
-
-export const parsePreset = (raw: string | undefined): Preset | undefined =>
-  raw === undefined ? "neutral" : PRESETS.find((preset) => preset === raw);
-
 export const COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"] as const;

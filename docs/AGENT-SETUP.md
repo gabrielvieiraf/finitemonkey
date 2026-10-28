@@ -9,7 +9,7 @@ This file is for an AI agent, such as Claude Code, that a user asked to install 
 ## Conduct
 
 1. **Run the commands yourself.** Do not ask the user to type commands you can run.
-2. **Ask only for decisions.** For example: which preset, which language for generated files, whether to enable an optional feature. Do not ask questions you can answer by reading the project or the command output.
+2. **Ask only for decisions.** For example: which language for generated files, whether to keep the repository's commit style, whether to enable an optional feature. Do not ask questions you can answer by reading the project or the command output.
 3. **Never ask for secrets.** No passwords, API keys, tokens or recovery codes, not even "to finish the setup". Finite Monkey does not need any to install.
 4. **Prefer `--json`.** Read the JSON output, not the human text. Follow the `next` field when it is present.
 5. **Do not enable anything costly without asking.** Anything that spends money, uses paid APIs, runs long benchmarks, changes GitHub settings such as branch rulesets, or edits global configuration (`~/.claude/settings.json`, shell profiles) needs an explicit yes from the user first.
@@ -67,7 +67,7 @@ npx finitemonkey@latest init --dry-run --json
 
 This reads the project and returns the plan without writing anything: `data.actions` lists each file with `create`, `merge`, `update`, `unchanged`, `keep-edited` or `skip-foreign`, `data.warnings` lists what the user should know (another plugin that also decides when a session stops, a Claude Code too old to block on a crashed hook, a file that is not Finite Monkey's), and `data.diff` shows the exact change. Summarize the plan for the user in a few lines. Ask the user only these decisions:
 
-- Preset: `neutral` (default) or `gabriel` (adds the author's conventions, such as turning off AI attribution in commits and PRs when the project has not set it).
+- Commit style, only when the output says most recent commits do not follow Conventional Commits: `--commits free` keeps the repository's style, `--commits conventional` adopts the default. Every other default applies to everyone; the README lists each one with its evidence, and any of them turns off later in `config.yml`.
 - Whether to register the plugin marketplace in the project (`--marketplace`).
 - Whether to turn on the Claude Code sandbox for this user (`--sandbox`, macOS, Linux and WSL2 only). It goes into `.claude/settings.local.json`, not the committed settings: Claude Code then refuses to start without the sandbox, sandboxed commands cannot read `~/.ssh`, `~/.aws` or the project's `.env` files, and they reach only the hosts in `sandbox.hosts` of `config.yml` (npm and GitHub by default).
 - Whether to look back once at this project's local Claude Code sessions (`--look-back`). It reads the session logs on this machine and prints estimated counts of what Finite Monkey would have blocked, with secrets masked. Nothing is saved or sent. Without the flag, no session log is read.
@@ -78,7 +78,7 @@ This reads the project and returns the plan without writing anything: `data.acti
 npx finitemonkey@latest init --yes --json
 ```
 
-Pass the user's decisions as flags (for example `--preset gabriel --lang pt-BR`). Without `--yes`, `init` exits 4 with the plan and a `next` field holding the exact command to run after the user agrees. `init` backs up every file it touches to `.finitemonkey/backups/<timestamp>/`, records what it wrote in `.finitemonkey/lock.json`, merges `.claude/settings.json` without removing any user hook or permission, adds a managed block to `.gitignore` (state stays local, `config.yml` is committed), and is safe to run again: a second run with no change writes nothing.
+Pass the user's decisions as flags (for example `--commits free --lang pt-BR`). Without `--yes`, `init` exits 4 with the plan and a `next` field holding the exact command to run after the user agrees. `init` backs up every file it touches to `.finitemonkey/backups/<timestamp>/`, records what it wrote in `.finitemonkey/lock.json`, merges `.claude/settings.json` without removing any user hook or permission, adds a managed block to `.gitignore` (state stays local, `config.yml` is committed), and is safe to run again: a second run with no change writes nothing.
 
 ### 5. Verify
 

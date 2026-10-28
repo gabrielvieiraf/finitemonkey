@@ -1,7 +1,7 @@
 import type { Runtime } from "../core/runtime.js";
+import { defaultOn } from "../defaults/items.js";
 import { gitAt } from "../gate/git.js";
 import { linesOf } from "../inventory/grep.js";
-import { projectPreset } from "../prose/preset.js";
 import { parseContract } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
@@ -69,7 +69,7 @@ export const listDebt = (runtime: Runtime, paths: FmPaths): readonly DebtItem[] 
     ...(row.trigger === undefined ? {} : { trigger: row.trigger }),
     ...(row.where === undefined ? {} : { where: row.where }),
   }));
-  const markers = projectPreset(runtime, paths.root) === "neutral" ? markerItems(runtime, paths) : [];
+  const markers = defaultOn(runtime, paths.root, "no-comments") ? [] : markerItems(runtime, paths);
   return [...closed, ...openItems(runtime, paths), ...markers].map((item) => {
     const result = evaluateTrigger(runtime, paths.root, item.trigger);
     return { ...item, state: result.state, detail: result.detail };

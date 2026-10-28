@@ -130,6 +130,22 @@ The full comparison, with sources, is in [docs/compare.md](docs/compare.md).
 - **Methods like superpowers, GSD, Spec Kit or OpenSpec** tell the agent how to plan and build. Finite Monkey doesn't replace them. It checks the result at the end, whatever method you used.
 - **Single guards like tdd-guard, cc-safety-net or dcg** each do one job well. Finite Monkey covers four damages with one gate, one install and one `undo`. If you only need one of those jobs, a single guard may be the simpler choice.
 
+<!-- generated:defaults:start -->
+## Defaults and their evidence
+
+One set of defaults for everyone, generated from `src/defaults/items.ts`. Each item comes from practices found in 78 local sessions and three repositories. Guidance that helps a beginner can slow down an expert (expertise reversal, Kalyuga et al. 2003), so any item turns off with `defaults: <item>: off` in `.finitemonkey/config.yml`, and a repository convention that differs from a default is asked about once.
+
+| Default | What it does | Evidence |
+|---|---|---|
+| `no-attribution` | No AI credit in commits and pull requests: `attribution` is emptied in the settings when unset, and the guard and the `commit-msg` hook block `Co-Authored-By` lines for AI tools and `Generated with` footers. | Kept in all three repositories studied and corrected by hand in the local sessions: the commit reads as the person's work. Rule I3 in this repository. |
+| `branch-names` | A new branch must be named `type/issue-description`; any other name is blocked instead of only warned. | One pull request per issue, found by its branch name, in all three repositories. |
+| `prose-blocks` | Commit, pull request and issue text and changed Markdown that read as machine-written are blocked instead of only warned. | Corrected in the local sessions and kept in the three repositories. Each pattern is in the prose catalog with its test corpus. |
+| `research-first` | A new dependency needs a research record before the gate passes. | Research before design, with a decision record, in the local sessions and the three repositories. |
+| `no-comments` | `TODO` and `FIXME` comments are not listed as debt; debt lives in the ledger written when a task closes. | No code comments in the three repositories. Rule I1 in this repository. |
+| `no-time-estimates` | The prose check flags time estimates in plans (`docs/plan/`) and reports. | Practice from the local sessions: plans and reports say what is done, what is left and what blocks it, with no estimates. |
+| `conventional-commits` | Commit headers follow Conventional Commits, checked by the `commit-msg` and `pre-push` hooks and CI. When most recent commits differ, `init` asks once and stores the answer under `conventions.commits`. | Used in all three repositories, where the version is computed from the commit types. Rule I4 in this repository. |
+<!-- generated:defaults:end -->
+
 <!-- generated:footprint:start -->
 ## What it reads, writes and sends
 

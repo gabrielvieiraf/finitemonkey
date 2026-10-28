@@ -15,6 +15,7 @@ export const PROSE_RULE_IDS = [
   "origin-project",
   "first-person",
   "padding",
+  "time-estimate",
 ] as const;
 
 export type ProseRuleId = (typeof PROSE_RULE_IDS)[number];

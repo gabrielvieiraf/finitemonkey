@@ -15,11 +15,21 @@ export interface PlanData {
   readonly applied: boolean;
   readonly root: string;
   readonly preset: string;
+  readonly defaultsOff: readonly string[];
   readonly detection: JsonDetection;
   readonly actions: readonly { readonly path: string; readonly action: string }[];
   readonly warnings: readonly Warning[];
   readonly diff: readonly string[];
   readonly backup?: string;
+  readonly questions?: readonly InstallQuestion[];
+}
+
+export interface InstallQuestion {
+  readonly id: "commits";
+  readonly detected: string;
+  readonly conventional: number;
+  readonly total: number;
+  readonly options: readonly string[];
 }
 
 interface JsonDetection {
@@ -101,7 +111,8 @@ export const planData = (
   mode,
   applied,
   root: plan.detection.root,
-  preset: plan.preset,
+  preset: "defaults",
+  defaultsOff: plan.defaults.off,
   detection: jsonDetection(plan.detection),
   actions: plan.items.map(({ path, action }) => ({ path, action })),
   warnings: planWarnings(t, plan),
@@ -112,7 +123,7 @@ export const planData = (
 const pad = (text: string, width: number): string => text.padEnd(width);
 
 export const planLines = (t: Translate, data: PlanData, withDiff: boolean): readonly string[] => [
-  t("install.plan.title", { root: data.root, preset: data.preset }),
+  t("install.plan.title", { root: data.root }),
   ...data.actions.map(({ path, action }) => `  ${pad(action, 13)}${path}`),
   ...data.warnings.map(({ message }) => t("install.warning", { message })),
   ...(withDiff ? data.diff : []),

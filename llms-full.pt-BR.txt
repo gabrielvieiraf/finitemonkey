@@ -140,6 +140,22 @@ A comparação completa, com fontes, está em [docs/compare.pt-BR.md](https://gi
 - **Métodos como superpowers, GSD, Spec Kit ou OpenSpec** dizem ao agente como planejar e construir. O Finite Monkey não substitui nenhum deles: confere o resultado no fim, seja qual for o método.
 - **Guardas avulsos como tdd-guard, cc-safety-net ou dcg** fazem um trabalho cada um, e bem. O Finite Monkey cobre quatro danos com um portão, uma instalação e um `undo`. Se você só precisa de um desses trabalhos, um guarda avulso pode ser a escolha mais simples.
 
+<!-- generated:defaults:start -->
+## Padrões e a evidência de cada um
+
+Um conjunto de padrões para todo mundo, gerado a partir de `src/defaults/items.ts`. Cada item vem de práticas encontradas em 78 sessões locais e três repositórios. Orientação que ajuda quem começa pode atrapalhar quem já domina (efeito de reversão da expertise, Kalyuga et al. 2003), então qualquer item desliga com `defaults: <item>: off` em `.finitemonkey/config.yml`, e uma convenção do repositório diferente de um padrão gera uma pergunta, uma vez.
+
+| Padrão | O que faz | Evidência |
+|---|---|---|
+| `no-attribution` | Sem crédito de IA em commits e pull requests: `attribution` é esvaziado nas configurações quando não definido, e o guard e o hook `commit-msg` bloqueiam linhas `Co-Authored-By` de ferramentas de IA e rodapés `Generated with`. | Mantido nos três repositórios estudados e corrigido à mão nas sessões locais: o commit é trabalho da pessoa. Regra I3 deste repositório. |
+| `branch-names` | Um branch novo precisa se chamar `tipo/issue-descricao`; outro nome é bloqueado em vez de só gerar aviso. | Um pull request por issue, achado pelo nome do branch, nos três repositórios. |
+| `prose-blocks` | Texto de commit, pull request e issue e Markdown alterado com cara de texto de máquina são bloqueados em vez de só gerar aviso. | Corrigido nas sessões locais e mantido nos três repositórios. Cada padrão está no catálogo de prosa com o seu corpus de teste. |
+| `research-first` | Uma dependência nova precisa de um registro de pesquisa antes de o portão passar. | Pesquisa antes do desenho, com registro de decisão, nas sessões locais e nos três repositórios. |
+| `no-comments` | Comentários `TODO` e `FIXME` não entram como dívida; a dívida fica no registro gravado quando a tarefa fecha. | Sem comentários no código nos três repositórios. Regra I1 deste repositório. |
+| `no-time-estimates` | A checagem de prosa aponta estimativas de tempo em planos (`docs/plan/`) e relatórios. | Prática das sessões locais: planos e relatórios dizem o que está pronto, o que falta e o que bloqueia, sem estimativas. |
+| `conventional-commits` | Cabeçalhos de commit seguem Conventional Commits, conferidos pelos hooks `commit-msg` e `pre-push` e pela CI. Quando a maioria dos commits recentes é diferente, o `init` pergunta uma vez e guarda a resposta em `conventions.commits`. | Usado nos três repositórios, onde a versão sai dos tipos de commit. Regra I4 deste repositório. |
+<!-- generated:defaults:end -->
+
 <!-- generated:footprint:start -->
 ## O que ele lê, grava e envia
 
@@ -524,7 +540,7 @@ Este arquivo é para um agente de IA, como o Claude Code, a quem a pessoa pediu 
 ## Conduta
 
 1. **Rode os comandos você mesmo.** Não peça para a pessoa digitar comandos que você consegue rodar.
-2. **Pergunte só o que é decisão dela.** Por exemplo: qual preset, qual idioma para os arquivos gerados, se liga um recurso opcional. Não pergunte o que dá para descobrir lendo o projeto ou a saída dos comandos.
+2. **Pergunte só o que é decisão dela.** Por exemplo: qual idioma para os arquivos gerados, se mantém o estilo de commit do repositório, se liga um recurso opcional. Não pergunte o que dá para descobrir lendo o projeto ou a saída dos comandos.
 3. **Nunca peça segredos.** Nada de senha, chave de API, token ou código de recuperação, nem "para terminar a configuração". O Finite Monkey não precisa de nenhum para instalar.
 4. **Prefira `--json`.** Leia a saída JSON, não o texto para humanos. Quando houver o campo `next`, siga-o.
 5. **Não ligue nada caro sem perguntar.** Tudo que gasta dinheiro, usa API paga, roda benchmark longo, muda configuração do GitHub (como rulesets de branch) ou edita configuração global (`~/.claude/settings.json`, perfis do shell) precisa de um sim explícito da pessoa antes.
@@ -582,7 +598,7 @@ npx finitemonkey@latest init --dry-run --json
 
 Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada arquivo com `create`, `merge`, `update`, `unchanged`, `keep-edited` ou `skip-foreign`; `data.warnings` lista o que a pessoa deve saber (outro plugin que também decide quando a sessão para, um Claude Code antigo demais para bloquear quando um hook quebra, um arquivo que não é do Finite Monkey); e `data.diff` mostra a mudança exata. Resuma o plano para a pessoa em poucas linhas. Pergunte só estas decisões:
 
-- Preset: `neutral` (padrão) ou `gabriel` (acrescenta as convenções do autor, como desligar a atribuição de IA em commits e PRs quando o projeto ainda não definiu isso).
+- Estilo de commit, só quando a saída disser que a maioria dos commits recentes não segue Conventional Commits: `--commits free` mantém o estilo do repositório, `--commits conventional` adota o padrão. Os outros padrões valem para todo mundo; o README lista cada um com a sua evidência, e qualquer um desliga depois no `config.yml`.
 - Se registra o marketplace do plugin no projeto (`--marketplace`).
 - Se liga o sandbox do Claude Code para esta pessoa (`--sandbox`, só macOS, Linux e WSL2). Ele vai para o `.claude/settings.local.json`, não para as configurações versionadas: o Claude Code passa a se recusar a iniciar sem o sandbox, os comandos no sandbox não leem `~/.ssh`, `~/.aws` nem os `.env` do projeto, e só chegam aos hosts de `sandbox.hosts` no `config.yml` (npm e GitHub por padrão).
 - Se olha uma vez as sessões locais do Claude Code neste projeto (`--look-back`). Ele lê os logs de sessão desta máquina e mostra contagens estimadas do que o Finite Monkey teria bloqueado, com segredos mascarados. Nada é salvo nem enviado. Sem a flag, nenhum log de sessão é lido.
@@ -593,7 +609,7 @@ Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada 
 npx finitemonkey@latest init --yes --json
 ```
 
-Passe as decisões da pessoa como flags (por exemplo `--preset gabriel --lang pt-BR`). Sem `--yes`, o `init` sai com código 4, o plano e um campo `next` com o comando exato para rodar depois que a pessoa concordar. O `init` faz backup de cada arquivo que toca em `.finitemonkey/backups/<timestamp>/`, registra o que gravou em `.finitemonkey/lock.json`, mescla o `.claude/settings.json` sem tirar nenhum hook ou permissão da pessoa, acrescenta um bloco gerenciado ao `.gitignore` (o estado fica local, o `config.yml` é versionado) e pode rodar de novo sem risco: uma segunda execução sem mudança não grava nada.
+Passe as decisões da pessoa como flags (por exemplo `--commits free --lang pt-BR`). Sem `--yes`, o `init` sai com código 4, o plano e um campo `next` com o comando exato para rodar depois que a pessoa concordar. O `init` faz backup de cada arquivo que toca em `.finitemonkey/backups/<timestamp>/`, registra o que gravou em `.finitemonkey/lock.json`, mescla o `.claude/settings.json` sem tirar nenhum hook ou permissão da pessoa, acrescenta um bloco gerenciado ao `.gitignore` (o estado fica local, o `config.yml` é versionado) e pode rodar de novo sem risco: uma segunda execução sem mudança não grava nada.
 
 ### 5. Verifique
 

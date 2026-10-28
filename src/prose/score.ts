@@ -2,6 +2,7 @@ import { type PhraseRule, phraseRules } from "./catalog.js";
 import { extractProse } from "./extract.js";
 import { recordRules } from "./record-catalog.js";
 import { structureHits } from "./structure.js";
+import { timeEstimateRules } from "./time-estimate.js";
 import {
   DENSITY_THRESHOLD,
   DENSITY_WINDOW,
@@ -16,6 +17,7 @@ export interface ScoreOptions {
   readonly window?: number;
   readonly threshold?: number;
   readonly context?: ProseContext;
+  readonly timeEstimates?: boolean;
 }
 
 const phraseHits = (units: readonly ProseUnit[], catalog: readonly PhraseRule[]): readonly ProseHit[] =>
@@ -77,7 +79,11 @@ export const scoreProse = (text: string, options: ScoreOptions = {}): ProseRepor
   const { units, allowed } = extractProse(text);
   const size = options.window ?? DENSITY_WINDOW;
   const threshold = options.threshold ?? DENSITY_THRESHOLD;
-  const catalog = options.context === "record" ? [...phraseRules(), ...recordRules()] : phraseRules();
+  const catalog = [
+    ...phraseRules(),
+    ...(options.context === "record" ? recordRules() : []),
+    ...(options.timeEstimates === true ? timeEstimateRules() : []),
+  ];
   const hits = [...phraseHits(units, catalog), ...structureHits(units)].sort(byPosition);
   const spans = mergeSpans(hits, hotWindows(hits, units, size, threshold));
   return { hits, spans, allowed };

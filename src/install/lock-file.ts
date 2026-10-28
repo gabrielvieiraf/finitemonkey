@@ -1,6 +1,6 @@
 import { accept, isRecord, type JsonObject, type Parsed, parseJsonObject, reject } from "../core/parsed.js";
 import type { HookHandlerJson } from "./hook-entries.js";
-import { LOCK_SCHEMA, type Preset, PRESETS } from "./layout.js";
+import { LOCK_SCHEMA } from "./layout.js";
 import type { SettingsAdded } from "./settings-merge.js";
 import { parseStatusLineAdded } from "./statusline.js";
 
@@ -22,7 +22,6 @@ export interface LockEntry {
 export interface LockFile {
   readonly schema: typeof LOCK_SCHEMA;
   readonly version: string;
-  readonly preset: Preset;
   readonly installedAt: string;
   readonly updatedAt: string;
   readonly createdDirs: readonly string[];
@@ -85,18 +84,15 @@ const parseEntries = (value: unknown): readonly LockEntry[] | undefined => {
 };
 
 const fromRecord = (record: JsonObject): Parsed<LockFile> => {
-  const { schema, version, preset, installedAt, updatedAt } = record;
-  const known = PRESETS.find((item) => item === preset);
+  const { schema, version, installedAt, updatedAt } = record;
   const entries = parseEntries(record["entries"]);
   const createdDirs = strings(record["createdDirs"]);
   if (schema !== LOCK_SCHEMA) return reject(`schema is not ${LOCK_SCHEMA}`);
   if (typeof version !== "string" || typeof installedAt !== "string" || typeof updatedAt !== "string") {
     return reject("version, installedAt and updatedAt must be text");
   }
-  if (known === undefined || entries === undefined || createdDirs === undefined) {
-    return reject("preset, entries or createdDirs is malformed");
-  }
-  return accept({ schema, version, preset: known, installedAt, updatedAt, createdDirs, entries });
+  if (entries === undefined || createdDirs === undefined) return reject("entries or createdDirs is malformed");
+  return accept({ schema, version, installedAt, updatedAt, createdDirs, entries });
 };
 
 export const parseLock = (text: string): Parsed<LockFile> => {

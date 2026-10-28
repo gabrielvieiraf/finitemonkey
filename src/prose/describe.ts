@@ -19,6 +19,7 @@ export const RULE_FIX_KEYS = {
   "origin-project": "prose.rule.origin-project",
   "first-person": "prose.rule.first-person",
   padding: "prose.rule.padding",
+  "time-estimate": "prose.rule.time-estimate",
 } as const satisfies Readonly<Record<ProseRuleId, MessageKey>>;
 
 const MAX_SPANS = 3;
