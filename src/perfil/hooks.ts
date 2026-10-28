@@ -67,11 +67,11 @@ export const perfilSession: HookHandler = (input) => {
   if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   const head = headShaFromFiles(input.runtime, paths.root);
-  if (head !== undefined && stored?.["head"] === head) return allow;
+  if (head === undefined || stored?.["head"] === head) return allow;
   const agent = new Set(knownCommits(stored?.["agent"]));
   const seen = new Set(knownCommits(stored?.["seen"]));
   const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
-  const headField = head === undefined ? {} : { head };
+  const headField = { head };
   if (agent.size === 0 && seen.size === 0) {
     writeJsonFile(input.runtime, agentCommitsPath(paths), {
       agent: [],
