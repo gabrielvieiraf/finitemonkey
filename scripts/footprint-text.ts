@@ -307,6 +307,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Saídas esperadas dos casos golden, um arquivo por caso, mais `accepted.jsonl` com quem gravou cada uma e quando. Só o `finitemonkey golden accept`, rodado pela pessoa num terminal, escreve nelas.",
     es: "Salidas esperadas de los casos golden, un archivo por caso, más `accepted.jsonl` con quién guardó cada una y cuándo. Solo `finitemonkey golden accept`, ejecutado por la persona en una terminal, las escribe.",
   },
+  organize: {
+    en: "`finitemonkey organize plan <file>` writes a split plan skeleton for that file, only when the plan does not exist yet: responsibilities with line ranges and the sequence of small steps. The hotspot ranking itself is cached in `.finitemonkey/cache/`.",
+    "pt-BR":
+      "O `finitemonkey organize plan <file>` grava um esqueleto de plano de divisão para esse arquivo, só quando o plano ainda não existe: responsabilidades com faixas de linhas e a sequência de passos pequenos. O ranking de hotspots fica em cache em `.finitemonkey/cache/`.",
+    es: "`finitemonkey organize plan <file>` escribe un esqueleto de plan de división para ese archivo, solo cuando el plan todavía no existe: responsabilidades con rangos de líneas y la secuencia de pasos pequeños. El ranking de hotspots queda en caché en `.finitemonkey/cache/`.",
+  },
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

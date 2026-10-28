@@ -1835,5 +1835,17 @@
   "gate.arch.shadow": "{count, plural, one {# violação de arquitetura nova} other {# violações de arquitetura novas}} (modo sombra, sem bloquear)",
   "gate.arch.forbidden": "{file}:{line} importa {to} ({from_layer} → {to_layer}): {hint}",
   "gate.arch.not_allowed": "{file}:{line} importa {to}: {from_layer} só pode importar {hint}",
-  "gate.arch.private": "{file}:{line} importa {to}, dentro de {to_layer}; importe pela API pública: {hint}"
+  "gate.arch.private": "{file}:{line} importa {to}, dentro de {to_layer}; importe pela API pública: {hint}",
+  "command.organize.summary": "Classifica os hotspots e planeja uma divisão em passos pequenos que preservam testes e chamadores",
+  "organize.row": "{rank}. {path}: nota {score} (commits {churn}, complexidade {complexity}, linhas {lines}, importadores {importers}, correções {fixes}, teste perto: {tested})",
+  "organize.error.round_full": "Já há três alvos abertos nesta rodada ({open}). Termine um com `finitemonkey organize done <file>` antes.",
+  "organize.planned": "{file}: esqueleto do plano em {plan} com {count, plural, one {# responsabilidade} other {# responsabilidades}}; o pesquisador preenche os destinos e o revisor lê antes do passo 1",
+  "organize.step": "A tarefa {id} está ativa: {goal}",
+  "organize.done": "{file} saiu dos alvos abertos",
+  "gate.organize.off": "o check de passo do organize está desligado em .finitemonkey/policy.yml",
+  "gate.organize.clean": "o passo só move código",
+  "gate.organize.logic": "{file}:{line} é lógica nova, não código movido: {text}",
+  "gate.organize.open_caller": "{file} ainda importa {name} de {origin}, cujo re-export foi removido",
+  "gate.organize.shadow": "o passo mistura mover com mudar lógica ou deixa chamadores abertos (modo sombra, sem bloquear)",
+  "gate.organize.fix": "deixe este passo só movendo código; mude comportamento num passo próprio com matriz de paridade"
 }

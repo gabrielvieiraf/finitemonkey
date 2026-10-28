@@ -35,6 +35,7 @@ export const CHECK_KINDS = [
   "golden",
   "mutation",
   "arch",
+  "organize",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

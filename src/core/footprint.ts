@@ -187,6 +187,7 @@ export const FOOTPRINT = [
     targets: [".github/workflows/deploy.yml", ".github/workflows/drift.yml", "deploy/remote.sh", "deploy/compose.yml"],
   },
   { id: "golden", kind: "writes", targets: [".finitemonkey/golden/"] },
+  { id: "organize", kind: "writes", targets: ["docs/organize/"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

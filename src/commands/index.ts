@@ -58,6 +58,7 @@ import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { observeCommand } from "./observe.js";
 import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
+import { organizeCommand } from "./organize.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
 import {
@@ -231,6 +232,7 @@ export const REGISTRY = [
   observeCommand,
   goldenAcceptCommand,
   archCommand,
+  organizeCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

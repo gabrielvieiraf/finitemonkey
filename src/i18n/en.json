@@ -1835,5 +1835,17 @@
   "gate.arch.shadow": "{count, plural, one {# new architecture violation} other {# new architecture violations}} (shadow mode, not blocking)",
   "gate.arch.forbidden": "{file}:{line} imports {to} ({from_layer} → {to_layer}): {hint}",
   "gate.arch.not_allowed": "{file}:{line} imports {to}: {from_layer} may import only {hint}",
-  "gate.arch.private": "{file}:{line} imports {to}, inside {to_layer}; import from its public API instead: {hint}"
+  "gate.arch.private": "{file}:{line} imports {to}, inside {to_layer}; import from its public API instead: {hint}",
+  "command.organize.summary": "Rank hotspots and plan a split in small steps that keep tests and callers",
+  "organize.row": "{rank}. {path}: score {score} (commits {churn}, complexity {complexity}, lines {lines}, importers {importers}, fixes {fixes}, test nearby: {tested})",
+  "organize.error.round_full": "Three targets are already open in this round ({open}). Finish one with `finitemonkey organize done <file>` first.",
+  "organize.planned": "{file}: plan skeleton in {plan} with {count, plural, one {# responsibility} other {# responsibilities}}; the researcher fills in the destinations and the reviewer reads it before step 1",
+  "organize.step": "Task {id} is active: {goal}",
+  "organize.done": "{file} left the open targets",
+  "gate.organize.off": "the organize step check is off in .finitemonkey/policy.yml",
+  "gate.organize.clean": "the step only moves code",
+  "gate.organize.logic": "{file}:{line} is new logic, not moved code: {text}",
+  "gate.organize.open_caller": "{file} still imports {name} from {origin}, whose re-export was removed",
+  "gate.organize.shadow": "the step mixes moving with changing logic or leaves callers open (shadow mode, not blocking)",
+  "gate.organize.fix": "keep this step to moving code; change behavior in its own step with a parity matrix"
 }

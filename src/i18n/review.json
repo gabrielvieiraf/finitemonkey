@@ -1836,7 +1836,19 @@
     "gate.arch.shadow": "machine",
     "gate.arch.forbidden": "machine",
     "gate.arch.not_allowed": "machine",
-    "gate.arch.private": "machine"
+    "gate.arch.private": "machine",
+    "command.organize.summary": "machine",
+    "organize.row": "machine",
+    "organize.error.round_full": "machine",
+    "organize.planned": "machine",
+    "organize.step": "machine",
+    "organize.done": "machine",
+    "gate.organize.off": "machine",
+    "gate.organize.clean": "machine",
+    "gate.organize.logic": "machine",
+    "gate.organize.open_caller": "machine",
+    "gate.organize.shadow": "machine",
+    "gate.organize.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3675,6 +3687,18 @@
     "gate.arch.shadow": "machine",
     "gate.arch.forbidden": "machine",
     "gate.arch.not_allowed": "machine",
-    "gate.arch.private": "machine"
+    "gate.arch.private": "machine",
+    "command.organize.summary": "machine",
+    "organize.row": "machine",
+    "organize.error.round_full": "machine",
+    "organize.planned": "machine",
+    "organize.step": "machine",
+    "organize.done": "machine",
+    "gate.organize.off": "machine",
+    "gate.organize.clean": "machine",
+    "gate.organize.logic": "machine",
+    "gate.organize.open_caller": "machine",
+    "gate.organize.shadow": "machine",
+    "gate.organize.fix": "machine"
   }
 }
