@@ -18,6 +18,7 @@ export type FrontStatus = (typeof FRONT_STATUSES)[number];
 export interface InboxItem {
   readonly at: string;
   readonly text: string;
+  readonly kind?: string;
 }
 
 export interface Front {
@@ -82,7 +83,7 @@ const inboxOf = (value: unknown): readonly InboxItem[] =>
   Array.isArray(value)
     ? value.flatMap((item: unknown) =>
         isRecord(item) && typeof item["at"] === "string" && typeof item["text"] === "string"
-          ? [{ at: item["at"], text: item["text"] }]
+          ? [{ at: item["at"], text: item["text"], kind: typeof item["kind"] === "string" ? item["kind"] : "message" }]
           : [],
       )
     : [];
@@ -136,7 +137,7 @@ export const frontYaml = (front: Front): YamlValue => ({
   agent: { id: front.agentId, kind: front.agentKind },
   status: front.status,
   blocked_by: [...front.blockedBy],
-  inbox: front.inbox.map((item) => ({ at: item.at, text: item.text })),
+  inbox: front.inbox.map((item) => ({ at: item.at, text: item.text, kind: item.kind ?? "message" })),
   last_report: front.lastReport,
   cost_usd: front.costUsd,
   started_at: front.startedAt,

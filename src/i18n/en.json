@@ -1102,5 +1102,12 @@
   "fronts.notify.invalid": "Front {front} reported, but the report does not hold: {problems}",
   "fronts.command.merge": "Merge the reported fronts of the wave into wave/<n> through the merge protocol, after checking every report",
   "fronts.error.merge": "The wave did not merge: {detail}",
-  "fronts.merge.done": "{count, plural, one {# front} other {# fronts}} merged into {branch} at {head}; open a pull request from it"
+  "fronts.merge.done": "{count, plural, one {# front} other {# fronts}} merged into {branch} at {head}; open a pull request from it",
+  "fronts.command.route": "Add a message from the person to a front's inbox, or record it as a contract change with --contract",
+  "fronts.route.message": "Added to the inbox of {front}; send it with SendMessage and do not relaunch the front",
+  "fronts.route.contract": "Recorded as a contract change of {front}; send it with SendMessage next",
+  "fronts.block.relaunch.claim": "Front {front} is already running; launching it again throws away its context and cost",
+  "fronts.block.relaunch.requires": "Send the correction to the running front with SendMessage",
+  "fronts.block.isolation.claim": "Front {front} is launched without isolation: \"worktree\", so it would write in the main checkout",
+  "fronts.block.isolation.requires": "Pass isolation: \"worktree\" on the Agent call"
 }
