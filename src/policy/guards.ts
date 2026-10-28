@@ -6,6 +6,7 @@ import { HOOK_EVENTS, type HookEvent } from "../hooks/events.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import type { FmPaths } from "../task/paths.js";
+import { experimentArm } from "./experiment.js";
 import { pausedFor } from "./pause.js";
 import { type GuardMode, loadPolicy, type Policy, STARTS_IN_SHADOW } from "./policy.js";
 
@@ -53,8 +54,14 @@ export const writeShadow = (runtime: Pick<Runtime, "writeText">, paths: FmPaths,
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}\n`);
 };
 
-export const modeOf = (set: Pick<GuardSet, "id" | "damage">, policy: Policy, shadow: ShadowState): GuardMode => {
+export const modeOf = (
+  set: Pick<GuardSet, "id" | "damage">,
+  policy: Policy,
+  shadow: ShadowState,
+  arm?: GuardMode,
+): GuardMode => {
   if (set.damage) return "active";
+  if (arm !== undefined) return arm;
   const chosen = policy.guards[set.id];
   if (chosen !== undefined) return chosen;
   if (!policy.exists && !STARTS_IN_SHADOW.has(set.id)) return "active";
@@ -92,7 +99,12 @@ const governed =
     if (paths === undefined) return handler(input);
     if (pausedFor(input.runtime, paths, input.payload.sessionId) !== undefined) return { kind: "allow" };
     const policy = loadPolicy(input.runtime, paths.root);
-    const mode = modeOf(set, policy, readShadow(input.runtime, paths));
+    const mode = modeOf(
+      set,
+      policy,
+      readShadow(input.runtime, paths),
+      experimentArm(input.runtime, paths, policy, set.id),
+    );
     if (mode === "off") return { kind: "allow" };
     const decision = await handler(input);
     if (mode === "active" || decision.kind !== "block") return decision;

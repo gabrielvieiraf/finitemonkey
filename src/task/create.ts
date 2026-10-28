@@ -5,7 +5,10 @@ import { toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { stringifyYaml } from "../core/yaml/write.js";
+import { CONFIG_FILE, configList, parseConfigYaml } from "../git/project-config.js";
 import { LOOK_CONFIG } from "../look/config.js";
+import { recordArms } from "../policy/experiment.js";
+import { loadPolicy } from "../policy/policy.js";
 import { detectChecks } from "./implicit.js";
 import { contractHash } from "./load.js";
 import type { FmPaths } from "./paths.js";
@@ -25,6 +28,7 @@ export interface TaskDraft {
   readonly git: readonly GitRequirement[];
   readonly manual: readonly string[];
   readonly budget: DiffBudget | undefined;
+  readonly answers?: readonly string[];
 }
 
 export type CreateProblem =
@@ -36,6 +40,9 @@ const explicitChecks = (draft: TaskDraft): readonly AcceptanceCheck[] => [
   ...draft.runs.map((run, index): AcceptanceCheck => ({ id: `C${String(index + 1)}`, kind: "command", run })),
   draft.tests === undefined ? { id: "tests", kind: "tests" } : { id: "tests", kind: "tests", run: draft.tests },
 ];
+
+const hasBannedCopy = (config: string | undefined): boolean =>
+  config !== undefined && configList(parseConfigYaml(config), "ui", "banned_copy").length > 0;
 
 export const draftChecks = (
   runtime: Pick<Runtime, "readText" | "stat">,
@@ -62,11 +69,15 @@ export const draftChecks = (
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
+    { id: "quality", kind: "quality" },
+    { id: "slop", kind: "slop" },
+    { id: "regression", kind: "regression" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
     ...(runtime.stat(toAbsolutePath(join(paths.root, LOOK_CONFIG))) === undefined
       ? []
       : [{ id: "look", kind: "look" as const }]),
     ...(draft.git.length > 0 ? [{ id: "git", kind: "git" as const, require: draft.git }] : []),
+    ...(hasBannedCopy(disk.read(CONFIG_FILE)) ? [{ id: "copy", kind: "copy" as const }] : []),
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index): AcceptanceCheck => ({
       id: `M${String(index + 1)}`,
@@ -77,7 +88,7 @@ export const draftChecks = (
 };
 
 export const createTask = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "stat">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "stat" | "appendText" | "now">,
   paths: FmPaths,
   draft: TaskDraft,
 ): Parsed<{ readonly contract: TaskContract; readonly text: string }, CreateProblem> => {
@@ -95,6 +106,7 @@ export const createTask = (
     acceptance: draftChecks(runtime, paths, draft),
     decisionsNeeded: [],
     implicit: false,
+    ...(draft.answers === undefined || draft.answers.length === 0 ? {} : { clarified: draft.answers }),
   } satisfies TaskContract;
   const text = stringifyYaml(contractYaml(shape));
   const valid = validateContract(contractYaml(shape));
@@ -108,5 +120,6 @@ export const createTask = (
     approved: { ...lock.approved, [draft.id]: text },
   });
   writeState(runtime, paths, { ...readState(runtime, paths), active: draft.id });
+  recordArms(runtime, paths, loadPolicy(runtime, paths.root), draft.id);
   return accept({ contract: valid.value, text });
 };

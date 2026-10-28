@@ -100,6 +100,72 @@
       "additionalProperties": {
         "type": "number"
       }
+    },
+    "byArm": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "number"
+              },
+              "completed": {
+                "type": "number"
+              },
+              "gateRuns": {
+                "type": "number"
+              },
+              "gateFailed": {
+                "type": "number"
+              },
+              "gateMedianMs": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "tasks",
+              "completed",
+              "gateRuns",
+              "gateFailed",
+              "gateMedianMs"
+            ]
+          },
+          "off": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "number"
+              },
+              "completed": {
+                "type": "number"
+              },
+              "gateRuns": {
+                "type": "number"
+              },
+              "gateFailed": {
+                "type": "number"
+              },
+              "gateMedianMs": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "tasks",
+              "completed",
+              "gateRuns",
+              "gateFailed",
+              "gateMedianMs"
+            ]
+          }
+        },
+        "required": [
+          "active",
+          "off"
+        ]
+      }
     }
   },
   "required": [

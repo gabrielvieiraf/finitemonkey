@@ -53,7 +53,8 @@
                       "person-as-reason",
                       "origin-project",
                       "first-person",
-                      "padding"
+                      "padding",
+                      "time-estimate"
                     ]
                   }
                 },
@@ -80,7 +81,8 @@
                           "person-as-reason",
                           "origin-project",
                           "first-person",
-                          "padding"
+                          "padding",
+                          "time-estimate"
                         ]
                       },
                       "line": {

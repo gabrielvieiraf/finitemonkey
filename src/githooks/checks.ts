@@ -1,5 +1,6 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
+import { defaultOn } from "../defaults/items.js";
 import { verifyMerge } from "../git/merge/verify.js";
 import type { Repo } from "../git/repo.js";
 import { acceptedFingerprints, EMPTY_BASELINE, loadBaseline } from "../secrets/baseline.js";
@@ -39,6 +40,7 @@ const RECORD = "\u001e";
 
 export const commitMessagesInRange = (runtime: Runtime, root: AbsolutePath, range: readonly string[]): HookCheck => {
   const log = runtime.git(["log", "--no-merges", `--format=%H%x00%B${RECORD}`, ...range, "--"], root);
+  const conventional = defaultOn(runtime, root, "conventional-commits");
   const failures = log.ok
     ? log.stdout
         .split(RECORD)
@@ -46,7 +48,7 @@ export const commitMessagesInRange = (runtime: Runtime, root: AbsolutePath, rang
         .filter((record) => record.includes("\u0000"))
         .flatMap((record) => {
           const [sha = "", body = ""] = record.split("\u0000");
-          return commitMessageProblems(body).map((problem) => `${short(sha)} ${problem}`);
+          return commitMessageProblems(body, conventional).map((problem) => `${short(sha)} ${problem}`);
         })
     : [`git log ${range.join(" ")} failed`];
   return { id: "commit-messages", failures, fix: "git rebase -i <base> and reword the listed commits" };

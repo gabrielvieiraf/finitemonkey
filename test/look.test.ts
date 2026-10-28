@@ -10,6 +10,7 @@ import { saveRelease } from "../src/guards/release/grants.js";
 import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
+import { approveRoute, latestLayouts, readApproved } from "../src/look/approved.js";
 import { launchBrowser, loadPlaywright } from "../src/look/node-playwright.js";
 import { readLookReads, recordLookRead } from "../src/look/reads.js";
 import { type LookRun, runLook } from "../src/look/run.js";
@@ -24,6 +25,7 @@ const PAGES: Readonly<Record<string, string>> = {
   "/overflow": '<main><div style="width:2400px;height:20px;background:#c00">wide</div></main>',
   "/console": '<main><h1>Console</h1><script>console.error("boom in the page")</script></main>',
   "/i18n": "<main><h1>checkout.title</h1></main>",
+  "/stripe": "<main><h1>Pay</h1><p>Payment processed by Stripe</p></main>",
 };
 
 const SERVER = [
@@ -230,5 +232,29 @@ describe("look", () => {
     await read(join(repo.root, ".finitemonkey", "look", "w1", "root-390.png"));
     await read(join(repo.root, "a.txt"));
     assert.deepEqual(Object.keys(readLookReads(runtime, fmPaths(repo.root))), [".finitemonkey/look/w1/root-390.png"]);
+  });
+});
+
+describe("look: banned copy and approved screens", () => {
+  it("flags a banned phrase on the screen and compares the next capture with the approved one", async (t) => {
+    if (!browser) {
+      t.skip("no browser");
+      return;
+    }
+    const repo = await fresh(["/", "/stripe"]);
+    repo.write(".finitemonkey/config.yml", "lang: en\nui:\n  banned_copy:\n    - processed by Stripe\n");
+    const first = done(await runLook(repoRuntime(), repo.root));
+    assert.deepEqual([...new Set(rules(first, "/stripe"))], ["look/banned-copy"]);
+    const paths = fmPaths(repo.root);
+    assert.equal(approveRoute(repoRuntime(), paths, "/", latestLayouts(repoRuntime(), paths)).length, 2);
+    const same = done(await runLook(repoRuntime(), repo.root));
+    assert.ok(!same.summary.findings.some((item) => item.rule === "look/drift"));
+    const other = readApproved(repoRuntime(), paths).map((screen) => ({
+      ...screen,
+      structure: ["header", "nav", "main", "section", "table", "section", "form", "footer"],
+    }));
+    repo.write(".finitemonkey/look/approved.json", JSON.stringify({ screens: other }));
+    const drifted = done(await runLook(repoRuntime(), repo.root));
+    assert.ok(drifted.summary.findings.some((item) => item.rule === "look/drift" && item.route === "/"));
   });
 });

@@ -130,6 +130,22 @@ La comparación completa, con fuentes, está en [docs/compare.es.md](docs/compar
 - **Métodos como superpowers, GSD, Spec Kit u OpenSpec** le dicen al agente cómo planificar y construir. Finite Monkey no los sustituye: comprueba el resultado al final, uses el método que uses.
 - **Guardas sueltos como tdd-guard, cc-safety-net o dcg** hacen un trabajo cada uno, y lo hacen bien. Finite Monkey cubre cuatro daños con un control, una instalación y un `undo`. Si solo necesitas uno de esos trabajos, un guarda suelto puede ser lo más sencillo.
 
+<!-- generated:defaults:start -->
+## Valores predeterminados y su evidencia
+
+Un solo conjunto de valores predeterminados para todos, generado desde `src/defaults/items.ts`. Cada elemento viene de prácticas encontradas en 78 sesiones locales y tres repositorios. Una guía que ayuda a quien empieza puede frenar a quien ya domina (efecto de reversión de la experticia, Kalyuga et al. 2003), así que cualquier elemento se apaga con `defaults: <item>: off` en `.finitemonkey/config.yml`, y una convención del repositorio distinta de un predeterminado genera una pregunta, una sola vez.
+
+| Predeterminado | Qué hace | Evidencia |
+|---|---|---|
+| `no-attribution` | Sin crédito de IA en commits y pull requests: `attribution` se vacía en la configuración cuando no está definido, y el guard y el hook `commit-msg` bloquean líneas `Co-Authored-By` de herramientas de IA y pies `Generated with`. | Presente en los tres repositorios estudiados y corregido a mano en las sesiones locales: el commit es trabajo de la persona. Regla I3 de este repositorio. |
+| `branch-names` | Una rama nueva debe llamarse `tipo/issue-descripcion`; cualquier otro nombre se bloquea en vez de solo avisar. | Un pull request por issue, encontrado por el nombre de su rama, en los tres repositorios. |
+| `prose-blocks` | El texto de commits, pull requests e issues y el Markdown cambiado que parecen escritos por una máquina se bloquean en vez de solo avisar. | Corregido en las sesiones locales y presente en los tres repositorios. Cada patrón está en el catálogo de prosa con su corpus de prueba. |
+| `research-first` | Una dependencia nueva necesita un registro de investigación antes de que pase la compuerta. | Investigación antes del diseño, con registro de decisión, en las sesiones locales y los tres repositorios. |
+| `no-comments` | Los comentarios `TODO` y `FIXME` no se listan como deuda; la deuda vive en el registro que se escribe al cerrar una tarea. | Sin comentarios en el código en los tres repositorios. Regla I1 de este repositorio. |
+| `no-time-estimates` | La revisión de prosa marca estimaciones de tiempo en planes (`docs/plan/`) e informes. | Práctica de las sesiones locales: planes e informes dicen qué está hecho, qué falta y qué lo bloquea, sin estimaciones. |
+| `conventional-commits` | Los encabezados de commit siguen Conventional Commits, revisados por los hooks `commit-msg` y `pre-push` y por la CI. Cuando la mayoría de los commits recientes es distinta, `init` pregunta una vez y guarda la respuesta en `conventions.commits`. | Usado en los tres repositorios, donde la versión sale de los tipos de commit. Regla I4 de este repositorio. |
+<!-- generated:defaults:end -->
+
 <!-- generated:footprint:start -->
 ## Qué lee, escribe y envía
 
@@ -146,6 +162,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Lee | `git diff` | Archivos modificados, revisados en busca de secretos, tests saltados, placeholders y patrones de prosa. |
 | Lee | `.finitemonkey/config.yml`, `.finitemonkey/policy.yml`, `.finitemonkey/briefing.md`, `.finitemonkey/look.yml`, `.finitemonkey/appsec.yml`, `.finitemonkey/routes-public.yml`, `.finitemonkey/rules.yml` | La configuración del proyecto, la política de los guards y el briefing opcional para subagentes. |
 | Lee | `.finitemonkey/profile.yml`, `~/.finitemonkey/profile.yml` | El nivel de la persona por dominio; el nivel de infraestructura elige los valores de git (intermedio si falta). |
+| Lee | `~/.claude/CLAUDE.md`, `~/.claude/rules/`, `/etc/claude-code/CLAUDE.md`, `../CLAUDE.md` | `finitemonkey instructions` y `doctor` leen cada archivo de instrucciones que Claude Code cargaría: el `CLAUDE.md` administrado, tu `~/.claude/CLAUDE.md` y `~/.claude/rules/`, y cada `CLAUDE.md`, `CLAUDE.local.md` y `AGENTS.md` desde la carpeta donde trabajas hasta la raíz del disco, para listarlos y encontrar reglas que se contradicen. |
 | Escribe | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/skills/verify/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.finitemonkey/config.yml`, `.finitemonkey/lock.json`, `.finitemonkey/locks/`, `.finitemonkey/runtime/`, `.finitemonkey/backups/` | `init` y `update`: la configuración de los hooks (y, con `--sandbox`, el sandbox en tu configuración local), la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian. |
 | Escribe | `.finitemonkey/tasks/`, `.finitemonkey/state.json` | Contratos de tarea y cuál tarea está activa. |
 | Escribe | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | La evidencia de cada comprobación, ligada al hash del árbol, y el log de la puerta. |
@@ -172,11 +189,18 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Escribe | `.finitemonkey/runs/` | La salida completa de los comandos ejecutados con `finitemonkey run`, con los secretos enmascarados; se guardan las 30 más recientes. |
 | Escribe | `.finitemonkey/map.txt`, `.finitemonkey/reuse.json` | El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol, y el registro de los avisos de reutilización con el resultado de cada uno. |
 | Escribe | `.finitemonkey/review/`, `.claude/agents/verifier.md` | El conteo de rondas de revisión que usa `review packet` y, solo cuando `review.playwright: true` está en la configuración, un agente verificador con el MCP de Playwright. |
+| Escribe | `.finitemonkey/regression/` | Un worktree desechable de git en el commit base, usado para comprobar que el test nuevo de una corrección de bug falla sin la corrección. Se elimina después de la ejecución. |
+| Escribe | `.finitemonkey/suggestions.jsonl` | Sugerencias de refactorización que se muestran al final de una tarea después de que pasa la puerta, con lo que se aceptó, descartó o cerró. No se cambia nada en el código. |
+| Escribe | `~/.finitemonkey/heavy/` | Un archivo de bloqueo por instalación, compilación o suite de pruebas en curso, compartido por todos los worktrees de la máquina, para que corran de a uno (por defecto en WSL). |
+| Escribe | `.finitemonkey/instructions.jsonl` | El hook `InstructionsLoaded` agrega una línea por cada archivo de instrucciones que carga Claude Code: la sesión, la ruta, el motivo y cuándo. `finitemonkey instructions` lo compara con lo que resolvió. No se copia el contenido de ningún archivo. |
+| Escribe | `.finitemonkey/rules.yml`, `.finitemonkey/rule-violations.jsonl` | `rules propose` agrega a `.finitemonkey/rules.yml` solo las entradas que confirmas en una terminal. Cada regla incumplida al final de un turno, bloqueada por un guard o informada con `rules violation` deja una línea en `rule-violations.jsonl` (regla, origen, detalle enmascarado), la evidencia para promover un recordatorio. |
+| Escribe | `.finitemonkey/learnings.jsonl` | Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano. |
 | Envía | `api.github.com` | A través de `gh`, solo si está instalado y con sesión iniciada: el estado del pull request indicado en una tarea y tus pull requests abiertos para la línea de la sesión. El código nunca se sube. |
 | Envía | `127.0.0.1` | Una petición a tu propia app en el puerto que declara la comprobación `runtime`, después de arrancarla o encontrarla en marcha. Nada sale de esta máquina. |
 | Envía | `registry.npmjs.org`, `pypi.org` | El nombre del paquete, al registro de npm o de PyPI, cuando un comando de shell va a añadir un paquete que el proyecto aún no declara. Nunca con `FINITEMONKEY_OFFLINE=1`. |
 | Envía | `api.osv.dev` | Nombres y versiones de paquetes de tus lockfiles, a la base de OSV mediante `osv-scanner`, solo cuando ejecutas `deps scan` (en CI, por ejemplo). Nunca desde un hook. |
 | Envía | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com` | A través de `curl`, solo cuando tú ejecutas `finitemonkey secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada. |
+| Envía | `deploy.version_url` | A través de `curl`, solo cuando `deploy.version_url` está definido en `.finitemonkey/config.yml`: un GET a esa URL después de un push, para leer qué commit está en producción. Con `deploy.environment`, la misma pregunta va a los deployments de GitHub a través de `gh`. |
 <!-- generated:footprint:end -->
 
 ## Preguntas frecuentes

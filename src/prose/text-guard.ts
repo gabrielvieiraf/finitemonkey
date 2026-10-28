@@ -1,5 +1,6 @@
 import { toAbsolutePath } from "../core/brand.js";
 import { accept, optionalString, type Parsed, reject } from "../core/parsed.js";
+import { defaultOn } from "../defaults/items.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
 import type { MessageKey } from "../i18n/catalogs.js";
@@ -7,7 +8,6 @@ import { toolInput, toolName } from "../secrets/guards/tool-input.js";
 import { projectRoot } from "../secrets/project.js";
 import { type CommandProse, proseInCommand, type ProseTarget, type TextSource } from "./command-text.js";
 import { describeFixes, describeSpans } from "./describe.js";
-import { projectPreset } from "./preset.js";
 import { scoreProse } from "./score.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
@@ -72,7 +72,7 @@ export const proseCommandGuard: HookHandler = (input) => {
   if (!SHELLS.has(toolName(input.payload))) return ALLOW;
   const found = proseInCommand(optionalString(toolInput(input.payload), "command") ?? "");
   if (found.length === 0) return ALLOW;
-  const blocking = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
+  const blocking = defaultOn(input.runtime, projectRoot(input), "prose-blocks");
   for (const item of found) {
     const decision = decisionFor(input, item, blocking);
     if (decision !== undefined) return decision;

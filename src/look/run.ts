@@ -3,7 +3,9 @@ import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt, gitRoot, treeHash } from "../gate/git.js";
 import { readApprovals } from "../guards/release/grants.js";
+import { featureMode } from "../policy/feature.js";
 import { fmPaths } from "../task/paths.js";
+import { readApproved, writeLayouts } from "./approved.js";
 import { loadLookConfig, type LookConfig, lookRoutes } from "./config.js";
 import { applyAllows, pageFindings } from "./findings.js";
 import { captureAll, type PageResult } from "./node-capture.js";
@@ -12,6 +14,8 @@ import { contactSheet } from "./node-sheet.js";
 import { lookDir } from "./paths.js";
 import { recordLook } from "./record.js";
 import { type LookSummary, VIEWPORTS } from "./types.js";
+import { loadUiConfig, UI_FEATURE } from "./ui.js";
+import { layoutsOf, uiFindings } from "./ui-findings.js";
 
 export type LookRun =
   | { readonly kind: "not_a_repo" | "not_configured" | "playwright_missing" | "browser_missing" }
@@ -79,7 +83,14 @@ export const runLook = async (runtime: Runtime, cwd: AbsolutePath): Promise<Look
     if ("kind" in shot) return shot;
     const paths = fmPaths(ready.root);
     const approvals = readApprovals(runtime, paths);
-    const allowed = applyAllows(shot.results.flatMap(pageFindings), ready.config.allow, (decision) =>
+    writeLayouts(runtime, paths, ready.tree, layoutsOf(shot.results));
+    const extra = uiFindings(
+      shot.results,
+      loadUiConfig(runtime, ready.root),
+      readApproved(runtime, paths),
+      featureMode(runtime, paths, UI_FEATURE),
+    );
+    const allowed = applyAllows([...shot.results.flatMap(pageFindings), ...extra], ready.config.allow, (decision) =>
       approvals.some((approval) => approval.check === decision),
     );
     return recordLook(runtime, paths, ready.tree, shot, allowed);

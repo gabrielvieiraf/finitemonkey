@@ -21,6 +21,7 @@ export interface NewWorktree {
   readonly parent: string | undefined;
   readonly portBase: number;
   readonly owner: WorktreeOwner;
+  readonly unlocked?: boolean;
 }
 
 export type NewFailure =
@@ -93,6 +94,7 @@ const register = (runtime: Runtime, plan: Planned, registry: Registry): Parsed<W
   if (ports === undefined) return reject({ kind: "no-ports" });
   const added = gitStep(runtime, plan.mainRoot, ["worktree", "add", "-b", plan.branch, plan.path, plan.baseSha]);
   if (!added.ok) return added;
+  if (plan.request.unlocked === true) return accept(entryOf(runtime, plan, ports));
   const reason = `${LOCK_REASON_PREFIX}${plan.request.id} active`;
   const locked = gitStep(runtime, plan.mainRoot, ["worktree", "lock", "--reason", reason, plan.path]);
   if (!locked.ok) return locked;

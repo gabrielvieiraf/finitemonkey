@@ -1,0 +1,10 @@
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/etc/claude-code/CLAUDE.md","memory_type":"Managed","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/test/.claude/CLAUDE.md","memory_type":"User","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/test/.claude/rules/publish.md","memory_type":"User","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/CLAUDE.md","memory_type":"Project","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/project/CLAUDE.md","memory_type":"Project","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/project/docs/conventions.md","memory_type":"Project","load_reason":"include","parent_file_path":"/home/ana/project/CLAUDE.md"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/project/CLAUDE.local.md","memory_type":"Local","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/project/.claude/rules/general.md","memory_type":"Project","load_reason":"session_start"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/project/.claude/rules/api.md","memory_type":"Project","load_reason":"path_glob_match","globs":["src/api/**"],"trigger_file_path":"/home/ana/project/src/api/pay.ts"}
+{"session_id":"rec-1","hook_event_name":"InstructionsLoaded","file_path":"/home/ana/project/packages/web/CLAUDE.md","memory_type":"Project","load_reason":"nested_traversal","trigger_file_path":"/home/ana/project/packages/web/page.tsx"}

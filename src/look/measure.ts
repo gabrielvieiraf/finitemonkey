@@ -5,6 +5,8 @@ export interface PageMeasure {
   readonly keys: readonly string[];
   readonly small: readonly string[];
   readonly broken: readonly string[];
+  readonly text?: string;
+  readonly structure?: readonly string[];
 }
 
 interface MiniNode {
@@ -35,12 +37,24 @@ export const measurePage = (doc: MiniDocument): PageMeasure => {
   const PLACEHOLDER = /\{\{\s*[\w.]+\s*\}\}|\$t\(/;
   const NOT_KEY = /\.(?:com|net|org|io|dev|br|app|js|ts|json|png|svg|jpg|md)$/i;
   const SHOW_TEXT = 4;
+  const MAX_TEXT = 20000;
+  const MAX_STRUCTURE = 200;
+  const LAYOUT = "header, nav, main, section, article, aside, footer, form, table, h1, h2, h3, ul, ol";
   const walker = doc.createTreeWalker(doc.body, SHOW_TEXT);
   const keys = new Set<string>();
+  const seen: string[] = [];
+  let length = 0;
   for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
     const text = (node.textContent ?? "").trim();
     if ((KEY.test(text) && !NOT_KEY.test(text)) || PLACEHOLDER.test(text)) keys.add(text.slice(0, 80));
+    if (text !== "" && length < MAX_TEXT) {
+      seen.push(text);
+      length += text.length + 1;
+    }
   }
+  const structure = [...doc.querySelectorAll(LAYOUT)]
+    .slice(0, MAX_STRUCTURE)
+    .map((element) => element.tagName.toLowerCase());
   const small = [...doc.querySelectorAll("a, button, input, select, textarea, [role=button], [role=link]")]
     .filter((element) => {
       const box = element.getBoundingClientRect();
@@ -51,7 +65,14 @@ export const measurePage = (doc: MiniDocument): PageMeasure => {
     .filter((image) => image.complete && image.naturalWidth === 0 && image.getAttribute("src") !== null)
     .map((image) => image.getAttribute("src") ?? "");
   const root = doc.documentElement;
-  return { overflow: Math.max(0, root.scrollWidth - root.clientWidth), keys: [...keys], small, broken };
+  return {
+    overflow: Math.max(0, root.scrollWidth - root.clientWidth),
+    keys: [...keys],
+    small,
+    broken,
+    text: seen.join("\n").slice(0, MAX_TEXT),
+    structure,
+  };
 };
 
 export const MEASURE_SCRIPT = `(${measurePage.toString()})(document)`;
@@ -66,5 +87,7 @@ export const parseMeasure = (value: unknown): PageMeasure | undefined => {
     keys: texts(value["keys"]),
     small: texts(value["small"]),
     broken: texts(value["broken"]),
+    text: typeof value["text"] === "string" ? value["text"] : "",
+    structure: texts(value["structure"]),
   };
 };

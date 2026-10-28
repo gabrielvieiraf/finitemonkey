@@ -1,5 +1,6 @@
 import type { Ctx } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
+import { projectDefaults } from "../defaults/items.js";
 import { type ApplyFailure, applyPlan } from "../install/apply.js";
 import { GITIGNORE_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../install/layout.js";
 import { buildPlan, CHANGING, detect, type PlanError, readPreviousLock } from "../install/plan.js";
@@ -23,7 +24,7 @@ export const applyFixes = (ctx: Ctx, write: boolean): Parsed<Fixed, FixError> =>
   const previous = readPreviousLock(project);
   if (!previous.ok) return reject({ kind: "plan", error: previous.error });
   if (previous.value === undefined) return accept({ installed: false, written: [], backup: undefined });
-  const input = planInputFor(ctx, previous.value.preset, undefined, false);
+  const input = planInputFor(ctx, projectDefaults(ctx.runtime, project.root), undefined, false);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return reject({ kind: "plan", error: plan.error });
   const pending = plan.value.items.filter((item) => CHANGING.includes(item.action) && fixable.includes(item.path));

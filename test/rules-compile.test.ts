@@ -53,7 +53,11 @@ describe("rules coverage before and after compile", () => {
     assert.equal(compiled.code, 0, compiled.stdout);
     const afterCompile = await coverage(fs);
     assert.equal(afterCompile.code, 0, afterCompile.stdout);
-    assert.deepEqual(afterCompile.status, { "no-force-push": "full", "no-wip-commits": "full" });
+    assert.deepEqual(afterCompile.status, {
+      "no-force-push": "full",
+      "no-wip-commits": "full",
+      "no-attribution": "full",
+    });
   });
 
   it("compile writes each output marked by id", async () => {

@@ -185,14 +185,15 @@ describe("pr hooks", () => {
     }
   });
 
-  it("branch names are a warning in the neutral preset and a block in the strict one", async () => {
+  it("branch names are a block by default and a warning when branch-names is off", async () => {
     const box = sandbox();
     try {
+      write(box.root, ".finitemonkey/config.yml", "defaults:\n  branch-names: off\n");
       const loose = await decide(box.root, bash("git switch -c my-stuff"));
       assert.equal(loose.kind, "allow");
       assert.match(JSON.stringify(loose), /does not follow/);
       assert.equal((await decide(box.root, bash("git switch -c feat/12-pix-checkout"))).kind, "allow");
-      write(box.root, ".finitemonkey/config.yml", "preset: gabriel\n");
+      write(box.root, ".finitemonkey/config.yml", "schemaVersion: 1\n");
       assert.equal((await decide(box.root, bash("git checkout -b my-stuff"))).kind, "block");
       assert.equal((await decide(box.root, bash("git worktree add ../x -b tmp"))).kind, "block");
       assert.equal((await decide(box.root, bash("git branch -d my-stuff"))).kind, "allow");

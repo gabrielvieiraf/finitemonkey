@@ -10,6 +10,7 @@ import { critiqueVerifyCommand } from "./critique.js";
 import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { deployStatusCommand } from "./deploy.js";
 import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
 import { depsScanCommand } from "./deps-scan.js";
@@ -30,8 +31,17 @@ import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
+import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
+import {
+  learningsAddCommand,
+  learningsCommand,
+  learningsDeleteCommand,
+  learningsEditCommand,
+  learningsUnhelpfulCommand,
+} from "./learnings.js";
 import { lookCommand } from "./look.js";
+import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
@@ -48,16 +58,21 @@ import { plantaCommand } from "./planta.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
 import { proseCheckCommand } from "./prose-check.js";
+import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
+import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
 import { runCommandSpec } from "./run.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
+import { signalsHypothesisCommand } from "./signals-hypothesis.js";
+import { slopDismissCommand, slopStatsCommand } from "./slop.js";
 import { statuslineCommand } from "./statusline.js";
+import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
 import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
 import { taskFromSpecCommand } from "./task-spec.js";
@@ -66,6 +81,7 @@ import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
 import { versionCommand } from "./version.js";
 import { wtAdoptCommand, wtNewCommand } from "./wt.js";
+import { wtClassifyCommand, wtDismissCommand } from "./wt-classify.js";
 import { wtArchiveCommand, wtCleanCommand, wtPurgeCommand } from "./wt-clean.js";
 import { wtDoctorCommand, wtListCommand } from "./wt-list.js";
 
@@ -165,7 +181,26 @@ export const REGISTRY = [
   conceitosExportCommand,
   conceitosUpdateCommand,
   conceitosMarkCommand,
+  signalsHypothesisCommand,
+  deployStatusCommand,
+  lookApproveCommand,
+  wtClassifyCommand,
+  wtDismissCommand,
+  instructionsCommand,
+  rulesProposeCommand,
+  rulesViolationCommand,
+  remindersCommand,
+  learningsCommand,
+  learningsAddCommand,
+  learningsEditCommand,
+  learningsDeleteCommand,
+  learningsUnhelpfulCommand,
   runCommandSpec,
+  slopDismissCommand,
+  slopStatsCommand,
+  suggestCommand,
+  suggestAcceptCommand,
+  suggestDismissCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

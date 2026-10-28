@@ -70,7 +70,7 @@ describe("gate", () => {
 
   it("fails when a test fails and lists the new failure", () => {
     const repo = fresh();
-    task(repo);
+    task(repo, { paths: ["src/**", "test/**"] });
     repo.write("test/a.test.js", PASSING_TEST.replace("1 + 1, 2", "1 + 1, 3"));
     const report = done(gate(repo));
     assert.equal(report.verdict, "failed");

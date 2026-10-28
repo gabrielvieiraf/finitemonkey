@@ -202,3 +202,49 @@ describe("fourth-attempt guard: the mode comes from policy.yml", () => {
     assert.deepEqual(field(shown.body, "data", "fourth"), { fired: 1, solved: 1 });
   });
 });
+
+describe("fourth-attempt guard: a written hypothesis replans instead of retrying", () => {
+  const hypothesis = (fs: MemoryFs, text: string): ReturnType<typeof cliJson> =>
+    cliJson(["signals", "hypothesis", ...text.split(" ")], { cwd: PROJECT, runtime: fakeRuntime({ fs }) });
+
+  it("releases the fourth attempt once, and the fifth failure stops the task with a summary", async () => {
+    const fs = projectFs(ACTIVE);
+    await threeFailures(fs);
+    assert.notEqual(denied(await fire(fs, "PreToolUse", edit)), "");
+    const short = await hypothesis(fs, "try again");
+    assert.notEqual(short.code, 0);
+    const first = await hypothesis(fs, "the total is rounded before tax; round after summing the items");
+    assert.equal(first.code, 0);
+    assert.equal(field(first.body, "data", "releases"), true);
+    assert.equal(denied(await fire(fs, "PreToolUse", edit)), "");
+    await fire(fs, "PostToolUseFailure", failure(13));
+    assert.equal(denied(await fire(fs, "PreToolUse", edit)), "");
+    await fire(fs, "PostToolUseFailure", failure(14));
+    const stopped = denied(await fire(fs, "PreToolUse", edit));
+    assert.match(stopped, /failed 5 times in this session, so the task stops here/);
+    assert.match(stopped, /return this summary to the person/);
+    assert.match(stopped, /round after summing the items/);
+    const second = await hypothesis(fs, "maybe the fixture has the wrong currency for this test case");
+    assert.equal(field(second.body, "data", "releases"), false);
+    assert.notEqual(denied(await fire(fs, "PreToolUse", edit)), "");
+  });
+
+  it("refuses a hypothesis that repeats an earlier one", async () => {
+    const fs = projectFs(ACTIVE);
+    await threeFailures(fs);
+    assert.equal((await hypothesis(fs, "the total is rounded before tax and should not be")).code, 0);
+    assert.notEqual((await hypothesis(fs, "The total is rounded  before tax and should not be")).code, 0);
+  });
+
+  it("in shadow mode the stop is recorded once and only warns", async () => {
+    const fs = projectFs("guards:\n  fourth-attempt: shadow\n");
+    await threeFailures(fs);
+    await fire(fs, "PostToolUseFailure", failure(13));
+    await fire(fs, "PostToolUseFailure", failure(14));
+    const outcome = await fire(fs, "PreToolUse", edit);
+    assert.equal(denied(outcome), "");
+    assert.match(context(outcome), /failed 5 times in this session/);
+    const entries = readEntries(fakeRuntime({ fs }), signalFiles(fmPaths(PROJECT)));
+    assert.equal(entries.filter((entry) => entry.kind === "stopped").length, 1);
+  });
+});

@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import { compareSemver, parseSemver } from "../src/core/semver.js";
+import { ALL_ON } from "../src/defaults/items.js";
 import { ExitCode } from "../src/exit-codes.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { applyPlan } from "../src/install/apply.js";
@@ -57,7 +58,7 @@ describe("update applies per-version migrations with backup", () => {
     const previous = readPreviousLock(project);
     assert.ok(previous.ok && previous.value !== undefined);
     const input: PlanInput = {
-      preset: "neutral",
+      defaults: ALL_ON,
       lang: "en",
       claudeLanguage: undefined,
       bin: undefined,
@@ -103,8 +104,9 @@ describe("update applies per-version migrations with backup", () => {
   it("a permission error during update returns a code and a fix", async () => {
     const fs = repo();
     await run(fs, ["init", "--yes"], "1.0.0");
+    fs.writeAtomic(toAbsolutePath(at(SETTINGS_FILE)), "{}\n");
     fs.failWritesTo(at(SETTINGS_FILE), "EACCES");
-    const result = await run(fs, ["update", "--yes", "--preset", "gabriel"], "1.1.0");
+    const result = await run(fs, ["update", "--yes"], "1.1.0");
     assert.equal(field(result.body, "error", "code"), "install_permission_denied");
     assert.match(String(field(result.body, "error", "fix")), /write access to \.claude\/settings\.json/);
   });

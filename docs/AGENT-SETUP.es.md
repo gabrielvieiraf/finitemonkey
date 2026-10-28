@@ -9,7 +9,7 @@ Este archivo es para un agente de IA, como Claude Code, al que una persona le pi
 ## Conducta
 
 1. **Ejecuta los comandos tú mismo.** No le pidas a la persona que escriba comandos que puedes ejecutar.
-2. **Pregunta solo lo que es decisión suya.** Por ejemplo: qué preset, qué idioma para los archivos generados, si activar una función opcional. No preguntes lo que puedes averiguar leyendo el proyecto o la salida de los comandos.
+2. **Pregunta solo lo que es decisión suya.** Por ejemplo: qué idioma para los archivos generados, si se mantiene el estilo de commit del repositorio, si activar una función opcional. No preguntes lo que puedes averiguar leyendo el proyecto o la salida de los comandos.
 3. **Nunca pidas secretos.** Ni contraseñas, ni claves de API, ni tokens, ni códigos de recuperación, tampoco "para terminar la configuración". Finite Monkey no necesita ninguno para instalarse.
 4. **Prefiere `--json`.** Lee la salida JSON, no el texto para personas. Cuando exista el campo `next`, síguelo.
 5. **No actives nada costoso sin preguntar.** Todo lo que gaste dinero, use APIs de pago, ejecute benchmarks largos, cambie configuración de GitHub (como los rulesets de ramas) o edite configuración global (`~/.claude/settings.json`, perfiles del shell) necesita antes un sí explícito de la persona.
@@ -67,7 +67,7 @@ npx finitemonkey@latest init --dry-run --json
 
 Esto lee el proyecto y devuelve el plan sin escribir nada: `data.actions` lista cada archivo con `create`, `merge`, `update`, `unchanged`, `keep-edited` o `skip-foreign`; `data.warnings` lista lo que la persona debe saber (otro plugin que también decide cuándo termina la sesión, un Claude Code demasiado antiguo para bloquear cuando un hook falla, un archivo que no es de Finite Monkey); y `data.diff` muestra el cambio exacto. Resume el plan para la persona en pocas líneas. Pregunta solo estas decisiones:
 
-- Preset: `neutral` (por defecto) o `gabriel` (añade las convenciones del autor, como desactivar la atribución de IA en commits y PRs cuando el proyecto no la ha definido).
+- Estilo de commit, solo cuando la salida diga que la mayoría de los commits recientes no sigue Conventional Commits: `--commits free` mantiene el estilo del repositorio, `--commits conventional` adopta el predeterminado. Los demás valores predeterminados valen para todos; el README lista cada uno con su evidencia, y cualquiera se apaga después en `config.yml`.
 - Si registrar el marketplace del plugin en el proyecto (`--marketplace`).
 - Si activar el sandbox de Claude Code para esta persona (`--sandbox`, solo macOS, Linux y WSL2). Va a `.claude/settings.local.json`, no a la configuración versionada: Claude Code se niega a arrancar sin el sandbox, los comandos en el sandbox no leen `~/.ssh`, `~/.aws` ni los `.env` del proyecto, y solo llegan a los hosts de `sandbox.hosts` en `config.yml` (npm y GitHub por defecto).
 - Si revisar una vez las sesiones locales de Claude Code en este proyecto (`--look-back`). Lee los logs de sesión de esta máquina y muestra conteos estimados de lo que Finite Monkey habría bloqueado, con los secretos enmascarados. No se guarda ni se envía nada. Sin la opción, no se lee ningún log de sesión.
@@ -78,7 +78,7 @@ Esto lee el proyecto y devuelve el plan sin escribir nada: `data.actions` lista 
 npx finitemonkey@latest init --yes --json
 ```
 
-Pasa las decisiones de la persona como flags (por ejemplo `--preset gabriel --lang es`). Sin `--yes`, `init` sale con código 4, el plan y un campo `next` con el comando exacto para ejecutar cuando la persona esté de acuerdo. `init` guarda una copia de cada archivo que toca en `.finitemonkey/backups/<timestamp>/`, registra lo que escribió en `.finitemonkey/lock.json`, combina `.claude/settings.json` sin quitar ningún hook ni permiso de la persona, añade un bloque gestionado a `.gitignore` (el estado queda local, `config.yml` se versiona) y se puede ejecutar otra vez sin riesgo: una segunda ejecución sin cambios no escribe nada.
+Pasa las decisiones de la persona como flags (por ejemplo `--commits free --lang es`). Sin `--yes`, `init` sale con código 4, el plan y un campo `next` con el comando exacto para ejecutar cuando la persona esté de acuerdo. `init` guarda una copia de cada archivo que toca en `.finitemonkey/backups/<timestamp>/`, registra lo que escribió en `.finitemonkey/lock.json`, combina `.claude/settings.json` sin quitar ningún hook ni permiso de la persona, añade un bloque gestionado a `.gitignore` (el estado queda local, `config.yml` se versiona) y se puede ejecutar otra vez sin riesgo: una segunda ejecución sin cambios no escribe nada.
 
 ### 5. Verifica
 
@@ -125,4 +125,4 @@ npx finitemonkey uninstall --yes --purge --json
 
 El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey`.
 
-<!-- translation of docs/AGENT-SETUP.md sha256:c21405741464 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:8e0aaa6fd0df -->

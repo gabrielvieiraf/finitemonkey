@@ -45,7 +45,9 @@ export type SignalEntry =
     })
   | (EntryBase & { readonly kind: "research"; readonly agent: string })
   | (EntryBase & { readonly kind: "release"; readonly sig: string })
-  | (EntryBase & { readonly kind: "fourth"; readonly sig: string; readonly mode: string });
+  | (EntryBase & { readonly kind: "fourth"; readonly sig: string; readonly mode: string })
+  | (EntryBase & { readonly kind: "hypothesis"; readonly sig: string; readonly text: string })
+  | (EntryBase & { readonly kind: "stopped"; readonly sig: string; readonly mode: string });
 
 export type SignalKind = SignalEntry["kind"];
 
@@ -88,6 +90,10 @@ const parseEntry = (raw: JsonObject): SignalEntry | undefined => {
       return { ...base, kind: "release", sig: text(raw, "sig") };
     case "fourth":
       return { ...base, kind: "fourth", sig: text(raw, "sig"), mode: text(raw, "mode") };
+    case "hypothesis":
+      return { ...base, kind: "hypothesis", sig: text(raw, "sig"), text: text(raw, "text") };
+    case "stopped":
+      return { ...base, kind: "stopped", sig: text(raw, "sig"), mode: text(raw, "mode") };
     default:
       return undefined;
   }

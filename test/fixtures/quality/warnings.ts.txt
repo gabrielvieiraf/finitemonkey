@@ -1,0 +1,4 @@
+export const wide = (a: number, b: number, c: number, d: number, e: number): number => a + b + c + d + e;
+
+export const chained = (items: readonly string[]): string =>
+  items.map((item) => item.trim()).filter((item) => item !== "").map((item) => item.toUpperCase()).slice(0, 3).reverse().join(",");

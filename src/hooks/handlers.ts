@@ -1,4 +1,7 @@
+import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
+import { CLAIMS_HANDLERS } from "../claims/guard.js";
+import { CLARIFY_HANDLERS } from "../clarify/hook.js";
 import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
 import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
@@ -6,25 +9,36 @@ import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { credsStaticGuard } from "../creds/static-guard.js";
+import { DEPLOY_HANDLERS } from "../deploy/hooks.js";
 import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
+import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
+import { instructionsLoaded } from "../instructions/log.js";
+import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
+import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
+import { REMINDERS_HANDLERS } from "../reminders/hooks.js";
 import { REUSE_HANDLERS } from "../reuse/hook.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { rulesGuard } from "../rules/guard.js";
+import { rulesStop } from "../rules/stop.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
+import { SLOP_HANDLERS } from "../slop/hook.js";
+import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
+import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
+import { WT_SUGGEST_HANDLERS } from "../wt/suggest-hooks.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 import { capReason } from "./reason.js";
@@ -167,6 +181,19 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "conceitos", damage: false, handlers: CONCEITOS_HANDLERS },
   { id: "relay", damage: false, handlers: RELAY_HANDLERS },
   { id: "reuse", damage: false, handlers: REUSE_HANDLERS },
+  { id: "quality", damage: false, handlers: QUALITY_HANDLERS },
+  { id: "slop", damage: false, handlers: SLOP_HANDLERS },
+  { id: "tests-hold", damage: false, handlers: TESTS_HOLD_HANDLERS },
+  { id: "advisor", damage: false, handlers: ADVISOR_HANDLERS },
+  { id: "claims", damage: false, handlers: CLAIMS_HANDLERS },
+  { id: "clarify", damage: false, handlers: CLARIFY_HANDLERS },
+  { id: "deploy", damage: false, handlers: DEPLOY_HANDLERS },
+  { id: "wt-suggest", damage: false, handlers: WT_SUGGEST_HANDLERS },
+  { id: "heavy-lock", damage: false, handlers: HEAVY_HANDLERS },
+  { id: "instructions", damage: false, handlers: { InstructionsLoaded: [instructionsLoaded] } },
+  { id: "rules-stop", damage: false, handlers: { Stop: [rulesStop] } },
+  { id: "reminders", damage: false, handlers: REMINDERS_HANDLERS },
+  { id: "learnings", damage: false, handlers: LEARNINGS_HANDLERS },
 ];
 
-export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
+export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

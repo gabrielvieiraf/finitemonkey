@@ -1,0 +1,17 @@
+export const deep = (rows: readonly (readonly number[])[]): number => {
+  let total = 0;
+  for (const row of rows) {
+    for (const cell of row) {
+      if (cell > 0) {
+        try {
+          if (cell > 10) {
+            total += cell;
+          }
+        } finally {
+          total += 0;
+        }
+      }
+    }
+  }
+  return total;
+};

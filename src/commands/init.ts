@@ -1,22 +1,17 @@
 import type { CommandArgs } from "../core/args.js";
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
+import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { projectDefaults } from "../defaults/items.js";
+import { type CommitsAnswer, commitsAnswer, parseCommitStyle, withCommits } from "../defaults/question.js";
 import { githubLines, type GithubStep, githubStep } from "../github/step.js";
 import { type LookBack, lookBack } from "../history/look-back.js";
 import { PATTERNS } from "../history/patterns.js";
 import { applyPlan } from "../install/apply.js";
-import { parsePreset, type Preset } from "../install/layout.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
-import { type PlanData, planData, planLines } from "../install/report.js";
-import {
-  applyProblem,
-  confirmProblem,
-  invalidPreset,
-  openProject,
-  planInputFor,
-  planProblem,
-} from "../install/session.js";
+import { type InstallQuestion, type PlanData, planData, planLines } from "../install/report.js";
+import { applyProblem, confirmProblem, openProject, planInputFor, planProblem } from "../install/session.js";
 import { isPerson } from "../secrets/project.js";
 import { trustImplicit } from "../task/trust.js";
 import type { CommandSpec } from "./types.js";
@@ -29,17 +24,17 @@ export interface LookBackData extends PlanData {
 
 export interface InstallRequest {
   readonly mode: InstallMode;
-  readonly preset: string | undefined;
+  readonly commits: CommitsAnswer;
   readonly bin: string | undefined;
   readonly marketplace: boolean;
   readonly sandbox?: boolean;
   readonly showDiff: boolean;
 }
 
-const flagsFor = (request: InstallRequest, preset: Preset): string =>
+const flagsFor = (request: InstallRequest): string =>
   [
     `finitemonkey ${request.mode} --yes`,
-    ...(request.mode === "init" && preset !== "neutral" ? [`--preset ${preset}`] : []),
+    ...(request.commits.kind === "given" ? [`--commits ${request.commits.style}`] : []),
     ...(request.bin === undefined ? [] : [`--bin "${request.bin}"`]),
     ...(request.marketplace ? ["--marketplace"] : []),
     ...(request.sandbox === true ? ["--sandbox"] : []),
@@ -50,7 +45,7 @@ export const presentPlan = (ctx: Ctx, request: InstallRequest, plan: Plan): Comm
   const human = planLines(ctx.t, data, request.showDiff || ctx.dryRun);
   if (ctx.dryRun) return success(data, [...human, ctx.t("install.dry_run")]);
   if (!needsWrite(plan)) return success(data, [...human, ctx.t("install.nothing_to_do")]);
-  const next = flagsFor(request, plan.preset);
+  const next = flagsFor(request);
   const problem = confirmProblem(request.mode, ctx.t("install.confirm_question"), next);
   return { ...failureFrom(ctx.t, { ...problem, data }, human), next };
 };
@@ -66,22 +61,40 @@ const applyAndReport = (ctx: Ctx, request: InstallRequest, plan: Plan): CommandR
   return success(data, [...planLines(ctx.t, data, request.showDiff), done, ...hint]);
 };
 
-export const runInstall = (ctx: Ctx, request: InstallRequest, presetFallback: Preset): CommandResult<PlanData> => {
-  const preset = request.preset === undefined ? presetFallback : parsePreset(request.preset);
-  if (preset === undefined) return failureFrom(ctx.t, invalidPreset(request.preset ?? ""));
+const withQuestions = (ctx: Ctx, result: CommandResult<PlanData>, answer: CommitsAnswer): CommandResult<PlanData> => {
+  if (answer.kind !== "pending") return result;
+  const question: InstallQuestion = {
+    id: "commits",
+    detected: answer.detected.style,
+    conventional: answer.detected.conventional,
+    total: answer.detected.total,
+    options: ["--commits free", "--commits conventional"],
+  };
+  const human = [...(result.human ?? []), ctx.t("defaults.question.commits_pending", { ...answer.detected })];
+  if (result.ok) return { ...result, data: { ...result.data, questions: [question] }, human };
+  return result.data === undefined
+    ? { ...result, human }
+    : { ...result, data: { ...result.data, questions: [question] }, human };
+};
+
+export const runInstall = (ctx: Ctx, request: InstallRequest): CommandResult<PlanData> => {
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const input = planInputFor(ctx, preset, request.bin, request.marketplace, request.sandbox === true);
+  const defaults = withCommits(projectDefaults(ctx.runtime, project.root), request.commits);
+  const input = planInputFor(ctx, defaults, request.bin, request.marketplace, request.sandbox === true);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
-  if (ctx.dryRun || !ctx.yes || !needsWrite(plan.value)) return presentPlan(ctx, request, plan.value);
-  return applyAndReport(ctx, request, plan.value);
+  const result =
+    ctx.dryRun || !ctx.yes || !needsWrite(plan.value)
+      ? presentPlan(ctx, request, plan.value)
+      : applyAndReport(ctx, request, plan.value);
+  return withQuestions(ctx, result, request.commits);
 };
 
-const initRequest = (args: CommandArgs): InstallRequest => ({
+const initRequest = (args: CommandArgs, commits: CommitsAnswer): InstallRequest => ({
   mode: "init",
-  preset: stringOption(args.values, "preset"),
+  commits,
   bin: stringOption(args.values, "bin"),
   marketplace: args.values["marketplace"] === true,
   sandbox: args.values["sandbox"] === true,
@@ -116,19 +129,28 @@ export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--preset neutral|gabriel] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+    "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
   status: "ready",
   options: {
-    preset: { type: "string" },
+    commits: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
     github: { type: "boolean" },
   },
-  run: (ctx, args) => {
-    const result = runInstall(ctx, initRequest(args), "neutral");
+  run: async (ctx, args) => {
+    const raw = stringOption(args.values, "commits");
+    const flag = parseCommitStyle(raw);
+    if (raw !== undefined && flag === undefined)
+      return failureFrom(
+        ctx.t,
+        usageProblem("invalid_arguments", "defaults.error.commits", "finitemonkey init --commits conventional", {
+          value: raw,
+        }),
+      );
+    const result = runInstall(ctx, initRequest(args, await commitsAnswer(ctx, flag)));
     const looked = args.values["look-back"] === true ? withLookBack(ctx, result) : result;
-    return Promise.resolve(args.values["github"] === true ? withGithub(ctx, looked) : looked);
+    return args.values["github"] === true ? withGithub(ctx, looked) : looked;
   },
 };

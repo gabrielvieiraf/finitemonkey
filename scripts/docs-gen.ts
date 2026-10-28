@@ -1,4 +1,6 @@
 import { FOOTPRINT, type FootprintKind } from "../src/core/footprint.js";
+import { DEFAULT_ITEMS } from "../src/defaults/items.js";
+import { DEFAULTS_SECTION, DEFAULTS_TEXT } from "./defaults-text.js";
 import { FAILURE_MODES, type FailureMode } from "./failure-modes.js";
 import { FOOTPRINT_TEXT, type Lang, SECTION_TEXT } from "./footprint-text.js";
 
@@ -22,6 +24,22 @@ export const renderFootprint = (lang: Lang, level = "##"): string => {
     `| | ${text.what} | ${text.why} |`,
     "|---|---|---|",
     ...rows,
+  ].join("\n");
+};
+
+export const renderDefaults = (lang: Lang): string => {
+  const section = DEFAULTS_SECTION[lang];
+  return [
+    `## ${section.heading}`,
+    "",
+    section.intro,
+    "",
+    `| ${section.columns.join(" | ")} |`,
+    "|---|---|---|",
+    ...DEFAULT_ITEMS.map((item) => {
+      const text = DEFAULTS_TEXT[item][lang];
+      return `| \`${item}\` | ${cell(text.what)} | ${cell(text.evidence)} |`;
+    }),
   ].join("\n");
 };
 
@@ -85,6 +103,9 @@ export const BLOCKS: readonly { readonly file: string; readonly marker: string; 
   { file: "README.pt-BR.md", marker: "footprint", render: () => renderFootprint("pt-BR") },
   { file: "README.es.md", marker: "footprint", render: () => renderFootprint("es") },
   { file: "SECURITY.md", marker: "footprint", render: () => renderFootprint("en") },
+  { file: "README.md", marker: "defaults", render: () => renderDefaults("en") },
+  { file: "README.pt-BR.md", marker: "defaults", render: () => renderDefaults("pt-BR") },
+  { file: "README.es.md", marker: "defaults", render: () => renderDefaults("es") },
 ];
 
 export const CLAIM_FILES = [

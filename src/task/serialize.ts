@@ -13,6 +13,8 @@ const checkYaml = (check: AcceptanceCheck): YamlValue => ({
   ...(check.route === undefined ? {} : { route: check.route }),
   ...(check.status === undefined ? {} : { status: check.status }),
   ...(check.body === undefined ? {} : { body: check.body }),
+  ...(check.versionUrl === undefined ? {} : { version_url: check.versionUrl }),
+  ...(check.field === undefined ? {} : { field: check.field }),
 });
 
 export const contractYaml = (contract: TaskContract): YamlValue => ({
@@ -30,6 +32,7 @@ export const contractYaml = (contract: TaskContract): YamlValue => ({
   ...(contract.callersIgnore === undefined ? {} : { callers_ignore: [...contract.callersIgnore] }),
   ...(contract.shortcuts === undefined ? {} : { shortcuts: contract.shortcuts.map((item) => ({ ...item })) }),
   ...(contract.blueprint === undefined ? {} : { blueprint: contract.blueprint }),
+  ...(contract.clarified === undefined ? {} : { clarified: [...contract.clarified] }),
 });
 
 export const contractJson = (contract: TaskContract): Readonly<Record<string, unknown>> => ({
@@ -47,4 +50,5 @@ export const contractJson = (contract: TaskContract): Readonly<Record<string, un
   decisionsNeeded: contract.decisionsNeeded,
   ...(contract.shortcuts === undefined ? {} : { shortcuts: contract.shortcuts }),
   blueprint: contract.blueprint ?? null,
+  ...(contract.clarified === undefined ? {} : { clarified: contract.clarified }),
 });

@@ -7,7 +7,7 @@ export type CiRequirement = "required" | "not required" | "unknown";
 
 const GH_TIMEOUT_MS = 10_000;
 
-const defaultBranch = (runtime: Pick<Runtime, "git">, root: AbsolutePath): string => {
+export const defaultBranch = (runtime: Pick<Runtime, "git">, root: AbsolutePath): string => {
   const head = runtime.git(["symbolic-ref", "--short", "refs/remotes/origin/HEAD"], root);
   const name = head.ok ? head.stdout.trim().replace(/^origin\//, "") : "";
   return name === "" ? "main" : name;

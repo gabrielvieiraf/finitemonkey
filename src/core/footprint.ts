@@ -134,6 +134,8 @@ export const FOOTPRINT = [
   { id: "runs", kind: "writes", targets: [".finitemonkey/runs/"] },
   { id: "map", kind: "writes", targets: [".finitemonkey/map.txt", ".finitemonkey/reuse.json"] },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },
+  { id: "regression", kind: "writes", targets: [".finitemonkey/regression/"] },
+  { id: "advisor", kind: "writes", targets: [".finitemonkey/suggestions.jsonl"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
   { id: "deps-registry", kind: "sends", targets: ["registry.npmjs.org", "pypi.org"], via: "curl" },
@@ -152,6 +154,20 @@ export const FOOTPRINT = [
     ],
     via: "curl",
   },
+  { id: "deploy", kind: "sends", targets: ["deploy.version_url"], via: "curl" },
+  { id: "heavy", kind: "writes", targets: ["~/.finitemonkey/heavy/"] },
+  {
+    id: "instruction-layers",
+    kind: "reads",
+    targets: ["~/.claude/CLAUDE.md", "~/.claude/rules/", "/etc/claude-code/CLAUDE.md", "../CLAUDE.md"],
+  },
+  { id: "instructions-log", kind: "writes", targets: [".finitemonkey/instructions.jsonl"] },
+  {
+    id: "rules-propose",
+    kind: "writes",
+    targets: [".finitemonkey/rules.yml", ".finitemonkey/rule-violations.jsonl"],
+  },
+  { id: "learnings", kind: "writes", targets: [".finitemonkey/learnings.jsonl"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

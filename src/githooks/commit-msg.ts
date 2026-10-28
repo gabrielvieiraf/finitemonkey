@@ -41,11 +41,13 @@ export const hasAttribution = (body: string): boolean => {
   return coAuthors.some((line) => AI_NAMES.test(line)) || rest.some((pattern) => pattern.test(body));
 };
 
-export const commitMessageProblems = (message: string): readonly CommitProblem[] => {
+export const isConventionalHeader = (header: string): boolean => EXEMPT.test(header) || HEADER.test(header);
+
+export const commitMessageProblems = (message: string, conventional = true): readonly CommitProblem[] => {
   const lines = meaningful(message);
   const header = lines.find((line) => line.trim() !== "") ?? "";
   const problems: CommitProblem[] = [];
-  if (!EXEMPT.test(header) && !HEADER.test(header)) problems.push("header");
+  if (conventional && !isConventionalHeader(header)) problems.push("header");
   if (header.length > MAX_HEADER) problems.push("header_length");
   if (hasAttribution(lines.join("\n"))) problems.push("attribution");
   return problems;

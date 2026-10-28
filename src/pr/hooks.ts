@@ -1,10 +1,10 @@
 import type { Env } from "../core/context.js";
 import { optionalString } from "../core/parsed.js";
+import { defaultOn } from "../defaults/items.js";
 import { gitInvocation } from "../git/invocation.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
 import { levelRules } from "../profile/level.js";
-import { projectPreset } from "../prose/preset.js";
 import { toolInput, toolName } from "../secrets/guards/tool-input.js";
 import { dialectOf, normalizeCommand } from "../shell/normalize.js";
 import type { ShellCommand } from "../shell/types.js";
@@ -67,7 +67,7 @@ const mergeDecision = (input: HookInput, command: ShellCommand, text: string): H
 
 const branchDecision = (input: HookInput, name: string): HookDecision => {
   if (isConventionalBranch(name)) return ALLOW;
-  if (projectPreset(input.runtime, input.cwd) === "gabriel") return block(input, "git.block.branch_name", name);
+  if (defaultOn(input.runtime, input.cwd, "branch-names")) return block(input, "git.block.branch_name", name);
   const context = input.t("pr.warn.branch", { name });
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
 };

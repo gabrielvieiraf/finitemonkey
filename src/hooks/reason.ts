@@ -19,7 +19,10 @@ export type ReasonFamily =
   | "gate.guard.tests"
   | "gate.guard.rewrite"
   | "fronts.block"
-  | "signals.fourth";
+  | "signals.fourth"
+  | "quality.block"
+  | "claims.block"
+  | "wt.heavy";
 
 export type HumanFamily = Extract<`${ReasonFamily}.human`, MessageKey>;
 
@@ -37,6 +40,9 @@ const familyOf = (base: ReasonBase): ReasonFamily => {
     "creds.block",
     "rules.block",
     "signals.fourth",
+    "quality.block",
+    "claims.block",
+    "wt.heavy",
   ];
   const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
   if (found === undefined) throw new Error(`no reason family for ${base}`);

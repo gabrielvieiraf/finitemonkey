@@ -1,4 +1,4 @@
-import type { FootprintId, FootprintKind } from "../src/core/footprint.js";
+import type { FootprintId } from "../src/core/footprint.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
 
@@ -172,6 +172,18 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "A contagem de rodadas de revisão usada pelo `review packet` e, só quando `review.playwright: true` está na configuração, um agente verificador com o MCP do Playwright.",
     es: "El conteo de rondas de revisión que usa `review packet` y, solo cuando `review.playwright: true` está en la configuración, un agente verificador con el MCP de Playwright.",
   },
+  regression: {
+    en: "A throwaway git worktree at the base commit, used to check that the test added in a bug fix fails without the fix. It is removed after the run.",
+    "pt-BR":
+      "Um worktree descartável do git no commit base, usado para checar que o teste novo de uma correção de bug falha sem a correção. Ele é removido depois da execução.",
+    es: "Un worktree desechable de git en el commit base, usado para comprobar que el test nuevo de una corrección de bug falla sin la corrección. Se elimina después de la ejecución.",
+  },
+  advisor: {
+    en: "Refactoring suggestions shown at the end of a task after the gate passes, with whether each was accepted, dismissed or closed. Nothing is changed in the code.",
+    "pt-BR":
+      "Sugestões de refatoração mostradas no fim de uma tarefa depois que o portão passa, com o que foi aceito, descartado ou fechado. Nada é mudado no código.",
+    es: "Sugerencias de refactorización que se muestran al final de una tarea después de que pasa la puerta, con lo que se aceptó, descartó o cerró. No se cambia nada en el código.",
+  },
   github: {
     en: "Through `gh`, only when it is installed and logged in: the state of the pull request named in a task, and your open pull requests for the session line. Code is never uploaded.",
     "pt-BR":
@@ -232,42 +244,42 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Pelo `curl`, só quando você roda `finitemonkey secrets live <provedor> --env <VARIAVEL> --send`: uma requisição com aquela chave para a API do provedor para ver se ela ainda funciona. Desligado por padrão, nunca roda por hook, e o host aparece antes de qualquer envio.",
     es: "A través de `curl`, solo cuando tú ejecutas `finitemonkey secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada.",
   },
+  heavy: {
+    en: "One lock file per running install, build or full test run, shared by every worktree on the machine, so they run one at a time (by default on WSL).",
+    "pt-BR":
+      "Um arquivo de trava por instalação, compilação ou suíte de testes em andamento, compartilhado por todas as worktrees da máquina, para que rodem uma de cada vez (por padrão no WSL).",
+    es: "Un archivo de bloqueo por instalación, compilación o suite de pruebas en curso, compartido por todos los worktrees de la máquina, para que corran de a uno (por defecto en WSL).",
+  },
+  deploy: {
+    en: "Through `curl`, only when `deploy.version_url` is set in `.finitemonkey/config.yml`: a GET to that URL after a push, to read which commit is live. With `deploy.environment`, the same question goes to GitHub deployments through `gh`.",
+    "pt-BR":
+      "Pelo `curl`, só quando `deploy.version_url` está definido em `.finitemonkey/config.yml`: um GET nessa URL depois de um push, para ler qual commit está no ar. Com `deploy.environment`, a mesma pergunta vai aos deployments do GitHub pelo `gh`.",
+    es: "A través de `curl`, solo cuando `deploy.version_url` está definido en `.finitemonkey/config.yml`: un GET a esa URL después de un push, para leer qué commit está en producción. Con `deploy.environment`, la misma pregunta va a los deployments de GitHub a través de `gh`.",
+  },
+  "instruction-layers": {
+    en: "`finitemonkey instructions` and `doctor` read every instruction file Claude Code would load: the managed `CLAUDE.md`, your `~/.claude/CLAUDE.md` and `~/.claude/rules/`, and each `CLAUDE.md`, `CLAUDE.local.md` and `AGENTS.md` from the folder you work in up to the disk root, to list them and find rules that contradict each other.",
+    "pt-BR":
+      "O `finitemonkey instructions` e o `doctor` leem cada arquivo de instruções que o Claude Code carregaria: o `CLAUDE.md` gerenciado, o seu `~/.claude/CLAUDE.md` e `~/.claude/rules/`, e cada `CLAUDE.md`, `CLAUDE.local.md` e `AGENTS.md` da pasta onde você trabalha até a raiz do disco, para listá-los e achar regras que se contradizem.",
+    es: "`finitemonkey instructions` y `doctor` leen cada archivo de instrucciones que Claude Code cargaría: el `CLAUDE.md` administrado, tu `~/.claude/CLAUDE.md` y `~/.claude/rules/`, y cada `CLAUDE.md`, `CLAUDE.local.md` y `AGENTS.md` desde la carpeta donde trabajas hasta la raíz del disco, para listarlos y encontrar reglas que se contradicen.",
+  },
+  "instructions-log": {
+    en: "The `InstructionsLoaded` hook appends one line per instruction file Claude Code loads: the session, the path, why it loaded and when. `finitemonkey instructions` compares it with what it resolved. No file content is copied.",
+    "pt-BR":
+      "O hook `InstructionsLoaded` acrescenta uma linha por arquivo de instruções que o Claude Code carrega: a sessão, o caminho, o motivo e quando. O `finitemonkey instructions` compara com o que ele resolveu. Nenhum conteúdo de arquivo é copiado.",
+    es: "El hook `InstructionsLoaded` agrega una línea por cada archivo de instrucciones que carga Claude Code: la sesión, la ruta, el motivo y cuándo. `finitemonkey instructions` lo compara con lo que resolvió. No se copia el contenido de ningún archivo.",
+  },
+  "rules-propose": {
+    en: "`rules propose` adds to `.finitemonkey/rules.yml` only the entries you confirm in a terminal. Every rule broken at the end of a turn, blocked by a guard or reported with `rules violation` gets one line in `rule-violations.jsonl` (rule, source, masked detail), the evidence for promoting a reminder.",
+    "pt-BR":
+      "O `rules propose` acrescenta a `.finitemonkey/rules.yml` só as entradas que você confirma num terminal. Cada regra descumprida no fim de um turno, bloqueada por um guard ou informada com `rules violation` ganha uma linha em `rule-violations.jsonl` (regra, origem, detalhe mascarado), a evidência para promover um lembrete.",
+    es: "`rules propose` agrega a `.finitemonkey/rules.yml` solo las entradas que confirmas en una terminal. Cada regla incumplida al final de un turno, bloqueada por un guard o informada con `rules violation` deja una línea en `rule-violations.jsonl` (regla, origen, detalle enmascarado), la evidencia para promover un recordatorio.",
+  },
+  learnings: {
+    en: "Lessons from earlier work: a short text keyed by file paths or by the signature of an error that stopped after a change, how often each was used and when it last matched. A lesson unused for 90 days or marked unhelpful twice is deleted; `learnings delete` removes one by hand.",
+    "pt-BR":
+      "Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão.",
+    es: "Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano.",
+  },
 };
 
-export const SECTION_TEXT: Readonly<
-  Record<
-    Lang,
-    {
-      readonly heading: string;
-      readonly intro: string;
-      readonly kinds: Readonly<Record<FootprintKind, string>>;
-      readonly what: string;
-      readonly why: string;
-    }
-  >
-> = {
-  en: {
-    heading: "What it reads, writes and sends",
-    intro:
-      "Generated from `src/core/footprint.ts`, the list the tests hold the code to. No telemetry. Paths are relative to the project unless they start with `~`.",
-    kinds: { reads: "Reads", writes: "Writes", sends: "Sends" },
-    what: "What",
-    why: "Why",
-  },
-  "pt-BR": {
-    heading: "O que ele lê, grava e envia",
-    intro:
-      "Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do código. Sem telemetria. Caminhos são relativos ao projeto, exceto os que começam com `~`.",
-    kinds: { reads: "Lê", writes: "Grava", sends: "Envia" },
-    what: "O quê",
-    why: "Para quê",
-  },
-  es: {
-    heading: "Qué lee, escribe y envía",
-    intro:
-      "Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código. Sin telemetría. Las rutas son relativas al proyecto salvo las que empiezan con `~`.",
-    kinds: { reads: "Lee", writes: "Escribe", sends: "Envía" },
-    what: "Qué",
-    why: "Para qué",
-  },
-};
+export { SECTION_TEXT } from "./footprint-sections.js";

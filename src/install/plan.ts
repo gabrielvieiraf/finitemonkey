@@ -1,6 +1,7 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { accept, type JsonObject, type Parsed, reject } from "../core/parsed.js";
+import { isOn, type ProjectDefaults } from "../defaults/items.js";
 import { configAt, configList, parseConfigYaml } from "../git/project-config.js";
 import { gitHookItems } from "../githooks/install.js";
 import type { Lang } from "../i18n/languages.js";
@@ -34,7 +35,6 @@ import {
   GENERATED_MARKER,
   GITIGNORE_FILE,
   LOCK_FILE,
-  type Preset,
   SETTINGS_FILE,
   VENDOR_BIN,
   VERIFY_SKILL,
@@ -95,7 +95,7 @@ export const locationOf = (root: string, env: Env): Location => ({
 });
 
 export interface PlanInput {
-  readonly preset: Preset;
+  readonly defaults: ProjectDefaults;
   readonly lang: Lang;
   readonly claudeLanguage: string | undefined;
   readonly bin: string | undefined;
@@ -114,7 +114,7 @@ export type SandboxState = "added" | "offer" | "unsupported" | "none";
 export interface Plan {
   readonly detection: Detection;
   readonly sandbox?: SandboxState;
-  readonly preset: Preset;
+  readonly defaults: ProjectDefaults;
   readonly items: readonly PlanItem[];
   readonly previous: LockFile | undefined;
 }
@@ -186,7 +186,7 @@ const settingsItem = (
     hooks,
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
-    attributionOff: input.preset === "gabriel",
+    attributionOff: isOn(input.defaults, "no-attribution"),
     marketplace: input.marketplace,
     language: input.claudeLanguage,
     statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current.value, input.env) },
@@ -268,7 +268,7 @@ const generatedFiles = (
   vendor: boolean,
 ): Parsed<readonly Generated[], PlanError> => {
   const own = [
-    { path: CONFIG_FILE, template: configTemplate(input.preset, input.lang), isOurs: hasMarker },
+    { path: CONFIG_FILE, template: configTemplate(input.defaults, input.lang), isOurs: hasMarker },
     { path: VERIFY_SKILL, template: verifySkillTemplate(runner, input.lang), isOurs: isOwnSkill },
     { path: POLICY_FILE, template: policyTemplate(input.lang), isOurs: hasMarker },
     ...playwrightVerifier(project),
@@ -305,7 +305,7 @@ export const buildPlan = (
   return accept({
     detection,
     sandbox,
-    preset: input.preset,
+    defaults: input.defaults,
     items: applyMigrations(
       [
         settings.value,

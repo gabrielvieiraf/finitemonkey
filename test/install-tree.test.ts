@@ -81,7 +81,7 @@ describe("init then uninstall leaves the tree byte-identical", () => {
     it(`${name}, in a path with a space and an accent`, async () => {
       const root = fresh(files);
       const before = snapshot(root);
-      assert.equal((await fm(root, ["init", "--yes", "--preset", "gabriel"])).code, ExitCode.Ok);
+      assert.equal((await fm(root, ["init", "--yes"])).code, ExitCode.Ok);
       assert.notDeepEqual(snapshot(root), before);
       assert.equal((await fm(root, ["uninstall", "--yes", "--purge"])).code, ExitCode.Ok);
       assert.deepEqual(snapshot(root), before);

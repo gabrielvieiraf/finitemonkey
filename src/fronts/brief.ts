@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
-import { projectPreset } from "../prose/preset.js";
+import { defaultOn } from "../defaults/items.js";
 import type { Front, FrontsState } from "./state.js";
 
 export const BRIEFING_FILE = ".finitemonkey/briefing.md";
@@ -33,7 +33,7 @@ const rules = (runtime: Runtime, root: AbsolutePath): readonly string[] => [
   "- Never copy, move or redirect files into the main checkout; the scope guard blocks it.",
   "- A file outside git used by another front is locked; write a separate file and say so in the report.",
   "- Never resolve a conflict by picking a whole side; integration goes through `finitemonkey merge`.",
-  ...(projectPreset(runtime, root) === "gabriel" ? ["- No AI attribution in commits or pull requests."] : []),
+  ...(defaultOn(runtime, root, "no-attribution") ? ["- No AI attribution in commits or pull requests."] : []),
 ];
 
 const reading = (runtime: Runtime, root: AbsolutePath): readonly string[] => [

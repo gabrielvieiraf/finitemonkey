@@ -1,6 +1,7 @@
 import { matchesAny } from "../../core/glob.js";
 import type { Change } from "../../gate/git.js";
 import { compareConfig, compareNewTestFile, compareTestFile, type TestViolation } from "./analyze.js";
+import { type TestCounter } from "./ast-count.js";
 import { isTestFile } from "./patterns.js";
 
 export interface TreeInput {
@@ -10,6 +11,8 @@ export interface TreeInput {
   readonly acceptedConfigs: Readonly<Record<string, string>>;
   readonly scopePaths: readonly string[];
   readonly testsProtected: boolean;
+  readonly count?: TestCounter;
+  readonly held?: (path: string) => boolean;
 }
 
 const outOfScope = (input: TreeInput, change: Change): readonly TestViolation[] =>
@@ -22,14 +25,17 @@ const outOfScope = (input: TreeInput, change: Change): readonly TestViolation[] 
     : [];
 
 const forChange = (input: TreeInput, change: Change): readonly TestViolation[] => {
-  if (change.status === "A") return compareNewTestFile(change.path, input.after(change.path) ?? "");
+  if (change.status === "A") return compareNewTestFile(change.path, input.after(change.path) ?? "", input.count);
   const oldPath = change.oldPath ?? change.path;
   const before = input.before(oldPath);
   const after = change.status === "D" ? undefined : input.after(change.path);
   return [
-    ...compareTestFile(change.status === "R" ? oldPath : change.path, before, after),
+    ...compareTestFile(change.status === "R" ? oldPath : change.path, before, after, input.count),
     ...compareConfig(change.path, before, after, input.acceptedConfigs[change.path]),
     ...outOfScope(input, change),
+    ...(change.status !== "D" && input.held?.(change.path) === true
+      ? [{ kind: "test_edited" as const, path: change.path }]
+      : []),
   ];
 };
 

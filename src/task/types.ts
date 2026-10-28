@@ -25,6 +25,10 @@ export const CHECK_KINDS = [
   "cost",
   "parity",
   "appsec",
+  "quality",
+  "slop",
+  "regression",
+  "copy",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];
@@ -49,6 +53,8 @@ export interface AcceptanceCheck {
   readonly route?: string;
   readonly status?: number;
   readonly body?: string;
+  readonly versionUrl?: string;
+  readonly field?: string;
 }
 
 export interface DiffBudget {
@@ -74,6 +80,7 @@ export interface TaskContract {
   readonly shortcuts?: readonly Shortcut[];
   readonly blueprint?: BlueprintType;
   readonly implicit: boolean;
+  readonly clarified?: readonly string[];
 }
 
 export const TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;

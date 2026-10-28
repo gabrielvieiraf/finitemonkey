@@ -49,6 +49,7 @@ const PAYLOADS: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
   SubagentStop: { agent_id: "a1", agent_type: "general-purpose", stop_hook_active: false },
   PreCompact: { trigger: "auto", custom_instructions: "" },
   ConfigChange: { source: "project_settings", file_path: ".claude/settings.json" },
+  InstructionsLoaded: { file_path: "CLAUDE.md", memory_type: "Project", load_reason: "session_start" },
 };
 
 const p95 = (samples: readonly number[]): number => {

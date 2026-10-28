@@ -5,6 +5,9 @@ export const LOOK_RULES = [
   "look/i18n-key",
   "look/broken-image",
   "look/touch-target",
+  "look/banned-copy",
+  "look/drift",
+  "look/repeated-layout",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];
@@ -15,6 +18,7 @@ export const BLOCKING_RULES: readonly LookRule[] = [
   "look/request-failed",
   "look/i18n-key",
   "look/broken-image",
+  "look/banned-copy",
 ];
 
 export const VIEWPORTS = [1440, 390] as const;

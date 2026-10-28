@@ -72,6 +72,7 @@ describe("guard modes from .finitemonkey/policy.yml", () => {
       severity: "high",
       promoteAfter: 5,
       guards: { prose: "shadow" },
+      experiments: {},
     });
   });
 
