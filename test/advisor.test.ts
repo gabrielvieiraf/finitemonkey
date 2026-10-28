@@ -26,6 +26,8 @@ const WIDE = (name: string): string =>
 
 const project = (test = 'node -e "process.exit(0)"'): Repo => {
   const repo = makeRepo({
+    ".finitemonkey/policy.yml":
+      "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     "package.json": JSON.stringify({ scripts: { test } }),
     "src/billing.ts": "export const placeholder = 1;\n",
     ".finitemonkey/config.yml": "lang: en\n",

@@ -7,6 +7,8 @@ import type { Runtime } from "../core/runtime.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 import { CONFIG_FILE, configList, parseConfigYaml } from "../git/project-config.js";
 import { LOOK_CONFIG } from "../look/config.js";
+import { recordArms } from "../policy/experiment.js";
+import { loadPolicy } from "../policy/policy.js";
 import { detectChecks } from "./implicit.js";
 import { contractHash } from "./load.js";
 import type { FmPaths } from "./paths.js";
@@ -86,7 +88,7 @@ export const draftChecks = (
 };
 
 export const createTask = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "stat">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "stat" | "appendText" | "now">,
   paths: FmPaths,
   draft: TaskDraft,
 ): Parsed<{ readonly contract: TaskContract; readonly text: string }, CreateProblem> => {
@@ -118,5 +120,6 @@ export const createTask = (
     approved: { ...lock.approved, [draft.id]: text },
   });
   writeState(runtime, paths, { ...readState(runtime, paths), active: draft.id });
+  recordArms(runtime, paths, loadPolicy(runtime, paths.root), draft.id);
   return accept({ contract: valid.value, text });
 };

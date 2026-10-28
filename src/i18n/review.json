@@ -1582,7 +1582,9 @@
     "prose.rule.time-estimate": "machine",
     "defaults.question.commits": "machine",
     "defaults.question.commits_pending": "machine",
-    "defaults.error.commits": "machine"
+    "defaults.error.commits": "machine",
+    "gain.arm": "machine",
+    "gain.arm.none": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3167,6 +3169,8 @@
     "prose.rule.time-estimate": "machine",
     "defaults.question.commits": "machine",
     "defaults.question.commits_pending": "machine",
-    "defaults.error.commits": "machine"
+    "defaults.error.commits": "machine",
+    "gain.arm": "machine",
+    "gain.arm.none": "machine"
   }
 }

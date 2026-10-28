@@ -35,6 +35,8 @@ const SUM_TEST = [
 
 const project = (): Repo => {
   const repo = makeRepo({
+    ".finitemonkey/policy.yml":
+      "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     "package.json": '{ "scripts": { "test": "node --test" } }\n',
     "src/sum.js": "exports.sum = (a, b) => a + b;\n",
     "test/a.test.js": PASSING_TEST,

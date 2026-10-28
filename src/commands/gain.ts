@@ -42,10 +42,23 @@ const linesOf = (ctx: Ctx, report: GainReport): readonly string[] => [
             .join(", "),
         })}`,
       ]),
+  ...Object.entries(report.byArm ?? {}).map(
+    ([feature, arms]) =>
+      `  ${ctx.t("gain.arm", {
+        feature,
+        onDone: arms.active.completed,
+        onTasks: arms.active.tasks,
+        onFailed: arms.active.gateFailed,
+        offDone: arms.off.completed,
+        offTasks: arms.off.tasks,
+        offFailed: arms.off.gateFailed,
+      })}`,
+  ),
+  ...(report.byArm !== undefined && Object.keys(report.byArm).length === 0 ? [`  ${ctx.t("gain.arm.none")}`] : []),
   ctx.t("gain.footer"),
 ];
 
-const runGain = (ctx: Ctx, rawDays: string | undefined): CommandResult<GainReport> => {
+const runGain = (ctx: Ctx, rawDays: string | undefined, byArm: boolean): CommandResult<GainReport> => {
   const days = rawDays === undefined ? DEFAULT_DAYS : Number.parseInt(rawDays, 10);
   if (!Number.isInteger(days) || days < 1 || days > 365) {
     return failureFrom(
@@ -58,15 +71,15 @@ const runGain = (ctx: Ctx, rawDays: string | undefined): CommandResult<GainRepor
   const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
   const dir = holdDir(ctx.runtime, root, ctx.env);
   const usage = dir === undefined ? undefined : ctx.runtime.readText(toAbsolutePath(join(dir, USAGE_FILE)));
-  const report = gainReport(ctx.runtime, fmPaths(root), days, usage?.ok === true ? usage.value : undefined);
+  const report = gainReport(ctx.runtime, fmPaths(root), days, usage?.ok === true ? usage.value : undefined, byArm);
   return success(report, linesOf(ctx, report));
 };
 
 export const gainCommand: CommandSpec = {
   path: ["gain"],
   summaryKey: "command.gain.summary",
-  usage: "finitemonkey gain [--days 1-365]",
+  usage: "finitemonkey gain [--days 1-365] [--by-arm]",
   status: "ready",
-  options: { days: { type: "string" } },
-  run: (ctx, args) => Promise.resolve(runGain(ctx, stringOption(args.values, "days"))),
+  options: { days: { type: "string" }, "by-arm": { type: "boolean" } },
+  run: (ctx, args) => Promise.resolve(runGain(ctx, stringOption(args.values, "days"), args.values["by-arm"] === true)),
 };

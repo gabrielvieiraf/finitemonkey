@@ -37,6 +37,8 @@ const projectFs = (lessons: readonly Lesson[] = [], files: Readonly<Record<strin
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/feature\n",
     [at(".finitemonkey/config.yml")]: "lang: en\n",
+    [at(".finitemonkey/policy.yml")]:
+      "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     ...(lessons.length === 0
       ? {}
       : { [at(".finitemonkey/learnings.jsonl")]: lessons.map((item) => `${JSON.stringify(item)}\n`).join("") }),

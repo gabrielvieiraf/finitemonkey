@@ -35,6 +35,8 @@ const projectFs = (files: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/feature\n",
     [at(".finitemonkey/config.yml")]: "lang: en\n",
+    [at(".finitemonkey/policy.yml")]:
+      "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     [at("AGENTS.md")]: AGENTS,
     ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
   });

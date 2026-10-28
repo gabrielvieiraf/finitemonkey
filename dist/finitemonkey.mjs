@@ -8222,7 +8222,9 @@ var en_default = {
   "prose.rule.time-estimate": "drop the time estimate; say what is done, what is left and what blocks it",
   "defaults.question.commits": "{conventional} of the last {total} commits here follow Conventional Commits. Use Conventional Commits from now on? [Y/n]",
   "defaults.question.commits_pending": "Question for the person: only {conventional} of the last {total} commits follow Conventional Commits, the default here. Keep the repository's style with `finitemonkey init --yes --commits free`, or adopt the default with `--commits conventional`.",
-  "defaults.error.commits": 'Unknown commit style "{value}". Use conventional or free'
+  "defaults.error.commits": 'Unknown commit style "{value}". Use conventional or free',
+  "gain.arm": "{feature}: on {onDone} of {onTasks} tasks done, {onFailed} failed gates; off {offDone} of {offTasks} done, {offFailed} failed gates",
+  "gain.arm.none": "No feature is in a random experiment. Set experiments: <feature>: random in policy.yml."
 };
 
 // src/i18n/es.json
@@ -9809,7 +9811,9 @@ var es_default = {
   "prose.rule.time-estimate": "quita la estimación de tiempo; di qué está hecho, qué falta y qué lo bloquea",
   "defaults.question.commits": "{conventional} de los últimos {total} commits aquí siguen Conventional Commits. ¿Usar Conventional Commits de ahora en adelante? [S/n]",
   "defaults.question.commits_pending": "Pregunta para la persona: solo {conventional} de los últimos {total} commits siguen Conventional Commits, el predeterminado aquí. Mantén el estilo del repositorio con `finitemonkey init --yes --commits free`, o adopta el predeterminado con `--commits conventional`.",
-  "defaults.error.commits": 'Estilo de commit desconocido "{value}". Usa conventional o free'
+  "defaults.error.commits": 'Estilo de commit desconocido "{value}". Usa conventional o free',
+  "gain.arm": "{feature}: activada {onDone} de {onTasks} tareas terminadas, {onFailed} controles fallidos; desactivada {offDone} de {offTasks}, {offFailed} fallidos",
+  "gain.arm.none": "Ninguna función está en un experimento aleatorio. Usa experiments: <feature>: random en policy.yml."
 };
 
 // src/i18n/pt-BR.json
@@ -11396,7 +11400,9 @@ var pt_BR_default = {
   "prose.rule.time-estimate": "tire a estimativa de tempo; diga o que está pronto, o que falta e o que bloqueia",
   "defaults.question.commits": "{conventional} dos últimos {total} commits aqui seguem Conventional Commits. Usar Conventional Commits daqui em diante? [S/n]",
   "defaults.question.commits_pending": "Pergunta para a pessoa: só {conventional} dos últimos {total} commits seguem Conventional Commits, o padrão aqui. Mantenha o estilo do repositório com `finitemonkey init --yes --commits free`, ou adote o padrão com `--commits conventional`.",
-  "defaults.error.commits": 'Estilo de commit desconhecido "{value}". Use conventional ou free'
+  "defaults.error.commits": 'Estilo de commit desconhecido "{value}". Use conventional ou free',
+  "gain.arm": "{feature}: ligado {onDone} de {onTasks} tarefas concluídas, {onFailed} gates reprovados; desligado {offDone} de {offTasks}, {offFailed} reprovados",
+  "gain.arm.none": "Nenhuma feature está num experimento aleatório. Use experiments: <feature>: random no policy.yml."
 };
 
 // src/i18n/review.json
@@ -12984,7 +12990,9 @@ var review_default = {
     "prose.rule.time-estimate": "machine",
     "defaults.question.commits": "machine",
     "defaults.question.commits_pending": "machine",
-    "defaults.error.commits": "machine"
+    "defaults.error.commits": "machine",
+    "gain.arm": "machine",
+    "gain.arm.none": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -14569,7 +14577,9 @@ var review_default = {
     "prose.rule.time-estimate": "machine",
     "defaults.question.commits": "machine",
     "defaults.question.commits_pending": "machine",
-    "defaults.error.commits": "machine"
+    "defaults.error.commits": "machine",
+    "gain.arm": "machine",
+    "gain.arm.none": "machine"
   }
 };
 
@@ -16079,13 +16089,26 @@ var OPTIONAL_GUARDS = [
   "reminders",
   "learnings"
 ];
-var STARTS_IN_SHADOW = /* @__PURE__ */ new Set(["fourth-attempt", "claims", "clarify"]);
+var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
+  "fourth-attempt",
+  "claims",
+  "clarify",
+  "quality",
+  "slop",
+  "tests-hold",
+  "regression",
+  "advisor",
+  "reminders",
+  "learnings",
+  "rules-stop"
+]);
 var DEFAULT_POLICY = {
   exists: false,
   level: "standard",
   severity: "medium",
   promoteAfter: DEFAULT_PROMOTE_AFTER,
-  guards: {}
+  guards: {},
+  experiments: {}
 };
 var pick3 = (options, value, fallback) => options.find((option3) => option3 === value) ?? fallback;
 var parsePolicy = (text22) => {
@@ -16098,12 +16121,18 @@ var parsePolicy = (text22) => {
       return known3 === void 0 ? [] : [[id, known3]];
     })
   );
+  const experiments = Object.fromEntries(
+    Object.entries(configMap(tree, "experiments")).flatMap(
+      ([id, mode]) => mode === "random" ? [[id, "random"]] : []
+    )
+  );
   return {
     exists: true,
     level: pick3(LEVELS, configAt(tree, "level"), DEFAULT_POLICY.level),
     severity: pick3(SEVERITIES2, configAt(tree, "severity"), DEFAULT_POLICY.severity),
     promoteAfter: Number.isInteger(promoteAfter) && promoteAfter > 0 ? promoteAfter : DEFAULT_PROMOTE_AFTER,
-    guards
+    guards,
+    experiments
   };
 };
 var policyPath = (root) => toAbsolutePath(join26(root, POLICY_FILE));
@@ -18151,6 +18180,21 @@ var stringLeaves = (value, out = []) => {
   return out;
 };
 
+// src/policy/experiment.ts
+import { createHash as createHash3 } from "node:crypto";
+var EXPERIMENT_ARM_EVENT = "experiment_arm";
+var armOf = (task, feature) => (createHash3("sha256").update(`${task}\0${feature}`).digest()[0] ?? 0) % 2 === 0 ? "active" : "off";
+var experimentArm = (runtime, paths, policy, feature) => {
+  if (policy.experiments[feature] !== "random") return void 0;
+  const task = readState(runtime, paths).active;
+  return task === void 0 ? void 0 : armOf(task, feature);
+};
+var recordArms = (runtime, paths, policy, task) => {
+  for (const feature of Object.keys(policy.experiments)) {
+    logEvent(runtime, paths, EXPERIMENT_ARM_EVENT, { feature, task, arm: armOf(task, feature) });
+  }
+};
+
 // src/policy/pause.ts
 var PAUSE_FILE = "pause.json";
 var readPause = (runtime, paths) => {
@@ -18206,8 +18250,9 @@ var writeShadow = (runtime, paths, state) => {
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}
 `);
 };
-var modeOf2 = (set2, policy, shadow) => {
+var modeOf2 = (set2, policy, shadow, arm) => {
   if (set2.damage) return "active";
+  if (arm !== void 0) return arm;
   const chosen = policy.guards[set2.id];
   if (chosen !== void 0) return chosen;
   if (!policy.exists && !STARTS_IN_SHADOW.has(set2.id)) return "active";
@@ -18241,7 +18286,12 @@ var governed = (set2, handler) => async (input) => {
   if (paths === void 0) return handler(input);
   if (pausedFor(input.runtime, paths, input.payload.sessionId) !== void 0) return { kind: "allow" };
   const policy = loadPolicy(input.runtime, paths.root);
-  const mode = modeOf2(set2, policy, readShadow(input.runtime, paths));
+  const mode = modeOf2(
+    set2,
+    policy,
+    readShadow(input.runtime, paths),
+    experimentArm(input.runtime, paths, policy, set2.id)
+  );
   if (mode === "off") return { kind: "allow" };
   const decision2 = await handler(input);
   if (mode === "active" || decision2.kind !== "block") return decision2;
@@ -19140,11 +19190,11 @@ var isProtectedConfig = (path) => {
 import { relative as relative3 } from "node:path";
 
 // src/signals/similarity.ts
-import { createHash as createHash3 } from "node:crypto";
+import { createHash as createHash4 } from "node:crypto";
 var MAX_SHINGLES = 64;
 var SHINGLE_HASH = 6;
 var words = (text22) => text22.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((word2) => word2.length > 1);
-var hashed = (text22) => createHash3("sha256").update(text22, "utf8").digest("hex").slice(0, SHINGLE_HASH);
+var hashed = (text22) => createHash4("sha256").update(text22, "utf8").digest("hex").slice(0, SHINGLE_HASH);
 var promptFingerprint = (text22) => {
   const list9 = words(text22);
   const shingles = list9.length < 2 ? list9 : list9.slice(1).map((word2, index) => `${list9[index] ?? ""} ${word2}`);
@@ -19228,7 +19278,7 @@ var computeIndex = (entries2, thresholds, gateFailedAt2) => {
 };
 
 // src/signals/signature.ts
-import { createHash as createHash4 } from "node:crypto";
+import { createHash as createHash5 } from "node:crypto";
 var ERROR_LINE = /\b(?:error|errors|fail|failed|failure|exception|panic|traceback|assert|assertion|cannot|undefined|expected|denied|refused)\b|✗|✖|\bnot ok\b/i;
 var MAX_LINES = 6;
 var MAX_SAMPLE = 160;
@@ -19246,10 +19296,10 @@ var errorSignature = (output) => {
   const normalized4 = [...new Set(raw.map(normalizeErrorLine).filter((line11) => line11 !== ""))];
   const first = raw[0];
   if (normalized4.length === 0 || first === void 0) return void 0;
-  const sig = createHash4("sha256").update(normalized4.join("\n"), "utf8").digest("hex").slice(0, SIGNATURE_LENGTH);
+  const sig = createHash5("sha256").update(normalized4.join("\n"), "utf8").digest("hex").slice(0, SIGNATURE_LENGTH);
   return { sig, sample: maskText(first).slice(0, MAX_SAMPLE) };
 };
-var shortHash = (text22) => createHash4("sha256").update(text22, "utf8").digest("hex").slice(0, 12);
+var shortHash = (text22) => createHash5("sha256").update(text22, "utf8").digest("hex").slice(0, 12);
 
 // src/signals/store.ts
 import { join as join43 } from "node:path";
@@ -19809,7 +19859,10 @@ var recordInContract = (runtime, paths, type) => {
 };
 
 // src/policy/feature.ts
-var featureMode = (runtime, paths, id) => modeOf2({ id, damage: false }, loadPolicy(runtime, paths.root), readShadow(runtime, paths));
+var featureMode = (runtime, paths, id) => {
+  const policy = loadPolicy(runtime, paths.root);
+  return modeOf2({ id, damage: false }, policy, readShadow(runtime, paths), experimentArm(runtime, paths, policy, id));
+};
 var recordFeatureShadow = (runtime, paths, id, data) => {
   logEvent(runtime, paths, "feature_shadow", { feature: id, ...data });
 };
@@ -30102,7 +30155,7 @@ var policyNumber = (runtime, root, path, fallback) => {
 };
 
 // src/learnings/store.ts
-import { createHash as createHash5 } from "node:crypto";
+import { createHash as createHash6 } from "node:crypto";
 import { join as join80 } from "node:path";
 var LEARNINGS_FILE = "learnings.jsonl";
 var STATS_FILE = "learnings-stats.json";
@@ -30180,7 +30233,7 @@ var pruneLessons = (runtime, dir, days = EXPIRE_DAYS) => {
   }
   return { kept, expired };
 };
-var lessonId = (body2, key2) => createHash5("sha256").update(`${key2}\0${body2}`, "utf8").digest("hex").slice(0, 8);
+var lessonId = (body2, key2) => createHash6("sha256").update(`${key2}\0${body2}`, "utf8").digest("hex").slice(0, 8);
 var newLesson = (input, now) => {
   const body2 = maskText(input.text).slice(0, MAX_TEXT2);
   return {
@@ -37291,7 +37344,41 @@ var numbersIn = (text22) => {
   );
   return entries2.length === 0 ? void 0 : Object.fromEntries(entries2);
 };
-var gainReport = (runtime, paths, days, usageText) => {
+var readArms = (runtime, paths) => {
+  const text22 = runtime.readText(paths.log);
+  if (!text22.ok) return [];
+  return text22.value.split("\n").flatMap((line11) => {
+    const parsed = parseJsonObject(line11);
+    if (!parsed.ok || parsed.value["event"] !== "experiment_arm") return [];
+    const { feature, task, arm } = parsed.value;
+    return typeof feature === "string" && typeof task === "string" && (arm === "active" || arm === "off") ? [{ feature, task, arm }] : [];
+  });
+};
+var median = (values) => {
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted.length === 0 ? 0 : sorted[Math.floor((sorted.length - 1) / 2)] ?? 0;
+};
+var armCounts = (tasks, gates) => {
+  const runs = gates.filter((entry2) => tasks.has(entry2.task));
+  return {
+    tasks: tasks.size,
+    completed: new Set(runs.filter((entry2) => entry2.status === "passed").map((entry2) => entry2.task)).size,
+    gateRuns: runs.length,
+    gateFailed: runs.filter((entry2) => entry2.status === "failed").length,
+    gateMedianMs: median(runs.map((entry2) => entry2.durationMs ?? 0))
+  };
+};
+var armComparison = (arms, gates) => {
+  const features = [...new Set(arms.map((line11) => line11.feature))].sort();
+  return Object.fromEntries(
+    features.map((feature) => {
+      const assigned = new Map(arms.filter((line11) => line11.feature === feature).map((line11) => [line11.task, line11.arm]));
+      const tasksIn = (arm) => new Set([...assigned].filter(([, value]) => value === arm).map(([task]) => task));
+      return [feature, { active: armCounts(tasksIn("active"), gates), off: armCounts(tasksIn("off"), gates) }];
+    })
+  );
+};
+var gainReport = (runtime, paths, days, usageText, byArm = false) => {
   const to = Date.parse(runtime.now());
   const from = to - days * DAY_MS10;
   const log = readLog(runtime, paths);
@@ -37306,7 +37393,8 @@ var gainReport = (runtime, paths, days, usageText) => {
     ...(() => {
       const usage2 = numbersIn(usageText);
       return usage2 === void 0 ? {} : { supervisorUsage: usage2 };
-    })()
+    })(),
+    ...byArm ? { byArm: armComparison(readArms(runtime, paths), gates) } : {}
   };
 };
 
@@ -37332,9 +37420,21 @@ var linesOf3 = (ctx, report2) => [
       usage: Object.entries(report2.supervisorUsage).map(([name, value]) => `${name} ${String(value)}`).join(", ")
     })}`
   ],
+  ...Object.entries(report2.byArm ?? {}).map(
+    ([feature, arms]) => `  ${ctx.t("gain.arm", {
+      feature,
+      onDone: arms.active.completed,
+      onTasks: arms.active.tasks,
+      onFailed: arms.active.gateFailed,
+      offDone: arms.off.completed,
+      offTasks: arms.off.tasks,
+      offFailed: arms.off.gateFailed
+    })}`
+  ),
+  ...report2.byArm !== void 0 && Object.keys(report2.byArm).length === 0 ? [`  ${ctx.t("gain.arm.none")}`] : [],
   ctx.t("gain.footer")
 ];
-var runGain = (ctx, rawDays) => {
+var runGain = (ctx, rawDays, byArm) => {
   const days = rawDays === void 0 ? DEFAULT_DAYS : Number.parseInt(rawDays, 10);
   if (!Number.isInteger(days) || days < 1 || days > 365) {
     return failureFrom(
@@ -37347,16 +37447,16 @@ var runGain = (ctx, rawDays) => {
   const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
   const dir = holdDir(ctx.runtime, root, ctx.env);
   const usage2 = dir === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(join107(dir, USAGE_FILE)));
-  const report2 = gainReport(ctx.runtime, fmPaths(root), days, usage2?.ok === true ? usage2.value : void 0);
+  const report2 = gainReport(ctx.runtime, fmPaths(root), days, usage2?.ok === true ? usage2.value : void 0, byArm);
   return success(report2, linesOf3(ctx, report2));
 };
 var gainCommand = {
   path: ["gain"],
   summaryKey: "command.gain.summary",
-  usage: "finitemonkey gain [--days 1-365]",
+  usage: "finitemonkey gain [--days 1-365] [--by-arm]",
   status: "ready",
-  options: { days: { type: "string" } },
-  run: (ctx, args2) => Promise.resolve(runGain(ctx, stringOption(args2.values, "days")))
+  options: { days: { type: "string" }, "by-arm": { type: "boolean" } },
+  run: (ctx, args2) => Promise.resolve(runGain(ctx, stringOption(args2.values, "days"), args2.values["by-arm"] === true))
 };
 
 // src/gate/baseline-run.ts
@@ -43198,6 +43298,7 @@ var createTask = (runtime, paths, draft) => {
     approved: { ...lock.approved, [draft.id]: text22 }
   });
   writeState(runtime, paths, { ...readState(runtime, paths), active: draft.id });
+  recordArms(runtime, paths, loadPolicy(runtime, paths.root), draft.id);
   return accept({ contract: valid.value, text: text22 });
 };
 

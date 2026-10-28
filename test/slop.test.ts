@@ -131,6 +131,8 @@ after(() => {
 
 const project = (): Repo => {
   const repo = makeRepo({
+    ".finitemonkey/policy.yml":
+      "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     "package.json": "{}\n",
     "src/legacy.ts": "console.log(boot);\nexport const legacy = 1;\n",
     "src/user.ts": "export const user = 1;\n",

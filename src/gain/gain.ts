@@ -22,6 +22,19 @@ export interface GainCounts {
   readonly gateMs: number;
 }
 
+export interface ArmCounts {
+  readonly tasks: number;
+  readonly completed: number;
+  readonly gateRuns: number;
+  readonly gateFailed: number;
+  readonly gateMedianMs: number;
+}
+
+export interface ArmComparison {
+  readonly active: ArmCounts;
+  readonly off: ArmCounts;
+}
+
 export interface GainReport {
   readonly schema: typeof GAIN_SCHEMA;
   readonly days: number;
@@ -30,6 +43,7 @@ export interface GainReport {
   readonly current: GainCounts;
   readonly previous: GainCounts;
   readonly supervisorUsage?: Readonly<Record<string, number>>;
+  readonly byArm?: Readonly<Record<string, ArmComparison>>;
 }
 
 interface LogLine {
@@ -86,11 +100,62 @@ const numbersIn = (text: string | undefined): Readonly<Record<string, number>> |
   return entries.length === 0 ? undefined : Object.fromEntries(entries);
 };
 
+interface ArmLine {
+  readonly feature: string;
+  readonly task: string;
+  readonly arm: "active" | "off";
+}
+
+const readArms = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ArmLine[] => {
+  const text = runtime.readText(paths.log);
+  if (!text.ok) return [];
+  return text.value.split("\n").flatMap((line): ArmLine[] => {
+    const parsed = parseJsonObject(line);
+    if (!parsed.ok || parsed.value["event"] !== "experiment_arm") return [];
+    const { feature, task, arm } = parsed.value;
+    return typeof feature === "string" && typeof task === "string" && (arm === "active" || arm === "off")
+      ? [{ feature, task, arm }]
+      : [];
+  });
+};
+
+const median = (values: readonly number[]): number => {
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted.length === 0 ? 0 : (sorted[Math.floor((sorted.length - 1) / 2)] ?? 0);
+};
+
+const armCounts = (tasks: ReadonlySet<string>, gates: readonly Evidence[]): ArmCounts => {
+  const runs = gates.filter((entry) => tasks.has(entry.task));
+  return {
+    tasks: tasks.size,
+    completed: new Set(runs.filter((entry) => entry.status === "passed").map((entry) => entry.task)).size,
+    gateRuns: runs.length,
+    gateFailed: runs.filter((entry) => entry.status === "failed").length,
+    gateMedianMs: median(runs.map((entry) => entry.durationMs ?? 0)),
+  };
+};
+
+export const armComparison = (
+  arms: readonly ArmLine[],
+  gates: readonly Evidence[],
+): Readonly<Record<string, ArmComparison>> => {
+  const features = [...new Set(arms.map((line) => line.feature))].sort();
+  return Object.fromEntries(
+    features.map((feature) => {
+      const assigned = new Map(arms.filter((line) => line.feature === feature).map((line) => [line.task, line.arm]));
+      const tasksIn = (arm: "active" | "off"): ReadonlySet<string> =>
+        new Set([...assigned].filter(([, value]) => value === arm).map(([task]) => task));
+      return [feature, { active: armCounts(tasksIn("active"), gates), off: armCounts(tasksIn("off"), gates) }];
+    }),
+  );
+};
+
 export const gainReport = (
   runtime: Pick<Runtime, "readText" | "listDir" | "now">,
   paths: FmPaths,
   days: number,
   usageText?: string,
+  byArm = false,
 ): GainReport => {
   const to = Date.parse(runtime.now());
   const from = to - days * DAY_MS;
@@ -107,5 +172,6 @@ export const gainReport = (
       const usage = numbersIn(usageText);
       return usage === undefined ? {} : { supervisorUsage: usage };
     })(),
+    ...(byArm ? { byArm: armComparison(readArms(runtime, paths), gates) } : {}),
   };
 };

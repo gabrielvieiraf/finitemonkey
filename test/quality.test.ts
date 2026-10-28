@@ -139,7 +139,13 @@ after(() => {
 });
 
 const project = (files: Readonly<Record<string, string>> = {}): Repo => {
-  const repo = makeRepo({ "package.json": "{}\n", "src/big.ts": lines(900), ...files });
+  const repo = makeRepo({
+    "package.json": "{}\n",
+    "src/big.ts": lines(900),
+    ".finitemonkey/policy.yml":
+      "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
+    ...files,
+  });
   repos.push(repo);
   return repo;
 };

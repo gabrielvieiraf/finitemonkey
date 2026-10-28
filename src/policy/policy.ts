@@ -38,7 +38,19 @@ export const OPTIONAL_GUARDS = [
   "learnings",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
-export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set(["fourth-attempt", "claims", "clarify"]);
+export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
+  "fourth-attempt",
+  "claims",
+  "clarify",
+  "quality",
+  "slop",
+  "tests-hold",
+  "regression",
+  "advisor",
+  "reminders",
+  "learnings",
+  "rules-stop",
+]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];
 export type Level = (typeof LEVELS)[number];
@@ -50,6 +62,7 @@ export interface Policy {
   readonly severity: Severity;
   readonly promoteAfter: number;
   readonly guards: Readonly<Record<string, GuardMode>>;
+  readonly experiments: Readonly<Record<string, "random">>;
 }
 
 export const DEFAULT_POLICY: Policy = {
@@ -58,6 +71,7 @@ export const DEFAULT_POLICY: Policy = {
   severity: "medium",
   promoteAfter: DEFAULT_PROMOTE_AFTER,
   guards: {},
+  experiments: {},
 };
 
 const pick = <T extends string>(options: readonly T[], value: unknown, fallback: T): T =>
@@ -73,12 +87,18 @@ export const parsePolicy = (text: string): Policy => {
       return known === undefined ? [] : [[id, known]];
     }),
   );
+  const experiments = Object.fromEntries(
+    Object.entries(configMap(tree, "experiments")).flatMap(([id, mode]): [string, "random"][] =>
+      mode === "random" ? [[id, "random"]] : [],
+    ),
+  );
   return {
     exists: true,
     level: pick(LEVELS, configAt(tree, "level"), DEFAULT_POLICY.level),
     severity: pick(SEVERITIES, configAt(tree, "severity"), DEFAULT_POLICY.severity),
     promoteAfter: Number.isInteger(promoteAfter) && promoteAfter > 0 ? promoteAfter : DEFAULT_PROMOTE_AFTER,
     guards,
+    experiments,
   };
 };
 

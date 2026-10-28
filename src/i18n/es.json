@@ -1581,5 +1581,7 @@
   "prose.rule.time-estimate": "quita la estimación de tiempo; di qué está hecho, qué falta y qué lo bloquea",
   "defaults.question.commits": "{conventional} de los últimos {total} commits aquí siguen Conventional Commits. ¿Usar Conventional Commits de ahora en adelante? [S/n]",
   "defaults.question.commits_pending": "Pregunta para la persona: solo {conventional} de los últimos {total} commits siguen Conventional Commits, el predeterminado aquí. Mantén el estilo del repositorio con `finitemonkey init --yes --commits free`, o adopta el predeterminado con `--commits conventional`.",
-  "defaults.error.commits": "Estilo de commit desconocido \"{value}\". Usa conventional o free"
+  "defaults.error.commits": "Estilo de commit desconocido \"{value}\". Usa conventional o free",
+  "gain.arm": "{feature}: activada {onDone} de {onTasks} tareas terminadas, {onFailed} controles fallidos; desactivada {offDone} de {offTasks}, {offFailed} fallidos",
+  "gain.arm.none": "Ninguna función está en un experimento aleatorio. Usa experiments: <feature>: random en policy.yml."
 }

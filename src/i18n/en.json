@@ -1581,5 +1581,7 @@
   "prose.rule.time-estimate": "drop the time estimate; say what is done, what is left and what blocks it",
   "defaults.question.commits": "{conventional} of the last {total} commits here follow Conventional Commits. Use Conventional Commits from now on? [Y/n]",
   "defaults.question.commits_pending": "Question for the person: only {conventional} of the last {total} commits follow Conventional Commits, the default here. Keep the repository's style with `finitemonkey init --yes --commits free`, or adopt the default with `--commits conventional`.",
-  "defaults.error.commits": "Unknown commit style \"{value}\". Use conventional or free"
+  "defaults.error.commits": "Unknown commit style \"{value}\". Use conventional or free",
+  "gain.arm": "{feature}: on {onDone} of {onTasks} tasks done, {onFailed} failed gates; off {offDone} of {offTasks} done, {offFailed} failed gates",
+  "gain.arm.none": "No feature is in a random experiment. Set experiments: <feature>: random in policy.yml."
 }
