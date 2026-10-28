@@ -193,6 +193,7 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: ["src/api/", "src/mocks/", "app/api/", "app/mocks/", "lib/api/", "lib/mocks/"],
   },
+  { id: "ds-sync", kind: "writes", targets: [".github/workflows/ds-sync.yml"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

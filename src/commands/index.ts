@@ -24,6 +24,7 @@ import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
 import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
+import { dsSyncCommand } from "./ds-sync.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
@@ -235,6 +236,7 @@ export const REGISTRY = [
   archCommand,
   organizeCommand,
   contractCommand,
+  dsSyncCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

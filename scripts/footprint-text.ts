@@ -1,5 +1,6 @@
 import type { FootprintId } from "../src/core/footprint.js";
 import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
+import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
 
@@ -8,6 +9,7 @@ export type Lang = (typeof LANGS)[number];
 export type Localized = Readonly<Record<Lang, string>>;
 
 export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
+  ...STAGE3_FOOTPRINT_TEXT,
   "hook-input": {
     en: "The event Claude Code passes to each hook: the tool call, the prompt or the stop request.",
     "pt-BR": "O evento que o Claude Code passa a cada hook: a chamada de ferramenta, o prompt ou o pedido de parada.",
@@ -281,6 +283,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão.",
     es: "Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano.",
   },
+<<<<<<< HEAD
   ownership: {
     en: "`gen ownership` writes one entry per component (name, vocabulary type, owner, consumers) after the person passes `--yes`; `ci gate`, `ownership check` and `plan check` read it, or read `catalog-info.yaml` when that exists.",
     "pt-BR":
@@ -319,6 +322,8 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Só com `finitemonkey contract --write` ou `contract mocks --write`: o registro de endpoints, o cliente tipado, o envelope de erro e o teste de cobertura em `api/`, e os mocks MSW em `mocks/`, dentro de `src/`, `app/` (Remix) ou `lib/` (Next sem `src/`), gerados a partir de `api/contract.yml`. Arquivos existentes nunca são substituídos, a menos que a pessoa passe `--overwrite` num terminal.",
     es: "Solo con `finitemonkey contract --write` o `contract mocks --write`: el registro de endpoints, el cliente tipado, el envelope de error y el test de cobertura en `api/`, y los mocks MSW en `mocks/`, dentro de `src/`, `app/` (Remix) o `lib/` (Next sin `src/`), generados desde `api/contract.yml`. Los archivos existentes nunca se reemplazan, salvo que la persona pase `--overwrite` en una terminal.",
   },
+=======
+>>>>>>> 4f004d56 (feat(ds-sync): design system sync workflow and issues from prototypes)
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";
