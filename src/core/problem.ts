@@ -75,6 +75,7 @@ export const ERROR_CODES = [
   "fronts_failed",
   "front_report_invalid",
   "fronts_merge_failed",
+  "creds_write_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

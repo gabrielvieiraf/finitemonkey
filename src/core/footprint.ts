@@ -95,6 +95,7 @@ export const FOOTPRINT = [
       "refs/finitemonkey/archive/",
     ],
   },
+  { id: "creds", kind: "writes", targets: [".finitemonkey/creds.yml"] },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "prompts", kind: "writes", targets: [".finitemonkey/prompts.jsonl"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },

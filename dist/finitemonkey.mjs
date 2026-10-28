@@ -4413,6 +4413,278 @@ var costCheckCommand = {
   })
 };
 
+// src/creds/files.ts
+var SKIPPED = /* @__PURE__ */ new Set(["node_modules", "dist", "build", "vendor", ".git", ".finitemonkey", "coverage"]);
+var repoFiles = (runtime, root) => {
+  const tracked = runtime.git(["ls-files", "--cached", "--others", "--exclude-standard"], root);
+  const files = tracked.found && tracked.ok ? tracked.stdout.split("\n").filter((line9) => line9 !== "") : (() => {
+    const entries = runtime.listDir(root);
+    return entries.ok ? entries.value : [];
+  })();
+  return files.filter((file) => !file.split("/").some((part2) => SKIPPED.has(part2)));
+};
+var readRepoFile = (runtime, root, file) => {
+  const text12 = runtime.readText(toAbsolutePath(file, root));
+  return text12.ok ? text12.value : void 0;
+};
+var baseName = (file) => file.slice(file.lastIndexOf("/") + 1);
+
+// src/creds/env-files.ts
+var ENV_FILE2 = /^\.env(?:\..+)?$/;
+var TEMPLATE = /^\.env\.(?:example|sample|template|dist)$/;
+var isEnvFile = (file) => ENV_FILE2.test(baseName(file));
+var isEnvTemplate = (file) => TEMPLATE.test(baseName(file));
+var environmentOf = (file) => {
+  const base = baseName(file);
+  return base === ".env" ? "default" : base.slice(".env.".length);
+};
+var namesIn = (text12) => [...text12.matchAll(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/gm)].map((match) => match[1] ?? "");
+var dirsOf = (files) => {
+  const dirs = /* @__PURE__ */ new Set([""]);
+  for (const file of files) {
+    const parts = file.split("/").slice(0, -1);
+    for (let depth = 1; depth <= Math.min(2, parts.length); depth += 1) dirs.add(parts.slice(0, depth).join("/"));
+  }
+  return [...dirs].sort();
+};
+var envFiles = (runtime, root) => {
+  const files = repoFiles(runtime, root);
+  const found = new Set(files.filter(isEnvFile));
+  for (const dir of dirsOf(files)) {
+    const entries = runtime.listDir(dir === "" ? root : toAbsolutePath(dir, root));
+    if (!entries.ok) continue;
+    for (const name of entries.value) if (ENV_FILE2.test(name)) found.add(dir === "" ? name : `${dir}/${name}`);
+  }
+  return [...found].sort();
+};
+var envNames = (runtime, root, file) => namesIn(readRepoFile(runtime, root, file) ?? "");
+
+// src/creds/history.ts
+var ENV_HISTORY_RULE = "env-file-in-history";
+var envInHistory = (runtime, root) => {
+  const log = runtime.git(
+    [
+      "log",
+      "--all",
+      "--diff-filter=A",
+      "--name-only",
+      "--format=commit:%H",
+      "--",
+      ":(glob)**/.env",
+      ":(glob)**/.env.*"
+    ],
+    root
+  );
+  if (!log.found || !log.ok) return [];
+  const found = /* @__PURE__ */ new Map();
+  let commit2 = "";
+  for (const line9 of log.stdout.split("\n")) {
+    if (line9.startsWith("commit:")) commit2 = line9.slice("commit:".length);
+    else if (line9 !== "" && isEnvFile(line9) && !isEnvTemplate(line9)) found.set(line9, commit2);
+  }
+  return [...found.entries()].map(([file, first]) => ({ file, commit: first })).sort((a, b) => a.file.localeCompare(b.file));
+};
+var openHistoryIncidents = (runtime, root, found, by) => found.flatMap((item2) => {
+  const incident = recordIncident(
+    runtime,
+    root,
+    {
+      rule: ENV_HISTORY_RULE,
+      where: item2.file,
+      fingerprint: item2.file,
+      source: "history",
+      state: "aberto",
+      firstCommit: item2.commit
+    },
+    by
+  );
+  return incident.ok ? [incident.value.id] : [];
+});
+
+// src/creds/classify.ts
+var STATIC_CLOUD = {
+  AWS_ACCESS_KEY_ID: "aws",
+  AWS_SECRET_ACCESS_KEY: "aws",
+  GOOGLE_APPLICATION_CREDENTIALS: "gcp",
+  GOOGLE_CREDENTIALS: "gcp",
+  GCP_CREDENTIALS: "gcp",
+  GCP_SA_KEY: "gcp",
+  GCP_SERVICE_ACCOUNT_KEY: "gcp",
+  AZURE_CLIENT_SECRET: "azure",
+  AZURE_CREDENTIALS: "azure",
+  ARM_CLIENT_SECRET: "azure"
+};
+var FEDERATED = /^(?:AWS_ROLE_ARN|AWS_WEB_IDENTITY_TOKEN_FILE|AZURE_FEDERATED_TOKEN_FILE|ACTIONS_ID_TOKEN_REQUEST_\w+|\w*WORKLOAD_IDENTITY_PROVIDER)$/;
+var SCOPED = /^(?:GITHUB_TOKEN|GH_TOKEN)$/;
+var CREDENTIAL_LIKE = /(?:KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL|PRIVATE|DSN|AUTH|CERT|SALT|WEBHOOK|CONNECTION|DATABASE_URL|REDIS_URL|MONGO\w*_URI|_ARN)/;
+var isCredentialName = (name) => CREDENTIAL_LIKE.test(name.toUpperCase()) && !/^(?:NEXT_PUBLIC|VITE|REACT_APP|EXPO_PUBLIC|NUXT_PUBLIC)_/.test(name);
+var credType = (name) => {
+  if (FEDERATED.test(name)) return "federated";
+  if (SCOPED.test(name)) return "scoped";
+  return "static";
+};
+var credRisk = (name, services) => {
+  const type = credType(name);
+  if (type !== "static") return "low";
+  return STATIC_CLOUD[name] !== void 0 || services > 1 ? "high" : "medium";
+};
+var PUBLIC_PREFIX = /^(NEXT_PUBLIC|VITE|REACT_APP|EXPO_PUBLIC|NUXT_PUBLIC|PUBLIC|GATSBY)_/;
+var SECRET_LIKE = /(?:SECRET|PRIVATE|PASSWORD|PASSWD|SERVICE_ROLE|ACCESS_KEY|CREDENTIAL|DATABASE_URL|ADMIN_KEY)/;
+var publicSecretName = (name) => {
+  const prefix2 = PUBLIC_PREFIX.exec(name);
+  return prefix2 !== null && SECRET_LIKE.test(name.slice(prefix2[0].length));
+};
+
+// src/creds/reads.ts
+var NAME2 = String.raw`([A-Za-z_][A-Za-z0-9_]*)`;
+var QUOTED = String.raw`["'\x60]${NAME2}["'\x60]`;
+var CODE_PATTERNS = [
+  new RegExp(String.raw`\bprocess\.env\.${NAME2}`, "g"),
+  new RegExp(String.raw`\bprocess\.env\[\s*${QUOTED}\s*\]`, "g"),
+  new RegExp(String.raw`\bimport\.meta\.env\.${NAME2}`, "g"),
+  new RegExp(String.raw`\bDeno\.env\.get\(\s*${QUOTED}`, "g"),
+  new RegExp(String.raw`\bBun\.env\.${NAME2}`, "g"),
+  new RegExp(String.raw`\bos\.environ\[\s*${QUOTED}\s*\]`, "g"),
+  new RegExp(String.raw`\bos\.(?:environ\.get|getenv)\(\s*${QUOTED}`, "g"),
+  new RegExp(String.raw`\bos\.(?:Getenv|LookupEnv)\(\s*${QUOTED}`, "g"),
+  new RegExp(String.raw`\bENV(?:\.fetch\(|\[)\s*${QUOTED}`, "g")
+];
+var DESTRUCTURED = /\{([^{}]*)\}\s*=\s*process\.env\b/g;
+var WORKFLOW_SECRET = /\$\{\{\s*secrets\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/g;
+var SOURCE = /\.(?:[cm]?[jt]sx?|py|go|rb|vue|svelte|astro)$/;
+var WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
+var lineAt = (text12, index) => text12.slice(0, index).split("\n").length;
+var matches = (pattern, text12) => [...text12.matchAll(pattern)].map((match) => ({ name: match[1] ?? "", index: match.index }));
+var destructured = (text12) => [...text12.matchAll(DESTRUCTURED)].flatMap(
+  (match) => (match[1] ?? "").split(",").map((part2) => (part2.split(":")[0] ?? "").split("=")[0]?.trim() ?? "").filter((name) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(name)).map((name) => ({ name, index: match.index }))
+);
+var readsIn = (file, text12) => {
+  if (WORKFLOW.test(file))
+    return matches(WORKFLOW_SECRET, text12).map((found) => ({
+      name: found.name,
+      file,
+      line: lineAt(text12, found.index),
+      kind: "workflow"
+    }));
+  if (!SOURCE.test(file)) return [];
+  return [...CODE_PATTERNS.flatMap((pattern) => matches(pattern, text12)), ...destructured(text12)].map((found) => ({ name: found.name, file, line: lineAt(text12, found.index), kind: "code" })).sort((left, right) => left.line - right.line || left.name.localeCompare(right.name));
+};
+var envReads = (runtime, root) => repoFiles(runtime, root).flatMap(
+  (file) => SOURCE.test(file) || WORKFLOW.test(file) ? readsIn(file, readRepoFile(runtime, root, file) ?? "") : []
+);
+
+// src/creds/inventory.ts
+var CREDS_FILE = ".finitemonkey/creds.yml";
+var SERVICE_ROOTS = /* @__PURE__ */ new Set(["apps", "services", "packages", "functions", "workers", "cmd"]);
+var serviceOf = (read5) => {
+  if (read5.kind === "workflow") return "ci";
+  const parts = read5.file.split("/");
+  const [first = "", second] = parts;
+  if (parts.length > 2 && SERVICE_ROOTS.has(first) && second !== void 0) return `${first}/${second}`;
+  return ".";
+};
+var environments = (runtime, root) => {
+  const map = /* @__PURE__ */ new Map();
+  for (const file of envFiles(runtime, root).filter((item2) => !isEnvTemplate(item2))) {
+    for (const name of envNames(runtime, root, file)) {
+      const set = map.get(name) ?? /* @__PURE__ */ new Set();
+      set.add(environmentOf(file));
+      map.set(name, set);
+    }
+  }
+  return new Map([...map.entries()].map(([name, set]) => [name, [...set].sort()]));
+};
+var credentialInventory = (runtime, root) => {
+  const reads = envReads(runtime, root).filter((read5) => read5.kind === "workflow" || isCredentialName(read5.name));
+  const envs = environments(runtime, root);
+  const names2 = [...new Set(reads.map((read5) => read5.name))].sort();
+  return names2.map((name) => {
+    const mine = reads.filter((read5) => read5.name === name);
+    const services = [...new Set(mine.map(serviceOf))].sort();
+    const codeServices = services.filter((service) => service !== "ci");
+    const inCi = services.includes("ci");
+    const cloud = STATIC_CLOUD[name];
+    return {
+      name,
+      type: credType(name),
+      risk: credRisk(name, codeServices.length),
+      ...cloud === void 0 ? {} : { cloud },
+      services,
+      shared: codeServices.length > 1,
+      environments: [.../* @__PURE__ */ new Set([...envs.get(name) ?? [], ...inCi ? ["ci"] : []])].sort(),
+      readAt: mine.map((read5) => `${read5.file}:${String(read5.line)}`)
+    };
+  });
+};
+var inventoryYaml = (credentials) => `# finitemonkey creds: names and places only, never values
+${stringifyYaml({
+  schemaVersion: 1,
+  credentials: credentials.map((credential) => ({
+    name: credential.name,
+    type: credential.type,
+    risk: credential.risk,
+    ...credential.cloud === void 0 ? {} : { cloud: credential.cloud },
+    shared: credential.shared,
+    services: [...credential.services],
+    environments: [...credential.environments],
+    readAt: [...credential.readAt]
+  }))
+})}`;
+
+// src/secrets/project.ts
+var projectRoot = (ctx) => {
+  const top = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
+  const path = top.stdout.trim();
+  return top.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
+};
+var isPerson = (ctx) => ctx.io.stdin.isTTY === true && ctx.env["CLAUDECODE"] === void 0 && ctx.env["CLAUDE_CODE_ENTRYPOINT"] === void 0;
+var personName = (ctx) => {
+  const name = ctx.runtime.git(["config", "user.name"], ctx.cwd).stdout.trim();
+  return name !== "" ? name : ctx.env["USER"] ?? ctx.env["USERNAME"] ?? "person";
+};
+
+// src/commands/creds.ts
+var CREDS_SCHEMA = "finitemonkey/creds@1";
+var notes = (ctx, data) => [
+  ctx.t("creds.inventory.written", { count: data.credentials.length, file: data.file }),
+  ...data.credentials.filter((credential) => credential.shared).map(
+    (credential) => ctx.t("creds.inventory.shared", { name: credential.name, services: credential.services.join(", ") })
+  ),
+  ...data.credentials.flatMap(
+    (credential) => credential.cloud === void 0 || credential.type !== "static" ? [] : [ctx.t("creds.inventory.static_cloud", { name: credential.name, cloud: credential.cloud })]
+  ),
+  ...data.history.map(
+    (item2) => ctx.t("creds.inventory.incident", { file: item2.file, commit: item2.commit.slice(0, 12), id: item2.incident ?? "" })
+  )
+];
+var runCreds = (ctx) => {
+  const root = projectRoot(ctx);
+  const credentials = credentialInventory(ctx.runtime, root);
+  const found = envInHistory(ctx.runtime, root);
+  const ids2 = openHistoryIncidents(ctx.runtime, root, found, personName(ctx));
+  const history = found.map((item2, index) => ({ ...item2, incident: ids2[index] ?? null }));
+  const data = { schema: CREDS_SCHEMA, file: CREDS_FILE, credentials, history };
+  const made = ctx.runtime.mkdir(toAbsolutePath(".finitemonkey", root));
+  const saved = made.ok ? ctx.runtime.writeText(toAbsolutePath(CREDS_FILE, root), inventoryYaml(credentials)) : made;
+  if (saved.ok) return success(data, notes(ctx, data));
+  return failureFrom(ctx.t, {
+    code: "creds_write_failed",
+    messageKey: "creds.write_failed",
+    params: { file: CREDS_FILE, detail: saved.error },
+    fix: `check that ${CREDS_FILE} can be written, then run finitemonkey creds again`,
+    exitCode: ExitCode.CheckFailed,
+    data
+  });
+};
+var credsCommand = {
+  path: ["creds"],
+  summaryKey: "creds.command.inventory",
+  usage: "finitemonkey creds",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => Promise.resolve(runCreds(ctx))
+};
+
 // src/hooks/stdin.ts
 var readAll = (source) => new Promise((resolve2, reject2) => {
   if (source.isTTY === true) {
@@ -4810,7 +5082,7 @@ var CREDENTIAL_HINTS = {
 };
 var ENV_NAME = /(?:process\.env\.|process\.env\[["']|import\.meta\.env\.|os\.environ\.get\(["']|os\.environ\[["']|os\.getenv\(["']|Getenv\(["']|ENV\[["']|env\(["'])([A-Z_][A-Z0-9_]*)/g;
 var envNamesIn = (text12) => [...text12.matchAll(ENV_NAME)].map((match) => match[1] ?? "").filter((name) => name !== "");
-var SKIPPED = [
+var SKIPPED2 = [
   ":(exclude,glob)**/node_modules/**",
   ":(exclude,glob)**/dist/**",
   ":(exclude,glob)**/build/**",
@@ -4829,7 +5101,7 @@ var DEPLOY_FILE = /(^|\/)(Dockerfile[^/]*|docker-compose[^/]*\.ya?ml|compose\.ya
 var GREP_LINE = /^[^:]+:(.+?):(\d+):(.*)$/;
 var pathspecOf = (covered) => [
   ...covered.length === 0 ? ["."] : covered,
-  ...SKIPPED
+  ...SKIPPED2
 ];
 var linesOf = (text12) => (text12 ?? "").split("\n").map(withoutCarriageReturn).filter((line9) => line9 !== "");
 var grepAt = (git3, hash, grep2, covered) => {
@@ -6476,7 +6748,26 @@ var en_default = {
   "fronts.sync.github": "{file}: {count, plural, one {# issue} other {# issues}} read from GitHub",
   "fronts.sync.local": "{file}: {count, plural, one {# row} other {# rows}} kept from the local map; GitHub was not read",
   "plan.issue.issue_without_row": "an issue has no row in the task map: {detail}",
-  "plan.issue.row_without_issue": "a task map row points to no issue: {detail}"
+  "plan.issue.row_without_issue": "a task map row points to no issue: {detail}",
+  "creds.command.inventory": "Write .finitemonkey/creds.yml: every credential the project reads, where, in which environments, its type and risk (names only)",
+  "creds.block.static.claim": "{file} would read the static cloud key {variable} from secrets, and {provider} accepts OIDC from GitHub Actions",
+  "creds.block.static.requires": "Use the short-lived login instead: {alternative}. If the project truly needs the static key, ask the person to record an exception",
+  "creds.block.not": "the same key under another secret name, or passed through env or a script",
+  "creds.block.human": "Kept the static cloud key {variable} out of {file}: {provider} accepts OIDC.",
+  "creds.inventory.written": "{count, plural, one {# credential} other {# credentials}} written to {file} (names only).",
+  "creds.inventory.shared": "{name} is read by {services}; a rotation has to reach all of them at once.",
+  "creds.inventory.static_cloud": "{name} is a static {cloud} key; prefer OIDC where the provider accepts it.",
+  "creds.inventory.incident": "{file} was committed in {commit}; incident {id} is open until the values in it are rotated.",
+  "creds.write_failed": "Could not write {file}: {detail}",
+  "env.unignored": "{file} is not ignored by git; only .env.example belongs in the repository.",
+  "env.public": "{name} ({where}) has a public prefix and a secret-like name; the bundler ships it to every browser.",
+  "env.undocumented": "{name} is read at {where} but is missing from .env.example.",
+  "env.unused": "{name} is in {file} but no code reads it.",
+  "env.history": ".env file {file} is in the git history (commit {commit}).",
+  "env.fix_unignored": "Add `.env*` and `!.env.example` to .gitignore, and `git rm --cached` the file if it is tracked.",
+  "env.fix_public": "Drop the public prefix and read the value on the server only.",
+  "env.fix_parity": "Keep .env.example listing every variable the code reads, with empty or fake values.",
+  "env.fix_history": "Run `finitemonkey creds` to open the incident, rotate every value the file held, then close it."
 };
 
 // src/i18n/es.json
@@ -7636,7 +7927,26 @@ var es_default = {
   "fronts.sync.github": "{file}: {count, plural, one {# issue leída} other {# issues leídas}} de GitHub",
   "fronts.sync.local": "{file}: {count, plural, one {# fila mantenida} other {# filas mantenidas}} del mapa local; GitHub no se leyó",
   "plan.issue.issue_without_row": "una issue no tiene fila en el mapa de tareas: {detail}",
-  "plan.issue.row_without_issue": "una fila del mapa de tareas no apunta a ninguna issue: {detail}"
+  "plan.issue.row_without_issue": "una fila del mapa de tareas no apunta a ninguna issue: {detail}",
+  "creds.command.inventory": "Escribe .finitemonkey/creds.yml: cada credencial que el proyecto lee, dónde, en qué entornos, su tipo y su riesgo (solo nombres)",
+  "creds.block.static.claim": "{file} pasaría a leer la clave estática de nube {variable} desde los secrets, y {provider} acepta OIDC de GitHub Actions",
+  "creds.block.static.requires": "Usa el inicio de sesión de corta duración: {alternative}. Si el proyecto de verdad necesita la clave estática, pide a la persona que registre una excepción",
+  "creds.block.not": "la misma clave con otro nombre de secret, o pasada por env o por un script",
+  "creds.block.human": "Dejé fuera de {file} la clave estática de nube {variable}: {provider} acepta OIDC.",
+  "creds.inventory.written": "{count, plural, one {# credencial escrita} other {# credenciales escritas}} en {file} (solo nombres).",
+  "creds.inventory.shared": "{name} la leen {services}; una rotación tiene que llegar a todos a la vez.",
+  "creds.inventory.static_cloud": "{name} es una clave estática de {cloud}; mejor OIDC donde el proveedor lo acepte.",
+  "creds.inventory.incident": "{file} entró en el commit {commit}; el incidente {id} queda abierto hasta rotar los valores que tenía.",
+  "creds.write_failed": "No se pudo escribir {file}: {detail}",
+  "env.unignored": "git no ignora {file}; solo .env.example va en el repositorio.",
+  "env.public": "{name} ({where}) tiene prefijo público y nombre de secreto; el bundler lo envía a cada navegador.",
+  "env.undocumented": "{name} se lee en {where}, pero falta en .env.example.",
+  "env.unused": "{name} está en {file}, pero ningún código la lee.",
+  "env.history": "El archivo .env {file} está en el historial de git (commit {commit}).",
+  "env.fix_unignored": "Añade `.env*` y `!.env.example` al .gitignore, y haz `git rm --cached` del archivo si está rastreado.",
+  "env.fix_public": "Quita el prefijo público y lee el valor solo en el servidor.",
+  "env.fix_parity": "Mantén en .env.example cada variable que lee el código, con valores vacíos o falsos.",
+  "env.fix_history": "Ejecuta `finitemonkey creds` para abrir el incidente, rota cada valor que tenía el archivo y luego ciérralo."
 };
 
 // src/i18n/pt-BR.json
@@ -8796,7 +9106,26 @@ var pt_BR_default = {
   "fronts.sync.github": "{file}: {count, plural, one {# issue lida} other {# issues lidas}} do GitHub",
   "fronts.sync.local": "{file}: {count, plural, one {# linha mantida} other {# linhas mantidas}} do mapa local; o GitHub não foi lido",
   "plan.issue.issue_without_row": "uma issue não tem linha no mapa de tarefas: {detail}",
-  "plan.issue.row_without_issue": "uma linha do mapa de tarefas não aponta para issue: {detail}"
+  "plan.issue.row_without_issue": "uma linha do mapa de tarefas não aponta para issue: {detail}",
+  "creds.command.inventory": "Grava .finitemonkey/creds.yml: cada credencial que o projeto lê, onde, em quais ambientes, tipo e risco (só nomes)",
+  "creds.block.static.claim": "{file} passaria a ler a chave estática de nuvem {variable} dos secrets, e o {provider} aceita OIDC do GitHub Actions",
+  "creds.block.static.requires": "Use o login de curta duração no lugar: {alternative}. Se o projeto precisa mesmo da chave estática, peça à pessoa para registrar uma exceção",
+  "creds.block.not": "a mesma chave com outro nome de secret, ou passada por env ou por script",
+  "creds.block.human": "Barrei a chave estática de nuvem {variable} em {file}: o {provider} aceita OIDC.",
+  "creds.inventory.written": "{count, plural, one {# credencial gravada} other {# credenciais gravadas}} em {file} (só nomes).",
+  "creds.inventory.shared": "{name} é lida por {services}; uma rotação precisa chegar em todos ao mesmo tempo.",
+  "creds.inventory.static_cloud": "{name} é uma chave estática de {cloud}; prefira OIDC onde o provedor aceita.",
+  "creds.inventory.incident": "{file} entrou no commit {commit}; o incidente {id} fica aberto até os valores dele serem rotacionados.",
+  "creds.write_failed": "Não deu para gravar {file}: {detail}",
+  "env.unignored": "{file} não está ignorado pelo git; só o .env.example pertence ao repositório.",
+  "env.public": "{name} ({where}) tem prefixo público e nome de segredo; o bundler entrega isso a todo navegador.",
+  "env.undocumented": "{name} é lida em {where}, mas falta no .env.example.",
+  "env.unused": "{name} está em {file}, mas nenhum código lê.",
+  "env.history": "O arquivo .env {file} está no histórico do git (commit {commit}).",
+  "env.fix_unignored": "Adicione `.env*` e `!.env.example` ao .gitignore e faça `git rm --cached` do arquivo se ele estiver rastreado.",
+  "env.fix_public": "Tire o prefixo público e leia o valor só no servidor.",
+  "env.fix_parity": "Mantenha no .env.example toda variável que o código lê, com valores vazios ou falsos.",
+  "env.fix_history": "Rode `finitemonkey creds` para abrir o incidente, rotacione cada valor que o arquivo tinha e depois feche."
 };
 
 // src/i18n/review.json
@@ -9917,7 +10246,26 @@ var review_default = {
     "fronts.sync.github": "machine",
     "fronts.sync.local": "machine",
     "plan.issue.issue_without_row": "machine",
-    "plan.issue.row_without_issue": "machine"
+    "plan.issue.row_without_issue": "machine",
+    "creds.command.inventory": "machine",
+    "creds.block.static.claim": "machine",
+    "creds.block.static.requires": "machine",
+    "creds.block.not": "machine",
+    "creds.block.human": "machine",
+    "creds.inventory.written": "machine",
+    "creds.inventory.shared": "machine",
+    "creds.inventory.static_cloud": "machine",
+    "creds.inventory.incident": "machine",
+    "creds.write_failed": "machine",
+    "env.unignored": "machine",
+    "env.public": "machine",
+    "env.undocumented": "machine",
+    "env.unused": "machine",
+    "env.history": "machine",
+    "env.fix_unignored": "machine",
+    "env.fix_public": "machine",
+    "env.fix_parity": "machine",
+    "env.fix_history": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -11035,7 +11383,26 @@ var review_default = {
     "fronts.sync.github": "machine",
     "fronts.sync.local": "machine",
     "plan.issue.issue_without_row": "machine",
-    "plan.issue.row_without_issue": "machine"
+    "plan.issue.row_without_issue": "machine",
+    "creds.command.inventory": "machine",
+    "creds.block.static.claim": "machine",
+    "creds.block.static.requires": "machine",
+    "creds.block.not": "machine",
+    "creds.block.human": "machine",
+    "creds.inventory.written": "machine",
+    "creds.inventory.shared": "machine",
+    "creds.inventory.static_cloud": "machine",
+    "creds.inventory.incident": "machine",
+    "creds.write_failed": "machine",
+    "env.unignored": "machine",
+    "env.public": "machine",
+    "env.undocumented": "machine",
+    "env.unused": "machine",
+    "env.history": "machine",
+    "env.fix_unignored": "machine",
+    "env.fix_public": "machine",
+    "env.fix_parity": "machine",
+    "env.fix_history": "machine"
   }
 };
 
@@ -11152,7 +11519,7 @@ var questionKey = (label2) => `decision.ask.${label2}`;
 // src/decide/check.ts
 var DECISION_FILE = /^\d{2,}-decision-.+\.md$/;
 var FACT = /^\s*(?:[-*|]\s*)?\**FACT\**\s*[:|]/;
-var SOURCE = /https?:\/\/\S+|[\w./-]*[A-Za-z_/-][\w./-]*\.[A-Za-z]{1,6}(?::\d+)?\b|\bsource\s*:\s*\S/i;
+var SOURCE2 = /https?:\/\/\S+|[\w./-]*[A-Za-z_/-][\w./-]*\.[A-Za-z]{1,6}(?::\d+)?\b|\bsource\s*:\s*\S/i;
 var DATE3 = /\b\d{4}-\d{2}-\d{2}\b/;
 var PARITY = /parity|\bP\d+\b/i;
 var anyLang = (key2) => LANGUAGES.map((lang) => catalogs[lang][key2].toLowerCase());
@@ -11175,7 +11542,7 @@ var structureIssues = (sections) => {
   ];
 };
 var linesOf2 = (sections, id) => sections.find((section3) => idOf(section3) === id)?.lines ?? [];
-var factIssues = (sections) => sections.flatMap((section3) => section3.lines).filter((line9) => FACT.test(line9.text) && !(SOURCE.test(line9.text.replace(FACT, "")) && DATE3.test(line9.text))).map((line9) => ({ kind: "fact_without_source", line: line9.line, detail: line9.text.trim() }));
+var factIssues = (sections) => sections.flatMap((section3) => section3.lines).filter((line9) => FACT.test(line9.text) && !(SOURCE2.test(line9.text.replace(FACT, "")) && DATE3.test(line9.text))).map((line9) => ({ kind: "fact_without_source", line: line9.line, detail: line9.text.trim() }));
 var rowsOf = (lines4) => lines4.filter((line9) => line9.text.trim().startsWith("|")).slice(1).map(
   (line9) => line9.text.trim().replace(/^\||\|$/g, "").split("|").map((cell3) => cell3.trim())
 ).filter((cells) => !/^-{3}/.test(cells[0] ?? ""));
@@ -11324,7 +11691,7 @@ var writeProblem2 = (detail) => ({
   fix: "check that docs/plan can be written",
   exitCode: ExitCode.CheckFailed
 });
-var baseName = (file) => file.replace(/^.*[\\/]/, "");
+var baseName2 = (file) => file.replace(/^.*[\\/]/, "");
 var decisionLine = (ctx, item2) => `${item2.file}:${String(item2.line)} ${ctx.t(`decision.issue.${item2.kind}`, { detail: item2.detail })}`;
 var newRecord = (ctx, root, topic) => {
   const names2 = planFiles(ctx.runtime, root);
@@ -11363,7 +11730,7 @@ var decideCheckCommand = {
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => inRepo3(ctx, (root) => {
-    const only = args2.positionals[0] === void 0 ? void 0 : baseName(args2.positionals[0]);
+    const only = args2.positionals[0] === void 0 ? void 0 : baseName2(args2.positionals[0]);
     const checked = checkDecisions(ctx.runtime, root, only);
     const data = { schema: DECISION_SCHEMA, ...checked };
     if (checked.issues.length === 0) return success(data, [ctx.t("decision.clean", { count: checked.records })]);
@@ -11397,18 +11764,18 @@ var decideRevokeCommand = {
         failureFrom(ctx.t, usageProblem("invalid_arguments", "decision.error.revoke_usage", usage))
       );
     return inRepo3(ctx, (root) => {
-      const revoked = revokeDecision(ctx.runtime, ctx.t, root, baseName(target2), baseName(by));
+      const revoked = revokeDecision(ctx.runtime, ctx.t, root, baseName2(target2), baseName2(by));
       if (revoked.ok)
         return success(
-          { schema: DECISION_SCHEMA, file: `${PLAN_DIR}/${revoked.value}`, replacedBy: `${PLAN_DIR}/${baseName(by)}` },
-          [ctx.t("decision.revoked_done", { file: revoked.value, by: baseName(by) })]
+          { schema: DECISION_SCHEMA, file: `${PLAN_DIR}/${revoked.value}`, replacedBy: `${PLAN_DIR}/${baseName2(by)}` },
+          [ctx.t("decision.revoked_done", { file: revoked.value, by: baseName2(by) })]
         );
       if (revoked.error === "write_failed") return failureFrom(ctx.t, writeProblem2(target2));
       return failureFrom(
         ctx.t,
         usageProblem("invalid_arguments", `decision.error.${revoked.error}`, usage, {
-          file: baseName(target2),
-          by: baseName(by)
+          file: baseName2(target2),
+          by: baseName2(by)
         })
       );
     });
@@ -11807,7 +12174,7 @@ var GUARD_MODES = ["off", "shadow", "active"];
 var LEVELS = ["light", "standard", "strict"];
 var SEVERITIES = ["low", "medium", "high"];
 var DEFAULT_PROMOTE_AFTER = 20;
-var OPTIONAL_GUARDS = ["prose", "deps"];
+var OPTIONAL_GUARDS = ["prose", "deps", "creds-static"];
 var DEFAULT_POLICY = {
   exists: false,
   level: "standard",
@@ -13213,6 +13580,99 @@ var checkClaudeSettings = (env) => {
   ];
 };
 
+// src/creds/hygiene.ts
+var BUILTIN = /* @__PURE__ */ new Set([
+  "NODE_ENV",
+  "CI",
+  "PATH",
+  "HOME",
+  "USER",
+  "PWD",
+  "SHELL",
+  "TZ",
+  "LANG",
+  "TERM",
+  "DEBUG",
+  "HOSTNAME",
+  "TMPDIR",
+  "MODE",
+  "DEV",
+  "PROD",
+  "SSR",
+  "BASE_URL",
+  "GITHUB_TOKEN"
+]);
+var BUILTIN_PREFIX = /^(?:GITHUB_|RUNNER_|VERCEL_|NETLIFY|npm_|CLAUDE_|FINITEMONKEY_)/;
+var isBuiltinName = (name) => BUILTIN.has(name) || BUILTIN_PREFIX.test(name);
+var unignored = (runtime, root, files) => files.filter((file) => !isEnvTemplate(file)).filter((file) => {
+  const result = runtime.git(["check-ignore", "-q", "--", file], root);
+  return result.found && !result.ok;
+}).map((file) => ({ kind: "unignored", file }));
+var envHygiene = (runtime, root, options = { full: true }) => {
+  const files = envFiles(runtime, root);
+  const reads = options.full ? envReads(runtime, root).filter((read5) => read5.kind === "code") : [];
+  const fromFiles = files.flatMap((file) => envNames(runtime, root, file).map((name) => ({ name, where: file })));
+  const fromCode = reads.map((read5) => ({ name: read5.name, where: `${read5.file}:${String(read5.line)}` }));
+  const seenPublic = /* @__PURE__ */ new Set();
+  const publicProblems = [];
+  for (const item2 of [...fromCode, ...fromFiles]) {
+    if (!publicSecretName(item2.name) || seenPublic.has(item2.name)) continue;
+    seenPublic.add(item2.name);
+    publicProblems.push({ kind: "public", name: item2.name, where: item2.where });
+  }
+  const template = files.find((file) => file.split("/").length === 1 && isEnvTemplate(file));
+  const parity = [];
+  if (options.full && template !== void 0) {
+    const documented = new Set(envNames(runtime, root, template));
+    const read5 = new Set(reads.map((item2) => item2.name));
+    const missing2 = /* @__PURE__ */ new Map();
+    for (const item2 of fromCode)
+      if (!documented.has(item2.name) && !isBuiltinName(item2.name) && !missing2.has(item2.name))
+        missing2.set(item2.name, item2.where);
+    for (const [name, where2] of missing2) parity.push({ kind: "undocumented", name, where: where2 });
+    for (const name of documented) if (!read5.has(name)) parity.push({ kind: "unused", name, file: template });
+  }
+  return [...unignored(runtime, root, files), ...publicProblems, ...parity];
+};
+
+// src/doctor/env-hygiene.ts
+var toFinding2 = (problem5) => {
+  switch (problem5.kind) {
+    case "unignored":
+      return finding("env.ignored", "fail", "env.unignored", { file: problem5.file }, "env.fix_unignored");
+    case "public":
+      return finding(
+        "env.public",
+        "fail",
+        "env.public",
+        { name: problem5.name, where: problem5.where },
+        "env.fix_public"
+      );
+    case "undocumented":
+      return finding(
+        "env.parity",
+        "warn",
+        "env.undocumented",
+        { name: problem5.name, where: problem5.where },
+        "env.fix_parity"
+      );
+    case "unused":
+      return finding("env.parity", "warn", "env.unused", { name: problem5.name, file: problem5.file }, "env.fix_parity");
+  }
+};
+var checkEnvHygiene = ({ root, runtime }) => [
+  ...envHygiene(runtime, root).map(toFinding2),
+  ...envInHistory(runtime, root).map(
+    (item2) => finding(
+      "env.history",
+      "fail",
+      "env.history",
+      { file: item2.file, commit: item2.commit.slice(0, 12) },
+      "env.fix_history"
+    )
+  )
+];
+
 // src/doctor/environment.ts
 import { join as join31 } from "node:path";
 var AUTH_VARIABLES = [
@@ -13523,7 +13983,8 @@ var familyOf = (base) => {
     "secrets.block",
     "git.block",
     "prod.block",
-    "prose.block"
+    "prose.block",
+    "creds.block"
   ];
   const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
   if (found === void 0) throw new Error(`no reason family for ${base}`);
@@ -13603,6 +14064,53 @@ var stringLeaves = (value, out = []) => {
   else if (Array.isArray(value)) for (const item2 of value) stringLeaves(item2, out);
   else if (isRecord(value)) for (const item2 of Object.values(value)) stringLeaves(item2, out);
   return out;
+};
+
+// src/creds/static-guard.ts
+var ALLOW = { kind: "allow" };
+var WORKFLOW2 = /(?:^|\/)\.github\/workflows\/[^/]+\.ya?ml$/;
+var SECRET_REF = /\$\{\{\s*secrets\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/g;
+var OIDC_ALTERNATIVE = {
+  aws: {
+    provider: "AWS",
+    alternative: "`permissions: id-token: write` plus `aws-actions/configure-aws-credentials` with `role-to-assume: arn:aws:iam::<account>:role/<role>`"
+  },
+  gcp: {
+    provider: "Google Cloud",
+    alternative: "`permissions: id-token: write` plus `google-github-actions/auth` with `workload_identity_provider` and `service_account`"
+  },
+  azure: {
+    provider: "Azure",
+    alternative: "`permissions: id-token: write` plus `azure/login` with `client-id`, `tenant-id` and `subscription-id`"
+  }
+};
+var staticRefs = (text12) => [...text12.matchAll(SECRET_REF)].map((match) => match[1] ?? "").filter((name) => STATIC_CLOUD[name] !== void 0);
+var introduced = (input, file, texts3) => {
+  const before = input.runtime.readText(toAbsolutePath(file, guardRoot(input)));
+  const known2 = new Set(before.ok ? staticRefs(before.value) : []);
+  return texts3.flatMap(staticRefs).find((name) => !known2.has(name));
+};
+var credsStaticGuard = (input) => {
+  const tool = toolName2(input.payload);
+  if (!FILE_TOOLS.has(tool)) return ALLOW;
+  const written = writtenTexts(tool, toolInput2(input.payload));
+  const file = written[0]?.file ?? "";
+  if (!WORKFLOW2.test(toPosixPath(file))) return ALLOW;
+  const variable = introduced(
+    input,
+    file,
+    written.map((item2) => item2.text)
+  );
+  const cloud = variable === void 0 ? void 0 : STATIC_CLOUD[variable];
+  if (variable === void 0 || cloud === void 0) return ALLOW;
+  const grant = grantFor(input, "creds-static");
+  if (grant !== void 0) {
+    logEvent(input.runtime, fmPaths(guardRoot(input)), "creds_exception", { file, variable, reason: grant.reason });
+    return ALLOW;
+  }
+  const { provider, alternative } = OIDC_ALTERNATIVE[cloud];
+  const params2 = { file, variable, provider, alternative };
+  return deny(modelReason(input.t, "creds.block.static", params2), input.t("creds.block.human", params2));
 };
 
 // src/shell/normalize.ts
@@ -14706,7 +15214,7 @@ var lookupOf = (pkg, result) => {
 var NETWORK_BUDGET_MS = 2e3;
 var MAX_PACKAGES = 5;
 var MIN_REQUEST_MS = 500;
-var ALLOW = { kind: "allow" };
+var ALLOW2 = { kind: "allow" };
 var NPM_SECTIONS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
 var PYTHON_MANIFESTS = ["pyproject.toml", "requirements.txt", "requirements-dev.txt", "Pipfile"];
 var npmDeclared = (runtime, root) => {
@@ -14765,15 +15273,15 @@ var isOffline = (env) => {
 };
 var depsGuard = (input) => {
   const tool = toolName2(input.payload);
-  if (!SHELL_TOOLS.has(tool)) return ALLOW;
+  if (!SHELL_TOOLS.has(tool)) return ALLOW2;
   const command = optionalString(toolInput2(input.payload), "command") ?? "";
   const packages = newPackages(input, packagesInCommand(command, dialectOf(tool))).slice(0, MAX_PACKAGES);
-  if (packages.length === 0) return ALLOW;
+  if (packages.length === 0) return ALLOW2;
   const deadline = Date.now() + NETWORK_BUDGET_MS;
   const offline = isOffline(input.env);
   const now = nowMs(input.runtime);
   const findings2 = packages.flatMap((pkg) => assessPackage(pkg, lookup(input, pkg, deadline, offline), now));
-  if (findings2.length === 0) return ALLOW;
+  if (findings2.length === 0) return ALLOW2;
   const lines4 = findings2.map((finding5) => `- ${describe(input.t, finding5)}`);
   const additionalContext = `finitemonkey: ${input.t("deps.warn.header")}
 ${lines4.join("\n")}`;
@@ -15482,9 +15990,9 @@ var recordEvidence = (runtime, root, owner, reads) => {
 // src/guards/rewrite/sensitive.ts
 var READ_ONLY_GIT = /* @__PURE__ */ new Set(["status", "log", "diff", "show", "blame", "describe", "rev-parse", "ls-files", "fetch"]);
 var REMOVERS = /* @__PURE__ */ new Set(["rm", "rmdir", "remove-item", "del", "rd"]);
-var ENV_FILE2 = /(^|[\s"'=/])\.env(\.[A-Za-z0-9_-]+)?(?=$|[\s"';|&)])/;
+var ENV_FILE3 = /(^|[\s"'=/])\.env(\.[A-Za-z0-9_-]+)?(?=$|[\s"';|&)])/;
 var isSensitiveCommand = (text12, dialect = "bash") => {
-  if (detectBypass(text12).length > 0 || ENV_FILE2.test(text12)) return true;
+  if (detectBypass(text12).length > 0 || ENV_FILE3.test(text12)) return true;
   return normalizeCommand(text12, dialect).commands.some((command) => {
     if (PROD_PROGRAMS.has(command.program) || REMOVERS.has(command.program)) return true;
     if (command.program !== "git") return false;
@@ -16068,7 +16576,7 @@ var params = (value) => isRecord(value) ? Object.fromEntries(
     (entry2) => typeof entry2[1] === "string" || typeof entry2[1] === "number"
   )
 ) : {};
-var notes = (value) => Array.isArray(value) ? value.flatMap(
+var notes2 = (value) => Array.isArray(value) ? value.flatMap(
   (item2) => isRecord(item2) && typeof item2["key"] === "string" ? [{ key: item2["key"], params: params(item2["params"]) }] : []
 ) : [];
 var text6 = (record5, key2) => {
@@ -16117,7 +16625,7 @@ var parseEvidence = (line9) => {
     status,
     treeHash: treeHash2,
     at,
-    notes: notes(record5["notes"]),
+    notes: notes2(record5["notes"]),
     ...optional2(record5)
   };
 };
@@ -16798,13 +17306,13 @@ var unverifiedSummary = (t, report2) => report2.items.filter((item2) => item2.st
 
 // src/gate/types.ts
 var note = (key2, params2 = {}) => ({ key: key2, params: params2 });
-var unverified = (reason, notes2 = []) => ({
+var unverified = (reason, notes3 = []) => ({
   status: "unverified",
   reason,
-  notes: notes2
+  notes: notes3
 });
-var passed = (notes2 = []) => ({ status: "passed", notes: notes2 });
-var failed2 = (notes2) => ({ status: "failed", notes: notes2 });
+var passed = (notes3 = []) => ({ status: "passed", notes: notes3 });
+var failed2 = (notes3) => ({ status: "failed", notes: notes3 });
 var REUSABLE_KINDS = ["command", "tests"];
 
 // src/gate/report.ts
@@ -17426,12 +17934,12 @@ var diffCheck = (_check, ctx) => {
   const outside = paths.length === 0 ? [] : ctx.changes.filter((change) => !matchesAny(change.path, paths));
   const files = ctx.changes.length;
   const lines4 = diffShape(ctx.runtime, ctx.git, ctx.base, ctx.changes).lines;
-  const notes2 = [
+  const notes3 = [
     ...outside.slice(0, MAX_LISTED3).map((change) => note("gate.diff.outside", { file: change.path })),
     ...diffBudget?.files !== void 0 && files > diffBudget.files ? [note("gate.diff.too_many_files", { count: files, max: diffBudget.files })] : [],
     ...diffBudget?.lines !== void 0 && lines4 > diffBudget.lines ? [note("gate.diff.too_many_lines", { count: lines4, max: diffBudget.lines })] : []
   ];
-  return notes2.length > 0 ? failed2(notes2) : passed([note("gate.diff.within", { files, lines: lines4 })]);
+  return notes3.length > 0 ? failed2(notes3) : passed([note("gate.diff.within", { files, lines: lines4 })]);
 };
 
 // src/gate/checks/git.ts
@@ -17513,8 +18021,8 @@ var noteOf = (state) => {
 };
 var inventoryOutcome = (states) => {
   if (states.length === 0) return failed2([note("gate.inventory.missing")]);
-  const notes2 = states.flatMap((state) => noteOf(state) ?? []);
-  return notes2.length === 0 ? passed([note("gate.inventory.fresh", { count: states.length })]) : failed2(notes2);
+  const notes3 = states.flatMap((state) => noteOf(state) ?? []);
+  return notes3.length === 0 ? passed([note("gate.inventory.fresh", { count: states.length })]) : failed2(notes3);
 };
 var inventoryCheck = (_check, ctx) => inventoryOutcome(inventoryStates(ctx.runtime, ctx.paths.root));
 
@@ -18275,7 +18783,7 @@ var splitBlock = (block5) => {
     starts.push(joined.length);
     joined += `${maskInline(piece.text)} `;
   }
-  const lineAt = (offset2) => {
+  const lineAt2 = (offset2) => {
     const index = starts.findLastIndex((start) => start <= offset2);
     return block5.pieces[Math.max(index, 0)]?.line ?? 0;
   };
@@ -18284,7 +18792,7 @@ var splitBlock = (block5) => {
     const at = joined.indexOf(sentence, offset);
     offset = at + sentence.length;
     const text12 = sentence.trim();
-    return text12 === "" ? [] : [{ text: text12, line: lineAt(at) }];
+    return text12 === "" ? [] : [{ text: text12, line: lineAt2(at) }];
   });
 };
 var unitsOf = (blocks) => {
@@ -18443,11 +18951,11 @@ var samePara = (units, from, count6) => {
   if (!isProse(first)) return false;
   return units.slice(from, from + count6).every((unit) => isProse(unit) && unit.paragraph === first.paragraph);
 };
-var runsOf = (units, size, matches) => {
+var runsOf = (units, size, matches2) => {
   const starts = [];
   for (let index = 0; index + size <= units.length; index += 1) {
     const window = units.slice(index, index + size);
-    if (!samePara(units, index, size) || !window.every(matches)) continue;
+    if (!samePara(units, index, size) || !window.every(matches2)) continue;
     if (starts.at(-1) !== void 0 && index - (starts.at(-1) ?? 0) < size) continue;
     starts.push(index);
   }
@@ -18618,9 +19126,9 @@ var proseOutcome = (status) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
   const { files, flagged, blocking: blocking2 } = status.value;
   const key2 = blocking2 ? "gate.prose.finding" : "gate.prose.warning";
-  const notes2 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED8).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
-  if (notes2.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
-  return blocking2 ? failed2(notes2) : passed(notes2);
+  const notes3 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED8).map(({ file, span }) => note(key2, { file, line: span.startLine, rules: rulesOf(span) }));
+  if (notes3.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
+  return blocking2 ? failed2(notes3) : passed(notes3);
 };
 var proseCheck = (_check, ctx) => proseOutcome(proseGateStatus(ctx.runtime, ctx.paths.root));
 
@@ -18757,11 +19265,11 @@ var dependenciesAt = (git3, hash, files) => files.filter((file) => MANIFESTS.tes
 
 // src/research/dependencies.ts
 var MANIFEST = /(^|\/)(package\.json|requirements\.txt|go\.mod)$/;
-var namesIn = (file, text12) => new Set(text12 === void 0 ? [] : parseManifest(file, text12).map((item2) => item2.name));
+var namesIn2 = (file, text12) => new Set(text12 === void 0 ? [] : parseManifest(file, text12).map((item2) => item2.name));
 var addedDependencies = (ctx) => ctx.changes.filter((change) => change.status !== "D" && MANIFEST.test(change.path)).flatMap((change) => {
-  const before = namesIn(change.path, fileAt(ctx.git, ctx.base, change.oldPath ?? change.path));
+  const before = namesIn2(change.path, fileAt(ctx.git, ctx.base, change.oldPath ?? change.path));
   const now = ctx.runtime.readText(toAbsolutePath(change.path, ctx.paths.root));
-  return [...namesIn(change.path, now.ok ? now.value : void 0)].filter((name) => !before.has(name));
+  return [...namesIn2(change.path, now.ok ? now.value : void 0)].filter((name) => !before.has(name));
 });
 
 // src/gate/checks/research.ts
@@ -18788,9 +19296,9 @@ var findings = (ctx) => {
   ].slice(0, MAX_LISTED9);
 };
 var researchCheck = (_check, ctx) => {
-  const notes2 = findings(ctx);
-  if (notes2.length === 0) return passed([note("gate.research.clean")]);
-  return required(ctx) ? failed2(notes2) : passed([note("gate.research.warning_only"), ...notes2]);
+  const notes3 = findings(ctx);
+  if (notes3.length === 0) return passed([note("gate.research.clean")]);
+  return required(ctx) ? failed2(notes3) : passed([note("gate.research.warning_only"), ...notes3]);
 };
 
 // src/gate/checks/review.ts
@@ -18911,11 +19419,11 @@ var resultNotes = (check2, result, ctx) => {
   }
 };
 var outcome = (check2, result, ctx) => {
-  const notes2 = [
+  const notes3 = [
     ...resultNotes(check2, result, ctx),
     ...result.stopped ? [] : [note("gate.runtime.orphan", { port: check2.port ?? 0 })]
   ];
-  const base = result.kind === "ok" && result.stopped ? passed(notes2) : failed2(notes2);
+  const base = result.kind === "ok" && result.stopped ? passed(notes3) : failed2(notes3);
   return {
     ...base,
     ...check2.run === void 0 ? {} : { command: check2.run },
@@ -19096,7 +19604,7 @@ var diffScanner = () => {
 
 // src/secrets/scan.ts
 var MAX_FILE_BYTES = 2 * 1024 * 1024;
-var SKIPPED2 = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
+var SKIPPED3 = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
 var DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var binary = (text12) => text12.slice(0, 8e3).includes("\0");
 var listed2 = (runtime, root, target2) => {
@@ -19118,12 +19626,12 @@ var scanFile = (runtime, root, file) => {
 var scanPath = (runtime, root, target2) => {
   const files = listed2(runtime, root, target2);
   if (!files.ok) return files;
-  return accept(files.value.filter((file) => !SKIPPED2.test(file)).flatMap((file) => scanFile(runtime, root, file)));
+  return accept(files.value.filter((file) => !SKIPPED3.test(file)).flatMap((file) => scanFile(runtime, root, file)));
 };
 var diffFindings = (diff) => {
   const scanner = diffScanner();
   for (const line9 of diff.split("\n")) scanner.push(line9);
-  return scanner.end().filter((finding5) => !SKIPPED2.test(finding5.file));
+  return scanner.end().filter((finding5) => !SKIPPED3.test(finding5.file));
 };
 var scanStaged = (runtime, root, includeUnstaged = false) => {
   const args2 = includeUnstaged ? ["diff", "HEAD", ...DIFF_FLAGS] : ["diff", "--cached", ...DIFF_FLAGS];
@@ -19136,7 +19644,7 @@ var scanHistory = async (runtime, root) => {
   const args2 = ["log", "-p", "--all", "--format=commit %H", ...DIFF_FLAGS];
   const git3 = await runtime.gitLines(args2, root, scanner.push);
   if (!git3.ok) return reject(git3.found ? "git log failed" : "git not found");
-  return accept(scanner.end().filter((finding5) => !SKIPPED2.test(finding5.file)));
+  return accept(scanner.end().filter((finding5) => !SKIPPED3.test(finding5.file)));
 };
 
 // src/secrets/gate.ts
@@ -19164,16 +19672,26 @@ var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
   return session === void 0 ? EPOCH : new Date(session.at).toISOString();
 };
+var envNote = (problem5) => {
+  if (problem5.kind === "unignored") return note("env.unignored", { file: problem5.file });
+  if (problem5.kind === "public") return note("env.public", { name: problem5.name, where: problem5.where });
+  return void 0;
+};
+var envNotes = (ctx) => envHygiene(ctx.runtime, ctx.paths.root, { full: false }).flatMap((problem5) => {
+  const found = envNote(problem5);
+  return found === void 0 ? [] : [found];
+});
 var secretsCheck = (_check, ctx) => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings: findings2, openIncidents } = status.value;
   const warnings = findings2.filter(isWarning).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.warning", { file: finding5.file, line: finding5.line, rule: finding5.ruleId }));
-  const notes2 = [
+  const notes3 = [
     ...blocking(findings2).slice(0, MAX_LISTED10).map((finding5) => note("gate.secrets.finding", { file: finding5.file, line: finding5.line, rule: finding5.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED10).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state }))
+    ...openIncidents.slice(0, MAX_LISTED10).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state })),
+    ...envNotes(ctx).slice(0, MAX_LISTED10)
   ];
-  if (notes2.length > 0) return failed2([...notes2, ...warnings]);
+  if (notes3.length > 0) return failed2([...notes3, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
 };
 
@@ -19221,10 +19739,10 @@ var treeViolations = (ctx) => {
 var testsCheck = (check2, ctx) => {
   const violations = treeViolations(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes2 = violations.slice(0, MAX_LISTED11).map(violationNote);
-  if (violations.length > 0 && grant === void 0) return failed2([...notes2, note("gate.tests.fix")]);
+  const notes3 = violations.slice(0, MAX_LISTED11).map(violationNote);
+  if (violations.length > 0 && grant === void 0) return failed2([...notes3, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
-  const releaseNotes = grant === void 0 ? [] : [...notes2, note("gate.note.released", { guard: "tests", reason: grant.reason })];
+  const releaseNotes = grant === void 0 ? [] : [...notes3, note("gate.note.released", { guard: "tests", reason: grant.reason })];
   if (check2.run === void 0) return { ...passed([note("gate.tests.clean"), ...releaseNotes]), ...released2 };
   const outcome2 = runShellCheck(check2, check2.run, ctx);
   return { ...outcome2, notes: [...outcome2.notes, ...releaseNotes], ...released2 };
@@ -19235,13 +19753,13 @@ import { join as join50 } from "node:path";
 
 // src/secrets/guards/paths.ts
 var SAFE_ENV = /^\.env\.(?:example|sample|template|dist|defaults|schema)$/i;
-var ENV_FILE3 = /^\.env(?:\..+)?$/i;
+var ENV_FILE4 = /^\.env(?:\..+)?$/i;
 var KEY_FILE = /\.(?:pem|key|p12|pfx)$/i;
 var SSH_KEY = /^id_(?:rsa|dsa|ecdsa|ed25519)(?:_[A-Za-z0-9_-]+)?$/;
 var basename4 = (path) => path.split(/[\\/]/).pop() ?? path;
 var isSensitivePath = (path) => {
   const name = basename4(path.replace(/^["']|["']$/g, ""));
-  if (ENV_FILE3.test(name)) return !SAFE_ENV.test(name);
+  if (ENV_FILE4.test(name)) return !SAFE_ENV.test(name);
   return KEY_FILE.test(name) || SSH_KEY.test(name);
 };
 
@@ -20065,11 +20583,11 @@ var worktreeCheck = (_check, ctx) => {
   if (repo === void 0) return unverified("tool_missing", [note("gate.worktree.unavailable")]);
   const status = worktreeGateStatus(ctx.runtime, repo, ownerOf2(ctx));
   const unpushed = declaresDestination(ctx) ? [] : status.unpushed;
-  const notes2 = [
+  const notes3 = [
     ...status.dirty.length > 0 ? [note("gate.worktree.dirty", { files: listed3(status.dirty) })] : [],
     ...unpushed.length > 0 ? [note("gate.worktree.unpushed", { count: unpushed.length, branch: status.branch ?? "HEAD" })] : []
   ];
-  return notes2.length > 0 ? failed2(notes2) : passed([note("gate.worktree.clean")]);
+  return notes3.length > 0 ? failed2(notes3) : passed([note("gate.worktree.clean")]);
 };
 var mergeCheck = (_check, ctx) => {
   const repo = repoOf2(ctx);
@@ -20405,7 +20923,7 @@ var frontContext = (t, runtime, root, front) => [
 ].join("\n");
 
 // src/fronts/hooks.ts
-var ALLOW2 = { kind: "allow" };
+var ALLOW3 = { kind: "allow" };
 var AGENT_TOOLS = /* @__PURE__ */ new Set(["Agent", "Task"]);
 var WORKFLOW_TOOLS = /* @__PURE__ */ new Set(["Workflow"]);
 var READ_ONLY_AGENTS = /* @__PURE__ */ new Set([
@@ -20457,18 +20975,18 @@ var launchProblem = (input, front) => {
 };
 var frontsPreToolUse = (input) => {
   const tool = toolName(input.payload.raw);
-  if (!AGENT_TOOLS.has(tool) && !WORKFLOW_TOOLS.has(tool)) return ALLOW2;
+  if (!AGENT_TOOLS.has(tool) && !WORKFLOW_TOOLS.has(tool)) return ALLOW3;
   const state = stateOf3(input);
-  if (state === void 0) return ALLOW2;
+  if (state === void 0) return ALLOW3;
   const running = runningWriteFronts(state);
-  if (WORKFLOW_TOOLS.has(tool)) return running.length > 0 ? ask2(input) : ALLOW2;
+  if (WORKFLOW_TOOLS.has(tool)) return running.length > 0 ? ask2(input) : ALLOW3;
   const named = frontNamed(state, agentText(input));
   if (named !== void 0) {
     const misuse = launchProblem(input, named);
     if (misuse !== void 0) return misuse;
   }
   const type = textField(toolInput(input.payload.raw), "subagent_type") ?? "general-purpose";
-  if (READ_ONLY_AGENTS.has(type) || running.length < state.maxConcurrent) return ALLOW2;
+  if (READ_ONLY_AGENTS.has(type) || running.length < state.maxConcurrent) return ALLOW3;
   return {
     kind: "block",
     reason: modelReason(input.t, "fronts.block.limit", {
@@ -20484,10 +21002,10 @@ var responseAgentId = (input) => {
   return optionalString(response, "agentId") ?? optionalString(response, "agent_id");
 };
 var frontsPostToolUse = (input) => {
-  if (!AGENT_TOOLS.has(toolName(input.payload.raw))) return ALLOW2;
+  if (!AGENT_TOOLS.has(toolName(input.payload.raw))) return ALLOW3;
   const state = stateOf3(input);
   const front = state === void 0 ? void 0 : frontNamed(state, agentText(input));
-  if (front === void 0) return ALLOW2;
+  if (front === void 0) return ALLOW3;
   const agentId = responseAgentId(input) ?? null;
   updateFronts(
     input.runtime,
@@ -20505,7 +21023,7 @@ var frontsPostToolUse = (input) => {
       result: void 0
     })
   );
-  return ALLOW2;
+  return ALLOW3;
 };
 var NO_CONTEXT = /(^|:)(reviewer|verifier|researcher|explore|plan|claude-code-guide|statusline-setup)$/i;
 var injected = (input, front) => ({
@@ -20520,13 +21038,13 @@ var injected = (input, front) => ({
 var frontsSubagentStart = (input) => {
   const agentId = optionalString(input.payload.raw, "agent_id");
   const state = stateOf3(input);
-  if (agentId === void 0 || state === void 0) return ALLOW2;
-  if (NO_CONTEXT.test(optionalString(input.payload.raw, "agent_type") ?? "")) return ALLOW2;
+  if (agentId === void 0 || state === void 0) return ALLOW3;
+  if (NO_CONTEXT.test(optionalString(input.payload.raw, "agent_type") ?? "")) return ALLOW3;
   const bound = state.fronts.find((front2) => front2.agentId === agentId);
   if (bound !== void 0) return injected(input, bound);
   const [next2, ...rest] = state.pending;
   const front = state.fronts.find((item2) => item2.id === next2);
-  if (next2 === void 0 || front === void 0) return ALLOW2;
+  if (next2 === void 0 || front === void 0) return ALLOW3;
   updateFronts(
     input.runtime,
     guardRoot(input),
@@ -20826,7 +21344,7 @@ var reportSummary = (check2) => {
 };
 
 // src/fronts/report-hooks.ts
-var ALLOW3 = { kind: "allow" };
+var ALLOW4 = { kind: "allow" };
 var COUNTER_FILE = ".finitemonkey/cache/front-blocks.json";
 var counterPath = (root) => toAbsolutePath(join57(root, COUNTER_FILE));
 var readCounters = (runtime, root) => {
@@ -20874,11 +21392,11 @@ var markReported = (input, root, check2) => {
   );
 };
 var frontReportHandback = (input) => {
-  if (toolName(input.payload.raw) !== "SubagentHandback") return ALLOW3;
+  if (toolName(input.payload.raw) !== "SubagentHandback") return ALLOW4;
   const found = frontForInput(input);
-  if (found === void 0) return ALLOW3;
+  if (found === void 0) return ALLOW4;
   const check2 = checkReport(input.runtime, found.root, found.front);
-  return check2.problems.length === 0 ? ALLOW3 : blocked(input, check2);
+  return check2.problems.length === 0 ? ALLOW4 : blocked(input, check2);
 };
 var nextCounter = (previous, check2) => {
   const signature = sha256Hex(check2.problems.join("\n"));
@@ -20890,13 +21408,13 @@ var nextCounter = (previous, check2) => {
 };
 var frontReportStop = (input) => {
   const found = frontForInput(input);
-  if (found === void 0) return ALLOW3;
+  if (found === void 0) return ALLOW4;
   const { root, front } = found;
   const check2 = checkReport(input.runtime, root, front);
   if (check2.problems.length === 0) {
     writeCounter(input.runtime, root, front.id, void 0);
     markReported(input, root, check2);
-    return ALLOW3;
+    return ALLOW4;
   }
   const counter = nextCounter(readCounters(input.runtime, root)[front.id], check2);
   if (counter.consecutive > maxBlocks(input.env) || counter.same > NO_PROGRESS_MAX) {
@@ -20906,7 +21424,7 @@ var frontReportStop = (input) => {
       root,
       (state) => accept({ state: withFront(state, front.id, (item2) => ({ ...item2, status: "blocked" })), result: void 0 })
     );
-    return ALLOW3;
+    return ALLOW4;
   }
   writeCounter(input.runtime, root, front.id, counter);
   return blocked(input, check2);
@@ -20914,12 +21432,12 @@ var frontReportStop = (input) => {
 var NOTIFICATION = /<task-notification>|\[SYSTEM NOTIFICATION/;
 var frontNotification = (input) => {
   const prompt = textField(input.payload.raw, "prompt") ?? textField(toolInput(input.payload.raw), "prompt") ?? "";
-  if (!NOTIFICATION.test(prompt)) return ALLOW3;
+  if (!NOTIFICATION.test(prompt)) return ALLOW4;
   const root = guardRoot(input);
   const state = readFronts(input.runtime, root);
-  if (!state.ok) return ALLOW3;
+  if (!state.ok) return ALLOW4;
   const checks = state.value.fronts.filter((front) => front.status === "reported" || front.status === "running").map((front) => checkReport(input.runtime, root, front)).filter((check2) => check2.report !== void 0);
-  if (checks.length === 0) return ALLOW3;
+  if (checks.length === 0) return ALLOW4;
   const lines4 = checks.map(
     (check2) => check2.problems.length === 0 ? input.t("fronts.notify.valid", { summary: reportSummary(check2) }) : input.t("fronts.notify.invalid", { front: check2.front, problems: check2.problems.join("; ") })
   );
@@ -20930,7 +21448,7 @@ var frontNotification = (input) => {
 };
 
 // src/fronts/routing.ts
-var ALLOW4 = { kind: "allow" };
+var ALLOW5 = { kind: "allow" };
 var SEND_TOOLS = /* @__PURE__ */ new Set(["SendMessage"]);
 var NOT_PERSON = [NOTIFICATION, /^\s*\[julius2claude\]/, /<other-session-message>|<session-message>/];
 var isPersonPrompt = (prompt) => !NOT_PERSON.some((pattern) => pattern.test(prompt));
@@ -20946,10 +21464,10 @@ var routingBlock = (state) => {
 };
 var frontsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt") ?? "";
-  if (prompt.trim() === "" || !isPersonPrompt(prompt)) return ALLOW4;
+  if (prompt.trim() === "" || !isPersonPrompt(prompt)) return ALLOW5;
   const state = readFronts(input.runtime, guardRoot(input));
   const block5 = state.ok ? routingBlock(state.value) : void 0;
-  if (block5 === void 0) return ALLOW4;
+  if (block5 === void 0) return ALLOW5;
   return {
     kind: "allow",
     output: { hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: block5 } }
@@ -20970,15 +21488,15 @@ var appendInbox = (runtime, root, front, text12, kind) => {
 };
 var recipientOf = (state, to) => state.fronts.find((front) => front.agentId === to || front.id === to);
 var frontsSendMessage = (input) => {
-  if (!SEND_TOOLS.has(toolName(input.payload.raw))) return ALLOW4;
+  if (!SEND_TOOLS.has(toolName(input.payload.raw))) return ALLOW5;
   const args2 = toolInput(input.payload.raw);
   const to = textField(args2, "to", "recipient", "agent_id", "name");
   const message = textField(args2, "message", "content", "text");
-  if (to === void 0 || message === void 0) return ALLOW4;
+  if (to === void 0 || message === void 0) return ALLOW5;
   const state = readFronts(input.runtime, guardRoot(input));
   const front = state.ok ? recipientOf(state.value, to) : void 0;
   if (front !== void 0) appendInbox(input.runtime, guardRoot(input), front.id, message, "message");
-  return ALLOW4;
+  return ALLOW5;
 };
 
 // src/guards/files/hook.ts
@@ -21028,7 +21546,7 @@ var releaseOwner = (runtime, root, owner) => {
 
 // src/guards/files/hook.ts
 var BACKUPS_DIR2 = ".finitemonkey/backups";
-var ALLOW5 = { kind: "allow" };
+var ALLOW6 = { kind: "allow" };
 var existingDir = (runtime, path) => {
   let dir = dirname8(path);
   while (runtime.stat(toAbsolutePath(dir))?.kind !== "dir") {
@@ -21066,11 +21584,11 @@ var backup = (input, root, path) => {
   };
 };
 var fileLockGuard = (input) => {
-  if (!FILE_TOOLS.has(toolName(input.payload.raw))) return ALLOW5;
+  if (!FILE_TOOLS.has(toolName(input.payload.raw))) return ALLOW6;
   const raw = textField(toolInput(input.payload.raw), "file_path", "notebook_path") ?? "";
-  if (raw === "") return ALLOW5;
+  if (raw === "") return ALLOW6;
   const path = toAbsolutePath(raw, input.cwd);
-  if (!isOutsideGit(input.runtime, path)) return ALLOW5;
+  if (!isOutsideGit(input.runtime, path)) return ALLOW6;
   const root = guardRoot(input);
   const claim = claimFile(input.runtime, root, path, ownerOfInput(input));
   if (claim.kind === "taken") {
@@ -21080,18 +21598,18 @@ var fileLockGuard = (input) => {
       human: input.t("git.block.human")
     };
   }
-  return backup(input, root, path) ?? ALLOW5;
+  return backup(input, root, path) ?? ALLOW6;
 };
 var fileLockRelease = (input) => {
   const agent = optionalString(input.payload.raw, "agent_id");
   const owner = input.event === "SubagentStop" ? agent : agent ?? input.payload.sessionId;
   if (owner !== void 0) releaseOwner(input.runtime, guardRoot(input), owner);
-  return ALLOW5;
+  return ALLOW6;
 };
 
 // src/guards/scope/copy.ts
 import { basename as basename6, dirname as dirname9, join as join60 } from "node:path";
-var ALLOW6 = { kind: "allow" };
+var ALLOW7 = { kind: "allow" };
 var COPIERS2 = /* @__PURE__ */ new Set(["cp", "mv", "rsync", "install", "ln", "scp"]);
 var transferOf = (command) => {
   const [name = "", ...args2] = command.argv;
@@ -21123,18 +21641,18 @@ var crossing = (input, trees, transfer) => {
 };
 var scopeCopyGuard = (input) => {
   const tool = toolName(input.payload.raw);
-  if (!SHELL_TOOLS.has(tool)) return ALLOW6;
+  if (!SHELL_TOOLS.has(tool)) return ALLOW7;
   const transfers = parseShell(textField(toolInput(input.payload.raw), "command") ?? "").map(transferOf).filter((transfer) => transfer.targets.length > 0);
-  if (transfers.length === 0) return ALLOW6;
+  if (transfers.length === 0) return ALLOW7;
   const listed5 = gitWorktrees(input.runtime, input.cwd);
   const main2 = listed5?.find((tree) => tree.main);
-  if (listed5 === void 0 || main2 === void 0) return ALLOW6;
+  if (listed5 === void 0 || main2 === void 0) return ALLOW7;
   const real = (path) => canonical(input.runtime, path);
   const trees = {
     main: real(main2.path),
     linked: listed5.filter((tree) => !tree.main).map((tree) => real(tree.path))
   };
-  if (trees.linked.length === 0) return ALLOW6;
+  if (trees.linked.length === 0) return ALLOW7;
   for (const transfer of transfers) {
     const target2 = crossing(input, trees, transfer);
     if (target2 !== void 0) {
@@ -21145,7 +21663,7 @@ var scopeCopyGuard = (input) => {
       };
     }
   }
-  return ALLOW6;
+  return ALLOW7;
 };
 
 // src/git/invocation.ts
@@ -21328,7 +21846,7 @@ var listSnapshots = (runtime, repo) => {
 };
 
 // src/merge/abort-hook.ts
-var ALLOW7 = { kind: "allow" };
+var ALLOW8 = { kind: "allow" };
 var SHELL = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var MERGING = /* @__PURE__ */ new Set(["merge", "pull"]);
 var INTEGRATION_PREFIX = "integrate/";
@@ -21338,15 +21856,15 @@ var runsMerge = (text12, tool) => normalizeCommand(text12, dialectOf(tool)).comm
 });
 var plainMergeAbort = (input) => {
   const tool = toolName2(input.payload);
-  if (!SHELL.has(tool)) return ALLOW7;
-  if (!runsMerge(optionalString(toolInput2(input.payload), "command") ?? "", tool)) return ALLOW7;
+  if (!SHELL.has(tool)) return ALLOW8;
+  if (!runsMerge(optionalString(toolInput2(input.payload), "command") ?? "", tool)) return ALLOW8;
   const repo = openRepo(input.runtime, input.cwd);
-  if (repo === void 0) return ALLOW7;
+  if (repo === void 0) return ALLOW8;
   const { runtime } = input;
   const conflicted = runtime.git(["diff", "--name-only", "--diff-filter=U"], repo.root).stdout.trim();
   const merging = runtime.git(["rev-parse", "--verify", "--quiet", "MERGE_HEAD"], repo.root).ok;
   const branch = runtime.git(["symbolic-ref", "--quiet", "--short", "HEAD"], repo.root).stdout.trim();
-  if (!merging || conflicted === "" || branch.startsWith(INTEGRATION_PREFIX)) return ALLOW7;
+  if (!merging || conflicted === "" || branch.startsWith(INTEGRATION_PREFIX)) return ALLOW8;
   const snapshot2 = takeSnapshot(runtime, repo, { op: "plain merge with conflicts", command: "git merge" });
   const files = conflicted.split("\n").slice(0, 8).join(", ");
   const aborted = snapshot2.ok && runtime.git(["merge", "--abort"], repo.root).ok ? snapshot2.value.ref : void 0;
@@ -21422,7 +21940,7 @@ var createdBranch = (invocation) => {
 };
 
 // src/pr/hooks.ts
-var ALLOW8 = { kind: "allow" };
+var ALLOW9 = { kind: "allow" };
 var SHELL2 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var MCP_CREATE_PR = /^mcp__.*github.*__create_pull_request$/i;
 var FM = /* @__PURE__ */ new Set(["finitemonkey", "fm"]);
@@ -21454,7 +21972,7 @@ var mergeDecision = (input, command, text12) => {
   return void 0;
 };
 var branchDecision = (input, name) => {
-  if (isConventionalBranch(name)) return ALLOW8;
+  if (isConventionalBranch(name)) return ALLOW9;
   if (projectPreset(input.runtime, input.cwd) === "gabriel") return block2(input, "git.block.branch_name", name);
   const context = input.t("pr.warn.branch", { name });
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
@@ -21472,17 +21990,17 @@ var commandDecision = (input, command, text12) => {
 var prPreToolUse = (input) => {
   const tool = toolName2(input.payload);
   if (MCP_CREATE_PR.test(tool)) return block2(input, "git.block.pr_create", tool);
-  if (!SHELL2.has(tool)) return ALLOW8;
+  if (!SHELL2.has(tool)) return ALLOW9;
   const text12 = optionalString(toolInput2(input.payload), "command") ?? "";
   for (const command of normalizeCommand(text12, dialectOf(tool)).commands) {
     const decision2 = commandDecision(input, command, text12);
     if (decision2 !== void 0) return decision2;
   }
-  return ALLOW8;
+  return ALLOW9;
 };
 
 // src/profile/git-hook.ts
-var ALLOW9 = { kind: "allow" };
+var ALLOW10 = { kind: "allow" };
 var SHELL3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var REBASE_CONTROL = /* @__PURE__ */ new Set(["--abort", "--continue", "--skip", "--quit", "--edit-todo", "--show-current-patch"]);
 var isLease = (command) => {
@@ -21507,12 +22025,12 @@ var ask4 = (input, text12) => ({
 });
 var levelPreToolUse = (input) => {
   const tool = toolName2(input.payload);
-  if (!SHELL3.has(tool)) return ALLOW9;
+  if (!SHELL3.has(tool)) return ALLOW10;
   const text12 = optionalString(toolInput2(input.payload), "command") ?? "";
   const commands = normalizeCommand(text12, dialectOf(tool)).commands;
   const lease = commands.some(isLease);
   const rebase = commands.some(isRebaseUpdate);
-  if (!lease && !rebase) return ALLOW9;
+  if (!lease && !rebase) return ALLOW10;
   const rules2 = levelRules(input.runtime, input.cwd);
   if (rebase && rules2.update === "merge") {
     return {
@@ -21521,11 +22039,11 @@ var levelPreToolUse = (input) => {
       human: input.t("git.block.human")
     };
   }
-  return lease && rules2.leaseOwnBranch === "ask" ? ask4(input, text12) : ALLOW9;
+  return lease && rules2.leaseOwnBranch === "ask" ? ask4(input, text12) : ALLOW10;
 };
 
 // src/wt/hooks.ts
-var ALLOW10 = { kind: "allow" };
+var ALLOW11 = { kind: "allow" };
 var SHELL4 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var hookOwner = (payload) => {
   const agentId = optionalString(payload.raw, "agent_id") ?? null;
@@ -21537,15 +22055,15 @@ var addsWorktree = (text12, tool) => normalizeCommand(text12, dialectOf(tool)).c
 });
 var adopt = (input) => {
   adoptWorktrees(input.runtime, input.cwd, hookOwner(input.payload));
-  return ALLOW10;
+  return ALLOW11;
 };
 var wtSessionStart = (input) => adopt(input);
 var wtPostToolUse = (input) => {
   const tool = toolName2(input.payload);
   if (tool === "EnterWorktree") return adopt(input);
-  if (!SHELL4.has(tool)) return ALLOW10;
+  if (!SHELL4.has(tool)) return ALLOW11;
   const command = optionalString(toolInput2(input.payload), "command") ?? "";
-  return addsWorktree(command, tool) ? adopt(input) : ALLOW10;
+  return addsWorktree(command, tool) ? adopt(input) : ALLOW11;
 };
 
 // src/git/path-key.ts
@@ -21630,8 +22148,8 @@ var worst2 = (verdicts) => verdicts.reduce((current2, next2) => SEVERITY[next2.k
 // src/git/options.ts
 var canonical2 = (name, spec2) => {
   if (spec2.known.includes(name)) return name;
-  const matches = spec2.known.filter((option) => option.startsWith(name));
-  return matches.length === 1 ? matches[0] ?? name : name;
+  const matches2 = spec2.known.filter((option) => option.startsWith(name));
+  return matches2.length === 1 ? matches2[0] ?? name : name;
 };
 var addValue = (building, name, value) => {
   building.values.set(name, [...building.values.get(name) ?? [], value]);
@@ -22311,7 +22829,7 @@ var outcomeMessage = (t, outcome2) => {
 };
 
 // src/git/hooks/pre-tool.ts
-var ALLOW11 = { kind: "allow" };
+var ALLOW12 = { kind: "allow" };
 var rmOutcome = (input, command, worktrees) => {
   if (removalTargets(command) === void 0) return void 0;
   const verdict2 = rmVerdict(input.runtime, { cwd: input.cwd, home: input.runtime.homeDir(), worktrees }, command);
@@ -22331,7 +22849,7 @@ var snapshotsOf = (input, owner, pending) => {
     }
     done.set(item2.repo.root, input.t("git.snapshot.context", { command: item2.command, ref: taken.value.ref }));
   }
-  if (done.size === 0) return ALLOW11;
+  if (done.size === 0) return ALLOW12;
   const context = [...done.values()].join("\n");
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
 };
@@ -22358,9 +22876,9 @@ var review = (input, commands, owner) => {
 };
 var gitPreToolUse = (input) => {
   const text12 = shellText(input.payload);
-  if (text12 === void 0) return ALLOW11;
+  if (text12 === void 0) return ALLOW12;
   const commands = normalizeCommand(text12, dialectOf(toolName2(input.payload))).commands;
-  if (commands.length === 0) return ALLOW11;
+  if (commands.length === 0) return ALLOW12;
   const owner = ownerOf3(input.payload);
   const result = review(input, commands, owner);
   if (result.blocked !== void 0) {
@@ -22379,12 +22897,12 @@ var gitPreToolUse = (input) => {
 
 // src/git/hooks/session.ts
 import { dirname as dirname10, relative as relative7 } from "node:path";
-var ALLOW12 = { kind: "allow" };
+var ALLOW13 = { kind: "allow" };
 var EDIT_TOOLS = /* @__PURE__ */ new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
 var gitSessionStart = (input) => {
   const repo = openRepo(input.runtime, input.cwd);
   if (repo !== void 0) recordBaseline(input.runtime, repo, ownerOf3(input.payload));
-  return ALLOW12;
+  return ALLOW13;
 };
 var editedPath = (input) => {
   const inputs = toolInput2(input.payload);
@@ -22401,12 +22919,12 @@ var gitPostToolUse = (input) => {
   if (EDIT_TOOLS.has(tool)) {
     const edited = editedPath(input);
     if (edited !== void 0) recordEdits(input.runtime, edited.repo, ownerOf3(input.payload), [edited.path]);
-    return ALLOW12;
+    return ALLOW13;
   }
-  if (!SHELL_TOOLS2.has(tool)) return ALLOW12;
+  if (!SHELL_TOOLS2.has(tool)) return ALLOW13;
   const repo = openRepo(input.runtime, input.cwd);
   if (repo !== void 0) recordShellChanges(input.runtime, repo, ownerOf3(input.payload));
-  return ALLOW12;
+  return ALLOW13;
 };
 
 // src/git/hooks/index.ts
@@ -22582,7 +23100,7 @@ var heredocIn = (value, heredocs) => {
 };
 
 // src/prose/marker-guard.ts
-var ALLOW13 = { kind: "allow" };
+var ALLOW14 = { kind: "allow" };
 var SHELLS2 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var READ_ONLY2 = /* @__PURE__ */ new Set(["grep", "rg", "cat", "less", "head", "tail", "ls", "wc", "finitemonkey", "fm"]);
 var GIT_READ_ONLY = /* @__PURE__ */ new Set(["grep", "log", "show", "diff", "status", "blame"]);
@@ -22626,7 +23144,7 @@ var proseMarkerGuard = (input) => {
   const tool = toolName2(input.payload);
   const inputs = toolInput2(input.payload);
   if (SHELLS2.has(tool)) {
-    if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW13;
+    if (!shellAddsMarker(optionalString(inputs, "command") ?? "")) return ALLOW14;
     return {
       kind: "block",
       reason: modelReason(input.t, "prose.block.marker_shell", { marker: ALLOW_COMMENT }),
@@ -22634,19 +23152,7 @@ var proseMarkerGuard = (input) => {
     };
   }
   const file = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path") ?? "";
-  return addsMarker(input, tool, inputs, file) ? blocked2(input, shown2(input.cwd, file)) : ALLOW13;
-};
-
-// src/secrets/project.ts
-var projectRoot = (ctx) => {
-  const top = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
-  const path = top.stdout.trim();
-  return top.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
-};
-var isPerson = (ctx) => ctx.io.stdin.isTTY === true && ctx.env["CLAUDECODE"] === void 0 && ctx.env["CLAUDE_CODE_ENTRYPOINT"] === void 0;
-var personName = (ctx) => {
-  const name = ctx.runtime.git(["config", "user.name"], ctx.cwd).stdout.trim();
-  return name !== "" ? name : ctx.env["USER"] ?? ctx.env["USERNAME"] ?? "person";
+  return addsMarker(input, tool, inputs, file) ? blocked2(input, shown2(input.cwd, file)) : ALLOW14;
 };
 
 // src/prose/command-text.ts
@@ -22754,7 +23260,7 @@ var describeSpans = (t, spans) => spans.slice(0, MAX_SPANS).map((span) => t("pro
 var describeFixes = (t, spans) => rulesOf2(spans).slice(0, MAX_FIXES).map((rule) => t("prose.fix_item", { rule, fix: t(RULE_FIX_KEYS[rule]) })).join("; ");
 
 // src/prose/text-guard.ts
-var ALLOW14 = { kind: "allow" };
+var ALLOW15 = { kind: "allow" };
 var SHELLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var TARGET_KEYS = {
   commit: "prose.target.commit",
@@ -22801,15 +23307,15 @@ var decisionFor = (input, found, blocking2) => {
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext } } };
 };
 var proseCommandGuard = (input) => {
-  if (!SHELLS3.has(toolName2(input.payload))) return ALLOW14;
+  if (!SHELLS3.has(toolName2(input.payload))) return ALLOW15;
   const found = proseInCommand(optionalString(toolInput2(input.payload), "command") ?? "");
-  if (found.length === 0) return ALLOW14;
+  if (found.length === 0) return ALLOW15;
   const blocking2 = projectPreset(input.runtime, projectRoot(input)) === "gabriel";
   for (const item2 of found) {
     const decision2 = decisionFor(input, item2, blocking2);
     if (decision2 !== void 0) return decision2;
   }
-  return ALLOW14;
+  return ALLOW15;
 };
 
 // src/prose/hooks.ts
@@ -22964,14 +23470,14 @@ var commitIntent = (segments) => {
 };
 
 // src/secrets/guards/pre-tool.ts
-var ALLOW15 = { kind: "allow" };
+var ALLOW16 = { kind: "allow" };
 var relativeFile = (cwd, file) => {
   if (file === "") return file;
   const rel = relative9(cwd, file).split("\\").join("/");
   return rel.startsWith("..") || rel === "" ? file : rel;
 };
 var warningDecision = (t, warnings) => {
-  if (warnings.length === 0) return ALLOW15;
+  if (warnings.length === 0) return ALLOW16;
   const context = t("secrets.warn.write", { found: describeFindings(t, warnings) });
   return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext: context } } };
 };
@@ -23014,7 +23520,7 @@ var bashMessage = (t, finding5) => {
 var commitDecision = (input, includeUnstaged) => {
   const staged = scanStaged(input.runtime, input.cwd, includeUnstaged);
   const found = staged.ok ? blocking(staged.value) : [];
-  if (found.length === 0) return ALLOW15;
+  if (found.length === 0) return ALLOW16;
   const items = found.map((finding5) => ({
     ruleId: finding5.ruleId,
     where: input.t("secrets.where.file", { file: finding5.file, line: finding5.line, column: finding5.column })
@@ -23027,7 +23533,7 @@ var commitDecision = (input, includeUnstaged) => {
 };
 var bashDecision = (input) => {
   const command = optionalString(toolInput2(input.payload), "command") ?? "";
-  if (command === "") return ALLOW15;
+  if (command === "") return ALLOW16;
   const segments = segmentsOf(command);
   const [first] = bashFindings(command, segments);
   if (first !== void 0) return { kind: "block", reason: bashMessage(input.t, first) };
@@ -23041,12 +23547,12 @@ var bashDecision = (input) => {
     };
   }
   const commit2 = commitIntent(segments);
-  return commit2 === void 0 ? ALLOW15 : commitDecision(input, commit2.includeUnstaged);
+  return commit2 === void 0 ? ALLOW16 : commitDecision(input, commit2.includeUnstaged);
 };
 var readDecision = (input) => {
   const inputs = toolInput2(input.payload);
   const target2 = optionalString(inputs, "file_path") ?? optionalString(inputs, "path") ?? "";
-  if (target2 === "" || !isSensitivePath(target2)) return ALLOW15;
+  if (target2 === "" || !isSensitivePath(target2)) return ALLOW16;
   return {
     kind: "block",
     reason: modelReason(input.t, "secrets.block.read", { target: relativeFile(input.cwd, target2) }),
@@ -23061,7 +23567,7 @@ var secretsPreToolUse = (input) => {
   if (WRITERS2.has(tool)) return writeDecision(input, tool);
   if (SHELLS4.has(tool)) return bashDecision(input);
   if (READS.has(tool)) return readDecision(input);
-  return ALLOW15;
+  return ALLOW16;
 };
 
 // src/secrets/remotes.ts
@@ -23186,7 +23692,8 @@ var GUARD_SETS = [
   { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
-  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } }
+  { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
+  { id: "creds-static", damage: false, handlers: { PreToolUse: [credsStaticGuard] } }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy));
 
@@ -23447,7 +23954,7 @@ var runProblems = (context, entry2, invocation) => {
   return [{ health: "degraded", messageKey: "doctor.hooks.slow", fixKey: "doctor.hooks.fix_slow", params: params2 }];
 };
 var STATUS = { ok: "ok", degraded: "warn", broken: "fail" };
-var toFinding2 = (entry2, problems, ms) => {
+var toFinding3 = (entry2, problems, ms) => {
   const check2 = `hook.${entry2.source}.${entry2.event}`;
   const worst4 = problems.find((problem5) => problem5.health === "broken") ?? problems[0];
   if (worst4 === void 0) {
@@ -23473,11 +23980,11 @@ var hookFinding = (context, entry2) => {
       fixKey: brokenFix(entry2),
       params: { ...params2, command: "" }
     };
-    return toFinding2(entry2, [problem5], 0);
+    return toFinding3(entry2, [problem5], 0);
   }
   const ran = runProblems(context, entry2, invocation);
   const problems = typeof ran === "number" ? [] : ran;
-  return toFinding2(entry2, [...problems, ...configProblems(entry2)], typeof ran === "number" ? ran : 0);
+  return toFinding3(entry2, [...problems, ...configProblems(entry2)], typeof ran === "number" ? ran : 0);
 };
 
 // src/doctor/hook-schema.ts
@@ -23980,6 +24487,7 @@ var CHECKS = [
   checkBriefing,
   checkAgentsFile,
   checkRewriters,
+  checkEnvHygiene,
   checkHooks
 ];
 var probeOnce = (probe) => {
@@ -30812,6 +31320,7 @@ var REGISTRY2 = [
   parityCheckCommand,
   auditCommand,
   debtCommand,
+  credsCommand,
   versionCommand,
   helpCommand
 ];

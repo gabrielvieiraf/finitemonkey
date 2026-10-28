@@ -92,7 +92,8 @@
             "fronts_refused",
             "fronts_failed",
             "front_report_invalid",
-            "fronts_merge_failed"
+            "fronts_merge_failed",
+            "creds_write_failed"
           ]
         },
         "message": {
