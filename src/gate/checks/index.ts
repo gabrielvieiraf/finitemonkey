@@ -3,6 +3,7 @@ import { appsecCheck } from "./appsec.js";
 import { archCheck } from "./arch.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
+import { contractCheck } from "./contract.js";
 import { copyCheck } from "./copy.js";
 import { costCheck } from "./cost.js";
 import { decisionCheck } from "./decision.js";
@@ -68,4 +69,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   mutation: mutationCheck,
   arch: archCheck,
   organize: organizeCheck,
+  contract: contractCheck,
 };

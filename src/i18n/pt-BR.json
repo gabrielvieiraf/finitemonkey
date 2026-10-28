@@ -1847,5 +1847,19 @@
   "gate.organize.logic": "{file}:{line} é lógica nova, não código movido: {text}",
   "gate.organize.open_caller": "{file} ainda importa {name} de {origin}, cujo re-export foi removido",
   "gate.organize.shadow": "o passo mistura mover com mudar lógica ou deixa chamadores abertos (modo sombra, sem bloquear)",
-  "gate.organize.fix": "deixe este passo só movendo código; mude comportamento num passo próprio com matriz de paridade"
+  "gate.organize.fix": "deixe este passo só movendo código; mude comportamento num passo próprio com matriz de paridade",
+  "command.contract.summary": "Gera o registro da API, o cliente tipado e os mocks MSW a partir de api/contract.yml, e checa a cobertura",
+  "contract.error.no_registry": "{file} não existe: liste lá os códigos de erro e os endpoints (id, method, path, summary, domain, input, output, screens) primeiro",
+  "contract.error.invalid": "o api/contract.yml é inválido: {issues}",
+  "contract.next": "Registro, cliente e teste de cobertura em {base}/api ({framework}). Próximo: `finitemonkey contract mocks`.",
+  "contract.mocks.next": "Mocks em {base}/mocks ({framework}). Para rodar sem backend: `npx msw init public` e inicie o `worker` de {base}/mocks/browser.ts em desenvolvimento antes de o app renderizar. Cenários: ?mock=slow, empty, error ou um código de erro.",
+  "gate.contract.off": "o check do contrato de API está desligado em .finitemonkey/policy.yml",
+  "gate.contract.no_registry": "sem api/contract.yml, nada a checar",
+  "gate.contract.invalid": "o api/contract.yml é inválido: {issues}",
+  "gate.contract.clean": "cada endpoint tem exatamente um mock e cada mock está no contrato",
+  "gate.contract.no_mock": "{route} ({id}) não tem mock",
+  "gate.contract.outside": "{file}:{line} faz mock de {route}, que não está no contrato",
+  "gate.contract.duplicate_handler": "{file}:{line} registra {route} pela segunda vez",
+  "gate.contract.repeated_route": "{route} aparece mais de uma vez no contrato ({ids})",
+  "gate.contract.shadow": "{count, plural, one {# problema de cobertura do contrato} other {# problemas de cobertura do contrato}} (modo sombra, sem bloquear)"
 }

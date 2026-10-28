@@ -1847,5 +1847,19 @@
   "gate.organize.logic": "{file}:{line} es lógica nueva, no código movido: {text}",
   "gate.organize.open_caller": "{file} todavía importa {name} desde {origin}, cuyo re-export se quitó",
   "gate.organize.shadow": "el paso mezcla mover con cambiar lógica o deja llamadores abiertos (modo sombra, sin bloquear)",
-  "gate.organize.fix": "deja este paso solo moviendo código; cambia el comportamiento en un paso propio con matriz de paridad"
+  "gate.organize.fix": "deja este paso solo moviendo código; cambia el comportamiento en un paso propio con matriz de paridad",
+  "command.contract.summary": "Genera el registro de la API, el cliente tipado y los mocks MSW desde api/contract.yml, y comprueba su cobertura",
+  "contract.error.no_registry": "{file} no existe: lista allí los códigos de error y los endpoints (id, method, path, summary, domain, input, output, screens) primero",
+  "contract.error.invalid": "el api/contract.yml no es válido: {issues}",
+  "contract.next": "Registro, cliente y test de cobertura en {base}/api ({framework}). Siguiente: `finitemonkey contract mocks`.",
+  "contract.mocks.next": "Mocks en {base}/mocks ({framework}). Para ejecutar sin backend: `npx msw init public` y arranca el `worker` de {base}/mocks/browser.ts en desarrollo antes de que la app renderice. Escenarios: ?mock=slow, empty, error o un código de error.",
+  "gate.contract.off": "el check del contrato de API está apagado en .finitemonkey/policy.yml",
+  "gate.contract.no_registry": "sin api/contract.yml, nada que comprobar",
+  "gate.contract.invalid": "el api/contract.yml no es válido: {issues}",
+  "gate.contract.clean": "cada endpoint tiene exactamente un mock y cada mock está en el contrato",
+  "gate.contract.no_mock": "{route} ({id}) no tiene mock",
+  "gate.contract.outside": "{file}:{line} hace mock de {route}, que no está en el contrato",
+  "gate.contract.duplicate_handler": "{file}:{line} registra {route} por segunda vez",
+  "gate.contract.repeated_route": "{route} aparece más de una vez en el contrato ({ids})",
+  "gate.contract.shadow": "{count, plural, one {# problema de cobertura del contrato} other {# problemas de cobertura del contrato}} (modo sombra, sin bloquear)"
 }

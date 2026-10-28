@@ -313,6 +313,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "O `finitemonkey organize plan <file>` grava um esqueleto de plano de divisão para esse arquivo, só quando o plano ainda não existe: responsabilidades com faixas de linhas e a sequência de passos pequenos. O ranking de hotspots fica em cache em `.finitemonkey/cache/`.",
     es: "`finitemonkey organize plan <file>` escribe un esqueleto de plan de división para ese archivo, solo cuando el plan todavía no existe: responsabilidades con rangos de líneas y la secuencia de pasos pequeños. El ranking de hotspots queda en caché en `.finitemonkey/cache/`.",
   },
+  "api-contract": {
+    en: "Only with `finitemonkey contract --write` or `contract mocks --write`: the endpoint registry, typed client, error envelope and coverage test under `api/`, and the MSW mocks under `mocks/`, in `src/`, `app/` (Remix) or `lib/` (Next without `src/`), generated from `api/contract.yml`. Existing files are never replaced unless the person passes `--overwrite` in a terminal.",
+    "pt-BR":
+      "Só com `finitemonkey contract --write` ou `contract mocks --write`: o registro de endpoints, o cliente tipado, o envelope de erro e o teste de cobertura em `api/`, e os mocks MSW em `mocks/`, dentro de `src/`, `app/` (Remix) ou `lib/` (Next sem `src/`), gerados a partir de `api/contract.yml`. Arquivos existentes nunca são substituídos, a menos que a pessoa passe `--overwrite` num terminal.",
+    es: "Solo con `finitemonkey contract --write` o `contract mocks --write`: el registro de endpoints, el cliente tipado, el envelope de error y el test de cobertura en `api/`, y los mocks MSW en `mocks/`, dentro de `src/`, `app/` (Remix) o `lib/` (Next sin `src/`), generados desde `api/contract.yml`. Los archivos existentes nunca se reemplazan, salvo que la persona pase `--overwrite` en una terminal.",
+  },
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

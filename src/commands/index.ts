@@ -9,6 +9,7 @@ import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
 import { ciWatchCommand } from "./ci-watch.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
+import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
@@ -233,6 +234,7 @@ export const REGISTRY = [
   goldenAcceptCommand,
   archCommand,
   organizeCommand,
+  contractCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

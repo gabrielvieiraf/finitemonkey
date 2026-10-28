@@ -188,6 +188,11 @@ export const FOOTPRINT = [
   },
   { id: "golden", kind: "writes", targets: [".finitemonkey/golden/"] },
   { id: "organize", kind: "writes", targets: ["docs/organize/"] },
+  {
+    id: "api-contract",
+    kind: "writes",
+    targets: ["src/api/", "src/mocks/", "app/api/", "app/mocks/", "lib/api/", "lib/mocks/"],
+  },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

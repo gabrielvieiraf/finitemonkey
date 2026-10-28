@@ -36,6 +36,7 @@ export const CHECK_KINDS = [
   "mutation",
   "arch",
   "organize",
+  "contract",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

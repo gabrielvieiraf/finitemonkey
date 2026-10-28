@@ -1847,5 +1847,19 @@
   "gate.organize.logic": "{file}:{line} is new logic, not moved code: {text}",
   "gate.organize.open_caller": "{file} still imports {name} from {origin}, whose re-export was removed",
   "gate.organize.shadow": "the step mixes moving with changing logic or leaves callers open (shadow mode, not blocking)",
-  "gate.organize.fix": "keep this step to moving code; change behavior in its own step with a parity matrix"
+  "gate.organize.fix": "keep this step to moving code; change behavior in its own step with a parity matrix",
+  "command.contract.summary": "Generate the API registry, typed client and MSW mocks from api/contract.yml, and check their coverage",
+  "contract.error.no_registry": "{file} does not exist: list the error codes and the endpoints (id, method, path, summary, domain, input, output, screens) there first",
+  "contract.error.invalid": "api/contract.yml is invalid: {issues}",
+  "contract.next": "Registry, client and coverage test under {base}/api ({framework}). Next: `finitemonkey contract mocks`.",
+  "contract.mocks.next": "Mocks under {base}/mocks ({framework}). To run without a backend: `npx msw init public`, then start `worker` from {base}/mocks/browser.ts in development before the app renders. Scenarios: ?mock=slow, empty, error or an error code.",
+  "gate.contract.off": "the API contract check is off in .finitemonkey/policy.yml",
+  "gate.contract.no_registry": "no api/contract.yml, nothing to check",
+  "gate.contract.invalid": "api/contract.yml is invalid: {issues}",
+  "gate.contract.clean": "every endpoint has exactly one mock and every mock is in the contract",
+  "gate.contract.no_mock": "{route} ({id}) has no mock",
+  "gate.contract.outside": "{file}:{line} mocks {route}, which is not in the contract",
+  "gate.contract.duplicate_handler": "{file}:{line} registers {route} a second time",
+  "gate.contract.repeated_route": "{route} appears more than once in the contract ({ids})",
+  "gate.contract.shadow": "{count, plural, one {# contract coverage problem} other {# contract coverage problems}} (shadow mode, not blocking)"
 }

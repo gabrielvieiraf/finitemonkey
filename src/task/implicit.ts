@@ -1,3 +1,4 @@
+import { CONTRACT_FILE } from "../apicontract/registry.js";
 import { detectStack, hasWebStack } from "../appsec/stack.js";
 import { ARCH_FILE } from "../arch/config.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
@@ -74,6 +75,7 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       { id: "slop", kind: "slop" },
       { id: "regression", kind: "regression" },
       ...(files.exists(ARCH_FILE) ? [{ id: "arch", kind: "arch" as const }] : []),
+      ...(files.exists(CONTRACT_FILE) ? [{ id: "contract", kind: "contract" as const }] : []),
       { id: "pr", kind: "pr", requireOpen: false },
     ],
     decisionsNeeded: [],

@@ -1848,7 +1848,21 @@
     "gate.organize.logic": "machine",
     "gate.organize.open_caller": "machine",
     "gate.organize.shadow": "machine",
-    "gate.organize.fix": "machine"
+    "gate.organize.fix": "machine",
+    "command.contract.summary": "machine",
+    "contract.error.no_registry": "machine",
+    "contract.error.invalid": "machine",
+    "contract.next": "machine",
+    "contract.mocks.next": "machine",
+    "gate.contract.off": "machine",
+    "gate.contract.no_registry": "machine",
+    "gate.contract.invalid": "machine",
+    "gate.contract.clean": "machine",
+    "gate.contract.no_mock": "machine",
+    "gate.contract.outside": "machine",
+    "gate.contract.duplicate_handler": "machine",
+    "gate.contract.repeated_route": "machine",
+    "gate.contract.shadow": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3699,6 +3713,20 @@
     "gate.organize.logic": "machine",
     "gate.organize.open_caller": "machine",
     "gate.organize.shadow": "machine",
-    "gate.organize.fix": "machine"
+    "gate.organize.fix": "machine",
+    "command.contract.summary": "machine",
+    "contract.error.no_registry": "machine",
+    "contract.error.invalid": "machine",
+    "contract.next": "machine",
+    "contract.mocks.next": "machine",
+    "gate.contract.off": "machine",
+    "gate.contract.no_registry": "machine",
+    "gate.contract.invalid": "machine",
+    "gate.contract.clean": "machine",
+    "gate.contract.no_mock": "machine",
+    "gate.contract.outside": "machine",
+    "gate.contract.duplicate_handler": "machine",
+    "gate.contract.repeated_route": "machine",
+    "gate.contract.shadow": "machine"
   }
 }
