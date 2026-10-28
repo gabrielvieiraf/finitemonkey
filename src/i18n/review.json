@@ -1031,7 +1031,12 @@
     "gate.reopened": "machine",
     "gate.guard.self.amend.claim": "machine",
     "gate.guard.self.amend.requires": "machine",
-    "gate.guard.amend.human": "machine"
+    "gate.guard.amend.human": "machine",
+    "command.task_from_spec.summary": "machine",
+    "spec.error.read": "machine",
+    "spec.error.empty": "machine",
+    "spec.proposed": "machine",
+    "spec.unchecked": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2065,6 +2070,11 @@
     "gate.reopened": "machine",
     "gate.guard.self.amend.claim": "machine",
     "gate.guard.self.amend.requires": "machine",
-    "gate.guard.amend.human": "machine"
+    "gate.guard.amend.human": "machine",
+    "command.task_from_spec.summary": "machine",
+    "spec.error.read": "machine",
+    "spec.error.empty": "machine",
+    "spec.proposed": "machine",
+    "spec.unchecked": "machine"
   }
 }

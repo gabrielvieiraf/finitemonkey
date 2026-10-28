@@ -5155,7 +5155,12 @@ var en_default = {
   "gate.reopened": "{check} was reopened and runs again",
   "gate.guard.self.amend.claim": "{file} changes the done contract, which only the person can do",
   "gate.guard.self.amend.requires": "ask the person to run it themselves",
-  "gate.guard.amend.human": "The agent tried to amend the done contract. Run finitemonkey task amend yourself if you agree, or type fm: allow self <reason>."
+  "gate.guard.amend.human": "The agent tried to amend the done contract. Run finitemonkey task amend yourself if you agree, or type fm: allow self <reason>.",
+  "command.task_from_spec.summary": "Propose a done contract from a Spec Kit or OpenSpec tasks.md without changing it",
+  "spec.error.read": "could not read {file}",
+  "spec.error.empty": "{file} has no task or criterion to turn into a check",
+  "spec.proposed": "Proposed contract from {format}: {count, plural, one {# criterion} other {# criteria}}, {unchecked} without an executable check.",
+  "spec.unchecked": "no executable check: {id} ({from}) {text}"
 };
 
 // src/i18n/es.json
@@ -6191,7 +6196,12 @@ var es_default = {
   "gate.reopened": "{check} se reabrió y vuelve a correr",
   "gate.guard.self.amend.claim": "{file} cambia el contrato de terminado, y solo la persona puede hacerlo",
   "gate.guard.self.amend.requires": "pide a la persona que lo ejecute",
-  "gate.guard.amend.human": "El agente intentó enmendar el contrato de terminado. Ejecuta finitemonkey task amend tú mismo si estás de acuerdo, o escribe fm: allow self <motivo>."
+  "gate.guard.amend.human": "El agente intentó enmendar el contrato de terminado. Ejecuta finitemonkey task amend tú mismo si estás de acuerdo, o escribe fm: allow self <motivo>.",
+  "command.task_from_spec.summary": "Propone un contrato de terminado a partir de un tasks.md de Spec Kit u OpenSpec sin modificarlo",
+  "spec.error.read": "no se pudo leer {file}",
+  "spec.error.empty": "{file} no tiene tareas ni criterios para convertir en comprobaciones",
+  "spec.proposed": "Contrato propuesto desde {format}: {count, plural, one {# criterio} other {# criterios}}, {unchecked} sin comprobación ejecutable.",
+  "spec.unchecked": "sin comprobación ejecutable: {id} ({from}) {text}"
 };
 
 // src/i18n/pt-BR.json
@@ -7227,7 +7237,12 @@ var pt_BR_default = {
   "gate.reopened": "{check} foi reaberto e roda de novo",
   "gate.guard.self.amend.claim": "{file} muda o contrato de pronto, e só a pessoa pode fazer isso",
   "gate.guard.self.amend.requires": "peça para a pessoa rodar",
-  "gate.guard.amend.human": "O agente tentou emendar o contrato de pronto. Rode finitemonkey task amend você mesmo se concordar, ou digite fm: allow self <motivo>."
+  "gate.guard.amend.human": "O agente tentou emendar o contrato de pronto. Rode finitemonkey task amend você mesmo se concordar, ou digite fm: allow self <motivo>.",
+  "command.task_from_spec.summary": "Propõe um contrato de pronto a partir de um tasks.md do Spec Kit ou OpenSpec sem alterá-lo",
+  "spec.error.read": "não deu para ler {file}",
+  "spec.error.empty": "{file} não tem tarefa nem critério para virar checagem",
+  "spec.proposed": "Contrato proposto a partir de {format}: {count, plural, one {# critério} other {# critérios}}, {unchecked} sem checagem executável.",
+  "spec.unchecked": "sem checagem executável: {id} ({from}) {text}"
 };
 
 // src/i18n/review.json
@@ -8264,7 +8279,12 @@ var review_default = {
     "gate.reopened": "machine",
     "gate.guard.self.amend.claim": "machine",
     "gate.guard.self.amend.requires": "machine",
-    "gate.guard.amend.human": "machine"
+    "gate.guard.amend.human": "machine",
+    "command.task_from_spec.summary": "machine",
+    "spec.error.read": "machine",
+    "spec.error.empty": "machine",
+    "spec.proposed": "machine",
+    "spec.unchecked": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -9298,7 +9318,12 @@ var review_default = {
     "gate.reopened": "machine",
     "gate.guard.self.amend.claim": "machine",
     "gate.guard.self.amend.requires": "machine",
-    "gate.guard.amend.human": "machine"
+    "gate.guard.amend.human": "machine",
+    "command.task_from_spec.summary": "machine",
+    "spec.error.read": "machine",
+    "spec.error.empty": "machine",
+    "spec.proposed": "machine",
+    "spec.unchecked": "machine"
   }
 };
 
@@ -27267,6 +27292,159 @@ var taskAmendCommand = {
   }
 };
 
+// src/spec/criteria.ts
+var COMMAND2 = /`((?:npm|pnpm|yarn|npx|bun|bunx|deno|node|pytest|python3?|go|cargo|make|mvn|gradle|dotnet|php|bundle|rake|\.\/)\b[^`]*)`/;
+var GET = /\bGET\b/;
+var ROUTE = /\s(\/[A-Za-z0-9_\-/{}:.]*)/;
+var STATUS2 = /\b([1-5]\d\d)\b/;
+var commandCheck3 = (id, item2) => {
+  const run4 = COMMAND2.exec(item2.text)?.[1];
+  return run4 === void 0 ? void 0 : { id, kind: "command", run: run4.trim(), description: item2.text };
+};
+var runtimeCheck2 = (id, item2, port) => {
+  const route = ROUTE.exec(item2.text)?.[1];
+  const status = STATUS2.exec(item2.text.replace(ROUTE, " "))?.[1];
+  if (!item2.ears || !GET.test(item2.text) || route === void 0 || status === void 0 || port === void 0)
+    return void 0;
+  return { id, kind: "runtime", port, route, status: Number(status), description: item2.text };
+};
+var criteriaOf = (items, port) => items.map((item2, index) => {
+  const id = `S${String(index + 1)}`;
+  const check2 = commandCheck3(id, item2) ?? runtimeCheck2(id, item2, port);
+  return {
+    id,
+    from: item2.from,
+    text: item2.text,
+    ears: item2.ears,
+    checkable: check2 !== void 0,
+    check: check2 ?? { id, kind: "manual", description: item2.text }
+  };
+});
+
+// src/spec/parse.ts
+var CHECKBOX = /^\s*[-*]\s+\[[ xX]\]\s+(.*)$/;
+var SPECKIT_ID = /^(T\d{3,})\s+/;
+var OPENSPEC_ID = /^(\d+(?:\.\d+)+)\s+/;
+var LABELS = /\[(?:P|US\d+|Story[^\]]*)\]\s*/g;
+var EARS = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:when|while|if|where)\b.*\bshall\b/i;
+var SHALL = /^\s*(?:[-*]\s*)?(?:the\s+\S+(?:\s+\S+)?\s+shall)\b/i;
+var SCENARIO_WHEN = /^\s*[-*]\s*\*\*WHEN\*\*\s*(.+)$/;
+var SCENARIO_THEN = /^\s*[-*]\s*\*\*THEN\*\*\s*(.+)$/;
+var formatOf = (path, text11) => {
+  if (/(^|[\\/])openspec[\\/]changes[\\/]/.test(path)) return "openspec";
+  return /^\s*[-*]\s+\[[ xX]\]\s+T\d{3,}\b/m.test(text11) ? "speckit" : "checklist";
+};
+var checkboxItem = (raw, line7, index) => {
+  const body2 = CHECKBOX.exec(raw)?.[1];
+  if (body2 === void 0) return void 0;
+  const id = SPECKIT_ID.exec(body2)?.[1] ?? OPENSPEC_ID.exec(body2)?.[1];
+  const text11 = body2.replace(SPECKIT_ID, "").replace(OPENSPEC_ID, "").replace(LABELS, "").trim();
+  return { from: id ?? `item-${String(index + 1)}`, text: text11, line: line7, ears: EARS.test(text11) || SHALL.test(text11) };
+};
+var scenarioItems = (lines4) => lines4.flatMap((raw, index) => {
+  const when = SCENARIO_WHEN.exec(raw)?.[1];
+  const then = lines4.slice(index + 1, index + 4).map((next2) => SCENARIO_THEN.exec(next2)?.[1]).find((item2) => item2 !== void 0);
+  return when === void 0 || then === void 0 ? [] : [
+    {
+      from: `scenario-${String(index + 1)}`,
+      text: `WHEN ${when.trim()} THE SYSTEM SHALL ${then.trim()}`,
+      line: index + 1,
+      ears: true
+    }
+  ];
+});
+var parseSpec = (text11) => {
+  const lines4 = text11.replace(/\r\n/g, "\n").split("\n");
+  const boxes = lines4.flatMap((raw, index) => checkboxItem(raw, index + 1, index) ?? []);
+  const loose = lines4.flatMap(
+    (raw, index) => CHECKBOX.test(raw) || !(EARS.test(raw) || SHALL.test(raw)) ? [] : [
+      {
+        from: `ears-${String(index + 1)}`,
+        text: raw.replace(/^\s*[-*]\s*/, "").replace(/\*\*/g, "").trim(),
+        line: index + 1,
+        ears: true
+      }
+    ]
+  );
+  return [...boxes, ...loose, ...scenarioItems(lines4)].sort((a, b) => a.line - b.line);
+};
+
+// src/commands/task-spec.ts
+var USAGE6 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
+var idFrom = (file) => {
+  const change = /openspec[\\/]changes[\\/]([^\\/]+)[\\/]/.exec(file)?.[1];
+  return slugOf(change ?? file.replace(/^.*[\\/]/, "").replace(/\.md$/, "")).slice(0, 64);
+};
+var save3 = (ctx, paths, contract, text11) => {
+  if (ctx.runtime.stat(paths.task(contract.id)) !== void 0) return false;
+  if (!ctx.runtime.writeText(paths.task(contract.id), text11).ok) return false;
+  const lock = readTrust(ctx.runtime, paths);
+  writeTrust(ctx.runtime, paths, {
+    ...lock,
+    contracts: { ...lock.contracts, [contract.id]: contractHash(contract) },
+    approved: { ...lock.approved, [contract.id]: text11 }
+  });
+  writeState(ctx.runtime, paths, { ...readState(ctx.runtime, paths), active: contract.id });
+  return true;
+};
+var portOf = (raw) => {
+  const port = Number(raw);
+  return Number.isInteger(port) && port > 0 && port <= 65535 ? port : void 0;
+};
+var taskFromSpecCommand = {
+  path: ["task", "from-spec"],
+  summaryKey: "command.task_from_spec.summary",
+  usage: USAGE6,
+  status: "ready",
+  maxPositionals: 1,
+  options: { id: { type: "string" }, goal: { type: "string" }, port: { type: "string" } },
+  run: (ctx, args2) => {
+    const repo = repoOf(ctx);
+    if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
+    const file = args2.positionals[0];
+    const source = file === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(file, ctx.cwd));
+    if (file === void 0 || source?.ok !== true)
+      return Promise.resolve(
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE6, { file: file ?? "-" }))
+      );
+    const criteria = criteriaOf(parseSpec(source.value), portOf(stringOption(args2.values, "port")));
+    const id = stringOption(args2.values, "id") ?? idFrom(file);
+    if (criteria.length === 0 || !TASK_ID.test(id))
+      return Promise.resolve(
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE6, { file }))
+      );
+    const contract = {
+      id,
+      goal: stringOption(args2.values, "goal") ?? id,
+      size: "M",
+      scope: { paths: [], testsProtected: true },
+      acceptance: criteria.map((item2) => item2.check),
+      decisionsNeeded: [],
+      implicit: false
+    };
+    const text11 = stringifyYaml(contractYaml(contract));
+    const written = stringOption(args2.values, "id") !== void 0 && save3(ctx, fmPaths(repo.root), contract, text11);
+    const data = {
+      schema: TASK_SCHEMA,
+      source: file,
+      format: formatOf(file, source.value),
+      sourceSha256: sha256Hex(source.value),
+      written,
+      criteria: criteria.map(({ check: check2, ...item2 }) => ({ ...item2, kind: check2.kind })),
+      contract: text11
+    };
+    const unchecked = criteria.filter((item2) => !item2.checkable).length;
+    return Promise.resolve(
+      success(data, [
+        ctx.t("spec.proposed", { count: criteria.length, unchecked, format: data.format }),
+        ...criteria.filter((item2) => !item2.checkable).map((item2) => `  ${ctx.t("spec.unchecked", { id: item2.id, from: item2.from, text: item2.text })}`),
+        text11.trimEnd(),
+        ...written ? [ctx.t("task.created", { task: id, file: fmPaths(repo.root).task(id) })] : []
+      ])
+    );
+  }
+};
+
 // src/install/githook-block.ts
 var withoutHookBlock = (text11) => withoutManagedBlock(text11, { begin: BLOCK_BEGIN, end: BLOCK_END });
 
@@ -27910,6 +28088,7 @@ var REGISTRY2 = [
   taskDoneCommand,
   taskReopenCommand,
   taskAmendCommand,
+  taskFromSpecCommand,
   secretsScanCommand,
   secretsAcceptCommand,
   policyFalsePositiveCommand,
