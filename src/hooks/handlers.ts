@@ -24,6 +24,7 @@ import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
+import { REMINDERS_HANDLERS } from "../reminders/hooks.js";
 import { REUSE_HANDLERS } from "../reuse/hook.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { rulesGuard } from "../rules/guard.js";
@@ -190,6 +191,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "heavy-lock", damage: false, handlers: HEAVY_HANDLERS },
   { id: "instructions", damage: false, handlers: { InstructionsLoaded: [instructionsLoaded] } },
   { id: "rules-stop", damage: false, handlers: { Stop: [rulesStop] } },
+  { id: "reminders", damage: false, handlers: REMINDERS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

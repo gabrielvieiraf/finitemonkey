@@ -1561,7 +1561,12 @@
     "rules.violation.recorded": "machine",
     "rules.coverage.buckets": "machine",
     "rules.coverage.too_many": "machine",
-    "rules.doctor.fix_too_many": "machine"
+    "rules.doctor.fix_too_many": "machine",
+    "reminders.command.summary": "machine",
+    "reminders.error.event": "machine",
+    "reminders.none": "machine",
+    "reminders.title": "machine",
+    "reminders.row": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3125,6 +3130,11 @@
     "rules.violation.recorded": "machine",
     "rules.coverage.buckets": "machine",
     "rules.coverage.too_many": "machine",
-    "rules.doctor.fix_too_many": "machine"
+    "rules.doctor.fix_too_many": "machine",
+    "reminders.command.summary": "machine",
+    "reminders.error.event": "machine",
+    "reminders.none": "machine",
+    "reminders.title": "machine",
+    "reminders.row": "machine"
   }
 }

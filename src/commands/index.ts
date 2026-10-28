@@ -51,6 +51,7 @@ import { plantaCommand } from "./planta.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
 import { proseCheckCommand } from "./prose-check.js";
+import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
@@ -181,6 +182,7 @@ export const REGISTRY = [
   instructionsCommand,
   rulesProposeCommand,
   rulesViolationCommand,
+  remindersCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,

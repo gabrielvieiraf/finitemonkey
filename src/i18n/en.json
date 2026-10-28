@@ -1560,5 +1560,10 @@
   "rules.violation.recorded": "Recorded: rule {id} broken {count, plural, one {# time} other {# times}} so far.",
   "rules.coverage.buckets": "Enforced: {enforced}. Checked at the end of the turn: {checked}. Reminders: {reminder}.",
   "rules.coverage.too_many": "{count} enforced rules, above {max}; every block costs a retry, so keep only the rules that matter",
-  "rules.doctor.fix_too_many": "Review .finitemonkey/rules.yml and move rules that do not prevent damage to bucket: reminder"
+  "rules.doctor.fix_too_many": "Review .finitemonkey/rules.yml and move rules that do not prevent damage to bucket: reminder",
+  "reminders.command.summary": "Show which reminder rules would be injected now, for which event, and why",
+  "reminders.error.event": "Unknown event; use session, subagent, tool or prompt, and for session a source of startup, resume or compact",
+  "reminders.none": "Nothing would be injected on {event}: no reminder rule matches, or each was already injected since the last compaction.",
+  "reminders.title": "{count, plural, one {# reminder} other {# reminders}}, about {tokens} of {max} tokens:",
+  "reminders.row": "  {id}: matched by {why}, broken {violations, plural, one {# time} other {# times}}"
 }

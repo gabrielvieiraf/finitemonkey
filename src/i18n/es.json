@@ -1560,5 +1560,10 @@
   "rules.violation.recorded": "Registrado: regla {id} incumplida {count, plural, one {# vez} other {# veces}} hasta ahora.",
   "rules.coverage.buckets": "Bloqueadas: {enforced}. Revisadas al final del turno: {checked}. Recordatorios: {reminder}.",
   "rules.coverage.too_many": "{count} reglas bloqueadas, por encima de {max}; cada bloqueo cuesta un reintento, así que deja solo las que importan",
-  "rules.doctor.fix_too_many": "Revisa .finitemonkey/rules.yml y pasa a bucket: reminder las reglas que no evitan daños"
+  "rules.doctor.fix_too_many": "Revisa .finitemonkey/rules.yml y pasa a bucket: reminder las reglas que no evitan daños",
+  "reminders.command.summary": "Muestra qué reglas de recordatorio se inyectarían ahora, en qué evento y por qué",
+  "reminders.error.event": "Evento desconocido; usa session, subagent, tool o prompt y, para session, el origen startup, resume o compact",
+  "reminders.none": "No se inyectaría nada en {event}: ninguna regla de recordatorio coincide, o cada una ya se inyectó desde la última compactación.",
+  "reminders.title": "{count, plural, one {# recordatorio} other {# recordatorios}}, unos {tokens} de {max} tokens:",
+  "reminders.row": "  {id}: coincidió por {why}, incumplida {violations, plural, one {# vez} other {# veces}}"
 }
