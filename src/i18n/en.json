@@ -1785,5 +1785,7 @@
   "observe.item.synthetic-checks": "a synthetic check per critical flow",
   "observe.item.alerts-severity": "alerts by severity, each with an owner",
   "observe.off": "observability is off in .finitemonkey/policy.yml.",
-  "observe.no_signup": "Finite Monkey signs up for no service: accounts, monitors and alert channels are created by the team."
+  "observe.no_signup": "Finite Monkey signs up for no service: accounts, monitors and alert channels are created by the team.",
+  "gate.fail.isolated": "isolated run stopped at {step}: {detail}",
+  "gate.isolated.off": "gate-isolated is off in .finitemonkey/policy.yml"
 }

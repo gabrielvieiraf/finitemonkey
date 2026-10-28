@@ -1786,7 +1786,9 @@
     "observe.item.synthetic-checks": "machine",
     "observe.item.alerts-severity": "machine",
     "observe.off": "machine",
-    "observe.no_signup": "machine"
+    "observe.no_signup": "machine",
+    "gate.fail.isolated": "machine",
+    "gate.isolated.off": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3575,6 +3577,8 @@
     "observe.item.synthetic-checks": "machine",
     "observe.item.alerts-severity": "machine",
     "observe.off": "machine",
-    "observe.no_signup": "machine"
+    "observe.no_signup": "machine",
+    "gate.fail.isolated": "machine",
+    "gate.isolated.off": "machine"
   }
 }

@@ -1785,5 +1785,7 @@
   "observe.item.synthetic-checks": "um check sintético por fluxo crítico",
   "observe.item.alerts-severity": "alertas por severidade, cada um com um dono",
   "observe.off": "observability está desligado em .finitemonkey/policy.yml.",
-  "observe.no_signup": "O Finite Monkey não cria conta em serviço nenhum: contas, monitores e canais de alerta são criados pelo time."
+  "observe.no_signup": "O Finite Monkey não cria conta em serviço nenhum: contas, monitores e canais de alerta são criados pelo time.",
+  "gate.fail.isolated": "a execução isolada parou em {step}: {detail}",
+  "gate.isolated.off": "gate-isolated está desligado em .finitemonkey/policy.yml"
 }

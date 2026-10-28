@@ -4,6 +4,7 @@ import type { Translate } from "../../i18n/translate.js";
 import { fmPaths } from "../../task/paths.js";
 import { closeTask, readState, writeState } from "../../task/state.js";
 import { gitAt, treeHash } from "../git.js";
+import type { IsolatedFailure } from "../isolated.js";
 import type { GateFailure } from "../prepare.js";
 import { blockReason, itemDetails, unverifiedSummary } from "../render.js";
 import type { GateReport } from "../report.js";
@@ -13,7 +14,10 @@ import { allowWith, findRepoRoot, gateBudget, human, sessionCwd } from "./common
 import { nextBlock, readCounter, saveCounter } from "./counter.js";
 import { writeGateStatus } from "./status.js";
 
-const failureDetail = (t: Translate, failure: GateFailure | { readonly kind: "ledger_unwritable" }): string => {
+const failureDetail = (
+  t: Translate,
+  failure: GateFailure | IsolatedFailure | { readonly kind: "ledger_unwritable" },
+): string => {
   switch (failure.kind) {
     case "not_a_repo":
       return t("gate.fail.not_a_repo");
@@ -26,6 +30,8 @@ const failureDetail = (t: Translate, failure: GateFailure | { readonly kind: "le
         task: failure.problem.id,
         issues: failure.problem.kind === "invalid" ? failure.problem.issues.join("; ") : "",
       });
+    case "isolated":
+      return t("gate.fail.isolated", { step: failure.step, detail: failure.detail });
   }
 };
 

@@ -1785,5 +1785,7 @@
   "observe.item.synthetic-checks": "un check sintético por flujo crítico",
   "observe.item.alerts-severity": "alertas por severidad, cada una con un responsable",
   "observe.off": "observability está apagado en .finitemonkey/policy.yml.",
-  "observe.no_signup": "Finite Monkey no se registra en ningún servicio: las cuentas, los monitores y los canales de alerta los crea el equipo."
+  "observe.no_signup": "Finite Monkey no se registra en ningún servicio: las cuentas, los monitores y los canales de alerta los crea el equipo.",
+  "gate.fail.isolated": "la ejecución aislada se detuvo en {step}: {detail}",
+  "gate.isolated.off": "gate-isolated está apagado en .finitemonkey/policy.yml"
 }

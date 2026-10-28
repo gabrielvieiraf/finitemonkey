@@ -39,6 +39,7 @@ export interface GateOptions {
   readonly fast: boolean;
   readonly mask?: (text: string) => string;
   readonly noSkip?: boolean;
+  readonly isolated?: boolean;
 }
 
 export type GateFailure =

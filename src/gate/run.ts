@@ -3,6 +3,7 @@ import { appendEvidence, latestFor, readLedger } from "../evidence/ledger.js";
 import { type Evidence, EVIDENCE_SCHEMA, GATE_CHECK } from "../evidence/types.js";
 import type { AcceptanceCheck } from "../task/types.js";
 import { DEFAULT_CHECKS } from "./checks/index.js";
+import { type IsolatedFailure, withIsolatedTree } from "./isolated.js";
 import { type GateFailure, type GateOptions, type GateSkip, type Prepared, prepareGate } from "./prepare.js";
 import { buildReport, type GateReport, verdictOf } from "./report.js";
 import { type CheckOutcome, type CheckRegistry, type GateContext, note, REUSABLE_KINDS, unverified } from "./types.js";
@@ -11,7 +12,10 @@ export const FAST_PATH_MS = 10 * 60_000;
 
 export type GateRun =
   | { readonly kind: "skipped"; readonly reason: GateSkip }
-  | { readonly kind: "failed"; readonly failure: GateFailure | { readonly kind: "ledger_unwritable" } }
+  | {
+      readonly kind: "failed";
+      readonly failure: GateFailure | IsolatedFailure | { readonly kind: "ledger_unwritable" };
+    }
   | { readonly kind: "done"; readonly report: GateReport };
 
 const toEvidence = (ctx: GateContext, check: AcceptanceCheck, outcome: CheckOutcome): Evidence => ({
@@ -89,13 +93,10 @@ const summaryEntry = (prepared: Prepared, ledger: readonly Evidence[]): Evidence
   };
 };
 
-export const runGate = (options: GateOptions, registry: CheckRegistry = DEFAULT_CHECKS): GateRun => {
-  const ready = prepareGate(options);
-  if (ready.kind !== "ready") return ready;
-  const { prepared } = ready;
+const evaluate = (options: GateOptions, prepared: Prepared, registry: CheckRegistry, fast: boolean): GateRun => {
   const path = prepared.ctx.paths.evidence(prepared.ctx.contract.id);
   const before = readLedger(options.runtime, path);
-  if (options.fast && fastPathHit(prepared, before)) return { kind: "done", report: report(prepared, before, true) };
+  if (fast && fastPathHit(prepared, before)) return { kind: "done", report: report(prepared, before, true) };
   const fresh = runChecks(prepared.ctx, before, registry);
   if (!appendEvidence(options.runtime, path, fresh)) return { kind: "failed", failure: { kind: "ledger_unwritable" } };
   const withChecks = readLedger(options.runtime, path);
@@ -103,4 +104,14 @@ export const runGate = (options: GateOptions, registry: CheckRegistry = DEFAULT_
     return { kind: "failed", failure: { kind: "ledger_unwritable" } };
   }
   return { kind: "done", report: report(prepared, readLedger(options.runtime, path), false) };
+};
+
+export const runGate = (options: GateOptions, registry: CheckRegistry = DEFAULT_CHECKS): GateRun => {
+  const ready = prepareGate(options);
+  if (ready.kind !== "ready") return ready;
+  if (options.isolated !== true) return evaluate(options, ready.prepared, registry, options.fast);
+  const isolated = withIsolatedTree(options.runtime, ready.prepared, (prepared) =>
+    evaluate(options, prepared, registry, false),
+  );
+  return isolated.ok ? isolated.value : { kind: "failed", failure: isolated.error };
 };
