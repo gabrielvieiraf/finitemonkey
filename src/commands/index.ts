@@ -3,6 +3,7 @@ import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
+import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
@@ -159,6 +160,10 @@ export const REGISTRY = [
   perfilSetCommand,
   perfilAnswerCommand,
   perfilForgetCommand,
+  conceitosCommand,
+  conceitosExportCommand,
+  conceitosUpdateCommand,
+  conceitosMarkCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

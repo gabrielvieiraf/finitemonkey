@@ -1,3 +1,4 @@
+import { bookPath } from "../conceitos/book.js";
 import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
@@ -121,7 +122,7 @@ const answer = (ctx: Ctx, rawDomain: string | undefined, rawOption: string | und
 
 const forget = (ctx: Ctx): CommandResult => {
   const paths = pathsOf(ctx);
-  const removed = [perfilPath(paths), agentCommitsPath(paths)].filter(
+  const removed = [perfilPath(paths), agentCommitsPath(paths), bookPath(paths)].filter(
     (path) => ctx.runtime.stat(path) !== undefined && ctx.runtime.remove(path).ok,
   );
   return success({ schema: PERFIL_SCHEMA, removed: removed.length }, [ctx.t("perfil.forget.done")]);

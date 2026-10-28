@@ -126,7 +126,11 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: [".finitemonkey/signals.jsonl", ".finitemonkey/signals-index.json", ".finitemonkey/signals-profile.json"],
   },
-  { id: "perfil", kind: "writes", targets: [".finitemonkey/perfil.yml", ".finitemonkey/perfil-commits.json"] },
+  {
+    id: "perfil",
+    kind: "writes",
+    targets: [".finitemonkey/perfil.yml", ".finitemonkey/perfil-commits.json", ".finitemonkey/conceitos.yml"],
+  },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },

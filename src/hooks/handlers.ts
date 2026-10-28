@@ -1,4 +1,6 @@
 import { appsecEditWarning } from "../appsec/hook.js";
+import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
+import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
@@ -10,8 +12,8 @@ import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
-import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
+import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
@@ -43,6 +45,7 @@ export type HookDecision =
       readonly output?: JsonObject;
       readonly persistent?: boolean;
       readonly warning?: string;
+      readonly concept?: TonedConcept;
     };
 
 export type HookHandler = (input: HookInput) => HookDecision | Promise<HookDecision>;
@@ -94,16 +97,24 @@ const recordBlock = (input: HookInput, decision: Extract<HookDecision, { kind: "
   });
 };
 
+const toned = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): string | undefined => {
+  const paths = projectPaths(input);
+  if (decision.concept === undefined || decision.human === undefined || paths === undefined) return decision.human;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return decision.human;
+  return tonedHuman(input.runtime, paths, input.t, decision.concept, decision.human);
+};
+
 const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
   recordBlock(input, decision);
   if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
+  const human = toned(input, decision);
   const reason = capReason(decision.reason);
   return {
     ...decision,
     reason,
     output: {
       hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
-      systemMessage: `finitemonkey: ${decision.human ?? input.t("reason.human.generic")}`,
+      systemMessage: `finitemonkey: ${human ?? input.t("reason.human.generic")}`,
     },
   };
 };
@@ -151,6 +162,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "planta", damage: false, handlers: PLANTA_HANDLERS },
   { id: "label", damage: false, handlers: LABEL_HANDLERS },
   { id: "perfil", damage: false, handlers: PERFIL_HANDLERS },
+  { id: "conceitos", damage: false, handlers: CONCEITOS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

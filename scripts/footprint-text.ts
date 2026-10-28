@@ -87,10 +87,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Señales de vuelta de `finitemonkey signals`: firmas de error, hashes de edición y huellas de los pedidos (pares de palabras en hash, nunca el texto), el índice de vueltas y los umbrales calibrados. Se borran con `signals forget`.",
   },
   perfil: {
-    en: "The per-domain profile of the person from `finitemonkey perfil`: tool literacy and domain knowledge per domain, raised by technical words in requests and by commits made outside the session. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
+    en: "The per-domain profile of the person from `finitemonkey perfil`: tool literacy and domain knowledge per domain, raised by technical words in requests and by commits made outside the session, and the concept book with the level shown for each concept seen in the project. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
     "pt-BR":
-      "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta e conhecimento do domínio, que sobem com palavras técnicas nos pedidos e com commits feitos fora da sessão. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
-    es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta y conocimiento del dominio, que suben con palabras técnicas en los pedidos y con commits hechos fuera de la sesión. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
+      "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta e conhecimento do domínio, que sobem com palavras técnicas nos pedidos e com commits feitos fora da sessão, e o livro de conceitos com o nível mostrado em cada conceito visto no projeto. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
+    es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta y conocimiento del dominio, que suben con palabras técnicas en los pedidos y con commits hechos fuera de la sesión, y el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
   },
   tasks: {
     en: "Task contracts and which task is active.",

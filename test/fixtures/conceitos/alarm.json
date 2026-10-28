@@ -1,0 +1,6 @@
+{
+  "description": "The blueprint gains four items (2 to 6) while the concept book stays flat at one concept seen.",
+  "book": "schema: \"finitemonkey/conceitos@1\"\nbaseline_green: 2\nalarm_green: -1\nconcepts:\n  api:\n    level: seen\n    updated_at: \"2026-10-20T10:00:00.000Z\"\n",
+  "plantaBefore": { "type": "saas", "green": 2, "total": 25 },
+  "plantaAfter": { "type": "saas", "green": 6, "total": 25 }
+}
