@@ -75,10 +75,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Documentos de plan en `docs/plan/`: el inventario de lo que hace el código hoy, registros de decisión, registros de investigación, modelos de costo, el plan maestro desde la primera tarea L y la copia que se guarda antes de cada consolidación.",
   },
   map: {
-    en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash.",
+    en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse.",
     "pt-BR":
-      "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore.",
-    es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol.",
+      "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore, e o registro dos avisos de reuso com o resultado de cada um.",
+    es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol, y el registro de los avisos de reutilización con el resultado de cada uno.",
   },
   signals: {
     en: "Loop signals from `finitemonkey signals`: error signatures, edit hashes and prompt fingerprints (hashed word pairs, never the text), the loop index and the calibrated thresholds. Deleted by `signals forget`.",

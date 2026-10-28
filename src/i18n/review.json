@@ -1372,7 +1372,8 @@
     "command.run.summary": "machine",
     "run.summary": "machine",
     "run.timed_out": "machine",
-    "run.failed": "machine"
+    "run.failed": "machine",
+    "reuse.warning": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2747,6 +2748,7 @@
     "command.run.summary": "machine",
     "run.summary": "machine",
     "run.timed_out": "machine",
-    "run.failed": "machine"
+    "run.failed": "machine",
+    "reuse.warning": "machine"
   }
 }

@@ -1411,5 +1411,6 @@
   "command.run.summary": "Ejecuta un comando, guarda la salida completa en un archivo y muestra un resumen corto con los errores",
   "run.summary": "salida {exit} en {ms} ms; salida completa: {file}",
   "run.timed_out": "detenido después de {seconds} s",
-  "run.failed": "el comando terminó con {exit}"
+  "run.failed": "el comando terminó con {exit}",
+  "reuse.warning": "finitemonkey reuse: `{name}` nuevo en `{file}`; `{existingName}` existe en `{existing}`."
 }
