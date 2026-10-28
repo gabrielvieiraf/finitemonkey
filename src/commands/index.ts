@@ -36,6 +36,7 @@ import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
+import { infraCommand } from "./infra.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
@@ -217,6 +218,7 @@ export const REGISTRY = [
   ciAuditCommand,
   ciProtectCommand,
   ciWatchCommand,
+  infraCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
