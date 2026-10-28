@@ -1090,5 +1090,14 @@
   "fronts.context.report": "Done means a valid .finitemonkey/reports/{id}.json; the format is in {briefing}.",
   "doctor.briefing.long": "The briefing has {lines} lines, above the ceiling of {ceiling}",
   "doctor.briefing.fix": "Regenerate it with finitemonkey brief and move long material to files it cites",
-  "doctor.briefing.ok": "The briefing has {lines} of at most {ceiling} lines"
+  "doctor.briefing.ok": "The briefing has {lines} of at most {ceiling} lines",
+  "fronts.command.close": "Validate a front's report against its worktree and ledger and mark it verified",
+  "fronts.error.unknown_front": "No front {id} in .finitemonkey/fronts.yml",
+  "fronts.error.report": "The report of {front} does not hold: {problems}",
+  "fronts.close.done": "Verified {summary}",
+  "fronts.block.report.claim": "The report of front {front} does not match what happened: {problems}",
+  "fronts.block.report.requires": "Fix the report or the work, run finitemonkey gate in the worktree, and write .finitemonkey/reports/{front}.json again; stopping early is fine with finished: false and left_out filled",
+  "fronts.block.report_human": "Front {front} said done without a report that matches the evidence; it keeps going.",
+  "fronts.notify.valid": "Front report checked against the worktree and ledger: {summary}",
+  "fronts.notify.invalid": "Front {front} reported, but the report does not hold: {problems}"
 }

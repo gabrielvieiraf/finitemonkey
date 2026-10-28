@@ -101,10 +101,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol.",
   },
   reports: {
-    en: "Masked bug reports that `doctor --report` writes, only when asked.",
-    "pt-BR": "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido.",
-    es: "Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide.",
+    en: "Masked bug reports that `doctor --report` writes, only when asked, and the report each front writes before it stops.",
+    "pt-BR":
+      "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido, e o relatório que cada frente grava antes de parar.",
+    es: "Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide, y el informe que cada frente escribe antes de parar.",
   },
+
   "pr-scope": {
     en: "Who accepted files outside the task scope in `pr open`, when and why, one file per branch.",
     "pt-BR": "Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch.",

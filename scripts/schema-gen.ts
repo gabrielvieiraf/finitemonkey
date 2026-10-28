@@ -88,6 +88,13 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "Report of one merge run by `finitemonkey merge`, also `data` of its `--json` output.",
   },
   {
+    name: "front-report@1",
+    file: "src/fronts/report.ts",
+    type: "FrontReport",
+    describes:
+      "`.finitemonkey/reports/<front>.json`, written by a front before it stops and checked by the front-report gate.",
+  },
+  {
     name: "evidence@1",
     file: "src/evidence/types.ts",
     type: "Evidence",

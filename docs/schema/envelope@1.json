@@ -90,7 +90,8 @@
             "parity_check_failed",
             "audit_findings",
             "fronts_refused",
-            "fronts_failed"
+            "fronts_failed",
+            "front_report_invalid"
           ]
         },
         "message": {

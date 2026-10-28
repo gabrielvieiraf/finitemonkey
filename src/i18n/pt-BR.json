@@ -1090,5 +1090,14 @@
   "fronts.context.report": "Pronto quer dizer um .finitemonkey/reports/{id}.json válido; o formato está em {briefing}.",
   "doctor.briefing.long": "O briefing tem {lines} linhas, acima do teto de {ceiling}",
   "doctor.briefing.fix": "Gere de novo com finitemonkey brief e mova o material longo para arquivos citados",
-  "doctor.briefing.ok": "O briefing tem {lines} de no máximo {ceiling} linhas"
+  "doctor.briefing.ok": "O briefing tem {lines} de no máximo {ceiling} linhas",
+  "fronts.command.close": "Confere o relatório da frente contra o worktree e o livro de evidências e marca como verificada",
+  "fronts.error.unknown_front": "Não há frente {id} em .finitemonkey/fronts.yml",
+  "fronts.error.report": "O relatório de {front} não se sustenta: {problems}",
+  "fronts.close.done": "Verificada {summary}",
+  "fronts.block.report.claim": "O relatório da frente {front} não bate com o que aconteceu: {problems}",
+  "fronts.block.report.requires": "Corrija o relatório ou o trabalho, rode finitemonkey gate no worktree e grave de novo .finitemonkey/reports/{front}.json; parar antes vale com finished: false e left_out preenchido",
+  "fronts.block.report_human": "A frente {front} disse pronto sem relatório que bata com a evidência; ela continua.",
+  "fronts.notify.valid": "Relatório de frente conferido contra o worktree e o livro: {summary}",
+  "fronts.notify.invalid": "A frente {front} entregou relatório, mas ele não se sustenta: {problems}"
 }
