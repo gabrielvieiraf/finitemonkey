@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.37](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.36...v0.1.0-next.37) (2026-10-28)
+
+### Features
+
+* **parity:** parity matrix of the code being replaced and the parity check ([#187](https://github.com/gabrielvieiraf/finitemonkey/issues/187)) ([33df7c5](https://github.com/gabrielvieiraf/finitemonkey/commit/33df7c5369be8c8c146e0e70e337d9425a42cc32)), closes [#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176) [#185](https://github.com/gabrielvieiraf/finitemonkey/issues/185) [#182](https://github.com/gabrielvieiraf/finitemonkey/issues/182) [#179](https://github.com/gabrielvieiraf/finitemonkey/issues/179) [#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176) [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#60](https://github.com/gabrielvieiraf/finitemonkey/issues/60)
+
 ## [0.1.0-next.36](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.35...v0.1.0-next.36) (2026-10-28)
 
 ### Features
