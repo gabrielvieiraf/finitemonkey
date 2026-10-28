@@ -1,10 +1,14 @@
+import { join } from "node:path";
+
 import { stringOption } from "../core/args.js";
+import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { type GainCounts, type GainReport, gainReport } from "../gain/gain.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import type { MessageKey } from "../i18n/catalogs.js";
+import { holdDir, USAGE_FILE } from "../supervisor/hold.js";
 import { fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
@@ -29,6 +33,15 @@ const linesOf = (ctx: Ctx, report: GainReport): readonly string[] => [
       `  ${ctx.t(key, { count: pick(report.current) })}${trend(ctx, pick(report.current), pick(report.previous))}`,
   ),
   `  ${ctx.t("gain.row.gate_time", { minutes: Math.round(report.current.gateMs / 60_000) })}`,
+  ...(report.supervisorUsage === undefined
+    ? []
+    : [
+        `  ${ctx.t("gain.supervisor", {
+          usage: Object.entries(report.supervisorUsage)
+            .map(([name, value]) => `${name} ${String(value)}`)
+            .join(", "),
+        })}`,
+      ]),
   ctx.t("gain.footer"),
 ];
 
@@ -42,7 +55,10 @@ const runGain = (ctx: Ctx, rawDays: string | undefined): CommandResult<GainRepor
       }),
     );
   }
-  const report = gainReport(ctx.runtime, fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd), days);
+  const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
+  const dir = holdDir(ctx.runtime, root, ctx.env);
+  const usage = dir === undefined ? undefined : ctx.runtime.readText(toAbsolutePath(join(dir, USAGE_FILE)));
+  const report = gainReport(ctx.runtime, fmPaths(root), days, usage?.ok === true ? usage.value : undefined);
   return success(report, linesOf(ctx, report));
 };
 

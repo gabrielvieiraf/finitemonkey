@@ -94,6 +94,12 @@
         "gateUnverified",
         "gateMs"
       ]
+    },
+    "supervisorUsage": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
     }
   },
   "required": [

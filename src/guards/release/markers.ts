@@ -25,6 +25,7 @@ const NOT_FROM_PERSON = [
   /<agent-message\b/i,
   /^\s*\[julius2claude\]/,
   /\[Subagent hand-back\]/i,
+  /^\s*\[(?:supervisor|account[- ]?switch(?:er)?)\]/i,
 ];
 
 export const comesFromPerson = (prompt: string): boolean => !NOT_FROM_PERSON.some((pattern) => pattern.test(prompt));

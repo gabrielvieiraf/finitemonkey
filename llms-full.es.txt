@@ -169,6 +169,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Escribe | `.git/finitemonkey/worktrees.yml`, `.git/finitemonkey/merges/`, `.git/info/exclude`, `.claude/worktrees/`, `~/.finitemonkey/worktrees/`, `~/.finitemonkey/archive/`, `refs/finitemonkey/archive/` | El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.finitemonkey/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.finitemonkey/archive/`. |
 | Escribe | `.finitemonkey/creds.yml` | `creds` escribe el inventario de credenciales: nombres de variables, dónde se leen, entornos, tipo y riesgo. Nunca un valor. |
 | Escribe | `.finitemonkey/findings/osv.json`, `.github/dependabot.yml`, `renovate.json` | `deps scan` guarda la fecha en que cada vulnerabilidad conocida apareció por primera vez, para que su plazo valga entre ejecuciones. `deps config --write` guarda el archivo de Dependabot o Renovate; sin `--write` solo lo imprime. |
+| Escribe | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Solo con `supervisor: enabled: true` en la configuración: un archivo de espera de vida corta por sesión en el directorio que anuncia un supervisor de cambio de cuenta, mientras la puerta corre o retiene la parada. `gain` lee el `usage.json` de ese directorio. |
 | Escribe | `.finitemonkey/look/` | Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol. |
 | Escribe | `.finitemonkey/prompts.jsonl` | Lo que escribes a Claude Code en este proyecto, con los secretos enmascarados, para que `finitemonkey audit` encuentre pedidos y decisiones que nunca llegaron a un documento. Se queda en esta máquina. |
 | Escribe | `.finitemonkey/spend.json`, `.finitemonkey/spend-reconcile.jsonl` | El gasto del agente estimado desde los logs locales de sesión, por tarea, día y mes, y las diferencias que encuentra `cost reconcile`. |
@@ -330,6 +331,12 @@ Sí. Un hook `Stop` puede ejecutar tu comando de tests y, si falla, bloquear el 
 Hay varios, y algunos son muy buenos en una sola tarea. tdd-guard obliga a escribir el test primero; cc-safety-net y dcg bloquean comandos destructivos de shell y git. Métodos como Superpowers, GSD y Spec Kit añaden proceso. La [página de comparación](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.es.md) muestra qué garantiza cada uno por mecanismo y qué deja en prosa, con fuentes.
 
 - **Previsto:** Finite Monkey pretende cubrir cuatro daños ("listo" falso, secretos filtrados, cambios a mano en producción, trabajo perdido en git) con un control, una instalación y un `undo`. Si eso te compensa frente a un guarda suelto es lo que responderá el benchmark previsto.
+
+## ¿Funciona con herramientas que cambian la cuenta de Claude Code cuando se acaba el límite?
+
+Sí, si la herramienta lee un archivo de espera. Un supervisor que reinicia Claude Code en otra cuenta puede cortar la puerta en medio de un `Stop`, y la sesión reanudada te espera con el trabajo a medio revisar.
+
+Para activarlo, agrega `supervisor:` con `enabled: true` a `.finitemonkey/config.yml` y haz que el supervisor defina `FINITEMONKEY_HOLD_DIR` con un directorio que vigile. Mientras la puerta corre o retiene la parada, Finite Monkey mantiene ahí `<sesión>.hold.json`, con una hora `until`; el supervisor no debe cambiar de cuenta mientras `until` esté en el futuro. El archivo vence solo (10 minutos para una ejecución, 15 para una parada retenida) y se borra cuando la puerta pasa. Cuando la sesión vuelve en la cuenta nueva, `SessionStart` le cuenta a Claude qué esperaba la puerta y la ejecuta otra vez. Los mensajes de reanudación que empiezan con `[supervisor]` no cuentan como tuyos, y un `usage.json` en el mismo directorio aparece en `finitemonkey gain`.
 
 ---
 

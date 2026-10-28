@@ -102,6 +102,11 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: [".finitemonkey/findings/osv.json", ".github/dependabot.yml", "renovate.json"],
   },
+  {
+    id: "supervisor",
+    kind: "writes",
+    targets: ["$FINITEMONKEY_HOLD_DIR/<session>.hold.json"],
+  },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "prompts", kind: "writes", targets: [".finitemonkey/prompts.jsonl"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },

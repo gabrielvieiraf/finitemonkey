@@ -1205,5 +1205,7 @@
   "doctor.coexist.output_rewriter": "Hooks de {owners} corren después de las herramientas y pueden reescribir lo que el modelo lee como evidencia.",
   "doctor.coexist.fix_output_rewriter": "Comprueba que esos hooks solo añaden contexto; la puerta confía en sus propias ejecuciones, no en la salida de las herramientas.",
   "doctor.coexist.memory_tool": "{file} lo editó una herramienta de memoria ({tool}) después de que finitemonkey lo instalara.",
-  "doctor.coexist.fix_memory_tool": "Revisa las líneas añadidas; un archivo de instrucciones guarda reglas, no notas de sesión."
+  "doctor.coexist.fix_memory_tool": "Revisa las líneas añadidas; un archivo de instrucciones guarda reglas, no notas de sesión.",
+  "supervisor.resumed": "Esta sesión se reanudó tras un cambio de cuenta mientras la puerta retenía la parada ({detail}). La puerta corre de nuevo ahora; termina lo que pidió antes de parar.",
+  "gain.supervisor": "Uso informado por el supervisor de cuentas: {usage}"
 }

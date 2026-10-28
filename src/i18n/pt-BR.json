@@ -1205,5 +1205,7 @@
   "doctor.coexist.output_rewriter": "Hooks de {owners} rodam depois das ferramentas e podem reescrever o que o modelo lê como evidência.",
   "doctor.coexist.fix_output_rewriter": "Confira se esses hooks só acrescentam contexto; o portão confia nas próprias execuções, não na saída das ferramentas.",
   "doctor.coexist.memory_tool": "{file} foi editado por uma ferramenta de memória ({tool}) depois que o finitemonkey o instalou.",
-  "doctor.coexist.fix_memory_tool": "Revise as linhas acrescentadas; arquivo de instrução guarda regra, não anotação de sessão."
+  "doctor.coexist.fix_memory_tool": "Revise as linhas acrescentadas; arquivo de instrução guarda regra, não anotação de sessão.",
+  "supervisor.resumed": "Esta sessão voltou depois de uma troca de conta enquanto o portão segurava a parada ({detail}). O portão roda de novo agora; termine o que ele pediu antes de parar.",
+  "gain.supervisor": "Uso informado pelo supervisor de contas: {usage}"
 }

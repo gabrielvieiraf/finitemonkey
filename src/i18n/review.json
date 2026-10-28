@@ -1166,7 +1166,9 @@
     "doctor.coexist.output_rewriter": "machine",
     "doctor.coexist.fix_output_rewriter": "machine",
     "doctor.coexist.memory_tool": "machine",
-    "doctor.coexist.fix_memory_tool": "machine"
+    "doctor.coexist.fix_memory_tool": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2335,6 +2337,8 @@
     "doctor.coexist.output_rewriter": "machine",
     "doctor.coexist.fix_output_rewriter": "machine",
     "doctor.coexist.memory_tool": "machine",
-    "doctor.coexist.fix_memory_tool": "machine"
+    "doctor.coexist.fix_memory_tool": "machine",
+    "supervisor.resumed": "machine",
+    "gain.supervisor": "machine"
   }
 }

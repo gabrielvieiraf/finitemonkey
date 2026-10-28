@@ -1205,5 +1205,7 @@
   "doctor.coexist.output_rewriter": "Hooks from {owners} run after tools and can rewrite what the model reads as evidence.",
   "doctor.coexist.fix_output_rewriter": "Check that those hooks only add context; the gate trusts its own runs, not tool output.",
   "doctor.coexist.memory_tool": "{file} was edited by a memory tool ({tool}) since finitemonkey installed it.",
-  "doctor.coexist.fix_memory_tool": "Review the added lines; instruction files should hold rules, not session notes."
+  "doctor.coexist.fix_memory_tool": "Review the added lines; instruction files should hold rules, not session notes.",
+  "supervisor.resumed": "This session was resumed after an account switch while the gate was holding the stop ({detail}). The gate runs again now; finish what it asked before stopping.",
+  "gain.supervisor": "Account supervisor usage: {usage}"
 }
