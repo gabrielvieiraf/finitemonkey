@@ -1755,5 +1755,16 @@
   "gate.deploy.diverged": "{alias} runs {running} with {edits, plural, one {# local edit} other {# local edits}}, not the commit of the task {expected}",
   "gate.deploy.unknown": "{alias}: nothing to compare (no revision label, no checkout configured)",
   "gate.deploy.unreachable": "{alias}: could not read ({detail})",
-  "deploy.line.drift": "But production differs from the branch on {hosts}: see finitemonkey deploy check."
+  "deploy.line.drift": "But production differs from the branch on {hosts}: see finitemonkey deploy check.",
+  "gate.headers.off": "headers check is off in policy.yml",
+  "gate.headers.not_run": "no headers recorded for this tree: run finitemonkey look, or set headers.url in config.yml",
+  "gate.headers.unreachable": "could not read {route}: {detail}",
+  "gate.headers.ok": "{count, plural, one {# route answers} other {# routes answer}} with CSP, HSTS where it applies, nosniff, Referrer-Policy and frame-ancestors",
+  "gate.headers.warn_only": "project level {level}: missing headers are a warning; they block from level 2",
+  "gate.headers.shadow": "shadow mode: missing headers do not block",
+  "gate.headers.missing.csp": "{route}: no Content-Security-Policy",
+  "gate.headers.missing.hsts": "{route}: no Strict-Transport-Security with max-age",
+  "gate.headers.missing.nosniff": "{route}: X-Content-Type-Options is not nosniff",
+  "gate.headers.missing.referrer": "{route}: no Referrer-Policy",
+  "gate.headers.missing.frame-ancestors": "{route}: no frame-ancestors in the CSP (or X-Frame-Options DENY/SAMEORIGIN)"
 }

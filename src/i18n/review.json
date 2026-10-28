@@ -1756,7 +1756,18 @@
     "gate.deploy.diverged": "machine",
     "gate.deploy.unknown": "machine",
     "gate.deploy.unreachable": "machine",
-    "deploy.line.drift": "machine"
+    "deploy.line.drift": "machine",
+    "gate.headers.off": "machine",
+    "gate.headers.not_run": "machine",
+    "gate.headers.unreachable": "machine",
+    "gate.headers.ok": "machine",
+    "gate.headers.warn_only": "machine",
+    "gate.headers.shadow": "machine",
+    "gate.headers.missing.csp": "machine",
+    "gate.headers.missing.hsts": "machine",
+    "gate.headers.missing.nosniff": "machine",
+    "gate.headers.missing.referrer": "machine",
+    "gate.headers.missing.frame-ancestors": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3515,6 +3526,17 @@
     "gate.deploy.diverged": "machine",
     "gate.deploy.unknown": "machine",
     "gate.deploy.unreachable": "machine",
-    "deploy.line.drift": "machine"
+    "deploy.line.drift": "machine",
+    "gate.headers.off": "machine",
+    "gate.headers.not_run": "machine",
+    "gate.headers.unreachable": "machine",
+    "gate.headers.ok": "machine",
+    "gate.headers.warn_only": "machine",
+    "gate.headers.shadow": "machine",
+    "gate.headers.missing.csp": "machine",
+    "gate.headers.missing.hsts": "machine",
+    "gate.headers.missing.nosniff": "machine",
+    "gate.headers.missing.referrer": "machine",
+    "gate.headers.missing.frame-ancestors": "machine"
   }
 }

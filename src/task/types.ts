@@ -31,6 +31,7 @@ export const CHECK_KINDS = [
   "copy",
   "migrations",
   "deploy",
+  "headers",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

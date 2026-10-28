@@ -1755,5 +1755,16 @@
   "gate.deploy.diverged": "{alias} roda {running} com {edits, plural, one {# edição local} other {# edições locais}}, não o commit da tarefa {expected}",
   "gate.deploy.unknown": "{alias}: nada para comparar (sem label de revisão, sem checkout configurado)",
   "gate.deploy.unreachable": "{alias}: não foi possível ler ({detail})",
-  "deploy.line.drift": "Mas a produção difere da branch em {hosts}: veja finitemonkey deploy check."
+  "deploy.line.drift": "Mas a produção difere da branch em {hosts}: veja finitemonkey deploy check.",
+  "gate.headers.off": "check de headers desligado no policy.yml",
+  "gate.headers.not_run": "nenhum header registrado para esta árvore: rode finitemonkey look, ou defina headers.url no config.yml",
+  "gate.headers.unreachable": "não foi possível ler {route}: {detail}",
+  "gate.headers.ok": "{count, plural, one {# rota responde} other {# rotas respondem}} com CSP, HSTS onde cabe, nosniff, Referrer-Policy e frame-ancestors",
+  "gate.headers.warn_only": "projeto nível {level}: headers faltando são aviso; bloqueiam a partir do nível 2",
+  "gate.headers.shadow": "modo shadow: headers faltando não bloqueiam",
+  "gate.headers.missing.csp": "{route}: sem Content-Security-Policy",
+  "gate.headers.missing.hsts": "{route}: sem Strict-Transport-Security com max-age",
+  "gate.headers.missing.nosniff": "{route}: X-Content-Type-Options não é nosniff",
+  "gate.headers.missing.referrer": "{route}: sem Referrer-Policy",
+  "gate.headers.missing.frame-ancestors": "{route}: sem frame-ancestors na CSP (ou X-Frame-Options DENY/SAMEORIGIN)"
 }

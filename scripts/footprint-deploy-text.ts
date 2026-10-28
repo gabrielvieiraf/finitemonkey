@@ -25,4 +25,12 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "Só com `finitemonkey deploy generate --yes`, e só arquivos que ainda não existem: os workflows de deploy e de drift, o script que o servidor roda e o compose dele. Um arquivo existente nunca é sobrescrito; o diff aparece no lugar.",
     es: "Solo con `finitemonkey deploy generate --yes`, y solo archivos que aún no existen: los workflows de despliegue y de drift, el script que corre el servidor y su compose. Un archivo existente nunca se sobrescribe; en su lugar se muestra el diff.",
   },
-} as const satisfies Readonly<Record<"infra" | "infra-remote" | "deploy-drift" | "deploy-generate", Localized>>;
+  headers: {
+    en: "Through `curl`, only when `headers.url` is set in `.finitemonkey/config.yml` and a task contract has the `headers` check: one GET per configured route, to read the security headers of the real response. Without it, the headers come from the app `look` already started on 127.0.0.1.",
+    "pt-BR":
+      "Pelo `curl`, só quando `headers.url` está definido em `.finitemonkey/config.yml` e um contrato de tarefa tem o check `headers`: um GET por rota configurada, para ler os headers de segurança da resposta real. Sem isso, os headers vêm do app que o `look` já subiu em 127.0.0.1.",
+    es: "A través de `curl`, solo cuando `headers.url` está definido en `.finitemonkey/config.yml` y un contrato de tarea tiene el check `headers`: un GET por ruta configurada, para leer los headers de seguridad de la respuesta real. Sin eso, los headers vienen de la app que `look` ya arrancó en 127.0.0.1.",
+  },
+} as const satisfies Readonly<
+  Record<"infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers", Localized>
+>;

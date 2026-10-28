@@ -8,6 +8,7 @@ import { decisionCheck } from "./decision.js";
 import { deployCheck } from "./deploy.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
+import { headersCheck } from "./headers.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
@@ -58,4 +59,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   copy: copyCheck,
   migrations: migrationsCheck,
   deploy: deployCheck,
+  headers: headersCheck,
 };

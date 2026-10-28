@@ -75,7 +75,10 @@ export const draftChecks = (
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
     ...(runtime.stat(toAbsolutePath(join(paths.root, LOOK_CONFIG))) === undefined
       ? []
-      : [{ id: "look", kind: "look" as const }]),
+      : [
+          { id: "look", kind: "look" as const },
+          { id: "headers", kind: "headers" as const },
+        ]),
     ...(draft.git.length > 0 ? [{ id: "git", kind: "git" as const, require: draft.git }] : []),
     ...(hasBannedCopy(disk.read(CONFIG_FILE)) ? [{ id: "copy", kind: "copy" as const }] : []),
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
