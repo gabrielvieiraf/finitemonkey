@@ -29,6 +29,7 @@ const KNOWN_KINDS = new Set([
   "callers",
   "runtime",
   "look",
+  "appsec",
 ]);
 
 const requirementText = (t: Translate, check: AcceptanceCheck): string => {

@@ -1,3 +1,4 @@
+import { appsecEditWarning } from "../appsec/hook.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
@@ -136,6 +137,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
   { id: "creds-static", damage: false, handlers: { PreToolUse: [credsStaticGuard] } },
+  { id: "appsec", damage: false, handlers: { PreToolUse: [appsecEditWarning] } },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

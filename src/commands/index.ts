@@ -1,4 +1,5 @@
 import { appCheckCommand } from "./app-check.js";
+import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
@@ -94,6 +95,8 @@ export const REGISTRY = [
   frontsRouteCommand,
   frontsSyncCommand,
   appCheckCommand,
+  appsecScanCommand,
+  appsecRulesCommand,
   commitMsgCommand,
   pushCheckCommand,
   ciGateCommand,

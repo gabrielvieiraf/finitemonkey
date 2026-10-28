@@ -1,0 +1,6 @@
+app.post("/webhooks/stripe", async (req, res) => {
+  const event = stripe.webhooks.constructEvent(req.body, req.headers["stripe-signature"], secret);
+  if (await alreadyHandled(event.id)) return res.end();
+  await creditWallet(event.data.object.customer, event.data.object.amount);
+  res.end();
+});

@@ -82,6 +82,7 @@ export const ERROR_CODES = [
   "deps_vulnerable",
   "deps_write_failed",
   "findings_not_found",
+  "appsec_found",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
