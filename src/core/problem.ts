@@ -86,6 +86,7 @@ export const ERROR_CODES = [
   "rules_uncovered",
   "rules_write_failed",
   "run_failed",
+  "gen_write_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
