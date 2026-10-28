@@ -199,6 +199,7 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: ["ruff.toml", "pytest.ini", "scripts/check_no_comments.py", ".github/workflows/ci.yml"],
   },
+  { id: "onboard", kind: "writes", targets: [".finitemonkey/onboard.json", "AGENTS.md"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

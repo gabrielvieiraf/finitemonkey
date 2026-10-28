@@ -2,6 +2,7 @@ import { CONTRACT_FILE } from "../apicontract/registry.js";
 import { detectStack, hasWebStack } from "../appsec/stack.js";
 import { ARCH_FILE } from "../arch/config.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
+import { ONBOARD_FILE, onboardChecks, parseOnboard } from "../onboard/state.js";
 import { detectPython, PIP_DEFAULT, pythonChecks } from "../python/detect.js";
 import type { AcceptanceCheck, TaskContract } from "./types.js";
 
@@ -19,7 +20,8 @@ const LOCKFILES = [
   ["bun.lock", "bun"],
 ] as const;
 
-const packageManager = (files: ProjectFiles): string => LOCKFILES.find(([file]) => files.exists(file))?.[1] ?? "npm";
+export const packageManager = (files: ProjectFiles): string =>
+  LOCKFILES.find(([file]) => files.exists(file))?.[1] ?? "npm";
 
 export const scriptChecks = (files: ProjectFiles): readonly AcceptanceCheck[] => {
   const text = files.read("package.json");
@@ -54,8 +56,13 @@ export const detectChecks = (files: ProjectFiles): readonly AcceptanceCheck[] =>
   return python === undefined && !files.exists("pytest.ini") ? [] : pythonChecks(python ?? PIP_DEFAULT);
 };
 
+const projectChecks = (files: ProjectFiles): readonly AcceptanceCheck[] => {
+  const onboard = parseOnboard(files.read(ONBOARD_FILE));
+  return onboard !== undefined && onboard.commands.length > 0 ? onboardChecks(onboard) : detectChecks(files);
+};
+
 export const implicitContract = (files: ProjectFiles): TaskContract => {
-  const commands = detectChecks(files);
+  const commands = projectChecks(files);
   const hasTests = commands.some((check) => check.kind === "tests");
   return {
     id: IMPLICIT_ID,

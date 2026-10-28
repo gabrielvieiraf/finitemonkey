@@ -1,7 +1,7 @@
 import type { Localized } from "./footprint-text.js";
 
 export const STAGE3_FOOTPRINT_TEXT: Readonly<
-  Record<"golden" | "organize" | "api-contract" | "ds-sync" | "python-preset", Localized>
+  Record<"golden" | "organize" | "api-contract" | "ds-sync" | "python-preset" | "onboard", Localized>
 > = {
   golden: {
     en: "Expected outputs of golden cases, one file per case, plus `accepted.jsonl` with who recorded each one and when. Only `finitemonkey golden accept`, run by the person in a terminal, writes them.",
@@ -32,5 +32,11 @@ export const STAGE3_FOOTPRINT_TEXT: Readonly<
     "pt-BR":
       "Só com `finitemonkey preset python --write` num projeto Python: regras do ruff para complexidade e tamanho, opções do pytest que falham com marcadores desconhecidos, um script que rejeita comentários no código, contratos do import-linter quando `.finitemonkey/arch.yml` existe e um workflow de CI com `uv sync --locked`. Um arquivo existente aparece como diff e é mantido.",
     es: "Solo con `finitemonkey preset python --write` en un proyecto Python: reglas de ruff para complejidad y longitud, opciones de pytest que fallan con marcadores desconocidos, un script que rechaza comentarios en el código, contratos de import-linter cuando existe `.finitemonkey/arch.yml` y un workflow de CI con `uv sync --locked`. Un archivo existente se muestra como diff y se conserva.",
+  },
+  onboard: {
+    en: "`finitemonkey onboard` runs the build, test, lint and typecheck commands it finds in the manifests and in AGENTS.md or CLAUDE.md, with a time limit, and keeps in `onboard.json` and in its own AGENTS.md block only the ones that succeeded, plus the number of possible secrets found by a one-time scan of the git history. Commands that deploy, publish, install or keep running are not run.",
+    "pt-BR":
+      "O `finitemonkey onboard` roda os comandos de build, teste, lint e typecheck que acha nos manifestos e no AGENTS.md ou CLAUDE.md, com limite de tempo, e guarda em `onboard.json` e no seu próprio bloco do AGENTS.md só os que deram certo, mais o número de possíveis segredos achados por uma varredura única do histórico do git. Comandos que publicam, instalam ou ficam rodando não são executados.",
+    es: "`finitemonkey onboard` ejecuta los comandos de build, test, lint y typecheck que encuentra en los manifiestos y en AGENTS.md o CLAUDE.md, con límite de tiempo, y guarda en `onboard.json` y en su propio bloque de AGENTS.md solo los que funcionaron, más el número de posibles secretos encontrados por un único escaneo del historial de git. Los comandos que publican, instalan o se quedan corriendo no se ejecutan.",
   },
 };

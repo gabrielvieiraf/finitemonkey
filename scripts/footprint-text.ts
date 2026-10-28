@@ -283,7 +283,6 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão.",
     es: "Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano.",
   },
-<<<<<<< HEAD
   ownership: {
     en: "`gen ownership` writes one entry per component (name, vocabulary type, owner, consumers) after the person passes `--yes`; `ci gate`, `ownership check` and `plan check` read it, or read `catalog-info.yaml` when that exists.",
     "pt-BR":
@@ -303,27 +302,6 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`ci-watch` guarda, por pull request, los commits cuya CI falló y cuándo empezó el seguimiento, más una línea por ejecución con el commit, el resultado de cada verificación, la clase de falla y el intento. Los logs de falla se leen con `gh` con los secretos enmascarados y solo se muestran sus últimas líneas, sin guardarlas.",
   },
   ...DEPLOY_FOOTPRINT_TEXT,
-  },
-  golden: {
-    en: "Expected outputs of golden cases, one file per case, plus `accepted.jsonl` with who recorded each one and when. Only `finitemonkey golden accept`, run by the person in a terminal, writes them.",
-    "pt-BR":
-      "Saídas esperadas dos casos golden, um arquivo por caso, mais `accepted.jsonl` com quem gravou cada uma e quando. Só o `finitemonkey golden accept`, rodado pela pessoa num terminal, escreve nelas.",
-    es: "Salidas esperadas de los casos golden, un archivo por caso, más `accepted.jsonl` con quién guardó cada una y cuándo. Solo `finitemonkey golden accept`, ejecutado por la persona en una terminal, las escribe.",
-  },
-  organize: {
-    en: "`finitemonkey organize plan <file>` writes a split plan skeleton for that file, only when the plan does not exist yet: responsibilities with line ranges and the sequence of small steps. The hotspot ranking itself is cached in `.finitemonkey/cache/`.",
-    "pt-BR":
-      "O `finitemonkey organize plan <file>` grava um esqueleto de plano de divisão para esse arquivo, só quando o plano ainda não existe: responsabilidades com faixas de linhas e a sequência de passos pequenos. O ranking de hotspots fica em cache em `.finitemonkey/cache/`.",
-    es: "`finitemonkey organize plan <file>` escribe un esqueleto de plan de división para ese archivo, solo cuando el plan todavía no existe: responsabilidades con rangos de líneas y la secuencia de pasos pequeños. El ranking de hotspots queda en caché en `.finitemonkey/cache/`.",
-  },
-  "api-contract": {
-    en: "Only with `finitemonkey contract --write` or `contract mocks --write`: the endpoint registry, typed client, error envelope and coverage test under `api/`, and the MSW mocks under `mocks/`, in `src/`, `app/` (Remix) or `lib/` (Next without `src/`), generated from `api/contract.yml`. Existing files are never replaced unless the person passes `--overwrite` in a terminal.",
-    "pt-BR":
-      "Só com `finitemonkey contract --write` ou `contract mocks --write`: o registro de endpoints, o cliente tipado, o envelope de erro e o teste de cobertura em `api/`, e os mocks MSW em `mocks/`, dentro de `src/`, `app/` (Remix) ou `lib/` (Next sem `src/`), gerados a partir de `api/contract.yml`. Arquivos existentes nunca são substituídos, a menos que a pessoa passe `--overwrite` num terminal.",
-    es: "Solo con `finitemonkey contract --write` o `contract mocks --write`: el registro de endpoints, el cliente tipado, el envelope de error y el test de cobertura en `api/`, y los mocks MSW en `mocks/`, dentro de `src/`, `app/` (Remix) o `lib/` (Next sin `src/`), generados desde `api/contract.yml`. Los archivos existentes nunca se reemplazan, salvo que la persona pase `--overwrite` en una terminal.",
-  },
-=======
->>>>>>> 4f004d56 (feat(ds-sync): design system sync workflow and issues from prototypes)
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";
