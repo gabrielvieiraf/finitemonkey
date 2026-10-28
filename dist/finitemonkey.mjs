@@ -6405,6 +6405,7 @@ var validateContract = (value, implicit = false) => {
   const callersIgnore = strings4(value["callers_ignore"], "callers_ignore", issues);
   const shortcuts = parseShortcuts(value["shortcuts"], checks, issues);
   const blueprint = parseBlueprintType(str4(value, "blueprint", "", issues, false));
+  const clarified = strings4(value["clarified"], "clarified", issues);
   if (value["blueprint"] !== void 0 && blueprint === void 0) {
     issues.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
   }
@@ -6420,7 +6421,8 @@ var validateContract = (value, implicit = false) => {
     ...callersIgnore.length === 0 ? {} : { callersIgnore },
     ...shortcuts.length === 0 ? {} : { shortcuts },
     ...blueprint === void 0 ? {} : { blueprint },
-    implicit
+    implicit,
+    ...clarified.length === 0 ? {} : { clarified }
   });
 };
 
@@ -8102,7 +8104,8 @@ var en_default = {
   "claims.block.tests.requires": "list these files and why each changed, and ask the person to approve them",
   "claims.block.not": "repeating the claim, or saying done before the gate confirms it",
   "claims.block.unconfirmed.human": "a done claim was held: {state}.",
-  "claims.block.tests.human": "the session edited {count, plural, one {# test or contract file} other {# test or contract files}} ({files}); type finitemonkey: allow claims <reason> to accept them."
+  "claims.block.tests.human": "the session edited {count, plural, one {# test or contract file} other {# test or contract files}} ({files}); type finitemonkey: allow claims <reason> to accept them.",
+  "clarify.context": 'finitemonkey clarify: this request starts a task of size {size} with no task contract. Before any edit, propose in one short message: the goal in one line, the scope, what exists today, and how we verify it is done. If something is ambiguous, add at most {max} multiple-choice questions, each with your recommendation, in this one round only. If nothing is ambiguous, state your assumptions in one line and go on. Then create the contract with the confirmed answers: finitemonkey task new <id> --goal "<goal>" --size {size} --paths <globs> --run "<command that proves it is done>" --answer "<question>: <answer>" (one --answer per confirmed answer or assumption).'
 };
 
 // src/i18n/es.json
@@ -9596,7 +9599,8 @@ var es_default = {
   "claims.block.tests.requires": "listar esos archivos y por qué cambió cada uno, y pedir a la persona que los apruebe",
   "claims.block.not": "repetir la afirmación, ni decir listo antes de que la compuerta lo confirme",
   "claims.block.unconfirmed.human": "se retuvo una afirmación de terminado: {state}.",
-  "claims.block.tests.human": "la sesión editó {count, plural, one {# archivo de prueba o contrato} other {# archivos de prueba o contrato}} ({files}); escribe finitemonkey: allow claims <motivo> para aceptarlos."
+  "claims.block.tests.human": "la sesión editó {count, plural, one {# archivo de prueba o contrato} other {# archivos de prueba o contrato}} ({files}); escribe finitemonkey: allow claims <motivo> para aceptarlos.",
+  "clarify.context": 'finitemonkey clarify: este pedido empieza una tarea de tamaño {size} sin contrato. Antes de cualquier edición, propone en un mensaje corto: el objetivo en una línea, el alcance, lo que existe hoy y cómo verificamos que está terminado. Si algo es ambiguo, agrega como máximo {max} preguntas de opción múltiple, cada una con tu recomendación, en esta única ronda. Si nada es ambiguo, di tus supuestos en una línea y sigue. Después crea el contrato con las respuestas confirmadas: finitemonkey task new <id> --goal "<objetivo>" --size {size} --paths <globs> --run "<comando que prueba que está terminado>" --answer "<pregunta>: <respuesta>" (un --answer por respuesta confirmada o supuesto).'
 };
 
 // src/i18n/pt-BR.json
@@ -11090,7 +11094,8 @@ var pt_BR_default = {
   "claims.block.tests.requires": "listar esses arquivos e por que cada um mudou, e pedir à pessoa que os aprove",
   "claims.block.not": "repetir a afirmação, nem dizer pronto antes de o portão confirmar",
   "claims.block.unconfirmed.human": "uma afirmação de pronto foi segurada: {state}.",
-  "claims.block.tests.human": "a sessão editou {count, plural, one {# arquivo de teste ou contrato} other {# arquivos de teste ou contrato}} ({files}); digite finitemonkey: allow claims <motivo> para aceitar."
+  "claims.block.tests.human": "a sessão editou {count, plural, one {# arquivo de teste ou contrato} other {# arquivos de teste ou contrato}} ({files}); digite finitemonkey: allow claims <motivo> para aceitar.",
+  "clarify.context": 'finitemonkey clarify: este pedido começa uma tarefa de tamanho {size} sem contrato. Antes de qualquer edição, proponha numa mensagem curta: o objetivo em uma linha, o escopo, o que existe hoje e como verificamos que está pronto. Se algo for ambíguo, acrescente no máximo {max} perguntas de múltipla escolha, cada uma com a sua recomendação, nesta única rodada. Se nada for ambíguo, diga suas suposições em uma linha e siga. Depois crie o contrato com as respostas confirmadas: finitemonkey task new <id> --goal "<objetivo>" --size {size} --paths <globs> --run "<comando que prova que está pronto>" --answer "<pergunta>: <resposta>" (um --answer por resposta confirmada ou suposição).'
 };
 
 // src/i18n/review.json
@@ -12585,7 +12590,8 @@ var review_default = {
     "claims.block.tests.requires": "machine",
     "claims.block.not": "machine",
     "claims.block.unconfirmed.human": "machine",
-    "claims.block.tests.human": "machine"
+    "claims.block.tests.human": "machine",
+    "clarify.context": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -14077,7 +14083,8 @@ var review_default = {
     "claims.block.tests.requires": "machine",
     "claims.block.not": "machine",
     "claims.block.unconfirmed.human": "machine",
-    "claims.block.tests.human": "machine"
+    "claims.block.tests.human": "machine",
+    "clarify.context": "machine"
   }
 };
 
@@ -15274,9 +15281,10 @@ var OPTIONAL_GUARDS = [
   "tests-hold",
   "regression",
   "advisor",
-  "claims"
+  "claims",
+  "clarify"
 ];
-var STARTS_IN_SHADOW = /* @__PURE__ */ new Set(["fourth-attempt", "claims"]);
+var STARTS_IN_SHADOW = /* @__PURE__ */ new Set(["fourth-attempt", "claims", "clarify"]);
 var DEFAULT_POLICY = {
   exists: false,
   level: "standard",
@@ -18687,6 +18695,377 @@ var claimGuard = (input) => {
 };
 var CLAIMS_HANDLERS = { Stop: [claimGuard] };
 
+// src/task/serialize.ts
+var checkYaml = (check2) => ({
+  id: check2.id,
+  check: check2.kind,
+  ...check2.run === void 0 ? {} : { run: check2.run },
+  ...check2.timeoutS === void 0 ? {} : { timeout_s: check2.timeoutS },
+  ...check2.require === void 0 ? {} : { require: [...check2.require] },
+  ...check2.requireOpen === void 0 ? {} : { require_open: check2.requireOpen },
+  ...check2.description === void 0 ? {} : { description: check2.description },
+  ...check2.port === void 0 ? {} : { port: check2.port },
+  ...check2.route === void 0 ? {} : { route: check2.route },
+  ...check2.status === void 0 ? {} : { status: check2.status },
+  ...check2.body === void 0 ? {} : { body: check2.body }
+});
+var contractYaml = (contract) => ({
+  id: contract.id,
+  goal: contract.goal,
+  size: contract.size,
+  ...contract.base === void 0 ? {} : { base: contract.base },
+  scope: {
+    paths: [...contract.scope.paths],
+    ...contract.scope.diffBudget === void 0 ? {} : { diff_budget: { ...contract.scope.diffBudget } },
+    tests_protected: contract.scope.testsProtected
+  },
+  acceptance: contract.acceptance.map(checkYaml),
+  decisions_needed: [...contract.decisionsNeeded],
+  ...contract.callersIgnore === void 0 ? {} : { callers_ignore: [...contract.callersIgnore] },
+  ...contract.shortcuts === void 0 ? {} : { shortcuts: contract.shortcuts.map((item2) => ({ ...item2 })) },
+  ...contract.blueprint === void 0 ? {} : { blueprint: contract.blueprint },
+  ...contract.clarified === void 0 ? {} : { clarified: [...contract.clarified] }
+});
+var contractJson = (contract) => ({
+  id: contract.id,
+  goal: contract.goal,
+  size: contract.size,
+  base: contract.base ?? null,
+  implicit: contract.implicit,
+  scope: {
+    paths: contract.scope.paths,
+    diffBudget: contract.scope.diffBudget ?? null,
+    testsProtected: contract.scope.testsProtected
+  },
+  acceptance: contract.acceptance.map((check2) => ({ ...check2 })),
+  decisionsNeeded: contract.decisionsNeeded,
+  ...contract.shortcuts === void 0 ? {} : { shortcuts: contract.shortcuts },
+  blueprint: contract.blueprint ?? null,
+  ...contract.clarified === void 0 ? {} : { clarified: contract.clarified }
+});
+
+// src/planta/blueprints.ts
+var MIGRATIONS2 = [
+  "migrations/",
+  "**/migrations/",
+  "prisma/schema.prisma",
+  "db/migrate/",
+  "drizzle/",
+  "alembic/",
+  "supabase/migrations/"
+];
+var SAAS = [
+  { id: "problem", area: "product", after: [], probe: { type: "manual" } },
+  {
+    id: "rules",
+    area: "product",
+    after: [],
+    probe: { type: "files", any: ["docs/plan/", "docs/rules*", "docs/business*", "docs/decisions/"] }
+  },
+  { id: "pricing", area: "product", after: ["problem"], probe: { type: "manual" } },
+  {
+    id: "api",
+    area: "application",
+    after: [],
+    probe: {
+      type: "files",
+      any: ["api/", "src/api/", "app/api/", "pages/api/", "server/", "src/server/", "backend/", "src/routes/"]
+    }
+  },
+  { id: "database", area: "application", after: [], probe: { type: "files", any: MIGRATIONS2 } },
+  {
+    id: "auth",
+    area: "application",
+    after: ["database"],
+    probe: {
+      type: "deps",
+      any: [
+        "next-auth",
+        "@auth/core",
+        "@clerk/nextjs",
+        "@clerk/clerk-react",
+        "lucia",
+        "passport",
+        "better-auth",
+        "@supabase/supabase-js",
+        "firebase",
+        "django-allauth",
+        "devise",
+        "flask-login"
+      ]
+    }
+  },
+  {
+    id: "password-reset",
+    area: "application",
+    after: ["auth"],
+    probe: { type: "grep", all: ["(reset|forgot)[-_ ]?password|password[-_ ]?reset"] }
+  },
+  {
+    id: "tenants",
+    area: "application",
+    after: ["auth"],
+    probe: { type: "grep", all: ["tenant|organization_?id|org_?id|workspace_?id"] }
+  },
+  { id: "states", area: "application", after: ["api"], probe: { type: "grep", all: ["loading", "empty", "error"] } },
+  {
+    id: "billing",
+    area: "money",
+    after: ["auth"],
+    probe: {
+      type: "deps",
+      any: ["stripe", "asaas", "mercadopago", "@paddle/paddle-node-sdk", "@lemonsqueezy/lemonsqueezy.js"]
+    }
+  },
+  { id: "webhooks", area: "money", after: ["billing"], probe: { type: "grep", all: ["idempoten"] } },
+  { id: "renewal-refund", area: "money", after: ["billing"], probe: { type: "grep", all: ["refund", "renew"] } },
+  { id: "cents", area: "money", after: ["billing"], probe: { type: "grep", all: ["cents|centavos|minor_?units"] } },
+  {
+    id: "types",
+    area: "quality",
+    after: [],
+    probe: { type: "files", any: ["tsconfig.json", "mypy.ini", "pyrightconfig.json", "go.mod", "Cargo.toml"] }
+  },
+  {
+    id: "lint",
+    area: "quality",
+    after: [],
+    probe: {
+      type: "files",
+      any: ["eslint.config.*", ".eslintrc*", "biome.json", "ruff.toml", ".ruff.toml", ".golangci.yml"]
+    }
+  },
+  { id: "tests", area: "quality", after: [], probe: { type: "contract", kind: "tests" } },
+  {
+    id: "ci",
+    area: "quality",
+    after: ["tests"],
+    probe: {
+      type: "files",
+      any: [".github/workflows/*.yml", ".github/workflows/*.yaml", ".gitlab-ci.yml", ".circleci/config.yml"]
+    }
+  },
+  { id: "secrets", area: "security", after: [], probe: { type: "contract", kind: "secrets" } },
+  { id: "rate-limit", area: "security", after: ["api"], probe: { type: "grep", all: ["rate[-_ ]?limit|throttl"] } },
+  {
+    id: "privacy",
+    area: "security",
+    after: ["auth"],
+    probe: { type: "grep", all: ["delete[-_ ]?account|account[-_ ]?deletion|data[-_ ]?export|lgpd|gdpr"] }
+  },
+  { id: "backup", area: "security", after: ["database"], probe: { type: "manual" } },
+  {
+    id: "environments",
+    area: "operation",
+    after: [],
+    probe: { type: "files", any: [".env.example", ".env.sample", "**/.env.example"] }
+  },
+  { id: "rollback", area: "operation", after: ["environments"], probe: { type: "manual" } },
+  {
+    id: "logs",
+    area: "operation",
+    after: ["api"],
+    probe: { type: "deps", any: ["@sentry/node", "@sentry/nextjs", "@sentry/react", "sentry-sdk", "pino", "winston"] }
+  },
+  {
+    id: "terms",
+    area: "legal",
+    after: [],
+    probe: { type: "files", any: ["**/terms*", "**/privacy*", "**/termos*", "**/privacidade*"] }
+  }
+];
+var LANDING = [
+  { id: "message", area: "product", after: [], probe: { type: "manual" } },
+  { id: "call-to-action", area: "application", after: ["message"], probe: { type: "grep", all: ["<button|<a "] } },
+  { id: "contact", area: "application", after: [], probe: { type: "grep", all: ["<form|mailto:|wa\\.me/"] } },
+  { id: "responsive", area: "application", after: [], probe: { type: "grep", all: ["@media|viewport"] } },
+  { id: "metadata", area: "application", after: [], probe: { type: "grep", all: ["<title|og:title|metadata"] } },
+  { id: "analytics", area: "operation", after: [], probe: { type: "grep", all: ["gtag|plausible|posthog|analytics"] } },
+  { id: "visual-check", area: "quality", after: ["responsive"], probe: { type: "contract", kind: "look" } },
+  {
+    id: "landing-terms",
+    area: "legal",
+    after: ["contact"],
+    probe: { type: "files", any: ["**/privacy*", "**/privacidade*", "**/privacidad*"] }
+  },
+  { id: "domain", area: "operation", after: [], probe: { type: "manual" } }
+];
+var BLUEPRINTS = {
+  saas: SAAS,
+  landing: LANDING
+};
+
+// src/planta/evaluate.ts
+var APPROVAL_TASK = "planta";
+var escape2 = (text18) => text18.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+var globRegex2 = (pattern) => {
+  const directory = pattern.endsWith("/");
+  const body2 = (directory ? pattern.slice(0, -1) : pattern).split("**/").map((part2) => escape2(part2).replace(/\*/g, "[^/]*")).join("(?:.*/)?");
+  return new RegExp(`^${body2}${directory ? "/" : "$"}`, "i");
+};
+var hasDependency = (manifests, name) => {
+  const quoted = new RegExp(`["']${escape2(name)}["']`, "i");
+  const line11 = new RegExp(`^\\s*${escape2(name)}(?:\\s|[=<>~\\[;]|$)`, "im");
+  return quoted.test(manifests) || line11.test(manifests);
+};
+var probeGreen = (probe, view2) => {
+  switch (probe.type) {
+    case "files":
+      return probe.any.map(globRegex2).some((pattern) => view2.files.some((file) => pattern.test(file)));
+    case "grep":
+      return probe.all.every((pattern) => view2.grep(pattern));
+    case "deps":
+      return probe.any.some((name) => hasDependency(view2.manifests, name));
+    case "contract":
+      return view2.passed(probe.kind);
+    case "manual":
+      return false;
+  }
+};
+var statusOf2 = (item2, view2, approved) => {
+  if (item2.probe.type === "manual") return approved.has(item2.id) ? "green" : "manual";
+  return probeGreen(item2.probe, view2) ? "green" : "missing";
+};
+var nextItem = (items, results) => {
+  const green = new Set(results.filter((result) => result.status === "green").map((result) => result.id));
+  const open = items.filter((item2) => !green.has(item2.id));
+  return (open.find((item2) => item2.after.every((id) => green.has(id))) ?? open[0])?.id;
+};
+var evaluateBlueprint = (type, view2, approved = /* @__PURE__ */ new Set()) => {
+  const items = BLUEPRINTS[type];
+  const results = items.map((item2) => ({
+    id: item2.id,
+    area: item2.area,
+    status: statusOf2(item2, view2, approved),
+    check: item2.probe.type
+  }));
+  return {
+    type,
+    green: results.filter((result) => result.status === "green").length,
+    total: results.length,
+    items: results,
+    next: nextItem(items, results),
+    tree: view2.tree
+  };
+};
+
+// src/planta/store.ts
+var PLANTA_CACHE = "planta.json";
+var readCachedBar = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(PLANTA_CACHE));
+  const type = parseBlueprintType(typeof raw?.["type"] === "string" ? raw["type"] : void 0);
+  const green = raw?.["green"];
+  const total = raw?.["total"];
+  if (type === void 0 || typeof green !== "number" || typeof total !== "number") return void 0;
+  const next2 = raw?.["next"];
+  const tree = raw?.["tree"];
+  return {
+    type,
+    green,
+    total,
+    next: typeof next2 === "string" ? next2 : void 0,
+    tree: typeof tree === "string" ? tree : void 0
+  };
+};
+var writeCachedBar = (runtime, paths, bar) => writeJsonFile(runtime, paths.cache(PLANTA_CACHE), {
+  type: bar.type,
+  green: bar.green,
+  total: bar.total,
+  next: bar.next ?? null,
+  tree: bar.tree ?? null
+}).ok;
+var approvedItems = (runtime, paths) => new Set(
+  readApprovals(runtime, paths).filter((approval) => approval.task === APPROVAL_TASK).map((approval) => approval.check)
+);
+var contractText = (runtime, paths, task) => {
+  const approved = readTrust(runtime, paths).approved[task];
+  if (approved !== void 0) return approved;
+  const disk = runtime.readText(paths.task(task));
+  return disk.ok ? disk.value : void 0;
+};
+var blueprintOfTask = (runtime, paths, task) => {
+  const text18 = contractText(runtime, paths, task);
+  if (text18 === void 0) return void 0;
+  const parsed = parseContract(task, text18);
+  return parsed.ok ? parsed.value.blueprint : void 0;
+};
+var activeBlueprint = (runtime, paths) => {
+  const task = readState(runtime, paths).active;
+  return task === void 0 ? void 0 : blueprintOfTask(runtime, paths, task);
+};
+var recordInContract = (runtime, paths, type) => {
+  const task = readState(runtime, paths).active;
+  const text18 = task === void 0 ? void 0 : contractText(runtime, paths, task);
+  if (task === void 0 || text18 === void 0) return void 0;
+  const parsed = parseContract(task, text18);
+  if (!parsed.ok) return void 0;
+  const updated = stringifyYaml(contractYaml({ ...parsed.value, blueprint: type }));
+  if (!runtime.writeText(paths.task(task), updated).ok) return void 0;
+  const lock = readTrust(runtime, paths);
+  if (lock.approved[task] !== void 0)
+    writeTrust(runtime, paths, { ...lock, approved: { ...lock.approved, [task]: updated } });
+  return task;
+};
+
+// src/policy/feature.ts
+var featureMode = (runtime, paths, id) => modeOf2({ id, damage: false }, loadPolicy(runtime, paths.root), readShadow(runtime, paths));
+var recordFeatureShadow = (runtime, paths, id, data) => {
+  logEvent(runtime, paths, "feature_shadow", { feature: id, ...data });
+};
+
+// src/clarify/size.ts
+var BUILD = /\b(?:build|create|make|implement|add|develop|design|set ?up|migrate|refactor|rewrite|integrate)\b|(?<![\p{L}])(?:cri(?:ar|e|a)|constru(?:ir|a|ye)|implement(?:ar|e|a)|adicion(?:ar|e)|desenvolv(?:er|a)|migr(?:ar|e|a)|refator(?:ar|e)|reescrev(?:er|a)|fa(?:zer|ça)|integr(?:ar|e|a)|crear|crea|agreg(?:ar|a)|añad(?:ir|e)|desarroll(?:ar|a)|hac(?:er|e))(?![\p{L}])/iu;
+var LARGE = /\b(?:app|application|platform|system|marketplace|saas|mvp|from scratch|end[- ]to[- ]end|backend and frontend)\b|(?<![\p{L}])(?:aplicativo|plataforma|sistema|do zero|aplicaci[oó]n|desde cero)(?![\p{L}])/iu;
+var SMALL = /\b(?:typo|rename|bump|one[- ]line|log line|comment)\b|(?<![\p{L}])(?:renome(?:ar|ie)|erro de digita[çc][ãa]o|errata|renombr(?:ar|a))(?![\p{L}])/iu;
+var JOINERS = /,|\b(?:and|with|plus)\b|(?<![\p{L}])(?:e|com|mais|y|con)(?![\p{L}])/giu;
+var MEDIUM_WORDS = 12;
+var BLUEPRINT_WORDS = 6;
+var requestSize = (prompt, hints) => {
+  const text18 = prompt.trim();
+  if (text18.startsWith("/") || !BUILD.test(text18) || SMALL.test(text18)) return "S";
+  if (LARGE.test(text18)) return "L";
+  const words2 = text18.split(/\s+/).length;
+  const joins = text18.match(JOINERS)?.length ?? 0;
+  return words2 >= MEDIUM_WORDS || joins >= 2 || hints.blueprint && words2 >= BLUEPRINT_WORDS ? "M" : "S";
+};
+
+// src/clarify/hook.ts
+var CLARIFY_FEATURE = "clarify";
+var MAX_QUESTIONS = 3;
+var ASKED_FILE = "clarify.json";
+var KEEP_SESSIONS = 50;
+var allow3 = { kind: "allow" };
+var askedSessions = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(ASKED_FILE))?.["sessions"];
+  return Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
+};
+var clarifyPrompt = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow3;
+  const paths = projectPaths(input);
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow3;
+  const { runtime, t } = input;
+  if (readState(runtime, paths).active !== void 0) return allow3;
+  const mode = featureMode(runtime, paths, CLARIFY_FEATURE);
+  if (mode === "off") return allow3;
+  const size = requestSize(prompt, { blueprint: readCachedBar(runtime, paths) !== void 0 });
+  if (size === "S") return allow3;
+  const session = input.payload.sessionId ?? "";
+  const asked = askedSessions(runtime, paths);
+  if (asked.includes(session)) return allow3;
+  writeJsonFile(runtime, paths.cache(ASKED_FILE), { sessions: [...asked, session].slice(-KEEP_SESSIONS) });
+  logEvent(runtime, paths, "clarify.asked", { size, mode, session });
+  if (mode === "shadow") {
+    recordFeatureShadow(runtime, paths, CLARIFY_FEATURE, { size });
+    return allow3;
+  }
+  return {
+    kind: "allow",
+    output: contextOutput("UserPromptSubmit", t("clarify.context", { size, max: MAX_QUESTIONS }))
+  };
+};
+var CLARIFY_HANDLERS = { UserPromptSubmit: [clarifyPrompt] };
+
 // src/perfil/store.ts
 import { join as join44 } from "node:path";
 
@@ -19970,13 +20349,13 @@ var pythonText2 = (runtime, root) => PYTHON_MANIFESTS.map((file) => {
   const text18 = runtime.readText(toAbsolutePath(file, root));
   return text18.ok ? text18.value.toLowerCase() : "";
 }).join("\n");
-var escape2 = (text18) => text18.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+var escape3 = (text18) => text18.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var newPackages = (input, packages) => {
   const root = guardRoot(input);
   const npm = npmDeclared(input.runtime, root);
   const python = packages.some((pkg) => pkg.ecosystem === "pypi") ? pythonText2(input.runtime, root) : "";
   return packages.filter(
-    (pkg) => pkg.ecosystem === "npm" ? !npm.has(pkg.name) : !new RegExp(`(^|[\\s"'\\[])${escape2(pkg.name).replace(/-/g, "[-_.]")}($|[\\s"'=<>~!\\[;,])`, "m").test(python)
+    (pkg) => pkg.ecosystem === "npm" ? !npm.has(pkg.name) : !new RegExp(`(^|[\\s"'\\[])${escape3(pkg.name).replace(/-/g, "[-_.]")}($|[\\s"'=<>~!\\[;,])`, "m").test(python)
   );
 };
 var lookup = (input, pkg, deadline, offline) => {
@@ -21516,53 +21895,6 @@ var reopenTask = (runtime, paths, id, criteria) => {
   writeState(runtime, paths, { ...state, active: id, done: state.done.filter((item2) => item2 !== id) });
   return done;
 };
-
-// src/task/serialize.ts
-var checkYaml = (check2) => ({
-  id: check2.id,
-  check: check2.kind,
-  ...check2.run === void 0 ? {} : { run: check2.run },
-  ...check2.timeoutS === void 0 ? {} : { timeout_s: check2.timeoutS },
-  ...check2.require === void 0 ? {} : { require: [...check2.require] },
-  ...check2.requireOpen === void 0 ? {} : { require_open: check2.requireOpen },
-  ...check2.description === void 0 ? {} : { description: check2.description },
-  ...check2.port === void 0 ? {} : { port: check2.port },
-  ...check2.route === void 0 ? {} : { route: check2.route },
-  ...check2.status === void 0 ? {} : { status: check2.status },
-  ...check2.body === void 0 ? {} : { body: check2.body }
-});
-var contractYaml = (contract) => ({
-  id: contract.id,
-  goal: contract.goal,
-  size: contract.size,
-  ...contract.base === void 0 ? {} : { base: contract.base },
-  scope: {
-    paths: [...contract.scope.paths],
-    ...contract.scope.diffBudget === void 0 ? {} : { diff_budget: { ...contract.scope.diffBudget } },
-    tests_protected: contract.scope.testsProtected
-  },
-  acceptance: contract.acceptance.map(checkYaml),
-  decisions_needed: [...contract.decisionsNeeded],
-  ...contract.callersIgnore === void 0 ? {} : { callers_ignore: [...contract.callersIgnore] },
-  ...contract.shortcuts === void 0 ? {} : { shortcuts: contract.shortcuts.map((item2) => ({ ...item2 })) },
-  ...contract.blueprint === void 0 ? {} : { blueprint: contract.blueprint }
-});
-var contractJson = (contract) => ({
-  id: contract.id,
-  goal: contract.goal,
-  size: contract.size,
-  base: contract.base ?? null,
-  implicit: contract.implicit,
-  scope: {
-    paths: contract.scope.paths,
-    diffBudget: contract.scope.diffBudget ?? null,
-    testsProtected: contract.scope.testsProtected
-  },
-  acceptance: contract.acceptance.map((check2) => ({ ...check2 })),
-  decisionsNeeded: contract.decisionsNeeded,
-  ...contract.shortcuts === void 0 ? {} : { shortcuts: contract.shortcuts },
-  blueprint: contract.blueprint ?? null
-});
 
 // src/task/amend.ts
 var AMENDMENTS_FILE = "amendments.jsonl";
@@ -25812,11 +26144,11 @@ var LOCKFILES4 = /* @__PURE__ */ new Set([
 ]);
 var GENERATOR_TIMEOUT_MS = 3e5;
 var DOUBLE_STAR = "";
-var globRegex2 = (pattern) => new RegExp(
+var globRegex3 = (pattern) => new RegExp(
   `^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").split("**").join(DOUBLE_STAR).replace(/\*/g, "[^/]*").split(DOUBLE_STAR).join(".*")}$`
 );
 var generatorFor = (path, generators) => Object.entries(generators).find(
-  ([pattern]) => globRegex2(pattern).test(path) || globRegex2(pattern).test(path.split("/").pop() ?? "")
+  ([pattern]) => globRegex3(pattern).test(path) || globRegex3(pattern).test(path.split("/").pop() ?? "")
 )?.[1];
 var generatedPaths = (runtime, repo, paths, generators) => {
   const out = new Set(
@@ -26652,10 +26984,10 @@ var READ_ONLY_AGENTS = /* @__PURE__ */ new Set([
   "reviewer",
   "verifier"
 ]);
-var escape3 = (text18) => text18.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+var escape4 = (text18) => text18.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var LIVE2 = /* @__PURE__ */ new Set(["planned", "blocked", "running"]);
 var frontNamed = (state, text18) => state.fronts.find(
-  (front) => LIVE2.has(front.status) && new RegExp(`(?<![\\w.-])${escape3(front.id)}(?![\\w.-])`).test(text18)
+  (front) => LIVE2.has(front.status) && new RegExp(`(?<![\\w.-])${escape4(front.id)}(?![\\w.-])`).test(text18)
 );
 var stateOf3 = (input) => {
   const read9 = readFronts(input.runtime, guardRoot(input));
@@ -27830,13 +28162,13 @@ var specOf = (raw, prefix2) => {
   const joined = posix8.normalize(top ? rest : posix8.join(prefix2 === "" ? "." : prefix2, rest));
   return { pattern: joined === "./" ? "." : joined.replace(/\/$/, ""), exclude };
 };
-var globRegex3 = (pattern) => {
+var globRegex4 = (pattern) => {
   const escaped = pattern.replace(/[.+^${}()|\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
   return new RegExp(`^${escaped}(?:/.*)?$`);
 };
 var matchesOne = (file, pattern) => {
   if (pattern === "." || pattern === "") return true;
-  if (GLOB.test(pattern)) return globRegex3(pattern).test(file);
+  if (GLOB.test(pattern)) return globRegex4(pattern).test(file);
   return file === pattern || file.startsWith(`${pattern}/`);
 };
 var matchPathspecs = (file, specs, prefix2) => {
@@ -28715,7 +29047,7 @@ var domainsMentioned = (text18) => Object.keys(TERMS).filter((domain) => TERMS[d
 var asksMechanism = (text18) => MECHANISM.test(text18);
 
 // src/perfil/hooks.ts
-var allow3 = { kind: "allow" };
+var allow4 = { kind: "allow" };
 var VOCABULARY_STEP = 2;
 var MECHANISM_STEP = 1;
 var PERSON_COMMIT_STEP = 2;
@@ -28731,35 +29063,35 @@ var fromPrompt = (profile, prompt) => {
 var perfilPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
   const paths = projectPaths(input);
-  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow3;
-  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow3;
+  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow4;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow4;
   writeProfile2(input.runtime, paths, fromPrompt(profileOrStart(input.runtime, paths), prompt));
-  return allow3;
+  return allow4;
 };
 var COMMIT2 = /\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b/;
 var knownCommits = (raw) => Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
 var perfilAgentCommit = (input) => {
   const raw = input.payload.raw;
-  if (!["Bash", "PowerShell"].includes(toolName(raw))) return allow3;
-  if (!COMMIT2.test(textField(toolInput(raw), "command") ?? "")) return allow3;
+  if (!["Bash", "PowerShell"].includes(toolName(raw))) return allow4;
+  if (!COMMIT2.test(textField(toolInput(raw), "command") ?? "")) return allow4;
   const paths = projectPaths(input);
-  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow3;
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow4;
   const head = gitAt(input.runtime, paths.root).out(["rev-parse", "HEAD"])?.trim();
-  if (head === void 0 || head === "") return allow3;
+  if (head === void 0 || head === "") return allow4;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
     agent: [...knownCommits(stored?.["agent"]), head].slice(-KEEP_COMMITS),
     seen: knownCommits(stored?.["seen"])
   });
-  return allow3;
+  return allow4;
 };
 var personCommits = (log, agent, seen) => log.split("\n").map((line11) => line11.trim()).filter((sha) => sha !== "" && !agent.has(sha) && !seen.has(sha));
 var perfilSession = (input) => {
   const paths = projectPaths(input);
-  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow3;
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow4;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   const head = headShaFromFiles(input.runtime, paths.root);
-  if (head === void 0 || stored?.["head"] === head) return allow3;
+  if (head === void 0 || stored?.["head"] === head) return allow4;
   const agent = new Set(knownCommits(stored?.["agent"]));
   const seen = new Set(knownCommits(stored?.["seen"]));
   const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
@@ -28770,7 +29102,7 @@ var perfilSession = (input) => {
       seen: personCommits(log, agent, seen),
       ...headField
     });
-    return allow3;
+    return allow4;
   }
   const fresh3 = personCommits(log, agent, seen);
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
@@ -28778,224 +29110,19 @@ var perfilSession = (input) => {
     seen: [...seen, ...fresh3].slice(-KEEP_COMMITS),
     ...headField
   });
-  if (fresh3.length === 0) return allow3;
+  if (fresh3.length === 0) return allow4;
   const step3 = Math.min(fresh3.length, 3) * PERSON_COMMIT_STEP;
   const profile = DOMAINS.reduce(
     (current2, domain) => updateDomain(current2, domain, (entry2) => ({ ...entry2, tool: clampScore(entry2.tool + step3) })),
     profileOrStart(input.runtime, paths)
   );
   writeProfile2(input.runtime, paths, profile);
-  return allow3;
+  return allow4;
 };
 var PERFIL_HANDLERS = {
   UserPromptSubmit: [perfilPrompt],
   PostToolUse: [perfilAgentCommit],
   SessionStart: [perfilSession]
-};
-
-// src/planta/blueprints.ts
-var MIGRATIONS2 = [
-  "migrations/",
-  "**/migrations/",
-  "prisma/schema.prisma",
-  "db/migrate/",
-  "drizzle/",
-  "alembic/",
-  "supabase/migrations/"
-];
-var SAAS = [
-  { id: "problem", area: "product", after: [], probe: { type: "manual" } },
-  {
-    id: "rules",
-    area: "product",
-    after: [],
-    probe: { type: "files", any: ["docs/plan/", "docs/rules*", "docs/business*", "docs/decisions/"] }
-  },
-  { id: "pricing", area: "product", after: ["problem"], probe: { type: "manual" } },
-  {
-    id: "api",
-    area: "application",
-    after: [],
-    probe: {
-      type: "files",
-      any: ["api/", "src/api/", "app/api/", "pages/api/", "server/", "src/server/", "backend/", "src/routes/"]
-    }
-  },
-  { id: "database", area: "application", after: [], probe: { type: "files", any: MIGRATIONS2 } },
-  {
-    id: "auth",
-    area: "application",
-    after: ["database"],
-    probe: {
-      type: "deps",
-      any: [
-        "next-auth",
-        "@auth/core",
-        "@clerk/nextjs",
-        "@clerk/clerk-react",
-        "lucia",
-        "passport",
-        "better-auth",
-        "@supabase/supabase-js",
-        "firebase",
-        "django-allauth",
-        "devise",
-        "flask-login"
-      ]
-    }
-  },
-  {
-    id: "password-reset",
-    area: "application",
-    after: ["auth"],
-    probe: { type: "grep", all: ["(reset|forgot)[-_ ]?password|password[-_ ]?reset"] }
-  },
-  {
-    id: "tenants",
-    area: "application",
-    after: ["auth"],
-    probe: { type: "grep", all: ["tenant|organization_?id|org_?id|workspace_?id"] }
-  },
-  { id: "states", area: "application", after: ["api"], probe: { type: "grep", all: ["loading", "empty", "error"] } },
-  {
-    id: "billing",
-    area: "money",
-    after: ["auth"],
-    probe: {
-      type: "deps",
-      any: ["stripe", "asaas", "mercadopago", "@paddle/paddle-node-sdk", "@lemonsqueezy/lemonsqueezy.js"]
-    }
-  },
-  { id: "webhooks", area: "money", after: ["billing"], probe: { type: "grep", all: ["idempoten"] } },
-  { id: "renewal-refund", area: "money", after: ["billing"], probe: { type: "grep", all: ["refund", "renew"] } },
-  { id: "cents", area: "money", after: ["billing"], probe: { type: "grep", all: ["cents|centavos|minor_?units"] } },
-  {
-    id: "types",
-    area: "quality",
-    after: [],
-    probe: { type: "files", any: ["tsconfig.json", "mypy.ini", "pyrightconfig.json", "go.mod", "Cargo.toml"] }
-  },
-  {
-    id: "lint",
-    area: "quality",
-    after: [],
-    probe: {
-      type: "files",
-      any: ["eslint.config.*", ".eslintrc*", "biome.json", "ruff.toml", ".ruff.toml", ".golangci.yml"]
-    }
-  },
-  { id: "tests", area: "quality", after: [], probe: { type: "contract", kind: "tests" } },
-  {
-    id: "ci",
-    area: "quality",
-    after: ["tests"],
-    probe: {
-      type: "files",
-      any: [".github/workflows/*.yml", ".github/workflows/*.yaml", ".gitlab-ci.yml", ".circleci/config.yml"]
-    }
-  },
-  { id: "secrets", area: "security", after: [], probe: { type: "contract", kind: "secrets" } },
-  { id: "rate-limit", area: "security", after: ["api"], probe: { type: "grep", all: ["rate[-_ ]?limit|throttl"] } },
-  {
-    id: "privacy",
-    area: "security",
-    after: ["auth"],
-    probe: { type: "grep", all: ["delete[-_ ]?account|account[-_ ]?deletion|data[-_ ]?export|lgpd|gdpr"] }
-  },
-  { id: "backup", area: "security", after: ["database"], probe: { type: "manual" } },
-  {
-    id: "environments",
-    area: "operation",
-    after: [],
-    probe: { type: "files", any: [".env.example", ".env.sample", "**/.env.example"] }
-  },
-  { id: "rollback", area: "operation", after: ["environments"], probe: { type: "manual" } },
-  {
-    id: "logs",
-    area: "operation",
-    after: ["api"],
-    probe: { type: "deps", any: ["@sentry/node", "@sentry/nextjs", "@sentry/react", "sentry-sdk", "pino", "winston"] }
-  },
-  {
-    id: "terms",
-    area: "legal",
-    after: [],
-    probe: { type: "files", any: ["**/terms*", "**/privacy*", "**/termos*", "**/privacidade*"] }
-  }
-];
-var LANDING = [
-  { id: "message", area: "product", after: [], probe: { type: "manual" } },
-  { id: "call-to-action", area: "application", after: ["message"], probe: { type: "grep", all: ["<button|<a "] } },
-  { id: "contact", area: "application", after: [], probe: { type: "grep", all: ["<form|mailto:|wa\\.me/"] } },
-  { id: "responsive", area: "application", after: [], probe: { type: "grep", all: ["@media|viewport"] } },
-  { id: "metadata", area: "application", after: [], probe: { type: "grep", all: ["<title|og:title|metadata"] } },
-  { id: "analytics", area: "operation", after: [], probe: { type: "grep", all: ["gtag|plausible|posthog|analytics"] } },
-  { id: "visual-check", area: "quality", after: ["responsive"], probe: { type: "contract", kind: "look" } },
-  {
-    id: "landing-terms",
-    area: "legal",
-    after: ["contact"],
-    probe: { type: "files", any: ["**/privacy*", "**/privacidade*", "**/privacidad*"] }
-  },
-  { id: "domain", area: "operation", after: [], probe: { type: "manual" } }
-];
-var BLUEPRINTS = {
-  saas: SAAS,
-  landing: LANDING
-};
-
-// src/planta/evaluate.ts
-var APPROVAL_TASK = "planta";
-var escape4 = (text18) => text18.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-var globRegex4 = (pattern) => {
-  const directory = pattern.endsWith("/");
-  const body2 = (directory ? pattern.slice(0, -1) : pattern).split("**/").map((part2) => escape4(part2).replace(/\*/g, "[^/]*")).join("(?:.*/)?");
-  return new RegExp(`^${body2}${directory ? "/" : "$"}`, "i");
-};
-var hasDependency = (manifests, name) => {
-  const quoted = new RegExp(`["']${escape4(name)}["']`, "i");
-  const line11 = new RegExp(`^\\s*${escape4(name)}(?:\\s|[=<>~\\[;]|$)`, "im");
-  return quoted.test(manifests) || line11.test(manifests);
-};
-var probeGreen = (probe, view2) => {
-  switch (probe.type) {
-    case "files":
-      return probe.any.map(globRegex4).some((pattern) => view2.files.some((file) => pattern.test(file)));
-    case "grep":
-      return probe.all.every((pattern) => view2.grep(pattern));
-    case "deps":
-      return probe.any.some((name) => hasDependency(view2.manifests, name));
-    case "contract":
-      return view2.passed(probe.kind);
-    case "manual":
-      return false;
-  }
-};
-var statusOf2 = (item2, view2, approved) => {
-  if (item2.probe.type === "manual") return approved.has(item2.id) ? "green" : "manual";
-  return probeGreen(item2.probe, view2) ? "green" : "missing";
-};
-var nextItem = (items, results) => {
-  const green = new Set(results.filter((result) => result.status === "green").map((result) => result.id));
-  const open = items.filter((item2) => !green.has(item2.id));
-  return (open.find((item2) => item2.after.every((id) => green.has(id))) ?? open[0])?.id;
-};
-var evaluateBlueprint = (type, view2, approved = /* @__PURE__ */ new Set()) => {
-  const items = BLUEPRINTS[type];
-  const results = items.map((item2) => ({
-    id: item2.id,
-    area: item2.area,
-    status: statusOf2(item2, view2, approved),
-    check: item2.probe.type
-  }));
-  return {
-    type,
-    green: results.filter((result) => result.status === "green").length,
-    total: results.length,
-    items: results,
-    next: nextItem(items, results),
-    tree: view2.tree
-  };
 };
 
 // src/planta/labels.ts
@@ -29586,64 +29713,6 @@ var barLines = (t, lang, bar) => {
   ];
 };
 
-// src/planta/store.ts
-var PLANTA_CACHE = "planta.json";
-var readCachedBar = (runtime, paths) => {
-  const raw = readJsonFile(runtime, paths.cache(PLANTA_CACHE));
-  const type = parseBlueprintType(typeof raw?.["type"] === "string" ? raw["type"] : void 0);
-  const green = raw?.["green"];
-  const total = raw?.["total"];
-  if (type === void 0 || typeof green !== "number" || typeof total !== "number") return void 0;
-  const next2 = raw?.["next"];
-  const tree = raw?.["tree"];
-  return {
-    type,
-    green,
-    total,
-    next: typeof next2 === "string" ? next2 : void 0,
-    tree: typeof tree === "string" ? tree : void 0
-  };
-};
-var writeCachedBar = (runtime, paths, bar) => writeJsonFile(runtime, paths.cache(PLANTA_CACHE), {
-  type: bar.type,
-  green: bar.green,
-  total: bar.total,
-  next: bar.next ?? null,
-  tree: bar.tree ?? null
-}).ok;
-var approvedItems = (runtime, paths) => new Set(
-  readApprovals(runtime, paths).filter((approval) => approval.task === APPROVAL_TASK).map((approval) => approval.check)
-);
-var contractText = (runtime, paths, task) => {
-  const approved = readTrust(runtime, paths).approved[task];
-  if (approved !== void 0) return approved;
-  const disk = runtime.readText(paths.task(task));
-  return disk.ok ? disk.value : void 0;
-};
-var blueprintOfTask = (runtime, paths, task) => {
-  const text18 = contractText(runtime, paths, task);
-  if (text18 === void 0) return void 0;
-  const parsed = parseContract(task, text18);
-  return parsed.ok ? parsed.value.blueprint : void 0;
-};
-var activeBlueprint = (runtime, paths) => {
-  const task = readState(runtime, paths).active;
-  return task === void 0 ? void 0 : blueprintOfTask(runtime, paths, task);
-};
-var recordInContract = (runtime, paths, type) => {
-  const task = readState(runtime, paths).active;
-  const text18 = task === void 0 ? void 0 : contractText(runtime, paths, task);
-  if (task === void 0 || text18 === void 0) return void 0;
-  const parsed = parseContract(task, text18);
-  if (!parsed.ok) return void 0;
-  const updated = stringifyYaml(contractYaml({ ...parsed.value, blueprint: type }));
-  if (!runtime.writeText(paths.task(task), updated).ok) return void 0;
-  const lock = readTrust(runtime, paths);
-  if (lock.approved[task] !== void 0)
-    writeTrust(runtime, paths, { ...lock, approved: { ...lock.approved, [task]: updated } });
-  return task;
-};
-
 // src/planta/view.ts
 import { join as join80 } from "node:path";
 var MANIFESTS3 = ["package.json", "requirements.txt", "pyproject.toml", "Gemfile", "go.mod", "composer.json"];
@@ -29710,7 +29779,7 @@ var MINIMUM = {
   }
 };
 var SAAS_CORE = ["api", "database", "auth", "billing"];
-var allow4 = { kind: "allow" };
+var allow5 = { kind: "allow" };
 var taskOf = (input, paths) => {
   const active = readState(input.runtime, paths).active;
   if (active !== void 0) return active;
@@ -29778,15 +29847,15 @@ var blockFor = (input, paths, task, verdict2) => {
 var labelGuard = (input) => {
   const message = textField(input.payload.raw, "last_assistant_message") ?? "";
   const hits = findLabels(message);
-  if (hits.length === 0) return allow4;
+  if (hits.length === 0) return allow5;
   const root = findRepoRoot(input.runtime, sessionCwd(input));
-  if (root === void 0) return allow4;
+  if (root === void 0) return allow5;
   const paths = fmPaths(root);
   const task = taskOf(input, paths);
   const type = task === void 0 ? void 0 : blueprintOfTask(input.runtime, paths, task);
-  if (task === void 0 || type === void 0) return allow4;
+  if (task === void 0 || type === void 0) return allow5;
   const verdict2 = verdictFor(input, root, type, hits);
-  return verdict2 === void 0 ? allow4 : blockFor(input, paths, task, verdict2);
+  return verdict2 === void 0 ? allow5 : blockFor(input, paths, task, verdict2);
 };
 
 // src/planta/hooks.ts
@@ -30538,7 +30607,7 @@ var writeReuseLog = (runtime, paths, log) => {
 };
 
 // src/reuse/hook.ts
-var allow5 = { kind: "allow" };
+var allow6 = { kind: "allow" };
 var WRITERS4 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
 var candidates2 = (raw) => {
   const input = toolInput(raw);
@@ -30560,17 +30629,17 @@ var resolve3 = (input, paths, log, finish5) => {
 };
 var warn = (input, paths, file, log) => {
   const names3 = candidates2(input.payload.raw);
-  if (log.retired || names3.length === 0) return allow5;
+  if (log.retired || names3.length === 0) return allow6;
   const index = projectDefinitions(input.runtime, paths.root);
   if (index.kind === "failed") {
     logEvent(input.runtime, paths, "reuse.failed", { detail: index.detail });
-    return allow5;
+    return allow6;
   }
   const found = names3.flatMap((name) => {
     const match = elsewhere(index.definitions, name, file);
     return match === void 0 ? [] : [{ name, match }];
   });
-  if (found.length === 0) return allow5;
+  if (found.length === 0) return allow6;
   const start2 = log.warnings.reduce((max, item2) => Math.max(max, item2.id), 0);
   const added = found.map(({ name, match }, offset) => ({
     id: start2 + offset + 1,
@@ -30600,13 +30669,13 @@ var failedOpen = (input, error) => {
   if (paths !== void 0) {
     logEvent(input.runtime, paths, "reuse.failed", { detail: error instanceof Error ? error.message : String(error) });
   }
-  return allow5;
+  return allow6;
 };
 var reuseWarning = (input) => {
   try {
     const paths = projectPaths(input);
     const file = paths === void 0 ? void 0 : changedFile(input, paths);
-    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow5;
+    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow6;
     const log = resolve3(input, paths, readReuseLog(input.runtime, paths), (warning) => warning.file === file);
     writeReuseLog(input.runtime, paths, log);
     return warn(input, paths, file, log);
@@ -30617,16 +30686,16 @@ var reuseWarning = (input) => {
 var reuseOutcomes = (input) => {
   try {
     const paths = projectPaths(input);
-    if (paths === void 0) return allow5;
+    if (paths === void 0) return allow6;
     const log = readReuseLog(input.runtime, paths);
-    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow5;
+    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow6;
     const session = input.payload.sessionId ?? "";
     writeReuseLog(
       input.runtime,
       paths,
       resolve3(input, paths, log, (warning) => warning.session === session)
     );
-    return allow5;
+    return allow6;
   } catch (error) {
     return failedOpen(input, error);
   }
@@ -30700,7 +30769,7 @@ var coverage2 = (checks) => PERTURBATIONS.map((question) => {
 });
 
 // src/ricochete/stop.ts
-var allow6 = { kind: "allow" };
+var allow7 = { kind: "allow" };
 var REPORTED_FILE = "ricochete.json";
 var block4 = (reason, note2) => ({
   kind: "block",
@@ -30711,12 +30780,12 @@ var block4 = (reason, note2) => ({
 var messageOf3 = (input) => textField(input.payload.raw, "last_assistant_message") ?? "";
 var horizonGuard = (input) => {
   const message = messageOf3(input);
-  if (!isHorizonHelp(message)) return allow6;
+  if (!isHorizonHelp(message)) return allow7;
   const view2 = taskInView(input);
-  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow6;
+  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow7;
   const ids2 = new Set(view2.checks.map((check2) => check2.id));
   const named = criterionIds(message);
-  if (named.some((id) => ids2.has(id))) return allow6;
+  if (named.some((id) => ids2.has(id))) return allow7;
   const { t } = input;
   const params2 = { task: view2.task, named: named.join(", ") || "-", checks: [...ids2].join(", ") };
   logEvent(input.runtime, view2.paths, "ricochete.horizon_without_criterion", { task: view2.task, named: [...named] });
@@ -30728,10 +30797,10 @@ var reportedTasks = (input, view2) => {
 };
 var perturbationReport = (input) => {
   const view2 = taskInView(input);
-  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow6;
-  if (!judgmentSignal(input, view2.paths)) return allow6;
+  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow7;
+  if (!judgmentSignal(input, view2.paths)) return allow7;
   const reported = reportedTasks(input, view2);
-  if (reported.includes(view2.task)) return allow6;
+  if (reported.includes(view2.task)) return allow7;
   writeJsonFile(input.runtime, view2.paths.cache(REPORTED_FILE), { tasks: [...reported, view2.task].slice(-100) });
   const { t } = input;
   const lines6 = coverage2(view2.checks).map(
@@ -31403,7 +31472,7 @@ var writesFiles = (raw) => {
 
 // src/signals/fourth.ts
 var FOURTH_ATTEMPT_GUARD = "fourth-attempt";
-var allow7 = { kind: "allow" };
+var allow8 = { kind: "allow" };
 var RESEARCHER = /(?:^|:)researcher$/i;
 var AGENT_TOOLS2 = /* @__PURE__ */ new Set(["Agent", "Task"]);
 var alreadyNoted = (scope2, sig) => {
@@ -31430,17 +31499,17 @@ var noteFourth = (scope2, sig, failed6, mode) => {
   });
 };
 var fourthAttemptGuard = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow7;
+  if (!writesFiles(input.payload.raw)) return allow8;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow7;
+  if (scope2 === void 0) return allow8;
   const stop = stopDecision(scope2, modeNow(scope2));
   if (stop !== void 0) return stop;
   const threshold2 = readProfile(input.runtime, scope2.files).threshold;
   const pending = pendingAttempt(sessionEntries(scope2.entries, scope2.session), threshold2);
-  if (pending === void 0) return allow7;
+  if (pending === void 0) return allow8;
   const mode = modeNow(scope2);
   const noted = alreadyNoted(scope2, pending.sig);
-  if (noted && mode !== "active") return allow7;
+  if (noted && mode !== "active") return allow8;
   if (!noted) noteFourth(scope2, pending.sig, pending.failed, mode);
   const { t } = input;
   const params2 = { sig: pending.sig, count: pending.failed, sample: pending.sample };
@@ -31454,10 +31523,10 @@ var researcherOf = (raw) => {
 };
 var researchRecorder = (input) => {
   const agent = researcherOf(input.payload.raw);
-  if (agent === void 0) return allow7;
+  if (agent === void 0) return allow8;
   const scope2 = scopeOf(input);
   if (scope2 !== void 0) record3(scope2, { ...baseOf2(scope2), kind: "research", agent });
-  return allow7;
+  return allow8;
 };
 
 // src/signals/render.ts
@@ -31529,13 +31598,13 @@ var writeIndex = (scope2, notice = readNotice(scope2)) => {
 };
 
 // src/signals/prompt.ts
-var allow8 = { kind: "allow" };
+var allow9 = { kind: "allow" };
 var CLEAR_AFTER = 2;
 var signalsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow8;
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow9;
   const before = scopeOf(input);
-  if (before === void 0) return allow8;
+  if (before === void 0) return allow9;
   const scope2 = record3(before, {
     ...baseOf2(before),
     turn: before.turn + 1,
@@ -31546,7 +31615,7 @@ var signalsPrompt = (input) => {
   const notice = readNotice(scope2);
   const index = writeIndex(scope2, notice);
   const key2 = loopKey(index);
-  if (!index.firing || key2 === notice.lastKey) return allow8;
+  if (!index.firing || key2 === notice.lastKey) return allow9;
   const injections = notice.injections + 1;
   writeIndex(scope2, { injections, lastKey: key2 });
   const { t } = input;
@@ -31563,7 +31632,7 @@ var signalsPrompt = (input) => {
 var EDIT_TOOLS2 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var FAST_ACCEPT_MS = 5e3;
 var LARGE_DIFF_LINES = 30;
-var allow9 = { kind: "allow" };
+var allow10 = { kind: "allow" };
 var permissionKey = (raw) => {
   const id = textField(raw, "tool_use_id");
   if (id !== void 0 && id !== "") return id;
@@ -31633,26 +31702,26 @@ var recordError = (scope2, raw, output) => {
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow9;
+  if (scope2 === void 0) return allow10;
   const raw = input.payload.raw;
   const output = failedOutput(raw);
   const after = EDIT_TOOLS2.has(toolName(raw)) ? recordEdit(scope2, raw) : output === void 0 ? scope2 : recordError(scope2, raw, output);
   if (after !== scope2) writeIndex(after);
-  return allow9;
+  return allow10;
 };
 var signalsPostToolUseFailure = (input) => {
   const scope2 = scopeOf(input);
   const raw = input.payload.raw;
-  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow9;
+  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow10;
   const after = recordError(scope2, raw, textField(raw, "error") ?? "");
   if (after !== scope2) writeIndex(after);
-  return allow9;
+  return allow10;
 };
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
     record3(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
-  return allow9;
+  return allow10;
 };
 
 // src/signals/hooks.ts
@@ -31705,7 +31774,7 @@ ${lines6.join("\n")}`)
 var SLOP_HANDLERS = { PreToolUse: [slopEditWarning] };
 
 // src/hooks/handlers.ts
-var allow10 = () => ({ kind: "allow" });
+var allow11 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -31812,7 +31881,8 @@ var GUARD_SETS = [
   { id: "slop", damage: false, handlers: SLOP_HANDLERS },
   { id: "tests-hold", damage: false, handlers: TESTS_HOLD_HANDLERS },
   { id: "advisor", damage: false, handlers: ADVISOR_HANDLERS },
-  { id: "claims", damage: false, handlers: CLAIMS_HANDLERS }
+  { id: "claims", damage: false, handlers: CLAIMS_HANDLERS },
+  { id: "clarify", damage: false, handlers: CLARIFY_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy));
 
@@ -31844,7 +31914,7 @@ var parseHookPayload = (event, text18, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf4 = (error) => error instanceof Error ? error.message : String(error);
-var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow10]);
+var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow11]);
 var evaluate = async (event, options) => {
   const text18 = await readAll2(options.stdin);
   const parsed = parseHookPayload(event, text18, options.stdin.isTTY === true);
@@ -36376,13 +36446,13 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided) => {
-  const accepted2 = allows.filter((allow11) => decided(allow11.decision));
-  const ignored = allows.filter((allow11) => !decided(allow11.decision)).map((allow11) => `${allow11.rule} ${allow11.route} ${allow11.decision}`);
+  const accepted2 = allows.filter((allow12) => decided(allow12.decision));
+  const ignored = allows.filter((allow12) => !decided(allow12.decision)).map((allow12) => `${allow12.rule} ${allow12.route} ${allow12.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow11 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow11 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow11.decision };
+      const allow12 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow12 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow12.decision };
     })
   };
 };
@@ -39607,7 +39677,8 @@ var createTask = (runtime, paths, draft) => {
     },
     acceptance: draftChecks(runtime, paths, draft),
     decisionsNeeded: [],
-    implicit: false
+    implicit: false,
+    ...draft.answers === void 0 || draft.answers.length === 0 ? {} : { clarified: draft.answers }
   };
   const text18 = stringifyYaml(contractYaml(shape));
   const valid = validateContract(contractYaml(shape));
@@ -39766,6 +39837,7 @@ var draftFrom = (ctx, paths, id, values) => {
     tests: stringOption(values, "tests"),
     git: csv(values, "git").filter((item2) => GIT_REQUIREMENTS.some((known2) => known2 === item2)),
     manual: list8(values, "manual"),
+    answers: list8(values, "answer"),
     budget: files === void 0 && lines6 === void 0 ? void 0 : { ...files === void 0 ? {} : { files }, ...lines6 === void 0 ? {} : { lines: lines6 } }
   };
 };
@@ -39874,12 +39946,13 @@ var TASK_OPTIONS = {
   git: { type: "string" },
   manual: { type: "string", multiple: true },
   "budget-files": { type: "string" },
-  "budget-lines": { type: "string" }
+  "budget-lines": { type: "string" },
+  answer: { type: "string", multiple: true }
 };
 var taskNewCommand = {
   path: ["task", "new"],
   summaryKey: "command.task_new.summary",
-  usage: "finitemonkey task new <id> --goal <text> [--size S|M|L] [--paths <globs>] [--run <cmd>]... [--tests <cmd>] [--git committed,pushed,pr_open] [--manual <text>]...",
+  usage: "finitemonkey task new <id> --goal <text> [--size S|M|L] [--paths <globs>] [--run <cmd>]... [--tests <cmd>] [--git committed,pushed,pr_open] [--manual <text>]... [--answer <question: answer>]...",
   status: "ready",
   options: TASK_OPTIONS,
   maxPositionals: 1,

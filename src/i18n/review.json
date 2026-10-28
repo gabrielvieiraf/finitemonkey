@@ -1489,7 +1489,8 @@
     "claims.block.tests.requires": "machine",
     "claims.block.not": "machine",
     "claims.block.unconfirmed.human": "machine",
-    "claims.block.tests.human": "machine"
+    "claims.block.tests.human": "machine",
+    "clarify.context": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2981,6 +2982,7 @@
     "claims.block.tests.requires": "machine",
     "claims.block.not": "machine",
     "claims.block.unconfirmed.human": "machine",
-    "claims.block.tests.human": "machine"
+    "claims.block.tests.human": "machine",
+    "clarify.context": "machine"
   }
 }

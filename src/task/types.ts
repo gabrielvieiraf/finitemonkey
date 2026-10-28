@@ -77,6 +77,7 @@ export interface TaskContract {
   readonly shortcuts?: readonly Shortcut[];
   readonly blueprint?: BlueprintType;
   readonly implicit: boolean;
+  readonly clarified?: readonly string[];
 }
 
 export const TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;

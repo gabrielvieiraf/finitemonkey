@@ -158,6 +158,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
   const callersIgnore = strings(value["callers_ignore"], "callers_ignore", issues);
   const shortcuts = parseShortcuts(value["shortcuts"], checks, issues);
   const blueprint = parseBlueprintType(str(value, "blueprint", "", issues, false));
+  const clarified = strings(value["clarified"], "clarified", issues);
   if (value["blueprint"] !== undefined && blueprint === undefined) {
     issues.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
   }
@@ -174,5 +175,6 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
     ...(shortcuts.length === 0 ? {} : { shortcuts }),
     ...(blueprint === undefined ? {} : { blueprint }),
     implicit,
+    ...(clarified.length === 0 ? {} : { clarified }),
   });
 };

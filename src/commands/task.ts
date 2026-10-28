@@ -73,6 +73,7 @@ const draftFrom = (ctx: Ctx, paths: FmPaths, id: string, values: OptionValues): 
     tests: stringOption(values, "tests"),
     git: csv(values, "git").filter((item): item is GitRequirement => GIT_REQUIREMENTS.some((known) => known === item)),
     manual: list(values, "manual"),
+    answers: list(values, "answer"),
     budget:
       files === undefined && lines === undefined
         ? undefined
@@ -193,13 +194,14 @@ const TASK_OPTIONS = {
   manual: { type: "string", multiple: true },
   "budget-files": { type: "string" },
   "budget-lines": { type: "string" },
+  answer: { type: "string", multiple: true },
 } as const;
 
 export const taskNewCommand: CommandSpec = {
   path: ["task", "new"],
   summaryKey: "command.task_new.summary",
   usage:
-    "finitemonkey task new <id> --goal <text> [--size S|M|L] [--paths <globs>] [--run <cmd>]... [--tests <cmd>] [--git committed,pushed,pr_open] [--manual <text>]...",
+    "finitemonkey task new <id> --goal <text> [--size S|M|L] [--paths <globs>] [--run <cmd>]... [--tests <cmd>] [--git committed,pushed,pr_open] [--manual <text>]... [--answer <question: answer>]...",
   status: "ready",
   options: TASK_OPTIONS,
   maxPositionals: 1,

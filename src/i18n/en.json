@@ -1488,5 +1488,6 @@
   "claims.block.tests.requires": "list these files and why each changed, and ask the person to approve them",
   "claims.block.not": "repeating the claim, or saying done before the gate confirms it",
   "claims.block.unconfirmed.human": "a done claim was held: {state}.",
-  "claims.block.tests.human": "the session edited {count, plural, one {# test or contract file} other {# test or contract files}} ({files}); type finitemonkey: allow claims <reason> to accept them."
+  "claims.block.tests.human": "the session edited {count, plural, one {# test or contract file} other {# test or contract files}} ({files}); type finitemonkey: allow claims <reason> to accept them.",
+  "clarify.context": "finitemonkey clarify: this request starts a task of size {size} with no task contract. Before any edit, propose in one short message: the goal in one line, the scope, what exists today, and how we verify it is done. If something is ambiguous, add at most {max} multiple-choice questions, each with your recommendation, in this one round only. If nothing is ambiguous, state your assumptions in one line and go on. Then create the contract with the confirmed answers: finitemonkey task new <id> --goal \"<goal>\" --size {size} --paths <globs> --run \"<command that proves it is done>\" --answer \"<question>: <answer>\" (one --answer per confirmed answer or assumption)."
 }

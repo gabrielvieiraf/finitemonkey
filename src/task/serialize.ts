@@ -30,6 +30,7 @@ export const contractYaml = (contract: TaskContract): YamlValue => ({
   ...(contract.callersIgnore === undefined ? {} : { callers_ignore: [...contract.callersIgnore] }),
   ...(contract.shortcuts === undefined ? {} : { shortcuts: contract.shortcuts.map((item) => ({ ...item })) }),
   ...(contract.blueprint === undefined ? {} : { blueprint: contract.blueprint }),
+  ...(contract.clarified === undefined ? {} : { clarified: [...contract.clarified] }),
 });
 
 export const contractJson = (contract: TaskContract): Readonly<Record<string, unknown>> => ({
@@ -47,4 +48,5 @@ export const contractJson = (contract: TaskContract): Readonly<Record<string, un
   decisionsNeeded: contract.decisionsNeeded,
   ...(contract.shortcuts === undefined ? {} : { shortcuts: contract.shortcuts }),
   blueprint: contract.blueprint ?? null,
+  ...(contract.clarified === undefined ? {} : { clarified: contract.clarified }),
 });

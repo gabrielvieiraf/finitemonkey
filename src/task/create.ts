@@ -25,6 +25,7 @@ export interface TaskDraft {
   readonly git: readonly GitRequirement[];
   readonly manual: readonly string[];
   readonly budget: DiffBudget | undefined;
+  readonly answers?: readonly string[];
 }
 
 export type CreateProblem =
@@ -98,6 +99,7 @@ export const createTask = (
     acceptance: draftChecks(runtime, paths, draft),
     decisionsNeeded: [],
     implicit: false,
+    ...(draft.answers === undefined || draft.answers.length === 0 ? {} : { clarified: draft.answers }),
   } satisfies TaskContract;
   const text = stringifyYaml(contractYaml(shape));
   const valid = validateContract(contractYaml(shape));
