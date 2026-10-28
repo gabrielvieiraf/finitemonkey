@@ -10,6 +10,7 @@ import { gitCheck } from "./git.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
+import { migrationsCheck } from "./migrations.js";
 import { parityCheck } from "./parity.js";
 import { placeholdersCheck } from "./placeholders.js";
 import { planCheck } from "./plan.js";
@@ -54,4 +55,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   regression: regressionCheck,
   prod: prodCheck,
   copy: copyCheck,
+  migrations: migrationsCheck,
 };

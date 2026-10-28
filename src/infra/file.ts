@@ -136,3 +136,32 @@ export const readHosts = (runtime: Pick<Runtime, "readText">, root: AbsolutePath
   if (data === undefined) return [];
   return Object.entries(data).flatMap(([alias, value]) => hostEntry(alias, value) ?? []);
 };
+
+export const readEvidence = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): string | undefined => {
+  const value = readInfra(runtime, root)?.["rollback_evidence"];
+  return typeof value === "string" && value.trim() !== "" ? value : undefined;
+};
+
+export const preservedFields = (
+  runtime: Pick<Runtime, "readText">,
+  root: AbsolutePath,
+): Readonly<Record<string, YamlValue>> => {
+  const evidence = readEvidence(runtime, root);
+  return evidence === undefined ? {} : { rollback_evidence: evidence };
+};
+
+const scalarLine = (key: string, value: string | number): string => {
+  const [line = ""] = stringifyYaml({ [key]: value }).split("\n");
+  return line;
+};
+
+export const withTopFields = (text: string, fields: Readonly<Record<string, string | number>>): string => {
+  const keys = new Set(Object.keys(fields));
+  const kept = text
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .filter((line) => !keys.has(/^([\w-]+):/.exec(line)?.[1] ?? ""));
+  const schema = kept.findIndex((line) => line.startsWith("schema:"));
+  const added = Object.entries(fields).map(([key, value]) => scalarLine(key, value));
+  return [...kept.slice(0, schema + 1), ...added, ...kept.slice(schema + 1)].join("\n");
+};

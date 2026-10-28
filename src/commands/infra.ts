@@ -9,6 +9,7 @@ import {
   INFRA_SCHEMA,
   infraYaml,
   type LevelRecord,
+  preservedFields,
   readHosts,
   readLevel,
 } from "../infra/file.js";
@@ -132,7 +133,13 @@ const runInfra = (ctx: Ctx, root: AbsolutePath, values: OptionValues): CommandRe
   const inventory = scanInfra(ctx.runtime, root, readHosts(ctx.runtime, root));
   const level = levelFor(ctx, root, inventory);
   const active = mode === "active" && !ctx.dryRun;
-  const written = writeAll(ctx, root, inventory, infraYaml(inventory, level), active);
+  const written = writeAll(
+    ctx,
+    root,
+    inventory,
+    infraYaml(inventory, level, preservedFields(ctx.runtime, root)),
+    active,
+  );
   if (mode === "shadow") recordFeatureShadow(ctx.runtime, paths, INFRA_FEATURE, { risks: inventory.risks.length });
   const human = [
     ...inventoryLines(ctx, inventory, level),

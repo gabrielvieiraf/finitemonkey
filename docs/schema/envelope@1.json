@@ -109,7 +109,9 @@
             "ci_audit_failed",
             "ci_protect_failed",
             "ci_watch_failed",
-            "ci_watch_pending"
+            "ci_watch_pending",
+            "deploy_level_needs_decision",
+            "deploy_write_failed"
           ]
         },
         "message": {
