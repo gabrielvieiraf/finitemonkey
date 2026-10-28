@@ -1,0 +1,7 @@
+fronts:
+  - id: F1
+    paths: [src/checkout/**]
+    blocked_by: [F2]
+  - id: F2
+    paths: [src/invites/**]
+    blocked_by: [F1]

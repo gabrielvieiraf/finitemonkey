@@ -1,0 +1,21 @@
+wave: 1
+size: L
+fronts:
+  - id: F1-checkout
+    goal: Checkout with Pix
+    paths: [src/checkout/**]
+    append: [src/routes.ts]
+    i18n_ns: checkout
+    shots_prefix: f1-
+  - id: F2-invites
+    goal: Invites
+    paths: [src/invites/**]
+    append: [src/routes.ts]
+    i18n_ns: invites
+    shots_prefix: f2-
+  - id: F3-report
+    goal: Report
+    paths: [src/report/**]
+    i18n_ns: report
+    shots_prefix: f3-
+    blocked_by: [F1-checkout]

@@ -79,6 +79,7 @@ export const FOOTPRINT = [
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
   { id: "pr-scope", kind: "writes", targets: [".finitemonkey/pr/"] },
+  { id: "fronts", kind: "writes", targets: [".finitemonkey/fronts.yml"] },
   { id: "profile", kind: "reads", targets: [".finitemonkey/profile.yml", "~/.finitemonkey/profile.yml"] },
   { id: "github-ruleset", kind: "writes", targets: [".finitemonkey/github-ruleset.json"] },
   {

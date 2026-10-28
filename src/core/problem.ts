@@ -71,6 +71,8 @@ export const ERROR_CODES = [
   "reconcile_unavailable",
   "parity_check_failed",
   "audit_findings",
+  "fronts_refused",
+  "fronts_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

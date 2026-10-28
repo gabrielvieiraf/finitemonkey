@@ -1,3 +1,4 @@
+import { frontsPostToolUse, frontsPreToolUse, frontsSubagentStart } from "../../fronts/hooks.js";
 import { fileLockGuard, fileLockRelease } from "../../guards/files/hook.js";
 import { scopeCopyGuard } from "../../guards/scope/copy.js";
 import type { HookHandlers } from "../../hooks/handlers.js";
@@ -10,9 +11,9 @@ import { gitPostToolUse, gitSessionStart } from "./session.js";
 
 export const GIT_HANDLERS: HookHandlers = {
   SessionStart: [gitSessionStart, wtSessionStart],
-  SubagentStart: [gitSessionStart],
-  PreToolUse: [gitPreToolUse, prPreToolUse, levelPreToolUse, fileLockGuard, scopeCopyGuard],
+  SubagentStart: [gitSessionStart, frontsSubagentStart],
+  PreToolUse: [gitPreToolUse, prPreToolUse, levelPreToolUse, fileLockGuard, scopeCopyGuard, frontsPreToolUse],
   SubagentStop: [fileLockRelease],
   SessionEnd: [fileLockRelease],
-  PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort],
+  PostToolUse: [gitPostToolUse, wtPostToolUse, plainMergeAbort, frontsPostToolUse],
 };
