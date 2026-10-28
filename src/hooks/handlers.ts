@@ -11,6 +11,7 @@ import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
+import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
@@ -149,6 +150,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "ricochete", damage: false, handlers: RICOCHETE_HANDLERS },
   { id: "planta", damage: false, handlers: PLANTA_HANDLERS },
   { id: "label", damage: false, handlers: LABEL_HANDLERS },
+  { id: "perfil", damage: false, handlers: PERFIL_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
