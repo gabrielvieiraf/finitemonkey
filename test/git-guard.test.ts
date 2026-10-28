@@ -90,7 +90,7 @@ const PASSED: readonly string[] = [
   "cat README.md | head -20",
   "git tag v1.0.0",
   "git cherry-pick abc123 --abort",
-  "gh pr create --title 'feat: x' --body 'y'",
+  "gh pr view 7 --json url",
 ];
 
 describe("git guard over a command corpus", () => {

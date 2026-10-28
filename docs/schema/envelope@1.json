@@ -81,7 +81,11 @@
             "research_invalid",
             "cost_check_failed",
             "merge_failed",
-            "merge_stopped"
+            "merge_stopped",
+            "pr_failed",
+            "pr_parent_open",
+            "pr_conflict",
+            "pr_outside_scope"
           ]
         },
         "message": {

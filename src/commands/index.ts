@@ -20,6 +20,7 @@ import { mergeCommand } from "./merge.js";
 import { offCommand, onCommand } from "./pause.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { policyFalsePositiveCommand } from "./policy.js";
+import { prOpenCommand } from "./pr-open.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
@@ -62,6 +63,7 @@ export const REGISTRY = [
   rescueCommand,
   mergeVerifyCommand,
   mergeCommand,
+  prOpenCommand,
   appCheckCommand,
   commitMsgCommand,
   pushCheckCommand,

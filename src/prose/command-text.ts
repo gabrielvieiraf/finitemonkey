@@ -23,6 +23,7 @@ const GIT_FLAGS: FlagSpec = { title: [], body: ["-m", "--message"], file: ["-F",
 const GH_FLAGS: FlagSpec = { title: ["-t", "--title"], body: ["-b", "--body"], file: ["-F", "--body-file"] };
 const GIT_GLOBAL_WITH_VALUE = new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace"]);
 const CLUSTER_WITH_MESSAGE = /^-[a-zA-Z]*m$/;
+const FM_PROGRAMS: ReadonlySet<string> = new Set(["finitemonkey", "fm"]);
 
 interface FlagValue {
   readonly flag: string;
@@ -84,6 +85,9 @@ const fromSegment = (segment: ShellSegment, heredocs: readonly string[]): Comman
     const at = gitSubcommand(segment.args);
     if (segment.args[at] !== "commit") return undefined;
     return collect("commit", segment, segment.args.slice(at + 1), GIT_FLAGS, heredocs);
+  }
+  if (FM_PROGRAMS.has(segment.program) && segment.args[0] === "pr" && segment.args[1] === "open") {
+    return collect("pr", segment, segment.args.slice(2), GH_FLAGS, heredocs);
   }
   if (segment.program !== "gh") return undefined;
   const [noun, verb] = segment.args;

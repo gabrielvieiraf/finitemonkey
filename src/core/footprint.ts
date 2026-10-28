@@ -78,6 +78,7 @@ export const FOOTPRINT = [
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
+  { id: "pr-scope", kind: "writes", targets: [".finitemonkey/pr/"] },
   {
     id: "worktrees",
     kind: "writes",

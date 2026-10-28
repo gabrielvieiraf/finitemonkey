@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { PORTAO_HANDLERS } from "../src/gate/hooks/index.js";
+import { GIT_HANDLERS } from "../src/git/hooks/index.js";
 import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { configDigest } from "../src/guards/tests/analyze.js";
 import {
@@ -117,7 +118,7 @@ describe("guard composition", () => {
     const secrets = list.indexOf(secretsPreToolUse);
     const git = list.indexOf(gitPreToolUse);
     assert.ok(secrets >= 0 && git > secrets, JSON.stringify({ secrets, git }));
-    assert.equal(list.length - git - 1, 1);
+    assert.equal(list.length - git, (GIT_HANDLERS.PreToolUse ?? []).length + 1);
     assert.equal(
       git - secrets - 1,
       (PORTAO_HANDLERS.PreToolUse ?? []).length + (PROSE_HANDLERS.PreToolUse ?? []).length,
