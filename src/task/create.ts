@@ -62,6 +62,7 @@ export const draftChecks = (
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
+    { id: "quality", kind: "quality" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
     ...(runtime.stat(toAbsolutePath(join(paths.root, LOOK_CONFIG))) === undefined
       ? []

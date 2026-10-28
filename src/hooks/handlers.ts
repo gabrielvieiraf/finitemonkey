@@ -16,6 +16,7 @@ import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
+import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
 import { REUSE_HANDLERS } from "../reuse/hook.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
@@ -167,6 +168,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "conceitos", damage: false, handlers: CONCEITOS_HANDLERS },
   { id: "relay", damage: false, handlers: RELAY_HANDLERS },
   { id: "reuse", damage: false, handlers: REUSE_HANDLERS },
+  { id: "quality", damage: false, handlers: QUALITY_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

@@ -14,6 +14,7 @@ import { placeholdersCheck } from "./placeholders.js";
 import { planCheck } from "./plan.js";
 import { prOutcome } from "./pr.js";
 import { proseCheck } from "./prose.js";
+import { qualityCheck } from "./quality.js";
 import { researchCheck } from "./research.js";
 import { reviewCheck } from "./review.js";
 import { runtimeCheck } from "./runtime.js";
@@ -44,4 +45,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   cost: costCheck,
   parity: parityCheck,
   appsec: appsecCheck,
+  quality: qualityCheck,
 };

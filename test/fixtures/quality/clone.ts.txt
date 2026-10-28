@@ -1,0 +1,13 @@
+export const normalize = (input: string): string => {
+  const trimmed = input.trim();
+  const lower = trimmed.toLowerCase();
+  const collapsed = lower.replace(/\s+/g, " ");
+  const stripped = collapsed.replace(/[^a-z0-9 ]/g, "");
+  const words = stripped.split(" ");
+  const kept = words.filter((word) => word.length > 2);
+  const unique = [...new Set(kept)];
+  const sorted = unique.sort();
+  const joined = sorted.join("-");
+  const limited = joined.slice(0, 64);
+  return limited;
+};
