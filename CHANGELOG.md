@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.35](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.34...v0.1.0-next.35) (2026-10-28)
+
+### Features
+
+* **git:** pr open with scope gate, fresh base, stacked branches and generated checklist ([#184](https://github.com/gabrielvieiraf/finitemonkey/issues/184)) ([417f111](https://github.com/gabrielvieiraf/finitemonkey/commit/417f111ccfab4c754e5b2a97c0bbe02d575a10ce)), closes [#73](https://github.com/gabrielvieiraf/finitemonkey/issues/73) [#180](https://github.com/gabrielvieiraf/finitemonkey/issues/180) [#174](https://github.com/gabrielvieiraf/finitemonkey/issues/174) [#74](https://github.com/gabrielvieiraf/finitemonkey/issues/74)
+
 ## [0.1.0-next.34](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.33...v0.1.0-next.34) (2026-10-28)
 
 ### Features
