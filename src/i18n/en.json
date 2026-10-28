@@ -1884,5 +1884,10 @@
   "ds.issue.created": "created: {title}",
   "ds.issue.updated": "updated, only the marked section: {title}",
   "ds.issue.unchanged": "unchanged: {title}",
-  "ds.issue.failed": "gh failed for: {title}"
+  "ds.issue.failed": "gh failed for: {title}",
+  "command.preset.summary": "Generate lint, test and CI configuration for a Python project (ruff, pytest, uv)",
+  "preset.off": "python-preset is off in .finitemonkey/policy.yml",
+  "preset.not_python": "No pyproject.toml, uv.lock, requirements.txt, setup.py or setup.cfg here: this is not a Python project.",
+  "preset.needs_uv": "The CI runs `uv sync --locked`, so the project needs a uv.lock: run `uv lock` once.",
+  "preset.dev_tools": "The CI calls these tools; add them once with `uv add --dev {tools}` and commit pyproject.toml and uv.lock."
 }

@@ -2,6 +2,7 @@ import { CONTRACT_FILE } from "../apicontract/registry.js";
 import { detectStack, hasWebStack } from "../appsec/stack.js";
 import { ARCH_FILE } from "../arch/config.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
+import { detectPython, PIP_DEFAULT, pythonChecks } from "../python/detect.js";
 import type { AcceptanceCheck, TaskContract } from "./types.js";
 
 export const IMPLICIT_ID = "implicit";
@@ -42,15 +43,15 @@ export const scriptChecks = (files: ProjectFiles): readonly AcceptanceCheck[] =>
 const OTHER_STACKS = [
   ["Cargo.toml", "cargo test"],
   ["go.mod", "go test ./..."],
-  ["pytest.ini", "python -m pytest -q"],
-  ["pyproject.toml", "python -m pytest -q"],
 ] as const;
 
 export const detectChecks = (files: ProjectFiles): readonly AcceptanceCheck[] => {
   const scripts = scriptChecks(files);
   if (scripts.length > 0) return scripts;
   const found = OTHER_STACKS.find(([file]) => files.exists(file));
-  return found === undefined ? [] : [{ id: "test", kind: "tests", run: found[1] }];
+  if (found !== undefined) return [{ id: "test", kind: "tests", run: found[1] }];
+  const python = detectPython(files.read, (file) => files.exists(file));
+  return python === undefined && !files.exists("pytest.ini") ? [] : pythonChecks(python ?? PIP_DEFAULT);
 };
 
 export const implicitContract = (files: ProjectFiles): TaskContract => {

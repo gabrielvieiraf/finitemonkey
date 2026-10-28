@@ -1885,7 +1885,12 @@
     "ds.issue.created": "machine",
     "ds.issue.updated": "machine",
     "ds.issue.unchanged": "machine",
-    "ds.issue.failed": "machine"
+    "ds.issue.failed": "machine",
+    "command.preset.summary": "machine",
+    "preset.off": "machine",
+    "preset.not_python": "machine",
+    "preset.needs_uv": "machine",
+    "preset.dev_tools": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3773,6 +3778,11 @@
     "ds.issue.created": "machine",
     "ds.issue.updated": "machine",
     "ds.issue.unchanged": "machine",
-    "ds.issue.failed": "machine"
+    "ds.issue.failed": "machine",
+    "command.preset.summary": "machine",
+    "preset.off": "machine",
+    "preset.not_python": "machine",
+    "preset.needs_uv": "machine",
+    "preset.dev_tools": "machine"
   }
 }

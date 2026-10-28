@@ -74,6 +74,7 @@ import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./pla
 import { plantaCommand } from "./planta.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
+import { presetCommand } from "./preset.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
@@ -237,6 +238,7 @@ export const REGISTRY = [
   organizeCommand,
   contractCommand,
   dsSyncCommand,
+  presetCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

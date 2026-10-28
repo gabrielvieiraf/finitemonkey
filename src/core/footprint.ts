@@ -194,6 +194,11 @@ export const FOOTPRINT = [
     targets: ["src/api/", "src/mocks/", "app/api/", "app/mocks/", "lib/api/", "lib/mocks/"],
   },
   { id: "ds-sync", kind: "writes", targets: [".github/workflows/ds-sync.yml"] },
+  {
+    id: "python-preset",
+    kind: "writes",
+    targets: ["ruff.toml", "pytest.ini", "scripts/check_no_comments.py", ".github/workflows/ci.yml"],
+  },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

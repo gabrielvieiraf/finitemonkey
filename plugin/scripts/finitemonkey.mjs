@@ -1659,9 +1659,9 @@ var npmDeps = (read10) => {
 var pythonText = (read10) => ["pyproject.toml", "requirements.txt", "Pipfile"].map((file) => (read10(file) ?? "").toLowerCase()).join("\n");
 var detectStack = (read10) => {
   const deps = npmDeps(read10);
-  const python = pythonText(read10);
+  const python2 = pythonText(read10);
   const has = (name) => deps.has(name);
-  const py = (name) => new RegExp(`(^|[\\s"'\\[])${name}($|[\\s"'=<>~\\[,])`, "m").test(python);
+  const py = (name) => new RegExp(`(^|[\\s"'\\[])${name}($|[\\s"'=<>~\\[,])`, "m").test(python2);
   const frameworks = [];
   if (has("next")) frameworks.push("nextjs");
   if (has("vite") && has("react")) frameworks.push("vite-react");
@@ -5761,7 +5761,8 @@ var OPTIONAL_GUARDS = [
   "arch",
   "organize",
   "contract",
-  "ds-sync"
+  "ds-sync",
+  "python-preset"
 ];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "fourth-attempt",
@@ -6659,10 +6660,10 @@ var toolchain = (input) => {
   const manager = input.stack.packageManager;
   const install = manager === void 0 ? [] : [{ run: manager === "yarn" ? yarnInstall(input) : INSTALL2[manager] }];
   const node = manager === void 0 ? [] : nodeChecks(input, manager);
-  const python = input.stack.python;
+  const python2 = input.stack.python;
   return {
-    setup: [...setupNode(input, manager), ...install, ...python ? pythonSetup(input) : []],
-    checks: [...node, ...python ? pythonChecks(input) : []],
+    setup: [...setupNode(input, manager), ...install, ...python2 ? pythonSetup(input) : []],
+    checks: [...node, ...python2 ? pythonChecks(input) : []],
     build: manager !== void 0 && input.stack.scripts.has("build") ? [{ run: `${RUN[manager]} build` }] : []
   };
 };
@@ -9980,6 +9981,35 @@ var resolveCommit = (git3, ref2) => {
   return hash2 === void 0 || hash2 === "" ? void 0 : hash2;
 };
 
+// src/python/detect.ts
+var PYTHON_FEATURE = "python-preset";
+var SECTION = /^\[tool\.([\w.-]+)/gm;
+var pyprojectSections = (text26) => new Set([...(text26 ?? "").matchAll(SECTION)].map((match) => match[1] ?? ""));
+var isPythonProject = (exists2) => ["pyproject.toml", "uv.lock", "requirements.txt", "setup.py", "setup.cfg"].some(exists2);
+var detectPython = (read10, exists2) => {
+  if (!isPythonProject(exists2)) return void 0;
+  const sections2 = pyprojectSections(read10("pyproject.toml"));
+  return {
+    manager: exists2("uv.lock") ? "uv" : "pip",
+    ruffConfigured: exists2("ruff.toml") || exists2(".ruff.toml") || [...sections2].some((name) => name.startsWith("ruff")),
+    pytestConfigured: exists2("pytest.ini") || sections2.has("pytest.ini_options"),
+    sections: sections2
+  };
+};
+var PIP_DEFAULT = {
+  manager: "pip",
+  ruffConfigured: false,
+  pytestConfigured: true,
+  sections: /* @__PURE__ */ new Set()
+};
+var pythonChecks2 = (project) => {
+  const run10 = project.manager === "uv" ? "uv run " : "python -m ";
+  return [
+    ...project.ruffConfigured ? [{ id: "lint", kind: "command", run: `${run10}ruff check .` }] : [],
+    { id: "test", kind: "tests", run: `${run10}pytest -q` }
+  ];
+};
+
 // src/task/implicit.ts
 var IMPLICIT_ID = "implicit";
 var LOCKFILES2 = [
@@ -10009,15 +10039,15 @@ var scriptChecks = (files) => {
 };
 var OTHER_STACKS = [
   ["Cargo.toml", "cargo test"],
-  ["go.mod", "go test ./..."],
-  ["pytest.ini", "python -m pytest -q"],
-  ["pyproject.toml", "python -m pytest -q"]
+  ["go.mod", "go test ./..."]
 ];
 var detectChecks = (files) => {
   const scripts2 = scriptChecks(files);
   if (scripts2.length > 0) return scripts2;
   const found = OTHER_STACKS.find(([file]) => files.exists(file));
-  return found === void 0 ? [] : [{ id: "test", kind: "tests", run: found[1] }];
+  if (found !== void 0) return [{ id: "test", kind: "tests", run: found[1] }];
+  const python2 = detectPython(files.read, (file) => files.exists(file));
+  return python2 === void 0 && !files.exists("pytest.ini") ? [] : pythonChecks2(python2 ?? PIP_DEFAULT);
 };
 var implicitContract = (files) => {
   const commands = detectChecks(files);
@@ -12388,7 +12418,12 @@ var en_default = {
   "ds.issue.created": "created: {title}",
   "ds.issue.updated": "updated, only the marked section: {title}",
   "ds.issue.unchanged": "unchanged: {title}",
-  "ds.issue.failed": "gh failed for: {title}"
+  "ds.issue.failed": "gh failed for: {title}",
+  "command.preset.summary": "Generate lint, test and CI configuration for a Python project (ruff, pytest, uv)",
+  "preset.off": "python-preset is off in .finitemonkey/policy.yml",
+  "preset.not_python": "No pyproject.toml, uv.lock, requirements.txt, setup.py or setup.cfg here: this is not a Python project.",
+  "preset.needs_uv": "The CI runs `uv sync --locked`, so the project needs a uv.lock: run `uv lock` once.",
+  "preset.dev_tools": "The CI calls these tools; add them once with `uv add --dev {tools}` and commit pyproject.toml and uv.lock."
 };
 
 // src/i18n/es.json
@@ -14278,7 +14313,12 @@ var es_default = {
   "ds.issue.created": "creada: {title}",
   "ds.issue.updated": "actualizada, solo la sección marcada: {title}",
   "ds.issue.unchanged": "sin cambios: {title}",
-  "ds.issue.failed": "gh falló para: {title}"
+  "ds.issue.failed": "gh falló para: {title}",
+  "command.preset.summary": "Genera configuración de lint, test y CI para un proyecto Python (ruff, pytest, uv)",
+  "preset.off": "python-preset está apagado en .finitemonkey/policy.yml",
+  "preset.not_python": "Sin pyproject.toml, uv.lock, requirements.txt, setup.py ni setup.cfg aquí: esto no es un proyecto Python.",
+  "preset.needs_uv": "El CI ejecuta `uv sync --locked`, así que el proyecto necesita un uv.lock: ejecuta `uv lock` una vez.",
+  "preset.dev_tools": "El CI llama a estas herramientas; agrégalas una vez con `uv add --dev {tools}` y haz commit de pyproject.toml y uv.lock."
 };
 
 // src/i18n/pt-BR.json
@@ -16168,7 +16208,12 @@ var pt_BR_default = {
   "ds.issue.created": "criada: {title}",
   "ds.issue.updated": "atualizada, só a seção marcada: {title}",
   "ds.issue.unchanged": "sem mudança: {title}",
-  "ds.issue.failed": "o gh falhou para: {title}"
+  "ds.issue.failed": "o gh falhou para: {title}",
+  "command.preset.summary": "Gera configuração de lint, teste e CI para um projeto Python (ruff, pytest, uv)",
+  "preset.off": "o python-preset está desligado em .finitemonkey/policy.yml",
+  "preset.not_python": "Sem pyproject.toml, uv.lock, requirements.txt, setup.py ou setup.cfg aqui: isto não é um projeto Python.",
+  "preset.needs_uv": "O CI roda `uv sync --locked`, então o projeto precisa de um uv.lock: rode `uv lock` uma vez.",
+  "preset.dev_tools": "O CI chama estas ferramentas; adicione uma vez com `uv add --dev {tools}` e faça commit do pyproject.toml e do uv.lock."
 };
 
 // src/i18n/review.json
@@ -18059,7 +18104,12 @@ var review_default = {
     "ds.issue.created": "machine",
     "ds.issue.updated": "machine",
     "ds.issue.unchanged": "machine",
-    "ds.issue.failed": "machine"
+    "ds.issue.failed": "machine",
+    "command.preset.summary": "machine",
+    "preset.off": "machine",
+    "preset.not_python": "machine",
+    "preset.needs_uv": "machine",
+    "preset.dev_tools": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -19947,7 +19997,12 @@ var review_default = {
     "ds.issue.created": "machine",
     "ds.issue.updated": "machine",
     "ds.issue.unchanged": "machine",
-    "ds.issue.failed": "machine"
+    "ds.issue.failed": "machine",
+    "command.preset.summary": "machine",
+    "preset.off": "machine",
+    "preset.not_python": "machine",
+    "preset.needs_uv": "machine",
+    "preset.dev_tools": "machine"
   }
 };
 
@@ -27241,9 +27296,9 @@ var escape3 = (text26) => text26.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var newPackages = (input, packages) => {
   const root = guardRoot(input);
   const npm = npmDeclared(input.runtime, root);
-  const python = packages.some((pkg) => pkg.ecosystem === "pypi") ? pythonText2(input.runtime, root) : "";
+  const python2 = packages.some((pkg) => pkg.ecosystem === "pypi") ? pythonText2(input.runtime, root) : "";
   return packages.filter(
-    (pkg) => pkg.ecosystem === "npm" ? !npm.has(pkg.name) : !new RegExp(`(^|[\\s"'\\[])${escape3(pkg.name).replace(/-/g, "[-_.]")}($|[\\s"'=<>~!\\[;,])`, "m").test(python)
+    (pkg) => pkg.ecosystem === "npm" ? !npm.has(pkg.name) : !new RegExp(`(^|[\\s"'\\[])${escape3(pkg.name).replace(/-/g, "[-_.]")}($|[\\s"'=<>~!\\[;,])`, "m").test(python2)
   );
 };
 var lookup = (input, pkg, deadline, offline) => {
@@ -38590,11 +38645,11 @@ var recentClaims = (runtime, paths) => {
 };
 var projectFacts = (runtime, paths) => {
   const js = JS_MANIFESTS.flatMap((name) => read4(runtime, paths.root, name) ?? []);
-  const python = PYTHON_MANIFESTS2.flatMap((name) => read4(runtime, paths.root, name) ?? []);
+  const python2 = PYTHON_MANIFESTS2.flatMap((name) => read4(runtime, paths.root, name) ?? []);
   return {
-    manifests: [...js, ...python].join("\n"),
+    manifests: [...js, ...python2].join("\n"),
     hasJs: js.length > 0,
-    hasPython: python.length > 0,
+    hasPython: python2.length > 0,
     ownOutput: recentClaims(runtime, paths)
   };
 };
@@ -45033,10 +45088,10 @@ var eslintFiles = (t, stack, presets, read10) => {
 };
 var lintPlan = (t, stack, presets, read10) => {
   const eslint = stack.node ? eslintFiles(t, stack, presets, read10) : { files: [], notes: [] };
-  const python = stack.python && presets.has("no-comments") ? [{ path: PYTHON_CHECKER, text: pythonChecker(t("gen.lint.no_comments")) }] : [];
-  const pythonNotes = python.length > 0 ? [t("gen.lint.python", { file: PYTHON_CHECKER })] : [];
-  const none = eslint.files.length === 0 && python.length === 0 ? [t("gen.lint.no_stack")] : [];
-  return { files: [...eslint.files, ...python], notes: [...eslint.notes, ...pythonNotes, ...none] };
+  const python2 = stack.python && presets.has("no-comments") ? [{ path: PYTHON_CHECKER, text: pythonChecker(t("gen.lint.no_comments")) }] : [];
+  const pythonNotes = python2.length > 0 ? [t("gen.lint.python", { file: PYTHON_CHECKER })] : [];
+  const none = eslint.files.length === 0 && python2.length === 0 ? [t("gen.lint.no_stack")] : [];
+  return { files: [...eslint.files, ...python2], notes: [...eslint.notes, ...pythonNotes, ...none] };
 };
 
 // src/commands/gen.ts
@@ -49815,6 +49870,160 @@ var prOpenCommand = {
   }
 };
 
+// src/commands/preset.ts
+import { join as join146 } from "node:path";
+
+// src/python/templates.ts
+var RUFF_TOML = [
+  "line-length = 100",
+  "",
+  "[lint]",
+  'select = ["E", "F", "W", "I", "B", "UP", "C90", "PLR", "SIM"]',
+  "",
+  "[lint.mccabe]",
+  "max-complexity = 10",
+  "",
+  "[lint.pylint]",
+  "max-args = 5",
+  "max-branches = 12",
+  "max-returns = 6",
+  "max-statements = 50",
+  "",
+  "[lint.per-file-ignores]",
+  '"tests/**" = ["PLR2004"]',
+  ""
+].join("\n");
+var PYTEST_INI = [
+  "[pytest]",
+  "addopts = -ra --strict-markers --strict-config",
+  "xfail_strict = true",
+  "testpaths = tests",
+  ""
+].join("\n");
+var NO_COMMENTS_SCRIPT = [
+  "import sys",
+  "import tokenize",
+  "from pathlib import Path",
+  "",
+  'ALLOWED = ("#!", "# -*-", "# noqa", "# type:", "# pragma:", "# pyright:")',
+  'SKIPPED = {".venv", "venv", ".git", "node_modules", "build", "dist", "__pycache__"}',
+  "",
+  "",
+  "def comment_lines(path: Path) -> list[int]:",
+  '    with path.open("rb") as handle:',
+  "        return [",
+  "            token.start[0]",
+  "            for token in tokenize.tokenize(handle.readline)",
+  "            if token.type == tokenize.COMMENT and not token.string.startswith(ALLOWED)",
+  "        ]",
+  "",
+  "",
+  "def main() -> int:",
+  "    found = [",
+  '        f"{path}:{line}"',
+  '        for path in sorted(Path(".").rglob("*.py"))',
+  "        if not SKIPPED.intersection(path.parts)",
+  "        for line in comment_lines(path)",
+  "    ]",
+  "    for item in found:",
+  '        print(f"{item}: comment")',
+  "    return 1 if found else 0",
+  "",
+  "",
+  'if __name__ == "__main__":',
+  "    sys.exit(main())",
+  ""
+].join("\n");
+var CHECKOUT3 = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1";
+var SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3";
+var pythonCi = (importLinter2) => [
+  "name: ci",
+  "",
+  "on:",
+  "  push:",
+  "    branches: [main]",
+  "  pull_request:",
+  "",
+  "permissions:",
+  "  contents: read",
+  "",
+  "concurrency:",
+  "  group: ci-${{ github.ref }}",
+  "  cancel-in-progress: true",
+  "",
+  "jobs:",
+  "  check:",
+  "    runs-on: ubuntu-latest",
+  "    timeout-minutes: 15",
+  "    steps:",
+  `      - uses: ${CHECKOUT3}`,
+  "        with:",
+  "          persist-credentials: false",
+  `      - uses: ${SETUP_UV}`,
+  "      - run: uv sync --locked",
+  "      - run: uv run ruff check .",
+  "      - run: uv run ruff format --check .",
+  "      - run: uv run python scripts/check_no_comments.py",
+  ...importLinter2 ? ["      - run: uv run lint-imports"] : [],
+  "      - run: uv run vulture . --min-confidence 80 --exclude .venv",
+  "      - run: uv run pytest",
+  ""
+].join("\n");
+var DEV_TOOLS = ["ruff", "pytest", "vulture"];
+
+// src/commands/preset.ts
+var PRESET_SCHEMA = "finitemonkey/preset@1";
+var USAGE13 = "finitemonkey preset python [--write] [--overwrite]";
+var presetFiles = (project, linter) => [
+  ...[...project.sections].some((name) => name.startsWith("ruff")) ? [] : [{ path: "ruff.toml", content: RUFF_TOML }],
+  ...project.sections.has("pytest.ini_options") ? [] : [{ path: "pytest.ini", content: PYTEST_INI }],
+  { path: "scripts/check_no_comments.py", content: NO_COMMENTS_SCRIPT },
+  ...linter === void 0 ? [] : [linter],
+  { path: ".github/workflows/ci.yml", content: pythonCi(linter !== void 0) }
+];
+var python = (ctx, values) => {
+  const root = projectRoot(ctx);
+  if (featureMode(ctx.runtime, fmPaths(root), PYTHON_FEATURE) === "off")
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE13));
+  const project = detectPython(
+    (relative24) => {
+      const text26 = ctx.runtime.readText(toAbsolutePath(join146(root, relative24)));
+      return text26.ok ? text26.value : void 0;
+    },
+    (relative24) => ctx.runtime.stat(toAbsolutePath(join146(root, relative24))) !== void 0
+  );
+  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE13));
+  const arch = loadArch(ctx.runtime, root);
+  const deny2 = (from, allowed2) => ctx.t("arch.generated.not_allowed", { from, allowed: allowed2.join(", ") });
+  const linter = arch.kind === "ok" ? importLinter(arch.config, deny2) : void 0;
+  const tools = [...DEV_TOOLS, ...linter === void 0 ? [] : ["import-linter"]].join(" ");
+  return generateResult({
+    ctx,
+    root,
+    files: presetFiles(project, linter),
+    values,
+    usage: USAGE13,
+    data: { schema: PRESET_SCHEMA, stack: "python", manager: project.manager },
+    lines: [...project.manager === "uv" ? [] : [ctx.t("preset.needs_uv")], ctx.t("preset.dev_tools", { tools })]
+  });
+};
+var presetCommand = {
+  path: ["preset"],
+  summaryKey: "command.preset.summary",
+  usage: USAGE13,
+  status: "ready",
+  maxPositionals: 1,
+  options: GENERATE_OPTIONS,
+  run: (ctx, args2) => Promise.resolve(
+    args2.positionals[0] === "python" ? python(ctx, args2.values) : failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE13, {
+        detail: args2.positionals[0] ?? "<stack>"
+      })
+    )
+  )
+};
+
 // src/commands/prose-check.ts
 import { relative as relative23 } from "node:path";
 
@@ -49948,7 +50157,7 @@ var proseCheckCommand = {
 };
 
 // src/commands/reminders.ts
-import { join as join146 } from "node:path";
+import { join as join147 } from "node:path";
 var REMINDERS_SCHEMA = "finitemonkey/reminders@1";
 var EVENTS = ["session", "subagent", "tool", "prompt"];
 var option2 = (values, key3) => {
@@ -50006,7 +50215,7 @@ var run8 = (ctx, values) => {
   const selection = selectReminders(rules2.value, trigger, {
     counts: summary2.counts,
     pending: summary2.pending,
-    seen: seenNow(ctx, join146(paths.dir, "cache", "reminders.json")),
+    seen: seenNow(ctx, join147(paths.dir, "cache", "reminders.json")),
     limits
   });
   const picked = selection.picked.map((item2) => ({
@@ -50141,12 +50350,12 @@ var researchCheckCommand = {
 };
 
 // src/review/packet.ts
-import { join as join147 } from "node:path";
+import { join as join148 } from "node:path";
 var REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
 var FULL_ROUNDS = 3;
 var REVIEW_FILE_MAX_LINES = 200;
 var LEDGER_MAX_LINES = 100;
-var statePath = (root) => toAbsolutePath(join147(root, REVIEW_STATE_FILE));
+var statePath = (root) => toAbsolutePath(join148(root, REVIEW_STATE_FILE));
 var readReviewState = (runtime, root) => {
   const raw = runtime.readText(statePath(root));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
@@ -50168,7 +50377,7 @@ var taskSections = (runtime, root) => {
   const active = readState(runtime, paths).active;
   if (active === void 0)
     return [section2("Contract", void 0, "(no active task)"), section2("Evidence ledger", void 0, "(none)")];
-  const contract = runtime.readText(toAbsolutePath(join147(root, taskRelative(active))));
+  const contract = runtime.readText(toAbsolutePath(join148(root, taskRelative(active))));
   const ledger = runtime.readText(paths.evidence(active));
   return [
     section2("Contract", contract.ok ? contract.value : void 0, "(contract file missing)"),
@@ -50198,7 +50407,7 @@ var buildPacket = (runtime, root, base, head) => {
     ...taskSections(runtime, root),
     ...owners === void 0 ? [] : [section2("REVIEW.md (base branch)", owners, "")]
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join147(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join148(root, ".finitemonkey", "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}
 `);
   return { round: state.rounds, base, head, range, text: text26 };
@@ -50426,7 +50635,7 @@ var rulesCheckCommand = {
 };
 
 // src/commands/rules-propose.ts
-import { join as join148 } from "node:path";
+import { join as join149 } from "node:path";
 
 // src/rules/write.ts
 var scopeYaml = (scope2) => Object.fromEntries(
@@ -50546,7 +50755,7 @@ var withPromotion = (current2, proposal) => {
 // src/commands/rules-propose.ts
 var RULES_PROPOSE_SCHEMA = "finitemonkey/rules-propose@1";
 var YES = /* @__PURE__ */ new Set(["y", "yes", "s", "sim", "si", "sí"]);
-var fmDir = (root) => toAbsolutePath(join148(root, FM_DIR));
+var fmDir = (root) => toAbsolutePath(join149(root, FM_DIR));
 var detectorText = (proposal) => {
   const detector = proposal.detector;
   if (detector === void 0) return "-";
@@ -50687,7 +50896,7 @@ var rulesViolationCommand = {
 };
 
 // src/commands/run.ts
-import { join as join149 } from "node:path";
+import { join as join150 } from "node:path";
 
 // src/runlog/shell.ts
 var SHELLS7 = ["sh", "bash", "cmd", "powershell", "pwsh", "none"];
@@ -50748,7 +50957,7 @@ var fullLog = (command, exitCode, stdout, stderr) => maskText(
 // src/commands/run.ts
 var RUN_SCHEMA = "finitemonkey/run@1";
 var RUNS_DIR = "runs";
-var USAGE13 = `finitemonkey run [--shell ${SHELLS7.join("|")}] [--timeout <seconds>] -- <command>`;
+var USAGE14 = `finitemonkey run [--shell ${SHELLS7.join("|")}] [--timeout <seconds>] -- <command>`;
 var DEFAULT_TIMEOUT_S2 = 600;
 var KEEP_RUNS = 30;
 var NOT_FOUND_EXIT = 127;
@@ -50763,16 +50972,16 @@ var prune = (ctx, dir) => {
   const names3 = ctx.runtime.listDir(dir);
   if (!names3.ok) return;
   const old = [...names3.value].filter((name) => name.endsWith(".log")).sort().slice(0, -KEEP_RUNS);
-  for (const name of old) ctx.runtime.remove(toAbsolutePath(join149(dir, name)));
+  for (const name of old) ctx.runtime.remove(toAbsolutePath(join150(dir, name)));
 };
 var saveLog = (ctx, root, line11, text26) => {
-  const dir = toAbsolutePath(join149(root, FM_DIR, RUNS_DIR));
+  const dir = toAbsolutePath(join150(root, FM_DIR, RUNS_DIR));
   const name = `${ctx.runtime.now().replace(/[:.]/g, "-")}-${slug5(line11)}.log`;
-  ctx.runtime.writeText(toAbsolutePath(join149(dir, name)), text26);
+  ctx.runtime.writeText(toAbsolutePath(join150(dir, name)), text26);
   prune(ctx, dir);
   return `${FM_DIR}/${RUNS_DIR}/${name}`;
 };
-var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE13, { detail }));
+var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE14, { detail }));
 var runCommand = (ctx, words4, shellRaw, timeoutRaw) => {
   const shell = shellRaw === void 0 ? defaultShell(ctx.platform) : parseShellChoice(shellRaw);
   const timeoutS = timeoutOf(timeoutRaw);
@@ -50819,7 +51028,7 @@ ${result.stderr}`, exitCode);
 var runCommandSpec = {
   path: ["run"],
   summaryKey: "command.run.summary",
-  usage: USAGE13,
+  usage: USAGE14,
   status: "ready",
   options: { shell: { type: "string" }, timeout: { type: "string" } },
   maxPositionals: 1e3,
@@ -50929,7 +51138,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname23, join as join150 } from "node:path";
+import { dirname as dirname23, join as join151 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -50951,13 +51160,13 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join150(dirname23(dirname23(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join151(dirname23(dirname23(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE14 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var USAGE15 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
 var TARGET = { rotated: "rotacionado", close: "fechado" };
 var PURGE_STEPS = [
   "secrets.purge.step1",
@@ -51015,7 +51224,7 @@ var move = (ctx, root, incident, action) => {
   if (!canMove(incident.state, to))
     return action === "close" ? notRotated(ctx, incident) : fail3(
       ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE14, {
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE15, {
         id: incident.id,
         from: incident.state,
         to
@@ -51038,7 +51247,7 @@ var actionOf = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "li
 var secretsIncidentCommand = {
   path: ["secrets", "incident"],
   summaryKey: "secrets.command.incident",
-  usage: USAGE14,
+  usage: USAGE15,
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args2) => {
@@ -51048,7 +51257,7 @@ var secretsIncidentCommand = {
       return Promise.resolve(
         fail3(
           ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE14, { detail: args2.positionals[0] ?? "" })
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE15, { detail: args2.positionals[0] ?? "" })
         )
       );
     if (action === "list") return Promise.resolve(list8(ctx, root));
@@ -51120,7 +51329,7 @@ var liveOutcome = (result) => {
 
 // src/commands/secrets-live.ts
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
-var USAGE15 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var USAGE16 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
 var target4 = (provider) => {
   const probe = LIVE_PROBES[provider];
@@ -51151,7 +51360,7 @@ var send = (ctx, provider, variable, key3) => {
 var secretsLiveCommand = {
   path: ["secrets", "live"],
   summaryKey: "secrets.command.live",
-  usage: USAGE15,
+  usage: USAGE16,
   status: "ready",
   maxPositionals: 1,
   options: { env: { type: "string" }, send: { type: "boolean" } },
@@ -51162,7 +51371,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE15, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE16, {
             detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
           })
         )
@@ -51172,7 +51381,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          needsPersonProblem("secrets.error.person_only", `${USAGE15.replace(" [--send]", "")} --send`, {
+          needsPersonProblem("secrets.error.person_only", `${USAGE16.replace(" [--send]", "")} --send`, {
             action: ctx.t("secrets.action.live")
           })
         )
@@ -51180,7 +51389,7 @@ var secretsLiveCommand = {
     const key3 = ctx.env[variable] ?? "";
     if (key3 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE15, { variable }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE16, { variable }))
       );
     return Promise.resolve(send(ctx, provider, variable, key3));
   }
@@ -51408,8 +51617,8 @@ var signalsForgetCommand = {
 };
 
 // src/commands/signals-hypothesis.ts
-var USAGE16 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
-var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE16, { detail });
+var USAGE17 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
+var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE17, { detail });
 var normalized4 = (text26) => text26.toLowerCase().replace(/\s+/g, " ").trim();
 var hypothesis = (ctx, words4) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -51444,14 +51653,14 @@ var hypothesis = (ctx, words4) => {
 var signalsHypothesisCommand = {
   path: ["signals", "hypothesis"],
   summaryKey: "command.signals_hypothesis.summary",
-  usage: USAGE16,
+  usage: USAGE17,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(hypothesis(ctx, args2.positionals))
 };
 
 // src/commands/slop.ts
-import { join as join151 } from "node:path";
+import { join as join152 } from "node:path";
 var SLOP_STATS_SCHEMA = "finitemonkey/slop-stats@1";
 var SLOP_DISMISS_SCHEMA = "finitemonkey/slop-dismiss@1";
 var DISMISS_USAGE = `finitemonkey slop dismiss <${SLOP_DETECTORS.join("|")}> <file>:<line> --reason <why>`;
@@ -51469,7 +51678,7 @@ var dismiss2 = (ctx, args2, reason) => {
   if (spot === void 0) return invalid7(ctx, where2 === "" ? "<file>:<line>" : where2);
   if (reason.trim() === "") return invalid7(ctx, "--reason");
   const root = projectRoot(ctx);
-  const text26 = ctx.runtime.readText(toAbsolutePath(join151(root, spot.file)));
+  const text26 = ctx.runtime.readText(toAbsolutePath(join152(root, spot.file)));
   const lineText = text26.ok ? text26.value.split("\n")[spot.line - 1] : void 0;
   const subject2 = FILE_DETECTORS.has(detector) ? spot.file : lineText ?? spot.file;
   const paths = fmPaths(root);
@@ -51758,7 +51967,7 @@ var statuslineCommand = {
 };
 
 // src/task/create.ts
-import { join as join152 } from "node:path";
+import { join as join153 } from "node:path";
 var explicitChecks = (draft) => [
   ...draft.runs.map((run10, index) => ({ id: `C${String(index + 1)}`, kind: "command", run: run10 })),
   draft.tests === void 0 ? { id: "tests", kind: "tests" } : { id: "tests", kind: "tests", run: draft.tests }
@@ -51767,10 +51976,10 @@ var hasBannedCopy = (config) => config !== void 0 && configList(parseConfigYaml(
 var draftChecks = (runtime, paths, draft) => {
   const disk = {
     read: (relative24) => {
-      const text26 = runtime.readText(toAbsolutePath(join152(paths.root, relative24)));
+      const text26 = runtime.readText(toAbsolutePath(join153(paths.root, relative24)));
       return text26.ok ? text26.value : void 0;
     },
-    exists: (relative24) => runtime.stat(toAbsolutePath(join152(paths.root, relative24))) !== void 0
+    exists: (relative24) => runtime.stat(toAbsolutePath(join153(paths.root, relative24))) !== void 0
   };
   const detected = detectChecks(disk);
   const base = draft.runs.length > 0 || draft.tests !== void 0 ? explicitChecks(draft) : detected;
@@ -51789,7 +51998,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "slop", kind: "slop" },
     { id: "regression", kind: "regression" },
     ...draft.paths.length > 0 || draft.budget !== void 0 ? [{ id: "diff", kind: "diff" }] : [],
-    ...runtime.stat(toAbsolutePath(join152(paths.root, LOOK_CONFIG))) === void 0 ? [] : [
+    ...runtime.stat(toAbsolutePath(join153(paths.root, LOOK_CONFIG))) === void 0 ? [] : [
       { id: "look", kind: "look" },
       { id: "headers", kind: "headers" }
     ],
@@ -52286,7 +52495,7 @@ var parseSpec = (text26) => {
 };
 
 // src/commands/task-spec.ts
-var USAGE17 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
+var USAGE18 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
 var idFrom = (file) => {
   const change2 = /openspec[\\/]changes[\\/]([^\\/]+)[\\/]/.exec(file)?.[1];
   return slugOf(change2 ?? file.replace(/^.*[\\/]/, "").replace(/\.md$/, "")).slice(0, 64);
@@ -52310,7 +52519,7 @@ var portOf = (raw) => {
 var taskFromSpecCommand = {
   path: ["task", "from-spec"],
   summaryKey: "command.task_from_spec.summary",
-  usage: USAGE17,
+  usage: USAGE18,
   status: "ready",
   maxPositionals: 1,
   options: { id: { type: "string" }, goal: { type: "string" }, port: { type: "string" } },
@@ -52321,13 +52530,13 @@ var taskFromSpecCommand = {
     const source3 = file === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(file, ctx.cwd));
     if (file === void 0 || source3?.ok !== true)
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE17, { file: file ?? "-" }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE18, { file: file ?? "-" }))
       );
     const criteria = criteriaOf(parseSpec(source3.value), portOf(stringOption(args2.values, "port")));
     const id = stringOption(args2.values, "id") ?? idFrom(file);
     if (criteria.length === 0 || !TASK_ID.test(id))
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE17, { file }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE18, { file }))
       );
     const contract = {
       id,
@@ -53093,12 +53302,13 @@ var REGISTRY2 = [
   organizeCommand,
   contractCommand,
   dsSyncCommand,
+  presetCommand,
   versionCommand,
   helpCommand
 ];
 
 // src/i18n/lang-settings.ts
-import { join as join153 } from "node:path";
+import { join as join154 } from "node:path";
 var read9 = (runtime, path) => {
   const text26 = runtime.readText(toAbsolutePath(path));
   return text26.ok ? text26.value : void 0;
@@ -53113,14 +53323,14 @@ var languageIn = (text26) => {
   const value2 = parsed.ok && isRecord(parsed.value) ? parsed.value["language"] : void 0;
   return typeof value2 === "string" && value2.trim() !== "" ? value2 : void 0;
 };
-var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join153(runtime.homeDir(), ".claude");
+var claudeDir = (runtime, env) => env["CLAUDE_CONFIG_DIR"] ?? join154(runtime.homeDir(), ".claude");
 var langSettings = (runtime, cwd, env, platform) => {
   const root = findGitRoot(cwd, runtime) ?? cwd;
-  const config = parseConfigYaml(read9(runtime, join153(root, CONFIG_FILE2)) ?? "");
+  const config = parseConfigYaml(read9(runtime, join154(root, CONFIG_FILE2)) ?? "");
   const claudeFiles = [
-    join153(root, ".claude", "settings.local.json"),
-    join153(root, ".claude", "settings.json"),
-    join153(claudeDir(runtime, env), "settings.json")
+    join154(root, ".claude", "settings.local.json"),
+    join154(root, ".claude", "settings.json"),
+    join154(claudeDir(runtime, env), "settings.json")
   ];
   return {
     config: configText2(config, "lang"),
