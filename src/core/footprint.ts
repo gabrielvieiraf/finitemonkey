@@ -96,6 +96,11 @@ export const FOOTPRINT = [
     ],
   },
   { id: "creds", kind: "writes", targets: [".finitemonkey/creds.yml"] },
+  {
+    id: "supply-chain",
+    kind: "writes",
+    targets: [".finitemonkey/findings/osv.json", ".github/dependabot.yml", "renovate.json"],
+  },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "prompts", kind: "writes", targets: [".finitemonkey/prompts.jsonl"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },
@@ -105,6 +110,7 @@ export const FOOTPRINT = [
   { id: "github", kind: "sends", targets: ["api.github.com"], via: "gh" },
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
   { id: "deps-registry", kind: "sends", targets: ["registry.npmjs.org", "pypi.org"], via: "curl" },
+  { id: "osv", kind: "sends", targets: ["api.osv.dev"], via: "osv-scanner" },
   {
     id: "secrets-live",
     kind: "sends",

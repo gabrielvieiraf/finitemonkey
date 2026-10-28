@@ -53,10 +53,10 @@
           "owner": {
             "type": "string",
             "enum": [
+              "unknown",
               "subagent",
               "session",
-              "human",
-              "unknown"
+              "human"
             ]
           },
           "purpose": {

@@ -172,6 +172,18 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "O `creds` grava o inventário de credenciais: nomes de variáveis, onde são lidas, ambientes, tipo e risco. Nunca um valor.",
     es: "`creds` escribe el inventario de credenciales: nombres de variables, dónde se leen, entornos, tipo y riesgo. Nunca un valor.",
   },
+  "supply-chain": {
+    en: "`deps scan` keeps the date each known vulnerability was first seen, so its deadline holds between runs. `deps config --write` saves the Dependabot or Renovate file; without `--write` it only prints it.",
+    "pt-BR":
+      "O `deps scan` guarda a data em que cada vulnerabilidade conhecida apareceu pela primeira vez, para o prazo valer entre execuções. O `deps config --write` grava o arquivo do Dependabot ou do Renovate; sem `--write` ele só imprime.",
+    es: "`deps scan` guarda la fecha en que cada vulnerabilidad conocida apareció por primera vez, para que su plazo valga entre ejecuciones. `deps config --write` guarda el archivo de Dependabot o Renovate; sin `--write` solo lo imprime.",
+  },
+  osv: {
+    en: "Package names and versions from your lockfiles, to the OSV database through `osv-scanner`, only when you run `deps scan` (in CI, for example). Never from a hook.",
+    "pt-BR":
+      "Nomes e versões de pacotes dos seus lockfiles, para a base do OSV pelo `osv-scanner`, só quando você roda `deps scan` (no CI, por exemplo). Nunca a partir de um hook.",
+    es: "Nombres y versiones de paquetes de tus lockfiles, a la base de OSV mediante `osv-scanner`, solo cuando ejecutas `deps scan` (en CI, por ejemplo). Nunca desde un hook.",
+  },
   "secrets-live": {
     en: "Through `curl`, only when you run `finitemonkey secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent.",
     "pt-BR":

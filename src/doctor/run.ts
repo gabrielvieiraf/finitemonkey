@@ -13,6 +13,7 @@ import { checkAgentsFile } from "./memory.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
 import { checkRewriters } from "./rewriters.js";
+import { checkSupplyChain } from "./supply-chain.js";
 import { checkOs, checkPath } from "./system.js";
 import { checkClaude, checkGit, checkNode } from "./tools.js";
 import type { Check, CheckFinding, CheckStatus, DoctorEnv, HookHealth } from "./types.js";
@@ -38,6 +39,7 @@ export const CHECKS: readonly Check[] = [
   checkAgentsFile,
   checkRewriters,
   checkEnvHygiene,
+  checkSupplyChain,
   checkHooks,
 ];
 

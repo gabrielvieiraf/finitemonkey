@@ -7,6 +7,9 @@ import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { depsCheckCommand } from "./deps-check.js";
+import { depsConfigCommand } from "./deps-config.js";
+import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
@@ -122,6 +125,9 @@ export const REGISTRY = [
   auditCommand,
   debtCommand,
   credsCommand,
+  depsCheckCommand,
+  depsScanCommand,
+  depsConfigCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
