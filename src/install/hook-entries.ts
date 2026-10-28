@@ -24,6 +24,8 @@ export const INSTALLED_HOOKS: readonly HookSpec[] = [
   { event: "SubagentStop", timeout: 600, guard: false },
   { event: "PreCompact", timeout: 30, guard: false },
   { event: "ConfigChange", timeout: 10, guard: true },
+  { event: "WorktreeCreate", timeout: 120, guard: false },
+  { event: "WorktreeRemove", timeout: 120, guard: false },
 ];
 
 export const PROJECT_BIN = `\${CLAUDE_PROJECT_DIR}/${LOCAL_BIN}`;

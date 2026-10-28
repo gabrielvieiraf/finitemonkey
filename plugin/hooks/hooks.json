@@ -146,6 +146,30 @@
           }
         ]
       }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "WorktreeCreate", "--via", "plugin"],
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "WorktreeRemove", "--via", "plugin"],
+            "timeout": 120
+          }
+        ]
+      }
     ]
   }
 }

@@ -1518,7 +1518,11 @@
     "wt.command.dismiss": "machine",
     "wt.classify.done": "machine",
     "wt.dismiss.done": "machine",
-    "wt.suggest.line": "machine"
+    "wt.suggest.line": "machine",
+    "wt.heavy.claim": "machine",
+    "wt.heavy.requires": "machine",
+    "wt.heavy.not": "machine",
+    "wt.heavy.human": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3039,6 +3043,10 @@
     "wt.command.dismiss": "machine",
     "wt.classify.done": "machine",
     "wt.dismiss.done": "machine",
-    "wt.suggest.line": "machine"
+    "wt.suggest.line": "machine",
+    "wt.heavy.claim": "machine",
+    "wt.heavy.requires": "machine",
+    "wt.heavy.not": "machine",
+    "wt.heavy.human": "machine"
   }
 }

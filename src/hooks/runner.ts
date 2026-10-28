@@ -90,13 +90,22 @@ const failed = (event: HookEvent, detail: string, t: Translate): HookOutcome =>
         verdict: "failed_open",
       };
 
-const conclude = (event: HookEvent, evaluation: Evaluation, t: Translate): HookOutcome => {
+const worktreeCreated = (output: JsonObject | undefined, t: Translate): HookOutcome => {
+  const path = output?.["worktreePath"];
+  if (typeof path === "string" && path !== "")
+    return { exitCode: 0, stdout: `${path}\n`, stderr: "", verdict: "allow" };
+  return failed("WorktreeCreate", "no worktree path", t);
+};
+
+const conclude = (event: HookEvent, evaluation: Evaluation, t: Translate, probe: boolean): HookOutcome => {
   const stopActive = evaluation.payload?.stopHookActive === true;
   if (evaluation.kind === "failed") {
     return stopActive ? released(event, evaluation.detail, t) : failed(event, evaluation.detail, t);
   }
   const { decision } = evaluation;
-  if (decision.kind === "allow") return allowed(decision.output);
+  if (decision.kind === "allow") {
+    return event === "WorktreeCreate" && !probe ? worktreeCreated(decision.output, t) : allowed(decision.output);
+  }
   if (stopActive && decision.persistent !== true) return released(event, decision.reason, t);
   if (decision.output !== undefined) {
     return { exitCode: 0, stdout: `${JSON.stringify(decision.output)}\n`, stderr: "", verdict: "block" };
@@ -110,6 +119,7 @@ export const runHook = async (event: HookEvent, options: HookRunOptions): Promis
       event,
       await withDeadline(evaluate(event, options), options.deadlineMs, options.startTimer),
       options.t,
+      options.env?.[HOOK_PROBE_ENV] === "1",
     );
   } catch (error) {
     return failed(event, messageOf(error), options.t);

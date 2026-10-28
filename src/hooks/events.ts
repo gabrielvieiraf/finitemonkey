@@ -13,6 +13,8 @@ export const HOOK_EVENTS = [
   "ConfigChange",
   "Notification",
   "SessionEnd",
+  "WorktreeCreate",
+  "WorktreeRemove",
 ] as const;
 
 export type HookEvent = (typeof HOOK_EVENTS)[number];
@@ -36,6 +38,8 @@ export const HOOK_POLICIES = {
   ConfigChange: { failClosed: true },
   Notification: { failClosed: false },
   SessionEnd: { failClosed: false },
+  WorktreeCreate: { failClosed: false },
+  WorktreeRemove: { failClosed: false },
 } as const satisfies Readonly<Record<HookEvent, HookPolicy>>;
 
 const squash = (value: string): string => value.replace(/[-_\s]/g, "").toLowerCase();
@@ -54,11 +58,15 @@ export const LONG_HOOK_DEADLINE_MS = 570_000;
 
 export const SESSION_HOOK_DEADLINE_MS = 20_000;
 
+export const WORKTREE_HOOK_DEADLINE_MS = 110_000;
+
 const EVENT_DEADLINES: Readonly<Partial<Record<HookEvent, number>>> = {
   Stop: LONG_HOOK_DEADLINE_MS,
   SubagentStop: LONG_HOOK_DEADLINE_MS,
   SessionStart: SESSION_HOOK_DEADLINE_MS,
   PreCompact: SESSION_HOOK_DEADLINE_MS,
+  WorktreeCreate: WORKTREE_HOOK_DEADLINE_MS,
+  WorktreeRemove: WORKTREE_HOOK_DEADLINE_MS,
 };
 
 export const deadlineFor = (event: HookEvent, raw: string | undefined): number => {

@@ -1517,5 +1517,9 @@
   "wt.command.dismiss": "Silence the merged worktrees line until there are more of them",
   "wt.classify.done": "{count, plural, one {# worktree} other {# worktrees}} classified, {cleanable} already merged.",
   "wt.dismiss.done": "The line stays quiet until there are more than {count} merged worktrees.",
-  "wt.suggest.line": "{count, plural, one {# merged worktree uses} other {# merged worktrees use}} about {size} MB. finitemonkey wt clean shows the plan and --apply removes them after an archive; finitemonkey wt dismiss silences this."
+  "wt.suggest.line": "{count, plural, one {# merged worktree uses} other {# merged worktrees use}} about {size} MB. finitemonkey wt clean shows the plan and --apply removes them after an archive; finitemonkey wt dismiss silences this.",
+  "wt.heavy.claim": "{limit, plural, one {# heavy command} other {# heavy commands}} already running on this machine ({holders})",
+  "wt.heavy.requires": "wait until it finishes and run this command again; meanwhile read, plan or edit without installing, building or running the full test suite",
+  "wt.heavy.not": "starting another install, build or full test run in parallel",
+  "wt.heavy.human": "heavy command waiting: the machine runs {limit} at a time ({holders})."
 }

@@ -1517,5 +1517,9 @@
   "wt.command.dismiss": "Silencia a linha das worktrees já integradas até aparecerem mais",
   "wt.classify.done": "{count, plural, one {# worktree classificada} other {# worktrees classificadas}}, {cleanable} já integradas.",
   "wt.dismiss.done": "A linha fica quieta até haver mais de {count} worktrees integradas.",
-  "wt.suggest.line": "{count, plural, one {# worktree já integrada ocupa} other {# worktrees já integradas ocupam}} cerca de {size} MB. finitemonkey wt clean mostra o plano e --apply remove depois de arquivar; finitemonkey wt dismiss silencia este aviso."
+  "wt.suggest.line": "{count, plural, one {# worktree já integrada ocupa} other {# worktrees já integradas ocupam}} cerca de {size} MB. finitemonkey wt clean mostra o plano e --apply remove depois de arquivar; finitemonkey wt dismiss silencia este aviso.",
+  "wt.heavy.claim": "{limit, plural, one {# comando pesado} other {# comandos pesados}} já rodando nesta máquina ({holders})",
+  "wt.heavy.requires": "esperar terminar e rodar este comando de novo; enquanto isso ler, planejar ou editar sem instalar, compilar ou rodar a suíte completa de testes",
+  "wt.heavy.not": "começar outra instalação, compilação ou suíte de testes em paralelo",
+  "wt.heavy.human": "comando pesado esperando: a máquina roda {limit} por vez ({holders})."
 }
