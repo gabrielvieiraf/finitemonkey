@@ -105,7 +105,8 @@
             "rules_write_failed",
             "run_failed",
             "gen_write_failed",
-            "ownership_failed"
+            "ownership_failed",
+            "ci_audit_failed"
           ]
         },
         "message": {

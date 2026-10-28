@@ -1,4 +1,5 @@
 import { accept, type Parsed, reject } from "../parsed.js";
+import { collapseBlockScalars } from "./block.js";
 import { parseValue, splitKey } from "./flow.js";
 import { parseQuoted, quotedEnd, type YamlValue } from "./scalar.js";
 
@@ -33,7 +34,7 @@ const stripComment = (text: string): string => {
 
 const toLines = (source: string): Parsed<readonly Line[], YamlError> => {
   const lines: Line[] = [];
-  const raw = source.replace(BOM, "").split(/\r?\n/);
+  const raw = collapseBlockScalars(source.replace(BOM, "").split(/\r?\n/), stripComment);
   for (const [index, full] of raw.entries()) {
     const text = stripComment(full).trimEnd();
     const body = text.trimStart();

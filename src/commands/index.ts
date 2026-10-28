@@ -3,6 +3,7 @@ import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
+import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
@@ -211,6 +212,7 @@ export const REGISTRY = [
   genOwnershipCommand,
   ownershipCheckCommand,
   ciGenCommand,
+  ciAuditCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

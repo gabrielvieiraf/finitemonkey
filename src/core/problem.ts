@@ -88,6 +88,7 @@ export const ERROR_CODES = [
   "run_failed",
   "gen_write_failed",
   "ownership_failed",
+  "ci_audit_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

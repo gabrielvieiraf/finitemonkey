@@ -1624,5 +1624,11 @@
   "ci.gen.deploy_command": "deploy.yml falla hasta que el paso de deploy tenga un comando: escríbelo ahí, o agrega scripts/deploy.sh y genera de nuevo.",
   "ci.gen.reviewers": "Proyecto en nivel {level}: dale revisores obligatorios al entorno production (`finitemonkey ci protect`).",
   "ci.gen.release": "release.yml se ejecuta con una tag v* que GitHub muestra como verificada; firma las tags con `git tag -s`.",
-  "ci.gen.review": "El workflow de revisión solo se ejecuta cuando un miembro comenta {trigger} en un pull request. Necesita una GitHub App (variable REVIEW_APP_CLIENT_ID, secreto REVIEW_APP_PRIVATE_KEY) y el secreto ANTHROPIC_API_KEY, y nunca es una verificación obligatoria."
+  "ci.gen.review": "El workflow de revisión solo se ejecuta cuando un miembro comenta {trigger} en un pull request. Necesita una GitHub App (variable REVIEW_APP_CLIENT_ID, secreto REVIEW_APP_PRIVATE_KEY) y el secreto ANTHROPIC_API_KEY, y nunca es una verificación obligatoria.",
+  "ci.command.audit": "Revisa los workflows de GitHub en busca de patrones que filtran tokens o ejecutan código no confiable",
+  "ci.audit.title": "{count, plural, one {# workflow auditado} other {# workflows auditados}} en el nivel {level} del proyecto:",
+  "ci.audit.item": "{severity} ({status}) {where} {rule}: {detail} [{id}]",
+  "ci.audit.tools_missing": "No instalados, así que solo corrieron las reglas propias: {tools}.",
+  "ci.audit.clean": "Ningún hallazgo nuevo que bloquee.",
+  "ci.audit.failed": "{count, plural, one {# hallazgo nuevo que bloquea en los workflows} other {# hallazgos nuevos que bloquean en los workflows}}"
 }

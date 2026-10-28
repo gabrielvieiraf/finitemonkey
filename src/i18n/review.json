@@ -1625,7 +1625,13 @@
     "ci.gen.deploy_command": "machine",
     "ci.gen.reviewers": "machine",
     "ci.gen.release": "machine",
-    "ci.gen.review": "machine"
+    "ci.gen.review": "machine",
+    "ci.command.audit": "machine",
+    "ci.audit.title": "machine",
+    "ci.audit.item": "machine",
+    "ci.audit.tools_missing": "machine",
+    "ci.audit.clean": "machine",
+    "ci.audit.failed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3253,6 +3259,12 @@
     "ci.gen.deploy_command": "machine",
     "ci.gen.reviewers": "machine",
     "ci.gen.release": "machine",
-    "ci.gen.review": "machine"
+    "ci.gen.review": "machine",
+    "ci.command.audit": "machine",
+    "ci.audit.title": "machine",
+    "ci.audit.item": "machine",
+    "ci.audit.tools_missing": "machine",
+    "ci.audit.clean": "machine",
+    "ci.audit.failed": "machine"
   }
 }

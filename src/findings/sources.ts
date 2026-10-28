@@ -1,4 +1,5 @@
 import { scanRepo } from "../appsec/scan.js";
+import { auditRepo, CI_AUDIT_CHECK } from "../ci/audit/audit.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { scanPath } from "../secrets/scan.js";
@@ -28,7 +29,12 @@ const secretsSource: FindingSource = {
 
 const appsecSource: FindingSource = { check: "appsec", scan: scanRepo };
 
-export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource, appsecSource];
+const ciAuditSource: FindingSource = {
+  check: CI_AUDIT_CHECK,
+  scan: (runtime, root) => auditRepo(runtime, root).findings,
+};
+
+export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource, appsecSource, ciAuditSource];
 
 export const findFinding = (
   runtime: Runtime,

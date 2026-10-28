@@ -1624,5 +1624,11 @@
   "ci.gen.deploy_command": "deploy.yml fails until its deploy step has a command: write it there, or add scripts/deploy.sh and generate again.",
   "ci.gen.reviewers": "Project level {level}: give the production environment required reviewers (`finitemonkey ci protect`).",
   "ci.gen.release": "release.yml runs on a v* tag that GitHub shows as verified; sign tags with `git tag -s`.",
-  "ci.gen.review": "The review workflow runs only when a member comments {trigger} on a pull request. It needs a GitHub App (variable REVIEW_APP_CLIENT_ID, secret REVIEW_APP_PRIVATE_KEY) and the ANTHROPIC_API_KEY secret, and it is never a required check."
+  "ci.gen.review": "The review workflow runs only when a member comments {trigger} on a pull request. It needs a GitHub App (variable REVIEW_APP_CLIENT_ID, secret REVIEW_APP_PRIVATE_KEY) and the ANTHROPIC_API_KEY secret, and it is never a required check.",
+  "ci.command.audit": "Check GitHub workflows for patterns that leak tokens or run untrusted code",
+  "ci.audit.title": "{count, plural, one {# workflow audited} other {# workflows audited}} at project level {level}:",
+  "ci.audit.item": "{severity} ({status}) {where} {rule}: {detail} [{id}]",
+  "ci.audit.tools_missing": "Not installed, so only the built-in rules ran: {tools}.",
+  "ci.audit.clean": "No new blocking finding.",
+  "ci.audit.failed": "{count, plural, one {# new blocking finding in the workflows} other {# new blocking findings in the workflows}}"
 }
