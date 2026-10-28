@@ -3,6 +3,7 @@ import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
+import { levelRules } from "../profile/level.js";
 import { archiveWorktree } from "../wt/archive.js";
 import { CLEANUP_CLASSES, type CleanupClass } from "../wt/classify.js";
 import { applyClean, cleanPlan, DEFAULT_INCLUDE, type PlanItem } from "../wt/clean.js";
@@ -45,9 +46,12 @@ export const wtCleanCommand: CommandSpec = {
   run: (ctx, args): Promise<CommandResult> => {
     const inventory = inventoryOf(ctx, args.values);
     if (inventory === undefined) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
-    const include = includeOf(args.values);
+    const options = {
+      include: includeOf(args.values),
+      archiveContained: levelRules(ctx.runtime, inventory.mainRoot).cleanup === "archive",
+    };
     if (args.values["apply"] !== true) {
-      const plan = cleanPlan(inventory, include);
+      const plan = cleanPlan(inventory, options);
       return Promise.resolve(
         success({ schema: WT_CLEAN_SCHEMA, applied: false, items: plan }, [
           ctx.t("wt.clean.plan_title", { count: plan.length }),
@@ -56,7 +60,7 @@ export const wtCleanCommand: CommandSpec = {
         ]),
       );
     }
-    const applied = applyClean(inventory, include, args.values["reap"] === true);
+    const applied = applyClean(inventory, options, args.values["reap"] === true);
     const items = applied.ok ? applied.value : [];
     return Promise.resolve(
       success({ schema: WT_CLEAN_SCHEMA, applied: true, items }, [

@@ -3,6 +3,7 @@ import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { configMap, loadProjectConfig } from "../git/project-config.js";
+import { levelRules } from "../profile/level.js";
 import type { WorktreeOwner } from "../wt/entry.js";
 import { commonDirOf } from "../wt/store.js";
 import { applyResolutions, regenerate } from "./apply.js";
@@ -112,11 +113,18 @@ const reportOf = (
     path: run.integration.entry.path,
     id: run.integration.entry.id,
   },
-  conclusion: "pull-request",
+  conclusion: conclusionFor(run, parts.outcome),
   undo: `finitemonkey wt archive ${run.integration.entry.id}`,
   reportPath: reportPathFor(commonDir, stamp),
   ...parts,
 });
+
+const conclusionFor = (run: Run, outcome: MergeReport["outcome"]): MergeReport["conclusion"] => {
+  if (outcome !== "merged") return "none";
+  return levelRules(run.runtime, run.cwd).mergeDefault === "pr-or-fast-forward"
+    ? "fast-forward-allowed"
+    : "pull-request";
+};
 
 const proposalPaths = (files: readonly FileResolution[]): ReadonlySet<string> =>
   new Set(files.filter((file) => file.rerereProposal).map((file) => file.path));
