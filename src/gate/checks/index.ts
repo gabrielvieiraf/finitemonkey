@@ -8,6 +8,7 @@ import { gitCheck } from "./git.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
+import { parityCheck } from "./parity.js";
 import { placeholdersCheck } from "./placeholders.js";
 import { planCheck } from "./plan.js";
 import { prOutcome } from "./pr.js";
@@ -40,4 +41,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   decision: decisionCheck,
   research: researchCheck,
   cost: costCheck,
+  parity: parityCheck,
 };

@@ -5,10 +5,13 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { type InventoryProblem, runInventory } from "../inventory/run.js";
 import { INVENTORY_SCHEMA } from "../inventory/types.js";
+import { initParity, updateParity } from "../parity/run.js";
 import { notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
-const USAGE = "finitemonkey inventory <topic> [--ref <ref>] [--path <dir>]... [--repo <dir>]...";
+type Root = NonNullable<ReturnType<typeof repoOf>>["root"];
+
+const USAGE = "finitemonkey inventory <topic> [--ref <ref>] [--path <dir>]... [--repo <dir>]... [--parity]";
 
 const problemResult = (ctx: Ctx, problem: InventoryProblem): CommandResult => {
   if (problem.kind === "repo") return failureFrom(ctx.t, notRepository(problem.repo));
@@ -26,6 +29,12 @@ const problemResult = (ctx: Ctx, problem: InventoryProblem): CommandResult => {
   });
 };
 
+const parityFor = (ctx: Ctx, root: Root, ref: string, covered: readonly string[]): readonly string[] => {
+  const started = initParity(ctx.runtime, root, ref, covered);
+  const written = !started.ok && started.error === "exists" ? updateParity(ctx.runtime, root, ref) : started;
+  return written.ok ? [ctx.t("parity.written", { rows: written.value.rows, added: written.value.added })] : [];
+};
+
 export const inventoryCommand: CommandSpec = {
   path: ["inventory"],
   summaryKey: "command.inventory.summary",
@@ -36,6 +45,7 @@ export const inventoryCommand: CommandSpec = {
     ref: { type: "string" },
     path: { type: "string", multiple: true },
     repo: { type: "string", multiple: true },
+    parity: { type: "boolean" },
   },
   run: (ctx, args): Promise<CommandResult> => {
     const repo = repoOf(ctx);
@@ -52,10 +62,15 @@ export const inventoryCommand: CommandSpec = {
     if (!written.ok) return Promise.resolve(problemResult(ctx, written.error));
     const { file, inventory } = written.value;
     const repos = inventory.repos.map((item) => ({ path: item.path, ref: item.ref, hash: item.hash }));
+    const parity =
+      args.values["parity"] === true
+        ? parityFor(ctx, repo.root, inventory.repos[0]?.ref ?? "HEAD", inventory.covered)
+        : [];
     return Promise.resolve(
       success({ schema: INVENTORY_SCHEMA, file, topic, covered: inventory.covered, repos, delta: inventory.delta }, [
         ctx.t("inventory.written", { file, count: repos.length }),
         ...repos.map((item) => `  ${item.path} ${item.hash}`),
+        ...parity,
       ]),
     );
   },

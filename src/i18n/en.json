@@ -988,5 +988,19 @@
   "budget.reconcile.missing": "{tool} is not installed or did not answer; nothing was compared",
   "budget.reconcile.done": "Compared with {tool}; the differences went to {file} (ours, theirs, difference):",
   "statusline.budget": "spend {percent}%",
-  "statusline.rate": "{name} {percent}%"
+  "statusline.rate": "{name} {percent}%",
+  "command.parity_init.summary": "Write docs/plan/parity.csv with what the code being replaced does today",
+  "command.parity_update.summary": "Add rows for capabilities the old code gained since the matrix was written",
+  "command.parity_check.summary": "Fail on parity rows without destination, test or green state, and removals without a decision",
+  "parity.written": "docs/plan/parity.csv has {rows, plural, one {# row} other {# rows}} ({added} new).",
+  "parity.clean": "{count, plural, one {# parity row is} other {# parity rows are}} placed, tested and green or removed by a decision",
+  "parity.error.check": "{count, plural, one {# parity row is} other {# parity rows are}} not done",
+  "parity.error.ref": "{ref} is not a commit",
+  "parity.error.exists": "docs/plan/parity.csv already exists; use finitemonkey parity update",
+  "parity.error.missing": "no parity matrix yet; run finitemonkey parity init",
+  "parity.issue.no_matrix": "no parity matrix ({detail}); run finitemonkey parity init",
+  "parity.issue.no_destination": "no destination: {detail}",
+  "parity.issue.no_test": "no parity test: {detail}",
+  "parity.issue.not_green": "parity test not green: {detail}",
+  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}"
 }

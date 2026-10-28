@@ -989,7 +989,21 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.parity_init.summary": "machine",
+    "command.parity_update.summary": "machine",
+    "command.parity_check.summary": "machine",
+    "parity.written": "machine",
+    "parity.clean": "machine",
+    "parity.error.check": "machine",
+    "parity.error.ref": "machine",
+    "parity.error.exists": "machine",
+    "parity.error.missing": "machine",
+    "parity.issue.no_matrix": "machine",
+    "parity.issue.no_destination": "machine",
+    "parity.issue.no_test": "machine",
+    "parity.issue.not_green": "machine",
+    "parity.issue.removed_without_decision": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -1981,6 +1995,20 @@
     "budget.reconcile.missing": "machine",
     "budget.reconcile.done": "machine",
     "statusline.budget": "machine",
-    "statusline.rate": "machine"
+    "statusline.rate": "machine",
+    "command.parity_init.summary": "machine",
+    "command.parity_update.summary": "machine",
+    "command.parity_check.summary": "machine",
+    "parity.written": "machine",
+    "parity.clean": "machine",
+    "parity.error.check": "machine",
+    "parity.error.ref": "machine",
+    "parity.error.exists": "machine",
+    "parity.error.missing": "machine",
+    "parity.issue.no_matrix": "machine",
+    "parity.issue.no_destination": "machine",
+    "parity.issue.no_test": "machine",
+    "parity.issue.not_green": "machine",
+    "parity.issue.removed_without_decision": "machine"
   }
 }
