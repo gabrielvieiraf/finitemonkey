@@ -35,7 +35,7 @@ const meaningful = (message: string): readonly string[] =>
     .split("\n")
     .filter((line) => !line.startsWith("#"));
 
-const hasAttribution = (body: string): boolean => {
+export const hasAttribution = (body: string): boolean => {
   const [coAuthor, ...rest] = ATTRIBUTION;
   const coAuthors = coAuthor === undefined ? [] : (body.match(coAuthor) ?? []);
   return coAuthors.some((line) => AI_NAMES.test(line)) || rest.some((pattern) => pattern.test(body));

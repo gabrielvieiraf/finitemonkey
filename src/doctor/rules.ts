@@ -1,12 +1,12 @@
 import { ruleCoverage } from "../rules/coverage.js";
 import { readManifest } from "../rules/manifest.js";
 import { CI_JOB } from "../rules/outputs.js";
+import { effectiveRules } from "../rules/preset.js";
 import { ciRequirement } from "../rules/required.js";
-import { loadRules } from "../rules/types.js";
 import { type Check, type CheckFinding, finding } from "./types.js";
 
 export const checkRules: Check = ({ root, runtime }) => {
-  const rules = loadRules(runtime, root);
+  const rules = effectiveRules(runtime, root);
   if (!rules.ok)
     return [
       finding("rules.file", "fail", "rules.error.invalid", { file: ".finitemonkey/rules.yml", detail: rules.error }),

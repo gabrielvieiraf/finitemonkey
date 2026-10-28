@@ -1,5 +1,6 @@
 import { globToRegExp } from "../core/glob.js";
 import { toPosixPath } from "../core/posix-path.js";
+import { hasAttribution } from "../githooks/commit-msg.js";
 import { normalizeCommand } from "../shell/normalize.js";
 import type { Dialect } from "../shell/types.js";
 import type { ProjectRule, TextTarget } from "./types.js";
@@ -35,7 +36,15 @@ const patternOf = (source: string): RegExp | undefined => {
 
 const withoutCodeBlocks = (text: string): string => text.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
 
+const ROBOT = "\u{1F916}";
+
+export const attributionIn = (target: TextTarget, text: string): boolean => {
+  const visible = target === "pr" ? withoutCodeBlocks(text) : text;
+  return hasAttribution(visible) || visible.includes(ROBOT);
+};
+
 export const textMatches = (rule: ProjectRule, target: TextTarget, text: string): boolean => {
+  if (rule.detector?.kind === "attribution") return attributionIn(target, text);
   if (rule.detector?.kind !== "text" || !rule.detector.on.includes(target)) return false;
   const pattern = patternOf(rule.detector.pattern);
   return pattern?.test(target === "pr" ? withoutCodeBlocks(text) : text) === true;
