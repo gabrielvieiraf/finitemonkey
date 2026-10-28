@@ -280,6 +280,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão.",
     es: "Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano.",
   },
+  ownership: {
+    en: "`gen ownership` writes one entry per component (name, vocabulary type, owner, consumers) after the person passes `--yes`; `ci gate`, `ownership check` and `plan check` read it, or read `catalog-info.yaml` when that exists.",
+    "pt-BR":
+      "O `gen ownership` grava uma entrada por peça (nome, tipo do vocabulário, dono, consumidores) depois que a pessoa passa `--yes`; `ci gate`, `ownership check` e `plan check` leem o arquivo, ou leem o `catalog-info.yaml` quando ele existe.",
+    es: "`gen ownership` escribe una entrada por componente (nombre, tipo del vocabulario, dueño, consumidores) después de que la persona pasa `--yes`; `ci gate`, `ownership check` y `plan check` lo leen, o leen `catalog-info.yaml` cuando existe.",
+  },
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

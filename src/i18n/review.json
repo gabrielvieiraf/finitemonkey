@@ -1613,7 +1613,14 @@
     "gen.command.pr_template": "machine",
     "gen.command.codeowners": "machine",
     "gen.codeowners.no_owner": "machine",
-    "gen.codeowners.inferred": "machine"
+    "gen.codeowners.inferred": "machine",
+    "ownership.command.check": "machine",
+    "ownership.command.gen": "machine",
+    "ownership.catalog": "machine",
+    "ownership.no_plan": "machine",
+    "ownership.fill_owner": "machine",
+    "plan.issue.ownership_gap": "machine",
+    "plan.issue.ownership_overlap": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3229,6 +3236,13 @@
     "gen.command.pr_template": "machine",
     "gen.command.codeowners": "machine",
     "gen.codeowners.no_owner": "machine",
-    "gen.codeowners.inferred": "machine"
+    "gen.codeowners.inferred": "machine",
+    "ownership.command.check": "machine",
+    "ownership.command.gen": "machine",
+    "ownership.catalog": "machine",
+    "ownership.no_plan": "machine",
+    "ownership.fill_owner": "machine",
+    "plan.issue.ownership_gap": "machine",
+    "plan.issue.ownership_overlap": "machine"
   }
 }

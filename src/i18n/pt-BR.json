@@ -1612,5 +1612,12 @@
   "gen.command.pr_template": "Gera o modelo de pull request no idioma do projeto",
   "gen.command.codeowners": "Gera o CODEOWNERS para o contrato da API, workflows, infra e migrações",
   "gen.codeowners.no_owner": "Nenhum dono foi informado e não deu para ler um do remote origin. Passe --owner com um usuário ou um time.",
-  "gen.codeowners.inferred": "O dono {owner} veio do remote origin. Se for uma organização, passe --owner {owner}/<time>: o GitHub ignora linha cujo dono é só a organização."
+  "gen.codeowners.inferred": "O dono {owner} veio do remote origin. Se for uma organização, passe --owner {owner}/<time>: o GitHub ignora linha cujo dono é só a organização.",
+  "ownership.command.check": "Falha em peça sem dono ou com nome fora do plano mestre",
+  "ownership.command.gen": "Gera o .finitemonkey/ownership.yml: peça, tipo do vocabulário, dono e consumidores",
+  "ownership.catalog": "{file} existe, então ele é o arquivo de donos e nada novo é gravado.",
+  "ownership.no_plan": "Sem docs/plan/MASTER.md: as peças vêm das pastas de código e a checagem de vocabulário fica de fora.",
+  "ownership.fill_owner": "Algumas peças ainda não têm dono. Preencha em {file} ou passe --owner; a CI falha em peça sem dono.",
+  "plan.issue.ownership_gap": "responsabilidade sem peça no arquivo de donos: {detail}",
+  "plan.issue.ownership_overlap": "dois donos para a mesma responsabilidade: {detail}"
 }

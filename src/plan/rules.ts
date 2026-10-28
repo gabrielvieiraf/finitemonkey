@@ -14,6 +14,8 @@ export const PLAN_ISSUES = [
   "grew_without_previous",
   "issue_without_row",
   "row_without_issue",
+  "ownership_gap",
+  "ownership_overlap",
 ] as const;
 
 export type PlanIssueKind = (typeof PLAN_ISSUES)[number];

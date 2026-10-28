@@ -1612,5 +1612,12 @@
   "gen.command.pr_template": "Genera la plantilla de pull request en el idioma del proyecto",
   "gen.command.codeowners": "Genera CODEOWNERS para el contrato de la API, workflows, infra y migraciones",
   "gen.codeowners.no_owner": "No se indicó dueño y no se pudo leer uno del remote origin. Pasa --owner con un usuario o un equipo.",
-  "gen.codeowners.inferred": "El dueño {owner} viene del remote origin. Si es una organización, pasa --owner {owner}/<equipo>: GitHub ignora la línea cuyo dueño es solo la organización."
+  "gen.codeowners.inferred": "El dueño {owner} viene del remote origin. Si es una organización, pasa --owner {owner}/<equipo>: GitHub ignora la línea cuyo dueño es solo la organización.",
+  "ownership.command.check": "Falla en un componente sin dueño o con un nombre fuera del plan maestro",
+  "ownership.command.gen": "Genera .finitemonkey/ownership.yml: componente, tipo del vocabulario, dueño y consumidores",
+  "ownership.catalog": "{file} existe, así que es el archivo de dueños y no se escribe nada nuevo.",
+  "ownership.no_plan": "Sin docs/plan/MASTER.md: los componentes salen de las carpetas de código y la verificación de vocabulario se omite.",
+  "ownership.fill_owner": "Algunos componentes aún no tienen dueño. Complétalos en {file} o pasa --owner; la CI falla en un componente sin dueño.",
+  "plan.issue.ownership_gap": "responsabilidad sin componente en el archivo de dueños: {detail}",
+  "plan.issue.ownership_overlap": "dos dueños para la misma responsabilidad: {detail}"
 }

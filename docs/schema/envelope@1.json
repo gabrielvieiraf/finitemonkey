@@ -104,7 +104,8 @@
             "rules_uncovered",
             "rules_write_failed",
             "run_failed",
-            "gen_write_failed"
+            "gen_write_failed",
+            "ownership_failed"
           ]
         },
         "message": {
