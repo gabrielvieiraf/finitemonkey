@@ -1286,5 +1286,13 @@
   "signals.error.person_only": "Solo la persona puede calibrar el detector de vueltas, y esto no parece su terminal (sin TTY, o ejecutándose dentro de Claude Code)",
   "command.signals.summary": "Muestra el índice de vueltas de la última sesión con su evidencia",
   "command.signals_not_loop.summary": "Registra que el último aviso de vuelta no era una vuelta y sube el umbral",
-  "command.signals_forget.summary": "Borra las señales locales, el índice de vueltas y los umbrales"
+  "command.signals_forget.summary": "Borra las señales locales, el índice de vueltas y los umbrales",
+  "signals.fourth.claim": "cuarta corrección sobre la firma de error {sig} después de {count, plural, one {# intento fallido} other {# intentos fallidos}} ({sample})",
+  "signals.fourth.requires": "investigar el error antes con el agente researcher, que trae fuentes y fechas, o que la persona ejecute finitemonkey signals release {sig}",
+  "signals.fourth.not": "otra variación del mismo arreglo, ni escribir el archivo con Bash o PowerShell",
+  "signals.fourth.human": "cuarto intento sobre el error {sig} detenido. Primero se investiga, o ejecuta finitemonkey signals release {sig}.",
+  "signals.fourth.warning": "finitemonkey signals: esta escritura es la cuarta corrección sobre la firma de error {sig} después de {count, plural, one {# intento fallido} other {# intentos fallidos}} ({sample}). Investigar con el agente researcher la libera; cuando la guarda fourth-attempt esté activa, la escritura queda bloqueada hasta entonces.",
+  "signals.release.done": "Firma de error {sig} liberada: la próxima corrección pasa, y la liberación queda registrada en el log.",
+  "signals.show.fourth": "Cuartos intentos: {count, plural, one {# detenido o avisado} other {# detenidos o avisados}}, {solved} de ellos resolvieron el error.",
+  "command.signals_release.summary": "Libera la guarda del cuarto intento en una firma de error"
 }

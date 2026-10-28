@@ -1,12 +1,14 @@
 import type { Ctx } from "../core/context.js";
-import { needsPersonProblem } from "../core/problem.js";
+import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import { isPerson } from "../secrets/project.js";
+import { fourthOutcomes } from "../signals/attempts.js";
 import { computeIndex, type LoopIndex, thresholdsOf } from "../signals/loop-index.js";
 import { contextLine } from "../signals/render.js";
 import {
+  appendEntry,
   MAX_THRESHOLD,
   readEntries,
   readIndexFile,
@@ -46,11 +48,15 @@ const showSignals = (ctx: Ctx): CommandResult => {
   const entries = sessionEntries(readEntries(ctx.runtime, files), session);
   const stored = recordOf(readIndexFile(ctx.runtime, files)["index"]);
   const index: LoopIndex = computeIndex(entries, thresholds);
-  const human = index.firing
-    ? [contextLine(ctx.t, index, thresholds)]
-    : [ctx.t("signals.show.quiet", { count: entries.length, score: index.score.toFixed(2) })];
+  const fourth = fourthOutcomes(readEntries(ctx.runtime, files));
+  const human = [
+    index.firing
+      ? contextLine(ctx.t, index, thresholds)
+      : ctx.t("signals.show.quiet", { count: entries.length, score: index.score.toFixed(2) }),
+    ...(fourth.fired === 0 ? [] : [ctx.t("signals.show.fourth", { count: fourth.fired, solved: fourth.solved })]),
+  ];
   return success(
-    { schema: SIGNALS_SCHEMA, session, signals: entries.length, threshold: profile.threshold, index, stored },
+    { schema: SIGNALS_SCHEMA, session, signals: entries.length, threshold: profile.threshold, index, stored, fourth },
     human,
   );
 };
@@ -67,6 +73,25 @@ const notLoop = (ctx: Ctx): CommandResult => {
   return success({ schema: SIGNALS_SCHEMA, ...profile }, [
     ctx.t("signals.not_loop.recorded", { threshold: profile.threshold }),
   ]);
+};
+
+const RELEASE_USAGE = "finitemonkey signals release <signature>";
+
+const release = (ctx: Ctx, sig: string): CommandResult => {
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("signals.error.person_only", RELEASE_USAGE));
+  if (!/^[0-9a-f]{4}$/.test(sig)) {
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", RELEASE_USAGE, { detail: sig }),
+    );
+  }
+  const { paths, files } = locate(ctx);
+  const session = lastSession(ctx, files);
+  const entries = readEntries(ctx.runtime, files);
+  const turn = entries.filter((entry) => entry.session === session && entry.kind === "prompt").length;
+  appendEntry(ctx.runtime, files, { at: ctx.runtime.now(), session, turn, kind: "release", sig }, entries);
+  logEvent(ctx.runtime, paths, "signals.release", { sig, session });
+  return success({ schema: SIGNALS_SCHEMA, sig, session }, [ctx.t("signals.release.done", { sig })]);
 };
 
 const forget = (ctx: Ctx): CommandResult => {
@@ -91,6 +116,15 @@ export const signalsNotLoopCommand: CommandSpec = {
   usage: PERSON_FIX,
   status: "ready",
   run: (ctx) => Promise.resolve(notLoop(ctx)),
+};
+
+export const signalsReleaseCommand: CommandSpec = {
+  path: ["signals", "release"],
+  summaryKey: "command.signals_release.summary",
+  usage: RELEASE_USAGE,
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args) => Promise.resolve(release(ctx, (args.positionals[0] ?? "").toLowerCase())),
 };
 
 export const signalsForgetCommand: CommandSpec = {

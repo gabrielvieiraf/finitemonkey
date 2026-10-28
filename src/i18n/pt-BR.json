@@ -1286,5 +1286,13 @@
   "signals.error.person_only": "Só a pessoa pode calibrar o detector de voltas, e isto não parece o terminal dela (sem TTY, ou rodando dentro do Claude Code)",
   "command.signals.summary": "Mostra o índice de voltas da última sessão com a evidência",
   "command.signals_not_loop.summary": "Registra que o último aviso de volta não era volta e sobe o limiar",
-  "command.signals_forget.summary": "Apaga os sinais locais, o índice de voltas e os limiares"
+  "command.signals_forget.summary": "Apaga os sinais locais, o índice de voltas e os limiares",
+  "signals.fourth.claim": "quarta correção na assinatura de erro {sig} depois de {count, plural, one {# tentativa que falhou} other {# tentativas que falharam}} ({sample})",
+  "signals.fourth.requires": "pesquisar o erro antes com o agente researcher, que traz fontes e datas, ou a pessoa roda finitemonkey signals release {sig}",
+  "signals.fourth.not": "outra variação da mesma correção, nem gravar o arquivo por Bash ou PowerShell",
+  "signals.fourth.human": "quarta tentativa no erro {sig} segurada. A pesquisa roda antes, ou rode finitemonkey signals release {sig}.",
+  "signals.fourth.warning": "finitemonkey signals: esta escrita é a quarta correção na assinatura de erro {sig} depois de {count, plural, one {# tentativa que falhou} other {# tentativas que falharam}} ({sample}). Pesquisar com o agente researcher libera; quando a trava fourth-attempt estiver ativa, a escrita fica barrada até lá.",
+  "signals.release.done": "Assinatura de erro {sig} liberada: a próxima correção passa, e a liberação fica registrada no log.",
+  "signals.show.fourth": "Quartas tentativas: {count, plural, one {# segurada ou avisada} other {# seguradas ou avisadas}}, {solved} delas resolveram o erro.",
+  "command.signals_release.summary": "Libera a trava da quarta tentativa numa assinatura de erro"
 }
