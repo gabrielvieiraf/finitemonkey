@@ -55,6 +55,11 @@ const PATTERN_FIXTURES: Readonly<Record<InfraPattern, Files>> = {
   "ssh-deploy": { ".github/workflows/deploy.yml": WORKFLOW_SSH },
   "deploy-script": { "scripts/deploy.sh": "#!/bin/sh\necho deploy\n" },
   migrations: { "prisma/migrations/001_init/migration.sql": "CREATE TABLE a (id int);\n" },
+  sentry: { "package.json": '{ "dependencies": { "@sentry/node": "^9.0.0" } }\n' },
+  opentelemetry: { "package.json": '{ "dependencies": { "@opentelemetry/api": "^1.9.0" } }\n' },
+  "json-logger": { "package.json": '{ "dependencies": { "pino": "^9.0.0" } }\n' },
+  apm: { "package.json": '{ "dependencies": { "dd-trace": "^5.0.0" } }\n' },
+  "health-route": { "app/api/health/route.ts": "export const GET = () => new Response('ok');\n" },
 };
 
 const RISK_FIXTURES: Readonly<Record<InfraRisk, Files>> = {

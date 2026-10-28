@@ -55,6 +55,7 @@ import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
+import { observeCommand } from "./observe.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
 import {
@@ -225,6 +226,7 @@ export const REGISTRY = [
   deployPlanCommand,
   deployGenerateCommand,
   deployCheckCommand,
+  observeCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

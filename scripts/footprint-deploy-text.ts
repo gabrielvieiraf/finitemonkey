@@ -31,6 +31,12 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "Pelo `curl`, só quando `headers.url` está definido em `.finitemonkey/config.yml` e um contrato de tarefa tem o check `headers`: um GET por rota configurada, para ler os headers de segurança da resposta real. Sem isso, os headers vêm do app que o `look` já subiu em 127.0.0.1.",
     es: "A través de `curl`, solo cuando `headers.url` está definido en `.finitemonkey/config.yml` y un contrato de tarea tiene el check `headers`: un GET por ruta configurada, para leer los headers de seguridad de la respuesta real. Sin eso, los headers vienen de la app que `look` ya arrancó en 127.0.0.1.",
   },
+  observability: {
+    en: "Only with `finitemonkey observe --yes`, and only files that do not exist yet: an error-report scrubber, a JSON logger with an allow-list of fields and, from level 2, a plan to fill in. No account is created anywhere.",
+    "pt-BR":
+      "Só com `finitemonkey observe --yes`, e só arquivos que ainda não existem: um scrubber de relatórios de erro, um logger em JSON com lista de campos permitidos e, a partir do nível 2, um plano para preencher. Nenhuma conta é criada em lugar nenhum.",
+    es: "Solo con `finitemonkey observe --yes`, y solo archivos que aún no existen: un scrubber de reportes de error, un logger en JSON con lista de campos permitidos y, desde el nivel 2, un plan para completar. No se crea ninguna cuenta en ningún sitio.",
+  },
 } as const satisfies Readonly<
-  Record<"infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers", Localized>
+  Record<"infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers" | "observability", Localized>
 >;

@@ -23,6 +23,11 @@ export const INFRA_PATTERNS = [
   "ssh-deploy",
   "deploy-script",
   "migrations",
+  "sentry",
+  "opentelemetry",
+  "json-logger",
+  "apm",
+  "health-route",
 ] as const;
 
 export type InfraPattern = (typeof INFRA_PATTERNS)[number];
@@ -36,6 +41,7 @@ export const INFRA_GROUPS = [
   "ssh",
   "script",
   "migration",
+  "observability",
 ] as const;
 
 export type InfraGroup = (typeof INFRA_GROUPS)[number];
@@ -65,6 +71,11 @@ export const PATTERN_GROUP: Readonly<Record<InfraPattern, InfraGroup>> = {
   "ssh-deploy": "ssh",
   "deploy-script": "script",
   migrations: "migration",
+  sentry: "observability",
+  opentelemetry: "observability",
+  "json-logger": "observability",
+  apm: "observability",
+  "health-route": "observability",
 };
 
 export const STATIC_PLATFORMS: ReadonlySet<InfraPattern> = new Set(["vercel", "netlify", "cloudflare", "github-pages"]);

@@ -173,6 +173,11 @@ export const FOOTPRINT = [
   { id: "ci-watch", kind: "writes", targets: [".finitemonkey/ci-watch/"] },
   { id: "infra", kind: "writes", targets: [".finitemonkey/infra.yml", ".finitemonkey/hosts.local.yml"] },
   { id: "infra-remote", kind: "sends", targets: ["hosts.local.yml"], via: "ssh" },
+  {
+    id: "observability",
+    kind: "writes",
+    targets: ["observability/scrub.mjs", "observability/log.mjs", "observability/plan.yml"],
+  },
   { id: "headers", kind: "sends", targets: ["headers.url"], via: "curl" },
   { id: "deploy-drift", kind: "sends", targets: ["hosts.local.yml", "FINITEMONKEY_DEPLOY_HOST"], via: "ssh" },
   {

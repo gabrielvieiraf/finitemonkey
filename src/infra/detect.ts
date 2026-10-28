@@ -48,9 +48,20 @@ const RULES: readonly Rule[] = [
     pattern: "migrations",
     path: /(^|\/)(prisma\/migrations|migrations|db\/migrate|alembic\/versions|drizzle)\/.+$|(^|\/)(alembic\.ini|knexfile\.[cm]?[jt]s)$/,
   },
+  { pattern: "sentry", path: /(^|\/)package\.json$/, text: [/"@sentry\//] },
+  { pattern: "sentry", path: /(^|\/)(requirements[^/]*\.txt|pyproject\.toml)$/, text: [/sentry-sdk/] },
+  { pattern: "sentry", path: /(^|\/)sentry\.(client|server|edge)\.config\.[cm]?[jt]s$/ },
+  { pattern: "opentelemetry", path: /(^|\/)package\.json$/, text: [/"@opentelemetry\//] },
+  { pattern: "json-logger", path: /(^|\/)package\.json$/, text: [/"(pino|winston|bunyan)"\s*:/] },
+  { pattern: "json-logger", path: /(^|\/)observability\/log\.mjs$/ },
+  { pattern: "apm", path: /(^|\/)package\.json$/, text: [/"(dd-trace|newrelic|elastic-apm-node)"\s*:/] },
+  {
+    pattern: "health-route",
+    path: /(^|\/)(health|healthz|healthcheck)(\/route)?\.[cm]?[jt]sx?$|(^|\/)(api|app|pages\/api|routes)\/health[^/]*\//,
+  },
 ];
 
-const PATH_ONLY: ReadonlySet<InfraPattern> = new Set(["migrations"]);
+const PATH_ONLY: ReadonlySet<InfraPattern> = new Set(["migrations", "health-route"]);
 
 export const wantsText = (path: string): boolean =>
   RULES.some((rule) => rule.path.test(path) && (rule.text !== undefined || !PATH_ONLY.has(rule.pattern))) ||

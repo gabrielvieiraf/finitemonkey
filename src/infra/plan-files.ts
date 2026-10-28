@@ -49,7 +49,7 @@ export const writePlanned = (
 };
 
 const FORMAT_TIMEOUT_MS = 20_000;
-const PRETTIER = /\.(?:ya?ml|json|md)$/;
+const PRETTIER = /\.(?:ya?ml|json|md|[cm]?js)$/;
 
 export const projectFormat =
   (runtime: Pick<Runtime, "stat" | "exec">, root: AbsolutePath) =>

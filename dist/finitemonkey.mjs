@@ -4972,7 +4972,8 @@ var OPTIONAL_GUARDS = [
   "deploy-plan",
   "deploy-generate",
   "deploy-drift",
-  "headers"
+  "headers",
+  "observability"
 ];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "fourth-attempt",
@@ -10888,7 +10889,26 @@ var en_default = {
   "gate.headers.missing.hsts": "{route}: no Strict-Transport-Security with max-age",
   "gate.headers.missing.nosniff": "{route}: X-Content-Type-Options is not nosniff",
   "gate.headers.missing.referrer": "{route}: no Referrer-Policy",
-  "gate.headers.missing.frame-ancestors": "{route}: no frame-ancestors in the CSP (or X-Frame-Options DENY/SAMEORIGIN)"
+  "gate.headers.missing.frame-ancestors": "{route}: no frame-ancestors in the CSP (or X-Frame-Options DENY/SAMEORIGIN)",
+  "command.observe.summary": "List the observability the project level needs, what exists, and write the scrubber, logger and plan that are missing",
+  "observe.title": "Observability for level {level}:",
+  "observe.state.exists": "  [exists] {item}",
+  "observe.state.generated": "  [this command writes it] {item}: {file}",
+  "observe.state.person": "  [for the team to set up] {item}",
+  "observe.item.platform-logs": "the platform's own logs and error view",
+  "observe.item.external-monitor": "a free external uptime monitor on the home route",
+  "observe.item.error-tracking": "error tracking (Sentry, an APM or OpenTelemetry)",
+  "observe.item.scrubber": "a beforeSend that strips bodies, messages and personal data from error reports",
+  "observe.item.json-logs": "JSON logs on stdout without customer content",
+  "observe.item.health-route": "a health route, confirmed by the runtime check",
+  "observe.item.monitor-health-payment": "an external monitor on the health route and on the payment flow",
+  "observe.item.alerts-team": "alerts to the team channel and a GitHub issue for each new error",
+  "observe.item.releases-sourcemaps": "releases and source maps uploaded to the error tracker",
+  "observe.item.aggregator-retention": "a log aggregator with a declared retention",
+  "observe.item.synthetic-checks": "a synthetic check per critical flow",
+  "observe.item.alerts-severity": "alerts by severity, each with an owner",
+  "observe.off": "observability is off in .finitemonkey/policy.yml.",
+  "observe.no_signup": "Finite Monkey signs up for no service: accounts, monitors and alert channels are created by the team."
 };
 
 // src/i18n/es.json
@@ -12660,7 +12680,26 @@ var es_default = {
   "gate.headers.missing.hsts": "{route}: sin Strict-Transport-Security con max-age",
   "gate.headers.missing.nosniff": "{route}: X-Content-Type-Options no es nosniff",
   "gate.headers.missing.referrer": "{route}: sin Referrer-Policy",
-  "gate.headers.missing.frame-ancestors": "{route}: sin frame-ancestors en la CSP (o X-Frame-Options DENY/SAMEORIGIN)"
+  "gate.headers.missing.frame-ancestors": "{route}: sin frame-ancestors en la CSP (o X-Frame-Options DENY/SAMEORIGIN)",
+  "command.observe.summary": "Lista la observabilidad que pide el nivel del proyecto, lo que ya existe, y escribe el scrubber, el logger y el plan que faltan",
+  "observe.title": "Observabilidad para el nivel {level}:",
+  "observe.state.exists": "  [existe] {item}",
+  "observe.state.generated": "  [este comando lo escribe] {item}: {file}",
+  "observe.state.person": "  [lo configura el equipo] {item}",
+  "observe.item.platform-logs": "los logs y la vista de errores de la propia plataforma",
+  "observe.item.external-monitor": "un monitor externo gratuito de disponibilidad en la ruta inicial",
+  "observe.item.error-tracking": "seguimiento de errores (Sentry, un APM u OpenTelemetry)",
+  "observe.item.scrubber": "un beforeSend que quita cuerpos, mensajes y datos personales de los reportes de error",
+  "observe.item.json-logs": "logs en JSON en stdout sin contenido de clientes",
+  "observe.item.health-route": "una ruta de health, confirmada por el check runtime",
+  "observe.item.monitor-health-payment": "un monitor externo en la ruta de health y en el flujo de pago",
+  "observe.item.alerts-team": "alertas en el canal del equipo y una issue en GitHub por cada error nuevo",
+  "observe.item.releases-sourcemaps": "releases y source maps subidos al rastreador de errores",
+  "observe.item.aggregator-retention": "un agregador de logs con retención declarada",
+  "observe.item.synthetic-checks": "un check sintético por flujo crítico",
+  "observe.item.alerts-severity": "alertas por severidad, cada una con un responsable",
+  "observe.off": "observability está apagado en .finitemonkey/policy.yml.",
+  "observe.no_signup": "Finite Monkey no se registra en ningún servicio: las cuentas, los monitores y los canales de alerta los crea el equipo."
 };
 
 // src/i18n/pt-BR.json
@@ -14432,7 +14471,26 @@ var pt_BR_default = {
   "gate.headers.missing.hsts": "{route}: sem Strict-Transport-Security com max-age",
   "gate.headers.missing.nosniff": "{route}: X-Content-Type-Options não é nosniff",
   "gate.headers.missing.referrer": "{route}: sem Referrer-Policy",
-  "gate.headers.missing.frame-ancestors": "{route}: sem frame-ancestors na CSP (ou X-Frame-Options DENY/SAMEORIGIN)"
+  "gate.headers.missing.frame-ancestors": "{route}: sem frame-ancestors na CSP (ou X-Frame-Options DENY/SAMEORIGIN)",
+  "command.observe.summary": "Lista a observabilidade que o nível do projeto pede, o que já existe, e grava o scrubber, o logger e o plano que faltam",
+  "observe.title": "Observabilidade para o nível {level}:",
+  "observe.state.exists": "  [existe] {item}",
+  "observe.state.generated": "  [este comando grava] {item}: {file}",
+  "observe.state.person": "  [o time configura] {item}",
+  "observe.item.platform-logs": "os logs e a tela de erros da própria plataforma",
+  "observe.item.external-monitor": "um monitor externo gratuito de disponibilidade na rota inicial",
+  "observe.item.error-tracking": "rastreamento de erros (Sentry, um APM ou OpenTelemetry)",
+  "observe.item.scrubber": "um beforeSend que tira corpos, mensagens e dados pessoais dos relatórios de erro",
+  "observe.item.json-logs": "logs em JSON no stdout sem conteúdo de cliente",
+  "observe.item.health-route": "uma rota de health, confirmada pelo check runtime",
+  "observe.item.monitor-health-payment": "um monitor externo na rota de health e no fluxo de pagamento",
+  "observe.item.alerts-team": "alertas no canal do time e uma issue no GitHub para cada erro novo",
+  "observe.item.releases-sourcemaps": "releases e source maps enviados ao rastreador de erros",
+  "observe.item.aggregator-retention": "um agregador de logs com retenção declarada",
+  "observe.item.synthetic-checks": "um check sintético por fluxo crítico",
+  "observe.item.alerts-severity": "alertas por severidade, cada um com um dono",
+  "observe.off": "observability está desligado em .finitemonkey/policy.yml.",
+  "observe.no_signup": "O Finite Monkey não cria conta em serviço nenhum: contas, monitores e canais de alerta são criados pelo time."
 };
 
 // src/i18n/review.json
@@ -16205,7 +16263,26 @@ var review_default = {
     "gate.headers.missing.hsts": "machine",
     "gate.headers.missing.nosniff": "machine",
     "gate.headers.missing.referrer": "machine",
-    "gate.headers.missing.frame-ancestors": "machine"
+    "gate.headers.missing.frame-ancestors": "machine",
+    "command.observe.summary": "machine",
+    "observe.title": "machine",
+    "observe.state.exists": "machine",
+    "observe.state.generated": "machine",
+    "observe.state.person": "machine",
+    "observe.item.platform-logs": "machine",
+    "observe.item.external-monitor": "machine",
+    "observe.item.error-tracking": "machine",
+    "observe.item.scrubber": "machine",
+    "observe.item.json-logs": "machine",
+    "observe.item.health-route": "machine",
+    "observe.item.monitor-health-payment": "machine",
+    "observe.item.alerts-team": "machine",
+    "observe.item.releases-sourcemaps": "machine",
+    "observe.item.aggregator-retention": "machine",
+    "observe.item.synthetic-checks": "machine",
+    "observe.item.alerts-severity": "machine",
+    "observe.off": "machine",
+    "observe.no_signup": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -17975,7 +18052,26 @@ var review_default = {
     "gate.headers.missing.hsts": "machine",
     "gate.headers.missing.nosniff": "machine",
     "gate.headers.missing.referrer": "machine",
-    "gate.headers.missing.frame-ancestors": "machine"
+    "gate.headers.missing.frame-ancestors": "machine",
+    "command.observe.summary": "machine",
+    "observe.title": "machine",
+    "observe.state.exists": "machine",
+    "observe.state.generated": "machine",
+    "observe.state.person": "machine",
+    "observe.item.platform-logs": "machine",
+    "observe.item.external-monitor": "machine",
+    "observe.item.error-tracking": "machine",
+    "observe.item.scrubber": "machine",
+    "observe.item.json-logs": "machine",
+    "observe.item.health-route": "machine",
+    "observe.item.monitor-health-payment": "machine",
+    "observe.item.alerts-team": "machine",
+    "observe.item.releases-sourcemaps": "machine",
+    "observe.item.aggregator-retention": "machine",
+    "observe.item.synthetic-checks": "machine",
+    "observe.item.alerts-severity": "machine",
+    "observe.off": "machine",
+    "observe.no_signup": "machine"
   }
 };
 
@@ -18413,7 +18509,12 @@ var PATTERN_GROUP = {
   caddy: "server",
   "ssh-deploy": "ssh",
   "deploy-script": "script",
-  migrations: "migration"
+  migrations: "migration",
+  sentry: "observability",
+  opentelemetry: "observability",
+  "json-logger": "observability",
+  apm: "observability",
+  "health-route": "observability"
 };
 var STATIC_PLATFORMS = /* @__PURE__ */ new Set(["vercel", "netlify", "cloudflare", "github-pages"]);
 var RISK_SEVERITY = {
@@ -19296,7 +19397,7 @@ var writePlanned = (runtime, root, planned, overwrite) => {
   return { written, failed: failed9 };
 };
 var FORMAT_TIMEOUT_MS2 = 2e4;
-var PRETTIER = /\.(?:ya?ml|json|md)$/;
+var PRETTIER = /\.(?:ya?ml|json|md|[cm]?js)$/;
 var projectFormat = (runtime, root) => (path, text24) => {
   const bin = toAbsolutePath(join39(root, "node_modules", "prettier", "bin", "prettier.cjs"));
   if (!PRETTIER.test(path) || runtime.stat(bin) === void 0) return text24;
@@ -19354,9 +19455,20 @@ var RULES2 = [
   {
     pattern: "migrations",
     path: /(^|\/)(prisma\/migrations|migrations|db\/migrate|alembic\/versions|drizzle)\/.+$|(^|\/)(alembic\.ini|knexfile\.[cm]?[jt]s)$/
+  },
+  { pattern: "sentry", path: /(^|\/)package\.json$/, text: [/"@sentry\//] },
+  { pattern: "sentry", path: /(^|\/)(requirements[^/]*\.txt|pyproject\.toml)$/, text: [/sentry-sdk/] },
+  { pattern: "sentry", path: /(^|\/)sentry\.(client|server|edge)\.config\.[cm]?[jt]s$/ },
+  { pattern: "opentelemetry", path: /(^|\/)package\.json$/, text: [/"@opentelemetry\//] },
+  { pattern: "json-logger", path: /(^|\/)package\.json$/, text: [/"(pino|winston|bunyan)"\s*:/] },
+  { pattern: "json-logger", path: /(^|\/)observability\/log\.mjs$/ },
+  { pattern: "apm", path: /(^|\/)package\.json$/, text: [/"(dd-trace|newrelic|elastic-apm-node)"\s*:/] },
+  {
+    pattern: "health-route",
+    path: /(^|\/)(health|healthz|healthcheck)(\/route)?\.[cm]?[jt]sx?$|(^|\/)(api|app|pages\/api|routes)\/health[^/]*\//
   }
 ];
-var PATH_ONLY = /* @__PURE__ */ new Set(["migrations"]);
+var PATH_ONLY = /* @__PURE__ */ new Set(["migrations", "health-route"]);
 var wantsText = (path) => RULES2.some((rule) => rule.path.test(path) && (rule.text !== void 0 || !PATH_ONLY.has(rule.pattern))) || SHELLISH.test(path) || path === "package.json";
 var lineOf3 = (text24, index) => text24.slice(0, index).split("\n").length;
 var firstLine2 = (text24, patterns) => {
@@ -45245,6 +45357,242 @@ var genOwnershipCommand = {
   }
 };
 
+// src/observe/templates.ts
+var SCRUB_PATH = "observability/scrub.mjs";
+var LOG_PATH = "observability/log.mjs";
+var PLAN_PATH = "observability/plan.yml";
+var SCRUB_LINES = [
+  "// Written by finitemonkey observe. Use as the error tracker's beforeSend: Sentry.init({ beforeSend: scrubEvent }).",
+  "// Error reports keep the error type, the stack frames and the user id; bodies, messages and personal data go.",
+  'const SAFE_HEADERS = new Set(["content-type", "user-agent", "x-request-id"]);',
+  'const REDACTED = "[redacted]";',
+  "const PERSONAL = /[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+|\\b\\d[\\d .-]{7,}\\d\\b/g;",
+  "",
+  "const scrubText = (value) =>",
+  '  typeof value === "string" ? value.replace(PERSONAL, REDACTED) : value;',
+  "",
+  "const scrubRequest = (request) => {",
+  "  if (!request) return request;",
+  "  const headers = Object.fromEntries(",
+  "    Object.entries(request.headers ?? {}).filter(([name]) =>",
+  "      SAFE_HEADERS.has(name.toLowerCase()),",
+  "    ),",
+  "  );",
+  "  return {",
+  "    method: request.method,",
+  '    url: scrubText((request.url ?? "").split("?")[0]),',
+  "    headers,",
+  "  };",
+  "};",
+  "",
+  "const scrubException = (exception) =>",
+  "  exception && {",
+  "    ...exception,",
+  "    values: (exception.values ?? []).map((value) => ({",
+  "      ...value,",
+  "      value: REDACTED,",
+  "    })),",
+  "  };",
+  "",
+  "const scrubBreadcrumbs = (breadcrumbs) =>",
+  "  (breadcrumbs ?? []).map((crumb) => ({",
+  "    category: crumb.category,",
+  "    level: crumb.level,",
+  "    timestamp: crumb.timestamp,",
+  "  }));",
+  "",
+  "export const scrubEvent = (event) => {",
+  "  const tags = Object.fromEntries(",
+  "    Object.entries(event.tags ?? {}).map(([key, value]) => [",
+  "      key,",
+  "      scrubText(value),",
+  "    ]),",
+  "  );",
+  "  return {",
+  "    ...event,",
+  "    message: event.message === undefined ? undefined : REDACTED,",
+  "    logentry: undefined,",
+  "    request: scrubRequest(event.request),",
+  "    user: event.user?.id === undefined ? undefined : { id: event.user.id },",
+  "    exception: scrubException(event.exception),",
+  "    breadcrumbs: scrubBreadcrumbs(event.breadcrumbs),",
+  "    extra: undefined,",
+  "    contexts: undefined,",
+  "    tags,",
+  "  };",
+  "};",
+  ""
+];
+var scrubModule = () => SCRUB_LINES.join("\n");
+var LOG_LINES = [
+  "// Written by finitemonkey observe. One JSON line per event on stdout, with an allow-list of fields:",
+  "// no request body, no message text from customers, no personal data.",
+  "const FIELDS = new Set([",
+  '  "route",',
+  '  "method",',
+  '  "status",',
+  '  "durationMs",',
+  '  "requestId",',
+  '  "userId",',
+  '  "release",',
+  '  "errorType",',
+  "]);",
+  "",
+  "const allowed = ([key, value]) =>",
+  "  FIELDS.has(key) &&",
+  '  (typeof value === "number" ||',
+  '    (typeof value === "string" && value.length <= 120));',
+  "",
+  "const clean = ([key, value]) => [",
+  "  key,",
+  '  key === "route" ? value.split("?")[0] : value,',
+  "];",
+  "",
+  "export const log = (level, event, fields = {}) => {",
+  "  const kept = Object.fromEntries(",
+  "    Object.entries(fields).filter(allowed).map(clean),",
+  "  );",
+  "  process.stdout.write(",
+  "    `${JSON.stringify({ time: new Date().toISOString(), level, event, ...kept })}\\n`,",
+  "  );",
+  "};",
+  ""
+];
+var logModule = () => LOG_LINES.join("\n");
+var planFile = (level) => [
+  "# Written by finitemonkey observe for level " + String(level) + ". Finite Monkey signs up for nothing:",
+  "# fill this in with the services the team chose and keep it next to the code.",
+  "releases:",
+  "  source_maps: false",
+  "aggregator:",
+  '  name: ""',
+  "  retention_days: null",
+  "synthetic_checks:",
+  '  - flow: ""',
+  '    url: ""',
+  "alerts:",
+  "  - severity: critical",
+  '    owner: ""',
+  '    channel: ""',
+  "  - severity: warning",
+  '    owner: ""',
+  '    channel: ""',
+  ""
+].join("\n");
+
+// src/observe/items.ts
+var TEAM = [
+  "error-tracking",
+  "scrubber",
+  "json-logs",
+  "health-route",
+  "releases-sourcemaps",
+  "aggregator-retention",
+  "synthetic-checks",
+  "alerts-severity"
+];
+var BY_LEVEL = {
+  0: ["platform-logs", "external-monitor"],
+  1: ["error-tracking", "scrubber", "json-logs", "health-route", "monitor-health-payment", "alerts-team"],
+  2: TEAM,
+  3: TEAM
+};
+var DETECTED = {
+  "error-tracking": ["sentry", "apm", "opentelemetry"],
+  "json-logs": ["json-logger"],
+  "health-route": ["health-route"]
+};
+var GENERATED = {
+  scrubber: SCRUB_PATH,
+  "json-logs": LOG_PATH,
+  "aggregator-retention": PLAN_PATH,
+  "synthetic-checks": PLAN_PATH,
+  "alerts-severity": PLAN_PATH
+};
+var observeRows = (level, inventory, existing) => BY_LEVEL[level].map((item2) => {
+  const patterns = DETECTED[item2] ?? [];
+  const file = GENERATED[item2];
+  const healthy = item2 === "health-route" && inventory.targets.some((target4) => target4.health === "yes");
+  const exists2 = healthy || inventory.hits.some((hit3) => patterns.includes(hit3.pattern)) || file !== void 0 && existing(file);
+  const state = file === void 0 ? exists2 ? "exists" : "person" : exists2 ? "exists" : "generated";
+  return { item: item2, state, exists: exists2, ...file === void 0 ? {} : { file } };
+});
+var filesFor = (level) => level === 0 ? [] : level === 1 ? [SCRUB_PATH, LOG_PATH] : [SCRUB_PATH, LOG_PATH, PLAN_PATH];
+
+// src/commands/observe.ts
+var OBSERVE_SCHEMA = "finitemonkey/observe@1";
+var OBSERVE_FEATURE = "observability";
+var textFor = (path, level) => path === SCRUB_PATH ? scrubModule() : path === LOG_PATH ? logModule() : planFile(level);
+var rowLine = (ctx, row2) => ctx.t(`observe.state.${row2.state}`, { item: ctx.t(`observe.item.${row2.item}`), file: row2.file ?? "-" });
+var fileLines2 = (ctx, planned, written) => {
+  const creates = planned.filter((file) => file.action === "create");
+  return [
+    ...creates.flatMap((file) => [
+      ctx.t("deploy.generate.file.create", { file: file.path }),
+      ...file.diff.map((line11) => `    ${line11}`)
+    ]),
+    ...planned.filter((file) => file.action === "differs").map((file) => ctx.t("deploy.generate.file.differs", { file: file.path })),
+    ctx.t(
+      written > 0 ? "deploy.generate.written" : creates.length > 0 ? "deploy.generate.preview" : "deploy.generate.nothing",
+      {
+        count: written
+      }
+    )
+  ];
+};
+var runObserve = (ctx, root) => {
+  const paths = fmPaths(root);
+  const mode = featureMode(ctx.runtime, paths, OBSERVE_FEATURE);
+  if (mode === "off") return success({ schema: OBSERVE_SCHEMA, mode }, [ctx.t("observe.off")]);
+  const inventory = scanInfra(ctx.runtime, root, readHosts(ctx.runtime, root));
+  const recorded = readLevel(ctx.runtime, root);
+  const level = recorded?.source === "confirmed" ? recorded.level : inventory.level;
+  const format = projectFormat(ctx.runtime, root);
+  const planned = planFiles3(
+    ctx.runtime,
+    root,
+    filesFor(level).map((path) => ({ path, text: format(path, textFor(path, level)) }))
+  );
+  const rows = observeRows(
+    level,
+    inventory,
+    (path) => planned.some((file) => file.path === path && file.action !== "create")
+  );
+  const creates = planned.filter((file) => file.action === "create");
+  const apply2 = ctx.yes && !ctx.dryRun && mode === "active" && creates.length > 0;
+  if (ctx.yes && mode === "shadow")
+    recordFeatureShadow(ctx.runtime, paths, OBSERVE_FEATURE, { creates: creates.length });
+  const written = apply2 ? writePlanned(ctx.runtime, root, planned, false).written : [];
+  const human2 = [
+    ctx.t("observe.title", { level }),
+    ...rows.map((row2) => rowLine(ctx, row2)),
+    ...fileLines2(ctx, planned, written.length),
+    ctx.t("observe.no_signup")
+  ];
+  const data2 = {
+    schema: OBSERVE_SCHEMA,
+    level,
+    items: rows,
+    files: planned.map(({ path, action }) => ({ path, action })),
+    written
+  };
+  const result = success(data2, human2);
+  return creates.length > 0 && !apply2 ? { ...result, next: "finitemonkey observe --yes" } : result;
+};
+var observeCommand = {
+  path: ["observe"],
+  summaryKey: "command.observe.summary",
+  usage: "finitemonkey observe [--dry-run] [--yes]",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => {
+    const repo = repoOf(ctx);
+    return Promise.resolve(
+      repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : runObserve(ctx, repo.root)
+    );
+  }
+};
+
 // src/commands/parity.ts
 var inRepo4 = (ctx, run9) => {
   const repo = repoOf(ctx);
@@ -46202,7 +46550,7 @@ var proseCheckData = (reports) => {
     }
   };
 };
-var fileLines2 = (t, report2) => {
+var fileLines3 = (t, report2) => {
   if (report2.report.allowed) return [t("prose.check.allowed", { file: report2.file, marker: ALLOW_FILE_COMMENT })];
   const { spans } = report2.report;
   if (spans.length === 0) return [];
@@ -46221,7 +46569,7 @@ var fileLines2 = (t, report2) => {
   ];
 };
 var proseCheckHuman = (t, reports, data2) => [
-  ...reports.flatMap((report2) => fileLines2(t, report2)),
+  ...reports.flatMap((report2) => fileLines3(t, report2)),
   ...data2.summary.spans === 0 ? [t("prose.check.clean", { count: data2.summary.files })] : []
 ];
 
@@ -49461,6 +49809,7 @@ var REGISTRY2 = [
   deployPlanCommand,
   deployGenerateCommand,
   deployCheckCommand,
+  observeCommand,
   versionCommand,
   helpCommand
 ];
