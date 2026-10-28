@@ -4,6 +4,7 @@ import { findGitRoot } from "../install/project.js";
 import { checkBriefing } from "./briefing.js";
 import { checkClaudeSettings } from "./claude-settings.js";
 import { checkEnvHygiene } from "./env-hygiene.js";
+import { checkCoexistence } from "./coexistence.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkGithubRules } from "./github.js";
 import { checkHooks } from "./hooks.js";
@@ -40,6 +41,7 @@ export const CHECKS: readonly Check[] = [
   checkRewriters,
   checkEnvHygiene,
   checkSupplyChain,
+  checkCoexistence,
   checkHooks,
 ];
 

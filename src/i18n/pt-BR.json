@@ -1192,5 +1192,18 @@
   "deps.scan.warn": "{name}@{version}: {id} ({severity}) avisa; corrija até {deadline}.",
   "deps.config.preview": "Nada foi gravado. Rode de novo com --write para salvar como {file}.",
   "deps.config.written": "{file} gravado.",
-  "deps.config.write_failed": "Não deu para gravar {file}: {detail}"
+  "deps.config.write_failed": "Não deu para gravar {file}: {detail}",
+  "doctor.hooks.inventory": "{count, plural, one {# hook} other {# hooks}} de plugins e configurações (evento, origem, modo de falha, latência, saída, autoridade no Stop, comando):",
+  "doctor.coexist.authorities": "Outra autoridade de loop também usa o Stop: {others}. O Claude Code roda todo hook de Stop e qualquer bloqueio mantém a sessão rodando.",
+  "doctor.coexist.fix_authorities": "Mantenha um critério de saída só: o contrato da tarefa conferido pelo portão. Desligue o hook de Stop do outro plugin nas configurações dele; o finitemonkey não mexe nisso.",
+  "doctor.coexist.duplicate": "O mesmo hook roda duas vezes, pelo plugin e pelas configurações: {hooks}.",
+  "doctor.coexist.fix_duplicate": "Tire a cópia das configurações e fique com a do plugin, ou desative o plugin.",
+  "doctor.coexist.disabled_plugin": "O plugin {plugin} está desativado, mas um hook nas configurações ainda roda os arquivos dele.",
+  "doctor.coexist.fix_disabled_plugin": "Tire esse hook das configurações ou ative o plugin de novo.",
+  "doctor.coexist.proxy": "ANTHROPIC_BASE_URL aponta para um proxy nesta máquina; ele vê e pode alterar cada requisição e resposta.",
+  "doctor.coexist.fix_proxy": "Remova ANTHROPIC_BASE_URL, a menos que o proxy seja seu e confiável.",
+  "doctor.coexist.output_rewriter": "Hooks de {owners} rodam depois das ferramentas e podem reescrever o que o modelo lê como evidência.",
+  "doctor.coexist.fix_output_rewriter": "Confira se esses hooks só acrescentam contexto; o portão confia nas próprias execuções, não na saída das ferramentas.",
+  "doctor.coexist.memory_tool": "{file} foi editado por uma ferramenta de memória ({tool}) depois que o finitemonkey o instalou.",
+  "doctor.coexist.fix_memory_tool": "Revise as linhas acrescentadas; arquivo de instrução guarda regra, não anotação de sessão."
 }

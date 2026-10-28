@@ -1153,7 +1153,20 @@
     "deps.scan.warn": "machine",
     "deps.config.preview": "machine",
     "deps.config.written": "machine",
-    "deps.config.write_failed": "machine"
+    "deps.config.write_failed": "machine",
+    "doctor.hooks.inventory": "machine",
+    "doctor.coexist.authorities": "machine",
+    "doctor.coexist.fix_authorities": "machine",
+    "doctor.coexist.duplicate": "machine",
+    "doctor.coexist.fix_duplicate": "machine",
+    "doctor.coexist.disabled_plugin": "machine",
+    "doctor.coexist.fix_disabled_plugin": "machine",
+    "doctor.coexist.proxy": "machine",
+    "doctor.coexist.fix_proxy": "machine",
+    "doctor.coexist.output_rewriter": "machine",
+    "doctor.coexist.fix_output_rewriter": "machine",
+    "doctor.coexist.memory_tool": "machine",
+    "doctor.coexist.fix_memory_tool": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2309,6 +2322,19 @@
     "deps.scan.warn": "machine",
     "deps.config.preview": "machine",
     "deps.config.written": "machine",
-    "deps.config.write_failed": "machine"
+    "deps.config.write_failed": "machine",
+    "doctor.hooks.inventory": "machine",
+    "doctor.coexist.authorities": "machine",
+    "doctor.coexist.fix_authorities": "machine",
+    "doctor.coexist.duplicate": "machine",
+    "doctor.coexist.fix_duplicate": "machine",
+    "doctor.coexist.disabled_plugin": "machine",
+    "doctor.coexist.fix_disabled_plugin": "machine",
+    "doctor.coexist.proxy": "machine",
+    "doctor.coexist.fix_proxy": "machine",
+    "doctor.coexist.output_rewriter": "machine",
+    "doctor.coexist.fix_output_rewriter": "machine",
+    "doctor.coexist.memory_tool": "machine",
+    "doctor.coexist.fix_memory_tool": "machine"
   }
 }
