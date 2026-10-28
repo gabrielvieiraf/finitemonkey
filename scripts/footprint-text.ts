@@ -1,10 +1,11 @@
 import type { FootprintId } from "../src/core/footprint.js";
+import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
 
 export type Lang = (typeof LANGS)[number];
 
-type Localized = Readonly<Record<Lang, string>>;
+export type Localized = Readonly<Record<Lang, string>>;
 
 export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
   "hook-input": {
@@ -316,6 +317,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Só com `finitemonkey deploy generate --yes`, e só arquivos que ainda não existem: o workflow de deploy, o script que o servidor roda e o compose dele. Um arquivo existente nunca é sobrescrito; o diff aparece no lugar.",
     es: "Solo con `finitemonkey deploy generate --yes`, y solo archivos que aún no existen: el workflow de despliegue, el script que corre el servidor y su compose. Un archivo existente nunca se sobrescribe; en su lugar se muestra el diff.",
   },
+  ...DEPLOY_FOOTPRINT_TEXT,
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

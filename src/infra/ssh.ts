@@ -4,14 +4,14 @@ import type { HostEntry } from "./types.js";
 
 export const SSH_TIMEOUT_MS = 20_000;
 const SAFE_PATH = /^[\w./~-]+$/;
-const SAFE_NAME = /^[\w.-]+$/;
+export const REVISION_LABEL = "org.opencontainers.image.revision";
 const SAFE_HOST = /^[A-Za-z0-9][\w.:-]*$/;
 const SAFE_USER = /^[A-Za-z_][\w.-]*$/;
 
 export type ReadCommand =
   | { readonly kind: "containers" }
   | { readonly kind: "services" }
-  | { readonly kind: "revision"; readonly container: string }
+  | { readonly kind: "revisions" }
   | { readonly kind: "git-status"; readonly path: string }
   | { readonly kind: "git-head"; readonly path: string };
 
@@ -23,12 +23,8 @@ export const remoteCommand = (command: ReadCommand): string | undefined => {
       return "docker ps --no-trunc --format '{{.Names}} {{.Image}}'";
     case "services":
       return "systemctl list-units --type=service --state=running --no-legend --plain";
-    case "revision": {
-      const name = quote(command.container, SAFE_NAME);
-      return name === undefined
-        ? undefined
-        : `docker inspect --format '{{.Image}} {{index .Config.Labels "org.opencontainers.image.revision"}}' ${name}`;
-    }
+    case "revisions":
+      return `docker ps --no-trunc --format '{{.Names}} {{.Image}} {{.Label "${REVISION_LABEL}"}}'`;
     case "git-status": {
       const path = quote(command.path, SAFE_PATH);
       return path === undefined ? undefined : `git -C ${path} status --porcelain`;

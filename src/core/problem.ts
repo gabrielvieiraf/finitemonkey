@@ -95,6 +95,8 @@ export const ERROR_CODES = [
   "deploy_level_needs_decision",
   "deploy_write_failed",
   "deploy_generate_blocked",
+  "deploy_drift_found",
+  "deploy_check_unconfigured",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

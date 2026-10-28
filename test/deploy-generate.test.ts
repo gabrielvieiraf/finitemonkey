@@ -9,7 +9,7 @@ import { after, describe, it } from "node:test";
 import { check as prettierCheck } from "prettier";
 
 import type { TextSource } from "../src/core/context.js";
-import { composeFile, deployWorkflow, remoteScript } from "../src/deploy/templates.js";
+import { composeFile, deployWorkflow, driftWorkflow, remoteScript } from "../src/deploy/templates.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cli, cliJson, field } from "./support.js";
 
@@ -59,7 +59,7 @@ const dangerous = (workflow: string): readonly string[] => [
     ? []
     : ["persisted token"]),
   ...(/^permissions: \{\}$/m.test(workflow) ? [] : ["default permissions"]),
-  ...(workflow.match(/packages: write/g)?.length === 1 ? [] : ["packages: write outside the image job"]),
+  ...((workflow.match(/packages: write/g)?.length ?? 0) <= 1 ? [] : ["packages: write outside the image job"]),
   ...(jobsOf(workflow).match(/^ {2}[\w-]+:$/gm)?.length === workflow.match(/timeout-minutes:/g)?.length
     ? []
     : ["no timeout"]),
@@ -73,6 +73,14 @@ describe("deploy generate templates", () => {
     assert.ok(await prettierCheck(composeFile(3000), { parser: "yaml" }));
     assert.match(workflow, /StrictHostKeyChecking=yes/);
     assert.match(workflow, /needs: check/);
+  });
+
+  it("the scheduled drift workflow has no dangerous pattern either", async () => {
+    const drift = driftWorkflow("main", "1.2.3");
+    assert.deepEqual(dangerous(drift), []);
+    assert.ok(await prettierCheck(drift, { parser: "yaml" }), drift);
+    assert.match(drift, /deploy check --issue/);
+    assert.match(drift, /issues: write/);
   });
 
   it("the audit catches the planted dangerous patterns", () => {
@@ -194,6 +202,7 @@ describe("finitemonkey deploy generate", () => {
     assert.match(workflow, /run: npm ci/);
     assert.match(workflow, /run: npm run test/);
     assert.match(repo.read("deploy/remote.sh"), /rolled back to/);
+    assert.deepEqual(dangerous(repo.read(".github/workflows/drift.yml")), []);
   });
 
   it("refuses projects that are not one server", async () => {

@@ -30,6 +30,7 @@ export const CHECK_KINDS = [
   "regression",
   "copy",
   "migrations",
+  "deploy",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

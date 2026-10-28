@@ -46,6 +46,7 @@ const options = (ctx: Ctx, root: AbsolutePath, values: OptionValues) => {
     port: Number.isInteger(port) && port > 0 && port < 65_536 ? port : DEFAULT_PORT,
     health: health.startsWith("/") ? health : `/${health}`,
     check: stringOption(values, "check"),
+    version: ctx.version,
   };
 };
 

@@ -5,13 +5,23 @@ import type { Runtime } from "../core/runtime.js";
 import type { WantedFile } from "../infra/plan-files.js";
 import type { Inventory } from "../infra/types.js";
 import { detectChecks, type ProjectFiles } from "../task/implicit.js";
-import { COMPOSE_PATH, composeFile, deployWorkflow, REMOTE_PATH, remoteScript, WORKFLOW_PATH } from "./templates.js";
+import {
+  COMPOSE_PATH,
+  composeFile,
+  deployWorkflow,
+  DRIFT_PATH,
+  driftWorkflow,
+  REMOTE_PATH,
+  remoteScript,
+  WORKFLOW_PATH,
+} from "./templates.js";
 
 export interface GenerateOptions {
   readonly branch: string;
   readonly port: number;
   readonly health: string;
   readonly check: string | undefined;
+  readonly version: string;
 }
 
 export type GenerateBlock = "level" | "no_dockerfile" | "no_check";
@@ -56,6 +66,7 @@ export const planGenerate = (
       { path: WORKFLOW_PATH, text: deployWorkflow(input) },
       { path: REMOTE_PATH, text: remoteScript() },
       { path: COMPOSE_PATH, text: composeFile(options.port) },
+      { path: DRIFT_PATH, text: driftWorkflow(options.branch, options.version) },
     ],
   };
 };

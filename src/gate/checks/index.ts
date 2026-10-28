@@ -5,6 +5,7 @@ import { commandCheck } from "./command.js";
 import { copyCheck } from "./copy.js";
 import { costCheck } from "./cost.js";
 import { decisionCheck } from "./decision.js";
+import { deployCheck } from "./deploy.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
 import { inventoryCheck } from "./inventory.js";
@@ -56,4 +57,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   prod: prodCheck,
   copy: copyCheck,
   migrations: migrationsCheck,
+  deploy: deployCheck,
 };
