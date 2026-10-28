@@ -46,10 +46,7 @@ export const probeGreen = (probe: Probe, view: ProjectView): boolean => {
     case "grep":
       return probe.all.every((pattern) => view.grep(pattern));
     case "deps":
-      return (
-        probe.any.some((name) => hasDependency(view.manifests, name)) ||
-        (probe.orGrep !== undefined && view.grep(probe.orGrep))
-      );
+      return probe.any.some((name) => hasDependency(view.manifests, name));
     case "contract":
       return view.passed(probe.kind);
     case "manual":

@@ -11,7 +11,7 @@ export type Area = (typeof AREAS)[number];
 export type Probe =
   | { readonly type: "files"; readonly any: readonly string[] }
   | { readonly type: "grep"; readonly all: readonly string[] }
-  | { readonly type: "deps"; readonly any: readonly string[]; readonly orGrep?: string }
+  | { readonly type: "deps"; readonly any: readonly string[] }
   | { readonly type: "contract"; readonly kind: CheckKind }
   | { readonly type: "manual" };
 

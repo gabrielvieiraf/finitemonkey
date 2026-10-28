@@ -2,6 +2,7 @@ import { findRepoRoot, sessionCwd } from "../gate/hooks/common.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { fmPaths } from "../task/paths.js";
 import { evaluateBlueprint } from "./evaluate.js";
+import { labelGuard } from "./label-guard.js";
 import { activeBlueprint, approvedItems, readCachedBar, writeCachedBar } from "./store.js";
 import { projectView } from "./view.js";
 
@@ -20,3 +21,5 @@ export const refreshBar: HookHandler = (input) => {
 };
 
 export const PLANTA_HANDLERS: HookHandlers = { Stop: [refreshBar] };
+
+export const LABEL_HANDLERS: HookHandlers = { Stop: [labelGuard] };

@@ -7694,7 +7694,15 @@ var en_default = {
   "planta.how.manual": "Manual: the person confirms it with the line fm: approve planta/{id} <how it was checked>",
   "planta.installed.task": "Blueprint {type} recorded in the contract of {task}.",
   "planta.installed.project": "Blueprint {type} recorded for the project; no active task to record it in.",
-  "statusline.planta": "{type} {green}/{total}"
+  "statusline.planta": "{type} {green}/{total}",
+  "planta.lang": "en",
+  "planta.label.artifact.screens": "a screen prototype (screens without a server, database or accounts)",
+  "planta.label.artifact.no_accounts": "an app without accounts",
+  "planta.label.artifact.unfinished": "an app that still misses minimum items of its blueprint",
+  "planta.label.artifact.landing": "a landing page",
+  "planta.label.reason": 'The final message uses the label "{label}" ("{phrase}"), but the project blueprint says this is {artifact}. Missing for that label ({count}): {list}. Rewrite the final message to say what was built and what is missing, without the label, or build the missing items first. finitemonkey planta shows the bar.',
+  "planta.label.human": 'label "{label}" held: this is {artifact}. Missing: {list}.',
+  "planta.label.exhausted": 'the label "{label}" was held too many times in a row; letting the turn end. This is {artifact}. Missing: {list}.'
 };
 
 // src/i18n/es.json
@@ -9020,7 +9028,15 @@ var es_default = {
   "planta.how.manual": "Manual: la persona lo confirma con la línea fm: approve planta/{id} <cómo lo comprobó>",
   "planta.installed.task": "Plano {type} registrado en el contrato de {task}.",
   "planta.installed.project": "Plano {type} registrado para el proyecto; no hay una tarea activa donde registrarlo.",
-  "statusline.planta": "{type} {green}/{total}"
+  "statusline.planta": "{type} {green}/{total}",
+  "planta.lang": "es",
+  "planta.label.artifact.screens": "un prototipo de pantallas (pantallas sin servidor, base de datos ni cuentas)",
+  "planta.label.artifact.no_accounts": "una aplicación sin cuentas",
+  "planta.label.artifact.unfinished": "una aplicación a la que aún le faltan elementos mínimos de su plano",
+  "planta.label.artifact.landing": "una página de aterrizaje",
+  "planta.label.reason": 'El mensaje final usa la etiqueta "{label}" ("{phrase}"), pero el plano del proyecto dice que esto es {artifact}. Falta para esa etiqueta ({count}): {list}. Reescribe el mensaje final diciendo qué se construyó y qué falta, sin la etiqueta, o construye antes lo que falta. finitemonkey planta muestra la barra.',
+  "planta.label.human": 'etiqueta "{label}" detenida: esto es {artifact}. Falta: {list}.',
+  "planta.label.exhausted": 'la etiqueta "{label}" se detuvo demasiadas veces seguidas; el turno puede terminar. Esto es {artifact}. Falta: {list}.'
 };
 
 // src/i18n/pt-BR.json
@@ -10346,7 +10362,15 @@ var pt_BR_default = {
   "planta.how.manual": "Manual: a pessoa confirma com a linha fm: approve planta/{id} <como conferiu>",
   "planta.installed.task": "Planta {type} registrada no contrato de {task}.",
   "planta.installed.project": "Planta {type} registrada para o projeto; não há tarefa ativa para registrar.",
-  "statusline.planta": "{type} {green}/{total}"
+  "statusline.planta": "{type} {green}/{total}",
+  "planta.lang": "pt-BR",
+  "planta.label.artifact.screens": "um protótipo de tela (telas sem servidor, banco ou contas)",
+  "planta.label.artifact.no_accounts": "um app sem contas",
+  "planta.label.artifact.unfinished": "um app que ainda não tem itens mínimos da planta",
+  "planta.label.artifact.landing": "uma página de venda",
+  "planta.label.reason": 'A mensagem final usa o rótulo "{label}" ("{phrase}"), mas a planta do projeto diz que isto é {artifact}. Falta para esse rótulo ({count}): {list}. Reescreva a mensagem final dizendo o que foi feito e o que falta, sem o rótulo, ou construa antes o que falta. finitemonkey planta mostra a barra.',
+  "planta.label.human": 'rótulo "{label}" segurado: isto é {artifact}. Falta: {list}.',
+  "planta.label.exhausted": 'o rótulo "{label}" foi segurado vezes demais seguidas; o turno pode terminar. Isto é {artifact}. Falta: {list}.'
 };
 
 // src/i18n/review.json
@@ -11633,7 +11657,15 @@ var review_default = {
     "planta.how.manual": "machine",
     "planta.installed.task": "machine",
     "planta.installed.project": "machine",
-    "statusline.planta": "machine"
+    "statusline.planta": "machine",
+    "planta.lang": "machine",
+    "planta.label.artifact.screens": "machine",
+    "planta.label.artifact.no_accounts": "machine",
+    "planta.label.artifact.unfinished": "machine",
+    "planta.label.artifact.landing": "machine",
+    "planta.label.reason": "machine",
+    "planta.label.human": "machine",
+    "planta.label.exhausted": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -12917,7 +12949,15 @@ var review_default = {
     "planta.how.manual": "machine",
     "planta.installed.task": "machine",
     "planta.installed.project": "machine",
-    "statusline.planta": "machine"
+    "statusline.planta": "machine",
+    "planta.lang": "machine",
+    "planta.label.artifact.screens": "machine",
+    "planta.label.artifact.no_accounts": "machine",
+    "planta.label.artifact.unfinished": "machine",
+    "planta.label.artifact.landing": "machine",
+    "planta.label.reason": "machine",
+    "planta.label.human": "machine",
+    "planta.label.exhausted": "machine"
   }
 };
 
@@ -14097,7 +14137,7 @@ var GUARD_MODES = ["off", "shadow", "active"];
 var LEVELS = ["light", "standard", "strict"];
 var SEVERITIES2 = ["low", "medium", "high"];
 var DEFAULT_PROMOTE_AFTER = 20;
-var OPTIONAL_GUARDS = ["prose", "deps", "creds-static", "appsec", "signals", "fourth-attempt", "ricochete"];
+var OPTIONAL_GUARDS = ["prose", "deps", "creds-static", "appsec", "signals", "fourth-attempt", "ricochete", "label"];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set(["fourth-attempt"]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -25258,8 +25298,20 @@ var SAAS = [
     after: ["database"],
     probe: {
       type: "deps",
-      any: ["next-auth", "@auth/core", "@clerk/nextjs", "lucia", "passport", "better-auth", "@supabase/supabase-js"],
-      orGrep: "sign_?in|log_?in|authenticate"
+      any: [
+        "next-auth",
+        "@auth/core",
+        "@clerk/nextjs",
+        "@clerk/clerk-react",
+        "lucia",
+        "passport",
+        "better-auth",
+        "@supabase/supabase-js",
+        "firebase",
+        "django-allauth",
+        "devise",
+        "flask-login"
+      ]
     }
   },
   {
@@ -25281,8 +25333,7 @@ var SAAS = [
     after: ["auth"],
     probe: {
       type: "deps",
-      any: ["stripe", "asaas", "mercadopago", "@paddle/paddle-node-sdk", "@lemonsqueezy/lemonsqueezy.js"],
-      orGrep: "checkout|subscription"
+      any: ["stripe", "asaas", "mercadopago", "@paddle/paddle-node-sdk", "@lemonsqueezy/lemonsqueezy.js"]
     }
   },
   { id: "webhooks", area: "money", after: ["billing"], probe: { type: "grep", all: ["idempoten"] } },
@@ -25383,7 +25434,7 @@ var probeGreen = (probe, view2) => {
     case "grep":
       return probe.all.every((pattern) => view2.grep(pattern));
     case "deps":
-      return probe.any.some((name) => hasDependency(view2.manifests, name)) || probe.orGrep !== void 0 && view2.grep(probe.orGrep);
+      return probe.any.some((name) => hasDependency(view2.manifests, name));
     case "contract":
       return view2.passed(probe.kind);
     case "manual":
@@ -25415,6 +25466,594 @@ var evaluateBlueprint = (type, view2, approved = /* @__PURE__ */ new Set()) => {
     next: nextItem(items, results),
     tree: view2.tree
   };
+};
+
+// src/planta/labels.ts
+var LABELS = ["saas", "production", "done"];
+var READY = String.raw`(?:ready|done|finished|complete|completed|live|launched|pronto|pronta|prontos|conclu[ií]d[oa]|finalizad[oa]|terminad[oa]|no ar|listo|lista|terminado|completado|acabado|funcionando)`;
+var PRODUCT = String.raw`(?:saas|app|application|aplicativo|aplicaci[oó]n|product|produto|producto|platform|plataforma|system|sistema|site|website|landing(?: page)?|p[aá]gina|project|projeto|proyecto)`;
+var GAP = String.raw`(?:\s+\S+){0,5}?\s+`;
+var PATTERNS2 = {
+  saas: [new RegExp(String.raw`\bsaas\b${GAP}${READY}\b`, "i"), new RegExp(String.raw`\b${READY}${GAP}saas\b`, "i")],
+  production: [
+    /\b(?:production[- ]ready|ready for production|ready to ship|in production|prod[- ]ready)\b/i,
+    /\b(?:pronto para (?:a )?produção|em produção|pronto pra produção)/i,
+    /\b(?:listo para (?:la )?producción|en producción)/i
+  ],
+  done: [
+    new RegExp(String.raw`\b${PRODUCT}\b${GAP}(?:is|est[aá]|fica|qued[oó]|ficou|esta)${GAP}?${READY}\b`, "i"),
+    new RegExp(String.raw`\b${PRODUCT}\b\s+${READY}\b`, "i")
+  ]
+};
+var sentences = (text15) => text15.split(/(?<=[.!?\n])\s+/).map((sentence) => sentence.trim()).filter((sentence) => sentence !== "");
+var findLabels = (text15) => {
+  const hits = [];
+  for (const label2 of LABELS) {
+    const phrase = sentences(text15).find((sentence) => PATTERNS2[label2].some((pattern) => pattern.test(sentence)));
+    if (phrase !== void 0) hits.push({ label: label2, phrase: phrase.slice(0, 160) });
+  }
+  return hits;
+};
+
+// src/planta/text/en.ts
+var en2 = {
+  problem: {
+    title: "Problem and audience written down",
+    why: "Without a named problem and person, every feature looks equally urgent.",
+    minimum: "One paragraph: who has the problem, what it costs them today, how they solve it now."
+  },
+  rules: {
+    title: "Business rules written",
+    why: "Rules that live only in someone's head get coded differently in each screen.",
+    minimum: "A document under docs/ with the rules the code must follow, one per line."
+  },
+  pricing: {
+    title: "Plans and prices",
+    why: "Billing, limits and the landing page all depend on what each plan includes.",
+    minimum: "A table of plans with price, period and what each one unlocks."
+  },
+  api: {
+    title: "API separate from the screens",
+    why: "Rules inside screens cannot be tested, reused or protected on the server.",
+    minimum: "Server routes in their own folder, called by the screens."
+  },
+  database: {
+    title: "Database with migrations",
+    why: "Changing tables by hand in production loses data and cannot be repeated.",
+    minimum: "A migrations folder or schema file that creates every table from zero."
+  },
+  auth: {
+    title: "Accounts and sign-in",
+    why: "Without accounts, anyone sees anyone's data.",
+    minimum: "Sign-up, sign-in and sign-out through a maintained library."
+  },
+  "password-reset": {
+    title: "Password recovery",
+    why: "People forget passwords on the first week; without recovery they leave.",
+    minimum: "A reset link by email that expires and works once."
+  },
+  tenants: {
+    title: "Separation between customer companies (B2B)",
+    why: "In B2B, one company seeing another's records ends the contract.",
+    minimum: "Every query filtered by the company or workspace id."
+  },
+  states: {
+    title: "Loading, empty and error states",
+    why: "A screen that shows nothing while loading or failing looks broken.",
+    minimum: "Each data screen has loading, empty and error states besides the normal one."
+  },
+  billing: {
+    title: "Billing",
+    why: "Without charging, it is a free tool, not a SaaS.",
+    minimum: "Checkout through a payment provider tied to the account."
+  },
+  webhooks: {
+    title: "Idempotent payment webhooks",
+    why: "Providers resend events; without idempotency a payment is applied twice.",
+    minimum: "Each event id is stored and a repeated one is ignored."
+  },
+  "renewal-refund": {
+    title: "Renewal and refund",
+    why: "Subscriptions renew and people ask for money back; both change access.",
+    minimum: "Renewal extends access, a refund removes it, both recorded."
+  },
+  cents: {
+    title: "Money in cents",
+    why: "Floating point turns 0.1 + 0.2 into 0.30000000000000004 on an invoice.",
+    minimum: "Amounts stored and computed as integer cents."
+  },
+  types: {
+    title: "Type checking",
+    why: "Types catch wrong fields and missing values before the user does.",
+    minimum: "A type checker configured and running on the whole project."
+  },
+  lint: {
+    title: "Linter",
+    why: "A linter finds unused code and common bugs on every change.",
+    minimum: "A linter configured for the project's language."
+  },
+  tests: {
+    title: "Tests of the business rules",
+    why: "Without tests, every change can silently break billing or access.",
+    minimum: "Tests for the rules that move money or permissions, passing on this tree."
+  },
+  ci: {
+    title: "Continuous integration",
+    why: "Checks that only run on one laptop stop running.",
+    minimum: "A CI workflow that runs types, lint and tests on every push."
+  },
+  secrets: {
+    title: "Secrets out of the code",
+    why: "A key committed once stays in the history for anyone with the repository.",
+    minimum: "Keys only in environment variables; the secrets check passes on this tree."
+  },
+  "rate-limit": {
+    title: "Request limits",
+    why: "Without limits, one script can take down the service or test passwords forever.",
+    minimum: "A limit on sign-in and on the public routes."
+  },
+  privacy: {
+    title: "Personal data: legal basis and deletion",
+    why: "Data protection laws require a way to delete or export a person's data.",
+    minimum: "An account deletion or data export path."
+  },
+  backup: {
+    title: "Tested backup",
+    why: "A backup never restored is a guess.",
+    minimum: "Automatic database backup and one restore done and written down."
+  },
+  environments: {
+    title: "Test and production environments",
+    why: "Testing in production breaks it for real users.",
+    minimum: "Separate settings per environment, documented in .env.example."
+  },
+  rollback: {
+    title: "Deploy with a way back",
+    why: "A bad deploy without rollback keeps the site down while someone fixes it live.",
+    minimum: "Deploys from a pipeline, and the previous version can be restored in minutes."
+  },
+  logs: {
+    title: "Logs and alerts",
+    why: "Without logs, the first report of an error comes from an angry customer.",
+    minimum: "Errors logged with context and an alert on spikes."
+  },
+  terms: {
+    title: "Terms of use and privacy policy",
+    why: "Charging money and storing personal data without them is a legal risk.",
+    minimum: "Terms and privacy pages linked from sign-up."
+  },
+  message: {
+    title: "One clear promise",
+    why: "Visitors decide in seconds whether the page is for them.",
+    minimum: "A headline that says who it is for and what they get."
+  },
+  "call-to-action": {
+    title: "Call to action",
+    why: "A page without a next step only gets read.",
+    minimum: "One main button or link that leads to the next step."
+  },
+  contact: {
+    title: "Way to reach you",
+    why: "Interested visitors with no way to reply are lost.",
+    minimum: "A form, email or chat link that reaches a person."
+  },
+  responsive: {
+    title: "Works on phones",
+    why: "Most visits to a landing page come from a phone.",
+    minimum: "Layout that adapts to narrow screens, with a viewport tag."
+  },
+  metadata: {
+    title: "Title and share preview",
+    why: "The title and preview are what people see in search and when the link is shared.",
+    minimum: "A page title, description and share image."
+  },
+  analytics: {
+    title: "Visit measurement",
+    why: "Without numbers, nobody knows whether the page converts.",
+    minimum: "An analytics script counting visits and clicks on the main button."
+  },
+  "visual-check": {
+    title: "Visual check",
+    why: "Overflow and broken layouts only show on a real render.",
+    minimum: "The look check passes on this tree."
+  },
+  "landing-terms": {
+    title: "Privacy notice",
+    why: "A form that collects email or phone collects personal data.",
+    minimum: "A privacy page linked next to the form."
+  },
+  domain: {
+    title: "Own domain with HTTPS",
+    why: "A temporary address and a browser warning cost trust.",
+    minimum: "The page served on its own domain over HTTPS."
+  }
+};
+
+// src/planta/text/es.ts
+var es2 = {
+  problem: {
+    title: "Problema y público por escrito",
+    why: "Sin un problema y una persona con nombre, toda funcionalidad parece igual de urgente.",
+    minimum: "Un párrafo: quién tiene el problema, cuánto le cuesta hoy, cómo lo resuelve ahora."
+  },
+  rules: {
+    title: "Reglas de negocio por escrito",
+    why: "Una regla que solo vive en la cabeza de alguien se programa distinta en cada pantalla.",
+    minimum: "Un documento en docs/ con las reglas que el código debe seguir, una por línea."
+  },
+  pricing: {
+    title: "Planes y precios",
+    why: "El cobro, los límites y la página de venta dependen de lo que incluye cada plan.",
+    minimum: "Una tabla de planes con precio, período y lo que libera cada uno."
+  },
+  api: {
+    title: "API separada de las pantallas",
+    why: "Las reglas dentro de las pantallas no se pueden probar, reutilizar ni proteger en el servidor.",
+    minimum: "Rutas de servidor en su propia carpeta, llamadas por las pantallas."
+  },
+  database: {
+    title: "Base de datos con migraciones",
+    why: "Cambiar tablas a mano en producción pierde datos y no se puede repetir.",
+    minimum: "Una carpeta de migraciones o un archivo de esquema que crea todas las tablas desde cero."
+  },
+  auth: {
+    title: "Cuentas e inicio de sesión",
+    why: "Sin cuentas, cualquiera ve los datos de cualquiera.",
+    minimum: "Registro, inicio y cierre de sesión con una biblioteca mantenida."
+  },
+  "password-reset": {
+    title: "Recuperación de contraseña",
+    why: "La gente olvida la contraseña la primera semana; sin recuperación se va.",
+    minimum: "Un enlace de cambio por correo que caduca y sirve una sola vez."
+  },
+  tenants: {
+    title: "Separación entre empresas clientes (B2B)",
+    why: "En B2B, que una empresa vea los registros de otra termina el contrato.",
+    minimum: "Cada consulta filtrada por el id de la empresa o del espacio de trabajo."
+  },
+  states: {
+    title: "Estados de carga, vacío y error",
+    why: "Una pantalla que no muestra nada mientras carga o falla parece rota.",
+    minimum: "Cada pantalla de datos tiene carga, vacío y error además del estado normal."
+  },
+  billing: {
+    title: "Cobro",
+    why: "Sin cobrar, es una herramienta gratuita, no un SaaS.",
+    minimum: "Checkout con un proveedor de pagos ligado a la cuenta."
+  },
+  webhooks: {
+    title: "Webhooks de pago idempotentes",
+    why: "Los proveedores reenvían eventos; sin idempotencia un pago se aplica dos veces.",
+    minimum: "Cada id de evento queda guardado y el repetido se ignora."
+  },
+  "renewal-refund": {
+    title: "Renovación y reembolso",
+    why: "Las suscripciones se renuevan y la gente pide su dinero; las dos cosas cambian el acceso.",
+    minimum: "La renovación extiende el acceso, el reembolso lo quita, ambos registrados."
+  },
+  cents: {
+    title: "Dinero en centavos",
+    why: "El punto flotante convierte 0,1 + 0,2 en 0,30000000000000004 en una factura.",
+    minimum: "Importes guardados y calculados como centavos enteros."
+  },
+  types: {
+    title: "Comprobación de tipos",
+    why: "Los tipos detectan campos equivocados y valores faltantes antes que el usuario.",
+    minimum: "Un comprobador de tipos configurado y ejecutándose en todo el proyecto."
+  },
+  lint: {
+    title: "Linter",
+    why: "Un linter encuentra código sin uso y errores comunes en cada cambio.",
+    minimum: "Un linter configurado para el lenguaje del proyecto."
+  },
+  tests: {
+    title: "Pruebas de las reglas de negocio",
+    why: "Sin pruebas, cualquier cambio puede romper el cobro o el acceso sin que nadie lo vea.",
+    minimum: "Pruebas de las reglas que mueven dinero o permisos, pasando en este árbol."
+  },
+  ci: {
+    title: "Integración continua",
+    why: "Las comprobaciones que solo corren en un portátil dejan de correr.",
+    minimum: "Un workflow de CI que ejecuta tipos, lint y pruebas en cada push."
+  },
+  secrets: {
+    title: "Secretos fuera del código",
+    why: "Una clave subida una vez queda en el historial para cualquiera con el repositorio.",
+    minimum: "Claves solo en variables de entorno; la comprobación de secretos pasa en este árbol."
+  },
+  "rate-limit": {
+    title: "Límite de peticiones",
+    why: "Sin límites, un script tumba el servicio o prueba contraseñas sin parar.",
+    minimum: "Un límite en el inicio de sesión y en las rutas públicas."
+  },
+  privacy: {
+    title: "Datos personales: base legal y borrado",
+    why: "Las leyes de protección de datos exigen una forma de borrar o exportar los datos de una persona.",
+    minimum: "Un camino de borrado de cuenta o de exportación de datos."
+  },
+  backup: {
+    title: "Copia de seguridad probada",
+    why: "Una copia nunca restaurada es una suposición.",
+    minimum: "Copia automática de la base de datos y una restauración hecha y anotada."
+  },
+  environments: {
+    title: "Entornos de prueba y producción",
+    why: "Probar en producción la rompe para usuarios reales.",
+    minimum: "Configuración separada por entorno, documentada en .env.example."
+  },
+  rollback: {
+    title: "Despliegue con vuelta atrás",
+    why: "Un mal despliegue sin vuelta atrás deja el sitio caído mientras alguien lo arregla en vivo.",
+    minimum: "Despliegues desde un pipeline, y la versión anterior vuelve en minutos."
+  },
+  logs: {
+    title: "Logs y alertas",
+    why: "Sin logs, el primer aviso de un error llega de un cliente enfadado.",
+    minimum: "Errores registrados con contexto y una alerta cuando se disparan."
+  },
+  terms: {
+    title: "Términos de uso y política de privacidad",
+    why: "Cobrar y guardar datos personales sin ellos es un riesgo legal.",
+    minimum: "Páginas de términos y privacidad enlazadas desde el registro."
+  },
+  message: {
+    title: "Una promesa clara",
+    why: "Quien visita decide en segundos si la página es para él.",
+    minimum: "Un titular que dice para quién es y qué obtiene."
+  },
+  "call-to-action": {
+    title: "Llamada a la acción",
+    why: "Una página sin siguiente paso solo se lee.",
+    minimum: "Un botón o enlace principal que lleva al siguiente paso."
+  },
+  contact: {
+    title: "Forma de contactarte",
+    why: "Un visitante interesado sin forma de responder se pierde.",
+    minimum: "Un formulario, correo o enlace de chat que llega a una persona."
+  },
+  responsive: {
+    title: "Funciona en el móvil",
+    why: "La mayoría de las visitas a una página de venta vienen del móvil.",
+    minimum: "Un diseño que se adapta a pantallas estrechas, con la etiqueta viewport."
+  },
+  metadata: {
+    title: "Título y vista previa al compartir",
+    why: "El título y la vista previa son lo que se ve en la búsqueda y al compartir el enlace.",
+    minimum: "Título de la página, descripción e imagen para compartir."
+  },
+  analytics: {
+    title: "Medición de visitas",
+    why: "Sin números, nadie sabe si la página convierte.",
+    minimum: "Un script de analítica que cuenta visitas y clics en el botón principal."
+  },
+  "visual-check": {
+    title: "Revisión visual",
+    why: "Los desbordes y los diseños rotos solo aparecen al renderizar de verdad.",
+    minimum: "La comprobación look pasa en este árbol."
+  },
+  "landing-terms": {
+    title: "Aviso de privacidad",
+    why: "Un formulario que pide correo o teléfono recoge datos personales.",
+    minimum: "Una página de privacidad enlazada junto al formulario."
+  },
+  domain: {
+    title: "Dominio propio con HTTPS",
+    why: "Una dirección provisional y un aviso del navegador cuestan confianza.",
+    minimum: "La página servida en su propio dominio por HTTPS."
+  }
+};
+
+// src/planta/text/pt-BR.ts
+var ptBR2 = {
+  problem: {
+    title: "Problema e público escritos",
+    why: "Sem um problema e uma pessoa com nome, toda funcionalidade parece igualmente urgente.",
+    minimum: "Um parágrafo: quem tem o problema, quanto custa hoje, como resolve agora."
+  },
+  rules: {
+    title: "Regras de negócio escritas",
+    why: "Regra que só existe na cabeça de alguém é programada diferente em cada tela.",
+    minimum: "Um documento em docs/ com as regras que o código precisa seguir, uma por linha."
+  },
+  pricing: {
+    title: "Planos e preço",
+    why: "Cobrança, limites e a página de venda dependem do que cada plano inclui.",
+    minimum: "Uma tabela de planos com preço, período e o que cada um libera."
+  },
+  api: {
+    title: "API separada da tela",
+    why: "Regra dentro da tela não dá para testar, reaproveitar nem proteger no servidor.",
+    minimum: "Rotas de servidor numa pasta própria, chamadas pelas telas."
+  },
+  database: {
+    title: "Banco com migrações",
+    why: "Mudar tabela na mão em produção perde dado e não dá para repetir.",
+    minimum: "Uma pasta de migrações ou arquivo de schema que cria todas as tabelas do zero."
+  },
+  auth: {
+    title: "Contas e login",
+    why: "Sem contas, qualquer um vê os dados de qualquer um.",
+    minimum: "Cadastro, login e logout por uma biblioteca mantida."
+  },
+  "password-reset": {
+    title: "Recuperação de senha",
+    why: "As pessoas esquecem a senha na primeira semana; sem recuperação, vão embora.",
+    minimum: "Um link de troca por e-mail que expira e vale uma vez."
+  },
+  tenants: {
+    title: "Separação entre empresas clientes (B2B)",
+    why: "Em B2B, uma empresa ver os registros de outra encerra o contrato.",
+    minimum: "Toda consulta filtrada pelo id da empresa ou do espaço de trabalho."
+  },
+  states: {
+    title: "Estados de carregando, vazio e erro",
+    why: "Tela que não mostra nada enquanto carrega ou falha parece quebrada.",
+    minimum: "Cada tela de dados tem carregando, vazio e erro além do estado normal."
+  },
+  billing: {
+    title: "Cobrança",
+    why: "Sem cobrar, é uma ferramenta gratuita, não um SaaS.",
+    minimum: "Checkout por um provedor de pagamento ligado à conta."
+  },
+  webhooks: {
+    title: "Webhooks de pagamento idempotentes",
+    why: "Provedores reenviam eventos; sem idempotência, um pagamento é aplicado duas vezes.",
+    minimum: "Cada id de evento fica gravado e o repetido é ignorado."
+  },
+  "renewal-refund": {
+    title: "Renovação e reembolso",
+    why: "Assinaturas renovam e pessoas pedem o dinheiro de volta; os dois mudam o acesso.",
+    minimum: "Renovação estende o acesso, reembolso tira, os dois registrados."
+  },
+  cents: {
+    title: "Dinheiro em centavos",
+    why: "Ponto flutuante transforma 0,1 + 0,2 em 0,30000000000000004 numa fatura.",
+    minimum: "Valores gravados e calculados como centavos inteiros."
+  },
+  types: {
+    title: "Checagem de tipos",
+    why: "Tipos pegam campo errado e valor faltando antes do usuário.",
+    minimum: "Um verificador de tipos configurado e rodando no projeto inteiro."
+  },
+  lint: {
+    title: "Linter",
+    why: "O linter acha código sem uso e bugs comuns a cada mudança.",
+    minimum: "Um linter configurado para a linguagem do projeto."
+  },
+  tests: {
+    title: "Testes das regras de negócio",
+    why: "Sem testes, qualquer mudança pode quebrar cobrança ou acesso sem ninguém ver.",
+    minimum: "Testes das regras que mexem com dinheiro ou permissão, passando nesta árvore."
+  },
+  ci: {
+    title: "Integração contínua",
+    why: "Checagem que só roda num notebook para de rodar.",
+    minimum: "Um workflow de CI que roda tipos, lint e testes a cada push."
+  },
+  secrets: {
+    title: "Segredos fora do código",
+    why: "Chave commitada uma vez fica no histórico para quem tiver o repositório.",
+    minimum: "Chaves só em variáveis de ambiente; a checagem de segredos passa nesta árvore."
+  },
+  "rate-limit": {
+    title: "Limite de requisições",
+    why: "Sem limite, um script derruba o serviço ou testa senhas sem parar.",
+    minimum: "Um limite no login e nas rotas públicas."
+  },
+  privacy: {
+    title: "Dados pessoais: base legal e exclusão",
+    why: "A LGPD exige um jeito de apagar ou exportar os dados de uma pessoa.",
+    minimum: "Um caminho de exclusão de conta ou de exportação de dados."
+  },
+  backup: {
+    title: "Backup testado",
+    why: "Backup nunca restaurado é um palpite.",
+    minimum: "Backup automático do banco e uma restauração feita e anotada."
+  },
+  environments: {
+    title: "Ambientes de teste e produção",
+    why: "Testar em produção quebra para usuários de verdade.",
+    minimum: "Configurações separadas por ambiente, documentadas no .env.example."
+  },
+  rollback: {
+    title: "Deploy com volta atrás",
+    why: "Deploy ruim sem volta deixa o site fora do ar enquanto alguém conserta ao vivo.",
+    minimum: "Deploy por pipeline, e a versão anterior volta em minutos."
+  },
+  logs: {
+    title: "Logs e alerta",
+    why: "Sem log, o primeiro aviso de erro vem de um cliente bravo.",
+    minimum: "Erros gravados com contexto e um alerta quando disparam."
+  },
+  terms: {
+    title: "Termos de uso e política de privacidade",
+    why: "Cobrar e guardar dado pessoal sem eles é risco jurídico.",
+    minimum: "Páginas de termos e privacidade com link no cadastro."
+  },
+  message: {
+    title: "Uma promessa clara",
+    why: "Quem visita decide em segundos se a página é para ela.",
+    minimum: "Um título que diz para quem é e o que a pessoa ganha."
+  },
+  "call-to-action": {
+    title: "Chamada para ação",
+    why: "Página sem próximo passo só é lida.",
+    minimum: "Um botão ou link principal que leva ao próximo passo."
+  },
+  contact: {
+    title: "Jeito de falar com você",
+    why: "Visitante interessado sem como responder se perde.",
+    minimum: "Um formulário, e-mail ou link de conversa que chega a uma pessoa."
+  },
+  responsive: {
+    title: "Funciona no celular",
+    why: "A maior parte das visitas a uma página de venda vem do celular.",
+    minimum: "Layout que se ajusta a telas estreitas, com a tag de viewport."
+  },
+  metadata: {
+    title: "Título e prévia de compartilhamento",
+    why: "Título e prévia são o que aparece na busca e quando o link é compartilhado.",
+    minimum: "Título da página, descrição e imagem de compartilhamento."
+  },
+  analytics: {
+    title: "Medição de visitas",
+    why: "Sem números, ninguém sabe se a página converte.",
+    minimum: "Um script de analytics contando visitas e cliques no botão principal."
+  },
+  "visual-check": {
+    title: "Conferência visual",
+    why: "Estouro e layout quebrado só aparecem renderizando de verdade.",
+    minimum: "A checagem look passa nesta árvore."
+  },
+  "landing-terms": {
+    title: "Aviso de privacidade",
+    why: "Formulário que pede e-mail ou telefone coleta dado pessoal.",
+    minimum: "Uma página de privacidade com link ao lado do formulário."
+  },
+  domain: {
+    title: "Domínio próprio com HTTPS",
+    why: "Endereço provisório e aviso do navegador custam confiança.",
+    minimum: "A página servida no próprio domínio por HTTPS."
+  }
+};
+
+// src/planta/text/index.ts
+var BLUEPRINT_TEXT = { en: en2, "pt-BR": ptBR2, es: es2 };
+
+// src/planta/render.ts
+var itemText = (lang, id) => BLUEPRINT_TEXT[lang][id];
+var typeLabel = (t, type) => type === "saas" ? t("planta.type.saas") : t("planta.type.landing");
+var howChecked = (t, id, probe) => {
+  switch (probe.type) {
+    case "files":
+      return t("planta.how.files", { list: probe.any.join(", ") });
+    case "grep":
+      return t("planta.how.grep", { list: probe.all.join(" + ") });
+    case "deps":
+      return t("planta.how.deps", { list: probe.any.join(", ") });
+    case "contract":
+      return t("planta.how.contract", { kind: probe.kind });
+    case "manual":
+      return t("planta.how.manual", { id });
+  }
+};
+var probeOf = (type, id) => BLUEPRINTS[type].find((item2) => item2.id === id)?.probe;
+var MARK = { green: "✓", missing: "✗", manual: "·" };
+var barLine = (t, bar) => t("planta.bar", { label: typeLabel(t, bar.type), green: bar.green, total: bar.total });
+var barLines = (t, lang, bar) => {
+  const next2 = bar.next;
+  const nextProbe = next2 === void 0 ? void 0 : probeOf(bar.type, next2);
+  const nextLines = next2 === void 0 || nextProbe === void 0 ? [] : [
+    t("planta.next", { title: itemText(lang, next2).title, id: next2 }),
+    `  ${itemText(lang, next2).why}`,
+    `  ${t("planta.minimum", { text: itemText(lang, next2).minimum })}`,
+    `  ${howChecked(t, next2, nextProbe)}`
+  ];
+  return [
+    barLine(t, bar),
+    ...nextLines,
+    ...bar.items.map((item2) => `${MARK[item2.status]} ${item2.id}: ${itemText(lang, item2.id).title}`)
+  ];
 };
 
 // src/planta/store.ts
@@ -25451,12 +26090,15 @@ var contractText = (runtime, paths, task) => {
   const disk = runtime.readText(paths.task(task));
   return disk.ok ? disk.value : void 0;
 };
-var activeBlueprint = (runtime, paths) => {
-  const task = readState(runtime, paths).active;
-  const text15 = task === void 0 ? void 0 : contractText(runtime, paths, task);
-  if (task === void 0 || text15 === void 0) return void 0;
+var blueprintOfTask = (runtime, paths, task) => {
+  const text15 = contractText(runtime, paths, task);
+  if (text15 === void 0) return void 0;
   const parsed = parseContract(task, text15);
   return parsed.ok ? parsed.value.blueprint : void 0;
+};
+var activeBlueprint = (runtime, paths) => {
+  const task = readState(runtime, paths).active;
+  return task === void 0 ? void 0 : blueprintOfTask(runtime, paths, task);
 };
 var recordInContract = (runtime, paths, type) => {
   const task = readState(runtime, paths).active;
@@ -25524,6 +26166,99 @@ var projectView = (runtime, root) => {
   };
 };
 
+// src/planta/label-guard.ts
+var MINIMUM = {
+  saas: {
+    saas: ["api", "database", "auth", "billing"],
+    production: ["api", "database", "auth", "secrets", "tests", "environments", "rollback", "logs", "backup"],
+    done: ["api", "database", "auth"]
+  },
+  landing: {
+    saas: [],
+    production: ["message", "call-to-action", "responsive", "metadata", "domain", "landing-terms"],
+    done: ["message", "call-to-action", "responsive"]
+  }
+};
+var SAAS_CORE = ["api", "database", "auth", "billing"];
+var allow = { kind: "allow" };
+var taskOf = (input, paths) => {
+  const active = readState(input.runtime, paths).active;
+  if (active !== void 0) return active;
+  const status = readGateStatus(input.runtime, paths);
+  return status?.status === "passed" ? status.task : void 0;
+};
+var verdictFor = (input, root, type, hits) => {
+  const view2 = projectView(input.runtime, root);
+  const approved = approvedItems(input.runtime, fmPaths(root));
+  const bars = { saas: evaluateBlueprint("saas", view2, approved), [type]: evaluateBlueprint(type, view2, approved) };
+  for (const hit3 of hits) {
+    const blueprint = hit3.label === "saas" ? "saas" : type;
+    const required2 = hit3.label === "saas" && type !== "saas" ? SAAS_CORE : MINIMUM[blueprint][hit3.label];
+    const bar = bars[blueprint] ?? evaluateBlueprint(blueprint, view2, approved);
+    const green = new Set(bar.items.filter((item2) => item2.status === "green").map((item2) => item2.id));
+    const missing2 = required2.filter((id) => !green.has(id));
+    if (missing2.length > 0) return { hit: hit3, type, missing: missing2, green };
+  }
+  return void 0;
+};
+var artifactKey = (verdict2) => {
+  if (verdict2.type === "landing") return "planta.label.artifact.landing";
+  if (!verdict2.green.has("api") && !verdict2.green.has("database")) return "planta.label.artifact.screens";
+  if (!verdict2.green.has("auth")) return "planta.label.artifact.no_accounts";
+  return "planta.label.artifact.unfinished";
+};
+var COUNTER_FILE2 = "label-guard.json";
+var numberAt = (raw, key2) => {
+  const value = raw?.[key2];
+  return typeof value === "number" && Number.isInteger(value) ? value : 0;
+};
+var withinCeiling = (input, paths, task, signature) => {
+  const raw = input.payload.stopHookActive ? readJsonFile(input.runtime, paths.cache(COUNTER_FILE2)) : void 0;
+  const sameTask = raw?.["task"] === task;
+  const consecutive = (sameTask ? numberAt(raw, "consecutive") : 0) + 1;
+  const same3 = sameTask && raw["signature"] === signature ? numberAt(raw, "same") + 1 : 1;
+  if (consecutive > maxBlocks(input.env) || same3 > NO_PROGRESS_MAX) return false;
+  writeJsonFile(input.runtime, paths.cache(COUNTER_FILE2), { task, signature, consecutive, same: same3 });
+  return true;
+};
+var blockFor = (input, paths, task, verdict2) => {
+  const { t } = input;
+  const lang = normalizeLang(t("planta.lang")) ?? "en";
+  const artifact = t(artifactKey(verdict2));
+  const list9 = verdict2.missing.map((id) => itemText(lang, id).title).join("; ");
+  const params2 = {
+    label: verdict2.hit.label,
+    phrase: verdict2.hit.phrase,
+    artifact,
+    list: list9,
+    count: verdict2.missing.length
+  };
+  logEvent(input.runtime, paths, "label.block", { task, label: verdict2.hit.label, missing: [...verdict2.missing] });
+  if (!withinCeiling(input, paths, task, sha256Hex(`label|${verdict2.hit.label}|${verdict2.missing.join(",")}`))) {
+    return { kind: "allow", output: { systemMessage: human(t("planta.label.exhausted", params2)) } };
+  }
+  const reason = t("planta.label.reason", params2);
+  return {
+    kind: "block",
+    reason,
+    persistent: true,
+    output: { decision: "block", reason, systemMessage: human(t("planta.label.human", params2)) }
+  };
+};
+var labelGuard = (input) => {
+  const message = textField(input.payload.raw, "last_assistant_message") ?? "";
+  const hits = findLabels(message);
+  if (hits.length === 0) return allow;
+  const root = findRepoRoot(input.runtime, sessionCwd(input));
+  if (root === void 0) return allow;
+  const paths = fmPaths(root);
+  const task = taskOf(input, paths);
+  const type = task === void 0 ? void 0 : blueprintOfTask(input.runtime, paths, task);
+  if (task === void 0 || type === void 0) return allow;
+  const verdict2 = verdictFor(input, root, type, hits);
+  return verdict2 === void 0 ? allow : blockFor(input, paths, task, verdict2);
+};
+
 // src/planta/hooks.ts
 var refreshBar = (input) => {
   const root = findRepoRoot(input.runtime, sessionCwd(input));
@@ -25539,6 +26274,7 @@ var refreshBar = (input) => {
   return { kind: "allow" };
 };
 var PLANTA_HANDLERS = { Stop: [refreshBar] };
+var LABEL_HANDLERS = { Stop: [labelGuard] };
 
 // src/policy/guards.ts
 var SHADOW_FILE = "shadow.json";
@@ -26076,7 +26812,7 @@ var coverage2 = (checks) => PERTURBATIONS.map((question) => {
 });
 
 // src/ricochete/stop.ts
-var allow = { kind: "allow" };
+var allow2 = { kind: "allow" };
 var REPORTED_FILE = "ricochete.json";
 var block4 = (reason, note2) => ({
   kind: "block",
@@ -26087,12 +26823,12 @@ var block4 = (reason, note2) => ({
 var messageOf3 = (input) => textField(input.payload.raw, "last_assistant_message") ?? "";
 var horizonGuard = (input) => {
   const message = messageOf3(input);
-  if (!isHorizonHelp(message)) return allow;
+  if (!isHorizonHelp(message)) return allow2;
   const view2 = taskInView(input);
-  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow;
+  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow2;
   const ids2 = new Set(view2.checks.map((check2) => check2.id));
   const named = criterionIds(message);
-  if (named.some((id) => ids2.has(id))) return allow;
+  if (named.some((id) => ids2.has(id))) return allow2;
   const { t } = input;
   const params2 = { task: view2.task, named: named.join(", ") || "-", checks: [...ids2].join(", ") };
   logEvent(input.runtime, view2.paths, "ricochete.horizon_without_criterion", { task: view2.task, named: [...named] });
@@ -26104,10 +26840,10 @@ var reportedTasks = (input, view2) => {
 };
 var perturbationReport = (input) => {
   const view2 = taskInView(input);
-  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow;
-  if (!judgmentSignal(input, view2.paths)) return allow;
+  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow2;
+  if (!judgmentSignal(input, view2.paths)) return allow2;
   const reported = reportedTasks(input, view2);
-  if (reported.includes(view2.task)) return allow;
+  if (reported.includes(view2.task)) return allow2;
   writeJsonFile(input.runtime, view2.paths.cache(REPORTED_FILE), { tasks: [...reported, view2.task].slice(-100) });
   const { t } = input;
   const lines6 = coverage2(view2.checks).map(
@@ -26864,7 +27600,7 @@ var writesFiles = (raw) => {
 
 // src/signals/fourth.ts
 var FOURTH_ATTEMPT_GUARD = "fourth-attempt";
-var allow2 = { kind: "allow" };
+var allow3 = { kind: "allow" };
 var RESEARCHER = /(?:^|:)researcher$/i;
 var AGENT_TOOLS2 = /* @__PURE__ */ new Set(["Agent", "Task"]);
 var alreadyNoted = (scope2, sig) => {
@@ -26891,15 +27627,15 @@ var noteFourth = (scope2, sig, failed6, mode) => {
   });
 };
 var fourthAttemptGuard = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow2;
+  if (!writesFiles(input.payload.raw)) return allow3;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow2;
+  if (scope2 === void 0) return allow3;
   const threshold2 = readProfile(input.runtime, scope2.files).threshold;
   const pending = pendingAttempt(sessionEntries(scope2.entries, scope2.session), threshold2);
-  if (pending === void 0) return allow2;
+  if (pending === void 0) return allow3;
   const mode = modeNow(scope2);
   const noted = alreadyNoted(scope2, pending.sig);
-  if (noted && mode !== "active") return allow2;
+  if (noted && mode !== "active") return allow3;
   if (!noted) noteFourth(scope2, pending.sig, pending.failed, mode);
   const { t } = input;
   const params2 = { sig: pending.sig, count: pending.failed, sample: pending.sample };
@@ -26913,10 +27649,10 @@ var researcherOf = (raw) => {
 };
 var researchRecorder = (input) => {
   const agent = researcherOf(input.payload.raw);
-  if (agent === void 0) return allow2;
+  if (agent === void 0) return allow3;
   const scope2 = scopeOf(input);
   if (scope2 !== void 0) record5(scope2, { ...baseOf2(scope2), kind: "research", agent });
-  return allow2;
+  return allow3;
 };
 
 // src/signals/render.ts
@@ -26988,13 +27724,13 @@ var writeIndex = (scope2, notice = readNotice(scope2)) => {
 };
 
 // src/signals/prompt.ts
-var allow3 = { kind: "allow" };
+var allow4 = { kind: "allow" };
 var CLEAR_AFTER = 2;
 var signalsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow3;
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow4;
   const before = scopeOf(input);
-  if (before === void 0) return allow3;
+  if (before === void 0) return allow4;
   const scope2 = record5(before, {
     ...baseOf2(before),
     turn: before.turn + 1,
@@ -27005,7 +27741,7 @@ var signalsPrompt = (input) => {
   const notice = readNotice(scope2);
   const index = writeIndex(scope2, notice);
   const key2 = loopKey(index);
-  if (!index.firing || key2 === notice.lastKey) return allow3;
+  if (!index.firing || key2 === notice.lastKey) return allow4;
   const injections = notice.injections + 1;
   writeIndex(scope2, { injections, lastKey: key2 });
   const { t } = input;
@@ -27022,7 +27758,7 @@ var signalsPrompt = (input) => {
 var EDIT_TOOLS2 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var FAST_ACCEPT_MS = 5e3;
 var LARGE_DIFF_LINES = 30;
-var allow4 = { kind: "allow" };
+var allow5 = { kind: "allow" };
 var permissionKey = (raw) => {
   const id = textField(raw, "tool_use_id");
   if (id !== void 0 && id !== "") return id;
@@ -27092,26 +27828,26 @@ var recordError = (scope2, raw, output) => {
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow4;
+  if (scope2 === void 0) return allow5;
   const raw = input.payload.raw;
   const output = failedOutput(raw);
   const after = EDIT_TOOLS2.has(toolName(raw)) ? recordEdit(scope2, raw) : output === void 0 ? scope2 : recordError(scope2, raw, output);
   if (after !== scope2) writeIndex(after);
-  return allow4;
+  return allow5;
 };
 var signalsPostToolUseFailure = (input) => {
   const scope2 = scopeOf(input);
   const raw = input.payload.raw;
-  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow4;
+  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow5;
   const after = recordError(scope2, raw, textField(raw, "error") ?? "");
   if (after !== scope2) writeIndex(after);
-  return allow4;
+  return allow5;
 };
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
     record5(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
-  return allow4;
+  return allow5;
 };
 
 // src/signals/hooks.ts
@@ -27125,7 +27861,7 @@ var SIGNALS_HANDLERS = {
 var FOURTH_ATTEMPT_HANDLERS = { PreToolUse: [fourthAttemptGuard] };
 
 // src/hooks/handlers.ts
-var allow5 = () => ({ kind: "allow" });
+var allow6 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -27215,7 +27951,8 @@ var GUARD_SETS = [
   { id: "signals", damage: false, handlers: SIGNALS_HANDLERS },
   { id: "fourth-attempt", damage: false, handlers: FOURTH_ATTEMPT_HANDLERS },
   { id: "ricochete", damage: false, handlers: RICOCHETE_HANDLERS },
-  { id: "planta", damage: false, handlers: PLANTA_HANDLERS }
+  { id: "planta", damage: false, handlers: PLANTA_HANDLERS },
+  { id: "label", damage: false, handlers: LABEL_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy));
 
@@ -27247,7 +27984,7 @@ var parseHookPayload = (event, text15, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf4 = (error) => error instanceof Error ? error.message : String(error);
-var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow5]);
+var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow6]);
 var evaluate = async (event, options) => {
   const text15 = await readAll2(options.stdin);
   const parsed = parseHookPayload(event, text15, options.stdin.isTTY === true);
@@ -28303,9 +29040,9 @@ var buildReport2 = (ctx, findings2) => {
 };
 
 // src/commands/doctor.ts
-var MARK = { ok: "ok  ", warn: "warn", fail: "FAIL" };
+var MARK2 = { ok: "ok  ", warn: "warn", fail: "FAIL" };
 var itemLines = (ctx, item2) => [
-  `[${MARK[item2.status]}] ${item2.check}: ${item2.detail}`,
+  `[${MARK2[item2.status]}] ${item2.check}: ${item2.detail}`,
   ...item2.fix !== void 0 && item2.status !== "ok" ? [`       ${ctx.t("output.fix", { fix: item2.fix })}`] : []
 ];
 var debugLog = (ctx) => {
@@ -29582,7 +30319,7 @@ var runMerge = (runtime, cwd, env, request) => {
 };
 
 // src/fronts/wave-merge.ts
-var READY = /* @__PURE__ */ new Set(["reported", "verified"]);
+var READY2 = /* @__PURE__ */ new Set(["reported", "verified"]);
 var mergeOrder = (fronts, merged2) => {
   const pending = [...fronts];
   const done = new Set(merged2);
@@ -29644,7 +30381,7 @@ var waveChecks = (options, last, base) => {
   return callers.length === 0 ? void 0 : callers.map((item2) => `${item2.symbol} at ${item2.file}`).join("; ");
 };
 var mergeWave = (options, state) => {
-  const ready = state.fronts.filter((front) => READY.has(front.status));
+  const ready = state.fronts.filter((front) => READY2.has(front.status));
   if (ready.length === 0) return reject({ kind: "no-fronts" });
   const checks = ready.map((front) => checkReport(options.runtime, options.root, front));
   if (checks.some((check2) => check2.problems.length > 0))
@@ -31778,13 +32515,13 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided) => {
-  const accepted2 = allows.filter((allow6) => decided(allow6.decision));
-  const ignored = allows.filter((allow6) => !decided(allow6.decision)).map((allow6) => `${allow6.rule} ${allow6.route} ${allow6.decision}`);
+  const accepted2 = allows.filter((allow7) => decided(allow7.decision));
+  const ignored = allows.filter((allow7) => !decided(allow7.decision)).map((allow7) => `${allow7.rule} ${allow7.route} ${allow7.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow6 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow6 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow6.decision };
+      const allow7 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow7 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow7.decision };
     })
   };
 };
@@ -32653,567 +33390,6 @@ var planConsolidateCommand = {
   })
 };
 
-// src/planta/text/en.ts
-var en2 = {
-  problem: {
-    title: "Problem and audience written down",
-    why: "Without a named problem and person, every feature looks equally urgent.",
-    minimum: "One paragraph: who has the problem, what it costs them today, how they solve it now."
-  },
-  rules: {
-    title: "Business rules written",
-    why: "Rules that live only in someone's head get coded differently in each screen.",
-    minimum: "A document under docs/ with the rules the code must follow, one per line."
-  },
-  pricing: {
-    title: "Plans and prices",
-    why: "Billing, limits and the landing page all depend on what each plan includes.",
-    minimum: "A table of plans with price, period and what each one unlocks."
-  },
-  api: {
-    title: "API separate from the screens",
-    why: "Rules inside screens cannot be tested, reused or protected on the server.",
-    minimum: "Server routes in their own folder, called by the screens."
-  },
-  database: {
-    title: "Database with migrations",
-    why: "Changing tables by hand in production loses data and cannot be repeated.",
-    minimum: "A migrations folder or schema file that creates every table from zero."
-  },
-  auth: {
-    title: "Accounts and sign-in",
-    why: "Without accounts, anyone sees anyone's data.",
-    minimum: "Sign-up, sign-in and sign-out through a maintained library."
-  },
-  "password-reset": {
-    title: "Password recovery",
-    why: "People forget passwords on the first week; without recovery they leave.",
-    minimum: "A reset link by email that expires and works once."
-  },
-  tenants: {
-    title: "Separation between customer companies (B2B)",
-    why: "In B2B, one company seeing another's records ends the contract.",
-    minimum: "Every query filtered by the company or workspace id."
-  },
-  states: {
-    title: "Loading, empty and error states",
-    why: "A screen that shows nothing while loading or failing looks broken.",
-    minimum: "Each data screen has loading, empty and error states besides the normal one."
-  },
-  billing: {
-    title: "Billing",
-    why: "Without charging, it is a free tool, not a SaaS.",
-    minimum: "Checkout through a payment provider tied to the account."
-  },
-  webhooks: {
-    title: "Idempotent payment webhooks",
-    why: "Providers resend events; without idempotency a payment is applied twice.",
-    minimum: "Each event id is stored and a repeated one is ignored."
-  },
-  "renewal-refund": {
-    title: "Renewal and refund",
-    why: "Subscriptions renew and people ask for money back; both change access.",
-    minimum: "Renewal extends access, a refund removes it, both recorded."
-  },
-  cents: {
-    title: "Money in cents",
-    why: "Floating point turns 0.1 + 0.2 into 0.30000000000000004 on an invoice.",
-    minimum: "Amounts stored and computed as integer cents."
-  },
-  types: {
-    title: "Type checking",
-    why: "Types catch wrong fields and missing values before the user does.",
-    minimum: "A type checker configured and running on the whole project."
-  },
-  lint: {
-    title: "Linter",
-    why: "A linter finds unused code and common bugs on every change.",
-    minimum: "A linter configured for the project's language."
-  },
-  tests: {
-    title: "Tests of the business rules",
-    why: "Without tests, every change can silently break billing or access.",
-    minimum: "Tests for the rules that move money or permissions, passing on this tree."
-  },
-  ci: {
-    title: "Continuous integration",
-    why: "Checks that only run on one laptop stop running.",
-    minimum: "A CI workflow that runs types, lint and tests on every push."
-  },
-  secrets: {
-    title: "Secrets out of the code",
-    why: "A key committed once stays in the history for anyone with the repository.",
-    minimum: "Keys only in environment variables; the secrets check passes on this tree."
-  },
-  "rate-limit": {
-    title: "Request limits",
-    why: "Without limits, one script can take down the service or test passwords forever.",
-    minimum: "A limit on sign-in and on the public routes."
-  },
-  privacy: {
-    title: "Personal data: legal basis and deletion",
-    why: "Data protection laws require a way to delete or export a person's data.",
-    minimum: "An account deletion or data export path."
-  },
-  backup: {
-    title: "Tested backup",
-    why: "A backup never restored is a guess.",
-    minimum: "Automatic database backup and one restore done and written down."
-  },
-  environments: {
-    title: "Test and production environments",
-    why: "Testing in production breaks it for real users.",
-    minimum: "Separate settings per environment, documented in .env.example."
-  },
-  rollback: {
-    title: "Deploy with a way back",
-    why: "A bad deploy without rollback keeps the site down while someone fixes it live.",
-    minimum: "Deploys from a pipeline, and the previous version can be restored in minutes."
-  },
-  logs: {
-    title: "Logs and alerts",
-    why: "Without logs, the first report of an error comes from an angry customer.",
-    minimum: "Errors logged with context and an alert on spikes."
-  },
-  terms: {
-    title: "Terms of use and privacy policy",
-    why: "Charging money and storing personal data without them is a legal risk.",
-    minimum: "Terms and privacy pages linked from sign-up."
-  },
-  message: {
-    title: "One clear promise",
-    why: "Visitors decide in seconds whether the page is for them.",
-    minimum: "A headline that says who it is for and what they get."
-  },
-  "call-to-action": {
-    title: "Call to action",
-    why: "A page without a next step only gets read.",
-    minimum: "One main button or link that leads to the next step."
-  },
-  contact: {
-    title: "Way to reach you",
-    why: "Interested visitors with no way to reply are lost.",
-    minimum: "A form, email or chat link that reaches a person."
-  },
-  responsive: {
-    title: "Works on phones",
-    why: "Most visits to a landing page come from a phone.",
-    minimum: "Layout that adapts to narrow screens, with a viewport tag."
-  },
-  metadata: {
-    title: "Title and share preview",
-    why: "The title and preview are what people see in search and when the link is shared.",
-    minimum: "A page title, description and share image."
-  },
-  analytics: {
-    title: "Visit measurement",
-    why: "Without numbers, nobody knows whether the page converts.",
-    minimum: "An analytics script counting visits and clicks on the main button."
-  },
-  "visual-check": {
-    title: "Visual check",
-    why: "Overflow and broken layouts only show on a real render.",
-    minimum: "The look check passes on this tree."
-  },
-  "landing-terms": {
-    title: "Privacy notice",
-    why: "A form that collects email or phone collects personal data.",
-    minimum: "A privacy page linked next to the form."
-  },
-  domain: {
-    title: "Own domain with HTTPS",
-    why: "A temporary address and a browser warning cost trust.",
-    minimum: "The page served on its own domain over HTTPS."
-  }
-};
-
-// src/planta/text/es.ts
-var es2 = {
-  problem: {
-    title: "Problema y público por escrito",
-    why: "Sin un problema y una persona con nombre, toda funcionalidad parece igual de urgente.",
-    minimum: "Un párrafo: quién tiene el problema, cuánto le cuesta hoy, cómo lo resuelve ahora."
-  },
-  rules: {
-    title: "Reglas de negocio por escrito",
-    why: "Una regla que solo vive en la cabeza de alguien se programa distinta en cada pantalla.",
-    minimum: "Un documento en docs/ con las reglas que el código debe seguir, una por línea."
-  },
-  pricing: {
-    title: "Planes y precios",
-    why: "El cobro, los límites y la página de venta dependen de lo que incluye cada plan.",
-    minimum: "Una tabla de planes con precio, período y lo que libera cada uno."
-  },
-  api: {
-    title: "API separada de las pantallas",
-    why: "Las reglas dentro de las pantallas no se pueden probar, reutilizar ni proteger en el servidor.",
-    minimum: "Rutas de servidor en su propia carpeta, llamadas por las pantallas."
-  },
-  database: {
-    title: "Base de datos con migraciones",
-    why: "Cambiar tablas a mano en producción pierde datos y no se puede repetir.",
-    minimum: "Una carpeta de migraciones o un archivo de esquema que crea todas las tablas desde cero."
-  },
-  auth: {
-    title: "Cuentas e inicio de sesión",
-    why: "Sin cuentas, cualquiera ve los datos de cualquiera.",
-    minimum: "Registro, inicio y cierre de sesión con una biblioteca mantenida."
-  },
-  "password-reset": {
-    title: "Recuperación de contraseña",
-    why: "La gente olvida la contraseña la primera semana; sin recuperación se va.",
-    minimum: "Un enlace de cambio por correo que caduca y sirve una sola vez."
-  },
-  tenants: {
-    title: "Separación entre empresas clientes (B2B)",
-    why: "En B2B, que una empresa vea los registros de otra termina el contrato.",
-    minimum: "Cada consulta filtrada por el id de la empresa o del espacio de trabajo."
-  },
-  states: {
-    title: "Estados de carga, vacío y error",
-    why: "Una pantalla que no muestra nada mientras carga o falla parece rota.",
-    minimum: "Cada pantalla de datos tiene carga, vacío y error además del estado normal."
-  },
-  billing: {
-    title: "Cobro",
-    why: "Sin cobrar, es una herramienta gratuita, no un SaaS.",
-    minimum: "Checkout con un proveedor de pagos ligado a la cuenta."
-  },
-  webhooks: {
-    title: "Webhooks de pago idempotentes",
-    why: "Los proveedores reenvían eventos; sin idempotencia un pago se aplica dos veces.",
-    minimum: "Cada id de evento queda guardado y el repetido se ignora."
-  },
-  "renewal-refund": {
-    title: "Renovación y reembolso",
-    why: "Las suscripciones se renuevan y la gente pide su dinero; las dos cosas cambian el acceso.",
-    minimum: "La renovación extiende el acceso, el reembolso lo quita, ambos registrados."
-  },
-  cents: {
-    title: "Dinero en centavos",
-    why: "El punto flotante convierte 0,1 + 0,2 en 0,30000000000000004 en una factura.",
-    minimum: "Importes guardados y calculados como centavos enteros."
-  },
-  types: {
-    title: "Comprobación de tipos",
-    why: "Los tipos detectan campos equivocados y valores faltantes antes que el usuario.",
-    minimum: "Un comprobador de tipos configurado y ejecutándose en todo el proyecto."
-  },
-  lint: {
-    title: "Linter",
-    why: "Un linter encuentra código sin uso y errores comunes en cada cambio.",
-    minimum: "Un linter configurado para el lenguaje del proyecto."
-  },
-  tests: {
-    title: "Pruebas de las reglas de negocio",
-    why: "Sin pruebas, cualquier cambio puede romper el cobro o el acceso sin que nadie lo vea.",
-    minimum: "Pruebas de las reglas que mueven dinero o permisos, pasando en este árbol."
-  },
-  ci: {
-    title: "Integración continua",
-    why: "Las comprobaciones que solo corren en un portátil dejan de correr.",
-    minimum: "Un workflow de CI que ejecuta tipos, lint y pruebas en cada push."
-  },
-  secrets: {
-    title: "Secretos fuera del código",
-    why: "Una clave subida una vez queda en el historial para cualquiera con el repositorio.",
-    minimum: "Claves solo en variables de entorno; la comprobación de secretos pasa en este árbol."
-  },
-  "rate-limit": {
-    title: "Límite de peticiones",
-    why: "Sin límites, un script tumba el servicio o prueba contraseñas sin parar.",
-    minimum: "Un límite en el inicio de sesión y en las rutas públicas."
-  },
-  privacy: {
-    title: "Datos personales: base legal y borrado",
-    why: "Las leyes de protección de datos exigen una forma de borrar o exportar los datos de una persona.",
-    minimum: "Un camino de borrado de cuenta o de exportación de datos."
-  },
-  backup: {
-    title: "Copia de seguridad probada",
-    why: "Una copia nunca restaurada es una suposición.",
-    minimum: "Copia automática de la base de datos y una restauración hecha y anotada."
-  },
-  environments: {
-    title: "Entornos de prueba y producción",
-    why: "Probar en producción la rompe para usuarios reales.",
-    minimum: "Configuración separada por entorno, documentada en .env.example."
-  },
-  rollback: {
-    title: "Despliegue con vuelta atrás",
-    why: "Un mal despliegue sin vuelta atrás deja el sitio caído mientras alguien lo arregla en vivo.",
-    minimum: "Despliegues desde un pipeline, y la versión anterior vuelve en minutos."
-  },
-  logs: {
-    title: "Logs y alertas",
-    why: "Sin logs, el primer aviso de un error llega de un cliente enfadado.",
-    minimum: "Errores registrados con contexto y una alerta cuando se disparan."
-  },
-  terms: {
-    title: "Términos de uso y política de privacidad",
-    why: "Cobrar y guardar datos personales sin ellos es un riesgo legal.",
-    minimum: "Páginas de términos y privacidad enlazadas desde el registro."
-  },
-  message: {
-    title: "Una promesa clara",
-    why: "Quien visita decide en segundos si la página es para él.",
-    minimum: "Un titular que dice para quién es y qué obtiene."
-  },
-  "call-to-action": {
-    title: "Llamada a la acción",
-    why: "Una página sin siguiente paso solo se lee.",
-    minimum: "Un botón o enlace principal que lleva al siguiente paso."
-  },
-  contact: {
-    title: "Forma de contactarte",
-    why: "Un visitante interesado sin forma de responder se pierde.",
-    minimum: "Un formulario, correo o enlace de chat que llega a una persona."
-  },
-  responsive: {
-    title: "Funciona en el móvil",
-    why: "La mayoría de las visitas a una página de venta vienen del móvil.",
-    minimum: "Un diseño que se adapta a pantallas estrechas, con la etiqueta viewport."
-  },
-  metadata: {
-    title: "Título y vista previa al compartir",
-    why: "El título y la vista previa son lo que se ve en la búsqueda y al compartir el enlace.",
-    minimum: "Título de la página, descripción e imagen para compartir."
-  },
-  analytics: {
-    title: "Medición de visitas",
-    why: "Sin números, nadie sabe si la página convierte.",
-    minimum: "Un script de analítica que cuenta visitas y clics en el botón principal."
-  },
-  "visual-check": {
-    title: "Revisión visual",
-    why: "Los desbordes y los diseños rotos solo aparecen al renderizar de verdad.",
-    minimum: "La comprobación look pasa en este árbol."
-  },
-  "landing-terms": {
-    title: "Aviso de privacidad",
-    why: "Un formulario que pide correo o teléfono recoge datos personales.",
-    minimum: "Una página de privacidad enlazada junto al formulario."
-  },
-  domain: {
-    title: "Dominio propio con HTTPS",
-    why: "Una dirección provisional y un aviso del navegador cuestan confianza.",
-    minimum: "La página servida en su propio dominio por HTTPS."
-  }
-};
-
-// src/planta/text/pt-BR.ts
-var ptBR2 = {
-  problem: {
-    title: "Problema e público escritos",
-    why: "Sem um problema e uma pessoa com nome, toda funcionalidade parece igualmente urgente.",
-    minimum: "Um parágrafo: quem tem o problema, quanto custa hoje, como resolve agora."
-  },
-  rules: {
-    title: "Regras de negócio escritas",
-    why: "Regra que só existe na cabeça de alguém é programada diferente em cada tela.",
-    minimum: "Um documento em docs/ com as regras que o código precisa seguir, uma por linha."
-  },
-  pricing: {
-    title: "Planos e preço",
-    why: "Cobrança, limites e a página de venda dependem do que cada plano inclui.",
-    minimum: "Uma tabela de planos com preço, período e o que cada um libera."
-  },
-  api: {
-    title: "API separada da tela",
-    why: "Regra dentro da tela não dá para testar, reaproveitar nem proteger no servidor.",
-    minimum: "Rotas de servidor numa pasta própria, chamadas pelas telas."
-  },
-  database: {
-    title: "Banco com migrações",
-    why: "Mudar tabela na mão em produção perde dado e não dá para repetir.",
-    minimum: "Uma pasta de migrações ou arquivo de schema que cria todas as tabelas do zero."
-  },
-  auth: {
-    title: "Contas e login",
-    why: "Sem contas, qualquer um vê os dados de qualquer um.",
-    minimum: "Cadastro, login e logout por uma biblioteca mantida."
-  },
-  "password-reset": {
-    title: "Recuperação de senha",
-    why: "As pessoas esquecem a senha na primeira semana; sem recuperação, vão embora.",
-    minimum: "Um link de troca por e-mail que expira e vale uma vez."
-  },
-  tenants: {
-    title: "Separação entre empresas clientes (B2B)",
-    why: "Em B2B, uma empresa ver os registros de outra encerra o contrato.",
-    minimum: "Toda consulta filtrada pelo id da empresa ou do espaço de trabalho."
-  },
-  states: {
-    title: "Estados de carregando, vazio e erro",
-    why: "Tela que não mostra nada enquanto carrega ou falha parece quebrada.",
-    minimum: "Cada tela de dados tem carregando, vazio e erro além do estado normal."
-  },
-  billing: {
-    title: "Cobrança",
-    why: "Sem cobrar, é uma ferramenta gratuita, não um SaaS.",
-    minimum: "Checkout por um provedor de pagamento ligado à conta."
-  },
-  webhooks: {
-    title: "Webhooks de pagamento idempotentes",
-    why: "Provedores reenviam eventos; sem idempotência, um pagamento é aplicado duas vezes.",
-    minimum: "Cada id de evento fica gravado e o repetido é ignorado."
-  },
-  "renewal-refund": {
-    title: "Renovação e reembolso",
-    why: "Assinaturas renovam e pessoas pedem o dinheiro de volta; os dois mudam o acesso.",
-    minimum: "Renovação estende o acesso, reembolso tira, os dois registrados."
-  },
-  cents: {
-    title: "Dinheiro em centavos",
-    why: "Ponto flutuante transforma 0,1 + 0,2 em 0,30000000000000004 numa fatura.",
-    minimum: "Valores gravados e calculados como centavos inteiros."
-  },
-  types: {
-    title: "Checagem de tipos",
-    why: "Tipos pegam campo errado e valor faltando antes do usuário.",
-    minimum: "Um verificador de tipos configurado e rodando no projeto inteiro."
-  },
-  lint: {
-    title: "Linter",
-    why: "O linter acha código sem uso e bugs comuns a cada mudança.",
-    minimum: "Um linter configurado para a linguagem do projeto."
-  },
-  tests: {
-    title: "Testes das regras de negócio",
-    why: "Sem testes, qualquer mudança pode quebrar cobrança ou acesso sem ninguém ver.",
-    minimum: "Testes das regras que mexem com dinheiro ou permissão, passando nesta árvore."
-  },
-  ci: {
-    title: "Integração contínua",
-    why: "Checagem que só roda num notebook para de rodar.",
-    minimum: "Um workflow de CI que roda tipos, lint e testes a cada push."
-  },
-  secrets: {
-    title: "Segredos fora do código",
-    why: "Chave commitada uma vez fica no histórico para quem tiver o repositório.",
-    minimum: "Chaves só em variáveis de ambiente; a checagem de segredos passa nesta árvore."
-  },
-  "rate-limit": {
-    title: "Limite de requisições",
-    why: "Sem limite, um script derruba o serviço ou testa senhas sem parar.",
-    minimum: "Um limite no login e nas rotas públicas."
-  },
-  privacy: {
-    title: "Dados pessoais: base legal e exclusão",
-    why: "A LGPD exige um jeito de apagar ou exportar os dados de uma pessoa.",
-    minimum: "Um caminho de exclusão de conta ou de exportação de dados."
-  },
-  backup: {
-    title: "Backup testado",
-    why: "Backup nunca restaurado é um palpite.",
-    minimum: "Backup automático do banco e uma restauração feita e anotada."
-  },
-  environments: {
-    title: "Ambientes de teste e produção",
-    why: "Testar em produção quebra para usuários de verdade.",
-    minimum: "Configurações separadas por ambiente, documentadas no .env.example."
-  },
-  rollback: {
-    title: "Deploy com volta atrás",
-    why: "Deploy ruim sem volta deixa o site fora do ar enquanto alguém conserta ao vivo.",
-    minimum: "Deploy por pipeline, e a versão anterior volta em minutos."
-  },
-  logs: {
-    title: "Logs e alerta",
-    why: "Sem log, o primeiro aviso de erro vem de um cliente bravo.",
-    minimum: "Erros gravados com contexto e um alerta quando disparam."
-  },
-  terms: {
-    title: "Termos de uso e política de privacidade",
-    why: "Cobrar e guardar dado pessoal sem eles é risco jurídico.",
-    minimum: "Páginas de termos e privacidade com link no cadastro."
-  },
-  message: {
-    title: "Uma promessa clara",
-    why: "Quem visita decide em segundos se a página é para ela.",
-    minimum: "Um título que diz para quem é e o que a pessoa ganha."
-  },
-  "call-to-action": {
-    title: "Chamada para ação",
-    why: "Página sem próximo passo só é lida.",
-    minimum: "Um botão ou link principal que leva ao próximo passo."
-  },
-  contact: {
-    title: "Jeito de falar com você",
-    why: "Visitante interessado sem como responder se perde.",
-    minimum: "Um formulário, e-mail ou link de conversa que chega a uma pessoa."
-  },
-  responsive: {
-    title: "Funciona no celular",
-    why: "A maior parte das visitas a uma página de venda vem do celular.",
-    minimum: "Layout que se ajusta a telas estreitas, com a tag de viewport."
-  },
-  metadata: {
-    title: "Título e prévia de compartilhamento",
-    why: "Título e prévia são o que aparece na busca e quando o link é compartilhado.",
-    minimum: "Título da página, descrição e imagem de compartilhamento."
-  },
-  analytics: {
-    title: "Medição de visitas",
-    why: "Sem números, ninguém sabe se a página converte.",
-    minimum: "Um script de analytics contando visitas e cliques no botão principal."
-  },
-  "visual-check": {
-    title: "Conferência visual",
-    why: "Estouro e layout quebrado só aparecem renderizando de verdade.",
-    minimum: "A checagem look passa nesta árvore."
-  },
-  "landing-terms": {
-    title: "Aviso de privacidade",
-    why: "Formulário que pede e-mail ou telefone coleta dado pessoal.",
-    minimum: "Uma página de privacidade com link ao lado do formulário."
-  },
-  domain: {
-    title: "Domínio próprio com HTTPS",
-    why: "Endereço provisório e aviso do navegador custam confiança.",
-    minimum: "A página servida no próprio domínio por HTTPS."
-  }
-};
-
-// src/planta/text/index.ts
-var BLUEPRINT_TEXT = { en: en2, "pt-BR": ptBR2, es: es2 };
-
-// src/planta/render.ts
-var itemText = (lang, id) => BLUEPRINT_TEXT[lang][id];
-var typeLabel = (t, type) => type === "saas" ? t("planta.type.saas") : t("planta.type.landing");
-var howChecked = (t, id, probe) => {
-  switch (probe.type) {
-    case "files":
-      return t("planta.how.files", { list: probe.any.join(", ") });
-    case "grep":
-      return t("planta.how.grep", { list: probe.all.join(" + ") });
-    case "deps":
-      return t("planta.how.deps", { list: probe.any.join(", ") });
-    case "contract":
-      return t("planta.how.contract", { kind: probe.kind });
-    case "manual":
-      return t("planta.how.manual", { id });
-  }
-};
-var probeOf = (type, id) => BLUEPRINTS[type].find((item2) => item2.id === id)?.probe;
-var MARK2 = { green: "✓", missing: "✗", manual: "·" };
-var barLine = (t, bar) => t("planta.bar", { label: typeLabel(t, bar.type), green: bar.green, total: bar.total });
-var barLines = (t, lang, bar) => {
-  const next2 = bar.next;
-  const nextProbe = next2 === void 0 ? void 0 : probeOf(bar.type, next2);
-  const nextLines = next2 === void 0 || nextProbe === void 0 ? [] : [
-    t("planta.next", { title: itemText(lang, next2).title, id: next2 }),
-    `  ${itemText(lang, next2).why}`,
-    `  ${t("planta.minimum", { text: itemText(lang, next2).minimum })}`,
-    `  ${howChecked(t, next2, nextProbe)}`
-  ];
-  return [
-    barLine(t, bar),
-    ...nextLines,
-    ...bar.items.map((item2) => `${MARK2[item2.status]} ${item2.id}: ${itemText(lang, item2.id).title}`)
-  ];
-};
-
 // src/commands/planta.ts
 var PLANTA_SCHEMA = "finitemonkey/planta@1";
 var USAGE4 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
@@ -33380,7 +33556,7 @@ import { join as join89 } from "node:path";
 // src/wt/inventory.ts
 var DEFAULT_STALE_DAYS = 7;
 var samePath = (left, right) => isWithinPath(left, right) && isWithinPath(right, left);
-var numberAt = (raw, fallback) => {
+var numberAt2 = (raw, fallback) => {
   const parsed = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
 };
@@ -33403,7 +33579,7 @@ var loadInventory = (runtime, cwd, staleDays) => {
       runtime,
       mainRoot: mainRoot2,
       defaultBranch: repo === void 0 ? "main" : repoFacts(runtime, repo, config).defaultBranch(),
-      staleDays: staleDays ?? numberAt(configAt(config, "wt", "stale_days"), DEFAULT_STALE_DAYS),
+      staleDays: staleDays ?? numberAt2(configAt(config, "wt", "stale_days"), DEFAULT_STALE_DAYS),
       processes: runtime.processes(),
       generated: configList(config, "wt", "generated")
     }
@@ -35400,7 +35576,7 @@ var criteriaOf = (items, port) => items.map((item2, index) => {
 var CHECKBOX = /^\s*[-*]\s+\[[ xX]\]\s+(.*)$/;
 var SPECKIT_ID = /^(T\d{3,})\s+/;
 var OPENSPEC_ID = /^(\d+(?:\.\d+)+)\s+/;
-var LABELS = /\[(?:P|US\d+|Story[^\]]*)\]\s*/g;
+var LABELS2 = /\[(?:P|US\d+|Story[^\]]*)\]\s*/g;
 var EARS = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:when|while|if|where)\b.*\bshall\b/i;
 var SHALL = /^\s*(?:[-*]\s*)?(?:the\s+\S+(?:\s+\S+)?\s+shall)\b/i;
 var SCENARIO_WHEN = /^\s*[-*]\s*\*\*WHEN\*\*\s*(.+)$/;
@@ -35413,7 +35589,7 @@ var checkboxItem = (raw, line11, index) => {
   const body2 = CHECKBOX.exec(raw)?.[1];
   if (body2 === void 0) return void 0;
   const id = SPECKIT_ID.exec(body2)?.[1] ?? OPENSPEC_ID.exec(body2)?.[1];
-  const text15 = body2.replace(SPECKIT_ID, "").replace(OPENSPEC_ID, "").replace(LABELS, "").trim();
+  const text15 = body2.replace(SPECKIT_ID, "").replace(OPENSPEC_ID, "").replace(LABELS2, "").trim();
   return { from: id ?? `item-${String(index + 1)}`, text: text15, line: line11, ears: EARS.test(text15) || SHALL.test(text15) };
 };
 var scenarioItems = (lines6) => lines6.flatMap((raw, index) => {
