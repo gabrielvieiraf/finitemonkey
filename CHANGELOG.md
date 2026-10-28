@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.40](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.39...v0.1.0-next.40) (2026-10-28)
+
+### Features
+
+* stage 2.5, rules that hold and work that finishes ([#256](https://github.com/gabrielvieiraf/finitemonkey/issues/256)) ([aba547c](https://github.com/gabrielvieiraf/finitemonkey/commit/aba547cadb4e97e14c033997906244fd9fa334ed)), closes [#233](https://github.com/gabrielvieiraf/finitemonkey/issues/233) [#234](https://github.com/gabrielvieiraf/finitemonkey/issues/234) [#235](https://github.com/gabrielvieiraf/finitemonkey/issues/235) [#248](https://github.com/gabrielvieiraf/finitemonkey/issues/248) [#242](https://github.com/gabrielvieiraf/finitemonkey/issues/242) [#121](https://github.com/gabrielvieiraf/finitemonkey/issues/121) [#236](https://github.com/gabrielvieiraf/finitemonkey/issues/236) [#237](https://github.com/gabrielvieiraf/finitemonkey/issues/237) [#239](https://github.com/gabrielvieiraf/finitemonkey/issues/239) [#238](https://github.com/gabrielvieiraf/finitemonkey/issues/238) [#240](https://github.com/gabrielvieiraf/finitemonkey/issues/240) [#241](https://github.com/gabrielvieiraf/finitemonkey/issues/241) [#243](https://github.com/gabrielvieiraf/finitemonkey/issues/243) [#249](https://github.com/gabrielvieiraf/finitemonkey/issues/249) [#244](https://github.com/gabrielvieiraf/finitemonkey/issues/244)
+
 ## [0.1.0-next.39](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.38...v0.1.0-next.39) (2026-10-28)
 
 ### Features
