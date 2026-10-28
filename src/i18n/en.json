@@ -1504,5 +1504,13 @@
   "gate.prod.unreachable": "could not read {url}: {detail}",
   "gate.prod.status": "{url} answered HTTP {status}, expected {want}",
   "gate.prod.live": "{url} answers {live}, the commit of the task",
-  "gate.prod.behind": "{url} answers {live}, not the commit of the task {expected}"
+  "gate.prod.behind": "{url} answers {live}, not the commit of the task {expected}",
+  "command.look_approve.summary": "Store the last captures of a route as the approved reference that later captures are compared with",
+  "look.approve.person_only": "Only the person approves a screen, and this does not look like their terminal (no TTY, or running inside Claude Code)",
+  "look.approve.no_capture": "no capture of {route} yet: run finitemonkey look with the route in .finitemonkey/look.yml first",
+  "look.approve.done": "Approved {route} ({count, plural, one {# width} other {# widths}}). The next look compares this route with it and flags large structural changes.",
+  "gate.copy.none": "no ui.banned_copy in config.yml",
+  "gate.copy.ok": "no banned phrase in {count, plural, one {# catalog} other {# catalogs}}",
+  "gate.copy.found": "{file} key {key} has \"{phrase}\"",
+  "gate.copy.shadow": "ui-review is in shadow in policy.yml, so this does not fail the gate yet"
 }

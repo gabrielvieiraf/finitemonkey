@@ -33,6 +33,7 @@ import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
 import { inventoryCommand } from "./inventory.js";
 import { lookCommand } from "./look.js";
+import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
@@ -171,6 +172,7 @@ export const REGISTRY = [
   conceitosMarkCommand,
   signalsHypothesisCommand,
   deployStatusCommand,
+  lookApproveCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,

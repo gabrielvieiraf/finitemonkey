@@ -49,7 +49,10 @@
               "look/request-failed",
               "look/i18n-key",
               "look/broken-image",
-              "look/touch-target"
+              "look/touch-target",
+              "look/banned-copy",
+              "look/drift",
+              "look/repeated-layout"
             ]
           },
           "route": {

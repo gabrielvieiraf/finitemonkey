@@ -2,6 +2,7 @@ import type { CheckRegistry } from "../types.js";
 import { appsecCheck } from "./appsec.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
+import { copyCheck } from "./copy.js";
 import { costCheck } from "./cost.js";
 import { decisionCheck } from "./decision.js";
 import { diffCheck } from "./diff.js";
@@ -52,4 +53,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   slop: slopCheck,
   regression: regressionCheck,
   prod: prodCheck,
+  copy: copyCheck,
 };

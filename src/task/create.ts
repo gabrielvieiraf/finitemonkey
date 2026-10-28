@@ -5,6 +5,7 @@ import { toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { stringifyYaml } from "../core/yaml/write.js";
+import { CONFIG_FILE, configList, parseConfigYaml } from "../git/project-config.js";
 import { LOOK_CONFIG } from "../look/config.js";
 import { detectChecks } from "./implicit.js";
 import { contractHash } from "./load.js";
@@ -37,6 +38,9 @@ const explicitChecks = (draft: TaskDraft): readonly AcceptanceCheck[] => [
   ...draft.runs.map((run, index): AcceptanceCheck => ({ id: `C${String(index + 1)}`, kind: "command", run })),
   draft.tests === undefined ? { id: "tests", kind: "tests" } : { id: "tests", kind: "tests", run: draft.tests },
 ];
+
+const hasBannedCopy = (config: string | undefined): boolean =>
+  config !== undefined && configList(parseConfigYaml(config), "ui", "banned_copy").length > 0;
 
 export const draftChecks = (
   runtime: Pick<Runtime, "readText" | "stat">,
@@ -71,6 +75,7 @@ export const draftChecks = (
       ? []
       : [{ id: "look", kind: "look" as const }]),
     ...(draft.git.length > 0 ? [{ id: "git", kind: "git" as const, require: draft.git }] : []),
+    ...(hasBannedCopy(disk.read(CONFIG_FILE)) ? [{ id: "copy", kind: "copy" as const }] : []),
     { id: "pr", kind: "pr", requireOpen: draft.git.includes("pr_open") },
     ...draft.manual.map((description, index): AcceptanceCheck => ({
       id: `M${String(index + 1)}`,

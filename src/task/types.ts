@@ -28,6 +28,7 @@ export const CHECK_KINDS = [
   "quality",
   "slop",
   "regression",
+  "copy",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

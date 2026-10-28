@@ -1505,7 +1505,15 @@
     "gate.prod.unreachable": "machine",
     "gate.prod.status": "machine",
     "gate.prod.live": "machine",
-    "gate.prod.behind": "machine"
+    "gate.prod.behind": "machine",
+    "command.look_approve.summary": "machine",
+    "look.approve.person_only": "machine",
+    "look.approve.no_capture": "machine",
+    "look.approve.done": "machine",
+    "gate.copy.none": "machine",
+    "gate.copy.ok": "machine",
+    "gate.copy.found": "machine",
+    "gate.copy.shadow": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3013,6 +3021,14 @@
     "gate.prod.unreachable": "machine",
     "gate.prod.status": "machine",
     "gate.prod.live": "machine",
-    "gate.prod.behind": "machine"
+    "gate.prod.behind": "machine",
+    "command.look_approve.summary": "machine",
+    "look.approve.person_only": "machine",
+    "look.approve.no_capture": "machine",
+    "look.approve.done": "machine",
+    "gate.copy.none": "machine",
+    "gate.copy.ok": "machine",
+    "gate.copy.found": "machine",
+    "gate.copy.shadow": "machine"
   }
 }
