@@ -1011,5 +1011,9 @@
   "audit.state.only_report": "Solo en un informe, fuera del plan maestro ({count}):",
   "audit.state.lost": "Perdido, en ningún documento ({count}):",
   "audit.incidents": "Credenciales pegadas en sesiones pasadas abrieron incidentes: {list}",
-  "audit.error.open": "{count, plural, one {# elemento está perdido o contradicho} other {# elementos están perdidos o contradichos}}"
+  "audit.error.open": "{count, plural, one {# elemento está perdido o contradicho} other {# elementos están perdidos o contradichos}}",
+  "command.debt.summary": "Lista los atajos deliberados entre tareas y marca los que no tienen disparador o ya vencieron",
+  "debt.title": "{count, plural, one {# atajo} other {# atajos}}:",
+  "debt.row": "  [{state}] {what} (tarea {task}, en {where}, {detail})",
+  "debt.no_trigger": "Atajo sin disparador para revisarlo: {what}"
 }

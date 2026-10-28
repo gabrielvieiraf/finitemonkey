@@ -1,3 +1,5 @@
+import type { Shortcut } from "./shortcuts.js";
+
 export const CHECK_KINDS = [
   "command",
   "tests",
@@ -67,6 +69,7 @@ export interface TaskContract {
   readonly acceptance: readonly AcceptanceCheck[];
   readonly decisionsNeeded: readonly string[];
   readonly callersIgnore?: readonly string[];
+  readonly shortcuts?: readonly Shortcut[];
   readonly implicit: boolean;
 }
 

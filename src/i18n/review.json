@@ -1012,7 +1012,11 @@
     "audit.state.only_report": "machine",
     "audit.state.lost": "machine",
     "audit.incidents": "machine",
-    "audit.error.open": "machine"
+    "audit.error.open": "machine",
+    "command.debt.summary": "machine",
+    "debt.title": "machine",
+    "debt.row": "machine",
+    "debt.no_trigger": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2027,6 +2031,10 @@
     "audit.state.only_report": "machine",
     "audit.state.lost": "machine",
     "audit.incidents": "machine",
-    "audit.error.open": "machine"
+    "audit.error.open": "machine",
+    "command.debt.summary": "machine",
+    "debt.title": "machine",
+    "debt.row": "machine",
+    "debt.no_trigger": "machine"
   }
 }

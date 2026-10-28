@@ -1011,5 +1011,9 @@
   "audit.state.only_report": "Só em um relatório, fora do plano mestre ({count}):",
   "audit.state.lost": "Perdido, em nenhum documento ({count}):",
   "audit.incidents": "Credenciais coladas em sessões passadas abriram incidentes: {list}",
-  "audit.error.open": "{count, plural, one {# item está perdido ou contrariado} other {# itens estão perdidos ou contrariados}}"
+  "audit.error.open": "{count, plural, one {# item está perdido ou contrariado} other {# itens estão perdidos ou contrariados}}",
+  "command.debt.summary": "Lista os atalhos deliberados entre tarefas e marca os sem gatilho ou já vencidos",
+  "debt.title": "{count, plural, one {# atalho} other {# atalhos}}:",
+  "debt.row": "  [{state}] {what} (tarefa {task}, em {where}, {detail})",
+  "debt.no_trigger": "Atalho sem gatilho para revisitar: {what}"
 }
