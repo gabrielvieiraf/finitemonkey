@@ -1,6 +1,6 @@
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
-import type { Problem } from "../core/problem.js";
+import { needsPersonProblem, type Problem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { gitAt, gitRoot, headSha } from "../gate/git.js";
@@ -9,6 +9,8 @@ import { currentReport } from "../gate/hooks/snapshot.js";
 import { reportLines } from "../gate/render.js";
 import { runGate } from "../gate/run.js";
 import { initPlan } from "../plan/master.js";
+import { spendLine } from "../spend/hook.js";
+import { blocksNewTask, budgetStatus } from "../spend/status.js";
 import { type CreateProblem, createTask, type TaskDraft } from "../task/create.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { contractJson } from "../task/serialize.js";
@@ -95,6 +97,12 @@ const newTask = (ctx: Ctx, id: string | undefined, values: OptionValues): Comman
     );
   const paths = projectOf(ctx);
   if (paths === undefined) return noRepo(ctx);
+  const budget = budgetStatus({ runtime: ctx.runtime, paths, env: ctx.env, sessionId: undefined, refresh: true });
+  if (blocksNewTask(budget))
+    return failureFrom(
+      ctx.t,
+      needsPersonProblem("budget.blocked", "fm: allow budget <reason>", { spend: spendLine(ctx.t, budget.spends) }),
+    );
   const created = createTask(ctx.runtime, paths, draftFrom(ctx, paths, id, values));
   if (!created.ok) return createFailure(ctx, created.error);
   const plan = created.value.contract.size === "L" ? initPlan(ctx.runtime, ctx.t, paths.root) : undefined;

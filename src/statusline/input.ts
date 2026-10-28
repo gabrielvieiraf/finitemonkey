@@ -1,6 +1,12 @@
 import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
 
+export interface RateWindow {
+  readonly name: string;
+  readonly percent: number;
+}
+
 export interface StatusInput {
+  readonly rateLimits: readonly RateWindow[];
   readonly sessionId: string | undefined;
   readonly dir: string | undefined;
   readonly contextPercent: number | undefined;
@@ -31,6 +37,14 @@ const contextPercent = (record: JsonObject): number | undefined => {
   return typeof size === "number" && size > 0 && used !== undefined ? Math.round((used / size) * 100) : undefined;
 };
 
+const rateLimits = (value: unknown): readonly RateWindow[] =>
+  isRecord(value)
+    ? Object.entries(value).flatMap(([name, window]) => {
+        const percent = isRecord(window) ? num(window["used_percentage"]) : undefined;
+        return percent === undefined ? [] : [{ name, percent: Math.round(percent) }];
+      })
+    : [];
+
 export const parseStatusInput = (raw: string): StatusInput => {
   const parsed = parseJsonObject(raw.trim() === "" ? "{}" : raw);
   const record = parsed.ok ? parsed.value : {};
@@ -39,6 +53,7 @@ export const parseStatusInput = (raw: string): StatusInput => {
     sessionId: text(record["session_id"]),
     dir: text(workspace["project_dir"]) ?? text(workspace["current_dir"]) ?? text(record["cwd"]),
     contextPercent: contextPercent(record),
+    rateLimits: rateLimits(record["rate_limits"]),
     raw,
   };
 };

@@ -4,7 +4,8 @@ import { readAll, withDeadline } from "../hooks/stdin.js";
 import { LOCK_FILE } from "../install/layout.js";
 import { parseLock } from "../install/lock-file.js";
 import { findGitRoot } from "../install/project.js";
-import { fmPaths } from "../task/paths.js";
+import { budgetStatus } from "../spend/status.js";
+import { type FmPaths, fmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 import { gateLight } from "./gate-state.js";
 import { parseStatusInput, type StatusInput } from "./input.js";
@@ -29,6 +30,26 @@ const columnsOf = (ctx: Ctx): number | undefined => {
   return Number.isInteger(columns) && columns > 0 ? columns : undefined;
 };
 
+const spendSegment = (ctx: Ctx, paths: FmPaths | undefined, input: StatusInput): { spend?: string } => {
+  if (input.rateLimits.length > 0)
+    return {
+      spend: input.rateLimits
+        .map((window) => ctx.t("statusline.rate", { name: window.name, percent: window.percent }))
+        .join(" "),
+    };
+  if (paths === undefined) return {};
+  const status = budgetStatus({
+    runtime: ctx.runtime,
+    paths,
+    env: ctx.env,
+    sessionId: input.sessionId,
+    refresh: false,
+  });
+  const ratios = status.spends.flatMap((item) => (item.limit === undefined ? [] : [item.spent / item.limit]));
+  if (status.level === "ok" || ratios.length === 0) return {};
+  return { spend: ctx.t("statusline.budget", { percent: Math.round(Math.max(...ratios) * 100) }) };
+};
+
 const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
   const start = input.dir === undefined ? ctx.cwd : toAbsolutePath(input.dir, ctx.cwd);
   const root = findGitRoot(start, ctx.runtime);
@@ -48,6 +69,7 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
     task: paths === undefined ? undefined : readState(ctx.runtime, paths).active,
     gate: paths === undefined ? "none" : gateLight(ctx.runtime, paths),
     contextPercent: input.contextPercent,
+    ...spendSegment(ctx, paths, input),
   });
   return composeLine(wrapped, segment, columnsOf(ctx));
 };
