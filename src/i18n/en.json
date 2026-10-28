@@ -1055,5 +1055,11 @@
   "doctor.github.codeowners_size": "{file} is above 3 MB; GitHub ignores it",
   "doctor.github.codeowners_invalid": "{file} has lines GitHub skips without warning: {lines}",
   "doctor.github.fix_codeowners": "Owners are @user, @org/team or an email; patterns cannot start with ! or use [ ]",
-  "doctor.github.codeowners_ok": "{file} parses"
+  "doctor.github.codeowners_ok": "{file} parses",
+  "git.block.file_in_use.claim": "{file} is outside git and in use by {owner}; two fronts rewriting it would lose one side",
+  "git.block.file_in_use.requires": "Write to a separate file and merge it later, once {owner} has finished",
+  "git.block.backup_failed.claim": "Could not copy {file} before rewriting it ({detail}); it is outside git, so there would be no way back",
+  "git.block.backup_failed.requires": "Free disk space or fix permissions on .finitemonkey/backups, then try again",
+  "git.block.scope_copy.claim": "The command copies or moves from a front worktree into the main checkout ({target} in {main})",
+  "git.block.scope_copy.requires": "Commit in the front's branch and bring the change through finitemonkey merge or a pull request"
 }
