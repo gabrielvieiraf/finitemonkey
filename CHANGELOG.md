@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.38](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.37...v0.1.0-next.38) (2026-10-28)
+
+### Features
+
+* **audit:** log the person's requests and find what never reached a document ([#189](https://github.com/gabrielvieiraf/finitemonkey/issues/189)) ([93a04d1](https://github.com/gabrielvieiraf/finitemonkey/commit/93a04d17c5847c3517d93de25f6330bb95d078be)), closes [#187](https://github.com/gabrielvieiraf/finitemonkey/issues/187) [#185](https://github.com/gabrielvieiraf/finitemonkey/issues/185) [#182](https://github.com/gabrielvieiraf/finitemonkey/issues/182) [#179](https://github.com/gabrielvieiraf/finitemonkey/issues/179) [#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176) [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#62](https://github.com/gabrielvieiraf/finitemonkey/issues/62)
+
 ## [0.1.0-next.37](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.36...v0.1.0-next.37) (2026-10-28)
 
 ### Features
