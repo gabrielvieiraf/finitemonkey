@@ -286,6 +286,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "O `gen ownership` grava uma entrada por peça (nome, tipo do vocabulário, dono, consumidores) depois que a pessoa passa `--yes`; `ci gate`, `ownership check` e `plan check` leem o arquivo, ou leem o `catalog-info.yaml` quando ele existe.",
     es: "`gen ownership` escribe una entrada por componente (nombre, tipo del vocabulario, dueño, consumidores) después de que la persona pasa `--yes`; `ci gate`, `ownership check` y `plan check` lo leen, o leen `catalog-info.yaml` cuando existe.",
   },
+  "ci-protect": {
+    en: "One line per GitHub setting `ci protect` changed after the person's yes in a terminal: when, the repository, the setting, the value before and after, and whether GitHub accepted it. The settings it read are cached in `.finitemonkey/cache/github-settings.json` for `doctor`.",
+    "pt-BR":
+      "Uma linha por configuração do GitHub que o `ci protect` mudou depois do sim da pessoa num terminal: quando, o repositório, a configuração, o valor antes e depois, e se o GitHub aceitou. O que ele leu fica em cache em `.finitemonkey/cache/github-settings.json` para o `doctor`.",
+    es: "Una línea por cada configuración de GitHub que `ci protect` cambió tras el sí de la persona en una terminal: cuándo, el repositorio, la configuración, el valor antes y después, y si GitHub la aceptó. Lo que leyó queda en caché en `.finitemonkey/cache/github-settings.json` para `doctor`.",
+  },
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

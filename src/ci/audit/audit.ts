@@ -7,6 +7,7 @@ import { type Finding, stableFindingId } from "../../findings/baseline.js";
 import { GITHUB_CACHE } from "../../github/ruleset.js";
 import { sha256Hex } from "../../secrets/fingerprint.js";
 import { type ProjectLevel, projectLevel } from "../level.js";
+import { readSettingsCache } from "../protect/state.js";
 import { type AuditHit, auditWorkflow, type Severity } from "./rules.js";
 import { runTools } from "./tools.js";
 import { parseWorkflow } from "./workflow.js";
@@ -39,6 +40,7 @@ export const workflowFiles = (runtime: Pick<Runtime, "listDir">, root: AbsoluteP
 };
 
 const publicRepo = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): boolean => {
+  if (readSettingsCache(runtime, root)?.visibility === "public") return true;
   const text = runtime.readText(toAbsolutePath(join(root, ...GITHUB_CACHE.split("/"))));
   const parsed = text.ok ? parseJsonObject(text.value) : undefined;
   return parsed?.ok === true && isRecord(parsed.value) && parsed.value["visibility"] === "public";
