@@ -81,6 +81,7 @@ export const ERROR_CODES = [
   "deps_scan_failed",
   "deps_vulnerable",
   "deps_write_failed",
+  "findings_not_found",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

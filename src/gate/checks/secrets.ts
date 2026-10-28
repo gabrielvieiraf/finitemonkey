@@ -1,4 +1,5 @@
 import { envHygiene, type HygieneProblem } from "../../creds/hygiene.js";
+import { loadBaseline } from "../../findings/baseline.js";
 import { secretsGateStatus } from "../../secrets/gate.js";
 import { blocking, isWarning } from "../../secrets/rules/types.js";
 import type { AcceptanceCheck } from "../../task/types.js";
@@ -27,14 +28,24 @@ const envNotes = (ctx: SecretsGateContext): readonly ReturnType<typeof note>[] =
     return found === undefined ? [] : [found];
   });
 
+const grewNotes = (ctx: SecretsGateContext): readonly ReturnType<typeof note>[] => {
+  const before = readSession(ctx.runtime, ctx.paths)?.findings;
+  const now = loadBaseline(ctx.runtime, ctx.paths.root);
+  if (before === undefined || !now.ok || now.value.entries.length <= before) return [];
+  return [note("gate.findings.grew", { before, after: now.value.entries.length })];
+};
+
 export const secretsCheck = (_check: AcceptanceCheck, ctx: SecretsGateContext): CheckOutcome => {
   const status = secretsGateStatus(ctx.runtime, ctx.paths.root, sinceOf(ctx));
   if (!status.ok) return unverified("tool_missing", [note("gate.secrets.unavailable")]);
   const { findings, openIncidents } = status.value;
-  const warnings = findings
-    .filter(isWarning)
-    .slice(0, MAX_LISTED)
-    .map((finding) => note("gate.secrets.warning", { file: finding.file, line: finding.line, rule: finding.ruleId }));
+  const warnings = [
+    ...grewNotes(ctx),
+    ...findings
+      .filter(isWarning)
+      .slice(0, MAX_LISTED)
+      .map((finding) => note("gate.secrets.warning", { file: finding.file, line: finding.line, rule: finding.ruleId })),
+  ];
   const notes = [
     ...blocking(findings)
       .slice(0, MAX_LISTED)

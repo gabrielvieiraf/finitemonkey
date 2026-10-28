@@ -1207,5 +1207,13 @@
   "doctor.coexist.memory_tool": "{file} foi editado por uma ferramenta de memória ({tool}) depois que o finitemonkey o instalou.",
   "doctor.coexist.fix_memory_tool": "Revise as linhas acrescentadas; arquivo de instrução guarda regra, não anotação de sessão.",
   "supervisor.resumed": "Esta sessão voltou depois de uma troca de conta enquanto o portão segurava a parada ({detail}). O portão roda de novo agora; termine o que ele pediu antes de parar.",
-  "gain.supervisor": "Uso informado pelo supervisor de contas: {usage}"
+  "gain.supervisor": "Uso informado pelo supervisor de contas: {usage}",
+  "findings.command.accept": "Aceita um achado de qualquer checagem no baseline compartilhado, com dono, motivo e validade (só a pessoa)",
+  "findings.command.list": "Lista os achados aceitos de todas as checagens, com dono e validade",
+  "findings.accept.done": "{id} ({check}, {rule}) em {where} aceito, com {owner} como dono até {expires}.",
+  "findings.error.not_found": "Nenhum achado atual tem o id {id}",
+  "findings.list.empty": "O baseline de achados está vazio.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, até {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, venceu em {expires}; volta a bloquear",
+  "gate.findings.grew": "O baseline de achados cresceu de {before} para {after} entradas nesta sessão; achado aceito precisa de um motivo que a pessoa defenda."
 }

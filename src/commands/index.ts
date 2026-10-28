@@ -1,7 +1,7 @@
 import { appCheckCommand } from "./app-check.js";
 import { auditCommand } from "./audit.js";
-import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { briefCommand } from "./brief.js";
+import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
@@ -11,6 +11,7 @@ import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
 import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
+import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
 import { frontsMergeCommand } from "./fronts-merge.js";
@@ -70,6 +71,8 @@ export const REGISTRY = [
   taskFromSpecCommand,
   secretsScanCommand,
   secretsAcceptCommand,
+  findingsAcceptCommand,
+  findingsListCommand,
   policyFalsePositiveCommand,
   offCommand,
   onCommand,

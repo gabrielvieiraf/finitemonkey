@@ -1207,5 +1207,13 @@
   "doctor.coexist.memory_tool": "{file} was edited by a memory tool ({tool}) since finitemonkey installed it.",
   "doctor.coexist.fix_memory_tool": "Review the added lines; instruction files should hold rules, not session notes.",
   "supervisor.resumed": "This session was resumed after an account switch while the gate was holding the stop ({detail}). The gate runs again now; finish what it asked before stopping.",
-  "gain.supervisor": "Account supervisor usage: {usage}"
+  "gain.supervisor": "Account supervisor usage: {usage}",
+  "findings.command.accept": "Accept a finding from any check into the shared baseline, with owner, reason and expiry (person only)",
+  "findings.command.list": "List the accepted findings of every check, with owner and expiry",
+  "findings.accept.done": "Accepted {id} ({check}, {rule}) at {where}, owned by {owner} until {expires}.",
+  "findings.error.not_found": "No current finding has the id {id}",
+  "findings.list.empty": "The findings baseline is empty.",
+  "findings.list.entry": "{id} {check} {where}: {owner}, until {expires}",
+  "findings.list.expired": "{id} {check} {where}: {owner}, expired on {expires}; it blocks again",
+  "gate.findings.grew": "The findings baseline grew from {before} to {after} entries during this session; accepted findings need a reason the person can defend."
 }

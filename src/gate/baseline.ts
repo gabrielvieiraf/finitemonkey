@@ -11,6 +11,7 @@ export interface SessionMark {
   readonly sessionId: string;
   readonly startTree: string;
   readonly at: number;
+  readonly findings?: number;
 }
 
 export const readSession = (runtime: Pick<Runtime, "readText">, paths: FmPaths): SessionMark | undefined => {
@@ -18,9 +19,9 @@ export const readSession = (runtime: Pick<Runtime, "readText">, paths: FmPaths):
   const sessionId = raw?.["sessionId"];
   const startTree = raw?.["startTree"];
   const at = raw?.["at"];
-  return typeof sessionId === "string" && typeof startTree === "string" && typeof at === "number"
-    ? { sessionId, startTree, at }
-    : undefined;
+  const findings = raw?.["findings"];
+  if (typeof sessionId !== "string" || typeof startTree !== "string" || typeof at !== "number") return undefined;
+  return { sessionId, startTree, at, ...(typeof findings === "number" ? { findings } : {}) };
 };
 
 export const writeSession = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, mark: SessionMark): boolean =>
