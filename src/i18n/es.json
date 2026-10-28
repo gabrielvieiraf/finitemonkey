@@ -1512,5 +1512,10 @@
   "gate.copy.none": "sin ui.banned_copy en config.yml",
   "gate.copy.ok": "ninguna frase prohibida en {count, plural, one {# catálogo} other {# catálogos}}",
   "gate.copy.found": "{file} clave {key} tiene \"{phrase}\"",
-  "gate.copy.shadow": "ui-review está en shadow en policy.yml, así que esto todavía no hace fallar la compuerta"
+  "gate.copy.shadow": "ui-review está en shadow en policy.yml, así que esto todavía no hace fallar la compuerta",
+  "wt.command.classify": "Clasifica los worktrees y guarda el resultado en caché para la línea de inicio de sesión (corre en segundo plano desde Stop una vez al día)",
+  "wt.command.dismiss": "Silencia la línea de worktrees ya integrados hasta que haya más",
+  "wt.classify.done": "{count, plural, one {# worktree clasificado} other {# worktrees clasificados}}, {cleanable} ya integrados.",
+  "wt.dismiss.done": "La línea queda en silencio hasta que haya más de {count} worktrees integrados.",
+  "wt.suggest.line": "{count, plural, one {# worktree ya integrado ocupa} other {# worktrees ya integrados ocupan}} cerca de {size} MB. finitemonkey wt clean muestra el plan y --apply los quita después de archivar; finitemonkey wt dismiss silencia este aviso."
 }

@@ -32,6 +32,7 @@ import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
+import { WT_SUGGEST_HANDLERS } from "../wt/suggest-hooks.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 import { capReason } from "./reason.js";
@@ -181,6 +182,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "claims", damage: false, handlers: CLAIMS_HANDLERS },
   { id: "clarify", damage: false, handlers: CLARIFY_HANDLERS },
   { id: "deploy", damage: false, handlers: DEPLOY_HANDLERS },
+  { id: "wt-suggest", damage: false, handlers: WT_SUGGEST_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

@@ -1513,7 +1513,12 @@
     "gate.copy.none": "machine",
     "gate.copy.ok": "machine",
     "gate.copy.found": "machine",
-    "gate.copy.shadow": "machine"
+    "gate.copy.shadow": "machine",
+    "wt.command.classify": "machine",
+    "wt.command.dismiss": "machine",
+    "wt.classify.done": "machine",
+    "wt.dismiss.done": "machine",
+    "wt.suggest.line": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3029,6 +3034,11 @@
     "gate.copy.none": "machine",
     "gate.copy.ok": "machine",
     "gate.copy.found": "machine",
-    "gate.copy.shadow": "machine"
+    "gate.copy.shadow": "machine",
+    "wt.command.classify": "machine",
+    "wt.command.dismiss": "machine",
+    "wt.classify.done": "machine",
+    "wt.dismiss.done": "machine",
+    "wt.suggest.line": "machine"
   }
 }

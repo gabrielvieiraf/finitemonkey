@@ -71,6 +71,7 @@ import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
 import { versionCommand } from "./version.js";
 import { wtAdoptCommand, wtNewCommand } from "./wt.js";
+import { wtClassifyCommand, wtDismissCommand } from "./wt-classify.js";
 import { wtArchiveCommand, wtCleanCommand, wtPurgeCommand } from "./wt-clean.js";
 import { wtDoctorCommand, wtListCommand } from "./wt-list.js";
 
@@ -173,6 +174,8 @@ export const REGISTRY = [
   signalsHypothesisCommand,
   deployStatusCommand,
   lookApproveCommand,
+  wtClassifyCommand,
+  wtDismissCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,
