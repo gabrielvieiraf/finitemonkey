@@ -6,6 +6,7 @@ import { after, describe, it } from "node:test";
 import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import type { Env } from "../src/core/context.js";
 import type { JsonObject } from "../src/core/parsed.js";
+import { toPosixPath } from "../src/core/posix-path.js";
 import type { GitResult, Runtime } from "../src/core/runtime.js";
 import type { HookEvent } from "../src/hooks/events.js";
 import { mergeHandlers } from "../src/hooks/handlers.js";
@@ -210,6 +211,43 @@ describe("WorktreeCreate: worktrees off synced and mounted folders", () => {
     const removed = await fire(runtime, "WorktreeRemove", repo.root, { worktree_path: path, repo_path: repo.root });
     assert.equal(removed.exitCode, 0, removed.stderr);
     assert.ok(!existsSync(path));
+  });
+
+  it("falls back to the plain git worktree add when the placed worktree cannot be created", async (t) => {
+    if (process.platform === "win32") {
+      t.skip("/mnt/c paths exist only on Linux");
+      return;
+    }
+    const main = toAbsolutePath("/mnt/c/Users/ana/OneDrive/shop");
+    const added: string[][] = [];
+    const ok = (stdout: string): GitResult => ({ found: true, ok: true, stdout });
+    const fs = memoryFs({ [toAbsolutePath(join(main, ".git", "HEAD"))]: "ref: refs/heads/main\n" });
+    const runtime = fakeRuntime({
+      fs,
+      git: (args) => {
+        if (args.includes("--git-common-dir")) return ok(`${main}/.git\n`);
+        if (args[0] === "symbolic-ref") return ok("main\n");
+        if (args[0] === "rev-parse") return ok("0123456789abcdef0123456789abcdef01234567\n");
+        return { found: true, ok: false, stdout: "" };
+      },
+      gitWith: (args) => {
+        if (args[0] === "worktree" && args[1] === "list") {
+          return {
+            found: true,
+            ok: true,
+            stdout: `worktree ${main}\nHEAD 0123456\nbranch refs/heads/main\n\n`,
+            stderr: "",
+            timedOut: false,
+          };
+        }
+        added.push([...args]);
+        const first = added.filter((item) => item[1] === "add").length === 1;
+        return { found: true, ok: !first, stdout: "", stderr: first ? "permission denied" : "", timedOut: false };
+      },
+    });
+    const outcome = await fire(runtime, "WorktreeCreate", main, { name: "login", repo_path: main });
+    assert.equal(outcome.exitCode, 0, outcome.stderr);
+    assert.equal(toPosixPath(outcome.stdout.trim()), `${toPosixPath(main)}/.claude/worktrees/login`);
   });
 
   it("fails the creation when there is no repository", async () => {

@@ -74,7 +74,11 @@ export const worktreeCreate: HookHandler = (input) => {
   const mode = featureMode(input.runtime, paths, WT_PLACE_FEATURE);
   const proposed = defaultPlace(root, input.runtime.homeDir(), id);
   logEvent(input.runtime, paths, "wt.placed", { id, proposed, mode });
-  return mode === "active" ? placed(input, cwd, id, branch) : plainAdd(input, root, id, branch);
+  if (mode !== "active") return plainAdd(input, root, id, branch);
+  const moved = placed(input, cwd, id, branch);
+  if (moved.kind === "allow") return moved;
+  logEvent(input.runtime, paths, "wt.place_fallback", { id, reason: moved.reason });
+  return plainAdd(input, root, id, branch);
 };
 
 export const worktreeRemove: HookHandler = (input) => {

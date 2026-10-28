@@ -32550,7 +32550,11 @@ var worktreeCreate = (input) => {
   const mode = featureMode(input.runtime, paths, WT_PLACE_FEATURE);
   const proposed2 = defaultPlace(root, input.runtime.homeDir(), id);
   logEvent(input.runtime, paths, "wt.placed", { id, proposed: proposed2, mode });
-  return mode === "active" ? placed(input, cwd, id, branch) : plainAdd(input, root, id, branch);
+  if (mode !== "active") return plainAdd(input, root, id, branch);
+  const moved = placed(input, cwd, id, branch);
+  if (moved.kind === "allow") return moved;
+  logEvent(input.runtime, paths, "wt.place_fallback", { id, reason: moved.reason });
+  return plainAdd(input, root, id, branch);
 };
 var worktreeRemove = (input) => {
   const target4 = textField(input.payload.raw, "worktree_path");
