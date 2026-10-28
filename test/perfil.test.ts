@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { Readable } from "node:stream";
 import { after, describe, it } from "node:test";
 
 import type { JsonObject } from "../src/core/parsed.js";
+import { headShaFromFiles } from "../src/git/head-file.js";
 import type { HookEvent } from "../src/hooks/events.js";
 import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { runHook } from "../src/hooks/runner.js";
@@ -170,5 +172,54 @@ describe("perfil: sources while working", () => {
     const forgot = await cliJson(["perfil", "forget"], { cwd: repo.root, runtime: runtime() });
     assert.equal(field(forgot.body, "data", "removed"), 1);
     assert.equal(readProfile(repoRuntime(), fmPaths(repo.root)), undefined);
+  });
+});
+
+describe("perfil: SessionStart stays off git when nothing was committed", () => {
+  const spied = (logs: string[]) => {
+    const rt = repoRuntime();
+    return {
+      ...rt,
+      exec: (request: Parameters<typeof rt.exec>[0]) => {
+        if (request.command === "git" && request.args.includes("log")) logs.push(request.args.join(" "));
+        return rt.exec(request);
+      },
+    };
+  };
+
+  const fireWith = (repo: Repo, rt: ReturnType<typeof repoRuntime>) =>
+    runHook("SessionStart", {
+      stdin: Readable.from([
+        JSON.stringify({ hook_event_name: "SessionStart", session_id: "s1", cwd: repo.root, source: "startup" }),
+      ]),
+      deadlineMs: 20_000,
+      handlers: DEFAULT_HANDLERS,
+      cwd: repo.root,
+      t: createTranslator("en"),
+      startTimer: rt.startTimer,
+      runtime: rt,
+      env: {},
+    });
+
+  it("reads HEAD from the .git files, loose, packed and detached, and runs git log only after a new commit", async () => {
+    const repo = await installed();
+    const head = () => spawnSync("git", ["rev-parse", "HEAD"], { cwd: repo.root, encoding: "utf8" }).stdout.trim();
+    assert.equal(headShaFromFiles(repoRuntime(), repo.root), head());
+    spawnSync("git", ["pack-refs", "--all"], { cwd: repo.root });
+    assert.equal(headShaFromFiles(repoRuntime(), repo.root), head());
+    spawnSync("git", ["checkout", "-q", "--detach"], { cwd: repo.root });
+    assert.equal(headShaFromFiles(repoRuntime(), repo.root), head());
+    spawnSync("git", ["checkout", "-q", "-"], { cwd: repo.root });
+
+    const logs: string[] = [];
+    await fireWith(repo, spied(logs));
+    const afterFirst = logs.length;
+    assert.ok(afterFirst >= 1, "the first session scans the log once");
+    await fireWith(repo, spied(logs));
+    assert.equal(logs.length, afterFirst, "same HEAD, no git log");
+    repo.write("notes.md", "a change\n");
+    repo.commit("a commit from the person");
+    await fireWith(repo, spied(logs));
+    assert.ok(logs.length > afterFirst, "a new commit is scanned");
   });
 });

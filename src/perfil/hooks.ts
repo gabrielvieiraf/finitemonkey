@@ -1,5 +1,6 @@
 import { gitAt } from "../gate/git.js";
 import { projectPaths } from "../gate/hooks/common.js";
+import { headShaFromFiles } from "../git/head-file.js";
 import { comesFromPerson } from "../guards/release/markers.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
@@ -65,20 +66,27 @@ export const perfilSession: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
+  const head = headShaFromFiles(input.runtime, paths.root);
+  if (head !== undefined && stored?.["head"] === head) return allow;
   const agent = new Set(knownCommits(stored?.["agent"]));
   const seen = new Set(knownCommits(stored?.["seen"]));
+  const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
+  const headField = head === undefined ? {} : { head };
   if (agent.size === 0 && seen.size === 0) {
-    const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
-    writeJsonFile(input.runtime, agentCommitsPath(paths), { agent: [], seen: personCommits(log, agent, seen) });
+    writeJsonFile(input.runtime, agentCommitsPath(paths), {
+      agent: [],
+      seen: personCommits(log, agent, seen),
+      ...headField,
+    });
     return allow;
   }
-  const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
   const fresh = personCommits(log, agent, seen);
-  if (fresh.length === 0) return allow;
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
     agent: [...agent],
     seen: [...seen, ...fresh].slice(-KEEP_COMMITS),
+    ...headField,
   });
+  if (fresh.length === 0) return allow;
   const step = Math.min(fresh.length, 3) * PERSON_COMMIT_STEP;
   const profile = DOMAINS.reduce(
     (current, domain) => updateDomain(current, domain, (entry) => ({ ...entry, tool: clampScore(entry.tool + step) })),
