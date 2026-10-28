@@ -1,6 +1,7 @@
 import { appCheckCommand } from "./app-check.js";
 import { auditCommand } from "./audit.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
+import { briefCommand } from "./brief.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { debtCommand } from "./debt.js";
@@ -76,6 +77,7 @@ export const REGISTRY = [
   prOpenCommand,
   frontsPlanCommand,
   frontsStatusCommand,
+  briefCommand,
   appCheckCommand,
   commitMsgCommand,
   pushCheckCommand,

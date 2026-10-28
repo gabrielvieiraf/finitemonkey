@@ -1080,7 +1080,18 @@
     "fronts.block.limit.claim": "machine",
     "fronts.block.limit.requires": "machine",
     "fronts.block.not": "machine",
-    "fronts.block.human": "machine"
+    "fronts.block.human": "machine",
+    "fronts.command.brief": "machine",
+    "fronts.brief.done": "machine",
+    "fronts.context.front": "machine",
+    "fronts.context.scope": "machine",
+    "fronts.context.contract": "machine",
+    "fronts.context.contract_missing": "machine",
+    "fronts.context.inbox": "machine",
+    "fronts.context.report": "machine",
+    "doctor.briefing.long": "machine",
+    "doctor.briefing.fix": "machine",
+    "doctor.briefing.ok": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2163,6 +2174,17 @@
     "fronts.block.limit.claim": "machine",
     "fronts.block.limit.requires": "machine",
     "fronts.block.not": "machine",
-    "fronts.block.human": "machine"
+    "fronts.block.human": "machine",
+    "fronts.command.brief": "machine",
+    "fronts.brief.done": "machine",
+    "fronts.context.front": "machine",
+    "fronts.context.scope": "machine",
+    "fronts.context.contract": "machine",
+    "fronts.context.contract_missing": "machine",
+    "fronts.context.inbox": "machine",
+    "fronts.context.report": "machine",
+    "doctor.briefing.long": "machine",
+    "doctor.briefing.fix": "machine",
+    "doctor.briefing.ok": "machine"
   }
 }

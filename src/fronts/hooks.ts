@@ -3,6 +3,7 @@ import { guardRoot } from "../guards/context.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
+import { frontContext } from "./context.js";
 import { type Front, type FrontsState, readFronts, runningWriteFronts, updateFronts, withFront } from "./state.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
@@ -99,20 +100,35 @@ export const frontsPostToolUse: HookHandler = (input) => {
   return ALLOW;
 };
 
+const NO_CONTEXT = /(^|:)(reviewer|verifier|researcher|explore|plan|claude-code-guide|statusline-setup)$/i;
+
+const injected = (input: HookInput, front: Front): HookDecision => ({
+  kind: "allow",
+  output: {
+    hookSpecificOutput: {
+      hookEventName: "SubagentStart",
+      additionalContext: frontContext(input.t, input.runtime, guardRoot(input), front),
+    },
+  },
+});
+
 export const frontsSubagentStart: HookHandler = (input) => {
   const agentId = optionalString(input.payload.raw, "agent_id");
   const state = stateOf(input);
   if (agentId === undefined || state === undefined) return ALLOW;
-  if (state.fronts.some((front) => front.agentId === agentId)) return ALLOW;
+  if (NO_CONTEXT.test(optionalString(input.payload.raw, "agent_type") ?? "")) return ALLOW;
+  const bound = state.fronts.find((front) => front.agentId === agentId);
+  if (bound !== undefined) return injected(input, bound);
   const [next, ...rest] = state.pending;
-  if (next === undefined) return ALLOW;
+  const front = state.fronts.find((item) => item.id === next);
+  if (next === undefined || front === undefined) return ALLOW;
   updateFronts(input.runtime, guardRoot(input), (current) =>
     accept({
       state: { ...withFront(current, next, (item) => ({ ...item, agentId })), pending: rest },
       result: undefined,
     }),
   );
-  return ALLOW;
+  return injected(input, { ...front, agentId });
 };
 
 export const frontOfAgent = (state: FrontsState, agentId: string | undefined): Front | undefined =>

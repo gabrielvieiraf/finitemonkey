@@ -1079,5 +1079,16 @@
   "fronts.block.limit.claim": "{max} frentes de escritura ya están en curso ({running}); una nueva pasaría el límite de la ola",
   "fronts.block.limit.requires": "Espera a que una frente entregue su informe o usa un agente de solo lectura (Explore, Plan, researcher)",
   "fronts.block.not": "lanzar el mismo trabajo con otro tipo de agente, un workflow o un agente anidado",
-  "fronts.block.human": "Retuve una frente nueva: la ola está en su límite."
+  "fronts.block.human": "Retuve una frente nueva: la ola está en su límite.",
+  "fronts.command.brief": "Escribe .finitemonkey/briefing.md, el briefing único que cita cada prompt de frente, y muestra los prompts de cuatro líneas",
+  "fronts.brief.done": "Escribí {file} ({lines} de como máximo {ceiling} líneas)",
+  "fronts.context.front": "Frente {id}: {goal}. Worktree {path}, rama {branch}, puerto {port}, prefijo de captura {prefix}.",
+  "fronts.context.scope": "Alcance: {paths}. Solo agregar: {append}. Namespace i18n: {ns}.",
+  "fronts.context.contract": "Contrato: {file}.",
+  "fronts.context.contract_missing": "El contrato {file} no existe; el alcance de arriba es el contrato.",
+  "fronts.context.inbox": "Mensaje de la persona a las {at}: {text}",
+  "fronts.context.report": "Terminado significa un .finitemonkey/reports/{id}.json válido; el formato está en {briefing}.",
+  "doctor.briefing.long": "El briefing tiene {lines} líneas, por encima del techo de {ceiling}",
+  "doctor.briefing.fix": "Vuelve a generarlo con finitemonkey brief y mueve el material largo a archivos citados",
+  "doctor.briefing.ok": "El briefing tiene {lines} de como máximo {ceiling} líneas"
 }
