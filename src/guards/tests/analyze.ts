@@ -1,8 +1,8 @@
 import { isRecord, parseJsonObject } from "../../core/parsed.js";
 import { toPosixPath } from "../../core/posix-path.js";
 import { sha256Hex as sha256 } from "../../secrets/fingerprint.js";
+import { type TestCounter, textCounter } from "./ast-count.js";
 import { isProtectedConfig, isSnapshot, testLanguage } from "./patterns.js";
-import { countTests } from "./scan.js";
 
 export const TEST_VIOLATIONS = [
   "test_file_deleted",
@@ -12,6 +12,7 @@ export const TEST_VIOLATIONS = [
   "snapshot_changed",
   "config_changed",
   "out_of_scope",
+  "test_edited",
 ] as const;
 
 export type TestViolationKind = (typeof TEST_VIOLATIONS)[number];
@@ -71,14 +72,15 @@ export const compareTestFile = (
   path: string,
   before: string | undefined,
   after: string | undefined,
+  count: TestCounter = textCounter,
 ): readonly TestViolation[] => {
   if (before === undefined) return [];
   if (isSnapshot(path)) return before === after ? [] : [{ kind: "snapshot_changed", path }];
   const language = testLanguage(path);
   if (language === undefined) return [];
   if (after === undefined) return [{ kind: "test_file_deleted", path }];
-  const old = countTests(language, before);
-  const now = countTests(language, after);
+  const old = count(language, before, path);
+  const now = count(language, after, path);
   const found: TestViolation[] = [];
   if (now.tests < old.tests) found.push({ kind: "test_removed", path, before: old.tests, after: now.tests });
   if (now.skips > old.skips) found.push({ kind: "skip_added", path, before: old.skips, after: now.skips });
@@ -88,10 +90,14 @@ export const compareTestFile = (
   return found;
 };
 
-export const compareNewTestFile = (path: string, after: string): readonly TestViolation[] => {
+export const compareNewTestFile = (
+  path: string,
+  after: string,
+  count: TestCounter = textCounter,
+): readonly TestViolation[] => {
   const language = testLanguage(path);
   if (language === undefined) return [];
-  const counts = countTests(language, after);
+  const counts = count(language, after, path);
   return counts.skips > 0 ? [{ kind: "skip_added", path, before: 0, after: counts.skips }] : [];
 };
 

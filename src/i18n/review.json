@@ -1431,7 +1431,22 @@
     "slop.stats.review": "machine",
     "slop.stats.empty": "machine",
     "command.slop_dismiss.summary": "machine",
-    "command.slop_stats.summary": "machine"
+    "command.slop_stats.summary": "machine",
+    "gate.tests.test_edited": "machine",
+    "gate.tests.edited": "machine",
+    "gate.tests.held_shadow": "machine",
+    "gate.guard.tests.held.claim": "machine",
+    "gate.guard.tests.held.requires": "machine",
+    "gate.guard.held.human": "machine",
+    "gate.require.regression": "machine",
+    "gate.regression.off": "machine",
+    "gate.regression.not_fix": "machine",
+    "gate.regression.no_new_test": "machine",
+    "gate.regression.no_command": "machine",
+    "gate.regression.proven": "machine",
+    "gate.regression.unavailable": "machine",
+    "gate.regression.not_proven": "machine",
+    "gate.regression.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2865,6 +2880,21 @@
     "slop.stats.review": "machine",
     "slop.stats.empty": "machine",
     "command.slop_dismiss.summary": "machine",
-    "command.slop_stats.summary": "machine"
+    "command.slop_stats.summary": "machine",
+    "gate.tests.test_edited": "machine",
+    "gate.tests.edited": "machine",
+    "gate.tests.held_shadow": "machine",
+    "gate.guard.tests.held.claim": "machine",
+    "gate.guard.tests.held.requires": "machine",
+    "gate.guard.held.human": "machine",
+    "gate.require.regression": "machine",
+    "gate.regression.off": "machine",
+    "gate.regression.not_fix": "machine",
+    "gate.regression.no_new_test": "machine",
+    "gate.regression.no_command": "machine",
+    "gate.regression.proven": "machine",
+    "gate.regression.unavailable": "machine",
+    "gate.regression.not_proven": "machine",
+    "gate.regression.fix": "machine"
   }
 }

@@ -1,12 +1,10 @@
+import type { NumberedLine } from "../core/line-diff.js";
 import type { Declared } from "./ast.js";
 import type { SlopConfig } from "./config.js";
 import { nameDetector } from "./names.js";
 import { finding, type SlopFinding } from "./types.js";
 
-export interface AddedLine {
-  readonly line: number;
-  readonly text: string;
-}
+export type AddedLine = NumberedLine;
 
 export interface SplitLine {
   readonly code: string;

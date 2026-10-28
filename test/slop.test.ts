@@ -4,13 +4,14 @@ import { Readable } from "node:stream";
 import { after, describe, it } from "node:test";
 
 import type { TextSource } from "../src/core/context.js";
+import { addedByContent } from "../src/core/line-diff.js";
 import { slopCheck } from "../src/gate/checks/slop.js";
 import { prepareGate } from "../src/gate/prepare.js";
 import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { loadTypescript } from "../src/quality/ts-api.js";
-import { addedByContent, analyzeSlop } from "../src/slop/analyze.js";
+import { analyzeSlop } from "../src/slop/analyze.js";
 import { DEFAULT_SLOP_CONFIG, parseSlopConfig, type SlopConfig } from "../src/slop/config.js";
 import { readSlopStore } from "../src/slop/store.js";
 import { SLOP_DETECTORS, type SlopDetector } from "../src/slop/types.js";

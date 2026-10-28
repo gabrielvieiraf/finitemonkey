@@ -1430,5 +1430,20 @@
   "slop.stats.review": "{detector}: {hits} hallazgos, {dismissed} descartados ({percent}%), por encima de {max}%: revisa este detector",
   "slop.stats.empty": "Todavía no hay hallazgos de slop registrados.",
   "command.slop_dismiss.summary": "Descarta un hallazgo de slop equivocado (solo la persona)",
-  "command.slop_stats.summary": "Hallazgos y tasa de descarte por detector de slop"
+  "command.slop_stats.summary": "Hallazgos y tasa de descarte por detector de slop",
+  "gate.tests.test_edited": "{file}: se editó un test existente y el contrato no lista ese archivo",
+  "gate.tests.edited": "{file}: test editado, +{added} -{removed} líneas, aserciones de {before} a {after}",
+  "gate.tests.held_shadow": "modo sombra: la edición en {file} quedaría retenida hasta que la persona la apruebe",
+  "gate.guard.tests.held.claim": "{file} es un test que ya existe, y el contrato no lo lista para edición",
+  "gate.guard.tests.held.requires": "Deja el test como está y haz que el código lo pase. Si el test parece equivocado, detente y dilo en vez de cambiarlo",
+  "gate.guard.held.human": "Retuve una edición en el test existente {file}. Si el cambio es intencional, escribe en una línea sola: finitemonkey: allow tests <motivo>",
+  "gate.require.regression": "en una corrección de bug, el test nuevo falla en el commit base y pasa ahora",
+  "gate.regression.off": "la prueba de regresión está apagada en .finitemonkey/policy.yml",
+  "gate.regression.not_fix": "no es una corrección de bug por su objetivo ni por la rama, así que ningún test tiene que fallar en el commit base",
+  "gate.regression.no_new_test": "corrección de bug sin test nuevo; nada que ejecutar en el commit base",
+  "gate.regression.no_command": "el contrato no tiene comando de test para ejecutar el test nuevo en el commit base",
+  "gate.regression.proven": "{files} falla en el commit base con `{command}`, así que prueba la corrección",
+  "gate.regression.unavailable": "no se pudo ejecutar `{command}` con {files} en el commit base",
+  "gate.regression.not_proven": "{files} pasa en el commit base con `{command}`, así que no prueba la corrección",
+  "gate.regression.fix": "escribe un test que reproduzca el bug: tiene que fallar sin la corrección y pasar con ella"
 }

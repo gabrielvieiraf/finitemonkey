@@ -1,8 +1,9 @@
+import { addedByContent } from "../../core/line-diff.js";
 import { logEvent } from "../../evidence/log.js";
 import type { Note } from "../../evidence/types.js";
 import { baseText, changedPaths, guardMode, readWorking } from "../../quality/gate-sources.js";
 import { loadTypescript } from "../../quality/ts-api.js";
-import { addedByContent, analyzeSlop, type SlopFile } from "../../slop/analyze.js";
+import { analyzeSlop, type SlopFile } from "../../slop/analyze.js";
 import { loadSlopConfig } from "../../slop/config.js";
 import type { AddedLine } from "../../slop/lines.js";
 import { isDismissed, readSlopStore, recordHits, writeSlopStore } from "../../slop/store.js";

@@ -172,6 +172,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "A contagem de rodadas de revisão usada pelo `review packet` e, só quando `review.playwright: true` está na configuração, um agente verificador com o MCP do Playwright.",
     es: "El conteo de rondas de revisión que usa `review packet` y, solo cuando `review.playwright: true` está en la configuración, un agente verificador con el MCP de Playwright.",
   },
+  regression: {
+    en: "A throwaway git worktree at the base commit, used to check that the test added in a bug fix fails without the fix. It is removed after the run.",
+    "pt-BR":
+      "Um worktree descartável do git no commit base, usado para checar que o teste novo de uma correção de bug falha sem a correção. Ele é removido depois da execução.",
+    es: "Un worktree desechable de git en el commit base, usado para comprobar que el test nuevo de una corrección de bug falla sin la corrección. Se elimina después de la ejecución.",
+  },
   github: {
     en: "Through `gh`, only when it is installed and logged in: the state of the pull request named in a task, and your open pull requests for the session line. Code is never uploaded.",
     "pt-BR":

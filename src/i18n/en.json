@@ -1430,5 +1430,20 @@
   "slop.stats.review": "{detector}: {hits} hits, {dismissed} dismissed ({percent}%), over {max}%: review this detector",
   "slop.stats.empty": "No slop finding recorded yet.",
   "command.slop_dismiss.summary": "Dismiss a wrong slop finding (person only)",
-  "command.slop_stats.summary": "Hits and dismissal rate per slop detector"
+  "command.slop_stats.summary": "Hits and dismissal rate per slop detector",
+  "gate.tests.test_edited": "{file}: an existing test was edited and the contract does not list it",
+  "gate.tests.edited": "{file}: test edited, +{added} -{removed} lines, assertions {before} to {after}",
+  "gate.tests.held_shadow": "shadow mode: the edit to {file} would be held until the person approves it",
+  "gate.guard.tests.held.claim": "{file} is an existing test, and the contract does not list it for editing",
+  "gate.guard.tests.held.requires": "Leave the test as it is and make the code pass it. If the test looks wrong, stop and say so instead of changing it",
+  "gate.guard.held.human": "Held an edit to the existing test {file}. If the change is intended, type on its own line: finitemonkey: allow tests <reason>",
+  "gate.require.regression": "in a bug fix, the new test fails on the base commit and passes now",
+  "gate.regression.off": "the regression proof is off in .finitemonkey/policy.yml",
+  "gate.regression.not_fix": "not a bug fix by its goal or branch, so no test has to fail on the base commit",
+  "gate.regression.no_new_test": "bug fix without a new test; nothing to run on the base commit",
+  "gate.regression.no_command": "the contract has no test command to run the new test on the base commit",
+  "gate.regression.proven": "{files} fails on the base commit with `{command}`, so it proves the fix",
+  "gate.regression.unavailable": "could not run `{command}` with {files} on the base commit",
+  "gate.regression.not_proven": "{files} passes on the base commit with `{command}`, so it does not prove the fix",
+  "gate.regression.fix": "write a test that reproduces the bug: it has to fail without the fix and pass with it"
 }

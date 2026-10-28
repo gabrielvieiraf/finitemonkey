@@ -15,6 +15,7 @@ import { planCheck } from "./plan.js";
 import { prOutcome } from "./pr.js";
 import { proseCheck } from "./prose.js";
 import { qualityCheck } from "./quality.js";
+import { regressionCheck } from "./regression.js";
 import { researchCheck } from "./research.js";
 import { reviewCheck } from "./review.js";
 import { runtimeCheck } from "./runtime.js";
@@ -48,4 +49,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   appsec: appsecCheck,
   quality: qualityCheck,
   slop: slopCheck,
+  regression: regressionCheck,
 };

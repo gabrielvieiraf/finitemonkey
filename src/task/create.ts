@@ -64,6 +64,7 @@ export const draftChecks = (
     { id: "callers", kind: "callers" },
     { id: "quality", kind: "quality" },
     { id: "slop", kind: "slop" },
+    { id: "regression", kind: "regression" },
     ...(draft.paths.length > 0 || draft.budget !== undefined ? [{ id: "diff", kind: "diff" as const }] : []),
     ...(runtime.stat(toAbsolutePath(join(paths.root, LOOK_CONFIG))) === undefined
       ? []

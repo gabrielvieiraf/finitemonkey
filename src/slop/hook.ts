@@ -1,12 +1,13 @@
 import { join, relative } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { addedByContent } from "../core/line-diff.js";
 import { toPosixPath } from "../core/posix-path.js";
 import { contextOutput, projectPaths } from "../gate/hooks/common.js";
 import { guardRoot } from "../guards/context.js";
 import { applyEdits, editsOf, textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers } from "../hooks/handlers.js";
-import { addedByContent, analyzeSlop } from "./analyze.js";
+import { analyzeSlop } from "./analyze.js";
 import { loadSlopConfig } from "./config.js";
 import { isDismissed, readSlopStore } from "./store.js";
 

@@ -11,6 +11,7 @@ import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
+import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
@@ -171,6 +172,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "reuse", damage: false, handlers: REUSE_HANDLERS },
   { id: "quality", damage: false, handlers: QUALITY_HANDLERS },
   { id: "slop", damage: false, handlers: SLOP_HANDLERS },
+  { id: "tests-hold", damage: false, handlers: TESTS_HOLD_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
