@@ -48883,7 +48883,7 @@ var onboardCommand = {
 };
 
 // src/commands/organize.ts
-import { join as join145, posix as posix15 } from "node:path";
+import { isAbsolute as isAbsolute4, join as join145, posix as posix15 } from "node:path";
 
 // src/organize/plan.ts
 import { posix as posix13 } from "node:path";
@@ -49146,7 +49146,11 @@ var ORGANIZE_SCHEMA = "finitemonkey/organize@1";
 var USAGE12 = "finitemonkey organize [--top <n>] | organize plan <file> | organize step <file> <n> | organize done <file>";
 var DEFAULT_TOP = 10;
 var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE12, { detail });
-var relativeFile2 = (ctx, root, raw) => toPosixPath(posix15.normalize(toPosixPath(toAbsolutePath(raw, ctx.cwd)).slice(toPosixPath(root).length + 1)));
+var relativeFile2 = (ctx, root, raw) => {
+  if (isAbsolute4(raw)) return posix15.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
+  const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
+  return posix15.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
+};
 var rank3 = (ctx, top) => {
   const root = projectRoot(ctx);
   const sensitive = [

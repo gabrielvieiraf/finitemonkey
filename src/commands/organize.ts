@@ -1,4 +1,4 @@
-import { join, posix } from "node:path";
+import { isAbsolute, join, posix } from "node:path";
 
 import { importEdges } from "../arch/imports.js";
 import { workingTree } from "../arch/scan.js";
@@ -28,8 +28,11 @@ const DEFAULT_TOP = 10;
 const invalid = (detail: string): Problem =>
   usageProblem("invalid_arguments", "error.invalid_arguments", USAGE, { detail });
 
-const relativeFile = (ctx: Ctx, root: AbsolutePath, raw: string): string =>
-  toPosixPath(posix.normalize(toPosixPath(toAbsolutePath(raw, ctx.cwd)).slice(toPosixPath(root).length + 1)));
+const relativeFile = (ctx: Ctx, root: AbsolutePath, raw: string): string => {
+  if (isAbsolute(raw)) return posix.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
+  const prefix = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
+  return posix.normalize(`${prefix.ok ? prefix.stdout.trim() : ""}${toPosixPath(raw)}`);
+};
 
 const rank = (ctx: Ctx, top: number): CommandResult => {
   const root = projectRoot(ctx);
