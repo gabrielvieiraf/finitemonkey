@@ -1,30 +1,8 @@
+import { pinned } from "../ci/actions.js";
+
 export const DS_SYNC_FEATURE = "ds-sync";
 export const DS_WORKFLOW = ".github/workflows/ds-sync.yml";
 export const DS_BRANCH = "ds-sync/update";
-
-interface Pin {
-  readonly name: string;
-  readonly sha: string;
-  readonly version: string;
-}
-
-const CHECKOUT: Pin = {
-  name: "actions/checkout",
-  sha: "3d3c42e5aac5ba805825da76410c181273ba90b1",
-  version: "v7.0.1",
-};
-const SETUP_NODE: Pin = {
-  name: "actions/setup-node",
-  sha: "949feb2413d6458794dcd2491c4babbbce0c15c1",
-  version: "v7.1.0",
-};
-const APP_LOGIN: Pin = {
-  name: "actions/create-github-app-token",
-  sha: "64ab729a6294000f5aa4a4bc0b73d1f32bc45510",
-  version: "v3.3.0",
-};
-
-const uses = (pin: Pin): string => `${pin.name}@${pin.sha} # ${pin.version}`;
 
 export interface DsWorkflowInput {
   readonly source: string;
@@ -65,23 +43,23 @@ const checkoutSteps = (input: DsWorkflowInput): readonly string[] => {
   return [
     "      - name: Token from the organization GitHub App",
     "        id: app",
-    `        uses: ${uses(APP_LOGIN)}`,
+    `        uses: ${pinned("actions/create-github-app-token")}`,
     "        with:",
     `          app-id: ${expression("vars.DS_SYNC_APP_ID")}`,
     `          private-key: ${expression("secrets.DS_SYNC_APP_PRIVATE_KEY")}`,
     `          owner: ${expression("github.repository_owner")}`,
     `          repositories: ${expression("github.event.repository.name")},${sourceRepo}`,
-    `      - uses: ${uses(CHECKOUT)}`,
+    `      - uses: ${pinned("actions/checkout")}`,
     "        with:",
     "          path: product",
     "          persist-credentials: false",
-    `      - uses: ${uses(CHECKOUT)}`,
+    `      - uses: ${pinned("actions/checkout")}`,
     "        with:",
     `          repository: ${input.source}`,
     "          path: prototypes",
     `          token: ${expression("steps.app.outputs.token")}`,
     "          persist-credentials: false",
-    `      - uses: ${uses(SETUP_NODE)}`,
+    `      - uses: ${pinned("actions/setup-node")}`,
     "        with:",
     "          node-version: 22",
   ];

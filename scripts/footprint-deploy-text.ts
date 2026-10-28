@@ -37,6 +37,15 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "Só com `finitemonkey observe --yes`, e só arquivos que ainda não existem: um scrubber de relatórios de erro, um logger em JSON com lista de campos permitidos e, a partir do nível 2, um plano para preencher. Nenhuma conta é criada em lugar nenhum.",
     es: "Solo con `finitemonkey observe --yes`, y solo archivos que aún no existen: un scrubber de reportes de error, un logger en JSON con lista de campos permitidos y, desde el nivel 2, un plan para completar. No se crea ninguna cuenta en ningún sitio.",
   },
+  "ci-watch": {
+    en: "`ci-watch` keeps, per pull request, the commits whose CI failed and when the watch started, plus one line per run with the commit, each check's result, the failure class and the attempt. Failed logs are read through `gh` with secrets masked and only their last lines are shown, never stored.",
+    "pt-BR":
+      "O `ci-watch` guarda, por pull request, os commits cuja CI falhou e quando o acompanhamento começou, mais uma linha por execução com o commit, o resultado de cada checagem, a classe da falha e a tentativa. Os logs de falha são lidos pelo `gh` com segredos mascarados e só as últimas linhas aparecem, sem ser guardadas.",
+    es: "`ci-watch` guarda, por pull request, los commits cuya CI falló y cuándo empezó el seguimiento, más una línea por ejecución con el commit, el resultado de cada verificación, la clase de falla y el intento. Los logs de falla se leen con `gh` con los secretos enmascarados y solo se muestran sus últimas líneas, sin guardarlas.",
+  },
 } as const satisfies Readonly<
-  Record<"infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers" | "observability", Localized>
+  Record<
+    "ci-watch" | "infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers" | "observability",
+    Localized
+  >
 >;

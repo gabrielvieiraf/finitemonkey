@@ -5971,11 +5971,11 @@ var persisted = (workflow, job) => {
     }
   ];
 };
-var unpinned = (job) => [job.uses, ...job.steps.map((step4) => step4.uses)].flatMap((uses2) => {
-  if (uses2 === void 0 || uses2.startsWith("./")) return [];
-  const ref2 = uses2.startsWith("docker://") ? uses2.split("@sha256:")[1] ?? "" : uses2.split("@")[1] ?? "";
-  const pinnedRef = uses2.startsWith("docker://") ? ref2.length === 64 : SHA.test(ref2);
-  return pinnedRef ? [] : [{ rule: "unpinned-action", job: job.id, detail: uses2, needle: uses2 }];
+var unpinned = (job) => [job.uses, ...job.steps.map((step4) => step4.uses)].flatMap((uses) => {
+  if (uses === void 0 || uses.startsWith("./")) return [];
+  const ref2 = uses.startsWith("docker://") ? uses.split("@sha256:")[1] ?? "" : uses.split("@")[1] ?? "";
+  const pinnedRef = uses.startsWith("docker://") ? ref2.length === 64 : SHA.test(ref2);
+  return pinnedRef ? [] : [{ rule: "unpinned-action", job: job.id, detail: uses, needle: uses }];
 });
 var printed = (job) => job.steps.flatMap((step4) => {
   const run10 = step4.run ?? "";
@@ -43042,22 +43042,6 @@ var dsSummary = (before, after) => ({
 var DS_SYNC_FEATURE = "ds-sync";
 var DS_WORKFLOW = ".github/workflows/ds-sync.yml";
 var DS_BRANCH = "ds-sync/update";
-var CHECKOUT2 = {
-  name: "actions/checkout",
-  sha: "3d3c42e5aac5ba805825da76410c181273ba90b1",
-  version: "v7.0.1"
-};
-var SETUP_NODE = {
-  name: "actions/setup-node",
-  sha: "949feb2413d6458794dcd2491c4babbbce0c15c1",
-  version: "v7.1.0"
-};
-var APP_LOGIN = {
-  name: "actions/create-github-app-token",
-  sha: "64ab729a6294000f5aa4a4bc0b73d1f32bc45510",
-  version: "v3.3.0"
-};
-var uses = (pin) => `${pin.name}@${pin.sha} # ${pin.version}`;
 var expression = (inner) => `\${{ ${inner} }}`;
 var HEADER5 = [
   "name: ds-sync",
@@ -43087,23 +43071,23 @@ var checkoutSteps = (input) => {
   return [
     "      - name: Token from the organization GitHub App",
     "        id: app",
-    `        uses: ${uses(APP_LOGIN)}`,
+    `        uses: ${pinned("actions/create-github-app-token")}`,
     "        with:",
     `          app-id: ${expression("vars.DS_SYNC_APP_ID")}`,
     `          private-key: ${expression("secrets.DS_SYNC_APP_PRIVATE_KEY")}`,
     `          owner: ${expression("github.repository_owner")}`,
     `          repositories: ${expression("github.event.repository.name")},${sourceRepo}`,
-    `      - uses: ${uses(CHECKOUT2)}`,
+    `      - uses: ${pinned("actions/checkout")}`,
     "        with:",
     "          path: product",
     "          persist-credentials: false",
-    `      - uses: ${uses(CHECKOUT2)}`,
+    `      - uses: ${pinned("actions/checkout")}`,
     "        with:",
     `          repository: ${input.source}`,
     "          path: prototypes",
     `          token: ${expression("steps.app.outputs.token")}`,
     "          persist-credentials: false",
-    `      - uses: ${uses(SETUP_NODE)}`,
+    `      - uses: ${pinned("actions/setup-node")}`,
     "        with:",
     "          node-version: 22"
   ];
@@ -50309,8 +50293,8 @@ var NO_COMMENTS_SCRIPT = [
   "    sys.exit(main())",
   ""
 ].join("\n");
-var CHECKOUT3 = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1";
-var SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3";
+var CHECKOUT2 = pinned("actions/checkout");
+var SETUP_UV = pinned("astral-sh/setup-uv");
 var pythonCi = (importLinter2) => [
   "name: ci",
   "",
@@ -50331,7 +50315,7 @@ var pythonCi = (importLinter2) => [
   "    runs-on: ubuntu-latest",
   "    timeout-minutes: 15",
   "    steps:",
-  `      - uses: ${CHECKOUT3}`,
+  `      - uses: ${CHECKOUT2}`,
   "        with:",
   "          persist-credentials: false",
   `      - uses: ${SETUP_UV}`,

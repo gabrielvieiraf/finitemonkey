@@ -1,3 +1,4 @@
+import { pinned } from "../ci/actions.js";
 export const RUFF_TOML = [
   "line-length = 100",
   "",
@@ -61,8 +62,8 @@ export const NO_COMMENTS_SCRIPT = [
   "",
 ].join("\n");
 
-const CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1";
-const SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3";
+const CHECKOUT = pinned("actions/checkout");
+const SETUP_UV = pinned("astral-sh/setup-uv");
 
 export const pythonCi = (importLinter: boolean): string =>
   [
