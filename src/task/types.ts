@@ -52,6 +52,8 @@ export interface AcceptanceCheck {
   readonly route?: string;
   readonly status?: number;
   readonly body?: string;
+  readonly versionUrl?: string;
+  readonly field?: string;
 }
 
 export interface DiffBudget {

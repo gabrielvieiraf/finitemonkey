@@ -77,6 +77,8 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
   const description = str(record, "description", at, issues, kind === "manual");
   const require = kind === "git" ? gitRequire(record["require"] ?? ["committed"], `${at}require`, issues) : undefined;
   const app = appFields(record, kind, at, issues);
+  const versionUrl = str(record, "version_url", at, issues, false);
+  const field = str(record, "field", at, issues, false);
   const open = record["require_open"];
   if (open !== undefined && typeof open !== "boolean") issues.push(`${at}require_open: must be true or false`);
   return {
@@ -86,6 +88,8 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
     ...(require === undefined ? {} : { require }),
     ...(typeof open === "boolean" ? { requireOpen: open } : {}),
     ...app,
+    ...(versionUrl === undefined ? {} : { versionUrl }),
+    ...(field === undefined ? {} : { field }),
   };
 };
 

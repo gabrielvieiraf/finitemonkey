@@ -154,6 +154,7 @@ export const FOOTPRINT = [
     ],
     via: "curl",
   },
+  { id: "deploy", kind: "sends", targets: ["deploy.version_url"], via: "curl" },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

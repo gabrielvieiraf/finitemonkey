@@ -1490,7 +1490,22 @@
     "claims.block.not": "machine",
     "claims.block.unconfirmed.human": "machine",
     "claims.block.tests.human": "machine",
-    "clarify.context": "machine"
+    "clarify.context": "machine",
+    "command.deploy_status.summary": "machine",
+    "deploy.not_configured": "machine",
+    "deploy.no_commit": "machine",
+    "deploy.line.live": "machine",
+    "deploy.line.test": "machine",
+    "deploy.line.failed": "machine",
+    "deploy.line.waiting": "machine",
+    "deploy.line.behind": "machine",
+    "deploy.line.unreachable": "machine",
+    "gate.prod.no_url": "machine",
+    "gate.prod.no_commit": "machine",
+    "gate.prod.unreachable": "machine",
+    "gate.prod.status": "machine",
+    "gate.prod.live": "machine",
+    "gate.prod.behind": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2983,6 +2998,21 @@
     "claims.block.not": "machine",
     "claims.block.unconfirmed.human": "machine",
     "claims.block.tests.human": "machine",
-    "clarify.context": "machine"
+    "clarify.context": "machine",
+    "command.deploy_status.summary": "machine",
+    "deploy.not_configured": "machine",
+    "deploy.no_commit": "machine",
+    "deploy.line.live": "machine",
+    "deploy.line.test": "machine",
+    "deploy.line.failed": "machine",
+    "deploy.line.waiting": "machine",
+    "deploy.line.behind": "machine",
+    "deploy.line.unreachable": "machine",
+    "gate.prod.no_url": "machine",
+    "gate.prod.no_commit": "machine",
+    "gate.prod.unreachable": "machine",
+    "gate.prod.status": "machine",
+    "gate.prod.live": "machine",
+    "gate.prod.behind": "machine"
   }
 }

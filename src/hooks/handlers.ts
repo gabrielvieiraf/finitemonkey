@@ -9,6 +9,7 @@ import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { credsStaticGuard } from "../creds/static-guard.js";
+import { DEPLOY_HANDLERS } from "../deploy/hooks.js";
 import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
@@ -179,6 +180,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "advisor", damage: false, handlers: ADVISOR_HANDLERS },
   { id: "claims", damage: false, handlers: CLAIMS_HANDLERS },
   { id: "clarify", damage: false, handlers: CLARIFY_HANDLERS },
+  { id: "deploy", damage: false, handlers: DEPLOY_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

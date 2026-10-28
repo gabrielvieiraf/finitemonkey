@@ -1489,5 +1489,20 @@
   "claims.block.not": "repetir la afirmación, ni decir listo antes de que la compuerta lo confirme",
   "claims.block.unconfirmed.human": "se retuvo una afirmación de terminado: {state}.",
   "claims.block.tests.human": "la sesión editó {count, plural, one {# archivo de prueba o contrato} other {# archivos de prueba o contrato}} ({files}); escribe finitemonkey: allow claims <motivo> para aceptarlos.",
-  "clarify.context": "finitemonkey clarify: este pedido empieza una tarea de tamaño {size} sin contrato. Antes de cualquier edición, propone en un mensaje corto: el objetivo en una línea, el alcance, lo que existe hoy y cómo verificamos que está terminado. Si algo es ambiguo, agrega como máximo {max} preguntas de opción múltiple, cada una con tu recomendación, en esta única ronda. Si nada es ambiguo, di tus supuestos en una línea y sigue. Después crea el contrato con las respuestas confirmadas: finitemonkey task new <id> --goal \"<objetivo>\" --size {size} --paths <globs> --run \"<comando que prueba que está terminado>\" --answer \"<pregunta>: <respuesta>\" (un --answer por respuesta confirmada o supuesto)."
+  "clarify.context": "finitemonkey clarify: este pedido empieza una tarea de tamaño {size} sin contrato. Antes de cualquier edición, propone en un mensaje corto: el objetivo en una línea, el alcance, lo que existe hoy y cómo verificamos que está terminado. Si algo es ambiguo, agrega como máximo {max} preguntas de opción múltiple, cada una con tu recomendación, en esta única ronda. Si nada es ambiguo, di tus supuestos en una línea y sigue. Después crea el contrato con las respuestas confirmadas: finitemonkey task new <id> --goal \"<objetivo>\" --size {size} --paths <globs> --run \"<comando que prueba que está terminado>\" --answer \"<pregunta>: <respuesta>\" (un --answer por respuesta confirmada o supuesto).",
+  "command.deploy_status.summary": "Dice si el último push está en producción y qué probar, por la URL de versión o el deployment de GitHub en config.yml",
+  "deploy.not_configured": "El deploy no está configurado: agrega deploy.version_url o deploy.environment en .finitemonkey/config.yml. No se pidió nada por la red.",
+  "deploy.no_commit": "Ningún commit para comparar: la rama de deploy no tiene ref remoto y HEAD está vacío.",
+  "deploy.line.live": "En producción: {expected} en {url}.",
+  "deploy.line.test": "Prueba ahora: {test}.",
+  "deploy.line.failed": "No está en producción: el deploy de {expected} falló, mira {run}.",
+  "deploy.line.waiting": "Todavía no está en producción: {url} no responde con {expected} ({detail}).",
+  "deploy.line.behind": "Todavía no está en producción: {url} responde {live}, se esperaba {expected}.",
+  "deploy.line.unreachable": "No se pudo leer la versión en producción ({url}): {detail}.",
+  "gate.prod.no_url": "sin URL de versión: define version_url en la comprobación o deploy.version_url en config.yml",
+  "gate.prod.no_commit": "ningún commit en HEAD para comparar con la versión en producción",
+  "gate.prod.unreachable": "no se pudo leer {url}: {detail}",
+  "gate.prod.status": "{url} respondió HTTP {status}, se esperaba {want}",
+  "gate.prod.live": "{url} responde {live}, el commit de la tarea",
+  "gate.prod.behind": "{url} responde {live}, no el commit de la tarea {expected}"
 }

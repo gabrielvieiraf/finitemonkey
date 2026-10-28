@@ -1489,5 +1489,20 @@
   "claims.block.not": "repeating the claim, or saying done before the gate confirms it",
   "claims.block.unconfirmed.human": "a done claim was held: {state}.",
   "claims.block.tests.human": "the session edited {count, plural, one {# test or contract file} other {# test or contract files}} ({files}); type finitemonkey: allow claims <reason> to accept them.",
-  "clarify.context": "finitemonkey clarify: this request starts a task of size {size} with no task contract. Before any edit, propose in one short message: the goal in one line, the scope, what exists today, and how we verify it is done. If something is ambiguous, add at most {max} multiple-choice questions, each with your recommendation, in this one round only. If nothing is ambiguous, state your assumptions in one line and go on. Then create the contract with the confirmed answers: finitemonkey task new <id> --goal \"<goal>\" --size {size} --paths <globs> --run \"<command that proves it is done>\" --answer \"<question>: <answer>\" (one --answer per confirmed answer or assumption)."
+  "clarify.context": "finitemonkey clarify: this request starts a task of size {size} with no task contract. Before any edit, propose in one short message: the goal in one line, the scope, what exists today, and how we verify it is done. If something is ambiguous, add at most {max} multiple-choice questions, each with your recommendation, in this one round only. If nothing is ambiguous, state your assumptions in one line and go on. Then create the contract with the confirmed answers: finitemonkey task new <id> --goal \"<goal>\" --size {size} --paths <globs> --run \"<command that proves it is done>\" --answer \"<question>: <answer>\" (one --answer per confirmed answer or assumption).",
+  "command.deploy_status.summary": "Say whether the last push is live and what to test, from the version URL or the GitHub deployment in config.yml",
+  "deploy.not_configured": "Deploy is not configured: add deploy.version_url or deploy.environment to .finitemonkey/config.yml. Nothing was requested over the network.",
+  "deploy.no_commit": "No commit to compare: the deploy branch has no remote ref and HEAD is empty.",
+  "deploy.line.live": "Live: {expected} at {url}.",
+  "deploy.line.test": "Test now: {test}.",
+  "deploy.line.failed": "Not live: the deployment of {expected} failed, see {run}.",
+  "deploy.line.waiting": "Not live yet: {url} does not answer with {expected} ({detail}).",
+  "deploy.line.behind": "Not live yet: {url} answers {live}, expected {expected}.",
+  "deploy.line.unreachable": "Could not read the live version ({url}): {detail}.",
+  "gate.prod.no_url": "no version URL: set version_url in the check or deploy.version_url in config.yml",
+  "gate.prod.no_commit": "no commit in HEAD to compare with the live version",
+  "gate.prod.unreachable": "could not read {url}: {detail}",
+  "gate.prod.status": "{url} answered HTTP {status}, expected {want}",
+  "gate.prod.live": "{url} answers {live}, the commit of the task",
+  "gate.prod.behind": "{url} answers {live}, not the commit of the task {expected}"
 }

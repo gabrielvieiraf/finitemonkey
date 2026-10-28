@@ -10,6 +10,7 @@ import { critiqueVerifyCommand } from "./critique.js";
 import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { deployStatusCommand } from "./deploy.js";
 import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
 import { depsScanCommand } from "./deps-scan.js";
@@ -169,6 +170,7 @@ export const REGISTRY = [
   conceitosUpdateCommand,
   conceitosMarkCommand,
   signalsHypothesisCommand,
+  deployStatusCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,

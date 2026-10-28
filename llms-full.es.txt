@@ -189,6 +189,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Envía | `registry.npmjs.org`, `pypi.org` | El nombre del paquete, al registro de npm o de PyPI, cuando un comando de shell va a añadir un paquete que el proyecto aún no declara. Nunca con `FINITEMONKEY_OFFLINE=1`. |
 | Envía | `api.osv.dev` | Nombres y versiones de paquetes de tus lockfiles, a la base de OSV mediante `osv-scanner`, solo cuando ejecutas `deps scan` (en CI, por ejemplo). Nunca desde un hook. |
 | Envía | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com` | A través de `curl`, solo cuando tú ejecutas `finitemonkey secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada. |
+| Envía | `deploy.version_url` | A través de `curl`, solo cuando `deploy.version_url` está definido en `.finitemonkey/config.yml`: un GET a esa URL después de un push, para leer qué commit está en producción. Con `deploy.environment`, la misma pregunta va a los deployments de GitHub a través de `gh`. |
 <!-- generated:footprint:end -->
 
 ## Preguntas frecuentes

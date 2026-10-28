@@ -13,6 +13,7 @@ import { parityCheck } from "./parity.js";
 import { placeholdersCheck } from "./placeholders.js";
 import { planCheck } from "./plan.js";
 import { prOutcome } from "./pr.js";
+import { prodCheck } from "./prod.js";
 import { proseCheck } from "./prose.js";
 import { qualityCheck } from "./quality.js";
 import { regressionCheck } from "./regression.js";
@@ -50,4 +51,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   quality: qualityCheck,
   slop: slopCheck,
   regression: regressionCheck,
+  prod: prodCheck,
 };
