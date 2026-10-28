@@ -27,6 +27,7 @@ import { RELAY_HANDLERS } from "../relay/hook.js";
 import { REUSE_HANDLERS } from "../reuse/hook.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { rulesGuard } from "../rules/guard.js";
+import { rulesStop } from "../rules/stop.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
@@ -188,6 +189,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "wt-suggest", damage: false, handlers: WT_SUGGEST_HANDLERS },
   { id: "heavy-lock", damage: false, handlers: HEAVY_HANDLERS },
   { id: "instructions", damage: false, handlers: { InstructionsLoaded: [instructionsLoaded] } },
+  { id: "rules-stop", damage: false, handlers: { Stop: [rulesStop] } },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

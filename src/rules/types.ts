@@ -6,16 +6,26 @@ import { parseYaml, type YamlValue } from "../core/yaml/parse.js";
 export const RULES_FILE = ".finitemonkey/rules.yml";
 export const SEVERITIES = ["never", "must", "prefer"] as const;
 export const TEXT_TARGETS = ["commit", "pr"] as const;
+export const BUCKETS = ["deterministic", "stop", "reminder"] as const;
 
 export type RuleSeverity = (typeof SEVERITIES)[number];
 export type TextTarget = (typeof TEXT_TARGETS)[number];
+export type RuleBucket = (typeof BUCKETS)[number];
+
+export interface RuleScope {
+  readonly paths: readonly string[];
+  readonly tools: readonly string[];
+  readonly words: readonly string[];
+}
+
+export const EMPTY_SCOPE: RuleScope = { paths: [], tools: [], words: [] };
 
 export type Detector =
   | { readonly kind: "command"; readonly command: string }
   | { readonly kind: "path"; readonly path: string; readonly tools: readonly string[] }
   | { readonly kind: "text"; readonly pattern: string; readonly on: readonly TextTarget[] }
   | { readonly kind: "lint"; readonly lint: string }
-  | { readonly kind: "check"; readonly check: string }
+  | { readonly kind: "check"; readonly check: string; readonly value: string | undefined }
   | { readonly kind: "attribution" };
 
 export interface ProjectRule {
@@ -25,6 +35,9 @@ export interface ProjectRule {
   readonly severity: RuleSeverity;
   readonly detector: Detector | undefined;
   readonly settings: JsonObject | undefined;
+  readonly bucket: RuleBucket;
+  readonly scope: RuleScope;
+  readonly why: string | undefined;
 }
 
 const ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
@@ -59,7 +72,17 @@ const detectorOf = (value: unknown): Detector | undefined => {
   const lint = str(value, "lint");
   if (lint !== undefined) return { kind: "lint", lint };
   const check = str(value, "check");
-  return check === undefined ? undefined : { kind: "check", check };
+  return check === undefined ? undefined : { kind: "check", check, value: str(value, "value") };
+};
+
+const scopeOf = (value: unknown): RuleScope =>
+  isRecord(value)
+    ? { paths: list(value["paths"]), tools: list(value["tools"]), words: list(value["words"]) }
+    : EMPTY_SCOPE;
+
+export const bucketOf = (detector: Detector | undefined, settings: JsonObject | undefined): RuleBucket => {
+  if (detector?.kind === "check") return "stop";
+  return detector === undefined && settings === undefined ? "reminder" : "deterministic";
 };
 
 export type PresetRules = Readonly<Record<string, ProjectRule>>;
@@ -75,14 +98,19 @@ const ruleOf = (value: YamlValue, index: number, presets: PresetRules): Parsed<P
     return reject(`rule ${String(index)} needs an id of lowercase letters, digits and dashes`);
   if (text === undefined) return reject(`rule ${id} needs a text`);
   if (severity === undefined) return reject(`rule ${id} needs severity never, must or prefer`);
-  const settings = value["settings"];
+  const raw = value["settings"];
+  const settings = isRecord(raw) ? raw : undefined;
+  const detector = detectorOf(value["detector"]);
   return accept({
     id,
     text,
     origin: str(value, "origin") ?? "",
     severity,
-    detector: detectorOf(value["detector"]),
-    settings: isRecord(settings) ? settings : undefined,
+    detector,
+    settings,
+    bucket: BUCKETS.find((item) => item === value["bucket"]) ?? bucketOf(detector, settings),
+    scope: scopeOf(value["scope"]),
+    why: str(value, "why"),
   });
 };
 

@@ -1,7 +1,8 @@
-import { ruleCoverage } from "../rules/coverage.js";
+import { bucketCounts, ruleCoverage } from "../rules/coverage.js";
 import { readManifest } from "../rules/manifest.js";
 import { CI_JOB } from "../rules/outputs.js";
 import { effectiveRules } from "../rules/preset.js";
+import { DETERMINISTIC_CEILING } from "../rules/propose.js";
 import { ciRequirement } from "../rules/required.js";
 import { type Check, type CheckFinding, finding } from "./types.js";
 
@@ -30,5 +31,18 @@ export const checkRules: Check = ({ root, runtime }) => {
     manifest.workflow !== undefined && ciRequirement(runtime, root) === "not required"
       ? [finding("rules.ci", "warn", "rules.doctor.ci_not_required", { job: CI_JOB }, "rules.doctor.fix_ruleset")]
       : [];
-  return [...coverage, ...ci];
+  const enforced = bucketCounts(rules.value).enforced;
+  const many =
+    enforced > DETERMINISTIC_CEILING
+      ? [
+          finding(
+            "rules.enforced_count",
+            "warn",
+            "rules.coverage.too_many",
+            { count: enforced, max: DETERMINISTIC_CEILING },
+            "rules.doctor.fix_too_many",
+          ),
+        ]
+      : [];
+  return [...coverage, ...ci, ...many];
 };

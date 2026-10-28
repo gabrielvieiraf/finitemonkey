@@ -7,9 +7,10 @@ import { baseExists, ciBase } from "../githooks/ci.js";
 import { checksResult } from "../githooks/render.js";
 import { ciRuleCheck } from "../rules/checks.js";
 import { compileRules } from "../rules/compile.js";
-import { type RuleCoverage, ruleCoverage } from "../rules/coverage.js";
+import { type BucketCounts, bucketCounts, type RuleCoverage, ruleCoverage } from "../rules/coverage.js";
 import { type SURFACES } from "../rules/manifest.js";
 import { effectiveRules } from "../rules/preset.js";
+import { DETERMINISTIC_CEILING } from "../rules/propose.js";
 import { type ProjectRule, RULES_FILE } from "../rules/types.js";
 import { projectRoot } from "../secrets/project.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
@@ -22,6 +23,7 @@ export const RULES_CHECK_SCHEMA = "finitemonkey/rules-check@1";
 export interface RulesCoverageData {
   readonly schema: typeof RULES_COVERAGE_SCHEMA;
   readonly rules: readonly RuleCoverage[];
+  readonly buckets: BucketCounts;
 }
 
 const invalid = (ctx: Ctx, detail: string): CommandResult =>
@@ -64,11 +66,18 @@ export const rulesCoverageCommand: CommandSpec = {
     Promise.resolve(
       withRules(ctx, (rules) => {
         const items = ruleCoverage(ctx.runtime, projectRoot(ctx), rules);
-        const data: RulesCoverageData = { schema: RULES_COVERAGE_SCHEMA, rules: items };
+        const buckets = bucketCounts(rules);
+        const data: RulesCoverageData = { schema: RULES_COVERAGE_SCHEMA, rules: items, buckets };
         const human =
           items.length === 0
             ? [ctx.t("rules.coverage.empty", { file: RULES_FILE })]
-            : items.map((item) => coverageLine(ctx, item));
+            : [
+                ...items.map((item) => coverageLine(ctx, item)),
+                ctx.t("rules.coverage.buckets", { ...buckets }),
+                ...(buckets.enforced > DETERMINISTIC_CEILING
+                  ? [ctx.t("rules.coverage.too_many", { count: buckets.enforced, max: DETERMINISTIC_CEILING })]
+                  : []),
+              ];
         const uncovered = items.filter((item) => item.severity === "never" && !item.covered).length;
         if (uncovered === 0) return success(data, human);
         return failureFrom(

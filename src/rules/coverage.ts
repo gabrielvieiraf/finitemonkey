@@ -5,7 +5,7 @@ import { SETTINGS_FILE } from "../install/layout.js";
 import { type Manifest, readManifest, type Surface } from "./manifest.js";
 import { AGENTS_MARKERS, workflowRuleIds } from "./outputs.js";
 import { applicableSurfaces } from "./plan.js";
-import type { ProjectRule, RuleSeverity } from "./types.js";
+import type { ProjectRule, RuleBucket, RuleSeverity } from "./types.js";
 
 export const COVERAGE_STATUSES = ["full", "partial", "text only", "none"] as const;
 
@@ -14,6 +14,7 @@ export type CoverageStatus = (typeof COVERAGE_STATUSES)[number];
 export interface RuleCoverage {
   readonly id: string;
   readonly severity: RuleSeverity;
+  readonly bucket: RuleBucket;
   readonly applicable: readonly Surface[];
   readonly surfaces: readonly Surface[];
   readonly status: CoverageStatus;
@@ -58,6 +59,18 @@ const statusOf = (applicable: readonly Surface[], present: readonly Surface[]): 
   return present.includes("text") ? "text only" : "none";
 };
 
+export interface BucketCounts {
+  readonly enforced: number;
+  readonly checked: number;
+  readonly reminder: number;
+}
+
+export const bucketCounts = (rules: readonly Pick<ProjectRule, "bucket">[]): BucketCounts => ({
+  enforced: rules.filter((rule) => rule.bucket === "deterministic").length,
+  checked: rules.filter((rule) => rule.bucket === "stop").length,
+  reminder: rules.filter((rule) => rule.bucket === "reminder").length,
+});
+
 export const ruleCoverage = (
   runtime: CoverageRuntime,
   root: AbsolutePath,
@@ -81,6 +94,15 @@ export const ruleCoverage = (
       present.push("text");
     const applicable = applicableSurfaces(rule);
     const status = statusOf(applicable, present);
-    return { id: rule.id, severity: rule.severity, applicable, surfaces: present, status, covered: status === "full" };
+    const covered = rule.bucket === "reminder" || status === "full";
+    return {
+      id: rule.id,
+      severity: rule.severity,
+      bucket: rule.bucket,
+      applicable,
+      surfaces: present,
+      status,
+      covered,
+    };
   });
 };

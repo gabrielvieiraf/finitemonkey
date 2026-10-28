@@ -1,6 +1,6 @@
-import { relative } from "node:path";
+import { join, relative } from "node:path";
 
-import { toAbsolutePath } from "../core/brand.js";
+import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { toPosixPath } from "../core/posix-path.js";
 import { deny, FILE_TOOLS, guardRoot, SHELL_TOOLS } from "../guards/context.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
@@ -8,10 +8,12 @@ import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js"
 import { modelReason } from "../hooks/reason.js";
 import { proseInCommand, type TextSource } from "../prose/command-text.js";
 import { dialectOf } from "../shell/normalize.js";
+import { FM_DIR } from "../task/paths.js";
 import { readManifest } from "./manifest.js";
 import { commandMatches, pathMatches, textMatches } from "./match.js";
 import { effectiveRules } from "./preset.js";
 import type { ProjectRule } from "./types.js";
+import { recordViolation } from "./violations.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
 
@@ -43,6 +45,18 @@ const broken = (input: HookInput, rule: ProjectRule): boolean => {
   return path !== "" && pathMatches(rule, tool, toPosixPath(relative(root, toAbsolutePath(path, root))));
 };
 
+const recordGuardViolation = (input: HookInput, root: AbsolutePath, rule: ProjectRule): void => {
+  const dir = toAbsolutePath(join(root, FM_DIR));
+  if (input.runtime.stat(dir)?.kind !== "dir") return;
+  const detail = `${toolName(input.payload.raw)} ${textField(toolInput(input.payload.raw), "command", "file_path") ?? ""}`;
+  recordViolation(input.runtime, dir, {
+    session: input.payload.sessionId ?? "",
+    rule: rule.id,
+    source: "guard",
+    detail,
+  });
+};
+
 export const rulesGuard: HookHandler = (input) => {
   const root = guardRoot(input);
   const manifest = readManifest(input.runtime, root);
@@ -53,6 +67,7 @@ export const rulesGuard: HookHandler = (input) => {
     (rule) => manifest.rules[rule.id]?.surfaces.includes("guard") === true && broken(input, rule),
   );
   if (hit === undefined) return ALLOW;
+  recordGuardViolation(input, root, hit);
   const params = { id: hit.id, text: hit.text };
   if (hit.severity === "prefer") {
     const additionalContext = `finitemonkey: ${input.t("rules.warn.prefer", params)}`;

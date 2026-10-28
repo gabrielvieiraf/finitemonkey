@@ -4,7 +4,7 @@ import type { Runtime } from "../core/runtime.js";
 import { CONFIG_FILE } from "../install/layout.js";
 import { ATTRIBUTION_OFF } from "../install/settings-merge.js";
 import { presetFromConfig } from "../prose/preset.js";
-import { loadRules, type ProjectRule } from "./types.js";
+import { EMPTY_SCOPE, loadRules, type ProjectRule } from "./types.js";
 
 export const NO_ATTRIBUTION: ProjectRule = {
   id: "no-attribution",
@@ -13,6 +13,9 @@ export const NO_ATTRIBUTION: ProjectRule = {
   severity: "never",
   detector: { kind: "attribution" },
   settings: { attribution: { ...ATTRIBUTION_OFF } },
+  bucket: "deterministic",
+  scope: EMPTY_SCOPE,
+  why: undefined,
 };
 
 export const PRESET_RULES: Readonly<Record<string, ProjectRule>> = { attribution: NO_ATTRIBUTION };

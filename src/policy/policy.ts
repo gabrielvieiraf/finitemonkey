@@ -33,6 +33,7 @@ export const OPTIONAL_GUARDS = [
   "wt-place",
   "heavy-lock",
   "instructions",
+  "rules-stop",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set(["fourth-attempt", "claims", "clarify"]);

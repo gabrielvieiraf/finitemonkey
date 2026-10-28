@@ -54,6 +54,7 @@ import { proseCheckCommand } from "./prose-check.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
+import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
 import { runCommandSpec } from "./run.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
@@ -178,6 +179,8 @@ export const REGISTRY = [
   wtClassifyCommand,
   wtDismissCommand,
   instructionsCommand,
+  rulesProposeCommand,
+  rulesViolationCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,
