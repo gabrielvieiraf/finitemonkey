@@ -63,7 +63,7 @@ describe("no-attribution: each compiled output", () => {
     await run(fs, ["rules", "compile"]);
     assert.equal((await fire(runtime, `git commit -m "feat: x" -m "${CO_AUTHOR}"`)).verdict, "block");
     assert.equal(
-      (await fire(runtime, 'gh pr create --title "feat: x" --body "Done. 🤖 Generated with Claude Code"')).verdict,
+      (await fire(runtime, 'gh pr edit 12 --title "feat: x" --body "Done. 🤖 Generated with Claude Code"')).verdict,
       "block",
     );
     assert.equal((await fire(runtime, 'git commit -m "feat: x" -m "Adds the cart total."')).verdict, "allow");
@@ -74,7 +74,7 @@ describe("no-attribution: each compiled output", () => {
     const runtime = fakeRuntime({ fs });
     await run(fs, ["rules", "compile"]);
     const body = `The hook now rejects lines like this one:\n\n\`\`\`\n${CO_AUTHOR}\n\`\`\`\n\nand inline \`🤖\` too.`;
-    const command = `gh pr create --title "feat: reject attribution" --body-file - <<'EOF'\n${body}\nEOF`;
+    const command = `gh pr edit 12 --title "feat: reject attribution" --body-file - <<'EOF'\n${body}\nEOF`;
     assert.equal((await fire(runtime, command)).verdict, "allow");
   });
 
