@@ -1649,7 +1649,18 @@
     "doctor.github.dependabot_alerts_off": "machine",
     "doctor.github.no_protect_ruleset": "machine",
     "doctor.github.fix_protect": "machine",
-    "doctor.github.settings_ok": "machine"
+    "doctor.github.settings_ok": "machine",
+    "ci.command.watch": "machine",
+    "ci.watch.title": "machine",
+    "ci.watch.failure": "machine",
+    "ci.watch.green": "machine",
+    "ci.watch.fix": "machine",
+    "ci.watch.ask": "machine",
+    "ci.watch.attempts": "machine",
+    "ci.watch.cost": "machine",
+    "ci.watch.pending": "machine",
+    "ci.watch.calls": "machine",
+    "ci.watch.no_pr": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3301,6 +3312,17 @@
     "doctor.github.dependabot_alerts_off": "machine",
     "doctor.github.no_protect_ruleset": "machine",
     "doctor.github.fix_protect": "machine",
-    "doctor.github.settings_ok": "machine"
+    "doctor.github.settings_ok": "machine",
+    "ci.command.watch": "machine",
+    "ci.watch.title": "machine",
+    "ci.watch.failure": "machine",
+    "ci.watch.green": "machine",
+    "ci.watch.fix": "machine",
+    "ci.watch.ask": "machine",
+    "ci.watch.attempts": "machine",
+    "ci.watch.cost": "machine",
+    "ci.watch.pending": "machine",
+    "ci.watch.calls": "machine",
+    "ci.watch.no_pr": "machine"
   }
 }

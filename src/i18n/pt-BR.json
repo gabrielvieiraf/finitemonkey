@@ -1648,5 +1648,16 @@
   "doctor.github.dependabot_alerts_off": "Os alertas do Dependabot estão desligados em {repo} (lidos pelo último ci protect)",
   "doctor.github.no_protect_ruleset": "{repo} não tem o ruleset do Finite Monkey na branch padrão (lido pelo último ci protect)",
   "doctor.github.fix_protect": "Rode finitemonkey ci protect para ver o diff e aplique com --yes num terminal",
-  "doctor.github.settings_ok": "{repo} tem secret scanning, push protection, alertas do Dependabot e o ruleset"
+  "doctor.github.settings_ok": "{repo} tem secret scanning, push protection, alertas do Dependabot e o ruleset",
+  "ci.command.watch": "Acompanha as checagens do pull request, classifica a falha e para nos tetos de tentativa e de custo",
+  "ci.watch.title": "Pull request #{pr} em {sha} ({calls} chamadas ao gh):",
+  "ci.watch.failure": "Falhou: {checks}. Classificado como {classification}; {attempt} de {max} tentativas de conserto usadas; US$ {usd} de US$ {maxUsd} gastos desde o início do acompanhamento. Últimas linhas do log:",
+  "ci.watch.green": "Todas as checagens passaram. O estado fica registrado com o commit em .finitemonkey/ci-watch/.",
+  "ci.watch.fix": "A CI falhou com um erro que o agente conserta ({attempt} de {max} tentativas de conserto usadas)",
+  "ci.watch.ask": "A CI falhou por um motivo que a pessoa precisa decidir (credencial, permissão, runner ou rede)",
+  "ci.watch.attempts": "A CI segue vermelha depois de {max} tentativas de conserto; parando aqui",
+  "ci.watch.cost": "US$ {usd} gastos desde o início do acompanhamento chegaram ao teto de US$ {maxUsd}; parando aqui",
+  "ci.watch.pending": "As checagens ainda rodavam quando o teto de tempo encerrou o acompanhamento",
+  "ci.watch.calls": "As checagens ainda rodam e o acompanhamento usou todas as chamadas ao gh",
+  "ci.watch.no_pr": "Nenhum pull request encontrado para esta branch, ou o gh não está disponível"
 }

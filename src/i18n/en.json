@@ -1648,5 +1648,16 @@
   "doctor.github.dependabot_alerts_off": "Dependabot alerts are off on {repo} (read by the last ci protect)",
   "doctor.github.no_protect_ruleset": "{repo} has no Finite Monkey ruleset for the default branch (read by the last ci protect)",
   "doctor.github.fix_protect": "Run finitemonkey ci protect to see the diff, then apply it with --yes in a terminal",
-  "doctor.github.settings_ok": "{repo} has secret scanning, push protection, Dependabot alerts and the ruleset"
+  "doctor.github.settings_ok": "{repo} has secret scanning, push protection, Dependabot alerts and the ruleset",
+  "ci.command.watch": "Follow the pull request checks, classify a failure and stop at the attempt and cost ceilings",
+  "ci.watch.title": "Pull request #{pr} at {sha} ({calls} gh calls):",
+  "ci.watch.failure": "Failed: {checks}. Classified as {classification}; {attempt} of {max} fix attempts used; ${usd} of ${maxUsd} spent since the watch started. Last lines of the log:",
+  "ci.watch.green": "Every check passed. The state is recorded with the commit in .finitemonkey/ci-watch/.",
+  "ci.watch.fix": "CI failed with an error the agent can fix ({attempt} of {max} fix attempts used)",
+  "ci.watch.ask": "CI failed for a reason the person has to decide (credentials, permissions, runner or network)",
+  "ci.watch.attempts": "CI is still red after {max} fix attempts; stopping here",
+  "ci.watch.cost": "${usd} spent since the watch started reached the ${maxUsd} ceiling; stopping here",
+  "ci.watch.pending": "Checks are still running when the time ceiling ended this watch",
+  "ci.watch.calls": "Checks are still running and this watch used all its gh calls",
+  "ci.watch.no_pr": "No pull request found for this branch, or gh is not available"
 }

@@ -107,7 +107,9 @@
             "gen_write_failed",
             "ownership_failed",
             "ci_audit_failed",
-            "ci_protect_failed"
+            "ci_protect_failed",
+            "ci_watch_failed",
+            "ci_watch_pending"
           ]
         },
         "message": {

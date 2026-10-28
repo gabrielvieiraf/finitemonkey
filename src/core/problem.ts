@@ -90,6 +90,8 @@ export const ERROR_CODES = [
   "ownership_failed",
   "ci_audit_failed",
   "ci_protect_failed",
+  "ci_watch_failed",
+  "ci_watch_pending",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

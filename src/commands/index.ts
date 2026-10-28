@@ -6,6 +6,7 @@ import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
+import { ciWatchCommand } from "./ci-watch.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
@@ -215,6 +216,7 @@ export const REGISTRY = [
   ciGenCommand,
   ciAuditCommand,
   ciProtectCommand,
+  ciWatchCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
