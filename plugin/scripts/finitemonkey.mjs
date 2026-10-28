@@ -5194,7 +5194,8 @@ var printed = (job) => job.steps.flatMap((step3) => {
   return /\bset -x\b/.test(run9) && (secretEnv || run9.includes("secrets.")) ? [{ rule: "secret-printed", job: job.id, detail: "set -x with secrets in the step", needle: "set -x" }] : [];
 });
 var deployUnsafe = (workflow, job) => {
-  const deploy = DEPLOY.test(job.id) || DEPLOY.test(job.name) || DEPLOY.test(job.environment ?? "") || /deploy/i.test(workflow.file);
+  const prerequisite = workflow.jobs.some((other) => other.needs.includes(job.id));
+  const deploy = DEPLOY.test(job.id) || DEPLOY.test(job.name) || DEPLOY.test(job.environment ?? "") || /deploy/i.test(workflow.file) && !prerequisite;
   if (!deploy || job.uses !== void 0) return [];
   const missing3 = [
     ...job.needs.length > 0 || workflow.triggers.includes("workflow_run") ? [] : ["needs CI"],
@@ -6083,7 +6084,8 @@ var securityWorkflow = (input) => workflowText({
           uses: "google/osv-scanner-action/osv-scanner-action",
           with: { "scan-args": "-r ./" }
         },
-        { name: "workflow audit", run: `${input.finitemonkey} ci audit` }
+        { name: "workflow audit", run: `${input.finitemonkey} ci audit` },
+        ...input.drift ? [{ name: "production drift", run: `${input.finitemonkey} deploy check --issue` }] : []
       ]
     }
   ]
@@ -6162,7 +6164,8 @@ var ciFiles = (input, chosen) => {
     mergeQueue: readCache(input.runtime, input.root)?.mergeQueue === true,
     defaultBranch: input.defaultBranch,
     attribution: isOn(input.defaults, "no-attribution"),
-    oidc: input.oidc
+    oidc: input.oidc,
+    drift: input.exists(".finitemonkey/infra.yml") && !input.exists(".github/workflows/drift.yml")
   };
   const deployCommand = DEPLOY_SCRIPTS.find(input.exists);
   const texts3 = {
@@ -19396,20 +19399,7 @@ var writePlanned = (runtime, root, planned, overwrite) => {
   }
   return { written, failed: failed9 };
 };
-var FORMAT_TIMEOUT_MS2 = 2e4;
-var PRETTIER = /\.(?:ya?ml|json|md|[cm]?js)$/;
-var projectFormat = (runtime, root) => (path, text24) => {
-  const bin = toAbsolutePath(join39(root, "node_modules", "prettier", "bin", "prettier.cjs"));
-  if (!PRETTIER.test(path) || runtime.stat(bin) === void 0) return text24;
-  const result = runtime.exec({
-    command: process.execPath,
-    args: [bin, "--stdin-filepath", path],
-    cwd: root,
-    timeoutMs: FORMAT_TIMEOUT_MS2,
-    input: text24
-  });
-  return result.exitCode === 0 && result.stdout !== "" ? result.stdout : text24;
-};
+var projectFormat = (runtime, root) => projectFormatter(runtime, root);
 
 // src/infra/scan.ts
 import { join as join40 } from "node:path";
@@ -45299,64 +45289,6 @@ var mergeCommand = {
   }
 };
 
-// src/commands/ownership.ts
-var OWNERSHIP_SCHEMA = "finitemonkey/ownership@1";
-var SOURCE_PARENTS = ["src", "packages", "apps", "services"];
-var ownershipCheckCommand = {
-  path: ["ownership", "check"],
-  summaryKey: "ownership.command.check",
-  usage: "finitemonkey ownership check",
-  status: "ready",
-  maxPositionals: 0,
-  run: (ctx) => Promise.resolve(
-    checksResult(ctx.t, OWNERSHIP_SCHEMA, "ownership_failed", [ownershipCheck(ctx.runtime, projectRoot(ctx))])
-  )
-};
-var defaultOwner = (ctx, given) => {
-  if (given !== void 0 && given !== "") return given;
-  const remote = ctx.runtime.git(["remote", "get-url", "origin"], projectRoot(ctx));
-  return (remote.ok ? ownerFromRemote(remote.stdout) : void 0) ?? "";
-};
-var fromPlan = (vocabulary, owner) => vocabulary.map((item2) => ({ name: item2.name, type: "component", owner: item2.owner || owner, consumers: [] }));
-var fromFolders = (ctx, owner) => {
-  const project = projectAt(projectRoot(ctx), ctx.runtime);
-  const names3 = detectStack2(ctx.runtime, project.root).dirs(SOURCE_PARENTS).flatMap((parent) => {
-    const listed7 = ctx.runtime.listDir(project.abs(parent));
-    return listed7.ok ? listed7.value.filter((name) => project.isDir(`${parent}/${name}`)) : [];
-  });
-  return [...new Set(names3)].sort().map((name) => ({ name, type: "component", owner, consumers: [] }));
-};
-var genOwnershipCommand = {
-  path: ["gen", "ownership"],
-  summaryKey: "ownership.command.gen",
-  usage: "finitemonkey gen ownership [--owner <@user|@org/team>] [--dry-run] [--yes]",
-  status: "ready",
-  maxPositionals: 0,
-  options: { owner: { type: "string" } },
-  run: (ctx, args2) => {
-    const root = projectRoot(ctx);
-    const owner = defaultOwner(ctx, stringOption(args2.values, "owner"));
-    const catalog = projectAt(root, ctx.runtime).exists(CATALOG_FILE);
-    const vocabulary = readVocabulary(ctx.runtime, root);
-    const components = vocabulary === void 0 ? fromFolders(ctx, owner) : fromPlan(vocabulary, owner);
-    const notes3 = [
-      ...catalog ? [ctx.t("ownership.catalog", { file: CATALOG_FILE })] : [],
-      ...vocabulary === void 0 ? [ctx.t("ownership.no_plan")] : [],
-      ...components.some((item2) => item2.owner === "") ? [ctx.t("ownership.fill_owner", { file: OWNERSHIP_FILE })] : []
-    ];
-    const flag2 = owner === "" ? "" : ` --owner ${owner}`;
-    return Promise.resolve(
-      runGenerator(ctx, {
-        generator: "ownership",
-        feature: OWNERSHIP_FEATURE,
-        files: catalog ? [] : [{ path: OWNERSHIP_FILE, text: stringifyYaml({ components }) }],
-        notes: notes3,
-        rerun: `finitemonkey gen ownership${flag2} --yes`
-      })
-    );
-  }
-};
-
 // src/observe/templates.ts
 var SCRUB_PATH = "observability/scrub.mjs";
 var LOG_PATH = "observability/log.mjs";
@@ -45589,6 +45521,64 @@ var observeCommand = {
     const repo = repoOf(ctx);
     return Promise.resolve(
       repo === void 0 ? failureFrom(ctx.t, notRepository(ctx.cwd)) : runObserve(ctx, repo.root)
+    );
+  }
+};
+
+// src/commands/ownership.ts
+var OWNERSHIP_SCHEMA = "finitemonkey/ownership@1";
+var SOURCE_PARENTS = ["src", "packages", "apps", "services"];
+var ownershipCheckCommand = {
+  path: ["ownership", "check"],
+  summaryKey: "ownership.command.check",
+  usage: "finitemonkey ownership check",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => Promise.resolve(
+    checksResult(ctx.t, OWNERSHIP_SCHEMA, "ownership_failed", [ownershipCheck(ctx.runtime, projectRoot(ctx))])
+  )
+};
+var defaultOwner = (ctx, given) => {
+  if (given !== void 0 && given !== "") return given;
+  const remote = ctx.runtime.git(["remote", "get-url", "origin"], projectRoot(ctx));
+  return (remote.ok ? ownerFromRemote(remote.stdout) : void 0) ?? "";
+};
+var fromPlan = (vocabulary, owner) => vocabulary.map((item2) => ({ name: item2.name, type: "component", owner: item2.owner || owner, consumers: [] }));
+var fromFolders = (ctx, owner) => {
+  const project = projectAt(projectRoot(ctx), ctx.runtime);
+  const names3 = detectStack2(ctx.runtime, project.root).dirs(SOURCE_PARENTS).flatMap((parent) => {
+    const listed7 = ctx.runtime.listDir(project.abs(parent));
+    return listed7.ok ? listed7.value.filter((name) => project.isDir(`${parent}/${name}`)) : [];
+  });
+  return [...new Set(names3)].sort().map((name) => ({ name, type: "component", owner, consumers: [] }));
+};
+var genOwnershipCommand = {
+  path: ["gen", "ownership"],
+  summaryKey: "ownership.command.gen",
+  usage: "finitemonkey gen ownership [--owner <@user|@org/team>] [--dry-run] [--yes]",
+  status: "ready",
+  maxPositionals: 0,
+  options: { owner: { type: "string" } },
+  run: (ctx, args2) => {
+    const root = projectRoot(ctx);
+    const owner = defaultOwner(ctx, stringOption(args2.values, "owner"));
+    const catalog = projectAt(root, ctx.runtime).exists(CATALOG_FILE);
+    const vocabulary = readVocabulary(ctx.runtime, root);
+    const components = vocabulary === void 0 ? fromFolders(ctx, owner) : fromPlan(vocabulary, owner);
+    const notes3 = [
+      ...catalog ? [ctx.t("ownership.catalog", { file: CATALOG_FILE })] : [],
+      ...vocabulary === void 0 ? [ctx.t("ownership.no_plan")] : [],
+      ...components.some((item2) => item2.owner === "") ? [ctx.t("ownership.fill_owner", { file: OWNERSHIP_FILE })] : []
+    ];
+    const flag2 = owner === "" ? "" : ` --owner ${owner}`;
+    return Promise.resolve(
+      runGenerator(ctx, {
+        generator: "ownership",
+        feature: OWNERSHIP_FEATURE,
+        files: catalog ? [] : [{ path: OWNERSHIP_FILE, text: stringifyYaml({ components }) }],
+        notes: notes3,
+        rerun: `finitemonkey gen ownership${flag2} --yes`
+      })
     );
   }
 };

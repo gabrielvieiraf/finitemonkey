@@ -8,6 +8,7 @@ export interface WorkflowInput {
   readonly defaultBranch: string;
   readonly attribution: boolean;
   readonly oidc: boolean;
+  readonly drift: boolean;
 }
 
 export const GATE_JOB = "finitemonkey ci gate";
@@ -148,6 +149,7 @@ export const securityWorkflow = (input: WorkflowInput): string =>
             with: { "scan-args": "-r ./" },
           },
           { name: "workflow audit", run: `${input.finitemonkey} ci audit` },
+          ...(input.drift ? [{ name: "production drift", run: `${input.finitemonkey} deploy check --issue` }] : []),
         ],
       },
     ],

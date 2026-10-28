@@ -137,8 +137,12 @@ const printed = (job: WorkflowJob): readonly Found[] =>
   });
 
 const deployUnsafe = (workflow: Workflow, job: WorkflowJob): readonly Found[] => {
+  const prerequisite = workflow.jobs.some((other) => other.needs.includes(job.id));
   const deploy =
-    DEPLOY.test(job.id) || DEPLOY.test(job.name) || DEPLOY.test(job.environment ?? "") || /deploy/i.test(workflow.file);
+    DEPLOY.test(job.id) ||
+    DEPLOY.test(job.name) ||
+    DEPLOY.test(job.environment ?? "") ||
+    (/deploy/i.test(workflow.file) && !prerequisite);
   if (!deploy || job.uses !== undefined) return [];
   const missing = [
     ...(job.needs.length > 0 || workflow.triggers.includes("workflow_run") ? [] : ["needs CI"]),

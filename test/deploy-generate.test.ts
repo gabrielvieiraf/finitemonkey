@@ -8,6 +8,8 @@ import { after, describe, it } from "node:test";
 
 import { check as prettierCheck } from "prettier";
 
+import { auditWorkflow } from "../src/ci/audit/rules.js";
+import { parseWorkflow } from "../src/ci/audit/workflow.js";
 import type { TextSource } from "../src/core/context.js";
 import { composeFile, deployWorkflow, driftWorkflow, remoteScript } from "../src/deploy/templates.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
@@ -29,76 +31,28 @@ const INPUT = {
   health: "/health",
 };
 
-const runBlocks = (text: string): readonly string[] => {
-  const lines = text.split("\n");
-  const blocks: string[] = [];
-  lines.forEach((line, index) => {
-    const match = /^(\s*)(?:-\s+)?run:\s*(.*)$/.exec(line);
-    if (match === null) return;
-    const indent = (match[1] ?? "").length;
-    const body = [match[2] ?? ""];
-    for (const next of lines.slice(index + 1)) {
-      if (next.trim() !== "" && next.search(/\S/) <= indent + 2) break;
-      body.push(next);
-    }
-    blocks.push(body.join("\n"));
-  });
-  return blocks;
+const auditRules = (file: string, text: string): readonly string[] => {
+  const parsed = parseWorkflow(file, text);
+  assert.ok(parsed.ok, file);
+  return auditWorkflow(parsed.value, { level: 3, publicRepo: true }).map((hit) => `${hit.rule}: ${hit.detail}`);
 };
 
-const jobsOf = (workflow: string): string => workflow.split(/^jobs:$/m)[1] ?? "";
-
-const dangerous = (workflow: string): readonly string[] => [
-  ...(/pull_request_target|workflow_run/.test(workflow) ? ["trigger"] : []),
-  ...runBlocks(workflow).flatMap((block) => (block.includes("${{") ? [`injection: ${block.trim()}`] : [])),
-  ...[...workflow.matchAll(/uses:\s*(\S+)/g)]
-    .map((match) => match[1] ?? "")
-    .filter((uses) => !/@[0-9a-f]{40}$/.test(uses))
-    .map((uses) => `unpinned: ${uses}`),
-  ...(workflow.split("actions/checkout@").length - 1 === workflow.split("persist-credentials: false").length - 1
-    ? []
-    : ["persisted token"]),
-  ...(/^permissions: \{\}$/m.test(workflow) ? [] : ["default permissions"]),
-  ...((workflow.match(/packages: write/g)?.length ?? 0) <= 1 ? [] : ["packages: write outside the image job"]),
-  ...(jobsOf(workflow).match(/^ {2}[\w-]+:$/gm)?.length === workflow.match(/timeout-minutes:/g)?.length
-    ? []
-    : ["no timeout"]),
-];
-
 describe("deploy generate templates", () => {
-  it("the workflow has no dangerous pattern and prettier parses it unchanged", async () => {
+  it("the workflow passes ci audit at the strictest level and prettier parses it unchanged", async () => {
     const workflow = deployWorkflow(INPUT);
-    assert.deepEqual(dangerous(workflow), []);
+    assert.deepEqual(auditRules("deploy.yml", workflow), []);
     assert.ok(await prettierCheck(workflow, { parser: "yaml" }), workflow);
     assert.ok(await prettierCheck(composeFile(3000), { parser: "yaml" }));
     assert.match(workflow, /StrictHostKeyChecking=yes/);
     assert.match(workflow, /needs: check/);
   });
 
-  it("the scheduled drift workflow has no dangerous pattern either", async () => {
+  it("the scheduled drift workflow passes ci audit too", async () => {
     const drift = driftWorkflow("main", "1.2.3");
-    assert.deepEqual(dangerous(drift), []);
+    assert.deepEqual(auditRules("drift.yml", drift), []);
     assert.ok(await prettierCheck(drift, { parser: "yaml" }), drift);
     assert.match(drift, /deploy check --issue/);
     assert.match(drift, /issues: write/);
-  });
-
-  it("the audit catches the planted dangerous patterns", () => {
-    const planted = [
-      "on: pull_request_target",
-      "permissions: write-all",
-      "jobs:",
-      "  bad:",
-      "    steps:",
-      "      - uses: actions/checkout@v4",
-      "      - run: echo ${{ github.event.pull_request.title }}",
-    ].join("\n");
-    const found = dangerous(planted);
-    for (const kind of ["trigger", "injection", "unpinned", "persisted token", "default permissions", "no timeout"])
-      assert.ok(
-        found.some((item) => item.startsWith(kind)),
-        kind,
-      );
   });
 });
 
@@ -198,11 +152,11 @@ describe("finitemonkey deploy generate", () => {
     assert.match(done.stdout, /exists and differs, kept: deploy\/compose\.yml/);
     assert.equal(repo.read("deploy/compose.yml"), "services: {}\n");
     const workflow = repo.read(".github/workflows/deploy.yml");
-    assert.deepEqual(dangerous(workflow), []);
+    assert.deepEqual(auditRules("deploy.yml", workflow), []);
     assert.match(workflow, /run: npm ci/);
     assert.match(workflow, /run: npm run test/);
     assert.match(repo.read("deploy/remote.sh"), /rolled back to/);
-    assert.deepEqual(dangerous(repo.read(".github/workflows/drift.yml")), []);
+    assert.deepEqual(auditRules("drift.yml", repo.read(".github/workflows/drift.yml")), []);
   });
 
   it("refuses projects that are not one server", async () => {

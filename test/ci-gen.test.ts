@@ -116,6 +116,15 @@ describe("ci gen", () => {
     }
   });
 
+  it("security checks production drift only when deploy is declared and no drift workflow exists", async () => {
+    const infra = { ".finitemonkey/infra.yml": "level: 1\n" };
+    const withDrift = (await generate({ ...NODE_PROJECT, ...infra })).read(".github/workflows/security.yml");
+    assert.match(withDrift, /deploy check --issue/);
+    const ownWorkflow = await generate({ ...NODE_PROJECT, ...infra, ".github/workflows/drift.yml": "name: drift\n" });
+    assert.doesNotMatch(ownWorkflow.read(".github/workflows/security.yml"), /deploy check/);
+    assert.doesNotMatch((await generate(NODE_PROJECT)).read(".github/workflows/security.yml"), /deploy check/);
+  });
+
   it("security runs on a schedule with history secrets, osv-scanner and ci audit; Dependabot covers actions", async () => {
     const { read } = await generate(NODE_PROJECT);
     const security = read(".github/workflows/security.yml");

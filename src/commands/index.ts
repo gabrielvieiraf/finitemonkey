@@ -54,8 +54,8 @@ import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
-import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
 import { observeCommand } from "./observe.js";
+import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
 import {

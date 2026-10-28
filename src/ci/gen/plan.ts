@@ -72,6 +72,7 @@ export const ciFiles = (input: CiGenInput, chosen: ReadonlySet<CiWorkflow>): rea
     defaultBranch: input.defaultBranch,
     attribution: isOn(input.defaults, "no-attribution"),
     oidc: input.oidc,
+    drift: input.exists(".finitemonkey/infra.yml") && !input.exists(".github/workflows/drift.yml"),
   };
   const deployCommand = DEPLOY_SCRIPTS.find(input.exists);
   const texts: Readonly<Record<CiWorkflow, () => string>> = {
