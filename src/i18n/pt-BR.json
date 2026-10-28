@@ -1237,5 +1237,11 @@
   "appsec.rule.ssrf": "{file}:{line}: o servidor busca uma URL que vem da requisição ({detail}); restrinja os destinos a uma lista",
   "appsec.rule.cors-credentials": "{file}:{line}: o CORS aceita qualquer origem junto com credenciais",
   "appsec.rule.rate-limit": "{file}:{line}: a rota sensível {detail} não tem limite de requisições",
-  "appsec.rule.sql-concat": "{file}:{line}: o SQL é montado por concatenação; passe os valores como parâmetros"
+  "appsec.rule.sql-concat": "{file}:{line}: o SQL é montado por concatenação; passe os valores como parâmetros",
+  "datamap.command": "Grava .finitemonkey/data-map.yml com uma linha por campo pessoal do schema Prisma, Drizzle ou SQLAlchemy",
+  "datamap.written": "{file}: {count, plural, one {# campo pessoal} other {# campos pessoais}}, {added} novos.",
+  "datamap.open": "Preencha legalBasis, retention e deletedIn de: {fields}.",
+  "gate.datamap.missing": "{file}:{line}: o campo pessoal {field} não tem linha em .finitemonkey/data-map.yml; rode finitemonkey data-map e preencha",
+  "gate.datamap.incomplete": "{file}:{line}: o campo pessoal {field} está sem base legal, retenção ou caminho de exclusão em .finitemonkey/data-map.yml",
+  "gate.datamap.ai": "{file}:{line}: {field} vai para um provedor de IA sem decisão registrada (a coluna ai de .finitemonkey/data-map.yml)"
 }

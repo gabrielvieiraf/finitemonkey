@@ -110,6 +110,7 @@ export const FOOTPRINT = [
     targets: ["$FINITEMONKEY_HOLD_DIR/<session>.hold.json"],
   },
   { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/"] },
+  { id: "appsec", kind: "writes", targets: [".finitemonkey/semgrep/", ".finitemonkey/data-map.yml"] },
   { id: "look", kind: "writes", targets: [".finitemonkey/look/"] },
   { id: "prompts", kind: "writes", targets: [".finitemonkey/prompts.jsonl"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },

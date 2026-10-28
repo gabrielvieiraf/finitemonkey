@@ -7,6 +7,7 @@ import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
 import { debtCommand } from "./debt.js";
+import { dataMapCommand } from "./data-map.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
@@ -97,6 +98,7 @@ export const REGISTRY = [
   appCheckCommand,
   appsecScanCommand,
   appsecRulesCommand,
+  dataMapCommand,
   commitMsgCommand,
   pushCheckCommand,
   ciGateCommand,
