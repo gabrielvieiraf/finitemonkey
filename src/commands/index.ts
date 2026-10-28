@@ -59,6 +59,7 @@ import { secretsScanCommand } from "./secrets-scan.js";
 import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
 import { statuslineCommand } from "./statusline.js";
+import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
 import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
 import { taskFromSpecCommand } from "./task-spec.js";
@@ -169,6 +170,9 @@ export const REGISTRY = [
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,
+  suggestCommand,
+  suggestAcceptCommand,
+  suggestDismissCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

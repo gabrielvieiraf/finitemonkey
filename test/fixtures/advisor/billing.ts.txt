@@ -1,0 +1,37 @@
+export const invoiceTotal = (lines: readonly { qty: number; price: number; kind: string }[], vip: boolean): number => {
+  let total = 0;
+  for (const line of lines) {
+    if (line.qty > 0) {
+      if (line.kind === "service") {
+        if (vip) {
+          total += line.qty * line.price * 0.9;
+        } else if (line.price > 100) {
+          total += line.qty * line.price * 0.95;
+        } else {
+          total += line.qty * line.price;
+        }
+      } else if (line.kind === "product" && line.price > 0) {
+        total += line.qty * line.price;
+      }
+    }
+  }
+  return total;
+};
+
+export const createInvoice = (customer: string, street: string, city: string, zip: string, country: string, notes: string): string =>
+  [customer, street, city, zip, country, notes].join("\n");
+
+export const invoiceLabel = (total: number): string => {
+  if (total > 1000) return "large";
+  return "small";
+};
+
+export const invoiceCode = (customer: string, year: number): string => {
+  const prefix = customer.slice(0, 3).toUpperCase();
+  return `${prefix}-${String(year)}`;
+};
+
+export const createReceipt = (order: { customer: string; total: number }): string => {
+  const header = `Receipt for ${order.customer}`;
+  return `${header}: ${String(order.total)}`;
+};

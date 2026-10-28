@@ -1,3 +1,4 @@
+import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
 import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
 import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
@@ -173,6 +174,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "quality", damage: false, handlers: QUALITY_HANDLERS },
   { id: "slop", damage: false, handlers: SLOP_HANDLERS },
   { id: "tests-hold", damage: false, handlers: TESTS_HOLD_HANDLERS },
+  { id: "advisor", damage: false, handlers: ADVISOR_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
