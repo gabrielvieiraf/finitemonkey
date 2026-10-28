@@ -31,6 +31,7 @@ import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
+import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
 import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
@@ -176,6 +177,7 @@ export const REGISTRY = [
   lookApproveCommand,
   wtClassifyCommand,
   wtDismissCommand,
+  instructionsCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,

@@ -156,6 +156,12 @@ export const FOOTPRINT = [
   },
   { id: "deploy", kind: "sends", targets: ["deploy.version_url"], via: "curl" },
   { id: "heavy", kind: "writes", targets: ["~/.finitemonkey/heavy/"] },
+  {
+    id: "instruction-layers",
+    kind: "reads",
+    targets: ["~/.claude/CLAUDE.md", "~/.claude/rules/", "/etc/claude-code/CLAUDE.md", "../CLAUDE.md"],
+  },
+  { id: "instructions-log", kind: "writes", targets: [".finitemonkey/instructions.jsonl"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

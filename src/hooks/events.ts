@@ -15,6 +15,7 @@ export const HOOK_EVENTS = [
   "SessionEnd",
   "WorktreeCreate",
   "WorktreeRemove",
+  "InstructionsLoaded",
 ] as const;
 
 export type HookEvent = (typeof HOOK_EVENTS)[number];
@@ -40,6 +41,7 @@ export const HOOK_POLICIES = {
   SessionEnd: { failClosed: false },
   WorktreeCreate: { failClosed: false },
   WorktreeRemove: { failClosed: false },
+  InstructionsLoaded: { failClosed: false },
 } as const satisfies Readonly<Record<HookEvent, HookPolicy>>;
 
 const squash = (value: string): string => value.replace(/[-_\s]/g, "").toLowerCase();
