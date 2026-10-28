@@ -58,6 +58,7 @@ import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
+import { signalsHypothesisCommand } from "./signals-hypothesis.js";
 import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
@@ -167,6 +168,7 @@ export const REGISTRY = [
   conceitosExportCommand,
   conceitosUpdateCommand,
   conceitosMarkCommand,
+  signalsHypothesisCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,

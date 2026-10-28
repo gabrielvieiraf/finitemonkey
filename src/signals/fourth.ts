@@ -7,6 +7,7 @@ import { modeOf, readShadow } from "../policy/guards.js";
 import { loadPolicy } from "../policy/policy.js";
 import { pendingAttempt } from "./attempts.js";
 import { baseOf, record, scopeOf, type SignalScope } from "./context.js";
+import { stopDecision } from "./stop.js";
 import { readProfile, sessionEntries } from "./store.js";
 import { writesFiles } from "./writes.js";
 
@@ -47,6 +48,8 @@ export const fourthAttemptGuard: HookHandler = (input): HookDecision => {
   if (!writesFiles(input.payload.raw)) return allow;
   const scope = scopeOf(input);
   if (scope === undefined) return allow;
+  const stop = stopDecision(scope, modeNow(scope));
+  if (stop !== undefined) return stop;
   const threshold = readProfile(input.runtime, scope.files).threshold;
   const pending = pendingAttempt(sessionEntries(scope.entries, scope.session), threshold);
   if (pending === undefined) return allow;

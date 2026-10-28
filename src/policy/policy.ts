@@ -25,9 +25,10 @@ export const OPTIONAL_GUARDS = [
   "tests-hold",
   "regression",
   "advisor",
+  "claims",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
-export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set(["fourth-attempt"]);
+export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set(["fourth-attempt", "claims"]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];
 export type Level = (typeof LEVELS)[number];

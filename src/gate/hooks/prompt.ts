@@ -12,7 +12,7 @@ import { prepareGate } from "../prepare.js";
 import { allowWith, human, projectPaths } from "./common.js";
 import { readCounter, saveCounter } from "./counter.js";
 
-export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget"]);
+export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims"]);
 
 const trust = (input: HookInput, paths: FmPaths, task: string): boolean => {
   const { runtime } = input;

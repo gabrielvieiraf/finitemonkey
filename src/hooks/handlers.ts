@@ -1,5 +1,6 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
+import { CLAIMS_HANDLERS } from "../claims/guard.js";
 import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
 import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
@@ -175,6 +176,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "slop", damage: false, handlers: SLOP_HANDLERS },
   { id: "tests-hold", damage: false, handlers: TESTS_HOLD_HANDLERS },
   { id: "advisor", damage: false, handlers: ADVISOR_HANDLERS },
+  { id: "claims", damage: false, handlers: CLAIMS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));
