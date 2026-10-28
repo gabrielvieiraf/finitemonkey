@@ -24,6 +24,7 @@ import { frontsSyncCommand } from "./fronts-sync.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
 import { genLintCommand } from "./gen.js";
+import { genCodeownersCommand, genPrTemplateCommand } from "./gen-github.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
 import { mergeVerifyCommand } from "./git-merge-verify.js";
 import { rescueCommand } from "./git-rescue.js";
@@ -203,6 +204,8 @@ export const REGISTRY = [
   suggestAcceptCommand,
   suggestDismissCommand,
   genLintCommand,
+  genPrTemplateCommand,
+  genCodeownersCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

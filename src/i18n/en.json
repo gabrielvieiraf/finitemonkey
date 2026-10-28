@@ -1608,5 +1608,9 @@
   "gen.lint.no_ts_eslint": "TypeScript files are left out until typescript-eslint is installed; the strict TypeScript rules need it.",
   "gen.lint.legacy": "{file} uses the old ESLint config format. Move to eslint.config.mjs with `npx @eslint/migrate-config {file}`, then run this again to merge.",
   "gen.lint.python": "Add `python {file} .` to the lint step; it fails on every comment except tool directives.",
-  "gen.lint.no_stack": "No package.json or Python project found here, so there is nothing to generate."
+  "gen.lint.no_stack": "No package.json or Python project found here, so there is nothing to generate.",
+  "gen.command.pr_template": "Generate the pull request template in the project language",
+  "gen.command.codeowners": "Generate CODEOWNERS for the API contract, workflows, infra and migrations",
+  "gen.codeowners.no_owner": "No owner was given and none could be read from the origin remote. Pass --owner with a user or a team.",
+  "gen.codeowners.inferred": "Owner {owner} comes from the origin remote. If it is an organization, pass --owner {owner}/<team>: GitHub ignores a line whose owner is a bare organization."
 }

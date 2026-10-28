@@ -8249,7 +8249,11 @@ var en_default = {
   "gen.lint.no_ts_eslint": "TypeScript files are left out until typescript-eslint is installed; the strict TypeScript rules need it.",
   "gen.lint.legacy": "{file} uses the old ESLint config format. Move to eslint.config.mjs with `npx @eslint/migrate-config {file}`, then run this again to merge.",
   "gen.lint.python": "Add `python {file} .` to the lint step; it fails on every comment except tool directives.",
-  "gen.lint.no_stack": "No package.json or Python project found here, so there is nothing to generate."
+  "gen.lint.no_stack": "No package.json or Python project found here, so there is nothing to generate.",
+  "gen.command.pr_template": "Generate the pull request template in the project language",
+  "gen.command.codeowners": "Generate CODEOWNERS for the API contract, workflows, infra and migrations",
+  "gen.codeowners.no_owner": "No owner was given and none could be read from the origin remote. Pass --owner with a user or a team.",
+  "gen.codeowners.inferred": "Owner {owner} comes from the origin remote. If it is an organization, pass --owner {owner}/<team>: GitHub ignores a line whose owner is a bare organization."
 };
 
 // src/i18n/es.json
@@ -9863,7 +9867,11 @@ var es_default = {
   "gen.lint.no_ts_eslint": "Los archivos TypeScript quedan fuera hasta instalar typescript-eslint; las reglas estrictas de TypeScript lo necesitan.",
   "gen.lint.legacy": "{file} usa el formato antiguo de configuración de ESLint. Pasa a eslint.config.mjs con `npx @eslint/migrate-config {file}` y ejecuta de nuevo para fusionar.",
   "gen.lint.python": "Agrega `python {file} .` al paso de lint; falla en todo comentario que no sea una directiva de herramienta.",
-  "gen.lint.no_stack": "No hay package.json ni proyecto Python aquí, así que no hay nada que generar."
+  "gen.lint.no_stack": "No hay package.json ni proyecto Python aquí, así que no hay nada que generar.",
+  "gen.command.pr_template": "Genera la plantilla de pull request en el idioma del proyecto",
+  "gen.command.codeowners": "Genera CODEOWNERS para el contrato de la API, workflows, infra y migraciones",
+  "gen.codeowners.no_owner": "No se indicó dueño y no se pudo leer uno del remote origin. Pasa --owner con un usuario o un equipo.",
+  "gen.codeowners.inferred": "El dueño {owner} viene del remote origin. Si es una organización, pasa --owner {owner}/<equipo>: GitHub ignora la línea cuyo dueño es solo la organización."
 };
 
 // src/i18n/pt-BR.json
@@ -11477,7 +11485,11 @@ var pt_BR_default = {
   "gen.lint.no_ts_eslint": "Os arquivos TypeScript ficam de fora até o typescript-eslint ser instalado; as regras estritas de TypeScript dependem dele.",
   "gen.lint.legacy": "{file} usa o formato antigo de configuração do ESLint. Passe para eslint.config.mjs com `npx @eslint/migrate-config {file}` e rode de novo para mesclar.",
   "gen.lint.python": "Acrescente `python {file} .` ao passo de lint; ele falha em todo comentário que não seja diretiva de ferramenta.",
-  "gen.lint.no_stack": "Não há package.json nem projeto Python aqui, então não há o que gerar."
+  "gen.lint.no_stack": "Não há package.json nem projeto Python aqui, então não há o que gerar.",
+  "gen.command.pr_template": "Gera o modelo de pull request no idioma do projeto",
+  "gen.command.codeowners": "Gera o CODEOWNERS para o contrato da API, workflows, infra e migrações",
+  "gen.codeowners.no_owner": "Nenhum dono foi informado e não deu para ler um do remote origin. Passe --owner com um usuário ou um time.",
+  "gen.codeowners.inferred": "O dono {owner} veio do remote origin. Se for uma organização, passe --owner {owner}/<time>: o GitHub ignora linha cujo dono é só a organização."
 };
 
 // src/i18n/review.json
@@ -13092,7 +13104,11 @@ var review_default = {
     "gen.lint.no_ts_eslint": "machine",
     "gen.lint.legacy": "machine",
     "gen.lint.python": "machine",
-    "gen.lint.no_stack": "machine"
+    "gen.lint.no_stack": "machine",
+    "gen.command.pr_template": "machine",
+    "gen.command.codeowners": "machine",
+    "gen.codeowners.no_owner": "machine",
+    "gen.codeowners.inferred": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -14704,7 +14720,11 @@ var review_default = {
     "gen.lint.no_ts_eslint": "machine",
     "gen.lint.legacy": "machine",
     "gen.lint.python": "machine",
-    "gen.lint.no_stack": "machine"
+    "gen.lint.no_stack": "machine",
+    "gen.command.pr_template": "machine",
+    "gen.command.codeowners": "machine",
+    "gen.codeowners.no_owner": "machine",
+    "gen.codeowners.inferred": "machine"
   }
 };
 
@@ -16213,7 +16233,8 @@ var OPTIONAL_GUARDS = [
   "rules-stop",
   "reminders",
   "learnings",
-  "lint-gen"
+  "lint-gen",
+  "pr-gen"
 ];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "fourth-attempt",
@@ -38223,6 +38244,207 @@ var genLintCommand = {
   }
 };
 
+// src/generate/github/codeowners.ts
+var CODEOWNERS_FILE = ".github/CODEOWNERS";
+var CODEOWNERS_PLACES = [CODEOWNERS_FILE, "CODEOWNERS", "docs/CODEOWNERS"];
+var CONTRACT_DIRS = ["src/api", "api", "contract", "contracts", "openapi", "proto"];
+var MIGRATION_DIRS = [
+  "prisma/migrations",
+  "migrations",
+  "db/migrations",
+  "supabase/migrations",
+  "alembic/versions",
+  "drizzle"
+];
+var ALWAYS = ["/.github/workflows/", "/infra/"];
+var ownedPaths = (dirs) => [
+  ...dirs(CONTRACT_DIRS).map((dir) => `/${dir}/`),
+  ...ALWAYS,
+  ...dirs(MIGRATION_DIRS).map((dir) => `/${dir}/`)
+];
+var codeownersText = (owner, paths, self) => {
+  const width = Math.max(...[...paths, `/${self}`].map((path) => path.length)) + 1;
+  return [...paths, `/${self}`].map((path) => `${path.padEnd(width)}${owner}`).join("\n").concat("\n");
+};
+var codeownersFile = (input) => {
+  const path = CODEOWNERS_PLACES.find(input.exists) ?? CODEOWNERS_FILE;
+  return { path, text: codeownersText(input.owner, ownedPaths(input.dirs), path) };
+};
+var REMOTE = /github\.com[:/]([^/\s]+)\/[^/\s]+?(?:\.git)?\s*$/;
+var ownerFromRemote = (url2) => {
+  const match = REMOTE.exec(url2.trim());
+  return match?.[1] === void 0 ? void 0 : `@${match[1]}`;
+};
+
+// src/generate/github/pr-template.ts
+var PR_TEMPLATE_FILE = ".github/pull_request_template.md";
+var PR_TEMPLATE_PLACES = [
+  PR_TEMPLATE_FILE,
+  ".github/PULL_REQUEST_TEMPLATE.md",
+  "pull_request_template.md",
+  "PULL_REQUEST_TEMPLATE.md",
+  "docs/pull_request_template.md",
+  "docs/PULL_REQUEST_TEMPLATE.md"
+];
+var TEXT = {
+  en: {
+    issue: "Linked issue",
+    closes: "Closes #",
+    changes: "What changes",
+    screenshots: "Screenshots",
+    phone: "Phone",
+    desktop: "Desktop",
+    tests: "Tests",
+    risk: "Risk",
+    revert: "How to revert",
+    checklist: "Checklist",
+    items: [
+      "The title follows Conventional Commits",
+      "API contract, mocks and screens changed together, or not applicable",
+      "Loading, empty and error states covered",
+      "Works with the keyboard",
+      "User-facing text reviewed",
+      "`finitemonkey gate` passes"
+    ]
+  },
+  "pt-BR": {
+    issue: "Issue ligada",
+    closes: "Closes #",
+    changes: "O que muda",
+    screenshots: "Prints",
+    phone: "Celular",
+    desktop: "Computador",
+    tests: "Testes",
+    risk: "Risco",
+    revert: "Como reverter",
+    checklist: "Checklist",
+    items: [
+      "O título segue Conventional Commits",
+      "Contrato da API, mocks e telas mudaram juntos, ou não se aplica",
+      "Estados de carregando, vazio e erro cobertos",
+      "Funciona pelo teclado",
+      "Textos para o usuário revisados",
+      "`finitemonkey gate` passa"
+    ]
+  },
+  es: {
+    issue: "Issue vinculada",
+    closes: "Closes #",
+    changes: "Qué cambia",
+    screenshots: "Capturas",
+    phone: "Teléfono",
+    desktop: "Escritorio",
+    tests: "Pruebas",
+    risk: "Riesgo",
+    revert: "Cómo revertir",
+    checklist: "Checklist",
+    items: [
+      "El título sigue Conventional Commits",
+      "Contrato de la API, mocks y pantallas cambiaron juntos, o no aplica",
+      "Estados de carga, vacío y error cubiertos",
+      "Funciona con el teclado",
+      "Textos para el usuario revisados",
+      "`finitemonkey gate` pasa"
+    ]
+  }
+};
+var prTemplate = (lang) => {
+  const text22 = TEXT[lang];
+  return [
+    `## ${text22.issue}`,
+    "",
+    text22.closes,
+    "",
+    `## ${text22.changes}`,
+    "",
+    `## ${text22.screenshots}`,
+    "",
+    `| ${text22.phone} | ${text22.desktop} |`,
+    "| --- | --- |",
+    "|  |  |",
+    "",
+    `## ${text22.tests}`,
+    "",
+    `## ${text22.risk}`,
+    "",
+    `## ${text22.revert}`,
+    "",
+    `## ${text22.checklist}`,
+    "",
+    ...text22.items.map((item2) => `- [ ] ${item2}`),
+    ""
+  ].join("\n");
+};
+var prTemplateFile = (lang, exists2) => ({
+  path: PR_TEMPLATE_PLACES.find(exists2) ?? PR_TEMPLATE_FILE,
+  text: prTemplate(lang)
+});
+
+// src/commands/gen-github.ts
+var PR_GEN_FEATURE = "pr-gen";
+var projectOf3 = (ctx) => projectAt(projectRoot(ctx), ctx.runtime);
+var genPrTemplateCommand = {
+  path: ["gen", "pr-template"],
+  summaryKey: "gen.command.pr_template",
+  usage: "finitemonkey gen pr-template [--dry-run] [--yes]",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => {
+    const project = projectOf3(ctx);
+    return Promise.resolve(
+      runGenerator3(ctx, {
+        generator: "pr-template",
+        feature: PR_GEN_FEATURE,
+        files: [prTemplateFile(ctx.lang, project.exists)],
+        notes: [],
+        rerun: "finitemonkey gen pr-template --yes"
+      })
+    );
+  }
+};
+var CODEOWNERS_USAGE = "finitemonkey gen codeowners [--owner <@user|@org/team>] [--dry-run] [--yes]";
+var ownerOf5 = (ctx, given) => {
+  if (given !== void 0 && given !== "") return { owner: given, notes: [] };
+  const remote = ctx.runtime.git(["remote", "get-url", "origin"], projectRoot(ctx));
+  const owner = remote.ok ? ownerFromRemote(remote.stdout) : void 0;
+  return owner === void 0 ? void 0 : { owner, notes: [ctx.t("gen.codeowners.inferred", { owner })] };
+};
+var genCodeownersCommand = {
+  path: ["gen", "codeowners"],
+  summaryKey: "gen.command.codeowners",
+  usage: CODEOWNERS_USAGE,
+  status: "ready",
+  maxPositionals: 0,
+  options: { owner: { type: "string" } },
+  run: (ctx, args2) => {
+    const project = projectOf3(ctx);
+    const found = ownerOf5(ctx, stringOption(args2.values, "owner"));
+    if (found === void 0)
+      return Promise.resolve(
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "gen.codeowners.no_owner", CODEOWNERS_USAGE))
+      );
+    const { owner, notes: notes3 } = found;
+    const stack = detectStack2(ctx.runtime, project.root);
+    const file = codeownersFile({ owner, dirs: stack.dirs, exists: project.exists });
+    if (invalidCodeownersLines(file.text).length > 0)
+      return Promise.resolve(
+        failureFrom(
+          ctx.t,
+          usageProblem("invalid_arguments", "error.invalid_arguments", CODEOWNERS_USAGE, { detail: owner })
+        )
+      );
+    return Promise.resolve(
+      runGenerator3(ctx, {
+        generator: "codeowners",
+        feature: PR_GEN_FEATURE,
+        files: [file],
+        notes: notes3,
+        rerun: `finitemonkey gen codeowners --owner ${owner} --yes`
+      })
+    );
+  }
+};
+
 // src/githooks/checks.ts
 var DIFF_FLAGS2 = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var short2 = (sha) => sha.slice(0, 12);
@@ -44016,7 +44238,7 @@ var problem4 = (code2, messageKey, fix, params2 = {}, exitCode = ExitCode.Usage)
   fix,
   exitCode
 });
-var projectOf3 = (ctx) => {
+var projectOf4 = (ctx) => {
   const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
   return root === void 0 ? void 0 : fmPaths(root);
 };
@@ -44065,7 +44287,7 @@ var newTask = (ctx, id, values) => {
       ctx.t,
       problem4("invalid_arguments", "error.invalid_arguments", "finitemonkey help task new", { detail: "missing <id>" })
     );
-  const paths = projectOf3(ctx);
+  const paths = projectOf4(ctx);
   if (paths === void 0) return noRepo(ctx);
   const budget = budgetStatus({ runtime: ctx.runtime, paths, env: ctx.env, sessionId: void 0, refresh: true });
   if (blocksNewTask(budget))
@@ -44093,7 +44315,7 @@ var newTask = (ctx, id, values) => {
   };
 };
 var showTask = (ctx, id) => {
-  const paths = projectOf3(ctx);
+  const paths = projectOf4(ctx);
   if (paths === void 0) return noRepo(ctx);
   const active = readState(ctx.runtime, paths).active;
   const target4 = id ?? active;
@@ -44120,7 +44342,7 @@ var closeShortcuts = (ctx, paths, id) => {
   return shortcuts.filter((item2) => item2.trigger === void 0).map((item2) => ctx.t("debt.no_trigger", { what: item2.what }));
 };
 var doneTask = (ctx, id) => {
-  const paths = projectOf3(ctx);
+  const paths = projectOf4(ctx);
   if (paths === void 0) return noRepo(ctx);
   const target4 = id ?? readState(ctx.runtime, paths).active;
   const run6 = runGate({
@@ -45157,6 +45379,8 @@ var REGISTRY2 = [
   suggestAcceptCommand,
   suggestDismissCommand,
   genLintCommand,
+  genPrTemplateCommand,
+  genCodeownersCommand,
   versionCommand,
   helpCommand
 ];

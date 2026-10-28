@@ -1609,7 +1609,11 @@
     "gen.lint.no_ts_eslint": "machine",
     "gen.lint.legacy": "machine",
     "gen.lint.python": "machine",
-    "gen.lint.no_stack": "machine"
+    "gen.lint.no_stack": "machine",
+    "gen.command.pr_template": "machine",
+    "gen.command.codeowners": "machine",
+    "gen.codeowners.no_owner": "machine",
+    "gen.codeowners.inferred": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3221,6 +3225,10 @@
     "gen.lint.no_ts_eslint": "machine",
     "gen.lint.legacy": "machine",
     "gen.lint.python": "machine",
-    "gen.lint.no_stack": "machine"
+    "gen.lint.no_stack": "machine",
+    "gen.command.pr_template": "machine",
+    "gen.command.codeowners": "machine",
+    "gen.codeowners.no_owner": "machine",
+    "gen.codeowners.inferred": "machine"
   }
 }
