@@ -310,6 +310,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Pelo `ssh`, só quando uma pessoa roda `finitemonkey infra --remote --yes` num terminal: comandos só de leitura (`docker ps`, `systemctl list-units`) nos hosts de `hosts.local.yml`. Nunca por hook nem por agente.",
     es: "A través de `ssh`, solo cuando una persona ejecuta `finitemonkey infra --remote --yes` en una terminal: comandos de solo lectura (`docker ps`, `systemctl list-units`) en los hosts de `hosts.local.yml`. Nunca desde un hook ni un agente.",
   },
+  "deploy-generate": {
+    en: "Only with `finitemonkey deploy generate --yes`, and only files that do not exist yet: the deploy workflow, the script the server runs and its compose file. An existing file is never overwritten; its diff is shown instead.",
+    "pt-BR":
+      "Só com `finitemonkey deploy generate --yes`, e só arquivos que ainda não existem: o workflow de deploy, o script que o servidor roda e o compose dele. Um arquivo existente nunca é sobrescrito; o diff aparece no lugar.",
+    es: "Solo con `finitemonkey deploy generate --yes`, y solo archivos que aún no existen: el workflow de despliegue, el script que corre el servidor y su compose. Un archivo existente nunca se sobrescribe; en su lugar se muestra el diff.",
+  },
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

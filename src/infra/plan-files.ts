@@ -47,3 +47,21 @@ export const writePlanned = (
   }
   return { written, failed };
 };
+
+const FORMAT_TIMEOUT_MS = 20_000;
+const PRETTIER = /\.(?:ya?ml|json|md)$/;
+
+export const projectFormat =
+  (runtime: Pick<Runtime, "stat" | "exec">, root: AbsolutePath) =>
+  (path: string, text: string): string => {
+    const bin = toAbsolutePath(join(root, "node_modules", "prettier", "bin", "prettier.cjs"));
+    if (!PRETTIER.test(path) || runtime.stat(bin) === undefined) return text;
+    const result = runtime.exec({
+      command: process.execPath,
+      args: [bin, "--stdin-filepath", path],
+      cwd: root,
+      timeoutMs: FORMAT_TIMEOUT_MS,
+      input: text,
+    });
+    return result.exitCode === 0 && result.stdout !== "" ? result.stdout : text;
+  };

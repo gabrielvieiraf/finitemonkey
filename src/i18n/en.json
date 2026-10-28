@@ -1722,5 +1722,19 @@
   "gate.migrations.ok": "{count, plural, one {# changed migration} other {# changed migrations}}, all backward-compatible",
   "gate.migrations.shadow": "shadow mode: {count, plural, one {# migration issue} other {# migration issues}} not blocking",
   "gate.migrations.drop-column": "{at}: DROP COLUMN ships with the code that stops reading it; drop it in a later deploy",
-  "gate.migrations.not-null-without-default": "{at}: NOT NULL without a default breaks the version still running; add a default or backfill first"
+  "gate.migrations.not-null-without-default": "{at}: NOT NULL without a default breaks the version still running; add a default or backfill first",
+  "command.deploy_generate.summary": "Generate an immutable deploy for a one-server project: image by digest in CI, health check and rollback",
+  "deploy.generate.title": "Immutable deploy for one server:",
+  "deploy.generate.file.create": "  new: {file}",
+  "deploy.generate.file.unchanged": "  same: {file}",
+  "deploy.generate.file.differs": "  exists and differs, kept: {file}",
+  "deploy.generate.kept": "Existing files are never overwritten: merge the diff above by hand if you want it.",
+  "deploy.generate.preview": "Nothing written yet. Review the files and rerun with --yes to create them.",
+  "deploy.generate.written": "{count, plural, one {# file created} other {# files created}}.",
+  "deploy.generate.nothing": "Nothing to create.",
+  "deploy.generate.setup": "Before the first deploy: create the deploy user on the server, log it in to ghcr.io with a read-only token, and add DEPLOY_HOST, DEPLOY_SSH_KEY and DEPLOY_KNOWN_HOSTS as repository secrets. The header of .github/workflows/deploy.yml has the details.",
+  "deploy.generate.off": "deploy-generate is off in .finitemonkey/policy.yml.",
+  "deploy.generate.blocked.level": "This generator is for level 1 (one server); this project is level {level}. See finitemonkey deploy plan.",
+  "deploy.generate.blocked.no_dockerfile": "No Dockerfile: the deploy ships an image built from it. Add one that runs as a non-root user.",
+  "deploy.generate.blocked.no_check": "No test or check command found to run before the image is built; pass one with --check."
 }

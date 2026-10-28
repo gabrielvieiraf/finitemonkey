@@ -173,6 +173,11 @@ export const FOOTPRINT = [
   { id: "ci-watch", kind: "writes", targets: [".finitemonkey/ci-watch/"] },
   { id: "infra", kind: "writes", targets: [".finitemonkey/infra.yml", ".finitemonkey/hosts.local.yml"] },
   { id: "infra-remote", kind: "sends", targets: ["hosts.local.yml"], via: "ssh" },
+  {
+    id: "deploy-generate",
+    kind: "writes",
+    targets: [".github/workflows/deploy.yml", "deploy/remote.sh", "deploy/compose.yml"],
+  },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

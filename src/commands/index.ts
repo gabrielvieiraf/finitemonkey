@@ -15,6 +15,7 @@ import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { deployStatusCommand } from "./deploy.js";
+import { deployGenerateCommand } from "./deploy-generate.js";
 import { deployPlanCommand } from "./deploy-plan.js";
 import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
@@ -221,6 +222,7 @@ export const REGISTRY = [
   ciWatchCommand,
   infraCommand,
   deployPlanCommand,
+  deployGenerateCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

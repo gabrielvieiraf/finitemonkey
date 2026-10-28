@@ -1722,5 +1722,19 @@
   "gate.migrations.ok": "{count, plural, one {# migração alterada} other {# migrações alteradas}}, todas compatíveis com a versão anterior",
   "gate.migrations.shadow": "modo shadow: {count, plural, one {# problema de migração} other {# problemas de migração}} sem bloquear",
   "gate.migrations.drop-column": "{at}: DROP COLUMN sai junto com o código que deixa de ler a coluna; remova num deploy seguinte",
-  "gate.migrations.not-null-without-default": "{at}: NOT NULL sem default quebra a versão que ainda está no ar; adicione um default ou preencha antes"
+  "gate.migrations.not-null-without-default": "{at}: NOT NULL sem default quebra a versão que ainda está no ar; adicione um default ou preencha antes",
+  "command.deploy_generate.summary": "Gera um deploy imutável para projeto de um servidor: imagem por digest no CI, health check e rollback",
+  "deploy.generate.title": "Deploy imutável para um servidor:",
+  "deploy.generate.file.create": "  novo: {file}",
+  "deploy.generate.file.unchanged": "  igual: {file}",
+  "deploy.generate.file.differs": "  já existe e é diferente, mantido: {file}",
+  "deploy.generate.kept": "Arquivos existentes nunca são sobrescritos: aplique o diff acima à mão se quiser.",
+  "deploy.generate.preview": "Nada gravado ainda. Revise os arquivos e rode de novo com --yes para criá-los.",
+  "deploy.generate.written": "{count, plural, one {# arquivo criado} other {# arquivos criados}}.",
+  "deploy.generate.nothing": "Nada para criar.",
+  "deploy.generate.setup": "Antes do primeiro deploy: crie o usuário deploy no servidor, faça login dele no ghcr.io com um token só de leitura e adicione DEPLOY_HOST, DEPLOY_SSH_KEY e DEPLOY_KNOWN_HOSTS como secrets do repositório. O cabeçalho de .github/workflows/deploy.yml tem os detalhes.",
+  "deploy.generate.off": "deploy-generate está desligado em .finitemonkey/policy.yml.",
+  "deploy.generate.blocked.level": "Este gerador é para o nível 1 (um servidor); este projeto é nível {level}. Veja finitemonkey deploy plan.",
+  "deploy.generate.blocked.no_dockerfile": "Sem Dockerfile: o deploy publica uma imagem gerada a partir dele. Adicione um que rode com usuário que não seja root.",
+  "deploy.generate.blocked.no_check": "Nenhum comando de teste ou verificação para rodar antes de gerar a imagem; passe um com --check."
 }

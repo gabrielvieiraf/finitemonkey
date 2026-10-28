@@ -1723,7 +1723,21 @@
     "gate.migrations.ok": "machine",
     "gate.migrations.shadow": "machine",
     "gate.migrations.drop-column": "machine",
-    "gate.migrations.not-null-without-default": "machine"
+    "gate.migrations.not-null-without-default": "machine",
+    "command.deploy_generate.summary": "machine",
+    "deploy.generate.title": "machine",
+    "deploy.generate.file.create": "machine",
+    "deploy.generate.file.unchanged": "machine",
+    "deploy.generate.file.differs": "machine",
+    "deploy.generate.kept": "machine",
+    "deploy.generate.preview": "machine",
+    "deploy.generate.written": "machine",
+    "deploy.generate.nothing": "machine",
+    "deploy.generate.setup": "machine",
+    "deploy.generate.off": "machine",
+    "deploy.generate.blocked.level": "machine",
+    "deploy.generate.blocked.no_dockerfile": "machine",
+    "deploy.generate.blocked.no_check": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3449,6 +3463,20 @@
     "gate.migrations.ok": "machine",
     "gate.migrations.shadow": "machine",
     "gate.migrations.drop-column": "machine",
-    "gate.migrations.not-null-without-default": "machine"
+    "gate.migrations.not-null-without-default": "machine",
+    "command.deploy_generate.summary": "machine",
+    "deploy.generate.title": "machine",
+    "deploy.generate.file.create": "machine",
+    "deploy.generate.file.unchanged": "machine",
+    "deploy.generate.file.differs": "machine",
+    "deploy.generate.kept": "machine",
+    "deploy.generate.preview": "machine",
+    "deploy.generate.written": "machine",
+    "deploy.generate.nothing": "machine",
+    "deploy.generate.setup": "machine",
+    "deploy.generate.off": "machine",
+    "deploy.generate.blocked.level": "machine",
+    "deploy.generate.blocked.no_dockerfile": "machine",
+    "deploy.generate.blocked.no_check": "machine"
   }
 }

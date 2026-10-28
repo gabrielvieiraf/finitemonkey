@@ -94,6 +94,7 @@ export const ERROR_CODES = [
   "ci_watch_pending",
   "deploy_level_needs_decision",
   "deploy_write_failed",
+  "deploy_generate_blocked",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
