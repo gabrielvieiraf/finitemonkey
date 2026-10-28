@@ -33,6 +33,13 @@ import { i18nCheckCommand } from "./i18n-check.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
+import {
+  learningsAddCommand,
+  learningsCommand,
+  learningsDeleteCommand,
+  learningsEditCommand,
+  learningsUnhelpfulCommand,
+} from "./learnings.js";
 import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
@@ -183,6 +190,11 @@ export const REGISTRY = [
   rulesProposeCommand,
   rulesViolationCommand,
   remindersCommand,
+  learningsCommand,
+  learningsAddCommand,
+  learningsEditCommand,
+  learningsDeleteCommand,
+  learningsUnhelpfulCommand,
   runCommandSpec,
   slopDismissCommand,
   slopStatsCommand,

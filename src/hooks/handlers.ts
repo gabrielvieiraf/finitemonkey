@@ -18,6 +18,7 @@ import { GIT_HANDLERS } from "../git/hooks/index.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
+import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
@@ -192,6 +193,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "instructions", damage: false, handlers: { InstructionsLoaded: [instructionsLoaded] } },
   { id: "rules-stop", damage: false, handlers: { Stop: [rulesStop] } },
   { id: "reminders", damage: false, handlers: REMINDERS_HANDLERS },
+  { id: "learnings", damage: false, handlers: LEARNINGS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

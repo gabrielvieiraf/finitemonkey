@@ -1565,5 +1565,18 @@
   "reminders.error.event": "Unknown event; use session, subagent, tool or prompt, and for session a source of startup, resume or compact",
   "reminders.none": "Nothing would be injected on {event}: no reminder rule matches, or each was already injected since the last compaction.",
   "reminders.title": "{count, plural, one {# reminder} other {# reminders}}, about {tokens} of {max} tokens:",
-  "reminders.row": "  {id}: matched by {why}, broken {violations, plural, one {# time} other {# times}}"
+  "reminders.row": "  {id}: matched by {why}, broken {violations, plural, one {# time} other {# times}}",
+  "learnings.from_signature": "The error \"{sample}\" stopped after a change to {files}; check that change before trying something else.",
+  "learnings.command.list": "List the lessons kept for this project, each keyed by file paths or an error signature, and expire old ones",
+  "learnings.command.add": "Add a lesson keyed by file paths or an error signature; it is injected only when that key matches",
+  "learnings.command.edit": "Change the text or the paths of a lesson",
+  "learnings.command.delete": "Delete a lesson",
+  "learnings.command.unhelpful": "Mark a lesson unhelpful; the second mark expires it",
+  "learnings.row": "  {id} ({source}; {key}; used {uses, plural, one {# time} other {# times}}): {text}",
+  "learnings.title": "{count, plural, one {# lesson} other {# lessons}}:",
+  "learnings.measure": "Kept: {lessons}; used at least once: {used}; expired so far: {expired}; deleted: {deleted}.",
+  "learnings.error.unknown": "There is no lesson {id}",
+  "learnings.error.add": "A lesson needs --text and a key: --paths, --sig or both; --source is correction, advisor or person",
+  "learnings.changed": "Lesson {id} updated.",
+  "learnings.added": "Lesson {id} added."
 }

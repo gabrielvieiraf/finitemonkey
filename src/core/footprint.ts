@@ -167,6 +167,7 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: [".finitemonkey/rules.yml", ".finitemonkey/rule-violations.jsonl"],
   },
+  { id: "learnings", kind: "writes", targets: [".finitemonkey/learnings.jsonl"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

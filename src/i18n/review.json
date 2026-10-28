@@ -1566,7 +1566,20 @@
     "reminders.error.event": "machine",
     "reminders.none": "machine",
     "reminders.title": "machine",
-    "reminders.row": "machine"
+    "reminders.row": "machine",
+    "learnings.from_signature": "machine",
+    "learnings.command.list": "machine",
+    "learnings.command.add": "machine",
+    "learnings.command.edit": "machine",
+    "learnings.command.delete": "machine",
+    "learnings.command.unhelpful": "machine",
+    "learnings.row": "machine",
+    "learnings.title": "machine",
+    "learnings.measure": "machine",
+    "learnings.error.unknown": "machine",
+    "learnings.error.add": "machine",
+    "learnings.changed": "machine",
+    "learnings.added": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3135,6 +3148,19 @@
     "reminders.error.event": "machine",
     "reminders.none": "machine",
     "reminders.title": "machine",
-    "reminders.row": "machine"
+    "reminders.row": "machine",
+    "learnings.from_signature": "machine",
+    "learnings.command.list": "machine",
+    "learnings.command.add": "machine",
+    "learnings.command.edit": "machine",
+    "learnings.command.delete": "machine",
+    "learnings.command.unhelpful": "machine",
+    "learnings.row": "machine",
+    "learnings.title": "machine",
+    "learnings.measure": "machine",
+    "learnings.error.unknown": "machine",
+    "learnings.error.add": "machine",
+    "learnings.changed": "machine",
+    "learnings.added": "machine"
   }
 }

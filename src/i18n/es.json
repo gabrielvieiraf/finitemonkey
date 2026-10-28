@@ -1565,5 +1565,18 @@
   "reminders.error.event": "Evento desconocido; usa session, subagent, tool o prompt y, para session, el origen startup, resume o compact",
   "reminders.none": "No se inyectaría nada en {event}: ninguna regla de recordatorio coincide, o cada una ya se inyectó desde la última compactación.",
   "reminders.title": "{count, plural, one {# recordatorio} other {# recordatorios}}, unos {tokens} de {max} tokens:",
-  "reminders.row": "  {id}: coincidió por {why}, incumplida {violations, plural, one {# vez} other {# veces}}"
+  "reminders.row": "  {id}: coincidió por {why}, incumplida {violations, plural, one {# vez} other {# veces}}",
+  "learnings.from_signature": "El error \"{sample}\" se detuvo tras un cambio en {files}; revisa ese cambio antes de probar otra cosa.",
+  "learnings.command.list": "Lista las lecciones guardadas en este proyecto, cada una ligada a rutas de archivo o a una firma de error, y expira las viejas",
+  "learnings.command.add": "Agrega una lección ligada a rutas de archivo o a una firma de error; solo se inyecta cuando esa clave coincide",
+  "learnings.command.edit": "Cambia el texto o las rutas de una lección",
+  "learnings.command.delete": "Borra una lección",
+  "learnings.command.unhelpful": "Marca una lección como inútil; la segunda marca la expira",
+  "learnings.row": "  {id} ({source}; {key}; usada {uses, plural, one {# vez} other {# veces}}): {text}",
+  "learnings.title": "{count, plural, one {# lección} other {# lecciones}}:",
+  "learnings.measure": "Guardadas: {lessons}; usadas al menos una vez: {used}; expiradas hasta ahora: {expired}; borradas: {deleted}.",
+  "learnings.error.unknown": "No existe la lección {id}",
+  "learnings.error.add": "Una lección necesita --text y una clave: --paths, --sig o ambas; --source es correction, advisor o person",
+  "learnings.changed": "Lección {id} actualizada.",
+  "learnings.added": "Lección {id} agregada."
 }

@@ -3,15 +3,13 @@ import { dirname, relative } from "node:path";
 import { toAbsolutePath } from "../core/brand.js";
 import { type JsonObject, parseJsonObject } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
-import { logEvent } from "../evidence/log.js";
-import { contextOutput, projectPaths } from "../gate/hooks/common.js";
+import { projectPaths } from "../gate/hooks/common.js";
 import { comesFromPerson } from "../guards/release/markers.js";
 import type { HookEvent } from "../hooks/events.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
-import { modeOf, readShadow } from "../policy/guards.js";
+import { injectContext } from "../policy/inject.js";
 import { policyNumber } from "../policy/numbers.js";
-import { loadPolicy } from "../policy/policy.js";
 import { effectiveRules } from "../rules/preset.js";
 import { readSummary, writeSummary } from "../rules/violations.js";
 import type { FmPaths } from "../task/paths.js";
@@ -24,7 +22,6 @@ import {
   type Trigger,
 } from "./select.js";
 
-export const REMINDERS_GUARD = { id: "reminders", damage: false } as const;
 const STATE_FILE = "reminders.json";
 const ALLOW: HookDecision = { kind: "allow" };
 
@@ -97,15 +94,11 @@ export const remindersHook: HookHandler = (input) => {
   if (selection.picked.length === 0) return ALLOW;
   const ids = selection.picked.map((item) => item.rule.id);
   remember(input, paths, state, ids, trigger.kind === "session");
-  const mode = modeOf(REMINDERS_GUARD, loadPolicy(input.runtime, paths.root), readShadow(input.runtime, paths));
-  logEvent(input.runtime, paths, mode === "active" ? "reminder_injected" : "reminder_shadow", {
-    hook: input.event,
+  return injectContext(input, paths, { id: "reminders", event: "reminder" }, selection.text, {
     rules: ids.join(","),
     why: selection.picked.map((item) => item.why).join(","),
     tokens: selection.tokens,
-    sessionId: input.payload.sessionId ?? null,
   });
-  return mode === "active" ? { kind: "allow", output: contextOutput(input.event, selection.text) } : ALLOW;
 };
 
 export const REMINDERS_HANDLERS: HookHandlers = {
