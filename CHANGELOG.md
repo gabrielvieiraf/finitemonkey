@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0-next.36](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.35...v0.1.0-next.36) (2026-10-28)
+
+### Features
+
+* **budget:** agent spend per task, day and month with ceilings and a person release ([#185](https://github.com/gabrielvieiraf/finitemonkey/issues/185)) ([8470c59](https://github.com/gabrielvieiraf/finitemonkey/commit/8470c59bf2867d2c483bf819219ebca8662cbf9d)), closes [#182](https://github.com/gabrielvieiraf/finitemonkey/issues/182) [#179](https://github.com/gabrielvieiraf/finitemonkey/issues/179) [#176](https://github.com/gabrielvieiraf/finitemonkey/issues/176) [#173](https://github.com/gabrielvieiraf/finitemonkey/issues/173) [#59](https://github.com/gabrielvieiraf/finitemonkey/issues/59)
+
 ## [0.1.0-next.35](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.34...v0.1.0-next.35) (2026-10-28)
 
 ### Features
