@@ -1,5 +1,6 @@
 import { basename } from "node:path";
 
+import { matchesAny } from "../core/glob.js";
 import { classifyHunk, type HunkVerdict, type MergeClass, type MergeSide } from "./hunk.js";
 import type { MergeStop } from "./report.js";
 import { isAppendOnly, isDeclaredGenerated, outOfScope, ownerOf, type Scopes } from "./scope.js";
@@ -38,10 +39,20 @@ export interface FileInputs {
   readonly generator: string | undefined;
 }
 
+export const MERGE_HINTS = ["keep-both", "json-merge", "prefer-front", "stop"] as const;
+
+export type MergeHint = (typeof MERGE_HINTS)[number];
+
 export interface FileContext {
   readonly scopes: Scopes;
   readonly declaredRemovals: ReadonlySet<string>;
+  readonly hints?: Readonly<Record<string, string>>;
 }
+
+export const hintFor = (context: FileContext, path: string): MergeHint | undefined => {
+  const found = Object.entries(context.hints ?? {}).find(([pattern]) => matchesAny(path, [pattern]));
+  return MERGE_HINTS.find((hint) => hint === found?.[1]);
+};
 
 export type FileAction =
   | { readonly kind: "write"; readonly text: string }
@@ -67,9 +78,10 @@ export interface FileResolution {
   readonly sameIntent: readonly { readonly side: MergeSide; readonly text: string }[];
   readonly stages: Stages;
   readonly rerereProposal: boolean;
+  readonly hint: MergeHint | null;
 }
 
-type Core = Omit<FileResolution, "stages" | "rerereProposal">;
+type Core = Omit<FileResolution, "stages" | "rerereProposal" | "hint">;
 
 const fileLevel = (
   path: string,
@@ -147,7 +159,7 @@ const lineBased = (inputs: FileInputs, context: FileContext): Core => {
   const segments = parseSegments(inputs.merged ?? "");
   const hunkContext = {
     appendOnly: isAppendOnly(context.scopes, path),
-    owner: ownerOf(context.scopes, path),
+    owner: ownerOf(context.scopes, path) ?? (hintFor(context, path) === "prefer-front" ? "theirs" : undefined),
     declaredRemoval: context.declaredRemovals.has(path),
   };
   const hunks = segments.flatMap((segment, index): ResolvedHunk[] => {
@@ -205,7 +217,7 @@ const resolveCore = (inputs: FileInputs, context: FileContext): Core => {
         });
   }
   if (base === undefined) return fileLevel(path, "C7", "both-created", DECISIONS.C7, { kind: "none" }, true);
-  if (isStructured(path)) {
+  if (isStructured(path) || hintFor(context, path) === "json-merge") {
     const merged = mergeJson(base, ours, theirs);
     if (merged?.text !== undefined)
       return fileLevel(path, "C5", "merged-by-key", DECISIONS.C5, { kind: "write", text: merged.text });
@@ -221,6 +233,7 @@ const REPLAYED = /^<{7} /m;
 
 export const resolveFile = (inputs: FileInputs, context: FileContext): FileResolution => ({
   ...resolveCore(inputs, context),
+  hint: hintFor(context, inputs.stages.path) ?? null,
   stages: inputs.stages,
   rerereProposal:
     inputs.stages.ours !== undefined &&

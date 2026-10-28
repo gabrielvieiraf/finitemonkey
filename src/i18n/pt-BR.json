@@ -1099,5 +1099,8 @@
   "fronts.block.report.requires": "Corrija o relatório ou o trabalho, rode finitemonkey gate no worktree e grave de novo .finitemonkey/reports/{front}.json; parar antes vale com finished: false e left_out preenchido",
   "fronts.block.report_human": "A frente {front} disse pronto sem relatório que bata com a evidência; ela continua.",
   "fronts.notify.valid": "Relatório de frente conferido contra o worktree e o livro: {summary}",
-  "fronts.notify.invalid": "A frente {front} entregou relatório, mas ele não se sustenta: {problems}"
+  "fronts.notify.invalid": "A frente {front} entregou relatório, mas ele não se sustenta: {problems}",
+  "fronts.command.merge": "Mescla as frentes da onda em wave/<n> pelo protocolo de mescla, depois de conferir cada relatório",
+  "fronts.error.merge": "A onda não foi mesclada: {detail}",
+  "fronts.merge.done": "{count, plural, one {# frente mesclada} other {# frentes mescladas}} em {branch} em {head}; abra um pull request a partir dela"
 }

@@ -1099,5 +1099,8 @@
   "fronts.block.report.requires": "Fix the report or the work, run finitemonkey gate in the worktree, and write .finitemonkey/reports/{front}.json again; stopping early is fine with finished: false and left_out filled",
   "fronts.block.report_human": "Front {front} said done without a report that matches the evidence; it keeps going.",
   "fronts.notify.valid": "Front report checked against the worktree and ledger: {summary}",
-  "fronts.notify.invalid": "Front {front} reported, but the report does not hold: {problems}"
+  "fronts.notify.invalid": "Front {front} reported, but the report does not hold: {problems}",
+  "fronts.command.merge": "Merge the reported fronts of the wave into wave/<n> through the merge protocol, after checking every report",
+  "fronts.error.merge": "The wave did not merge: {detail}",
+  "fronts.merge.done": "{count, plural, one {# front} other {# fronts}} merged into {branch} at {head}; open a pull request from it"
 }

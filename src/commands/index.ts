@@ -9,6 +9,7 @@ import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./dec
 import { doctorCommand } from "./doctor.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
+import { frontsMergeCommand } from "./fronts-merge.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
@@ -80,6 +81,7 @@ export const REGISTRY = [
   frontsStatusCommand,
   briefCommand,
   frontsCloseCommand,
+  frontsMergeCommand,
   appCheckCommand,
   commitMsgCommand,
   pushCheckCommand,

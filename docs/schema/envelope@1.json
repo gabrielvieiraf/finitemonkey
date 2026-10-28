@@ -91,7 +91,8 @@
             "audit_findings",
             "fronts_refused",
             "fronts_failed",
-            "front_report_invalid"
+            "front_report_invalid",
+            "fronts_merge_failed"
           ]
         },
         "message": {

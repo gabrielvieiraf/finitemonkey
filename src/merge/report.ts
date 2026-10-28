@@ -35,6 +35,7 @@ export interface FileReport {
   readonly rule: string;
   readonly decision: string;
   readonly proposal: string | null;
+  readonly hint?: string | null;
   readonly hunks: readonly HunkReport[];
 }
 
