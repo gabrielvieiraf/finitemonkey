@@ -7,9 +7,11 @@ import { runBaseline } from "../gate/baseline-run.js";
 import { gitAt, gitRoot } from "../gate/git.js";
 import { DEFAULT_GATE_BUDGET_MS } from "../gate/hooks/common.js";
 import { openPrsLine, refreshPrs } from "../gate/hooks/prs.js";
+import { ISOLATED_FEATURE } from "../gate/isolated.js";
 import { reportLines } from "../gate/render.js";
 import type { GateReport } from "../gate/report.js";
 import { type GateRun, runGate } from "../gate/run.js";
+import { featureMode } from "../policy/feature.js";
 import { fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
@@ -43,9 +45,22 @@ export const gateResult = (ctx: Ctx, report: GateReport, strict: boolean): Comma
 export const runResult = (ctx: Ctx, run: GateRun, strict: boolean): CommandResult => {
   if (run.kind === "done") return gateResult(ctx, run.report, strict);
   if (run.kind === "skipped") return success({ skipped: run.reason }, [ctx.t(`gate.skipped.${run.reason}`)]);
-  const detail =
-    run.failure.kind === "contract" ? `${run.failure.problem.kind}: ${run.failure.problem.id}` : run.failure.kind;
-  return failureFrom(ctx.t, notRun(detail));
+  return failureFrom(ctx.t, notRun(failureDetail(ctx, run.failure)));
+};
+
+const failureDetail = (ctx: Ctx, failure: Extract<GateRun, { kind: "failed" }>["failure"]): string => {
+  if (failure.kind === "contract") return `${failure.problem.kind}: ${failure.problem.id}`;
+  if (failure.kind === "isolated") return ctx.t("gate.fail.isolated", { step: failure.step, detail: failure.detail });
+  return failure.kind;
+};
+
+type IsolatedChoice = "isolated" | "in_place" | "off";
+
+const isolatedChoice = (ctx: Ctx, asked: boolean): IsolatedChoice => {
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  const mode = root === undefined ? "shadow" : featureMode(ctx.runtime, fmPaths(root), ISOLATED_FEATURE);
+  if (mode === "off") return asked ? "off" : "in_place";
+  return asked || mode === "active" ? "isolated" : "in_place";
 };
 
 const prsResult = (ctx: Ctx): CommandResult => {
@@ -60,7 +75,7 @@ const prsResult = (ctx: Ctx): CommandResult => {
 export const gateCommand: CommandSpec = {
   path: ["gate"],
   summaryKey: "command.gate.summary",
-  usage: "finitemonkey gate [--task <id>] [--fast] [--strict] [--budget <seconds>] [--baseline] [--prs]",
+  usage: "finitemonkey gate [--task <id>] [--fast] [--strict] [--budget <seconds>] [--baseline] [--prs] [--isolated]",
   status: "ready",
   options: {
     task: { type: "string" },
@@ -69,6 +84,7 @@ export const gateCommand: CommandSpec = {
     budget: { type: "string" },
     baseline: { type: "boolean" },
     prs: { type: "boolean" },
+    isolated: { type: "boolean" },
   },
   run: (ctx, args) => {
     const taskId = stringOption(args.values, "task");
@@ -92,6 +108,10 @@ export const gateCommand: CommandSpec = {
         ]),
       );
     }
-    return Promise.resolve(runResult(ctx, runGate(options), args.values["strict"] === true));
+    const choice = isolatedChoice(ctx, args.values["isolated"] === true);
+    if (choice === "off") return Promise.resolve(failureFrom(ctx.t, notRun(ctx.t("gate.isolated.off"))));
+    return Promise.resolve(
+      runResult(ctx, runGate({ ...options, isolated: choice === "isolated" }), args.values["strict"] === true),
+    );
   },
 };

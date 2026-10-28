@@ -1,0 +1,18 @@
+layers:
+  - name: domain
+    paths:
+      - internal/domain/**
+    public:
+      - internal/domain/api.go
+  - name: app
+    paths:
+      - internal/app/**
+    allow:
+      - domain
+  - name: infra
+    paths:
+      - internal/infra/**
+forbid:
+  - from: domain
+    to: infra
+    message: domain stays pure, depend on a port in the domain layer

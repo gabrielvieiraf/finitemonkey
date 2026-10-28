@@ -1,15 +1,23 @@
 import type { CheckRegistry } from "../types.js";
 import { appsecCheck } from "./appsec.js";
+import { archCheck } from "./arch.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
+import { contractCheck } from "./contract.js";
 import { copyCheck } from "./copy.js";
 import { costCheck } from "./cost.js";
 import { decisionCheck } from "./decision.js";
+import { deployCheck } from "./deploy.js";
 import { diffCheck } from "./diff.js";
 import { gitCheck } from "./git.js";
+import { goldenCheck } from "./golden.js";
+import { headersCheck } from "./headers.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
+import { migrationsCheck } from "./migrations.js";
+import { mutationCheck } from "./mutation.js";
+import { organizeCheck } from "./organize.js";
 import { parityCheck } from "./parity.js";
 import { placeholdersCheck } from "./placeholders.js";
 import { planCheck } from "./plan.js";
@@ -54,4 +62,12 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   regression: regressionCheck,
   prod: prodCheck,
   copy: copyCheck,
+  migrations: migrationsCheck,
+  deploy: deployCheck,
+  headers: headersCheck,
+  golden: goldenCheck,
+  mutation: mutationCheck,
+  arch: archCheck,
+  organize: organizeCheck,
+  contract: contractCheck,
 };

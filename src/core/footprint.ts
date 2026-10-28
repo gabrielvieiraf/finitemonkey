@@ -36,6 +36,7 @@ export const FOOTPRINT = [
       ".finitemonkey/appsec.yml",
       ".finitemonkey/routes-public.yml",
       ".finitemonkey/rules.yml",
+      ".finitemonkey/arch.yml",
     ],
   },
   {
@@ -168,6 +169,37 @@ export const FOOTPRINT = [
     targets: [".finitemonkey/rules.yml", ".finitemonkey/rule-violations.jsonl"],
   },
   { id: "learnings", kind: "writes", targets: [".finitemonkey/learnings.jsonl"] },
+  { id: "ownership", kind: "writes", targets: [".finitemonkey/ownership.yml"] },
+  { id: "ci-protect", kind: "writes", targets: [".finitemonkey/ci-protect.jsonl"] },
+  { id: "ci-watch", kind: "writes", targets: [".finitemonkey/ci-watch/"] },
+  { id: "infra", kind: "writes", targets: [".finitemonkey/infra.yml", ".finitemonkey/hosts.local.yml"] },
+  { id: "infra-remote", kind: "sends", targets: ["hosts.local.yml"], via: "ssh" },
+  {
+    id: "observability",
+    kind: "writes",
+    targets: ["observability/scrub.mjs", "observability/log.mjs", "observability/plan.yml"],
+  },
+  { id: "headers", kind: "sends", targets: ["headers.url"], via: "curl" },
+  { id: "deploy-drift", kind: "sends", targets: ["hosts.local.yml", "FINITEMONKEY_DEPLOY_HOST"], via: "ssh" },
+  {
+    id: "deploy-generate",
+    kind: "writes",
+    targets: [".github/workflows/deploy.yml", ".github/workflows/drift.yml", "deploy/remote.sh", "deploy/compose.yml"],
+  },
+  { id: "golden", kind: "writes", targets: [".finitemonkey/golden/"] },
+  { id: "organize", kind: "writes", targets: ["docs/organize/"] },
+  {
+    id: "api-contract",
+    kind: "writes",
+    targets: ["src/api/", "src/mocks/", "app/api/", "app/mocks/", "lib/api/", "lib/mocks/"],
+  },
+  { id: "ds-sync", kind: "writes", targets: [".github/workflows/ds-sync.yml"] },
+  {
+    id: "python-preset",
+    kind: "writes",
+    targets: ["ruff.toml", "pytest.ini", "scripts/check_no_comments.py", ".github/workflows/ci.yml"],
+  },
+  { id: "onboard", kind: "writes", targets: [".finitemonkey/onboard.json", "AGENTS.md"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

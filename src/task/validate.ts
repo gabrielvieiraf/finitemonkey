@@ -71,8 +71,32 @@ const appFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issu
   };
 };
 
+const nonNegative = (record: JsonObject, key: string, at: string, issues: Issues): number | undefined => {
+  const value = record[key];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
+  issues.push(`${at}${key}: must be a number of zero or more`);
+  return undefined;
+};
+
+const extraFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issues): Partial<AcceptanceCheck> => {
+  const cases = str(record, "cases", at, issues, kind === "golden");
+  const tolerance = nonNegative(record, "tolerance", at, issues);
+  const run = record["run"];
+  if (kind === "golden" && typeof run === "string" && !run.includes("{case}")) {
+    issues.push(`${at}run: must contain {case}`);
+  }
+  const minScore = positive(record, "min_score", at, issues);
+  if (minScore !== undefined && minScore > 100) issues.push(`${at}min_score: must be at most 100`);
+  return {
+    ...(cases === undefined ? {} : { cases }),
+    ...(tolerance === undefined ? {} : { tolerance }),
+    ...(minScore === undefined ? {} : { minScore }),
+  };
+};
+
 const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issues): Partial<AcceptanceCheck> => {
-  const run = str(record, "run", at, issues, kind === "command");
+  const run = str(record, "run", at, issues, kind === "command" || kind === "golden");
   const timeoutS = positive(record, "timeout_s", at, issues);
   const description = str(record, "description", at, issues, kind === "manual");
   const require = kind === "git" ? gitRequire(record["require"] ?? ["committed"], `${at}require`, issues) : undefined;
@@ -90,6 +114,7 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
     ...app,
     ...(versionUrl === undefined ? {} : { versionUrl }),
     ...(field === undefined ? {} : { field }),
+    ...extraFields(record, kind, at, issues),
   };
 };
 

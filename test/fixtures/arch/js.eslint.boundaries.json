@@ -1,0 +1,53 @@
+{
+  "settings": {
+    "boundaries/elements": [
+      {
+        "type": "domain",
+        "pattern": ["src/domain/**"],
+        "mode": "full"
+      },
+      {
+        "type": "app",
+        "pattern": ["src/app/**"],
+        "mode": "full"
+      },
+      {
+        "type": "infra",
+        "pattern": ["src/infra/**"],
+        "mode": "full"
+      }
+    ]
+  },
+  "rules": {
+    "boundaries/element-types": [
+      "error",
+      {
+        "default": "allow",
+        "rules": [
+          {
+            "from": ["domain"],
+            "disallow": ["infra"],
+            "message": "domain stays pure, depend on a port in the domain layer"
+          },
+          {
+            "from": ["app"],
+            "disallow": ["infra"],
+            "message": "app may import only: domain"
+          }
+        ]
+      }
+    ],
+    "boundaries/entry-point": [
+      "error",
+      {
+        "default": "disallow",
+        "rules": [
+          {
+            "target": ["domain"],
+            "allow": ["index.ts"]
+          }
+        ]
+      }
+    ]
+  }
+}

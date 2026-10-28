@@ -1,8 +1,11 @@
+import { fetchHeaders } from "../app/node-probe.js";
 import { portOpen, type RunningApp, startApp, stopApp, waitForPort } from "../app/node-process.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt, gitRoot, treeHash } from "../gate/git.js";
 import { readApprovals } from "../guards/release/grants.js";
+import { probeHeaders } from "../headers/probe.js";
+import { HEADERS_FEATURE, writeHeaders } from "../headers/record.js";
 import { featureMode } from "../policy/feature.js";
 import { fmPaths } from "../task/paths.js";
 import { readApproved, writeLayouts } from "./approved.js";
@@ -73,6 +76,14 @@ const capture = async (
   }
 };
 
+const recordHeaders = async (runtime: Runtime, ready: Ready): Promise<void> => {
+  const paths = fmPaths(ready.root);
+  if (featureMode(runtime, paths, HEADERS_FEATURE) === "off") return;
+  const base = `http://${ready.config.host}:${String(ready.config.port)}`;
+  const routes = await probeHeaders(fetchHeaders, base, ready.config.routes, ready.config.timeoutS * 1000);
+  writeHeaders(runtime, paths, ready.tree, { at: runtime.now(), https: false, routes });
+};
+
 export const runLook = async (runtime: Runtime, cwd: AbsolutePath): Promise<LookRun> => {
   const ready = prepare(runtime, cwd);
   if ("kind" in ready) return ready;
@@ -90,6 +101,7 @@ export const runLook = async (runtime: Runtime, cwd: AbsolutePath): Promise<Look
       readApproved(runtime, paths),
       featureMode(runtime, paths, UI_FEATURE),
     );
+    await recordHeaders(runtime, ready);
     const allowed = applyAllows([...shot.results.flatMap(pageFindings), ...extra], ready.config.allow, (decision) =>
       approvals.some((approval) => approval.check === decision),
     );

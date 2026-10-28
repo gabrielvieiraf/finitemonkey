@@ -1,0 +1,18 @@
+linters:
+  enable:
+    - depguard
+linters-settings:
+  depguard:
+    rules:
+      "domain":
+        files:
+          - "**/internal/domain/**"
+        deny:
+          - pkg: "example.com/shop/internal/infra"
+            desc: "domain stays pure, depend on a port in the domain layer"
+      "app":
+        files:
+          - "**/internal/app/**"
+        deny:
+          - pkg: "example.com/shop/internal/infra"
+            desc: "app may import only: domain"

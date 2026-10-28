@@ -9,7 +9,7 @@ import { loadProjectConfig } from "../git/project-config.js";
 import { maskText } from "../mask/mask.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { activeTaskId, type LoadedContract, loadImplicit, type LoadProblem, loadTask } from "../task/load.js";
-import { type FmPaths, fmPaths } from "../task/paths.js";
+import { FM_DIR, type FmPaths, fmPaths } from "../task/paths.js";
 import { type GateTrust, readTrust } from "../task/state.js";
 import { readBaseline, readSession } from "./baseline.js";
 import { diffShape } from "./diff-shape.js";
@@ -39,6 +39,7 @@ export interface GateOptions {
   readonly fast: boolean;
   readonly mask?: (text: string) => string;
   readonly noSkip?: boolean;
+  readonly isolated?: boolean;
 }
 
 export type GateFailure =
@@ -62,7 +63,8 @@ const diskFiles = (runtime: Runtime, root: AbsolutePath): ProjectFiles => ({
 });
 
 const baseFiles = (git: Git, base: string, disk: ProjectFiles): ProjectFiles => ({
-  read: (relative) => (base === EMPTY_TREE ? disk.read(relative) : fileAt(git, base, relative)),
+  read: (relative) =>
+    base === EMPTY_TREE || relative.startsWith(`${FM_DIR}/`) ? disk.read(relative) : fileAt(git, base, relative),
   exists: disk.exists,
 });
 

@@ -56,3 +56,18 @@ export const probeApp = async (request: AppProbeRequest): Promise<AppProbeResult
   if (port === "timeout") return finish(app, { kind: "no_port" }, started);
   return finish(app, await ask(request, deadline), started);
 };
+
+export interface HeaderAnswer {
+  readonly status: number;
+  readonly headers: Readonly<Record<string, string>>;
+}
+
+export const fetchHeaders = async (url: string, timeoutMs: number): Promise<HeaderAnswer | undefined> => {
+  try {
+    const response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(timeoutMs) });
+    await response.body?.cancel();
+    return { status: response.status, headers: Object.fromEntries(response.headers.entries()) };
+  } catch {
+    return undefined;
+  }
+};

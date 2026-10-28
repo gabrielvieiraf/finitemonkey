@@ -1,0 +1,42 @@
+errors: [NOT_FOUND, VALIDATION]
+endpoints:
+  - id: listOrders
+    method: GET
+    path: /api/orders
+    summary: List the orders
+    domain: orders
+    list: true
+    output:
+      id: string
+      total: number
+    screens: [OrdersPage]
+  - id: getOrder
+    method: GET
+    path: /api/orders/:id
+    summary: One order
+    domain: orders
+    input:
+      id: string
+    output:
+      id: string
+      total: number
+      paid: boolean?
+  - id: createUser
+    method: POST
+    path: /api/users
+    summary: Create a user
+    domain: users
+    input:
+      name: string
+    output:
+      id: string
+      name: string
+      tags: string[]
+  - id: allOrders
+    method: GET
+    path: /api/orders
+    summary: Same route again
+    domain: orders
+    list: true
+    output:
+      id: string

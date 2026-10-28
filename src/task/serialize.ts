@@ -15,6 +15,9 @@ const checkYaml = (check: AcceptanceCheck): YamlValue => ({
   ...(check.body === undefined ? {} : { body: check.body }),
   ...(check.versionUrl === undefined ? {} : { version_url: check.versionUrl }),
   ...(check.field === undefined ? {} : { field: check.field }),
+  ...(check.cases === undefined ? {} : { cases: check.cases }),
+  ...(check.tolerance === undefined ? {} : { tolerance: check.tolerance }),
+  ...(check.minScore === undefined ? {} : { min_score: check.minScore }),
 });
 
 export const contractYaml = (contract: TaskContract): YamlValue => ({

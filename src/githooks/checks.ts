@@ -8,7 +8,7 @@ import { blocking } from "../secrets/rules/types.js";
 import { diffFindings } from "../secrets/scan.js";
 import { commitMessageProblems } from "./commit-msg.js";
 
-export const HOOK_CHECKS = ["secrets", "commit-messages", "merges", "protected", "rules"] as const;
+export const HOOK_CHECKS = ["secrets", "commit-messages", "merges", "protected", "rules", "ownership"] as const;
 
 export type HookCheckId = (typeof HOOK_CHECKS)[number];
 

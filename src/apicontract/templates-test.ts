@@ -1,0 +1,53 @@
+import type { TestRunner } from "./framework.js";
+import { imported } from "./syntax.js";
+
+const RUNNER_IMPORT: Readonly<Record<TestRunner, readonly string[]>> = {
+  vitest: [imported("{ test }", "vitest")],
+  jest: [],
+  node: ['import { test } from "node:test";'],
+};
+
+export const coverageTestFile = (runner: TestRunner): string =>
+  [
+    'import assert from "node:assert/strict";',
+    ...RUNNER_IMPORT[runner],
+    "",
+    imported("{ handlers }", "../mocks/handlers"),
+    imported("{ ENDPOINT_IDS, ENDPOINTS }", "./registry"),
+    "",
+    "const routeOf = (method: string, path: string): string =>",
+    "  `${method.toUpperCase()} ${path}`;",
+    "",
+    "const mocked = handlers.map((handler) =>",
+    "  routeOf(String(handler.info.method), String(handler.info.path)),",
+    ");",
+    "const declared = ENDPOINT_IDS.map((id) =>",
+    "  routeOf(ENDPOINTS[id].method, ENDPOINTS[id].path),",
+    ");",
+    "",
+    "const repeated = (routes: readonly string[]): string[] =>",
+    "  routes.filter((route, index) => routes.indexOf(route) !== index);",
+    "",
+    'test("every endpoint in the contract has a mock", () => {',
+    "  assert.deepEqual(",
+    "    declared.filter((route) => !mocked.includes(route)),",
+    "    [],",
+    "  );",
+    "});",
+    "",
+    'test("every mock answers an endpoint of the contract", () => {',
+    "  assert.deepEqual(",
+    "    mocked.filter((route) => !declared.includes(route)),",
+    "    [],",
+    "  );",
+    "});",
+    "",
+    'test("no handler is registered twice", () => {',
+    "  assert.deepEqual(repeated(mocked), []);",
+    "});",
+    "",
+    'test("no method and path repeat in the contract", () => {',
+    "  assert.deepEqual(repeated(declared), []);",
+    "});",
+    "",
+  ].join("\n");

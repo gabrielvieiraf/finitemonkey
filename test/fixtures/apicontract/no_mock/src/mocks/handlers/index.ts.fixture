@@ -1,0 +1,4 @@
+export const h = [
+  http.get("/api/orders", ({ request, params }) => respond("listOrders", request, params)),
+  http.post("/api/users", ({ request, params }) => respond("createUser", request, params)),
+];

@@ -1,0 +1,34 @@
+[
+  {
+    "files": ["src/domain/**"],
+    "rules": {
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": ["**/infra", "**/infra/**"],
+              "message": "domain stays pure, depend on a port in the domain layer"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "files": ["src/app/**"],
+    "rules": {
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": ["**/infra", "**/infra/**"],
+              "message": "app may import only: domain"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

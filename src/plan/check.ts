@@ -2,6 +2,8 @@ import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt } from "../gate/git.js";
 import { linesOf } from "../inventory/grep.js";
+import { responsibilitiesOf } from "../ownership/check.js";
+import { ownershipPlanIssues } from "../ownership/plan.js";
 import { PLAN_DIR, planFiles, planPath } from "./folder.js";
 import { readFront } from "./front.js";
 import { MASTER_FILE, planReports, previousVersions } from "./reports.js";
@@ -66,6 +68,7 @@ export const checkPlan = (runtime: Runtime, root: AbsolutePath): PlanCheck => {
       ...revokedIssues(reports),
       ...growthIssues(runtime, root, master, text.value),
       ...taskMapIssues(runtime, root),
+      ...ownershipPlanIssues(runtime, root, master, responsibilitiesOf(text.value)),
     ],
   };
 };

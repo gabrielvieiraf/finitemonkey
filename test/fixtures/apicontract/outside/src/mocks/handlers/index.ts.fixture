@@ -1,0 +1,6 @@
+export const h = [
+  http.get("/api/orders", ({ request, params }) => respond("listOrders", request, params)),
+  http.get("/api/orders/:id", ({ request, params }) => respond("getOrder", request, params)),
+  http.post("/api/users", ({ request, params }) => respond("createUser", request, params)),
+  http.get("/api/stats", () => new Response("{}")),
+];

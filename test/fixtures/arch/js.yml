@@ -1,0 +1,18 @@
+layers:
+  - name: domain
+    paths:
+      - src/domain/**
+    public:
+      - src/domain/index.ts
+  - name: app
+    paths:
+      - src/app/**
+    allow:
+      - domain
+  - name: infra
+    paths:
+      - src/infra/**
+forbid:
+  - from: domain
+    to: infra
+    message: domain stays pure, depend on a port in the domain layer

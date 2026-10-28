@@ -103,7 +103,18 @@
             "appsec_found",
             "rules_uncovered",
             "rules_write_failed",
-            "run_failed"
+            "run_failed",
+            "gen_write_failed",
+            "ownership_failed",
+            "ci_audit_failed",
+            "ci_protect_failed",
+            "ci_watch_failed",
+            "ci_watch_pending",
+            "deploy_level_needs_decision",
+            "deploy_write_failed",
+            "deploy_generate_blocked",
+            "deploy_drift_found",
+            "deploy_check_unconfigured"
           ]
         },
         "message": {

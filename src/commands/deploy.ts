@@ -1,10 +1,13 @@
+import type { AbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, success } from "../core/result.js";
 import { loadDeployConfig } from "../deploy/config.js";
+import { DRIFT_FEATURE, driftHosts, hostDrift, loadDriftConfig } from "../deploy/drift.js";
 import { deployLine, saveReport, whatToTest } from "../deploy/report.js";
 import { checkDeploy, type DeployVerdict, expectedCommit, waitForDeploy } from "../deploy/status.js";
 import { logEvent } from "../evidence/log.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
+import { featureMode } from "../policy/feature.js";
 import { fmPaths } from "../task/paths.js";
 import type { CommandSpec, OptionValues } from "./types.js";
 
@@ -22,6 +25,18 @@ const verdictData = (verdict: DeployVerdict, test: string | undefined): Readonly
   test: test ?? null,
 });
 
+const driftAfterDeploy = (ctx: Ctx, root: AbsolutePath, expected: string): readonly string[] => {
+  const config = loadDriftConfig(ctx.runtime, root);
+  if (!config.afterDeploy || featureMode(ctx.runtime, fmPaths(root), DRIFT_FEATURE) !== "active") return [];
+  const hosts = driftHosts(ctx.runtime, root, ctx.env);
+  const diverged = hosts
+    .map((host) => hostDrift(ctx.runtime, root, host, config, expected))
+    .filter((host) => host.state === "diverged");
+  return diverged.length === 0
+    ? []
+    : [ctx.t("deploy.line.drift", { hosts: diverged.map((host) => host.alias).join(", ") })];
+};
+
 const deployStatus = async (ctx: Ctx, values: OptionValues): Promise<CommandResult> => {
   const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
   const config = loadDeployConfig(ctx.runtime, root);
@@ -38,7 +53,9 @@ const deployStatus = async (ctx: Ctx, values: OptionValues): Promise<CommandResu
       : checkDeploy(ctx.runtime, root, config, expected);
   const paths = fmPaths(root);
   const test = whatToTest(ctx.runtime, paths);
-  const line = deployLine(ctx.t, verdict, test);
+  const drift =
+    values["report"] === true && verdict.state === "live" ? driftAfterDeploy(ctx, root, verdict.expected) : [];
+  const line = [deployLine(ctx.t, verdict, test), ...drift].join(" ");
   if (values["report"] === true) {
     saveReport(ctx.runtime, paths, verdict, line);
     logEvent(ctx.runtime, paths, "deploy.reported", { state: verdict.state, expected: verdict.expected });

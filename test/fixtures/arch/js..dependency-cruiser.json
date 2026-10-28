@@ -1,0 +1,44 @@
+{
+  "forbidden": [
+    {
+      "name": "domain-not-to-infra",
+      "comment": "domain stays pure, depend on a port in the domain layer",
+      "severity": "error",
+      "from": {
+        "path": "^src/domain/.*$"
+      },
+      "to": {
+        "path": "^src/infra/.*$"
+      }
+    },
+    {
+      "name": "app-not-to-infra",
+      "comment": "app may import only: domain",
+      "severity": "error",
+      "from": {
+        "path": "^src/app/.*$"
+      },
+      "to": {
+        "path": "^src/infra/.*$"
+      }
+    },
+    {
+      "name": "domain-public-api",
+      "comment": "src/domain/index.ts",
+      "severity": "error",
+      "from": {
+        "pathNot": "^src/domain/.*$"
+      },
+      "to": {
+        "path": "^src/domain/.*$",
+        "pathNot": "^src/domain/index\\.ts$"
+      }
+    }
+  ],
+  "options": {
+    "doNotFollow": {
+      "path": "node_modules"
+    },
+    "tsPreCompilationDeps": true
+  }
+}

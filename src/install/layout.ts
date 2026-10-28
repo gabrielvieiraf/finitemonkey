@@ -23,4 +23,12 @@ export const AGENTS_IMPORT = "@AGENTS.md";
 export const AGENTS_MAX_LINES = 60;
 export const INSTALL_LOCK_STALE_MS = 5 * 60 * 1000;
 
-export const COMMITTED_STATE = ["config.yml", "runtime/", "tasks/", "rules.yml", "policy.yml", "findings/"] as const;
+export const COMMITTED_STATE = [
+  "config.yml",
+  "runtime/",
+  "tasks/",
+  "rules.yml",
+  "policy.yml",
+  "findings/",
+  "infra.yml",
+] as const;

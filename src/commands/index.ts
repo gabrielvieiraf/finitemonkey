@@ -1,9 +1,15 @@
 import { appCheckCommand } from "./app-check.js";
 import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
+import { archCommand } from "./arch.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
+import { ciAuditCommand } from "./ci-audit.js";
+import { ciGenCommand } from "./ci-gen.js";
+import { ciProtectCommand } from "./ci-protect.js";
+import { ciWatchCommand } from "./ci-watch.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
+import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
@@ -11,10 +17,14 @@ import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { deployStatusCommand } from "./deploy.js";
+import { deployCheckCommand } from "./deploy-check.js";
+import { deployGenerateCommand } from "./deploy-generate.js";
+import { deployPlanCommand } from "./deploy-plan.js";
 import { depsCheckCommand } from "./deps-check.js";
 import { depsConfigCommand } from "./deps-config.js";
 import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
+import { dsSyncCommand } from "./ds-sync.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
@@ -23,13 +33,17 @@ import { frontsRouteCommand } from "./fronts-route.js";
 import { frontsSyncCommand } from "./fronts-sync.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
+import { genLintCommand } from "./gen.js";
+import { genCodeownersCommand, genPrTemplateCommand } from "./gen-github.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
 import { mergeVerifyCommand } from "./git-merge-verify.js";
 import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
+import { goldenAcceptCommand } from "./golden.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
+import { infraCommand } from "./infra.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
@@ -44,6 +58,10 @@ import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
+import { observeCommand } from "./observe.js";
+import { onboardCommand } from "./onboard.js";
+import { organizeCommand } from "./organize.js";
+import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
 import {
@@ -57,6 +75,7 @@ import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./pla
 import { plantaCommand } from "./planta.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
+import { presetCommand } from "./preset.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
@@ -201,6 +220,27 @@ export const REGISTRY = [
   suggestCommand,
   suggestAcceptCommand,
   suggestDismissCommand,
+  genLintCommand,
+  genPrTemplateCommand,
+  genCodeownersCommand,
+  genOwnershipCommand,
+  ownershipCheckCommand,
+  ciGenCommand,
+  ciAuditCommand,
+  ciProtectCommand,
+  ciWatchCommand,
+  infraCommand,
+  deployPlanCommand,
+  deployGenerateCommand,
+  deployCheckCommand,
+  observeCommand,
+  goldenAcceptCommand,
+  archCommand,
+  organizeCommand,
+  contractCommand,
+  dsSyncCommand,
+  presetCommand,
+  onboardCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

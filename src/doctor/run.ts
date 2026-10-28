@@ -7,6 +7,7 @@ import { checkCoexistence } from "./coexistence.js";
 import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkGithubRules } from "./github.js";
+import { checkGithubSettings } from "./github-settings.js";
 import { checkHooks } from "./hooks.js";
 import { checkInstructionLayers } from "./instruction-layers.js";
 import { checkInstructions } from "./instructions.js";
@@ -47,6 +48,7 @@ export const CHECKS: readonly Check[] = [
   checkRules,
   checkHooks,
   checkInstructionLayers,
+  checkGithubSettings,
 ];
 
 export interface DoctorItem {
