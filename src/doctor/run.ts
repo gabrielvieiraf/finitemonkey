@@ -3,8 +3,8 @@ import type { Probe, ProbeResult } from "../core/runtime.js";
 import { findGitRoot } from "../install/project.js";
 import { checkBriefing } from "./briefing.js";
 import { checkClaudeSettings } from "./claude-settings.js";
-import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkCoexistence } from "./coexistence.js";
+import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkGithubRules } from "./github.js";
 import { checkHooks } from "./hooks.js";
@@ -14,6 +14,7 @@ import { checkAgentsFile } from "./memory.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
 import { checkRewriters } from "./rewriters.js";
+import { checkRules } from "./rules.js";
 import { checkSupplyChain } from "./supply-chain.js";
 import { checkOs, checkPath } from "./system.js";
 import { checkClaude, checkGit, checkNode } from "./tools.js";
@@ -42,6 +43,7 @@ export const CHECKS: readonly Check[] = [
   checkEnvHygiene,
   checkSupplyChain,
   checkCoexistence,
+  checkRules,
   checkHooks,
 ];
 

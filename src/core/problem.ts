@@ -83,6 +83,8 @@ export const ERROR_CODES = [
   "deps_write_failed",
   "findings_not_found",
   "appsec_found",
+  "rules_uncovered",
+  "rules_write_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
