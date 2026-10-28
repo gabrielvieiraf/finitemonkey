@@ -1801,5 +1801,16 @@
   "gate.golden.text": "{case} línea {line}: se esperaba \"{expected}\", salió \"{actual}\"",
   "gate.golden.clean": "{count, plural, one {# caso golden coincide} other {# casos golden coinciden}}",
   "gate.golden.shadow": "{count, plural, one {# caso golden difiere} other {# casos golden difieren}} (modo sombra, sin bloquear)",
-  "gate.golden.fix": "corrige el código; si la salida nueva es correcta, la persona ejecuta `finitemonkey golden accept {id}`"
+  "gate.golden.fix": "corrige el código; si la salida nueva es correcta, la persona ejecuta `finitemonkey golden accept {id}`",
+  "gate.mutation.off": "el check de mutación está apagado en .finitemonkey/policy.yml",
+  "gate.mutation.no_tests": "el contrato no tiene un check `tests` con comando para ejecutar contra los mutantes",
+  "gate.mutation.no_mutants": "ninguna línea de código cambiada pudo mutarse",
+  "gate.mutation.baseline_failed": "los tests fallan en el código sin mutar, así que los mutantes no dicen nada",
+  "gate.mutation.unavailable": "no se pudo preparar la ejecución de mutación: {detail}",
+  "gate.mutation.no_report": "la herramienta de mutación se ejecutó, pero {file} no tiene un informe legible",
+  "gate.mutation.none_ran": "ningún mutante se ejecutó hasta el final",
+  "gate.mutation.score": "los tests atraparon {killed} de {total} mutantes ({score}%, mínimo {min}%)",
+  "gate.mutation.survived": "{file}:{line}: el mutante sobrevivió ({operator})",
+  "gate.mutation.shadow": "por debajo del mínimo, modo sombra: sin bloquear",
+  "gate.mutation.fix": "agrega aserciones que fallen cuando estas líneas cambien"
 }

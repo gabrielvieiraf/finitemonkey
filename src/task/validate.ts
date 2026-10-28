@@ -79,16 +79,19 @@ const nonNegative = (record: JsonObject, key: string, at: string, issues: Issues
   return undefined;
 };
 
-const goldenFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issues): Partial<AcceptanceCheck> => {
+const extraFields = (record: JsonObject, kind: CheckKind, at: string, issues: Issues): Partial<AcceptanceCheck> => {
   const cases = str(record, "cases", at, issues, kind === "golden");
   const tolerance = nonNegative(record, "tolerance", at, issues);
   const run = record["run"];
   if (kind === "golden" && typeof run === "string" && !run.includes("{case}")) {
     issues.push(`${at}run: must contain {case}`);
   }
+  const minScore = positive(record, "min_score", at, issues);
+  if (minScore !== undefined && minScore > 100) issues.push(`${at}min_score: must be at most 100`);
   return {
     ...(cases === undefined ? {} : { cases }),
     ...(tolerance === undefined ? {} : { tolerance }),
+    ...(minScore === undefined ? {} : { minScore }),
   };
 };
 
@@ -111,7 +114,7 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
     ...app,
     ...(versionUrl === undefined ? {} : { versionUrl }),
     ...(field === undefined ? {} : { field }),
-    ...goldenFields(record, kind, at, issues),
+    ...extraFields(record, kind, at, issues),
   };
 };
 

@@ -1801,5 +1801,16 @@
   "gate.golden.text": "{case} line {line}: expected \"{expected}\", got \"{actual}\"",
   "gate.golden.clean": "{count, plural, one {# golden case matches} other {# golden cases match}}",
   "gate.golden.shadow": "{count, plural, one {# golden case differs} other {# golden cases differ}} (shadow mode, not blocking)",
-  "gate.golden.fix": "fix the code; if the new output is right, the person runs `finitemonkey golden accept {id}`"
+  "gate.golden.fix": "fix the code; if the new output is right, the person runs `finitemonkey golden accept {id}`",
+  "gate.mutation.off": "the mutation check is off in .finitemonkey/policy.yml",
+  "gate.mutation.no_tests": "the contract has no `tests` check with a command to run against the mutants",
+  "gate.mutation.no_mutants": "no changed source line could be mutated",
+  "gate.mutation.baseline_failed": "the tests fail on the unmutated code, so mutants say nothing",
+  "gate.mutation.unavailable": "could not prepare the mutation run: {detail}",
+  "gate.mutation.no_report": "the mutation tool ran but {file} has no readable report",
+  "gate.mutation.none_ran": "no mutant ran to the end",
+  "gate.mutation.score": "the tests caught {killed} of {total} mutants ({score}%, minimum {min}%)",
+  "gate.mutation.survived": "{file}:{line}: mutant survived ({operator})",
+  "gate.mutation.shadow": "below the minimum, shadow mode: not blocking",
+  "gate.mutation.fix": "add assertions that fail when these lines change"
 }

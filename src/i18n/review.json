@@ -1802,7 +1802,18 @@
     "gate.golden.text": "machine",
     "gate.golden.clean": "machine",
     "gate.golden.shadow": "machine",
-    "gate.golden.fix": "machine"
+    "gate.golden.fix": "machine",
+    "gate.mutation.off": "machine",
+    "gate.mutation.no_tests": "machine",
+    "gate.mutation.no_mutants": "machine",
+    "gate.mutation.baseline_failed": "machine",
+    "gate.mutation.unavailable": "machine",
+    "gate.mutation.no_report": "machine",
+    "gate.mutation.none_ran": "machine",
+    "gate.mutation.score": "machine",
+    "gate.mutation.survived": "machine",
+    "gate.mutation.shadow": "machine",
+    "gate.mutation.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3607,6 +3618,17 @@
     "gate.golden.text": "machine",
     "gate.golden.clean": "machine",
     "gate.golden.shadow": "machine",
-    "gate.golden.fix": "machine"
+    "gate.golden.fix": "machine",
+    "gate.mutation.off": "machine",
+    "gate.mutation.no_tests": "machine",
+    "gate.mutation.no_mutants": "machine",
+    "gate.mutation.baseline_failed": "machine",
+    "gate.mutation.unavailable": "machine",
+    "gate.mutation.no_report": "machine",
+    "gate.mutation.none_ran": "machine",
+    "gate.mutation.score": "machine",
+    "gate.mutation.survived": "machine",
+    "gate.mutation.shadow": "machine",
+    "gate.mutation.fix": "machine"
   }
 }

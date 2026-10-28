@@ -41,8 +41,8 @@ const lastLine = (text: string): string => {
   return (lines[lines.length - 1] ?? "").trim().slice(0, TAIL);
 };
 
-const isolatedDir = (runtime: Runtime, root: AbsolutePath): AbsolutePath =>
-  defaultPlace(root, runtime.homeDir(), `gate-isolated-${runtime.now().replace(/[^0-9A-Za-z]/g, "")}`);
+export const scratchDir = (runtime: Runtime, root: AbsolutePath, prefix: string): AbsolutePath =>
+  defaultPlace(root, runtime.homeDir(), `${prefix}-${runtime.now().replace(/[^0-9A-Za-z]/g, "")}`);
 
 const applyStaged = (runtime: Runtime, root: AbsolutePath, dir: AbsolutePath): Parsed<undefined, IsolatedFailure> => {
   const staged = runtime.gitWith(["diff", "--cached", "--binary", "--no-color", "--", ".", EXCLUDE_FM], root, {});
@@ -52,7 +52,11 @@ const applyStaged = (runtime: Runtime, root: AbsolutePath, dir: AbsolutePath): P
   return applied.ok ? accept(undefined) : reject(failure("staged", lastLine(applied.stderr)));
 };
 
-const install = (runtime: Runtime, dir: AbsolutePath, deadline: number): Parsed<undefined, IsolatedFailure> => {
+export const installFrozen = (
+  runtime: Runtime,
+  dir: AbsolutePath,
+  deadline: number,
+): Parsed<undefined, IsolatedFailure> => {
   const command = frozenInstall((file) => runtime.stat(toAbsolutePath(join(dir, file))) !== undefined);
   if (command === undefined) return accept(undefined);
   const result = runtime.exec({
@@ -68,7 +72,7 @@ const install = (runtime: Runtime, dir: AbsolutePath, deadline: number): Parsed<
   return reject(failure("install", `${command}: ${why}`));
 };
 
-const cleanup = (runtime: Runtime, root: AbsolutePath, dir: AbsolutePath): void => {
+export const removeScratch = (runtime: Runtime, root: AbsolutePath, dir: AbsolutePath): void => {
   reap(
     runtime,
     runtime
@@ -102,7 +106,7 @@ const runInside = <T>(
   if (!staged.ok) return staged;
   const isolated = isolatedPrepared(runtime, prepared, dir);
   if (isolated === undefined) return reject(failure("tree", dir));
-  const installed = install(runtime, dir, prepared.ctx.deadline);
+  const installed = installFrozen(runtime, dir, prepared.ctx.deadline);
   return installed.ok ? accept(run(isolated)) : installed;
 };
 
@@ -112,15 +116,15 @@ export const withIsolatedTree = <T>(
   run: (isolated: Prepared) => T,
 ): Parsed<T, IsolatedFailure> => {
   const root = prepared.ctx.paths.root;
-  const dir = isolatedDir(runtime, root);
+  const dir = scratchDir(runtime, root, "gate-isolated");
   const added = runtime.gitWith(["worktree", "add", "--detach", "--force", dir, "HEAD"], root, {});
   if (!added.ok) {
-    cleanup(runtime, root, dir);
+    removeScratch(runtime, root, dir);
     return reject(failure("worktree", lastLine(added.stderr)));
   }
   try {
     return runInside(runtime, prepared, dir, run);
   } finally {
-    cleanup(runtime, root, dir);
+    removeScratch(runtime, root, dir);
   }
 };
