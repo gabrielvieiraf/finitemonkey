@@ -1,0 +1,18 @@
+layers:
+  - name: domain
+    paths:
+      - src/main/java/com/acme/shop/domain/**
+    public:
+      - src/main/java/com/acme/shop/domain/Api.java
+  - name: app
+    paths:
+      - src/main/java/com/acme/shop/app/**
+    allow:
+      - domain
+  - name: infra
+    paths:
+      - src/main/java/com/acme/shop/infra/**
+forbid:
+  - from: domain
+    to: infra
+    message: domain stays pure, depend on a port in the domain layer

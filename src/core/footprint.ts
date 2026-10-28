@@ -36,6 +36,7 @@ export const FOOTPRINT = [
       ".finitemonkey/appsec.yml",
       ".finitemonkey/routes-public.yml",
       ".finitemonkey/rules.yml",
+      ".finitemonkey/arch.yml",
     ],
   },
   {

@@ -1,0 +1,18 @@
+layers:
+  - name: domain
+    paths:
+      - src/shop/domain/**
+    public:
+      - src/shop/domain/__init__.py
+  - name: app
+    paths:
+      - src/shop/app/**
+    allow:
+      - domain
+  - name: infra
+    paths:
+      - src/shop/infra/**
+forbid:
+  - from: domain
+    to: infra
+    message: domain stays pure, depend on a port in the domain layer

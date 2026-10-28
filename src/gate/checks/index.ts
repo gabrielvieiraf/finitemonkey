@@ -1,5 +1,6 @@
 import type { CheckRegistry } from "../types.js";
 import { appsecCheck } from "./appsec.js";
+import { archCheck } from "./arch.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
 import { copyCheck } from "./copy.js";
@@ -64,4 +65,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   headers: headersCheck,
   golden: goldenCheck,
   mutation: mutationCheck,
+  arch: archCheck,
 };

@@ -1,0 +1,18 @@
+[importlinter]
+root_package = shop
+
+[importlinter:contract:1]
+name = domain stays pure, depend on a port in the domain layer
+type = forbidden
+source_modules =
+    shop.domain
+forbidden_modules =
+    shop.infra
+
+[importlinter:contract:2]
+name = app may import only: domain
+type = forbidden
+source_modules =
+    shop.app
+forbidden_modules =
+    shop.infra
