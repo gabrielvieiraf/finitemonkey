@@ -1255,7 +1255,19 @@
     "signals.fourth.warning": "machine",
     "signals.release.done": "machine",
     "signals.show.fourth": "machine",
-    "command.signals_release.summary": "machine"
+    "command.signals_release.summary": "machine",
+    "signals.protocol": "machine",
+    "ricochete.horizon.reason": "machine",
+    "ricochete.horizon.human": "machine",
+    "ricochete.perturbation.reason": "machine",
+    "ricochete.perturbation.human": "machine",
+    "ricochete.perturbation.covered": "machine",
+    "ricochete.perturbation.open": "machine",
+    "ricochete.perturbation.requirement": "machine",
+    "ricochete.perturbation.invalid": "machine",
+    "ricochete.perturbation.empty": "machine",
+    "ricochete.perturbation.twice": "machine",
+    "ricochete.perturbation.outside": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -2513,6 +2525,18 @@
     "signals.fourth.warning": "machine",
     "signals.release.done": "machine",
     "signals.show.fourth": "machine",
-    "command.signals_release.summary": "machine"
+    "command.signals_release.summary": "machine",
+    "signals.protocol": "machine",
+    "ricochete.horizon.reason": "machine",
+    "ricochete.horizon.human": "machine",
+    "ricochete.perturbation.reason": "machine",
+    "ricochete.perturbation.human": "machine",
+    "ricochete.perturbation.covered": "machine",
+    "ricochete.perturbation.open": "machine",
+    "ricochete.perturbation.requirement": "machine",
+    "ricochete.perturbation.invalid": "machine",
+    "ricochete.perturbation.empty": "machine",
+    "ricochete.perturbation.twice": "machine",
+    "ricochete.perturbation.outside": "machine"
   }
 }

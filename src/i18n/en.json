@@ -1294,5 +1294,17 @@
   "signals.fourth.warning": "finitemonkey signals: this write is the fourth correction on error signature {sig} after {count, plural, one {# failed attempt} other {# failed attempts}} ({sample}). Research with the researcher agent clears it; once the fourth-attempt guard is active, the write is blocked until then.",
   "signals.release.done": "Released error signature {sig}: the next correction goes through, and the release is recorded in the log.",
   "signals.show.fourth": "Fourth attempts: {count, plural, one {# held or warned} other {# held or warned}}, {solved} of them solved the error.",
-  "command.signals_release.summary": "Release the fourth-attempt hold on an error signature"
+  "command.signals_release.summary": "Release the fourth-attempt hold on an error signature",
+  "signals.protocol": "The ricochete skill holds the protocol for this frontier.",
+  "ricochete.horizon.reason": "The final message widens the horizon (expert questions or a rewritten request) while this session has a judgment signal, and it names no contract check of {task} as the judgment criterion (named: {named}; checks in the contract: {checks}). Add a line \"Judgment criterion: <check id>\" naming the check that proves the result, or propose that check to the person if none fits.",
+  "ricochete.horizon.human": "horizon help held until it names a contract check of {task} as its judgment criterion.",
+  "ricochete.perturbation.reason": "Task {task} is closing with judgment signals in this session. Add to the final report the perturbation questions below, with the check that covers each one, and say which stay open:",
+  "ricochete.perturbation.human": "perturbation questions added to the report of {task}.",
+  "ricochete.perturbation.covered": "- {question} Covered by: {checks}.",
+  "ricochete.perturbation.open": "- {question} No contract check covers it.",
+  "ricochete.perturbation.requirement": "What if the requirement changes?",
+  "ricochete.perturbation.invalid": "What if the input is invalid?",
+  "ricochete.perturbation.empty": "What if the data is empty or missing?",
+  "ricochete.perturbation.twice": "What if it runs twice or at the same time?",
+  "ricochete.perturbation.outside": "What if an outside service fails or times out?"
 }

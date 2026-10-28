@@ -29,6 +29,7 @@ export const contextLine = (t: Translate, index: LoopIndex, thresholds: Threshol
     t("signals.context", { score: index.score.toFixed(2), evidence: evidenceLines(t, index, thresholds).join("; ") }),
     byLine(t, index),
     frontierLine(t, index),
+    index.frontier === "none" ? "" : t("signals.protocol"),
   ]
     .filter((part) => part !== "")
     .join(" ");
