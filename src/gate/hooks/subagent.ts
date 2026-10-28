@@ -31,6 +31,7 @@ const KNOWN_KINDS = new Set([
   "look",
   "appsec",
   "quality",
+  "slop",
 ]);
 
 const requirementText = (t: Translate, check: AcceptanceCheck): string => {

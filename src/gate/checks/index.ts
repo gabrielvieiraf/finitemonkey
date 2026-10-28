@@ -19,6 +19,7 @@ import { researchCheck } from "./research.js";
 import { reviewCheck } from "./review.js";
 import { runtimeCheck } from "./runtime.js";
 import { secretsCheck } from "./secrets.js";
+import { slopCheck } from "./slop.js";
 import { testsCheck } from "./tests.js";
 import { mergeCheck, worktreeCheck } from "./worktree.js";
 
@@ -46,4 +47,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   parity: parityCheck,
   appsec: appsecCheck,
   quality: qualityCheck,
+  slop: slopCheck,
 };

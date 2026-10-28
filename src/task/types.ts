@@ -26,6 +26,7 @@ export const CHECK_KINDS = [
   "parity",
   "appsec",
   "quality",
+  "slop",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

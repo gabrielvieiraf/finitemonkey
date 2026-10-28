@@ -26,6 +26,7 @@ import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
+import { SLOP_HANDLERS } from "../slop/hook.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 import { capReason } from "./reason.js";
@@ -169,6 +170,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "relay", damage: false, handlers: RELAY_HANDLERS },
   { id: "reuse", damage: false, handlers: REUSE_HANDLERS },
   { id: "quality", damage: false, handlers: QUALITY_HANDLERS },
+  { id: "slop", damage: false, handlers: SLOP_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

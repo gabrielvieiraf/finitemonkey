@@ -106,7 +106,7 @@ describe("implicit contract from the project", () => {
     const contract = implicitContract(files({}));
     assert.deepEqual(
       contract.acceptance.map((check) => check.kind),
-      ["tests", "placeholders", "secrets", "prose", "worktree", "merge", "callers", "quality", "pr"],
+      ["tests", "placeholders", "secrets", "prose", "worktree", "merge", "callers", "quality", "slop", "pr"],
     );
     assert.equal(contract.implicit, true);
   });
@@ -144,6 +144,7 @@ describe("task new", () => {
         "merge",
         "callers",
         "quality",
+        "slop",
         "diff",
         "git",
         "pr",
