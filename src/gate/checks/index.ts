@@ -1,4 +1,5 @@
 import type { CheckRegistry } from "../types.js";
+import { appsecCheck } from "./appsec.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
 import { costCheck } from "./cost.js";
@@ -42,4 +43,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   research: researchCheck,
   cost: costCheck,
   parity: parityCheck,
+  appsec: appsecCheck,
 };

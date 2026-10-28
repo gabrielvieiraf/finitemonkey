@@ -1,3 +1,6 @@
+import type { BlueprintType } from "../planta/types.js";
+import type { Shortcut } from "./shortcuts.js";
+
 export const CHECK_KINDS = [
   "command",
   "tests",
@@ -21,6 +24,7 @@ export const CHECK_KINDS = [
   "research",
   "cost",
   "parity",
+  "appsec",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];
@@ -67,6 +71,8 @@ export interface TaskContract {
   readonly acceptance: readonly AcceptanceCheck[];
   readonly decisionsNeeded: readonly string[];
   readonly callersIgnore?: readonly string[];
+  readonly shortcuts?: readonly Shortcut[];
+  readonly blueprint?: BlueprintType;
   readonly implicit: boolean;
 }
 

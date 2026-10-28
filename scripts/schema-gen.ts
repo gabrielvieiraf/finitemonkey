@@ -52,6 +52,18 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey secrets scan --json`.",
   },
   {
+    name: "deps-check@1",
+    file: "src/commands/deps-check.ts",
+    type: "DepsCheckData",
+    describes: "`data` of `finitemonkey deps check --json`.",
+  },
+  {
+    name: "deps-scan@1",
+    file: "src/commands/deps-scan.ts",
+    type: "DepsScanData",
+    describes: "`data` of `finitemonkey deps scan --json`.",
+  },
+  {
     name: "prose-check@1",
     file: "src/commands/prose-view.ts",
     type: "ProseCheckData",
@@ -86,6 +98,13 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     file: "src/merge/report.ts",
     type: "MergeReport",
     describes: "Report of one merge run by `finitemonkey merge`, also `data` of its `--json` output.",
+  },
+  {
+    name: "front-report@1",
+    file: "src/fronts/report.ts",
+    type: "FrontReport",
+    describes:
+      "`.finitemonkey/reports/<front>.json`, written by a front before it stops and checked by the front-report gate.",
   },
   {
     name: "evidence@1",

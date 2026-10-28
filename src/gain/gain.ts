@@ -29,6 +29,7 @@ export interface GainReport {
   readonly to: string;
   readonly current: GainCounts;
   readonly previous: GainCounts;
+  readonly supervisorUsage?: Readonly<Record<string, number>>;
 }
 
 interface LogLine {
@@ -76,10 +77,20 @@ const countsIn = (log: readonly LogLine[], gates: readonly Evidence[], from: num
   };
 };
 
+const numbersIn = (text: string | undefined): Readonly<Record<string, number>> | undefined => {
+  const parsed = text === undefined ? undefined : parseJsonObject(text);
+  if (parsed?.ok !== true) return undefined;
+  const entries = Object.entries(parsed.value).filter(
+    (entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1]),
+  );
+  return entries.length === 0 ? undefined : Object.fromEntries(entries);
+};
+
 export const gainReport = (
   runtime: Pick<Runtime, "readText" | "listDir" | "now">,
   paths: FmPaths,
   days: number,
+  usageText?: string,
 ): GainReport => {
   const to = Date.parse(runtime.now());
   const from = to - days * DAY_MS;
@@ -92,5 +103,9 @@ export const gainReport = (
     to: new Date(to).toISOString(),
     current: countsIn(log, gates, from, to + 1),
     previous: countsIn(log, gates, from - days * DAY_MS, from),
+    ...(() => {
+      const usage = numbersIn(usageText);
+      return usage === undefined ? {} : { supervisorUsage: usage };
+    })(),
   };
 };

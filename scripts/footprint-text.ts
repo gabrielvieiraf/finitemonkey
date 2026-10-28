@@ -44,6 +44,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "Os logs locais de sessão do Claude Code deste projeto: lidos uma vez com `init --look-back`, e lidos aos poucos a cada prompt só quando há um teto de gasto em `.finitemonkey/config.yml`.",
     es: "Los logs locales de sesión de Claude Code de este proyecto: leídos una vez con `init --look-back`, y leídos de a poco en cada prompt solo cuando hay un tope de gasto en `.finitemonkey/config.yml`.",
   },
+  "hook-sources": {
+    en: "`doctor` reads installed plugins and their hook files to list every hook and find conflicts; `doctor --hooks` also reads the latest Claude Code debug log for hook timings. It never changes another plugin's files.",
+    "pt-BR":
+      "O `doctor` lê os plugins instalados e os arquivos de hook deles para listar cada hook e achar conflitos; o `doctor --hooks` também lê o log de debug mais recente do Claude Code para os tempos dos hooks. Nunca altera arquivos de outro plugin.",
+    es: "`doctor` lee los plugins instalados y sus archivos de hooks para listar cada hook y encontrar conflictos; `doctor --hooks` también lee el log de depuración más reciente de Claude Code para los tiempos de los hooks. Nunca cambia archivos de otro plugin.",
+  },
   install: {
     en: "`init` and `update`: hook settings (and, with `--sandbox`, the sandbox in your local settings), the verify skill, a short managed block in `AGENTS.md` that `CLAUDE.md` imports, one `.gitignore` line, the pinned runtime and a backup of every file it changes.",
     "pt-BR":
@@ -69,10 +75,28 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Documentos de plan en `docs/plan/`: el inventario de lo que hace el código hoy, registros de decisión, registros de investigación, modelos de costo, el plan maestro desde la primera tarea L y la copia que se guarda antes de cada consolidación.",
   },
   map: {
-    en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash.",
+    en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse.",
     "pt-BR":
-      "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore.",
-    es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol.",
+      "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore, e o registro dos avisos de reuso com o resultado de cada um.",
+    es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol, y el registro de los avisos de reutilización con el resultado de cada uno.",
+  },
+  signals: {
+    en: "Loop signals from `finitemonkey signals`: error signatures, edit hashes and prompt fingerprints (hashed word pairs, never the text), the loop index and the calibrated thresholds. Deleted by `signals forget`.",
+    "pt-BR":
+      "Sinais de volta de `finitemonkey signals`: assinaturas de erro, hashes de edição e impressões dos pedidos (pares de palavras em hash, nunca o texto), o índice de voltas e os limiares calibrados. Apagados por `signals forget`.",
+    es: "Señales de vuelta de `finitemonkey signals`: firmas de error, hashes de edición y huellas de los pedidos (pares de palabras en hash, nunca el texto), el índice de vueltas y los umbrales calibrados. Se borran con `signals forget`.",
+  },
+  perfil: {
+    en: "The per-domain profile of the person from `finitemonkey perfil`: tool literacy and domain knowledge per domain, raised by technical words in requests and by commits made outside the session, and the concept book with the level shown for each concept seen in the project. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
+    "pt-BR":
+      "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta e conhecimento do domínio, que sobem com palavras técnicas nos pedidos e com commits feitos fora da sessão, e o livro de conceitos com o nível mostrado em cada conceito visto no projeto. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
+    es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta y conocimiento del dominio, que suben con palabras técnicas en los pedidos y con commits hechos fuera de la sesión, y el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
+  },
+  runs: {
+    en: "The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept.",
+    "pt-BR":
+      "A saída inteira dos comandos rodados por `finitemonkey run`, com segredos mascarados; ficam as 30 mais recentes.",
+    es: "La salida completa de los comandos ejecutados con `finitemonkey run`, con los secretos enmascarados; se guardan las 30 más recientes.",
   },
   tasks: {
     en: "Task contracts and which task is active.",
@@ -101,14 +125,34 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol.",
   },
   reports: {
-    en: "Masked bug reports that `doctor --report` writes, only when asked.",
-    "pt-BR": "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido.",
-    es: "Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide.",
+    en: "Masked bug reports that `doctor --report` writes, only when asked, and the report each front writes before it stops.",
+    "pt-BR":
+      "Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido, e o relatório que cada frente grava antes de parar.",
+    es: "Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide, y el informe que cada frente escribe antes de parar.",
   },
+
   "pr-scope": {
     en: "Who accepted files outside the task scope in `pr open`, when and why, one file per branch.",
     "pt-BR": "Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch.",
     es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
+  },
+  fronts: {
+    en: "The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed.",
+    "pt-BR":
+      "O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit.",
+    es: "El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea.",
+  },
+  profile: {
+    en: "The person's level per domain; the infrastructure level picks the git defaults (intermediate when missing).",
+    "pt-BR":
+      "O nível da pessoa por domínio; o nível de infraestrutura escolhe os padrões de git (intermediário quando falta).",
+    es: "El nivel de la persona por dominio; el nivel de infraestructura elige los valores de git (intermedio si falta).",
+  },
+  "github-ruleset": {
+    en: "The ruleset `init --github` proposes when the default branch has none; it is sent to GitHub only after the person says yes.",
+    "pt-BR":
+      "O ruleset que o `init --github` propõe quando a branch padrão não tem nenhum; só vai para o GitHub depois do sim da pessoa.",
+    es: "El ruleset que `init --github` propone cuando la rama por defecto no tiene ninguno; solo se envía a GitHub tras el sí de la persona.",
   },
   worktrees: {
     en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`.",
@@ -145,6 +189,42 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR":
       "O nome do pacote, ao registro do npm ou do PyPI, quando um comando de shell vai adicionar um pacote que o projeto ainda não declara. Nunca com `FINITEMONKEY_OFFLINE=1`.",
     es: "El nombre del paquete, al registro de npm o de PyPI, cuando un comando de shell va a añadir un paquete que el proyecto aún no declara. Nunca con `FINITEMONKEY_OFFLINE=1`.",
+  },
+  creds: {
+    en: "`creds` writes the credential inventory: variable names, where they are read, environments, type and risk. Never a value.",
+    "pt-BR":
+      "O `creds` grava o inventário de credenciais: nomes de variáveis, onde são lidas, ambientes, tipo e risco. Nunca um valor.",
+    es: "`creds` escribe el inventario de credenciales: nombres de variables, dónde se leen, entornos, tipo y riesgo. Nunca un valor.",
+  },
+  "supply-chain": {
+    en: "`deps scan` keeps the date each known vulnerability was first seen, so its deadline holds between runs. `deps config --write` saves the Dependabot or Renovate file; without `--write` it only prints it.",
+    "pt-BR":
+      "O `deps scan` guarda a data em que cada vulnerabilidade conhecida apareceu pela primeira vez, para o prazo valer entre execuções. O `deps config --write` grava o arquivo do Dependabot ou do Renovate; sem `--write` ele só imprime.",
+    es: "`deps scan` guarda la fecha en que cada vulnerabilidad conocida apareció por primera vez, para que su plazo valga entre ejecuciones. `deps config --write` guarda el archivo de Dependabot o Renovate; sin `--write` solo lo imprime.",
+  },
+  osv: {
+    en: "Package names and versions from your lockfiles, to the OSV database through `osv-scanner`, only when you run `deps scan` (in CI, for example). Never from a hook.",
+    "pt-BR":
+      "Nomes e versões de pacotes dos seus lockfiles, para a base do OSV pelo `osv-scanner`, só quando você roda `deps scan` (no CI, por exemplo). Nunca a partir de um hook.",
+    es: "Nombres y versiones de paquetes de tus lockfiles, a la base de OSV mediante `osv-scanner`, solo cuando ejecutas `deps scan` (en CI, por ejemplo). Nunca desde un hook.",
+  },
+  supervisor: {
+    en: "Only with `supervisor: enabled: true` in the config: a short-lived hold file per session in the directory an account-switching supervisor announces, while the gate runs or holds the stop. `gain` reads that directory's `usage.json`.",
+    "pt-BR":
+      "Só com `supervisor: enabled: true` na configuração: um arquivo de espera de vida curta por sessão no diretório que um supervisor de troca de conta anuncia, enquanto o portão roda ou segura a parada. O `gain` lê o `usage.json` desse diretório.",
+    es: "Solo con `supervisor: enabled: true` en la configuración: un archivo de espera de vida corta por sesión en el directorio que anuncia un supervisor de cambio de cuenta, mientras la puerta corre o retiene la parada. `gain` lee el `usage.json` de ese directorio.",
+  },
+  appsec: {
+    en: "`appsec rules --write` saves the semgrep rules generated for the detected stack, for CI to run; without `--write` it only prints them. `data-map` writes one row per personal field found in the schema (names only).",
+    "pt-BR":
+      "O `appsec rules --write` grava as regras do semgrep geradas para a stack detectada, para o CI rodar; sem `--write` ele só imprime. O `data-map` grava uma linha por campo pessoal achado no schema (só nomes).",
+    es: "`appsec rules --write` guarda las reglas de semgrep generadas para la stack detectada, para que CI las ejecute; sin `--write` solo las imprime. `data-map` escribe una fila por campo personal encontrado en el esquema (solo nombres).",
+  },
+  rules: {
+    en: "`rules compile` writes, per rule in `.finitemonkey/rules.yml`: deny entries and settings keys in `.claude/settings.json`, a line in `AGENTS.md`, the list of what it wrote, and with `--ci` a workflow that checks the rules on pull requests. `uninstall` removes all of it.",
+    "pt-BR":
+      "O `rules compile` grava, para cada regra de `.finitemonkey/rules.yml`: entradas de deny e chaves de configuração em `.claude/settings.json`, uma linha no `AGENTS.md`, a lista do que gravou e, com `--ci`, um workflow que confere as regras nos pull requests. O `uninstall` remove tudo isso.",
+    es: "`rules compile` escribe, por cada regla de `.finitemonkey/rules.yml`: entradas de deny y claves de configuración en `.claude/settings.json`, una línea en `AGENTS.md`, la lista de lo que escribió y, con `--ci`, un workflow que revisa las reglas en los pull requests. `uninstall` lo quita todo.",
   },
   "secrets-live": {
     en: "Through `curl`, only when you run `finitemonkey secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent.",

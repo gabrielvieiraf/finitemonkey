@@ -1,19 +1,30 @@
+import { appsecEditWarning } from "../appsec/hook.js";
+import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
+import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { credsStaticGuard } from "../creds/static-guard.js";
 import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import type { Translate } from "../i18n/translate.js";
+import { PERFIL_HANDLERS } from "../perfil/hooks.js";
+import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
+import { RELAY_HANDLERS } from "../relay/hook.js";
+import { REUSE_HANDLERS } from "../reuse/hook.js";
+import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
+import { rulesGuard } from "../rules/guard.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
+import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { HOOK_EVENTS, type HookEvent } from "./events.js";
 import type { HookPayload } from "./payload.js";
 import { capReason } from "./reason.js";
@@ -35,6 +46,8 @@ export type HookDecision =
       readonly human?: string;
       readonly output?: JsonObject;
       readonly persistent?: boolean;
+      readonly warning?: string;
+      readonly concept?: TonedConcept;
     };
 
 export type HookHandler = (input: HookInput) => HookDecision | Promise<HookDecision>;
@@ -86,16 +99,24 @@ const recordBlock = (input: HookInput, decision: Extract<HookDecision, { kind: "
   });
 };
 
+const toned = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): string | undefined => {
+  const paths = projectPaths(input);
+  if (decision.concept === undefined || decision.human === undefined || paths === undefined) return decision.human;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return decision.human;
+  return tonedHuman(input.runtime, paths, input.t, decision.concept, decision.human);
+};
+
 const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
   recordBlock(input, decision);
   if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
+  const human = toned(input, decision);
   const reason = capReason(decision.reason);
   return {
     ...decision,
     reason,
     output: {
       hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
-      systemMessage: `finitemonkey: ${decision.human ?? input.t("reason.human.generic")}`,
+      systemMessage: `finitemonkey: ${human ?? input.t("reason.human.generic")}`,
     },
   };
 };
@@ -134,6 +155,18 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
+  { id: "creds-static", damage: false, handlers: { PreToolUse: [credsStaticGuard] } },
+  { id: "appsec", damage: false, handlers: { PreToolUse: [appsecEditWarning] } },
+  { id: "rules", damage: true, handlers: { PreToolUse: [rulesGuard] } },
+  { id: "signals", damage: false, handlers: SIGNALS_HANDLERS },
+  { id: "fourth-attempt", damage: false, handlers: FOURTH_ATTEMPT_HANDLERS },
+  { id: "ricochete", damage: false, handlers: RICOCHETE_HANDLERS },
+  { id: "planta", damage: false, handlers: PLANTA_HANDLERS },
+  { id: "label", damage: false, handlers: LABEL_HANDLERS },
+  { id: "perfil", damage: false, handlers: PERFIL_HANDLERS },
+  { id: "conceitos", damage: false, handlers: CONCEITOS_HANDLERS },
+  { id: "relay", damage: false, handlers: RELAY_HANDLERS },
+  { id: "reuse", damage: false, handlers: REUSE_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy));

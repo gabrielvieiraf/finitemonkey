@@ -12,6 +12,8 @@ export const PLAN_ISSUES = [
   "no_owner",
   "revoked_without_banner",
   "grew_without_previous",
+  "issue_without_row",
+  "row_without_issue",
 ] as const;
 
 export type PlanIssueKind = (typeof PLAN_ISSUES)[number];

@@ -1,0 +1,7 @@
+fronts:
+  - id: F1
+    paths: [src/checkout/**]
+    i18n_ns: app
+  - id: F2
+    paths: [src/invites/**]
+    i18n_ns: app

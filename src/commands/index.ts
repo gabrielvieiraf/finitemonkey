@@ -1,10 +1,25 @@
 import { appCheckCommand } from "./app-check.js";
+import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { auditCommand } from "./audit.js";
+import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
+import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
+import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
+import { dataMapCommand } from "./data-map.js";
+import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { depsCheckCommand } from "./deps-check.js";
+import { depsConfigCommand } from "./deps-config.js";
+import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
+import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
+import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
+import { frontsCloseCommand } from "./fronts-close.js";
+import { frontsMergeCommand } from "./fronts-merge.js";
+import { frontsRouteCommand } from "./fronts-route.js";
+import { frontsSyncCommand } from "./fronts-sync.js";
 import { gainCommand } from "./gain.js";
 import { gateCommand } from "./gate.js";
 import { ciGateCommand, commitMsgCommand, pushCheckCommand } from "./git-checks.js";
@@ -21,18 +36,31 @@ import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
 import { offCommand, onCommand } from "./pause.js";
+import {
+  perfilAnswerCommand,
+  perfilCommand,
+  perfilForgetCommand,
+  perfilSetCommand,
+  perfilStartCommand,
+} from "./perfil.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
+import { plantaCommand } from "./planta.js";
 import { policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { reviewPacketCommand } from "./review.js";
+import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
+import { runCommandSpec } from "./run.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
+import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
 import { statuslineCommand } from "./statusline.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
+import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
+import { taskFromSpecCommand } from "./task-spec.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
@@ -52,8 +80,13 @@ export const REGISTRY = [
   taskNewCommand,
   taskShowCommand,
   taskDoneCommand,
+  taskReopenCommand,
+  taskAmendCommand,
+  taskFromSpecCommand,
   secretsScanCommand,
   secretsAcceptCommand,
+  findingsAcceptCommand,
+  findingsListCommand,
   policyFalsePositiveCommand,
   offCommand,
   onCommand,
@@ -67,12 +100,25 @@ export const REGISTRY = [
   mergeVerifyCommand,
   mergeCommand,
   prOpenCommand,
+  frontsPlanCommand,
+  frontsStatusCommand,
+  briefCommand,
+  frontsCloseCommand,
+  frontsMergeCommand,
+  frontsRouteCommand,
+  frontsSyncCommand,
   appCheckCommand,
+  appsecScanCommand,
+  appsecRulesCommand,
+  dataMapCommand,
   commitMsgCommand,
   pushCheckCommand,
   ciGateCommand,
   lookCommand,
   reviewPacketCommand,
+  rulesCompileCommand,
+  rulesCoverageCommand,
+  rulesCheckCommand,
   statuslineCommand,
   critiqueVerifyCommand,
   inventoryCommand,
@@ -100,6 +146,26 @@ export const REGISTRY = [
   parityUpdateCommand,
   parityCheckCommand,
   auditCommand,
+  debtCommand,
+  credsCommand,
+  depsCheckCommand,
+  depsScanCommand,
+  depsConfigCommand,
+  signalsCommand,
+  signalsNotLoopCommand,
+  signalsReleaseCommand,
+  signalsForgetCommand,
+  plantaCommand,
+  perfilCommand,
+  perfilStartCommand,
+  perfilSetCommand,
+  perfilAnswerCommand,
+  perfilForgetCommand,
+  conceitosCommand,
+  conceitosExportCommand,
+  conceitosUpdateCommand,
+  conceitosMarkCommand,
+  runCommandSpec,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

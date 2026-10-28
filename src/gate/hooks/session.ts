@@ -1,5 +1,6 @@
 import { nowMs } from "../../core/clock.js";
 import type { Runtime } from "../../core/runtime.js";
+import { loadBaseline } from "../../findings/baseline.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
@@ -10,6 +11,7 @@ import { gitAt, headSha, treeHash } from "../git.js";
 import { allowWith, contextOutput, human, projectPaths } from "./common.js";
 import { recordConfigHooks } from "./config.js";
 import { cachedPrs, openPrsLine } from "./prs.js";
+import { startupRoutine } from "./routine.js";
 import { saveSnapshot, snapshotFacts } from "./snapshot.js";
 import { readGateStatus } from "./status.js";
 
@@ -33,7 +35,13 @@ const markSession = (input: HookInput, paths: FmPaths): void => {
   if (sessionId === undefined || headSha(git) === undefined) return;
   const tree = treeHash(git);
   if (tree === undefined) return;
-  writeSession(runtime, paths, { sessionId, startTree: tree, at: nowMs(runtime) });
+  const findings = loadBaseline(runtime, paths.root);
+  writeSession(runtime, paths, {
+    sessionId,
+    startTree: tree,
+    at: nowMs(runtime),
+    ...(findings.ok ? { findings: findings.value.entries.length } : {}),
+  });
   startBaseline(runtime, paths, tree);
   if (cachedPrs(runtime, paths) === undefined) runtime.spawnSelf(["gate", "--prs"], paths.root);
 };
@@ -47,8 +55,10 @@ export const sessionStart: HookHandler = (input) => {
   recordConfigHooks(runtime, paths, input.env);
   const lines = [...notRunLine(t, runtime, paths), ...openPrsLine(t, runtime, paths)];
   const systemMessage = lines.length === 0 ? undefined : human(lines.join(" "));
-  const facts = REINJECT_SOURCES.has(source) ? snapshotFacts(t, readState(runtime, paths).snapshot) : undefined;
-  if (facts !== undefined) return allowWith(contextOutput("SessionStart", facts, systemMessage));
+  const snapshot = REINJECT_SOURCES.has(source) ? snapshotFacts(t, readState(runtime, paths).snapshot) : undefined;
+  const routine = startupRoutine(input, paths);
+  const facts = [snapshot, routine].filter((part): part is string => part !== undefined).join("\n");
+  if (facts !== "") return allowWith(contextOutput("SessionStart", facts, systemMessage));
   return systemMessage === undefined ? { kind: "allow" } : allowWith({ systemMessage });
 };
 

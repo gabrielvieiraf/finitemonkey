@@ -63,5 +63,5 @@ export const run = async (options: RunOptions): Promise<number> => {
     result = resultFromThrown(thrown, t);
   }
   render(ctx, name, result);
-  return result.exitCode;
+  return result.passthroughExit ?? result.exitCode;
 };

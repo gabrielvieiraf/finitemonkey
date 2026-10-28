@@ -1,5 +1,6 @@
 import { join } from "node:path";
 
+import { detectStack, hasWebStack } from "../appsec/stack.js";
 import { toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
@@ -56,6 +57,7 @@ export const draftChecks = (
     ...(hasTests ? [] : [{ id: "tests", kind: "tests" as const }]),
     { id: "placeholders", kind: "placeholders" },
     { id: "secrets", kind: "secrets" },
+    ...(hasWebStack(detectStack(disk.read)) ? [{ id: "appsec", kind: "appsec" as const }] : []),
     { id: "prose", kind: "prose" },
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },

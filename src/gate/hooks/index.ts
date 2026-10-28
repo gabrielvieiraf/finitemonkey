@@ -8,7 +8,9 @@ import type { HookHandlers } from "../../hooks/handlers.js";
 import { lookReadTracker } from "../../look/reads.js";
 import { pausePrompt, unlessPaused } from "../../policy/pause-hooks.js";
 import { budgetPrompt } from "../../spend/hook.js";
+import { holdingStop, supervisorResume } from "../../supervisor/hooks.js";
 import { configChange } from "./config.js";
+import { permissionDenied } from "./permission.js";
 import { promptRelease } from "./prompt.js";
 import { preCompact, sessionStart } from "./session.js";
 import { stopGate, subagentStopGate } from "./stop.js";
@@ -18,10 +20,11 @@ export const PORTAO_HANDLERS: HookHandlers = {
   PreToolUse: [reviewAgentGuard, selfGuard, bypassGuard, testsGuard, recordChecked],
   PostToolUse: [compareRan, lookReadTracker],
   UserPromptSubmit: [promptLog, pausePrompt, promptRelease, budgetPrompt],
-  Stop: [rewriteStop, unlessPaused(stopGate)],
+  Stop: [rewriteStop, unlessPaused(holdingStop(stopGate))],
   SubagentStop: [unlessPaused(subagentStopGate)],
   SubagentStart: [subagentStart],
   PreCompact: [preCompact],
-  SessionStart: [sessionStart],
+  SessionStart: [sessionStart, supervisorResume],
   ConfigChange: [configChange],
+  PermissionDenied: [permissionDenied],
 };

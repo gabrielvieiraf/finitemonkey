@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/front-report@1.json",
+  "title": "finitemonkey/front-report@1",
+  "description": "`.finitemonkey/reports/<front>.json`, written by a front before it stops and checked by the front-report gate. Generated from FrontReport in src/fronts/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/front-report@1"
+    },
+    "front": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "head": {
+      "type": "string"
+    },
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delivered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "endpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "number"
+        },
+        "failed": {
+          "type": "number"
+        },
+        "added": {
+          "type": "number"
+        }
+      },
+      "required": ["command", "passed", "failed", "added"]
+    },
+    "screenshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "viewport": {
+            "type": "number"
+          },
+          "opened": {
+            "type": "boolean"
+          }
+        },
+        "required": ["path", "viewport", "opened"]
+      }
+    },
+    "left_out": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "what": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          }
+        },
+        "required": ["what", "why"]
+      }
+    },
+    "provisional_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "needs_human": {
+            "type": "boolean"
+          }
+        },
+        "required": ["decision", "options", "recommendation", "needs_human"]
+      }
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "finished": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        }
+      ]
+    },
+    "inbox": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "done": {
+            "type": "string"
+          }
+        },
+        "required": ["at", "text", "done"]
+      }
+    }
+  },
+  "required": [
+    "front",
+    "branch",
+    "head",
+    "commits",
+    "delivered",
+    "endpoints",
+    "tests",
+    "screenshots",
+    "left_out",
+    "provisional_decisions",
+    "evidence"
+  ]
+}

@@ -4,6 +4,8 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { readPreviousLock } from "../install/plan.js";
 import { applyProblem, confirmProblem, notInstalled, openProject, planProblem } from "../install/session.js";
 import { applyRemoval, planRemoval, type RemovalPlan } from "../install/uninstall.js";
+import { removeCompiled } from "../rules/compile.js";
+import { MANIFEST_FILE } from "../rules/manifest.js";
 import type { CommandSpec } from "./types.js";
 
 export const UNINSTALL_SCHEMA = "finitemonkey/uninstall-plan@1";
@@ -28,12 +30,15 @@ const OUTSIDE = [
   },
 ] as const;
 
-const dataOf = (root: string, plan: RemovalPlan, applied: boolean): UninstallData => ({
+const dataOf = (root: string, plan: RemovalPlan, applied: boolean, rules: boolean): UninstallData => ({
   schema: UNINSTALL_SCHEMA,
   applied,
   purge: plan.purge,
   root,
-  actions: plan.items.map(({ path, action }) => ({ path, action })),
+  actions: [
+    ...(rules ? [{ path: MANIFEST_FILE, action: "delete" }] : []),
+    ...plan.items.map(({ path, action }) => ({ path, action })),
+  ],
   kept: plan.items.filter((item) => item.action.startsWith("keep")).map(({ path }) => path),
   outside: OUTSIDE.map(({ command }) => command),
 });
@@ -61,16 +66,18 @@ const runUninstall = (ctx: Ctx, args: CommandArgs): CommandResult<UninstallData>
   if (lock.value === undefined) return failureFrom(ctx.t, notInstalled());
   const options = { purge: args.values["purge"] === true, keepGenerated: args.values["keep-generated"] === true };
   const plan = planRemoval(project, lock.value, options);
-  const preview = dataOf(project.root, plan, false);
+  const preview = dataOf(project.root, plan, false, project.exists(MANIFEST_FILE));
   if (ctx.dryRun) return success(preview, [...linesOf(ctx, preview), ctx.t("install.dry_run")]);
   if (!ctx.yes) {
     const next = fixFor(args);
     const problem = confirmProblem("uninstall", ctx.t("install.uninstall.question"), next);
     return { ...failureFrom(ctx.t, { ...problem, data: preview }, linesOf(ctx, preview)), next };
   }
-  const removed = applyRemoval(project, plan);
+  const compiled = removeCompiled(ctx.runtime, project.root);
+  if (!compiled.ok) return failureFrom(ctx.t, applyProblem({ path: MANIFEST_FILE, detail: compiled.error }));
+  const removed = applyRemoval(project, planRemoval(project, lock.value, options));
   if (!removed.ok) return failureFrom(ctx.t, applyProblem(removed.error));
-  const data = dataOf(project.root, plan, true);
+  const data = dataOf(project.root, plan, true, compiled.value.length > 0);
   return success(data, [...linesOf(ctx, data), ctx.t("install.uninstall.done")]);
 };
 

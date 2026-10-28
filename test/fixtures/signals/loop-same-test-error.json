@@ -1,0 +1,91 @@
+{
+  "expect": "loop",
+  "loopedBy": "model",
+  "description": "The model retries the same failing test three times inside one turn.",
+  "events": [
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Fix the checkout total test"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/checkout.ts",
+          "old_string": "return total",
+          "new_string": "return total * 100"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test"
+        },
+        "error": "Exit code 1\n FAIL test/checkout.test.ts > total in cents (12 ms)\n AssertionError: expected 1200 to be 1000\n at test/checkout.test.ts:14:20"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/checkout.ts",
+          "old_string": "return total * 100",
+          "new_string": "return Math.round(total * 100)"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test"
+        },
+        "error": "Exit code 1\n FAIL test/checkout.test.ts > total in cents (9 ms)\n AssertionError: expected 1199 to be 1000\n at test/checkout.test.ts:14:20"
+      }
+    },
+    {
+      "event": "PostToolUse",
+      "payload": {
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "src/checkout.ts",
+          "old_string": "return Math.round(total * 100)",
+          "new_string": "return Math.floor(total * 100)"
+        },
+        "tool_response": {
+          "success": true
+        }
+      }
+    },
+    {
+      "event": "PostToolUseFailure",
+      "payload": {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "npm test"
+        },
+        "error": "Exit code 1\n FAIL test/checkout.test.ts > total in cents (11 ms)\n AssertionError: expected 1201 to be 1000\n at test/checkout.test.ts:14:21"
+      }
+    },
+    {
+      "event": "UserPromptSubmit",
+      "payload": {
+        "prompt": "Still red, what now?"
+      }
+    }
+  ]
+}

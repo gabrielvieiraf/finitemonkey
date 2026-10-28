@@ -113,6 +113,16 @@
               }
             ]
           },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
           "hunks": {
             "type": "array",
             "items": {

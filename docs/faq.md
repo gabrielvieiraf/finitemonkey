@@ -87,3 +87,9 @@ Yes. A `Stop` hook can run your test command and, if it fails, block the stop wi
 Yes, several, and some are good at one job. tdd-guard enforces test-first edits; cc-safety-net and dcg block destructive shell and git commands. Methods like Superpowers, GSD and Spec Kit add process. The [comparison page](compare.md) lists what each one enforces by mechanism and what it leaves to prose, with sources.
 
 - **Planned:** Finite Monkey aims to cover four damages (false "done", leaked secrets, hand edits to production, lost git work) with one gate, one install and one `undo`. Whether that beats a single guard for you is what the planned benchmark is for.
+
+## Does it work with tools that switch Claude Code accounts when a limit hits?
+
+Yes, if the switcher reads a hold file. A supervisor that restarts Claude Code on another account can cut the gate in the middle of a `Stop`, and the resumed session waits for you with the work half checked.
+
+To opt in, add `supervisor:` with `enabled: true` to `.finitemonkey/config.yml`, and have the supervisor set `FINITEMONKEY_HOLD_DIR` to a directory it watches. While the gate runs or holds the stop, Finite Monkey keeps `<session>.hold.json` there, with an `until` time; the supervisor should not switch while `until` is in the future. The file expires on its own (10 minutes for a run, 15 for a held stop) and is deleted when the gate passes. When the session resumes on the new account, `SessionStart` tells Claude what the gate was waiting for and runs the gate again. Resume messages that start with `[supervisor]` are not taken as yours, and a `usage.json` in the same directory shows up in `finitemonkey gain`.

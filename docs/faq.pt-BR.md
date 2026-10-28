@@ -87,3 +87,9 @@ Sim. Um hook `Stop` pode rodar o seu comando de teste e, se falhar, bloquear o f
 Existem vários, e alguns são ótimos num trabalho só. O tdd-guard obriga a escrever o teste antes; o cc-safety-net e o dcg bloqueiam comandos destrutivos de shell e git. Métodos como Superpowers, GSD e Spec Kit acrescentam processo. A [página de comparação](compare.pt-BR.md) mostra o que cada um garante por mecanismo e o que deixa na prosa, com fontes.
 
 - **Planejado:** o Finite Monkey pretende cobrir quatro danos ("pronto" falso, segredo vazado, mexida na produção na mão, trabalho perdido no git) com um portão, uma instalação e um `undo`. Se isso vale mais do que um guarda avulso no seu caso é o que o benchmark planejado vai responder.
+
+## Funciona com ferramentas que trocam a conta do Claude Code quando o limite acaba?
+
+Funciona, se a ferramenta ler um arquivo de espera. Um supervisor que reinicia o Claude Code em outra conta pode cortar o portão no meio de um `Stop`, e a sessão retomada fica esperando por você com o trabalho meio conferido.
+
+Para ativar, coloque `supervisor:` com `enabled: true` em `.finitemonkey/config.yml` e faça o supervisor definir `FINITEMONKEY_HOLD_DIR` com um diretório que ele observa. Enquanto o portão roda ou segura a parada, o Finite Monkey mantém ali o `<sessão>.hold.json`, com um horário `until`; o supervisor não deve trocar de conta enquanto `until` estiver no futuro. O arquivo vence sozinho (10 minutos para uma execução, 15 para uma parada segurada) e é apagado quando o portão passa. Quando a sessão volta na conta nova, o `SessionStart` conta ao Claude o que o portão esperava e roda o portão de novo. Mensagens de retomada que começam com `[supervisor]` não contam como suas, e um `usage.json` no mesmo diretório aparece no `finitemonkey gain`.

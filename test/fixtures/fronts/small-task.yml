@@ -1,0 +1,6 @@
+size: M
+fronts:
+  - id: F1
+    paths: [src/checkout/**]
+  - id: F2
+    paths: [src/invites/**]

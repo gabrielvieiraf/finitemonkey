@@ -52,6 +52,7 @@ const writeDecision = (input: HookInput, tool: string): HookDecision => {
       kind: "block",
       reason: modelReason(t, "secrets.block.write", { file, found: describeFindings(t, items) }),
       human: t("secrets.block.human"),
+      concept: "secret-in-code",
     };
   }
   return warningDecision(t, warnings);
@@ -80,6 +81,7 @@ const commitDecision = (input: HookInput, includeUnstaged: boolean): HookDecisio
     kind: "block",
     reason: modelReason(input.t, "secrets.block.commit", { found: describeFindings(input.t, items) }),
     human: input.t("secrets.block.human"),
+    concept: "secret-in-code",
   };
 };
 
@@ -96,6 +98,7 @@ const bashDecision = (input: HookInput): HookDecision => {
       kind: "block",
       reason: modelReason(input.t, "secrets.block.bash", { found: describeFindings(input.t, items) }),
       human: input.t("secrets.block.human"),
+      concept: "secret-in-code",
     };
   }
   const commit = commitIntent(segments);

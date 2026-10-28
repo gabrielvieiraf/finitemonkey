@@ -12,10 +12,14 @@ export type ReasonFamily =
   | "git.block"
   | "prod.block"
   | "prose.block"
+  | "creds.block"
+  | "rules.block"
   | "gate.guard.bypass"
   | "gate.guard.self"
   | "gate.guard.tests"
-  | "gate.guard.rewrite";
+  | "gate.guard.rewrite"
+  | "fronts.block"
+  | "signals.fourth";
 
 export type HumanFamily = Extract<`${ReasonFamily}.human`, MessageKey>;
 
@@ -25,10 +29,14 @@ const familyOf = (base: ReasonBase): ReasonFamily => {
     "gate.guard.self",
     "gate.guard.tests",
     "gate.guard.rewrite",
+    "fronts.block",
     "secrets.block",
     "git.block",
     "prod.block",
     "prose.block",
+    "creds.block",
+    "rules.block",
+    "signals.fourth",
   ];
   const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
   if (found === undefined) throw new Error(`no reason family for ${base}`);
@@ -58,6 +66,9 @@ export const humanFamilyKey = (base: ReasonBase): HumanFamily | undefined => {
     "git.block.human",
     "prod.block.human",
     "prose.block.human",
+    "fronts.block.human",
+    "creds.block.human",
+    "rules.block.human",
   ];
   return known.find((candidate) => candidate === key);
 };

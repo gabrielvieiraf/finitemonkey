@@ -33,6 +33,8 @@ export const selfGuard: HookHandler = (input): HookDecision => {
     );
   const first = found[0];
   if (first === undefined || grantFor(input, "self") !== undefined) return { kind: "allow" };
+  if (first.kind === "amend")
+    return deny(modelReason(t, "gate.guard.self.amend", { file: first.path }), t("gate.guard.amend.human"));
   return deny(
     modelReason(t, "gate.guard.self.policy", { file: first.path }),
     t("gate.guard.self.human", { file: first.path }),

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/deps-check@1.json",
+  "title": "finitemonkey/deps-check@1",
+  "description": "`data` of `finitemonkey deps check --json`. Generated from DepsCheckData in src/commands/deps-check.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/deps-check@1"
+    },
+    "lockfiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dir": {
+            "type": "string"
+          },
+          "ecosystem": {
+            "type": "string",
+            "enum": ["javascript", "python"]
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["dir", "ecosystem", "files"]
+      }
+    },
+    "installs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "command": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
+        "required": ["file", "line", "command", "fix"]
+      }
+    }
+  },
+  "required": ["schema", "lockfiles", "installs"]
+}

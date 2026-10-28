@@ -1,0 +1,6 @@
+fronts:
+  - id: F1
+    paths: [src/checkout/**]
+    kind: rename
+  - id: F2
+    paths: [src/invites/**]

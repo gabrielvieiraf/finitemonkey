@@ -71,6 +71,21 @@ export const ERROR_CODES = [
   "reconcile_unavailable",
   "parity_check_failed",
   "audit_findings",
+  "fronts_refused",
+  "fronts_failed",
+  "front_report_invalid",
+  "fronts_merge_failed",
+  "creds_write_failed",
+  "deps_check_failed",
+  "deps_scanner_missing",
+  "deps_scan_failed",
+  "deps_vulnerable",
+  "deps_write_failed",
+  "findings_not_found",
+  "appsec_found",
+  "rules_uncovered",
+  "rules_write_failed",
+  "run_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

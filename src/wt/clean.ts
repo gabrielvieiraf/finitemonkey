@@ -31,26 +31,31 @@ export interface AppliedItem extends PlanItem {
   readonly archive: string | null;
 }
 
-const actionFor = (cls: CleanupClass, include: readonly CleanupClass[]): CleanAction => {
+export interface CleanOptions {
+  readonly include: readonly CleanupClass[];
+  readonly archiveContained: boolean;
+}
+
+const actionFor = (cls: CleanupClass, options: CleanOptions): CleanAction => {
   if (cls === "unpushed") return "archive-keep";
-  if (NEVER_REMOVED.has(cls) || !include.includes(cls)) return "keep";
-  if (cls === "contained") return "remove";
+  if (NEVER_REMOVED.has(cls) || !options.include.includes(cls)) return "keep";
+  if (cls === "contained") return options.archiveContained ? "archive-remove" : "remove";
   if (cls === "equivalent") return "archive-remove";
   return cls === "orphan" ? "prune" : "keep";
 };
 
-export const planItem = (item: Classified, include: readonly CleanupClass[]): PlanItem => ({
+export const planItem = (item: Classified, options: CleanOptions): PlanItem => ({
   id: item.entry?.id ?? basename(item.path),
   path: toPosixPath(item.path),
   branch: item.branch,
   cls: item.cls,
-  action: actionFor(item.cls, include),
+  action: actionFor(item.cls, options),
   dirty: item.dirty,
   pids: item.pids,
 });
 
-export const cleanPlan = (inventory: Inventory, include: readonly CleanupClass[]): readonly PlanItem[] =>
-  classifyAll(inventory).map((item) => planItem(item, include));
+export const cleanPlan = (inventory: Inventory, options: CleanOptions): readonly PlanItem[] =>
+  classifyAll(inventory).map((item) => planItem(item, options));
 
 const statusAfter: Readonly<Record<CleanAction, WorktreeStatus | undefined>> = {
   remove: "removed",
@@ -99,7 +104,7 @@ const runAction = (inventory: Inventory, item: PlanItem): Omit<AppliedItem, keyo
 
 export const applyClean = (
   inventory: Inventory,
-  include: readonly CleanupClass[],
+  options: CleanOptions,
   reapRunning: boolean,
 ): Parsed<readonly AppliedItem[]> => {
   const items = classifyAll(inventory);
@@ -114,12 +119,12 @@ export const applyClean = (
         ...inventory,
         context: { ...inventory.context, processes: inventory.context.runtime.processes() },
       };
-      return applyClean(refreshed, include, false);
+      return applyClean(refreshed, options, false);
     }
   }
   return accept(
     items.map((item) => {
-      const planned = planItem(item, include);
+      const planned = planItem(item, options);
       const applied: AppliedItem = { ...planned, ...runAction(inventory, planned) };
       recordStatus(inventory, applied);
       return applied;

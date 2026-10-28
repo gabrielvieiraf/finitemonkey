@@ -50,6 +50,30 @@
         ]
       }
     ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "PostToolUseFailure", "--via", "plugin"],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "PermissionRequest", "--via", "plugin"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
@@ -107,6 +131,18 @@
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "ConfigChange", "--via", "plugin"],
             "timeout": 10,
             "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs", "hook", "PermissionDenied", "--via", "plugin"],
+            "timeout": 10
           }
         ]
       }

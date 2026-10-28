@@ -1,0 +1,8 @@
+const ALLOWED = new Map([["docs", "https://docs.example.com/feed.json"]]);
+
+export async function POST(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const feed = ALLOWED.get(searchParams.get("feed") ?? "") ?? "https://docs.example.com/feed.json";
+  const preview = await fetch(feed);
+  return new Response(await preview.text());
+}

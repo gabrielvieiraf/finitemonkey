@@ -1,8 +1,12 @@
 import type { Ctx } from "../core/context.js";
 import type { Probe, ProbeResult } from "../core/runtime.js";
 import { findGitRoot } from "../install/project.js";
+import { checkBriefing } from "./briefing.js";
 import { checkClaudeSettings } from "./claude-settings.js";
+import { checkCoexistence } from "./coexistence.js";
+import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
+import { checkGithubRules } from "./github.js";
 import { checkHooks } from "./hooks.js";
 import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
@@ -10,6 +14,8 @@ import { checkAgentsFile } from "./memory.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
 import { checkRewriters } from "./rewriters.js";
+import { checkRules } from "./rules.js";
+import { checkSupplyChain } from "./supply-chain.js";
 import { checkOs, checkPath } from "./system.js";
 import { checkClaude, checkGit, checkNode } from "./tools.js";
 import type { Check, CheckFinding, CheckStatus, DoctorEnv, HookHealth } from "./types.js";
@@ -30,8 +36,14 @@ export const CHECKS: readonly Check[] = [
   checkProjectFiles,
   checkLineEndings,
   checkRemoteCredentials,
+  checkGithubRules,
+  checkBriefing,
   checkAgentsFile,
   checkRewriters,
+  checkEnvHygiene,
+  checkSupplyChain,
+  checkCoexistence,
+  checkRules,
   checkHooks,
 ];
 
