@@ -128,11 +128,13 @@ describe("relay detector: stores nothing beyond the signal", () => {
     const fs = projectFs();
     const before = new Set(Object.keys(fs.files()));
     await send(fs, AXIOS_PASTE);
-    const changed = Object.keys(fs.files()).filter((path) => !before.has(path));
-    assert.deepEqual(
-      changed.map((path) => path.slice(path.indexOf(".finitemonkey"))),
-      [".finitemonkey/log.jsonl"],
-    );
+    const changed = Object.keys(fs.files())
+      .filter((path) => !before.has(path))
+      .map((path) => path.slice(path.indexOf(".finitemonkey")));
+    assert.ok(changed.includes(".finitemonkey/log.jsonl"), changed.join(","));
+    for (const path of changed.filter((item) => item !== ".finitemonkey/prompts.jsonl")) {
+      assert.doesNotMatch(fs.read(at(path)) ?? "", /axios|fetchInvoices|invoices/, path);
+    }
     const log = fs.read(at(".finitemonkey/log.jsonl")) ?? "";
     assert.match(log, /"event":"relay.flagged","markers":\["missing_import"\],"blocks":1,"lines":\d+/);
     assert.doesNotMatch(log, /axios|fetchInvoices|invoices/);

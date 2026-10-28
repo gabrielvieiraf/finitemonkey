@@ -7718,46 +7718,6 @@ var en_default = {
   "fronts.block.relaunch.requires": "Send the correction to the running front with SendMessage",
   "fronts.block.isolation.claim": 'Front {front} is launched without isolation: "worktree", so it would write in the main checkout',
   "fronts.block.isolation.requires": 'Pass isolation: "worktree" on the Agent call',
-  "fronts.block.isolation.requires": 'Pass isolation: "worktree" on the Agent call',
-  "command.plan_init.summary": "Create docs/plan/MASTER.md with the fixed section order",
-  "command.plan_check.summary": "Find contradictions in docs/plan: uncited numbers, unindexed reports, double decisions and owners",
-  "command.plan_consolidate.summary": "Save the master plan with its date and list the reports to bring into it",
-  "plan.master.title": "Master plan",
-  "plan.section.goal": "Goal",
-  "plan.section.decisions": "Decisions",
-  "plan.section.responsibilities": "Responsibilities",
-  "plan.section.numbers": "Numbers",
-  "plan.section.risks": "Risks",
-  "plan.section.questions": "Open questions",
-  "plan.section.reports": "Reports",
-  "plan.text_for_plan": "Text for the plan",
-  "plan.col.responsibility": "Responsibility",
-  "plan.col.owner": "Owner",
-  "plan.hint.decisions": "One line per decision: `- topic: choice (NN-report.md)`.",
-  "plan.hint.numbers": "Every line with a number cites the report it comes from.",
-  "plan.hint.reports": "Every report in this folder, one per line.",
-  "plan.created": "Created {file}.",
-  "plan.exists": "{file} already exists; nothing changed.",
-  "plan.clean": "The plan has no contradictions ({count, plural, one {# report} other {# reports}}).",
-  "plan.error.check": "{count, plural, one {# problem} other {# problems}} in docs/plan",
-  "plan.error.no_master": "there is no master plan yet",
-  "plan.issue.no_master": "no master plan ({detail}); run finitemonkey plan init",
-  "plan.issue.order": "the sections are not in the fixed order (goal, decisions, responsibilities, numbers, risks, open questions, reports); found: {detail}",
-  "plan.issue.number_without_report": "a number cites no report: {detail}",
-  "plan.issue.missing_report": "cites {detail}, which is not in docs/plan",
-  "plan.issue.not_indexed": "{detail} is missing from the Reports section",
-  "plan.issue.decided_twice": "decided two ways: {detail}",
-  "plan.issue.two_owners": "more than one owner: {detail}",
-  "plan.issue.no_owner": "no owner: {detail}",
-  "plan.issue.revoked_without_banner": "{detail} is revoked but has no banner pointing to what replaced it",
-  "plan.issue.grew_without_previous": "the master plan grew ({detail} lines) without saving the previous version; run finitemonkey plan consolidate",
-  "plan.consolidate.saved": "Saved the current master plan as {file}.",
-  "plan.consolidate.ask": "{count, plural, =0 {No new report to bring in.} one {Bring the text below into MASTER.md, keeping the section order, and list the report under Reports. Then run finitemonkey plan consolidate --done.} other {Bring the # texts below into MASTER.md, keeping the section order, and list each report under Reports. Then run finitemonkey plan consolidate --done.}}",
-  "plan.consolidate.no_text": '(no "Text for the plan" section; read the report)',
-  "plan.consolidate.diff": "Changes since {file}:",
-  "gate.plan.clean": "docs/plan has no contradictions ({count, plural, one {# report} other {# reports}})",
-  "doctor.instructions.plan_import": "{files} imports files from docs/plan; plan reports would load into every session",
-  "doctor.instructions.fix_plan_import": "Remove the @docs/plan/ lines; the plan is read on demand",
   "fronts.command.sync": "Link fronts to their issues and keep docs/plan/NN-task-map.md with one row per issue",
   "fronts.sync.github": "{file}: {count, plural, one {# issue} other {# issues}} read from GitHub",
   "fronts.sync.local": "{file}: {count, plural, one {# row} other {# rows}} kept from the local map; GitHub was not read",
@@ -9145,46 +9105,6 @@ var es_default = {
   "fronts.block.relaunch.requires": "Envía la corrección a la frente en curso con SendMessage",
   "fronts.block.isolation.claim": 'La frente {front} se lanza sin isolation: "worktree" y escribiría en el checkout principal',
   "fronts.block.isolation.requires": 'Pasa isolation: "worktree" en la llamada Agent',
-  "fronts.block.isolation.requires": 'Pasa isolation: "worktree" en la llamada Agent',
-  "command.plan_init.summary": "Crea docs/plan/MASTER.md con el orden fijo de secciones",
-  "command.plan_check.summary": "Encuentra contradicciones en docs/plan: números sin fuente, informes fuera del índice, decisiones y dueños dobles",
-  "command.plan_consolidate.summary": "Guarda el plan maestro con su fecha y lista los informes a incorporar",
-  "plan.master.title": "Plan maestro",
-  "plan.section.goal": "Objetivo",
-  "plan.section.decisions": "Decisiones",
-  "plan.section.responsibilities": "Responsabilidades",
-  "plan.section.numbers": "Números",
-  "plan.section.risks": "Riesgos",
-  "plan.section.questions": "Preguntas abiertas",
-  "plan.section.reports": "Informes",
-  "plan.text_for_plan": "Texto para el plan",
-  "plan.col.responsibility": "Responsabilidad",
-  "plan.col.owner": "Dueño",
-  "plan.hint.decisions": "Una línea por decisión: `- tema: elección (NN-informe.md)`.",
-  "plan.hint.numbers": "Toda línea con un número cita el informe del que viene.",
-  "plan.hint.reports": "Todos los informes de esta carpeta, uno por línea.",
-  "plan.created": "Creado {file}.",
-  "plan.exists": "{file} ya existe; nada cambió.",
-  "plan.clean": "El plan no tiene contradicciones ({count, plural, one {# informe} other {# informes}}).",
-  "plan.error.check": "{count, plural, one {# problema} other {# problemas}} en docs/plan",
-  "plan.error.no_master": "todavía no hay plan maestro",
-  "plan.issue.no_master": "sin plan maestro ({detail}); ejecuta finitemonkey plan init",
-  "plan.issue.order": "las secciones no siguen el orden fijo (objetivo, decisiones, responsabilidades, números, riesgos, preguntas abiertas, informes); encontrado: {detail}",
-  "plan.issue.number_without_report": "un número no cita ningún informe: {detail}",
-  "plan.issue.missing_report": "cita {detail}, que no está en docs/plan",
-  "plan.issue.not_indexed": "{detail} falta en la sección Informes",
-  "plan.issue.decided_twice": "decidido de dos maneras: {detail}",
-  "plan.issue.two_owners": "más de un dueño: {detail}",
-  "plan.issue.no_owner": "sin dueño: {detail}",
-  "plan.issue.revoked_without_banner": "{detail} está revocado pero no tiene el aviso que apunta a lo que lo reemplazó",
-  "plan.issue.grew_without_previous": "el plan maestro creció ({detail} líneas) sin guardar la versión anterior; ejecuta finitemonkey plan consolidate",
-  "plan.consolidate.saved": "Plan maestro actual guardado como {file}.",
-  "plan.consolidate.ask": "{count, plural, =0 {Ningún informe nuevo para incorporar.} one {Lleva el texto de abajo a MASTER.md, manteniendo el orden de las secciones, y lista el informe en Informes. Luego ejecuta finitemonkey plan consolidate --done.} other {Lleva los # textos de abajo a MASTER.md, manteniendo el orden de las secciones, y lista cada informe en Informes. Luego ejecuta finitemonkey plan consolidate --done.}}",
-  "plan.consolidate.no_text": '(sin sección "Texto para el plan"; lee el informe)',
-  "plan.consolidate.diff": "Cambios desde {file}:",
-  "gate.plan.clean": "docs/plan sin contradicciones ({count, plural, one {# informe} other {# informes}})",
-  "doctor.instructions.plan_import": "{files} importa archivos de docs/plan; los informes del plan entrarían en cada sesión",
-  "doctor.instructions.fix_plan_import": "Quita las líneas @docs/plan/; el plan se lee cuando hace falta",
   "fronts.command.sync": "Vincula las frentes a sus issues y mantiene docs/plan/NN-task-map.md con una fila por issue",
   "fronts.sync.github": "{file}: {count, plural, one {# issue leída} other {# issues leídas}} de GitHub",
   "fronts.sync.local": "{file}: {count, plural, one {# fila mantenida} other {# filas mantenidas}} del mapa local; GitHub no se leyó",
@@ -10572,46 +10492,6 @@ var pt_BR_default = {
   "fronts.block.relaunch.requires": "Mande a correção para a frente que está rodando por SendMessage",
   "fronts.block.isolation.claim": 'A frente {front} está sendo lançada sem isolation: "worktree" e escreveria no checkout principal',
   "fronts.block.isolation.requires": 'Passe isolation: "worktree" na chamada Agent',
-  "fronts.block.isolation.requires": 'Passe isolation: "worktree" na chamada Agent',
-  "command.plan_init.summary": "Cria docs/plan/MASTER.md com a ordem fixa de seções",
-  "command.plan_check.summary": "Acha contradições em docs/plan: números sem fonte, relatórios fora do índice, decisões e donos em dobro",
-  "command.plan_consolidate.summary": "Guarda o plano mestre com a data e lista os relatórios a trazer para ele",
-  "plan.master.title": "Plano mestre",
-  "plan.section.goal": "Objetivo",
-  "plan.section.decisions": "Decisões",
-  "plan.section.responsibilities": "Responsabilidades",
-  "plan.section.numbers": "Números",
-  "plan.section.risks": "Riscos",
-  "plan.section.questions": "Perguntas em aberto",
-  "plan.section.reports": "Relatórios",
-  "plan.text_for_plan": "Texto para o plano",
-  "plan.col.responsibility": "Responsabilidade",
-  "plan.col.owner": "Dono",
-  "plan.hint.decisions": "Uma linha por decisão: `- tema: escolha (NN-relatorio.md)`.",
-  "plan.hint.numbers": "Toda linha com número cita o relatório de onde veio.",
-  "plan.hint.reports": "Todo relatório desta pasta, um por linha.",
-  "plan.created": "Criado {file}.",
-  "plan.exists": "{file} já existe; nada mudou.",
-  "plan.clean": "O plano não tem contradições ({count, plural, one {# relatório} other {# relatórios}}).",
-  "plan.error.check": "{count, plural, one {# problema} other {# problemas}} em docs/plan",
-  "plan.error.no_master": "ainda não há plano mestre",
-  "plan.issue.no_master": "sem plano mestre ({detail}); rode finitemonkey plan init",
-  "plan.issue.order": "as seções não estão na ordem fixa (objetivo, decisões, responsabilidades, números, riscos, perguntas em aberto, relatórios); encontrado: {detail}",
-  "plan.issue.number_without_report": "um número não cita relatório: {detail}",
-  "plan.issue.missing_report": "cita {detail}, que não está em docs/plan",
-  "plan.issue.not_indexed": "{detail} falta na seção Relatórios",
-  "plan.issue.decided_twice": "decidido de dois jeitos: {detail}",
-  "plan.issue.two_owners": "mais de um dono: {detail}",
-  "plan.issue.no_owner": "sem dono: {detail}",
-  "plan.issue.revoked_without_banner": "{detail} foi revogado mas não tem a faixa apontando o que o substituiu",
-  "plan.issue.grew_without_previous": "o plano mestre cresceu ({detail} linhas) sem guardar a versão anterior; rode finitemonkey plan consolidate",
-  "plan.consolidate.saved": "Plano mestre atual guardado como {file}.",
-  "plan.consolidate.ask": "{count, plural, =0 {Nenhum relatório novo para trazer.} one {Traga o texto abaixo para o MASTER.md, mantendo a ordem das seções, e liste o relatório em Relatórios. Depois rode finitemonkey plan consolidate --done.} other {Traga os # textos abaixo para o MASTER.md, mantendo a ordem das seções, e liste cada relatório em Relatórios. Depois rode finitemonkey plan consolidate --done.}}",
-  "plan.consolidate.no_text": '(sem seção "Texto para o plano"; leia o relatório)',
-  "plan.consolidate.diff": "Mudanças desde {file}:",
-  "gate.plan.clean": "docs/plan sem contradições ({count, plural, one {# relatório} other {# relatórios}})",
-  "doctor.instructions.plan_import": "{files} importa arquivos de docs/plan; os relatórios do plano entrariam em toda sessão",
-  "doctor.instructions.fix_plan_import": "Remova as linhas @docs/plan/; o plano é lido quando preciso",
   "fronts.command.sync": "Liga as frentes às issues e mantém docs/plan/NN-task-map.md com uma linha por issue",
   "fronts.sync.github": "{file}: {count, plural, one {# issue lida} other {# issues lidas}} do GitHub",
   "fronts.sync.local": "{file}: {count, plural, one {# linha mantida} other {# linhas mantidas}} do mapa local; o GitHub não foi lido",
@@ -14837,7 +14717,18 @@ var GUARD_MODES = ["off", "shadow", "active"];
 var LEVELS = ["light", "standard", "strict"];
 var SEVERITIES2 = ["low", "medium", "high"];
 var DEFAULT_PROMOTE_AFTER = 20;
-var OPTIONAL_GUARDS = ["prose", "deps", "creds-static", "appsec", "signals", "fourth-attempt", "ricochete", "label", "relay", "reuse"];
+var OPTIONAL_GUARDS = [
+  "prose",
+  "deps",
+  "creds-static",
+  "appsec",
+  "signals",
+  "fourth-attempt",
+  "ricochete",
+  "label",
+  "relay",
+  "reuse"
+];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set(["fourth-attempt"]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -27677,22 +27568,520 @@ var PROSE_HANDLERS = {
   PreToolUse: [proseMarkerGuard, proseCommandGuard]
 };
 
-// src/ricochete/context.ts
+// src/relay/hook.ts
+import { join as join71 } from "node:path";
+
+// src/relay/imports.ts
+var JS_IMPORT = /(?:^|\s)import\s+(?:[\w*{}\s,]+\s+from\s+)?["']([^"'\n]+)["']|require\(\s*["']([^"'\n]+)["']\s*\)/g;
+var PY_IMPORT = /^[ \t]*(?:from\s+([A-Za-z_][\w.]*)\s+import\s|import\s+([A-Za-z_][\w.]*)[ \t]*(?:$|,|\s+as\s))/gm;
+var NODE_BUILTINS = /* @__PURE__ */ new Set([
+  "assert",
+  "buffer",
+  "child_process",
+  "crypto",
+  "dns",
+  "events",
+  "fs",
+  "http",
+  "https",
+  "net",
+  "os",
+  "path",
+  "process",
+  "querystring",
+  "readline",
+  "stream",
+  "string_decoder",
+  "timers",
+  "tls",
+  "url",
+  "util",
+  "worker_threads",
+  "zlib"
+]);
+var PYTHON_STDLIB = /* @__PURE__ */ new Set([
+  "abc",
+  "argparse",
+  "asyncio",
+  "base64",
+  "collections",
+  "contextlib",
+  "csv",
+  "dataclasses",
+  "datetime",
+  "decimal",
+  "enum",
+  "functools",
+  "glob",
+  "hashlib",
+  "http",
+  "io",
+  "itertools",
+  "json",
+  "logging",
+  "math",
+  "os",
+  "pathlib",
+  "random",
+  "re",
+  "shutil",
+  "socket",
+  "sqlite3",
+  "string",
+  "subprocess",
+  "sys",
+  "tempfile",
+  "threading",
+  "time",
+  "typing",
+  "unittest",
+  "urllib",
+  "uuid",
+  "__future__"
+]);
+var jsPackage = (specifier) => {
+  if (specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("node:")) return void 0;
+  const parts = specifier.split("/");
+  const name = specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0] ?? "";
+  return name === "" || NODE_BUILTINS.has(name) ? void 0 : name;
+};
+var pyPackage = (module) => {
+  const name = module.split(".")[0] ?? "";
+  return name === "" || PYTHON_STDLIB.has(name) ? void 0 : name;
+};
+var importedPackages = (text17) => {
+  const found = /* @__PURE__ */ new Map();
+  for (const match of text17.matchAll(JS_IMPORT)) {
+    const name = jsPackage(match[1] ?? match[2] ?? "");
+    if (name !== void 0) found.set(`js:${name}`, { name, language: "js" });
+  }
+  for (const match of text17.matchAll(PY_IMPORT)) {
+    const name = pyPackage(match[1] ?? match[2] ?? "");
+    if (name !== void 0) found.set(`python:${name}`, { name, language: "python" });
+  }
+  return [...found.values()];
+};
+
+// src/relay/detect.ts
+var PASTED = /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content>/gi;
+var FENCE5 = /```[^\n]*\n([\s\S]*?)```/g;
+var MIN_LINES = 4;
+var MIN_CHARS = 800;
+var CHAT = [
+  /^\s*(?:chatgpt|gpt-?\d|gemini|copilot|claude|assistant|bard|perplexity)\s*(?:said|disse|dijo)?\s*:/im,
+  /^\s*(?:you said|voc[eê] disse|dijiste|user)\s*:/im,
+  /\bcopy code\b|\bcopiar c[oó]digo\b/i,
+  /\bas an ai (?:language )?model\b|\bcomo (?:um|una?) (?:modelo|ia)\b/i,
+  /^\s*(?:sure|certainly|claro|com certeza|por supuesto)[!,.]\s+(?:here|aqui|aquí)/im
+];
+var PLACEHOLDER2 = /\b(?:YOUR_[A-Z_]+|your[-_]?api[-_]?key|<your[-_ ][^>]+>|path\/to\/[\w./-]+|example\.com)\b|\/\/\s*\.\.\.|#\s*\.\.\.|\.\.\.\s*(?:rest of|resto d)|\brest of (?:the )?code\b|\bTODO: implement\b/gi;
+var lineCount3 = (text17) => text17.split("\n").filter((line11) => line11.trim() !== "").length;
+var pastedBlocks = (prompt) => {
+  const explicit = [...prompt.matchAll(PASTED), ...prompt.matchAll(FENCE5)].map((match) => match[1] ?? "");
+  const blocks = explicit.length > 0 ? explicit : [prompt];
+  return blocks.map((text17) => ({ text: text17, lines: lineCount3(text17) })).filter((block6) => explicit.length > 0 || block6.lines >= MIN_LINES || block6.text.length >= MIN_CHARS);
+};
+var isMissing = (pkg, manifests) => {
+  const escaped = pkg.name.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  const pattern = pkg.language === "js" ? new RegExp(`["']${escaped}["']\\s*:`) : new RegExp(`(?:^|["'\\s])${escaped.replace(/[-_]/g, "[-_]")}(?:\\s|[=<>~\\[;"',]|$)`, "im");
+  return !pattern.test(manifests);
+};
+var detectRelay = (prompt, facts) => {
+  const blocks = pastedBlocks(prompt);
+  if (blocks.length === 0) return void 0;
+  const text17 = blocks.map((block6) => block6.text).join("\n");
+  const placeholders = [...new Set([...text17.matchAll(PLACEHOLDER2)].map((match) => match[0]))].slice(0, 5);
+  const missing2 = importedPackages(text17).filter((pkg) => (pkg.language === "js" ? facts.hasJs : facts.hasPython) && isMissing(pkg, facts.manifests)).map((pkg) => pkg.name);
+  const markers = [
+    ...CHAT.some((pattern) => pattern.test(text17)) ? ["chat"] : [],
+    ...placeholders.length > 0 ? ["placeholder"] : [],
+    ...missing2.length > 0 ? ["missing_import"] : [],
+    ...facts.ownOutput.some((line11) => line11.length >= 20 && text17.includes(line11)) ? ["own_output"] : []
+  ];
+  if (markers.length === 0) return void 0;
+  return {
+    blocks: blocks.length,
+    lines: blocks.reduce((sum, block6) => sum + block6.lines, 0),
+    markers,
+    missing: missing2,
+    placeholders
+  };
+};
+
+// src/relay/hook.ts
+var JS_MANIFESTS = ["package.json"];
+var PYTHON_MANIFESTS2 = ["requirements.txt", "pyproject.toml", "Pipfile"];
+var LOG_TAIL = 64 * 1024;
+var read3 = (runtime, root, name) => {
+  const text17 = runtime.readText(toAbsolutePath(join71(root, name)));
+  return text17.ok ? text17.value : void 0;
+};
+var recentClaims = (runtime, paths) => {
+  const log = runtime.readText(paths.log);
+  if (!log.ok) return [];
+  return log.value.slice(-LOG_TAIL).split("\n").flatMap((line11) => {
+    const parsed = parseJsonObject(line11);
+    const claim = parsed.ok ? parsed.value["claim"] : void 0;
+    return typeof claim === "string" ? [claim] : [];
+  });
+};
+var projectFacts = (runtime, paths) => {
+  const js = JS_MANIFESTS.flatMap((name) => read3(runtime, paths.root, name) ?? []);
+  const python = PYTHON_MANIFESTS2.flatMap((name) => read3(runtime, paths.root, name) ?? []);
+  return {
+    manifests: [...js, ...python].join("\n"),
+    hasJs: js.length > 0,
+    hasPython: python.length > 0,
+    ownOutput: recentClaims(runtime, paths)
+  };
+};
+var relayNote = (t, finding5) => [
+  t("relay.note.found", { count: finding5.blocks, lines: finding5.lines }),
+  ...finding5.markers.map(
+    (marker3) => marker3 === "missing_import" ? t("relay.marker.missing_import", { list: finding5.missing.join(", ") }) : marker3 === "placeholder" ? t("relay.marker.placeholder", { list: finding5.placeholders.join(", ") }) : t(`relay.marker.${marker3}`)
+  ),
+  t("relay.note.source")
+].join(" ");
+var relayDetector = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  const paths = projectPaths(input);
+  if (paths === void 0 || prompt.trim() === "" || !comesFromPerson(prompt)) return { kind: "allow" };
+  const finding5 = detectRelay(prompt, projectFacts(input.runtime, paths));
+  if (finding5 === void 0) return { kind: "allow" };
+  if (input.runtime.stat(paths.dir)?.kind === "dir") {
+    logEvent(input.runtime, paths, "relay.flagged", {
+      markers: [...finding5.markers],
+      blocks: finding5.blocks,
+      lines: finding5.lines
+    });
+  }
+  return { kind: "allow", output: contextOutput("UserPromptSubmit", relayNote(input.t, finding5)) };
+};
+var RELAY_HANDLERS = { UserPromptSubmit: [relayDetector] };
+
+// src/reuse/hook.ts
+import { join as join73, relative as relative10 } from "node:path";
+
+// src/map/defs.ts
+var SKIPPED_PATH = /(^|\/)(node_modules|dist|build|out|vendor|coverage|generated|__generated__|tests?|__tests__|spec|fixtures)\/|\.(test|spec)\.[a-z]+$|\.d\.ts$|\.min\.js$|\.generated\.[a-z]+$|_pb2\.py$|\.pb\.go$|_test\.go$|(^|\/)test_[^/]+\.py$|^\.finitemonkey\//;
+var CODE_FILES = ["ts", "tsx", "js", "jsx", "mjs", "cjs", "py", "go", "rs", "rb"];
+var AST_FILES = /* @__PURE__ */ new Set(["ts", "tsx", "js", "jsx", "mjs", "cjs", "py"]);
+var GREP_PATTERN = "^(export +(default +)?(async +)?(function|const|let|var|class|interface|type|enum|abstract +class) |(async +)?function\\*? *[A-Za-z_$]|class +[A-Za-z_]|def +[A-Za-z_]|func +|type +[A-Z][A-Za-z0-9_]* +(struct|interface)|pub +(fn|struct|enum|trait) +|module +[A-Z])";
+var NAMES = [
+  /^export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|var|class|interface|type|enum|abstract\s+class)\s+([A-Za-z_$][\w$]*)/,
+  /^(?:async\s+)?function\*?\s*([A-Za-z_$][\w$]*)/,
+  /^class\s+([A-Za-z_$][\w$]*)/,
+  /^def\s+([A-Za-z_]\w*[?!]?)/,
+  /^func\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/,
+  /^type\s+([A-Z]\w*)\s+(?:struct|interface)/,
+  /^pub\s+(?:fn|struct|enum|trait)\s+([A-Za-z_]\w*)/,
+  /^module\s+([A-Z]\w*)/
+];
+var nameIn = (line11) => {
+  for (const pattern of NAMES) {
+    const name = pattern.exec(line11)?.[1];
+    if (name !== void 0) return name;
+  }
+  return void 0;
+};
+var extensionOf = (file) => {
+  const dot = file.lastIndexOf(".");
+  return dot === -1 ? "" : file.slice(dot + 1);
+};
+var isCode = (file) => CODE_FILES.includes(extensionOf(file)) && !SKIPPED_PATH.test(file);
+
+// src/reuse/names.ts
+var GENERIC_NAMES = new Set(
+  [
+    "get",
+    "set",
+    "init",
+    "render",
+    "handle",
+    "handler",
+    "main",
+    "index",
+    "run",
+    "start",
+    "stop",
+    "create",
+    "update",
+    "delete",
+    "remove",
+    "load",
+    "save",
+    "parse",
+    "format",
+    "default",
+    "props",
+    "config",
+    "setup",
+    "app",
+    "helper",
+    "helpers",
+    "utils",
+    "util",
+    "test",
+    "data",
+    "value",
+    "result",
+    "item",
+    "items",
+    "list",
+    "map",
+    "filter",
+    "reduce",
+    "constructor",
+    "options",
+    "state",
+    "context",
+    "provider",
+    "component",
+    "page",
+    "layout",
+    "schema",
+    "types",
+    "type",
+    "error",
+    "errors",
+    "request",
+    "response",
+    "client",
+    "server",
+    "router",
+    "routes",
+    "store",
+    "model",
+    "service",
+    "controller",
+    "validate",
+    "transform",
+    "fetch",
+    "post",
+    "put",
+    "patch",
+    "use",
+    "on",
+    "off",
+    "emit",
+    "logger",
+    "log",
+    "new",
+    "build",
+    "make",
+    "of",
+    "from",
+    "to",
+    "id",
+    "name",
+    "key"
+  ].map((name) => name.toLowerCase())
+);
+var MIN_LENGTH = 4;
+var normalizeName = (name) => name.toLowerCase().replace(/[_-]/g, "");
+var isGeneric = (name) => {
+  const normalized3 = normalizeName(name);
+  return normalized3.length < MIN_LENGTH || GENERIC_NAMES.has(normalized3);
+};
+var definedNames = (text17) => text17.split(/\r?\n/).flatMap((line11) => {
+  const name = nameIn(line11);
+  return name === void 0 ? [] : [name];
+});
+var newDefinitions = (before, after) => {
+  const old = new Set(definedNames(before).map(normalizeName));
+  return [...new Set(definedNames(after))].filter((name) => !old.has(normalizeName(name)) && !isGeneric(name));
+};
+
+// src/reuse/index-defs.ts
+var GREP_LINE2 = /^(.+?):(\d+):(.*)$/;
+var projectDefinitions = (runtime, root) => {
+  const spec2 = CODE_FILES.map((ext) => `:(glob)**/*.${ext}`);
+  const result = gitAt(runtime, root).run(["grep", "--untracked", "-n", "-I", "-E", "-e", GREP_PATTERN, "--", ...spec2]);
+  if (!result.found) return { kind: "failed", detail: "git not found" };
+  if (result.exitCode !== 0 && result.exitCode !== 1) {
+    return { kind: "failed", detail: `git grep exited ${String(result.exitCode)}: ${result.stderr.slice(0, 200)}` };
+  }
+  const definitions = result.stdout.split("\n").map(withoutCarriageReturn).flatMap((line11) => {
+    const match = GREP_LINE2.exec(line11);
+    const file = match?.[1];
+    const name = nameIn(match?.[3] ?? "");
+    return file === void 0 || name === void 0 || !isCode(file) ? [] : [{ file, line: Number(match?.[2] ?? "0"), name }];
+  });
+  return { kind: "ok", definitions };
+};
+var elsewhere = (definitions, name, file) => {
+  const wanted = normalizeName(name);
+  return definitions.find((item2) => item2.file !== file && normalizeName(item2.name) === wanted);
+};
+
+// src/reuse/log.ts
 import { join as join72 } from "node:path";
+var REUSE_LOG = "reuse.json";
+var RETIRE_AFTER = 100;
+var RETIRE_BELOW = 0.2;
+var reuseLogPath = (paths) => toAbsolutePath(join72(paths.dir, REUSE_LOG));
+var OUTCOMES = ["pending", "reused", "kept"];
+var text14 = (raw, key2) => {
+  const value = raw[key2];
+  return typeof value === "string" ? value : "";
+};
+var readReuseLog = (runtime, paths) => {
+  const raw = readJsonFile(runtime, reuseLogPath(paths));
+  const list9 = Array.isArray(raw?.["warnings"]) ? raw["warnings"] : [];
+  return {
+    warnings: list9.flatMap((item2) => {
+      if (!isRecord(item2)) return [];
+      const outcome2 = OUTCOMES.find((value) => value === item2["outcome"]) ?? "pending";
+      const id = typeof item2["id"] === "number" ? item2["id"] : 0;
+      return [
+        {
+          id,
+          at: text14(item2, "at"),
+          session: text14(item2, "session"),
+          name: text14(item2, "name"),
+          file: text14(item2, "file"),
+          existing: text14(item2, "existing"),
+          outcome: outcome2
+        }
+      ];
+    }),
+    retired: raw?.["retired"] === true
+  };
+};
+var reuseStats = (log) => {
+  const resolved = log.warnings.filter((item2) => item2.outcome !== "pending");
+  return { resolved: resolved.length, reused: resolved.filter((item2) => item2.outcome === "reused").length };
+};
+var shouldRetire = (log) => {
+  const stats = reuseStats(log);
+  return stats.resolved >= RETIRE_AFTER && stats.reused / stats.resolved < RETIRE_BELOW;
+};
+var writeReuseLog = (runtime, paths, log) => {
+  const stats = reuseStats(log);
+  return writeJsonFile(runtime, reuseLogPath(paths), {
+    retired: log.retired,
+    resolved: stats.resolved,
+    reused: stats.reused,
+    warnings: log.warnings.map((item2) => ({ ...item2 }))
+  }).ok;
+};
+
+// src/reuse/hook.ts
+var allow4 = { kind: "allow" };
+var WRITERS2 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
+var candidates = (raw) => {
+  const input = toolInput(raw);
+  const content = textField(input, "content");
+  if (content !== void 0) return [...new Set(definedNames(content))].filter((name) => !isGeneric(name));
+  return [...new Set(editsOf(input).flatMap((edit) => newDefinitions(edit.oldText, edit.newText)))];
+};
+var definesNow = (input, paths, warning) => {
+  const text17 = input.runtime.readText(toAbsolutePath(join73(paths.root, warning.file)));
+  return text17.ok && definedNames(text17.value).some((name) => normalizeName(name) === normalizeName(warning.name));
+};
+var resolve3 = (input, paths, log, finish5) => {
+  const warnings = log.warnings.map((warning) => {
+    if (warning.outcome !== "pending" || !finish5(warning)) return warning;
+    return { ...warning, outcome: definesNow(input, paths, warning) ? "kept" : "reused" };
+  });
+  const next2 = { ...log, warnings };
+  return { ...next2, retired: log.retired || shouldRetire(next2) };
+};
+var warn = (input, paths, file, log) => {
+  const names2 = candidates(input.payload.raw);
+  if (log.retired || names2.length === 0) return allow4;
+  const index = projectDefinitions(input.runtime, paths.root);
+  if (index.kind === "failed") {
+    logEvent(input.runtime, paths, "reuse.failed", { detail: index.detail });
+    return allow4;
+  }
+  const found = names2.flatMap((name) => {
+    const match = elsewhere(index.definitions, name, file);
+    return match === void 0 ? [] : [{ name, match }];
+  });
+  if (found.length === 0) return allow4;
+  const start2 = log.warnings.reduce((max, item2) => Math.max(max, item2.id), 0);
+  const added = found.map(({ name, match }, offset) => ({
+    id: start2 + offset + 1,
+    at: input.runtime.now(),
+    session: input.payload.sessionId ?? "",
+    name,
+    file,
+    existing: `${match.file}:${String(match.line)}`,
+    outcome: "pending"
+  }));
+  writeReuseLog(input.runtime, paths, { ...log, warnings: [...log.warnings, ...added] });
+  for (const item2 of added)
+    logEvent(input.runtime, paths, "reuse.warning", { id: item2.id, name: item2.name, file, existing: item2.existing });
+  const lines6 = found.map(
+    ({ name, match }) => input.t("reuse.warning", { name, file, existingName: match.name, existing: `${match.file}:${String(match.line)}` })
+  );
+  return { kind: "allow", output: contextOutput("PostToolUse", lines6.join("\n")) };
+};
+var changedFile = (input, paths) => {
+  const target3 = textField(toolInput(input.payload.raw), "file_path");
+  if (!WRITERS2.has(toolName(input.payload.raw)) || target3 === void 0) return void 0;
+  const file = toPosixPath(relative10(paths.root, toAbsolutePath(target3, paths.root)));
+  return isCode(file) ? file : void 0;
+};
+var failedOpen = (input, error) => {
+  const paths = projectPaths(input);
+  if (paths !== void 0) {
+    logEvent(input.runtime, paths, "reuse.failed", { detail: error instanceof Error ? error.message : String(error) });
+  }
+  return allow4;
+};
+var reuseWarning = (input) => {
+  try {
+    const paths = projectPaths(input);
+    const file = paths === void 0 ? void 0 : changedFile(input, paths);
+    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow4;
+    const log = resolve3(input, paths, readReuseLog(input.runtime, paths), (warning) => warning.file === file);
+    writeReuseLog(input.runtime, paths, log);
+    return warn(input, paths, file, log);
+  } catch (error) {
+    return failedOpen(input, error);
+  }
+};
+var reuseOutcomes = (input) => {
+  try {
+    const paths = projectPaths(input);
+    if (paths === void 0) return allow4;
+    const log = readReuseLog(input.runtime, paths);
+    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow4;
+    const session = input.payload.sessionId ?? "";
+    writeReuseLog(
+      input.runtime,
+      paths,
+      resolve3(input, paths, log, (warning) => warning.session === session)
+    );
+    return allow4;
+  } catch (error) {
+    return failedOpen(input, error);
+  }
+};
+var REUSE_HANDLERS = {
+  PostToolUse: [reuseWarning],
+  Stop: [reuseOutcomes],
+  UserPromptSubmit: [reuseOutcomes]
+};
+
+// src/ricochete/context.ts
+import { join as join75 } from "node:path";
 
 // src/signals/store.ts
-import { join as join71 } from "node:path";
+import { join as join74 } from "node:path";
 var SIGNALS_FILE = "signals.jsonl";
 var INDEX_FILE = "signals-index.json";
 var PROFILE_FILE2 = "signals-profile.json";
 var KEEP_LINES = 1e3;
 var ROTATE_AT = 1500;
 var signalFiles = (paths) => ({
-  log: toAbsolutePath(join71(paths.dir, SIGNALS_FILE)),
-  index: toAbsolutePath(join71(paths.dir, INDEX_FILE)),
-  profile: toAbsolutePath(join71(paths.dir, PROFILE_FILE2))
+  log: toAbsolutePath(join74(paths.dir, SIGNALS_FILE)),
+  index: toAbsolutePath(join74(paths.dir, INDEX_FILE)),
+  profile: toAbsolutePath(join74(paths.dir, PROFILE_FILE2))
 });
-var text14 = (raw, key2) => {
+var text15 = (raw, key2) => {
   const value = raw[key2];
   return typeof value === "string" ? value : "";
 };
@@ -27702,31 +28091,31 @@ var count5 = (raw, key2) => {
 };
 var strings7 = (value) => Array.isArray(value) ? value.filter((item2) => typeof item2 === "string") : [];
 var parseEntry4 = (raw) => {
-  const base = { at: text14(raw, "at"), session: text14(raw, "session"), turn: count5(raw, "turn") };
+  const base = { at: text15(raw, "at"), session: text15(raw, "session"), turn: count5(raw, "turn") };
   switch (raw["kind"]) {
     case "error":
-      return { ...base, kind: "error", sig: text14(raw, "sig"), sample: text14(raw, "sample"), tool: text14(raw, "tool") };
+      return { ...base, kind: "error", sig: text15(raw, "sig"), sample: text15(raw, "sample"), tool: text15(raw, "tool") };
     case "edit":
-      return { ...base, kind: "edit", file: text14(raw, "file"), hash: text14(raw, "hash"), undo: raw["undo"] === true };
+      return { ...base, kind: "edit", file: text15(raw, "file"), hash: text15(raw, "hash"), undo: raw["undo"] === true };
     case "prompt":
-      return { ...base, kind: "prompt", fp: strings7(raw["fp"]), progress: text14(raw, "progress") };
+      return { ...base, kind: "prompt", fp: strings7(raw["fp"]), progress: text15(raw, "progress") };
     case "permission":
-      return { ...base, kind: "permission", key: text14(raw, "key") };
+      return { ...base, kind: "permission", key: text15(raw, "key") };
     case "approved":
       return {
         ...base,
         kind: "approved",
-        file: text14(raw, "file"),
+        file: text15(raw, "file"),
         lines: count5(raw, "lines"),
         ms: count5(raw, "ms"),
         fast: raw["fast"] === true
       };
     case "research":
-      return { ...base, kind: "research", agent: text14(raw, "agent") };
+      return { ...base, kind: "research", agent: text15(raw, "agent") };
     case "release":
-      return { ...base, kind: "release", sig: text14(raw, "sig") };
+      return { ...base, kind: "release", sig: text15(raw, "sig") };
     case "fourth":
-      return { ...base, kind: "fourth", sig: text14(raw, "sig"), mode: text14(raw, "mode") };
+      return { ...base, kind: "fourth", sig: text15(raw, "sig"), mode: text15(raw, "mode") };
     default:
       return void 0;
   }
@@ -27795,7 +28184,7 @@ var taskInView = (input) => {
   const found = taskId(input, paths);
   if (found === void 0) return void 0;
   const disk = (relative16) => {
-    const text17 = input.runtime.readText(toAbsolutePath(join72(root, relative16)));
+    const text17 = input.runtime.readText(toAbsolutePath(join75(root, relative16)));
     return text17.ok ? text17.value : void 0;
   };
   const loaded = loadTask(input.runtime, paths, { disk, base: () => void 0 }, found.task);
@@ -27836,7 +28225,7 @@ var coverage2 = (checks) => PERTURBATIONS.map((question) => {
 });
 
 // src/ricochete/stop.ts
-var allow4 = { kind: "allow" };
+var allow5 = { kind: "allow" };
 var REPORTED_FILE = "ricochete.json";
 var block4 = (reason, note2) => ({
   kind: "block",
@@ -27847,12 +28236,12 @@ var block4 = (reason, note2) => ({
 var messageOf3 = (input) => textField(input.payload.raw, "last_assistant_message") ?? "";
 var horizonGuard = (input) => {
   const message = messageOf3(input);
-  if (!isHorizonHelp(message)) return allow4;
+  if (!isHorizonHelp(message)) return allow5;
   const view2 = taskInView(input);
-  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow4;
+  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow5;
   const ids2 = new Set(view2.checks.map((check2) => check2.id));
   const named = criterionIds(message);
-  if (named.some((id) => ids2.has(id))) return allow4;
+  if (named.some((id) => ids2.has(id))) return allow5;
   const { t } = input;
   const params2 = { task: view2.task, named: named.join(", ") || "-", checks: [...ids2].join(", ") };
   logEvent(input.runtime, view2.paths, "ricochete.horizon_without_criterion", { task: view2.task, named: [...named] });
@@ -27864,10 +28253,10 @@ var reportedTasks = (input, view2) => {
 };
 var perturbationReport = (input) => {
   const view2 = taskInView(input);
-  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow4;
-  if (!judgmentSignal(input, view2.paths)) return allow4;
+  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow5;
+  if (!judgmentSignal(input, view2.paths)) return allow5;
   const reported = reportedTasks(input, view2);
-  if (reported.includes(view2.task)) return allow4;
+  if (reported.includes(view2.task)) return allow5;
   writeJsonFile(input.runtime, view2.paths.cache(REPORTED_FILE), { tasks: [...reported, view2.task].slice(-100) });
   const { t } = input;
   const lines6 = coverage2(view2.checks).map(
@@ -27883,7 +28272,7 @@ var perturbationReport = (input) => {
 var RICOCHETE_HANDLERS = { Stop: [horizonGuard, perturbationReport] };
 
 // src/rules/guard.ts
-import { relative as relative10 } from "node:path";
+import { relative as relative11 } from "node:path";
 
 // src/rules/manifest.ts
 var MANIFEST_FILE = ".finitemonkey/rules-compiled.json";
@@ -28114,7 +28503,7 @@ var broken = (input, rule) => {
   if (!FILE_TOOLS.has(tool)) return false;
   const root = guardRoot(input);
   const path = textField(args2, "file_path", "notebook_path") ?? "";
-  return path !== "" && pathMatches(rule, tool, toPosixPath(relative10(root, toAbsolutePath(path, root))));
+  return path !== "" && pathMatches(rule, tool, toPosixPath(relative11(root, toAbsolutePath(path, root))));
 };
 var rulesGuard = (input) => {
   const root = guardRoot(input);
@@ -28132,504 +28521,6 @@ var rulesGuard = (input) => {
     return { kind: "allow", output: { hookSpecificOutput: { hookEventName: "PreToolUse", additionalContext } } };
   }
   return deny(modelReason(input.t, "rules.block.broken", params2), input.t("rules.block.human", params2));
-};
-
-// src/relay/hook.ts
-import { join as join73 } from "node:path";
-
-// src/relay/imports.ts
-var JS_IMPORT = /(?:^|\s)import\s+(?:[\w*{}\s,]+\s+from\s+)?["']([^"'\n]+)["']|require\(\s*["']([^"'\n]+)["']\s*\)/g;
-var PY_IMPORT = /^[ \t]*(?:from\s+([A-Za-z_][\w.]*)\s+import\s|import\s+([A-Za-z_][\w.]*)[ \t]*(?:$|,|\s+as\s))/gm;
-var NODE_BUILTINS = /* @__PURE__ */ new Set([
-  "assert",
-  "buffer",
-  "child_process",
-  "crypto",
-  "dns",
-  "events",
-  "fs",
-  "http",
-  "https",
-  "net",
-  "os",
-  "path",
-  "process",
-  "querystring",
-  "readline",
-  "stream",
-  "string_decoder",
-  "timers",
-  "tls",
-  "url",
-  "util",
-  "worker_threads",
-  "zlib"
-]);
-var PYTHON_STDLIB = /* @__PURE__ */ new Set([
-  "abc",
-  "argparse",
-  "asyncio",
-  "base64",
-  "collections",
-  "contextlib",
-  "csv",
-  "dataclasses",
-  "datetime",
-  "decimal",
-  "enum",
-  "functools",
-  "glob",
-  "hashlib",
-  "http",
-  "io",
-  "itertools",
-  "json",
-  "logging",
-  "math",
-  "os",
-  "pathlib",
-  "random",
-  "re",
-  "shutil",
-  "socket",
-  "sqlite3",
-  "string",
-  "subprocess",
-  "sys",
-  "tempfile",
-  "threading",
-  "time",
-  "typing",
-  "unittest",
-  "urllib",
-  "uuid",
-  "__future__"
-]);
-var jsPackage = (specifier) => {
-  if (specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("node:")) return void 0;
-  const parts = specifier.split("/");
-  const name = specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0] ?? "";
-  return name === "" || NODE_BUILTINS.has(name) ? void 0 : name;
-};
-var pyPackage = (module) => {
-  const name = module.split(".")[0] ?? "";
-  return name === "" || PYTHON_STDLIB.has(name) ? void 0 : name;
-};
-var importedPackages = (text17) => {
-  const found = /* @__PURE__ */ new Map();
-  for (const match of text17.matchAll(JS_IMPORT)) {
-    const name = jsPackage(match[1] ?? match[2] ?? "");
-    if (name !== void 0) found.set(`js:${name}`, { name, language: "js" });
-  }
-  for (const match of text17.matchAll(PY_IMPORT)) {
-    const name = pyPackage(match[1] ?? match[2] ?? "");
-    if (name !== void 0) found.set(`python:${name}`, { name, language: "python" });
-  }
-  return [...found.values()];
-};
-
-// src/relay/detect.ts
-var PASTED = /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content>/gi;
-var FENCE5 = /```[^\n]*\n([\s\S]*?)```/g;
-var MIN_LINES = 4;
-var MIN_CHARS = 800;
-var CHAT = [
-  /^\s*(?:chatgpt|gpt-?\d|gemini|copilot|claude|assistant|bard|perplexity)\s*(?:said|disse|dijo)?\s*:/im,
-  /^\s*(?:you said|voc[eê] disse|dijiste|user)\s*:/im,
-  /\bcopy code\b|\bcopiar c[oó]digo\b/i,
-  /\bas an ai (?:language )?model\b|\bcomo (?:um|una?) (?:modelo|ia)\b/i,
-  /^\s*(?:sure|certainly|claro|com certeza|por supuesto)[!,.]\s+(?:here|aqui|aquí)/im
-];
-var PLACEHOLDER2 = /\b(?:YOUR_[A-Z_]+|your[-_]?api[-_]?key|<your[-_ ][^>]+>|path\/to\/[\w./-]+|example\.com)\b|\/\/\s*\.\.\.|#\s*\.\.\.|\.\.\.\s*(?:rest of|resto d)|\brest of (?:the )?code\b|\bTODO: implement\b/gi;
-var lineCount3 = (text17) => text17.split("\n").filter((line11) => line11.trim() !== "").length;
-var pastedBlocks = (prompt) => {
-  const explicit = [...prompt.matchAll(PASTED), ...prompt.matchAll(FENCE5)].map((match) => match[1] ?? "");
-  const blocks = explicit.length > 0 ? explicit : [prompt];
-  return blocks.map((text17) => ({ text: text17, lines: lineCount3(text17) })).filter((block6) => explicit.length > 0 || block6.lines >= MIN_LINES || block6.text.length >= MIN_CHARS);
-};
-var isMissing = (pkg, manifests) => {
-  const escaped = pkg.name.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
-  const pattern = pkg.language === "js" ? new RegExp(`["']${escaped}["']\\s*:`) : new RegExp(`(?:^|["'\\s])${escaped.replace(/[-_]/g, "[-_]")}(?:\\s|[=<>~\\[;"',]|$)`, "im");
-  return !pattern.test(manifests);
-};
-var detectRelay = (prompt, facts) => {
-  const blocks = pastedBlocks(prompt);
-  if (blocks.length === 0) return void 0;
-  const text17 = blocks.map((block6) => block6.text).join("\n");
-  const placeholders = [...new Set([...text17.matchAll(PLACEHOLDER2)].map((match) => match[0]))].slice(0, 5);
-  const missing2 = importedPackages(text17).filter((pkg) => (pkg.language === "js" ? facts.hasJs : facts.hasPython) && isMissing(pkg, facts.manifests)).map((pkg) => pkg.name);
-  const markers = [
-    ...CHAT.some((pattern) => pattern.test(text17)) ? ["chat"] : [],
-    ...placeholders.length > 0 ? ["placeholder"] : [],
-    ...missing2.length > 0 ? ["missing_import"] : [],
-    ...facts.ownOutput.some((line11) => line11.length >= 20 && text17.includes(line11)) ? ["own_output"] : []
-  ];
-  if (markers.length === 0) return void 0;
-  return {
-    blocks: blocks.length,
-    lines: blocks.reduce((sum, block6) => sum + block6.lines, 0),
-    markers,
-    missing: missing2,
-    placeholders
-  };
-};
-
-// src/relay/hook.ts
-var JS_MANIFESTS = ["package.json"];
-var PYTHON_MANIFESTS2 = ["requirements.txt", "pyproject.toml", "Pipfile"];
-var LOG_TAIL = 64 * 1024;
-var read3 = (runtime, root, name) => {
-  const text17 = runtime.readText(toAbsolutePath(join73(root, name)));
-  return text17.ok ? text17.value : void 0;
-};
-var recentClaims = (runtime, paths) => {
-  const log = runtime.readText(paths.log);
-  if (!log.ok) return [];
-  return log.value.slice(-LOG_TAIL).split("\n").flatMap((line11) => {
-    const parsed = parseJsonObject(line11);
-    const claim = parsed.ok ? parsed.value["claim"] : void 0;
-    return typeof claim === "string" ? [claim] : [];
-  });
-};
-var projectFacts = (runtime, paths) => {
-  const js = JS_MANIFESTS.flatMap((name) => read3(runtime, paths.root, name) ?? []);
-  const python = PYTHON_MANIFESTS2.flatMap((name) => read3(runtime, paths.root, name) ?? []);
-  return {
-    manifests: [...js, ...python].join("\n"),
-    hasJs: js.length > 0,
-    hasPython: python.length > 0,
-    ownOutput: recentClaims(runtime, paths)
-  };
-};
-var relayNote = (t, finding5) => [
-  t("relay.note.found", { count: finding5.blocks, lines: finding5.lines }),
-  ...finding5.markers.map(
-    (marker3) => marker3 === "missing_import" ? t("relay.marker.missing_import", { list: finding5.missing.join(", ") }) : marker3 === "placeholder" ? t("relay.marker.placeholder", { list: finding5.placeholders.join(", ") }) : t(`relay.marker.${marker3}`)
-  ),
-  t("relay.note.source")
-].join(" ");
-var relayDetector = (input) => {
-  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  const paths = projectPaths(input);
-  if (paths === void 0 || prompt.trim() === "" || !comesFromPerson(prompt)) return { kind: "allow" };
-  const finding5 = detectRelay(prompt, projectFacts(input.runtime, paths));
-  if (finding5 === void 0) return { kind: "allow" };
-  if (input.runtime.stat(paths.dir)?.kind === "dir") {
-    logEvent(input.runtime, paths, "relay.flagged", {
-      markers: [...finding5.markers],
-      blocks: finding5.blocks,
-      lines: finding5.lines
-    });
-  }
-  return { kind: "allow", output: contextOutput("UserPromptSubmit", relayNote(input.t, finding5)) };
-};
-var RELAY_HANDLERS = { UserPromptSubmit: [relayDetector] };
-
-// src/reuse/hook.ts
-import { join as join75, relative as relative11 } from "node:path";
-
-// src/map/defs.ts
-var SKIPPED_PATH = /(^|\/)(node_modules|dist|build|out|vendor|coverage|generated|__generated__|tests?|__tests__|spec|fixtures)\/|\.(test|spec)\.[a-z]+$|\.d\.ts$|\.min\.js$|\.generated\.[a-z]+$|_pb2\.py$|\.pb\.go$|_test\.go$|(^|\/)test_[^/]+\.py$|^\.finitemonkey\//;
-var CODE_FILES = ["ts", "tsx", "js", "jsx", "mjs", "cjs", "py", "go", "rs", "rb"];
-var AST_FILES = /* @__PURE__ */ new Set(["ts", "tsx", "js", "jsx", "mjs", "cjs", "py"]);
-var GREP_PATTERN = "^(export +(default +)?(async +)?(function|const|let|var|class|interface|type|enum|abstract +class) |(async +)?function\\*? *[A-Za-z_$]|class +[A-Za-z_]|def +[A-Za-z_]|func +|type +[A-Z][A-Za-z0-9_]* +(struct|interface)|pub +(fn|struct|enum|trait) +|module +[A-Z])";
-var NAMES = [
-  /^export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|var|class|interface|type|enum|abstract\s+class)\s+([A-Za-z_$][\w$]*)/,
-  /^(?:async\s+)?function\*?\s*([A-Za-z_$][\w$]*)/,
-  /^class\s+([A-Za-z_$][\w$]*)/,
-  /^def\s+([A-Za-z_]\w*[?!]?)/,
-  /^func\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/,
-  /^type\s+([A-Z]\w*)\s+(?:struct|interface)/,
-  /^pub\s+(?:fn|struct|enum|trait)\s+([A-Za-z_]\w*)/,
-  /^module\s+([A-Z]\w*)/
-];
-var nameIn = (line11) => {
-  for (const pattern of NAMES) {
-    const name = pattern.exec(line11)?.[1];
-    if (name !== void 0) return name;
-  }
-  return void 0;
-};
-var extensionOf = (file) => {
-  const dot = file.lastIndexOf(".");
-  return dot === -1 ? "" : file.slice(dot + 1);
-};
-var isCode = (file) => CODE_FILES.includes(extensionOf(file)) && !SKIPPED_PATH.test(file);
-
-// src/reuse/names.ts
-var GENERIC_NAMES = new Set(
-  [
-    "get",
-    "set",
-    "init",
-    "render",
-    "handle",
-    "handler",
-    "main",
-    "index",
-    "run",
-    "start",
-    "stop",
-    "create",
-    "update",
-    "delete",
-    "remove",
-    "load",
-    "save",
-    "parse",
-    "format",
-    "default",
-    "props",
-    "config",
-    "setup",
-    "app",
-    "helper",
-    "helpers",
-    "utils",
-    "util",
-    "test",
-    "data",
-    "value",
-    "result",
-    "item",
-    "items",
-    "list",
-    "map",
-    "filter",
-    "reduce",
-    "constructor",
-    "options",
-    "state",
-    "context",
-    "provider",
-    "component",
-    "page",
-    "layout",
-    "schema",
-    "types",
-    "type",
-    "error",
-    "errors",
-    "request",
-    "response",
-    "client",
-    "server",
-    "router",
-    "routes",
-    "store",
-    "model",
-    "service",
-    "controller",
-    "validate",
-    "transform",
-    "fetch",
-    "post",
-    "put",
-    "patch",
-    "use",
-    "on",
-    "off",
-    "emit",
-    "logger",
-    "log",
-    "new",
-    "build",
-    "make",
-    "of",
-    "from",
-    "to",
-    "id",
-    "name",
-    "key"
-  ].map((name) => name.toLowerCase())
-);
-var MIN_LENGTH = 4;
-var normalizeName = (name) => name.toLowerCase().replace(/[_-]/g, "");
-var isGeneric = (name) => {
-  const normalized3 = normalizeName(name);
-  return normalized3.length < MIN_LENGTH || GENERIC_NAMES.has(normalized3);
-};
-var definedNames = (text17) => text17.split(/\r?\n/).flatMap((line11) => {
-  const name = nameIn(line11);
-  return name === void 0 ? [] : [name];
-});
-var newDefinitions = (before, after) => {
-  const old = new Set(definedNames(before).map(normalizeName));
-  return [...new Set(definedNames(after))].filter((name) => !old.has(normalizeName(name)) && !isGeneric(name));
-};
-
-// src/reuse/index-defs.ts
-var GREP_LINE2 = /^(.+?):(\d+):(.*)$/;
-var projectDefinitions = (runtime, root) => {
-  const spec2 = CODE_FILES.map((ext) => `:(glob)**/*.${ext}`);
-  const result = gitAt(runtime, root).run(["grep", "--untracked", "-n", "-I", "-E", "-e", GREP_PATTERN, "--", ...spec2]);
-  if (!result.found) return { kind: "failed", detail: "git not found" };
-  if (result.exitCode !== 0 && result.exitCode !== 1) {
-    return { kind: "failed", detail: `git grep exited ${String(result.exitCode)}: ${result.stderr.slice(0, 200)}` };
-  }
-  const definitions = result.stdout.split("\n").map(withoutCarriageReturn).flatMap((line11) => {
-    const match = GREP_LINE2.exec(line11);
-    const file = match?.[1];
-    const name = nameIn(match?.[3] ?? "");
-    return file === void 0 || name === void 0 || !isCode(file) ? [] : [{ file, line: Number(match?.[2] ?? "0"), name }];
-  });
-  return { kind: "ok", definitions };
-};
-var elsewhere = (definitions, name, file) => {
-  const wanted = normalizeName(name);
-  return definitions.find((item2) => item2.file !== file && normalizeName(item2.name) === wanted);
-};
-
-// src/reuse/log.ts
-import { join as join74 } from "node:path";
-var REUSE_LOG = "reuse.json";
-var RETIRE_AFTER = 100;
-var RETIRE_BELOW = 0.2;
-var reuseLogPath = (paths) => toAbsolutePath(join74(paths.dir, REUSE_LOG));
-var OUTCOMES = ["pending", "reused", "kept"];
-var text15 = (raw, key2) => {
-  const value = raw[key2];
-  return typeof value === "string" ? value : "";
-};
-var readReuseLog = (runtime, paths) => {
-  const raw = readJsonFile(runtime, reuseLogPath(paths));
-  const list9 = Array.isArray(raw?.["warnings"]) ? raw["warnings"] : [];
-  return {
-    warnings: list9.flatMap((item2) => {
-      if (!isRecord(item2)) return [];
-      const outcome2 = OUTCOMES.find((value) => value === item2["outcome"]) ?? "pending";
-      const id = typeof item2["id"] === "number" ? item2["id"] : 0;
-      return [
-        {
-          id,
-          at: text15(item2, "at"),
-          session: text15(item2, "session"),
-          name: text15(item2, "name"),
-          file: text15(item2, "file"),
-          existing: text15(item2, "existing"),
-          outcome: outcome2
-        }
-      ];
-    }),
-    retired: raw?.["retired"] === true
-  };
-};
-var reuseStats = (log) => {
-  const resolved = log.warnings.filter((item2) => item2.outcome !== "pending");
-  return { resolved: resolved.length, reused: resolved.filter((item2) => item2.outcome === "reused").length };
-};
-var shouldRetire = (log) => {
-  const stats = reuseStats(log);
-  return stats.resolved >= RETIRE_AFTER && stats.reused / stats.resolved < RETIRE_BELOW;
-};
-var writeReuseLog = (runtime, paths, log) => {
-  const stats = reuseStats(log);
-  return writeJsonFile(runtime, reuseLogPath(paths), {
-    retired: log.retired,
-    resolved: stats.resolved,
-    reused: stats.reused,
-    warnings: log.warnings.map((item2) => ({ ...item2 }))
-  }).ok;
-};
-
-// src/reuse/hook.ts
-var allow5 = { kind: "allow" };
-var WRITERS2 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
-var candidates = (raw) => {
-  const input = toolInput(raw);
-  const content = textField(input, "content");
-  if (content !== void 0) return [...new Set(definedNames(content))].filter((name) => !isGeneric(name));
-  return [...new Set(editsOf(input).flatMap((edit) => newDefinitions(edit.oldText, edit.newText)))];
-};
-var definesNow = (input, paths, warning) => {
-  const text17 = input.runtime.readText(toAbsolutePath(join75(paths.root, warning.file)));
-  return text17.ok && definedNames(text17.value).some((name) => normalizeName(name) === normalizeName(warning.name));
-};
-var resolve3 = (input, paths, log, finish5) => {
-  const warnings = log.warnings.map((warning) => {
-    if (warning.outcome !== "pending" || !finish5(warning)) return warning;
-    return { ...warning, outcome: definesNow(input, paths, warning) ? "kept" : "reused" };
-  });
-  const next2 = { ...log, warnings };
-  return { ...next2, retired: log.retired || shouldRetire(next2) };
-};
-var warn = (input, paths, file, log) => {
-  const names2 = candidates(input.payload.raw);
-  if (log.retired || names2.length === 0) return allow5;
-  const index = projectDefinitions(input.runtime, paths.root);
-  if (index.kind === "failed") {
-    logEvent(input.runtime, paths, "reuse.failed", { detail: index.detail });
-    return allow5;
-  }
-  const found = names2.flatMap((name) => {
-    const match = elsewhere(index.definitions, name, file);
-    return match === void 0 ? [] : [{ name, match }];
-  });
-  if (found.length === 0) return allow5;
-  const start2 = log.warnings.reduce((max, item2) => Math.max(max, item2.id), 0);
-  const added = found.map(({ name, match }, offset) => ({
-    id: start2 + offset + 1,
-    at: input.runtime.now(),
-    session: input.payload.sessionId ?? "",
-    name,
-    file,
-    existing: `${match.file}:${String(match.line)}`,
-    outcome: "pending"
-  }));
-  writeReuseLog(input.runtime, paths, { ...log, warnings: [...log.warnings, ...added] });
-  for (const item2 of added)
-    logEvent(input.runtime, paths, "reuse.warning", { id: item2.id, name: item2.name, file, existing: item2.existing });
-  const lines6 = found.map(
-    ({ name, match }) => input.t("reuse.warning", { name, file, existingName: match.name, existing: `${match.file}:${String(match.line)}` })
-  );
-  return { kind: "allow", output: contextOutput("PostToolUse", lines6.join("\n")) };
-};
-var changedFile = (input, paths) => {
-  const target3 = textField(toolInput(input.payload.raw), "file_path");
-  if (!WRITERS2.has(toolName(input.payload.raw)) || target3 === void 0) return void 0;
-  const file = toPosixPath(relative11(paths.root, toAbsolutePath(target3, paths.root)));
-  return isCode(file) ? file : void 0;
-};
-var failedOpen = (input, error) => {
-  const paths = projectPaths(input);
-  if (paths !== void 0) {
-    logEvent(input.runtime, paths, "reuse.failed", { detail: error instanceof Error ? error.message : String(error) });
-  }
-  return allow5;
-};
-var reuseWarning = (input) => {
-  try {
-    const paths = projectPaths(input);
-    const file = paths === void 0 ? void 0 : changedFile(input, paths);
-    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow5;
-    const log = resolve3(input, paths, readReuseLog(input.runtime, paths), (warning) => warning.file === file);
-    writeReuseLog(input.runtime, paths, log);
-    return warn(input, paths, file, log);
-  } catch (error) {
-    return failedOpen(input, error);
-  }
-};
-var reuseOutcomes = (input) => {
-  try {
-    const paths = projectPaths(input);
-    if (paths === void 0) return allow5;
-    const log = readReuseLog(input.runtime, paths);
-    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow5;
-    const session = input.payload.sessionId ?? "";
-    writeReuseLog(
-      input.runtime,
-      paths,
-      resolve3(input, paths, log, (warning) => warning.session === session)
-    );
-    return allow5;
-  } catch (error) {
-    return failedOpen(input, error);
-  }
-};
-var REUSE_HANDLERS = {
-  PostToolUse: [reuseWarning],
-  Stop: [reuseOutcomes],
-  UserPromptSubmit: [reuseOutcomes]
 };
 
 // src/secrets/guards/describe.ts
