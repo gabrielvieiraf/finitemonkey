@@ -119,6 +119,12 @@ const CASES: Readonly<Record<string, Case>> = {
     fire: { files: { [USER_SETTINGS]: settings({ enabledPlugins: { "ralph-loop@claude-plugins": true } }) } },
     quiet: { files: { [USER_SETTINGS]: settings({ enabledPlugins: { "ralph-loop@claude-plugins": false } }) } },
   },
+  "default transcript retention shorter than the project": {
+    check: "settings.cleanup_period",
+    status: "warn",
+    fire: { git: firstCommit(100) },
+    quiet: { git: firstCommit(10) },
+  },
   "cleanupPeriodDays shorter than the project": {
     check: "settings.cleanup_period",
     status: "warn",

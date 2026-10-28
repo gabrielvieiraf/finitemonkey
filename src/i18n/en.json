@@ -1002,5 +1002,14 @@
   "parity.issue.no_destination": "no destination: {detail}",
   "parity.issue.no_test": "no parity test: {detail}",
   "parity.issue.not_green": "parity test not green: {detail}",
-  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}"
+  "parity.issue.removed_without_decision": "removed without a linked decision record: {detail}",
+  "command.audit.summary": "Find requests, decisions, corrections and numbers from the conversation that never reached a document",
+  "audit.title": "{count, plural, one {# item} other {# items}} from the person's messages (source: {source}):",
+  "audit.state.contradicted": "Contradicted by a document ({count}):",
+  "audit.state.superseded": "Superseded by a later message ({count}):",
+  "audit.state.in_master": "In the master plan ({count}):",
+  "audit.state.only_report": "Only in a report, not in the master plan ({count}):",
+  "audit.state.lost": "Lost, in no document ({count}):",
+  "audit.incidents": "Credentials pasted in past sessions opened incidents: {list}",
+  "audit.error.open": "{count, plural, one {# item is} other {# items are}} lost or contradicted"
 }

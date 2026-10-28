@@ -50,6 +50,12 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
       "`init` e `update`: configuração dos hooks (e, com `--sandbox`, o sandbox nas suas configurações locais), a skill verify, um bloco gerenciado curto no `AGENTS.md` que o `CLAUDE.md` importa, uma linha no `.gitignore`, o runtime fixado e um backup de cada arquivo que alteram.",
     es: "`init` y `update`: la configuración de los hooks (y, con `--sandbox`, el sandbox en tu configuración local), la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
   },
+  prompts: {
+    en: "What you type to Claude Code in this project, with secrets masked, so `finitemonkey audit` can find requests and decisions that never reached a document. It stays on this machine.",
+    "pt-BR":
+      "O que você digita para o Claude Code neste projeto, com segredos mascarados, para o `finitemonkey audit` achar pedidos e decisões que nunca chegaram a um documento. Fica nesta máquina.",
+    es: "Lo que escribes a Claude Code en este proyecto, con los secretos enmascarados, para que `finitemonkey audit` encuentre pedidos y decisiones que nunca llegaron a un documento. Se queda en esta máquina.",
+  },
   spend: {
     en: "Agent spend estimated from the local session logs, per task, day and month, and the differences found by `cost reconcile`.",
     "pt-BR":
