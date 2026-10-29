@@ -2293,5 +2293,17 @@
   "fronts.board.waiting": " · esperando por ti",
   "onboard.block.pointers": "Dónde buscar",
   "onboard.block.pointer.map": "símbolos por carpeta: `finitemonkey map` (en caché en `{file}`)",
-  "onboard.block.trimmed": "{count} líneas quedaron fuera del bloque de AGENTS.md para caber en {maxLines} líneas y {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens en policy.yml)"
+  "onboard.block.trimmed": "{count} líneas quedaron fuera del bloque de AGENTS.md para caber en {maxLines} líneas y {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens en policy.yml)",
+  "instructions.drift.missing_path": "{at}: `{ref}` no está en el árbol (línea de {commit})",
+  "instructions.drift.missing_script": "{at}: `{ref}` nombra un script o target que no existe (línea de {commit})",
+  "instructions.drift.missing_symbol": "{at}: `{ref}` no aparece en ningún lugar del código (línea de {commit})",
+  "instructions.drift.wrong_manager": "{at}: la instrucción dice {ref}, el lockfile es {lockfile} (línea de {commit})",
+  "instructions.drift.forbidden_dependency": "{at}: la instrucción prohíbe {ref}, package.json depende de él (línea de {commit})",
+  "instructions.drift.contradiction": "{at} y {other} se contradicen (línea de {commit})",
+  "instructions.drift.contradiction_proposal": "propuesta de un modelo, sin verificar: {at} y {other} pueden contradecirse",
+  "instructions.drift.violated_rule": "la regla {ref} se violó {count, plural, one {# vez} other {# veces}}; conviértela en check o bórrala ({at}, línea de {commit})",
+  "instructions.drift.uncommitted": "texto sin commit",
+  "instructions.drift.strict": "{count, plural, one {# línea de instrucción ya no coincide} other {# líneas de instrucción ya no coinciden}} con el repositorio",
+  "doctor.instructions.drift": "{count, plural, one {# línea de instrucción ya no coincide} other {# líneas de instrucción ya no coinciden}} con el repositorio; primera: {example}",
+  "doctor.instructions.fix_drift": "ejecuta `finitemonkey instructions` para la lista con el commit que escribió cada línea; corrige o borra la línea, o convierte en check la regla que se sigue violando"
 }

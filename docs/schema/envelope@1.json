@@ -120,7 +120,8 @@
             "guardian_write_failed",
             "unattended_refused",
             "unattended_incomplete",
-            "guard_bypassed"
+            "guard_bypassed",
+            "instructions_drift"
           ]
         },
         "message": {

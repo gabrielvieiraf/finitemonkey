@@ -2293,5 +2293,17 @@
   "fronts.board.waiting": " · waiting on you",
   "onboard.block.pointers": "Where to look",
   "onboard.block.pointer.map": "symbols by folder: `finitemonkey map` (cached in `{file}`)",
-  "onboard.block.trimmed": "{count} lines left out of the AGENTS.md block to stay within {maxLines} lines and {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens in policy.yml)"
+  "onboard.block.trimmed": "{count} lines left out of the AGENTS.md block to stay within {maxLines} lines and {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens in policy.yml)",
+  "instructions.drift.missing_path": "{at}: `{ref}` is not in the tree (line from {commit})",
+  "instructions.drift.missing_script": "{at}: `{ref}` names a script or target that does not exist (line from {commit})",
+  "instructions.drift.missing_symbol": "{at}: `{ref}` appears nowhere in the code (line from {commit})",
+  "instructions.drift.wrong_manager": "{at}: the instruction says {ref}, the lockfile is {lockfile} (line from {commit})",
+  "instructions.drift.forbidden_dependency": "{at}: the instruction forbids {ref}, package.json depends on it (line from {commit})",
+  "instructions.drift.contradiction": "{at} and {other} contradict each other (line from {commit})",
+  "instructions.drift.contradiction_proposal": "proposal from a model, not checked: {at} and {other} may contradict each other",
+  "instructions.drift.violated_rule": "rule {ref} was violated {count, plural, one {# time} other {# times}}; turn it into a check or delete it ({at}, line from {commit})",
+  "instructions.drift.uncommitted": "uncommitted text",
+  "instructions.drift.strict": "{count, plural, one {# instruction line no longer matches} other {# instruction lines no longer match}} the repository",
+  "doctor.instructions.drift": "{count, plural, one {# instruction line no longer matches} other {# instruction lines no longer match}} the repository; first: {example}",
+  "doctor.instructions.fix_drift": "run `finitemonkey instructions` for the list with the commit that wrote each line; fix or delete the line, or turn a rule that keeps being violated into a check"
 }

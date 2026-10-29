@@ -50,6 +50,9 @@ jobs:
       - run: npm run check
       - name: dist/ matches a fresh build
         run: npm run build && git diff --exit-code dist/
+      - name: instruction files match the repository
+        if: matrix.os == 'ubuntu-latest'
+        run: node dist/finitemonkey.mjs instructions --strict
       - name: installed bins run from a prefix with spaces and accents
         run: npm run smoke:install
       - name: plugin validate --strict, mod footprint, mod load and claude plugin test

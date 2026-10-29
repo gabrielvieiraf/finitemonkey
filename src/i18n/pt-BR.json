@@ -2293,5 +2293,17 @@
   "fronts.board.waiting": " · esperando você",
   "onboard.block.pointers": "Onde procurar",
   "onboard.block.pointer.map": "símbolos por pasta: `finitemonkey map` (em cache em `{file}`)",
-  "onboard.block.trimmed": "{count} linhas ficaram fora do bloco do AGENTS.md para caber em {maxLines} linhas e {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens no policy.yml)"
+  "onboard.block.trimmed": "{count} linhas ficaram fora do bloco do AGENTS.md para caber em {maxLines} linhas e {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens no policy.yml)",
+  "instructions.drift.missing_path": "{at}: `{ref}` não está na árvore (linha de {commit})",
+  "instructions.drift.missing_script": "{at}: `{ref}` cita um script ou alvo que não existe (linha de {commit})",
+  "instructions.drift.missing_symbol": "{at}: `{ref}` não aparece em lugar nenhum do código (linha de {commit})",
+  "instructions.drift.wrong_manager": "{at}: a instrução diz {ref}, o lockfile é {lockfile} (linha de {commit})",
+  "instructions.drift.forbidden_dependency": "{at}: a instrução proíbe {ref}, o package.json depende dele (linha de {commit})",
+  "instructions.drift.contradiction": "{at} e {other} se contradizem (linha de {commit})",
+  "instructions.drift.contradiction_proposal": "proposta de um modelo, não verificada: {at} e {other} podem se contradizer",
+  "instructions.drift.violated_rule": "a regra {ref} foi violada {count, plural, one {# vez} other {# vezes}}; transforme em check ou apague ({at}, linha de {commit})",
+  "instructions.drift.uncommitted": "texto não commitado",
+  "instructions.drift.strict": "{count, plural, one {# linha de instrução não bate mais} other {# linhas de instrução não batem mais}} com o repositório",
+  "doctor.instructions.drift": "{count, plural, one {# linha de instrução não bate mais} other {# linhas de instrução não batem mais}} com o repositório; primeira: {example}",
+  "doctor.instructions.fix_drift": "rode `finitemonkey instructions` para a lista com o commit que escreveu cada linha; corrija ou apague a linha, ou transforme em check a regra que segue sendo violada"
 }

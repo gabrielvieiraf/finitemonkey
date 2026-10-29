@@ -103,6 +103,7 @@ export const ERROR_CODES = [
   "unattended_refused",
   "unattended_incomplete",
   "guard_bypassed",
+  "instructions_drift",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

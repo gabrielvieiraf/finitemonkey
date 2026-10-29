@@ -2294,7 +2294,19 @@
     "fronts.board.waiting": "machine",
     "onboard.block.pointers": "machine",
     "onboard.block.pointer.map": "machine",
-    "onboard.block.trimmed": "machine"
+    "onboard.block.trimmed": "machine",
+    "instructions.drift.missing_path": "machine",
+    "instructions.drift.missing_script": "machine",
+    "instructions.drift.missing_symbol": "machine",
+    "instructions.drift.wrong_manager": "machine",
+    "instructions.drift.forbidden_dependency": "machine",
+    "instructions.drift.contradiction": "machine",
+    "instructions.drift.contradiction_proposal": "machine",
+    "instructions.drift.violated_rule": "machine",
+    "instructions.drift.uncommitted": "machine",
+    "instructions.drift.strict": "machine",
+    "doctor.instructions.drift": "machine",
+    "doctor.instructions.fix_drift": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4591,6 +4603,18 @@
     "fronts.board.waiting": "machine",
     "onboard.block.pointers": "machine",
     "onboard.block.pointer.map": "machine",
-    "onboard.block.trimmed": "machine"
+    "onboard.block.trimmed": "machine",
+    "instructions.drift.missing_path": "machine",
+    "instructions.drift.missing_script": "machine",
+    "instructions.drift.missing_symbol": "machine",
+    "instructions.drift.wrong_manager": "machine",
+    "instructions.drift.forbidden_dependency": "machine",
+    "instructions.drift.contradiction": "machine",
+    "instructions.drift.contradiction_proposal": "machine",
+    "instructions.drift.violated_rule": "machine",
+    "instructions.drift.uncommitted": "machine",
+    "instructions.drift.strict": "machine",
+    "doctor.instructions.drift": "machine",
+    "doctor.instructions.fix_drift": "machine"
   }
 }
