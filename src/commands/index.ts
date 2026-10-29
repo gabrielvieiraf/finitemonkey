@@ -5,7 +5,6 @@ import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { calibrateExplainCommand, calibrateRefitCommand } from "./calibrate.js";
-import { bypassReviewCommand } from "./bypass.js";
 import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
@@ -31,7 +30,6 @@ import { dsSyncCommand } from "./ds-sync.js";
 import { evidenceWhyCommand } from "./evidence-why.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
-import { frontsBoardCommand } from "./fronts-board.js";
 import { frontsCloseCommand } from "./fronts-close.js";
 import { frontsMergeCommand } from "./fronts-merge.js";
 import { frontsRouteCommand } from "./fronts-route.js";
@@ -52,7 +50,6 @@ import { guardianReportCommand } from "./guardian-report.js";
 import { guardianReuseCommand, guardianScanCommand } from "./guardian-reuse.js";
 import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
 import { guardianWeighCommand } from "./guardian-weigh.js";
-import { handoffCommand } from "./handoff.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
@@ -72,8 +69,7 @@ import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
-import { modRecordCommand, modStateCommand } from "./mod.js";
-import { modCostCommand, modUsageCommand } from "./mod-cost.js";
+import { MOD_COMMANDS } from "./mod-registry.js";
 import { observeCommand } from "./observe.js";
 import { onboardCommand } from "./onboard.js";
 import { organizeCommand } from "./organize.js";
@@ -111,7 +107,6 @@ import { signalsBlindBandCommand } from "./signals-blind-band.js";
 import { signalsHypothesisCommand } from "./signals-hypothesis.js";
 import { signalsLocateCommand } from "./signals-locate.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
-import { statusCommand } from "./status.js";
 import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
@@ -295,14 +290,7 @@ export const REGISTRY = [
   policyRevertCommand,
   calibrateRefitCommand,
   calibrateExplainCommand,
-  modStateCommand,
-  modRecordCommand,
-  statusCommand,
-  bypassReviewCommand,
-  handoffCommand,
-  modCostCommand,
-  modUsageCommand,
-  frontsBoardCommand,
+  ...MOD_COMMANDS,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
