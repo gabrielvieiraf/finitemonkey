@@ -91,6 +91,8 @@ const capture = async (runtime: Runtime, ready: Ready): Promise<Shot | LookRun> 
     const sessions = await sessionPages(browser, {
       runtime,
       root: ready.root,
+      tree: ready.tree,
+      captures: output.results.filter((result) => result.loadError === undefined),
       config: ready.config,
       modes: ready.modes,
       screens: uxSetup(runtime, ready.root, ready.config, ready.modes).screens,

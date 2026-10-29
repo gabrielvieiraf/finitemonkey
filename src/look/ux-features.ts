@@ -34,6 +34,7 @@ import { optionsOf, STATES_FEATURE } from "./states.js";
 import { EMPTY_TOKENS, loadTokens, type TokenSet } from "./tokens.js";
 import { VIEWPORTS } from "./types.js";
 import type { UxPage } from "./ux.js";
+import { VISUAL_FEATURE } from "./visual.js";
 
 export const UX_FEATURES = [
   A11Y_FEATURE,
@@ -45,6 +46,7 @@ export const UX_FEATURES = [
   FORMS_FEATURE,
   FLOW_FEATURE,
   JOURNEYS_FEATURE,
+  VISUAL_FEATURE,
 ] as const;
 
 export type ModeMap = Readonly<Record<string, GuardMode>>;

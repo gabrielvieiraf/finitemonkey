@@ -101,7 +101,9 @@
               "flow/draft-lost",
               "journey/failed",
               "journey/weak",
-              "journey/unapproved"
+              "journey/unapproved",
+              "visual/pending",
+              "visual/rejected"
             ]
           },
           "route": {

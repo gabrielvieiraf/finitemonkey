@@ -3,6 +3,7 @@ import type { Browser } from "playwright-core";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { fmPaths } from "../task/paths.js";
+import { readApproved } from "./approved.js";
 import type { LookConfig } from "./config.js";
 import { routeLists } from "./config.js";
 import type { UiScreen } from "./contract.js";
@@ -10,8 +11,11 @@ import { destructiveIssues, draftIssues, FLOW_FEATURE, flowPages, type FlowSpec 
 import { journeyPages, JOURNEYS_FEATURE, listJourneys } from "./journey.js";
 import { crawlFlow, type FlowRequest, tryDestructive, tryDraft } from "./node-flow.js";
 import { measureJourney } from "./node-journey.js";
+import { visualDiffs } from "./node-visual.js";
+import { lookDir } from "./paths.js";
 import type { UxPage } from "./ux.js";
 import type { ModeMap } from "./ux-features.js";
+import { approvedImagesDir, readVerdicts, VISUAL_FEATURE, visualPages } from "./visual.js";
 
 const on = (modes: ModeMap, feature: string): boolean => (modes[feature] ?? "off") !== "off";
 
@@ -66,20 +70,34 @@ const flowRun = async (browser: Browser, request: FlowRequest, config: LookConfi
   return [...flowPages(nodes, spec), ...destructiveIssues(destructive), ...draftIssues(drafts)];
 };
 
-export const sessionPages = async (
-  browser: Browser,
-  input: {
-    readonly runtime: Runtime;
-    readonly root: AbsolutePath;
-    readonly config: LookConfig;
-    readonly modes: ModeMap;
-    readonly screens: readonly UiScreen[];
-    readonly request: FlowRequest;
-  },
-): Promise<readonly UxPage[]> => {
+export interface SessionInput {
+  readonly runtime: Runtime;
+  readonly root: AbsolutePath;
+  readonly tree: string;
+  readonly config: LookConfig;
+  readonly modes: ModeMap;
+  readonly screens: readonly UiScreen[];
+  readonly request: FlowRequest;
+  readonly captures: readonly { readonly route: string; readonly viewport: number; readonly path: string }[];
+}
+
+const visualRun = async (browser: Browser, input: SessionInput): Promise<readonly UxPage[]> => {
+  const paths = fmPaths(input.root);
+  const diffs = await visualDiffs(browser, {
+    captures: input.captures,
+    approved: readApproved(input.runtime, paths),
+    imagesDir: approvedImagesDir(paths),
+    dir: lookDir(paths, input.tree),
+    tolerance: input.config.visual,
+  });
+  return visualPages(diffs, readVerdicts(input.runtime, paths), input.tree);
+};
+
+export const sessionPages = async (browser: Browser, input: SessionInput): Promise<readonly UxPage[]> => {
   const pages: UxPage[] = [];
   if (on(input.modes, FLOW_FEATURE))
     pages.push(...(await flowRun(browser, input.request, input.config, input.screens)));
+  if (on(input.modes, VISUAL_FEATURE)) pages.push(...(await visualRun(browser, input)));
   if (on(input.modes, JOURNEYS_FEATURE)) {
     const states = listJourneys(input.runtime, fmPaths(input.root));
     const outcomes = [];

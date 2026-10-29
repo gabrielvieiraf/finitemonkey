@@ -2616,5 +2616,7 @@
   "journey.approve.missing": "There is no journey {name}.",
   "journey.approve.invalid": "Journey {name} does not match the schema.",
   "journey.approve.hash": "Journey {name} changed since that hash. Read it again.",
-  "journey.approve.write": "Could not record the approval of {name}."
+  "journey.approve.write": "Could not record the approval of {name}.",
+  "command.look_reject.summary": "Reject the current screen of a route with a reason (person only)",
+  "look.reject.done": "Screen {route} rejected; the reason is kept as standing rule {id}."
 }

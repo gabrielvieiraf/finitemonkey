@@ -7,6 +7,7 @@ import { TARGET_MIN, TARGET_OPTIONS } from "./a11y.js";
 import { COLOR_TOLERANCE } from "./ds.js";
 import { parseStateSpec, type StateSpec } from "./states.js";
 import { LOOK_RULES, type LookRule } from "./types.js";
+import { DEFAULT_MAX_DIFF_PIXELS, DEFAULT_THRESHOLD } from "./visual.js";
 
 export const LOOK_CONFIG = ".finitemonkey/look.yml";
 
@@ -48,6 +49,7 @@ export interface LookConfig {
   readonly formsKeepCleared: readonly string[];
   readonly formValues: Readonly<Record<string, string>>;
   readonly flow: FlowConfig;
+  readonly visual: { readonly threshold: number; readonly maxDiffPixels: number };
 }
 
 export interface FlowConfig {
@@ -105,6 +107,16 @@ const statesOf = (tree: ReturnType<typeof parseConfigYaml>): Readonly<Record<str
   );
 };
 
+const ratioOf = (value: unknown): number | undefined => {
+  const parsed = typeof value === "string" ? Number(value) : Number.NaN;
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : undefined;
+};
+
+const wholeOf = (value: unknown): number | undefined => {
+  const parsed = typeof value === "string" ? Number(value) : Number.NaN;
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : undefined;
+};
+
 export const parseLookConfig = (source: string): LookConfig => {
   const tree = parseConfigYaml(source);
   const screens = configAt(tree, "screens");
@@ -126,6 +138,10 @@ export const parseLookConfig = (source: string): LookConfig => {
     forms: routeLists(configList(tree, "forms")),
     formsKeepCleared: configList(tree, "forms_keep_cleared"),
     formValues: configMap(tree, "form_values"),
+    visual: {
+      threshold: ratioOf(configAt(tree, "visual", "threshold")) ?? DEFAULT_THRESHOLD,
+      maxDiffPixels: wholeOf(configAt(tree, "visual", "max_diff_pixels")) ?? DEFAULT_MAX_DIFF_PIXELS,
+    },
     flow: {
       entry: text(configAt(tree, "flow", "entry")),
       terminal: configList(tree, "flow", "terminal"),
