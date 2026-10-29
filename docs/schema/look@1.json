@@ -93,7 +93,15 @@
               "forms/focus-not-moved",
               "forms/input-lost",
               "forms/error-sticks",
-              "forms/native"
+              "forms/native",
+              "flow/dead-end",
+              "flow/unreachable",
+              "flow/steps",
+              "flow/destructive",
+              "flow/draft-lost",
+              "journey/failed",
+              "journey/weak",
+              "journey/unapproved"
             ]
           },
           "route": {

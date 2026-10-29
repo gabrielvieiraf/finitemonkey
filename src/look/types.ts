@@ -49,6 +49,14 @@ export const LOOK_RULES = [
   "forms/input-lost",
   "forms/error-sticks",
   "forms/native",
+  "flow/dead-end",
+  "flow/unreachable",
+  "flow/steps",
+  "flow/destructive",
+  "flow/draft-lost",
+  "journey/failed",
+  "journey/weak",
+  "journey/unapproved",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

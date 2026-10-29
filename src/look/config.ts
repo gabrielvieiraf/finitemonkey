@@ -47,6 +47,14 @@ export interface LookConfig {
   readonly forms: Readonly<Record<string, readonly string[]>>;
   readonly formsKeepCleared: readonly string[];
   readonly formValues: Readonly<Record<string, string>>;
+  readonly flow: FlowConfig;
+}
+
+export interface FlowConfig {
+  readonly entry: string | undefined;
+  readonly terminal: readonly string[];
+  readonly destructive: readonly string[];
+  readonly drafts: readonly string[];
 }
 
 export interface DsConfig {
@@ -118,6 +126,12 @@ export const parseLookConfig = (source: string): LookConfig => {
     forms: routeLists(configList(tree, "forms")),
     formsKeepCleared: configList(tree, "forms_keep_cleared"),
     formValues: configMap(tree, "form_values"),
+    flow: {
+      entry: text(configAt(tree, "flow", "entry")),
+      terminal: configList(tree, "flow", "terminal"),
+      destructive: configList(tree, "flow", "destructive"),
+      drafts: configList(tree, "flow", "drafts"),
+    },
     ds: {
       tokens: [...configList(tree, "ds", "tokens"), ...configList(tree, "ds", "css")],
       exclude: configList(tree, "ds", "exclude"),

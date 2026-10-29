@@ -19,7 +19,9 @@ import {
 import { readDont } from "./dont.js";
 import { DEFAULT_LOOK_FEATURE, DS_FEATURE } from "./ds.js";
 import { type AddedText, staticPages } from "./ds-static.js";
+import { FLOW_FEATURE } from "./flow.js";
 import { FORMS_FEATURE } from "./forms.js";
+import { JOURNEYS_FEATURE } from "./journey.js";
 import { KEYBOARD_FEATURE } from "./keyboard.js";
 import { contractPass } from "./node-contract.js";
 import { defaultLookPass, type DsOptions, dsPass } from "./node-ds.js";
@@ -41,6 +43,8 @@ export const UX_FEATURES = [
   DS_FEATURE,
   DEFAULT_LOOK_FEATURE,
   FORMS_FEATURE,
+  FLOW_FEATURE,
+  JOURNEYS_FEATURE,
 ] as const;
 
 export type ModeMap = Readonly<Record<string, GuardMode>>;
