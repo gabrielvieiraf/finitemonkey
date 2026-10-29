@@ -7,6 +7,7 @@ import {
   type Evidence,
   EVIDENCE_SCHEMA,
   EVIDENCE_STATUSES,
+  type EvidenceInputs,
   type Note,
   UNVERIFIED_REASONS,
 } from "./types.js";
@@ -35,6 +36,23 @@ const text = (record: JsonObject, key: string): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
+const strings = (value: unknown): Readonly<Record<string, string>> =>
+  isRecord(value)
+    ? Object.fromEntries(
+        Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      )
+    : {};
+
+const inputsOf = (value: unknown): EvidenceInputs | undefined => {
+  if (!isRecord(value) || typeof value["cwd"] !== "string") return undefined;
+  return {
+    cwd: value["cwd"],
+    lockfiles: strings(value["lockfiles"]),
+    tools: strings(value["tools"]),
+    env: strings(value["env"]),
+  };
+};
+
 const optional = (record: JsonObject): Partial<Evidence> => {
   const exitCode = record["exitCode"];
   const durationMs = record["durationMs"];
@@ -47,6 +65,7 @@ const optional = (record: JsonObject): Partial<Evidence> => {
   const state = oneOf(COMPLETION_STATES, record["state"]);
   const from = oneOf(COMPLETION_STATES, record["from"]);
   const stateReason = text(record, "stateReason");
+  const inputs = inputsOf(record["inputs"]);
   return {
     ...(command === undefined ? {} : { command }),
     ...(typeof exitCode === "number" || exitCode === null ? { exitCode } : {}),
@@ -61,6 +80,7 @@ const optional = (record: JsonObject): Partial<Evidence> => {
     ...(state === undefined ? {} : { state }),
     ...(from === undefined ? {} : { from }),
     ...(stateReason === undefined ? {} : { stateReason }),
+    ...(inputs === undefined ? {} : { inputs }),
   };
 };
 

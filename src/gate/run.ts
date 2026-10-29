@@ -1,8 +1,12 @@
 import { nowMs } from "../core/clock.js";
 import { appendEvidence, latestFor, readLedger } from "../evidence/ledger.js";
-import { type Evidence, EVIDENCE_SCHEMA, GATE_CHECK } from "../evidence/types.js";
+import { type Evidence, EVIDENCE_SCHEMA, type EvidenceInputs, GATE_CHECK } from "../evidence/types.js";
+import { loadProjectConfig } from "../git/project-config.js";
+import { featureMode, recordFeatureShadow } from "../policy/feature.js";
+import type { GuardMode } from "../policy/policy.js";
 import type { AcceptanceCheck } from "../task/types.js";
 import { DEFAULT_CHECKS } from "./checks/index.js";
+import { currentInputs, EVIDENCE_INPUTS_FEATURE, inputsConfig, staleReasons } from "./inputs.js";
 import { type IsolatedFailure, withIsolatedTree } from "./isolated.js";
 import { type GateFailure, type GateOptions, type GateSkip, type Prepared, prepareGate } from "./prepare.js";
 import { buildReport, type GateReport, verdictOf } from "./report.js";
@@ -19,7 +23,25 @@ export type GateRun =
     }
   | { readonly kind: "done"; readonly report: GateReport };
 
-const toEvidence = (ctx: GateContext, check: AcceptanceCheck, outcome: CheckOutcome): Evidence => ({
+export interface Freshness {
+  readonly inputs: EvidenceInputs;
+  readonly maxAgeMs: number;
+  readonly mode: GuardMode;
+}
+
+export const freshnessFor = (ctx: GateContext): Freshness | undefined => {
+  const mode = featureMode(ctx.runtime, ctx.paths, EVIDENCE_INPUTS_FEATURE);
+  if (mode === "off") return undefined;
+  const config = inputsConfig(loadProjectConfig(ctx.runtime, ctx.paths.root));
+  return { inputs: currentInputs(ctx.runtime, ctx.paths.root, ctx.env, config), maxAgeMs: config.maxAgeMs, mode };
+};
+
+const toEvidence = (
+  ctx: GateContext,
+  check: AcceptanceCheck,
+  outcome: CheckOutcome,
+  freshness: Freshness | undefined,
+): Evidence => ({
   schema: EVIDENCE_SCHEMA,
   task: ctx.contract.id,
   check: check.id,
@@ -28,9 +50,33 @@ const toEvidence = (ctx: GateContext, check: AcceptanceCheck, outcome: CheckOutc
   at: ctx.runtime.now(),
   ...outcome,
   ...(check.run === undefined || outcome.command !== undefined ? {} : { command: check.run }),
+  ...(freshness === undefined ? {} : { inputs: freshness.inputs }),
 });
 
-const reusable = (ledger: readonly Evidence[], ctx: GateContext, check: AcceptanceCheck): boolean => {
+const stillFresh = (ctx: GateContext, prior: Evidence, freshness: Freshness | undefined): boolean => {
+  if (freshness === undefined) return true;
+  const reasons = staleReasons(prior, {
+    inputs: freshness.inputs,
+    treeHash: ctx.treeHash,
+    atMs: nowMs(ctx.runtime),
+    maxAgeMs: freshness.maxAgeMs,
+  });
+  if (reasons.length === 0) return true;
+  if (freshness.mode === "active") return false;
+  recordFeatureShadow(ctx.runtime, ctx.paths, EVIDENCE_INPUTS_FEATURE, {
+    check: prior.check,
+    wouldHave: "rerun",
+    changed: reasons.join(","),
+  });
+  return true;
+};
+
+const reusable = (
+  ledger: readonly Evidence[],
+  ctx: GateContext,
+  check: AcceptanceCheck,
+  freshness: Freshness | undefined,
+): boolean => {
   if (!REUSABLE_KINDS.includes(check.kind)) return false;
   const prior = latestFor(
     ledger.filter((entry) => entry.task === ctx.contract.id),
@@ -38,7 +84,7 @@ const reusable = (ledger: readonly Evidence[], ctx: GateContext, check: Acceptan
     ctx.treeHash,
     check.run,
   );
-  return prior !== undefined && prior.status !== "unverified";
+  return prior !== undefined && prior.status !== "unverified" && stillFresh(ctx, prior, freshness);
 };
 
 const notImplemented = (check: AcceptanceCheck): CheckOutcome =>
@@ -48,14 +94,15 @@ export const runChecks = (
   ctx: GateContext,
   ledger: readonly Evidence[],
   registry: CheckRegistry,
+  freshness?: Freshness,
 ): readonly Evidence[] =>
   ctx.contract.acceptance.flatMap((check) => {
-    if (reusable(ledger, ctx, check)) return [];
+    if (reusable(ledger, ctx, check, freshness)) return [];
     const runner = registry[check.kind];
-    return [toEvidence(ctx, check, runner === undefined ? notImplemented(check) : runner(check, ctx))];
+    return [toEvidence(ctx, check, runner === undefined ? notImplemented(check) : runner(check, ctx), freshness)];
   });
 
-const fastPathHit = (prepared: Prepared, ledger: readonly Evidence[]): boolean => {
+const fastPathHit = (prepared: Prepared, ledger: readonly Evidence[], freshness: Freshness | undefined): boolean => {
   const { ctx, loaded } = prepared;
   const last = latestFor(
     ledger.filter((entry) => entry.task === ctx.contract.id),
@@ -63,7 +110,10 @@ const fastPathHit = (prepared: Prepared, ledger: readonly Evidence[]): boolean =
     ctx.treeHash,
   );
   return (
-    last?.status === "passed" && last.command === loaded.hash && nowMs(ctx.runtime) - Date.parse(last.at) < FAST_PATH_MS
+    last?.status === "passed" &&
+    last.command === loaded.hash &&
+    nowMs(ctx.runtime) - Date.parse(last.at) < FAST_PATH_MS &&
+    stillFresh(ctx, last, freshness)
   );
 };
 
@@ -78,7 +128,7 @@ const report = (prepared: Prepared, ledger: readonly Evidence[], fastPath: boole
     fastPath,
   });
 
-const summaryEntry = (prepared: Prepared, ledger: readonly Evidence[]): Evidence => {
+const summaryEntry = (prepared: Prepared, ledger: readonly Evidence[], freshness: Freshness | undefined): Evidence => {
   const draft = report(prepared, ledger, false);
   return {
     schema: EVIDENCE_SCHEMA,
@@ -91,14 +141,16 @@ const summaryEntry = (prepared: Prepared, ledger: readonly Evidence[]): Evidence
     at: prepared.ctx.runtime.now(),
     command: prepared.loaded.hash,
     notes: [],
+    ...(freshness === undefined ? {} : { inputs: freshness.inputs }),
   };
 };
 
 const evaluate = (options: GateOptions, prepared: Prepared, registry: CheckRegistry, fast: boolean): GateRun => {
   const path = prepared.ctx.paths.evidence(prepared.ctx.contract.id);
   const before = readLedger(options.runtime, path);
-  if (fast && fastPathHit(prepared, before)) return { kind: "done", report: report(prepared, before, true) };
-  const fresh = runChecks(prepared.ctx, before, registry);
+  const freshness = freshnessFor(prepared.ctx);
+  if (fast && fastPathHit(prepared, before, freshness)) return { kind: "done", report: report(prepared, before, true) };
+  const fresh = runChecks(prepared.ctx, before, registry, freshness);
   if (!appendEvidence(options.runtime, path, fresh)) return { kind: "failed", failure: { kind: "ledger_unwritable" } };
   const withChecks = readLedger(options.runtime, path);
   const draft = report(prepared, withChecks, false);
@@ -107,7 +159,7 @@ const evaluate = (options: GateOptions, prepared: Prepared, registry: CheckRegis
     { task: prepared.ctx.contract.id, treeHash: prepared.ctx.treeHash, at: prepared.ctx.runtime.now() },
     { state: draft.state, reason: draft.stateReason },
   );
-  if (!appendEvidence(options.runtime, path, [summaryEntry(prepared, withChecks), ...states])) {
+  if (!appendEvidence(options.runtime, path, [summaryEntry(prepared, withChecks, freshness), ...states])) {
     return { kind: "failed", failure: { kind: "ledger_unwritable" } };
   }
   return { kind: "done", report: report(prepared, readLedger(options.runtime, path), false) };

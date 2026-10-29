@@ -1935,5 +1935,11 @@
   "gate.review.no_verdict": "{agent} reviewed at {at} but its output had no verdict (approve, request-changes or fail)",
   "gate.review.rejected": "{agent} reviewed at {at} with verdict {verdict}",
   "gate.review.untrusted": "review by {agent} ignored: only the plugin's reviewer or a project agent that existed before the task counts",
-  "gate.approval.stale": "approved at {at} for an earlier tree; the code changed since, so type `fm: approve {task}/{check} <reason>` again"
+  "gate.approval.stale": "approved at {at} for an earlier tree; the code changed since, so type `fm: approve {task}/{check} <reason>` again",
+  "command.evidence_why.summary": "Say why a check's evidence is still valid or which input changed",
+  "evidence.why.usage": "Name the check, for example `finitemonkey evidence why tests`",
+  "evidence.why.no_task": "No task to read evidence from here",
+  "evidence.why.none": "{check} has no evidence in task {task}",
+  "evidence.why.fresh": "{check}: the evidence from {at} ({status}) still holds; no input changed",
+  "evidence.why.stale": "{check}: the evidence from {at} no longer holds; changed: {list}"
 }

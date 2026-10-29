@@ -1935,5 +1935,11 @@
   "gate.review.no_verdict": "{agent} revisou em {at}, mas a saída não trouxe veredito (approve, request-changes ou fail)",
   "gate.review.rejected": "{agent} revisou em {at} com veredito {verdict}",
   "gate.review.untrusted": "revisão de {agent} ignorada: só contam o revisor do plugin ou um agente do projeto que já existia antes da tarefa",
-  "gate.approval.stale": "aprovado em {at} para uma árvore anterior; o código mudou desde então, então digite `fm: approve {task}/{check} <motivo>` de novo"
+  "gate.approval.stale": "aprovado em {at} para uma árvore anterior; o código mudou desde então, então digite `fm: approve {task}/{check} <motivo>` de novo",
+  "command.evidence_why.summary": "Diz por que a evidência de uma verificação ainda vale ou qual entrada mudou",
+  "evidence.why.usage": "Diga a verificação, por exemplo `finitemonkey evidence why tests`",
+  "evidence.why.no_task": "Não há tarefa para ler evidências aqui",
+  "evidence.why.none": "{check} não tem evidência na tarefa {task}",
+  "evidence.why.fresh": "{check}: a evidência de {at} ({status}) ainda vale; nenhuma entrada mudou",
+  "evidence.why.stale": "{check}: a evidência de {at} não vale mais; mudou: {list}"
 }

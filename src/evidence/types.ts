@@ -47,6 +47,13 @@ export interface Note {
   readonly params: Params;
 }
 
+export interface EvidenceInputs {
+  readonly cwd: string;
+  readonly lockfiles: Readonly<Record<string, string>>;
+  readonly tools: Readonly<Record<string, string>>;
+  readonly env: Readonly<Record<string, string>>;
+}
+
 export interface Evidence {
   readonly schema: typeof EVIDENCE_SCHEMA;
   readonly task: string;
@@ -67,6 +74,7 @@ export interface Evidence {
   readonly state?: CompletionState;
   readonly from?: CompletionState;
   readonly stateReason?: string;
+  readonly inputs?: EvidenceInputs;
 }
 
 export const GATE_CHECK = "*gate*";

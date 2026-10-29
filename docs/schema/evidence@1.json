@@ -142,6 +142,38 @@
     },
     "stateReason": {
       "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "cwd": {
+          "type": "string"
+        },
+        "lockfiles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tools": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "cwd",
+        "lockfiles",
+        "tools",
+        "env"
+      ]
     }
   },
   "required": [

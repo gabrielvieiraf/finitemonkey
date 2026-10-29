@@ -1936,7 +1936,13 @@
     "gate.review.no_verdict": "machine",
     "gate.review.rejected": "machine",
     "gate.review.untrusted": "machine",
-    "gate.approval.stale": "machine"
+    "gate.approval.stale": "machine",
+    "command.evidence_why.summary": "machine",
+    "evidence.why.usage": "machine",
+    "evidence.why.no_task": "machine",
+    "evidence.why.none": "machine",
+    "evidence.why.fresh": "machine",
+    "evidence.why.stale": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3875,6 +3881,12 @@
     "gate.review.no_verdict": "machine",
     "gate.review.rejected": "machine",
     "gate.review.untrusted": "machine",
-    "gate.approval.stale": "machine"
+    "gate.approval.stale": "machine",
+    "command.evidence_why.summary": "machine",
+    "evidence.why.usage": "machine",
+    "evidence.why.no_task": "machine",
+    "evidence.why.none": "machine",
+    "evidence.why.fresh": "machine",
+    "evidence.why.stale": "machine"
   }
 }

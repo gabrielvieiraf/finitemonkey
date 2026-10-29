@@ -73,6 +73,14 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     test: "an edit after a manual approval sets the check back to needs_approval",
   },
   {
+    failure: "A dependency or runtime change keeps old green results",
+    cause: "The tree hash covers code only, not lockfiles, tool versions or the environment",
+    mitigation:
+      "Evidence records its inputs; a changed lockfile, tool version or allowlisted variable, or command evidence past its maximum age, runs the check again, and `evidence why` names the input",
+    file: "test/evidence-inputs.test.ts",
+    test: "a lockfile change invalidates green evidence, and evidence why names it",
+  },
+  {
     failure: "A secret is committed",
     cause: "A credential is staged with the change",
     mitigation: "`git commit` is blocked with the file and line",
