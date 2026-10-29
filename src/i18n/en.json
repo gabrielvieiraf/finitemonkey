@@ -2461,5 +2461,19 @@
   "approve.reversal.unknown": "undo unknown",
   "approve.line.short": "{effect}; {reversal}",
   "approve.line.long": "This command: {effect}. Undo: {reversal}. If that is not what you expected, deny it and ask what it is for.",
-  "premise.notice": "agreed without checking: the agent accepted your statement about the code without reading it or running anything (references: {refs}). Ask it to show where it looked."
+  "premise.notice": "agreed without checking: the agent accepted your statement about the code without reading it or running anything (references: {refs}). Ask it to show where it looked.",
+  "focus.card.title": "Where this stands: task {task} ({goal})",
+  "focus.card.criteria": "Criteria green: {green} · red: {red} · not run: {open}",
+  "focus.card.failure": "Last failure: {check}, reproduce with `{command}`",
+  "focus.card.next.reproduce": "Next: run `{command}` to see {check} fail.",
+  "focus.card.next.decide": "Next: a decision waits on you: {subject} ({id}).",
+  "focus.card.next.gate": "Next: run the gate with `{command}`.",
+  "focus.limit": "{open} projects or fronts are open without a done contract (your limit is {limit}). Consider closing one before opening another; this is only a suggestion.",
+  "focus.park.ask": "{file} is outside the scope of task {task} ({scope}). Ask the person once whether to park this as an idea for later with `finitemonkey park \"<idea>\"` instead of doing it now. Do not ask again for this area.",
+  "focus.park.line": "{id}: {text} (task {task})",
+  "focus.park.empty": "No parked ideas.",
+  "focus.park.done": "Parked as {id}. Bring it back with `finitemonkey unpark {id}`.",
+  "focus.unpark.missing": "No parked idea with id {id}.",
+  "command.park.summary": "Park an idea outside the current task for later, or list parked ideas",
+  "command.unpark.summary": "Bring back a parked idea"
 }

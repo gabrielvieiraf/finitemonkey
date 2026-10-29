@@ -1,5 +1,6 @@
 import type { FootprintId } from "../src/core/footprint.js";
 import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
+import { PERSON_FOOTPRINT_TEXT } from "./footprint-person-text.js";
 import { GUARDIAN_FOOTPRINT_TEXT } from "./footprint-text-guardian.js";
 import { KNOWLEDGE_FOOTPRINT_TEXT } from "./footprint-text-knowledge.js";
 import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
@@ -300,6 +301,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Una línea por cada configuración de GitHub que `ci protect` cambió tras el sí de la persona en una terminal: cuándo, el repositorio, la configuración, el valor antes y después, y si GitHub la aceptó. Lo que leyó queda en caché en `.finitemonkey/cache/github-settings.json` para `doctor`.",
   },
   ...DEPLOY_FOOTPRINT_TEXT,
+  ...PERSON_FOOTPRINT_TEXT,
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

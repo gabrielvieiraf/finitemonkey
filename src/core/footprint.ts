@@ -229,6 +229,7 @@ export const FOOTPRINT = [
     ],
   },
   { id: "infra-plan", kind: "sends", targets: ["terraform provider APIs"], via: "terraform" },
+  { id: "parking", kind: "writes", targets: [".finitemonkey/parking.jsonl"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

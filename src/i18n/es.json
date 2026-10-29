@@ -2461,5 +2461,19 @@
   "approve.reversal.unknown": "no se sabe si se puede deshacer",
   "approve.line.short": "{effect}; {reversal}",
   "approve.line.long": "Este comando: {effect}. Deshacer: {reversal}. Si no es lo que esperabas, recházalo y pregunta para qué sirve.",
-  "premise.notice": "aceptó sin comprobar: el agente aceptó tu afirmación sobre el código sin leerlo ni ejecutar nada (referencias: {refs}). Pídele que muestre dónde miró."
+  "premise.notice": "aceptó sin comprobar: el agente aceptó tu afirmación sobre el código sin leerlo ni ejecutar nada (referencias: {refs}). Pídele que muestre dónde miró.",
+  "focus.card.title": "Dónde está: tarea {task} ({goal})",
+  "focus.card.criteria": "Criterios en verde: {green} · en rojo: {red} · sin correr: {open}",
+  "focus.card.failure": "Última falla: {check}, reprodúcela con `{command}`",
+  "focus.card.next.reproduce": "Siguiente paso: corre `{command}` para ver fallar {check}.",
+  "focus.card.next.decide": "Siguiente paso: una decisión te espera: {subject} ({id}).",
+  "focus.card.next.gate": "Siguiente paso: corre el gate con `{command}`.",
+  "focus.limit": "{open} proyectos o frentes están abiertos sin contrato terminado (tu límite es {limit}). Considera cerrar uno antes de abrir otro; es solo una sugerencia.",
+  "focus.park.ask": "{file} está fuera del alcance de la tarea {task} ({scope}). Pregunta una vez a la persona si quiere aparcarlo como idea para después con `finitemonkey park \"<idea>\"` en vez de hacerlo ahora. No vuelvas a preguntar para esta área.",
+  "focus.park.line": "{id}: {text} (tarea {task})",
+  "focus.park.empty": "No hay ideas aparcadas.",
+  "focus.park.done": "Aparcada como {id}. Recupérala con `finitemonkey unpark {id}`.",
+  "focus.unpark.missing": "No hay idea aparcada con id {id}.",
+  "command.park.summary": "Aparcar una idea fuera de la tarea actual para después, o listar las aparcadas",
+  "command.unpark.summary": "Recuperar una idea aparcada"
 }

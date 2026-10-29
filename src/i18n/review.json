@@ -2462,7 +2462,21 @@
     "approve.reversal.unknown": "machine",
     "approve.line.short": "machine",
     "approve.line.long": "machine",
-    "premise.notice": "machine"
+    "premise.notice": "machine",
+    "focus.card.title": "machine",
+    "focus.card.criteria": "machine",
+    "focus.card.failure": "machine",
+    "focus.card.next.reproduce": "machine",
+    "focus.card.next.decide": "machine",
+    "focus.card.next.gate": "machine",
+    "focus.limit": "machine",
+    "focus.park.ask": "machine",
+    "focus.park.line": "machine",
+    "focus.park.empty": "machine",
+    "focus.park.done": "machine",
+    "focus.unpark.missing": "machine",
+    "command.park.summary": "machine",
+    "command.unpark.summary": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4927,6 +4941,20 @@
     "approve.reversal.unknown": "machine",
     "approve.line.short": "machine",
     "approve.line.long": "machine",
-    "premise.notice": "machine"
+    "premise.notice": "machine",
+    "focus.card.title": "machine",
+    "focus.card.criteria": "machine",
+    "focus.card.failure": "machine",
+    "focus.card.next.reproduce": "machine",
+    "focus.card.next.decide": "machine",
+    "focus.card.next.gate": "machine",
+    "focus.limit": "machine",
+    "focus.park.ask": "machine",
+    "focus.park.line": "machine",
+    "focus.park.empty": "machine",
+    "focus.park.done": "machine",
+    "focus.unpark.missing": "machine",
+    "command.park.summary": "machine",
+    "command.unpark.summary": "machine"
   }
 }

@@ -119,6 +119,7 @@ export const OPTIONAL_GUARDS = [
   "red-green",
   "explain-approval",
   "premise-check",
+  "focus-card",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -137,6 +138,7 @@ export const POLICY_KEYS: readonly string[] = [
   "calibrate",
   "autonomy",
   "knowledge",
+  "person",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
@@ -189,6 +191,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "red-green",
   "explain-approval",
   "premise-check",
+  "focus-card",
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];

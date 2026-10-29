@@ -70,10 +70,13 @@ export const parseAutonomy = (tree: ConfigTree): AutonomyConfig => {
   };
 };
 
+export const PERSON_KEYS: readonly string[] = ["projectLimit", "idleMinutes"];
+
 const SECTIONS: readonly (readonly [string, readonly string[]])[] = [
   ["evolve", EVOLVE_KEYS],
   ["calibrate", CALIBRATE_KEYS],
   ["autonomy", AUTONOMY_KEYS],
+  ["person", PERSON_KEYS],
 ];
 
 export const sectionKeyIssues = (tree: ConfigTree): readonly (readonly [string, string, readonly string[]])[] =>

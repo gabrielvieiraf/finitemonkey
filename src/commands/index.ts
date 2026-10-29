@@ -77,6 +77,7 @@ import { onboardCommand } from "./onboard.js";
 import { organizeCommand } from "./organize.js";
 import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
+import { parkCommand, unparkCommand } from "./park.js";
 import { offCommand, onCommand } from "./pause.js";
 import {
   perfilAnswerCommand,
@@ -293,6 +294,8 @@ export const REGISTRY = [
   calibrateRefitCommand,
   calibrateExplainCommand,
   ...DATA_COMMANDS,
+  parkCommand,
+  unparkCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

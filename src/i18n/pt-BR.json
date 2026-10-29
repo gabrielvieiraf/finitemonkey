@@ -2461,5 +2461,19 @@
   "approve.reversal.unknown": "não se sabe se dá para desfazer",
   "approve.line.short": "{effect}; {reversal}",
   "approve.line.long": "Este comando: {effect}. Desfazer: {reversal}. Se não era isso que você esperava, negue e pergunte para que serve.",
-  "premise.notice": "concordou sem checar: o agente aceitou sua afirmação sobre o código sem ler o código nem rodar nada (referências: {refs}). Peça para ele mostrar onde olhou."
+  "premise.notice": "concordou sem checar: o agente aceitou sua afirmação sobre o código sem ler o código nem rodar nada (referências: {refs}). Peça para ele mostrar onde olhou.",
+  "focus.card.title": "Onde está: tarefa {task} ({goal})",
+  "focus.card.criteria": "Critérios verdes: {green} · vermelhos: {red} · não rodados: {open}",
+  "focus.card.failure": "Última falha: {check}, reproduza com `{command}`",
+  "focus.card.next.reproduce": "Próximo passo: rode `{command}` para ver {check} falhar.",
+  "focus.card.next.decide": "Próximo passo: uma decisão espera por você: {subject} ({id}).",
+  "focus.card.next.gate": "Próximo passo: rode o gate com `{command}`.",
+  "focus.limit": "{open} projetos ou frentes estão abertos sem contrato concluído (seu limite é {limit}). Considere fechar um antes de abrir outro; é só uma sugestão.",
+  "focus.park.ask": "{file} está fora do escopo da tarefa {task} ({scope}). Pergunte uma vez à pessoa se quer estacionar isso como ideia para depois com `finitemonkey park \"<ideia>\"` em vez de fazer agora. Não pergunte de novo para esta área.",
+  "focus.park.line": "{id}: {text} (tarefa {task})",
+  "focus.park.empty": "Nenhuma ideia estacionada.",
+  "focus.park.done": "Estacionada como {id}. Traga de volta com `finitemonkey unpark {id}`.",
+  "focus.unpark.missing": "Nenhuma ideia estacionada com id {id}.",
+  "command.park.summary": "Estacionar uma ideia fora da tarefa atual para depois, ou listar as estacionadas",
+  "command.unpark.summary": "Trazer de volta uma ideia estacionada"
 }

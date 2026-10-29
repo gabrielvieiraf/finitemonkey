@@ -17,6 +17,7 @@ import { DEPLOY_HANDLERS } from "../deploy/hooks.js";
 import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
 import { EVOLVE_HANDLERS } from "../evolve/hooks.js";
+import { FOCUS_FEATURE, FOCUS_HANDLERS } from "../focus/hook.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
@@ -249,6 +250,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
   { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
   { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
+  { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(
