@@ -15,6 +15,7 @@ import { examplesCheck } from "./examples.js";
 import { gitCheck } from "./git.js";
 import { goldenCheck } from "./golden.js";
 import { headersCheck } from "./headers.js";
+import { infraPlanCheck } from "./infra-plan.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
@@ -80,4 +81,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   "blind-tests": blindCheck,
   claims: claimsCheck,
   migrate: migrateCheck,
+  "infra-plan": infraPlanCheck,
 };

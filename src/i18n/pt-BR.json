@@ -2390,5 +2390,14 @@
   "gate.migrate.apply-failed": "as migrações novas falharam ao aplicar no banco descartável",
   "gate.migrate.compat-broken": "os testes da versão base falham contra o schema novo; um deploy em etapas quebraria",
   "gate.migrate.down-mismatch": "a migração de volta não devolve o schema da base",
-  "gate.migrate.down-failed": "a migração de volta ou o dump do schema depois dela falhou"
+  "gate.migrate.down-failed": "a migração de volta ou o dump do schema depois dela falhou",
+  "gate.infra_plan.off": "a checagem do plano de infraestrutura está desligada no policy.yml (infra-plan)",
+  "gate.infra_plan.none": "nenhuma infraestrutura declarativa mudou",
+  "gate.infra_plan.shadow": "modo shadow: o resultado do plano de infraestrutura não bloqueia",
+  "gate.infra_plan.not_verified": "não deu para gerar o plano, então a mudança de infraestrutura não está verificada: {detail}",
+  "gate.infra_plan.counts": "plano: {create} a criar, {update} a atualizar, {delete} a apagar, {replace} a substituir",
+  "gate.infra_plan.accepted": "{subject}: destruição citada num critério do contrato ou em ambiente efêmero",
+  "gate.infra_plan.stateful-destroy": "{subject}: um recurso que guarda dados é destruído; acrescente um critério no contrato que cite esse endereço",
+  "gate.infra_plan.wildcard-policy": "{subject}: política de identidade libera qualquer ação ou qualquer principal",
+  "gate.infra_plan.secret-output": "{subject}: a saída parece um segredo e não está marcada como sensitive"
 }

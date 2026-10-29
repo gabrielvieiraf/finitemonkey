@@ -2391,7 +2391,16 @@
     "gate.migrate.apply-failed": "machine",
     "gate.migrate.compat-broken": "machine",
     "gate.migrate.down-mismatch": "machine",
-    "gate.migrate.down-failed": "machine"
+    "gate.migrate.down-failed": "machine",
+    "gate.infra_plan.off": "machine",
+    "gate.infra_plan.none": "machine",
+    "gate.infra_plan.shadow": "machine",
+    "gate.infra_plan.not_verified": "machine",
+    "gate.infra_plan.counts": "machine",
+    "gate.infra_plan.accepted": "machine",
+    "gate.infra_plan.stateful-destroy": "machine",
+    "gate.infra_plan.wildcard-policy": "machine",
+    "gate.infra_plan.secret-output": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4785,6 +4794,15 @@
     "gate.migrate.apply-failed": "machine",
     "gate.migrate.compat-broken": "machine",
     "gate.migrate.down-mismatch": "machine",
-    "gate.migrate.down-failed": "machine"
+    "gate.migrate.down-failed": "machine",
+    "gate.infra_plan.off": "machine",
+    "gate.infra_plan.none": "machine",
+    "gate.infra_plan.shadow": "machine",
+    "gate.infra_plan.not_verified": "machine",
+    "gate.infra_plan.counts": "machine",
+    "gate.infra_plan.accepted": "machine",
+    "gate.infra_plan.stateful-destroy": "machine",
+    "gate.infra_plan.wildcard-policy": "machine",
+    "gate.infra_plan.secret-output": "machine"
   }
 }

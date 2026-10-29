@@ -7,6 +7,7 @@ import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { MIGRATION_FILE } from "../deploy/migrations.js";
 import { configAt, loadProjectConfig } from "../git/project-config.js";
+import { touchesInfra } from "../infra/plan-gate.js";
 import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
 import { maskText } from "../mask/mask.js";
 import { featureMode } from "../policy/feature.js";
@@ -128,7 +129,7 @@ const measureSize = (
 
 const withCheck = (
   contract: TaskContract,
-  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate",
+  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate" | "infra-plan",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -146,7 +147,7 @@ const withConfigured = (
 ): TaskContract => {
   const config = loadProjectConfig(runtime, root);
   const migrations = changes.some((change) => MIGRATION_FILE.test(change.oldPath ?? change.path));
-  return withCheck(
+  const withMigrate = withCheck(
     withCheck(
       withCheck(
         withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
@@ -159,6 +160,11 @@ const withConfigured = (
     ),
     "migrate",
     migrations,
+  );
+  return withCheck(
+    withMigrate,
+    "infra-plan",
+    touchesInfra(changes.flatMap((change) => [change.path, change.oldPath ?? ""])),
   );
 };
 

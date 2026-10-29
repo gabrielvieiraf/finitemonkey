@@ -61,6 +61,12 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "O `ci-watch` guarda, por pull request, os commits cuja CI falhou e quando o acompanhamento começou, mais uma linha por execução com o commit, o resultado de cada checagem, a classe da falha e a tentativa. Os logs de falha são lidos pelo `gh` com segredos mascarados e só as últimas linhas aparecem, sem ser guardadas.",
     es: "`ci-watch` guarda, por pull request, los commits cuya CI falló y cuándo empezó el seguimiento, más una línea por ejecución con el commit, el resultado de cada verificación, la clase de falla y el intento. Los logs de falla se leen con `gh` con los secretos enmascarados y solo se muestran sus últimas líneas, sin guardarlas.",
   },
+  "infra-plan": {
+    en: "Only when a change touches Terraform files: `terraform plan` and `terraform show -json` run with your own credentials, so the provider APIs are read. The plan file stays in `.finitemonkey/cache/`. Apply is never run.",
+    "pt-BR":
+      "Só quando uma mudança toca arquivos Terraform: `terraform plan` e `terraform show -json` rodam com as suas credenciais, então as APIs do provedor são lidas. O arquivo do plano fica em `.finitemonkey/cache/`. Apply nunca roda.",
+    es: "Solo cuando un cambio toca archivos Terraform: `terraform plan` y `terraform show -json` corren con tus credenciales, así que se leen las APIs del proveedor. El archivo del plan queda en `.finitemonkey/cache/`. Apply nunca se ejecuta.",
+  },
 } as const satisfies Readonly<
   Record<
     | "ci-watch"
@@ -72,7 +78,8 @@ export const DEPLOY_FOOTPRINT_TEXT = {
     | "observability"
     | "ledger-key"
     | "guard-bypass"
-    | "mod-cost",
+    | "mod-cost"
+    | "infra-plan",
     Localized
   >
 >;

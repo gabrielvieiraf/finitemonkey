@@ -42,6 +42,7 @@ export const CHECK_KINDS = [
   "blind-tests",
   "claims",
   "migrate",
+  "infra-plan",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

@@ -2390,5 +2390,14 @@
   "gate.migrate.apply-failed": "the new migrations failed to apply on the throwaway database",
   "gate.migrate.compat-broken": "the base version's tests fail against the new schema; a staged deploy would break",
   "gate.migrate.down-mismatch": "the down migration does not bring the schema back to the base",
-  "gate.migrate.down-failed": "the down migration or the schema dump after it failed"
+  "gate.migrate.down-failed": "the down migration or the schema dump after it failed",
+  "gate.infra_plan.off": "infrastructure plan check is off in policy.yml (infra-plan)",
+  "gate.infra_plan.none": "no declarative infrastructure changed",
+  "gate.infra_plan.shadow": "shadow mode: the infrastructure plan result does not block",
+  "gate.infra_plan.not_verified": "the plan could not be generated, so the infrastructure change is not verified: {detail}",
+  "gate.infra_plan.counts": "plan: {create} to create, {update} to update, {delete} to delete, {replace} to replace",
+  "gate.infra_plan.accepted": "{subject}: destroy named by a contract criterion or in an ephemeral environment",
+  "gate.infra_plan.stateful-destroy": "{subject}: a resource that holds data is destroyed; add a contract criterion that names this address",
+  "gate.infra_plan.wildcard-policy": "{subject}: identity policy allows any action or any principal",
+  "gate.infra_plan.secret-output": "{subject}: output looks like a secret and is not marked sensitive"
 }
