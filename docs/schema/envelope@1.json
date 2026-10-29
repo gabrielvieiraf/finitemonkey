@@ -114,7 +114,8 @@
             "deploy_write_failed",
             "deploy_generate_blocked",
             "deploy_drift_found",
-            "deploy_check_unconfigured"
+            "deploy_check_unconfigured",
+            "policy_invalid"
           ]
         },
         "message": {

@@ -1943,7 +1943,20 @@
     "evidence.why.none": "machine",
     "evidence.why.fresh": "machine",
     "evidence.why.stale": "machine",
-    "gate.report.tampered": "machine"
+    "gate.report.tampered": "machine",
+    "command.policy_explain.summary": "machine",
+    "policy.explain.row": "machine",
+    "policy.explain.ignored": "machine",
+    "policy.issue.unknown_key": "machine",
+    "policy.issue.retired_key": "machine",
+    "policy.issue.unknown_guard": "machine",
+    "policy.issue.invalid_mode": "machine",
+    "policy.issue.unknown_experiment": "machine",
+    "policy.issue.suggestion": "machine",
+    "policy.error.invalid": "machine",
+    "doctor.policy.ok": "machine",
+    "doctor.policy.issues": "machine",
+    "doctor.policy.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3889,6 +3902,19 @@
     "evidence.why.none": "machine",
     "evidence.why.fresh": "machine",
     "evidence.why.stale": "machine",
-    "gate.report.tampered": "machine"
+    "gate.report.tampered": "machine",
+    "command.policy_explain.summary": "machine",
+    "policy.explain.row": "machine",
+    "policy.explain.ignored": "machine",
+    "policy.issue.unknown_key": "machine",
+    "policy.issue.retired_key": "machine",
+    "policy.issue.unknown_guard": "machine",
+    "policy.issue.invalid_mode": "machine",
+    "policy.issue.unknown_experiment": "machine",
+    "policy.issue.suggestion": "machine",
+    "policy.error.invalid": "machine",
+    "doctor.policy.ok": "machine",
+    "doctor.policy.issues": "machine",
+    "doctor.policy.fix": "machine"
   }
 }

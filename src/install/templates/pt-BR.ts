@@ -6,7 +6,7 @@ export const ptBR: GeneratedTemplates = {
   policyHeader: [
     "Política dos guards deste projeto. Modos: off, shadow (registra o que bloquearia), active.",
     "Os guards de segredos, produção, trabalho de git perdido e falso pronto ficam ativos, diga o que disser este arquivo.",
-    "Um guard que não está nesta lista começa em shadow e é promovido depois de promoteAfter disparos sem falso positivo.",
+    "Um guard que não está nesta lista fica no padrão dele: active, ou shadow para guards novos até promoteAfter disparos sem falso positivo. Rode `finitemonkey policy explain` para ver cada modo e de onde ele veio.",
   ],
   agentsBlock: ({ gate, doctor }) => [
     "## Finite Monkey",

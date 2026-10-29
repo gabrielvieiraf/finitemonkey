@@ -1942,5 +1942,18 @@
   "evidence.why.none": "{check} has no evidence in task {task}",
   "evidence.why.fresh": "{check}: the evidence from {at} ({status}) still holds; no input changed",
   "evidence.why.stale": "{check}: the evidence from {at} no longer holds; changed: {list}",
-  "gate.report.tampered": "{count, plural, one {# ledger line was} other {# ledger lines were}} unsigned or badly signed and ignored (possible tampering)"
+  "gate.report.tampered": "{count, plural, one {# ledger line was} other {# ledger lines were}} unsigned or badly signed and ignored (possible tampering)",
+  "command.policy_explain.summary": "Show each guard, its mode, where the mode came from and what happens when it fires",
+  "policy.explain.row": "{guard}: {mode} (from {source}, on firing: {failure})",
+  "policy.explain.ignored": "[{source} asked for {mode}, ignored: a lower level cannot weaken a higher one]",
+  "policy.issue.unknown_key": "{file}: unknown key {key}.",
+  "policy.issue.retired_key": "{file}: {key} is no longer read; remove it.",
+  "policy.issue.unknown_guard": "{file}: unknown guard {key}.",
+  "policy.issue.invalid_mode": "{file}: {key} has a mode that is not off, shadow or active.",
+  "policy.issue.unknown_experiment": "{file}: unknown feature {key}.",
+  "policy.issue.suggestion": "Did you mean {name}?",
+  "policy.error.invalid": "The policy has {count, plural, one {# error} other {# errors}}; those entries are not applied",
+  "doctor.policy.ok": "{file} is valid",
+  "doctor.policy.issues": "{file}: {detail}",
+  "doctor.policy.fix": "Fix the entries named above, then run `finitemonkey policy explain`"
 }

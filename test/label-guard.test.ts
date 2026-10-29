@@ -145,7 +145,7 @@ describe("label guard: false positives and the block ceiling", () => {
 
   it("in shadow it records what it would block instead of blocking", async () => {
     const repo = await project(SCREENS, "saas");
-    repo.write(".finitemonkey/policy.yml", "level: standard\n");
+    repo.write(".finitemonkey/policy.yml", "level: standard\nguards:\n  label: shadow\n");
     const outcome = await stop(repo, "Your SaaS is ready!");
     assert.equal(outcome.verdict, "allow");
     assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"guard_shadow","guard":"label"/);

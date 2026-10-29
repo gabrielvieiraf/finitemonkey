@@ -54,19 +54,58 @@ export const writeShadow = (runtime: Pick<Runtime, "writeText">, paths: FmPaths,
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}\n`);
 };
 
+export type ModeSource = "built-in" | "experiment" | "project" | "user" | "default" | "promoted";
+
+export interface Override {
+  readonly source: "project" | "user";
+  readonly mode: GuardMode;
+}
+
+export interface GuardResolution {
+  readonly mode: GuardMode;
+  readonly source: ModeSource;
+  readonly ignored: readonly Override[];
+}
+
+const STRENGTH: Readonly<Record<GuardMode, number>> = { off: 0, shadow: 1, active: 2 };
+
+const fallback = (id: string, shadow: ShadowState): GuardResolution => {
+  if (!STARTS_IN_SHADOW.has(id)) return { mode: "active", source: "default", ignored: [] };
+  return shadow[id]?.promoted === true
+    ? { mode: "active", source: "promoted", ignored: [] }
+    : { mode: "shadow", source: "default", ignored: [] };
+};
+
+export const resolveGuard = (
+  set: Pick<GuardSet, "id" | "damage">,
+  policy: Policy,
+  shadow: ShadowState,
+  arm?: GuardMode,
+): GuardResolution => {
+  const project = policy.guards[set.id];
+  const user = policy.userGuards[set.id];
+  const levels: readonly Override[] = [
+    ...(project === undefined ? [] : [{ source: "project" as const, mode: project }]),
+    ...(user === undefined ? [] : [{ source: "user" as const, mode: user }]),
+  ];
+  if (set.damage) {
+    return { mode: "active", source: "built-in", ignored: levels.filter((level) => level.mode !== "active") };
+  }
+  if (arm !== undefined) return { mode: arm, source: "experiment", ignored: levels };
+  if (project === undefined)
+    return user === undefined ? fallback(set.id, shadow) : { mode: user, source: "user", ignored: [] };
+  if (user === undefined || user === project) return { mode: project, source: "project", ignored: [] };
+  return STRENGTH[user] > STRENGTH[project]
+    ? { mode: user, source: "user", ignored: [] }
+    : { mode: project, source: "project", ignored: [{ source: "user", mode: user }] };
+};
+
 export const modeOf = (
   set: Pick<GuardSet, "id" | "damage">,
   policy: Policy,
   shadow: ShadowState,
   arm?: GuardMode,
-): GuardMode => {
-  if (set.damage) return "active";
-  if (arm !== undefined) return arm;
-  const chosen = policy.guards[set.id];
-  if (chosen !== undefined) return chosen;
-  if (!policy.exists && !STARTS_IN_SHADOW.has(set.id)) return "active";
-  return shadow[set.id]?.promoted === true ? "active" : "shadow";
-};
+): GuardMode => resolveGuard(set, policy, shadow, arm).mode;
 
 const recordShadow = (input: HookInput, paths: FmPaths, set: GuardSet, policy: Policy, reason: string): void => {
   const { runtime } = input;

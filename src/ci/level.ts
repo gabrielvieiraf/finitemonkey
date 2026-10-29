@@ -9,7 +9,7 @@ export type ProjectLevel = (typeof PROJECT_LEVELS)[number];
 
 const FROM_POLICY_LEVEL: Readonly<Record<Level, ProjectLevel>> = { light: 0, standard: 1, strict: 2 };
 
-export const projectLevel = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): ProjectLevel => {
+export const projectLevel = (runtime: Pick<Runtime, "readText" | "homeDir">, root: AbsolutePath): ProjectLevel => {
   const text = runtime.readText(policyPath(root));
   const raw = text.ok ? configAt(parseConfigYaml(text.value), "projectLevel") : undefined;
   const chosen = PROJECT_LEVELS.find((level) => String(level) === raw);

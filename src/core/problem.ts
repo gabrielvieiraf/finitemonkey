@@ -97,6 +97,7 @@ export const ERROR_CODES = [
   "deploy_generate_blocked",
   "deploy_drift_found",
   "deploy_check_unconfigured",
+  "policy_invalid",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

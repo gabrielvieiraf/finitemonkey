@@ -22,7 +22,7 @@ export const ownershipFailures = (runtime: Pick<Runtime, "readText">, root: Abso
 };
 
 export const ownershipCheck = (
-  runtime: Pick<Runtime, "readText" | "appendText" | "now">,
+  runtime: Pick<Runtime, "readText" | "appendText" | "now" | "homeDir">,
   root: AbsolutePath,
 ): HookCheck => {
   const paths = fmPaths(root);

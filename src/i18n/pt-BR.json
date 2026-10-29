@@ -1942,5 +1942,18 @@
   "evidence.why.none": "{check} não tem evidência na tarefa {task}",
   "evidence.why.fresh": "{check}: a evidência de {at} ({status}) ainda vale; nenhuma entrada mudou",
   "evidence.why.stale": "{check}: a evidência de {at} não vale mais; mudou: {list}",
-  "gate.report.tampered": "{count, plural, one {# linha do registro estava sem assinatura ou com assinatura errada e foi ignorada} other {# linhas do registro estavam sem assinatura ou com assinatura errada e foram ignoradas}} (possível adulteração)"
+  "gate.report.tampered": "{count, plural, one {# linha do registro estava sem assinatura ou com assinatura errada e foi ignorada} other {# linhas do registro estavam sem assinatura ou com assinatura errada e foram ignoradas}} (possível adulteração)",
+  "command.policy_explain.summary": "Mostra cada guard, o modo dele, de onde o modo veio e o que acontece quando ele dispara",
+  "policy.explain.row": "{guard}: {mode} (de {source}, ao disparar: {failure})",
+  "policy.explain.ignored": "[{source} pediu {mode}, ignorado: um nível abaixo não enfraquece um nível acima]",
+  "policy.issue.unknown_key": "{file}: chave desconhecida {key}.",
+  "policy.issue.retired_key": "{file}: {key} não é mais lida; remova.",
+  "policy.issue.unknown_guard": "{file}: guard desconhecido {key}.",
+  "policy.issue.invalid_mode": "{file}: {key} tem um modo que não é off, shadow nem active.",
+  "policy.issue.unknown_experiment": "{file}: recurso desconhecido {key}.",
+  "policy.issue.suggestion": "Você quis dizer {name}?",
+  "policy.error.invalid": "A política tem {count, plural, one {# erro} other {# erros}}; essas entradas não são aplicadas",
+  "doctor.policy.ok": "{file} é válido",
+  "doctor.policy.issues": "{file}: {detail}",
+  "doctor.policy.fix": "Corrija as entradas citadas e rode `finitemonkey policy explain`"
 }

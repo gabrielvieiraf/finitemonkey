@@ -112,6 +112,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     type: "Evidence",
     describes: "One line of `.finitemonkey/evidence/<task>.jsonl`.",
   },
+  {
+    name: "policy-explain@1",
+    file: "src/policy/explain.ts",
+    type: "PolicyExplainData",
+    describes: "`data` of `finitemonkey policy explain --json`.",
+  },
 ];
 
 export const ROOT = fileURLToPath(new URL("..", import.meta.url));

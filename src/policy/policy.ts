@@ -2,12 +2,12 @@ import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
-import { configAt, configMap, parseConfigYaml } from "../git/project-config.js";
+import { closest } from "../core/suggest.js";
+import { configAt, configMap, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
 
 export const POLICY_FILE = ".finitemonkey/policy.yml";
 export const GUARD_MODES = ["off", "shadow", "active"] as const;
 export const LEVELS = ["light", "standard", "strict"] as const;
-export const SEVERITIES = ["low", "medium", "high"] as const;
 export const DEFAULT_PROMOTE_AFTER = 20;
 export const OPTIONAL_GUARDS = [
   "prose",
@@ -61,8 +61,24 @@ export const OPTIONAL_GUARDS = [
   "gate-hold",
   "test-pin",
   "evidence-inputs",
+  "planta",
+  "perfil",
+  "conceitos",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
+export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
+export const POLICY_KEYS: readonly string[] = [
+  "level",
+  "promoteAfter",
+  "projectLevel",
+  "guards",
+  "experiments",
+  "rules",
+  "learnings",
+  "reminders",
+  "quality",
+];
+export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "fourth-attempt",
   "claims",
@@ -82,57 +98,115 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
 
 export type GuardMode = (typeof GUARD_MODES)[number];
 export type Level = (typeof LEVELS)[number];
-export type Severity = (typeof SEVERITIES)[number];
+export type PolicyIssueKind = "unknown_key" | "retired_key" | "unknown_guard" | "invalid_mode" | "unknown_experiment";
+
+export interface PolicyIssue {
+  readonly kind: PolicyIssueKind;
+  readonly file: string;
+  readonly key: string;
+  readonly suggestion?: string;
+}
 
 export interface Policy {
   readonly exists: boolean;
   readonly level: Level;
-  readonly severity: Severity;
   readonly promoteAfter: number;
   readonly guards: Readonly<Record<string, GuardMode>>;
+  readonly userGuards: Readonly<Record<string, GuardMode>>;
   readonly experiments: Readonly<Record<string, "random">>;
+  readonly issues: readonly PolicyIssue[];
 }
 
 export const DEFAULT_POLICY: Policy = {
   exists: false,
   level: "standard",
-  severity: "medium",
   promoteAfter: DEFAULT_PROMOTE_AFTER,
   guards: {},
+  userGuards: {},
   experiments: {},
+  issues: [],
 };
+
+export const USER_POLICY_FILE = "~/.finitemonkey/policy.yml";
 
 const pick = <T extends string>(options: readonly T[], value: unknown, fallback: T): T =>
   options.find((option) => option === value) ?? fallback;
+
+const issue = (
+  kind: PolicyIssueKind,
+  file: string,
+  key: string,
+  candidates: readonly string[],
+  value: string = key,
+): PolicyIssue => {
+  const suggestion = closest(value, candidates);
+  return suggestion === undefined ? { kind, file, key } : { kind, file, key, suggestion };
+};
+
+const guardModes = (tree: ConfigTree, file: string): [Record<string, GuardMode>, PolicyIssue[]] => {
+  const guards: Record<string, GuardMode> = {};
+  const issues: PolicyIssue[] = [];
+  for (const [id, mode] of Object.entries(configMap(tree, "guards"))) {
+    const known = GUARD_MODES.find((option) => option === mode);
+    if (!KNOWN_GUARDS.includes(id)) issues.push(issue("unknown_guard", file, `guards.${id}`, KNOWN_GUARDS, id));
+    else if (known === undefined) issues.push(issue("invalid_mode", file, `guards.${id}`, GUARD_MODES, mode));
+    else guards[id] = known;
+  }
+  return [guards, issues];
+};
+
+const keyIssues = (tree: ConfigTree, file: string, allowed: readonly string[]): PolicyIssue[] =>
+  Object.keys(tree).flatMap((key): PolicyIssue[] => {
+    if (allowed.includes(key)) return [];
+    if (RETIRED_POLICY_KEYS.includes(key)) return [{ kind: "retired_key", file, key }];
+    return [issue("unknown_key", file, key, allowed)];
+  });
 
 export const parsePolicy = (text: string): Policy => {
   const tree = parseConfigYaml(text);
   const raw = configAt(tree, "promoteAfter");
   const promoteAfter = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
-  const guards = Object.fromEntries(
-    Object.entries(configMap(tree, "guards")).flatMap(([id, mode]): [string, GuardMode][] => {
-      const known = GUARD_MODES.find((option) => option === mode);
-      return known === undefined ? [] : [[id, known]];
-    }),
-  );
+  const [guards, guardIssues] = guardModes(tree, POLICY_FILE);
+  const experimentIssues: PolicyIssue[] = [];
   const experiments = Object.fromEntries(
-    Object.entries(configMap(tree, "experiments")).flatMap(([id, mode]): [string, "random"][] =>
-      mode === "random" ? [[id, "random"]] : [],
-    ),
+    Object.entries(configMap(tree, "experiments")).flatMap(([id, mode]): [string, "random"][] => {
+      if (!KNOWN_GUARDS.includes(id)) {
+        experimentIssues.push(issue("unknown_experiment", POLICY_FILE, `experiments.${id}`, KNOWN_GUARDS, id));
+        return [];
+      }
+      return mode === "random" ? [[id, "random"]] : [];
+    }),
   );
   return {
     exists: true,
     level: pick(LEVELS, configAt(tree, "level"), DEFAULT_POLICY.level),
-    severity: pick(SEVERITIES, configAt(tree, "severity"), DEFAULT_POLICY.severity),
     promoteAfter: Number.isInteger(promoteAfter) && promoteAfter > 0 ? promoteAfter : DEFAULT_PROMOTE_AFTER,
     guards,
+    userGuards: {},
     experiments,
+    issues: [...keyIssues(tree, POLICY_FILE, POLICY_KEYS), ...guardIssues, ...experimentIssues],
   };
 };
 
+export const parseUserPolicy = (text: string): Pick<Policy, "userGuards" | "issues"> => {
+  const tree = parseConfigYaml(text);
+  const [userGuards, issues] = guardModes(tree, USER_POLICY_FILE);
+  return { userGuards, issues: [...keyIssues(tree, USER_POLICY_FILE, ["guards"]), ...issues] };
+};
+
+export const isPolicyError = (found: PolicyIssue): boolean => found.kind !== "retired_key";
+
 export const policyPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(join(root, POLICY_FILE));
 
-export const loadPolicy = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): Policy => {
+export const userPolicyPath = (home: string): AbsolutePath => toAbsolutePath(join(home, ".finitemonkey", "policy.yml"));
+
+export type PolicyRuntime = Pick<Runtime, "readText" | "homeDir">;
+
+export const loadPolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy => {
   const text = runtime.readText(policyPath(root));
-  return text.ok ? parsePolicy(text.value) : DEFAULT_POLICY;
+  const project = text.ok ? parsePolicy(text.value) : DEFAULT_POLICY;
+  const userText = runtime.readText(userPolicyPath(runtime.homeDir()));
+  if (!userText.ok) return project;
+  const user = parseUserPolicy(userText.value);
+  return { ...project, userGuards: user.userGuards, issues: [...project.issues, ...user.issues] };
 };

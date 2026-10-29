@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/policy-explain@1.json",
+  "title": "finitemonkey/policy-explain@1",
+  "description": "`data` of `finitemonkey policy explain --json`. Generated from PolicyExplainData in src/policy/explain.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/policy-explain@1"
+    },
+    "guards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "guard": {
+            "type": "string"
+          },
+          "damage": {
+            "type": "boolean"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["active", "off", "shadow"]
+          },
+          "source": {
+            "type": "string",
+            "enum": ["built-in", "experiment", "project", "user", "default", "promoted"]
+          },
+          "failureMode": {
+            "type": "string",
+            "enum": ["block", "none", "log"]
+          },
+          "ignored": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": ["project", "user"]
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": ["active", "off", "shadow"]
+                }
+              },
+              "required": ["source", "mode"]
+            }
+          }
+        },
+        "required": ["guard", "damage", "mode", "source", "failureMode", "ignored"]
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["unknown_key", "retired_key", "unknown_guard", "invalid_mode", "unknown_experiment"]
+          },
+          "file": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string"
+          }
+        },
+        "required": ["kind", "file", "key"]
+      }
+    },
+    "errors": {
+      "type": "number"
+    }
+  },
+  "required": ["schema", "guards", "issues", "errors"]
+}

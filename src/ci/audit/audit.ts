@@ -27,7 +27,7 @@ export interface AuditReport {
   readonly missingTools: readonly string[];
 }
 
-export type AuditRuntime = Pick<Runtime, "readText" | "listDir" | "exec">;
+export type AuditRuntime = Pick<Runtime, "readText" | "listDir" | "exec" | "homeDir">;
 
 export const workflowFiles = (runtime: Pick<Runtime, "listDir">, root: AbsolutePath): readonly string[] => {
   const listed = runtime.listDir(toAbsolutePath(join(root, ...WORKFLOWS_DIR.split("/"))));
