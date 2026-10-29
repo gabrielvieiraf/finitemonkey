@@ -11,6 +11,8 @@
     "verb": {
       "type": "string",
       "enum": [
+        "domain",
+        "concept",
         "contest",
         "ask",
         "observe",
@@ -259,6 +261,13 @@
           "concept": {
             "type": "string"
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suggested"
+            ]
+          },
           "label": {
             "type": "string"
           },
@@ -337,12 +346,48 @@
         },
         "required": [
           "concept",
+          "status",
           "band",
           "positive",
           "negative",
           "exposures",
           "contested",
           "request"
+        ]
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "demonstrated",
+              "proximal",
+              "beyond",
+              "no record"
+            ]
+          },
+          "concepts": {
+            "type": "number"
+          },
+          "evidence": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "domain",
+          "band",
+          "concepts",
+          "evidence"
         ]
       }
     },

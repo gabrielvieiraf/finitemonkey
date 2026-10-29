@@ -1,4 +1,4 @@
-import { type ConceptBand, conceptBand, worstBand } from "./band.js";
+import { type ConceptBand, conceptBand, evidenceOf, worstBand } from "./band.js";
 import { entryId } from "./store.js";
 import type { Band, ClaimEntry, ConceptEntry, JudgeEntry, ResultEntry, SupportEntry, SupportState } from "./types.js";
 
@@ -11,6 +11,17 @@ export const claimsIn = (entries: readonly JudgeEntry[]): readonly ClaimEntry[] 
 
 export const conceptsIn = (entries: readonly JudgeEntry[]): readonly ConceptEntry[] =>
   entries.filter((entry): entry is ConceptEntry => entry.type === "concept");
+
+export type ConceptStatus = "active" | "suggested";
+
+export const usedInEvidence = (concept: string, entries: readonly JudgeEntry[]): boolean =>
+  evidenceOf(entries).some((entry) => entry.proof !== "exposure" && entry.concepts.includes(concept));
+
+export const conceptStatus = (concept: ConceptEntry, entries: readonly JudgeEntry[]): ConceptStatus =>
+  concept.origin === "model" && !usedInEvidence(concept.id, entries) ? "suggested" : "active";
+
+export const activeConcepts = (entries: readonly JudgeEntry[]): readonly ConceptEntry[] =>
+  conceptsIn(entries).filter((concept) => conceptStatus(concept, entries) === "active");
 
 export const resultsIn = (entries: readonly JudgeEntry[]): readonly ResultEntry[] =>
   entries.filter((entry): entry is ResultEntry => entry.type === "result");
@@ -30,7 +41,7 @@ export const conceptsMentioned = (text: string, concepts: readonly ConceptEntry[
   concepts.filter((concept) => [concept.label, ...concept.synonyms].some((term) => mentionsTerm(text, term)));
 
 export const touchedConcepts = (claim: ClaimEntry, entries: readonly JudgeEntry[]): readonly string[] => {
-  const mentioned = conceptsMentioned(claim.text, conceptsIn(entries)).map((concept) => concept.id);
+  const mentioned = conceptsMentioned(claim.text, activeConcepts(entries)).map((concept) => concept.id);
   return [...new Set([...claim.concepts, ...mentioned])];
 };
 

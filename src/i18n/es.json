@@ -2685,7 +2685,7 @@
   "command.judge_call.summary": "Responder un pedido a judge leído como JSON en la entrada estándar",
   "judge.error.usage": "Argumentos ausentes o inválidos.",
   "judge.error.rejected": "No registrado: {detail}.",
-  "judge.error.off": "judge-core está apagado en policy.yml.",
+  "judge.error.off": "{detail} está apagado en policy.yml.",
   "judge.error.person": "Solo la persona en una terminal puede hacer esto.",
   "judge.recorded": "registrado {id}",
   "judge.row": "{state} × {band}: {text} ({claim}) {outcome}",
@@ -2701,5 +2701,9 @@
   "gate.judge.none": "ninguna afirmación de los resultados de esta tarea depende solo del modelo",
   "gate.judge.model_only": "no verificada ({band}): {text} ({claim}, {source})",
   "gate.judge.count": "{count, plural, one {# afirmación depende} other {# afirmaciones dependen}} solo del modelo; el resultado no está terminado",
-  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmación depende} other {# afirmaciones dependen}} solo del modelo y retendrían el gate con judge-core activo"
+  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmación depende} other {# afirmaciones dependen}} solo del modelo y retendrían el gate con judge-core activo",
+  "command.judge_concept.summary": "Agregar un concepto de cualquier campo, anclado a un fragmento de fuente guardado",
+  "command.judge_domain.summary": "Agregar un dominio con padre opcional",
+  "judge.domain": "{domain}: {band} ({concepts, plural, one {# concepto} other {# conceptos}}, {evidence} evidencias con peso)",
+  "judge.concept.suggested": "{concept}: sugerido, fuera del conteo hasta que una evidencia lo use"
 }

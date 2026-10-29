@@ -6,6 +6,7 @@ export type JudgeRequest =
   | {
       readonly verb: "observe";
       readonly concepts: readonly string[];
+      readonly text?: string;
       readonly proof: ProofKind;
       readonly result: ProofResult;
       readonly ref?: string;
@@ -31,7 +32,16 @@ export type JudgeRequest =
   | { readonly verb: "fade"; readonly concept?: string }
   | { readonly verb: "report" }
   | { readonly verb: "export" }
-  | { readonly verb: "forget"; readonly id?: string };
+  | { readonly verb: "forget"; readonly id?: string }
+  | {
+      readonly verb: "concept";
+      readonly label: string;
+      readonly domain: string;
+      readonly synonyms: readonly string[];
+      readonly source: string;
+      readonly span: string;
+    }
+  | { readonly verb: "domain"; readonly domain: string; readonly parent?: string };
 
 const text = (record: JsonObject, key: string): string | undefined => {
   const value = record[key];
@@ -60,6 +70,8 @@ const observeOf = (record: JsonObject): JudgeRequest | undefined => {
   const proof = oneOf(PROOF_KINDS, record["proof"]);
   const result = oneOf(RESULTS, record["result"]) ?? "pass";
   const concepts = list(record, "concepts");
+  const said = text(record, "text");
+  if (said !== undefined) return { verb: "observe", concepts, text: said, proof: "exposure", result: "pass" };
   if (proof === undefined || concepts.length === 0) return undefined;
   return { verb: "observe", concepts, proof, result, ...optional(record, ["ref", "claim"]) };
 };
@@ -96,6 +108,17 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
   report: () => ({ verb: "report" }),
   export: () => ({ verb: "export" }),
   forget: (record) => ({ verb: "forget", ...optional(record, ["id"]) }),
+  concept: (record) => {
+    const [label, domain] = [text(record, "label"), text(record, "domain")];
+    if (label === undefined || domain === undefined) return undefined;
+    const [source, span] = [text(record, "source"), text(record, "span")];
+    if (source === undefined || span === undefined) return undefined;
+    return { verb: "concept", label, domain, synonyms: list(record, "synonyms"), source, span };
+  },
+  domain: (record) => {
+    const domain = text(record, "domain");
+    return domain === undefined ? undefined : { verb: "domain", domain, ...optional(record, ["parent"]) };
+  },
 };
 
 export const parseRequest = (value: unknown): JudgeRequest | undefined => {

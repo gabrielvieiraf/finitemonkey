@@ -1,5 +1,14 @@
 import { type BandStep, conceptBand } from "./band.js";
-import { claimBand, claimsIn, conceptsIn, resultsIn, supportStateOf } from "./claims.js";
+import {
+  claimBand,
+  claimsIn,
+  conceptsIn,
+  type ConceptStatus,
+  conceptStatus,
+  resultsIn,
+  supportStateOf,
+} from "./claims.js";
+import type { DomainView } from "./concepts.js";
 import {
   type Band,
   JUDGE_VERBS_SCHEMA,
@@ -21,6 +30,8 @@ export const VERBS = [
   "report",
   "export",
   "forget",
+  "concept",
+  "domain",
 ] as const;
 
 export type Verb = (typeof VERBS)[number];
@@ -52,6 +63,7 @@ export interface ResultView {
 
 export interface ConceptView {
   readonly concept: string;
+  readonly status: ConceptStatus;
   readonly label?: string;
   readonly domain?: string;
   readonly band: Band;
@@ -96,6 +108,7 @@ export interface JudgeResponse {
   readonly result?: ResultView;
   readonly results?: readonly ResultView[];
   readonly concepts?: readonly ConceptView[];
+  readonly domains?: readonly DomainView[];
   readonly claim?: ClaimView;
   readonly handoff?: HandoffPackage;
   readonly ask?: AskView;
@@ -173,6 +186,7 @@ export const conceptView = (id: string, entries: readonly JudgeEntry[]): Concept
   const band = conceptBand(id, entries);
   return {
     concept: id,
+    status: concept === undefined ? "active" : conceptStatus(concept, entries),
     ...(concept === undefined ? {} : { label: concept.label, domain: concept.domain }),
     band: band.band,
     ...(band.because === undefined ? {} : { because: band.because }),
