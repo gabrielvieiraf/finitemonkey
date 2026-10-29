@@ -2197,5 +2197,8 @@
   "guardian.trigger.proportionality.consequences": "más para construir, operar y deshacer de lo que esta etapa suele soportar",
   "guardian.trigger.proportionality.alternatives": "pedido: como está escrito | lo más simple viable: el mismo resultado con lo que el proyecto ya ejecuta | no hacer nada",
   "guardian.trigger.proportionality.recommendation": "la opción más simple viable, salvo que una restricción declarada exija la más pesada",
-  "guardian.trigger.proportionality.next": "la persona elige una fila"
+  "guardian.trigger.proportionality.next": "la persona elige una fila",
+  "command.guardian_reuse.summary": "Busca un módulo o dependencia que el proyecto ya tiene para el papel de lo que agrega el diff",
+  "command.guardian_scan.summary": "Calcula los informes que necesitan git (reuso, proporcionalidad) fuera de los hooks; --record los guarda para el próximo prompt",
+  "guardian.pending.intro": "Informes calculados después del último turno. Muéstralos a la persona antes de escribir más; la persona elige."
 }

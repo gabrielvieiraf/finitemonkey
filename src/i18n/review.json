@@ -2198,7 +2198,10 @@
     "guardian.trigger.proportionality.consequences": "machine",
     "guardian.trigger.proportionality.alternatives": "machine",
     "guardian.trigger.proportionality.recommendation": "machine",
-    "guardian.trigger.proportionality.next": "machine"
+    "guardian.trigger.proportionality.next": "machine",
+    "command.guardian_reuse.summary": "machine",
+    "command.guardian_scan.summary": "machine",
+    "guardian.pending.intro": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4399,6 +4402,9 @@
     "guardian.trigger.proportionality.consequences": "machine",
     "guardian.trigger.proportionality.alternatives": "machine",
     "guardian.trigger.proportionality.recommendation": "machine",
-    "guardian.trigger.proportionality.next": "machine"
+    "guardian.trigger.proportionality.next": "machine",
+    "command.guardian_reuse.summary": "machine",
+    "command.guardian_scan.summary": "machine",
+    "guardian.pending.intro": "machine"
   }
 }

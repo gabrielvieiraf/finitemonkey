@@ -45,6 +45,7 @@ import { goldenAcceptCommand } from "./golden.js";
 import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
 import { guardianAssumeAddCommand, guardianAssumeListCommand, guardianAssumeVerifyCommand } from "./guardian-assume.js";
 import { guardianReportCommand } from "./guardian-report.js";
+import { guardianReuseCommand, guardianScanCommand } from "./guardian-reuse.js";
 import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
@@ -272,6 +273,8 @@ export const REGISTRY = [
   guardianAssumeAddCommand,
   guardianAssumeVerifyCommand,
   guardianReportCommand,
+  guardianReuseCommand,
+  guardianScanCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

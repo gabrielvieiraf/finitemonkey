@@ -2197,5 +2197,8 @@
   "guardian.trigger.proportionality.consequences": "more to build, operate and undo than this stage usually carries",
   "guardian.trigger.proportionality.alternatives": "requested: as written | simplest viable: the same result with what the project already runs | do nothing",
   "guardian.trigger.proportionality.recommendation": "the simplest viable option, unless a stated constraint needs the heavier one",
-  "guardian.trigger.proportionality.next": "the person picks one row"
+  "guardian.trigger.proportionality.next": "the person picks one row",
+  "command.guardian_reuse.summary": "Look for a module or dependency the project already has for the role of what the diff adds",
+  "command.guardian_scan.summary": "Compute the reports that need git (reuse, proportionality) outside the hooks; --record keeps them for the next prompt",
+  "guardian.pending.intro": "Reports computed after the last turn. Show them to the person before writing more; the person chooses."
 }
