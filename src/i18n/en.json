@@ -1930,5 +1930,10 @@
   "gate.pin.no_count": "`{command}` looks like a test run but printed no test count",
   "gate.pin.count_drop": "fewer tests ran than before: {before} then {after}",
   "gate.pin.exit_zero": "new exit(0) outside tests at {where}",
-  "gate.pin.shadow": "test pinning is in shadow: it would have been {status}"
+  "gate.pin.shadow": "test pinning is in shadow: it would have been {status}",
+  "gate.reason.no_verdict": "the review has no verdict",
+  "gate.review.no_verdict": "{agent} reviewed at {at} but its output had no verdict (approve, request-changes or fail)",
+  "gate.review.rejected": "{agent} reviewed at {at} with verdict {verdict}",
+  "gate.review.untrusted": "review by {agent} ignored: only the plugin's reviewer or a project agent that existed before the task counts",
+  "gate.approval.stale": "approved at {at} for an earlier tree; the code changed since, so type `fm: approve {task}/{check} <reason>` again"
 }

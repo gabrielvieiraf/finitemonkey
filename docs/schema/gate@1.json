@@ -147,7 +147,8 @@
               "no_evidence",
               "no_baseline",
               "masked_exit",
-              "no_test_count"
+              "no_test_count",
+              "no_verdict"
             ]
           },
           "command": {

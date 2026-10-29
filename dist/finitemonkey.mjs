@@ -5522,8 +5522,9 @@ var toApproval = (value2) => {
   const task = text5(value2, "task");
   const check2 = text5(value2, "check");
   const at5 = text5(value2, "at");
+  const treeHash2 = text5(value2, "treeHash");
   if (task === void 0 || check2 === void 0 || at5 === void 0) return void 0;
-  return { task, check: check2, at: at5, reason: text5(value2, "reason") ?? "" };
+  return { task, check: check2, at: at5, reason: text5(value2, "reason") ?? "", ...treeHash2 === void 0 ? {} : { treeHash: treeHash2 } };
 };
 var list = (raw, map) => Array.isArray(raw) ? raw.flatMap((item2) => {
   const value2 = map(item2);
@@ -5539,6 +5540,15 @@ var saveRelease = (store2, paths, now, added) => {
   return writeJsonFile(store2, paths.grants, { grants: [...grants], approvals: [...approvals] }).ok;
 };
 var expiryFrom = (now) => new Date(now + GRANT_MINUTES * 6e4).toISOString();
+var bindApproval = (store2, paths, approval, treeHash2) => {
+  const approvals = readApprovals(store2, paths).map(
+    (item2) => item2.task === approval.task && item2.check === approval.check && item2.at === approval.at && item2.treeHash === void 0 ? { ...item2, treeHash: treeHash2 } : item2
+  );
+  return writeJsonFile(store2, paths.grants, {
+    grants: readGrants(store2, paths).map((grant) => ({ ...grant })),
+    approvals: approvals.map((item2) => ({ ...item2 }))
+  }).ok;
+};
 
 // src/spend/status.ts
 var BUDGET_GUARD = "budget";
@@ -12574,7 +12584,12 @@ var en_default = {
   "gate.pin.no_count": "`{command}` looks like a test run but printed no test count",
   "gate.pin.count_drop": "fewer tests ran than before: {before} then {after}",
   "gate.pin.exit_zero": "new exit(0) outside tests at {where}",
-  "gate.pin.shadow": "test pinning is in shadow: it would have been {status}"
+  "gate.pin.shadow": "test pinning is in shadow: it would have been {status}",
+  "gate.reason.no_verdict": "the review has no verdict",
+  "gate.review.no_verdict": "{agent} reviewed at {at} but its output had no verdict (approve, request-changes or fail)",
+  "gate.review.rejected": "{agent} reviewed at {at} with verdict {verdict}",
+  "gate.review.untrusted": "review by {agent} ignored: only the plugin's reviewer or a project agent that existed before the task counts",
+  "gate.approval.stale": "approved at {at} for an earlier tree; the code changed since, so type `fm: approve {task}/{check} <reason>` again"
 };
 
 // src/i18n/es.json
@@ -14510,7 +14525,12 @@ var es_default = {
   "gate.pin.no_count": "`{command}` parece correr pruebas pero no mostró cuántas corrieron",
   "gate.pin.count_drop": "corrieron menos pruebas que antes: {before} y ahora {after}",
   "gate.pin.exit_zero": "exit(0) nuevo fuera de las pruebas en {where}",
-  "gate.pin.shadow": "la fijación de pruebas está en sombra: habría quedado {status}"
+  "gate.pin.shadow": "la fijación de pruebas está en sombra: habría quedado {status}",
+  "gate.reason.no_verdict": "la revisión no tiene veredicto",
+  "gate.review.no_verdict": "{agent} revisó en {at}, pero su salida no trajo veredicto (approve, request-changes o fail)",
+  "gate.review.rejected": "{agent} revisó en {at} con veredicto {verdict}",
+  "gate.review.untrusted": "revisión de {agent} ignorada: solo cuentan el revisor del plugin o un agente del proyecto que ya existía antes de la tarea",
+  "gate.approval.stale": "aprobado en {at} para un árbol anterior; el código cambió desde entonces, así que escribe `fm: approve {task}/{check} <motivo>` otra vez"
 };
 
 // src/i18n/pt-BR.json
@@ -16446,7 +16466,12 @@ var pt_BR_default = {
   "gate.pin.no_count": "`{command}` parece rodar testes mas não mostrou quantos rodaram",
   "gate.pin.count_drop": "rodaram menos testes do que antes: {before} e agora {after}",
   "gate.pin.exit_zero": "exit(0) novo fora dos testes em {where}",
-  "gate.pin.shadow": "a fixação de testes está em sombra: teria ficado {status}"
+  "gate.pin.shadow": "a fixação de testes está em sombra: teria ficado {status}",
+  "gate.reason.no_verdict": "a revisão não tem veredito",
+  "gate.review.no_verdict": "{agent} revisou em {at}, mas a saída não trouxe veredito (approve, request-changes ou fail)",
+  "gate.review.rejected": "{agent} revisou em {at} com veredito {verdict}",
+  "gate.review.untrusted": "revisão de {agent} ignorada: só contam o revisor do plugin ou um agente do projeto que já existia antes da tarefa",
+  "gate.approval.stale": "aprovado em {at} para uma árvore anterior; o código mudou desde então, então digite `fm: approve {task}/{check} <motivo>` de novo"
 };
 
 // src/i18n/review.json
@@ -18383,7 +18408,12 @@ var review_default = {
     "gate.pin.no_count": "machine",
     "gate.pin.count_drop": "machine",
     "gate.pin.exit_zero": "machine",
-    "gate.pin.shadow": "machine"
+    "gate.pin.shadow": "machine",
+    "gate.reason.no_verdict": "machine",
+    "gate.review.no_verdict": "machine",
+    "gate.review.rejected": "machine",
+    "gate.review.untrusted": "machine",
+    "gate.approval.stale": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -20317,7 +20347,12 @@ var review_default = {
     "gate.pin.no_count": "machine",
     "gate.pin.count_drop": "machine",
     "gate.pin.exit_zero": "machine",
-    "gate.pin.shadow": "machine"
+    "gate.pin.shadow": "machine",
+    "gate.reason.no_verdict": "machine",
+    "gate.review.no_verdict": "machine",
+    "gate.review.rejected": "machine",
+    "gate.review.untrusted": "machine",
+    "gate.approval.stale": "machine"
   }
 };
 
@@ -24626,7 +24661,8 @@ var UNVERIFIED_REASONS = [
   "no_baseline",
   "needs_approval",
   "masked_exit",
-  "no_test_count"
+  "no_test_count",
+  "no_verdict"
 ];
 var COMPLETION_STATES = [
   "unverified",
@@ -24652,9 +24688,17 @@ var readGateStatus = (runtime, paths) => {
   const detail = raw?.["detail"];
   const at5 = raw?.["at"];
   const state = COMPLETION_STATES.find((item2) => item2 === raw?.["state"]);
+  const tree = raw?.["tree"];
   if (status === void 0 || typeof task !== "string" || typeof detail !== "string" || typeof at5 !== "string")
     return void 0;
-  return { status, task, detail, at: at5, ...state === void 0 ? {} : { state } };
+  return {
+    status,
+    task,
+    detail,
+    at: at5,
+    ...state === void 0 ? {} : { state },
+    ...typeof tree === "string" ? { tree } : {}
+  };
 };
 
 // src/quality/limits.ts
@@ -29566,6 +29610,7 @@ var apply = (input, paths, markers) => {
   const approvals = [];
   const said = [];
   const active = readState(runtime, paths).active ?? IMPLICIT_ID;
+  const status = readGateStatus(runtime, paths);
   for (const marker3 of markers) {
     if (marker3.type === "allow" && RELEASABLE.has(marker3.guard)) {
       grants.push({
@@ -29578,7 +29623,13 @@ var apply = (input, paths, markers) => {
       said.push(t("gate.release.allowed", { guard: marker3.guard, until: expiryFrom(now) }));
     } else if (marker3.type === "allow") said.push(t("gate.release.unknown_guard", { guard: marker3.guard }));
     else if (marker3.type === "approve") {
-      approvals.push({ task: marker3.task ?? active, check: marker3.check, reason: marker3.reason, at: at5 });
+      approvals.push({
+        task: marker3.task ?? active,
+        check: marker3.check,
+        reason: marker3.reason,
+        at: at5,
+        ...status?.tree === void 0 || status.task !== (marker3.task ?? active) ? {} : { treeHash: status.tree }
+      });
       said.push(t("gate.release.approved", { task: marker3.task ?? active, check: marker3.check }));
     } else
       said.push(
@@ -30139,10 +30190,24 @@ var preCompact = (input) => {
 var REVIEWS_FILE = "reviews.json";
 var REVIEWER_AGENT = /(^|:)[\w-]*reviewer$/i;
 var KEEP2 = 50;
+var REVIEW_VERDICTS = ["approve", "approve-with-changes", "request-changes", "fail"];
+var APPROVING = /* @__PURE__ */ new Set(["approve", "approve-with-changes"]);
+var verdictOf2 = (value2) => REVIEW_VERDICTS.find((item2) => item2 === value2);
 var toReview = (value2) => {
   if (!isRecord(value2)) return void 0;
   const { treeHash: treeHash2, agent, at: at5 } = value2;
-  return typeof treeHash2 === "string" && typeof agent === "string" && typeof at5 === "string" ? { treeHash: treeHash2, agent, at: at5 } : void 0;
+  const verdict4 = verdictOf2(value2["verdict"]);
+  return typeof treeHash2 === "string" && typeof agent === "string" && typeof at5 === "string" ? { treeHash: treeHash2, agent, at: at5, ...verdict4 === void 0 ? {} : { verdict: verdict4 } } : void 0;
+};
+var FENCED = /```[a-z]*\r?\n([\s\S]*?)```/g;
+var parsedVerdict = (text26) => {
+  const parsed = parseJsonObject(text26.trim());
+  return parsed.ok ? verdictOf2(parsed.value["verdict"]) : void 0;
+};
+var reviewVerdict = (message) => {
+  const blocks = [...message.matchAll(FENCED)].map((match) => match[1] ?? "");
+  const found = [...blocks, message].map(parsedVerdict).filter((item2) => item2 !== void 0);
+  return found[found.length - 1];
 };
 var readReviews = (runtime, paths) => {
   const raw = readJsonFile(runtime, paths.cache(REVIEWS_FILE))?.["reviews"];
@@ -30151,9 +30216,10 @@ var readReviews = (runtime, paths) => {
     return review2 === void 0 ? [] : [review2];
   }) : [];
 };
-var recordReview = (runtime, paths, treeHash2, agent) => {
-  const reviews = [...readReviews(runtime, paths), { treeHash: treeHash2, agent, at: runtime.now() }].slice(-KEEP2);
-  return writeJsonFile(runtime, paths.cache(REVIEWS_FILE), { reviews: reviews.map((review2) => ({ ...review2 })) }).ok;
+var recordReview = (runtime, paths, treeHash2, agent, verdict4) => {
+  const review2 = { treeHash: treeHash2, agent, at: runtime.now(), ...verdict4 === void 0 ? {} : { verdict: verdict4 } };
+  const reviews = [...readReviews(runtime, paths), review2].slice(-KEEP2);
+  return writeJsonFile(runtime, paths.cache(REVIEWS_FILE), { reviews: reviews.map((review3) => ({ ...review3 })) }).ok;
 };
 
 // src/datamap/check.ts
@@ -31399,20 +31465,36 @@ var lookCheck = (_check, ctx) => {
   return passed([note("gate.look.ok", { count: summary2.captures.length }), ...ignored]);
 };
 
+// src/gate/checks/approval.ts
+var boundApproval = (ctx, check2) => {
+  const approval = readApprovals(ctx.runtime, ctx.paths).findLast(
+    (item2) => item2.task === ctx.contract.id && item2.check === check2
+  );
+  if (approval === void 0) return void 0;
+  if (approval.treeHash === void 0) {
+    bindApproval(ctx.runtime, ctx.paths, approval, ctx.treeHash);
+    return { kind: "valid", approval: { ...approval, treeHash: ctx.treeHash } };
+  }
+  return { kind: approval.treeHash === ctx.treeHash ? "valid" : "stale", approval };
+};
+
 // src/gate/checks/manual.ts
 var manualCheck = (check2, ctx) => {
-  const approval = readApprovals(ctx.runtime, ctx.paths).findLast(
-    (item2) => item2.task === ctx.contract.id && item2.check === check2.id
-  );
-  if (approval === void 0) {
+  const bound = boundApproval(ctx, check2.id);
+  if (bound === void 0) {
     return unverified("awaiting_person", [
       note("gate.manual.waiting", { description: check2.description ?? "", task: ctx.contract.id, check: check2.id })
     ]);
   }
+  if (bound.kind === "stale") {
+    return unverified("needs_approval", [
+      note("gate.approval.stale", { at: bound.approval.at, task: ctx.contract.id, check: check2.id })
+    ]);
+  }
   return {
     status: "passed",
-    notes: [note("gate.manual.approved", { at: approval.at, reason: approval.reason })],
-    releasedBy: `person@${approval.at}`
+    notes: [note("gate.manual.approved", { at: bound.approval.at, reason: bound.approval.reason })],
+    releasedBy: `person@${bound.approval.at}`
   };
 };
 
@@ -31646,7 +31728,7 @@ var copyWorking = (ctx, dir) => {
     ctx.runtime.copyFile(toAbsolutePath(join82(ctx.paths.root, change2.path)), target5);
   }
 };
-var verdictOf2 = (at5, tests, run10, dir, mutant) => {
+var verdictOf3 = (at5, tests, run10, dir, mutant) => {
   const path = toAbsolutePath(join82(dir, mutant.file));
   const original = at5.runtime.readText(path);
   const mutated = original.ok ? applyMutant(original.value, mutant) : void 0;
@@ -31666,7 +31748,7 @@ var insideScratch = (ctx, dir, tests, run10, mutants) => {
   if (!installed.ok) return { kind: "unavailable", detail: installed.error.detail };
   const at5 = { ...ctx, paths: { ...ctx.paths, root: dir }, baseline: void 0 };
   if (runShellCheck(tests, run10, at5).status !== "passed") return { kind: "baseline_failed" };
-  const verdicts = mutants.map((mutant) => ({ mutant, verdict: verdictOf2(at5, tests, run10, dir, mutant) }));
+  const verdicts = mutants.map((mutant) => ({ mutant, verdict: verdictOf3(at5, tests, run10, dir, mutant) }));
   const pick5 = (verdict4) => verdicts.filter((item2) => item2.verdict === verdict4).map((item2) => item2.mutant);
   return { kind: "ran", killed: pick5("killed"), survived: pick5("survived"), skipped: pick5("skipped").length };
 };
@@ -33459,22 +33541,40 @@ var sizeNotes = (ctx) => {
     ...size.sensitive.slice(0, MAX_SENSITIVE).map((file) => note("gate.size.sensitive", { file }))
   ];
 };
+var PLUGIN_PREFIX = "finitemonkey:";
+var trustedReviewer = (ctx, agent) => {
+  if (agent.startsWith(PLUGIN_PREFIX)) return true;
+  if (agent.includes(":")) return false;
+  const file = `.claude/agents/${agent}.md`;
+  return fileAt(ctx.git, ctx.base, file) !== void 0 && !ctx.changes.some((change2) => change2.path === file);
+};
+var fromReview = (review2) => {
+  const params2 = { agent: review2.agent, at: review2.at, verdict: review2.verdict ?? "" };
+  if (review2.verdict === void 0) return unverified("no_verdict", [note("gate.review.no_verdict", params2)]);
+  if (APPROVING.has(review2.verdict)) return passed([note("gate.review.done", params2)]);
+  return failed4([note("gate.review.rejected", params2)]);
+};
 var reviewCheck = (check2, ctx) => {
-  const review2 = readReviews(ctx.runtime, ctx.paths).findLast((entry2) => entry2.treeHash === ctx.treeHash);
-  if (review2 !== void 0) {
-    return { status: "passed", notes: [note("gate.review.done", { agent: review2.agent, at: review2.at })] };
-  }
-  const approval = readApprovals(ctx.runtime, ctx.paths).findLast(
-    (item2) => item2.task === ctx.contract.id && item2.check === check2.id
-  );
-  if (approval !== void 0) {
+  const bound = boundApproval(ctx, check2.id);
+  if (bound?.kind === "valid") {
     return {
       status: "passed",
-      notes: [note("gate.manual.approved", { at: approval.at, reason: approval.reason })],
-      releasedBy: `person@${approval.at}`
+      notes: [note("gate.manual.approved", { at: bound.approval.at, reason: bound.approval.reason })],
+      releasedBy: `person@${bound.approval.at}`
     };
   }
-  return failed4([...sizeNotes(ctx), note("gate.review.missing", { check: check2.id })]);
+  const reviews = readReviews(ctx.runtime, ctx.paths).filter((entry2) => entry2.treeHash === ctx.treeHash);
+  const trusted = reviews.filter((entry2) => trustedReviewer(ctx, entry2.agent));
+  const latest2 = trusted[trusted.length - 1];
+  if (latest2 !== void 0) return fromReview(latest2);
+  const ignored = [...new Set(reviews.map((entry2) => entry2.agent))].slice(0, MAX_SENSITIVE).map((agent) => note("gate.review.untrusted", { agent }));
+  if (bound?.kind === "stale") {
+    return unverified("needs_approval", [
+      ...ignored,
+      note("gate.approval.stale", { at: bound.approval.at, task: ctx.contract.id, check: check2.id })
+    ]);
+  }
+  return failed4([...sizeNotes(ctx), ...ignored, note("gate.review.missing", { check: check2.id })]);
 };
 
 // src/app/parse.ts
@@ -35308,7 +35408,8 @@ var onFailed = (input, report2, paths) => {
       status: "not_done",
       task: report2.task,
       detail: failingList(t, report2),
-      state: report2.state
+      state: report2.state,
+      tree: report2.treeHash
     });
     return allowWith({
       systemMessage: human(t("gate.human.not_done", { blocks: verdict4.blocks, list: failingList(t, report2) }))
@@ -35343,7 +35444,13 @@ var holdSignature = (report2) => sha256Hex(
 var onIncomplete = (input, report2, paths) => {
   const { t, runtime } = input;
   const list10 = unverifiedSummary(t, report2);
-  writeGateStatus(runtime, paths, { status: "incomplete", task: report2.task, detail: list10, state: report2.state });
+  writeGateStatus(runtime, paths, {
+    status: "incomplete",
+    task: report2.task,
+    detail: list10,
+    state: report2.state,
+    tree: report2.treeHash
+  });
   const passOn = allowWith({ systemMessage: human(t("gate.human.incomplete", { list: list10 })) });
   const signature = holdSignature(report2);
   const previous = readCounter(runtime, paths);
@@ -35375,7 +35482,13 @@ var onReport = (input, report2, paths) => {
   if (report2.verdict === "failed") return onFailed(input, report2, paths);
   if (report2.verdict === "incomplete") return onIncomplete(input, report2, paths);
   saveCounter(runtime, paths, void 0);
-  writeGateStatus(runtime, paths, { status: "passed", task: report2.task, detail: "", state: report2.state });
+  writeGateStatus(runtime, paths, {
+    status: "passed",
+    task: report2.task,
+    detail: "",
+    state: report2.state,
+    tree: report2.treeHash
+  });
   markDone(input, report2, paths);
   return allowWith({ systemMessage: human(t("gate.human.passed", { count: report2.counts.passed })) });
 };
@@ -35440,7 +35553,8 @@ var noteReview = (input) => {
   const root = findRepoRoot(input.runtime, sessionCwd(input));
   if (root === void 0) return;
   const tree = treeHash(gitAt(input.runtime, root));
-  if (tree !== void 0) recordReview(input.runtime, fmPaths(root), tree, agent);
+  const verdict4 = reviewVerdict(textField(input.payload.raw, "last_assistant_message") ?? "");
+  if (tree !== void 0) recordReview(input.runtime, fmPaths(root), tree, agent, verdict4);
 };
 var subagentStopGate = (input) => {
   noteReview(input);

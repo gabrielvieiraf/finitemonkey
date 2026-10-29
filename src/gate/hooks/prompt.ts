@@ -11,6 +11,7 @@ import { readState, readTrust, writeTrust } from "../../task/state.js";
 import { prepareGate } from "../prepare.js";
 import { allowWith, human, projectPaths } from "./common.js";
 import { readCounter, saveCounter } from "./counter.js";
+import { readGateStatus } from "./status.js";
 
 export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims"]);
 
@@ -52,6 +53,7 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
   const approvals: Approval[] = [];
   const said: string[] = [];
   const active = readState(runtime, paths).active ?? IMPLICIT_ID;
+  const status = readGateStatus(runtime, paths);
   for (const marker of markers) {
     if (marker.type === "allow" && RELEASABLE.has(marker.guard)) {
       grants.push({
@@ -64,7 +66,13 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
       said.push(t("gate.release.allowed", { guard: marker.guard, until: expiryFrom(now) }));
     } else if (marker.type === "allow") said.push(t("gate.release.unknown_guard", { guard: marker.guard }));
     else if (marker.type === "approve") {
-      approvals.push({ task: marker.task ?? active, check: marker.check, reason: marker.reason, at });
+      approvals.push({
+        task: marker.task ?? active,
+        check: marker.check,
+        reason: marker.reason,
+        at,
+        ...(status?.tree === undefined || status.task !== (marker.task ?? active) ? {} : { treeHash: status.tree }),
+      });
       said.push(t("gate.release.approved", { task: marker.task ?? active, check: marker.check }));
     } else
       said.push(

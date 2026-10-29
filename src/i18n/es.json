@@ -1930,5 +1930,10 @@
   "gate.pin.no_count": "`{command}` parece correr pruebas pero no mostró cuántas corrieron",
   "gate.pin.count_drop": "corrieron menos pruebas que antes: {before} y ahora {after}",
   "gate.pin.exit_zero": "exit(0) nuevo fuera de las pruebas en {where}",
-  "gate.pin.shadow": "la fijación de pruebas está en sombra: habría quedado {status}"
+  "gate.pin.shadow": "la fijación de pruebas está en sombra: habría quedado {status}",
+  "gate.reason.no_verdict": "la revisión no tiene veredicto",
+  "gate.review.no_verdict": "{agent} revisó en {at}, pero su salida no trajo veredicto (approve, request-changes o fail)",
+  "gate.review.rejected": "{agent} revisó en {at} con veredicto {verdict}",
+  "gate.review.untrusted": "revisión de {agent} ignorada: solo cuentan el revisor del plugin o un agente del proyecto que ya existía antes de la tarea",
+  "gate.approval.stale": "aprobado en {at} para un árbol anterior; el código cambió desde entonces, así que escribe `fm: approve {task}/{check} <motivo>` otra vez"
 }

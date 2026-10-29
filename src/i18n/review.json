@@ -1931,7 +1931,12 @@
     "gate.pin.no_count": "machine",
     "gate.pin.count_drop": "machine",
     "gate.pin.exit_zero": "machine",
-    "gate.pin.shadow": "machine"
+    "gate.pin.shadow": "machine",
+    "gate.reason.no_verdict": "machine",
+    "gate.review.no_verdict": "machine",
+    "gate.review.rejected": "machine",
+    "gate.review.untrusted": "machine",
+    "gate.approval.stale": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3865,6 +3870,11 @@
     "gate.pin.no_count": "machine",
     "gate.pin.count_drop": "machine",
     "gate.pin.exit_zero": "machine",
-    "gate.pin.shadow": "machine"
+    "gate.pin.shadow": "machine",
+    "gate.reason.no_verdict": "machine",
+    "gate.review.no_verdict": "machine",
+    "gate.review.rejected": "machine",
+    "gate.review.untrusted": "machine",
+    "gate.approval.stale": "machine"
   }
 }

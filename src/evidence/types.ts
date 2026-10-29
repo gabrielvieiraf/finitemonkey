@@ -23,6 +23,7 @@ export const UNVERIFIED_REASONS = [
   "needs_approval",
   "masked_exit",
   "no_test_count",
+  "no_verdict",
 ] as const;
 
 export type UnverifiedReason = (typeof UNVERIFIED_REASONS)[number];

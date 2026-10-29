@@ -13,6 +13,7 @@ export interface GateStatus {
   readonly detail: string;
   readonly at: string;
   readonly state?: CompletionState;
+  readonly tree?: string;
 }
 
 const KINDS: readonly GateStatusKind[] = ["passed", "failed", "incomplete", "not_run", "not_done"];
@@ -30,7 +31,15 @@ export const readGateStatus = (runtime: Pick<Runtime, "readText">, paths: FmPath
   const detail = raw?.["detail"];
   const at = raw?.["at"];
   const state = COMPLETION_STATES.find((item) => item === raw?.["state"]);
+  const tree = raw?.["tree"];
   if (status === undefined || typeof task !== "string" || typeof detail !== "string" || typeof at !== "string")
     return undefined;
-  return { status, task, detail, at, ...(state === undefined ? {} : { state }) };
+  return {
+    status,
+    task,
+    detail,
+    at,
+    ...(state === undefined ? {} : { state }),
+    ...(typeof tree === "string" ? { tree } : {}),
+  };
 };

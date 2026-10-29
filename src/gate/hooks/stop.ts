@@ -10,7 +10,7 @@ import type { IsolatedFailure } from "../isolated.js";
 import type { GateFailure } from "../prepare.js";
 import { blockReason, holdReason, itemDetails, unverifiedSummary } from "../render.js";
 import type { GateReport } from "../report.js";
-import { recordReview, REVIEWER_AGENT } from "../review.js";
+import { recordReview, REVIEWER_AGENT, reviewVerdict } from "../review.js";
 import { type GateRun, runGate } from "../run.js";
 import { canClose } from "../state.js";
 import { allowWith, findRepoRoot, gateBudget, human, sessionCwd } from "./common.js";
@@ -68,6 +68,7 @@ const onFailed = (input: HookInput, report: GateReport, paths: ReturnType<typeof
       task: report.task,
       detail: failingList(t, report),
       state: report.state,
+      tree: report.treeHash,
     });
     return allowWith({
       systemMessage: human(t("gate.human.not_done", { blocks: verdict.blocks, list: failingList(t, report) })),
@@ -105,7 +106,13 @@ const holdSignature = (report: GateReport): string =>
 const onIncomplete = (input: HookInput, report: GateReport, paths: ReturnType<typeof fmPaths>): HookDecision => {
   const { t, runtime } = input;
   const list = unverifiedSummary(t, report);
-  writeGateStatus(runtime, paths, { status: "incomplete", task: report.task, detail: list, state: report.state });
+  writeGateStatus(runtime, paths, {
+    status: "incomplete",
+    task: report.task,
+    detail: list,
+    state: report.state,
+    tree: report.treeHash,
+  });
   const passOn = allowWith({ systemMessage: human(t("gate.human.incomplete", { list })) });
   const signature = holdSignature(report);
   const previous = readCounter(runtime, paths);
@@ -138,7 +145,13 @@ const onReport = (input: HookInput, report: GateReport, paths: ReturnType<typeof
   if (report.verdict === "failed") return onFailed(input, report, paths);
   if (report.verdict === "incomplete") return onIncomplete(input, report, paths);
   saveCounter(runtime, paths, undefined);
-  writeGateStatus(runtime, paths, { status: "passed", task: report.task, detail: "", state: report.state });
+  writeGateStatus(runtime, paths, {
+    status: "passed",
+    task: report.task,
+    detail: "",
+    state: report.state,
+    tree: report.treeHash,
+  });
   markDone(input, report, paths);
   return allowWith({ systemMessage: human(t("gate.human.passed", { count: report.counts.passed })) });
 };
@@ -214,7 +227,8 @@ const noteReview = (input: HookInput): void => {
   const root = findRepoRoot(input.runtime, sessionCwd(input));
   if (root === undefined) return;
   const tree = treeHash(gitAt(input.runtime, root));
-  if (tree !== undefined) recordReview(input.runtime, fmPaths(root), tree, agent);
+  const verdict = reviewVerdict(textField(input.payload.raw, "last_assistant_message") ?? "");
+  if (tree !== undefined) recordReview(input.runtime, fmPaths(root), tree, agent, verdict);
 };
 
 export const subagentStopGate: HookHandler = (input) => {

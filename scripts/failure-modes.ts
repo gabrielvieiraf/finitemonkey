@@ -65,6 +65,14 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     test: "redefining scripts.test during a task holds the check until the person approves",
   },
   {
+    failure: "A review or approval outlives the code it saw",
+    cause: "An edit after the review or the manual approval, or a reviewer agent written during the task",
+    mitigation:
+      "Reviews count only with a verdict from a trusted reviewer on the current tree; approvals carry the tree hash and go back to needs approval after an edit",
+    file: "test/review-bound.test.ts",
+    test: "an edit after a manual approval sets the check back to needs_approval",
+  },
+  {
     failure: "A secret is committed",
     cause: "A credential is staged with the change",
     mitigation: "`git commit` is blocked with the file and line",
