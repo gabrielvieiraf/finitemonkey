@@ -116,7 +116,8 @@
             "deploy_drift_found",
             "deploy_check_unconfigured",
             "policy_invalid",
-            "gate_released_by_cap"
+            "gate_released_by_cap",
+            "guardian_write_failed"
           ]
         },
         "message": {

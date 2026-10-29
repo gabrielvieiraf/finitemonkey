@@ -41,6 +41,7 @@ import { mergeVerifyCommand } from "./git-merge-verify.js";
 import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { goldenAcceptCommand } from "./golden.js";
+import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
@@ -257,6 +258,9 @@ export const REGISTRY = [
   signalsBlindBandCommand,
   scenariosCommand,
   scenariosRunCommand,
+  guardianStatusCommand,
+  guardianGoalAddCommand,
+  guardianGoalConfirmCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

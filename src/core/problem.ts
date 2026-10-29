@@ -99,6 +99,7 @@ export const ERROR_CODES = [
   "deploy_check_unconfigured",
   "policy_invalid",
   "gate_released_by_cap",
+  "guardian_write_failed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

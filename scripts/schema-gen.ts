@@ -124,6 +124,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     type: "BlindBandData",
     describes: "`data` of `finitemonkey signals blind-band --json`.",
   },
+  {
+    name: "guardian-status@1",
+    file: "src/guardian/status.ts",
+    type: "GuardianStatus",
+    describes: "`data` of `finitemonkey guardian status --json`.",
+  },
 ];
 
 export const ROOT = fileURLToPath(new URL("..", import.meta.url));

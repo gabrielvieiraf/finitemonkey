@@ -2109,5 +2109,22 @@
   "gate.blind.unavailable": "blind tests could not run: {detail}",
   "gate.blind.summary": "{kept, plural, one {# blind test fails} other {# blind tests fail}} on the base commit and ran on the change; {discarded} passed on base and were discarded",
   "gate.blind.disagree": "blind test \"{name}\" disagrees with the change. On base: {base}. On the change: {head}",
-  "gate.blind.shadow": "shadow mode: {count, plural, one {# blind test disagrees} other {# blind tests disagree}} and would block once blind-tests is active"
+  "gate.blind.shadow": "shadow mode: {count, plural, one {# blind test disagrees} other {# blind tests disagree}} and would block once blind-tests is active",
+  "command.guardian_status.summary": "Compare recent tasks with the project goals: unlinked tasks, scope growth, reopened decisions, stalled work",
+  "command.guardian_goal_add.summary": "Add a goal, constraint, non-goal, done criterion or rejected option to .finitemonkey/goals.yml",
+  "command.guardian_goal_confirm.summary": "Mark an inferred goal entry as stated (person in a terminal only)",
+  "guardian.status.head": "Goals: {stated} stated, {inferred} inferred. Tasks: {tasks}.",
+  "guardian.status.clean": "No drift signal.",
+  "guardian.signal.unlinked_task": "{subject}: no stated goal linked (goals: {detail})",
+  "guardian.signal.scope_growth": "{subject}: scope grew after approval ({detail})",
+  "guardian.signal.reopened_decision": "{subject}: reopens {detail} without a new FACT line",
+  "guardian.signal.stalled": "{subject}: one check short of passing for {detail} days",
+  "guardian.goal.added_stated": "Added {id} as stated.",
+  "guardian.goal.added_inferred": "Added {id} as inferred. It counts only after the person runs finitemonkey guardian goal confirm {id} in a terminal.",
+  "guardian.goal.confirmed": "{id} is now stated.",
+  "guardian.error.add": "Give the text of the entry and a known kind.",
+  "guardian.error.confirm": "Give the id of the entry to confirm.",
+  "guardian.error.unknown_goal": "No entry with id {id} in .finitemonkey/goals.yml.",
+  "guardian.error.person_only": "Only the person, in a terminal outside Claude Code, can confirm a goal.",
+  "guardian.error.write": "Could not write {file}."
 }

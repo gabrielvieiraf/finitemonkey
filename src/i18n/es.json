@@ -2109,5 +2109,22 @@
   "gate.blind.unavailable": "las pruebas ciegas no corrieron: {detail}",
   "gate.blind.summary": "{kept, plural, one {# prueba ciega falla} other {# pruebas ciegas fallan}} en el commit base y corrieron en el cambio; {discarded} pasaron en base y se descartaron",
   "gate.blind.disagree": "la prueba ciega \"{name}\" no concuerda con el cambio. En base: {base}. En el cambio: {head}",
-  "gate.blind.shadow": "modo sombra: {count, plural, one {# prueba ciega no concuerda} other {# pruebas ciegas no concuerdan}} y bloquearían con blind-tests activo"
+  "gate.blind.shadow": "modo sombra: {count, plural, one {# prueba ciega no concuerda} other {# pruebas ciegas no concuerdan}} y bloquearían con blind-tests activo",
+  "command.guardian_status.summary": "Compara las tareas recientes con los objetivos del proyecto: tareas sin objetivo, alcance que creció, decisiones reabiertas, trabajo estancado",
+  "command.guardian_goal_add.summary": "Agrega un objetivo, restricción, no objetivo, criterio de terminado u opción rechazada a .finitemonkey/goals.yml",
+  "command.guardian_goal_confirm.summary": "Marca una entrada inferida como declarada (solo la persona, en una terminal)",
+  "guardian.status.head": "Objetivos: {stated} declarados, {inferred} inferidos. Tareas: {tasks}.",
+  "guardian.status.clean": "Ninguna señal de desvío.",
+  "guardian.signal.unlinked_task": "{subject}: ningún objetivo declarado vinculado (goals: {detail})",
+  "guardian.signal.scope_growth": "{subject}: el alcance creció después de la aprobación ({detail})",
+  "guardian.signal.reopened_decision": "{subject}: reabre {detail} sin ninguna línea FACT nueva",
+  "guardian.signal.stalled": "{subject}: a un check de pasar desde hace {detail} días",
+  "guardian.goal.added_stated": "{id} agregado como declarado.",
+  "guardian.goal.added_inferred": "{id} agregado como inferido. Solo cuenta después de que la persona ejecute finitemonkey guardian goal confirm {id} en una terminal.",
+  "guardian.goal.confirmed": "{id} ahora es declarado.",
+  "guardian.error.add": "Indica el texto de la entrada y un tipo conocido.",
+  "guardian.error.confirm": "Indica el id de la entrada a confirmar.",
+  "guardian.error.unknown_goal": "Ninguna entrada con id {id} en .finitemonkey/goals.yml.",
+  "guardian.error.person_only": "Solo la persona, en una terminal fuera de Claude Code, puede confirmar un objetivo.",
+  "guardian.error.write": "No se pudo escribir {file}."
 }
