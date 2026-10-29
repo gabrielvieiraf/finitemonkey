@@ -6239,7 +6239,8 @@ var OPTIONAL_GUARDS = [
   "probes",
   "trajectory",
   "a11y",
-  "keyboard"
+  "keyboard",
+  "ui-states"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6319,7 +6320,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "xray",
   "probes",
   "a11y",
-  "keyboard"
+  "keyboard",
+  "ui-states"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -7504,8 +7506,8 @@ var releaseArtifacts = (input) => {
 };
 var dependabot = (input) => {
   const ecosystems = updateEcosystems(input.files);
-  const actions = ecosystems.some((entry2) => entry2.ecosystem === "github-actions") ? ecosystems : [...ecosystems, { ecosystem: "github-actions", directories: ["/"] }];
-  return dependabotConfig(actions);
+  const actions2 = ecosystems.some((entry2) => entry2.ecosystem === "github-actions") ? ecosystems : [...ecosystems, { ecosystem: "github-actions", directories: ["/"] }];
+  return dependabotConfig(actions2);
 };
 var ciFiles = (input, chosen) => {
   const workflow = {
@@ -9039,9 +9041,9 @@ var STATEFUL_TYPES = [
   /^kubernetes_(?:persistent_volume_claim|persistent_volume|stateful_set)(?:_v1)?$/,
   /^digitalocean_(?:database_cluster|volume|spaces_bucket)$/
 ];
-var actionOf = (actions) => {
-  if (!Array.isArray(actions)) return void 0;
-  const list12 = actions.filter((item2) => typeof item2 === "string");
+var actionOf = (actions2) => {
+  if (!Array.isArray(actions2)) return void 0;
+  const list12 = actions2.filter((item2) => typeof item2 === "string");
   if (list12.includes("delete") && list12.includes("create")) return "replace";
   if (list12.includes("delete")) return "delete";
   if (list12.includes("create")) return "create";
@@ -36260,8 +36262,8 @@ var npmFacts = (doc, wanted) => {
   const times2 = record7(doc, "time");
   const versions = record7(doc, "versions");
   const tags = record7(doc, "dist-tags");
-  const tagged = wanted === void 0 ? tags["latest"] : tags[wanted] ?? wanted;
-  const version2 = typeof tagged === "string" && tagged in versions ? tagged : void 0;
+  const tagged2 = wanted === void 0 ? tags["latest"] : tags[wanted] ?? wanted;
+  const version2 = typeof tagged2 === "string" && tagged2 in versions ? tagged2 : void 0;
   const ordered = Object.keys(versions).sort((left, right) => (timeOf(times2[left]) ?? 0) - (timeOf(times2[right]) ?? 0));
   const index = version2 === void 0 ? -1 : ordered.indexOf(version2);
   const previous = index > 0 ? ordered[index - 1] : void 0;
@@ -39595,6 +39597,20 @@ var contrastRatio = (first, second) => {
   const [light, dark] = [luminance(first), luminance(second)].sort((left, right) => right - left);
   return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
 };
+var colorDistance = (first, second) => Math.sqrt((first.r - second.r) ** 2 + (first.g - second.g) ** 2 + (first.b - second.b) ** 2) + Math.abs(first.a - second.a) * 255;
+var hueOf = (color) => {
+  const r = color.r / 255;
+  const g = color.g / 255;
+  const b = color.b / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const light = (max + min) / 2;
+  const delta = max - min;
+  if (delta === 0) return { hue: 0, saturation: 0, light };
+  const saturation = delta / (1 - Math.abs(2 * light - 1));
+  const raw = max === r ? (g - b) / delta % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+  return { hue: (raw * 60 + 360) % 360, saturation, light };
+};
 
 // src/look/ux.ts
 var MAX_ISSUES_PER_RULE = 20;
@@ -39758,6 +39774,83 @@ var a11yIssues = (probe, options2) => {
   ]);
 };
 
+// src/look/states.ts
+var STATES_FEATURE = "ui-states";
+var UI_STATES = ["ideal", "empty", "loading", "error", "partial"];
+var LOADING_BUDGET_MS = 400;
+var STATUS_WATCH_MS = 1500;
+var SUCCESS_DISTANCE = 40;
+var GREEN_HUE = [90, 165];
+var GREEN_SATURATION = 0.35;
+var parseStateSpec = (entry2) => {
+  const [name = "", mock] = entry2.trim().split(/\s+/);
+  const state = UI_STATES.find((item2) => item2 === name);
+  return state === void 0 ? void 0 : { state, mock };
+};
+var loadingIssues = (seen) => seen.indicator || seen.settledMs !== void 0 && seen.settledMs <= LOADING_BUDGET_MS ? [] : [
+  issue2(
+    "ui-states/loading",
+    "body",
+    `no progress indicator and no final content within ${String(LOADING_BUDGET_MS)} ms`
+  )
+];
+var visibleText = (probe) => probe.nodes.some((node) => node.visible && node.text !== "");
+var actions = (probe) => probe.nodes.some((node) => node.interactive && (node.role === "button" || node.role === "link"));
+var emptyIssues = (probe) => {
+  if (visibleText(probe) && actions(probe)) return [];
+  const missing3 = [...visibleText(probe) ? [] : ["text"], ...actions(probe) ? [] : ["an action"]];
+  return [issue2("ui-states/empty", "main", `empty state without ${missing3.join(" or ")}`)];
+};
+var looksGreen = (color) => {
+  const { hue: hue2, saturation } = hueOf(color);
+  return hue2 >= GREEN_HUE[0] && hue2 <= GREEN_HUE[1] && saturation >= GREEN_SATURATION;
+};
+var errorBlock = (probe) => {
+  const alert = probe.nodes.findIndex((node) => node.visible && node.role === "alert");
+  return alert >= 0 ? alert : probe.nodes.findIndex((node) => node.role === "main");
+};
+var colorIssue = (probe, at6, options2) => {
+  const node = probe.nodes[at6];
+  if (node === void 0) return [];
+  const back = backdropOf(probe.nodes, at6);
+  if (back === "image") return [];
+  if (options2.success !== void 0)
+    return colorDistance(back, options2.success) <= SUCCESS_DISTANCE ? [issue2("ui-states/error-color", node.sel, "error shown in the success color", { box: node })] : [];
+  return looksGreen(back) ? [
+    issue2("ui-states/error-color", node.sel, "error block looks like a success color (no success token declared)", {
+      advisory: true,
+      box: node
+    })
+  ] : [];
+};
+var errorIssues = (probe, options2) => {
+  const at6 = errorBlock(probe);
+  const selector = probe.nodes[at6]?.sel ?? "body";
+  return [
+    ...visibleText(probe) ? [] : [issue2("ui-states/error-text", selector, "error state without text")],
+    ...actions(probe) ? [] : [issue2("ui-states/error-action", selector, "error state without a recovery action")],
+    ...colorIssue(probe, at6, options2)
+  ];
+};
+var partialIssues = (probe) => [
+  ...probe.scrollWidth > probe.clientWidth ? [issue2("ui-states/partial", "html", `${String(probe.scrollWidth - probe.clientWidth)}px of horizontal overflow`)] : [],
+  ...probe.nodes.filter((node) => node.visible && node.clipped).map((node) => issue2("ui-states/partial", node.sel, `text cut off: "${node.text.slice(0, 40)}"`, { box: node }))
+];
+var statusIssues = (changed) => changed.map(
+  (selector) => issue2("ui-states/status", selector, "content changes without a live region, role=status or role=alert")
+);
+var notCovered = (spec2) => issue2("ui-states/not-covered", "body", `state "${spec2.state}" is required and has no mock`);
+var stateIssues = (spec2, probe, options2) => {
+  if (spec2.state === "empty") return emptyIssues(probe);
+  if (spec2.state === "error") return errorIssues(probe, options2);
+  if (spec2.state === "partial") return partialIssues(probe);
+  return [];
+};
+var optionsOf = (success2, skeleton2) => ({
+  success: success2 === void 0 ? void 0 : parseColor(success2),
+  skeleton: skeleton2
+});
+
 // src/look/types.ts
 var LOOK_RULES = [
   "look/overflow",
@@ -39784,7 +39877,15 @@ var LOOK_RULES = [
   "keyboard/focus-invisible",
   "keyboard/focus-obscured",
   "keyboard/order",
-  "keyboard/dialog"
+  "keyboard/dialog",
+  "ui-states/not-covered",
+  "ui-states/loading",
+  "ui-states/empty",
+  "ui-states/error-text",
+  "ui-states/error-action",
+  "ui-states/error-color",
+  "ui-states/partial",
+  "ui-states/status"
 ];
 var BLOCKING_RULES = [
   "look/overflow",
@@ -39835,6 +39936,16 @@ var routeLists = (entries2) => {
   }
   return out;
 };
+var statesOf = (tree) => {
+  const node = configAt(tree, "states");
+  if (node === void 0 || typeof node === "string" || Array.isArray(node)) return {};
+  return Object.fromEntries(
+    Object.keys(node).map((route) => [
+      route,
+      configList(tree, "states", route).flatMap((entry2) => parseStateSpec(entry2) ?? [])
+    ])
+  );
+};
 var parseLookConfig = (source3) => {
   const tree = parseConfigYaml(source3);
   const screens = configAt(tree, "screens");
@@ -39849,7 +39960,10 @@ var parseLookConfig = (source3) => {
     allow: allowEntries(tree),
     timeoutS: number3(top2["timeout_s"]) ?? 60,
     a11yTarget: targetOf(configAt(tree, "a11y", "target")),
-    dialogs: routeLists(configList(tree, "keyboard", "dialogs"))
+    dialogs: routeLists(configList(tree, "keyboard", "dialogs")),
+    states: statesOf(tree),
+    successColor: text23(configAt(tree, "ui_states", "success_color")),
+    skeleton: text23(configAt(tree, "ui_states", "skeleton"))
   };
 };
 var loadLookConfig = (runtime, root) => {
@@ -53151,9 +53265,9 @@ var editsSinceRun = (entries2) => {
 };
 var NOISE2 = /* @__PURE__ */ new Set(["permission", "approved"]);
 var ignoredError = (entries2, file) => {
-  const actions = entries2.filter((entry2) => !NOISE2.has(entry2.kind));
-  const last = actions.at(-1);
-  const before2 = actions.at(-2);
+  const actions2 = entries2.filter((entry2) => !NOISE2.has(entry2.kind));
+  const last = actions2.at(-1);
+  const before2 = actions2.at(-2);
   if (last?.kind !== "edit" || last.file !== file || before2?.kind !== "error") return void 0;
   if (!SHELL_TOOLS3.has(before2.tool)) return void 0;
   const named2 = before2.files ?? [];
@@ -57422,14 +57536,116 @@ var keyboardPass = (dialogs) => ({
   }
 });
 
+// src/look/states-dom.ts
+var LIVE_SELECTOR = "[aria-live=polite], [aria-live=assertive], [role=status], [role=alert], [role=log], [role=timer], [role=marquee], [role=progressbar], output";
+var watchText = (kit, doc, win, ms, lives) => new Promise((resolve4) => {
+  const changed = /* @__PURE__ */ new Set();
+  const observer = new win.MutationObserver((records2) => {
+    for (const record14 of records2) {
+      const target5 = "tagName" in record14.target ? record14.target : record14.target.parentElement;
+      if (target5 === null) continue;
+      if (target5.closest(lives) !== null) continue;
+      if (["SCRIPT", "STYLE", "NOSCRIPT"].includes(target5.tagName) || kit.clean(target5.textContent) === "") continue;
+      changed.add(kit.selectorOf(target5));
+    }
+  });
+  observer.observe(doc.body, { subtree: true, characterData: true, childList: true });
+  win.setTimeout(() => {
+    observer.disconnect();
+    resolve4([...changed].slice(0, 20));
+  }, ms);
+});
+var hasIndicator = (_kit, doc, skeleton2) => {
+  const query = `[role=progressbar], [aria-busy=true], progress${skeleton2 === "" ? "" : `, ${skeleton2}`}`;
+  return [...doc.querySelectorAll(query)].some((element) => {
+    const box2 = element.getBoundingClientRect();
+    return box2.width > 0 && box2.height > 0;
+  });
+};
+
+// src/look/node-states.ts
+var POLL_MS2 = 40;
+var watchScript = (ms) => runInPage(watchText.toString(), ["document", "window", String(ms), JSON.stringify(LIVE_SELECTOR)]);
+var changedWithoutLive = async (page, ms = STATUS_WATCH_MS) => {
+  const raw = await page.evaluate(watchScript(ms));
+  return Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
+};
+var observeLoading = async (page, url2, skeleton2) => {
+  const seen = { pending: 0, loaded: false };
+  const more = () => {
+    seen.pending += 1;
+  };
+  const less = () => {
+    seen.pending -= 1;
+  };
+  const done2 = () => {
+    seen.loaded = true;
+  };
+  page.on("request", more);
+  page.on("requestfinished", less);
+  page.on("requestfailed", less);
+  page.on("load", done2);
+  const started = Date.now();
+  await page.goto(url2, { waitUntil: "commit" });
+  const script = runInPage(hasIndicator.toString(), ["document", JSON.stringify(skeleton2)]);
+  let indicator = false;
+  let settledMs;
+  while (Date.now() - started <= LOADING_BUDGET_MS && !indicator && settledMs === void 0) {
+    indicator = await page.evaluate(script).catch(() => false) === true;
+    if (seen.loaded && seen.pending <= 0) settledMs = Date.now() - started;
+    await sleep(POLL_MS2);
+  }
+  page.off("request", more);
+  page.off("requestfinished", less);
+  page.off("requestfailed", less);
+  page.off("load", done2);
+  return { indicator, settledMs };
+};
+var tagged = (spec2, route, found) => found.map((item2) => ({ ...item2, route, detail: `[${spec2.state}] ${item2.detail}` }));
+var checkState = async (page, at6, spec2, options2) => {
+  if (spec2.mock === void 0) return [notCovered(spec2)];
+  const route = withMock(at6.route, spec2.mock);
+  const url2 = withMock(at6.url, spec2.mock);
+  try {
+    if (spec2.state === "loading")
+      return tagged(spec2, route, loadingIssues(await observeLoading(page, url2, options2.skeleton ?? "")));
+    await page.goto(url2, { waitUntil: "networkidle" });
+    const probe = parseProbe(await page.evaluate(PROBE_SCRIPT));
+    if (probe === void 0) return [];
+    return tagged(spec2, route, [...stateIssues(spec2, probe, options2), ...statusIssues(await changedWithoutLive(page))]);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message.split("\n")[0] ?? "" : String(error);
+    return [
+      issue2("ui-states/not-covered", "body", `[${spec2.state}] could not render: ${detail}`, {
+        route,
+        unverified: true
+      })
+    ];
+  }
+};
+var statesPass = (states, options2) => ({
+  feature: STATES_FEATURE,
+  allWidths: false,
+  run: async (page, at6) => {
+    if (at6.route.includes("?")) return [];
+    const found = [...statusIssues(await changedWithoutLive(page))];
+    for (const spec2 of (states[at6.route] ?? []).filter((item2) => item2.state !== "ideal"))
+      found.push(...await checkState(page, at6, spec2, options2));
+    if ((states[at6.route] ?? []).length > 0)
+      await page.goto(at6.url, { waitUntil: "networkidle" }).catch(() => void 0);
+    return found;
+  }
+});
+
 // src/look/ux-features.ts
-var UX_FEATURES = [A11Y_FEATURE, KEYBOARD_FEATURE];
+var UX_FEATURES = [A11Y_FEATURE, KEYBOARD_FEATURE, STATES_FEATURE];
 var activeModes = (runtime, paths) => Object.fromEntries(UX_FEATURES.map((feature) => [feature, featureMode(runtime, paths, feature)]));
 var on = (modes, feature) => (modes[feature] ?? "off") !== "off";
 var uxWidths = (modes) => on(modes, A11Y_FEATURE) ? A11Y_VIEWPORTS : [];
 var uxPasses = (_runtime, root, config, modes) => [
   ...on(modes, A11Y_FEATURE) ? [a11yPass({ target: config.a11yTarget }, loadAxeSource(root), Math.max(...VIEWPORTS))] : [],
-  ...on(modes, KEYBOARD_FEATURE) ? [keyboardPass(config.dialogs)] : []
+  ...on(modes, KEYBOARD_FEATURE) ? [keyboardPass(config.dialogs)] : [],
+  ...on(modes, STATES_FEATURE) ? [statesPass(config.states, optionsOf(config.successColor, config.skeleton))] : []
 ];
 
 // src/commands/findings.ts
@@ -63608,9 +63824,14 @@ var runPasses = async (page, request, at6, only3) => {
   const pages = [];
   for (const pass of (request.passes ?? []).filter(only3)) {
     const issues2 = await pass.run(page, { ...at6, probe, file });
-    const boxes = issues2.flatMap((item2) => item2.box === void 0 ? [] : [item2.box]);
+    const here = issues2.filter((item2) => item2.route === void 0 || item2.route === at6.route);
+    const boxes = here.flatMap((item2) => item2.box === void 0 ? [] : [item2.box]);
     await drawBoxes(page, boxes, file(pass.feature));
-    pages.push({ feature: pass.feature, route: at6.route, viewport: at6.viewport, issues: issues2 });
+    for (const route of /* @__PURE__ */ new Set([at6.route, ...issues2.map((item2) => item2.route ?? at6.route)])) {
+      const mine = issues2.filter((item2) => (item2.route ?? at6.route) === route);
+      if (route === at6.route || mine.length > 0)
+        pages.push({ feature: pass.feature, route, viewport: at6.viewport, issues: mine });
+    }
   }
   return pages;
 };

@@ -7,10 +7,12 @@ import { A11Y_FEATURE, A11Y_VIEWPORTS } from "./a11y.js";
 import type { LookConfig } from "./config.js";
 import { KEYBOARD_FEATURE } from "./keyboard.js";
 import { keyboardPass } from "./node-keyboard.js";
+import { statesPass } from "./node-states.js";
 import { a11yPass, loadAxeSource, type PagePass } from "./node-ux.js";
+import { optionsOf, STATES_FEATURE } from "./states.js";
 import { VIEWPORTS } from "./types.js";
 
-export const UX_FEATURES = [A11Y_FEATURE, KEYBOARD_FEATURE] as const;
+export const UX_FEATURES = [A11Y_FEATURE, KEYBOARD_FEATURE, STATES_FEATURE] as const;
 
 export type ModeMap = Readonly<Record<string, GuardMode>>;
 
@@ -31,4 +33,5 @@ export const uxPasses = (
     ? [a11yPass({ target: config.a11yTarget }, loadAxeSource(root), Math.max(...VIEWPORTS))]
     : []),
   ...(on(modes, KEYBOARD_FEATURE) ? [keyboardPass(config.dialogs)] : []),
+  ...(on(modes, STATES_FEATURE) ? [statesPass(config.states, optionsOf(config.successColor, config.skeleton))] : []),
 ];

@@ -24,6 +24,14 @@ export const LOOK_RULES = [
   "keyboard/focus-obscured",
   "keyboard/order",
   "keyboard/dialog",
+  "ui-states/not-covered",
+  "ui-states/loading",
+  "ui-states/empty",
+  "ui-states/error-text",
+  "ui-states/error-action",
+  "ui-states/error-color",
+  "ui-states/partial",
+  "ui-states/status",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

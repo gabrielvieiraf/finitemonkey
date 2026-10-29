@@ -92,9 +92,14 @@ const runPasses = async (
   const pages: UxPage[] = [];
   for (const pass of (request.passes ?? []).filter(only)) {
     const issues = await pass.run(page, { ...at, probe, file });
-    const boxes = issues.flatMap((item): readonly ProbeBox[] => (item.box === undefined ? [] : [item.box]));
+    const here = issues.filter((item) => item.route === undefined || item.route === at.route);
+    const boxes = here.flatMap((item): readonly ProbeBox[] => (item.box === undefined ? [] : [item.box]));
     await drawBoxes(page, boxes, file(pass.feature));
-    pages.push({ feature: pass.feature, route: at.route, viewport: at.viewport, issues });
+    for (const route of new Set([at.route, ...issues.map((item) => item.route ?? at.route)])) {
+      const mine = issues.filter((item) => (item.route ?? at.route) === route);
+      if (route === at.route || mine.length > 0)
+        pages.push({ feature: pass.feature, route, viewport: at.viewport, issues: mine });
+    }
   }
   return pages;
 };

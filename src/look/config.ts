@@ -4,6 +4,7 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, configMap, parseConfigYaml } from "../git/project-config.js";
 import { TARGET_MIN, TARGET_OPTIONS } from "./a11y.js";
+import { parseStateSpec, type StateSpec } from "./states.js";
 import { LOOK_RULES, type LookRule } from "./types.js";
 
 export const LOOK_CONFIG = ".finitemonkey/look.yml";
@@ -38,6 +39,9 @@ export interface LookConfig {
   readonly timeoutS: number;
   readonly a11yTarget: number;
   readonly dialogs: Readonly<Record<string, readonly string[]>>;
+  readonly states: Readonly<Record<string, readonly StateSpec[]>>;
+  readonly successColor: string | undefined;
+  readonly skeleton: string | undefined;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -70,6 +74,17 @@ export const routeLists = (entries: readonly string[]): Readonly<Record<string, 
   return out;
 };
 
+const statesOf = (tree: ReturnType<typeof parseConfigYaml>): Readonly<Record<string, readonly StateSpec[]>> => {
+  const node = configAt(tree, "states");
+  if (node === undefined || typeof node === "string" || Array.isArray(node)) return {};
+  return Object.fromEntries(
+    Object.keys(node).map((route) => [
+      route,
+      configList(tree, "states", route).flatMap((entry) => parseStateSpec(entry) ?? []),
+    ]),
+  );
+};
+
 export const parseLookConfig = (source: string): LookConfig => {
   const tree = parseConfigYaml(source);
   const screens = configAt(tree, "screens");
@@ -85,6 +100,9 @@ export const parseLookConfig = (source: string): LookConfig => {
     timeoutS: number(top["timeout_s"]) ?? 60,
     a11yTarget: targetOf(configAt(tree, "a11y", "target")),
     dialogs: routeLists(configList(tree, "keyboard", "dialogs")),
+    states: statesOf(tree),
+    successColor: text(configAt(tree, "ui_states", "success_color")),
+    skeleton: text(configAt(tree, "ui_states", "skeleton")),
   };
 };
 

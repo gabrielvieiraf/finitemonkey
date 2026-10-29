@@ -8,6 +8,7 @@ export interface UxIssue {
   readonly unverified?: true;
   readonly advisory?: true;
   readonly box?: ProbeBox;
+  readonly route?: string;
 }
 
 export interface UxPage {
@@ -32,5 +33,5 @@ export const issue = (
   rule: LookRule,
   selector: string,
   detail: string,
-  extra: Pick<UxIssue, "unverified" | "advisory" | "box"> = {},
+  extra: Pick<UxIssue, "unverified" | "advisory" | "box" | "route"> = {},
 ): UxIssue => ({ rule, selector, detail, ...extra });

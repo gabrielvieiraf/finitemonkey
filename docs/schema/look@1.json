@@ -68,7 +68,15 @@
               "keyboard/focus-invisible",
               "keyboard/focus-obscured",
               "keyboard/order",
-              "keyboard/dialog"
+              "keyboard/dialog",
+              "ui-states/not-covered",
+              "ui-states/loading",
+              "ui-states/empty",
+              "ui-states/error-text",
+              "ui-states/error-action",
+              "ui-states/error-color",
+              "ui-states/partial",
+              "ui-states/status"
             ]
           },
           "route": {
