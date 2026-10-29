@@ -35,7 +35,8 @@
               "project",
               "user",
               "default",
-              "promoted"
+              "promoted",
+              "evolved"
             ]
           },
           "failureMode": {

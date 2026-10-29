@@ -5,6 +5,7 @@ import type { Runtime } from "../core/runtime.js";
 import { closest } from "../core/suggest.js";
 import { configAt, configMap, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
 import { ALERT_BUDGET_KEYS, type AlertBudgetConfig, DEFAULT_ALERT_BUDGET, parseAlertBudget } from "./budget.js";
+import { withEvolved } from "./evolved.js";
 
 export const POLICY_FILE = ".finitemonkey/policy.yml";
 export const GUARD_MODES = ["off", "shadow", "active"] as const;
@@ -82,6 +83,7 @@ export const OPTIONAL_GUARDS = [
   "guardian-reuse",
   "proportionality",
   "forecast",
+  "evolve",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -96,6 +98,7 @@ export const POLICY_KEYS: readonly string[] = [
   "reminders",
   "quality",
   "alertBudget",
+  "evolve",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
@@ -129,7 +132,20 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "guardian-reuse",
   "proportionality",
   "forecast",
+  "evolve",
 ]);
+
+export const DEFAULT_EVOLVE_MIN_TASKS = 10;
+export const EVOLVE_KEYS: readonly string[] = ["minTasks"];
+
+export interface EvolveConfig {
+  readonly minTasks: number;
+}
+
+const parseEvolve = (tree: ConfigTree): EvolveConfig => {
+  const raw = Number(configMap(tree, "evolve")["minTasks"]);
+  return { minTasks: Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_EVOLVE_MIN_TASKS };
+};
 
 export type GuardMode = (typeof GUARD_MODES)[number];
 export type Level = (typeof LEVELS)[number];
@@ -150,6 +166,9 @@ export interface Policy {
   readonly userGuards: Readonly<Record<string, GuardMode>>;
   readonly experiments: Readonly<Record<string, "random">>;
   readonly alertBudget: AlertBudgetConfig;
+  readonly alertBudgetSet: readonly string[];
+  readonly evolved: Readonly<Record<string, GuardMode>>;
+  readonly evolve: EvolveConfig;
   readonly issues: readonly PolicyIssue[];
 }
 
@@ -161,6 +180,9 @@ export const DEFAULT_POLICY: Policy = {
   userGuards: {},
   experiments: {},
   alertBudget: DEFAULT_ALERT_BUDGET,
+  alertBudgetSet: [],
+  evolved: {},
+  evolve: { minTasks: DEFAULT_EVOLVE_MIN_TASKS },
   issues: [],
 };
 
@@ -222,11 +244,17 @@ export const parsePolicy = (text: string): Policy => {
     userGuards: {},
     experiments,
     alertBudget: parseAlertBudget(tree),
+    alertBudgetSet: Object.keys(configMap(tree, "alertBudget")).filter((key) => ALERT_BUDGET_KEYS.includes(key)),
+    evolved: {},
+    evolve: parseEvolve(tree),
     issues: [
       ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
       ...Object.keys(configMap(tree, "alertBudget"))
         .filter((key) => !ALERT_BUDGET_KEYS.includes(key))
         .map((key) => issue("unknown_key", POLICY_FILE, `alertBudget.${key}`, ALERT_BUDGET_KEYS, key)),
+      ...Object.keys(configMap(tree, "evolve"))
+        .filter((key) => !EVOLVE_KEYS.includes(key))
+        .map((key) => issue("unknown_key", POLICY_FILE, `evolve.${key}`, EVOLVE_KEYS, key)),
       ...guardIssues,
       ...experimentIssues,
     ],
@@ -247,7 +275,7 @@ export const userPolicyPath = (home: string): AbsolutePath => toAbsolutePath(joi
 
 export type PolicyRuntime = Pick<Runtime, "readText" | "homeDir">;
 
-export const loadPolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy => {
+export const loadBasePolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy => {
   const text = runtime.readText(policyPath(root));
   const project = text.ok ? parsePolicy(text.value) : DEFAULT_POLICY;
   const userText = runtime.readText(userPolicyPath(runtime.homeDir()));
@@ -255,3 +283,6 @@ export const loadPolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy =
   const user = parseUserPolicy(userText.value);
   return { ...project, userGuards: user.userGuards, issues: [...project.issues, ...user.issues] };
 };
+
+export const loadPolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy =>
+  withEvolved(runtime, root, loadBasePolicy(runtime, root));

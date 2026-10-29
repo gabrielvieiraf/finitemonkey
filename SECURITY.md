@@ -71,6 +71,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `guardian-reuse` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `proportionality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `forecast` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `evolve` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 <!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->

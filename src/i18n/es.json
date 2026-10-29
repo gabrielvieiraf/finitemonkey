@@ -2218,5 +2218,17 @@
   "research.log.status": "{sources} fuentes; {quiet} seguidas no cambiaron nada; incógnitas críticas abiertas: {open}",
   "research.log.stop_note": "Las últimas {quiet} fuentes no cambiaron ninguna opción ni incógnita, y no hay incógnita crítica abierta. Condición de parada: {stop}. Propón parar aquí o cambiar el foco.",
   "research.log.error.source": "Indica el slug de la investigación, la URL de la fuente y --changed nothing, option o unknown.",
-  "research.log.error.missing": "Ningún log de investigación para {slug}; empieza uno con finitemonkey research new <pregunta> --decision <registro>."
+  "research.log.error.missing": "Ningún log de investigación para {slug}; empieza uno con finitemonkey research new <pregunta> --decision <registro>.",
+  "command.policy_evolve.summary": "Registra el brazo de la tarea activa, juzga variantes de política en las tareas siguientes y propone nuevas a partir del ledger",
+  "command.policy_history.summary": "Lista las variantes de política con su estado, los números de cada decisión y el comando para revertir",
+  "command.policy_revert.summary": "Revierte una variante de política promovida o en prueba (solo la persona)",
+  "evolve.run": "evolve ({mode}): propuestas {proposed}, promovidas {promoted}, rechazadas {rejected}, en espera {waiting}",
+  "evolve.halted": "El hash del evaluador cambió desde que nacieron estas variantes ({variants}); ninguna variante se promueve ni se rechaza hasta que se reviertan.",
+  "evolve.promoted": "Variante de política {id} promovida: {change} ({reason}).",
+  "evolve.numbers": "Variante en {variantTasks} tareas siguientes contra el padre en {parentTasks}: falso listo {variantFalseDone} contra {parentFalseDone}, descartes por tarea {variantDismissals} contra {parentDismissals}, tiempo mediano {variantHours} h contra {parentHours} h.",
+  "evolve.revert": "Revertir: {command}",
+  "evolve.history.row": "{id} [{status}] {change}, nació en {born}: {reason}.",
+  "evolve.history.none": "Todavía no hay variantes de política.",
+  "evolve.error.person_only": "Solo la persona revierte una variante de política, desde una terminal fuera de Claude Code.",
+  "evolve.reverted": "Variante {id} revertida; la política padre vuelve a aplicarse."
 }

@@ -2218,5 +2218,17 @@
   "research.log.status": "{sources} sources; {quiet} in a row changed nothing; open critical unknowns: {open}",
   "research.log.stop_note": "The last {quiet} sources changed no option and no unknown, and no critical unknown is open. Stop condition: {stop}. Propose stopping here or switching focus.",
   "research.log.error.source": "Give the research slug, the source URL and --changed nothing, option or unknown.",
-  "research.log.error.missing": "No research log for {slug}; start one with finitemonkey research new <question> --decision <record>."
+  "research.log.error.missing": "No research log for {slug}; start one with finitemonkey research new <question> --decision <record>.",
+  "command.policy_evolve.summary": "Record the active task's arm, judge policy variants on later tasks and propose new ones from the ledger",
+  "command.policy_history.summary": "List policy variants with their status, the numbers behind each decision and the revert command",
+  "command.policy_revert.summary": "Revert a promoted or trial policy variant (person only)",
+  "evolve.run": "evolve ({mode}): proposed {proposed}, promoted {promoted}, rejected {rejected}, waiting {waiting}",
+  "evolve.halted": "The evaluator hash changed since these variants were born ({variants}); no variant is promoted or rejected until they are reverted.",
+  "evolve.promoted": "Policy variant {id} promoted: {change} ({reason}).",
+  "evolve.numbers": "Variant on {variantTasks} later tasks vs parent on {parentTasks}: false done {variantFalseDone} vs {parentFalseDone}, dismissals per task {variantDismissals} vs {parentDismissals}, median wall time {variantHours} h vs {parentHours} h.",
+  "evolve.revert": "Revert: {command}",
+  "evolve.history.row": "{id} [{status}] {change}, born on {born}: {reason}.",
+  "evolve.history.none": "No policy variants yet.",
+  "evolve.error.person_only": "Only the person can revert a policy variant, from a terminal outside Claude Code.",
+  "evolve.reverted": "Variant {id} reverted; the parent policy applies again."
 }

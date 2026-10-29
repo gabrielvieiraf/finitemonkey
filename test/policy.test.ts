@@ -79,6 +79,9 @@ describe("guard modes from .finitemonkey/policy.yml", () => {
       userGuards: {},
       experiments: {},
       alertBudget: DEFAULT_ALERT_BUDGET,
+      alertBudgetSet: [],
+      evolved: {},
+      evolve: { minTasks: 10 },
       issues: [{ kind: "invalid_mode", file: POLICY_FILE, key: "guards.deps" }],
     });
   });

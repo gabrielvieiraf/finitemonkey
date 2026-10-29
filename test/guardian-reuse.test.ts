@@ -74,7 +74,7 @@ describe("find what the project already has", () => {
     const stop = await fireHook(repo, "Stop", {}, repoRuntime({ spawned }));
     assert.equal(silent(stop), true);
     assert.deepEqual(
-      spawned.map((args) => args.slice(0, 3)),
+      spawned.filter((args) => args[0] === "guardian").map((args) => args.slice(0, 3)),
       [["guardian", "scan", "--record"]],
     );
     repo.write("package.json", pkg({ axios: "^1.7.0", got: "^14.0.0" }));

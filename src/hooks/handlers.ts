@@ -13,6 +13,7 @@ import { credsStaticGuard } from "../creds/static-guard.js";
 import { DEPLOY_HANDLERS } from "../deploy/hooks.js";
 import { depsGuard } from "../deps/guard.js";
 import { logEvent } from "../evidence/log.js";
+import { EVOLVE_HANDLERS } from "../evolve/hooks.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
@@ -225,6 +226,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
   { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") },
   { id: "forecast", damage: false, handlers: FORECAST_HANDLERS },
+  { id: "evolve", damage: false, handlers: EVOLVE_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

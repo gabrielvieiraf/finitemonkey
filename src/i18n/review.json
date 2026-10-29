@@ -2219,7 +2219,19 @@
     "research.log.status": "machine",
     "research.log.stop_note": "machine",
     "research.log.error.source": "machine",
-    "research.log.error.missing": "machine"
+    "research.log.error.missing": "machine",
+    "command.policy_evolve.summary": "machine",
+    "command.policy_history.summary": "machine",
+    "command.policy_revert.summary": "machine",
+    "evolve.run": "machine",
+    "evolve.halted": "machine",
+    "evolve.promoted": "machine",
+    "evolve.numbers": "machine",
+    "evolve.revert": "machine",
+    "evolve.history.row": "machine",
+    "evolve.history.none": "machine",
+    "evolve.error.person_only": "machine",
+    "evolve.reverted": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4441,6 +4453,18 @@
     "research.log.status": "machine",
     "research.log.stop_note": "machine",
     "research.log.error.source": "machine",
-    "research.log.error.missing": "machine"
+    "research.log.error.missing": "machine",
+    "command.policy_evolve.summary": "machine",
+    "command.policy_history.summary": "machine",
+    "command.policy_revert.summary": "machine",
+    "evolve.run": "machine",
+    "evolve.halted": "machine",
+    "evolve.promoted": "machine",
+    "evolve.numbers": "machine",
+    "evolve.revert": "machine",
+    "evolve.history.row": "machine",
+    "evolve.history.none": "machine",
+    "evolve.error.person_only": "machine",
+    "evolve.reverted": "machine"
   }
 }

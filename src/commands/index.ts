@@ -84,6 +84,7 @@ import {
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { plantaCommand } from "./planta.js";
 import { policyExplainCommand, policyFalsePositiveCommand } from "./policy.js";
+import { policyEvolveCommand, policyHistoryCommand, policyRevertCommand } from "./policy-evolve.js";
 import { prOpenCommand } from "./pr-open.js";
 import { presetCommand } from "./preset.js";
 import { proseCheckCommand } from "./prose-check.js";
@@ -282,6 +283,9 @@ export const REGISTRY = [
   guardianForecastCommand,
   researchSourceCommand,
   researchStatusCommand,
+  policyEvolveCommand,
+  policyHistoryCommand,
+  policyRevertCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

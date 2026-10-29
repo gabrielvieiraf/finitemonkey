@@ -56,7 +56,7 @@ export const writeShadow = (runtime: Pick<Runtime, "writeText">, paths: FmPaths,
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}\n`);
 };
 
-export type ModeSource = "built-in" | "experiment" | "project" | "user" | "default" | "promoted";
+export type ModeSource = "built-in" | "experiment" | "project" | "user" | "default" | "promoted" | "evolved";
 
 export interface Override {
   readonly source: "project" | "user";
@@ -94,6 +94,9 @@ export const resolveGuard = (
     return { mode: "active", source: "built-in", ignored: levels.filter((level) => level.mode !== "active") };
   }
   if (arm !== undefined) return { mode: arm, source: "experiment", ignored: levels };
+  const evolved = policy.evolved[set.id];
+  if (project === undefined && user === undefined && evolved !== undefined)
+    return { mode: evolved, source: "evolved", ignored: [] };
   if (project === undefined)
     return user === undefined ? fallback(set.id, shadow) : { mode: user, source: "user", ignored: [] };
   if (user === undefined || user === project) return { mode: project, source: "project", ignored: [] };
@@ -136,7 +139,7 @@ const recordShadow = (input: HookInput, paths: FmPaths, set: GuardSet, policy: P
 const firesAlert = (decision: HookDecision): boolean =>
   decision.kind === "block" || typeof decision.output?.["systemMessage"] === "string";
 
-const MUTABLE: ReadonlySet<ModeSource> = new Set(["default", "promoted"]);
+const MUTABLE: ReadonlySet<ModeSource> = new Set(["default", "promoted", "evolved"]);
 
 const muted = (
   input: HookInput,

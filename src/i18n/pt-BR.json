@@ -2218,5 +2218,17 @@
   "research.log.status": "{sources} fontes; {quiet} seguidas não mudaram nada; incógnitas críticas em aberto: {open}",
   "research.log.stop_note": "As últimas {quiet} fontes não mudaram nenhuma opção nem incógnita, e não há incógnita crítica em aberto. Condição de parada: {stop}. Proponha parar aqui ou mudar o foco.",
   "research.log.error.source": "Informe o slug da pesquisa, a URL da fonte e --changed nothing, option ou unknown.",
-  "research.log.error.missing": "Nenhum log de pesquisa para {slug}; comece um com finitemonkey research new <pergunta> --decision <registro>."
+  "research.log.error.missing": "Nenhum log de pesquisa para {slug}; comece um com finitemonkey research new <pergunta> --decision <registro>.",
+  "command.policy_evolve.summary": "Registra o braço da tarefa ativa, julga variantes de política nas tarefas seguintes e propõe novas a partir do ledger",
+  "command.policy_history.summary": "Lista as variantes de política com o estado, os números de cada decisão e o comando para reverter",
+  "command.policy_revert.summary": "Reverte uma variante de política promovida ou em teste (só a pessoa)",
+  "evolve.run": "evolve ({mode}): propostas {proposed}, promovidas {promoted}, rejeitadas {rejected}, aguardando {waiting}",
+  "evolve.halted": "O hash do avaliador mudou desde que estas variantes nasceram ({variants}); nenhuma variante é promovida nem rejeitada até que sejam revertidas.",
+  "evolve.promoted": "Variante de política {id} promovida: {change} ({reason}).",
+  "evolve.numbers": "Variante em {variantTasks} tarefas seguintes contra o pai em {parentTasks}: pronto falso {variantFalseDone} contra {parentFalseDone}, dispensas por tarefa {variantDismissals} contra {parentDismissals}, tempo mediano {variantHours} h contra {parentHours} h.",
+  "evolve.revert": "Reverter: {command}",
+  "evolve.history.row": "{id} [{status}] {change}, nasceu em {born}: {reason}.",
+  "evolve.history.none": "Nenhuma variante de política ainda.",
+  "evolve.error.person_only": "Só a pessoa reverte uma variante de política, num terminal fora do Claude Code.",
+  "evolve.reverted": "Variante {id} revertida; a política pai volta a valer."
 }
