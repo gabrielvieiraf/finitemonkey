@@ -2372,7 +2372,7 @@
   "knowledge.map.nobody": "{area}: nenhuma mudança recente e nenhuma afirmação verificada",
   "knowledge.map.question": "Uma pergunta opcional para a pessoa, no máximo uma vez nesta sessão: o código por trás de \"{text}\" ({anchor}) mudou desde a última vez que ela mexeu ali. Antes de mostrar o código, peça que ela preveja o que ele faz agora com uma entrada concreta, ou explique numa frase; se ela disser pular, deixe de lado e não pergunte de novo.",
   "remote.hold.reason": "Esta chamada apaga dados ou recursos fora desta máquina ({entry}: {target}) e não dá para desfazer daqui. Aprove só se for isso mesmo e houver backup",
-  "remote.hold.human": "Segurei uma chamada remota que apaga {target}. Ela só roda se você aprovar.",
+  "remote.hold.human": "Segurei uma chamada remota que apaga {target}. Próximo passo: aprove no prompt só se for isso mesmo e houver backup; senão, negue.",
   "gate.migrate.off": "a checagem de migração está desligada no policy.yml (migrate-check)",
   "gate.migrate.none": "nenhuma migração mudou",
   "gate.migrate.ok": "migrações aplicadas no banco descartável sem achado",

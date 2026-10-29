@@ -2372,7 +2372,7 @@
   "knowledge.map.nobody": "{area}: ningún cambio reciente y ninguna afirmación verificada",
   "knowledge.map.question": "Una pregunta opcional para la persona, como máximo una vez en esta sesión: el código detrás de \"{text}\" ({anchor}) cambió desde la última vez que trabajó ahí. Antes de mostrar el código, pídele que prediga qué hace ahora con una entrada concreta, o que lo explique en una frase; si dice saltar, déjalo y no vuelvas a preguntar.",
   "remote.hold.reason": "Esta llamada borra datos o recursos fuera de esta máquina ({entry}: {target}) y no se puede deshacer desde aquí. Apruébala solo si es lo que quieres y hay copia de seguridad",
-  "remote.hold.human": "Retuve una llamada remota que borra {target}. Solo se ejecuta si la apruebas.",
+  "remote.hold.human": "Retuve una llamada remota que borra {target}. Siguiente paso: apruébala en el aviso solo si es lo que quieres y hay copia de seguridad; si no, recházala.",
   "gate.migrate.off": "la comprobación de migraciones está apagada en policy.yml (migrate-check)",
   "gate.migrate.none": "ninguna migración cambió",
   "gate.migrate.ok": "migraciones aplicadas en la base desechable sin hallazgos",
