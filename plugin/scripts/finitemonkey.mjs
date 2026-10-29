@@ -6238,7 +6238,8 @@ var OPTIONAL_GUARDS = [
   "xray",
   "probes",
   "trajectory",
-  "a11y"
+  "a11y",
+  "keyboard"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6317,7 +6318,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "team-dashboard",
   "xray",
   "probes",
-  "a11y"
+  "a11y",
+  "keyboard"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -12745,10 +12747,10 @@ var readBalanced = (cursor, open, close2) => {
   cursor.incomplete = true;
   return cursor.text.slice(start2);
 };
-var readUntil = (cursor, terminator, escapes) => {
+var readUntil = (cursor, terminator, escapes2) => {
   let out = "";
   while (!atEnd(cursor) && peek(cursor) !== terminator) {
-    if (escapes && peek(cursor) === "\\" && cursor.pos + 1 < cursor.text.length) {
+    if (escapes2 && peek(cursor) === "\\" && cursor.pos + 1 < cursor.text.length) {
       out += peek(cursor, 1);
       cursor.pos += 2;
     } else {
@@ -39776,7 +39778,13 @@ var LOOK_RULES = [
   "a11y/label",
   "a11y/alt",
   "a11y/landmark",
-  "a11y/engine"
+  "a11y/engine",
+  "keyboard/unreachable",
+  "keyboard/trap",
+  "keyboard/focus-invisible",
+  "keyboard/focus-obscured",
+  "keyboard/order",
+  "keyboard/dialog"
 ];
 var BLOCKING_RULES = [
   "look/overflow",
@@ -39818,6 +39826,15 @@ var targetOf = (value2) => {
   const parsed = typeof value2 === "string" ? Number(value2) : Number.NaN;
   return TARGET_OPTIONS.find((option3) => option3 === parsed) ?? TARGET_MIN;
 };
+var routeLists = (entries2) => {
+  const out = {};
+  for (const entry2 of entries2) {
+    const match = /^(\S+)\s+(.+)$/.exec(entry2.trim());
+    if (match?.[1] === void 0 || match[2] === void 0) continue;
+    (out[match[1]] ??= []).push(match[2].trim());
+  }
+  return out;
+};
 var parseLookConfig = (source3) => {
   const tree = parseConfigYaml(source3);
   const screens = configAt(tree, "screens");
@@ -39831,7 +39848,8 @@ var parseLookConfig = (source3) => {
     screens: screens === void 0 ? DEFAULT_SCREENS : configList(tree, "screens"),
     allow: allowEntries(tree),
     timeoutS: number3(top2["timeout_s"]) ?? 60,
-    a11yTarget: targetOf(configAt(tree, "a11y", "target"))
+    a11yTarget: targetOf(configAt(tree, "a11y", "target")),
+    dialogs: routeLists(configList(tree, "keyboard", "dialogs"))
   };
 };
 var loadLookConfig = (runtime, root) => {
@@ -56806,6 +56824,106 @@ var findFinding = (runtime, root, id, sources = FINDING_SOURCES) => {
   return void 0;
 };
 
+// src/look/keyboard.ts
+var KEYBOARD_FEATURE = "keyboard";
+var MAX_STOPS = 60;
+var ORDER_SLACK_PX = 8;
+var unreachable = (walk3, targets2) => {
+  if (!walk3.complete || walk3.trap !== void 0) return [];
+  const reached = new Set(walk3.stops.map((stop) => stop.sel));
+  const groups = new Set(walk3.stops.flatMap((stop) => stop.composite === null ? [] : [stop.composite]));
+  return targets2.filter((target5) => !reached.has(target5.sel) && (target5.composite === null || !groups.has(target5.composite))).map((target5) => issue2("keyboard/unreachable", target5.sel, "never receives focus with Tab"));
+};
+var trapped = (walk3) => {
+  const trap = walk3.trap;
+  if (trap === void 0 || trap.escaped || trap.modal) return [];
+  const first = trap.cycle[0] ?? "body";
+  return [
+    issue2(
+      "keyboard/trap",
+      first,
+      `focus cycles among ${String(trap.cycle.length)} elements and Shift+Tab cannot leave`
+    )
+  ];
+};
+var orderIssues2 = (stops) => {
+  const jumps = stops.flatMap((stop, index) => {
+    const before2 = stops[index - 1];
+    return before2 !== void 0 && stop.y + ORDER_SLACK_PX < before2.y && stop.y + stop.h <= before2.y ? [index] : [];
+  });
+  const first = jumps[0] === void 0 ? void 0 : stops[jumps[0]];
+  if (first === void 0) return [];
+  const listed11 = jumps.slice(0, 5).map((index) => `#${String(index)} → #${String(index + 1)}`);
+  const detail = `focus moves up the page ${String(jumps.length)} times: ${listed11.join(", ")}`;
+  return [issue2("keyboard/order", first.sel, detail, { advisory: true })];
+};
+var dialogIssues = (results) => results.flatMap((result) => {
+  const problems = [
+    ...result.opened ? [] : ["did not open from the keyboard"],
+    ...result.opened && !result.focusInside ? ["focus did not move inside"] : [],
+    ...result.opened && !result.closed ? ["Escape did not close it"] : [],
+    ...result.opened && result.closed && !result.returned ? ["focus did not return to the trigger"] : []
+  ];
+  return problems.length === 0 ? [] : [issue2("keyboard/dialog", result.trigger, problems.join("; "))];
+});
+var keyboardIssues = (walk3, targets2, dialogs) => capPerRule([
+  ...unreachable(walk3, targets2),
+  ...trapped(walk3),
+  ...walk3.stops.filter((stop) => !stop.changed && !stop.obscured).map(
+    (stop) => issue2("keyboard/focus-invisible", stop.sel, "focus changes no pixel of the element", { box: stop })
+  ),
+  ...walk3.stops.filter((stop) => stop.obscured).map(
+    (stop) => issue2("keyboard/focus-obscured", stop.sel, "focused element is under a fixed or sticky element", { box: stop })
+  ),
+  ...orderIssues2(walk3.stops),
+  ...dialogIssues(dialogs)
+]);
+
+// src/look/keyboard-dom.ts
+var COMPOSITES = "[role=tablist], [role=menu], [role=menubar], [role=radiogroup], [role=listbox], [role=grid], [role=toolbar], [role=tree]";
+var MODALS = "dialog[open], [role=dialog][aria-modal=true], [role=alertdialog][aria-modal=true]";
+var focusNow = (kit, doc, win, composites, modals) => {
+  const element = doc.activeElement;
+  if (element === null || element === doc.body || element === doc.documentElement) return null;
+  const rect = element.getBoundingClientRect();
+  const hit3 = doc.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  let cover = hit3 !== null && hit3 !== element && !element.contains(hit3) && !hit3.contains(element) ? hit3 : null;
+  let obscured = false;
+  while (cover !== null && !obscured) {
+    const position = win.getComputedStyle(cover).getPropertyValue("position");
+    obscured = position === "fixed" || position === "sticky";
+    cover = cover.parentElement;
+  }
+  const composite = element.closest(composites);
+  return {
+    sel: kit.selectorOf(element),
+    role: kit.roleOf(kit, element, element.tagName.toLowerCase()),
+    name: kit.nameOf(kit, doc, element, element.tagName.toLowerCase()),
+    x: rect.x + win.scrollX,
+    y: rect.y + win.scrollY,
+    w: rect.width,
+    h: rect.height,
+    obscured,
+    composite: composite === null ? null : kit.selectorOf(composite),
+    modal: element.closest(modals) !== null
+  };
+};
+var focusTargets = (kit, doc, win, composites) => {
+  const query = "a[href], button, input, select, textarea, summary, [role=button], [role=link], [role=checkbox], [role=tab], [role=menuitem], [role=switch], [tabindex]";
+  return [...doc.querySelectorAll(query)].flatMap((element) => {
+    const rect = element.getBoundingClientRect();
+    const style = win.getComputedStyle(element);
+    const tag = element.tagName.toLowerCase();
+    const shown9 = rect.width > 0 && rect.height > 0 && style.getPropertyValue("visibility") !== "hidden";
+    const hidden = tag === "input" && element.getAttribute("type") === "hidden" || element.closest("[aria-hidden=true], [inert]") !== null;
+    const role = kit.roleOf(kit, element, tag);
+    const decorative2 = element.hasAttribute("tabindex") && !["a", "button", "input", "select", "textarea", "summary"].includes(tag) && role === "";
+    if (!shown9 || hidden || element.hasAttribute("disabled") || decorative2) return [];
+    const composite = element.closest(composites);
+    return [{ sel: kit.selectorOf(element), composite: composite === null ? null : kit.selectorOf(composite) }];
+  });
+};
+
 // src/look/node-ux.ts
 import { readFileSync as readFileSync2 } from "node:fs";
 import { createRequire as createRequire2 } from "node:module";
@@ -57183,13 +57301,135 @@ var drawBoxes = async (page, boxes, path) => {
   }
 };
 
+// src/look/node-keyboard.ts
+var FOCUS_SCRIPT = runInPage(focusNow.toString(), [
+  "document",
+  "window",
+  JSON.stringify(COMPOSITES),
+  JSON.stringify(MODALS)
+]);
+var TARGETS_SCRIPT = runInPage(focusTargets.toString(), ["document", "window", JSON.stringify(COMPOSITES)]);
+var SETTLE_MS = 150;
+var INFLATE = 4;
+var num5 = (value2) => typeof value2 === "number" && Number.isFinite(value2) ? value2 : 0;
+var stopOf = (value2) => {
+  if (!isRecord(value2) || typeof value2["sel"] !== "string") return void 0;
+  return {
+    sel: value2["sel"],
+    role: typeof value2["role"] === "string" ? value2["role"] : "",
+    name: typeof value2["name"] === "string" ? value2["name"] : "",
+    x: num5(value2["x"]),
+    y: num5(value2["y"]),
+    w: num5(value2["w"]),
+    h: num5(value2["h"]),
+    obscured: value2["obscured"] === true,
+    composite: typeof value2["composite"] === "string" ? value2["composite"] : null,
+    modal: value2["modal"] === true
+  };
+};
+var focused = async (page) => stopOf(await page.evaluate(FOCUS_SCRIPT));
+var targetsOf2 = async (page) => {
+  const raw = await page.evaluate(TARGETS_SCRIPT);
+  return Array.isArray(raw) ? raw.flatMap(
+    (item2) => isRecord(item2) && typeof item2["sel"] === "string" ? [{ sel: item2["sel"], composite: typeof item2["composite"] === "string" ? item2["composite"] : null }] : []
+  ) : [];
+};
+var shoot = async (page, stop) => page.screenshot({
+  fullPage: true,
+  animations: "disabled",
+  caret: "hide",
+  clip: {
+    x: Math.max(0, stop.x - INFLATE),
+    y: Math.max(0, stop.y - INFLATE),
+    width: stop.w + 2 * INFLATE,
+    height: stop.h + 2 * INFLATE
+  }
+});
+var focusShows = async (page, stop) => {
+  try {
+    const on2 = await shoot(page, stop);
+    await page.evaluate("document.activeElement && document.activeElement.blur()");
+    const off2 = await shoot(page, stop);
+    await page.evaluate(`document.querySelector(${JSON.stringify(stop.sel)})?.focus()`);
+    return !on2.equals(off2);
+  } catch {
+    return true;
+  }
+};
+var escapes = async (page, cycle2) => {
+  const inside2 = new Set(cycle2);
+  for (let step4 = 0; step4 <= cycle2.length; step4 += 1) {
+    await page.keyboard.press("Shift+Tab");
+    const now = await focused(page);
+    if (now === void 0 || !inside2.has(now.sel)) return true;
+  }
+  return false;
+};
+var trapOf = async (page, stops, repeat) => {
+  const start2 = stops.findIndex((stop) => stop.sel === repeat.sel);
+  if (start2 <= 0) return void 0;
+  const cycle2 = stops.slice(start2).map((stop) => stop.sel);
+  return { cycle: cycle2, escaped: await escapes(page, cycle2), modal: repeat.modal };
+};
+var walkKeyboard = async (page, limit = MAX_STOPS) => {
+  await page.evaluate("document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)");
+  const stops = [];
+  for (let step4 = 0; step4 < limit + 2; step4 += 1) {
+    await page.keyboard.press("Tab");
+    const now = await focused(page);
+    if (now === void 0) {
+      if (stops.length > 0) return { stops, complete: true, trap: void 0 };
+      continue;
+    }
+    if (stops.some((stop) => stop.sel === now.sel)) {
+      const trap = await trapOf(page, stops, now);
+      return { stops, complete: trap === void 0, trap };
+    }
+    if (stops.length >= limit) return { stops, complete: false, trap: void 0 };
+    stops.push({ ...now, changed: await focusShows(page, now) });
+  }
+  return { stops, complete: false, trap: void 0 };
+};
+var dialogCheck = async (page, trigger2) => {
+  const result = { trigger: trigger2, opened: false, focusInside: false, closed: false, returned: false };
+  const found = await page.evaluate(
+    `(() => { const el = document.querySelector(${JSON.stringify(trigger2)}); if (!el) return false; el.focus(); return true; })()`
+  );
+  if (found !== true) return result;
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(SETTLE_MS);
+  const dialogs = "dialog[open], [role=dialog], [role=alertdialog]";
+  const open = `[...document.querySelectorAll(${JSON.stringify(dialogs)})].some((el) => el.getBoundingClientRect().height > 0)`;
+  if (await page.evaluate(open) !== true) return result;
+  const inside2 = await page.evaluate(`document.activeElement?.closest(${JSON.stringify(dialogs)}) != null`);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(SETTLE_MS);
+  const closed = await page.evaluate(open) !== true;
+  const back = await page.evaluate(`document.activeElement === document.querySelector(${JSON.stringify(trigger2)})`);
+  return { trigger: trigger2, opened: true, focusInside: inside2 === true, closed, returned: back === true };
+};
+var keyboardPass = (dialogs) => ({
+  feature: KEYBOARD_FEATURE,
+  allWidths: false,
+  run: async (page, at6) => {
+    const targets2 = await targetsOf2(page);
+    const walk3 = await walkKeyboard(page);
+    await drawBoxes(page, walk3.stops, at6.file("focus"));
+    const route = at6.route.split("?")[0] ?? at6.route;
+    const results = [];
+    for (const trigger2 of dialogs[route] ?? []) results.push(await dialogCheck(page, trigger2));
+    return keyboardIssues(walk3, targets2, results);
+  }
+});
+
 // src/look/ux-features.ts
-var UX_FEATURES = [A11Y_FEATURE];
+var UX_FEATURES = [A11Y_FEATURE, KEYBOARD_FEATURE];
 var activeModes = (runtime, paths) => Object.fromEntries(UX_FEATURES.map((feature) => [feature, featureMode(runtime, paths, feature)]));
 var on = (modes, feature) => (modes[feature] ?? "off") !== "off";
 var uxWidths = (modes) => on(modes, A11Y_FEATURE) ? A11Y_VIEWPORTS : [];
 var uxPasses = (_runtime, root, config, modes) => [
-  ...on(modes, A11Y_FEATURE) ? [a11yPass({ target: config.a11yTarget }, loadAxeSource(root), Math.max(...VIEWPORTS))] : []
+  ...on(modes, A11Y_FEATURE) ? [a11yPass({ target: config.a11yTarget }, loadAxeSource(root), Math.max(...VIEWPORTS))] : [],
+  ...on(modes, KEYBOARD_FEATURE) ? [keyboardPass(config.dialogs)] : []
 ];
 
 // src/commands/findings.ts
@@ -59662,7 +59902,7 @@ var headIsMerge = (ctx, repo) => {
   const parents = ctx.runtime.git(["rev-list", "--parents", "-n", "1", "HEAD"], repo.root).stdout.trim().split(" ");
   return parents.length > 2;
 };
-var targetsOf2 = (ctx, repo, rev, since) => {
+var targetsOf3 = (ctx, repo, rev, since) => {
   if (since !== void 0) return mergeCommitsSince(ctx.runtime, repo, since);
   if (rev !== void 0) return [rev];
   if (mergeInProgress(ctx.runtime, repo)) return ["MERGE_HEAD"];
@@ -59703,7 +59943,7 @@ var mergeVerifyCommand = {
     const repo = repoOf(ctx);
     if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
     const dropped = stringOption(args2.values, "dropped");
-    const targets2 = targetsOf2(ctx, repo, args2.positionals[0], stringOption(args2.values, "since"));
+    const targets2 = targetsOf3(ctx, repo, args2.positionals[0], stringOption(args2.values, "since"));
     if (targets2.length === 0) {
       const data2 = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: [] };
       return Promise.resolve(success(data2, [ctx.t("git.merge.none", { detail: "HEAD" })]));
@@ -59732,7 +59972,7 @@ var reflogLines = (runtime, repo) => {
     return sha === void 0 || ref2 === void 0 || !SHA3.test(sha) || ref2.startsWith("refs/finitemonkey/") ? [] : [{ sha, ref: ref2 }];
   });
 };
-var unreachable = (runtime, repo, shas) => {
+var unreachable2 = (runtime, repo, shas) => {
   if (shas.length === 0) return /* @__PURE__ */ new Set();
   const result = runtime.git(["rev-list", ...shas, "--not", "--branches", "--tags", "--remotes"], repo.root);
   return new Set(result.ok ? linesOf5(result.stdout) : []);
@@ -59758,7 +59998,7 @@ var describe3 = (runtime, repo, shas) => {
 };
 var rescueReport = (runtime, repo) => {
   const reflog = reflogLines(runtime, repo);
-  const lost = unreachable(runtime, repo, [...new Set(reflog.map((line12) => line12.sha))]);
+  const lost = unreachable2(runtime, repo, [...new Set(reflog.map((line12) => line12.sha))]);
   const fromReflog = reflog.filter(
     (line12, index) => lost.has(line12.sha) && reflog.findIndex((other) => other.sha === line12.sha) === index
   );
@@ -63364,11 +63604,12 @@ var loadAndShoot = async (page, url2, path, timeoutMs) => {
 };
 var runPasses = async (page, request, at6, only3) => {
   const probe = probeOnce2(page);
+  const file = (suffix) => join184(request.dir, `${slugOf2(at6.route)}-${String(at6.viewport)}.${suffix}.png`);
   const pages = [];
   for (const pass of (request.passes ?? []).filter(only3)) {
-    const issues2 = await pass.run(page, { ...at6, probe });
+    const issues2 = await pass.run(page, { ...at6, probe, file });
     const boxes = issues2.flatMap((item2) => item2.box === void 0 ? [] : [item2.box]);
-    await drawBoxes(page, boxes, join184(request.dir, `${slugOf2(at6.route)}-${String(at6.viewport)}.${pass.feature}.png`));
+    await drawBoxes(page, boxes, file(pass.feature));
     pages.push({ feature: pass.feature, route: at6.route, viewport: at6.viewport, issues: issues2 });
   }
   return pages;
@@ -67874,7 +68115,7 @@ var expand2 = (ctx, root, target5) => {
     walked.value.map((name) => underRoot(root, toAbsolutePath(toPosixPath(name), path))).filter((name) => TEXT_FILE.test(name) && !/(?:^|\/)(?:node_modules|\.git)\//.test(name)).sort()
   );
 };
-var targetsOf3 = (ctx, root, paths) => {
+var targetsOf4 = (ctx, root, paths) => {
   if (paths.length === 0) {
     const changed = changedMarkdown(ctx.runtime, root);
     return changed.ok ? changed : reject(problem3("prose_no_input", "prose.error.no_input", {}));
@@ -67893,7 +68134,7 @@ var reportsOf = async (ctx, root, paths, mode) => {
     const report5 = scoreProse(await readAll2(ctx.io.stdin), { context: forced ?? "docs" });
     return accept([{ file: STDIN_LABEL, report: report5 }]);
   }
-  const targets2 = targetsOf3(ctx, root, paths);
+  const targets2 = targetsOf4(ctx, root, paths);
   if (!targets2.ok) return targets2;
   const scored2 = scoreFiles(ctx.runtime, root, targets2.value, forced);
   return scored2.ok ? scored2 : reject(problem3("prose_unreadable", "prose.error.unreadable", { file: "", detail: scored2.error }));
@@ -70105,10 +70346,10 @@ var slopStatsCommand = {
 
 // src/statusline/input.ts
 var text34 = (value2) => typeof value2 === "string" && value2 !== "" ? value2 : void 0;
-var num5 = (value2) => typeof value2 === "number" && Number.isFinite(value2) ? value2 : void 0;
+var num6 = (value2) => typeof value2 === "number" && Number.isFinite(value2) ? value2 : void 0;
 var usedTokens = (usage2) => {
   if (!isRecord(usage2)) return void 0;
-  return (num5(usage2["input_tokens"]) ?? 0) + (num5(usage2["cache_creation_input_tokens"]) ?? 0) + (num5(usage2["cache_read_input_tokens"]) ?? 0);
+  return (num6(usage2["input_tokens"]) ?? 0) + (num6(usage2["cache_creation_input_tokens"]) ?? 0) + (num6(usage2["cache_read_input_tokens"]) ?? 0);
 };
 var contextPercent = (record14) => {
   const window = record14["context_window"];
@@ -70120,7 +70361,7 @@ var contextPercent = (record14) => {
   return typeof size === "number" && size > 0 && used !== void 0 ? Math.round(used / size * 100) : void 0;
 };
 var rateLimits = (value2) => isRecord(value2) ? Object.entries(value2).flatMap(([name, window]) => {
-  const percent3 = isRecord(window) ? num5(window["used_percentage"]) : void 0;
+  const percent3 = isRecord(window) ? num6(window["used_percentage"]) : void 0;
   return percent3 === void 0 ? [] : [{ name, percent: Math.round(percent3) }];
 }) : [];
 var parseStatusInput = (raw) => {

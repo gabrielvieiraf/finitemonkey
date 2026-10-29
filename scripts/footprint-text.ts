@@ -122,9 +122,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto.",
   },
   look: {
-    en: "Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash.",
-    "pt-BR": "Capturas de tela, a folha de contato e o resumo JSON que o `look` grava por hash da árvore.",
-    es: "Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol.",
+    en: "Screen captures, the contact sheet, the JSON summary and the interface findings per rule (`ux.json`, boxed screenshots) that `look` writes per tree hash.",
+    "pt-BR":
+      "Capturas de tela, a folha de contato, o resumo JSON e os achados de interface por regra (`ux.json`, capturas com caixas) que o `look` grava por hash da árvore.",
+    es: "Capturas de pantalla, la hoja de contactos, el resumen JSON y los hallazgos de interfaz por regla (`ux.json`, capturas con recuadros) que escribe `look` por hash del árbol.",
   },
   reports: {
     en: "Masked bug reports that `doctor --report` writes, only when asked, and the report each front writes before it stops.",

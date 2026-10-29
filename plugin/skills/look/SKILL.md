@@ -10,6 +10,7 @@ when_to_use: >-
 
 1. Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" look --json`.
 2. Open every image listed in `data` with the Read tool and check for horizontal overflow, cut text, overlap and console errors.
-3. Fix what you see, then run the command again. Report which screens you opened.
+3. Read the findings in `data.findings`. Rules starting with `a11y/` and `keyboard/` come from the rendered page (contrast, target size, focus); each names a selector. Findings marked "not verified" were not judged either way.
+4. Fix what you see, then run the command again. Report which screens you opened.
 
 If the command answers `unknown_command` or `not_implemented`, tell the person in one line that screen capture is not in this version yet and that you did not look at the screens.

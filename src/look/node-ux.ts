@@ -14,6 +14,7 @@ export interface PassAt {
   readonly viewport: number;
   readonly url: string;
   readonly probe: () => Promise<ProbeResult | undefined>;
+  readonly file: (suffix: string) => string;
 }
 
 export interface PagePass {

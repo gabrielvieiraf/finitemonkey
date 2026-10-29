@@ -87,11 +87,13 @@ const runPasses = async (
   only: (pass: PagePass) => boolean,
 ): Promise<readonly UxPage[]> => {
   const probe = probeOnce(page);
+  const file = (suffix: string): string =>
+    join(request.dir, `${slugOf(at.route)}-${String(at.viewport)}.${suffix}.png`);
   const pages: UxPage[] = [];
   for (const pass of (request.passes ?? []).filter(only)) {
-    const issues = await pass.run(page, { ...at, probe });
+    const issues = await pass.run(page, { ...at, probe, file });
     const boxes = issues.flatMap((item): readonly ProbeBox[] => (item.box === undefined ? [] : [item.box]));
-    await drawBoxes(page, boxes, join(request.dir, `${slugOf(at.route)}-${String(at.viewport)}.${pass.feature}.png`));
+    await drawBoxes(page, boxes, file(pass.feature));
     pages.push({ feature: pass.feature, route: at.route, viewport: at.viewport, issues });
   }
   return pages;

@@ -62,7 +62,13 @@
               "a11y/label",
               "a11y/alt",
               "a11y/landmark",
-              "a11y/engine"
+              "a11y/engine",
+              "keyboard/unreachable",
+              "keyboard/trap",
+              "keyboard/focus-invisible",
+              "keyboard/focus-obscured",
+              "keyboard/order",
+              "keyboard/dialog"
             ]
           },
           "route": {

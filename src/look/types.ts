@@ -18,6 +18,12 @@ export const LOOK_RULES = [
   "a11y/alt",
   "a11y/landmark",
   "a11y/engine",
+  "keyboard/unreachable",
+  "keyboard/trap",
+  "keyboard/focus-invisible",
+  "keyboard/focus-obscured",
+  "keyboard/order",
+  "keyboard/dialog",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

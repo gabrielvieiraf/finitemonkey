@@ -37,6 +37,7 @@ export interface LookConfig {
   readonly allow: readonly LookAllow[];
   readonly timeoutS: number;
   readonly a11yTarget: number;
+  readonly dialogs: Readonly<Record<string, readonly string[]>>;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -59,6 +60,16 @@ const targetOf = (value: unknown): number => {
   return TARGET_OPTIONS.find((option) => option === parsed) ?? TARGET_MIN;
 };
 
+export const routeLists = (entries: readonly string[]): Readonly<Record<string, readonly string[]>> => {
+  const out: Record<string, string[]> = {};
+  for (const entry of entries) {
+    const match = /^(\S+)\s+(.+)$/.exec(entry.trim());
+    if (match?.[1] === undefined || match[2] === undefined) continue;
+    (out[match[1]] ??= []).push(match[2].trim());
+  }
+  return out;
+};
+
 export const parseLookConfig = (source: string): LookConfig => {
   const tree = parseConfigYaml(source);
   const screens = configAt(tree, "screens");
@@ -73,6 +84,7 @@ export const parseLookConfig = (source: string): LookConfig => {
     allow: allowEntries(tree),
     timeoutS: number(top["timeout_s"]) ?? 60,
     a11yTarget: targetOf(configAt(tree, "a11y", "target")),
+    dialogs: routeLists(configList(tree, "keyboard", "dialogs")),
   };
 };
 
