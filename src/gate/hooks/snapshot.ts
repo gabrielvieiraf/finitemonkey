@@ -34,7 +34,7 @@ export const currentReport = (
     treeHash: ctx.treeHash,
     base: ctx.base,
     source: loaded.source,
-    contractEdited: loaded.editedOnDisk,
+    contractEdited: loaded.editedOnDisk || loaded.examplesEdited === true,
     fastPath: true,
   });
 };

@@ -142,7 +142,7 @@ const report = (prepared: Prepared, ledger: readonly Evidence[], fastPath: boole
     treeHash: prepared.ctx.treeHash,
     base: prepared.ctx.base,
     source: prepared.loaded.source,
-    contractEdited: prepared.loaded.editedOnDisk,
+    contractEdited: prepared.loaded.editedOnDisk || prepared.loaded.examplesEdited === true,
     fastPath,
     tampered,
   });

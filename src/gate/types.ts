@@ -1,6 +1,7 @@
 import type { Env } from "../core/context.js";
 import type { Runtime } from "../core/runtime.js";
 import type { EvidenceStatus, Note, UnverifiedReason } from "../evidence/types.js";
+import type { Example } from "../task/examples.js";
 import type { FmPaths } from "../task/paths.js";
 import type { GateTrust } from "../task/state.js";
 import type { AcceptanceCheck, CheckKind, TaskContract } from "../task/types.js";
@@ -33,6 +34,7 @@ export interface GateContext {
   readonly mask: (text: string) => string;
   readonly baseline: Baseline | undefined;
   readonly size?: SizeVerdict;
+  readonly examples?: readonly Example[];
 }
 
 export interface CheckOutcome {

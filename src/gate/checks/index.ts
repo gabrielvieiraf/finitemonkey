@@ -9,6 +9,7 @@ import { costCheck } from "./cost.js";
 import { decisionCheck } from "./decision.js";
 import { deployCheck } from "./deploy.js";
 import { diffCheck } from "./diff.js";
+import { examplesCheck } from "./examples.js";
 import { gitCheck } from "./git.js";
 import { goldenCheck } from "./golden.js";
 import { headersCheck } from "./headers.js";
@@ -70,4 +71,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   arch: archCheck,
   organize: organizeCheck,
   contract: contractCheck,
+  examples: examplesCheck,
 };

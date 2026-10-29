@@ -2,6 +2,7 @@ import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
 import { sha256Hex as sha256 } from "../secrets/fingerprint.js";
+import { approvedExamples, type Example, examplesFingerprint, examplesRelative, parseExamples } from "./examples.js";
 import { IMPLICIT_ID, implicitContract, type ProjectFiles } from "./implicit.js";
 import type { FmPaths } from "./paths.js";
 import { type GateTrust, readState, readTrust } from "./state.js";
@@ -16,6 +17,8 @@ export interface LoadedContract {
   readonly trusted: boolean;
   readonly source: ContractSource;
   readonly editedOnDisk: boolean;
+  readonly examples?: readonly Example[];
+  readonly examplesEdited?: boolean;
 }
 
 export type LoadProblem =
@@ -29,8 +32,13 @@ export interface ContractSources {
 
 type Files = Pick<Runtime, "readText">;
 
-export const contractHash = (contract: TaskContract): string =>
-  sha256(JSON.stringify(contract.acceptance.map((check) => [check.id, check.kind, check.run ?? ""])));
+const criteria = (contract: TaskContract): readonly (readonly string[])[] =>
+  contract.acceptance.map((check) => [check.id, check.kind, check.run ?? ""]);
+
+export const contractHash = (contract: TaskContract, examples: readonly Example[] = []): string => {
+  const behavior = examplesFingerprint(examples);
+  return sha256(JSON.stringify(behavior.length === 0 ? criteria(contract) : [criteria(contract), behavior]));
+};
 
 export const taskRelative = (id: string): string => `.finitemonkey/tasks/${id}.yml`;
 
@@ -43,6 +51,10 @@ export const parseContract = (id: string, text: string): Parsed<TaskContract, Lo
   if (valid.value.id !== id) return reject({ kind: "invalid", id, issues: [`id: must match the file name (${id})`] });
   return accept(valid.value);
 };
+
+const examplesEdited = (disk: string | undefined, approved: readonly Example[]): boolean =>
+  disk === undefined ||
+  JSON.stringify(examplesFingerprint(parseExamples(disk))) !== JSON.stringify(examplesFingerprint(approved));
 
 const pick = (
   lock: GateTrust,
@@ -69,14 +81,19 @@ export const loadTask = (
   if (chosen === undefined) return reject({ kind: "not_found", id });
   const parsed = parseContract(id, chosen.text);
   if (!parsed.ok) return parsed;
-  const hash = contractHash(parsed.value);
+  const behavior = approvedExamples(files, paths, id);
+  const hash = contractHash(parsed.value, behavior.examples);
   const disk = sources.disk(taskRelative(id));
+  const examplesDisk = sources.disk(examplesRelative(id));
   return accept({
     contract: parsed.value,
     hash,
     trusted: chosen.source === "lock" && lock.contracts[id] === hash,
     source: chosen.source,
     editedOnDisk: disk !== undefined && disk !== chosen.text,
+    ...(behavior.text === undefined
+      ? {}
+      : { examples: behavior.examples, examplesEdited: examplesEdited(examplesDisk, behavior.examples) }),
   });
 };
 

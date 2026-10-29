@@ -5,7 +5,7 @@ import { toPosixPath } from "../../core/posix-path.js";
 import { fmArguments } from "../bypass/detect.js";
 import { parseShell, type SimpleCommand } from "../shell.js";
 
-export const SELF_KINDS = ["policy", "allow_store", "registry", "amend"] as const;
+export const SELF_KINDS = ["policy", "allow_store", "registry", "amend", "examples"] as const;
 
 export type SelfKind = (typeof SELF_KINDS)[number];
 
@@ -75,9 +75,16 @@ const mentioned = (text: string): SelfKind | undefined => {
   return undefined;
 };
 
+const PERSON_DECISIONS = new Set(["--approve", "--reject"]);
+
+const decidesExamples = (args: readonly string[]): boolean =>
+  args[0] === "task" && args[1] === "examples" && args.some((arg) => PERSON_DECISIONS.has(arg.split("=")[0] ?? ""));
+
 const amends = (command: SimpleCommand): readonly { readonly kind: SelfKind; readonly path: string }[] => {
   const args = fmArguments(command.argv);
-  return args?.[0] === "task" && args[1] === "amend" ? [{ kind: "amend", path: "finitemonkey task amend" }] : [];
+  if (args === undefined) return [];
+  if (args[0] === "task" && args[1] === "amend") return [{ kind: "amend", path: "finitemonkey task amend" }];
+  return decidesExamples(args) ? [{ kind: "examples", path: "finitemonkey task examples" }] : [];
 };
 
 export const bashSelfTargets = (

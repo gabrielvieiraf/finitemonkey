@@ -71,6 +71,7 @@ export const OPTIONAL_GUARDS = [
   "reproduce-first",
   "scope",
   "front-scope",
+  "behavior-contract",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -107,6 +108,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "reproduce-first",
   "scope",
   "front-scope",
+  "behavior-contract",
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];

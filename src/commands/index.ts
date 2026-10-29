@@ -97,6 +97,7 @@ import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
 import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
+import { taskExamplesCommand } from "./task-examples.js";
 import { taskFromSpecCommand } from "./task-spec.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
@@ -248,6 +249,7 @@ export const REGISTRY = [
   policyExplainCommand,
   signalsLocateCommand,
   learningsAcceptCommand,
+  taskExamplesCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

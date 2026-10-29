@@ -7,10 +7,12 @@ import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { loadProjectConfig } from "../git/project-config.js";
 import { maskText } from "../mask/mask.js";
+import type { Example } from "../task/examples.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { activeTaskId, type LoadedContract, loadImplicit, type LoadProblem, loadTask } from "../task/load.js";
 import { FM_DIR, type FmPaths, fmPaths } from "../task/paths.js";
 import { type GateTrust, readTrust } from "../task/state.js";
+import type { TaskContract } from "../task/types.js";
 import { readBaseline, readSession } from "./baseline.js";
 import { diffShape } from "./diff-shape.js";
 import {
@@ -121,6 +123,11 @@ const measureSize = (
 ): SizeVerdict =>
   sizeVerdict(contract.size, diffShape(runtime, git, base, changes), sizeConfig(loadProjectConfig(runtime, git.cwd)));
 
+const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
+  examples === undefined || examples.length === 0 || contract.acceptance.some((check) => check.kind === "examples")
+    ? contract
+    : { ...contract, acceptance: [...contract.acceptance, { id: "examples", kind: "examples" }] };
+
 export type PrepareResult =
   | { readonly kind: "ready"; readonly prepared: Prepared }
   | { readonly kind: "skipped"; readonly reason: GateSkip }
@@ -155,7 +162,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     runtime: options.runtime,
     git,
     paths,
-    contract: applySize(loaded.value.contract, size),
+    contract: withExamples(applySize(loaded.value.contract, size), loaded.value.examples),
     size,
     trusted: loaded.value.trusted,
     treeHash: tree,
@@ -168,6 +175,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     pr,
     mask: options.mask ?? maskText,
     baseline: sessionBaseline(options.runtime, paths, options.sessionId),
+    ...(loaded.value.examples === undefined ? {} : { examples: loaded.value.examples }),
   };
   return { kind: "ready", prepared: { ctx, loaded: loaded.value } };
 };
