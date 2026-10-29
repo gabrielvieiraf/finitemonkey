@@ -1,3 +1,4 @@
+import type { DomainTrajectory, Mark } from "../conceitos/trajectory.js";
 import type { Timer } from "./api.js";
 import type { ContractView, DivergeView } from "./approve-view.js";
 import type { LoadedState } from "./state.js";
@@ -25,6 +26,8 @@ export interface Memory {
   notice: string | undefined;
   xray: XrayView | undefined;
   concepts: readonly ConceptRow[];
+  trajectory: readonly DomainTrajectory[];
+  selectedMark: Mark | undefined;
 }
 
 export const memory: Memory = {
@@ -39,4 +42,6 @@ export const memory: Memory = {
   notice: undefined,
   xray: undefined,
   concepts: [],
+  trajectory: [],
+  selectedMark: undefined,
 };

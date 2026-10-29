@@ -1695,9 +1695,9 @@ var hasWebStack = (stack) => stack.frameworks.length > 0 || stack.orms.length > 
 
 // src/secrets/project.ts
 var projectRoot = (ctx) => {
-  const top = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
-  const path = top.stdout.trim();
-  return top.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
+  const top2 = ctx.runtime.git(["rev-parse", "--show-toplevel"], ctx.cwd);
+  const path = top2.stdout.trim();
+  return top2.ok && path !== "" ? toAbsolutePath(path) : ctx.cwd;
 };
 var isPerson = (ctx) => ctx.io.stdin.isTTY === true && ctx.env["CLAUDECODE"] === void 0 && ctx.env["CLAUDE_CODE_ENTRYPOINT"] === void 0;
 var personName = (ctx) => {
@@ -2375,8 +2375,8 @@ var gitAt = (runtime, cwd) => {
   };
 };
 var gitRoot = (git4) => {
-  const top = git4.out(["rev-parse", "--show-toplevel"])?.trim();
-  return top === void 0 || top === "" ? void 0 : toAbsolutePath(top);
+  const top2 = git4.out(["rev-parse", "--show-toplevel"])?.trim();
+  return top2 === void 0 || top2 === "" ? void 0 : toAbsolutePath(top2);
 };
 var nonEmpty = (value2) => value2 === "" ? void 0 : value2;
 var headSha = (git4) => git4.out(["rev-parse", "--verify", "-q", "HEAD"])?.trim();
@@ -3735,19 +3735,19 @@ var runAudit = (runtime, paths, env) => {
 };
 
 // src/git/facts.ts
-var memo = (compute) => {
+var memo = (compute2) => {
   let cached4;
   return () => {
-    cached4 ??= { value: compute() };
+    cached4 ??= { value: compute2() };
     return cached4.value;
   };
 };
-var memoBy = (compute) => {
+var memoBy = (compute2) => {
   const cache = /* @__PURE__ */ new Map();
   return (key3) => {
     const hit3 = cache.get(key3);
     if (hit3 !== void 0) return hit3.value;
-    const value2 = compute(key3);
+    const value2 = compute2(key3);
     cache.set(key3, { value: value2 });
     return value2;
   };
@@ -3812,15 +3812,15 @@ var addItem = (frame, item2) => {
 };
 var placeLine = (stack, indent, body2) => {
   while (stack.length > 1 && (stack[stack.length - 1]?.indent ?? 0) >= indent && !body2.startsWith("- ")) stack.pop();
-  const top = stack[stack.length - 1];
-  if (top === void 0) return;
+  const top2 = stack[stack.length - 1];
+  if (top2 === void 0) return;
   if (body2.startsWith("- ")) {
-    addItem(top, unquote2(body2.slice(2)));
+    addItem(top2, unquote2(body2.slice(2)));
     return;
   }
   const pair = keyValue(body2);
   if (pair === void 0) return;
-  const parentTree = top.key === void 0 ? top.tree : ensureTree(top.tree, top.key);
+  const parentTree = top2.key === void 0 ? top2.tree : ensureTree(top2.tree, top2.key);
   if (pair.value === "") {
     stack.push({ indent, tree: parentTree, key: pair.key });
     return;
@@ -4343,9 +4343,9 @@ var SYNCED = /(^|\/)(OneDrive[^/]*|Dropbox|Google ?Drive|My Drive|iCloud ?Drive|
 var FIXED_TEMP = ["/tmp", "/var/tmp"];
 var key = (path) => toPosixPath(path).replace(/\/+$/, "");
 var isWithinPath = (parent, child2) => {
-  const top = key(parent);
+  const top2 = key(parent);
   const inner = key(child2);
-  return top !== "" && (inner === top || inner.startsWith(`${top}/`));
+  return top2 !== "" && (inner === top2 || inner.startsWith(`${top2}/`));
 };
 var isSlowPlace = (path) => MOUNTED.test(`${key(path)}/`) || SYNCED.test(key(path));
 var tempDirs = (env) => [...FIXED_TEMP, env["TMPDIR"], env["TEMP"], env["TMP"]].flatMap(
@@ -6215,7 +6215,8 @@ var OPTIONAL_GUARDS = [
   "pr-provenance",
   "team-dashboard",
   "xray",
-  "probes"
+  "probes",
+  "trajectory"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -10708,7 +10709,7 @@ var hunksOf = (added) => {
 var RANK = { demonstrated: 0, proximal: 1, unknown: 2, beyond: 3 };
 var bandOf = (states) => {
   if (states.length === 0) return "unknown";
-  const worst4 = states.reduce((top, state) => RANK[state] > RANK[top] ? state : top, "demonstrated");
+  const worst4 = states.reduce((top2, state) => RANK[state] > RANK[top2] ? state : top2, "demonstrated");
   if (worst4 === "beyond") return "beyond";
   if (worst4 === "unknown") return "unknown";
   return worst4 === "proximal" ? "edge" : "within";
@@ -13506,8 +13507,8 @@ var suiteRuns = (entries2) => {
 };
 var median = (values) => {
   const sorted = [...values].sort((left, right) => left - right);
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+  const middle2 = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle2] ?? 0 : ((sorted[middle2 - 1] ?? 0) + (sorted[middle2] ?? 0)) / 2;
 };
 var slowSuite = (runs, tolerance = DEFAULT_TOLERANCE) => {
   const current2 = runs.at(-1);
@@ -16525,7 +16526,15 @@ var en_default = {
   "probe.forgotten": "Probes deleted.",
   "gate.guard.self.probe.claim": "{file} answers or skips a probe, which only the person can do",
   "gate.guard.self.probe.requires": "show the probe and let the person answer it in their terminal",
-  "gate.guard.probe.human": "The agent tried to answer a probe. Answer it yourself with finitemonkey probe answer <id> <option>, or skip it."
+  "gate.guard.probe.human": "The agent tried to answer a probe. Answer it yourself with finitemonkey probe answer <id> <option>, or skip it.",
+  "command.trajectory.summary": "Per domain and week: where accepted work landed across the bands, with ricochets marked",
+  "command.trajectory_forget.summary": "Delete the concept evidence log the trajectory is drawn from",
+  "command.trajectory_export.summary": "Print the trajectory and its evidence as JSON",
+  "trajectory.off": "trajectory is off in policy.yml.",
+  "trajectory.domain": "domain",
+  "trajectory.no_data": "no data ({evidence} weighted events)",
+  "trajectory.legend": "█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence",
+  "trajectory.forgotten": "Concept evidence deleted; the trajectory starts over."
 };
 
 // src/i18n/es.json
@@ -19093,7 +19102,15 @@ var es_default = {
   "probe.forgotten": "Sondas borradas.",
   "gate.guard.self.probe.claim": "{file} responde o salta una sonda, algo que solo la persona puede hacer",
   "gate.guard.self.probe.requires": "muestra la sonda y deja que la persona la responda en su terminal",
-  "gate.guard.probe.human": "El agente intentó responder una sonda. Respóndela tú con finitemonkey probe answer <id> <opción>, o sáltala."
+  "gate.guard.probe.human": "El agente intentó responder una sonda. Respóndela tú con finitemonkey probe answer <id> <opción>, o sáltala.",
+  "command.trajectory.summary": "Por dominio y semana: dónde cayó el trabajo aceptado en las franjas, con rebotes marcados",
+  "command.trajectory_forget.summary": "Borra el registro de evidencia de conceptos del que sale la trayectoria",
+  "command.trajectory_export.summary": "Imprime la trayectoria y su evidencia en JSON",
+  "trajectory.off": "trajectory está apagado en policy.yml.",
+  "trajectory.domain": "dominio",
+  "trajectory.no_data": "sin datos ({evidence} eventos con peso)",
+  "trajectory.legend": "█ hecho sin ayuda  ▓ proximal  ▒ ciega con criterio  ░ ciega sin criterio  ^ más allá  ↯ rebote  ● aguantó  - sin trabajo aceptado  · sin evidencia",
+  "trajectory.forgotten": "Evidencia de conceptos borrada; la trayectoria empieza de nuevo."
 };
 
 // src/i18n/pt-BR.json
@@ -21661,7 +21678,15 @@ var pt_BR_default = {
   "probe.forgotten": "Sondas apagadas.",
   "gate.guard.self.probe.claim": "{file} responde ou pula uma sonda, o que só a pessoa pode fazer",
   "gate.guard.self.probe.requires": "mostre a sonda e deixe a pessoa responder no terminal dela",
-  "gate.guard.probe.human": "O agente tentou responder uma sonda. Responda você com finitemonkey probe answer <id> <alternativa>, ou pule."
+  "gate.guard.probe.human": "O agente tentou responder uma sonda. Responda você com finitemonkey probe answer <id> <alternativa>, ou pule.",
+  "command.trajectory.summary": "Por domínio e semana: onde o trabalho aceito caiu nas faixas, com ricochetes marcados",
+  "command.trajectory_forget.summary": "Apaga o registro de evidência de conceitos de onde a trajetória sai",
+  "command.trajectory_export.summary": "Imprime a trajetória e a evidência em JSON",
+  "trajectory.off": "trajectory está desligado no policy.yml.",
+  "trajectory.domain": "domínio",
+  "trajectory.no_data": "sem dados ({evidence} eventos com peso)",
+  "trajectory.legend": "█ feito sem ajuda  ▓ proximal  ▒ cega com critério  ░ cega sem critério  ^ além  ↯ ricochete  ● segurou  - sem trabalho aceito  · sem evidência",
+  "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça."
 };
 
 // src/i18n/review.json
@@ -24230,7 +24255,15 @@ var review_default = {
     "probe.forgotten": "machine",
     "gate.guard.self.probe.claim": "machine",
     "gate.guard.self.probe.requires": "machine",
-    "gate.guard.probe.human": "machine"
+    "gate.guard.probe.human": "machine",
+    "command.trajectory.summary": "machine",
+    "command.trajectory_forget.summary": "machine",
+    "command.trajectory_export.summary": "machine",
+    "trajectory.off": "machine",
+    "trajectory.domain": "machine",
+    "trajectory.no_data": "machine",
+    "trajectory.legend": "machine",
+    "trajectory.forgotten": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -26796,7 +26829,15 @@ var review_default = {
     "probe.forgotten": "machine",
     "gate.guard.self.probe.claim": "machine",
     "gate.guard.self.probe.requires": "machine",
-    "gate.guard.probe.human": "machine"
+    "gate.guard.probe.human": "machine",
+    "command.trajectory.summary": "machine",
+    "command.trajectory_forget.summary": "machine",
+    "command.trajectory_export.summary": "machine",
+    "trajectory.off": "machine",
+    "trajectory.domain": "machine",
+    "trajectory.no_data": "machine",
+    "trajectory.legend": "machine",
+    "trajectory.forgotten": "machine"
   }
 };
 
@@ -27716,8 +27757,8 @@ var areasOf = (contract) => [
 ].filter((area) => area !== "");
 var median2 = (values) => {
   const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+  const middle2 = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle2] ?? 0 : ((sorted[middle2 - 1] ?? 0) + (sorted[middle2] ?? 0)) / 2;
 };
 var pastTask = (id, ledger) => {
   const first = ledger[0];
@@ -32493,8 +32534,8 @@ var appendSuggestions = (runtime, root, items) => {
 `).join("")).ok;
 };
 var nextId = (current2) => {
-  const top = current2.reduce((max, item2) => Math.max(max, Number(item2.id.replace(/^S/, "")) || 0), 0);
-  return `S${String(top + 1)}`;
+  const top2 = current2.reduce((max, item2) => Math.max(max, Number(item2.id.replace(/^S/, "")) || 0), 0);
+  return `S${String(top2 + 1)}`;
 };
 var mutedFor = (current2, person) => new Set(
   ADVISOR_RULES.filter(
@@ -36489,7 +36530,7 @@ var mean = (values) => values.reduce((a, b) => a + b, 0) / Math.max(1, values.le
 var BAND_FLOOR = 0.05;
 var outOfBand = (value2, baseline) => Math.abs(value2 - baseline) > Math.max(BAND * baseline, BAND_FLOOR);
 var changesBetween = (before2, after2) => {
-  const top = (points, pick6) => majority(
+  const top2 = (points, pick6) => majority(
     points.reduce(
       (counts2, point) => counts2.set(pick6(point), (counts2.get(pick6(point)) ?? 0) + 1),
       /* @__PURE__ */ new Map()
@@ -36499,8 +36540,8 @@ var changesBetween = (before2, after2) => {
     ["model", (point) => point.model],
     ["version", (point) => point.version]
   ].flatMap(([name, pick6]) => {
-    const from = top(before2, pick6);
-    const to = top(after2, pick6);
+    const from = top2(before2, pick6);
+    const to = top2(after2, pick6);
     return from === to ? [] : [`${name} ${from} -> ${to}`];
   });
 };
@@ -37943,16 +37984,16 @@ var allowEntries = (tree) => LOOK_RULES.flatMap(
 var parseLookConfig = (source3) => {
   const tree = parseConfigYaml(source3);
   const screens = configAt(tree, "screens");
-  const top = configMap(tree);
+  const top2 = configMap(tree);
   return {
-    port: number3(top["port"]),
-    start: text22(top["start"]),
-    host: text22(top["host"]) ?? "127.0.0.1",
+    port: number3(top2["port"]),
+    start: text22(top2["start"]),
+    host: text22(top2["host"]) ?? "127.0.0.1",
     routes: configList(tree, "routes").length === 0 ? ["/"] : configList(tree, "routes"),
     mocks: configList(tree, "mocks"),
     screens: screens === void 0 ? DEFAULT_SCREENS : configList(tree, "screens"),
     allow: allowEntries(tree),
-    timeoutS: number3(top["timeout_s"]) ?? 60
+    timeoutS: number3(top2["timeout_s"]) ?? 60
   };
 };
 var loadLookConfig = (runtime, root) => {
@@ -42618,7 +42659,7 @@ var rowsIn = (sections2, id) => tableRows(sections2.find((section3) => idOf2(sec
 var structure = (sections2) => {
   const ids4 = sections2.flatMap((section3) => idOf2(section3) ?? []);
   const missing3 = RESEARCH_SECTIONS.filter((id) => !ids4.includes(id));
-  const top = ids4[0] === "not_read" && ids4[1] === "not_verified";
+  const top2 = ids4[0] === "not_read" && ids4[1] === "not_verified";
   return [
     ...missing3.length === 0 ? [] : [
       {
@@ -42627,7 +42668,7 @@ var structure = (sections2) => {
         detail: missing3.map((id) => catalogs.en[researchKey(id)]).join(", ")
       }
     ],
-    ...top || missing3.includes("not_read") || missing3.includes("not_verified") ? [] : [{ kind: "lists_not_on_top", line: sections2[0]?.line ?? 1, detail: ids4.join(", ") }]
+    ...top2 || missing3.includes("not_read") || missing3.includes("not_verified") ? [] : [{ kind: "lists_not_on_top", line: sections2[0]?.line ?? 1, detail: ids4.join(", ") }]
   ];
 };
 var sourceIssues = (rows2) => rows2.flatMap(({ cells, line: line12 }) => {
@@ -46692,8 +46733,8 @@ var specOf3 = (raw, prefix2) => {
   const words6 = magic === null ? "" : magic[1] ?? magic[2] ?? "";
   const rest = magic === null ? posixRaw : magic[3] ?? "";
   const exclude = /(?:^|,)exclude(?:,|$)|[!^]/.test(words6);
-  const top = /(?:^|,)top(?:,|$)|\//.test(words6);
-  const joined = posix11.normalize(top ? rest : posix11.join(prefix2 === "" ? "." : prefix2, rest));
+  const top2 = /(?:^|,)top(?:,|$)|\//.test(words6);
+  const joined = posix11.normalize(top2 ? rest : posix11.join(prefix2 === "" ? "." : prefix2, rest));
   return { pattern: joined === "./" ? "." : joined.replace(/\/$/, ""), exclude };
 };
 var globRegex4 = (pattern) => {
@@ -55692,8 +55733,8 @@ var calibrateExplainCommand = {
 // src/evolve/evaluate.ts
 var median4 = (values) => {
   const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+  const middle2 = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle2] ?? 0 : ((sorted[middle2 - 1] ?? 0) + (sorted[middle2] ?? 0)) / 2;
 };
 var ratio2 = (count12, total) => total === 0 ? 0 : count12 / total;
 var summarize3 = (outcomes2) => ({
@@ -60725,12 +60766,12 @@ var renderInventory = (t, inventory) => [
 
 // src/inventory/run.ts
 var readOne = (runtime, root, dir, request) => {
-  const top = gitRoot(gitAt(runtime, toAbsolutePath(dir, root)));
-  if (top === void 0) return reject({ kind: "repo", repo: dir });
-  const git4 = gitAt(runtime, top);
+  const top2 = gitRoot(gitAt(runtime, toAbsolutePath(dir, root)));
+  if (top2 === void 0) return reject({ kind: "repo", repo: dir });
+  const git4 = gitAt(runtime, top2);
   const hash2 = resolveCommit(git4, request.ref);
   if (hash2 === void 0) return reject({ kind: "ref", repo: dir, ref: request.ref });
-  const path = toPosixPath(relative27(runtime.realpath(root), runtime.realpath(top))) || ".";
+  const path = toPosixPath(relative27(runtime.realpath(root), runtime.realpath(top2))) || ".";
   return accept(readRepo(git4, path, request.ref, hash2, request.covered));
 };
 var deltaOf = (runtime, root, previous, repo, covered) => {
@@ -63837,10 +63878,245 @@ var taskTrustCommand = {
   }
 };
 
+// src/conceitos/trajectory.ts
+var TRAJECTORY_SCHEMA = "finitemonkey/trajectory@1";
+var TRAJECTORY_FEATURE = "trajectory";
+var WEEKS = 12;
+var MIN_EVIDENCE = 6;
+var MIN_WEEKS = 2;
+var DAY2 = 864e5;
+var weekKeys = (now, count12 = WEEKS) => Array.from(
+  { length: count12 },
+  (_, index) => isoWeek(new Date(now - (count12 - 1 - index) * 7 * DAY2).toISOString()) ?? ""
+);
+var INDEPENDENT = /* @__PURE__ */ new Set(["own_change", "own_repair"]);
+var DISCERNMENT = /* @__PURE__ */ new Set(["prediction_right", "check_right"]);
+var refOf = (event) => ({
+  kind: event.kind,
+  at: event.at,
+  concept: event.concept,
+  task: event.task ?? null,
+  file: event.file ?? null
+});
+var marksOf = (events) => events.flatMap((event, index) => {
+  if (event.kind !== "failure_after_approval") return [];
+  const before2 = events.slice(0, index).filter((item2) => item2.concept === event.concept);
+  if (stateOf2(before2) === "demonstrated") return [];
+  const accepted2 = before2.filter((item2) => item2.kind === "exposure" && item2.origin === "agent").slice(-1);
+  const repair = events.slice(index + 1).find((item2) => item2.concept === event.concept && item2.kind === "own_repair" && item2.origin === "person");
+  const week = isoWeek(event.at) ?? "";
+  const evidence2 = [...accepted2, event, ...repair === void 0 ? [] : [repair]].map(refOf);
+  return [{ kind: repair === void 0 ? "ricochet" : "held", week, concept: event.concept, at: event.at, evidence: evidence2 }];
+});
+var distinct = (events, keep) => new Set(events.filter(keep).map((event) => event.concept)).size;
+var ACCEPTED = (event) => INDEPENDENT.has(event.kind) || event.kind === "exposure" && event.origin === "agent";
+var middle = (from, to) => to > from ? (from + to) / 2 : to;
+var landedLevel = (inWeek, upTo, series) => {
+  const touched2 = [...new Set(inWeek.filter(ACCEPTED).map((event) => event.concept))];
+  if (touched2.length === 0) return null;
+  const levels = touched2.map((concept) => {
+    const state = stateOf2(upTo.filter((event) => event.concept === concept));
+    if (state === "demonstrated") return middle(0, series.independent);
+    if (state === "proximal") return middle(series.independent, series.discernment);
+    return middle(series.discernment, Math.max(series.assisted, series.discernment + 1));
+  });
+  return Math.max(...levels);
+};
+var trajectoryOf = (domain, all, helps, now) => {
+  const events = all.filter((event) => domainOf(event.concept) === domain);
+  const keys = weekKeys(now);
+  const weighted = events.filter((event) => event.weight !== 0 || event.origin === "agent");
+  const weeksWith = new Set(weighted.map((event) => isoWeek(event.at)));
+  const marks = marksOf(events).filter((mark2) => keys.includes(mark2.week));
+  const evidence2 = events.filter((event) => event.weight !== 0).length;
+  const enough = evidence2 >= MIN_EVIDENCE && keys.filter((key3) => weeksWith.has(key3)).length >= MIN_WEEKS;
+  const weeks = keys.map((key3) => {
+    const upTo = events.filter((event) => (isoWeek(event.at) ?? "") <= key3);
+    const inWeek = events.filter((event) => isoWeek(event.at) === key3);
+    const domainHelps = helps.filter((help) => help.domain === domain && isoWeek(help.at) === key3);
+    const has = inWeek.some((event) => event.weight !== 0 || event.origin === "agent");
+    const independent = distinct(upTo, (event) => INDEPENDENT.has(event.kind));
+    const discernment = Math.max(
+      independent,
+      distinct(upTo, (event) => DISCERNMENT.has(event.kind))
+    );
+    const assisted = Math.max(
+      discernment,
+      distinct(upTo, (event) => ACCEPTED(event) || DISCERNMENT.has(event.kind))
+    );
+    return {
+      week: key3,
+      independent: has ? independent : null,
+      discernment: has ? discernment : null,
+      assisted: has ? assisted : null,
+      blindCovered: domainHelps.filter((help) => help.criterion !== "none").length,
+      blindBare: domainHelps.filter((help) => help.criterion === "none").length,
+      work: has ? landedLevel(inWeek, upTo, { independent, discernment, assisted }) : null,
+      evidence: inWeek.filter((event) => event.weight !== 0).length
+    };
+  });
+  const last = [...weeks].reverse().find((week) => week.work !== null);
+  return {
+    domain,
+    status: enough ? "ok" : "no_data",
+    evidence: evidence2,
+    weeks: enough ? weeks : [],
+    marks: enough ? marks : [],
+    position: enough && last !== void 0 ? last.week : null
+  };
+};
+var trajectories = (events, helps, now) => DOMAINS.map((domain) => trajectoryOf(domain, events, helps, now));
+
+// src/conceitos/trajectory-chart.ts
+var ZONE_LABEL = {
+  independent: "done alone",
+  proximal: "proximal band",
+  blindCovered: "blind band, with criterion",
+  blindBare: "blind band, no criterion",
+  beyond: "beyond the horizon"
+};
+var ZONE_GLYPH = {
+  independent: "█",
+  proximal: "▓",
+  blindCovered: "▒",
+  blindBare: "░",
+  beyond: " "
+};
+var blindSplit = (week, discernment, assisted) => {
+  const helps = week.blindCovered + week.blindBare;
+  return helps === 0 ? discernment : discernment + (assisted - discernment) * week.blindCovered / helps;
+};
+var zoneAt = (week, level) => {
+  if (week.independent === null || week.discernment === null || week.assisted === null) return void 0;
+  if (level <= week.independent) return "independent";
+  if (level <= week.discernment) return "proximal";
+  if (level <= week.assisted)
+    return level <= blindSplit(week, week.discernment, week.assisted) ? "blindCovered" : "blindBare";
+  return "beyond";
+};
+var markOf = (marks, week) => {
+  const here = marks.filter((mark2) => mark2.week === week);
+  return here.find((mark2) => mark2.kind === "ricochet") ?? here[0];
+};
+var cellOf2 = (trajectory, week) => {
+  const mark2 = markOf(trajectory.marks, week.week);
+  if (mark2 !== void 0) return mark2.kind === "ricochet" ? "↯" : "●";
+  if (week.assisted === null) return "·";
+  if (week.work === null) return "-";
+  const zone = zoneAt(week, week.work);
+  return zone === void 0 ? "·" : ZONE_GLYPH[zone] === " " ? "^" : ZONE_GLYPH[zone];
+};
+var ENGLISH_TABLE = {
+  domain: "domain",
+  noData: (evidence2) => `no data (${String(evidence2)} weighted events)`,
+  legend: "█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence"
+};
+var tableLines2 = (trajectories2, labels = ENGLISH_TABLE) => {
+  const width = Math.max(...trajectories2.map((item2) => item2.domain.length), labels.domain.length);
+  const weeks = trajectories2.find((item2) => item2.weeks.length > 0)?.weeks.map((week) => week.week.slice(-3)) ?? [];
+  return [
+    `${labels.domain.padEnd(width)}  ${weeks.join(" ")}`,
+    ...trajectories2.map(
+      (item2) => item2.status === "no_data" ? `${item2.domain.padEnd(width)}  ${labels.noData(item2.evidence)}` : `${item2.domain.padEnd(width)}  ${item2.weeks.map((week) => cellOf2(item2, week).padStart(3)).join(" ")}`
+    ),
+    labels.legend
+  ];
+};
+var top = (trajectory) => Math.max(
+  1,
+  ...trajectory.weeks.map((week) => (week.assisted ?? 0) + 1),
+  ...trajectory.weeks.map((week) => week.work ?? 0)
+);
+var blockLines = (trajectory, rows2 = 6) => {
+  if (trajectory.status === "no_data")
+    return [`${trajectory.domain}: no data (${String(trajectory.evidence)} weighted events)`];
+  const peak = top(trajectory);
+  const lines10 = Array.from({ length: rows2 }, (_, row4) => {
+    const level = peak * (rows2 - row4) / rows2;
+    const cells = trajectory.weeks.map((week) => {
+      if (week.assisted === null) return "·";
+      const onLine = week.work !== null && Math.abs(week.work - level) < peak / rows2 / 2;
+      if (onLine) return "━";
+      return ZONE_GLYPH[zoneAt(week, level) ?? "beyond"];
+    });
+    const zone = [...trajectory.weeks].reverse().map((week) => zoneAt(week, level)).find((item2) => item2 !== void 0);
+    return `${cells.join("")}  ${zone === void 0 ? "" : ZONE_LABEL[zone]}`;
+  });
+  const marks = trajectory.weeks.map((week) => {
+    const mark2 = markOf(trajectory.marks, week.week);
+    return mark2 === void 0 ? " " : mark2.kind === "ricochet" ? "↯" : "●";
+  });
+  return [trajectory.domain, marks.join(""), ...lines10];
+};
+
+// src/commands/trajectory.ts
+var pathsOf5 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+var helpMarks = (log) => log.split("\n").flatMap((line12) => {
+  if (!line12.includes(HORIZON_EVENT)) return [];
+  const parsed = parseJsonObject(line12);
+  if (!parsed.ok || parsed.value["event"] !== HORIZON_EVENT) return [];
+  const { at: at6, domain, criterion } = parsed.value;
+  return typeof at6 === "string" && typeof domain === "string" && typeof criterion === "string" ? [{ at: at6, domain, criterion }] : [];
+});
+var compute = (ctx) => {
+  const paths = pathsOf5(ctx);
+  const log = ctx.runtime.readText(paths.log);
+  return trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(log.ok ? log.value : ""), nowMs(ctx.runtime));
+};
+var show5 = (ctx, domain, chart) => {
+  const mode = featureMode(ctx.runtime, pathsOf5(ctx), TRAJECTORY_FEATURE);
+  if (mode === "off") return success({ schema: TRAJECTORY_SCHEMA, mode, domains: [] }, [ctx.t("trajectory.off")]);
+  const all = compute(ctx).filter((item2) => domain === void 0 || item2.domain === domain);
+  const table3 = tableLines2(all, {
+    domain: ctx.t("trajectory.domain"),
+    noData: (evidence2) => ctx.t("trajectory.no_data", { evidence: evidence2 }),
+    legend: ctx.t("trajectory.legend")
+  });
+  const charts = chart ? all.flatMap((item2) => ["", ...blockLines(item2)]) : [];
+  return success({ schema: TRAJECTORY_SCHEMA, mode, domains: all }, [...table3, ...charts]);
+};
+var forget2 = (ctx) => {
+  const removed = ctx.runtime.remove(eventsPath(pathsOf5(ctx))).ok;
+  return success({ schema: TRAJECTORY_SCHEMA, removed: removed ? 1 : 0 }, [ctx.t("trajectory.forgotten")]);
+};
+var exportAll = (ctx) => {
+  const data2 = {
+    schema: TRAJECTORY_SCHEMA,
+    domains: compute(ctx),
+    events: readConceptEvents(ctx.runtime, pathsOf5(ctx))
+  };
+  return success(data2, [JSON.stringify(data2, null, 2)]);
+};
+var trajectoryCommand = {
+  path: ["trajectory"],
+  summaryKey: "command.trajectory.summary",
+  usage: "finitemonkey trajectory [--domain <domain>] [--chart]",
+  status: "ready",
+  maxPositionals: 0,
+  options: { domain: { type: "string" }, chart: { type: "boolean" } },
+  run: (ctx, args2) => Promise.resolve(show5(ctx, stringOption(args2.values, "domain"), args2.values["chart"] === true))
+};
+var trajectoryForgetCommand = {
+  path: ["trajectory", "forget"],
+  summaryKey: "command.trajectory_forget.summary",
+  usage: "finitemonkey trajectory forget",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => Promise.resolve(forget2(ctx))
+};
+var trajectoryExportCommand = {
+  path: ["trajectory", "export"],
+  summaryKey: "command.trajectory_export.summary",
+  usage: "finitemonkey trajectory export",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => Promise.resolve(exportAll(ctx))
+};
+
 // src/commands/xray.ts
 var USAGE17 = "finitemonkey xray [--json]";
 var DECIDE_USAGE = "finitemonkey xray decide <file>:<line> --leave|--skip";
-var pathsOf5 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+var pathsOf6 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 var itemLine2 = (ctx, item2) => ctx.t("xray.item", {
   file: item2.file,
   start: item2.start,
@@ -63862,8 +64138,8 @@ var gridLines = (ctx, xray) => BANDS.flatMap(
     ];
   })
 );
-var show5 = (ctx) => {
-  const paths = pathsOf5(ctx);
+var show6 = (ctx) => {
+  const paths = pathsOf6(ctx);
   const mode = featureMode(ctx.runtime, paths, XRAY_FEATURE);
   if (mode === "off") return success({ schema: XRAY_SCHEMA, mode, items: [] }, [ctx.t("xray.off")]);
   const ready = prepareGate({
@@ -63891,13 +64167,13 @@ var show5 = (ctx) => {
     ...xray.items.map((item2) => itemLine2(ctx, item2))
   ]);
 };
-var forget2 = (ctx) => {
-  const paths = pathsOf5(ctx);
+var forget3 = (ctx) => {
+  const paths = pathsOf6(ctx);
   const removed = [xrayPath(paths), eventsPath(paths)].filter((path) => ctx.runtime.remove(path).ok);
   return success({ schema: XRAY_SCHEMA, removed: removed.length }, [ctx.t("xray.forgotten")]);
 };
-var exportAll = (ctx) => {
-  const paths = pathsOf5(ctx);
+var exportAll2 = (ctx) => {
+  const paths = pathsOf6(ctx);
   const data2 = {
     schema: XRAY_SCHEMA,
     xray: readJsonFile(ctx.runtime, xrayPath(paths)) ?? null,
@@ -63913,7 +64189,7 @@ var decide5 = (ctx, target5, leave, skip) => {
       usageProblem("invalid_arguments", "error.invalid_arguments", DECIDE_USAGE, { detail: target5 ?? "" })
     );
   const decision2 = leave ? "leave" : "skip";
-  logEvent(ctx.runtime, pathsOf5(ctx), "xray.decision", { file: match[1] ?? "", line: Number(match[2]), decision: decision2 });
+  logEvent(ctx.runtime, pathsOf6(ctx), "xray.decision", { file: match[1] ?? "", line: Number(match[2]), decision: decision2 });
   return success({ schema: XRAY_SCHEMA, decision: decision2 }, [ctx.t(`xray.decided.${decision2}`, { target: target5 ?? "" })]);
 };
 var xrayCommand = {
@@ -63922,7 +64198,7 @@ var xrayCommand = {
   usage: USAGE17,
   status: "ready",
   maxPositionals: 0,
-  run: (ctx) => Promise.resolve(show5(ctx))
+  run: (ctx) => Promise.resolve(show6(ctx))
 };
 var xrayForgetCommand = {
   path: ["xray", "forget"],
@@ -63930,7 +64206,7 @@ var xrayForgetCommand = {
   usage: "finitemonkey xray forget",
   status: "ready",
   maxPositionals: 0,
-  run: (ctx) => Promise.resolve(forget2(ctx))
+  run: (ctx) => Promise.resolve(forget3(ctx))
 };
 var xrayExportCommand = {
   path: ["xray", "export"],
@@ -63938,7 +64214,7 @@ var xrayExportCommand = {
   usage: "finitemonkey xray export",
   status: "ready",
   maxPositionals: 0,
-  run: (ctx) => Promise.resolve(exportAll(ctx))
+  run: (ctx) => Promise.resolve(exportAll2(ctx))
 };
 var xrayDecideCommand = {
   path: ["xray", "decide"],
@@ -63972,7 +64248,10 @@ var MOD_COMMANDS = [
   probeAnswerCommand,
   probeSkipCommand,
   probeGapCommand,
-  probeForgetCommand
+  probeForgetCommand,
+  trajectoryCommand,
+  trajectoryForgetCommand,
+  trajectoryExportCommand
 ];
 
 // src/observe/templates.ts
@@ -64783,7 +65062,7 @@ var relativeFile3 = (ctx, root, raw) => {
   const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
   return posix16.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
 };
-var rank3 = (ctx, top) => {
+var rank3 = (ctx, top2) => {
   const root = projectRoot(ctx);
   const sensitive = [
     ...DEFAULT_SENSITIVE2,
@@ -64791,7 +65070,7 @@ var rank3 = (ctx, top) => {
   ];
   const ranked = hotspots(ctx.runtime, gitAt(ctx.runtime, root), fmPaths(root), sensitive);
   if (ranked === void 0) return failureFrom(ctx.t, invalid3("git history"));
-  const shown9 = ranked.slice(0, top);
+  const shown9 = ranked.slice(0, top2);
   return success(
     { schema: ORGANIZE_SCHEMA, hotspots: shown9 },
     shown9.map(
@@ -64873,8 +65152,8 @@ var organizeCommand = {
     if (action === "step") return Promise.resolve(step3(ctx, first, second));
     if (action === "done") return Promise.resolve(done(ctx, first));
     if (action !== "") return Promise.resolve(failureFrom(ctx.t, invalid3(action)));
-    const top = Number.parseInt(stringOption(args2.values, "top") ?? "", 10);
-    return Promise.resolve(rank3(ctx, Number.isInteger(top) && top > 0 ? top : DEFAULT_TOP));
+    const top2 = Number.parseInt(stringOption(args2.values, "top") ?? "", 10);
+    return Promise.resolve(rank3(ctx, Number.isInteger(top2) && top2 > 0 ? top2 : DEFAULT_TOP));
   }
 };
 
@@ -65115,7 +65394,7 @@ var runQuickStart = async (ctx, start2) => {
 
 // src/commands/perfil.ts
 var PERFIL_SCHEMA = "finitemonkey/perfil@1";
-var pathsOf6 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+var pathsOf7 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 var profileJson = (profile) => ({
   schema: PERFIL_SCHEMA,
   quickStart: profile.quickStart,
@@ -65141,14 +65420,14 @@ var profileLines = (ctx, profile) => DOMAINS.map((domain) => {
     knowledge: ctx.t(`perfil.level.${levelOf2(entry2.knowledge)}`)
   });
 });
-var show6 = (ctx) => {
-  const stored = readProfile2(ctx.runtime, pathsOf6(ctx));
-  const profile = stored ?? profileOrStart(ctx.runtime, pathsOf6(ctx));
+var show7 = (ctx) => {
+  const stored = readProfile2(ctx.runtime, pathsOf7(ctx));
+  const profile = stored ?? profileOrStart(ctx.runtime, pathsOf7(ctx));
   const header3 = stored === void 0 ? [ctx.t("perfil.show.none")] : [];
   return success(profileJson(profile), [...header3, ...profileLines(ctx, profile)]);
 };
 var start = async (ctx) => {
-  const paths = pathsOf6(ctx);
+  const paths = pathsOf7(ctx);
   const before2 = profileOrStart(ctx.runtime, paths);
   const outcome3 = await runQuickStart(ctx, before2);
   const profile = outcome3.kind === "done" ? outcome3.profile : { ...before2, quickStart: "skipped" };
@@ -65170,7 +65449,7 @@ var set = (ctx, rawDomain, rawLevel) => {
       })
     );
   }
-  const paths = pathsOf6(ctx);
+  const paths = pathsOf7(ctx);
   const profile = profileOrStart(ctx.runtime, paths);
   const observed = levelOf2(profile.domains[domain].knowledge);
   if (observed === level)
@@ -65195,7 +65474,7 @@ var answer2 = (ctx, rawDomain, rawOption) => {
       })
     );
   }
-  const paths = pathsOf6(ctx);
+  const paths = pathsOf7(ctx);
   const profile = profileOrStart(ctx.runtime, paths);
   const entry2 = profile.domains[domain];
   const right = option3 === DOMAIN_QUESTIONS[domain].correct;
@@ -65206,8 +65485,8 @@ var answer2 = (ctx, rawDomain, rawOption) => {
   const key3 = right ? "perfil.answer.right" : "perfil.answer.kept";
   return success(profileJson(updated), [ctx.t(key3, { level: ctx.t(`perfil.level.${levelOf2(knowledge)}`) })]);
 };
-var forget3 = (ctx) => {
-  const paths = pathsOf6(ctx);
+var forget4 = (ctx) => {
+  const paths = pathsOf7(ctx);
   const removed = [perfilPath(paths), agentCommitsPath(paths), bookPath(paths), eventsPath(paths)].filter(
     (path) => ctx.runtime.stat(path) !== void 0 && ctx.runtime.remove(path).ok
   );
@@ -65218,7 +65497,7 @@ var perfilCommand = {
   summaryKey: "command.perfil.summary",
   usage: "finitemonkey perfil",
   status: "ready",
-  run: (ctx) => Promise.resolve(show6(ctx))
+  run: (ctx) => Promise.resolve(show7(ctx))
 };
 var perfilStartCommand = {
   path: ["perfil", "start"],
@@ -65248,7 +65527,7 @@ var perfilForgetCommand = {
   summaryKey: "command.perfil_forget.summary",
   usage: "finitemonkey perfil forget",
   status: "ready",
-  run: (ctx) => Promise.resolve(forget3(ctx))
+  run: (ctx) => Promise.resolve(forget4(ctx))
 };
 
 // src/attention/queue.ts
@@ -65623,8 +65902,8 @@ var wilson = (hits, total) => {
 var median5 = (values) => {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+  const middle2 = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle2] ?? 0 : ((sorted[middle2 - 1] ?? 0) + (sorted[middle2] ?? 0)) / 2;
 };
 var periodOf = (at6) => at6.slice(0, 7);
 var gateRuns = (ledger) => ledger.entries.filter((entry2) => entry2.check === GATE_CHECK);
@@ -68622,7 +68901,7 @@ var release2 = (ctx, sig) => {
   logEvent(ctx.runtime, paths, "signals.release", { sig, session });
   return success({ schema: SIGNALS_SCHEMA, sig, session }, [ctx.t("signals.release.done", { sig })]);
 };
-var forget4 = (ctx) => {
+var forget5 = (ctx) => {
   const { files } = locate3(ctx);
   const removed = [files.log, files.index, files.profile].filter(
     (path) => ctx.runtime.stat(path) !== void 0 && ctx.runtime.remove(path).ok
@@ -68656,7 +68935,7 @@ var signalsForgetCommand = {
   summaryKey: "command.signals_forget.summary",
   usage: "finitemonkey signals forget",
   status: "ready",
-  run: (ctx) => Promise.resolve(forget4(ctx))
+  run: (ctx) => Promise.resolve(forget5(ctx))
 };
 
 // src/commands/signals-blind-band.ts

@@ -15,6 +15,7 @@ import {
 } from "./probe.js";
 import { statusCommand } from "./status.js";
 import { taskTrustCommand } from "./task-trust.js";
+import { trajectoryCommand, trajectoryExportCommand, trajectoryForgetCommand } from "./trajectory.js";
 import type { CommandSpec } from "./types.js";
 import { xrayCommand, xrayDecideCommand, xrayExportCommand, xrayForgetCommand } from "./xray.js";
 
@@ -40,4 +41,7 @@ export const MOD_COMMANDS = [
   probeSkipCommand,
   probeGapCommand,
   probeForgetCommand,
+  trajectoryCommand,
+  trajectoryForgetCommand,
+  trajectoryExportCommand,
 ] as const satisfies readonly CommandSpec[];

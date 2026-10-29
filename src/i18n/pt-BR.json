@@ -2562,5 +2562,13 @@
   "probe.forgotten": "Sondas apagadas.",
   "gate.guard.self.probe.claim": "{file} responde ou pula uma sonda, o que só a pessoa pode fazer",
   "gate.guard.self.probe.requires": "mostre a sonda e deixe a pessoa responder no terminal dela",
-  "gate.guard.probe.human": "O agente tentou responder uma sonda. Responda você com finitemonkey probe answer <id> <alternativa>, ou pule."
+  "gate.guard.probe.human": "O agente tentou responder uma sonda. Responda você com finitemonkey probe answer <id> <alternativa>, ou pule.",
+  "command.trajectory.summary": "Por domínio e semana: onde o trabalho aceito caiu nas faixas, com ricochetes marcados",
+  "command.trajectory_forget.summary": "Apaga o registro de evidência de conceitos de onde a trajetória sai",
+  "command.trajectory_export.summary": "Imprime a trajetória e a evidência em JSON",
+  "trajectory.off": "trajectory está desligado no policy.yml.",
+  "trajectory.domain": "domínio",
+  "trajectory.no_data": "sem dados ({evidence} eventos com peso)",
+  "trajectory.legend": "█ feito sem ajuda  ▓ proximal  ▒ cega com critério  ░ cega sem critério  ^ além  ↯ ricochete  ● segurou  - sem trabalho aceito  · sem evidência",
+  "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça."
 }

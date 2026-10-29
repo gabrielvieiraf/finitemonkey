@@ -2562,5 +2562,13 @@
   "probe.forgotten": "Probes deleted.",
   "gate.guard.self.probe.claim": "{file} answers or skips a probe, which only the person can do",
   "gate.guard.self.probe.requires": "show the probe and let the person answer it in their terminal",
-  "gate.guard.probe.human": "The agent tried to answer a probe. Answer it yourself with finitemonkey probe answer <id> <option>, or skip it."
+  "gate.guard.probe.human": "The agent tried to answer a probe. Answer it yourself with finitemonkey probe answer <id> <option>, or skip it.",
+  "command.trajectory.summary": "Per domain and week: where accepted work landed across the bands, with ricochets marked",
+  "command.trajectory_forget.summary": "Delete the concept evidence log the trajectory is drawn from",
+  "command.trajectory_export.summary": "Print the trajectory and its evidence as JSON",
+  "trajectory.off": "trajectory is off in policy.yml.",
+  "trajectory.domain": "domain",
+  "trajectory.no_data": "no data ({evidence} weighted events)",
+  "trajectory.legend": "█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence",
+  "trajectory.forgotten": "Concept evidence deleted; the trajectory starts over."
 }

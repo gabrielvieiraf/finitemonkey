@@ -10,7 +10,9 @@ var memory = {
   divergence: void 0,
   notice: void 0,
   xray: void 0,
-  concepts: []
+  concepts: [],
+  trajectory: [],
+  selectedMark: void 0
 };
 
 // src/mod/attribution-hooks.ts
@@ -543,11 +545,393 @@ var costTree = (elements, lines, close) => elements.Box({
   ]
 });
 
+// src/conceitos/trajectory-chart.ts
+var ZONE_LABEL = {
+  independent: "done alone",
+  proximal: "proximal band",
+  blindCovered: "blind band, with criterion",
+  blindBare: "blind band, no criterion",
+  beyond: "beyond the horizon"
+};
+var ZONE_GLYPH = {
+  independent: "█",
+  proximal: "▓",
+  blindCovered: "▒",
+  blindBare: "░",
+  beyond: " "
+};
+var ZONE_COLOR = {
+  independent: 3112271,
+  proximal: 12749338,
+  blindCovered: 6970061,
+  blindBare: 10503738,
+  beyond: 16777216
+};
+var ACCENT = 16101441;
+var RICOCHET = 16729402;
+var HELD = 3458905;
+var DEFAULT = 16777216;
+var blindSplit = (week, discernment, assisted) => {
+  const helps = week.blindCovered + week.blindBare;
+  return helps === 0 ? discernment : discernment + (assisted - discernment) * week.blindCovered / helps;
+};
+var zoneAt = (week, level) => {
+  if (week.independent === null || week.discernment === null || week.assisted === null) return void 0;
+  if (level <= week.independent) return "independent";
+  if (level <= week.discernment) return "proximal";
+  if (level <= week.assisted)
+    return level <= blindSplit(week, week.discernment, week.assisted) ? "blindCovered" : "blindBare";
+  return "beyond";
+};
+var markOf2 = (marks, week) => {
+  const here = marks.filter((mark) => mark.week === week);
+  return here.find((mark) => mark.kind === "ricochet") ?? here[0];
+};
+var cellOf = (trajectory, week) => {
+  const mark = markOf2(trajectory.marks, week.week);
+  if (mark !== void 0) return mark.kind === "ricochet" ? "↯" : "●";
+  if (week.assisted === null) return "·";
+  if (week.work === null) return "-";
+  const zone = zoneAt(week, week.work);
+  return zone === void 0 ? "·" : ZONE_GLYPH[zone] === " " ? "^" : ZONE_GLYPH[zone];
+};
+var ENGLISH_TABLE = {
+  domain: "domain",
+  noData: (evidence) => `no data (${String(evidence)} weighted events)`,
+  legend: "█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence"
+};
+var tableLines = (trajectories, labels = ENGLISH_TABLE) => {
+  const width = Math.max(...trajectories.map((item) => item.domain.length), labels.domain.length);
+  const weeks = trajectories.find((item) => item.weeks.length > 0)?.weeks.map((week) => week.week.slice(-3)) ?? [];
+  return [
+    `${labels.domain.padEnd(width)}  ${weeks.join(" ")}`,
+    ...trajectories.map(
+      (item) => item.status === "no_data" ? `${item.domain.padEnd(width)}  ${labels.noData(item.evidence)}` : `${item.domain.padEnd(width)}  ${item.weeks.map((week) => cellOf(item, week).padStart(3)).join(" ")}`
+    ),
+    labels.legend
+  ];
+};
+var top = (trajectory) => Math.max(
+  1,
+  ...trajectory.weeks.map((week) => (week.assisted ?? 0) + 1),
+  ...trajectory.weeks.map((week) => week.work ?? 0)
+);
+var BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+var base64 = (bytes) => {
+  let out = "";
+  for (let index = 0; index < bytes.length; index += 3) {
+    const a = bytes[index] ?? 0;
+    const b = bytes[index + 1] ?? 0;
+    const c = bytes[index + 2] ?? 0;
+    const triple = a << 16 | b << 8 | c;
+    out += BASE64[triple >> 18 & 63] ?? "";
+    out += BASE64[triple >> 12 & 63] ?? "";
+    out += index + 1 < bytes.length ? BASE64[triple >> 6 & 63] ?? "" : "=";
+    out += index + 2 < bytes.length ? BASE64[triple & 63] ?? "" : "=";
+  }
+  return out;
+};
+var word = (value) => [
+  value & 255,
+  value >>> 8 & 255,
+  value >>> 16 & 255,
+  value >>> 24 & 255
+];
+var rasterCells = (trajectory, columns, rows) => {
+  const peak = top(trajectory);
+  const weeks = trajectory.weeks;
+  const cells = [];
+  for (let row2 = 0; row2 < rows; row2 += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const week = weeks[Math.min(weeks.length - 1, Math.floor(column * weeks.length / Math.max(columns, 1)))];
+      if (week === void 0) {
+        cells.push({ glyph: " ", fg: DEFAULT, bg: DEFAULT });
+        continue;
+      }
+      if (row2 === 0) {
+        const mark = markOf2(trajectory.marks, week.week);
+        cells.push(
+          mark === void 0 ? { glyph: " ", fg: DEFAULT, bg: DEFAULT } : {
+            glyph: mark.kind === "ricochet" ? "↯" : "●",
+            fg: mark.kind === "ricochet" ? RICOCHET : HELD,
+            bg: DEFAULT
+          }
+        );
+        continue;
+      }
+      const level = peak * (rows - row2) / (rows - 1);
+      if (week.assisted === null) {
+        cells.push({ glyph: "·", fg: DEFAULT, bg: DEFAULT });
+        continue;
+      }
+      const zone = zoneAt(week, level) ?? "beyond";
+      const onLine = week.work !== null && Math.abs(week.work - level) < peak / (rows - 1) / 2;
+      cells.push({ glyph: onLine ? "━" : " ", fg: onLine ? ACCENT : DEFAULT, bg: ZONE_COLOR[zone] });
+    }
+  }
+  return cells;
+};
+var rasterOf = (trajectory, columns, rows) => {
+  const bytes = rasterCells(trajectory, columns, rows).flatMap((cell) => [
+    ...word(cell.glyph.codePointAt(0) ?? 32),
+    ...word(cell.fg),
+    ...word(cell.bg)
+  ]);
+  return { columns, rows, cells: base64(bytes) };
+};
+var escape = (text4) => text4.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+var SVG_FILL = {
+  independent: "#2f7d4f",
+  proximal: "#c28a1a",
+  blindCovered: "#6a5acd",
+  blindBare: "#a0463a",
+  beyond: "none"
+};
+var yOf = (frame, level) => frame.pad + frame.plotHeight - level / frame.peak * frame.plotHeight;
+var xOf = (frame, index) => frame.pad + index * frame.step;
+var zoneRects = (frame, week, index) => {
+  const x = String(xOf(frame, index));
+  if (week.independent === null || week.discernment === null || week.assisted === null)
+    return [
+      `<rect class="gap" x="${x}" y="${String(frame.pad)}" width="${String(frame.step)}" height="${String(frame.plotHeight)}" fill="url(#gap)"><title>${escape(`${week.week}: no evidence`)}</title></rect>`
+    ];
+  const split = blindSplit(week, week.discernment, week.assisted);
+  const bands = [
+    ["independent", 0, week.independent],
+    ["proximal", week.independent, week.discernment],
+    ["blindCovered", week.discernment, split],
+    ["blindBare", split, week.assisted]
+  ];
+  return bands.filter(([, from, to]) => to > from).map(
+    ([zone, from, to]) => `<rect class="zone-${zone}" x="${x}" y="${String(yOf(frame, to))}" width="${String(frame.step)}" height="${String(yOf(frame, from) - yOf(frame, to))}" fill="${SVG_FILL[zone]}" fill-opacity="0.55"/>`
+  );
+};
+var workLines = (frame, weeks) => {
+  const segments = [];
+  weeks.forEach((week, index) => {
+    if (week.work === null) {
+      segments.push([]);
+      return;
+    }
+    const point = `${String(xOf(frame, index) + frame.step / 2)},${String(yOf(frame, week.work))}`;
+    const current = segments.at(-1);
+    if (current === void 0) segments.push([point]);
+    else current.push(point);
+  });
+  return segments.filter((item) => item.length > 0).map(
+    (points) => `<polyline class="work" points="${points.join(" ")}" fill="none" stroke="#f5b041" stroke-width="2.5"/>`
+  );
+};
+var markTexts = (frame, trajectory) => trajectory.marks.flatMap((mark) => {
+  const index = trajectory.weeks.findIndex((week) => week.week === mark.week);
+  if (index < 0) return [];
+  const evidence = mark.evidence.map((item) => `${item.kind} ${item.task ?? "-"} ${item.file ?? "-"} ${item.at}`).join("; ");
+  const color = mark.kind === "ricochet" ? "#ff453a" : "#34c759";
+  return [
+    `<text class="mark-${mark.kind}" x="${String(xOf(frame, index) + frame.step / 2)}" y="${String(frame.pad - 6)}" text-anchor="middle" font-size="14" fill="${color}">${mark.kind === "ricochet" ? "↯" : "●"}<title>${escape(`${mark.kind} · ${mark.concept} · ${evidence}`)}</title></text>`
+  ];
+});
+var zoneLabels = (frame, weeks) => {
+  const last = [...weeks].reverse().find((week) => week.assisted !== null);
+  const independent = last?.independent ?? null;
+  const discernment = last?.discernment ?? null;
+  const assisted = last?.assisted ?? null;
+  if (independent === null || discernment === null || assisted === null) return [];
+  const labels = [
+    [ZONE_LABEL.independent, independent / 2],
+    [ZONE_LABEL.proximal, (independent + discernment) / 2],
+    ["blind band", (discernment + assisted) / 2],
+    [ZONE_LABEL.beyond, (assisted + frame.peak) / 2]
+  ];
+  return labels.map(
+    ([label, level]) => `<text x="${String(frame.pad + frame.plotWidth + 8)}" y="${String(yOf(frame, level) + 4)}" font-size="11" fill="currentColor">${escape(label)}</text>`
+  );
+};
+var svgOf = (trajectory, width = 640, height = 240) => {
+  if (trajectory.status === "no_data")
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${String(width)}" height="60" viewBox="0 0 ${String(width)} 60"><text x="8" y="30" font-size="13" fill="currentColor">${escape(`${trajectory.domain}: no data (${String(trajectory.evidence)} weighted events)`)}</text></svg>`;
+  const weeks = trajectory.weeks;
+  const plotWidth = width - 180;
+  const frame = {
+    pad: 24,
+    plotWidth,
+    plotHeight: height - 48,
+    step: plotWidth / Math.max(weeks.length, 1),
+    peak: top(trajectory)
+  };
+  const caption = `${trajectory.domain} · ${String(trajectory.evidence)} weighted events · ${weeks[0]?.week ?? ""} to ${weeks.at(-1)?.week ?? ""}`;
+  const parts = [
+    `<defs><pattern id="gap" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="currentColor" stroke-opacity="0.35"/></pattern></defs>`,
+    ...weeks.flatMap((week, index) => zoneRects(frame, week, index)),
+    ...workLines(frame, weeks),
+    ...markTexts(frame, trajectory),
+    ...zoneLabels(frame, weeks),
+    `<text x="${String(frame.pad)}" y="${String(height - 4)}" font-size="11" fill="currentColor">${escape(caption)}</text>`
+  ];
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${String(width)}" height="${String(height)}" viewBox="0 0 ${String(width)} ${String(height)}">${parts.join("")}</svg>`;
+};
+
+// src/mod/trajectory-view.ts
+var TRAJECTORY_PANE = "fm-trajectory";
+var RASTER_ROWS = 8;
+var MAX_COLUMNS = 96;
+var DOMAIN_NAMES = ["product", "interface", "backend", "infrastructure", "security"];
+var CONCEPTS = [
+  "api",
+  "migration",
+  "webhook",
+  "idempotency",
+  "force-push",
+  "merge-conflict",
+  "secret-in-code",
+  "immutable-deploy"
+];
+var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var records = (value) => Array.isArray(value) ? value.filter(isRecord6) : [];
+var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var orNull = (record, key) => typeof record[key] === "number" ? record[key] : null;
+var num = (record, key) => typeof record[key] === "number" ? record[key] : 0;
+var concept = (value) => CONCEPTS.find((item) => item === value) ?? "api";
+var weekOf = (item) => ({
+  week: str3(item, "week"),
+  independent: orNull(item, "independent"),
+  discernment: orNull(item, "discernment"),
+  assisted: orNull(item, "assisted"),
+  blindCovered: num(item, "blindCovered"),
+  blindBare: num(item, "blindBare"),
+  work: orNull(item, "work"),
+  evidence: num(item, "evidence")
+});
+var refOf = (item) => ({
+  kind: str3(item, "kind"),
+  at: str3(item, "at"),
+  concept: concept(item["concept"]),
+  task: typeof item["task"] === "string" ? item["task"] : null,
+  file: typeof item["file"] === "string" ? item["file"] : null
+});
+var markOf3 = (item) => ({
+  kind: item["kind"] === "held" ? "held" : "ricochet",
+  week: str3(item, "week"),
+  concept: concept(item["concept"]),
+  at: str3(item, "at"),
+  evidence: records(item["evidence"]).map(refOf)
+});
+var parseTrajectories = (text4) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text4);
+  } catch {
+    return [];
+  }
+  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord6(data) || data["schema"] !== "finitemonkey/trajectory@1") return [];
+  return records(data["domains"]).flatMap((item) => {
+    const domain = DOMAIN_NAMES.find((name) => name === item["domain"]);
+    if (domain === void 0) return [];
+    return [
+      {
+        domain,
+        status: item["status"] === "ok" ? "ok" : "no_data",
+        evidence: num(item, "evidence"),
+        weeks: records(item["weeks"]).map(weekOf),
+        marks: records(item["marks"]).map(markOf3),
+        position: typeof item["position"] === "string" ? item["position"] : null
+      }
+    ];
+  });
+};
+var evidenceLines = (mark) => [
+  `${mark.kind === "ricochet" ? "↯ ricochet" : "● held"} · ${mark.concept} · ${mark.week}`,
+  ...mark.evidence.map(
+    (item) => `  ${item.kind} · task ${item.task ?? "-"} · ${item.file ?? "-"} · ${item.at.slice(0, 16).replace("T", " ")}`
+  )
+];
+var trajectoryText = (domains) => tableLines(domains).join("\n");
+var chartOf = (elements, item, surface, columns) => {
+  const raster = elements.Raster;
+  const svg = elements.Svg;
+  if (surface === "terminal" && raster !== void 0 && item.status === "ok") {
+    const cells = rasterOf(item, Math.max(12, Math.min(columns, MAX_COLUMNS)), RASTER_ROWS);
+    return raster({ key: `fm-trajectory-raster-${item.domain}`, ...cells });
+  }
+  if ((surface === "desktop" || surface === "vscode") && svg !== void 0)
+    return svg({
+      key: `fm-trajectory-svg-${item.domain}`,
+      source: svgOf(item),
+      alt: `${item.domain}: where accepted work landed per week, with ricochets marked`
+    });
+  return elements.Text({
+    key: `fm-trajectory-text-${item.domain}`,
+    children: [tableLines([item]).slice(1, 2).join("")]
+  });
+};
+var markButtons = (elements, item, actions) => item.marks.length === 0 ? [] : [
+  elements.Box({
+    key: `fm-trajectory-marks-${item.domain}`,
+    flexDirection: "row",
+    columnGap: 2,
+    children: item.marks.map(
+      (mark, index) => elements.Button({
+        key: `fm-trajectory-mark-${item.domain}-${String(index)}`,
+        label: `${mark.kind === "ricochet" ? "↯" : "●"} ${mark.concept} ${mark.week.slice(-3)}`,
+        onPress: () => actions.select(mark)
+      })
+    )
+  })
+];
+var trajectoryTree = (elements, domains, selected, surface, columns, actions) => elements.Box({
+  key: "fm-trajectory",
+  flexDirection: "column",
+  children: [
+    ...domains.flatMap((item) => [
+      elements.Text({
+        key: `fm-trajectory-head-${item.domain}`,
+        bold: true,
+        children: [
+          item.status === "ok" ? `${item.domain} · ${String(item.evidence)} weighted events` : `${item.domain}: no data (${String(item.evidence)} weighted events)`
+        ]
+      }),
+      ...item.status === "ok" ? [chartOf(elements, item, surface, columns), ...markButtons(elements, item, actions)] : []
+    ]),
+    ...selected === void 0 ? [] : evidenceLines(selected).map(
+      (line2, index) => elements.Text({ key: `fm-trajectory-evidence-${String(index)}`, children: [line2] })
+    ),
+    elements.Button({ key: "fm-trajectory-close", label: "Close", hotkey: "x", onPress: actions.close })
+  ]
+});
+
+// src/mod/trajectory-hooks.ts
+var DEFAULT_COLUMNS = 72;
+function selectMark($, mark) {
+  memory.selectedMark = mark;
+  $.ui.invalidate("ui.render");
+  return Promise.resolve();
+}
+function renderTrajectory($, e) {
+  const columns = (e.props?.bodyColumns ?? DEFAULT_COLUMNS) - 2;
+  return trajectoryTree($.ui.resolve(e), memory.trajectory, memory.selectedMark, e.surface, columns, {
+    select: (mark) => selectMark($, mark),
+    close: () => $.ui.close({ id: TRAJECTORY_PANE })
+  });
+}
+async function trajectoryNow($) {
+  const text4 = await runCli($, ["trajectory", "--json"]);
+  const domains = text4 === void 0 ? [] : parseTrajectories(text4);
+  memory.trajectory = domains;
+  memory.selectedMark = void 0;
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) {
+    await $.ui.open({ id: TRAJECTORY_PANE, title: "Finite Monkey · trajectory" });
+    return {};
+  }
+  return { text: domains.length === 0 ? "finitemonkey: no trajectory in this folder" : trajectoryText(domains) };
+}
+
 // src/mod/xray-view.ts
 var XRAY_PANE = "fm-xray";
-var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
-var num = (record, key) => typeof record[key] === "number" ? record[key] : 0;
+var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var str4 = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var num2 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
 var dataOf = (text4, schema) => {
   let parsed;
   try {
@@ -555,34 +939,34 @@ var dataOf = (text4, schema) => {
   } catch {
     return void 0;
   }
-  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
-  return isRecord6(data) && data["schema"] === schema ? data : void 0;
+  const data = isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
+  return isRecord7(data) && data["schema"] === schema ? data : void 0;
 };
-var records = (value) => Array.isArray(value) ? value.filter(isRecord6) : [];
+var records2 = (value) => Array.isArray(value) ? value.filter(isRecord7) : [];
 var parseXray = (text4) => {
   const data = dataOf(text4, "finitemonkey/xray@1");
   if (data === void 0) return void 0;
   return {
-    task: str3(data, "task"),
-    beyond: num(data, "beyondWithoutCriterion"),
-    items: records(data["items"]).map((item) => ({
-      file: str3(item, "file"),
-      start: num(item, "start"),
-      end: num(item, "end"),
-      band: str3(item, "band"),
-      coverage: str3(item, "coverage"),
-      concepts: records(item["concepts"]).map((entry) => str3(entry, "concept")),
-      by: str3(item, "by")
+    task: str4(data, "task"),
+    beyond: num2(data, "beyondWithoutCriterion"),
+    items: records2(data["items"]).map((item) => ({
+      file: str4(item, "file"),
+      start: num2(item, "start"),
+      end: num2(item, "end"),
+      band: str4(item, "band"),
+      coverage: str4(item, "coverage"),
+      concepts: records2(item["concepts"]).map((entry) => str4(entry, "concept")),
+      by: str4(item, "by")
     }))
   };
 };
-var parseConcepts = (text4) => records(dataOf(text4, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
-  concept: str3(item, "concept"),
-  domain: str3(item, "domain"),
-  state: str3(item, "state"),
-  positive: num(item, "positive"),
-  negative: num(item, "negative"),
-  exposures: num(item, "exposures")
+var parseConcepts = (text4) => records2(dataOf(text4, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
+  concept: str4(item, "concept"),
+  domain: str4(item, "domain"),
+  state: str4(item, "state"),
+  positive: num2(item, "positive"),
+  negative: num2(item, "negative"),
+  exposures: num2(item, "exposures")
 }));
 var BAND_TEXT = {
   beyond: "beyond the evidence on record",
@@ -607,14 +991,14 @@ var STATE_COLOR = {
   proximal: "#c28a1a",
   beyond: "#b3412f"
 };
-var escape = (text4) => text4.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+var escape2 = (text4) => text4.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 var mapSvg = (concepts) => {
   const known = concepts.filter((row2) => row2.state !== "unknown");
   const height = 24 * Math.max(known.length, 1) + 8;
   const rows = known.map((row2, index) => {
     const y = 8 + index * 24;
     const color = STATE_COLOR[row2.state] ?? "#888888";
-    return `<rect x="8" y="${String(y)}" width="14" height="14" fill="${color}"/><text x="30" y="${String(y + 12)}" font-size="12" fill="currentColor">${escape(conceptLine(row2))}</text>`;
+    return `<rect x="8" y="${String(y)}" width="14" height="14" fill="${color}"/><text x="30" y="${String(y + 12)}" font-size="12" fill="currentColor">${escape2(conceptLine(row2))}</text>`;
   });
   const body = rows.length === 0 ? `<text x="8" y="20" font-size="12" fill="currentColor">no concept evidence on record</text>` : rows.join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="${String(height)}" viewBox="0 0 560 ${String(height)}">${body}</svg>`;
@@ -773,6 +1157,7 @@ async function renderPane($, e, next) {
     return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
   if (isApprovalPane(e.requestId)) return renderApproval($, e);
   if (e.requestId === XRAY_PANE) return renderXray($, e);
+  if (e.requestId === TRAJECTORY_PANE) return renderTrajectory($, e);
   if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
@@ -813,6 +1198,7 @@ async function runGateCommand($, e) {
   if (e.args.trim() === "contract") return contractNow($);
   if (e.args.trim() === "diverge") return divergeNow($);
   if (e.args.trim() === "xray") return xrayNow($);
+  if (e.args.trim() === "trajectory") return trajectoryNow($);
   if (memory.view === void 0) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
@@ -833,7 +1219,7 @@ ${line2}` };
 
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -844,7 +1230,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord7(value)) return void 0;
+  if (!isRecord8(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -853,11 +1239,11 @@ var ruleOf = (value) => {
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord7(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord8(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
-var dataOf2 = (parsed) => isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
+var dataOf2 = (parsed) => isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text4) => {
   let parsed;
   try {
@@ -866,7 +1252,7 @@ var parseModState = (text4) => {
     return void 0;
   }
   const data = dataOf2(parsed);
-  if (!isRecord7(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  if (!isRecord8(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
@@ -887,9 +1273,9 @@ var parseModState = (text4) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text3 = (input, ...names) => {
-  if (!isRecord8(input)) return void 0;
+  if (!isRecord9(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;

@@ -102,6 +102,7 @@ export interface RenderInput {
   readonly component: string;
   readonly surface: Surface;
   readonly requestId: string;
+  readonly props?: { readonly bodyColumns?: number };
 }
 
 export interface ModApi {

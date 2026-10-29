@@ -2563,7 +2563,15 @@
     "probe.forgotten": "machine",
     "gate.guard.self.probe.claim": "machine",
     "gate.guard.self.probe.requires": "machine",
-    "gate.guard.probe.human": "machine"
+    "gate.guard.probe.human": "machine",
+    "command.trajectory.summary": "machine",
+    "command.trajectory_forget.summary": "machine",
+    "command.trajectory_export.summary": "machine",
+    "trajectory.off": "machine",
+    "trajectory.domain": "machine",
+    "trajectory.no_data": "machine",
+    "trajectory.legend": "machine",
+    "trajectory.forgotten": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5129,6 +5137,14 @@
     "probe.forgotten": "machine",
     "gate.guard.self.probe.claim": "machine",
     "gate.guard.self.probe.requires": "machine",
-    "gate.guard.probe.human": "machine"
+    "gate.guard.probe.human": "machine",
+    "command.trajectory.summary": "machine",
+    "command.trajectory_forget.summary": "machine",
+    "command.trajectory_export.summary": "machine",
+    "trajectory.off": "machine",
+    "trajectory.domain": "machine",
+    "trajectory.no_data": "machine",
+    "trajectory.legend": "machine",
+    "trajectory.forgotten": "machine"
   }
 }
