@@ -1,0 +1,5 @@
+{
+  "id": "senior",
+  "label": "senior engineer",
+  "prompt": "{{goal}} Done means: {{acceptance}} Constraints: {{constraints}}"
+}

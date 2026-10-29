@@ -1,0 +1,5 @@
+{
+  "id": "everything",
+  "label": "uses it for everything",
+  "prompt": "{{goal}} Do whatever else you think is needed while you are in there."
+}

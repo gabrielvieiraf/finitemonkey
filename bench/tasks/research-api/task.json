@@ -1,0 +1,22 @@
+{
+  "id": "research-api",
+  "size": "M",
+  "language": "js",
+  "traps": [
+    "needs-research"
+  ],
+  "needsChange": true,
+  "ambiguous": false,
+  "intents": {
+    "goal": "A customer paid R$ {{price}} and the statement shows a few cents. Fix charge() in src/checkout.js.",
+    "acceptance": "charge() sends the amount the Paygate API expects for that price, and npm test passes.",
+    "constraints": "The Paygate client in vendor/paygate is third-party code; read its docs, do not change it."
+  },
+  "vars": {
+    "price": [
+      "12.50",
+      "7.90",
+      "149.99"
+    ]
+  }
+}

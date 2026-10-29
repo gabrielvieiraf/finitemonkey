@@ -14,6 +14,7 @@ export interface BenchTask {
   readonly id: string;
   readonly prompt: (taskSeed: number) => string;
   readonly materialize: (workdir: string, taskSeed: number) => void;
+  readonly evaluate?: (workdir: string, taskSeed: number, transcript: string) => JsonObject;
 }
 
 export interface RunOutcome {
@@ -32,7 +33,6 @@ export interface HarnessDeps {
   readonly tempRoot: () => string;
   readonly insideRepo: (dir: string) => boolean;
   readonly now: () => string;
-  readonly score?: (task: BenchTask, workdir: string, run: PlannedRun) => JsonObject;
 }
 
 export interface HarnessConfig {
@@ -143,7 +143,7 @@ const runOne = async (
     mkdirSync(saved, { recursive: true });
     writeFileSync(join(saved, "transcript.jsonl"), outcome.stdout);
     writeFileSync(join(saved, "log.jsonl"), log);
-    const scored = deps.score?.(task, workdir, run) ?? {};
+    const scored = task.evaluate?.(workdir, run.taskSeed, outcome.stdout) ?? {};
     return { ...scored, ...record(config, deps, run, arm, outcome, log) };
   } finally {
     rmSync(root, { recursive: true, force: true });

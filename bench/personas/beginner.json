@@ -1,0 +1,5 @@
+{
+  "id": "beginner",
+  "label": "beginner beyond their depth",
+  "prompt": "{{goal}} I don't really know this code, so please just make it work."
+}

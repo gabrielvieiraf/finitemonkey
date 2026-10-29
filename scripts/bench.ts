@@ -4,10 +4,11 @@ import { fileURLToPath } from "node:url";
 
 import { loadArms, unpinned } from "./bench-arms.js";
 import { realDeps } from "./bench-claude.js";
-import { estimate, parseBenchArgs, pick, realRunProblems } from "./bench-cli.js";
+import { estimate, heldoutProblem, parseBenchArgs, pick, realRunProblems } from "./bench-cli.js";
+import { loadFamilies, loadPersonas } from "./bench-family.js";
 import { runBench, schedule } from "./bench-harness.js";
 import { verifyFrozen } from "./bench-prereg.js";
-import { loadTasks } from "./bench-tasks.js";
+import { suiteTasks } from "./bench-suite.js";
 
 const repo = fileURLToPath(new URL("..", import.meta.url));
 const benchDir = join(repo, "bench");
@@ -24,7 +25,14 @@ const unwrap = <T>(
 const args = unwrap(parseBenchArgs(process.argv.slice(2)));
 const freeze = unwrap(verifyFrozen(benchDir));
 const arms = unwrap(pick(unwrap(loadArms(join(benchDir, "arms"))), args.arms, "arm"));
-const tasks = unwrap(pick(unwrap(loadTasks(benchDir)), args.tasks, "task"));
+const heldoutIssue = heldoutProblem(repo, args.heldout);
+if (heldoutIssue !== undefined) fail(heldoutIssue);
+const families = [
+  ...unwrap(loadFamilies(join(benchDir, "tasks"), "public")),
+  ...(args.heldout === undefined ? [] : unwrap(loadFamilies(args.heldout, "heldout"))),
+];
+const personas = unwrap(loadPersonas(join(benchDir, "personas")));
+const tasks = unwrap(pick(suiteTasks(families, personas), args.tasks, "task"));
 const runs = schedule({
   tasks,
   arms,

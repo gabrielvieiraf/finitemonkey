@@ -14,3 +14,4 @@ NOTICE
 .claude
 .releaserc.json
 commitlint.config.mjs
+bench/tasks

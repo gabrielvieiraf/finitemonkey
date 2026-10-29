@@ -1,0 +1,5 @@
+{
+  "id": "exact",
+  "label": "states exactly what they want",
+  "prompt": "{{goal}} Done means: {{acceptance}}"
+}

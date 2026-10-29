@@ -1,3 +1,4 @@
+import { isAbsolute, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
 import { accept, type Parsed, reject } from "../src/core/parsed.js";
@@ -14,6 +15,7 @@ export interface BenchArgs {
   readonly maxBudgetUsd: number;
   readonly configDir: string | undefined;
   readonly out: string | undefined;
+  readonly heldout: string | undefined;
   readonly yes: boolean;
   readonly dryRun: boolean;
 }
@@ -28,6 +30,7 @@ const OPTIONS = {
   "max-budget-usd": { type: "string" },
   "config-dir": { type: "string" },
   out: { type: "string" },
+  heldout: { type: "string" },
   yes: { type: "boolean" },
   "dry-run": { type: "boolean" },
 } as const;
@@ -58,6 +61,7 @@ export const parseBenchArgs = (argv: readonly string[]): Parsed<BenchArgs> => {
     maxBudgetUsd: budget,
     configDir: values["config-dir"],
     out: values.out,
+    heldout: values.heldout,
     yes: values.yes === true,
     dryRun: values["dry-run"] === true,
   });
@@ -96,4 +100,12 @@ export const pick = <T extends { readonly id: string }>(
   const unknown = wanted.filter((id) => !items.some((item) => item.id === id));
   if (unknown.length > 0) return reject(`unknown ${label}: ${unknown.join(", ")}`);
   return accept(items.filter((item) => wanted.includes(item.id)));
+};
+
+export const heldoutProblem = (repo: string, heldout: string | undefined): string | undefined => {
+  if (heldout === undefined) return undefined;
+  const inside = relative(resolve(repo), resolve(heldout));
+  return inside === "" || (!inside.startsWith("..") && !isAbsolute(inside))
+    ? "the held-out partition must live outside this repository"
+    : undefined;
 };

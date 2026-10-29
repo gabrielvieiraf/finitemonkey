@@ -1,0 +1,22 @@
+{
+  "id": "no-change",
+  "size": "S",
+  "language": "js",
+  "traps": [
+    "no-change-needed"
+  ],
+  "needsChange": false,
+  "ambiguous": false,
+  "intents": {
+    "goal": "Make sure {{fn}} in src/leap.js handles century years like 1900 and 2000 properly.",
+    "acceptance": "{{fn}}(1900) is false, {{fn}}(2000) is true, and npm test passes.",
+    "constraints": "Only change code that is actually wrong."
+  },
+  "vars": {
+    "fn": [
+      "isLeapYear",
+      "leapYear",
+      "isLeap"
+    ]
+  }
+}
