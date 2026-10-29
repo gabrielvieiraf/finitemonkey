@@ -13,6 +13,7 @@ import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, readState, writeJsonFile } from "../task/state.js";
 import { type Book, readBook, writeBook } from "./book.js";
 import { type ConceptId, conceptsIn, domainOf, parseConcept } from "./concepts.js";
+import { recordConceptEvents } from "./evidence.js";
 
 export const PREDICT_FEATURE = "predict-gate";
 export const DEMONSTRATED_AFTER = 3;
@@ -198,6 +199,9 @@ export const settlePredictions = (
     const correct = actual === prediction.output.trim();
     book = scored(book, prediction.concept, correct, runtime.now());
     logEvent(runtime, paths, "predict.result", { concept: prediction.concept, task, correct });
+    recordConceptEvents(runtime, paths, [
+      { concept: prediction.concept, kind: correct ? "prediction_right" : "prediction_wrong", origin: "person", task },
+    ]);
     return [{ prediction, actual, correct, demonstrated: isDemonstrated(book, prediction.concept) }];
   });
   writeBook(runtime, paths, book);

@@ -8,6 +8,8 @@ import type { FmPaths } from "../task/paths.js";
 import { readJsonFile } from "../task/state.js";
 import { levelSum, raise, readBook, writeBook } from "./book.js";
 import { conceptsIn, domainOf } from "./concepts.js";
+import { creditPending } from "./credit.js";
+import { recordConceptEvents } from "./evidence.js";
 
 export const PENDING_FILE = "conceitos-pending.txt";
 export const ALARM_STEP = 3;
@@ -35,10 +37,9 @@ export const conceitosStop: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
   const message = textField(input.payload.raw, "last_assistant_message") ?? "";
-  if (message !== "" && conceptsIn(message).length > 0) {
-    input.runtime.writeText(pendingPath(paths), maskText(message).slice(0, MAX_PENDING));
-    input.runtime.spawnSelf(["conceitos", "update"], paths.root);
-  }
+  const exposed = message !== "" && conceptsIn(message).length > 0;
+  if (exposed) input.runtime.writeText(pendingPath(paths), maskText(message).slice(0, MAX_PENDING));
+  if (exposed || creditPending(input.runtime, paths)) input.runtime.spawnSelf(["conceitos", "update"], paths.root);
   const alarm = alarmOf(input, paths);
   return alarm === undefined ? allow : { kind: "allow", output: { systemMessage: human(alarm) } };
 };
@@ -64,6 +65,11 @@ export const updateFromPending = (
   if (!text.ok) return [];
   runtime.remove(pendingPath(paths));
   const ids = conceptsIn(text.value);
+  recordConceptEvents(
+    runtime,
+    paths,
+    ids.map((concept) => ({ concept, kind: "exposure", origin: "agent" })),
+  );
   const before = readBook(runtime, paths);
   const after = ids.reduce((current, id) => raise(current, id, "seen", runtime.now()), before);
   const grew = levelSum(after) > levelSum(before);

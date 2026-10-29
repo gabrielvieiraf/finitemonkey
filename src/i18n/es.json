@@ -2508,5 +2508,11 @@
   "gate.guard.self.trust.claim": "{file} con --hash aprueba el contrato, algo que solo la persona puede hacer",
   "gate.guard.self.trust.requires": "muestra el contrato y pide a la persona que lo apruebe en el panel /fm contract o en su propio prompt",
   "gate.guard.trust.human": "El agente intentó aprobar un contrato. Usa `/fm contract` o escribe `fm: trust <id>` si estás de acuerdo.",
-  "divergence.none": "{task} no tiene una pregunta de divergencia abierta."
+  "divergence.none": "{task} no tiene una pregunta de divergencia abierta.",
+  "command.conceitos_evidence.summary": "Por concepto: el estado que sostiene su evidencia y cuál es esa evidencia",
+  "conceitos.evidence.line": "{concept}: {state} ({positive} a favor, {negative} en contra, {exposures} exposiciones)",
+  "conceitos.state.demonstrated": "mostrado en cambios, reparaciones o predicciones propias",
+  "conceitos.state.proximal": "juzgado al menos una vez, con apoyo o antes de un fallo posterior",
+  "conceitos.state.beyond": "sin predicción, cambio o reparación propia registrada",
+  "conceitos.state.unknown": "sin registro en este proyecto"
 }

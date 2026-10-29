@@ -131,7 +131,12 @@ export const FOOTPRINT = [
   {
     id: "perfil",
     kind: "writes",
-    targets: [".finitemonkey/perfil.yml", ".finitemonkey/perfil-commits.json", ".finitemonkey/conceitos.yml"],
+    targets: [
+      ".finitemonkey/perfil.yml",
+      ".finitemonkey/perfil-commits.json",
+      ".finitemonkey/conceitos.yml",
+      ".finitemonkey/conceitos-events.jsonl",
+    ],
   },
   { id: "runs", kind: "writes", targets: [".finitemonkey/runs/"] },
   { id: "map", kind: "writes", targets: [".finitemonkey/map.txt", ".finitemonkey/reuse.json"] },

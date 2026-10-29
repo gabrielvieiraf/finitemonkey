@@ -2509,7 +2509,13 @@
     "gate.guard.self.trust.claim": "machine",
     "gate.guard.self.trust.requires": "machine",
     "gate.guard.trust.human": "machine",
-    "divergence.none": "machine"
+    "divergence.none": "machine",
+    "command.conceitos_evidence.summary": "machine",
+    "conceitos.evidence.line": "machine",
+    "conceitos.state.demonstrated": "machine",
+    "conceitos.state.proximal": "machine",
+    "conceitos.state.beyond": "machine",
+    "conceitos.state.unknown": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5021,6 +5027,12 @@
     "gate.guard.self.trust.claim": "machine",
     "gate.guard.self.trust.requires": "machine",
     "gate.guard.trust.human": "machine",
-    "divergence.none": "machine"
+    "divergence.none": "machine",
+    "command.conceitos_evidence.summary": "machine",
+    "conceitos.evidence.line": "machine",
+    "conceitos.state.demonstrated": "machine",
+    "conceitos.state.proximal": "machine",
+    "conceitos.state.beyond": "machine",
+    "conceitos.state.unknown": "machine"
   }
 }

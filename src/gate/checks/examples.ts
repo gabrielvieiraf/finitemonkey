@@ -1,4 +1,5 @@
 import { conceptsIn } from "../../conceitos/concepts.js";
+import { recordConceptEvents } from "../../conceitos/evidence.js";
 import { revokeDemonstrated, settlePredictions } from "../../conceitos/predict.js";
 import { nowMs } from "../../core/clock.js";
 import { logEvent } from "../../evidence/log.js";
@@ -108,7 +109,18 @@ const revokeNotes = (ctx: GateContext): readonly Note[] => {
   const text = addedLines(ctx.git, ctx.base)
     .map((line) => line.text)
     .join("\n");
-  return revokeDemonstrated(ctx.runtime, ctx.paths, conceptsIn(text)).map((concept) =>
+  const concepts = conceptsIn(text);
+  recordConceptEvents(
+    ctx.runtime,
+    ctx.paths,
+    concepts.map((concept) => ({
+      concept,
+      kind: "failure_after_approval",
+      origin: "person",
+      task: ctx.contract.id,
+    })),
+  );
+  return revokeDemonstrated(ctx.runtime, ctx.paths, concepts).map((concept) =>
     note("gate.predict.revoked", { concept }),
   );
 };

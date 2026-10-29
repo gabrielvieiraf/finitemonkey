@@ -2508,5 +2508,11 @@
   "gate.guard.self.trust.claim": "{file} with --hash approves the contract, which only the person can do",
   "gate.guard.self.trust.requires": "show the contract and ask the person to approve it in the /fm contract pane or in their prompt",
   "gate.guard.trust.human": "The agent tried to approve a contract. Use `/fm contract` or type `fm: trust <id>` yourself if you agree.",
-  "divergence.none": "{task} has no open divergence question."
+  "divergence.none": "{task} has no open divergence question.",
+  "command.conceitos_evidence.summary": "Per concept: the state its evidence supports and what that evidence is",
+  "conceitos.evidence.line": "{concept}: {state} ({positive} for, {negative} against, {exposures} exposures)",
+  "conceitos.state.demonstrated": "shown in own changes, repairs or predictions",
+  "conceitos.state.proximal": "judged at least once, with help or before a later failure",
+  "conceitos.state.beyond": "no own prediction, change or repair on record",
+  "conceitos.state.unknown": "no record in this project"
 }

@@ -2508,5 +2508,11 @@
   "gate.guard.self.trust.claim": "{file} com --hash aprova o contrato, o que só a pessoa pode fazer",
   "gate.guard.self.trust.requires": "mostre o contrato e peça para a pessoa aprovar no painel /fm contract ou no próprio prompt",
   "gate.guard.trust.human": "O agente tentou aprovar um contrato. Use `/fm contract` ou digite `fm: trust <id>` se concordar.",
-  "divergence.none": "{task} não tem pergunta de divergência aberta."
+  "divergence.none": "{task} não tem pergunta de divergência aberta.",
+  "command.conceitos_evidence.summary": "Por conceito: o estado que a evidência sustenta e qual é essa evidência",
+  "conceitos.evidence.line": "{concept}: {state} ({positive} a favor, {negative} contra, {exposures} exposições)",
+  "conceitos.state.demonstrated": "mostrado em alterações, reparos ou previsões próprias",
+  "conceitos.state.proximal": "julgado ao menos uma vez, com apoio ou antes de uma falha posterior",
+  "conceitos.state.beyond": "sem previsão, alteração ou reparo próprio registrado",
+  "conceitos.state.unknown": "sem registro neste projeto"
 }
