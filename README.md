@@ -121,6 +121,8 @@ Requirements: Node.js 20 or later, on Linux, macOS, Windows or WSL. Install make
 
 Finite Monkey starts from a study of what happens when someone works with AI above what they can judge. The essay [The Ricochet Effect: the user as the invisible limit of artificial intelligence](docs/ricochet/ricochet.md) describes two boundaries a person cannot see from inside: what they do not know to ask for and what they cannot evaluate. Section 10 maps each mechanism here to an executable check at those two points and lists the hypotheses the benchmark will test.
 
+The second essay, [The illusion of the second brain](docs/second-brain/second-brain.md), is about project knowledge: why LLM "second brains" and context files go stale without warning and barely help the agent, according to the studies available, and how Finite Monkey proposes to treat each claim about the code as a build artifact, bound to the hash of the code it describes and verified by running it.
+
 ## Does it actually help? (benchmark, not run yet)
 
 Not known yet. The harness, the tasks with traps and the simulated users are built, but the benchmark has not been run. It compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will be published in this repo, including the parts where it didn't help.

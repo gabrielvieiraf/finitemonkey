@@ -121,6 +121,8 @@ Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instala�
 
 O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha com IA acima do que consegue julgar. O ensaio [Efeito Ricochete: o usuário como limite invisível da inteligência artificial](docs/ricochet/ricochet.pt-BR.md) descreve duas fronteiras que a pessoa não vê de dentro: o que ela não sabe pedir e o que não consegue avaliar. A seção 10 mostra como cada mecanismo daqui põe uma verificação executável nesses dois pontos e quais hipóteses a bancada vai testar.
 
+O segundo ensaio, [A ilusão do segundo cérebro](docs/second-brain/second-brain.pt-BR.md), trata do conhecimento do projeto: por que "segundo cérebro" com LLM e arquivos de contexto envelhecem sem aviso e quase não ajudam o agente, segundo os estudos disponíveis, e como o Finite Monkey propõe tratar cada afirmação sobre o código como artefato de build, presa ao hash do trecho que descreve e verificada por execução.
+
 ## Funciona de verdade? (benchmark, ainda não rodado)
 
 Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório, inclusive onde não ajudou.
