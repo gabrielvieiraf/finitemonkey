@@ -5,6 +5,7 @@ import { archCheck } from "./arch.js";
 import { blindCheck } from "./blind.js";
 import { callersCheck } from "./callers.js";
 import { claimsCheck } from "./claims.js";
+import { cochangeCheck } from "./cochange.js";
 import { commandCheck } from "./command.js";
 import { contractCheck } from "./contract.js";
 import { copyCheck } from "./copy.js";
@@ -84,4 +85,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   migrate: migrateCheck,
   "infra-plan": infraPlanCheck,
   "api-version": apiVersionCheck,
+  cochange: cochangeCheck,
 };

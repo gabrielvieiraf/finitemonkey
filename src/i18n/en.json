@@ -2422,5 +2422,13 @@
   "gate.api_version.keyword": "{at}: {symbol} has no keyword argument {detail} in version {version}",
   "gate.api_version.deprecated": "{at}: {symbol} is deprecated in version {version} (warning)",
   "gate.api_version.uncertain": "{at}: {symbol} could not be resolved statically ({detail}); not a finding",
-  "gate.api_version.not_verified": "{at}: {symbol} not verified: {detail}"
+  "gate.api_version.not_verified": "{at}: {symbol} not verified: {detail}",
+  "gate.cochange.off": "co-change warning is off in policy.yml (cochange)",
+  "gate.cochange.ok": "no usual partner file left out ({count, plural, one {# commit read} other {# commits read}})",
+  "gate.cochange.shadow": "shadow mode: {count, plural, one {# usual partner file} other {# usual partner files}} left out, logged only",
+  "gate.cochange.partner": "{file} changed without {partner}: they changed together in {support} commits ({confidence}% of the commits touching {file}), e.g. {commits}. Warning only; `finitemonkey cochange dismiss` silences the pair",
+  "command.cochange_dismiss.summary": "Silence a co-change warning for a file pair, with a reason, until their history changes",
+  "cochange.error.usage": "name both files and a --reason",
+  "cochange.error.person": "dismissing a co-change pair is a decision for the person, typed in a terminal",
+  "cochange.dismissed": "{file} and {partner} stay silent until their shared history moves past {support} commits"
 }

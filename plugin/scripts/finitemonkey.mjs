@@ -6144,7 +6144,8 @@ var OPTIONAL_GUARDS = [
   "migrate-check",
   "infra-plan",
   "restore-drill",
-  "api-version"
+  "api-version",
+  "cochange"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6209,7 +6210,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "migrate-check",
   "infra-plan",
   "restore-drill",
-  "api-version"
+  "api-version",
+  "cochange"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -9083,7 +9085,15 @@ var en_default = {
   "gate.api_version.keyword": "{at}: {symbol} has no keyword argument {detail} in version {version}",
   "gate.api_version.deprecated": "{at}: {symbol} is deprecated in version {version} (warning)",
   "gate.api_version.uncertain": "{at}: {symbol} could not be resolved statically ({detail}); not a finding",
-  "gate.api_version.not_verified": "{at}: {symbol} not verified: {detail}"
+  "gate.api_version.not_verified": "{at}: {symbol} not verified: {detail}",
+  "gate.cochange.off": "co-change warning is off in policy.yml (cochange)",
+  "gate.cochange.ok": "no usual partner file left out ({count, plural, one {# commit read} other {# commits read}})",
+  "gate.cochange.shadow": "shadow mode: {count, plural, one {# usual partner file} other {# usual partner files}} left out, logged only",
+  "gate.cochange.partner": "{file} changed without {partner}: they changed together in {support} commits ({confidence}% of the commits touching {file}), e.g. {commits}. Warning only; `finitemonkey cochange dismiss` silences the pair",
+  "command.cochange_dismiss.summary": "Silence a co-change warning for a file pair, with a reason, until their history changes",
+  "cochange.error.usage": "name both files and a --reason",
+  "cochange.error.person": "dismissing a co-change pair is a decision for the person, typed in a terminal",
+  "cochange.dismissed": "{file} and {partner} stay silent until their shared history moves past {support} commits"
 };
 
 // src/i18n/es.json
@@ -11511,7 +11521,15 @@ var es_default = {
   "gate.api_version.keyword": "{at}: {symbol} no tiene el argumento con nombre {detail} en la versión {version}",
   "gate.api_version.deprecated": "{at}: {symbol} está obsoleto en la versión {version} (aviso)",
   "gate.api_version.uncertain": "{at}: {symbol} no se pudo resolver de forma estática ({detail}); no es un hallazgo",
-  "gate.api_version.not_verified": "{at}: {symbol} no verificado: {detail}"
+  "gate.api_version.not_verified": "{at}: {symbol} no verificado: {detail}",
+  "gate.cochange.off": "el aviso de cambio conjunto está apagado en policy.yml (cochange)",
+  "gate.cochange.ok": "ningún archivo compañero habitual quedó fuera ({count, plural, one {# commit leído} other {# commits leídos}})",
+  "gate.cochange.shadow": "modo shadow: {count, plural, one {# archivo compañero habitual quedó} other {# archivos compañeros habituales quedaron}} fuera, solo registrado",
+  "gate.cochange.partner": "{file} cambió sin {partner}: cambiaron juntos en {support} commits ({confidence}% de los commits que tocan {file}), por ejemplo {commits}. Solo aviso; `finitemonkey cochange dismiss` silencia el par",
+  "command.cochange_dismiss.summary": "Silencia el aviso de cambio conjunto de un par de archivos, con motivo, hasta que cambie su historial",
+  "cochange.error.usage": "indica los dos archivos y un --reason",
+  "cochange.error.person": "silenciar un par de cambio conjunto es una decisión de la persona, escrita en una terminal",
+  "cochange.dismissed": "{file} y {partner} quedan en silencio hasta que su historial común pase de {support} commits"
 };
 
 // src/i18n/pt-BR.json
@@ -13939,7 +13957,15 @@ var pt_BR_default = {
   "gate.api_version.keyword": "{at}: {symbol} não tem o argumento nomeado {detail} na versão {version}",
   "gate.api_version.deprecated": "{at}: {symbol} está obsoleto na versão {version} (aviso)",
   "gate.api_version.uncertain": "{at}: {symbol} não deu para resolver estaticamente ({detail}); não é achado",
-  "gate.api_version.not_verified": "{at}: {symbol} não verificado: {detail}"
+  "gate.api_version.not_verified": "{at}: {symbol} não verificado: {detail}",
+  "gate.cochange.off": "o aviso de co-mudança está desligado no policy.yml (cochange)",
+  "gate.cochange.ok": "nenhum arquivo parceiro de costume ficou de fora ({count, plural, one {# commit lido} other {# commits lidos}})",
+  "gate.cochange.shadow": "modo shadow: {count, plural, one {# arquivo parceiro de costume ficou} other {# arquivos parceiros de costume ficaram}} de fora, só registrado",
+  "gate.cochange.partner": "{file} mudou sem {partner}: os dois mudaram juntos em {support} commits ({confidence}% dos commits que tocam {file}), por exemplo {commits}. Só aviso; `finitemonkey cochange dismiss` cala o par",
+  "command.cochange_dismiss.summary": "Cala o aviso de co-mudança de um par de arquivos, com motivo, até o histórico deles mudar",
+  "cochange.error.usage": "informe os dois arquivos e um --reason",
+  "cochange.error.person": "calar um par de co-mudança é decisão da pessoa, digitada num terminal",
+  "cochange.dismissed": "{file} e {partner} ficam em silêncio até o histórico em comum passar de {support} commits"
 };
 
 // src/i18n/review.json
@@ -16368,7 +16394,15 @@ var review_default = {
     "gate.api_version.keyword": "machine",
     "gate.api_version.deprecated": "machine",
     "gate.api_version.uncertain": "machine",
-    "gate.api_version.not_verified": "machine"
+    "gate.api_version.not_verified": "machine",
+    "gate.cochange.off": "machine",
+    "gate.cochange.ok": "machine",
+    "gate.cochange.shadow": "machine",
+    "gate.cochange.partner": "machine",
+    "command.cochange_dismiss.summary": "machine",
+    "cochange.error.usage": "machine",
+    "cochange.error.person": "machine",
+    "cochange.dismissed": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -18794,7 +18828,15 @@ var review_default = {
     "gate.api_version.keyword": "machine",
     "gate.api_version.deprecated": "machine",
     "gate.api_version.uncertain": "machine",
-    "gate.api_version.not_verified": "machine"
+    "gate.api_version.not_verified": "machine",
+    "gate.cochange.off": "machine",
+    "gate.cochange.ok": "machine",
+    "gate.cochange.shadow": "machine",
+    "gate.cochange.partner": "machine",
+    "command.cochange_dismiss.summary": "machine",
+    "cochange.error.usage": "machine",
+    "cochange.error.person": "machine",
+    "cochange.dismissed": "machine"
   }
 };
 
@@ -19035,7 +19077,8 @@ var CHECK_KINDS = [
   "claims",
   "migrate",
   "infra-plan",
-  "api-version"
+  "api-version",
+  "cochange"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -22284,6 +22327,126 @@ var ciWatchCommand = {
   }
 };
 
+// src/git/cochange.ts
+var COCHANGE_FEATURE = "cochange";
+var MAX_COMMITS = 2e3;
+var BULK_FILES = 30;
+var MIN_SUPPORT = 4;
+var MIN_CONFIDENCE = 0.75;
+var CACHE_FILE = "cochange.json";
+var DISMISSED_FILE = "cochange-dismissed.json";
+var MAX_EVIDENCE = 5;
+var IGNORED = [
+  /(?:^|\/)(?:package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|Cargo\.lock|poetry\.lock|uv\.lock|Gemfile\.lock|composer\.lock|go\.sum|Pipfile\.lock)$/,
+  /(?:^|\/)(?:CHANGELOG|CHANGES|HISTORY|NEWS)(?:\.[\w.]+)?$/i,
+  /(?:^|\/)(?:dist|build|out|vendor|node_modules|coverage)\//,
+  /\.(?:min\.js|map|snap|lock)$/,
+  /(?:^|\/)\.finitemonkey\//
+];
+var isIgnored = (path) => IGNORED.some((pattern) => pattern.test(path));
+var parseLog = (text34) => text34.split("\0").map((block7) => block7.trim().split("\n")).flatMap(
+  ([hash2, ...files]) => hash2 === void 0 || !/^[0-9a-f]{7,64}$/.test(hash2) ? [] : [{ hash: hash2, files: files.map((file) => file.trim()).filter((file) => file !== "") }]
+);
+var DEFAULT_OPTIONS = {
+  minSupport: MIN_SUPPORT,
+  minConfidence: MIN_CONFIDENCE,
+  bulkFiles: BULK_FILES
+};
+var usable = (commits2, bulkFiles) => commits2.map((commit2) => ({ ...commit2, files: commit2.files.filter((file) => !isIgnored(file)) })).filter((commit2) => commit2.files.length >= 2 && commit2.files.length <= bulkFiles);
+var missingPartners = (commits2, touched2, options2 = DEFAULT_OPTIONS) => {
+  const kept = usable(commits2, options2.bulkFiles);
+  const set2 = new Set(touched2);
+  const found = [];
+  for (const file of touched2.filter((item2) => !isIgnored(item2))) {
+    const withFile = kept.filter((commit2) => commit2.files.includes(file));
+    if (withFile.length < options2.minSupport) continue;
+    const counts = /* @__PURE__ */ new Map();
+    for (const commit2 of withFile) {
+      for (const other of commit2.files) {
+        if (other !== file) counts.set(other, [...counts.get(other) ?? [], commit2.hash]);
+      }
+    }
+    for (const [partner, hashes] of counts) {
+      const confidence = hashes.length / withFile.length;
+      if (set2.has(partner) || hashes.length < options2.minSupport || confidence < options2.minConfidence) continue;
+      found.push({
+        file,
+        partner,
+        support: hashes.length,
+        confidence: Math.round(confidence * 100) / 100,
+        commits: hashes.slice(0, MAX_EVIDENCE)
+      });
+    }
+  }
+  return found.sort((left, right) => right.support - left.support);
+};
+var historyOf = (runtime, paths, git4) => {
+  const head = git4.out(["rev-parse", "HEAD"])?.trim();
+  if (head === void 0 || head === "") return [];
+  const cached4 = readJsonFile(runtime, paths.cache(CACHE_FILE));
+  if (cached4?.["head"] === head && Array.isArray(cached4["commits"])) {
+    return cached4["commits"].flatMap(
+      (item2) => isRecord(item2) && typeof item2["hash"] === "string" && Array.isArray(item2["files"]) ? [{ hash: item2["hash"], files: item2["files"].filter((file) => typeof file === "string") }] : []
+    );
+  }
+  const text34 = git4.out(["log", "--no-merges", "-n", String(MAX_COMMITS), "--name-only", "--format=%x00%H"]) ?? "";
+  const commits2 = usable(parseLog(text34), BULK_FILES);
+  writeJsonFile(runtime, paths.cache(CACHE_FILE), {
+    head,
+    commits: commits2.map((commit2) => ({ hash: commit2.hash, files: [...commit2.files] }))
+  });
+  return commits2;
+};
+var pairKey = (left, right) => [left, right].sort().join("\0");
+var readDismissed = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(DISMISSED_FILE));
+  return Object.fromEntries(
+    Object.entries(raw ?? {}).flatMap(
+      ([key3, value2]) => isRecord(value2) && typeof value2["reason"] === "string" && typeof value2["support"] === "number" ? [[key3, { reason: value2["reason"], support: value2["support"] }]] : []
+    )
+  );
+};
+var supportOf = (commits2, left, right) => commits2.filter((commit2) => commit2.files.includes(left) && commit2.files.includes(right)).length;
+var dismissPair = (runtime, paths, commits2, pair, reason) => {
+  const dismissal = { reason, support: supportOf(commits2, pair[0], pair[1]) };
+  writeJsonFile(runtime, paths.cache(DISMISSED_FILE), {
+    ...readDismissed(runtime, paths),
+    [pairKey(pair[0], pair[1])]: dismissal
+  });
+  return dismissal;
+};
+var notDismissed = (partners, dismissed) => partners.filter((item2) => dismissed[pairKey(item2.file, item2.partner)]?.support !== item2.support);
+
+// src/commands/cochange.ts
+var COCHANGE_SCHEMA = "finitemonkey/cochange@1";
+var USAGE4 = 'finitemonkey cochange dismiss <file> <partner> --reason "<why>"';
+var cochangeDismissCommand = {
+  path: ["cochange", "dismiss"],
+  summaryKey: "command.cochange_dismiss.summary",
+  usage: USAGE4,
+  status: "ready",
+  maxPositionals: 2,
+  options: { reason: { type: "string" } },
+  run: (ctx, args2) => {
+    const [file, partner] = args2.positionals;
+    const reason = stringOption(args2.values, "reason")?.trim() ?? "";
+    if (file === void 0 || partner === void 0 || reason === "") {
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "cochange.error.usage", USAGE4)));
+    }
+    if (!isPerson(ctx)) return Promise.resolve(failureFrom(ctx.t, needsPersonProblem("cochange.error.person", USAGE4)));
+    const repo = repoOf(ctx);
+    if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
+    const paths = fmPaths(repo.root);
+    const commits2 = historyOf(ctx.runtime, paths, gitAt(ctx.runtime, repo.root));
+    const dismissal = dismissPair(ctx.runtime, paths, commits2, [file, partner], reason);
+    return Promise.resolve(
+      success({ schema: COCHANGE_SCHEMA, file, partner, ...dismissal }, [
+        ctx.t("cochange.dismissed", { file, partner, support: dismissal.support })
+      ])
+    );
+  }
+};
+
 // src/conceitos/book.ts
 import { join as join43 } from "node:path";
 
@@ -23253,7 +23416,7 @@ var generateResult = (run10) => {
 
 // src/commands/contract.ts
 var API_CONTRACT_SCHEMA = "finitemonkey/api-contract@1";
-var USAGE4 = "finitemonkey contract [mocks|coverage] [--write] [--overwrite]";
+var USAGE5 = "finitemonkey contract [mocks|coverage] [--write] [--overwrite]";
 var projectAt2 = (ctx, root) => detectProject(
   (relative28) => {
     const text34 = ctx.runtime.readText(toAbsolutePath(join45(root, relative28)));
@@ -23267,12 +23430,12 @@ var withRegistry = (ctx, run10) => {
   if (loaded2.kind === "absent")
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "contract.error.no_registry", USAGE4, { file: CONTRACT_FILE })
+      usageProblem("invalid_arguments", "contract.error.no_registry", USAGE5, { file: CONTRACT_FILE })
     );
   if (loaded2.kind === "invalid")
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "contract.error.invalid", USAGE4, { issues: loaded2.issues.join("; ") })
+      usageProblem("invalid_arguments", "contract.error.invalid", USAGE5, { issues: loaded2.issues.join("; ") })
     );
   return run10(root, loaded2.registry);
 };
@@ -23283,7 +23446,7 @@ var generate = (ctx, values, make2, hint) => withRegistry(ctx, (root, registry) 
     root,
     files: make2(registry, project),
     values,
-    usage: USAGE4,
+    usage: USAGE5,
     data: { schema: API_CONTRACT_SCHEMA, framework: project.framework ?? null, base: project.base },
     lines: [ctx.t(hint, { base: project.base, framework: project.framework ?? "?" })]
   });
@@ -23304,7 +23467,7 @@ var coverage2 = (ctx) => withRegistry(ctx, (root, registry) => {
 var contractCommand = {
   path: ["contract"],
   summaryKey: "command.contract.summary",
-  usage: USAGE4,
+  usage: USAGE5,
   status: "ready",
   maxPositionals: 1,
   options: GENERATE_OPTIONS,
@@ -23314,7 +23477,7 @@ var contractCommand = {
     if (action === "coverage") return Promise.resolve(coverage2(ctx));
     if (action !== "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE4, { detail: action }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE5, { detail: action }))
       );
     return Promise.resolve(generate(ctx, args2.values, contractFiles, "contract.next"));
   }
@@ -24084,7 +24247,7 @@ var critiqueLines = (t, critique, checked, ledger) => {
 
 // src/commands/critique.ts
 var CRITIQUE_SCHEMA = "finitemonkey/critique@1";
-var USAGE5 = "finitemonkey critique verify [--base <ref>] [--file <findings.json>] (or the findings JSON on stdin)";
+var USAGE6 = "finitemonkey critique verify [--base <ref>] [--file <findings.json>] (or the findings JSON on stdin)";
 var findingsText = async (ctx, root, file) => {
   if (file === void 0) return ctx.io.stdin.isTTY === true ? void 0 : readAll2(ctx.io.stdin);
   const text34 = ctx.runtime.readText(toAbsolutePath(file, root));
@@ -24093,7 +24256,7 @@ var findingsText = async (ctx, root, file) => {
 var critiqueVerifyCommand = {
   path: ["critique", "verify"],
   summaryKey: "critique.command.verify",
-  usage: USAGE5,
+  usage: USAGE6,
   status: "ready",
   options: { file: { type: "string" }, base: { type: "string" } },
   run: async (ctx, args2) => {
@@ -24106,7 +24269,7 @@ var critiqueVerifyCommand = {
     if (Array.isArray(critique) || !("verdict" in critique))
       return failureFrom(
         ctx.t,
-        usageProblem("invalid_arguments", "critique.error.invalid", USAGE5, { detail: critique.join("; ") })
+        usageProblem("invalid_arguments", "critique.error.invalid", USAGE6, { detail: critique.join("; ") })
       );
     const base = stringOption(args2.values, "base") ?? repoFacts(ctx.runtime, repo).defaultBranch();
     const head = ctx.runtime.git(["rev-parse", "HEAD"], repo.root).stdout.trim();
@@ -25018,17 +25181,17 @@ var guardianGoalConfirmCommand = {
 };
 
 // src/commands/decide-accept.ts
-var USAGE6 = "finitemonkey decide accept <record> [--choice <what was chosen>] [--reason <one line>]";
+var USAGE7 = "finitemonkey decide accept <record> [--choice <what was chosen>] [--reason <one line>]";
 var accept2 = (ctx, root, name, choice, reason) => {
   const file = `${PLAN_DIR}/${name}`;
   const text34 = ctx.runtime.readText(planPath(root, name));
   if (!text34.ok)
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.error.no_record", USAGE6, { file }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.error.no_record", USAGE7, { file }));
   const record13 = readRecord(text34.value);
   if (record13.status !== "proposed" && record13.status !== "needs-person")
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "guardian.error.not_proposed", USAGE6, { file, status: record13.status })
+      usageProblem("invalid_arguments", "guardian.error.not_proposed", USAGE7, { file, status: record13.status })
     );
   const { data: data2, body: body2 } = readFront(text34.value);
   const written = ctx.runtime.writeText(
@@ -25056,7 +25219,7 @@ var accept2 = (ctx, root, name, choice, reason) => {
 var decideAcceptCommand = {
   path: ["decide", "accept"],
   summaryKey: "command.decide_accept.summary",
-  usage: USAGE6,
+  usage: USAGE7,
   status: "ready",
   maxPositionals: 1,
   options: { choice: { type: "string" }, reason: { type: "string" } },
@@ -25064,10 +25227,10 @@ var decideAcceptCommand = {
     const target5 = args2.positionals[0]?.replace(/^.*[\\/]/, "") ?? "";
     if (target5 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.error.no_record", USAGE6, { file: "-" }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.error.no_record", USAGE7, { file: "-" }))
       );
     if (!isPerson(ctx))
-      return Promise.resolve(failureFrom(ctx.t, needsPersonProblem("guardian.error.accept_person", USAGE6)));
+      return Promise.resolve(failureFrom(ctx.t, needsPersonProblem("guardian.error.accept_person", USAGE7)));
     return inGuardianRepo(
       ctx,
       (root) => accept2(ctx, root, target5, stringOption(args2.values, "choice"), stringOption(args2.values, "reason"))
@@ -26121,7 +26284,7 @@ var IPV4 = /\b((?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}
 var LOCAL = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0)$/i;
 var HOSTLIKE = /^(?:\d{1,3}(?:\.\d{1,3}){3}|[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)$/;
 var lineOf4 = (text34, index) => text34.slice(0, index).split("\n").length;
-var usable = (host) => HOSTLIKE.test(host) && !LOCAL.test(host) && !/^\d+\.\d+$/.test(host);
+var usable2 = (host) => HOSTLIKE.test(host) && !LOCAL.test(host) && !/^\d+\.\d+$/.test(host);
 var foundIn = (file) => {
   const at6 = (index) => lineOf4(file.text, index);
   const withUser = [...file.text.matchAll(USER_AT_HOST)].map((match) => ({
@@ -26140,7 +26303,7 @@ var foundIn = (file) => {
     file: file.path,
     line: at6(match.index)
   }));
-  return [...withUser, ...keyed, ...ips].filter((found) => usable(found.host));
+  return [...withUser, ...keyed, ...ips].filter((found) => usable2(found.host));
 };
 var findHosts = (files) => files.flatMap(foundIn);
 var aliasHosts = (found, existing = []) => {
@@ -30295,7 +30458,7 @@ var closeAccepted = (runtime, paths, task) => {
 
 // src/advisor/hook.ts
 var ALLOW = { kind: "allow" };
-var CACHE_FILE = "advisor.json";
+var CACHE_FILE2 = "advisor.json";
 var METRIC_LABELS = {
   cognitive: "advisor.metric.cognitive",
   nesting: "advisor.metric.nesting",
@@ -30346,8 +30509,8 @@ var suggest = (input, paths, task) => {
 var freshGate = (input, paths) => {
   const status = readGateStatus(input.runtime, paths);
   if (status?.status !== "passed") return void 0;
-  if (readJsonFile(input.runtime, paths.cache(CACHE_FILE))?.["at"] === status.at) return void 0;
-  writeJsonFile(input.runtime, paths.cache(CACHE_FILE), { at: status.at, task: status.task });
+  if (readJsonFile(input.runtime, paths.cache(CACHE_FILE2))?.["at"] === status.at) return void 0;
+  writeJsonFile(input.runtime, paths.cache(CACHE_FILE2), { at: status.at, task: status.task });
   return status.task;
 };
 var run5 = (input, paths) => {
@@ -35021,11 +35184,12 @@ var withConfigured = (runtime, root, contract, changes) => {
     "infra-plan",
     touchesInfra(changes.flatMap((change2) => [change2.path, change2.oldPath ?? ""]))
   );
-  return withCheck(
+  const withApi = withCheck(
     withInfra,
     "api-version",
     paths.some((path) => UNTYPED_JS.test(path) || PYTHON.test(path))
   );
+  return withCheck(withApi, "cochange", changes.length > 0);
 };
 var shapedContract = (runtime, root, loaded2, size, changes) => withConfigured(runtime, root, withExamples(applySize(loaded2.contract, size), loaded2.examples), changes);
 var prepareGate = (options2) => {
@@ -37332,8 +37496,37 @@ var claimsCheck = (_check, ctx) => {
   return passed([note("gate.claims.shadow"), ...notes3].slice(0, MAX_NOTES));
 };
 
+// src/gate/checks/cochange.ts
+var MAX_LISTED6 = 8;
+var cochangeCheck = (_check, ctx) => {
+  const mode = featureMode(ctx.runtime, ctx.paths, COCHANGE_FEATURE);
+  if (mode === "off") return passed([note("gate.cochange.off")]);
+  const touched2 = ctx.changes.flatMap((change2) => [
+    change2.path,
+    ...change2.oldPath === void 0 ? [] : [change2.oldPath]
+  ]);
+  const commits2 = historyOf(ctx.runtime, ctx.paths, ctx.git);
+  const partners = notDismissed(missingPartners(commits2, touched2), readDismissed(ctx.runtime, ctx.paths));
+  if (partners.length === 0) return passed([note("gate.cochange.ok", { count: commits2.length })]);
+  logEvent(ctx.runtime, ctx.paths, "cochange_warning", {
+    task: ctx.contract.id,
+    mode,
+    pairs: partners.map((item2) => `${item2.file} -> ${item2.partner}`)
+  });
+  const notes3 = partners.slice(0, MAX_LISTED6).map(
+    (item2) => note("gate.cochange.partner", {
+      file: item2.file,
+      partner: item2.partner,
+      support: item2.support,
+      confidence: Math.round(item2.confidence * 100),
+      commits: item2.commits.map((hash2) => hash2.slice(0, 8)).join(", ")
+    })
+  );
+  return passed(mode === "shadow" ? [note("gate.cochange.shadow", { count: partners.length })] : notes3);
+};
+
 // src/gate/checks/contract.ts
-var MAX_LISTED6 = 10;
+var MAX_LISTED7 = 10;
 var contractCheck = (_check, ctx) => {
   const mode = guardMode(ctx, CONTRACT_FEATURE);
   if (mode === "off") return passed([note("gate.contract.off")]);
@@ -37342,7 +37535,7 @@ var contractCheck = (_check, ctx) => {
   if (loaded2.kind === "invalid") return failed4([note("gate.contract.invalid", { issues: loaded2.issues.join("; ") })]);
   const problems = contractCoverage(ctx.runtime, ctx.paths.root, loaded2.registry);
   if (problems.length === 0) return passed([note("gate.contract.clean")]);
-  const notes3 = problems.slice(0, MAX_LISTED6).map((problem5) => note(`gate.contract.${problem5.kind}`, { ...problem5 }));
+  const notes3 = problems.slice(0, MAX_LISTED7).map((problem5) => note(`gate.contract.${problem5.kind}`, { ...problem5 }));
   return mode === "shadow" ? passed([note("gate.contract.shadow", { count: problems.length }), ...notes3]) : failed4(notes3);
 };
 
@@ -37392,7 +37585,7 @@ var loadUiConfig = (runtime, root) => {
 };
 
 // src/gate/checks/copy.ts
-var MAX_LISTED7 = 10;
+var MAX_LISTED8 = 10;
 var projectFiles3 = (ctx) => (ctx.git.out(["ls-files", "-z", "--cached", "--others", "--exclude-standard"]) ?? "").split("\0").filter((file) => file !== "");
 var matchesIn = (ctx, file, phrases2) => {
   const text34 = ctx.runtime.readText(toAbsolutePath(file, ctx.paths.root));
@@ -37405,19 +37598,19 @@ var copyCheck = (_check, ctx) => {
   const catalogs2 = projectFiles3(ctx).filter((file) => matchesAny(file, ui.catalogs));
   const found = catalogs2.flatMap((file) => matchesIn(ctx, file, ui.bannedCopy));
   if (found.length === 0) return passed([note("gate.copy.ok", { count: catalogs2.length })]);
-  const notes3 = found.slice(0, MAX_LISTED7).map((match) => note("gate.copy.found", { file: match.file, key: match.key, phrase: match.phrase }));
+  const notes3 = found.slice(0, MAX_LISTED8).map((match) => note("gate.copy.found", { file: match.file, key: match.key, phrase: match.phrase }));
   return mode === "active" ? failed4(notes3) : passed([...notes3, note("gate.copy.shadow")]);
 };
 
 // src/gate/checks/cost.ts
-var MAX_LISTED8 = 10;
+var MAX_LISTED9 = 10;
 var costCheck = (_check, ctx) => {
   const result = checkCost(ctx.runtime, ctx.paths.root);
   if (result.files === 0) return failed4([note("gate.cost.missing")]);
   if (result.issues.length === 0)
     return passed([note("cost.clean", { count: result.files, days: result.validityDays })]);
   return failed4(
-    result.issues.slice(0, MAX_LISTED8).map(
+    result.issues.slice(0, MAX_LISTED9).map(
       (item2) => note(`cost.issue.${item2.kind}`, {
         detail: `${item2.file}:${String(item2.line)} ${item2.detail}`,
         days: result.validityDays
@@ -37427,13 +37620,13 @@ var costCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/decision.ts
-var MAX_LISTED9 = 10;
+var MAX_LISTED10 = 10;
 var decisionCheck = (_check, ctx) => {
   const result = checkDecisions(ctx.runtime, ctx.paths.root);
   if (result.records === 0) return failed4([note("gate.decision.missing")]);
   if (result.issues.length === 0) return passed([note("decision.clean", { count: result.records })]);
   return failed4(
-    result.issues.slice(0, MAX_LISTED9).map(
+    result.issues.slice(0, MAX_LISTED10).map(
       (item2) => note(`decision.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` })
     )
   );
@@ -37512,7 +37705,7 @@ var observeEdit = (before2, task, file) => {
 };
 
 // src/gate/checks/diff.ts
-var MAX_LISTED10 = 10;
+var MAX_LISTED11 = 10;
 var inferredOutside = (ctx) => {
   const scope2 = readInferred(ctx.runtime, ctx.paths);
   if (scope2?.task !== ctx.contract.id || scope2.dirs.length === 0) return { files: [], label: "" };
@@ -37537,7 +37730,7 @@ var inferredCheck = (ctx) => {
   if (label2 === "") return passed([note("gate.diff.no_scope")]);
   if (files.length === 0) return passed([note("gate.diff.inferred_within", { scope: label2 })]);
   return acceptedOutside(ctx, files) ?? failed4(
-    files.slice(0, MAX_LISTED10).map((file) => note("gate.diff.outside_inferred", { file, scope: label2, task: ctx.contract.id }))
+    files.slice(0, MAX_LISTED11).map((file) => note("gate.diff.outside_inferred", { file, scope: label2, task: ctx.contract.id }))
   );
 };
 var diffCheck = (_check, ctx) => {
@@ -37547,7 +37740,7 @@ var diffCheck = (_check, ctx) => {
   const files = ctx.changes.length;
   const lines9 = diffShape(ctx.runtime, ctx.git, ctx.base, ctx.changes).lines;
   const notes3 = [
-    ...outside.slice(0, MAX_LISTED10).map((change2) => note("gate.diff.outside", { file: change2.path })),
+    ...outside.slice(0, MAX_LISTED11).map((change2) => note("gate.diff.outside", { file: change2.path })),
     ...diffBudget?.files !== void 0 && files > diffBudget.files ? [note("gate.diff.too_many_files", { count: files, max: diffBudget.files })] : [],
     ...diffBudget?.lines !== void 0 && lines9 > diffBudget.lines ? [note("gate.diff.too_many_lines", { count: lines9, max: diffBudget.lines })] : []
   ];
@@ -37761,7 +37954,7 @@ var evaluateCase = (runtime, root, spec2, name, deadline) => {
 };
 
 // src/gate/checks/golden.ts
-var MAX_LISTED11 = 5;
+var MAX_LISTED12 = 5;
 var specOf2 = (check2) => check2.run === void 0 || check2.cases === void 0 ? void 0 : { id: check2.id, run: check2.run, cases: check2.cases, tolerance: check2.tolerance ?? 0 };
 var caseNote = (ctx, result) => {
   switch (result.kind) {
@@ -37791,7 +37984,7 @@ var goldenCheck = (check2, ctx) => {
   const results = names3.map((name) => evaluateCase(ctx.runtime, ctx.paths.root, spec2, name, ctx.deadline));
   const notes3 = results.flatMap((result) => caseNote(ctx, result) ?? []);
   if (notes3.length === 0) return passed([note("gate.golden.clean", { count: names3.length })]);
-  const listed10 = [...notes3.slice(0, MAX_LISTED11), note("gate.golden.fix", { id: check2.id })];
+  const listed10 = [...notes3.slice(0, MAX_LISTED12), note("gate.golden.fix", { id: check2.id })];
   return mode === "shadow" ? passed([note("gate.golden.shadow", { count: notes3.length }), ...listed10]) : failed4(listed10);
 };
 
@@ -37931,7 +38124,7 @@ var curlHeaders = (runtime, cwd, base, routes, platform) => {
 };
 
 // src/gate/checks/headers.ts
-var MAX_LISTED12 = 15;
+var MAX_LISTED13 = 15;
 var BLOCKING_LEVEL = 2;
 var source = (ctx) => {
   const config = loadHeadersConfig(ctx.runtime, ctx.paths.root);
@@ -37956,7 +38149,7 @@ var headersCheck = (_check, ctx) => {
     return level < BLOCKING_LEVEL && found.status === "failed" ? passed([...found.notes, note("gate.headers.warn_only", { level })]) : found;
   const issues2 = missingHeaders(found.routes, found.https);
   if (issues2.length === 0) return passed([note("gate.headers.ok", { count: found.routes.length })]);
-  const notes3 = issues2.slice(0, MAX_LISTED12).map((issue3) => note(`gate.headers.missing.${issue3.rule}`, { route: issue3.route }));
+  const notes3 = issues2.slice(0, MAX_LISTED13).map((issue3) => note(`gate.headers.missing.${issue3.rule}`, { route: issue3.route }));
   if (level < BLOCKING_LEVEL) return passed([note("gate.headers.warn_only", { level }), ...notes3]);
   return mode === "shadow" ? passed([note("gate.headers.shadow"), ...notes3]) : failed4(notes3);
 };
@@ -37966,7 +38159,7 @@ import { dirname as dirname16, join as join101 } from "node:path";
 var INFRA_PLAN_FEATURE = "infra-plan";
 var PLAN_TIMEOUT_MS = 3e5;
 var DETAIL_LIMIT2 = 300;
-var MAX_LISTED13 = 12;
+var MAX_LISTED14 = 12;
 var terraform = (ctx, args2) => ctx.runtime.exec({
   command: "terraform",
   args: args2,
@@ -38048,7 +38241,7 @@ var infraPlanCheck = (_check, ctx) => {
   const countNote = note("gate.infra_plan.counts", counts);
   const accepted2 = findings2.filter(isAllowed2).map((finding6) => note("gate.infra_plan.accepted", { subject: finding6.subject }));
   if (open.length === 0) return passed([countNote, ...accepted2]);
-  const notes3 = open.slice(0, MAX_LISTED13).map((finding6) => note(`gate.infra_plan.${finding6.kind}`, { subject: finding6.subject }));
+  const notes3 = open.slice(0, MAX_LISTED14).map((finding6) => note(`gate.infra_plan.${finding6.kind}`, { subject: finding6.subject }));
   return shadowed2(mode, failed4([countNote, ...notes3]), [countNote, ...notes3]);
 };
 
@@ -38115,7 +38308,7 @@ var inventoryCheck = (_check, ctx) => inventoryOutcome(inventoryStates(ctx.runti
 
 // src/gate/checks/look.ts
 import { join as join102 } from "node:path";
-var MAX_LISTED14 = 10;
+var MAX_LISTED15 = 10;
 var findingNote3 = (value2) => {
   if (!isRecord(value2) || value2["blocking"] !== true) return [];
   const { rule, route, viewport, detail } = value2;
@@ -38161,14 +38354,14 @@ var unopened = (ctx, captures) => {
 var lookCheck = (_check, ctx) => {
   const summary2 = readSummary(ctx);
   if (summary2 === void 0) return failed4([note("gate.look.not_run")]);
-  const ignored = summary2.ignored.slice(0, MAX_LISTED14).map((entry2) => note("gate.look.allow_ignored", { entry: entry2 }));
-  if (summary2.blocking.length > 0) return failed4([...summary2.blocking.slice(0, MAX_LISTED14), ...ignored]);
+  const ignored = summary2.ignored.slice(0, MAX_LISTED15).map((entry2) => note("gate.look.allow_ignored", { entry: entry2 }));
+  if (summary2.blocking.length > 0) return failed4([...summary2.blocking.slice(0, MAX_LISTED15), ...ignored]);
   if (summary2.captures.length === 0) return failed4([note("gate.look.no_captures"), ...ignored]);
   const closed = unopened(ctx, summary2.captures);
   if (closed.length > 0) {
     return failed4([
       note("gate.look.unopened", { count: closed.length }),
-      ...closed.slice(0, MAX_LISTED14).map((file) => note("gate.look.open", { file })),
+      ...closed.slice(0, MAX_LISTED15).map((file) => note("gate.look.open", { file })),
       ...ignored
     ]);
   }
@@ -38336,7 +38529,7 @@ var runThrowaway = (runtime, config, places, deadline) => {
 
 // src/gate/checks/migrate.ts
 var MIGRATE_FEATURE = "migrate-check";
-var MAX_LISTED15 = 12;
+var MAX_LISTED16 = 12;
 var throwaway = (ctx) => {
   const config = migrateConfig(loadProjectConfig(ctx.runtime, ctx.paths.root));
   if (config.url === void 0 || config.apply === void 0) return { kind: "not_configured" };
@@ -38378,7 +38571,7 @@ var migrateCheck = (_check, ctx) => {
   const touched2 = ctx.changes.some((change2) => MIGRATION_FILE.test(change2.oldPath ?? change2.path));
   if (!touched2) return passed([note("gate.migrate.none")]);
   const result = throwaway(ctx);
-  const findings2 = [...staticNotes(ctx), ...throwawayNotes(result)].slice(0, MAX_LISTED15);
+  const findings2 = [...staticNotes(ctx), ...throwawayNotes(result)].slice(0, MAX_LISTED16);
   if (findings2.length === 0 && result.kind === "unavailable") {
     return unverified("tool_missing", [note("gate.migrate.unavailable", { step: result.step, detail: result.detail })]);
   }
@@ -38389,7 +38582,7 @@ var migrateCheck = (_check, ctx) => {
 };
 
 // src/gate/checks/migrations.ts
-var MAX_LISTED16 = 10;
+var MAX_LISTED17 = 10;
 var MIGRATIONS_FEATURE = "deploy-plan";
 var migrationsCheck = (_check, ctx) => {
   const mode = featureMode(ctx.runtime, ctx.paths, MIGRATIONS_FEATURE);
@@ -38398,7 +38591,7 @@ var migrationsCheck = (_check, ctx) => {
   const files = changedMigrations(ctx.git, deployBase(ctx.git, branch));
   const issues2 = lintChangedMigrations(ctx.runtime, ctx.paths.root, files);
   if (issues2.length === 0) return passed([note("gate.migrations.ok", { count: files.length })]);
-  const notes3 = issues2.slice(0, MAX_LISTED16).map((issue3) => note(`gate.migrations.${issue3.kind}`, { at: `${issue3.file}:${String(issue3.line)}` }));
+  const notes3 = issues2.slice(0, MAX_LISTED17).map((issue3) => note(`gate.migrations.${issue3.kind}`, { at: `${issue3.file}:${String(issue3.line)}` }));
   return mode === "shadow" ? passed([note("gate.migrations.shadow", { count: issues2.length }), ...notes3]) : failed4(notes3);
 };
 
@@ -38469,7 +38662,7 @@ var removedReExports = (changes) => changes.flatMap(
 
 // src/gate/checks/organize.ts
 var ORGANIZE_FEATURE = "organize";
-var MAX_LISTED17 = 8;
+var MAX_LISTED18 = 8;
 var fileChanges = (ctx) => ctx.changes.filter((change2) => languageOf(change2.path) !== void 0).map((change2) => ({
   path: change2.path,
   before: baseText(ctx, change2.path),
@@ -38494,8 +38687,8 @@ var organizeCheck = (_check, ctx) => {
   const logic = newLogic(changes);
   const open = openCallers(ctx, removedReExports(changes));
   const notes3 = [
-    ...logic.slice(0, MAX_LISTED17).map((item2) => note("gate.organize.logic", { file: item2.file, line: item2.line, text: ctx.mask(item2.text) })),
-    ...open.slice(0, MAX_LISTED17).map((item2) => note("gate.organize.open_caller", { ...item2 }))
+    ...logic.slice(0, MAX_LISTED18).map((item2) => note("gate.organize.logic", { file: item2.file, line: item2.line, text: ctx.mask(item2.text) })),
+    ...open.slice(0, MAX_LISTED18).map((item2) => note("gate.organize.open_caller", { ...item2 }))
   ];
   if (notes3.length === 0) return passed([note("gate.organize.clean")]);
   if (mode === "shadow") return passed([note("gate.organize.shadow"), ...notes3]);
@@ -38560,12 +38753,12 @@ var checkParity = (runtime, root) => {
 };
 
 // src/gate/checks/parity.ts
-var MAX_LISTED18 = 10;
+var MAX_LISTED19 = 10;
 var parityCheck = (_check, ctx) => {
   const result = checkParity(ctx.runtime, ctx.paths.root);
   if (result.issues.length === 0) return passed([note("parity.clean", { count: result.rows })]);
   return failed4(
-    result.issues.slice(0, MAX_LISTED18).map(
+    result.issues.slice(0, MAX_LISTED19).map(
       (item2) => note(`parity.issue.${item2.kind}`, { detail: `${result.file}:${String(item2.line)} ${item2.detail}` })
     )
   );
@@ -38573,7 +38766,7 @@ var parityCheck = (_check, ctx) => {
 
 // src/gate/checks/placeholders.ts
 import { join as join104 } from "node:path";
-var MAX_LISTED19 = 10;
+var MAX_LISTED20 = 10;
 var SKIP_FILES = /\.(md|mdx|txt|rst|lock|snap|svg|png|jpg|gif|json)$|(^|\/)(CHANGELOG|LICENSE)/i;
 var PLACEHOLDER = /\b(TODO|FIXME|XXX)\b|not implemented|NotImplementedError|unimplemented!|todo!\(|lorem ipsum/i;
 var findPlaceholders = (lines9) => lines9.filter((line12) => !isTestFile(line12.path) && !SKIP_FILES.test(line12.path) && PLACEHOLDER.test(line12.text));
@@ -38587,7 +38780,7 @@ var placeholdersCheck = (_check, ctx) => {
   const found = findPlaceholders([...tracked, ...untrackedAdded(ctx).filter((line12) => !seen.has(line12.path))]);
   if (found.length === 0) return passed([note("gate.placeholders.clean")]);
   return failed4(
-    found.slice(0, MAX_LISTED19).map((line12) => note("gate.placeholders.found", { file: line12.path, line: line12.line }))
+    found.slice(0, MAX_LISTED20).map((line12) => note("gate.placeholders.found", { file: line12.path, line: line12.line }))
   );
 };
 
@@ -38873,12 +39066,12 @@ var checkPlan = (runtime, root) => {
 };
 
 // src/gate/checks/plan.ts
-var MAX_LISTED20 = 10;
+var MAX_LISTED21 = 10;
 var planCheck = (_check, ctx) => {
   const result = checkPlan(ctx.runtime, ctx.paths.root);
   if (result.issues.length === 0) return passed([note("gate.plan.clean", { count: result.reports })]);
   return failed4(
-    result.issues.slice(0, MAX_LISTED20).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
+    result.issues.slice(0, MAX_LISTED21).map((item2) => note(`plan.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` }))
   );
 };
 
@@ -39621,13 +39814,13 @@ var proseGateStatus = (runtime, root) => {
 };
 
 // src/gate/checks/prose.ts
-var MAX_LISTED21 = 10;
+var MAX_LISTED22 = 10;
 var rulesOf = (span) => [...new Set(span.hits.map((hit3) => hit3.rule))].join(", ");
 var proseOutcome = (status) => {
   if (!status.ok) return unverified("tool_missing", [note("gate.prose.unavailable")]);
   const { files, flagged, blocking: blocking3 } = status.value;
   const key3 = blocking3 ? "gate.prose.finding" : "gate.prose.warning";
-  const notes3 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED21).map(({ file, span }) => note(key3, { file, line: span.startLine, rules: rulesOf(span) }));
+  const notes3 = flagged.flatMap((item2) => item2.report.spans.map((span) => ({ file: item2.file, span }))).slice(0, MAX_LISTED22).map(({ file, span }) => note(key3, { file, line: span.startLine, rules: rulesOf(span) }));
   if (notes3.length === 0) return passed([note("gate.prose.clean", { count: files.length })]);
   return blocking3 ? failed4(notes3) : passed(notes3);
 };
@@ -39856,7 +40049,7 @@ var analyzeQuality = (sources, limits) => {
 };
 
 // src/gate/checks/quality.ts
-var MAX_LISTED22 = 15;
+var MAX_LISTED23 = 15;
 var findingNote4 = (finding6) => note(`gate.quality.${finding6.rule}`, { file: finding6.file, line: finding6.line, ...finding6.params });
 var countsByRule = (findings2) => {
   const counts = {};
@@ -39879,7 +40072,7 @@ var qualityCheck = (_check, ctx) => {
     });
   }
   const notes3 = [
-    ...ordered.slice(0, MAX_LISTED22).map(findingNote4),
+    ...ordered.slice(0, MAX_LISTED23).map(findingNote4),
     ...analysis.metricsSkipped ? [note("gate.quality.no_typescript")] : []
   ];
   if (blocks.length === 0) return passed([note("gate.quality.clean", { count: analysis.files }), ...notes3]);
@@ -39891,7 +40084,7 @@ var qualityCheck = (_check, ctx) => {
 import { dirname as dirname17, join as join107 } from "node:path";
 var REGRESSION_GUARD = "regression";
 var REGRESSION_DIR = ".finitemonkey/regression";
-var CACHE_FILE2 = "regression.json";
+var CACHE_FILE3 = "regression.json";
 var FIX_GOAL = /\b(?:fix|fixes|fixed|bug|bugfix|hotfix|regression)\b/i;
 var FIX_BRANCH = /^(?:fix|bugfix|hotfix)[/-]/i;
 var isFixTask = (ctx) => FIX_GOAL.test(ctx.contract.goal) || FIX_BRANCH.test(currentBranch(ctx.git) ?? "");
@@ -39925,7 +40118,7 @@ var runOnBase = (ctx, check2, run10, files) => {
 };
 var cacheKey = (ctx, run10, files) => sha256Hex([ctx.base, run10, ...files.map((file) => `${file}\0${readWorking(ctx, file) ?? ""}`)].join("\n"));
 var cachedStatus = (ctx, key3) => {
-  const raw = readJsonFile(ctx.runtime, ctx.paths.cache(CACHE_FILE2));
+  const raw = readJsonFile(ctx.runtime, ctx.paths.cache(CACHE_FILE3));
   return raw?.["key"] === key3 && typeof raw["status"] === "string" ? raw["status"] : void 0;
 };
 var baseStatus = (ctx, check2, run10, files) => {
@@ -39935,7 +40128,7 @@ var baseStatus = (ctx, check2, run10, files) => {
   const result = runOnBase(ctx, check2, run10, files);
   const status = result.kind === "ran" ? result.outcome.status : "no_worktree";
   if (status === "passed" || status === "failed")
-    writeJsonFile(ctx.runtime, ctx.paths.cache(CACHE_FILE2), { key: key3, status });
+    writeJsonFile(ctx.runtime, ctx.paths.cache(CACHE_FILE3), { key: key3, status });
   return status;
 };
 var regressionCheck = (_check, ctx) => {
@@ -40092,7 +40285,7 @@ var addedDependencies = (ctx) => ctx.changes.filter((change2) => change2.status 
 });
 
 // src/gate/checks/research.ts
-var MAX_LISTED23 = 10;
+var MAX_LISTED24 = 10;
 var required = (ctx) => defaultOn(ctx.runtime, ctx.paths.root, "research-first") || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records2 = researchRecords(ctx.runtime, ctx.paths.root);
@@ -40112,7 +40305,7 @@ var findings = (ctx) => {
         paths: rules2.slice(0, 3).map((change2) => change2.path).join(", ")
       })
     ] : []
-  ].slice(0, MAX_LISTED23);
+  ].slice(0, MAX_LISTED24);
 };
 var researchCheck = (_check, ctx) => {
   const notes3 = findings(ctx);
@@ -40596,7 +40789,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED24 = 10;
+var MAX_LISTED25 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -40623,12 +40816,12 @@ var secretsCheck = (_check, ctx) => {
   const { findings: findings2, openIncidents } = status.value;
   const warnings = [
     ...grewNotes(ctx),
-    ...findings2.filter(isWarning).slice(0, MAX_LISTED24).map((finding6) => note("gate.secrets.warning", { file: finding6.file, line: finding6.line, rule: finding6.ruleId }))
+    ...findings2.filter(isWarning).slice(0, MAX_LISTED25).map((finding6) => note("gate.secrets.warning", { file: finding6.file, line: finding6.line, rule: finding6.ruleId }))
   ];
   const notes3 = [
-    ...blocking(findings2).slice(0, MAX_LISTED24).map((finding6) => note("gate.secrets.finding", { file: finding6.file, line: finding6.line, rule: finding6.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED24).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state })),
-    ...envNotes(ctx).slice(0, MAX_LISTED24)
+    ...blocking(findings2).slice(0, MAX_LISTED25).map((finding6) => note("gate.secrets.finding", { file: finding6.file, line: finding6.line, rule: finding6.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED25).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state })),
+    ...envNotes(ctx).slice(0, MAX_LISTED25)
   ];
   if (notes3.length > 0) return failed4([...notes3, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
@@ -40943,7 +41136,7 @@ var detectorRates = (store2) => SLOP_DETECTORS.map((detector) => {
 });
 
 // src/gate/checks/slop.ts
-var MAX_LISTED25 = 15;
+var MAX_LISTED26 = 15;
 var trackedAdditions = (ctx) => {
   const diff = ctx.git.out(["diff", "-U0", "-M", "--no-color", "--no-ext-diff", ctx.base, "--", ".", EXCLUDE_FM]);
   const grouped2 = /* @__PURE__ */ new Map();
@@ -40986,7 +41179,7 @@ var slopCheck = (_check, ctx) => {
   }
   const blocks = found.filter((item2) => levelOf3(item2.detector) === "block");
   const ordered = [...blocks, ...found.filter((item2) => levelOf3(item2.detector) === "warn")];
-  const notes3 = ordered.slice(0, MAX_LISTED25).map(findingNote5);
+  const notes3 = ordered.slice(0, MAX_LISTED26).map(findingNote5);
   if (blocks.length === 0) return passed([note("gate.slop.clean", { count: files.length }), ...notes3]);
   if (mode === "shadow") return passed([note("gate.slop.shadow", { count: blocks.length }), ...notes3]);
   return failed4([...notes3, note("gate.slop.fix")]);
@@ -41062,7 +41255,7 @@ var forChange = (input, change2) => {
 var analyzeTree = (input) => input.changes.flatMap((change2) => forChange(input, change2));
 
 // src/gate/checks/tests.ts
-var MAX_LISTED26 = 10;
+var MAX_LISTED27 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -41108,15 +41301,15 @@ var testsView = (ctx) => {
   return {
     violations,
     notes: [
-      ...edited.slice(0, MAX_LISTED26).map((change2) => editNote(ctx, change2, count12)),
-      ...shadowHeld.slice(0, MAX_LISTED26).map((file) => note("gate.tests.held_shadow", { file }))
+      ...edited.slice(0, MAX_LISTED27).map((change2) => editNote(ctx, change2, count12)),
+      ...shadowHeld.slice(0, MAX_LISTED27).map((file) => note("gate.tests.held_shadow", { file }))
     ]
   };
 };
 var testsCheck = (check2, ctx) => {
   const { violations, notes: edits } = testsView(ctx);
   const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes3 = violations.slice(0, MAX_LISTED26).map(violationNote);
+  const notes3 = violations.slice(0, MAX_LISTED27).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed4([...notes3, ...edits, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes3, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -41947,10 +42140,10 @@ var findingLabel = (finding6) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED27 = 8;
+var MAX_LISTED28 = 8;
 var listed5 = (items) => {
-  const head = items.slice(0, MAX_LISTED27).join(", ");
-  return items.length > MAX_LISTED27 ? `${head} (+${String(items.length - MAX_LISTED27)})` : head;
+  const head = items.slice(0, MAX_LISTED28).join(", ");
+  return items.length > MAX_LISTED28 ? `${head} (+${String(items.length - MAX_LISTED28)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf2 = (ctx) => ownerKey(ctx.sessionId);
@@ -42037,7 +42230,8 @@ var DEFAULT_CHECKS = {
   claims: claimsCheck,
   migrate: migrateCheck,
   "infra-plan": infraPlanCheck,
-  "api-version": apiVersionCheck
+  "api-version": apiVersionCheck,
+  cochange: cochangeCheck
 };
 
 // src/gate/inputs.ts
@@ -47347,7 +47541,7 @@ var barLines = (t, lang, bar) => {
 // src/planta/view.ts
 import { join as join136 } from "node:path";
 var MANIFESTS4 = ["package.json", "requirements.txt", "pyproject.toml", "Gemfile", "go.mod", "composer.json"];
-var IGNORED = ":(exclude)node_modules";
+var IGNORED2 = ":(exclude)node_modules";
 var listFiles = (runtime, root) => (gitAt(runtime, root).out(["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", ".", EXCLUDE_FM]) ?? "").split("\0").filter((path) => path !== "");
 var grepper = (runtime, root) => {
   const git4 = gitAt(runtime, root);
@@ -47367,7 +47561,7 @@ var grepper = (runtime, root) => {
       "--",
       ".",
       EXCLUDE_FM,
-      IGNORED
+      IGNORED2
     ]);
     const found = result.found && result.exitCode === 0;
     cache.set(pattern, found);
@@ -49151,9 +49345,9 @@ var rulesStop = (input) => {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED28 = 5;
+var MAX_LISTED29 = 5;
 var describeFindings = (t, items) => {
-  const listed10 = items.slice(0, MAX_LISTED28).map(({ ruleId, where: where3 }) => t("secrets.found_item", { rule: ruleId, where: where3 }));
+  const listed10 = items.slice(0, MAX_LISTED29).map(({ ruleId, where: where3 }) => t("secrets.found_item", { rule: ruleId, where: where3 }));
   const rest = items.length - listed10.length;
   return rest > 0 ? `${listed10.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed10.join("; ");
 };
@@ -52966,8 +53160,8 @@ var dsWorkflow = (input) => [...HEADER5, ...checkoutSteps(input), ...syncSteps(i
 
 // src/commands/ds-sync.ts
 var DS_SYNC_SCHEMA = "finitemonkey/ds-sync@1";
-var USAGE7 = "finitemonkey ds-sync init --source <owner/repo> [--source-dir <dir>] [--target-dir <dir>] [--prototypes <dir>] [--write] | ds-sync summary --from <dir> --to <dir> | ds-sync apply --from <dir> --to <dir> --summary <file> | ds-sync issue <dir> [--yes]";
-var invalid = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE7, { detail });
+var USAGE8 = "finitemonkey ds-sync init --source <owner/repo> [--source-dir <dir>] [--target-dir <dir>] [--prototypes <dir>] [--write] | ds-sync summary --from <dir> --to <dir> | ds-sync apply --from <dir> --to <dir> --summary <file> | ds-sync issue <dir> [--yes]";
+var invalid = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE8, { detail });
 var dirOption = (ctx, values, name) => {
   const raw = stringOption(values, name);
   return raw === void 0 ? void 0 : toAbsolutePath(raw, ctx.cwd);
@@ -52988,7 +53182,7 @@ var init = (ctx, root, values) => {
     root,
     files: [{ path: DS_WORKFLOW, content }],
     values,
-    usage: USAGE7,
+    usage: USAGE8,
     data: { schema: DS_SYNC_SCHEMA },
     lines: [ctx.t("ds.init.next")]
   });
@@ -53016,7 +53210,7 @@ var issues = (ctx, root, raw, yes2) => {
       { schema: DS_SYNC_SCHEMA, ready },
       ready.map((item2) => ctx.t("ds.issue.would", { title: item2.title }))
     );
-  if (!mayPublish(ctx)) return failureFrom(ctx.t, needsPersonProblem("ds.issue.person_only", USAGE7));
+  if (!mayPublish(ctx)) return failureFrom(ctx.t, needsPersonProblem("ds.issue.person_only", USAGE8));
   const results = ready.map((item2) => ({
     title: item2.title,
     action: upsertIssue(ctx.runtime, root, item2.title, sectionOf2(item2, item2.title, ctx.t("ds.issue.components")))
@@ -53029,7 +53223,7 @@ var issues = (ctx, root, raw, yes2) => {
 var dsSyncCommand = {
   path: ["ds-sync"],
   summaryKey: "command.ds_sync.summary",
-  usage: USAGE7,
+  usage: USAGE8,
   status: "ready",
   maxPositionals: 2,
   options: {
@@ -53047,7 +53241,7 @@ var dsSyncCommand = {
     const [action = "", target5 = ""] = args2.positionals;
     const root = projectRoot(ctx);
     if (featureMode(ctx.runtime, fmPaths(root), DS_SYNC_FEATURE) === "off")
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "ds.off", USAGE7)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "ds.off", USAGE8)));
     if (action === "init") return Promise.resolve(init(ctx, root, args2.values));
     if (action === "summary") return Promise.resolve(summary(ctx, args2.values, false));
     if (action === "apply") return Promise.resolve(summary(ctx, args2.values, true));
@@ -53057,7 +53251,7 @@ var dsSyncCommand = {
 };
 
 // src/commands/evidence-why.ts
-var USAGE8 = "finitemonkey evidence why <check> [--task <id>]";
+var USAGE9 = "finitemonkey evidence why <check> [--task <id>]";
 var NO_TASK = {
   code: "gate_not_run",
   messageKey: "evidence.why.no_task",
@@ -53069,14 +53263,14 @@ var taskOption = (taskId2) => taskId2 === void 0 ? {} : { taskId: taskId2 };
 var evidenceWhyCommand = {
   path: ["evidence", "why"],
   summaryKey: "command.evidence_why.summary",
-  usage: USAGE8,
+  usage: USAGE9,
   status: "ready",
   maxPositionals: 1,
   options: { task: { type: "string" } },
   run: (ctx, args2) => {
     const check2 = args2.positionals[0]?.trim() ?? "";
     if (check2 === "")
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "evidence.why.usage", USAGE8)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "evidence.why.usage", USAGE9)));
     const ready = prepareGate({
       runtime: ctx.runtime,
       cwd: ctx.cwd,
@@ -54142,7 +54336,7 @@ var fileInputs = (runtime, dir, gitDir, path, ids4, generators) => {
 };
 
 // src/merge/trace.ts
-var MAX_COMMITS = 5;
+var MAX_COMMITS2 = 5;
 var indexFrom = (lines9, needle, from) => {
   for (let start2 = from; start2 + needle.length <= lines9.length; start2 += 1) {
     if (needle.every((line12, offset) => lines9[start2 + offset] === line12)) return start2;
@@ -54159,7 +54353,7 @@ var locate2 = (lines9, needle, from, before2) => {
 };
 var commitsTouching = (runtime, dir, base, tip, path) => {
   const result = runtime.gitWith(
-    ["log", `--max-count=${String(MAX_COMMITS)}`, "--format=%h %s", `${base}..${tip}`, "--", path],
+    ["log", `--max-count=${String(MAX_COMMITS2)}`, "--format=%h %s", `${base}..${tip}`, "--", path],
     dir,
     {}
   );
@@ -55421,10 +55615,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED29 = 5;
+var MAX_LISTED30 = 5;
 var detailOf2 = (check2) => {
-  const listed10 = check2.failures.slice(0, MAX_LISTED29).join("; ");
-  const rest = check2.failures.length - MAX_LISTED29;
+  const listed10 = check2.failures.slice(0, MAX_LISTED30).join("; ");
+  const rest = check2.failures.length - MAX_LISTED30;
   return rest > 0 ? `${listed10}; +${String(rest)}` : listed10;
 };
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf2(check2), fix: check2.fix });
@@ -55973,8 +56167,8 @@ var undoCommand = {
 // src/commands/golden.ts
 import { dirname as dirname28 } from "node:path";
 var GOLDEN_ACCEPT_SCHEMA = "finitemonkey/golden-accept@1";
-var USAGE9 = "finitemonkey golden accept <check-id> [--case <name>] [--task <id>]";
-var invalid2 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE9, { detail });
+var USAGE10 = "finitemonkey golden accept <check-id> [--case <name>] [--task <id>]";
+var invalid2 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE10, { detail });
 var notRun3 = (detail) => ({
   code: "gate_not_run",
   messageKey: "error.gate_not_run",
@@ -56004,7 +56198,7 @@ var store = (ctx, gate, spec2, result) => {
   return accepted2;
 };
 var accept4 = (ctx, id, only3, taskId2) => {
-  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("golden.error.person_only", USAGE9));
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("golden.error.person_only", USAGE10));
   if (id === "") return failureFrom(ctx.t, invalid2("<check-id>"));
   const ready = prepareGate({
     runtime: ctx.runtime,
@@ -56036,7 +56230,7 @@ var accept4 = (ctx, id, only3, taskId2) => {
 var goldenAcceptCommand = {
   path: ["golden", "accept"],
   summaryKey: "command.golden_accept.summary",
-  usage: USAGE9,
+  usage: USAGE10,
   status: "ready",
   maxPositionals: 1,
   options: { case: { type: "string" }, task: { type: "string" } },
@@ -56941,8 +57135,8 @@ var requiredPluralBranches = (locale) => {
 var interpolate = (template, params2 = {}, lang = SOURCE_LANG) => formatMessage(template, params2, lang);
 var placeholdersOf = (template) => argumentsOf(template);
 var createTranslator = (lang, source3 = catalogs, options2 = {}) => (key3, params2) => {
-  const usable2 = lang === SOURCE_LANG || options2.reviewed === void 0 || options2.reviewed.has(key3);
-  const own = usable2 ? source3[lang][key3] : void 0;
+  const usable3 = lang === SOURCE_LANG || options2.reviewed === void 0 || options2.reviewed.has(key3);
+  const own = usable3 ? source3[lang][key3] : void 0;
   return own === void 0 ? interpolate(source3[SOURCE_LANG][key3] ?? key3, params2, SOURCE_LANG) : interpolate(own, params2, lang);
 };
 
@@ -57772,8 +57966,8 @@ var readRepo = (git4, path, ref2, hash2, covered) => {
 };
 
 // src/inventory/render.ts
-var MAX_LISTED30 = 40;
-var capped = (t, lines9) => lines9.length > MAX_LISTED30 ? [...lines9.slice(0, MAX_LISTED30), `- ${t("inventory.more", { count: lines9.length - MAX_LISTED30 })}`] : lines9;
+var MAX_LISTED31 = 40;
+var capped = (t, lines9) => lines9.length > MAX_LISTED31 ? [...lines9.slice(0, MAX_LISTED31), `- ${t("inventory.more", { count: lines9.length - MAX_LISTED31 })}`] : lines9;
 var listed7 = (t, lines9) => lines9.length === 0 ? [t("inventory.none")] : capped(t, lines9);
 var hitLines = (t, hits) => listed7(
   t,
@@ -58012,13 +58206,13 @@ var updateParity = (runtime, root, ref2) => {
 };
 
 // src/commands/inventory.ts
-var USAGE10 = "finitemonkey inventory <topic> [--ref <ref>] [--path <dir>]... [--repo <dir>]... [--parity]";
+var USAGE11 = "finitemonkey inventory <topic> [--ref <ref>] [--path <dir>]... [--repo <dir>]... [--parity]";
 var problemResult = (ctx, problem5) => {
   if (problem5.kind === "repo") return failureFrom(ctx.t, notRepository(problem5.repo));
   if (problem5.kind === "ref")
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "inventory.error.ref", USAGE10, { ref: problem5.ref, repo: problem5.repo })
+      usageProblem("invalid_arguments", "inventory.error.ref", USAGE11, { ref: problem5.ref, repo: problem5.repo })
     );
   return failureFrom(ctx.t, {
     code: "plan_write_failed",
@@ -58036,7 +58230,7 @@ var parityFor = (ctx, root, ref2, covered) => {
 var inventoryCommand = {
   path: ["inventory"],
   summaryKey: "command.inventory.summary",
-  usage: USAGE10,
+  usage: USAGE11,
   status: "ready",
   maxPositionals: 1,
   options: {
@@ -58050,7 +58244,7 @@ var inventoryCommand = {
     if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
     const topic = args2.positionals[0]?.trim() ?? "";
     if (topic === "")
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "inventory.error.topic", USAGE10)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "inventory.error.topic", USAGE11)));
     const written = runInventory(ctx.runtime, ctx.t, repo.root, {
       topic,
       ref: stringOption(args2.values, "ref") ?? "HEAD",
@@ -58528,16 +58722,16 @@ var experimentsReportCommand = {
 
 // src/commands/knowledge.ts
 var KNOWLEDGE_MAP_SCHEMA = "finitemonkey/knowledge-map@1";
-var USAGE11 = "finitemonkey knowledge map";
+var USAGE12 = "finitemonkey knowledge map";
 var knowledgeMapCommand = {
   path: ["knowledge", "map"],
   summaryKey: "command.knowledge_map.summary",
-  usage: USAGE11,
+  usage: USAGE12,
   status: "ready",
   run: (ctx) => inGuardianRepo(ctx, (root) => {
     const paths = fmPaths(root);
     if (!optedIn(ctx.runtime, paths))
-      return failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.map.opt_in", USAGE11));
+      return failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.map.opt_in", USAGE12));
     const areas = knowledgeMap(ctx.runtime, paths);
     writeMapCache(ctx.runtime, paths, areas);
     return success(
@@ -58947,11 +59141,11 @@ var record12 = (runtime, paths, result) => {
 
 // src/commands/retrieve.ts
 var RETRIEVE_SCHEMA = "finitemonkey/retrieve@1";
-var USAGE12 = 'finitemonkey retrieve "<question or symbol>" [--budget <tokens per step>]';
+var USAGE13 = 'finitemonkey retrieve "<question or symbol>" [--budget <tokens per step>]';
 var retrieveCommand = {
   path: ["retrieve"],
   summaryKey: "command.retrieve.summary",
-  usage: USAGE12,
+  usage: USAGE13,
   status: "ready",
   maxPositionals: 1,
   options: { budget: { type: "string" } },
@@ -58959,11 +59153,11 @@ var retrieveCommand = {
     const query = args2.positionals[0]?.trim() ?? "";
     const raw = Number.parseInt(stringOption(args2.values, "budget") ?? "", 10);
     if (query === "")
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.retrieve.usage", USAGE12)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.retrieve.usage", USAGE13)));
     return inGuardianRepo(ctx, (root) => {
       const paths = fmPaths(root);
       if (featureMode(ctx.runtime, paths, RETRIEVE_FEATURE) === "off")
-        return failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.retrieve.off", USAGE12));
+        return failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.retrieve.off", USAGE13));
       const budget = Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_STEP_BUDGET;
       const result = retrieve(ctx.runtime, paths, query, { budget });
       return success({ schema: RETRIEVE_SCHEMA, ...result }, [
@@ -59642,15 +59836,15 @@ var lookCommand = {
 
 // src/commands/look-approve.ts
 var LOOK_APPROVE_SCHEMA = "finitemonkey/look-approve@1";
-var USAGE13 = "finitemonkey look approve <route>";
+var USAGE14 = "finitemonkey look approve <route>";
 var approve = (ctx, route) => {
   if (!route?.startsWith("/")) {
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE13, { detail: route ?? "" })
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE14, { detail: route ?? "" })
     );
   }
-  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("look.approve.person_only", USAGE13));
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("look.approve.person_only", USAGE14));
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const approved = approveRoute(ctx.runtime, paths, route, latestLayouts(ctx.runtime, paths));
   if (approved.length === 0) {
@@ -59667,7 +59861,7 @@ var approve = (ctx, route) => {
 var lookApproveCommand = {
   path: ["look", "approve"],
   summaryKey: "command.look_approve.summary",
-  usage: USAGE13,
+  usage: USAGE14,
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => Promise.resolve(approve(ctx, args2.positionals[0]))
@@ -59675,7 +59869,7 @@ var lookApproveCommand = {
 
 // src/commands/map.ts
 var MAP_SCHEMA = "finitemonkey/map@1";
-var USAGE14 = "finitemonkey map [--budget <characters>]";
+var USAGE15 = "finitemonkey map [--budget <characters>]";
 var MIN_BUDGET = 200;
 var budgetOf = (raw) => {
   if (raw === void 0) return void 0;
@@ -59685,7 +59879,7 @@ var budgetOf = (raw) => {
 var mapCommand = {
   path: ["map"],
   summaryKey: "command.map.summary",
-  usage: USAGE14,
+  usage: USAGE15,
   status: "ready",
   options: { budget: { type: "string" } },
   run: (ctx, args2) => {
@@ -59696,7 +59890,7 @@ var mapCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE14, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE15, {
             detail: `--budget >= ${String(MIN_BUDGET)}`
           })
         )
@@ -60850,7 +61044,7 @@ var runCandidates = (runtime, root, candidates4, timeoutS) => {
 };
 
 // src/commands/onboard.ts
-var USAGE15 = "finitemonkey onboard [--timeout <seconds>]";
+var USAGE16 = "finitemonkey onboard [--timeout <seconds>]";
 var LOCKS2 = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb"];
 var diskFiles2 = (ctx, root) => ({
   read: (relative28) => {
@@ -60911,7 +61105,7 @@ var writeBlock = (ctx, root, files, state) => {
 var onboard = async (ctx, timeoutS) => {
   const root = projectRoot(ctx);
   if (featureMode(ctx.runtime, fmPaths(root), ONBOARD_FEATURE) === "off")
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "onboard.off", USAGE15));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "onboard.off", USAGE16));
   const files = diskFiles2(ctx, root);
   const ran = runCandidates(ctx.runtime, root, discoverCommands(files, outsideOnboardBlock), timeoutS);
   const previous = parseOnboard(files.read(ONBOARD_FILE));
@@ -60961,7 +61155,7 @@ var onboard = async (ctx, timeoutS) => {
 var onboardCommand = {
   path: ["onboard"],
   summaryKey: "command.onboard.summary",
-  usage: USAGE15,
+  usage: USAGE16,
   status: "ready",
   maxPositionals: 0,
   options: { timeout: { type: "string" } },
@@ -61232,9 +61426,9 @@ var writeTargets = (runtime, paths, open) => {
 
 // src/commands/organize.ts
 var ORGANIZE_SCHEMA = "finitemonkey/organize@1";
-var USAGE16 = "finitemonkey organize [--top <n>] | organize plan <file> | organize step <file> <n> | organize done <file>";
+var USAGE17 = "finitemonkey organize [--top <n>] | organize plan <file> | organize step <file> <n> | organize done <file>";
 var DEFAULT_TOP = 10;
-var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE16, { detail });
+var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE17, { detail });
 var relativeFile2 = (ctx, root, raw) => {
   if (isAbsolute5(raw)) return posix16.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
   const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
@@ -61276,7 +61470,7 @@ var plan = (ctx, raw) => {
   if (!open.includes(file) && open.length >= MAX_TARGETS)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "organize.error.round_full", USAGE16, { open: open.join(", ") })
+      usageProblem("invalid_arguments", "organize.error.round_full", USAGE17, { open: open.join(", ") })
     );
   const tree = workingTree(ctx.runtime, gitAt(ctx.runtime, root), root, []);
   const importerDirs = [
@@ -61303,7 +61497,7 @@ var step3 = (ctx, raw, number5) => {
   if (goal === void 0) return failureFrom(ctx.t, invalid3(`${raw} ${number5}`));
   const id = stepId(file, index);
   if (!saveStep(ctx.runtime, fmPaths(root), stepContract(ctx.runtime, root, id, goal)))
-    return failureFrom(ctx.t, usageProblem("task_exists", "error.task_exists", USAGE16, { task: id }));
+    return failureFrom(ctx.t, usageProblem("task_exists", "error.task_exists", USAGE17, { task: id }));
   return success({ schema: ORGANIZE_SCHEMA, task: id, goal }, [ctx.t("organize.step", { id, goal })]);
 };
 var done = (ctx, raw) => {
@@ -61320,7 +61514,7 @@ var done = (ctx, raw) => {
 var organizeCommand = {
   path: ["organize"],
   summaryKey: "command.organize.summary",
-  usage: USAGE16,
+  usage: USAGE17,
   status: "ready",
   maxPositionals: 3,
   options: { top: { type: "string" } },
@@ -61873,7 +62067,7 @@ var planConsolidateCommand = {
 
 // src/commands/planta.ts
 var PLANTA_SCHEMA = "finitemonkey/planta@1";
-var USAGE17 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
+var USAGE18 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
 var itemsJson = (ctx, bar) => bar.items.map((item2) => {
   const probe = BLUEPRINTS[bar.type].find((entry2) => entry2.id === item2.id)?.probe;
   return {
@@ -61891,7 +62085,7 @@ var runPlanta = (ctx, raw) => {
   if (type === void 0) {
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE17, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE18, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
     );
   }
   const task = raw === void 0 ? void 0 : recordInContract(ctx.runtime, paths, type);
@@ -61917,7 +62111,7 @@ var runPlanta = (ctx, raw) => {
 var plantaCommand = {
   path: ["planta"],
   summaryKey: "command.planta.summary",
-  usage: USAGE17,
+  usage: USAGE18,
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => Promise.resolve(runPlanta(ctx, args2.positionals[0]))
@@ -62749,7 +62943,7 @@ var DEV_TOOLS = ["ruff", "pytest", "vulture"];
 
 // src/commands/preset.ts
 var PRESET_SCHEMA = "finitemonkey/preset@1";
-var USAGE18 = "finitemonkey preset python [--write] [--overwrite]";
+var USAGE19 = "finitemonkey preset python [--write] [--overwrite]";
 var presetFiles = (project, linter) => [
   ...[...project.sections].some((name) => name.startsWith("ruff")) ? [] : [{ path: "ruff.toml", content: RUFF_TOML }],
   ...project.sections.has("pytest.ini_options") ? [] : [{ path: "pytest.ini", content: PYTEST_INI }],
@@ -62760,7 +62954,7 @@ var presetFiles = (project, linter) => [
 var python = (ctx, values) => {
   const root = projectRoot(ctx);
   if (featureMode(ctx.runtime, fmPaths(root), PYTHON_FEATURE) === "off")
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE18));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE19));
   const project = detectPython(
     (relative28) => {
       const text34 = ctx.runtime.readText(toAbsolutePath(join183(root, relative28)));
@@ -62768,7 +62962,7 @@ var python = (ctx, values) => {
     },
     (relative28) => ctx.runtime.stat(toAbsolutePath(join183(root, relative28))) !== void 0
   );
-  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE18));
+  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE19));
   const arch = loadArch(ctx.runtime, root);
   const deny2 = (from, allowed4) => ctx.t("arch.generated.not_allowed", { from, allowed: allowed4.join(", ") });
   const linter = arch.kind === "ok" ? importLinter(arch.config, deny2) : void 0;
@@ -62778,7 +62972,7 @@ var python = (ctx, values) => {
     root,
     files: presetFiles(project, linter),
     values,
-    usage: USAGE18,
+    usage: USAGE19,
     data: { schema: PRESET_SCHEMA, stack: "python", manager: project.manager },
     lines: [...project.manager === "uv" ? [] : [ctx.t("preset.needs_uv")], ctx.t("preset.dev_tools", { tools })]
   });
@@ -62786,14 +62980,14 @@ var python = (ctx, values) => {
 var presetCommand = {
   path: ["preset"],
   summaryKey: "command.preset.summary",
-  usage: USAGE18,
+  usage: USAGE19,
   status: "ready",
   maxPositionals: 1,
   options: GENERATE_OPTIONS,
   run: (ctx, args2) => Promise.resolve(
     args2.positionals[0] === "python" ? python(ctx, args2.values) : failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE18, {
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, {
         detail: args2.positionals[0] ?? "<stack>"
       })
     )
@@ -64298,7 +64492,7 @@ var unattended = (ctx, id, options2 = {}) => {
 // src/commands/run.ts
 var RUN_SCHEMA = "finitemonkey/run@1";
 var RUNS_DIR = "runs";
-var USAGE19 = `finitemonkey run [--shell ${SHELLS8.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
+var USAGE20 = `finitemonkey run [--shell ${SHELLS8.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
 var DEFAULT_TIMEOUT_S2 = 600;
 var KEEP_RUNS = 30;
 var NOT_FOUND_EXIT = 127;
@@ -64322,7 +64516,7 @@ var saveLog = (ctx, root, line12, text34) => {
   prune(ctx, dir);
   return `${FM_DIR}/${RUNS_DIR}/${name}`;
 };
-var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, { detail }));
+var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, { detail }));
 var runCommand = (ctx, words6, shellRaw, timeoutRaw) => {
   const shell = shellRaw === void 0 ? defaultShell(ctx.platform) : parseShellChoice(shellRaw);
   const timeoutS = timeoutOf(timeoutRaw);
@@ -64369,7 +64563,7 @@ ${result.stderr}`, exitCode);
 var runCommandSpec = {
   path: ["run"],
   summaryKey: "command.run.summary",
-  usage: USAGE19,
+  usage: USAGE20,
   status: "ready",
   options: { shell: { type: "string" }, timeout: { type: "string" }, unattended: { type: "boolean" } },
   maxPositionals: 1e3,
@@ -64650,7 +64844,7 @@ var runbookLink = (runtime, rule) => {
 
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE20 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var USAGE21 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
 var TARGET = { rotated: "rotacionado", close: "fechado" };
 var PURGE_STEPS = [
   "secrets.purge.step1",
@@ -64708,7 +64902,7 @@ var move = (ctx, root, incident, action) => {
   if (!canMove(incident.state, to))
     return action === "close" ? notRotated(ctx, incident) : fail4(
       ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE20, {
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE21, {
         id: incident.id,
         from: incident.state,
         to
@@ -64731,7 +64925,7 @@ var actionOf2 = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "l
 var secretsIncidentCommand = {
   path: ["secrets", "incident"],
   summaryKey: "secrets.command.incident",
-  usage: USAGE20,
+  usage: USAGE21,
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args2) => {
@@ -64741,7 +64935,7 @@ var secretsIncidentCommand = {
       return Promise.resolve(
         fail4(
           ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, { detail: args2.positionals[0] ?? "" })
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE21, { detail: args2.positionals[0] ?? "" })
         )
       );
     if (action === "list") return Promise.resolve(list8(ctx, root));
@@ -64813,7 +65007,7 @@ var liveOutcome = (result) => {
 
 // src/commands/secrets-live.ts
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
-var USAGE21 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var USAGE22 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
 var target4 = (provider) => {
   const probe = LIVE_PROBES[provider];
@@ -64844,7 +65038,7 @@ var send = (ctx, provider, variable, key3) => {
 var secretsLiveCommand = {
   path: ["secrets", "live"],
   summaryKey: "secrets.command.live",
-  usage: USAGE21,
+  usage: USAGE22,
   status: "ready",
   maxPositionals: 1,
   options: { env: { type: "string" }, send: { type: "boolean" } },
@@ -64855,7 +65049,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE21, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE22, {
             detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
           })
         )
@@ -64865,7 +65059,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          needsPersonProblem("secrets.error.person_only", `${USAGE21.replace(" [--send]", "")} --send`, {
+          needsPersonProblem("secrets.error.person_only", `${USAGE22.replace(" [--send]", "")} --send`, {
             action: ctx.t("secrets.action.live")
           })
         )
@@ -64873,7 +65067,7 @@ var secretsLiveCommand = {
     const key3 = ctx.env[variable] ?? "";
     if (key3 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE21, { variable }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE22, { variable }))
       );
     return Promise.resolve(send(ctx, provider, variable, key3));
   }
@@ -65135,8 +65329,8 @@ var signalsBlindBandCommand = {
 };
 
 // src/commands/signals-hypothesis.ts
-var USAGE22 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
-var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE22, { detail });
+var USAGE23 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
+var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE23, { detail });
 var normalized4 = (text34) => text34.toLowerCase().replace(/\s+/g, " ").trim();
 var hypothesis = (ctx, words6) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -65171,14 +65365,14 @@ var hypothesis = (ctx, words6) => {
 var signalsHypothesisCommand = {
   path: ["signals", "hypothesis"],
   summaryKey: "command.signals_hypothesis.summary",
-  usage: USAGE22,
+  usage: USAGE23,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(hypothesis(ctx, args2.positionals))
 };
 
 // src/commands/signals-locate.ts
-var USAGE23 = "finitemonkey signals locate <file>:<line> <reason>";
+var USAGE24 = "finitemonkey signals locate <file>:<line> <reason>";
 var PLACE = /^(.+):(\d+)$/;
 var locate4 = (ctx, words6) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -65189,7 +65383,7 @@ var locate4 = (ctx, words6) => {
   const line12 = Number(place2?.[2] ?? "0");
   if (file === void 0 || line12 < 1 || reason.length < limits.hypothesisChars) {
     const detail = ctx.t("signals.locate.invalid", { count: limits.hypothesisChars });
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE23, { detail }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE24, { detail }));
   }
   const files = signalFiles(paths);
   const entries2 = readEntries(ctx.runtime, files);
@@ -65208,7 +65402,7 @@ var locate4 = (ctx, words6) => {
 var signalsLocateCommand = {
   path: ["signals", "locate"],
   summaryKey: "command.signals_locate.summary",
-  usage: USAGE23,
+  usage: USAGE24,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(locate4(ctx, args2.positionals))
@@ -65852,7 +66046,7 @@ var taskDoneCommand = {
 
 // src/commands/task-diverge.ts
 import { join as join193 } from "node:path";
-var USAGE24 = "finitemonkey task diverge [<id>] [--choose <letter>]";
+var USAGE25 = "finitemonkey task diverge [<id>] [--choose <letter>]";
 var load = (ctx, paths, task) => {
   const disk = (relative28) => {
     const text34 = ctx.runtime.readText(toAbsolutePath(join193(paths.root, relative28)));
@@ -65908,7 +66102,7 @@ var ask6 = (ctx, paths, task) => {
   if (mode === "off") return skipped(ctx, task, "off");
   const loaded2 = load(ctx, paths, task);
   if (loaded2 === void 0)
-    return failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE24, { task }));
+    return failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE25, { task }));
   const examples = loaded2.examples ?? [];
   const why = eligible(loaded2.contract, examples);
   if (why !== void 0) return skipped(ctx, task, why);
@@ -65940,7 +66134,7 @@ var choose = (ctx, paths, task, letter) => {
   const question = state.pending[task];
   const option3 = question?.options.find((item2) => item2.letter === letter.toUpperCase());
   if (question === void 0 || option3 === void 0)
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE24, { task, letter }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE25, { task, letter }));
   const loaded2 = load(ctx, paths, task);
   if (loaded2?.trusted !== true)
     return failureFrom(ctx.t, needsPersonProblem("examples.untrusted", `fm: trust ${task}`, { task }));
@@ -65954,7 +66148,7 @@ var choose = (ctx, paths, task, letter) => {
   if (!made.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE24, { task, max: MAX_EXAMPLES })
+      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE25, { task, max: MAX_EXAMPLES })
     );
   const decided2 = decideExamples(
     ctx.runtime,
@@ -65966,7 +66160,7 @@ var choose = (ctx, paths, task, letter) => {
   if (!decided2.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "examples.decide_failed", USAGE24, { task, detail: "write" })
+      usageProblem("invalid_arguments", "examples.decide_failed", USAGE25, { task, detail: "write" })
     );
   const rest = Object.fromEntries(Object.entries(state.pending).filter(([key3]) => key3 !== task));
   writePending(ctx.runtime, paths, { ...state, pending: rest });
@@ -65978,7 +66172,7 @@ var choose = (ctx, paths, task, letter) => {
 var taskDivergeCommand = {
   path: ["task", "diverge"],
   summaryKey: "command.task_diverge.summary",
-  usage: USAGE24,
+  usage: USAGE25,
   status: "ready",
   maxPositionals: 1,
   options: { choose: { type: "string" } },
@@ -65988,7 +66182,7 @@ var taskDivergeCommand = {
     const paths = fmPaths(repo.root);
     const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
     if (task === void 0)
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE24)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE25)));
     const letter = stringOption(args2.values, "choose");
     return Promise.resolve(letter === void 0 ? ask6(ctx, paths, task) : choose(ctx, paths, task, letter));
   }
@@ -66088,7 +66282,7 @@ var taskAmendCommand = {
 
 // src/commands/task-examples.ts
 import { join as join194 } from "node:path";
-var USAGE25 = "finitemonkey task examples [<id>] [--says <sentence> --run <cmd> --expect <output> [--input <stdin>]] [--approve E1,E2] [--reject E3]";
+var USAGE26 = "finitemonkey task examples [<id>] [--says <sentence> --run <cmd> --expect <output> [--input <stdin>]] [--approve E1,E2] [--reject E3]";
 var ids3 = (values, name) => {
   const value2 = values[name];
   const raw = Array.isArray(value2) ? value2 : typeof value2 === "string" ? [value2] : [];
@@ -66112,7 +66306,7 @@ var propose = (ctx, paths, task, draft) => {
   if (!made.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE25, { task, max: MAX_EXAMPLES })
+      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE26, { task, max: MAX_EXAMPLES })
     );
   return {
     ...success({ schema: TASK_SCHEMA, task, example: made.value }, [
@@ -66133,7 +66327,7 @@ var decide5 = (ctx, paths, task, values) => {
   const done2 = decideExamples(ctx.runtime, paths, loaded2.value.contract, decision2, contractHash);
   if (!done2.ok) {
     const detail = done2.error.kind === "unknown" ? done2.error.ids.join(", ") : done2.error.kind;
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.decide_failed", USAGE25, { task, detail }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.decide_failed", USAGE26, { task, detail }));
   }
   return {
     ...listed9(ctx, task, done2.value),
@@ -66146,7 +66340,7 @@ var decide5 = (ctx, paths, task, values) => {
 var taskExamplesCommand = {
   path: ["task", "examples"],
   summaryKey: "command.task_examples.summary",
-  usage: USAGE25,
+  usage: USAGE26,
   status: "ready",
   maxPositionals: 1,
   options: {
@@ -66163,7 +66357,7 @@ var taskExamplesCommand = {
     const paths = fmPaths(repo.root);
     const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
     if (task === void 0)
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE25)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE26)));
     if (ids3(args2.values, "approve").length + ids3(args2.values, "reject").length > 0)
       return Promise.resolve(decide5(ctx, paths, task, args2.values));
     const draft = draftOf2(args2.values);
@@ -66250,7 +66444,7 @@ var parseSpec = (text34) => {
 };
 
 // src/commands/task-spec.ts
-var USAGE26 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
+var USAGE27 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
 var idFrom = (file) => {
   const change2 = /openspec[\\/]changes[\\/]([^\\/]+)[\\/]/.exec(file)?.[1];
   return slugOf(change2 ?? file.replace(/^.*[\\/]/, "").replace(/\.md$/, "")).slice(0, 64);
@@ -66274,7 +66468,7 @@ var portOf = (raw) => {
 var taskFromSpecCommand = {
   path: ["task", "from-spec"],
   summaryKey: "command.task_from_spec.summary",
-  usage: USAGE26,
+  usage: USAGE27,
   status: "ready",
   maxPositionals: 1,
   options: { id: { type: "string" }, goal: { type: "string" }, port: { type: "string" } },
@@ -66285,13 +66479,13 @@ var taskFromSpecCommand = {
     const source3 = file === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(file, ctx.cwd));
     if (file === void 0 || source3?.ok !== true)
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE26, { file: file ?? "-" }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE27, { file: file ?? "-" }))
       );
     const criteria2 = criteriaOf(parseSpec(source3.value), portOf(stringOption(args2.values, "port")));
     const id = stringOption(args2.values, "id") ?? idFrom(file);
     if (criteria2.length === 0 || !TASK_ID.test(id))
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE26, { file }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE27, { file }))
       );
     const contract = {
       id,
@@ -67091,6 +67285,7 @@ var REGISTRY2 = [
   calibrateExplainCommand,
   restoreCheckCommand,
   restoreDrillCommand,
+  cochangeDismissCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

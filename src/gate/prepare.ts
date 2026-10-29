@@ -130,7 +130,7 @@ const measureSize = (
 
 const withCheck = (
   contract: TaskContract,
-  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate" | "infra-plan" | "api-version",
+  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate" | "infra-plan" | "api-version" | "cochange",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -168,11 +168,12 @@ const withConfigured = (
     "infra-plan",
     touchesInfra(changes.flatMap((change) => [change.path, change.oldPath ?? ""])),
   );
-  return withCheck(
+  const withApi = withCheck(
     withInfra,
     "api-version",
     paths.some((path) => UNTYPED_JS.test(path) || PYTHON.test(path)),
   );
+  return withCheck(withApi, "cochange", changes.length > 0);
 };
 
 const shapedContract = (

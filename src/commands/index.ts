@@ -9,6 +9,7 @@ import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
 import { ciWatchCommand } from "./ci-watch.js";
+import { cochangeDismissCommand } from "./cochange.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
@@ -294,6 +295,7 @@ export const REGISTRY = [
   calibrateExplainCommand,
   restoreCheckCommand,
   restoreDrillCommand,
+  cochangeDismissCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

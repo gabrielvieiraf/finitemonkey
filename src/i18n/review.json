@@ -2423,7 +2423,15 @@
     "gate.api_version.keyword": "machine",
     "gate.api_version.deprecated": "machine",
     "gate.api_version.uncertain": "machine",
-    "gate.api_version.not_verified": "machine"
+    "gate.api_version.not_verified": "machine",
+    "gate.cochange.off": "machine",
+    "gate.cochange.ok": "machine",
+    "gate.cochange.shadow": "machine",
+    "gate.cochange.partner": "machine",
+    "command.cochange_dismiss.summary": "machine",
+    "cochange.error.usage": "machine",
+    "cochange.error.person": "machine",
+    "cochange.dismissed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4849,6 +4857,14 @@
     "gate.api_version.keyword": "machine",
     "gate.api_version.deprecated": "machine",
     "gate.api_version.uncertain": "machine",
-    "gate.api_version.not_verified": "machine"
+    "gate.api_version.not_verified": "machine",
+    "gate.cochange.off": "machine",
+    "gate.cochange.ok": "machine",
+    "gate.cochange.shadow": "machine",
+    "gate.cochange.partner": "machine",
+    "command.cochange_dismiss.summary": "machine",
+    "cochange.error.usage": "machine",
+    "cochange.error.person": "machine",
+    "cochange.dismissed": "machine"
   }
 }

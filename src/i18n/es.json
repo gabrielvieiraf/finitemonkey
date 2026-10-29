@@ -2422,5 +2422,13 @@
   "gate.api_version.keyword": "{at}: {symbol} no tiene el argumento con nombre {detail} en la versión {version}",
   "gate.api_version.deprecated": "{at}: {symbol} está obsoleto en la versión {version} (aviso)",
   "gate.api_version.uncertain": "{at}: {symbol} no se pudo resolver de forma estática ({detail}); no es un hallazgo",
-  "gate.api_version.not_verified": "{at}: {symbol} no verificado: {detail}"
+  "gate.api_version.not_verified": "{at}: {symbol} no verificado: {detail}",
+  "gate.cochange.off": "el aviso de cambio conjunto está apagado en policy.yml (cochange)",
+  "gate.cochange.ok": "ningún archivo compañero habitual quedó fuera ({count, plural, one {# commit leído} other {# commits leídos}})",
+  "gate.cochange.shadow": "modo shadow: {count, plural, one {# archivo compañero habitual quedó} other {# archivos compañeros habituales quedaron}} fuera, solo registrado",
+  "gate.cochange.partner": "{file} cambió sin {partner}: cambiaron juntos en {support} commits ({confidence}% de los commits que tocan {file}), por ejemplo {commits}. Solo aviso; `finitemonkey cochange dismiss` silencia el par",
+  "command.cochange_dismiss.summary": "Silencia el aviso de cambio conjunto de un par de archivos, con motivo, hasta que cambie su historial",
+  "cochange.error.usage": "indica los dos archivos y un --reason",
+  "cochange.error.person": "silenciar un par de cambio conjunto es una decisión de la persona, escrita en una terminal",
+  "cochange.dismissed": "{file} y {partner} quedan en silencio hasta que su historial común pase de {support} commits"
 }
