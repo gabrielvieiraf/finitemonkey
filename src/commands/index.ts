@@ -69,6 +69,7 @@ import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
+import { modRecordCommand, modStateCommand } from "./mod.js";
 import { observeCommand } from "./observe.js";
 import { onboardCommand } from "./onboard.js";
 import { organizeCommand } from "./organize.js";
@@ -289,6 +290,8 @@ export const REGISTRY = [
   policyRevertCommand,
   calibrateRefitCommand,
   calibrateExplainCommand,
+  modStateCommand,
+  modRecordCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

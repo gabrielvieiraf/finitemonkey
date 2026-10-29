@@ -2252,7 +2252,11 @@
     "autonomy.item.invalidated": "machine",
     "autonomy.report.hold": "machine",
     "autonomy.report.file": "machine",
-    "autonomy.incomplete": "machine"
+    "autonomy.incomplete": "machine",
+    "command.mod_state.summary": "machine",
+    "command.mod_record.summary": "machine",
+    "mod.state.summary": "machine",
+    "mod.check_failed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4507,6 +4511,10 @@
     "autonomy.item.invalidated": "machine",
     "autonomy.report.hold": "machine",
     "autonomy.report.file": "machine",
-    "autonomy.incomplete": "machine"
+    "autonomy.incomplete": "machine",
+    "command.mod_state.summary": "machine",
+    "command.mod_record.summary": "machine",
+    "mod.state.summary": "machine",
+    "mod.check_failed": "machine"
   }
 }

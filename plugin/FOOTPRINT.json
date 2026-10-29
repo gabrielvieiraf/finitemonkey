@@ -2,8 +2,13 @@
   "schema": "finitemonkey/mod-footprint@1",
   "module": "./register.mjs",
   "reach": [
-    "calls: nothing on $",
-    "hooks: session.start"
+    "calls: $.clock.after (via scheduleRecord, scheduleRefresh), $.process.run (via recordTightening, refreshState), $.session.root (via recordTightening, refreshState)",
+    "hooks: session.start, turn.complete, tool.check"
   ],
-  "gating": []
+  "gating": [
+    {
+      "hook": "tool.check",
+      "hasCatch": true
+    }
+  ]
 }

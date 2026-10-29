@@ -1,4 +1,5 @@
 import type { ModApi, Surface } from "./api.js";
+import type { CheckResult } from "./tighten.js";
 
 export interface SessionStartInput {
   readonly cwd: string;
@@ -10,8 +11,41 @@ export interface SessionStartResult {
   readonly cwd: string;
 }
 
+export interface ToolCheckInput {
+  readonly tool: string;
+  readonly input: unknown;
+  readonly tool_use_id?: string;
+  readonly agentId?: string;
+  readonly isReadOnly?: true;
+}
+
+export type ToolCheckResult = CheckResult;
+
+export interface Usage {
+  readonly input_tokens?: number;
+  readonly output_tokens?: number;
+  readonly cache_read_input_tokens?: number;
+  readonly cache_creation_input_tokens?: number;
+  readonly model?: string;
+}
+
+export interface TurnCompleteInput {
+  readonly turnId: string;
+  readonly answer?: string;
+  readonly durationMs?: number;
+  readonly isAborted?: boolean;
+  readonly usage?: Usage | null;
+  readonly agentId?: string;
+}
+
+export interface TurnCompleteResult {
+  readonly text?: string;
+}
+
 export interface EventTypes {
   readonly "session.start": readonly [SessionStartInput, SessionStartResult];
+  readonly "tool.check": readonly [ToolCheckInput, ToolCheckResult];
+  readonly "turn.complete": readonly [TurnCompleteInput, TurnCompleteResult];
 }
 
 export type EventName = keyof EventTypes;

@@ -2251,5 +2251,9 @@
   "autonomy.item.invalidated": "invalidated: {task} ({why})",
   "autonomy.report.hold": "hold: {reason} in {command}",
   "autonomy.report.file": "Morning report: .finitemonkey/reports/unattended-{run}.json",
-  "autonomy.incomplete": "Unattended run {run} stopped before every part was proven."
+  "autonomy.incomplete": "Unattended run {run} stopped before every part was proven.",
+  "command.mod_state.summary": "Print what the mod tightens: the guard mode and the rules the CLI already enforces",
+  "command.mod_record.summary": "Log a call the mod tightened (used by the mod)",
+  "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# rule} other {# rules}}",
+  "mod.check_failed": "finitemonkey: the mod's permission check failed, so this call was refused. Try the call again; the command hooks still decide it."
 }

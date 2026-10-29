@@ -5982,11 +5982,11 @@ var applyChange = (policy, change2) => {
 };
 var withEvolved = (runtime, root, policy) => {
   const state = readEvolve(runtime, root);
-  const live = state.variants.filter((variant) => variant.status === "promoted" || variant.status === "trial");
-  if (live.length === 0) return policy;
+  const live2 = state.variants.filter((variant) => variant.status === "promoted" || variant.status === "trial");
+  if (live2.length === 0) return policy;
   const task = activeTaskOf(runtime, root);
   if (evolveModeOf(policy, task) !== "active") return policy;
-  return live.filter((variant) => appliesTo(variant, task)).reduce((next2, variant) => applyChange(next2, variant.change), policy);
+  return live2.filter((variant) => appliesTo(variant, task)).reduce((next2, variant) => applyChange(next2, variant.change), policy);
 };
 var trialFor = (runtime, root, policy) => {
   const task = activeTaskOf(runtime, root);
@@ -6126,7 +6126,8 @@ var OPTIONAL_GUARDS = [
   "forecast",
   "evolve",
   "calibrate",
-  "autonomy"
+  "autonomy",
+  "mod-tighten"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -8875,7 +8876,11 @@ var en_default = {
   "autonomy.item.invalidated": "invalidated: {task} ({why})",
   "autonomy.report.hold": "hold: {reason} in {command}",
   "autonomy.report.file": "Morning report: .finitemonkey/reports/unattended-{run}.json",
-  "autonomy.incomplete": "Unattended run {run} stopped before every part was proven."
+  "autonomy.incomplete": "Unattended run {run} stopped before every part was proven.",
+  "command.mod_state.summary": "Print what the mod tightens: the guard mode and the rules the CLI already enforces",
+  "command.mod_record.summary": "Log a call the mod tightened (used by the mod)",
+  "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# rule} other {# rules}}",
+  "mod.check_failed": "finitemonkey: the mod's permission check failed, so this call was refused. Try the call again; the command hooks still decide it."
 };
 
 // src/i18n/es.json
@@ -11132,7 +11137,11 @@ var es_default = {
   "autonomy.item.invalidated": "invalidado: {task} ({why})",
   "autonomy.report.hold": "retención: {reason} en {command}",
   "autonomy.report.file": "Informe de la mañana: .finitemonkey/reports/unattended-{run}.json",
-  "autonomy.incomplete": "La ejecución sin supervisión {run} se detuvo antes de probar todas las partes."
+  "autonomy.incomplete": "La ejecución sin supervisión {run} se detuvo antes de probar todas las partes.",
+  "command.mod_state.summary": "Muestra lo que el mod endurece: el modo del guard y las reglas que el CLI ya aplica",
+  "command.mod_record.summary": "Registra una llamada que el mod endureció (la usa el mod)",
+  "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# regla} other {# reglas}}",
+  "mod.check_failed": "finitemonkey: la verificación de permisos del mod falló, así que esta llamada fue rechazada. Inténtalo de nuevo; los command hooks siguen decidiendo."
 };
 
 // src/i18n/pt-BR.json
@@ -13389,7 +13398,11 @@ var pt_BR_default = {
   "autonomy.item.invalidated": "invalidado: {task} ({why})",
   "autonomy.report.hold": "retenção: {reason} em {command}",
   "autonomy.report.file": "Relatório da manhã: .finitemonkey/reports/unattended-{run}.json",
-  "autonomy.incomplete": "A execução sem supervisão {run} parou antes de provar todas as partes."
+  "autonomy.incomplete": "A execução sem supervisão {run} parou antes de provar todas as partes.",
+  "command.mod_state.summary": "Mostra o que o mod aperta: o modo do guard e as regras que o CLI já aplica",
+  "command.mod_record.summary": "Registra uma chamada que o mod apertou (usado pelo mod)",
+  "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# regra} other {# regras}}",
+  "mod.check_failed": "finitemonkey: a checagem de permissão do mod falhou, então esta chamada foi recusada. Tente de novo; os command hooks continuam decidindo."
 };
 
 // src/i18n/review.json
@@ -15647,7 +15660,11 @@ var review_default = {
     "autonomy.item.invalidated": "machine",
     "autonomy.report.hold": "machine",
     "autonomy.report.file": "machine",
-    "autonomy.incomplete": "machine"
+    "autonomy.incomplete": "machine",
+    "command.mod_state.summary": "machine",
+    "command.mod_record.summary": "machine",
+    "mod.state.summary": "machine",
+    "mod.check_failed": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -17902,7 +17919,11 @@ var review_default = {
     "autonomy.item.invalidated": "machine",
     "autonomy.report.hold": "machine",
     "autonomy.report.file": "machine",
-    "autonomy.incomplete": "machine"
+    "autonomy.incomplete": "machine",
+    "command.mod_state.summary": "machine",
+    "command.mod_record.summary": "machine",
+    "mod.state.summary": "machine",
+    "mod.check_failed": "machine"
   }
 };
 
@@ -18395,8 +18416,8 @@ var writeExamples = (runtime, paths, task, examples) => {
 };
 var proposeExample = (runtime, paths, task, draft) => {
   const current2 = readExamples(runtime, paths, task);
-  const live = current2.filter((example2) => example2.status !== "rejected");
-  if (live.length >= MAX_EXAMPLES) return reject("full");
+  const live2 = current2.filter((example2) => example2.status !== "rejected");
+  if (live2.length >= MAX_EXAMPLES) return reject("full");
   const next2 = Math.max(0, ...current2.map((example2) => Number.parseInt(example2.id.slice(1), 10))) + 1;
   const example = { id: `E${String(next2)}`, status: "proposed", ...draft };
   const wrote = writeExamples(runtime, paths, task, [...current2, example]);
@@ -24462,9 +24483,9 @@ var readVersion = (runtime, cwd, url2, field) => {
   const commit2 = commitIn(lines8.slice(0, -1).join("\n"), field);
   return { kind: "answered", status, ...commit2 === void 0 ? {} : { commit: commit2 } };
 };
-var sameCommit = (live, expected) => {
-  if (live === void 0 || live.length < 7) return false;
-  const a = live.toLowerCase();
+var sameCommit = (live2, expected) => {
+  if (live2 === void 0 || live2.length < 7) return false;
+  const a = live2.toLowerCase();
   const b = expected.toLowerCase();
   return a.startsWith(b) || b.startsWith(a);
 };
@@ -24650,9 +24671,9 @@ var withRun = (runtime, root, verdict4) => {
 var byVersion = (runtime, root, config, url2, expected) => {
   const read10 = readVersion(runtime, root, url2, config.field);
   if (read10.kind === "unreachable") return { state: "unreachable", expected, url: url2, detail: read10.detail };
-  const live = read10.commit;
-  const base = { expected, url: url2, ...live === void 0 ? {} : { live } };
-  if (read10.status === config.status && sameCommit(live, expected)) return { ...base, state: "live" };
+  const live2 = read10.commit;
+  const base = { expected, url: url2, ...live2 === void 0 ? {} : { live: live2 } };
+  if (read10.status === config.status && sameCommit(live2, expected)) return { ...base, state: "live" };
   return withRun(runtime, root, {
     ...base,
     state: "not_live",
@@ -31507,17 +31528,17 @@ var findDivergence = (input) => {
   const noChange = readings[0];
   if (noChange !== void 0 && examples.length > 0 && passesAll(runtime, noChange, examples))
     return { kind: "no_change", reading: noChange.id };
-  const live = readings.filter((reading2) => !reading2.noChange && passesAll(runtime, reading2, examples));
-  if (live.length < 2) return { kind: "too_few", readings: live.length };
+  const live2 = readings.filter((reading2) => !reading2.noChange && passesAll(runtime, reading2, examples));
+  if (live2.length < 2) return { kind: "too_few", readings: live2.length };
   const run10 = examples[0]?.run;
   const probes = input.candidates.inputs.slice(0, MAX_INPUTS).filter((probe) => allowed(probe, input.beginner));
-  if (run10 === void 0) return { kind: "agree", readings: live.length, inputs: 0 };
+  if (run10 === void 0) return { kind: "agree", readings: live2.length, inputs: 0 };
   for (const probe of probes) {
-    const options2 = optionsFor(runtime, live, run10, probe.input);
+    const options2 = optionsFor(runtime, live2, run10, probe.input);
     if (options2.length > 1)
       return { kind: "question", question: { task: input.task, input: probe.input, run: run10, topic: probe.topic, options: options2 } };
   }
-  return { kind: "agree", readings: live.length, inputs: probes.length };
+  return { kind: "agree", readings: live2.length, inputs: probes.length };
 };
 var beginnerIn = (runtime, paths) => (domain) => {
   const profile = readProfile2(runtime, paths);
@@ -35580,14 +35601,14 @@ var diffCheck = (_check, ctx) => {
 // src/mutation/strength.ts
 import { join as join89 } from "node:path";
 var isDecorative = (item2) => item2.measured && item2.total > 0 && item2.killed === 0;
-var killedBy = (at5, dir, mutant, live) => {
+var killedBy = (at5, dir, mutant, live2) => {
   const path = toAbsolutePath(join89(dir, mutant.file));
   const original = at5.runtime.readText(path);
   const mutated = original.ok ? applyMutant(original.value, mutant) : void 0;
   if (!original.ok || mutated === void 0) return /* @__PURE__ */ new Set();
   at5.runtime.writeText(path, mutated);
   try {
-    return new Set(live.filter((criterion) => criterion.passes(at5) === false).map((criterion) => criterion.id));
+    return new Set(live2.filter((criterion) => criterion.passes(at5) === false).map((criterion) => criterion.id));
   } finally {
     at5.runtime.writeText(path, original.value);
   }
@@ -35597,15 +35618,15 @@ var measure = (ctx, dir, criteria2, mutants) => {
   const installed = installFrozen(ctx.runtime, dir, ctx.deadline);
   if (!installed.ok) return { kind: "unavailable", detail: installed.error.detail };
   const at5 = { ...ctx, paths: { ...ctx.paths, root: dir }, baseline: void 0 };
-  const live = criteria2.filter((criterion) => criterion.passes(at5) === true);
-  const kills = mutants.map((mutant) => killedBy(at5, dir, mutant, live));
+  const live2 = criteria2.filter((criterion) => criterion.passes(at5) === true);
+  const kills = mutants.map((mutant) => killedBy(at5, dir, mutant, live2));
   return {
     kind: "ran",
     criteria: criteria2.map((criterion) => ({
       id: criterion.id,
       killed: kills.filter((set2) => set2.has(criterion.id)).length,
       total: mutants.length,
-      measured: live.includes(criterion)
+      measured: live2.includes(criterion)
     }))
   };
 };
@@ -40655,11 +40676,11 @@ var classify3 = (context, tree, entry2) => {
   const path = tree?.path ?? entry2?.path ?? "";
   const dir = toAbsolutePath(path);
   const exists3 = context.runtime.stat(dir)?.kind === "dir";
-  const live = exists3 && tree !== void 0 && !tree.prunable;
+  const live2 = exists3 && tree !== void 0 && !tree.prunable;
   const facts = {
     exists: exists3,
-    dirty: live ? dirtyFiles(context.runtime, dir, context.generated) : [],
-    pids: live ? pidsInside(context, path) : [],
+    dirty: live2 ? dirtyFiles(context.runtime, dir, context.generated) : [],
+    pids: live2 ? pidsInside(context, path) : [],
     activityAt: tree === void 0 ? entry2?.activityAt ?? null : activityOf(context.runtime, tree) ?? null,
     tip: tree?.head ?? null
   };
@@ -55591,6 +55612,143 @@ var mergeCommand = {
   }
 };
 
+// src/mod/state.ts
+var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
+
+// src/bridge/state.ts
+var MOD_TIGHTEN_GUARD = "mod-tighten";
+var MAX_HELD_FILES = 500;
+var POLICY_PATH = String.raw`(?:^|/)\.finitemonkey/(?!reports/[^/]+\.json$)`;
+var REGISTRY_PATH = String.raw`(?:^|/)\.git/(?:worktrees/[^/]+/)?finitemonkey(?:/|$)`;
+var LEAKS_IGNORE = String.raw`(?:^|/)\.gitleaksignore$`;
+var SHELL_WRITE_FM = String.raw`(?:>|\btee\b|\brm\b|\bmv\b|\bcp\b|\btruncate\b|\bsed\s+-i)[^;&|]*\.finitemonkey/(?!reports/)`;
+var NO_VERIFY2 = String.raw`(?:^|[\s;&|(])git\b[^;&|]*\s--no-verify\b`;
+var HOOKS_PATH = String.raw`core\.hooks[Pp]ath`;
+var escape5 = (text30) => text30.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+var live = (runtime, paths, guard) => activeGrant(runtime, paths, guard, nowMs(runtime), void 0) !== void 0;
+var selfRules = (t) => [
+  {
+    id: "self.policy",
+    target: "path",
+    pattern: POLICY_PATH,
+    reason: modelReason(t, "gate.guard.self.policy", { file: ".finitemonkey/" })
+  },
+  {
+    id: "self.registry",
+    target: "path",
+    pattern: REGISTRY_PATH,
+    reason: modelReason(t, "gate.guard.self.registry", { file: ".git/finitemonkey/" })
+  },
+  {
+    id: "self.leaks_ignore",
+    target: "path",
+    pattern: LEAKS_IGNORE,
+    reason: modelReason(t, "gate.guard.self.policy", { file: ".gitleaksignore" })
+  },
+  {
+    id: "self.shell",
+    target: "command",
+    pattern: SHELL_WRITE_FM,
+    reason: modelReason(t, "gate.guard.self.policy", { file: ".finitemonkey/" })
+  }
+];
+var bypassRules = (t) => [
+  {
+    id: "bypass.no_verify",
+    target: "command",
+    pattern: NO_VERIFY2,
+    reason: modelReason(t, "gate.guard.bypass.no_verify", { detail: "--no-verify" })
+  },
+  {
+    id: "bypass.hooks_path",
+    target: "command",
+    pattern: HOOKS_PATH,
+    reason: modelReason(t, "gate.guard.bypass.hooks_path", { detail: "core.hooksPath" })
+  }
+];
+var heldTestRules = (runtime, paths, t) => {
+  if (featureMode(runtime, paths, TESTS_HOLD_GUARD) !== "active" || live(runtime, paths, "tests")) return [];
+  const scope2 = activeScope(runtime, paths);
+  const created4 = new Set(createdFiles(runtime, paths));
+  const tracked = (gitAt(runtime, paths.root).out(["ls-files", "-z"]) ?? "").split("\0");
+  return tracked.filter((file) => file !== "" && isTestFile(file) && !isSnapshot(file) && !created4.has(file)).filter((file) => scope2 === void 0 || !isListed(scope2, file)).slice(0, MAX_HELD_FILES).map((file) => ({
+    id: "tests.held",
+    target: "path",
+    pattern: `^${escape5(file)}$`,
+    reason: modelReason(t, "gate.guard.tests.held", { file })
+  }));
+};
+var modState = (runtime, paths, t) => ({
+  schema: MOD_STATE_SCHEMA,
+  root: paths.root,
+  mode: featureMode(runtime, paths, MOD_TIGHTEN_GUARD),
+  failReason: t("mod.check_failed"),
+  rules: [
+    ...live(runtime, paths, "self") ? [] : selfRules(t),
+    ...live(runtime, paths, "bypass") ? [] : bypassRules(t),
+    ...heldTestRules(runtime, paths, t)
+  ]
+});
+
+// src/commands/mod.ts
+var projectOf4 = (ctx) => {
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  return root === void 0 ? void 0 : fmPaths(root);
+};
+var noRepo = (ctx) => failureFrom(ctx.t, {
+  code: "not_a_git_repo",
+  messageKey: "error.not_a_git_repo",
+  params: {},
+  fix: "git init",
+  exitCode: ExitCode.NotConfigured
+});
+var showState = (ctx) => {
+  const paths = projectOf4(ctx);
+  if (paths === void 0) return noRepo(ctx);
+  const state = modState(ctx.runtime, paths, ctx.t);
+  return success(state, [
+    ctx.t("mod.state.summary", { mode: state.mode, count: state.rules.length }),
+    ...state.rules.map((rule) => `${rule.id}: ${rule.pattern}`)
+  ]);
+};
+var MODES = /* @__PURE__ */ new Set(["off", "shadow", "active"]);
+var recordTightening = (ctx, rule, tool, mode) => {
+  const paths = projectOf4(ctx);
+  if (paths === void 0) return noRepo(ctx);
+  if (rule === void 0 || tool === void 0 || mode === void 0 || !MODES.has(mode))
+    return failureFrom(ctx.t, {
+      code: "invalid_arguments",
+      messageKey: "error.invalid_arguments",
+      params: { detail: "--rule, --tool and --mode are required" },
+      fix: "finitemonkey help mod record",
+      exitCode: ExitCode.Usage
+    });
+  logEvent(ctx.runtime, paths, "mod_tightened", { rule, tool, mode });
+  return success({ rule, tool, mode }, []);
+};
+var modStateCommand = {
+  path: ["mod", "state"],
+  summaryKey: "command.mod_state.summary",
+  usage: "finitemonkey mod state [--json]",
+  status: "ready",
+  run: (ctx) => Promise.resolve(showState(ctx))
+};
+var modRecordCommand = {
+  path: ["mod", "record"],
+  summaryKey: "command.mod_record.summary",
+  usage: "finitemonkey mod record --rule <id> --tool <name> --mode shadow|active",
+  status: "ready",
+  options: { rule: { type: "string" }, tool: { type: "string" }, mode: { type: "string" } },
+  run: (ctx, args2) => Promise.resolve(
+    recordTightening(
+      ctx,
+      stringOption(args2.values, "rule"),
+      stringOption(args2.values, "tool"),
+      stringOption(args2.values, "mode")
+    )
+  )
+};
+
 // src/observe/templates.ts
 var SCRUB_PATH = "observability/scrub.mjs";
 var LOG_PATH = "observability/log.mjs";
@@ -60666,11 +60824,11 @@ var problem4 = (code2, messageKey, fix, params2 = {}, exitCode = ExitCode.Usage)
   fix,
   exitCode
 });
-var projectOf4 = (ctx) => {
+var projectOf5 = (ctx) => {
   const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
   return root === void 0 ? void 0 : fmPaths(root);
 };
-var noRepo = (ctx) => failureFrom(ctx.t, problem4("not_a_git_repo", "error.not_a_git_repo", "git init", {}, ExitCode.NotConfigured));
+var noRepo2 = (ctx) => failureFrom(ctx.t, problem4("not_a_git_repo", "error.not_a_git_repo", "git init", {}, ExitCode.NotConfigured));
 var list9 = (values, name) => {
   const value2 = values[name];
   const raw = Array.isArray(value2) ? value2 : typeof value2 === "string" ? [value2] : [];
@@ -60715,8 +60873,8 @@ var newTask = (ctx, id, values) => {
       ctx.t,
       problem4("invalid_arguments", "error.invalid_arguments", "finitemonkey help task new", { detail: "missing <id>" })
     );
-  const paths = projectOf4(ctx);
-  if (paths === void 0) return noRepo(ctx);
+  const paths = projectOf5(ctx);
+  if (paths === void 0) return noRepo2(ctx);
   const budget = budgetStatus({ runtime: ctx.runtime, paths, env: ctx.env, sessionId: void 0, refresh: true });
   if (blocksNewTask(budget))
     return failureFrom(
@@ -60743,8 +60901,8 @@ var newTask = (ctx, id, values) => {
   };
 };
 var showTask = (ctx, id) => {
-  const paths = projectOf4(ctx);
-  if (paths === void 0) return noRepo(ctx);
+  const paths = projectOf5(ctx);
+  if (paths === void 0) return noRepo2(ctx);
   const active = readState(ctx.runtime, paths).active;
   const target5 = id ?? active;
   const report4 = currentReport(ctx.runtime, paths, void 0, target5);
@@ -60770,8 +60928,8 @@ var closeShortcuts = (ctx, paths, id) => {
   return shortcuts.filter((item2) => item2.trigger === void 0).map((item2) => ctx.t("debt.no_trigger", { what: item2.what }));
 };
 var doneTask = (ctx, id) => {
-  const paths = projectOf4(ctx);
-  if (paths === void 0) return noRepo(ctx);
+  const paths = projectOf5(ctx);
+  if (paths === void 0) return noRepo2(ctx);
   const target5 = id ?? readState(ctx.runtime, paths).active;
   const run10 = runGate({
     runtime: ctx.runtime,
@@ -62072,6 +62230,8 @@ var REGISTRY2 = [
   policyRevertCommand,
   calibrateRefitCommand,
   calibrateExplainCommand,
+  modStateCommand,
+  modRecordCommand,
   versionCommand,
   helpCommand
 ];

@@ -2251,5 +2251,9 @@
   "autonomy.item.invalidated": "invalidado: {task} ({why})",
   "autonomy.report.hold": "retención: {reason} en {command}",
   "autonomy.report.file": "Informe de la mañana: .finitemonkey/reports/unattended-{run}.json",
-  "autonomy.incomplete": "La ejecución sin supervisión {run} se detuvo antes de probar todas las partes."
+  "autonomy.incomplete": "La ejecución sin supervisión {run} se detuvo antes de probar todas las partes.",
+  "command.mod_state.summary": "Muestra lo que el mod endurece: el modo del guard y las reglas que el CLI ya aplica",
+  "command.mod_record.summary": "Registra una llamada que el mod endureció (la usa el mod)",
+  "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# regla} other {# reglas}}",
+  "mod.check_failed": "finitemonkey: la verificación de permisos del mod falló, así que esta llamada fue rechazada. Inténtalo de nuevo; los command hooks siguen decidiendo."
 }
