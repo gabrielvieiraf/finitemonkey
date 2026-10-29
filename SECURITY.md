@@ -79,6 +79,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `explain-approval` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `premise-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `focus-card` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `attention` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 <!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->

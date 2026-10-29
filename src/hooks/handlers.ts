@@ -1,6 +1,7 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { EXPLAIN_APPROVAL_FEATURE, EXPLAIN_APPROVAL_HANDLERS } from "../approve/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
+import { ATTENTION_FEATURE, ATTENTION_HANDLERS } from "../attention/hook.js";
 import { UNATTENDED_HANDLERS } from "../autonomy/hold.js";
 import { CALIBRATE_HANDLERS } from "../calibrate/hooks.js";
 import { CLAIMS_HANDLERS } from "../claims/guard.js";
@@ -251,6 +252,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
   { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
   { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
+  { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

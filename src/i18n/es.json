@@ -2475,5 +2475,12 @@
   "focus.park.done": "Aparcada como {id}. Recupérala con `finitemonkey unpark {id}`.",
   "focus.unpark.missing": "No hay idea aparcada con id {id}.",
   "command.park.summary": "Aparcar una idea fuera de la tarea actual para después, o listar las aparcadas",
-  "command.unpark.summary": "Recuperar una idea aparcada"
+  "command.unpark.summary": "Recuperar una idea aparcada",
+  "attention.ask": "Una sesión te está esperando: {message}",
+  "attention.gate": "El gate terminó para {task}: {status}",
+  "attention.timebox": "La tarea {task} lleva {elapsed} h, más que las {horizon} h que suelen tomar tus tareas parecidas (percentil 80). Reduce el alcance, separa una subtarea o continúa; esto se pregunta una vez por tarea.",
+  "attention.rhythm": "Esta sesión pasó de {hours} h o de la medianoche. Una pausa puede ayudar; este aviso se puede apagar en policy.yml (person.rhythmHours).",
+  "attention.queue.line": "{front} ({kind}, esperando {minutes} min): {text}",
+  "attention.queue.empty": "Nada te espera.",
+  "command.attention.summary": "Listar lo que cada frente espera de ti, en una cola por prioridad, con el tiempo de espera"
 }

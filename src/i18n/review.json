@@ -2476,7 +2476,14 @@
     "focus.park.done": "machine",
     "focus.unpark.missing": "machine",
     "command.park.summary": "machine",
-    "command.unpark.summary": "machine"
+    "command.unpark.summary": "machine",
+    "attention.ask": "machine",
+    "attention.gate": "machine",
+    "attention.timebox": "machine",
+    "attention.rhythm": "machine",
+    "attention.queue.line": "machine",
+    "attention.queue.empty": "machine",
+    "command.attention.summary": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4955,6 +4962,13 @@
     "focus.park.done": "machine",
     "focus.unpark.missing": "machine",
     "command.park.summary": "machine",
-    "command.unpark.summary": "machine"
+    "command.unpark.summary": "machine",
+    "attention.ask": "machine",
+    "attention.gate": "machine",
+    "attention.timebox": "machine",
+    "attention.rhythm": "machine",
+    "attention.queue.line": "machine",
+    "attention.queue.empty": "machine",
+    "command.attention.summary": "machine"
   }
 }

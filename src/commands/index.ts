@@ -1,6 +1,7 @@
 import { appCheckCommand } from "./app-check.js";
 import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { archCommand } from "./arch.js";
+import { attentionCommand } from "./attention.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
@@ -296,6 +297,7 @@ export const REGISTRY = [
   ...DATA_COMMANDS,
   parkCommand,
   unparkCommand,
+  attentionCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

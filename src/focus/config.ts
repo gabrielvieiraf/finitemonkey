@@ -8,9 +8,11 @@ export const PERSON_SECTION = "person";
 export interface PersonConfig {
   readonly projectLimit: number;
   readonly idleMinutes: number;
+  readonly quietHours: string;
+  readonly rhythmHours: number;
 }
 
-export const DEFAULT_PERSON: PersonConfig = { projectLimit: 3, idleMinutes: 30 };
+export const DEFAULT_PERSON: PersonConfig = { projectLimit: 3, idleMinutes: 30, quietHours: "", rhythmHours: 0 };
 
 const whole = (raw: string | undefined, fallback: number): number => {
   const value = Number(raw);
@@ -22,6 +24,8 @@ export const parsePerson = (tree: ConfigTree): PersonConfig => {
   return {
     projectLimit: whole(raw["projectLimit"], DEFAULT_PERSON.projectLimit),
     idleMinutes: whole(raw["idleMinutes"], DEFAULT_PERSON.idleMinutes),
+    quietHours: raw["quietHours"] ?? DEFAULT_PERSON.quietHours,
+    rhythmHours: whole(raw["rhythmHours"], DEFAULT_PERSON.rhythmHours),
   };
 };
 

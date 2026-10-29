@@ -2475,5 +2475,12 @@
   "focus.park.done": "Parked as {id}. Bring it back with `finitemonkey unpark {id}`.",
   "focus.unpark.missing": "No parked idea with id {id}.",
   "command.park.summary": "Park an idea outside the current task for later, or list parked ideas",
-  "command.unpark.summary": "Bring back a parked idea"
+  "command.unpark.summary": "Bring back a parked idea",
+  "attention.ask": "A session is waiting on you: {message}",
+  "attention.gate": "Gate finished for {task}: {status}",
+  "attention.timebox": "Task {task} has run {elapsed} h, past the {horizon} h your similar tasks usually take (80th percentile). Reduce the scope, split a subtask, or continue; this is asked once per task.",
+  "attention.rhythm": "This session has gone past {hours} h or past midnight. A break may help; this notice can be turned off in policy.yml (person.rhythmHours).",
+  "attention.queue.line": "{front} ({kind}, waiting {minutes} min): {text}",
+  "attention.queue.empty": "Nothing waits on you.",
+  "command.attention.summary": "List what every front waits on you for, in one queue ordered by priority, with wait times"
 }
