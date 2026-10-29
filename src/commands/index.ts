@@ -43,6 +43,7 @@ import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { goldenAcceptCommand } from "./golden.js";
 import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
+import { guardianAssumeAddCommand, guardianAssumeListCommand, guardianAssumeVerifyCommand } from "./guardian-assume.js";
 import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
@@ -266,6 +267,9 @@ export const REGISTRY = [
   decideAcceptCommand,
   guardianReviewCommand,
   guardianForgetCommand,
+  guardianAssumeListCommand,
+  guardianAssumeAddCommand,
+  guardianAssumeVerifyCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -2147,5 +2147,13 @@
   "guardian.review.tally": "Followed: {followed} ({followedReverted} reverted). Overridden: {overridden} ({overriddenReverted} reverted).",
   "guardian.review.yes": "yes",
   "guardian.review.no": "no",
-  "guardian.forgotten": "Deleted {id}."
+  "guardian.forgotten": "Deleted {id}.",
+  "command.guardian_assume_list.summary": "List the assumption register, marking for review those whose trigger fired",
+  "command.guardian_assume_add.summary": "Add an assumption with impact, how to verify it and a re-evaluation trigger",
+  "command.guardian_assume_verify.summary": "Mark an assumption verified (or false with --false), citing the evidence",
+  "guardian.assumptions.reason": "This {kind} step ({target}) depends on unverified high-impact assumptions:\n{list}\nCheck each one in the cheapest way listed, record it with finitemonkey guardian assume verify <id> --evidence <file:line or output>, then run the step again.",
+  "guardian.assumptions.human": "held a {kind} step once: {count, plural, one {# unverified high-impact assumption} other {# unverified high-impact assumptions}}; see finitemonkey guardian assume list.",
+  "guardian.assumptions.empty": "No assumption recorded.",
+  "guardian.assumptions.marked": "{id} marked {status}.",
+  "guardian.error.verify": "Give the assumption id and the evidence."
 }

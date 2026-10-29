@@ -2148,7 +2148,15 @@
     "guardian.review.tally": "machine",
     "guardian.review.yes": "machine",
     "guardian.review.no": "machine",
-    "guardian.forgotten": "machine"
+    "guardian.forgotten": "machine",
+    "command.guardian_assume_list.summary": "machine",
+    "command.guardian_assume_add.summary": "machine",
+    "command.guardian_assume_verify.summary": "machine",
+    "guardian.assumptions.reason": "machine",
+    "guardian.assumptions.human": "machine",
+    "guardian.assumptions.empty": "machine",
+    "guardian.assumptions.marked": "machine",
+    "guardian.error.verify": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4299,6 +4307,14 @@
     "guardian.review.tally": "machine",
     "guardian.review.yes": "machine",
     "guardian.review.no": "machine",
-    "guardian.forgotten": "machine"
+    "guardian.forgotten": "machine",
+    "command.guardian_assume_list.summary": "machine",
+    "command.guardian_assume_add.summary": "machine",
+    "command.guardian_assume_verify.summary": "machine",
+    "guardian.assumptions.reason": "machine",
+    "guardian.assumptions.human": "machine",
+    "guardian.assumptions.empty": "machine",
+    "guardian.assumptions.marked": "machine",
+    "guardian.error.verify": "machine"
   }
 }

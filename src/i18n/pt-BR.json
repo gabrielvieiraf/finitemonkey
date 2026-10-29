@@ -2147,5 +2147,13 @@
   "guardian.review.tally": "Seguidas: {followed} ({followedReverted} revertidas). Contrariadas: {overridden} ({overriddenReverted} revertidas).",
   "guardian.review.yes": "sim",
   "guardian.review.no": "não",
-  "guardian.forgotten": "{id} apagado."
+  "guardian.forgotten": "{id} apagado.",
+  "command.guardian_assume_list.summary": "Lista o registro de premissas, marcando para revisão as que tiveram o gatilho disparado",
+  "command.guardian_assume_add.summary": "Adiciona uma premissa com impacto, como verificá-la e um gatilho de reavaliação",
+  "command.guardian_assume_verify.summary": "Marca uma premissa como verificada (ou falsa com --false), citando a evidência",
+  "guardian.assumptions.reason": "Este passo de {kind} ({target}) depende de premissas de alto impacto não verificadas:\n{list}\nConfira cada uma do jeito mais barato listado, grave com finitemonkey guardian assume verify <id> --evidence <arquivo:linha ou saída> e rode o passo de novo.",
+  "guardian.assumptions.human": "segurei um passo de {kind} uma vez: {count, plural, one {# premissa de alto impacto sem verificação} other {# premissas de alto impacto sem verificação}}; veja finitemonkey guardian assume list.",
+  "guardian.assumptions.empty": "Nenhuma premissa gravada.",
+  "guardian.assumptions.marked": "{id} marcada como {status}.",
+  "guardian.error.verify": "Informe o id da premissa e a evidência."
 }

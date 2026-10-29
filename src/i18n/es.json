@@ -2147,5 +2147,13 @@
   "guardian.review.tally": "Seguidas: {followed} ({followedReverted} revertidas). Contrariadas: {overridden} ({overriddenReverted} revertidas).",
   "guardian.review.yes": "sí",
   "guardian.review.no": "no",
-  "guardian.forgotten": "{id} borrado."
+  "guardian.forgotten": "{id} borrado.",
+  "command.guardian_assume_list.summary": "Lista el registro de supuestos, marcando para revisión los que tuvieron su disparador activado",
+  "command.guardian_assume_add.summary": "Agrega un supuesto con impacto, cómo verificarlo y un disparador de reevaluación",
+  "command.guardian_assume_verify.summary": "Marca un supuesto como verificado (o falso con --false), citando la evidencia",
+  "guardian.assumptions.reason": "Este paso de {kind} ({target}) depende de supuestos de alto impacto sin verificar:\n{list}\nComprueba cada uno de la forma más barata indicada, regístralo con finitemonkey guardian assume verify <id> --evidence <archivo:línea o salida> y ejecuta el paso otra vez.",
+  "guardian.assumptions.human": "retuve un paso de {kind} una vez: {count, plural, one {# supuesto de alto impacto sin verificar} other {# supuestos de alto impacto sin verificar}}; mira finitemonkey guardian assume list.",
+  "guardian.assumptions.empty": "Ningún supuesto guardado.",
+  "guardian.assumptions.marked": "{id} marcado como {status}.",
+  "guardian.error.verify": "Indica el id del supuesto y la evidencia."
 }

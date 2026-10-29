@@ -12,7 +12,7 @@ when_to_use: >-
 2. Fill "Today" from the inventory (`finitemonkey inventory <topic>`) on L tasks.
 3. Write the criteria table (criterion, weight 1 to 5, origin) before you list any alternative. Do not change a weight after scoring.
 4. Score every alternative, "Do nothing" included. When a critical criterion has no evidence, write and run a small test and put the command and its result under "Proof".
-5. Mark claims: `FACT: <claim> (<source URL or file:line>, YYYY-MM-DD)`. A FACT without source and date fails the check; write ASSUMPTION or OPINION instead.
+5. Mark claims: `FACT: <claim> (<source URL or file:line>, YYYY-MM-DD)`. A FACT without source and date fails the check; write ASSUMPTION or OPINION instead. An assumption can carry fields after ` | `: `ASSUMPTION: <claim> | impact: high | verify: <cheapest check> | trigger: file:<path>` (or `date:YYYY-MM-DD`); `decide check` copies it to the assumption register, and a task that relies on it lists its id under `assumptions:` in the contract.
 6. Fill reversibility (how to undo it and what that costs), no-regret moves, the delta (added, modified, removed; each removal names its parity row), what you left out on purpose, risks, points to prove and the limits of the analysis.
 7. Put what changes in the master plan under "What changes in the plan" and run `plan consolidate` after.
 8. Run `decide check`. Fix what it lists.

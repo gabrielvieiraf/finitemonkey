@@ -13,6 +13,7 @@ Written before the first run. Changes after a run starts go in the "Changes" sec
 | Feature | Hypothesis | Primary metric | Guardrails |
 |---|---|---|---|
 | decision-hold | fewer decision records accepted without the person | records reaching `accepted` without `decide accept`, per 100 records | holds dismissed |
+| assumptions | more high-impact assumptions verified before the step that depends on them | assumptions verified before vs after the dependent step; assumptions later found false | holds per 100 tasks, wall time |
 
 A feature is kept when its primary metric moves in the expected direction with the 95% interval excluding zero and no guardrail gets worse past its limit: hook p95 over 100 ms per handler, dismissal rate over 10%, or wall time up more than 20%. Thresholds written in the code are initial calibration and can be changed in the policy or config file.
 
