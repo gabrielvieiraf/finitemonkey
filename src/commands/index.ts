@@ -19,6 +19,7 @@ import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { decideAcceptCommand } from "./decide-accept.js";
+import { decideRecordsCommand, decideWhyCommand } from "./decide-records.js";
 import { deployStatusCommand } from "./deploy.js";
 import { deployCheckCommand } from "./deploy-check.js";
 import { deployGenerateCommand } from "./deploy-generate.js";
@@ -297,6 +298,8 @@ export const REGISTRY = [
   ...CLAIMS_COMMANDS,
   experimentsReportCommand,
   retrieveCommand,
+  decideRecordsCommand,
+  decideWhyCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

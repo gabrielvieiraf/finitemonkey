@@ -2354,5 +2354,14 @@
   "knowledge.retrieve.usage": "Pasa una pregunta o un símbolo.",
   "knowledge.retrieve.off": "retrieve está desactivado en .finitemonkey/policy.yml",
   "knowledge.retrieve.none": "Ningún escalón respondió dentro de su presupuesto.",
-  "knowledge.retrieve.step": "Respondido por {step} ({tokens} tokens):"
+  "knowledge.retrieve.step": "Respondido por {step} ({tokens} tokens):",
+  "command.decide_records.summary": "Lista los registros de decisión armados cuando una tarea cerró con un cambio de dependencia, proveedor o arquitectura",
+  "command.decide_why.summary": "Escribe la frase del porqué de un registro de decisión; solo una persona en una terminal",
+  "knowledge.records.none": "Todavía no hay registros de decisión.",
+  "knowledge.records.row": "{task}: {changes}; por qué: {reason}; reverts en 7 días: {reverted}",
+  "knowledge.records.no_reason": "sin motivo",
+  "knowledge.records.usage": "Pasa la tarea y una frase.",
+  "knowledge.records.person": "Solo una persona en una terminal escribe el motivo de una decisión.",
+  "knowledge.records.unknown": "No hay registro de decisión para {task}.",
+  "knowledge.records.saved": "Motivo guardado para {task}."
 }

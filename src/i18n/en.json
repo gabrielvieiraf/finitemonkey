@@ -2354,5 +2354,14 @@
   "knowledge.retrieve.usage": "Give a question or a symbol.",
   "knowledge.retrieve.off": "retrieve is off in .finitemonkey/policy.yml",
   "knowledge.retrieve.none": "No step answered within its budget.",
-  "knowledge.retrieve.step": "Answered by {step} ({tokens} tokens):"
+  "knowledge.retrieve.step": "Answered by {step} ({tokens} tokens):",
+  "command.decide_records.summary": "List the decision records assembled when a task closed with a dependency, vendor or architecture change",
+  "command.decide_why.summary": "Write the one sentence of why for a decision record; only a person in a terminal",
+  "knowledge.records.none": "No decision records yet.",
+  "knowledge.records.row": "{task}: {changes}; why: {reason}; reverts within 7 days: {reverted}",
+  "knowledge.records.no_reason": "no reason",
+  "knowledge.records.usage": "Give the task and one sentence.",
+  "knowledge.records.person": "Only a person in a terminal writes the reason of a decision.",
+  "knowledge.records.unknown": "No decision record for {task}.",
+  "knowledge.records.saved": "Reason saved for {task}."
 }

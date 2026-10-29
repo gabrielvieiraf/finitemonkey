@@ -2355,7 +2355,16 @@
     "knowledge.retrieve.usage": "machine",
     "knowledge.retrieve.off": "machine",
     "knowledge.retrieve.none": "machine",
-    "knowledge.retrieve.step": "machine"
+    "knowledge.retrieve.step": "machine",
+    "command.decide_records.summary": "machine",
+    "command.decide_why.summary": "machine",
+    "knowledge.records.none": "machine",
+    "knowledge.records.row": "machine",
+    "knowledge.records.no_reason": "machine",
+    "knowledge.records.usage": "machine",
+    "knowledge.records.person": "machine",
+    "knowledge.records.unknown": "machine",
+    "knowledge.records.saved": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4713,6 +4722,15 @@
     "knowledge.retrieve.usage": "machine",
     "knowledge.retrieve.off": "machine",
     "knowledge.retrieve.none": "machine",
-    "knowledge.retrieve.step": "machine"
+    "knowledge.retrieve.step": "machine",
+    "command.decide_records.summary": "machine",
+    "command.decide_why.summary": "machine",
+    "knowledge.records.none": "machine",
+    "knowledge.records.row": "machine",
+    "knowledge.records.no_reason": "machine",
+    "knowledge.records.usage": "machine",
+    "knowledge.records.person": "machine",
+    "knowledge.records.unknown": "machine",
+    "knowledge.records.saved": "machine"
   }
 }

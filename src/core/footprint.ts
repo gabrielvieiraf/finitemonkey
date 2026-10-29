@@ -222,6 +222,8 @@ export const FOOTPRINT = [
       ".finitemonkey/derived.json",
       ".finitemonkey/demoted.json",
       ".finitemonkey/retrieve.jsonl",
+      ".finitemonkey/decision-records/",
+      ".finitemonkey/decision-reasons.jsonl",
     ],
   },
 ] as const satisfies readonly FootprintEntry[];
