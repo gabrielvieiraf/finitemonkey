@@ -5,6 +5,7 @@ import { archCheck } from "./arch.js";
 import { blindCheck } from "./blind.js";
 import { callersCheck } from "./callers.js";
 import { claimsCheck } from "./claims.js";
+import { cliCheck } from "./cli.js";
 import { cochangeCheck } from "./cochange.js";
 import { commandCheck } from "./command.js";
 import { contractCheck } from "./contract.js";
@@ -90,4 +91,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   cochange: cochangeCheck,
   "test-budget": testBudgetCheck,
   "red-green": redGreenCheck,
+  cli: cliCheck,
 };
