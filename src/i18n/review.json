@@ -2291,7 +2291,10 @@
     "command.fronts_board.summary": "machine",
     "fronts.board.row": "machine",
     "fronts.board.collision": "machine",
-    "fronts.board.waiting": "machine"
+    "fronts.board.waiting": "machine",
+    "onboard.block.pointers": "machine",
+    "onboard.block.pointer.map": "machine",
+    "onboard.block.trimmed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4585,6 +4588,9 @@
     "command.fronts_board.summary": "machine",
     "fronts.board.row": "machine",
     "fronts.board.collision": "machine",
-    "fronts.board.waiting": "machine"
+    "fronts.board.waiting": "machine",
+    "onboard.block.pointers": "machine",
+    "onboard.block.pointer.map": "machine",
+    "onboard.block.trimmed": "machine"
   }
 }

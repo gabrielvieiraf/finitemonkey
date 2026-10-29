@@ -4906,8 +4906,8 @@ var statusTable = (summary2) => {
   const widths = headers.map(
     (header3, index) => Math.max(header3.length, ...cells.map((cell4) => (cell4[index] ?? "").length))
   );
-  const render3 = (cell4) => cell4.map((value2, index) => pad(value2, widths[index] ?? 0)).join("  ").trimEnd();
-  return [render3(headers), ...cells.map(render3)];
+  const render4 = (cell4) => cell4.map((value2, index) => pad(value2, widths[index] ?? 0)).join("  ").trimEnd();
+  return [render4(headers), ...cells.map(render4)];
 };
 var statusSegment = (state) => {
   if (state.fronts.length === 0) return void 0;
@@ -6146,7 +6146,8 @@ var POLICY_KEYS = [
   "alertBudget",
   "evolve",
   "calibrate",
-  "autonomy"
+  "autonomy",
+  "knowledge"
 ];
 var RETIRED_POLICY_KEYS = ["severity"];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
@@ -8918,7 +8919,10 @@ var en_default = {
   "command.fronts_board.summary": "Show every worktree with its gate, contract and last activity, and files two fronts both changed",
   "fronts.board.row": "{branch}: gate {gate}, contract {contract}{waiting}",
   "fronts.board.collision": "collision: {file} changed in {branches}",
-  "fronts.board.waiting": " · waiting on you"
+  "fronts.board.waiting": " · waiting on you",
+  "onboard.block.pointers": "Where to look",
+  "onboard.block.pointer.map": "symbols by folder: `finitemonkey map` (cached in `{file}`)",
+  "onboard.block.trimmed": "{count} lines left out of the AGENTS.md block to stay within {maxLines} lines and {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens in policy.yml)"
 };
 
 // src/i18n/es.json
@@ -11214,7 +11218,10 @@ var es_default = {
   "command.fronts_board.summary": "Muestra cada worktree con su gate, contrato y última actividad, y los archivos que dos frentes cambiaron",
   "fronts.board.row": "{branch}: gate {gate}, contrato {contract}{waiting}",
   "fronts.board.collision": "colisión: {file} cambió en {branches}",
-  "fronts.board.waiting": " · esperando por ti"
+  "fronts.board.waiting": " · esperando por ti",
+  "onboard.block.pointers": "Dónde buscar",
+  "onboard.block.pointer.map": "símbolos por carpeta: `finitemonkey map` (en caché en `{file}`)",
+  "onboard.block.trimmed": "{count} líneas quedaron fuera del bloque de AGENTS.md para caber en {maxLines} líneas y {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens en policy.yml)"
 };
 
 // src/i18n/pt-BR.json
@@ -13510,7 +13517,10 @@ var pt_BR_default = {
   "command.fronts_board.summary": "Mostra cada worktree com gate, contrato e última atividade, e arquivos que duas frentes mudaram",
   "fronts.board.row": "{branch}: gate {gate}, contrato {contract}{waiting}",
   "fronts.board.collision": "colisão: {file} mudou em {branches}",
-  "fronts.board.waiting": " · esperando você"
+  "fronts.board.waiting": " · esperando você",
+  "onboard.block.pointers": "Onde procurar",
+  "onboard.block.pointer.map": "símbolos por pasta: `finitemonkey map` (em cache em `{file}`)",
+  "onboard.block.trimmed": "{count} linhas ficaram fora do bloco do AGENTS.md para caber em {maxLines} linhas e {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens no policy.yml)"
 };
 
 // src/i18n/review.json
@@ -15807,7 +15817,10 @@ var review_default = {
     "command.fronts_board.summary": "machine",
     "fronts.board.row": "machine",
     "fronts.board.collision": "machine",
-    "fronts.board.waiting": "machine"
+    "fronts.board.waiting": "machine",
+    "onboard.block.pointers": "machine",
+    "onboard.block.pointer.map": "machine",
+    "onboard.block.trimmed": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -18101,7 +18114,10 @@ var review_default = {
     "command.fronts_board.summary": "machine",
     "fronts.board.row": "machine",
     "fronts.board.collision": "machine",
-    "fronts.board.waiting": "machine"
+    "fronts.board.waiting": "machine",
+    "onboard.block.pointers": "machine",
+    "onboard.block.pointer.map": "machine",
+    "onboard.block.trimmed": "machine"
   }
 };
 
@@ -18742,13 +18758,19 @@ var parseOnboard = (text30) => {
     return purpose === void 0 ? [] : [{ purpose, run: item2["run"] }];
   });
   const history = parsed.value["historyFindings"];
-  return { commands, historyFindings: typeof history === "number" ? history : void 0 };
+  const tree = parsed.value["tree"];
+  return {
+    commands,
+    historyFindings: typeof history === "number" ? history : void 0,
+    ...typeof tree === "string" ? { tree } : {}
+  };
 };
 var onboardText = (state) => `${JSON.stringify(
   {
     schema: ONBOARD_SCHEMA,
     commands: state.commands.map((item2) => ({ purpose: item2.purpose, run: item2.run })),
-    ...state.historyFindings === void 0 ? {} : { historyFindings: state.historyFindings }
+    ...state.historyFindings === void 0 ? {} : { historyFindings: state.historyFindings },
+    ...state.tree === void 0 ? {} : { tree: state.tree }
   },
   null,
   2
@@ -18760,13 +18782,13 @@ var onboardChecks = (state) => state.commands.map((item2, index) => ({
   kind: item2.purpose === "test" ? "tests" : "command",
   run: item2.run
 }));
-var agentsBlock = (heading, header3, commands) => [
-  `## ${heading}`,
-  "",
-  header3,
-  "| --- | --- |",
-  ...commands.map((item2) => `| ${item2.purpose} | \`${item2.run.replace(/\|/g, "\\|")}\` |`)
-];
+var commandRows = (commands) => commands.map((item2) => `| ${item2.purpose} | \`${item2.run.replace(/\|/g, "\\|")}\` |`);
+var onboardBlockBody = (text30) => {
+  const lines9 = (text30 ?? "").split(/\r?\n/);
+  const start2 = lines9.findIndex((line12) => line12.trimEnd() === ONBOARD_MARKERS.begin);
+  const end = lines9.findIndex((line12, index) => index > start2 && line12.trimEnd() === ONBOARD_MARKERS.end);
+  return start2 < 0 || end < 0 ? [] : lines9.slice(start2 + 1, end);
+};
 var withOnboardBlock = (text30, body2) => withManagedBlock(text30, ONBOARD_MARKERS, body2);
 var outsideOnboardBlock = (text30) => withoutManagedBlock(text30, ONBOARD_MARKERS);
 var writeIfChanged = (runtime, root, file, text30) => {
@@ -27090,9 +27112,9 @@ var settingsItem = (project, detection, input, previous) => {
 var markdownItems = (project, runner2, lang) => [
   { path: AGENTS_FILE, render: (text30) => withAgentsBlock(text30, runner2, lang) },
   { path: CLAUDE_FILE, render: withAgentsImport }
-].map(({ path, render: render3 }) => {
+].map(({ path, render: render4 }) => {
   const before2 = project.read(path);
-  const after2 = render3(before2);
+  const after2 = render4(before2);
   return { path, kind: "markdown", action: actionFor(before2, after2, "merge"), before: before2, after: after2 };
 });
 var sandboxItems = (project, input) => {
@@ -56822,6 +56844,55 @@ var observeCommand = {
 // src/commands/onboard.ts
 import { join as join164 } from "node:path";
 
+// src/onboard/block.ts
+var DEFAULT_BLOCK_MAX_LINES = 30;
+var DEFAULT_BLOCK_MAX_TOKENS = 400;
+var OVERVIEW_HEADING = /^#{1,6}\s+.*\b(?:overview|summary|architecture|about|introduction|structure|vis[ãa]o geral|resumo|arquitetura|resumen|arquitectura|estructura)\b/iu;
+var blockLimits = (runtime, root) => ({
+  maxLines: policyNumber(runtime, root, ["knowledge", "blockMaxLines"], DEFAULT_BLOCK_MAX_LINES),
+  maxTokens: policyNumber(runtime, root, ["knowledge", "blockMaxTokens"], DEFAULT_BLOCK_MAX_TOKENS)
+});
+var render2 = (sections2) => sections2.filter((section3) => section3.rows.length > 0 || section3.intro.length > 0).flatMap((section3, index) => [
+  ...index === 0 ? [] : [""],
+  section3.heading,
+  "",
+  ...section3.intro,
+  ...section3.rows
+]);
+var fits = (lines9, limits) => {
+  const text30 = lines9.join("\n");
+  return lineCount4(`${text30}
+`) <= limits.maxLines && tokenEstimate(text30) <= limits.maxTokens;
+};
+var withoutOverview = (section3) => ({
+  heading: section3.heading,
+  intro: section3.intro.filter((line12) => !OVERVIEW_HEADING.test(line12)),
+  rows: section3.rows.filter((line12) => !OVERVIEW_HEADING.test(line12))
+});
+var fitBlock = (sections2, limits) => {
+  const kept = sections2.filter((section3) => !OVERVIEW_HEADING.test(section3.heading)).map(withoutOverview);
+  const total = kept.reduce((sum2, section3) => sum2 + section3.rows.length, 0);
+  let current2 = kept;
+  let dropped = 0;
+  while (!fits(render2(current2), limits)) {
+    const last = current2.findLastIndex((section3) => section3.rows.length > 0);
+    if (last < 0) return { lines: [], dropped: total };
+    current2 = current2.map(
+      (section3, index) => index === last ? { ...section3, rows: section3.rows.slice(0, -1) } : section3
+    );
+    dropped += 1;
+  }
+  return { lines: render2(current2), dropped };
+};
+var blockDiff = (before2, after2) => {
+  const left = new Set(before2);
+  const right = new Set(after2);
+  return {
+    added: after2.filter((line12) => line12.trim() !== "" && !left.has(line12)),
+    removed: before2.filter((line12) => line12.trim() !== "" && !right.has(line12))
+  };
+};
+
 // src/onboard/discover.ts
 var SCRIPT_PURPOSE = [
   ["build", "build"],
@@ -56977,6 +57048,34 @@ var riskLines = (ctx, risks) => risks.length === 0 ? [ctx.t("onboard.risks.none"
   ctx.t("onboard.risks.title"),
   ...risks.map((risk2) => `- ${ctx.t(`onboard.risk.${risk2.kind}`, { subject: risk2.subject })}`)
 ];
+var POINTERS = [[".finitemonkey/map.txt", "onboard.block.pointer.map"]];
+var blockSections = (ctx, files, state) => [
+  {
+    heading: `## ${ctx.t("onboard.block.heading")}`,
+    intro: state.commands.length === 0 ? [ctx.t("onboard.block.none")] : [ctx.t("onboard.block.header"), "| --- | --- |"],
+    rows: commandRows(state.commands)
+  },
+  {
+    heading: `## ${ctx.t("onboard.block.pointers")}`,
+    intro: [],
+    rows: POINTERS.flatMap(([file, key3]) => files.exists(file) ? [`- ${ctx.t(key3, { file })}`] : [])
+  }
+];
+var writeBlock = (ctx, root, files, state) => {
+  const limits = blockLimits(ctx.runtime, root);
+  const fitted = fitBlock(blockSections(ctx, files, state), limits);
+  const agents = files.read("AGENTS.md");
+  const diff = blockDiff(onboardBlockBody(agents), fitted.lines);
+  writeIfChanged(ctx.runtime, root, "AGENTS.md", withOnboardBlock(agents, fitted.lines));
+  return {
+    data: { ...limits, lines: fitted.lines.length, dropped: fitted.dropped, ...diff },
+    human: [
+      ...fitted.dropped === 0 ? [] : [ctx.t("onboard.block.trimmed", { count: fitted.dropped, ...limits })],
+      ...diff.removed.map((line12) => `- ${line12}`),
+      ...diff.added.map((line12) => `+ ${line12}`)
+    ]
+  };
+};
 var onboard = async (ctx, timeoutS) => {
   const root = projectRoot(ctx);
   if (featureMode(ctx.runtime, fmPaths(root), ONBOARD_FEATURE) === "off")
@@ -56984,13 +57083,14 @@ var onboard = async (ctx, timeoutS) => {
   const files = diskFiles2(ctx, root);
   const ran = runCandidates(ctx.runtime, root, discoverCommands(files, outsideOnboardBlock), timeoutS);
   const previous = parseOnboard(files.read(ONBOARD_FILE));
-  const state = {
+  const commands = {
     commands: passedCommands(ran),
     historyFindings: await historyCount(ctx, root, previous)
   };
+  const block7 = writeBlock(ctx, root, files, commands);
+  const tree = treeHash(gitAt(ctx.runtime, root));
+  const state = { ...commands, ...tree === void 0 ? {} : { tree } };
   writeIfChanged(ctx.runtime, root, ONBOARD_FILE, onboardText(state));
-  const body2 = state.commands.length === 0 ? [`## ${ctx.t("onboard.block.heading")}`, "", ctx.t("onboard.block.none")] : agentsBlock(ctx.t("onboard.block.heading"), ctx.t("onboard.block.header"), state.commands);
-  writeIfChanged(ctx.runtime, root, "AGENTS.md", withOnboardBlock(files.read("AGENTS.md"), body2));
   if (isPerson(ctx)) trustImplicit(ctx.runtime, root, files);
   const tracked = (gitAt(ctx.runtime, root).out(["ls-files", "-z"]) ?? "").split("\0").filter((file) => file !== "");
   const credentials = credentialInventory(ctx.runtime, root);
@@ -57005,9 +57105,18 @@ var onboard = async (ctx, timeoutS) => {
     lockfileMissing: files.exists("package.json") && !LOCKS.some(files.exists)
   });
   return success(
-    { schema: ONBOARD_SCHEMA, commands: ran, credentials: credentials.length, infra, worktrees: unregistered, risks },
+    {
+      schema: ONBOARD_SCHEMA,
+      commands: ran,
+      credentials: credentials.length,
+      infra,
+      worktrees: unregistered,
+      risks,
+      block: block7.data
+    },
     [
       ...commandLines(ctx, ran),
+      ...block7.human,
       ctx.t("onboard.inventory", {
         credentials: credentials.length,
         infra: infra.length,
@@ -63120,7 +63229,7 @@ var block6 = (items) => items.length > 0 ? `${items.join("\n")}
 var write5 = (sink, text30) => {
   if (text30 !== "") sink.write(maskText(text30));
 };
-var render2 = (ctx, command, result) => {
+var render3 = (ctx, command, result) => {
   if (result.raw !== void 0) {
     write5(ctx.io.stdout, result.raw.stdout);
     write5(ctx.io.stderr, result.raw.stderr);
@@ -63178,7 +63287,7 @@ var run9 = async (options2) => {
   } catch (thrown) {
     result = resultFromThrown(thrown, t);
   }
-  render2(ctx, name, result);
+  render3(ctx, name, result);
   return result.passthroughExit ?? result.exitCode;
 };
 

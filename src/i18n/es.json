@@ -2290,5 +2290,8 @@
   "command.fronts_board.summary": "Muestra cada worktree con su gate, contrato y última actividad, y los archivos que dos frentes cambiaron",
   "fronts.board.row": "{branch}: gate {gate}, contrato {contract}{waiting}",
   "fronts.board.collision": "colisión: {file} cambió en {branches}",
-  "fronts.board.waiting": " · esperando por ti"
+  "fronts.board.waiting": " · esperando por ti",
+  "onboard.block.pointers": "Dónde buscar",
+  "onboard.block.pointer.map": "símbolos por carpeta: `finitemonkey map` (en caché en `{file}`)",
+  "onboard.block.trimmed": "{count} líneas quedaron fuera del bloque de AGENTS.md para caber en {maxLines} líneas y {maxTokens} tokens (knowledge.blockMaxLines, knowledge.blockMaxTokens en policy.yml)"
 }

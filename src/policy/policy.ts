@@ -120,6 +120,7 @@ export const POLICY_KEYS: readonly string[] = [
   "evolve",
   "calibrate",
   "autonomy",
+  "knowledge",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([

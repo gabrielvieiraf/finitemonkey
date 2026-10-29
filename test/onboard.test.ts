@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Readable } from "node:stream";
 import { after, describe, it } from "node:test";
@@ -7,9 +7,17 @@ import { after, describe, it } from "node:test";
 import type { TextSource } from "../src/core/context.js";
 import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { Runtime } from "../src/core/runtime.js";
+import { fitBlock, fits, OVERVIEW_HEADING } from "../src/onboard/block.js";
 import { implicitContract } from "../src/task/implicit.js";
 import { git, type TempRepo, tempRepo } from "./git-support.js";
 import { cliJson, field } from "./support.js";
+
+const blockOf = (text: string): readonly string[] => {
+  const lines = text.split("\n");
+  const start = lines.indexOf("<!-- finitemonkey:onboard:begin -->");
+  const end = lines.indexOf("<!-- finitemonkey:onboard:end -->");
+  return lines.slice(start + 1, end);
+};
 
 const tty = (): TextSource => Object.assign(Readable.from([]), { isTTY: true });
 
@@ -105,5 +113,56 @@ describe("onboard", () => {
       contract.acceptance.flatMap((check) => (check.run === undefined ? [] : [check.run])),
       ["npm run build", "npm run test"],
     );
+  });
+
+  it("never writes the block past the configured lines and tokens", async () => {
+    const repo = project();
+    const policy = "knowledge:\n  blockMaxLines: 5\n  blockMaxTokens: 400\n";
+    const dir = join(repo.root, ".finitemonkey");
+    await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });
+    writeFileSync(join(dir, "policy.yml"), policy);
+    const run = await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });
+    const block = blockOf(readFileSync(join(repo.root, "AGENTS.md"), "utf8"));
+    assert.ok(block.length <= 5, block.join("\n"));
+    assert.equal(field(run.body, "data", "block", "maxLines"), 5);
+    assert.ok(Number(field(run.body, "data", "block", "dropped")) > 0);
+    for (let max = 1; max < 40; max += 1) {
+      const rows = Array.from({ length: 30 }, (_, index) => `| test | \`npm run t${String(index)}\` |`);
+      const fitted = fitBlock([{ heading: "## Commands", intro: ["| a | b |"], rows }], {
+        maxLines: max,
+        maxTokens: 120,
+      });
+      assert.ok(fits(fitted.lines, { maxLines: max, maxTokens: 120 }));
+    }
+  });
+
+  it("drops a command that stopped working on the next onboard and shows the change", async () => {
+    const repo = project();
+    await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });
+    assert.match(readFileSync(join(repo.root, "AGENTS.md"), "utf8"), /\| build \| `npm run build` \|/);
+    const broken = JSON.parse(PACKAGE) as { scripts: Record<string, string> };
+    broken.scripts["build"] = 'node -e "process.exit(1)"';
+    writeFileSync(join(repo.root, "package.json"), `${JSON.stringify(broken)}\n`);
+    const run = await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });
+    assert.ok(!readFileSync(join(repo.root, "AGENTS.md"), "utf8").includes("npm run build"));
+    assert.deepEqual(field(run.body, "data", "block", "removed"), ["| build | `npm run build` |"]);
+  });
+
+  it("never writes an overview or summary section", async () => {
+    const repo = project();
+    writeFileSync(
+      join(repo.root, "AGENTS.md"),
+      "# Team rules\n\n## Overview\n\nThis repo does things. Run `npm run test`.\n",
+    );
+    await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });
+    assert.ok(!blockOf(readFileSync(join(repo.root, "AGENTS.md"), "utf8")).some((line) => OVERVIEW_HEADING.test(line)));
+    const fitted = fitBlock(
+      [
+        { heading: "## Repository overview", intro: ["It is an app."], rows: ["- x"] },
+        { heading: "## Commands that ran", intro: [], rows: ["- `npm test`", "## Summary"] },
+      ],
+      { maxLines: 50, maxTokens: 500 },
+    );
+    assert.deepEqual(fitted.lines, ["## Commands that ran", "", "- `npm test`"]);
   });
 });
