@@ -5,6 +5,7 @@ import type { Translate } from "../i18n/translate.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile } from "../task/state.js";
+import { hasSessionLogs } from "./collect.js";
 import type { DriftWarning } from "./sensor.js";
 import { DRIFT_CACHE, warningsOf } from "./store.js";
 
@@ -33,7 +34,8 @@ export const driftRefresh: HookHandler = (input) => {
   if (paths === undefined || input.payload.stopHookActive) return allow;
   const at = readJsonFile(input.runtime, paths.cache(DRIFT_CACHE))?.["at"];
   const stale = typeof at !== "string" || Date.parse(input.runtime.now()) - Date.parse(at) > REFRESH_MS;
-  if (stale) input.runtime.spawnSelf(["drift", "--refresh"], paths.root);
+  if (stale && hasSessionLogs(input.runtime, paths.root, input.env))
+    input.runtime.spawnSelf(["drift", "--refresh"], paths.root);
   return allow;
 };
 

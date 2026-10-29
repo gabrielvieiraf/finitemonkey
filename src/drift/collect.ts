@@ -104,6 +104,11 @@ export const sessionStats = (text: string): SessionStats | undefined => {
 export const classOf = (stats: Pick<SessionStats, "files">): "small" | "large" =>
   stats.files >= LARGE_FILES ? "large" : "small";
 
+export const hasSessionLogs = (runtime: Pick<Runtime, "homeDir" | "listDir">, root: string, env: Env): boolean => {
+  const listed = runtime.listDir(toAbsolutePath(projectLogDir(runtime, root, env)));
+  return listed.ok && listed.value.some((name) => name.endsWith(".jsonl"));
+};
+
 export const collectSessions = (
   runtime: Pick<Runtime, "homeDir" | "listDir" | "readText">,
   root: string,

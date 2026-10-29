@@ -34857,6 +34857,10 @@ var sessionStats = (text34) => {
   };
 };
 var classOf = (stats) => stats.files >= LARGE_FILES ? "large" : "small";
+var hasSessionLogs = (runtime, root, env) => {
+  const listed10 = runtime.listDir(toAbsolutePath(projectLogDir(runtime, root, env)));
+  return listed10.ok && listed10.value.some((name) => name.endsWith(".jsonl"));
+};
 var collectSessions = (runtime, root, env) => {
   const dir = projectLogDir(runtime, root, env);
   const listed10 = runtime.listDir(toAbsolutePath(dir));
@@ -35014,7 +35018,8 @@ var driftRefresh = (input) => {
   if (paths === void 0 || input.payload.stopHookActive) return allow7;
   const at6 = readJsonFile(input.runtime, paths.cache(DRIFT_CACHE))?.["at"];
   const stale = typeof at6 !== "string" || Date.parse(input.runtime.now()) - Date.parse(at6) > REFRESH_MS;
-  if (stale) input.runtime.spawnSelf(["drift", "--refresh"], paths.root);
+  if (stale && hasSessionLogs(input.runtime, paths.root, input.env))
+    input.runtime.spawnSelf(["drift", "--refresh"], paths.root);
   return allow7;
 };
 var driftSession = (input) => {
