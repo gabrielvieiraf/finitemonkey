@@ -1,6 +1,12 @@
 import type { Localized } from "./footprint-text.js";
 
 export const DEPLOY_FOOTPRINT_TEXT = {
+  "ledger-key": {
+    en: "A random key, created the first time evidence is written, that signs every line of the evidence ledger. It stays in your home folder, outside the project, readable only by you. Lines without a valid signature are ignored and reported; deleting the key makes old evidence count as not run.",
+    "pt-BR":
+      "Uma chave aleatória, criada na primeira vez que uma evidência é gravada, que assina cada linha do registro de evidências. Fica na sua pasta pessoal, fora do projeto, legível só por você. Linhas sem assinatura válida são ignoradas e relatadas; apagar a chave faz as evidências antigas contarem como não executadas.",
+    es: "Una clave aleatoria, creada la primera vez que se escribe una evidencia, que firma cada línea del registro de evidencias. Queda en tu carpeta personal, fuera del proyecto, legible solo por ti. Las líneas sin firma válida se ignoran y se informan; borrar la clave hace que las evidencias antiguas cuenten como no ejecutadas.",
+  },
   infra: {
     en: "How the project deploys, read from its own files when you run `finitemonkey infra`: level, targets and risks with `file:line`, no address. Production hosts found in deploy files go to `hosts.local.yml`, which git ignores, and only when the `.gitignore` block is there.",
     "pt-BR":
@@ -45,7 +51,14 @@ export const DEPLOY_FOOTPRINT_TEXT = {
   },
 } as const satisfies Readonly<
   Record<
-    "ci-watch" | "infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers" | "observability",
+    | "ci-watch"
+    | "infra"
+    | "infra-remote"
+    | "deploy-drift"
+    | "deploy-generate"
+    | "headers"
+    | "observability"
+    | "ledger-key",
     Localized
   >
 >;

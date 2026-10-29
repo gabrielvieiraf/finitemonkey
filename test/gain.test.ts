@@ -7,6 +7,7 @@ import { ExitCode } from "../src/exit-codes.js";
 import { gainReport } from "../src/gain/gain.js";
 import { fmPaths } from "../src/task/paths.js";
 import { memoryFs } from "./memory-fs.js";
+import { keySeed, signedTest } from "./signed.js";
 import { cliJson, fakeRuntime, field } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
@@ -29,7 +30,7 @@ const log = [
   .join("\n");
 
 const gate = (hours: number, status: "passed" | "failed" | "unverified", durationMs: number): string =>
-  JSON.stringify({
+  signedTest({
     schema: "finitemonkey/evidence@1",
     task: "implicit",
     check: "*gate*",
@@ -45,7 +46,11 @@ const ledger = [gate(8, "passed", 90_000), gate(20, "failed", 60_000), gate(26, 
 
 const fixture = () =>
   memoryFs(
-    { [at(".finitemonkey/log.jsonl")]: `${log}\n`, [at(".finitemonkey/evidence/implicit.jsonl")]: `${ledger}\n` },
+    {
+      [at(".finitemonkey/log.jsonl")]: `${log}\n`,
+      [at(".finitemonkey/evidence/implicit.jsonl")]: `${ledger}\n`,
+      ...keySeed(),
+    },
     [at(".git")],
     NOW,
   );

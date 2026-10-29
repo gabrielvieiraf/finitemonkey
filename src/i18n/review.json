@@ -1942,7 +1942,8 @@
     "evidence.why.no_task": "machine",
     "evidence.why.none": "machine",
     "evidence.why.fresh": "machine",
-    "evidence.why.stale": "machine"
+    "evidence.why.stale": "machine",
+    "gate.report.tampered": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3887,6 +3888,7 @@
     "evidence.why.no_task": "machine",
     "evidence.why.none": "machine",
     "evidence.why.fresh": "machine",
-    "evidence.why.stale": "machine"
+    "evidence.why.stale": "machine",
+    "gate.report.tampered": "machine"
   }
 }

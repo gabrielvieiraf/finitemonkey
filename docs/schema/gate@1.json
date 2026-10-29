@@ -191,6 +191,9 @@
     },
     "fastPath": {
       "type": "boolean"
+    },
+    "tampered": {
+      "type": "number"
     }
   },
   "required": [
@@ -208,6 +211,7 @@
     "counts",
     "items",
     "decisionsNeeded",
-    "fastPath"
+    "fastPath",
+    "tampered"
   ]
 }

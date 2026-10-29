@@ -1941,5 +1941,6 @@
   "evidence.why.no_task": "No task to read evidence from here",
   "evidence.why.none": "{check} has no evidence in task {task}",
   "evidence.why.fresh": "{check}: the evidence from {at} ({status}) still holds; no input changed",
-  "evidence.why.stale": "{check}: the evidence from {at} no longer holds; changed: {list}"
+  "evidence.why.stale": "{check}: the evidence from {at} no longer holds; changed: {list}",
+  "gate.report.tampered": "{count, plural, one {# ledger line was} other {# ledger lines were}} unsigned or badly signed and ignored (possible tampering)"
 }

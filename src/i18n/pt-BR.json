@@ -1941,5 +1941,6 @@
   "evidence.why.no_task": "Não há tarefa para ler evidências aqui",
   "evidence.why.none": "{check} não tem evidência na tarefa {task}",
   "evidence.why.fresh": "{check}: a evidência de {at} ({status}) ainda vale; nenhuma entrada mudou",
-  "evidence.why.stale": "{check}: a evidência de {at} não vale mais; mudou: {list}"
+  "evidence.why.stale": "{check}: a evidência de {at} não vale mais; mudou: {list}",
+  "gate.report.tampered": "{count, plural, one {# linha do registro estava sem assinatura ou com assinatura errada e foi ignorada} other {# linhas do registro estavam sem assinatura ou com assinatura errada e foram ignoradas}} (possível adulteração)"
 }

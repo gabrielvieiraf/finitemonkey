@@ -1941,5 +1941,6 @@
   "evidence.why.no_task": "No hay tarea de la que leer evidencias aquí",
   "evidence.why.none": "{check} no tiene evidencia en la tarea {task}",
   "evidence.why.fresh": "{check}: la evidencia de {at} ({status}) sigue valiendo; ninguna entrada cambió",
-  "evidence.why.stale": "{check}: la evidencia de {at} ya no vale; cambió: {list}"
+  "evidence.why.stale": "{check}: la evidencia de {at} ya no vale; cambió: {list}",
+  "gate.report.tampered": "{count, plural, one {# línea del registro estaba sin firma o con firma errónea y se ignoró} other {# líneas del registro estaban sin firma o con firma errónea y se ignoraron}} (posible manipulación)"
 }

@@ -63,7 +63,7 @@ const readLog = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly L
   });
 };
 
-const readGates = (runtime: Pick<Runtime, "readText" | "listDir">, paths: FmPaths): readonly Evidence[] => {
+const readGates = (runtime: Pick<Runtime, "readText" | "listDir" | "homeDir">, paths: FmPaths): readonly Evidence[] => {
   const listed = runtime.listDir(toAbsolutePath(join(paths.dir, "evidence")));
   const files = listed.ok ? listed.value.filter((name) => name.endsWith(".jsonl")) : [];
   return files
@@ -151,7 +151,7 @@ export const armComparison = (
 };
 
 export const gainReport = (
-  runtime: Pick<Runtime, "readText" | "listDir" | "now">,
+  runtime: Pick<Runtime, "readText" | "listDir" | "now" | "homeDir">,
   paths: FmPaths,
   days: number,
   usageText?: string,

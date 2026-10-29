@@ -39,6 +39,7 @@ export const reportLines = (t: Translate, report: GateReport): readonly string[]
       tree: report.treeHash,
     }),
     ...(report.contractEdited ? [`  ${t("gate.report.contract_edited")}`] : []),
+    ...(report.tampered > 0 ? [`  ${t("gate.report.tampered", { count: report.tampered })}`] : []),
     ...report.items.flatMap((item) => [
       `  ${t(STATUS_KEYS[item.status]).padEnd(width)}${item.id}  ${label(item)}`,
       ...itemDetails(t, item).map((line) => `  ${" ".repeat(width)}  ${line}`),

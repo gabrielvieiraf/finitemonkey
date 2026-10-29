@@ -81,6 +81,14 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     test: "a lockfile change invalidates green evidence, and evidence why names it",
   },
   {
+    failure: "A forged ledger line passes a check",
+    cause: "The agent appends a passed line with the current tree hash, or edits the scripts the gate trusts",
+    mitigation:
+      "Every ledger line carries an HMAC with a key outside the project; unsigned lines are ignored and reported, and evidence is reused only when the hook entry points and gate scripts hash the same",
+    file: "test/ledger-hmac.test.ts",
+    test: "a hand-written passed line is ignored and reported as tampering",
+  },
+  {
     failure: "A secret is committed",
     cause: "A credential is staged with the change",
     mitigation: "`git commit` is blocked with the file and line",

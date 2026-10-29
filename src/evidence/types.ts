@@ -75,6 +75,7 @@ export interface Evidence {
   readonly from?: CompletionState;
   readonly stateReason?: string;
   readonly inputs?: EvidenceInputs;
+  readonly scripts?: string;
 }
 
 export const GATE_CHECK = "*gate*";

@@ -10,6 +10,7 @@ import { type Front, readFronts, serializeState } from "../src/fronts/state.js";
 import { gitAt, treeHash } from "../src/gate/git.js";
 import { git, runtime, tempDir, tempRepo, write } from "./git-support.js";
 import { hunksOf, merge, sandbox, sides } from "./merge-support.js";
+import { signedLine } from "./signed.js";
 import { BUNDLE, field, parseBody } from "./support.js";
 
 const ROUTES = 'export const routes = [\n  "/home",\n];\n';
@@ -60,7 +61,7 @@ const frontOf = (id: string, path: string, blockedBy: readonly string[]): Front 
   startedAt: null,
 });
 
-const reportFor = (path: string, id: string, passed: number): void => {
+const reportFor = (path: string, id: string, passed: number, home: AbsolutePath): void => {
   const tree = treeHash(gitAt(runtime, toAbsolutePath(path))) ?? "";
   const entry = {
     schema: EVIDENCE_SCHEMA,
@@ -73,7 +74,7 @@ const reportFor = (path: string, id: string, passed: number): void => {
     notes: [],
     testCount: 41,
   };
-  write(path, `.finitemonkey/evidence/${id}.jsonl`, `${JSON.stringify(entry)}\n`);
+  write(path, `.finitemonkey/evidence/${id}.jsonl`, `${signedLine({ ...runtime, homeDir: () => home }, entry)}\n`);
   const report = {
     front: id,
     branch: `front/${id}`,
@@ -111,7 +112,7 @@ const waveOf = (claimed: Readonly<Record<string, number>> = {}): Wave => {
     plant(path, id);
     git(path, "add", "-A");
     git(path, "commit", "-q", "-m", `feat: ${id}`);
-    reportFor(path, id, claimed[id] ?? 41);
+    reportFor(path, id, claimed[id] ?? 41, home);
   }
   const fronts = [
     frontOf("F1", paths["F1"] ?? "", []),

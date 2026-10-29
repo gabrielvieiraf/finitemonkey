@@ -11,6 +11,7 @@ import { gitAt, treeHash } from "../src/gate/git.js";
 import type { HookEvent } from "../src/hooks/events.js";
 import type { HookHandler } from "../src/hooks/handlers.js";
 import { git, runtime, t, tempRepo, write } from "./git-support.js";
+import { signedLine } from "./signed.js";
 
 interface Wave {
   readonly root: AbsolutePath;
@@ -62,7 +63,7 @@ const setup = (ids: readonly string[]): Wave => {
       notes: [],
       testCount: 41,
     };
-    write(path, `.finitemonkey/evidence/${id}.jsonl`, `${JSON.stringify(entry)}\n`);
+    write(path, `.finitemonkey/evidence/${id}.jsonl`, `${signedLine(runtime, entry)}\n`);
   });
   const state = {
     wave: 1,

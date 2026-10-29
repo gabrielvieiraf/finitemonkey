@@ -39,6 +39,7 @@ export interface GateReport {
   readonly items: readonly ReportItem[];
   readonly decisionsNeeded: readonly string[];
   readonly fastPath: boolean;
+  readonly tampered: number;
 }
 
 const fromEvidence = (id: string, kind: string, entry: Evidence | undefined, stale: boolean): ReportItem => {
@@ -73,6 +74,7 @@ export interface ReportInput {
   readonly source: ContractSource;
   readonly contractEdited: boolean;
   readonly fastPath: boolean;
+  readonly tampered?: number;
 }
 
 export const buildReport = (input: ReportInput): GateReport => {
@@ -105,5 +107,6 @@ export const buildReport = (input: ReportInput): GateReport => {
     items,
     decisionsNeeded: contract.decisionsNeeded,
     fastPath: input.fastPath,
+    tampered: input.tampered ?? 0,
   };
 };
