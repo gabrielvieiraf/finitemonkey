@@ -5,6 +5,7 @@ import { logEvent } from "../evidence/log.js";
 import { ExitCode } from "../exit-codes.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import type { Translate } from "../i18n/translate.js";
+import { recordDismissal } from "../policy/budget.js";
 import { explainPolicy, type GuardExplain, type PolicyExplainData } from "../policy/explain.js";
 import { readShadow, writeShadow } from "../policy/guards.js";
 import { isPolicyError, OPTIONAL_GUARDS, type PolicyIssue } from "../policy/policy.js";
@@ -29,6 +30,7 @@ const recordFalsePositive = (ctx: Ctx, guard: string): CommandResult<FalsePositi
   const before = state[guard] ?? { firings: 0, falsePositives: 0, promoted: false };
   const falsePositives = before.falsePositives + 1;
   writeShadow(ctx.runtime, paths, { ...state, [guard]: { ...before, falsePositives } });
+  recordDismissal(ctx.runtime, paths, guard);
   logEvent(ctx.runtime, paths, "guard_false_positive", { guard, falsePositives });
   return success({ guard, falsePositives }, [
     ctx.t("policy.false_positive.recorded", { guard, count: falsePositives }),

@@ -13,7 +13,7 @@ import { checkInstructionLayers } from "./instruction-layers.js";
 import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
 import { checkAgentsFile } from "./memory.js";
-import { checkPolicy } from "./policy.js";
+import { checkAlertBudget, checkPolicy } from "./policy.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
 import { checkRewriters } from "./rewriters.js";
@@ -51,6 +51,7 @@ export const CHECKS: readonly Check[] = [
   checkInstructionLayers,
   checkGithubSettings,
   checkPolicy,
+  checkAlertBudget,
 ];
 
 export interface DoctorItem {

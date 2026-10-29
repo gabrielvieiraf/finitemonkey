@@ -4,6 +4,8 @@ import { type Approval, expiryFrom, type Grant, saveRelease } from "../../guards
 import { comesFromPerson, type Marker, parseMarkers } from "../../guards/release/markers.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
+import { recordDismissal } from "../../policy/budget.js";
+import { KNOWN_GUARDS } from "../../policy/policy.js";
 import { approveAmendments } from "../../task/amend.js";
 import { IMPLICIT_ID } from "../../task/implicit.js";
 import type { FmPaths } from "../../task/paths.js";
@@ -64,6 +66,7 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
         ...(sessionId === undefined ? {} : { sessionId }),
       });
       said.push(t("gate.release.allowed", { guard: marker.guard, until: expiryFrom(now) }));
+      if (KNOWN_GUARDS.includes(marker.guard)) recordDismissal(runtime, paths, marker.guard);
     } else if (marker.type === "allow") said.push(t("gate.release.unknown_guard", { guard: marker.guard }));
     else if (marker.type === "approve") {
       approvals.push({

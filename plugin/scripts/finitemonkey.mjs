@@ -40,8 +40,8 @@ var parseJsonObject = (text26) => {
   if (!parsed.ok) return parsed;
   return isRecord(parsed.value) ? accept(parsed.value) : reject("expected a JSON object");
 };
-var optionalString = (record9, key3) => {
-  const value2 = record9[key3];
+var optionalString = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 
@@ -897,8 +897,8 @@ var SECRETS_CHECK = "secrets";
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
 var stableFindingId = (check2, rule, file, fingerprint) => `${check2}-${sha256Hex(`${check2}\0${rule}\0${toPosixPath(file)}\0${fingerprint}`).slice(0, 16)}`;
 var baselinePath = (root) => toAbsolutePath(join3(root, BASELINE_FILE));
-var text2 = (record9, key3) => {
-  const value2 = record9[key3];
+var text2 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : void 0;
 };
 var stateOf = (value2) => BASELINE_STATES.find((state) => state === value2);
@@ -1853,8 +1853,8 @@ var texts = (value2, at5, issues2) => {
   issues2.push(`${at5}: must be a list of text`);
   return void 0;
 };
-var text3 = (record9, key3, at5, issues2) => {
-  const value2 = record9[key3];
+var text3 = (record10, key3, at5, issues2) => {
+  const value2 = record10[key3];
   if (typeof value2 === "string" && value2.trim() !== "") return value2;
   issues2.push(`${at5}.${key3}: required text`);
   return "";
@@ -2766,8 +2766,8 @@ var writeFront = (data2, body2) => `${FENCE}
 ${stringifyYaml(data2)}${FENCE}
 
 ${body2}`;
-var textList = (record9, key3) => {
-  const value2 = record9[key3];
+var textList = (record10, key3) => {
+  const value2 = record10[key3];
   return Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
 };
 
@@ -3228,8 +3228,8 @@ var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint
 var incidentsDir = (root) => toAbsolutePath(join10(root, INCIDENTS_DIR));
 var incidentFile = (root, id) => toAbsolutePath(join10(incidentsDir(root), `${id}.json`));
 var pick = (options2, value2) => options2.find((option3) => option3 === value2);
-var str = (record9, key3) => {
-  const value2 = record9[key3];
+var str = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 var parseEvent = (value2) => {
@@ -3247,12 +3247,12 @@ var parseHistory = (value2) => {
 var parseIncident = (raw) => {
   const parsed = parseJsonObject(raw);
   if (!parsed.ok) return parsed;
-  const record9 = parsed.value;
-  const [id, rule, where2, fingerprint, createdAt, updatedAt] = ["id", "rule", "where", "fingerprint", "createdAt", "updatedAt"].map((key3) => str(record9, key3));
-  const state = pick(INCIDENT_STATES, record9["state"]);
-  const source3 = pick(INCIDENT_SOURCES, record9["source"]);
-  const history = parseHistory(record9["history"]);
-  const firstCommit = str(record9, "firstCommit");
+  const record10 = parsed.value;
+  const [id, rule, where2, fingerprint, createdAt, updatedAt] = ["id", "rule", "where", "fingerprint", "createdAt", "updatedAt"].map((key3) => str(record10, key3));
+  const state = pick(INCIDENT_STATES, record10["state"]);
+  const source3 = pick(INCIDENT_SOURCES, record10["source"]);
+  const history = parseHistory(record10["history"]);
+  const firstCommit = str(record10, "firstCommit");
   if (id === void 0 || !ID.test(id) || rule === void 0 || where2 === void 0) return reject("incomplete");
   if (fingerprint === void 0 || createdAt === void 0 || updatedAt === void 0) return reject("incomplete");
   if (state === void 0 || source3 === void 0 || history === void 0) return reject("incomplete");
@@ -3394,9 +3394,9 @@ var parseMarkers = (prompt) => {
 };
 
 // src/hooks/fields.ts
-var textField = (record9, ...names3) => {
+var textField = (record10, ...names3) => {
   for (const name of names3) {
-    const value2 = record9[name];
+    const value2 = record10[name];
     if (typeof value2 === "string") return value2;
   }
   return void 0;
@@ -3457,12 +3457,12 @@ var promptLog = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
   const paths = projectPaths(input);
   if (paths === void 0 || !isPersonText(prompt)) return { kind: "allow" };
-  const record9 = {
+  const record10 = {
     at: input.runtime.now(),
     session: input.payload.sessionId ?? "",
     text: maskText(prompt)
   };
-  input.runtime.appendText(promptsPath(paths), `${JSON.stringify(record9)}
+  input.runtime.appendText(promptsPath(paths), `${JSON.stringify(record10)}
 `);
   return { kind: "allow" };
 };
@@ -3663,12 +3663,12 @@ var textOf3 = (content) => {
 var requestOf = (line11, session) => {
   const parsed = parseJsonObject(line11);
   if (!parsed.ok) return void 0;
-  const record9 = parsed.value;
-  if (record9["type"] !== "user" || record9["isSidechain"] === true || record9["isMeta"] === true) return void 0;
-  if (typeof record9["sessionId"] === "string" && record9["sessionId"] !== session) return void 0;
-  const message = record9["message"];
+  const record10 = parsed.value;
+  if (record10["type"] !== "user" || record10["isSidechain"] === true || record10["isMeta"] === true) return void 0;
+  if (typeof record10["sessionId"] === "string" && record10["sessionId"] !== session) return void 0;
+  const message = record10["message"];
   const text26 = isRecord(message) ? textOf3(message["content"]) : void 0;
-  const at5 = typeof record9["timestamp"] === "string" ? record9["timestamp"] : "";
+  const at5 = typeof record10["timestamp"] === "string" ? record10["timestamp"] : "";
   return text26 === void 0 || !isPersonText(text26) ? void 0 : { at: at5, session, text: text26 };
 };
 var transcriptRequests = (runtime, paths, env) => {
@@ -3742,20 +3742,20 @@ var entryOf = (kind, xy, path) => ({
   staged: kind !== "untracked" && !xy.startsWith("."),
   unstaged: kind === "untracked" || xy.charAt(1) !== "."
 });
-var afterFields = (record9, count10) => record9.split(" ").slice(count10).join(" ");
+var afterFields = (record10, count10) => record10.split(" ").slice(count10).join(" ");
 var parsePorcelainV2 = (stdout) => {
   const records2 = stdout.split("\0");
   const out = [];
   for (let index = 0; index < records2.length; index += 1) {
-    const record9 = records2[index] ?? "";
-    const xy = record9.split(" ")[1] ?? "..";
-    if (record9.startsWith("1 ")) out.push(entryOf("changed", xy, afterFields(record9, PORCELAIN_FIELDS.ordinary)));
-    else if (record9.startsWith("2 ")) {
-      out.push(entryOf("changed", xy, afterFields(record9, PORCELAIN_FIELDS.renamed)));
+    const record10 = records2[index] ?? "";
+    const xy = record10.split(" ")[1] ?? "..";
+    if (record10.startsWith("1 ")) out.push(entryOf("changed", xy, afterFields(record10, PORCELAIN_FIELDS.ordinary)));
+    else if (record10.startsWith("2 ")) {
+      out.push(entryOf("changed", xy, afterFields(record10, PORCELAIN_FIELDS.renamed)));
       index += 1;
-    } else if (record9.startsWith("u ")) {
-      out.push(entryOf("unmerged", xy, afterFields(record9, PORCELAIN_FIELDS.unmerged)));
-    } else if (record9.startsWith("? ")) out.push(entryOf("untracked", "??", record9.slice(2)));
+    } else if (record10.startsWith("u ")) {
+      out.push(entryOf("unmerged", xy, afterFields(record10, PORCELAIN_FIELDS.unmerged)));
+    } else if (record10.startsWith("? ")) out.push(entryOf("untracked", "??", record10.slice(2)));
   }
   return out.filter((entry2) => entry2.path !== "" && !entry2.path.startsWith(STATE_PREFIX));
 };
@@ -4140,12 +4140,12 @@ var EMPTY_STATE = {
   fronts: [],
   pending: []
 };
-var str2 = (record9, key3) => {
-  const value2 = record9[key3];
+var str2 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : null;
 };
-var num = (record9, key3) => {
-  const value2 = record9[key3];
+var num = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "number" && Number.isFinite(value2) ? value2 : null;
 };
 var strings2 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
@@ -4314,8 +4314,8 @@ var activityOf = (runtime, tree) => {
   const marks = gitDir.ok ? ["index", "HEAD", join18("logs", "HEAD")].map(
     (name) => mtimeOf(runtime, toAbsolutePath(join18(gitDir.stdout.trim(), name)))
   ) : [];
-  const times = [commitMs, ...marks].filter((time) => time !== void 0 && Number.isFinite(time));
-  return times.length === 0 ? void 0 : new Date(Math.max(...times)).toISOString();
+  const times2 = [commitMs, ...marks].filter((time) => time !== void 0 && Number.isFinite(time));
+  return times2.length === 0 ? void 0 : new Date(Math.max(...times2)).toISOString();
 };
 
 // src/wt/place.ts
@@ -4370,18 +4370,18 @@ import { join as join20 } from "node:path";
 var REGISTRY_SCHEMA = "finitemonkey/worktrees@1";
 var OWNER_KINDS = ["subagent", "session", "human", "unknown"];
 var WORKTREE_STATUSES = ["active", "done", "merged", "abandoned", "archived", "removed", "adopted"];
-var text4 = (record9, key3) => {
-  const value2 = record9[key3];
+var text4 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : null;
 };
 var integer = (value2) => typeof value2 === "number" && Number.isInteger(value2) ? value2 : null;
 var oneOf = (options2, value2, fallback2) => options2.find((option3) => option3 === value2) ?? fallback2;
 var ownerOf = (value2) => {
-  const record9 = isRecord(value2) ? value2 : {};
+  const record10 = isRecord(value2) ? value2 : {};
   return {
-    kind: oneOf(OWNER_KINDS, record9["kind"], "unknown"),
-    agentId: text4(record9, "agent_id"),
-    sessionId: text4(record9, "session_id")
+    kind: oneOf(OWNER_KINDS, record10["kind"], "unknown"),
+    agentId: text4(record10, "agent_id"),
+    sessionId: text4(record10, "session_id")
   };
 };
 var portsOf = (value2) => {
@@ -4686,12 +4686,12 @@ var applyWave = (context, plan2) => {
 };
 
 // src/fronts/plan-input.ts
-var str3 = (record9, key3) => {
-  const value2 = record9[key3];
+var str3 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : typeof value2 === "number" ? String(value2) : null;
 };
-var num2 = (record9, key3) => {
-  const value2 = record9[key3];
+var num2 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "number" && Number.isInteger(value2) ? value2 : null;
 };
 var strings3 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
@@ -5491,10 +5491,10 @@ var reconcile = (runtime, paths, ledger) => {
     const other = round(theirs.get(date) ?? 0);
     return { date, ours: mine, theirs: other, diff: round(mine - other) };
   });
-  const record9 = { at: runtime.now(), tool: RECONCILE_TOOL, days };
-  runtime.appendText(reconcilePath(paths), `${JSON.stringify(record9)}
+  const record10 = { at: runtime.now(), tool: RECONCILE_TOOL, days };
+  runtime.appendText(reconcilePath(paths), `${JSON.stringify(record10)}
 `);
-  return record9;
+  return record10;
 };
 
 // src/core/clock.ts
@@ -5502,8 +5502,8 @@ var nowMs = (runtime) => Date.parse(runtime.now());
 
 // src/guards/release/grants.ts
 var GRANT_MINUTES = 30;
-var text5 = (record9, key3) => {
-  const value2 = record9[key3];
+var text5 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 var toGrant = (value2) => {
@@ -5599,8 +5599,8 @@ var costReconcileCommand = {
   status: "ready",
   run: (ctx) => inRepo(ctx, (paths) => {
     const ledger = ingest({ runtime: ctx.runtime, paths, env: ctx.env });
-    const record9 = reconcile(ctx.runtime, paths, ledger);
-    if (record9 === void 0)
+    const record10 = reconcile(ctx.runtime, paths, ledger);
+    if (record10 === void 0)
       return failureFrom(ctx.t, {
         code: "reconcile_unavailable",
         messageKey: "budget.reconcile.missing",
@@ -5608,9 +5608,9 @@ var costReconcileCommand = {
         fix: `install ${RECONCILE_TOOL} locally, then run finitemonkey cost reconcile again`,
         exitCode: ExitCode.NotConfigured
       });
-    return success({ schema: BUDGET_SCHEMA, file: `${FM_DIR}/${RECONCILE_FILE}`, ...record9 }, [
-      ctx.t("budget.reconcile.done", { tool: record9.tool, file: `${FM_DIR}/${RECONCILE_FILE}` }),
-      ...record9.days.map((day) => `  ${day.date}  ${money(day.ours)}  ${money(day.theirs)}  ${money(day.diff)}`)
+    return success({ schema: BUDGET_SCHEMA, file: `${FM_DIR}/${RECONCILE_FILE}`, ...record10 }, [
+      ctx.t("budget.reconcile.done", { tool: record10.tool, file: `${FM_DIR}/${RECONCILE_FILE}` }),
+      ...record10.days.map((day) => `  ${day.date}  ${money(day.ours)}  ${money(day.theirs)}  ${money(day.diff)}`)
     ]);
   })
 };
@@ -5748,6 +5748,67 @@ var closest = (input, candidates3) => {
   return best?.name;
 };
 
+// src/policy/budget.ts
+var ALERT_BUDGET_FILE = "alert-budget.json";
+var ALERT_BUDGET_FEATURE = "alert-budget";
+var DAY_MS3 = 864e5;
+var KEEP_PER_CLASS = 200;
+var DEFAULT_ALERT_BUDGET = { muteAbove: 0.15, windowDays: 30, minFirings: 10 };
+var ALERT_BUDGET_KEYS = ["muteAbove", "windowDays", "minFirings"];
+var numberIn = (raw, valid, fallback2) => {
+  const value2 = raw === void 0 ? Number.NaN : Number(raw);
+  return Number.isFinite(value2) && valid(value2) ? value2 : fallback2;
+};
+var parseAlertBudget = (tree) => {
+  const raw = configMap(tree, "alertBudget");
+  return {
+    muteAbove: numberIn(raw["muteAbove"], (value2) => value2 > 0 && value2 <= 1, DEFAULT_ALERT_BUDGET.muteAbove),
+    windowDays: numberIn(
+      raw["windowDays"],
+      (value2) => Number.isInteger(value2) && value2 > 0,
+      DEFAULT_ALERT_BUDGET.windowDays
+    ),
+    minFirings: numberIn(
+      raw["minFirings"],
+      (value2) => Number.isInteger(value2) && value2 > 0,
+      DEFAULT_ALERT_BUDGET.minFirings
+    )
+  };
+};
+var times = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "number" && Number.isFinite(item2)) : [];
+var readBudget = (runtime, paths) => {
+  const text26 = runtime.readText(paths.cache(ALERT_BUDGET_FILE));
+  const parsed = text26.ok ? parseJsonObject(text26.value) : void 0;
+  if (parsed?.ok !== true) return {};
+  return Object.fromEntries(
+    Object.entries(parsed.value).flatMap(
+      ([guard, value2]) => isRecord(value2) ? [[guard, { fired: times(value2["fired"]), dismissed: times(value2["dismissed"]) }]] : []
+    )
+  );
+};
+var record2 = (runtime, paths, guard, field) => {
+  const state = readBudget(runtime, paths);
+  const before2 = state[guard] ?? { fired: [], dismissed: [] };
+  const next2 = { ...state, [guard]: { ...before2, [field]: [...before2[field], nowMs(runtime)].slice(-KEEP_PER_CLASS) } };
+  runtime.writeText(paths.cache(ALERT_BUDGET_FILE), `${JSON.stringify(next2)}
+`);
+  return next2;
+};
+var recordFiring = (runtime, paths, guard) => record2(runtime, paths, guard, "fired");
+var recordDismissal = (runtime, paths, guard) => record2(runtime, paths, guard, "dismissed");
+var classRate = (guard, log, config, now) => {
+  const from = now - config.windowDays * DAY_MS3;
+  const fired = log.fired.filter((at5) => at5 >= from).length;
+  const dismissed = log.dismissed.filter((at5) => at5 >= from).length;
+  const rate = fired === 0 ? 0 : dismissed / fired;
+  return { guard, fired, dismissed, rate, muted: fired >= config.minFirings && rate > config.muteAbove };
+};
+var classRates = (state, config, now) => Object.entries(state).map(([guard, log]) => classRate(guard, log, config, now)).sort((left, right) => left.guard.localeCompare(right.guard));
+var isMuted = (state, config, now, guard) => {
+  const log = state[guard];
+  return log !== void 0 && classRate(guard, log, config, now).muted;
+};
+
 // src/policy/policy.ts
 var POLICY_FILE = ".finitemonkey/policy.yml";
 var GUARD_MODES = ["off", "shadow", "active"];
@@ -5807,7 +5868,8 @@ var OPTIONAL_GUARDS = [
   "evidence-inputs",
   "planta",
   "perfil",
-  "conceitos"
+  "conceitos",
+  "alert-budget"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -5820,7 +5882,8 @@ var POLICY_KEYS = [
   "rules",
   "learnings",
   "reminders",
-  "quality"
+  "quality",
+  "alertBudget"
 ];
 var RETIRED_POLICY_KEYS = ["severity"];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
@@ -5846,6 +5909,7 @@ var DEFAULT_POLICY = {
   guards: {},
   userGuards: {},
   experiments: {},
+  alertBudget: DEFAULT_ALERT_BUDGET,
   issues: []
 };
 var USER_POLICY_FILE = "~/.finitemonkey/policy.yml";
@@ -5892,7 +5956,13 @@ var parsePolicy = (text26) => {
     guards,
     userGuards: {},
     experiments,
-    issues: [...keyIssues(tree, POLICY_FILE, POLICY_KEYS), ...guardIssues, ...experimentIssues]
+    alertBudget: parseAlertBudget(tree),
+    issues: [
+      ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
+      ...Object.keys(configMap(tree, "alertBudget")).filter((key3) => !ALERT_BUDGET_KEYS.includes(key3)).map((key3) => issue("unknown_key", POLICY_FILE, `alertBudget.${key3}`, ALERT_BUDGET_KEYS, key3)),
+      ...guardIssues,
+      ...experimentIssues
+    ]
   };
 };
 var parseUserPolicy = (text26) => {
@@ -6194,11 +6264,11 @@ var runTools = (runtime, root, files) => {
 var isMap = (value2) => typeof value2 === "object" && value2 !== null && !Array.isArray(value2);
 var scalar2 = (value2) => typeof value2 === "string" ? value2 : typeof value2 === "number" || typeof value2 === "boolean" ? String(value2) : "";
 var strings4 = (value2) => Array.isArray(value2) ? value2.map((item2) => scalar2(item2)) : value2 === void 0 ? [] : [scalar2(value2)];
-var record2 = (value2) => isMap(value2) ? Object.fromEntries(Object.entries(value2).map(([key3, item2]) => [key3, scalar2(item2)])) : {};
+var record3 = (value2) => isMap(value2) ? Object.fromEntries(Object.entries(value2).map(([key3, item2]) => [key3, scalar2(item2)])) : {};
 var permissionsOf = (value2) => {
   if (value2 === void 0) return "missing";
   if (value2 === "write-all" || value2 === "read-all") return value2;
-  return record2(value2);
+  return record3(value2);
 };
 var triggersOf = (value2) => isMap(value2) ? Object.keys(value2) : strings4(value2);
 var stepOf = (value2, index) => {
@@ -6207,8 +6277,8 @@ var stepOf = (value2, index) => {
     index,
     uses: typeof step4["uses"] === "string" ? step4["uses"] : void 0,
     run: typeof step4["run"] === "string" ? step4["run"] : void 0,
-    with: record2(step4["with"]),
-    env: record2(step4["env"])
+    with: record3(step4["with"]),
+    env: record3(step4["env"])
   };
 };
 var jobOf = (id, value2) => {
@@ -6520,6 +6590,26 @@ var recordShadow = (input, paths, set2, policy, reason) => {
     });
   }
 };
+var firesAlert = (decision2) => decision2.kind === "block" || typeof decision2.output?.["systemMessage"] === "string";
+var MUTABLE = /* @__PURE__ */ new Set(["default", "promoted"]);
+var muted = (input, paths, set2, policy, resolved, shadow) => {
+  const { runtime } = input;
+  const state = recordFiring(runtime, paths, set2.id);
+  if (!MUTABLE.has(resolved.source)) return false;
+  const budget = modeOf2(
+    { id: ALERT_BUDGET_FEATURE, damage: false },
+    policy,
+    shadow,
+    experimentArm(runtime, paths, policy, ALERT_BUDGET_FEATURE)
+  );
+  if (budget === "off" || !isMuted(state, policy.alertBudget, nowMs(runtime), set2.id)) return false;
+  logEvent(runtime, paths, budget === "active" ? "guard_muted" : "guard_mute_shadow", {
+    guard: set2.id,
+    hook: input.event,
+    tool: toolName2(input.payload)
+  });
+  return budget === "active";
+};
 var failOpen = (set2, handler) => async (input) => {
   try {
     return await handler(input);
@@ -6541,15 +6631,13 @@ var governed = (set2, inner) => async (input) => {
   if (paths === void 0) return handler(input);
   if (pausedFor(input.runtime, paths, input.payload.sessionId) !== void 0) return { kind: "allow" };
   const policy = loadPolicy(input.runtime, paths.root);
-  const mode = modeOf2(
-    set2,
-    policy,
-    readShadow(input.runtime, paths),
-    experimentArm(input.runtime, paths, policy, set2.id)
-  );
-  if (mode === "off") return { kind: "allow" };
+  const shadow = readShadow(input.runtime, paths);
+  const resolved = resolveGuard(set2, policy, shadow, experimentArm(input.runtime, paths, policy, set2.id));
+  if (resolved.mode === "off") return { kind: "allow" };
   const decision2 = await handler(input);
-  if (mode === "active" || decision2.kind !== "block") return decision2;
+  if (!firesAlert(decision2)) return decision2;
+  if (muted(input, paths, set2, policy, resolved, shadow)) return { kind: "allow" };
+  if (resolved.mode === "active" || decision2.kind !== "block") return decision2;
   recordShadow(input, paths, set2, policy, decision2.reason);
   return decision2.warning === void 0 ? { kind: "allow" } : { kind: "allow", output: contextOutput(input.event, decision2.warning) };
 };
@@ -7307,10 +7395,10 @@ var renderJson = (value2, style) => `${JSON.stringify(value2, null, style.indent
 var parseSettings = (text26) => text26 === void 0 || text26.trim() === "" ? { ok: true, value: {} } : parseJsonObject(text26);
 var asList = (value2) => Array.isArray(value2) ? value2 : [];
 var asRecord = (value2) => isRecord(value2) ? value2 : {};
-var setKey = (record9, key3, value2) => {
-  if (!(key3 in record9)) return value2 === void 0 ? record9 : { ...record9, [key3]: value2 };
+var setKey = (record10, key3, value2) => {
+  if (!(key3 in record10)) return value2 === void 0 ? record10 : { ...record10, [key3]: value2 };
   return Object.fromEntries(
-    Object.entries(record9).flatMap(([name, current2]) => {
+    Object.entries(record10).flatMap(([name, current2]) => {
       if (name !== key3) return [[name, current2]];
       return value2 === void 0 ? [] : [[name, value2]];
     })
@@ -8918,8 +9006,8 @@ var fieldsOf = (value2, at5, issues2) => {
     return [{ name, type, optional: optional5 }];
   });
 };
-var text6 = (record9, key3, at5, issues2, pattern) => {
-  const value2 = record9[key3];
+var text6 = (record10, key3, at5, issues2, pattern) => {
+  const value2 = record10[key3];
   if (typeof value2 === "string" && value2.trim() !== "" && (pattern === void 0 || pattern.test(value2))) return value2;
   issues2.push(`${at5}.${key3}: required${pattern === void 0 ? "" : ` and must match ${pattern.source}`}`);
   return "";
@@ -9105,7 +9193,7 @@ var parseCsv = (text26) => text26.replace(/\r\n/g, "\n").split("\n").filter((lin
 var COST_SCHEMA = "finitemonkey/cost@1";
 var DEFAULT_VALIDITY_DAYS = 90;
 var DATE = /^\d{4}-\d{2}-\d{2}$/;
-var DAY_MS3 = 864e5;
+var DAY_MS4 = 864e5;
 var column = (header3, name) => header3.indexOf(name);
 var sourced = (row3, header3, line11, label2, oldest) => {
   const source3 = (row3[column(header3, "source")] ?? "").trim();
@@ -9152,7 +9240,7 @@ var validityDays = (runtime, root) => {
 };
 var checkCost = (runtime, root) => {
   const days = validityDays(runtime, root);
-  const oldest = Date.parse(runtime.now()) - days * DAY_MS3;
+  const oldest = Date.parse(runtime.now()) - days * DAY_MS4;
   const names3 = planFiles2(runtime, root).filter(
     (name) => name.endsWith("-cost-model.csv") || name.endsWith("-cost-limits.csv")
   );
@@ -9655,8 +9743,8 @@ var withDeadline = (work, ms, startTimer) => new Promise((resolve4, reject2) => 
 // src/review/findings.ts
 var GROUPS = ["must", "should", "nice"];
 var VERDICTS = ["approve", "approve-with-changes", "request-changes"];
-var text7 = (record9, key3) => {
-  const value2 = record9[key3];
+var text7 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
 var reproOf = (value2) => {
@@ -9958,8 +10046,8 @@ var isSchemaCandidate = (file) => file.endsWith(".prisma") || /(?:^|\/)(?:schema
 
 // src/datamap/map.ts
 var DATA_MAP_FILE = ".finitemonkey/data-map.yml";
-var text8 = (record9, key3) => {
-  const value2 = record9[key3];
+var text8 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
 var readDataMap = (runtime, root) => {
@@ -10383,8 +10471,8 @@ var parseShortcuts = (value2, acceptance2, issues2) => {
 };
 
 // src/task/validate.ts
-var str4 = (record9, key3, at5, issues2, required2) => {
-  const value2 = record9[key3];
+var str4 = (record10, key3, at5, issues2, required2) => {
+  const value2 = record10[key3];
   if (value2 === void 0 || value2 === null) {
     if (required2) issues2.push(`${at5}${key3}: required`);
     return void 0;
@@ -10395,8 +10483,8 @@ var str4 = (record9, key3, at5, issues2, required2) => {
   }
   return value2;
 };
-var positive2 = (record9, key3, at5, issues2) => {
-  const value2 = record9[key3];
+var positive2 = (record10, key3, at5, issues2) => {
+  const value2 = record10[key3];
   if (value2 === void 0 || value2 === null) return void 0;
   if (typeof value2 === "number" && Number.isInteger(value2) && value2 > 0) return value2;
   issues2.push(`${at5}${key3}: must be a positive integer`);
@@ -10415,13 +10503,13 @@ var gitRequire = (value2, at5, issues2) => {
   if (known3.some((item2) => item2 === void 0)) issues2.push(`${at5}: use ${GIT_REQUIREMENTS.join(", ")}`);
   return known3.filter((item2) => item2 !== void 0);
 };
-var appFields = (record9, kind, at5, issues2) => {
-  const port = positive2(record9, "port", at5, issues2);
+var appFields = (record10, kind, at5, issues2) => {
+  const port = positive2(record10, "port", at5, issues2);
   if (kind === "runtime" && port === void 0) issues2.push(`${at5}port: required`);
   if (port !== void 0 && port > 65535) issues2.push(`${at5}port: must be at most 65535`);
-  const status = positive2(record9, "status", at5, issues2);
-  const route = str4(record9, "route", at5, issues2, false);
-  const body2 = str4(record9, "body", at5, issues2, false);
+  const status = positive2(record10, "status", at5, issues2);
+  const route = str4(record10, "route", at5, issues2, false);
+  const body2 = str4(record10, "body", at5, issues2, false);
   return {
     ...port === void 0 ? {} : { port },
     ...route === void 0 ? {} : { route },
@@ -10429,21 +10517,21 @@ var appFields = (record9, kind, at5, issues2) => {
     ...body2 === void 0 ? {} : { body: body2 }
   };
 };
-var nonNegative = (record9, key3, at5, issues2) => {
-  const value2 = record9[key3];
+var nonNegative = (record10, key3, at5, issues2) => {
+  const value2 = record10[key3];
   if (value2 === void 0 || value2 === null) return void 0;
   if (typeof value2 === "number" && Number.isFinite(value2) && value2 >= 0) return value2;
   issues2.push(`${at5}${key3}: must be a number of zero or more`);
   return void 0;
 };
-var extraFields = (record9, kind, at5, issues2) => {
-  const cases = str4(record9, "cases", at5, issues2, kind === "golden");
-  const tolerance = nonNegative(record9, "tolerance", at5, issues2);
-  const run10 = record9["run"];
+var extraFields = (record10, kind, at5, issues2) => {
+  const cases = str4(record10, "cases", at5, issues2, kind === "golden");
+  const tolerance = nonNegative(record10, "tolerance", at5, issues2);
+  const run10 = record10["run"];
   if (kind === "golden" && typeof run10 === "string" && !run10.includes("{case}")) {
     issues2.push(`${at5}run: must contain {case}`);
   }
-  const minScore = positive2(record9, "min_score", at5, issues2);
+  const minScore = positive2(record10, "min_score", at5, issues2);
   if (minScore !== void 0 && minScore > 100) issues2.push(`${at5}min_score: must be at most 100`);
   return {
     ...cases === void 0 ? {} : { cases },
@@ -10451,15 +10539,15 @@ var extraFields = (record9, kind, at5, issues2) => {
     ...minScore === void 0 ? {} : { minScore }
   };
 };
-var checkFields = (record9, kind, at5, issues2) => {
-  const run10 = str4(record9, "run", at5, issues2, kind === "command" || kind === "golden");
-  const timeoutS = positive2(record9, "timeout_s", at5, issues2);
-  const description = str4(record9, "description", at5, issues2, kind === "manual");
-  const require2 = kind === "git" ? gitRequire(record9["require"] ?? ["committed"], `${at5}require`, issues2) : void 0;
-  const app = appFields(record9, kind, at5, issues2);
-  const versionUrl = str4(record9, "version_url", at5, issues2, false);
-  const field = str4(record9, "field", at5, issues2, false);
-  const open = record9["require_open"];
+var checkFields = (record10, kind, at5, issues2) => {
+  const run10 = str4(record10, "run", at5, issues2, kind === "command" || kind === "golden");
+  const timeoutS = positive2(record10, "timeout_s", at5, issues2);
+  const description = str4(record10, "description", at5, issues2, kind === "manual");
+  const require2 = kind === "git" ? gitRequire(record10["require"] ?? ["committed"], `${at5}require`, issues2) : void 0;
+  const app = appFields(record10, kind, at5, issues2);
+  const versionUrl = str4(record10, "version_url", at5, issues2, false);
+  const field = str4(record10, "field", at5, issues2, false);
+  const open = record10["require_open"];
   if (open !== void 0 && typeof open !== "boolean") issues2.push(`${at5}require_open: must be true or false`);
   return {
     ...run10 === void 0 ? {} : { run: run10 },
@@ -10470,7 +10558,7 @@ var checkFields = (record9, kind, at5, issues2) => {
     ...app,
     ...versionUrl === void 0 ? {} : { versionUrl },
     ...field === void 0 ? {} : { field },
-    ...extraFields(record9, kind, at5, issues2)
+    ...extraFields(record10, kind, at5, issues2)
   };
 };
 var acceptanceItem = (value2, index, issues2) => {
@@ -10608,7 +10696,7 @@ var activeTaskId = (files, paths, explicit) => explicit ?? readState(files, path
 import { join as join43 } from "node:path";
 var DECISIONS_FILE = "decisions.jsonl";
 var decisionsPath = (paths) => toAbsolutePath(join43(paths.dir, "tasks", DECISIONS_FILE));
-var optional = (record9, key3) => typeof record9[key3] === "string" ? { [key3]: record9[key3] } : {};
+var optional = (record10, key3) => typeof record10[key3] === "string" ? { [key3]: record10[key3] } : {};
 var readShortcutRows = (runtime, paths) => {
   const text26 = runtime.readText(decisionsPath(paths));
   if (!text26.ok) return [];
@@ -10921,7 +11009,7 @@ var en_default = {
   "secrets.block.write.claim": "the new text for {file} has a credential ({found})",
   "secrets.block.write.requires": "Nothing was written. Keep the value in .env (outside git) and read it by its variable name. If the key is real, treat it as exposed and rotate it",
   "secrets.block.not": "an encoded, split, commented or renamed copy of the same value",
-  "secrets.block.human": "Kept a credential out of a file, command or commit.",
+  "secrets.block.human": "Kept a credential out of a file, command or commit. Next: read it from an environment variable or a secret file; if it is not a secret, record it with `finitemonkey secrets accept <id> --false-positive --reason <why>`.",
   "secrets.block.bash.claim": "this command has a credential ({found}) and did not run",
   "secrets.block.bash.requires": "Read the value from an environment variable instead of writing it in the command. If the key is real, treat it as exposed and rotate it",
   "secrets.block.commit.claim": "the staged changes have a credential ({found}), so the commit did not run",
@@ -11140,7 +11228,7 @@ var en_default = {
   "gate.guard.self.not": "a copy, move, redirect or script that writes the same file",
   "gate.guard.self.allow_store.claim": "{file} records what the person released; tools never write it",
   "gate.guard.self.allow_store.requires": "leave this file to the person",
-  "gate.guard.self.human": "Kept {file} out of reach: the monkey does not grade its own homework.",
+  "gate.guard.self.human": "Kept {file} out of reach: the monkey does not grade its own homework. Next: change it through `finitemonkey` commands, or type on its own line: finitemonkey: allow self <reason>",
   "gate.guard.tests.claim": "{detail}",
   "gate.guard.tests.requires": "make the code pass the tests as they are",
   "gate.guard.tests.not": "a test that still runs but no longer checks the behavior",
@@ -11182,7 +11270,7 @@ var en_default = {
   "prose.block.command.claim": "{target} reads as machine-written ({spans}), and this project blocks it (default prose-blocks). {fixes}",
   "prose.block.command.requires": "Rewrite it and run the command again",
   "prose.block.not": "the same text with a few words swapped",
-  "prose.block.human": "Held back text that reads as machine-written.",
+  "prose.block.human": "Held back text that reads as machine-written. Next: rewrite the spans that `finitemonkey prose check --stdin` flags.",
   "prose.block.unreadable.claim": "could not read {file} to check its text ({detail})",
   "prose.block.unreadable.requires": "Check the path and run the command again",
   "prose.block.marker.claim": "this would add the marker {marker} to {file}, and only the person can add it",
@@ -11214,7 +11302,7 @@ var en_default = {
   "git.block.force_push.claim": "`{command}` rewrites the remote branch and can erase commits someone else pushed",
   "git.block.force_push.requires": "Fetch, integrate the remote commits and push normally. On your own branch after a rebase, use `git push --force-with-lease=<branch>:<expected sha> --force-if-includes`",
   "git.block.not": "the same effect through another git command, an alias, a script or a nested shell",
-  "git.block.human": "Stopped a git command that could lose work or rewrite shared history.",
+  "git.block.human": "Stopped a git command that could lose work or rewrite shared history. Next: save the work with `finitemonkey snapshot`; if you mean it, run the command yourself in a terminal.",
   "git.block.lease_not_own.claim": "`{command}` forces a push onto {subject}, which is not the branch you are working on or is protected",
   "git.block.lease_not_own.requires": "A forced push is only for your own branch, with an explicit lease",
   "git.block.push_delete.claim": "`{command}` deletes {subject} on the remote",
@@ -11257,7 +11345,7 @@ var en_default = {
   "prod.block.effect.claim": "`{command}` changes production ({target}) by hand, and a server edited by hand drifts from the repository",
   "prod.block.effect.requires": "Change it through the deploy path ({deploy}): commit, open a pull request and let the deploy run",
   "prod.block.not": "the same change through another tool, a script or a nested shell",
-  "prod.block.human": "Stopped a hand edit to production; changes go through the deploy.",
+  "prod.block.human": "Stopped a hand edit to production; changes go through the deploy. Next: commit the change and follow it with `finitemonkey deploy status`.",
   "prod.block.interactive.claim": "`{command}` opens an interactive session on production ({target}), where nothing typed can be checked first",
   "prod.block.interactive.requires": "Run one read-only command at a time, such as `ssh {target} docker ps`",
   "prod.deploy.unknown": "the project's declared deploy",
@@ -11390,7 +11478,7 @@ var en_default = {
   "reason.label.blocked": "blocked",
   "reason.label.requires": "requires",
   "reason.label.not": "does not count",
-  "reason.human.generic": "Blocked a tool call; the reason went to Claude.",
+  "reason.human.generic": "Blocked a tool call; the reason went to Claude. Next: if it was a false alarm, record it with `finitemonkey policy false-positive <guard>`.",
   "review.command.packet": "Print the review packet for the reviewer and verifier agents: diff, task contract, evidence ledger and REVIEW.md, never the conversation",
   "review.guard.read_only": "blocked: the {agent} agent is read-only and cannot use {tool}. Report the finding; the main session makes the change.",
   "review.error.no_base": "the base {detail} is not a commit here",
@@ -11403,15 +11491,15 @@ var en_default = {
   "command.gain.summary": "What the guards did: saves next to false alarms and gate failures",
   "gain.title": "Finite Monkey, last {days, plural, one {# day} other {# days}} (from .finitemonkey/log.jsonl and the evidence ledgers):",
   "gain.row.blocks": "{count, plural, one {# block} other {# blocks}} by the guards",
-  "gain.row.saves": "{count, plural, one {# block} other {# blocks}} followed by a green gate within a day",
-  "gain.row.false_positives": "{count, plural, one {# false alarm} other {# false alarms}} (releases typed by the person, and false positives recorded)",
+  "gain.row.saves": "{count, plural, one {# block} other {# blocks}} after which the same check went from failed to passed on changed code within a day",
+  "gain.row.false_positives": "{count, plural, one {# false alarm} other {# false alarms}} recorded with `finitemonkey policy false-positive`",
   "gain.row.gate_runs": "{count, plural, one {# gate run} other {# gate runs}}",
   "gain.row.gate_failed": "{count, plural, one {# gate run} other {# gate runs}} failed",
   "gain.row.gate_unverified": "{count, plural, one {# gate run} other {# gate runs}} ended not verified",
   "gain.row.gate_time": "{minutes, plural, one {# minute} other {# minutes}} spent in the gate",
   "gain.up": "up {delta} on the window before",
   "gain.down": "down {delta} on the window before",
-  "gain.footer": "Counts come from local files only; a save is a block followed by a passing gate, not proof that the block caused it.",
+  "gain.footer": "Counts come from local files only; a save is a block after which the same check failed and then passed on a different tree, not proof that the block caused it. An override is not counted as a false alarm.",
   "critique.command.verify": "Check a review's must-fix findings: run each reproduction command on base and head in throwaway worktrees and keep only what fails on head alone",
   "critique.title": "Critique",
   "critique.group.must": "Must fix",
@@ -11436,11 +11524,11 @@ var en_default = {
   "gate.guard.rewrite.claim": "the command that ran is not the one Finite Monkey checked; another hook rewrote it (checked: `{checked}`; ran: `{ran}`)",
   "gate.guard.rewrite.requires": "a sensitive command runs exactly as it was checked; find the hook that rewrites it and stop it from changing this command",
   "gate.guard.rewrite.not": "a rewrite that looks equivalent, or running the same command again through the same hook",
-  "gate.guard.rewrite.human": "Another hook changed a sensitive command after Finite Monkey checked it; both versions are in .finitemonkey/log.jsonl.",
+  "gate.guard.rewrite.human": "Another hook changed a sensitive command after Finite Monkey checked it; both versions are in .finitemonkey/log.jsonl. Next: find that hook with `finitemonkey doctor --hooks`.",
   "doctor.hooks.rewriters": "{hooks, plural, one {# other hook sees} other {# other hooks see}} shell commands before they run and can rewrite them ({list}); a sensitive command they change fails the gate",
   "doctor.hooks.fix_rewriters": "If a hook rewrites commands (updatedInput), make it skip git, rm, ssh, kubectl and .env commands, or remove it",
   "deps.warn.header": "Check these new packages before installing them (a warning, nothing was blocked):",
-  "deps.warn.human": "{count, plural, one {# warning about a new package} other {# warnings about new packages}}; see the details before installing.",
+  "deps.warn.human": "{count, plural, one {# warning about a new package} other {# warnings about new packages}}; see the details before installing. Next: `finitemonkey deps check` lists them again.",
   "deps.finding.missing": "{name} does not exist on {registry}; the name may be made up.",
   "deps.finding.typo": "{name} is one or two letters away from the popular package {popular}; check the spelling.",
   "deps.finding.young": "{name} has little history: first published {days, plural, one {# day} other {# days}} ago, {count, plural, one {# version} other {# versions}}.",
@@ -11826,7 +11914,7 @@ var en_default = {
   "fronts.block.limit.claim": "{max} write fronts are already running ({running}); a new one would pass the wave limit",
   "fronts.block.limit.requires": "Wait for a front to report, or use a read-only agent (Explore, Plan, researcher)",
   "fronts.block.not": "launching the same work under another agent type, a workflow or a nested agent",
-  "fronts.block.human": "Held a new front: the wave is at its limit.",
+  "fronts.block.human": "Held a new front: the wave is at its limit. Next: finish one and close it with `finitemonkey fronts close <front>`.",
   "fronts.command.brief": "Write .finitemonkey/briefing.md, the one briefing every front prompt cites, and print the four-line prompts",
   "fronts.brief.done": "Wrote {file} ({lines} of at most {ceiling} lines)",
   "fronts.context.front": "Front {id}: {goal}. Worktree {path}, branch {branch}, port {port}, capture prefix {prefix}.",
@@ -11866,7 +11954,7 @@ var en_default = {
   "creds.block.static.claim": "{file} would read the static cloud key {variable} from secrets, and {provider} accepts OIDC from GitHub Actions",
   "creds.block.static.requires": "Use the short-lived login instead: {alternative}. If the project truly needs the static key, ask the person to record an exception",
   "creds.block.not": "the same key under another secret name, or passed through env or a script",
-  "creds.block.human": "Kept the static cloud key {variable} out of {file}: {provider} accepts OIDC.",
+  "creds.block.human": "Kept the static cloud key {variable} out of {file}: {provider} accepts OIDC. Next: `finitemonkey creds` shows the OIDC setup.",
   "creds.inventory.written": "{count, plural, one {# credential} other {# credentials}} written to {file} (names only).",
   "creds.inventory.shared": "{name} is read by {services}; a rotation has to reach all of them at once.",
   "creds.inventory.static_cloud": "{name} is a static {cloud} key; prefer OIDC where the provider accepts it.",
@@ -11969,7 +12057,7 @@ var en_default = {
   "rules.block.broken.claim": "this goes against project rule {id}: {text}",
   "rules.block.broken.requires": "Follow the rule, or ask the person to change it in .finitemonkey/rules.yml",
   "rules.block.not": "the same action through another command, tool or file",
-  "rules.block.human": "Held back an action against project rule {id}.",
+  "rules.block.human": "Held back an action against project rule {id}. Next: do it the way the rule asks; if the rule is wrong, change it and run `finitemonkey rules compile`.",
   "rules.warn.prefer": "project rule {id} prefers otherwise: {text}",
   "signals.evidence.error": "error signature {sig} came back {count, plural, one {# time} other {# times}} in this session ({sample})",
   "signals.evidence.stalled": "the task contract has not moved in {count, plural, one {# turn} other {# turns}}",
@@ -12004,9 +12092,9 @@ var en_default = {
   "command.signals_release.summary": "Release the fourth-attempt hold on an error signature",
   "signals.protocol": "The ricochete skill holds the protocol for this frontier.",
   "ricochete.horizon.reason": 'The final message widens the horizon (expert questions or a rewritten request) while this session has a judgment signal, and it names no contract check of {task} as the judgment criterion (named: {named}; checks in the contract: {checks}). Add a line "Judgment criterion: <check id>" naming the check that proves the result, or propose that check to the person if none fits.',
-  "ricochete.horizon.human": "horizon help held until it names a contract check of {task} as its judgment criterion.",
+  "ricochete.horizon.human": "horizon help held until it names a contract check of {task} as its judgment criterion. Next: pick a check from `finitemonkey task show {task}`.",
   "ricochete.perturbation.reason": "Task {task} is closing with judgment signals in this session. Add to the final report the perturbation questions below, with the check that covers each one, and say which stay open:",
-  "ricochete.perturbation.human": "perturbation questions added to the report of {task}.",
+  "ricochete.perturbation.human": "perturbation questions added to the report of {task}. Next: answer them in the report before stopping.",
   "ricochete.perturbation.covered": "- {question} Covered by: {checks}.",
   "ricochete.perturbation.open": "- {question} No contract check covers it.",
   "ricochete.perturbation.requirement": "What if the requirement changes?",
@@ -12034,7 +12122,7 @@ var en_default = {
   "planta.label.artifact.unfinished": "an app that still misses minimum items of its blueprint",
   "planta.label.artifact.landing": "a landing page",
   "planta.label.reason": 'The final message uses the label "{label}" ("{phrase}"), but the project blueprint says this is {artifact}. Missing for that label ({count}): {list}. Rewrite the final message to say what was built and what is missing, without the label, or build the missing items first. finitemonkey planta shows the bar.',
-  "planta.label.human": 'label "{label}" held: this is {artifact}. Missing: {list}.',
+  "planta.label.human": 'label "{label}" held: this is {artifact}. Missing: {list}. Next: build what is missing, or call it {artifact}.',
   "planta.label.exhausted": 'the label "{label}" was held too many times in a row; letting the turn end. This is {artifact}. Missing: {list}.',
   "command.perfil.summary": "Show the per-domain profile used to tune explanations",
   "command.perfil_start.summary": "Answer six practical questions to set the profile (optional)",
@@ -12151,7 +12239,7 @@ var en_default = {
   "quality.block.size.claim": "{file} would have {lines} lines, over the {max}-line limit, and it would grow",
   "quality.block.size.requires": "Move part of it into a new module, or make the change without growing the file",
   "quality.block.not": "the same code squeezed onto fewer lines",
-  "quality.block.human": "Held back an edit that grows {file} past {max} lines.",
+  "quality.block.human": "Held back an edit that grows {file} past {max} lines. Next: move part of {file} into a new file.",
   "gate.require.slop": "added lines carry no AI code tics: no sibling v2 files, improvement suffixes, narrating comments, emoji, swallowed errors, unexplained any or debug output",
   "gate.slop.off": "the slop check is off in .finitemonkey/policy.yml",
   "gate.slop.clean": "no AI code tic in the added lines of {count, plural, one {# changed file} other {# changed files}}",
@@ -12234,7 +12322,7 @@ var en_default = {
   "claims.block.tests.claim": 'the final message says "{claim}" in a session that edited tests or the task contract ({files})',
   "claims.block.tests.requires": "list these files and why each changed, and ask the person to approve them",
   "claims.block.not": "repeating the claim, or saying done before the gate confirms it",
-  "claims.block.unconfirmed.human": "a done claim was held: {state}.",
+  "claims.block.unconfirmed.human": "a done claim was held: {state}. Next: run `finitemonkey gate` and claim done when it is green.",
   "claims.block.tests.human": "the session edited {count, plural, one {# test or contract file} other {# test or contract files}} ({files}); type finitemonkey: allow claims <reason> to accept them.",
   "clarify.context": 'finitemonkey clarify: this request starts a task of size {size} with no task contract. Before any edit, propose in one short message: the goal in one line, the scope, what exists today, and how we verify it is done. If something is ambiguous, add at most {max} multiple-choice questions, each with your recommendation, in this one round only. If nothing is ambiguous, state your assumptions in one line and go on. Then create the contract with the confirmed answers: finitemonkey task new <id> --goal "<goal>" --size {size} --paths <globs> --run "<command that proves it is done>" --answer "<question>: <answer>" (one --answer per confirmed answer or assumption).',
   "command.deploy_status.summary": "Say whether the last push is live and what to test, from the version URL or the GitHub deployment in config.yml",
@@ -12268,7 +12356,7 @@ var en_default = {
   "wt.heavy.claim": "{limit, plural, one {# heavy command} other {# heavy commands}} already running on this machine ({holders})",
   "wt.heavy.requires": "wait until it finishes and run this command again; meanwhile read, plan or edit without installing, building or running the full test suite",
   "wt.heavy.not": "starting another install, build or full test run in parallel",
-  "wt.heavy.human": "heavy command waiting: the machine runs {limit} at a time ({holders}).",
+  "wt.heavy.human": "heavy command waiting: the machine runs {limit} at a time ({holders}). Next: nothing to do; it starts when one of them ends.",
   "instructions.command.summary": "List every instruction file the session loads, by layer, and compare it with what Claude Code reported loading",
   "instructions.title": "{count, plural, one {# instruction file} other {# instruction files}} resolved:",
   "instructions.row.lasting": "  {layer} ({reason}): {file}, {lines, plural, one {# line} other {# lines}}, about {tokens} tokens, survives compaction",
@@ -12703,7 +12791,12 @@ var en_default = {
   "policy.error.invalid": "The policy has {count, plural, one {# error} other {# errors}}; those entries are not applied",
   "doctor.policy.ok": "{file} is valid",
   "doctor.policy.issues": "{file}: {detail}",
-  "doctor.policy.fix": "Fix the entries named above, then run `finitemonkey policy explain`"
+  "doctor.policy.fix": "Fix the entries named above, then run `finitemonkey policy explain`",
+  "gain.row.overrides_reason": "{count, plural, one {# override} other {# overrides}} typed by the person with a reason",
+  "gain.row.overrides_bare": "{count, plural, one {# override} other {# overrides}} without a reason",
+  "doctor.alert_budget.muted": "muted for being dismissed more than {limit}% of the times they fired in {days, plural, one {# day} other {# days}}: {list}",
+  "doctor.alert_budget.fix": "Fix what makes the guard fire wrongly, or set it in .finitemonkey/policy.yml to keep it on; `finitemonkey policy explain` shows each mode",
+  "guard.next": "Next:"
 };
 
 // src/i18n/es.json
@@ -12882,7 +12975,7 @@ var es_default = {
   "secrets.block.write.claim": "el texto nuevo de {file} tiene una credencial ({found})",
   "secrets.block.write.requires": "No se escribió nada. Deja el valor en .env (fuera de git) y léelo por el nombre de la variable. Si la clave es real, trátala como expuesta y rótala",
   "secrets.block.not": "una copia codificada, partida, comentada o renombrada del mismo valor",
-  "secrets.block.human": "Mantuve una credencial fuera de un archivo, comando o commit.",
+  "secrets.block.human": "Mantuve una credencial fuera de un archivo, comando o commit. Siguiente paso: lee el valor de una variable de entorno o de un archivo de secretos; si no es un secreto, regístralo con `finitemonkey secrets accept <id> --false-positive --reason <motivo>`.",
   "secrets.block.bash.claim": "este comando tiene una credencial ({found}) y no se ejecutó",
   "secrets.block.bash.requires": "Lee el valor de una variable de entorno en lugar de escribirlo en el comando. Si la clave es real, trátala como expuesta y rótala",
   "secrets.block.commit.claim": "los cambios preparados tienen una credencial ({found}), así que el commit no se ejecutó",
@@ -13101,7 +13194,7 @@ var es_default = {
   "gate.guard.self.not": "una copia, movimiento, redirección o script que escribe el mismo archivo",
   "gate.guard.self.allow_store.claim": "{file} registra lo que la persona liberó; ninguna herramienta lo escribe",
   "gate.guard.self.allow_store.requires": "dejar este archivo a la persona",
-  "gate.guard.self.human": "Dejé {file} fuera de alcance: el mono no corrige su propio examen.",
+  "gate.guard.self.human": "Dejé {file} fuera de alcance: el mono no corrige su propio examen. Siguiente paso: cámbialo con los comandos de `finitemonkey`, o escribe en una línea sola: finitemonkey: allow self <motivo>",
   "gate.guard.tests.claim": "{detail}",
   "gate.guard.tests.requires": "hacer que el código pase las pruebas como están",
   "gate.guard.tests.not": "una prueba que sigue corriendo pero ya no comprueba el comportamiento",
@@ -13143,7 +13236,7 @@ var es_default = {
   "prose.block.command.claim": "{target} parece escrito por IA ({spans}), y este proyecto lo bloquea (predeterminado prose-blocks). {fixes}",
   "prose.block.command.requires": "Reescríbelo y vuelve a ejecutar el comando",
   "prose.block.not": "el mismo texto con algunas palabras cambiadas",
-  "prose.block.human": "Retuve un texto que parece escrito por una máquina.",
+  "prose.block.human": "Retuve un texto que parece escrito por una máquina. Siguiente paso: reescribe los fragmentos que señala `finitemonkey prose check --stdin`.",
   "prose.block.unreadable.claim": "no se pudo leer {file} para revisar el texto ({detail})",
   "prose.block.unreadable.requires": "Revisa la ruta y vuelve a ejecutar el comando",
   "prose.block.marker.claim": "esto añadiría el marcador {marker} en {file}, y solo la persona puede ponerlo",
@@ -13175,7 +13268,7 @@ var es_default = {
   "git.block.force_push.claim": "`{command}` reescribe la rama remota y puede borrar commits que otra persona subió",
   "git.block.force_push.requires": "Trae e integra los commits remotos y sube normalmente. En tu propia rama después de un rebase, usa `git push --force-with-lease=<rama>:<sha esperado> --force-if-includes`",
   "git.block.not": "el mismo efecto con otro comando git, un alias, un script o un shell anidado",
-  "git.block.human": "Detuve un comando git que podía perder trabajo o reescribir historia compartida.",
+  "git.block.human": "Detuve un comando git que podía perder trabajo o reescribir historia compartida. Siguiente paso: guarda el trabajo con `finitemonkey snapshot`; si es lo que quieres, ejecuta el comando tú mismo en una terminal.",
   "git.block.lease_not_own.claim": "`{command}` fuerza un push sobre {subject}, que no es la rama en la que trabajas o está protegida",
   "git.block.lease_not_own.requires": "El push forzado solo vale en tu propia rama, con lease explícito",
   "git.block.push_delete.claim": "`{command}` borra {subject} en el remoto",
@@ -13218,7 +13311,7 @@ var es_default = {
   "prod.block.effect.claim": "`{command}` cambia producción ({target}) a mano, y un servidor editado a mano se aparta del repositorio",
   "prod.block.effect.requires": "Cámbialo por el camino de deploy ({deploy}): commit, pull request y que corra el deploy",
   "prod.block.not": "el mismo cambio con otra herramienta, un script o un shell anidado",
-  "prod.block.human": "Detuve una edición a mano en producción; los cambios van por el despliegue.",
+  "prod.block.human": "Detuve una edición a mano en producción; los cambios van por el despliegue. Siguiente paso: haz commit del cambio y síguelo con `finitemonkey deploy status`.",
   "prod.block.interactive.claim": "`{command}` abre una sesión interactiva en producción ({target}), donde nada de lo que se escriba se revisa antes",
   "prod.block.interactive.requires": "Corre un comando de solo lectura a la vez, como `ssh {target} docker ps`",
   "prod.deploy.unknown": "el deploy declarado del proyecto",
@@ -13351,7 +13444,7 @@ var es_default = {
   "reason.label.blocked": "bloqueado",
   "reason.label.requires": "exige",
   "reason.label.not": "no cuenta",
-  "reason.human.generic": "Bloqueé una llamada de herramienta; el motivo fue a Claude.",
+  "reason.human.generic": "Bloqueé una llamada de herramienta; el motivo fue a Claude. Siguiente paso: si fue una falsa alarma, regístrala con `finitemonkey policy false-positive <guard>`.",
   "review.command.packet": "Muestra el paquete de revisión para los agentes revisor y verificador: diff, contrato de la tarea, registro de evidencias y REVIEW.md, nunca la conversación",
   "review.guard.read_only": "bloqueado: el agente {agent} es de solo lectura y no puede usar {tool}. Informa el hallazgo; la sesión principal hace el cambio.",
   "review.error.no_base": "la base {detail} no es un commit aquí",
@@ -13364,15 +13457,15 @@ var es_default = {
   "command.gain.summary": "Lo que hicieron los bloqueos: aciertos junto a falsas alarmas y fallos de la compuerta",
   "gain.title": "Finite Monkey, {days, plural, one {último # día} other {últimos # días}} (de .finitemonkey/log.jsonl y los ledgers de evidencia):",
   "gain.row.blocks": "{count, plural, one {# bloqueo} other {# bloqueos}} de los guards",
-  "gain.row.saves": "{count, plural, one {# bloqueo seguido} other {# bloqueos seguidos}} de una compuerta en verde en menos de un día",
-  "gain.row.false_positives": "{count, plural, one {# falsa alarma} other {# falsas alarmas}} (liberaciones escritas por la persona y falsos positivos registrados)",
+  "gain.row.saves": "{count, plural, one {# bloqueo} other {# bloqueos}} tras los cuales la misma comprobación pasó de fallar a verde con código cambiado en menos de un día",
+  "gain.row.false_positives": "{count, plural, one {# falsa alarma registrada} other {# falsas alarmas registradas}} con `finitemonkey policy false-positive`",
   "gain.row.gate_runs": "{count, plural, one {# ejecución de la compuerta} other {# ejecuciones de la compuerta}}",
   "gain.row.gate_failed": "{count, plural, one {# ejecución de la compuerta falló} other {# ejecuciones de la compuerta fallaron}}",
   "gain.row.gate_unverified": "{count, plural, one {# ejecución de la compuerta terminó} other {# ejecuciones de la compuerta terminaron}} sin verificar",
   "gain.row.gate_time": "{minutes, plural, one {# minuto} other {# minutos}} en la compuerta",
   "gain.up": "+{delta} respecto a la ventana anterior",
   "gain.down": "-{delta} respecto a la ventana anterior",
-  "gain.footer": "Los conteos salen solo de archivos locales; un acierto es un bloqueo seguido de una compuerta en verde, no prueba de que el bloqueo lo causara.",
+  "gain.footer": "Los conteos salen solo de archivos locales; un acierto es un bloqueo tras el cual la misma comprobación falló y luego pasó en un árbol distinto, no prueba de que el bloqueo lo causara. Una liberación no cuenta como falsa alarma.",
   "critique.command.verify": "Revisa los hallazgos obligatorios de una revisión: ejecuta cada comando de reproducción en base y en head en worktrees desechables y conserva solo lo que falla únicamente en head",
   "critique.title": "Crítica",
   "critique.group.must": "Corregir sí o sí",
@@ -13397,11 +13490,11 @@ var es_default = {
   "gate.guard.rewrite.claim": "el comando que se ejecutó no es el que Finite Monkey revisó; otro hook lo reescribió (revisado: `{checked}`; ejecutado: `{ran}`)",
   "gate.guard.rewrite.requires": "un comando sensible se ejecuta exactamente como se revisó; busca el hook que lo reescribe e impide que cambie este comando",
   "gate.guard.rewrite.not": "una reescritura que parece equivalente, o ejecutar el mismo comando otra vez por el mismo hook",
-  "gate.guard.rewrite.human": "Otro hook cambió un comando sensible después de que Finite Monkey lo revisara; las dos versiones están en .finitemonkey/log.jsonl.",
+  "gate.guard.rewrite.human": "Otro hook cambió un comando sensible después de que Finite Monkey lo revisara; las dos versiones están en .finitemonkey/log.jsonl. Siguiente paso: encuentra ese hook con `finitemonkey doctor --hooks`.",
   "doctor.hooks.rewriters": "{hooks, plural, one {# otro hook ve} other {# otros hooks ven}} los comandos de shell antes de ejecutarse y pueden reescribirlos ({list}); un comando sensible que cambien hace fallar la compuerta",
   "doctor.hooks.fix_rewriters": "Si un hook reescribe comandos (updatedInput), haz que ignore los comandos de git, rm, ssh, kubectl y .env, o quítalo",
   "deps.warn.header": "Revisa estos paquetes nuevos antes de instalarlos (es un aviso, no se bloqueó nada):",
-  "deps.warn.human": "{count, plural, one {# aviso sobre un paquete nuevo} other {# avisos sobre paquetes nuevos}}; mira los detalles antes de instalar.",
+  "deps.warn.human": "{count, plural, one {# aviso sobre un paquete nuevo} other {# avisos sobre paquetes nuevos}}; mira los detalles antes de instalar. Siguiente paso: `finitemonkey deps check` los vuelve a listar.",
   "deps.finding.missing": "{name} no existe en {registry}; puede que el nombre sea inventado.",
   "deps.finding.typo": "{name} está a una o dos letras del paquete popular {popular}; revisa cómo se escribe.",
   "deps.finding.young": "{name} tiene poco historial: se publicó por primera vez hace {days, plural, one {# día} other {# días}}, {count, plural, one {# versión} other {# versiones}}.",
@@ -13787,7 +13880,7 @@ var es_default = {
   "fronts.block.limit.claim": "{max} frentes de escritura ya están en curso ({running}); una nueva pasaría el límite de la ola",
   "fronts.block.limit.requires": "Espera a que una frente entregue su informe o usa un agente de solo lectura (Explore, Plan, researcher)",
   "fronts.block.not": "lanzar el mismo trabajo con otro tipo de agente, un workflow o un agente anidado",
-  "fronts.block.human": "Retuve una frente nueva: la ola está en su límite.",
+  "fronts.block.human": "Retuve una frente nueva: la ola está en su límite. Siguiente paso: termina una y ciérrala con `finitemonkey fronts close <frente>`.",
   "fronts.command.brief": "Escribe .finitemonkey/briefing.md, el briefing único que cita cada prompt de frente, y muestra los prompts de cuatro líneas",
   "fronts.brief.done": "Escribí {file} ({lines} de como máximo {ceiling} líneas)",
   "fronts.context.front": "Frente {id}: {goal}. Worktree {path}, rama {branch}, puerto {port}, prefijo de captura {prefix}.",
@@ -13827,7 +13920,7 @@ var es_default = {
   "creds.block.static.claim": "{file} pasaría a leer la clave estática de nube {variable} desde los secrets, y {provider} acepta OIDC de GitHub Actions",
   "creds.block.static.requires": "Usa el inicio de sesión de corta duración: {alternative}. Si el proyecto de verdad necesita la clave estática, pide a la persona que registre una excepción",
   "creds.block.not": "la misma clave con otro nombre de secret, o pasada por env o por un script",
-  "creds.block.human": "Dejé fuera de {file} la clave estática de nube {variable}: {provider} acepta OIDC.",
+  "creds.block.human": "Dejé fuera de {file} la clave estática de nube {variable}: {provider} acepta OIDC. Siguiente paso: `finitemonkey creds` muestra la configuración OIDC.",
   "creds.inventory.written": "{count, plural, one {# credencial escrita} other {# credenciales escritas}} en {file} (solo nombres).",
   "creds.inventory.shared": "{name} la leen {services}; una rotación tiene que llegar a todos a la vez.",
   "creds.inventory.static_cloud": "{name} es una clave estática de {cloud}; mejor OIDC donde el proveedor lo acepte.",
@@ -13930,7 +14023,7 @@ var es_default = {
   "rules.block.broken.claim": "esto va contra la regla {id} del proyecto: {text}",
   "rules.block.broken.requires": "Sigue la regla, o pide a la persona que la cambie en .finitemonkey/rules.yml",
   "rules.block.not": "la misma acción por otro comando, herramienta o archivo",
-  "rules.block.human": "Detuve una acción contra la regla {id} del proyecto.",
+  "rules.block.human": "Detuve una acción contra la regla {id} del proyecto. Siguiente paso: hazlo como pide la regla; si la regla está mal, cámbiala y ejecuta `finitemonkey rules compile`.",
   "rules.warn.prefer": "la regla {id} del proyecto prefiere otra cosa: {text}",
   "signals.evidence.error": "la firma de error {sig} volvió {count, plural, one {# vez} other {# veces}} en esta sesión ({sample})",
   "signals.evidence.stalled": "el contrato de la tarea no avanza desde hace {count, plural, one {# vuelta} other {# vueltas}}",
@@ -13965,9 +14058,9 @@ var es_default = {
   "command.signals_release.summary": "Libera la guarda del cuarto intento en una firma de error",
   "signals.protocol": "La skill ricochete tiene el protocolo de esta frontera.",
   "ricochete.horizon.reason": 'El mensaje final amplía el horizonte (preguntas de experto o un pedido reescrito) mientras esta sesión tiene una señal de juicio, y no nombra ninguna comprobación del contrato de {task} como criterio de juicio (nombradas: {named}; comprobaciones en el contrato: {checks}). Agrega una línea "Criterio de juicio: <id de la comprobación>" con la comprobación que prueba el resultado, o propón esa comprobación a la persona si ninguna sirve.',
-  "ricochete.horizon.human": "ayuda de horizonte detenida hasta que nombre una comprobación del contrato de {task} como criterio de juicio.",
+  "ricochete.horizon.human": "ayuda de horizonte detenida hasta que nombre una comprobación del contrato de {task} como criterio de juicio. Siguiente paso: elige una comprobación de `finitemonkey task show {task}`.",
   "ricochete.perturbation.reason": "La tarea {task} se está cerrando con señales de juicio en esta sesión. Agrega al informe final las preguntas de perturbación de abajo, con la comprobación que cubre cada una, y di cuáles quedan abiertas:",
-  "ricochete.perturbation.human": "preguntas de perturbación agregadas al informe de {task}.",
+  "ricochete.perturbation.human": "preguntas de perturbación agregadas al informe de {task}. Siguiente paso: respóndelas en el informe antes de parar.",
   "ricochete.perturbation.covered": "- {question} Cubierta por: {checks}.",
   "ricochete.perturbation.open": "- {question} Ninguna comprobación del contrato la cubre.",
   "ricochete.perturbation.requirement": "¿Y si cambia el requisito?",
@@ -13995,7 +14088,7 @@ var es_default = {
   "planta.label.artifact.unfinished": "una aplicación a la que aún le faltan elementos mínimos de su plano",
   "planta.label.artifact.landing": "una página de aterrizaje",
   "planta.label.reason": 'El mensaje final usa la etiqueta "{label}" ("{phrase}"), pero el plano del proyecto dice que esto es {artifact}. Falta para esa etiqueta ({count}): {list}. Reescribe el mensaje final diciendo qué se construyó y qué falta, sin la etiqueta, o construye antes lo que falta. finitemonkey planta muestra la barra.',
-  "planta.label.human": 'etiqueta "{label}" detenida: esto es {artifact}. Falta: {list}.',
+  "planta.label.human": 'etiqueta "{label}" detenida: esto es {artifact}. Falta: {list}. Siguiente paso: construye lo que falta, o llámalo {artifact}.',
   "planta.label.exhausted": 'la etiqueta "{label}" se detuvo demasiadas veces seguidas; el turno puede terminar. Esto es {artifact}. Falta: {list}.',
   "command.perfil.summary": "Muestra el perfil por dominio usado para ajustar las explicaciones",
   "command.perfil_start.summary": "Responde seis preguntas prácticas para armar el perfil (opcional)",
@@ -14112,7 +14205,7 @@ var es_default = {
   "quality.block.size.claim": "{file} quedaría con {lines} líneas, por encima del límite de {max}, y crecería",
   "quality.block.size.requires": "Mueve una parte a un módulo nuevo, o haz el cambio sin crecer el archivo",
   "quality.block.not": "el mismo código apretado en menos líneas",
-  "quality.block.human": "Retuve una edición que hace que {file} pase de {max} líneas.",
+  "quality.block.human": "Retuve una edición que hace que {file} pase de {max} líneas. Siguiente paso: mueve parte de {file} a un archivo nuevo.",
   "gate.require.slop": "las líneas nuevas no traen tics de código de IA: nada de archivo hermano v2, sufijo de mejora, comentario que narra el cambio, emoji, error tragado, any sin motivo ni salida de debug",
   "gate.slop.off": "la revisión de slop está apagada en .finitemonkey/policy.yml",
   "gate.slop.clean": "ningún tic de código de IA en las líneas nuevas de {count, plural, one {# archivo cambiado} other {# archivos cambiados}}",
@@ -14195,7 +14288,7 @@ var es_default = {
   "claims.block.tests.claim": 'el mensaje final dice "{claim}" en una sesión que editó pruebas o el contrato de la tarea ({files})',
   "claims.block.tests.requires": "listar esos archivos y por qué cambió cada uno, y pedir a la persona que los apruebe",
   "claims.block.not": "repetir la afirmación, ni decir listo antes de que la compuerta lo confirme",
-  "claims.block.unconfirmed.human": "se retuvo una afirmación de terminado: {state}.",
+  "claims.block.unconfirmed.human": "se retuvo una afirmación de terminado: {state}. Siguiente paso: ejecuta `finitemonkey gate` y di terminado cuando esté en verde.",
   "claims.block.tests.human": "la sesión editó {count, plural, one {# archivo de prueba o contrato} other {# archivos de prueba o contrato}} ({files}); escribe finitemonkey: allow claims <motivo> para aceptarlos.",
   "clarify.context": 'finitemonkey clarify: este pedido empieza una tarea de tamaño {size} sin contrato. Antes de cualquier edición, propone en un mensaje corto: el objetivo en una línea, el alcance, lo que existe hoy y cómo verificamos que está terminado. Si algo es ambiguo, agrega como máximo {max} preguntas de opción múltiple, cada una con tu recomendación, en esta única ronda. Si nada es ambiguo, di tus supuestos en una línea y sigue. Después crea el contrato con las respuestas confirmadas: finitemonkey task new <id> --goal "<objetivo>" --size {size} --paths <globs> --run "<comando que prueba que está terminado>" --answer "<pregunta>: <respuesta>" (un --answer por respuesta confirmada o supuesto).',
   "command.deploy_status.summary": "Dice si el último push está en producción y qué probar, por la URL de versión o el deployment de GitHub en config.yml",
@@ -14229,7 +14322,7 @@ var es_default = {
   "wt.heavy.claim": "{limit, plural, one {# comando pesado} other {# comandos pesados}} ya corriendo en esta máquina ({holders})",
   "wt.heavy.requires": "esperar a que termine y volver a ejecutar este comando; mientras tanto leer, planificar o editar sin instalar, compilar ni correr toda la suite de pruebas",
   "wt.heavy.not": "empezar otra instalación, compilación o suite de pruebas en paralelo",
-  "wt.heavy.human": "comando pesado en espera: la máquina corre {limit} a la vez ({holders}).",
+  "wt.heavy.human": "comando pesado en espera: la máquina corre {limit} a la vez ({holders}). Siguiente paso: nada que hacer; empieza cuando uno de ellos termine.",
   "instructions.command.summary": "Lista cada archivo de instrucciones que carga la sesión, por capa, y lo compara con lo que Claude Code registró haber cargado",
   "instructions.title": "{count, plural, one {# archivo de instrucciones resuelto} other {# archivos de instrucciones resueltos}}:",
   "instructions.row.lasting": "  {layer} ({reason}): {file}, {lines, plural, one {# línea} other {# líneas}}, unos {tokens} tokens, sobrevive a la compactación",
@@ -14664,7 +14757,12 @@ var es_default = {
   "policy.error.invalid": "La política tiene {count, plural, one {# error} other {# errores}}; esas entradas no se aplican",
   "doctor.policy.ok": "{file} es válido",
   "doctor.policy.issues": "{file}: {detail}",
-  "doctor.policy.fix": "Corrige las entradas indicadas y ejecuta `finitemonkey policy explain`"
+  "doctor.policy.fix": "Corrige las entradas indicadas y ejecuta `finitemonkey policy explain`",
+  "gain.row.overrides_reason": "{count, plural, one {# liberación escrita} other {# liberaciones escritas}} por la persona con motivo",
+  "gain.row.overrides_bare": "{count, plural, one {# liberación} other {# liberaciones}} sin motivo",
+  "doctor.alert_budget.muted": "silenciados por ser descartados en más del {limit}% de las veces que se dispararon en {days, plural, one {# día} other {# días}}: {list}",
+  "doctor.alert_budget.fix": "Corrige lo que hace que el guard se dispare mal, o fija su modo en .finitemonkey/policy.yml para mantenerlo; `finitemonkey policy explain` muestra cada modo",
+  "guard.next": "Siguiente paso:"
 };
 
 // src/i18n/pt-BR.json
@@ -14843,7 +14941,7 @@ var pt_BR_default = {
   "secrets.block.write.claim": "o texto novo de {file} tem uma credencial ({found})",
   "secrets.block.write.requires": "Nada foi gravado. Deixe o valor no .env (fora do git) e leia pelo nome da variável. Se a chave é real, trate como exposta e troque",
   "secrets.block.not": "uma cópia codificada, partida, comentada ou renomeada do mesmo valor",
-  "secrets.block.human": "Mantive uma credencial fora de um arquivo, comando ou commit.",
+  "secrets.block.human": "Mantive uma credencial fora de um arquivo, comando ou commit. Próximo passo: leia o valor de uma variável de ambiente ou de um arquivo de segredo; se não for segredo, registre com `finitemonkey secrets accept <id> --false-positive --reason <motivo>`.",
   "secrets.block.bash.claim": "este comando tem uma credencial ({found}) e não rodou",
   "secrets.block.bash.requires": "Leia o valor de uma variável de ambiente em vez de escrevê-lo no comando. Se a chave é real, trate como exposta e troque",
   "secrets.block.commit.claim": "as mudanças preparadas têm uma credencial ({found}), então o commit não rodou",
@@ -15062,7 +15160,7 @@ var pt_BR_default = {
   "gate.guard.self.not": "uma cópia, move, redirecionamento ou script que grava o mesmo arquivo",
   "gate.guard.self.allow_store.claim": "{file} registra o que a pessoa liberou; ferramenta nunca escreve nele",
   "gate.guard.self.allow_store.requires": "deixar este arquivo para a pessoa",
-  "gate.guard.self.human": "Deixei {file} fora do alcance: o macaco não corrige a própria prova.",
+  "gate.guard.self.human": "Deixei {file} fora do alcance: o macaco não corrige a própria prova. Próximo passo: mude pelos comandos do `finitemonkey`, ou digite numa linha só: finitemonkey: allow self <motivo>",
   "gate.guard.tests.claim": "{detail}",
   "gate.guard.tests.requires": "fazer o código passar nos testes como estão",
   "gate.guard.tests.not": "um teste que ainda roda mas não confere mais o comportamento",
@@ -15104,7 +15202,7 @@ var pt_BR_default = {
   "prose.block.command.claim": "{target} tem cara de texto de IA ({spans}), e este projeto bloqueia isso (padrão prose-blocks). {fixes}",
   "prose.block.command.requires": "Reescreva e rode o comando de novo",
   "prose.block.not": "o mesmo texto com algumas palavras trocadas",
-  "prose.block.human": "Segurei um texto com cara de escrito por máquina.",
+  "prose.block.human": "Segurei um texto com cara de escrito por máquina. Próximo passo: reescreva os trechos que o `finitemonkey prose check --stdin` aponta.",
   "prose.block.unreadable.claim": "não deu para ler {file} para conferir o texto ({detail})",
   "prose.block.unreadable.requires": "Confira o caminho e rode o comando de novo",
   "prose.block.marker.claim": "isto acrescentaria o marcador {marker} em {file}, e só a pessoa pode pôr esse marcador",
@@ -15136,7 +15234,7 @@ var pt_BR_default = {
   "git.block.force_push.claim": "`{command}` reescreve a branch remota e pode apagar commits que outra pessoa enviou",
   "git.block.force_push.requires": "Busque, integre os commits remotos e envie normalmente. Na sua própria branch depois de um rebase, use `git push --force-with-lease=<branch>:<sha esperado> --force-if-includes`",
   "git.block.not": "o mesmo efeito por outro comando git, um alias, um script ou um shell aninhado",
-  "git.block.human": "Parei um comando git que podia perder trabalho ou reescrever histórico compartilhado.",
+  "git.block.human": "Parei um comando git que podia perder trabalho ou reescrever histórico compartilhado. Próximo passo: salve o trabalho com `finitemonkey snapshot`; se for isso mesmo, rode o comando você mesmo num terminal.",
   "git.block.lease_not_own.claim": "`{command}` força um push em {subject}, que não é a branch em que você trabalha ou é protegida",
   "git.block.lease_not_own.requires": "Push forçado só vale na sua própria branch, com lease explícito",
   "git.block.push_delete.claim": "`{command}` apaga {subject} no remoto",
@@ -15179,7 +15277,7 @@ var pt_BR_default = {
   "prod.block.effect.claim": "`{command}` mexe em produção ({target}) na mão, e servidor editado na mão diverge do repositório",
   "prod.block.effect.requires": "Mude pelo caminho de deploy ({deploy}): commit, pull request e o deploy roda",
   "prod.block.not": "a mesma mudança por outra ferramenta, um script ou um shell aninhado",
-  "prod.block.human": "Parei uma edição na mão em produção; mudança vai pelo deploy.",
+  "prod.block.human": "Parei uma edição na mão em produção; mudança vai pelo deploy. Próximo passo: faça commit da mudança e acompanhe com `finitemonkey deploy status`.",
   "prod.block.interactive.claim": "`{command}` abre sessão interativa em produção ({target}), onde nada do que for digitado passa por conferência",
   "prod.block.interactive.requires": "Rode um comando de leitura por vez, como `ssh {target} docker ps`",
   "prod.deploy.unknown": "o deploy declarado do projeto",
@@ -15312,7 +15410,7 @@ var pt_BR_default = {
   "reason.label.blocked": "bloqueado",
   "reason.label.requires": "exige",
   "reason.label.not": "não vale",
-  "reason.human.generic": "Bloqueei uma chamada de ferramenta; o motivo foi para o Claude.",
+  "reason.human.generic": "Bloqueei uma chamada de ferramenta; o motivo foi para o Claude. Próximo passo: se foi alarme falso, registre com `finitemonkey policy false-positive <guard>`.",
   "review.command.packet": "Mostra o pacote de revisão para os agentes revisor e verificador: diff, contrato da tarefa, registro de evidências e REVIEW.md, nunca a conversa",
   "review.guard.read_only": "bloqueado: o agente {agent} é só leitura e não pode usar {tool}. Relate o achado; a sessão principal faz a mudança.",
   "review.error.no_base": "a base {detail} não é um commit aqui",
@@ -15325,15 +15423,15 @@ var pt_BR_default = {
   "command.gain.summary": "O que as travas fizeram: acertos ao lado dos alarmes falsos e das falhas do portão",
   "gain.title": "Finite Monkey, últimos {days, plural, one {# dia} other {# dias}} (de .finitemonkey/log.jsonl e dos ledgers de evidência):",
   "gain.row.blocks": "{count, plural, one {# bloqueio} other {# bloqueios}} das travas",
-  "gain.row.saves": "{count, plural, one {# bloqueio seguido} other {# bloqueios seguidos}} de portão verde em até um dia",
-  "gain.row.false_positives": "{count, plural, one {# alarme falso} other {# alarmes falsos}} (liberações digitadas pela pessoa e falsos positivos registrados)",
+  "gain.row.saves": "{count, plural, one {# bloqueio} other {# bloqueios}} depois dos quais a mesma checagem passou de falha para verde com código mudado em até um dia",
+  "gain.row.false_positives": "{count, plural, one {# alarme falso registrado} other {# alarmes falsos registrados}} com `finitemonkey policy false-positive`",
   "gain.row.gate_runs": "{count, plural, one {# execução do portão} other {# execuções do portão}}",
   "gain.row.gate_failed": "{count, plural, one {# execução do portão reprovou} other {# execuções do portão reprovaram}}",
   "gain.row.gate_unverified": "{count, plural, one {# execução do portão terminou} other {# execuções do portão terminaram}} sem verificar",
   "gain.row.gate_time": "{minutes, plural, one {# minuto} other {# minutos}} no portão",
   "gain.up": "+{delta} em relação à janela anterior",
   "gain.down": "-{delta} em relação à janela anterior",
-  "gain.footer": "As contagens vêm só de arquivos locais; um acerto é um bloqueio seguido de portão verde, não prova de que o bloqueio causou isso.",
+  "gain.footer": "As contagens vêm só de arquivos locais; um acerto é um bloqueio depois do qual a mesma checagem falhou e passou numa árvore diferente, não prova de que o bloqueio causou isso. Uma liberação não conta como alarme falso.",
   "critique.command.verify": "Confere os achados obrigatórios de uma revisão: roda cada comando de reprodução na base e no head em worktrees descartáveis e fica só com o que falha apenas no head",
   "critique.title": "Crítica",
   "critique.group.must": "Corrigir obrigatoriamente",
@@ -15358,11 +15456,11 @@ var pt_BR_default = {
   "gate.guard.rewrite.claim": "o comando que rodou não é o que o Finite Monkey conferiu; outro hook o reescreveu (conferido: `{checked}`; rodou: `{ran}`)",
   "gate.guard.rewrite.requires": "um comando sensível roda exatamente como foi conferido; ache o hook que o reescreve e impeça que ele mude este comando",
   "gate.guard.rewrite.not": "uma reescrita que parece equivalente, ou rodar o mesmo comando de novo pelo mesmo hook",
-  "gate.guard.rewrite.human": "Outro hook mudou um comando sensível depois que o Finite Monkey o conferiu; as duas versões estão em .finitemonkey/log.jsonl.",
+  "gate.guard.rewrite.human": "Outro hook mudou um comando sensível depois que o Finite Monkey o conferiu; as duas versões estão em .finitemonkey/log.jsonl. Próximo passo: ache esse hook com `finitemonkey doctor --hooks`.",
   "doctor.hooks.rewriters": "{hooks, plural, one {# outro hook vê} other {# outros hooks veem}} comandos de shell antes de rodarem e podem reescrevê-los ({list}); um comando sensível que eles mudarem reprova o portão",
   "doctor.hooks.fix_rewriters": "Se um hook reescreve comandos (updatedInput), faça ele pular comandos de git, rm, ssh, kubectl e .env, ou remova o hook",
   "deps.warn.header": "Confira estes pacotes novos antes de instalar (é um aviso, nada foi bloqueado):",
-  "deps.warn.human": "{count, plural, one {# aviso sobre pacote novo} other {# avisos sobre pacotes novos}}; veja os detalhes antes de instalar.",
+  "deps.warn.human": "{count, plural, one {# aviso sobre pacote novo} other {# avisos sobre pacotes novos}}; veja os detalhes antes de instalar. Próximo passo: o `finitemonkey deps check` lista de novo.",
   "deps.finding.missing": "{name} não existe no {registry}; o nome pode ter sido inventado.",
   "deps.finding.typo": "{name} está a uma ou duas letras do pacote popular {popular}; confira a grafia.",
   "deps.finding.young": "{name} tem pouco histórico: publicado pela primeira vez há {days, plural, one {# dia} other {# dias}}, {count, plural, one {# versão} other {# versões}}.",
@@ -15748,7 +15846,7 @@ var pt_BR_default = {
   "fronts.block.limit.claim": "{max} frentes de escrita já estão rodando ({running}); uma nova passaria do limite da onda",
   "fronts.block.limit.requires": "Espere uma frente entregar o relatório ou use um agente só leitura (Explore, Plan, researcher)",
   "fronts.block.not": "lançar o mesmo trabalho com outro tipo de agente, um workflow ou um agente aninhado",
-  "fronts.block.human": "Segurei uma frente nova: a onda está no limite.",
+  "fronts.block.human": "Segurei uma frente nova: a onda está no limite. Próximo passo: termine uma e feche com `finitemonkey fronts close <frente>`.",
   "fronts.command.brief": "Grava .finitemonkey/briefing.md, o briefing único que todo prompt de frente cita, e mostra os prompts de quatro linhas",
   "fronts.brief.done": "Gravei {file} ({lines} de no máximo {ceiling} linhas)",
   "fronts.context.front": "Frente {id}: {goal}. Worktree {path}, branch {branch}, porta {port}, prefixo de captura {prefix}.",
@@ -15788,7 +15886,7 @@ var pt_BR_default = {
   "creds.block.static.claim": "{file} passaria a ler a chave estática de nuvem {variable} dos secrets, e o {provider} aceita OIDC do GitHub Actions",
   "creds.block.static.requires": "Use o login de curta duração no lugar: {alternative}. Se o projeto precisa mesmo da chave estática, peça à pessoa para registrar uma exceção",
   "creds.block.not": "a mesma chave com outro nome de secret, ou passada por env ou por script",
-  "creds.block.human": "Barrei a chave estática de nuvem {variable} em {file}: o {provider} aceita OIDC.",
+  "creds.block.human": "Barrei a chave estática de nuvem {variable} em {file}: o {provider} aceita OIDC. Próximo passo: o `finitemonkey creds` mostra a configuração OIDC.",
   "creds.inventory.written": "{count, plural, one {# credencial gravada} other {# credenciais gravadas}} em {file} (só nomes).",
   "creds.inventory.shared": "{name} é lida por {services}; uma rotação precisa chegar em todos ao mesmo tempo.",
   "creds.inventory.static_cloud": "{name} é uma chave estática de {cloud}; prefira OIDC onde o provedor aceita.",
@@ -15891,7 +15989,7 @@ var pt_BR_default = {
   "rules.block.broken.claim": "isto vai contra a regra {id} do projeto: {text}",
   "rules.block.broken.requires": "Siga a regra, ou peça à pessoa para mudá-la em .finitemonkey/rules.yml",
   "rules.block.not": "a mesma ação por outro comando, ferramenta ou arquivo",
-  "rules.block.human": "Barrei uma ação contra a regra {id} do projeto.",
+  "rules.block.human": "Barrei uma ação contra a regra {id} do projeto. Próximo passo: faça do jeito que a regra pede; se a regra estiver errada, mude a regra e rode `finitemonkey rules compile`.",
   "rules.warn.prefer": "a regra {id} do projeto prefere outro caminho: {text}",
   "signals.evidence.error": "a assinatura de erro {sig} voltou {count, plural, one {# vez} other {# vezes}} nesta sessão ({sample})",
   "signals.evidence.stalled": "o contrato da tarefa não avança há {count, plural, one {# volta} other {# voltas}}",
@@ -15926,9 +16024,9 @@ var pt_BR_default = {
   "command.signals_release.summary": "Libera a trava da quarta tentativa numa assinatura de erro",
   "signals.protocol": "A skill ricochete tem o protocolo desta fronteira.",
   "ricochete.horizon.reason": 'A mensagem final amplia o horizonte (perguntas de especialista ou pedido reescrito) enquanto esta sessão tem sinal de julgamento, e não cita nenhuma checagem do contrato de {task} como critério de julgamento (citadas: {named}; checagens no contrato: {checks}). Acrescente uma linha "Critério de julgamento: <id da checagem>" com a checagem que prova o resultado, ou proponha essa checagem à pessoa se nenhuma servir.',
-  "ricochete.horizon.human": "ajuda de horizonte segurada até citar uma checagem do contrato de {task} como critério de julgamento.",
+  "ricochete.horizon.human": "ajuda de horizonte segurada até citar uma checagem do contrato de {task} como critério de julgamento. Próximo passo: escolha uma checagem em `finitemonkey task show {task}`.",
   "ricochete.perturbation.reason": "A tarefa {task} está fechando com sinais de julgamento nesta sessão. Ponha no relatório final as perguntas de perturbação abaixo, com a checagem que cobre cada uma, e diga quais ficam em aberto:",
-  "ricochete.perturbation.human": "perguntas de perturbação acrescentadas ao relatório de {task}.",
+  "ricochete.perturbation.human": "perguntas de perturbação acrescentadas ao relatório de {task}. Próximo passo: responda no relatório antes de parar.",
   "ricochete.perturbation.covered": "- {question} Coberta por: {checks}.",
   "ricochete.perturbation.open": "- {question} Nenhuma checagem do contrato cobre.",
   "ricochete.perturbation.requirement": "E se o requisito mudar?",
@@ -15956,7 +16054,7 @@ var pt_BR_default = {
   "planta.label.artifact.unfinished": "um app que ainda não tem itens mínimos da planta",
   "planta.label.artifact.landing": "uma página de venda",
   "planta.label.reason": 'A mensagem final usa o rótulo "{label}" ("{phrase}"), mas a planta do projeto diz que isto é {artifact}. Falta para esse rótulo ({count}): {list}. Reescreva a mensagem final dizendo o que foi feito e o que falta, sem o rótulo, ou construa antes o que falta. finitemonkey planta mostra a barra.',
-  "planta.label.human": 'rótulo "{label}" segurado: isto é {artifact}. Falta: {list}.',
+  "planta.label.human": 'rótulo "{label}" segurado: isto é {artifact}. Falta: {list}. Próximo passo: construa o que falta, ou chame de {artifact}.',
   "planta.label.exhausted": 'o rótulo "{label}" foi segurado vezes demais seguidas; o turno pode terminar. Isto é {artifact}. Falta: {list}.',
   "command.perfil.summary": "Mostra o perfil por domínio usado para ajustar as explicações",
   "command.perfil_start.summary": "Responde seis perguntas práticas para montar o perfil (opcional)",
@@ -16073,7 +16171,7 @@ var pt_BR_default = {
   "quality.block.size.claim": "{file} ficaria com {lines} linhas, acima do limite de {max}, e cresceria",
   "quality.block.size.requires": "Mova parte dele para um módulo novo, ou faça a mudança sem crescer o arquivo",
   "quality.block.not": "o mesmo código espremido em menos linhas",
-  "quality.block.human": "Segurei uma edição que faz {file} passar de {max} linhas.",
+  "quality.block.human": "Segurei uma edição que faz {file} passar de {max} linhas. Próximo passo: mova parte de {file} para um arquivo novo.",
   "gate.require.slop": "as linhas novas não trazem tiques de código de IA: nada de arquivo irmão v2, sufixo de melhoria, comentário que narra a mudança, emoji, erro engolido, any sem motivo ou saída de debug",
   "gate.slop.off": "a checagem de slop está desligada no .finitemonkey/policy.yml",
   "gate.slop.clean": "nenhum tique de código de IA nas linhas novas de {count, plural, one {# arquivo mudado} other {# arquivos mudados}}",
@@ -16156,7 +16254,7 @@ var pt_BR_default = {
   "claims.block.tests.claim": 'a mensagem final diz "{claim}" numa sessão que editou testes ou o contrato da tarefa ({files})',
   "claims.block.tests.requires": "listar esses arquivos e por que cada um mudou, e pedir à pessoa que os aprove",
   "claims.block.not": "repetir a afirmação, nem dizer pronto antes de o portão confirmar",
-  "claims.block.unconfirmed.human": "uma afirmação de pronto foi segurada: {state}.",
+  "claims.block.unconfirmed.human": "uma afirmação de pronto foi segurada: {state}. Próximo passo: rode `finitemonkey gate` e diga pronto quando ficar verde.",
   "claims.block.tests.human": "a sessão editou {count, plural, one {# arquivo de teste ou contrato} other {# arquivos de teste ou contrato}} ({files}); digite finitemonkey: allow claims <motivo> para aceitar.",
   "clarify.context": 'finitemonkey clarify: este pedido começa uma tarefa de tamanho {size} sem contrato. Antes de qualquer edição, proponha numa mensagem curta: o objetivo em uma linha, o escopo, o que existe hoje e como verificamos que está pronto. Se algo for ambíguo, acrescente no máximo {max} perguntas de múltipla escolha, cada uma com a sua recomendação, nesta única rodada. Se nada for ambíguo, diga suas suposições em uma linha e siga. Depois crie o contrato com as respostas confirmadas: finitemonkey task new <id> --goal "<objetivo>" --size {size} --paths <globs> --run "<comando que prova que está pronto>" --answer "<pergunta>: <resposta>" (um --answer por resposta confirmada ou suposição).',
   "command.deploy_status.summary": "Diz se o último push está no ar e o que testar, pela URL de versão ou pelo deployment do GitHub no config.yml",
@@ -16190,7 +16288,7 @@ var pt_BR_default = {
   "wt.heavy.claim": "{limit, plural, one {# comando pesado} other {# comandos pesados}} já rodando nesta máquina ({holders})",
   "wt.heavy.requires": "esperar terminar e rodar este comando de novo; enquanto isso ler, planejar ou editar sem instalar, compilar ou rodar a suíte completa de testes",
   "wt.heavy.not": "começar outra instalação, compilação ou suíte de testes em paralelo",
-  "wt.heavy.human": "comando pesado esperando: a máquina roda {limit} por vez ({holders}).",
+  "wt.heavy.human": "comando pesado esperando: a máquina roda {limit} por vez ({holders}). Próximo passo: nada a fazer; ele começa quando um deles terminar.",
   "instructions.command.summary": "Lista cada arquivo de instruções que a sessão carrega, por camada, e compara com o que o Claude Code registrou ter carregado",
   "instructions.title": "{count, plural, one {# arquivo de instruções resolvido} other {# arquivos de instruções resolvidos}}:",
   "instructions.row.lasting": "  {layer} ({reason}): {file}, {lines, plural, one {# linha} other {# linhas}}, cerca de {tokens} tokens, sobrevive à compactação",
@@ -16625,7 +16723,12 @@ var pt_BR_default = {
   "policy.error.invalid": "A política tem {count, plural, one {# erro} other {# erros}}; essas entradas não são aplicadas",
   "doctor.policy.ok": "{file} é válido",
   "doctor.policy.issues": "{file}: {detail}",
-  "doctor.policy.fix": "Corrija as entradas citadas e rode `finitemonkey policy explain`"
+  "doctor.policy.fix": "Corrija as entradas citadas e rode `finitemonkey policy explain`",
+  "gain.row.overrides_reason": "{count, plural, one {# liberação digitada} other {# liberações digitadas}} pela pessoa com motivo",
+  "gain.row.overrides_bare": "{count, plural, one {# liberação} other {# liberações}} sem motivo",
+  "doctor.alert_budget.muted": "silenciados por serem dispensados em mais de {limit}% das vezes que dispararam em {days, plural, one {# dia} other {# dias}}: {list}",
+  "doctor.alert_budget.fix": "Corrija o que faz o guard disparar errado, ou fixe o modo em .finitemonkey/policy.yml para mantê-lo ligado; o `finitemonkey policy explain` mostra cada modo",
+  "guard.next": "Próximo passo:"
 };
 
 // src/i18n/review.json
@@ -18587,7 +18690,12 @@ var review_default = {
     "policy.error.invalid": "machine",
     "doctor.policy.ok": "machine",
     "doctor.policy.issues": "machine",
-    "doctor.policy.fix": "machine"
+    "doctor.policy.fix": "machine",
+    "gain.row.overrides_reason": "machine",
+    "gain.row.overrides_bare": "machine",
+    "doctor.alert_budget.muted": "machine",
+    "doctor.alert_budget.fix": "machine",
+    "guard.next": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -20546,7 +20654,12 @@ var review_default = {
     "policy.error.invalid": "machine",
     "doctor.policy.ok": "machine",
     "doctor.policy.issues": "machine",
-    "doctor.policy.fix": "machine"
+    "doctor.policy.fix": "machine",
+    "gain.row.overrides_reason": "machine",
+    "gain.row.overrides_bare": "machine",
+    "doctor.alert_budget.muted": "machine",
+    "doctor.alert_budget.fix": "machine",
+    "guard.next": "machine"
   }
 };
 
@@ -21353,8 +21466,8 @@ var ghJson2 = (runtime, cwd, args2) => {
   return parsed.ok ? parsed.value : void 0;
 };
 var records = (value2) => Array.isArray(value2) ? value2.filter((item2) => isRecord(item2)) : [];
-var textOf4 = (record9, key3) => {
-  const value2 = record9?.[key3];
+var textOf4 = (record10, key3) => {
+  const value2 = record10?.[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : void 0;
 };
 var stateOf2 = (raw) => {
@@ -22442,7 +22555,7 @@ var parseLevel = (raw) => {
   const value2 = Number.parseInt(raw, 10);
   return isDeployLevel(value2) && String(value2) === raw.trim() ? value2 : "invalid";
 };
-var record3 = (ctx, root, values) => {
+var record4 = (ctx, root, values) => {
   const level = parseLevel(stringOption(values, "level"));
   const evidence = stringOption(values, "rollback-evidence");
   if (level === void 0 && evidence === void 0) return void 0;
@@ -22466,7 +22579,7 @@ var record3 = (ctx, root, values) => {
 var runPlan = (ctx, root, values) => {
   const mode = featureMode(ctx.runtime, fmPaths(root), DEPLOY_PLAN_FEATURE);
   if (mode === "off") return success({ schema: DEPLOY_PLAN_SCHEMA, mode }, [ctx.t("deploy.plan.off")]);
-  const recorded = record3(ctx, root, values);
+  const recorded = record4(ctx, root, values);
   if (recorded !== void 0) return recorded;
   return showPlan(ctx, root);
 };
@@ -22710,7 +22823,7 @@ var osvOutcome = (result) => {
 
 // src/supply/verdict.ts
 var OSV_SEEN_FILE = ".finitemonkey/findings/osv.json";
-var DAY_MS4 = 864e5;
+var DAY_MS5 = 864e5;
 var DEADLINE_DAYS = {
   critical: 7,
   high: 14,
@@ -22744,7 +22857,7 @@ var judge = (vulns, seen, now) => {
   const nowMs2 = Date.parse(now);
   return vulns.map((vuln) => {
     const firstSeen = seen[keyOf2(vuln)] ?? now;
-    const deadlineMs = Date.parse(firstSeen) + DEADLINE_DAYS[vuln.severity] * DAY_MS4;
+    const deadlineMs = Date.parse(firstSeen) + DEADLINE_DAYS[vuln.severity] * DAY_MS5;
     const blocking3 = vuln.severity === "critical" && vuln.fixed !== void 0 || nowMs2 > deadlineMs;
     return { ...vuln, verdict: blocking3 ? "block" : "warn", firstSeen, deadline: new Date(deadlineMs).toISOString() };
   });
@@ -22903,10 +23016,10 @@ var parseEntries = (value2) => {
   const entries2 = value2.map(parseEntry3);
   return entries2.every((entry2) => entry2 !== void 0) ? entries2 : void 0;
 };
-var fromRecord = (record9) => {
-  const { schema, version: version2, installedAt, updatedAt } = record9;
-  const entries2 = parseEntries(record9["entries"]);
-  const createdDirs = strings7(record9["createdDirs"]);
+var fromRecord = (record10) => {
+  const { schema, version: version2, installedAt, updatedAt } = record10;
+  const entries2 = parseEntries(record10["entries"]);
+  const createdDirs = strings7(record10["createdDirs"]);
   if (schema !== LOCK_SCHEMA) return reject(`schema is not ${LOCK_SCHEMA}`);
   if (typeof version2 !== "string" || typeof installedAt !== "string" || typeof updatedAt !== "string") {
     return reject("version, installedAt and updatedAt must be text");
@@ -23996,8 +24109,8 @@ var installedPlugins = (env) => {
   const enabled = enabledPlugins2(env);
   return Object.entries(asRecord(index?.["plugins"])).flatMap(([id, value2]) => {
     const records2 = Array.isArray(value2) ? value2.filter(isRecord) : isRecord(value2) ? [value2] : [];
-    const record9 = records2.find((item2) => item2["projectPath"] === env.root) ?? records2[0];
-    const root = record9 === void 0 ? void 0 : optionalString(record9, "installPath");
+    const record10 = records2.find((item2) => item2["projectPath"] === env.root) ?? records2[0];
+    const root = record10 === void 0 ? void 0 : optionalString(record10, "installPath");
     return root === void 0 ? [] : [{ id, root, enabled: enabled.get(id) ?? true }];
   });
 };
@@ -24327,7 +24440,7 @@ var NEXT_PLUGIN_ID = `${PLUGIN_NAME}@${NEXT_MARKETPLACE_NAME}`;
 // src/doctor/claude-settings.ts
 var AGENT_TEAMS_VAR = "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS";
 var LOOP_PLUGINS2 = ["oh-my-claudecode", "ralph-loop", "ralph-wiggum", "everything-claude-code", "superclaude"];
-var DAY_MS5 = 24 * 60 * 60 * 1e3;
+var DAY_MS6 = 24 * 60 * 60 * 1e3;
 var scopeCheck = (all, key3, build) => {
   const scopes = scopesWith(all, isOn2(key3));
   return scopes.length === 0 ? [] : [build(scopes.join(", "))];
@@ -24402,7 +24515,7 @@ var projectAgeDays = (env) => {
   const seconds2 = result.stdout.split(/\s+/).filter((part2) => /^\d+$/.test(part2)).map(Number);
   if (seconds2.length === 0) return void 0;
   const now = Date.parse(env.runtime.now());
-  return Math.floor((now - Math.min(...seconds2) * 1e3) / DAY_MS5);
+  return Math.floor((now - Math.min(...seconds2) * 1e3) / DAY_MS6);
 };
 var cleanupPeriod = (env, all) => {
   const days = shortestCleanup(all);
@@ -25105,7 +25218,7 @@ var exportedNames = (ts, node) => {
   const declared = ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isEnumDeclaration(node) ? nameText(ts, node.name) : void 0;
   return declared === void 0 ? [] : [declared];
 };
-var record4 = (ts, source3, node, walk3, scope2) => {
+var record5 = (ts, source3, node, walk3, scope2) => {
   const name = functionName(ts, node);
   const scoped = scope2 === "" ? name : `${scope2}>${name}`;
   const count10 = (walk3.seen.get(scoped) ?? 0) + 1;
@@ -25123,7 +25236,7 @@ var record4 = (ts, source3, node, walk3, scope2) => {
   return key3;
 };
 var walkNode = (ts, source3, node, walk3, scope2) => {
-  const inner = isFunctionLike(ts, node) ? record4(ts, source3, node, walk3, scope2) : scope2;
+  const inner = isFunctionLike(ts, node) ? record5(ts, source3, node, walk3, scope2) : scope2;
   if (isNestedTernary(ts, node)) {
     walk3.ternaries.push({
       line: lineOf6(source3, node.getStart(source3)),
@@ -25329,12 +25442,12 @@ var rankCandidates = (touched2, limits, filter) => {
 // src/advisor/store.ts
 import { join as join58 } from "node:path";
 var suggestionsPath = (root) => toAbsolutePath(join58(root, SUGGESTIONS_FILE));
-var text13 = (record9, key3) => {
-  const value2 = record9[key3];
+var text13 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
-var number2 = (record9, key3) => {
-  const value2 = record9[key3];
+var number2 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "number" ? value2 : void 0;
 };
 var runsOf = (value2) => Array.isArray(value2) ? value2.flatMap((item2) => {
@@ -25342,12 +25455,12 @@ var runsOf = (value2) => Array.isArray(value2) ? value2.flatMap((item2) => {
   const code2 = item2["exitCode"];
   return [{ command: item2["command"], exitCode: typeof code2 === "number" ? code2 : null }];
 }) : void 0;
-var optional2 = (record9) => {
-  const before2 = runsOf(record9["before"]);
-  const after2 = number2(record9, "after");
-  const example = text13(record9, "example");
-  const by = text13(record9, "by");
-  const refactorTask = text13(record9, "refactorTask");
+var optional2 = (record10) => {
+  const before2 = runsOf(record10["before"]);
+  const after2 = number2(record10, "after");
+  const example = text13(record10, "example");
+  const by = text13(record10, "by");
+  const refactorTask = text13(record10, "refactorTask");
   return {
     ...example === void 0 ? {} : { example },
     ...by === void 0 ? {} : { by },
@@ -25359,7 +25472,7 @@ var optional2 = (record9) => {
 var parseSuggestion = (line11) => {
   const parsed = parseJsonObject(line11);
   if (!parsed.ok) return void 0;
-  const record9 = parsed.value;
+  const record10 = parsed.value;
   const [id, at5, task, file, name, metric, refactoring] = [
     "id",
     "at",
@@ -25368,9 +25481,9 @@ var parseSuggestion = (line11) => {
     "name",
     "metric",
     "refactoring"
-  ].map((key3) => text13(record9, key3));
-  const [lineNo, value2, target5, score] = ["line", "value", "target", "score"].map((key3) => number2(record9, key3));
-  const { rule, state } = record9;
+  ].map((key3) => text13(record10, key3));
+  const [lineNo, value2, target5, score] = ["line", "value", "target", "score"].map((key3) => number2(record10, key3));
+  const { rule, state } = record10;
   if (id === void 0 || at5 === void 0 || task === void 0 || file === void 0 || name === void 0)
     return void 0;
   if (metric === void 0 || refactoring === void 0 || !isRule(rule) || !isState(state)) return void 0;
@@ -25389,7 +25502,7 @@ var parseSuggestion = (line11) => {
     refactoring,
     score,
     state,
-    ...optional2(record9)
+    ...optional2(record10)
   };
 };
 var readHistory = (runtime, root) => {
@@ -25481,7 +25594,7 @@ var nearbyFiles = (input, touched2) => {
 var skipFilter = (input) => {
   const current2 = latest(readHistory(input.runtime, input.root));
   const dismissed = dismissedSpots(current2);
-  const muted = mutedFor(current2, input.person);
+  const muted2 = mutedFor(current2, input.person);
   const retired = new Set(
     ruleRates(current2).filter((rate) => rate.retired).map((rate) => rate.rule)
   );
@@ -25490,7 +25603,7 @@ var skipFilter = (input) => {
   );
   return {
     current: current2,
-    skip: (candidate2) => dismissed.has(`${candidate2.rule}\0${candidate2.file}`) || muted.has(candidate2.rule) || retired.has(candidate2.rule) || open.has(`${candidate2.rule}\0${candidate2.file}\0${candidate2.name}`)
+    skip: (candidate2) => dismissed.has(`${candidate2.rule}\0${candidate2.file}`) || muted2.has(candidate2.rule) || retired.has(candidate2.rule) || open.has(`${candidate2.rule}\0${candidate2.file}\0${candidate2.name}`)
   };
 };
 var advise = (input) => {
@@ -25994,7 +26107,7 @@ var scopeOf = (input) => {
   const session = input.payload.sessionId ?? "";
   return { input, paths, files, session, entries: entries2, turn: turnOf(entries2, session) };
 };
-var record5 = (scope2, entry2) => ({
+var record6 = (scope2, entry2) => ({
   ...scope2,
   entries: appendEntry(scope2.input.runtime, scope2.files, entry2, scope2.entries)
 });
@@ -27607,19 +27720,19 @@ var closePopular = (ecosystem, name) => {
 // src/deps/assess.ts
 var MIN_HISTORY_DAYS = 30;
 var MIN_VERSION_AGE_DAYS = 3;
-var DAY_MS6 = 864e5;
+var DAY_MS7 = 864e5;
 var HOUR_MS = 36e5;
 var registryFindings = (pkg, lookup2, nowMs2) => {
   if (lookup2.kind === "missing") return [{ kind: "missing", name: pkg.name, ecosystem: pkg.ecosystem }];
   if (lookup2.kind === "unreachable") return [{ kind: "unchecked", name: pkg.name, ecosystem: pkg.ecosystem }];
   const { facts } = lookup2;
   const out = [];
-  if (facts.createdMs !== void 0 && nowMs2 - facts.createdMs < MIN_HISTORY_DAYS * DAY_MS6) {
-    const days = Math.max(0, Math.floor((nowMs2 - facts.createdMs) / DAY_MS6));
+  if (facts.createdMs !== void 0 && nowMs2 - facts.createdMs < MIN_HISTORY_DAYS * DAY_MS7) {
+    const days = Math.max(0, Math.floor((nowMs2 - facts.createdMs) / DAY_MS7));
     out.push({ kind: "young", name: pkg.name, days, count: facts.versionCount });
   }
   const { version: version2, versionMs } = facts;
-  if (version2 !== void 0 && versionMs !== void 0 && nowMs2 - versionMs < MIN_VERSION_AGE_DAYS * DAY_MS6) {
+  if (version2 !== void 0 && versionMs !== void 0 && nowMs2 - versionMs < MIN_VERSION_AGE_DAYS * DAY_MS7) {
     out.push({ kind: "fresh", name: pkg.name, version: version2, hours: Math.max(0, Math.floor((nowMs2 - versionMs) / HOUR_MS)) });
   }
   if (version2 !== void 0 && facts.installScript && !facts.previousInstallScript) {
@@ -27765,45 +27878,45 @@ var timeOf = (value2) => {
   const parsed = Date.parse(value2);
   return Number.isNaN(parsed) ? void 0 : parsed;
 };
-var record6 = (value2, key3) => {
+var record7 = (value2, key3) => {
   const inner = isRecord(value2) ? value2[key3] : void 0;
   return isRecord(inner) ? inner : {};
 };
 var INSTALL_SCRIPTS = ["preinstall", "install", "postinstall"];
 var hasInstallScript = (manifest2) => {
   if (manifest2["hasInstallScript"] === true) return true;
-  const scripts2 = record6(manifest2, "scripts");
+  const scripts2 = record7(manifest2, "scripts");
   return INSTALL_SCRIPTS.some((name) => typeof scripts2[name] === "string");
 };
 var npmFacts = (doc, wanted) => {
-  const times = record6(doc, "time");
-  const versions = record6(doc, "versions");
-  const tags = record6(doc, "dist-tags");
+  const times2 = record7(doc, "time");
+  const versions = record7(doc, "versions");
+  const tags = record7(doc, "dist-tags");
   const tagged = wanted === void 0 ? tags["latest"] : tags[wanted] ?? wanted;
   const version2 = typeof tagged === "string" && tagged in versions ? tagged : void 0;
-  const ordered = Object.keys(versions).sort((left, right) => (timeOf(times[left]) ?? 0) - (timeOf(times[right]) ?? 0));
+  const ordered = Object.keys(versions).sort((left, right) => (timeOf(times2[left]) ?? 0) - (timeOf(times2[right]) ?? 0));
   const index = version2 === void 0 ? -1 : ordered.indexOf(version2);
   const previous = index > 0 ? ordered[index - 1] : void 0;
   return {
-    createdMs: timeOf(times["created"]),
+    createdMs: timeOf(times2["created"]),
     versionCount: ordered.length,
     version: version2,
-    versionMs: version2 === void 0 ? void 0 : timeOf(times[version2]),
-    installScript: version2 === void 0 ? false : hasInstallScript(record6(versions, version2)),
-    previousInstallScript: previous === void 0 ? false : hasInstallScript(record6(versions, previous))
+    versionMs: version2 === void 0 ? void 0 : timeOf(times2[version2]),
+    installScript: version2 === void 0 ? false : hasInstallScript(record7(versions, version2)),
+    previousInstallScript: previous === void 0 ? false : hasInstallScript(record7(versions, previous))
   };
 };
 var uploadMs = (files) => {
   if (!Array.isArray(files)) return void 0;
-  const times = files.flatMap((file) => {
+  const times2 = files.flatMap((file) => {
     const time = isRecord(file) ? timeOf(file["upload_time_iso_8601"] ?? file["upload_time"]) : void 0;
     return time === void 0 ? [] : [time];
   });
-  return times.length === 0 ? void 0 : Math.min(...times);
+  return times2.length === 0 ? void 0 : Math.min(...times2);
 };
 var pypiFacts = (doc, wanted) => {
-  const releases = record6(doc, "releases");
-  const latest2 = record6(doc, "info")["version"];
+  const releases = record7(doc, "releases");
+  const latest2 = record7(doc, "info")["version"];
   const chosen = wanted ?? (typeof latest2 === "string" ? latest2 : void 0);
   const version2 = chosen !== void 0 && chosen in releases ? chosen : void 0;
   const uploads = Object.values(releases).flatMap((files) => {
@@ -28644,18 +28757,18 @@ var compareRan = (input) => {
   const checked = parsed.ok ? optionalString(parsed.value, "command") : void 0;
   const ran = commandOf3(input) ?? "";
   if (checked === void 0 || same(checked, ran)) return { kind: "allow" };
-  const record9 = {
+  const record10 = {
     tool: toolName2(input.payload),
     checked: maskText(checked),
     ran: maskText(ran),
     sessionId: input.payload.sessionId ?? null
   };
-  logEvent(input.runtime, paths, "input_rewritten", record9);
-  input.runtime.writeText(paths.cache(REWRITTEN), `${JSON.stringify(record9)}
+  logEvent(input.runtime, paths, "input_rewritten", record10);
+  input.runtime.writeText(paths.cache(REWRITTEN), `${JSON.stringify(record10)}
 `);
   return {
     kind: "block",
-    reason: modelReason(input.t, "gate.guard.rewrite", { checked: record9.checked, ran: record9.ran }),
+    reason: modelReason(input.t, "gate.guard.rewrite", { checked: record10.checked, ran: record10.ran }),
     human: input.t("gate.guard.rewrite.human")
   };
 };
@@ -29324,8 +29437,8 @@ var params = (value2) => isRecord(value2) ? Object.fromEntries(
 var notes2 = (value2) => Array.isArray(value2) ? value2.flatMap(
   (item2) => isRecord(item2) && typeof item2["key"] === "string" ? [{ key: item2["key"], params: params(item2["params"]) }] : []
 ) : [];
-var text15 = (record9, key3) => {
-  const value2 = record9[key3];
+var text15 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 var strings9 = (value2) => isRecord(value2) ? Object.fromEntries(
@@ -29340,20 +29453,20 @@ var inputsOf = (value2) => {
     env: strings9(value2["env"])
   };
 };
-var optional3 = (record9) => {
-  const scripts2 = text15(record9, "scripts");
-  const exitCode = record9["exitCode"];
-  const durationMs = record9["durationMs"];
-  const command = text15(record9, "command");
-  const stdoutSha256 = text15(record9, "stdoutSha256");
-  const releasedBy = text15(record9, "releasedBy");
-  const reason = oneOf3(UNVERIFIED_REASONS, record9["reason"]);
-  const failures = record9["failures"];
-  const testCount = record9["testCount"];
-  const state = oneOf3(COMPLETION_STATES, record9["state"]);
-  const from = oneOf3(COMPLETION_STATES, record9["from"]);
-  const stateReason = text15(record9, "stateReason");
-  const inputs = inputsOf(record9["inputs"]);
+var optional3 = (record10) => {
+  const scripts2 = text15(record10, "scripts");
+  const exitCode = record10["exitCode"];
+  const durationMs = record10["durationMs"];
+  const command = text15(record10, "command");
+  const stdoutSha256 = text15(record10, "stdoutSha256");
+  const releasedBy = text15(record10, "releasedBy");
+  const reason = oneOf3(UNVERIFIED_REASONS, record10["reason"]);
+  const failures = record10["failures"];
+  const testCount = record10["testCount"];
+  const state = oneOf3(COMPLETION_STATES, record10["state"]);
+  const from = oneOf3(COMPLETION_STATES, record10["from"]);
+  const stateReason = text15(record10, "stateReason");
+  const inputs = inputsOf(record10["inputs"]);
   return {
     ...command === void 0 ? {} : { command },
     ...typeof exitCode === "number" || exitCode === null ? { exitCode } : {},
@@ -29373,14 +29486,14 @@ var optional3 = (record9) => {
 var parseEvidence = (line11) => {
   const parsed = parseJsonObject(line11);
   if (!parsed.ok) return void 0;
-  const record9 = parsed.value;
-  const status = oneOf3(EVIDENCE_STATUSES, record9["status"]);
-  const task = text15(record9, "task");
-  const check2 = text15(record9, "check");
-  const kind = text15(record9, "kind");
-  const treeHash2 = text15(record9, "treeHash");
-  const at5 = text15(record9, "at");
-  if (record9["schema"] !== EVIDENCE_SCHEMA || status === void 0) return void 0;
+  const record10 = parsed.value;
+  const status = oneOf3(EVIDENCE_STATUSES, record10["status"]);
+  const task = text15(record10, "task");
+  const check2 = text15(record10, "check");
+  const kind = text15(record10, "kind");
+  const treeHash2 = text15(record10, "treeHash");
+  const at5 = text15(record10, "at");
+  if (record10["schema"] !== EVIDENCE_SCHEMA || status === void 0) return void 0;
   if (task === void 0 || check2 === void 0 || kind === void 0 || treeHash2 === void 0 || at5 === void 0) {
     return void 0;
   }
@@ -29392,8 +29505,8 @@ var parseEvidence = (line11) => {
     status,
     treeHash: treeHash2,
     at: at5,
-    notes: notes2(record9["notes"]),
-    ...optional3(record9)
+    notes: notes2(record10["notes"]),
+    ...optional3(record10)
   };
 };
 var readLedgerChecked = (runtime, path) => {
@@ -29591,18 +29704,18 @@ var ciChecks = (value2) => Array.isArray(value2) ? value2.flatMap((item2) => {
 var parsePrView = (text26) => {
   const parsed = parseJsonObject(text26);
   if (!parsed.ok) return void 0;
-  const record9 = parsed.value;
-  const number5 = record9["number"];
+  const record10 = parsed.value;
+  const number5 = record10["number"];
   if (typeof number5 !== "number") return void 0;
   return {
     number: number5,
-    url: optionalString(record9, "url") ?? "",
-    state: optionalString(record9, "state") ?? "",
-    mergeable: optionalString(record9, "mergeable") ?? "UNKNOWN",
-    mergeStateStatus: optionalString(record9, "mergeStateStatus") ?? "UNKNOWN",
-    baseRefName: optionalString(record9, "baseRefName") ?? "",
-    headRefOid: optionalString(record9, "headRefOid") ?? "",
-    checks: ciChecks(record9["statusCheckRollup"])
+    url: optionalString(record10, "url") ?? "",
+    state: optionalString(record10, "state") ?? "",
+    mergeable: optionalString(record10, "mergeable") ?? "UNKNOWN",
+    mergeStateStatus: optionalString(record10, "mergeStateStatus") ?? "UNKNOWN",
+    baseRefName: optionalString(record10, "baseRefName") ?? "",
+    headRefOid: optionalString(record10, "headRefOid") ?? "",
+    checks: ciChecks(record10["statusCheckRollup"])
   };
 };
 var isConflicting = (pr) => pr.mergeable === "CONFLICTING" || pr.mergeStateStatus === "DIRTY";
@@ -29902,6 +30015,7 @@ var apply = (input, paths, markers) => {
         ...sessionId === void 0 ? {} : { sessionId }
       });
       said.push(t("gate.release.allowed", { guard: marker3.guard, until: expiryFrom(now) }));
+      if (KNOWN_GUARDS.includes(marker3.guard)) recordDismissal(runtime, paths, marker3.guard);
     } else if (marker3.type === "allow") said.push(t("gate.release.unknown_guard", { guard: marker3.guard }));
     else if (marker3.type === "approve") {
       approvals.push({
@@ -30685,8 +30799,8 @@ var FLAGGED_EVENT = "callers.flagged";
 var RELEASED_EVENT = "callers.released";
 var MIN_SAMPLE = 20;
 var MAX_FALSE_POSITIVE = 0.05;
-var pairs2 = (record9) => {
-  const { task, names: names3 } = record9;
+var pairs2 = (record10) => {
+  const { task, names: names3 } = record10;
   if (typeof task !== "string" || !Array.isArray(names3)) return [];
   return names3.filter((name) => typeof name === "string").map((name) => `${task}\0${name}`);
 };
@@ -30903,7 +31017,7 @@ var siteNotes = (open) => [
   ...[...open].map(([name, sites]) => note("gate.callers.open", { name, count: sites.length })),
   ...[...open.values()].flat().slice(0, MAX_SITES).map((site) => note("gate.callers.at", { name: site.name, file: site.file, line: site.line }))
 ];
-var record7 = (ctx, event, names3) => {
+var record8 = (ctx, event, names3) => {
   if (names3.length > 0) logEvent(ctx.runtime, ctx.paths, event, { task: ctx.contract.id, names: [...names3] });
 };
 var callersCheck = (_check, ctx) => {
@@ -30911,12 +31025,12 @@ var callersCheck = (_check, ctx) => {
   const grouped2 = byName(callSites(ctx.runtime, ctx.git, symbols));
   const ignore = new Set(ctx.contract.callersIgnore ?? []);
   const open = new Map([...grouped2].filter(([name]) => !ignore.has(name)));
-  record7(
+  record8(
     ctx,
     RELEASED_EVENT,
     [...grouped2.keys()].filter((name) => ignore.has(name))
   );
-  record7(ctx, FLAGGED_EVENT, [...open.keys()]);
+  record8(ctx, FLAGGED_EVENT, [...open.keys()]);
   if (open.size === 0) return passed([note("gate.callers.none", { count: symbols.length })]);
   const rate = callersRate(ctx.runtime, ctx.paths);
   if (!rate.downgraded) return failed4(siteNotes(open));
@@ -31474,9 +31588,9 @@ var projectRelative = (paths, absolute3) => toPosixPath(relative8(paths.root, ab
 var HEADERS_FILE = "headers.json";
 var HEADERS_FEATURE = "headers";
 var headersPath = (paths, tree) => toAbsolutePath(join80(lookDir(paths, tree), HEADERS_FILE));
-var writeHeaders = (runtime, paths, tree, record9) => {
+var writeHeaders = (runtime, paths, tree, record10) => {
   const made = runtime.mkdir(lookDir(paths, tree));
-  if (made.ok) runtime.writeAtomic(headersPath(paths, tree), `${JSON.stringify(record9, null, 2)}
+  if (made.ok) runtime.writeAtomic(headersPath(paths, tree), `${JSON.stringify(record10, null, 2)}
 `);
 };
 var routeOf2 = (value2) => {
@@ -33785,17 +33899,17 @@ var MAX_LISTED19 = 10;
 var required = (ctx) => defaultOn(ctx.runtime, ctx.paths.root, "research-first") || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records2 = researchRecords(ctx.runtime, ctx.paths.root);
-  const valid = records2.filter((record9) => record9.issues.length === 0);
+  const valid = records2.filter((record10) => record10.issues.length === 0);
   const rulePaths = configList(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "rule_paths");
   const rules2 = rulePaths.length === 0 ? [] : ctx.changes.filter((change2) => matchesAny(change2.path, rulePaths));
-  const backed = valid.some((record9) => ctx.changes.some((change2) => change2.path === record9.file));
+  const backed = valid.some((record10) => ctx.changes.some((change2) => change2.path === record10.file));
   return [
     ...records2.flatMap(
-      (record9) => record9.issues.map(
+      (record10) => record10.issues.map(
         (item2) => note(`research.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` })
       )
     ),
-    ...addedDependencies(ctx).filter((name) => !valid.some((record9) => record9.text.includes(name))).map((name) => note("gate.research.dependency", { name })),
+    ...addedDependencies(ctx).filter((name) => !valid.some((record10) => record10.text.includes(name))).map((name) => note("gate.research.dependency", { name })),
     ...rules2.length > 0 && !backed ? [
       note("gate.research.rule", {
         paths: rules2.slice(0, 3).map((change2) => change2.path).join(", ")
@@ -36272,7 +36386,7 @@ var CLEANUP_CLASSES = [
   "open"
 ];
 var NEVER_REMOVED = /* @__PURE__ */ new Set(["dirty", "locked", "running", "recent", "unpushed"]);
-var DAY_MS7 = 864e5;
+var DAY_MS8 = 864e5;
 var dirtyFiles = (runtime, path, generated) => {
   const status = runtime.gitWith(["status", "--porcelain=v2", "-z", "--untracked-files=all"], path, {
     env: { GIT_OPTIONAL_LOCKS: "0" }
@@ -36287,7 +36401,7 @@ var pidsInside = (context, path) => {
 var isRecent = (context, activityAt) => {
   if (activityAt === null) return false;
   const age = Date.parse(context.runtime.now()) - Date.parse(activityAt);
-  return Number.isFinite(age) && age < context.staleDays * DAY_MS7;
+  return Number.isFinite(age) && age < context.staleDays * DAY_MS8;
 };
 var branchClass = (context, tip, target5) => {
   if (tip === null) return "open";
@@ -36331,20 +36445,20 @@ var classify3 = (context, tree, entry2) => {
 };
 
 // src/fronts/report.ts
-var text19 = (record9, key3, issues2, allowEmpty = false) => {
-  const value2 = record9[key3];
+var text19 = (record10, key3, issues2, allowEmpty = false) => {
+  const value2 = record10[key3];
   if (typeof value2 === "string" && (allowEmpty || value2.trim() !== "")) return value2;
   issues2.push(`${key3}: must be a${allowEmpty ? "" : " non-empty"} string`);
   return "";
 };
-var count5 = (record9, key3, issues2) => {
-  const value2 = record9[key3];
+var count5 = (record10, key3, issues2) => {
+  const value2 = record10[key3];
   if (typeof value2 === "number" && Number.isInteger(value2) && value2 >= 0) return value2;
   issues2.push(`tests.${key3}: must be a whole number`);
   return 0;
 };
-var list5 = (record9, key3, issues2, item2) => {
-  const value2 = record9[key3];
+var list5 = (record10, key3, issues2, item2) => {
+  const value2 = record10[key3];
   if (value2 === void 0) return [];
   if (!Array.isArray(value2)) {
     issues2.push(`${key3}: must be a list`);
@@ -36376,15 +36490,15 @@ var routed = (value2) => isRecord(value2) && typeof value2["text"] === "string" 
 var parseFrontReport = (raw) => {
   const parsed = parseJson(raw);
   if (!parsed.ok || !isRecord(parsed.value)) return { report: void 0, issues: ["not a JSON object"] };
-  const record9 = parsed.value;
+  const record10 = parsed.value;
   const issues2 = [];
-  const tests = isRecord(record9["tests"]) ? record9["tests"] : {};
-  if (!isRecord(record9["tests"])) issues2.push("tests: must be an object with command, passed, failed and added");
-  const strings16 = (key3) => list5(record9, key3, issues2, (value2) => str5(value2));
+  const tests = isRecord(record10["tests"]) ? record10["tests"] : {};
+  if (!isRecord(record10["tests"])) issues2.push("tests: must be an object with command, passed, failed and added");
+  const strings16 = (key3) => list5(record10, key3, issues2, (value2) => str5(value2));
   const report2 = {
-    front: text19(record9, "front", issues2),
-    branch: text19(record9, "branch", issues2),
-    head: text19(record9, "head", issues2),
+    front: text19(record10, "front", issues2),
+    branch: text19(record10, "branch", issues2),
+    head: text19(record10, "head", issues2),
     commits: strings16("commits"),
     delivered: strings16("delivered"),
     endpoints: strings16("endpoints"),
@@ -36394,12 +36508,12 @@ var parseFrontReport = (raw) => {
       failed: count5(tests, "failed", issues2),
       added: count5(tests, "added", issues2)
     },
-    screenshots: list5(record9, "screenshots", issues2, screenshot),
-    left_out: list5(record9, "left_out", issues2, leftOut),
-    provisional_decisions: list5(record9, "provisional_decisions", issues2, decision),
-    evidence: text19(record9, "evidence", issues2, true),
-    finished: record9["finished"] !== false,
-    inbox: list5(record9, "inbox", issues2, routed)
+    screenshots: list5(record10, "screenshots", issues2, screenshot),
+    left_out: list5(record10, "left_out", issues2, leftOut),
+    provisional_decisions: list5(record10, "provisional_decisions", issues2, decision),
+    evidence: text19(record10, "evidence", issues2, true),
+    finished: record10["finished"] !== false,
+    inbox: list5(record10, "inbox", issues2, routed)
   };
   if (report2.finished === false && report2.left_out.length === 0)
     issues2.push("left_out: a NOT FINISHED report lists what is left out");
@@ -36880,23 +36994,23 @@ var headsOf = (value2) => isRecord(value2) ? Object.fromEntries(
 var parseJournalLine = (line11) => {
   const parsed = parseJsonObject(line11);
   if (!parsed.ok) return void 0;
-  const record9 = parsed.value;
-  const ref2 = optionalString(record9, "ref");
-  const commit2 = optionalString(record9, "commit");
-  const at5 = optionalString(record9, "at");
+  const record10 = parsed.value;
+  const ref2 = optionalString(record10, "ref");
+  const commit2 = optionalString(record10, "commit");
+  const at5 = optionalString(record10, "at");
   if (ref2 === void 0 || commit2 === void 0 || at5 === void 0) return void 0;
   return {
     schema: JOURNAL_SCHEMA,
     at: at5,
-    op: optionalString(record9, "op") ?? "",
+    op: optionalString(record10, "op") ?? "",
     ref: ref2,
     commit: commit2,
-    head: optionalString(record9, "head"),
-    branch: optionalString(record9, "branch"),
-    index: optionalString(record9, "index"),
-    owner: optionalString(record9, "owner"),
-    command: optionalString(record9, "command"),
-    heads: headsOf(record9["heads"])
+    head: optionalString(record10, "head"),
+    branch: optionalString(record10, "branch"),
+    index: optionalString(record10, "index"),
+    owner: optionalString(record10, "owner"),
+    command: optionalString(record10, "command"),
+    heads: headsOf(record10["heads"])
   };
 };
 var readJournal = (runtime, root) => {
@@ -38099,8 +38213,8 @@ var readLoadRecords = (runtime, dir) => {
   if (!raw.ok) return [];
   return raw.value.split("\n").flatMap((line11) => {
     const parsed = line11.trim() === "" ? void 0 : parseJsonObject(line11);
-    const record9 = parsed?.ok === true ? parseRecord(parsed.value) : void 0;
-    return record9 === void 0 ? [] : [record9];
+    const record10 = parsed?.ok === true ? parseRecord(parsed.value) : void 0;
+    return record10 === void 0 ? [] : [record10];
   });
 };
 var ALLOW17 = { kind: "allow" };
@@ -38110,7 +38224,7 @@ var instructionsLoaded = (input) => {
   const raw = input.payload.raw;
   const file = absolute2(textField(raw, "file_path"), input.cwd);
   if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return ALLOW17;
-  const record9 = {
+  const record10 = {
     at: input.runtime.now(),
     session: input.payload.sessionId ?? "",
     file,
@@ -38119,7 +38233,7 @@ var instructionsLoaded = (input) => {
     trigger: absolute2(textField(raw, "trigger_file_path"), input.cwd),
     parent: absolute2(textField(raw, "parent_file_path"), input.cwd)
   };
-  input.runtime.appendText(instructionsLog(paths.dir), `${JSON.stringify(record9)}
+  input.runtime.appendText(instructionsLog(paths.dir), `${JSON.stringify(record10)}
 `);
   return ALLOW17;
 };
@@ -38160,7 +38274,7 @@ var STATS_FILE = "learnings-stats.json";
 var LESSON_SOURCES = ["signature", "correction", "advisor", "person"];
 var EXPIRE_DAYS = 90;
 var EXPIRE_UNHELPFUL = 2;
-var DAY_MS8 = 864e5;
+var DAY_MS9 = 864e5;
 var MAX_TEXT2 = 300;
 var learningsPath = (dir) => toAbsolutePath(join108(dir, LEARNINGS_FILE));
 var statsPath = (dir) => toAbsolutePath(join108(dir, "cache", STATS_FILE));
@@ -38218,7 +38332,7 @@ var bumpStats = (runtime, dir, change2) => {
 var isExpired = (lesson, now, days = EXPIRE_DAYS) => {
   if (lesson.unhelpful >= EXPIRE_UNHELPFUL) return true;
   const since = Date.parse(lesson.lastMatchedAt ?? lesson.createdAt);
-  return Number.isFinite(since) && Date.parse(now) - since > days * DAY_MS8;
+  return Number.isFinite(since) && Date.parse(now) - since > days * DAY_MS9;
 };
 var pruneLessons = (runtime, dir, days = EXPIRE_DAYS) => {
   const lessons = readLessons(runtime, dir);
@@ -39850,8 +39964,8 @@ var SEVERITIES2 = ["never", "must", "prefer"];
 var BUCKETS2 = ["deterministic", "stop", "reminder"];
 var EMPTY_SCOPE = { paths: [], tools: [], words: [] };
 var ID4 = /^[a-z0-9][a-z0-9-]{0,63}$/;
-var str6 = (record9, key3) => {
-  const value2 = record9[key3];
+var str6 = (record10, key3) => {
+  const value2 = record10[key3];
   return typeof value2 === "string" && value2.trim() !== "" ? value2.trim() : void 0;
 };
 var list6 = (value2) => typeof value2 === "string" ? [value2] : Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
@@ -40950,7 +41064,7 @@ var liveFindings = (input, texts4) => {
   const accepted2 = acceptedFingerprints(baseline.ok ? baseline.value : EMPTY_BASELINE, input.runtime.now());
   return texts4.flatMap((text26) => scanText2(text26, { rules: CREDENTIAL_RULES })).filter((finding6) => !accepted2.has(finding6.fingerprint));
 };
-var record8 = (input, findings2, draft, where2) => {
+var record9 = (input, findings2, draft, where2) => {
   const ids3 = findings2.map((finding6) => {
     const saved = recordIncident(
       input.runtime,
@@ -40966,7 +41080,7 @@ var secretsUserPromptSubmit = (input) => {
   const prompt = optionalString(input.payload.raw, "prompt") ?? "";
   const findings2 = liveFindings(input, [prompt]);
   if (findings2.length === 0) return { kind: "allow" };
-  const incident = record8(input, findings2, { source: "prompt", state: "exposicao-local" }, "prompt");
+  const incident = record9(input, findings2, { source: "prompt", state: "exposicao-local" }, "prompt");
   const items = findings2.map((finding6) => ({ ruleId: finding6.ruleId, where: lineWhere(input.t, finding6) }));
   return {
     kind: "block",
@@ -40977,7 +41091,7 @@ var secretsPostToolUse = (input) => {
   const findings2 = liveFindings(input, stringLeaves(input.payload.raw["tool_response"]));
   if (findings2.length === 0) return { kind: "allow" };
   const tool = toolName2(input.payload) || "tool";
-  const incident = record8(input, findings2, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
+  const incident = record9(input, findings2, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
   const items = findings2.map((finding6) => ({ ruleId: finding6.ruleId, where: lineWhere(input.t, finding6) }));
   const context = input.t("secrets.post.context", { tool, found: describeFindings(input.t, items), incident });
   return {
@@ -41301,7 +41415,7 @@ var stopDecision = (scope2, mode) => {
   const noted = alreadyStopped(entries2, stopped.sig);
   if (noted && mode !== "active") return { kind: "allow" };
   if (!noted) {
-    record5(scope2, { ...baseOf2(scope2), kind: "stopped", sig: stopped.sig, mode });
+    record6(scope2, { ...baseOf2(scope2), kind: "stopped", sig: stopped.sig, mode });
     logEvent(runtime, scope2.paths, "signals.stopped", { sig: stopped.sig, failed: stopped.failed, mode });
   }
   const params2 = { sig: stopped.sig, count: stopped.failed, summary: stopSummary(t, entries2, stopped) };
@@ -41357,7 +41471,7 @@ var modeNow = (scope2) => {
 };
 var noteFourth = (scope2, sig, failed9, mode) => {
   const { runtime } = scope2.input;
-  record5(scope2, { ...baseOf2(scope2), kind: "fourth", sig, mode });
+  record6(scope2, { ...baseOf2(scope2), kind: "fourth", sig, mode });
   logEvent(runtime, scope2.paths, "signals.fourth_attempt", {
     sig,
     failed: failed9,
@@ -41392,7 +41506,7 @@ var researchRecorder = (input) => {
   const agent = researcherOf(input.payload.raw);
   if (agent === void 0) return allow9;
   const scope2 = scopeOf(input);
-  if (scope2 !== void 0) record5(scope2, { ...baseOf2(scope2), kind: "research", agent });
+  if (scope2 !== void 0) record6(scope2, { ...baseOf2(scope2), kind: "research", agent });
   return allow9;
 };
 
@@ -41472,7 +41586,7 @@ var signalsPrompt = (input) => {
   if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow10;
   const before2 = scopeOf(input);
   if (before2 === void 0) return allow10;
-  const scope2 = record5(before2, {
+  const scope2 = record6(before2, {
     ...baseOf2(before2),
     turn: before2.turn + 1,
     kind: "prompt",
@@ -41544,7 +41658,7 @@ var recordEdit = (scope2, raw) => {
   if (target5 === void 0) return scope2;
   const file = projectFile2(scope2, target5);
   const hashes = editHashes(file, input);
-  const edited = record5(scope2, {
+  const edited = record6(scope2, {
     ...baseOf2(scope2),
     kind: "edit",
     file,
@@ -41552,7 +41666,7 @@ var recordEdit = (scope2, raw) => {
     undo: isUndo(scope2, file, hashes)
   });
   const approved = approvalOf(edited, raw, file, changedLines(input));
-  return approved === void 0 ? edited : record5(edited, approved);
+  return approved === void 0 ? edited : record6(edited, approved);
 };
 var failedOutput2 = (raw) => {
   const response = raw["tool_response"];
@@ -41565,7 +41679,7 @@ var failedOutput2 = (raw) => {
 var recordError = (scope2, raw, output) => {
   const signature = errorSignature(output);
   if (signature === void 0) return scope2;
-  return record5(scope2, { ...baseOf2(scope2), kind: "error", tool: toolName(raw), ...signature });
+  return record6(scope2, { ...baseOf2(scope2), kind: "error", tool: toolName(raw), ...signature });
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
@@ -41587,7 +41701,7 @@ var signalsPostToolUseFailure = (input) => {
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
-    record5(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
+    record6(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
   return allow11;
 };
 
@@ -42466,9 +42580,9 @@ var hookSchemaProblems = (hooks, claude) => {
 import { join as join121 } from "node:path";
 var entriesOf = (source3, hooks, own) => Object.entries(asRecord(hooks)).flatMap(
   ([event, groups]) => asList(groups).flatMap((group) => {
-    const record9 = asRecord(group);
-    const matcher = optionalString(record9, "matcher");
-    return asList(record9["hooks"]).filter((handler) => isRecord(handler) && own(handler)).map((handler) => ({ source: source3, event, matcher, handler }));
+    const record10 = asRecord(group);
+    const matcher = optionalString(record10, "matcher");
+    return asList(record10["hooks"]).filter((handler) => isRecord(handler) && own(handler)).map((handler) => ({ source: source3, event, matcher, handler }));
   })
 );
 var PROJECT_SCOPES = { project: "project", local: "local" };
@@ -42479,7 +42593,7 @@ var projectHookFiles = (env) => readSettings2(env).flatMap(({ scope: scope2, pat
 var pluginsDir2 = ({ env, runtime }) => join121(env["CLAUDE_CONFIG_DIR"] ?? join121(runtime.homeDir(), ".claude"), "plugins");
 var installRecord = (value2, root) => {
   const records2 = Array.isArray(value2) ? value2.filter(isRecord) : isRecord(value2) ? [value2] : [];
-  return records2.find((record9) => record9["projectPath"] === root) ?? records2[0];
+  return records2.find((record10) => record10["projectPath"] === root) ?? records2[0];
 };
 var readJson2 = (env, path) => {
   const text26 = env.runtime.readText(path);
@@ -42488,9 +42602,9 @@ var readJson2 = (env, path) => {
 };
 var installedPlugin = (env) => {
   const index = readJson2(env, toAbsolutePath(join121(pluginsDir2(env), "installed_plugins.json")));
-  const record9 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
-  const installPath = record9 === void 0 ? void 0 : optionalString(record9, "installPath");
-  if (record9 === void 0 || installPath === void 0) return void 0;
+  const record10 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
+  const installPath = record10 === void 0 ? void 0 : optionalString(record10, "installPath");
+  if (record10 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
   const manifest2 = readJson2(env, toAbsolutePath(join121(root, ".claude-plugin", "plugin.json")));
   const hooksPath = toAbsolutePath(join121(root, "hooks", "hooks.json"));
@@ -42498,7 +42612,7 @@ var installedPlugin = (env) => {
   const parsed = text26.ok ? parseJsonObject(text26.value) : void 0;
   return {
     root,
-    version: (manifest2 === void 0 ? void 0 : optionalString(manifest2, "version")) ?? optionalString(record9, "version"),
+    version: (manifest2 === void 0 ? void 0 : optionalString(manifest2, "version")) ?? optionalString(record10, "version"),
     hooksFile: parsed?.ok === true ? { source: "plugin", path: hooksPath, hooks: parsed.value["hooks"] } : void 0,
     hooksText: text26.ok ? text26.value : void 0
   };
@@ -43204,6 +43318,22 @@ var checkPolicy = ({ root, runtime }) => {
   const detail = policy.issues.map(named).join(", ");
   return [finding("policy.valid", status, "doctor.policy.issues", { file: files, detail }, "doctor.policy.fix")];
 };
+var checkAlertBudget = ({ root, runtime }) => {
+  const policy = loadPolicy(runtime, root);
+  const rates = classRates(readBudget(runtime, fmPaths(root)), policy.alertBudget, nowMs(runtime));
+  const silenced = rates.filter((rate) => rate.muted);
+  if (silenced.length === 0) return [];
+  const list10 = silenced.map((rate) => `${rate.guard} (${String(rate.dismissed)}/${String(rate.fired)})`).join(", ");
+  return [
+    finding(
+      "policy.alert_budget",
+      "warn",
+      "doctor.alert_budget.muted",
+      { list: list10, limit: Math.round(policy.alertBudget.muteAbove * 100), days: policy.alertBudget.windowDays },
+      "doctor.alert_budget.fix"
+    )
+  ];
+};
 
 // src/doctor/project-files.ts
 import { join as join127 } from "node:path";
@@ -43678,7 +43808,8 @@ var CHECKS = [
   checkHooks,
   checkInstructionLayers,
   checkGithubSettings,
-  checkPolicy
+  checkPolicy,
+  checkAlertBudget
 ];
 var probeOnce = (probe) => {
   const seen = /* @__PURE__ */ new Map();
@@ -43958,10 +44089,10 @@ var CLASS = /\.(-?[_a-zA-Z][\w-]*)(?=[^{};]*\{)/g;
 var sortedMap = (entries2) => new Map([...entries2].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
 var flatten = (value2, prefix2) => {
   if (typeof value2 !== "object" || value2 === null) return [[prefix2, JSON.stringify(value2)]];
-  const record9 = new Map(Object.entries(value2));
-  if (record9.has("value") || record9.has("$value"))
-    return [[prefix2, JSON.stringify(record9.get("$value") ?? record9.get("value"))]];
-  return [...record9].flatMap(([key3, item2]) => flatten(item2, prefix2 === "" ? key3 : `${prefix2}.${key3}`));
+  const record10 = new Map(Object.entries(value2));
+  if (record10.has("value") || record10.has("$value"))
+    return [[prefix2, JSON.stringify(record10.get("$value") ?? record10.get("value"))]];
+  return [...record10].flatMap(([key3, item2]) => flatten(item2, prefix2 === "" ? key3 : `${prefix2}.${key3}`));
 };
 var parseTokens = (text26) => {
   try {
@@ -44278,7 +44409,7 @@ var findFinding = (runtime, root, id, sources = FINDING_SOURCES) => {
 
 // src/commands/findings.ts
 var FINDINGS_LIST_SCHEMA = "finitemonkey/findings-list@1";
-var DAY_MS9 = 864e5;
+var DAY_MS10 = 864e5;
 var ACCEPT_USAGE = "finitemonkey findings accept <finding-id> --reason <why> [--days 1-90] [--owner <name>] [--false-positive]";
 var fail2 = (ctx, problem5) => failureFrom(ctx.t, problem5);
 var daysOf = (raw) => {
@@ -44314,7 +44445,7 @@ var accept2 = (ctx, id, reason, days, owner, falsePositive) => {
     owner,
     reason,
     acceptedAt: now,
-    expiresAt: new Date(Date.parse(now) + days * DAY_MS9).toISOString()
+    expiresAt: new Date(Date.parse(now) + days * DAY_MS10).toISOString()
   };
   const saved = saveBaseline(ctx.runtime, root, withEntry(baseline.value, entry2));
   if (!saved.ok) return fail2(ctx, writeFailed(BASELINE_FILE, saved.error));
@@ -45014,7 +45145,7 @@ var parseSegments = (text26) => {
 // src/merge/structured.ts
 var same2 = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 var MISSING = /* @__PURE__ */ Symbol("missing");
-var slot = (record9, key3) => record9 !== void 0 && Object.hasOwn(record9, key3) ? record9[key3] : MISSING;
+var slot = (record10, key3) => record10 !== void 0 && Object.hasOwn(record10, key3) ? record10[key3] : MISSING;
 var mergeValue = (path, base, ours, theirs, conflicts2) => {
   if (same2(ours, theirs)) return ours;
   if (same2(base, ours)) return theirs;
@@ -45208,8 +45339,8 @@ var STAGE_NAMES = { "1": "base", "2": "ours", "3": "theirs" };
 var conflictedStageIds = (runtime, dir) => {
   const listed8 = runtime.gitWith(["ls-files", "-u", "-z"], dir, {});
   const byPath = /* @__PURE__ */ new Map();
-  for (const record9 of listed8.stdout.split("\0")) {
-    const match = /^\d+ ([0-9a-f]+) ([123])\t(.+)$/s.exec(record9);
+  for (const record10 of listed8.stdout.split("\0")) {
+    const match = /^\d+ ([0-9a-f]+) ([123])\t(.+)$/s.exec(record10);
     const sha = match?.[1];
     const stage = match?.[2];
     const path = match?.[3];
@@ -45746,35 +45877,64 @@ import { join as join136 } from "node:path";
 // src/gain/gain.ts
 import { join as join135 } from "node:path";
 var GAIN_SCHEMA = "finitemonkey/gain@1";
-var DAY_MS10 = 864e5;
-var SAVE_WINDOW_MS = DAY_MS10;
+var DAY_MS11 = 864e5;
+var SAVE_WINDOW_MS = DAY_MS11;
+var OVERRIDES = /* @__PURE__ */ new Set(["person.allow", "person.approve"]);
 var readLog = (runtime, paths) => {
   const text26 = runtime.readText(paths.log);
   if (!text26.ok) return [];
   return text26.value.split("\n").flatMap((line11) => {
     const parsed = parseJsonObject(line11);
     if (!parsed.ok || !isRecord(parsed.value)) return [];
-    const { at: at5, event } = parsed.value;
+    const { at: at5, event, reason } = parsed.value;
     const time = typeof at5 === "string" ? Date.parse(at5) : Number.NaN;
-    return typeof event === "string" && Number.isFinite(time) ? [{ at: time, event }] : [];
+    return typeof event === "string" && Number.isFinite(time) ? [{ at: time, event, reason: typeof reason === "string" ? reason.trim() : "" }] : [];
   });
 };
-var readGates = (runtime, paths) => {
+var readEvidence2 = (runtime, paths) => {
   const listed8 = runtime.listDir(toAbsolutePath(join135(paths.dir, "evidence")));
   const files = listed8.ok ? listed8.value.filter((name) => name.endsWith(".jsonl")) : [];
-  return files.flatMap((name) => readLedger3(runtime, paths.evidence(name.replace(/\.jsonl$/, "")))).filter((entry2) => entry2.check === GATE_CHECK);
+  return files.flatMap((name) => readLedger3(runtime, paths.evidence(name.replace(/\.jsonl$/, ""))));
 };
-var countsIn = (log, gates, from, to) => {
+var recoveries = (evidence) => {
+  const byCheck = /* @__PURE__ */ new Map();
+  for (const entry2 of evidence) {
+    const key3 = `${entry2.task}\0${entry2.check}`;
+    byCheck.set(key3, [...byCheck.get(key3) ?? [], entry2]);
+  }
+  return [...byCheck.values()].flatMap((entries2) => {
+    const sorted = [...entries2].sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
+    const found = [];
+    let failed9;
+    for (const entry2 of sorted) {
+      if (entry2.status === "failed") failed9 = entry2;
+      else if (entry2.status === "passed") {
+        if (failed9 !== void 0 && failed9.treeHash !== entry2.treeHash) {
+          found.push({ failedAt: Date.parse(failed9.at), passedAt: Date.parse(entry2.at) });
+        }
+        failed9 = void 0;
+      }
+    }
+    return found;
+  });
+};
+var countsIn = (log, gates, fixed, from, to) => {
   const inWindow = (at5) => at5 >= from && at5 < to;
   const lines7 = log.filter((line11) => inWindow(line11.at));
   const runs = gates.filter((entry2) => inWindow(Date.parse(entry2.at)));
-  const passedAt = gates.filter((entry2) => entry2.status === "passed").map((entry2) => Date.parse(entry2.at));
   const blocks = lines7.filter((line11) => line11.event === "guard_block");
+  const overrides = lines7.filter((line11) => OVERRIDES.has(line11.event));
   return {
     blocks: blocks.length,
-    saves: blocks.filter((block7) => passedAt.some((at5) => at5 > block7.at && at5 - block7.at <= SAVE_WINDOW_MS)).length,
+    saves: blocks.filter(
+      (block7) => fixed.some(
+        (item2) => item2.failedAt <= block7.at && item2.passedAt > block7.at && item2.passedAt - block7.at <= SAVE_WINDOW_MS
+      )
+    ).length,
     releases: lines7.filter((line11) => line11.event === "person.allow").length,
-    falsePositives: lines7.filter((line11) => line11.event === "person.allow").length + lines7.filter((line11) => line11.event === "guard_false_positive").length,
+    falsePositives: lines7.filter((line11) => line11.event === "guard_false_positive").length,
+    overridesWithReason: overrides.filter((line11) => line11.reason !== "").length,
+    overridesWithoutReason: overrides.filter((line11) => line11.reason === "").length,
     gateRuns: runs.length,
     gateFailed: runs.filter((entry2) => entry2.status === "failed").length,
     gateUnverified: runs.filter((entry2) => entry2.status === "unverified").length,
@@ -45825,16 +45985,18 @@ var armComparison = (arms, gates) => {
 };
 var gainReport = (runtime, paths, days, usageText, byArm = false) => {
   const to = Date.parse(runtime.now());
-  const from = to - days * DAY_MS10;
+  const from = to - days * DAY_MS11;
   const log = readLog(runtime, paths);
-  const gates = readGates(runtime, paths);
+  const evidence = readEvidence2(runtime, paths);
+  const gates = evidence.filter((entry2) => entry2.check === GATE_CHECK);
+  const fixed = recoveries(evidence);
   return {
     schema: GAIN_SCHEMA,
     days,
     from: new Date(from).toISOString(),
     to: new Date(to).toISOString(),
-    current: countsIn(log, gates, from, to + 1),
-    previous: countsIn(log, gates, from - days * DAY_MS10, from),
+    current: countsIn(log, gates, fixed, from, to + 1),
+    previous: countsIn(log, gates, fixed, from - days * DAY_MS11, from),
     ...(() => {
       const usage2 = numbersIn(usageText);
       return usage2 === void 0 ? {} : { supervisorUsage: usage2 };
@@ -45850,6 +46012,8 @@ var ROWS = [
   { key: "gain.row.blocks", pick: (counts) => counts.blocks },
   { key: "gain.row.saves", pick: (counts) => counts.saves },
   { key: "gain.row.false_positives", pick: (counts) => counts.falsePositives },
+  { key: "gain.row.overrides_reason", pick: (counts) => counts.overridesWithReason },
+  { key: "gain.row.overrides_bare", pick: (counts) => counts.overridesWithoutReason },
   { key: "gain.row.gate_runs", pick: (counts) => counts.gateRuns },
   { key: "gain.row.gate_failed", pick: (counts) => counts.gateFailed },
   { key: "gain.row.gate_unverified", pick: (counts) => counts.gateUnverified }
@@ -46550,8 +46714,8 @@ var RECORD = "";
 var commitMessagesInRange = (runtime, root, range) => {
   const log = runtime.git(["log", "--no-merges", `--format=%H%x00%B${RECORD}`, ...range, "--"], root);
   const conventional = defaultOn(runtime, root, "conventional-commits");
-  const failures = log.ok ? log.stdout.split(RECORD).map((record9) => record9.replace(/^\n/, "")).filter((record9) => record9.includes("\0")).flatMap((record9) => {
-    const [sha = "", body2 = ""] = record9.split("\0");
+  const failures = log.ok ? log.stdout.split(RECORD).map((record10) => record10.replace(/^\n/, "")).filter((record10) => record10.includes("\0")).flatMap((record10) => {
+    const [sha = "", body2 = ""] = record10.split("\0");
     return commitMessageProblems(body2, conventional).map((problem5) => `${short3(sha)} ${problem5}`);
   }) : [`git log ${range.join(" ")} failed`];
   return { id: "commit-messages", failures, fix: "git rebase -i <base> and reword the listed commits" };
@@ -46689,8 +46853,8 @@ var pullRequestOf = (runtime, env) => {
 var commitsIn = (runtime, root, base) => {
   const log = runtime.git(["log", "--no-merges", `--format=%h%x00%B${RECORD2}`, `${base}..HEAD`, "--"], root);
   if (!log.ok) return [];
-  return log.stdout.split(RECORD2).map((record9) => record9.replace(/^\n/, "")).filter((record9) => record9.includes("\0")).map((record9) => {
-    const [sha = "", body2 = ""] = record9.split("\0");
+  return log.stdout.split(RECORD2).map((record10) => record10.replace(/^\n/, "")).filter((record10) => record10.includes("\0")).map((record10) => {
+    const [sha = "", body2 = ""] = record10.split("\0");
     return { sha, body: body2 };
   });
 };
@@ -47190,8 +47354,8 @@ var store = (ctx, gate, spec2, result) => {
     before: prior.ok ? sha256Hex(prior.value) : null,
     after: sha256Hex(result.stdout)
   };
-  const record9 = { at: ctx.runtime.now(), person: personName(ctx), check: spec2.id, ...accepted2 };
-  ctx.runtime.appendText(historyPath(gate.paths.root, spec2.id), `${JSON.stringify(record9)}
+  const record10 = { at: ctx.runtime.now(), person: personName(ctx), check: spec2.id, ...accepted2 };
+  ctx.runtime.appendText(historyPath(gate.paths.root, spec2.id), `${JSON.stringify(record10)}
 `);
   logEvent(ctx.runtime, gate.paths, "golden.accepted", { check: spec2.id, case: result.name });
   return accepted2;
@@ -48083,21 +48247,21 @@ import { join as join140 } from "node:path";
 var keyOf7 = (path, platform) => platform === "win32" ? path.toLowerCase() : path;
 var sessionsOf = (records2) => {
   const groups = /* @__PURE__ */ new Map();
-  for (const record9 of records2) groups.set(record9.session, [...groups.get(record9.session) ?? [], record9]);
+  for (const record10 of records2) groups.set(record10.session, [...groups.get(record10.session) ?? [], record10]);
   return groups;
 };
 var loadDiff = (inventory, records2, platform, session) => {
   const chosen = session ?? records2.at(-1)?.session;
-  const mine = records2.filter((record9) => record9.session === chosen);
+  const mine = records2.filter((record10) => record10.session === chosen);
   if (chosen === void 0 || mine.length === 0) return { session: chosen, recorded: 0, missing: [], unexpected: [] };
-  const loaded2 = new Set(mine.map((record9) => keyOf7(record9.file, platform)));
+  const loaded2 = new Set(mine.map((record10) => keyOf7(record10.file, platform)));
   const resolved = new Set(inventory.files.map((file) => keyOf7(file.path, platform)));
   const display = new Map(inventory.files.map((file) => [keyOf7(file.path, platform), file.display]));
   return {
     session: chosen,
     recorded: mine.length,
     missing: inventory.files.filter((file) => file.survivesCompaction && !loaded2.has(keyOf7(file.path, platform))).map((file) => file.display),
-    unexpected: [...new Set(mine.map((record9) => record9.file))].filter((file) => !resolved.has(keyOf7(file, platform))).map((file) => display.get(keyOf7(file, platform)) ?? file)
+    unexpected: [...new Set(mine.map((record10) => record10.file))].filter((file) => !resolved.has(keyOf7(file, platform))).map((file) => display.get(keyOf7(file, platform)) ?? file)
   };
 };
 var filesOf = (finding6) => {
@@ -48118,7 +48282,7 @@ var instructionsMeasure = (inventory, findings2, records2, platform) => {
   const conflicts2 = keys("conflict");
   const volatile2 = keys("volatile");
   const sessions = [...sessionsOf(records2).values()].map(
-    (list10) => new Set(list10.map((record9) => keyOf7(record9.file, platform)))
+    (list10) => new Set(list10.map((record10) => keyOf7(record10.file, platform)))
   );
   return {
     sessions: sessions.length,
@@ -50935,6 +51099,7 @@ var recordFalsePositive = (ctx, guard) => {
   const before2 = state[guard] ?? { firings: 0, falsePositives: 0, promoted: false };
   const falsePositives = before2.falsePositives + 1;
   writeShadow(ctx.runtime, paths, { ...state, [guard]: { ...before2, falsePositives } });
+  recordDismissal(ctx.runtime, paths, guard);
   logEvent(ctx.runtime, paths, "guard_false_positive", { guard, falsePositives });
   return success({ guard, falsePositives }, [
     ctx.t("policy.false_positive.recorded", { guard, count: falsePositives })
@@ -51197,13 +51362,13 @@ var mergeSummary = (runtime, root, branch) => {
 var recordAcceptance = (runtime, root, branch, acceptance2, files) => {
   const path = toAbsolutePath(join151(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
   runtime.mkdir(toAbsolutePath(join151(root, ".finitemonkey", "pr")));
-  const record9 = {
+  const record10 = {
     schema: "finitemonkey/pr-scope@1",
     branch,
     acceptedOutside: files.map((file) => file.path),
     ...acceptance2
   };
-  runtime.writeText(path, `${JSON.stringify(record9, null, 2)}
+  runtime.writeText(path, `${JSON.stringify(record10, null, 2)}
 `);
 };
 var preparePr = (runtime, cwd, request) => {
@@ -51819,7 +51984,7 @@ var researchCheckCommand = {
   run: (ctx, args2) => inRepo6(ctx, (root) => {
     const only3 = args2.positionals[0]?.replace(/^.*[\\/]/, "");
     const records2 = researchRecords(ctx.runtime, root, only3);
-    const issues2 = records2.flatMap((record9) => record9.issues);
+    const issues2 = records2.flatMap((record10) => record10.issues);
     const data2 = { schema: RESEARCH_SCHEMA, records: records2.length, issues: issues2 };
     if (issues2.length === 0) return success(data2, [ctx.t("research.clean", { count: records2.length })]);
     return failureFrom(
@@ -52528,14 +52693,14 @@ var runCommandSpec = {
 };
 
 // src/commands/secrets-accept.ts
-var DAY_MS11 = 864e5;
+var DAY_MS12 = 864e5;
 var daysOf2 = (values) => {
   const raw = stringOption(values, "days");
   if (raw === void 0) return EXCEPTION_MAX_DAYS;
   const days = Number.parseInt(raw, 10);
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS11).toISOString();
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS12).toISOString();
 var failure5 = (ctx, problem5) => failureFrom(ctx.t, problem5);
 var inputProblem2 = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
@@ -53265,8 +53430,8 @@ var usedTokens = (usage2) => {
   if (!isRecord(usage2)) return void 0;
   return (num3(usage2["input_tokens"]) ?? 0) + (num3(usage2["cache_creation_input_tokens"]) ?? 0) + (num3(usage2["cache_read_input_tokens"]) ?? 0);
 };
-var contextPercent = (record9) => {
-  const window = record9["context_window"];
+var contextPercent = (record10) => {
+  const window = record10["context_window"];
   if (!isRecord(window)) return void 0;
   const direct = window["used_percentage"];
   if (typeof direct === "number" && Number.isFinite(direct)) return Math.round(direct);
@@ -53280,13 +53445,13 @@ var rateLimits = (value2) => isRecord(value2) ? Object.entries(value2).flatMap((
 }) : [];
 var parseStatusInput = (raw) => {
   const parsed = parseJsonObject(raw.trim() === "" ? "{}" : raw);
-  const record9 = parsed.ok ? parsed.value : {};
-  const workspace = isRecord(record9["workspace"]) ? record9["workspace"] : {};
+  const record10 = parsed.ok ? parsed.value : {};
+  const workspace = isRecord(record10["workspace"]) ? record10["workspace"] : {};
   return {
-    sessionId: text25(record9["session_id"]),
-    dir: text25(workspace["project_dir"]) ?? text25(workspace["current_dir"]) ?? text25(record9["cwd"]),
-    contextPercent: contextPercent(record9),
-    rateLimits: rateLimits(record9["rate_limits"]),
+    sessionId: text25(record10["session_id"]),
+    dir: text25(workspace["project_dir"]) ?? text25(workspace["current_dir"]) ?? text25(record10["cwd"]),
+    contextPercent: contextPercent(record10),
+    rateLimits: rateLimits(record10["rate_limits"]),
     raw
   };
 };
@@ -54382,7 +54547,7 @@ var applyClean = (inventory, options2, reapRunning) => {
 
 // src/wt/purge.ts
 var DEFAULT_ARCHIVE_DAYS = 30;
-var DAY_MS12 = 864e5;
+var DAY_MS13 = 864e5;
 var safetyRefs = (runtime, root, days) => {
   const listed8 = runtime.git(
     ["for-each-ref", "--format=%(refname) %(committerdate:iso-strict)", ARCHIVE_PREFIX, BACKUP_PREFIX],
@@ -54394,7 +54559,7 @@ var safetyRefs = (runtime, root, days) => {
     const [ref2 = "", at5 = ""] = line11.split(" ");
     if (ref2 === "") return [];
     const age = now - Date.parse(at5);
-    return [{ ref: ref2, at: at5, expired: Number.isFinite(age) && age > days * DAY_MS12 }];
+    return [{ ref: ref2, at: at5, expired: Number.isFinite(age) && age > days * DAY_MS13 }];
   });
 };
 var purgeRefs = (runtime, root, refs) => refs.filter((item2) => item2.expired && runtime.git(["update-ref", "-d", item2.ref], root).ok).map((item2) => item2.ref);

@@ -32,6 +32,12 @@
         "falsePositives": {
           "type": "number"
         },
+        "overridesWithReason": {
+          "type": "number"
+        },
+        "overridesWithoutReason": {
+          "type": "number"
+        },
         "gateRuns": {
           "type": "number"
         },
@@ -50,6 +56,8 @@
         "saves",
         "releases",
         "falsePositives",
+        "overridesWithReason",
+        "overridesWithoutReason",
         "gateRuns",
         "gateFailed",
         "gateUnverified",
@@ -71,6 +79,12 @@
         "falsePositives": {
           "type": "number"
         },
+        "overridesWithReason": {
+          "type": "number"
+        },
+        "overridesWithoutReason": {
+          "type": "number"
+        },
         "gateRuns": {
           "type": "number"
         },
@@ -89,6 +103,8 @@
         "saves",
         "releases",
         "falsePositives",
+        "overridesWithReason",
+        "overridesWithoutReason",
         "gateRuns",
         "gateFailed",
         "gateUnverified",

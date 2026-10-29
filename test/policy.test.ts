@@ -8,6 +8,7 @@ import { ExitCode } from "../src/exit-codes.js";
 import { composeDecisions, DEFAULT_HANDLERS, GUARD_SETS, type HookInput } from "../src/hooks/handlers.js";
 import { parseHookPayload } from "../src/hooks/payload.js";
 import { createTranslator } from "../src/i18n/translate.js";
+import { DEFAULT_ALERT_BUDGET } from "../src/policy/budget.js";
 import { type GuardSet, modeOf, withPolicy } from "../src/policy/guards.js";
 import { DEFAULT_POLICY, isPolicyError, OPTIONAL_GUARDS, parsePolicy, POLICY_FILE } from "../src/policy/policy.js";
 import { memoryFs } from "./memory-fs.js";
@@ -77,6 +78,7 @@ describe("guard modes from .finitemonkey/policy.yml", () => {
       guards: { prose: "shadow" },
       userGuards: {},
       experiments: {},
+      alertBudget: DEFAULT_ALERT_BUDGET,
       issues: [{ kind: "invalid_mode", file: POLICY_FILE, key: "guards.deps" }],
     });
   });

@@ -4,6 +4,7 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { closest } from "../core/suggest.js";
 import { configAt, configMap, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
+import { ALERT_BUDGET_KEYS, type AlertBudgetConfig, DEFAULT_ALERT_BUDGET, parseAlertBudget } from "./budget.js";
 
 export const POLICY_FILE = ".finitemonkey/policy.yml";
 export const GUARD_MODES = ["off", "shadow", "active"] as const;
@@ -64,6 +65,7 @@ export const OPTIONAL_GUARDS = [
   "planta",
   "perfil",
   "conceitos",
+  "alert-budget",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -77,6 +79,7 @@ export const POLICY_KEYS: readonly string[] = [
   "learnings",
   "reminders",
   "quality",
+  "alertBudget",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
@@ -114,6 +117,7 @@ export interface Policy {
   readonly guards: Readonly<Record<string, GuardMode>>;
   readonly userGuards: Readonly<Record<string, GuardMode>>;
   readonly experiments: Readonly<Record<string, "random">>;
+  readonly alertBudget: AlertBudgetConfig;
   readonly issues: readonly PolicyIssue[];
 }
 
@@ -124,6 +128,7 @@ export const DEFAULT_POLICY: Policy = {
   guards: {},
   userGuards: {},
   experiments: {},
+  alertBudget: DEFAULT_ALERT_BUDGET,
   issues: [],
 };
 
@@ -184,7 +189,15 @@ export const parsePolicy = (text: string): Policy => {
     guards,
     userGuards: {},
     experiments,
-    issues: [...keyIssues(tree, POLICY_FILE, POLICY_KEYS), ...guardIssues, ...experimentIssues],
+    alertBudget: parseAlertBudget(tree),
+    issues: [
+      ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
+      ...Object.keys(configMap(tree, "alertBudget"))
+        .filter((key) => !ALERT_BUDGET_KEYS.includes(key))
+        .map((key) => issue("unknown_key", POLICY_FILE, `alertBudget.${key}`, ALERT_BUDGET_KEYS, key)),
+      ...guardIssues,
+      ...experimentIssues,
+    ],
   };
 };
 

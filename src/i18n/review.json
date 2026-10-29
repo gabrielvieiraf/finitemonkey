@@ -1956,7 +1956,12 @@
     "policy.error.invalid": "machine",
     "doctor.policy.ok": "machine",
     "doctor.policy.issues": "machine",
-    "doctor.policy.fix": "machine"
+    "doctor.policy.fix": "machine",
+    "gain.row.overrides_reason": "machine",
+    "gain.row.overrides_bare": "machine",
+    "doctor.alert_budget.muted": "machine",
+    "doctor.alert_budget.fix": "machine",
+    "guard.next": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3915,6 +3920,11 @@
     "policy.error.invalid": "machine",
     "doctor.policy.ok": "machine",
     "doctor.policy.issues": "machine",
-    "doctor.policy.fix": "machine"
+    "doctor.policy.fix": "machine",
+    "gain.row.overrides_reason": "machine",
+    "gain.row.overrides_bare": "machine",
+    "doctor.alert_budget.muted": "machine",
+    "doctor.alert_budget.fix": "machine",
+    "guard.next": "machine"
   }
 }
