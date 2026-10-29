@@ -14,6 +14,7 @@ export interface ModState {
   readonly schema: typeof MOD_STATE_SCHEMA;
   readonly root: string;
   readonly mode: TightenMode;
+  readonly band: TightenMode;
   readonly failReason: string;
   readonly rules: readonly ModRule[];
 }
@@ -26,6 +27,7 @@ export interface CompiledRule {
 export interface LoadedState {
   readonly root: string;
   readonly mode: TightenMode;
+  readonly band: TightenMode;
   readonly failReason?: string;
   readonly rules: readonly CompiledRule[];
 }
@@ -69,5 +71,6 @@ export const parseModState = (text: string): LoadedState | undefined => {
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule): rule is CompiledRule => rule !== undefined);
   const failReason = data["failReason"];
-  return { root: data["root"], mode, rules, ...(typeof failReason === "string" ? { failReason } : {}) };
+  const band = MODES.find((item) => item === data["band"]) ?? "active";
+  return { root: data["root"], mode, band, rules, ...(typeof failReason === "string" ? { failReason } : {}) };
 };

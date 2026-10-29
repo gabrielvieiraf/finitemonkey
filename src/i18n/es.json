@@ -2255,5 +2255,10 @@
   "command.mod_state.summary": "Muestra lo que el mod endurece: el modo del guard y las reglas que el CLI ya aplica",
   "command.mod_record.summary": "Registra una llamada que el mod endureció (la usa el mod)",
   "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# regla} other {# reglas}}",
-  "mod.check_failed": "finitemonkey: la verificación de permisos del mod falló, así que esta llamada fue rechazada. Inténtalo de nuevo; los command hooks siguen decidiendo."
+  "mod.check_failed": "finitemonkey: la verificación de permisos del mod falló, así que esta llamada fue rechazada. Inténtalo de nuevo; los command hooks siguen decidiendo.",
+  "command.status.summary": "Muestra el estado del gate, el contrato y lo que no se verificó",
+  "status.summary": "gate {light}: {passed}/{total} verificaciones pasaron (tarea {task})",
+  "status.contract": "contrato {id} {hash}",
+  "status.edits": "la evidencia tiene {count, plural, one {# edición} other {# ediciones}} de atraso",
+  "status.not_verified": "no verificado: {id} ({reason}); verifica con `{verify}`"
 }

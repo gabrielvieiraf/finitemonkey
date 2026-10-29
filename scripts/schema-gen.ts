@@ -130,6 +130,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     type: "GuardianStatus",
     describes: "`data` of `finitemonkey guardian status --json`.",
   },
+  {
+    name: "status@1",
+    file: "src/bridge/status.ts",
+    type: "StatusData",
+    describes: "`data` of `finitemonkey status --json`, which the mod draws in the band and the gate pane.",
+  },
 ];
 
 export const ROOT = fileURLToPath(new URL("..", import.meta.url));

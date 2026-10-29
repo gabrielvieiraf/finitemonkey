@@ -11,6 +11,7 @@ import { featureMode } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
 
 export const MOD_TIGHTEN_GUARD = "mod-tighten";
+export const MOD_BAND_GUARD = "mod-band";
 export const MAX_HELD_FILES = 500;
 
 const POLICY_PATH = String.raw`(?:^|/)\.finitemonkey/(?!reports/[^/]+\.json$)`;
@@ -88,6 +89,7 @@ export const modState = (runtime: Runtime, paths: FmPaths, t: Translate): ModSta
   schema: MOD_STATE_SCHEMA,
   root: paths.root,
   mode: featureMode(runtime, paths, MOD_TIGHTEN_GUARD),
+  band: featureMode(runtime, paths, MOD_BAND_GUARD),
   failReason: t("mod.check_failed"),
   rules: [
     ...(live(runtime, paths, "self") ? [] : selfRules(t)),

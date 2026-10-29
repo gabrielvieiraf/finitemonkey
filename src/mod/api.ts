@@ -68,7 +68,7 @@ export interface SessionVersion {
 export interface RenderInput {
   readonly component: string;
   readonly surface: Surface;
-  readonly requestId?: string;
+  readonly requestId: string;
 }
 
 export interface ModApi {

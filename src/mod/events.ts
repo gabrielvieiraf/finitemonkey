@@ -1,4 +1,4 @@
-import type { ModApi, Surface } from "./api.js";
+import type { ModApi, ModElement, RenderInput, Surface } from "./api.js";
 import type { CheckResult } from "./tighten.js";
 
 export interface SessionStartInput {
@@ -42,7 +42,27 @@ export interface TurnCompleteResult {
   readonly text?: string;
 }
 
+export interface ToolCallInput {
+  readonly tool: string;
+  readonly [field: string]: unknown;
+}
+
+export type ToolCallResult = Readonly<Record<string, unknown>>;
+
+export interface CommandRunInput {
+  readonly command: string;
+  readonly args: string;
+}
+
+export interface CommandRunResult {
+  readonly text?: string;
+  readonly context?: readonly string[];
+}
+
 export interface EventTypes {
+  readonly "tool.call": readonly [ToolCallInput, ToolCallResult];
+  readonly "ui.render": readonly [RenderInput, ModElement | null];
+  readonly "command.run": readonly [CommandRunInput, CommandRunResult];
   readonly "session.start": readonly [SessionStartInput, SessionStartResult];
   readonly "tool.check": readonly [ToolCheckInput, ToolCheckResult];
   readonly "turn.complete": readonly [TurnCompleteInput, TurnCompleteResult];

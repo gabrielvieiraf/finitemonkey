@@ -2256,7 +2256,12 @@
     "command.mod_state.summary": "machine",
     "command.mod_record.summary": "machine",
     "mod.state.summary": "machine",
-    "mod.check_failed": "machine"
+    "mod.check_failed": "machine",
+    "command.status.summary": "machine",
+    "status.summary": "machine",
+    "status.contract": "machine",
+    "status.edits": "machine",
+    "status.not_verified": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4515,6 +4520,11 @@
     "command.mod_state.summary": "machine",
     "command.mod_record.summary": "machine",
     "mod.state.summary": "machine",
-    "mod.check_failed": "machine"
+    "mod.check_failed": "machine",
+    "command.status.summary": "machine",
+    "status.summary": "machine",
+    "status.contract": "machine",
+    "status.edits": "machine",
+    "status.not_verified": "machine"
   }
 }

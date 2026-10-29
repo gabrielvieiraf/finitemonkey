@@ -107,6 +107,7 @@ import { signalsBlindBandCommand } from "./signals-blind-band.js";
 import { signalsHypothesisCommand } from "./signals-hypothesis.js";
 import { signalsLocateCommand } from "./signals-locate.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
+import { statusCommand } from "./status.js";
 import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
@@ -292,6 +293,7 @@ export const REGISTRY = [
   calibrateExplainCommand,
   modStateCommand,
   modRecordCommand,
+  statusCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

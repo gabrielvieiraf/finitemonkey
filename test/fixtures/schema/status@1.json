@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/status@1.json",
+  "title": "finitemonkey/status@1",
+  "description": "`data` of `finitemonkey status --json`, which the mod draws in the band and the gate pane. Generated from StatusData in src/bridge/status.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/status@1"
+    },
+    "task": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "implicit": {
+      "type": "boolean"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "contract": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "hash": {
+              "type": "string"
+            }
+          },
+          "required": ["id", "hash"]
+        }
+      ]
+    },
+    "gate": {
+      "type": "object",
+      "properties": {
+        "light": {
+          "type": "string",
+          "enum": ["incomplete", "none", "green", "red", "did_not_run"]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "at": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["light", "status", "at"]
+    },
+    "tree": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "passed": {
+          "type": "number"
+        },
+        "failed": {
+          "type": "number"
+        },
+        "unverified": {
+          "type": "number"
+        }
+      },
+      "required": ["passed", "failed", "unverified"]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["passed", "failed", "unverified"]
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "verify": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "kind", "status", "stale", "verify"]
+      }
+    },
+    "notVerified": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "verify": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "reason", "verify"]
+      }
+    },
+    "editsSinceGate": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "task",
+    "implicit",
+    "goal",
+    "contract",
+    "gate",
+    "tree",
+    "counts",
+    "checks",
+    "notVerified",
+    "editsSinceGate"
+  ]
+}

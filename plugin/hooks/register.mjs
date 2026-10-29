@@ -1,6 +1,203 @@
+// src/mod/cli.ts
+var CLI_TIMEOUT_MS = 2e4;
+function cliArgv($, args) {
+  return ["node", `${$.plugin.root}/scripts/finitemonkey.mjs`, ...args];
+}
+async function runCli($, args) {
+  const root = await $.session.root();
+  const result = await $.process.run(cliArgv($, args), { cwd: root, timeoutMs: CLI_TIMEOUT_MS });
+  return result.exitCode === 0 ? result.stdout : void 0;
+}
+
+// src/mod/status.ts
+var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var str = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var list = (value) => Array.isArray(value) ? value.filter(isRecord) : [];
+var contractOf = (value) => isRecord(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
+var parseStatus = (text2) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text2);
+  } catch {
+    return void 0;
+  }
+  const data = isRecord(parsed) && isRecord(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord(data) || data["schema"] !== "finitemonkey/status@1") return void 0;
+  const checks = list(data["checks"]).map((item) => ({
+    id: str(item, "id"),
+    status: str(item, "status"),
+    stale: item["stale"] === true,
+    verify: str(item, "verify")
+  }));
+  const gate = isRecord(data["gate"]) ? data["gate"] : {};
+  const edits = data["editsSinceGate"];
+  return {
+    task: typeof data["task"] === "string" ? data["task"] : null,
+    contract: contractOf(data["contract"]),
+    light: str(gate, "light") || "none",
+    passed: checks.filter((check) => check.status === "passed").length,
+    total: checks.length,
+    checks,
+    notVerified: list(data["notVerified"]).map((item) => ({
+      id: str(item, "id"),
+      reason: str(item, "reason"),
+      verify: str(item, "verify")
+    })),
+    editsSinceGate: typeof edits === "number" ? edits : null
+  };
+};
+var MARK = {
+  green: "✓",
+  red: "✗",
+  incomplete: "…",
+  did_not_run: "?",
+  none: "·"
+};
+var markOf = (light) => MARK[light] ?? "·";
+var short = (hash) => hash.slice(0, 4);
+var bandLine = (view) => [
+  `gate ${markOf(view.light)} ${String(view.passed)}/${String(view.total)}`,
+  ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : [],
+  ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`],
+  ...view.editsSinceGate !== null && view.editsSinceGate > 0 ? [`evidence ${String(view.editsSinceGate)} edits old`] : []
+].join(" · ");
+var turnLine = (view) => [
+  `gate ${markOf(view.light)}`,
+  ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} criteria without check`] : [],
+  ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`]
+].join(" · ");
+var checkLine = (check) => `${check.status === "passed" ? "✓" : check.status === "failed" ? "✗" : "○"} ${check.id}${check.stale ? " (stale)" : ""}`;
+var notVerifiedLine = (item) => `○ ${item.id}: ${item.reason} → ${item.verify}`;
+var statusText = (view) => [
+  `finitemonkey ${bandLine(view)}`,
+  ...view.checks.map(checkLine),
+  ...view.notVerified.length > 0 ? ["not verified:", ...view.notVerified.map(notVerifiedLine)] : []
+].join("\n");
+
+// src/mod/gate-view.ts
+var GATE_PANE = "fm-gate";
+var line = (elements, text2, key, dim = false) => elements.Text({ key, children: [text2], ...dim ? { dimColor: true } : {} });
+var bandTree = (elements, view, open) => elements.Box({
+  key: "fm-band",
+  flexDirection: "row",
+  columnGap: 2,
+  children: [
+    line(elements, `FM  ${bandLine(view)}`, "fm-band-text"),
+    elements.Button({ key: "fm-open", label: "gate panel", hotkey: "g", onPress: open })
+  ]
+});
+var contractLine = (view) => view.contract === null ? "no contract" : `contract ${view.contract.id} ${view.contract.hash.slice(0, 12)}`;
+var paneTree = (elements, view, actions) => elements.Box({
+  key: "fm-pane",
+  flexDirection: "column",
+  children: [
+    line(elements, bandLine(view), "fm-pane-summary"),
+    line(elements, contractLine(view), "fm-pane-contract", true),
+    ...view.checks.map((check) => line(elements, checkLine(check), `fm-check-${check.id}`)),
+    ...view.notVerified.length > 0 ? [
+      line(elements, "not verified:", "fm-not-verified"),
+      ...view.notVerified.map((item) => line(elements, notVerifiedLine(item), `fm-nv-${item.id}`))
+    ] : [],
+    elements.Box({
+      key: "fm-pane-buttons",
+      flexDirection: "row",
+      columnGap: 2,
+      children: [
+        elements.Button({ key: "fm-run-gate", label: "Run gate", hotkey: "r", onPress: actions.runGate }),
+        elements.Button({ key: "fm-close", label: "Close", hotkey: "x", onPress: actions.close })
+      ]
+    })
+  ]
+});
+
+// src/mod/memory.ts
+var memory = { state: void 0, view: void 0, pending: void 0 };
+
+// src/mod/gate-hooks.ts
+var DEBOUNCE_MS = 500;
+var GATE_COMMAND = "fm";
+function bandOn() {
+  return (memory.state?.band ?? "active") !== "off";
+}
+async function refreshStatus($) {
+  const text2 = await runCli($, ["status", "--json"]);
+  const view = text2 === void 0 ? void 0 : parseStatus(text2);
+  if (view === void 0) return;
+  memory.view = view;
+  $.ui.invalidate("ui.render");
+  const surfaces = await $.session.surfaces();
+  if (bandOn() && surfaces.includes("vscode")) $.ui.status(`FM ${bandLine(view)} · /fm`);
+}
+function scheduleStatus($, delay) {
+  memory.pending?.cancel();
+  memory.pending = $.clock.after(delay, () => refreshStatus($));
+}
+async function registerGateCommand($) {
+  try {
+    await $.command.register({
+      name: GATE_COMMAND,
+      description: "Finite Monkey: gate state, contract and what is not verified",
+      immediate: true
+    });
+  } catch {
+    $.ui.log("finitemonkey: /fm is taken by another command; the gate panel opens from the band");
+  }
+}
+async function afterTool($, e, next) {
+  const result = await next(e);
+  scheduleStatus($, DEBOUNCE_MS);
+  return result;
+}
+async function passTool(_$, e, next) {
+  return next(e);
+}
+async function openPane($) {
+  await $.ui.open({ id: GATE_PANE, title: "Finite Monkey" });
+}
+async function runGateNow($) {
+  await runCli($, ["gate"]);
+  await refreshStatus($);
+}
+async function closePane($) {
+  await $.ui.close({ id: GATE_PANE });
+}
+async function renderBand($, e, next) {
+  const view = memory.view;
+  const theirs = await next(e);
+  if (view === void 0 || !bandOn()) return theirs;
+  const elements = $.ui.resolve(e);
+  const ours = bandTree(elements, view, () => openPane($));
+  return theirs === null ? ours : elements.Box({ flexDirection: "column", children: [ours, theirs] });
+}
+async function renderPane($, e, next) {
+  if (e.requestId !== GATE_PANE) return next(e);
+  const elements = $.ui.resolve(e);
+  const view = memory.view;
+  if (view === void 0) return elements.Text({ key: "fm-loading", children: ["finitemonkey: reading the gate…"] });
+  return paneTree(elements, view, { runGate: () => runGateNow($), close: () => closePane($) });
+}
+async function runGateCommand($) {
+  if (memory.view === void 0) await refreshStatus($);
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) {
+    await openPane($);
+    return {};
+  }
+  const view = memory.view;
+  return { text: view === void 0 ? "finitemonkey: no gate status in this folder" : statusText(view) };
+}
+function withTurnLine(e, result) {
+  const view = memory.view;
+  if (e.agentId !== void 0 || e.isAborted === true || view === void 0 || view.task === null || !bandOn())
+    return result;
+  const line2 = `FM ${turnLine(view)}`;
+  return { ...result, text: result.text === void 0 || result.text === "" ? line2 : `${result.text}
+${line2}` };
+}
+
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -11,7 +208,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord(value)) return void 0;
+  if (!isRecord2(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -19,7 +216,7 @@ var ruleOf = (value) => {
   const regex = compile(pattern);
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
-var dataOf = (parsed) => isRecord(parsed) && isRecord(parsed["data"]) ? parsed["data"] : parsed;
+var dataOf = (parsed) => isRecord2(parsed) && isRecord2(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text2) => {
   let parsed;
   try {
@@ -28,20 +225,21 @@ var parseModState = (text2) => {
     return void 0;
   }
   const data = dataOf(parsed);
-  if (!isRecord(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  if (!isRecord2(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
   const failReason = data["failReason"];
-  return { root: data["root"], mode, rules, ...typeof failReason === "string" ? { failReason } : {} };
+  const band = MODES.find((item) => item === data["band"]) ?? "active";
+  return { root: data["root"], mode, band, rules, ...typeof failReason === "string" ? { failReason } : {} };
 };
 
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text = (input, ...names) => {
-  if (!isRecord2(input)) return void 0;
+  if (!isRecord3(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;
@@ -82,42 +280,24 @@ var tightenFor = (rule) => ({
 });
 var FAILED_REASON = "finitemonkey: the mod's permission check failed, so this call was refused. Retry it; the command hooks still decide it.";
 
-// src/mod/register.ts
-var loaded;
-function cliArgv($, args) {
-  return ["node", `${$.plugin.root}/scripts/finitemonkey.mjs`, ...args];
-}
+// src/mod/tighten-hooks.ts
 async function refreshState($) {
-  const root = await $.session.root();
-  const result = await $.process.run(cliArgv($, ["mod", "state", "--json"]), { cwd: root, timeoutMs: 2e4 });
-  if (result.exitCode !== 0) return;
-  const state = parseModState(result.stdout);
-  if (state !== void 0) loaded = state;
+  const text2 = await runCli($, ["mod", "state", "--json"]);
+  const state = text2 === void 0 ? void 0 : parseModState(text2);
+  if (state !== void 0) memory.state = state;
 }
 function scheduleRefresh($) {
   $.clock.after(0, () => refreshState($));
 }
 async function recordTightening($, rule, tool, mode) {
-  const root = await $.session.root();
-  await $.process.run(cliArgv($, ["mod", "record", "--rule", rule, "--tool", tool, "--mode", mode]), {
-    cwd: root,
-    timeoutMs: 2e4
-  });
+  await runCli($, ["mod", "record", "--rule", rule, "--tool", tool, "--mode", mode]);
 }
 function scheduleRecord($, rule, tool, mode) {
   $.clock.after(0, () => recordTightening($, rule, tool, mode));
 }
-async function onStart($, e, next) {
-  scheduleRefresh($);
-  return next(e);
-}
-async function onTurnComplete($, e, next) {
-  scheduleRefresh($);
-  return next(e);
-}
 async function guardCheck($, e, next) {
   const decided = await next(e);
-  const state = loaded;
+  const state = memory.state;
   if (state === void 0 || state.mode === "off") return decided;
   const rule = ruleFor(state, e.tool, e.input);
   if (rule === void 0) return decided;
@@ -125,12 +305,30 @@ async function guardCheck($, e, next) {
   return state.mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
 }
 async function failClosed() {
-  return Promise.resolve({ decision: "deny", reason: loaded?.failReason ?? FAILED_REASON });
+  return Promise.resolve({ decision: "deny", reason: memory.state?.failReason ?? FAILED_REASON });
+}
+
+// src/mod/register.ts
+var WATCHED_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "PowerShell"];
+async function onStart($, e, next) {
+  scheduleRefresh($);
+  scheduleStatus($, 0);
+  await registerGateCommand($);
+  return next(e);
+}
+async function onTurnComplete($, e, next) {
+  scheduleRefresh($);
+  scheduleStatus($, 0);
+  return withTurnLine(e, await next(e));
 }
 function register(on) {
   on("session.start", onStart);
   on("turn.complete", onTurnComplete);
   on("tool.check", guardCheck).catch(failClosed);
+  on("tool.call", { tool: WATCHED_TOOLS }, afterTool).catch(passTool);
+  on("ui.render", { component: "AbovePrompt" }, renderBand);
+  on("ui.render", { component: "Pane" }, renderPane);
+  on("command.run", { command: GATE_COMMAND }, runGateCommand);
 }
 export {
   register

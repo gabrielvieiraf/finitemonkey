@@ -1783,8 +1783,8 @@ var runScan = (ctx, acceptExisting, reason) => {
   }
   const freshIds = new Set(acceptExisting ? [] : outcome2.fresh.map((item2) => item2.id));
   const expiredIds = new Set(outcome2.expired.map((item2) => item2.id));
-  const statusOf6 = (id) => freshIds.has(id) ? "new" : expiredIds.has(id) ? "expired" : "known";
-  const findings2 = found.map((item2) => ({ ...item2, status: statusOf6(item2.id), owaspName: OWASP[item2.owasp] }));
+  const statusOf7 = (id) => freshIds.has(id) ? "new" : expiredIds.has(id) ? "expired" : "known";
+  const findings2 = found.map((item2) => ({ ...item2, status: statusOf7(item2.id), owaspName: OWASP[item2.owasp] }));
   const data2 = {
     schema: APPSEC_SCAN_SCHEMA,
     stack: detectStack(readFile(ctx, root)),
@@ -6127,7 +6127,8 @@ var OPTIONAL_GUARDS = [
   "evolve",
   "calibrate",
   "autonomy",
-  "mod-tighten"
+  "mod-tighten",
+  "mod-band"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -8880,7 +8881,12 @@ var en_default = {
   "command.mod_state.summary": "Print what the mod tightens: the guard mode and the rules the CLI already enforces",
   "command.mod_record.summary": "Log a call the mod tightened (used by the mod)",
   "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# rule} other {# rules}}",
-  "mod.check_failed": "finitemonkey: the mod's permission check failed, so this call was refused. Try the call again; the command hooks still decide it."
+  "mod.check_failed": "finitemonkey: the mod's permission check failed, so this call was refused. Try the call again; the command hooks still decide it.",
+  "command.status.summary": "Print the gate state, the contract and what is not verified",
+  "status.summary": "gate {light}: {passed}/{total} checks passed (task {task})",
+  "status.contract": "contract {id} {hash}",
+  "status.edits": "evidence is {count, plural, one {# edit} other {# edits}} old",
+  "status.not_verified": "not verified: {id} ({reason}); verify with `{verify}`"
 };
 
 // src/i18n/es.json
@@ -11141,7 +11147,12 @@ var es_default = {
   "command.mod_state.summary": "Muestra lo que el mod endurece: el modo del guard y las reglas que el CLI ya aplica",
   "command.mod_record.summary": "Registra una llamada que el mod endureció (la usa el mod)",
   "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# regla} other {# reglas}}",
-  "mod.check_failed": "finitemonkey: la verificación de permisos del mod falló, así que esta llamada fue rechazada. Inténtalo de nuevo; los command hooks siguen decidiendo."
+  "mod.check_failed": "finitemonkey: la verificación de permisos del mod falló, así que esta llamada fue rechazada. Inténtalo de nuevo; los command hooks siguen decidiendo.",
+  "command.status.summary": "Muestra el estado del gate, el contrato y lo que no se verificó",
+  "status.summary": "gate {light}: {passed}/{total} verificaciones pasaron (tarea {task})",
+  "status.contract": "contrato {id} {hash}",
+  "status.edits": "la evidencia tiene {count, plural, one {# edición} other {# ediciones}} de atraso",
+  "status.not_verified": "no verificado: {id} ({reason}); verifica con `{verify}`"
 };
 
 // src/i18n/pt-BR.json
@@ -13402,7 +13413,12 @@ var pt_BR_default = {
   "command.mod_state.summary": "Mostra o que o mod aperta: o modo do guard e as regras que o CLI já aplica",
   "command.mod_record.summary": "Registra uma chamada que o mod apertou (usado pelo mod)",
   "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# regra} other {# regras}}",
-  "mod.check_failed": "finitemonkey: a checagem de permissão do mod falhou, então esta chamada foi recusada. Tente de novo; os command hooks continuam decidindo."
+  "mod.check_failed": "finitemonkey: a checagem de permissão do mod falhou, então esta chamada foi recusada. Tente de novo; os command hooks continuam decidindo.",
+  "command.status.summary": "Mostra o estado do gate, o contrato e o que não foi verificado",
+  "status.summary": "gate {light}: {passed}/{total} checagens passaram (tarefa {task})",
+  "status.contract": "contrato {id} {hash}",
+  "status.edits": "a evidência tem {count, plural, one {# edição} other {# edições}} de atraso",
+  "status.not_verified": "não verificado: {id} ({reason}); verifique com `{verify}`"
 };
 
 // src/i18n/review.json
@@ -15664,7 +15680,12 @@ var review_default = {
     "command.mod_state.summary": "machine",
     "command.mod_record.summary": "machine",
     "mod.state.summary": "machine",
-    "mod.check_failed": "machine"
+    "mod.check_failed": "machine",
+    "command.status.summary": "machine",
+    "status.summary": "machine",
+    "status.contract": "machine",
+    "status.edits": "machine",
+    "status.not_verified": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -17923,7 +17944,12 @@ var review_default = {
     "command.mod_state.summary": "machine",
     "command.mod_record.summary": "machine",
     "mod.state.summary": "machine",
-    "mod.check_failed": "machine"
+    "mod.check_failed": "machine",
+    "command.status.summary": "machine",
+    "status.summary": "machine",
+    "status.contract": "machine",
+    "status.edits": "machine",
+    "status.not_verified": "machine"
   }
 };
 
@@ -55617,6 +55643,7 @@ var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
 
 // src/bridge/state.ts
 var MOD_TIGHTEN_GUARD = "mod-tighten";
+var MOD_BAND_GUARD = "mod-band";
 var MAX_HELD_FILES = 500;
 var POLICY_PATH = String.raw`(?:^|/)\.finitemonkey/(?!reports/[^/]+\.json$)`;
 var REGISTRY_PATH = String.raw`(?:^|/)\.git/(?:worktrees/[^/]+/)?finitemonkey(?:/|$)`;
@@ -55682,6 +55709,7 @@ var modState = (runtime, paths, t) => ({
   schema: MOD_STATE_SCHEMA,
   root: paths.root,
   mode: featureMode(runtime, paths, MOD_TIGHTEN_GUARD),
+  band: featureMode(runtime, paths, MOD_BAND_GUARD),
   failReason: t("mod.check_failed"),
   rules: [
     ...live(runtime, paths, "self") ? [] : selfRules(t),
@@ -60431,6 +60459,110 @@ var gateLight = (runtime, paths) => {
   }
 };
 
+// src/bridge/status.ts
+var STATUS_SCHEMA = "finitemonkey/status@1";
+var GATE_COMMAND = "finitemonkey gate";
+var verifyOf = (item2) => item2.command ?? GATE_COMMAND;
+var checkOf2 = (item2) => ({
+  id: item2.id,
+  kind: item2.kind,
+  status: item2.status,
+  stale: item2.stale,
+  verify: verifyOf(item2)
+});
+var notVerifiedOf = (item2) => ({
+  id: item2.id,
+  reason: item2.stale ? "stale" : item2.reason ?? "no_evidence",
+  verify: verifyOf(item2)
+});
+var editsSince = (runtime, paths, at5) => {
+  if (at5 === null) return null;
+  const since = Date.parse(at5);
+  return readEntries(runtime, signalFiles(paths)).filter(
+    (entry2) => entry2.kind === "edit" && Date.parse(entry2.at) > since
+  ).length;
+};
+var reportOf2 = (runtime, paths) => {
+  const ready = prepareGate({
+    runtime,
+    cwd: paths.root,
+    env: {},
+    sessionId: void 0,
+    budgetMs: 0,
+    fast: true,
+    noSkip: true
+  });
+  if (ready.kind !== "ready") return void 0;
+  const { ctx, loaded: loaded2 } = ready.prepared;
+  const report4 = buildReport({
+    contract: ctx.contract,
+    ledger: readLedger2(runtime, paths.evidence(ctx.contract.id)),
+    treeHash: ctx.treeHash,
+    base: ctx.base,
+    source: loaded2.source,
+    contractEdited: loaded2.editedOnDisk,
+    fastPath: true
+  });
+  return { report: report4, hash: contractHash(ctx.contract) };
+};
+var statusOf6 = (runtime, paths) => {
+  const gate = readGateStatus(runtime, paths);
+  const gateAt = gate?.at ?? null;
+  const found = reportOf2(runtime, paths);
+  const report4 = found?.report;
+  const items = report4?.items ?? [];
+  return {
+    schema: STATUS_SCHEMA,
+    task: report4?.task ?? null,
+    implicit: report4?.implicit ?? true,
+    goal: report4?.goal ?? "",
+    contract: report4 === void 0 || found === void 0 ? null : { id: report4.task, hash: found.hash },
+    gate: { light: gateLight(runtime, paths), status: gate?.status ?? null, at: gateAt },
+    tree: report4?.treeHash ?? null,
+    counts: report4?.counts ?? { passed: 0, failed: 0, unverified: 0 },
+    checks: items.map(checkOf2),
+    notVerified: items.filter((item2) => item2.status === "unverified").map(notVerifiedOf),
+    editsSinceGate: editsSince(runtime, paths, gateAt)
+  };
+};
+
+// src/commands/status.ts
+var MARK4 = { passed: "✓", failed: "✗", unverified: "○" };
+var humanLines = (ctx, data2) => [
+  ctx.t("status.summary", {
+    light: data2.gate.light,
+    passed: data2.counts.passed,
+    total: data2.checks.length,
+    task: data2.task ?? "-"
+  }),
+  ...data2.contract === null ? [] : [ctx.t("status.contract", { id: data2.contract.id, hash: data2.contract.hash })],
+  ...data2.editsSinceGate !== null && data2.editsSinceGate > 0 ? [ctx.t("status.edits", { count: data2.editsSinceGate })] : [],
+  ...data2.checks.map((check2) => `${MARK4[check2.status] ?? "○"} ${check2.id}${check2.stale ? " (stale)" : ""}`),
+  ...data2.notVerified.map(
+    (item2) => ctx.t("status.not_verified", { id: item2.id, reason: item2.reason, verify: item2.verify })
+  )
+];
+var show3 = (ctx) => {
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  if (root === void 0)
+    return failureFrom(ctx.t, {
+      code: "not_a_git_repo",
+      messageKey: "error.not_a_git_repo",
+      params: {},
+      fix: "git init",
+      exitCode: ExitCode.NotConfigured
+    });
+  const data2 = statusOf6(ctx.runtime, fmPaths(root));
+  return success(data2, humanLines(ctx, data2));
+};
+var statusCommand = {
+  path: ["status"],
+  summaryKey: "command.status.summary",
+  usage: "finitemonkey status [--json]",
+  status: "ready",
+  run: (ctx) => Promise.resolve(show3(ctx))
+};
+
 // src/statusline/input.ts
 var text29 = (value2) => typeof value2 === "string" && value2 !== "" ? value2 : void 0;
 var num4 = (value2) => typeof value2 === "number" && Number.isFinite(value2) ? value2 : void 0;
@@ -62232,6 +62364,7 @@ var REGISTRY2 = [
   calibrateExplainCommand,
   modStateCommand,
   modRecordCommand,
+  statusCommand,
   versionCommand,
   helpCommand
 ];

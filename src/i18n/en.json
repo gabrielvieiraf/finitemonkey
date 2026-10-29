@@ -2255,5 +2255,10 @@
   "command.mod_state.summary": "Print what the mod tightens: the guard mode and the rules the CLI already enforces",
   "command.mod_record.summary": "Log a call the mod tightened (used by the mod)",
   "mod.state.summary": "mod-tighten {mode}: {count, plural, one {# rule} other {# rules}}",
-  "mod.check_failed": "finitemonkey: the mod's permission check failed, so this call was refused. Try the call again; the command hooks still decide it."
+  "mod.check_failed": "finitemonkey: the mod's permission check failed, so this call was refused. Try the call again; the command hooks still decide it.",
+  "command.status.summary": "Print the gate state, the contract and what is not verified",
+  "status.summary": "gate {light}: {passed}/{total} checks passed (task {task})",
+  "status.contract": "contract {id} {hash}",
+  "status.edits": "evidence is {count, plural, one {# edit} other {# edits}} old",
+  "status.not_verified": "not verified: {id} ({reason}); verify with `{verify}`"
 }
