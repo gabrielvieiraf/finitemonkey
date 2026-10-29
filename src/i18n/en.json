@@ -2064,5 +2064,12 @@
   "command.signals_blind_band.summary": "Share of horizon help that went out without a criterion the person can check, per domain and week",
   "blind_band.empty": "No horizon help recorded yet.",
   "blind_band.total": "Blind band index: {index} ({without} of {helps} horizon helps went out without a criterion).",
-  "blind_band.row": "  {week} {domain}: {index} without criterion ({without} of {helps}); concepts moved: {concepts}"
+  "blind_band.row": "  {week} {domain}: {index} without criterion ({without} of {helps}); concepts moved: {concepts}",
+  "predict.reason": "This change brings in {concept}, which the person has not shown they can predict yet in a domain where the profile marks them as a beginner. Before it lands, ask the person one question and wait: when `{run}` gets the input {input}, what does it print? They answer by typing fm: predict {concept} <what it prints>. The result is shown next to their answer after the gate runs. They can skip with fm: allow predict <reason>.",
+  "predict.human": "Before this change with {concept} lands: what does {run} print for {input}? Type fm: predict {concept} <answer>, or fm: allow predict <reason> to skip.",
+  "predict.recorded": "Recorded your prediction for {concept}: {output}. The gate will show the real result next to it.",
+  "predict.not_recorded": "No prediction recorded for {concept}: unknown concept or no example input to predict on.",
+  "gate.predict.correct": "{concept} on input {input}: you predicted {predicted}, it printed {actual}. Correct.",
+  "gate.predict.wrong": "{concept} on input {input}: you predicted {predicted}, it printed {actual}. The prompt for {concept} stays on.",
+  "gate.predict.revoked": "{concept} is no longer marked demonstrated: the gate caught a failure in code that uses it"
 }

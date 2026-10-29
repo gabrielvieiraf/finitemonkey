@@ -13,6 +13,8 @@ export const BOOK_FILE = "conceitos.yml";
 export interface ConceptEntry {
   readonly level: ConceptLevel;
   readonly updatedAt: string;
+  readonly streak?: number;
+  readonly demonstrated?: boolean;
 }
 
 export interface Book {
@@ -34,7 +36,14 @@ const entryOf = (raw: unknown): ConceptEntry | undefined => {
   if (!isRecord(raw)) return undefined;
   const level = parseConceptLevel(typeof raw["level"] === "string" ? raw["level"] : undefined);
   const at = raw["updated_at"];
-  return level === undefined ? undefined : { level, updatedAt: typeof at === "string" ? at : "" };
+  const streak = raw["streak"];
+  if (level === undefined) return undefined;
+  return {
+    level,
+    updatedAt: typeof at === "string" ? at : "",
+    ...(typeof streak === "number" && streak > 0 ? { streak } : {}),
+    ...(raw["demonstrated"] === true ? { demonstrated: true } : {}),
+  };
 };
 
 export const readBook = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Book => {
@@ -65,7 +74,19 @@ export const writeBook = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, b
       concepts: Object.fromEntries(
         CONCEPT_IDS.flatMap((id) => {
           const entry = book.concepts[id];
-          return entry === undefined ? [] : [[id, { level: entry.level, updated_at: entry.updatedAt }]];
+          return entry === undefined
+            ? []
+            : [
+                [
+                  id,
+                  {
+                    level: entry.level,
+                    updated_at: entry.updatedAt,
+                    ...(entry.streak === undefined || entry.streak === 0 ? {} : { streak: entry.streak }),
+                    ...(entry.demonstrated === true ? { demonstrated: true } : {}),
+                  },
+                ],
+              ];
         }),
       ),
     }),
@@ -74,7 +95,7 @@ export const writeBook = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, b
 export const raise = (book: Book, id: ConceptId, level: ConceptLevel, at: string): Book => {
   const before = book.concepts[id];
   if (rankOf(before?.level) >= rankOf(level)) return book;
-  return { ...book, concepts: { ...book.concepts, [id]: { level, updatedAt: at } } };
+  return { ...book, concepts: { ...book.concepts, [id]: { ...before, level, updatedAt: at } } };
 };
 
 export const levelSum = (book: Book): number =>

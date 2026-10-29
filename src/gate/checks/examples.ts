@@ -1,9 +1,12 @@
+import { conceptsIn } from "../../conceitos/concepts.js";
+import { revokeDemonstrated, settlePredictions } from "../../conceitos/predict.js";
 import { nowMs } from "../../core/clock.js";
 import { logEvent } from "../../evidence/log.js";
 import type { Note } from "../../evidence/types.js";
 import { planMutants } from "../../mutation/operators.js";
 import { type Criterion, isDecorative, measureStrength } from "../../mutation/strength.js";
 import { featureMode, recordFeatureShadow } from "../../policy/feature.js";
+import { outputOf } from "../../ricochete/divergence.js";
 import { BEHAVIOR_FEATURE, type Example } from "../../task/examples.js";
 import type { AcceptanceCheck } from "../../task/types.js";
 import { addedLines } from "../git.js";
@@ -89,18 +92,45 @@ const failureNote = (result: ExampleResult, ctx: GateContext): Note =>
     actual: clip(ctx.mask(result.actual)) || "-",
   });
 
+const predictionNotes = (ctx: GateContext): readonly Note[] =>
+  settlePredictions(ctx.runtime, ctx.paths, ctx.contract.id, (probe) =>
+    outputOf(ctx.runtime, ctx.paths.root, probe.run, probe.input),
+  ).map((item) =>
+    note(item.correct ? "gate.predict.correct" : "gate.predict.wrong", {
+      concept: item.prediction.concept,
+      predicted: clip(item.prediction.output),
+      actual: clip(ctx.mask(item.actual)) || "-",
+      input: item.prediction.probe.input || "-",
+    }),
+  );
+
+const revokeNotes = (ctx: GateContext): readonly Note[] => {
+  const text = addedLines(ctx.git, ctx.base)
+    .map((line) => line.text)
+    .join("\n");
+  return revokeDemonstrated(ctx.runtime, ctx.paths, conceptsIn(text)).map((concept) =>
+    note("gate.predict.revoked", { concept }),
+  );
+};
+
 export const examplesCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
+  const predicted = ctx.trusted ? predictionNotes(ctx) : [];
   const mode = featureMode(ctx.runtime, ctx.paths, BEHAVIOR_FEATURE);
-  if (mode === "off") return passed([note("gate.examples.off")]);
+  if (mode === "off") return passed([note("gate.examples.off"), ...predicted]);
   const examples = ctx.examples ?? [];
-  if (examples.length === 0) return passed([note("gate.examples.none")]);
+  if (examples.length === 0) return passed([note("gate.examples.none"), ...predicted]);
   if (!ctx.trusted) return unverified("untrusted", [note("gate.note.untrusted", { task: ctx.contract.id })]);
   const results = examples.map((example) => runExample(example, ctx));
-  if (results.some((result) => result === undefined)) return unverified("budget", [note("gate.examples.not_run")]);
+  if (results.some((result) => result === undefined))
+    return unverified("budget", [note("gate.examples.not_run"), ...predicted]);
   const failures = results.filter((result): result is ExampleResult => result !== undefined && !result.passed);
   if (failures.length === 0)
-    return passed([note("gate.examples.passed", { count: examples.length }), ...strengthNotes(ctx, examples)]);
-  const notes = failures.map((result) => failureNote(result, ctx));
+    return passed([
+      note("gate.examples.passed", { count: examples.length }),
+      ...predicted,
+      ...strengthNotes(ctx, examples),
+    ]);
+  const notes = [...failures.map((result) => failureNote(result, ctx)), ...predicted, ...revokeNotes(ctx)];
   if (mode === "active") return failed(notes);
   recordFeatureShadow(ctx.runtime, ctx.paths, BEHAVIOR_FEATURE, {
     task: ctx.contract.id,

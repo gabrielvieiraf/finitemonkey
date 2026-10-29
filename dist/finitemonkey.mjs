@@ -1868,12 +1868,12 @@ var layerOf = (value2, index, issues2) => {
   const name = text3(value2, "name", at5, issues2);
   const paths = texts(value2["paths"], `${at5}.paths`, issues2) ?? [];
   if (paths.length === 0) issues2.push(`${at5}.paths: list at least one glob`);
-  const allow17 = texts(value2["allow"], `${at5}.allow`, issues2);
+  const allow18 = texts(value2["allow"], `${at5}.allow`, issues2);
   const exposed = texts(value2["public"], `${at5}.public`, issues2);
   return {
     name,
     paths,
-    ...allow17 === void 0 ? {} : { allow: allow17 },
+    ...allow18 === void 0 ? {} : { allow: allow18 },
     ...exposed === void 0 ? {} : { public: exposed }
   };
 };
@@ -3361,7 +3361,8 @@ var contextOutput = (event, additionalContext, systemMessage) => ({
 var human = (text27) => `finitemonkey: ${text27}`;
 
 // src/guards/release/markers.ts
-var LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust)\s+(\S+)(?:\s+(.*))?$/i;
+var LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust|predict)\s+(\S+)(?:\s+(.*))?$/i;
+var unquote = (text27) => text27.replace(/^(["'`])(.*)\1$/, "$2");
 var NAME = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,80}$/;
 var NOT_FROM_PERSON = [
   /<task-notification\b/i,
@@ -3374,6 +3375,8 @@ var comesFromPerson = (prompt) => !NOT_FROM_PERSON.some((pattern) => pattern.tes
 var toMarker = (verb, target5, rest) => {
   if (!NAME.test(target5)) return void 0;
   if (verb === "trust") return { type: "trust", task: target5 };
+  if (verb === "predict")
+    return rest === "" ? void 0 : { type: "predict", concept: target5.toLowerCase(), output: unquote(rest) };
   if (verb === "allow") {
     return rest.length >= 3 ? { type: "allow", guard: target5.toLowerCase(), reason: rest } : void 0;
   }
@@ -3763,7 +3766,7 @@ var parsePorcelainV2 = (stdout) => {
 // src/git/project-config.ts
 import { join as join15 } from "node:path";
 var CONFIG_FILE = ".finitemonkey/config.yml";
-var unquote = (value2) => value2.trim().replace(/^(["'])(.*)\1$/s, "$2");
+var unquote2 = (value2) => value2.trim().replace(/^(["'])(.*)\1$/s, "$2");
 var stripComment2 = (line12) => {
   let quote3;
   for (let index = 0; index < line12.length; index += 1) {
@@ -3779,12 +3782,12 @@ var stripComment2 = (line12) => {
 var flowList = (value2) => {
   const trimmed = value2.trim();
   if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return void 0;
-  return trimmed.slice(1, -1).split(",").map(unquote).filter((item2) => item2 !== "");
+  return trimmed.slice(1, -1).split(",").map(unquote2).filter((item2) => item2 !== "");
 };
 var keyValue = (body2) => {
   const match = /^("[^"]*"|'[^']*'|[^:]+?)\s*:(?:\s+(.*))?$/.exec(body2);
   if (match === null) return void 0;
-  return { key: unquote(match[1] ?? ""), value: match[2] ?? "" };
+  return { key: unquote2(match[1] ?? ""), value: match[2] ?? "" };
 };
 var addItem = (frame, item2) => {
   if (frame.key === void 0) return;
@@ -3797,7 +3800,7 @@ var placeLine = (stack, indent, body2) => {
   const top = stack[stack.length - 1];
   if (top === void 0) return;
   if (body2.startsWith("- ")) {
-    addItem(top, unquote(body2.slice(2)));
+    addItem(top, unquote2(body2.slice(2)));
     return;
   }
   const pair = keyValue(body2);
@@ -3807,7 +3810,7 @@ var placeLine = (stack, indent, body2) => {
     stack.push({ indent, tree: parentTree, key: pair.key });
     return;
   }
-  parentTree[pair.key] = flowList(pair.value) ?? unquote(pair.value);
+  parentTree[pair.key] = flowList(pair.value) ?? unquote2(pair.value);
 };
 var ensureTree = (tree, key3) => {
   const existing = tree[key3];
@@ -5876,7 +5879,8 @@ var OPTIONAL_GUARDS = [
   "scope",
   "front-scope",
   "behavior-contract",
-  "divergence-ask"
+  "divergence-ask",
+  "predict-gate"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -5914,7 +5918,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "scope",
   "front-scope",
   "behavior-contract",
-  "divergence-ask"
+  "divergence-ask",
+  "predict-gate"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -8260,7 +8265,14 @@ var entryOf3 = (raw) => {
   if (!isRecord(raw)) return void 0;
   const level = parseConceptLevel(typeof raw["level"] === "string" ? raw["level"] : void 0);
   const at5 = raw["updated_at"];
-  return level === void 0 ? void 0 : { level, updatedAt: typeof at5 === "string" ? at5 : "" };
+  const streak = raw["streak"];
+  if (level === void 0) return void 0;
+  return {
+    level,
+    updatedAt: typeof at5 === "string" ? at5 : "",
+    ...typeof streak === "number" && streak > 0 ? { streak } : {},
+    ...raw["demonstrated"] === true ? { demonstrated: true } : {}
+  };
 };
 var readBook = (runtime, paths) => {
   const text27 = runtime.readText(bookPath(paths));
@@ -8288,7 +8300,17 @@ var writeBook = (runtime, paths, book) => runtime.writeText(
     concepts: Object.fromEntries(
       CONCEPT_IDS.flatMap((id) => {
         const entry2 = book.concepts[id];
-        return entry2 === void 0 ? [] : [[id, { level: entry2.level, updated_at: entry2.updatedAt }]];
+        return entry2 === void 0 ? [] : [
+          [
+            id,
+            {
+              level: entry2.level,
+              updated_at: entry2.updatedAt,
+              ...entry2.streak === void 0 || entry2.streak === 0 ? {} : { streak: entry2.streak },
+              ...entry2.demonstrated === true ? { demonstrated: true } : {}
+            }
+          ]
+        ];
       })
     )
   })
@@ -8296,7 +8318,7 @@ var writeBook = (runtime, paths, book) => runtime.writeText(
 var raise = (book, id, level, at5) => {
   const before2 = book.concepts[id];
   if (rankOf(before2?.level) >= rankOf(level)) return book;
-  return { ...book, concepts: { ...book.concepts, [id]: { level, updatedAt: at5 } } };
+  return { ...book, concepts: { ...book.concepts, [id]: { ...before2, level, updatedAt: at5 } } };
 };
 var levelSum = (book) => CONCEPT_IDS.reduce((sum, id) => sum + rankOf(book.concepts[id]?.level) + 1, 0);
 
@@ -13139,7 +13161,14 @@ var en_default = {
   "command.signals_blind_band.summary": "Share of horizon help that went out without a criterion the person can check, per domain and week",
   "blind_band.empty": "No horizon help recorded yet.",
   "blind_band.total": "Blind band index: {index} ({without} of {helps} horizon helps went out without a criterion).",
-  "blind_band.row": "  {week} {domain}: {index} without criterion ({without} of {helps}); concepts moved: {concepts}"
+  "blind_band.row": "  {week} {domain}: {index} without criterion ({without} of {helps}); concepts moved: {concepts}",
+  "predict.reason": "This change brings in {concept}, which the person has not shown they can predict yet in a domain where the profile marks them as a beginner. Before it lands, ask the person one question and wait: when `{run}` gets the input {input}, what does it print? They answer by typing fm: predict {concept} <what it prints>. The result is shown next to their answer after the gate runs. They can skip with fm: allow predict <reason>.",
+  "predict.human": "Before this change with {concept} lands: what does {run} print for {input}? Type fm: predict {concept} <answer>, or fm: allow predict <reason> to skip.",
+  "predict.recorded": "Recorded your prediction for {concept}: {output}. The gate will show the real result next to it.",
+  "predict.not_recorded": "No prediction recorded for {concept}: unknown concept or no example input to predict on.",
+  "gate.predict.correct": "{concept} on input {input}: you predicted {predicted}, it printed {actual}. Correct.",
+  "gate.predict.wrong": "{concept} on input {input}: you predicted {predicted}, it printed {actual}. The prompt for {concept} stays on.",
+  "gate.predict.revoked": "{concept} is no longer marked demonstrated: the gate caught a failure in code that uses it"
 };
 
 // src/i18n/es.json
@@ -15209,7 +15238,14 @@ var es_default = {
   "command.signals_blind_band.summary": "Fracción de la ayuda de horizonte que salió sin un criterio que la persona pueda verificar, por dominio y semana",
   "blind_band.empty": "Todavía no hay ayuda de horizonte registrada.",
   "blind_band.total": "Índice de franja ciega: {index} ({without} de {helps} ayudas de horizonte salieron sin criterio).",
-  "blind_band.row": "  {week} {domain}: {index} sin criterio ({without} de {helps}); conceptos que avanzaron: {concepts}"
+  "blind_band.row": "  {week} {domain}: {index} sin criterio ({without} de {helps}); conceptos que avanzaron: {concepts}",
+  "predict.reason": "Este cambio trae {concept}, que la persona todavía no mostró que puede predecir en un dominio donde el perfil la marca como principiante. Antes de que entre, hazle una pregunta y espera: cuando `{run}` recibe la entrada {input}, ¿qué imprime? Responde escribiendo fm: predict {concept} <lo que imprime>. El resultado aparece junto a su respuesta después de que corra el gate. Puede saltarlo con fm: allow predict <motivo>.",
+  "predict.human": "Antes de que entre este cambio con {concept}: ¿qué imprime {run} con {input}? Escribe fm: predict {concept} <respuesta>, o fm: allow predict <motivo> para saltarlo.",
+  "predict.recorded": "Registré tu predicción para {concept}: {output}. El gate mostrará el resultado real al lado.",
+  "predict.not_recorded": "No se registró predicción para {concept}: concepto desconocido o ninguna entrada de ejemplo para predecir.",
+  "gate.predict.correct": "{concept} con la entrada {input}: predijiste {predicted}, salió {actual}. Correcto.",
+  "gate.predict.wrong": "{concept} con la entrada {input}: predijiste {predicted}, salió {actual}. La pregunta sobre {concept} sigue.",
+  "gate.predict.revoked": "{concept} ya no está marcado como demostrado: el gate atrapó una falla en código que lo usa"
 };
 
 // src/i18n/pt-BR.json
@@ -17279,7 +17315,14 @@ var pt_BR_default = {
   "command.signals_blind_band.summary": "Fração da ajuda de horizonte que saiu sem um critério que a pessoa consegue verificar, por domínio e semana",
   "blind_band.empty": "Nenhuma ajuda de horizonte registrada ainda.",
   "blind_band.total": "Índice de faixa cega: {index} ({without} de {helps} ajudas de horizonte saíram sem critério).",
-  "blind_band.row": "  {week} {domain}: {index} sem critério ({without} de {helps}); conceitos que avançaram: {concepts}"
+  "blind_band.row": "  {week} {domain}: {index} sem critério ({without} de {helps}); conceitos que avançaram: {concepts}",
+  "predict.reason": "Esta mudança traz {concept}, que a pessoa ainda não mostrou que consegue prever num domínio em que o perfil a marca como iniciante. Antes de a mudança entrar, faça uma pergunta à pessoa e espere: quando `{run}` recebe a entrada {input}, o que ele imprime? Ela responde digitando fm: predict {concept} <o que imprime>. O resultado aparece ao lado da resposta depois que o portão roda. Ela pode pular com fm: allow predict <motivo>.",
+  "predict.human": "Antes desta mudança com {concept} entrar: o que {run} imprime para {input}? Digite fm: predict {concept} <resposta>, ou fm: allow predict <motivo> para pular.",
+  "predict.recorded": "Registrei sua previsão para {concept}: {output}. O portão vai mostrar o resultado real ao lado.",
+  "predict.not_recorded": "Nenhuma previsão registrada para {concept}: conceito desconhecido ou nenhuma entrada de exemplo para prever.",
+  "gate.predict.correct": "{concept} na entrada {input}: você previu {predicted}, saiu {actual}. Acertou.",
+  "gate.predict.wrong": "{concept} na entrada {input}: você previu {predicted}, saiu {actual}. A pergunta sobre {concept} continua.",
+  "gate.predict.revoked": "{concept} deixou de estar marcado como demonstrado: o portão pegou uma falha em código que o usa"
 };
 
 // src/i18n/review.json
@@ -19350,7 +19393,14 @@ var review_default = {
     "command.signals_blind_band.summary": "machine",
     "blind_band.empty": "machine",
     "blind_band.total": "machine",
-    "blind_band.row": "machine"
+    "blind_band.row": "machine",
+    "predict.reason": "machine",
+    "predict.human": "machine",
+    "predict.recorded": "machine",
+    "predict.not_recorded": "machine",
+    "gate.predict.correct": "machine",
+    "gate.predict.wrong": "machine",
+    "gate.predict.revoked": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -21418,7 +21468,14 @@ var review_default = {
     "command.signals_blind_band.summary": "machine",
     "blind_band.empty": "machine",
     "blind_band.total": "machine",
-    "blind_band.row": "machine"
+    "blind_band.row": "machine",
+    "predict.reason": "machine",
+    "predict.human": "machine",
+    "predict.recorded": "machine",
+    "predict.not_recorded": "machine",
+    "gate.predict.correct": "machine",
+    "gate.predict.wrong": "machine",
+    "gate.predict.revoked": "machine"
   }
 };
 
@@ -28096,6 +28153,312 @@ var writeProfile2 = (runtime, paths, profile) => runtime.writeText(
 ).ok;
 var updateDomain = (profile, domain, change2) => ({ ...profile, domains: { ...profile.domains, [domain]: change2(profile.domains[domain]) } });
 
+// src/ricochete/divergence.ts
+var DIVERGENCE_FEATURE = "divergence-ask";
+var DEFAULT_READINGS = 3;
+var DEFAULT_ROUNDS = 3;
+var MAX_INPUTS = 12;
+var RUN_TIMEOUT_MS = 3e4;
+var GENERATOR_TIMEOUT_MS = 15 * 6e4;
+var PENDING_FILE2 = "divergence.json";
+var LETTERS = "ABCDEFGH";
+var count3 = (raw, fallback2, max) => {
+  const parsed = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback2;
+};
+var divergenceConfig = (runtime, root) => {
+  const tree = loadProjectConfig(runtime, root);
+  const generator = configAt(tree, "divergence", "generator");
+  return {
+    generator: typeof generator === "string" && generator.trim() !== "" ? generator : void 0,
+    readings: count3(configAt(tree, "divergence", "readings"), DEFAULT_READINGS, LETTERS.length - 1),
+    rounds: count3(configAt(tree, "divergence", "rounds"), DEFAULT_ROUNDS, 20)
+  };
+};
+var probeOf = (value2) => {
+  if (typeof value2 === "string") return { input: value2, topic: "intent" };
+  if (!isRecord(value2) || typeof value2["input"] !== "string") return void 0;
+  const domain = parseDomain(typeof value2["domain"] === "string" ? value2["domain"] : void 0);
+  return {
+    input: value2["input"],
+    topic: value2["topic"] === "technical" ? "technical" : "intent",
+    ...domain === void 0 ? {} : { domain }
+  };
+};
+var parseCandidates = (text27) => {
+  const parsed = parseJson(text27);
+  if (!parsed.ok || !isRecord(parsed.value)) return void 0;
+  const readings = parsed.value["readings"];
+  const inputs = parsed.value["inputs"];
+  if (!Array.isArray(readings)) return void 0;
+  return {
+    readings: readings.flatMap(
+      (item2) => isRecord(item2) && typeof item2["dir"] === "string" && item2["dir"] !== "" ? [
+        {
+          dir: toAbsolutePath(item2["dir"]),
+          summary: typeof item2["summary"] === "string" ? item2["summary"] : ""
+        }
+      ] : []
+    ),
+    inputs: (Array.isArray(inputs) ? inputs : []).flatMap((item2) => {
+      const probe = probeOf(item2);
+      return probe === void 0 ? [] : [probe];
+    })
+  };
+};
+var commandSource = (runtime, root, command) => ({
+  generate: (request) => {
+    const result = runtime.exec({
+      command,
+      args: [],
+      cwd: root,
+      shell: true,
+      timeoutMs: GENERATOR_TIMEOUT_MS,
+      input: JSON.stringify(request)
+    });
+    return result.found && result.exitCode === 0 ? parseCandidates(result.stdout) : void 0;
+  }
+});
+var outputOf = (runtime, dir, run10, input) => {
+  const result = runtime.exec({
+    command: run10,
+    args: [],
+    cwd: dir,
+    shell: true,
+    timeoutMs: RUN_TIMEOUT_MS,
+    env: { CI: "1" },
+    unset: ["NODE_TEST_CONTEXT"],
+    input
+  });
+  const out = result.stdout.trim();
+  if (result.timedOut) return "(timed out)";
+  return result.exitCode === 0 ? out : `(exit ${String(result.exitCode ?? -1)}) ${out}`.trim();
+};
+var passesAll = (runtime, reading2, examples) => examples.every(
+  (example) => outputOf(runtime, reading2.dir, example.run, example.input ?? "") === example.expect.trim()
+);
+var allowed = (probe, beginner) => probe.topic === "intent" || probe.domain === void 0 || !beginner(probe.domain);
+var optionsFor = (runtime, readings, run10, input) => {
+  const groups = /* @__PURE__ */ new Map();
+  for (const reading2 of readings) {
+    const output = outputOf(runtime, reading2.dir, run10, input);
+    groups.set(output, [...groups.get(output) ?? [], reading2.id]);
+  }
+  return [...groups.entries()].map(([output, ids4], index) => ({
+    letter: LETTERS[index] ?? String(index),
+    readings: ids4,
+    output
+  }));
+};
+var withNoChange = (root, candidates4) => [
+  { id: "R0", summary: "no change", dir: root, noChange: true },
+  ...candidates4.readings.map((reading2, index) => ({ ...reading2, id: `R${String(index + 1)}`, noChange: false }))
+];
+var findDivergence = (input) => {
+  const { runtime, examples } = input;
+  const readings = withNoChange(input.root, input.candidates);
+  const noChange = readings[0];
+  if (noChange !== void 0 && examples.length > 0 && passesAll(runtime, noChange, examples))
+    return { kind: "no_change", reading: noChange.id };
+  const live = readings.filter((reading2) => !reading2.noChange && passesAll(runtime, reading2, examples));
+  if (live.length < 2) return { kind: "too_few", readings: live.length };
+  const run10 = examples[0]?.run;
+  const probes = input.candidates.inputs.slice(0, MAX_INPUTS).filter((probe) => allowed(probe, input.beginner));
+  if (run10 === void 0) return { kind: "agree", readings: live.length, inputs: 0 };
+  for (const probe of probes) {
+    const options2 = optionsFor(runtime, live, run10, probe.input);
+    if (options2.length > 1)
+      return { kind: "question", question: { task: input.task, input: probe.input, run: run10, topic: probe.topic, options: options2 } };
+  }
+  return { kind: "agree", readings: live.length, inputs: probes.length };
+};
+var beginnerIn = (runtime, paths) => (domain) => {
+  const profile = readProfile2(runtime, paths);
+  return profile !== void 0 && levelOf2(profile.domains[domain].knowledge) === "beginner";
+};
+var eligible = (contract, examples) => {
+  if (contract.size === "S") return "small";
+  return examples.length === 0 ? "no_examples" : void 0;
+};
+var toQuestion = (value2) => {
+  if (!isRecord(value2)) return void 0;
+  const { task, input, run: run10, topic, options: options2 } = value2;
+  if (typeof task !== "string" || typeof input !== "string" || typeof run10 !== "string" || !Array.isArray(options2))
+    return void 0;
+  const parsed = options2.flatMap(
+    (item2) => isRecord(item2) && typeof item2["letter"] === "string" && typeof item2["output"] === "string" ? [
+      {
+        letter: item2["letter"],
+        output: item2["output"],
+        readings: Array.isArray(item2["readings"]) ? item2["readings"].filter((id) => typeof id === "string") : []
+      }
+    ] : []
+  );
+  return { task, input, run: run10, topic: topic === "technical" ? "technical" : "intent", options: parsed };
+};
+var readPending = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(PENDING_FILE2));
+  const pending = isRecord(raw?.["pending"]) ? raw["pending"] : {};
+  const rounds = isRecord(raw?.["rounds"]) ? raw["rounds"] : {};
+  return {
+    pending: Object.fromEntries(
+      Object.entries(pending).flatMap(([task, value2]) => {
+        const question = toQuestion(value2);
+        return question === void 0 ? [] : [[task, question]];
+      })
+    ),
+    rounds: Object.fromEntries(
+      Object.entries(rounds).flatMap(([task, value2]) => typeof value2 === "number" ? [[task, value2]] : [])
+    )
+  };
+};
+var writePending = (runtime, paths, state) => {
+  writeJsonFile(runtime, paths.cache(PENDING_FILE2), {
+    pending: Object.fromEntries(Object.entries(state.pending).map(([task, question]) => [task, { ...question }])),
+    rounds: { ...state.rounds }
+  });
+};
+
+// src/conceitos/predict.ts
+var DEMONSTRATED_AFTER = 3;
+var PREDICTIONS_FILE = "predictions.json";
+var probeOf2 = (value2) => isRecord(value2) && typeof value2["run"] === "string" && typeof value2["input"] === "string" ? { run: value2["run"], input: value2["input"] } : void 0;
+var readPredictions = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(PREDICTIONS_FILE));
+  const asked = isRecord(raw?.["asked"]) ? raw["asked"] : {};
+  const list10 = Array.isArray(raw?.["predictions"]) ? raw["predictions"] : [];
+  return {
+    asked: Object.fromEntries(
+      Object.entries(asked).flatMap(([key3, value2]) => {
+        const concept = parseConcept(key3);
+        const probe = probeOf2(value2);
+        const task = isRecord(value2) ? value2["task"] : void 0;
+        return concept === void 0 || probe === void 0 || typeof task !== "string" ? [] : [[concept, { ...probe, task }]];
+      })
+    ),
+    predictions: list10.flatMap((item2) => {
+      if (!isRecord(item2)) return [];
+      const concept = parseConcept(typeof item2["concept"] === "string" ? item2["concept"] : void 0);
+      const probe = probeOf2(item2["probe"]);
+      const { task, output, at: at5 } = item2;
+      return concept === void 0 || probe === void 0 || typeof task !== "string" || typeof output !== "string" ? [] : [{ concept, task, output, probe, at: typeof at5 === "string" ? at5 : "" }];
+    })
+  };
+};
+var writePredictions = (runtime, paths, state) => {
+  writeJsonFile(runtime, paths.cache(PREDICTIONS_FILE), {
+    asked: Object.fromEntries(Object.entries(state.asked).map(([key3, value2]) => [key3, { ...value2 }])),
+    predictions: state.predictions.map((item2) => ({ ...item2, probe: { ...item2.probe } }))
+  });
+};
+var probeFor = (runtime, paths, task) => {
+  const question = readPending(runtime, paths).pending[task];
+  if (question !== void 0) return { run: question.run, input: question.input };
+  const first = approvedExamples(runtime, paths, task).examples[0];
+  return first === void 0 ? void 0 : { run: first.run, input: first.input ?? "" };
+};
+var isBeginner = (runtime, paths, concept) => {
+  const profile = readProfile2(runtime, paths);
+  return profile !== void 0 && levelOf2(profile.domains[domainOf(concept)].knowledge) === "beginner";
+};
+var isDemonstrated = (book, concept) => book.concepts[concept]?.demonstrated === true;
+var editedText = (raw) => {
+  const args2 = toolInput(raw);
+  const edits = isRecord(args2) && Array.isArray(args2["edits"]) ? args2["edits"] : [];
+  return [
+    textField(args2, "content", "new_string", "new_source") ?? "",
+    ...edits.map((edit) => isRecord(edit) ? textField(edit, "new_string") ?? "" : "")
+  ].join("\n");
+};
+var allow4 = { kind: "allow" };
+var predictGuard = (input) => {
+  if (!FILE_TOOLS.has(toolName(input.payload.raw))) return allow4;
+  const paths = projectPaths(input);
+  if (paths === void 0) return allow4;
+  const { runtime, t } = input;
+  const task = readState(runtime, paths).active;
+  if (task === void 0) return allow4;
+  const book = readBook(runtime, paths);
+  const state = readPredictions(runtime, paths);
+  const waiting = conceptsIn(editedText(input.payload.raw)).filter(
+    (concept2) => !isDemonstrated(book, concept2) && !state.predictions.some((item2) => item2.concept === concept2 && item2.task === task) && isBeginner(runtime, paths, concept2)
+  );
+  const concept = waiting[0];
+  if (concept === void 0) return allow4;
+  const probe = probeFor(runtime, paths, task);
+  if (probe === void 0) return allow4;
+  if (grantFor(input, "predict") !== void 0) {
+    logEvent(runtime, paths, "predict.skipped", { concept, task });
+    return allow4;
+  }
+  writePredictions(runtime, paths, { ...state, asked: { ...state.asked, [concept]: { ...probe, task } } });
+  logEvent(runtime, paths, "predict.asked", { concept, task });
+  const params2 = { concept, input: probe.input || "-", run: probe.run };
+  return deny(t("predict.reason", params2), t("predict.human", params2));
+};
+var PREDICT_HANDLERS = { PreToolUse: [predictGuard] };
+var recordPrediction = (runtime, paths, concept, output) => {
+  const state = readPredictions(runtime, paths);
+  const active = readState(runtime, paths).active;
+  const volunteered = active === void 0 ? void 0 : probeFor(runtime, paths, active);
+  const asked = state.asked[concept] ?? (active === void 0 || volunteered === void 0 ? void 0 : { ...volunteered, task: active });
+  if (asked === void 0) return void 0;
+  const prediction = {
+    concept,
+    task: asked.task,
+    output,
+    probe: { run: asked.run, input: asked.input },
+    at: runtime.now()
+  };
+  const rest = Object.fromEntries(Object.entries(state.asked).filter(([key3]) => key3 !== concept));
+  writePredictions(runtime, paths, { asked: rest, predictions: [...state.predictions, prediction] });
+  return prediction;
+};
+var scored = (book, concept, correct, at5) => {
+  const before2 = book.concepts[concept];
+  const streak = correct ? (before2?.streak ?? 0) + 1 : 0;
+  const demonstrated = correct && streak >= DEMONSTRATED_AFTER;
+  return {
+    ...book,
+    concepts: {
+      ...book.concepts,
+      [concept]: {
+        level: before2?.level ?? "seen",
+        updatedAt: at5,
+        streak,
+        ...demonstrated || correct && before2?.demonstrated === true ? { demonstrated: true } : {}
+      }
+    }
+  };
+};
+var settlePredictions = (runtime, paths, task, observe) => {
+  const state = readPredictions(runtime, paths);
+  const mine = state.predictions.filter((item2) => item2.task === task);
+  if (mine.length === 0) return [];
+  let book = readBook(runtime, paths);
+  const settled = mine.flatMap((prediction) => {
+    const actual = observe(prediction.probe);
+    if (actual === void 0) return [];
+    const correct = actual === prediction.output.trim();
+    book = scored(book, prediction.concept, correct, runtime.now());
+    logEvent(runtime, paths, "predict.result", { concept: prediction.concept, task, correct });
+    return [{ prediction, actual, correct, demonstrated: isDemonstrated(book, prediction.concept) }];
+  });
+  writeBook(runtime, paths, book);
+  const done2 = new Set(settled.map((item2) => item2.prediction));
+  writePredictions(runtime, paths, { ...state, predictions: state.predictions.filter((item2) => !done2.has(item2)) });
+  return settled;
+};
+var revokeDemonstrated = (runtime, paths, concepts) => {
+  const book = readBook(runtime, paths);
+  const revoked = concepts.filter((concept) => isDemonstrated(book, concept));
+  if (revoked.length === 0) return [];
+  const next2 = revoked.reduce((current2, concept) => scored(current2, concept, false, runtime.now()), book);
+  writeBook(runtime, paths, next2);
+  logEvent(runtime, paths, "predict.revoked", { concepts: [...revoked] });
+  return revoked;
+};
+
 // src/conceitos/tone.ts
 var toneFor = (runtime, paths, concept) => {
   const profile = readProfile2(runtime, paths);
@@ -28485,7 +28848,7 @@ var parseShell = (text27) => normalizeCommand(text27).commands.map((command) => 
 // src/deploy/hooks.ts
 var DEPLOY_FEATURE = "deploy";
 var SHELLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var allow4 = { kind: "allow" };
+var allow5 = { kind: "allow" };
 var isPush = (command) => parseShell(command).some((simple) => {
   const args2 = simple.argv;
   const git3 = args2.findIndex((arg) => /(^|[\\/])git(\.exe)?$/.test(arg));
@@ -28506,19 +28869,19 @@ var projectOf = (input) => {
 var deployPushSeen = (input) => {
   const raw = input.payload.raw;
   if (!SHELLS3.has(toolName(raw)) || !isPush(textField(toolInput(raw), "command") ?? "") || !succeeded(raw))
-    return allow4;
+    return allow5;
   const paths = projectOf(input);
-  if (paths === void 0 || loadDeployConfig(input.runtime, paths.root) === void 0) return allow4;
+  if (paths === void 0 || loadDeployConfig(input.runtime, paths.root) === void 0) return allow5;
   writeJsonFile(input.runtime, paths.cache(DEPLOY_PUSH_FILE), { at: input.runtime.now(), started: false });
-  return allow4;
+  return allow5;
 };
 var reportLine = (input, paths) => {
   const mode = featureMode(input.runtime, paths, DEPLOY_FEATURE);
   const line12 = takeReport(input.runtime, paths);
-  if (line12 === void 0) return allow4;
+  if (line12 === void 0) return allow5;
   if (mode !== "active") {
     recordFeatureShadow(input.runtime, paths, DEPLOY_FEATURE, { line: line12 });
-    return allow4;
+    return allow5;
   }
   return { kind: "allow", output: { systemMessage: human(line12) } };
 };
@@ -28530,13 +28893,13 @@ var startCheck = (input, paths) => {
 };
 var deployStop = (input) => {
   const paths = projectOf(input);
-  if (paths === void 0) return allow4;
+  if (paths === void 0) return allow5;
   startCheck(input, paths);
   return reportLine(input, paths);
 };
 var deployPrompt = (input) => {
   const paths = projectOf(input);
-  return paths === void 0 ? allow4 : reportLine(input, paths);
+  return paths === void 0 ? allow5 : reportLine(input, paths);
 };
 var DEPLOY_HANDLERS = {
   PostToolUse: [deployPushSeen],
@@ -29964,7 +30327,7 @@ var stripJs = (source3) => {
   return out;
 };
 var stripHash = (source3) => source3.split("\n").map((line12) => line12.replace(/(^|\s)#.*$/, "")).join("\n");
-var count3 = (source3, pattern) => source3.match(pattern)?.length ?? 0;
+var count4 = (source3, pattern) => source3.match(pattern)?.length ?? 0;
 var RULES4 = {
   js: {
     tests: /(?<![.\w$])(?:it|test)\b(?:\s*\.\s*\w+)*\s*\(/g,
@@ -29985,8 +30348,8 @@ var RULES4 = {
 var countTests = (language, source3) => {
   const code2 = language === "py" ? stripHash(source3) : stripJs(source3);
   const rules2 = RULES4[language];
-  const skips = count3(code2, rules2.skips);
-  return { tests: count3(code2, rules2.tests), skips, assertions: count3(code2, rules2.asserts) };
+  const skips = count4(code2, rules2.skips);
+  return { tests: count4(code2, rules2.tests), skips, assertions: count4(code2, rules2.asserts) };
 };
 
 // src/guards/tests/ast-count.ts
@@ -30828,14 +31191,14 @@ var DEFAULT_SIZE_CONFIG = {
   l: { files: 20, lines: 600 },
   sensitive: DEFAULT_SENSITIVE
 };
-var count4 = (tree, fallback2, ...path) => {
+var count5 = (tree, fallback2, ...path) => {
   const value2 = configAt(tree, ...path);
   const parsed = typeof value2 === "string" ? Number(value2) : Number.NaN;
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback2;
 };
 var threshold = (tree, key3, fallback2) => ({
-  files: count4(tree, fallback2.files, "size", key3, "files"),
-  lines: count4(tree, fallback2.lines, "size", key3, "lines")
+  files: count5(tree, fallback2.files, "size", key3, "files"),
+  lines: count5(tree, fallback2.lines, "size", key3, "lines")
 });
 var sizeConfig = (tree) => {
   const declared = configAt(tree, "size", "sensitive");
@@ -30996,7 +31359,7 @@ var saveCounter = (store2, paths, counter) => {
 var readCounter = (store2, paths) => readState(store2, paths).blocks;
 
 // src/gate/hooks/prompt.ts
-var RELEASABLE = /* @__PURE__ */ new Set(["tests", "bypass", "self", "config", "budget", "claims"]);
+var RELEASABLE = /* @__PURE__ */ new Set(["tests", "bypass", "self", "config", "budget", "claims", "predict"]);
 var trust = (input, paths, task) => {
   const { runtime } = input;
   const taskId2 = task === IMPLICIT_ID ? void 0 : task;
@@ -31023,6 +31386,11 @@ var trustAndApprove = (input, paths, task) => {
   const trusted = trust(input, paths, task);
   if (trusted) approveAmendments(input.runtime, paths, task, `person@${input.runtime.now()}`);
   return trusted;
+};
+var predicted = (input, paths, marker3) => {
+  const concept = parseConcept(marker3.concept);
+  const recorded = concept === void 0 ? void 0 : recordPrediction(input.runtime, paths, concept, marker3.output);
+  return recorded === void 0 ? input.t("predict.not_recorded", { concept: marker3.concept }) : input.t("predict.recorded", { concept: recorded.concept, output: recorded.output });
 };
 var apply = (input, paths, markers) => {
   const { runtime, t } = input;
@@ -31055,7 +31423,8 @@ var apply = (input, paths, markers) => {
         ...status?.tree === void 0 || status.task !== (marker3.task ?? active) ? {} : { treeHash: status.tree }
       });
       said.push(t("gate.release.approved", { task: marker3.task ?? active, check: marker3.check }));
-    } else
+    } else if (marker3.type === "predict") said.push(predicted(input, paths, marker3));
+    else
       said.push(
         t(trustAndApprove(input, paths, marker3.task) ? "gate.release.trusted" : "gate.release.trust_failed", {
           task: marker3.task
@@ -32947,18 +33316,43 @@ var failureNote = (result, ctx) => note("gate.examples.failed", {
   expected: clip2(result.example.expect.trim()),
   actual: clip2(ctx.mask(result.actual)) || "-"
 });
+var predictionNotes = (ctx) => settlePredictions(
+  ctx.runtime,
+  ctx.paths,
+  ctx.contract.id,
+  (probe) => outputOf(ctx.runtime, ctx.paths.root, probe.run, probe.input)
+).map(
+  (item2) => note(item2.correct ? "gate.predict.correct" : "gate.predict.wrong", {
+    concept: item2.prediction.concept,
+    predicted: clip2(item2.prediction.output),
+    actual: clip2(ctx.mask(item2.actual)) || "-",
+    input: item2.prediction.probe.input || "-"
+  })
+);
+var revokeNotes = (ctx) => {
+  const text27 = addedLines(ctx.git, ctx.base).map((line12) => line12.text).join("\n");
+  return revokeDemonstrated(ctx.runtime, ctx.paths, conceptsIn(text27)).map(
+    (concept) => note("gate.predict.revoked", { concept })
+  );
+};
 var examplesCheck = (_check, ctx) => {
+  const predicted3 = ctx.trusted ? predictionNotes(ctx) : [];
   const mode = featureMode(ctx.runtime, ctx.paths, BEHAVIOR_FEATURE);
-  if (mode === "off") return passed([note("gate.examples.off")]);
+  if (mode === "off") return passed([note("gate.examples.off"), ...predicted3]);
   const examples = ctx.examples ?? [];
-  if (examples.length === 0) return passed([note("gate.examples.none")]);
+  if (examples.length === 0) return passed([note("gate.examples.none"), ...predicted3]);
   if (!ctx.trusted) return unverified("untrusted", [note("gate.note.untrusted", { task: ctx.contract.id })]);
   const results = examples.map((example) => runExample(example, ctx));
-  if (results.some((result) => result === void 0)) return unverified("budget", [note("gate.examples.not_run")]);
+  if (results.some((result) => result === void 0))
+    return unverified("budget", [note("gate.examples.not_run"), ...predicted3]);
   const failures = results.filter((result) => result !== void 0 && !result.passed);
   if (failures.length === 0)
-    return passed([note("gate.examples.passed", { count: examples.length }), ...strengthNotes(ctx, examples)]);
-  const notes3 = failures.map((result) => failureNote(result, ctx));
+    return passed([
+      note("gate.examples.passed", { count: examples.length }),
+      ...predicted3,
+      ...strengthNotes(ctx, examples)
+    ]);
+  const notes3 = [...failures.map((result) => failureNote(result, ctx)), ...predicted3, ...revokeNotes(ctx)];
   if (mode === "active") return failed4(notes3);
   recordFeatureShadow(ctx.runtime, ctx.paths, BEHAVIOR_FEATURE, {
     task: ctx.contract.id,
@@ -36354,7 +36748,7 @@ var LOCKFILES4 = /* @__PURE__ */ new Set([
   "go.sum",
   "uv.lock"
 ]);
-var GENERATOR_TIMEOUT_MS = 3e5;
+var GENERATOR_TIMEOUT_MS2 = 3e5;
 var DOUBLE_STAR = "";
 var globRegex3 = (pattern) => new RegExp(
   `^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").split("**").join(DOUBLE_STAR).replace(/\*/g, "[^/]*").split(DOUBLE_STAR).join(".*")}$`
@@ -36388,7 +36782,7 @@ var runGenerator2 = (runtime, dir, command) => {
     command,
     args: [],
     cwd: toAbsolutePath(dir),
-    timeoutMs: GENERATOR_TIMEOUT_MS,
+    timeoutMs: GENERATOR_TIMEOUT_MS2,
     shell: true
   });
   return result.exitCode === 0 ? accept(void 0) : reject(`generator failed: ${command}: ${result.stderr.trim().slice(0, 200)}`);
@@ -37683,7 +38077,7 @@ var text20 = (record10, key3, issues2, allowEmpty = false) => {
   issues2.push(`${key3}: must be a${allowEmpty ? "" : " non-empty"} string`);
   return "";
 };
-var count5 = (record10, key3, issues2) => {
+var count6 = (record10, key3, issues2) => {
   const value2 = record10[key3];
   if (typeof value2 === "number" && Number.isInteger(value2) && value2 >= 0) return value2;
   issues2.push(`tests.${key3}: must be a whole number`);
@@ -37736,9 +38130,9 @@ var parseFrontReport = (raw) => {
     endpoints: strings18("endpoints"),
     tests: {
       command: text20(tests, "command", issues2, true),
-      passed: count5(tests, "passed", issues2),
-      failed: count5(tests, "failed", issues2),
-      added: count5(tests, "added", issues2)
+      passed: count6(tests, "passed", issues2),
+      failed: count6(tests, "failed", issues2),
+      added: count6(tests, "added", issues2)
     },
     screenshots: list5(record10, "screenshots", issues2, screenshot),
     left_out: list5(record10, "left_out", issues2, leftOut),
@@ -39714,7 +40108,7 @@ var text22 = (raw, key3) => {
   const value2 = raw[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : void 0;
 };
-var count6 = (raw, key3) => {
+var count7 = (raw, key3) => {
   const value2 = raw[key3];
   return typeof value2 === "number" && Number.isInteger(value2) && value2 > 0 ? value2 : 0;
 };
@@ -39739,8 +40133,8 @@ var parseLesson = (raw) => {
     source: source3,
     createdAt: text22(raw, "createdAt") ?? "",
     lastMatchedAt: text22(raw, "lastMatchedAt"),
-    uses: count6(raw, "uses"),
-    unhelpful: count6(raw, "unhelpful"),
+    uses: count7(raw, "uses"),
+    unhelpful: count7(raw, "unhelpful"),
     ...provenance(raw)
   };
 };
@@ -39758,7 +40152,7 @@ var writeLessons = (runtime, dir, lessons) => runtime.writeText(learningsPath(di
 var readStats = (runtime, dir) => {
   const raw = runtime.readText(statsPath(dir));
   const parsed = raw.ok ? parseJsonObject(raw.value) : void 0;
-  return parsed?.ok === true ? { expired: count6(parsed.value, "expired"), deleted: count6(parsed.value, "deleted") } : { expired: 0, deleted: 0 };
+  return parsed?.ok === true ? { expired: count7(parsed.value, "expired"), deleted: count7(parsed.value, "deleted") } : { expired: 0, deleted: 0 };
 };
 var bumpStats = (runtime, dir, change2) => {
   const before2 = readStats(runtime, dir);
@@ -40024,7 +40418,7 @@ var domainsMentioned = (text27) => Object.keys(TERMS).filter((domain) => TERMS[d
 var asksMechanism = (text27) => MECHANISM.test(text27);
 
 // src/perfil/hooks.ts
-var allow5 = { kind: "allow" };
+var allow6 = { kind: "allow" };
 var VOCABULARY_STEP = 2;
 var MECHANISM_STEP = 1;
 var PERSON_COMMIT_STEP = 2;
@@ -40040,35 +40434,35 @@ var fromPrompt = (profile, prompt) => {
 var perfilPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
   const paths = projectPaths(input);
-  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow5;
-  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow5;
+  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow6;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow6;
   writeProfile2(input.runtime, paths, fromPrompt(profileOrStart(input.runtime, paths), prompt));
-  return allow5;
+  return allow6;
 };
 var COMMIT3 = /\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b/;
 var knownCommits = (raw) => Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
 var perfilAgentCommit = (input) => {
   const raw = input.payload.raw;
-  if (!["Bash", "PowerShell"].includes(toolName(raw))) return allow5;
-  if (!COMMIT3.test(textField(toolInput(raw), "command") ?? "")) return allow5;
+  if (!["Bash", "PowerShell"].includes(toolName(raw))) return allow6;
+  if (!COMMIT3.test(textField(toolInput(raw), "command") ?? "")) return allow6;
   const paths = projectPaths(input);
-  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow5;
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow6;
   const head = gitAt(input.runtime, paths.root).out(["rev-parse", "HEAD"])?.trim();
-  if (head === void 0 || head === "") return allow5;
+  if (head === void 0 || head === "") return allow6;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
     agent: [...knownCommits(stored?.["agent"]), head].slice(-KEEP_COMMITS),
     seen: knownCommits(stored?.["seen"])
   });
-  return allow5;
+  return allow6;
 };
 var personCommits = (log, agent, seen) => log.split("\n").map((line12) => line12.trim()).filter((sha) => sha !== "" && !agent.has(sha) && !seen.has(sha));
 var perfilSession = (input) => {
   const paths = projectPaths(input);
-  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow5;
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow6;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   const head = headShaFromFiles(input.runtime, paths.root);
-  if (head === void 0 || stored?.["head"] === head) return allow5;
+  if (head === void 0 || stored?.["head"] === head) return allow6;
   const agent = new Set(knownCommits(stored?.["agent"]));
   const seen = new Set(knownCommits(stored?.["seen"]));
   const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
@@ -40079,7 +40473,7 @@ var perfilSession = (input) => {
       seen: personCommits(log, agent, seen),
       ...headField
     });
-    return allow5;
+    return allow6;
   }
   const fresh3 = personCommits(log, agent, seen);
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
@@ -40087,14 +40481,14 @@ var perfilSession = (input) => {
     seen: [...seen, ...fresh3].slice(-KEEP_COMMITS),
     ...headField
   });
-  if (fresh3.length === 0) return allow5;
+  if (fresh3.length === 0) return allow6;
   const step4 = Math.min(fresh3.length, 3) * PERSON_COMMIT_STEP;
   const profile = DOMAINS.reduce(
     (current2, domain) => updateDomain(current2, domain, (entry2) => ({ ...entry2, tool: clampScore(entry2.tool + step4) })),
     profileOrStart(input.runtime, paths)
   );
   writeProfile2(input.runtime, paths, profile);
-  return allow5;
+  return allow6;
 };
 var PERFIL_HANDLERS = {
   UserPromptSubmit: [perfilPrompt],
@@ -40671,12 +41065,12 @@ var howChecked = (t, id, probe) => {
       return t("planta.how.manual", { id });
   }
 };
-var probeOf = (type, id) => BLUEPRINTS[type].find((item2) => item2.id === id)?.probe;
+var probeOf3 = (type, id) => BLUEPRINTS[type].find((item2) => item2.id === id)?.probe;
 var MARK = { green: "✓", missing: "✗", manual: "·" };
 var barLine = (t, bar) => t("planta.bar", { label: typeLabel(t, bar.type), green: bar.green, total: bar.total });
 var barLines = (t, lang, bar) => {
   const next2 = bar.next;
-  const nextProbe = next2 === void 0 ? void 0 : probeOf(bar.type, next2);
+  const nextProbe = next2 === void 0 ? void 0 : probeOf3(bar.type, next2);
   const nextLines = next2 === void 0 || nextProbe === void 0 ? [] : [
     t("planta.next", { title: itemText(lang, next2).title, id: next2 }),
     `  ${itemText(lang, next2).why}`,
@@ -40756,7 +41150,7 @@ var MINIMUM = {
   }
 };
 var SAAS_CORE = ["api", "database", "auth", "billing"];
-var allow6 = { kind: "allow" };
+var allow7 = { kind: "allow" };
 var taskOf = (input, paths) => {
   const active = readState(input.runtime, paths).active;
   if (active !== void 0) return active;
@@ -40824,15 +41218,15 @@ var blockFor = (input, paths, task, verdict4) => {
 var labelGuard = (input) => {
   const message = textField(input.payload.raw, "last_assistant_message") ?? "";
   const hits = findLabels(message);
-  if (hits.length === 0) return allow6;
+  if (hits.length === 0) return allow7;
   const root = findRepoRoot(input.runtime, sessionCwd(input));
-  if (root === void 0) return allow6;
+  if (root === void 0) return allow7;
   const paths = fmPaths(root);
   const task = taskOf(input, paths);
   const type = task === void 0 ? void 0 : blueprintOfTask(input.runtime, paths, task);
-  if (task === void 0 || type === void 0) return allow6;
+  if (task === void 0 || type === void 0) return allow7;
   const verdict4 = verdictFor(input, root, type, hits);
-  return verdict4 === void 0 ? allow6 : blockFor(input, paths, task, verdict4);
+  return verdict4 === void 0 ? allow7 : blockFor(input, paths, task, verdict4);
 };
 
 // src/planta/hooks.ts
@@ -41911,7 +42305,7 @@ var writeReuseLog = (runtime, paths, log) => {
 };
 
 // src/reuse/hook.ts
-var allow7 = { kind: "allow" };
+var allow8 = { kind: "allow" };
 var WRITERS4 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
 var candidates3 = (raw) => {
   const input = toolInput(raw);
@@ -41933,17 +42327,17 @@ var resolve3 = (input, paths, log, finish5) => {
 };
 var warn = (input, paths, file, log) => {
   const names3 = candidates3(input.payload.raw);
-  if (log.retired || names3.length === 0) return allow7;
+  if (log.retired || names3.length === 0) return allow8;
   const index = projectDefinitions(input.runtime, paths.root);
   if (index.kind === "failed") {
     logEvent(input.runtime, paths, "reuse.failed", { detail: index.detail });
-    return allow7;
+    return allow8;
   }
   const found = names3.flatMap((name) => {
     const match = elsewhere(index.definitions, name, file);
     return match === void 0 ? [] : [{ name, match }];
   });
-  if (found.length === 0) return allow7;
+  if (found.length === 0) return allow8;
   const start2 = log.warnings.reduce((max, item2) => Math.max(max, item2.id), 0);
   const added = found.map(({ name, match }, offset) => ({
     id: start2 + offset + 1,
@@ -41973,13 +42367,13 @@ var failedOpen = (input, error) => {
   if (paths !== void 0) {
     logEvent(input.runtime, paths, "reuse.failed", { detail: error instanceof Error ? error.message : String(error) });
   }
-  return allow7;
+  return allow8;
 };
 var reuseWarning = (input) => {
   try {
     const paths = projectPaths(input);
     const file = paths === void 0 ? void 0 : changedFile(input, paths);
-    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow7;
+    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow8;
     const log = resolve3(input, paths, readReuseLog(input.runtime, paths), (warning) => warning.file === file);
     writeReuseLog(input.runtime, paths, log);
     return warn(input, paths, file, log);
@@ -41990,16 +42384,16 @@ var reuseWarning = (input) => {
 var reuseOutcomes = (input) => {
   try {
     const paths = projectPaths(input);
-    if (paths === void 0) return allow7;
+    if (paths === void 0) return allow8;
     const log = readReuseLog(input.runtime, paths);
-    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow7;
+    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow8;
     const session = input.payload.sessionId ?? "";
     writeReuseLog(
       input.runtime,
       paths,
       resolve3(input, paths, log, (warning) => warning.session === session)
     );
-    return allow7;
+    return allow8;
   } catch (error) {
     return failedOpen(input, error);
   }
@@ -42073,7 +42467,7 @@ var coverage3 = (checks) => PERTURBATIONS.map((question) => {
 });
 
 // src/ricochete/stop.ts
-var allow8 = { kind: "allow" };
+var allow9 = { kind: "allow" };
 var REPORTED_FILE = "ricochete.json";
 var block5 = (reason, note2) => ({
   kind: "block",
@@ -42095,13 +42489,13 @@ var recordSkillHelp = (input, message, view2) => {
 };
 var horizonGuard = (input) => {
   const message = messageOf3(input);
-  if (!isHorizonHelp(message)) return allow8;
+  if (!isHorizonHelp(message)) return allow9;
   const view2 = taskInView(input);
   recordSkillHelp(input, message, view2);
-  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow8;
+  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow9;
   const ids4 = new Set(view2.checks.map((check2) => check2.id));
   const named2 = criterionIds(message);
-  if (named2.some((id) => ids4.has(id))) return allow8;
+  if (named2.some((id) => ids4.has(id))) return allow9;
   const { t } = input;
   const params2 = { task: view2.task, named: named2.join(", ") || "-", checks: [...ids4].join(", ") };
   logEvent(input.runtime, view2.paths, "ricochete.horizon_without_criterion", { task: view2.task, named: [...named2] });
@@ -42113,10 +42507,10 @@ var reportedTasks = (input, view2) => {
 };
 var perturbationReport = (input) => {
   const view2 = taskInView(input);
-  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow8;
-  if (!judgmentSignal(input, view2.paths)) return allow8;
+  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow9;
+  if (!judgmentSignal(input, view2.paths)) return allow9;
   const reported = reportedTasks(input, view2);
-  if (reported.includes(view2.task)) return allow8;
+  if (reported.includes(view2.task)) return allow9;
   writeJsonFile(input.runtime, view2.paths.cache(REPORTED_FILE), { tasks: [...reported, view2.task].slice(-100) });
   const { t } = input;
   const lines7 = coverage3(view2.checks).map(
@@ -42972,7 +43366,7 @@ var REPRO_GUARD = "reproduce-first";
 var EDIT_TOOLS4 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var SHELL_TOOLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var LONG_SIZES2 = /* @__PURE__ */ new Set(["M", "L"]);
-var allow9 = { kind: "allow" };
+var allow10 = { kind: "allow" };
 var feedback = (input, base, humanKey, params2) => {
   const reason = modelReason(input.t, base, params2);
   return {
@@ -42989,10 +43383,10 @@ var editedFile = (scope2) => {
 var syntaxAfterEdit = (input) => {
   const scope2 = scopeOf(input);
   const file = scope2 === void 0 ? void 0 : editedFile(scope2);
-  if (scope2 === void 0 || file === void 0) return allow9;
+  if (scope2 === void 0 || file === void 0) return allow10;
   const text27 = input.runtime.readText(toAbsolutePath(join122(scope2.paths.root, file)));
   const problem5 = text27.ok ? syntaxProblem(file, text27.value) : void 0;
-  if (problem5 === void 0) return allow9;
+  if (problem5 === void 0) return allow10;
   record6(scope2, { ...baseOf2(scope2), kind: "edit_failed", file, why: "syntax" });
   const where2 = problem5.line > 0 ? `${file}:${String(problem5.line)}` : file;
   return feedback(input, "signals.syntax", "signals.syntax.human", { file, where: where2, message: problem5.message });
@@ -43036,7 +43430,7 @@ var trigger = (scope2, file) => {
   if (failed9 === limits.failedEdits) {
     return feedback(input, "signals.early.failed_edits", "signals.early.failed_edits.human", { file, count: failed9 });
   }
-  if (input.event !== "PostToolUse") return allow9;
+  if (input.event !== "PostToolUse") return allow10;
   const named2 = ignoredError(entries2, file);
   if (named2 !== void 0) {
     return feedback(input, "signals.early.ignored_error", "signals.early.ignored_error.human", {
@@ -43048,12 +43442,12 @@ var trigger = (scope2, file) => {
   if (entries2.at(-1)?.kind === "edit" && blind === limits.editsWithoutRun) {
     return feedback(input, "signals.early.blind_edits", "signals.early.blind_edits.human", { count: blind });
   }
-  return allow9;
+  return allow10;
 };
 var earlyLoopTriggers = (input) => {
   const scope2 = scopeOf(input);
   const file = scope2 === void 0 ? void 0 : editedFile(scope2);
-  if (scope2 === void 0 || file === void 0) return allow9;
+  if (scope2 === void 0 || file === void 0) return allow10;
   return trigger(scope2, file);
 };
 var activeContract = (input, paths) => {
@@ -43069,17 +43463,17 @@ var activeContract = (input, paths) => {
 var LOCATED_FRESH_MS = 12 * 36e5;
 var locatedNow = (scope2, entry2) => entry2.kind === "located" && (entry2.session === scope2.session || nowMs(scope2.input.runtime) - Date.parse(entry2.at) <= LOCATED_FRESH_MS);
 var reproduceFirst = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow9;
+  if (!writesFiles(input.payload.raw)) return allow10;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow9;
+  if (scope2 === void 0) return allow10;
   const entries2 = sessionEntries(scope2.entries, scope2.session);
   const started = entries2.some(
     (entry2) => entry2.kind === "edit" || entry2.kind === "checkpoint" || entry2.kind === "edit_failed"
   );
-  if (started || entries2.some((entry2) => entry2.kind === "error")) return allow9;
-  if (scope2.entries.some((entry2) => locatedNow(scope2, entry2))) return allow9;
+  if (started || entries2.some((entry2) => entry2.kind === "error")) return allow10;
+  if (scope2.entries.some((entry2) => locatedNow(scope2, entry2))) return allow10;
   const contract = activeContract(input, scope2.paths);
-  if (contract === void 0 || !LONG_SIZES2.has(contract.size)) return allow9;
+  if (contract === void 0 || !LONG_SIZES2.has(contract.size)) return allow10;
   record6(scope2, { ...baseOf2(scope2), kind: "checkpoint", task: contract.id });
   const params2 = { task: contract.id, size: contract.size };
   return deny(modelReason(input.t, "signals.repro", params2), input.t("signals.repro.human", params2));
@@ -43124,7 +43518,7 @@ var stopDecision = (scope2, mode) => {
 
 // src/signals/fourth.ts
 var FOURTH_ATTEMPT_GUARD = "fourth-attempt";
-var allow10 = { kind: "allow" };
+var allow11 = { kind: "allow" };
 var RESEARCHER = /(?:^|:)researcher$/i;
 var AGENT_TOOLS2 = /* @__PURE__ */ new Set(["Agent", "Task"]);
 var alreadyNoted = (scope2, sig) => {
@@ -43151,17 +43545,17 @@ var noteFourth = (scope2, sig, failed9, mode) => {
   });
 };
 var fourthAttemptGuard = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow10;
+  if (!writesFiles(input.payload.raw)) return allow11;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow10;
+  if (scope2 === void 0) return allow11;
   const stop = stopDecision(scope2, modeNow(scope2));
   if (stop !== void 0) return stop;
   const threshold2 = readProfile(input.runtime, scope2.files).threshold;
   const pending = pendingAttempt(sessionEntries(scope2.entries, scope2.session), threshold2);
-  if (pending === void 0) return allow10;
+  if (pending === void 0) return allow11;
   const mode = modeNow(scope2);
   const noted = alreadyNoted(scope2, pending.sig);
-  if (noted && mode !== "active") return allow10;
+  if (noted && mode !== "active") return allow11;
   if (!noted) noteFourth(scope2, pending.sig, pending.failed, mode);
   const { t } = input;
   const params2 = { sig: pending.sig, count: pending.failed, sample: inlineData("tool output", pending.sample) };
@@ -43175,10 +43569,10 @@ var researcherOf = (raw) => {
 };
 var researchRecorder = (input) => {
   const agent = researcherOf(input.payload.raw);
-  if (agent === void 0) return allow10;
+  if (agent === void 0) return allow11;
   const scope2 = scopeOf(input);
   if (scope2 !== void 0) record6(scope2, { ...baseOf2(scope2), kind: "research", agent });
-  return allow10;
+  return allow11;
 };
 
 // src/signals/render.ts
@@ -43262,13 +43656,13 @@ var writeIndex = (scope2, notice = readNotice(scope2)) => {
 };
 
 // src/signals/prompt.ts
-var allow11 = { kind: "allow" };
+var allow12 = { kind: "allow" };
 var CLEAR_AFTER = 2;
 var signalsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow11;
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow12;
   const before2 = scopeOf(input);
-  if (before2 === void 0) return allow11;
+  if (before2 === void 0) return allow12;
   const scope2 = record6(before2, {
     ...baseOf2(before2),
     turn: before2.turn + 1,
@@ -43279,7 +43673,7 @@ var signalsPrompt = (input) => {
   const notice = readNotice(scope2);
   const index = writeIndex(scope2, notice);
   const key3 = loopKey(index);
-  if (!index.firing || key3 === notice.lastKey) return allow11;
+  if (!index.firing || key3 === notice.lastKey) return allow12;
   const injections = notice.injections + 1;
   writeIndex(scope2, { injections, lastKey: key3 });
   const { t } = input;
@@ -43296,7 +43690,7 @@ var signalsPrompt = (input) => {
 var EDIT_TOOLS5 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var FAST_ACCEPT_MS = 5e3;
 var LARGE_DIFF_LINES = 30;
-var allow12 = { kind: "allow" };
+var allow13 = { kind: "allow" };
 var permissionKey = (raw) => {
   const id = textField(raw, "tool_use_id");
   if (id !== void 0 && id !== "") return id;
@@ -43386,27 +43780,27 @@ var recordFailedEdit = (scope2, raw) => {
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow12;
+  if (scope2 === void 0) return allow13;
   const raw = input.payload.raw;
   const output = failedOutput2(raw);
   const after2 = EDIT_TOOLS5.has(toolName(raw)) ? recordEdit(scope2, raw) : output === void 0 ? recordRun(scope2, raw) : recordError(scope2, raw, output);
   if (after2 !== scope2) writeIndex(after2);
-  return allow12;
+  return allow13;
 };
 var signalsPostToolUseFailure = (input) => {
   const scope2 = scopeOf(input);
   const raw = input.payload.raw;
-  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow12;
+  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow13;
   const failed9 = recordFailedEdit(scope2, raw);
   const after2 = recordError(failed9, raw, textField(raw, "error") ?? "");
   if (after2 !== scope2) writeIndex(after2);
-  return allow12;
+  return allow13;
 };
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
     record6(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
-  return allow12;
+  return allow13;
 };
 
 // src/signals/hooks.ts
@@ -43462,7 +43856,7 @@ var SLOP_HANDLERS = { PreToolUse: [slopEditWarning] };
 import { isAbsolute as isAbsolute3, relative as relative21 } from "node:path";
 var SCOPE_GUARD = "scope";
 var FRONT_SCOPE_GUARD = "front-scope";
-var allow13 = { kind: "allow" };
+var allow14 = { kind: "allow" };
 var targetOf2 = (input) => {
   const raw = input.payload.raw;
   return FILE_TOOLS.has(toolName(raw)) ? textField(toolInput(raw), "file_path", "notebook_path") : void 0;
@@ -43476,29 +43870,29 @@ var inside = (root, target5) => {
 var advise2 = (input, paths, event, params2) => {
   const mode = featureMode(input.runtime, paths, SCOPE_GUARD);
   logEvent(input.runtime, paths, `scope.${event}`, { ...params2, mode });
-  if (mode !== "active") return allow13;
+  if (mode !== "active") return allow14;
   return { kind: "allow", output: contextOutput(input.event, input.t(`scope.${event}`, params2)) };
 };
 var scopeAfterEdit = (input) => {
   const target5 = targetOf2(input);
   const paths = projectPaths(input);
-  if (target5 === void 0 || paths === void 0) return allow13;
-  if (readState(input.runtime, paths).active !== void 0) return allow13;
+  if (target5 === void 0 || paths === void 0) return allow14;
+  if (readState(input.runtime, paths).active !== void 0) return allow14;
   const file = inside(paths.root, target5);
-  if (file === void 0) return allow13;
+  if (file === void 0) return allow14;
   const before2 = readInferred(input.runtime, paths);
   const { scope: scope2, event } = observeEdit(before2, IMPLICIT_ID, file);
   if (scope2 !== before2) writeInferred(input.runtime, paths, scope2);
   if (event === "widened") return advise2(input, paths, "widened", { file, scope: scopeLabel(scope2) });
   if (event === "outside") return advise2(input, paths, "outside", { file, scope: scopeLabel(scope2) });
-  return allow13;
+  return allow14;
 };
 var frontScopeGuard = (input) => {
   const target5 = targetOf2(input);
-  if (target5 === void 0) return allow13;
+  if (target5 === void 0) return allow14;
   const root = guardRoot(input);
   const state = readFronts(input.runtime, root);
-  if (!state.ok) return allow13;
+  if (!state.ok) return allow14;
   for (const front of state.value.fronts) {
     if (front.path === null || front.paths.length === 0 || front.status !== "running") continue;
     const file = inside(toAbsolutePath(front.path, root), target5);
@@ -43506,7 +43900,7 @@ var frontScopeGuard = (input) => {
     const params2 = { front: front.id, file, paths: front.paths.join(", ") };
     return deny(modelReason(input.t, "fronts.scope", params2), input.t("fronts.scope.human", params2));
   }
-  return allow13;
+  return allow14;
 };
 
 // src/wt/heavy.ts
@@ -43542,13 +43936,13 @@ var isHeavy = (command) => {
   const tool = TOOLS[program];
   return tool?.test(words2(command.args)[0] ?? "") === true;
 };
-var count7 = (raw) => {
+var count8 = (raw) => {
   const parsed = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : void 0;
 };
 var isWsl = (env) => (env["WSL_DISTRO_NAME"] ?? "") !== "" || (env["WSL_INTEROP"] ?? "") !== "";
-var heavyLimit = (env, config) => count7(env["FINITEMONKEY_HEAVY_LIMIT"]) ?? count7(configAt(config, "wt", "heavy_limit")) ?? (isWsl(env) ? 1 : 0);
-var staleMs = (config) => (count7(configAt(config, "wt", "heavy_stale_minutes")) ?? DEFAULT_STALE_MINUTES) * MINUTE_MS;
+var heavyLimit = (env, config) => count8(env["FINITEMONKEY_HEAVY_LIMIT"]) ?? count8(configAt(config, "wt", "heavy_limit")) ?? (isWsl(env) ? 1 : 0);
+var staleMs = (config) => (count8(configAt(config, "wt", "heavy_stale_minutes")) ?? DEFAULT_STALE_MINUTES) * MINUTE_MS;
 var heavyDir = (runtime) => toAbsolutePath(join124(runtime.homeDir(), ".finitemonkey", HEAVY_DIR));
 var slotPath = (runtime, slot2) => toAbsolutePath(join124(heavyDir(runtime), `slot-${String(slot2)}.lock`));
 var ownerText = (content) => {
@@ -43586,7 +43980,7 @@ var releaseSlots = (runtime, id) => {
 // src/wt/heavy-hooks.ts
 var SHELLS7 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var COMMAND_MAX = 120;
-var allow14 = { kind: "allow" };
+var allow15 = { kind: "allow" };
 var heavyCommand = (input) => {
   const raw = input.payload.raw;
   const tool = toolName(raw);
@@ -43602,11 +43996,11 @@ var busy = (input, limit, holders) => {
 };
 var heavyGuard = (input) => {
   const command = heavyCommand(input);
-  if (command === void 0) return allow14;
+  if (command === void 0) return allow15;
   const paths = projectPaths(input);
   const config = paths === void 0 ? {} : loadProjectConfig(input.runtime, paths.root);
   const limit = heavyLimit(input.env, config);
-  if (limit === 0) return allow14;
+  if (limit === 0) return allow15;
   const { runtime } = input;
   const id = textField(input.payload.raw, "tool_use_id") ?? `${input.payload.sessionId ?? "session"}-${runtime.now()}`;
   const holder = { id, cwd: sessionCwd(input), command: maskText(command).slice(0, COMMAND_MAX), at: runtime.now() };
@@ -43616,12 +44010,12 @@ var heavyGuard = (input) => {
     return busy(input, limit, result.holders);
   }
   if (toolInput(input.payload.raw)["run_in_background"] === true) runtime.remove(slotPath(runtime, result.slot));
-  return allow14;
+  return allow15;
 };
 var heavyRelease = (input) => {
   const id = textField(input.payload.raw, "tool_use_id");
   if (id !== void 0 && heavyCommand(input) !== void 0) releaseSlots(input.runtime, id);
-  return allow14;
+  return allow15;
 };
 var HEAVY_HANDLERS = {
   PreToolUse: [heavyGuard],
@@ -43797,7 +44191,7 @@ var dismiss = (runtime, paths, count11) => {
 // src/wt/suggest-hooks.ts
 var WT_SUGGEST_FEATURE = "wt-suggest";
 var MEGABYTE = 1048576;
-var allow15 = { kind: "allow" };
+var allow16 = { kind: "allow" };
 var projectOf2 = (input) => {
   const paths = projectPaths(input);
   return paths !== void 0 && input.runtime.stat(paths.dir)?.kind === "dir" ? paths : void 0;
@@ -43808,25 +44202,25 @@ var hasWorktrees = (input, paths) => {
 };
 var wtClassifyStop = (input) => {
   const paths = projectOf2(input);
-  if (paths === void 0 || !hasWorktrees(input, paths)) return allow15;
-  if (!refreshDue(input.runtime, readClasses(input.runtime, paths))) return allow15;
+  if (paths === void 0 || !hasWorktrees(input, paths)) return allow16;
+  if (!refreshDue(input.runtime, readClasses(input.runtime, paths))) return allow16;
   markStarted(input.runtime, paths);
   input.runtime.spawnSelf(["wt", "classify"], paths.root);
-  return allow15;
+  return allow16;
 };
 var wtSuggestStart = (input) => {
   const paths = projectOf2(input);
-  if (paths === void 0) return allow15;
+  if (paths === void 0) return allow16;
   const { runtime, t } = input;
   const cached4 = readClasses(runtime, paths);
-  if (cached4 === void 0) return allow15;
+  if (cached4 === void 0) return allow16;
   const cleanable = cleanableOf(cached4);
-  if (cleanable.count === 0 || cleanable.count <= dismissedCount(runtime, paths)) return allow15;
+  if (cleanable.count === 0 || cleanable.count <= dismissedCount(runtime, paths)) return allow16;
   const mode = featureMode(runtime, paths, WT_SUGGEST_FEATURE);
   logEvent(runtime, paths, "wt.suggested", { count: cleanable.count, bytes: cleanable.bytes, mode });
   if (mode !== "active") {
     recordFeatureShadow(runtime, paths, WT_SUGGEST_FEATURE, { count: cleanable.count });
-    return allow15;
+    return allow16;
   }
   const size = (cleanable.bytes / MEGABYTE).toFixed(0);
   return { kind: "allow", output: { systemMessage: human(t("wt.suggest.line", { count: cleanable.count, size })) } };
@@ -43834,7 +44228,7 @@ var wtSuggestStart = (input) => {
 var WT_SUGGEST_HANDLERS = { SessionStart: [wtSuggestStart], Stop: [wtClassifyStop] };
 
 // src/hooks/handlers.ts
-var allow16 = () => ({ kind: "allow" });
+var allow17 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -43958,7 +44352,8 @@ var GUARD_SETS = [
   },
   { id: REPRO_GUARD, damage: false, handlers: { PreToolUse: [reproduceFirst] } },
   { id: SCOPE_GUARD, damage: false, handlers: { PostToolUse: [scopeAfterEdit] } },
-  { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } }
+  { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
+  { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);
 
@@ -43990,7 +44385,7 @@ var parseHookPayload = (event, text27, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf4 = (error) => error instanceof Error ? error.message : String(error);
-var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow16]);
+var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow17]);
 var evaluate2 = async (event, options2) => {
   const text27 = await readAll2(options2.stdin);
   const parsed = parseHookPayload(event, text27, options2.stdin.isTTY === true);
@@ -44020,7 +44415,7 @@ var evaluate2 = async (event, options2) => {
 };
 var ALLOW_STDOUT = `${JSON.stringify({ continue: true })}
 `;
-var allowed = (output) => ({
+var allowed2 = (output) => ({
   exitCode: 0,
   stdout: `${JSON.stringify({ continue: true, ...output })}
 `,
@@ -44061,7 +44456,7 @@ var conclude2 = (event, evaluation, t, probe) => {
   }
   const { decision: decision2 } = evaluation;
   if (decision2.kind === "allow") {
-    return event === "WorktreeCreate" && !probe ? worktreeCreated(decision2.output, t) : allowed(decision2.output);
+    return event === "WorktreeCreate" && !probe ? worktreeCreated(decision2.output, t) : allowed2(decision2.output);
   }
   if (stopActive && decision2.persistent !== true) return released(event, decision2.reason, t);
   if (decision2.output !== void 0) {
@@ -45608,7 +46003,7 @@ var toItem = (ctx, finding6) => ({
   detail: ctx.t(finding6.messageKey, finding6.params),
   ...finding6.fixKey === void 0 ? {} : { fix: ctx.t(finding6.fixKey, finding6.params) }
 });
-var count8 = (items, status) => items.filter((item2) => item2.status === status).length;
+var count9 = (items, status) => items.filter((item2) => item2.status === status).length;
 var hookItems = (ctx, findings2) => findings2.flatMap(
   (finding6) => finding6.hook === void 0 ? [] : [
     {
@@ -45624,7 +46019,7 @@ var buildReport2 = (ctx, findings2) => {
     schema: DOCTOR_SCHEMA,
     checks,
     hooks: hookItems(ctx, findings2),
-    summary: { ok: count8(checks, "ok"), warn: count8(checks, "warn"), fail: count8(checks, "fail") }
+    summary: { ok: count9(checks, "ok"), warn: count9(checks, "warn"), fail: count9(checks, "fail") }
   };
 };
 
@@ -46493,7 +46888,7 @@ var personLines = (checks) => {
 
 // src/merge/apply.ts
 import { join as join137 } from "node:path";
-var GENERATOR_TIMEOUT_MS2 = 3e5;
+var GENERATOR_TIMEOUT_MS3 = 3e5;
 var git = (runtime, dir, args2) => {
   const result = runtime.gitWith(args2, dir, {});
   return result.ok ? void 0 : `git ${args2.join(" ")}: ${result.stderr.trim()}`;
@@ -46517,7 +46912,7 @@ var applyResolutions = (runtime, dir, files) => files.flatMap((file) => {
   const failed9 = file.stop === void 0 ? applyOne(runtime, dir, file) : void 0;
   return failed9 === void 0 ? [] : [{ reason: `apply-failed: ${failed9}`, path: file.path }];
 });
-var runGenerator3 = (runtime, dir, command) => runtime.exec({ command, args: [], cwd: dir, timeoutMs: GENERATOR_TIMEOUT_MS2, shell: true }).exitCode === 0;
+var runGenerator3 = (runtime, dir, command) => runtime.exec({ command, args: [], cwd: dir, timeoutMs: GENERATOR_TIMEOUT_MS3, shell: true }).exitCode === 0;
 var read7 = (runtime, dir, path) => {
   const text27 = runtime.readText(toAbsolutePath(join137(dir, path)));
   return text27.ok ? text27.value : void 0;
@@ -49640,7 +50035,7 @@ var i18nCheckCommand = {
 
 // src/infra/remote.ts
 var DETAIL2 = 160;
-var count9 = (stdout) => stdout.split(/\r?\n/).filter((line12) => line12.trim() !== "").length;
+var count10 = (stdout) => stdout.split(/\r?\n/).filter((line12) => line12.trim() !== "").length;
 var hostLine2 = (ctx, root, host) => {
   const containers = sshRead(ctx.runtime, root, host, { kind: "containers" });
   if (containers === void 0) return ctx.t("infra.remote.unsafe", { alias: host.alias });
@@ -49651,8 +50046,8 @@ var hostLine2 = (ctx, root, host) => {
   const services = sshRead(ctx.runtime, root, host, { kind: "services" });
   return ctx.t("infra.remote.host", {
     alias: host.alias,
-    containers: count9(containers.stdout),
-    services: services?.exitCode === 0 ? count9(services.stdout) : 0
+    containers: count10(containers.stdout),
+    services: services?.exitCode === 0 ? count10(services.stdout) : 0
   });
 };
 var remoteLines = (ctx, root, hosts) => hosts.length === 0 ? [ctx.t("infra.remote.no_hosts")] : hosts.map((host) => hostLine2(ctx, root, host));
@@ -50765,13 +51160,13 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided2) => {
-  const accepted2 = allows.filter((allow17) => decided2(allow17.decision));
-  const ignored = allows.filter((allow17) => !decided2(allow17.decision)).map((allow17) => `${allow17.rule} ${allow17.route} ${allow17.decision}`);
+  const accepted2 = allows.filter((allow18) => decided2(allow18.decision));
+  const ignored = allows.filter((allow18) => !decided2(allow18.decision)).map((allow18) => `${allow18.rule} ${allow18.route} ${allow18.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow17 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow17 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow17.decision };
+      const allow18 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow18 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow18.decision };
     })
   };
 };
@@ -53173,7 +53568,7 @@ var resolveBase2 = (runtime, repo, request, defaultBranch2) => {
 };
 var fetchBase = (runtime, root, base, dryRun2) => !dryRun2 && runtime.gitWith(["fetch", "--quiet", "origin", base], root, { timeoutMs: NETWORK_TIMEOUT_MS }).ok;
 var baseRefOf = (runtime, root, base) => line10(runtime, root, ["rev-parse", "--verify", "--quiet", `refs/remotes/origin/${base}`]) === void 0 ? base : `origin/${base}`;
-var predicted = (runtime, root, baseRef) => {
+var predicted2 = (runtime, root, baseRef) => {
   const result = runtime.gitWith(
     ["merge-tree", "--write-tree", "--name-only", "--no-messages", baseRef, "HEAD"],
     root,
@@ -53219,7 +53614,7 @@ var preparePr = (runtime, cwd, request) => {
   if (!base.ok) return base;
   const fetched = fetchBase(runtime, repo.root, base.value, request.dryRun);
   const baseRef = baseRefOf(runtime, repo.root, base.value);
-  const conflicts2 = predicted(runtime, repo.root, baseRef);
+  const conflicts2 = predicted2(runtime, repo.root, baseRef);
   if (conflicts2.length > 0) return reject({ kind: "conflict", base: baseRef, files: conflicts2 });
   const baseSha = line10(runtime, repo.root, ["merge-base", baseRef, "HEAD"]) ?? baseRef;
   const files = changedSince2(runtime, repo.root, baseSha);
@@ -53612,8 +54007,8 @@ var reportsOf = async (ctx, root, paths, mode) => {
   }
   const targets2 = targetsOf3(ctx, root, paths);
   if (!targets2.ok) return targets2;
-  const scored = scoreFiles(ctx.runtime, root, targets2.value, forced);
-  return scored.ok ? scored : reject(problem3("prose_unreadable", "prose.error.unreadable", { file: "", detail: scored.error }));
+  const scored2 = scoreFiles(ctx.runtime, root, targets2.value, forced);
+  return scored2.ok ? scored2 : reject(problem3("prose_unreadable", "prose.error.unreadable", { file: "", detail: scored2.error }));
 };
 var resultOf2 = (ctx, reports) => {
   const data2 = proseCheckData(reports);
@@ -55902,174 +56297,6 @@ var taskDoneCommand = {
 
 // src/commands/task-diverge.ts
 import { join as join166 } from "node:path";
-
-// src/ricochete/divergence.ts
-var DIVERGENCE_FEATURE = "divergence-ask";
-var DEFAULT_READINGS = 3;
-var DEFAULT_ROUNDS = 3;
-var MAX_INPUTS = 12;
-var RUN_TIMEOUT_MS = 3e4;
-var GENERATOR_TIMEOUT_MS3 = 15 * 6e4;
-var PENDING_FILE2 = "divergence.json";
-var LETTERS = "ABCDEFGH";
-var count10 = (raw, fallback2, max) => {
-  const parsed = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
-  return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback2;
-};
-var divergenceConfig = (runtime, root) => {
-  const tree = loadProjectConfig(runtime, root);
-  const generator = configAt(tree, "divergence", "generator");
-  return {
-    generator: typeof generator === "string" && generator.trim() !== "" ? generator : void 0,
-    readings: count10(configAt(tree, "divergence", "readings"), DEFAULT_READINGS, LETTERS.length - 1),
-    rounds: count10(configAt(tree, "divergence", "rounds"), DEFAULT_ROUNDS, 20)
-  };
-};
-var probeOf2 = (value2) => {
-  if (typeof value2 === "string") return { input: value2, topic: "intent" };
-  if (!isRecord(value2) || typeof value2["input"] !== "string") return void 0;
-  const domain = parseDomain(typeof value2["domain"] === "string" ? value2["domain"] : void 0);
-  return {
-    input: value2["input"],
-    topic: value2["topic"] === "technical" ? "technical" : "intent",
-    ...domain === void 0 ? {} : { domain }
-  };
-};
-var parseCandidates = (text27) => {
-  const parsed = parseJson(text27);
-  if (!parsed.ok || !isRecord(parsed.value)) return void 0;
-  const readings = parsed.value["readings"];
-  const inputs = parsed.value["inputs"];
-  if (!Array.isArray(readings)) return void 0;
-  return {
-    readings: readings.flatMap(
-      (item2) => isRecord(item2) && typeof item2["dir"] === "string" && item2["dir"] !== "" ? [
-        {
-          dir: toAbsolutePath(item2["dir"]),
-          summary: typeof item2["summary"] === "string" ? item2["summary"] : ""
-        }
-      ] : []
-    ),
-    inputs: (Array.isArray(inputs) ? inputs : []).flatMap((item2) => {
-      const probe = probeOf2(item2);
-      return probe === void 0 ? [] : [probe];
-    })
-  };
-};
-var commandSource = (runtime, root, command) => ({
-  generate: (request) => {
-    const result = runtime.exec({
-      command,
-      args: [],
-      cwd: root,
-      shell: true,
-      timeoutMs: GENERATOR_TIMEOUT_MS3,
-      input: JSON.stringify(request)
-    });
-    return result.found && result.exitCode === 0 ? parseCandidates(result.stdout) : void 0;
-  }
-});
-var outputOf = (runtime, dir, run10, input) => {
-  const result = runtime.exec({
-    command: run10,
-    args: [],
-    cwd: dir,
-    shell: true,
-    timeoutMs: RUN_TIMEOUT_MS,
-    env: { CI: "1" },
-    unset: ["NODE_TEST_CONTEXT"],
-    input
-  });
-  const out = result.stdout.trim();
-  if (result.timedOut) return "(timed out)";
-  return result.exitCode === 0 ? out : `(exit ${String(result.exitCode ?? -1)}) ${out}`.trim();
-};
-var passesAll = (runtime, reading2, examples) => examples.every(
-  (example) => outputOf(runtime, reading2.dir, example.run, example.input ?? "") === example.expect.trim()
-);
-var allowed2 = (probe, beginner) => probe.topic === "intent" || probe.domain === void 0 || !beginner(probe.domain);
-var optionsFor = (runtime, readings, run10, input) => {
-  const groups = /* @__PURE__ */ new Map();
-  for (const reading2 of readings) {
-    const output = outputOf(runtime, reading2.dir, run10, input);
-    groups.set(output, [...groups.get(output) ?? [], reading2.id]);
-  }
-  return [...groups.entries()].map(([output, ids4], index) => ({
-    letter: LETTERS[index] ?? String(index),
-    readings: ids4,
-    output
-  }));
-};
-var withNoChange = (root, candidates4) => [
-  { id: "R0", summary: "no change", dir: root, noChange: true },
-  ...candidates4.readings.map((reading2, index) => ({ ...reading2, id: `R${String(index + 1)}`, noChange: false }))
-];
-var findDivergence = (input) => {
-  const { runtime, examples } = input;
-  const readings = withNoChange(input.root, input.candidates);
-  const noChange = readings[0];
-  if (noChange !== void 0 && examples.length > 0 && passesAll(runtime, noChange, examples))
-    return { kind: "no_change", reading: noChange.id };
-  const live = readings.filter((reading2) => !reading2.noChange && passesAll(runtime, reading2, examples));
-  if (live.length < 2) return { kind: "too_few", readings: live.length };
-  const run10 = examples[0]?.run;
-  const probes = input.candidates.inputs.slice(0, MAX_INPUTS).filter((probe) => allowed2(probe, input.beginner));
-  if (run10 === void 0) return { kind: "agree", readings: live.length, inputs: 0 };
-  for (const probe of probes) {
-    const options2 = optionsFor(runtime, live, run10, probe.input);
-    if (options2.length > 1)
-      return { kind: "question", question: { task: input.task, input: probe.input, run: run10, topic: probe.topic, options: options2 } };
-  }
-  return { kind: "agree", readings: live.length, inputs: probes.length };
-};
-var beginnerIn = (runtime, paths) => (domain) => {
-  const profile = readProfile2(runtime, paths);
-  return profile !== void 0 && levelOf2(profile.domains[domain].knowledge) === "beginner";
-};
-var eligible = (contract, examples) => {
-  if (contract.size === "S") return "small";
-  return examples.length === 0 ? "no_examples" : void 0;
-};
-var toQuestion = (value2) => {
-  if (!isRecord(value2)) return void 0;
-  const { task, input, run: run10, topic, options: options2 } = value2;
-  if (typeof task !== "string" || typeof input !== "string" || typeof run10 !== "string" || !Array.isArray(options2))
-    return void 0;
-  const parsed = options2.flatMap(
-    (item2) => isRecord(item2) && typeof item2["letter"] === "string" && typeof item2["output"] === "string" ? [
-      {
-        letter: item2["letter"],
-        output: item2["output"],
-        readings: Array.isArray(item2["readings"]) ? item2["readings"].filter((id) => typeof id === "string") : []
-      }
-    ] : []
-  );
-  return { task, input, run: run10, topic: topic === "technical" ? "technical" : "intent", options: parsed };
-};
-var readPending = (runtime, paths) => {
-  const raw = readJsonFile(runtime, paths.cache(PENDING_FILE2));
-  const pending = isRecord(raw?.["pending"]) ? raw["pending"] : {};
-  const rounds = isRecord(raw?.["rounds"]) ? raw["rounds"] : {};
-  return {
-    pending: Object.fromEntries(
-      Object.entries(pending).flatMap(([task, value2]) => {
-        const question = toQuestion(value2);
-        return question === void 0 ? [] : [[task, question]];
-      })
-    ),
-    rounds: Object.fromEntries(
-      Object.entries(rounds).flatMap(([task, value2]) => typeof value2 === "number" ? [[task, value2]] : [])
-    )
-  };
-};
-var writePending = (runtime, paths, state) => {
-  writeJsonFile(runtime, paths.cache(PENDING_FILE2), {
-    pending: Object.fromEntries(Object.entries(state.pending).map(([task, question]) => [task, { ...question }])),
-    rounds: { ...state.rounds }
-  });
-};
-
-// src/commands/task-diverge.ts
 var USAGE21 = "finitemonkey task diverge [<id>] [--choose <letter>]";
 var load = (ctx, paths, task) => {
   const disk = (relative25) => {

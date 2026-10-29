@@ -3,6 +3,7 @@ import { appsecEditWarning } from "../appsec/hook.js";
 import { CLAIMS_HANDLERS } from "../claims/guard.js";
 import { CLARIFY_HANDLERS } from "../clarify/hook.js";
 import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
+import { PREDICT_HANDLERS } from "../conceitos/predict.js";
 import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
@@ -212,6 +213,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: REPRO_GUARD, damage: false, handlers: { PreToolUse: [reproduceFirst] } },
   { id: SCOPE_GUARD, damage: false, handlers: { PostToolUse: [scopeAfterEdit] } },
   { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
+  { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

@@ -1,7 +1,9 @@
+import { parseConcept } from "../../conceitos/concepts.js";
+import { recordPrediction } from "../../conceitos/predict.js";
 import { nowMs } from "../../core/clock.js";
 import { logEvent } from "../../evidence/log.js";
 import { type Approval, expiryFrom, type Grant, saveRelease } from "../../guards/release/grants.js";
-import { comesFromPerson, type Marker, parseMarkers } from "../../guards/release/markers.js";
+import { comesFromPerson, type Marker, parseMarkers, type PredictMarker } from "../../guards/release/markers.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
 import { recordDismissal } from "../../policy/budget.js";
@@ -15,7 +17,7 @@ import { allowWith, human, projectPaths } from "./common.js";
 import { readCounter, saveCounter } from "./counter.js";
 import { readGateStatus } from "./status.js";
 
-export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims"]);
+export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims", "predict"]);
 
 const trust = (input: HookInput, paths: FmPaths, task: string): boolean => {
   const { runtime } = input;
@@ -44,6 +46,14 @@ const trustAndApprove = (input: HookInput, paths: FmPaths, task: string): boolea
   const trusted = trust(input, paths, task);
   if (trusted) approveAmendments(input.runtime, paths, task, `person@${input.runtime.now()}`);
   return trusted;
+};
+
+const predicted = (input: HookInput, paths: FmPaths, marker: PredictMarker): string => {
+  const concept = parseConcept(marker.concept);
+  const recorded = concept === undefined ? undefined : recordPrediction(input.runtime, paths, concept, marker.output);
+  return recorded === undefined
+    ? input.t("predict.not_recorded", { concept: marker.concept })
+    : input.t("predict.recorded", { concept: recorded.concept, output: recorded.output });
 };
 
 const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): readonly string[] => {
@@ -77,7 +87,8 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
         ...(status?.tree === undefined || status.task !== (marker.task ?? active) ? {} : { treeHash: status.tree }),
       });
       said.push(t("gate.release.approved", { task: marker.task ?? active, check: marker.check }));
-    } else
+    } else if (marker.type === "predict") said.push(predicted(input, paths, marker));
+    else
       said.push(
         t(trustAndApprove(input, paths, marker.task) ? "gate.release.trusted" : "gate.release.trust_failed", {
           task: marker.task,

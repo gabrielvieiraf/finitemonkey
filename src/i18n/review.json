@@ -2065,7 +2065,14 @@
     "command.signals_blind_band.summary": "machine",
     "blind_band.empty": "machine",
     "blind_band.total": "machine",
-    "blind_band.row": "machine"
+    "blind_band.row": "machine",
+    "predict.reason": "machine",
+    "predict.human": "machine",
+    "predict.recorded": "machine",
+    "predict.not_recorded": "machine",
+    "gate.predict.correct": "machine",
+    "gate.predict.wrong": "machine",
+    "gate.predict.revoked": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4133,6 +4140,13 @@
     "command.signals_blind_band.summary": "machine",
     "blind_band.empty": "machine",
     "blind_band.total": "machine",
-    "blind_band.row": "machine"
+    "blind_band.row": "machine",
+    "predict.reason": "machine",
+    "predict.human": "machine",
+    "predict.recorded": "machine",
+    "predict.not_recorded": "machine",
+    "gate.predict.correct": "machine",
+    "gate.predict.wrong": "machine",
+    "gate.predict.revoked": "machine"
   }
 }

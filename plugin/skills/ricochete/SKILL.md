@@ -16,7 +16,7 @@ Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" perfil --json` when i
 
 - deliver: short, the decision recorded, nothing unrequested.
 - explain: trade-offs with a recommendation; the person chooses.
-- learn: ask the person to predict the result before you show it.
+- learn: ask the person to predict the result before you show it. When a change is held for a prediction, ask the question as the hold states it and wait for `fm: predict <concept> <answer>`; never answer it yourself.
 
 ## Exploration: the same approach keeps coming back
 

@@ -2064,5 +2064,12 @@
   "command.signals_blind_band.summary": "Fracción de la ayuda de horizonte que salió sin un criterio que la persona pueda verificar, por dominio y semana",
   "blind_band.empty": "Todavía no hay ayuda de horizonte registrada.",
   "blind_band.total": "Índice de franja ciega: {index} ({without} de {helps} ayudas de horizonte salieron sin criterio).",
-  "blind_band.row": "  {week} {domain}: {index} sin criterio ({without} de {helps}); conceptos que avanzaron: {concepts}"
+  "blind_band.row": "  {week} {domain}: {index} sin criterio ({without} de {helps}); conceptos que avanzaron: {concepts}",
+  "predict.reason": "Este cambio trae {concept}, que la persona todavía no mostró que puede predecir en un dominio donde el perfil la marca como principiante. Antes de que entre, hazle una pregunta y espera: cuando `{run}` recibe la entrada {input}, ¿qué imprime? Responde escribiendo fm: predict {concept} <lo que imprime>. El resultado aparece junto a su respuesta después de que corra el gate. Puede saltarlo con fm: allow predict <motivo>.",
+  "predict.human": "Antes de que entre este cambio con {concept}: ¿qué imprime {run} con {input}? Escribe fm: predict {concept} <respuesta>, o fm: allow predict <motivo> para saltarlo.",
+  "predict.recorded": "Registré tu predicción para {concept}: {output}. El gate mostrará el resultado real al lado.",
+  "predict.not_recorded": "No se registró predicción para {concept}: concepto desconocido o ninguna entrada de ejemplo para predecir.",
+  "gate.predict.correct": "{concept} con la entrada {input}: predijiste {predicted}, salió {actual}. Correcto.",
+  "gate.predict.wrong": "{concept} con la entrada {input}: predijiste {predicted}, salió {actual}. La pregunta sobre {concept} sigue.",
+  "gate.predict.revoked": "{concept} ya no está marcado como demostrado: el gate atrapó una falla en código que lo usa"
 }
