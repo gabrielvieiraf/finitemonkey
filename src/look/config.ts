@@ -4,6 +4,7 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, configMap, parseConfigYaml } from "../git/project-config.js";
 import { TARGET_MIN, TARGET_OPTIONS } from "./a11y.js";
+import { COLOR_TOLERANCE } from "./ds.js";
 import { parseStateSpec, type StateSpec } from "./states.js";
 import { LOOK_RULES, type LookRule } from "./types.js";
 
@@ -42,6 +43,14 @@ export interface LookConfig {
   readonly states: Readonly<Record<string, readonly StateSpec[]>>;
   readonly successColor: string | undefined;
   readonly skeleton: string | undefined;
+  readonly ds: DsConfig;
+}
+
+export interface DsConfig {
+  readonly tokens: readonly string[];
+  readonly exclude: readonly string[];
+  readonly excludeFiles: readonly string[];
+  readonly tolerance: number;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -103,6 +112,12 @@ export const parseLookConfig = (source: string): LookConfig => {
     states: statesOf(tree),
     successColor: text(configAt(tree, "ui_states", "success_color")),
     skeleton: text(configAt(tree, "ui_states", "skeleton")),
+    ds: {
+      tokens: [...configList(tree, "ds", "tokens"), ...configList(tree, "ds", "css")],
+      exclude: configList(tree, "ds", "exclude"),
+      excludeFiles: configList(tree, "ds", "exclude_files"),
+      tolerance: number(configAt(tree, "ds", "tolerance")) ?? COLOR_TOLERANCE,
+    },
   };
 };
 

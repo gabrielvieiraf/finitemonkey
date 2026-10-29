@@ -91,14 +91,24 @@ const runPasses = async (
     join(request.dir, `${slugOf(at.route)}-${String(at.viewport)}.${suffix}.png`);
   const pages: UxPage[] = [];
   for (const pass of (request.passes ?? []).filter(only)) {
-    const issues = await pass.run(page, { ...at, probe, file });
+    const metrics: Record<string, number> = {};
+    const metric = (name: string, value: number): void => {
+      metrics[name] = value;
+    };
+    const issues = await pass.run(page, { ...at, probe, file, metric });
     const here = issues.filter((item) => item.route === undefined || item.route === at.route);
     const boxes = here.flatMap((item): readonly ProbeBox[] => (item.box === undefined ? [] : [item.box]));
     await drawBoxes(page, boxes, file(pass.feature));
     for (const route of new Set([at.route, ...issues.map((item) => item.route ?? at.route)])) {
       const mine = issues.filter((item) => (item.route ?? at.route) === route);
       if (route === at.route || mine.length > 0)
-        pages.push({ feature: pass.feature, route, viewport: at.viewport, issues: mine });
+        pages.push({
+          feature: pass.feature,
+          route,
+          viewport: at.viewport,
+          issues: mine,
+          ...(route === at.route && Object.keys(metrics).length > 0 ? { metrics } : {}),
+        });
     }
   }
   return pages;

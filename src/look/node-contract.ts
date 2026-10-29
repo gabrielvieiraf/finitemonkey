@@ -1,6 +1,7 @@
 import { isRecord } from "../core/parsed.js";
 import { UI_CONTRACT_FEATURE } from "./contract.js";
 import { type DontHit, dontHits, dontIssues, type DontRule, liveRules, MAX_HITS_PER_RULE } from "./dont.js";
+import { patternHits } from "./ds.js";
 import type { PagePass } from "./node-ux.js";
 import { runInPage } from "./probe-dom.js";
 
@@ -38,6 +39,21 @@ export const contractPass = (rules: readonly DontRule[], widest: number): PagePa
             ]),
           );
     const hits = Array.isArray(raw) ? raw.flatMap((item: unknown) => hitOf(item) ?? []) : [];
-    return dontIssues(rules, hits, at.viewport === widest);
+    const patterned = liveRules(rules).filter((rule) => rule.pattern !== undefined);
+    const probe = patterned.length === 0 ? undefined : await at.probe();
+    const matched = patternHits(probe?.nodes ?? []).flatMap((hit) =>
+      patterned
+        .filter((rule) => rule.pattern === hit.pattern)
+        .map((rule) => ({
+          id: rule.id,
+          sel: hit.node.sel,
+          actual: hit.detail,
+          x: hit.node.x,
+          y: hit.node.y,
+          w: hit.node.w,
+          h: hit.node.h,
+        })),
+    );
+    return dontIssues(rules, [...hits, ...matched], at.viewport === widest);
   },
 });

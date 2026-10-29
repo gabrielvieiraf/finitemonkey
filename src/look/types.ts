@@ -33,6 +33,15 @@ export const LOOK_RULES = [
   "ui-states/partial",
   "ui-states/status",
   "ui/dont",
+  "ds/off-token",
+  "ds/font-small",
+  "ds/literal",
+  "ds/no-tokens",
+  "default-look/pill",
+  "default-look/gradient",
+  "default-look/default-font",
+  "default-look/emoji-icon",
+  "default-look/same-shadow",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

@@ -164,6 +164,11 @@ describe("ui contract: standing don't rules", () => {
     const retired = await cliJson(["ui", "dont", "retire", "D1", "--reason", "brand changed"], options);
     assert.equal(retired.code, 0, retired.stdout);
     assert.ok(repo.read(".finitemonkey/log.jsonl").includes("ui.dont_retired"));
+    const pattern = await cliJson(["ui", "dont", "add", "--reason", "no pills", "--pattern", "pill"], options);
+    assert.equal(pattern.code, 0, pattern.stdout);
+    assert.ok(JSON.stringify(field(pattern.body, "data", "rules")).includes('"pattern":"pill"'));
+    const unknown = await cliJson(["ui", "dont", "add", "--reason", "x", "--pattern", "sparkles"], options);
+    assert.notEqual(unknown.code, 0);
     const agent = await cliJson(["ui", "dont", "add", "--reason", "x"], {
       runtime,
       cwd: repo.root,

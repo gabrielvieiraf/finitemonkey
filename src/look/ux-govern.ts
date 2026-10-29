@@ -56,6 +56,14 @@ export interface UxFile {
   readonly at: string;
   readonly rules: readonly RuleCount[];
   readonly records: readonly UxRecord[];
+  readonly metrics: readonly PageMetrics[];
+}
+
+export interface PageMetrics {
+  readonly feature: string;
+  readonly route: string;
+  readonly viewport: number;
+  readonly values: Readonly<Record<string, number>>;
 }
 
 export const fingerprintOf = (viewport: number, selector: string): string => `${String(viewport)} ${selector}`;
@@ -257,6 +265,11 @@ export const governAndRecord = (ctx: GovernContext, pages: readonly UxPage[]): r
     at: now,
     rules: counted(governed.records, (rule) => [budget[rule]?.fired.length ?? 0, budget[rule]?.dismissed.length ?? 0]),
     records: governed.records,
+    metrics: pages.flatMap((page) =>
+      page.metrics === undefined
+        ? []
+        : [{ feature: page.feature, route: page.route, viewport: page.viewport, values: page.metrics }],
+    ),
   };
   runtime.writeText(uxPath(paths, tree), `${JSON.stringify(file, null, 2)}\n`);
   if (file.records.length > 0) recordEvidence(ctx, file);

@@ -21,7 +21,7 @@ import { type LookSummary, VIEWPORTS } from "./types.js";
 import { loadUiConfig, UI_FEATURE } from "./ui.js";
 import { layoutsOf, uiFindings } from "./ui-findings.js";
 import type { UxPage } from "./ux.js";
-import { activeModes, type ModeMap, uxPasses, uxWidths } from "./ux-features.js";
+import { activeModes, type ModeMap, uxPasses, uxStaticPages, uxWidths } from "./ux-features.js";
 import { governAndRecord } from "./ux-govern.js";
 
 export type LookRun =
@@ -75,7 +75,7 @@ const capture = async (runtime: Runtime, ready: Ready): Promise<Shot | LookRun> 
   if (browser === undefined) return { kind: "browser_missing" };
   try {
     const dir = lookDir(fmPaths(ready.root), ready.tree);
-    const passes = uxPasses(runtime, ready.root, ready.config, ready.modes);
+    const passes = uxPasses(runtime, ready.root, ready.config, ready.modes, ready.tree);
     const output = await captureAll(browser, {
       baseUrl: `http://${ready.config.host}:${String(ready.config.port)}`,
       routes: lookRoutes(ready.config),
@@ -123,7 +123,10 @@ export const runLook = async (runtime: Runtime, cwd: AbsolutePath): Promise<Look
       featureMode(runtime, paths, UI_FEATURE),
     );
     await recordHeaders(runtime, ready);
-    const ux = governAndRecord({ runtime, paths, tree: ready.tree, modes: ready.modes }, shot.ux);
+    const ux = governAndRecord({ runtime, paths, tree: ready.tree, modes: ready.modes }, [
+      ...shot.ux,
+      ...uxStaticPages(runtime, ready.root, ready.config, ready.modes),
+    ]);
     const base = shot.results
       .flatMap(pageFindings)
       .filter((item) => item.rule !== "look/touch-target" || ready.modes["a11y"] === "off");

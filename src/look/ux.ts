@@ -16,6 +16,7 @@ export interface UxPage {
   readonly route: string;
   readonly viewport: number;
   readonly issues: readonly UxIssue[];
+  readonly metrics?: Readonly<Record<string, number>>;
 }
 
 export const MAX_ISSUES_PER_RULE = 20;

@@ -25,6 +25,7 @@ export interface MiniEl {
   readonly getBoundingClientRect: () => MiniRect;
   readonly closest: (selector: string) => MiniEl | null;
   readonly querySelector: (selector: string) => MiniEl | null;
+  readonly querySelectorAll: (selector: string) => Iterable<MiniEl>;
 }
 
 export interface MiniDoc {

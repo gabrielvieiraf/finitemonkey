@@ -5,6 +5,7 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import { DONT_OPS, type DontPredicate, type DontRule, nextDontId, readDont, writeDont } from "../look/dont.js";
+import { DEFAULT_PATTERNS } from "../look/ds.js";
 import { isPerson, personName } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec, OptionValues } from "./types.js";
@@ -12,7 +13,7 @@ import type { CommandSpec, OptionValues } from "./types.js";
 export const UI_DONT_SCHEMA = "finitemonkey/ui-dont@1";
 
 const ADD_USAGE =
-  "finitemonkey ui dont add --reason <why> [--selector <css> --property <name> (--equals|--above|--below|--matches) <value>]";
+  "finitemonkey ui dont add --reason <why> [--selector <css> --property <name> (--equals|--above|--below|--matches) <value> | --pattern <pill|gradient|default-font|emoji-icon|same-shadow>]";
 const RETIRE_USAGE = "finitemonkey ui dont retire <id> --reason <why>";
 const LIST_USAGE = "finitemonkey ui dont";
 
@@ -63,7 +64,9 @@ const add = (ctx: Ctx, values: OptionValues): CommandResult => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("ui.person_only", ADD_USAGE));
   const reason = stringOption(values, "reason")?.trim() ?? "";
   const predicate = predicateFrom(values);
-  if (reason === "" || predicate === "partial")
+  const pattern = stringOption(values, "pattern");
+  const known = pattern === undefined || DEFAULT_PATTERNS.some((name) => name === pattern);
+  if (reason === "" || predicate === "partial" || !known || (pattern !== undefined && predicate !== undefined))
     return failureFrom(ctx.t, usageProblem("invalid_arguments", "ui.dont.bad_input", ADD_USAGE));
   const paths = pathsOf(ctx);
   const rules = readDont(ctx.runtime, paths);
@@ -74,6 +77,7 @@ const add = (ctx: Ctx, values: OptionValues): CommandResult => {
     at: ctx.runtime.now(),
     source: stringOption(values, "source") ?? "message",
     ...(predicate === undefined ? {} : { predicate }),
+    ...(pattern === undefined ? {} : { pattern }),
   };
   if (!writeDont(ctx.runtime, paths, [...rules, rule]))
     return failureFrom(ctx.t, usageProblem("invalid_arguments", "ui.dont.write_failed", LIST_USAGE));
@@ -124,6 +128,7 @@ export const uiDontAddCommand: CommandSpec = {
     below: { type: "string" },
     matches: { type: "string" },
     source: { type: "string" },
+    pattern: { type: "string" },
   },
   run: (ctx, args) => Promise.resolve(add(ctx, args.values)),
 };
