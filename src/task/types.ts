@@ -46,6 +46,7 @@ export const CHECK_KINDS = [
   "api-version",
   "cochange",
   "test-budget",
+  "red-green",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];
@@ -101,6 +102,7 @@ export interface TaskContract {
   readonly blueprint?: BlueprintType;
   readonly implicit: boolean;
   readonly clarified?: readonly string[];
+  readonly testsFirst?: boolean;
 }
 
 export const TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;

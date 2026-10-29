@@ -2439,7 +2439,16 @@
     "gate.test_budget.redundant": "machine",
     "command.tests_select.summary": "machine",
     "tests_select.none": "machine",
-    "tests_select.head": "machine"
+    "tests_select.head": "machine",
+    "gate.red_green.off": "machine",
+    "gate.red_green.not_opted": "machine",
+    "gate.red_green.no_new_test": "machine",
+    "gate.red_green.no_command": "machine",
+    "gate.red_green.shadow": "machine",
+    "gate.red_green.proven": "machine",
+    "gate.red_green.never_red": "machine",
+    "gate.red_green.compile_only": "machine",
+    "gate.red_green.unavailable": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4881,6 +4890,15 @@
     "gate.test_budget.redundant": "machine",
     "command.tests_select.summary": "machine",
     "tests_select.none": "machine",
-    "tests_select.head": "machine"
+    "tests_select.head": "machine",
+    "gate.red_green.off": "machine",
+    "gate.red_green.not_opted": "machine",
+    "gate.red_green.no_new_test": "machine",
+    "gate.red_green.no_command": "machine",
+    "gate.red_green.shadow": "machine",
+    "gate.red_green.proven": "machine",
+    "gate.red_green.never_red": "machine",
+    "gate.red_green.compile_only": "machine",
+    "gate.red_green.unavailable": "machine"
   }
 }

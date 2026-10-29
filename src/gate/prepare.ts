@@ -139,7 +139,8 @@ const withCheck = (
     | "infra-plan"
     | "api-version"
     | "cochange"
-    | "test-budget",
+    | "test-budget"
+    | "red-green",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -183,10 +184,15 @@ const withConfigured = (
     paths.some((path) => UNTYPED_JS.test(path) || PYTHON.test(path)),
   );
   const withCochange = withCheck(withApi, "cochange", changes.length > 0);
-  return withCheck(
+  const withBudget = withCheck(
     withCochange,
     "test-budget",
     contract.acceptance.some((check) => check.kind === "tests"),
+  );
+  return withCheck(
+    withBudget,
+    "red-green",
+    contract.testsFirst === true || configAt(config, "red_green") !== undefined,
   );
 };
 

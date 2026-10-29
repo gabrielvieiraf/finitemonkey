@@ -32,6 +32,7 @@ import { prOutcome } from "./pr.js";
 import { prodCheck } from "./prod.js";
 import { proseCheck } from "./prose.js";
 import { qualityCheck } from "./quality.js";
+import { redGreenCheck } from "./red-green.js";
 import { regressionCheck } from "./regression.js";
 import { researchCheck } from "./research.js";
 import { reviewCheck } from "./review.js";
@@ -88,4 +89,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   "api-version": apiVersionCheck,
   cochange: cochangeCheck,
   "test-budget": testBudgetCheck,
+  "red-green": redGreenCheck,
 };

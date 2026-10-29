@@ -2438,5 +2438,14 @@
   "gate.test_budget.redundant": "{test} no cubre ninguna línea ni afirma nada que {other} no cubra; candidato a quitar, o márcalo keep en test_budget.keep",
   "command.tests_select.summary": "Lista los tests ligados a los archivos tocados por el grafo de imports, para el ciclo interno; la puerta sigue corriendo la suite completa",
   "tests_select.none": "ningún test importa los archivos tocados",
-  "tests_select.head": "{count, plural, one {# test ligado} other {# tests ligados}} a los archivos tocados:"
+  "tests_select.head": "{count, plural, one {# test ligado} other {# tests ligados}} a los archivos tocados:",
+  "gate.red_green.off": "la prueba de rojo antes del verde está apagada en policy.yml (red-green)",
+  "gate.red_green.not_opted": "el contrato no pide tests primero (tests_first) y ningún red_green.paths coincide",
+  "gate.red_green.no_new_test": "ningún test nuevo en el cambio",
+  "gate.red_green.no_command": "el contrato no tiene comando de tests para probar el rojo en la base",
+  "gate.red_green.shadow": "modo shadow: la falta de la entrada roja no retiene la tarea",
+  "gate.red_green.proven": "{files} falló en una aserción con los archivos de producción de la base (rojo {red}) y el check de tests cubre este árbol (verde {green})",
+  "gate.red_green.never_red": "{files} pasan con los archivos de producción de la base, así que nunca estuvieron en rojo (árbol base {red})",
+  "gate.red_green.compile_only": "{files} fallan en la base solo con un error de import o compilación, lo que no cuenta como rojo (árbol base {red})",
+  "gate.red_green.unavailable": "no se pudo ejecutar {files} con los archivos de producción de la base"
 }

@@ -2438,5 +2438,14 @@
   "gate.test_budget.redundant": "{test} covers no line and asserts nothing that {other} does not; candidate to remove, or mark it keep in test_budget.keep",
   "command.tests_select.summary": "List the tests linked to the touched files through the import graph, for the inner loop; the gate still runs the full suite",
   "tests_select.none": "no test imports the touched files",
-  "tests_select.head": "{count, plural, one {# test linked} other {# tests linked}} to the touched files:"
+  "tests_select.head": "{count, plural, one {# test linked} other {# tests linked}} to the touched files:",
+  "gate.red_green.off": "red-before-green proof is off in policy.yml (red-green)",
+  "gate.red_green.not_opted": "the contract does not ask for tests first (tests_first) and no red_green.paths match",
+  "gate.red_green.no_new_test": "no new test in the change",
+  "gate.red_green.no_command": "the contract has no tests command to prove red on the base",
+  "gate.red_green.shadow": "shadow mode: the missing red entry does not hold the task",
+  "gate.red_green.proven": "{files} failed on an assertion with the base production files (red {red}) and the tests check covers this tree (green {green})",
+  "gate.red_green.never_red": "{files} pass on the base production files, so they were never red (base tree {red})",
+  "gate.red_green.compile_only": "{files} fail on the base only with an import or compile error, which does not count as red (base tree {red})",
+  "gate.red_green.unavailable": "could not run {files} on the base production files"
 }
