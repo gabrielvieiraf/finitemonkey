@@ -2286,5 +2286,9 @@
   "command.mod_cost.summary": "Print what the active contract has cost so far, per attempt and per experiment arm",
   "command.mod_usage.summary": "Record the API usage of model requests (used by the mod)",
   "mod.cost.summary": "contract {task}: {usd} in {requests, plural, one {# request} other {# requests}}, {attempts, plural, one {# attempt} other {# attempts}}",
-  "mod.cost.arm": "arm {arm}: {usd} in {requests, plural, one {# request} other {# requests}}"
+  "mod.cost.arm": "arm {arm}: {usd} in {requests, plural, one {# request} other {# requests}}",
+  "command.fronts_board.summary": "Show every worktree with its gate, contract and last activity, and files two fronts both changed",
+  "fronts.board.row": "{branch}: gate {gate}, contract {contract}{waiting}",
+  "fronts.board.collision": "collision: {file} changed in {branches}",
+  "fronts.board.waiting": " · waiting on you"
 }

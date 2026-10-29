@@ -31,6 +31,7 @@ import { dsSyncCommand } from "./ds-sync.js";
 import { evidenceWhyCommand } from "./evidence-why.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
+import { frontsBoardCommand } from "./fronts-board.js";
 import { frontsCloseCommand } from "./fronts-close.js";
 import { frontsMergeCommand } from "./fronts-merge.js";
 import { frontsRouteCommand } from "./fronts-route.js";
@@ -301,6 +302,7 @@ export const REGISTRY = [
   handoffCommand,
   modCostCommand,
   modUsageCommand,
+  frontsBoardCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

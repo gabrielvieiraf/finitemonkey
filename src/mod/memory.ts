@@ -17,6 +17,7 @@ export interface Memory {
   pending: Timer | undefined;
   steps: readonly StepUsage[];
   cost: readonly string[];
+  board: readonly string[];
 }
 
-export const memory: Memory = { state: undefined, view: undefined, pending: undefined, steps: [], cost: [] };
+export const memory: Memory = { state: undefined, view: undefined, pending: undefined, steps: [], cost: [], board: [] };

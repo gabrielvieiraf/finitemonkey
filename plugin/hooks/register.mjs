@@ -1,5 +1,5 @@
 // src/mod/memory.ts
-var memory = { state: void 0, view: void 0, pending: void 0, steps: [], cost: [] };
+var memory = { state: void 0, view: void 0, pending: void 0, steps: [], cost: [], board: [] };
 
 // src/mod/attribution-hooks.ts
 var KINDS = /* @__PURE__ */ new Set(["commit", "pr"]);
@@ -27,16 +27,16 @@ async function runCli($, args) {
 // src/mod/compose-hooks.ts
 var RULES_SECTION = "finitemonkey:rules";
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var withRulesSection = (result, text2) => text2 === "" ? result : {
+var withRulesSection = (result, text3) => text3 === "" ? result : {
   sections: [
     ...result.sections.filter((section) => section.id !== RULES_SECTION),
-    { id: RULES_SECTION, text: text2, scope: "session" }
+    { id: RULES_SECTION, text: text3, scope: "session" }
   ]
 };
-var parseHandoff = (text2) => {
+var parseHandoff = (text3) => {
   let parsed;
   try {
-    parsed = JSON.parse(text2);
+    parsed = JSON.parse(text3);
   } catch {
     return void 0;
   }
@@ -44,8 +44,8 @@ var parseHandoff = (text2) => {
   return isRecord(data) && data["schema"] === "finitemonkey/handoff@1" && typeof data["text"] === "string" ? data["text"] : void 0;
 };
 async function readHandoff($) {
-  const text2 = await runCli($, ["handoff", "--json"]);
-  return text2 === void 0 ? void 0 : parseHandoff(text2);
+  const text3 = await runCli($, ["handoff", "--json"]);
+  return text3 === void 0 ? void 0 : parseHandoff(text3);
 }
 async function composeRules(_$, e, next) {
   return withRulesSection(await next(e), memory.state?.instructions ?? "");
@@ -89,10 +89,10 @@ function scheduleUsage($) {
 }
 var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var money = (usd) => `$${(typeof usd === "number" ? usd : 0).toFixed(2)}`;
-var costLines = (text2) => {
+var costLines = (text3) => {
   let parsed;
   try {
-    parsed = JSON.parse(text2);
+    parsed = JSON.parse(text3);
   } catch {
     return [];
   }
@@ -106,8 +106,8 @@ var costLines = (text2) => {
   ];
 };
 async function refreshCost($) {
-  const text2 = await runCli($, ["mod", "cost", "--json"]);
-  memory.cost = text2 === void 0 ? [] : costLines(text2);
+  const text3 = await runCli($, ["mod", "cost", "--json"]);
+  memory.cost = text3 === void 0 ? [] : costLines(text3);
   return memory.cost;
 }
 
@@ -118,10 +118,10 @@ var list = (value) => Array.isArray(value) ? value.filter(isRecord3) : [];
 var contractOf = (value) => isRecord3(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
 var loopOf = (value) => isRecord3(value) && typeof value["count"] === "number" && typeof value["limit"] === "number" ? { count: value["count"], limit: value["limit"] } : null;
 var costOf = (value) => isRecord3(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number" ? { usd: value["usd"], requests: value["requests"] } : null;
-var parseStatus = (text2) => {
+var parseStatus = (text3) => {
   let parsed;
   try {
-    parsed = JSON.parse(text2);
+    parsed = JSON.parse(text3);
   } catch {
     return void 0;
   }
@@ -184,10 +184,47 @@ var statusText = (view) => [
   ...view.notVerified.length > 0 ? ["not verified:", ...view.notVerified.map(notVerifiedLine)] : []
 ].join("\n");
 
+// src/mod/fronts-view.ts
+var FRONTS_PANE = "fm-fronts";
+var isRecord4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var text = (value, fallback) => typeof value === "string" ? value : fallback;
+var rowLine = (row) => [
+  `${row["waiting"] === true ? "◆" : "●"} ${text(row["branch"], text(row["path"], "?"))}`,
+  `gate ${markOf(text(row["gate"], "none"))}`,
+  `contract ${text(row["contract"], "-")}`,
+  ...typeof row["lastActivity"] === "string" ? [`last ${row["lastActivity"].slice(0, 16).replace("T", " ")}`] : [],
+  ...row["waiting"] === true ? ["WAITING ON YOU"] : []
+].join("  ");
+var collisionLine = (item) => {
+  const branches = Array.isArray(item["branches"]) ? item["branches"].map(String).join(", ") : "";
+  return `collision: ${text(item["file"], "?")} in ${branches}`;
+};
+var boardLines = (json) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  const data = isRecord4(parsed) && isRecord4(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord4(data) || data["schema"] !== "finitemonkey/fronts-board@1") return [];
+  const rows = Array.isArray(data["rows"]) ? data["rows"].filter(isRecord4) : [];
+  const collisions = Array.isArray(data["collisions"]) ? data["collisions"].filter(isRecord4) : [];
+  return [...rows.map(rowLine), ...collisions.map(collisionLine)];
+};
+var frontsTree = (elements, lines, close) => elements.Box({
+  key: "fm-fronts",
+  flexDirection: "column",
+  children: [
+    ...(lines.length === 0 ? ["no worktrees found"] : lines).map((line2) => elements.Text({ children: [line2] })),
+    elements.Button({ key: "fm-fronts-close", label: "Close", hotkey: "x", onPress: close })
+  ]
+});
+
 // src/mod/gate-view.ts
 var GATE_PANE = "fm-gate";
 var COST_PANE = "fm-cost";
-var line = (elements, text2, key, dim = false) => elements.Text({ key, children: [text2], ...dim ? { dimColor: true } : {} });
+var line = (elements, text3, key, dim = false) => elements.Text({ key, children: [text3], ...dim ? { dimColor: true } : {} });
 var bandTree = (elements, view, open) => elements.Box({
   key: "fm-band",
   flexDirection: "row",
@@ -225,7 +262,7 @@ var costTree = (elements, lines, close) => elements.Box({
   flexDirection: "column",
   children: [
     ...(lines.length === 0 ? ["no cost recorded for this contract"] : lines).map(
-      (text2) => elements.Text({ children: [text2] })
+      (text3) => elements.Text({ children: [text3] })
     ),
     elements.Button({ key: "fm-cost-close", label: "Close", hotkey: "x", onPress: close })
   ]
@@ -238,8 +275,8 @@ function bandOn() {
   return (memory.state?.band ?? "active") !== "off";
 }
 async function refreshStatus($) {
-  const text2 = await runCli($, ["status", "--json"]);
-  const view = text2 === void 0 ? void 0 : parseStatus(text2);
+  const text3 = await runCli($, ["status", "--json"]);
+  const view = text3 === void 0 ? void 0 : parseStatus(text3);
   if (view === void 0) return;
   memory.view = view;
   $.ui.invalidate("ui.render");
@@ -288,6 +325,8 @@ async function renderBand($, e, next) {
   return theirs === null ? ours : elements.Box({ flexDirection: "column", children: [ours, theirs] });
 }
 async function renderPane($, e, next) {
+  if (e.requestId === FRONTS_PANE)
+    return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
   if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
@@ -304,6 +343,16 @@ async function costNow($) {
   }
   return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
 }
+async function frontsNow($) {
+  const json = await runCli($, ["fronts", "board", "--json"]);
+  memory.board = json === void 0 ? [] : boardLines(json);
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) {
+    await $.ui.open({ id: FRONTS_PANE, title: "Finite Monkey · fronts" });
+    return {};
+  }
+  return { text: memory.board.length === 0 ? "finitemonkey: no worktrees found" : memory.board.join("\n") };
+}
 async function handoffNow($) {
   const brief = await readHandoff($);
   if (brief === void 0) return { text: "finitemonkey: no handoff in this folder" };
@@ -314,6 +363,7 @@ async function handoffNow($) {
 async function runGateCommand($, e) {
   if (e.args.trim() === "handoff") return handoffNow($);
   if (e.args.trim() === "cost") return costNow($);
+  if (e.args.trim() === "fronts") return frontsNow($);
   if (memory.view === void 0) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
@@ -334,7 +384,7 @@ ${line2}` };
 
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord5 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -345,7 +395,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord4(value)) return void 0;
+  if (!isRecord5(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -354,20 +404,20 @@ var ruleOf = (value) => {
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord4(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord5(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
-var dataOf = (parsed) => isRecord4(parsed) && isRecord4(parsed["data"]) ? parsed["data"] : parsed;
-var parseModState = (text2) => {
+var dataOf = (parsed) => isRecord5(parsed) && isRecord5(parsed["data"]) ? parsed["data"] : parsed;
+var parseModState = (text3) => {
   let parsed;
   try {
-    parsed = JSON.parse(text2);
+    parsed = JSON.parse(text3);
   } catch {
     return void 0;
   }
   const data = dataOf(parsed);
-  if (!isRecord4(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  if (!isRecord5(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
@@ -388,9 +438,9 @@ var parseModState = (text2) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord5 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var text = (input, ...names) => {
-  if (!isRecord5(input)) return void 0;
+var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var text2 = (input, ...names) => {
+  if (!isRecord6(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;
@@ -408,13 +458,13 @@ var relativeTo = (root, path) => {
 var firstMatch = (rules, value) => rules.find((rule) => rule.regex.test(value));
 var ruleFor = (state, tool, input) => {
   if (FILE_TOOLS.has(tool)) {
-    const path = text(input, "file_path", "notebook_path");
+    const path = text2(input, "file_path", "notebook_path");
     if (path === void 0) return void 0;
     const rules = state.rules.filter((rule) => rule.rule.target === "path");
     return firstMatch(rules, relativeTo(state.root, path));
   }
   if (SHELL_TOOLS.has(tool)) {
-    const command = text(input, "command");
+    const command = text2(input, "command");
     if (command === void 0) return void 0;
     return firstMatch(
       state.rules.filter((rule) => rule.rule.target === "command"),
@@ -433,8 +483,8 @@ var FAILED_REASON = "finitemonkey: the mod's permission check failed, so this ca
 
 // src/mod/tighten-hooks.ts
 async function refreshState($) {
-  const text2 = await runCli($, ["mod", "state", "--json"]);
-  const state = text2 === void 0 ? void 0 : parseModState(text2);
+  const text3 = await runCli($, ["mod", "state", "--json"]);
+  const state = text3 === void 0 ? void 0 : parseModState(text3);
   if (state === void 0) return;
   const before = memory.state?.instructions;
   memory.state = state;

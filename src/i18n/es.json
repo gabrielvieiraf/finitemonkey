@@ -2286,5 +2286,9 @@
   "command.mod_cost.summary": "Muestra cuánto costó el contrato activo hasta ahora, por intento y por brazo de experimento",
   "command.mod_usage.summary": "Registra el uso de la API de las solicitudes al modelo (lo usa el mod)",
   "mod.cost.summary": "contrato {task}: {usd} en {requests, plural, one {# solicitud} other {# solicitudes}}, {attempts, plural, one {# intento} other {# intentos}}",
-  "mod.cost.arm": "brazo {arm}: {usd} en {requests, plural, one {# solicitud} other {# solicitudes}}"
+  "mod.cost.arm": "brazo {arm}: {usd} en {requests, plural, one {# solicitud} other {# solicitudes}}",
+  "command.fronts_board.summary": "Muestra cada worktree con su gate, contrato y última actividad, y los archivos que dos frentes cambiaron",
+  "fronts.board.row": "{branch}: gate {gate}, contrato {contract}{waiting}",
+  "fronts.board.collision": "colisión: {file} cambió en {branches}",
+  "fronts.board.waiting": " · esperando por ti"
 }
