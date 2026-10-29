@@ -24,6 +24,7 @@ import { ASSUMPTION_HANDLERS } from "../guardian/assumption-hook.js";
 import { FORECAST_HANDLERS } from "../guardian/forecast-hook.js";
 import { scanHandlers } from "../guardian/pending.js";
 import { REALITY_HANDLERS } from "../guardian/reality-hook.js";
+import { detectBypass, noteDenied } from "../guards/bypass/ledger.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
@@ -140,6 +141,7 @@ const toned = (input: HookInput, decision: Extract<HookDecision, { kind: "block"
 
 const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
   recordBlock(input, decision);
+  if (input.event === "PreToolUse") noteDenied(input);
   if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
   const human = toned(input, decision);
   const reason = capReason(decision.reason);
@@ -183,7 +185,14 @@ export const SECRETS_HANDLERS: HookHandlers = {
 
 export const GUARD_SETS: readonly GuardSet[] = [
   { id: "secrets", damage: true, handlers: SECRETS_HANDLERS },
-  { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
+  {
+    id: "gate",
+    damage: true,
+    handlers: mergeHandlers(PORTAO_HANDLERS, {
+      PostToolUse: [detectBypass],
+      PostToolUseFailure: [detectBypass],
+    }),
+  },
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },

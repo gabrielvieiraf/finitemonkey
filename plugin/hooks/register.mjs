@@ -43,7 +43,8 @@ var parseStatus = (text2) => {
       reason: str(item, "reason"),
       verify: str(item, "verify")
     })),
-    editsSinceGate: typeof edits === "number" ? edits : null
+    editsSinceGate: typeof edits === "number" ? edits : null,
+    bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0
   };
 };
 var MARK = {
@@ -56,6 +57,7 @@ var MARK = {
 var markOf = (light) => MARK[light] ?? "·";
 var short = (hash) => hash.slice(0, 4);
 var bandLine = (view) => [
+  ...view.bypasses > 0 ? [`⚠ ${String(view.bypasses)} guard bypassed`] : [],
   `gate ${markOf(view.light)} ${String(view.passed)}/${String(view.total)}`,
   ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : [],
   ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`],

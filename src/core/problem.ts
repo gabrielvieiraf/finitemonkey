@@ -102,6 +102,7 @@ export const ERROR_CODES = [
   "guardian_write_failed",
   "unattended_refused",
   "unattended_incomplete",
+  "guard_bypassed",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

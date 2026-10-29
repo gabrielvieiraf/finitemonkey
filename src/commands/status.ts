@@ -19,6 +19,7 @@ const humanLines = (ctx: Ctx, data: StatusData): readonly string[] => [
   ...(data.editsSinceGate !== null && data.editsSinceGate > 0
     ? [ctx.t("status.edits", { count: data.editsSinceGate })]
     : []),
+  ...(data.bypasses > 0 ? [ctx.t("bypass.refused", { count: data.bypasses })] : []),
   ...data.checks.map((check) => `${MARK[check.status] ?? "○"} ${check.id}${check.stale ? " (stale)" : ""}`),
   ...data.notVerified.map((item) =>
     ctx.t("status.not_verified", { id: item.id, reason: item.reason, verify: item.verify }),

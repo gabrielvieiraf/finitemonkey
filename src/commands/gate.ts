@@ -13,6 +13,7 @@ import { ISOLATED_FEATURE } from "../gate/isolated.js";
 import { reportLines } from "../gate/render.js";
 import type { GateReport } from "../gate/report.js";
 import { type GateRun, runGate } from "../gate/run.js";
+import { unreviewedBypasses } from "../guards/bypass/ledger.js";
 import { featureMode } from "../policy/feature.js";
 import { fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
@@ -32,6 +33,15 @@ const notRun = (detail: string): Problem => ({
 
 export const lastRunRefusal = (ctx: Ctx): Problem | undefined => {
   const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  const bypassed = root === undefined ? [] : unreviewedBypasses(ctx.runtime, fmPaths(root));
+  if (bypassed.length > 0)
+    return {
+      code: "guard_bypassed",
+      messageKey: "bypass.refused",
+      params: { count: bypassed.length },
+      fix: "finitemonkey bypass review",
+      exitCode: ExitCode.CheckFailed,
+    };
   const status = root === undefined ? undefined : readGateStatus(ctx.runtime, fmPaths(root));
   if (status?.status === "released_by_cap") {
     return {

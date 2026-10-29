@@ -119,7 +119,8 @@
             "gate_released_by_cap",
             "guardian_write_failed",
             "unattended_refused",
-            "unattended_incomplete"
+            "unattended_incomplete",
+            "guard_bypassed"
           ]
         },
         "message": {

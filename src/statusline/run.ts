@@ -3,6 +3,7 @@ import type { Ctx } from "../core/context.js";
 import { brokenHooks } from "../doctor/probe.js";
 import { readFronts } from "../fronts/state.js";
 import { statusSegment } from "../fronts/status.js";
+import { unreviewedBypasses } from "../guards/bypass/ledger.js";
 import { readAll, withDeadline } from "../hooks/stdin.js";
 import { LOCK_FILE } from "../install/layout.js";
 import { parseLock } from "../install/lock-file.js";
@@ -86,6 +87,7 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
     ...spendSegment(ctx, paths, input),
     fronts: root === undefined ? undefined : frontsSegment(ctx, root),
     blueprint: blueprintOf(ctx, paths),
+    bypassed: paths === undefined ? 0 : unreviewedBypasses(ctx.runtime, paths).length,
     hooksBroken: paths !== undefined && input.version !== undefined && brokenHooks(ctx.runtime, paths, input.version),
   });
   return composeLine(wrapped, segment, columnsOf(ctx));

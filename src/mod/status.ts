@@ -20,6 +20,7 @@ export interface GateView {
   readonly checks: readonly ViewCheck[];
   readonly notVerified: readonly ViewNotVerified[];
   readonly editsSinceGate: number | null;
+  readonly bypasses: number;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -66,6 +67,7 @@ export const parseStatus = (text: string): GateView | undefined => {
       verify: str(item, "verify"),
     })),
     editsSinceGate: typeof edits === "number" ? edits : null,
+    bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
   };
 };
 
@@ -83,6 +85,7 @@ const short = (hash: string): string => hash.slice(0, 4);
 
 export const bandLine = (view: GateView): string =>
   [
+    ...(view.bypasses > 0 ? [`⚠ ${String(view.bypasses)} guard bypassed`] : []),
     `gate ${markOf(view.light)} ${String(view.passed)}/${String(view.total)}`,
     ...(view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : []),
     ...(view.contract === null ? [] : [`contract ${short(view.contract.hash)}`]),

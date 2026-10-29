@@ -5,6 +5,7 @@ import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
 import { calibrateExplainCommand, calibrateRefitCommand } from "./calibrate.js";
+import { bypassReviewCommand } from "./bypass.js";
 import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
@@ -294,6 +295,7 @@ export const REGISTRY = [
   modStateCommand,
   modRecordCommand,
   statusCommand,
+  bypassReviewCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -95,7 +95,9 @@ const runTests = (): void => {
     mkdirSync(tests);
     for (const name of readdirSync(MOD_TESTS).filter((file) => file.endsWith(".ts") && !file.endsWith(".d.ts")))
       cpSync(join(MOD_TESTS, name), join(tests, name));
-    const result = claude(["plugin", "test", dir]);
+    const home = join(dir, ".home");
+    mkdirSync(home);
+    const result = claude(["plugin", "test", dir], sandboxEnv(home));
     const output = `${result.stdout}${result.stderr}`;
     if (output.includes("hooks modules are turned off")) {
       if (inCi) fail(`claude plugin test could not run:\n${output}`);

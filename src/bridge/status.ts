@@ -4,6 +4,7 @@ import type { EvidenceStatus } from "../evidence/types.js";
 import { readGateStatus } from "../gate/hooks/status.js";
 import { prepareGate } from "../gate/prepare.js";
 import { buildReport, type GateReport, type ReportItem } from "../gate/report.js";
+import { unreviewedBypasses } from "../guards/bypass/ledger.js";
 import { readEntries, signalFiles } from "../signals/store.js";
 import { type GateLight, gateLight } from "../statusline/gate-state.js";
 import { contractHash } from "../task/load.js";
@@ -44,6 +45,7 @@ export interface StatusData {
   readonly checks: readonly StatusCheck[];
   readonly notVerified: readonly NotVerified[];
   readonly editsSinceGate: number | null;
+  readonly bypasses: number;
 }
 
 const verifyOf = (item: ReportItem): string => item.command ?? GATE_COMMAND;
@@ -115,5 +117,6 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     checks: items.map(checkOf),
     notVerified: items.filter((item) => item.status === "unverified").map(notVerifiedOf),
     editsSinceGate: editsSince(runtime, paths, gateAt),
+    bypasses: unreviewedBypasses(runtime, paths).length,
   };
 };

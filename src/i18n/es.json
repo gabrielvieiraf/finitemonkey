@@ -2260,5 +2260,18 @@
   "status.summary": "gate {light}: {passed}/{total} verificaciones pasaron (tarea {task})",
   "status.contract": "contrato {id} {hash}",
   "status.edits": "la evidencia tiene {count, plural, one {# edición} other {# ediciones}} de atraso",
-  "status.not_verified": "no verificado: {id} ({reason}); verifica con `{verify}`"
+  "status.not_verified": "no verificado: {id} ({reason}); verifica con `{verify}`",
+  "command.bypass_review.summary": "Lista llamadas que un guard negó y que corrieron igual, y las marca como revisadas (solo la persona)",
+  "bypass.detected": "Un guard de finitemonkey negó esta llamada de {tool} ({summary}) y corrió igual: otro mod, una regla de settings o una herramienta de permisos la aprobó por encima del guard. La llamada quedó registrada como guard_bypassed; ci gate y pr open se niegan hasta que la persona ejecute finitemonkey bypass review. No repitas la llamada.",
+  "bypass.detected.human": "Una llamada de {tool} que un guard negó corrió igual. Revísala con `finitemonkey bypass review` y mira qué mod o regla la aprobó (`finitemonkey doctor`).",
+  "bypass.refused": "{count, plural, one {# llamada} other {# llamadas}} que un guard negó {count, plural, one {corrió} other {corrieron}} igual y no {count, plural, one {fue revisada} other {fueron revisadas}}",
+  "bypass.open": "{count, plural, =0 {Ningún guard eludido por revisar.} one {# guard eludido por revisar:} other {# guards eludidos por revisar:}}",
+  "bypass.line": "{id}  {tool}  {summary}  ({at})",
+  "bypass.needs_person": "Solo la persona marca un guard eludido como revisado, en una terminal fuera de Claude Code",
+  "bypass.reviewed": "{count, plural, one {# elusión marcada} other {# elusiones marcadas}} como revisada",
+  "statusline.bypassed": "{count} eludido",
+  "doctor.mods.none": "Ningún mod instalado puede aprobar una llamada que un guard negó",
+  "doctor.mods.reach": "El mod {plugin} engancha {reach}: con un login personal sin managed settings puede aprobar una llamada que un guard de finitemonkey negó, o saltarse los guards",
+  "doctor.mods.guarded": "El mod {plugin} engancha {reach}; el guard integrado sec-default aplica en esta máquina y le impide aflojar la decisión de un guard",
+  "doctor.mods.fix": "Desactiva el mod, o pon finitemonkey primero en prependPlugins en ~/.claude/settings.json (solo vale sin managed settings y sin login Team o Enterprise), para que su endurecimiento corra por fuera"
 }

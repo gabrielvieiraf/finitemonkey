@@ -2261,7 +2261,20 @@
     "status.summary": "machine",
     "status.contract": "machine",
     "status.edits": "machine",
-    "status.not_verified": "machine"
+    "status.not_verified": "machine",
+    "command.bypass_review.summary": "machine",
+    "bypass.detected": "machine",
+    "bypass.detected.human": "machine",
+    "bypass.refused": "machine",
+    "bypass.open": "machine",
+    "bypass.line": "machine",
+    "bypass.needs_person": "machine",
+    "bypass.reviewed": "machine",
+    "statusline.bypassed": "machine",
+    "doctor.mods.none": "machine",
+    "doctor.mods.reach": "machine",
+    "doctor.mods.guarded": "machine",
+    "doctor.mods.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4525,6 +4538,19 @@
     "status.summary": "machine",
     "status.contract": "machine",
     "status.edits": "machine",
-    "status.not_verified": "machine"
+    "status.not_verified": "machine",
+    "command.bypass_review.summary": "machine",
+    "bypass.detected": "machine",
+    "bypass.detected.human": "machine",
+    "bypass.refused": "machine",
+    "bypass.open": "machine",
+    "bypass.line": "machine",
+    "bypass.needs_person": "machine",
+    "bypass.reviewed": "machine",
+    "statusline.bypassed": "machine",
+    "doctor.mods.none": "machine",
+    "doctor.mods.reach": "machine",
+    "doctor.mods.guarded": "machine",
+    "doctor.mods.fix": "machine"
   }
 }

@@ -7,6 +7,12 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "Uma chave aleatória, criada na primeira vez que uma evidência é gravada, que assina cada linha do registro de evidências. Fica na sua pasta pessoal, fora do projeto, legível só por você. Linhas sem assinatura válida são ignoradas e relatadas; apagar a chave faz as evidências antigas contarem como não executadas.",
     es: "Una clave aleatoria, creada la primera vez que se escribe una evidencia, que firma cada línea del registro de evidencias. Queda en tu carpeta personal, fuera del proyecto, legible solo por ti. Las líneas sin firma válida se ignoran y se informan; borrar la clave hace que las evidencias antiguas cuenten como no ejecutadas.",
   },
+  "guard-bypass": {
+    en: "Tool calls a finitemonkey guard denied that ran anyway, approved by another mod, a settings rule or a permission tool: the call id, the tool and a masked summary of its input. `ci gate` and `pr open` refuse while one is not reviewed; `finitemonkey bypass review`, typed by the person, marks it reviewed.",
+    "pt-BR":
+      "Chamadas de ferramenta que um guard do finitemonkey negou e que rodaram mesmo assim, aprovadas por outro mod, uma regra de settings ou uma ferramenta de permissão: o id da chamada, a ferramenta e um resumo mascarado da entrada. `ci gate` e `pr open` recusam enquanto houver uma não revisada; `finitemonkey bypass review`, digitado pela pessoa, marca como revisada.",
+    es: "Llamadas de herramienta que un guard de finitemonkey negó y que corrieron igual, aprobadas por otro mod, una regla de settings o una herramienta de permisos: el id de la llamada, la herramienta y un resumen enmascarado de su entrada. `ci gate` y `pr open` se niegan mientras haya una sin revisar; `finitemonkey bypass review`, escrito por la persona, la marca como revisada.",
+  },
   infra: {
     en: "How the project deploys, read from its own files when you run `finitemonkey infra`: level, targets and risks with `file:line`, no address. Production hosts found in deploy files go to `hosts.local.yml`, which git ignores, and only when the `.gitignore` block is there.",
     "pt-BR":
@@ -58,7 +64,8 @@ export const DEPLOY_FOOTPRINT_TEXT = {
     | "deploy-generate"
     | "headers"
     | "observability"
-    | "ledger-key",
+    | "ledger-key"
+    | "guard-bypass",
     Localized
   >
 >;

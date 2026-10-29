@@ -150,6 +150,9 @@
           "type": "number"
         }
       ]
+    },
+    "bypasses": {
+      "type": "number"
     }
   },
   "required": [
@@ -163,6 +166,7 @@
     "counts",
     "checks",
     "notVerified",
-    "editsSinceGate"
+    "editsSinceGate",
+    "bypasses"
   ]
 }

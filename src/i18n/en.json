@@ -2260,5 +2260,18 @@
   "status.summary": "gate {light}: {passed}/{total} checks passed (task {task})",
   "status.contract": "contract {id} {hash}",
   "status.edits": "evidence is {count, plural, one {# edit} other {# edits}} old",
-  "status.not_verified": "not verified: {id} ({reason}); verify with `{verify}`"
+  "status.not_verified": "not verified: {id} ({reason}); verify with `{verify}`",
+  "command.bypass_review.summary": "List calls a guard denied that ran anyway, and mark them reviewed (person only)",
+  "bypass.detected": "A finitemonkey guard denied this {tool} call ({summary}) and it ran anyway: another mod, a settings rule or a permission tool approved it over the guard. The call is recorded as guard_bypassed; ci gate and pr open refuse until the person runs finitemonkey bypass review. Do not repeat the call.",
+  "bypass.detected.human": "A {tool} call that a guard denied ran anyway. Review it with `finitemonkey bypass review` and check which mod or rule approved it (`finitemonkey doctor`).",
+  "bypass.refused": "{count, plural, one {# call} other {# calls}} that a guard denied ran anyway and {count, plural, one {is} other {are}} not reviewed",
+  "bypass.open": "{count, plural, =0 {No bypassed guard to review.} one {# bypassed guard to review:} other {# bypassed guards to review:}}",
+  "bypass.line": "{id}  {tool}  {summary}  ({at})",
+  "bypass.needs_person": "Only the person marks a bypassed guard as reviewed, in a terminal outside Claude Code",
+  "bypass.reviewed": "{count, plural, one {# bypass} other {# bypasses}} marked reviewed",
+  "statusline.bypassed": "{count} bypassed",
+  "doctor.mods.none": "No installed mod can approve a call a guard denied",
+  "doctor.mods.reach": "Mod {plugin} hooks {reach}: on a personal login without managed settings it can approve a call a finitemonkey guard denied, or skip the guards",
+  "doctor.mods.guarded": "Mod {plugin} hooks {reach}; the built-in sec-default guard applies on this machine and keeps it from loosening a guard's decision",
+  "doctor.mods.fix": "Disable the mod, or list finitemonkey first in prependPlugins in ~/.claude/settings.json (allowed only without managed settings and a Team or Enterprise login), so its tightening runs outermost"
 }
