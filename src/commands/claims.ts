@@ -18,6 +18,7 @@ import {
 import { viewsOf } from "../knowledge/service.js";
 import type { ClaimView } from "../knowledge/status.js";
 import { whyChain } from "../knowledge/why.js";
+import { classifyStatement, isRuleLike } from "../rules/classify.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { inGuardianRepo } from "./guardian.js";
@@ -38,7 +39,7 @@ const fail = (
 const viewLine = (ctx: Ctx, view: ClaimView): string =>
   ctx.t("knowledge.claims.row", {
     id: view.claim.id,
-    status: view.status,
+    status: `${view.status}, ${ctx.t(view.claim.kind === "check" ? "knowledge.claims.checked" : "knowledge.claims.unverified")}`,
     text: view.claim.text,
     where: view.anchors.map((item) => item.anchor.path).join(", "),
   });
@@ -67,6 +68,7 @@ export const claimsListCommand: CommandSpec = {
             id: view.claim.id,
             text: view.claim.text,
             kind: view.claim.kind,
+            verified: view.claim.kind === "check",
             status: view.status,
             anchors: view.anchors.map((item) => ({ ...item.anchor, state: item.state })),
             origin: view.claim.origin,
@@ -154,7 +156,11 @@ export const claimsAddCommand: CommandSpec = {
         ...(tree === undefined ? {} : { tree }),
         ...(commit === undefined ? {} : { commit }),
       });
-      return success({ schema: CLAIMS_SCHEMA, id }, [ctx.t("knowledge.claims.added", { id })]);
+      const shaped = check === undefined && isRuleLike(text) && classifyStatement(text).detector !== undefined;
+      return success({ schema: CLAIMS_SCHEMA, id, suggestRule: shaped }, [
+        ctx.t("knowledge.claims.added", { id }),
+        ...(shaped ? [ctx.t("knowledge.claims.suggest_rule")] : []),
+      ]);
     });
   },
 };

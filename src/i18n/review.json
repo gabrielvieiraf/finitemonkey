@@ -2324,7 +2324,20 @@
     "knowledge.claims.error.anchor": "machine",
     "knowledge.claims.error.unknown": "machine",
     "knowledge.claims.context.title": "machine",
-    "knowledge.claims.context.line": "machine"
+    "knowledge.claims.context.line": "machine",
+    "knowledge.claims.checked": "machine",
+    "knowledge.claims.unverified": "machine",
+    "knowledge.claims.suggest_rule": "machine",
+    "knowledge.claims.context.prose": "machine",
+    "gate.claims.none": "machine",
+    "gate.claims.unverified": "machine",
+    "gate.claims.failed": "machine",
+    "gate.claims.not_run": "machine",
+    "gate.claims.passed": "machine",
+    "gate.claims.decorative": "machine",
+    "gate.claims.strength_unavailable": "machine",
+    "gate.claims.shadow": "machine",
+    "onboard.block.conventions": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4651,6 +4664,19 @@
     "knowledge.claims.error.anchor": "machine",
     "knowledge.claims.error.unknown": "machine",
     "knowledge.claims.context.title": "machine",
-    "knowledge.claims.context.line": "machine"
+    "knowledge.claims.context.line": "machine",
+    "knowledge.claims.checked": "machine",
+    "knowledge.claims.unverified": "machine",
+    "knowledge.claims.suggest_rule": "machine",
+    "knowledge.claims.context.prose": "machine",
+    "gate.claims.none": "machine",
+    "gate.claims.unverified": "machine",
+    "gate.claims.failed": "machine",
+    "gate.claims.not_run": "machine",
+    "gate.claims.passed": "machine",
+    "gate.claims.decorative": "machine",
+    "gate.claims.strength_unavailable": "machine",
+    "gate.claims.shadow": "machine",
+    "onboard.block.conventions": "machine"
   }
 }

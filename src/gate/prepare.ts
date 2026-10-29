@@ -6,7 +6,9 @@ import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, loadProjectConfig } from "../git/project-config.js";
+import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
 import { maskText } from "../mask/mask.js";
+import { featureMode } from "../policy/feature.js";
 import type { Example } from "../task/examples.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { activeTaskId, type LoadedContract, loadImplicit, type LoadProblem, loadTask } from "../task/load.js";
@@ -125,7 +127,7 @@ const measureSize = (
 
 const withCheck = (
   contract: TaskContract,
-  kind: "examples" | "scenarios" | "blind-tests",
+  kind: "examples" | "scenarios" | "blind-tests" | "claims",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -138,9 +140,14 @@ const withExamples = (contract: TaskContract, examples: readonly Example[] | und
 const withConfigured = (runtime: Runtime, root: AbsolutePath, contract: TaskContract): TaskContract => {
   const config = loadProjectConfig(runtime, root);
   return withCheck(
-    withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
-    "blind-tests",
-    configAt(config, "blind") !== undefined,
+    withCheck(
+      withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
+      "blind-tests",
+      configAt(config, "blind") !== undefined,
+    ),
+    "claims",
+    featureMode(runtime, fmPaths(root), CLAIM_CHECKS_FEATURE) !== "off" &&
+      readClaims(runtime, fmPaths(root)).some((claim) => lastOf(claim, ["close"]) === undefined),
   );
 };
 

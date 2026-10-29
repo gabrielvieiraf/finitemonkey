@@ -10,6 +10,7 @@ import { type Anchor, ANCHOR_MODES } from "./anchor.js";
 export const CLAIMS_FILE = "claims.jsonl";
 export const CLAIM_SCHEMA = "finitemonkey/claim@1";
 export const KNOWLEDGE_CLAIMS_FEATURE = "knowledge-claims";
+export const CLAIM_CHECKS_FEATURE = "claim-checks";
 
 export const CLAIM_KINDS = ["prose", "check"] as const;
 export const ORIGIN_SOURCES = ["person", "ledger", "agent", "external"] as const;

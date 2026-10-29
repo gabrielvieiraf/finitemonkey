@@ -2323,5 +2323,18 @@
   "knowledge.claims.error.anchor": "Ancla {anchor} no encontrada: el archivo no existe o la función no está definida en su nivel superior.",
   "knowledge.claims.error.unknown": "No hay afirmación con id {id}.",
   "knowledge.claims.context.title": "Afirmaciones del proyecto cuyo código anclado no cambió desde la última verificación:",
-  "knowledge.claims.context.line": "- {text} ({where}; {id})"
+  "knowledge.claims.context.line": "- {text} ({where}; {id})",
+  "knowledge.claims.checked": "verificada",
+  "knowledge.claims.unverified": "sin verificar",
+  "knowledge.claims.suggest_rule": "Esto parece una regla; `finitemonkey rules propose` puede convertirla en un check que se ejecuta en lugar de texto.",
+  "knowledge.claims.context.prose": "- {text} ({where}; {id}; texto sin verificar, ningún check lo ejecuta)",
+  "gate.claims.none": "ninguna afirmación ejecutable está anclada a los archivos modificados",
+  "gate.claims.unverified": "afirmación sin verificar {id}: {text} (solo texto; nada la comprueba)",
+  "gate.claims.failed": "la afirmación {id} ya no se cumple: {text}",
+  "gate.claims.not_run": "la afirmación {id} no pudo ejecutarse (comando ausente, timeout o sin tiempo)",
+  "gate.claims.passed": "{count, plural, one {# check de afirmación pasó} other {# checks de afirmación pasaron}} y se renovaron en este árbol",
+  "gate.claims.decorative": "la afirmación {id} es decorativa: su check no detectó ninguno de los {total} defectos plantados en su código anclado",
+  "gate.claims.strength_unavailable": "fuerza de los checks de afirmación no medida: {detail}",
+  "gate.claims.shadow": "modo shadow: un check de afirmación falló y bloquearía con claim-checks activo",
+  "onboard.block.conventions": "Convenciones comprobadas en el gate"
 }

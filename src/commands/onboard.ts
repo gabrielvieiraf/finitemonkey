@@ -9,6 +9,7 @@ import { envInHistory } from "../creds/history.js";
 import { credentialInventory } from "../creds/inventory.js";
 import { gitAt, treeHash } from "../gate/git.js";
 import type { MessageKey } from "../i18n/catalogs.js";
+import { viewsOf } from "../knowledge/service.js";
 import { blockDiff, blockLimits, type BlockSection, fitBlock } from "../onboard/block.js";
 import { discoverCommands } from "../onboard/discover.js";
 import { activeRisks, infraFiles, type Risk } from "../onboard/risks.js";
@@ -81,6 +82,13 @@ const blockSections = (ctx: Ctx, files: ProjectFiles, state: OnboardState): read
     intro:
       state.commands.length === 0 ? [ctx.t("onboard.block.none")] : [ctx.t("onboard.block.header"), "| --- | --- |"],
     rows: commandRows(state.commands),
+  },
+  {
+    heading: `## ${ctx.t("onboard.block.conventions")}`,
+    intro: [],
+    rows: viewsOf(ctx.runtime, fmPaths(projectRoot(ctx)))
+      .filter((view) => view.status === "valid" && view.claim.kind === "check" && view.claim.run !== undefined)
+      .map((view) => `- ${view.claim.text} (\`${(view.claim.run ?? "").replace(/`/g, "'")}\`)`),
   },
   {
     heading: `## ${ctx.t("onboard.block.pointers")}`,

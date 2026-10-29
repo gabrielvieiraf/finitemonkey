@@ -21,7 +21,11 @@ const where = (view: ClaimView): string =>
     .join(", ");
 
 export const claimLine = (t: Translate, view: ClaimView): string =>
-  t("knowledge.claims.context.line", { id: view.claim.id, text: view.claim.text, where: where(view) });
+  t(view.claim.kind === "check" ? "knowledge.claims.context.line" : "knowledge.claims.context.prose", {
+    id: view.claim.id,
+    text: view.claim.text,
+    where: where(view),
+  });
 
 const allow = { kind: "allow" } as const;
 

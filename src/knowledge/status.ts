@@ -35,6 +35,9 @@ export const evaluateClaim = (claim: Claim, options: EvaluateOptions): ClaimView
   if (lastOf(claim, ["close"]) !== undefined) return { claim, status: "closed", anchors, reason: "closed" };
   const broken = anchors.find((item) => item.state === "changed" || item.state === "missing");
   if (broken !== undefined) return { claim, status: "stale", anchors, reason: `${broken.state}:${broken.anchor.path}` };
+  const last = lastOf(claim, ["stale", "renew"]);
+  if (last?.event === "stale" && last.reason === "check_failed")
+    return { claim, status: "stale", anchors, reason: "check_failed" };
   return { claim, status: "valid", anchors };
 };
 

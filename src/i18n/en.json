@@ -2323,5 +2323,18 @@
   "knowledge.claims.error.anchor": "Anchor {anchor} not found: the file does not exist or the function is not defined at the top of it.",
   "knowledge.claims.error.unknown": "No claim with id {id}.",
   "knowledge.claims.context.title": "Project claims whose anchored code has not changed since they were checked:",
-  "knowledge.claims.context.line": "- {text} ({where}; {id})"
+  "knowledge.claims.context.line": "- {text} ({where}; {id})",
+  "knowledge.claims.checked": "checked",
+  "knowledge.claims.unverified": "unverified",
+  "knowledge.claims.suggest_rule": "This reads like a rule; `finitemonkey rules propose` can turn it into a check that runs instead of text.",
+  "knowledge.claims.context.prose": "- {text} ({where}; {id}; unverified text, no check runs it)",
+  "gate.claims.none": "no executable claim is anchored to the changed files",
+  "gate.claims.unverified": "unverified claim {id}: {text} (text only; nothing checks it)",
+  "gate.claims.failed": "claim {id} no longer holds: {text}",
+  "gate.claims.not_run": "claim {id} could not run (missing command, timeout or no time left)",
+  "gate.claims.passed": "{count, plural, one {# claim check passed} other {# claim checks passed}} and were renewed at this tree",
+  "gate.claims.decorative": "claim {id} is decorative: its check caught none of {total} planted defects in its anchored code",
+  "gate.claims.strength_unavailable": "claim check strength not measured: {detail}",
+  "gate.claims.shadow": "shadow mode: a claim check failed and would block once claim-checks is active",
+  "onboard.block.conventions": "Conventions checked at the gate"
 }
