@@ -16534,7 +16534,8 @@ var en_default = {
   "trajectory.domain": "domain",
   "trajectory.no_data": "no data ({evidence} weighted events)",
   "trajectory.legend": "█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence",
-  "trajectory.forgotten": "Concept evidence deleted; the trajectory starts over."
+  "trajectory.forgotten": "Concept evidence deleted; the trajectory starts over.",
+  "handoff.assumption": "Open assumption {id} ({impact} impact): {text}; verify: {verify}"
 };
 
 // src/i18n/es.json
@@ -19110,7 +19111,8 @@ var es_default = {
   "trajectory.domain": "dominio",
   "trajectory.no_data": "sin datos ({evidence} eventos con peso)",
   "trajectory.legend": "█ hecho sin ayuda  ▓ proximal  ▒ ciega con criterio  ░ ciega sin criterio  ^ más allá  ↯ rebote  ● aguantó  - sin trabajo aceptado  · sin evidencia",
-  "trajectory.forgotten": "Evidencia de conceptos borrada; la trayectoria empieza de nuevo."
+  "trajectory.forgotten": "Evidencia de conceptos borrada; la trayectoria empieza de nuevo.",
+  "handoff.assumption": "Supuesto abierto {id} (impacto {impact}): {text}; verificar: {verify}"
 };
 
 // src/i18n/pt-BR.json
@@ -21686,7 +21688,8 @@ var pt_BR_default = {
   "trajectory.domain": "domínio",
   "trajectory.no_data": "sem dados ({evidence} eventos com peso)",
   "trajectory.legend": "█ feito sem ajuda  ▓ proximal  ▒ cega com critério  ░ cega sem critério  ^ além  ↯ ricochete  ● segurou  - sem trabalho aceito  · sem evidência",
-  "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça."
+  "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça.",
+  "handoff.assumption": "Premissa aberta {id} (impacto {impact}): {text}; verificar: {verify}"
 };
 
 // src/i18n/review.json
@@ -24263,7 +24266,8 @@ var review_default = {
     "trajectory.domain": "machine",
     "trajectory.no_data": "machine",
     "trajectory.legend": "machine",
-    "trajectory.forgotten": "machine"
+    "trajectory.forgotten": "machine",
+    "handoff.assumption": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -26837,7 +26841,8 @@ var review_default = {
     "trajectory.domain": "machine",
     "trajectory.no_data": "machine",
     "trajectory.legend": "machine",
-    "trajectory.forgotten": "machine"
+    "trajectory.forgotten": "machine",
+    "handoff.assumption": "machine"
   }
 };
 
@@ -62985,17 +62990,17 @@ var blindBandLine = (runtime, paths) => {
   const rows2 = blindBand(runtime, paths, log.value).rows;
   const week = rows2.at(-1)?.week;
   if (week === void 0) return null;
-  const current2 = rows2.filter((row3) => row3.week === week);
+  const current2 = rows2.filter((row4) => row4.week === week);
   const worst4 = [...current2].sort((a, b) => b.withoutCriterion - a.withoutCriterion)[0];
   if (worst4 === void 0) return null;
-  const recent = rows2.filter((row3) => row3.domain === worst4.domain).slice(-RECENT_WEEKS);
+  const recent = rows2.filter((row4) => row4.domain === worst4.domain).slice(-RECENT_WEEKS);
   return {
     domain: worst4.domain,
     week,
     index: worst4.index,
     withoutCriterion: worst4.withoutCriterion,
     helps: worst4.helps,
-    recent: recent.map((row3) => row3.index)
+    recent: recent.map((row4) => row4.index)
   };
 };
 var statusOf6 = (runtime, paths) => {
@@ -63027,6 +63032,7 @@ var statusOf6 = (runtime, paths) => {
 // src/bridge/handoff.ts
 var HANDOFF_SCHEMA = "finitemonkey/handoff@1";
 var MAX_ATTEMPTS = 5;
+var MAX_ASSUMPTIONS = 8;
 var attemptsOf2 = (runtime, paths) => {
   const groups = /* @__PURE__ */ new Map();
   for (const entry2 of readEntries(runtime, signalFiles(paths))) {
@@ -63036,6 +63042,8 @@ var attemptsOf2 = (runtime, paths) => {
   }
   return [...groups.values()].filter((item2) => item2.count >= 2).sort((a, b) => b.count - a.count).slice(0, MAX_ATTEMPTS);
 };
+var IMPACT_ORDER = ["high", "medium", "low"];
+var openAssumptions = (runtime, paths) => readAssumptions(runtime, paths).filter((item2) => item2.status === "unverified" || item2.status === "review").sort((a, b) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact)).slice(0, MAX_ASSUMPTIONS).map((item2) => ({ id: item2.id, text: item2.text, impact: item2.impact, status: item2.status, verify: item2.verify }));
 var textOf12 = (t, data2) => [
   t("handoff.title"),
   data2.contract === null ? t("handoff.no_contract") : t("handoff.contract", { id: data2.contract.id, hash: data2.contract.hash }),
@@ -63043,7 +63051,10 @@ var textOf12 = (t, data2) => [
   t("handoff.green", { list: data2.green.join(", ") || "-" }),
   ...data2.failed.length > 0 ? [t("handoff.failed", { list: data2.failed.join(", ") })] : [],
   ...data2.notVerified.map((item2) => t("handoff.not_verified", { ...item2 })),
-  ...data2.attempts.map((item2) => t("handoff.attempt", { sample: item2.sample, count: item2.count }))
+  ...data2.attempts.map((item2) => t("handoff.attempt", { sample: item2.sample, count: item2.count })),
+  ...data2.assumptions.map(
+    (item2) => t("handoff.assumption", { id: item2.id, impact: item2.impact, text: item2.text, verify: item2.verify || "-" })
+  )
 ].join("\n");
 var handoffOf = (runtime, paths, t) => {
   const status = statusOf6(runtime, paths);
@@ -63054,7 +63065,8 @@ var handoffOf = (runtime, paths, t) => {
     green: status.checks.filter((check2) => check2.status === "passed").map((check2) => check2.id),
     failed: status.checks.filter((check2) => check2.status === "failed").map((check2) => check2.id),
     notVerified: status.notVerified,
-    attempts: attemptsOf2(runtime, paths)
+    attempts: attemptsOf2(runtime, paths),
+    assumptions: openAssumptions(runtime, paths)
   };
   return { schema: HANDOFF_SCHEMA, ...body2, text: textOf12(t, body2) };
 };

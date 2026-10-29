@@ -2571,7 +2571,8 @@
     "trajectory.domain": "machine",
     "trajectory.no_data": "machine",
     "trajectory.legend": "machine",
-    "trajectory.forgotten": "machine"
+    "trajectory.forgotten": "machine",
+    "handoff.assumption": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5145,6 +5146,7 @@
     "trajectory.domain": "machine",
     "trajectory.no_data": "machine",
     "trajectory.legend": "machine",
-    "trajectory.forgotten": "machine"
+    "trajectory.forgotten": "machine",
+    "handoff.assumption": "machine"
   }
 }

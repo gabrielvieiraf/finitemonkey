@@ -1,4 +1,5 @@
 import type { Runtime } from "../core/runtime.js";
+import { readAssumptions } from "../guardian/assumptions.js";
 import type { Translate } from "../i18n/translate.js";
 import { readEntries, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
@@ -6,6 +7,15 @@ import { type StatusData, statusOf } from "./status.js";
 
 export const HANDOFF_SCHEMA = "finitemonkey/handoff@1";
 export const MAX_ATTEMPTS = 5;
+export const MAX_ASSUMPTIONS = 8;
+
+export interface OpenAssumption {
+  readonly id: string;
+  readonly text: string;
+  readonly impact: string;
+  readonly status: string;
+  readonly verify: string;
+}
 
 export interface FailedAttempt {
   readonly sample: string;
@@ -21,6 +31,7 @@ export interface HandoffData {
   readonly failed: readonly string[];
   readonly notVerified: readonly { readonly id: string; readonly reason: string; readonly verify: string }[];
   readonly attempts: readonly FailedAttempt[];
+  readonly assumptions: readonly OpenAssumption[];
   readonly text: string;
 }
 
@@ -37,6 +48,15 @@ const attemptsOf = (runtime: Runtime, paths: FmPaths): readonly FailedAttempt[] 
     .slice(0, MAX_ATTEMPTS);
 };
 
+const IMPACT_ORDER: readonly string[] = ["high", "medium", "low"];
+
+const openAssumptions = (runtime: Runtime, paths: FmPaths): readonly OpenAssumption[] =>
+  readAssumptions(runtime, paths)
+    .filter((item) => item.status === "unverified" || item.status === "review")
+    .sort((a, b) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact))
+    .slice(0, MAX_ASSUMPTIONS)
+    .map((item) => ({ id: item.id, text: item.text, impact: item.impact, status: item.status, verify: item.verify }));
+
 const textOf = (t: Translate, data: Omit<HandoffData, "text" | "schema">): string =>
   [
     t("handoff.title"),
@@ -48,6 +68,9 @@ const textOf = (t: Translate, data: Omit<HandoffData, "text" | "schema">): strin
     ...(data.failed.length > 0 ? [t("handoff.failed", { list: data.failed.join(", ") })] : []),
     ...data.notVerified.map((item) => t("handoff.not_verified", { ...item })),
     ...data.attempts.map((item) => t("handoff.attempt", { sample: item.sample, count: item.count })),
+    ...data.assumptions.map((item) =>
+      t("handoff.assumption", { id: item.id, impact: item.impact, text: item.text, verify: item.verify || "-" }),
+    ),
   ].join("\n");
 
 export const handoffOf = (runtime: Runtime, paths: FmPaths, t: Translate): HandoffData => {
@@ -60,6 +83,7 @@ export const handoffOf = (runtime: Runtime, paths: FmPaths, t: Translate): Hando
     failed: status.checks.filter((check) => check.status === "failed").map((check) => check.id),
     notVerified: status.notVerified,
     attempts: attemptsOf(runtime, paths),
+    assumptions: openAssumptions(runtime, paths),
   };
   return { schema: HANDOFF_SCHEMA, ...body, text: textOf(t, body) };
 };

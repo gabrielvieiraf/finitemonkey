@@ -2570,5 +2570,6 @@
   "trajectory.domain": "domínio",
   "trajectory.no_data": "sem dados ({evidence} eventos com peso)",
   "trajectory.legend": "█ feito sem ajuda  ▓ proximal  ▒ cega com critério  ░ cega sem critério  ^ além  ↯ ricochete  ● segurou  - sem trabalho aceito  · sem evidência",
-  "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça."
+  "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça.",
+  "handoff.assumption": "Premissa aberta {id} (impacto {impact}): {text}; verificar: {verify}"
 }

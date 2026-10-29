@@ -2570,5 +2570,6 @@
   "trajectory.domain": "dominio",
   "trajectory.no_data": "sin datos ({evidence} eventos con peso)",
   "trajectory.legend": "█ hecho sin ayuda  ▓ proximal  ▒ ciega con criterio  ░ ciega sin criterio  ^ más allá  ↯ rebote  ● aguantó  - sin trabajo aceptado  · sin evidencia",
-  "trajectory.forgotten": "Evidencia de conceptos borrada; la trayectoria empieza de nuevo."
+  "trajectory.forgotten": "Evidencia de conceptos borrada; la trayectoria empieza de nuevo.",
+  "handoff.assumption": "Supuesto abierto {id} (impacto {impact}): {text}; verificar: {verify}"
 }
