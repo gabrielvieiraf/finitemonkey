@@ -77,8 +77,15 @@ const mentioned = (text: string): SelfKind | undefined => {
 
 const PERSON_DECISIONS = new Set(["--approve", "--reject"]);
 
+const PERSON_CHOICES = new Set(["--choose"]);
+
+const flagIn = (args: readonly string[], flags: ReadonlySet<string>): boolean =>
+  args.some((arg) => flags.has(arg.split("=")[0] ?? ""));
+
 const decidesExamples = (args: readonly string[]): boolean =>
-  args[0] === "task" && args[1] === "examples" && args.some((arg) => PERSON_DECISIONS.has(arg.split("=")[0] ?? ""));
+  args[0] === "task" &&
+  ((args[1] === "examples" && flagIn(args, PERSON_DECISIONS)) ||
+    (args[1] === "diverge" && flagIn(args, PERSON_CHOICES)));
 
 const amends = (command: SimpleCommand): readonly { readonly kind: SelfKind; readonly path: string }[] => {
   const args = fmArguments(command.argv);

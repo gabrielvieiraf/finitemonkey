@@ -96,6 +96,7 @@ import { slopDismissCommand, slopStatsCommand } from "./slop.js";
 import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
+import { taskDivergeCommand } from "./task-diverge.js";
 import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
 import { taskExamplesCommand } from "./task-examples.js";
 import { taskFromSpecCommand } from "./task-spec.js";
@@ -250,6 +251,7 @@ export const REGISTRY = [
   signalsLocateCommand,
   learningsAcceptCommand,
   taskExamplesCommand,
+  taskDivergeCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
