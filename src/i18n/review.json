@@ -2240,7 +2240,19 @@
     "calibrate.state.abstain": "machine",
     "calibrate.explain.labels": "machine",
     "calibrate.explain.input": "machine",
-    "calibrate.explain.none": "machine"
+    "calibrate.explain.none": "machine",
+    "autonomy.hold": "machine",
+    "autonomy.plan": "machine",
+    "autonomy.piece": "machine",
+    "autonomy.refused": "machine",
+    "autonomy.not_run": "machine",
+    "autonomy.error.person_only": "machine",
+    "autonomy.item.proven": "machine",
+    "autonomy.item.unproven": "machine",
+    "autonomy.item.invalidated": "machine",
+    "autonomy.report.hold": "machine",
+    "autonomy.report.file": "machine",
+    "autonomy.incomplete": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4483,6 +4495,18 @@
     "calibrate.state.abstain": "machine",
     "calibrate.explain.labels": "machine",
     "calibrate.explain.input": "machine",
-    "calibrate.explain.none": "machine"
+    "calibrate.explain.none": "machine",
+    "autonomy.hold": "machine",
+    "autonomy.plan": "machine",
+    "autonomy.piece": "machine",
+    "autonomy.refused": "machine",
+    "autonomy.not_run": "machine",
+    "autonomy.error.person_only": "machine",
+    "autonomy.item.proven": "machine",
+    "autonomy.item.unproven": "machine",
+    "autonomy.item.invalidated": "machine",
+    "autonomy.report.hold": "machine",
+    "autonomy.report.file": "machine",
+    "autonomy.incomplete": "machine"
   }
 }

@@ -6,6 +6,20 @@ import { closest } from "../core/suggest.js";
 import { configAt, configMap, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
 import { ALERT_BUDGET_KEYS, type AlertBudgetConfig, DEFAULT_ALERT_BUDGET, parseAlertBudget } from "./budget.js";
 import { withEvolved } from "./evolved.js";
+import {
+  type AutonomyConfig,
+  type CalibrateConfig,
+  DEFAULT_AUTONOMY,
+  DEFAULT_CALIBRATE,
+  DEFAULT_EVOLVE_MIN_TASKS,
+  type EvolveConfig,
+  parseAutonomy,
+  parseCalibrate,
+  parseEvolve,
+  sectionKeyIssues,
+} from "./stage6.js";
+
+export type { AutonomyConfig, CalibrateConfig, EvolveConfig } from "./stage6.js";
 
 export const POLICY_FILE = ".finitemonkey/policy.yml";
 export const GUARD_MODES = ["off", "shadow", "active"] as const;
@@ -85,6 +99,7 @@ export const OPTIONAL_GUARDS = [
   "forecast",
   "evolve",
   "calibrate",
+  "autonomy",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -101,6 +116,7 @@ export const POLICY_KEYS: readonly string[] = [
   "alertBudget",
   "evolve",
   "calibrate",
+  "autonomy",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
@@ -136,46 +152,8 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "forecast",
   "evolve",
   "calibrate",
+  "autonomy",
 ]);
-
-export const DEFAULT_EVOLVE_MIN_TASKS = 10;
-export const EVOLVE_KEYS: readonly string[] = ["minTasks"];
-
-export interface EvolveConfig {
-  readonly minTasks: number;
-}
-
-const parseEvolve = (tree: ConfigTree): EvolveConfig => {
-  const raw = Number(configMap(tree, "evolve")["minTasks"]);
-  return { minTasks: Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_EVOLVE_MIN_TASKS };
-};
-
-export const CALIBRATE_KEYS: readonly string[] = ["minLabels", "askAbove", "abstainAbove"];
-
-export interface CalibrateConfig {
-  readonly minLabels: number;
-  readonly askAbove: number;
-  readonly abstainAbove: number;
-}
-
-export const DEFAULT_CALIBRATE: CalibrateConfig = { minLabels: 30, askAbove: 0.25, abstainAbove: 0.6 };
-
-const share = (raw: string | undefined, fallback: number): number => {
-  const value = Number(raw);
-  return raw !== undefined && Number.isFinite(value) && value > 0 && value < 1 ? value : fallback;
-};
-
-const parseCalibrate = (tree: ConfigTree): CalibrateConfig => {
-  const raw = configMap(tree, "calibrate");
-  const min = Number(raw["minLabels"]);
-  const askAbove = share(raw["askAbove"], DEFAULT_CALIBRATE.askAbove);
-  const abstainAbove = share(raw["abstainAbove"], DEFAULT_CALIBRATE.abstainAbove);
-  return {
-    minLabels: Number.isInteger(min) && min > 0 ? min : DEFAULT_CALIBRATE.minLabels,
-    askAbove: Math.min(askAbove, abstainAbove),
-    abstainAbove: Math.max(askAbove, abstainAbove),
-  };
-};
 
 export type GuardMode = (typeof GUARD_MODES)[number];
 export type Level = (typeof LEVELS)[number];
@@ -200,6 +178,7 @@ export interface Policy {
   readonly evolved: Readonly<Record<string, GuardMode>>;
   readonly evolve: EvolveConfig;
   readonly calibrate: CalibrateConfig;
+  readonly autonomy: AutonomyConfig;
   readonly issues: readonly PolicyIssue[];
 }
 
@@ -215,6 +194,7 @@ export const DEFAULT_POLICY: Policy = {
   evolved: {},
   evolve: { minTasks: DEFAULT_EVOLVE_MIN_TASKS },
   calibrate: DEFAULT_CALIBRATE,
+  autonomy: DEFAULT_AUTONOMY,
   issues: [],
 };
 
@@ -280,17 +260,13 @@ export const parsePolicy = (text: string): Policy => {
     evolved: {},
     evolve: parseEvolve(tree),
     calibrate: parseCalibrate(tree),
+    autonomy: parseAutonomy(tree),
     issues: [
       ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
       ...Object.keys(configMap(tree, "alertBudget"))
         .filter((key) => !ALERT_BUDGET_KEYS.includes(key))
         .map((key) => issue("unknown_key", POLICY_FILE, `alertBudget.${key}`, ALERT_BUDGET_KEYS, key)),
-      ...Object.keys(configMap(tree, "evolve"))
-        .filter((key) => !EVOLVE_KEYS.includes(key))
-        .map((key) => issue("unknown_key", POLICY_FILE, `evolve.${key}`, EVOLVE_KEYS, key)),
-      ...Object.keys(configMap(tree, "calibrate"))
-        .filter((key) => !CALIBRATE_KEYS.includes(key))
-        .map((key) => issue("unknown_key", POLICY_FILE, `calibrate.${key}`, CALIBRATE_KEYS, key)),
+      ...sectionKeyIssues(tree).map(([path, key, keys]) => issue("unknown_key", POLICY_FILE, path, keys, key)),
       ...guardIssues,
       ...experimentIssues,
     ],

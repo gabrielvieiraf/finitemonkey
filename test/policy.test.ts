@@ -83,6 +83,7 @@ describe("guard modes from .finitemonkey/policy.yml", () => {
       evolved: {},
       evolve: { minTasks: 10 },
       calibrate: { minLabels: 30, askAbove: 0.25, abstainAbove: 0.6 },
+      autonomy: { publishedHorizonMinutes: 60, margin: 0.5, maxMinutes: 120, maxUsd: 5 },
       issues: [{ kind: "invalid_mode", file: POLICY_FILE, key: "guards.deps" }],
     });
   });

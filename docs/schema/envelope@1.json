@@ -117,7 +117,9 @@
             "deploy_check_unconfigured",
             "policy_invalid",
             "gate_released_by_cap",
-            "guardian_write_failed"
+            "guardian_write_failed",
+            "unattended_refused",
+            "unattended_incomplete"
           ]
         },
         "message": {

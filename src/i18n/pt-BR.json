@@ -2239,5 +2239,17 @@
   "calibrate.state.abstain": "Estado calibrado de {task}: {color} (abster: não dizer pronto aqui sem a pessoa; decide: {by}).",
   "calibrate.explain.labels": "Rótulos: {labels} tarefas terminadas, {bad} ruins (pronto falso ou revertida em 7 dias); o modelo decide a partir de {min}.",
   "calibrate.explain.input": "Entrada {name}: {value} (peso {weight})",
-  "calibrate.explain.none": "Nenhuma tarefa aberta para explicar; indique uma com calibrate explain <task>."
+  "calibrate.explain.none": "Nenhuma tarefa aberta para explicar; indique uma com calibrate explain <task>.",
+  "autonomy.hold": "Retido durante uma execução sem supervisão: {reason}. Ações destrutivas e de produção esperam a pessoa; o relatório da manhã lista esta retenção.",
+  "autonomy.plan": "Estimativa de {task}: {estimate} min ({estimateSource}); horizonte {horizon} min ({horizonSource}).",
+  "autonomy.piece": "parte {index}: {checks}",
+  "autonomy.refused": "{task} precisa de {needed} partes para caber no horizonte, mas tem {checks} critérios de aceite; não roda sem supervisão.",
+  "autonomy.not_run": "Só o plano, não iniciado: autonomy não está ativo ou autonomy.agent não está definido em .finitemonkey/config.yml.",
+  "autonomy.error.person_only": "Só a pessoa inicia uma execução sem supervisão, num terminal fora do Claude Code.",
+  "autonomy.item.proven": "provado: {task} ({why})",
+  "autonomy.item.unproven": "não provado: {task} ({why})",
+  "autonomy.item.invalidated": "invalidado: {task} ({why})",
+  "autonomy.report.hold": "retenção: {reason} em {command}",
+  "autonomy.report.file": "Relatório da manhã: .finitemonkey/reports/unattended-{run}.json",
+  "autonomy.incomplete": "A execução sem supervisão {run} parou antes de provar todas as partes."
 }

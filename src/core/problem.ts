@@ -100,6 +100,8 @@ export const ERROR_CODES = [
   "policy_invalid",
   "gate_released_by_cap",
   "guardian_write_failed",
+  "unattended_refused",
+  "unattended_incomplete",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

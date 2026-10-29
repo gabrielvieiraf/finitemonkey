@@ -2239,5 +2239,17 @@
   "calibrate.state.abstain": "Calibrated state for {task}: {color} (abstain: do not claim done here without the person; decided by {by}).",
   "calibrate.explain.labels": "Labels: {labels} finished tasks, {bad} bad (false done or reverted within 7 days); the model decides from {min}.",
   "calibrate.explain.input": "Input {name}: {value} (weight {weight})",
-  "calibrate.explain.none": "No open task to explain; name one with calibrate explain <task>."
+  "calibrate.explain.none": "No open task to explain; name one with calibrate explain <task>.",
+  "autonomy.hold": "Held during an unattended run: {reason}. Destructive and production actions wait for the person; the morning report lists this hold.",
+  "autonomy.plan": "Estimate for {task}: {estimate} min ({estimateSource}); horizon {horizon} min ({horizonSource}).",
+  "autonomy.piece": "part {index}: {checks}",
+  "autonomy.refused": "{task} needs {needed} parts to fit the horizon but has {checks} acceptance checks; it is not run unattended.",
+  "autonomy.not_run": "Plan only, not started: autonomy is not active or autonomy.agent is not set in .finitemonkey/config.yml.",
+  "autonomy.error.person_only": "Only the person starts an unattended run, from a terminal outside Claude Code.",
+  "autonomy.item.proven": "proven: {task} ({why})",
+  "autonomy.item.unproven": "unproven: {task} ({why})",
+  "autonomy.item.invalidated": "invalidated: {task} ({why})",
+  "autonomy.report.hold": "hold: {reason} in {command}",
+  "autonomy.report.file": "Morning report: .finitemonkey/reports/unattended-{run}.json",
+  "autonomy.incomplete": "Unattended run {run} stopped before every part was proven."
 }

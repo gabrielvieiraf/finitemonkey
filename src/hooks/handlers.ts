@@ -1,5 +1,6 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
+import { UNATTENDED_HANDLERS } from "../autonomy/hold.js";
 import { CALIBRATE_HANDLERS } from "../calibrate/hooks.js";
 import { CLAIMS_HANDLERS } from "../claims/guard.js";
 import { CLARIFY_HANDLERS } from "../clarify/hook.js";
@@ -231,4 +232,8 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "calibrate", damage: false, handlers: CALIBRATE_HANDLERS },
 ];
 
-export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);
+export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(
+  ...GUARD_SETS.map(withPolicy),
+  WT_PLACE_HANDLERS,
+  UNATTENDED_HANDLERS,
+);

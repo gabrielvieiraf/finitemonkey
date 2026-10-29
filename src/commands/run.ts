@@ -11,11 +11,12 @@ import { maskText } from "../mask/mask.js";
 import { commandLine, defaultShell, invocationFor, parseShellChoice, SHELLS } from "../runlog/shell.js";
 import { errorLines, fullLog } from "../runlog/summary.js";
 import { FM_DIR } from "../task/paths.js";
+import { unattended } from "./run-unattended.js";
 import type { CommandSpec } from "./types.js";
 
 export const RUN_SCHEMA = "finitemonkey/run@1";
 export const RUNS_DIR = "runs";
-const USAGE = `finitemonkey run [--shell ${SHELLS.join("|")}] [--timeout <seconds>] -- <command>`;
+const USAGE = `finitemonkey run [--shell ${SHELLS.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
 const DEFAULT_TIMEOUT_S = 600;
 const KEEP_RUNS = 30;
 const NOT_FOUND_EXIT = 127;
@@ -108,10 +109,12 @@ export const runCommandSpec: CommandSpec = {
   summaryKey: "command.run.summary",
   usage: USAGE,
   status: "ready",
-  options: { shell: { type: "string" }, timeout: { type: "string" } },
+  options: { shell: { type: "string" }, timeout: { type: "string" }, unattended: { type: "boolean" } },
   maxPositionals: 1000,
   run: (ctx, args) =>
     Promise.resolve(
-      runCommand(ctx, args.positionals, stringOption(args.values, "shell"), stringOption(args.values, "timeout")),
+      args.values["unattended"] === true
+        ? unattended(ctx, args.positionals[0])
+        : runCommand(ctx, args.positionals, stringOption(args.values, "shell"), stringOption(args.values, "timeout")),
     ),
 };

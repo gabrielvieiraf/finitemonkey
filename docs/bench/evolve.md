@@ -15,7 +15,19 @@ Not covered: reminder sets as a variant target, CI and hidden oracles as the jud
 
 ## calibrate: when to ask, from local labels
 
-- Inputs, and only these: divergence (the last `task diverge` for the task asked a question), the share of contract criteria marked decorative by mutants, and the share of bad tasks among earlier finished tasks in the same area. No text written by the model is read, and no confidence field in any log line counts.
+- Inputs, and only these: divergence (a `task diverge` run for the task asked a question), the share of contract criteria marked decorative by mutants, and the share of bad tasks among earlier finished tasks in the same area. No text written by the model is read, and no confidence field in any log line counts.
 - Labels: a finished task is bad when a gate passed and a later gate failed, the task was invalidated, or a commit starting with "Revert" touched its scope within 7 days of its last evidence. Dismissed warnings are not a label yet.
 - Below `calibrate.minLabels` (default 30) the fixed rule decides: ask when the readings diverged, run otherwise. From there a logistic model per repository, fitted on the labels, decides: ask at 0.25 or more, abstain at 0.6 or more (`calibrate.askAbove`, `calibrate.abstainAbove`). All three numbers are initial calibration.
 - `calibrate refit` runs at Stop in the background, at most every 10 minutes, and caches the state of each open task. When the person trusts a contract, the state appears as a color (green run, yellow ask, red abstain), never as a number. `calibrate explain [<task>]` lists the inputs, their weights and the label count.
+
+## autonomy: unattended runs sized by the local p80 horizon
+
+- `finitemonkey run --unattended <task>` estimates the contract from its reference class (the median of finished tasks of the same size and area, as in `guardian forecast`), or from its size when there are fewer than five: 30, 120 and 480 minutes for S, M and L.
+- The local horizon is the longest time to the first passing gate at which at least 80% of the shorter finished tasks had no false done, from five tasks on. With less history it is the published horizon (`autonomy.publishedHorizonMinutes`, default 60) times `autonomy.margin` (default 0.5). All these numbers are initial calibration.
+- A contract over the horizon is split into as many subcontracts as it needs, each taking a share of the acceptance checks, its own file under `.finitemonkey/tasks/` and its own gate. If it needs more parts than it has checks, the run is refused.
+- Every subcontract file is written, trusted and hashed before the first part starts. A part whose file changed during the run is invalidated. A part whose gate does not pass stops the chain; the rest are reported unproven.
+- While the run is on, a hold outside the policy blocks `git push`, `reset`, `clean`, `rebase`, forced branch deletion, recursive `rm`, production clients (`ssh`, `psql`, `kubectl` and the rest of the production list), publishing and deploy tools, and the destructive SQL, Terraform and kubectl commands the git guard already knows. It cannot be set to off.
+- The time cap (`autonomy.maxMinutes`, default 120) and the spend cap (`autonomy.maxUsd`, default 5, from the local spend ledger) are checked before each part. The morning report in `.finitemonkey/reports/unattended-<run>.json` lists proven, unproven and invalidated parts and every hold.
+- Finite Monkey never calls a model here. The agent is a command the person sets as `autonomy.agent` in `.finitemonkey/config.yml`; it receives the part as JSON on stdin. Without it, or while the autonomy feature is not active, the command prints the plan and starts nothing. Only the person starts a run, from a terminal outside Claude Code.
+
+Not covered: properties and oracle hashes beyond the contract and examples files, and per-size-class statistics for the measure.
