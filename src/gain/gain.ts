@@ -70,7 +70,7 @@ const readLog = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly L
   });
 };
 
-const readEvidence = (
+export const readEvidence = (
   runtime: Pick<Runtime, "readText" | "listDir" | "homeDir">,
   paths: FmPaths,
 ): readonly Evidence[] => {
@@ -152,7 +152,7 @@ interface ArmLine {
   readonly arm: "active" | "off";
 }
 
-const readArms = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ArmLine[] => {
+export const readArms = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ArmLine[] => {
   const text = runtime.readText(paths.log);
   if (!text.ok) return [];
   return text.value.split("\n").flatMap((line): ArmLine[] => {

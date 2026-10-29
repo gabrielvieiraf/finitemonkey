@@ -2344,5 +2344,10 @@
   "knowledge.claims.promoted": "promovida {id} (origen {origin}): {text}",
   "knowledge.claims.error.instruction": "Rechazado: un texto de origen externo con forma de instrucción (always, never, ignore, run...) nunca se guarda como conocimiento del proyecto.",
   "knowledge.claims.error.person": "Solo una persona en una terminal puede promover afirmaciones.",
-  "knowledge.memory.blocked": "Esta sesión leyó salida de {source}; una escritura en la memoria con una línea en forma de instrucción quedó retenida: \"{line}\". Pide a la persona que la escriba si es suya."
+  "knowledge.memory.blocked": "Esta sesión leyó salida de {source}; una escritura en la memoria con una línea en forma de instrucción quedó retenida: \"{line}\". Pide a la persona que la escriba si es suya.",
+  "command.experiments_report.summary": "Efecto y costo de cada fuente de conocimiento inyectada, según su brazo A/B",
+  "knowledge.arms.row": "{source}: intentos hasta el verde con ella menos sin ella: {effect} (intervalo del 95% de {low} a {high}); {cost} tokens inyectados por tarea; {active} tareas con, {off} sin",
+  "knowledge.arms.row_demoted": "{source} (degradada): intentos hasta el verde con ella menos sin ella: {effect} (intervalo del 95% de {low} a {high}); {cost} tokens inyectados por tarea; {active} tareas con, {off} sin",
+  "knowledge.arms.none": "Ninguna fuente de conocimiento corre como experimento; agrégala en experiments: de policy.yml con el valor random.",
+  "knowledge.arms.demoted": "{source} no mostró efecto más allá del margen de equivalencia después del número configurado de tareas y ya no se inyecta; borra .finitemonkey/demoted.json para traerla de vuelta."
 }

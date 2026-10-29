@@ -214,7 +214,11 @@ export const FOOTPRINT = [
   },
   { id: "guard-bypass", kind: "writes", targets: [".finitemonkey/bypasses.jsonl"] },
   { id: "mod-cost", kind: "writes", targets: [".finitemonkey/cost.jsonl"] },
-  { id: "knowledge", kind: "writes", targets: [".finitemonkey/claims.jsonl", ".finitemonkey/derived.json"] },
+  {
+    id: "knowledge",
+    kind: "writes",
+    targets: [".finitemonkey/claims.jsonl", ".finitemonkey/derived.json", ".finitemonkey/demoted.json"],
+  },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

@@ -2344,5 +2344,10 @@
   "knowledge.claims.promoted": "promoted {id} (origin {origin}): {text}",
   "knowledge.claims.error.instruction": "Refused: text from an external origin that reads like an instruction (always, never, ignore, run...) is never stored as project knowledge.",
   "knowledge.claims.error.person": "Only a person in a terminal can promote claims.",
-  "knowledge.memory.blocked": "This session read {source} output; a memory write with an instruction-shaped line from it is held: \"{line}\". Ask the person to write it if it is theirs."
+  "knowledge.memory.blocked": "This session read {source} output; a memory write with an instruction-shaped line from it is held: \"{line}\". Ask the person to write it if it is theirs.",
+  "command.experiments_report.summary": "Effect and cost of each injected knowledge source, from its A/B arm",
+  "knowledge.arms.row": "{source}: attempts to green with it minus without: {effect} (95% interval {low} to {high}); {cost} tokens injected per task; {active} tasks with it, {off} without",
+  "knowledge.arms.row_demoted": "{source} (demoted): attempts to green with it minus without: {effect} (95% interval {low} to {high}); {cost} tokens injected per task; {active} tasks with it, {off} without",
+  "knowledge.arms.none": "No knowledge source runs as an experiment; add it under experiments: in policy.yml with the value random.",
+  "knowledge.arms.demoted": "{source} showed no effect beyond the equivalence margin after the configured number of tasks and is no longer injected; delete .finitemonkey/demoted.json to bring it back."
 }

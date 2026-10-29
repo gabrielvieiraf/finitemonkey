@@ -6,8 +6,10 @@ import { contextOutput, projectPaths, sessionCwd } from "../gate/hooks/common.js
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import type { Translate } from "../i18n/translate.js";
+import { tokenEstimate } from "../instructions/types.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import { diskReader } from "./anchor.js";
+import { readDemoted, recordInjected } from "./arms.js";
 import { appendClaimEvent, KNOWLEDGE_CLAIMS_FEATURE, lastOf, readClaims } from "./claims.js";
 import { withQuarantine } from "./quarantine.js";
 import { withRetractions } from "./retraction.js";
@@ -42,11 +44,16 @@ export const claimsOnSessionStart: HookHandler = (input) => {
     withQuarantine(input.runtime, paths, withRetractions(input.runtime, paths, evaluated), false),
   ).slice(0, MAX_INJECTED);
   if (views.length === 0) return allow;
+  if (readDemoted(input.runtime, paths).has(KNOWLEDGE_CLAIMS_FEATURE)) {
+    recordFeatureShadow(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE, { demoted: 1 });
+    return allow;
+  }
   if (featureMode(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE) !== "active") {
     recordFeatureShadow(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE, { injected: views.length });
     return allow;
   }
   const text = [input.t("knowledge.claims.context.title"), ...views.map((view) => claimLine(input.t, view))].join("\n");
+  recordInjected(input.runtime, paths, "knowledge-claims", tokenEstimate(text));
   return { kind: "allow", output: contextOutput("SessionStart", text) };
 };
 

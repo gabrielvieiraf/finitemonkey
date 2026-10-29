@@ -7,6 +7,7 @@ import { HOOK_EVENTS, type HookEvent } from "../hooks/events.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { toolName } from "../secrets/guards/tool-input.js";
 import type { FmPaths } from "../task/paths.js";
+import { readState } from "../task/state.js";
 import { ALERT_BUDGET_FEATURE, isMuted, recordFiring } from "./budget.js";
 import { experimentArm } from "./experiment.js";
 import { pausedFor } from "./pause.js";
@@ -195,7 +196,14 @@ const governed =
     const policy = loadPolicy(input.runtime, paths.root);
     const shadow = readShadow(input.runtime, paths);
     const resolved = resolveGuard(set, policy, shadow, experimentArm(input.runtime, paths, policy, set.id));
-    if (resolved.mode === "off") return { kind: "allow" };
+    if (resolved.mode === "off") {
+      if (resolved.source === "experiment" && input.event === "SessionStart")
+        logEvent(input.runtime, paths, "experiment_drop", {
+          feature: set.id,
+          task: readState(input.runtime, paths).active ?? "",
+        });
+      return { kind: "allow" };
+    }
     const decision = await handler(input);
     if (!firesAlert(decision)) return decision;
     if (muted(input, paths, set, policy, resolved, shadow)) return { kind: "allow" };

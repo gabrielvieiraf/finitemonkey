@@ -6,6 +6,7 @@ import { toPosixPath } from "../core/posix-path.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
+import { readDemoted } from "../knowledge/arms.js";
 import { injectContext } from "../policy/inject.js";
 import { policyNumber } from "../policy/numbers.js";
 import { markUntrusted, readsUntrusted } from "../policy/untrusted.js";
@@ -74,7 +75,7 @@ export const learningsInject: HookHandler = (input) => {
   const key = keyOf(input, paths);
   if (key === undefined || (key.sig === undefined && key.path === undefined)) return ALLOW;
   const lessons = readLessons(input.runtime, paths.dir);
-  if (lessons.length === 0) return ALLOW;
+  if (lessons.length === 0 || readDemoted(input.runtime, paths).has("learnings")) return ALLOW;
   const seen = readSeen(input, paths);
   const limits = {
     maxLessons: policyNumber(input.runtime, paths.root, ["learnings", "maxLessons"], DEFAULT_MAX_LESSONS),

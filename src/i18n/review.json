@@ -2345,7 +2345,12 @@
     "knowledge.claims.promoted": "machine",
     "knowledge.claims.error.instruction": "machine",
     "knowledge.claims.error.person": "machine",
-    "knowledge.memory.blocked": "machine"
+    "knowledge.memory.blocked": "machine",
+    "command.experiments_report.summary": "machine",
+    "knowledge.arms.row": "machine",
+    "knowledge.arms.row_demoted": "machine",
+    "knowledge.arms.none": "machine",
+    "knowledge.arms.demoted": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4693,6 +4698,11 @@
     "knowledge.claims.promoted": "machine",
     "knowledge.claims.error.instruction": "machine",
     "knowledge.claims.error.person": "machine",
-    "knowledge.memory.blocked": "machine"
+    "knowledge.memory.blocked": "machine",
+    "command.experiments_report.summary": "machine",
+    "knowledge.arms.row": "machine",
+    "knowledge.arms.row_demoted": "machine",
+    "knowledge.arms.none": "machine",
+    "knowledge.arms.demoted": "machine"
   }
 }
