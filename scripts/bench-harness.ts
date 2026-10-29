@@ -6,7 +6,7 @@ import { type Arm, policyYaml } from "./bench-arms.js";
 import { buildInvocation, type Invocation, type PinnedPlugin } from "./bench-invoke.js";
 import { plan, type PlannedRun } from "./bench-plan.js";
 import type { Freeze } from "./bench-prereg.js";
-import { checkInjection, type Injection, usageOf } from "./bench-transcript.js";
+import { checkInjection, type Injection, sessionIdOf, usageOf } from "./bench-transcript.js";
 
 export const RUN_SCHEMA = "finitemonkey/bench-run@1";
 
@@ -15,6 +15,7 @@ export interface BenchTask {
   readonly prompt: (taskSeed: number) => string;
   readonly materialize: (workdir: string, taskSeed: number) => void;
   readonly evaluate?: (workdir: string, taskSeed: number, transcript: string) => JsonObject;
+  readonly followUp?: (transcript: string, turn: number, taskSeed: number) => string | undefined;
 }
 
 export interface RunOutcome {
@@ -113,6 +114,31 @@ const record = (
   };
 };
 
+const converse = async (
+  deps: HarnessDeps,
+  task: BenchTask,
+  run: PlannedRun,
+  first: Invocation,
+  invoke: (prompt: string, resume: string) => Invocation,
+): Promise<{ readonly outcome: RunOutcome; readonly followUps: readonly string[] }> => {
+  let outcome = await deps.runner(first);
+  const followUps: string[] = [];
+  if (task.followUp === undefined) return { outcome, followUps };
+  for (;;) {
+    const reply = task.followUp(outcome.stdout, followUps.length, run.taskSeed);
+    const resume = sessionIdOf(outcome.stdout);
+    if (reply === undefined || resume === undefined) return { outcome, followUps };
+    followUps.push(reply);
+    const next = await deps.runner(invoke(reply, resume));
+    outcome = {
+      exitCode: next.exitCode,
+      durationMs: outcome.durationMs + next.durationMs,
+      stdout: `${outcome.stdout.trimEnd()}\n${next.stdout}`,
+      stderr: `${outcome.stderr}${next.stderr}`,
+    };
+  }
+};
+
 const runOne = async (
   config: HarnessConfig,
   deps: HarnessDeps,
@@ -125,26 +151,31 @@ const runOne = async (
     if (deps.insideRepo(dirname(root))) throw new Error(`${root} is inside a git repository`);
     const workdir = prepare(task, arm, run, root);
     const settingsPath = join(root, "settings.json");
-    const invocation = buildInvocation({
-      run,
-      arm,
-      prompt: task.prompt(run.taskSeed),
-      workdir,
-      settingsPath,
-      configDir: config.configDir,
-      model: config.model,
-      maxBudgetUsd: config.maxBudgetUsd,
-      plugin: deps.pluginFor(arm),
-    });
+    const plugin = deps.pluginFor(arm);
+    const persist = task.followUp !== undefined;
+    const invoke = (prompt: string, resume?: string): Invocation =>
+      buildInvocation({
+        run,
+        arm,
+        prompt,
+        workdir,
+        settingsPath,
+        configDir: config.configDir,
+        model: config.model,
+        maxBudgetUsd: config.maxBudgetUsd,
+        plugin,
+        session: resume === undefined ? { persist } : { persist, resume },
+      });
+    const invocation = invoke(task.prompt(run.taskSeed));
     writeFileSync(settingsPath, `${JSON.stringify(invocation.settings, null, 2)}\n`);
-    const outcome = await deps.runner(invocation);
+    const { outcome, followUps } = await converse(deps, task, run, invocation, invoke);
     const log = readIfAny(join(workdir, ".finitemonkey", "log.jsonl"));
     const saved = join(config.outDir, "runs", run.id);
     mkdirSync(saved, { recursive: true });
     writeFileSync(join(saved, "transcript.jsonl"), outcome.stdout);
     writeFileSync(join(saved, "log.jsonl"), log);
     const scored = task.evaluate?.(workdir, run.taskSeed, outcome.stdout) ?? {};
-    return { ...scored, ...record(config, deps, run, arm, outcome, log) };
+    return { ...scored, ...record(config, deps, run, arm, outcome, log), followUps };
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

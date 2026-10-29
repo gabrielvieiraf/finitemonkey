@@ -20,6 +20,7 @@ export interface InvocationInput {
   readonly model: string;
   readonly maxBudgetUsd: number;
   readonly plugin: PinnedPlugin | undefined;
+  readonly session?: { readonly persist: boolean; readonly resume?: string };
 }
 
 export interface Invocation {
@@ -82,7 +83,8 @@ export const buildInvocation = (input: InvocationInput): Invocation => {
     "--output-format",
     "stream-json",
     "--verbose",
-    "--no-session-persistence",
+    ...(input.session?.persist === true ? [] : ["--no-session-persistence"]),
+    ...(input.session?.resume === undefined ? [] : ["--resume", input.session.resume]),
     "--settings",
     input.settingsPath,
     ...plugin,

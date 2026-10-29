@@ -5,9 +5,10 @@ import { join } from "node:path";
 
 import { completionClaim } from "../src/claims/detect.js";
 import { isRecord, type JsonObject } from "../src/core/parsed.js";
-import type { Family, Persona, Solution } from "./bench-family.js";
+import type { Family, Intents, Persona, Solution } from "./bench-family.js";
 import type { BenchTask } from "./bench-harness.js";
 import { type OracleResult, runOracle } from "./bench-oracle.js";
+import { followUp } from "./bench-persona.js";
 import { deletions, filesUnder, pickVars, renderText, renderTree, type Vars } from "./bench-render.js";
 import { commitWorkspace } from "./bench-tasks.js";
 import { jsonLines } from "./bench-transcript.js";
@@ -15,6 +16,12 @@ import { jsonLines } from "./bench-transcript.js";
 export const taskId = (family: Family, persona: Persona): string => `${family.id}.${persona.id}`;
 
 export const varsFor = (family: Family, taskSeed: number): Vars => pickVars(family.vars, taskSeed);
+
+export const intentsFor = (family: Family, vars: Vars): Intents => ({
+  goal: renderText(family.intents.goal, vars),
+  acceptance: renderText(family.intents.acceptance, vars),
+  constraints: renderText(family.intents.constraints, vars),
+});
 
 export const promptFor = (family: Family, persona: Persona, vars: Vars): string =>
   renderText(renderText(persona.prompt, { ...family.intents }), vars)
@@ -115,6 +122,8 @@ export const suiteTasks = (families: readonly Family[], personas: readonly Perso
       },
       evaluate: (workdir: string, taskSeed: number, transcript: string) =>
         evaluateRun(family, workdir, varsFor(family, taskSeed), transcript),
+      followUp: (transcript: string, turn: number, taskSeed: number) =>
+        followUp(persona.behavior, intentsFor(family, varsFor(family, taskSeed)), transcript, turn),
     })),
   );
 

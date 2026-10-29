@@ -1,4 +1,11 @@
 {
-  "sha256": "0c341b7cee18a3be2f3fc2696988bae74faf302895ef6bc422b5177465aa388e",
-  "frozenAt": "2026-10-29"
+  "sha256": "5635193d37c20d097e31bb275cd66d03b05b449afb9b11671a9ebc3694ae9516",
+  "frozenAt": "2026-10-29",
+  "personas": {
+    "beginner.json": "ebaa9d0a1ddea6d9d2293057e5bde3da57767af62ae152af3765c967ee71e1cd",
+    "everything.json": "244ac8495dfaba1b30346733ba40964ec45301fc448a0304a3cf6951f4715378",
+    "exact.json": "33907ded192cf36a27affd600c322fb5b0ba872bb011eba3c7c7c18f0f19f602",
+    "novice.json": "23f47d766b62eec40f2928c8b42210980ae5ac43591b6770deadb8a51138fc42",
+    "senior.json": "f5ab71b0d61ecb073bbb5a4d06e9cacc9c0d19546001618aa91ee60b4f06729b"
+  }
 }

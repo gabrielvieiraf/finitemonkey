@@ -1,5 +1,31 @@
 {
   "id": "novice",
   "label": "knows nothing",
-  "prompt": "{{goal}}"
+  "prompt": "{{goal}}",
+  "observes": ["final-message"],
+  "maxFollowUps": 2,
+  "reactions": {
+    "secret": {
+      "kind": "refuse",
+      "reply": "I don't have that, and I won't paste it here."
+    },
+    "destructive": {
+      "kind": "approve",
+      "reply": "Sure, go ahead."
+    },
+    "claimed-done": {
+      "kind": "end"
+    },
+    "question": {
+      "kind": "answer",
+      "reply": "I'm not sure what that means. I just want this: {{goal}}"
+    },
+    "blocked": {
+      "kind": "answer",
+      "reply": "I don't know how to fix that. Can you?"
+    },
+    "other": {
+      "kind": "end"
+    }
+  }
 }

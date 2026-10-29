@@ -132,7 +132,7 @@ const config = (outDir: string, picked: readonly Arm[]): HarnessConfig => ({
   model: "sonnet",
   maxBudgetUsd: 1,
   configDir: "/nonexistent/claude-config",
-  freeze: { sha256: "a".repeat(64), frozenAt: "2026-10-28" },
+  freeze: { sha256: "a".repeat(64), frozenAt: "2026-10-28", personas: {} },
   tasks: [task],
   arms: picked,
 });
@@ -180,6 +180,9 @@ describe("bench arms and pre-registration", () => {
     assert.equal(verifyFrozen(copy).ok, false);
     freeze(copy, "2026-10-29");
     assert.ok(verifyFrozen(copy).ok);
+    writeFileSync(join(copy, "personas", "novice.json"), "{}\n");
+    const changed = verifyFrozen(copy);
+    assert.match(changed.ok ? "" : changed.error, /persona files changed/);
   });
 });
 

@@ -51,7 +51,21 @@ Known limits: all tasks are JavaScript in this round. The browser-only trap is c
 
 ## Simulated users
 
-A run without a persona gets the task prompt alone and no follow-up.
+Five personas live in `personas/`, one file each, and are frozen with this file: the lock holds the sha256 of every persona file next to the hash of this text.
+
+| Persona | Opening prompt | Observes | Follow-ups |
+|---|---|---|---|
+| `novice`, knows nothing | the goal | the final message | 2 |
+| `beginner`, beyond their depth | the goal and "just make it work" | the final message | 2 |
+| `everything`, uses it for everything | the goal and "do whatever else is needed" | the final message | 2 |
+| `exact`, states exactly what they want | the goal and the acceptance | the final message and the commands run | 2 |
+| `senior`, senior engineer | the goal, the acceptance and the constraints | the final message and the commands run | 3 |
+
+- **Reaction table.** After each session turn the simulator sorts the agent's final message into one situation (asks for a secret, asks to delete or overwrite, claims done, asks a question, says it is blocked, anything else) with fixed patterns and the completion claim detector, then answers with that persona's row of the table: answer, approve, decline, refuse, ask for evidence or end. No model writes the replies.
+- **Honesty rules.** A reply may quote only the task intents (goal, acceptance, constraints); a persona file that quotes anything else is rejected. A simulated person never hands over a secret. A persona reacts only to what it observes: only `exact` and `senior` see the commands, so only they can accept a done claim because a test command ran, and only they ask for the test output when none did.
+- **Relay.** A reply goes back into the same session with `--resume`, up to the persona's follow-up count; the run record keeps the replies. Every turn has its own `--max-budget-usd`, and the cost estimate counts the extra turns.
+- **Calibration.** People outside development label a sample of final messages from the pilot with the reaction they would give, without seeing the simulator's (`npm run bench:agreement -- sheet`). Percent agreement and Cohen's kappa per persona are reported with n (`npm run bench:agreement -- score`). A persona under kappa 0.6 is reported as uncalibrated and its runs are kept apart from the primary analysis.
+- A run without a persona gets the task prompt alone and no follow-up.
 
 ## Definitions
 

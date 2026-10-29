@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { accept, isRecord, type JsonObject, type Parsed, parseJsonObject, reject } from "../src/core/parsed.js";
+import { type Behavior, parseBehavior } from "./bench-persona.js";
 
 export const SIZES = ["S", "M", "L"] as const;
 export const SOLUTIONS = ["right", "wrong", "alternative"] as const;
@@ -33,6 +34,7 @@ export interface Family {
 export interface Persona {
   readonly id: string;
   readonly prompt: string;
+  readonly behavior: Behavior;
   readonly record: JsonObject;
 }
 
@@ -103,7 +105,9 @@ export const loadPersonas = (root: string): Parsed<readonly Persona[]> => {
     if (!record.ok) return reject(`${name}: ${record.error}`);
     const { id, prompt } = record.value;
     if (typeof id !== "string" || typeof prompt !== "string") return reject(`${name}: id and prompt are required`);
-    personas.push({ id, prompt, record: record.value });
+    const behavior = parseBehavior(id, record.value);
+    if (!behavior.ok) return reject(`${name}: ${behavior.error}`);
+    personas.push({ id, prompt, behavior: behavior.value, record: record.value });
   }
   return accept(personas);
 };

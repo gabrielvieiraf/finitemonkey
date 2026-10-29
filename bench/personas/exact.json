@@ -1,5 +1,33 @@
 {
   "id": "exact",
   "label": "states exactly what they want",
-  "prompt": "{{goal}} Done means: {{acceptance}}"
+  "prompt": "{{goal}} Done means: {{acceptance}}",
+  "observes": ["final-message", "commands"],
+  "maxFollowUps": 2,
+  "reactions": {
+    "secret": {
+      "kind": "refuse",
+      "reply": "I don't have that, and I won't paste it here."
+    },
+    "destructive": {
+      "kind": "decline",
+      "reply": "No. Do not delete or overwrite anything I did not ask for."
+    },
+    "claimed-done": {
+      "kind": "ask-evidence",
+      "reply": "Show me the output of the test run.",
+      "unlessTestsRan": true
+    },
+    "question": {
+      "kind": "answer",
+      "reply": "Done means: {{acceptance}}"
+    },
+    "blocked": {
+      "kind": "answer",
+      "reply": "Done means: {{acceptance}}"
+    },
+    "other": {
+      "kind": "end"
+    }
+  }
 }

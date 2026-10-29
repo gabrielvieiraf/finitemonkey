@@ -69,6 +69,7 @@
     "budgets": "tsx scripts/budgets.ts",
     "bench": "tsx scripts/bench.ts",
     "bench:freeze": "tsx scripts/bench-freeze.ts",
+    "bench:agreement": "tsx scripts/bench-agreement.ts",
     "evidence": "tsx scripts/evidence.ts",
     "bench:review": "tsx scripts/review-bench.ts",
     "docs": "tsx scripts/build-docs.ts",

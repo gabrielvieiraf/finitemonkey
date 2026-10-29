@@ -42,7 +42,13 @@ const runs = schedule({
 });
 
 console.log(`preregistration ${freeze.sha256.slice(0, 12)} frozen ${freeze.frozenAt}`);
-console.log(estimate(runs.length, args.maxBudgetUsd));
+console.log(
+  estimate(
+    runs.length,
+    args.maxBudgetUsd,
+    1 + Math.max(0, ...personas.map((persona) => persona.behavior.maxFollowUps)),
+  ),
+);
 for (const run of runs) console.log(`${String(run.order).padStart(3)} ${run.id} task seed ${String(run.taskSeed)}`);
 if (args.dryRun) process.exit(0);
 

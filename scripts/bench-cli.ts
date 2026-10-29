@@ -88,8 +88,8 @@ export const realRunProblems = (check: RealRunCheck): readonly string[] => [
   ...(check.configHasInstructions ? ["the config dir has a CLAUDE.md; the bench runs without user instructions"] : []),
 ];
 
-export const estimate = (sessions: number, maxBudgetUsd: number): string =>
-  `${String(sessions)} sessions, at most US$ ${(sessions * maxBudgetUsd).toFixed(2)} at --max-budget-usd ${maxBudgetUsd.toFixed(2)} each`;
+export const estimate = (sessions: number, maxBudgetUsd: number, turnsPerSession = 1): string =>
+  `${String(sessions)} sessions of up to ${String(turnsPerSession)} turns, at most US$ ${(sessions * turnsPerSession * maxBudgetUsd).toFixed(2)} at --max-budget-usd ${maxBudgetUsd.toFixed(2)} per turn`;
 
 export const pick = <T extends { readonly id: string }>(
   items: readonly T[],
