@@ -2430,5 +2430,13 @@
   "command.cochange_dismiss.summary": "Silence a co-change warning for a file pair, with a reason, until their history changes",
   "cochange.error.usage": "name both files and a --reason",
   "cochange.error.person": "dismissing a co-change pair is a decision for the person, typed in a terminal",
-  "cochange.dismissed": "{file} and {partner} stay silent until their shared history moves past {support} commits"
+  "cochange.dismissed": "{file} and {partner} stay silent until their shared history moves past {support} commits",
+  "gate.test_budget.off": "test suite budget is off in policy.yml (test-budget)",
+  "gate.test_budget.ok": "suite time within tolerance and no redundant test listed",
+  "gate.test_budget.shadow": "shadow mode: the test budget findings do not block",
+  "gate.test_budget.slow": "the last suite run took {current} ms against a median of {base} ms over the {runs} runs before it",
+  "gate.test_budget.redundant": "{test} covers no line and asserts nothing that {other} does not; candidate to remove, or mark it keep in test_budget.keep",
+  "command.tests_select.summary": "List the tests linked to the touched files through the import graph, for the inner loop; the gate still runs the full suite",
+  "tests_select.none": "no test imports the touched files",
+  "tests_select.head": "{count, plural, one {# test linked} other {# tests linked}} to the touched files:"
 }

@@ -9,12 +9,12 @@ import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
 import { ciWatchCommand } from "./ci-watch.js";
-import { cochangeDismissCommand } from "./cochange.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
+import { DATA_COMMANDS } from "./data-commands.js";
 import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
@@ -95,7 +95,6 @@ import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { researchSourceCommand, researchStatusCommand } from "./research-log.js";
-import { restoreCheckCommand, restoreDrillCommand } from "./restore.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
@@ -293,9 +292,7 @@ export const REGISTRY = [
   policyRevertCommand,
   calibrateRefitCommand,
   calibrateExplainCommand,
-  restoreCheckCommand,
-  restoreDrillCommand,
-  cochangeDismissCommand,
+  ...DATA_COMMANDS,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

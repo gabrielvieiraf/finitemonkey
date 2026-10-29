@@ -2430,5 +2430,13 @@
   "command.cochange_dismiss.summary": "Silencia el aviso de cambio conjunto de un par de archivos, con motivo, hasta que cambie su historial",
   "cochange.error.usage": "indica los dos archivos y un --reason",
   "cochange.error.person": "silenciar un par de cambio conjunto es una decisión de la persona, escrita en una terminal",
-  "cochange.dismissed": "{file} y {partner} quedan en silencio hasta que su historial común pase de {support} commits"
+  "cochange.dismissed": "{file} y {partner} quedan en silencio hasta que su historial común pase de {support} commits",
+  "gate.test_budget.off": "el presupuesto de la suite de tests está apagado en policy.yml (test-budget)",
+  "gate.test_budget.ok": "tiempo de la suite dentro de la tolerancia y ningún test redundante listado",
+  "gate.test_budget.shadow": "modo shadow: los hallazgos del presupuesto de tests no bloquean",
+  "gate.test_budget.slow": "la última ejecución de la suite tardó {current} ms frente a una mediana de {base} ms en las {runs} ejecuciones anteriores",
+  "gate.test_budget.redundant": "{test} no cubre ninguna línea ni afirma nada que {other} no cubra; candidato a quitar, o márcalo keep en test_budget.keep",
+  "command.tests_select.summary": "Lista los tests ligados a los archivos tocados por el grafo de imports, para el ciclo interno; la puerta sigue corriendo la suite completa",
+  "tests_select.none": "ningún test importa los archivos tocados",
+  "tests_select.head": "{count, plural, one {# test ligado} other {# tests ligados}} a los archivos tocados:"
 }

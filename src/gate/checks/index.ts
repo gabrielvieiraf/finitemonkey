@@ -39,6 +39,7 @@ import { runtimeCheck } from "./runtime.js";
 import { scenariosCheck } from "./scenarios.js";
 import { secretsCheck } from "./secrets.js";
 import { slopCheck } from "./slop.js";
+import { testBudgetCheck } from "./test-budget.js";
 import { testsCheck } from "./tests.js";
 import { mergeCheck, worktreeCheck } from "./worktree.js";
 
@@ -86,4 +87,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   "infra-plan": infraPlanCheck,
   "api-version": apiVersionCheck,
   cochange: cochangeCheck,
+  "test-budget": testBudgetCheck,
 };

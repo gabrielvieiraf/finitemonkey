@@ -2430,5 +2430,13 @@
   "command.cochange_dismiss.summary": "Cala o aviso de co-mudança de um par de arquivos, com motivo, até o histórico deles mudar",
   "cochange.error.usage": "informe os dois arquivos e um --reason",
   "cochange.error.person": "calar um par de co-mudança é decisão da pessoa, digitada num terminal",
-  "cochange.dismissed": "{file} e {partner} ficam em silêncio até o histórico em comum passar de {support} commits"
+  "cochange.dismissed": "{file} e {partner} ficam em silêncio até o histórico em comum passar de {support} commits",
+  "gate.test_budget.off": "o orçamento da suíte de testes está desligado no policy.yml (test-budget)",
+  "gate.test_budget.ok": "tempo da suíte dentro da tolerância e nenhum teste redundante listado",
+  "gate.test_budget.shadow": "modo shadow: os achados do orçamento de testes não bloqueiam",
+  "gate.test_budget.slow": "a última execução da suíte levou {current} ms contra mediana de {base} ms nas {runs} execuções anteriores",
+  "gate.test_budget.redundant": "{test} não cobre linha nem afirma nada que {other} não cubra; candidato a remover, ou marque como keep em test_budget.keep",
+  "command.tests_select.summary": "Lista os testes ligados aos arquivos tocados pelo grafo de imports, para o ciclo interno; o portão continua rodando a suíte inteira",
+  "tests_select.none": "nenhum teste importa os arquivos tocados",
+  "tests_select.head": "{count, plural, one {# teste ligado} other {# testes ligados}} aos arquivos tocados:"
 }

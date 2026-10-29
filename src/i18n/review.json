@@ -2431,7 +2431,15 @@
     "command.cochange_dismiss.summary": "machine",
     "cochange.error.usage": "machine",
     "cochange.error.person": "machine",
-    "cochange.dismissed": "machine"
+    "cochange.dismissed": "machine",
+    "gate.test_budget.off": "machine",
+    "gate.test_budget.ok": "machine",
+    "gate.test_budget.shadow": "machine",
+    "gate.test_budget.slow": "machine",
+    "gate.test_budget.redundant": "machine",
+    "command.tests_select.summary": "machine",
+    "tests_select.none": "machine",
+    "tests_select.head": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4865,6 +4873,14 @@
     "command.cochange_dismiss.summary": "machine",
     "cochange.error.usage": "machine",
     "cochange.error.person": "machine",
-    "cochange.dismissed": "machine"
+    "cochange.dismissed": "machine",
+    "gate.test_budget.off": "machine",
+    "gate.test_budget.ok": "machine",
+    "gate.test_budget.shadow": "machine",
+    "gate.test_budget.slow": "machine",
+    "gate.test_budget.redundant": "machine",
+    "command.tests_select.summary": "machine",
+    "tests_select.none": "machine",
+    "tests_select.head": "machine"
   }
 }

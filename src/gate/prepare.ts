@@ -130,7 +130,16 @@ const measureSize = (
 
 const withCheck = (
   contract: TaskContract,
-  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate" | "infra-plan" | "api-version" | "cochange",
+  kind:
+    | "examples"
+    | "scenarios"
+    | "blind-tests"
+    | "claims"
+    | "migrate"
+    | "infra-plan"
+    | "api-version"
+    | "cochange"
+    | "test-budget",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -173,7 +182,12 @@ const withConfigured = (
     "api-version",
     paths.some((path) => UNTYPED_JS.test(path) || PYTHON.test(path)),
   );
-  return withCheck(withApi, "cochange", changes.length > 0);
+  const withCochange = withCheck(withApi, "cochange", changes.length > 0);
+  return withCheck(
+    withCochange,
+    "test-budget",
+    contract.acceptance.some((check) => check.kind === "tests"),
+  );
 };
 
 const shapedContract = (

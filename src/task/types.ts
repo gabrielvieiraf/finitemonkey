@@ -45,6 +45,7 @@ export const CHECK_KINDS = [
   "infra-plan",
   "api-version",
   "cochange",
+  "test-budget",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];
