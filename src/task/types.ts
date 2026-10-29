@@ -48,6 +48,7 @@ export const CHECK_KINDS = [
   "test-budget",
   "red-green",
   "cli",
+  "judge",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

@@ -85,3 +85,21 @@ export const sectionKeyIssues = (tree: ConfigTree): readonly (readonly [string, 
       .filter((key) => !keys.includes(key))
       .map((key) => [`${section}.${key}`, key, keys] as const),
   );
+
+export interface Stage6Config {
+  readonly evolve: EvolveConfig;
+  readonly calibrate: CalibrateConfig;
+  readonly autonomy: AutonomyConfig;
+}
+
+export const DEFAULT_STAGE6: Stage6Config = {
+  evolve: { minTasks: DEFAULT_EVOLVE_MIN_TASKS },
+  calibrate: DEFAULT_CALIBRATE,
+  autonomy: DEFAULT_AUTONOMY,
+};
+
+export const parseStage6 = (tree: ConfigTree): Stage6Config => ({
+  evolve: parseEvolve(tree),
+  calibrate: parseCalibrate(tree),
+  autonomy: parseAutonomy(tree),
+});

@@ -1,8 +1,8 @@
 import type { Localized } from "./footprint-text.js";
-import { KNOWLEDGE_FOOTPRINT_TEXT } from "./footprint-text-knowledge.js";
+import { KNOWLEDGE_JUDGE_FOOTPRINT_TEXT } from "./footprint-text-judge.js";
 
-export const COPY_FOOTPRINT_TEXT: Readonly<Record<"knowledge" | "ui-copy", Localized>> = {
-  ...KNOWLEDGE_FOOTPRINT_TEXT,
+export const COPY_FOOTPRINT_TEXT: Readonly<Record<"knowledge" | "judge" | "ui-copy", Localized>> = {
+  ...KNOWLEDGE_JUDGE_FOOTPRINT_TEXT,
   "ui-copy": {
     en: "`cache/copy-rules.json` keeps, per interface copy rule (verb-first labels, error messages with an action, one name per action, empty labels), the findings the copy check showed and the ones later fixed in the catalog. The ratio of fixed over shown decides whether a rule may block: only when `ui-copy` is active and the ratio reaches `ui.copy.accept_threshold` from config.yml. Never committed.",
     "pt-BR":

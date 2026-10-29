@@ -15,7 +15,7 @@ import {
   RETIRED_POLICY_KEYS,
   USER_POLICY_FILE,
 } from "./policy.js";
-import { parseAutonomy, parseCalibrate, parseEvolve, sectionKeyIssues } from "./stage6.js";
+import { parseStage6, sectionKeyIssues } from "./stage6.js";
 
 const pick = <T extends string>(options: readonly T[], value: unknown, fallback: T): T =>
   options.find((option) => option === value) ?? fallback;
@@ -64,9 +64,7 @@ export const parsePolicy = (text: string): Policy => {
     alertBudget: parseAlertBudget(tree),
     alertBudgetSet: Object.keys(configMap(tree, "alertBudget")).filter((key) => ALERT_BUDGET_KEYS.includes(key)),
     evolved: {},
-    evolve: parseEvolve(tree),
-    calibrate: parseCalibrate(tree),
-    autonomy: parseAutonomy(tree),
+    ...parseStage6(tree),
     issues: [
       ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
       ...Object.keys(configMap(tree, "alertBudget"))

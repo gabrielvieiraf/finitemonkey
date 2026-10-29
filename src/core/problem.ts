@@ -105,6 +105,7 @@ export const ERROR_CODES = [
   "guard_bypassed",
   "instructions_drift",
   "restore_failed",
+  "judge_refused",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

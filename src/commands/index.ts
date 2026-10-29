@@ -58,6 +58,7 @@ import { infraCommand } from "./infra.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
+import { JUDGE_COMMANDS } from "./judge-registry.js";
 import { KNOWLEDGE_COMMANDS } from "./knowledge-registry.js";
 import {
   learningsAcceptCommand,
@@ -294,6 +295,7 @@ export const REGISTRY = [
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   ...UX_COMMANDS,
+  ...JUDGE_COMMANDS,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

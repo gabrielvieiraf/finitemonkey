@@ -1,12 +1,6 @@
 import { type AlertBudgetConfig, DEFAULT_ALERT_BUDGET } from "./budget.js";
-import {
-  type AutonomyConfig,
-  type CalibrateConfig,
-  DEFAULT_AUTONOMY,
-  DEFAULT_CALIBRATE,
-  DEFAULT_EVOLVE_MIN_TASKS,
-  type EvolveConfig,
-} from "./stage6.js";
+import { JUDGE_GUARDS } from "./judge-guards.js";
+import { type AutonomyConfig, type CalibrateConfig, DEFAULT_STAGE6, type EvolveConfig } from "./stage6.js";
 import { UI_GUARDS } from "./ui-guards.js";
 
 export { loadBasePolicy, loadPolicy, policyPath, type PolicyRuntime, userPolicyPath } from "./load.js";
@@ -128,6 +122,7 @@ export const OPTIONAL_GUARDS = [
   "api-breaking",
   "cli-ux",
   "ui-copy",
+  ...JUDGE_GUARDS,
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -211,6 +206,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "api-breaking",
   "cli-ux",
   "ui-copy",
+  ...JUDGE_GUARDS,
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];
@@ -250,9 +246,7 @@ export const DEFAULT_POLICY: Policy = {
   alertBudget: DEFAULT_ALERT_BUDGET,
   alertBudgetSet: [],
   evolved: {},
-  evolve: { minTasks: DEFAULT_EVOLVE_MIN_TASKS },
-  calibrate: DEFAULT_CALIBRATE,
-  autonomy: DEFAULT_AUTONOMY,
+  ...DEFAULT_STAGE6,
   issues: [],
 };
 
