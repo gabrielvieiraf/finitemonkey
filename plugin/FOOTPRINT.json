@@ -3,7 +3,7 @@
   "module": "./register.mjs",
   "reach": [
     "calls: $.clock.after (via scheduleRecord, scheduleRefresh, scheduleStatus), $.command.register (via registerGateCommand), $.process.run (via runCli), $.session.root (via runCli), $.session.surfaces, $.ui.close (via closePane), $.ui.invalidate (via refreshStatus), $.ui.log (via registerGateCommand), $.ui.open (via openPane), $.ui.resolve, $.ui.status (via refreshStatus)",
-    "hooks: session.start, turn.complete, tool.check, tool.call{tool=?}, ui.render{component=AbovePrompt}, ui.render{component=Pane}, command.run{command=?}"
+    "hooks: session.start, turn.complete, tool.check, tool.call{tool=?}, ui.render{component=AbovePrompt}, ui.render{component=Pane}, command.run{command=?}, attribution.text"
   ],
   "gating": [
     {

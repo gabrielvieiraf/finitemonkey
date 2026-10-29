@@ -1,4 +1,5 @@
 import type { ModApi } from "./api.js";
+import { attributionText } from "./attribution-hooks.js";
 import type {
   Next,
   On,
@@ -47,4 +48,5 @@ export function register(on: On): void {
   on("ui.render", { component: "AbovePrompt" }, renderBand);
   on("ui.render", { component: "Pane" }, renderPane);
   on("command.run", { command: GATE_COMMAND }, runGateCommand);
+  on("attribution.text", attributionText);
 }

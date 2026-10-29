@@ -59,7 +59,17 @@ export interface CommandRunResult {
   readonly context?: readonly string[];
 }
 
+export interface AttributionTextInput {
+  readonly kind: string;
+  readonly text: string;
+}
+
+export interface AttributionTextResult {
+  readonly text: string;
+}
+
 export interface EventTypes {
+  readonly "attribution.text": readonly [AttributionTextInput, AttributionTextResult];
   readonly "tool.call": readonly [ToolCallInput, ToolCallResult];
   readonly "ui.render": readonly [RenderInput, ModElement | null];
   readonly "command.run": readonly [CommandRunInput, CommandRunResult];

@@ -9,6 +9,7 @@ import type { Translate } from "../i18n/translate.js";
 import { MOD_STATE_SCHEMA, type ModRule, type ModState } from "../mod/state.js";
 import { featureMode } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
+import { attributionOf } from "./attribution.js";
 
 export const MOD_TIGHTEN_GUARD = "mod-tighten";
 export const MOD_BAND_GUARD = "mod-band";
@@ -91,6 +92,7 @@ export const modState = (runtime: Runtime, paths: FmPaths, t: Translate): ModSta
   mode: featureMode(runtime, paths, MOD_TIGHTEN_GUARD),
   band: featureMode(runtime, paths, MOD_BAND_GUARD),
   failReason: t("mod.check_failed"),
+  attribution: attributionOf(runtime, paths),
   rules: [
     ...(live(runtime, paths, "self") ? [] : selfRules(t)),
     ...(live(runtime, paths, "bypass") ? [] : bypassRules(t)),

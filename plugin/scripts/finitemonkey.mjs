@@ -6128,7 +6128,8 @@ var OPTIONAL_GUARDS = [
   "calibrate",
   "autonomy",
   "mod-tighten",
-  "mod-band"
+  "mod-band",
+  "attribution-trailer"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6181,7 +6182,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "forecast",
   "evolve",
   "calibrate",
-  "autonomy"
+  "autonomy",
+  "attribution-trailer"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -55903,6 +55905,16 @@ var mergeCommand = {
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
 
+// src/bridge/attribution.ts
+var MOD_TRAILER_GUARD = "attribution-trailer";
+var attributionOf = (runtime, paths) => {
+  const rules2 = effectiveRules(runtime, paths.root);
+  const forbid = rules2.ok && rules2.value.some((rule) => rule.detector?.kind === "attribution");
+  const gate = readGateStatus(runtime, paths);
+  const trailer = featureMode(runtime, paths, MOD_TRAILER_GUARD) === "active" && gate?.tree !== void 0 ? `Verified-by: finitemonkey ${gate.status} tree:${gate.tree}` : null;
+  return { forbid, trailer };
+};
+
 // src/bridge/state.ts
 var MOD_TIGHTEN_GUARD = "mod-tighten";
 var MOD_BAND_GUARD = "mod-band";
@@ -55973,6 +55985,7 @@ var modState = (runtime, paths, t) => ({
   mode: featureMode(runtime, paths, MOD_TIGHTEN_GUARD),
   band: featureMode(runtime, paths, MOD_BAND_GUARD),
   failReason: t("mod.check_failed"),
+  attribution: attributionOf(runtime, paths),
   rules: [
     ...live(runtime, paths, "self") ? [] : selfRules(t),
     ...live(runtime, paths, "bypass") ? [] : bypassRules(t),

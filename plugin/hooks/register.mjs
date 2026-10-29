@@ -1,3 +1,18 @@
+// src/mod/memory.ts
+var memory = { state: void 0, view: void 0, pending: void 0 };
+
+// src/mod/attribution-hooks.ts
+var KINDS = /* @__PURE__ */ new Set(["commit", "pr"]);
+var attributionFor = (e, decided, attribution) => {
+  if (attribution === void 0 || !KINDS.has(e.kind)) return decided;
+  const base = attribution.forbid ? "" : decided.text;
+  const trailer = e.kind === "commit" ? attribution.trailer : null;
+  return { text: [base, trailer ?? ""].filter((part) => part !== "").join("\n") };
+};
+async function attributionText(_$, e, next) {
+  return attributionFor(e, await next(e), memory.state?.attribution);
+}
+
 // src/mod/cli.ts
 var CLI_TIMEOUT_MS = 2e4;
 function cliArgv($, args) {
@@ -112,9 +127,6 @@ var paneTree = (elements, view, actions) => elements.Box({
   ]
 });
 
-// src/mod/memory.ts
-var memory = { state: void 0, view: void 0, pending: void 0 };
-
 // src/mod/gate-hooks.ts
 var DEBOUNCE_MS = 500;
 var GATE_COMMAND = "fm";
@@ -218,6 +230,11 @@ var ruleOf = (value) => {
   const regex = compile(pattern);
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
+var attributionOf = (value) => {
+  if (!isRecord2(value) || typeof value["forbid"] !== "boolean") return void 0;
+  const trailer = value["trailer"];
+  return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
+};
 var dataOf = (parsed) => isRecord2(parsed) && isRecord2(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text2) => {
   let parsed;
@@ -233,7 +250,15 @@ var parseModState = (text2) => {
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
   const failReason = data["failReason"];
   const band = MODES.find((item) => item === data["band"]) ?? "active";
-  return { root: data["root"], mode, band, rules, ...typeof failReason === "string" ? { failReason } : {} };
+  const attribution = attributionOf(data["attribution"]);
+  return {
+    root: data["root"],
+    mode,
+    band,
+    rules,
+    ...attribution === void 0 ? {} : { attribution },
+    ...typeof failReason === "string" ? { failReason } : {}
+  };
 };
 
 // src/mod/tighten.ts
@@ -331,6 +356,7 @@ function register(on) {
   on("ui.render", { component: "AbovePrompt" }, renderBand);
   on("ui.render", { component: "Pane" }, renderPane);
   on("command.run", { command: GATE_COMMAND }, runGateCommand);
+  on("attribution.text", attributionText);
 }
 export {
   register
