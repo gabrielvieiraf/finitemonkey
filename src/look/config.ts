@@ -44,6 +44,9 @@ export interface LookConfig {
   readonly successColor: string | undefined;
   readonly skeleton: string | undefined;
   readonly ds: DsConfig;
+  readonly forms: Readonly<Record<string, readonly string[]>>;
+  readonly formsKeepCleared: readonly string[];
+  readonly formValues: Readonly<Record<string, string>>;
 }
 
 export interface DsConfig {
@@ -112,6 +115,9 @@ export const parseLookConfig = (source: string): LookConfig => {
     states: statesOf(tree),
     successColor: text(configAt(tree, "ui_states", "success_color")),
     skeleton: text(configAt(tree, "ui_states", "skeleton")),
+    forms: routeLists(configList(tree, "forms")),
+    formsKeepCleared: configList(tree, "forms_keep_cleared"),
+    formValues: configMap(tree, "form_values"),
     ds: {
       tokens: [...configList(tree, "ds", "tokens"), ...configList(tree, "ds", "css")],
       exclude: configList(tree, "ds", "exclude"),

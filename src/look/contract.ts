@@ -195,6 +195,16 @@ export const contractStates = (
   return out;
 };
 
+export const contractForms = (
+  screens: readonly UiScreen[],
+  mapped: Readonly<Record<string, readonly string[]>>,
+): Readonly<Record<string, readonly string[]>> => {
+  const out: Record<string, readonly string[]> = { ...mapped };
+  for (const screen of screens.filter((item) => item.forms.length > 0))
+    out[screen.screen] = [...new Set([...(mapped[screen.screen] ?? []), ...screen.forms])];
+  return out;
+};
+
 export const contractDialogs = (
   screens: readonly UiScreen[],
   mapped: Readonly<Record<string, readonly string[]>>,
