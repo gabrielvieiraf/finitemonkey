@@ -21,8 +21,9 @@ import { type LookSummary, VIEWPORTS } from "./types.js";
 import { loadUiConfig, UI_FEATURE } from "./ui.js";
 import { layoutsOf, uiFindings } from "./ui-findings.js";
 import type { UxPage } from "./ux.js";
-import { activeModes, type ModeMap, uxPasses, uxStaticPages, uxWidths } from "./ux-features.js";
+import { activeModes, type ModeMap, uxPasses, uxSetup, uxStaticPages, uxWidths } from "./ux-features.js";
 import { governAndRecord } from "./ux-govern.js";
+import { sessionPages } from "./ux-sessions.js";
 
 export type LookRun =
   | { readonly kind: "not_a_repo" | "not_configured" | "playwright_missing" | "browser_missing" }
@@ -76,8 +77,9 @@ const capture = async (runtime: Runtime, ready: Ready): Promise<Shot | LookRun> 
   try {
     const dir = lookDir(fmPaths(ready.root), ready.tree);
     const passes = uxPasses(runtime, ready.root, ready.config, ready.modes, ready.tree);
+    const baseUrl = `http://${ready.config.host}:${String(ready.config.port)}`;
     const output = await captureAll(browser, {
-      baseUrl: `http://${ready.config.host}:${String(ready.config.port)}`,
+      baseUrl,
       routes: lookRoutes(ready.config),
       viewports: VIEWPORTS,
       dir,
@@ -86,9 +88,17 @@ const capture = async (runtime: Runtime, ready: Ready): Promise<Shot | LookRun> 
       extraWidths: uxWidths(ready.modes),
       isolate: passes.length > 0,
     });
+    const sessions = await sessionPages(browser, {
+      runtime,
+      root: ready.root,
+      config: ready.config,
+      modes: ready.modes,
+      screens: uxSetup(runtime, ready.root, ready.config, ready.modes).screens,
+      request: { baseUrl, timeoutMs: ready.config.timeoutS * 1000, isolate: true },
+    });
     return {
       results: output.results,
-      ux: output.ux,
+      ux: [...output.ux, ...sessions],
       blocked: output.blocked,
       sheet: await contactSheet(browser, output.results, dir),
     };

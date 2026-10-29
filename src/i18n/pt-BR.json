@@ -2602,5 +2602,19 @@
   "ui.dont.retired": "Regra {id} aposentada: {reason}",
   "ui.dont.unknown": "Não há regra ativa {id}, ou faltou o motivo.",
   "ui.dont.bad_input": "Uma rejeição precisa de --reason, e um predicado precisa de --selector, --property e exatamente um entre --equals, --above, --below, --matches.",
-  "ui.dont.write_failed": "Não deu para gravar as regras permanentes."
+  "ui.dont.write_failed": "Não deu para gravar as regras permanentes.",
+  "command.journey.summary": "Lista as jornadas e se cada uma está aprovada",
+  "command.journey_propose.summary": "Propõe uma jornada (passos com um oráculo cada) a partir de um arquivo YAML",
+  "command.journey_approve.summary": "Aprova uma jornada em um hash (só a pessoa)",
+  "journey.empty": "Nenhuma jornada ainda.",
+  "journey.line_approved": "{name}: aprovada em {hash}",
+  "journey.line_waiting": "{name}: esperando aprovação em {hash}",
+  "journey.invalid": "A jornada não segue o schema: {errors}",
+  "journey.proposed": "Jornada {name} proposta com hash {hash}. Só roda depois que a pessoa aprovar.",
+  "journey.approved": "Jornada {name} aprovada no hash {hash}. Qualquer edição pede nova aprovação.",
+  "journey.person_only": "Só a pessoa aprova uma jornada.",
+  "journey.approve.missing": "Não existe a jornada {name}.",
+  "journey.approve.invalid": "A jornada {name} não segue o schema.",
+  "journey.approve.hash": "A jornada {name} mudou desde esse hash. Leia de novo.",
+  "journey.approve.write": "Não deu para gravar a aprovação de {name}."
 }

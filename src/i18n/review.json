@@ -2602,7 +2602,21 @@
     "ui.dont.retired": "machine",
     "ui.dont.unknown": "machine",
     "ui.dont.bad_input": "machine",
-    "ui.dont.write_failed": "machine"
+    "ui.dont.write_failed": "machine",
+    "command.journey.summary": "machine",
+    "command.journey_propose.summary": "machine",
+    "command.journey_approve.summary": "machine",
+    "journey.empty": "machine",
+    "journey.line_approved": "machine",
+    "journey.line_waiting": "machine",
+    "journey.invalid": "machine",
+    "journey.proposed": "machine",
+    "journey.approved": "machine",
+    "journey.person_only": "machine",
+    "journey.approve.missing": "machine",
+    "journey.approve.invalid": "machine",
+    "journey.approve.hash": "machine",
+    "journey.approve.write": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5207,6 +5221,20 @@
     "ui.dont.retired": "machine",
     "ui.dont.unknown": "machine",
     "ui.dont.bad_input": "machine",
-    "ui.dont.write_failed": "machine"
+    "ui.dont.write_failed": "machine",
+    "command.journey.summary": "machine",
+    "command.journey_propose.summary": "machine",
+    "command.journey_approve.summary": "machine",
+    "journey.empty": "machine",
+    "journey.line_approved": "machine",
+    "journey.line_waiting": "machine",
+    "journey.invalid": "machine",
+    "journey.proposed": "machine",
+    "journey.approved": "machine",
+    "journey.person_only": "machine",
+    "journey.approve.missing": "machine",
+    "journey.approve.invalid": "machine",
+    "journey.approve.hash": "machine",
+    "journey.approve.write": "machine"
   }
 }

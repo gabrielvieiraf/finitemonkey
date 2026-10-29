@@ -2602,5 +2602,19 @@
   "ui.dont.retired": "Rule {id} retired: {reason}",
   "ui.dont.unknown": "No live rule {id}, or no reason given.",
   "ui.dont.bad_input": "A rejection needs --reason, and a predicate needs --selector, --property and exactly one of --equals, --above, --below, --matches.",
-  "ui.dont.write_failed": "Could not write the standing rules."
+  "ui.dont.write_failed": "Could not write the standing rules.",
+  "command.journey.summary": "List the journeys and whether each is approved",
+  "command.journey_propose.summary": "Propose a journey (steps with an oracle each) from a YAML file",
+  "command.journey_approve.summary": "Approve a journey at a hash (person only)",
+  "journey.empty": "No journeys yet.",
+  "journey.line_approved": "{name}: approved at {hash}",
+  "journey.line_waiting": "{name}: waiting for approval at {hash}",
+  "journey.invalid": "The journey does not match the schema: {errors}",
+  "journey.proposed": "Journey {name} proposed with hash {hash}. It runs only after the person approves it.",
+  "journey.approved": "Journey {name} approved at hash {hash}. Any edit needs a new approval.",
+  "journey.person_only": "Only the person approves a journey.",
+  "journey.approve.missing": "There is no journey {name}.",
+  "journey.approve.invalid": "Journey {name} does not match the schema.",
+  "journey.approve.hash": "Journey {name} changed since that hash. Read it again.",
+  "journey.approve.write": "Could not record the approval of {name}."
 }
