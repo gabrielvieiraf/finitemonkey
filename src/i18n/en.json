@@ -2497,5 +2497,16 @@
   "pr.provenance.unreadable": "Cannot read {file}.",
   "command.team_report.summary": "Aggregate, anonymous report of gate results, rework, reverts and spend for the repository, with its method",
   "team.report.off": "The team report is off in this project.",
-  "team.report.k": "--k must be a whole number of at least 1."
+  "team.report.k": "--k must be a whole number of at least 1.",
+  "command.task_trust.summary": "Show a task contract with its hash, or (person only) approve that exact hash",
+  "trust.header": "Contract {task} ({hash}): {goal}",
+  "trust.check": "  check {id}: {says}",
+  "trust.example": "  example {id} [{status}]: {says}",
+  "trust.how": "Approve it in the prompt with fm: trust {task}, or with the Approve button of /fm contract.",
+  "trust.already": "{task} is approved on this machine with this hash.",
+  "trust.stale": "the contract of {task} changed after it was shown ({shown} shown, {current} now); show it again before approving",
+  "gate.guard.self.trust.claim": "{file} with --hash approves the contract, which only the person can do",
+  "gate.guard.self.trust.requires": "show the contract and ask the person to approve it in the /fm contract pane or in their prompt",
+  "gate.guard.trust.human": "The agent tried to approve a contract. Use `/fm contract` or type `fm: trust <id>` yourself if you agree.",
+  "divergence.none": "{task} has no open divergence question."
 }

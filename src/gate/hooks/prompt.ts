@@ -8,45 +8,18 @@ import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
 import { recordDismissal } from "../../policy/budget.js";
 import { KNOWN_GUARDS } from "../../policy/policy.js";
-import { approveAmendments } from "../../task/amend.js";
 import { IMPLICIT_ID } from "../../task/implicit.js";
 import type { FmPaths } from "../../task/paths.js";
-import { readState, readTrust, writeTrust } from "../../task/state.js";
-import { prepareGate } from "../prepare.js";
+import { readState } from "../../task/state.js";
+import { trustContract } from "../trust-contract.js";
 import { allowWith, human, projectPaths } from "./common.js";
 import { readCounter, saveCounter } from "./counter.js";
 import { readGateStatus } from "./status.js";
 
 export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims", "predict"]);
 
-const trust = (input: HookInput, paths: FmPaths, task: string): boolean => {
-  const { runtime } = input;
-  const taskId = task === IMPLICIT_ID ? undefined : task;
-  const ready = prepareGate({
-    runtime,
-    cwd: paths.root,
-    env: {},
-    sessionId: undefined,
-    budgetMs: 0,
-    fast: true,
-    noSkip: true,
-    ...(taskId === undefined ? {} : { taskId }),
-  });
-  if (ready.kind !== "ready" || ready.prepared.ctx.contract.id !== task) return false;
-  const lock = readTrust(runtime, paths);
-  const text = runtime.readText(paths.task(task));
-  return writeTrust(runtime, paths, {
-    ...lock,
-    contracts: { ...lock.contracts, [task]: ready.prepared.loaded.hash },
-    approved: task === IMPLICIT_ID || !text.ok ? lock.approved : { ...lock.approved, [task]: text.value },
-  }).ok;
-};
-
-const trustAndApprove = (input: HookInput, paths: FmPaths, task: string): boolean => {
-  const trusted = trust(input, paths, task);
-  if (trusted) approveAmendments(input.runtime, paths, task, `person@${input.runtime.now()}`);
-  return trusted;
-};
+const trustAndApprove = (input: HookInput, paths: FmPaths, task: string): boolean =>
+  trustContract(input.runtime, paths, task, `person@${input.runtime.now()}`).kind === "trusted";
 
 const predicted = (input: HookInput, paths: FmPaths, marker: PredictMarker): string => {
   const concept = parseConcept(marker.concept);

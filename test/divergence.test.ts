@@ -128,6 +128,20 @@ describe("divergence question", () => {
     );
   });
 
+  it("stores a person's own answer when neither reading is wanted, and --pending changes nothing", async () => {
+    const repo = project([candidate("nothing to refund"), candidate("error: negative amount")], ["-5"]);
+    await withExample(repo);
+    await run(repo, ["task", "diverge", "refund"]);
+    const pending = await run(repo, ["task", "diverge", "refund", "--pending"]);
+    assert.equal(field(pending.body, "data", "question", "input"), "-5");
+    const own = await run(repo, ["task", "diverge", "refund", "--want", "refund refused: negative amount"]);
+    assert.equal(own.code, 0, own.stdout);
+    const approved = approvedExamples(repoRuntime(), fmPaths(repo.root), "refund").examples;
+    assert.deepEqual(approved.at(-1)?.expect, "refund refused: negative amount");
+    const empty = await run(repo, ["task", "diverge", "refund", "--pending"]);
+    assert.equal(field(empty.body, "data", "question"), null);
+  });
+
   it("skips small contracts and routes technical questions away from beginners", async () => {
     const repo = project(
       [candidate("nothing to refund"), candidate("error: negative amount")],

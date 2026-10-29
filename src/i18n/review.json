@@ -2498,7 +2498,18 @@
     "pr.provenance.unreadable": "machine",
     "command.team_report.summary": "machine",
     "team.report.off": "machine",
-    "team.report.k": "machine"
+    "team.report.k": "machine",
+    "command.task_trust.summary": "machine",
+    "trust.header": "machine",
+    "trust.check": "machine",
+    "trust.example": "machine",
+    "trust.how": "machine",
+    "trust.already": "machine",
+    "trust.stale": "machine",
+    "gate.guard.self.trust.claim": "machine",
+    "gate.guard.self.trust.requires": "machine",
+    "gate.guard.trust.human": "machine",
+    "divergence.none": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4999,6 +5010,17 @@
     "pr.provenance.unreadable": "machine",
     "command.team_report.summary": "machine",
     "team.report.off": "machine",
-    "team.report.k": "machine"
+    "team.report.k": "machine",
+    "command.task_trust.summary": "machine",
+    "trust.header": "machine",
+    "trust.check": "machine",
+    "trust.example": "machine",
+    "trust.how": "machine",
+    "trust.already": "machine",
+    "trust.stale": "machine",
+    "gate.guard.self.trust.claim": "machine",
+    "gate.guard.self.trust.requires": "machine",
+    "gate.guard.trust.human": "machine",
+    "divergence.none": "machine"
   }
 }

@@ -116,6 +116,7 @@ import { taskDivergeCommand } from "./task-diverge.js";
 import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
 import { taskExamplesCommand } from "./task-examples.js";
 import { taskFromSpecCommand } from "./task-spec.js";
+import { taskTrustCommand } from "./task-trust.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
@@ -290,6 +291,7 @@ export const REGISTRY = [
   ...EVOLVE_COMMANDS,
   ...DATA_COMMANDS,
   ...PERSON_COMMANDS,
+  taskTrustCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

@@ -2590,9 +2590,9 @@ var lineDiff = (path, before2, after2) => {
   const changes = changedOps(splitLines(before2), splitLines(after2));
   if (changes.length === 0) return [];
   const lines10 = changes.map(([op, line12]) => `${op} ${line12}`);
-  const shown7 = lines10.slice(0, MAX_DIFF_LINES);
-  const hidden = lines10.length - shown7.length;
-  return [`--- ${path}`, `+++ ${path}`, ...shown7, ...hidden > 0 ? [`… ${String(hidden)} more`] : []];
+  const shown8 = lines10.slice(0, MAX_DIFF_LINES);
+  const hidden = lines10.length - shown8.length;
+  return [`--- ${path}`, `+++ ${path}`, ...shown8, ...hidden > 0 ? [`… ${String(hidden)} more`] : []];
 };
 
 // src/generate/plan.ts
@@ -5548,22 +5548,22 @@ var list = (raw, map) => Array.isArray(raw) ? raw.flatMap((item2) => {
   const value2 = map(item2);
   return value2 === void 0 ? [] : [value2];
 }) : [];
-var readGrants = (store2, paths) => list(readJsonFile(store2, paths.grants)?.["grants"], toGrant);
-var readApprovals = (store2, paths) => list(readJsonFile(store2, paths.grants)?.["approvals"], toApproval);
+var readGrants = (store3, paths) => list(readJsonFile(store3, paths.grants)?.["grants"], toGrant);
+var readApprovals = (store3, paths) => list(readJsonFile(store3, paths.grants)?.["approvals"], toApproval);
 var isLive = (grant, now, sessionId) => Date.parse(grant.expiresAt) > now && (grant.sessionId === void 0 || sessionId === void 0 || grant.sessionId === sessionId);
-var activeGrant = (store2, paths, guard, now, sessionId) => readGrants(store2, paths).findLast((grant) => grant.guard === guard && isLive(grant, now, sessionId));
-var saveRelease = (store2, paths, now, added) => {
-  const grants = [...readGrants(store2, paths).filter((grant) => Date.parse(grant.expiresAt) > now), ...added.grants];
-  const approvals = [...readApprovals(store2, paths), ...added.approvals];
-  return writeJsonFile(store2, paths.grants, { grants: [...grants], approvals: [...approvals] }).ok;
+var activeGrant = (store3, paths, guard, now, sessionId) => readGrants(store3, paths).findLast((grant) => grant.guard === guard && isLive(grant, now, sessionId));
+var saveRelease = (store3, paths, now, added) => {
+  const grants = [...readGrants(store3, paths).filter((grant) => Date.parse(grant.expiresAt) > now), ...added.grants];
+  const approvals = [...readApprovals(store3, paths), ...added.approvals];
+  return writeJsonFile(store3, paths.grants, { grants: [...grants], approvals: [...approvals] }).ok;
 };
 var expiryFrom = (now) => new Date(now + GRANT_MINUTES * 6e4).toISOString();
-var bindApproval = (store2, paths, approval, treeHash2) => {
-  const approvals = readApprovals(store2, paths).map(
+var bindApproval = (store3, paths, approval, treeHash2) => {
+  const approvals = readApprovals(store3, paths).map(
     (item2) => item2.task === approval.task && item2.check === approval.check && item2.at === approval.at && item2.treeHash === void 0 ? { ...item2, treeHash: treeHash2 } : item2
   );
-  return writeJsonFile(store2, paths.grants, {
-    grants: readGrants(store2, paths).map((grant) => ({ ...grant })),
+  return writeJsonFile(store3, paths.grants, {
+    grants: readGrants(store3, paths).map((grant) => ({ ...grant })),
     approvals: approvals.map((item2) => ({ ...item2 }))
   }).ok;
 };
@@ -11829,20 +11829,20 @@ var restoreConfig = (config) => {
   };
 };
 var bucketOf2 = (location2) => /^(?:s3|gs|az|r2|b2|spaces):\/\/([^/]+)/i.exec(location2)?.[1]?.toLowerCase();
-var isProtected = (store2) => store2.protection !== void 0 && PROTECTIONS.includes(store2.protection);
-var reachFindings = (runtime, root, config) => config.stores.flatMap((store2) => {
-  if (store2.evidence !== void 0) {
-    const read11 = runtime.readText(toAbsolutePath(join47(root, store2.evidence)));
-    return read11.ok ? [] : [{ store: store2.name, problem: "evidence-missing" }];
+var isProtected = (store3) => store3.protection !== void 0 && PROTECTIONS.includes(store3.protection);
+var reachFindings = (runtime, root, config) => config.stores.flatMap((store3) => {
+  if (store3.evidence !== void 0) {
+    const read11 = runtime.readText(toAbsolutePath(join47(root, store3.evidence)));
+    return read11.ok ? [] : [{ store: store3.name, problem: "evidence-missing" }];
   }
-  if (store2.backup === "") return [{ store: store2.name, problem: "no-backup" }];
-  const bucket = bucketOf2(store2.backup);
+  if (store3.backup === "") return [{ store: store3.name, problem: "no-backup" }];
+  const bucket = bucketOf2(store3.backup);
   const buckets = config.appBuckets.map((item2) => item2.toLowerCase());
-  if (bucket !== void 0 && buckets.includes(bucket) && !isProtected(store2)) {
-    return [{ store: store2.name, problem: "same-bucket" }];
+  if (bucket !== void 0 && buckets.includes(bucket) && !isProtected(store3)) {
+    return [{ store: store3.name, problem: "same-bucket" }];
   }
-  const sameAccount = store2.backupAccount === void 0 || store2.backupAccount === config.appAccount;
-  return sameAccount && !isProtected(store2) ? [{ store: store2.name, problem: "same-account" }] : [];
+  const sameAccount = store3.backupAccount === void 0 || store3.backupAccount === config.appAccount;
+  return sameAccount && !isProtected(store3) ? [{ store: store3.name, problem: "same-account" }] : [];
 });
 var evidenceHash = (runtime, root, file) => {
   const read11 = runtime.readText(toAbsolutePath(join47(root, file)));
@@ -11864,33 +11864,33 @@ var parseCounts = (stdout) => {
     })
   );
 };
-var runDrill = (runtime, root, store2) => {
+var runDrill = (runtime, root, store3) => {
   const result = (status, detail = "", counts2 = {}) => ({
-    store: store2.name,
+    store: store3.name,
     status,
-    source: store2.backup,
+    source: store3.backup,
     counts: counts2,
     detail
   });
-  if (store2.restore === void 0 || store2.target === void 0) return result("not_configured");
-  if (!isLocalDatabase(store2.target)) return result("refused", store2.target.replace(/\/\/[^@/]*@/, "//***@"));
+  if (store3.restore === void 0 || store3.target === void 0) return result("not_configured");
+  if (!isLocalDatabase(store3.target)) return result("refused", store3.target.replace(/\/\/[^@/]*@/, "//***@"));
   const exec = (command) => runtime.exec({
     command,
     args: [],
     cwd: root,
     shell: true,
     timeoutMs: DRILL_TIMEOUT_MS,
-    env: { RESTORE_TARGET: store2.target ?? "", RESTORE_SOURCE: store2.backup, FINITEMONKEY_THROWAWAY: "1" }
+    env: { RESTORE_TARGET: store3.target ?? "", RESTORE_SOURCE: store3.backup, FINITEMONKEY_THROWAWAY: "1" }
   });
   const started = nowMs(runtime);
-  const restored = exec(store2.restore);
+  const restored = exec(store3.restore);
   if (!restored.found || restored.exitCode !== 0 || restored.timedOut) {
     return result("failed", (restored.stderr || restored.stdout).trim().slice(-DETAIL_LIMIT2));
   }
-  if (store2.counts === void 0) return result("passed", `${String(nowMs(runtime) - started)} ms`);
-  const counted3 = exec(store2.counts);
+  if (store3.counts === void 0) return result("passed", `${String(nowMs(runtime) - started)} ms`);
+  const counted3 = exec(store3.counts);
   const counts = counted3.exitCode === 0 ? parseCounts(counted3.stdout) : {};
-  const empty = store2.expect.filter((table3) => (counts[table3] ?? 0) === 0);
+  const empty = store3.expect.filter((table3) => (counts[table3] ?? 0) === 0);
   if (counted3.exitCode !== 0 || empty.length > 0) {
     return result("failed", empty.length > 0 ? `empty: ${empty.join(", ")}` : counted3.stderr.trim(), counts);
   }
@@ -11920,8 +11920,8 @@ var lastPassedDrills = (ctx, paths) => {
     if (!line12.includes('"restore_drill"')) continue;
     const parsed = parseJsonObject(line12);
     if (!parsed.ok || parsed.value["status"] !== "passed") continue;
-    const { store: store2, at: at6 } = parsed.value;
-    if (typeof store2 === "string" && typeof at6 === "string") last[store2] = at6;
+    const { store: store3, at: at6 } = parsed.value;
+    if (typeof store3 === "string" && typeof at6 === "string") last[store3] = at6;
   }
   return last;
 };
@@ -11935,10 +11935,10 @@ var restoreCheckCommand = {
     const config = restoreConfig(loadProjectConfig(ctx.runtime, paths.root));
     const reach = mode === "off" ? [] : reachFindings(ctx.runtime, paths.root, config);
     const last = lastPassedDrills(ctx, paths);
-    const stale = config.stores.filter((store2) => mode !== "off" && isStale2(last[store2.name], nowMs(ctx.runtime), config.periodDays)).map((store2) => ({ store: store2.name, lastPassed: last[store2.name] ?? null }));
-    const evidence = config.stores.flatMap((store2) => {
-      const sha256 = store2.evidence === void 0 ? void 0 : evidenceHash(ctx.runtime, paths.root, store2.evidence);
-      return sha256 === void 0 ? [] : [{ store: store2.name, sha256 }];
+    const stale = config.stores.filter((store3) => mode !== "off" && isStale2(last[store3.name], nowMs(ctx.runtime), config.periodDays)).map((store3) => ({ store: store3.name, lastPassed: last[store3.name] ?? null }));
+    const evidence = config.stores.flatMap((store3) => {
+      const sha256 = store3.evidence === void 0 ? void 0 : evidenceHash(ctx.runtime, paths.root, store3.evidence);
+      return sha256 === void 0 ? [] : [{ store: store3.name, sha256 }];
     });
     const lines10 = [
       ...config.stores.length === 0 ? [ctx.t("restore.none")] : [],
@@ -11961,8 +11961,8 @@ var restoreDrillCommand = {
   run: (ctx, args2) => inRepo3(ctx, (paths) => {
     const config = restoreConfig(loadProjectConfig(ctx.runtime, paths.root));
     const wanted = args2.positionals[0];
-    const stores = config.stores.filter((store2) => wanted === void 0 || store2.name === wanted);
-    const results = stores.map((store2) => runDrill(ctx.runtime, paths.root, store2));
+    const stores = config.stores.filter((store3) => wanted === void 0 || store3.name === wanted);
+    const results = stores.map((store3) => runDrill(ctx.runtime, paths.root, store3));
     for (const result of results) {
       if (result.status === "not_configured") continue;
       logEvent(ctx.runtime, paths, "restore_drill", { ...result, counts: { ...result.counts } });
@@ -14978,7 +14978,18 @@ var en_default = {
   "pr.provenance.unreadable": "Cannot read {file}.",
   "command.team_report.summary": "Aggregate, anonymous report of gate results, rework, reverts and spend for the repository, with its method",
   "team.report.off": "The team report is off in this project.",
-  "team.report.k": "--k must be a whole number of at least 1."
+  "team.report.k": "--k must be a whole number of at least 1.",
+  "command.task_trust.summary": "Show a task contract with its hash, or (person only) approve that exact hash",
+  "trust.header": "Contract {task} ({hash}): {goal}",
+  "trust.check": "  check {id}: {says}",
+  "trust.example": "  example {id} [{status}]: {says}",
+  "trust.how": "Approve it in the prompt with fm: trust {task}, or with the Approve button of /fm contract.",
+  "trust.already": "{task} is approved on this machine with this hash.",
+  "trust.stale": "the contract of {task} changed after it was shown ({shown} shown, {current} now); show it again before approving",
+  "gate.guard.self.trust.claim": "{file} with --hash approves the contract, which only the person can do",
+  "gate.guard.self.trust.requires": "show the contract and ask the person to approve it in the /fm contract pane or in their prompt",
+  "gate.guard.trust.human": "The agent tried to approve a contract. Use `/fm contract` or type `fm: trust <id>` yourself if you agree.",
+  "divergence.none": "{task} has no open divergence question."
 };
 
 // src/i18n/es.json
@@ -17481,7 +17492,18 @@ var es_default = {
   "pr.provenance.unreadable": "No se pudo leer {file}.",
   "command.team_report.summary": "Informe agregado y anónimo de resultados del gate, retrabajo, reverts y gasto del repositorio, con su método",
   "team.report.off": "El informe del equipo está apagado en este proyecto.",
-  "team.report.k": "--k debe ser un número entero mayor o igual a 1."
+  "team.report.k": "--k debe ser un número entero mayor o igual a 1.",
+  "command.task_trust.summary": "Muestra el contrato de una tarea con su hash, o (solo la persona) aprueba ese hash exacto",
+  "trust.header": "Contrato {task} ({hash}): {goal}",
+  "trust.check": "  check {id}: {says}",
+  "trust.example": "  ejemplo {id} [{status}]: {says}",
+  "trust.how": "Apruébalo en el prompt con fm: trust {task}, o con el botón Aprobar de /fm contract.",
+  "trust.already": "{task} está aprobado en esta máquina con este hash.",
+  "trust.stale": "el contrato de {task} cambió después de mostrarse ({shown} mostrado, {current} ahora); muéstralo de nuevo antes de aprobar",
+  "gate.guard.self.trust.claim": "{file} con --hash aprueba el contrato, algo que solo la persona puede hacer",
+  "gate.guard.self.trust.requires": "muestra el contrato y pide a la persona que lo apruebe en el panel /fm contract o en su propio prompt",
+  "gate.guard.trust.human": "El agente intentó aprobar un contrato. Usa `/fm contract` o escribe `fm: trust <id>` si estás de acuerdo.",
+  "divergence.none": "{task} no tiene una pregunta de divergencia abierta."
 };
 
 // src/i18n/pt-BR.json
@@ -19984,7 +20006,18 @@ var pt_BR_default = {
   "pr.provenance.unreadable": "Não foi possível ler {file}.",
   "command.team_report.summary": "Relatório agregado e anônimo de resultados do gate, retrabalho, reverts e gasto do repositório, com o método",
   "team.report.off": "O relatório do time está desligado neste projeto.",
-  "team.report.k": "--k precisa ser um número inteiro maior ou igual a 1."
+  "team.report.k": "--k precisa ser um número inteiro maior ou igual a 1.",
+  "command.task_trust.summary": "Mostra o contrato de uma tarefa com o hash, ou (só a pessoa) aprova esse hash exato",
+  "trust.header": "Contrato {task} ({hash}): {goal}",
+  "trust.check": "  check {id}: {says}",
+  "trust.example": "  exemplo {id} [{status}]: {says}",
+  "trust.how": "Aprove no prompt com fm: trust {task}, ou pelo botão Aprovar do /fm contract.",
+  "trust.already": "{task} está aprovado nesta máquina com este hash.",
+  "trust.stale": "o contrato de {task} mudou depois de exibido ({shown} exibido, {current} agora); mostre de novo antes de aprovar",
+  "gate.guard.self.trust.claim": "{file} com --hash aprova o contrato, o que só a pessoa pode fazer",
+  "gate.guard.self.trust.requires": "mostre o contrato e peça para a pessoa aprovar no painel /fm contract ou no próprio prompt",
+  "gate.guard.trust.human": "O agente tentou aprovar um contrato. Use `/fm contract` ou digite `fm: trust <id>` se concordar.",
+  "divergence.none": "{task} não tem pergunta de divergência aberta."
 };
 
 // src/i18n/review.json
@@ -22488,7 +22521,18 @@ var review_default = {
     "pr.provenance.unreadable": "machine",
     "command.team_report.summary": "machine",
     "team.report.off": "machine",
-    "team.report.k": "machine"
+    "team.report.k": "machine",
+    "command.task_trust.summary": "machine",
+    "trust.header": "machine",
+    "trust.check": "machine",
+    "trust.example": "machine",
+    "trust.how": "machine",
+    "trust.already": "machine",
+    "trust.stale": "machine",
+    "gate.guard.self.trust.claim": "machine",
+    "gate.guard.self.trust.requires": "machine",
+    "gate.guard.trust.human": "machine",
+    "divergence.none": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -24989,7 +25033,18 @@ var review_default = {
     "pr.provenance.unreadable": "machine",
     "command.team_report.summary": "machine",
     "team.report.off": "machine",
-    "team.report.k": "machine"
+    "team.report.k": "machine",
+    "command.task_trust.summary": "machine",
+    "trust.header": "machine",
+    "trust.check": "machine",
+    "trust.example": "machine",
+    "trust.how": "machine",
+    "trust.already": "machine",
+    "trust.stale": "machine",
+    "gate.guard.self.trust.claim": "machine",
+    "gate.guard.self.trust.requires": "machine",
+    "gate.guard.trust.human": "machine",
+    "divergence.none": "machine"
   }
 };
 
@@ -25835,10 +25890,10 @@ var readLedgerChecked = (runtime, path) => {
   let oldKey = 0;
   for (const line12 of content.value.split("\n")) {
     if (line12.trim() === "") continue;
-    const trust2 = lineTrust(key3, line12);
+    const trust = lineTrust(key3, line12);
     const entry2 = parseEvidence(line12);
-    if (trust2 === "old_key") oldKey += 1;
-    else if (trust2 === "tampered") tampered += 1;
+    if (trust === "old_key") oldKey += 1;
+    else if (trust === "tampered") tampered += 1;
     else if (entry2 !== void 0) entries2.push(entry2);
   }
   return { entries: entries2, tampered, oldKey };
@@ -25988,12 +26043,12 @@ var taskList = (text34, key3) => {
   const list11 = Array.isArray(raw) ? raw : typeof raw === "string" ? [raw] : [];
   return list11.flatMap((item2) => typeof item2 === "string" && item2.trim() !== "" ? [item2.trim()] : []);
 };
-var taskOf = (runtime, paths, trust2, done2, id) => {
+var taskOf = (runtime, paths, trust, done2, id) => {
   const text34 = runtime.readText(paths.task(id));
   if (!text34.ok) return void 0;
   const contract = parseContract(id, text34.value);
   if (!contract.ok) return void 0;
-  const approvedText = trust2.approved[id];
+  const approvedText = trust.approved[id];
   const approved = approvedText === void 0 ? void 0 : parseContract(id, approvedText);
   return {
     contract: contract.value,
@@ -26005,9 +26060,9 @@ var taskOf = (runtime, paths, trust2, done2, id) => {
 var knownTasks = (runtime, paths) => {
   const listed10 = runtime.listDir(toAbsolutePath(join53(paths.dir, "tasks")));
   const names3 = listed10.ok ? [...listed10.value].filter((name) => name.endsWith(".yml")).sort() : [];
-  const trust2 = readTrust(runtime, paths);
+  const trust = readTrust(runtime, paths);
   const done2 = new Set(readState(runtime, paths).done);
-  return names3.flatMap((name) => taskOf(runtime, paths, trust2, done2, name.replace(/\.yml$/, "")) ?? []);
+  return names3.flatMap((name) => taskOf(runtime, paths, trust, done2, name.replace(/\.yml$/, "")) ?? []);
 };
 var activeTask = (runtime, paths) => {
   const state = readState(runtime, paths);
@@ -30754,9 +30809,9 @@ var mutedFor = (current2, person) => new Set(
   )
 );
 var ruleRates = (current2) => ADVISOR_RULES.map((rule) => {
-  const shown7 = current2.filter((item2) => item2.rule === rule).length;
+  const shown8 = current2.filter((item2) => item2.rule === rule).length;
   const dismissed = current2.filter((item2) => item2.rule === rule && item2.state === "dismissed").length;
-  return { rule, shown: shown7, dismissed, retired: shown7 >= RETIRE_MIN_SHOWN && dismissed / shown7 > RETIRE_RATE };
+  return { rule, shown: shown8, dismissed, retired: shown8 >= RETIRE_MIN_SHOWN && dismissed / shown8 > RETIRE_RATE };
 });
 var dismissedSpots = (current2) => new Set(current2.filter((item2) => item2.state === "dismissed").map((item2) => `${item2.rule}\0${item2.file}`));
 
@@ -35439,13 +35494,16 @@ var mentioned = (text34) => {
   return void 0;
 };
 var PERSON_DECISIONS = /* @__PURE__ */ new Set(["--approve", "--reject"]);
-var PERSON_CHOICES = /* @__PURE__ */ new Set(["--choose"]);
+var PERSON_CHOICES = /* @__PURE__ */ new Set(["--choose", "--want"]);
+var PERSON_TRUST = /* @__PURE__ */ new Set(["--hash"]);
 var flagIn = (args2, flags) => args2.some((arg) => flags.has(arg.split("=")[0] ?? ""));
 var decidesExamples = (args2) => args2[0] === "task" && (args2[1] === "examples" && flagIn(args2, PERSON_DECISIONS) || args2[1] === "diverge" && flagIn(args2, PERSON_CHOICES));
 var amends = (command) => {
   const args2 = fmArguments(command.argv);
   if (args2 === void 0) return [];
   if (args2[0] === "task" && args2[1] === "amend") return [{ kind: "amend", path: "finitemonkey task amend" }];
+  if (args2[0] === "task" && args2[1] === "trust" && flagIn(args2, PERSON_TRUST))
+    return [{ kind: "trust", path: "finitemonkey task trust" }];
   return decidesExamples(args2) ? [{ kind: "examples", path: "finitemonkey task examples" }] : [];
 };
 var bashSelfTargets = (root, commandLine2) => parseShell(commandLine2).flatMap((command) => [
@@ -35470,7 +35528,7 @@ var targets = (input) => {
 };
 var selfGuard = (input) => {
   const found = targets(input);
-  const store2 = found.find((item2) => item2.kind === "allow_store");
+  const store3 = found.find((item2) => item2.kind === "allow_store");
   const registry = found.find((item2) => item2.kind === "registry");
   const { t } = input;
   if (registry !== void 0)
@@ -35478,15 +35536,17 @@ var selfGuard = (input) => {
       modelReason(t, "gate.guard.self.registry", { file: registry.path }),
       t("gate.guard.self.human", { file: registry.path })
     );
-  if (store2 !== void 0)
+  if (store3 !== void 0)
     return deny(
-      modelReason(t, "gate.guard.self.allow_store", { file: store2.path }),
-      t("gate.guard.self.human", { file: store2.path })
+      modelReason(t, "gate.guard.self.allow_store", { file: store3.path }),
+      t("gate.guard.self.human", { file: store3.path })
     );
   const first = found[0];
   if (first === void 0 || grantFor(input, "self") !== void 0) return { kind: "allow" };
   if (first.kind === "examples")
     return deny(modelReason(t, "gate.guard.self.examples", { file: first.path }), t("gate.guard.examples.human"));
+  if (first.kind === "trust")
+    return deny(modelReason(t, "gate.guard.self.trust", { file: first.path }), t("gate.guard.trust.human"));
   if (first.kind === "amend")
     return deny(modelReason(t, "gate.guard.self.amend", { file: first.path }), t("gate.guard.amend.human"));
   return deny(
@@ -36925,7 +36985,7 @@ var prepareGate = (options2) => {
   }
   const git4 = gitAt(options2.runtime, root);
   const paths = fmPaths(root);
-  const trust2 = readTrust(options2.runtime, paths);
+  const trust = readTrust(options2.runtime, paths);
   const firstBase = resolveBase(git4, void 0);
   const loaded2 = loadContract(options2, paths, git4, firstBase);
   if (!loaded2.ok) return { kind: "failed", failure: { kind: "contract", problem: loaded2.error } };
@@ -36950,13 +37010,61 @@ var prepareGate = (options2) => {
     deadline: nowMs(options2.runtime) + options2.budgetMs,
     sessionId: options2.sessionId,
     env: options2.env,
-    trust: trust2,
+    trust,
     pr,
     mask: options2.mask ?? maskText,
     baseline: sessionBaseline(options2.runtime, paths, options2.sessionId),
     ...loaded2.value.examples === void 0 ? {} : { examples: loaded2.value.examples }
   };
   return { kind: "ready", prepared: { ctx, loaded: loaded2.value } };
+};
+
+// src/gate/trust-contract.ts
+var pendingContract = (runtime, paths, task) => {
+  const taskId2 = task === IMPLICIT_ID ? void 0 : task;
+  const ready = prepareGate({
+    runtime,
+    cwd: paths.root,
+    env: {},
+    sessionId: void 0,
+    budgetMs: 0,
+    fast: true,
+    noSkip: true,
+    ...taskId2 === void 0 ? {} : { taskId: taskId2 }
+  });
+  if (ready.kind !== "ready" || ready.prepared.ctx.contract.id !== task) return void 0;
+  const { loaded: loaded2 } = ready.prepared;
+  const read11 = runtime.readText(paths.task(task));
+  const text34 = task === IMPLICIT_ID || !read11.ok ? void 0 : read11.value;
+  const parsed = text34 === void 0 ? void 0 : parseContract(task, text34);
+  const contract = parsed?.ok === true ? parsed.value : loaded2.contract;
+  const locked = approvedExamples(runtime, paths, task).examples;
+  const hash2 = parsed?.ok === true ? contractHash(contract, locked) : loaded2.hash;
+  return {
+    task,
+    contract,
+    hash: hash2,
+    digest: sha256Hex(`${hash2}
+${text34 ?? ""}`),
+    trusted: loaded2.trusted && !loaded2.editedOnDisk,
+    text: text34,
+    examples: task === IMPLICIT_ID ? [] : readExamples(runtime, paths, task)
+  };
+};
+var trustContract = (runtime, paths, task, approvedBy, expected) => {
+  const pending = pendingContract(runtime, paths, task);
+  if (pending === void 0) return { kind: "failed" };
+  const changed = expected !== void 0 && (expected.hash !== pending.hash || expected.digest !== void 0 && expected.digest !== pending.digest);
+  if (changed) return { kind: "stale", hash: pending.hash };
+  const lock = readTrust(runtime, paths);
+  const written = writeTrust(runtime, paths, {
+    ...lock,
+    contracts: { ...lock.contracts, [task]: pending.hash },
+    approved: pending.text === void 0 ? lock.approved : { ...lock.approved, [task]: pending.text }
+  });
+  if (!written.ok) return { kind: "failed" };
+  approveAmendments(runtime, paths, task, approvedBy);
+  return { kind: "trusted", hash: pending.hash };
 };
 
 // src/gate/hooks/counter.ts
@@ -36982,40 +37090,14 @@ var nextBlock = (previous, report5, env) => {
   if (consecutive > maxBlocks(env) || same3 > NO_PROGRESS_MAX) return { kind: "exhausted", blocks: consecutive - 1 };
   return { kind: "block", counter: { task: report5.task, signature, consecutive, same: same3 } };
 };
-var saveCounter = (store2, paths, counter) => {
-  return writeState(store2, paths, withBlocks(readState(store2, paths), counter)).ok;
+var saveCounter = (store3, paths, counter) => {
+  return writeState(store3, paths, withBlocks(readState(store3, paths), counter)).ok;
 };
-var readCounter = (store2, paths) => readState(store2, paths).blocks;
+var readCounter = (store3, paths) => readState(store3, paths).blocks;
 
 // src/gate/hooks/prompt.ts
 var RELEASABLE = /* @__PURE__ */ new Set(["tests", "bypass", "self", "config", "budget", "claims", "predict"]);
-var trust = (input, paths, task) => {
-  const { runtime } = input;
-  const taskId2 = task === IMPLICIT_ID ? void 0 : task;
-  const ready = prepareGate({
-    runtime,
-    cwd: paths.root,
-    env: {},
-    sessionId: void 0,
-    budgetMs: 0,
-    fast: true,
-    noSkip: true,
-    ...taskId2 === void 0 ? {} : { taskId: taskId2 }
-  });
-  if (ready.kind !== "ready" || ready.prepared.ctx.contract.id !== task) return false;
-  const lock = readTrust(runtime, paths);
-  const text34 = runtime.readText(paths.task(task));
-  return writeTrust(runtime, paths, {
-    ...lock,
-    contracts: { ...lock.contracts, [task]: ready.prepared.loaded.hash },
-    approved: task === IMPLICIT_ID || !text34.ok ? lock.approved : { ...lock.approved, [task]: text34.value }
-  }).ok;
-};
-var trustAndApprove = (input, paths, task) => {
-  const trusted = trust(input, paths, task);
-  if (trusted) approveAmendments(input.runtime, paths, task, `person@${input.runtime.now()}`);
-  return trusted;
-};
+var trustAndApprove = (input, paths, task) => trustContract(input.runtime, paths, task, `person@${input.runtime.now()}`).kind === "trusted";
 var predicted = (input, paths, marker3) => {
   const concept = parseConcept(marker3.concept);
   const recorded2 = concept === void 0 ? void 0 : recordPrediction(input.runtime, paths, concept, marker3.output);
@@ -39898,8 +39980,8 @@ var planDir2 = (ctx, dir, index) => {
   const planned = terraform(ctx, [chdir, "plan", "-input=false", "-lock=false", "-no-color", `-out=${out}`]);
   if (!planned.found) return "terraform not installed";
   if (planned.exitCode !== 0 || planned.timedOut) return (planned.stderr || planned.stdout).trim().slice(-DETAIL_LIMIT4);
-  const shown7 = terraform(ctx, [chdir, "show", "-no-color", "-json", out]);
-  const parsed = shown7.exitCode === 0 ? parseJsonObject(shown7.stdout) : void 0;
+  const shown8 = terraform(ctx, [chdir, "show", "-no-color", "-json", out]);
+  const parsed = shown8.exitCode === 0 ? parseJsonObject(shown8.stdout) : void 0;
   return parsed?.ok === true ? parsed.value : "terraform show -json did not return a plan";
 };
 var terraformPlans = (ctx, config, dirs) => {
@@ -42795,26 +42877,26 @@ var readSlopStore = (runtime, paths) => {
   const dismissed = raw?.["dismissed"];
   return { seen, dismissed: Array.isArray(dismissed) ? dismissed.flatMap(dismissalOf) : [] };
 };
-var writeSlopStore = (runtime, paths, store2) => writeJsonFile(runtime, paths.cache(SLOP_FILE), { seen: { ...store2.seen }, dismissed: [...store2.dismissed] }).ok;
-var isDismissed = (store2, item2) => {
+var writeSlopStore = (runtime, paths, store3) => writeJsonFile(runtime, paths.cache(SLOP_FILE), { seen: { ...store3.seen }, dismissed: [...store3.dismissed] }).ok;
+var isDismissed = (store3, item2) => {
   const print2 = fingerprintOf2(item2.detector, item2.file, item2.text);
-  return store2.dismissed.some((entry2) => entry2.detector === item2.detector && entry2.fingerprint === print2);
+  return store3.dismissed.some((entry2) => entry2.detector === item2.detector && entry2.fingerprint === print2);
 };
-var recordHits = (store2, found) => {
-  const seen = { ...store2.seen };
+var recordHits = (store3, found) => {
+  const seen = { ...store3.seen };
   for (const item2 of found) {
     const list11 = seen[item2.detector] ?? [];
     const print2 = fingerprintOf2(item2.detector, item2.file, item2.text);
     if (!list11.includes(print2)) seen[item2.detector] = [...list11, print2].slice(-MAX_SEEN);
   }
-  return { ...store2, seen };
+  return { ...store3, seen };
 };
-var detectorRates = (store2) => SLOP_DETECTORS.map((detector) => {
+var detectorRates = (store3) => SLOP_DETECTORS.map((detector) => {
   const hits = (/* @__PURE__ */ new Set([
-    ...store2.seen[detector] ?? [],
-    ...store2.dismissed.filter((d) => d.detector === detector).map((d) => d.fingerprint)
+    ...store3.seen[detector] ?? [],
+    ...store3.dismissed.filter((d) => d.detector === detector).map((d) => d.fingerprint)
   ])).size;
-  const dismissed = store2.dismissed.filter((entry2) => entry2.detector === detector).length;
+  const dismissed = store3.dismissed.filter((entry2) => entry2.detector === detector).length;
   const rate = hits === 0 ? 0 : dismissed / hits;
   return { detector, hits, dismissed, rate, review: rate > REVIEW_RATE };
 });
@@ -42850,15 +42932,15 @@ var slopCheck = (_check, ctx) => {
   const mode = guardMode(ctx, SLOP_GUARD);
   if (mode === "off") return passed([note("gate.slop.off")]);
   const files = slopFiles(ctx);
-  const store2 = readSlopStore(ctx.runtime, ctx.paths);
+  const store3 = readSlopStore(ctx.runtime, ctx.paths);
   const found = analyzeSlop({
     files,
     exists: (file) => readWorking(ctx, file) !== void 0,
     config: loadSlopConfig(ctx.runtime, ctx.paths.root),
     ts: files.length === 0 ? void 0 : loadTypescript(ctx.paths.root)
-  }).filter((item2) => !isDismissed(store2, item2));
+  }).filter((item2) => !isDismissed(store3, item2));
   if (found.length > 0) {
-    writeSlopStore(ctx.runtime, ctx.paths, recordHits(store2, found));
+    writeSlopStore(ctx.runtime, ctx.paths, recordHits(store3, found));
     logEvent(ctx.runtime, ctx.paths, "slop.hits", { task: ctx.contract.id, mode, detectors: countByDetector(found) });
   }
   const blocks = found.filter((item2) => levelOf3(item2.detector) === "block");
@@ -51825,13 +51907,13 @@ var slopEditWarning = (input) => {
   const content = textField(args2, "content");
   const after2 = tool === "Write" && content !== void 0 ? content : applyEdits(before2 ?? "", editsOf(args2));
   const paths = projectPaths(input);
-  const store2 = paths === void 0 ? void 0 : readSlopStore(input.runtime, paths);
+  const store3 = paths === void 0 ? void 0 : readSlopStore(input.runtime, paths);
   const found = analyzeSlop({
     files: [{ file, text: after2, added: addedByContent(before2, after2), created: before2 === void 0 }],
     exists: (other) => input.runtime.stat(toAbsolutePath(join148(root, other)))?.kind === "file",
     config: loadSlopConfig(input.runtime, root),
     ts: void 0
-  }).filter((item2) => store2 === void 0 || !isDismissed(store2, item2));
+  }).filter((item2) => store3 === void 0 || !isDismissed(store3, item2));
   if (found.length === 0) return ALLOW26;
   const lines10 = found.slice(0, MAX_LINES2).map(
     (item2) => `- ${input.t(`gate.slop.${item2.detector}`, { file: item2.file, line: item2.line, detail: item2.detail })}`
@@ -59500,8 +59582,8 @@ var planLines4 = (t, data2, withDiff) => [
 var trustImplicit = (runtime, root, files) => {
   const paths = fmPaths(root);
   const hash2 = contractHash(implicitContract(files));
-  const trust2 = readTrust(runtime, paths);
-  const written = writeTrust(runtime, paths, { ...trust2, contracts: { ...trust2.contracts, [IMPLICIT_ID]: hash2 } });
+  const trust = readTrust(runtime, paths);
+  const written = writeTrust(runtime, paths, { ...trust, contracts: { ...trust.contracts, [IMPLICIT_ID]: hash2 } });
   return written.ok ? hash2 : void 0;
 };
 
@@ -61483,10 +61565,10 @@ var STYLE2 = [
   "img{display:block;width:100%;max-height:720px;object-fit:cover;object-position:top}"
 ].join("");
 var contactSheet = async (browser, results, dir) => {
-  const shown7 = results.filter((result) => result.loadError === void 0);
-  if (shown7.length === 0) return void 0;
+  const shown8 = results.filter((result) => result.loadError === void 0);
+  if (shown8.length === 0) return void 0;
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-  await page.setContent(`<!doctype html><style>${STYLE2}</style>${shown7.map(card).join("")}`);
+  await page.setContent(`<!doctype html><style>${STYLE2}</style>${shown8.map(card).join("")}`);
   const path = join180(dir, "contact-sheet.png");
   await page.screenshot({ path, fullPage: true });
   await page.close();
@@ -63344,10 +63426,10 @@ var rank3 = (ctx, top) => {
   ];
   const ranked = hotspots(ctx.runtime, gitAt(ctx.runtime, root), fmPaths(root), sensitive);
   if (ranked === void 0) return failureFrom(ctx.t, invalid3("git history"));
-  const shown7 = ranked.slice(0, top);
+  const shown8 = ranked.slice(0, top);
   return success(
-    { schema: ORGANIZE_SCHEMA, hotspots: shown7 },
-    shown7.map(
+    { schema: ORGANIZE_SCHEMA, hotspots: shown8 },
+    shown8.map(
       (item2, index) => ctx.t("organize.row", {
         rank: index + 1,
         path: item2.path,
@@ -66164,16 +66246,16 @@ var subcontracts = (contract, pieces) => pieces.length <= 1 ? [contract] : piece
   acceptance: acceptance2
 }));
 var fixContracts = (runtime, paths, contracts) => {
-  const trust2 = readTrust(runtime, paths);
+  const trust = readTrust(runtime, paths);
   const texts6 = contracts.map((contract) => {
     const text34 = stringifyYaml(contractYaml(contract));
     if (!runtime.readText(paths.task(contract.id)).ok) runtime.writeText(paths.task(contract.id), text34);
     return [contract.id, runtime.readText(paths.task(contract.id))];
   });
   writeTrust(runtime, paths, {
-    ...trust2,
+    ...trust,
     contracts: {
-      ...trust2.contracts,
+      ...trust.contracts,
       ...Object.fromEntries(contracts.map((contract) => [contract.id, contractHash(contract)]))
     }
   });
@@ -66444,12 +66526,12 @@ var runCommand = (ctx, words6, shellRaw, timeoutRaw) => {
   const invocation = invocationFor(shell, words6);
   const result = ctx.runtime.exec({ ...invocation, cwd: ctx.cwd, timeoutMs: timeoutS * 1e3 });
   const exitCode = result.timedOut ? TIMEOUT_EXIT : result.exitCode ?? NOT_FOUND_EXIT;
-  const shown7 = saveLog(ctx, root, line12, fullLog(line12, exitCode, result.stdout, result.stderr));
+  const shown8 = saveLog(ctx, root, line12, fullLog(line12, exitCode, result.stdout, result.stderr));
   const errors = errorLines2(`${result.stdout}
 ${result.stderr}`, exitCode);
   const lines10 = [
     ...errors,
-    ctx.t("run.summary", { exit: exitCode, file: shown7, ms: result.durationMs }),
+    ctx.t("run.summary", { exit: exitCode, file: shown8, ms: result.durationMs }),
     ...result.timedOut ? [ctx.t("run.timed_out", { seconds: timeoutS })] : []
   ];
   const data2 = {
@@ -66457,7 +66539,7 @@ ${result.stderr}`, exitCode);
     command: maskText(line12),
     shell,
     exitCode,
-    file: shown7,
+    file: shown8,
     errors,
     timedOut: result.timedOut
   };
@@ -66469,7 +66551,7 @@ ${result.stderr}`, exitCode);
         code: "run_failed",
         messageKey: "run.failed",
         params: { exit: exitCode },
-        fix: shown7,
+        fix: shown8,
         exitCode: ExitCode.CheckFailed,
         data: data2
       },
@@ -67349,7 +67431,7 @@ var dismiss2 = (ctx, args2, reason) => {
   const lineText = text34.ok ? text34.value.split("\n")[spot.line - 1] : void 0;
   const subject2 = FILE_DETECTORS.has(detector) ? spot.file : lineText ?? spot.file;
   const paths = fmPaths(root);
-  const store2 = readSlopStore(ctx.runtime, paths);
+  const store3 = readSlopStore(ctx.runtime, paths);
   const entry2 = {
     detector,
     fingerprint: fingerprintOf2(detector, spot.file, subject2),
@@ -67358,7 +67440,7 @@ var dismiss2 = (ctx, args2, reason) => {
     reason,
     at: ctx.runtime.now()
   };
-  writeSlopStore(ctx.runtime, paths, { ...store2, dismissed: [...store2.dismissed, entry2] });
+  writeSlopStore(ctx.runtime, paths, { ...store3, dismissed: [...store3.dismissed, entry2] });
   logEvent(ctx.runtime, paths, "slop.dismissed", { detector, file: spot.file, line: spot.line });
   return success({ schema: SLOP_DISMISS_SCHEMA, ...entry2 }, [
     ctx.t("slop.dismissed", { detector, file: spot.file, line: spot.line })
@@ -67964,7 +68046,7 @@ var taskDoneCommand = {
 
 // src/commands/task-diverge.ts
 import { join as join197 } from "node:path";
-var USAGE27 = "finitemonkey task diverge [<id>] [--choose <letter>]";
+var USAGE27 = "finitemonkey task diverge [<id>] [--choose <letter> | --want <output> | --pending]";
 var load = (ctx, paths, task) => {
   const disk = (relative29) => {
     const text34 = ctx.runtime.readText(toAbsolutePath(join197(paths.root, relative29)));
@@ -68047,22 +68129,30 @@ var ask6 = (ctx, paths, task) => {
   });
   return report4(ctx, paths, task, outcome3, mode);
 };
-var choose = (ctx, paths, task, letter) => {
+var pendingOf2 = (ctx, paths, task) => {
+  const question = readPending(ctx.runtime, paths).pending[task];
+  if (question === void 0)
+    return success({ schema: TASK_SCHEMA, task, question: null }, [ctx.t("divergence.none", { task })]);
+  return success({ schema: TASK_SCHEMA, task, question }, questionLines2(ctx, question));
+};
+var store2 = (ctx, paths, task, answer2) => {
   const state = readPending(ctx.runtime, paths);
   const question = state.pending[task];
-  const option3 = question?.options.find((item2) => item2.letter === letter.toUpperCase());
-  if (question === void 0 || option3 === void 0)
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE27, { task, letter }));
+  const option3 = "letter" in answer2 ? question?.options.find((item2) => item2.letter === answer2.letter.toUpperCase()) : void 0;
+  const expect = "want" in answer2 ? answer2.want.trim() : option3?.output;
+  if (question === void 0 || expect === void 0 || expect === "")
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "divergence.no_pending", USAGE27, {
+        task,
+        letter: "letter" in answer2 ? answer2.letter : "--want"
+      })
+    );
   const loaded2 = load(ctx, paths, task);
   if (loaded2?.trusted !== true)
     return failureFrom(ctx.t, needsPersonProblem("examples.untrusted", `fm: trust ${task}`, { task }));
-  const says = ctx.t("divergence.says", { input: question.input, output: option3.output });
-  const made = proposeExample(ctx.runtime, paths, task, {
-    says,
-    run: question.run,
-    input: question.input,
-    expect: option3.output
-  });
+  const says = ctx.t("divergence.says", { input: question.input, output: expect });
+  const made = proposeExample(ctx.runtime, paths, task, { says, run: question.run, input: question.input, expect });
   if (!made.ok)
     return failureFrom(
       ctx.t,
@@ -68082,7 +68172,12 @@ var choose = (ctx, paths, task, letter) => {
     );
   const rest = Object.fromEntries(Object.entries(state.pending).filter(([key3]) => key3 !== task));
   writePending(ctx.runtime, paths, { ...state, pending: rest });
-  logEvent(ctx.runtime, paths, "divergence.answered", { task, letter: option3.letter, example: made.value.id });
+  logEvent(ctx.runtime, paths, "divergence.answered", {
+    task,
+    letter: option3?.letter ?? null,
+    own: option3 === void 0,
+    example: made.value.id
+  });
   return success({ schema: TASK_SCHEMA, task, example: made.value }, [
     ctx.t("divergence.stored", { task, id: made.value.id, says })
   ]);
@@ -68093,7 +68188,7 @@ var taskDivergeCommand = {
   usage: USAGE27,
   status: "ready",
   maxPositionals: 1,
-  options: { choose: { type: "string" } },
+  options: { choose: { type: "string" }, want: { type: "string" }, pending: { type: "boolean" } },
   run: (ctx, args2) => {
     const repo = repoOf(ctx);
     if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
@@ -68102,7 +68197,11 @@ var taskDivergeCommand = {
     if (task === void 0)
       return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE27)));
     const letter = stringOption(args2.values, "choose");
-    return Promise.resolve(letter === void 0 ? ask6(ctx, paths, task) : choose(ctx, paths, task, letter));
+    const want = stringOption(args2.values, "want");
+    if (letter !== void 0) return Promise.resolve(store2(ctx, paths, task, { letter }));
+    if (want !== void 0) return Promise.resolve(store2(ctx, paths, task, { want }));
+    if (args2.values["pending"] === true) return Promise.resolve(pendingOf2(ctx, paths, task));
+    return Promise.resolve(ask6(ctx, paths, task));
   }
 };
 
@@ -68434,6 +68533,81 @@ var taskFromSpecCommand = {
         ...written ? [ctx.t("task.created", { task: id, file: fmPaths(repo.root).task(id) })] : []
       ])
     );
+  }
+};
+
+// src/commands/task-trust.ts
+var USAGE30 = "finitemonkey task trust [<id>] [--hash <hash> [--digest <digest>]]";
+var checkText = (check2) => check2.description ?? check2.run ?? check2.kind;
+var exampleData = (example2) => ({
+  id: example2.id,
+  status: example2.status,
+  says: example2.says
+});
+var shown7 = (ctx, pending) => success(
+  {
+    schema: TASK_SCHEMA,
+    task: pending.task,
+    goal: pending.contract.goal,
+    hash: pending.hash,
+    digest: pending.digest,
+    trusted: pending.trusted,
+    acceptance: pending.contract.acceptance.map((check2) => ({ id: check2.id, says: checkText(check2) })),
+    examples: pending.examples.map(exampleData)
+  },
+  [
+    ctx.t("trust.header", { task: pending.task, hash: pending.hash.slice(0, 12), goal: pending.contract.goal }),
+    ...pending.contract.acceptance.map((check2) => ctx.t("trust.check", { id: check2.id, says: checkText(check2) })),
+    ...pending.examples.map(
+      (example2) => ctx.t("trust.example", { id: example2.id, status: example2.status, says: example2.says })
+    ),
+    ctx.t(pending.trusted ? "trust.already" : "trust.how", { task: pending.task })
+  ]
+);
+var approve2 = (ctx, paths, task, hash2, digest3) => {
+  const outcome3 = trustContract(ctx.runtime, paths, task, `person@${ctx.runtime.now()}`, {
+    hash: hash2,
+    ...digest3 === void 0 ? {} : { digest: digest3 }
+  });
+  if (outcome3.kind === "failed")
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "gate.release.trust_failed", USAGE30, { task }));
+  if (outcome3.kind === "stale")
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "trust.stale", `finitemonkey task trust ${task}`, {
+        task,
+        shown: hash2.slice(0, 12),
+        current: outcome3.hash.slice(0, 12)
+      })
+    );
+  logEvent(ctx.runtime, paths, "person.trust", { task, hash: outcome3.hash, via: "cli" });
+  return success({ schema: TASK_SCHEMA, task, hash: outcome3.hash, trusted: true }, [
+    ctx.t("gate.release.trusted", { task })
+  ]);
+};
+var taskTrustCommand = {
+  path: ["task", "trust"],
+  summaryKey: "command.task_trust.summary",
+  usage: USAGE30,
+  status: "ready",
+  maxPositionals: 1,
+  options: { hash: { type: "string" }, digest: { type: "string" } },
+  run: (ctx, args2) => {
+    const repo = repoOf(ctx);
+    if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
+    const paths = fmPaths(repo.root);
+    const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
+    if (task === void 0)
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE30)));
+    const hash2 = stringOption(args2.values, "hash");
+    if (hash2 !== void 0)
+      return Promise.resolve(approve2(ctx, paths, task, hash2, stringOption(args2.values, "digest")));
+    const pending = pendingContract(ctx.runtime, paths, task);
+    if (pending === void 0)
+      return Promise.resolve(
+        failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE30, { task }))
+      );
+    return Promise.resolve(shown7(ctx, pending));
   }
 };
 
@@ -69199,6 +69373,7 @@ var REGISTRY2 = [
   ...EVOLVE_COMMANDS,
   ...DATA_COMMANDS,
   ...PERSON_COMMANDS,
+  taskTrustCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

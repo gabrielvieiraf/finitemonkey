@@ -18,6 +18,7 @@ declare module "claude-code/testing" {
 
   export interface Mounted {
     readonly press: (target: { readonly key: string }) => Promise<void>;
+    readonly input: (target: { readonly key: string; readonly text: string }) => Promise<void>;
     readonly find: (query: {
       readonly key?: string;
       readonly type?: string;

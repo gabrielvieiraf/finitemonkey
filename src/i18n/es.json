@@ -2497,5 +2497,16 @@
   "pr.provenance.unreadable": "No se pudo leer {file}.",
   "command.team_report.summary": "Informe agregado y anónimo de resultados del gate, retrabajo, reverts y gasto del repositorio, con su método",
   "team.report.off": "El informe del equipo está apagado en este proyecto.",
-  "team.report.k": "--k debe ser un número entero mayor o igual a 1."
+  "team.report.k": "--k debe ser un número entero mayor o igual a 1.",
+  "command.task_trust.summary": "Muestra el contrato de una tarea con su hash, o (solo la persona) aprueba ese hash exacto",
+  "trust.header": "Contrato {task} ({hash}): {goal}",
+  "trust.check": "  check {id}: {says}",
+  "trust.example": "  ejemplo {id} [{status}]: {says}",
+  "trust.how": "Apruébalo en el prompt con fm: trust {task}, o con el botón Aprobar de /fm contract.",
+  "trust.already": "{task} está aprobado en esta máquina con este hash.",
+  "trust.stale": "el contrato de {task} cambió después de mostrarse ({shown} mostrado, {current} ahora); muéstralo de nuevo antes de aprobar",
+  "gate.guard.self.trust.claim": "{file} con --hash aprueba el contrato, algo que solo la persona puede hacer",
+  "gate.guard.self.trust.requires": "muestra el contrato y pide a la persona que lo apruebe en el panel /fm contract o en su propio prompt",
+  "gate.guard.trust.human": "El agente intentó aprobar un contrato. Usa `/fm contract` o escribe `fm: trust <id>` si estás de acuerdo.",
+  "divergence.none": "{task} no tiene una pregunta de divergencia abierta."
 }

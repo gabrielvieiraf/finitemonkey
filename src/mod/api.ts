@@ -47,10 +47,43 @@ export interface ButtonProps {
   readonly onPress: () => void | Promise<void>;
 }
 
+export interface CodeProps {
+  readonly source: string;
+  readonly language?: string;
+  readonly key?: string;
+}
+
+export interface InputProps {
+  readonly key: string;
+  readonly label?: string;
+  readonly placeholder?: string;
+  readonly submitLabel?: string;
+  readonly onSubmit: (value: string) => void | Promise<void>;
+}
+
+export interface SvgProps {
+  readonly source: string;
+  readonly alt: string;
+  readonly width?: number;
+  readonly height?: number;
+  readonly key?: string;
+}
+
+export interface RasterProps {
+  readonly key: string;
+  readonly columns: number;
+  readonly rows: number;
+  readonly cells: string;
+}
+
 export interface Elements {
   readonly Box: (props: BoxProps) => ModElement;
   readonly Text: (props: TextProps) => ModElement;
   readonly Button: (props: ButtonProps) => ModElement;
+  readonly Code: (props: CodeProps) => ModElement;
+  readonly Input?: (props: InputProps) => ModElement;
+  readonly Svg?: (props: SvgProps) => ModElement;
+  readonly Raster?: (props: RasterProps) => ModElement;
 }
 
 export interface CommandSpec {

@@ -28,7 +28,7 @@ import { TASK_SCHEMA } from "../task/types.js";
 import { notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
-const USAGE = "finitemonkey task diverge [<id>] [--choose <letter>]";
+const USAGE = "finitemonkey task diverge [<id>] [--choose <letter> | --want <output> | --pending]";
 
 const load = (ctx: Ctx, paths: FmPaths, task: string): LoadedContract | undefined => {
   const disk = (relative: string): string | undefined => {
@@ -120,22 +120,34 @@ const ask = (ctx: Ctx, paths: FmPaths, task: string): CommandResult => {
   return report(ctx, paths, task, outcome, mode);
 };
 
-const choose = (ctx: Ctx, paths: FmPaths, task: string, letter: string): CommandResult => {
+const pendingOf = (ctx: Ctx, paths: FmPaths, task: string): CommandResult => {
+  const question = readPending(ctx.runtime, paths).pending[task];
+  if (question === undefined)
+    return success({ schema: TASK_SCHEMA, task, question: null }, [ctx.t("divergence.none", { task })]);
+  return success({ schema: TASK_SCHEMA, task, question }, questionLines(ctx, question));
+};
+
+type Answer = { readonly letter: string } | { readonly want: string };
+
+const store = (ctx: Ctx, paths: FmPaths, task: string, answer: Answer): CommandResult => {
   const state = readPending(ctx.runtime, paths);
   const question = state.pending[task];
-  const option = question?.options.find((item) => item.letter === letter.toUpperCase());
-  if (question === undefined || option === undefined)
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE, { task, letter }));
+  const option =
+    "letter" in answer ? question?.options.find((item) => item.letter === answer.letter.toUpperCase()) : undefined;
+  const expect = "want" in answer ? answer.want.trim() : option?.output;
+  if (question === undefined || expect === undefined || expect === "")
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "divergence.no_pending", USAGE, {
+        task,
+        letter: "letter" in answer ? answer.letter : "--want",
+      }),
+    );
   const loaded = load(ctx, paths, task);
   if (loaded?.trusted !== true)
     return failureFrom(ctx.t, needsPersonProblem("examples.untrusted", `fm: trust ${task}`, { task }));
-  const says = ctx.t("divergence.says", { input: question.input, output: option.output });
-  const made = proposeExample(ctx.runtime, paths, task, {
-    says,
-    run: question.run,
-    input: question.input,
-    expect: option.output,
-  });
+  const says = ctx.t("divergence.says", { input: question.input, output: expect });
+  const made = proposeExample(ctx.runtime, paths, task, { says, run: question.run, input: question.input, expect });
   if (!made.ok)
     return failureFrom(
       ctx.t,
@@ -155,7 +167,12 @@ const choose = (ctx: Ctx, paths: FmPaths, task: string, letter: string): Command
     );
   const rest = Object.fromEntries(Object.entries(state.pending).filter(([key]) => key !== task));
   writePending(ctx.runtime, paths, { ...state, pending: rest });
-  logEvent(ctx.runtime, paths, "divergence.answered", { task, letter: option.letter, example: made.value.id });
+  logEvent(ctx.runtime, paths, "divergence.answered", {
+    task,
+    letter: option?.letter ?? null,
+    own: option === undefined,
+    example: made.value.id,
+  });
   return success({ schema: TASK_SCHEMA, task, example: made.value }, [
     ctx.t("divergence.stored", { task, id: made.value.id, says }),
   ]);
@@ -167,7 +184,7 @@ export const taskDivergeCommand: CommandSpec = {
   usage: USAGE,
   status: "ready",
   maxPositionals: 1,
-  options: { choose: { type: "string" } },
+  options: { choose: { type: "string" }, want: { type: "string" }, pending: { type: "boolean" } },
   run: (ctx, args): Promise<CommandResult> => {
     const repo = repoOf(ctx);
     if (repo === undefined) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
@@ -176,6 +193,10 @@ export const taskDivergeCommand: CommandSpec = {
     if (task === undefined)
       return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE)));
     const letter = stringOption(args.values, "choose");
-    return Promise.resolve(letter === undefined ? ask(ctx, paths, task) : choose(ctx, paths, task, letter));
+    const want = stringOption(args.values, "want");
+    if (letter !== undefined) return Promise.resolve(store(ctx, paths, task, { letter }));
+    if (want !== undefined) return Promise.resolve(store(ctx, paths, task, { want }));
+    if (args.values["pending"] === true) return Promise.resolve(pendingOf(ctx, paths, task));
+    return Promise.resolve(ask(ctx, paths, task));
   },
 };

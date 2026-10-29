@@ -5,7 +5,7 @@ import { toPosixPath } from "../../core/posix-path.js";
 import { fmArguments } from "../bypass/detect.js";
 import { parseShell, type SimpleCommand } from "../shell.js";
 
-export const SELF_KINDS = ["policy", "allow_store", "registry", "amend", "examples"] as const;
+export const SELF_KINDS = ["policy", "allow_store", "registry", "amend", "examples", "trust"] as const;
 
 export type SelfKind = (typeof SELF_KINDS)[number];
 
@@ -77,7 +77,9 @@ const mentioned = (text: string): SelfKind | undefined => {
 
 const PERSON_DECISIONS = new Set(["--approve", "--reject"]);
 
-const PERSON_CHOICES = new Set(["--choose"]);
+const PERSON_CHOICES = new Set(["--choose", "--want"]);
+
+const PERSON_TRUST = new Set(["--hash"]);
 
 const flagIn = (args: readonly string[], flags: ReadonlySet<string>): boolean =>
   args.some((arg) => flags.has(arg.split("=")[0] ?? ""));
@@ -91,6 +93,8 @@ const amends = (command: SimpleCommand): readonly { readonly kind: SelfKind; rea
   const args = fmArguments(command.argv);
   if (args === undefined) return [];
   if (args[0] === "task" && args[1] === "amend") return [{ kind: "amend", path: "finitemonkey task amend" }];
+  if (args[0] === "task" && args[1] === "trust" && flagIn(args, PERSON_TRUST))
+    return [{ kind: "trust", path: "finitemonkey task trust" }];
   return decidesExamples(args) ? [{ kind: "examples", path: "finitemonkey task examples" }] : [];
 };
 

@@ -1,4 +1,5 @@
 import type { ModApi, ModElement, RenderInput } from "./api.js";
+import { contractNow, divergeNow, isApprovalPane, renderApproval } from "./approve-hooks.js";
 import { runCli } from "./cli.js";
 import { readHandoff } from "./compose-hooks.js";
 import { refreshCost } from "./cost-hooks.js";
@@ -86,6 +87,7 @@ export async function renderBand($: ModApi, e: RenderInput, next: Next<"ui.rende
 export async function renderPane($: ModApi, e: RenderInput, next: Next<"ui.render">): Promise<ModElement | null> {
   if (e.requestId === FRONTS_PANE)
     return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
+  if (isApprovalPane(e.requestId)) return renderApproval($, e);
   if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
@@ -127,6 +129,8 @@ export async function runGateCommand($: ModApi, e: CommandRunInput): Promise<Com
   if (e.args.trim() === "handoff") return handoffNow($);
   if (e.args.trim() === "cost") return costNow($);
   if (e.args.trim() === "fronts") return frontsNow($);
+  if (e.args.trim() === "contract") return contractNow($);
+  if (e.args.trim() === "diverge") return divergeNow($);
   if (memory.view === undefined) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
