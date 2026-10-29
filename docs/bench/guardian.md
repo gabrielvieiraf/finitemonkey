@@ -16,8 +16,14 @@ Written before the first run. Changes after a run starts go in the "Changes" sec
 | assumptions | more high-impact assumptions verified before the step that depends on them | assumptions verified before vs after the dependent step; assumptions later found false | holds per 100 tasks, wall time |
 | reality | level 1-3 reports change the final decision only when it was wrong | precision of level 2-3 reports judged later; harmful redirects (advice followed, then reverted) | dismissals, wall time |
 | guardian-reuse | fewer second implementations of a role the project already covers | reports per 100 tasks; accepted reuse vs new code kept | dismissals |
+| proportionality | H1: accepted changes over the stage budget have more reverts, rework and incidents; H2: concepts nobody demonstrated predict them better than size | reverts and rework within 30 days per arm; then time to milestone and harmful redirects (followed the simpler option and had to rebuild) | dismissals, wall time |
 
 A feature is kept when its primary metric moves in the expected direction with the 95% interval excluding zero and no guardrail gets worse past its limit: hook p95 over 100 ms per handler, dismissal rate over 10%, or wall time up more than 20%. Thresholds written in the code are initial calibration and can be changed in the policy or config file.
+
+## Discard rules
+
+- proportionality: if H1 shows no difference in the shadow period, the token budget is dropped and only the reversibility trigger stays. If H2 does not predict, demonstrated concepts leave the weight. If the report only delays without fewer incidents or less rework, it goes back to level 1.
+- The per-stage budget (1, 1, 2, 3 tokens for idea, first customers, growing, stable) and the 10-minute scan interval are initial calibration.
 
 ## Changes
 

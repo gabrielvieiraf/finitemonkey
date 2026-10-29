@@ -2200,5 +2200,12 @@
   "guardian.trigger.proportionality.next": "a pessoa escolhe uma linha",
   "command.guardian_reuse.summary": "Procura um módulo ou dependência que o projeto já tem para o papel do que o diff adiciona",
   "command.guardian_scan.summary": "Calcula os relatórios que precisam do git (reuso, proporcionalidade) fora dos hooks; --record guarda para o próximo prompt",
-  "guardian.pending.intro": "Relatórios calculados depois do último turno. Mostre à pessoa antes de escrever mais; a pessoa escolhe."
+  "guardian.pending.intro": "Relatórios calculados depois do último turno. Mostre à pessoa antes de escrever mais; a pessoa escolhe.",
+  "command.guardian_weigh.summary": "Pesa a mudança contra o problema e o estágio da empresa: coisas novas para operar, categorias novas, conceitos que ninguém demonstrou",
+  "guardian.weigh.summary": "Peso {tokens} fichas, orçamento {budget}, reversibilidade {undo}: {verdict}.",
+  "guardian.weigh.scale_unknown": "ASSUMPTION: escala desconhecida, o contrato não traz número de usuários, requisições ou dados",
+  "guardian.weigh.ask_scale": "pergunte à pessoa o número de escala (usuários, requisições por segundo, volume de dados) e escreva em scale: no contrato; não estime",
+  "guardian.weigh.row.requested": "pedido: construir {files} arquivos novos e {deps} dependências novas; operar {operate}; desfazer classe {undo}; ninguém demonstrou {beyond}",
+  "guardian.weigh.row.simplest": "mais simples viável: o mesmo resultado com o que o projeto já roda; nada novo para operar; desfazer classe A; mantido pelo time atual",
+  "guardian.weigh.row.nothing": "não fazer agora: sem custo; o contrato não é atendido até o próximo marco"
 }

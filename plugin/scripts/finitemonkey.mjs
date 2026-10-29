@@ -5901,7 +5901,8 @@ var OPTIONAL_GUARDS = [
   "decision-hold",
   "assumptions",
   "reality",
-  "guardian-reuse"
+  "guardian-reuse",
+  "proportionality"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -5946,7 +5947,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "decision-hold",
   "assumptions",
   "reality",
-  "guardian-reuse"
+  "guardian-reuse",
+  "proportionality"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -13327,7 +13329,14 @@ var en_default = {
   "guardian.trigger.proportionality.next": "the person picks one row",
   "command.guardian_reuse.summary": "Look for a module or dependency the project already has for the role of what the diff adds",
   "command.guardian_scan.summary": "Compute the reports that need git (reuse, proportionality) outside the hooks; --record keeps them for the next prompt",
-  "guardian.pending.intro": "Reports computed after the last turn. Show them to the person before writing more; the person chooses."
+  "guardian.pending.intro": "Reports computed after the last turn. Show them to the person before writing more; the person chooses.",
+  "command.guardian_weigh.summary": "Weigh the change against the problem and the company stage: new things to operate, new categories, concepts nobody demonstrated",
+  "guardian.weigh.summary": "Weight {tokens} tokens, budget {budget}, reversibility {undo}: {verdict}.",
+  "guardian.weigh.scale_unknown": "ASSUMPTION: scale unknown, the contract has no number of users, requests or data",
+  "guardian.weigh.ask_scale": "ask the person for the scale number (users, requests per second, data volume) and write it under scale: in the contract; do not estimate it",
+  "guardian.weigh.row.requested": "requested: build {files} new files and {deps} new dependencies; operate {operate}; undo class {undo}; nobody has demonstrated {beyond}",
+  "guardian.weigh.row.simplest": "simplest viable: the same result with what the project already runs; nothing new to operate; undo class A; maintained by the current team",
+  "guardian.weigh.row.nothing": "do nothing now: no cost; the contract is not met until the next milestone"
 };
 
 // src/i18n/es.json
@@ -15533,7 +15542,14 @@ var es_default = {
   "guardian.trigger.proportionality.next": "la persona elige una fila",
   "command.guardian_reuse.summary": "Busca un módulo o dependencia que el proyecto ya tiene para el papel de lo que agrega el diff",
   "command.guardian_scan.summary": "Calcula los informes que necesitan git (reuso, proporcionalidad) fuera de los hooks; --record los guarda para el próximo prompt",
-  "guardian.pending.intro": "Informes calculados después del último turno. Muéstralos a la persona antes de escribir más; la persona elige."
+  "guardian.pending.intro": "Informes calculados después del último turno. Muéstralos a la persona antes de escribir más; la persona elige.",
+  "command.guardian_weigh.summary": "Pesa el cambio contra el problema y la etapa de la empresa: cosas nuevas que operar, categorías nuevas, conceptos que nadie demostró",
+  "guardian.weigh.summary": "Peso {tokens} fichas, presupuesto {budget}, reversibilidad {undo}: {verdict}.",
+  "guardian.weigh.scale_unknown": "ASSUMPTION: escala desconocida, el contrato no trae número de usuarios, peticiones o datos",
+  "guardian.weigh.ask_scale": "pregunta a la persona el número de escala (usuarios, peticiones por segundo, volumen de datos) y escríbelo en scale: en el contrato; no lo estimes",
+  "guardian.weigh.row.requested": "pedido: construir {files} archivos nuevos y {deps} dependencias nuevas; operar {operate}; deshacer clase {undo}; nadie demostró {beyond}",
+  "guardian.weigh.row.simplest": "lo más simple viable: el mismo resultado con lo que el proyecto ya ejecuta; nada nuevo que operar; deshacer clase A; mantenido por el equipo actual",
+  "guardian.weigh.row.nothing": "no hacer nada ahora: sin costo; el contrato no se cumple hasta el próximo hito"
 };
 
 // src/i18n/pt-BR.json
@@ -17739,7 +17755,14 @@ var pt_BR_default = {
   "guardian.trigger.proportionality.next": "a pessoa escolhe uma linha",
   "command.guardian_reuse.summary": "Procura um módulo ou dependência que o projeto já tem para o papel do que o diff adiciona",
   "command.guardian_scan.summary": "Calcula os relatórios que precisam do git (reuso, proporcionalidade) fora dos hooks; --record guarda para o próximo prompt",
-  "guardian.pending.intro": "Relatórios calculados depois do último turno. Mostre à pessoa antes de escrever mais; a pessoa escolhe."
+  "guardian.pending.intro": "Relatórios calculados depois do último turno. Mostre à pessoa antes de escrever mais; a pessoa escolhe.",
+  "command.guardian_weigh.summary": "Pesa a mudança contra o problema e o estágio da empresa: coisas novas para operar, categorias novas, conceitos que ninguém demonstrou",
+  "guardian.weigh.summary": "Peso {tokens} fichas, orçamento {budget}, reversibilidade {undo}: {verdict}.",
+  "guardian.weigh.scale_unknown": "ASSUMPTION: escala desconhecida, o contrato não traz número de usuários, requisições ou dados",
+  "guardian.weigh.ask_scale": "pergunte à pessoa o número de escala (usuários, requisições por segundo, volume de dados) e escreva em scale: no contrato; não estime",
+  "guardian.weigh.row.requested": "pedido: construir {files} arquivos novos e {deps} dependências novas; operar {operate}; desfazer classe {undo}; ninguém demonstrou {beyond}",
+  "guardian.weigh.row.simplest": "mais simples viável: o mesmo resultado com o que o projeto já roda; nada novo para operar; desfazer classe A; mantido pelo time atual",
+  "guardian.weigh.row.nothing": "não fazer agora: sem custo; o contrato não é atendido até o próximo marco"
 };
 
 // src/i18n/review.json
@@ -19946,7 +19969,14 @@ var review_default = {
     "guardian.trigger.proportionality.next": "machine",
     "command.guardian_reuse.summary": "machine",
     "command.guardian_scan.summary": "machine",
-    "guardian.pending.intro": "machine"
+    "guardian.pending.intro": "machine",
+    "command.guardian_weigh.summary": "machine",
+    "guardian.weigh.summary": "machine",
+    "guardian.weigh.scale_unknown": "machine",
+    "guardian.weigh.ask_scale": "machine",
+    "guardian.weigh.row.requested": "machine",
+    "guardian.weigh.row.simplest": "machine",
+    "guardian.weigh.row.nothing": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -22150,7 +22180,14 @@ var review_default = {
     "guardian.trigger.proportionality.next": "machine",
     "command.guardian_reuse.summary": "machine",
     "command.guardian_scan.summary": "machine",
-    "guardian.pending.intro": "machine"
+    "guardian.pending.intro": "machine",
+    "command.guardian_weigh.summary": "machine",
+    "guardian.weigh.summary": "machine",
+    "guardian.weigh.scale_unknown": "machine",
+    "guardian.weigh.ask_scale": "machine",
+    "guardian.weigh.row.requested": "machine",
+    "guardian.weigh.row.simplest": "machine",
+    "guardian.weigh.row.nothing": "machine"
   }
 };
 
@@ -46356,7 +46393,8 @@ var GUARD_SETS = [
   { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
   { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
   { id: "reality", damage: false, handlers: REALITY_HANDLERS },
-  { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") }
+  { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
+  { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);
 
@@ -51877,15 +51915,189 @@ var reuseReport = (t, match, goal) => ({
   key: `${match.added}\0${match.existing}`
 });
 
+// src/guardian/context.ts
+var STAGES = ["idea", "first-customers", "growing", "stable"];
+var STAGE_BUDGET = {
+  idea: 1,
+  "first-customers": 1,
+  growing: 2,
+  stable: 3
+};
+var MOST_PERMISSIVE_BUDGET = 3;
+var fieldOf = (raw) => {
+  if (typeof raw === "string" && raw.trim() !== "") return { value: raw.trim(), origin: "inferred" };
+  if (!isRecord(raw)) return void 0;
+  const value2 = raw["value"];
+  const origin = raw["origin"] === "stated" ? "stated" : "inferred";
+  return typeof value2 === "string" && value2.trim() !== "" ? { value: value2.trim(), origin } : void 0;
+};
+var listOf3 = (raw) => {
+  if (isRecord(raw) && Array.isArray(raw["value"])) {
+    const origin = raw["origin"] === "stated" ? "stated" : "inferred";
+    return raw["value"].flatMap(
+      (item2) => typeof item2 === "string" && item2.trim() !== "" ? [{ value: item2.trim().toLowerCase(), origin }] : []
+    );
+  }
+  return Array.isArray(raw) ? raw.flatMap((item2) => {
+    const field = fieldOf(item2);
+    return field === void 0 ? [] : [{ ...field, value: field.value.toLowerCase() }];
+  }) : [];
+};
+var companyContext = (goals) => {
+  const raw = goals.extra["context"];
+  if (!isRecord(raw)) return { demonstrated: [] };
+  const stageField = fieldOf(raw["stage"]);
+  const stage = STAGES.find((item2) => item2 === stageField?.value);
+  const operates = fieldOf(raw["operates"]);
+  const milestone = fieldOf(raw["milestone"]);
+  return {
+    ...stage === void 0 || stageField === void 0 ? {} : { stage: { value: stage, origin: stageField.origin } },
+    demonstrated: listOf3(raw["demonstrated"]),
+    ...operates === void 0 ? {} : { operates },
+    ...milestone === void 0 ? {} : { milestone }
+  };
+};
+var raisingBudget = (context) => context.stage?.origin === "stated" ? STAGE_BUDGET[context.stage.value] : MOST_PERMISSIVE_BUDGET;
+
+// src/guardian/proportion.ts
+var numbersIn2 = (value2) => {
+  if (typeof value2 === "number") return [String(value2)];
+  if (typeof value2 === "string") return /\d/.test(value2) ? [value2] : [];
+  if (Array.isArray(value2)) return value2.flatMap(numbersIn2);
+  if (isRecord(value2))
+    return Object.entries(value2).flatMap(([key3, item2]) => numbersIn2(item2).map((text29) => `${key3}: ${text29}`));
+  return [];
+};
+var problemWeight = (contractText2) => {
+  const parsed = parseYaml(contractText2);
+  const tree = parsed.ok && isRecord(parsed.value) ? parsed.value : {};
+  const deadline = tree["deadline"];
+  return {
+    scale: numbersIn2(tree["scale"]),
+    ...typeof deadline === "string" && deadline !== "" ? { deadline } : {}
+  };
+};
+var weigh = (weight2, context, problem5, decided2) => {
+  const budget = raisingBudget(context);
+  const base = { budget, tokens: weight2.tokens, problem: problem5, askScale: false };
+  if (weight2.concepts.length === 0 && weight2.tokens === 0) return { ...base, verdict: "silent", reason: "nothing_new" };
+  if (weight2.tokens <= budget && weight2.reversibility === "A")
+    return { ...base, verdict: "silent", reason: "within_budget" };
+  if (weight2.beyond.length === 0) return { ...base, verdict: "silent", reason: "demonstrated" };
+  if (weight2.beyond.every(decided2)) return { ...base, verdict: "silent", reason: "decided" };
+  return { ...base, verdict: "report", askScale: problem5.scale.length === 0 };
+};
+var proportionReport = (t, weight2, context, proportion, request) => {
+  const stage = context.stage?.value ?? "-";
+  return {
+    trigger: "proportionality",
+    level: LEVEL_OF.proportionality,
+    perceivedGoal: context.milestone?.value ?? request,
+    request,
+    finding: t("guardian.trigger.proportionality.finding", {
+      tokens: proportion.tokens,
+      budget: proportion.budget,
+      stage
+    }),
+    evidence: [...weight2.evidence, `${GOALS_FILE}: context.stage ${stage} (${context.stage?.origin ?? "missing"})`],
+    assumptions: proportion.askScale ? [t("guardian.weigh.scale_unknown")] : proportion.problem.scale,
+    consequences: t("guardian.trigger.proportionality.consequences"),
+    alternatives: [
+      t("guardian.weigh.row.requested", {
+        files: weight2.newFiles,
+        deps: weight2.newDependencies,
+        operate: weight2.operate.join(", ") || "-",
+        undo: weight2.reversibility,
+        beyond: weight2.beyond.join(", ") || "-"
+      }),
+      t("guardian.weigh.row.simplest"),
+      t("guardian.weigh.row.nothing")
+    ],
+    recommendation: t("guardian.trigger.proportionality.recommendation"),
+    certainty: "medium",
+    nextStep: proportion.askScale ? t("guardian.weigh.ask_scale") : t("guardian.trigger.proportionality.next"),
+    paths: [],
+    key: weight2.concepts.join(",")
+  };
+};
+
+// src/guardian/weight.ts
+var OPERATED_ROLES = /* @__PURE__ */ new Set(["queue", "cache", "database", "web server"]);
+var INFRA = [
+  ["containers", /(^|\/)(Dockerfile|docker-compose\.ya?ml|compose\.ya?ml)$/],
+  ["kubernetes", /(^|\/)(k8s|kubernetes|helm|charts)\//],
+  ["terraform", /\.tf$/],
+  ["serverless", /(^|\/)serverless\.ya?ml$/],
+  ["service", /^(services|apps|packages)\/[^/]+\/package\.json$/]
+];
+var unique2 = (items) => [...new Set(items)];
+var solutionWeight = (change2, demonstrated) => {
+  const before2 = new Set(change2.installedDeps.flatMap((name) => roleOf(name) ?? []));
+  const fresh3 = change2.addedDeps.flatMap((name) => {
+    const role = roleOf(name);
+    return role === void 0 || before2.has(role) ? [] : [{ name, role }];
+  });
+  const roles = unique2(fresh3.map((item2) => item2.role));
+  const files = change2.addedFiles.flatMap(
+    (file) => INFRA.filter(([, pattern]) => pattern.test(file)).map(([name]) => ({ file, name }))
+  );
+  const infra = unique2(files.map((item2) => item2.name));
+  const operate = [...roles.filter((role) => OPERATED_ROLES.has(role)), ...infra];
+  const newCategories = roles.filter((role) => !OPERATED_ROLES.has(role));
+  const concepts = unique2([...operate, ...newCategories]);
+  const known3 = new Set(demonstrated.map((item2) => item2.toLowerCase()));
+  const beyond = concepts.filter((concept) => !known3.has(concept));
+  const irreversible = [...change2.addedFiles, ...change2.changedFiles].some(
+    (file) => irreversiblePath(file) !== void 0
+  );
+  return {
+    operate,
+    newCategories,
+    concepts,
+    beyond,
+    reversibility: irreversible || operate.length > 0 ? "B" : "A",
+    newDependencies: change2.addedDeps.length,
+    newFiles: change2.addedFiles.length,
+    tokens: operate.length + newCategories.length + beyond.length,
+    evidence: [
+      ...fresh3.map((item2) => `dependency ${item2.name} (${item2.role})`),
+      ...files.map((item2) => `${item2.file} (${item2.name})`)
+    ]
+  };
+};
+
 // src/guardian/scan.ts
+var decidedConcept = (runtime, paths) => (concept) => planFiles2(runtime, paths.root).filter((name) => DECISION_FILE.test(name)).some((name) => {
+  const text29 = runtime.readText(planPath(paths.root, name));
+  return text29.ok && statusOf3(text29.value) === "accepted" && text29.value.toLowerCase().includes(concept);
+});
 var scanChange = (runtime, t, paths, base) => {
-  const goal = activeTask(runtime, paths)?.contract.goal ?? "";
+  const task = activeTask(runtime, paths);
+  const goal = task?.contract.goal ?? "";
+  const context = companyContext(readGoals(runtime, paths.root));
   const snap = diffSnapshot(runtime, paths, base);
+  const weight2 = solutionWeight(
+    {
+      addedDeps: snap.addedDeps.map((item2) => item2.name),
+      installedDeps: snap.installed.map((item2) => item2.name),
+      addedFiles: snap.addedFiles,
+      changedFiles: snap.changedFiles
+    },
+    context.demonstrated.map((item2) => item2.value)
+  );
+  const contract = task === void 0 ? void 0 : runtime.readText(paths.task(task.contract.id));
+  const proportion = weigh(
+    weight2,
+    context,
+    problemWeight(contract?.ok === true ? contract.value : ""),
+    decidedConcept(runtime, paths)
+  );
   const reuse = existingMatches(runtime, paths.root, snap).map((match) => ({
     feature: "guardian-reuse",
     report: reuseReport(t, match, goal)
   }));
-  return { reports: reuse };
+  const heavy2 = proportion.verdict === "report" ? [{ feature: "proportionality", report: proportionReport(t, weight2, context, proportion, goal) }] : [];
+  return { weight: weight2, proportion, reports: [...reuse, ...heavy2] };
 };
 
 // src/commands/guardian-reuse.ts
@@ -52070,6 +52282,35 @@ var guardianForgetCommand = {
       return success({ schema: GUARDIAN_REVIEW_SCHEMA, forgotten: id }, [ctx.t("guardian.forgotten", { id })]);
     });
   }
+};
+
+// src/commands/guardian-weigh.ts
+var GUARDIAN_WEIGH_SCHEMA = "finitemonkey/guardian-weigh@1";
+var guardianWeighCommand = {
+  path: ["guardian", "weigh"],
+  summaryKey: "command.guardian_weigh.summary",
+  usage: "finitemonkey guardian weigh [--base <ref>]",
+  status: "ready",
+  options: { base: { type: "string" } },
+  run: (ctx, args2) => inGuardianRepo(ctx, (root) => {
+    const scanned = scanChange(ctx.runtime, ctx.t, fmPaths(root), stringOption(args2.values, "base") ?? "HEAD");
+    const report4 = scanned.reports.find((item2) => item2.feature === "proportionality")?.report;
+    const summary2 = ctx.t("guardian.weigh.summary", {
+      tokens: scanned.proportion.tokens,
+      budget: scanned.proportion.budget,
+      undo: scanned.weight.reversibility,
+      verdict: scanned.proportion.reason ?? scanned.proportion.verdict
+    });
+    return success(
+      {
+        schema: GUARDIAN_WEIGH_SCHEMA,
+        weight: scanned.weight,
+        proportion: scanned.proportion,
+        report: report4 ?? null
+      },
+      [summary2, ...report4 === void 0 ? [] : [renderReport(ctx.t, report4)]]
+    );
+  })
 };
 
 // src/commands/types.ts
@@ -53556,7 +53797,7 @@ var layoutOf = (value2) => {
   if (typeof route !== "string" || typeof viewport !== "number") return void 0;
   return { route, viewport, structure: strings18(value2["structure"]) };
 };
-var listOf3 = (text29, key3) => {
+var listOf4 = (text29, key3) => {
   const parsed = parseJsonObject(text29);
   const list10 = parsed.ok ? parsed.value[key3] : void 0;
   return Array.isArray(list10) ? list10 : [];
@@ -53574,12 +53815,12 @@ var latestLayouts = (runtime, paths) => {
   const newest = dirs.value.map((name) => toAbsolutePath(join155(paths.dir, LOOK_DIR, name, LAYOUT_FILE))).map((file) => ({ file, at: runtime.stat(file)?.mtimeMs ?? -1 })).filter((entry2) => entry2.at >= 0).sort((left, right) => right.at - left.at)[0];
   if (newest === void 0) return [];
   const text29 = runtime.readText(newest.file);
-  return text29.ok ? listOf3(text29.value, "pages").flatMap((item2) => layoutOf(item2) ?? []) : [];
+  return text29.ok ? listOf4(text29.value, "pages").flatMap((item2) => layoutOf(item2) ?? []) : [];
 };
 var readApproved = (runtime, paths) => {
   const text29 = runtime.readText(approvedPath(paths));
   if (!text29.ok) return [];
-  return listOf3(text29.value, "screens").flatMap((item2) => {
+  return listOf4(text29.value, "screens").flatMap((item2) => {
     const layout = layoutOf(item2);
     const at5 = isRecord(item2) ? item2["at"] : void 0;
     return layout === void 0 || typeof at5 !== "string" ? [] : [{ ...layout, at: at5 }];
@@ -54676,7 +54917,7 @@ var discoverCommands = (files, own) => {
 };
 
 // src/onboard/risks.ts
-var INFRA = [
+var INFRA2 = [
   /(^|\/)Dockerfile[^/]*$/,
   /(^|\/)(docker-)?compose[^/]*\.ya?ml$/,
   /\.tf$/,
@@ -54684,7 +54925,7 @@ var INFRA = [
   /(^|\/)(fly\.toml|vercel\.json|netlify\.toml|render\.yaml|Procfile|app\.yaml|serverless\.ya?ml)$/,
   /^\.github\/workflows\/[^/]+\.ya?ml$/
 ];
-var infraFiles = (files) => files.filter((file) => INFRA.some((pattern) => pattern.test(file))).sort();
+var infraFiles = (files) => files.filter((file) => INFRA2.some((pattern) => pattern.test(file))).sort();
 var activeRisks = (input) => [
   ...input.historyFindings !== void 0 && input.historyFindings > 0 ? [{ kind: "history_secrets", subject: String(input.historyFindings) }] : [],
   ...[...new Set(input.envHistory.map((item2) => item2.file))].sort().map((file) => ({ kind: "env_in_history", subject: file })),
@@ -60127,6 +60368,7 @@ var REGISTRY2 = [
   guardianReportCommand,
   guardianReuseCommand,
   guardianScanCommand,
+  guardianWeighCommand,
   versionCommand,
   helpCommand
 ];

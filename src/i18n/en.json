@@ -2200,5 +2200,12 @@
   "guardian.trigger.proportionality.next": "the person picks one row",
   "command.guardian_reuse.summary": "Look for a module or dependency the project already has for the role of what the diff adds",
   "command.guardian_scan.summary": "Compute the reports that need git (reuse, proportionality) outside the hooks; --record keeps them for the next prompt",
-  "guardian.pending.intro": "Reports computed after the last turn. Show them to the person before writing more; the person chooses."
+  "guardian.pending.intro": "Reports computed after the last turn. Show them to the person before writing more; the person chooses.",
+  "command.guardian_weigh.summary": "Weigh the change against the problem and the company stage: new things to operate, new categories, concepts nobody demonstrated",
+  "guardian.weigh.summary": "Weight {tokens} tokens, budget {budget}, reversibility {undo}: {verdict}.",
+  "guardian.weigh.scale_unknown": "ASSUMPTION: scale unknown, the contract has no number of users, requests or data",
+  "guardian.weigh.ask_scale": "ask the person for the scale number (users, requests per second, data volume) and write it under scale: in the contract; do not estimate it",
+  "guardian.weigh.row.requested": "requested: build {files} new files and {deps} new dependencies; operate {operate}; undo class {undo}; nobody has demonstrated {beyond}",
+  "guardian.weigh.row.simplest": "simplest viable: the same result with what the project already runs; nothing new to operate; undo class A; maintained by the current team",
+  "guardian.weigh.row.nothing": "do nothing now: no cost; the contract is not met until the next milestone"
 }

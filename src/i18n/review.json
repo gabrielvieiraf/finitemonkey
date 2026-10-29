@@ -2201,7 +2201,14 @@
     "guardian.trigger.proportionality.next": "machine",
     "command.guardian_reuse.summary": "machine",
     "command.guardian_scan.summary": "machine",
-    "guardian.pending.intro": "machine"
+    "guardian.pending.intro": "machine",
+    "command.guardian_weigh.summary": "machine",
+    "guardian.weigh.summary": "machine",
+    "guardian.weigh.scale_unknown": "machine",
+    "guardian.weigh.ask_scale": "machine",
+    "guardian.weigh.row.requested": "machine",
+    "guardian.weigh.row.simplest": "machine",
+    "guardian.weigh.row.nothing": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4405,6 +4412,13 @@
     "guardian.trigger.proportionality.next": "machine",
     "command.guardian_reuse.summary": "machine",
     "command.guardian_scan.summary": "machine",
-    "guardian.pending.intro": "machine"
+    "guardian.pending.intro": "machine",
+    "command.guardian_weigh.summary": "machine",
+    "guardian.weigh.summary": "machine",
+    "guardian.weigh.scale_unknown": "machine",
+    "guardian.weigh.ask_scale": "machine",
+    "guardian.weigh.row.requested": "machine",
+    "guardian.weigh.row.simplest": "machine",
+    "guardian.weigh.row.nothing": "machine"
   }
 }
