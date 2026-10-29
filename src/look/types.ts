@@ -57,6 +57,8 @@ export const LOOK_RULES = [
   "journey/failed",
   "journey/weak",
   "journey/unapproved",
+  "visual/pending",
+  "visual/rejected",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

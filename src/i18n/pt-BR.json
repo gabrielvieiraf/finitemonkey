@@ -2616,5 +2616,7 @@
   "journey.approve.missing": "Não existe a jornada {name}.",
   "journey.approve.invalid": "A jornada {name} não segue o schema.",
   "journey.approve.hash": "A jornada {name} mudou desde esse hash. Leia de novo.",
-  "journey.approve.write": "Não deu para gravar a aprovação de {name}."
+  "journey.approve.write": "Não deu para gravar a aprovação de {name}.",
+  "command.look_reject.summary": "Rejeita a tela atual de uma rota com um motivo (só a pessoa)",
+  "look.reject.done": "Tela {route} rejeitada; o motivo fica como regra permanente {id}."
 }

@@ -2616,7 +2616,9 @@
     "journey.approve.missing": "machine",
     "journey.approve.invalid": "machine",
     "journey.approve.hash": "machine",
-    "journey.approve.write": "machine"
+    "journey.approve.write": "machine",
+    "command.look_reject.summary": "machine",
+    "look.reject.done": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5235,6 +5237,8 @@
     "journey.approve.missing": "machine",
     "journey.approve.invalid": "machine",
     "journey.approve.hash": "machine",
-    "journey.approve.write": "machine"
+    "journey.approve.write": "machine",
+    "command.look_reject.summary": "machine",
+    "look.reject.done": "machine"
   }
 }
