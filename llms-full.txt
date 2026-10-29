@@ -128,6 +128,10 @@ Requirements: Node.js 20 or later, on Linux, macOS, Windows or WSL. Install make
 
 **Lazier still:** ask Claude Code to "install Finite Monkey following docs/AGENT-SETUP.md". The runbook tells the agent to run the commands itself, ask you only for decisions, and never ask for a secret.
 
+## Where the design comes from
+
+Finite Monkey starts from a study of what happens when someone works with AI above what they can judge. The essay [The Ricochet Effect: the user as the invisible limit of artificial intelligence](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/ricochet/ricochet.md) describes two boundaries a person cannot see from inside: what they do not know to ask for and what they cannot evaluate. Section 10 maps each mechanism here to an executable check at those two points and lists the hypotheses the benchmark will test.
+
 ## Does it actually help? (benchmark, planned)
 
 Not known yet. The planned benchmark compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will live in this repo, including the parts where it didn't help.

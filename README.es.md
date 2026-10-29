@@ -118,6 +118,10 @@ Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalaci
 
 **Todavía más vago:** pídele a Claude Code "instala Finite Monkey siguiendo docs/AGENT-SETUP.es.md". La guía le indica al agente que ejecute los comandos él mismo, que te pregunte solo lo que sea decisión tuya y que nunca te pida un secreto.
 
+## De dónde viene el diseño
+
+Finite Monkey parte de un estudio sobre lo que pasa cuando alguien trabaja con IA por encima de lo que puede juzgar. El ensayo [Efecto Rebote: el usuario como límite invisible de la inteligencia artificial](docs/ricochet/ricochet.es.md) describe dos fronteras que la persona no ve desde adentro: lo que no sabe pedir y lo que no puede evaluar. La sección 10 muestra cómo cada mecanismo de aquí pone una verificación ejecutable en esos dos puntos y qué hipótesis va a probar el banco de pruebas.
+
 ## ¿De verdad ayuda? (benchmark, previsto)
 
 Todavía no se sabe. El benchmark previsto compara Claude Code solo, Claude Code con Finite Monkey y Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto estarán en este repositorio, incluidas las partes donde no ayudó.
