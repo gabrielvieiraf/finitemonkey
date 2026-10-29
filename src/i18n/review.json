@@ -2274,7 +2274,16 @@
     "doctor.mods.none": "machine",
     "doctor.mods.reach": "machine",
     "doctor.mods.guarded": "machine",
-    "doctor.mods.fix": "machine"
+    "doctor.mods.fix": "machine",
+    "command.handoff.summary": "machine",
+    "handoff.title": "machine",
+    "handoff.no_contract": "machine",
+    "handoff.contract": "machine",
+    "handoff.gate": "machine",
+    "handoff.green": "machine",
+    "handoff.failed": "machine",
+    "handoff.not_verified": "machine",
+    "handoff.attempt": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4551,6 +4560,15 @@
     "doctor.mods.none": "machine",
     "doctor.mods.reach": "machine",
     "doctor.mods.guarded": "machine",
-    "doctor.mods.fix": "machine"
+    "doctor.mods.fix": "machine",
+    "command.handoff.summary": "machine",
+    "handoff.title": "machine",
+    "handoff.no_contract": "machine",
+    "handoff.contract": "machine",
+    "handoff.gate": "machine",
+    "handoff.green": "machine",
+    "handoff.failed": "machine",
+    "handoff.not_verified": "machine",
+    "handoff.attempt": "machine"
   }
 }

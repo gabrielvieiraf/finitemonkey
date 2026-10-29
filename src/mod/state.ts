@@ -23,6 +23,7 @@ export interface ModState {
   readonly failReason: string;
   readonly rules: readonly ModRule[];
   readonly attribution: ModAttribution;
+  readonly instructions: string;
 }
 
 export interface CompiledRule {
@@ -35,6 +36,7 @@ export interface LoadedState {
   readonly mode: TightenMode;
   readonly band: TightenMode;
   readonly attribution?: ModAttribution;
+  readonly instructions: string;
   readonly failReason?: string;
   readonly rules: readonly CompiledRule[];
 }
@@ -91,6 +93,7 @@ export const parseModState = (text: string): LoadedState | undefined => {
     mode,
     band,
     rules,
+    instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
     ...(attribution === undefined ? {} : { attribution }),
     ...(typeof failReason === "string" ? { failReason } : {}),
   };

@@ -24,12 +24,16 @@ async function runCli($, args) {
   return result.exitCode === 0 ? result.stdout : void 0;
 }
 
-// src/mod/status.ts
+// src/mod/compose-hooks.ts
+var RULES_SECTION = "finitemonkey:rules";
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var str = (record, key) => typeof record[key] === "string" ? record[key] : "";
-var list = (value) => Array.isArray(value) ? value.filter(isRecord) : [];
-var contractOf = (value) => isRecord(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
-var parseStatus = (text2) => {
+var withRulesSection = (result, text2) => text2 === "" ? result : {
+  sections: [
+    ...result.sections.filter((section) => section.id !== RULES_SECTION),
+    { id: RULES_SECTION, text: text2, scope: "session" }
+  ]
+};
+var parseHandoff = (text2) => {
   let parsed;
   try {
     parsed = JSON.parse(text2);
@@ -37,14 +41,44 @@ var parseStatus = (text2) => {
     return void 0;
   }
   const data = isRecord(parsed) && isRecord(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord(data) || data["schema"] !== "finitemonkey/status@1") return void 0;
+  return isRecord(data) && data["schema"] === "finitemonkey/handoff@1" && typeof data["text"] === "string" ? data["text"] : void 0;
+};
+async function readHandoff($) {
+  const text2 = await runCli($, ["handoff", "--json"]);
+  return text2 === void 0 ? void 0 : parseHandoff(text2);
+}
+async function composeRules(_$, e, next) {
+  return withRulesSection(await next(e), memory.state?.instructions ?? "");
+}
+async function compactNotes($, e, next) {
+  if (e.agentId !== void 0) return next(e);
+  const brief = await readHandoff($);
+  if (brief === void 0 || brief === "") return next(e);
+  const instructions = [e.instructions ?? "", brief].filter((part) => part !== "").join("\n\n");
+  return next({ ...e, instructions });
+}
+
+// src/mod/status.ts
+var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var str = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var list = (value) => Array.isArray(value) ? value.filter(isRecord2) : [];
+var contractOf = (value) => isRecord2(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
+var parseStatus = (text2) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text2);
+  } catch {
+    return void 0;
+  }
+  const data = isRecord2(parsed) && isRecord2(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord2(data) || data["schema"] !== "finitemonkey/status@1") return void 0;
   const checks = list(data["checks"]).map((item) => ({
     id: str(item, "id"),
     status: str(item, "status"),
     stale: item["stale"] === true,
     verify: str(item, "verify")
   }));
-  const gate = isRecord(data["gate"]) ? data["gate"] : {};
+  const gate = isRecord2(data["gate"]) ? data["gate"] : {};
   const edits = data["editsSinceGate"];
   return {
     task: typeof data["task"] === "string" ? data["task"] : null,
@@ -190,7 +224,15 @@ async function renderPane($, e, next) {
   if (view === void 0) return elements.Text({ key: "fm-loading", children: ["finitemonkey: reading the gate…"] });
   return paneTree(elements, view, { runGate: () => runGateNow($), close: () => closePane($) });
 }
-async function runGateCommand($) {
+async function handoffNow($) {
+  const brief = await readHandoff($);
+  if (brief === void 0) return { text: "finitemonkey: no handoff in this folder" };
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) await $.session.compact({ instructions: brief });
+  return { text: brief };
+}
+async function runGateCommand($, e) {
+  if (e.args.trim() === "handoff") return handoffNow($);
   if (memory.view === void 0) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
@@ -211,7 +253,7 @@ ${line2}` };
 
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -222,7 +264,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord2(value)) return void 0;
+  if (!isRecord3(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -231,11 +273,11 @@ var ruleOf = (value) => {
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord2(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord3(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
-var dataOf = (parsed) => isRecord2(parsed) && isRecord2(parsed["data"]) ? parsed["data"] : parsed;
+var dataOf = (parsed) => isRecord3(parsed) && isRecord3(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text2) => {
   let parsed;
   try {
@@ -244,7 +286,7 @@ var parseModState = (text2) => {
     return void 0;
   }
   const data = dataOf(parsed);
-  if (!isRecord2(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  if (!isRecord3(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
@@ -256,6 +298,7 @@ var parseModState = (text2) => {
     mode,
     band,
     rules,
+    instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
     ...attribution === void 0 ? {} : { attribution },
     ...typeof failReason === "string" ? { failReason } : {}
   };
@@ -264,9 +307,9 @@ var parseModState = (text2) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text = (input, ...names) => {
-  if (!isRecord3(input)) return void 0;
+  if (!isRecord4(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;
@@ -311,7 +354,10 @@ var FAILED_REASON = "finitemonkey: the mod's permission check failed, so this ca
 async function refreshState($) {
   const text2 = await runCli($, ["mod", "state", "--json"]);
   const state = text2 === void 0 ? void 0 : parseModState(text2);
-  if (state !== void 0) memory.state = state;
+  if (state === void 0) return;
+  const before = memory.state?.instructions;
+  memory.state = state;
+  if (before !== void 0 && before !== state.instructions) $.ui.invalidate("prompt.section");
 }
 function scheduleRefresh($) {
   $.clock.after(0, () => refreshState($));
@@ -357,6 +403,8 @@ function register(on) {
   on("ui.render", { component: "Pane" }, renderPane);
   on("command.run", { command: GATE_COMMAND }, runGateCommand);
   on("attribution.text", attributionText);
+  on("prompt.compose", composeRules);
+  on("session.compact", compactNotes);
 }
 export {
   register

@@ -8901,7 +8901,16 @@ var en_default = {
   "doctor.mods.none": "No installed mod can approve a call a guard denied",
   "doctor.mods.reach": "Mod {plugin} hooks {reach}: on a personal login without managed settings it can approve a call a finitemonkey guard denied, or skip the guards",
   "doctor.mods.guarded": "Mod {plugin} hooks {reach}; the built-in sec-default guard applies on this machine and keeps it from loosening a guard's decision",
-  "doctor.mods.fix": "Disable the mod, or list finitemonkey first in prependPlugins in ~/.claude/settings.json (allowed only without managed settings and a Team or Enterprise login), so its tightening runs outermost"
+  "doctor.mods.fix": "Disable the mod, or list finitemonkey first in prependPlugins in ~/.claude/settings.json (allowed only without managed settings and a Team or Enterprise login), so its tightening runs outermost",
+  "command.handoff.summary": "Print a handoff brief from the ledger: contract, green checks, what is not verified and failed attempts",
+  "handoff.title": "Finite Monkey handoff (from the ledger, not a summary by the model):",
+  "handoff.no_contract": "No task contract is active.",
+  "handoff.contract": "Contract {id}, hash {hash}.",
+  "handoff.gate": "Gate {light} on tree {tree}.",
+  "handoff.green": "Green with evidence on this tree: {list}.",
+  "handoff.failed": "Failing: {list}.",
+  "handoff.not_verified": "Not verified: {id} ({reason}); verify with `{verify}`.",
+  "handoff.attempt": "Tried and failed {count, plural, one {# time} other {# times}}: {sample}"
 };
 
 // src/i18n/es.json
@@ -11180,7 +11189,16 @@ var es_default = {
   "doctor.mods.none": "Ningún mod instalado puede aprobar una llamada que un guard negó",
   "doctor.mods.reach": "El mod {plugin} engancha {reach}: con un login personal sin managed settings puede aprobar una llamada que un guard de finitemonkey negó, o saltarse los guards",
   "doctor.mods.guarded": "El mod {plugin} engancha {reach}; el guard integrado sec-default aplica en esta máquina y le impide aflojar la decisión de un guard",
-  "doctor.mods.fix": "Desactiva el mod, o pon finitemonkey primero en prependPlugins en ~/.claude/settings.json (solo vale sin managed settings y sin login Team o Enterprise), para que su endurecimiento corra por fuera"
+  "doctor.mods.fix": "Desactiva el mod, o pon finitemonkey primero en prependPlugins en ~/.claude/settings.json (solo vale sin managed settings y sin login Team o Enterprise), para que su endurecimiento corra por fuera",
+  "command.handoff.summary": "Muestra un resumen de traspaso desde el ledger: contrato, verificaciones en verde, lo no verificado e intentos fallidos",
+  "handoff.title": "Traspaso de Finite Monkey (del ledger, no un resumen del modelo):",
+  "handoff.no_contract": "No hay un contrato de tarea activo.",
+  "handoff.contract": "Contrato {id}, hash {hash}.",
+  "handoff.gate": "Gate {light} en el árbol {tree}.",
+  "handoff.green": "En verde con evidencia en este árbol: {list}.",
+  "handoff.failed": "Fallando: {list}.",
+  "handoff.not_verified": "No verificado: {id} ({reason}); verifica con `{verify}`.",
+  "handoff.attempt": "Intentado y falló {count, plural, one {# vez} other {# veces}}: {sample}"
 };
 
 // src/i18n/pt-BR.json
@@ -13459,7 +13477,16 @@ var pt_BR_default = {
   "doctor.mods.none": "Nenhum mod instalado consegue aprovar uma chamada que um guard negou",
   "doctor.mods.reach": "O mod {plugin} engancha {reach}: num login pessoal sem managed settings ele consegue aprovar uma chamada que um guard do finitemonkey negou, ou pular os guards",
   "doctor.mods.guarded": "O mod {plugin} engancha {reach}; o guard embutido sec-default vale nesta máquina e impede que ele afrouxe a decisão de um guard",
-  "doctor.mods.fix": "Desligue o mod, ou ponha finitemonkey primeiro em prependPlugins no ~/.claude/settings.json (só vale sem managed settings e sem login Team ou Enterprise), para o aperto dele rodar por fora"
+  "doctor.mods.fix": "Desligue o mod, ou ponha finitemonkey primeiro em prependPlugins no ~/.claude/settings.json (só vale sem managed settings e sem login Team ou Enterprise), para o aperto dele rodar por fora",
+  "command.handoff.summary": "Mostra um resumo de passagem a partir do ledger: contrato, checagens verdes, o que não foi verificado e tentativas que falharam",
+  "handoff.title": "Passagem do Finite Monkey (do ledger, não um resumo do modelo):",
+  "handoff.no_contract": "Nenhum contrato de tarefa está ativo.",
+  "handoff.contract": "Contrato {id}, hash {hash}.",
+  "handoff.gate": "Gate {light} na árvore {tree}.",
+  "handoff.green": "Verdes com evidência nesta árvore: {list}.",
+  "handoff.failed": "Falhando: {list}.",
+  "handoff.not_verified": "Não verificado: {id} ({reason}); verifique com `{verify}`.",
+  "handoff.attempt": "Tentado e falhou {count, plural, one {# vez} other {# vezes}}: {sample}"
 };
 
 // src/i18n/review.json
@@ -15739,7 +15766,16 @@ var review_default = {
     "doctor.mods.none": "machine",
     "doctor.mods.reach": "machine",
     "doctor.mods.guarded": "machine",
-    "doctor.mods.fix": "machine"
+    "doctor.mods.fix": "machine",
+    "command.handoff.summary": "machine",
+    "handoff.title": "machine",
+    "handoff.no_contract": "machine",
+    "handoff.contract": "machine",
+    "handoff.gate": "machine",
+    "handoff.green": "machine",
+    "handoff.failed": "machine",
+    "handoff.not_verified": "machine",
+    "handoff.attempt": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -18016,7 +18052,16 @@ var review_default = {
     "doctor.mods.none": "machine",
     "doctor.mods.reach": "machine",
     "doctor.mods.guarded": "machine",
-    "doctor.mods.fix": "machine"
+    "doctor.mods.fix": "machine",
+    "command.handoff.summary": "machine",
+    "handoff.title": "machine",
+    "handoff.no_contract": "machine",
+    "handoff.contract": "machine",
+    "handoff.gate": "machine",
+    "handoff.green": "machine",
+    "handoff.failed": "machine",
+    "handoff.not_verified": "machine",
+    "handoff.attempt": "machine"
   }
 };
 
@@ -35541,13 +35586,13 @@ var mentions3 = (text30, name) => new RegExp(`(?<![\\w$])${name.replace(/[$?!]/g
 var callSites = (runtime, git3, symbols) => {
   const hits = grep(git3, [...new Set(symbols.map((symbol) => symbol.name))]);
   const texts6 = /* @__PURE__ */ new Map();
-  const textOf11 = (file) => {
+  const textOf12 = (file) => {
     const cached4 = texts6.get(file) ?? current(runtime, git3.cwd, file);
     texts6.set(file, cached4);
     return cached4;
   };
   return symbols.flatMap(
-    (symbol) => hits.filter((hit3) => languageOf(hit3.file)?.id === symbol.language.id && mentions3(hit3.text, symbol.name)).filter((hit3) => !symbol.language.comment.test(hit3.text) && !definesName(symbol.language, hit3.text, symbol.name)).filter((hit3) => importsOrigin(symbol.language, hit3.file, textOf11(hit3.file), symbol.origins)).map((hit3) => ({ name: symbol.name, file: hit3.file, line: hit3.line }))
+    (symbol) => hits.filter((hit3) => languageOf(hit3.file)?.id === symbol.language.id && mentions3(hit3.text, symbol.name)).filter((hit3) => !symbol.language.comment.test(hit3.text) && !definesName(symbol.language, hit3.text, symbol.name)).filter((hit3) => importsOrigin(symbol.language, hit3.file, textOf12(hit3.file), symbol.origins)).map((hit3) => ({ name: symbol.name, file: hit3.file, line: hit3.line }))
   );
 };
 
@@ -53622,6 +53667,168 @@ var guardianWeighCommand = {
   })
 };
 
+// src/statusline/gate-state.ts
+var GATE_HOOKS = /* @__PURE__ */ new Set(["Stop", "SubagentStop"]);
+var TAIL_BYTES = 64 * 1024;
+var lastGateFailure = (runtime, paths) => {
+  const log = runtime.readText(paths.log);
+  if (!log.ok) return void 0;
+  const lines8 = log.value.slice(-TAIL_BYTES).split("\n").reverse();
+  for (const line12 of lines8) {
+    if (!line12.includes(HOOK_FAILURE_EVENT)) continue;
+    const parsed = parseJsonObject(line12);
+    if (!parsed.ok || !isRecord(parsed.value)) continue;
+    const { event, hook, at: at5 } = parsed.value;
+    if (event === HOOK_FAILURE_EVENT && typeof hook === "string" && GATE_HOOKS.has(hook) && typeof at5 === "string")
+      return at5;
+  }
+  return void 0;
+};
+var gateLight = (runtime, paths) => {
+  const status = readGateStatus(runtime, paths);
+  const failure6 = lastGateFailure(runtime, paths);
+  const greenSince = status?.status === "passed" ? Date.parse(status.at) : Number.NEGATIVE_INFINITY;
+  if (failure6 !== void 0 && Date.parse(failure6) >= greenSince) return "did_not_run";
+  if (status === void 0) return "none";
+  switch (status.status) {
+    case "passed":
+      return "green";
+    case "failed":
+    case "not_done":
+      return "red";
+    case "incomplete":
+      return "incomplete";
+    case "not_run":
+    case "released_by_cap":
+      return "did_not_run";
+  }
+};
+
+// src/bridge/status.ts
+var STATUS_SCHEMA = "finitemonkey/status@1";
+var GATE_COMMAND = "finitemonkey gate";
+var verifyOf = (item2) => item2.command ?? GATE_COMMAND;
+var checkOf2 = (item2) => ({
+  id: item2.id,
+  kind: item2.kind,
+  status: item2.status,
+  stale: item2.stale,
+  verify: verifyOf(item2)
+});
+var notVerifiedOf = (item2) => ({
+  id: item2.id,
+  reason: item2.stale ? "stale" : item2.reason ?? "no_evidence",
+  verify: verifyOf(item2)
+});
+var editsSince = (runtime, paths, at5) => {
+  if (at5 === null) return null;
+  const since = Date.parse(at5);
+  return readEntries(runtime, signalFiles(paths)).filter(
+    (entry2) => entry2.kind === "edit" && Date.parse(entry2.at) > since
+  ).length;
+};
+var reportOf2 = (runtime, paths) => {
+  const ready = prepareGate({
+    runtime,
+    cwd: paths.root,
+    env: {},
+    sessionId: void 0,
+    budgetMs: 0,
+    fast: true,
+    noSkip: true
+  });
+  if (ready.kind !== "ready") return void 0;
+  const { ctx, loaded: loaded2 } = ready.prepared;
+  const report4 = buildReport({
+    contract: ctx.contract,
+    ledger: readLedger2(runtime, paths.evidence(ctx.contract.id)),
+    treeHash: ctx.treeHash,
+    base: ctx.base,
+    source: loaded2.source,
+    contractEdited: loaded2.editedOnDisk,
+    fastPath: true
+  });
+  return { report: report4, hash: contractHash(ctx.contract) };
+};
+var statusOf6 = (runtime, paths) => {
+  const gate = readGateStatus(runtime, paths);
+  const gateAt = gate?.at ?? null;
+  const found = reportOf2(runtime, paths);
+  const report4 = found?.report;
+  const items = report4?.items ?? [];
+  return {
+    schema: STATUS_SCHEMA,
+    task: report4?.task ?? null,
+    implicit: report4?.implicit ?? true,
+    goal: report4?.goal ?? "",
+    contract: report4 === void 0 || found === void 0 ? null : { id: report4.task, hash: found.hash },
+    gate: { light: gateLight(runtime, paths), status: gate?.status ?? null, at: gateAt },
+    tree: report4?.treeHash ?? null,
+    counts: report4?.counts ?? { passed: 0, failed: 0, unverified: 0 },
+    checks: items.map(checkOf2),
+    notVerified: items.filter((item2) => item2.status === "unverified").map(notVerifiedOf),
+    editsSinceGate: editsSince(runtime, paths, gateAt),
+    bypasses: unreviewedBypasses(runtime, paths).length
+  };
+};
+
+// src/bridge/handoff.ts
+var HANDOFF_SCHEMA = "finitemonkey/handoff@1";
+var MAX_ATTEMPTS = 5;
+var attemptsOf = (runtime, paths) => {
+  const groups = /* @__PURE__ */ new Map();
+  for (const entry2 of readEntries(runtime, signalFiles(paths))) {
+    if (entry2.kind !== "error") continue;
+    const before2 = groups.get(entry2.sig);
+    groups.set(entry2.sig, { sample: entry2.sample, count: (before2?.count ?? 0) + 1 });
+  }
+  return [...groups.values()].filter((item2) => item2.count >= 2).sort((a, b) => b.count - a.count).slice(0, MAX_ATTEMPTS);
+};
+var textOf11 = (t, data2) => [
+  t("handoff.title"),
+  data2.contract === null ? t("handoff.no_contract") : t("handoff.contract", { id: data2.contract.id, hash: data2.contract.hash }),
+  t("handoff.gate", { light: data2.gate, tree: data2.tree ?? "-" }),
+  t("handoff.green", { list: data2.green.join(", ") || "-" }),
+  ...data2.failed.length > 0 ? [t("handoff.failed", { list: data2.failed.join(", ") })] : [],
+  ...data2.notVerified.map((item2) => t("handoff.not_verified", { ...item2 })),
+  ...data2.attempts.map((item2) => t("handoff.attempt", { sample: item2.sample, count: item2.count }))
+].join("\n");
+var handoffOf = (runtime, paths, t) => {
+  const status = statusOf6(runtime, paths);
+  const body2 = {
+    contract: status.contract,
+    gate: status.gate.light,
+    tree: status.tree,
+    green: status.checks.filter((check2) => check2.status === "passed").map((check2) => check2.id),
+    failed: status.checks.filter((check2) => check2.status === "failed").map((check2) => check2.id),
+    notVerified: status.notVerified,
+    attempts: attemptsOf(runtime, paths)
+  };
+  return { schema: HANDOFF_SCHEMA, ...body2, text: textOf11(t, body2) };
+};
+
+// src/commands/handoff.ts
+var show2 = (ctx) => {
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  if (root === void 0)
+    return failureFrom(ctx.t, {
+      code: "not_a_git_repo",
+      messageKey: "error.not_a_git_repo",
+      params: {},
+      fix: "git init",
+      exitCode: ExitCode.NotConfigured
+    });
+  const data2 = handoffOf(ctx.runtime, fmPaths(root), ctx.t);
+  return success(data2, data2.text.split("\n"));
+};
+var handoffCommand = {
+  path: ["handoff"],
+  summaryKey: "command.handoff.summary",
+  usage: "finitemonkey handoff [--json]",
+  status: "ready",
+  run: (ctx) => Promise.resolve(show2(ctx))
+};
+
 // src/commands/types.ts
 var commandName = (spec2) => spec2.path.join(" ");
 
@@ -55915,6 +56122,24 @@ var attributionOf = (runtime, paths) => {
   return { forbid, trailer };
 };
 
+// src/bridge/instructions.ts
+var RULES_FEATURE = "reminders";
+var rulesSection = (runtime, paths) => {
+  if (featureMode(runtime, paths, RULES_FEATURE) !== "active") return "";
+  const rules2 = effectiveRules(runtime, paths.root);
+  if (!rules2.ok) return "";
+  return selectReminders(
+    rules2.value,
+    { kind: "session", source: "startup" },
+    {
+      counts: {},
+      pending: [],
+      seen: /* @__PURE__ */ new Set(),
+      limits: limitsOf2(runtime, paths.root)
+    }
+  ).text;
+};
+
 // src/bridge/state.ts
 var MOD_TIGHTEN_GUARD = "mod-tighten";
 var MOD_BAND_GUARD = "mod-band";
@@ -55986,6 +56211,7 @@ var modState = (runtime, paths, t) => ({
   band: featureMode(runtime, paths, MOD_BAND_GUARD),
   failReason: t("mod.check_failed"),
   attribution: attributionOf(runtime, paths),
+  instructions: rulesSection(runtime, paths),
   rules: [
     ...live(runtime, paths, "self") ? [] : selfRules(t),
     ...live(runtime, paths, "bypass") ? [] : bypassRules(t),
@@ -57126,7 +57352,7 @@ var profileLines = (ctx, profile) => DOMAINS.map((domain) => {
     knowledge: ctx.t(`perfil.level.${levelOf2(entry2.knowledge)}`)
   });
 });
-var show2 = (ctx) => {
+var show3 = (ctx) => {
   const stored = readProfile2(ctx.runtime, pathsOf3(ctx));
   const profile = stored ?? profileOrStart(ctx.runtime, pathsOf3(ctx));
   const header3 = stored === void 0 ? [ctx.t("perfil.show.none")] : [];
@@ -57203,7 +57429,7 @@ var perfilCommand = {
   summaryKey: "command.perfil.summary",
   usage: "finitemonkey perfil",
   status: "ready",
-  run: (ctx) => Promise.resolve(show2(ctx))
+  run: (ctx) => Promise.resolve(show3(ctx))
 };
 var perfilStartCommand = {
   path: ["perfil", "start"],
@@ -60697,111 +60923,6 @@ var slopStatsCommand = {
   }
 };
 
-// src/statusline/gate-state.ts
-var GATE_HOOKS = /* @__PURE__ */ new Set(["Stop", "SubagentStop"]);
-var TAIL_BYTES = 64 * 1024;
-var lastGateFailure = (runtime, paths) => {
-  const log = runtime.readText(paths.log);
-  if (!log.ok) return void 0;
-  const lines8 = log.value.slice(-TAIL_BYTES).split("\n").reverse();
-  for (const line12 of lines8) {
-    if (!line12.includes(HOOK_FAILURE_EVENT)) continue;
-    const parsed = parseJsonObject(line12);
-    if (!parsed.ok || !isRecord(parsed.value)) continue;
-    const { event, hook, at: at5 } = parsed.value;
-    if (event === HOOK_FAILURE_EVENT && typeof hook === "string" && GATE_HOOKS.has(hook) && typeof at5 === "string")
-      return at5;
-  }
-  return void 0;
-};
-var gateLight = (runtime, paths) => {
-  const status = readGateStatus(runtime, paths);
-  const failure6 = lastGateFailure(runtime, paths);
-  const greenSince = status?.status === "passed" ? Date.parse(status.at) : Number.NEGATIVE_INFINITY;
-  if (failure6 !== void 0 && Date.parse(failure6) >= greenSince) return "did_not_run";
-  if (status === void 0) return "none";
-  switch (status.status) {
-    case "passed":
-      return "green";
-    case "failed":
-    case "not_done":
-      return "red";
-    case "incomplete":
-      return "incomplete";
-    case "not_run":
-    case "released_by_cap":
-      return "did_not_run";
-  }
-};
-
-// src/bridge/status.ts
-var STATUS_SCHEMA = "finitemonkey/status@1";
-var GATE_COMMAND = "finitemonkey gate";
-var verifyOf = (item2) => item2.command ?? GATE_COMMAND;
-var checkOf2 = (item2) => ({
-  id: item2.id,
-  kind: item2.kind,
-  status: item2.status,
-  stale: item2.stale,
-  verify: verifyOf(item2)
-});
-var notVerifiedOf = (item2) => ({
-  id: item2.id,
-  reason: item2.stale ? "stale" : item2.reason ?? "no_evidence",
-  verify: verifyOf(item2)
-});
-var editsSince = (runtime, paths, at5) => {
-  if (at5 === null) return null;
-  const since = Date.parse(at5);
-  return readEntries(runtime, signalFiles(paths)).filter(
-    (entry2) => entry2.kind === "edit" && Date.parse(entry2.at) > since
-  ).length;
-};
-var reportOf2 = (runtime, paths) => {
-  const ready = prepareGate({
-    runtime,
-    cwd: paths.root,
-    env: {},
-    sessionId: void 0,
-    budgetMs: 0,
-    fast: true,
-    noSkip: true
-  });
-  if (ready.kind !== "ready") return void 0;
-  const { ctx, loaded: loaded2 } = ready.prepared;
-  const report4 = buildReport({
-    contract: ctx.contract,
-    ledger: readLedger2(runtime, paths.evidence(ctx.contract.id)),
-    treeHash: ctx.treeHash,
-    base: ctx.base,
-    source: loaded2.source,
-    contractEdited: loaded2.editedOnDisk,
-    fastPath: true
-  });
-  return { report: report4, hash: contractHash(ctx.contract) };
-};
-var statusOf6 = (runtime, paths) => {
-  const gate = readGateStatus(runtime, paths);
-  const gateAt = gate?.at ?? null;
-  const found = reportOf2(runtime, paths);
-  const report4 = found?.report;
-  const items = report4?.items ?? [];
-  return {
-    schema: STATUS_SCHEMA,
-    task: report4?.task ?? null,
-    implicit: report4?.implicit ?? true,
-    goal: report4?.goal ?? "",
-    contract: report4 === void 0 || found === void 0 ? null : { id: report4.task, hash: found.hash },
-    gate: { light: gateLight(runtime, paths), status: gate?.status ?? null, at: gateAt },
-    tree: report4?.treeHash ?? null,
-    counts: report4?.counts ?? { passed: 0, failed: 0, unverified: 0 },
-    checks: items.map(checkOf2),
-    notVerified: items.filter((item2) => item2.status === "unverified").map(notVerifiedOf),
-    editsSinceGate: editsSince(runtime, paths, gateAt),
-    bypasses: unreviewedBypasses(runtime, paths).length
-  };
-};
-
 // src/commands/status.ts
 var MARK4 = { passed: "✓", failed: "✗", unverified: "○" };
 var humanLines = (ctx, data2) => [
@@ -60819,7 +60940,7 @@ var humanLines = (ctx, data2) => [
     (item2) => ctx.t("status.not_verified", { id: item2.id, reason: item2.reason, verify: item2.verify })
   )
 ];
-var show3 = (ctx) => {
+var show4 = (ctx) => {
   const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
   if (root === void 0)
     return failureFrom(ctx.t, {
@@ -60837,7 +60958,7 @@ var statusCommand = {
   summaryKey: "command.status.summary",
   usage: "finitemonkey status [--json]",
   status: "ready",
-  run: (ctx) => Promise.resolve(show3(ctx))
+  run: (ctx) => Promise.resolve(show4(ctx))
 };
 
 // src/statusline/input.ts
@@ -62645,6 +62766,7 @@ var REGISTRY2 = [
   modRecordCommand,
   statusCommand,
   bypassReviewCommand,
+  handoffCommand,
   versionCommand,
   helpCommand
 ];

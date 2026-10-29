@@ -1,6 +1,8 @@
 import type { ModApi, ModElement, RenderInput } from "./api.js";
 import { runCli } from "./cli.js";
+import { readHandoff } from "./compose-hooks.js";
 import type {
+  CommandRunInput,
   CommandRunResult,
   FailedNext,
   Next,
@@ -87,7 +89,16 @@ export async function renderPane($: ModApi, e: RenderInput, next: Next<"ui.rende
   return paneTree(elements, view, { runGate: () => runGateNow($), close: () => closePane($) });
 }
 
-export async function runGateCommand($: ModApi): Promise<CommandRunResult> {
+async function handoffNow($: ModApi): Promise<CommandRunResult> {
+  const brief = await readHandoff($);
+  if (brief === undefined) return { text: "finitemonkey: no handoff in this folder" };
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) await $.session.compact({ instructions: brief });
+  return { text: brief };
+}
+
+export async function runGateCommand($: ModApi, e: CommandRunInput): Promise<CommandRunResult> {
+  if (e.args.trim() === "handoff") return handoffNow($);
   if (memory.view === undefined) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {

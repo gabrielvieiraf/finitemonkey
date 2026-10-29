@@ -68,7 +68,32 @@ export interface AttributionTextResult {
   readonly text: string;
 }
 
+export interface PromptSection {
+  readonly id: string;
+  readonly text: string;
+  readonly scope: "shared" | "session";
+}
+
+export interface PromptComposeInput {
+  readonly model: string;
+}
+
+export interface PromptComposeResult {
+  readonly sections: readonly PromptSection[];
+}
+
+export interface SessionCompactInput {
+  readonly trigger: string;
+  readonly agentId?: string;
+  readonly instructions?: string;
+  readonly messages: readonly unknown[];
+}
+
+export type SessionCompactResult = Readonly<Record<string, unknown>>;
+
 export interface EventTypes {
+  readonly "prompt.compose": readonly [PromptComposeInput, PromptComposeResult];
+  readonly "session.compact": readonly [SessionCompactInput, SessionCompactResult];
   readonly "attribution.text": readonly [AttributionTextInput, AttributionTextResult];
   readonly "tool.call": readonly [ToolCallInput, ToolCallResult];
   readonly "ui.render": readonly [RenderInput, ModElement | null];

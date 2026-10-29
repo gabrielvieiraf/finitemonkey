@@ -51,6 +51,7 @@ import { guardianReportCommand } from "./guardian-report.js";
 import { guardianReuseCommand, guardianScanCommand } from "./guardian-reuse.js";
 import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
 import { guardianWeighCommand } from "./guardian-weigh.js";
+import { handoffCommand } from "./handoff.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
@@ -296,6 +297,7 @@ export const REGISTRY = [
   modRecordCommand,
   statusCommand,
   bypassReviewCommand,
+  handoffCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

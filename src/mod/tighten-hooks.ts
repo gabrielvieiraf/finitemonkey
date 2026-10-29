@@ -8,7 +8,10 @@ import { FAILED_REASON, ruleFor, stricter, tightenFor } from "./tighten.js";
 export async function refreshState($: ModApi): Promise<void> {
   const text = await runCli($, ["mod", "state", "--json"]);
   const state = text === undefined ? undefined : parseModState(text);
-  if (state !== undefined) memory.state = state;
+  if (state === undefined) return;
+  const before = memory.state?.instructions;
+  memory.state = state;
+  if (before !== undefined && before !== state.instructions) $.ui.invalidate("prompt.section");
 }
 
 export function scheduleRefresh($: ModApi): void {

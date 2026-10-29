@@ -2273,5 +2273,14 @@
   "doctor.mods.none": "Nenhum mod instalado consegue aprovar uma chamada que um guard negou",
   "doctor.mods.reach": "O mod {plugin} engancha {reach}: num login pessoal sem managed settings ele consegue aprovar uma chamada que um guard do finitemonkey negou, ou pular os guards",
   "doctor.mods.guarded": "O mod {plugin} engancha {reach}; o guard embutido sec-default vale nesta máquina e impede que ele afrouxe a decisão de um guard",
-  "doctor.mods.fix": "Desligue o mod, ou ponha finitemonkey primeiro em prependPlugins no ~/.claude/settings.json (só vale sem managed settings e sem login Team ou Enterprise), para o aperto dele rodar por fora"
+  "doctor.mods.fix": "Desligue o mod, ou ponha finitemonkey primeiro em prependPlugins no ~/.claude/settings.json (só vale sem managed settings e sem login Team ou Enterprise), para o aperto dele rodar por fora",
+  "command.handoff.summary": "Mostra um resumo de passagem a partir do ledger: contrato, checagens verdes, o que não foi verificado e tentativas que falharam",
+  "handoff.title": "Passagem do Finite Monkey (do ledger, não um resumo do modelo):",
+  "handoff.no_contract": "Nenhum contrato de tarefa está ativo.",
+  "handoff.contract": "Contrato {id}, hash {hash}.",
+  "handoff.gate": "Gate {light} na árvore {tree}.",
+  "handoff.green": "Verdes com evidência nesta árvore: {list}.",
+  "handoff.failed": "Falhando: {list}.",
+  "handoff.not_verified": "Não verificado: {id} ({reason}); verifique com `{verify}`.",
+  "handoff.attempt": "Tentado e falhou {count, plural, one {# vez} other {# vezes}}: {sample}"
 }

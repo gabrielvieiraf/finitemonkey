@@ -80,6 +80,7 @@ export interface ModApi {
     readonly version: () => Promise<SessionVersion>;
     readonly surfaces: () => Promise<readonly Surface[]>;
     readonly root: () => Promise<string>;
+    readonly compact: (args: { readonly instructions: string }) => Promise<unknown>;
   };
   readonly clock: {
     readonly after: (ms: number, fn: () => void | Promise<void>) => Timer;
@@ -88,7 +89,7 @@ export interface ModApi {
     readonly register: (spec: CommandSpec) => Promise<unknown>;
   };
   readonly ui: {
-    readonly invalidate: (event: "ui.render") => void;
+    readonly invalidate: (event: "ui.render" | "prompt.section") => void;
     readonly resolve: (e: RenderInput) => Elements;
     readonly status: (text: string | undefined) => void;
     readonly log: (text: string) => void;

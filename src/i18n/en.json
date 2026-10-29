@@ -2273,5 +2273,14 @@
   "doctor.mods.none": "No installed mod can approve a call a guard denied",
   "doctor.mods.reach": "Mod {plugin} hooks {reach}: on a personal login without managed settings it can approve a call a finitemonkey guard denied, or skip the guards",
   "doctor.mods.guarded": "Mod {plugin} hooks {reach}; the built-in sec-default guard applies on this machine and keeps it from loosening a guard's decision",
-  "doctor.mods.fix": "Disable the mod, or list finitemonkey first in prependPlugins in ~/.claude/settings.json (allowed only without managed settings and a Team or Enterprise login), so its tightening runs outermost"
+  "doctor.mods.fix": "Disable the mod, or list finitemonkey first in prependPlugins in ~/.claude/settings.json (allowed only without managed settings and a Team or Enterprise login), so its tightening runs outermost",
+  "command.handoff.summary": "Print a handoff brief from the ledger: contract, green checks, what is not verified and failed attempts",
+  "handoff.title": "Finite Monkey handoff (from the ledger, not a summary by the model):",
+  "handoff.no_contract": "No task contract is active.",
+  "handoff.contract": "Contract {id}, hash {hash}.",
+  "handoff.gate": "Gate {light} on tree {tree}.",
+  "handoff.green": "Green with evidence on this tree: {list}.",
+  "handoff.failed": "Failing: {list}.",
+  "handoff.not_verified": "Not verified: {id} ({reason}); verify with `{verify}`.",
+  "handoff.attempt": "Tried and failed {count, plural, one {# time} other {# times}}: {sample}"
 }
