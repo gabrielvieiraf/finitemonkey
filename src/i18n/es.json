@@ -2338,5 +2338,6 @@
   "gate.claims.shadow": "modo shadow: un check de afirmación falló y bloquearía con claim-checks activo",
   "onboard.block.conventions": "Convenciones comprobadas en el gate",
   "knowledge.claims.error.premise": "La premisa {premise} no es una afirmación registrada, evidencia del ledger (<tarea>:<n>) ni un supuesto del registro; las aristas solo apuntan a registros, nunca a texto.",
-  "knowledge.claims.decision_out": "{subject} cayó: {reason}"
+  "knowledge.claims.decision_out": "{subject} cayó: {reason}",
+  "map.edited": "map.txt se editó a mano y se rehízo; la edición quedó guardada como afirmación de la persona: {line}"
 }

@@ -42,6 +42,9 @@ export const mapCommand: CommandSpec = {
         failureFrom(ctx.t, gitProblem("map_unavailable", "map.error.git", repo.root, "git status")),
       );
     const data = { schema: MAP_SCHEMA, file: `${FM_DIR}/${MAP_FILE}`, ...map };
-    return Promise.resolve(success(data, map.text === "" ? [ctx.t("map.empty")] : map.text.split("\n")));
+    const edited = (map.edited ?? []).map((line) => ctx.t("map.edited", { line }));
+    return Promise.resolve(
+      success(data, [...edited, ...(map.text === "" ? [ctx.t("map.empty")] : map.text.split("\n"))]),
+    );
   },
 };

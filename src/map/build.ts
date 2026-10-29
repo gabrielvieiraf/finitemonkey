@@ -4,7 +4,9 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt, treeHash } from "../gate/git.js";
 import { configAt, loadProjectConfig } from "../git/project-config.js";
-import { fmPaths } from "../task/paths.js";
+import { buildDerived, DERIVED_FEATURE, derivedState } from "../knowledge/derived.js";
+import { featureMode } from "../policy/feature.js";
+import { FM_DIR, fmPaths } from "../task/paths.js";
 import type { Definition } from "./defs.js";
 import { astGrepDefinitions, astGrepFound, grepDefinitions } from "./sources.js";
 
@@ -22,6 +24,7 @@ export interface CodeMap {
   readonly cached: boolean;
   readonly folders: number;
   readonly shown: number;
+  readonly edited?: readonly string[];
 }
 
 const HEADER = /^# finitemonkey map tree=(\S+) budget=(\d+) source=(ast-grep|git-grep) folders=(\d+) shown=(\d+)\n/;
@@ -111,15 +114,34 @@ const definitionsOf = (
   };
 };
 
+export const MAP_GENERATOR = { file: `${FM_DIR}/${MAP_FILE}`, generator: "map", sources: [] as readonly string[] };
+
+const cachedMap = (runtime: Runtime, root: AbsolutePath, tree: string, budget: number, tracked: boolean) => {
+  const edited =
+    tracked && derivedState(runtime, fmPaths(root), MAP_GENERATOR.file, { tree, budget: String(budget) }) === "edited";
+  return edited ? undefined : fromCache(runtime, root, tree, budget);
+};
+
 export const buildMap = (runtime: Runtime, root: AbsolutePath, budget: number): CodeMap | undefined => {
   const tree = treeHash(gitAt(runtime, root));
   if (tree === undefined) return undefined;
-  const cached = fromCache(runtime, root, tree, budget);
+  const paths = fmPaths(root);
+  const tracked = featureMode(runtime, paths, DERIVED_FEATURE) !== "off";
+  const cached = cachedMap(runtime, root, tree, budget, tracked);
   if (cached !== undefined) return cached;
   const { source, definitions } = definitionsOf(runtime, root);
   const rendered = renderMap(definitions, budget);
   const map: CodeMap = { ...rendered, tree, budget, source, cached: false };
-  const made = runtime.mkdir(fmPaths(root).dir);
-  if (made.ok) runtime.writeText(mapPath(root), `${headerOf(map)}${map.text}\n`);
-  return map;
+  const made = runtime.mkdir(paths.dir);
+  if (!made.ok) return map;
+  if (!tracked) {
+    runtime.writeText(mapPath(root), `${headerOf(map)}${map.text}\n`);
+    return map;
+  }
+  const built = buildDerived(runtime, paths, {
+    ...MAP_GENERATOR,
+    inputs: { tree, budget: String(budget) },
+    render: () => `${headerOf(map)}${map.text}\n`,
+  });
+  return built.kind === "built" && built.edited.length > 0 ? { ...map, edited: built.edited } : map;
 };

@@ -106,6 +106,7 @@ export const OPTIONAL_GUARDS = [
   "instruction-drift",
   "knowledge-claims",
   "claim-checks",
+  "derived-cache",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];

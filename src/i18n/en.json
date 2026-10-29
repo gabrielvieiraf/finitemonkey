@@ -2338,5 +2338,6 @@
   "gate.claims.shadow": "shadow mode: a claim check failed and would block once claim-checks is active",
   "onboard.block.conventions": "Conventions checked at the gate",
   "knowledge.claims.error.premise": "Premise {premise} is not a recorded claim, ledger evidence (<task>:<n>) or assumption; edges only point to records, never to text.",
-  "knowledge.claims.decision_out": "{subject} is out: {reason}"
+  "knowledge.claims.decision_out": "{subject} is out: {reason}",
+  "map.edited": "map.txt was edited by hand and was rebuilt; the edit is kept as a claim from the person: {line}"
 }
