@@ -164,10 +164,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.finitemonkey/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.finitemonkey/archive/`.",
   },
   "git-safety": {
-    en: "Snapshots before destructive git commands, the journal that `undo` reads and dropped-line decisions from merges.",
+    en: "Snapshots before destructive git commands and `rm` in the repository, with copies of ignored and untracked secret files up to 50 MB inside .git, the journal that `undo` reads and dropped-line decisions from merges.",
     "pt-BR":
-      "Snapshots antes de comandos git destrutivos, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges.",
-    es: "Snapshots antes de comandos git destructivos, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges.",
+      "Snapshots antes de comandos git destrutivos e de `rm` no repositório, com cópias de arquivos ignorados e de segredos não rastreados até 50 MB dentro do .git, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges.",
+    es: "Snapshots antes de comandos git destructivos y de `rm` en el repositorio, con copias de archivos ignorados y de secretos sin seguimiento hasta 50 MB dentro de .git, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges.",
   },
   review: {
     en: "The review round count used by `review packet`, and, only when `review.playwright: true` is set in the config, a verifier agent with the Playwright MCP.",

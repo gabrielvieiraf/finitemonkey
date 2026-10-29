@@ -1999,5 +1999,8 @@
   "git.block.kubectl_delete.requires": "Compruébalo con --dry-run=client, o ejecútalo en un contexto local (kind, k3d, minikube, docker-desktop)",
   "git.block.pipe_shell.claim": "`{command}` envía una descarga directo a un shell ({subject})",
   "git.block.pipe_shell.requires": "Descarga el script a un archivo, léelo y luego ejecuta el archivo",
-  "doctor.coexist.blockers": "{tools} también bloquea comandos destructivos; Finite Monkey le deja los bloqueos amplios y mantiene sus snapshots y sus guards propios"
+  "doctor.coexist.blockers": "{tools} también bloquea comandos destructivos; Finite Monkey le deja los bloqueos amplios y mantiene sus snapshots y sus guards propios",
+  "git.snapshot.skipped": "No copiados, por encima del límite de {cap} MB: {list}. Ajusta snapshot.max_mb en .finitemonkey/config.yml para cambiar el límite.",
+  "git.undo.restored": "{count, plural, one {# archivo ignorado o sin seguimiento recuperado} other {# archivos ignorados o sin seguimiento recuperados}}.",
+  "git.undo.conflicts": "Cambiaron después del snapshot y quedaron como están: {list}. La copia del snapshot está junto a cada uno con el sufijo {suffix}."
 }

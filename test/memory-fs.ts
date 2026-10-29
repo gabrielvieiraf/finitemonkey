@@ -60,7 +60,7 @@ const putFile = (state: State, path: string, content: string): void => {
 
 const statOf = (state: State, path: string): FileStat | undefined => {
   const file = state.files.get(path);
-  if (file !== undefined) return { kind: "file", mtimeMs: file.mtimeMs };
+  if (file !== undefined) return { kind: "file", mtimeMs: file.mtimeMs, size: Buffer.byteLength(file.content) };
   return state.dirs.has(path) ? { kind: "dir", mtimeMs: state.clock } : undefined;
 };
 

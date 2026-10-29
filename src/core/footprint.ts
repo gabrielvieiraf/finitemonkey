@@ -80,6 +80,7 @@ export const FOOTPRINT = [
       ".finitemonkey/git-journal.jsonl",
       ".finitemonkey/merge-dropped.json",
       "refs/finitemonkey/backup/",
+      ".git/finitemonkey/snapshots/",
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },

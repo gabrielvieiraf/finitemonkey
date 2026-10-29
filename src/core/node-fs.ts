@@ -57,7 +57,7 @@ export const nodeWriteText = (path: AbsolutePath, text: string): Parsed<true> =>
 export const nodeStat = (path: AbsolutePath): FileStat | undefined => {
   try {
     const stats = statSync(path);
-    return { kind: stats.isDirectory() ? "dir" : "file", mtimeMs: stats.mtimeMs };
+    return { kind: stats.isDirectory() ? "dir" : "file", mtimeMs: stats.mtimeMs, size: stats.size };
   } catch {
     return undefined;
   }

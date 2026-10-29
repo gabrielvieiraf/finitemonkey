@@ -2000,7 +2000,10 @@
     "git.block.kubectl_delete.requires": "machine",
     "git.block.pipe_shell.claim": "machine",
     "git.block.pipe_shell.requires": "machine",
-    "doctor.coexist.blockers": "machine"
+    "doctor.coexist.blockers": "machine",
+    "git.snapshot.skipped": "machine",
+    "git.undo.restored": "machine",
+    "git.undo.conflicts": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4003,6 +4006,9 @@
     "git.block.kubectl_delete.requires": "machine",
     "git.block.pipe_shell.claim": "machine",
     "git.block.pipe_shell.requires": "machine",
-    "doctor.coexist.blockers": "machine"
+    "doctor.coexist.blockers": "machine",
+    "git.snapshot.skipped": "machine",
+    "git.undo.restored": "machine",
+    "git.undo.conflicts": "machine"
   }
 }

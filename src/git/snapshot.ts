@@ -1,5 +1,6 @@
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { capBytes, saveFiles } from "./file-store.js";
 import { appendJournal, JOURNAL_SCHEMA, type JournalEntry } from "./journal.js";
 import type { Repo } from "./repo.js";
 import { commitTree, indexTree, type TreeOptions, worktreeTree } from "./tree.js";
@@ -12,7 +13,10 @@ export interface SnapshotRequest {
   readonly owner?: string;
   readonly command?: string;
   readonly timeoutMs?: number;
+  readonly capBytes?: number;
 }
+
+export const storeName = (ref: string): string => ref.replace(BACKUP_PREFIX, "");
 
 const stampOf = (iso: string): string => iso.replace(/[:.]/g, "-");
 
@@ -85,6 +89,8 @@ export const takeSnapshot = (runtime: Runtime, repo: Repo, request: SnapshotRequ
   if (!made.ok) return made;
   const ref = createRef(runtime, repo, `${BACKUP_PREFIX}${options.stamp}-${slug(request.op)}`, made.value.commit);
   if (!ref.ok) return ref;
+  const saved = saveFiles(runtime, repo, storeName(ref.value), at, request.capBytes ?? capBytes(runtime, repo));
+  if (!saved.ok) return reject(`untracked files: ${saved.error}`);
   const entry: JournalEntry = {
     schema: JOURNAL_SCHEMA,
     at,
@@ -97,6 +103,8 @@ export const takeSnapshot = (runtime: Runtime, repo: Repo, request: SnapshotRequ
     owner: request.owner,
     command: request.command,
     heads: branchHeads(runtime, repo),
+    files: saved.value.files.length,
+    skipped: saved.value.skipped.length,
   };
   const logged = appendJournal(runtime, repo.root, entry);
   return logged.ok ? accept(entry) : reject(`journal: ${logged.error}`);
