@@ -20,8 +20,45 @@ These describe how Finite Monkey is being built. Each one will be backed by a te
 
 - Nothing leaves the user's machine by default. No telemetry.
 - Secrets are never printed in output, logs, reports or pull requests; they are referenced by file and line.
-- Guards fail closed: if a check cannot run, the action is blocked and the reason is shown.
+- Guards that prevent damage fail closed: if the gate cannot run, the stop is held once with the reason and the fix, the next stop goes through recorded as not run, and `pr open` and `ci gate` refuse until a real run passes. Advisory guards fail open. The table below lists each one.
 - Packages are published only from CI, with npm provenance.
+
+<!-- generated:guard-failure-modes:start -->
+Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent damage fail closed; advisory guards fail open.
+
+| Guard | Failure mode |
+|---|---|
+| `secrets` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `gate` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `prose` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `git` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `deps` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `creds-static` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `appsec` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `rules` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `signals` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `fourth-attempt` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `ricochete` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `planta` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `label` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `perfil` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `conceitos` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `relay` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reuse` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `quality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `slop` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `tests-hold` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `advisor` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `claims` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `clarify` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `deploy` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `wt-suggest` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `heavy-lock` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `instructions` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `rules-stop` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reminders` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `learnings` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+<!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->
 ## What it reads, writes and sends

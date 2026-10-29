@@ -24,9 +24,10 @@ export const FAILURE_MODES: readonly FailureMode[] = [
   {
     failure: "A gate that cannot run looks like a pass",
     cause: "A crash, a missing file or an unwritable ledger",
-    mitigation: "The person sees GATE DID NOT RUN instead of a green result",
+    mitigation:
+      "The stop is held once with GATE DID NOT RUN, then let through recorded as not run; `pr open` and `ci gate` refuse until a real run passes",
     file: "test/stop.test.ts",
-    test: "when the gate cannot run, the person sees GATE DID NOT RUN and the stop is not blocked",
+    test: "when the gate cannot run (an unwritable ledger), the stop is held once, then let through as not run",
   },
   {
     failure: "Old evidence passes new code",

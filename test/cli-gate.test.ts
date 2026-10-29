@@ -5,6 +5,7 @@ import { after, describe, it } from "node:test";
 
 import { isRecord } from "../src/core/parsed.js";
 import { readLedger } from "../src/evidence/ledger.js";
+import { writeGateStatus } from "../src/gate/hooks/status.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, NO_PR, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
 import { cli, cliJson, field, parseBody, ROOT } from "./support.js";
@@ -89,6 +90,19 @@ describe("finitemonkey task and gate", () => {
     assert.ok(Array.isArray(items));
     for (const item of items) hasShape(item, "gateItem");
     for (const entry of readLedger(repoRuntime(), fmPaths(target.root).evidence("t"))) hasShape(entry, "evidence");
+  });
+
+  it("pr open and ci gate refuse while the last gate did not run", async () => {
+    const target = repo();
+    writeGateStatus(repoRuntime(), fmPaths(target.root), { status: "not_run", task: "", detail: "ledger" });
+    for (const argv of [
+      ["pr", "open", "--dry-run"],
+      ["ci", "gate", "--base", "HEAD"],
+    ]) {
+      const { code, body } = await cliJson(argv, { cwd: target.root, runtime: repoRuntime() });
+      assert.notEqual(code, 0, argv.join(" "));
+      assert.equal(field(body, "error", "code"), "gate_not_run", argv.join(" "));
+    }
   });
 
   it("gate prints passed, failed and not verified for people", async () => {

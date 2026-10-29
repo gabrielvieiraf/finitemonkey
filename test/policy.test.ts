@@ -76,6 +76,22 @@ describe("guard modes from .finitemonkey/policy.yml", () => {
     });
   });
 
+  it("an advisory guard that crashes fails open and logs it; a damage guard is left to fail closed", async () => {
+    const crash = (): never => {
+      throw new Error("boom");
+    };
+    const advisory: GuardSet = { id: "demo", damage: false, handlers: { PreToolUse: [crash] } };
+    const { fs, runtime } = setup();
+    const decision = await composeDecisions(
+      inputWith(runtime, { tool_name: "Bash" }),
+      withPolicy(advisory).PreToolUse ?? [],
+    );
+    assert.equal(decision.kind, "allow");
+    assert.ok(events(fs).some((event) => event["event"] === "guard_failed_open" && event["guard"] === "demo"));
+    const damage: GuardSet = { id: "demo", damage: true, handlers: { PreToolUse: [crash] } };
+    await assert.rejects(async () => composeDecisions(inputWith(runtime), withPolicy(damage).PreToolUse ?? []));
+  });
+
   it("without a policy file every guard is active", async () => {
     const { runtime } = setup();
     assert.equal((await run(runtime)).kind, "block");

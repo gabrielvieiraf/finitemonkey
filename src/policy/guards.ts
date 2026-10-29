@@ -92,9 +92,28 @@ const recordShadow = (input: HookInput, paths: FmPaths, set: GuardSet, policy: P
   }
 };
 
-const governed =
+const failOpen =
   (set: GuardSet, handler: HookHandler): HookHandler =>
   async (input): Promise<HookDecision> => {
+    try {
+      return await handler(input);
+    } catch (error) {
+      const paths = projectPaths(input);
+      if (paths !== undefined) {
+        logEvent(input.runtime, paths, "guard_failed_open", {
+          guard: set.id,
+          hook: input.event,
+          detail: error instanceof Error ? error.message : String(error),
+        });
+      }
+      return { kind: "allow" };
+    }
+  };
+
+const governed =
+  (set: GuardSet, inner: HookHandler): HookHandler =>
+  async (input): Promise<HookDecision> => {
+    const handler = failOpen(set, inner);
     const paths = projectPaths(input);
     if (paths === undefined) return handler(input);
     if (pausedFor(input.runtime, paths, input.payload.sessionId) !== undefined) return { kind: "allow" };

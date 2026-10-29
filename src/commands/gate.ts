@@ -7,6 +7,7 @@ import { runBaseline } from "../gate/baseline-run.js";
 import { gitAt, gitRoot } from "../gate/git.js";
 import { DEFAULT_GATE_BUDGET_MS } from "../gate/hooks/common.js";
 import { openPrsLine, refreshPrs } from "../gate/hooks/prs.js";
+import { readGateStatus } from "../gate/hooks/status.js";
 import { ISOLATED_FEATURE } from "../gate/isolated.js";
 import { reportLines } from "../gate/render.js";
 import type { GateReport } from "../gate/report.js";
@@ -27,6 +28,19 @@ const notRun = (detail: string): Problem => ({
   fix: "finitemonkey doctor",
   exitCode: ExitCode.NotConfigured,
 });
+
+export const lastRunRefusal = (ctx: Ctx): Problem | undefined => {
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  const status = root === undefined ? undefined : readGateStatus(ctx.runtime, fmPaths(root));
+  if (status?.status !== "not_run") return undefined;
+  return {
+    code: "gate_not_run",
+    messageKey: "error.gate_last_not_run",
+    params: { detail: status.detail },
+    fix: "finitemonkey gate",
+    exitCode: ExitCode.CheckFailed,
+  };
+};
 
 export const gateResult = (ctx: Ctx, report: GateReport, strict: boolean): CommandResult<GateReport> => {
   const human = reportLines(ctx.t, report);

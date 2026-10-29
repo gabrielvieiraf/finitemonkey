@@ -1919,7 +1919,10 @@
     "gate.verify.person": "machine",
     "gate.verify.gh": "machine",
     "gate.verify.rerun": "machine",
-    "gate.human.held_unverified": "machine"
+    "gate.human.held_unverified": "machine",
+    "gate.model.not_run": "machine",
+    "gate.human.not_run_held": "machine",
+    "error.gate_last_not_run": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3841,6 +3844,9 @@
     "gate.verify.person": "machine",
     "gate.verify.gh": "machine",
     "gate.verify.rerun": "machine",
-    "gate.human.held_unverified": "machine"
+    "gate.human.held_unverified": "machine",
+    "gate.model.not_run": "machine",
+    "gate.human.not_run_held": "machine",
+    "error.gate_last_not_run": "machine"
   }
 }

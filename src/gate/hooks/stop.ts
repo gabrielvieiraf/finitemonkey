@@ -143,17 +143,41 @@ const onReport = (input: HookInput, report: GateReport, paths: ReturnType<typeof
   return allowWith({ systemMessage: human(t("gate.human.passed", { count: report.counts.passed })) });
 };
 
+export const NOT_RUN_TASK = "*not_run*";
+
+type NotRunState = "blocked" | "inconclusive";
+
+const notRun = (input: HookInput, detail: string, state: NotRunState): HookDecision => {
+  const { t, runtime } = input;
+  const message = allowWith({ systemMessage: human(t("gate.human.not_run", { detail })) });
+  const root = findRepoRoot(runtime, sessionCwd(input));
+  if (root === undefined) return message;
+  const paths = fmPaths(root);
+  writeGateStatus(runtime, paths, { status: "not_run", task: "", detail, state });
+  const signature = sha256(JSON.stringify(["not_run", detail]));
+  const previous = readCounter(runtime, paths);
+  if (previous?.task === NOT_RUN_TASK && previous.signature === signature) return message;
+  if (!saveCounter(runtime, paths, { task: NOT_RUN_TASK, signature, consecutive: 1, same: 1 })) return message;
+  const reason = t("gate.model.not_run", { detail });
+  return {
+    kind: "block",
+    reason,
+    persistent: true,
+    output: { decision: "block", reason, systemMessage: human(t("gate.human.not_run_held", { detail })) },
+  };
+};
+
 const conclude = (input: HookInput, run: GateRun): HookDecision => {
   const { t, runtime } = input;
-  if (run.kind === "skipped") return { kind: "allow" };
   const root = findRepoRoot(runtime, sessionCwd(input));
-  if (root === undefined)
-    return allowWith({ systemMessage: human(t("gate.human.not_run", { detail: t("gate.fail.not_a_repo") })) });
-  const paths = fmPaths(root);
-  if (run.kind === "done") return onReport(input, run.report, paths);
-  const detail = failureDetail(t, run.failure);
-  writeGateStatus(runtime, paths, { status: "not_run", task: "", detail });
-  return allowWith({ systemMessage: human(t("gate.human.not_run", { detail })) });
+  if (run.kind === "skipped") {
+    return run.reason === "no_repo" && root !== undefined && readState(runtime, fmPaths(root)).active !== undefined
+      ? notRun(input, t("gate.fail.not_a_repo"), "blocked")
+      : { kind: "allow" };
+  }
+  if (root === undefined) return notRun(input, t("gate.fail.not_a_repo"), "blocked");
+  if (run.kind === "done") return onReport(input, run.report, fmPaths(root));
+  return notRun(input, failureDetail(t, run.failure), "blocked");
 };
 
 const safeRun = (input: HookInput): GateRun | { readonly kind: "crashed"; readonly detail: string } => {
@@ -173,8 +197,7 @@ const safeRun = (input: HookInput): GateRun | { readonly kind: "crashed"; readon
 
 export const stopGate: HookHandler = (input) => {
   const run = safeRun(input);
-  if (run.kind !== "crashed") return conclude(input, run);
-  return allowWith({ systemMessage: human(input.t("gate.human.not_run", { detail: run.detail })) });
+  return run.kind === "crashed" ? notRun(input, run.detail, "inconclusive") : conclude(input, run);
 };
 
 const isOwnWorktree = (input: HookInput): boolean => {

@@ -1,5 +1,6 @@
 import { FOOTPRINT, type FootprintKind } from "../src/core/footprint.js";
 import { DEFAULT_ITEMS } from "../src/defaults/items.js";
+import { type GuardFailureMode, guardFailureModes } from "../src/hooks/failure-modes.js";
 import { DEFAULTS_SECTION, DEFAULTS_TEXT } from "./defaults-text.js";
 import { FAILURE_MODES, type FailureMode } from "./failure-modes.js";
 import { FOOTPRINT_TEXT, type Lang, SECTION_TEXT } from "./footprint-text.js";
@@ -53,6 +54,21 @@ export const renderFailureModes = (modes: readonly FailureMode[]): string =>
     ),
   ].join("\n");
 
+const MODE_TEXT: Readonly<Record<GuardFailureMode["mode"], string>> = {
+  closed:
+    "closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run",
+  open: "open: when it cannot run, the action goes through and `guard_failed_open` is logged",
+};
+
+export const renderGuardFailureModes = (modes: readonly GuardFailureMode[]): string =>
+  [
+    "Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent damage fail closed; advisory guards fail open.",
+    "",
+    "| Guard | Failure mode |",
+    "|---|---|",
+    ...modes.map((mode) => `| \`${mode.guard}\` | ${MODE_TEXT[mode.mode]} |`),
+  ].join("\n");
+
 const markers = (marker: string): readonly [string, string] => [
   `<!-- generated:${marker}:start -->`,
   `<!-- generated:${marker}:end -->`,
@@ -103,6 +119,7 @@ export const BLOCKS: readonly { readonly file: string; readonly marker: string; 
   { file: "README.pt-BR.md", marker: "footprint", render: () => renderFootprint("pt-BR") },
   { file: "README.es.md", marker: "footprint", render: () => renderFootprint("es") },
   { file: "SECURITY.md", marker: "footprint", render: () => renderFootprint("en") },
+  { file: "SECURITY.md", marker: "guard-failure-modes", render: () => renderGuardFailureModes(guardFailureModes()) },
   { file: "README.md", marker: "defaults", render: () => renderDefaults("en") },
   { file: "README.pt-BR.md", marker: "defaults", render: () => renderDefaults("pt-BR") },
   { file: "README.es.md", marker: "defaults", render: () => renderDefaults("es") },

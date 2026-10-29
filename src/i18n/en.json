@@ -1918,5 +1918,8 @@
   "gate.verify.person": "the person approves it in the terminal",
   "gate.verify.gh": "`gh auth login`, then `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
-  "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open."
+  "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open.",
+  "gate.model.not_run": "Finite Monkey gate did not run: {detail}. Nothing was verified. Fix the cause and run `finitemonkey doctor`.",
+  "gate.human.not_run_held": "GATE DID NOT RUN: {detail}. Held this stop once; the next one goes through, recorded as not run. Run `finitemonkey doctor`.",
+  "error.gate_last_not_run": "The last gate run did not run ({detail}); a real run has to pass first"
 }

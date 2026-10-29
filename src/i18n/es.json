@@ -1918,5 +1918,8 @@
   "gate.verify.person": "la persona lo aprueba en la terminal",
   "gate.verify.gh": "`gh auth login` y luego `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
-  "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta."
+  "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta.",
+  "gate.model.not_run": "La puerta de Finite Monkey no se ejecutó: {detail}. No se verificó nada. Corrige la causa y ejecuta `finitemonkey doctor`.",
+  "gate.human.not_run_held": "LA PUERTA NO SE EJECUTÓ: {detail}. Retuve esta parada una vez; la próxima pasa, registrada como no ejecutada. Ejecuta `finitemonkey doctor`.",
+  "error.gate_last_not_run": "La última ejecución de la puerta no se ejecutó ({detail}); antes tiene que pasar una ejecución real"
 }

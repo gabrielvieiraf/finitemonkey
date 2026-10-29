@@ -153,17 +153,42 @@ describe("Stop gate", () => {
     assert.deepEqual(readState(repoRuntime(), fmPaths(repo.root)).done, ["t1"]);
   });
 
-  it("when the gate cannot run, the person sees GATE DID NOT RUN and the stop is not blocked", async () => {
+  const heldOnce = async (prepare: (repo: Repo) => Runtime): Promise<void> => {
     const repo = setup();
     repo.write("src/a.js", "export const a = 2;\n");
-    const outcome = await stop(repo, { runtime: repoRuntime({ failAppend: true }) });
-    assert.equal(outcome.verdict, "allow");
-    assert.match(
-      String(field(parseBody(outcome.stdout), "systemMessage")),
-      /GATE DID NOT RUN: could not write the evidence ledger/,
-    );
+    const runtime = prepare(repo);
+    const first = await stop(repo, { runtime });
+    assert.equal(first.verdict, "block");
+    const body = parseBody(first.stdout);
+    assert.match(String(field(body, "reason")), /gate did not run: .*Nothing was verified/);
+    assert.match(String(field(body, "systemMessage")), /GATE DID NOT RUN: .*Held this stop once/);
+    const second = await stop(repo, { runtime, active: true });
+    assert.equal(second.verdict, "allow");
+    assert.match(String(field(parseBody(second.stdout), "systemMessage")), /GATE DID NOT RUN/);
     assert.equal(readGateStatus(repoRuntime(), fmPaths(repo.root))?.status, "not_run");
-  });
+  };
+
+  it("when the gate cannot run (an unwritable ledger), the stop is held once, then let through as not run", () =>
+    heldOnce(() => repoRuntime({ failAppend: true })));
+
+  it("when the gate cannot run (a crash), the stop is held once, then let through as not run", () =>
+    heldOnce(() => {
+      const base = repoRuntime();
+      return {
+        ...base,
+        exec: (request) => {
+          if (request.command === "git") throw new Error("git exploded");
+          return base.exec(request);
+        },
+      };
+    }));
+
+  it("when the gate cannot run (not a repository), the stop is held once, then let through as not run", () =>
+    heldOnce((repo) => {
+      repo.remove(".git");
+      repo.write(".git", "gitdir: /nonexistent/fm-broken\n");
+      return repoRuntime();
+    }));
 
   it("a session that did not touch the tree is not gated", async () => {
     const repo = makeRepo({ "a.txt": "x" });

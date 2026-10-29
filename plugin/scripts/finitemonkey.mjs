@@ -6414,7 +6414,23 @@ var recordShadow = (input, paths, set2, policy, reason) => {
     });
   }
 };
-var governed = (set2, handler) => async (input) => {
+var failOpen = (set2, handler) => async (input) => {
+  try {
+    return await handler(input);
+  } catch (error) {
+    const paths = projectPaths(input);
+    if (paths !== void 0) {
+      logEvent(input.runtime, paths, "guard_failed_open", {
+        guard: set2.id,
+        hook: input.event,
+        detail: error instanceof Error ? error.message : String(error)
+      });
+    }
+    return { kind: "allow" };
+  }
+};
+var governed = (set2, inner) => async (input) => {
+  const handler = failOpen(set2, inner);
   const paths = projectPaths(input);
   if (paths === void 0) return handler(input);
   if (pausedFor(input.runtime, paths, input.payload.sessionId) !== void 0) return { kind: "allow" };
@@ -12544,7 +12560,10 @@ var en_default = {
   "gate.verify.person": "the person approves it in the terminal",
   "gate.verify.gh": "`gh auth login`, then `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
-  "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open."
+  "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open.",
+  "gate.model.not_run": "Finite Monkey gate did not run: {detail}. Nothing was verified. Fix the cause and run `finitemonkey doctor`.",
+  "gate.human.not_run_held": "GATE DID NOT RUN: {detail}. Held this stop once; the next one goes through, recorded as not run. Run `finitemonkey doctor`.",
+  "error.gate_last_not_run": "The last gate run did not run ({detail}); a real run has to pass first"
 };
 
 // src/i18n/es.json
@@ -14468,7 +14487,10 @@ var es_default = {
   "gate.verify.person": "la persona lo aprueba en la terminal",
   "gate.verify.gh": "`gh auth login` y luego `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
-  "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta."
+  "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta.",
+  "gate.model.not_run": "La puerta de Finite Monkey no se ejecutó: {detail}. No se verificó nada. Corrige la causa y ejecuta `finitemonkey doctor`.",
+  "gate.human.not_run_held": "LA PUERTA NO SE EJECUTÓ: {detail}. Retuve esta parada una vez; la próxima pasa, registrada como no ejecutada. Ejecuta `finitemonkey doctor`.",
+  "error.gate_last_not_run": "La última ejecución de la puerta no se ejecutó ({detail}); antes tiene que pasar una ejecución real"
 };
 
 // src/i18n/pt-BR.json
@@ -16392,7 +16414,10 @@ var pt_BR_default = {
   "gate.verify.person": "a pessoa aprova no terminal",
   "gate.verify.gh": "`gh auth login` e depois `finitemonkey gate --task {task}`",
   "gate.verify.rerun": "`finitemonkey gate --task {task}`",
-  "gate.human.held_unverified": "Segurei uma vez: {count, plural, one {# verificação não foi feita} other {# verificações não foram feitas}} ({list}). A próxima parada passa e a tarefa continua aberta."
+  "gate.human.held_unverified": "Segurei uma vez: {count, plural, one {# verificação não foi feita} other {# verificações não foram feitas}} ({list}). A próxima parada passa e a tarefa continua aberta.",
+  "gate.model.not_run": "O portão do Finite Monkey não rodou: {detail}. Nada foi verificado. Corrija a causa e rode `finitemonkey doctor`.",
+  "gate.human.not_run_held": "O PORTÃO NÃO RODOU: {detail}. Segurei esta parada uma vez; a próxima passa, registrada como não rodada. Rode `finitemonkey doctor`.",
+  "error.gate_last_not_run": "A última execução do portão não rodou ({detail}); uma execução real precisa passar antes"
 };
 
 // src/i18n/review.json
@@ -18317,7 +18342,10 @@ var review_default = {
     "gate.verify.person": "machine",
     "gate.verify.gh": "machine",
     "gate.verify.rerun": "machine",
-    "gate.human.held_unverified": "machine"
+    "gate.human.held_unverified": "machine",
+    "gate.model.not_run": "machine",
+    "gate.human.not_run_held": "machine",
+    "error.gate_last_not_run": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -20239,7 +20267,10 @@ var review_default = {
     "gate.verify.person": "machine",
     "gate.verify.gh": "machine",
     "gate.verify.rerun": "machine",
-    "gate.human.held_unverified": "machine"
+    "gate.human.held_unverified": "machine",
+    "gate.model.not_run": "machine",
+    "gate.human.not_run_held": "machine",
+    "error.gate_last_not_run": "machine"
   }
 };
 
@@ -35185,17 +35216,35 @@ var onReport = (input, report2, paths) => {
   markDone(input, report2, paths);
   return allowWith({ systemMessage: human(t("gate.human.passed", { count: report2.counts.passed })) });
 };
+var NOT_RUN_TASK = "*not_run*";
+var notRun = (input, detail, state) => {
+  const { t, runtime } = input;
+  const message = allowWith({ systemMessage: human(t("gate.human.not_run", { detail })) });
+  const root = findRepoRoot(runtime, sessionCwd(input));
+  if (root === void 0) return message;
+  const paths = fmPaths(root);
+  writeGateStatus(runtime, paths, { status: "not_run", task: "", detail, state });
+  const signature = sha256Hex(JSON.stringify(["not_run", detail]));
+  const previous = readCounter(runtime, paths);
+  if (previous?.task === NOT_RUN_TASK && previous.signature === signature) return message;
+  if (!saveCounter(runtime, paths, { task: NOT_RUN_TASK, signature, consecutive: 1, same: 1 })) return message;
+  const reason = t("gate.model.not_run", { detail });
+  return {
+    kind: "block",
+    reason,
+    persistent: true,
+    output: { decision: "block", reason, systemMessage: human(t("gate.human.not_run_held", { detail })) }
+  };
+};
 var conclude = (input, run10) => {
   const { t, runtime } = input;
-  if (run10.kind === "skipped") return { kind: "allow" };
   const root = findRepoRoot(runtime, sessionCwd(input));
-  if (root === void 0)
-    return allowWith({ systemMessage: human(t("gate.human.not_run", { detail: t("gate.fail.not_a_repo") })) });
-  const paths = fmPaths(root);
-  if (run10.kind === "done") return onReport(input, run10.report, paths);
-  const detail = failureDetail(t, run10.failure);
-  writeGateStatus(runtime, paths, { status: "not_run", task: "", detail });
-  return allowWith({ systemMessage: human(t("gate.human.not_run", { detail })) });
+  if (run10.kind === "skipped") {
+    return run10.reason === "no_repo" && root !== void 0 && readState(runtime, fmPaths(root)).active !== void 0 ? notRun(input, t("gate.fail.not_a_repo"), "blocked") : { kind: "allow" };
+  }
+  if (root === void 0) return notRun(input, t("gate.fail.not_a_repo"), "blocked");
+  if (run10.kind === "done") return onReport(input, run10.report, fmPaths(root));
+  return notRun(input, failureDetail(t, run10.failure), "blocked");
 };
 var safeRun = (input) => {
   try {
@@ -35213,8 +35262,7 @@ var safeRun = (input) => {
 };
 var stopGate = (input) => {
   const run10 = safeRun(input);
-  if (run10.kind !== "crashed") return conclude(input, run10);
-  return allowWith({ systemMessage: human(input.t("gate.human.not_run", { detail: run10.detail })) });
+  return run10.kind === "crashed" ? notRun(input, run10.detail, "inconclusive") : conclude(input, run10);
 };
 var isOwnWorktree = (input) => {
   if (input.payload.cwd === void 0) return false;
@@ -45115,13 +45163,25 @@ var budgetMs = (raw) => {
   const seconds2 = Number.parseInt(raw ?? "", 10);
   return Number.isFinite(seconds2) && seconds2 > 0 ? seconds2 * 1e3 : DEFAULT_GATE_BUDGET_MS;
 };
-var notRun = (detail) => ({
+var notRun2 = (detail) => ({
   code: "gate_not_run",
   messageKey: "error.gate_not_run",
   params: { detail },
   fix: "finitemonkey doctor",
   exitCode: ExitCode.NotConfigured
 });
+var lastRunRefusal = (ctx) => {
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  const status = root === void 0 ? void 0 : readGateStatus(ctx.runtime, fmPaths(root));
+  if (status?.status !== "not_run") return void 0;
+  return {
+    code: "gate_not_run",
+    messageKey: "error.gate_last_not_run",
+    params: { detail: status.detail },
+    fix: "finitemonkey gate",
+    exitCode: ExitCode.CheckFailed
+  };
+};
 var gateResult = (ctx, report2, strict) => {
   const human2 = reportLines2(ctx.t, report2);
   const failedVerdict = report2.verdict === "failed" || strict && report2.verdict === "incomplete";
@@ -45138,7 +45198,7 @@ var gateResult = (ctx, report2, strict) => {
 var runResult = (ctx, run10, strict) => {
   if (run10.kind === "done") return gateResult(ctx, run10.report, strict);
   if (run10.kind === "skipped") return success({ skipped: run10.reason }, [ctx.t(`gate.skipped.${run10.reason}`)]);
-  return failureFrom(ctx.t, notRun(failureDetail2(ctx, run10.failure)));
+  return failureFrom(ctx.t, notRun2(failureDetail2(ctx, run10.failure)));
 };
 var failureDetail2 = (ctx, failure6) => {
   if (failure6.kind === "contract") return `${failure6.problem.kind}: ${failure6.problem.id}`;
@@ -45196,7 +45256,7 @@ var gateCommand = {
       );
     }
     const choice = isolatedChoice(ctx, args2.values["isolated"] === true);
-    if (choice === "off") return Promise.resolve(failureFrom(ctx.t, notRun(ctx.t("gate.isolated.off"))));
+    if (choice === "off") return Promise.resolve(failureFrom(ctx.t, notRun2(ctx.t("gate.isolated.off"))));
     return Promise.resolve(
       runResult(ctx, runGate({ ...options2, isolated: choice === "isolated" }), args2.values["strict"] === true)
     );
@@ -45948,6 +46008,8 @@ var ciGateCommand = {
   run: (ctx, args2) => {
     const repo = repoOf(ctx);
     if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
+    const refusal = lastRunRefusal(ctx);
+    if (refusal !== void 0) return Promise.resolve(failureFrom(ctx.t, refusal));
     const base = ciBase(ctx.runtime, repo, ctx.env, stringOption(args2.values, "base"));
     if (!baseExists(ctx.runtime, repo, base))
       return Promise.resolve(
@@ -46336,7 +46398,7 @@ import { dirname as dirname22 } from "node:path";
 var GOLDEN_ACCEPT_SCHEMA = "finitemonkey/golden-accept@1";
 var USAGE7 = "finitemonkey golden accept <check-id> [--case <name>] [--task <id>]";
 var invalid2 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE7, { detail });
-var notRun2 = (detail) => ({
+var notRun3 = (detail) => ({
   code: "gate_not_run",
   messageKey: "error.gate_not_run",
   params: { detail },
@@ -46378,7 +46440,7 @@ var accept3 = (ctx, id, only3, taskId2) => {
     ...taskId2 === void 0 ? {} : { taskId: taskId2 }
   });
   if (ready.kind !== "ready")
-    return failureFrom(ctx.t, notRun2(ready.kind === "failed" ? ready.failure.kind : ready.reason));
+    return failureFrom(ctx.t, notRun3(ready.kind === "failed" ? ready.failure.kind : ready.reason));
   const gate = ready.prepared.ctx;
   const spec2 = specIn(gate, id);
   if (spec2 === void 0) return failureFrom(ctx.t, invalid2(id));
@@ -50437,6 +50499,8 @@ var prOpenCommand = {
     draft: { type: "boolean" }
   },
   run: (ctx, args2) => {
+    const refusal = lastRunRefusal(ctx);
+    if (refusal !== void 0) return Promise.resolve(failureFrom(ctx.t, refusal));
     const person = isPerson(ctx);
     const opened = openPr(ctx.runtime, ctx.cwd, {
       base: stringOption(args2.values, "base"),
