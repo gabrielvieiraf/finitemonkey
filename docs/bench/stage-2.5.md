@@ -49,4 +49,4 @@ A feature is kept when its primary metric moves in the expected direction with t
 
 ## Changes
 
-None yet.
+- 2026-10-28, before any run: the simulated-user runs follow `bench/PREREGISTRATION.md`, which is stricter than this plan. Runs are paired by task, with 3 repeats per task and arm, standard errors clustered by task, pass^k and cost next to pass@1, and a plain Claude Code arm in every round. No feature is promoted on a difference under about 3 points. The primary bench metric is false done: a completion claim with the hidden oracle red. Reason: single-run pass@1 varies by 2.2 to 6.0 points from noise alone, and about one in five patches counted as solved fails stronger tests.

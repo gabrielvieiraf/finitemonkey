@@ -1,0 +1,7 @@
+{
+  "id": "no-detector",
+  "description": "Finite Monkey without the horizon detector: ricochete and clarify off.",
+  "finitemonkey": true,
+  "sha": null,
+  "guards": { "ricochete": "off", "clarify": "off" }
+}

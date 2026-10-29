@@ -47144,13 +47144,19 @@ var helpCommand = {
 };
 
 // src/commands/hook.ts
+var BENCH_RUN_ENV = "FINITEMONKEY_BENCH_RUN";
+var benchOwnsHooks = (ctx) => (ctx.env[BENCH_RUN_ENV] ?? "") !== "";
+var recordBenchHook = (ctx, run10, event) => {
+  const root = toAbsolutePath(ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd);
+  logEvent(ctx.runtime, fmPaths(root), "bench_hook", { run: run10, hook: event });
+};
 var hookCommand = {
   path: ["hook"],
   summaryKey: "command.hook.summary",
   usage: `finitemonkey hook <${HOOK_EVENTS.join("|")}>`,
   status: "ready",
   maxPositionals: 1,
-  options: { via: { type: "string" } },
+  options: { via: { type: "string" }, "bench-run": { type: "string" } },
   run: async (ctx, args2) => {
     const raw = args2.positionals[0] ?? "";
     const event = parseHookEvent(raw);
@@ -47161,9 +47167,11 @@ var hookCommand = {
         usageProblem("unknown_hook_event", "error.unknown_hook_event", "finitemonkey help hook", params2)
       );
     }
-    if (stringOption(args2.values, "via") === PLUGIN_VIA && projectOwnsHooks(ctx)) {
+    if (stringOption(args2.values, "via") === PLUGIN_VIA && (projectOwnsHooks(ctx) || benchOwnsHooks(ctx))) {
       return { ok: true, exitCode: 0, data: { event, verdict: "allow" }, raw: { stdout: YIELD_STDOUT, stderr: "" } };
     }
+    const benchRun = stringOption(args2.values, "bench-run");
+    if (benchRun !== void 0) recordBenchHook(ctx, benchRun, event);
     const outcome2 = await runHook(event, {
       stdin: ctx.io.stdin,
       deadlineMs: deadlineFor(event, ctx.env["FINITEMONKEY_HOOK_DEADLINE_MS"]),

@@ -67,6 +67,8 @@
     "schema": "tsx scripts/build-schemas.ts",
     "schema:check": "tsx scripts/build-schemas.ts --check",
     "budgets": "tsx scripts/budgets.ts",
+    "bench": "tsx scripts/bench.ts",
+    "bench:freeze": "tsx scripts/bench-freeze.ts",
     "docs": "tsx scripts/build-docs.ts",
     "docs:check": "tsc -p scripts && tsx scripts/build-docs.ts --check",
     "runbooks:check": "tsx scripts/check-runbooks.ts",
