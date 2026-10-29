@@ -2363,5 +2363,12 @@
   "knowledge.records.usage": "Passe a tarefa e uma frase.",
   "knowledge.records.person": "Só uma pessoa no terminal escreve o motivo de uma decisão.",
   "knowledge.records.unknown": "Nenhum registro de decisão para {task}.",
-  "knowledge.records.saved": "Motivo salvo para {task}."
+  "knowledge.records.saved": "Motivo salvo para {task}.",
+  "command.knowledge_map.summary": "Mostra, por área do código, onde está o conhecimento dela (só com opt-in)",
+  "knowledge.map.opt_in": "o knowledge map só roda depois que a pessoa põe guards: knowledge-map: active no .finitemonkey/policy.yml",
+  "knowledge.map.person": "{area}: mudada pela pessoa fora das sessões do agente ({person} commits)",
+  "knowledge.map.claims": "{area}: só afirmações verificadas cobrem ({claims}); a pessoa não mexeu fora das sessões",
+  "knowledge.map.agent": "{area}: só o agente mexeu ({agent} commits em sessões); risco se o contexto do agente se perder",
+  "knowledge.map.nobody": "{area}: nenhuma mudança recente e nenhuma afirmação verificada",
+  "knowledge.map.question": "Uma pergunta opcional para a pessoa, no máximo uma vez nesta sessão: o código por trás de \"{text}\" ({anchor}) mudou desde a última vez que ela mexeu ali. Antes de mostrar o código, peça que ela preveja o que ele faz agora com uma entrada concreta, ou explique numa frase; se ela disser pular, deixe de lado e não pergunte de novo."
 }

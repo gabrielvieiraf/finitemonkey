@@ -60,6 +60,7 @@ import { infraCommand } from "./infra.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
+import { knowledgeMapCommand } from "./knowledge.js";
 import {
   learningsAcceptCommand,
   learningsAddCommand,
@@ -300,6 +301,7 @@ export const REGISTRY = [
   retrieveCommand,
   decideRecordsCommand,
   decideWhyCommand,
+  knowledgeMapCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

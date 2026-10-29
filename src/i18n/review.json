@@ -2364,7 +2364,14 @@
     "knowledge.records.usage": "machine",
     "knowledge.records.person": "machine",
     "knowledge.records.unknown": "machine",
-    "knowledge.records.saved": "machine"
+    "knowledge.records.saved": "machine",
+    "command.knowledge_map.summary": "machine",
+    "knowledge.map.opt_in": "machine",
+    "knowledge.map.person": "machine",
+    "knowledge.map.claims": "machine",
+    "knowledge.map.agent": "machine",
+    "knowledge.map.nobody": "machine",
+    "knowledge.map.question": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4731,6 +4738,13 @@
     "knowledge.records.usage": "machine",
     "knowledge.records.person": "machine",
     "knowledge.records.unknown": "machine",
-    "knowledge.records.saved": "machine"
+    "knowledge.records.saved": "machine",
+    "command.knowledge_map.summary": "machine",
+    "knowledge.map.opt_in": "machine",
+    "knowledge.map.person": "machine",
+    "knowledge.map.claims": "machine",
+    "knowledge.map.agent": "machine",
+    "knowledge.map.nobody": "machine",
+    "knowledge.map.question": "machine"
   }
 }

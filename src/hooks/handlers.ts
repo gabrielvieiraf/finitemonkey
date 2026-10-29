@@ -30,6 +30,7 @@ import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
 import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
 import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
+import { KNOWLEDGE_MAP_HANDLERS } from "../knowledge/who-knows-hook.js";
 import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
@@ -243,6 +244,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "calibrate", damage: false, handlers: CALIBRATE_HANDLERS },
   { id: "knowledge-claims", damage: false, handlers: KNOWLEDGE_CLAIMS_HANDLERS },
   { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
+  { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(
