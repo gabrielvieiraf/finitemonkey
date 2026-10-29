@@ -76,7 +76,8 @@
               "ui-states/error-action",
               "ui-states/error-color",
               "ui-states/partial",
-              "ui-states/status"
+              "ui-states/status",
+              "ui/dont"
             ]
           },
           "route": {

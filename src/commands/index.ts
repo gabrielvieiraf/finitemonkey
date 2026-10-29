@@ -119,6 +119,7 @@ import { taskFromSpecCommand } from "./task-spec.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
+import { UX_COMMANDS } from "./ux-commands.js";
 import { versionCommand } from "./version.js";
 import { wtAdoptCommand, wtNewCommand } from "./wt.js";
 import { wtClassifyCommand, wtDismissCommand } from "./wt-classify.js";
@@ -292,6 +293,7 @@ export const REGISTRY = [
   ...PERSON_COMMANDS,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
+  ...UX_COMMANDS,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

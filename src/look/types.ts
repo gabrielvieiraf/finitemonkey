@@ -32,6 +32,7 @@ export const LOOK_RULES = [
   "ui-states/error-color",
   "ui-states/partial",
   "ui-states/status",
+  "ui/dont",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];
