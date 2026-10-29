@@ -1,9 +1,14 @@
+import { fileURLToPath } from "node:url";
+
 import { FOOTPRINT, type FootprintKind } from "../src/core/footprint.js";
 import { DEFAULT_ITEMS } from "../src/defaults/items.js";
 import { type GuardFailureMode, guardFailureModes } from "../src/hooks/failure-modes.js";
 import { DEFAULTS_SECTION, DEFAULTS_TEXT } from "./defaults-text.js";
+import { readEvidence, renderEvidence } from "./evidence-text.js";
 import { FAILURE_MODES, type FailureMode } from "./failure-modes.js";
 import { FOOTPRINT_TEXT, type Lang, SECTION_TEXT } from "./footprint-text.js";
+
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 const KIND_ORDER: readonly FootprintKind[] = ["reads", "writes", "sends"];
 
@@ -123,6 +128,9 @@ export const BLOCKS: readonly { readonly file: string; readonly marker: string; 
   { file: "README.md", marker: "defaults", render: () => renderDefaults("en") },
   { file: "README.pt-BR.md", marker: "defaults", render: () => renderDefaults("pt-BR") },
   { file: "README.es.md", marker: "defaults", render: () => renderDefaults("es") },
+  { file: "README.md", marker: "evidence", render: () => renderEvidence("en", readEvidence(ROOT)) },
+  { file: "README.pt-BR.md", marker: "evidence", render: () => renderEvidence("pt-BR", readEvidence(ROOT)) },
+  { file: "README.es.md", marker: "evidence", render: () => renderEvidence("es", readEvidence(ROOT)) },
 ];
 
 export const CLAIM_FILES = [

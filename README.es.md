@@ -122,6 +122,19 @@ Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalaci
 
 Todavía no se sabe. El benchmark previsto compara Claude Code solo, Claude Code con Finite Monkey y Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto estarán en este repositorio, incluidas las partes donde no ayudó.
 
+<!-- generated:evidence:start -->
+Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.40 sobre el corpus etiquetado en [bench/corpus](bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
+
+| Guard | Debe bloquear | Debe dejar | Falsos positivos | Falsos negativos | p95 (ms) |
+|---|---|---|---|---|---|
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.4 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.3 |
+| `git` | 55 | 59 | 1/59 (1.7%) | 0/55 (0.0%) | 95.8 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 2.5 |
+
+Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.
+<!-- generated:evidence:end -->
+
 ## ¿En qué se diferencia de...?
 
 La comparación completa, con fuentes, está en [docs/compare.es.md](docs/compare.es.md).

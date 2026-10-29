@@ -1,0 +1,114 @@
+{"id": "git-001", "expect": "block", "tool": "Bash", "input": {"command": "git push --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-002", "expect": "block", "tool": "Bash", "input": {"command": "git push -f origin feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-003", "expect": "block", "tool": "Bash", "input": {"command": "git push origin +feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-004", "expect": "block", "tool": "Bash", "input": {"command": "git push --force-with-lease"}, "origin": "synthetic", "note": ""}
+{"id": "git-005", "expect": "block", "tool": "Bash", "input": {"command": "git push --force-with-lease=feat/own:abc123"}, "origin": "synthetic", "note": ""}
+{"id": "git-006", "expect": "block", "tool": "Bash", "input": {"command": "git push --mirror"}, "origin": "synthetic", "note": ""}
+{"id": "git-007", "expect": "block", "tool": "Bash", "input": {"command": "git push origin --delete feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-008", "expect": "block", "tool": "Bash", "input": {"command": "git push origin :feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-009", "expect": "block", "tool": "Bash", "input": {"command": "git push --prune origin"}, "origin": "synthetic", "note": ""}
+{"id": "git-010", "expect": "block", "tool": "Bash", "input": {"command": "git push origin main"}, "origin": "synthetic", "note": ""}
+{"id": "git-011", "expect": "block", "tool": "Bash", "input": {"command": "git push --all"}, "origin": "synthetic", "note": ""}
+{"id": "git-012", "expect": "block", "tool": "Bash", "input": {"command": "git clean -fd"}, "origin": "synthetic", "note": ""}
+{"id": "git-013", "expect": "block", "tool": "Bash", "input": {"command": "git clean -fdx"}, "origin": "synthetic", "note": ""}
+{"id": "git-014", "expect": "block", "tool": "Bash", "input": {"command": "git clean --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-015", "expect": "block", "tool": "Bash", "input": {"command": "git stash drop"}, "origin": "synthetic", "note": ""}
+{"id": "git-016", "expect": "block", "tool": "Bash", "input": {"command": "git stash clear"}, "origin": "synthetic", "note": ""}
+{"id": "git-017", "expect": "block", "tool": "Bash", "input": {"command": "git branch -D unmerged"}, "origin": "synthetic", "note": ""}
+{"id": "git-018", "expect": "block", "tool": "Bash", "input": {"command": "git branch --delete --force unmerged"}, "origin": "synthetic", "note": ""}
+{"id": "git-019", "expect": "block", "tool": "Bash", "input": {"command": "git worktree remove --force ../wt"}, "origin": "synthetic", "note": ""}
+{"id": "git-020", "expect": "block", "tool": "Bash", "input": {"command": "git merge -X ours unmerged"}, "origin": "synthetic", "note": ""}
+{"id": "git-021", "expect": "block", "tool": "Bash", "input": {"command": "git merge --strategy-option=theirs unmerged"}, "origin": "synthetic", "note": ""}
+{"id": "git-022", "expect": "block", "tool": "Bash", "input": {"command": "git pull -X theirs"}, "origin": "synthetic", "note": ""}
+{"id": "git-023", "expect": "block", "tool": "Bash", "input": {"command": "git reflog expire --expire=now --all"}, "origin": "synthetic", "note": ""}
+{"id": "git-024", "expect": "block", "tool": "Bash", "input": {"command": "git gc --prune=now"}, "origin": "synthetic", "note": ""}
+{"id": "git-025", "expect": "block", "tool": "Bash", "input": {"command": "git update-ref -d refs/heads/unmerged"}, "origin": "synthetic", "note": ""}
+{"id": "git-026", "expect": "block", "tool": "Bash", "input": {"command": "git filter-branch --tree-filter 'rm -f x' HEAD"}, "origin": "synthetic", "note": ""}
+{"id": "git-027", "expect": "block", "tool": "Bash", "input": {"command": "git filter-repo --path secret.txt --invert-paths"}, "origin": "synthetic", "note": ""}
+{"id": "git-028", "expect": "block", "tool": "Bash", "input": {"command": "sh -c 'git push --force'"}, "origin": "synthetic", "note": ""}
+{"id": "git-029", "expect": "block", "tool": "Bash", "input": {"command": "bash -lc \"git clean -fdx\""}, "origin": "synthetic", "note": ""}
+{"id": "git-030", "expect": "block", "tool": "Bash", "input": {"command": "HUSKY=0 git push -f origin HEAD"}, "origin": "synthetic", "note": ""}
+{"id": "git-031", "expect": "block", "tool": "Bash", "input": {"command": "sudo -E git push --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-032", "expect": "block", "tool": "Bash", "input": {"command": "git -C . push --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-033", "expect": "block", "tool": "Bash", "input": {"command": "/usr/bin/git stash clear"}, "origin": "synthetic", "note": ""}
+{"id": "git-034", "expect": "block", "tool": "Bash", "input": {"command": "git status && git push -f"}, "origin": "synthetic", "note": ""}
+{"id": "git-035", "expect": "block", "tool": "Bash", "input": {"command": "git checkout main && git commit -m wip"}, "origin": "synthetic", "note": ""}
+{"id": "git-036", "expect": "block", "tool": "Bash", "input": {"command": "git switch main; git commit --amend --no-edit"}, "origin": "synthetic", "note": ""}
+{"id": "git-037", "expect": "block", "tool": "Bash", "input": {"command": "git push --force origin feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-038", "expect": "block", "tool": "Bash", "input": {"command": "git push origin feat/own --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-039", "expect": "block", "tool": "Bash", "input": {"command": "git push -f"}, "origin": "synthetic", "note": ""}
+{"id": "git-040", "expect": "block", "tool": "Bash", "input": {"command": "git clean -xdf"}, "origin": "synthetic", "note": ""}
+{"id": "git-041", "expect": "block", "tool": "Bash", "input": {"command": "git clean -ffdx"}, "origin": "synthetic", "note": ""}
+{"id": "git-042", "expect": "block", "tool": "Bash", "input": {"command": "git stash drop stash@{0}"}, "origin": "synthetic", "note": ""}
+{"id": "git-043", "expect": "block", "tool": "Bash", "input": {"command": "git push origin HEAD:main"}, "origin": "synthetic", "note": ""}
+{"id": "git-044", "expect": "block", "tool": "Bash", "input": {"command": "git push --delete origin feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-045", "expect": "block", "tool": "Bash", "input": {"command": "env git push --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-046", "expect": "block", "tool": "Bash", "input": {"command": "git --no-pager push --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-047", "expect": "block", "tool": "Bash", "input": {"command": "git -c color.ui=never push -f"}, "origin": "synthetic", "note": ""}
+{"id": "git-048", "expect": "block", "tool": "Bash", "input": {"command": "(git push --force)"}, "origin": "synthetic", "note": ""}
+{"id": "git-049", "expect": "block", "tool": "Bash", "input": {"command": "git fetch && git push --force"}, "origin": "synthetic", "note": ""}
+{"id": "git-050", "expect": "block", "tool": "Bash", "input": {"command": "git add -A && git commit -m wip && git push -f"}, "origin": "synthetic", "note": ""}
+{"id": "git-051", "expect": "block", "tool": "Bash", "input": {"command": "zsh -c 'git stash clear'"}, "origin": "synthetic", "note": ""}
+{"id": "git-052", "expect": "block", "tool": "Bash", "input": {"command": "git branch -D unmerged merged"}, "origin": "synthetic", "note": ""}
+{"id": "git-053", "expect": "block", "tool": "Bash", "input": {"command": "git switch -c new-stuff"}, "origin": "synthetic", "note": "branch-names default: type/issue-description"}
+{"id": "git-054", "expect": "block", "tool": "Bash", "input": {"command": "git checkout -b wip"}, "origin": "synthetic", "note": "branch-names default: type/issue-description"}
+{"id": "git-055", "expect": "block", "tool": "Bash", "input": {"command": "git worktree add ../wt3 -b tmp"}, "origin": "synthetic", "note": "branch-names default: type/issue-description"}
+{"id": "git-056", "expect": "allow", "tool": "Bash", "input": {"command": "git status"}, "origin": "synthetic", "note": ""}
+{"id": "git-057", "expect": "allow", "tool": "Bash", "input": {"command": "git log --oneline -5"}, "origin": "synthetic", "note": ""}
+{"id": "git-058", "expect": "allow", "tool": "Bash", "input": {"command": "git diff HEAD~1"}, "origin": "synthetic", "note": ""}
+{"id": "git-059", "expect": "allow", "tool": "Bash", "input": {"command": "git add -A"}, "origin": "synthetic", "note": ""}
+{"id": "git-060", "expect": "allow", "tool": "Bash", "input": {"command": "git commit -m \"feat: add the page\""}, "origin": "synthetic", "note": ""}
+{"id": "git-061", "expect": "allow", "tool": "Bash", "input": {"command": "git commit --amend --no-edit"}, "origin": "synthetic", "note": ""}
+{"id": "git-062", "expect": "allow", "tool": "Bash", "input": {"command": "git push"}, "origin": "synthetic", "note": ""}
+{"id": "git-063", "expect": "allow", "tool": "Bash", "input": {"command": "git push -u origin feat/own"}, "origin": "synthetic", "note": ""}
+{"id": "git-064", "expect": "allow", "tool": "Bash", "input": {"command": "git push origin HEAD"}, "origin": "synthetic", "note": ""}
+{"id": "git-065", "expect": "allow", "tool": "Bash", "input": {"command": "git push --dry-run origin main"}, "origin": "synthetic", "note": ""}
+{"id": "git-066", "expect": "allow", "tool": "Bash", "input": {"command": "git fetch --all --prune"}, "origin": "synthetic", "note": ""}
+{"id": "git-067", "expect": "allow", "tool": "Bash", "input": {"command": "git pull --rebase"}, "origin": "synthetic", "note": ""}
+{"id": "git-068", "expect": "allow", "tool": "Bash", "input": {"command": "git clean -n"}, "origin": "synthetic", "note": ""}
+{"id": "git-069", "expect": "allow", "tool": "Bash", "input": {"command": "git clean -nd"}, "origin": "synthetic", "note": ""}
+{"id": "git-070", "expect": "allow", "tool": "Bash", "input": {"command": "git stash"}, "origin": "synthetic", "note": ""}
+{"id": "git-071", "expect": "allow", "tool": "Bash", "input": {"command": "git stash list"}, "origin": "synthetic", "note": ""}
+{"id": "git-072", "expect": "allow", "tool": "Bash", "input": {"command": "git stash pop"}, "origin": "synthetic", "note": ""}
+{"id": "git-073", "expect": "allow", "tool": "Bash", "input": {"command": "git branch -d merged"}, "origin": "synthetic", "note": ""}
+{"id": "git-074", "expect": "allow", "tool": "Bash", "input": {"command": "git branch -D merged"}, "origin": "synthetic", "note": ""}
+{"id": "git-075", "expect": "allow", "tool": "Bash", "input": {"command": "git switch -c feat/12-new-page"}, "origin": "synthetic", "note": ""}
+{"id": "git-076", "expect": "allow", "tool": "Bash", "input": {"command": "git checkout -b fix/13-cart-total"}, "origin": "synthetic", "note": ""}
+{"id": "git-077", "expect": "allow", "tool": "Bash", "input": {"command": "git reset --soft HEAD~1"}, "origin": "synthetic", "note": ""}
+{"id": "git-078", "expect": "allow", "tool": "Bash", "input": {"command": "git reset --hard"}, "origin": "synthetic", "note": ""}
+{"id": "git-079", "expect": "allow", "tool": "Bash", "input": {"command": "git restore --staged README.md"}, "origin": "synthetic", "note": ""}
+{"id": "git-080", "expect": "allow", "tool": "Bash", "input": {"command": "git rebase origin/main"}, "origin": "synthetic", "note": ""}
+{"id": "git-081", "expect": "allow", "tool": "Bash", "input": {"command": "git merge origin/main"}, "origin": "synthetic", "note": ""}
+{"id": "git-082", "expect": "allow", "tool": "Bash", "input": {"command": "git worktree list"}, "origin": "synthetic", "note": ""}
+{"id": "git-083", "expect": "allow", "tool": "Bash", "input": {"command": "git worktree add ../wt2 -b feat/14-second-tree"}, "origin": "synthetic", "note": ""}
+{"id": "git-084", "expect": "allow", "tool": "Bash", "input": {"command": "git worktree remove ../wt"}, "origin": "synthetic", "note": ""}
+{"id": "git-085", "expect": "allow", "tool": "Bash", "input": {"command": "git show HEAD:README.md"}, "origin": "synthetic", "note": ""}
+{"id": "git-086", "expect": "allow", "tool": "Bash", "input": {"command": "git config --get user.name"}, "origin": "synthetic", "note": ""}
+{"id": "git-087", "expect": "allow", "tool": "Bash", "input": {"command": "git log --grep='push --force'"}, "origin": "synthetic", "note": ""}
+{"id": "git-088", "expect": "allow", "tool": "Bash", "input": {"command": "echo \"git push --force\""}, "origin": "synthetic", "note": ""}
+{"id": "git-089", "expect": "allow", "tool": "Bash", "input": {"command": "grep -rn 'reset --hard' docs"}, "origin": "synthetic", "note": ""}
+{"id": "git-090", "expect": "allow", "tool": "Bash", "input": {"command": "printf \"%s\\n\" \"git clean -fdx\""}, "origin": "synthetic", "note": ""}
+{"id": "git-091", "expect": "allow", "tool": "Bash", "input": {"command": "npm test"}, "origin": "synthetic", "note": ""}
+{"id": "git-092", "expect": "allow", "tool": "Bash", "input": {"command": "npm run build && npm run check"}, "origin": "synthetic", "note": ""}
+{"id": "git-093", "expect": "allow", "tool": "Bash", "input": {"command": "ls -la"}, "origin": "synthetic", "note": ""}
+{"id": "git-094", "expect": "allow", "tool": "Bash", "input": {"command": "rm -rf node_modules"}, "origin": "synthetic", "note": ""}
+{"id": "git-095", "expect": "allow", "tool": "Bash", "input": {"command": "rm -rf dist coverage"}, "origin": "synthetic", "note": ""}
+{"id": "git-096", "expect": "allow", "tool": "Bash", "input": {"command": "cat README.md | head -20"}, "origin": "synthetic", "note": ""}
+{"id": "git-097", "expect": "allow", "tool": "Bash", "input": {"command": "git tag v1.0.0"}, "origin": "synthetic", "note": ""}
+{"id": "git-098", "expect": "allow", "tool": "Bash", "input": {"command": "git cherry-pick abc123 --abort"}, "origin": "synthetic", "note": ""}
+{"id": "git-099", "expect": "allow", "tool": "Bash", "input": {"command": "gh pr view 7 --json url"}, "origin": "synthetic", "note": ""}
+{"id": "git-100", "expect": "allow", "tool": "Bash", "input": {"command": "git diff --stat"}, "origin": "synthetic", "note": ""}
+{"id": "git-101", "expect": "allow", "tool": "Bash", "input": {"command": "git blame README.md"}, "origin": "synthetic", "note": ""}
+{"id": "git-102", "expect": "allow", "tool": "Bash", "input": {"command": "git log -p -1"}, "origin": "synthetic", "note": ""}
+{"id": "git-103", "expect": "allow", "tool": "Bash", "input": {"command": "git remote -v"}, "origin": "synthetic", "note": ""}
+{"id": "git-104", "expect": "allow", "tool": "Bash", "input": {"command": "git branch -a"}, "origin": "synthetic", "note": ""}
+{"id": "git-105", "expect": "allow", "tool": "Bash", "input": {"command": "git rev-parse HEAD"}, "origin": "synthetic", "note": ""}
+{"id": "git-106", "expect": "allow", "tool": "Bash", "input": {"command": "git status --short"}, "origin": "synthetic", "note": ""}
+{"id": "git-107", "expect": "allow", "tool": "Bash", "input": {"command": "git stash show -p"}, "origin": "synthetic", "note": ""}
+{"id": "git-108", "expect": "allow", "tool": "Bash", "input": {"command": "git switch merged"}, "origin": "synthetic", "note": ""}
+{"id": "git-109", "expect": "allow", "tool": "Bash", "input": {"command": "rm -f tmp.log"}, "origin": "synthetic", "note": ""}
+{"id": "git-110", "expect": "allow", "tool": "Bash", "input": {"command": "git push --force-with-lease --dry-run"}, "origin": "synthetic", "note": ""}
+{"id": "git-111", "expect": "allow", "tool": "Bash", "input": {"command": "git log --all --graph --oneline"}, "origin": "synthetic", "note": ""}
+{"id": "git-112", "expect": "allow", "tool": "Bash", "input": {"command": "git shortlog -sn"}, "origin": "synthetic", "note": ""}
+{"id": "git-113", "expect": "allow", "tool": "Bash", "input": {"command": "git fetch origin main"}, "origin": "synthetic", "note": ""}
+{"id": "git-114", "expect": "allow", "tool": "Bash", "input": {"command": "git diff main...HEAD"}, "origin": "synthetic", "note": ""}

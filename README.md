@@ -122,6 +122,19 @@ Requirements: Node.js 20 or later, on Linux, macOS, Windows or WSL. Install make
 
 Not known yet. The planned benchmark compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will live in this repo, including the parts where it didn't help.
 
+<!-- generated:evidence:start -->
+Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.40 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
+
+| Guard | Should block | Should allow | False positives | False negatives | p95 (ms) |
+|---|---|---|---|---|---|
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.4 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.3 |
+| `git` | 55 | 59 | 1/59 (1.7%) | 0/55 (0.0%) | 95.8 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 2.5 |
+
+Cost against plain Claude Code on the same tasks: not measured yet.
+<!-- generated:evidence:end -->
+
 ## How is this different from...?
 
 The full comparison, with sources, is in [docs/compare.md](docs/compare.md).

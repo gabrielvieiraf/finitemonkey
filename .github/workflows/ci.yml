@@ -135,6 +135,8 @@ jobs:
           node-version: 24
       - run: npm ci
       - run: npm audit signatures
+      - name: guard error rates against their budgets, written to bench/evidence.json and the README tables
+        run: npm run evidence && npm run docs && npm run llms
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
