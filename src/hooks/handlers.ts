@@ -16,6 +16,7 @@ import { logEvent } from "../evidence/log.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
+import { DECISION_HOLD_HANDLERS } from "../guardian/accepted-hold.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
@@ -214,6 +215,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: SCOPE_GUARD, damage: false, handlers: { PostToolUse: [scopeAfterEdit] } },
   { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
   { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
+  { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

@@ -16,6 +16,7 @@ import { critiqueVerifyCommand } from "./critique.js";
 import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { decideAcceptCommand } from "./decide-accept.js";
 import { deployStatusCommand } from "./deploy.js";
 import { deployCheckCommand } from "./deploy-check.js";
 import { deployGenerateCommand } from "./deploy-generate.js";
@@ -42,6 +43,7 @@ import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { goldenAcceptCommand } from "./golden.js";
 import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
+import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
@@ -261,6 +263,9 @@ export const REGISTRY = [
   guardianStatusCommand,
   guardianGoalAddCommand,
   guardianGoalConfirmCommand,
+  decideAcceptCommand,
+  guardianReviewCommand,
+  guardianForgetCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

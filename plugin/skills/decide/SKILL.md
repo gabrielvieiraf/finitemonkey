@@ -27,6 +27,8 @@ When the choice needs the person, set status to `needs-person` and ask with exac
 - **Cost:** money and time of the recommendation
 - **Risk:** what goes wrong if it is wrong, and the way back
 
+Leave the status at `proposed` or `needs-person`. Only the person accepts a record, with `finitemonkey decide accept <record>` in a terminal; a write that sets `accepted` from here is held.
+
 To replace a decision, write the new record, then `decide revoke <old> --by <new>`. The old record keeps its text and gains a banner. Never delete a record.
 
 If a command answers `unknown_command` or `not_implemented`, say in one line that this part of Finite Monkey is not in this version yet.

@@ -11,7 +11,7 @@ import { decisionKey } from "./sections.js";
 
 export type RevokeProblem = "missing" | "replacement_missing" | "already_revoked" | "write_failed";
 
-const toYaml = (value: unknown): YamlValue => {
+export const toYaml = (value: unknown): YamlValue => {
   if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean")
     return value;
   if (Array.isArray(value)) return value.map(toYaml);
@@ -25,7 +25,7 @@ const withBanner = (body: string, banner: string): string => {
   return [...lines.slice(0, at), "", banner, ...lines.slice(at)].join("\n");
 };
 
-const withStatus = (body: string): string => {
+export const withStatus = (body: string, status = "revoked"): string => {
   const lines = body.split("\n");
   const heading = lines.findIndex(
     (line) => line.startsWith("## ") && matchesHeading(line.slice(3), decisionKey("status")),
@@ -33,8 +33,8 @@ const withStatus = (body: string): string => {
   if (heading === -1) return body;
   const value = lines.findIndex((line, index) => index > heading && line.trim() !== "");
   if (value === -1 || lines[value]?.startsWith("#") === true)
-    return [...lines.slice(0, heading + 1), "", "revoked", ...lines.slice(heading + 1)].join("\n");
-  return [...lines.slice(0, value), "revoked", ...lines.slice(value + 1)].join("\n");
+    return [...lines.slice(0, heading + 1), "", status, ...lines.slice(heading + 1)].join("\n");
+  return [...lines.slice(0, value), status, ...lines.slice(value + 1)].join("\n");
 };
 
 export const revokeDecision = (
