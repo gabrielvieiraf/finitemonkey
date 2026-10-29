@@ -2,6 +2,7 @@ import type { Timer } from "./api.js";
 import type { ContractView, DivergeView } from "./approve-view.js";
 import type { LoadedState } from "./state.js";
 import type { GateView } from "./status.js";
+import type { ConceptRow, XrayView } from "./xray-view.js";
 
 export interface StepUsage {
   readonly model: string;
@@ -22,6 +23,8 @@ export interface Memory {
   contract: ContractView | undefined;
   divergence: DivergeView | undefined;
   notice: string | undefined;
+  xray: XrayView | undefined;
+  concepts: readonly ConceptRow[];
 }
 
 export const memory: Memory = {
@@ -34,4 +37,6 @@ export const memory: Memory = {
   contract: undefined,
   divergence: undefined,
   notice: undefined,
+  xray: undefined,
+  concepts: [],
 };

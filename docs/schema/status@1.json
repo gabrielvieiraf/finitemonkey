@@ -228,6 +228,28 @@
           ]
         }
       ]
+    },
+    "xray": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "beyondWithoutCriterion": {
+              "type": "number"
+            },
+            "blocks": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "beyondWithoutCriterion",
+            "blocks"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -244,6 +266,7 @@
     "editsSinceGate",
     "bypasses",
     "loop",
-    "cost"
+    "cost",
+    "xray"
   ]
 }

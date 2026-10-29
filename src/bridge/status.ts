@@ -1,3 +1,5 @@
+import { XRAY_FEATURE } from "../conceitos/xray.js";
+import { xrayPath } from "../conceitos/xray-run.js";
 import { nowMs } from "../core/clock.js";
 import type { Runtime } from "../core/runtime.js";
 import { readLedger } from "../evidence/ledger.js";
@@ -7,12 +9,14 @@ import { prepareGate } from "../gate/prepare.js";
 import { buildReport, type GateReport, type ReportItem } from "../gate/report.js";
 import { unreviewedBypasses } from "../guards/bypass/ledger.js";
 import { isMuted, readBudget } from "../policy/budget.js";
+import { featureMode } from "../policy/feature.js";
 import { loadPolicy } from "../policy/policy.js";
 import { FOURTH_ATTEMPT_GUARD } from "../signals/fourth.js";
 import { readEntries, readIndexFile, readProfile, recordOf, signalFiles } from "../signals/store.js";
 import { type GateLight, gateLight } from "../statusline/gate-state.js";
 import { contractHash } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
+import { readJsonFile } from "../task/state.js";
 import { costOf } from "./cost.js";
 
 export const STATUS_SCHEMA = "finitemonkey/status@1";
@@ -53,6 +57,7 @@ export interface StatusData {
   readonly bypasses: number;
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
+  readonly xray: { readonly beyondWithoutCriterion: number; readonly blocks: number } | null;
 }
 
 const verifyOf = (item: ReportItem): string => item.command ?? GATE_COMMAND;
@@ -122,6 +127,15 @@ const costLine = (runtime: Runtime, paths: FmPaths): StatusData["cost"] => {
   return cost.requests === 0 ? null : { usd: cost.usd, requests: cost.requests };
 };
 
+const xrayLine = (runtime: Runtime, paths: FmPaths, task: string | null): StatusData["xray"] => {
+  if (task === null || featureMode(runtime, paths, XRAY_FEATURE) !== "active") return null;
+  const saved = readJsonFile(runtime, xrayPath(paths));
+  const beyond = saved?.["beyondWithoutCriterion"];
+  const items = saved?.["items"];
+  if (saved?.["task"] !== task || typeof beyond !== "number" || !Array.isArray(items)) return null;
+  return { beyondWithoutCriterion: beyond, blocks: items.length };
+};
+
 export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
   const gate = readGateStatus(runtime, paths);
   const gateAt = gate?.at ?? null;
@@ -143,5 +157,6 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     bypasses: unreviewedBypasses(runtime, paths).length,
     loop: loopOf(runtime, paths),
     cost: costLine(runtime, paths),
+    xray: xrayLine(runtime, paths, report?.task ?? null),
   };
 };

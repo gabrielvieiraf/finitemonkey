@@ -9,6 +9,7 @@ import { readEntries, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import { changeEvents, type ConceptEvent, recordConceptEvents } from "./evidence.js";
+import { saveXray, xrayFor } from "./xray-run.js";
 
 export const CREDIT_FILE = "conceitos-credit.json";
 
@@ -75,6 +76,7 @@ export const creditGate = (runtime: Runtime, paths: FmPaths): readonly ConceptEv
   });
   if (ready.kind !== "ready" || ready.prepared.ctx.treeHash !== status.tree) return [];
   const { ctx } = ready.prepared;
+  saveXray(runtime, paths, status.task, status.tree, xrayFor(runtime, paths, ctx));
   const repaired = before?.task === status.task && before.status === "failed";
   const drafts = changeEvents([...addedLines(ctx.git, ctx.base), ...untrackedLines(runtime, ctx.git, paths)], {
     agentFiles: agentFiles(runtime, paths),

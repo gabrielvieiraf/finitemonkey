@@ -12,7 +12,7 @@ import type { AcceptanceCheck, CheckKind } from "../task/types.js";
 export const HORIZON_EVENT = "horizon.help";
 export const BLIND_BAND_SCHEMA = "finitemonkey/blind-band@1";
 export const CRITERIA = ["example", "property", "scenario", "check", "none"] as const;
-export const HORIZON_SOURCES = ["skill", "clarify", "research", "divergence", "concept", "scope"] as const;
+export const HORIZON_SOURCES = ["skill", "clarify", "research", "divergence", "concept", "scope", "xray"] as const;
 export const GENERAL = "general";
 
 export type Criterion = (typeof CRITERIA)[number];

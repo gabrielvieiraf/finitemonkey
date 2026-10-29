@@ -8,7 +8,9 @@ var memory = {
   board: [],
   contract: void 0,
   divergence: void 0,
-  notice: void 0
+  notice: void 0,
+  xray: void 0,
+  concepts: []
 };
 
 // src/mod/attribution-hooks.ts
@@ -388,6 +390,7 @@ var list = (value) => Array.isArray(value) ? value.filter(isRecord4) : [];
 var contractOf = (value) => isRecord4(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
 var loopOf = (value) => isRecord4(value) && typeof value["count"] === "number" && typeof value["limit"] === "number" ? { count: value["count"], limit: value["limit"] } : null;
 var costOf = (value) => isRecord4(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number" ? { usd: value["usd"], requests: value["requests"] } : null;
+var xrayOf = (value) => isRecord4(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number" ? { beyond: value["beyondWithoutCriterion"], blocks: value["blocks"] } : null;
 var parseStatus = (text4) => {
   let parsed;
   try {
@@ -420,7 +423,8 @@ var parseStatus = (text4) => {
     editsSinceGate: typeof edits === "number" ? edits : null,
     bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
     loop: loopOf(data["loop"]),
-    cost: costOf(data["cost"])
+    cost: costOf(data["cost"]),
+    xray: xrayOf(data["xray"])
   };
 };
 var MARK = {
@@ -439,7 +443,8 @@ var bandLine = (view) => [
   ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`],
   ...view.editsSinceGate !== null && view.editsSinceGate > 0 ? [`evidence ${String(view.editsSinceGate)} edits old`] : [],
   ...view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`],
-  ...view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]
+  ...view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`],
+  ...view.xray === null || view.xray.beyond === 0 ? [] : [`x-ray ${String(view.xray.beyond)} beyond the record without criterion`]
 ].join(" · ");
 var turnLine = (view) => [
   `gate ${markOf(view.light)}`,
@@ -538,6 +543,175 @@ var costTree = (elements, lines, close) => elements.Box({
   ]
 });
 
+// src/mod/xray-view.ts
+var XRAY_PANE = "fm-xray";
+var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var num = (record, key) => typeof record[key] === "number" ? record[key] : 0;
+var dataOf = (text4, schema) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text4);
+  } catch {
+    return void 0;
+  }
+  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
+  return isRecord6(data) && data["schema"] === schema ? data : void 0;
+};
+var records = (value) => Array.isArray(value) ? value.filter(isRecord6) : [];
+var parseXray = (text4) => {
+  const data = dataOf(text4, "finitemonkey/xray@1");
+  if (data === void 0) return void 0;
+  return {
+    task: str3(data, "task"),
+    beyond: num(data, "beyondWithoutCriterion"),
+    items: records(data["items"]).map((item) => ({
+      file: str3(item, "file"),
+      start: num(item, "start"),
+      end: num(item, "end"),
+      band: str3(item, "band"),
+      coverage: str3(item, "coverage"),
+      concepts: records(item["concepts"]).map((entry) => str3(entry, "concept")),
+      by: str3(item, "by")
+    }))
+  };
+};
+var parseConcepts = (text4) => records(dataOf(text4, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
+  concept: str3(item, "concept"),
+  domain: str3(item, "domain"),
+  state: str3(item, "state"),
+  positive: num(item, "positive"),
+  negative: num(item, "negative"),
+  exposures: num(item, "exposures")
+}));
+var BAND_TEXT = {
+  beyond: "beyond the evidence on record",
+  unknown: "no record",
+  edge: "at the edge",
+  within: "within the evidence on record"
+};
+var COVERAGE_TEXT = {
+  none: "no executable criterion",
+  decorative: "criterion caught no planted defect",
+  covered: "covered by a criterion"
+};
+var rowLine2 = (row2) => `${row2.file} ${String(row2.start)}-${String(row2.end)}: ${BAND_TEXT[row2.band] ?? row2.band}, ${COVERAGE_TEXT[row2.coverage] ?? row2.coverage} (${row2.concepts.join(", ") || "-"}; ${row2.by === "agent" ? "written by the agent" : "changed outside the agent's tools"})`;
+var conceptLine = (row2) => `${row2.concept} (${row2.domain}): ${row2.state === "unknown" ? "no record" : row2.state} · ${String(row2.positive)} for, ${String(row2.negative)} against, ${String(row2.exposures)} exposures`;
+var xrayLines = (view, concepts) => [
+  `x-ray ${view.task}: ${String(view.beyond)} beyond the record with no criterion, ${String(view.items.length)} changed blocks`,
+  ...view.items.map(rowLine2),
+  ...concepts.filter((row2) => row2.state !== "unknown").map(conceptLine)
+];
+var STATE_COLOR = {
+  demonstrated: "#2f7d4f",
+  proximal: "#c28a1a",
+  beyond: "#b3412f"
+};
+var escape = (text4) => text4.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+var mapSvg = (concepts) => {
+  const known = concepts.filter((row2) => row2.state !== "unknown");
+  const height = 24 * Math.max(known.length, 1) + 8;
+  const rows = known.map((row2, index) => {
+    const y = 8 + index * 24;
+    const color = STATE_COLOR[row2.state] ?? "#888888";
+    return `<rect x="8" y="${String(y)}" width="14" height="14" fill="${color}"/><text x="30" y="${String(y + 12)}" font-size="12" fill="currentColor">${escape(conceptLine(row2))}</text>`;
+  });
+  const body = rows.length === 0 ? `<text x="8" y="20" font-size="12" fill="currentColor">no concept evidence on record</text>` : rows.join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="${String(height)}" viewBox="0 0 560 ${String(height)}">${body}</svg>`;
+};
+var needsAction = (row2) => (row2.band === "beyond" || row2.band === "unknown") && row2.coverage !== "covered";
+var itemTree = (elements, row2, actions) => {
+  const key = `${row2.file}:${String(row2.start)}`;
+  const text4 = elements.Text({ key: `fm-xray-text-${key}`, children: [rowLine2(row2)] });
+  if (!needsAction(row2)) return text4;
+  return elements.Box({
+    key: `fm-xray-item-${key}`,
+    flexDirection: "column",
+    children: [
+      text4,
+      elements.Box({
+        key: `fm-xray-actions-${key}`,
+        flexDirection: "row",
+        columnGap: 2,
+        children: [
+          elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
+          elements.Button({
+            key: `fm-xray-leave-${key}`,
+            label: "Leave it to the machine",
+            onPress: () => actions.leave(row2)
+          }),
+          elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row2) })
+        ]
+      })
+    ]
+  });
+};
+var xrayTree = (elements, view, concepts, actions, surface) => {
+  const svg = surface === "desktop" || surface === "vscode" ? elements.Svg : void 0;
+  const map = svg === void 0 ? concepts.filter((row2) => row2.state !== "unknown").map((row2) => elements.Text({ key: `fm-xray-concept-${row2.concept}`, children: [conceptLine(row2)] })) : [svg({ key: "fm-xray-map", source: mapSvg(concepts), alt: "concept evidence on record, one row per concept" })];
+  return elements.Box({
+    key: "fm-xray",
+    flexDirection: "column",
+    children: [
+      elements.Text({
+        key: "fm-xray-head",
+        children: [
+          view === void 0 ? "no x-ray for this folder" : `X-ray ${view.task}: ${String(view.beyond)} beyond the record with no criterion`
+        ]
+      }),
+      ...(view?.items ?? []).map((row2) => itemTree(elements, row2, actions)),
+      elements.Text({ key: "fm-xray-map-head", dimColor: true, children: ["What is on record, per concept:"] }),
+      ...map,
+      elements.Button({ key: "fm-xray-close", label: "Close", hotkey: "x", onPress: actions.close })
+    ]
+  });
+};
+
+// src/mod/xray-hooks.ts
+async function loadXray($) {
+  const xray = await runCli($, ["xray", "--json"]);
+  const concepts = await runCli($, ["conceitos", "evidence", "--json"]);
+  memory.xray = xray === void 0 ? void 0 : parseXray(xray);
+  memory.concepts = concepts === void 0 ? [] : parseConcepts(concepts);
+}
+async function decideRow($, row2, flag) {
+  await runCli($, ["xray", "decide", `${row2.file}:${String(row2.start)}`, flag, "--json"]);
+  memory.xray = memory.xray === void 0 ? void 0 : {
+    ...memory.xray,
+    items: memory.xray.items.filter((item) => item.file !== row2.file || item.start !== row2.start)
+  };
+  $.ui.invalidate("ui.render");
+}
+async function createCriterion($) {
+  await contractNow($);
+}
+function renderXray($, e) {
+  return xrayTree(
+    $.ui.resolve(e),
+    memory.xray,
+    memory.concepts,
+    {
+      criterion: () => createCriterion($),
+      leave: (row2) => decideRow($, row2, "--leave"),
+      skip: (row2) => decideRow($, row2, "--skip"),
+      close: () => $.ui.close({ id: XRAY_PANE })
+    },
+    e.surface
+  );
+}
+async function xrayNow($) {
+  await loadXray($);
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) {
+    await $.ui.open({ id: XRAY_PANE, title: "Finite Monkey · x-ray" });
+    return {};
+  }
+  const view = memory.xray;
+  return {
+    text: view === void 0 ? "finitemonkey: no x-ray in this folder" : xrayLines(view, memory.concepts).join("\n")
+  };
+}
+
 // src/mod/gate-hooks.ts
 var DEBOUNCE_MS = 500;
 var GATE_COMMAND = "fm";
@@ -598,6 +772,7 @@ async function renderPane($, e, next) {
   if (e.requestId === FRONTS_PANE)
     return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
   if (isApprovalPane(e.requestId)) return renderApproval($, e);
+  if (e.requestId === XRAY_PANE) return renderXray($, e);
   if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
@@ -637,6 +812,7 @@ async function runGateCommand($, e) {
   if (e.args.trim() === "fronts") return frontsNow($);
   if (e.args.trim() === "contract") return contractNow($);
   if (e.args.trim() === "diverge") return divergeNow($);
+  if (e.args.trim() === "xray") return xrayNow($);
   if (memory.view === void 0) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
@@ -657,7 +833,7 @@ ${line2}` };
 
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -668,7 +844,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord6(value)) return void 0;
+  if (!isRecord7(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -677,11 +853,11 @@ var ruleOf = (value) => {
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord6(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord7(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
-var dataOf = (parsed) => isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
+var dataOf2 = (parsed) => isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text4) => {
   let parsed;
   try {
@@ -689,8 +865,8 @@ var parseModState = (text4) => {
   } catch {
     return void 0;
   }
-  const data = dataOf(parsed);
-  if (!isRecord6(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  const data = dataOf2(parsed);
+  if (!isRecord7(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
@@ -711,9 +887,9 @@ var parseModState = (text4) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text3 = (input, ...names) => {
-  if (!isRecord7(input)) return void 0;
+  if (!isRecord8(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;

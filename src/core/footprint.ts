@@ -136,6 +136,7 @@ export const FOOTPRINT = [
       ".finitemonkey/perfil-commits.json",
       ".finitemonkey/conceitos.yml",
       ".finitemonkey/conceitos-events.jsonl",
+      ".finitemonkey/xray.json",
     ],
   },
   { id: "runs", kind: "writes", targets: [".finitemonkey/runs/"] },

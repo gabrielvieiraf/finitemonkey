@@ -7,6 +7,7 @@ import { modCostCommand, modUsageCommand } from "./mod-cost.js";
 import { statusCommand } from "./status.js";
 import { taskTrustCommand } from "./task-trust.js";
 import type { CommandSpec } from "./types.js";
+import { xrayCommand, xrayDecideCommand, xrayExportCommand, xrayForgetCommand } from "./xray.js";
 
 export const MOD_COMMANDS = [
   modStateCommand,
@@ -19,4 +20,8 @@ export const MOD_COMMANDS = [
   frontsBoardCommand,
   taskTrustCommand,
   conceitosEvidenceCommand,
+  xrayCommand,
+  xrayForgetCommand,
+  xrayExportCommand,
+  xrayDecideCommand,
 ] as const satisfies readonly CommandSpec[];

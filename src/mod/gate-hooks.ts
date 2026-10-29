@@ -17,6 +17,8 @@ import { boardLines, FRONTS_PANE, frontsTree } from "./fronts-view.js";
 import { bandTree, COST_PANE, costTree, GATE_PANE, paneTree } from "./gate-view.js";
 import { memory } from "./memory.js";
 import { bandLine, parseStatus, statusText, turnLine } from "./status.js";
+import { renderXray, xrayNow } from "./xray-hooks.js";
+import { XRAY_PANE } from "./xray-view.js";
 
 export const DEBOUNCE_MS = 500;
 export const GATE_COMMAND = "fm";
@@ -88,6 +90,7 @@ export async function renderPane($: ModApi, e: RenderInput, next: Next<"ui.rende
   if (e.requestId === FRONTS_PANE)
     return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
   if (isApprovalPane(e.requestId)) return renderApproval($, e);
+  if (e.requestId === XRAY_PANE) return renderXray($, e);
   if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
@@ -131,6 +134,7 @@ export async function runGateCommand($: ModApi, e: CommandRunInput): Promise<Com
   if (e.args.trim() === "fronts") return frontsNow($);
   if (e.args.trim() === "contract") return contractNow($);
   if (e.args.trim() === "diverge") return divergeNow($);
+  if (e.args.trim() === "xray") return xrayNow($);
   if (memory.view === undefined) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {

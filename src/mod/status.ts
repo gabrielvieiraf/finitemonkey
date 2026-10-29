@@ -23,6 +23,7 @@ export interface GateView {
   readonly bypasses: number;
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
+  readonly xray: { readonly beyond: number; readonly blocks: number } | null;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -47,6 +48,11 @@ const loopOf = (value: unknown): GateView["loop"] =>
 const costOf = (value: unknown): GateView["cost"] =>
   isRecord(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number"
     ? { usd: value["usd"], requests: value["requests"] }
+    : null;
+
+const xrayOf = (value: unknown): GateView["xray"] =>
+  isRecord(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number"
+    ? { beyond: value["beyondWithoutCriterion"], blocks: value["blocks"] }
     : null;
 
 export const parseStatus = (text: string): GateView | undefined => {
@@ -82,6 +88,7 @@ export const parseStatus = (text: string): GateView | undefined => {
     bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
     loop: loopOf(data["loop"]),
     cost: costOf(data["cost"]),
+    xray: xrayOf(data["xray"]),
   };
 };
 
@@ -108,6 +115,9 @@ export const bandLine = (view: GateView): string =>
       : []),
     ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
     ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),
+    ...(view.xray === null || view.xray.beyond === 0
+      ? []
+      : [`x-ray ${String(view.xray.beyond)} beyond the record without criterion`]),
   ].join(" · ");
 
 export const turnLine = (view: GateView): string =>
