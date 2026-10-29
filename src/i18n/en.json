@@ -2399,5 +2399,19 @@
   "gate.infra_plan.accepted": "{subject}: destroy named by a contract criterion or in an ephemeral environment",
   "gate.infra_plan.stateful-destroy": "{subject}: a resource that holds data is destroyed; add a contract criterion that names this address",
   "gate.infra_plan.wildcard-policy": "{subject}: identity policy allows any action or any principal",
-  "gate.infra_plan.secret-output": "{subject}: output looks like a secret and is not marked sensitive"
+  "gate.infra_plan.secret-output": "{subject}: output looks like a secret and is not marked sensitive",
+  "command.restore_check.summary": "Check that each declared backup is out of reach of the app credentials and that drills are recent",
+  "command.restore_drill.summary": "Restore the latest backup of each declared store into a throwaway local target and compare row counts",
+  "restore.failed": "{count, plural, one {# restore problem} other {# restore problems}}",
+  "restore.none": "no data store declared under restore.stores in config.yml",
+  "restore.shadow": "shadow mode: these findings do not fail the command (restore-drill)",
+  "restore.reach.no-backup": "{store}: no backup location declared",
+  "restore.reach.same-bucket": "{store}: the backup lives in a bucket the app credentials can write to, and nothing denies delete",
+  "restore.reach.same-account": "{store}: the backup is in the same account as the app credentials, with no object lock or delete denial",
+  "restore.reach.evidence-missing": "{store}: the declared evidence file for a managed backup is missing",
+  "restore.stale": "{store}: last passing drill {last}, older than {days} days",
+  "restore.drill.passed": "{store}: restore drill passed ({detail})",
+  "restore.drill.failed": "{store}: restore drill failed: {detail}",
+  "restore.drill.refused": "{store}: {detail} is not a local throwaway target; a restore never writes to an existing instance",
+  "restore.drill.not_configured": "{store}: restore and target are not declared, so no drill ran"
 }

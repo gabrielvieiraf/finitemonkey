@@ -2400,7 +2400,21 @@
     "gate.infra_plan.accepted": "machine",
     "gate.infra_plan.stateful-destroy": "machine",
     "gate.infra_plan.wildcard-policy": "machine",
-    "gate.infra_plan.secret-output": "machine"
+    "gate.infra_plan.secret-output": "machine",
+    "command.restore_check.summary": "machine",
+    "command.restore_drill.summary": "machine",
+    "restore.failed": "machine",
+    "restore.none": "machine",
+    "restore.shadow": "machine",
+    "restore.reach.no-backup": "machine",
+    "restore.reach.same-bucket": "machine",
+    "restore.reach.same-account": "machine",
+    "restore.reach.evidence-missing": "machine",
+    "restore.stale": "machine",
+    "restore.drill.passed": "machine",
+    "restore.drill.failed": "machine",
+    "restore.drill.refused": "machine",
+    "restore.drill.not_configured": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4803,6 +4817,20 @@
     "gate.infra_plan.accepted": "machine",
     "gate.infra_plan.stateful-destroy": "machine",
     "gate.infra_plan.wildcard-policy": "machine",
-    "gate.infra_plan.secret-output": "machine"
+    "gate.infra_plan.secret-output": "machine",
+    "command.restore_check.summary": "machine",
+    "command.restore_drill.summary": "machine",
+    "restore.failed": "machine",
+    "restore.none": "machine",
+    "restore.shadow": "machine",
+    "restore.reach.no-backup": "machine",
+    "restore.reach.same-bucket": "machine",
+    "restore.reach.same-account": "machine",
+    "restore.reach.evidence-missing": "machine",
+    "restore.stale": "machine",
+    "restore.drill.passed": "machine",
+    "restore.drill.failed": "machine",
+    "restore.drill.refused": "machine",
+    "restore.drill.not_configured": "machine"
   }
 }

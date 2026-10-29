@@ -94,6 +94,7 @@ import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { researchSourceCommand, researchStatusCommand } from "./research-log.js";
+import { restoreCheckCommand, restoreDrillCommand } from "./restore.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
@@ -291,6 +292,8 @@ export const REGISTRY = [
   policyRevertCommand,
   calibrateRefitCommand,
   calibrateExplainCommand,
+  restoreCheckCommand,
+  restoreDrillCommand,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

@@ -121,7 +121,8 @@
             "unattended_refused",
             "unattended_incomplete",
             "guard_bypassed",
-            "instructions_drift"
+            "instructions_drift",
+            "restore_failed"
           ]
         },
         "message": {

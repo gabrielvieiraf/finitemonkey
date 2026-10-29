@@ -2399,5 +2399,19 @@
   "gate.infra_plan.accepted": "{subject}: destrucción nombrada en un criterio del contrato o en un entorno efímero",
   "gate.infra_plan.stateful-destroy": "{subject}: se destruye un recurso que guarda datos; agrega un criterio al contrato que nombre esta dirección",
   "gate.infra_plan.wildcard-policy": "{subject}: la política de identidad permite cualquier acción o cualquier principal",
-  "gate.infra_plan.secret-output": "{subject}: la salida parece un secreto y no está marcada como sensitive"
+  "gate.infra_plan.secret-output": "{subject}: la salida parece un secreto y no está marcada como sensitive",
+  "command.restore_check.summary": "Comprueba que cada backup declarado está fuera del alcance de las credenciales de la app y que los ensayos están al día",
+  "command.restore_drill.summary": "Restaura el último backup de cada almacén declarado en un destino local desechable y compara los conteos de filas",
+  "restore.failed": "{count, plural, one {# problema de restauración} other {# problemas de restauración}}",
+  "restore.none": "ningún almacén declarado en restore.stores de config.yml",
+  "restore.shadow": "modo shadow: estos hallazgos no hacen fallar el comando (restore-drill)",
+  "restore.reach.no-backup": "{store}: no hay ubicación de backup declarada",
+  "restore.reach.same-bucket": "{store}: el backup vive en un bucket donde escriben las credenciales de la app, y nada impide borrar",
+  "restore.reach.same-account": "{store}: el backup está en la misma cuenta que las credenciales de la app, sin object lock ni denegación de borrado",
+  "restore.reach.evidence-missing": "{store}: falta el archivo de evidencia declarado para el backup gestionado",
+  "restore.stale": "{store}: último ensayo aprobado {last}, más antiguo que {days} días",
+  "restore.drill.passed": "{store}: el ensayo de restauración pasó ({detail})",
+  "restore.drill.failed": "{store}: el ensayo de restauración falló: {detail}",
+  "restore.drill.refused": "{store}: {detail} no es un destino local desechable; una restauración nunca escribe en una instancia existente",
+  "restore.drill.not_configured": "{store}: restore y target no están declarados, así que no corrió ningún ensayo"
 }
