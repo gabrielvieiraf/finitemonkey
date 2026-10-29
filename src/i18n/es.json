@@ -1921,5 +1921,14 @@
   "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta.",
   "gate.model.not_run": "La puerta de Finite Monkey no se ejecutó: {detail}. No se verificó nada. Corrige la causa y ejecuta `finitemonkey doctor`.",
   "gate.human.not_run_held": "LA PUERTA NO SE EJECUTÓ: {detail}. Retuve esta parada una vez; la próxima pasa, registrada como no ejecutada. Ejecuta `finitemonkey doctor`.",
-  "error.gate_last_not_run": "La última ejecución de la puerta no se ejecutó ({detail}); antes tiene que pasar una ejecución real"
+  "error.gate_last_not_run": "La última ejecución de la puerta no se ejecutó ({detail}); antes tiene que pasar una ejecución real",
+  "gate.reason.masked_exit": "el comando oculta su código de salida",
+  "gate.reason.no_test_count": "la ejecución no informó cuántas pruebas corrieron",
+  "gate.pin.masked": "`{command}` oculta su código de salida (`|| true`, `; exit 0`, `set +e`); ejecuta el comando sin el envoltorio",
+  "gate.pin.changed": "{key} cambió durante la tarea ({diff})",
+  "gate.pin.approve": "la persona aprueba el cambio escribiendo `fm: approve {task}/{check} <motivo>`",
+  "gate.pin.no_count": "`{command}` parece correr pruebas pero no mostró cuántas corrieron",
+  "gate.pin.count_drop": "corrieron menos pruebas que antes: {before} y ahora {after}",
+  "gate.pin.exit_zero": "exit(0) nuevo fuera de las pruebas en {where}",
+  "gate.pin.shadow": "la fijación de pruebas está en sombra: habría quedado {status}"
 }

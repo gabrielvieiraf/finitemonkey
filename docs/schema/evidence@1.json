@@ -94,7 +94,9 @@
         "rewriter",
         "awaiting_person",
         "no_evidence",
-        "no_baseline"
+        "no_baseline",
+        "masked_exit",
+        "no_test_count"
       ]
     },
     "releasedBy": {

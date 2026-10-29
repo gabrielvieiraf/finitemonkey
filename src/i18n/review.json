@@ -1922,7 +1922,16 @@
     "gate.human.held_unverified": "machine",
     "gate.model.not_run": "machine",
     "gate.human.not_run_held": "machine",
-    "error.gate_last_not_run": "machine"
+    "error.gate_last_not_run": "machine",
+    "gate.reason.masked_exit": "machine",
+    "gate.reason.no_test_count": "machine",
+    "gate.pin.masked": "machine",
+    "gate.pin.changed": "machine",
+    "gate.pin.approve": "machine",
+    "gate.pin.no_count": "machine",
+    "gate.pin.count_drop": "machine",
+    "gate.pin.exit_zero": "machine",
+    "gate.pin.shadow": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3847,6 +3856,15 @@
     "gate.human.held_unverified": "machine",
     "gate.model.not_run": "machine",
     "gate.human.not_run_held": "machine",
-    "error.gate_last_not_run": "machine"
+    "error.gate_last_not_run": "machine",
+    "gate.reason.masked_exit": "machine",
+    "gate.reason.no_test_count": "machine",
+    "gate.pin.masked": "machine",
+    "gate.pin.changed": "machine",
+    "gate.pin.approve": "machine",
+    "gate.pin.no_count": "machine",
+    "gate.pin.count_drop": "machine",
+    "gate.pin.exit_zero": "machine",
+    "gate.pin.shadow": "machine"
   }
 }

@@ -1921,5 +1921,14 @@
   "gate.human.held_unverified": "Segurei uma vez: {count, plural, one {# verificação não foi feita} other {# verificações não foram feitas}} ({list}). A próxima parada passa e a tarefa continua aberta.",
   "gate.model.not_run": "O portão do Finite Monkey não rodou: {detail}. Nada foi verificado. Corrija a causa e rode `finitemonkey doctor`.",
   "gate.human.not_run_held": "O PORTÃO NÃO RODOU: {detail}. Segurei esta parada uma vez; a próxima passa, registrada como não rodada. Rode `finitemonkey doctor`.",
-  "error.gate_last_not_run": "A última execução do portão não rodou ({detail}); uma execução real precisa passar antes"
+  "error.gate_last_not_run": "A última execução do portão não rodou ({detail}); uma execução real precisa passar antes",
+  "gate.reason.masked_exit": "o comando esconde o código de saída",
+  "gate.reason.no_test_count": "a execução não informou quantos testes rodaram",
+  "gate.pin.masked": "`{command}` esconde o código de saída (`|| true`, `; exit 0`, `set +e`); rode o comando sem o invólucro",
+  "gate.pin.changed": "{key} mudou durante a tarefa ({diff})",
+  "gate.pin.approve": "a pessoa aprova a mudança digitando `fm: approve {task}/{check} <motivo>`",
+  "gate.pin.no_count": "`{command}` parece rodar testes mas não mostrou quantos rodaram",
+  "gate.pin.count_drop": "rodaram menos testes do que antes: {before} e agora {after}",
+  "gate.pin.exit_zero": "exit(0) novo fora dos testes em {where}",
+  "gate.pin.shadow": "a fixação de testes está em sombra: teria ficado {status}"
 }

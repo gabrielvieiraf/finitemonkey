@@ -31,8 +31,13 @@ const entry = (value: unknown): BaselineEntry | undefined => {
   if (!isRecord(value)) return undefined;
   const exitCode = value["exitCode"];
   const failures = value["failures"];
+  const testCount = value["testCount"];
   if (!(typeof exitCode === "number" || exitCode === null) || !Array.isArray(failures)) return undefined;
-  return { exitCode, failures: failures.filter((item): item is string => typeof item === "string") };
+  return {
+    exitCode,
+    failures: failures.filter((item): item is string => typeof item === "string"),
+    ...(typeof testCount === "number" ? { testCount } : {}),
+  };
 };
 
 export const readBaseline = (

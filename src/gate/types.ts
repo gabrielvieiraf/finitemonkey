@@ -11,6 +11,7 @@ import type { SizeVerdict } from "./size.js";
 export interface BaselineEntry {
   readonly exitCode: number | null;
   readonly failures: readonly string[];
+  readonly testCount?: number;
 }
 
 export type Baseline = Readonly<Record<string, BaselineEntry>>;

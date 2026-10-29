@@ -58,6 +58,13 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     test: "the tests check catches a skip added through any tool, from the tree diff",
   },
   {
+    failure: "The agent redefines what test means",
+    cause: "`scripts.test`, a runner config, the Makefile or a CI workflow changes during the task",
+    mitigation: "With `test-pin` active the check is held as needs approval with the diff until the person approves",
+    file: "test/test-pin.test.ts",
+    test: "redefining scripts.test during a task holds the check until the person approves",
+  },
+  {
     failure: "A secret is committed",
     cause: "A credential is staged with the change",
     mitigation: "`git commit` is blocked with the file and line",

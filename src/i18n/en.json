@@ -1921,5 +1921,14 @@
   "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open.",
   "gate.model.not_run": "Finite Monkey gate did not run: {detail}. Nothing was verified. Fix the cause and run `finitemonkey doctor`.",
   "gate.human.not_run_held": "GATE DID NOT RUN: {detail}. Held this stop once; the next one goes through, recorded as not run. Run `finitemonkey doctor`.",
-  "error.gate_last_not_run": "The last gate run did not run ({detail}); a real run has to pass first"
+  "error.gate_last_not_run": "The last gate run did not run ({detail}); a real run has to pass first",
+  "gate.reason.masked_exit": "the command hides its exit code",
+  "gate.reason.no_test_count": "the run did not report how many tests ran",
+  "gate.pin.masked": "`{command}` hides its exit code (`|| true`, `; exit 0`, `set +e`); run the command without the wrapper",
+  "gate.pin.changed": "{key} changed during the task ({diff})",
+  "gate.pin.approve": "the person approves the change by typing `fm: approve {task}/{check} <reason>`",
+  "gate.pin.no_count": "`{command}` looks like a test run but printed no test count",
+  "gate.pin.count_drop": "fewer tests ran than before: {before} then {after}",
+  "gate.pin.exit_zero": "new exit(0) outside tests at {where}",
+  "gate.pin.shadow": "test pinning is in shadow: it would have been {status}"
 }
