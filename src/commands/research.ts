@@ -6,6 +6,8 @@ import { nextNumber, numberOf, PLAN_DIR, planDir, planFiles, planPath, slugOf } 
 import { researchRecords } from "../research/check.js";
 import { RESEARCH_SCHEMA } from "../research/sections.js";
 import { renderResearch } from "../research/template.js";
+import { activeCheckOf, criterionOfCheck, domainOfText, recordHorizon } from "../signals/blind-band.js";
+import { fmPaths } from "../task/paths.js";
 import { notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -45,6 +47,14 @@ const newRecord = (ctx: Ctx, root: Root, topic: string): CommandResult => {
     : made;
   if (!written.ok) return failureFrom(ctx.t, writeProblem(written.error));
   const file = `${PLAN_DIR}/${name}`;
+  const paths = fmPaths(root);
+  const active = activeCheckOf(ctx.runtime, paths, "research");
+  recordHorizon(ctx.runtime, paths, {
+    source: "research",
+    criterion: criterionOfCheck(active.check),
+    domain: domainOfText(topic),
+    ...(active.task === undefined ? {} : { task: active.task }),
+  });
   return {
     ...success({ schema: RESEARCH_SCHEMA, file, topic, created: true }, [ctx.t("research.created", { file })]),
     next: `finitemonkey research check ${file}`,

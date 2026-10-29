@@ -2060,5 +2060,9 @@
   "divergence.shadow": "Shadow mode: a divergence question for {task} was recorded and not asked.",
   "divergence.no_pending": "{task} has no open divergence question with option {letter}",
   "divergence.says": "on input {input} the result is {output}",
-  "divergence.stored": "Stored the answer as approved example {id} of {task}: {says}"
+  "divergence.stored": "Stored the answer as approved example {id} of {task}: {says}",
+  "command.signals_blind_band.summary": "Share of horizon help that went out without a criterion the person can check, per domain and week",
+  "blind_band.empty": "No horizon help recorded yet.",
+  "blind_band.total": "Blind band index: {index} ({without} of {helps} horizon helps went out without a criterion).",
+  "blind_band.row": "  {week} {domain}: {index} without criterion ({without} of {helps}); concepts moved: {concepts}"
 }

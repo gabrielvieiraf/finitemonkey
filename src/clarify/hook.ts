@@ -5,6 +5,7 @@ import { textField } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { readCachedBar } from "../planta/store.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
+import { domainOfText, recordHorizon } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, readState, writeJsonFile } from "../task/state.js";
 import { requestSize } from "./size.js";
@@ -41,6 +42,7 @@ export const clarifyPrompt: HookHandler = (input) => {
     recordFeatureShadow(runtime, paths, CLARIFY_FEATURE, { size });
     return allow;
   }
+  recordHorizon(runtime, paths, { source: "clarify", criterion: "none", domain: domainOfText(prompt) });
   return {
     kind: "allow",
     output: contextOutput("UserPromptSubmit", t("clarify.context", { size, max: MAX_QUESTIONS })),

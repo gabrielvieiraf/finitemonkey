@@ -2061,7 +2061,11 @@
     "divergence.shadow": "machine",
     "divergence.no_pending": "machine",
     "divergence.says": "machine",
-    "divergence.stored": "machine"
+    "divergence.stored": "machine",
+    "command.signals_blind_band.summary": "machine",
+    "blind_band.empty": "machine",
+    "blind_band.total": "machine",
+    "blind_band.row": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4125,6 +4129,10 @@
     "divergence.shadow": "machine",
     "divergence.no_pending": "machine",
     "divergence.says": "machine",
-    "divergence.stored": "machine"
+    "divergence.stored": "machine",
+    "command.signals_blind_band.summary": "machine",
+    "blind_band.empty": "machine",
+    "blind_band.total": "machine",
+    "blind_band.row": "machine"
   }
 }

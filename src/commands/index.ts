@@ -90,6 +90,7 @@ import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
+import { signalsBlindBandCommand } from "./signals-blind-band.js";
 import { signalsHypothesisCommand } from "./signals-hypothesis.js";
 import { signalsLocateCommand } from "./signals-locate.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
@@ -252,6 +253,7 @@ export const REGISTRY = [
   learningsAcceptCommand,
   taskExamplesCommand,
   taskDivergeCommand,
+  signalsBlindBandCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

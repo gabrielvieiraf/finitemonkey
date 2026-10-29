@@ -2060,5 +2060,9 @@
   "divergence.shadow": "Modo sombra: uma pergunta por divergência para {task} foi registrada e não feita.",
   "divergence.no_pending": "{task} não tem pergunta por divergência aberta com a opção {letter}",
   "divergence.says": "na entrada {input} o resultado é {output}",
-  "divergence.stored": "Guardei a resposta como exemplo aprovado {id} de {task}: {says}"
+  "divergence.stored": "Guardei a resposta como exemplo aprovado {id} de {task}: {says}",
+  "command.signals_blind_band.summary": "Fração da ajuda de horizonte que saiu sem um critério que a pessoa consegue verificar, por domínio e semana",
+  "blind_band.empty": "Nenhuma ajuda de horizonte registrada ainda.",
+  "blind_band.total": "Índice de faixa cega: {index} ({without} de {helps} ajudas de horizonte saíram sem critério).",
+  "blind_band.row": "  {week} {domain}: {index} sem critério ({without} de {helps}); conceitos que avançaram: {concepts}"
 }

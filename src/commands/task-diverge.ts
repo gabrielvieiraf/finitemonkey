@@ -19,6 +19,7 @@ import {
   readPending,
   writePending,
 } from "../ricochete/divergence.js";
+import { domainOfText, recordHorizon } from "../signals/blind-band.js";
 import { decideExamples, MAX_EXAMPLES, proposeExample } from "../task/examples.js";
 import { contractHash, type LoadedContract, loadTask } from "../task/load.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
@@ -74,6 +75,12 @@ const report = (ctx: Ctx, paths: FmPaths, task: string, outcome: Outcome, mode: 
   }
   const state = readPending(ctx.runtime, paths);
   writePending(ctx.runtime, paths, { ...state, pending: { ...state.pending, [task]: question } });
+  recordHorizon(ctx.runtime, paths, {
+    source: "divergence",
+    criterion: "example",
+    domain: domainOfText(`${question.input} ${question.options.map((option) => option.output).join(" ")}`),
+    task,
+  });
   return {
     ...success({ ...data, question }, questionLines(ctx, question)),
     next: `finitemonkey task diverge ${task} --choose A`,

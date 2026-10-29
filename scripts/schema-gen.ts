@@ -118,6 +118,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     type: "PolicyExplainData",
     describes: "`data` of `finitemonkey policy explain --json`.",
   },
+  {
+    name: "blind-band@1",
+    file: "src/commands/signals-blind-band.ts",
+    type: "BlindBandData",
+    describes: "`data` of `finitemonkey signals blind-band --json`.",
+  },
 ];
 
 export const ROOT = fileURLToPath(new URL("..", import.meta.url));

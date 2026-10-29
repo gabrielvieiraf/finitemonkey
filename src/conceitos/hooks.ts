@@ -3,10 +3,11 @@ import { human, projectPaths } from "../gate/hooks/common.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { maskText } from "../mask/mask.js";
+import { recordHorizon } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile } from "../task/state.js";
 import { levelSum, raise, readBook, writeBook } from "./book.js";
-import { conceptsIn } from "./concepts.js";
+import { conceptsIn, domainOf } from "./concepts.js";
 
 export const PENDING_FILE = "conceitos-pending.txt";
 export const ALARM_STEP = 3;
@@ -56,7 +57,7 @@ export const teacherRecorder: HookHandler = (input) => {
 };
 
 export const updateFromPending = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "remove" | "now">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "remove" | "now" | "appendText">,
   paths: FmPaths,
 ): readonly string[] => {
   const text = runtime.readText(pendingPath(paths));
@@ -66,6 +67,8 @@ export const updateFromPending = (
   const before = readBook(runtime, paths);
   const after = ids.reduce((current, id) => raise(current, id, "seen", runtime.now()), before);
   const grew = levelSum(after) > levelSum(before);
+  for (const id of ids.filter((item) => before.concepts[item] === undefined))
+    recordHorizon(runtime, paths, { source: "concept", criterion: "none", domain: domainOf(id) });
   writeBook(
     runtime,
     paths,

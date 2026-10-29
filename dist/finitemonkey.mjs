@@ -2709,8 +2709,8 @@ var placeOf = (text27, docs) => {
   const words4 = wordsOf(text27);
   const master = docs.find((doc) => doc.master && coverage(words4, wordsOf(doc.text)) >= MATCH);
   if (master !== void 0) return { state: "in_master", where: master.file };
-  const report3 = docs.find((doc) => !doc.master && coverage(words4, wordsOf(doc.text)) >= MATCH);
-  return report3 === void 0 ? { state: "lost" } : { state: "only_report", where: report3.file };
+  const report4 = docs.find((doc) => !doc.master && coverage(words4, wordsOf(doc.text)) >= MATCH);
+  return report4 === void 0 ? { state: "lost" } : { state: "only_report", where: report4.file };
 };
 var classify = (requests, docs) => {
   const statements = requests.flatMap(statementsOf);
@@ -3947,11 +3947,11 @@ var auditCommand = {
   run: (ctx) => {
     const repo = repoOf(ctx);
     if (repo === void 0) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
-    const report3 = runAudit(ctx.runtime, fmPaths(repo.root), ctx.env);
-    const items = report3.items.map((item2) => ({ ...item2, text: maskText(item2.text).slice(0, MAX_TEXT) }));
-    const data2 = { ...report3, items };
+    const report4 = runAudit(ctx.runtime, fmPaths(repo.root), ctx.env);
+    const items = report4.items.map((item2) => ({ ...item2, text: maskText(item2.text).slice(0, MAX_TEXT) }));
+    const data2 = { ...report4, items };
     const human2 = [
-      ctx.t("audit.title", { count: items.length, source: report3.source }),
+      ctx.t("audit.title", { count: items.length, source: report4.source }),
       ...AUDIT_STATES.flatMap((state) => {
         const listed10 = items.filter((item2) => item2.state === state);
         return listed10.length === 0 ? [] : [
@@ -3959,7 +3959,7 @@ var auditCommand = {
           ...listed10.map((item2) => `  - ${item2.text}${item2.where === void 0 ? "" : ` (${item2.where})`}`)
         ];
       }),
-      ...report3.incidents.length === 0 ? [] : [ctx.t("audit.incidents", { list: report3.incidents.join(", ") })]
+      ...report4.incidents.length === 0 ? [] : [ctx.t("audit.incidents", { list: report4.incidents.join(", ") })]
     ];
     const open = items.filter((item2) => item2.state === "lost" || item2.state === "contradicted").length;
     if (open === 0) return Promise.resolve(success(data2, human2));
@@ -6694,22 +6694,22 @@ var run2 = (ctx) => {
   if (mode === "off") return success(empty, [ctx.t("gen.off", { feature: CI_AUDIT_FEATURE })]);
   const baseline = loadBaseline(ctx.runtime, root);
   if (!baseline.ok) return failureFrom(ctx.t, baselineInvalid(baseline.error));
-  const report3 = auditRepo(ctx.runtime, root);
-  const outcome2 = ratchetFor(CI_AUDIT_CHECK, report3.findings, baseline.value, ctx.runtime.now(), void 0);
+  const report4 = auditRepo(ctx.runtime, root);
+  const outcome2 = ratchetFor(CI_AUDIT_CHECK, report4.findings, baseline.value, ctx.runtime.now(), void 0);
   const fresh3 = new Set(outcome2.fresh.map((item2) => item2.id));
   const expired = new Set(outcome2.expired.map((item2) => item2.id));
-  const findings2 = report3.findings.map((item2) => ({ ...item2, status: statusOf2(fresh3, expired, item2.id) }));
+  const findings2 = report4.findings.map((item2) => ({ ...item2, status: statusOf2(fresh3, expired, item2.id) }));
   const data2 = {
     ...empty,
-    level: report3.level,
-    files: report3.files,
-    missingTools: report3.missingTools,
+    level: report4.level,
+    files: report4.files,
+    missingTools: report4.missingTools,
     findings: findings2
   };
   const human2 = [
-    ctx.t("ci.audit.title", { count: report3.files.length, level: report3.level }),
+    ctx.t("ci.audit.title", { count: report4.files.length, level: report4.level }),
     ...findings2.map((item2) => `  ${itemLine(ctx, item2)}`),
-    ...report3.missingTools.length === 0 ? [] : [ctx.t("ci.audit.tools_missing", { tools: report3.missingTools.join(", ") })]
+    ...report4.missingTools.length === 0 ? [] : [ctx.t("ci.audit.tools_missing", { tools: report4.missingTools.join(", ") })]
   ];
   const blocking3 = findings2.filter((item2) => item2.severity === "block" && item2.status !== "known");
   if (blocking3.length === 0) return success(data2, [...human2, ctx.t("ci.audit.clean")]);
@@ -8043,7 +8043,7 @@ var watchPullRequest = async (runtime, root, pr, limits, counter) => {
   const usd = spentSince(runtime, root, state.startedAt);
   const outcome2 = classification !== null ? failureOutcome(classification, attempt2, usd, limits) : pending ? counter.calls >= limits.maxCalls ? "calls" : "pending" : "green";
   writeWatch(runtime, root, pr.number, { startedAt: state.startedAt, failed: shas });
-  const report3 = {
+  const report4 = {
     pr: pr.number,
     sha: pr.sha,
     outcome: outcome2,
@@ -8064,7 +8064,7 @@ var watchPullRequest = async (runtime, root, pr, limits, counter) => {
     classification,
     attempt: attempt2
   });
-  return report3;
+  return report4;
 };
 
 // src/commands/ci-watch.ts
@@ -8125,31 +8125,31 @@ var ENDINGS = {
     fix: "run finitemonkey ci-watch again later"
   }
 };
-var reportLines = (ctx, report3) => [
-  ctx.t("ci.watch.title", { pr: report3.pr, sha: report3.sha.slice(0, 12), calls: report3.calls }),
-  ...report3.checks.map((check2) => `  ${check2.bucket} ${check2.name}`),
-  ...report3.classification === null ? [] : [
+var reportLines = (ctx, report4) => [
+  ctx.t("ci.watch.title", { pr: report4.pr, sha: report4.sha.slice(0, 12), calls: report4.calls }),
+  ...report4.checks.map((check2) => `  ${check2.bucket} ${check2.name}`),
+  ...report4.classification === null ? [] : [
     ctx.t("ci.watch.failure", {
-      checks: report3.failedChecks.join(", "),
-      classification: report3.classification,
-      attempt: report3.attempt,
-      max: report3.maxAttempts,
-      usd: report3.usd.toFixed(2),
-      maxUsd: report3.maxUsd.toFixed(2)
+      checks: report4.failedChecks.join(", "),
+      classification: report4.classification,
+      attempt: report4.attempt,
+      max: report4.maxAttempts,
+      usd: report4.usd.toFixed(2),
+      maxUsd: report4.maxUsd.toFixed(2)
     }),
-    ...report3.log.split("\n").slice(-LOG_LINES_SHOWN).map((line12) => `    ${line12}`)
+    ...report4.log.split("\n").slice(-LOG_LINES_SHOWN).map((line12) => `    ${line12}`)
   ]
 ];
-var outcomeResult = (ctx, report3) => {
-  const data2 = { schema: CI_WATCH_SCHEMA, ...report3 };
-  const human2 = reportLines(ctx, report3);
-  if (report3.outcome === "green") return success(data2, [...human2, ctx.t("ci.watch.green")]);
-  const ending = ENDINGS[report3.outcome];
+var outcomeResult = (ctx, report4) => {
+  const data2 = { schema: CI_WATCH_SCHEMA, ...report4 };
+  const human2 = reportLines(ctx, report4);
+  if (report4.outcome === "green") return success(data2, [...human2, ctx.t("ci.watch.green")]);
+  const ending = ENDINGS[report4.outcome];
   const params2 = {
-    attempt: report3.attempt,
-    max: report3.maxAttempts,
-    usd: report3.usd.toFixed(2),
-    maxUsd: report3.maxUsd.toFixed(2)
+    attempt: report4.attempt,
+    max: report4.maxAttempts,
+    usd: report4.usd.toFixed(2),
+    maxUsd: report4.maxUsd.toFixed(2)
   };
   return failureFrom(
     ctx.t,
@@ -8172,15 +8172,15 @@ var run4 = async (ctx, given, limits) => {
       fix: "open the pull request first (finitemonkey pr open), and check that gh is logged in",
       exitCode: ExitCode.NotConfigured
     });
-  const report3 = await watchPullRequest(ctx.runtime, root, pr, limits, counter);
-  if (mode === "shadow" && report3.outcome !== "green") {
-    recordFeatureShadow(ctx.runtime, paths, CI_WATCH_FEATURE, { pr: report3.pr, outcome: report3.outcome });
-    return success({ schema: CI_WATCH_SCHEMA, ...report3 }, [
-      ...reportLines(ctx, report3),
+  const report4 = await watchPullRequest(ctx.runtime, root, pr, limits, counter);
+  if (mode === "shadow" && report4.outcome !== "green") {
+    recordFeatureShadow(ctx.runtime, paths, CI_WATCH_FEATURE, { pr: report4.pr, outcome: report4.outcome });
+    return success({ schema: CI_WATCH_SCHEMA, ...report4 }, [
+      ...reportLines(ctx, report4),
       ctx.t("gen.shadow", { feature: CI_WATCH_FEATURE })
     ]);
   }
-  return outcomeResult(ctx, report3);
+  return outcomeResult(ctx, report4);
 };
 var ciWatchCommand = {
   path: ["ci-watch"],
@@ -8300,6 +8300,793 @@ var raise = (book, id, level, at5) => {
 };
 var levelSum = (book) => CONCEPT_IDS.reduce((sum, id) => sum + rankOf(book.concepts[id]?.level) + 1, 0);
 
+// src/perfil/types.ts
+var DOMAINS = ["product", "interface", "backend", "infrastructure", "security"];
+var LEVELS2 = ["beginner", "intermediate", "advanced"];
+var START_SCORE = 50;
+var MIN_SCORE = 0;
+var MAX_SCORE = 100;
+var levelOf2 = (score) => {
+  if (score < 35) return "beginner";
+  if (score < 70) return "intermediate";
+  return "advanced";
+};
+var scoreOf = (level) => {
+  if (level === "beginner") return 25;
+  if (level === "intermediate") return START_SCORE;
+  return 80;
+};
+var clampScore = (score) => Math.min(MAX_SCORE, Math.max(MIN_SCORE, Math.round(score)));
+var parseDomain = (raw) => DOMAINS.find((domain) => domain === raw?.toLowerCase());
+var parseLevel = (raw) => LEVELS2.find((level) => level === raw?.toLowerCase());
+var startingProfile = (at5) => ({
+  domains: {
+    product: { tool: START_SCORE, knowledge: START_SCORE },
+    interface: { tool: START_SCORE, knowledge: START_SCORE },
+    backend: { tool: START_SCORE, knowledge: START_SCORE },
+    infrastructure: { tool: START_SCORE, knowledge: START_SCORE },
+    security: { tool: START_SCORE, knowledge: START_SCORE }
+  },
+  quickStart: "never",
+  updatedAt: at5
+});
+
+// src/task/examples.ts
+import { dirname as dirname9, join as join38 } from "node:path";
+var BEHAVIOR_FEATURE = "behavior-contract";
+var MAX_EXAMPLES = 8;
+var EXAMPLE_STATUSES = ["proposed", "approved", "rejected"];
+var EXAMPLE_ID = /^E[0-9]{1,3}$/;
+var examplesRelative = (task) => `.finitemonkey/tasks/${task}/examples.yml`;
+var examplesPath = (paths, task) => toAbsolutePath(join38(paths.dir, "tasks", task, "examples.yml"));
+var examplesLockKey = (task) => `${task}#examples`;
+var text6 = (value2) => typeof value2 === "string" && value2.trim() !== "" ? value2 : typeof value2 === "number" ? String(value2) : void 0;
+var toExample = (value2) => {
+  if (!isRecord(value2)) return void 0;
+  const id = text6(value2["id"]);
+  const says = text6(value2["says"]);
+  const run10 = text6(value2["run"]);
+  const expected = value2["expect"];
+  const expect = typeof expected === "number" ? String(expected) : typeof expected === "string" ? expected : void 0;
+  const status = EXAMPLE_STATUSES.find((item2) => item2 === value2["status"]) ?? "proposed";
+  const input = text6(value2["input"]);
+  if (id === void 0 || !EXAMPLE_ID.test(id) || says === void 0 || run10 === void 0 || expect === void 0)
+    return void 0;
+  return { id, says, run: run10, expect, status, ...input === void 0 ? {} : { input } };
+};
+var parseExamples = (source3) => {
+  const yaml = parseYaml(source3);
+  const list10 = yaml.ok && isRecord(yaml.value) ? yaml.value["examples"] : void 0;
+  if (!Array.isArray(list10)) return [];
+  const seen = /* @__PURE__ */ new Set();
+  return list10.flatMap((item2) => {
+    const example = toExample(item2);
+    if (example === void 0 || seen.has(example.id)) return [];
+    seen.add(example.id);
+    return [example];
+  });
+};
+var exampleYaml = (example) => ({
+  id: example.id,
+  says: example.says,
+  run: example.run,
+  ...example.input === void 0 ? {} : { input: example.input },
+  expect: example.expect,
+  status: example.status
+});
+var examplesYaml = (examples) => stringifyYaml({ examples: examples.map(exampleYaml) });
+var approvedOnly = (examples) => examples.filter((example) => example.status === "approved");
+var examplesFingerprint = (examples) => approvedOnly(examples).map((example) => [example.id, example.says, example.run, example.input ?? "", example.expect]);
+var readExamples = (runtime, paths, task) => {
+  const read10 = runtime.readText(examplesPath(paths, task));
+  return read10.ok ? parseExamples(read10.value) : [];
+};
+var approvedExamples = (runtime, paths, task) => {
+  const locked = readTrust(runtime, paths).approved[examplesLockKey(task)];
+  return locked === void 0 ? { examples: [], text: void 0 } : { examples: parseExamples(locked), text: locked };
+};
+var writeExamples = (runtime, paths, task, examples) => {
+  const target5 = examplesPath(paths, task);
+  runtime.mkdir(toAbsolutePath(dirname9(target5)));
+  const body2 = examplesYaml(examples);
+  const wrote = runtime.writeText(target5, body2);
+  return wrote.ok ? accept(body2) : reject(wrote.error);
+};
+var proposeExample = (runtime, paths, task, draft) => {
+  const current2 = readExamples(runtime, paths, task);
+  const live = current2.filter((example2) => example2.status !== "rejected");
+  if (live.length >= MAX_EXAMPLES) return reject("full");
+  const next2 = Math.max(0, ...current2.map((example2) => Number.parseInt(example2.id.slice(1), 10))) + 1;
+  const example = { id: `E${String(next2)}`, status: "proposed", ...draft };
+  const wrote = writeExamples(runtime, paths, task, [...current2, example]);
+  return wrote.ok ? accept(example) : reject("write");
+};
+var decided = (example, decision2) => {
+  if (decision2.approve.includes(example.id)) return { ...example, status: "approved" };
+  if (decision2.reject.includes(example.id)) return { ...example, status: "rejected" };
+  return example;
+};
+var decideExamples = (runtime, paths, contract, decision2, hashOf) => {
+  const current2 = readExamples(runtime, paths, contract.id);
+  const known3 = new Set(current2.map((example) => example.id));
+  const unknown = [...decision2.approve, ...decision2.reject].filter((id) => !known3.has(id));
+  if (unknown.length > 0) return reject({ kind: "unknown", ids: unknown });
+  const next2 = current2.map((example) => decided(example, decision2));
+  const wrote = writeExamples(runtime, paths, contract.id, next2);
+  if (!wrote.ok) return reject({ kind: "write" });
+  const lock = readTrust(runtime, paths);
+  const approved = approvedOnly(next2);
+  const locked = examplesYaml(approved);
+  const saved = writeTrust(runtime, paths, {
+    ...lock,
+    contracts: { ...lock.contracts, [contract.id]: hashOf(contract, approved) },
+    approved: { ...lock.approved, [examplesLockKey(contract.id)]: locked }
+  });
+  return saved.ok ? accept(next2) : reject({ kind: "write" });
+};
+
+// src/apicontract/registry.ts
+var CONTRACT_FILE = "api/contract.yml";
+var CONTRACT_FEATURE = "contract";
+var METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+var FIELD_TYPES = ["string", "number", "boolean", "string[]", "number[]"];
+var ID3 = /^[a-z][A-Za-z0-9]*$/;
+var CODE = /^[A-Z][A-Z0-9_]*$/;
+var DOMAIN = /^[a-z][a-z0-9-]*$/;
+var fieldsOf = (value2, at5, issues2) => {
+  if (value2 === void 0 || value2 === null) return [];
+  if (!isRecord(value2)) {
+    issues2.push(`${at5}: must be a mapping of field: type`);
+    return [];
+  }
+  return Object.entries(value2).flatMap(([name, raw]) => {
+    const text27 = typeof raw === "string" ? raw : "";
+    const optional5 = text27.endsWith("?");
+    const type = FIELD_TYPES.find((item2) => item2 === text27.replace(/\?$/, ""));
+    if (type === void 0 || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+      issues2.push(`${at5}.${name}: use one of ${FIELD_TYPES.join(", ")} (add ? when optional)`);
+      return [];
+    }
+    return [{ name, type, optional: optional5 }];
+  });
+};
+var text7 = (record10, key3, at5, issues2, pattern) => {
+  const value2 = record10[key3];
+  if (typeof value2 === "string" && value2.trim() !== "" && (pattern === void 0 || pattern.test(value2))) return value2;
+  issues2.push(`${at5}.${key3}: required${pattern === void 0 ? "" : ` and must match ${pattern.source}`}`);
+  return "";
+};
+var endpointOf = (value2, index, issues2) => {
+  const at5 = `endpoints[${String(index)}]`;
+  if (!isRecord(value2)) {
+    issues2.push(`${at5}: must be a mapping`);
+    return void 0;
+  }
+  const method = METHODS.find((item2) => item2 === value2["method"]);
+  if (method === void 0) issues2.push(`${at5}.method: use ${METHODS.join(", ")}`);
+  const screens = value2["screens"];
+  return {
+    id: text7(value2, "id", at5, issues2, ID3),
+    method: method ?? "GET",
+    path: text7(value2, "path", at5, issues2, /^\//),
+    summary: text7(value2, "summary", at5, issues2),
+    domain: text7(value2, "domain", at5, issues2, DOMAIN),
+    list: value2["list"] === true,
+    input: fieldsOf(value2["input"], `${at5}.input`, issues2),
+    output: fieldsOf(value2["output"], `${at5}.output`, issues2),
+    screens: Array.isArray(screens) ? screens.filter((item2) => typeof item2 === "string") : []
+  };
+};
+var parseRegistry2 = (source3) => {
+  const yaml = parseYaml(source3);
+  if (!yaml.ok) return reject([`line ${String(yaml.error.line)}: ${yaml.error.message}`]);
+  if (!isRecord(yaml.value)) return reject(["contract.yml must be a mapping"]);
+  const issues2 = [];
+  const errors = Array.isArray(yaml.value["errors"]) ? yaml.value["errors"].filter((item2) => typeof item2 === "string") : [];
+  if (errors.length === 0 || !errors.every((code2) => CODE.test(code2)))
+    issues2.push("errors: list the error codes in CAPS");
+  const list10 = yaml.value["endpoints"];
+  const endpoints = Array.isArray(list10) ? list10.flatMap((item2, index) => endpointOf(item2, index, issues2) ?? []) : [];
+  if (endpoints.length === 0) issues2.push("endpoints: list at least one endpoint");
+  return issues2.length === 0 ? accept({ errors, endpoints }) : reject(issues2);
+};
+
+// src/onboard/state.ts
+import { join as join39 } from "node:path";
+
+// src/install/managed-block.ts
+var lineBreak = (text27) => text27.includes("\r\n") ? "\r\n" : "\n";
+var blockRange = (lines7, markers) => {
+  const start2 = lines7.findIndex((line12) => line12.trimEnd() === markers.begin);
+  if (start2 < 0) return void 0;
+  const end = lines7.findIndex((line12, index) => index > start2 && line12.trimEnd() === markers.end);
+  return end < 0 ? void 0 : { start: start2, end };
+};
+var withManagedBlock = (text27, markers, body2) => {
+  const eol = text27 === void 0 ? "\n" : lineBreak(text27);
+  const block7 = [markers.begin, ...body2, markers.end];
+  if (text27 === void 0 || text27 === "") return `${block7.join(eol)}${eol}`;
+  const lines7 = text27.split(eol);
+  const range = blockRange(lines7, markers);
+  if (range !== void 0) return [...lines7.slice(0, range.start), ...block7, ...lines7.slice(range.end + 1)].join(eol);
+  const separator = text27.endsWith(eol) ? "" : eol;
+  return `${text27}${separator}${block7.join(eol)}${eol}`;
+};
+var withoutManagedBlock = (text27, markers) => {
+  const eol = lineBreak(text27);
+  const lines7 = text27.split(eol);
+  const range = blockRange(lines7, markers);
+  if (range === void 0) return text27;
+  return [...lines7.slice(0, range.start), ...lines7.slice(range.end + 1)].join(eol);
+};
+
+// src/onboard/purpose.ts
+var PURPOSES = ["build", "typecheck", "lint", "format", "test", "check"];
+
+// src/onboard/state.ts
+var ONBOARD_FILE = ".finitemonkey/onboard.json";
+var ONBOARD_SCHEMA = "finitemonkey/onboard@1";
+var ONBOARD_FEATURE = "onboard";
+var ONBOARD_MARKERS = {
+  begin: "<!-- finitemonkey:onboard:begin -->",
+  end: "<!-- finitemonkey:onboard:end -->"
+};
+var purposeOf = (value2) => PURPOSES.find((item2) => item2 === value2);
+var parseOnboard = (text27) => {
+  const parsed = text27 === void 0 ? void 0 : parseJsonObject(text27);
+  if (parsed?.ok !== true || parsed.value["schema"] !== ONBOARD_SCHEMA) return void 0;
+  const list10 = parsed.value["commands"];
+  const commands = (Array.isArray(list10) ? list10 : []).flatMap((item2) => {
+    if (!isRecord(item2) || typeof item2["run"] !== "string") return [];
+    const purpose = purposeOf(item2["purpose"]);
+    return purpose === void 0 ? [] : [{ purpose, run: item2["run"] }];
+  });
+  const history = parsed.value["historyFindings"];
+  return { commands, historyFindings: typeof history === "number" ? history : void 0 };
+};
+var onboardText = (state) => `${JSON.stringify(
+  {
+    schema: ONBOARD_SCHEMA,
+    commands: state.commands.map((item2) => ({ purpose: item2.purpose, run: item2.run })),
+    ...state.historyFindings === void 0 ? {} : { historyFindings: state.historyFindings }
+  },
+  null,
+  2
+)}
+`;
+var passedCommands = (ran) => ran.filter((item2) => item2.outcome === "passed").map((item2) => ({ purpose: item2.purpose, run: item2.run }));
+var onboardChecks = (state) => state.commands.map((item2, index) => ({
+  id: item2.purpose === "test" ? index === 0 ? "test" : `test-${String(index)}` : `${item2.purpose}-${String(index)}`,
+  kind: item2.purpose === "test" ? "tests" : "command",
+  run: item2.run
+}));
+var agentsBlock = (heading, header3, commands) => [
+  `## ${heading}`,
+  "",
+  header3,
+  "| --- | --- |",
+  ...commands.map((item2) => `| ${item2.purpose} | \`${item2.run.replace(/\|/g, "\\|")}\` |`)
+];
+var withOnboardBlock = (text27, body2) => withManagedBlock(text27, ONBOARD_MARKERS, body2);
+var outsideOnboardBlock = (text27) => withoutManagedBlock(text27, ONBOARD_MARKERS);
+var writeIfChanged = (runtime, root, file, text27) => {
+  const path = toAbsolutePath(join39(root, file));
+  const current2 = runtime.readText(path);
+  if (current2.ok && current2.value === text27) return false;
+  return runtime.writeText(path, text27).ok;
+};
+
+// src/python/detect.ts
+var PYTHON_FEATURE = "python-preset";
+var SECTION = /^\[tool\.([\w.-]+)/gm;
+var pyprojectSections = (text27) => new Set([...(text27 ?? "").matchAll(SECTION)].map((match) => match[1] ?? ""));
+var isPythonProject = (exists3) => ["pyproject.toml", "uv.lock", "requirements.txt", "setup.py", "setup.cfg"].some(exists3);
+var detectPython = (read10, exists3) => {
+  if (!isPythonProject(exists3)) return void 0;
+  const sections2 = pyprojectSections(read10("pyproject.toml"));
+  return {
+    manager: exists3("uv.lock") ? "uv" : "pip",
+    ruffConfigured: exists3("ruff.toml") || exists3(".ruff.toml") || [...sections2].some((name) => name.startsWith("ruff")),
+    pytestConfigured: exists3("pytest.ini") || sections2.has("pytest.ini_options"),
+    sections: sections2
+  };
+};
+var PIP_DEFAULT = {
+  manager: "pip",
+  ruffConfigured: false,
+  pytestConfigured: true,
+  sections: /* @__PURE__ */ new Set()
+};
+var pythonChecks2 = (project) => {
+  const run10 = project.manager === "uv" ? "uv run " : "python -m ";
+  return [
+    ...project.ruffConfigured ? [{ id: "lint", kind: "command", run: `${run10}ruff check .` }] : [],
+    { id: "test", kind: "tests", run: `${run10}pytest -q` }
+  ];
+};
+
+// src/task/implicit.ts
+var IMPLICIT_ID = "implicit";
+var LOCKFILES2 = [
+  ["pnpm-lock.yaml", "pnpm"],
+  ["yarn.lock", "yarn"],
+  ["bun.lockb", "bun"],
+  ["bun.lock", "bun"]
+];
+var packageManager = (files) => LOCKFILES2.find(([file]) => files.exists(file))?.[1] ?? "npm";
+var scriptChecks = (files) => {
+  const text27 = files.read("package.json");
+  if (text27 === void 0) return [];
+  const parsed = parseJsonObject(text27);
+  const scripts2 = parsed.ok ? parsed.value["scripts"] : void 0;
+  if (!isRecord(scripts2)) return [];
+  const pm = packageManager(files);
+  const has = (name) => typeof scripts2[name] === "string";
+  const typecheck = ["typecheck", "type-check", "tsc"].find(has);
+  const checks = [];
+  if (typecheck !== void 0) checks.push({ id: "typecheck", kind: "command", run: `${pm} run ${typecheck}` });
+  if (has("lint")) checks.push({ id: "lint", kind: "command", run: `${pm} run lint` });
+  const test = scripts2["test"];
+  if (typeof test === "string" && !test.includes("no test specified"))
+    checks.push({ id: "test", kind: "tests", run: `${pm} run test` });
+  if (checks.length === 0 && has("check")) checks.push({ id: "check", kind: "command", run: `${pm} run check` });
+  return checks;
+};
+var OTHER_STACKS = [
+  ["Cargo.toml", "cargo test"],
+  ["go.mod", "go test ./..."]
+];
+var detectChecks = (files) => {
+  const scripts2 = scriptChecks(files);
+  if (scripts2.length > 0) return scripts2;
+  const found = OTHER_STACKS.find(([file]) => files.exists(file));
+  if (found !== void 0) return [{ id: "test", kind: "tests", run: found[1] }];
+  const python2 = detectPython(files.read, (file) => files.exists(file));
+  return python2 === void 0 && !files.exists("pytest.ini") ? [] : pythonChecks2(python2 ?? PIP_DEFAULT);
+};
+var projectChecks = (files) => {
+  const onboard2 = parseOnboard(files.read(ONBOARD_FILE));
+  return onboard2 !== void 0 && onboard2.commands.length > 0 ? onboardChecks(onboard2) : detectChecks(files);
+};
+var implicitContract = (files) => {
+  const commands = projectChecks(files);
+  const hasTests = commands.some((check2) => check2.kind === "tests");
+  return {
+    id: IMPLICIT_ID,
+    goal: "",
+    size: "S",
+    scope: { paths: [], testsProtected: true },
+    acceptance: [
+      ...commands,
+      ...hasTests ? [] : [{ id: "tests", kind: "tests" }],
+      { id: "placeholders", kind: "placeholders" },
+      { id: "secrets", kind: "secrets" },
+      ...hasWebStack(detectStack(files.read)) ? [{ id: "appsec", kind: "appsec" }] : [],
+      { id: "prose", kind: "prose" },
+      { id: "worktree", kind: "worktree" },
+      { id: "merge", kind: "merge" },
+      { id: "callers", kind: "callers" },
+      { id: "quality", kind: "quality" },
+      { id: "slop", kind: "slop" },
+      { id: "regression", kind: "regression" },
+      ...files.exists(ARCH_FILE) ? [{ id: "arch", kind: "arch" }] : [],
+      ...files.exists(CONTRACT_FILE) ? [{ id: "contract", kind: "contract" }] : [],
+      { id: "pr", kind: "pr", requireOpen: false },
+      { id: "diff", kind: "diff" }
+    ],
+    decisionsNeeded: [],
+    implicit: true
+  };
+};
+
+// src/task/types.ts
+var CHECK_KINDS = [
+  "command",
+  "tests",
+  "diff",
+  "placeholders",
+  "git",
+  "pr",
+  "manual",
+  "look",
+  "runtime",
+  "callers",
+  "secrets",
+  "worktree",
+  "merge",
+  "prod",
+  "prose",
+  "review",
+  "inventory",
+  "plan",
+  "decision",
+  "research",
+  "cost",
+  "parity",
+  "appsec",
+  "quality",
+  "slop",
+  "regression",
+  "copy",
+  "migrations",
+  "deploy",
+  "headers",
+  "golden",
+  "mutation",
+  "arch",
+  "organize",
+  "contract",
+  "examples"
+];
+var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
+var SIZES = ["S", "M", "L"];
+var TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+var TASK_SCHEMA = "finitemonkey/task@1";
+
+// src/planta/types.ts
+var BLUEPRINT_TYPES = ["saas", "landing"];
+var parseBlueprintType = (raw) => BLUEPRINT_TYPES.find((type) => type === raw?.toLowerCase());
+
+// src/task/shortcuts.ts
+var KEYS = ["what", "ceiling", "trigger", "where"];
+var text8 = (value2) => typeof value2 === "string" && value2.trim() !== "" ? value2.trim() : void 0;
+var mentions2 = (what, check2) => {
+  const lower = what.toLowerCase();
+  const id = new RegExp(`(^|[^A-Za-z0-9_-])${check2.id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^A-Za-z0-9_-])`, "i");
+  const texts4 = [check2.description, check2.run].filter((item2) => item2 !== void 0 && item2.length >= 6);
+  return id.test(what) || texts4.some((item2) => lower.includes(item2.toLowerCase()));
+};
+var shortcutAt = (value2, index, acceptance2, issues2) => {
+  const at5 = `shortcuts[${String(index)}]`;
+  if (!isRecord(value2)) {
+    issues2.push(`${at5}: must be a mapping with what, ceiling, trigger and where`);
+    return void 0;
+  }
+  const unknown = Object.keys(value2).filter((key3) => !KEYS.some((known3) => known3 === key3));
+  if (unknown.length > 0) issues2.push(`${at5}: unknown keys ${unknown.join(", ")}`);
+  const what = text8(value2["what"]);
+  if (what === void 0) {
+    issues2.push(`${at5}.what: required`);
+    return void 0;
+  }
+  const scope2 = acceptance2.find((check2) => mentions2(what, check2));
+  if (scope2 !== void 0)
+    issues2.push(`${at5}: a shortcut is for how the task is done, never its scope; "${scope2.id}" is an acceptance check`);
+  const [ceiling, trigger2, where2] = [text8(value2["ceiling"]), text8(value2["trigger"]), text8(value2["where"])];
+  return {
+    what,
+    ...ceiling === void 0 ? {} : { ceiling },
+    ...trigger2 === void 0 ? {} : { trigger: trigger2 },
+    ...where2 === void 0 ? {} : { where: where2 }
+  };
+};
+var parseShortcuts = (value2, acceptance2, issues2) => {
+  if (value2 === void 0 || value2 === null) return [];
+  if (!Array.isArray(value2)) {
+    issues2.push("shortcuts: must be a list");
+    return [];
+  }
+  return value2.flatMap((item2, index) => shortcutAt(item2, index, acceptance2, issues2) ?? []);
+};
+
+// src/task/validate.ts
+var str4 = (record10, key3, at5, issues2, required2) => {
+  const value2 = record10[key3];
+  if (value2 === void 0 || value2 === null) {
+    if (required2) issues2.push(`${at5}${key3}: required`);
+    return void 0;
+  }
+  if (typeof value2 !== "string" || value2.trim() === "") {
+    issues2.push(`${at5}${key3}: must be non-empty text`);
+    return void 0;
+  }
+  return value2;
+};
+var positive2 = (record10, key3, at5, issues2) => {
+  const value2 = record10[key3];
+  if (value2 === void 0 || value2 === null) return void 0;
+  if (typeof value2 === "number" && Number.isInteger(value2) && value2 > 0) return value2;
+  issues2.push(`${at5}${key3}: must be a positive integer`);
+  return void 0;
+};
+var strings5 = (value2, at5, issues2) => {
+  if (value2 === void 0 || value2 === null) return [];
+  if (Array.isArray(value2) && value2.every((item2) => typeof item2 === "string")) return value2;
+  issues2.push(`${at5}: must be a list of text`);
+  return [];
+};
+var oneOf2 = (options2, value2) => options2.find((option3) => option3 === value2);
+var gitRequire = (value2, at5, issues2) => {
+  const items = strings5(value2, at5, issues2);
+  const known3 = items.map((item2) => oneOf2(GIT_REQUIREMENTS, item2));
+  if (known3.some((item2) => item2 === void 0)) issues2.push(`${at5}: use ${GIT_REQUIREMENTS.join(", ")}`);
+  return known3.filter((item2) => item2 !== void 0);
+};
+var appFields = (record10, kind, at5, issues2) => {
+  const port = positive2(record10, "port", at5, issues2);
+  if (kind === "runtime" && port === void 0) issues2.push(`${at5}port: required`);
+  if (port !== void 0 && port > 65535) issues2.push(`${at5}port: must be at most 65535`);
+  const status = positive2(record10, "status", at5, issues2);
+  const route = str4(record10, "route", at5, issues2, false);
+  const body2 = str4(record10, "body", at5, issues2, false);
+  return {
+    ...port === void 0 ? {} : { port },
+    ...route === void 0 ? {} : { route },
+    ...status === void 0 ? {} : { status },
+    ...body2 === void 0 ? {} : { body: body2 }
+  };
+};
+var nonNegative = (record10, key3, at5, issues2) => {
+  const value2 = record10[key3];
+  if (value2 === void 0 || value2 === null) return void 0;
+  if (typeof value2 === "number" && Number.isFinite(value2) && value2 >= 0) return value2;
+  issues2.push(`${at5}${key3}: must be a number of zero or more`);
+  return void 0;
+};
+var extraFields = (record10, kind, at5, issues2) => {
+  const cases = str4(record10, "cases", at5, issues2, kind === "golden");
+  const tolerance = nonNegative(record10, "tolerance", at5, issues2);
+  const run10 = record10["run"];
+  if (kind === "golden" && typeof run10 === "string" && !run10.includes("{case}")) {
+    issues2.push(`${at5}run: must contain {case}`);
+  }
+  const minScore = positive2(record10, "min_score", at5, issues2);
+  if (minScore !== void 0 && minScore > 100) issues2.push(`${at5}min_score: must be at most 100`);
+  return {
+    ...cases === void 0 ? {} : { cases },
+    ...tolerance === void 0 ? {} : { tolerance },
+    ...minScore === void 0 ? {} : { minScore }
+  };
+};
+var checkFields = (record10, kind, at5, issues2) => {
+  const run10 = str4(record10, "run", at5, issues2, kind === "command" || kind === "golden");
+  const timeoutS = positive2(record10, "timeout_s", at5, issues2);
+  const description = str4(record10, "description", at5, issues2, kind === "manual");
+  const require2 = kind === "git" ? gitRequire(record10["require"] ?? ["committed"], `${at5}require`, issues2) : void 0;
+  const app = appFields(record10, kind, at5, issues2);
+  const versionUrl = str4(record10, "version_url", at5, issues2, false);
+  const field = str4(record10, "field", at5, issues2, false);
+  const open = record10["require_open"];
+  if (open !== void 0 && typeof open !== "boolean") issues2.push(`${at5}require_open: must be true or false`);
+  return {
+    ...run10 === void 0 ? {} : { run: run10 },
+    ...timeoutS === void 0 ? {} : { timeoutS },
+    ...description === void 0 ? {} : { description },
+    ...require2 === void 0 ? {} : { require: require2 },
+    ...typeof open === "boolean" ? { requireOpen: open } : {},
+    ...app,
+    ...versionUrl === void 0 ? {} : { versionUrl },
+    ...field === void 0 ? {} : { field },
+    ...extraFields(record10, kind, at5, issues2)
+  };
+};
+var acceptanceItem = (value2, index, issues2) => {
+  const at5 = `acceptance[${String(index)}].`;
+  if (!isRecord(value2)) {
+    issues2.push(`${at5.slice(0, -1)}: must be a mapping`);
+    return void 0;
+  }
+  const id = str4(value2, "id", at5, issues2, true);
+  const kind = oneOf2(CHECK_KINDS, value2["check"]);
+  if (kind === void 0) issues2.push(`${at5}check: use one of ${CHECK_KINDS.join(", ")}`);
+  if (id === void 0 || kind === void 0) return void 0;
+  return { id, kind, ...checkFields(value2, kind, at5, issues2) };
+};
+var acceptance = (value2, issues2) => {
+  if (!Array.isArray(value2) || value2.length === 0) {
+    issues2.push("acceptance: must list at least one check");
+    return [];
+  }
+  const items = value2.map((item2, index) => acceptanceItem(item2, index, issues2));
+  const checks = items.filter((item2) => item2 !== void 0);
+  const ids4 = checks.map((check2) => check2.id);
+  const duplicate = ids4.find((id, index) => ids4.indexOf(id) !== index);
+  if (duplicate !== void 0) issues2.push(`acceptance: duplicate id "${duplicate}"`);
+  return checks;
+};
+var scope = (value2, issues2) => {
+  if (value2 === void 0 || value2 === null) return { paths: [], testsProtected: true };
+  if (!isRecord(value2)) {
+    issues2.push("scope: must be a mapping");
+    return { paths: [], testsProtected: true };
+  }
+  const budget = value2["diff_budget"];
+  const diffBudget = isRecord(budget) ? (({ files, lines: lines7 }) => ({
+    ...files === void 0 ? {} : { files },
+    ...lines7 === void 0 ? {} : { lines: lines7 }
+  }))({
+    files: positive2(budget, "files", "scope.diff_budget.", issues2),
+    lines: positive2(budget, "lines", "scope.diff_budget.", issues2)
+  }) : void 0;
+  if (budget !== void 0 && budget !== null && !isRecord(budget)) issues2.push("scope.diff_budget: must be a mapping");
+  const protectedValue = value2["tests_protected"];
+  if (protectedValue !== void 0 && typeof protectedValue !== "boolean") {
+    issues2.push("scope.tests_protected: must be true or false");
+  }
+  return {
+    paths: strings5(value2["paths"], "scope.paths", issues2),
+    ...diffBudget === void 0 ? {} : { diffBudget },
+    testsProtected: protectedValue !== false
+  };
+};
+var validateContract = (value2, implicit = false) => {
+  if (!isRecord(value2)) return reject(["the contract must be a YAML mapping"]);
+  const issues2 = [];
+  const id = str4(value2, "id", "", issues2, true);
+  if (id !== void 0 && !TASK_ID.test(id)) issues2.push("id: use letters, digits, dot, dash or underscore (max 64)");
+  const goal = str4(value2, "goal", "", issues2, true);
+  const size = value2["size"] === void 0 ? "S" : oneOf2(SIZES, value2["size"]);
+  if (size === void 0) issues2.push(`size: use ${SIZES.join(", ")}`);
+  const base = str4(value2, "base", "", issues2, false);
+  const contractScope = scope(value2["scope"], issues2);
+  const checks = acceptance(value2["acceptance"], issues2);
+  const decisionsNeeded = strings5(value2["decisions_needed"], "decisions_needed", issues2);
+  const callersIgnore = strings5(value2["callers_ignore"], "callers_ignore", issues2);
+  const shortcuts = parseShortcuts(value2["shortcuts"], checks, issues2);
+  const blueprint = parseBlueprintType(str4(value2, "blueprint", "", issues2, false));
+  const clarified = strings5(value2["clarified"], "clarified", issues2);
+  if (value2["blueprint"] !== void 0 && blueprint === void 0) {
+    issues2.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
+  }
+  if (issues2.length > 0 || id === void 0 || goal === void 0 || size === void 0) return reject(issues2);
+  return accept({
+    id,
+    goal,
+    size,
+    ...base === void 0 ? {} : { base },
+    scope: contractScope,
+    acceptance: checks,
+    decisionsNeeded,
+    ...callersIgnore.length === 0 ? {} : { callersIgnore },
+    ...shortcuts.length === 0 ? {} : { shortcuts },
+    ...blueprint === void 0 ? {} : { blueprint },
+    implicit,
+    ...clarified.length === 0 ? {} : { clarified }
+  });
+};
+
+// src/task/load.ts
+var criteria = (contract) => contract.acceptance.map((check2) => [check2.id, check2.kind, check2.run ?? ""]);
+var contractHash = (contract, examples = []) => {
+  const behavior = examplesFingerprint(examples);
+  return sha256Hex(JSON.stringify(behavior.length === 0 ? criteria(contract) : [criteria(contract), behavior]));
+};
+var taskRelative = (id) => `.finitemonkey/tasks/${id}.yml`;
+var parseContract = (id, text27) => {
+  const yaml = parseYaml(text27);
+  if (!yaml.ok)
+    return reject({ kind: "invalid", id, issues: [`line ${String(yaml.error.line)}: ${yaml.error.message}`] });
+  const valid = validateContract(yaml.value);
+  if (!valid.ok) return reject({ kind: "invalid", id, issues: valid.error });
+  if (valid.value.id !== id) return reject({ kind: "invalid", id, issues: [`id: must match the file name (${id})`] });
+  return accept(valid.value);
+};
+var examplesEdited = (disk, approved) => disk === void 0 || JSON.stringify(examplesFingerprint(parseExamples(disk))) !== JSON.stringify(examplesFingerprint(approved));
+var pick3 = (lock, sources, id) => {
+  const approved = lock.approved[id];
+  if (approved !== void 0) return { text: approved, source: "lock" };
+  const base = sources.base(taskRelative(id));
+  if (base !== void 0) return { text: base, source: "base" };
+  const disk = sources.disk(taskRelative(id));
+  return disk === void 0 ? void 0 : { text: disk, source: "disk" };
+};
+var loadTask = (files, paths, sources, id) => {
+  if (!TASK_ID.test(id)) return reject({ kind: "not_found", id });
+  const lock = readTrust(files, paths);
+  const chosen = pick3(lock, sources, id);
+  if (chosen === void 0) return reject({ kind: "not_found", id });
+  const parsed = parseContract(id, chosen.text);
+  if (!parsed.ok) return parsed;
+  const behavior = approvedExamples(files, paths, id);
+  const hash2 = contractHash(parsed.value, behavior.examples);
+  const disk = sources.disk(taskRelative(id));
+  const examplesDisk = sources.disk(examplesRelative(id));
+  return accept({
+    contract: parsed.value,
+    hash: hash2,
+    trusted: chosen.source === "lock" && lock.contracts[id] === hash2,
+    source: chosen.source,
+    editedOnDisk: disk !== void 0 && disk !== chosen.text,
+    ...behavior.text === void 0 ? {} : { examples: behavior.examples, examplesEdited: examplesEdited(examplesDisk, behavior.examples) }
+  });
+};
+var loadImplicit = (files, paths, project) => {
+  const contract = implicitContract(project);
+  const hash2 = contractHash(contract);
+  const commands = contract.acceptance.filter((check2) => check2.run !== void 0);
+  const trusted = commands.length === 0 || readTrust(files, paths).contracts[IMPLICIT_ID] === hash2;
+  return { contract, hash: hash2, trusted, source: "implicit", editedOnDisk: false };
+};
+var activeTaskId = (files, paths, explicit) => explicit ?? readState(files, paths).active;
+
+// src/signals/blind-band.ts
+var HORIZON_EVENT = "horizon.help";
+var BLIND_BAND_SCHEMA = "finitemonkey/blind-band@1";
+var CRITERIA = ["example", "property", "scenario", "check", "none"];
+var GENERAL = "general";
+var domainOfText = (text27) => {
+  const first = conceptsIn(text27)[0];
+  return first === void 0 ? GENERAL : domainOf(first);
+};
+var KIND_CRITERION = {
+  examples: "example",
+  golden: "example"
+};
+var criterionOfCheck = (check2) => check2 === void 0 ? "none" : KIND_CRITERION[check2.kind] ?? "check";
+var activeCheckOf = (runtime, paths, kind) => {
+  const task = readState(runtime, paths).active;
+  const text27 = task === void 0 ? void 0 : readTrust(runtime, paths).approved[task];
+  const parsed = task === void 0 || text27 === void 0 ? void 0 : parseContract(task, text27);
+  return { task, check: parsed?.ok === true ? parsed.value.acceptance.find((item2) => item2.kind === kind) : void 0 };
+};
+var recordHorizon = (runtime, paths, help) => logEvent(runtime, paths, HORIZON_EVENT, {
+  source: help.source,
+  criterion: help.criterion,
+  domain: help.domain,
+  ...help.task === void 0 ? {} : { task: help.task }
+});
+var isoWeek = (at5) => {
+  const time = Date.parse(at5);
+  if (Number.isNaN(time)) return void 0;
+  const date = new Date(time);
+  const day = (date.getUTCDay() + 6) % 7;
+  const thursday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - day + 3));
+  const yearStart = Date.UTC(thursday.getUTCFullYear(), 0, 1);
+  const week = Math.floor((thursday.getTime() - yearStart) / (7 * 864e5)) + 1;
+  return `${String(thursday.getUTCFullYear())}-W${String(week).padStart(2, "0")}`;
+};
+var bandDomain = (value2) => DOMAINS.find((domain) => domain === value2) ?? GENERAL;
+var parseLine = (line12) => {
+  const parsed = parseJsonObject(line12);
+  if (!parsed.ok || parsed.value["event"] !== HORIZON_EVENT) return void 0;
+  const at5 = parsed.value["at"];
+  const week = typeof at5 === "string" ? isoWeek(at5) : void 0;
+  const criterion = CRITERIA.find((item2) => item2 === parsed.value["criterion"]);
+  if (week === void 0 || criterion === void 0) return void 0;
+  return { week, domain: bandDomain(parsed.value["domain"]), criterion };
+};
+var share = (part2, whole) => whole === 0 ? 0 : Math.round(part2 / whole * 1e3) / 1e3;
+var emptyCounts = () => ({ example: 0, property: 0, scenario: 0, check: 0, none: 0 });
+var conceptWeeks = (runtime, paths) => {
+  const moved = /* @__PURE__ */ new Map();
+  const book = readBook(runtime, paths);
+  for (const id of CONCEPT_IDS) {
+    const at5 = book.concepts[id]?.updatedAt;
+    const week = at5 === void 0 ? void 0 : isoWeek(at5);
+    if (week === void 0) continue;
+    const key3 = `${domainOf(id)}|${week}`;
+    moved.set(key3, (moved.get(key3) ?? 0) + 1);
+  }
+  return moved;
+};
+var blindBand = (runtime, paths, logText) => {
+  const groups = /* @__PURE__ */ new Map();
+  for (const line12 of logText.split("\n")) {
+    const item2 = parseLine(line12);
+    if (item2 === void 0) continue;
+    const key3 = `${item2.domain}|${item2.week}`;
+    const group = groups.get(key3) ?? { domain: item2.domain, week: item2.week, counts: emptyCounts() };
+    group.counts[item2.criterion] += 1;
+    groups.set(key3, group);
+  }
+  const moved = conceptWeeks(runtime, paths);
+  const rows2 = [...groups.entries()].map(([key3, group]) => {
+    const helps2 = CRITERIA.reduce((sum, criterion) => sum + group.counts[criterion], 0);
+    return {
+      domain: group.domain,
+      week: group.week,
+      helps: helps2,
+      withoutCriterion: group.counts.none,
+      index: share(group.counts.none, helps2),
+      byCriterion: { ...group.counts },
+      conceptsMoved: moved.get(key3) ?? 0
+    };
+  }).sort((a, b) => a.week.localeCompare(b.week) || a.domain.localeCompare(b.domain));
+  const helps = rows2.reduce((sum, row3) => sum + row3.helps, 0);
+  const without = rows2.reduce((sum, row3) => sum + row3.withoutCriterion, 0);
+  return { schema: BLIND_BAND_SCHEMA, rows: rows2, total: { helps, withoutCriterion: without, index: share(without, helps) } };
+};
+
 // src/conceitos/hooks.ts
 var PENDING_FILE = "conceitos-pending.txt";
 var ALARM_STEP = 3;
@@ -8349,6 +9136,8 @@ var updateFromPending = (runtime, paths) => {
   const before2 = readBook(runtime, paths);
   const after2 = ids4.reduce((current2, id) => raise(current2, id, "seen", runtime.now()), before2);
   const grew2 = levelSum(after2) > levelSum(before2);
+  for (const id of ids4.filter((item2) => before2.concepts[item2] === void 0))
+    recordHorizon(runtime, paths, { source: "concept", criterion: "none", domain: domainOf(id) });
   writeBook(
     runtime,
     paths,
@@ -8440,7 +9229,7 @@ var conceitosMarkCommand = {
 };
 
 // src/commands/contract.ts
-import { join as join39 } from "node:path";
+import { join as join41 } from "node:path";
 
 // src/apicontract/framework.ts
 var dependencies = (packageJson) => {
@@ -8958,7 +9747,7 @@ var mockFiles = (registry, project) => {
 var MOCK_DIRS = ["src/mocks", "app/mocks", "lib/mocks"];
 
 // src/apicontract/load.ts
-import { join as join38 } from "node:path";
+import { join as join40 } from "node:path";
 
 // src/apicontract/coverage.ts
 var HANDLER = /\bhttp\.(get|post|put|patch|delete)\(\s*["'`]([^"'`]+)["'`]/g;
@@ -8995,82 +9784,16 @@ var coverageProblems = (registry, routes) => {
   return [...fromRegistry, ...fromMocks];
 };
 
-// src/apicontract/registry.ts
-var CONTRACT_FILE = "api/contract.yml";
-var CONTRACT_FEATURE = "contract";
-var METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
-var FIELD_TYPES = ["string", "number", "boolean", "string[]", "number[]"];
-var ID3 = /^[a-z][A-Za-z0-9]*$/;
-var CODE = /^[A-Z][A-Z0-9_]*$/;
-var DOMAIN = /^[a-z][a-z0-9-]*$/;
-var fieldsOf = (value2, at5, issues2) => {
-  if (value2 === void 0 || value2 === null) return [];
-  if (!isRecord(value2)) {
-    issues2.push(`${at5}: must be a mapping of field: type`);
-    return [];
-  }
-  return Object.entries(value2).flatMap(([name, raw]) => {
-    const text27 = typeof raw === "string" ? raw : "";
-    const optional5 = text27.endsWith("?");
-    const type = FIELD_TYPES.find((item2) => item2 === text27.replace(/\?$/, ""));
-    if (type === void 0 || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
-      issues2.push(`${at5}.${name}: use one of ${FIELD_TYPES.join(", ")} (add ? when optional)`);
-      return [];
-    }
-    return [{ name, type, optional: optional5 }];
-  });
-};
-var text6 = (record10, key3, at5, issues2, pattern) => {
-  const value2 = record10[key3];
-  if (typeof value2 === "string" && value2.trim() !== "" && (pattern === void 0 || pattern.test(value2))) return value2;
-  issues2.push(`${at5}.${key3}: required${pattern === void 0 ? "" : ` and must match ${pattern.source}`}`);
-  return "";
-};
-var endpointOf = (value2, index, issues2) => {
-  const at5 = `endpoints[${String(index)}]`;
-  if (!isRecord(value2)) {
-    issues2.push(`${at5}: must be a mapping`);
-    return void 0;
-  }
-  const method = METHODS.find((item2) => item2 === value2["method"]);
-  if (method === void 0) issues2.push(`${at5}.method: use ${METHODS.join(", ")}`);
-  const screens = value2["screens"];
-  return {
-    id: text6(value2, "id", at5, issues2, ID3),
-    method: method ?? "GET",
-    path: text6(value2, "path", at5, issues2, /^\//),
-    summary: text6(value2, "summary", at5, issues2),
-    domain: text6(value2, "domain", at5, issues2, DOMAIN),
-    list: value2["list"] === true,
-    input: fieldsOf(value2["input"], `${at5}.input`, issues2),
-    output: fieldsOf(value2["output"], `${at5}.output`, issues2),
-    screens: Array.isArray(screens) ? screens.filter((item2) => typeof item2 === "string") : []
-  };
-};
-var parseRegistry2 = (source3) => {
-  const yaml = parseYaml(source3);
-  if (!yaml.ok) return reject([`line ${String(yaml.error.line)}: ${yaml.error.message}`]);
-  if (!isRecord(yaml.value)) return reject(["contract.yml must be a mapping"]);
-  const issues2 = [];
-  const errors = Array.isArray(yaml.value["errors"]) ? yaml.value["errors"].filter((item2) => typeof item2 === "string") : [];
-  if (errors.length === 0 || !errors.every((code2) => CODE.test(code2)))
-    issues2.push("errors: list the error codes in CAPS");
-  const list10 = yaml.value["endpoints"];
-  const endpoints = Array.isArray(list10) ? list10.flatMap((item2, index) => endpointOf(item2, index, issues2) ?? []) : [];
-  if (endpoints.length === 0) issues2.push("endpoints: list at least one endpoint");
-  return issues2.length === 0 ? accept({ errors, endpoints }) : reject(issues2);
-};
-
 // src/apicontract/load.ts
 var loadRegistry = (runtime, root) => {
-  const raw = runtime.readText(toAbsolutePath(join38(root, CONTRACT_FILE)));
+  const raw = runtime.readText(toAbsolutePath(join40(root, CONTRACT_FILE)));
   if (!raw.ok) return { kind: "absent" };
   const parsed = parseRegistry2(raw.value);
   return parsed.ok ? { kind: "ok", registry: parsed.value } : { kind: "invalid", issues: parsed.error };
 };
 var SOURCE3 = /\.[cm]?[jt]sx?$/;
 var mockSources = (runtime, root) => MOCK_DIRS.flatMap((dir) => {
-  const base = toAbsolutePath(join38(root, dir));
+  const base = toAbsolutePath(join40(root, dir));
   const files = runtime.walkFiles(base);
   if (!files.ok) return [];
   return files.value.flatMap((file) => {
@@ -9104,10 +9827,10 @@ var API_CONTRACT_SCHEMA = "finitemonkey/api-contract@1";
 var USAGE4 = "finitemonkey contract [mocks|coverage] [--write] [--overwrite]";
 var projectAt2 = (ctx, root) => detectProject(
   (relative25) => {
-    const text27 = ctx.runtime.readText(toAbsolutePath(join39(root, relative25)));
+    const text27 = ctx.runtime.readText(toAbsolutePath(join41(root, relative25)));
     return text27.ok ? text27.value : void 0;
   },
-  (relative25) => ctx.runtime.stat(toAbsolutePath(join39(root, relative25))) !== void 0
+  (relative25) => ctx.runtime.stat(toAbsolutePath(join41(root, relative25))) !== void 0
 );
 var withRegistry = (ctx, run10) => {
   const root = projectRoot(ctx);
@@ -9757,14 +10480,14 @@ var withDeadline = (work, ms, startTimer) => new Promise((resolve4, reject2) => 
 // src/review/findings.ts
 var GROUPS = ["must", "should", "nice"];
 var VERDICTS = ["approve", "approve-with-changes", "request-changes"];
-var text7 = (record10, key3) => {
+var text9 = (record10, key3) => {
   const value2 = record10[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
 var reproOf = (value2) => {
   if (!isRecord(value2)) return void 0;
-  const command = text7(value2, "command");
-  const expect = text7(value2, "expect");
+  const command = text9(value2, "command");
+  const expect = text9(value2, "expect");
   return command === "" || expect === "" ? void 0 : { command, expect };
 };
 var findingOf2 = (value2, index) => {
@@ -9772,17 +10495,17 @@ var findingOf2 = (value2, index) => {
   const group = GROUPS.find((item2) => item2 === value2["group"]);
   if (group === void 0) return `finding ${String(index + 1)} needs group must, should or nice`;
   const fields2 = ["what", "problem", "fix", "ifNotFixed"];
-  const missing3 = fields2.filter((key3) => text7(value2, key3) === "");
+  const missing3 = fields2.filter((key3) => text9(value2, key3) === "");
   if (missing3.length > 0) return `finding ${String(index + 1)} is missing ${missing3.join(", ")}`;
   const repro = reproOf(value2["repro"]);
   const demoted = group === "must" && repro === void 0;
   return {
     id: index + 1,
     group: demoted ? "should" : group,
-    what: text7(value2, "what"),
-    problem: text7(value2, "problem"),
-    fix: text7(value2, "fix"),
-    ifNotFixed: text7(value2, "ifNotFixed"),
+    what: text9(value2, "what"),
+    problem: text9(value2, "problem"),
+    fix: text9(value2, "fix"),
+    ifNotFixed: text9(value2, "ifNotFixed"),
     ...repro === void 0 ? {} : { repro },
     activeRisk: value2["activeRisk"] === true,
     demoted
@@ -9802,10 +10525,10 @@ var parseCritique = (value2) => {
 };
 
 // src/review/report.ts
-import { join as join41 } from "node:path";
+import { join as join43 } from "node:path";
 
 // src/review/reproduce.ts
-import { join as join40 } from "node:path";
+import { join as join42 } from "node:path";
 var REVIEW_LEDGER = ".finitemonkey/review/ledger.jsonl";
 var REPRO_TIMEOUT_MS = 12e4;
 var fails = (run10) => run10 !== void 0 && run10.exitCode !== 0;
@@ -9814,7 +10537,7 @@ var outcomeOf = (base, head) => {
   if (fails(head) && !fails(base)) return "head-only";
   return fails(head) && fails(base) ? "already-there" : "not-reproduced";
 };
-var worktreeDir = (root, side) => toAbsolutePath(join40(root, ".finitemonkey", "review", `worktree-${side}`));
+var worktreeDir = (root, side) => toAbsolutePath(join42(root, ".finitemonkey", "review", `worktree-${side}`));
 var runAt = (runtime, root, side, rev, findings2) => {
   const dir = worktreeDir(root, side);
   runtime.git(["worktree", "remove", "--force", dir], root);
@@ -9841,9 +10564,9 @@ var reproduce = (runtime, root, sides, findings2) => {
   const musts = findings2.filter((finding6) => finding6.group === "must");
   const runs = [...runAt(runtime, root, "base", sides.base, musts), ...runAt(runtime, root, "head", sides.head, musts)];
   if (runs.length > 0) {
-    runtime.mkdir(toAbsolutePath(join40(root, ".finitemonkey", "review")));
+    runtime.mkdir(toAbsolutePath(join42(root, ".finitemonkey", "review")));
     runtime.appendText(
-      toAbsolutePath(join40(root, REVIEW_LEDGER)),
+      toAbsolutePath(join42(root, REVIEW_LEDGER)),
       runs.map((run10) => `${JSON.stringify(run10)}
 `).join("")
     );
@@ -9870,7 +10593,7 @@ var settle = (item2) => {
 
 // src/review/report.ts
 var readLedger2 = (runtime, root) => {
-  const raw = runtime.readText(toAbsolutePath(join41(root, REVIEW_LEDGER)));
+  const raw = runtime.readText(toAbsolutePath(join43(root, REVIEW_LEDGER)));
   if (!raw.ok) return [];
   return raw.value.split("\n").flatMap((line12) => {
     const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
@@ -10060,7 +10783,7 @@ var isSchemaCandidate = (file) => file.endsWith(".prisma") || /(?:^|\/)(?:schema
 
 // src/datamap/map.ts
 var DATA_MAP_FILE = ".finitemonkey/data-map.yml";
-var text8 = (record10, key3) => {
+var text10 = (record10, key3) => {
   const value2 = record10[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
@@ -10076,10 +10799,10 @@ var readDataMap = (runtime, root) => {
     return [
       {
         field: item2["field"],
-        legalBasis: text8(item2, "legalBasis"),
-        retention: text8(item2, "retention"),
-        deletedIn: text8(item2, "deletedIn"),
-        ai: text8(item2, "ai")
+        legalBasis: text10(item2, "legalBasis"),
+        retention: text10(item2, "retention"),
+        deletedIn: text10(item2, "deletedIn"),
+        ai: text10(item2, "ai")
       }
     ];
   });
@@ -10207,608 +10930,6 @@ var resolveCommit = (git3, ref2) => {
   const hash2 = git3.out(["rev-parse", "--verify", "-q", `${ref2}^{commit}`])?.trim();
   return hash2 === void 0 || hash2 === "" ? void 0 : hash2;
 };
-
-// src/task/examples.ts
-import { dirname as dirname9, join as join42 } from "node:path";
-var BEHAVIOR_FEATURE = "behavior-contract";
-var MAX_EXAMPLES = 8;
-var EXAMPLE_STATUSES = ["proposed", "approved", "rejected"];
-var EXAMPLE_ID = /^E[0-9]{1,3}$/;
-var examplesRelative = (task) => `.finitemonkey/tasks/${task}/examples.yml`;
-var examplesPath = (paths, task) => toAbsolutePath(join42(paths.dir, "tasks", task, "examples.yml"));
-var examplesLockKey = (task) => `${task}#examples`;
-var text9 = (value2) => typeof value2 === "string" && value2.trim() !== "" ? value2 : typeof value2 === "number" ? String(value2) : void 0;
-var toExample = (value2) => {
-  if (!isRecord(value2)) return void 0;
-  const id = text9(value2["id"]);
-  const says = text9(value2["says"]);
-  const run10 = text9(value2["run"]);
-  const expected = value2["expect"];
-  const expect = typeof expected === "number" ? String(expected) : typeof expected === "string" ? expected : void 0;
-  const status = EXAMPLE_STATUSES.find((item2) => item2 === value2["status"]) ?? "proposed";
-  const input = text9(value2["input"]);
-  if (id === void 0 || !EXAMPLE_ID.test(id) || says === void 0 || run10 === void 0 || expect === void 0)
-    return void 0;
-  return { id, says, run: run10, expect, status, ...input === void 0 ? {} : { input } };
-};
-var parseExamples = (source3) => {
-  const yaml = parseYaml(source3);
-  const list10 = yaml.ok && isRecord(yaml.value) ? yaml.value["examples"] : void 0;
-  if (!Array.isArray(list10)) return [];
-  const seen = /* @__PURE__ */ new Set();
-  return list10.flatMap((item2) => {
-    const example = toExample(item2);
-    if (example === void 0 || seen.has(example.id)) return [];
-    seen.add(example.id);
-    return [example];
-  });
-};
-var exampleYaml = (example) => ({
-  id: example.id,
-  says: example.says,
-  run: example.run,
-  ...example.input === void 0 ? {} : { input: example.input },
-  expect: example.expect,
-  status: example.status
-});
-var examplesYaml = (examples) => stringifyYaml({ examples: examples.map(exampleYaml) });
-var approvedOnly = (examples) => examples.filter((example) => example.status === "approved");
-var examplesFingerprint = (examples) => approvedOnly(examples).map((example) => [example.id, example.says, example.run, example.input ?? "", example.expect]);
-var readExamples = (runtime, paths, task) => {
-  const read10 = runtime.readText(examplesPath(paths, task));
-  return read10.ok ? parseExamples(read10.value) : [];
-};
-var approvedExamples = (runtime, paths, task) => {
-  const locked = readTrust(runtime, paths).approved[examplesLockKey(task)];
-  return locked === void 0 ? { examples: [], text: void 0 } : { examples: parseExamples(locked), text: locked };
-};
-var writeExamples = (runtime, paths, task, examples) => {
-  const target5 = examplesPath(paths, task);
-  runtime.mkdir(toAbsolutePath(dirname9(target5)));
-  const body2 = examplesYaml(examples);
-  const wrote = runtime.writeText(target5, body2);
-  return wrote.ok ? accept(body2) : reject(wrote.error);
-};
-var proposeExample = (runtime, paths, task, draft) => {
-  const current2 = readExamples(runtime, paths, task);
-  const live = current2.filter((example2) => example2.status !== "rejected");
-  if (live.length >= MAX_EXAMPLES) return reject("full");
-  const next2 = Math.max(0, ...current2.map((example2) => Number.parseInt(example2.id.slice(1), 10))) + 1;
-  const example = { id: `E${String(next2)}`, status: "proposed", ...draft };
-  const wrote = writeExamples(runtime, paths, task, [...current2, example]);
-  return wrote.ok ? accept(example) : reject("write");
-};
-var decided = (example, decision2) => {
-  if (decision2.approve.includes(example.id)) return { ...example, status: "approved" };
-  if (decision2.reject.includes(example.id)) return { ...example, status: "rejected" };
-  return example;
-};
-var decideExamples = (runtime, paths, contract, decision2, hashOf) => {
-  const current2 = readExamples(runtime, paths, contract.id);
-  const known3 = new Set(current2.map((example) => example.id));
-  const unknown = [...decision2.approve, ...decision2.reject].filter((id) => !known3.has(id));
-  if (unknown.length > 0) return reject({ kind: "unknown", ids: unknown });
-  const next2 = current2.map((example) => decided(example, decision2));
-  const wrote = writeExamples(runtime, paths, contract.id, next2);
-  if (!wrote.ok) return reject({ kind: "write" });
-  const lock = readTrust(runtime, paths);
-  const approved = approvedOnly(next2);
-  const locked = examplesYaml(approved);
-  const saved = writeTrust(runtime, paths, {
-    ...lock,
-    contracts: { ...lock.contracts, [contract.id]: hashOf(contract, approved) },
-    approved: { ...lock.approved, [examplesLockKey(contract.id)]: locked }
-  });
-  return saved.ok ? accept(next2) : reject({ kind: "write" });
-};
-
-// src/onboard/state.ts
-import { join as join43 } from "node:path";
-
-// src/install/managed-block.ts
-var lineBreak = (text27) => text27.includes("\r\n") ? "\r\n" : "\n";
-var blockRange = (lines7, markers) => {
-  const start2 = lines7.findIndex((line12) => line12.trimEnd() === markers.begin);
-  if (start2 < 0) return void 0;
-  const end = lines7.findIndex((line12, index) => index > start2 && line12.trimEnd() === markers.end);
-  return end < 0 ? void 0 : { start: start2, end };
-};
-var withManagedBlock = (text27, markers, body2) => {
-  const eol = text27 === void 0 ? "\n" : lineBreak(text27);
-  const block7 = [markers.begin, ...body2, markers.end];
-  if (text27 === void 0 || text27 === "") return `${block7.join(eol)}${eol}`;
-  const lines7 = text27.split(eol);
-  const range = blockRange(lines7, markers);
-  if (range !== void 0) return [...lines7.slice(0, range.start), ...block7, ...lines7.slice(range.end + 1)].join(eol);
-  const separator = text27.endsWith(eol) ? "" : eol;
-  return `${text27}${separator}${block7.join(eol)}${eol}`;
-};
-var withoutManagedBlock = (text27, markers) => {
-  const eol = lineBreak(text27);
-  const lines7 = text27.split(eol);
-  const range = blockRange(lines7, markers);
-  if (range === void 0) return text27;
-  return [...lines7.slice(0, range.start), ...lines7.slice(range.end + 1)].join(eol);
-};
-
-// src/onboard/purpose.ts
-var PURPOSES = ["build", "typecheck", "lint", "format", "test", "check"];
-
-// src/onboard/state.ts
-var ONBOARD_FILE = ".finitemonkey/onboard.json";
-var ONBOARD_SCHEMA = "finitemonkey/onboard@1";
-var ONBOARD_FEATURE = "onboard";
-var ONBOARD_MARKERS = {
-  begin: "<!-- finitemonkey:onboard:begin -->",
-  end: "<!-- finitemonkey:onboard:end -->"
-};
-var purposeOf = (value2) => PURPOSES.find((item2) => item2 === value2);
-var parseOnboard = (text27) => {
-  const parsed = text27 === void 0 ? void 0 : parseJsonObject(text27);
-  if (parsed?.ok !== true || parsed.value["schema"] !== ONBOARD_SCHEMA) return void 0;
-  const list10 = parsed.value["commands"];
-  const commands = (Array.isArray(list10) ? list10 : []).flatMap((item2) => {
-    if (!isRecord(item2) || typeof item2["run"] !== "string") return [];
-    const purpose = purposeOf(item2["purpose"]);
-    return purpose === void 0 ? [] : [{ purpose, run: item2["run"] }];
-  });
-  const history = parsed.value["historyFindings"];
-  return { commands, historyFindings: typeof history === "number" ? history : void 0 };
-};
-var onboardText = (state) => `${JSON.stringify(
-  {
-    schema: ONBOARD_SCHEMA,
-    commands: state.commands.map((item2) => ({ purpose: item2.purpose, run: item2.run })),
-    ...state.historyFindings === void 0 ? {} : { historyFindings: state.historyFindings }
-  },
-  null,
-  2
-)}
-`;
-var passedCommands = (ran) => ran.filter((item2) => item2.outcome === "passed").map((item2) => ({ purpose: item2.purpose, run: item2.run }));
-var onboardChecks = (state) => state.commands.map((item2, index) => ({
-  id: item2.purpose === "test" ? index === 0 ? "test" : `test-${String(index)}` : `${item2.purpose}-${String(index)}`,
-  kind: item2.purpose === "test" ? "tests" : "command",
-  run: item2.run
-}));
-var agentsBlock = (heading, header3, commands) => [
-  `## ${heading}`,
-  "",
-  header3,
-  "| --- | --- |",
-  ...commands.map((item2) => `| ${item2.purpose} | \`${item2.run.replace(/\|/g, "\\|")}\` |`)
-];
-var withOnboardBlock = (text27, body2) => withManagedBlock(text27, ONBOARD_MARKERS, body2);
-var outsideOnboardBlock = (text27) => withoutManagedBlock(text27, ONBOARD_MARKERS);
-var writeIfChanged = (runtime, root, file, text27) => {
-  const path = toAbsolutePath(join43(root, file));
-  const current2 = runtime.readText(path);
-  if (current2.ok && current2.value === text27) return false;
-  return runtime.writeText(path, text27).ok;
-};
-
-// src/python/detect.ts
-var PYTHON_FEATURE = "python-preset";
-var SECTION = /^\[tool\.([\w.-]+)/gm;
-var pyprojectSections = (text27) => new Set([...(text27 ?? "").matchAll(SECTION)].map((match) => match[1] ?? ""));
-var isPythonProject = (exists3) => ["pyproject.toml", "uv.lock", "requirements.txt", "setup.py", "setup.cfg"].some(exists3);
-var detectPython = (read10, exists3) => {
-  if (!isPythonProject(exists3)) return void 0;
-  const sections2 = pyprojectSections(read10("pyproject.toml"));
-  return {
-    manager: exists3("uv.lock") ? "uv" : "pip",
-    ruffConfigured: exists3("ruff.toml") || exists3(".ruff.toml") || [...sections2].some((name) => name.startsWith("ruff")),
-    pytestConfigured: exists3("pytest.ini") || sections2.has("pytest.ini_options"),
-    sections: sections2
-  };
-};
-var PIP_DEFAULT = {
-  manager: "pip",
-  ruffConfigured: false,
-  pytestConfigured: true,
-  sections: /* @__PURE__ */ new Set()
-};
-var pythonChecks2 = (project) => {
-  const run10 = project.manager === "uv" ? "uv run " : "python -m ";
-  return [
-    ...project.ruffConfigured ? [{ id: "lint", kind: "command", run: `${run10}ruff check .` }] : [],
-    { id: "test", kind: "tests", run: `${run10}pytest -q` }
-  ];
-};
-
-// src/task/implicit.ts
-var IMPLICIT_ID = "implicit";
-var LOCKFILES2 = [
-  ["pnpm-lock.yaml", "pnpm"],
-  ["yarn.lock", "yarn"],
-  ["bun.lockb", "bun"],
-  ["bun.lock", "bun"]
-];
-var packageManager = (files) => LOCKFILES2.find(([file]) => files.exists(file))?.[1] ?? "npm";
-var scriptChecks = (files) => {
-  const text27 = files.read("package.json");
-  if (text27 === void 0) return [];
-  const parsed = parseJsonObject(text27);
-  const scripts2 = parsed.ok ? parsed.value["scripts"] : void 0;
-  if (!isRecord(scripts2)) return [];
-  const pm = packageManager(files);
-  const has = (name) => typeof scripts2[name] === "string";
-  const typecheck = ["typecheck", "type-check", "tsc"].find(has);
-  const checks = [];
-  if (typecheck !== void 0) checks.push({ id: "typecheck", kind: "command", run: `${pm} run ${typecheck}` });
-  if (has("lint")) checks.push({ id: "lint", kind: "command", run: `${pm} run lint` });
-  const test = scripts2["test"];
-  if (typeof test === "string" && !test.includes("no test specified"))
-    checks.push({ id: "test", kind: "tests", run: `${pm} run test` });
-  if (checks.length === 0 && has("check")) checks.push({ id: "check", kind: "command", run: `${pm} run check` });
-  return checks;
-};
-var OTHER_STACKS = [
-  ["Cargo.toml", "cargo test"],
-  ["go.mod", "go test ./..."]
-];
-var detectChecks = (files) => {
-  const scripts2 = scriptChecks(files);
-  if (scripts2.length > 0) return scripts2;
-  const found = OTHER_STACKS.find(([file]) => files.exists(file));
-  if (found !== void 0) return [{ id: "test", kind: "tests", run: found[1] }];
-  const python2 = detectPython(files.read, (file) => files.exists(file));
-  return python2 === void 0 && !files.exists("pytest.ini") ? [] : pythonChecks2(python2 ?? PIP_DEFAULT);
-};
-var projectChecks = (files) => {
-  const onboard2 = parseOnboard(files.read(ONBOARD_FILE));
-  return onboard2 !== void 0 && onboard2.commands.length > 0 ? onboardChecks(onboard2) : detectChecks(files);
-};
-var implicitContract = (files) => {
-  const commands = projectChecks(files);
-  const hasTests = commands.some((check2) => check2.kind === "tests");
-  return {
-    id: IMPLICIT_ID,
-    goal: "",
-    size: "S",
-    scope: { paths: [], testsProtected: true },
-    acceptance: [
-      ...commands,
-      ...hasTests ? [] : [{ id: "tests", kind: "tests" }],
-      { id: "placeholders", kind: "placeholders" },
-      { id: "secrets", kind: "secrets" },
-      ...hasWebStack(detectStack(files.read)) ? [{ id: "appsec", kind: "appsec" }] : [],
-      { id: "prose", kind: "prose" },
-      { id: "worktree", kind: "worktree" },
-      { id: "merge", kind: "merge" },
-      { id: "callers", kind: "callers" },
-      { id: "quality", kind: "quality" },
-      { id: "slop", kind: "slop" },
-      { id: "regression", kind: "regression" },
-      ...files.exists(ARCH_FILE) ? [{ id: "arch", kind: "arch" }] : [],
-      ...files.exists(CONTRACT_FILE) ? [{ id: "contract", kind: "contract" }] : [],
-      { id: "pr", kind: "pr", requireOpen: false },
-      { id: "diff", kind: "diff" }
-    ],
-    decisionsNeeded: [],
-    implicit: true
-  };
-};
-
-// src/task/types.ts
-var CHECK_KINDS = [
-  "command",
-  "tests",
-  "diff",
-  "placeholders",
-  "git",
-  "pr",
-  "manual",
-  "look",
-  "runtime",
-  "callers",
-  "secrets",
-  "worktree",
-  "merge",
-  "prod",
-  "prose",
-  "review",
-  "inventory",
-  "plan",
-  "decision",
-  "research",
-  "cost",
-  "parity",
-  "appsec",
-  "quality",
-  "slop",
-  "regression",
-  "copy",
-  "migrations",
-  "deploy",
-  "headers",
-  "golden",
-  "mutation",
-  "arch",
-  "organize",
-  "contract",
-  "examples"
-];
-var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
-var SIZES = ["S", "M", "L"];
-var TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
-var TASK_SCHEMA = "finitemonkey/task@1";
-
-// src/planta/types.ts
-var BLUEPRINT_TYPES = ["saas", "landing"];
-var parseBlueprintType = (raw) => BLUEPRINT_TYPES.find((type) => type === raw?.toLowerCase());
-
-// src/task/shortcuts.ts
-var KEYS = ["what", "ceiling", "trigger", "where"];
-var text10 = (value2) => typeof value2 === "string" && value2.trim() !== "" ? value2.trim() : void 0;
-var mentions2 = (what, check2) => {
-  const lower = what.toLowerCase();
-  const id = new RegExp(`(^|[^A-Za-z0-9_-])${check2.id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^A-Za-z0-9_-])`, "i");
-  const texts4 = [check2.description, check2.run].filter((item2) => item2 !== void 0 && item2.length >= 6);
-  return id.test(what) || texts4.some((item2) => lower.includes(item2.toLowerCase()));
-};
-var shortcutAt = (value2, index, acceptance2, issues2) => {
-  const at5 = `shortcuts[${String(index)}]`;
-  if (!isRecord(value2)) {
-    issues2.push(`${at5}: must be a mapping with what, ceiling, trigger and where`);
-    return void 0;
-  }
-  const unknown = Object.keys(value2).filter((key3) => !KEYS.some((known3) => known3 === key3));
-  if (unknown.length > 0) issues2.push(`${at5}: unknown keys ${unknown.join(", ")}`);
-  const what = text10(value2["what"]);
-  if (what === void 0) {
-    issues2.push(`${at5}.what: required`);
-    return void 0;
-  }
-  const scope2 = acceptance2.find((check2) => mentions2(what, check2));
-  if (scope2 !== void 0)
-    issues2.push(`${at5}: a shortcut is for how the task is done, never its scope; "${scope2.id}" is an acceptance check`);
-  const [ceiling, trigger2, where2] = [text10(value2["ceiling"]), text10(value2["trigger"]), text10(value2["where"])];
-  return {
-    what,
-    ...ceiling === void 0 ? {} : { ceiling },
-    ...trigger2 === void 0 ? {} : { trigger: trigger2 },
-    ...where2 === void 0 ? {} : { where: where2 }
-  };
-};
-var parseShortcuts = (value2, acceptance2, issues2) => {
-  if (value2 === void 0 || value2 === null) return [];
-  if (!Array.isArray(value2)) {
-    issues2.push("shortcuts: must be a list");
-    return [];
-  }
-  return value2.flatMap((item2, index) => shortcutAt(item2, index, acceptance2, issues2) ?? []);
-};
-
-// src/task/validate.ts
-var str4 = (record10, key3, at5, issues2, required2) => {
-  const value2 = record10[key3];
-  if (value2 === void 0 || value2 === null) {
-    if (required2) issues2.push(`${at5}${key3}: required`);
-    return void 0;
-  }
-  if (typeof value2 !== "string" || value2.trim() === "") {
-    issues2.push(`${at5}${key3}: must be non-empty text`);
-    return void 0;
-  }
-  return value2;
-};
-var positive2 = (record10, key3, at5, issues2) => {
-  const value2 = record10[key3];
-  if (value2 === void 0 || value2 === null) return void 0;
-  if (typeof value2 === "number" && Number.isInteger(value2) && value2 > 0) return value2;
-  issues2.push(`${at5}${key3}: must be a positive integer`);
-  return void 0;
-};
-var strings5 = (value2, at5, issues2) => {
-  if (value2 === void 0 || value2 === null) return [];
-  if (Array.isArray(value2) && value2.every((item2) => typeof item2 === "string")) return value2;
-  issues2.push(`${at5}: must be a list of text`);
-  return [];
-};
-var oneOf2 = (options2, value2) => options2.find((option3) => option3 === value2);
-var gitRequire = (value2, at5, issues2) => {
-  const items = strings5(value2, at5, issues2);
-  const known3 = items.map((item2) => oneOf2(GIT_REQUIREMENTS, item2));
-  if (known3.some((item2) => item2 === void 0)) issues2.push(`${at5}: use ${GIT_REQUIREMENTS.join(", ")}`);
-  return known3.filter((item2) => item2 !== void 0);
-};
-var appFields = (record10, kind, at5, issues2) => {
-  const port = positive2(record10, "port", at5, issues2);
-  if (kind === "runtime" && port === void 0) issues2.push(`${at5}port: required`);
-  if (port !== void 0 && port > 65535) issues2.push(`${at5}port: must be at most 65535`);
-  const status = positive2(record10, "status", at5, issues2);
-  const route = str4(record10, "route", at5, issues2, false);
-  const body2 = str4(record10, "body", at5, issues2, false);
-  return {
-    ...port === void 0 ? {} : { port },
-    ...route === void 0 ? {} : { route },
-    ...status === void 0 ? {} : { status },
-    ...body2 === void 0 ? {} : { body: body2 }
-  };
-};
-var nonNegative = (record10, key3, at5, issues2) => {
-  const value2 = record10[key3];
-  if (value2 === void 0 || value2 === null) return void 0;
-  if (typeof value2 === "number" && Number.isFinite(value2) && value2 >= 0) return value2;
-  issues2.push(`${at5}${key3}: must be a number of zero or more`);
-  return void 0;
-};
-var extraFields = (record10, kind, at5, issues2) => {
-  const cases = str4(record10, "cases", at5, issues2, kind === "golden");
-  const tolerance = nonNegative(record10, "tolerance", at5, issues2);
-  const run10 = record10["run"];
-  if (kind === "golden" && typeof run10 === "string" && !run10.includes("{case}")) {
-    issues2.push(`${at5}run: must contain {case}`);
-  }
-  const minScore = positive2(record10, "min_score", at5, issues2);
-  if (minScore !== void 0 && minScore > 100) issues2.push(`${at5}min_score: must be at most 100`);
-  return {
-    ...cases === void 0 ? {} : { cases },
-    ...tolerance === void 0 ? {} : { tolerance },
-    ...minScore === void 0 ? {} : { minScore }
-  };
-};
-var checkFields = (record10, kind, at5, issues2) => {
-  const run10 = str4(record10, "run", at5, issues2, kind === "command" || kind === "golden");
-  const timeoutS = positive2(record10, "timeout_s", at5, issues2);
-  const description = str4(record10, "description", at5, issues2, kind === "manual");
-  const require2 = kind === "git" ? gitRequire(record10["require"] ?? ["committed"], `${at5}require`, issues2) : void 0;
-  const app = appFields(record10, kind, at5, issues2);
-  const versionUrl = str4(record10, "version_url", at5, issues2, false);
-  const field = str4(record10, "field", at5, issues2, false);
-  const open = record10["require_open"];
-  if (open !== void 0 && typeof open !== "boolean") issues2.push(`${at5}require_open: must be true or false`);
-  return {
-    ...run10 === void 0 ? {} : { run: run10 },
-    ...timeoutS === void 0 ? {} : { timeoutS },
-    ...description === void 0 ? {} : { description },
-    ...require2 === void 0 ? {} : { require: require2 },
-    ...typeof open === "boolean" ? { requireOpen: open } : {},
-    ...app,
-    ...versionUrl === void 0 ? {} : { versionUrl },
-    ...field === void 0 ? {} : { field },
-    ...extraFields(record10, kind, at5, issues2)
-  };
-};
-var acceptanceItem = (value2, index, issues2) => {
-  const at5 = `acceptance[${String(index)}].`;
-  if (!isRecord(value2)) {
-    issues2.push(`${at5.slice(0, -1)}: must be a mapping`);
-    return void 0;
-  }
-  const id = str4(value2, "id", at5, issues2, true);
-  const kind = oneOf2(CHECK_KINDS, value2["check"]);
-  if (kind === void 0) issues2.push(`${at5}check: use one of ${CHECK_KINDS.join(", ")}`);
-  if (id === void 0 || kind === void 0) return void 0;
-  return { id, kind, ...checkFields(value2, kind, at5, issues2) };
-};
-var acceptance = (value2, issues2) => {
-  if (!Array.isArray(value2) || value2.length === 0) {
-    issues2.push("acceptance: must list at least one check");
-    return [];
-  }
-  const items = value2.map((item2, index) => acceptanceItem(item2, index, issues2));
-  const checks = items.filter((item2) => item2 !== void 0);
-  const ids4 = checks.map((check2) => check2.id);
-  const duplicate = ids4.find((id, index) => ids4.indexOf(id) !== index);
-  if (duplicate !== void 0) issues2.push(`acceptance: duplicate id "${duplicate}"`);
-  return checks;
-};
-var scope = (value2, issues2) => {
-  if (value2 === void 0 || value2 === null) return { paths: [], testsProtected: true };
-  if (!isRecord(value2)) {
-    issues2.push("scope: must be a mapping");
-    return { paths: [], testsProtected: true };
-  }
-  const budget = value2["diff_budget"];
-  const diffBudget = isRecord(budget) ? (({ files, lines: lines7 }) => ({
-    ...files === void 0 ? {} : { files },
-    ...lines7 === void 0 ? {} : { lines: lines7 }
-  }))({
-    files: positive2(budget, "files", "scope.diff_budget.", issues2),
-    lines: positive2(budget, "lines", "scope.diff_budget.", issues2)
-  }) : void 0;
-  if (budget !== void 0 && budget !== null && !isRecord(budget)) issues2.push("scope.diff_budget: must be a mapping");
-  const protectedValue = value2["tests_protected"];
-  if (protectedValue !== void 0 && typeof protectedValue !== "boolean") {
-    issues2.push("scope.tests_protected: must be true or false");
-  }
-  return {
-    paths: strings5(value2["paths"], "scope.paths", issues2),
-    ...diffBudget === void 0 ? {} : { diffBudget },
-    testsProtected: protectedValue !== false
-  };
-};
-var validateContract = (value2, implicit = false) => {
-  if (!isRecord(value2)) return reject(["the contract must be a YAML mapping"]);
-  const issues2 = [];
-  const id = str4(value2, "id", "", issues2, true);
-  if (id !== void 0 && !TASK_ID.test(id)) issues2.push("id: use letters, digits, dot, dash or underscore (max 64)");
-  const goal = str4(value2, "goal", "", issues2, true);
-  const size = value2["size"] === void 0 ? "S" : oneOf2(SIZES, value2["size"]);
-  if (size === void 0) issues2.push(`size: use ${SIZES.join(", ")}`);
-  const base = str4(value2, "base", "", issues2, false);
-  const contractScope = scope(value2["scope"], issues2);
-  const checks = acceptance(value2["acceptance"], issues2);
-  const decisionsNeeded = strings5(value2["decisions_needed"], "decisions_needed", issues2);
-  const callersIgnore = strings5(value2["callers_ignore"], "callers_ignore", issues2);
-  const shortcuts = parseShortcuts(value2["shortcuts"], checks, issues2);
-  const blueprint = parseBlueprintType(str4(value2, "blueprint", "", issues2, false));
-  const clarified = strings5(value2["clarified"], "clarified", issues2);
-  if (value2["blueprint"] !== void 0 && blueprint === void 0) {
-    issues2.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
-  }
-  if (issues2.length > 0 || id === void 0 || goal === void 0 || size === void 0) return reject(issues2);
-  return accept({
-    id,
-    goal,
-    size,
-    ...base === void 0 ? {} : { base },
-    scope: contractScope,
-    acceptance: checks,
-    decisionsNeeded,
-    ...callersIgnore.length === 0 ? {} : { callersIgnore },
-    ...shortcuts.length === 0 ? {} : { shortcuts },
-    ...blueprint === void 0 ? {} : { blueprint },
-    implicit,
-    ...clarified.length === 0 ? {} : { clarified }
-  });
-};
-
-// src/task/load.ts
-var criteria = (contract) => contract.acceptance.map((check2) => [check2.id, check2.kind, check2.run ?? ""]);
-var contractHash = (contract, examples = []) => {
-  const behavior = examplesFingerprint(examples);
-  return sha256Hex(JSON.stringify(behavior.length === 0 ? criteria(contract) : [criteria(contract), behavior]));
-};
-var taskRelative = (id) => `.finitemonkey/tasks/${id}.yml`;
-var parseContract = (id, text27) => {
-  const yaml = parseYaml(text27);
-  if (!yaml.ok)
-    return reject({ kind: "invalid", id, issues: [`line ${String(yaml.error.line)}: ${yaml.error.message}`] });
-  const valid = validateContract(yaml.value);
-  if (!valid.ok) return reject({ kind: "invalid", id, issues: valid.error });
-  if (valid.value.id !== id) return reject({ kind: "invalid", id, issues: [`id: must match the file name (${id})`] });
-  return accept(valid.value);
-};
-var examplesEdited = (disk, approved) => disk === void 0 || JSON.stringify(examplesFingerprint(parseExamples(disk))) !== JSON.stringify(examplesFingerprint(approved));
-var pick3 = (lock, sources, id) => {
-  const approved = lock.approved[id];
-  if (approved !== void 0) return { text: approved, source: "lock" };
-  const base = sources.base(taskRelative(id));
-  if (base !== void 0) return { text: base, source: "base" };
-  const disk = sources.disk(taskRelative(id));
-  return disk === void 0 ? void 0 : { text: disk, source: "disk" };
-};
-var loadTask = (files, paths, sources, id) => {
-  if (!TASK_ID.test(id)) return reject({ kind: "not_found", id });
-  const lock = readTrust(files, paths);
-  const chosen = pick3(lock, sources, id);
-  if (chosen === void 0) return reject({ kind: "not_found", id });
-  const parsed = parseContract(id, chosen.text);
-  if (!parsed.ok) return parsed;
-  const behavior = approvedExamples(files, paths, id);
-  const hash2 = contractHash(parsed.value, behavior.examples);
-  const disk = sources.disk(taskRelative(id));
-  const examplesDisk = sources.disk(examplesRelative(id));
-  return accept({
-    contract: parsed.value,
-    hash: hash2,
-    trusted: chosen.source === "lock" && lock.contracts[id] === hash2,
-    source: chosen.source,
-    editedOnDisk: disk !== void 0 && disk !== chosen.text,
-    ...behavior.text === void 0 ? {} : { examples: behavior.examples, examplesEdited: examplesEdited(examplesDisk, behavior.examples) }
-  });
-};
-var loadImplicit = (files, paths, project) => {
-  const contract = implicitContract(project);
-  const hash2 = contractHash(contract);
-  const commands = contract.acceptance.filter((check2) => check2.run !== void 0);
-  const trusted = commands.length === 0 || readTrust(files, paths).contracts[IMPLICIT_ID] === hash2;
-  return { contract, hash: hash2, trusted, source: "implicit", editedOnDisk: false };
-};
-var activeTaskId = (files, paths, explicit) => explicit ?? readState(files, paths).active;
 
 // src/debt/ledger.ts
 import { join as join44 } from "node:path";
@@ -13014,7 +13135,11 @@ var en_default = {
   "divergence.shadow": "Shadow mode: a divergence question for {task} was recorded and not asked.",
   "divergence.no_pending": "{task} has no open divergence question with option {letter}",
   "divergence.says": "on input {input} the result is {output}",
-  "divergence.stored": "Stored the answer as approved example {id} of {task}: {says}"
+  "divergence.stored": "Stored the answer as approved example {id} of {task}: {says}",
+  "command.signals_blind_band.summary": "Share of horizon help that went out without a criterion the person can check, per domain and week",
+  "blind_band.empty": "No horizon help recorded yet.",
+  "blind_band.total": "Blind band index: {index} ({without} of {helps} horizon helps went out without a criterion).",
+  "blind_band.row": "  {week} {domain}: {index} without criterion ({without} of {helps}); concepts moved: {concepts}"
 };
 
 // src/i18n/es.json
@@ -15080,7 +15205,11 @@ var es_default = {
   "divergence.shadow": "Modo sombra: se registró una pregunta por divergencia para {task} y no se hizo.",
   "divergence.no_pending": "{task} no tiene pregunta por divergencia abierta con la opción {letter}",
   "divergence.says": "con la entrada {input} el resultado es {output}",
-  "divergence.stored": "Guardé la respuesta como ejemplo aprobado {id} de {task}: {says}"
+  "divergence.stored": "Guardé la respuesta como ejemplo aprobado {id} de {task}: {says}",
+  "command.signals_blind_band.summary": "Fracción de la ayuda de horizonte que salió sin un criterio que la persona pueda verificar, por dominio y semana",
+  "blind_band.empty": "Todavía no hay ayuda de horizonte registrada.",
+  "blind_band.total": "Índice de franja ciega: {index} ({without} de {helps} ayudas de horizonte salieron sin criterio).",
+  "blind_band.row": "  {week} {domain}: {index} sin criterio ({without} de {helps}); conceptos que avanzaron: {concepts}"
 };
 
 // src/i18n/pt-BR.json
@@ -17146,7 +17275,11 @@ var pt_BR_default = {
   "divergence.shadow": "Modo sombra: uma pergunta por divergência para {task} foi registrada e não feita.",
   "divergence.no_pending": "{task} não tem pergunta por divergência aberta com a opção {letter}",
   "divergence.says": "na entrada {input} o resultado é {output}",
-  "divergence.stored": "Guardei a resposta como exemplo aprovado {id} de {task}: {says}"
+  "divergence.stored": "Guardei a resposta como exemplo aprovado {id} de {task}: {says}",
+  "command.signals_blind_band.summary": "Fração da ajuda de horizonte que saiu sem um critério que a pessoa consegue verificar, por domínio e semana",
+  "blind_band.empty": "Nenhuma ajuda de horizonte registrada ainda.",
+  "blind_band.total": "Índice de faixa cega: {index} ({without} de {helps} ajudas de horizonte saíram sem critério).",
+  "blind_band.row": "  {week} {domain}: {index} sem critério ({without} de {helps}); conceitos que avançaram: {concepts}"
 };
 
 // src/i18n/review.json
@@ -19213,7 +19346,11 @@ var review_default = {
     "divergence.shadow": "machine",
     "divergence.no_pending": "machine",
     "divergence.says": "machine",
-    "divergence.stored": "machine"
+    "divergence.stored": "machine",
+    "command.signals_blind_band.summary": "machine",
+    "blind_band.empty": "machine",
+    "blind_band.total": "machine",
+    "blind_band.row": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -21277,7 +21414,11 @@ var review_default = {
     "divergence.shadow": "machine",
     "divergence.no_pending": "machine",
     "divergence.says": "machine",
-    "divergence.stored": "machine"
+    "divergence.stored": "machine",
+    "command.signals_blind_band.summary": "machine",
+    "blind_band.empty": "machine",
+    "blind_band.total": "machine",
+    "blind_band.row": "machine"
   }
 };
 
@@ -23168,13 +23309,13 @@ var showPlan = (ctx, root) => {
   const result = success(data2, [...planLines3(ctx, plan2, level), ...confirmLine(ctx, level)]);
   return level.source === "confirmed" ? result : { ...result, next: `finitemonkey deploy plan --level ${String(level.level)} --yes` };
 };
-var parseLevel = (raw) => {
+var parseLevel2 = (raw) => {
   if (raw === void 0) return void 0;
   const value2 = Number.parseInt(raw, 10);
   return isDeployLevel(value2) && String(value2) === raw.trim() ? value2 : "invalid";
 };
 var record4 = (ctx, root, values) => {
-  const level = parseLevel(stringOption(values, "level"));
+  const level = parseLevel2(stringOption(values, "level"));
   const evidence = stringOption(values, "rollback-evidence");
   if (level === void 0 && evidence === void 0) return void 0;
   if (level === "invalid")
@@ -27331,7 +27472,7 @@ var parseEntry4 = (raw) => {
       return parseEarly(raw, base);
   }
 };
-var parseLine = (line12) => {
+var parseLine2 = (line12) => {
   const parsed = parseJsonObject(line12);
   return parsed.ok ? parseEntry4(parsed.value) : void 0;
 };
@@ -27339,7 +27480,7 @@ var readEntries = (runtime, files) => {
   const raw = runtime.readText(files.log);
   if (!raw.ok) return [];
   return raw.value.split("\n").flatMap((line12) => {
-    const entry2 = line12.trim() === "" ? void 0 : parseLine(line12);
+    const entry2 = line12.trim() === "" ? void 0 : parseLine2(line12);
     return entry2 === void 0 ? [] : [entry2];
   });
 };
@@ -27882,6 +28023,7 @@ var clarifyPrompt = (input) => {
     recordFeatureShadow(runtime, paths, CLARIFY_FEATURE, { size });
     return allow3;
   }
+  recordHorizon(runtime, paths, { source: "clarify", criterion: "none", domain: domainOfText(prompt) });
   return {
     kind: "allow",
     output: contextOutput("UserPromptSubmit", t("clarify.context", { size, max: MAX_QUESTIONS }))
@@ -27891,39 +28033,6 @@ var CLARIFY_HANDLERS = { UserPromptSubmit: [clarifyPrompt] };
 
 // src/perfil/store.ts
 import { join as join66 } from "node:path";
-
-// src/perfil/types.ts
-var DOMAINS = ["product", "interface", "backend", "infrastructure", "security"];
-var LEVELS2 = ["beginner", "intermediate", "advanced"];
-var START_SCORE = 50;
-var MIN_SCORE = 0;
-var MAX_SCORE = 100;
-var levelOf2 = (score) => {
-  if (score < 35) return "beginner";
-  if (score < 70) return "intermediate";
-  return "advanced";
-};
-var scoreOf = (level) => {
-  if (level === "beginner") return 25;
-  if (level === "intermediate") return START_SCORE;
-  return 80;
-};
-var clampScore = (score) => Math.min(MAX_SCORE, Math.max(MIN_SCORE, Math.round(score)));
-var parseDomain = (raw) => DOMAINS.find((domain) => domain === raw?.toLowerCase());
-var parseLevel2 = (raw) => LEVELS2.find((level) => level === raw?.toLowerCase());
-var startingProfile = (at5) => ({
-  domains: {
-    product: { tool: START_SCORE, knowledge: START_SCORE },
-    interface: { tool: START_SCORE, knowledge: START_SCORE },
-    backend: { tool: START_SCORE, knowledge: START_SCORE },
-    infrastructure: { tool: START_SCORE, knowledge: START_SCORE },
-    security: { tool: START_SCORE, knowledge: START_SCORE }
-  },
-  quickStart: "never",
-  updatedAt: at5
-});
-
-// src/perfil/store.ts
 var PERFIL_FILE = "perfil.yml";
 var AGENT_COMMITS_FILE = "perfil-commits.json";
 var perfilPath = (paths) => toAbsolutePath(join66(paths.dir, PERFIL_FILE));
@@ -27934,7 +28043,7 @@ var scoreAt = (raw, key3) => {
   return Number.isFinite(parsed) ? clampScore(parsed) : START_SCORE;
 };
 var domainFrom = (raw) => {
-  const claimed = parseLevel2(isRecord(raw) && typeof raw["claimed"] === "string" ? raw["claimed"] : void 0);
+  const claimed = parseLevel(isRecord(raw) && typeof raw["claimed"] === "string" ? raw["claimed"] : void 0);
   return {
     tool: scoreAt(raw, "tool"),
     knowledge: scoreAt(raw, "knowledge"),
@@ -30867,19 +30976,19 @@ var maxBlocks = (env) => {
   const cap = Number.isFinite(parsed) && parsed > 0 ? parsed : OFFICIAL_STOP_CAP;
   return Math.max(1, cap - CAP_MARGIN);
 };
-var failureSignature = (report3) => sha256Hex(
+var failureSignature = (report4) => sha256Hex(
   JSON.stringify([
-    report3.treeHash,
-    report3.items.filter((item2) => item2.status === "failed").map((item2) => [item2.id, item2.notes])
+    report4.treeHash,
+    report4.items.filter((item2) => item2.status === "failed").map((item2) => [item2.id, item2.notes])
   ])
 );
-var nextBlock = (previous, report3, env) => {
-  const signature = failureSignature(report3);
-  const sameTask = previous?.task === report3.task;
+var nextBlock = (previous, report4, env) => {
+  const signature = failureSignature(report4);
+  const sameTask = previous?.task === report4.task;
   const consecutive = (sameTask ? previous.consecutive : 0) + 1;
   const same3 = sameTask && previous.signature === signature ? previous.same + 1 : 1;
   if (consecutive > maxBlocks(env) || same3 > NO_PROGRESS_MAX) return { kind: "exhausted", blocks: consecutive - 1 };
-  return { kind: "block", counter: { task: report3.task, signature, consecutive, same: same3 } };
+  return { kind: "block", counter: { task: report4.task, signature, consecutive, same: same3 } };
 };
 var saveCounter = (store2, paths, counter) => {
   return writeState(store2, paths, withBlocks(readState(store2, paths), counter)).ok;
@@ -31174,29 +31283,29 @@ var itemDetails = (t, item2) => [
   ...reasonText(t, item2)
 ];
 var label = (item2) => item2.command === void 0 ? item2.kind : `${item2.kind} \`${maskText(item2.command)}\``;
-var reportLines2 = (t, report3) => {
+var reportLines2 = (t, report4) => {
   const width = Math.max(...Object.values(STATUS_KEYS).map((key3) => t(key3).length)) + 2;
   return [
-    t(report3.implicit ? "gate.report.title_implicit" : "gate.report.title", {
-      task: report3.task,
-      tree: report3.treeHash
+    t(report4.implicit ? "gate.report.title_implicit" : "gate.report.title", {
+      task: report4.task,
+      tree: report4.treeHash
     }),
-    ...report3.contractEdited ? [`  ${t("gate.report.contract_edited")}`] : [],
-    ...report3.tampered > 0 ? [`  ${t("gate.report.tampered", { count: report3.tampered })}`] : [],
-    ...report3.items.flatMap((item2) => [
+    ...report4.contractEdited ? [`  ${t("gate.report.contract_edited")}`] : [],
+    ...report4.tampered > 0 ? [`  ${t("gate.report.tampered", { count: report4.tampered })}`] : [],
+    ...report4.items.flatMap((item2) => [
       `  ${t(STATUS_KEYS[item2.status]).padEnd(width)}${item2.id}  ${label(item2)}`,
       ...itemDetails(t, item2).map((line12) => `  ${" ".repeat(width)}  ${line12}`)
     ]),
-    t(`gate.verdict.${report3.verdict}`, report3.counts),
-    groupsLine(t, report3)
+    t(`gate.verdict.${report4.verdict}`, report4.counts),
+    groupsLine(t, report4)
   ];
 };
 var ids = (items) => items.map((item2) => item2.id).join(", ") || "-";
-var groupsLine = (t, report3) => t("gate.report.groups", {
-  state: report3.state,
-  verified: ids(report3.items.filter((item2) => item2.status === "passed")),
-  unverified: ids(report3.items.filter((item2) => item2.status === "unverified" && !item2.stale)),
-  invalidated: ids(report3.items.filter((item2) => item2.stale))
+var groupsLine = (t, report4) => t("gate.report.groups", {
+  state: report4.state,
+  verified: ids(report4.items.filter((item2) => item2.status === "passed")),
+  unverified: ids(report4.items.filter((item2) => item2.status === "unverified" && !item2.stale)),
+  invalidated: ids(report4.items.filter((item2) => item2.stale))
 });
 var REQUIRE_KEYS = {
   command: "gate.require.command",
@@ -31216,10 +31325,10 @@ var claimOf = (message) => {
   const first = maskText((message ?? "").trim().split(/\n/)[0] ?? "");
   return first.length > CLAIM_MAX2 ? `${first.slice(0, CLAIM_MAX2)}…` : first;
 };
-var blockReason = (t, report3, lastMessage) => {
-  const failing2 = report3.items.filter((item2) => item2.status === "failed");
+var blockReason = (t, report4, lastMessage) => {
+  const failing2 = report4.items.filter((item2) => item2.status === "failed");
   return [
-    t("gate.model.title", { task: report3.task, tree: report3.treeHash }),
+    t("gate.model.title", { task: report4.task, tree: report4.treeHash }),
     t("gate.model.claim", { claim: claimOf(lastMessage) || t("gate.model.no_claim") }),
     t("gate.model.requires", { list: failing2.map((item2) => requirement(t, item2)).join("; ") }),
     t("gate.model.not_enough", {
@@ -31227,22 +31336,22 @@ var blockReason = (t, report3, lastMessage) => {
     })
   ].join("\n");
 };
-var unverifiedSummary = (t, report3) => report3.items.filter((item2) => item2.status === "unverified").map((item2) => `${item2.id} (${itemDetails(t, item2).join(", ") || t("gate.reason.no_evidence")})`).join("; ");
-var verifyStep = (t, report3, item2) => {
+var unverifiedSummary = (t, report4) => report4.items.filter((item2) => item2.status === "unverified").map((item2) => `${item2.id} (${itemDetails(t, item2).join(", ") || t("gate.reason.no_evidence")})`).join("; ");
+var verifyStep = (t, report4, item2) => {
   if (item2.reason === "awaiting_person" || item2.reason === "untrusted" || item2.reason === "needs_approval")
     return t("gate.verify.person");
-  if (item2.reason === "no_gh") return t("gate.verify.gh", { task: report3.task });
+  if (item2.reason === "no_gh") return t("gate.verify.gh", { task: report4.task });
   if (item2.command !== void 0 && item2.reason !== "rewriter") return `\`${maskText(item2.command)}\``;
-  return t("gate.verify.rerun", { task: report3.task });
+  return t("gate.verify.rerun", { task: report4.task });
 };
-var holdReason = (t, report3) => {
-  const open = report3.items.filter((item2) => item2.status === "unverified");
+var holdReason = (t, report4) => {
+  const open = report4.items.filter((item2) => item2.status === "unverified");
   return [
-    t("gate.model.unverified_title", { task: report3.task, tree: report3.treeHash, state: report3.state }),
+    t("gate.model.unverified_title", { task: report4.task, tree: report4.treeHash, state: report4.state }),
     t("gate.model.not_verified", {
       list: open.map((item2) => `${item2.id}: ${itemDetails(t, item2).join(", ") || t("gate.reason.no_evidence")}`).join("; ")
     }),
-    t("gate.model.verify", { list: open.map((item2) => `${item2.id}: ${verifyStep(t, report3, item2)}`).join("; ") })
+    t("gate.model.verify", { list: open.map((item2) => `${item2.id}: ${verifyStep(t, report4, item2)}`).join("; ") })
   ].join("\n");
 };
 
@@ -31417,16 +31526,16 @@ var currentReport = (runtime, paths, sessionId, taskId2) => {
     fastPath: true
   });
 };
-var ids2 = (report3, status) => report3.items.filter((item2) => item2.status === status).map((item2) => item2.id).join(", ") || "-";
-var snapshotOf = (t, report3, grants, at5) => ({
+var ids2 = (report4, status) => report4.items.filter((item2) => item2.status === status).map((item2) => item2.id).join(", ") || "-";
+var snapshotOf = (t, report4, grants, at5) => ({
   at: at5,
-  task: report3?.task ?? "",
-  goal: report3?.goal ?? "",
-  implicit: report3?.implicit ?? true,
-  tree: report3?.treeHash ?? "",
-  passed: report3 === void 0 ? "-" : ids2(report3, "passed"),
-  failed: report3 === void 0 ? "-" : report3.items.filter((item2) => item2.status === "failed").map((item2) => `${item2.id} (${itemDetails(t, item2).join(", ")})`).join("; ") || "-",
-  unverified: report3 === void 0 ? "-" : ids2(report3, "unverified"),
+  task: report4?.task ?? "",
+  goal: report4?.goal ?? "",
+  implicit: report4?.implicit ?? true,
+  tree: report4?.treeHash ?? "",
+  passed: report4 === void 0 ? "-" : ids2(report4, "passed"),
+  failed: report4 === void 0 ? "-" : report4.items.filter((item2) => item2.status === "failed").map((item2) => `${item2.id} (${itemDetails(t, item2).join(", ")})`).join("; ") || "-",
+  unverified: report4 === void 0 ? "-" : ids2(report4, "unverified"),
   grants: grants.join(", ") || "-"
 });
 var saveSnapshot = (runtime, paths, t, sessionId) => {
@@ -32751,8 +32860,8 @@ var verdict2 = (check2, ctx, mode, tally2) => {
 var toolTally = (check2, run10, ctx) => {
   const outcome2 = runShellCheck({ ...check2, kind: "command" }, run10, ctx);
   if (outcome2.status === "unverified") return outcome2;
-  const report3 = ctx.runtime.readText(toAbsolutePath(join84(ctx.paths.root, TOOL_REPORT)));
-  const counts = report3.ok ? parseToolReport(report3.value) : void 0;
+  const report4 = ctx.runtime.readText(toAbsolutePath(join84(ctx.paths.root, TOOL_REPORT)));
+  const counts = report4.ok ? parseToolReport(report4.value) : void 0;
   return counts ?? unverified("tool_missing", [note("gate.mutation.no_report", { file: TOOL_REPORT })]);
 };
 var builtInTally = (ctx) => {
@@ -33185,15 +33294,15 @@ var stateOf3 = (runtime, root, name) => {
   const text27 = runtime.readText(planPath(root, name));
   const front = text27.ok ? readFront(text27.value).data : void 0;
   if (front?.["schema"] !== INVENTORY_SCHEMA) return void 0;
-  const report3 = `${PLAN_DIR}/${name}`;
+  const report4 = `${PLAN_DIR}/${name}`;
   const topic = typeof front["topic"] === "string" ? front["topic"] : name;
   const covered = textList(front, "covered");
   for (const repo of reposOf(front)) {
     const changed = changedSince(runtime, toAbsolutePath(repo.path, root), repo.hash, covered);
-    if (changed === void 0) return { kind: "unknown", report: report3, repo: repo.path, hash: repo.hash };
-    if (changed.length > 0) return { kind: "expired", report: report3, topic, hash: repo.hash, changed };
+    if (changed === void 0) return { kind: "unknown", report: report4, repo: repo.path, hash: repo.hash };
+    if (changed.length > 0) return { kind: "expired", report: report4, topic, hash: repo.hash, changed };
   }
-  return { kind: "fresh", report: report3 };
+  return { kind: "fresh", report: report4 };
 };
 var inventoryStates = (runtime, root) => planFiles2(runtime, root).filter((name) => TODAY.test(name)).flatMap((name) => stateOf3(runtime, root, name) ?? []);
 
@@ -33673,7 +33782,7 @@ var choiceOf = (pattern, file, line12) => {
 var decisionIssues = (master, sections2, reports, reportLines3) => [
   ...conflicts(linesIn(sections2, "decisions").flatMap((line12) => choiceOf(BULLET, master, line12) ?? [])),
   ...conflicts(
-    reports.filter((report3) => !report3.revoked).flatMap((report3) => reportLines3(report3).flatMap((line12) => choiceOf(DECIDES, report3.name, line12) ?? []))
+    reports.filter((report4) => !report4.revoked).flatMap((report4) => reportLines3(report4).flatMap((line12) => choiceOf(DECIDES, report4.name, line12) ?? []))
   )
 ];
 var NOBODY = /* @__PURE__ */ new Set(["", "-", "?", "none", "nobody", "tbd", "ninguém", "nenhum", "nadie", "ninguno"]);
@@ -33692,7 +33801,7 @@ var ownerIssues = (master, sections2) => {
     return before2 !== void 0 && before2 !== clean(owner) ? [issue2("two_owners", master, row3.line, `${name}: ${owner}`)] : [];
   });
 };
-var revokedIssues = (reports) => reports.filter((report3) => report3.revoked && !report3.banner).map((report3) => issue2("revoked_without_banner", report3.name, 1, report3.name));
+var revokedIssues = (reports) => reports.filter((report4) => report4.revoked && !report4.banner).map((report4) => issue2("revoked_without_banner", report4.name, 1, report4.name));
 
 // src/plan/task-map.ts
 import { join as join91 } from "node:path";
@@ -33705,8 +33814,8 @@ var parseTaskMap = (text27) => text27.split(/\r?\n/).flatMap((line12, index) => 
   const match = ROW.exec(line12);
   if (match === null) return [];
   const cells = (match[2] ?? "").split(/(?<!\\)\|/).map((cell4) => cell4.trim().replace(/\\\|/g, "|"));
-  const [title = "", front = "", state = "", report3 = ""] = cells;
-  return [{ issue: Number(match[1]), title, front, state, report: report3, line: index + 1 }];
+  const [title = "", front = "", state = "", report4 = ""] = cells;
+  return [{ issue: Number(match[1]), title, front, state, report: report4, line: index + 1 }];
 });
 var renderTaskMap = (rows2, at5) => [
   "# Task map",
@@ -33778,8 +33887,8 @@ var checkPlan = (runtime, root) => {
   if (!text27.ok)
     return { master, reports: reports.length, issues: [{ kind: "no_master", file: master, line: 1, detail: master }] };
   const sections2 = sectionsOf(text27.value);
-  const names3 = reports.map((report3) => report3.name);
-  const bodyLines = (report3) => readFront(report3.text).body.split("\n").map((line12, index) => ({ text: line12, line: index + 1 }));
+  const names3 = reports.map((report4) => report4.name);
+  const bodyLines = (report4) => readFront(report4.text).body.split("\n").map((line12, index) => ({ text: line12, line: index + 1 }));
   return {
     master,
     reports: reports.length,
@@ -34498,7 +34607,7 @@ var scoreProse = (text27, options2 = {}) => {
   const spans = mergeSpans(hits, hotWindows(hits, units, size, threshold2));
   return { hits, spans, allowed: allowed3 };
 };
-var isFlagged = (report3) => report3.spans.length > 0;
+var isFlagged = (report4) => report4.spans.length > 0;
 
 // src/prose/gate.ts
 var MARKDOWN = /\.(?:md|markdown|mdx)$/i;
@@ -37041,44 +37150,44 @@ var failureDetail = (t, failure6) => {
       return t("gate.fail.isolated", { step: failure6.step, detail: failure6.detail });
   }
 };
-var failingList = (t, report3) => report3.items.filter((item2) => item2.status === "failed").map((item2) => `${item2.id} (${itemDetails(t, item2).join(", ")})`).join("; ");
-var touchesTests = (report3) => report3.items.some(
+var failingList = (t, report4) => report4.items.filter((item2) => item2.status === "failed").map((item2) => `${item2.id} (${itemDetails(t, item2).join(", ")})`).join("; ");
+var touchesTests = (report4) => report4.items.some(
   (item2) => item2.status === "failed" && item2.notes.some((entry2) => entry2.key.startsWith("gate.tests."))
 );
 var HOLD_FEATURE = "gate-hold";
-var markDone = (input, report3, root) => {
-  if (report3.implicit || !canClose(report3.state)) return;
+var markDone = (input, report4, root) => {
+  if (report4.implicit || !canClose(report4.state)) return;
   const state = readState(input.runtime, root);
-  if (state.active !== report3.task) return;
-  writeState(input.runtime, root, closeTask(state, report3.task));
+  if (state.active !== report4.task) return;
+  writeState(input.runtime, root, closeTask(state, report4.task));
 };
-var onFailed = (input, report3, paths) => {
+var onFailed = (input, report4, paths) => {
   const { t, runtime, env } = input;
-  const verdict4 = nextBlock(readCounter(runtime, paths), report3, env);
+  const verdict4 = nextBlock(readCounter(runtime, paths), report4, env);
   if (verdict4.kind === "exhausted") {
     saveCounter(runtime, paths, void 0);
     writeGateStatus(runtime, paths, {
       status: "not_done",
-      task: report3.task,
-      detail: failingList(t, report3),
-      state: report3.state,
-      tree: report3.treeHash
+      task: report4.task,
+      detail: failingList(t, report4),
+      state: report4.state,
+      tree: report4.treeHash
     });
     return allowWith({
-      systemMessage: human(t("gate.human.not_done", { blocks: verdict4.blocks, list: failingList(t, report3) }))
+      systemMessage: human(t("gate.human.not_done", { blocks: verdict4.blocks, list: failingList(t, report4) }))
     });
   }
   saveCounter(runtime, paths, verdict4.counter);
   writeGateStatus(runtime, paths, {
     status: "failed",
-    task: report3.task,
-    detail: failingList(t, report3),
-    state: report3.state
+    task: report4.task,
+    detail: failingList(t, report4),
+    state: report4.state
   });
-  const reason = blockReason(t, report3, textField(input.payload.raw, "last_assistant_message"));
+  const reason = blockReason(t, report4, textField(input.payload.raw, "last_assistant_message"));
   const message = [
-    t("gate.human.held", { count: report3.counts.failed }),
-    ...touchesTests(report3) ? [t("gate.human.witness")] : []
+    t("gate.human.held", { count: report4.counts.failed }),
+    ...touchesTests(report4) ? [t("gate.human.witness")] : []
   ];
   return {
     kind: "block",
@@ -37087,38 +37196,38 @@ var onFailed = (input, report3, paths) => {
     output: { decision: "block", reason, systemMessage: human(message.join(" ")) }
   };
 };
-var holdSignature = (report3) => sha256Hex(
+var holdSignature = (report4) => sha256Hex(
   JSON.stringify([
     "unverified",
-    report3.treeHash,
-    report3.items.filter((item2) => item2.status === "unverified").map((item2) => [item2.id, item2.reason ?? ""])
+    report4.treeHash,
+    report4.items.filter((item2) => item2.status === "unverified").map((item2) => [item2.id, item2.reason ?? ""])
   ])
 );
-var onIncomplete = (input, report3, paths) => {
+var onIncomplete = (input, report4, paths) => {
   const { t, runtime } = input;
-  const list10 = unverifiedSummary(t, report3);
+  const list10 = unverifiedSummary(t, report4);
   writeGateStatus(runtime, paths, {
     status: "incomplete",
-    task: report3.task,
+    task: report4.task,
     detail: list10,
-    state: report3.state,
-    tree: report3.treeHash
+    state: report4.state,
+    tree: report4.treeHash
   });
   const passOn = allowWith({ systemMessage: human(t("gate.human.incomplete", { list: list10 })) });
-  const signature = holdSignature(report3);
+  const signature = holdSignature(report4);
   const previous = readCounter(runtime, paths);
   const mode = featureMode(runtime, paths, HOLD_FEATURE);
-  if (mode === "off" || previous?.task === report3.task && previous.signature === signature) {
+  if (mode === "off" || previous?.task === report4.task && previous.signature === signature) {
     saveCounter(runtime, paths, void 0);
     return passOn;
   }
   if (mode === "shadow") {
     saveCounter(runtime, paths, void 0);
-    recordFeatureShadow(runtime, paths, HOLD_FEATURE, { task: report3.task, state: report3.state, wouldHave: "block" });
+    recordFeatureShadow(runtime, paths, HOLD_FEATURE, { task: report4.task, state: report4.state, wouldHave: "block" });
     return passOn;
   }
-  saveCounter(runtime, paths, { task: report3.task, signature, consecutive: 1, same: 1 });
-  const reason = holdReason(t, report3);
+  saveCounter(runtime, paths, { task: report4.task, signature, consecutive: 1, same: 1 });
+  const reason = holdReason(t, report4);
   return {
     kind: "block",
     reason,
@@ -37126,24 +37235,24 @@ var onIncomplete = (input, report3, paths) => {
     output: {
       decision: "block",
       reason,
-      systemMessage: human(t("gate.human.held_unverified", { count: report3.counts.unverified, list: list10 }))
+      systemMessage: human(t("gate.human.held_unverified", { count: report4.counts.unverified, list: list10 }))
     }
   };
 };
-var onReport = (input, report3, paths) => {
+var onReport = (input, report4, paths) => {
   const { t, runtime } = input;
-  if (report3.verdict === "failed") return onFailed(input, report3, paths);
-  if (report3.verdict === "incomplete") return onIncomplete(input, report3, paths);
+  if (report4.verdict === "failed") return onFailed(input, report4, paths);
+  if (report4.verdict === "incomplete") return onIncomplete(input, report4, paths);
   saveCounter(runtime, paths, void 0);
   writeGateStatus(runtime, paths, {
     status: "passed",
-    task: report3.task,
+    task: report4.task,
     detail: "",
-    state: report3.state,
-    tree: report3.treeHash
+    state: report4.state,
+    tree: report4.treeHash
   });
-  markDone(input, report3, paths);
-  return allowWith({ systemMessage: human(t("gate.human.passed", { count: report3.counts.passed })) });
+  markDone(input, report4, paths);
+  return allowWith({ systemMessage: human(t("gate.human.passed", { count: report4.counts.passed })) });
 };
 var NOT_RUN_TASK = "*not_run*";
 var notRun = (input, detail, state) => {
@@ -37618,7 +37727,7 @@ var parseFrontReport = (raw) => {
   const tests = isRecord(record10["tests"]) ? record10["tests"] : {};
   if (!isRecord(record10["tests"])) issues2.push("tests: must be an object with command, passed, failed and added");
   const strings18 = (key3) => list5(record10, key3, issues2, (value2) => str5(value2));
-  const report3 = {
+  const report4 = {
     front: text20(record10, "front", issues2),
     branch: text20(record10, "branch", issues2),
     head: text20(record10, "head", issues2),
@@ -37638,9 +37747,9 @@ var parseFrontReport = (raw) => {
     finished: record10["finished"] !== false,
     inbox: list5(record10, "inbox", issues2, routed)
   };
-  if (report3.finished === false && report3.left_out.length === 0)
+  if (report4.finished === false && report4.left_out.length === 0)
     issues2.push("left_out: a NOT FINISHED report lists what is left out");
-  return { report: issues2.length === 0 ? report3 : void 0, issues: issues2 };
+  return { report: issues2.length === 0 ? report4 : void 0, issues: issues2 };
 };
 
 // src/fronts/report-gate.ts
@@ -37654,48 +37763,48 @@ var headOf = (runtime, dir) => {
   const result = runtime.git(["rev-parse", "HEAD"], toAbsolutePath(dir));
   return result.ok ? result.stdout.trim() : void 0;
 };
-var ledgerProblems = (runtime, dir, report3) => {
-  const claimed = report3.tests.passed + report3.tests.failed;
+var ledgerProblems = (runtime, dir, report4) => {
+  const claimed = report4.tests.passed + report4.tests.failed;
   if (claimed === 0) return [];
   const tree = treeHash(gitAt(runtime, dir));
   const ledger = readLedger3(
     runtime,
     toAbsolutePath(
-      report3.evidence === "" ? join105(dir, ".finitemonkey", "evidence", `${report3.front}.jsonl`) : report3.evidence,
+      report4.evidence === "" ? join105(dir, ".finitemonkey", "evidence", `${report4.front}.jsonl`) : report4.evidence,
       dir
     )
   );
   const entry2 = ledger.findLast((item2) => item2.kind === "tests" && item2.treeHash === tree);
   if (entry2 === void 0)
     return [
-      `tests: no ledger entry for the worktree at ${report3.head.slice(0, 12)} (${report3.evidence || "no evidence path"})`
+      `tests: no ledger entry for the worktree at ${report4.head.slice(0, 12)} (${report4.evidence || "no evidence path"})`
     ];
   const problems = [];
   if (entry2.testCount !== void 0 && entry2.testCount !== claimed) {
     problems.push(`tests: the report claims ${String(claimed)} tests, the ledger ran ${String(entry2.testCount)}`);
   }
-  if (report3.tests.failed === 0 !== (entry2.status === "passed")) {
-    problems.push(`tests: the report says ${String(report3.tests.failed)} failed, the ledger says ${entry2.status}`);
+  if (report4.tests.failed === 0 !== (entry2.status === "passed")) {
+    problems.push(`tests: the report says ${String(report4.tests.failed)} failed, the ledger says ${entry2.status}`);
   }
   return problems;
 };
-var worktreeProblems = (runtime, front, report3) => {
+var worktreeProblems = (runtime, front, report4) => {
   if (front.path === null || runtime.stat(toAbsolutePath(front.path)) === void 0) return [];
   const dir = toAbsolutePath(front.path);
   const head = headOf(runtime, dir);
   const problems = [];
-  if (head === void 0 || report3.head.length < 7 || !head.startsWith(report3.head)) {
-    problems.push(`head: the report says ${report3.head}, the worktree is at ${head ?? "nothing"}`);
+  if (head === void 0 || report4.head.length < 7 || !head.startsWith(report4.head)) {
+    problems.push(`head: the report says ${report4.head}, the worktree is at ${head ?? "nothing"}`);
   }
   const dirty = dirtyFiles(runtime, dir, []).filter((path) => !path.startsWith(REPORTS_DIR2));
-  if (dirty.length > 0 && report3.left_out.length === 0) {
+  if (dirty.length > 0 && report4.left_out.length === 0) {
     problems.push(`worktree: uncommitted ${dirty.slice(0, 5).join(", ")} and nothing in left_out`);
   }
-  const missing3 = report3.screenshots.filter(
+  const missing3 = report4.screenshots.filter(
     (shot) => shot.opened && runtime.stat(toAbsolutePath(shot.path, dir)) === void 0
   );
   problems.push(...missing3.map((shot) => `screenshots: ${shot.path} does not exist`));
-  return [...problems, ...ledgerProblems(runtime, dir, report3)];
+  return [...problems, ...ledgerProblems(runtime, dir, report4)];
 };
 var checkReport = (runtime, root, front) => {
   const file = locateReport(runtime, root, front);
@@ -37722,12 +37831,12 @@ var checkReport = (runtime, root, front) => {
   };
 };
 var reportSummary = (check2) => {
-  const report3 = check2.report;
-  if (report3 === void 0) return `${check2.front}: no valid report`;
-  const tests = `${String(report3.tests.passed)} passed, ${String(report3.tests.failed)} failed, ${String(report3.tests.added)} added`;
-  const left = report3.left_out.length === 0 ? "" : `; left out: ${report3.left_out.map((item2) => item2.what).join(", ")}`;
-  const decisions = report3.provisional_decisions.length === 0 ? "" : `; decisions: ${report3.provisional_decisions.map((item2) => item2.decision).join(", ")}`;
-  return `${check2.front} at ${report3.head.slice(0, 12)}: ${report3.delivered.join(", ") || "nothing delivered"}; tests ${tests}${left}${decisions}`;
+  const report4 = check2.report;
+  if (report4 === void 0) return `${check2.front}: no valid report`;
+  const tests = `${String(report4.tests.passed)} passed, ${String(report4.tests.failed)} failed, ${String(report4.tests.added)} added`;
+  const left = report4.left_out.length === 0 ? "" : `; left out: ${report4.left_out.map((item2) => item2.what).join(", ")}`;
+  const decisions = report4.provisional_decisions.length === 0 ? "" : `; decisions: ${report4.provisional_decisions.map((item2) => item2.decision).join(", ")}`;
+  return `${check2.front} at ${report4.head.slice(0, 12)}: ${report4.delivered.join(", ") || "nothing delivered"}; tests ${tests}${left}${decisions}`;
 };
 
 // src/fronts/report-hooks.ts
@@ -41010,12 +41119,12 @@ var decisionFor = (input, found, blocking3) => {
       human: input.t("prose.block.human")
     } : void 0;
   }
-  const report3 = scoreProse(text27.value, { context: "record" });
-  if (report3.allowed || report3.spans.length === 0) return void 0;
+  const report4 = scoreProse(text27.value, { context: "record" });
+  if (report4.allowed || report4.spans.length === 0) return void 0;
   const params2 = {
     target: input.t(TARGET_KEYS[found.target]),
-    spans: describeSpans(input.t, report3.spans),
-    fixes: describeFixes(input.t, report3.spans)
+    spans: describeSpans(input.t, report4.spans),
+    fixes: describeFixes(input.t, report4.spans)
   };
   if (blocking3)
     return {
@@ -41973,10 +42082,22 @@ var block5 = (reason, note2) => ({
   output: { decision: "block", reason, systemMessage: human(note2) }
 });
 var messageOf3 = (input) => textField(input.payload.raw, "last_assistant_message") ?? "";
+var recordSkillHelp = (input, message, view2) => {
+  const paths = view2?.paths ?? projectPaths(input);
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return;
+  const named2 = new Set(criterionIds(message));
+  recordHorizon(input.runtime, paths, {
+    source: "skill",
+    criterion: criterionOfCheck(view2?.checks.find((check2) => named2.has(check2.id))),
+    domain: domainOfText(message),
+    ...view2 === void 0 ? {} : { task: view2.task }
+  });
+};
 var horizonGuard = (input) => {
   const message = messageOf3(input);
   if (!isHorizonHelp(message)) return allow8;
   const view2 = taskInView(input);
+  recordSkillHelp(input, message, view2);
   if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow8;
   const ids4 = new Set(view2.checks.map((check2) => check2.id));
   const named2 = criterionIds(message);
@@ -45525,23 +45646,23 @@ var inventoryLines = (ctx, rows2) => [
     (row3) => `  ${row3.event.padEnd(17)}${row3.source.padEnd(28)}${row3.failMode.padEnd(12)}${cellOf(row3.latencyMs, "ms").padEnd(9)}${cellOf(row3.outputBytes, "B").padEnd(9)}${row3.blocksStop ? "stop " : "     "}${row3.enabled ? "" : "(disabled) "}${row3.command}`
   )
 ];
-var doctorResult = (ctx, report3, extra = []) => {
+var doctorResult = (ctx, report4, extra = []) => {
   const human2 = [
     ctx.t("doctor.title", { version: ctx.version }),
     ...extra,
-    ...report3.checks.flatMap((item2) => itemLines(ctx, item2)),
-    ctx.t("doctor.summary", report3.summary)
+    ...report4.checks.flatMap((item2) => itemLines(ctx, item2)),
+    ctx.t("doctor.summary", report4.summary)
   ];
-  const failed9 = report3.checks.find((item2) => item2.status === "fail");
-  if (failed9 === void 0) return { ok: true, exitCode: ExitCode.Ok, data: report3, human: human2 };
+  const failed9 = report4.checks.find((item2) => item2.status === "fail");
+  if (failed9 === void 0) return { ok: true, exitCode: ExitCode.Ok, data: report4, human: human2 };
   return {
     ok: false,
     exitCode: ExitCode.CheckFailed,
-    data: report3,
+    data: report4,
     human: human2,
     error: {
       code: "doctor_failed",
-      message: ctx.t("error.doctor_failed", { count: report3.summary.fail }),
+      message: ctx.t("error.doctor_failed", { count: report4.summary.fail }),
       fix: failed9.fix ?? "finitemonkey doctor"
     }
   };
@@ -45556,7 +45677,7 @@ var fixLines = (ctx, fixed) => {
     ...fixed.backup === void 0 ? [] : [ctx.t("doctor.fix.backup", { path: fixed.backup })]
   ];
 };
-var manualLines = (ctx, report3) => report3.checks.some((item2) => item2.status !== "ok" && item2.fix !== void 0) ? [ctx.t("doctor.fix.manual")] : [];
+var manualLines = (ctx, report4) => report4.checks.some((item2) => item2.status !== "ok" && item2.fix !== void 0) ? [ctx.t("doctor.fix.manual")] : [];
 var writeReport = (ctx, data2, result) => {
   const env = doctorEnvFrom(ctx);
   const path = reportPath(env);
@@ -45567,7 +45688,7 @@ var writeReport = (ctx, data2, result) => {
   const human2 = [...result.human ?? [], ctx.t("doctor.report.written", { path })];
   return { ...result, data: { ...data2, reportPath: path }, human: human2 };
 };
-var runDoctor = (ctx, fix, report3, hooks, probe) => {
+var runDoctor = (ctx, fix, report4, hooks, probe) => {
   let extra = [];
   let fixed;
   if (fix) {
@@ -45591,7 +45712,7 @@ var runDoctor = (ctx, fix, report3, hooks, probe) => {
     ...rows2 === void 0 ? [] : inventoryLines(ctx, rows2)
   ];
   const result = doctorResult(ctx, data2, lines7);
-  return report3 ? writeReport(ctx, data2, result) : result;
+  return report4 ? writeReport(ctx, data2, result) : result;
 };
 var doctorCommand = {
   path: ["doctor"],
@@ -46482,9 +46603,9 @@ var verifyCheck = (runtime, dir, dropped) => {
   if (repo === void 0)
     return { name: "merge verify", command: "finitemonkey merge verify", ok: false, detail: "no repo" };
   const droppedFile = writeDropped(runtime, dir, dropped);
-  const report3 = verifyMerge(runtime, repo, droppedFile === void 0 ? {} : { droppedFile });
-  const detail = report3.exit === 2 ? report3.error ?? "unanalyzable" : report3.findings.map((finding6) => `${finding6.file}: ${finding6.kind} ${finding6.text}`).join("; ");
-  return { name: "merge verify", command: "finitemonkey merge verify", ok: report3.exit === 0, detail };
+  const report4 = verifyMerge(runtime, repo, droppedFile === void 0 ? {} : { droppedFile });
+  const detail = report4.exit === 2 ? report4.error ?? "unanalyzable" : report4.findings.map((finding6) => `${finding6.file}: ${finding6.kind} ${finding6.text}`).join("; ");
+  return { name: "merge verify", command: "finitemonkey merge verify", ok: report4.exit === 0, detail };
 };
 var commandCheck2 = (runtime, dir, command) => {
   const result = runtime.exec({ command, args: [], cwd: dir, timeoutMs: CHECK_TIMEOUT_MS, shell: true });
@@ -46575,45 +46696,45 @@ var openIntegration = (runtime, cwd, env, sides, owner) => {
 import { join as join139 } from "node:path";
 var MERGE_REPORT_SCHEMA = "finitemonkey/merge-report@1";
 var reportPathFor = (commonDir, stamp2) => toAbsolutePath(join139(registryDir(commonDir), "merges", `${stamp2}.json`));
-var writeReport2 = (runtime, report3) => {
-  const path = toAbsolutePath(report3.reportPath);
+var writeReport2 = (runtime, report4) => {
+  const path = toAbsolutePath(report4.reportPath);
   const made = runtime.mkdir(toAbsolutePath(join139(path, "..")));
   if (!made.ok) return made;
-  const written = runtime.writeAtomic(path, `${JSON.stringify(report3, null, 2)}
+  const written = runtime.writeAtomic(path, `${JSON.stringify(report4, null, 2)}
 `);
   if (!written.ok) return written;
-  const summary2 = runtime.writeAtomic(toAbsolutePath(path.replace(/\.json$/, ".md")), `${reportMarkdown2(report3)}
+  const summary2 = runtime.writeAtomic(toAbsolutePath(path.replace(/\.json$/, ".md")), `${reportMarkdown2(report4)}
 `);
   return summary2.ok ? accept(void 0) : summary2;
 };
-var classCounts = (report3) => {
+var classCounts = (report4) => {
   const counts = /* @__PURE__ */ new Map();
-  for (const file of report3.files) {
+  for (const file of report4.files) {
     for (const hunk of file.hunks.length === 0 ? [{ class: file.class }] : file.hunks) {
       counts.set(hunk.class, (counts.get(hunk.class) ?? 0) + 1);
     }
   }
   return [...counts].sort(([left], [right]) => left.localeCompare(right)).map(([cls, count11]) => `${cls} ${String(count11)}`).join(", ");
 };
-var reportMarkdown2 = (report3) => [
-  `### Merge report: ${report3.source.ref} into ${report3.target.ref}`,
+var reportMarkdown2 = (report4) => [
+  `### Merge report: ${report4.source.ref} into ${report4.target.ref}`,
   "",
-  `Outcome: ${report3.outcome}${report3.commit === null ? "" : ` (${report3.commit.slice(0, 12)})`}. Bases: ${String(report3.bases.length)}${report3.virtualBase ? " (virtual base used)" : ""}.`,
-  `Hunks by class: ${classCounts(report3) || "none"}.`,
+  `Outcome: ${report4.outcome}${report4.commit === null ? "" : ` (${report4.commit.slice(0, 12)})`}. Bases: ${String(report4.bases.length)}${report4.virtualBase ? " (virtual base used)" : ""}.`,
+  `Hunks by class: ${classCounts(report4) || "none"}.`,
   "",
   "| File | Class | Rule | Decision |",
   "|---|---|---|---|",
-  ...report3.files.flatMap(
+  ...report4.files.flatMap(
     (file) => (file.hunks.length === 0 ? [file] : file.hunks).map(
       (hunk) => `| ${file.path} | ${hunk.class} | ${hunk.rule} | ${hunk.decision} |`
     )
   ),
   "",
-  ...report3.stops.map((stop) => `- Stop: ${stop.reason}${stop.path === null ? "" : ` (${stop.path})`}`),
-  ...report3.semanticCandidates.map((item2) => `- Semantic candidate: ${item2.symbol} in ${item2.file} (${item2.reason})`),
-  ...report3.checks.map((check2) => `- Check ${check2.name}: ${check2.ok ? "passed" : "failed"} (\`${check2.command}\`)`),
-  `- Snapshots: ${report3.snapshots.join(", ")}`,
-  `- Undo: \`${report3.undo}\``,
+  ...report4.stops.map((stop) => `- Stop: ${stop.reason}${stop.path === null ? "" : ` (${stop.path})`}`),
+  ...report4.semanticCandidates.map((item2) => `- Semantic candidate: ${item2.symbol} in ${item2.file} (${item2.reason})`),
+  ...report4.checks.map((check2) => `- Check ${check2.name}: ${check2.ok ? "passed" : "failed"} (\`${check2.command}\`)`),
+  `- Snapshots: ${report4.snapshots.join(", ")}`,
+  `- Undo: \`${report4.undo}\``,
   "",
   "This report proves presence of every line, not behavior; the gate and the tests of both sides still decide."
 ].join("\n");
@@ -47212,7 +47333,7 @@ var runMerge = (runtime, cwd, env, request) => {
   const commit2 = stops.length === 0 ? commitMerge(runtime, dir) ?? null : null;
   if (stops.length === 0 && commit2 === null) stops.push({ reason: "commit-failed", path: null });
   const proposals = proposalPaths(files);
-  const report3 = reportOf(
+  const report4 = reportOf(
     run10,
     {
       snapshots: prepared.value.snapshots,
@@ -47227,8 +47348,8 @@ var runMerge = (runtime, cwd, env, request) => {
     prepared.value.stamp,
     prepared.value.commonDir
   );
-  writeReport2(runtime, report3);
-  return accept(report3);
+  writeReport2(runtime, report4);
+  return accept(report4);
 };
 
 // src/fronts/wave-merge.ts
@@ -47276,17 +47397,17 @@ var mergeFront = (options2, branch, front) => {
     sourceScope: { paths: front.paths, append: front.append, generated: [], inferred: front.paths.length === 0 }
   });
   if (!merged2.ok) return reject({ kind: "merge", front: front.id, report: void 0, detail: merged2.error });
-  const report3 = merged2.value;
-  if (report3.outcome !== "merged" || report3.commit === null) {
+  const report4 = merged2.value;
+  if (report4.outcome !== "merged" || report4.commit === null) {
     return reject({
       kind: "merge",
       front: front.id,
-      report: report3,
-      detail: report3.stops.map((stop) => stop.reason).join("; ")
+      report: report4,
+      detail: report4.stops.map((stop) => stop.reason).join("; ")
     });
   }
-  const moved = options2.runtime.git(["update-ref", `refs/heads/${branch}`, report3.commit, before2], options2.root);
-  return moved.ok ? accept(report3) : reject({ kind: "merge", front: front.id, report: report3, detail: `could not move ${branch}` });
+  const moved = options2.runtime.git(["update-ref", `refs/heads/${branch}`, report4.commit, before2], options2.root);
+  return moved.ok ? accept(report4) : reject({ kind: "merge", front: front.id, report: report4, detail: `could not move ${branch}` });
 };
 var waveChecks = (options2, last, base) => {
   const dir = toAbsolutePath(last.integration.path);
@@ -47307,9 +47428,9 @@ var mergeWave = (options2, state) => {
   const base = line8(options2.runtime, options2.root, ["rev-parse", `refs/heads/${branch.value}`]) ?? "";
   const merges = [];
   for (const front of order2) {
-    const report3 = mergeFront(options2, branch.value, front);
-    if (!report3.ok) return report3;
-    merges.push({ front: front.id, report: report3.value });
+    const report4 = mergeFront(options2, branch.value, front);
+    if (!report4.ok) return report4;
+    merges.push({ front: front.id, report: report4.value });
   }
   const last = merges[merges.length - 1]?.report;
   const failed9 = last === void 0 ? void 0 : waveChecks(options2, last, base);
@@ -47683,18 +47804,18 @@ var ROWS = [
   { key: "gain.row.gate_failed", pick: (counts) => counts.gateFailed },
   { key: "gain.row.gate_unverified", pick: (counts) => counts.gateUnverified }
 ];
-var linesOf4 = (ctx, report3) => [
-  ctx.t("gain.title", { days: report3.days }),
+var linesOf4 = (ctx, report4) => [
+  ctx.t("gain.title", { days: report4.days }),
   ...ROWS.map(
-    ({ key: key3, pick: pick5 }) => `  ${ctx.t(key3, { count: pick5(report3.current) })}${trend(ctx, pick5(report3.current), pick5(report3.previous))}`
+    ({ key: key3, pick: pick5 }) => `  ${ctx.t(key3, { count: pick5(report4.current) })}${trend(ctx, pick5(report4.current), pick5(report4.previous))}`
   ),
-  `  ${ctx.t("gain.row.gate_time", { minutes: Math.round(report3.current.gateMs / 6e4) })}`,
-  ...report3.supervisorUsage === void 0 ? [] : [
+  `  ${ctx.t("gain.row.gate_time", { minutes: Math.round(report4.current.gateMs / 6e4) })}`,
+  ...report4.supervisorUsage === void 0 ? [] : [
     `  ${ctx.t("gain.supervisor", {
-      usage: Object.entries(report3.supervisorUsage).map(([name, value2]) => `${name} ${String(value2)}`).join(", ")
+      usage: Object.entries(report4.supervisorUsage).map(([name, value2]) => `${name} ${String(value2)}`).join(", ")
     })}`
   ],
-  ...Object.entries(report3.byArm ?? {}).map(
+  ...Object.entries(report4.byArm ?? {}).map(
     ([feature, arms]) => `  ${ctx.t("gain.arm", {
       feature,
       onDone: arms.active.completed,
@@ -47705,7 +47826,7 @@ var linesOf4 = (ctx, report3) => [
       offFailed: arms.off.gateFailed
     })}`
   ),
-  ...report3.byArm !== void 0 && Object.keys(report3.byArm).length === 0 ? [`  ${ctx.t("gain.arm.none")}`] : [],
+  ...report4.byArm !== void 0 && Object.keys(report4.byArm).length === 0 ? [`  ${ctx.t("gain.arm.none")}`] : [],
   ctx.t("gain.footer")
 ];
 var runGain = (ctx, rawDays, byArm) => {
@@ -47721,8 +47842,8 @@ var runGain = (ctx, rawDays, byArm) => {
   const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
   const dir = holdDir(ctx.runtime, root, ctx.env);
   const usage2 = dir === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(join142(dir, USAGE_FILE)));
-  const report3 = gainReport(ctx.runtime, fmPaths(root), days, usage2?.ok === true ? usage2.value : void 0, byArm);
-  return success(report3, linesOf4(ctx, report3));
+  const report4 = gainReport(ctx.runtime, fmPaths(root), days, usage2?.ok === true ? usage2.value : void 0, byArm);
+  return success(report4, linesOf4(ctx, report4));
 };
 var gainCommand = {
   path: ["gain"],
@@ -47790,17 +47911,17 @@ var lastRunRefusal = (ctx) => {
     exitCode: ExitCode.CheckFailed
   };
 };
-var gateResult = (ctx, report3, strict) => {
-  const human2 = reportLines2(ctx.t, report3);
-  const failedVerdict = report3.verdict === "failed" || strict && report3.verdict === "incomplete";
-  if (!failedVerdict) return success(report3, human2);
-  const code2 = report3.verdict === "failed" ? "gate_failed" : "gate_incomplete";
+var gateResult = (ctx, report4, strict) => {
+  const human2 = reportLines2(ctx.t, report4);
+  const failedVerdict = report4.verdict === "failed" || strict && report4.verdict === "incomplete";
+  if (!failedVerdict) return success(report4, human2);
+  const code2 = report4.verdict === "failed" ? "gate_failed" : "gate_incomplete";
   return {
     ok: false,
     exitCode: ExitCode.CheckFailed,
-    data: report3,
+    data: report4,
     human: human2,
-    error: { code: code2, message: ctx.t(`error.${code2}`, report3.counts), fix: `finitemonkey gate --task ${report3.task}` }
+    error: { code: code2, message: ctx.t(`error.${code2}`, report4.counts), fix: `finitemonkey gate --task ${report4.task}` }
   };
 };
 var runResult = (ctx, run10, strict) => {
@@ -48398,10 +48519,10 @@ var mergesInRange = (runtime, repo, range) => {
   const listed10 = runtime.git(["rev-list", "--merges", ...range, "--"], repo.root);
   const merges = listed10.ok ? listed10.stdout.split("\n").filter((line12) => line12 !== "") : [];
   const failures = merges.flatMap((sha) => {
-    const report3 = verifyMerge(runtime, repo, { rev: sha });
-    if (report3.exit === 0) return [];
+    const report4 = verifyMerge(runtime, repo, { rev: sha });
+    if (report4.exit === 0) return [];
     return [
-      report3.exit === 2 ? `${short3(sha)} could not be analyzed` : `${short3(sha)} dropped ${String(report3.findings.length)} line(s)`
+      report4.exit === 2 ? `${short3(sha)} could not be analyzed` : `${short3(sha)} dropped ${String(report4.findings.length)} line(s)`
     ];
   });
   return { id: "merges", failures, fix: "finitemonkey merge verify <merge-commit>" };
@@ -48639,18 +48760,18 @@ var ciGateCommand = {
 var MERGE_VERIFY_RUN_SCHEMA = "finitemonkey/merge-verify-run@1";
 var short4 = (sha) => (sha ?? "?").slice(0, 12);
 var humanOf = (ctx, item2) => {
-  const { report: report3 } = item2;
+  const { report: report4 } = item2;
   const range = {
-    base: short4(report3.base),
+    base: short4(report4.base),
     result: item2.commit === "MERGE_HEAD" ? "working tree" : short4(item2.commit)
   };
-  if (report3.exit === 2) return [ctx.t("git.error.merge_unanalyzable", { detail: report3.error ?? "" })];
-  if (report3.exit === 0) {
-    return [ctx.t("git.merge.ok", { ...range, files: report3.files, justified: report3.justified })];
+  if (report4.exit === 2) return [ctx.t("git.error.merge_unanalyzable", { detail: report4.error ?? "" })];
+  if (report4.exit === 0) {
+    return [ctx.t("git.merge.ok", { ...range, files: report4.files, justified: report4.justified })];
   }
   return [
-    ctx.t("git.merge.lost", { ...range, count: report3.findings.length }),
-    ...report3.findings.map(
+    ctx.t("git.merge.lost", { ...range, count: report4.findings.length }),
+    ...report4.findings.map(
       (finding6) => ctx.t("git.merge.finding", {
         where: findingLabel(finding6),
         kind: finding6.kind,
@@ -48793,9 +48914,9 @@ var restoreBranch = (runtime, repo, sha, branch) => {
 
 // src/commands/git-rescue.ts
 var RESCUE_SCHEMA = "finitemonkey/git-rescue@1";
-var listing = (t, report3) => [
+var listing = (t, report4) => [
   t("git.rescue.title"),
-  ...report3.commits.map(
+  ...report4.commits.map(
     (commit2) => commit2.source === "reflog" ? t("git.rescue.reflog", {
       ref: commit2.ref ?? "",
       sha: commit2.sha.slice(0, 12),
@@ -48803,9 +48924,9 @@ var listing = (t, report3) => [
       subject: commit2.subject
     }) : t("git.rescue.dangling", { sha: commit2.sha.slice(0, 12), when: commit2.when, subject: commit2.subject })
   ),
-  ...report3.blobs > 0 ? [t("git.rescue.blobs", { count: report3.blobs })] : [],
+  ...report4.blobs > 0 ? [t("git.rescue.blobs", { count: report4.blobs })] : [],
   t("git.rescue.never_staged"),
-  ...report3.commits.length > 0 ? [t("git.rescue.next")] : []
+  ...report4.commits.length > 0 ? [t("git.rescue.next")] : []
 ];
 var rescueCommand = {
   path: ["rescue"],
@@ -48819,8 +48940,8 @@ var rescueCommand = {
     const sha = stringOption(args2.values, "restore");
     const branch = stringOption(args2.values, "branch");
     if (sha === void 0 && branch === void 0) {
-      const report3 = rescueReport(ctx.runtime, repo);
-      return Promise.resolve(success({ schema: RESCUE_SCHEMA, action: "list", ...report3 }, listing(ctx.t, report3)));
+      const report4 = rescueReport(ctx.runtime, repo);
+      return Promise.resolve(success({ schema: RESCUE_SCHEMA, action: "list", ...report4 }, listing(ctx.t, report4)));
     }
     if (sha === void 0 || branch === void 0) {
       const fix = "finitemonkey rescue --restore <sha> --branch <name>";
@@ -49489,18 +49610,18 @@ var loadReview = (ctx, dir) => {
 var runI18nCheck = (ctx, dir) => {
   const input = dir === void 0 ? accept(catalogs) : loadCatalogs(ctx, dir);
   if (!input.ok) return failureFrom(ctx.t, input.error);
-  const report3 = checkCatalogs(input.value, dir === void 0 ? reviewStatus : loadReview(ctx, dir));
-  const data2 = { ...report3, source: dir ?? "bundled" };
-  const summary2 = ctx.t("i18n.summary", { languages: report3.languages.join(", "), keys: report3.keys });
-  if (report3.problems.length === 0) return success(data2, [summary2, ctx.t("i18n.ok")]);
+  const report4 = checkCatalogs(input.value, dir === void 0 ? reviewStatus : loadReview(ctx, dir));
+  const data2 = { ...report4, source: dir ?? "bundled" };
+  const summary2 = ctx.t("i18n.summary", { languages: report4.languages.join(", "), keys: report4.keys });
+  if (report4.problems.length === 0) return success(data2, [summary2, ctx.t("i18n.ok")]);
   return {
     ok: false,
     exitCode: ExitCode.CheckFailed,
     data: data2,
-    human: [summary2, ...report3.problems.map((problem5) => describeProblem(ctx, problem5))],
+    human: [summary2, ...report4.problems.map((problem5) => describeProblem(ctx, problem5))],
     error: {
       code: "i18n_mismatch",
-      message: ctx.t("error.i18n_mismatch", { count: report3.problems.length }),
+      message: ctx.t("error.i18n_mismatch", { count: report4.problems.length }),
       fix: ctx.t("i18n.fix", { file: dir ?? "src/i18n" })
     }
   };
@@ -51298,23 +51419,23 @@ var list7 = (values, name) => {
   if (typeof value2 === "string") return [value2];
   return Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
 };
-var humanOf2 = (ctx, report3) => [
-  ctx.t(report3.outcome === "merged" ? "merge.done" : "merge.stopped", {
-    source: report3.source.ref,
-    target: report3.target.ref,
-    branch: report3.integration.branch,
-    count: report3.stops.length
+var humanOf2 = (ctx, report4) => [
+  ctx.t(report4.outcome === "merged" ? "merge.done" : "merge.stopped", {
+    source: report4.source.ref,
+    target: report4.target.ref,
+    branch: report4.integration.branch,
+    count: report4.stops.length
   }),
-  ...report3.files.flatMap(
+  ...report4.files.flatMap(
     (file) => (file.hunks.length === 0 ? [file] : file.hunks).map(
       (hunk) => ctx.t("merge.file", { path: file.path, cls: hunk.class, rule: hunk.rule, decision: hunk.decision })
     )
   ),
-  ...report3.stops.map((stop) => ctx.t("merge.stop", { reason: stop.reason, path: stop.path ?? "-" })),
-  ...report3.semanticCandidates.map(
+  ...report4.stops.map((stop) => ctx.t("merge.stop", { reason: stop.reason, path: stop.path ?? "-" })),
+  ...report4.semanticCandidates.map(
     (item2) => ctx.t("merge.semantic", { symbol: item2.symbol, file: item2.file, reason: item2.reason })
   ),
-  ctx.t("merge.report", { path: report3.reportPath })
+  ctx.t("merge.report", { path: report4.reportPath })
 ];
 var mergeCommand = {
   path: ["merge"],
@@ -51339,7 +51460,7 @@ var mergeCommand = {
         )
       );
     }
-    const report3 = runMerge(ctx.runtime, ctx.cwd, ctx.env, {
+    const report4 = runMerge(ctx.runtime, ctx.cwd, ctx.env, {
       source: source3,
       target: stringOption(args2.values, "into"),
       checks: list7(args2.values, "check"),
@@ -51348,30 +51469,30 @@ var mergeCommand = {
       declaredRemovals: list7(args2.values, "declare-removal"),
       owner: commandOwner(ctx)
     });
-    if (!report3.ok) {
+    if (!report4.ok) {
       return Promise.resolve(
         failureFrom(ctx.t, {
-          ...usageProblem("merge_failed", "merge.error.failed", "finitemonkey wt doctor", { detail: report3.error }),
+          ...usageProblem("merge_failed", "merge.error.failed", "finitemonkey wt doctor", { detail: report4.error }),
           exitCode: ExitCode.CheckFailed
         })
       );
     }
-    const human2 = humanOf2(ctx, report3.value);
-    if (report3.value.outcome === "merged") return Promise.resolve(success(report3.value, human2));
+    const human2 = humanOf2(ctx, report4.value);
+    if (report4.value.outcome === "merged") return Promise.resolve(success(report4.value, human2));
     return Promise.resolve({
       ok: false,
       exitCode: ExitCode.CheckFailed,
       error: {
         code: "merge_stopped",
         message: ctx.t("merge.stopped", {
-          source: report3.value.source.ref,
-          target: report3.value.target.ref,
-          branch: report3.value.integration.branch,
-          count: report3.value.stops.length
+          source: report4.value.source.ref,
+          target: report4.value.target.ref,
+          branch: report4.value.integration.branch,
+          count: report4.value.stops.length
         }),
-        fix: `finitemonkey wt archive ${report3.value.integration.id}`
+        fix: `finitemonkey wt archive ${report4.value.integration.id}`
       },
-      data: report3.value,
+      data: report4.value,
       human: human2
     });
   }
@@ -52471,7 +52592,7 @@ var ANSWER_USAGE = `finitemonkey perfil answer <${DOMAINS.join("|")}> <a|b|c>`;
 var set = (ctx, rawDomain, rawLevel) => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("perfil.error.person_only", SET_USAGE));
   const domain = parseDomain(rawDomain);
-  const level = parseLevel2(rawLevel);
+  const level = parseLevel(rawLevel);
   if (domain === void 0 || level === void 0) {
     return failureFrom(
       ctx.t,
@@ -52613,14 +52734,14 @@ var startConsolidation = (runtime, root, date) => {
     indexIssues(
       MASTER_FILE,
       sectionsOf(current2.value),
-      reports.map((report3) => report3.name)
+      reports.map((report4) => report4.name)
     ).map((item2) => item2.detail)
   );
   return accept({
     previous: `${PLAN_DIR}/${name}`,
-    reports: reports.filter((report3) => missing3.has(report3.name)).map((report3) => ({
-      file: `${PLAN_DIR}/${report3.name}`,
-      text: textForPlan(report3.body)
+    reports: reports.filter((report4) => missing3.has(report4.name)).map((report4) => ({
+      file: `${PLAN_DIR}/${report4.name}`,
+      text: textForPlan(report4.body)
     }))
   });
 };
@@ -52714,9 +52835,9 @@ var planConsolidateCommand = {
       ...success({ schema: PLAN_SCHEMA2, ...started.value }, [
         ctx.t("plan.consolidate.saved", { file: previous }),
         ctx.t("plan.consolidate.ask", { count: reports.length }),
-        ...reports.flatMap((report3) => [
-          `## ${report3.file}`,
-          report3.text === "" ? ctx.t("plan.consolidate.no_text") : report3.text
+        ...reports.flatMap((report4) => [
+          `## ${report4.file}`,
+          report4.text === "" ? ctx.t("plan.consolidate.no_text") : report4.text
         ])
       ]),
       next: "finitemonkey plan consolidate --done"
@@ -53408,10 +53529,10 @@ var spanView = (span) => ({
   hits: span.hits.map(({ rule, line: line12, weight: weight2, excerpt }) => ({ rule, line: line12, weight: weight2, excerpt }))
 });
 var proseCheckData = (reports) => {
-  const files = reports.map(({ file, report: report3 }) => ({
+  const files = reports.map(({ file, report: report4 }) => ({
     file,
-    allowed: report3.allowed,
-    spans: report3.spans.map(spanView)
+    allowed: report4.allowed,
+    spans: report4.spans.map(spanView)
   }));
   return {
     schema: PROSE_CHECK_SCHEMA,
@@ -53423,15 +53544,15 @@ var proseCheckData = (reports) => {
     }
   };
 };
-var fileLines3 = (t, report3) => {
-  if (report3.report.allowed) return [t("prose.check.allowed", { file: report3.file, marker: ALLOW_FILE_COMMENT })];
-  const { spans } = report3.report;
+var fileLines3 = (t, report4) => {
+  if (report4.report.allowed) return [t("prose.check.allowed", { file: report4.file, marker: ALLOW_FILE_COMMENT })];
+  const { spans } = report4.report;
   if (spans.length === 0) return [];
   return [
-    t("prose.check.file", { file: report3.file, count: spans.length }),
+    t("prose.check.file", { file: report4.file, count: spans.length }),
     ...spans.flatMap((span) => [
       t("prose.check.span", {
-        file: report3.file,
+        file: report4.file,
         start: span.startLine,
         end: span.endLine,
         score: span.score,
@@ -53442,7 +53563,7 @@ var fileLines3 = (t, report3) => {
   ];
 };
 var proseCheckHuman = (t, reports, data2) => [
-  ...reports.flatMap((report3) => fileLines3(t, report3)),
+  ...reports.flatMap((report4) => fileLines3(t, report4)),
   ...data2.summary.spans === 0 ? [t("prose.check.clean", { count: data2.summary.files })] : []
 ];
 
@@ -53486,8 +53607,8 @@ var targetsOf3 = (ctx, root, paths) => {
 var reportsOf = async (ctx, root, paths, mode) => {
   const forced = mode.record ? "record" : void 0;
   if (mode.stdin) {
-    const report3 = scoreProse(await readAll2(ctx.io.stdin), { context: forced ?? "docs" });
-    return accept([{ file: STDIN_LABEL, report: report3 }]);
+    const report4 = scoreProse(await readAll2(ctx.io.stdin), { context: forced ?? "docs" });
+    return accept([{ file: STDIN_LABEL, report: report4 }]);
   }
   const targets2 = targetsOf3(ctx, root, paths);
   if (!targets2.ok) return targets2;
@@ -53668,6 +53789,14 @@ var newRecord2 = (ctx, root, topic) => {
   const written = made.ok ? ctx.runtime.writeText(planPath(root, name), renderResearch(ctx.t, topic, ctx.runtime.now().slice(0, 10))) : made;
   if (!written.ok) return failureFrom(ctx.t, writeProblem4(written.error));
   const file = `${PLAN_DIR}/${name}`;
+  const paths = fmPaths(root);
+  const active = activeCheckOf(ctx.runtime, paths, "research");
+  recordHorizon(ctx.runtime, paths, {
+    source: "research",
+    criterion: criterionOfCheck(active.check),
+    domain: domainOfText(topic),
+    ...active.task === void 0 ? {} : { task: active.task }
+  });
   return {
     ...success({ schema: RESEARCH_SCHEMA, file, topic, created: true }, [ctx.t("research.created", { file })]),
     next: `finitemonkey research check ${file}`
@@ -54987,6 +55116,40 @@ var signalsForgetCommand = {
   run: (ctx) => Promise.resolve(forget2(ctx))
 };
 
+// src/commands/signals-blind-band.ts
+var percent = (value2) => `${String(Math.round(value2 * 100))}%`;
+var report2 = (ctx) => {
+  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+  const log = ctx.runtime.readText(paths.log);
+  const data2 = blindBand(ctx.runtime, paths, log.ok ? log.value : "");
+  const human2 = data2.rows.length === 0 ? [ctx.t("blind_band.empty")] : [
+    ctx.t("blind_band.total", {
+      index: percent(data2.total.index),
+      without: data2.total.withoutCriterion,
+      helps: data2.total.helps
+    }),
+    ...data2.rows.map(
+      (row3) => ctx.t("blind_band.row", {
+        week: row3.week,
+        domain: row3.domain,
+        index: percent(row3.index),
+        without: row3.withoutCriterion,
+        helps: row3.helps,
+        concepts: row3.conceptsMoved
+      })
+    )
+  ];
+  return success(data2, human2);
+};
+var signalsBlindBandCommand = {
+  path: ["signals", "blind-band"],
+  summaryKey: "command.signals_blind_band.summary",
+  usage: "finitemonkey signals blind-band [--json]",
+  status: "ready",
+  maxPositionals: 0,
+  run: (ctx) => Promise.resolve(report2(ctx))
+};
+
 // src/commands/signals-hypothesis.ts
 var USAGE19 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
 var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, { detail });
@@ -55194,8 +55357,8 @@ var contextPercent = (record10) => {
   return typeof size === "number" && size > 0 && used !== void 0 ? Math.round(used / size * 100) : void 0;
 };
 var rateLimits = (value2) => isRecord(value2) ? Object.entries(value2).flatMap(([name, window]) => {
-  const percent = isRecord(window) ? num3(window["used_percentage"]) : void 0;
-  return percent === void 0 ? [] : [{ name, percent: Math.round(percent) }];
+  const percent2 = isRecord(window) ? num3(window["used_percentage"]) : void 0;
+  return percent2 === void 0 ? [] : [{ name, percent: Math.round(percent2) }];
 }) : [];
 var parseStatusInput = (raw) => {
   const parsed = parseJsonObject(raw.trim() === "" ? "{}" : raw);
@@ -55651,8 +55814,8 @@ var showTask = (ctx, id) => {
   if (paths === void 0) return noRepo(ctx);
   const active = readState(ctx.runtime, paths).active;
   const target5 = id ?? active;
-  const report3 = currentReport(ctx.runtime, paths, void 0, target5);
-  if (report3 === void 0) {
+  const report4 = currentReport(ctx.runtime, paths, void 0, target5);
+  if (report4 === void 0) {
     return failureFrom(
       ctx.t,
       problem4(
@@ -55664,7 +55827,7 @@ var showTask = (ctx, id) => {
       )
     );
   }
-  return success({ schema: TASK_SCHEMA, active: active ?? null, report: report3 }, reportLines2(ctx.t, report3));
+  return success({ schema: TASK_SCHEMA, active: active ?? null, report: report4 }, reportLines2(ctx.t, report4));
 };
 var closeShortcuts = (ctx, paths, id) => {
   const text27 = ctx.runtime.readText(paths.task(id));
@@ -55928,7 +56091,7 @@ var questionLines2 = (ctx, question) => [
   ...question.options.map((option3) => ctx.t("divergence.option", { letter: option3.letter, output: option3.output })),
   ctx.t("divergence.choose", { task: question.task })
 ];
-var report2 = (ctx, paths, task, outcome2, mode) => {
+var report3 = (ctx, paths, task, outcome2, mode) => {
   logEvent(ctx.runtime, paths, "divergence.outcome", { task, mode, kind: outcome2.kind });
   const data2 = { schema: TASK_SCHEMA, task, mode, outcome: outcome2.kind };
   if (outcome2.kind === "no_change") return success({ ...data2 }, [ctx.t("divergence.no_change", { task })]);
@@ -55947,6 +56110,12 @@ var report2 = (ctx, paths, task, outcome2, mode) => {
   }
   const state = readPending(ctx.runtime, paths);
   writePending(ctx.runtime, paths, { ...state, pending: { ...state.pending, [task]: question } });
+  recordHorizon(ctx.runtime, paths, {
+    source: "divergence",
+    criterion: "example",
+    domain: domainOfText(`${question.input} ${question.options.map((option3) => option3.output).join(" ")}`),
+    task
+  });
   return {
     ...success({ ...data2, question }, questionLines2(ctx, question)),
     next: `finitemonkey task diverge ${task} --choose A`
@@ -55982,7 +56151,7 @@ var ask6 = (ctx, paths, task) => {
     candidates: { ...candidates4, readings: candidates4.readings.slice(0, config.readings) },
     beginner: beginnerIn(ctx.runtime, paths)
   });
-  return report2(ctx, paths, task, outcome2, mode);
+  return report3(ctx, paths, task, outcome2, mode);
 };
 var choose = (ctx, paths, task, letter) => {
   const state = readPending(ctx.runtime, paths);
@@ -57114,6 +57283,7 @@ var REGISTRY2 = [
   learningsAcceptCommand,
   taskExamplesCommand,
   taskDivergeCommand,
+  signalsBlindBandCommand,
   versionCommand,
   helpCommand
 ];
