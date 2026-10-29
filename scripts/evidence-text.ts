@@ -14,6 +14,8 @@ interface EvidenceWords {
   readonly armColumns: readonly string[];
   readonly noRuns: string;
   readonly runsIntro: string;
+  readonly reviewIntro: (benchmark: string, commit: string, judge: string) => string;
+  readonly reviewColumns: readonly string[];
 }
 
 const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
@@ -25,6 +27,9 @@ const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
     armColumns: ["Arm", "Runs", "Tokens (median)", "Wall time (median, s)", "False done"],
     noRuns: "Cost against plain Claude Code on the same tasks: not measured yet.",
     runsIntro: "Cost against plain Claude Code on the same tasks:",
+    reviewIntro: (benchmark, commit, judge) =>
+      `Review against ${benchmark} at \`${commit.slice(0, 12)}\`, judged by ${judge}:`,
+    reviewColumns: ["Arm", "PRs", "Precision", "Recall", "F1"],
   },
   "pt-BR": {
     intro: (version, budget, synthetic) =>
@@ -34,6 +39,9 @@ const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
     armColumns: ["Braço", "Execuções", "Tokens (mediana)", "Tempo (mediana, s)", "Pronto falso"],
     noRuns: "Custo contra o Claude Code puro nas mesmas tarefas: ainda não medido.",
     runsIntro: "Custo contra o Claude Code puro nas mesmas tarefas:",
+    reviewIntro: (benchmark, commit, judge) =>
+      `Revisão contra ${benchmark} em \`${commit.slice(0, 12)}\`, com ${judge} como juiz:`,
+    reviewColumns: ["Braço", "PRs", "Precisão", "Revocação", "F1"],
   },
   es: {
     intro: (version, budget, synthetic) =>
@@ -43,6 +51,9 @@ const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
     armColumns: ["Brazo", "Ejecuciones", "Tokens (mediana)", "Tiempo (mediana, s)", "Listo falso"],
     noRuns: "Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.",
     runsIntro: "Costo frente a Claude Code solo en las mismas tareas:",
+    reviewIntro: (benchmark, commit, judge) =>
+      `Revisión contra ${benchmark} en \`${commit.slice(0, 12)}\`, con ${judge} como juez:`,
+    reviewColumns: ["Brazo", "PRs", "Precisión", "Exhaustividad", "F1"],
   },
 };
 
@@ -89,7 +100,21 @@ export const renderEvidence = (lang: Lang, evidence: Evidence | undefined): stri
       ? [words.noRuns]
       : [words.runsIntro, "", row(words.armColumns), divider(words.armColumns.length), ...evidence.arms.map(armRow)];
   const synthetic = evidence.guards.every((guard) => guard.byOrigin.session === 0);
-  return [words.intro(evidence.version, evidence.budget, synthetic), "", ...guards, "", ...arms].join("\n");
+  const percent = (value: number): string => `${(value * 100).toFixed(1)}%`;
+  const review =
+    evidence.review === null
+      ? []
+      : [
+          "",
+          words.reviewIntro(evidence.review.benchmark, evidence.review.commit, evidence.review.judgeModel),
+          "",
+          row(words.reviewColumns),
+          divider(words.reviewColumns.length),
+          ...evidence.review.arms.map((arm) =>
+            row([`\`${arm.arm}\``, String(arm.reviews), percent(arm.precision), percent(arm.recall), percent(arm.f1)]),
+          ),
+        ];
+  return [words.intro(evidence.version, evidence.budget, synthetic), "", ...guards, "", ...arms, ...review].join("\n");
 };
 
 export const readEvidence = (root: string): Evidence | undefined => {

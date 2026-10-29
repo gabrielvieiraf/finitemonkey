@@ -40,6 +40,22 @@ export interface Evidence {
   readonly guards: readonly GuardEvidence[];
   readonly contextBytes: Readonly<Record<string, number>>;
   readonly arms: readonly ArmOverhead[];
+  readonly review: ReviewEvidence | null;
+}
+
+export interface ReviewArmScore {
+  readonly arm: string;
+  readonly reviews: number;
+  readonly precision: number;
+  readonly recall: number;
+  readonly f1: number;
+}
+
+export interface ReviewEvidence {
+  readonly benchmark: string;
+  readonly commit: string;
+  readonly judgeModel: string;
+  readonly arms: readonly ReviewArmScore[];
 }
 
 export interface GuardBudget {
@@ -211,6 +227,27 @@ const guardOf = (raw: unknown): GuardEvidence | undefined => {
   };
 };
 
+const reviewArmOf = (raw: unknown): ReviewArmScore | undefined => {
+  if (!isRecord(raw)) return undefined;
+  const { arm, reviews, precision, recall, f1 } = raw;
+  return typeof arm === "string" &&
+    typeof reviews === "number" &&
+    typeof precision === "number" &&
+    typeof recall === "number" &&
+    typeof f1 === "number"
+    ? { arm, reviews, precision, recall, f1 }
+    : undefined;
+};
+
+export const parseReviewEvidence = (raw: unknown): ReviewEvidence | null => {
+  if (!isRecord(raw)) return null;
+  const { benchmark, commit, judgeModel } = raw;
+  const arms = Array.isArray(raw["arms"]) ? raw["arms"].map(reviewArmOf) : [];
+  if (typeof benchmark !== "string" || typeof commit !== "string" || typeof judgeModel !== "string") return null;
+  if (arms.length === 0 || arms.some((arm) => arm === undefined)) return null;
+  return { benchmark, commit, judgeModel, arms: arms.flatMap((arm) => (arm === undefined ? [] : [arm])) };
+};
+
 const armOf = (raw: unknown): ArmOverhead | undefined => {
   if (!isRecord(raw)) return undefined;
   const { arm, runs, tokensMedian, wallMsMedian, costUsdMedian, falseDoneRate } = raw;
@@ -246,5 +283,6 @@ export const parseEvidence = (raw: JsonObject): Parsed<Evidence> => {
       Object.entries(context).flatMap(([name, value]) => (typeof value === "number" ? [[name, value]] : [])),
     ),
     arms: arms.flatMap((item) => (item === undefined ? [] : [item])),
+    review: parseReviewEvidence(raw["review"]),
   });
 };

@@ -17,6 +17,8 @@ import {
   guardEvidence,
   judge,
   parseEvidenceBudgets,
+  parseReviewEvidence,
+  type ReviewEvidence,
 } from "./evidence-rates.js";
 import { prepareFixture, replayGuard } from "./evidence-replay.js";
 import { EVIDENCE_FILE, renderEvidence } from "./evidence-text.js";
@@ -30,7 +32,7 @@ const fail = (message: string): never => {
 
 const { values } = parseArgs({
   args: process.argv.slice(2),
-  options: { runs: { type: "string" }, out: { type: "string" } },
+  options: { runs: { type: "string" }, out: { type: "string" }, review: { type: "string" } },
   strict: true,
 });
 
@@ -59,6 +61,13 @@ const runRecords = (path: string | undefined): readonly JsonObject[] => {
       const record = parseJsonObject(line);
       return record.ok ? [record.value] : [];
     });
+};
+
+const reviewScores = (path: string | undefined): ReviewEvidence | null => {
+  if (path === undefined) return null;
+  const raw = parseJsonObject(readFileSync(path, "utf8"));
+  const parsed = raw.ok ? parseReviewEvidence(raw.value) : null;
+  return parsed ?? fail(`${path} is not a bench:review score file`);
 };
 
 const alwaysOn = GUARD_SETS.filter((set) => set.damage);
@@ -92,6 +101,7 @@ const evidence: Evidence = {
     measured.context.filter((measure) => measure.name.endsWith("Bytes")).map((item) => [item.name, item.value]),
   ),
   arms: armOverhead(runRecords(values.runs)),
+  review: reviewScores(values.review),
 };
 
 const out = values.out ?? join(root, EVIDENCE_FILE);

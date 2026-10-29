@@ -70,6 +70,7 @@
     "bench": "tsx scripts/bench.ts",
     "bench:freeze": "tsx scripts/bench-freeze.ts",
     "evidence": "tsx scripts/evidence.ts",
+    "bench:review": "tsx scripts/review-bench.ts",
     "docs": "tsx scripts/build-docs.ts",
     "docs:check": "tsc -p scripts && tsx scripts/build-docs.ts --check",
     "runbooks:check": "tsx scripts/check-runbooks.ts",
