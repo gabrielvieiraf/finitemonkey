@@ -108,6 +108,39 @@
         ]
       }
     },
+    "probe": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        },
+        "seen": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cached": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "version",
+        "at",
+        "seen",
+        "missing",
+        "cached"
+      ]
+    },
     "schema": {
       "const": "finitemonkey/doctor@1"
     },

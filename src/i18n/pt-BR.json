@@ -2007,5 +2007,13 @@
   "learnings.quarantined": "[em quarentena: escrita depois de {origin}; não é injetada até `finitemonkey learnings accept {id}`]",
   "learnings.error.person_only": "Só a pessoa aceita uma lição em quarentena, num terminal",
   "doctor.hidden.found": "caracteres ocultos ou bidirecionais que o modelo lê e a pessoa não vê: {list}",
-  "doctor.hidden.fix": "Abra cada arquivo na linha indicada e apague os caracteres ocultos, ou reescreva a linha"
+  "doctor.hidden.fix": "Abra cada arquivo na linha indicada e apague os caracteres ocultos, ou reescreva a linha",
+  "claims.state.released_by_cap": "o Claude Code liberou o último Stop pelo limite de bloqueios, então o portão nunca confirmou o trabalho",
+  "pr.error.released_by_cap": "A última sessão de {task} terminou porque o Claude Code liberou o Stop pelo limite de bloqueios ({at}); o portão não passou",
+  "gate.human.last_released": "A última sessão terminou no limite de Stop do Claude Code ({at}) sem portão verde: {detail}. Rode `finitemonkey gate` antes de abrir PR.",
+  "statusline.hooks_broken": "hooks quebrados",
+  "doctor.probe.ok": "Claude Code {version}: PreToolUse, SubagentStart, PreToolUse dentro de subagente e Stop dispararam (sonda em {at})",
+  "doctor.probe.missing": "Claude Code {version}: estes hooks não dispararam na sessão de sonda em {at}: {list}",
+  "doctor.probe.fix": "Atualize ou volte a versão do Claude Code; até lá os guards que dependem desses hooks não protegem este projeto",
+  "doctor.probe.no_claude": "O comando claude não foi encontrado, então a sonda de hooks não rodou"
 }

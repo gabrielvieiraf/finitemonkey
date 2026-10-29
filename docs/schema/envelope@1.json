@@ -115,7 +115,8 @@
             "deploy_generate_blocked",
             "deploy_drift_found",
             "deploy_check_unconfigured",
-            "policy_invalid"
+            "policy_invalid",
+            "gate_released_by_cap"
           ]
         },
         "message": {

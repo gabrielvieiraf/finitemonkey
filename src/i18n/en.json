@@ -2007,5 +2007,13 @@
   "learnings.quarantined": "[quarantined: written after {origin}; not injected until `finitemonkey learnings accept {id}`]",
   "learnings.error.person_only": "Only the person accepts a quarantined lesson, from a terminal",
   "doctor.hidden.found": "hidden or bidirectional characters that the model reads and the person does not see: {list}",
-  "doctor.hidden.fix": "Open each file at the line shown and delete the hidden characters, or rewrite the line"
+  "doctor.hidden.fix": "Open each file at the line shown and delete the hidden characters, or rewrite the line",
+  "claims.state.released_by_cap": "Claude Code released the last Stop at its block cap, so the gate never confirmed the work",
+  "pr.error.released_by_cap": "The last session of {task} ended because Claude Code released Stop at its block cap ({at}); the gate did not pass",
+  "gate.human.last_released": "The last session ended at Claude Code's Stop cap ({at}) without a passing gate: {detail}. Run `finitemonkey gate` before opening a PR.",
+  "statusline.hooks_broken": "hooks broken",
+  "doctor.probe.ok": "Claude Code {version}: PreToolUse, SubagentStart, PreToolUse inside a subagent and Stop all fired (probe at {at})",
+  "doctor.probe.missing": "Claude Code {version}: these hooks did not fire in the probe session at {at}: {list}",
+  "doctor.probe.fix": "Update or downgrade Claude Code; until then the guards that need those hooks do not protect this project",
+  "doctor.probe.no_claude": "The claude command was not found, so the hook probe did not run"
 }

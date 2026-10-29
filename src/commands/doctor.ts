@@ -5,10 +5,12 @@ import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, toEnvelope } from "../core/result.js";
 import { applyFixes, type Fixed } from "../doctor/fix.js";
 import { hookInventory, type HookRow, withDebugLog } from "../doctor/hook-inventory.js";
+import { probeFindings, type ProbeResult, runProbe } from "../doctor/probe.js";
 import { reportMarkdown, reportPath } from "../doctor/report-file.js";
 import { buildReport, doctorEnvFrom, type DoctorItem, type DoctorReport, runChecks } from "../doctor/run.js";
 import { ExitCode } from "../exit-codes.js";
 import { applyProblem, planProblem } from "../install/session.js";
+import { fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
 const MARK = { ok: "ok  ", warn: "warn", fail: "FAIL" } as const;
@@ -22,6 +24,7 @@ export interface DoctorData extends DoctorReport {
   readonly fixed?: Fixed;
   readonly reportPath?: string;
   readonly hookInventory?: readonly HookRow[];
+  readonly probe?: ProbeResult;
 }
 
 const debugLog = (ctx: Ctx): string | undefined => {
@@ -91,7 +94,13 @@ const writeReport = (ctx: Ctx, data: DoctorData, result: CommandResult<DoctorDat
   return { ...result, data: { ...data, reportPath: path }, human };
 };
 
-const runDoctor = (ctx: Ctx, fix: boolean, report: boolean, hooks: boolean): CommandResult<DoctorData> => {
+const runDoctor = (
+  ctx: Ctx,
+  fix: boolean,
+  report: boolean,
+  hooks: boolean,
+  probe: boolean,
+): CommandResult<DoctorData> => {
   let extra: readonly string[] = [];
   let fixed: Fixed | undefined;
   if (fix) {
@@ -105,10 +114,12 @@ const runDoctor = (ctx: Ctx, fix: boolean, report: boolean, hooks: boolean): Com
     extra = fixLines(ctx, fixed);
   }
   const env = doctorEnvFrom(ctx);
-  const checked = buildReport(ctx, runChecks(env));
+  const probed = probe ? runProbe(ctx.runtime, fmPaths(env.root)) : undefined;
+  const checked = buildReport(ctx, [...runChecks(env), ...(probe ? probeFindings(probed) : [])]);
   const rows = hooks ? withDebugLog(hookInventory(env), debugLog(ctx)) : undefined;
   const base: DoctorData = rows === undefined ? checked : { ...checked, hookInventory: rows };
-  const data: DoctorData = fixed === undefined ? base : { ...base, fixed };
+  const withProbe: DoctorData = probed === undefined ? base : { ...base, probe: probed };
+  const data: DoctorData = fixed === undefined ? withProbe : { ...withProbe, fixed };
   const lines = [
     ...(fix ? [...extra, ...manualLines(ctx, checked)] : extra),
     ...(rows === undefined ? [] : inventoryLines(ctx, rows)),
@@ -120,11 +131,22 @@ const runDoctor = (ctx: Ctx, fix: boolean, report: boolean, hooks: boolean): Com
 export const doctorCommand: CommandSpec = {
   path: ["doctor"],
   summaryKey: "command.doctor.summary",
-  usage: "finitemonkey doctor [--hooks] [--fix] [--report] [--dry-run] [--json]",
+  usage: "finitemonkey doctor [--hooks] [--probe] [--fix] [--report] [--dry-run] [--json]",
   status: "ready",
-  options: { fix: { type: "boolean" }, report: { type: "boolean" }, hooks: { type: "boolean" } },
+  options: {
+    fix: { type: "boolean" },
+    report: { type: "boolean" },
+    hooks: { type: "boolean" },
+    probe: { type: "boolean" },
+  },
   run: (ctx, args) =>
     Promise.resolve(
-      runDoctor(ctx, args.values["fix"] === true, args.values["report"] === true, args.values["hooks"] === true),
+      runDoctor(
+        ctx,
+        args.values["fix"] === true,
+        args.values["report"] === true,
+        args.values["hooks"] === true,
+        args.values["probe"] === true,
+      ),
     ),
 };

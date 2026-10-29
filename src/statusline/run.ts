@@ -1,5 +1,6 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { brokenHooks } from "../doctor/probe.js";
 import { readFronts } from "../fronts/state.js";
 import { statusSegment } from "../fronts/status.js";
 import { readAll, withDeadline } from "../hooks/stdin.js";
@@ -85,6 +86,7 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
     ...spendSegment(ctx, paths, input),
     fronts: root === undefined ? undefined : frontsSegment(ctx, root),
     blueprint: blueprintOf(ctx, paths),
+    hooksBroken: paths !== undefined && input.version !== undefined && brokenHooks(ctx.runtime, paths, input.version),
   });
   return composeLine(wrapped, segment, columnsOf(ctx));
 };

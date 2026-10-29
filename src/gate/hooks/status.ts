@@ -5,7 +5,7 @@ import { readJsonFile, writeJsonFile } from "../../task/state.js";
 
 export const STATUS_FILE = "gate-status.json";
 
-export type GateStatusKind = "passed" | "failed" | "incomplete" | "not_run" | "not_done";
+export type GateStatusKind = "passed" | "failed" | "incomplete" | "not_run" | "not_done" | "released_by_cap";
 
 export interface GateStatus {
   readonly status: GateStatusKind;
@@ -16,7 +16,9 @@ export interface GateStatus {
   readonly tree?: string;
 }
 
-const KINDS: readonly GateStatusKind[] = ["passed", "failed", "incomplete", "not_run", "not_done"];
+const KINDS: readonly GateStatusKind[] = ["passed", "failed", "incomplete", "not_run", "not_done", "released_by_cap"];
+
+export const UNPROVEN: ReadonlySet<GateStatusKind> = new Set(["not_run", "released_by_cap"]);
 
 export const writeGateStatus = (
   runtime: Pick<Runtime, "writeText" | "now">,
@@ -43,3 +45,10 @@ export const readGateStatus = (runtime: Pick<Runtime, "readText">, paths: FmPath
     ...(typeof tree === "string" ? { tree } : {}),
   };
 };
+
+export const recordReleasedByCap = (
+  runtime: Pick<Runtime, "writeText" | "now">,
+  paths: FmPaths,
+  task: string,
+  detail: string,
+): boolean => writeGateStatus(runtime, paths, { status: "released_by_cap", task, detail });

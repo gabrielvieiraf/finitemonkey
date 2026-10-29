@@ -2008,7 +2008,15 @@
     "learnings.quarantined": "machine",
     "learnings.error.person_only": "machine",
     "doctor.hidden.found": "machine",
-    "doctor.hidden.fix": "machine"
+    "doctor.hidden.fix": "machine",
+    "claims.state.released_by_cap": "machine",
+    "pr.error.released_by_cap": "machine",
+    "gate.human.last_released": "machine",
+    "statusline.hooks_broken": "machine",
+    "doctor.probe.ok": "machine",
+    "doctor.probe.missing": "machine",
+    "doctor.probe.fix": "machine",
+    "doctor.probe.no_claude": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4019,6 +4027,14 @@
     "learnings.quarantined": "machine",
     "learnings.error.person_only": "machine",
     "doctor.hidden.found": "machine",
-    "doctor.hidden.fix": "machine"
+    "doctor.hidden.fix": "machine",
+    "claims.state.released_by_cap": "machine",
+    "pr.error.released_by_cap": "machine",
+    "gate.human.last_released": "machine",
+    "statusline.hooks_broken": "machine",
+    "doctor.probe.ok": "machine",
+    "doctor.probe.missing": "machine",
+    "doctor.probe.fix": "machine",
+    "doctor.probe.no_claude": "machine"
   }
 }

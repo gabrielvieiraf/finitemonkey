@@ -39,6 +39,7 @@ export const gateLight = (runtime: Pick<Runtime, "readText">, paths: FmPaths): G
     case "incomplete":
       return "incomplete";
     case "not_run":
+    case "released_by_cap":
       return "did_not_run";
   }
 };

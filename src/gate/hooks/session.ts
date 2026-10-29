@@ -24,6 +24,8 @@ const startBaseline = (runtime: Runtime, paths: FmPaths, tree: string): void => 
 const notRunLine = (t: Translate, runtime: Runtime, paths: FmPaths): readonly string[] => {
   const status = readGateStatus(runtime, paths);
   if (status?.status === "not_run") return [t("gate.human.last_not_run", { at: status.at, detail: status.detail })];
+  if (status?.status === "released_by_cap")
+    return [t("gate.human.last_released", { at: status.at, detail: status.detail })];
   if (status?.status === "not_done") return [t("gate.human.last_not_done", { at: status.at, detail: status.detail })];
   return [];
 };
