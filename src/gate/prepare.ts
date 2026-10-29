@@ -123,7 +123,11 @@ const measureSize = (
 ): SizeVerdict =>
   sizeVerdict(contract.size, diffShape(runtime, git, base, changes), sizeConfig(loadProjectConfig(runtime, git.cwd)));
 
-const withCheck = (contract: TaskContract, kind: "examples" | "scenarios", wanted: boolean): TaskContract =>
+const withCheck = (
+  contract: TaskContract,
+  kind: "examples" | "scenarios" | "blind-tests",
+  wanted: boolean,
+): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
     ? contract
     : { ...contract, acceptance: [...contract.acceptance, { id: kind, kind }] };
@@ -131,8 +135,14 @@ const withCheck = (contract: TaskContract, kind: "examples" | "scenarios", wante
 const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
   withCheck(contract, "examples", examples !== undefined && examples.length > 0);
 
-const withScenarios = (runtime: Runtime, root: AbsolutePath, contract: TaskContract): TaskContract =>
-  withCheck(contract, "scenarios", configAt(loadProjectConfig(runtime, root), "access") !== undefined);
+const withConfigured = (runtime: Runtime, root: AbsolutePath, contract: TaskContract): TaskContract => {
+  const config = loadProjectConfig(runtime, root);
+  return withCheck(
+    withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
+    "blind-tests",
+    configAt(config, "blind") !== undefined,
+  );
+};
 
 export type PrepareResult =
   | { readonly kind: "ready"; readonly prepared: Prepared }
@@ -168,7 +178,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     runtime: options.runtime,
     git,
     paths,
-    contract: withScenarios(
+    contract: withConfigured(
       options.runtime,
       root,
       withExamples(applySize(loaded.value.contract, size), loaded.value.examples),

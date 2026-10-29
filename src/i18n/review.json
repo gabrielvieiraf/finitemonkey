@@ -2102,7 +2102,15 @@
     "gate.scenarios.untouched": "machine",
     "gate.scenarios.not_configured": "machine",
     "gate.scenarios.not_run": "machine",
-    "gate.scenarios.shadow": "machine"
+    "gate.scenarios.shadow": "machine",
+    "gate.blind.off": "machine",
+    "gate.blind.small": "machine",
+    "gate.blind.no_criteria": "machine",
+    "gate.blind.no_writer": "machine",
+    "gate.blind.unavailable": "machine",
+    "gate.blind.summary": "machine",
+    "gate.blind.disagree": "machine",
+    "gate.blind.shadow": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4207,6 +4215,14 @@
     "gate.scenarios.untouched": "machine",
     "gate.scenarios.not_configured": "machine",
     "gate.scenarios.not_run": "machine",
-    "gate.scenarios.shadow": "machine"
+    "gate.scenarios.shadow": "machine",
+    "gate.blind.off": "machine",
+    "gate.blind.small": "machine",
+    "gate.blind.no_criteria": "machine",
+    "gate.blind.no_writer": "machine",
+    "gate.blind.unavailable": "machine",
+    "gate.blind.summary": "machine",
+    "gate.blind.disagree": "machine",
+    "gate.blind.shadow": "machine"
   }
 }

@@ -2101,5 +2101,13 @@
   "gate.scenarios.untouched": "a mudança não toca autenticação, acesso a dados nem rotas de API",
   "gate.scenarios.not_configured": "a mudança toca caminhos de acesso, mas o .finitemonkey/config.yml não tem access: start, port, user_a e user_b",
   "gate.scenarios.not_run": "os cenários de acesso não rodaram (app fora do ar ou sem resposta)",
-  "gate.scenarios.shadow": "modo sombra: {count, plural, one {# cenário de acesso falhou} other {# cenários de acesso falharam}} e bloquearia com access-scenarios ativo"
+  "gate.scenarios.shadow": "modo sombra: {count, plural, one {# cenário de acesso falhou} other {# cenários de acesso falharam}} e bloquearia com access-scenarios ativo",
+  "gate.blind.off": "os testes cegos estão desligados no policy.yml",
+  "gate.blind.small": "testes cegos não rodam em tarefas de tamanho S",
+  "gate.blind.no_criteria": "o contrato não tem critério descrito nem exemplo para escrever testes cegos",
+  "gate.blind.no_writer": "nenhum escritor de testes cegos configurado (blind.writer no config.yml)",
+  "gate.blind.unavailable": "os testes cegos não rodaram: {detail}",
+  "gate.blind.summary": "{kept, plural, one {# teste cego falha} other {# testes cegos falham}} no commit base e rodaram na mudança; {discarded} passaram no base e foram descartados",
+  "gate.blind.disagree": "o teste cego \"{name}\" discorda da mudança. No base: {base}. Na mudança: {head}",
+  "gate.blind.shadow": "modo sombra: {count, plural, one {# teste cego discorda} other {# testes cegos discordam}} e bloqueariam com blind-tests ativo"
 }

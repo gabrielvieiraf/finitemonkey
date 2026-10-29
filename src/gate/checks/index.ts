@@ -1,6 +1,7 @@
 import type { CheckRegistry } from "../types.js";
 import { appsecCheck } from "./appsec.js";
 import { archCheck } from "./arch.js";
+import { blindCheck } from "./blind.js";
 import { callersCheck } from "./callers.js";
 import { commandCheck } from "./command.js";
 import { contractCheck } from "./contract.js";
@@ -74,4 +75,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   contract: contractCheck,
   examples: examplesCheck,
   scenarios: scenariosCheck,
+  "blind-tests": blindCheck,
 };

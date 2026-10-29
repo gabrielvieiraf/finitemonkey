@@ -2101,5 +2101,13 @@
   "gate.scenarios.untouched": "el cambio no toca autenticación, acceso a datos ni rutas de API",
   "gate.scenarios.not_configured": "el cambio toca rutas de acceso, pero .finitemonkey/config.yml no tiene access: start, port, user_a y user_b",
   "gate.scenarios.not_run": "los escenarios de acceso no corrieron (app caída o sin respuesta)",
-  "gate.scenarios.shadow": "modo sombra: {count, plural, one {# escenario de acceso falló} other {# escenarios de acceso fallaron}} y bloquearía con access-scenarios activo"
+  "gate.scenarios.shadow": "modo sombra: {count, plural, one {# escenario de acceso falló} other {# escenarios de acceso fallaron}} y bloquearía con access-scenarios activo",
+  "gate.blind.off": "las pruebas ciegas están apagadas en policy.yml",
+  "gate.blind.small": "las pruebas ciegas no corren en tareas de tamaño S",
+  "gate.blind.no_criteria": "el contrato no tiene criterio descrito ni ejemplo para escribir pruebas ciegas",
+  "gate.blind.no_writer": "no hay escritor de pruebas ciegas configurado (blind.writer en config.yml)",
+  "gate.blind.unavailable": "las pruebas ciegas no corrieron: {detail}",
+  "gate.blind.summary": "{kept, plural, one {# prueba ciega falla} other {# pruebas ciegas fallan}} en el commit base y corrieron en el cambio; {discarded} pasaron en base y se descartaron",
+  "gate.blind.disagree": "la prueba ciega \"{name}\" no concuerda con el cambio. En base: {base}. En el cambio: {head}",
+  "gate.blind.shadow": "modo sombra: {count, plural, one {# prueba ciega no concuerda} other {# pruebas ciegas no concuerdan}} y bloquearían con blind-tests activo"
 }

@@ -2101,5 +2101,13 @@
   "gate.scenarios.untouched": "the change does not touch auth, data access or API routes",
   "gate.scenarios.not_configured": "the change touches access paths but .finitemonkey/config.yml has no access: start, port, user_a and user_b",
   "gate.scenarios.not_run": "the access scenarios did not run (app down or no answer)",
-  "gate.scenarios.shadow": "shadow mode: {count, plural, one {# access scenario failed} other {# access scenarios failed}} and would block once access-scenarios is active"
+  "gate.scenarios.shadow": "shadow mode: {count, plural, one {# access scenario failed} other {# access scenarios failed}} and would block once access-scenarios is active",
+  "gate.blind.off": "blind tests are off in policy.yml",
+  "gate.blind.small": "blind tests do not run for size S tasks",
+  "gate.blind.no_criteria": "the contract has no described criterion or example to write blind tests from",
+  "gate.blind.no_writer": "no blind test writer is set (blind.writer in config.yml)",
+  "gate.blind.unavailable": "blind tests could not run: {detail}",
+  "gate.blind.summary": "{kept, plural, one {# blind test fails} other {# blind tests fail}} on the base commit and ran on the change; {discarded} passed on base and were discarded",
+  "gate.blind.disagree": "blind test \"{name}\" disagrees with the change. On base: {base}. On the change: {head}",
+  "gate.blind.shadow": "shadow mode: {count, plural, one {# blind test disagrees} other {# blind tests disagree}} and would block once blind-tests is active"
 }
