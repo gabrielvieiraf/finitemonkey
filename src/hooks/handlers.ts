@@ -1,4 +1,5 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
+import { EXPLAIN_APPROVAL_FEATURE, EXPLAIN_APPROVAL_HANDLERS } from "../approve/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
 import { UNATTENDED_HANDLERS } from "../autonomy/hold.js";
 import { CALIBRATE_HANDLERS } from "../calibrate/hooks.js";
@@ -245,6 +246,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "knowledge-claims", damage: false, handlers: KNOWLEDGE_CLAIMS_HANDLERS },
   { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
+  { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

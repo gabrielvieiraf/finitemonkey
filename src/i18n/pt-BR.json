@@ -2447,5 +2447,18 @@
   "gate.red_green.proven": "{files} falhou numa asserção com os arquivos de produção da base (vermelho {red}) e o check de testes cobre esta árvore (verde {green})",
   "gate.red_green.never_red": "{files} passam com os arquivos de produção da base, então nunca ficaram vermelhos (árvore base {red})",
   "gate.red_green.compile_only": "{files} falham na base só com erro de import ou compilação, o que não conta como vermelho (árvore base {red})",
-  "gate.red_green.unavailable": "não deu para rodar {files} com os arquivos de produção da base"
+  "gate.red_green.unavailable": "não deu para rodar {files} com os arquivos de produção da base",
+  "approve.effect.reads": "lê, não muda nada",
+  "approve.effect.reads_host": "lê de {host}, não muda nada aqui",
+  "approve.effect.changes": "muda arquivos ou estado nesta máquina",
+  "approve.effect.deletes": "apaga",
+  "approve.effect.sends": "envia para fora da máquina",
+  "approve.effect.sends_host": "envia para fora da máquina, para {host}",
+  "approve.effect.unknown": "efeito desconhecido",
+  "approve.reversal.self": "nada a desfazer",
+  "approve.reversal.undo": "dá para desfazer com undo",
+  "approve.reversal.none": "não dá para desfazer",
+  "approve.reversal.unknown": "não se sabe se dá para desfazer",
+  "approve.line.short": "{effect}; {reversal}",
+  "approve.line.long": "Este comando: {effect}. Desfazer: {reversal}. Se não era isso que você esperava, negue e pergunte para que serve."
 }

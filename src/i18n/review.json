@@ -2448,7 +2448,20 @@
     "gate.red_green.proven": "machine",
     "gate.red_green.never_red": "machine",
     "gate.red_green.compile_only": "machine",
-    "gate.red_green.unavailable": "machine"
+    "gate.red_green.unavailable": "machine",
+    "approve.effect.reads": "machine",
+    "approve.effect.reads_host": "machine",
+    "approve.effect.changes": "machine",
+    "approve.effect.deletes": "machine",
+    "approve.effect.sends": "machine",
+    "approve.effect.sends_host": "machine",
+    "approve.effect.unknown": "machine",
+    "approve.reversal.self": "machine",
+    "approve.reversal.undo": "machine",
+    "approve.reversal.none": "machine",
+    "approve.reversal.unknown": "machine",
+    "approve.line.short": "machine",
+    "approve.line.long": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4899,6 +4912,19 @@
     "gate.red_green.proven": "machine",
     "gate.red_green.never_red": "machine",
     "gate.red_green.compile_only": "machine",
-    "gate.red_green.unavailable": "machine"
+    "gate.red_green.unavailable": "machine",
+    "approve.effect.reads": "machine",
+    "approve.effect.reads_host": "machine",
+    "approve.effect.changes": "machine",
+    "approve.effect.deletes": "machine",
+    "approve.effect.sends": "machine",
+    "approve.effect.sends_host": "machine",
+    "approve.effect.unknown": "machine",
+    "approve.reversal.self": "machine",
+    "approve.reversal.undo": "machine",
+    "approve.reversal.none": "machine",
+    "approve.reversal.unknown": "machine",
+    "approve.line.short": "machine",
+    "approve.line.long": "machine"
   }
 }

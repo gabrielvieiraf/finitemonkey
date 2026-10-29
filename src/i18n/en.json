@@ -2447,5 +2447,18 @@
   "gate.red_green.proven": "{files} failed on an assertion with the base production files (red {red}) and the tests check covers this tree (green {green})",
   "gate.red_green.never_red": "{files} pass on the base production files, so they were never red (base tree {red})",
   "gate.red_green.compile_only": "{files} fail on the base only with an import or compile error, which does not count as red (base tree {red})",
-  "gate.red_green.unavailable": "could not run {files} on the base production files"
+  "gate.red_green.unavailable": "could not run {files} on the base production files",
+  "approve.effect.reads": "reads, changes nothing",
+  "approve.effect.reads_host": "reads from {host}, changes nothing here",
+  "approve.effect.changes": "changes files or state on this machine",
+  "approve.effect.deletes": "deletes",
+  "approve.effect.sends": "sends out of the machine",
+  "approve.effect.sends_host": "sends out of the machine to {host}",
+  "approve.effect.unknown": "effect unknown",
+  "approve.reversal.self": "nothing to undo",
+  "approve.reversal.undo": "undoable with undo",
+  "approve.reversal.none": "not undoable",
+  "approve.reversal.unknown": "undo unknown",
+  "approve.line.short": "{effect}; {reversal}",
+  "approve.line.long": "This command: {effect}. Undo: {reversal}. If that is not what you expected, deny it and ask what it is for."
 }

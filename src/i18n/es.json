@@ -2447,5 +2447,18 @@
   "gate.red_green.proven": "{files} falló en una aserción con los archivos de producción de la base (rojo {red}) y el check de tests cubre este árbol (verde {green})",
   "gate.red_green.never_red": "{files} pasan con los archivos de producción de la base, así que nunca estuvieron en rojo (árbol base {red})",
   "gate.red_green.compile_only": "{files} fallan en la base solo con un error de import o compilación, lo que no cuenta como rojo (árbol base {red})",
-  "gate.red_green.unavailable": "no se pudo ejecutar {files} con los archivos de producción de la base"
+  "gate.red_green.unavailable": "no se pudo ejecutar {files} con los archivos de producción de la base",
+  "approve.effect.reads": "lee, no cambia nada",
+  "approve.effect.reads_host": "lee de {host}, no cambia nada aquí",
+  "approve.effect.changes": "cambia archivos o estado en esta máquina",
+  "approve.effect.deletes": "borra",
+  "approve.effect.sends": "envía fuera de la máquina",
+  "approve.effect.sends_host": "envía fuera de la máquina, a {host}",
+  "approve.effect.unknown": "efecto desconocido",
+  "approve.reversal.self": "nada que deshacer",
+  "approve.reversal.undo": "se puede deshacer con undo",
+  "approve.reversal.none": "no se puede deshacer",
+  "approve.reversal.unknown": "no se sabe si se puede deshacer",
+  "approve.line.short": "{effect}; {reversal}",
+  "approve.line.long": "Este comando: {effect}. Deshacer: {reversal}. Si no es lo que esperabas, recházalo y pregunta para qué sirve."
 }
