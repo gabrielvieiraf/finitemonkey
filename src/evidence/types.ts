@@ -20,9 +20,24 @@ export const UNVERIFIED_REASONS = [
   "awaiting_person",
   "no_evidence",
   "no_baseline",
+  "needs_approval",
 ] as const;
 
 export type UnverifiedReason = (typeof UNVERIFIED_REASONS)[number];
+
+export const COMPLETION_STATES = [
+  "unverified",
+  "running",
+  "verified",
+  "partial",
+  "invalidated",
+  "blocked",
+  "failed",
+  "inconclusive",
+  "needs_approval",
+] as const;
+
+export type CompletionState = (typeof COMPLETION_STATES)[number];
 
 export interface Note {
   readonly key: string;
@@ -46,6 +61,9 @@ export interface Evidence {
   readonly releasedBy?: string;
   readonly failures?: readonly string[];
   readonly testCount?: number;
+  readonly state?: CompletionState;
+  readonly from?: CompletionState;
+  readonly stateReason?: string;
 }
 
 export const GATE_CHECK = "*gate*";

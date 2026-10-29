@@ -1,4 +1,5 @@
 import type { Runtime } from "../../core/runtime.js";
+import { COMPLETION_STATES, type CompletionState } from "../../evidence/types.js";
 import type { FmPaths } from "../../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../../task/state.js";
 
@@ -11,6 +12,7 @@ export interface GateStatus {
   readonly task: string;
   readonly detail: string;
   readonly at: string;
+  readonly state?: CompletionState;
 }
 
 const KINDS: readonly GateStatusKind[] = ["passed", "failed", "incomplete", "not_run", "not_done"];
@@ -27,7 +29,8 @@ export const readGateStatus = (runtime: Pick<Runtime, "readText">, paths: FmPath
   const task = raw?.["task"];
   const detail = raw?.["detail"];
   const at = raw?.["at"];
+  const state = COMPLETION_STATES.find((item) => item === raw?.["state"]);
   if (status === undefined || typeof task !== "string" || typeof detail !== "string" || typeof at !== "string")
     return undefined;
-  return { status, task, detail, at };
+  return { status, task, detail, at, ...(state === undefined ? {} : { state }) };
 };

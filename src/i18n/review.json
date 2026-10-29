@@ -1910,7 +1910,16 @@
     "onboard.risk.static_credential": "machine",
     "onboard.risk.failing_command": "machine",
     "onboard.risk.worktree": "machine",
-    "onboard.risk.no_lockfile": "machine"
+    "onboard.risk.no_lockfile": "machine",
+    "gate.reason.needs_approval": "machine",
+    "gate.report.groups": "machine",
+    "gate.model.unverified_title": "machine",
+    "gate.model.not_verified": "machine",
+    "gate.model.verify": "machine",
+    "gate.verify.person": "machine",
+    "gate.verify.gh": "machine",
+    "gate.verify.rerun": "machine",
+    "gate.human.held_unverified": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3823,6 +3832,15 @@
     "onboard.risk.static_credential": "machine",
     "onboard.risk.failing_command": "machine",
     "onboard.risk.worktree": "machine",
-    "onboard.risk.no_lockfile": "machine"
+    "onboard.risk.no_lockfile": "machine",
+    "gate.reason.needs_approval": "machine",
+    "gate.report.groups": "machine",
+    "gate.model.unverified_title": "machine",
+    "gate.model.not_verified": "machine",
+    "gate.model.verify": "machine",
+    "gate.verify.person": "machine",
+    "gate.verify.gh": "machine",
+    "gate.verify.rerun": "machine",
+    "gate.human.held_unverified": "machine"
   }
 }

@@ -83,6 +83,8 @@ describe("finitemonkey task and gate", () => {
     const data = body["data"];
     hasShape(data, "gate");
     assert.equal(field(data, "schema"), field(frozen, "gate", "schema"));
+    assert.equal(field(data, "state"), "failed");
+    assert.match(String(field(data, "stateReason")), /^failed:/);
     const items = field(data, "items");
     assert.ok(Array.isArray(items));
     for (const item of items) hasShape(item, "gateItem");

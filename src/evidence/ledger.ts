@@ -2,7 +2,14 @@ import type { AbsolutePath } from "../core/brand.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Params } from "../i18n/translate.js";
-import { type Evidence, EVIDENCE_SCHEMA, EVIDENCE_STATUSES, type Note, UNVERIFIED_REASONS } from "./types.js";
+import {
+  COMPLETION_STATES,
+  type Evidence,
+  EVIDENCE_SCHEMA,
+  EVIDENCE_STATUSES,
+  type Note,
+  UNVERIFIED_REASONS,
+} from "./types.js";
 
 const oneOf = <T extends string>(options: readonly T[], value: unknown): T | undefined =>
   options.find((option) => option === value);
@@ -37,6 +44,9 @@ const optional = (record: JsonObject): Partial<Evidence> => {
   const reason = oneOf(UNVERIFIED_REASONS, record["reason"]);
   const failures = record["failures"];
   const testCount = record["testCount"];
+  const state = oneOf(COMPLETION_STATES, record["state"]);
+  const from = oneOf(COMPLETION_STATES, record["from"]);
+  const stateReason = text(record, "stateReason");
   return {
     ...(command === undefined ? {} : { command }),
     ...(typeof exitCode === "number" || exitCode === null ? { exitCode } : {}),
@@ -48,6 +58,9 @@ const optional = (record: JsonObject): Partial<Evidence> => {
       ? { failures: failures.filter((item): item is string => typeof item === "string") }
       : {}),
     ...(typeof testCount === "number" ? { testCount } : {}),
+    ...(state === undefined ? {} : { state }),
+    ...(from === undefined ? {} : { from }),
+    ...(stateReason === undefined ? {} : { stateReason }),
   };
 };
 

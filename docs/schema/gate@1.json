@@ -43,6 +43,23 @@
         "incomplete"
       ]
     },
+    "state": {
+      "type": "string",
+      "enum": [
+        "failed",
+        "unverified",
+        "running",
+        "verified",
+        "partial",
+        "invalidated",
+        "blocked",
+        "inconclusive",
+        "needs_approval"
+      ]
+    },
+    "stateReason": {
+      "type": "string"
+    },
     "counts": {
       "type": "object",
       "properties": {
@@ -116,6 +133,7 @@
             "type": "string",
             "enum": [
               "not_implemented",
+              "needs_approval",
               "tool_missing",
               "timeout",
               "rate_limited",
@@ -182,6 +200,8 @@
     "source",
     "contractEdited",
     "verdict",
+    "state",
+    "stateReason",
     "counts",
     "items",
     "decisionsNeeded",

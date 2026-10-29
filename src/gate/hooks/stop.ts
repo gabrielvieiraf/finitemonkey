@@ -1,15 +1,18 @@
 import { textField } from "../../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
+import { featureMode, recordFeatureShadow } from "../../policy/feature.js";
+import { sha256Hex as sha256 } from "../../secrets/fingerprint.js";
 import { fmPaths } from "../../task/paths.js";
 import { closeTask, readState, writeState } from "../../task/state.js";
 import { gitAt, treeHash } from "../git.js";
 import type { IsolatedFailure } from "../isolated.js";
 import type { GateFailure } from "../prepare.js";
-import { blockReason, itemDetails, unverifiedSummary } from "../render.js";
+import { blockReason, holdReason, itemDetails, unverifiedSummary } from "../render.js";
 import type { GateReport } from "../report.js";
 import { recordReview, REVIEWER_AGENT } from "../review.js";
 import { type GateRun, runGate } from "../run.js";
+import { canClose } from "../state.js";
 import { allowWith, findRepoRoot, gateBudget, human, sessionCwd } from "./common.js";
 import { nextBlock, readCounter, saveCounter } from "./counter.js";
 import { writeGateStatus } from "./status.js";
@@ -46,8 +49,10 @@ const touchesTests = (report: GateReport): boolean =>
     (item) => item.status === "failed" && item.notes.some((entry) => entry.key.startsWith("gate.tests.")),
   );
 
+export const HOLD_FEATURE = "gate-hold";
+
 const markDone = (input: HookInput, report: GateReport, root: ReturnType<typeof fmPaths>): void => {
-  if (report.implicit) return;
+  if (report.implicit || !canClose(report.state)) return;
   const state = readState(input.runtime, root);
   if (state.active !== report.task) return;
   writeState(input.runtime, root, closeTask(state, report.task));
@@ -58,13 +63,23 @@ const onFailed = (input: HookInput, report: GateReport, paths: ReturnType<typeof
   const verdict = nextBlock(readCounter(runtime, paths), report, env);
   if (verdict.kind === "exhausted") {
     saveCounter(runtime, paths, undefined);
-    writeGateStatus(runtime, paths, { status: "not_done", task: report.task, detail: failingList(t, report) });
+    writeGateStatus(runtime, paths, {
+      status: "not_done",
+      task: report.task,
+      detail: failingList(t, report),
+      state: report.state,
+    });
     return allowWith({
       systemMessage: human(t("gate.human.not_done", { blocks: verdict.blocks, list: failingList(t, report) })),
     });
   }
   saveCounter(runtime, paths, verdict.counter);
-  writeGateStatus(runtime, paths, { status: "failed", task: report.task, detail: failingList(t, report) });
+  writeGateStatus(runtime, paths, {
+    status: "failed",
+    task: report.task,
+    detail: failingList(t, report),
+    state: report.state,
+  });
   const reason = blockReason(t, report, textField(input.payload.raw, "last_assistant_message"));
   const message = [
     t("gate.human.held", { count: report.counts.failed }),
@@ -78,16 +93,52 @@ const onFailed = (input: HookInput, report: GateReport, paths: ReturnType<typeof
   };
 };
 
+const holdSignature = (report: GateReport): string =>
+  sha256(
+    JSON.stringify([
+      "unverified",
+      report.treeHash,
+      report.items.filter((item) => item.status === "unverified").map((item) => [item.id, item.reason ?? ""]),
+    ]),
+  );
+
+const onIncomplete = (input: HookInput, report: GateReport, paths: ReturnType<typeof fmPaths>): HookDecision => {
+  const { t, runtime } = input;
+  const list = unverifiedSummary(t, report);
+  writeGateStatus(runtime, paths, { status: "incomplete", task: report.task, detail: list, state: report.state });
+  const passOn = allowWith({ systemMessage: human(t("gate.human.incomplete", { list })) });
+  const signature = holdSignature(report);
+  const previous = readCounter(runtime, paths);
+  const mode = featureMode(runtime, paths, HOLD_FEATURE);
+  if (mode === "off" || (previous?.task === report.task && previous.signature === signature)) {
+    saveCounter(runtime, paths, undefined);
+    return passOn;
+  }
+  if (mode === "shadow") {
+    saveCounter(runtime, paths, undefined);
+    recordFeatureShadow(runtime, paths, HOLD_FEATURE, { task: report.task, state: report.state, wouldHave: "block" });
+    return passOn;
+  }
+  saveCounter(runtime, paths, { task: report.task, signature, consecutive: 1, same: 1 });
+  const reason = holdReason(t, report);
+  return {
+    kind: "block",
+    reason,
+    persistent: true,
+    output: {
+      decision: "block",
+      reason,
+      systemMessage: human(t("gate.human.held_unverified", { count: report.counts.unverified, list })),
+    },
+  };
+};
+
 const onReport = (input: HookInput, report: GateReport, paths: ReturnType<typeof fmPaths>): HookDecision => {
   const { t, runtime } = input;
   if (report.verdict === "failed") return onFailed(input, report, paths);
+  if (report.verdict === "incomplete") return onIncomplete(input, report, paths);
   saveCounter(runtime, paths, undefined);
-  if (report.verdict === "incomplete") {
-    const list = unverifiedSummary(t, report);
-    writeGateStatus(runtime, paths, { status: "incomplete", task: report.task, detail: list });
-    return allowWith({ systemMessage: human(t("gate.human.incomplete", { list })) });
-  }
-  writeGateStatus(runtime, paths, { status: "passed", task: report.task, detail: "" });
+  writeGateStatus(runtime, paths, { status: "passed", task: report.task, detail: "", state: report.state });
   markDone(input, report, paths);
   return allowWith({ systemMessage: human(t("gate.human.passed", { count: report.counts.passed })) });
 };

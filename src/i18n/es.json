@@ -1909,5 +1909,14 @@
   "onboard.risk.static_credential": "credencial estática {subject} con riesgo alto",
   "onboard.risk.failing_command": "el comando `{subject}` falla hoy",
   "onboard.risk.worktree": "el worktree {subject} no está en el registro; `finitemonkey wt` puede adoptarlo",
-  "onboard.risk.no_lockfile": "{subject} no tiene lockfile, las instalaciones no son reproducibles"
+  "onboard.risk.no_lockfile": "{subject} no tiene lockfile, las instalaciones no son reproducibles",
+  "gate.reason.needs_approval": "un cambio necesita la aprobación de la persona",
+  "gate.report.groups": "estado {state}. verificado: {verified}. no verificado: {unverified}. invalidado por una edición posterior: {invalidated}.",
+  "gate.model.unverified_title": "Puerta de Finite Monkey: aún no verificado (tarea {task}, árbol {tree}, estado {state}).",
+  "gate.model.not_verified": "no verificado: {list}",
+  "gate.model.verify": "para verificar: {list}",
+  "gate.verify.person": "la persona lo aprueba en la terminal",
+  "gate.verify.gh": "`gh auth login` y luego `finitemonkey gate --task {task}`",
+  "gate.verify.rerun": "`finitemonkey gate --task {task}`",
+  "gate.human.held_unverified": "Retuve una vez: {count, plural, one {# verificación no se hizo} other {# verificaciones no se hicieron}} ({list}). La próxima parada pasa y la tarea sigue abierta."
 }

@@ -1909,5 +1909,14 @@
   "onboard.risk.static_credential": "static credential {subject} with high risk",
   "onboard.risk.failing_command": "the command `{subject}` fails today",
   "onboard.risk.worktree": "worktree {subject} is not in the registry; `finitemonkey wt` can adopt it",
-  "onboard.risk.no_lockfile": "{subject} has no lockfile, installs are not reproducible"
+  "onboard.risk.no_lockfile": "{subject} has no lockfile, installs are not reproducible",
+  "gate.reason.needs_approval": "a change needs the person's approval",
+  "gate.report.groups": "state {state}. verified: {verified}. not verified: {unverified}. invalidated by a later edit: {invalidated}.",
+  "gate.model.unverified_title": "Finite Monkey gate: not verified yet (task {task}, tree {tree}, state {state}).",
+  "gate.model.not_verified": "not verified: {list}",
+  "gate.model.verify": "to verify: {list}",
+  "gate.verify.person": "the person approves it in the terminal",
+  "gate.verify.gh": "`gh auth login`, then `finitemonkey gate --task {task}`",
+  "gate.verify.rerun": "`finitemonkey gate --task {task}`",
+  "gate.human.held_unverified": "Held once: {count, plural, one {# check is} other {# checks are}} not verified ({list}). The next stop goes through and the task stays open."
 }

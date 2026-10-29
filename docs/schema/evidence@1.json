@@ -82,6 +82,7 @@
       "type": "string",
       "enum": [
         "not_implemented",
+        "needs_approval",
         "tool_missing",
         "timeout",
         "rate_limited",
@@ -107,6 +108,37 @@
     },
     "testCount": {
       "type": "number"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "failed",
+        "unverified",
+        "running",
+        "verified",
+        "partial",
+        "invalidated",
+        "blocked",
+        "inconclusive",
+        "needs_approval"
+      ]
+    },
+    "from": {
+      "type": "string",
+      "enum": [
+        "failed",
+        "unverified",
+        "running",
+        "verified",
+        "partial",
+        "invalidated",
+        "blocked",
+        "inconclusive",
+        "needs_approval"
+      ]
+    },
+    "stateReason": {
+      "type": "string"
     }
   },
   "required": [

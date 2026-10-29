@@ -6,6 +6,7 @@ import { DEFAULT_CHECKS } from "./checks/index.js";
 import { type IsolatedFailure, withIsolatedTree } from "./isolated.js";
 import { type GateFailure, type GateOptions, type GateSkip, type Prepared, prepareGate } from "./prepare.js";
 import { buildReport, type GateReport, verdictOf } from "./report.js";
+import { stateEntries } from "./state.js";
 import { type CheckOutcome, type CheckRegistry, type GateContext, note, REUSABLE_KINDS, unverified } from "./types.js";
 
 export const FAST_PATH_MS = 10 * 60_000;
@@ -100,7 +101,13 @@ const evaluate = (options: GateOptions, prepared: Prepared, registry: CheckRegis
   const fresh = runChecks(prepared.ctx, before, registry);
   if (!appendEvidence(options.runtime, path, fresh)) return { kind: "failed", failure: { kind: "ledger_unwritable" } };
   const withChecks = readLedger(options.runtime, path);
-  if (!appendEvidence(options.runtime, path, [summaryEntry(prepared, withChecks)])) {
+  const draft = report(prepared, withChecks, false);
+  const states = stateEntries(
+    withChecks,
+    { task: prepared.ctx.contract.id, treeHash: prepared.ctx.treeHash, at: prepared.ctx.runtime.now() },
+    { state: draft.state, reason: draft.stateReason },
+  );
+  if (!appendEvidence(options.runtime, path, [summaryEntry(prepared, withChecks), ...states])) {
     return { kind: "failed", failure: { kind: "ledger_unwritable" } };
   }
   return { kind: "done", report: report(prepared, readLedger(options.runtime, path), false) };

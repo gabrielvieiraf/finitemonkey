@@ -1,7 +1,8 @@
 import { hasStale, latestFor } from "../evidence/ledger.js";
-import type { Evidence, EvidenceStatus, Note, UnverifiedReason } from "../evidence/types.js";
+import type { CompletionState, Evidence, EvidenceStatus, Note, UnverifiedReason } from "../evidence/types.js";
 import type { ContractSource } from "../task/load.js";
 import type { TaskContract } from "../task/types.js";
+import { outcomeState } from "./state.js";
 import { REUSABLE_KINDS } from "./types.js";
 
 export const GATE_SCHEMA = "finitemonkey/gate@1";
@@ -32,6 +33,8 @@ export interface GateReport {
   readonly source: ContractSource;
   readonly contractEdited: boolean;
   readonly verdict: GateVerdict;
+  readonly state: CompletionState;
+  readonly stateReason: string;
   readonly counts: { readonly passed: number; readonly failed: number; readonly unverified: number };
   readonly items: readonly ReportItem[];
   readonly decisionsNeeded: readonly string[];
@@ -85,6 +88,7 @@ export const buildReport = (input: ReportInput): GateReport => {
     return fromEvidence(check.id, check.kind, entry, hasStale(ledger, check.id, treeHash));
   });
   const count = (status: EvidenceStatus): number => items.filter((item) => item.status === status).length;
+  const outcome = outcomeState(items);
   return {
     schema: GATE_SCHEMA,
     task: contract.id,
@@ -95,6 +99,8 @@ export const buildReport = (input: ReportInput): GateReport => {
     source: input.source,
     contractEdited: input.contractEdited,
     verdict: verdictOf(items),
+    state: outcome.state,
+    stateReason: outcome.reason,
     counts: { passed: count("passed"), failed: count("failed"), unverified: count("unverified") },
     items,
     decisionsNeeded: contract.decisionsNeeded,

@@ -44,8 +44,19 @@ export const reportLines = (t: Translate, report: GateReport): readonly string[]
       ...itemDetails(t, item).map((line) => `  ${" ".repeat(width)}  ${line}`),
     ]),
     t(`gate.verdict.${report.verdict}`, report.counts),
+    groupsLine(t, report),
   ];
 };
+
+const ids = (items: readonly ReportItem[]): string => items.map((item) => item.id).join(", ") || "-";
+
+export const groupsLine = (t: Translate, report: GateReport): string =>
+  t("gate.report.groups", {
+    state: report.state,
+    verified: ids(report.items.filter((item) => item.status === "passed")),
+    unverified: ids(report.items.filter((item) => item.status === "unverified" && !item.stale)),
+    invalidated: ids(report.items.filter((item) => item.stale)),
+  });
 
 const REQUIRE_KEYS: Readonly<Record<string, MessageKey>> = {
   command: "gate.require.command",
@@ -87,3 +98,24 @@ export const unverifiedSummary = (t: Translate, report: GateReport): string =>
     .filter((item) => item.status === "unverified")
     .map((item) => `${item.id} (${itemDetails(t, item).join(", ") || t("gate.reason.no_evidence")})`)
     .join("; ");
+
+const verifyStep = (t: Translate, report: GateReport, item: ReportItem): string => {
+  if (item.reason === "awaiting_person" || item.reason === "untrusted" || item.reason === "needs_approval")
+    return t("gate.verify.person");
+  if (item.reason === "no_gh") return t("gate.verify.gh", { task: report.task });
+  if (item.command !== undefined && item.reason !== "rewriter") return `\`${maskText(item.command)}\``;
+  return t("gate.verify.rerun", { task: report.task });
+};
+
+export const holdReason = (t: Translate, report: GateReport): string => {
+  const open = report.items.filter((item) => item.status === "unverified");
+  return [
+    t("gate.model.unverified_title", { task: report.task, tree: report.treeHash, state: report.state }),
+    t("gate.model.not_verified", {
+      list: open
+        .map((item) => `${item.id}: ${itemDetails(t, item).join(", ") || t("gate.reason.no_evidence")}`)
+        .join("; "),
+    }),
+    t("gate.model.verify", { list: open.map((item) => `${item.id}: ${verifyStep(t, report, item)}`).join("; ") }),
+  ].join("\n");
+};
