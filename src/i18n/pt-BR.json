@@ -2494,5 +2494,8 @@
   "pr.provenance.match": "O bloco de procedência bate com o registro.",
   "pr.provenance.missing": "O corpo do PR não tem bloco de procedência.",
   "pr.provenance.edited": "O bloco de procedência difere do que o registro dá neste commit; foi editado ou o registro mudou.",
-  "pr.provenance.unreadable": "Não foi possível ler {file}."
+  "pr.provenance.unreadable": "Não foi possível ler {file}.",
+  "command.team_report.summary": "Relatório agregado e anônimo de resultados do gate, retrabalho, reverts e gasto do repositório, com o método",
+  "team.report.off": "O relatório do time está desligado neste projeto.",
+  "team.report.k": "--k precisa ser um número inteiro maior ou igual a 1."
 }

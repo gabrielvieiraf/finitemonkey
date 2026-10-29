@@ -2449,9 +2449,9 @@ var parseAddedLines = (diff) => {
 };
 var addedLines = (git4, base) => parseAddedLines(git4.out(["diff", "-U0", "--no-color", "--no-ext-diff", base, "--", ".", EXCLUDE_FM]) ?? "");
 var numstat = (git4, base) => {
-  const rows2 = (git4.out(["diff", "--numstat", "--no-color", base, "--", ".", EXCLUDE_FM]) ?? "").split("\n").filter((row3) => row3.trim() !== "");
-  const lines10 = rows2.reduce((sum2, row3) => {
-    const [plus = "0", minus = "0"] = row3.split("	");
+  const rows2 = (git4.out(["diff", "--numstat", "--no-color", base, "--", ".", EXCLUDE_FM]) ?? "").split("\n").filter((row4) => row4.trim() !== "");
+  const lines10 = rows2.reduce((sum2, row4) => {
+    const [plus = "0", minus = "0"] = row4.split("	");
     return sum2 + (Number(plus) || 0) + (Number(minus) || 0);
   }, 0);
   return { files: rows2.length, lines: lines10 };
@@ -2536,10 +2536,10 @@ var MAX_LCS_CELLS = 4e6;
 var table = (a, b) => {
   const rows2 = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
   for (let i = a.length - 1; i >= 0; i -= 1) {
-    const row3 = rows2[i] ?? [];
+    const row4 = rows2[i] ?? [];
     const below = rows2[i + 1] ?? [];
     for (let j = b.length - 1; j >= 0; j -= 1) {
-      row3[j] = a[i] === b[j] ? (below[j + 1] ?? 0) + 1 : Math.max(below[j] ?? 0, row3[j + 1] ?? 0);
+      row4[j] = a[i] === b[j] ? (below[j + 1] ?? 0) + 1 : Math.max(below[j] ?? 0, row4[j + 1] ?? 0);
     }
   }
   return rows2;
@@ -4894,14 +4894,14 @@ var summarize = (state, now) => ({
 var pad = (text34, width) => text34.length >= width ? text34 : `${text34}${" ".repeat(width - text34.length)}`;
 var statusTable = (summary2) => {
   const headers = ["id", "status", "branch", "port", "age", "last report", "blocked by"];
-  const cells = summary2.rows.map((row3) => [
-    row3.id,
-    row3.status,
-    row3.branch,
-    row3.port,
-    row3.age,
-    row3.report,
-    row3.blockedBy
+  const cells = summary2.rows.map((row4) => [
+    row4.id,
+    row4.status,
+    row4.branch,
+    row4.port,
+    row4.age,
+    row4.report,
+    row4.blockedBy
   ]);
   const widths = headers.map(
     (header3, index) => Math.max(header3.length, ...cells.map((cell4) => (cell4[index] ?? "").length))
@@ -5095,11 +5095,11 @@ var wtAdoptCommand = {
     const human2 = [
       ctx.t("wt.adopt.title", { count: rows2.length, adopted: fresh3.size }),
       ...rows2.map(
-        (row3) => ctx.t("wt.adopt.row", {
-          path: row3.path,
-          branch: row3.branch ?? "-",
-          activity: row3.activityAt ?? "-",
-          state: row3.main ? "main" : row3.adopted ? "adopted" : "registered"
+        (row4) => ctx.t("wt.adopt.row", {
+          path: row4.path,
+          branch: row4.branch ?? "-",
+          activity: row4.activityAt ?? "-",
+          state: row4.main ? "main" : row4.adopted ? "adopted" : "registered"
         })
       ),
       ...adopted.ok ? [] : [ctx.t("wt.adopt.registry_failed", { detail: adopted.error })]
@@ -5844,18 +5844,18 @@ var clearPause = (runtime, paths, by) => {
 
 // src/core/suggest.ts
 var distance = (a, b) => {
-  const row3 = Array.from({ length: b.length + 1 }, (_, index) => index);
+  const row4 = Array.from({ length: b.length + 1 }, (_, index) => index);
   for (let i = 1; i <= a.length; i += 1) {
-    let diagonal = row3[0] ?? 0;
-    row3[0] = i;
+    let diagonal = row4[0] ?? 0;
+    row4[0] = i;
     for (let j = 1; j <= b.length; j += 1) {
-      const above = row3[j] ?? 0;
+      const above = row4[j] ?? 0;
       const cost2 = a[i - 1] === b[j - 1] ? 0 : 1;
-      row3[j] = Math.min(above + 1, (row3[j - 1] ?? 0) + 1, diagonal + cost2);
+      row4[j] = Math.min(above + 1, (row4[j - 1] ?? 0) + 1, diagonal + cost2);
       diagonal = above;
     }
   }
-  return row3[b.length] ?? 0;
+  return row4[b.length] ?? 0;
 };
 var closest = (input, candidates4) => {
   const group = candidates4.find((name) => name.startsWith(`${input} `));
@@ -6168,7 +6168,8 @@ var OPTIONAL_GUARDS = [
   "focus-card",
   "attention",
   "drift-sensor",
-  "pr-provenance"
+  "pr-provenance",
+  "team-dashboard"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6243,7 +6244,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "focus-card",
   "attention",
   "drift-sensor",
-  "pr-provenance"
+  "pr-provenance",
+  "team-dashboard"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -9178,7 +9180,10 @@ var en_default = {
   "pr.provenance.match": "The provenance block matches the ledger.",
   "pr.provenance.missing": "The PR body has no provenance block.",
   "pr.provenance.edited": "The provenance block differs from what the ledger gives at this commit; it was edited or the ledger changed.",
-  "pr.provenance.unreadable": "Cannot read {file}."
+  "pr.provenance.unreadable": "Cannot read {file}.",
+  "command.team_report.summary": "Aggregate, anonymous report of gate results, rework, reverts and spend for the repository, with its method",
+  "team.report.off": "The team report is off in this project.",
+  "team.report.k": "--k must be a whole number of at least 1."
 };
 
 // src/i18n/es.json
@@ -11678,7 +11683,10 @@ var es_default = {
   "pr.provenance.match": "El bloque de procedencia coincide con el registro.",
   "pr.provenance.missing": "El cuerpo del PR no tiene bloque de procedencia.",
   "pr.provenance.edited": "El bloque de procedencia difiere de lo que da el registro en este commit; fue editado o el registro cambió.",
-  "pr.provenance.unreadable": "No se pudo leer {file}."
+  "pr.provenance.unreadable": "No se pudo leer {file}.",
+  "command.team_report.summary": "Informe agregado y anónimo de resultados del gate, retrabajo, reverts y gasto del repositorio, con su método",
+  "team.report.off": "El informe del equipo está apagado en este proyecto.",
+  "team.report.k": "--k debe ser un número entero mayor o igual a 1."
 };
 
 // src/i18n/pt-BR.json
@@ -14178,7 +14186,10 @@ var pt_BR_default = {
   "pr.provenance.match": "O bloco de procedência bate com o registro.",
   "pr.provenance.missing": "O corpo do PR não tem bloco de procedência.",
   "pr.provenance.edited": "O bloco de procedência difere do que o registro dá neste commit; foi editado ou o registro mudou.",
-  "pr.provenance.unreadable": "Não foi possível ler {file}."
+  "pr.provenance.unreadable": "Não foi possível ler {file}.",
+  "command.team_report.summary": "Relatório agregado e anônimo de resultados do gate, retrabalho, reverts e gasto do repositório, com o método",
+  "team.report.off": "O relatório do time está desligado neste projeto.",
+  "team.report.k": "--k precisa ser um número inteiro maior ou igual a 1."
 };
 
 // src/i18n/review.json
@@ -16679,7 +16690,10 @@ var review_default = {
     "pr.provenance.match": "machine",
     "pr.provenance.missing": "machine",
     "pr.provenance.edited": "machine",
-    "pr.provenance.unreadable": "machine"
+    "pr.provenance.unreadable": "machine",
+    "command.team_report.summary": "machine",
+    "team.report.off": "machine",
+    "team.report.k": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -19177,7 +19191,10 @@ var review_default = {
     "pr.provenance.match": "machine",
     "pr.provenance.missing": "machine",
     "pr.provenance.edited": "machine",
-    "pr.provenance.unreadable": "machine"
+    "pr.provenance.unreadable": "machine",
+    "command.team_report.summary": "machine",
+    "team.report.off": "machine",
+    "team.report.k": "machine"
   }
 };
 
@@ -20326,7 +20343,7 @@ var fitLogistic = (samples, width) => {
     const model = { weights, bias };
     const errors = samples.map((sample) => predict(model, sample.x) - sample.y);
     weights = weights.map((weight2, index) => {
-      const gradient = samples.reduce((sum2, sample, row3) => sum2 + (errors[row3] ?? 0) * (sample.x[index] ?? 0), 0) / n;
+      const gradient = samples.reduce((sum2, sample, row4) => sum2 + (errors[row4] ?? 0) * (sample.x[index] ?? 0), 0) / n;
       return weight2 - RATE * (gradient + L2 * weight2);
     });
     bias -= RATE * errors.reduce((sum2, error) => sum2 + error, 0) / n;
@@ -20996,14 +21013,14 @@ var zizmorHit = (root, item2) => {
   const locations = at2(item2, "locations");
   const first = Array.isArray(locations) ? locations[0] : void 0;
   const file = at2(first, "symbolic", "key", "Local", "given_path");
-  const row3 = at2(first, "concrete", "location", "start_point", "row");
+  const row4 = at2(first, "concrete", "location", "start_point", "row");
   const desc = at2(item2, "desc");
   return {
     tool: "zizmor",
     rule: `zizmor/${ident}`,
     severity: at2(item2, "determinations", "severity") === "High" ? "block" : "warn",
     file: relative2(root, typeof file === "string" ? file : ""),
-    line: typeof row3 === "number" ? row3 + 1 : 1,
+    line: typeof row4 === "number" ? row4 + 1 : 1,
     detail: typeof desc === "string" ? desc : ident
   };
 };
@@ -22547,11 +22564,11 @@ var limitsFrom = (values) => {
   const maxAttempts = number(stringOption(values, "max-attempts"), DEFAULT_LIMITS.maxAttempts);
   const maxUsd = number(stringOption(values, "max-usd"), DEFAULT_LIMITS.maxUsd);
   const timeout = number(stringOption(values, "timeout"), DEFAULT_LIMITS.timeoutMs / 6e4);
-  const interval = number(stringOption(values, "interval"), DEFAULT_LIMITS.intervalMs / 1e3);
+  const interval2 = number(stringOption(values, "interval"), DEFAULT_LIMITS.intervalMs / 1e3);
   const maxCalls = number(stringOption(values, "max-calls"), DEFAULT_LIMITS.maxCalls);
   if (maxAttempts === void 0 || maxUsd === void 0 || timeout === void 0) return void 0;
-  if (interval === void 0 || maxCalls === void 0) return void 0;
-  return { maxAttempts, maxUsd, timeoutMs: timeout * 6e4, intervalMs: interval * 1e3, maxCalls };
+  if (interval2 === void 0 || maxCalls === void 0) return void 0;
+  return { maxAttempts, maxUsd, timeoutMs: timeout * 6e4, intervalMs: interval2 * 1e3, maxCalls };
 };
 var ENDINGS = {
   fix: {
@@ -22898,8 +22915,8 @@ var blindBand = (runtime, paths, logText) => {
       conceptsMoved: moved.get(key3) ?? 0
     };
   }).sort((a, b) => a.week.localeCompare(b.week) || a.domain.localeCompare(b.domain));
-  const helps = rows2.reduce((sum2, row3) => sum2 + row3.helps, 0);
-  const without = rows2.reduce((sum2, row3) => sum2 + row3.withoutCriterion, 0);
+  const helps = rows2.reduce((sum2, row4) => sum2 + row4.helps, 0);
+  const without = rows2.reduce((sum2, row4) => sum2 + row4.withoutCriterion, 0);
   return { schema: BLIND_BAND_SCHEMA, rows: rows2, total: { helps, withoutCriterion: without, index: share2(without, helps) } };
 };
 
@@ -23748,9 +23765,9 @@ var DEFAULT_VALIDITY_DAYS = 90;
 var DATE2 = /^\d{4}-\d{2}-\d{2}$/;
 var DAY_MS6 = 864e5;
 var column = (header3, name) => header3.indexOf(name);
-var sourced = (row3, header3, line12, label2, oldest) => {
-  const source3 = (row3[column(header3, "source")] ?? "").trim();
-  const date = (row3[column(header3, "date")] ?? "").trim();
+var sourced = (row4, header3, line12, label2, oldest) => {
+  const source3 = (row4[column(header3, "source")] ?? "").trim();
+  const date = (row4[column(header3, "date")] ?? "").trim();
   if (source3 === "") return [{ kind: "missing_source", line: line12, detail: label2 }];
   if (!DATE2.test(date) || Number.isNaN(Date.parse(date))) return [{ kind: "missing_date", line: line12, detail: label2 }];
   return Date.parse(date) < oldest ? [{ kind: "expired", line: line12, detail: `${label2} (${date})` }] : [];
@@ -23760,7 +23777,7 @@ var modelIssues = (rows2, oldest) => {
   if (column(header3, "type") === -1 || column(header3, "source") === -1 || column(header3, "date") === -1)
     return [{ kind: "unreadable", line: 1, detail: "id,unit,type,source,date" }];
   return body2.flatMap(
-    (row3, index) => row3[column(header3, "type")] === "FACT" ? sourced(row3, header3, index + 2, row3[0] ?? "", oldest) : []
+    (row4, index) => row4[column(header3, "type")] === "FACT" ? sourced(row4, header3, index + 2, row4[0] ?? "", oldest) : []
   );
 };
 var limitIssues = (rows2, oldest) => {
@@ -23769,18 +23786,18 @@ var limitIssues = (rows2, oldest) => {
     return [
       { kind: "unreadable", line: 1, detail: "provider,limit,value,unit,accepted,next_layer,next_value,source,date" }
     ];
-  return body2.flatMap((row3, index) => {
-    const label2 = `${row3[0] ?? ""} ${row3[1] ?? ""}`.trim();
-    const accepted2 = Number(row3[column(header3, "accepted")]);
-    const next2 = Number(row3[column(header3, "next_value")]);
+  return body2.flatMap((row4, index) => {
+    const label2 = `${row4[0] ?? ""} ${row4[1] ?? ""}`.trim();
+    const accepted2 = Number(row4[column(header3, "accepted")]);
+    const next2 = Number(row4[column(header3, "next_value")]);
     const over = Number.isFinite(accepted2) && Number.isFinite(next2) && accepted2 > next2;
     return [
-      ...sourced(row3, header3, index + 2, label2, oldest),
+      ...sourced(row4, header3, index + 2, label2, oldest),
       ...over ? [
         {
           kind: "limit_exceeds_next_layer",
           line: index + 2,
-          detail: `${label2}: ${String(accepted2)} > ${String(next2)} (${row3[column(header3, "next_layer")] ?? ""})`
+          detail: `${label2}: ${String(accepted2)} > ${String(next2)} (${row4[column(header3, "next_layer")] ?? ""})`
         }
       ] : []
     ];
@@ -24420,9 +24437,9 @@ var readLedger3 = (runtime, root) => {
   });
 };
 var GROUP_ORDER = ["must", "should", "nice", "already-there", "not-reproduced"];
-var resultText = (row3) => {
-  if (row3 === void 0) return "-";
-  return row3.exitCode === null ? "did not run" : `exit ${String(row3.exitCode)}`;
+var resultText = (row4) => {
+  if (row4 === void 0) return "-";
+  return row4.exitCode === null ? "did not run" : `exit ${String(row4.exitCode)}`;
 };
 var findingLines = (t, settled) => GROUP_ORDER.flatMap((group) => {
   const items = settled.filter((item2) => item2.group === group);
@@ -24444,7 +24461,7 @@ var findingLines = (t, settled) => GROUP_ORDER.flatMap((group) => {
 var tableLines = (t, checked2, ledger) => {
   const rows2 = checked2.filter((item2) => item2.finding.group === "must");
   if (rows2.length === 0) return [];
-  const last = (id, side) => ledger.filter((row3) => row3.finding === id && row3.side === side).at(-1);
+  const last = (id, side) => ledger.filter((row4) => row4.finding === id && row4.side === side).at(-1);
   return [
     "",
     `| # | ${t("critique.table.command")} | base | head | ${t("critique.table.outcome")} |`,
@@ -25692,7 +25709,7 @@ var readDataMap = (runtime, root) => {
     ];
   });
 };
-var isComplete = (row3) => row3.legalBasis !== "" && row3.retention !== "" && row3.deletedIn !== "";
+var isComplete = (row4) => row4.legalBasis !== "" && row4.retention !== "" && row4.deletedIn !== "";
 var keyOf = (field) => `${field.model}.${field.field}`;
 var personalFields = (runtime, root) => {
   const listed10 = runtime.git(["ls-files", "--cached", "--others", "--exclude-standard"], root);
@@ -25703,7 +25720,7 @@ var personalFields = (runtime, root) => {
   }).filter((field) => isPersonalField(field.model, field.field));
 };
 var mergedRows = (fields2, rows2) => {
-  const known3 = new Set(rows2.map((row3) => row3.field));
+  const known3 = new Set(rows2.map((row4) => row4.field));
   const added = [...new Set(fields2.map(keyOf))].filter((key3) => !known3.has(key3)).map((field) => ({ field, legalBasis: "", retention: "", deletedIn: "", ai: "" }));
   return [...rows2, ...added];
 };
@@ -25712,7 +25729,7 @@ var dataMapYaml = (rows2) => `# finitemonkey data map: one row per personal fiel
 ${stringifyYaml(
   {
     schemaVersion: 1,
-    fields: rows2.map((row3) => ({ ...row3 }))
+    fields: rows2.map((row4) => ({ ...row4 }))
   }
 )}`;
 
@@ -25730,7 +25747,7 @@ var dataMapCommand = {
     const made = ctx.runtime.mkdir(toAbsolutePath(".finitemonkey", root));
     const saved = made.ok ? ctx.runtime.writeText(toAbsolutePath(DATA_MAP_FILE, root), dataMapYaml(rows2)) : made;
     if (!saved.ok) return Promise.resolve(failureFrom(ctx.t, writeFailed(DATA_MAP_FILE, saved.error)));
-    const open = rows2.filter((row3) => !isComplete(row3)).map((row3) => row3.field);
+    const open = rows2.filter((row4) => !isComplete(row4)).map((row4) => row4.field);
     const data2 = {
       schema: "finitemonkey/data-map@1",
       file: DATA_MAP_FILE,
@@ -25844,9 +25861,9 @@ var readShortcutRows = (runtime, paths) => {
   });
 };
 var recordShortcuts = (runtime, paths, task, shortcuts) => {
-  const known3 = new Set(readShortcutRows(runtime, paths).map((row3) => `${row3.task}\0${row3.what}`));
+  const known3 = new Set(readShortcutRows(runtime, paths).map((row4) => `${row4.task}\0${row4.what}`));
   const rows2 = shortcuts.filter((item2) => !known3.has(`${task}\0${item2.what}`)).map((item2) => ({ type: "shortcut", task, at: runtime.now(), ...item2 }));
-  if (rows2.length > 0) runtime.appendText(decisionsPath(paths), rows2.map((row3) => `${JSON.stringify(row3)}
+  if (rows2.length > 0) runtime.appendText(decisionsPath(paths), rows2.map((row4) => `${JSON.stringify(row4)}
 `).join(""));
   return rows2;
 };
@@ -25916,13 +25933,13 @@ var openItems = (runtime, paths) => {
   return parsed?.ok === true ? (parsed.value.shortcuts ?? []).map((item2) => ({ source: "open", task: active2, ...item2 })) : [];
 };
 var listDebt = (runtime, paths) => {
-  const closed = readShortcutRows(runtime, paths).map((row3) => ({
+  const closed = readShortcutRows(runtime, paths).map((row4) => ({
     source: "closed",
-    task: row3.task,
-    what: row3.what,
-    ...row3.ceiling === void 0 ? {} : { ceiling: row3.ceiling },
-    ...row3.trigger === void 0 ? {} : { trigger: row3.trigger },
-    ...row3.where === void 0 ? {} : { where: row3.where }
+    task: row4.task,
+    what: row4.what,
+    ...row4.ceiling === void 0 ? {} : { ceiling: row4.ceiling },
+    ...row4.trigger === void 0 ? {} : { trigger: row4.trigger },
+    ...row4.where === void 0 ? {} : { where: row4.where }
   }));
   const markers = defaultOn(runtime, paths.root, "no-comments") ? [] : markerItems(runtime, paths);
   return [...closed, ...openItems(runtime, paths), ...markers].map((item2) => {
@@ -29608,9 +29625,9 @@ var OUTPUT = /hook[^\n]*?output[^\n]*?\b(\d+)\s*(?:bytes|chars)/i;
 var withDebugLog = (rows2, log) => {
   if (log === void 0) return rows2;
   const lines10 = log.split("\n");
-  return rows2.map((row3) => {
+  return rows2.map((row4) => {
     const mine = lines10.filter(
-      (line12) => line12.includes(row3.command.split(" ")[0] ?? row3.command) && line12.includes(row3.event)
+      (line12) => line12.includes(row4.command.split(" ")[0] ?? row4.command) && line12.includes(row4.event)
     );
     const latencies = mine.flatMap((line12) => {
       const match = LATENCY.exec(line12);
@@ -29621,9 +29638,9 @@ var withDebugLog = (rows2, log) => {
       return match === null ? [] : [Number(match[1])];
     });
     return {
-      ...row3,
-      latencyMs: latencies.length === 0 ? row3.latencyMs : Math.max(...latencies),
-      outputBytes: outputs.length === 0 ? row3.outputBytes : Math.max(...outputs)
+      ...row4,
+      latencyMs: latencies.length === 0 ? row4.latencyMs : Math.max(...latencies),
+      outputBytes: outputs.length === 0 ? row4.outputBytes : Math.max(...outputs)
     };
   });
 };
@@ -30110,7 +30127,7 @@ var checkClaudeSettings = (env) => {
 import { join as join63 } from "node:path";
 var list3 = (items) => [...new Set(items)].sort().join(", ");
 var authorities = (rows2) => {
-  const owners = new Set(rows2.filter((row3) => row3.enabled && row3.event === "Stop").map((row3) => row3.owner));
+  const owners = new Set(rows2.filter((row4) => row4.enabled && row4.event === "Stop").map((row4) => row4.owner));
   if (owners.size < 2) return [];
   const others = [...owners].filter((owner) => owner !== "finitemonkey");
   return [
@@ -30124,10 +30141,10 @@ var authorities = (rows2) => {
   ];
 };
 var duplicates2 = (rows2) => {
-  const enabled = rows2.filter((row3) => row3.enabled);
+  const enabled = rows2.filter((row4) => row4.enabled);
   const twice = enabled.filter(
-    (row3) => row3.source.startsWith("plugin:") && enabled.some(
-      (other) => !other.source.startsWith("plugin:") && other.event === row3.event && other.command === row3.command
+    (row4) => row4.source.startsWith("plugin:") && enabled.some(
+      (other) => !other.source.startsWith("plugin:") && other.event === row4.event && other.command === row4.command
     )
   );
   return twice.length === 0 ? [] : [
@@ -30135,7 +30152,7 @@ var duplicates2 = (rows2) => {
       "hooks.duplicate",
       "warn",
       "doctor.coexist.duplicate",
-      { hooks: list3(twice.map((row3) => `${row3.event} ${row3.owner}`)) },
+      { hooks: list3(twice.map((row4) => `${row4.event} ${row4.owner}`)) },
       "doctor.coexist.fix_duplicate"
     )
   ];
@@ -30143,7 +30160,7 @@ var duplicates2 = (rows2) => {
 var disabledFiring = (env, rows2) => {
   const disabled = installedPlugins(env).filter((plugin) => !plugin.enabled);
   const firing = disabled.filter(
-    (plugin) => rows2.some((row3) => !row3.source.startsWith("plugin:") && row3.command.includes(plugin.root))
+    (plugin) => rows2.some((row4) => !row4.source.startsWith("plugin:") && row4.command.includes(plugin.root))
   );
   return firing.map(
     (plugin) => finding(
@@ -30165,13 +30182,13 @@ var proxy = (env) => {
   return urls.length === 0 ? [] : [finding("hooks.proxy", "warn", "doctor.coexist.proxy", {}, "doctor.coexist.fix_proxy")];
 };
 var rewriters = (rows2) => {
-  const foreign = rows2.filter((row3) => row3.enabled && !row3.ours && row3.event === "PostToolUse");
+  const foreign = rows2.filter((row4) => row4.enabled && !row4.ours && row4.event === "PostToolUse");
   return foreign.length === 0 ? [] : [
     finding(
       "hooks.output_rewriter",
       "warn",
       "doctor.coexist.output_rewriter",
-      { owners: list3(foreign.map((row3) => row3.owner)) },
+      { owners: list3(foreign.map((row4) => row4.owner)) },
       "doctor.coexist.fix_output_rewriter"
     )
   ];
@@ -31120,8 +31137,8 @@ var metricsOf = (input, file, text34) => fileMetrics(isTsFamily(file) ? input.ts
 var churnOf = (git4, files) => {
   const out = git4.out(["log", `--since=${CHURN_WINDOW}`, "--format=", "--numstat", "--no-renames", "--", ...files]);
   const churn = /* @__PURE__ */ new Map();
-  for (const row3 of (out ?? "").split("\n")) {
-    const [plus = "", minus = "", file = ""] = row3.split("	");
+  for (const row4 of (out ?? "").split("\n")) {
+    const [plus = "", minus = "", file = ""] = row4.split("	");
     if (file === "") continue;
     churn.set(file, (churn.get(file) ?? 0) + (Number(plus) || 0) + (Number(minus) || 0));
   }
@@ -34407,16 +34424,16 @@ var POPULAR = { npm: NPM, pypi: PYPI };
 var distance2 = (left, right) => {
   const rows2 = Array.from(
     { length: left.length + 1 },
-    (_, row3) => Array.from({ length: right.length + 1 }, (_2, column2) => row3 === 0 ? column2 : column2 === 0 ? row3 : 0)
+    (_, row4) => Array.from({ length: right.length + 1 }, (_2, column2) => row4 === 0 ? column2 : column2 === 0 ? row4 : 0)
   );
-  const cell4 = (row3, column2) => rows2[row3]?.[column2] ?? Number.POSITIVE_INFINITY;
-  for (let row3 = 1; row3 <= left.length; row3 += 1) {
-    const current2 = rows2[row3] ?? [];
+  const cell4 = (row4, column2) => rows2[row4]?.[column2] ?? Number.POSITIVE_INFINITY;
+  for (let row4 = 1; row4 <= left.length; row4 += 1) {
+    const current2 = rows2[row4] ?? [];
     for (let column2 = 1; column2 <= right.length; column2 += 1) {
-      const cost2 = left[row3 - 1] === right[column2 - 1] ? 0 : 1;
-      let best = Math.min(cell4(row3 - 1, column2) + 1, cell4(row3, column2 - 1) + 1, cell4(row3 - 1, column2 - 1) + cost2);
-      const swapped = left[row3 - 1] === right[column2 - 2] && left[row3 - 2] === right[column2 - 1];
-      if (row3 > 1 && column2 > 1 && swapped) best = Math.min(best, cell4(row3 - 2, column2 - 2) + 1);
+      const cost2 = left[row4 - 1] === right[column2 - 1] ? 0 : 1;
+      let best = Math.min(cell4(row4 - 1, column2) + 1, cell4(row4, column2 - 1) + 1, cell4(row4 - 1, column2 - 1) + cost2);
+      const swapped = left[row4 - 1] === right[column2 - 2] && left[row4 - 2] === right[column2 - 1];
+      if (row4 > 1 && column2 > 1 && swapped) best = Math.min(best, cell4(row4 - 2, column2 - 2) + 1);
       current2[column2] = best;
     }
   }
@@ -37991,23 +38008,23 @@ var aiProblems = (runtime, root, files, rows2) => files.flatMap((file) => {
   const read11 = runtime.readText(toAbsolutePath(file, root));
   if (!read11.ok || !AI_CLIENT.test(read11.value)) return [];
   const lines10 = read11.value.split("\n");
-  return rows2.filter((row3) => row3.ai === "").flatMap((row3) => {
-    const name = row3.field.slice(row3.field.lastIndexOf(".") + 1);
+  return rows2.filter((row4) => row4.ai === "").flatMap((row4) => {
+    const name = row4.field.slice(row4.field.lastIndexOf(".") + 1);
     const index = lines10.findIndex((line12) => new RegExp(`[.?]${name}\\b|\\[["']${name}["']\\]`).test(line12));
-    return index === -1 ? [] : [{ kind: "ai", key: row3.field, file, line: index + 1 }];
+    return index === -1 ? [] : [{ kind: "ai", key: row4.field, file, line: index + 1 }];
   });
 });
 var dataMapProblems = (runtime, root, changedSources = []) => {
   const rows2 = readDataMap(runtime, root);
-  const byKey = new Map(rows2.map((row3) => [row3.field, row3]));
+  const byKey = new Map(rows2.map((row4) => [row4.field, row4]));
   const seen = /* @__PURE__ */ new Set();
   const fieldProblems = personalFields(runtime, root).flatMap((field) => {
     const key3 = keyOf(field);
     if (seen.has(key3)) return [];
     seen.add(key3);
-    const row3 = byKey.get(key3);
-    if (row3 === void 0) return [{ kind: "missing", field }];
-    return isComplete(row3) ? [] : [{ kind: "incomplete", field }];
+    const row4 = byKey.get(key3);
+    if (row4 === void 0) return [{ kind: "missing", field }];
+    return isComplete(row4) ? [] : [{ kind: "incomplete", field }];
   });
   return [...fieldProblems, ...aiProblems(runtime, root, changedSources, rows2)];
 };
@@ -38988,8 +39005,8 @@ var removedSymbols = (runtime, git4, base, changes) => {
   }
   return [...found.values()].slice(0, MAX_SYMBOLS);
 };
-var parseGrep = (output) => output.split("\n").filter((row3) => row3 !== "").flatMap((row3) => {
-  const [file = "", line12 = "", ...rest] = row3.split("\0");
+var parseGrep = (output) => output.split("\n").filter((row4) => row4 !== "").flatMap((row4) => {
+  const [file = "", line12 = "", ...rest] = row4.split("\0");
   const number5 = Number(line12);
   return file === "" || !Number.isInteger(number5) ? [] : [{ file: toPosixPath(file), line: number5, text: rest.join("\0") }];
 });
@@ -40359,7 +40376,7 @@ var cell2 = (value2) => /[",\n]/.test(value2) ? `"${value2.replace(/"/g, '""')}"
 var renderParity = (rows2) => [
   PARITY_COLUMNS.join(","),
   ...rows2.map(
-    (row3) => [row3.id, row3.capability, row3.whereToday, row3.destination, row3.parityTest, row3.state, row3.decision].map(cell2).join(",")
+    (row4) => [row4.id, row4.capability, row4.whereToday, row4.destination, row4.parityTest, row4.state, row4.decision].map(cell2).join(",")
   )
 ].join("\n") + "\n";
 var parseParity = (text34) => {
@@ -40376,7 +40393,7 @@ var parseParity = (text34) => {
     decision: get(cells, "decision")
   }));
 };
-var nextId2 = (rows2) => Math.max(0, ...rows2.map((row3) => Number.parseInt(row3.id.replace(/^P/i, ""), 10)).filter(Number.isFinite)) + 1;
+var nextId2 = (rows2) => Math.max(0, ...rows2.map((row4) => Number.parseInt(row4.id.replace(/^P/i, ""), 10)).filter(Number.isFinite)) + 1;
 
 // src/parity/check.ts
 var DECISION3 = /(^|\/)\d{2,}-decision-[^/]+\.md$/;
@@ -40385,17 +40402,17 @@ var checkParity = (runtime, root) => {
   const text34 = runtime.readText(planPath(root, PARITY_FILE));
   if (!text34.ok) return { file, rows: 0, issues: [{ kind: "no_matrix", line: 1, detail: file }] };
   const rows2 = parseParity(text34.value);
-  const issues2 = rows2.flatMap((row3, index) => {
+  const issues2 = rows2.flatMap((row4, index) => {
     const line12 = index + 2;
-    const label2 = `${row3.id} ${row3.capability}`;
-    if (row3.destination === "") return [{ kind: "no_destination", line: line12, detail: label2 }];
-    if (row3.destination.toLowerCase() === "removed") {
-      const decision2 = row3.decision.replace(/^docs\/plan\//, "");
-      const linked = DECISION3.test(row3.decision) && runtime.readText(planPath(root, decision2)).ok;
+    const label2 = `${row4.id} ${row4.capability}`;
+    if (row4.destination === "") return [{ kind: "no_destination", line: line12, detail: label2 }];
+    if (row4.destination.toLowerCase() === "removed") {
+      const decision2 = row4.decision.replace(/^docs\/plan\//, "");
+      const linked = DECISION3.test(row4.decision) && runtime.readText(planPath(root, decision2)).ok;
       return linked ? [] : [{ kind: "removed_without_decision", line: line12, detail: label2 }];
     }
-    if (row3.parityTest === "") return [{ kind: "no_test", line: line12, detail: label2 }];
-    return row3.state.toLowerCase() === "green" ? [] : [{ kind: "not_green", line: line12, detail: `${label2} (${row3.state || "-"})` }];
+    if (row4.parityTest === "") return [{ kind: "no_test", line: line12, detail: label2 }];
+    return row4.state.toLowerCase() === "green" ? [] : [{ kind: "not_green", line: line12, detail: `${label2} (${row4.state || "-"})` }];
   });
   return { file, rows: rows2.length, issues: issues2 };
 };
@@ -40434,11 +40451,11 @@ var placeholdersCheck = (_check, ctx) => {
 
 // src/plan/table.ts
 var cellsOf = (text34) => text34.trim().replace(/^\||\|$/g, "").split("|").map((cell4) => cell4.trim());
-var tableRows = (lines10) => lines10.filter((line12) => line12.text.trim().startsWith("|")).slice(1).map((line12) => ({ cells: cellsOf(line12.text), line: line12.line })).filter((row3) => !/^:?-{3}/.test(row3.cells[0] ?? "") && row3.cells.some((cell4) => cell4 !== ""));
+var tableRows = (lines10) => lines10.filter((line12) => line12.text.trim().startsWith("|")).slice(1).map((line12) => ({ cells: cellsOf(line12.text), line: line12.line })).filter((row4) => !/^:?-{3}/.test(row4.cells[0] ?? "") && row4.cells.some((cell4) => cell4 !== ""));
 
 // src/ownership/check.ts
 var keyOf4 = (name) => name.trim().toLowerCase().replace(/[\s_]+/g, "-");
-var responsibilitiesOf = (master) => sectionsOf(master).filter((section3) => masterSectionOf(section3.heading) === "responsibilities").flatMap((section3) => tableRows(section3.lines)).map((row3) => ({ name: row3.cells[0] ?? "", owner: row3.cells[1] ?? "", line: row3.line })).filter((row3) => row3.name !== "");
+var responsibilitiesOf = (master) => sectionsOf(master).filter((section3) => masterSectionOf(section3.heading) === "responsibilities").flatMap((section3) => tableRows(section3.lines)).map((row4) => ({ name: row4.cells[0] ?? "", owner: row4.cells[1] ?? "", line: row4.line })).filter((row4) => row4.name !== "");
 var readVocabulary = (runtime, root) => {
   const master = runtime.readText(planPath(root, MASTER_FILE));
   return master.ok ? responsibilitiesOf(master.value) : void 0;
@@ -40598,14 +40615,14 @@ var cellsOf2 = (text34) => text34.trim().replace(/^\||\|$/g, "").split("|").map(
 var ownerIssues = (master, sections2) => {
   const rows2 = linesIn(sections2, "responsibilities").filter((line12) => line12.text.trim().startsWith("|"));
   const owners = /* @__PURE__ */ new Map();
-  return rows2.slice(1).flatMap((row3) => {
-    const [name = "", owner = ""] = cellsOf2(row3.text);
+  return rows2.slice(1).flatMap((row4) => {
+    const [name = "", owner = ""] = cellsOf2(row4.text);
     if (/^-{3}/.test(name) || clean(name) === "") return [];
-    if (NOBODY.has(clean(owner))) return [issue2("no_owner", master, row3.line, name)];
-    if (SEVERAL.test(owner)) return [issue2("two_owners", master, row3.line, `${name}: ${owner}`)];
+    if (NOBODY.has(clean(owner))) return [issue2("no_owner", master, row4.line, name)];
+    if (SEVERAL.test(owner)) return [issue2("two_owners", master, row4.line, `${name}: ${owner}`)];
     const before2 = owners.get(clean(name));
     owners.set(clean(name), clean(owner));
-    return before2 !== void 0 && before2 !== clean(owner) ? [issue2("two_owners", master, row3.line, `${name}: ${owner}`)] : [];
+    return before2 !== void 0 && before2 !== clean(owner) ? [issue2("two_owners", master, row4.line, `${name}: ${owner}`)] : [];
   });
 };
 var revokedIssues = (reports) => reports.filter((report5) => report5.revoked && !report5.banner).map((report5) => issue2("revoked_without_banner", report5.name, 1, report5.name));
@@ -40631,7 +40648,7 @@ var renderTaskMap = (rows2, at6) => [
   "",
   ...table2(
     ["Issue", "Title", "Front", "State", "Report"],
-    rows2.map((row3) => [`#${String(row3.issue)}`, row3.title, row3.front || "-", row3.state, row3.report || "-"])
+    rows2.map((row4) => [`#${String(row4.issue)}`, row4.title, row4.front || "-", row4.state, row4.report || "-"])
   ),
   ""
 ].join("\n");
@@ -40658,7 +40675,7 @@ var taskMapIssues = (runtime, root) => {
   const text34 = runtime.readText(planPath(root, name));
   if (!text34.ok) return [];
   const rows2 = parseTaskMap(text34.value);
-  const listed10 = new Set(rows2.map((row3) => row3.issue));
+  const listed10 = new Set(rows2.map((row4) => row4.issue));
   const known3 = new Set(snapshot2.issues.map((issue3) => issue3.number));
   const file = `${PLAN_DIR}/${name}`;
   return [
@@ -40668,7 +40685,7 @@ var taskMapIssues = (runtime, root) => {
       line: 1,
       detail: `#${String(issue3.number)} ${issue3.title}`
     })),
-    ...rows2.filter((row3) => !known3.has(row3.issue)).map((row3) => ({ kind: "row_without_issue", file, line: row3.line, detail: `#${String(row3.issue)}` }))
+    ...rows2.filter((row4) => !known3.has(row4.issue)).map((row4) => ({ kind: "row_without_issue", file, line: row4.line, detail: `#${String(row4.issue)}` }))
   ];
 };
 
@@ -42134,8 +42151,8 @@ var PROBE_MARGIN_MS = 15e3;
 var MIN_REMAINING_MS4 = 5e3;
 var TAIL3 = 160;
 var lastLine2 = (text34) => {
-  const rows2 = text34.split(/\r?\n/).filter((row3) => row3.trim() !== "" && !/^\s*at\s|^Node\.js v\d/.test(row3));
-  const line12 = (rows2.findLast((row3) => /error/i.test(row3)) ?? rows2.at(-1))?.trim() ?? "";
+  const rows2 = text34.split(/\r?\n/).filter((row4) => row4.trim() !== "" && !/^\s*at\s|^Node\.js v\d/.test(row4));
+  const line12 = (rows2.findLast((row4) => /error/i.test(row4)) ?? rows2.at(-1))?.trim() ?? "";
   return line12.length > TAIL3 ? `${line12.slice(0, TAIL3)}…` : line12;
 };
 var args = (check2, timeoutS) => [
@@ -47611,15 +47628,15 @@ var sourceReports = (runtime, paths) => {
     const right = mean2(off2.values);
     const effect = left === null || right === null ? null : left - right;
     const spread2 = active2.values.length < 2 || off2.values.length < 2 ? null : Z95 * Math.sqrt(variance(active2.values) / active2.values.length + variance(off2.values) / off2.values.length);
-    const interval = effect === null || spread2 === null ? null : [effect - spread2, effect + spread2];
+    const interval2 = effect === null || spread2 === null ? null : [effect - spread2, effect + spread2];
     const enough = active2.values.length >= after2 && off2.values.length >= after2;
-    const equivalent = interval !== null && interval[0] >= -margin && interval[1] <= margin;
+    const equivalent = interval2 !== null && interval2[0] >= -margin && interval2[1] <= margin;
     return {
       source: source3,
       active: active2.summary,
       off: off2.summary,
       effect,
-      interval,
+      interval: interval2,
       cost: active2.summary.tokens,
       demoted: demoted.has(source3) || enough && equivalent
     };
@@ -54402,7 +54419,7 @@ var cellOf = (value2, unit) => value2 === null ? "?" : `${String(value2)} ${unit
 var inventoryLines = (ctx, rows2) => [
   ctx.t("doctor.hooks.inventory", { count: rows2.length }),
   ...rows2.map(
-    (row3) => `  ${row3.event.padEnd(17)}${row3.source.padEnd(28)}${row3.failMode.padEnd(12)}${cellOf(row3.latencyMs, "ms").padEnd(9)}${cellOf(row3.outputBytes, "B").padEnd(9)}${row3.blocksStop ? "stop " : "     "}${row3.enabled ? "" : "(disabled) "}${row3.command}`
+    (row4) => `  ${row4.event.padEnd(17)}${row4.source.padEnd(28)}${row4.failMode.padEnd(12)}${cellOf(row4.latencyMs, "ms").padEnd(9)}${cellOf(row4.outputBytes, "B").padEnd(9)}${row4.blocksStop ? "stop " : "     "}${row4.enabled ? "" : "(disabled) "}${row4.command}`
   )
 ];
 var doctorResult = (ctx, report5, extra = []) => {
@@ -55506,11 +55523,11 @@ var MAX_ALIGN_CELLS = 25e4;
 var lcsTable = (base, side) => {
   const rows2 = Array.from({ length: base.length + 1 }, () => new Uint32Array(side.length + 1));
   for (let i = base.length - 1; i >= 0; i -= 1) {
-    const row3 = rows2[i];
+    const row4 = rows2[i];
     const below = rows2[i + 1];
-    if (row3 === void 0 || below === void 0) continue;
+    if (row4 === void 0 || below === void 0) continue;
     for (let j = side.length - 1; j >= 0; j -= 1) {
-      row3[j] = base[i] === side[j] ? (below[j + 1] ?? 0) + 1 : Math.max(below[j] ?? 0, row3[j + 1] ?? 0);
+      row4[j] = base[i] === side[j] ? (below[j + 1] ?? 0) + 1 : Math.max(below[j] ?? 0, row4[j + 1] ?? 0);
     }
   }
   return rows2;
@@ -56348,7 +56365,7 @@ var fetchIssues = (runtime, root, project) => {
 };
 var rowsFrom = (issues2, previous, state) => issues2.map((issue3) => {
   const front = state.fronts.find((item2) => item2.issue === issue3.number);
-  const old = previous.find((row3) => row3.issue === issue3.number);
+  const old = previous.find((row4) => row4.issue === issue3.number);
   return {
     issue: issue3.number,
     title: issue3.title,
@@ -56363,7 +56380,7 @@ var syncTaskMap = (runtime, root, state, project, offline) => {
   const existing = runtime.readText(planPath(root, name));
   const previous = existing.ok ? parseTaskMap(existing.value) : [];
   const fetched = offline ? void 0 : fetchIssues(runtime, root, project);
-  const issues2 = fetched ?? readSnapshot(runtime, root)?.issues ?? previous.map((row3) => ({ number: row3.issue, title: row3.title, state: row3.state }));
+  const issues2 = fetched ?? readSnapshot(runtime, root)?.issues ?? previous.map((row4) => ({ number: row4.issue, title: row4.title, state: row4.state }));
   const now = runtime.now();
   if (fetched !== void 0) {
     const snapshot2 = {
@@ -58369,8 +58386,8 @@ var processOf = (runtime, paths, entry2) => {
   return { criteriaFirst, evidence: entry2.evidence.length };
 };
 var tally2 = (rows2, decision2) => {
-  const chosen = rows2.filter((row3) => row3.decision === decision2);
-  return { decisions: chosen.length, reverted: chosen.filter((row3) => row3.outcome.reverted.length > 0).length };
+  const chosen = rows2.filter((row4) => row4.decision === decision2);
+  return { decisions: chosen.length, reverted: chosen.filter((row4) => row4.outcome.reverted.length > 0).length };
 };
 var guardianReview = (runtime, paths) => {
   const entries2 = readDecisions(runtime, paths);
@@ -58396,15 +58413,15 @@ var guardianReview = (runtime, paths) => {
 
 // src/commands/guardian-review.ts
 var yes = (t, value2) => t(value2 ? "guardian.review.yes" : "guardian.review.no");
-var rowLine = (t, row3) => t("guardian.review.row", {
-  id: row3.id,
-  subject: row3.subject,
-  decision: row3.decision,
-  criteria: yes(t, row3.process.criteriaFirst),
-  evidence: row3.process.evidence,
-  reverted: row3.outcome.reverted.length === 0 ? "-" : row3.outcome.reverted.join(", "),
-  gate: row3.outcome.gateFailures,
-  reopened: row3.outcome.reopenedBy ?? "-"
+var rowLine = (t, row4) => t("guardian.review.row", {
+  id: row4.id,
+  subject: row4.subject,
+  decision: row4.decision,
+  criteria: yes(t, row4.process.criteriaFirst),
+  evidence: row4.process.evidence,
+  reverted: row4.outcome.reverted.length === 0 ? "-" : row4.outcome.reverted.join(", "),
+  gate: row4.outcome.gateFailures,
+  reopened: row4.outcome.reopenedBy ?? "-"
 });
 var guardianReviewCommand = {
   path: ["guardian", "review"],
@@ -58416,7 +58433,7 @@ var guardianReviewCommand = {
     if (review3.rows.length === 0) return success(review3, [ctx.t("guardian.review.empty")]);
     return success(review3, [
       ctx.t("guardian.review.head"),
-      ...review3.rows.map((row3) => rowLine(ctx.t, row3)),
+      ...review3.rows.map((row4) => rowLine(ctx.t, row4)),
       ctx.t("guardian.review.tally", {
         followed: review3.followed.decisions,
         followedReverted: review3.followed.reverted,
@@ -59809,7 +59826,7 @@ var updateParity = (runtime, root, ref2) => {
   const changed = new Set(
     linesOf2(git4.out(["diff", "--name-only", state.hash, hash2, "--", ...pathspecOf(state.covered)]))
   );
-  const known3 = new Set(rows2.map((row3) => row3.capability));
+  const known3 = new Set(rows2.map((row4) => row4.capability));
   const fresh3 = capabilitiesAt(git4, hash2, state.covered).filter(
     (capability) => changed.has(capability.where.replace(/:\d+$/, "")) && !known3.has(capability.text)
   );
@@ -60138,10 +60155,10 @@ var claimsAsofCommand = {
       return success(
         { schema: CLAIMS_SCHEMA, commit: commit2, claims: rows2 },
         rows2.length === 0 ? [ctx.t("knowledge.claims.empty")] : rows2.map(
-          (row3) => ctx.t(row3.known ? "knowledge.claims.asof.known" : "knowledge.claims.asof.later", {
-            id: row3.id,
-            status: row3.status,
-            text: row3.text
+          (row4) => ctx.t(row4.known ? "knowledge.claims.asof.known" : "knowledge.claims.asof.later", {
+            id: row4.id,
+            status: row4.status,
+            text: row4.text
           })
         )
       );
@@ -60267,11 +60284,11 @@ var decideRecordsCommand = {
     return success(
       { schema: DECISION_RECORDS_SCHEMA, records: rows2 },
       rows2.length === 0 ? [ctx.t("knowledge.records.none")] : rows2.map(
-        (row3) => ctx.t("knowledge.records.row", {
-          task: row3.task,
-          changes: row3.changes.map((change2) => `${change2.class} ${change2.detail}`).join(", "),
-          reason: row3.reason ?? ctx.t("knowledge.records.no_reason"),
-          reverted: row3.outcome.reverted.length
+        (row4) => ctx.t("knowledge.records.row", {
+          task: row4.task,
+          changes: row4.changes.map((change2) => `${change2.class} ${change2.detail}`).join(", "),
+          reason: row4.reason ?? ctx.t("knowledge.records.no_reason"),
+          reverted: row4.outcome.reverted.length
         })
       )
     );
@@ -61717,8 +61734,8 @@ var rowOf3 = (runtime, tree, base, waiting) => {
 };
 var collisionsOf = (rows2) => {
   const owners = /* @__PURE__ */ new Map();
-  for (const row3 of rows2)
-    for (const file of row3.files) owners.set(file, [...owners.get(file) ?? [], row3.branch ?? row3.path]);
+  for (const row4 of rows2)
+    for (const file of row4.files) owners.set(file, [...owners.get(file) ?? [], row4.branch ?? row4.path]);
   return [...owners.entries()].filter(([, branches]) => branches.length > 1).map(([file, branches]) => ({ file, branches })).sort((a, b) => a.file.localeCompare(b.file));
 };
 var boardOf = (runtime, cwd) => {
@@ -61735,11 +61752,11 @@ var show2 = (ctx) => {
   const board = boardOf(ctx.runtime, ctx.cwd);
   return success(board, [
     ...board.rows.map(
-      (row3) => ctx.t("fronts.board.row", {
-        branch: row3.branch ?? "-",
-        gate: row3.gate,
-        contract: row3.contract ?? "-",
-        waiting: row3.waiting ? ctx.t("fronts.board.waiting") : ""
+      (row4) => ctx.t("fronts.board.row", {
+        branch: row4.branch ?? "-",
+        gate: row4.gate,
+        contract: row4.contract ?? "-",
+        waiting: row4.waiting ? ctx.t("fronts.board.waiting") : ""
       })
     ),
     ...board.collisions.map(
@@ -62406,7 +62423,7 @@ var filesFor = (level) => level === 0 ? [] : level === 1 ? [SCRUB_PATH, LOG_PATH
 var OBSERVE_SCHEMA = "finitemonkey/observe@1";
 var OBSERVE_FEATURE = "observability";
 var textFor = (path, level) => path === SCRUB_PATH ? scrubModule() : path === LOG_PATH ? logModule() : planFile(level);
-var rowLine2 = (ctx, row3) => ctx.t(`observe.state.${row3.state}`, { item: ctx.t(`observe.item.${row3.item}`), file: row3.file ?? "-" });
+var rowLine2 = (ctx, row4) => ctx.t(`observe.state.${row4.state}`, { item: ctx.t(`observe.item.${row4.item}`), file: row4.file ?? "-" });
 var fileLines2 = (ctx, planned, written) => {
   const creates = planned.filter((file) => file.action === "create");
   return [
@@ -62448,7 +62465,7 @@ var runObserve = (ctx, root) => {
   const written = apply2 ? writePlanned(ctx.runtime, root, planned, false).written : [];
   const human2 = [
     ctx.t("observe.title", { level }),
-    ...rows2.map((row3) => rowLine2(ctx, row3)),
+    ...rows2.map((row4) => rowLine2(ctx, row4)),
     ...fileLines2(ctx, planned, written.length),
     ctx.t("observe.no_signup")
   ];
@@ -63801,13 +63818,194 @@ var prProvenanceCommand = {
   })
 };
 
+// src/team/history.ts
+var SEPARATOR4 = "";
+var FIELD = "";
+var parseLog2 = (text34) => text34.split(SEPARATOR4).map((chunk) => chunk.trim()).filter((chunk) => chunk !== "").flatMap((chunk) => {
+  const [header3 = "", ...rest] = chunk.split("\n");
+  const [sha, at6, email, subject2] = header3.split(FIELD);
+  if (sha === void 0 || at6 === void 0 || email === void 0 || subject2 === void 0) return [];
+  const files = rest.map((line12) => line12.trim()).filter((line12) => line12 !== "");
+  return [{ sha, at: at6, author: sha256Hex(email.toLowerCase()).slice(0, 12), subject: subject2, files }];
+});
+var readCommits = (runtime, root) => {
+  const result = runtime.git(
+    ["log", "--no-merges", "--reverse", `--format=${SEPARATOR4}%H${FIELD}%cI${FIELD}%ae${FIELD}%s`, "--name-only"],
+    root
+  );
+  return result.ok ? parseLog2(result.stdout) : [];
+};
+var REVERT = /^(?:Revert "|revert(?:\([^)]*\))?!?:)/;
+var FIX3 = /^fix(?:\([^)]*\))?!?:/;
+var REWORK_DAYS = 14;
+var DAY_MS14 = 864e5;
+var isRework = (commit2, earlier) => FIX3.test(commit2.subject) && earlier.some(
+  (prior) => !FIX3.test(prior.subject) && Date.parse(commit2.at) - Date.parse(prior.at) <= REWORK_DAYS * DAY_MS14 && prior.files.some((file) => commit2.files.includes(file))
+);
+
+// src/team/render.ts
+var interval = (value2) => value2 === null ? "n/a" : `${String(value2.low)} to ${String(value2.high)}`;
+var row2 = (bucket) => bucket.suppressed ? `| ${bucket.period} | suppressed (fewer than k contributors) | | | | | | |` : `| ${bucket.period} | ${String(bucket.commits)} | ${String(bucket.tasks)} | ${String(bucket.falseDone)} | ${String(bucket.firstTry)} (${interval(bucket.firstTryRate)}) | ${String(bucket.rework)} | ${String(bucket.reverts)} | ${bucket.spendMedianUsd === null ? "n/a" : `$${String(bucket.spendMedianUsd)} (${String(bucket.spendTasks)} tasks)`} |`;
+var renderReport2 = (report5) => [
+  "# Team report",
+  "",
+  `Aggregated per repository and month. No person is named; a month with fewer than ${String(report5.k)} contributors is suppressed.`,
+  "",
+  "| Period | Commits | Tasks | False done | First try (95% interval) | Rework | Reverts | Spend per task (median) |",
+  "|---|---|---|---|---|---|---|---|",
+  ...report5.buckets.map(row2),
+  "",
+  "## Method",
+  "",
+  ...report5.method.map((line12) => `- ${line12.metric}: ${line12.definition}. Source: ${line12.source}.`)
+];
+
+// src/team/report.ts
+var TEAM_SCHEMA = "finitemonkey/team-report@1";
+var DEFAULT_K = 3;
+var METHOD = [
+  {
+    metric: "falseDone",
+    definition: "gate runs at a done claim that did not pass",
+    source: ".finitemonkey/evidence/<task>.jsonl, *gate* entries"
+  },
+  {
+    metric: "firstTry",
+    definition: "tasks whose first gate run passed, with a 95% Wilson interval over the tasks of the period",
+    source: ".finitemonkey/evidence/<task>.jsonl, first *gate* entry"
+  },
+  {
+    metric: "rework",
+    definition: `fix commits touching a file that a non-fix commit changed in the previous ${String(REWORK_DAYS)} days`,
+    source: "git log --name-only"
+  },
+  { metric: "reverts", definition: 'commits whose subject starts with Revert " or revert:', source: "git log" },
+  {
+    metric: "spendPerTask",
+    definition: "median dollars per task, from the token counts the API reported",
+    source: ".finitemonkey/cost.jsonl"
+  },
+  {
+    metric: "reviewTime",
+    definition: "not measured: it needs the forge API, which this report does not call",
+    source: "none"
+  },
+  { metric: "securityFindings", definition: "not measured in this version", source: "none" }
+];
+var Z = 1.96;
+var wilson = (hits, total) => {
+  if (total === 0) return null;
+  const p = hits / total;
+  const denominator = 1 + Z * Z / total;
+  const center = p + Z * Z / (2 * total);
+  const margin = Z * Math.sqrt(p * (1 - p) / total + Z * Z / (4 * total * total));
+  const round5 = (value2) => Math.round(value2 * 1e3) / 1e3;
+  return { low: round5((center - margin) / denominator), high: round5((center + margin) / denominator) };
+};
+var median4 = (values) => {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+};
+var periodOf = (at6) => at6.slice(0, 7);
+var gateRuns = (ledger) => ledger.entries.filter((entry2) => entry2.check === GATE_CHECK);
+var ledgerFacts = (ledgers, period) => {
+  const runs = ledgers.map(gateRuns).filter((items) => items.length > 0 && periodOf(items[0]?.at ?? "") === period);
+  return {
+    tasks: runs.length,
+    falseDone: runs.reduce((total, items) => total + items.filter((entry2) => entry2.status !== "passed").length, 0),
+    firstTry: runs.filter((items) => items[0]?.status === "passed").length
+  };
+};
+var spendFacts = (spend, period) => {
+  const perTask2 = /* @__PURE__ */ new Map();
+  for (const item2 of spend)
+    if (periodOf(item2.at) === period) perTask2.set(item2.task, (perTask2.get(item2.task) ?? 0) + item2.usd);
+  const median_ = median4([...perTask2.values()]);
+  return { spendTasks: perTask2.size, spendMedianUsd: median_ === null ? null : Math.round(median_ * 100) / 100 };
+};
+var bucketOf4 = (period, commits2, ledgers, spend, k) => {
+  const inPeriod = commits2.filter((commit2) => periodOf(commit2.at) === period);
+  const facts = ledgerFacts(ledgers, period);
+  const contributors = new Set(inPeriod.map((commit2) => commit2.author)).size;
+  return {
+    period,
+    suppressed: contributors < k,
+    commits: inPeriod.length,
+    ...facts,
+    firstTryRate: wilson(facts.firstTry, facts.tasks),
+    rework: inPeriod.filter((commit2) => isRework(commit2, commits2.slice(0, commits2.indexOf(commit2)))).length,
+    reverts: inPeriod.filter((commit2) => REVERT.test(commit2.subject)).length,
+    ...spendFacts(spend, period)
+  };
+};
+var SUPPRESSED = {
+  commits: 0,
+  tasks: 0,
+  falseDone: 0,
+  firstTry: 0,
+  firstTryRate: null,
+  rework: 0,
+  reverts: 0,
+  spendTasks: 0,
+  spendMedianUsd: null
+};
+var teamReport = (commits2, ledgers, spend, k = DEFAULT_K) => {
+  const periods = [...new Set(commits2.map((commit2) => periodOf(commit2.at)))].sort();
+  const buckets = periods.map((period) => {
+    const bucket = bucketOf4(period, commits2, ledgers, spend, k);
+    return bucket.suppressed ? { period, suppressed: true, ...SUPPRESSED } : bucket;
+  });
+  return { schema: TEAM_SCHEMA, k, buckets, method: METHOD };
+};
+
+// src/commands/team-report.ts
+var TEAM_FEATURE = "team-dashboard";
+var USAGE19 = "finitemonkey team report [--k <n>] [--out <file>] [--json]";
+var teamReportCommand = {
+  path: ["team", "report"],
+  summaryKey: "command.team_report.summary",
+  usage: USAGE19,
+  status: "ready",
+  options: { k: { type: "string" }, out: { type: "string" } },
+  run: (ctx, args2) => inGuardianRepo(ctx, (root) => {
+    const paths = fmPaths(root);
+    if (featureMode(ctx.runtime, paths, TEAM_FEATURE) === "off")
+      return failureFrom(
+        ctx.t,
+        usageProblem(
+          "invalid_arguments",
+          "team.report.off",
+          "set guards.team-dashboard: shadow in .finitemonkey/policy.yml"
+        )
+      );
+    const k = Number(stringOption(args2.values, "k") ?? DEFAULT_K);
+    if (!Number.isInteger(k) || k < 1)
+      return failureFrom(ctx.t, usageProblem("invalid_arguments", "team.report.k", USAGE19));
+    const ledgers = knownTasks(ctx.runtime, paths).map((task) => ({
+      task: task.contract.id,
+      entries: readLedger2(ctx.runtime, paths.evidence(task.contract.id))
+    }));
+    const spend = readCost(ctx.runtime, paths).map((line12) => ({ task: line12.task, at: line12.at, usd: line12.usd }));
+    const report5 = teamReport(readCommits(ctx.runtime, root), ledgers, spend, k);
+    const lines10 = renderReport2(report5);
+    const out = stringOption(args2.values, "out");
+    if (out !== void 0 && !ctx.runtime.writeText(toAbsolutePath(out, root), `${lines10.join("\n")}
+`).ok)
+      return failureFrom(ctx.t, guardianWriteProblem(out));
+    return success(report5, lines10);
+  })
+};
+
 // src/commands/person.ts
 var PERSON_COMMANDS = [
   parkCommand,
   unparkCommand,
   attentionCommand,
   driftCommand,
-  prProvenanceCommand
+  prProvenanceCommand,
+  teamReportCommand
 ];
 
 // src/plan/master.ts
@@ -63975,7 +64173,7 @@ var planConsolidateCommand = {
 
 // src/commands/planta.ts
 var PLANTA_SCHEMA = "finitemonkey/planta@1";
-var USAGE19 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
+var USAGE20 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
 var itemsJson = (ctx, bar) => bar.items.map((item2) => {
   const probe = BLUEPRINTS[bar.type].find((entry2) => entry2.id === item2.id)?.probe;
   return {
@@ -63993,7 +64191,7 @@ var runPlanta = (ctx, raw) => {
   if (type === void 0) {
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
     );
   }
   const task = raw === void 0 ? void 0 : recordInContract(ctx.runtime, paths, type);
@@ -64019,7 +64217,7 @@ var runPlanta = (ctx, raw) => {
 var plantaCommand = {
   path: ["planta"],
   summaryKey: "command.planta.summary",
-  usage: USAGE19,
+  usage: USAGE20,
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => Promise.resolve(runPlanta(ctx, args2.positionals[0]))
@@ -64028,7 +64226,7 @@ var plantaCommand = {
 // src/policy/explain.ts
 var POLICY_EXPLAIN_SCHEMA = "finitemonkey/policy-explain@1";
 var FAILURE = { active: "block", shadow: "log", off: "none" };
-var row2 = (guard, damage, resolved) => ({
+var row3 = (guard, damage, resolved) => ({
   guard,
   damage,
   mode: resolved.mode,
@@ -64042,7 +64240,7 @@ var explainPolicy = (runtime, paths) => {
   const damage = DAMAGE_GUARDS;
   const guards = KNOWN_GUARDS.map((guard) => {
     const set2 = { id: guard, damage: damage.includes(guard) };
-    return row2(guard, set2.damage, resolveGuard(set2, policy, shadow, experimentArm(runtime, paths, policy, guard)));
+    return row3(guard, set2.damage, resolveGuard(set2, policy, shadow, experimentArm(runtime, paths, policy, guard)));
   });
   return {
     schema: POLICY_EXPLAIN_SCHEMA,
@@ -64053,11 +64251,11 @@ var explainPolicy = (runtime, paths) => {
 };
 
 // src/commands/policy.ts
-var FIX3 = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
+var FIX4 = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
 var recordFalsePositive = (ctx, guard) => {
-  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX3));
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX4));
   if (!OPTIONAL_GUARDS.some((id) => id === guard)) {
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", FIX3, { detail: guard }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", FIX4, { detail: guard }));
   }
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const state = readShadow(ctx.runtime, paths);
@@ -64073,7 +64271,7 @@ var recordFalsePositive = (ctx, guard) => {
 var policyFalsePositiveCommand = {
   path: ["policy", "false-positive"],
   summaryKey: "command.policy_false_positive.summary",
-  usage: FIX3,
+  usage: FIX4,
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => Promise.resolve(recordFalsePositive(ctx, args2.positionals[0] ?? ""))
@@ -64082,10 +64280,10 @@ var policyIssueLine = (t, found) => {
   const base = t(`policy.issue.${found.kind}`, { file: found.file, key: found.key });
   return found.suggestion === void 0 ? base : `${base} ${t("policy.issue.suggestion", { name: found.suggestion })}`;
 };
-var guardLine = (t, row3) => {
-  const ignored = row3.ignored.map((level) => t("policy.explain.ignored", { source: level.source, mode: level.mode }));
+var guardLine = (t, row4) => {
+  const ignored = row4.ignored.map((level) => t("policy.explain.ignored", { source: level.source, mode: level.mode }));
   return [
-    t("policy.explain.row", { guard: row3.guard, mode: row3.mode, source: row3.source, failure: row3.failureMode }),
+    t("policy.explain.row", { guard: row4.guard, mode: row4.mode, source: row4.source, failure: row4.failureMode }),
     ...ignored
   ].join(" ");
 };
@@ -64101,7 +64299,7 @@ var explain = (ctx) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const data2 = explainPolicy(ctx.runtime, paths);
   const human2 = [
-    ...data2.guards.map((row3) => guardLine(ctx.t, row3)),
+    ...data2.guards.map((row4) => guardLine(ctx.t, row4)),
     ...data2.issues.map((found) => policyIssueLine(ctx.t, found))
   ];
   return data2.issues.some(isPolicyError) ? failureFrom(ctx.t, invalidPolicy(data2), human2) : success(data2, human2);
@@ -64116,7 +64314,7 @@ var policyExplainCommand = {
 };
 
 // src/evolve/evaluate.ts
-var median4 = (values) => {
+var median5 = (values) => {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
@@ -64129,7 +64327,7 @@ var summarize2 = (outcomes2) => ({
     outcomes2.reduce((sum2, outcome3) => sum2 + outcome3.dismissals, 0),
     outcomes2.length
   ),
-  medianWallMs: median4(outcomes2.map((outcome3) => outcome3.wallMs))
+  medianWallMs: median5(outcomes2.map((outcome3) => outcome3.wallMs))
 });
 var beats = (variant, parent) => {
   const pairs4 = [
@@ -64495,7 +64693,7 @@ var stackPlan = (runtime, root, defaultBranch2) => {
   if (isEquivalent(runtime, root, tip, targets2)) return { kind: "restack", parent };
   return { kind: "parent-open", parent };
 };
-var lostPatches = (runtime, root, oldRange, newRange) => runtime.git(["range-diff", "--no-color", oldRange, newRange], root).stdout.split("\n").filter((row3) => /^\s*\d+:\s+[0-9a-f]+\s+<\s+-:/.test(row3));
+var lostPatches = (runtime, root, oldRange, newRange) => runtime.git(["range-diff", "--no-color", oldRange, newRange], root).stdout.split("\n").filter((row4) => /^\s*\d+:\s+[0-9a-f]+\s+<\s+-:/.test(row4));
 var restack = (runtime, repo, parent, onto) => {
   const root = repo.root;
   const oldTip = line9(runtime, root, ["rev-parse", "HEAD"]);
@@ -64833,7 +65031,7 @@ var DEV_TOOLS = ["ruff", "pytest", "vulture"];
 
 // src/commands/preset.ts
 var PRESET_SCHEMA = "finitemonkey/preset@1";
-var USAGE20 = "finitemonkey preset python [--write] [--overwrite]";
+var USAGE21 = "finitemonkey preset python [--write] [--overwrite]";
 var presetFiles = (project, linter) => [
   ...[...project.sections].some((name) => name.startsWith("ruff")) ? [] : [{ path: "ruff.toml", content: RUFF_TOML }],
   ...project.sections.has("pytest.ini_options") ? [] : [{ path: "pytest.ini", content: PYTEST_INI }],
@@ -64844,7 +65042,7 @@ var presetFiles = (project, linter) => [
 var python = (ctx, values) => {
   const root = projectRoot(ctx);
   if (featureMode(ctx.runtime, fmPaths(root), PYTHON_FEATURE) === "off")
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE20));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE21));
   const project = detectPython(
     (relative29) => {
       const text34 = ctx.runtime.readText(toAbsolutePath(join188(root, relative29)));
@@ -64852,7 +65050,7 @@ var python = (ctx, values) => {
     },
     (relative29) => ctx.runtime.stat(toAbsolutePath(join188(root, relative29))) !== void 0
   );
-  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE20));
+  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE21));
   const arch = loadArch(ctx.runtime, root);
   const deny2 = (from, allowed4) => ctx.t("arch.generated.not_allowed", { from, allowed: allowed4.join(", ") });
   const linter = arch.kind === "ok" ? importLinter(arch.config, deny2) : void 0;
@@ -64862,7 +65060,7 @@ var python = (ctx, values) => {
     root,
     files: presetFiles(project, linter),
     values,
-    usage: USAGE20,
+    usage: USAGE21,
     data: { schema: PRESET_SCHEMA, stack: "python", manager: project.manager },
     lines: [...project.manager === "uv" ? [] : [ctx.t("preset.needs_uv")], ctx.t("preset.dev_tools", { tools })]
   });
@@ -64870,14 +65068,14 @@ var python = (ctx, values) => {
 var presetCommand = {
   path: ["preset"],
   summaryKey: "command.preset.summary",
-  usage: USAGE20,
+  usage: USAGE21,
   status: "ready",
   maxPositionals: 1,
   options: GENERATE_OPTIONS,
   run: (ctx, args2) => Promise.resolve(
     args2.positionals[0] === "python" ? python(ctx, args2.values) : failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, {
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE21, {
         detail: args2.positionals[0] ?? "<stack>"
       })
     )
@@ -66199,7 +66397,7 @@ var unattended = (ctx, id, options2 = {}) => {
 // src/commands/run.ts
 var RUN_SCHEMA = "finitemonkey/run@1";
 var RUNS_DIR = "runs";
-var USAGE21 = `finitemonkey run [--shell ${SHELLS8.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
+var USAGE22 = `finitemonkey run [--shell ${SHELLS8.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
 var DEFAULT_TIMEOUT_S2 = 600;
 var KEEP_RUNS = 30;
 var NOT_FOUND_EXIT = 127;
@@ -66223,7 +66421,7 @@ var saveLog = (ctx, root, line12, text34) => {
   prune(ctx, dir);
   return `${FM_DIR}/${RUNS_DIR}/${name}`;
 };
-var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE21, { detail }));
+var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE22, { detail }));
 var runCommand = (ctx, words6, shellRaw, timeoutRaw) => {
   const shell = shellRaw === void 0 ? defaultShell(ctx.platform) : parseShellChoice(shellRaw);
   const timeoutS = timeoutOf(timeoutRaw);
@@ -66270,7 +66468,7 @@ ${result.stderr}`, exitCode);
 var runCommandSpec = {
   path: ["run"],
   summaryKey: "command.run.summary",
-  usage: USAGE21,
+  usage: USAGE22,
   status: "ready",
   options: { shell: { type: "string" }, timeout: { type: "string" }, unattended: { type: "boolean" } },
   maxPositionals: 1e3,
@@ -66423,14 +66621,14 @@ var scenariosRunCommand = {
 };
 
 // src/commands/secrets-accept.ts
-var DAY_MS14 = 864e5;
+var DAY_MS15 = 864e5;
 var daysOf2 = (values) => {
   const raw = stringOption(values, "days");
   if (raw === void 0) return EXCEPTION_MAX_DAYS;
   const days = Number.parseInt(raw, 10);
   return Number.isInteger(days) && days > 0 && days <= EXCEPTION_MAX_DAYS ? days : void 0;
 };
-var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS14).toISOString();
+var plusDays = (iso, days) => new Date(Date.parse(iso) + days * DAY_MS15).toISOString();
 var failure5 = (ctx, problem5) => failureFrom(ctx.t, problem5);
 var inputProblem2 = (ctx, id, reason, days) => {
   const fix = "finitemonkey secrets accept <id> --reason <why> [--days 1-90] [--false-positive]";
@@ -66551,7 +66749,7 @@ var runbookLink = (runtime, rule) => {
 
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE22 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var USAGE23 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
 var TARGET = { rotated: "rotacionado", close: "fechado" };
 var PURGE_STEPS = [
   "secrets.purge.step1",
@@ -66609,7 +66807,7 @@ var move = (ctx, root, incident, action) => {
   if (!canMove(incident.state, to))
     return action === "close" ? notRotated(ctx, incident) : fail4(
       ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE22, {
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE23, {
         id: incident.id,
         from: incident.state,
         to
@@ -66632,7 +66830,7 @@ var actionOf2 = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "l
 var secretsIncidentCommand = {
   path: ["secrets", "incident"],
   summaryKey: "secrets.command.incident",
-  usage: USAGE22,
+  usage: USAGE23,
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args2) => {
@@ -66642,7 +66840,7 @@ var secretsIncidentCommand = {
       return Promise.resolve(
         fail4(
           ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE22, { detail: args2.positionals[0] ?? "" })
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE23, { detail: args2.positionals[0] ?? "" })
         )
       );
     if (action === "list") return Promise.resolve(list9(ctx, root));
@@ -66714,7 +66912,7 @@ var liveOutcome = (result) => {
 
 // src/commands/secrets-live.ts
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
-var USAGE23 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var USAGE24 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
 var target4 = (provider) => {
   const probe = LIVE_PROBES[provider];
@@ -66745,7 +66943,7 @@ var send = (ctx, provider, variable, key3) => {
 var secretsLiveCommand = {
   path: ["secrets", "live"],
   summaryKey: "secrets.command.live",
-  usage: USAGE23,
+  usage: USAGE24,
   status: "ready",
   maxPositionals: 1,
   options: { env: { type: "string" }, send: { type: "boolean" } },
@@ -66756,7 +66954,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE23, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE24, {
             detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
           })
         )
@@ -66766,7 +66964,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          needsPersonProblem("secrets.error.person_only", `${USAGE23.replace(" [--send]", "")} --send`, {
+          needsPersonProblem("secrets.error.person_only", `${USAGE24.replace(" [--send]", "")} --send`, {
             action: ctx.t("secrets.action.live")
           })
         )
@@ -66774,7 +66972,7 @@ var secretsLiveCommand = {
     const key3 = ctx.env[variable] ?? "";
     if (key3 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE23, { variable }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE24, { variable }))
       );
     return Promise.resolve(send(ctx, provider, variable, key3));
   }
@@ -67014,13 +67212,13 @@ var report3 = (ctx) => {
       helps: data2.total.helps
     }),
     ...data2.rows.map(
-      (row3) => ctx.t("blind_band.row", {
-        week: row3.week,
-        domain: row3.domain,
-        index: percent2(row3.index),
-        without: row3.withoutCriterion,
-        helps: row3.helps,
-        concepts: row3.conceptsMoved
+      (row4) => ctx.t("blind_band.row", {
+        week: row4.week,
+        domain: row4.domain,
+        index: percent2(row4.index),
+        without: row4.withoutCriterion,
+        helps: row4.helps,
+        concepts: row4.conceptsMoved
       })
     )
   ];
@@ -67036,8 +67234,8 @@ var signalsBlindBandCommand = {
 };
 
 // src/commands/signals-hypothesis.ts
-var USAGE24 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
-var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE24, { detail });
+var USAGE25 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
+var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE25, { detail });
 var normalized4 = (text34) => text34.toLowerCase().replace(/\s+/g, " ").trim();
 var hypothesis = (ctx, words6) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -67072,14 +67270,14 @@ var hypothesis = (ctx, words6) => {
 var signalsHypothesisCommand = {
   path: ["signals", "hypothesis"],
   summaryKey: "command.signals_hypothesis.summary",
-  usage: USAGE24,
+  usage: USAGE25,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(hypothesis(ctx, args2.positionals))
 };
 
 // src/commands/signals-locate.ts
-var USAGE25 = "finitemonkey signals locate <file>:<line> <reason>";
+var USAGE26 = "finitemonkey signals locate <file>:<line> <reason>";
 var PLACE = /^(.+):(\d+)$/;
 var locate4 = (ctx, words6) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -67090,7 +67288,7 @@ var locate4 = (ctx, words6) => {
   const line12 = Number(place2?.[2] ?? "0");
   if (file === void 0 || line12 < 1 || reason.length < limits.hypothesisChars) {
     const detail = ctx.t("signals.locate.invalid", { count: limits.hypothesisChars });
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE25, { detail }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE26, { detail }));
   }
   const files = signalFiles(paths);
   const entries2 = readEntries(ctx.runtime, files);
@@ -67109,7 +67307,7 @@ var locate4 = (ctx, words6) => {
 var signalsLocateCommand = {
   path: ["signals", "locate"],
   summaryKey: "command.signals_locate.summary",
-  usage: USAGE25,
+  usage: USAGE26,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(locate4(ctx, args2.positionals))
@@ -67223,7 +67421,7 @@ var parseStatusInput = (raw) => {
 };
 
 // src/statusline/render.ts
-var SEPARATOR4 = " | ";
+var SEPARATOR5 = " | ";
 var segmentText = (t, segment2) => [
   "fm",
   ...segment2.task === void 0 ? [] : [segment2.task],
@@ -67245,7 +67443,7 @@ var fit2 = (line12, columns) => {
 var composeLine = (wrapped, segment2, columns) => {
   const lines10 = wrapped === "" ? [] : wrapped.split(/\r?\n/);
   const last = lines10.pop();
-  const joined = last === void 0 || last.trim() === "" ? segment2 : `${last}${SEPARATOR4}${segment2}`;
+  const joined = last === void 0 || last.trim() === "" ? segment2 : `${last}${SEPARATOR5}${segment2}`;
   return [...lines10, joined].map((line12) => fit2(line12, columns)).join("\n");
 };
 
@@ -67753,7 +67951,7 @@ var taskDoneCommand = {
 
 // src/commands/task-diverge.ts
 import { join as join197 } from "node:path";
-var USAGE26 = "finitemonkey task diverge [<id>] [--choose <letter>]";
+var USAGE27 = "finitemonkey task diverge [<id>] [--choose <letter>]";
 var load = (ctx, paths, task) => {
   const disk = (relative29) => {
     const text34 = ctx.runtime.readText(toAbsolutePath(join197(paths.root, relative29)));
@@ -67809,7 +68007,7 @@ var ask6 = (ctx, paths, task) => {
   if (mode === "off") return skipped(ctx, task, "off");
   const loaded2 = load(ctx, paths, task);
   if (loaded2 === void 0)
-    return failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE26, { task }));
+    return failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE27, { task }));
   const examples = loaded2.examples ?? [];
   const why = eligible(loaded2.contract, examples);
   if (why !== void 0) return skipped(ctx, task, why);
@@ -67841,7 +68039,7 @@ var choose = (ctx, paths, task, letter) => {
   const question = state.pending[task];
   const option3 = question?.options.find((item2) => item2.letter === letter.toUpperCase());
   if (question === void 0 || option3 === void 0)
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE26, { task, letter }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE27, { task, letter }));
   const loaded2 = load(ctx, paths, task);
   if (loaded2?.trusted !== true)
     return failureFrom(ctx.t, needsPersonProblem("examples.untrusted", `fm: trust ${task}`, { task }));
@@ -67855,7 +68053,7 @@ var choose = (ctx, paths, task, letter) => {
   if (!made.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE26, { task, max: MAX_EXAMPLES })
+      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE27, { task, max: MAX_EXAMPLES })
     );
   const decided2 = decideExamples(
     ctx.runtime,
@@ -67867,7 +68065,7 @@ var choose = (ctx, paths, task, letter) => {
   if (!decided2.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "examples.decide_failed", USAGE26, { task, detail: "write" })
+      usageProblem("invalid_arguments", "examples.decide_failed", USAGE27, { task, detail: "write" })
     );
   const rest = Object.fromEntries(Object.entries(state.pending).filter(([key3]) => key3 !== task));
   writePending(ctx.runtime, paths, { ...state, pending: rest });
@@ -67879,7 +68077,7 @@ var choose = (ctx, paths, task, letter) => {
 var taskDivergeCommand = {
   path: ["task", "diverge"],
   summaryKey: "command.task_diverge.summary",
-  usage: USAGE26,
+  usage: USAGE27,
   status: "ready",
   maxPositionals: 1,
   options: { choose: { type: "string" } },
@@ -67889,7 +68087,7 @@ var taskDivergeCommand = {
     const paths = fmPaths(repo.root);
     const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
     if (task === void 0)
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE26)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE27)));
     const letter = stringOption(args2.values, "choose");
     return Promise.resolve(letter === void 0 ? ask6(ctx, paths, task) : choose(ctx, paths, task, letter));
   }
@@ -67989,7 +68187,7 @@ var taskAmendCommand = {
 
 // src/commands/task-examples.ts
 import { join as join198 } from "node:path";
-var USAGE27 = "finitemonkey task examples [<id>] [--says <sentence> --run <cmd> --expect <output> [--input <stdin>]] [--approve E1,E2] [--reject E3]";
+var USAGE28 = "finitemonkey task examples [<id>] [--says <sentence> --run <cmd> --expect <output> [--input <stdin>]] [--approve E1,E2] [--reject E3]";
 var ids3 = (values, name) => {
   const value2 = values[name];
   const raw = Array.isArray(value2) ? value2 : typeof value2 === "string" ? [value2] : [];
@@ -68013,7 +68211,7 @@ var propose = (ctx, paths, task, draft) => {
   if (!made.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE27, { task, max: MAX_EXAMPLES })
+      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE28, { task, max: MAX_EXAMPLES })
     );
   return {
     ...success({ schema: TASK_SCHEMA, task, example: made.value }, [
@@ -68034,7 +68232,7 @@ var decide5 = (ctx, paths, task, values) => {
   const done2 = decideExamples(ctx.runtime, paths, loaded2.value.contract, decision2, contractHash);
   if (!done2.ok) {
     const detail = done2.error.kind === "unknown" ? done2.error.ids.join(", ") : done2.error.kind;
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.decide_failed", USAGE27, { task, detail }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.decide_failed", USAGE28, { task, detail }));
   }
   return {
     ...listed9(ctx, task, done2.value),
@@ -68047,7 +68245,7 @@ var decide5 = (ctx, paths, task, values) => {
 var taskExamplesCommand = {
   path: ["task", "examples"],
   summaryKey: "command.task_examples.summary",
-  usage: USAGE27,
+  usage: USAGE28,
   status: "ready",
   maxPositionals: 1,
   options: {
@@ -68064,7 +68262,7 @@ var taskExamplesCommand = {
     const paths = fmPaths(repo.root);
     const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
     if (task === void 0)
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE27)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE28)));
     if (ids3(args2.values, "approve").length + ids3(args2.values, "reject").length > 0)
       return Promise.resolve(decide5(ctx, paths, task, args2.values));
     const draft = draftOf2(args2.values);
@@ -68151,7 +68349,7 @@ var parseSpec = (text34) => {
 };
 
 // src/commands/task-spec.ts
-var USAGE28 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
+var USAGE29 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
 var idFrom = (file) => {
   const change2 = /openspec[\\/]changes[\\/]([^\\/]+)[\\/]/.exec(file)?.[1];
   return slugOf(change2 ?? file.replace(/^.*[\\/]/, "").replace(/\.md$/, "")).slice(0, 64);
@@ -68175,7 +68373,7 @@ var portOf = (raw) => {
 var taskFromSpecCommand = {
   path: ["task", "from-spec"],
   summaryKey: "command.task_from_spec.summary",
-  usage: USAGE28,
+  usage: USAGE29,
   status: "ready",
   maxPositionals: 1,
   options: { id: { type: "string" }, goal: { type: "string" }, port: { type: "string" } },
@@ -68186,13 +68384,13 @@ var taskFromSpecCommand = {
     const source3 = file === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(file, ctx.cwd));
     if (file === void 0 || source3?.ok !== true)
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE28, { file: file ?? "-" }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE29, { file: file ?? "-" }))
       );
     const criteria2 = criteriaOf(parseSpec(source3.value), portOf(stringOption(args2.values, "port")));
     const id = stringOption(args2.values, "id") ?? idFrom(file);
     if (criteria2.length === 0 || !TASK_ID.test(id))
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE28, { file }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE29, { file }))
       );
     const contract = {
       id,
@@ -68548,7 +68746,7 @@ var applyClean = (inventory, options2, reapRunning) => {
 
 // src/wt/purge.ts
 var DEFAULT_ARCHIVE_DAYS = 30;
-var DAY_MS15 = 864e5;
+var DAY_MS16 = 864e5;
 var safetyRefs = (runtime, root, days) => {
   const listed10 = runtime.git(
     ["for-each-ref", "--format=%(refname) %(committerdate:iso-strict)", ARCHIVE_PREFIX, BACKUP_PREFIX],
@@ -68560,7 +68758,7 @@ var safetyRefs = (runtime, root, days) => {
     const [ref2 = "", at6 = ""] = line12.split(" ");
     if (ref2 === "") return [];
     const age = now - Date.parse(at6);
-    return [{ ref: ref2, at: at6, expired: Number.isFinite(age) && age > days * DAY_MS15 }];
+    return [{ ref: ref2, at: at6, expired: Number.isFinite(age) && age > days * DAY_MS16 }];
   });
 };
 var purgeRefs = (runtime, root, refs) => refs.filter((item2) => item2.expired && runtime.git(["update-ref", "-d", item2.ref], root).ok).map((item2) => item2.ref);
@@ -68650,15 +68848,15 @@ var wtListCommand = {
     const human2 = [
       ctx.t("wt.list.title", { count: rows2.length }),
       ...rows2.map(
-        (row3) => ctx.t("wt.list.row", {
-          id: row3.id ?? "-",
-          cls: row3.class,
-          branch: row3.branch ?? "-",
-          owner: row3.owner,
-          port: row3.port === null ? "-" : String(row3.port),
-          age: row3.ageDays === null ? "-" : String(row3.ageDays),
-          size: sizeText(row3.exclusiveBytes),
-          purpose: row3.purpose === "" ? "-" : row3.purpose
+        (row4) => ctx.t("wt.list.row", {
+          id: row4.id ?? "-",
+          cls: row4.class,
+          branch: row4.branch ?? "-",
+          owner: row4.owner,
+          port: row4.port === null ? "-" : String(row4.port),
+          age: row4.ageDays === null ? "-" : String(row4.ageDays),
+          size: sizeText(row4.exclusiveBytes),
+          purpose: row4.purpose === "" ? "-" : row4.purpose
         })
       )
     ];

@@ -2494,5 +2494,8 @@
   "pr.provenance.match": "El bloque de procedencia coincide con el registro.",
   "pr.provenance.missing": "El cuerpo del PR no tiene bloque de procedencia.",
   "pr.provenance.edited": "El bloque de procedencia difiere de lo que da el registro en este commit; fue editado o el registro cambió.",
-  "pr.provenance.unreadable": "No se pudo leer {file}."
+  "pr.provenance.unreadable": "No se pudo leer {file}.",
+  "command.team_report.summary": "Informe agregado y anónimo de resultados del gate, retrabajo, reverts y gasto del repositorio, con su método",
+  "team.report.off": "El informe del equipo está apagado en este proyecto.",
+  "team.report.k": "--k debe ser un número entero mayor o igual a 1."
 }

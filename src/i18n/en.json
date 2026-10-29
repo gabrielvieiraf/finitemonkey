@@ -2494,5 +2494,8 @@
   "pr.provenance.match": "The provenance block matches the ledger.",
   "pr.provenance.missing": "The PR body has no provenance block.",
   "pr.provenance.edited": "The provenance block differs from what the ledger gives at this commit; it was edited or the ledger changed.",
-  "pr.provenance.unreadable": "Cannot read {file}."
+  "pr.provenance.unreadable": "Cannot read {file}.",
+  "command.team_report.summary": "Aggregate, anonymous report of gate results, rework, reverts and spend for the repository, with its method",
+  "team.report.off": "The team report is off in this project.",
+  "team.report.k": "--k must be a whole number of at least 1."
 }
