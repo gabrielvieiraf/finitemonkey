@@ -2413,5 +2413,14 @@
   "restore.drill.passed": "{store}: restore drill passed ({detail})",
   "restore.drill.failed": "{store}: restore drill failed: {detail}",
   "restore.drill.refused": "{store}: {detail} is not a local throwaway target; a restore never writes to an existing instance",
-  "restore.drill.not_configured": "{store}: restore and target are not declared, so no drill ran"
+  "restore.drill.not_configured": "{store}: restore and target are not declared, so no drill ran",
+  "gate.api_version.off": "library call check is off in policy.yml (api-version)",
+  "gate.api_version.ok": "{count, plural, one {# untyped file} other {# untyped files}}: every imported library call matches the installed version",
+  "gate.api_version.shadow": "shadow mode: {count, plural, one {# library call finding} other {# library call findings}} not blocking",
+  "gate.api_version.missing": "{at}: {symbol} does not exist in the installed version {version}",
+  "gate.api_version.arity": "{at}: {symbol} called with more arguments than version {version} accepts ({detail})",
+  "gate.api_version.keyword": "{at}: {symbol} has no keyword argument {detail} in version {version}",
+  "gate.api_version.deprecated": "{at}: {symbol} is deprecated in version {version} (warning)",
+  "gate.api_version.uncertain": "{at}: {symbol} could not be resolved statically ({detail}); not a finding",
+  "gate.api_version.not_verified": "{at}: {symbol} not verified: {detail}"
 }

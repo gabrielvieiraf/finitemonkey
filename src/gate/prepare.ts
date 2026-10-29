@@ -6,6 +6,7 @@ import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { MIGRATION_FILE } from "../deploy/migrations.js";
+import { PYTHON, UNTYPED_JS } from "../deps/api-version.js";
 import { configAt, loadProjectConfig } from "../git/project-config.js";
 import { touchesInfra } from "../infra/plan-gate.js";
 import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
@@ -129,7 +130,7 @@ const measureSize = (
 
 const withCheck = (
   contract: TaskContract,
-  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate" | "infra-plan",
+  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate" | "infra-plan" | "api-version",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -161,10 +162,16 @@ const withConfigured = (
     "migrate",
     migrations,
   );
-  return withCheck(
+  const paths = changes.filter((change) => change.status !== "D").map((change) => change.path);
+  const withInfra = withCheck(
     withMigrate,
     "infra-plan",
     touchesInfra(changes.flatMap((change) => [change.path, change.oldPath ?? ""])),
+  );
+  return withCheck(
+    withInfra,
+    "api-version",
+    paths.some((path) => UNTYPED_JS.test(path) || PYTHON.test(path)),
   );
 };
 

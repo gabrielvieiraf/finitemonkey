@@ -2414,7 +2414,16 @@
     "restore.drill.passed": "machine",
     "restore.drill.failed": "machine",
     "restore.drill.refused": "machine",
-    "restore.drill.not_configured": "machine"
+    "restore.drill.not_configured": "machine",
+    "gate.api_version.off": "machine",
+    "gate.api_version.ok": "machine",
+    "gate.api_version.shadow": "machine",
+    "gate.api_version.missing": "machine",
+    "gate.api_version.arity": "machine",
+    "gate.api_version.keyword": "machine",
+    "gate.api_version.deprecated": "machine",
+    "gate.api_version.uncertain": "machine",
+    "gate.api_version.not_verified": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4831,6 +4840,15 @@
     "restore.drill.passed": "machine",
     "restore.drill.failed": "machine",
     "restore.drill.refused": "machine",
-    "restore.drill.not_configured": "machine"
+    "restore.drill.not_configured": "machine",
+    "gate.api_version.off": "machine",
+    "gate.api_version.ok": "machine",
+    "gate.api_version.shadow": "machine",
+    "gate.api_version.missing": "machine",
+    "gate.api_version.arity": "machine",
+    "gate.api_version.keyword": "machine",
+    "gate.api_version.deprecated": "machine",
+    "gate.api_version.uncertain": "machine",
+    "gate.api_version.not_verified": "machine"
   }
 }

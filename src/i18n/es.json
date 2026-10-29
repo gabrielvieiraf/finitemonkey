@@ -2413,5 +2413,14 @@
   "restore.drill.passed": "{store}: el ensayo de restauración pasó ({detail})",
   "restore.drill.failed": "{store}: el ensayo de restauración falló: {detail}",
   "restore.drill.refused": "{store}: {detail} no es un destino local desechable; una restauración nunca escribe en una instancia existente",
-  "restore.drill.not_configured": "{store}: restore y target no están declarados, así que no corrió ningún ensayo"
+  "restore.drill.not_configured": "{store}: restore y target no están declarados, así que no corrió ningún ensayo",
+  "gate.api_version.off": "la comprobación de llamadas a bibliotecas está apagada en policy.yml (api-version)",
+  "gate.api_version.ok": "{count, plural, one {# archivo sin tipos} other {# archivos sin tipos}}: toda llamada a biblioteca importada coincide con la versión instalada",
+  "gate.api_version.shadow": "modo shadow: {count, plural, one {# hallazgo de llamada a biblioteca} other {# hallazgos de llamadas a bibliotecas}} sin bloquear",
+  "gate.api_version.missing": "{at}: {symbol} no existe en la versión instalada {version}",
+  "gate.api_version.arity": "{at}: {symbol} llamado con más argumentos de los que acepta la versión {version} ({detail})",
+  "gate.api_version.keyword": "{at}: {symbol} no tiene el argumento con nombre {detail} en la versión {version}",
+  "gate.api_version.deprecated": "{at}: {symbol} está obsoleto en la versión {version} (aviso)",
+  "gate.api_version.uncertain": "{at}: {symbol} no se pudo resolver de forma estática ({detail}); no es un hallazgo",
+  "gate.api_version.not_verified": "{at}: {symbol} no verificado: {detail}"
 }

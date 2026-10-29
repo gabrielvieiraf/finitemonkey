@@ -2413,5 +2413,14 @@
   "restore.drill.passed": "{store}: ensaio de restauração passou ({detail})",
   "restore.drill.failed": "{store}: ensaio de restauração falhou: {detail}",
   "restore.drill.refused": "{store}: {detail} não é um alvo local descartável; restauração nunca escreve numa instância existente",
-  "restore.drill.not_configured": "{store}: restore e target não estão declarados, então nenhum ensaio rodou"
+  "restore.drill.not_configured": "{store}: restore e target não estão declarados, então nenhum ensaio rodou",
+  "gate.api_version.off": "a checagem de chamadas de biblioteca está desligada no policy.yml (api-version)",
+  "gate.api_version.ok": "{count, plural, one {# arquivo sem tipos} other {# arquivos sem tipos}}: toda chamada de biblioteca importada bate com a versão instalada",
+  "gate.api_version.shadow": "modo shadow: {count, plural, one {# achado de chamada de biblioteca} other {# achados de chamada de biblioteca}} sem bloquear",
+  "gate.api_version.missing": "{at}: {symbol} não existe na versão instalada {version}",
+  "gate.api_version.arity": "{at}: {symbol} chamado com mais argumentos do que a versão {version} aceita ({detail})",
+  "gate.api_version.keyword": "{at}: {symbol} não tem o argumento nomeado {detail} na versão {version}",
+  "gate.api_version.deprecated": "{at}: {symbol} está obsoleto na versão {version} (aviso)",
+  "gate.api_version.uncertain": "{at}: {symbol} não deu para resolver estaticamente ({detail}); não é achado",
+  "gate.api_version.not_verified": "{at}: {symbol} não verificado: {detail}"
 }

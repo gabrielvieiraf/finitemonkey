@@ -1,4 +1,5 @@
 import type { CheckRegistry } from "../types.js";
+import { apiVersionCheck } from "./api-version.js";
 import { appsecCheck } from "./appsec.js";
 import { archCheck } from "./arch.js";
 import { blindCheck } from "./blind.js";
@@ -82,4 +83,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   claims: claimsCheck,
   migrate: migrateCheck,
   "infra-plan": infraPlanCheck,
+  "api-version": apiVersionCheck,
 };
