@@ -1,3 +1,4 @@
+import { assumptionLines, openAssumptions } from "../../bridge/handoff.js";
 import { nowMs } from "../../core/clock.js";
 import type { Runtime } from "../../core/runtime.js";
 import { loadBaseline } from "../../findings/baseline.js";
@@ -48,6 +49,11 @@ const markSession = (input: HookInput, paths: FmPaths): void => {
   if (cachedPrs(runtime, paths) === undefined) runtime.spawnSelf(["gate", "--prs"], paths.root);
 };
 
+const compactionFacts = (runtime: Runtime, paths: FmPaths, t: Translate): string | undefined => {
+  const lines = assumptionLines(t, openAssumptions(runtime, paths));
+  return lines.length === 0 ? undefined : lines.join("\n");
+};
+
 export const sessionStart: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined) return { kind: "allow" };
@@ -58,8 +64,9 @@ export const sessionStart: HookHandler = (input) => {
   const lines = [...notRunLine(t, runtime, paths), ...openPrsLine(t, runtime, paths)];
   const systemMessage = lines.length === 0 ? undefined : human(lines.join(" "));
   const snapshot = REINJECT_SOURCES.has(source) ? snapshotFacts(t, readState(runtime, paths).snapshot) : undefined;
+  const knowledge = source === "compact" ? compactionFacts(runtime, paths, t) : undefined;
   const routine = startupRoutine(input, paths);
-  const facts = [snapshot, routine].filter((part): part is string => part !== undefined).join("\n");
+  const facts = [snapshot, knowledge, routine].filter((part): part is string => part !== undefined).join("\n");
   if (facts !== "") return allowWith(contextOutput("SessionStart", facts, systemMessage));
   return systemMessage === undefined ? { kind: "allow" } : allowWith({ systemMessage });
 };

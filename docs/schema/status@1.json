@@ -251,6 +251,32 @@
         }
       ]
     },
+    "knowledge": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stale": {
+              "type": "number"
+            },
+            "contradictions": {
+              "type": "number"
+            },
+            "quarantined": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "stale",
+            "contradictions",
+            "quarantined"
+          ]
+        }
+      ]
+    },
     "blindBand": {
       "anyOf": [
         {
@@ -309,6 +335,7 @@
     "loop",
     "cost",
     "xray",
+    "knowledge",
     "blindBand"
   ]
 }

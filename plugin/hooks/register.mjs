@@ -401,6 +401,8 @@ var blindOf = (value) => isRecord4(value) && typeof value["domain"] === "string"
   helps: value["helps"],
   recent: numbers(value["recent"])
 } : null;
+var knowledgeOf = (value) => isRecord4(value) && typeof value["stale"] === "number" && typeof value["contradictions"] === "number" && typeof value["quarantined"] === "number" && value["stale"] + value["contradictions"] + value["quarantined"] > 0 ? { stale: value["stale"], contradictions: value["contradictions"], quarantined: value["quarantined"] } : null;
+var knowledgeLine = (knowledge) => `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
 var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
 var blindLine = (blind) => `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
@@ -438,7 +440,8 @@ var parseStatus = (text4) => {
     loop: loopOf(data["loop"]),
     cost: costOf(data["cost"]),
     xray: xrayOf(data["xray"]),
-    blindBand: blindOf(data["blindBand"])
+    blindBand: blindOf(data["blindBand"]),
+    knowledge: knowledgeOf(data["knowledge"])
   };
 };
 var MARK = {
@@ -456,6 +459,7 @@ var bandLine = (view) => [
   ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : [],
   ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`],
   ...view.editsSinceGate !== null && view.editsSinceGate > 0 ? [`evidence ${String(view.editsSinceGate)} edits old`] : [],
+  ...view.knowledge === null ? [] : [knowledgeLine(view.knowledge)],
   ...view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)],
   ...view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`],
   ...view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`],

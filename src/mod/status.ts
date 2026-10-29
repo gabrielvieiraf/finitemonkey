@@ -24,6 +24,7 @@ export interface GateView {
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
   readonly xray: { readonly beyond: number; readonly blocks: number } | null;
+  readonly knowledge: { readonly stale: number; readonly contradictions: number; readonly quarantined: number } | null;
   readonly blindBand: {
     readonly domain: string;
     readonly index: number;
@@ -80,6 +81,18 @@ const blindOf = (value: unknown): GateView["blindBand"] =>
       }
     : null;
 
+const knowledgeOf = (value: unknown): GateView["knowledge"] =>
+  isRecord(value) &&
+  typeof value["stale"] === "number" &&
+  typeof value["contradictions"] === "number" &&
+  typeof value["quarantined"] === "number" &&
+  value["stale"] + value["contradictions"] + value["quarantined"] > 0
+    ? { stale: value["stale"], contradictions: value["contradictions"], quarantined: value["quarantined"] }
+    : null;
+
+export const knowledgeLine = (knowledge: NonNullable<GateView["knowledge"]>): string =>
+  `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
+
 const SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 
 export const sparkline = (values: readonly number[]): string =>
@@ -125,6 +138,7 @@ export const parseStatus = (text: string): GateView | undefined => {
     cost: costOf(data["cost"]),
     xray: xrayOf(data["xray"]),
     blindBand: blindOf(data["blindBand"]),
+    knowledge: knowledgeOf(data["knowledge"]),
   };
 };
 
@@ -149,6 +163,7 @@ export const bandLine = (view: GateView): string =>
     ...(view.editsSinceGate !== null && view.editsSinceGate > 0
       ? [`evidence ${String(view.editsSinceGate)} edits old`]
       : []),
+    ...(view.knowledge === null ? [] : [knowledgeLine(view.knowledge)]),
     ...(view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)]),
     ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
     ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),

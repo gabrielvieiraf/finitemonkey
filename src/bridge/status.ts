@@ -8,6 +8,7 @@ import { readGateStatus } from "../gate/hooks/status.js";
 import { prepareGate } from "../gate/prepare.js";
 import { buildReport, type GateReport, type ReportItem } from "../gate/report.js";
 import { unreviewedBypasses } from "../guards/bypass/ledger.js";
+import { type KnowledgeCounts, knowledgeCounts } from "../knowledge/freshness.js";
 import { isMuted, readBudget } from "../policy/budget.js";
 import { featureMode } from "../policy/feature.js";
 import { loadPolicy } from "../policy/policy.js";
@@ -59,6 +60,7 @@ export interface StatusData {
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
   readonly xray: { readonly beyondWithoutCriterion: number; readonly blocks: number } | null;
+  readonly knowledge: KnowledgeCounts | null;
   readonly blindBand: {
     readonly domain: string;
     readonly week: string;
@@ -190,5 +192,6 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     cost: costLine(runtime, paths),
     xray: xrayLine(runtime, paths, report?.task ?? null),
     blindBand: blindBandLine(runtime, paths),
+    knowledge: knowledgeCounts(runtime, paths),
   };
 };
