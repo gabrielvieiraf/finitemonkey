@@ -85,6 +85,7 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       ...(files.exists(ARCH_FILE) ? [{ id: "arch", kind: "arch" as const }] : []),
       ...(files.exists(CONTRACT_FILE) ? [{ id: "contract", kind: "contract" as const }] : []),
       { id: "pr", kind: "pr", requireOpen: false },
+      { id: "diff", kind: "diff" },
     ],
     decisionsNeeded: [],
     implicit: true,

@@ -118,6 +118,7 @@ describe("implicit contract from the project", () => {
         "slop",
         "regression",
         "pr",
+        "diff",
       ],
     );
     assert.equal(contract.implicit, true);

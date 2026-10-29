@@ -1982,7 +1982,16 @@
     "signals.repro.human": "machine",
     "command.signals_locate.summary": "machine",
     "signals.locate.recorded": "machine",
-    "signals.locate.invalid": "machine"
+    "signals.locate.invalid": "machine",
+    "gate.diff.outside_inferred": "machine",
+    "gate.diff.accepted": "machine",
+    "gate.diff.inferred_within": "machine",
+    "scope.widened": "machine",
+    "scope.outside": "machine",
+    "fronts.scope.claim": "machine",
+    "fronts.scope.requires": "machine",
+    "fronts.scope.not": "machine",
+    "fronts.scope.human": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3967,6 +3976,15 @@
     "signals.repro.human": "machine",
     "command.signals_locate.summary": "machine",
     "signals.locate.recorded": "machine",
-    "signals.locate.invalid": "machine"
+    "signals.locate.invalid": "machine",
+    "gate.diff.outside_inferred": "machine",
+    "gate.diff.accepted": "machine",
+    "gate.diff.inferred_within": "machine",
+    "scope.widened": "machine",
+    "scope.outside": "machine",
+    "fronts.scope.claim": "machine",
+    "fronts.scope.requires": "machine",
+    "fronts.scope.not": "machine",
+    "fronts.scope.human": "machine"
   }
 }

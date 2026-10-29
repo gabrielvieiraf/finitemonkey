@@ -1981,5 +1981,14 @@
   "signals.repro.human": "primera edición en {task} detenida una vez hasta reproducir o ubicar el problema. Siguiente paso: ejecuta un comando que falle, o `finitemonkey signals locate <archivo>:<línea> <motivo>`.",
   "command.signals_locate.summary": "Registra dónde está el problema (archivo:línea y por qué) antes de la primera edición de una tarea mayor",
   "signals.locate.recorded": "Registré {file}:{line} como el lugar del problema.",
-  "signals.locate.invalid": "indica el lugar como <archivo>:<línea> y un motivo de al menos {count, plural, one {# carácter} other {# caracteres}}"
+  "signals.locate.invalid": "indica el lugar como <archivo>:<línea> y un motivo de al menos {count, plural, one {# carácter} other {# caracteres}}",
+  "gate.diff.outside_inferred": "{file} está fuera del alcance inferido de las primeras ediciones ({scope}); saca el cambio de esta tarea, o pide a la persona que lo acepte en {task}/diff",
+  "gate.diff.accepted": "{file} está fuera del alcance, aceptado por la persona el {at}: {reason}",
+  "gate.diff.inferred_within": "todo cambio está dentro del alcance inferido de las primeras ediciones ({scope})",
+  "scope.widened": "finitemonkey scope: {file} amplió el alcance de esta tarea a {scope}. Pasa una vez; el siguiente archivo fuera de él recibe un aviso.",
+  "scope.outside": "finitemonkey scope: {file} está fuera del alcance de esta tarea ({scope}). Mantén el cambio en la tarea, o di a la persona por qué pertenece; la compuerta lo lista al final.",
+  "fronts.scope.claim": "{file} está fuera de las rutas de la frente {front} ({paths})",
+  "fronts.scope.requires": "cambia solo archivos en {paths}; un cambio necesario en otro lugar va al coordinador en el informe",
+  "fronts.scope.not": "escribir el mismo archivo con un comando de shell, o moverlo a las rutas de la frente",
+  "fronts.scope.human": "Retuve una edición de {file}: la frente {front} se encarga de {paths}. Siguiente paso: la frente informa el cambio necesario al coordinador."
 }

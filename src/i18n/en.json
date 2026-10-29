@@ -1981,5 +1981,14 @@
   "signals.repro.human": "first edit on {task} held once until the problem is reproduced or located. Next: run a failing command, or `finitemonkey signals locate <file>:<line> <reason>`.",
   "command.signals_locate.summary": "Record where the problem is (file:line and why) before the first edit of a larger task",
   "signals.locate.recorded": "Recorded {file}:{line} as the place of the problem.",
-  "signals.locate.invalid": "give the place as <file>:<line> and a reason of at least {count, plural, one {# character} other {# characters}}"
+  "signals.locate.invalid": "give the place as <file>:<line> and a reason of at least {count, plural, one {# character} other {# characters}}",
+  "gate.diff.outside_inferred": "{file} is outside the scope inferred from the first edits ({scope}); take the change out of this task, or ask the person to accept it for {task}/diff",
+  "gate.diff.accepted": "{file} is outside the scope, accepted by the person at {at}: {reason}",
+  "gate.diff.inferred_within": "every change is inside the scope inferred from the first edits ({scope})",
+  "scope.widened": "finitemonkey scope: {file} widened the scope of this task to {scope}. This happens once; the next file outside it gets a warning.",
+  "scope.outside": "finitemonkey scope: {file} is outside the scope of this task ({scope}). Keep the change to the task, or tell the person why it belongs; the gate lists it at the end.",
+  "fronts.scope.claim": "{file} is outside the paths of front {front} ({paths})",
+  "fronts.scope.requires": "change only files under {paths}; a change needed elsewhere goes to the coordinator in the report",
+  "fronts.scope.not": "writing the same file through a shell command, or moving it into the front's paths",
+  "fronts.scope.human": "Held an edit to {file}: front {front} owns {paths}. Next: the front reports the needed change to the coordinator."
 }

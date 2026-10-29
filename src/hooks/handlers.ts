@@ -44,6 +44,7 @@ import {
 } from "../signals/early.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
+import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
 import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
 import { WT_SUGGEST_HANDLERS } from "../wt/suggest-hooks.js";
@@ -209,6 +210,8 @@ export const GUARD_SETS: readonly GuardSet[] = [
     handlers: { PostToolUse: [earlyLoopTriggers], PostToolUseFailure: [earlyLoopTriggers] },
   },
   { id: REPRO_GUARD, damage: false, handlers: { PreToolUse: [reproduceFirst] } },
+  { id: SCOPE_GUARD, damage: false, handlers: { PostToolUse: [scopeAfterEdit] } },
+  { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

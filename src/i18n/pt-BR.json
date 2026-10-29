@@ -1981,5 +1981,14 @@
   "signals.repro.human": "primeira edição em {task} segurada uma vez até o problema ser reproduzido ou localizado. Próximo passo: rode um comando que falha, ou `finitemonkey signals locate <arquivo>:<linha> <motivo>`.",
   "command.signals_locate.summary": "Registra onde está o problema (arquivo:linha e por quê) antes da primeira edição de uma tarefa maior",
   "signals.locate.recorded": "Registrei {file}:{line} como o lugar do problema.",
-  "signals.locate.invalid": "informe o lugar como <arquivo>:<linha> e um motivo de pelo menos {count, plural, one {# caractere} other {# caracteres}}"
+  "signals.locate.invalid": "informe o lugar como <arquivo>:<linha> e um motivo de pelo menos {count, plural, one {# caractere} other {# caracteres}}",
+  "gate.diff.outside_inferred": "{file} está fora do escopo inferido das primeiras edições ({scope}); tire a mudança desta tarefa, ou peça à pessoa que aceite em {task}/diff",
+  "gate.diff.accepted": "{file} está fora do escopo, aceito pela pessoa em {at}: {reason}",
+  "gate.diff.inferred_within": "toda mudança está dentro do escopo inferido das primeiras edições ({scope})",
+  "scope.widened": "finitemonkey scope: {file} ampliou o escopo desta tarefa para {scope}. Isso acontece uma vez; o próximo arquivo fora dele recebe aviso.",
+  "scope.outside": "finitemonkey scope: {file} está fora do escopo desta tarefa ({scope}). Mantenha a mudança na tarefa, ou diga à pessoa por que ela pertence; o portão lista no fim.",
+  "fronts.scope.claim": "{file} está fora dos caminhos da frente {front} ({paths})",
+  "fronts.scope.requires": "mude só arquivos em {paths}; uma mudança necessária em outro lugar vai para o coordenador no relatório",
+  "fronts.scope.not": "escrever o mesmo arquivo por um comando de shell, ou movê-lo para os caminhos da frente",
+  "fronts.scope.human": "Segurei uma edição em {file}: a frente {front} cuida de {paths}. Próximo passo: a frente relata a mudança necessária ao coordenador."
 }
