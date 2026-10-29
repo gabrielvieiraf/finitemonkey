@@ -2283,7 +2283,11 @@
     "handoff.green": "machine",
     "handoff.failed": "machine",
     "handoff.not_verified": "machine",
-    "handoff.attempt": "machine"
+    "handoff.attempt": "machine",
+    "command.mod_cost.summary": "machine",
+    "command.mod_usage.summary": "machine",
+    "mod.cost.summary": "machine",
+    "mod.cost.arm": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4569,6 +4573,10 @@
     "handoff.green": "machine",
     "handoff.failed": "machine",
     "handoff.not_verified": "machine",
-    "handoff.attempt": "machine"
+    "handoff.attempt": "machine",
+    "command.mod_cost.summary": "machine",
+    "command.mod_usage.summary": "machine",
+    "mod.cost.summary": "machine",
+    "mod.cost.arm": "machine"
   }
 }

@@ -1,6 +1,7 @@
 import type { ModApi } from "./api.js";
 import { attributionText } from "./attribution-hooks.js";
 import { compactNotes, composeRules } from "./compose-hooks.js";
+import { scheduleUsage, stepUsage } from "./cost-hooks.js";
 import type {
   Next,
   On,
@@ -38,6 +39,7 @@ async function onTurnComplete(
 ): Promise<TurnCompleteResult> {
   scheduleRefresh($);
   scheduleStatus($, 0);
+  if (e.agentId === undefined) scheduleUsage($);
   return withTurnLine(e, await next(e));
 }
 
@@ -52,4 +54,5 @@ export function register(on: On): void {
   on("attribution.text", attributionText);
   on("prompt.compose", composeRules);
   on("session.compact", compactNotes);
+  on("turn.step", stepUsage);
 }

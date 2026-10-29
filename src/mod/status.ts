@@ -21,6 +21,8 @@ export interface GateView {
   readonly notVerified: readonly ViewNotVerified[];
   readonly editsSinceGate: number | null;
   readonly bypasses: number;
+  readonly loop: { readonly count: number; readonly limit: number } | null;
+  readonly cost: { readonly usd: number; readonly requests: number } | null;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -35,6 +37,16 @@ const list = (value: unknown): readonly Readonly<Record<string, unknown>>[] =>
 const contractOf = (value: unknown): GateView["contract"] =>
   isRecord(value) && typeof value["id"] === "string" && typeof value["hash"] === "string"
     ? { id: value["id"], hash: value["hash"] }
+    : null;
+
+const loopOf = (value: unknown): GateView["loop"] =>
+  isRecord(value) && typeof value["count"] === "number" && typeof value["limit"] === "number"
+    ? { count: value["count"], limit: value["limit"] }
+    : null;
+
+const costOf = (value: unknown): GateView["cost"] =>
+  isRecord(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number"
+    ? { usd: value["usd"], requests: value["requests"] }
     : null;
 
 export const parseStatus = (text: string): GateView | undefined => {
@@ -68,6 +80,8 @@ export const parseStatus = (text: string): GateView | undefined => {
     })),
     editsSinceGate: typeof edits === "number" ? edits : null,
     bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
+    loop: loopOf(data["loop"]),
+    cost: costOf(data["cost"]),
   };
 };
 
@@ -92,6 +106,8 @@ export const bandLine = (view: GateView): string =>
     ...(view.editsSinceGate !== null && view.editsSinceGate > 0
       ? [`evidence ${String(view.editsSinceGate)} edits old`]
       : []),
+    ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
+    ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),
   ].join(" · ");
 
 export const turnLine = (view: GateView): string =>

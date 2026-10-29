@@ -13,6 +13,12 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "Chamadas de ferramenta que um guard do finitemonkey negou e que rodaram mesmo assim, aprovadas por outro mod, uma regra de settings ou uma ferramenta de permissão: o id da chamada, a ferramenta e um resumo mascarado da entrada. `ci gate` e `pr open` recusam enquanto houver uma não revisada; `finitemonkey bypass review`, digitado pela pessoa, marca como revisada.",
     es: "Llamadas de herramienta que un guard de finitemonkey negó y que corrieron igual, aprobadas por otro mod, una regla de settings o una herramienta de permisos: el id de la llamada, la herramienta y un resumen enmascarado de su entrada. `ci gate` y `pr open` se niegan mientras haya una sin revisar; `finitemonkey bypass review`, escrito por la persona, la marca como revisada.",
   },
+  "mod-cost": {
+    en: "Only when the mod runs (Claude Code 2.1.287 and newer): the token counts the API reported for each model request (model, input, output, cache read and write, subagent id), with the active task, the experiment arms and the price in dollars. `finitemonkey mod cost` adds them up per contract, attempt and arm. No prompt or answer text.",
+    "pt-BR":
+      "Só quando o mod roda (Claude Code 2.1.287 ou mais novo): as contagens de tokens que a API informou em cada requisição ao modelo (modelo, entrada, saída, leitura e escrita de cache, id do subagente), com a tarefa ativa, os braços de experimento e o preço em dólares. `finitemonkey mod cost` soma por contrato, tentativa e braço. Nenhum texto de pedido ou resposta.",
+    es: "Solo cuando corre el mod (Claude Code 2.1.287 o más nuevo): los conteos de tokens que la API informó en cada solicitud al modelo (modelo, entrada, salida, lectura y escritura de caché, id del subagente), con la tarea activa, los brazos de experimento y el precio en dólares. `finitemonkey mod cost` los suma por contrato, intento y brazo. Ningún texto de pedido o respuesta.",
+  },
   infra: {
     en: "How the project deploys, read from its own files when you run `finitemonkey infra`: level, targets and risks with `file:line`, no address. Production hosts found in deploy files go to `hosts.local.yml`, which git ignores, and only when the `.gitignore` block is there.",
     "pt-BR":
@@ -65,7 +71,8 @@ export const DEPLOY_FOOTPRINT_TEXT = {
     | "headers"
     | "observability"
     | "ledger-key"
-    | "guard-bypass",
+    | "guard-bypass"
+    | "mod-cost",
     Localized
   >
 >;

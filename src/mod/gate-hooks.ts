@@ -1,6 +1,7 @@
 import type { ModApi, ModElement, RenderInput } from "./api.js";
 import { runCli } from "./cli.js";
 import { readHandoff } from "./compose-hooks.js";
+import { refreshCost } from "./cost-hooks.js";
 import type {
   CommandRunInput,
   CommandRunResult,
@@ -11,7 +12,7 @@ import type {
   TurnCompleteInput,
   TurnCompleteResult,
 } from "./events.js";
-import { bandTree, GATE_PANE, paneTree } from "./gate-view.js";
+import { bandTree, COST_PANE, costTree, GATE_PANE, paneTree } from "./gate-view.js";
 import { memory } from "./memory.js";
 import { bandLine, parseStatus, statusText, turnLine } from "./status.js";
 
@@ -82,11 +83,22 @@ export async function renderBand($: ModApi, e: RenderInput, next: Next<"ui.rende
 }
 
 export async function renderPane($: ModApi, e: RenderInput, next: Next<"ui.render">): Promise<ModElement | null> {
+  if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
   const view = memory.view;
   if (view === undefined) return elements.Text({ key: "fm-loading", children: ["finitemonkey: reading the gate…"] });
   return paneTree(elements, view, { runGate: () => runGateNow($), close: () => closePane($) });
+}
+
+async function costNow($: ModApi): Promise<CommandRunResult> {
+  const lines = await refreshCost($);
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) {
+    await $.ui.open({ id: COST_PANE, title: "Finite Monkey · cost" });
+    return {};
+  }
+  return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
 }
 
 async function handoffNow($: ModApi): Promise<CommandRunResult> {
@@ -99,6 +111,7 @@ async function handoffNow($: ModApi): Promise<CommandRunResult> {
 
 export async function runGateCommand($: ModApi, e: CommandRunInput): Promise<CommandRunResult> {
   if (e.args.trim() === "handoff") return handoffNow($);
+  if (e.args.trim() === "cost") return costNow($);
   if (memory.view === undefined) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {

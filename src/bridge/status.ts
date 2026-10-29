@@ -1,3 +1,4 @@
+import { nowMs } from "../core/clock.js";
 import type { Runtime } from "../core/runtime.js";
 import { readLedger } from "../evidence/ledger.js";
 import type { EvidenceStatus } from "../evidence/types.js";
@@ -5,10 +6,14 @@ import { readGateStatus } from "../gate/hooks/status.js";
 import { prepareGate } from "../gate/prepare.js";
 import { buildReport, type GateReport, type ReportItem } from "../gate/report.js";
 import { unreviewedBypasses } from "../guards/bypass/ledger.js";
-import { readEntries, signalFiles } from "../signals/store.js";
+import { isMuted, readBudget } from "../policy/budget.js";
+import { loadPolicy } from "../policy/policy.js";
+import { FOURTH_ATTEMPT_GUARD } from "../signals/fourth.js";
+import { readEntries, readIndexFile, readProfile, recordOf, signalFiles } from "../signals/store.js";
 import { type GateLight, gateLight } from "../statusline/gate-state.js";
 import { contractHash } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
+import { costOf } from "./cost.js";
 
 export const STATUS_SCHEMA = "finitemonkey/status@1";
 export const GATE_COMMAND = "finitemonkey gate";
@@ -46,6 +51,8 @@ export interface StatusData {
   readonly notVerified: readonly NotVerified[];
   readonly editsSinceGate: number | null;
   readonly bypasses: number;
+  readonly loop: { readonly count: number; readonly limit: number } | null;
+  readonly cost: { readonly usd: number; readonly requests: number } | null;
 }
 
 const verifyOf = (item: ReportItem): string => item.command ?? GATE_COMMAND;
@@ -99,6 +106,22 @@ const reportOf = (
   return { report, hash: contractHash(ctx.contract) };
 };
 
+const loopOf = (runtime: Runtime, paths: FmPaths): StatusData["loop"] => {
+  const files = signalFiles(paths);
+  const index = recordOf(readIndexFile(runtime, files)["index"]);
+  const error = recordOf(index["error"]);
+  const count = typeof error["count"] === "number" ? error["count"] : 0;
+  if (count === 0) return null;
+  const policy = loadPolicy(runtime, paths.root);
+  if (isMuted(readBudget(runtime, paths), policy.alertBudget, nowMs(runtime), FOURTH_ATTEMPT_GUARD)) return null;
+  return { count, limit: readProfile(runtime, files).threshold + 1 };
+};
+
+const costLine = (runtime: Runtime, paths: FmPaths): StatusData["cost"] => {
+  const cost = costOf(runtime, paths);
+  return cost.requests === 0 ? null : { usd: cost.usd, requests: cost.requests };
+};
+
 export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
   const gate = readGateStatus(runtime, paths);
   const gateAt = gate?.at ?? null;
@@ -118,5 +141,7 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     notVerified: items.filter((item) => item.status === "unverified").map(notVerifiedOf),
     editsSinceGate: editsSince(runtime, paths, gateAt),
     bypasses: unreviewedBypasses(runtime, paths).length,
+    loop: loopOf(runtime, paths),
+    cost: costLine(runtime, paths),
   };
 };

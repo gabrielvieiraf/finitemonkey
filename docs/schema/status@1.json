@@ -184,6 +184,50 @@
     },
     "bypasses": {
       "type": "number"
+    },
+    "loop": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number"
+            },
+            "limit": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "count",
+            "limit"
+          ]
+        }
+      ]
+    },
+    "cost": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "usd": {
+              "type": "number"
+            },
+            "requests": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "usd",
+            "requests"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -198,6 +242,8 @@
     "checks",
     "notVerified",
     "editsSinceGate",
-    "bypasses"
+    "bypasses",
+    "loop",
+    "cost"
   ]
 }

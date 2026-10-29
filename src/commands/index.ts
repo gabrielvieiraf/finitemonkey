@@ -72,6 +72,7 @@ import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
 import { modRecordCommand, modStateCommand } from "./mod.js";
+import { modCostCommand, modUsageCommand } from "./mod-cost.js";
 import { observeCommand } from "./observe.js";
 import { onboardCommand } from "./onboard.js";
 import { organizeCommand } from "./organize.js";
@@ -298,6 +299,8 @@ export const REGISTRY = [
   statusCommand,
   bypassReviewCommand,
   handoffCommand,
+  modCostCommand,
+  modUsageCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -91,6 +91,25 @@ export interface SessionCompactInput {
 
 export type SessionCompactResult = Readonly<Record<string, unknown>>;
 
+export interface TurnStepInput {
+  readonly turnId: string;
+  readonly index: number;
+  readonly model: string;
+  readonly agentId?: string;
+}
+
+export interface TurnStepResult {
+  readonly usage?: Usage | null;
+}
+
+export type StreamNext = (e: TurnStepInput) => AsyncGenerator<unknown, TurnStepResult, unknown>;
+
+export type StreamHook = (
+  $: ModApi,
+  e: TurnStepInput,
+  next: StreamNext,
+) => AsyncGenerator<unknown, TurnStepResult, unknown>;
+
 export interface EventTypes {
   readonly "prompt.compose": readonly [PromptComposeInput, PromptComposeResult];
   readonly "session.compact": readonly [SessionCompactInput, SessionCompactResult];
@@ -125,6 +144,7 @@ export interface Registration<N extends EventName> {
 export type Matcher = Readonly<Record<string, string | boolean | readonly string[]>>;
 
 export interface On {
+  (event: "turn.step", hook: StreamHook): unknown;
   <N extends EventName>(event: N, hook: Hook<N>): Registration<N>;
   <N extends EventName>(event: N, matcher: Matcher, hook: Hook<N>): Registration<N>;
 }

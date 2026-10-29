@@ -2282,5 +2282,9 @@
   "handoff.green": "Verdes com evidência nesta árvore: {list}.",
   "handoff.failed": "Falhando: {list}.",
   "handoff.not_verified": "Não verificado: {id} ({reason}); verifique com `{verify}`.",
-  "handoff.attempt": "Tentado e falhou {count, plural, one {# vez} other {# vezes}}: {sample}"
+  "handoff.attempt": "Tentado e falhou {count, plural, one {# vez} other {# vezes}}: {sample}",
+  "command.mod_cost.summary": "Mostra quanto o contrato ativo custou até agora, por tentativa e por braço de experimento",
+  "command.mod_usage.summary": "Registra o uso da API das requisições ao modelo (usado pelo mod)",
+  "mod.cost.summary": "contrato {task}: {usd} em {requests, plural, one {# requisição} other {# requisições}}, {attempts, plural, one {# tentativa} other {# tentativas}}",
+  "mod.cost.arm": "braço {arm}: {usd} em {requests, plural, one {# requisição} other {# requisições}}"
 }

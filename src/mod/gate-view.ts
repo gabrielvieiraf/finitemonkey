@@ -2,6 +2,7 @@ import type { Elements, ModElement } from "./api.js";
 import { bandLine, checkLine, type GateView, notVerifiedLine } from "./status.js";
 
 export const GATE_PANE = "fm-gate";
+export const COST_PANE = "fm-cost";
 
 export interface PaneActions {
   readonly runGate: () => Promise<void>;
@@ -48,5 +49,17 @@ export const paneTree = (elements: Elements, view: GateView, actions: PaneAction
           elements.Button({ key: "fm-close", label: "Close", hotkey: "x", onPress: actions.close }),
         ],
       }),
+    ],
+  });
+
+export const costTree = (elements: Elements, lines: readonly string[], close: () => Promise<void>): ModElement =>
+  elements.Box({
+    key: "fm-cost",
+    flexDirection: "column",
+    children: [
+      ...(lines.length === 0 ? ["no cost recorded for this contract"] : lines).map((text) =>
+        elements.Text({ children: [text] }),
+      ),
+      elements.Button({ key: "fm-cost-close", label: "Close", hotkey: "x", onPress: close }),
     ],
   });
