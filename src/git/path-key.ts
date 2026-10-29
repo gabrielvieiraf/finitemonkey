@@ -26,7 +26,7 @@ export const isWithin = (child: string, parent: string): boolean => {
 
 export const isRootLike = (path: string, home: string | undefined): boolean => {
   const key = pathKey(path);
-  if (key === "/" || /^[a-z]:\/?$/.test(key)) return true;
+  if (key === "/" || /^[a-z]:\/?$/.test(key) || /^\/mnt(?:\/[a-z])?\/?$/.test(key)) return true;
   return home !== undefined && home !== "" && key === pathKey(home);
 };
 

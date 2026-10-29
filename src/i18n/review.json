@@ -1991,7 +1991,16 @@
     "fronts.scope.claim": "machine",
     "fronts.scope.requires": "machine",
     "fronts.scope.not": "machine",
-    "fronts.scope.human": "machine"
+    "fronts.scope.human": "machine",
+    "git.block.sql_destroy.claim": "machine",
+    "git.block.sql_destroy.requires": "machine",
+    "git.block.terraform_destroy.claim": "machine",
+    "git.block.terraform_destroy.requires": "machine",
+    "git.block.kubectl_delete.claim": "machine",
+    "git.block.kubectl_delete.requires": "machine",
+    "git.block.pipe_shell.claim": "machine",
+    "git.block.pipe_shell.requires": "machine",
+    "doctor.coexist.blockers": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -3985,6 +3994,15 @@
     "fronts.scope.claim": "machine",
     "fronts.scope.requires": "machine",
     "fronts.scope.not": "machine",
-    "fronts.scope.human": "machine"
+    "fronts.scope.human": "machine",
+    "git.block.sql_destroy.claim": "machine",
+    "git.block.sql_destroy.requires": "machine",
+    "git.block.terraform_destroy.claim": "machine",
+    "git.block.terraform_destroy.requires": "machine",
+    "git.block.kubectl_delete.claim": "machine",
+    "git.block.kubectl_delete.requires": "machine",
+    "git.block.pipe_shell.claim": "machine",
+    "git.block.pipe_shell.requires": "machine",
+    "doctor.coexist.blockers": "machine"
   }
 }

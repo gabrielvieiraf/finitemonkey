@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { externalBlockers } from "../git/destructive.js";
 import { hashText } from "../install/hash.js";
 import { asRecord } from "../install/json-text.js";
 import { LOCK_FILE } from "../install/layout.js";
@@ -128,6 +129,13 @@ const memoryTools = (env: DoctorEnv): readonly CheckFinding[] => {
   });
 };
 
+const blockers = (env: DoctorEnv): readonly CheckFinding[] => {
+  const found = externalBlockers(env.runtime, env.root, env.runtime.homeDir());
+  return found.length === 0
+    ? []
+    : [finding("hooks.blockers", "ok", "doctor.coexist.blockers", { tools: found.join(", ") })];
+};
+
 export const checkCoexistence: Check = (env) => {
   const rows = hookInventory(env);
   return [
@@ -137,5 +145,6 @@ export const checkCoexistence: Check = (env) => {
     ...proxy(env),
     ...rewriters(rows),
     ...memoryTools(env),
+    ...blockers(env),
   ];
 };

@@ -1990,5 +1990,14 @@
   "fronts.scope.claim": "{file} está fuera de las rutas de la frente {front} ({paths})",
   "fronts.scope.requires": "cambia solo archivos en {paths}; un cambio necesario en otro lugar va al coordinador en el informe",
   "fronts.scope.not": "escribir el mismo archivo con un comando de shell, o moverlo a las rutas de la frente",
-  "fronts.scope.human": "Retuve una edición de {file}: la frente {front} se encarga de {paths}. Siguiente paso: la frente informa el cambio necesario al coordinador."
+  "fronts.scope.human": "Retuve una edición de {file}: la frente {front} se encarga de {paths}. Siguiente paso: la frente informa el cambio necesario al coordinador.",
+  "git.block.sql_destroy.claim": "`{command}` ejecuta {subject}, una sentencia destructiva contra una base de datos que no es local",
+  "git.block.sql_destroy.requires": "Ejecútala contra una base local, o pasa la sentencia a la persona para que la ejecute con un respaldo hecho",
+  "git.block.terraform_destroy.claim": "`{command}` destruye la infraestructura gestionada por {subject}",
+  "git.block.terraform_destroy.requires": "Muestra el plan con `terraform plan -destroy` y deja la destrucción a la persona",
+  "git.block.kubectl_delete.claim": "`{command}` borra recursos en el contexto de Kubernetes {subject}, que no es un clúster local",
+  "git.block.kubectl_delete.requires": "Compruébalo con --dry-run=client, o ejecútalo en un contexto local (kind, k3d, minikube, docker-desktop)",
+  "git.block.pipe_shell.claim": "`{command}` envía una descarga directo a un shell ({subject})",
+  "git.block.pipe_shell.requires": "Descarga el script a un archivo, léelo y luego ejecuta el archivo",
+  "doctor.coexist.blockers": "{tools} también bloquea comandos destructivos; Finite Monkey le deja los bloqueos amplios y mantiene sus snapshots y sus guards propios"
 }
