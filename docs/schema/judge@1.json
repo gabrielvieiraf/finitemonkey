@@ -353,6 +353,42 @@
               ]
             }
           },
+          "anchors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "span",
+                    "code",
+                    "compute"
+                  ]
+                },
+                "ref": {
+                  "type": "string"
+                },
+                "hash": {
+                  "type": "string"
+                },
+                "span": {
+                  "type": "string"
+                },
+                "inputs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "kind",
+                "ref",
+                "hash"
+              ]
+            }
+          },
           "id": {
             "type": "string"
           },
@@ -499,6 +535,9 @@
           },
           "state": {
             "const": "shadow"
+          },
+          "ref": {
+            "type": "string"
           },
           "id": {
             "type": "string"
@@ -670,6 +709,73 @@
           "at"
         ]
       }
+    },
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "probe"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "concepts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "form": {
+            "type": "string",
+            "enum": [
+              "two-spans",
+              "unsupported-claim",
+              "predict-number"
+            ]
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "key": {
+            "type": "number"
+          },
+          "keyHash": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "task": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "claim",
+          "concepts",
+          "form",
+          "prompt",
+          "options",
+          "key",
+          "keyHash",
+          "id",
+          "at"
+        ]
+      }
     }
   },
   "required": [
@@ -685,6 +791,7 @@
     "signals",
     "events",
     "items",
-    "asks"
+    "asks",
+    "probes"
   ]
 }

@@ -1,14 +1,20 @@
 import type { Translate } from "../i18n/translate.js";
-import type { ConceptView, JudgeResponse, ResultView, XrayRow } from "./response.js";
+import type { ConceptView, JudgeResponse, ProbeView, ResultView, XrayRow } from "./response.js";
 
 export const rowLine = (t: Translate, row: XrayRow): string =>
-  t("judge.row", {
-    claim: row.claim,
-    state: row.state,
-    band: row.band,
-    text: row.text,
-    outcome: row.outcome ?? "",
-  });
+  [
+    t("judge.row", { claim: row.claim, state: row.state, band: row.band, text: row.text, outcome: row.outcome ?? "" }),
+    ...(row.actions.length === 0 ? [] : [t("judge.row.actions", { actions: row.actions.join(", ") })]),
+  ].join(" ");
+
+const probeLines = (t: Translate, probe: ProbeView): readonly string[] => {
+  if (probe.span !== undefined) return [t("judge.probe.wrong", { span: probe.span, claim: probe.claim })];
+  if (probe.answered) return [t("judge.probe.right", { claim: probe.claim })];
+  return [
+    t("judge.probe.two_spans", { probe: probe.probe, source: probe.prompt }),
+    ...probe.options.map((option, index) => `  ${String(index + 1)}) ${option}`),
+  ];
+};
 
 export const resultLines = (t: Translate, view: ResultView): readonly string[] => [
   t(view.done ? "judge.result.done" : "judge.result.open", {
@@ -58,6 +64,7 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
   ...(data.ask === undefined ? [] : [t("judge.ask", { ...data.ask })]),
   ...(data.export === undefined ? [] : [t("judge.export", { count: entriesIn(data) })]),
   ...(data.removed === undefined ? [] : [t("judge.removed", { count: data.removed })]),
+  ...(data.probe === undefined ? [] : probeLines(t, data.probe)),
 ];
 
 const entriesIn = (data: JudgeResponse): number =>

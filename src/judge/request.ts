@@ -41,7 +41,10 @@ export type JudgeRequest =
       readonly source: string;
       readonly span: string;
     }
-  | { readonly verb: "domain"; readonly domain: string; readonly parent?: string };
+  | { readonly verb: "domain"; readonly domain: string; readonly parent?: string }
+  | { readonly verb: "judge"; readonly claim: string; readonly decision?: string; readonly task?: string }
+  | { readonly verb: "answer"; readonly probe: string; readonly choice: number }
+  | { readonly verb: "cut"; readonly claim: string };
 
 const text = (record: JsonObject, key: string): string | undefined => {
   const value = record[key];
@@ -114,6 +117,20 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
     const [source, span] = [text(record, "source"), text(record, "span")];
     if (source === undefined || span === undefined) return undefined;
     return { verb: "concept", label, domain, synonyms: list(record, "synonyms"), source, span };
+  },
+  judge: (record) => {
+    const claim = text(record, "claim");
+    return claim === undefined ? undefined : { verb: "judge", claim, ...optional(record, ["decision", "task"]) };
+  },
+  answer: (record) => {
+    const probe = text(record, "probe");
+    const raw = record["choice"];
+    const choice = typeof raw === "number" ? raw : Number.parseInt(String(raw), 10);
+    return probe === undefined || !Number.isInteger(choice) ? undefined : { verb: "answer", probe, choice };
+  },
+  cut: (record) => {
+    const claim = text(record, "claim");
+    return claim === undefined ? undefined : { verb: "cut", claim };
   },
   domain: (record) => {
     const domain = text(record, "domain");

@@ -15,6 +15,7 @@ import {
   type JudgeClaimKind,
   type JudgeEntry,
   type JudgeExport,
+  type ProbeForm,
   type ResultEntry,
   type SupportState,
 } from "./types.js";
@@ -32,7 +33,14 @@ export const VERBS = [
   "forget",
   "concept",
   "domain",
+  "judge",
+  "answer",
+  "cut",
 ] as const;
+
+export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
+
+export type RowAction = (typeof ROW_ACTIONS)[number];
 
 export type Verb = (typeof VERBS)[number];
 
@@ -50,6 +58,18 @@ export interface XrayRow {
   readonly band: Band;
   readonly concepts: readonly RowConcept[];
   readonly outcome?: string;
+  readonly actions: readonly RowAction[];
+}
+
+export interface ProbeView {
+  readonly probe: string;
+  readonly claim: string;
+  readonly form: ProbeForm;
+  readonly prompt: string;
+  readonly options: readonly string[];
+  readonly answered: boolean;
+  readonly correct?: boolean;
+  readonly span?: string;
 }
 
 export interface ResultView {
@@ -114,6 +134,8 @@ export interface JudgeResponse {
   readonly ask?: AskView;
   readonly export?: JudgeExport;
   readonly removed?: number;
+  readonly probe?: ProbeView;
+  readonly route?: "verify" | "handoff";
 }
 
 export const response = (verb: Verb, fields: Omit<JudgeResponse, "schema" | "verb" | "ok"> = {}): JudgeResponse => ({
@@ -149,6 +171,11 @@ export const orderRows = (rows: readonly XrayRow[]): readonly XrayRow[] =>
     .sort((left, right) => rankOf(left.row) - rankOf(right.row) || left.index - right.index)
     .map((item) => item.row);
 
+const actionsFor = (state: SupportState): readonly RowAction[] => {
+  if (state === "model-only") return ROW_ACTIONS;
+  return state === "handed-off" ? ["verify", "cut"] : [];
+};
+
 export const rowOf = (claimId: string, entries: readonly JudgeEntry[], outcome?: string): XrayRow | undefined => {
   const claim = claimsIn(entries).find((item) => item.id === claimId);
   if (claim === undefined) return undefined;
@@ -165,6 +192,7 @@ export const rowOf = (claimId: string, entries: readonly JudgeEntry[], outcome?:
       ...(item.because === undefined ? {} : { because: item.because.evidence }),
     })),
     ...(outcome === undefined ? {} : { outcome }),
+    actions: actionsFor(supportStateOf(claim.id, entries)),
   };
 };
 

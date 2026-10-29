@@ -39,7 +39,9 @@ export const ENTRY_TYPES = [
   "event",
   "item",
   "ask",
+  "probe",
 ] as const;
+export const PROBE_FORMS = ["two-spans", "unsupported-claim", "predict-number"] as const;
 
 export type Band = (typeof BANDS)[number];
 export type SupportState = (typeof SUPPORT_STATES)[number];
@@ -56,6 +58,7 @@ export type AnchorKind = (typeof ANCHOR_KINDS)[number];
 export type EventCause = (typeof EVENT_CAUSES)[number];
 export type EventState = (typeof EVENT_STATES)[number];
 export type EntryType = (typeof ENTRY_TYPES)[number];
+export type ProbeForm = (typeof PROBE_FORMS)[number];
 
 export interface JudgeAnchor {
   readonly kind: AnchorKind;
@@ -120,6 +123,7 @@ export interface SupportEntry extends EntryBase {
   readonly to?: string;
   readonly missing?: string;
   readonly bands?: Readonly<Record<string, Band>>;
+  readonly anchors?: readonly JudgeAnchor[];
 }
 
 export interface ResultEntry extends EntryBase {
@@ -149,6 +153,7 @@ export interface SignalEntry extends EntryBase {
   readonly family: string;
   readonly confidence: number;
   readonly state: "shadow";
+  readonly ref?: string;
 }
 
 export interface EventEntry extends EntryBase {
@@ -178,6 +183,19 @@ export interface AskEntry extends EntryBase {
   readonly criterion: string;
 }
 
+export interface ProbeEntry extends EntryBase {
+  readonly type: "probe";
+  readonly claim: string;
+  readonly concepts: readonly string[];
+  readonly form: ProbeForm;
+  readonly prompt: string;
+  readonly options: readonly string[];
+  readonly key: number;
+  readonly keyHash: string;
+  readonly decision?: string;
+  readonly task?: string;
+}
+
 export type JudgeEntry =
   | DomainEntry
   | ConceptEntry
@@ -190,7 +208,8 @@ export type JudgeEntry =
   | SignalEntry
   | EventEntry
   | ItemEntry
-  | AskEntry;
+  | AskEntry
+  | ProbeEntry;
 
 export interface JudgeExport {
   readonly schema: typeof JUDGE_SCHEMA;
@@ -206,6 +225,7 @@ export interface JudgeExport {
   readonly events: readonly EventEntry[];
   readonly items: readonly ItemEntry[];
   readonly asks: readonly AskEntry[];
+  readonly probes: readonly ProbeEntry[];
 }
 
 export const oneOf = <T extends string>(options: readonly T[], value: unknown): T | undefined =>

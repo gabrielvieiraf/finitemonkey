@@ -2705,5 +2705,13 @@
   "command.judge_concept.summary": "Agregar un concepto de cualquier campo, anclado a un fragmento de fuente guardado",
   "command.judge_domain.summary": "Agregar un dominio con padre opcional",
   "judge.domain": "{domain}: {band} ({concepts, plural, one {# concepto} other {# conceptos}}, {evidence} evidencias con peso)",
-  "judge.concept.suggested": "{concept}: sugerido, fuera del conteo hasta que una evidencia lo use"
+  "judge.concept.suggested": "{concept}: sugerido, fuera del conteo hasta que una evidencia lo use",
+  "command.judge_xray.summary": "Rayos X de un resultado de investigación: afirmaciones por estado de sustento y franja, peor celda primero",
+  "command.judge_mine.summary": "Abrir una pregunta de verificación con clave en el fragmento de la fuente de una afirmación",
+  "command.judge_answer.summary": "Responder una pregunta de verificación; solo cuenta una respuesta con clave",
+  "command.judge_cut.summary": "Cortar una afirmación de su resultado",
+  "judge.row.actions": "[{actions}]",
+  "judge.probe.two_spans": "{probe}: ¿cuál de estos fragmentos aparece en {source}?",
+  "judge.probe.right": "{claim}: respuesta con clave registrada",
+  "judge.probe.wrong": "la fuente dice: \"{span}\" ({claim} pasa a verificación o entrega)"
 }

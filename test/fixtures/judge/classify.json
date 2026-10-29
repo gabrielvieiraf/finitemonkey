@@ -15,7 +15,8 @@
         "kind": "prose",
         "state": "model-only",
         "band": "no record",
-        "concepts": []
+        "concepts": [],
+        "actions": ["verify", "handoff", "cut", "judge"]
       },
       {
         "claim": "j-2da869a2aa",
@@ -23,7 +24,8 @@
         "kind": "number",
         "state": "model-only",
         "band": "no record",
-        "concepts": []
+        "concepts": [],
+        "actions": ["verify", "handoff", "cut", "judge"]
       },
       {
         "claim": "j-bea8780a46",
@@ -31,7 +33,8 @@
         "kind": "number",
         "state": "model-only",
         "band": "no record",
-        "concepts": []
+        "concepts": [],
+        "actions": ["verify", "handoff", "cut", "judge"]
       }
     ]
   }

@@ -6,10 +6,12 @@ import { appendNow, type JudgeDeps } from "./deps.js";
 import { writeHandoff } from "./handoff.js";
 import type { JudgeRequest } from "./request.js";
 import { conceptViews, type JudgeResponse, response, resultView, resultViews } from "./response.js";
+import { inScope } from "./scope.js";
 import { splitClaims } from "./split.js";
 import { entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
+import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS } from "./verify.js";
 
 export type { JudgeDeps, JudgeRuntime } from "./deps.js";
@@ -32,7 +34,7 @@ const append = (deps: JudgeDeps, record: JsonObject): JudgeResponse | undefined 
 const classify = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "classify" }>): JudgeResponse => {
   const before = readEntries(deps.runtime, deps.paths);
   const known = new Set(claimsIn(before).map((claim) => claim.id));
-  const texts = splitClaims(request.text, deps.splitter);
+  const texts = splitClaims(request.text, deps.splitter).filter(inScope);
   const ids = texts.map(claimIdOf);
   texts.forEach((text, index) => {
     const id = ids[index] ?? claimIdOf(text);
@@ -168,5 +170,11 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
       return addConcept(deps, request);
     case "domain":
       return addDomain(deps, request);
+    case "judge":
+      return judgeThis(deps, request);
+    case "answer":
+      return answer(deps, request);
+    case "cut":
+      return cut(deps, request);
   }
 };

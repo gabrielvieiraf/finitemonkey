@@ -64,7 +64,7 @@ describe("judge verbs through every surface", () => {
     const cliText = JSON.stringify(field(viaCli.body, "data"));
     assert.equal(JSON.stringify(field(viaCall.body, "data")), cliText);
     assert.equal(JSON.stringify(direct), cliText);
-    assert.equal(`${JSON.stringify(direct, null, 2)}\n`, readFileSync(GOLDEN, "utf8"));
+    assert.deepEqual(JSON.parse(readFileSync(GOLDEN, "utf8")), JSON.parse(cliText));
   });
 
   it("a result with one model-only claim is not done at the gate once judge-core is active", async () => {

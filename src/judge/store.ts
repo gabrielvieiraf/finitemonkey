@@ -98,6 +98,7 @@ export const exportOf = (entries: readonly JudgeEntry[]): JudgeExport => ({
   events: only(entries, "event"),
   items: only(entries, "item"),
   asks: only(entries, "ask"),
+  probes: only(entries, "probe"),
 });
 
 export const exportJudge = (runtime: Pick<Runtime, "readText">, paths: FmPaths): JudgeExport =>
@@ -107,7 +108,7 @@ const mentions = (entry: JudgeEntry, id: string): boolean => {
   if (entry.id === id) return true;
   if (entry.type === "contest") return entry.target === id;
   if (entry.type === "support" || entry.type === "event") return entry.claim === id;
-  if (entry.type === "evidence") return entry.claim === id;
+  if (entry.type === "evidence" || entry.type === "probe") return entry.claim === id;
   return false;
 };
 

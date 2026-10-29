@@ -2705,5 +2705,13 @@
   "command.judge_concept.summary": "Add a concept in any field, anchored to a saved source span",
   "command.judge_domain.summary": "Add a domain with an optional parent",
   "judge.domain": "{domain}: {band} ({concepts, plural, one {# concept} other {# concepts}}, {evidence} evidence entries with weight)",
-  "judge.concept.suggested": "{concept}: suggested, not counted until an evidence entry uses it"
+  "judge.concept.suggested": "{concept}: suggested, not counted until an evidence entry uses it",
+  "command.judge_xray.summary": "X-ray of a research result: claims by support state and band, worst cell first",
+  "command.judge_mine.summary": "Open one check question keyed to the source span of a claim",
+  "command.judge_answer.summary": "Answer a check question; only a keyed answer counts",
+  "command.judge_cut.summary": "Cut a claim from its result",
+  "judge.row.actions": "[{actions}]",
+  "judge.probe.two_spans": "{probe}: which of these spans appears in {source}?",
+  "judge.probe.right": "{claim}: keyed answer recorded",
+  "judge.probe.wrong": "the source says: \"{span}\" ({claim} goes to verification or handoff)"
 }
