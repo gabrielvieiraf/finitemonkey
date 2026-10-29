@@ -5,6 +5,7 @@ import { nowMs } from "../core/clock.js";
 import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { MIGRATION_FILE } from "../deploy/migrations.js";
 import { configAt, loadProjectConfig } from "../git/project-config.js";
 import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
 import { maskText } from "../mask/mask.js";
@@ -127,7 +128,7 @@ const measureSize = (
 
 const withCheck = (
   contract: TaskContract,
-  kind: "examples" | "scenarios" | "blind-tests" | "claims",
+  kind: "examples" | "scenarios" | "blind-tests" | "claims" | "migrate",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -137,19 +138,38 @@ const withCheck = (
 const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
   withCheck(contract, "examples", examples !== undefined && examples.length > 0);
 
-const withConfigured = (runtime: Runtime, root: AbsolutePath, contract: TaskContract): TaskContract => {
+const withConfigured = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  contract: TaskContract,
+  changes: readonly Change[],
+): TaskContract => {
   const config = loadProjectConfig(runtime, root);
+  const migrations = changes.some((change) => MIGRATION_FILE.test(change.oldPath ?? change.path));
   return withCheck(
     withCheck(
-      withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
-      "blind-tests",
-      configAt(config, "blind") !== undefined,
+      withCheck(
+        withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
+        "blind-tests",
+        configAt(config, "blind") !== undefined,
+      ),
+      "claims",
+      featureMode(runtime, fmPaths(root), CLAIM_CHECKS_FEATURE) !== "off" &&
+        readClaims(runtime, fmPaths(root)).some((claim) => lastOf(claim, ["close"]) === undefined),
     ),
-    "claims",
-    featureMode(runtime, fmPaths(root), CLAIM_CHECKS_FEATURE) !== "off" &&
-      readClaims(runtime, fmPaths(root)).some((claim) => lastOf(claim, ["close"]) === undefined),
+    "migrate",
+    migrations,
   );
 };
+
+const shapedContract = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  loaded: LoadedContract,
+  size: SizeVerdict,
+  changes: readonly Change[],
+): TaskContract =>
+  withConfigured(runtime, root, withExamples(applySize(loaded.contract, size), loaded.examples), changes);
 
 export type PrepareResult =
   | { readonly kind: "ready"; readonly prepared: Prepared }
@@ -185,11 +205,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     runtime: options.runtime,
     git,
     paths,
-    contract: withConfigured(
-      options.runtime,
-      root,
-      withExamples(applySize(loaded.value.contract, size), loaded.value.examples),
-    ),
+    contract: shapedContract(options.runtime, root, loaded.value, size, changes),
     size,
     trusted: loaded.value.trusted,
     treeHash: tree,

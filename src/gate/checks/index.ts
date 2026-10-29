@@ -18,6 +18,7 @@ import { headersCheck } from "./headers.js";
 import { inventoryCheck } from "./inventory.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
+import { migrateCheck } from "./migrate.js";
 import { migrationsCheck } from "./migrations.js";
 import { mutationCheck } from "./mutation.js";
 import { organizeCheck } from "./organize.js";
@@ -78,4 +79,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   scenarios: scenariosCheck,
   "blind-tests": blindCheck,
   claims: claimsCheck,
+  migrate: migrateCheck,
 };
