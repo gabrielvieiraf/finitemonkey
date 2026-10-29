@@ -33,7 +33,7 @@ const writePending = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, repor
 };
 
 export const recordScan = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "appendText" | "now">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "appendText" | "now" | "homeDir">,
   paths: FmPaths,
   reports: readonly ScanReport[],
 ): number => {

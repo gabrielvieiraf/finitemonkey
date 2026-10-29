@@ -8,6 +8,7 @@ import { createTranslator } from "../src/i18n/translate.js";
 import { fmPaths } from "../src/task/paths.js";
 import { denied, fireHook, policyWith, tty } from "./guardian-support.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
+import { signedLine } from "./signed.js";
 import { cli, cliJson, field } from "./support.js";
 
 const t = createTranslator("en");
@@ -82,7 +83,7 @@ describe("guardian decisions", () => {
       "src/cache/store.ts": "export const store = 1;\n",
       ".finitemonkey/tasks/jobs.yml":
         "id: jobs\ngoal: jobs\nscope:\n  paths: [src/jobs/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
-      ".finitemonkey/evidence/jobs.jsonl": `${JSON.stringify({
+      ".finitemonkey/evidence/jobs.jsonl": `${signedLine(repoRuntime(), {
         schema: "finitemonkey/evidence@1",
         task: "jobs",
         check: "*gate*",

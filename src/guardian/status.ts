@@ -25,7 +25,7 @@ const countGoals = (goals: Goals): GoalCounts => ({
 });
 
 const escalations = (
-  runtime: Pick<Runtime, "readText" | "now">,
+  runtime: Pick<Runtime, "readText" | "now" | "homeDir">,
   paths: FmPaths,
   tasks: readonly KnownTask[],
 ): readonly GuardianSignal[] =>
@@ -37,7 +37,7 @@ const escalations = (
   });
 
 export const guardianStatus = (
-  runtime: Pick<Runtime, "readText" | "listDir" | "now">,
+  runtime: Pick<Runtime, "readText" | "listDir" | "now" | "homeDir">,
   paths: FmPaths,
 ): GuardianStatus => {
   const goals = readGoals(runtime, paths.root);

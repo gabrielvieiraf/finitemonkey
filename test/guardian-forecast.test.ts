@@ -5,6 +5,7 @@ import { guardianStatus } from "../src/guardian/status.js";
 import { fmPaths } from "../src/task/paths.js";
 import { contextOf, fireHook, policyWith } from "./guardian-support.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
+import { signedLine } from "./signed.js";
 import { cli } from "./support.js";
 
 const repos: Repo[] = [];
@@ -16,7 +17,7 @@ const contract = (id: string, paths = "[src/billing/]", size = "M"): string =>
   `id: ${id}\ngoal: ${id}\nsize: ${size}\nscope:\n  paths: ${paths}\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n`;
 
 const evidence = (task: string, check: string, status: string, at: string, tree = "t"): string =>
-  JSON.stringify({
+  signedLine(repoRuntime(), {
     schema: "finitemonkey/evidence@1",
     task,
     check,

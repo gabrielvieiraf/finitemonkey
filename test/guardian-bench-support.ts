@@ -9,6 +9,7 @@ import { readResearchLog, researchState } from "../src/research/log.js";
 import { fmPaths } from "../src/task/paths.js";
 import { contextOf, denied, fireHook } from "./guardian-support.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
+import { signedLine } from "./signed.js";
 import { ROOT } from "./support.js";
 
 export const SCENARIO_DIR = join(ROOT, "bench", "guardian", "scenarios");
@@ -79,6 +80,22 @@ const filesOf = (value: unknown): Readonly<Record<string, string>> =>
       )
     : {};
 
+const EVIDENCE_FILE = /^\.finitemonkey\/evidence\/[^/]+\.jsonl$/;
+
+const signedLedger = (text: string): string =>
+  text
+    .split("\n")
+    .map((line) => {
+      const parsed = line.trim() === "" ? undefined : parseJsonObject(line);
+      return parsed?.ok === true ? signedLine(repoRuntime(), parsed.value) : line;
+    })
+    .join("\n");
+
+const seeded = (files: Readonly<Record<string, string>>): Readonly<Record<string, string>> =>
+  Object.fromEntries(
+    Object.entries(files).map(([path, content]) => [path, EVIDENCE_FILE.test(path) ? signedLedger(content) : content]),
+  );
+
 const prepare = (scenario: Scenario): Repo => {
   const contract = text(scenario.raw, "contract");
   const task: Record<string, string> =
@@ -88,7 +105,11 @@ const prepare = (scenario: Scenario): Repo => {
           ".finitemonkey/tasks/work.yml": contract,
           ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
         };
-  const repo = makeRepo({ ".finitemonkey/policy.yml": GUARDIAN_POLICY, ...task, ...filesOf(scenario.raw["files"]) });
+  const repo = makeRepo({
+    ".finitemonkey/policy.yml": GUARDIAN_POLICY,
+    ...task,
+    ...seeded(filesOf(scenario.raw["files"])),
+  });
   for (const [path, content] of Object.entries(filesOf(scenario.raw["change"]))) repo.write(path, content);
   return repo;
 };

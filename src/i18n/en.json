@@ -2169,7 +2169,7 @@
   "guardian.report.certainty": "Certainty",
   "guardian.report.nextStep": "Next step",
   "guardian.report.none": "No report: nothing in the active task needs one.",
-  "guardian.level.human": "level {level} report ({trigger}) shown before the step; the person chooses.",
+  "guardian.level.human": "level {level} report ({trigger}) shown before the step; the person chooses. `finitemonkey guardian report` shows it again.",
   "guardian.level3.ask": "Decision review before an irreversible step: {finding}. Before any recommendation, ask the person to write their own criterion for this choice by typing: finitemonkey: criterion <what matters most here>. Do not suggest an answer. Then run the step again.",
   "guardian.level3.ask_human": "an irreversible step is waiting: type finitemonkey: criterion <what matters most here> before seeing the recommendation.",
   "guardian.level3.criterion": "The person's criterion, recorded before this report: {criterion}",

@@ -117,7 +117,7 @@ export const failingDays = (ledger: readonly Evidence[]): number => {
 };
 
 export const stalledTasks = (
-  runtime: Pick<Runtime, "readText">,
+  runtime: Pick<Runtime, "readText" | "homeDir">,
   paths: FmPaths,
   tasks: readonly KnownTask[],
 ): readonly GuardianSignal[] =>

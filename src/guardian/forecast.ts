@@ -58,7 +58,7 @@ const comparable = (task: KnownTask, contract: TaskContract): boolean => {
 };
 
 export const forecastFor = (
-  runtime: Pick<Runtime, "readText">,
+  runtime: Pick<Runtime, "readText" | "homeDir">,
   paths: FmPaths,
   tasks: readonly KnownTask[],
   contract: TaskContract,
@@ -77,7 +77,7 @@ export const forecastFor = (
 };
 
 export const escalated = (
-  runtime: Pick<Runtime, "readText" | "now">,
+  runtime: Pick<Runtime, "readText" | "now" | "homeDir">,
   paths: FmPaths,
   task: KnownTask,
   forecast: Forecast | undefined,

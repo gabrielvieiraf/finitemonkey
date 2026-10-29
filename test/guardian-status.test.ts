@@ -7,6 +7,7 @@ import { parseGoals, renderGoals } from "../src/guardian/goals.js";
 import { guardianStatus } from "../src/guardian/status.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
+import { signedLine } from "./signed.js";
 import { cli, cliJson, field } from "./support.js";
 
 const repos: Repo[] = [];
@@ -54,7 +55,7 @@ const kindsFor = (repo: Repo): readonly (readonly [string, string])[] =>
   guardianStatus(runtime(), fmPaths(repo.root)).signals.map((item) => [item.kind, item.subject] as const);
 
 const gate = (status: string, at: string, tree: string): string =>
-  JSON.stringify({
+  signedLine(repoRuntime(), {
     schema: "finitemonkey/evidence@1",
     task: "slow",
     check: "*gate*",
@@ -66,7 +67,7 @@ const gate = (status: string, at: string, tree: string): string =>
   });
 
 const check = (name: string, status: string, at: string, tree: string): string =>
-  JSON.stringify({
+  signedLine(repoRuntime(), {
     schema: "finitemonkey/evidence@1",
     task: "slow",
     check: name,

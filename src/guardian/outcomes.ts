@@ -68,7 +68,11 @@ const reverts = (commits: readonly Commit[], entry: DecisionEntry): readonly str
     .map((commit) => commit.hash.slice(0, 12));
 };
 
-const gateFailures = (runtime: Pick<Runtime, "readText" | "listDir">, paths: FmPaths, entry: DecisionEntry): number =>
+const gateFailures = (
+  runtime: Pick<Runtime, "readText" | "listDir" | "homeDir">,
+  paths: FmPaths,
+  entry: DecisionEntry,
+): number =>
   knownTasks(runtime, paths)
     .filter((task) => touches(task.contract.scope.paths, entry.paths))
     .flatMap((task) => readLedger(runtime, paths.evidence(task.contract.id)))
@@ -90,7 +94,7 @@ const reopenedBy = (runtime: Pick<Runtime, "listDir">, paths: FmPaths, entry: De
 };
 
 export const outcomeOf = (
-  runtime: Pick<Runtime, "readText" | "listDir">,
+  runtime: Pick<Runtime, "readText" | "listDir" | "homeDir">,
   paths: FmPaths,
   commits: readonly Commit[],
   entry: DecisionEntry,

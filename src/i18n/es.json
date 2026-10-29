@@ -2169,7 +2169,7 @@
   "guardian.report.certainty": "Certeza",
   "guardian.report.nextStep": "Próximo paso",
   "guardian.report.none": "Ningún informe: nada en la tarea activa lo necesita.",
-  "guardian.level.human": "informe de nivel {level} ({trigger}) mostrado antes del paso; la persona elige.",
+  "guardian.level.human": "informe de nivel {level} ({trigger}) mostrado antes del paso; la persona elige. `finitemonkey guardian report` lo muestra de nuevo.",
   "guardian.level3.ask": "Revisión de decisión antes de un paso irreversible: {finding}. Antes de cualquier recomendación, pide a la persona que escriba su propio criterio para esta elección escribiendo: finitemonkey: criterion <lo que más importa aquí>. No sugieras respuesta. Luego ejecuta el paso otra vez.",
   "guardian.level3.ask_human": "un paso irreversible está esperando: escribe finitemonkey: criterion <lo que más importa aquí> antes de ver la recomendación.",
   "guardian.level3.criterion": "El criterio de la persona, guardado antes de este informe: {criterion}",

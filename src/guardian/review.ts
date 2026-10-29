@@ -52,7 +52,7 @@ const tally = (rows: readonly ReviewRow[], decision: DecisionEntry["decision"]):
 };
 
 export const guardianReview = (
-  runtime: Pick<Runtime, "readText" | "listDir" | "exec">,
+  runtime: Pick<Runtime, "readText" | "listDir" | "exec" | "homeDir">,
   paths: FmPaths,
 ): GuardianReview => {
   const entries = readDecisions(runtime, paths);
