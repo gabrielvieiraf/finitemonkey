@@ -30,6 +30,7 @@ import { regressionCheck } from "./regression.js";
 import { researchCheck } from "./research.js";
 import { reviewCheck } from "./review.js";
 import { runtimeCheck } from "./runtime.js";
+import { scenariosCheck } from "./scenarios.js";
 import { secretsCheck } from "./secrets.js";
 import { slopCheck } from "./slop.js";
 import { testsCheck } from "./tests.js";
@@ -72,4 +73,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   organize: organizeCheck,
   contract: contractCheck,
   examples: examplesCheck,
+  scenarios: scenariosCheck,
 };

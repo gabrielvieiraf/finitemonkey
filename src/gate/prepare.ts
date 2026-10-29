@@ -5,7 +5,7 @@ import { nowMs } from "../core/clock.js";
 import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
-import { loadProjectConfig } from "../git/project-config.js";
+import { configAt, loadProjectConfig } from "../git/project-config.js";
 import { maskText } from "../mask/mask.js";
 import type { Example } from "../task/examples.js";
 import type { ProjectFiles } from "../task/implicit.js";
@@ -123,10 +123,16 @@ const measureSize = (
 ): SizeVerdict =>
   sizeVerdict(contract.size, diffShape(runtime, git, base, changes), sizeConfig(loadProjectConfig(runtime, git.cwd)));
 
-const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
-  examples === undefined || examples.length === 0 || contract.acceptance.some((check) => check.kind === "examples")
+const withCheck = (contract: TaskContract, kind: "examples" | "scenarios", wanted: boolean): TaskContract =>
+  !wanted || contract.acceptance.some((check) => check.kind === kind)
     ? contract
-    : { ...contract, acceptance: [...contract.acceptance, { id: "examples", kind: "examples" }] };
+    : { ...contract, acceptance: [...contract.acceptance, { id: kind, kind }] };
+
+const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
+  withCheck(contract, "examples", examples !== undefined && examples.length > 0);
+
+const withScenarios = (runtime: Runtime, root: AbsolutePath, contract: TaskContract): TaskContract =>
+  withCheck(contract, "scenarios", configAt(loadProjectConfig(runtime, root), "access") !== undefined);
 
 export type PrepareResult =
   | { readonly kind: "ready"; readonly prepared: Prepared }
@@ -162,7 +168,11 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     runtime: options.runtime,
     git,
     paths,
-    contract: withExamples(applySize(loaded.value.contract, size), loaded.value.examples),
+    contract: withScenarios(
+      options.runtime,
+      root,
+      withExamples(applySize(loaded.value.contract, size), loaded.value.examples),
+    ),
     size,
     trusted: loaded.value.trusted,
     treeHash: tree,

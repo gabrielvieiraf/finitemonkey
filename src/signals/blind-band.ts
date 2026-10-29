@@ -34,6 +34,7 @@ export const domainOfText = (text: string): BandDomain => {
 const KIND_CRITERION: Readonly<Partial<Record<CheckKind, Criterion>>> = {
   examples: "example",
   golden: "example",
+  scenarios: "scenario",
 };
 
 export const criterionOfCheck = (check: AcceptanceCheck | undefined): Criterion =>

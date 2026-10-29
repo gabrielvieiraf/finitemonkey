@@ -38,6 +38,7 @@ export const CHECK_KINDS = [
   "organize",
   "contract",
   "examples",
+  "scenarios",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];
