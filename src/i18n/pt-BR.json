@@ -2489,5 +2489,10 @@
   "drift.indicator.correctionsPerSession": "correções por sessão",
   "drift.no_change": "nenhuma troca de modelo ou de versão da ferramenta nos logs",
   "drift.none": "Nenhuma mudança em {days} grupos de dias dos logs locais de sessão.",
-  "command.drift.summary": "Comparar o comportamento do agente nos logs locais de sessão com a sua linha de base e dizer o que mudou"
+  "command.drift.summary": "Comparar o comportamento do agente nos logs locais de sessão com a sua linha de base e dizer o que mudou",
+  "command.pr_provenance.summary": "Mostrar o bloco de procedência montado a partir do registro, ou checar se o corpo de um PR ainda bate com ele",
+  "pr.provenance.match": "O bloco de procedência bate com o registro.",
+  "pr.provenance.missing": "O corpo do PR não tem bloco de procedência.",
+  "pr.provenance.edited": "O bloco de procedência difere do que o registro dá neste commit; foi editado ou o registro mudou.",
+  "pr.provenance.unreadable": "Não foi possível ler {file}."
 }

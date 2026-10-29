@@ -6167,7 +6167,8 @@ var OPTIONAL_GUARDS = [
   "premise-check",
   "focus-card",
   "attention",
-  "drift-sensor"
+  "drift-sensor",
+  "pr-provenance"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6241,7 +6242,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "premise-check",
   "focus-card",
   "attention",
-  "drift-sensor"
+  "drift-sensor",
+  "pr-provenance"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -9171,7 +9173,12 @@ var en_default = {
   "drift.indicator.correctionsPerSession": "corrections per session",
   "drift.no_change": "no model or tool version change in the logs",
   "drift.none": "No drift across {days} day buckets of local session logs.",
-  "command.drift.summary": "Compare the agent's behavior in local session logs with your own baseline and name what changed"
+  "command.drift.summary": "Compare the agent's behavior in local session logs with your own baseline and name what changed",
+  "command.pr_provenance.summary": "Print the provenance block built from the ledger, or check that a PR body still matches it",
+  "pr.provenance.match": "The provenance block matches the ledger.",
+  "pr.provenance.missing": "The PR body has no provenance block.",
+  "pr.provenance.edited": "The provenance block differs from what the ledger gives at this commit; it was edited or the ledger changed.",
+  "pr.provenance.unreadable": "Cannot read {file}."
 };
 
 // src/i18n/es.json
@@ -11666,7 +11673,12 @@ var es_default = {
   "drift.indicator.correctionsPerSession": "correcciones por sesión",
   "drift.no_change": "ningún cambio de modelo o de versión de la herramienta en los logs",
   "drift.none": "Ningún cambio en {days} grupos de días de los logs locales de sesión.",
-  "command.drift.summary": "Comparar el comportamiento del agente en los logs locales de sesión con tu línea de base y decir qué cambió"
+  "command.drift.summary": "Comparar el comportamiento del agente en los logs locales de sesión con tu línea de base y decir qué cambió",
+  "command.pr_provenance.summary": "Mostrar el bloque de procedencia armado desde el registro, o comprobar que el cuerpo de un PR todavía coincide",
+  "pr.provenance.match": "El bloque de procedencia coincide con el registro.",
+  "pr.provenance.missing": "El cuerpo del PR no tiene bloque de procedencia.",
+  "pr.provenance.edited": "El bloque de procedencia difiere de lo que da el registro en este commit; fue editado o el registro cambió.",
+  "pr.provenance.unreadable": "No se pudo leer {file}."
 };
 
 // src/i18n/pt-BR.json
@@ -14161,7 +14173,12 @@ var pt_BR_default = {
   "drift.indicator.correctionsPerSession": "correções por sessão",
   "drift.no_change": "nenhuma troca de modelo ou de versão da ferramenta nos logs",
   "drift.none": "Nenhuma mudança em {days} grupos de dias dos logs locais de sessão.",
-  "command.drift.summary": "Comparar o comportamento do agente nos logs locais de sessão com a sua linha de base e dizer o que mudou"
+  "command.drift.summary": "Comparar o comportamento do agente nos logs locais de sessão com a sua linha de base e dizer o que mudou",
+  "command.pr_provenance.summary": "Mostrar o bloco de procedência montado a partir do registro, ou checar se o corpo de um PR ainda bate com ele",
+  "pr.provenance.match": "O bloco de procedência bate com o registro.",
+  "pr.provenance.missing": "O corpo do PR não tem bloco de procedência.",
+  "pr.provenance.edited": "O bloco de procedência difere do que o registro dá neste commit; foi editado ou o registro mudou.",
+  "pr.provenance.unreadable": "Não foi possível ler {file}."
 };
 
 // src/i18n/review.json
@@ -16657,7 +16674,12 @@ var review_default = {
     "drift.indicator.correctionsPerSession": "machine",
     "drift.no_change": "machine",
     "drift.none": "machine",
-    "command.drift.summary": "machine"
+    "command.drift.summary": "machine",
+    "command.pr_provenance.summary": "machine",
+    "pr.provenance.match": "machine",
+    "pr.provenance.missing": "machine",
+    "pr.provenance.edited": "machine",
+    "pr.provenance.unreadable": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -19150,7 +19172,12 @@ var review_default = {
     "drift.indicator.correctionsPerSession": "machine",
     "drift.no_change": "machine",
     "drift.none": "machine",
-    "command.drift.summary": "machine"
+    "command.drift.summary": "machine",
+    "command.pr_provenance.summary": "machine",
+    "pr.provenance.match": "machine",
+    "pr.provenance.missing": "machine",
+    "pr.provenance.edited": "machine",
+    "pr.provenance.unreadable": "machine"
   }
 };
 
@@ -63624,8 +63651,159 @@ var unparkCommand = {
   })
 };
 
+// src/pr/provenance.ts
+var PROVENANCE_START = "<!-- finitemonkey:provenance";
+var PROVENANCE_END = "<!-- finitemonkey:provenance:end -->";
+var MAX_BLOCK_LINES = 60;
+var latestPerCheck = (entries2) => {
+  const latest3 = /* @__PURE__ */ new Map();
+  for (const entry2 of entries2) if (entry2.check !== GATE_CHECK) latest3.set(entry2.check, entry2);
+  return [...latest3.values()].sort((a, b) => a.check.localeCompare(b.check));
+};
+var checkOf3 = (entry2) => ({
+  check: entry2.check,
+  status: entry2.status,
+  treeHash: entry2.treeHash,
+  command: entry2.command ?? null,
+  exitCode: entry2.exitCode ?? null
+});
+var provenanceSources = (runtime, root, files) => {
+  const paths = fmPaths(root);
+  const task = readState(runtime, paths).active ?? null;
+  const tree = treeHash(gitAt(runtime, root)) ?? null;
+  const edits = readEntries(runtime, signalFiles(paths)).flatMap(
+    (entry2) => entry2.kind === "edit" ? [entry2.file] : []
+  );
+  const latest3 = task === null ? [] : latestPerCheck(readLedger2(runtime, paths.evidence(task)));
+  const current2 = (entry2) => entry2.status === "passed" && entry2.treeHash === tree;
+  return {
+    task,
+    tree,
+    generated: [...files].sort().map((path) => {
+      const count12 = edits.filter((file) => file === path).length;
+      return { path, origin: count12 > 0 ? "agent" : "unknown", edits: count12 };
+    }),
+    verified: latest3.filter(current2).map(checkOf3),
+    notVerified: latest3.filter((entry2) => !current2(entry2)).map(checkOf3),
+    decisions: readDecisions(runtime, paths).flatMap((entry2) => entry2.overrideReason ?? entry2.choice ?? [])
+  };
+};
+var capped2 = (lines10) => lines10.length <= MAX_BLOCK_LINES ? lines10 : [...lines10.slice(0, MAX_BLOCK_LINES - 1), `- ${String(lines10.length - MAX_BLOCK_LINES + 1)} more lines left out`];
+var checkLine2 = (item2) => `- ${item2.check}: ${item2.status} at tree \`${item2.treeHash}\`${item2.command === null ? "" : `, \`${item2.command}\``}${item2.exitCode === null ? "" : `, exit ${String(item2.exitCode)}`}`;
+var sourcesHash = (sources) => sha256Hex(JSON.stringify(sources)).slice(0, 32);
+var renderBlock = (sources) => {
+  const body2 = [
+    "## Provenance",
+    "",
+    `Task: ${sources.task ?? "none"} · tree \`${sources.tree ?? "unknown"}\``,
+    "",
+    "### Generated",
+    ...sources.generated.map(
+      (file) => file.origin === "agent" ? `- ${file.path}: agent edits (${String(file.edits)})` : `- ${file.path}: unknown`
+    ),
+    "",
+    "### Verified",
+    ...sources.verified.length === 0 ? ["- none"] : sources.verified.map(checkLine2),
+    "",
+    "### Not verified",
+    ...sources.notVerified.length === 0 ? ["- none"] : sources.notVerified.map(checkLine2),
+    ...sources.decisions.length === 0 ? [] : ["", "### Decisions", ...sources.decisions.map((text34) => `- ${text34}`)]
+  ];
+  return [`${PROVENANCE_START} sha256=${sourcesHash(sources)} -->`, ...capped2(body2), PROVENANCE_END].join("\n");
+};
+var extractBlock = (body2) => {
+  const start2 = body2.indexOf(PROVENANCE_START);
+  const end = body2.indexOf(PROVENANCE_END);
+  return start2 < 0 || end < start2 ? void 0 : body2.slice(start2, end + PROVENANCE_END.length);
+};
+var checkBlock = (body2, expected) => {
+  const found = extractBlock(body2);
+  if (found === void 0) return "missing";
+  return found.replace(/\r\n/g, "\n") === expected ? "match" : "edited";
+};
+
+// src/pr/scope.ts
+import { join as join186 } from "node:path";
+var changedSince2 = (runtime, root, base) => {
+  const result = runtime.git(["diff", "--name-status", "-M", "-z", `${base}..HEAD`], root);
+  if (!result.ok) return [];
+  const fields2 = result.stdout.split("\0").filter((field) => field !== "");
+  const files = [];
+  for (let index = 0; index < fields2.length; index += 1) {
+    const status = fields2[index] ?? "";
+    const renamed = status.startsWith("R") || status.startsWith("C");
+    const path = fields2[index + (renamed ? 2 : 1)] ?? "";
+    files.push({ status: status.slice(0, 1), path });
+    index += renamed ? 2 : 1;
+  }
+  return files;
+};
+var registryContract = (runtime, root) => {
+  const common = commonDirOf(runtime, root);
+  if (common === void 0) return void 0;
+  const registry = readRegistry(runtime, common);
+  return registry.ok ? entryFor3(registry.value, root)?.contract ?? void 0 : void 0;
+};
+var contractFor = (runtime, root, explicit) => {
+  if (explicit !== void 0) return explicit;
+  const fromRegistry = registryContract(runtime, root);
+  if (fromRegistry !== void 0) return fromRegistry;
+  const active2 = readState(runtime, fmPaths(root)).active;
+  return active2 === void 0 ? void 0 : toPosixPath(join186(".finitemonkey", "tasks", `${active2}.yml`));
+};
+var declaredOf = (scope2) => scope2 === void 0 ? [] : [...scope2.paths, ...scope2.append, ...scope2.generated];
+var checkScope = (runtime, root, files, explicit) => {
+  const contract = contractFor(runtime, root, explicit);
+  const scope2 = contract === void 0 ? void 0 : scopeFromContract(runtime, toAbsolutePath(contract, root));
+  const declared = declaredOf(scope2);
+  const outside = declared.length === 0 ? [] : files.filter((file) => !matchesAny(file.path, declared));
+  return {
+    contract: scope2 === void 0 ? void 0 : contract,
+    declared,
+    inside: files.filter((file) => !outside.includes(file)),
+    outside
+  };
+};
+
+// src/commands/pr-provenance.ts
+var PROVENANCE_SCHEMA = "finitemonkey/pr-provenance@1";
+var USAGE18 = "finitemonkey pr provenance [--base <ref>] [--check <body-file>] [--json]";
+var prProvenanceCommand = {
+  path: ["pr", "provenance"],
+  summaryKey: "command.pr_provenance.summary",
+  usage: USAGE18,
+  status: "ready",
+  options: { base: { type: "string" }, check: { type: "string" } },
+  run: (ctx, args2) => inGuardianRepo(ctx, (root) => {
+    const base = stringOption(args2.values, "base") ?? "origin/main";
+    const files = changedSince2(ctx.runtime, root, base).map((file2) => file2.path);
+    const block7 = renderBlock(provenanceSources(ctx.runtime, root, files));
+    const file = stringOption(args2.values, "check");
+    if (file === void 0) return success({ schema: PROVENANCE_SCHEMA, block: block7, result: null }, [block7]);
+    const body2 = ctx.runtime.readText(toAbsolutePath(file, root));
+    if (!body2.ok)
+      return failureFrom(ctx.t, usageProblem("invalid_arguments", "pr.provenance.unreadable", USAGE18, { file }));
+    const result = checkBlock(body2.value, block7);
+    if (result === "match")
+      return success({ schema: PROVENANCE_SCHEMA, block: block7, result }, [ctx.t("pr.provenance.match")]);
+    return failureFrom(ctx.t, {
+      code: "pr_failed",
+      messageKey: `pr.provenance.${result}`,
+      params: {},
+      fix: "finitemonkey pr provenance",
+      exitCode: ExitCode.CheckFailed
+    });
+  })
+};
+
 // src/commands/person.ts
-var PERSON_COMMANDS = [parkCommand, unparkCommand, attentionCommand, driftCommand];
+var PERSON_COMMANDS = [
+  parkCommand,
+  unparkCommand,
+  attentionCommand,
+  driftCommand,
+  prProvenanceCommand
+];
 
 // src/plan/master.ts
 var HINTS = {
@@ -63792,7 +63970,7 @@ var planConsolidateCommand = {
 
 // src/commands/planta.ts
 var PLANTA_SCHEMA = "finitemonkey/planta@1";
-var USAGE18 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
+var USAGE19 = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
 var itemsJson = (ctx, bar) => bar.items.map((item2) => {
   const probe = BLUEPRINTS[bar.type].find((entry2) => entry2.id === item2.id)?.probe;
   return {
@@ -63810,7 +63988,7 @@ var runPlanta = (ctx, raw) => {
   if (type === void 0) {
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE18, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, { detail: raw ?? BLUEPRINT_TYPES.join("|") })
     );
   }
   const task = raw === void 0 ? void 0 : recordInContract(ctx.runtime, paths, type);
@@ -63836,7 +64014,7 @@ var runPlanta = (ctx, raw) => {
 var plantaCommand = {
   path: ["planta"],
   summaryKey: "command.planta.summary",
-  usage: USAGE18,
+  usage: USAGE19,
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => Promise.resolve(runPlanta(ctx, args2.positionals[0]))
@@ -64272,47 +64450,23 @@ var prBody = (runtime, root, input) => {
   ].join("\n");
 };
 
-// src/pr/scope.ts
-import { join as join186 } from "node:path";
-var changedSince2 = (runtime, root, base) => {
-  const result = runtime.git(["diff", "--name-status", "-M", "-z", `${base}..HEAD`], root);
-  if (!result.ok) return [];
-  const fields2 = result.stdout.split("\0").filter((field) => field !== "");
-  const files = [];
-  for (let index = 0; index < fields2.length; index += 1) {
-    const status = fields2[index] ?? "";
-    const renamed = status.startsWith("R") || status.startsWith("C");
-    const path = fields2[index + (renamed ? 2 : 1)] ?? "";
-    files.push({ status: status.slice(0, 1), path });
-    index += renamed ? 2 : 1;
-  }
-  return files;
-};
-var registryContract = (runtime, root) => {
-  const common = commonDirOf(runtime, root);
-  if (common === void 0) return void 0;
-  const registry = readRegistry(runtime, common);
-  return registry.ok ? entryFor3(registry.value, root)?.contract ?? void 0 : void 0;
-};
-var contractFor = (runtime, root, explicit) => {
-  if (explicit !== void 0) return explicit;
-  const fromRegistry = registryContract(runtime, root);
-  if (fromRegistry !== void 0) return fromRegistry;
-  const active2 = readState(runtime, fmPaths(root)).active;
-  return active2 === void 0 ? void 0 : toPosixPath(join186(".finitemonkey", "tasks", `${active2}.yml`));
-};
-var declaredOf = (scope2) => scope2 === void 0 ? [] : [...scope2.paths, ...scope2.append, ...scope2.generated];
-var checkScope = (runtime, root, files, explicit) => {
-  const contract = contractFor(runtime, root, explicit);
-  const scope2 = contract === void 0 ? void 0 : scopeFromContract(runtime, toAbsolutePath(contract, root));
-  const declared = declaredOf(scope2);
-  const outside = declared.length === 0 ? [] : files.filter((file) => !matchesAny(file.path, declared));
-  return {
-    contract: scope2 === void 0 ? void 0 : contract,
-    declared,
-    inside: files.filter((file) => !outside.includes(file)),
-    outside
-  };
+// src/pr/provenance-attach.ts
+var PROVENANCE_FEATURE = "pr-provenance";
+var PROVENANCE_CACHE = "pr-provenance.md";
+var attachProvenance = (runtime, root, body2, files) => {
+  const paths = fmPaths(root);
+  const mode = featureMode(runtime, paths, PROVENANCE_FEATURE);
+  if (mode === "off") return body2;
+  const sources = provenanceSources(runtime, root, files);
+  const block7 = renderBlock(sources);
+  if (mode === "active") return `${body2.trimEnd()}
+
+${block7}
+`;
+  runtime.writeText(paths.cache(PROVENANCE_CACHE), `${block7}
+`);
+  recordFeatureShadow(runtime, paths, PROVENANCE_FEATURE, { hash: sourcesHash(sources), files: files.length });
+  return body2;
 };
 
 // src/pr/stack.ts
@@ -64432,7 +64586,7 @@ var preparePr = (runtime, cwd, request) => {
   const accepted2 = scope2.outside.length > 0 && request.acceptOutside !== void 0 ? { by: request.acceptedBy, at: runtime.now(), reason: request.acceptOutside } : void 0;
   if (accepted2 !== void 0 && !request.dryRun) recordAcceptance(runtime, repo.root, branch, accepted2, scope2.outside);
   const append = scope2.contract === void 0 ? [] : scopeFromContract(runtime, toAbsolutePath(scope2.contract, repo.root))?.append ?? [];
-  const body2 = prBody(runtime, repo.root, {
+  const plain = prBody(runtime, repo.root, {
     userBody: request.body,
     base: base.value,
     baseSha,
@@ -64443,6 +64597,12 @@ var preparePr = (runtime, cwd, request) => {
     snapshots: snapshotsFor(runtime, repo.root, branch),
     mergeSummary: mergeSummary(runtime, repo.root, branch)
   });
+  const body2 = attachProvenance(
+    runtime,
+    repo.root,
+    plain,
+    files.map((file) => file.path)
+  );
   return accept({ repo, branch, base: base.value, baseSha, body: body2, outside: scope2.outside, fetched });
 };
 var openPr = (runtime, cwd, request) => {
@@ -64668,7 +64828,7 @@ var DEV_TOOLS = ["ruff", "pytest", "vulture"];
 
 // src/commands/preset.ts
 var PRESET_SCHEMA = "finitemonkey/preset@1";
-var USAGE19 = "finitemonkey preset python [--write] [--overwrite]";
+var USAGE20 = "finitemonkey preset python [--write] [--overwrite]";
 var presetFiles = (project, linter) => [
   ...[...project.sections].some((name) => name.startsWith("ruff")) ? [] : [{ path: "ruff.toml", content: RUFF_TOML }],
   ...project.sections.has("pytest.ini_options") ? [] : [{ path: "pytest.ini", content: PYTEST_INI }],
@@ -64679,7 +64839,7 @@ var presetFiles = (project, linter) => [
 var python = (ctx, values) => {
   const root = projectRoot(ctx);
   if (featureMode(ctx.runtime, fmPaths(root), PYTHON_FEATURE) === "off")
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE19));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.off", USAGE20));
   const project = detectPython(
     (relative29) => {
       const text34 = ctx.runtime.readText(toAbsolutePath(join188(root, relative29)));
@@ -64687,7 +64847,7 @@ var python = (ctx, values) => {
     },
     (relative29) => ctx.runtime.stat(toAbsolutePath(join188(root, relative29))) !== void 0
   );
-  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE19));
+  if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE20));
   const arch = loadArch(ctx.runtime, root);
   const deny2 = (from, allowed4) => ctx.t("arch.generated.not_allowed", { from, allowed: allowed4.join(", ") });
   const linter = arch.kind === "ok" ? importLinter(arch.config, deny2) : void 0;
@@ -64697,7 +64857,7 @@ var python = (ctx, values) => {
     root,
     files: presetFiles(project, linter),
     values,
-    usage: USAGE19,
+    usage: USAGE20,
     data: { schema: PRESET_SCHEMA, stack: "python", manager: project.manager },
     lines: [...project.manager === "uv" ? [] : [ctx.t("preset.needs_uv")], ctx.t("preset.dev_tools", { tools })]
   });
@@ -64705,14 +64865,14 @@ var python = (ctx, values) => {
 var presetCommand = {
   path: ["preset"],
   summaryKey: "command.preset.summary",
-  usage: USAGE19,
+  usage: USAGE20,
   status: "ready",
   maxPositionals: 1,
   options: GENERATE_OPTIONS,
   run: (ctx, args2) => Promise.resolve(
     args2.positionals[0] === "python" ? python(ctx, args2.values) : failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, {
+      usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, {
         detail: args2.positionals[0] ?? "<stack>"
       })
     )
@@ -66034,7 +66194,7 @@ var unattended = (ctx, id, options2 = {}) => {
 // src/commands/run.ts
 var RUN_SCHEMA = "finitemonkey/run@1";
 var RUNS_DIR = "runs";
-var USAGE20 = `finitemonkey run [--shell ${SHELLS8.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
+var USAGE21 = `finitemonkey run [--shell ${SHELLS8.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
 var DEFAULT_TIMEOUT_S2 = 600;
 var KEEP_RUNS = 30;
 var NOT_FOUND_EXIT = 127;
@@ -66058,7 +66218,7 @@ var saveLog = (ctx, root, line12, text34) => {
   prune(ctx, dir);
   return `${FM_DIR}/${RUNS_DIR}/${name}`;
 };
-var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, { detail }));
+var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE21, { detail }));
 var runCommand = (ctx, words6, shellRaw, timeoutRaw) => {
   const shell = shellRaw === void 0 ? defaultShell(ctx.platform) : parseShellChoice(shellRaw);
   const timeoutS = timeoutOf(timeoutRaw);
@@ -66105,7 +66265,7 @@ ${result.stderr}`, exitCode);
 var runCommandSpec = {
   path: ["run"],
   summaryKey: "command.run.summary",
-  usage: USAGE20,
+  usage: USAGE21,
   status: "ready",
   options: { shell: { type: "string" }, timeout: { type: "string" }, unattended: { type: "boolean" } },
   maxPositionals: 1e3,
@@ -66386,7 +66546,7 @@ var runbookLink = (runtime, rule) => {
 
 // src/commands/secrets-incident.ts
 var INCIDENT_ACTIONS = ["list", "rotated", "close", "purge"];
-var USAGE21 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
+var USAGE22 = "finitemonkey secrets incident [list | rotated <id> | close <id> | purge <id>]";
 var TARGET = { rotated: "rotacionado", close: "fechado" };
 var PURGE_STEPS = [
   "secrets.purge.step1",
@@ -66444,7 +66604,7 @@ var move = (ctx, root, incident, action) => {
   if (!canMove(incident.state, to))
     return action === "close" ? notRotated(ctx, incident) : fail4(
       ctx,
-      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE21, {
+      usageProblem("invalid_arguments", "secrets.error.bad_transition", USAGE22, {
         id: incident.id,
         from: incident.state,
         to
@@ -66467,7 +66627,7 @@ var actionOf2 = (raw) => INCIDENT_ACTIONS.find((action) => action === (raw ?? "l
 var secretsIncidentCommand = {
   path: ["secrets", "incident"],
   summaryKey: "secrets.command.incident",
-  usage: USAGE21,
+  usage: USAGE22,
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args2) => {
@@ -66477,7 +66637,7 @@ var secretsIncidentCommand = {
       return Promise.resolve(
         fail4(
           ctx,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE21, { detail: args2.positionals[0] ?? "" })
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE22, { detail: args2.positionals[0] ?? "" })
         )
       );
     if (action === "list") return Promise.resolve(list9(ctx, root));
@@ -66549,7 +66709,7 @@ var liveOutcome = (result) => {
 
 // src/commands/secrets-live.ts
 var SECRETS_LIVE_SCHEMA = "finitemonkey/secrets-live@1";
-var USAGE22 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
+var USAGE23 = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VARIABLE> [--send]`;
 var ENV_NAME2 = /^[A-Za-z_][A-Za-z0-9_]*$/;
 var target4 = (provider) => {
   const probe = LIVE_PROBES[provider];
@@ -66580,7 +66740,7 @@ var send = (ctx, provider, variable, key3) => {
 var secretsLiveCommand = {
   path: ["secrets", "live"],
   summaryKey: "secrets.command.live",
-  usage: USAGE22,
+  usage: USAGE23,
   status: "ready",
   maxPositionals: 1,
   options: { env: { type: "string" }, send: { type: "boolean" } },
@@ -66591,7 +66751,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE22, {
+          usageProblem("invalid_arguments", "error.invalid_arguments", USAGE23, {
             detail: provider === void 0 ? args2.positionals[0] ?? "<provider>" : "--env <VARIABLE>"
           })
         )
@@ -66601,7 +66761,7 @@ var secretsLiveCommand = {
       return Promise.resolve(
         failureFrom(
           ctx.t,
-          needsPersonProblem("secrets.error.person_only", `${USAGE22.replace(" [--send]", "")} --send`, {
+          needsPersonProblem("secrets.error.person_only", `${USAGE23.replace(" [--send]", "")} --send`, {
             action: ctx.t("secrets.action.live")
           })
         )
@@ -66609,7 +66769,7 @@ var secretsLiveCommand = {
     const key3 = ctx.env[variable] ?? "";
     if (key3 === "")
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE22, { variable }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "secrets.live.no_value", USAGE23, { variable }))
       );
     return Promise.resolve(send(ctx, provider, variable, key3));
   }
@@ -66871,8 +67031,8 @@ var signalsBlindBandCommand = {
 };
 
 // src/commands/signals-hypothesis.ts
-var USAGE23 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
-var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE23, { detail });
+var USAGE24 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
+var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE24, { detail });
 var normalized4 = (text34) => text34.toLowerCase().replace(/\s+/g, " ").trim();
 var hypothesis = (ctx, words6) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -66907,14 +67067,14 @@ var hypothesis = (ctx, words6) => {
 var signalsHypothesisCommand = {
   path: ["signals", "hypothesis"],
   summaryKey: "command.signals_hypothesis.summary",
-  usage: USAGE23,
+  usage: USAGE24,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(hypothesis(ctx, args2.positionals))
 };
 
 // src/commands/signals-locate.ts
-var USAGE24 = "finitemonkey signals locate <file>:<line> <reason>";
+var USAGE25 = "finitemonkey signals locate <file>:<line> <reason>";
 var PLACE = /^(.+):(\d+)$/;
 var locate4 = (ctx, words6) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -66925,7 +67085,7 @@ var locate4 = (ctx, words6) => {
   const line12 = Number(place2?.[2] ?? "0");
   if (file === void 0 || line12 < 1 || reason.length < limits.hypothesisChars) {
     const detail = ctx.t("signals.locate.invalid", { count: limits.hypothesisChars });
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE24, { detail }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE25, { detail }));
   }
   const files = signalFiles(paths);
   const entries2 = readEntries(ctx.runtime, files);
@@ -66944,7 +67104,7 @@ var locate4 = (ctx, words6) => {
 var signalsLocateCommand = {
   path: ["signals", "locate"],
   summaryKey: "command.signals_locate.summary",
-  usage: USAGE24,
+  usage: USAGE25,
   status: "ready",
   maxPositionals: 200,
   run: (ctx, args2) => Promise.resolve(locate4(ctx, args2.positionals))
@@ -67588,7 +67748,7 @@ var taskDoneCommand = {
 
 // src/commands/task-diverge.ts
 import { join as join197 } from "node:path";
-var USAGE25 = "finitemonkey task diverge [<id>] [--choose <letter>]";
+var USAGE26 = "finitemonkey task diverge [<id>] [--choose <letter>]";
 var load = (ctx, paths, task) => {
   const disk = (relative29) => {
     const text34 = ctx.runtime.readText(toAbsolutePath(join197(paths.root, relative29)));
@@ -67644,7 +67804,7 @@ var ask6 = (ctx, paths, task) => {
   if (mode === "off") return skipped(ctx, task, "off");
   const loaded2 = load(ctx, paths, task);
   if (loaded2 === void 0)
-    return failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE25, { task }));
+    return failureFrom(ctx.t, usageProblem("task_not_found", "error.task_not_found", USAGE26, { task }));
   const examples = loaded2.examples ?? [];
   const why = eligible(loaded2.contract, examples);
   if (why !== void 0) return skipped(ctx, task, why);
@@ -67676,7 +67836,7 @@ var choose = (ctx, paths, task, letter) => {
   const question = state.pending[task];
   const option3 = question?.options.find((item2) => item2.letter === letter.toUpperCase());
   if (question === void 0 || option3 === void 0)
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE25, { task, letter }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "divergence.no_pending", USAGE26, { task, letter }));
   const loaded2 = load(ctx, paths, task);
   if (loaded2?.trusted !== true)
     return failureFrom(ctx.t, needsPersonProblem("examples.untrusted", `fm: trust ${task}`, { task }));
@@ -67690,7 +67850,7 @@ var choose = (ctx, paths, task, letter) => {
   if (!made.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE25, { task, max: MAX_EXAMPLES })
+      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE26, { task, max: MAX_EXAMPLES })
     );
   const decided2 = decideExamples(
     ctx.runtime,
@@ -67702,7 +67862,7 @@ var choose = (ctx, paths, task, letter) => {
   if (!decided2.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "examples.decide_failed", USAGE25, { task, detail: "write" })
+      usageProblem("invalid_arguments", "examples.decide_failed", USAGE26, { task, detail: "write" })
     );
   const rest = Object.fromEntries(Object.entries(state.pending).filter(([key3]) => key3 !== task));
   writePending(ctx.runtime, paths, { ...state, pending: rest });
@@ -67714,7 +67874,7 @@ var choose = (ctx, paths, task, letter) => {
 var taskDivergeCommand = {
   path: ["task", "diverge"],
   summaryKey: "command.task_diverge.summary",
-  usage: USAGE25,
+  usage: USAGE26,
   status: "ready",
   maxPositionals: 1,
   options: { choose: { type: "string" } },
@@ -67724,7 +67884,7 @@ var taskDivergeCommand = {
     const paths = fmPaths(repo.root);
     const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
     if (task === void 0)
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE25)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE26)));
     const letter = stringOption(args2.values, "choose");
     return Promise.resolve(letter === void 0 ? ask6(ctx, paths, task) : choose(ctx, paths, task, letter));
   }
@@ -67824,7 +67984,7 @@ var taskAmendCommand = {
 
 // src/commands/task-examples.ts
 import { join as join198 } from "node:path";
-var USAGE26 = "finitemonkey task examples [<id>] [--says <sentence> --run <cmd> --expect <output> [--input <stdin>]] [--approve E1,E2] [--reject E3]";
+var USAGE27 = "finitemonkey task examples [<id>] [--says <sentence> --run <cmd> --expect <output> [--input <stdin>]] [--approve E1,E2] [--reject E3]";
 var ids3 = (values, name) => {
   const value2 = values[name];
   const raw = Array.isArray(value2) ? value2 : typeof value2 === "string" ? [value2] : [];
@@ -67848,7 +68008,7 @@ var propose = (ctx, paths, task, draft) => {
   if (!made.ok)
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE26, { task, max: MAX_EXAMPLES })
+      usageProblem("invalid_arguments", `examples.${made.error}`, USAGE27, { task, max: MAX_EXAMPLES })
     );
   return {
     ...success({ schema: TASK_SCHEMA, task, example: made.value }, [
@@ -67869,7 +68029,7 @@ var decide5 = (ctx, paths, task, values) => {
   const done2 = decideExamples(ctx.runtime, paths, loaded2.value.contract, decision2, contractHash);
   if (!done2.ok) {
     const detail = done2.error.kind === "unknown" ? done2.error.ids.join(", ") : done2.error.kind;
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.decide_failed", USAGE26, { task, detail }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.decide_failed", USAGE27, { task, detail }));
   }
   return {
     ...listed9(ctx, task, done2.value),
@@ -67882,7 +68042,7 @@ var decide5 = (ctx, paths, task, values) => {
 var taskExamplesCommand = {
   path: ["task", "examples"],
   summaryKey: "command.task_examples.summary",
-  usage: USAGE26,
+  usage: USAGE27,
   status: "ready",
   maxPositionals: 1,
   options: {
@@ -67899,7 +68059,7 @@ var taskExamplesCommand = {
     const paths = fmPaths(repo.root);
     const task = args2.positionals[0] ?? readState(ctx.runtime, paths).active;
     if (task === void 0)
-      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE26)));
+      return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "examples.no_task", USAGE27)));
     if (ids3(args2.values, "approve").length + ids3(args2.values, "reject").length > 0)
       return Promise.resolve(decide5(ctx, paths, task, args2.values));
     const draft = draftOf2(args2.values);
@@ -67986,7 +68146,7 @@ var parseSpec = (text34) => {
 };
 
 // src/commands/task-spec.ts
-var USAGE27 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
+var USAGE28 = "finitemonkey task from-spec <tasks.md> [--id <task id>] [--goal <text>] [--port <n>]";
 var idFrom = (file) => {
   const change2 = /openspec[\\/]changes[\\/]([^\\/]+)[\\/]/.exec(file)?.[1];
   return slugOf(change2 ?? file.replace(/^.*[\\/]/, "").replace(/\.md$/, "")).slice(0, 64);
@@ -68010,7 +68170,7 @@ var portOf = (raw) => {
 var taskFromSpecCommand = {
   path: ["task", "from-spec"],
   summaryKey: "command.task_from_spec.summary",
-  usage: USAGE27,
+  usage: USAGE28,
   status: "ready",
   maxPositionals: 1,
   options: { id: { type: "string" }, goal: { type: "string" }, port: { type: "string" } },
@@ -68021,13 +68181,13 @@ var taskFromSpecCommand = {
     const source3 = file === void 0 ? void 0 : ctx.runtime.readText(toAbsolutePath(file, ctx.cwd));
     if (file === void 0 || source3?.ok !== true)
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE27, { file: file ?? "-" }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.read", USAGE28, { file: file ?? "-" }))
       );
     const criteria2 = criteriaOf(parseSpec(source3.value), portOf(stringOption(args2.values, "port")));
     const id = stringOption(args2.values, "id") ?? idFrom(file);
     if (criteria2.length === 0 || !TASK_ID.test(id))
       return Promise.resolve(
-        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE27, { file }))
+        failureFrom(ctx.t, usageProblem("invalid_arguments", "spec.error.empty", USAGE28, { file }))
       );
     const contract = {
       id,

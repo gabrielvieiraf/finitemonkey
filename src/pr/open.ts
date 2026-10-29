@@ -10,6 +10,7 @@ import { scopeFromContract } from "../merge/scope.js";
 import { registryDir } from "../wt/store.js";
 import { commonDirOf } from "../wt/store.js";
 import { type Acceptance, prBody } from "./checklist.js";
+import { attachProvenance } from "./provenance-attach.js";
 import { type ChangedFile, changedSince, checkScope } from "./scope.js";
 import { restack, stackPlan } from "./stack.js";
 
@@ -173,7 +174,7 @@ export const preparePr = (
     scope.contract === undefined
       ? []
       : (scopeFromContract(runtime, toAbsolutePath(scope.contract, repo.root))?.append ?? []);
-  const body = prBody(runtime, repo.root, {
+  const plain = prBody(runtime, repo.root, {
     userBody: request.body,
     base: base.value,
     baseSha,
@@ -184,6 +185,12 @@ export const preparePr = (
     snapshots: snapshotsFor(runtime, repo.root, branch),
     mergeSummary: mergeSummary(runtime, repo.root, branch),
   });
+  const body = attachProvenance(
+    runtime,
+    repo.root,
+    plain,
+    files.map((file) => file.path),
+  );
   return accept({ repo, branch, base: base.value, baseSha, body, outside: scope.outside, fetched });
 };
 

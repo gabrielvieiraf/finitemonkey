@@ -2489,5 +2489,10 @@
   "drift.indicator.correctionsPerSession": "corrections per session",
   "drift.no_change": "no model or tool version change in the logs",
   "drift.none": "No drift across {days} day buckets of local session logs.",
-  "command.drift.summary": "Compare the agent's behavior in local session logs with your own baseline and name what changed"
+  "command.drift.summary": "Compare the agent's behavior in local session logs with your own baseline and name what changed",
+  "command.pr_provenance.summary": "Print the provenance block built from the ledger, or check that a PR body still matches it",
+  "pr.provenance.match": "The provenance block matches the ledger.",
+  "pr.provenance.missing": "The PR body has no provenance block.",
+  "pr.provenance.edited": "The provenance block differs from what the ledger gives at this commit; it was edited or the ledger changed.",
+  "pr.provenance.unreadable": "Cannot read {file}."
 }

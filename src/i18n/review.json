@@ -2490,7 +2490,12 @@
     "drift.indicator.correctionsPerSession": "machine",
     "drift.no_change": "machine",
     "drift.none": "machine",
-    "command.drift.summary": "machine"
+    "command.drift.summary": "machine",
+    "command.pr_provenance.summary": "machine",
+    "pr.provenance.match": "machine",
+    "pr.provenance.missing": "machine",
+    "pr.provenance.edited": "machine",
+    "pr.provenance.unreadable": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4983,6 +4988,11 @@
     "drift.indicator.correctionsPerSession": "machine",
     "drift.no_change": "machine",
     "drift.none": "machine",
-    "command.drift.summary": "machine"
+    "command.drift.summary": "machine",
+    "command.pr_provenance.summary": "machine",
+    "pr.provenance.match": "machine",
+    "pr.provenance.missing": "machine",
+    "pr.provenance.edited": "machine",
+    "pr.provenance.unreadable": "machine"
   }
 }
