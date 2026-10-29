@@ -2349,5 +2349,10 @@
   "knowledge.arms.row": "{source}: attempts to green with it minus without: {effect} (95% interval {low} to {high}); {cost} tokens injected per task; {active} tasks with it, {off} without",
   "knowledge.arms.row_demoted": "{source} (demoted): attempts to green with it minus without: {effect} (95% interval {low} to {high}); {cost} tokens injected per task; {active} tasks with it, {off} without",
   "knowledge.arms.none": "No knowledge source runs as an experiment; add it under experiments: in policy.yml with the value random.",
-  "knowledge.arms.demoted": "{source} showed no effect beyond the equivalence margin after the configured number of tasks and is no longer injected; delete .finitemonkey/demoted.json to bring it back."
+  "knowledge.arms.demoted": "{source} showed no effect beyond the equivalence margin after the configured number of tasks and is no longer injected; delete .finitemonkey/demoted.json to bring it back.",
+  "command.retrieve.summary": "Answer a question about the project with spans and anchors: grep first, then the map, then BM25 over valid claims and decisions",
+  "knowledge.retrieve.usage": "Give a question or a symbol.",
+  "knowledge.retrieve.off": "retrieve is off in .finitemonkey/policy.yml",
+  "knowledge.retrieve.none": "No step answered within its budget.",
+  "knowledge.retrieve.step": "Answered by {step} ({tokens} tokens):"
 }

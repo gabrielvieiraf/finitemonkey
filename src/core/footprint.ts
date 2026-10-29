@@ -217,7 +217,12 @@ export const FOOTPRINT = [
   {
     id: "knowledge",
     kind: "writes",
-    targets: [".finitemonkey/claims.jsonl", ".finitemonkey/derived.json", ".finitemonkey/demoted.json"],
+    targets: [
+      ".finitemonkey/claims.jsonl",
+      ".finitemonkey/derived.json",
+      ".finitemonkey/demoted.json",
+      ".finitemonkey/retrieve.jsonl",
+    ],
   },
 ] as const satisfies readonly FootprintEntry[];
 

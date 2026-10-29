@@ -2349,5 +2349,10 @@
   "knowledge.arms.row": "{source}: intentos hasta el verde con ella menos sin ella: {effect} (intervalo del 95% de {low} a {high}); {cost} tokens inyectados por tarea; {active} tareas con, {off} sin",
   "knowledge.arms.row_demoted": "{source} (degradada): intentos hasta el verde con ella menos sin ella: {effect} (intervalo del 95% de {low} a {high}); {cost} tokens inyectados por tarea; {active} tareas con, {off} sin",
   "knowledge.arms.none": "Ninguna fuente de conocimiento corre como experimento; agrégala en experiments: de policy.yml con el valor random.",
-  "knowledge.arms.demoted": "{source} no mostró efecto más allá del margen de equivalencia después del número configurado de tareas y ya no se inyecta; borra .finitemonkey/demoted.json para traerla de vuelta."
+  "knowledge.arms.demoted": "{source} no mostró efecto más allá del margen de equivalencia después del número configurado de tareas y ya no se inyecta; borra .finitemonkey/demoted.json para traerla de vuelta.",
+  "command.retrieve.summary": "Responde una pregunta sobre el proyecto con fragmentos y anclas: grep primero, luego el mapa, luego BM25 sobre afirmaciones válidas y decisiones",
+  "knowledge.retrieve.usage": "Pasa una pregunta o un símbolo.",
+  "knowledge.retrieve.off": "retrieve está desactivado en .finitemonkey/policy.yml",
+  "knowledge.retrieve.none": "Ningún escalón respondió dentro de su presupuesto.",
+  "knowledge.retrieve.step": "Respondido por {step} ({tokens} tokens):"
 }

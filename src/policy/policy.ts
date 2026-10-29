@@ -109,6 +109,8 @@ export const OPTIONAL_GUARDS = [
   "derived-cache",
   "memory-quarantine",
   "claim-promotion",
+  "retrieve",
+  "retrieve-deep",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -167,6 +169,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "knowledge-claims",
   "claim-checks",
   "claim-promotion",
+  "retrieve-deep",
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];

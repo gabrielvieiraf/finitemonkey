@@ -95,6 +95,7 @@ import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { researchSourceCommand, researchStatusCommand } from "./research-log.js";
+import { retrieveCommand } from "./retrieve.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
@@ -295,6 +296,7 @@ export const REGISTRY = [
   ...MOD_COMMANDS,
   ...CLAIMS_COMMANDS,
   experimentsReportCommand,
+  retrieveCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

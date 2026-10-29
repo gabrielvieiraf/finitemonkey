@@ -2350,7 +2350,12 @@
     "knowledge.arms.row": "machine",
     "knowledge.arms.row_demoted": "machine",
     "knowledge.arms.none": "machine",
-    "knowledge.arms.demoted": "machine"
+    "knowledge.arms.demoted": "machine",
+    "command.retrieve.summary": "machine",
+    "knowledge.retrieve.usage": "machine",
+    "knowledge.retrieve.off": "machine",
+    "knowledge.retrieve.none": "machine",
+    "knowledge.retrieve.step": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4703,6 +4708,11 @@
     "knowledge.arms.row": "machine",
     "knowledge.arms.row_demoted": "machine",
     "knowledge.arms.none": "machine",
-    "knowledge.arms.demoted": "machine"
+    "knowledge.arms.demoted": "machine",
+    "command.retrieve.summary": "machine",
+    "knowledge.retrieve.usage": "machine",
+    "knowledge.retrieve.off": "machine",
+    "knowledge.retrieve.none": "machine",
+    "knowledge.retrieve.step": "machine"
   }
 }
