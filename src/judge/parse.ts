@@ -15,6 +15,7 @@ import {
   type JudgeEntry,
   oneOf,
   ORIGINS,
+  PROBE_FORMS,
   PROOF_KINDS,
   RESULTS,
   SUPPORT_STATES,
@@ -105,6 +106,7 @@ const supportOf: Parser = (record, base) => {
   const by = oneOf(DECIDERS, record["by"]);
   if (claim === undefined || state === undefined || by === undefined) return undefined;
   const bands = bandsOf(record["bands"]);
+  const anchors = anchorsOf(record["anchors"]);
   return {
     type: "support",
     ...base,
@@ -113,6 +115,7 @@ const supportOf: Parser = (record, base) => {
     by,
     ...optional(record, ["ref", "outcome", "to", "missing"]),
     ...(bands === undefined ? {} : { bands }),
+    ...(anchors.length === 0 ? {} : { anchors }),
   };
 };
 
@@ -159,6 +162,30 @@ const number = (record: JsonObject, key: string): number => {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 };
 
+const probeOf: Parser = (record, base) => {
+  const claim = text(record, "claim");
+  const form = oneOf(PROBE_FORMS, record["form"]);
+  const prompt = text(record, "prompt");
+  const keyHash = text(record, "keyHash");
+  const options = texts(record, "options");
+  const key = number(record, "key");
+  if (claim === undefined || form === undefined || prompt === undefined || keyHash === undefined) return undefined;
+  if (!Number.isInteger(key) || key < 0 || key >= options.length) return undefined;
+  const extra = optional(record, ["decision", "task"]);
+  return {
+    type: "probe",
+    ...base,
+    claim,
+    concepts: texts(record, "concepts"),
+    form,
+    prompt,
+    options,
+    key,
+    keyHash,
+    ...extra,
+  };
+};
+
 const PARSERS: Readonly<Record<string, Parser>> = {
   domain: (record, base) => ({ type: "domain", ...base, ...optional(record, ["parent"]) }),
   concept: conceptOf,
@@ -175,7 +202,14 @@ const PARSERS: Readonly<Record<string, Parser>> = {
     const family = text(record, "family");
     return family === undefined
       ? undefined
-      : { type: "signal", ...base, family, confidence: number(record, "confidence"), state: "shadow" };
+      : {
+          type: "signal",
+          ...base,
+          family,
+          confidence: number(record, "confidence"),
+          state: "shadow",
+          ...optional(record, ["ref"]),
+        };
   },
   event: eventOf,
   item: (record, base) => {
@@ -185,6 +219,7 @@ const PARSERS: Readonly<Record<string, Parser>> = {
     const instructions = number(record, "instructions");
     return { type: "item", ...base, origin, hash, instructions, synthesis: record["synthesis"] === true };
   },
+  probe: probeOf,
   ask: (record, base) => {
     const fields = optional(record, ["task", "decision", "question", "criterion"]);
     const { task, decision, question, criterion } = fields;

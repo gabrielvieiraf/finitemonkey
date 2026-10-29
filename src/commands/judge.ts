@@ -30,14 +30,18 @@ export const refuse = (ctx: Ctx, key: MessageKey, fix: string, detail = ""): Com
 export const VERB_FEATURES: Readonly<Record<string, string>> = {
   concept: "perfil-any-field",
   domain: "perfil-any-field",
+  judge: "xray-research",
+  answer: "xray-research",
+  cut: "xray-research",
 };
+
+export const PERSON_VERBS: readonly string[] = ["contest", "forget", "answer"];
 
 export const switchedOff = (ctx: Ctx, root: string, record: JsonObject): CommandResult | undefined => {
   const verb = typeof record["verb"] === "string" ? record["verb"] : "";
   const paths = fmPaths(toAbsolutePath(root));
-  const off = [JUDGE_FEATURE, VERB_FEATURES[verb] ?? JUDGE_FEATURE].find(
-    (feature) => featureMode(ctx.runtime, paths, feature) === "off",
-  );
+  const wanted = [JUDGE_FEATURE, VERB_FEATURES[verb], record["xray"] === true ? "xray-research" : undefined];
+  const off = wanted.find((feature) => feature !== undefined && featureMode(ctx.runtime, paths, feature) === "off");
   return off === undefined
     ? undefined
     : refuse(ctx, "judge.error.off", `set ${off}: shadow in .finitemonkey/policy.yml`, off);
@@ -110,18 +114,20 @@ export const judgeObserveCommand = judgeCommand({
   }),
 });
 
+export const judgeClassifyCommandBuild: Build = (ctx, values, positionals, root) => {
+  const file = positionals[0];
+  const text = file === undefined ? undefined : readFileAt(ctx, root, file);
+  if (file === undefined || text === undefined) return undefined;
+  return { verb: "classify", file, text, task: stringOption(values, "task"), domain: stringOption(values, "domain") };
+};
+
 export const judgeClassifyCommand = judgeCommand({
   path: ["judge", "classify"],
   summaryKey: "command.judge_classify.summary",
   usage: "finitemonkey judge classify <file> [--task <id>] [--domain <id>]",
   options: { task: { type: "string" }, domain: { type: "string" } },
   maxPositionals: 1,
-  build: (ctx, values, positionals, root) => {
-    const file = positionals[0];
-    const text = file === undefined ? undefined : readFileAt(ctx, root, file);
-    if (file === undefined || text === undefined) return undefined;
-    return { verb: "classify", file, text, task: stringOption(values, "task"), domain: stringOption(values, "domain") };
-  },
+  build: judgeClassifyCommandBuild,
 });
 
 export const judgeVerifyCommand = judgeCommand({
@@ -176,7 +182,7 @@ export const judgeCallCommand: CommandSpec = {
       const parsed = parseJsonObject(raw);
       if (!parsed.ok) return refuse(ctx, "judge.error.usage", "finitemonkey judge call < request.json");
       const verb = parsed.value["verb"];
-      if ((verb === "contest" || verb === "forget") && !isPerson(ctx))
+      if (typeof verb === "string" && PERSON_VERBS.includes(verb) && !isPerson(ctx))
         return refuse(ctx, "judge.error.person", "finitemonkey judge call < request.json");
       return (
         switchedOff(ctx, root, parsed.value) ??

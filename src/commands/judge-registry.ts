@@ -3,6 +3,7 @@ import {
   judgeAskCommand,
   judgeCallCommand,
   judgeClassifyCommand,
+  judgeClassifyCommandBuild,
   judgeCommand,
   judgeHandoffCommand,
   judgeObserveCommand,
@@ -90,6 +91,53 @@ export const judgeDomainCommand = judgeCommand({
   }),
 });
 
+export const judgeXrayCommand = judgeCommand({
+  path: ["judge", "xray"],
+  summaryKey: "command.judge_xray.summary",
+  usage: "finitemonkey judge xray <file> [--task <id>] [--domain <id>]",
+  options: { task: { type: "string" }, domain: { type: "string" } },
+  maxPositionals: 1,
+  build: (ctx, values, positionals, root) => {
+    const record = judgeClassifyCommandBuild(ctx, values, positionals, root);
+    return record === undefined ? undefined : { ...record, xray: true };
+  },
+});
+
+export const judgeThisCommand = judgeCommand({
+  path: ["judge", "mine"],
+  summaryKey: "command.judge_mine.summary",
+  usage: "finitemonkey judge mine <claim> [--decision <id>] [--task <id>]",
+  options: { decision: { type: "string" }, task: { type: "string" } },
+  maxPositionals: 1,
+  build: (_ctx, values, positionals) => ({
+    verb: "judge",
+    claim: positionals[0],
+    decision: stringOption(values, "decision"),
+    task: stringOption(values, "task"),
+  }),
+});
+
+export const judgeAnswerCommand = judgeCommand({
+  path: ["judge", "answer"],
+  summaryKey: "command.judge_answer.summary",
+  usage: "finitemonkey judge answer <probe> <option number>",
+  maxPositionals: 2,
+  person: true,
+  build: (_ctx, _values, positionals) => ({
+    verb: "answer",
+    probe: positionals[0],
+    choice: Number.parseInt(positionals[1] ?? "", 10) - 1,
+  }),
+});
+
+export const judgeCutCommand = judgeCommand({
+  path: ["judge", "cut"],
+  summaryKey: "command.judge_cut.summary",
+  usage: "finitemonkey judge cut <claim>",
+  maxPositionals: 1,
+  build: (_ctx, _values, positionals) => ({ verb: "cut", claim: positionals[0] }),
+});
+
 export const JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -104,4 +152,8 @@ export const JUDGE_COMMANDS = [
   judgeCallCommand,
   judgeConceptCommand,
   judgeDomainCommand,
+  judgeXrayCommand,
+  judgeThisCommand,
+  judgeAnswerCommand,
+  judgeCutCommand,
 ] as const satisfies readonly CommandSpec[];

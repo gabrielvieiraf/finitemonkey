@@ -2705,7 +2705,15 @@
     "command.judge_concept.summary": "machine",
     "command.judge_domain.summary": "machine",
     "judge.domain": "machine",
-    "judge.concept.suggested": "machine"
+    "judge.concept.suggested": "machine",
+    "command.judge_xray.summary": "machine",
+    "command.judge_mine.summary": "machine",
+    "command.judge_answer.summary": "machine",
+    "command.judge_cut.summary": "machine",
+    "judge.row.actions": "machine",
+    "judge.probe.two_spans": "machine",
+    "judge.probe.right": "machine",
+    "judge.probe.wrong": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5413,6 +5421,14 @@
     "command.judge_concept.summary": "machine",
     "command.judge_domain.summary": "machine",
     "judge.domain": "machine",
-    "judge.concept.suggested": "machine"
+    "judge.concept.suggested": "machine",
+    "command.judge_xray.summary": "machine",
+    "command.judge_mine.summary": "machine",
+    "command.judge_answer.summary": "machine",
+    "command.judge_cut.summary": "machine",
+    "judge.row.actions": "machine",
+    "judge.probe.two_spans": "machine",
+    "judge.probe.right": "machine",
+    "judge.probe.wrong": "machine"
   }
 }
