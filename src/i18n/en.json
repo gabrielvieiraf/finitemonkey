@@ -2230,5 +2230,14 @@
   "evolve.history.row": "{id} [{status}] {change}, born on {born}: {reason}.",
   "evolve.history.none": "No policy variants yet.",
   "evolve.error.person_only": "Only the person can revert a policy variant, from a terminal outside Claude Code.",
-  "evolve.reverted": "Variant {id} reverted; the parent policy applies again."
+  "evolve.reverted": "Variant {id} reverted; the parent policy applies again.",
+  "command.calibrate_refit.summary": "Refit the per-repository ask/run/abstain model from ledger labels (runs at Stop in the background)",
+  "command.calibrate_explain.summary": "Show the calibrated state of a task and the inputs behind it",
+  "calibrate.refit": "Calibration refit from {labels} labels ({bad} bad, minimum {min}); decided by {by}.",
+  "calibrate.state.run": "Calibrated state for {task}: {color} (run without asking; decided by {by}).",
+  "calibrate.state.ask": "Calibrated state for {task}: {color} (ask the person before claiming done; decided by {by}).",
+  "calibrate.state.abstain": "Calibrated state for {task}: {color} (abstain: do not claim done here without the person; decided by {by}).",
+  "calibrate.explain.labels": "Labels: {labels} finished tasks, {bad} bad (false done or reverted within 7 days); the model decides from {min}.",
+  "calibrate.explain.input": "Input {name}: {value} (weight {weight})",
+  "calibrate.explain.none": "No open task to explain; name one with calibrate explain <task>."
 }

@@ -2231,7 +2231,16 @@
     "evolve.history.row": "machine",
     "evolve.history.none": "machine",
     "evolve.error.person_only": "machine",
-    "evolve.reverted": "machine"
+    "evolve.reverted": "machine",
+    "command.calibrate_refit.summary": "machine",
+    "command.calibrate_explain.summary": "machine",
+    "calibrate.refit": "machine",
+    "calibrate.state.run": "machine",
+    "calibrate.state.ask": "machine",
+    "calibrate.state.abstain": "machine",
+    "calibrate.explain.labels": "machine",
+    "calibrate.explain.input": "machine",
+    "calibrate.explain.none": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4465,6 +4474,15 @@
     "evolve.history.row": "machine",
     "evolve.history.none": "machine",
     "evolve.error.person_only": "machine",
-    "evolve.reverted": "machine"
+    "evolve.reverted": "machine",
+    "command.calibrate_refit.summary": "machine",
+    "command.calibrate_explain.summary": "machine",
+    "calibrate.refit": "machine",
+    "calibrate.state.run": "machine",
+    "calibrate.state.ask": "machine",
+    "calibrate.state.abstain": "machine",
+    "calibrate.explain.labels": "machine",
+    "calibrate.explain.input": "machine",
+    "calibrate.explain.none": "machine"
   }
 }

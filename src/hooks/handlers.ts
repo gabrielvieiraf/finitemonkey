@@ -1,5 +1,6 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
+import { CALIBRATE_HANDLERS } from "../calibrate/hooks.js";
 import { CLAIMS_HANDLERS } from "../claims/guard.js";
 import { CLARIFY_HANDLERS } from "../clarify/hook.js";
 import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
@@ -227,6 +228,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") },
   { id: "forecast", damage: false, handlers: FORECAST_HANDLERS },
   { id: "evolve", damage: false, handlers: EVOLVE_HANDLERS },
+  { id: "calibrate", damage: false, handlers: CALIBRATE_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

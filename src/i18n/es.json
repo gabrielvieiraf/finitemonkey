@@ -2230,5 +2230,14 @@
   "evolve.history.row": "{id} [{status}] {change}, nació en {born}: {reason}.",
   "evolve.history.none": "Todavía no hay variantes de política.",
   "evolve.error.person_only": "Solo la persona revierte una variante de política, desde una terminal fuera de Claude Code.",
-  "evolve.reverted": "Variante {id} revertida; la política padre vuelve a aplicarse."
+  "evolve.reverted": "Variante {id} revertida; la política padre vuelve a aplicarse.",
+  "command.calibrate_refit.summary": "Reajusta el modelo de preguntar/ejecutar/abstenerse del repositorio a partir de las etiquetas del ledger (corre en Stop en segundo plano)",
+  "command.calibrate_explain.summary": "Muestra el estado calibrado de una tarea y las entradas detrás de él",
+  "calibrate.refit": "Calibración reajustada con {labels} etiquetas ({bad} malas, mínimo {min}); decide: {by}.",
+  "calibrate.state.run": "Estado calibrado de {task}: {color} (ejecutar sin preguntar; decide: {by}).",
+  "calibrate.state.ask": "Estado calibrado de {task}: {color} (preguntar a la persona antes de decir listo; decide: {by}).",
+  "calibrate.state.abstain": "Estado calibrado de {task}: {color} (abstenerse: no decir listo aquí sin la persona; decide: {by}).",
+  "calibrate.explain.labels": "Etiquetas: {labels} tareas terminadas, {bad} malas (falso listo o revertida en 7 días); el modelo decide desde {min}.",
+  "calibrate.explain.input": "Entrada {name}: {value} (peso {weight})",
+  "calibrate.explain.none": "No hay tarea abierta para explicar; indica una con calibrate explain <task>."
 }

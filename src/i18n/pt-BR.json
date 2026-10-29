@@ -2230,5 +2230,14 @@
   "evolve.history.row": "{id} [{status}] {change}, nasceu em {born}: {reason}.",
   "evolve.history.none": "Nenhuma variante de política ainda.",
   "evolve.error.person_only": "Só a pessoa reverte uma variante de política, num terminal fora do Claude Code.",
-  "evolve.reverted": "Variante {id} revertida; a política pai volta a valer."
+  "evolve.reverted": "Variante {id} revertida; a política pai volta a valer.",
+  "command.calibrate_refit.summary": "Reajusta o modelo de perguntar/rodar/abster do repositório a partir dos rótulos do ledger (roda no Stop em segundo plano)",
+  "command.calibrate_explain.summary": "Mostra o estado calibrado de uma tarefa e as entradas por trás dele",
+  "calibrate.refit": "Calibração reajustada com {labels} rótulos ({bad} ruins, mínimo {min}); decide: {by}.",
+  "calibrate.state.run": "Estado calibrado de {task}: {color} (rodar sem perguntar; decide: {by}).",
+  "calibrate.state.ask": "Estado calibrado de {task}: {color} (perguntar à pessoa antes de dizer pronto; decide: {by}).",
+  "calibrate.state.abstain": "Estado calibrado de {task}: {color} (abster: não dizer pronto aqui sem a pessoa; decide: {by}).",
+  "calibrate.explain.labels": "Rótulos: {labels} tarefas terminadas, {bad} ruins (pronto falso ou revertida em 7 dias); o modelo decide a partir de {min}.",
+  "calibrate.explain.input": "Entrada {name}: {value} (peso {weight})",
+  "calibrate.explain.none": "Nenhuma tarefa aberta para explicar; indique uma com calibrate explain <task>."
 }

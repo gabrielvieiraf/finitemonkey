@@ -84,6 +84,7 @@ export const OPTIONAL_GUARDS = [
   "proportionality",
   "forecast",
   "evolve",
+  "calibrate",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -99,6 +100,7 @@ export const POLICY_KEYS: readonly string[] = [
   "quality",
   "alertBudget",
   "evolve",
+  "calibrate",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
@@ -133,6 +135,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "proportionality",
   "forecast",
   "evolve",
+  "calibrate",
 ]);
 
 export const DEFAULT_EVOLVE_MIN_TASKS = 10;
@@ -145,6 +148,33 @@ export interface EvolveConfig {
 const parseEvolve = (tree: ConfigTree): EvolveConfig => {
   const raw = Number(configMap(tree, "evolve")["minTasks"]);
   return { minTasks: Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_EVOLVE_MIN_TASKS };
+};
+
+export const CALIBRATE_KEYS: readonly string[] = ["minLabels", "askAbove", "abstainAbove"];
+
+export interface CalibrateConfig {
+  readonly minLabels: number;
+  readonly askAbove: number;
+  readonly abstainAbove: number;
+}
+
+export const DEFAULT_CALIBRATE: CalibrateConfig = { minLabels: 30, askAbove: 0.25, abstainAbove: 0.6 };
+
+const share = (raw: string | undefined, fallback: number): number => {
+  const value = Number(raw);
+  return raw !== undefined && Number.isFinite(value) && value > 0 && value < 1 ? value : fallback;
+};
+
+const parseCalibrate = (tree: ConfigTree): CalibrateConfig => {
+  const raw = configMap(tree, "calibrate");
+  const min = Number(raw["minLabels"]);
+  const askAbove = share(raw["askAbove"], DEFAULT_CALIBRATE.askAbove);
+  const abstainAbove = share(raw["abstainAbove"], DEFAULT_CALIBRATE.abstainAbove);
+  return {
+    minLabels: Number.isInteger(min) && min > 0 ? min : DEFAULT_CALIBRATE.minLabels,
+    askAbove: Math.min(askAbove, abstainAbove),
+    abstainAbove: Math.max(askAbove, abstainAbove),
+  };
 };
 
 export type GuardMode = (typeof GUARD_MODES)[number];
@@ -169,6 +199,7 @@ export interface Policy {
   readonly alertBudgetSet: readonly string[];
   readonly evolved: Readonly<Record<string, GuardMode>>;
   readonly evolve: EvolveConfig;
+  readonly calibrate: CalibrateConfig;
   readonly issues: readonly PolicyIssue[];
 }
 
@@ -183,6 +214,7 @@ export const DEFAULT_POLICY: Policy = {
   alertBudgetSet: [],
   evolved: {},
   evolve: { minTasks: DEFAULT_EVOLVE_MIN_TASKS },
+  calibrate: DEFAULT_CALIBRATE,
   issues: [],
 };
 
@@ -247,6 +279,7 @@ export const parsePolicy = (text: string): Policy => {
     alertBudgetSet: Object.keys(configMap(tree, "alertBudget")).filter((key) => ALERT_BUDGET_KEYS.includes(key)),
     evolved: {},
     evolve: parseEvolve(tree),
+    calibrate: parseCalibrate(tree),
     issues: [
       ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
       ...Object.keys(configMap(tree, "alertBudget"))
@@ -255,6 +288,9 @@ export const parsePolicy = (text: string): Policy => {
       ...Object.keys(configMap(tree, "evolve"))
         .filter((key) => !EVOLVE_KEYS.includes(key))
         .map((key) => issue("unknown_key", POLICY_FILE, `evolve.${key}`, EVOLVE_KEYS, key)),
+      ...Object.keys(configMap(tree, "calibrate"))
+        .filter((key) => !CALIBRATE_KEYS.includes(key))
+        .map((key) => issue("unknown_key", POLICY_FILE, `calibrate.${key}`, CALIBRATE_KEYS, key)),
       ...guardIssues,
       ...experimentIssues,
     ],

@@ -12,3 +12,10 @@ Each feature reads its mode from `.finitemonkey/policy.yml`, starts in shadow an
 - A promotion is shown once at the next prompt with the numbers and the revert command. `policy history` lists every variant; `policy revert <id>` works only from a terminal outside Claude Code. Lessons learned during a task on a trial variant are quarantined until the person accepts them.
 
 Not covered: reminder sets as a variant target, CI and hidden oracles as the judge (the local signed gate is the judge here), and selection by the performance of descendants. Ten tasks per arm detects only large differences; the numbers are shown, not tested for significance.
+
+## calibrate: when to ask, from local labels
+
+- Inputs, and only these: divergence (the last `task diverge` for the task asked a question), the share of contract criteria marked decorative by mutants, and the share of bad tasks among earlier finished tasks in the same area. No text written by the model is read, and no confidence field in any log line counts.
+- Labels: a finished task is bad when a gate passed and a later gate failed, the task was invalidated, or a commit starting with "Revert" touched its scope within 7 days of its last evidence. Dismissed warnings are not a label yet.
+- Below `calibrate.minLabels` (default 30) the fixed rule decides: ask when the readings diverged, run otherwise. From there a logistic model per repository, fitted on the labels, decides: ask at 0.25 or more, abstain at 0.6 or more (`calibrate.askAbove`, `calibrate.abstainAbove`). All three numbers are initial calibration.
+- `calibrate refit` runs at Stop in the background, at most every 10 minutes, and caches the state of each open task. When the person trusts a contract, the state appears as a color (green run, yellow ask, red abstain), never as a number. `calibrate explain [<task>]` lists the inputs, their weights and the label count.
