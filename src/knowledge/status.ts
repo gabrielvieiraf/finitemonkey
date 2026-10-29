@@ -2,7 +2,7 @@ import type { Anchor, ReadFile } from "./anchor.js";
 import { anchorState, relocate } from "./anchor.js";
 import { type Claim, lastOf } from "./claims.js";
 
-export const CLAIM_STATUSES = ["valid", "stale", "closed", "out"] as const;
+export const CLAIM_STATUSES = ["valid", "stale", "closed", "out", "quarantined"] as const;
 
 export type ClaimStatus = (typeof CLAIM_STATUSES)[number];
 

@@ -3,10 +3,11 @@ import { gitAt } from "../gate/git.js";
 import type { FmPaths } from "../task/paths.js";
 import { diskReader } from "./anchor.js";
 import { type Claim, readClaims } from "./claims.js";
+import { withQuarantine } from "./quarantine.js";
 import { withRetractions } from "./retraction.js";
 import { type ClaimView, evaluateClaim, memoCandidates } from "./status.js";
 
-export type ClaimsRuntime = Pick<Runtime, "readText" | "exec" | "homeDir">;
+export type ClaimsRuntime = Pick<Runtime, "readText" | "exec" | "homeDir" | "listDir">;
 
 export const trackedFiles = (runtime: Pick<Runtime, "exec">, paths: FmPaths): readonly string[] =>
   (gitAt(runtime, paths.root).out(["ls-files", "-z", "--cached", "--others", "--exclude-standard"]) ?? "")
@@ -22,10 +23,14 @@ export const viewsOf = (
     read: diskReader(runtime, paths.root),
     candidates: memoCandidates(() => trackedFiles(runtime, paths)),
   };
-  return withRetractions(
+  return withQuarantine(
     runtime,
     paths,
-    claims.map((claim) => evaluateClaim(claim, options)),
+    withRetractions(
+      runtime,
+      paths,
+      claims.map((claim) => evaluateClaim(claim, options)),
+    ),
   );
 };
 

@@ -2339,5 +2339,10 @@
   "onboard.block.conventions": "Convenções conferidas no gate",
   "knowledge.claims.error.premise": "A premissa {premise} não é uma afirmação registrada, evidência do ledger (<tarefa>:<n>) nem premissa do registro; arestas só apontam para registros, nunca para texto.",
   "knowledge.claims.decision_out": "{subject} caiu: {reason}",
-  "map.edited": "o map.txt foi editado à mão e foi refeito; a edição ficou guardada como afirmação da pessoa: {line}"
+  "map.edited": "o map.txt foi editado à mão e foi refeito; a edição ficou guardada como afirmação da pessoa: {line}",
+  "command.claims_promote.summary": "Promove afirmações em quarentena para o contexto; só uma pessoa no terminal pode fazer isso",
+  "knowledge.claims.promoted": "promovida {id} (origem {origin}): {text}",
+  "knowledge.claims.error.instruction": "Recusado: texto de origem externa com cara de instrução (always, never, ignore, run...) nunca vira conhecimento do projeto.",
+  "knowledge.claims.error.person": "Só uma pessoa no terminal pode promover afirmações.",
+  "knowledge.memory.blocked": "Esta sessão leu saída de {source}; uma escrita na memória com linha em forma de instrução vinda dela foi segurada: \"{line}\". Peça à pessoa para escrever se for dela."
 }

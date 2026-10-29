@@ -2339,5 +2339,10 @@
   "onboard.block.conventions": "Conventions checked at the gate",
   "knowledge.claims.error.premise": "Premise {premise} is not a recorded claim, ledger evidence (<task>:<n>) or assumption; edges only point to records, never to text.",
   "knowledge.claims.decision_out": "{subject} is out: {reason}",
-  "map.edited": "map.txt was edited by hand and was rebuilt; the edit is kept as a claim from the person: {line}"
+  "map.edited": "map.txt was edited by hand and was rebuilt; the edit is kept as a claim from the person: {line}",
+  "command.claims_promote.summary": "Promote quarantined claims into the context; only a person in a terminal can do it",
+  "knowledge.claims.promoted": "promoted {id} (origin {origin}): {text}",
+  "knowledge.claims.error.instruction": "Refused: text from an external origin that reads like an instruction (always, never, ignore, run...) is never stored as project knowledge.",
+  "knowledge.claims.error.person": "Only a person in a terminal can promote claims.",
+  "knowledge.memory.blocked": "This session read {source} output; a memory write with an instruction-shaped line from it is held: \"{line}\". Ask the person to write it if it is theirs."
 }

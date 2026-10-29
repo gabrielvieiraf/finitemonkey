@@ -1,62 +1,22 @@
-import { type CommandArgs, listOption, stringOption } from "../core/args.js";
+import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
-import { usageProblem } from "../core/problem.js";
-import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { success } from "../core/result.js";
 import { gitAt, headSha, treeHash } from "../gate/git.js";
 import { anchorAt, diskReader } from "../knowledge/anchor.js";
 import { asOf } from "../knowledge/asof.js";
-import {
-  appendClaimEvent,
-  type Attribution,
-  type Claim,
-  claimId,
-  type DerivedFrom,
-  ORIGIN_SOURCES,
-  type OriginSource,
-  readClaims,
-} from "../knowledge/claims.js";
-import { outDecisions, parsePremise, premiseExists, settleRetractions } from "../knowledge/retraction.js";
+import { appendClaimEvent, type Claim } from "../knowledge/claims.js";
+import { settlePromotions } from "../knowledge/quarantine.js";
+import { outDecisions, settleRetractions } from "../knowledge/retraction.js";
 import { viewsOf } from "../knowledge/service.js";
-import type { ClaimView } from "../knowledge/status.js";
 import { whyChain } from "../knowledge/why.js";
-import { classifyStatement, isRuleLike } from "../rules/classify.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
+import { claimsAddCommand } from "./claims-add.js";
+import { CLAIMS_SCHEMA, fail, viewLine, withClaim } from "./claims-shared.js";
 import { inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
 
-export const CLAIMS_SCHEMA = "finitemonkey/claims@1";
-
-const ADD_USAGE =
-  'finitemonkey claims add "<text>" --anchor <path>[#<symbol>] [--check "<command>"] [--origin person|agent|external] [--evidence <task>:<n>] [--prompt <at>] [--session <id>]';
-
-const fail = (
-  ctx: Ctx,
-  key:
-    | "knowledge.claims.error.usage"
-    | "knowledge.claims.error.anchor"
-    | "knowledge.claims.error.unknown"
-    | "knowledge.claims.error.premise",
-  usage: string,
-  params = {},
-) => failureFrom(ctx.t, { ...usageProblem("invalid_arguments", key, usage), params });
-
-const viewLine = (ctx: Ctx, view: ClaimView): string =>
-  ctx.t("knowledge.claims.row", {
-    id: view.claim.id,
-    status: `${view.status}, ${ctx.t(view.claim.kind === "check" ? "knowledge.claims.checked" : "knowledge.claims.unverified")}`,
-    text: view.claim.text,
-    where: view.anchors.map((item) => item.anchor.path).join(", "),
-  });
-
-const withClaim = (ctx: Ctx, id: string, run: (paths: FmPaths, claim: Claim) => CommandResult) =>
-  inGuardianRepo(ctx, (root) => {
-    const paths = fmPaths(root);
-    const claim = readClaims(ctx.runtime, paths).find((item) => item.id === id);
-    return claim === undefined
-      ? fail(ctx, "knowledge.claims.error.unknown", "finitemonkey claims list", { id })
-      : run(paths, claim);
-  });
+export { CLAIMS_SCHEMA } from "./claims-shared.js";
 
 export const claimsListCommand: CommandSpec = {
   path: ["claims", "list"],
@@ -68,6 +28,7 @@ export const claimsListCommand: CommandSpec = {
       const paths = fmPaths(root);
       const views = viewsOf(ctx.runtime, paths);
       settleRetractions(ctx.runtime, paths, views);
+      settlePromotions(ctx.runtime, paths, views);
       const decisions = outDecisions(ctx.runtime, paths);
       return success(
         {
@@ -91,101 +52,6 @@ export const claimsListCommand: CommandSpec = {
         ],
       );
     }),
-};
-
-const anchorSpec = (spec: string): { readonly path: string; readonly symbol?: string } => {
-  const [path = "", symbol] = spec.split("#");
-  return { path: path.replace(/^\.\//, ""), ...(symbol === undefined || symbol === "" ? {} : { symbol }) };
-};
-
-const sourceOf = (ctx: Ctx, wanted: string | undefined): OriginSource =>
-  ORIGIN_SOURCES.find((item) => item === wanted) ?? (isPerson(ctx) ? "person" : "agent");
-
-const attributionOf = (source: OriginSource): Attribution =>
-  source === "person" ? "person" : source === "external" ? "tool" : "agent";
-
-const badPremise = (ctx: Ctx, paths: FmPaths, refs: readonly string[]): string | undefined => {
-  const claims = readClaims(ctx.runtime, paths);
-  return refs.find((ref) => {
-    const premise = parsePremise(ref);
-    return premise === undefined || !premiseExists(ctx.runtime, paths, claims, premise);
-  });
-};
-
-const derivedFrom = (values: CommandArgs["values"], commit: string | undefined): DerivedFrom => ({
-  ...(commit === undefined ? {} : { commit }),
-  ...Object.fromEntries(
-    (["session", "evidence", "prompt"] as const).flatMap((key) => {
-      const value = stringOption(values, key);
-      return value === undefined ? [] : [[key, value]];
-    }),
-  ),
-});
-
-export const claimsAddCommand: CommandSpec = {
-  path: ["claims", "add"],
-  summaryKey: "command.claims_add.summary",
-  usage: ADD_USAGE,
-  status: "ready",
-  maxPositionals: 1,
-  options: {
-    anchor: { type: "string", multiple: true },
-    check: { type: "string" },
-    origin: { type: "string" },
-    evidence: { type: "string" },
-    prompt: { type: "string" },
-    session: { type: "string" },
-    because: { type: "string", multiple: true },
-  },
-  run: (ctx, args) => {
-    const text = args.positionals[0]?.trim() ?? "";
-    const specs = listOption(args.values, "anchor").map(anchorSpec);
-    if (text === "" || specs.length === 0) return Promise.resolve(fail(ctx, "knowledge.claims.error.usage", ADD_USAGE));
-    return inGuardianRepo(ctx, (root) => {
-      const paths = fmPaths(root);
-      const read = diskReader(ctx.runtime, root);
-      const anchors = specs.map((spec) => {
-        const content = read(spec.path);
-        return content === undefined ? undefined : anchorAt(content, spec.path, spec.symbol);
-      });
-      const missing = specs.find((_, index) => anchors[index] === undefined);
-      if (missing !== undefined)
-        return fail(ctx, "knowledge.claims.error.anchor", ADD_USAGE, {
-          anchor: missing.symbol === undefined ? missing.path : `${missing.path}#${missing.symbol}`,
-        });
-      const premise = badPremise(ctx, paths, listOption(args.values, "because"));
-      if (premise !== undefined) return fail(ctx, "knowledge.claims.error.premise", ADD_USAGE, { premise });
-      const git = gitAt(ctx.runtime, root);
-      const commit = headSha(git);
-      const tree = treeHash(git);
-      const source = sourceOf(ctx, stringOption(args.values, "origin"));
-      const check = stringOption(args.values, "check");
-      const recordedAt = ctx.runtime.now();
-      const id = claimId(text, recordedAt);
-      appendClaimEvent(ctx.runtime, paths, {
-        event: "add",
-        id,
-        recordedAt,
-        text,
-        kind: check === undefined ? "prose" : "check",
-        ...(check === undefined ? {} : { run: check }),
-        anchors: anchors.flatMap((anchor) => anchor ?? []),
-        origin: {
-          source,
-          attributedTo: attributionOf(source),
-          derivedFrom: derivedFrom(args.values, commit),
-        },
-        because: listOption(args.values, "because"),
-        ...(tree === undefined ? {} : { tree }),
-        ...(commit === undefined ? {} : { commit }),
-      });
-      const shaped = check === undefined && isRuleLike(text) && classifyStatement(text).detector !== undefined;
-      return success({ schema: CLAIMS_SCHEMA, id, suggestRule: shaped }, [
-        ctx.t("knowledge.claims.added", { id }),
-        ...(shaped ? [ctx.t("knowledge.claims.suggest_rule")] : []),
-      ]);
-    });
-  },
 };
 
 export const claimsWhyCommand: CommandSpec = {
@@ -299,6 +165,52 @@ export const claimsCloseCommand: CommandSpec = {
     }),
 };
 
+const PROMOTE_USAGE = "finitemonkey claims promote <id>... | --all";
+
+export const claimsPromoteCommand: CommandSpec = {
+  path: ["claims", "promote"],
+  summaryKey: "command.claims_promote.summary",
+  usage: PROMOTE_USAGE,
+  status: "ready",
+  maxPositionals: 50,
+  options: { all: { type: "boolean" } },
+  run: (ctx, args) => {
+    if (!isPerson(ctx)) return Promise.resolve(fail(ctx, "knowledge.claims.error.person", PROMOTE_USAGE));
+    return inGuardianRepo(ctx, (root) => {
+      const paths = fmPaths(root);
+      const all = args.values["all"] === true;
+      const chosen = viewsOf(ctx.runtime, paths).filter(
+        (view) => view.status === "quarantined" && (all || args.positionals.includes(view.claim.id)),
+      );
+      if (chosen.length === 0) return fail(ctx, "knowledge.claims.error.usage", PROMOTE_USAGE);
+      for (const view of chosen)
+        appendClaimEvent(ctx.runtime, paths, {
+          event: "promote",
+          id: view.claim.id,
+          recordedAt: ctx.runtime.now(),
+          reason: "person",
+        });
+      return success(
+        {
+          schema: CLAIMS_SCHEMA,
+          promoted: chosen.map((view) => ({
+            id: view.claim.id,
+            origin: view.claim.origin.source,
+            text: view.claim.text,
+          })),
+        },
+        chosen.map((view) =>
+          ctx.t("knowledge.claims.promoted", {
+            id: view.claim.id,
+            origin: view.claim.origin.source,
+            text: view.claim.text,
+          }),
+        ),
+      );
+    });
+  },
+};
+
 export const CLAIMS_COMMANDS = [
   claimsListCommand,
   claimsAddCommand,
@@ -306,4 +218,5 @@ export const CLAIMS_COMMANDS = [
   claimsAsofCommand,
   claimsRenewCommand,
   claimsCloseCommand,
+  claimsPromoteCommand,
 ] as const;

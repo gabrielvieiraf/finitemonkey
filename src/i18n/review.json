@@ -2340,7 +2340,12 @@
     "onboard.block.conventions": "machine",
     "knowledge.claims.error.premise": "machine",
     "knowledge.claims.decision_out": "machine",
-    "map.edited": "machine"
+    "map.edited": "machine",
+    "command.claims_promote.summary": "machine",
+    "knowledge.claims.promoted": "machine",
+    "knowledge.claims.error.instruction": "machine",
+    "knowledge.claims.error.person": "machine",
+    "knowledge.memory.blocked": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4683,6 +4688,11 @@
     "onboard.block.conventions": "machine",
     "knowledge.claims.error.premise": "machine",
     "knowledge.claims.decision_out": "machine",
-    "map.edited": "machine"
+    "map.edited": "machine",
+    "command.claims_promote.summary": "machine",
+    "knowledge.claims.promoted": "machine",
+    "knowledge.claims.error.instruction": "machine",
+    "knowledge.claims.error.person": "machine",
+    "knowledge.memory.blocked": "machine"
   }
 }
