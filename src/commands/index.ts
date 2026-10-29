@@ -9,7 +9,6 @@ import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
 import { ciWatchCommand } from "./ci-watch.js";
-import { CLAIMS_COMMANDS } from "./claims.js";
 import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
 import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
@@ -19,7 +18,6 @@ import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
 import { decideAcceptCommand } from "./decide-accept.js";
-import { decideRecordsCommand, decideWhyCommand } from "./decide-records.js";
 import { deployStatusCommand } from "./deploy.js";
 import { deployCheckCommand } from "./deploy-check.js";
 import { deployGenerateCommand } from "./deploy-generate.js";
@@ -30,7 +28,6 @@ import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
 import { dsSyncCommand } from "./ds-sync.js";
 import { evidenceWhyCommand } from "./evidence-why.js";
-import { experimentsReportCommand } from "./experiments.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
@@ -60,7 +57,7 @@ import { infraCommand } from "./infra.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
-import { knowledgeMapCommand } from "./knowledge.js";
+import { KNOWLEDGE_COMMANDS } from "./knowledge-registry.js";
 import {
   learningsAcceptCommand,
   learningsAddCommand,
@@ -97,7 +94,6 @@ import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
 import { researchSourceCommand, researchStatusCommand } from "./research-log.js";
-import { retrieveCommand } from "./retrieve.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
@@ -296,12 +292,7 @@ export const REGISTRY = [
   calibrateRefitCommand,
   calibrateExplainCommand,
   ...MOD_COMMANDS,
-  ...CLAIMS_COMMANDS,
-  experimentsReportCommand,
-  retrieveCommand,
-  decideRecordsCommand,
-  decideWhyCommand,
-  knowledgeMapCommand,
+  ...KNOWLEDGE_COMMANDS,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];
