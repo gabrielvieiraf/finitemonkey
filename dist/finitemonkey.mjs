@@ -62978,6 +62978,26 @@ var xrayLine = (runtime, paths, task) => {
   if (saved?.["task"] !== task || typeof beyond !== "number" || !Array.isArray(items)) return null;
   return { beyondWithoutCriterion: beyond, blocks: items.length };
 };
+var RECENT_WEEKS = 3;
+var blindBandLine = (runtime, paths) => {
+  const log = runtime.readText(paths.log);
+  if (!log.ok || !log.value.includes(HORIZON_EVENT)) return null;
+  const rows2 = blindBand(runtime, paths, log.value).rows;
+  const week = rows2.at(-1)?.week;
+  if (week === void 0) return null;
+  const current2 = rows2.filter((row3) => row3.week === week);
+  const worst4 = [...current2].sort((a, b) => b.withoutCriterion - a.withoutCriterion)[0];
+  if (worst4 === void 0) return null;
+  const recent = rows2.filter((row3) => row3.domain === worst4.domain).slice(-RECENT_WEEKS);
+  return {
+    domain: worst4.domain,
+    week,
+    index: worst4.index,
+    withoutCriterion: worst4.withoutCriterion,
+    helps: worst4.helps,
+    recent: recent.map((row3) => row3.index)
+  };
+};
 var statusOf6 = (runtime, paths) => {
   const gate = readGateStatus(runtime, paths);
   const gateAt = gate?.at ?? null;
@@ -62999,7 +63019,8 @@ var statusOf6 = (runtime, paths) => {
     bypasses: unreviewedBypasses(runtime, paths).length,
     loop: loopOf(runtime, paths),
     cost: costLine(runtime, paths),
-    xray: xrayLine(runtime, paths, report5?.task ?? null)
+    xray: xrayLine(runtime, paths, report5?.task ?? null),
+    blindBand: blindBandLine(runtime, paths)
   };
 };
 

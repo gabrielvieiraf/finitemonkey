@@ -24,6 +24,13 @@ export interface GateView {
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
   readonly xray: { readonly beyond: number; readonly blocks: number } | null;
+  readonly blindBand: {
+    readonly domain: string;
+    readonly index: number;
+    readonly withoutCriterion: number;
+    readonly helps: number;
+    readonly recent: readonly number[];
+  } | null;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -54,6 +61,34 @@ const xrayOf = (value: unknown): GateView["xray"] =>
   isRecord(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number"
     ? { beyond: value["beyondWithoutCriterion"], blocks: value["blocks"] }
     : null;
+
+const numbers = (value: unknown): readonly number[] =>
+  Array.isArray(value) ? value.filter((item): item is number => typeof item === "number") : [];
+
+const blindOf = (value: unknown): GateView["blindBand"] =>
+  isRecord(value) &&
+  typeof value["domain"] === "string" &&
+  typeof value["index"] === "number" &&
+  typeof value["withoutCriterion"] === "number" &&
+  typeof value["helps"] === "number"
+    ? {
+        domain: value["domain"],
+        index: value["index"],
+        withoutCriterion: value["withoutCriterion"],
+        helps: value["helps"],
+        recent: numbers(value["recent"]),
+      }
+    : null;
+
+const SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+
+export const sparkline = (values: readonly number[]): string =>
+  values
+    .map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "")
+    .join("");
+
+export const blindLine = (blind: NonNullable<GateView["blindBand"]>): string =>
+  `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
 
 export const parseStatus = (text: string): GateView | undefined => {
   let parsed: unknown;
@@ -89,6 +124,7 @@ export const parseStatus = (text: string): GateView | undefined => {
     loop: loopOf(data["loop"]),
     cost: costOf(data["cost"]),
     xray: xrayOf(data["xray"]),
+    blindBand: blindOf(data["blindBand"]),
   };
 };
 
@@ -113,6 +149,7 @@ export const bandLine = (view: GateView): string =>
     ...(view.editsSinceGate !== null && view.editsSinceGate > 0
       ? [`evidence ${String(view.editsSinceGate)} edits old`]
       : []),
+    ...(view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)]),
     ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
     ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),
     ...(view.xray === null || view.xray.beyond === 0

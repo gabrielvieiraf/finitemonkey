@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
+import { toAbsolutePath } from "../src/core/brand.js";
 import { bandLine, parseStatus } from "../src/mod/status.js";
+import { recordHorizon } from "../src/signals/blind-band.js";
+import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, NO_PR, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
 import { cli, field } from "./support.js";
 
@@ -38,6 +41,30 @@ describe("finitemonkey status", () => {
     assert.ok(after !== undefined);
     assert.ok(after.notVerified.some((item) => item.id === "tests" && item.reason === "stale"));
     assert.match(bandLine(after), /not verified/);
+  });
+
+  it("puts the blind band index of the week next to the loop index", async () => {
+    const target = makeRepo({ "src/a.js": "export const a = 1;\n", "test/a.test.js": PASSING_TEST });
+    repos.push(target);
+    await cli(["task", "new", "t", "--goal", "g", "--tests", "node --test"], {
+      cwd: target.root,
+      runtime: repoRuntime(),
+    });
+    const runtime = repoRuntime();
+    const paths = fmPaths(toAbsolutePath(target.root));
+    recordHorizon(runtime, paths, { source: "skill", criterion: "none", domain: "backend" });
+    recordHorizon(runtime, paths, { source: "skill", criterion: "example", domain: "backend" });
+    recordHorizon(runtime, paths, { source: "skill", criterion: "example", domain: "security" });
+    const view = parseStatus(await statusJson(target.root));
+    assert.deepEqual(
+      [view?.blindBand?.domain, view?.blindBand?.index, view?.blindBand?.withoutCriterion, view?.blindBand?.helps],
+      ["backend", 0.5, 1, 2],
+    );
+    assert.ok(view !== undefined);
+    assert.match(
+      bandLine({ ...view, loop: { count: 2, limit: 4 } }),
+      /blind band backend 0\.50 ▅ \(1\/2 help without criterion\) · loop 2\/4/,
+    );
   });
 
   it("prints the same facts for people", async () => {

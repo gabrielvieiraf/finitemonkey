@@ -393,6 +393,17 @@ var contractOf = (value) => isRecord4(value) && typeof value["id"] === "string" 
 var loopOf = (value) => isRecord4(value) && typeof value["count"] === "number" && typeof value["limit"] === "number" ? { count: value["count"], limit: value["limit"] } : null;
 var costOf = (value) => isRecord4(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number" ? { usd: value["usd"], requests: value["requests"] } : null;
 var xrayOf = (value) => isRecord4(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number" ? { beyond: value["beyondWithoutCriterion"], blocks: value["blocks"] } : null;
+var numbers = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "number") : [];
+var blindOf = (value) => isRecord4(value) && typeof value["domain"] === "string" && typeof value["index"] === "number" && typeof value["withoutCriterion"] === "number" && typeof value["helps"] === "number" ? {
+  domain: value["domain"],
+  index: value["index"],
+  withoutCriterion: value["withoutCriterion"],
+  helps: value["helps"],
+  recent: numbers(value["recent"])
+} : null;
+var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
+var blindLine = (blind) => `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
 var parseStatus = (text4) => {
   let parsed;
   try {
@@ -426,7 +437,8 @@ var parseStatus = (text4) => {
     bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
     loop: loopOf(data["loop"]),
     cost: costOf(data["cost"]),
-    xray: xrayOf(data["xray"])
+    xray: xrayOf(data["xray"]),
+    blindBand: blindOf(data["blindBand"])
   };
 };
 var MARK = {
@@ -444,6 +456,7 @@ var bandLine = (view) => [
   ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : [],
   ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`],
   ...view.editsSinceGate !== null && view.editsSinceGate > 0 ? [`evidence ${String(view.editsSinceGate)} edits old`] : [],
+  ...view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)],
   ...view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`],
   ...view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`],
   ...view.xray === null || view.xray.beyond === 0 ? [] : [`x-ray ${String(view.xray.beyond)} beyond the record without criterion`]

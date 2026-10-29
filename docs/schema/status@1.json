@@ -250,6 +250,47 @@
           ]
         }
       ]
+    },
+    "blindBand": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string"
+            },
+            "week": {
+              "type": "string"
+            },
+            "index": {
+              "type": "number"
+            },
+            "withoutCriterion": {
+              "type": "number"
+            },
+            "helps": {
+              "type": "number"
+            },
+            "recent": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "required": [
+            "domain",
+            "week",
+            "index",
+            "withoutCriterion",
+            "helps",
+            "recent"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -267,6 +308,7 @@
     "bypasses",
     "loop",
     "cost",
-    "xray"
+    "xray",
+    "blindBand"
   ]
 }

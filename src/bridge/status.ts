@@ -11,6 +11,7 @@ import { unreviewedBypasses } from "../guards/bypass/ledger.js";
 import { isMuted, readBudget } from "../policy/budget.js";
 import { featureMode } from "../policy/feature.js";
 import { loadPolicy } from "../policy/policy.js";
+import { blindBand, HORIZON_EVENT } from "../signals/blind-band.js";
 import { FOURTH_ATTEMPT_GUARD } from "../signals/fourth.js";
 import { readEntries, readIndexFile, readProfile, recordOf, signalFiles } from "../signals/store.js";
 import { type GateLight, gateLight } from "../statusline/gate-state.js";
@@ -58,6 +59,14 @@ export interface StatusData {
   readonly loop: { readonly count: number; readonly limit: number } | null;
   readonly cost: { readonly usd: number; readonly requests: number } | null;
   readonly xray: { readonly beyondWithoutCriterion: number; readonly blocks: number } | null;
+  readonly blindBand: {
+    readonly domain: string;
+    readonly week: string;
+    readonly index: number;
+    readonly withoutCriterion: number;
+    readonly helps: number;
+    readonly recent: readonly number[];
+  } | null;
 }
 
 const verifyOf = (item: ReportItem): string => item.command ?? GATE_COMMAND;
@@ -136,6 +145,28 @@ const xrayLine = (runtime: Runtime, paths: FmPaths, task: string | null): Status
   return { beyondWithoutCriterion: beyond, blocks: items.length };
 };
 
+const RECENT_WEEKS = 3;
+
+const blindBandLine = (runtime: Runtime, paths: FmPaths): StatusData["blindBand"] => {
+  const log = runtime.readText(paths.log);
+  if (!log.ok || !log.value.includes(HORIZON_EVENT)) return null;
+  const rows = blindBand(runtime, paths, log.value).rows;
+  const week = rows.at(-1)?.week;
+  if (week === undefined) return null;
+  const current = rows.filter((row) => row.week === week);
+  const worst = [...current].sort((a, b) => b.withoutCriterion - a.withoutCriterion)[0];
+  if (worst === undefined) return null;
+  const recent = rows.filter((row) => row.domain === worst.domain).slice(-RECENT_WEEKS);
+  return {
+    domain: worst.domain,
+    week,
+    index: worst.index,
+    withoutCriterion: worst.withoutCriterion,
+    helps: worst.helps,
+    recent: recent.map((row) => row.index),
+  };
+};
+
 export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
   const gate = readGateStatus(runtime, paths);
   const gateAt = gate?.at ?? null;
@@ -158,5 +189,6 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     loop: loopOf(runtime, paths),
     cost: costLine(runtime, paths),
     xray: xrayLine(runtime, paths, report?.task ?? null),
+    blindBand: blindBandLine(runtime, paths),
   };
 };
