@@ -2460,5 +2460,6 @@
   "approve.reversal.none": "não dá para desfazer",
   "approve.reversal.unknown": "não se sabe se dá para desfazer",
   "approve.line.short": "{effect}; {reversal}",
-  "approve.line.long": "Este comando: {effect}. Desfazer: {reversal}. Se não era isso que você esperava, negue e pergunte para que serve."
+  "approve.line.long": "Este comando: {effect}. Desfazer: {reversal}. Se não era isso que você esperava, negue e pergunte para que serve.",
+  "premise.notice": "concordou sem checar: o agente aceitou sua afirmação sobre o código sem ler o código nem rodar nada (referências: {refs}). Peça para ele mostrar onde olhou."
 }

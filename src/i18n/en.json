@@ -2460,5 +2460,6 @@
   "approve.reversal.none": "not undoable",
   "approve.reversal.unknown": "undo unknown",
   "approve.line.short": "{effect}; {reversal}",
-  "approve.line.long": "This command: {effect}. Undo: {reversal}. If that is not what you expected, deny it and ask what it is for."
+  "approve.line.long": "This command: {effect}. Undo: {reversal}. If that is not what you expected, deny it and ask what it is for.",
+  "premise.notice": "agreed without checking: the agent accepted your statement about the code without reading it or running anything (references: {refs}). Ask it to show where it looked."
 }

@@ -2460,5 +2460,6 @@
   "approve.reversal.none": "no se puede deshacer",
   "approve.reversal.unknown": "no se sabe si se puede deshacer",
   "approve.line.short": "{effect}; {reversal}",
-  "approve.line.long": "Este comando: {effect}. Deshacer: {reversal}. Si no es lo que esperabas, recházalo y pregunta para qué sirve."
+  "approve.line.long": "Este comando: {effect}. Deshacer: {reversal}. Si no es lo que esperabas, recházalo y pregunta para qué sirve.",
+  "premise.notice": "aceptó sin comprobar: el agente aceptó tu afirmación sobre el código sin leerlo ni ejecutar nada (referencias: {refs}). Pídele que muestre dónde miró."
 }

@@ -36,6 +36,7 @@ import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
+import { PREMISE_FEATURE, PREMISE_HANDLERS } from "../premise/hook.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
@@ -247,6 +248,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
   { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
+  { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

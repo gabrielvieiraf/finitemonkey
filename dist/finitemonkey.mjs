@@ -1883,12 +1883,12 @@ var layerOf = (value2, index, issues2) => {
   const name = text3(value2, "name", at6, issues2);
   const paths = texts(value2["paths"], `${at6}.paths`, issues2) ?? [];
   if (paths.length === 0) issues2.push(`${at6}.paths: list at least one glob`);
-  const allow24 = texts(value2["allow"], `${at6}.allow`, issues2);
+  const allow25 = texts(value2["allow"], `${at6}.allow`, issues2);
   const exposed = texts(value2["public"], `${at6}.public`, issues2);
   return {
     name,
     paths,
-    ...allow24 === void 0 ? {} : { allow: allow24 },
+    ...allow25 === void 0 ? {} : { allow: allow25 },
     ...exposed === void 0 ? {} : { public: exposed }
   };
 };
@@ -6161,7 +6161,8 @@ var OPTIONAL_GUARDS = [
   "cochange",
   "test-budget",
   "red-green",
-  "explain-approval"
+  "explain-approval",
+  "premise-check"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -6230,7 +6231,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "cochange",
   "test-budget",
   "red-green",
-  "explain-approval"
+  "explain-approval",
+  "premise-check"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -9131,7 +9133,8 @@ var en_default = {
   "approve.reversal.none": "not undoable",
   "approve.reversal.unknown": "undo unknown",
   "approve.line.short": "{effect}; {reversal}",
-  "approve.line.long": "This command: {effect}. Undo: {reversal}. If that is not what you expected, deny it and ask what it is for."
+  "approve.line.long": "This command: {effect}. Undo: {reversal}. If that is not what you expected, deny it and ask what it is for.",
+  "premise.notice": "agreed without checking: the agent accepted your statement about the code without reading it or running anything (references: {refs}). Ask it to show where it looked."
 };
 
 // src/i18n/es.json
@@ -11597,7 +11600,8 @@ var es_default = {
   "approve.reversal.none": "no se puede deshacer",
   "approve.reversal.unknown": "no se sabe si se puede deshacer",
   "approve.line.short": "{effect}; {reversal}",
-  "approve.line.long": "Este comando: {effect}. Deshacer: {reversal}. Si no es lo que esperabas, recházalo y pregunta para qué sirve."
+  "approve.line.long": "Este comando: {effect}. Deshacer: {reversal}. Si no es lo que esperabas, recházalo y pregunta para qué sirve.",
+  "premise.notice": "aceptó sin comprobar: el agente aceptó tu afirmación sobre el código sin leerlo ni ejecutar nada (referencias: {refs}). Pídele que muestre dónde miró."
 };
 
 // src/i18n/pt-BR.json
@@ -14063,7 +14067,8 @@ var pt_BR_default = {
   "approve.reversal.none": "não dá para desfazer",
   "approve.reversal.unknown": "não se sabe se dá para desfazer",
   "approve.line.short": "{effect}; {reversal}",
-  "approve.line.long": "Este comando: {effect}. Desfazer: {reversal}. Se não era isso que você esperava, negue e pergunte para que serve."
+  "approve.line.long": "Este comando: {effect}. Desfazer: {reversal}. Se não era isso que você esperava, negue e pergunte para que serve.",
+  "premise.notice": "concordou sem checar: o agente aceitou sua afirmação sobre o código sem ler o código nem rodar nada (referências: {refs}). Peça para ele mostrar onde olhou."
 };
 
 // src/i18n/review.json
@@ -16530,7 +16535,8 @@ var review_default = {
     "approve.reversal.none": "machine",
     "approve.reversal.unknown": "machine",
     "approve.line.short": "machine",
-    "approve.line.long": "machine"
+    "approve.line.long": "machine",
+    "premise.notice": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -18994,7 +19000,8 @@ var review_default = {
     "approve.reversal.none": "machine",
     "approve.reversal.unknown": "machine",
     "approve.line.short": "machine",
-    "approve.line.long": "machine"
+    "approve.line.long": "machine",
+    "premise.notice": "machine"
   }
 };
 
@@ -23789,22 +23796,22 @@ var costCheckCommand = {
   usage: "finitemonkey cost check",
   status: "ready",
   run: (ctx) => inRepo2(ctx, (root) => {
-    const checked = checkCost(ctx.runtime, root);
-    const data2 = { schema: COST_SCHEMA, ...checked };
-    if (checked.issues.length === 0)
-      return success(data2, [ctx.t("cost.clean", { count: checked.files, days: checked.validityDays })]);
+    const checked2 = checkCost(ctx.runtime, root);
+    const data2 = { schema: COST_SCHEMA, ...checked2 };
+    if (checked2.issues.length === 0)
+      return success(data2, [ctx.t("cost.clean", { count: checked2.files, days: checked2.validityDays })]);
     return failureFrom(
       ctx.t,
       {
         code: "cost_check_failed",
         messageKey: "cost.error.check",
-        params: { count: checked.issues.length },
+        params: { count: checked2.issues.length },
         fix: "add the source and date of each FACT row, refresh expired prices, then rerun the cost model script",
         exitCode: ExitCode.CheckFailed,
         data: data2
       },
-      checked.issues.map(
-        (item2) => `  ${item2.file}:${String(item2.line)} ${ctx.t(`cost.issue.${item2.kind}`, { detail: item2.detail, days: checked.validityDays })}`
+      checked2.issues.map(
+        (item2) => `  ${item2.file}:${String(item2.line)} ${ctx.t(`cost.issue.${item2.kind}`, { detail: item2.detail, days: checked2.validityDays })}`
       )
     );
   })
@@ -24258,8 +24265,8 @@ var findingLines = (t, settled) => GROUP_ORDER.flatMap((group) => {
     )
   ];
 });
-var tableLines = (t, checked, ledger) => {
-  const rows2 = checked.filter((item2) => item2.finding.group === "must");
+var tableLines = (t, checked2, ledger) => {
+  const rows2 = checked2.filter((item2) => item2.finding.group === "must");
   if (rows2.length === 0) return [];
   const last = (id, side) => ledger.filter((row3) => row3.finding === id && row3.side === side).at(-1);
   return [
@@ -24271,14 +24278,14 @@ var tableLines = (t, checked, ledger) => {
     )
   ];
 };
-var critiqueLines = (t, critique, checked, ledger) => {
-  const settled = checked.map(settle);
+var critiqueLines = (t, critique, checked2, ledger) => {
+  const settled = checked2.map(settle);
   const demoted = critique.findings.filter((finding6) => finding6.demoted);
   const decisions = settled.filter((item2) => item2.decisionNeeded);
   return [
     `# ${t("critique.title")}`,
     ...findingLines(t, settled),
-    ...tableLines(t, checked, ledger),
+    ...tableLines(t, checked2, ledger),
     ...demoted.map((finding6) => t("critique.demoted", { id: finding6.id })),
     ...decisions.map((item2) => t("critique.decision", { id: item2.finding.id, what: item2.finding.what })),
     "",
@@ -24314,15 +24321,15 @@ var critiqueVerifyCommand = {
       );
     const base = stringOption(args2.values, "base") ?? repoFacts(ctx.runtime, repo).defaultBranch();
     const head = ctx.runtime.git(["rev-parse", "HEAD"], repo.root).stdout.trim();
-    const checked = reproduce(ctx.runtime, repo.root, { base, head }, critique.findings);
-    const human2 = critiqueLines(ctx.t, critique, checked, readLedger3(ctx.runtime, repo.root));
-    const confirmed = checked.map(settle).filter((item2) => item2.group === "must").length;
+    const checked2 = reproduce(ctx.runtime, repo.root, { base, head }, critique.findings);
+    const human2 = critiqueLines(ctx.t, critique, checked2, readLedger3(ctx.runtime, repo.root));
+    const confirmed = checked2.map(settle).filter((item2) => item2.group === "must").length;
     const data2 = {
       schema: CRITIQUE_SCHEMA,
       verdict: critique.verdict,
       base,
       head,
-      checked: checked.map((item2) => ({ ...item2, settled: settle(item2).group }))
+      checked: checked2.map((item2) => ({ ...item2, settled: settle(item2).group }))
     };
     if (confirmed === 0) return success(data2, human2);
     return failureFrom(
@@ -26070,21 +26077,21 @@ var decideCheckCommand = {
   maxPositionals: 1,
   run: (ctx, args2) => inRepo4(ctx, (root) => {
     const only3 = args2.positionals[0] === void 0 ? void 0 : baseName2(args2.positionals[0]);
-    const checked = checkDecisions(ctx.runtime, root, only3);
+    const checked2 = checkDecisions(ctx.runtime, root, only3);
     exportDecisionAssumptions(ctx.runtime, fmPaths(root));
-    const data2 = { schema: DECISION_SCHEMA, ...checked };
-    if (checked.issues.length === 0) return success(data2, [ctx.t("decision.clean", { count: checked.records })]);
+    const data2 = { schema: DECISION_SCHEMA, ...checked2 };
+    if (checked2.issues.length === 0) return success(data2, [ctx.t("decision.clean", { count: checked2.records })]);
     return failureFrom(
       ctx.t,
       {
         code: "decision_invalid",
         messageKey: "decision.error.invalid",
-        params: { count: checked.issues.length },
+        params: { count: checked2.issues.length },
         fix: "fill or reorder the sections listed, then run finitemonkey decide check again",
         exitCode: ExitCode.CheckFailed,
         data: data2
       },
-      checked.issues.map((item2) => `  ${decisionLine(ctx, item2)}`)
+      checked2.issues.map((item2) => `  ${decisionLine(ctx, item2)}`)
     );
   })
 };
@@ -34593,12 +34600,12 @@ var compareRan = (input) => {
   if (!stored.ok) return { kind: "allow" };
   input.runtime.remove(checkedPath(paths, id));
   const parsed = parseJsonObject(stored.value);
-  const checked = parsed.ok ? optionalString(parsed.value, "command") : void 0;
+  const checked2 = parsed.ok ? optionalString(parsed.value, "command") : void 0;
   const ran = commandOf3(input) ?? "";
-  if (checked === void 0 || same(checked, ran)) return { kind: "allow" };
+  if (checked2 === void 0 || same(checked2, ran)) return { kind: "allow" };
   const record13 = {
     tool: toolName2(input.payload),
-    checked: maskText(checked),
+    checked: maskText(checked2),
     ran: maskText(ran),
     sessionId: input.payload.sessionId ?? null
   };
@@ -43296,9 +43303,9 @@ var summaryEntry = (prepared, ledger, freshness, scripts2) => {
 };
 var evaluate = (options2, prepared, registry, fast) => {
   const path = prepared.ctx.paths.evidence(prepared.ctx.contract.id);
-  const checked = readLedgerChecked(options2.runtime, path);
-  const before2 = checked.entries;
-  const { tampered } = checked;
+  const checked2 = readLedgerChecked(options2.runtime, path);
+  const before2 = checked2.entries;
+  const { tampered } = checked2;
   if (tampered > 0) logEvent(options2.runtime, prepared.ctx.paths, "ledger_tampered", { lines: tampered });
   const freshness = freshnessFor(prepared.ctx);
   const scripts2 = scriptsDigest(options2.runtime, prepared.ctx.paths.root);
@@ -48452,6 +48459,124 @@ var refreshBar = (input) => {
 var PLANTA_HANDLERS = { Stop: [refreshBar] };
 var LABEL_HANDLERS = { Stop: [labelGuard] };
 
+// src/premise/hook.ts
+import { basename as basename10 } from "node:path";
+
+// src/premise/detect.ts
+var TEXT_MAX = 200;
+var PREFERENCE = [
+  /\b(?:i(?:'d)? (?:prefer|like|want|would rather)|let's|please (?:use|keep|call|name)|rather than)\b/i,
+  /(?<![\p{L}])(?:prefiro|prefere|gosto mais|gostaria|quero que|vamos usar|melhor usar)(?![\p{L}])/iu,
+  /(?<![\p{L}])(?:prefiero|me gusta m[áa]s|quiero que|mejor usar|usemos)(?![\p{L}])/iu
+];
+var CORRECTION2 = [
+  /^(?:no[,.!]|nope\b|that(?:'s| is) (?:wrong|not right|incorrect)|you(?:'re| are) wrong|actually,)/i,
+  /^(?:n[ãa]o[,.!]|isso (?:est[áa] )?errado|voc[êe] (?:est[áa] )?errad[oa]|na verdade,)/iu,
+  /^(?:no[,.!]|eso (?:est[áa] )?mal|est[áa]s equivocad[oa]|en realidad,)/iu
+];
+var FACT4 = [
+  /\b(?:already (?:handles?|does|checks?|exists?|returns?|covers?|validates?)|(?:is|are) (?:wrong|broken|unused|dead code|not used|never called)|(?:isn't|aren't|is not|are not) used|we (?:don't|do not|never) use|(?:doesn't|does not|don't|do not) (?:exist|handle|return|call)|always returns?|never (?:called|used|returns?))\b/i,
+  /(?<![\p{L}])(?:j[áa] (?:trata|faz|verifica|existe|retorna|cobre|valida)|(?:est[áa]|est[ãa]o) errad[oa]s?|n[ãa]o (?:usamos|existe|trata|retorna|chama|[ée] usad[oa])|nunca [ée] chamad[oa]|sempre retorna)(?![\p{L}])/iu,
+  /(?<![\p{L}])(?:ya (?:maneja|hace|verifica|existe|devuelve|cubre|valida)|(?:est[áa]|est[áa]n) mal|no (?:usamos|existe|maneja|devuelve|llama|se usa)|nunca se llama|siempre devuelve)(?![\p{L}])/iu
+];
+var CODE_WORDS = /\b(?:function|method|class|test|tests|table|column|file|module|endpoint|route|variable|field|type|query|schema|hook|component)s?\b|(?<![\p{L}])(?:fun[çc][ãa]o|m[ée]todo|classe|teste|tabela|coluna|arquivo|m[óo]dulo|rota|vari[áa]vel|campo|funci[óo]n|clase|prueba|tabla|archivo|ruta)s?(?![\p{L}])/iu;
+var PATH2 = /(?:^|[\s"'(`])((?:[\w.-]+\/)*[\w.-]+\.(?:[a-z]{1,5}))(?=$|[\s"'),:;`?!]|\.\s)/gi;
+var SYMBOL = /`([^`\s]{2,80})`/g;
+var referencesIn = (text34) => {
+  const paths = [...text34.matchAll(PATH2)].map((match) => match[1] ?? "");
+  const symbols = [...text34.matchAll(SYMBOL)].map((match) => match[1] ?? "");
+  return [...new Set([...paths, ...symbols].filter((ref2) => ref2 !== "" && !/^\d+(?:\.\d+)*$/.test(ref2)))];
+};
+var kindOf3 = (text34) => {
+  if (FACT4.some((pattern) => pattern.test(text34))) return "fact";
+  return CORRECTION2.some((pattern) => pattern.test(text34.trim())) ? "correction" : void 0;
+};
+var premiseIn = (prompt) => {
+  const text34 = prompt.trim();
+  if (text34 === "" || PREFERENCE.some((pattern) => pattern.test(text34))) return void 0;
+  const kind = kindOf3(text34);
+  if (kind === void 0) return void 0;
+  const refs = referencesIn(text34);
+  if (refs.length === 0 && !CODE_WORDS.test(text34)) return void 0;
+  return { kind, text: text34.slice(0, TEXT_MAX), refs };
+};
+var AGREEMENT = [
+  /\byou(?:'re| are) (?:absolutely |completely |totally )?(?:right|correct)\b|\bgood catch\b|\bmy (?:mistake|bad)\b|\bi stand corrected\b/i,
+  /(?<![\p{L}])(?:voc[êe] (?:tem|est[áa] com) (?:toda (?:a )?)?raz[ãa]o|tem raz[ãa]o|bem observado|erro meu|est[áa] cert[oa])(?![\p{L}])/iu,
+  /(?<![\p{L}])(?:tienes (?:toda la )?raz[óo]n|buena observaci[óo]n|error m[íi]o|est[áa]s en lo cierto)(?![\p{L}])/iu
+];
+var agrees = (message) => AGREEMENT.some((pattern) => pattern.test(message));
+
+// src/premise/hook.ts
+var PREMISE_FEATURE = "premise-check";
+var PENDING_FILE3 = "premise.json";
+var READ_TOOLS = /* @__PURE__ */ new Set(["Read", "Grep", "Glob", "LS", "NotebookRead"]);
+var RUN_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
+var allow14 = { kind: "allow" };
+var register2 = (input, paths, premise) => {
+  const list10 = readAssumptions(input.runtime, paths);
+  const item2 = {
+    id: nextAssumptionId(list10),
+    text: premise.text,
+    source: "premise",
+    impact: "low",
+    breaks: "",
+    confidence: "low",
+    verify: premise.refs.join(", "),
+    status: "unverified",
+    at: input.runtime.now()
+  };
+  writeAssumptions(input.runtime, paths, [...list10, item2]);
+};
+var premiseOnPrompt = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  const premise = comesFromPerson(prompt) ? premiseIn(prompt) : void 0;
+  const paths = projectPaths(input);
+  if (premise === void 0 || paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow14;
+  const session = input.payload.sessionId ?? "";
+  writeJsonFile(input.runtime, paths.cache(PENDING_FILE3), { session, kind: premise.kind, refs: [...premise.refs] });
+  logEvent(input.runtime, paths, "premise.detected", { kind: premise.kind, refs: premise.refs.length });
+  if (featureMode(input.runtime, paths, PREMISE_FEATURE) === "active") register2(input, paths, premise);
+  return allow14;
+};
+var pendingOf = (input, paths) => {
+  const raw = readJsonFile(input.runtime, paths.cache(PENDING_FILE3));
+  const session = raw === void 0 ? void 0 : optionalString(raw, "session");
+  if (raw === void 0 || session !== (input.payload.sessionId ?? "")) return void 0;
+  const refs = Array.isArray(raw["refs"]) ? raw["refs"].filter((ref2) => typeof ref2 === "string") : [];
+  return { session, kind: optionalString(raw, "kind") ?? "fact", refs };
+};
+var touches2 = (tool, refs) => {
+  const values = Object.values(tool.input).filter((value2) => typeof value2 === "string");
+  return refs.some((ref2) => values.some((value2) => value2.includes(ref2) || value2.includes(basename10(ref2))));
+};
+var checked = (tools, refs) => tools.some(
+  (tool) => RUN_TOOLS.has(tool.name) || READ_TOOLS.has(tool.name) && (refs.length === 0 || touches2(tool, refs))
+);
+var turnTools = (input) => {
+  const file = textField(input.payload.raw, "transcript_path");
+  if (file === void 0 || file === "") return [];
+  const text34 = input.runtime.readText(toAbsolutePath(file));
+  return text34.ok ? parseTranscript(text34.value).at(-1)?.tools ?? [] : [];
+};
+var premiseOnStop = (input) => {
+  const paths = projectPaths(input);
+  const pending = paths === void 0 ? void 0 : pendingOf(input, paths);
+  if (paths === void 0 || pending === void 0 || input.payload.stopHookActive) return allow14;
+  input.runtime.remove(paths.cache(PENDING_FILE3));
+  const agreed = agrees(textField(input.payload.raw, "last_assistant_message") ?? "");
+  const evidence = checked(turnTools(input), pending.refs);
+  logEvent(input.runtime, paths, "premise.checked", { kind: pending.kind, agreed, evidence });
+  if (!agreed || evidence) return allow14;
+  if (featureMode(input.runtime, paths, PREMISE_FEATURE) !== "active") {
+    recordFeatureShadow(input.runtime, paths, PREMISE_FEATURE, { kind: pending.kind, refs: pending.refs.length });
+    return allow14;
+  }
+  const refs = pending.refs.length === 0 ? "-" : pending.refs.join(", ");
+  return { kind: "allow", output: { systemMessage: human(input.t("premise.notice", { refs })) } };
+};
+var PREMISE_HANDLERS = { UserPromptSubmit: [premiseOnPrompt], Stop: [premiseOnStop] };
+
 // src/prose/marker-guard.ts
 import { relative as relative16 } from "node:path";
 
@@ -49488,7 +49613,7 @@ var writeReuseLog = (runtime, paths, log) => {
 };
 
 // src/reuse/hook.ts
-var allow14 = { kind: "allow" };
+var allow15 = { kind: "allow" };
 var WRITERS8 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
 var candidates3 = (raw) => {
   const input = toolInput(raw);
@@ -49510,17 +49635,17 @@ var resolve3 = (input, paths, log, finish5) => {
 };
 var warn = (input, paths, file, log) => {
   const names3 = candidates3(input.payload.raw);
-  if (log.retired || names3.length === 0) return allow14;
+  if (log.retired || names3.length === 0) return allow15;
   const index = projectDefinitions(input.runtime, paths.root);
   if (index.kind === "failed") {
     logEvent(input.runtime, paths, "reuse.failed", { detail: index.detail });
-    return allow14;
+    return allow15;
   }
   const found = names3.flatMap((name) => {
     const match = elsewhere(index.definitions, name, file);
     return match === void 0 ? [] : [{ name, match }];
   });
-  if (found.length === 0) return allow14;
+  if (found.length === 0) return allow15;
   const start2 = log.warnings.reduce((max, item2) => Math.max(max, item2.id), 0);
   const added = found.map(({ name, match }, offset) => ({
     id: start2 + offset + 1,
@@ -49550,13 +49675,13 @@ var failedOpen = (input, error) => {
   if (paths !== void 0) {
     logEvent(input.runtime, paths, "reuse.failed", { detail: error instanceof Error ? error.message : String(error) });
   }
-  return allow14;
+  return allow15;
 };
 var reuseWarning = (input) => {
   try {
     const paths = projectPaths(input);
     const file = paths === void 0 ? void 0 : changedFile(input, paths);
-    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow14;
+    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow15;
     const log = resolve3(input, paths, readReuseLog(input.runtime, paths), (warning) => warning.file === file);
     writeReuseLog(input.runtime, paths, log);
     return warn(input, paths, file, log);
@@ -49567,16 +49692,16 @@ var reuseWarning = (input) => {
 var reuseOutcomes = (input) => {
   try {
     const paths = projectPaths(input);
-    if (paths === void 0) return allow14;
+    if (paths === void 0) return allow15;
     const log = readReuseLog(input.runtime, paths);
-    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow14;
+    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow15;
     const session = input.payload.sessionId ?? "";
     writeReuseLog(
       input.runtime,
       paths,
       resolve3(input, paths, log, (warning) => warning.session === session)
     );
-    return allow14;
+    return allow15;
   } catch (error) {
     return failedOpen(input, error);
   }
@@ -49650,7 +49775,7 @@ var coverage3 = (checks) => PERTURBATIONS.map((question) => {
 });
 
 // src/ricochete/stop.ts
-var allow15 = { kind: "allow" };
+var allow16 = { kind: "allow" };
 var REPORTED_FILE = "ricochete.json";
 var block5 = (reason, note2) => ({
   kind: "block",
@@ -49672,13 +49797,13 @@ var recordSkillHelp = (input, message, view2) => {
 };
 var horizonGuard = (input) => {
   const message = messageOf3(input);
-  if (!isHorizonHelp(message)) return allow15;
+  if (!isHorizonHelp(message)) return allow16;
   const view2 = taskInView(input);
   recordSkillHelp(input, message, view2);
-  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow15;
+  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow16;
   const ids4 = new Set(view2.checks.map((check2) => check2.id));
   const named2 = criterionIds(message);
-  if (named2.some((id) => ids4.has(id))) return allow15;
+  if (named2.some((id) => ids4.has(id))) return allow16;
   const { t } = input;
   const params2 = { task: view2.task, named: named2.join(", ") || "-", checks: [...ids4].join(", ") };
   logEvent(input.runtime, view2.paths, "ricochete.horizon_without_criterion", { task: view2.task, named: [...named2] });
@@ -49690,10 +49815,10 @@ var reportedTasks = (input, view2) => {
 };
 var perturbationReport = (input) => {
   const view2 = taskInView(input);
-  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow15;
-  if (!judgmentSignal(input, view2.paths)) return allow15;
+  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow16;
+  if (!judgmentSignal(input, view2.paths)) return allow16;
   const reported = reportedTasks(input, view2);
-  if (reported.includes(view2.task)) return allow15;
+  if (reported.includes(view2.task)) return allow16;
   writeJsonFile(input.runtime, view2.paths.cache(REPORTED_FILE), { tasks: [...reported, view2.task].slice(-100) });
   const { t } = input;
   const lines10 = coverage3(view2.checks).map(
@@ -50385,7 +50510,7 @@ var secretsSessionStart = (input) => {
 };
 
 // src/signals/early.ts
-import { basename as basename10, join as join146 } from "node:path";
+import { basename as basename11, join as join146 } from "node:path";
 
 // src/signals/attempts.ts
 var DEFAULT_STOP_AFTER = 5;
@@ -50549,7 +50674,7 @@ var REPRO_GUARD = "reproduce-first";
 var EDIT_TOOLS5 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var SHELL_TOOLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var LONG_SIZES2 = /* @__PURE__ */ new Set(["M", "L"]);
-var allow16 = { kind: "allow" };
+var allow17 = { kind: "allow" };
 var feedback = (input, base, humanKey, params2) => {
   const reason = modelReason(input.t, base, params2);
   return {
@@ -50566,10 +50691,10 @@ var editedFile = (scope2) => {
 var syntaxAfterEdit = (input) => {
   const scope2 = scopeOf(input);
   const file = scope2 === void 0 ? void 0 : editedFile(scope2);
-  if (scope2 === void 0 || file === void 0) return allow16;
+  if (scope2 === void 0 || file === void 0) return allow17;
   const text34 = input.runtime.readText(toAbsolutePath(join146(scope2.paths.root, file)));
   const problem5 = text34.ok ? syntaxProblem(file, text34.value) : void 0;
-  if (problem5 === void 0) return allow16;
+  if (problem5 === void 0) return allow17;
   record6(scope2, { ...baseOf2(scope2), kind: "edit_failed", file, why: "syntax" });
   const where3 = problem5.line > 0 ? `${file}:${String(problem5.line)}` : file;
   return feedback(input, "signals.syntax", "signals.syntax.human", { file, where: where3, message: problem5.message });
@@ -50603,7 +50728,7 @@ var ignoredError = (entries2, file) => {
   if (last?.kind !== "edit" || last.file !== file || before2?.kind !== "error") return void 0;
   if (!SHELL_TOOLS3.has(before2.tool)) return void 0;
   const named2 = before2.files ?? [];
-  return named2.length === 0 || named2.includes(basename10(file)) ? void 0 : named2;
+  return named2.length === 0 || named2.includes(basename11(file)) ? void 0 : named2;
 };
 var trigger = (scope2, file) => {
   const { input } = scope2;
@@ -50613,7 +50738,7 @@ var trigger = (scope2, file) => {
   if (failed9 === limits.failedEdits) {
     return feedback(input, "signals.early.failed_edits", "signals.early.failed_edits.human", { file, count: failed9 });
   }
-  if (input.event !== "PostToolUse") return allow16;
+  if (input.event !== "PostToolUse") return allow17;
   const named2 = ignoredError(entries2, file);
   if (named2 !== void 0) {
     return feedback(input, "signals.early.ignored_error", "signals.early.ignored_error.human", {
@@ -50625,12 +50750,12 @@ var trigger = (scope2, file) => {
   if (entries2.at(-1)?.kind === "edit" && blind === limits.editsWithoutRun) {
     return feedback(input, "signals.early.blind_edits", "signals.early.blind_edits.human", { count: blind });
   }
-  return allow16;
+  return allow17;
 };
 var earlyLoopTriggers = (input) => {
   const scope2 = scopeOf(input);
   const file = scope2 === void 0 ? void 0 : editedFile(scope2);
-  if (scope2 === void 0 || file === void 0) return allow16;
+  if (scope2 === void 0 || file === void 0) return allow17;
   return trigger(scope2, file);
 };
 var activeContract = (input, paths) => {
@@ -50646,17 +50771,17 @@ var activeContract = (input, paths) => {
 var LOCATED_FRESH_MS = 12 * 36e5;
 var locatedNow = (scope2, entry2) => entry2.kind === "located" && (entry2.session === scope2.session || nowMs(scope2.input.runtime) - Date.parse(entry2.at) <= LOCATED_FRESH_MS);
 var reproduceFirst = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow16;
+  if (!writesFiles(input.payload.raw)) return allow17;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow16;
+  if (scope2 === void 0) return allow17;
   const entries2 = sessionEntries(scope2.entries, scope2.session);
   const started = entries2.some(
     (entry2) => entry2.kind === "edit" || entry2.kind === "checkpoint" || entry2.kind === "edit_failed"
   );
-  if (started || entries2.some((entry2) => entry2.kind === "error")) return allow16;
-  if (scope2.entries.some((entry2) => locatedNow(scope2, entry2))) return allow16;
+  if (started || entries2.some((entry2) => entry2.kind === "error")) return allow17;
+  if (scope2.entries.some((entry2) => locatedNow(scope2, entry2))) return allow17;
   const contract = activeContract(input, scope2.paths);
-  if (contract === void 0 || !LONG_SIZES2.has(contract.size)) return allow16;
+  if (contract === void 0 || !LONG_SIZES2.has(contract.size)) return allow17;
   record6(scope2, { ...baseOf2(scope2), kind: "checkpoint", task: contract.id });
   const params2 = { task: contract.id, size: contract.size };
   return deny(modelReason(input.t, "signals.repro", params2), input.t("signals.repro.human", params2));
@@ -50701,7 +50826,7 @@ var stopDecision = (scope2, mode) => {
 
 // src/signals/fourth.ts
 var FOURTH_ATTEMPT_GUARD = "fourth-attempt";
-var allow17 = { kind: "allow" };
+var allow18 = { kind: "allow" };
 var RESEARCHER = /(?:^|:)researcher$/i;
 var AGENT_TOOLS2 = /* @__PURE__ */ new Set(["Agent", "Task"]);
 var alreadyNoted = (scope2, sig) => {
@@ -50728,17 +50853,17 @@ var noteFourth = (scope2, sig, failed9, mode) => {
   });
 };
 var fourthAttemptGuard = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow17;
+  if (!writesFiles(input.payload.raw)) return allow18;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow17;
+  if (scope2 === void 0) return allow18;
   const stop = stopDecision(scope2, modeNow(scope2));
   if (stop !== void 0) return stop;
   const threshold2 = readProfile2(input.runtime, scope2.files).threshold;
   const pending = pendingAttempt(sessionEntries(scope2.entries, scope2.session), threshold2);
-  if (pending === void 0) return allow17;
+  if (pending === void 0) return allow18;
   const mode = modeNow(scope2);
   const noted = alreadyNoted(scope2, pending.sig);
-  if (noted && mode !== "active") return allow17;
+  if (noted && mode !== "active") return allow18;
   if (!noted) noteFourth(scope2, pending.sig, pending.failed, mode);
   const { t } = input;
   const params2 = { sig: pending.sig, count: pending.failed, sample: inlineData("tool output", pending.sample) };
@@ -50752,10 +50877,10 @@ var researcherOf = (raw) => {
 };
 var researchRecorder = (input) => {
   const agent = researcherOf(input.payload.raw);
-  if (agent === void 0) return allow17;
+  if (agent === void 0) return allow18;
   const scope2 = scopeOf(input);
   if (scope2 !== void 0) record6(scope2, { ...baseOf2(scope2), kind: "research", agent });
-  return allow17;
+  return allow18;
 };
 
 // src/signals/render.ts
@@ -50839,13 +50964,13 @@ var writeIndex = (scope2, notice = readNotice(scope2)) => {
 };
 
 // src/signals/prompt.ts
-var allow18 = { kind: "allow" };
+var allow19 = { kind: "allow" };
 var CLEAR_AFTER = 2;
 var signalsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow18;
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow19;
   const before2 = scopeOf(input);
-  if (before2 === void 0) return allow18;
+  if (before2 === void 0) return allow19;
   const scope2 = record6(before2, {
     ...baseOf2(before2),
     turn: before2.turn + 1,
@@ -50856,7 +50981,7 @@ var signalsPrompt = (input) => {
   const notice = readNotice(scope2);
   const index = writeIndex(scope2, notice);
   const key3 = loopKey(index);
-  if (!index.firing || key3 === notice.lastKey) return allow18;
+  if (!index.firing || key3 === notice.lastKey) return allow19;
   const injections = notice.injections + 1;
   writeIndex(scope2, { injections, lastKey: key3 });
   const { t } = input;
@@ -50873,7 +50998,7 @@ var signalsPrompt = (input) => {
 var EDIT_TOOLS6 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var FAST_ACCEPT_MS = 5e3;
 var LARGE_DIFF_LINES = 30;
-var allow19 = { kind: "allow" };
+var allow20 = { kind: "allow" };
 var permissionKey = (raw) => {
   const id = textField(raw, "tool_use_id");
   if (id !== void 0 && id !== "") return id;
@@ -50963,27 +51088,27 @@ var recordFailedEdit = (scope2, raw) => {
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow19;
+  if (scope2 === void 0) return allow20;
   const raw = input.payload.raw;
   const output = failedOutput2(raw);
   const after2 = EDIT_TOOLS6.has(toolName(raw)) ? recordEdit(scope2, raw) : output === void 0 ? recordRun(scope2, raw) : recordError(scope2, raw, output);
   if (after2 !== scope2) writeIndex(after2);
-  return allow19;
+  return allow20;
 };
 var signalsPostToolUseFailure = (input) => {
   const scope2 = scopeOf(input);
   const raw = input.payload.raw;
-  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow19;
+  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow20;
   const failed9 = recordFailedEdit(scope2, raw);
   const after2 = recordError(failed9, raw, textField(raw, "error") ?? "");
   if (after2 !== scope2) writeIndex(after2);
-  return allow19;
+  return allow20;
 };
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
     record6(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
-  return allow19;
+  return allow20;
 };
 
 // src/signals/hooks.ts
@@ -51039,7 +51164,7 @@ var SLOP_HANDLERS = { PreToolUse: [slopEditWarning] };
 import { isAbsolute as isAbsolute3, relative as relative24 } from "node:path";
 var SCOPE_GUARD = "scope";
 var FRONT_SCOPE_GUARD = "front-scope";
-var allow20 = { kind: "allow" };
+var allow21 = { kind: "allow" };
 var targetOf3 = (input) => {
   const raw = input.payload.raw;
   return FILE_TOOLS.has(toolName(raw)) ? textField(toolInput(raw), "file_path", "notebook_path") : void 0;
@@ -51053,29 +51178,29 @@ var inside = (root, target5) => {
 var advise2 = (input, paths, event, params2) => {
   const mode = featureMode(input.runtime, paths, SCOPE_GUARD);
   logEvent(input.runtime, paths, `scope.${event}`, { ...params2, mode });
-  if (mode !== "active") return allow20;
+  if (mode !== "active") return allow21;
   return { kind: "allow", output: contextOutput(input.event, input.t(`scope.${event}`, params2)) };
 };
 var scopeAfterEdit = (input) => {
   const target5 = targetOf3(input);
   const paths = projectPaths(input);
-  if (target5 === void 0 || paths === void 0) return allow20;
-  if (readState(input.runtime, paths).active !== void 0) return allow20;
+  if (target5 === void 0 || paths === void 0) return allow21;
+  if (readState(input.runtime, paths).active !== void 0) return allow21;
   const file = inside(paths.root, target5);
-  if (file === void 0) return allow20;
+  if (file === void 0) return allow21;
   const before2 = readInferred(input.runtime, paths);
   const { scope: scope2, event } = observeEdit(before2, IMPLICIT_ID, file);
   if (scope2 !== before2) writeInferred(input.runtime, paths, scope2);
   if (event === "widened") return advise2(input, paths, "widened", { file, scope: scopeLabel(scope2) });
   if (event === "outside") return advise2(input, paths, "outside", { file, scope: scopeLabel(scope2) });
-  return allow20;
+  return allow21;
 };
 var frontScopeGuard = (input) => {
   const target5 = targetOf3(input);
-  if (target5 === void 0) return allow20;
+  if (target5 === void 0) return allow21;
   const root = guardRoot(input);
   const state = readFronts(input.runtime, root);
-  if (!state.ok) return allow20;
+  if (!state.ok) return allow21;
   for (const front of state.value.fronts) {
     if (front.path === null || front.paths.length === 0 || front.status !== "running") continue;
     const file = inside(toAbsolutePath(front.path, root), target5);
@@ -51083,11 +51208,11 @@ var frontScopeGuard = (input) => {
     const params2 = { front: front.id, file, paths: front.paths.join(", ") };
     return deny(modelReason(input.t, "fronts.scope", params2), input.t("fronts.scope.human", params2));
   }
-  return allow20;
+  return allow21;
 };
 
 // src/wt/heavy.ts
-import { basename as basename11, join as join148 } from "node:path";
+import { basename as basename12, join as join148 } from "node:path";
 var HEAVY_DIR = "heavy";
 var DEFAULT_STALE_MINUTES = 30;
 var MINUTE_MS = 6e4;
@@ -51113,7 +51238,7 @@ var runnerHeavy = (program, args2) => {
   return program !== "npm" && SCRIPTS.test(first);
 };
 var isHeavy = (command) => {
-  const program = basename11(command.program).replace(/\.(?:cmd|exe)$/i, "").toLowerCase();
+  const program = basename12(command.program).replace(/\.(?:cmd|exe)$/i, "").toLowerCase();
   if (RUNNERS3.has(program)) return runnerHeavy(program, command.args);
   if (program === "npx") return NPX_HEAVY.test(words3(command.args)[0] ?? "");
   const tool = TOOLS[program];
@@ -51163,7 +51288,7 @@ var releaseSlots = (runtime, id) => {
 // src/wt/heavy-hooks.ts
 var SHELLS7 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var COMMAND_MAX = 120;
-var allow21 = { kind: "allow" };
+var allow22 = { kind: "allow" };
 var heavyCommand = (input) => {
   const raw = input.payload.raw;
   const tool = toolName(raw);
@@ -51179,11 +51304,11 @@ var busy = (input, limit, holders) => {
 };
 var heavyGuard = (input) => {
   const command = heavyCommand(input);
-  if (command === void 0) return allow21;
+  if (command === void 0) return allow22;
   const paths = projectPaths(input);
   const config = paths === void 0 ? {} : loadProjectConfig(input.runtime, paths.root);
   const limit = heavyLimit(input.env, config);
-  if (limit === 0) return allow21;
+  if (limit === 0) return allow22;
   const { runtime } = input;
   const id = textField(input.payload.raw, "tool_use_id") ?? `${input.payload.sessionId ?? "session"}-${runtime.now()}`;
   const holder = { id, cwd: sessionCwd(input), command: maskText(command).slice(0, COMMAND_MAX), at: runtime.now() };
@@ -51193,12 +51318,12 @@ var heavyGuard = (input) => {
     return busy(input, limit, result.holders);
   }
   if (toolInput(input.payload.raw)["run_in_background"] === true) runtime.remove(slotPath(runtime, result.slot));
-  return allow21;
+  return allow22;
 };
 var heavyRelease = (input) => {
   const id = textField(input.payload.raw, "tool_use_id");
   if (id !== void 0 && heavyCommand(input) !== void 0) releaseSlots(input.runtime, id);
-  return allow21;
+  return allow22;
 };
 var HEAVY_HANDLERS = {
   PreToolUse: [heavyGuard],
@@ -51374,7 +51499,7 @@ var dismiss = (runtime, paths, count12) => {
 // src/wt/suggest-hooks.ts
 var WT_SUGGEST_FEATURE = "wt-suggest";
 var MEGABYTE = 1048576;
-var allow22 = { kind: "allow" };
+var allow23 = { kind: "allow" };
 var projectOf2 = (input) => {
   const paths = projectPaths(input);
   return paths !== void 0 && input.runtime.stat(paths.dir)?.kind === "dir" ? paths : void 0;
@@ -51385,25 +51510,25 @@ var hasWorktrees = (input, paths) => {
 };
 var wtClassifyStop = (input) => {
   const paths = projectOf2(input);
-  if (paths === void 0 || !hasWorktrees(input, paths)) return allow22;
-  if (!refreshDue(input.runtime, readClasses(input.runtime, paths))) return allow22;
+  if (paths === void 0 || !hasWorktrees(input, paths)) return allow23;
+  if (!refreshDue(input.runtime, readClasses(input.runtime, paths))) return allow23;
   markStarted(input.runtime, paths);
   input.runtime.spawnSelf(["wt", "classify"], paths.root);
-  return allow22;
+  return allow23;
 };
 var wtSuggestStart = (input) => {
   const paths = projectOf2(input);
-  if (paths === void 0) return allow22;
+  if (paths === void 0) return allow23;
   const { runtime, t } = input;
   const cached4 = readClasses(runtime, paths);
-  if (cached4 === void 0) return allow22;
+  if (cached4 === void 0) return allow23;
   const cleanable = cleanableOf(cached4);
-  if (cleanable.count === 0 || cleanable.count <= dismissedCount(runtime, paths)) return allow22;
+  if (cleanable.count === 0 || cleanable.count <= dismissedCount(runtime, paths)) return allow23;
   const mode = featureMode(runtime, paths, WT_SUGGEST_FEATURE);
   logEvent(runtime, paths, "wt.suggested", { count: cleanable.count, bytes: cleanable.bytes, mode });
   if (mode !== "active") {
     recordFeatureShadow(runtime, paths, WT_SUGGEST_FEATURE, { count: cleanable.count });
-    return allow22;
+    return allow23;
   }
   const size = (cleanable.bytes / MEGABYTE).toFixed(0);
   return { kind: "allow", output: { systemMessage: human(t("wt.suggest.line", { count: cleanable.count, size })) } };
@@ -51411,7 +51536,7 @@ var wtSuggestStart = (input) => {
 var WT_SUGGEST_HANDLERS = { SessionStart: [wtSuggestStart], Stop: [wtClassifyStop] };
 
 // src/hooks/handlers.ts
-var allow23 = () => ({ kind: "allow" });
+var allow24 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -51556,7 +51681,8 @@ var GUARD_SETS = [
   { id: "knowledge-claims", damage: false, handlers: KNOWLEDGE_CLAIMS_HANDLERS },
   { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
-  { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS }
+  { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
+  { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(
   ...GUARD_SETS.map(withPolicy),
@@ -51592,7 +51718,7 @@ var parseHookPayload = (event, text34, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf4 = (error) => error instanceof Error ? error.message : String(error);
-var decide3 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow23]);
+var decide3 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow24]);
 var evaluate2 = async (event, options2) => {
   const text34 = await readAll2(options2.stdin);
   const parsed = parseHookPayload(event, text34, options2.stdin.isTTY === true);
@@ -52150,7 +52276,7 @@ var TECH_NAMES = /^(?:node|next|nuxt|vue|react|express|three|chart|socket|backbo
 var NOT_A_PATH = /[\s*?[\]{}<>$|,;()'"=]|:\/\/|^~|^-|^\/|^\.\.|^@/;
 var SCRIPT_RUN = /^(npm|pnpm|yarn|bun)\s+run\s+([\w:.-]+)/;
 var MAKE_RUN = /^make\s+([\w.-]+)$/;
-var SYMBOL = /^(?:[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)+|[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+)(?:\(\))?$/;
+var SYMBOL2 = /^(?:[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)+|[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+)(?:\(\))?$/;
 var MANAGER = /\b(?:use|uses|using|always use|only use|with|via)\s+(npm|pnpm|yarn|bun)\b|^(npm|pnpm|yarn|bun)\s+(?:install|add|run|i)\b/i;
 var FORBID = /\b(?:never|do not|don't|dont|avoid|no longer)\s+(?:use|import|add|install)\s+`?(@?[a-z0-9][\w.-]*(?:\/[\w.-]+)?)`?/i;
 var LOCKS = {
@@ -52181,7 +52307,7 @@ var dirShaped = (span, tree) => {
   const first = clean3.split("/")[0] ?? "";
   return tree.some((file) => file.startsWith(`${first}/`));
 };
-var symbolShaped = (span) => span.length >= 4 && SYMBOL.test(span);
+var symbolShaped = (span) => span.length >= 4 && SYMBOL2.test(span);
 var pathExists = (tree, span) => {
   const clean3 = span.replace(/^\.\//, "").replace(/\/$/, "");
   return tree.some(
@@ -53244,7 +53370,7 @@ var PROGRAMS = /* @__PURE__ */ new Set([
   "chmod"
 ]);
 var COMMAND_WORDS = /\b(command|commands|terminal|shell|comando|comandos)\b/i;
-var CODE_WORDS = /\b(file|files|code|component|function|module|arquivo|código|componente|função|archivo|función)\b/i;
+var CODE_WORDS2 = /\b(file|files|code|component|function|module|arquivo|código|componente|função|archivo|función)\b/i;
 var MAX_WORDS = 3;
 var MIN_WORD = 5;
 var codeSpans = (text34) => [...text34.matchAll(/`([^`]+)`/g)].map((match) => (match[1] ?? "").trim()).filter((span) => span !== "");
@@ -53262,7 +53388,7 @@ var scopeFor = (text34) => {
   const spans = codeSpans(text34);
   const tools = [
     ...spans.some(isCommand) || COMMAND_WORDS.test(text34) ? ["Bash"] : [],
-    ...spans.some(isPathLike) || CODE_WORDS.test(text34) ? ["Edit", "Write"] : []
+    ...spans.some(isPathLike) || CODE_WORDS2.test(text34) ? ["Edit", "Write"] : []
   ];
   return { paths: spans.filter(isPathLike).map(globOf2), tools, words: words4(text34) };
 };
@@ -53600,13 +53726,13 @@ var runDoctor = (ctx, fix, report5, hooks, probe) => {
   }
   const env = doctorEnvFrom(ctx);
   const probed = probe ? runProbe(ctx.runtime, fmPaths(env.root)) : void 0;
-  const checked = buildReport2(ctx, [...runChecks2(env), ...probe ? probeFindings(probed) : []]);
+  const checked2 = buildReport2(ctx, [...runChecks2(env), ...probe ? probeFindings(probed) : []]);
   const rows2 = hooks ? withDebugLog(hookInventory(env), debugLog(ctx)) : void 0;
-  const base = rows2 === void 0 ? checked : { ...checked, hookInventory: rows2 };
+  const base = rows2 === void 0 ? checked2 : { ...checked2, hookInventory: rows2 };
   const withProbe = probed === void 0 ? base : { ...base, probe: probed };
   const data2 = fixed2 === void 0 ? withProbe : { ...withProbe, fixed: fixed2 };
   const lines10 = [
-    ...fix ? [...extra, ...manualLines(ctx, checked)] : extra,
+    ...fix ? [...extra, ...manualLines(ctx, checked2)] : extra,
     ...rows2 === void 0 ? [] : inventoryLines(ctx, rows2)
   ];
   const result = doctorResult(ctx, data2, lines10);
@@ -54249,7 +54375,7 @@ var frontsCloseCommand = {
 };
 
 // src/wt/archive.ts
-import { basename as basename12, join as join162 } from "node:path";
+import { basename as basename13, join as join162 } from "node:path";
 var ARCHIVE_PREFIX = "refs/finitemonkey/archive/";
 var stampOf3 = (iso) => iso.replace(/[:.]/g, "-");
 var refName = (request, stamp2) => `${ARCHIVE_PREFIX}${(request.branch ?? request.id).replace(/[^A-Za-z0-9._/-]/g, "-")}/${stamp2}`;
@@ -54296,7 +54422,7 @@ var archiveWorktree = (runtime, request) => {
     return reject(`update-ref ${ref2}: could not create the archive ref`);
   }
   const target5 = toAbsolutePath(
-    join162(runtime.homeDir(), ".finitemonkey", "archive", basename12(request.mainRoot), request.id, stamp2)
+    join162(runtime.homeDir(), ".finitemonkey", "archive", basename13(request.mainRoot), request.id, stamp2)
   );
   const kept = copyIgnored(runtime, repo, ignoredFiles(runtime, repo, request.generated), target5);
   const again = snapshotTree(runtime, repo, head, `${stamp2}-b`);
@@ -54638,7 +54764,7 @@ var reportMarkdown2 = (report5) => [
 ].join("\n");
 
 // src/merge/resolve-file.ts
-import { basename as basename13 } from "node:path";
+import { basename as basename14 } from "node:path";
 
 // src/merge/align.ts
 var MAX_ALIGN_CELLS = 25e4;
@@ -54904,7 +55030,7 @@ var fileLevel = (path, cls, rule, decision2, action, stop = false) => ({
   droppedSide: void 0,
   sameIntent: []
 });
-var isGenerated = (inputs, context) => LOCKFILES6.has(basename13(inputs.stages.path)) || inputs.linguistGenerated || isDeclaredGenerated(context.scopes, inputs.stages.path) || GENERATED_HEADER.test((inputs.stages.ours ?? "").split("\n").slice(0, 5).join("\n"));
+var isGenerated = (inputs, context) => LOCKFILES6.has(basename14(inputs.stages.path)) || inputs.linguistGenerated || isDeclaredGenerated(context.scopes, inputs.stages.path) || GENERATED_HEADER.test((inputs.stages.ours ?? "").split("\n").slice(0, 5).join("\n"));
 var DECISIONS = {
   C0: "stopped: needs the owner of the file",
   C1: "kept both sides",
@@ -56565,16 +56691,16 @@ var targetsOf2 = (ctx, repo, rev, since) => {
   if (mergeInProgress(ctx.runtime, repo)) return ["MERGE_HEAD"];
   return headIsMerge(ctx, repo) ? ["HEAD"] : [];
 };
-var resultOf = (ctx, checked) => {
-  const human2 = [...checked.flatMap((item2) => humanOf(ctx, item2)), ctx.t("git.merge.limits")];
-  const data2 = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: checked };
-  const broken2 = checked.find((item2) => item2.report.exit === 2);
+var resultOf = (ctx, checked2) => {
+  const human2 = [...checked2.flatMap((item2) => humanOf(ctx, item2)), ctx.t("git.merge.limits")];
+  const data2 = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: checked2 };
+  const broken2 = checked2.find((item2) => item2.report.exit === 2);
   if (broken2 !== void 0) {
     const detail = broken2.report.error ?? "";
     const problem5 = gitProblem("merge_unanalyzable", "git.error.merge_unanalyzable", detail, "git status");
     return failureFrom(ctx.t, { ...problem5, exitCode: ExitCode.Usage, data: data2 }, human2);
   }
-  const lost = checked.reduce((count12, item2) => count12 + item2.report.findings.length, 0);
+  const lost = checked2.reduce((count12, item2) => count12 + item2.report.findings.length, 0);
   if (lost === 0) return success(data2, human2);
   return failureFrom(
     ctx.t,
@@ -56605,14 +56731,14 @@ var mergeVerifyCommand = {
       const data2 = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: [] };
       return Promise.resolve(success(data2, [ctx.t("git.merge.none", { detail: "HEAD" })]));
     }
-    const checked = targets2.map((commit2) => ({
+    const checked2 = targets2.map((commit2) => ({
       commit: commit2,
       report: verifyMerge(ctx.runtime, repo, {
         ...commit2 === "MERGE_HEAD" ? {} : { rev: commit2 },
         ...dropped === void 0 ? {} : { droppedFile: dropped }
       })
     }));
-    return Promise.resolve(resultOf(ctx, checked));
+    return Promise.resolve(resultOf(ctx, checked2));
   }
 };
 
@@ -56741,7 +56867,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename14, dirname as dirname29, join as join169 } from "node:path";
+import { basename as basename15, dirname as dirname29, join as join169 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args2) => {
   const result = runtime.git(args2, repo.root);
@@ -56784,7 +56910,7 @@ var findSnapshot = (views, wanted) => {
 };
 var stampOf5 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join169(dirname29(repo.root), `${basename14(repo.root)}-undo-${stampOf5(runtime.now())}`);
+  const base = join169(dirname29(repo.root), `${basename15(repo.root)}-undo-${stampOf5(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view2) => {
@@ -60154,13 +60280,13 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided2) => {
-  const accepted2 = allows.filter((allow24) => decided2(allow24.decision));
-  const ignored = allows.filter((allow24) => !decided2(allow24.decision)).map((allow24) => `${allow24.rule} ${allow24.route} ${allow24.decision}`);
+  const accepted2 = allows.filter((allow25) => decided2(allow25.decision));
+  const ignored = allows.filter((allow25) => !decided2(allow25.decision)).map((allow25) => `${allow25.rule} ${allow25.route} ${allow25.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow24 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow24 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow24.decision };
+      const allow25 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow25 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow25.decision };
     })
   };
 };
@@ -62391,21 +62517,21 @@ var parityCheckCommand = {
   usage: "finitemonkey parity check",
   status: "ready",
   run: (ctx) => inRepo6(ctx, (root) => {
-    const checked = checkParity(ctx.runtime, root);
-    const data2 = { schema: PARITY_SCHEMA, ...checked };
-    if (checked.issues.length === 0) return success(data2, [ctx.t("parity.clean", { count: checked.rows })]);
+    const checked2 = checkParity(ctx.runtime, root);
+    const data2 = { schema: PARITY_SCHEMA, ...checked2 };
+    if (checked2.issues.length === 0) return success(data2, [ctx.t("parity.clean", { count: checked2.rows })]);
     return failureFrom(
       ctx.t,
       {
         code: "parity_check_failed",
         messageKey: "parity.error.check",
-        params: { count: checked.issues.length },
+        params: { count: checked2.issues.length },
         fix: "give each row a destination, a parity test and a green state, or mark it removed with its decision",
         exitCode: ExitCode.CheckFailed,
         data: data2
       },
-      checked.issues.map(
-        (item2) => `  ${checked.file}:${String(item2.line)} ${ctx.t(`parity.issue.${item2.kind}`, { detail: item2.detail })}`
+      checked2.issues.map(
+        (item2) => `  ${checked2.file}:${String(item2.line)} ${ctx.t(`parity.issue.${item2.kind}`, { detail: item2.detail })}`
       )
     );
   })
@@ -63222,7 +63348,7 @@ var policyRevertCommand = {
 import { join as join185 } from "node:path";
 
 // src/pr/checklist.ts
-import { basename as basename15 } from "node:path";
+import { basename as basename16 } from "node:path";
 var CODEOWNERS_FILES2 = [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"];
 var API_CONTRACT = [
   "**/openapi*.yml",
@@ -63272,7 +63398,7 @@ var checklistLines = (runtime, root, input) => {
       )
     );
   }
-  for (const path of paths.filter((item2) => LOCKFILES6.has(basename15(item2))))
+  for (const path of paths.filter((item2) => LOCKFILES6.has(basename16(item2))))
     lines10.push(box(false, `Lockfile ${path} changed: dependency change reviewed`));
   return lines10;
 };
@@ -67324,7 +67450,7 @@ var wtDismissCommand = {
 };
 
 // src/wt/clean.ts
-import { basename as basename16 } from "node:path";
+import { basename as basename17 } from "node:path";
 var DEFAULT_INCLUDE = ["contained", "equivalent", "orphan"];
 var actionFor2 = (cls, options2) => {
   if (cls === "unpushed") return "archive-keep";
@@ -67334,7 +67460,7 @@ var actionFor2 = (cls, options2) => {
   return cls === "orphan" ? "prune" : "keep";
 };
 var planItem = (item2, options2) => ({
-  id: item2.entry?.id ?? basename16(item2.path),
+  id: item2.entry?.id ?? basename17(item2.path),
   path: toPosixPath(item2.path),
   branch: item2.branch,
   cls: item2.cls,
