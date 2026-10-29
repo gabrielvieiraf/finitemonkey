@@ -2336,5 +2336,7 @@
   "gate.claims.decorative": "la afirmación {id} es decorativa: su check no detectó ninguno de los {total} defectos plantados en su código anclado",
   "gate.claims.strength_unavailable": "fuerza de los checks de afirmación no medida: {detail}",
   "gate.claims.shadow": "modo shadow: un check de afirmación falló y bloquearía con claim-checks activo",
-  "onboard.block.conventions": "Convenciones comprobadas en el gate"
+  "onboard.block.conventions": "Convenciones comprobadas en el gate",
+  "knowledge.claims.error.premise": "La premisa {premise} no es una afirmación registrada, evidencia del ledger (<tarea>:<n>) ni un supuesto del registro; las aristas solo apuntan a registros, nunca a texto.",
+  "knowledge.claims.decision_out": "{subject} cayó: {reason}"
 }

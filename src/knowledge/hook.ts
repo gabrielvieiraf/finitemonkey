@@ -9,6 +9,7 @@ import type { Translate } from "../i18n/translate.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import { diskReader } from "./anchor.js";
 import { appendClaimEvent, KNOWLEDGE_CLAIMS_FEATURE, lastOf, readClaims } from "./claims.js";
+import { withRetractions } from "./retraction.js";
 import { injectable } from "./service.js";
 import { type ClaimView, evaluateClaim } from "./status.js";
 
@@ -35,10 +36,8 @@ export const claimsOnSessionStart: HookHandler = (input) => {
   const claims = readClaims(input.runtime, paths);
   if (claims.length === 0) return allow;
   const read = diskReader(input.runtime, paths.root);
-  const views = injectable(claims.map((claim) => evaluateClaim(claim, { read, candidates: () => [] }))).slice(
-    0,
-    MAX_INJECTED,
-  );
+  const evaluated = claims.map((claim) => evaluateClaim(claim, { read, candidates: () => [] }));
+  const views = injectable(withRetractions(input.runtime, paths, evaluated)).slice(0, MAX_INJECTED);
   if (views.length === 0) return allow;
   if (featureMode(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE) !== "active") {
     recordFeatureShadow(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE, { injected: views.length });

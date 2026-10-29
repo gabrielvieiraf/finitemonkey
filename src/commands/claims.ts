@@ -15,6 +15,7 @@ import {
   type OriginSource,
   readClaims,
 } from "../knowledge/claims.js";
+import { outDecisions, parsePremise, premiseExists, settleRetractions } from "../knowledge/retraction.js";
 import { viewsOf } from "../knowledge/service.js";
 import type { ClaimView } from "../knowledge/status.js";
 import { whyChain } from "../knowledge/why.js";
@@ -31,7 +32,11 @@ const ADD_USAGE =
 
 const fail = (
   ctx: Ctx,
-  key: "knowledge.claims.error.usage" | "knowledge.claims.error.anchor" | "knowledge.claims.error.unknown",
+  key:
+    | "knowledge.claims.error.usage"
+    | "knowledge.claims.error.anchor"
+    | "knowledge.claims.error.unknown"
+    | "knowledge.claims.error.premise",
   usage: string,
   params = {},
 ) => failureFrom(ctx.t, { ...usageProblem("invalid_arguments", key, usage), params });
@@ -60,7 +65,10 @@ export const claimsListCommand: CommandSpec = {
   status: "ready",
   run: (ctx) =>
     inGuardianRepo(ctx, (root) => {
-      const views = viewsOf(ctx.runtime, fmPaths(root));
+      const paths = fmPaths(root);
+      const views = viewsOf(ctx.runtime, paths);
+      settleRetractions(ctx.runtime, paths, views);
+      const decisions = outDecisions(ctx.runtime, paths);
       return success(
         {
           schema: CLAIMS_SCHEMA,
@@ -70,12 +78,17 @@ export const claimsListCommand: CommandSpec = {
             kind: view.claim.kind,
             verified: view.claim.kind === "check",
             status: view.status,
+            ...(view.reason === undefined ? {} : { reason: view.reason }),
             anchors: view.anchors.map((item) => ({ ...item.anchor, state: item.state })),
             origin: view.claim.origin,
             recordedAt: view.claim.recordedAt,
           })),
+          decisions,
         },
-        views.length === 0 ? [ctx.t("knowledge.claims.empty")] : views.map((view) => viewLine(ctx, view)),
+        [
+          ...(views.length === 0 ? [ctx.t("knowledge.claims.empty")] : views.map((view) => viewLine(ctx, view))),
+          ...decisions.map((item) => ctx.t("knowledge.claims.decision_out", { ...item })),
+        ],
       );
     }),
 };
@@ -90,6 +103,14 @@ const sourceOf = (ctx: Ctx, wanted: string | undefined): OriginSource =>
 
 const attributionOf = (source: OriginSource): Attribution =>
   source === "person" ? "person" : source === "external" ? "tool" : "agent";
+
+const badPremise = (ctx: Ctx, paths: FmPaths, refs: readonly string[]): string | undefined => {
+  const claims = readClaims(ctx.runtime, paths);
+  return refs.find((ref) => {
+    const premise = parsePremise(ref);
+    return premise === undefined || !premiseExists(ctx.runtime, paths, claims, premise);
+  });
+};
 
 const derivedFrom = (values: CommandArgs["values"], commit: string | undefined): DerivedFrom => ({
   ...(commit === undefined ? {} : { commit }),
@@ -132,6 +153,8 @@ export const claimsAddCommand: CommandSpec = {
         return fail(ctx, "knowledge.claims.error.anchor", ADD_USAGE, {
           anchor: missing.symbol === undefined ? missing.path : `${missing.path}#${missing.symbol}`,
         });
+      const premise = badPremise(ctx, paths, listOption(args.values, "because"));
+      if (premise !== undefined) return fail(ctx, "knowledge.claims.error.premise", ADD_USAGE, { premise });
       const git = gitAt(ctx.runtime, root);
       const commit = headSha(git);
       const tree = treeHash(git);
@@ -175,7 +198,18 @@ export const claimsWhyCommand: CommandSpec = {
     const id = args.positionals[0]?.trim() ?? "";
     if (id === "") return Promise.resolve(fail(ctx, "knowledge.claims.error.usage", "finitemonkey claims why <id>"));
     return withClaim(ctx, id, (paths) => {
-      const chain = whyChain(ctx.runtime, paths, id);
+      const view = viewsOf(ctx.runtime, paths).find((item) => item.claim.id === id);
+      const status =
+        view === undefined
+          ? []
+          : [
+              {
+                depth: 0,
+                label: "status",
+                detail: `${view.status}${view.reason === undefined ? "" : `: ${view.reason}`}`,
+              },
+            ];
+      const chain = [...status, ...whyChain(ctx.runtime, paths, id)];
       return success(
         { schema: CLAIMS_SCHEMA, id, chain },
         chain.map((step) => `${"  ".repeat(step.depth)}${step.label}: ${step.detail}`),

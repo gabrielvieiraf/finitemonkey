@@ -2337,7 +2337,9 @@
     "gate.claims.decorative": "machine",
     "gate.claims.strength_unavailable": "machine",
     "gate.claims.shadow": "machine",
-    "onboard.block.conventions": "machine"
+    "onboard.block.conventions": "machine",
+    "knowledge.claims.error.premise": "machine",
+    "knowledge.claims.decision_out": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4677,6 +4679,8 @@
     "gate.claims.decorative": "machine",
     "gate.claims.strength_unavailable": "machine",
     "gate.claims.shadow": "machine",
-    "onboard.block.conventions": "machine"
+    "onboard.block.conventions": "machine",
+    "knowledge.claims.error.premise": "machine",
+    "knowledge.claims.decision_out": "machine"
   }
 }

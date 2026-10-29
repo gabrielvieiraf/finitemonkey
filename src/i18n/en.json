@@ -2336,5 +2336,7 @@
   "gate.claims.decorative": "claim {id} is decorative: its check caught none of {total} planted defects in its anchored code",
   "gate.claims.strength_unavailable": "claim check strength not measured: {detail}",
   "gate.claims.shadow": "shadow mode: a claim check failed and would block once claim-checks is active",
-  "onboard.block.conventions": "Conventions checked at the gate"
+  "onboard.block.conventions": "Conventions checked at the gate",
+  "knowledge.claims.error.premise": "Premise {premise} is not a recorded claim, ledger evidence (<task>:<n>) or assumption; edges only point to records, never to text.",
+  "knowledge.claims.decision_out": "{subject} is out: {reason}"
 }

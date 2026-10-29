@@ -8970,7 +8970,9 @@ var en_default = {
   "gate.claims.decorative": "claim {id} is decorative: its check caught none of {total} planted defects in its anchored code",
   "gate.claims.strength_unavailable": "claim check strength not measured: {detail}",
   "gate.claims.shadow": "shadow mode: a claim check failed and would block once claim-checks is active",
-  "onboard.block.conventions": "Conventions checked at the gate"
+  "onboard.block.conventions": "Conventions checked at the gate",
+  "knowledge.claims.error.premise": "Premise {premise} is not a recorded claim, ledger evidence (<task>:<n>) or assumption; edges only point to records, never to text.",
+  "knowledge.claims.decision_out": "{subject} is out: {reason}"
 };
 
 // src/i18n/es.json
@@ -11312,7 +11314,9 @@ var es_default = {
   "gate.claims.decorative": "la afirmación {id} es decorativa: su check no detectó ninguno de los {total} defectos plantados en su código anclado",
   "gate.claims.strength_unavailable": "fuerza de los checks de afirmación no medida: {detail}",
   "gate.claims.shadow": "modo shadow: un check de afirmación falló y bloquearía con claim-checks activo",
-  "onboard.block.conventions": "Convenciones comprobadas en el gate"
+  "onboard.block.conventions": "Convenciones comprobadas en el gate",
+  "knowledge.claims.error.premise": "La premisa {premise} no es una afirmación registrada, evidencia del ledger (<tarea>:<n>) ni un supuesto del registro; las aristas solo apuntan a registros, nunca a texto.",
+  "knowledge.claims.decision_out": "{subject} cayó: {reason}"
 };
 
 // src/i18n/pt-BR.json
@@ -13654,7 +13658,9 @@ var pt_BR_default = {
   "gate.claims.decorative": "a afirmação {id} é decorativa: o check dela não pegou nenhum dos {total} defeitos plantados no código ancorado",
   "gate.claims.strength_unavailable": "força dos checks de afirmação não medida: {detail}",
   "gate.claims.shadow": "modo shadow: um check de afirmação falhou e bloquearia com claim-checks ativo",
-  "onboard.block.conventions": "Convenções conferidas no gate"
+  "onboard.block.conventions": "Convenções conferidas no gate",
+  "knowledge.claims.error.premise": "A premissa {premise} não é uma afirmação registrada, evidência do ledger (<tarefa>:<n>) nem premissa do registro; arestas só apontam para registros, nunca para texto.",
+  "knowledge.claims.decision_out": "{subject} caiu: {reason}"
 };
 
 // src/i18n/review.json
@@ -15997,7 +16003,9 @@ var review_default = {
     "gate.claims.decorative": "machine",
     "gate.claims.strength_unavailable": "machine",
     "gate.claims.shadow": "machine",
-    "onboard.block.conventions": "machine"
+    "onboard.block.conventions": "machine",
+    "knowledge.claims.error.premise": "machine",
+    "knowledge.claims.decision_out": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -18337,7 +18345,9 @@ var review_default = {
     "gate.claims.decorative": "machine",
     "gate.claims.strength_unavailable": "machine",
     "gate.claims.shadow": "machine",
-    "onboard.block.conventions": "machine"
+    "onboard.block.conventions": "machine",
+    "knowledge.claims.error.premise": "machine",
+    "knowledge.claims.decision_out": "machine"
   }
 };
 
@@ -22030,6 +22040,226 @@ var asOf = (runtime, paths, commit2) => {
   });
 };
 
+// src/guardian/assumptions.ts
+import { join as join45 } from "node:path";
+var ASSUMPTIONS_LOG = "assumptions.jsonl";
+var LEVELS3 = ["low", "medium", "high"];
+var ASSUMPTION_STATUSES = ["unverified", "verified", "false", "review"];
+var TRIGGER_KINDS = ["date", "file", "event"];
+var assumptionsPath = (paths) => toAbsolutePath(join45(paths.dir, ASSUMPTIONS_LOG));
+var pick4 = (options2, value2, fallback2) => options2.find((option3) => option3 === value2) ?? fallback2;
+var text11 = (record11, key3) => {
+  const value2 = record11[key3];
+  return typeof value2 === "string" ? value2 : "";
+};
+var triggerOf = (value2) => {
+  if (!isRecord(value2)) return void 0;
+  const kind = TRIGGER_KINDS.find((item2) => item2 === value2["kind"]);
+  const target5 = text11(value2, "value");
+  const hash2 = text11(value2, "hash");
+  return kind === void 0 || target5 === "" ? void 0 : { kind, value: target5, ...hash2 === "" ? {} : { hash: hash2 } };
+};
+var assumptionOf = (record11) => {
+  const id = text11(record11, "id");
+  const body2 = text11(record11, "text");
+  if (id === "" || body2 === "") return void 0;
+  const trigger2 = triggerOf(record11["trigger"]);
+  return {
+    id,
+    text: body2,
+    source: text11(record11, "source"),
+    impact: pick4(LEVELS3, record11["impact"], "medium"),
+    breaks: text11(record11, "breaks"),
+    confidence: pick4(LEVELS3, record11["confidence"], "medium"),
+    verify: text11(record11, "verify"),
+    status: pick4(ASSUMPTION_STATUSES, record11["status"], "unverified"),
+    at: text11(record11, "at"),
+    ...trigger2 === void 0 ? {} : { trigger: trigger2 }
+  };
+};
+var readAssumptions = (runtime, paths) => {
+  const content = runtime.readText(assumptionsPath(paths));
+  if (!content.ok) return [];
+  return content.value.split("\n").flatMap((line12) => {
+    const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
+    const item2 = parsed?.ok === true ? assumptionOf(parsed.value) : void 0;
+    return item2 === void 0 ? [] : [item2];
+  });
+};
+var writeAssumptions = (runtime, paths, list10) => runtime.mkdir(paths.dir).ok && runtime.writeText(assumptionsPath(paths), list10.map((item2) => `${JSON.stringify(item2)}
+`).join("")).ok;
+var fileHash = (runtime, root, file) => {
+  const content = runtime.readText(toAbsolutePath(join45(root, file)));
+  return content.ok ? sha256Hex(content.value) : "missing";
+};
+var due2 = (runtime, root, item2) => {
+  const trigger2 = item2.trigger;
+  if (trigger2 === void 0 || item2.status === "review" || item2.status === "false") return false;
+  if (trigger2.kind === "date") return runtime.now().slice(0, 10) >= trigger2.value;
+  if (trigger2.kind === "file")
+    return trigger2.hash !== void 0 && fileHash(runtime, root, trigger2.value) !== trigger2.hash;
+  return false;
+};
+var refreshTriggers = (runtime, paths) => {
+  const list10 = readAssumptions(runtime, paths);
+  const marked = list10.map(
+    (item2) => due2(runtime, paths.root, item2) ? { ...item2, status: "review" } : item2
+  );
+  if (marked.some((item2, index) => item2.status !== list10[index]?.status)) writeAssumptions(runtime, paths, marked);
+  return marked;
+};
+var nextAssumptionId = (list10) => `a${String(Math.max(0, ...list10.map((item2) => Number.parseInt(item2.id.slice(1), 10)).filter(Number.isFinite)) + 1)}`;
+var openHighImpact = (list10, ids4) => list10.filter(
+  (item2) => (ids4.includes(item2.id) || ids4.includes(item2.text)) && item2.impact === "high" && (item2.status === "unverified" || item2.status === "review")
+);
+
+// src/guardian/decisions.ts
+import { join as join46 } from "node:path";
+var DECISIONS_LOG = "decisions.jsonl";
+var DECISION_SOURCES = ["decide", "report"];
+var DECISION_CHOICES = ["followed", "overridden", "pending"];
+var decisionsPath = (paths) => toAbsolutePath(join46(paths.dir, DECISIONS_LOG));
+var texts3 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
+var optional2 = (record11, key3) => {
+  const value2 = record11[key3];
+  return typeof value2 === "string" && value2 !== "" ? { [key3]: value2 } : {};
+};
+var entryOf4 = (record11) => {
+  const { id, at: at6, subject: subject2, recommendation } = record11;
+  const source3 = DECISION_SOURCES.find((item2) => item2 === record11["source"]);
+  const decision2 = DECISION_CHOICES.find((item2) => item2 === record11["decision"]);
+  if (typeof id !== "string" || typeof at6 !== "string" || typeof subject2 !== "string") return void 0;
+  if (typeof recommendation !== "string" || source3 === void 0 || decision2 === void 0) return void 0;
+  return {
+    id,
+    source: source3,
+    at: at6,
+    subject: subject2,
+    recommendation,
+    evidence: texts3(record11["evidence"]),
+    decision: decision2,
+    paths: texts3(record11["paths"]),
+    ...optional2(record11, "criterion"),
+    ...optional2(record11, "choice"),
+    ...optional2(record11, "overrideReason"),
+    ...optional2(record11, "trigger")
+  };
+};
+var readDecisions = (runtime, paths) => {
+  const text31 = runtime.readText(decisionsPath(paths));
+  if (!text31.ok) return [];
+  return text31.value.split("\n").flatMap((line12) => {
+    const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
+    const entry2 = parsed?.ok === true && isRecord(parsed.value) ? entryOf4(parsed.value) : void 0;
+    return entry2 === void 0 ? [] : [entry2];
+  });
+};
+var nextDecisionId = (entries2) => `d${String(
+  Math.max(0, ...entries2.map((entry2) => Number.parseInt(entry2.id.replace(/^d/, ""), 10)).filter(Number.isFinite)) + 1
+)}`;
+var appendDecision = (runtime, paths, entry2) => {
+  const full = { id: nextDecisionId(readDecisions(runtime, paths)), ...entry2 };
+  return runtime.appendText(decisionsPath(paths), `${JSON.stringify(full)}
+`).ok ? full : void 0;
+};
+var forgetDecision = (runtime, paths, id) => {
+  const entries2 = readDecisions(runtime, paths);
+  if (!entries2.some((entry2) => entry2.id === id)) return false;
+  const kept = entries2.filter((entry2) => entry2.id !== id);
+  return runtime.writeText(decisionsPath(paths), kept.map((entry2) => `${JSON.stringify(entry2)}
+`).join("")).ok;
+};
+
+// src/knowledge/retraction.ts
+var PREMISE_KINDS = ["claim", "evidence", "assumption"];
+var parsePremise = (ref2) => {
+  const at6 = ref2.indexOf(":");
+  const kind = PREMISE_KINDS.find((item2) => item2 === ref2.slice(0, at6));
+  const id = ref2.slice(at6 + 1);
+  return at6 <= 0 || kind === void 0 || id === "" ? void 0 : { kind, id };
+};
+var evidenceOk = (runtime, paths, id) => {
+  const [task = "", index = ""] = id.split(":");
+  return readLedger2(runtime, paths.evidence(task))[Number.parseInt(index, 10) - 1]?.status === "passed";
+};
+var premiseExists = (runtime, paths, claims, premise) => {
+  switch (premise.kind) {
+    case "claim":
+      return claims.some((claim) => claim.id === premise.id);
+    case "assumption":
+      return readAssumptions(runtime, paths).some((item2) => item2.id === premise.id);
+    case "evidence": {
+      const [task = "", index = ""] = premise.id.split(":");
+      return readLedger2(runtime, paths.evidence(task))[Number.parseInt(index, 10) - 1] !== void 0;
+    }
+  }
+};
+var premiseReason = (graph, premise, seen) => {
+  switch (premise.kind) {
+    case "assumption":
+      return graph.assumptions.get(premise.id)?.status === "false" ? `assumption:${premise.id} refuted` : void 0;
+    case "evidence":
+      return graph.evidence(premise.id) ? void 0 : `evidence:${premise.id} not passing`;
+    case "claim": {
+      const view2 = graph.views.get(premise.id);
+      if (view2 === void 0) return `claim:${premise.id} unknown`;
+      if (view2.status !== "valid")
+        return `claim:${premise.id} ${view2.status}${view2.reason === void 0 ? "" : ` (${view2.reason})`}`;
+      const inner = outReason(graph, view2.claim, seen);
+      return inner === void 0 ? void 0 : `claim:${premise.id} out <- ${inner}`;
+    }
+  }
+};
+var outReason = (graph, claim, seen) => {
+  if (seen.has(claim.id)) return void 0;
+  const next2 = /* @__PURE__ */ new Set([...seen, claim.id]);
+  for (const ref2 of claim.because) {
+    const premise = parsePremise(ref2);
+    const reason = premise === void 0 ? void 0 : premiseReason(graph, premise, next2);
+    if (reason !== void 0) return reason;
+  }
+  return void 0;
+};
+var sticky = (claim) => {
+  const last = lastOf(claim, ["out", "renew", "in"]);
+  return last?.event === "out" ? last.reason ?? "out" : void 0;
+};
+var withRetractions = (runtime, paths, views) => {
+  const graph = {
+    views: new Map(views.map((view2) => [view2.claim.id, view2])),
+    assumptions: new Map(readAssumptions(runtime, paths).map((item2) => [item2.id, item2])),
+    evidence: (id) => evidenceOk(runtime, paths, id)
+  };
+  return views.map((view2) => {
+    if (view2.status !== "valid") return view2;
+    const live2 = outReason(graph, view2.claim, /* @__PURE__ */ new Set());
+    if (live2 !== void 0) return { ...view2, status: "out", reason: live2 };
+    const held = sticky(view2.claim);
+    return held === void 0 ? view2 : { ...view2, status: "out", reason: `${held}; waiting for its own check or renew` };
+  });
+};
+var settleRetractions = (runtime, paths, views) => {
+  for (const view2 of views) {
+    if (view2.status !== "out" || sticky(view2.claim) !== void 0) continue;
+    appendClaimEvent(runtime, paths, {
+      event: "out",
+      id: view2.claim.id,
+      recordedAt: runtime.now(),
+      ...view2.reason === void 0 ? {} : { reason: view2.reason }
+    });
+  }
+};
+var decisionPremises = (decision2, assumptions) => assumptions.filter(
+  (item2) => item2.source === decision2.id || decision2.evidence.includes(`assumption:${item2.id}`) || item2.source !== "" && decision2.paths.includes(item2.source)
+);
+var outDecisions = (runtime, paths) => {
+  const assumptions = readAssumptions(runtime, paths);
+  return readDecisions(runtime, paths).flatMap((decision2) => {
+    const refuted = decisionPremises(decision2, assumptions).find((item2) => item2.status === "false");
+    return refuted === void 0 ? [] : [{ subject: `decision:${decision2.id}`, reason: `assumption:${refuted.id} refuted` }];
+  });
+};
+
 // src/knowledge/status.ts
 var report = (anchor, options2) => {
   const state = anchorState(anchor, options2.read(anchor.path));
@@ -22062,7 +22292,11 @@ var viewsOf = (runtime, paths, claims = readClaims(runtime, paths)) => {
     read: diskReader(runtime, paths.root),
     candidates: memoCandidates(() => trackedFiles2(runtime, paths))
   };
-  return claims.map((claim) => evaluateClaim(claim, options2));
+  return withRetractions(
+    runtime,
+    paths,
+    claims.map((claim) => evaluateClaim(claim, options2))
+  );
 };
 var injectable = (views) => views.filter((view2) => view2.status === "valid");
 
@@ -22445,7 +22679,10 @@ var claimsListCommand = {
   usage: "finitemonkey claims list",
   status: "ready",
   run: (ctx) => inGuardianRepo(ctx, (root) => {
-    const views = viewsOf(ctx.runtime, fmPaths(root));
+    const paths = fmPaths(root);
+    const views = viewsOf(ctx.runtime, paths);
+    settleRetractions(ctx.runtime, paths, views);
+    const decisions = outDecisions(ctx.runtime, paths);
     return success(
       {
         schema: CLAIMS_SCHEMA,
@@ -22455,12 +22692,17 @@ var claimsListCommand = {
           kind: view2.claim.kind,
           verified: view2.claim.kind === "check",
           status: view2.status,
+          ...view2.reason === void 0 ? {} : { reason: view2.reason },
           anchors: view2.anchors.map((item2) => ({ ...item2.anchor, state: item2.state })),
           origin: view2.claim.origin,
           recordedAt: view2.claim.recordedAt
-        }))
+        })),
+        decisions
       },
-      views.length === 0 ? [ctx.t("knowledge.claims.empty")] : views.map((view2) => viewLine(ctx, view2))
+      [
+        ...views.length === 0 ? [ctx.t("knowledge.claims.empty")] : views.map((view2) => viewLine(ctx, view2)),
+        ...decisions.map((item2) => ctx.t("knowledge.claims.decision_out", { ...item2 }))
+      ]
     );
   })
 };
@@ -22470,6 +22712,13 @@ var anchorSpec = (spec2) => {
 };
 var sourceOf = (ctx, wanted) => ORIGIN_SOURCES.find((item2) => item2 === wanted) ?? (isPerson(ctx) ? "person" : "agent");
 var attributionOf = (source3) => source3 === "person" ? "person" : source3 === "external" ? "tool" : "agent";
+var badPremise = (ctx, paths, refs) => {
+  const claims = readClaims(ctx.runtime, paths);
+  return refs.find((ref2) => {
+    const premise = parsePremise(ref2);
+    return premise === void 0 || !premiseExists(ctx.runtime, paths, claims, premise);
+  });
+};
 var derivedFrom = (values, commit2) => ({
   ...commit2 === void 0 ? {} : { commit: commit2 },
   ...Object.fromEntries(
@@ -22510,6 +22759,8 @@ var claimsAddCommand = {
         return fail2(ctx, "knowledge.claims.error.anchor", ADD_USAGE2, {
           anchor: missing3.symbol === void 0 ? missing3.path : `${missing3.path}#${missing3.symbol}`
         });
+      const premise = badPremise(ctx, paths, listOption(args2.values, "because"));
+      if (premise !== void 0) return fail2(ctx, "knowledge.claims.error.premise", ADD_USAGE2, { premise });
       const git4 = gitAt(ctx.runtime, root);
       const commit2 = headSha(git4);
       const tree = treeHash(git4);
@@ -22552,7 +22803,15 @@ var claimsWhyCommand = {
     const id = args2.positionals[0]?.trim() ?? "";
     if (id === "") return Promise.resolve(fail2(ctx, "knowledge.claims.error.usage", "finitemonkey claims why <id>"));
     return withClaim(ctx, id, (paths) => {
-      const chain2 = whyChain(ctx.runtime, paths, id);
+      const view2 = viewsOf(ctx.runtime, paths).find((item2) => item2.claim.id === id);
+      const status = view2 === void 0 ? [] : [
+        {
+          depth: 0,
+          label: "status",
+          detail: `${view2.status}${view2.reason === void 0 ? "" : `: ${view2.reason}`}`
+        }
+      ];
+      const chain2 = [...status, ...whyChain(ctx.runtime, paths, id)];
       return success(
         { schema: CLAIMS_SCHEMA, id, chain: chain2 },
         chain2.map((step4) => `${"  ".repeat(step4.depth)}${step4.label}: ${step4.detail}`)
@@ -22637,7 +22896,7 @@ var CLAIMS_COMMANDS = [
 ];
 
 // src/conceitos/book.ts
-import { join as join45 } from "node:path";
+import { join as join47 } from "node:path";
 
 // src/conceitos/concepts.ts
 var CONCEPT_IDS = [
@@ -22682,12 +22941,12 @@ var domainOf = (id) => CONCEPTS.find((concept) => concept.id === id)?.domain ?? 
 // src/conceitos/book.ts
 var BOOK_FILE = "conceitos.yml";
 var EMPTY_BOOK = { concepts: {}, baselineGreen: 0, alarmGreen: -1 };
-var bookPath = (paths) => toAbsolutePath(join45(paths.dir, BOOK_FILE));
+var bookPath = (paths) => toAbsolutePath(join47(paths.dir, BOOK_FILE));
 var integer2 = (value2, fallback2) => {
   const parsed = typeof value2 === "number" ? value2 : Number.parseInt(String(value2), 10);
   return Number.isInteger(parsed) ? parsed : fallback2;
 };
-var entryOf4 = (raw) => {
+var entryOf5 = (raw) => {
   if (!isRecord(raw)) return void 0;
   const level = parseConceptLevel(typeof raw["level"] === "string" ? raw["level"] : void 0);
   const at6 = raw["updated_at"];
@@ -22709,7 +22968,7 @@ var readBook = (runtime, paths) => {
   return {
     concepts: Object.fromEntries(
       CONCEPT_IDS.flatMap((id) => {
-        const entry2 = entryOf4(concepts[id]);
+        const entry2 = entryOf5(concepts[id]);
         return entry2 === void 0 ? [] : [[id, entry2]];
       })
     ),
@@ -23010,7 +23269,7 @@ var conceitosMarkCommand = {
 };
 
 // src/commands/contract.ts
-import { join as join47 } from "node:path";
+import { join as join49 } from "node:path";
 
 // src/apicontract/framework.ts
 var dependencies = (packageJson) => {
@@ -23528,7 +23787,7 @@ var mockFiles = (registry, project) => {
 var MOCK_DIRS = ["src/mocks", "app/mocks", "lib/mocks"];
 
 // src/apicontract/load.ts
-import { join as join46 } from "node:path";
+import { join as join48 } from "node:path";
 
 // src/apicontract/coverage.ts
 var HANDLER = /\bhttp\.(get|post|put|patch|delete)\(\s*["'`]([^"'`]+)["'`]/g;
@@ -23567,14 +23826,14 @@ var coverageProblems = (registry, routes) => {
 
 // src/apicontract/load.ts
 var loadRegistry = (runtime, root) => {
-  const raw = runtime.readText(toAbsolutePath(join46(root, CONTRACT_FILE)));
+  const raw = runtime.readText(toAbsolutePath(join48(root, CONTRACT_FILE)));
   if (!raw.ok) return { kind: "absent" };
   const parsed = parseRegistry2(raw.value);
   return parsed.ok ? { kind: "ok", registry: parsed.value } : { kind: "invalid", issues: parsed.error };
 };
 var SOURCE4 = /\.[cm]?[jt]sx?$/;
 var mockSources = (runtime, root) => MOCK_DIRS.flatMap((dir) => {
-  const base = toAbsolutePath(join46(root, dir));
+  const base = toAbsolutePath(join48(root, dir));
   const files = runtime.walkFiles(base);
   if (!files.ok) return [];
   return files.value.flatMap((file) => {
@@ -23608,10 +23867,10 @@ var API_CONTRACT_SCHEMA = "finitemonkey/api-contract@1";
 var USAGE4 = "finitemonkey contract [mocks|coverage] [--write] [--overwrite]";
 var projectAt2 = (ctx, root) => detectProject(
   (relative28) => {
-    const text31 = ctx.runtime.readText(toAbsolutePath(join47(root, relative28)));
+    const text31 = ctx.runtime.readText(toAbsolutePath(join49(root, relative28)));
     return text31.ok ? text31.value : void 0;
   },
-  (relative28) => ctx.runtime.stat(toAbsolutePath(join47(root, relative28))) !== void 0
+  (relative28) => ctx.runtime.stat(toAbsolutePath(join49(root, relative28))) !== void 0
 );
 var withRegistry = (ctx, run10) => {
   const root = projectRoot(ctx);
@@ -24261,14 +24520,14 @@ var withDeadline = (work, ms, startTimer) => new Promise((resolve4, reject2) => 
 // src/review/findings.ts
 var GROUPS = ["must", "should", "nice"];
 var VERDICTS = ["approve", "approve-with-changes", "request-changes"];
-var text11 = (record11, key3) => {
+var text12 = (record11, key3) => {
   const value2 = record11[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
 var reproOf = (value2) => {
   if (!isRecord(value2)) return void 0;
-  const command = text11(value2, "command");
-  const expect = text11(value2, "expect");
+  const command = text12(value2, "command");
+  const expect = text12(value2, "expect");
   return command === "" || expect === "" ? void 0 : { command, expect };
 };
 var findingOf2 = (value2, index) => {
@@ -24276,17 +24535,17 @@ var findingOf2 = (value2, index) => {
   const group = GROUPS.find((item2) => item2 === value2["group"]);
   if (group === void 0) return `finding ${String(index + 1)} needs group must, should or nice`;
   const fields2 = ["what", "problem", "fix", "ifNotFixed"];
-  const missing3 = fields2.filter((key3) => text11(value2, key3) === "");
+  const missing3 = fields2.filter((key3) => text12(value2, key3) === "");
   if (missing3.length > 0) return `finding ${String(index + 1)} is missing ${missing3.join(", ")}`;
   const repro = reproOf(value2["repro"]);
   const demoted = group === "must" && repro === void 0;
   return {
     id: index + 1,
     group: demoted ? "should" : group,
-    what: text11(value2, "what"),
-    problem: text11(value2, "problem"),
-    fix: text11(value2, "fix"),
-    ifNotFixed: text11(value2, "ifNotFixed"),
+    what: text12(value2, "what"),
+    problem: text12(value2, "problem"),
+    fix: text12(value2, "fix"),
+    ifNotFixed: text12(value2, "ifNotFixed"),
     ...repro === void 0 ? {} : { repro },
     activeRisk: value2["activeRisk"] === true,
     demoted
@@ -24306,10 +24565,10 @@ var parseCritique = (value2) => {
 };
 
 // src/review/report.ts
-import { join as join49 } from "node:path";
+import { join as join51 } from "node:path";
 
 // src/review/reproduce.ts
-import { join as join48 } from "node:path";
+import { join as join50 } from "node:path";
 var REVIEW_LEDGER = ".finitemonkey/review/ledger.jsonl";
 var REPRO_TIMEOUT_MS = 12e4;
 var fails = (run10) => run10 !== void 0 && run10.exitCode !== 0;
@@ -24318,7 +24577,7 @@ var outcomeOf2 = (base, head) => {
   if (fails(head) && !fails(base)) return "head-only";
   return fails(head) && fails(base) ? "already-there" : "not-reproduced";
 };
-var worktreeDir = (root, side) => toAbsolutePath(join48(root, ".finitemonkey", "review", `worktree-${side}`));
+var worktreeDir = (root, side) => toAbsolutePath(join50(root, ".finitemonkey", "review", `worktree-${side}`));
 var runAt = (runtime, root, side, rev, findings2) => {
   const dir = worktreeDir(root, side);
   runtime.git(["worktree", "remove", "--force", dir], root);
@@ -24345,9 +24604,9 @@ var reproduce = (runtime, root, sides, findings2) => {
   const musts = findings2.filter((finding6) => finding6.group === "must");
   const runs = [...runAt(runtime, root, "base", sides.base, musts), ...runAt(runtime, root, "head", sides.head, musts)];
   if (runs.length > 0) {
-    runtime.mkdir(toAbsolutePath(join48(root, ".finitemonkey", "review")));
+    runtime.mkdir(toAbsolutePath(join50(root, ".finitemonkey", "review")));
     runtime.appendText(
-      toAbsolutePath(join48(root, REVIEW_LEDGER)),
+      toAbsolutePath(join50(root, REVIEW_LEDGER)),
       runs.map((run10) => `${JSON.stringify(run10)}
 `).join("")
     );
@@ -24374,7 +24633,7 @@ var settle = (item2) => {
 
 // src/review/report.ts
 var readLedger3 = (runtime, root) => {
-  const raw = runtime.readText(toAbsolutePath(join49(root, REVIEW_LEDGER)));
+  const raw = runtime.readText(toAbsolutePath(join51(root, REVIEW_LEDGER)));
   if (!raw.ok) return [];
   return raw.value.split("\n").flatMap((line12) => {
     const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
@@ -24564,7 +24823,7 @@ var isSchemaCandidate = (file) => file.endsWith(".prisma") || /(?:^|\/)(?:schema
 
 // src/datamap/map.ts
 var DATA_MAP_FILE = ".finitemonkey/data-map.yml";
-var text12 = (record11, key3) => {
+var text13 = (record11, key3) => {
   const value2 = record11[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
@@ -24580,10 +24839,10 @@ var readDataMap = (runtime, root) => {
     return [
       {
         field: item2["field"],
-        legalBasis: text12(item2, "legalBasis"),
-        retention: text12(item2, "retention"),
-        deletedIn: text12(item2, "deletedIn"),
-        ai: text12(item2, "ai")
+        legalBasis: text13(item2, "legalBasis"),
+        retention: text13(item2, "retention"),
+        deletedIn: text13(item2, "deletedIn"),
+        ai: text13(item2, "ai")
       }
     ];
   });
@@ -24713,12 +24972,12 @@ var resolveCommit = (git4, ref2) => {
 };
 
 // src/debt/ledger.ts
-import { join as join50 } from "node:path";
+import { join as join52 } from "node:path";
 var DECISIONS_FILE = "decisions.jsonl";
-var decisionsPath = (paths) => toAbsolutePath(join50(paths.dir, "tasks", DECISIONS_FILE));
-var optional2 = (record11, key3) => typeof record11[key3] === "string" ? { [key3]: record11[key3] } : {};
+var decisionsPath2 = (paths) => toAbsolutePath(join52(paths.dir, "tasks", DECISIONS_FILE));
+var optional3 = (record11, key3) => typeof record11[key3] === "string" ? { [key3]: record11[key3] } : {};
 var readShortcutRows = (runtime, paths) => {
-  const text31 = runtime.readText(decisionsPath(paths));
+  const text31 = runtime.readText(decisionsPath2(paths));
   if (!text31.ok) return [];
   return text31.value.split("\n").flatMap((line12) => {
     const parsed = parseJsonObject(line12);
@@ -24732,9 +24991,9 @@ var readShortcutRows = (runtime, paths) => {
         task,
         at: at6,
         what,
-        ...optional2(parsed.value, "ceiling"),
-        ...optional2(parsed.value, "trigger"),
-        ...optional2(parsed.value, "where")
+        ...optional3(parsed.value, "ceiling"),
+        ...optional3(parsed.value, "trigger"),
+        ...optional3(parsed.value, "where")
       }
     ];
   });
@@ -24742,7 +25001,7 @@ var readShortcutRows = (runtime, paths) => {
 var recordShortcuts = (runtime, paths, task, shortcuts) => {
   const known3 = new Set(readShortcutRows(runtime, paths).map((row3) => `${row3.task}\0${row3.what}`));
   const rows2 = shortcuts.filter((item2) => !known3.has(`${task}\0${item2.what}`)).map((item2) => ({ type: "shortcut", task, at: runtime.now(), ...item2 }));
-  if (rows2.length > 0) runtime.appendText(decisionsPath(paths), rows2.map((row3) => `${JSON.stringify(row3)}
+  if (rows2.length > 0) runtime.appendText(decisionsPath2(paths), rows2.map((row3) => `${JSON.stringify(row3)}
 `).join(""));
   return rows2;
 };
@@ -24931,79 +25190,6 @@ var renderDecision = (t, topic, date) => {
   ].join("\n");
   return writeFront(front, body2);
 };
-
-// src/guardian/assumptions.ts
-import { join as join51 } from "node:path";
-var ASSUMPTIONS_LOG = "assumptions.jsonl";
-var LEVELS3 = ["low", "medium", "high"];
-var ASSUMPTION_STATUSES = ["unverified", "verified", "false", "review"];
-var TRIGGER_KINDS = ["date", "file", "event"];
-var assumptionsPath = (paths) => toAbsolutePath(join51(paths.dir, ASSUMPTIONS_LOG));
-var pick4 = (options2, value2, fallback2) => options2.find((option3) => option3 === value2) ?? fallback2;
-var text13 = (record11, key3) => {
-  const value2 = record11[key3];
-  return typeof value2 === "string" ? value2 : "";
-};
-var triggerOf = (value2) => {
-  if (!isRecord(value2)) return void 0;
-  const kind = TRIGGER_KINDS.find((item2) => item2 === value2["kind"]);
-  const target5 = text13(value2, "value");
-  const hash2 = text13(value2, "hash");
-  return kind === void 0 || target5 === "" ? void 0 : { kind, value: target5, ...hash2 === "" ? {} : { hash: hash2 } };
-};
-var assumptionOf = (record11) => {
-  const id = text13(record11, "id");
-  const body2 = text13(record11, "text");
-  if (id === "" || body2 === "") return void 0;
-  const trigger2 = triggerOf(record11["trigger"]);
-  return {
-    id,
-    text: body2,
-    source: text13(record11, "source"),
-    impact: pick4(LEVELS3, record11["impact"], "medium"),
-    breaks: text13(record11, "breaks"),
-    confidence: pick4(LEVELS3, record11["confidence"], "medium"),
-    verify: text13(record11, "verify"),
-    status: pick4(ASSUMPTION_STATUSES, record11["status"], "unverified"),
-    at: text13(record11, "at"),
-    ...trigger2 === void 0 ? {} : { trigger: trigger2 }
-  };
-};
-var readAssumptions = (runtime, paths) => {
-  const content = runtime.readText(assumptionsPath(paths));
-  if (!content.ok) return [];
-  return content.value.split("\n").flatMap((line12) => {
-    const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
-    const item2 = parsed?.ok === true ? assumptionOf(parsed.value) : void 0;
-    return item2 === void 0 ? [] : [item2];
-  });
-};
-var writeAssumptions = (runtime, paths, list10) => runtime.mkdir(paths.dir).ok && runtime.writeText(assumptionsPath(paths), list10.map((item2) => `${JSON.stringify(item2)}
-`).join("")).ok;
-var fileHash = (runtime, root, file) => {
-  const content = runtime.readText(toAbsolutePath(join51(root, file)));
-  return content.ok ? sha256Hex(content.value) : "missing";
-};
-var due2 = (runtime, root, item2) => {
-  const trigger2 = item2.trigger;
-  if (trigger2 === void 0 || item2.status === "review" || item2.status === "false") return false;
-  if (trigger2.kind === "date") return runtime.now().slice(0, 10) >= trigger2.value;
-  if (trigger2.kind === "file")
-    return trigger2.hash !== void 0 && fileHash(runtime, root, trigger2.value) !== trigger2.hash;
-  return false;
-};
-var refreshTriggers = (runtime, paths) => {
-  const list10 = readAssumptions(runtime, paths);
-  const marked = list10.map(
-    (item2) => due2(runtime, paths.root, item2) ? { ...item2, status: "review" } : item2
-  );
-  if (marked.some((item2, index) => item2.status !== list10[index]?.status)) writeAssumptions(runtime, paths, marked);
-  return marked;
-};
-var nextAssumptionId = (list10) => `a${String(Math.max(0, ...list10.map((item2) => Number.parseInt(item2.id.slice(1), 10)).filter(Number.isFinite)) + 1)}`;
-var openHighImpact = (list10, ids4) => list10.filter(
-  (item2) => (ids4.includes(item2.id) || ids4.includes(item2.text)) && item2.impact === "high" && (item2.status === "unverified" || item2.status === "review")
-);
 
 // src/guardian/record.ts
 var FACT3 = /^\s*(?:[-*|]\s*)?\**FACT\**\s*[:|]\s*(.+)$/;
@@ -25199,63 +25385,6 @@ var decideRevokeCommand = {
       );
     });
   }
-};
-
-// src/guardian/decisions.ts
-import { join as join52 } from "node:path";
-var DECISIONS_LOG = "decisions.jsonl";
-var DECISION_SOURCES = ["decide", "report"];
-var DECISION_CHOICES = ["followed", "overridden", "pending"];
-var decisionsPath2 = (paths) => toAbsolutePath(join52(paths.dir, DECISIONS_LOG));
-var texts3 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
-var optional3 = (record11, key3) => {
-  const value2 = record11[key3];
-  return typeof value2 === "string" && value2 !== "" ? { [key3]: value2 } : {};
-};
-var entryOf5 = (record11) => {
-  const { id, at: at6, subject: subject2, recommendation } = record11;
-  const source3 = DECISION_SOURCES.find((item2) => item2 === record11["source"]);
-  const decision2 = DECISION_CHOICES.find((item2) => item2 === record11["decision"]);
-  if (typeof id !== "string" || typeof at6 !== "string" || typeof subject2 !== "string") return void 0;
-  if (typeof recommendation !== "string" || source3 === void 0 || decision2 === void 0) return void 0;
-  return {
-    id,
-    source: source3,
-    at: at6,
-    subject: subject2,
-    recommendation,
-    evidence: texts3(record11["evidence"]),
-    decision: decision2,
-    paths: texts3(record11["paths"]),
-    ...optional3(record11, "criterion"),
-    ...optional3(record11, "choice"),
-    ...optional3(record11, "overrideReason"),
-    ...optional3(record11, "trigger")
-  };
-};
-var readDecisions = (runtime, paths) => {
-  const text31 = runtime.readText(decisionsPath2(paths));
-  if (!text31.ok) return [];
-  return text31.value.split("\n").flatMap((line12) => {
-    const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
-    const entry2 = parsed?.ok === true && isRecord(parsed.value) ? entryOf5(parsed.value) : void 0;
-    return entry2 === void 0 ? [] : [entry2];
-  });
-};
-var nextDecisionId = (entries2) => `d${String(
-  Math.max(0, ...entries2.map((entry2) => Number.parseInt(entry2.id.replace(/^d/, ""), 10)).filter(Number.isFinite)) + 1
-)}`;
-var appendDecision = (runtime, paths, entry2) => {
-  const full = { id: nextDecisionId(readDecisions(runtime, paths)), ...entry2 };
-  return runtime.appendText(decisionsPath2(paths), `${JSON.stringify(full)}
-`).ok ? full : void 0;
-};
-var forgetDecision = (runtime, paths, id) => {
-  const entries2 = readDecisions(runtime, paths);
-  if (!entries2.some((entry2) => entry2.id === id)) return false;
-  const kept = entries2.filter((entry2) => entry2.id !== id);
-  return runtime.writeText(decisionsPath2(paths), kept.map((entry2) => `${JSON.stringify(entry2)}
-`).join("")).ok;
 };
 
 // src/commands/decide-accept.ts
@@ -44461,10 +44590,8 @@ var claimsOnSessionStart = (input) => {
   const claims = readClaims(input.runtime, paths);
   if (claims.length === 0) return allow9;
   const read10 = diskReader(input.runtime, paths.root);
-  const views = injectable(claims.map((claim) => evaluateClaim(claim, { read: read10, candidates: () => [] }))).slice(
-    0,
-    MAX_INJECTED
-  );
+  const evaluated = claims.map((claim) => evaluateClaim(claim, { read: read10, candidates: () => [] }));
+  const views = injectable(withRetractions(input.runtime, paths, evaluated)).slice(0, MAX_INJECTED);
   if (views.length === 0) return allow9;
   if (featureMode(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE) !== "active") {
     recordFeatureShadow(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE, { injected: views.length });
