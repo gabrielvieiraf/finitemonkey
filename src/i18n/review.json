@@ -2212,7 +2212,14 @@
     "command.guardian_forecast.summary": "machine",
     "guardian.forecast.line": "machine",
     "guardian.forecast.none": "machine",
-    "guardian.signal.escalation": "machine"
+    "guardian.signal.escalation": "machine",
+    "command.research_source.summary": "machine",
+    "command.research_status.summary": "machine",
+    "research.log.created": "machine",
+    "research.log.status": "machine",
+    "research.log.stop_note": "machine",
+    "research.log.error.source": "machine",
+    "research.log.error.missing": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4427,6 +4434,13 @@
     "command.guardian_forecast.summary": "machine",
     "guardian.forecast.line": "machine",
     "guardian.forecast.none": "machine",
-    "guardian.signal.escalation": "machine"
+    "guardian.signal.escalation": "machine",
+    "command.research_source.summary": "machine",
+    "command.research_status.summary": "machine",
+    "research.log.created": "machine",
+    "research.log.status": "machine",
+    "research.log.stop_note": "machine",
+    "research.log.error.source": "machine",
+    "research.log.error.missing": "machine"
   }
 }

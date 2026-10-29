@@ -12,6 +12,7 @@ when_to_use: >-
 2. Write the question and the decision it unlocks. Pass only those, plus the output of `finitemonkey map` and the path of the inventory, to the `researcher` agent. Never pass the conversation.
 3. Copy the researcher's tables into the record: sources (ID, source, URL, accessed date, kind, version), findings (finding, strength, sources) and versions (library, version, where it was checked, date). Keep "Not read" and "Not verified" on top and fill them honestly.
 4. Primary sources first. A vendor number is kind `vendor`. A third-party documentation index is kind `index` with its version and date, and never makes a finding strong alone.
-5. Run `research check`. Fix what it lists. Bring "Text for the plan" in with `plan consolidate`.
+5. When the research serves a decision record, start it with `research new <question> --decision <record> --option <o> --criterion <c> --unknown <critical unknown> --stop <condition>` (add `--risk high` when the decision is costly to undo). Log every source with `research source <slug> <url> --changed nothing|option|unknown` (with `--resolves <unknown>` when it answers one). When the command says to stop or switch focus, propose that to the person instead of reading more.
+6. Run `research check`. Fix what it lists. Bring "Text for the plan" in with `plan consolidate`.
 
 If a command answers `unknown_command` or `not_implemented`, say in one line that this part of Finite Monkey is not in this version yet.

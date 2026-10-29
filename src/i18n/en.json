@@ -2211,5 +2211,12 @@
   "command.guardian_forecast.summary": "Forecast a task from the person's own past tasks of the same size and area (needs five)",
   "guardian.forecast.line": "Your last {count} tasks of size {size} in {areas} took {hours} h (median) and {runs} gate runs (median): {tasks}.",
   "guardian.forecast.none": "Fewer than five finished tasks of this size and area; no forecast.",
-  "guardian.signal.escalation": "{subject}: still one check short after {detail} h, more than twice the median of comparable tasks"
+  "guardian.signal.escalation": "{subject}: still one check short after {detail} h, more than twice the median of comparable tasks",
+  "command.research_source.summary": "Log one source of a research question and what it changed: an option, a critical unknown or nothing",
+  "command.research_status.summary": "Show a research question: sources, open critical unknowns and whether to stop",
+  "research.log.created": "Research log .finitemonkey/research/{slug}.jsonl serves {decision}.",
+  "research.log.status": "{sources} sources; {quiet} in a row changed nothing; open critical unknowns: {open}",
+  "research.log.stop_note": "The last {quiet} sources changed no option and no unknown, and no critical unknown is open. Stop condition: {stop}. Propose stopping here or switching focus.",
+  "research.log.error.source": "Give the research slug, the source URL and --changed nothing, option or unknown.",
+  "research.log.error.missing": "No research log for {slug}; start one with finitemonkey research new <question> --decision <record>."
 }

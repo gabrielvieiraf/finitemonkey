@@ -9,6 +9,7 @@ import { renderResearch } from "../research/template.js";
 import { activeCheckOf, criterionOfCheck, domainOfText, recordHorizon } from "../signals/blind-band.js";
 import { fmPaths } from "../task/paths.js";
 import { notRepository, repoOf } from "./git-problems.js";
+import { openResearchLog, RESEARCH_LOG_OPTIONS } from "./research-log.js";
 import type { CommandSpec } from "./types.js";
 
 type Root = NonNullable<ReturnType<typeof repoOf>>["root"];
@@ -61,12 +62,16 @@ const newRecord = (ctx: Ctx, root: Root, topic: string): CommandResult => {
   };
 };
 
+const NEW_USAGE =
+  "finitemonkey research new <topic or question> [--decision <record> --option <o> --criterion <c> --unknown <u> --stop <condition> --risk normal|high]";
+
 export const researchNewCommand: CommandSpec = {
   path: ["research", "new"],
   summaryKey: "command.research_new.summary",
-  usage: "finitemonkey research new <topic>",
+  usage: NEW_USAGE,
   status: "ready",
   maxPositionals: 1,
+  options: RESEARCH_LOG_OPTIONS,
   run: (ctx, args) => {
     const topic = args.positionals[0]?.trim() ?? "";
     if (topic === "")
@@ -76,7 +81,13 @@ export const researchNewCommand: CommandSpec = {
           usageProblem("invalid_arguments", "inventory.error.topic", "finitemonkey research new <topic>"),
         ),
       );
-    return inRepo(ctx, (root) => newRecord(ctx, root, topic));
+    return inRepo(ctx, (root) => {
+      const opened = openResearchLog(ctx, root, topic, args.values);
+      if (opened.kind === "failed") return opened.result;
+      const made = newRecord(ctx, root, topic);
+      if (!made.ok || opened.kind === "none") return made;
+      return { ...made, human: [...(made.human ?? []), ctx.t("research.log.created", opened)] };
+    });
   },
 };
 

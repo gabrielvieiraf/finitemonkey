@@ -89,6 +89,7 @@ import { presetCommand } from "./preset.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
+import { researchSourceCommand, researchStatusCommand } from "./research-log.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
@@ -279,6 +280,8 @@ export const REGISTRY = [
   guardianScanCommand,
   guardianWeighCommand,
   guardianForecastCommand,
+  researchSourceCommand,
+  researchStatusCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

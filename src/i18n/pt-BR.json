@@ -2211,5 +2211,12 @@
   "command.guardian_forecast.summary": "Prevê uma tarefa a partir das tarefas passadas da própria pessoa, do mesmo tamanho e área (precisa de cinco)",
   "guardian.forecast.line": "Suas últimas {count} tarefas de tamanho {size} em {areas} levaram {hours} h (mediana) e {runs} rodadas do gate (mediana): {tasks}.",
   "guardian.forecast.none": "Menos de cinco tarefas terminadas deste tamanho e área; sem previsão.",
-  "guardian.signal.escalation": "{subject}: ainda a um check de passar depois de {detail} h, mais que o dobro da mediana das tarefas comparáveis"
+  "guardian.signal.escalation": "{subject}: ainda a um check de passar depois de {detail} h, mais que o dobro da mediana das tarefas comparáveis",
+  "command.research_source.summary": "Registra uma fonte de uma pergunta de pesquisa e o que ela mudou: uma opção, uma incógnita crítica ou nada",
+  "command.research_status.summary": "Mostra uma pergunta de pesquisa: fontes, incógnitas críticas em aberto e se é hora de parar",
+  "research.log.created": "Log de pesquisa .finitemonkey/research/{slug}.jsonl serve a {decision}.",
+  "research.log.status": "{sources} fontes; {quiet} seguidas não mudaram nada; incógnitas críticas em aberto: {open}",
+  "research.log.stop_note": "As últimas {quiet} fontes não mudaram nenhuma opção nem incógnita, e não há incógnita crítica em aberto. Condição de parada: {stop}. Proponha parar aqui ou mudar o foco.",
+  "research.log.error.source": "Informe o slug da pesquisa, a URL da fonte e --changed nothing, option ou unknown.",
+  "research.log.error.missing": "Nenhum log de pesquisa para {slug}; comece um com finitemonkey research new <pergunta> --decision <registro>."
 }
