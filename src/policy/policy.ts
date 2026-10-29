@@ -66,6 +66,9 @@ export const OPTIONAL_GUARDS = [
   "perfil",
   "conceitos",
   "alert-budget",
+  "syntax-check",
+  "early-loops",
+  "reproduce-first",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -97,6 +100,9 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "gate-isolated",
   "gate-hold",
   "test-pin",
+  "syntax-check",
+  "early-loops",
+  "reproduce-first",
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];

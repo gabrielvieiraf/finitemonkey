@@ -34,6 +34,14 @@ import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/e
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
+import {
+  EARLY_GUARD,
+  earlyLoopTriggers,
+  REPRO_GUARD,
+  reproduceFirst,
+  SYNTAX_GUARD,
+  syntaxAfterEdit,
+} from "../signals/early.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
@@ -194,6 +202,13 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "rules-stop", damage: false, handlers: { Stop: [rulesStop] } },
   { id: "reminders", damage: false, handlers: REMINDERS_HANDLERS },
   { id: "learnings", damage: false, handlers: LEARNINGS_HANDLERS },
+  { id: SYNTAX_GUARD, damage: false, handlers: { PostToolUse: [syntaxAfterEdit] } },
+  {
+    id: EARLY_GUARD,
+    damage: false,
+    handlers: { PostToolUse: [earlyLoopTriggers], PostToolUseFailure: [earlyLoopTriggers] },
+  },
+  { id: REPRO_GUARD, damage: false, handlers: { PreToolUse: [reproduceFirst] } },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);

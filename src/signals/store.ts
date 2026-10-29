@@ -32,7 +32,13 @@ interface EntryBase {
 }
 
 export type SignalEntry =
-  | (EntryBase & { readonly kind: "error"; readonly sig: string; readonly sample: string; readonly tool: string })
+  | (EntryBase & {
+      readonly kind: "error";
+      readonly sig: string;
+      readonly sample: string;
+      readonly tool: string;
+      readonly files?: readonly string[];
+    })
   | (EntryBase & { readonly kind: "edit"; readonly file: string; readonly hash: string; readonly undo: boolean })
   | (EntryBase & { readonly kind: "prompt"; readonly fp: readonly string[]; readonly progress: string })
   | (EntryBase & { readonly kind: "permission"; readonly key: string })
@@ -47,7 +53,11 @@ export type SignalEntry =
   | (EntryBase & { readonly kind: "release"; readonly sig: string })
   | (EntryBase & { readonly kind: "fourth"; readonly sig: string; readonly mode: string })
   | (EntryBase & { readonly kind: "hypothesis"; readonly sig: string; readonly text: string })
-  | (EntryBase & { readonly kind: "stopped"; readonly sig: string; readonly mode: string });
+  | (EntryBase & { readonly kind: "stopped"; readonly sig: string; readonly mode: string })
+  | (EntryBase & { readonly kind: "run"; readonly tool: string })
+  | (EntryBase & { readonly kind: "edit_failed"; readonly file: string; readonly why: "tool" | "syntax" })
+  | (EntryBase & { readonly kind: "located"; readonly file: string; readonly line: number; readonly reason: string })
+  | (EntryBase & { readonly kind: "checkpoint"; readonly task: string });
 
 export type SignalKind = SignalEntry["kind"];
 
@@ -64,11 +74,46 @@ const count = (raw: JsonObject, key: string): number => {
 const strings = (value: unknown): readonly string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
+const parseEarly = (raw: JsonObject, base: EntryBase): SignalEntry | undefined => {
+  switch (raw["kind"]) {
+    case "run":
+      return { ...base, kind: "run", tool: text(raw, "tool") };
+    case "edit_failed":
+      return {
+        ...base,
+        kind: "edit_failed",
+        file: text(raw, "file"),
+        why: raw["why"] === "syntax" ? "syntax" : "tool",
+      };
+    case "located":
+      return {
+        ...base,
+        kind: "located",
+        file: text(raw, "file"),
+        line: count(raw, "line"),
+        reason: text(raw, "reason"),
+      };
+    case "checkpoint":
+      return { ...base, kind: "checkpoint", task: text(raw, "task") };
+    default:
+      return undefined;
+  }
+};
+
 const parseEntry = (raw: JsonObject): SignalEntry | undefined => {
   const base = { at: text(raw, "at"), session: text(raw, "session"), turn: count(raw, "turn") };
   switch (raw["kind"]) {
-    case "error":
-      return { ...base, kind: "error", sig: text(raw, "sig"), sample: text(raw, "sample"), tool: text(raw, "tool") };
+    case "error": {
+      const files = strings(raw["files"]);
+      return {
+        ...base,
+        kind: "error",
+        sig: text(raw, "sig"),
+        sample: text(raw, "sample"),
+        tool: text(raw, "tool"),
+        ...(files.length === 0 ? {} : { files }),
+      };
+    }
     case "edit":
       return { ...base, kind: "edit", file: text(raw, "file"), hash: text(raw, "hash"), undo: raw["undo"] === true };
     case "prompt":
@@ -95,7 +140,7 @@ const parseEntry = (raw: JsonObject): SignalEntry | undefined => {
     case "stopped":
       return { ...base, kind: "stopped", sig: text(raw, "sig"), mode: text(raw, "mode") };
     default:
-      return undefined;
+      return parseEarly(raw, base);
   }
 };
 

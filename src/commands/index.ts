@@ -90,6 +90,7 @@ import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
 import { signalsHypothesisCommand } from "./signals-hypothesis.js";
+import { signalsLocateCommand } from "./signals-locate.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
 import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
@@ -244,6 +245,7 @@ export const REGISTRY = [
   onboardCommand,
   evidenceWhyCommand,
   policyExplainCommand,
+  signalsLocateCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

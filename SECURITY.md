@@ -59,6 +59,9 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `rules-stop` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `reminders` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `learnings` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `syntax-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `early-loops` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reproduce-first` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 <!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->
