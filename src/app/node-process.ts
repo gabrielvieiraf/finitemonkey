@@ -34,14 +34,37 @@ export const portOpen = (host: string, port: number): Promise<boolean> =>
     });
   });
 
-export const startApp = (command: string, cwd: string, port: number): RunningApp => {
+const KEPT_ENV = [
+  "PATH",
+  "Path",
+  "HOME",
+  "USER",
+  "LANG",
+  "TMPDIR",
+  "TEMP",
+  "TMP",
+  "SystemRoot",
+  "ComSpec",
+  "PATHEXT",
+  "APPDATA",
+  "LOCALAPPDATA",
+  "USERPROFILE",
+] as const;
+
+export const minimalEnv = (source: NodeJS.ProcessEnv, port: number): NodeJS.ProcessEnv => ({
+  ...Object.fromEntries(KEPT_ENV.flatMap((name) => (source[name] === undefined ? [] : [[name, source[name]]]))),
+  NODE_ENV: "test",
+  PORT: String(port),
+});
+
+export const startApp = (command: string, cwd: string, port: number, minimal = false): RunningApp => {
   const child = spawn(command, {
     cwd,
     shell: true,
     detached: process.platform !== "win32",
     windowsHide: true,
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, PORT: String(port) },
+    env: minimal ? minimalEnv(process.env, port) : { ...process.env, PORT: String(port) },
   });
   let output = "";
   let exit: { readonly code: number | null } | undefined;

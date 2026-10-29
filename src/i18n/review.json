@@ -2573,7 +2573,8 @@
     "trajectory.legend": "machine",
     "trajectory.forgotten": "machine",
     "handoff.assumption": "machine",
-    "handoff.claims": "machine"
+    "handoff.claims": "machine",
+    "ux.recorded": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5149,6 +5150,7 @@
     "trajectory.legend": "machine",
     "trajectory.forgotten": "machine",
     "handoff.assumption": "machine",
-    "handoff.claims": "machine"
+    "handoff.claims": "machine",
+    "ux.recorded": "machine"
   }
 }

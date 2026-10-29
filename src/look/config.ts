@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, configMap, parseConfigYaml } from "../git/project-config.js";
+import { TARGET_MIN, TARGET_OPTIONS } from "./a11y.js";
 import { LOOK_RULES, type LookRule } from "./types.js";
 
 export const LOOK_CONFIG = ".finitemonkey/look.yml";
@@ -35,6 +36,7 @@ export interface LookConfig {
   readonly screens: readonly string[];
   readonly allow: readonly LookAllow[];
   readonly timeoutS: number;
+  readonly a11yTarget: number;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -52,6 +54,11 @@ const allowEntries = (tree: ReturnType<typeof parseConfigYaml>): readonly LookAl
     }),
   );
 
+const targetOf = (value: unknown): number => {
+  const parsed = typeof value === "string" ? Number(value) : Number.NaN;
+  return TARGET_OPTIONS.find((option) => option === parsed) ?? TARGET_MIN;
+};
+
 export const parseLookConfig = (source: string): LookConfig => {
   const tree = parseConfigYaml(source);
   const screens = configAt(tree, "screens");
@@ -65,6 +72,7 @@ export const parseLookConfig = (source: string): LookConfig => {
     screens: screens === undefined ? DEFAULT_SCREENS : configList(tree, "screens"),
     allow: allowEntries(tree),
     timeoutS: number(top["timeout_s"]) ?? 60,
+    a11yTarget: targetOf(configAt(tree, "a11y", "target")),
   };
 };
 

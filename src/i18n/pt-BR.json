@@ -2572,5 +2572,6 @@
   "trajectory.legend": "█ feito sem ajuda  ▓ proximal  ▒ cega com critério  ░ cega sem critério  ^ além  ↯ ricochete  ● segurou  - sem trabalho aceito  · sem evidência",
   "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça.",
   "handoff.assumption": "Premissa aberta {id} (impacto {impact}): {text}; verificar: {verify}",
-  "handoff.claims": "Afirmações do projeto válidas na árvore {tree} (vencidas e em quarentena ficam de fora):"
+  "handoff.claims": "Afirmações do projeto válidas na árvore {tree} (vencidas e em quarentena ficam de fora):",
+  "ux.recorded": "{rule}: {count, plural, one {# achado} other {# achados}}, {unverified} não verificados"
 }

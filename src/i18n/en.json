@@ -2572,5 +2572,6 @@
   "trajectory.legend": "█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence",
   "trajectory.forgotten": "Concept evidence deleted; the trajectory starts over.",
   "handoff.assumption": "Open assumption {id} ({impact} impact): {text}; verify: {verify}",
-  "handoff.claims": "Project claims valid at tree {tree} (stale and quarantined ones left out):"
+  "handoff.claims": "Project claims valid at tree {tree} (stale and quarantined ones left out):",
+  "ux.recorded": "{rule}: {count, plural, one {# finding} other {# findings}}, {unverified} not verified"
 }

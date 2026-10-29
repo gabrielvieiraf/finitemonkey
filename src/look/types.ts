@@ -8,6 +8,16 @@ export const LOOK_RULES = [
   "look/banned-copy",
   "look/drift",
   "look/repeated-layout",
+  "a11y/contrast",
+  "a11y/non-text-contrast",
+  "a11y/target-size",
+  "a11y/reflow",
+  "a11y/clipped-text",
+  "a11y/name",
+  "a11y/label",
+  "a11y/alt",
+  "a11y/landmark",
+  "a11y/engine",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];
@@ -30,6 +40,11 @@ export interface LookFinding {
   readonly detail: string;
   readonly blocking: boolean;
   readonly allowedBy?: string;
+  readonly feature?: string;
+  readonly selector?: string;
+  readonly id?: string;
+  readonly unverified?: true;
+  readonly baseline?: true;
 }
 
 export interface LookCapture {
@@ -48,6 +63,7 @@ export interface LookSummary {
   readonly contactSheet: string | null;
   readonly findings: readonly LookFinding[];
   readonly ignoredAllows: readonly string[];
+  readonly blockedRequests?: readonly string[];
 }
 
 export const LOOK_SCHEMA = "finitemonkey/look@1";

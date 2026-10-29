@@ -52,7 +52,17 @@
               "look/touch-target",
               "look/banned-copy",
               "look/drift",
-              "look/repeated-layout"
+              "look/repeated-layout",
+              "a11y/contrast",
+              "a11y/non-text-contrast",
+              "a11y/target-size",
+              "a11y/reflow",
+              "a11y/clipped-text",
+              "a11y/name",
+              "a11y/label",
+              "a11y/alt",
+              "a11y/landmark",
+              "a11y/engine"
             ]
           },
           "route": {
