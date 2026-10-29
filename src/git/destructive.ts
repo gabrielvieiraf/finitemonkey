@@ -50,11 +50,12 @@ export const pipeToShell = (text: string, dialect: Dialect): string | undefined 
 };
 
 const SQL_CLIENTS = new Set(["psql", "mysql", "mariadb", "sqlcmd", "clickhouse-client", "cockroach", "pgcli", "mycli"]);
-const SQL_DESTROY = /\bdrop\s+(?:table|database|schema)\b|\btruncate\b|\bdelete\s+from\s+[\w."`[\]]+\s*(?:;|$)/im;
-const LOCAL_HOST = /^(?:localhost|127\.\d+\.\d+\.\d+|::1|\[::1\]|0\.0\.0\.0|host\.docker\.internal)$/i;
+export const SQL_DESTROY =
+  /\bdrop\s+(?:table|database|schema)\b|\btruncate\b|\bdelete\s+from\s+[\w."`[\]]+\s*(?:;|$)/im;
+export const LOCAL_HOST = /^(?:localhost|127\.\d+\.\d+\.\d+|::1|\[::1\]|0\.0\.0\.0|host\.docker\.internal)$/i;
 const HOST_FLAGS = new Set(["-h", "--host", "-S", "--server"]);
 
-const hostOfUrl = (value: string): string | undefined => {
+export const hostOfUrl = (value: string): string | undefined => {
   const match = /^[a-z][\w+.-]*:\/\/(?:[^@/]*@)?(\[[^\]]+\]|[^:/?,]+)/i.exec(value);
   return match?.[1];
 };
@@ -76,7 +77,7 @@ const sqlHosts = (command: ShellCommand): readonly string[] => {
   return hosts;
 };
 
-const isLocal = (host: string): boolean =>
+export const isLocal = (host: string): boolean =>
   host === "" || host.startsWith("/") || LOCAL_HOST.test(host.split(",")[0] ?? "");
 
 const sqlHit = (command: ShellCommand): DestructiveHit | undefined => {

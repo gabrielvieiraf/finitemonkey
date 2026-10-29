@@ -2371,7 +2371,9 @@
     "knowledge.map.claims": "machine",
     "knowledge.map.agent": "machine",
     "knowledge.map.nobody": "machine",
-    "knowledge.map.question": "machine"
+    "knowledge.map.question": "machine",
+    "remote.hold.reason": "machine",
+    "remote.hold.human": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4745,6 +4747,8 @@
     "knowledge.map.claims": "machine",
     "knowledge.map.agent": "machine",
     "knowledge.map.nobody": "machine",
-    "knowledge.map.question": "machine"
+    "knowledge.map.question": "machine",
+    "remote.hold.reason": "machine",
+    "remote.hold.human": "machine"
   }
 }

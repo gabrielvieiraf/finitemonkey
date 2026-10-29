@@ -2370,5 +2370,7 @@
   "knowledge.map.claims": "{area}: only checked claims hold it ({claims}); the person has not changed it outside sessions",
   "knowledge.map.agent": "{area}: only the agent has changed it ({agent} commits in sessions); a risk if the agent's context is lost",
   "knowledge.map.nobody": "{area}: no recent change and no checked claim",
-  "knowledge.map.question": "One optional question for the person, at most once this session: the code behind \"{text}\" ({anchor}) changed since they last worked there. Before showing the code, ask them to predict what it now does on one concrete input, or to explain it in one sentence; if they say skip, drop it and do not ask again."
+  "knowledge.map.question": "One optional question for the person, at most once this session: the code behind \"{text}\" ({anchor}) changed since they last worked there. Before showing the code, ask them to predict what it now does on one concrete input, or to explain it in one sentence; if they say skip, drop it and do not ask again.",
+  "remote.hold.reason": "This call deletes data or resources outside this machine ({entry}: {target}) and cannot be undone from here. Approve only if you mean it and a backup exists",
+  "remote.hold.human": "Held a remote call that deletes {target}. It runs only if you approve it."
 }
