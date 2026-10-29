@@ -38,6 +38,8 @@ export const referencesIn = (text: string): readonly string[] => {
   return [...new Set([...paths, ...symbols].filter((ref) => ref !== "" && !/^\d+(?:\.\d+)*$/.test(ref)))];
 };
 
+export const isCorrection = (text: string): boolean => CORRECTION.some((pattern) => pattern.test(text.trim()));
+
 const kindOf = (text: string): PremiseKind | undefined => {
   if (FACT.some((pattern) => pattern.test(text))) return "fact";
   return CORRECTION.some((pattern) => pattern.test(text.trim())) ? "correction" : undefined;

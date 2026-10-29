@@ -16,6 +16,7 @@ import type { Runtime } from "../core/runtime.js";
 import { credsStaticGuard } from "../creds/static-guard.js";
 import { DEPLOY_HANDLERS } from "../deploy/hooks.js";
 import { depsGuard } from "../deps/guard.js";
+import { DRIFT_FEATURE, DRIFT_HANDLERS } from "../drift/hook.js";
 import { logEvent } from "../evidence/log.js";
 import { EVOLVE_HANDLERS } from "../evolve/hooks.js";
 import { FOCUS_FEATURE, FOCUS_HANDLERS } from "../focus/hook.js";
@@ -253,6 +254,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
   { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
+  { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

@@ -1,7 +1,6 @@
 import { appCheckCommand } from "./app-check.js";
 import { appsecRulesCommand, appsecScanCommand } from "./appsec.js";
 import { archCommand } from "./arch.js";
-import { attentionCommand } from "./attention.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
@@ -78,7 +77,6 @@ import { onboardCommand } from "./onboard.js";
 import { organizeCommand } from "./organize.js";
 import { genOwnershipCommand, ownershipCheckCommand } from "./ownership.js";
 import { parityCheckCommand, parityInitCommand, parityUpdateCommand } from "./parity.js";
-import { parkCommand, unparkCommand } from "./park.js";
 import { offCommand, onCommand } from "./pause.js";
 import {
   perfilAnswerCommand,
@@ -87,6 +85,7 @@ import {
   perfilSetCommand,
   perfilStartCommand,
 } from "./perfil.js";
+import { PERSON_COMMANDS } from "./person.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { plantaCommand } from "./planta.js";
 import { policyExplainCommand, policyFalsePositiveCommand } from "./policy.js";
@@ -295,9 +294,7 @@ export const REGISTRY = [
   calibrateRefitCommand,
   calibrateExplainCommand,
   ...DATA_COMMANDS,
-  parkCommand,
-  unparkCommand,
-  attentionCommand,
+  ...PERSON_COMMANDS,
   ...MOD_COMMANDS,
   ...KNOWLEDGE_COMMANDS,
   versionCommand,

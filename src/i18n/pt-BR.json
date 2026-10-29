@@ -2482,5 +2482,12 @@
   "attention.rhythm": "Esta sessão passou de {hours} h ou da meia-noite. Uma pausa pode ajudar; este aviso pode ser desligado no policy.yml (person.rhythmHours).",
   "attention.queue.line": "{front} ({kind}, esperando há {minutes} min): {text}",
   "attention.queue.empty": "Nada espera por você.",
-  "command.attention.summary": "Listar o que cada frente espera de você, numa fila por prioridade, com o tempo de espera"
+  "command.attention.summary": "Listar o que cada frente espera de você, numa fila por prioridade, com o tempo de espera",
+  "drift.warning": "O comportamento do agente mudou nas tarefas {taskClass} desde {since}: {indicator} foi de {baseline} para {current}. O que mudou: {changes}. Opções: subir o esforço, trocar o modelo ou dividir as tarefas.",
+  "drift.indicator.readsPerEdit": "leituras por edição",
+  "drift.indicator.wholeFileShare": "fração de arquivos reescritos inteiros",
+  "drift.indicator.correctionsPerSession": "correções por sessão",
+  "drift.no_change": "nenhuma troca de modelo ou de versão da ferramenta nos logs",
+  "drift.none": "Nenhuma mudança em {days} grupos de dias dos logs locais de sessão.",
+  "command.drift.summary": "Comparar o comportamento do agente nos logs locais de sessão com a sua linha de base e dizer o que mudou"
 }

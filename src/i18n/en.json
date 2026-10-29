@@ -2482,5 +2482,12 @@
   "attention.rhythm": "This session has gone past {hours} h or past midnight. A break may help; this notice can be turned off in policy.yml (person.rhythmHours).",
   "attention.queue.line": "{front} ({kind}, waiting {minutes} min): {text}",
   "attention.queue.empty": "Nothing waits on you.",
-  "command.attention.summary": "List what every front waits on you for, in one queue ordered by priority, with wait times"
+  "command.attention.summary": "List what every front waits on you for, in one queue ordered by priority, with wait times",
+  "drift.warning": "Agent behavior drifted in {taskClass} tasks since {since}: {indicator} went from {baseline} to {current}. What changed: {changes}. Options: raise the effort, switch the model, or split tasks.",
+  "drift.indicator.readsPerEdit": "reads per edit",
+  "drift.indicator.wholeFileShare": "share of whole-file writes",
+  "drift.indicator.correctionsPerSession": "corrections per session",
+  "drift.no_change": "no model or tool version change in the logs",
+  "drift.none": "No drift across {days} day buckets of local session logs.",
+  "command.drift.summary": "Compare the agent's behavior in local session logs with your own baseline and name what changed"
 }

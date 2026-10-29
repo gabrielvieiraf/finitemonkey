@@ -2483,7 +2483,14 @@
     "attention.rhythm": "machine",
     "attention.queue.line": "machine",
     "attention.queue.empty": "machine",
-    "command.attention.summary": "machine"
+    "command.attention.summary": "machine",
+    "drift.warning": "machine",
+    "drift.indicator.readsPerEdit": "machine",
+    "drift.indicator.wholeFileShare": "machine",
+    "drift.indicator.correctionsPerSession": "machine",
+    "drift.no_change": "machine",
+    "drift.none": "machine",
+    "command.drift.summary": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4969,6 +4976,13 @@
     "attention.rhythm": "machine",
     "attention.queue.line": "machine",
     "attention.queue.empty": "machine",
-    "command.attention.summary": "machine"
+    "command.attention.summary": "machine",
+    "drift.warning": "machine",
+    "drift.indicator.readsPerEdit": "machine",
+    "drift.indicator.wholeFileShare": "machine",
+    "drift.indicator.correctionsPerSession": "machine",
+    "drift.no_change": "machine",
+    "drift.none": "machine",
+    "command.drift.summary": "machine"
   }
 }

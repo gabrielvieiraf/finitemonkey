@@ -80,6 +80,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `premise-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `focus-card` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `attention` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `drift-sensor` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 <!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->
@@ -92,7 +93,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Reads | `stdin` | The event Claude Code passes to each hook: the tool call, the prompt or the stop request. |
 | Reads | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | Claude Code settings, to check that the hooks are installed and nothing switches them off. `$CLAUDE_CONFIG_DIR` replaces `~/.claude` when set. |
 | Reads | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Instruction files, read by `doctor` to report rules that exist only as text. |
-| Reads | `~/.claude/projects/` | This project's local Claude Code session logs: read once with `init --look-back`, and read incrementally on each prompt only when a spend budget is set in `.finitemonkey/config.yml`. |
+| Reads | `~/.claude/projects/` | This project's local Claude Code session logs: read once with `init --look-back`, and read incrementally on each prompt only when a spend budget is set in `.finitemonkey/config.yml`. `finitemonkey drift` (and, unless the drift-sensor flag is off, a background run at most once a day after a turn) counts tool calls, model and version per day from them; only those counts are kept, in `.finitemonkey/cache/drift.json`. |
 | Reads | `~/.claude/plugins/`, `~/.claude/debug/latest` | `doctor` reads installed plugins and their hook files to list every hook and find conflicts; `doctor --hooks` also reads the latest Claude Code debug log for hook timings. It never changes another plugin's files. |
 | Reads | `.git/` | The repository through the `git` command: status, diffs, refs and the reflog. |
 | Reads | `git diff` | Changed files, scanned for secrets, test skips, placeholders and prose patterns. |
