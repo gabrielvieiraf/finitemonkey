@@ -20,6 +20,7 @@ import { goldenCheck } from "./golden.js";
 import { headersCheck } from "./headers.js";
 import { infraPlanCheck } from "./infra-plan.js";
 import { inventoryCheck } from "./inventory.js";
+import { judgeCheck } from "./judge.js";
 import { lookCheck } from "./look.js";
 import { manualCheck } from "./manual.js";
 import { migrateCheck } from "./migrate.js";
@@ -92,4 +93,5 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   "test-budget": testBudgetCheck,
   "red-green": redGreenCheck,
   cli: cliCheck,
+  judge: judgeCheck,
 };

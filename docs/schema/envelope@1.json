@@ -122,7 +122,8 @@
             "unattended_incomplete",
             "guard_bypassed",
             "instructions_drift",
-            "restore_failed"
+            "restore_failed",
+            "judge_refused"
           ]
         },
         "message": {

@@ -9,6 +9,7 @@ import { MIGRATION_FILE } from "../deploy/migrations.js";
 import { PYTHON, UNTYPED_JS } from "../deps/api-version.js";
 import { configAt, loadProjectConfig } from "../git/project-config.js";
 import { touchesInfra } from "../infra/plan-gate.js";
+import { judgeWanted } from "../judge/gate.js";
 import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
 import { maskText } from "../mask/mask.js";
 import { featureMode } from "../policy/feature.js";
@@ -140,7 +141,8 @@ const withCheck = (
     | "api-version"
     | "cochange"
     | "test-budget"
-    | "red-green",
+    | "red-green"
+    | "judge",
   wanted: boolean,
 ): TaskContract =>
   !wanted || contract.acceptance.some((check) => check.kind === kind)
@@ -150,7 +152,7 @@ const withCheck = (
 const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
   withCheck(contract, "examples", examples !== undefined && examples.length > 0);
 
-const withConfigured = (
+const withConfiguredChecks = (
   runtime: Runtime,
   root: AbsolutePath,
   contract: TaskContract,
@@ -195,6 +197,18 @@ const withConfigured = (
     contract.testsFirst === true || configAt(config, "red_green") !== undefined,
   );
 };
+
+const withConfigured = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  contract: TaskContract,
+  changes: readonly Change[],
+): TaskContract =>
+  withCheck(
+    withConfiguredChecks(runtime, root, contract, changes),
+    "judge",
+    judgeWanted(runtime, fmPaths(root), contract.id),
+  );
 
 const shapedContract = (
   runtime: Runtime,

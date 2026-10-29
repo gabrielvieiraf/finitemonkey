@@ -136,6 +136,20 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     type: "StatusData",
     describes: "`data` of `finitemonkey status --json`, which the mod draws in the band and the gate pane.",
   },
+  {
+    name: "judge@1",
+    file: "src/judge/types.ts",
+    type: "JudgeExport",
+    describes:
+      "The judge data model: every entry of `.finitemonkey/judge.jsonl` by type, also `export` in `finitemonkey judge export --json`.",
+  },
+  {
+    name: "judge-verbs@1",
+    file: "src/judge/response.ts",
+    type: "JudgeResponse",
+    describes:
+      "`data` of every `finitemonkey judge <verb> --json` and of `judge call`: the same JSON for the CLI, the mod pane, the skill and the gate.",
+  },
 ];
 
 export const ROOT = fileURLToPath(new URL("..", import.meta.url));

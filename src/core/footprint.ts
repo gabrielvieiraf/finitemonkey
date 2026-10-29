@@ -237,6 +237,7 @@ export const FOOTPRINT = [
   { id: "infra-plan", kind: "sends", targets: ["terraform provider APIs"], via: "terraform" },
   { id: "parking", kind: "writes", targets: [".finitemonkey/parking.jsonl"] },
   { id: "ui-copy", kind: "writes", targets: [".finitemonkey/cache/copy-rules.json"] },
+  { id: "judge", kind: "writes", targets: [".finitemonkey/judge.jsonl", ".finitemonkey/judge/"] },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];
