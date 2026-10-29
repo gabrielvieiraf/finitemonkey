@@ -2618,5 +2618,7 @@
   "journey.approve.hash": "A jornada {name} mudou desde esse hash. Leia de novo.",
   "journey.approve.write": "Não deu para gravar a aprovação de {name}.",
   "command.look_reject.summary": "Rejeita a tela atual de uma rota com um motivo (só a pessoa)",
-  "look.reject.done": "Tela {route} rejeitada; o motivo fica como regra permanente {id}."
+  "look.reject.done": "Tela {route} rejeitada; o motivo fica como regra permanente {id}.",
+  "command.look_sheet.summary": "Desenha uma folha técnica medida de uma rota ou componente a partir da página renderizada",
+  "look.sheet.done": "Folha de {route}: {variables, plural, one {# variável} other {# variáveis}}, {changes, plural, one {# dimensão mudou} other {# dimensões mudaram}} contra a folha aprovada."
 }

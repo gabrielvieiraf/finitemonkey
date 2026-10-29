@@ -27,9 +27,11 @@ import { contractPass } from "./node-contract.js";
 import { defaultLookPass, type DsOptions, dsPass } from "./node-ds.js";
 import { formsPass } from "./node-forms.js";
 import { keyboardPass } from "./node-keyboard.js";
+import { approvedSheets, sheetPass } from "./node-sheet-pass.js";
 import { statesPass } from "./node-states.js";
 import { a11yPass, loadAxeSource, type PagePass } from "./node-ux.js";
 import { lookDir } from "./paths.js";
+import { SHEET_FEATURE } from "./sheet.js";
 import { optionsOf, STATES_FEATURE } from "./states.js";
 import { EMPTY_TOKENS, loadTokens, type TokenSet } from "./tokens.js";
 import { VIEWPORTS } from "./types.js";
@@ -47,6 +49,7 @@ export const UX_FEATURES = [
   FLOW_FEATURE,
   JOURNEYS_FEATURE,
   VISUAL_FEATURE,
+  SHEET_FEATURE,
 ] as const;
 
 export type ModeMap = Readonly<Record<string, GuardMode>>;
@@ -95,6 +98,9 @@ export const uxPasses = (
     ...(dont.length > 0 ? [contractPass(dont, widest)] : []),
     ...(on(modes, DS_FEATURE) ? [dsPass(ds)] : []),
     ...(on(modes, DEFAULT_LOOK_FEATURE) ? [defaultLookPass(ds)] : []),
+    ...(on(modes, SHEET_FEATURE)
+      ? [sheetPass(approvedSheets(runtime, fmPaths(root), config.routes), loadTokens(runtime, root, setup.tokenFiles))]
+      : []),
     ...(on(modes, KEYBOARD_FEATURE) ? [keyboardPass(contractDialogs(setup.screens, config.dialogs))] : []),
     ...(on(modes, FORMS_FEATURE)
       ? [

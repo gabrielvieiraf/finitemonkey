@@ -30,14 +30,14 @@ export type LookRun =
   | { readonly kind: "app_failed"; readonly detail: string }
   | { readonly kind: "done"; readonly summary: LookSummary; readonly summaryPath: string };
 
-interface Ready {
+export interface Ready {
   readonly root: AbsolutePath;
   readonly tree: string;
   readonly config: LookConfig & { readonly port: number };
   readonly modes: ModeMap;
 }
 
-const prepare = (runtime: Runtime, cwd: AbsolutePath): Ready | LookRun => {
+export const prepare = (runtime: Runtime, cwd: AbsolutePath): Ready | LookRun => {
   const root = gitRoot(gitAt(runtime, cwd));
   if (root === undefined) return { kind: "not_a_repo" };
   const tree = treeHash(gitAt(runtime, root));
@@ -49,7 +49,7 @@ const prepare = (runtime: Runtime, cwd: AbsolutePath): Ready | LookRun => {
   return { root, tree, config: { ...config, port: config.port }, modes };
 };
 
-const bootApp = async (ready: Ready): Promise<RunningApp | undefined | { readonly detail: string }> => {
+export const bootApp = async (ready: Ready): Promise<RunningApp | undefined | { readonly detail: string }> => {
   const { config } = ready;
   if (await portOpen(config.host, config.port)) return undefined;
   if (config.start === undefined) return { detail: `nothing listens on ${config.host}:${String(config.port)}` };

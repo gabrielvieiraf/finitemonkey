@@ -7,6 +7,7 @@ import {
   DEFAULT_EVOLVE_MIN_TASKS,
   type EvolveConfig,
 } from "./stage6.js";
+import { UI_GUARDS } from "./ui-guards.js";
 
 export { loadBasePolicy, loadPolicy, policyPath, type PolicyRuntime, userPolicyPath } from "./load.js";
 export { isPolicyError, parsePolicy, parseUserPolicy } from "./parse.js";
@@ -132,6 +133,7 @@ export const OPTIONAL_GUARDS = [
   "ui-flow",
   "journeys",
   "visual-approve",
+  ...UI_GUARDS,
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
 export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -220,6 +222,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "ui-flow",
   "journeys",
   "visual-approve",
+  ...UI_GUARDS,
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];
