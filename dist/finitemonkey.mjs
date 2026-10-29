@@ -5902,7 +5902,8 @@ var OPTIONAL_GUARDS = [
   "assumptions",
   "reality",
   "guardian-reuse",
-  "proportionality"
+  "proportionality",
+  "forecast"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -5948,7 +5949,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "assumptions",
   "reality",
   "guardian-reuse",
-  "proportionality"
+  "proportionality",
+  "forecast"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -13336,7 +13338,11 @@ var en_default = {
   "guardian.weigh.ask_scale": "ask the person for the scale number (users, requests per second, data volume) and write it under scale: in the contract; do not estimate it",
   "guardian.weigh.row.requested": "requested: build {files} new files and {deps} new dependencies; operate {operate}; undo class {undo}; nobody has demonstrated {beyond}",
   "guardian.weigh.row.simplest": "simplest viable: the same result with what the project already runs; nothing new to operate; undo class A; maintained by the current team",
-  "guardian.weigh.row.nothing": "do nothing now: no cost; the contract is not met until the next milestone"
+  "guardian.weigh.row.nothing": "do nothing now: no cost; the contract is not met until the next milestone",
+  "command.guardian_forecast.summary": "Forecast a task from the person's own past tasks of the same size and area (needs five)",
+  "guardian.forecast.line": "Your last {count} tasks of size {size} in {areas} took {hours} h (median) and {runs} gate runs (median): {tasks}.",
+  "guardian.forecast.none": "Fewer than five finished tasks of this size and area; no forecast.",
+  "guardian.signal.escalation": "{subject}: still one check short after {detail} h, more than twice the median of comparable tasks"
 };
 
 // src/i18n/es.json
@@ -15549,7 +15555,11 @@ var es_default = {
   "guardian.weigh.ask_scale": "pregunta a la persona el número de escala (usuarios, peticiones por segundo, volumen de datos) y escríbelo en scale: en el contrato; no lo estimes",
   "guardian.weigh.row.requested": "pedido: construir {files} archivos nuevos y {deps} dependencias nuevas; operar {operate}; deshacer clase {undo}; nadie demostró {beyond}",
   "guardian.weigh.row.simplest": "lo más simple viable: el mismo resultado con lo que el proyecto ya ejecuta; nada nuevo que operar; deshacer clase A; mantenido por el equipo actual",
-  "guardian.weigh.row.nothing": "no hacer nada ahora: sin costo; el contrato no se cumple hasta el próximo hito"
+  "guardian.weigh.row.nothing": "no hacer nada ahora: sin costo; el contrato no se cumple hasta el próximo hito",
+  "command.guardian_forecast.summary": "Pronostica una tarea a partir de las tareas pasadas de la propia persona, del mismo tamaño y área (necesita cinco)",
+  "guardian.forecast.line": "Tus últimas {count} tareas de tamaño {size} en {areas} tomaron {hours} h (mediana) y {runs} corridas del gate (mediana): {tasks}.",
+  "guardian.forecast.none": "Menos de cinco tareas terminadas de este tamaño y área; sin pronóstico.",
+  "guardian.signal.escalation": "{subject}: todavía a un check de pasar después de {detail} h, más del doble de la mediana de tareas comparables"
 };
 
 // src/i18n/pt-BR.json
@@ -17762,7 +17772,11 @@ var pt_BR_default = {
   "guardian.weigh.ask_scale": "pergunte à pessoa o número de escala (usuários, requisições por segundo, volume de dados) e escreva em scale: no contrato; não estime",
   "guardian.weigh.row.requested": "pedido: construir {files} arquivos novos e {deps} dependências novas; operar {operate}; desfazer classe {undo}; ninguém demonstrou {beyond}",
   "guardian.weigh.row.simplest": "mais simples viável: o mesmo resultado com o que o projeto já roda; nada novo para operar; desfazer classe A; mantido pelo time atual",
-  "guardian.weigh.row.nothing": "não fazer agora: sem custo; o contrato não é atendido até o próximo marco"
+  "guardian.weigh.row.nothing": "não fazer agora: sem custo; o contrato não é atendido até o próximo marco",
+  "command.guardian_forecast.summary": "Prevê uma tarefa a partir das tarefas passadas da própria pessoa, do mesmo tamanho e área (precisa de cinco)",
+  "guardian.forecast.line": "Suas últimas {count} tarefas de tamanho {size} em {areas} levaram {hours} h (mediana) e {runs} rodadas do gate (mediana): {tasks}.",
+  "guardian.forecast.none": "Menos de cinco tarefas terminadas deste tamanho e área; sem previsão.",
+  "guardian.signal.escalation": "{subject}: ainda a um check de passar depois de {detail} h, mais que o dobro da mediana das tarefas comparáveis"
 };
 
 // src/i18n/review.json
@@ -19976,7 +19990,11 @@ var review_default = {
     "guardian.weigh.ask_scale": "machine",
     "guardian.weigh.row.requested": "machine",
     "guardian.weigh.row.simplest": "machine",
-    "guardian.weigh.row.nothing": "machine"
+    "guardian.weigh.row.nothing": "machine",
+    "command.guardian_forecast.summary": "machine",
+    "guardian.forecast.line": "machine",
+    "guardian.forecast.none": "machine",
+    "guardian.signal.escalation": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -22187,7 +22205,11 @@ var review_default = {
     "guardian.weigh.ask_scale": "machine",
     "guardian.weigh.row.requested": "machine",
     "guardian.weigh.row.simplest": "machine",
-    "guardian.weigh.row.nothing": "machine"
+    "guardian.weigh.row.nothing": "machine",
+    "command.guardian_forecast.summary": "machine",
+    "guardian.forecast.line": "machine",
+    "guardian.forecast.none": "machine",
+    "guardian.signal.escalation": "machine"
   }
 };
 
@@ -23130,6 +23152,53 @@ var stalledTasks = (runtime, paths, tasks) => tasks.flatMap((task) => {
   return days >= STALLED_DAYS && almostDone(ledger) ? [{ kind: "stalled", subject: task.contract.id, detail: String(days) }] : [];
 });
 
+// src/guardian/forecast.ts
+var MIN_REFERENCE = 5;
+var ESCALATION_FACTOR = 2;
+var areasOf = (contract) => [
+  ...new Set(
+    contract.scope.paths.map(
+      (path) => path.replace(/^\.\//, "").split("/").filter((part2) => part2 !== "").slice(0, 2).join("/")
+    )
+  )
+].filter((area) => area !== "");
+var median = (values) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+};
+var pastTask = (id, ledger) => {
+  const first = ledger[0];
+  const gates = ledger.filter((entry2) => entry2.check === GATE_CHECK);
+  const passed2 = gates.findIndex((entry2) => entry2.status === "passed");
+  const done2 = gates[passed2];
+  if (first === void 0 || done2 === void 0) return void 0;
+  return { id, durationMs: Date.parse(done2.at) - Date.parse(first.at), gateRuns: passed2 + 1 };
+};
+var comparable = (task, contract) => {
+  const wanted = new Set(areasOf(contract));
+  return task.contract.size === contract.size && areasOf(task.contract).some((area) => wanted.has(area));
+};
+var forecastFor = (runtime, paths, tasks, contract) => {
+  const past = tasks.filter((task) => task.done && task.contract.id !== contract.id && comparable(task, contract)).flatMap((task) => pastTask(task.contract.id, readLedger3(runtime, paths.evidence(task.contract.id))) ?? []);
+  if (past.length < MIN_REFERENCE) return void 0;
+  return {
+    size: contract.size,
+    areas: areasOf(contract),
+    tasks: past,
+    medianMs: median(past.map((item2) => item2.durationMs)),
+    medianGateRuns: median(past.map((item2) => item2.gateRuns))
+  };
+};
+var escalated = (runtime, paths, task, forecast) => {
+  if (task.done || forecast === void 0) return void 0;
+  const ledger = readLedger3(runtime, paths.evidence(task.contract.id));
+  const first = ledger[0];
+  if (first === void 0 || !almostDone(ledger)) return void 0;
+  const elapsed = Date.parse(runtime.now()) - Date.parse(first.at);
+  return elapsed > ESCALATION_FACTOR * forecast.medianMs ? elapsed : void 0;
+};
+
 // src/guardian/tasks.ts
 import { join as join49 } from "node:path";
 var taskList = (text29, key3) => {
@@ -23171,6 +23240,10 @@ var countGoals = (goals) => ({
   stated: goals.entries.filter((entry2) => entry2.origin === "stated").length,
   inferred: goals.entries.filter((entry2) => entry2.origin === "inferred").length
 });
+var escalations = (runtime, paths, tasks) => tasks.flatMap((task) => {
+  const elapsed = escalated(runtime, paths, task, forecastFor(runtime, paths, tasks, task.contract));
+  return elapsed === void 0 ? [] : [{ kind: "escalation", subject: task.contract.id, detail: (elapsed / 36e5).toFixed(1) }];
+});
 var guardianStatus = (runtime, paths) => {
   const goals = readGoals(runtime, paths.root);
   const tasks = knownTasks(runtime, paths);
@@ -23182,7 +23255,8 @@ var guardianStatus = (runtime, paths) => {
       ...unlinkedTasks(tasks, goals),
       ...scopeGrowth(tasks),
       ...reopenedDecisions(runtime, paths.root),
-      ...stalledTasks(runtime, paths, tasks)
+      ...stalledTasks(runtime, paths, tasks),
+      ...escalations(runtime, paths, tasks)
     ]
   };
 };
@@ -41706,6 +41780,38 @@ var assumptionHold = (input) => {
 };
 var ASSUMPTION_HANDLERS = { PreToolUse: [assumptionHold] };
 
+// src/guardian/forecast-hook.ts
+var FORECAST_FEATURE = "forecast";
+var hours = (ms) => (ms / 36e5).toFixed(1);
+var forecastLine = (t, forecast) => t("guardian.forecast.line", {
+  count: forecast.tasks.length,
+  size: forecast.size,
+  areas: forecast.areas.join(", "),
+  hours: hours(forecast.medianMs),
+  runs: forecast.medianGateRuns,
+  tasks: forecast.tasks.map((item2) => item2.id).join(", ")
+});
+var forecastOnTrust = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  const paths = projectPaths(input);
+  if (paths === void 0 || !comesFromPerson(prompt)) return { kind: "allow" };
+  const trusted = parseMarkers(prompt).flatMap((marker3) => marker3.type === "trust" ? [marker3.task] : []);
+  if (trusted.length === 0) return { kind: "allow" };
+  const tasks = knownTasks(input.runtime, paths);
+  const lines8 = trusted.flatMap((id) => {
+    const task = tasks.find((item2) => item2.contract.id === id);
+    const forecast = task === void 0 ? void 0 : forecastFor(input.runtime, paths, tasks, task.contract);
+    return forecast === void 0 ? [] : [forecastLine(input.t, forecast)];
+  });
+  if (lines8.length === 0) return { kind: "allow" };
+  if (featureMode(input.runtime, paths, FORECAST_FEATURE) !== "active") {
+    recordFeatureShadow(input.runtime, paths, FORECAST_FEATURE, { tasks: trusted.join(",") });
+    return { kind: "allow" };
+  }
+  return { kind: "allow", output: contextOutput("UserPromptSubmit", lines8.join("\n"), lines8.join(" ")) };
+};
+var FORECAST_HANDLERS = { UserPromptSubmit: [forecastOnTrust] };
+
 // src/guardian/report.ts
 var TRIGGER_IDS = ["scope_growth", "goal_conflict", "reuse", "irreversible", "proportionality"];
 var LEVEL_OF = {
@@ -46394,7 +46500,8 @@ var GUARD_SETS = [
   { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
   { id: "reality", damage: false, handlers: REALITY_HANDLERS },
   { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
-  { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") }
+  { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") },
+  { id: "forecast", damage: false, handlers: FORECAST_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);
 
@@ -50181,7 +50288,7 @@ var readArms = (runtime, paths) => {
     return typeof feature === "string" && typeof task === "string" && (arm === "active" || arm === "off") ? [{ feature, task, arm }] : [];
   });
 };
-var median = (values) => {
+var median2 = (values) => {
   const sorted = [...values].sort((left, right) => left - right);
   return sorted.length === 0 ? 0 : sorted[Math.floor((sorted.length - 1) / 2)] ?? 0;
 };
@@ -50192,7 +50299,7 @@ var armCounts = (tasks, gates) => {
     completed: new Set(runs.filter((entry2) => entry2.status === "passed").map((entry2) => entry2.task)).size,
     gateRuns: runs.length,
     gateFailed: runs.filter((entry2) => entry2.status === "failed").length,
-    gateMedianMs: median(runs.map((entry2) => entry2.durationMs ?? 0))
+    gateMedianMs: median2(runs.map((entry2) => entry2.durationMs ?? 0))
   };
 };
 var armComparison = (arms, gates) => {
@@ -51725,6 +51832,26 @@ var guardianAssumeVerifyCommand = {
       ]);
     });
   }
+};
+
+// src/commands/guardian-forecast.ts
+var GUARDIAN_FORECAST_SCHEMA = "finitemonkey/guardian-forecast@1";
+var guardianForecastCommand = {
+  path: ["guardian", "forecast"],
+  summaryKey: "command.guardian_forecast.summary",
+  usage: "finitemonkey guardian forecast [<task>]",
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => inGuardianRepo(ctx, (root) => {
+    const paths = fmPaths(root);
+    const tasks = knownTasks(ctx.runtime, paths);
+    const wanted = args2.positionals[0] ?? activeTask(ctx.runtime, paths)?.contract.id;
+    const task = tasks.find((item2) => item2.contract.id === wanted);
+    const forecast = task === void 0 ? void 0 : forecastFor(ctx.runtime, paths, tasks, task.contract);
+    return success({ schema: GUARDIAN_FORECAST_SCHEMA, task: wanted ?? null, forecast: forecast ?? null }, [
+      forecast === void 0 ? ctx.t("guardian.forecast.none") : forecastLine(ctx.t, forecast)
+    ]);
+  })
 };
 
 // src/commands/guardian-report.ts
@@ -60369,6 +60496,7 @@ var REGISTRY2 = [
   guardianReuseCommand,
   guardianScanCommand,
   guardianWeighCommand,
+  guardianForecastCommand,
   versionCommand,
   helpCommand
 ];

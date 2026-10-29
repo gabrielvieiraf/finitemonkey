@@ -2207,5 +2207,9 @@
   "guardian.weigh.ask_scale": "ask the person for the scale number (users, requests per second, data volume) and write it under scale: in the contract; do not estimate it",
   "guardian.weigh.row.requested": "requested: build {files} new files and {deps} new dependencies; operate {operate}; undo class {undo}; nobody has demonstrated {beyond}",
   "guardian.weigh.row.simplest": "simplest viable: the same result with what the project already runs; nothing new to operate; undo class A; maintained by the current team",
-  "guardian.weigh.row.nothing": "do nothing now: no cost; the contract is not met until the next milestone"
+  "guardian.weigh.row.nothing": "do nothing now: no cost; the contract is not met until the next milestone",
+  "command.guardian_forecast.summary": "Forecast a task from the person's own past tasks of the same size and area (needs five)",
+  "guardian.forecast.line": "Your last {count} tasks of size {size} in {areas} took {hours} h (median) and {runs} gate runs (median): {tasks}.",
+  "guardian.forecast.none": "Fewer than five finished tasks of this size and area; no forecast.",
+  "guardian.signal.escalation": "{subject}: still one check short after {detail} h, more than twice the median of comparable tasks"
 }

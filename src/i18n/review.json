@@ -2208,7 +2208,11 @@
     "guardian.weigh.ask_scale": "machine",
     "guardian.weigh.row.requested": "machine",
     "guardian.weigh.row.simplest": "machine",
-    "guardian.weigh.row.nothing": "machine"
+    "guardian.weigh.row.nothing": "machine",
+    "command.guardian_forecast.summary": "machine",
+    "guardian.forecast.line": "machine",
+    "guardian.forecast.none": "machine",
+    "guardian.signal.escalation": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4419,6 +4423,10 @@
     "guardian.weigh.ask_scale": "machine",
     "guardian.weigh.row.requested": "machine",
     "guardian.weigh.row.simplest": "machine",
-    "guardian.weigh.row.nothing": "machine"
+    "guardian.weigh.row.nothing": "machine",
+    "command.guardian_forecast.summary": "machine",
+    "guardian.forecast.line": "machine",
+    "guardian.forecast.none": "machine",
+    "guardian.signal.escalation": "machine"
   }
 }

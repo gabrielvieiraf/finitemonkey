@@ -1,8 +1,9 @@
 import type { Runtime } from "../core/runtime.js";
 import type { FmPaths } from "../task/paths.js";
+import { escalated, forecastFor } from "./forecast.js";
 import { type Goals, readGoals } from "./goals.js";
 import { type GuardianSignal, reopenedDecisions, scopeGrowth, stalledTasks, unlinkedTasks } from "./signals.js";
-import { knownTasks } from "./tasks.js";
+import { type KnownTask, knownTasks } from "./tasks.js";
 
 export const GUARDIAN_STATUS_SCHEMA = "finitemonkey/guardian-status@1";
 
@@ -23,7 +24,22 @@ const countGoals = (goals: Goals): GoalCounts => ({
   inferred: goals.entries.filter((entry) => entry.origin === "inferred").length,
 });
 
-export const guardianStatus = (runtime: Pick<Runtime, "readText" | "listDir">, paths: FmPaths): GuardianStatus => {
+const escalations = (
+  runtime: Pick<Runtime, "readText" | "now">,
+  paths: FmPaths,
+  tasks: readonly KnownTask[],
+): readonly GuardianSignal[] =>
+  tasks.flatMap((task) => {
+    const elapsed = escalated(runtime, paths, task, forecastFor(runtime, paths, tasks, task.contract));
+    return elapsed === undefined
+      ? []
+      : [{ kind: "escalation", subject: task.contract.id, detail: (elapsed / 3_600_000).toFixed(1) }];
+  });
+
+export const guardianStatus = (
+  runtime: Pick<Runtime, "readText" | "listDir" | "now">,
+  paths: FmPaths,
+): GuardianStatus => {
   const goals = readGoals(runtime, paths.root);
   const tasks = knownTasks(runtime, paths);
   return {
@@ -35,6 +51,7 @@ export const guardianStatus = (runtime: Pick<Runtime, "readText" | "listDir">, p
       ...scopeGrowth(tasks),
       ...reopenedDecisions(runtime, paths.root),
       ...stalledTasks(runtime, paths, tasks),
+      ...escalations(runtime, paths, tasks),
     ],
   };
 };

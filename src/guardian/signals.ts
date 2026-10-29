@@ -9,7 +9,7 @@ import { SIZES } from "../task/types.js";
 import { type GoalEntry, type Goals, statedGoals } from "./goals.js";
 import type { KnownTask } from "./tasks.js";
 
-export const SIGNAL_KINDS = ["unlinked_task", "scope_growth", "reopened_decision", "stalled"] as const;
+export const SIGNAL_KINDS = ["unlinked_task", "scope_growth", "reopened_decision", "stalled", "escalation"] as const;
 
 export type SignalKind = (typeof SIGNAL_KINDS)[number];
 

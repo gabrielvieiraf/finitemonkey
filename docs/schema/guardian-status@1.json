@@ -37,7 +37,8 @@
               "unlinked_task",
               "scope_growth",
               "reopened_decision",
-              "stalled"
+              "stalled",
+              "escalation"
             ]
           },
           "subject": {

@@ -44,6 +44,7 @@ import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { goldenAcceptCommand } from "./golden.js";
 import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
 import { guardianAssumeAddCommand, guardianAssumeListCommand, guardianAssumeVerifyCommand } from "./guardian-assume.js";
+import { guardianForecastCommand } from "./guardian-forecast.js";
 import { guardianReportCommand } from "./guardian-report.js";
 import { guardianReuseCommand, guardianScanCommand } from "./guardian-reuse.js";
 import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
@@ -277,6 +278,7 @@ export const REGISTRY = [
   guardianReuseCommand,
   guardianScanCommand,
   guardianWeighCommand,
+  guardianForecastCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

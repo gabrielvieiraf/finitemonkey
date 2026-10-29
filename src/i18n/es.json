@@ -2207,5 +2207,9 @@
   "guardian.weigh.ask_scale": "pregunta a la persona el número de escala (usuarios, peticiones por segundo, volumen de datos) y escríbelo en scale: en el contrato; no lo estimes",
   "guardian.weigh.row.requested": "pedido: construir {files} archivos nuevos y {deps} dependencias nuevas; operar {operate}; deshacer clase {undo}; nadie demostró {beyond}",
   "guardian.weigh.row.simplest": "lo más simple viable: el mismo resultado con lo que el proyecto ya ejecuta; nada nuevo que operar; deshacer clase A; mantenido por el equipo actual",
-  "guardian.weigh.row.nothing": "no hacer nada ahora: sin costo; el contrato no se cumple hasta el próximo hito"
+  "guardian.weigh.row.nothing": "no hacer nada ahora: sin costo; el contrato no se cumple hasta el próximo hito",
+  "command.guardian_forecast.summary": "Pronostica una tarea a partir de las tareas pasadas de la propia persona, del mismo tamaño y área (necesita cinco)",
+  "guardian.forecast.line": "Tus últimas {count} tareas de tamaño {size} en {areas} tomaron {hours} h (mediana) y {runs} corridas del gate (mediana): {tasks}.",
+  "guardian.forecast.none": "Menos de cinco tareas terminadas de este tamaño y área; sin pronóstico.",
+  "guardian.signal.escalation": "{subject}: todavía a un check de pasar después de {detail} h, más del doble de la mediana de tareas comparables"
 }
