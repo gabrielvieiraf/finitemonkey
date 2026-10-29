@@ -40,8 +40,8 @@ var parseJsonObject = (text29) => {
   if (!parsed.ok) return parsed;
   return isRecord(parsed.value) ? accept(parsed.value) : reject("expected a JSON object");
 };
-var optionalString = (record10, key3) => {
-  const value2 = record10[key3];
+var optionalString = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 
@@ -912,8 +912,8 @@ var SECRETS_CHECK = "secrets";
 var EMPTY_BASELINE = { schema: BASELINE_SCHEMA, entries: [] };
 var stableFindingId = (check2, rule, file, fingerprint) => `${check2}-${sha256Hex(`${check2}\0${rule}\0${toPosixPath(file)}\0${fingerprint}`).slice(0, 16)}`;
 var baselinePath = (root) => toAbsolutePath(join3(root, BASELINE_FILE));
-var text2 = (record10, key3) => {
-  const value2 = record10[key3];
+var text2 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : void 0;
 };
 var stateOf = (value2) => BASELINE_STATES.find((state) => state === value2);
@@ -1868,8 +1868,8 @@ var texts = (value2, at5, issues2) => {
   issues2.push(`${at5}: must be a list of text`);
   return void 0;
 };
-var text3 = (record10, key3, at5, issues2) => {
-  const value2 = record10[key3];
+var text3 = (record11, key3, at5, issues2) => {
+  const value2 = record11[key3];
   if (typeof value2 === "string" && value2.trim() !== "") return value2;
   issues2.push(`${at5}.${key3}: required text`);
   return "";
@@ -1883,12 +1883,12 @@ var layerOf = (value2, index, issues2) => {
   const name = text3(value2, "name", at5, issues2);
   const paths = texts(value2["paths"], `${at5}.paths`, issues2) ?? [];
   if (paths.length === 0) issues2.push(`${at5}.paths: list at least one glob`);
-  const allow20 = texts(value2["allow"], `${at5}.allow`, issues2);
+  const allow21 = texts(value2["allow"], `${at5}.allow`, issues2);
   const exposed = texts(value2["public"], `${at5}.public`, issues2);
   return {
     name,
     paths,
-    ...allow20 === void 0 ? {} : { allow: allow20 },
+    ...allow21 === void 0 ? {} : { allow: allow21 },
     ...exposed === void 0 ? {} : { public: exposed }
   };
 };
@@ -2695,7 +2695,7 @@ var wordsOf = (text29) => new Set(
   normalize(text29).match(/[a-z]{4,}/g)?.filter((word2) => !STOP.has(word2)) ?? []
 );
 var numbersOf = (text29) => (text29.match(NUMBER2) ?? []).map((value2) => value2.replace(",", "."));
-var coverage = (words4, target5) => words4.size === 0 ? 0 : [...words4].filter((word2) => target5.has(word2)).length / words4.size;
+var coverage = (words5, target5) => words5.size === 0 ? 0 : [...words5].filter((word2) => target5.has(word2)).length / words5.size;
 var kindOf = (sentence2) => {
   if (numbersOf(sentence2).length > 0) return "number";
   if (CORRECTION.test(sentence2)) return "correction";
@@ -2709,22 +2709,22 @@ var LINE_MATCH = 0.5;
 var contradiction = (text29, docs) => {
   const numbers3 = numbersOf(text29);
   if (numbers3.length === 0) return void 0;
-  const words4 = wordsOf(text29);
+  const words5 = wordsOf(text29);
   for (const doc of docs) {
     const lines7 = doc.text.split("\n");
     const index = lines7.findIndex((line12) => {
       const theirs = numbersOf(line12);
-      return theirs.length > 0 && coverage(words4, wordsOf(line12)) >= LINE_MATCH && !theirs.some((value2) => numbers3.includes(value2));
+      return theirs.length > 0 && coverage(words5, wordsOf(line12)) >= LINE_MATCH && !theirs.some((value2) => numbers3.includes(value2));
     });
     if (index !== -1) return `${doc.file}:${String(index + 1)}`;
   }
   return void 0;
 };
 var placeOf = (text29, docs) => {
-  const words4 = wordsOf(text29);
-  const master = docs.find((doc) => doc.master && coverage(words4, wordsOf(doc.text)) >= MATCH);
+  const words5 = wordsOf(text29);
+  const master = docs.find((doc) => doc.master && coverage(words5, wordsOf(doc.text)) >= MATCH);
   if (master !== void 0) return { state: "in_master", where: master.file };
-  const report4 = docs.find((doc) => !doc.master && coverage(words4, wordsOf(doc.text)) >= MATCH);
+  const report4 = docs.find((doc) => !doc.master && coverage(words5, wordsOf(doc.text)) >= MATCH);
   return report4 === void 0 ? { state: "lost" } : { state: "only_report", where: report4.file };
 };
 var classify = (requests, docs) => {
@@ -2732,8 +2732,8 @@ var classify = (requests, docs) => {
   return statements.map((statement, index) => {
     const contradicted = contradiction(statement.text, docs);
     if (contradicted !== void 0) return { ...statement, state: "contradicted", where: contradicted };
-    const words4 = wordsOf(statement.text);
-    const later = statements.slice(index + 1).find((next2) => coverage(words4, wordsOf(next2.text)) >= MATCH);
+    const words5 = wordsOf(statement.text);
+    const later = statements.slice(index + 1).find((next2) => coverage(words5, wordsOf(next2.text)) >= MATCH);
     if (later !== void 0) return { ...statement, state: "superseded", where: later.at };
     return { ...statement, ...placeOf(statement.text, docs) };
   });
@@ -2781,8 +2781,8 @@ var writeFront = (data2, body2) => `${FENCE}
 ${stringifyYaml(data2)}${FENCE}
 
 ${body2}`;
-var textList = (record10, key3) => {
-  const value2 = record10[key3];
+var textList = (record11, key3) => {
+  const value2 = record11[key3];
   return Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
 };
 
@@ -3243,8 +3243,8 @@ var incidentId = (rule, fingerprint) => `inc-${sha256Hex(`${rule}\0${fingerprint
 var incidentsDir = (root) => toAbsolutePath(join10(root, INCIDENTS_DIR));
 var incidentFile = (root, id) => toAbsolutePath(join10(incidentsDir(root), `${id}.json`));
 var pick = (options2, value2) => options2.find((option3) => option3 === value2);
-var str = (record10, key3) => {
-  const value2 = record10[key3];
+var str = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 var parseEvent = (value2) => {
@@ -3262,12 +3262,12 @@ var parseHistory = (value2) => {
 var parseIncident = (raw) => {
   const parsed = parseJsonObject(raw);
   if (!parsed.ok) return parsed;
-  const record10 = parsed.value;
-  const [id, rule, where2, fingerprint, createdAt, updatedAt] = ["id", "rule", "where", "fingerprint", "createdAt", "updatedAt"].map((key3) => str(record10, key3));
-  const state = pick(INCIDENT_STATES, record10["state"]);
-  const source3 = pick(INCIDENT_SOURCES, record10["source"]);
-  const history = parseHistory(record10["history"]);
-  const firstCommit = str(record10, "firstCommit");
+  const record11 = parsed.value;
+  const [id, rule, where2, fingerprint, createdAt, updatedAt] = ["id", "rule", "where", "fingerprint", "createdAt", "updatedAt"].map((key3) => str(record11, key3));
+  const state = pick(INCIDENT_STATES, record11["state"]);
+  const source3 = pick(INCIDENT_SOURCES, record11["source"]);
+  const history = parseHistory(record11["history"]);
+  const firstCommit = str(record11, "firstCommit");
   if (id === void 0 || !ID.test(id) || rule === void 0 || where2 === void 0) return reject("incomplete");
   if (fingerprint === void 0 || createdAt === void 0 || updatedAt === void 0) return reject("incomplete");
   if (state === void 0 || source3 === void 0 || history === void 0) return reject("incomplete");
@@ -3412,9 +3412,9 @@ var parseMarkers = (prompt) => {
 };
 
 // src/hooks/fields.ts
-var textField = (record10, ...names3) => {
+var textField = (record11, ...names3) => {
   for (const name of names3) {
-    const value2 = record10[name];
+    const value2 = record11[name];
     if (typeof value2 === "string") return value2;
   }
   return void 0;
@@ -3475,12 +3475,12 @@ var promptLog = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
   const paths = projectPaths(input);
   if (paths === void 0 || !isPersonText(prompt)) return { kind: "allow" };
-  const record10 = {
+  const record11 = {
     at: input.runtime.now(),
     session: input.payload.sessionId ?? "",
     text: maskText(prompt)
   };
-  input.runtime.appendText(promptsPath(paths), `${JSON.stringify(record10)}
+  input.runtime.appendText(promptsPath(paths), `${JSON.stringify(record11)}
 `);
   return { kind: "allow" };
 };
@@ -3681,12 +3681,12 @@ var textOf3 = (content) => {
 var requestOf = (line12, session) => {
   const parsed = parseJsonObject(line12);
   if (!parsed.ok) return void 0;
-  const record10 = parsed.value;
-  if (record10["type"] !== "user" || record10["isSidechain"] === true || record10["isMeta"] === true) return void 0;
-  if (typeof record10["sessionId"] === "string" && record10["sessionId"] !== session) return void 0;
-  const message = record10["message"];
+  const record11 = parsed.value;
+  if (record11["type"] !== "user" || record11["isSidechain"] === true || record11["isMeta"] === true) return void 0;
+  if (typeof record11["sessionId"] === "string" && record11["sessionId"] !== session) return void 0;
+  const message = record11["message"];
   const text29 = isRecord(message) ? textOf3(message["content"]) : void 0;
-  const at5 = typeof record10["timestamp"] === "string" ? record10["timestamp"] : "";
+  const at5 = typeof record11["timestamp"] === "string" ? record11["timestamp"] : "";
   return text29 === void 0 || !isPersonText(text29) ? void 0 : { at: at5, session, text: text29 };
 };
 var transcriptRequests = (runtime, paths, env) => {
@@ -3760,20 +3760,20 @@ var entryOf = (kind, xy, path) => ({
   staged: kind !== "untracked" && !xy.startsWith("."),
   unstaged: kind === "untracked" || xy.charAt(1) !== "."
 });
-var afterFields = (record10, count11) => record10.split(" ").slice(count11).join(" ");
+var afterFields = (record11, count11) => record11.split(" ").slice(count11).join(" ");
 var parsePorcelainV2 = (stdout) => {
   const records2 = stdout.split("\0");
   const out = [];
   for (let index = 0; index < records2.length; index += 1) {
-    const record10 = records2[index] ?? "";
-    const xy = record10.split(" ")[1] ?? "..";
-    if (record10.startsWith("1 ")) out.push(entryOf("changed", xy, afterFields(record10, PORCELAIN_FIELDS.ordinary)));
-    else if (record10.startsWith("2 ")) {
-      out.push(entryOf("changed", xy, afterFields(record10, PORCELAIN_FIELDS.renamed)));
+    const record11 = records2[index] ?? "";
+    const xy = record11.split(" ")[1] ?? "..";
+    if (record11.startsWith("1 ")) out.push(entryOf("changed", xy, afterFields(record11, PORCELAIN_FIELDS.ordinary)));
+    else if (record11.startsWith("2 ")) {
+      out.push(entryOf("changed", xy, afterFields(record11, PORCELAIN_FIELDS.renamed)));
       index += 1;
-    } else if (record10.startsWith("u ")) {
-      out.push(entryOf("unmerged", xy, afterFields(record10, PORCELAIN_FIELDS.unmerged)));
-    } else if (record10.startsWith("? ")) out.push(entryOf("untracked", "??", record10.slice(2)));
+    } else if (record11.startsWith("u ")) {
+      out.push(entryOf("unmerged", xy, afterFields(record11, PORCELAIN_FIELDS.unmerged)));
+    } else if (record11.startsWith("? ")) out.push(entryOf("untracked", "??", record11.slice(2)));
   }
   return out.filter((entry2) => entry2.path !== "" && !entry2.path.startsWith(STATE_PREFIX));
 };
@@ -4158,12 +4158,12 @@ var EMPTY_STATE = {
   fronts: [],
   pending: []
 };
-var str2 = (record10, key3) => {
-  const value2 = record10[key3];
+var str2 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : null;
 };
-var num = (record10, key3) => {
-  const value2 = record10[key3];
+var num = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "number" && Number.isFinite(value2) ? value2 : null;
 };
 var strings2 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
@@ -4388,18 +4388,18 @@ import { join as join20 } from "node:path";
 var REGISTRY_SCHEMA = "finitemonkey/worktrees@1";
 var OWNER_KINDS = ["subagent", "session", "human", "unknown"];
 var WORKTREE_STATUSES = ["active", "done", "merged", "abandoned", "archived", "removed", "adopted"];
-var text4 = (record10, key3) => {
-  const value2 = record10[key3];
+var text4 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : null;
 };
 var integer = (value2) => typeof value2 === "number" && Number.isInteger(value2) ? value2 : null;
 var oneOf = (options2, value2, fallback2) => options2.find((option3) => option3 === value2) ?? fallback2;
 var ownerOf = (value2) => {
-  const record10 = isRecord(value2) ? value2 : {};
+  const record11 = isRecord(value2) ? value2 : {};
   return {
-    kind: oneOf(OWNER_KINDS, record10["kind"], "unknown"),
-    agentId: text4(record10, "agent_id"),
-    sessionId: text4(record10, "session_id")
+    kind: oneOf(OWNER_KINDS, record11["kind"], "unknown"),
+    agentId: text4(record11, "agent_id"),
+    sessionId: text4(record11, "session_id")
   };
 };
 var portsOf = (value2) => {
@@ -4704,12 +4704,12 @@ var applyWave = (context, plan2) => {
 };
 
 // src/fronts/plan-input.ts
-var str3 = (record10, key3) => {
-  const value2 = record10[key3];
+var str3 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : typeof value2 === "number" ? String(value2) : null;
 };
-var num2 = (record10, key3) => {
-  const value2 = record10[key3];
+var num2 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "number" && Number.isInteger(value2) ? value2 : null;
 };
 var strings3 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
@@ -5509,10 +5509,10 @@ var reconcile = (runtime, paths, ledger) => {
     const other = round(theirs.get(date) ?? 0);
     return { date, ours: mine, theirs: other, diff: round(mine - other) };
   });
-  const record10 = { at: runtime.now(), tool: RECONCILE_TOOL, days };
-  runtime.appendText(reconcilePath(paths), `${JSON.stringify(record10)}
+  const record11 = { at: runtime.now(), tool: RECONCILE_TOOL, days };
+  runtime.appendText(reconcilePath(paths), `${JSON.stringify(record11)}
 `);
-  return record10;
+  return record11;
 };
 
 // src/core/clock.ts
@@ -5520,8 +5520,8 @@ var nowMs = (runtime) => Date.parse(runtime.now());
 
 // src/guards/release/grants.ts
 var GRANT_MINUTES = 30;
-var text5 = (record10, key3) => {
-  const value2 = record10[key3];
+var text5 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 var toGrant = (value2) => {
@@ -5617,8 +5617,8 @@ var costReconcileCommand = {
   status: "ready",
   run: (ctx) => inRepo(ctx, (paths) => {
     const ledger = ingest({ runtime: ctx.runtime, paths, env: ctx.env });
-    const record10 = reconcile(ctx.runtime, paths, ledger);
-    if (record10 === void 0)
+    const record11 = reconcile(ctx.runtime, paths, ledger);
+    if (record11 === void 0)
       return failureFrom(ctx.t, {
         code: "reconcile_unavailable",
         messageKey: "budget.reconcile.missing",
@@ -5626,9 +5626,9 @@ var costReconcileCommand = {
         fix: `install ${RECONCILE_TOOL} locally, then run finitemonkey cost reconcile again`,
         exitCode: ExitCode.NotConfigured
       });
-    return success({ schema: BUDGET_SCHEMA, file: `${FM_DIR}/${RECONCILE_FILE}`, ...record10 }, [
-      ctx.t("budget.reconcile.done", { tool: record10.tool, file: `${FM_DIR}/${RECONCILE_FILE}` }),
-      ...record10.days.map((day2) => `  ${day2.date}  ${money(day2.ours)}  ${money(day2.theirs)}  ${money(day2.diff)}`)
+    return success({ schema: BUDGET_SCHEMA, file: `${FM_DIR}/${RECONCILE_FILE}`, ...record11 }, [
+      ctx.t("budget.reconcile.done", { tool: record11.tool, file: `${FM_DIR}/${RECONCILE_FILE}` }),
+      ...record11.days.map((day2) => `  ${day2.date}  ${money(day2.ours)}  ${money(day2.theirs)}  ${money(day2.diff)}`)
     ]);
   })
 };
@@ -5899,7 +5899,8 @@ var OPTIONAL_GUARDS = [
   "access-scenarios",
   "blind-tests",
   "decision-hold",
-  "assumptions"
+  "assumptions",
+  "reality"
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
 var KNOWN_GUARDS = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
@@ -5942,7 +5943,8 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "access-scenarios",
   "blind-tests",
   "decision-hold",
-  "assumptions"
+  "assumptions",
+  "reality"
 ]);
 var DEFAULT_POLICY = {
   exists: false,
@@ -7437,10 +7439,10 @@ var renderJson = (value2, style) => `${JSON.stringify(value2, null, style.indent
 var parseSettings = (text29) => text29 === void 0 || text29.trim() === "" ? { ok: true, value: {} } : parseJsonObject(text29);
 var asList = (value2) => Array.isArray(value2) ? value2 : [];
 var asRecord = (value2) => isRecord(value2) ? value2 : {};
-var setKey = (record10, key3, value2) => {
-  if (!(key3 in record10)) return value2 === void 0 ? record10 : { ...record10, [key3]: value2 };
+var setKey = (record11, key3, value2) => {
+  if (!(key3 in record11)) return value2 === void 0 ? record11 : { ...record11, [key3]: value2 };
   return Object.fromEntries(
-    Object.entries(record10).flatMap(([name, current2]) => {
+    Object.entries(record11).flatMap(([name, current2]) => {
       if (name !== key3) return [[name, current2]];
       return value2 === void 0 ? [] : [[name, value2]];
     })
@@ -8495,8 +8497,8 @@ var fieldsOf = (value2, at5, issues2) => {
     return [{ name, type, optional: optional6 }];
   });
 };
-var text7 = (record10, key3, at5, issues2, pattern) => {
-  const value2 = record10[key3];
+var text7 = (record11, key3, at5, issues2, pattern) => {
+  const value2 = record11[key3];
   if (typeof value2 === "string" && value2.trim() !== "" && (pattern === void 0 || pattern.test(value2))) return value2;
   issues2.push(`${at5}.${key3}: required${pattern === void 0 ? "" : ` and must match ${pattern.source}`}`);
   return "";
@@ -8817,8 +8819,8 @@ var parseShortcuts = (value2, acceptance2, issues2) => {
 };
 
 // src/task/validate.ts
-var str4 = (record10, key3, at5, issues2, required2) => {
-  const value2 = record10[key3];
+var str4 = (record11, key3, at5, issues2, required2) => {
+  const value2 = record11[key3];
   if (value2 === void 0 || value2 === null) {
     if (required2) issues2.push(`${at5}${key3}: required`);
     return void 0;
@@ -8829,8 +8831,8 @@ var str4 = (record10, key3, at5, issues2, required2) => {
   }
   return value2;
 };
-var positive2 = (record10, key3, at5, issues2) => {
-  const value2 = record10[key3];
+var positive2 = (record11, key3, at5, issues2) => {
+  const value2 = record11[key3];
   if (value2 === void 0 || value2 === null) return void 0;
   if (typeof value2 === "number" && Number.isInteger(value2) && value2 > 0) return value2;
   issues2.push(`${at5}${key3}: must be a positive integer`);
@@ -8849,13 +8851,13 @@ var gitRequire = (value2, at5, issues2) => {
   if (known3.some((item2) => item2 === void 0)) issues2.push(`${at5}: use ${GIT_REQUIREMENTS.join(", ")}`);
   return known3.filter((item2) => item2 !== void 0);
 };
-var appFields = (record10, kind, at5, issues2) => {
-  const port = positive2(record10, "port", at5, issues2);
+var appFields = (record11, kind, at5, issues2) => {
+  const port = positive2(record11, "port", at5, issues2);
   if (kind === "runtime" && port === void 0) issues2.push(`${at5}port: required`);
   if (port !== void 0 && port > 65535) issues2.push(`${at5}port: must be at most 65535`);
-  const status = positive2(record10, "status", at5, issues2);
-  const route = str4(record10, "route", at5, issues2, false);
-  const body2 = str4(record10, "body", at5, issues2, false);
+  const status = positive2(record11, "status", at5, issues2);
+  const route = str4(record11, "route", at5, issues2, false);
+  const body2 = str4(record11, "body", at5, issues2, false);
   return {
     ...port === void 0 ? {} : { port },
     ...route === void 0 ? {} : { route },
@@ -8863,21 +8865,21 @@ var appFields = (record10, kind, at5, issues2) => {
     ...body2 === void 0 ? {} : { body: body2 }
   };
 };
-var nonNegative = (record10, key3, at5, issues2) => {
-  const value2 = record10[key3];
+var nonNegative = (record11, key3, at5, issues2) => {
+  const value2 = record11[key3];
   if (value2 === void 0 || value2 === null) return void 0;
   if (typeof value2 === "number" && Number.isFinite(value2) && value2 >= 0) return value2;
   issues2.push(`${at5}${key3}: must be a number of zero or more`);
   return void 0;
 };
-var extraFields = (record10, kind, at5, issues2) => {
-  const cases = str4(record10, "cases", at5, issues2, kind === "golden");
-  const tolerance = nonNegative(record10, "tolerance", at5, issues2);
-  const run10 = record10["run"];
+var extraFields = (record11, kind, at5, issues2) => {
+  const cases = str4(record11, "cases", at5, issues2, kind === "golden");
+  const tolerance = nonNegative(record11, "tolerance", at5, issues2);
+  const run10 = record11["run"];
   if (kind === "golden" && typeof run10 === "string" && !run10.includes("{case}")) {
     issues2.push(`${at5}run: must contain {case}`);
   }
-  const minScore = positive2(record10, "min_score", at5, issues2);
+  const minScore = positive2(record11, "min_score", at5, issues2);
   if (minScore !== void 0 && minScore > 100) issues2.push(`${at5}min_score: must be at most 100`);
   return {
     ...cases === void 0 ? {} : { cases },
@@ -8885,15 +8887,15 @@ var extraFields = (record10, kind, at5, issues2) => {
     ...minScore === void 0 ? {} : { minScore }
   };
 };
-var checkFields = (record10, kind, at5, issues2) => {
-  const run10 = str4(record10, "run", at5, issues2, kind === "command" || kind === "golden");
-  const timeoutS = positive2(record10, "timeout_s", at5, issues2);
-  const description = str4(record10, "description", at5, issues2, kind === "manual");
-  const require2 = kind === "git" ? gitRequire(record10["require"] ?? ["committed"], `${at5}require`, issues2) : void 0;
-  const app = appFields(record10, kind, at5, issues2);
-  const versionUrl = str4(record10, "version_url", at5, issues2, false);
-  const field = str4(record10, "field", at5, issues2, false);
-  const open = record10["require_open"];
+var checkFields = (record11, kind, at5, issues2) => {
+  const run10 = str4(record11, "run", at5, issues2, kind === "command" || kind === "golden");
+  const timeoutS = positive2(record11, "timeout_s", at5, issues2);
+  const description = str4(record11, "description", at5, issues2, kind === "manual");
+  const require2 = kind === "git" ? gitRequire(record11["require"] ?? ["committed"], `${at5}require`, issues2) : void 0;
+  const app = appFields(record11, kind, at5, issues2);
+  const versionUrl = str4(record11, "version_url", at5, issues2, false);
+  const field = str4(record11, "field", at5, issues2, false);
+  const open = record11["require_open"];
   if (open !== void 0 && typeof open !== "boolean") issues2.push(`${at5}require_open: must be true or false`);
   return {
     ...run10 === void 0 ? {} : { run: run10 },
@@ -8904,7 +8906,7 @@ var checkFields = (record10, kind, at5, issues2) => {
     ...app,
     ...versionUrl === void 0 ? {} : { versionUrl },
     ...field === void 0 ? {} : { field },
-    ...extraFields(record10, kind, at5, issues2)
+    ...extraFields(record11, kind, at5, issues2)
   };
 };
 var acceptanceItem = (value2, index, issues2) => {
@@ -10528,8 +10530,8 @@ var withDeadline = (work, ms, startTimer) => new Promise((resolve4, reject2) => 
 // src/review/findings.ts
 var GROUPS = ["must", "should", "nice"];
 var VERDICTS = ["approve", "approve-with-changes", "request-changes"];
-var text9 = (record10, key3) => {
-  const value2 = record10[key3];
+var text9 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
 var reproOf = (value2) => {
@@ -10831,8 +10833,8 @@ var isSchemaCandidate = (file) => file.endsWith(".prisma") || /(?:^|\/)(?:schema
 
 // src/datamap/map.ts
 var DATA_MAP_FILE = ".finitemonkey/data-map.yml";
-var text10 = (record10, key3) => {
-  const value2 = record10[key3];
+var text10 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2.trim() : "";
 };
 var readDataMap = (runtime, root) => {
@@ -10983,7 +10985,7 @@ var resolveCommit = (git3, ref2) => {
 import { join as join44 } from "node:path";
 var DECISIONS_FILE = "decisions.jsonl";
 var decisionsPath = (paths) => toAbsolutePath(join44(paths.dir, "tasks", DECISIONS_FILE));
-var optional = (record10, key3) => typeof record10[key3] === "string" ? { [key3]: record10[key3] } : {};
+var optional = (record11, key3) => typeof record11[key3] === "string" ? { [key3]: record11[key3] } : {};
 var readShortcutRows = (runtime, paths) => {
   const text29 = runtime.readText(decisionsPath(paths));
   if (!text29.ok) return [];
@@ -13278,7 +13280,49 @@ var en_default = {
   "guardian.assumptions.human": "held a {kind} step once: {count, plural, one {# unverified high-impact assumption} other {# unverified high-impact assumptions}}; see finitemonkey guardian assume list.",
   "guardian.assumptions.empty": "No assumption recorded.",
   "guardian.assumptions.marked": "{id} marked {status}.",
-  "guardian.error.verify": "Give the assumption id and the evidence."
+  "guardian.error.verify": "Give the assumption id and the evidence.",
+  "command.guardian_report.summary": "Show the reality reports for the active task: goal conflicts and scope growth, each with evidence",
+  "guardian.report.title": "Reality report, level {level} ({trigger})",
+  "guardian.report.perceivedGoal": "Perceived goal",
+  "guardian.report.request": "Request",
+  "guardian.report.finding": "Finding",
+  "guardian.report.evidence": "Evidence",
+  "guardian.report.assumptions": "Assumptions",
+  "guardian.report.consequences": "Consequences",
+  "guardian.report.alternatives": "Alternatives",
+  "guardian.report.recommendation": "Recommendation",
+  "guardian.report.certainty": "Certainty",
+  "guardian.report.nextStep": "Next step",
+  "guardian.report.none": "No report: nothing in the active task needs one.",
+  "guardian.level.human": "level {level} report ({trigger}) shown before the step; the person chooses.",
+  "guardian.level3.ask": "Decision review before an irreversible step: {finding}. Before any recommendation, ask the person to write their own criterion for this choice by typing: finitemonkey: criterion <what matters most here>. Do not suggest an answer. Then run the step again.",
+  "guardian.level3.ask_human": "an irreversible step is waiting: type finitemonkey: criterion <what matters most here> before seeing the recommendation.",
+  "guardian.level3.criterion": "The person's criterion, recorded before this report: {criterion}",
+  "guardian.trigger.scope_growth.finding": "the contract grew after approval ({detail})",
+  "guardian.trigger.scope_growth.consequences": "more files to review and test than the person approved",
+  "guardian.trigger.scope_growth.alternatives": "split the extra scope into its own task | ask the person to approve the larger contract | do nothing and keep the approved scope",
+  "guardian.trigger.scope_growth.recommendation": "keep the approved scope and propose the extra as a new task",
+  "guardian.trigger.scope_growth.next": "continue; mention the growth in the final message",
+  "guardian.trigger.goal_conflict.finding": "the task matches {kind} {id}: {text}",
+  "guardian.trigger.goal_conflict.consequences": "work on something the person wrote down as out of scope or already rejected",
+  "guardian.trigger.goal_conflict.alternatives": "drop the conflicting part of the task | ask the person to update goals.yml | do nothing",
+  "guardian.trigger.goal_conflict.recommendation": "stop and show this report to the person before writing more",
+  "guardian.trigger.goal_conflict.next": "the person picks one alternative",
+  "guardian.trigger.reuse.finding": "the project already has {existing} for the same role as {added}",
+  "guardian.trigger.reuse.consequences": "two ways to do the same thing to maintain and keep consistent",
+  "guardian.trigger.reuse.alternatives": "use the existing one | replace the existing one everywhere in a separate task | keep both, with the reason written in a decision record",
+  "guardian.trigger.reuse.recommendation": "use the existing one",
+  "guardian.trigger.reuse.next": "the person picks one alternative",
+  "guardian.trigger.irreversible.finding": "irreversible {kind} step: {target}",
+  "guardian.trigger.irreversible.consequences": "hard to undo once it runs: data, sessions, callers or vendors depend on it",
+  "guardian.trigger.irreversible.alternatives": "run it as planned | run a reversible version first (dry run, staging, feature flag) | do nothing until the open assumptions are checked",
+  "guardian.trigger.irreversible.recommendation": "run a reversible version first when one exists",
+  "guardian.trigger.irreversible.next": "the person compares this with the criterion they wrote and decides",
+  "guardian.trigger.proportionality.finding": "the change weighs {tokens} tokens against a budget of {budget} for stage {stage}",
+  "guardian.trigger.proportionality.consequences": "more to build, operate and undo than this stage usually carries",
+  "guardian.trigger.proportionality.alternatives": "requested: as written | simplest viable: the same result with what the project already runs | do nothing",
+  "guardian.trigger.proportionality.recommendation": "the simplest viable option, unless a stated constraint needs the heavier one",
+  "guardian.trigger.proportionality.next": "the person picks one row"
 };
 
 // src/i18n/es.json
@@ -15439,7 +15483,49 @@ var es_default = {
   "guardian.assumptions.human": "retuve un paso de {kind} una vez: {count, plural, one {# supuesto de alto impacto sin verificar} other {# supuestos de alto impacto sin verificar}}; mira finitemonkey guardian assume list.",
   "guardian.assumptions.empty": "Ningún supuesto guardado.",
   "guardian.assumptions.marked": "{id} marcado como {status}.",
-  "guardian.error.verify": "Indica el id del supuesto y la evidencia."
+  "guardian.error.verify": "Indica el id del supuesto y la evidencia.",
+  "command.guardian_report.summary": "Muestra los informes de realidad de la tarea activa: conflictos con objetivos y alcance que creció, cada uno con evidencia",
+  "guardian.report.title": "Informe de realidad, nivel {level} ({trigger})",
+  "guardian.report.perceivedGoal": "Objetivo percibido",
+  "guardian.report.request": "Pedido",
+  "guardian.report.finding": "Hallazgo",
+  "guardian.report.evidence": "Evidencia",
+  "guardian.report.assumptions": "Supuestos",
+  "guardian.report.consequences": "Consecuencias",
+  "guardian.report.alternatives": "Alternativas",
+  "guardian.report.recommendation": "Recomendación",
+  "guardian.report.certainty": "Certeza",
+  "guardian.report.nextStep": "Próximo paso",
+  "guardian.report.none": "Ningún informe: nada en la tarea activa lo necesita.",
+  "guardian.level.human": "informe de nivel {level} ({trigger}) mostrado antes del paso; la persona elige.",
+  "guardian.level3.ask": "Revisión de decisión antes de un paso irreversible: {finding}. Antes de cualquier recomendación, pide a la persona que escriba su propio criterio para esta elección escribiendo: finitemonkey: criterion <lo que más importa aquí>. No sugieras respuesta. Luego ejecuta el paso otra vez.",
+  "guardian.level3.ask_human": "un paso irreversible está esperando: escribe finitemonkey: criterion <lo que más importa aquí> antes de ver la recomendación.",
+  "guardian.level3.criterion": "El criterio de la persona, guardado antes de este informe: {criterion}",
+  "guardian.trigger.scope_growth.finding": "el contrato creció después de la aprobación ({detail})",
+  "guardian.trigger.scope_growth.consequences": "más archivos para revisar y probar de los que la persona aprobó",
+  "guardian.trigger.scope_growth.alternatives": "separar el alcance extra en su propia tarea | pedir a la persona que apruebe el contrato más grande | no hacer nada y mantener el alcance aprobado",
+  "guardian.trigger.scope_growth.recommendation": "mantener el alcance aprobado y proponer lo extra como nueva tarea",
+  "guardian.trigger.scope_growth.next": "seguir; mencionar el crecimiento en el mensaje final",
+  "guardian.trigger.goal_conflict.finding": "la tarea coincide con {kind} {id}: {text}",
+  "guardian.trigger.goal_conflict.consequences": "trabajo en algo que la persona anotó como fuera de alcance o ya rechazado",
+  "guardian.trigger.goal_conflict.alternatives": "quitar la parte en conflicto de la tarea | pedir a la persona que actualice goals.yml | no hacer nada",
+  "guardian.trigger.goal_conflict.recommendation": "parar y mostrar este informe a la persona antes de escribir más",
+  "guardian.trigger.goal_conflict.next": "la persona elige una alternativa",
+  "guardian.trigger.reuse.finding": "el proyecto ya tiene {existing} para el mismo papel que {added}",
+  "guardian.trigger.reuse.consequences": "dos formas de hacer lo mismo para mantener y mantener coherentes",
+  "guardian.trigger.reuse.alternatives": "usar el existente | reemplazar el existente en todas partes en una tarea aparte | mantener los dos, con el motivo escrito en un registro de decisión",
+  "guardian.trigger.reuse.recommendation": "usar el existente",
+  "guardian.trigger.reuse.next": "la persona elige una alternativa",
+  "guardian.trigger.irreversible.finding": "paso irreversible de {kind}: {target}",
+  "guardian.trigger.irreversible.consequences": "difícil de deshacer una vez ejecutado: datos, sesiones, llamadores o proveedores dependen de esto",
+  "guardian.trigger.irreversible.alternatives": "ejecutarlo como está planeado | ejecutar antes una versión reversible (dry run, staging, feature flag) | no hacer nada hasta comprobar los supuestos abiertos",
+  "guardian.trigger.irreversible.recommendation": "ejecutar antes una versión reversible cuando exista",
+  "guardian.trigger.irreversible.next": "la persona compara esto con el criterio que escribió y decide",
+  "guardian.trigger.proportionality.finding": "el cambio pesa {tokens} fichas contra un presupuesto de {budget} para la etapa {stage}",
+  "guardian.trigger.proportionality.consequences": "más para construir, operar y deshacer de lo que esta etapa suele soportar",
+  "guardian.trigger.proportionality.alternatives": "pedido: como está escrito | lo más simple viable: el mismo resultado con lo que el proyecto ya ejecuta | no hacer nada",
+  "guardian.trigger.proportionality.recommendation": "la opción más simple viable, salvo que una restricción declarada exija la más pesada",
+  "guardian.trigger.proportionality.next": "la persona elige una fila"
 };
 
 // src/i18n/pt-BR.json
@@ -17600,7 +17686,49 @@ var pt_BR_default = {
   "guardian.assumptions.human": "segurei um passo de {kind} uma vez: {count, plural, one {# premissa de alto impacto sem verificação} other {# premissas de alto impacto sem verificação}}; veja finitemonkey guardian assume list.",
   "guardian.assumptions.empty": "Nenhuma premissa gravada.",
   "guardian.assumptions.marked": "{id} marcada como {status}.",
-  "guardian.error.verify": "Informe o id da premissa e a evidência."
+  "guardian.error.verify": "Informe o id da premissa e a evidência.",
+  "command.guardian_report.summary": "Mostra os relatórios de realidade da tarefa ativa: conflitos com objetivos e escopo que cresceu, cada um com evidência",
+  "guardian.report.title": "Relatório de realidade, nível {level} ({trigger})",
+  "guardian.report.perceivedGoal": "Objetivo percebido",
+  "guardian.report.request": "Pedido",
+  "guardian.report.finding": "Achado",
+  "guardian.report.evidence": "Evidência",
+  "guardian.report.assumptions": "Premissas",
+  "guardian.report.consequences": "Consequências",
+  "guardian.report.alternatives": "Alternativas",
+  "guardian.report.recommendation": "Recomendação",
+  "guardian.report.certainty": "Certeza",
+  "guardian.report.nextStep": "Próximo passo",
+  "guardian.report.none": "Nenhum relatório: nada na tarefa ativa precisa de um.",
+  "guardian.level.human": "relatório de nível {level} ({trigger}) mostrado antes do passo; a pessoa escolhe.",
+  "guardian.level3.ask": "Revisão de decisão antes de um passo irreversível: {finding}. Antes de qualquer recomendação, peça à pessoa para escrever o próprio critério para esta escolha digitando: finitemonkey: criterion <o que mais importa aqui>. Não sugira resposta. Depois rode o passo de novo.",
+  "guardian.level3.ask_human": "um passo irreversível está esperando: digite finitemonkey: criterion <o que mais importa aqui> antes de ver a recomendação.",
+  "guardian.level3.criterion": "O critério da pessoa, gravado antes deste relatório: {criterion}",
+  "guardian.trigger.scope_growth.finding": "o contrato cresceu depois da aprovação ({detail})",
+  "guardian.trigger.scope_growth.consequences": "mais arquivos para revisar e testar do que a pessoa aprovou",
+  "guardian.trigger.scope_growth.alternatives": "separar o escopo extra numa tarefa própria | pedir à pessoa para aprovar o contrato maior | não fazer nada e manter o escopo aprovado",
+  "guardian.trigger.scope_growth.recommendation": "manter o escopo aprovado e propor o extra como nova tarefa",
+  "guardian.trigger.scope_growth.next": "seguir; citar o crescimento na mensagem final",
+  "guardian.trigger.goal_conflict.finding": "a tarefa bate com {kind} {id}: {text}",
+  "guardian.trigger.goal_conflict.consequences": "trabalho em algo que a pessoa escreveu como fora de escopo ou já rejeitado",
+  "guardian.trigger.goal_conflict.alternatives": "tirar a parte conflitante da tarefa | pedir à pessoa para atualizar o goals.yml | não fazer nada",
+  "guardian.trigger.goal_conflict.recommendation": "parar e mostrar este relatório à pessoa antes de escrever mais",
+  "guardian.trigger.goal_conflict.next": "a pessoa escolhe uma alternativa",
+  "guardian.trigger.reuse.finding": "o projeto já tem {existing} para o mesmo papel de {added}",
+  "guardian.trigger.reuse.consequences": "dois jeitos de fazer a mesma coisa para manter e deixar consistentes",
+  "guardian.trigger.reuse.alternatives": "usar o existente | trocar o existente em todo lugar numa tarefa separada | manter os dois, com o motivo escrito num registro de decisão",
+  "guardian.trigger.reuse.recommendation": "usar o existente",
+  "guardian.trigger.reuse.next": "a pessoa escolhe uma alternativa",
+  "guardian.trigger.irreversible.finding": "passo irreversível de {kind}: {target}",
+  "guardian.trigger.irreversible.consequences": "difícil de desfazer depois de rodar: dados, sessões, chamadores ou fornecedores dependem disso",
+  "guardian.trigger.irreversible.alternatives": "rodar como planejado | rodar antes uma versão reversível (dry run, staging, feature flag) | não fazer nada até conferir as premissas em aberto",
+  "guardian.trigger.irreversible.recommendation": "rodar antes uma versão reversível quando existir",
+  "guardian.trigger.irreversible.next": "a pessoa compara isto com o critério que escreveu e decide",
+  "guardian.trigger.proportionality.finding": "a mudança pesa {tokens} fichas contra um orçamento de {budget} para o estágio {stage}",
+  "guardian.trigger.proportionality.consequences": "mais para construir, operar e desfazer do que este estágio costuma aguentar",
+  "guardian.trigger.proportionality.alternatives": "pedido: como escrito | mais simples viável: o mesmo resultado com o que o projeto já roda | não fazer nada",
+  "guardian.trigger.proportionality.recommendation": "a opção mais simples viável, a menos que uma restrição declarada exija a mais pesada",
+  "guardian.trigger.proportionality.next": "a pessoa escolhe uma linha"
 };
 
 // src/i18n/review.json
@@ -19762,7 +19890,49 @@ var review_default = {
     "guardian.assumptions.human": "machine",
     "guardian.assumptions.empty": "machine",
     "guardian.assumptions.marked": "machine",
-    "guardian.error.verify": "machine"
+    "guardian.error.verify": "machine",
+    "command.guardian_report.summary": "machine",
+    "guardian.report.title": "machine",
+    "guardian.report.perceivedGoal": "machine",
+    "guardian.report.request": "machine",
+    "guardian.report.finding": "machine",
+    "guardian.report.evidence": "machine",
+    "guardian.report.assumptions": "machine",
+    "guardian.report.consequences": "machine",
+    "guardian.report.alternatives": "machine",
+    "guardian.report.recommendation": "machine",
+    "guardian.report.certainty": "machine",
+    "guardian.report.nextStep": "machine",
+    "guardian.report.none": "machine",
+    "guardian.level.human": "machine",
+    "guardian.level3.ask": "machine",
+    "guardian.level3.ask_human": "machine",
+    "guardian.level3.criterion": "machine",
+    "guardian.trigger.scope_growth.finding": "machine",
+    "guardian.trigger.scope_growth.consequences": "machine",
+    "guardian.trigger.scope_growth.alternatives": "machine",
+    "guardian.trigger.scope_growth.recommendation": "machine",
+    "guardian.trigger.scope_growth.next": "machine",
+    "guardian.trigger.goal_conflict.finding": "machine",
+    "guardian.trigger.goal_conflict.consequences": "machine",
+    "guardian.trigger.goal_conflict.alternatives": "machine",
+    "guardian.trigger.goal_conflict.recommendation": "machine",
+    "guardian.trigger.goal_conflict.next": "machine",
+    "guardian.trigger.reuse.finding": "machine",
+    "guardian.trigger.reuse.consequences": "machine",
+    "guardian.trigger.reuse.alternatives": "machine",
+    "guardian.trigger.reuse.recommendation": "machine",
+    "guardian.trigger.reuse.next": "machine",
+    "guardian.trigger.irreversible.finding": "machine",
+    "guardian.trigger.irreversible.consequences": "machine",
+    "guardian.trigger.irreversible.alternatives": "machine",
+    "guardian.trigger.irreversible.recommendation": "machine",
+    "guardian.trigger.irreversible.next": "machine",
+    "guardian.trigger.proportionality.finding": "machine",
+    "guardian.trigger.proportionality.consequences": "machine",
+    "guardian.trigger.proportionality.alternatives": "machine",
+    "guardian.trigger.proportionality.recommendation": "machine",
+    "guardian.trigger.proportionality.next": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -21921,7 +22091,49 @@ var review_default = {
     "guardian.assumptions.human": "machine",
     "guardian.assumptions.empty": "machine",
     "guardian.assumptions.marked": "machine",
-    "guardian.error.verify": "machine"
+    "guardian.error.verify": "machine",
+    "command.guardian_report.summary": "machine",
+    "guardian.report.title": "machine",
+    "guardian.report.perceivedGoal": "machine",
+    "guardian.report.request": "machine",
+    "guardian.report.finding": "machine",
+    "guardian.report.evidence": "machine",
+    "guardian.report.assumptions": "machine",
+    "guardian.report.consequences": "machine",
+    "guardian.report.alternatives": "machine",
+    "guardian.report.recommendation": "machine",
+    "guardian.report.certainty": "machine",
+    "guardian.report.nextStep": "machine",
+    "guardian.report.none": "machine",
+    "guardian.level.human": "machine",
+    "guardian.level3.ask": "machine",
+    "guardian.level3.ask_human": "machine",
+    "guardian.level3.criterion": "machine",
+    "guardian.trigger.scope_growth.finding": "machine",
+    "guardian.trigger.scope_growth.consequences": "machine",
+    "guardian.trigger.scope_growth.alternatives": "machine",
+    "guardian.trigger.scope_growth.recommendation": "machine",
+    "guardian.trigger.scope_growth.next": "machine",
+    "guardian.trigger.goal_conflict.finding": "machine",
+    "guardian.trigger.goal_conflict.consequences": "machine",
+    "guardian.trigger.goal_conflict.alternatives": "machine",
+    "guardian.trigger.goal_conflict.recommendation": "machine",
+    "guardian.trigger.goal_conflict.next": "machine",
+    "guardian.trigger.reuse.finding": "machine",
+    "guardian.trigger.reuse.consequences": "machine",
+    "guardian.trigger.reuse.alternatives": "machine",
+    "guardian.trigger.reuse.recommendation": "machine",
+    "guardian.trigger.reuse.next": "machine",
+    "guardian.trigger.irreversible.finding": "machine",
+    "guardian.trigger.irreversible.consequences": "machine",
+    "guardian.trigger.irreversible.alternatives": "machine",
+    "guardian.trigger.irreversible.recommendation": "machine",
+    "guardian.trigger.irreversible.next": "machine",
+    "guardian.trigger.proportionality.finding": "machine",
+    "guardian.trigger.proportionality.consequences": "machine",
+    "guardian.trigger.proportionality.alternatives": "machine",
+    "guardian.trigger.proportionality.recommendation": "machine",
+    "guardian.trigger.proportionality.next": "machine"
   }
 };
 
@@ -22206,8 +22418,8 @@ var ASSUMPTION_STATUSES = ["unverified", "verified", "false", "review"];
 var TRIGGER_KINDS = ["date", "file", "event"];
 var assumptionsPath = (paths) => toAbsolutePath(join45(paths.dir, ASSUMPTIONS_LOG));
 var pick4 = (options2, value2, fallback2) => options2.find((option3) => option3 === value2) ?? fallback2;
-var text11 = (record10, key3) => {
-  const value2 = record10[key3];
+var text11 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2 : "";
 };
 var triggerOf = (value2) => {
@@ -22217,21 +22429,21 @@ var triggerOf = (value2) => {
   const hash2 = text11(value2, "hash");
   return kind === void 0 || target5 === "" ? void 0 : { kind, value: target5, ...hash2 === "" ? {} : { hash: hash2 } };
 };
-var assumptionOf = (record10) => {
-  const id = text11(record10, "id");
-  const body2 = text11(record10, "text");
+var assumptionOf = (record11) => {
+  const id = text11(record11, "id");
+  const body2 = text11(record11, "text");
   if (id === "" || body2 === "") return void 0;
-  const trigger2 = triggerOf(record10["trigger"]);
+  const trigger2 = triggerOf(record11["trigger"]);
   return {
     id,
     text: body2,
-    source: text11(record10, "source"),
-    impact: pick4(LEVELS3, record10["impact"], "medium"),
-    breaks: text11(record10, "breaks"),
-    confidence: pick4(LEVELS3, record10["confidence"], "medium"),
-    verify: text11(record10, "verify"),
-    status: pick4(ASSUMPTION_STATUSES, record10["status"], "unverified"),
-    at: text11(record10, "at"),
+    source: text11(record11, "source"),
+    impact: pick4(LEVELS3, record11["impact"], "medium"),
+    breaks: text11(record11, "breaks"),
+    confidence: pick4(LEVELS3, record11["confidence"], "medium"),
+    verify: text11(record11, "verify"),
+    status: pick4(ASSUMPTION_STATUSES, record11["status"], "unverified"),
+    at: text11(record11, "at"),
     ...trigger2 === void 0 ? {} : { trigger: trigger2 }
   };
 };
@@ -22474,14 +22686,14 @@ var DECISION_SOURCES = ["decide", "report"];
 var DECISION_CHOICES = ["followed", "overridden", "pending"];
 var decisionsPath2 = (paths) => toAbsolutePath(join46(paths.dir, DECISIONS_LOG));
 var texts3 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
-var optional2 = (record10, key3) => {
-  const value2 = record10[key3];
+var optional2 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" && value2 !== "" ? { [key3]: value2 } : {};
 };
-var entryOf4 = (record10) => {
-  const { id, at: at5, subject: subject2, recommendation } = record10;
-  const source3 = DECISION_SOURCES.find((item2) => item2 === record10["source"]);
-  const decision2 = DECISION_CHOICES.find((item2) => item2 === record10["decision"]);
+var entryOf4 = (record11) => {
+  const { id, at: at5, subject: subject2, recommendation } = record11;
+  const source3 = DECISION_SOURCES.find((item2) => item2 === record11["source"]);
+  const decision2 = DECISION_CHOICES.find((item2) => item2 === record11["decision"]);
   if (typeof id !== "string" || typeof at5 !== "string" || typeof subject2 !== "string") return void 0;
   if (typeof recommendation !== "string" || source3 === void 0 || decision2 === void 0) return void 0;
   return {
@@ -22490,13 +22702,13 @@ var entryOf4 = (record10) => {
     at: at5,
     subject: subject2,
     recommendation,
-    evidence: texts3(record10["evidence"]),
+    evidence: texts3(record11["evidence"]),
     decision: decision2,
-    paths: texts3(record10["paths"]),
-    ...optional2(record10, "criterion"),
-    ...optional2(record10, "choice"),
-    ...optional2(record10, "overrideReason"),
-    ...optional2(record10, "trigger")
+    paths: texts3(record11["paths"]),
+    ...optional2(record11, "criterion"),
+    ...optional2(record11, "choice"),
+    ...optional2(record11, "overrideReason"),
+    ...optional2(record11, "trigger")
   };
 };
 var readDecisions = (runtime, paths) => {
@@ -22686,8 +22898,8 @@ var params = (value2) => isRecord(value2) ? Object.fromEntries(
 var notes2 = (value2) => Array.isArray(value2) ? value2.flatMap(
   (item2) => isRecord(item2) && typeof item2["key"] === "string" ? [{ key: item2["key"], params: params(item2["params"]) }] : []
 ) : [];
-var text12 = (record10, key3) => {
-  const value2 = record10[key3];
+var text12 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
 var strings6 = (value2) => isRecord(value2) ? Object.fromEntries(
@@ -22702,20 +22914,20 @@ var inputsOf = (value2) => {
     env: strings6(value2["env"])
   };
 };
-var optional3 = (record10) => {
-  const scripts2 = text12(record10, "scripts");
-  const exitCode = record10["exitCode"];
-  const durationMs = record10["durationMs"];
-  const command = text12(record10, "command");
-  const stdoutSha256 = text12(record10, "stdoutSha256");
-  const releasedBy = text12(record10, "releasedBy");
-  const reason = oneOf3(UNVERIFIED_REASONS, record10["reason"]);
-  const failures = record10["failures"];
-  const testCount = record10["testCount"];
-  const state = oneOf3(COMPLETION_STATES, record10["state"]);
-  const from = oneOf3(COMPLETION_STATES, record10["from"]);
-  const stateReason = text12(record10, "stateReason");
-  const inputs = inputsOf(record10["inputs"]);
+var optional3 = (record11) => {
+  const scripts2 = text12(record11, "scripts");
+  const exitCode = record11["exitCode"];
+  const durationMs = record11["durationMs"];
+  const command = text12(record11, "command");
+  const stdoutSha256 = text12(record11, "stdoutSha256");
+  const releasedBy = text12(record11, "releasedBy");
+  const reason = oneOf3(UNVERIFIED_REASONS, record11["reason"]);
+  const failures = record11["failures"];
+  const testCount = record11["testCount"];
+  const state = oneOf3(COMPLETION_STATES, record11["state"]);
+  const from = oneOf3(COMPLETION_STATES, record11["from"]);
+  const stateReason = text12(record11, "stateReason");
+  const inputs = inputsOf(record11["inputs"]);
   return {
     ...command === void 0 ? {} : { command },
     ...typeof exitCode === "number" || exitCode === null ? { exitCode } : {},
@@ -22735,14 +22947,14 @@ var optional3 = (record10) => {
 var parseEvidence = (line12) => {
   const parsed = parseJsonObject(line12);
   if (!parsed.ok) return void 0;
-  const record10 = parsed.value;
-  const status = oneOf3(EVIDENCE_STATUSES, record10["status"]);
-  const task = text12(record10, "task");
-  const check2 = text12(record10, "check");
-  const kind = text12(record10, "kind");
-  const treeHash2 = text12(record10, "treeHash");
-  const at5 = text12(record10, "at");
-  if (record10["schema"] !== EVIDENCE_SCHEMA || status === void 0) return void 0;
+  const record11 = parsed.value;
+  const status = oneOf3(EVIDENCE_STATUSES, record11["status"]);
+  const task = text12(record11, "task");
+  const check2 = text12(record11, "check");
+  const kind = text12(record11, "kind");
+  const treeHash2 = text12(record11, "treeHash");
+  const at5 = text12(record11, "at");
+  if (record11["schema"] !== EVIDENCE_SCHEMA || status === void 0) return void 0;
   if (task === void 0 || check2 === void 0 || kind === void 0 || treeHash2 === void 0 || at5 === void 0) {
     return void 0;
   }
@@ -22754,8 +22966,8 @@ var parseEvidence = (line12) => {
     status,
     treeHash: treeHash2,
     at: at5,
-    notes: notes2(record10["notes"]),
-    ...optional3(record10)
+    notes: notes2(record11["notes"]),
+    ...optional3(record11)
   };
 };
 var readLedgerChecked = (runtime, path) => {
@@ -22894,6 +23106,10 @@ var knownTasks = (runtime, paths) => {
   const done2 = new Set(readState(runtime, paths).done);
   return names3.flatMap((name) => taskOf(runtime, paths, trust2, done2, name.replace(/\.yml$/, "")) ?? []);
 };
+var activeTask = (runtime, paths) => {
+  const state = readState(runtime, paths);
+  return state.active === void 0 ? void 0 : taskOf(runtime, paths, readTrust(runtime, paths), new Set(state.done), state.active);
+};
 
 // src/guardian/status.ts
 var GUARDIAN_STATUS_SCHEMA = "finitemonkey/guardian-status@1";
@@ -23008,11 +23224,11 @@ var accept2 = (ctx, root, name, choice, reason) => {
   const text29 = ctx.runtime.readText(planPath(root, name));
   if (!text29.ok)
     return failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.error.no_record", USAGE6, { file }));
-  const record10 = readRecord(text29.value);
-  if (record10.status !== "proposed" && record10.status !== "needs-person")
+  const record11 = readRecord(text29.value);
+  if (record11.status !== "proposed" && record11.status !== "needs-person")
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "guardian.error.not_proposed", USAGE6, { file, status: record10.status })
+      usageProblem("invalid_arguments", "guardian.error.not_proposed", USAGE6, { file, status: record11.status })
     );
   const { data: data2, body: body2 } = readFront(text29.value);
   const written = ctx.runtime.writeText(
@@ -23020,15 +23236,15 @@ var accept2 = (ctx, root, name, choice, reason) => {
     writeFront(toYaml2({ ...data2 ?? {}, status: "accepted" }), withStatus(body2, "accepted"))
   );
   if (!written.ok) return failureFrom(ctx.t, guardianWriteProblem(file));
-  const overridden = choice !== void 0 && choice.trim().toLowerCase() !== record10.recommendation.toLowerCase();
+  const overridden = choice !== void 0 && choice.trim().toLowerCase() !== record11.recommendation.toLowerCase();
   const entry2 = appendDecision(ctx.runtime, fmPaths(root), {
     source: "decide",
     at: ctx.runtime.now(),
     subject: file,
-    recommendation: record10.recommendation,
-    evidence: record10.facts,
+    recommendation: record11.recommendation,
+    evidence: record11.facts,
     decision: overridden ? "overridden" : "followed",
-    paths: record10.paths,
+    paths: record11.paths,
     ...choice === void 0 ? {} : { choice },
     ...overridden && reason !== void 0 && reason.trim() !== "" ? { overrideReason: reason.trim() } : {}
   });
@@ -23486,8 +23702,8 @@ var ghJson2 = (runtime, cwd, args2) => {
   return parsed.ok ? parsed.value : void 0;
 };
 var records = (value2) => Array.isArray(value2) ? value2.filter((item2) => isRecord(item2)) : [];
-var textOf4 = (record10, key3) => {
-  const value2 = record10?.[key3];
+var textOf4 = (record11, key3) => {
+  const value2 = record11?.[key3];
   return typeof value2 === "string" && value2 !== "" ? value2 : void 0;
 };
 var stateOf2 = (raw) => {
@@ -25036,10 +25252,10 @@ var parseEntries = (value2) => {
   const entries2 = value2.map(parseEntry3);
   return entries2.every((entry2) => entry2 !== void 0) ? entries2 : void 0;
 };
-var fromRecord = (record10) => {
-  const { schema, version: version2, installedAt, updatedAt } = record10;
-  const entries2 = parseEntries(record10["entries"]);
-  const createdDirs = strings8(record10["createdDirs"]);
+var fromRecord = (record11) => {
+  const { schema, version: version2, installedAt, updatedAt } = record11;
+  const entries2 = parseEntries(record11["entries"]);
+  const createdDirs = strings8(record11["createdDirs"]);
   if (schema !== LOCK_SCHEMA) return reject(`schema is not ${LOCK_SCHEMA}`);
   if (typeof version2 !== "string" || typeof installedAt !== "string" || typeof updatedAt !== "string") {
     return reject("version, installedAt and updatedAt must be text");
@@ -26129,8 +26345,8 @@ var installedPlugins = (env) => {
   const enabled = enabledPlugins2(env);
   return Object.entries(asRecord(index?.["plugins"])).flatMap(([id, value2]) => {
     const records2 = Array.isArray(value2) ? value2.filter(isRecord) : isRecord(value2) ? [value2] : [];
-    const record10 = records2.find((item2) => item2["projectPath"] === env.root) ?? records2[0];
-    const root = record10 === void 0 ? void 0 : optionalString(record10, "installPath");
+    const record11 = records2.find((item2) => item2["projectPath"] === env.root) ?? records2[0];
+    const root = record11 === void 0 ? void 0 : optionalString(record11, "installPath");
     return root === void 0 ? [] : [{ id, root, enabled: enabled.get(id) ?? true }];
   });
 };
@@ -27047,24 +27263,24 @@ var powershellProgram = (name) => ALIASES[name.toLowerCase()] ?? name.toLowerCas
 var FETCHERS2 = /* @__PURE__ */ new Set(["curl", "wget", "iwr", "irm", "invoke-webrequest", "invoke-restmethod"]);
 var SHELLS = /* @__PURE__ */ new Set(["sh", "bash", "zsh", "dash", "ksh", "fish", "iex", "invoke-expression"]);
 var WRAPPERS = /* @__PURE__ */ new Set(["sudo", "doas", "env", "command", "exec", "nohup"]);
-var programOf = (words4) => {
-  const word2 = words4.find((item2) => !WRAPPERS.has(item2) && !item2.startsWith("-") && !/^\w+=/.test(item2)) ?? "";
+var programOf = (words5) => {
+  const word2 = words5.find((item2) => !WRAPPERS.has(item2) && !item2.startsWith("-") && !/^\w+=/.test(item2)) ?? "";
   return basename5(word2.replace(/\\/g, "/")).toLowerCase().replace(/\.exe$/, "");
 };
 var END = { kind: "op", text: "\n" };
 var pipeToShell = (text29, dialect) => {
   const tokens = (dialect === "powershell" ? lexPowerShell(text29) : lexBash(text29)).tokens;
-  let words4 = [];
+  let words5 = [];
   let previous;
   for (const token of [...tokens, END]) {
-    if (token.kind === "word") words4.push(token.text);
+    if (token.kind === "word") words5.push(token.text);
     if (token.kind !== "op") continue;
-    const program = programOf(words4);
+    const program = programOf(words5);
     if (previous?.op === "|" && FETCHERS2.has(previous.program) && SHELLS.has(program)) {
       return `${previous.program} | ${program}`;
     }
     previous = { program, op: token.text };
-    words4 = [];
+    words5 = [];
   }
   return void 0;
 };
@@ -27904,21 +28120,21 @@ var GENERIC = /* @__PURE__ */ new Set([
 ]);
 var wordsOf2 = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2").replace(/([A-Za-z])(\d)/g, "$1 $2").split(/[\s_\-$]+/).filter((word2) => word2 !== "").map((word2) => word2.toLowerCase());
 var isVersion = (word2) => /^v\d+$/.test(word2);
-var joinVersion = (words4) => words4.flatMap((word2, index) => {
-  const previous = words4[index - 1];
+var joinVersion = (words5) => words5.flatMap((word2, index) => {
+  const previous = words5[index - 1];
   if (/^\d+$/.test(word2) && previous === "v") return [];
-  return word2 === "v" && /^\d+$/.test(words4[index + 1] ?? "") ? [`v${words4[index + 1] ?? ""}`] : [word2];
+  return word2 === "v" && /^\d+$/.test(words5[index + 1] ?? "") ? [`v${words5[index + 1] ?? ""}`] : [word2];
 });
 var nameDetector = (name) => {
-  const words4 = joinVersion(wordsOf2(name));
-  const first = words4[0] ?? "";
-  const last = words4[words4.length - 1] ?? "";
-  const copying = last === "copy" && COPY_KINDS.has(words4[words4.length - 2] ?? "");
-  if (words4.length > 1 && !copying && (IMPROVEMENT_SUFFIX.has(last) || IMPROVEMENT_PREFIX.has(first))) {
+  const words5 = joinVersion(wordsOf2(name));
+  const first = words5[0] ?? "";
+  const last = words5[words5.length - 1] ?? "";
+  const copying = last === "copy" && COPY_KINDS.has(words5[words5.length - 2] ?? "");
+  if (words5.length > 1 && !copying && (IMPROVEMENT_SUFFIX.has(last) || IMPROVEMENT_PREFIX.has(first))) {
     return "improvement_name";
   }
-  if (words4.length > 1 && (VERSION_SUFFIX.has(last) || isVersion(last) || first === "legacy")) return "version_name";
-  if (words4.length > 0 && words4.every((word2) => GENERIC.has(word2))) return "generic_name";
+  if (words5.length > 1 && (VERSION_SUFFIX.has(last) || isVersion(last) || first === "legacy")) return "version_name";
+  if (words5.length > 0 && words5.every((word2) => GENERIC.has(word2))) return "generic_name";
   return void 0;
 };
 var SIBLING_SUFFIX = /(?:[-_.](?:v\d+|new|old|copy|backup|bak|temp|tmp|final|fixed|updated|refactored|enhanced|improved|better|optimized|legacy|\d+)|(?<=[a-z0-9])(?:V\d+|New|Old|Copy|Backup|Temp|Final|Fixed|Updated|Refactored|Enhanced|Improved|Better|Optimized|Legacy))$/;
@@ -28047,12 +28263,12 @@ var rankCandidates = (touched2, limits, filter) => {
 // src/advisor/store.ts
 import { join as join66 } from "node:path";
 var suggestionsPath = (root) => toAbsolutePath(join66(root, SUGGESTIONS_FILE));
-var text16 = (record10, key3) => {
-  const value2 = record10[key3];
+var text16 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" ? value2 : void 0;
 };
-var number2 = (record10, key3) => {
-  const value2 = record10[key3];
+var number2 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "number" ? value2 : void 0;
 };
 var runsOf = (value2) => Array.isArray(value2) ? value2.flatMap((item2) => {
@@ -28060,12 +28276,12 @@ var runsOf = (value2) => Array.isArray(value2) ? value2.flatMap((item2) => {
   const code2 = item2["exitCode"];
   return [{ command: item2["command"], exitCode: typeof code2 === "number" ? code2 : null }];
 }) : void 0;
-var optional4 = (record10) => {
-  const before2 = runsOf(record10["before"]);
-  const after2 = number2(record10, "after");
-  const example = text16(record10, "example");
-  const by = text16(record10, "by");
-  const refactorTask = text16(record10, "refactorTask");
+var optional4 = (record11) => {
+  const before2 = runsOf(record11["before"]);
+  const after2 = number2(record11, "after");
+  const example = text16(record11, "example");
+  const by = text16(record11, "by");
+  const refactorTask = text16(record11, "refactorTask");
   return {
     ...example === void 0 ? {} : { example },
     ...by === void 0 ? {} : { by },
@@ -28077,7 +28293,7 @@ var optional4 = (record10) => {
 var parseSuggestion = (line12) => {
   const parsed = parseJsonObject(line12);
   if (!parsed.ok) return void 0;
-  const record10 = parsed.value;
+  const record11 = parsed.value;
   const [id, at5, task, file, name, metric, refactoring] = [
     "id",
     "at",
@@ -28086,9 +28302,9 @@ var parseSuggestion = (line12) => {
     "name",
     "metric",
     "refactoring"
-  ].map((key3) => text16(record10, key3));
-  const [lineNo, value2, target5, score] = ["line", "value", "target", "score"].map((key3) => number2(record10, key3));
-  const { rule, state } = record10;
+  ].map((key3) => text16(record11, key3));
+  const [lineNo, value2, target5, score] = ["line", "value", "target", "score"].map((key3) => number2(record11, key3));
+  const { rule, state } = record11;
   if (id === void 0 || at5 === void 0 || task === void 0 || file === void 0 || name === void 0)
     return void 0;
   if (metric === void 0 || refactoring === void 0 || !isRule(rule) || !isState(state)) return void 0;
@@ -28107,7 +28323,7 @@ var parseSuggestion = (line12) => {
     refactoring,
     score,
     state,
-    ...optional4(record10)
+    ...optional4(record11)
   };
 };
 var readHistory = (runtime, root) => {
@@ -29215,9 +29431,9 @@ var requestSize = (prompt, hints) => {
   const text29 = prompt.trim();
   if (text29.startsWith("/") || !BUILD2.test(text29) || SMALL.test(text29)) return "S";
   if (LARGE.test(text29)) return "L";
-  const words4 = text29.split(/\s+/).length;
+  const words5 = text29.split(/\s+/).length;
   const joins = text29.match(JOINERS)?.length ?? 0;
-  return words4 >= MEDIUM_WORDS || joins >= 2 || hints.blueprint && words4 >= BLUEPRINT_WORDS ? "M" : "S";
+  return words5 >= MEDIUM_WORDS || joins >= 2 || hints.blueprint && words5 >= BLUEPRINT_WORDS ? "M" : "S";
 };
 
 // src/clarify/hook.ts
@@ -29701,19 +29917,19 @@ import { posix as posix5 } from "node:path";
 // src/shell/parse.ts
 var PREFIX_WORDS = /* @__PURE__ */ new Set(["!", "{", "}", "if", "then", "elif", "else", "do", "while", "until"]);
 var SKIP_WORDS = /* @__PURE__ */ new Set(["fi", "done", "esac", "}", "for", "case", "select", "function", "in"]);
-var trimKeywords = (words4) => {
+var trimKeywords = (words5) => {
   let start2 = 0;
-  while (start2 < words4.length && !words4[start2]?.quoted && PREFIX_WORDS.has(words4[start2]?.text ?? "")) start2 += 1;
-  const rest = words4.slice(start2);
+  while (start2 < words5.length && !words5[start2]?.quoted && PREFIX_WORDS.has(words5[start2]?.text ?? "")) start2 += 1;
+  const rest = words5.slice(start2);
   const first = rest[0];
   if (first !== void 0 && !first.quoted && SKIP_WORDS.has(first.text)) return [];
   return rest;
 };
 var fresh = () => ({ words: [], redirects: [], stdin: void 0 });
 var close = (building, out) => {
-  const words4 = trimKeywords(building.words);
-  if (words4.length > 0 || building.redirects.length > 0 || building.stdin !== void 0) {
-    out.push({ words: words4, redirects: building.redirects, stdin: building.stdin });
+  const words5 = trimKeywords(building.words);
+  if (words5.length > 0 || building.redirects.length > 0 || building.stdin !== void 0) {
+    out.push({ words: words5, redirects: building.redirects, stdin: building.stdin });
   }
 };
 var rawCommands = (tokens) => {
@@ -29919,15 +30135,15 @@ var joinDir = (current2, target5) => {
   if (next2.startsWith("/") || isWindowsAbsolute(next2) || next2.startsWith("~")) return next2;
   return current2 === void 0 ? posix5.normalize(next2) : posix5.join(current2, next2);
 };
-var assignments = (words4, language) => {
+var assignments = (words5, language) => {
   if (language !== "bash") {
-    const [first, second, third] = words4;
+    const [first, second, third] = words5;
     const match = first === void 0 ? null : PS_ENV.exec(first);
     if (match === null) return void 0;
     const value2 = second === "=" ? third ?? "" : match[2] ?? "";
     return { [match[1] ?? ""]: value2 };
   }
-  const list10 = words4[0] === "export" || words4[0] === "declare" ? words4.slice(1) : words4;
+  const list10 = words5[0] === "export" || words5[0] === "declare" ? words5.slice(1) : words5;
   if (list10.length === 0 || !list10.every((word2) => ASSIGNMENT2.test(word2) || word2.startsWith("-"))) return void 0;
   const found = list10.flatMap((word2) => {
     const match = ASSIGNMENT2.exec(word2);
@@ -29935,12 +30151,12 @@ var assignments = (words4, language) => {
   });
   return found.length === 0 ? void 0 : Object.fromEntries(found);
 };
-var track = (words4, language, context) => {
-  const assigned = assignments(words4, language);
+var track = (words5, language, context) => {
+  const assigned = assignments(words5, language);
   if (assigned !== void 0) context.env = { ...context.env, ...assigned };
-  const program = language === "bash" ? words4[0] ?? "" : powershellProgram(words4[0] ?? "");
+  const program = language === "bash" ? words5[0] ?? "" : powershellProgram(words5[0] ?? "");
   if (!CHANGES_DIR.has(program)) return;
-  const target5 = words4.slice(1).find((word2) => !word2.startsWith("-"));
+  const target5 = words5.slice(1).find((word2) => !word2.startsWith("-"));
   context.dir = target5 === void 0 || target5 === "-" ? "~" : joinDir(context.dir, target5);
 };
 var emit = (stage, raw, language, context, collector) => {
@@ -29968,9 +30184,9 @@ var emptyCommand = (raw, context) => ({
   dynamic: false
 });
 var visit2 = (raw, language, context, depth, collector) => {
-  const words4 = raw.words.map((word2) => word2.text);
-  track(words4, language, context);
-  const result = unwrap2({ argv: words4, env: context.env, via: context.via }, raw.stdin);
+  const words5 = raw.words.map((word2) => word2.text);
+  track(words5, language, context);
+  const result = unwrap2({ argv: words5, env: context.env, via: context.via }, raw.stdin);
   if (result.kind === "none") {
     if (raw.redirects.length > 0) collector.out.push(emptyCommand(raw, context));
     return;
@@ -30882,8 +31098,8 @@ var KUBE_VALUE_FLAGS = /* @__PURE__ */ new Set([
   "--kube-context"
 ]);
 var dockerReadOnly = (args2) => {
-  const words4 = firstPositional(args2, DOCKER_VALUE_FLAGS);
-  const [first, second] = words4;
+  const words5 = firstPositional(args2, DOCKER_VALUE_FLAGS);
+  const [first, second] = words5;
   if (first === void 0) return true;
   if (DOCKER_GROUPS.has(first))
     return second === void 0 || DOCKER_READ.has(second) || first === "compose" && second === "top";
@@ -30952,8 +31168,8 @@ var REDIS_READ = /* @__PURE__ */ new Set([
   "dbsize",
   "config"
 ]);
-var readOnlyRedis = (words4) => {
-  const [first, second] = words4;
+var readOnlyRedis = (words5) => {
+  const [first, second] = words5;
   if (first === void 0) return false;
   if (first.toLowerCase() === "config") return (second ?? "").toLowerCase() === "get";
   return REDIS_READ.has(first.toLowerCase());
@@ -31309,18 +31525,18 @@ var compareRan = (input) => {
   const checked = parsed.ok ? optionalString(parsed.value, "command") : void 0;
   const ran = commandOf3(input) ?? "";
   if (checked === void 0 || same(checked, ran)) return { kind: "allow" };
-  const record10 = {
+  const record11 = {
     tool: toolName2(input.payload),
     checked: maskText(checked),
     ran: maskText(ran),
     sessionId: input.payload.sessionId ?? null
   };
-  logEvent(input.runtime, paths, "input_rewritten", record10);
-  input.runtime.writeText(paths.cache(REWRITTEN), `${JSON.stringify(record10)}
+  logEvent(input.runtime, paths, "input_rewritten", record11);
+  input.runtime.writeText(paths.cache(REWRITTEN), `${JSON.stringify(record11)}
 `);
   return {
     kind: "block",
-    reason: modelReason(input.t, "gate.guard.rewrite", { checked: record10.checked, ran: record10.ran }),
+    reason: modelReason(input.t, "gate.guard.rewrite", { checked: record11.checked, ran: record11.ran }),
     human: input.t("gate.guard.rewrite.human")
   };
 };
@@ -32095,18 +32311,18 @@ var ciChecks = (value2) => Array.isArray(value2) ? value2.flatMap((item2) => {
 var parsePrView = (text29) => {
   const parsed = parseJsonObject(text29);
   if (!parsed.ok) return void 0;
-  const record10 = parsed.value;
-  const number5 = record10["number"];
+  const record11 = parsed.value;
+  const number5 = record11["number"];
   if (typeof number5 !== "number") return void 0;
   return {
     number: number5,
-    url: optionalString(record10, "url") ?? "",
-    state: optionalString(record10, "state") ?? "",
-    mergeable: optionalString(record10, "mergeable") ?? "UNKNOWN",
-    mergeStateStatus: optionalString(record10, "mergeStateStatus") ?? "UNKNOWN",
-    baseRefName: optionalString(record10, "baseRefName") ?? "",
-    headRefOid: optionalString(record10, "headRefOid") ?? "",
-    checks: ciChecks(record10["statusCheckRollup"])
+    url: optionalString(record11, "url") ?? "",
+    state: optionalString(record11, "state") ?? "",
+    mergeable: optionalString(record11, "mergeable") ?? "UNKNOWN",
+    mergeStateStatus: optionalString(record11, "mergeStateStatus") ?? "UNKNOWN",
+    baseRefName: optionalString(record11, "baseRefName") ?? "",
+    headRefOid: optionalString(record11, "headRefOid") ?? "",
+    checks: ciChecks(record11["statusCheckRollup"])
   };
 };
 var isConflicting = (pr) => pr.mergeable === "CONFLICTING" || pr.mergeStateStatus === "DIRTY";
@@ -33855,8 +34071,8 @@ var FLAGGED_EVENT = "callers.flagged";
 var RELEASED_EVENT = "callers.released";
 var MIN_SAMPLE = 20;
 var MAX_FALSE_POSITIVE = 0.05;
-var pairs2 = (record10) => {
-  const { task, names: names3 } = record10;
+var pairs2 = (record11) => {
+  const { task, names: names3 } = record11;
   if (typeof task !== "string" || !Array.isArray(names3)) return [];
   return names3.filter((name) => typeof name === "string").map((name) => `${task}\0${name}`);
 };
@@ -34699,9 +34915,9 @@ var projectRelative = (paths, absolute3) => toPosixPath(relative8(paths.root, ab
 var HEADERS_FILE = "headers.json";
 var HEADERS_FEATURE = "headers";
 var headersPath = (paths, tree) => toAbsolutePath(join92(lookDir(paths, tree), HEADERS_FILE));
-var writeHeaders = (runtime, paths, tree, record10) => {
+var writeHeaders = (runtime, paths, tree, record11) => {
   const made = runtime.mkdir(lookDir(paths, tree));
-  if (made.ok) runtime.writeAtomic(headersPath(paths, tree), `${JSON.stringify(record10, null, 2)}
+  if (made.ok) runtime.writeAtomic(headersPath(paths, tree), `${JSON.stringify(record11, null, 2)}
 `);
 };
 var routeOf2 = (value2) => {
@@ -36035,8 +36251,8 @@ var isImperative = (unit) => {
   return isShort(SHORT_IMPERATIVE)(unit) && IMPERATIVE_VERBS.has((first ?? "").toLowerCase());
 };
 var isPhrase = (part2) => {
-  const words4 = wordsOf3(part2);
-  return words4.length >= 2 && words4.length <= TRIAD_PART && !CONNECTIVES.has((words4[0] ?? "").toLowerCase());
+  const words5 = wordsOf3(part2);
+  return words5.length >= 2 && words5.length <= TRIAD_PART && !CONNECTIVES.has((words5[0] ?? "").toLowerCase());
 };
 var isCommaTriad = (unit) => {
   const parts = unit.text.replace(/[.!?…]+$/, "").split(/,\s*|\s+(?:and|e|y)\s+/);
@@ -36714,17 +36930,17 @@ var MAX_LISTED20 = 10;
 var required = (ctx) => defaultOn(ctx.runtime, ctx.paths.root, "research-first") || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records2 = researchRecords(ctx.runtime, ctx.paths.root);
-  const valid = records2.filter((record10) => record10.issues.length === 0);
+  const valid = records2.filter((record11) => record11.issues.length === 0);
   const rulePaths = configList(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "rule_paths");
   const rules2 = rulePaths.length === 0 ? [] : ctx.changes.filter((change2) => matchesAny(change2.path, rulePaths));
-  const backed = valid.some((record10) => ctx.changes.some((change2) => change2.path === record10.file));
+  const backed = valid.some((record11) => ctx.changes.some((change2) => change2.path === record11.file));
   return [
     ...records2.flatMap(
-      (record10) => record10.issues.map(
+      (record11) => record11.issues.map(
         (item2) => note(`research.issue.${item2.kind}`, { detail: `${item2.file}:${String(item2.line)} ${item2.detail}` })
       )
     ),
-    ...addedDependencies(ctx).filter((name) => !valid.some((record10) => record10.text.includes(name))).map((name) => note("gate.research.dependency", { name })),
+    ...addedDependencies(ctx).filter((name) => !valid.some((record11) => record11.text.includes(name))).map((name) => note("gate.research.dependency", { name })),
     ...rules2.length > 0 && !backed ? [
       note("gate.research.rule", {
         paths: rules2.slice(0, 3).map((change2) => change2.path).join(", ")
@@ -39422,20 +39638,20 @@ var classify3 = (context, tree, entry2) => {
 };
 
 // src/fronts/report.ts
-var text22 = (record10, key3, issues2, allowEmpty = false) => {
-  const value2 = record10[key3];
+var text22 = (record11, key3, issues2, allowEmpty = false) => {
+  const value2 = record11[key3];
   if (typeof value2 === "string" && (allowEmpty || value2.trim() !== "")) return value2;
   issues2.push(`${key3}: must be a${allowEmpty ? "" : " non-empty"} string`);
   return "";
 };
-var count6 = (record10, key3, issues2) => {
-  const value2 = record10[key3];
+var count6 = (record11, key3, issues2) => {
+  const value2 = record11[key3];
   if (typeof value2 === "number" && Number.isInteger(value2) && value2 >= 0) return value2;
   issues2.push(`tests.${key3}: must be a whole number`);
   return 0;
 };
-var list5 = (record10, key3, issues2, item2) => {
-  const value2 = record10[key3];
+var list5 = (record11, key3, issues2, item2) => {
+  const value2 = record11[key3];
   if (value2 === void 0) return [];
   if (!Array.isArray(value2)) {
     issues2.push(`${key3}: must be a list`);
@@ -39467,15 +39683,15 @@ var routed = (value2) => isRecord(value2) && typeof value2["text"] === "string" 
 var parseFrontReport = (raw) => {
   const parsed = parseJson(raw);
   if (!parsed.ok || !isRecord(parsed.value)) return { report: void 0, issues: ["not a JSON object"] };
-  const record10 = parsed.value;
+  const record11 = parsed.value;
   const issues2 = [];
-  const tests = isRecord(record10["tests"]) ? record10["tests"] : {};
-  if (!isRecord(record10["tests"])) issues2.push("tests: must be an object with command, passed, failed and added");
-  const strings18 = (key3) => list5(record10, key3, issues2, (value2) => str5(value2));
+  const tests = isRecord(record11["tests"]) ? record11["tests"] : {};
+  if (!isRecord(record11["tests"])) issues2.push("tests: must be an object with command, passed, failed and added");
+  const strings18 = (key3) => list5(record11, key3, issues2, (value2) => str5(value2));
   const report4 = {
-    front: text22(record10, "front", issues2),
-    branch: text22(record10, "branch", issues2),
-    head: text22(record10, "head", issues2),
+    front: text22(record11, "front", issues2),
+    branch: text22(record11, "branch", issues2),
+    head: text22(record11, "head", issues2),
     commits: strings18("commits"),
     delivered: strings18("delivered"),
     endpoints: strings18("endpoints"),
@@ -39485,12 +39701,12 @@ var parseFrontReport = (raw) => {
       failed: count6(tests, "failed", issues2),
       added: count6(tests, "added", issues2)
     },
-    screenshots: list5(record10, "screenshots", issues2, screenshot),
-    left_out: list5(record10, "left_out", issues2, leftOut),
-    provisional_decisions: list5(record10, "provisional_decisions", issues2, decision),
-    evidence: text22(record10, "evidence", issues2, true),
-    finished: record10["finished"] !== false,
-    inbox: list5(record10, "inbox", issues2, routed)
+    screenshots: list5(record11, "screenshots", issues2, screenshot),
+    left_out: list5(record11, "left_out", issues2, leftOut),
+    provisional_decisions: list5(record11, "provisional_decisions", issues2, decision),
+    evidence: text22(record11, "evidence", issues2, true),
+    finished: record11["finished"] !== false,
+    inbox: list5(record11, "inbox", issues2, routed)
   };
   if (report4.finished === false && report4.left_out.length === 0)
     issues2.push("left_out: a NOT FINISHED report lists what is left out");
@@ -40098,32 +40314,32 @@ var journalPath = (root) => toAbsolutePath(join118(root, JOURNAL_FILE));
 var headsOf = (value2) => isRecord(value2) ? Object.fromEntries(
   Object.entries(value2).filter((entry2) => typeof entry2[1] === "string")
 ) : {};
-var countOf3 = (record10, key3) => {
-  const value2 = record10[key3];
+var countOf3 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "number" && Number.isInteger(value2) ? { [key3]: value2 } : {};
 };
 var parseJournalLine = (line12) => {
   const parsed = parseJsonObject(line12);
   if (!parsed.ok) return void 0;
-  const record10 = parsed.value;
-  const ref2 = optionalString(record10, "ref");
-  const commit2 = optionalString(record10, "commit");
-  const at5 = optionalString(record10, "at");
+  const record11 = parsed.value;
+  const ref2 = optionalString(record11, "ref");
+  const commit2 = optionalString(record11, "commit");
+  const at5 = optionalString(record11, "at");
   if (ref2 === void 0 || commit2 === void 0 || at5 === void 0) return void 0;
   return {
     schema: JOURNAL_SCHEMA,
     at: at5,
-    op: optionalString(record10, "op") ?? "",
+    op: optionalString(record11, "op") ?? "",
     ref: ref2,
     commit: commit2,
-    head: optionalString(record10, "head"),
-    branch: optionalString(record10, "branch"),
-    index: optionalString(record10, "index"),
-    owner: optionalString(record10, "owner"),
-    command: optionalString(record10, "command"),
-    heads: headsOf(record10["heads"]),
-    ...countOf3(record10, "files"),
-    ...countOf3(record10, "skipped")
+    head: optionalString(record11, "head"),
+    branch: optionalString(record11, "branch"),
+    index: optionalString(record11, "index"),
+    owner: optionalString(record11, "owner"),
+    command: optionalString(record11, "command"),
+    heads: headsOf(record11["heads"]),
+    ...countOf3(record11, "files"),
+    ...countOf3(record11, "skipped")
   };
 };
 var readJournal = (runtime, root) => {
@@ -40444,10 +40660,10 @@ var GLOB = /[*?[]/;
 var specOf3 = (raw, prefix2) => {
   const posixRaw = toPosixPath(raw);
   const magic = MAGIC.exec(posixRaw);
-  const words4 = magic === null ? "" : magic[1] ?? magic[2] ?? "";
+  const words5 = magic === null ? "" : magic[1] ?? magic[2] ?? "";
   const rest = magic === null ? posixRaw : magic[3] ?? "";
-  const exclude = /(?:^|,)exclude(?:,|$)|[!^]/.test(words4);
-  const top = /(?:^|,)top(?:,|$)|\//.test(words4);
+  const exclude = /(?:^|,)exclude(?:,|$)|[!^]/.test(words5);
+  const top = /(?:^|,)top(?:,|$)|\//.test(words5);
   const joined = posix11.normalize(top ? rest : posix11.join(prefix2 === "" ? "." : prefix2, rest));
   return { pattern: joined === "./" ? "." : joined.replace(/\/$/, ""), exclude };
 };
@@ -40995,8 +41211,8 @@ var expandAlias = (runtime, repo, invocation, depth = 0) => {
   const inline5 = invocation.config[`alias.${invocation.subcommand.toLowerCase()}`];
   const configured2 = inline5 ?? runtime.git(["config", "--get", `alias.${invocation.subcommand}`], repo.root).stdout.trim();
   if (configured2 === "" || configured2.startsWith("!")) return invocation;
-  const words4 = normalizeCommand(`git ${configured2}`).commands[0]?.args ?? [];
-  return expandAlias(runtime, repo, withAlias(invocation, words4), depth + 1);
+  const words5 = normalizeCommand(`git ${configured2}`).commands[0]?.args ?? [];
+  return expandAlias(runtime, repo, withAlias(invocation, words5), depth + 1);
 };
 var targetsOf = (entries2, spec2, prefix2) => entries2.filter((entry2) => {
   if (spec2.scope === "tracked") return entry2.kind !== "untracked";
@@ -41436,6 +41652,217 @@ var assumptionHold = (input) => {
 };
 var ASSUMPTION_HANDLERS = { PreToolUse: [assumptionHold] };
 
+// src/guardian/criteria.ts
+var FILE = "guardian-criteria.json";
+var MARKER2 = /^\s*finitemonkey:\s*criterion\s+(\S.*)$/im;
+var readCriteria = (runtime, paths) => {
+  const raw = readJsonFile(runtime, paths.cache(FILE));
+  const criteria2 = isRecord(raw?.["criteria"]) ? Object.fromEntries(
+    Object.entries(raw["criteria"]).filter((entry2) => typeof entry2[1] === "string")
+  ) : {};
+  const pending = raw?.["pending"];
+  return { criteria: criteria2, ...typeof pending === "string" ? { pending } : {} };
+};
+var writeCriteria = (runtime, paths, state) => {
+  writeJsonFile(runtime, paths.cache(FILE), { ...state });
+};
+var criterionFrom = (prompt) => MARKER2.exec(prompt)?.[1]?.trim();
+var criterionPrompt = (input) => {
+  const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
+  const text29 = criterionFrom(prompt);
+  const paths = projectPaths(input);
+  if (text29 === void 0 || paths === void 0 || !comesFromPerson(prompt)) return { kind: "allow" };
+  const state = readCriteria(input.runtime, paths);
+  if (state.pending === void 0) return { kind: "allow" };
+  writeCriteria(input.runtime, paths, { criteria: { ...state.criteria, [state.pending]: text29 } });
+  return { kind: "allow" };
+};
+
+// src/guardian/report.ts
+var LEVEL_OF = {
+  scope_growth: 1,
+  goal_conflict: 2,
+  reuse: 2,
+  proportionality: 2,
+  irreversible: 3
+};
+var showable = (report4) => report4.evidence.some((line12) => line12.trim() !== "") && report4.finding.trim() !== "";
+var FIELDS2 = [
+  "perceivedGoal",
+  "request",
+  "finding",
+  "evidence",
+  "assumptions",
+  "consequences",
+  "alternatives",
+  "recommendation",
+  "certainty",
+  "nextStep"
+];
+var labelKey = (field) => `guardian.report.${field}`;
+var valueOf = (report4, field) => {
+  const value2 = report4[field];
+  if (typeof value2 === "string") return value2 === "" ? [] : [value2];
+  return value2;
+};
+var renderReport = (t, report4) => [
+  t("guardian.report.title", { level: report4.level, trigger: report4.trigger }),
+  ...FIELDS2.flatMap((field) => {
+    const lines7 = valueOf(report4, field);
+    if (lines7.length === 0) return [];
+    if (lines7.length === 1) return [`${t(labelKey(field))}: ${lines7[0] ?? ""}`];
+    return [`${t(labelKey(field))}:`, ...lines7.map((line12) => `  - ${line12}`)];
+  })
+].join("\n");
+
+// src/guardian/triggers.ts
+var words2 = (text29) => text29.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").split(/[^a-z0-9]+/).filter((word2) => word2.length >= 4);
+var conflictsWith = (contract, entry2) => {
+  const wanted = words2(entry2.text);
+  const have = new Set(words2([contract.goal, ...contract.scope.paths].join(" ")));
+  return wanted.length > 0 && wanted.every((word2) => have.has(word2));
+};
+var perceived = (base) => {
+  const linked = statedGoals(base.goals).filter((goal) => base.task.goals.includes(goal.id));
+  return linked.map((goal) => `${goal.id}: ${goal.text}`).join("; ") || base.task.contract.goal;
+};
+var reportFor = (base, trigger2, finding6, evidence, paths, key3) => ({
+  trigger: trigger2,
+  level: LEVEL_OF[trigger2],
+  perceivedGoal: perceived(base),
+  request: base.task.contract.goal,
+  finding: finding6,
+  evidence,
+  assumptions: base.open.map((item2) => `${item2.id}: ${item2.text}`),
+  consequences: base.t(`guardian.trigger.${trigger2}.consequences`),
+  alternatives: base.t(`guardian.trigger.${trigger2}.alternatives`).split(" | "),
+  recommendation: base.t(`guardian.trigger.${trigger2}.recommendation`),
+  certainty: trigger2 === "irreversible" ? "high" : "medium",
+  nextStep: base.t(`guardian.trigger.${trigger2}.next`),
+  paths,
+  key: key3
+});
+var goalConflicts = (base) => base.goals.entries.filter((entry2) => entry2.origin === "stated" && (entry2.kind === "non_goals" || entry2.kind === "rejected")).filter((entry2) => conflictsWith(base.task.contract, entry2)).map(
+  (entry2) => reportFor(
+    base,
+    "goal_conflict",
+    base.t("guardian.trigger.goal_conflict.finding", { id: entry2.id, kind: entry2.kind, text: entry2.text }),
+    [
+      `${GOALS_FILE}: ${entry2.kind} ${entry2.id} "${entry2.text}"`,
+      `${taskRelative(base.task.contract.id)}: goal "${base.task.contract.goal}"`
+    ],
+    base.task.contract.scope.paths,
+    entry2.id
+  )
+);
+var growthReports = (base) => scopeGrowth([base.task]).map(
+  (signal) => reportFor(
+    base,
+    "scope_growth",
+    base.t("guardian.trigger.scope_growth.finding", { detail: signal.detail }),
+    [`${taskRelative(signal.subject)}: ${signal.detail}`],
+    base.task.contract.scope.paths,
+    signal.detail
+  )
+);
+var irreversibleReport = (base, step4) => reportFor(
+  base,
+  "irreversible",
+  base.t("guardian.trigger.irreversible.finding", { kind: step4.kind, target: step4.target }),
+  [step4.target],
+  [step4.target],
+  step4.kind
+);
+
+// src/guardian/reality-hook.ts
+var REALITY_FEATURE = "reality";
+var ONCE_FILE = "guardian-reports.json";
+var SHADOW_FILE2 = "guardian-shadow.json";
+var WRITERS5 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
+var allow8 = { kind: "allow" };
+var baseOf3 = (input, paths) => {
+  const task = activeTask(input.runtime, paths);
+  if (task === void 0) return void 0;
+  const text29 = input.runtime.readText(paths.task(task.contract.id));
+  const ids4 = text29.ok ? taskList(text29.value, "assumptions") : [];
+  const open = ids4.length === 0 ? [] : openHighImpact(refreshTriggers(input.runtime, paths), ids4);
+  return { t: input.t, task, goals: readGoals(input.runtime, paths.root), open };
+};
+var record9 = (input, paths, report4, criterion) => {
+  appendDecision(input.runtime, paths, {
+    source: "report",
+    at: input.runtime.now(),
+    subject: report4.request,
+    recommendation: report4.recommendation,
+    evidence: report4.evidence,
+    decision: "pending",
+    paths: report4.paths,
+    trigger: report4.trigger,
+    ...criterion === void 0 ? {} : { criterion }
+  });
+};
+var signatureOf = (base, report4) => sha256Hex([base.task.contract.id, report4.trigger, report4.key].join("\0"));
+var reviewStep = (input, paths, base, report4) => {
+  const signature = signatureOf(base, report4);
+  const state = readCriteria(input.runtime, paths);
+  const criterion = state.criteria[signature];
+  if (criterion === void 0) {
+    writeCriteria(input.runtime, paths, { ...state, pending: signature });
+    return deny(input.t("guardian.level3.ask", { finding: report4.finding }), input.t("guardian.level3.ask_human"));
+  }
+  if (!onceFor(input.runtime, paths, ONCE_FILE, signature)) return allow8;
+  record9(input, paths, report4, criterion);
+  return deny(
+    `${input.t("guardian.level3.criterion", { criterion })}
+${renderReport(input.t, report4)}`,
+    input.t("guardian.level.human", { level: report4.level, trigger: report4.trigger })
+  );
+};
+var chooseStep = (input, paths, base, report4) => {
+  if (!onceFor(input.runtime, paths, ONCE_FILE, signatureOf(base, report4))) return allow8;
+  record9(input, paths, report4);
+  return deny(
+    renderReport(input.t, report4),
+    input.t("guardian.level.human", { level: report4.level, trigger: report4.trigger })
+  );
+};
+var noteStep = (input, paths, base, report4) => {
+  if (!onceFor(input.runtime, paths, ONCE_FILE, signatureOf(base, report4))) return allow8;
+  return { kind: "allow", output: contextOutput("PreToolUse", renderReport(input.t, report4)) };
+};
+var reportsFor = (input, paths, base) => {
+  const step4 = irreversibleStep(input.payload.raw, paths.root);
+  const writes2 = WRITERS5.has(toolName(input.payload.raw));
+  return [
+    ...step4 === void 0 ? [] : [irreversibleReport(base, step4)],
+    ...writes2 ? goalConflicts(base) : [],
+    ...writes2 ? growthReports(base) : []
+  ].filter(showable);
+};
+var shadowStep = (input, paths, base, report4) => {
+  if (!onceFor(input.runtime, paths, SHADOW_FILE2, signatureOf(base, report4))) return allow8;
+  if (report4.level === 1) {
+    recordFeatureShadow(input.runtime, paths, REALITY_FEATURE, { trigger: report4.trigger, level: report4.level });
+    return allow8;
+  }
+  return deny(
+    renderReport(input.t, report4),
+    input.t("guardian.level.human", { level: report4.level, trigger: report4.trigger })
+  );
+};
+var realityGuard = (input) => {
+  const paths = projectPaths(input);
+  const base = paths === void 0 ? void 0 : baseOf3(input, paths);
+  if (paths === void 0 || base === void 0) return allow8;
+  const report4 = [...reportsFor(input, paths, base)].sort((a, b) => b.level - a.level)[0];
+  if (report4 === void 0) return allow8;
+  if (featureMode(input.runtime, paths, REALITY_FEATURE) !== "active") return shadowStep(input, paths, base, report4);
+  if (report4.level === 3) return reviewStep(input, paths, base, report4);
+  if (report4.level === 2) return chooseStep(input, paths, base, report4);
+  return noteStep(input, paths, base, report4);
+};
+var REALITY_HANDLERS = { PreToolUse: [realityGuard], UserPromptSubmit: [criterionPrompt] };
+
 // src/instructions/log.ts
 import { join as join119 } from "node:path";
 
@@ -41483,8 +41910,8 @@ var readLoadRecords = (runtime, dir) => {
   if (!raw.ok) return [];
   return raw.value.split("\n").flatMap((line12) => {
     const parsed = line12.trim() === "" ? void 0 : parseJsonObject(line12);
-    const record10 = parsed?.ok === true ? parseRecord(parsed.value) : void 0;
-    return record10 === void 0 ? [] : [record10];
+    const record11 = parsed?.ok === true ? parseRecord(parsed.value) : void 0;
+    return record11 === void 0 ? [] : [record11];
   });
 };
 var ALLOW17 = { kind: "allow" };
@@ -41494,7 +41921,7 @@ var instructionsLoaded = (input) => {
   const raw = input.payload.raw;
   const file = absolute2(textField(raw, "file_path"), input.cwd);
   if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return ALLOW17;
-  const record10 = {
+  const record11 = {
     at: input.runtime.now(),
     session: input.payload.sessionId ?? "",
     file,
@@ -41503,7 +41930,7 @@ var instructionsLoaded = (input) => {
     trigger: absolute2(textField(raw, "trigger_file_path"), input.cwd),
     parent: absolute2(textField(raw, "parent_file_path"), input.cwd)
   };
-  input.runtime.appendText(instructionsLog(paths.dir), `${JSON.stringify(record10)}
+  input.runtime.appendText(instructionsLog(paths.dir), `${JSON.stringify(record11)}
 `);
   return ALLOW17;
 };
@@ -41862,7 +42289,7 @@ var domainsMentioned = (text29) => Object.keys(TERMS).filter((domain) => TERMS[d
 var asksMechanism = (text29) => MECHANISM.test(text29);
 
 // src/perfil/hooks.ts
-var allow8 = { kind: "allow" };
+var allow9 = { kind: "allow" };
 var VOCABULARY_STEP = 2;
 var MECHANISM_STEP = 1;
 var PERSON_COMMIT_STEP = 2;
@@ -41878,35 +42305,35 @@ var fromPrompt = (profile, prompt) => {
 var perfilPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
   const paths = projectPaths(input);
-  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow8;
-  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow8;
+  if (paths === void 0 || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow9;
+  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow9;
   writeProfile2(input.runtime, paths, fromPrompt(profileOrStart(input.runtime, paths), prompt));
-  return allow8;
+  return allow9;
 };
 var COMMIT3 = /\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b/;
 var knownCommits = (raw) => Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
 var perfilAgentCommit = (input) => {
   const raw = input.payload.raw;
-  if (!["Bash", "PowerShell"].includes(toolName(raw))) return allow8;
-  if (!COMMIT3.test(textField(toolInput(raw), "command") ?? "")) return allow8;
+  if (!["Bash", "PowerShell"].includes(toolName(raw))) return allow9;
+  if (!COMMIT3.test(textField(toolInput(raw), "command") ?? "")) return allow9;
   const paths = projectPaths(input);
-  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow8;
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow9;
   const head = gitAt(input.runtime, paths.root).out(["rev-parse", "HEAD"])?.trim();
-  if (head === void 0 || head === "") return allow8;
+  if (head === void 0 || head === "") return allow9;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
     agent: [...knownCommits(stored?.["agent"]), head].slice(-KEEP_COMMITS),
     seen: knownCommits(stored?.["seen"])
   });
-  return allow8;
+  return allow9;
 };
 var personCommits = (log, agent, seen) => log.split("\n").map((line12) => line12.trim()).filter((sha) => sha !== "" && !agent.has(sha) && !seen.has(sha));
 var perfilSession = (input) => {
   const paths = projectPaths(input);
-  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow8;
+  if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow9;
   const stored = readJsonFile(input.runtime, agentCommitsPath(paths));
   const head = headShaFromFiles(input.runtime, paths.root);
-  if (head === void 0 || stored?.["head"] === head) return allow8;
+  if (head === void 0 || stored?.["head"] === head) return allow9;
   const agent = new Set(knownCommits(stored?.["agent"]));
   const seen = new Set(knownCommits(stored?.["seen"]));
   const log = gitAt(input.runtime, paths.root).out(["log", "--format=%H", "-n", String(SCAN_COMMITS)]) ?? "";
@@ -41917,7 +42344,7 @@ var perfilSession = (input) => {
       seen: personCommits(log, agent, seen),
       ...headField
     });
-    return allow8;
+    return allow9;
   }
   const fresh3 = personCommits(log, agent, seen);
   writeJsonFile(input.runtime, agentCommitsPath(paths), {
@@ -41925,14 +42352,14 @@ var perfilSession = (input) => {
     seen: [...seen, ...fresh3].slice(-KEEP_COMMITS),
     ...headField
   });
-  if (fresh3.length === 0) return allow8;
+  if (fresh3.length === 0) return allow9;
   const step4 = Math.min(fresh3.length, 3) * PERSON_COMMIT_STEP;
   const profile = DOMAINS.reduce(
     (current2, domain) => updateDomain(current2, domain, (entry2) => ({ ...entry2, tool: clampScore(entry2.tool + step4) })),
     profileOrStart(input.runtime, paths)
   );
   writeProfile2(input.runtime, paths, profile);
-  return allow8;
+  return allow9;
 };
 var PERFIL_HANDLERS = {
   UserPromptSubmit: [perfilPrompt],
@@ -42594,7 +43021,7 @@ var MINIMUM = {
   }
 };
 var SAAS_CORE = ["api", "database", "auth", "billing"];
-var allow9 = { kind: "allow" };
+var allow10 = { kind: "allow" };
 var taskOf2 = (input, paths) => {
   const active = readState(input.runtime, paths).active;
   if (active !== void 0) return active;
@@ -42662,15 +43089,15 @@ var blockFor = (input, paths, task, verdict4) => {
 var labelGuard = (input) => {
   const message = textField(input.payload.raw, "last_assistant_message") ?? "";
   const hits = findLabels(message);
-  if (hits.length === 0) return allow9;
+  if (hits.length === 0) return allow10;
   const root = findRepoRoot(input.runtime, sessionCwd(input));
-  if (root === void 0) return allow9;
+  if (root === void 0) return allow10;
   const paths = fmPaths(root);
   const task = taskOf2(input, paths);
   const type = task === void 0 ? void 0 : blueprintOfTask(input.runtime, paths, task);
-  if (task === void 0 || type === void 0) return allow9;
+  if (task === void 0 || type === void 0) return allow10;
   const verdict4 = verdictFor(input, root, type, hits);
-  return verdict4 === void 0 ? allow9 : blockFor(input, paths, task, verdict4);
+  return verdict4 === void 0 ? allow10 : blockFor(input, paths, task, verdict4);
 };
 
 // src/planta/hooks.ts
@@ -42745,17 +43172,17 @@ var splitWords = (text29) => {
   endSegment(scan);
   return scan.segments;
 };
-var segmentOf = (words4) => {
+var segmentOf = (words5) => {
   let index = 0;
-  while (index < words4.length && (ASSIGNMENT3.test(words4[index] ?? "") || WRAPPERS3.has(words4[index] ?? ""))) index += 1;
-  const program = words4[index];
+  while (index < words5.length && (ASSIGNMENT3.test(words5[index] ?? "") || WRAPPERS3.has(words5[index] ?? ""))) index += 1;
+  const program = words5[index];
   if (program === void 0) return void 0;
-  return { program: program.split(/[\\/]/).pop() ?? program, args: words4.slice(index + 1) };
+  return { program: program.split(/[\\/]/).pop() ?? program, args: words5.slice(index + 1) };
 };
 var shellWords = (command) => {
   const { text: text29, heredocs } = liftHeredocs(command);
-  const segments = splitWords(text29).flatMap((words4) => {
-    const segment2 = segmentOf(words4);
+  const segments = splitWords(text29).flatMap((words5) => {
+    const segment2 = segmentOf(words5);
     return segment2 === void 0 ? [] : [segment2];
   });
   return { segments, heredocs };
@@ -42993,10 +43420,10 @@ var PROSE_HANDLERS = {
 // src/quality/hook.ts
 import { relative as relative16 } from "node:path";
 var ALLOW21 = { kind: "allow" };
-var WRITERS5 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
+var WRITERS6 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
 var qualitySizeGuard = (input) => {
   const tool = toolName(input.payload.raw);
-  if (!WRITERS5.has(tool)) return ALLOW21;
+  if (!WRITERS6.has(tool)) return ALLOW21;
   const args2 = toolInput(input.payload.raw);
   const target5 = textField(args2, "file_path") ?? "";
   if (target5 === "") return ALLOW21;
@@ -43261,8 +43688,8 @@ var SEVERITIES2 = ["never", "must", "prefer"];
 var BUCKETS2 = ["deterministic", "stop", "reminder"];
 var EMPTY_SCOPE = { paths: [], tools: [], words: [] };
 var ID4 = /^[a-z0-9][a-z0-9-]{0,63}$/;
-var str6 = (record10, key3) => {
-  const value2 = record10[key3];
+var str6 = (record11, key3) => {
+  const value2 = record11[key3];
   return typeof value2 === "string" && value2.trim() !== "" ? value2.trim() : void 0;
 };
 var list6 = (value2) => typeof value2 === "string" ? [value2] : Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string") : [];
@@ -43749,8 +44176,8 @@ var writeReuseLog = (runtime, paths, log) => {
 };
 
 // src/reuse/hook.ts
-var allow10 = { kind: "allow" };
-var WRITERS6 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
+var allow11 = { kind: "allow" };
+var WRITERS7 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write"]);
 var candidates3 = (raw) => {
   const input = toolInput(raw);
   const content = textField(input, "content");
@@ -43771,17 +44198,17 @@ var resolve3 = (input, paths, log, finish5) => {
 };
 var warn = (input, paths, file, log) => {
   const names3 = candidates3(input.payload.raw);
-  if (log.retired || names3.length === 0) return allow10;
+  if (log.retired || names3.length === 0) return allow11;
   const index = projectDefinitions(input.runtime, paths.root);
   if (index.kind === "failed") {
     logEvent(input.runtime, paths, "reuse.failed", { detail: index.detail });
-    return allow10;
+    return allow11;
   }
   const found = names3.flatMap((name) => {
     const match = elsewhere(index.definitions, name, file);
     return match === void 0 ? [] : [{ name, match }];
   });
-  if (found.length === 0) return allow10;
+  if (found.length === 0) return allow11;
   const start2 = log.warnings.reduce((max, item2) => Math.max(max, item2.id), 0);
   const added = found.map(({ name, match }, offset) => ({
     id: start2 + offset + 1,
@@ -43802,7 +44229,7 @@ var warn = (input, paths, file, log) => {
 };
 var changedFile = (input, paths) => {
   const target5 = textField(toolInput(input.payload.raw), "file_path");
-  if (!WRITERS6.has(toolName(input.payload.raw)) || target5 === void 0) return void 0;
+  if (!WRITERS7.has(toolName(input.payload.raw)) || target5 === void 0) return void 0;
   const file = toPosixPath(relative18(paths.root, toAbsolutePath(target5, paths.root)));
   return isCode(file) ? file : void 0;
 };
@@ -43811,13 +44238,13 @@ var failedOpen = (input, error) => {
   if (paths !== void 0) {
     logEvent(input.runtime, paths, "reuse.failed", { detail: error instanceof Error ? error.message : String(error) });
   }
-  return allow10;
+  return allow11;
 };
 var reuseWarning = (input) => {
   try {
     const paths = projectPaths(input);
     const file = paths === void 0 ? void 0 : changedFile(input, paths);
-    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow10;
+    if (paths === void 0 || file === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow11;
     const log = resolve3(input, paths, readReuseLog(input.runtime, paths), (warning) => warning.file === file);
     writeReuseLog(input.runtime, paths, log);
     return warn(input, paths, file, log);
@@ -43828,16 +44255,16 @@ var reuseWarning = (input) => {
 var reuseOutcomes = (input) => {
   try {
     const paths = projectPaths(input);
-    if (paths === void 0) return allow10;
+    if (paths === void 0) return allow11;
     const log = readReuseLog(input.runtime, paths);
-    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow10;
+    if (!log.warnings.some((warning) => warning.outcome === "pending")) return allow11;
     const session = input.payload.sessionId ?? "";
     writeReuseLog(
       input.runtime,
       paths,
       resolve3(input, paths, log, (warning) => warning.session === session)
     );
-    return allow10;
+    return allow11;
   } catch (error) {
     return failedOpen(input, error);
   }
@@ -43911,7 +44338,7 @@ var coverage3 = (checks) => PERTURBATIONS.map((question) => {
 });
 
 // src/ricochete/stop.ts
-var allow11 = { kind: "allow" };
+var allow12 = { kind: "allow" };
 var REPORTED_FILE = "ricochete.json";
 var block5 = (reason, note2) => ({
   kind: "block",
@@ -43933,13 +44360,13 @@ var recordSkillHelp = (input, message, view2) => {
 };
 var horizonGuard = (input) => {
   const message = messageOf3(input);
-  if (!isHorizonHelp(message)) return allow11;
+  if (!isHorizonHelp(message)) return allow12;
   const view2 = taskInView(input);
   recordSkillHelp(input, message, view2);
-  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow11;
+  if (view2 === void 0 || !judgmentSignal(input, view2.paths)) return allow12;
   const ids4 = new Set(view2.checks.map((check2) => check2.id));
   const named2 = criterionIds(message);
-  if (named2.some((id) => ids4.has(id))) return allow11;
+  if (named2.some((id) => ids4.has(id))) return allow12;
   const { t } = input;
   const params2 = { task: view2.task, named: named2.join(", ") || "-", checks: [...ids4].join(", ") };
   logEvent(input.runtime, view2.paths, "ricochete.horizon_without_criterion", { task: view2.task, named: [...named2] });
@@ -43951,10 +44378,10 @@ var reportedTasks = (input, view2) => {
 };
 var perturbationReport = (input) => {
   const view2 = taskInView(input);
-  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow11;
-  if (!judgmentSignal(input, view2.paths)) return allow11;
+  if (view2 === void 0 || !view2.closing || hasPerturbation(messageOf3(input))) return allow12;
+  if (!judgmentSignal(input, view2.paths)) return allow12;
   const reported = reportedTasks(input, view2);
-  if (reported.includes(view2.task)) return allow11;
+  if (reported.includes(view2.task)) return allow12;
   writeJsonFile(input.runtime, view2.paths.cache(REPORTED_FILE), { tasks: [...reported, view2.task].slice(-100) });
   const { t } = input;
   const lines7 = coverage3(view2.checks).map(
@@ -44271,8 +44698,8 @@ var LANGUAGE_WORDS = {
 var MIN_HITS = 3;
 var MARGIN = 1.5;
 var detectLanguage = (text29) => {
-  const words4 = text29.toLowerCase().replace(/```[\s\S]*?```|`[^`]*`/g, " ").split(/[^\p{L}]+/u);
-  const scores = Object.entries(LANGUAGE_WORDS).map(([lang, set2]) => [lang, words4.filter((word2) => set2.has(word2)).length]).sort((left, right) => right[1] - left[1]);
+  const words5 = text29.toLowerCase().replace(/```[\s\S]*?```|`[^`]*`/g, " ").split(/[^\p{L}]+/u);
+  const scores = Object.entries(LANGUAGE_WORDS).map(([lang, set2]) => [lang, words5.filter((word2) => set2.has(word2)).length]).sort((left, right) => right[1] - left[1]);
   const [first, second] = scores;
   if (first === void 0 || first[1] < MIN_HITS) return void 0;
   return second === void 0 || first[1] >= second[1] * MARGIN ? first[0] : void 0;
@@ -44373,7 +44800,7 @@ var liveFindings = (input, texts5) => {
   const accepted2 = acceptedFingerprints(baseline.ok ? baseline.value : EMPTY_BASELINE, input.runtime.now());
   return texts5.flatMap((text29) => scanText2(text29, { rules: CREDENTIAL_RULES })).filter((finding6) => !accepted2.has(finding6.fingerprint));
 };
-var record9 = (input, findings2, draft, where2) => {
+var record10 = (input, findings2, draft, where2) => {
   const ids4 = findings2.map((finding6) => {
     const saved = recordIncident(
       input.runtime,
@@ -44389,7 +44816,7 @@ var secretsUserPromptSubmit = (input) => {
   const prompt = optionalString(input.payload.raw, "prompt") ?? "";
   const findings2 = liveFindings(input, [prompt]);
   if (findings2.length === 0) return { kind: "allow" };
-  const incident = record9(input, findings2, { source: "prompt", state: "exposicao-local" }, "prompt");
+  const incident = record10(input, findings2, { source: "prompt", state: "exposicao-local" }, "prompt");
   const items = findings2.map((finding6) => ({ ruleId: finding6.ruleId, where: lineWhere(input.t, finding6) }));
   return {
     kind: "block",
@@ -44400,7 +44827,7 @@ var secretsPostToolUse = (input) => {
   const findings2 = liveFindings(input, stringLeaves(input.payload.raw["tool_response"]));
   if (findings2.length === 0) return { kind: "allow" };
   const tool = toolName2(input.payload) || "tool";
-  const incident = record9(input, findings2, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
+  const incident = record10(input, findings2, { source: "tool-output", state: "aberto" }, `tool-output:${tool}`);
   const items = findings2.map((finding6) => ({ ruleId: finding6.ruleId, where: lineWhere(input.t, finding6) }));
   const context = input.t("secrets.post.context", { tool, found: describeFindings(input.t, items), incident });
   return {
@@ -44596,12 +45023,12 @@ var readDecision = (input) => {
     human: input.t("secrets.block.human")
   };
 };
-var WRITERS7 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
+var WRITERS8 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELLS6 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var READS = /* @__PURE__ */ new Set(["Read", "Grep"]);
 var secretsPreToolUse = (input) => {
   const tool = toolName2(input.payload);
-  if (WRITERS7.has(tool)) return writeDecision(input, tool);
+  if (WRITERS8.has(tool)) return writeDecision(input, tool);
   if (SHELLS6.has(tool)) return bashDecision(input);
   if (READS.has(tool)) return readDecision(input);
   return ALLOW24;
@@ -44810,7 +45237,7 @@ var REPRO_GUARD = "reproduce-first";
 var EDIT_TOOLS4 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var SHELL_TOOLS3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var LONG_SIZES2 = /* @__PURE__ */ new Set(["M", "L"]);
-var allow12 = { kind: "allow" };
+var allow13 = { kind: "allow" };
 var feedback = (input, base, humanKey, params2) => {
   const reason = modelReason(input.t, base, params2);
   return {
@@ -44827,10 +45254,10 @@ var editedFile = (scope2) => {
 var syntaxAfterEdit = (input) => {
   const scope2 = scopeOf(input);
   const file = scope2 === void 0 ? void 0 : editedFile(scope2);
-  if (scope2 === void 0 || file === void 0) return allow12;
+  if (scope2 === void 0 || file === void 0) return allow13;
   const text29 = input.runtime.readText(toAbsolutePath(join129(scope2.paths.root, file)));
   const problem5 = text29.ok ? syntaxProblem(file, text29.value) : void 0;
-  if (problem5 === void 0) return allow12;
+  if (problem5 === void 0) return allow13;
   record6(scope2, { ...baseOf2(scope2), kind: "edit_failed", file, why: "syntax" });
   const where2 = problem5.line > 0 ? `${file}:${String(problem5.line)}` : file;
   return feedback(input, "signals.syntax", "signals.syntax.human", { file, where: where2, message: problem5.message });
@@ -44874,7 +45301,7 @@ var trigger = (scope2, file) => {
   if (failed9 === limits.failedEdits) {
     return feedback(input, "signals.early.failed_edits", "signals.early.failed_edits.human", { file, count: failed9 });
   }
-  if (input.event !== "PostToolUse") return allow12;
+  if (input.event !== "PostToolUse") return allow13;
   const named2 = ignoredError(entries2, file);
   if (named2 !== void 0) {
     return feedback(input, "signals.early.ignored_error", "signals.early.ignored_error.human", {
@@ -44886,12 +45313,12 @@ var trigger = (scope2, file) => {
   if (entries2.at(-1)?.kind === "edit" && blind === limits.editsWithoutRun) {
     return feedback(input, "signals.early.blind_edits", "signals.early.blind_edits.human", { count: blind });
   }
-  return allow12;
+  return allow13;
 };
 var earlyLoopTriggers = (input) => {
   const scope2 = scopeOf(input);
   const file = scope2 === void 0 ? void 0 : editedFile(scope2);
-  if (scope2 === void 0 || file === void 0) return allow12;
+  if (scope2 === void 0 || file === void 0) return allow13;
   return trigger(scope2, file);
 };
 var activeContract = (input, paths) => {
@@ -44907,17 +45334,17 @@ var activeContract = (input, paths) => {
 var LOCATED_FRESH_MS = 12 * 36e5;
 var locatedNow = (scope2, entry2) => entry2.kind === "located" && (entry2.session === scope2.session || nowMs(scope2.input.runtime) - Date.parse(entry2.at) <= LOCATED_FRESH_MS);
 var reproduceFirst = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow12;
+  if (!writesFiles(input.payload.raw)) return allow13;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow12;
+  if (scope2 === void 0) return allow13;
   const entries2 = sessionEntries(scope2.entries, scope2.session);
   const started = entries2.some(
     (entry2) => entry2.kind === "edit" || entry2.kind === "checkpoint" || entry2.kind === "edit_failed"
   );
-  if (started || entries2.some((entry2) => entry2.kind === "error")) return allow12;
-  if (scope2.entries.some((entry2) => locatedNow(scope2, entry2))) return allow12;
+  if (started || entries2.some((entry2) => entry2.kind === "error")) return allow13;
+  if (scope2.entries.some((entry2) => locatedNow(scope2, entry2))) return allow13;
   const contract = activeContract(input, scope2.paths);
-  if (contract === void 0 || !LONG_SIZES2.has(contract.size)) return allow12;
+  if (contract === void 0 || !LONG_SIZES2.has(contract.size)) return allow13;
   record6(scope2, { ...baseOf2(scope2), kind: "checkpoint", task: contract.id });
   const params2 = { task: contract.id, size: contract.size };
   return deny(modelReason(input.t, "signals.repro", params2), input.t("signals.repro.human", params2));
@@ -44962,7 +45389,7 @@ var stopDecision = (scope2, mode) => {
 
 // src/signals/fourth.ts
 var FOURTH_ATTEMPT_GUARD = "fourth-attempt";
-var allow13 = { kind: "allow" };
+var allow14 = { kind: "allow" };
 var RESEARCHER = /(?:^|:)researcher$/i;
 var AGENT_TOOLS2 = /* @__PURE__ */ new Set(["Agent", "Task"]);
 var alreadyNoted = (scope2, sig) => {
@@ -44989,17 +45416,17 @@ var noteFourth = (scope2, sig, failed9, mode) => {
   });
 };
 var fourthAttemptGuard = (input) => {
-  if (!writesFiles(input.payload.raw)) return allow13;
+  if (!writesFiles(input.payload.raw)) return allow14;
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow13;
+  if (scope2 === void 0) return allow14;
   const stop = stopDecision(scope2, modeNow(scope2));
   if (stop !== void 0) return stop;
   const threshold2 = readProfile(input.runtime, scope2.files).threshold;
   const pending = pendingAttempt(sessionEntries(scope2.entries, scope2.session), threshold2);
-  if (pending === void 0) return allow13;
+  if (pending === void 0) return allow14;
   const mode = modeNow(scope2);
   const noted = alreadyNoted(scope2, pending.sig);
-  if (noted && mode !== "active") return allow13;
+  if (noted && mode !== "active") return allow14;
   if (!noted) noteFourth(scope2, pending.sig, pending.failed, mode);
   const { t } = input;
   const params2 = { sig: pending.sig, count: pending.failed, sample: inlineData("tool output", pending.sample) };
@@ -45013,10 +45440,10 @@ var researcherOf = (raw) => {
 };
 var researchRecorder = (input) => {
   const agent = researcherOf(input.payload.raw);
-  if (agent === void 0) return allow13;
+  if (agent === void 0) return allow14;
   const scope2 = scopeOf(input);
   if (scope2 !== void 0) record6(scope2, { ...baseOf2(scope2), kind: "research", agent });
-  return allow13;
+  return allow14;
 };
 
 // src/signals/render.ts
@@ -45100,13 +45527,13 @@ var writeIndex = (scope2, notice = readNotice(scope2)) => {
 };
 
 // src/signals/prompt.ts
-var allow14 = { kind: "allow" };
+var allow15 = { kind: "allow" };
 var CLEAR_AFTER = 2;
 var signalsPrompt = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
-  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow14;
+  if (prompt.trim() === "" || !comesFromPerson(prompt)) return allow15;
   const before2 = scopeOf(input);
-  if (before2 === void 0) return allow14;
+  if (before2 === void 0) return allow15;
   const scope2 = record6(before2, {
     ...baseOf2(before2),
     turn: before2.turn + 1,
@@ -45117,7 +45544,7 @@ var signalsPrompt = (input) => {
   const notice = readNotice(scope2);
   const index = writeIndex(scope2, notice);
   const key3 = loopKey(index);
-  if (!index.firing || key3 === notice.lastKey) return allow14;
+  if (!index.firing || key3 === notice.lastKey) return allow15;
   const injections = notice.injections + 1;
   writeIndex(scope2, { injections, lastKey: key3 });
   const { t } = input;
@@ -45134,7 +45561,7 @@ var signalsPrompt = (input) => {
 var EDIT_TOOLS5 = /* @__PURE__ */ new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 var FAST_ACCEPT_MS = 5e3;
 var LARGE_DIFF_LINES = 30;
-var allow15 = { kind: "allow" };
+var allow16 = { kind: "allow" };
 var permissionKey = (raw) => {
   const id = textField(raw, "tool_use_id");
   if (id !== void 0 && id !== "") return id;
@@ -45224,27 +45651,27 @@ var recordFailedEdit = (scope2, raw) => {
 };
 var signalsPostToolUse = (input) => {
   const scope2 = scopeOf(input);
-  if (scope2 === void 0) return allow15;
+  if (scope2 === void 0) return allow16;
   const raw = input.payload.raw;
   const output = failedOutput2(raw);
   const after2 = EDIT_TOOLS5.has(toolName(raw)) ? recordEdit(scope2, raw) : output === void 0 ? recordRun(scope2, raw) : recordError(scope2, raw, output);
   if (after2 !== scope2) writeIndex(after2);
-  return allow15;
+  return allow16;
 };
 var signalsPostToolUseFailure = (input) => {
   const scope2 = scopeOf(input);
   const raw = input.payload.raw;
-  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow15;
+  if (scope2 === void 0 || raw["is_interrupt"] === true) return allow16;
   const failed9 = recordFailedEdit(scope2, raw);
   const after2 = recordError(failed9, raw, textField(raw, "error") ?? "");
   if (after2 !== scope2) writeIndex(after2);
-  return allow15;
+  return allow16;
 };
 var signalsPermissionRequest = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 !== void 0)
     record6(scope2, { ...baseOf2(scope2), kind: "permission", key: permissionKey(input.payload.raw) });
-  return allow15;
+  return allow16;
 };
 
 // src/signals/hooks.ts
@@ -45260,11 +45687,11 @@ var FOURTH_ATTEMPT_HANDLERS = { PreToolUse: [fourthAttemptGuard] };
 // src/slop/hook.ts
 import { join as join130, relative as relative22 } from "node:path";
 var ALLOW25 = { kind: "allow" };
-var WRITERS8 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
+var WRITERS9 = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
 var MAX_LINES2 = 8;
 var slopEditWarning = (input) => {
   const tool = toolName(input.payload.raw);
-  if (!WRITERS8.has(tool)) return ALLOW25;
+  if (!WRITERS9.has(tool)) return ALLOW25;
   const args2 = toolInput(input.payload.raw);
   const target5 = textField(args2, "file_path") ?? "";
   if (target5 === "") return ALLOW25;
@@ -45300,7 +45727,7 @@ var SLOP_HANDLERS = { PreToolUse: [slopEditWarning] };
 import { isAbsolute as isAbsolute3, relative as relative23 } from "node:path";
 var SCOPE_GUARD = "scope";
 var FRONT_SCOPE_GUARD = "front-scope";
-var allow16 = { kind: "allow" };
+var allow17 = { kind: "allow" };
 var targetOf2 = (input) => {
   const raw = input.payload.raw;
   return FILE_TOOLS.has(toolName(raw)) ? textField(toolInput(raw), "file_path", "notebook_path") : void 0;
@@ -45314,29 +45741,29 @@ var inside = (root, target5) => {
 var advise2 = (input, paths, event, params2) => {
   const mode = featureMode(input.runtime, paths, SCOPE_GUARD);
   logEvent(input.runtime, paths, `scope.${event}`, { ...params2, mode });
-  if (mode !== "active") return allow16;
+  if (mode !== "active") return allow17;
   return { kind: "allow", output: contextOutput(input.event, input.t(`scope.${event}`, params2)) };
 };
 var scopeAfterEdit = (input) => {
   const target5 = targetOf2(input);
   const paths = projectPaths(input);
-  if (target5 === void 0 || paths === void 0) return allow16;
-  if (readState(input.runtime, paths).active !== void 0) return allow16;
+  if (target5 === void 0 || paths === void 0) return allow17;
+  if (readState(input.runtime, paths).active !== void 0) return allow17;
   const file = inside(paths.root, target5);
-  if (file === void 0) return allow16;
+  if (file === void 0) return allow17;
   const before2 = readInferred(input.runtime, paths);
   const { scope: scope2, event } = observeEdit(before2, IMPLICIT_ID, file);
   if (scope2 !== before2) writeInferred(input.runtime, paths, scope2);
   if (event === "widened") return advise2(input, paths, "widened", { file, scope: scopeLabel(scope2) });
   if (event === "outside") return advise2(input, paths, "outside", { file, scope: scopeLabel(scope2) });
-  return allow16;
+  return allow17;
 };
 var frontScopeGuard = (input) => {
   const target5 = targetOf2(input);
-  if (target5 === void 0) return allow16;
+  if (target5 === void 0) return allow17;
   const root = guardRoot(input);
   const state = readFronts(input.runtime, root);
-  if (!state.ok) return allow16;
+  if (!state.ok) return allow17;
   for (const front of state.value.fronts) {
     if (front.path === null || front.paths.length === 0 || front.status !== "running") continue;
     const file = inside(toAbsolutePath(front.path, root), target5);
@@ -45344,7 +45771,7 @@ var frontScopeGuard = (input) => {
     const params2 = { front: front.id, file, paths: front.paths.join(", ") };
     return deny(modelReason(input.t, "fronts.scope", params2), input.t("fronts.scope.human", params2));
   }
-  return allow16;
+  return allow17;
 };
 
 // src/wt/heavy.ts
@@ -45365,9 +45792,9 @@ var TOOLS = {
   gradlew: /.*/
 };
 var NPX_HEAVY = /^(?:tsc|jest|vitest|next|vite|playwright|webpack)$/;
-var words2 = (args2) => args2.filter((arg) => !arg.startsWith("-"));
+var words3 = (args2) => args2.filter((arg) => !arg.startsWith("-"));
 var runnerHeavy = (program, args2) => {
-  const [first, second] = words2(args2);
+  const [first, second] = words3(args2);
   if (first === void 0) return program === "yarn";
   if (INSTALLS.has(first) || first === "test" || first === "t") return true;
   if (first === "run" || first === "run-script") return SCRIPTS.test(second ?? "");
@@ -45376,9 +45803,9 @@ var runnerHeavy = (program, args2) => {
 var isHeavy = (command) => {
   const program = basename10(command.program).replace(/\.(?:cmd|exe)$/i, "").toLowerCase();
   if (RUNNERS2.has(program)) return runnerHeavy(program, command.args);
-  if (program === "npx") return NPX_HEAVY.test(words2(command.args)[0] ?? "");
+  if (program === "npx") return NPX_HEAVY.test(words3(command.args)[0] ?? "");
   const tool = TOOLS[program];
-  return tool?.test(words2(command.args)[0] ?? "") === true;
+  return tool?.test(words3(command.args)[0] ?? "") === true;
 };
 var count8 = (raw) => {
   const parsed = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
@@ -45424,7 +45851,7 @@ var releaseSlots = (runtime, id) => {
 // src/wt/heavy-hooks.ts
 var SHELLS7 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var COMMAND_MAX = 120;
-var allow17 = { kind: "allow" };
+var allow18 = { kind: "allow" };
 var heavyCommand = (input) => {
   const raw = input.payload.raw;
   const tool = toolName(raw);
@@ -45440,11 +45867,11 @@ var busy = (input, limit, holders) => {
 };
 var heavyGuard = (input) => {
   const command = heavyCommand(input);
-  if (command === void 0) return allow17;
+  if (command === void 0) return allow18;
   const paths = projectPaths(input);
   const config = paths === void 0 ? {} : loadProjectConfig(input.runtime, paths.root);
   const limit = heavyLimit(input.env, config);
-  if (limit === 0) return allow17;
+  if (limit === 0) return allow18;
   const { runtime } = input;
   const id = textField(input.payload.raw, "tool_use_id") ?? `${input.payload.sessionId ?? "session"}-${runtime.now()}`;
   const holder = { id, cwd: sessionCwd(input), command: maskText(command).slice(0, COMMAND_MAX), at: runtime.now() };
@@ -45454,12 +45881,12 @@ var heavyGuard = (input) => {
     return busy(input, limit, result.holders);
   }
   if (toolInput(input.payload.raw)["run_in_background"] === true) runtime.remove(slotPath(runtime, result.slot));
-  return allow17;
+  return allow18;
 };
 var heavyRelease = (input) => {
   const id = textField(input.payload.raw, "tool_use_id");
   if (id !== void 0 && heavyCommand(input) !== void 0) releaseSlots(input.runtime, id);
-  return allow17;
+  return allow18;
 };
 var HEAVY_HANDLERS = {
   PreToolUse: [heavyGuard],
@@ -45635,7 +46062,7 @@ var dismiss = (runtime, paths, count11) => {
 // src/wt/suggest-hooks.ts
 var WT_SUGGEST_FEATURE = "wt-suggest";
 var MEGABYTE = 1048576;
-var allow18 = { kind: "allow" };
+var allow19 = { kind: "allow" };
 var projectOf2 = (input) => {
   const paths = projectPaths(input);
   return paths !== void 0 && input.runtime.stat(paths.dir)?.kind === "dir" ? paths : void 0;
@@ -45646,25 +46073,25 @@ var hasWorktrees = (input, paths) => {
 };
 var wtClassifyStop = (input) => {
   const paths = projectOf2(input);
-  if (paths === void 0 || !hasWorktrees(input, paths)) return allow18;
-  if (!refreshDue(input.runtime, readClasses(input.runtime, paths))) return allow18;
+  if (paths === void 0 || !hasWorktrees(input, paths)) return allow19;
+  if (!refreshDue(input.runtime, readClasses(input.runtime, paths))) return allow19;
   markStarted(input.runtime, paths);
   input.runtime.spawnSelf(["wt", "classify"], paths.root);
-  return allow18;
+  return allow19;
 };
 var wtSuggestStart = (input) => {
   const paths = projectOf2(input);
-  if (paths === void 0) return allow18;
+  if (paths === void 0) return allow19;
   const { runtime, t } = input;
   const cached4 = readClasses(runtime, paths);
-  if (cached4 === void 0) return allow18;
+  if (cached4 === void 0) return allow19;
   const cleanable = cleanableOf(cached4);
-  if (cleanable.count === 0 || cleanable.count <= dismissedCount(runtime, paths)) return allow18;
+  if (cleanable.count === 0 || cleanable.count <= dismissedCount(runtime, paths)) return allow19;
   const mode = featureMode(runtime, paths, WT_SUGGEST_FEATURE);
   logEvent(runtime, paths, "wt.suggested", { count: cleanable.count, bytes: cleanable.bytes, mode });
   if (mode !== "active") {
     recordFeatureShadow(runtime, paths, WT_SUGGEST_FEATURE, { count: cleanable.count });
-    return allow18;
+    return allow19;
   }
   const size = (cleanable.bytes / MEGABYTE).toFixed(0);
   return { kind: "allow", output: { systemMessage: human(t("wt.suggest.line", { count: cleanable.count, size })) } };
@@ -45672,7 +46099,7 @@ var wtSuggestStart = (input) => {
 var WT_SUGGEST_HANDLERS = { SessionStart: [wtSuggestStart], Stop: [wtClassifyStop] };
 
 // src/hooks/handlers.ts
-var allow19 = () => ({ kind: "allow" });
+var allow20 = () => ({ kind: "allow" });
 var DECISION_RANK = { allow: 0, defer: 0, ask: 1, deny: 2 };
 var joinText = (left, right) => {
   if (typeof left !== "string" || left === "") return right;
@@ -45799,7 +46226,8 @@ var GUARD_SETS = [
   { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
   { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
   { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
-  { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS }
+  { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
+  { id: "reality", damage: false, handlers: REALITY_HANDLERS }
 ];
 var DEFAULT_HANDLERS = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);
 
@@ -45831,7 +46259,7 @@ var parseHookPayload = (event, text29, interactive) => {
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf4 = (error) => error instanceof Error ? error.message : String(error);
-var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow19]);
+var decide2 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow20]);
 var evaluate2 = async (event, options2) => {
   const text29 = await readAll2(options2.stdin);
   const parsed = parseHookPayload(event, text29, options2.stdin.isTTY === true);
@@ -46193,9 +46621,9 @@ var hookSchemaProblems = (hooks, claude) => {
 import { join as join134 } from "node:path";
 var entriesOf = (source3, hooks, own) => Object.entries(asRecord(hooks)).flatMap(
   ([event, groups]) => asList(groups).flatMap((group) => {
-    const record10 = asRecord(group);
-    const matcher = optionalString(record10, "matcher");
-    return asList(record10["hooks"]).filter((handler) => isRecord(handler) && own(handler)).map((handler) => ({ source: source3, event, matcher, handler }));
+    const record11 = asRecord(group);
+    const matcher = optionalString(record11, "matcher");
+    return asList(record11["hooks"]).filter((handler) => isRecord(handler) && own(handler)).map((handler) => ({ source: source3, event, matcher, handler }));
   })
 );
 var PROJECT_SCOPES = { project: "project", local: "local" };
@@ -46206,7 +46634,7 @@ var projectHookFiles = (env) => readSettings2(env).flatMap(({ scope: scope2, pat
 var pluginsDir2 = ({ env, runtime }) => join134(env["CLAUDE_CONFIG_DIR"] ?? join134(runtime.homeDir(), ".claude"), "plugins");
 var installRecord = (value2, root) => {
   const records2 = Array.isArray(value2) ? value2.filter(isRecord) : isRecord(value2) ? [value2] : [];
-  return records2.find((record10) => record10["projectPath"] === root) ?? records2[0];
+  return records2.find((record11) => record11["projectPath"] === root) ?? records2[0];
 };
 var readJson2 = (env, path) => {
   const text29 = env.runtime.readText(path);
@@ -46215,9 +46643,9 @@ var readJson2 = (env, path) => {
 };
 var installedPlugin = (env) => {
   const index = readJson2(env, toAbsolutePath(join134(pluginsDir2(env), "installed_plugins.json")));
-  const record10 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
-  const installPath = record10 === void 0 ? void 0 : optionalString(record10, "installPath");
-  if (record10 === void 0 || installPath === void 0) return void 0;
+  const record11 = installRecord(asRecord(index?.["plugins"])[PLUGIN_ID], env.root);
+  const installPath = record11 === void 0 ? void 0 : optionalString(record11, "installPath");
+  if (record11 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
   const manifest2 = readJson2(env, toAbsolutePath(join134(root, ".claude-plugin", "plugin.json")));
   const hooksPath = toAbsolutePath(join134(root, "hooks", "hooks.json"));
@@ -46225,7 +46653,7 @@ var installedPlugin = (env) => {
   const parsed = text29.ok ? parseJsonObject(text29.value) : void 0;
   return {
     root,
-    version: (manifest2 === void 0 ? void 0 : optionalString(manifest2, "version")) ?? optionalString(record10, "version"),
+    version: (manifest2 === void 0 ? void 0 : optionalString(manifest2, "version")) ?? optionalString(record11, "version"),
     hooksFile: parsed?.ok === true ? { source: "plugin", path: hooksPath, hooks: parsed.value["hooks"] } : void 0,
     hooksText: text29.ok ? text29.value : void 0
   };
@@ -46571,14 +46999,14 @@ var wordsOf4 = (text29) => text29.toLowerCase().replace(/[`*_"“”()[\]{}.,;:!
 var statementOf = (file, line12, raw) => {
   const text29 = raw.trim().replace(/^([-*+]|\d+[.)])\s+(\[[ xX]\]\s+)?/, "").trim();
   if (text29 === "" || SKIPPED5.test(text29)) return void 0;
-  const words4 = wordsOf4(text29);
-  if (words4.length < MIN_STATEMENT_WORDS) return void 0;
+  const words5 = wordsOf4(text29);
+  if (words5.length < MIN_STATEMENT_WORDS) return void 0;
   return {
     file,
     line: line12,
     text: text29,
-    words: new Set(words4.filter((word2) => !STOP_WORDS.has(word2) && !NEGATORS.has(word2))),
-    negated: words4.some((word2) => NEGATORS.has(word2))
+    words: new Set(words5.filter((word2) => !STOP_WORDS.has(word2) && !NEGATORS.has(word2))),
+    negated: words5.some((word2) => NEGATORS.has(word2))
   };
 };
 var statementsOf2 = (file, text29) => proseLines(text29).flatMap(({ line: line12, text: raw }) => {
@@ -47198,7 +47626,7 @@ var isPathLike = (span) => !span.includes(" ") && (/[/*]/.test(span) || /^\.[\w-
 var globOf2 = (span) => span.endsWith("/") ? `${span}**` : span;
 var isRuleLike = (text29) => MODAL.test(text29) || IMPERATIVE.test(text29.trim());
 var escapeRegExp = (text29) => text29.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-var words3 = (text29) => [
+var words4 = (text29) => [
   ...new Set(
     text29.toLowerCase().replace(/`[^`]*`/g, " ").split(/[^\p{L}\p{N}-]+/u).filter((word2) => word2.length >= MIN_WORD && !MODAL.test(word2) && !NEGATED2.test(word2))
   )
@@ -47209,7 +47637,7 @@ var scopeFor = (text29) => {
     ...spans.some(isCommand) || COMMAND_WORDS.test(text29) ? ["Bash"] : [],
     ...spans.some(isPathLike) || CODE_WORDS.test(text29) ? ["Edit", "Write"] : []
   ];
-  return { paths: spans.filter(isPathLike).map(globOf2), tools, words: words3(text29) };
+  return { paths: spans.filter(isPathLike).map(globOf2), tools, words: words4(text29) };
 };
 var severityOf3 = (text29) => {
   if (NEGATED2.test(text29)) return "never";
@@ -47716,10 +48144,10 @@ var CLASS = /\.(-?[_a-zA-Z][\w-]*)(?=[^{};]*\{)/g;
 var sortedMap = (entries2) => new Map([...entries2].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
 var flatten = (value2, prefix2) => {
   if (typeof value2 !== "object" || value2 === null) return [[prefix2, JSON.stringify(value2)]];
-  const record10 = new Map(Object.entries(value2));
-  if (record10.has("value") || record10.has("$value"))
-    return [[prefix2, JSON.stringify(record10.get("$value") ?? record10.get("value"))]];
-  return [...record10].flatMap(([key3, item2]) => flatten(item2, prefix2 === "" ? key3 : `${prefix2}.${key3}`));
+  const record11 = new Map(Object.entries(value2));
+  if (record11.has("value") || record11.has("$value"))
+    return [[prefix2, JSON.stringify(record11.get("$value") ?? record11.get("value"))]];
+  return [...record11].flatMap(([key3, item2]) => flatten(item2, prefix2 === "" ? key3 : `${prefix2}.${key3}`));
 };
 var parseTokens = (text29) => {
   try {
@@ -48772,7 +49200,7 @@ var parseSegments = (text29) => {
 // src/merge/structured.ts
 var same2 = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 var MISSING = /* @__PURE__ */ Symbol("missing");
-var slot = (record10, key3) => record10 !== void 0 && Object.hasOwn(record10, key3) ? record10[key3] : MISSING;
+var slot = (record11, key3) => record11 !== void 0 && Object.hasOwn(record11, key3) ? record11[key3] : MISSING;
 var mergeValue = (path, base, ours, theirs, conflicts2) => {
   if (same2(ours, theirs)) return ours;
   if (same2(base, ours)) return theirs;
@@ -48966,8 +49394,8 @@ var STAGE_NAMES = { "1": "base", "2": "ours", "3": "theirs" };
 var conflictedStageIds = (runtime, dir) => {
   const listed10 = runtime.gitWith(["ls-files", "-u", "-z"], dir, {});
   const byPath = /* @__PURE__ */ new Map();
-  for (const record10 of listed10.stdout.split("\0")) {
-    const match = /^\d+ ([0-9a-f]+) ([123])\t(.+)$/s.exec(record10);
+  for (const record11 of listed10.stdout.split("\0")) {
+    const match = /^\d+ ([0-9a-f]+) ([123])\t(.+)$/s.exec(record11);
     const sha = match?.[1];
     const stage = match?.[2];
     const path = match?.[3];
@@ -50350,8 +50778,8 @@ var RECORD = "";
 var commitMessagesInRange = (runtime, root, range) => {
   const log = runtime.git(["log", "--no-merges", `--format=%H%x00%B${RECORD}`, ...range, "--"], root);
   const conventional = defaultOn(runtime, root, "conventional-commits");
-  const failures = log.ok ? log.stdout.split(RECORD).map((record10) => record10.replace(/^\n/, "")).filter((record10) => record10.includes("\0")).flatMap((record10) => {
-    const [sha = "", body2 = ""] = record10.split("\0");
+  const failures = log.ok ? log.stdout.split(RECORD).map((record11) => record11.replace(/^\n/, "")).filter((record11) => record11.includes("\0")).flatMap((record11) => {
+    const [sha = "", body2 = ""] = record11.split("\0");
     return commitMessageProblems(body2, conventional).map((problem5) => `${short3(sha)} ${problem5}`);
   }) : [`git log ${range.join(" ")} failed`];
   return { id: "commit-messages", failures, fix: "git rebase -i <base> and reword the listed commits" };
@@ -50489,8 +50917,8 @@ var pullRequestOf = (runtime, env) => {
 var commitsIn = (runtime, root, base) => {
   const log = runtime.git(["log", "--no-merges", `--format=%h%x00%B${RECORD2}`, `${base}..HEAD`, "--"], root);
   if (!log.ok) return [];
-  return log.stdout.split(RECORD2).map((record10) => record10.replace(/^\n/, "")).filter((record10) => record10.includes("\0")).map((record10) => {
-    const [sha = "", body2 = ""] = record10.split("\0");
+  return log.stdout.split(RECORD2).map((record11) => record11.replace(/^\n/, "")).filter((record11) => record11.includes("\0")).map((record11) => {
+    const [sha = "", body2 = ""] = record11.split("\0");
     return { sha, body: body2 };
   });
 };
@@ -51011,8 +51439,8 @@ var store = (ctx, gate, spec2, result) => {
     before: prior.ok ? sha256Hex(prior.value) : null,
     after: sha256Hex(result.stdout)
   };
-  const record10 = { at: ctx.runtime.now(), person: personName(ctx), check: spec2.id, ...accepted2 };
-  ctx.runtime.appendText(historyPath(gate.paths.root, spec2.id), `${JSON.stringify(record10)}
+  const record11 = { at: ctx.runtime.now(), person: personName(ctx), check: spec2.id, ...accepted2 };
+  ctx.runtime.appendText(historyPath(gate.paths.root, spec2.id), `${JSON.stringify(record11)}
 `);
   logEvent(ctx.runtime, gate.paths, "golden.accepted", { check: spec2.id, case: result.name });
   return accepted2;
@@ -51130,6 +51558,34 @@ var guardianAssumeVerifyCommand = {
       ]);
     });
   }
+};
+
+// src/commands/guardian-report.ts
+var GUARDIAN_REPORT_SCHEMA = "finitemonkey/guardian-report@1";
+var guardianReportCommand = {
+  path: ["guardian", "report"],
+  summaryKey: "command.guardian_report.summary",
+  usage: "finitemonkey guardian report",
+  status: "ready",
+  run: (ctx) => inGuardianRepo(ctx, (root) => {
+    const paths = fmPaths(root);
+    const task = activeTask(ctx.runtime, paths);
+    if (task === void 0)
+      return success({ schema: GUARDIAN_REPORT_SCHEMA, reports: [] }, [ctx.t("guardian.report.none")]);
+    const text29 = ctx.runtime.readText(paths.task(task.contract.id));
+    const ids4 = text29.ok ? taskList(text29.value, "assumptions") : [];
+    const base = {
+      t: ctx.t,
+      task,
+      goals: readGoals(ctx.runtime, root),
+      open: openHighImpact(readAssumptions(ctx.runtime, paths), ids4)
+    };
+    const reports = [...goalConflicts(base), ...growthReports(base)].filter(showable);
+    return success(
+      { schema: GUARDIAN_REPORT_SCHEMA, reports },
+      reports.length === 0 ? [ctx.t("guardian.report.none")] : reports.map((report4) => renderReport(ctx.t, report4))
+    );
+  })
 };
 
 // src/guardian/outcomes.ts
@@ -52124,21 +52580,21 @@ import { join as join153 } from "node:path";
 var keyOf7 = (path, platform) => platform === "win32" ? path.toLowerCase() : path;
 var sessionsOf = (records2) => {
   const groups = /* @__PURE__ */ new Map();
-  for (const record10 of records2) groups.set(record10.session, [...groups.get(record10.session) ?? [], record10]);
+  for (const record11 of records2) groups.set(record11.session, [...groups.get(record11.session) ?? [], record11]);
   return groups;
 };
 var loadDiff = (inventory, records2, platform, session) => {
   const chosen = session ?? records2.at(-1)?.session;
-  const mine = records2.filter((record10) => record10.session === chosen);
+  const mine = records2.filter((record11) => record11.session === chosen);
   if (chosen === void 0 || mine.length === 0) return { session: chosen, recorded: 0, missing: [], unexpected: [] };
-  const loaded2 = new Set(mine.map((record10) => keyOf7(record10.file, platform)));
+  const loaded2 = new Set(mine.map((record11) => keyOf7(record11.file, platform)));
   const resolved = new Set(inventory.files.map((file) => keyOf7(file.path, platform)));
   const display = new Map(inventory.files.map((file) => [keyOf7(file.path, platform), file.display]));
   return {
     session: chosen,
     recorded: mine.length,
     missing: inventory.files.filter((file) => file.survivesCompaction && !loaded2.has(keyOf7(file.path, platform))).map((file) => file.display),
-    unexpected: [...new Set(mine.map((record10) => record10.file))].filter((file) => !resolved.has(keyOf7(file, platform))).map((file) => display.get(keyOf7(file, platform)) ?? file)
+    unexpected: [...new Set(mine.map((record11) => record11.file))].filter((file) => !resolved.has(keyOf7(file, platform))).map((file) => display.get(keyOf7(file, platform)) ?? file)
   };
 };
 var filesOf = (finding6) => {
@@ -52159,7 +52615,7 @@ var instructionsMeasure = (inventory, findings2, records2, platform) => {
   const conflicts2 = keys("conflict");
   const volatile2 = keys("volatile");
   const sessions = [...sessionsOf(records2).values()].map(
-    (list10) => new Set(list10.map((record10) => keyOf7(record10.file, platform)))
+    (list10) => new Set(list10.map((record11) => keyOf7(record11.file, platform)))
   );
   return {
     sessions: sessions.length,
@@ -52826,13 +53282,13 @@ var pageFindings = (result) => {
   ];
 };
 var applyAllows = (findings2, allows, decided2) => {
-  const accepted2 = allows.filter((allow20) => decided2(allow20.decision));
-  const ignored = allows.filter((allow20) => !decided2(allow20.decision)).map((allow20) => `${allow20.rule} ${allow20.route} ${allow20.decision}`);
+  const accepted2 = allows.filter((allow21) => decided2(allow21.decision));
+  const ignored = allows.filter((allow21) => !decided2(allow21.decision)).map((allow21) => `${allow21.rule} ${allow21.route} ${allow21.decision}`);
   return {
     ignored,
     findings: findings2.map((item2) => {
-      const allow20 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
-      return allow20 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow20.decision };
+      const allow21 = accepted2.find((entry2) => entry2.rule === item2.rule && entry2.route === item2.route);
+      return allow21 === void 0 ? item2 : { ...item2, blocking: false, allowedBy: allow21.decision };
     })
   };
 };
@@ -55260,13 +55716,13 @@ var mergeSummary = (runtime, root, branch) => {
 var recordAcceptance = (runtime, root, branch, acceptance2, files) => {
   const path = toAbsolutePath(join164(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
   runtime.mkdir(toAbsolutePath(join164(root, ".finitemonkey", "pr")));
-  const record10 = {
+  const record11 = {
     schema: "finitemonkey/pr-scope@1",
     branch,
     acceptedOutside: files.map((file) => file.path),
     ...acceptance2
   };
-  runtime.writeText(path, `${JSON.stringify(record10, null, 2)}
+  runtime.writeText(path, `${JSON.stringify(record11, null, 2)}
 `);
 };
 var preparePr = (runtime, cwd, request) => {
@@ -55890,7 +56346,7 @@ var researchCheckCommand = {
   run: (ctx, args2) => inRepo7(ctx, (root) => {
     const only3 = args2.positionals[0]?.replace(/^.*[\\/]/, "");
     const records2 = researchRecords(ctx.runtime, root, only3);
-    const issues2 = records2.flatMap((record10) => record10.issues);
+    const issues2 = records2.flatMap((record11) => record11.issues);
     const data2 = { schema: RESEARCH_SCHEMA, records: records2.length, issues: issues2 };
     if (issues2.length === 0) return success(data2, [ctx.t("research.clean", { count: records2.length })]);
     return failureFrom(
@@ -56465,10 +56921,10 @@ var parseShellChoice = (raw) => SHELLS8.find((shell) => shell === raw?.toLowerCa
 var defaultShell = (platform) => platform === "win32" ? "powershell" : "sh";
 var SAFE = /^[\w@%+=:,./-]+$/;
 var quoteArg = (arg) => SAFE.test(arg) ? arg : `"${arg.replace(/(["\\$`])/g, "\\$1")}"`;
-var commandLine = (words4) => words4.length === 1 ? words4[0] ?? "" : words4.map(quoteArg).join(" ");
+var commandLine = (words5) => words5.length === 1 ? words5[0] ?? "" : words5.map(quoteArg).join(" ");
 var powershellLine = (line12) => `$global:LASTEXITCODE = $null; ${line12}; $fmOk = $?; if ($null -ne $LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $fmOk) { exit 1 }`;
-var invocationFor = (choice, words4) => {
-  const line12 = commandLine(words4);
+var invocationFor = (choice, words5) => {
+  const line12 = commandLine(words5);
   switch (choice) {
     case "powershell":
     case "pwsh":
@@ -56484,7 +56940,7 @@ var invocationFor = (choice, words4) => {
     case "sh":
       return { command: "sh", args: ["-c", line12], shell: false };
     case "none":
-      return { command: words4[0] ?? "", args: words4.slice(1), shell: false };
+      return { command: words5[0] ?? "", args: words5.slice(1), shell: false };
   }
 };
 
@@ -56543,13 +56999,13 @@ var saveLog = (ctx, root, line12, text29) => {
   return `${FM_DIR}/${RUNS_DIR}/${name}`;
 };
 var usage = (ctx, detail) => failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE17, { detail }));
-var runCommand = (ctx, words4, shellRaw, timeoutRaw) => {
+var runCommand = (ctx, words5, shellRaw, timeoutRaw) => {
   const shell = shellRaw === void 0 ? defaultShell(ctx.platform) : parseShellChoice(shellRaw);
   const timeoutS = timeoutOf(timeoutRaw);
-  if (words4.length === 0 || shell === void 0 || timeoutS === void 0) return usage(ctx, words4.join(" "));
-  const line12 = commandLine(words4);
+  if (words5.length === 0 || shell === void 0 || timeoutS === void 0) return usage(ctx, words5.join(" "));
+  const line12 = commandLine(words5);
   const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd;
-  const invocation = invocationFor(shell, words4);
+  const invocation = invocationFor(shell, words5);
   const result = ctx.runtime.exec({ ...invocation, cwd: ctx.cwd, timeoutMs: timeoutS * 1e3 });
   const exitCode = result.timedOut ? TIMEOUT_EXIT : result.exitCode ?? NOT_FOUND_EXIT;
   const shown5 = saveLog(ctx, root, line12, fullLog(line12, exitCode, result.stdout, result.stderr));
@@ -57358,10 +57814,10 @@ var signalsBlindBandCommand = {
 var USAGE20 = 'finitemonkey signals hypothesis "<what changed since the last failure>"';
 var invalid6 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE20, { detail });
 var normalized4 = (text29) => text29.toLowerCase().replace(/\s+/g, " ").trim();
-var hypothesis = (ctx, words4) => {
+var hypothesis = (ctx, words5) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const files = signalFiles(paths);
-  const text29 = maskText(words4.join(" ").replace(/\s+/g, " ").trim());
+  const text29 = maskText(words5.join(" ").replace(/\s+/g, " ").trim());
   const limits = signalLimits(ctx.runtime, paths.root);
   if (text29.length < limits.hypothesisChars) {
     return failureFrom(ctx.t, invalid6(ctx.t("signals.hypothesis.short", { count: limits.hypothesisChars })));
@@ -57400,11 +57856,11 @@ var signalsHypothesisCommand = {
 // src/commands/signals-locate.ts
 var USAGE21 = "finitemonkey signals locate <file>:<line> <reason>";
 var PLACE = /^(.+):(\d+)$/;
-var locate4 = (ctx, words4) => {
+var locate4 = (ctx, words5) => {
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const limits = signalLimits(ctx.runtime, paths.root);
-  const place = PLACE.exec(words4[0] ?? "");
-  const reason = maskText(words4.slice(1).join(" ").replace(/\s+/g, " ").trim());
+  const place = PLACE.exec(words5[0] ?? "");
+  const reason = maskText(words5.slice(1).join(" ").replace(/\s+/g, " ").trim());
   const file = place?.[1];
   const line12 = Number(place?.[2] ?? "0");
   if (file === void 0 || line12 < 1 || reason.length < limits.hypothesisChars) {
@@ -57551,8 +58007,8 @@ var usedTokens = (usage2) => {
   if (!isRecord(usage2)) return void 0;
   return (num3(usage2["input_tokens"]) ?? 0) + (num3(usage2["cache_creation_input_tokens"]) ?? 0) + (num3(usage2["cache_read_input_tokens"]) ?? 0);
 };
-var contextPercent = (record10) => {
-  const window = record10["context_window"];
+var contextPercent = (record11) => {
+  const window = record11["context_window"];
   if (!isRecord(window)) return void 0;
   const direct = window["used_percentage"];
   if (typeof direct === "number" && Number.isFinite(direct)) return Math.round(direct);
@@ -57566,15 +58022,15 @@ var rateLimits = (value2) => isRecord(value2) ? Object.entries(value2).flatMap((
 }) : [];
 var parseStatusInput = (raw) => {
   const parsed = parseJsonObject(raw.trim() === "" ? "{}" : raw);
-  const record10 = parsed.ok ? parsed.value : {};
-  const workspace = isRecord(record10["workspace"]) ? record10["workspace"] : {};
+  const record11 = parsed.ok ? parsed.value : {};
+  const workspace = isRecord(record11["workspace"]) ? record11["workspace"] : {};
   return {
-    sessionId: text28(record10["session_id"]),
-    dir: text28(workspace["project_dir"]) ?? text28(workspace["current_dir"]) ?? text28(record10["cwd"]),
-    contextPercent: contextPercent(record10),
-    rateLimits: rateLimits(record10["rate_limits"]),
+    sessionId: text28(record11["session_id"]),
+    dir: text28(workspace["project_dir"]) ?? text28(workspace["current_dir"]) ?? text28(record11["cwd"]),
+    contextPercent: contextPercent(record11),
+    rateLimits: rateLimits(record11["rate_limits"]),
     raw,
-    version: text28(record10["version"])
+    version: text28(record11["version"])
   };
 };
 
@@ -59331,6 +59787,7 @@ var REGISTRY2 = [
   guardianAssumeListCommand,
   guardianAssumeAddCommand,
   guardianAssumeVerifyCommand,
+  guardianReportCommand,
   versionCommand,
   helpCommand
 ];

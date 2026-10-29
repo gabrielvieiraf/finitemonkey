@@ -43,6 +43,8 @@ export const contextOf = (outcome: HookOutcome): string => {
   return typeof text === "string" ? text : "";
 };
 
+export const silent = (outcome: HookOutcome): boolean => !denied(outcome) && contextOf(outcome) === "";
+
 export const policyWith = (guards: Readonly<Record<string, string>>): string =>
   `guards:\n${Object.entries(guards)
     .map(([id, mode]) => `  ${id}: ${mode}`)
