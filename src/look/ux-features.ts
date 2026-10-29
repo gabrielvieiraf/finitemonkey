@@ -8,13 +8,22 @@ import type { GuardMode } from "../policy/policy.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { A11Y_FEATURE, A11Y_VIEWPORTS } from "./a11y.js";
 import type { LookConfig } from "./config.js";
-import { activeUiScreens, contractDialogs, contractStates, UI_CONTRACT_FEATURE, type UiScreen } from "./contract.js";
+import {
+  activeUiScreens,
+  contractDialogs,
+  contractForms,
+  contractStates,
+  UI_CONTRACT_FEATURE,
+  type UiScreen,
+} from "./contract.js";
 import { readDont } from "./dont.js";
 import { DEFAULT_LOOK_FEATURE, DS_FEATURE } from "./ds.js";
 import { type AddedText, staticPages } from "./ds-static.js";
+import { FORMS_FEATURE } from "./forms.js";
 import { KEYBOARD_FEATURE } from "./keyboard.js";
 import { contractPass } from "./node-contract.js";
 import { defaultLookPass, type DsOptions, dsPass } from "./node-ds.js";
+import { formsPass } from "./node-forms.js";
 import { keyboardPass } from "./node-keyboard.js";
 import { statesPass } from "./node-states.js";
 import { a11yPass, loadAxeSource, type PagePass } from "./node-ux.js";
@@ -31,6 +40,7 @@ export const UX_FEATURES = [
   UI_CONTRACT_FEATURE,
   DS_FEATURE,
   DEFAULT_LOOK_FEATURE,
+  FORMS_FEATURE,
 ] as const;
 
 export type ModeMap = Readonly<Record<string, GuardMode>>;
@@ -80,6 +90,16 @@ export const uxPasses = (
     ...(on(modes, DS_FEATURE) ? [dsPass(ds)] : []),
     ...(on(modes, DEFAULT_LOOK_FEATURE) ? [defaultLookPass(ds)] : []),
     ...(on(modes, KEYBOARD_FEATURE) ? [keyboardPass(contractDialogs(setup.screens, config.dialogs))] : []),
+    ...(on(modes, FORMS_FEATURE)
+      ? [
+          formsPass({
+            forms: contractForms(setup.screens, config.forms),
+            keepCleared: config.formsKeepCleared,
+            values: config.formValues,
+            widest,
+          }),
+        ]
+      : []),
     ...(on(modes, STATES_FEATURE)
       ? [statesPass(contractStates(setup.screens, config.states), optionsOf(config.successColor, config.skeleton))]
       : []),

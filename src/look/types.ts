@@ -42,6 +42,13 @@ export const LOOK_RULES = [
   "default-look/default-font",
   "default-look/emoji-icon",
   "default-look/same-shadow",
+  "forms/placeholder-label",
+  "forms/premature",
+  "forms/error-not-linked",
+  "forms/focus-not-moved",
+  "forms/input-lost",
+  "forms/error-sticks",
+  "forms/native",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

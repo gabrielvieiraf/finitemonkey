@@ -86,7 +86,14 @@
               "default-look/gradient",
               "default-look/default-font",
               "default-look/emoji-icon",
-              "default-look/same-shadow"
+              "default-look/same-shadow",
+              "forms/placeholder-label",
+              "forms/premature",
+              "forms/error-not-linked",
+              "forms/focus-not-moved",
+              "forms/input-lost",
+              "forms/error-sticks",
+              "forms/native"
             ]
           },
           "route": {
