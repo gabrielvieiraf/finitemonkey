@@ -103,7 +103,10 @@
               "journey/weak",
               "journey/unapproved",
               "visual/pending",
-              "visual/rejected"
+              "visual/rejected",
+              "sheet/changed",
+              "sheet/off-scale",
+              "sheet/nested-radius"
             ]
           },
           "route": {

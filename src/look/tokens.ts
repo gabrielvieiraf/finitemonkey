@@ -16,6 +16,13 @@ export interface TokenSet {
   readonly fonts: readonly string[];
   readonly shadows: readonly string[];
   readonly sources: readonly string[];
+  readonly names: readonly TokenName[];
+}
+
+export interface TokenName {
+  readonly kind: "space" | "radius" | "font-size";
+  readonly name: string;
+  readonly px: number;
 }
 
 export const EMPTY_TOKENS: TokenSet = {
@@ -26,6 +33,7 @@ export const EMPTY_TOKENS: TokenSet = {
   fonts: [],
   shadows: [],
   sources: [],
+  names: [],
 };
 
 export const hasTokens = (tokens: TokenSet): boolean =>
@@ -52,9 +60,18 @@ interface Collected {
   fontSizes: number[];
   fonts: string[];
   shadows: string[];
+  names: TokenName[];
 }
 
-const fresh = (): Collected => ({ colors: [], lengths: [], radii: [], fontSizes: [], fonts: [], shadows: [] });
+const fresh = (): Collected => ({
+  colors: [],
+  lengths: [],
+  radii: [],
+  fontSizes: [],
+  fonts: [],
+  shadows: [],
+  names: [],
+});
 
 const place = (into: Collected, path: string, type: string | undefined, raw: string): void => {
   const name = path.toLowerCase();
@@ -73,9 +90,17 @@ const place = (into: Collected, path: string, type: string | undefined, raw: str
   }
   const length = lengthOf(raw);
   if (length === undefined) return;
-  if (/radius|radii|rounded/.test(name)) into.radii.push(length);
-  else if (/font-?size|text-|type-?scale/.test(name)) into.fontSizes.push(length);
-  else into.lengths.push(length);
+  const label = path.replace(/^[.-]+/, "");
+  if (/radius|radii|rounded/.test(name)) {
+    into.radii.push(length);
+    into.names.push({ kind: "radius", name: label, px: length });
+  } else if (/font-?size|text-|type-?scale/.test(name)) {
+    into.fontSizes.push(length);
+    into.names.push({ kind: "font-size", name: label, px: length });
+  } else {
+    into.lengths.push(length);
+    into.names.push({ kind: "space", name: label, px: length });
+  }
 };
 
 const walkW3c = (node: unknown, path: string, inherited: string | undefined, into: Collected): void => {

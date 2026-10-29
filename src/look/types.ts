@@ -59,6 +59,9 @@ export const LOOK_RULES = [
   "journey/unapproved",
   "visual/pending",
   "visual/rejected",
+  "sheet/changed",
+  "sheet/off-scale",
+  "sheet/nested-radius",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];
