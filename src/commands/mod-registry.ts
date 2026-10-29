@@ -4,6 +4,15 @@ import { frontsBoardCommand } from "./fronts-board.js";
 import { handoffCommand } from "./handoff.js";
 import { modRecordCommand, modStateCommand } from "./mod.js";
 import { modCostCommand, modUsageCommand } from "./mod-cost.js";
+import {
+  probeAnswerCommand,
+  probeCommand,
+  probeForgetCommand,
+  probeGapCommand,
+  probeNextCommand,
+  probeProposeCommand,
+  probeSkipCommand,
+} from "./probe.js";
 import { statusCommand } from "./status.js";
 import { taskTrustCommand } from "./task-trust.js";
 import type { CommandSpec } from "./types.js";
@@ -24,4 +33,11 @@ export const MOD_COMMANDS = [
   xrayForgetCommand,
   xrayExportCommand,
   xrayDecideCommand,
+  probeCommand,
+  probeProposeCommand,
+  probeNextCommand,
+  probeAnswerCommand,
+  probeSkipCommand,
+  probeGapCommand,
+  probeForgetCommand,
 ] as const satisfies readonly CommandSpec[];
