@@ -8,6 +8,7 @@ import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkGithubRules } from "./github.js";
 import { checkGithubSettings } from "./github-settings.js";
+import { checkHiddenText } from "./hidden-text.js";
 import { checkHooks } from "./hooks.js";
 import { checkInstructionLayers } from "./instruction-layers.js";
 import { checkInstructions } from "./instructions.js";
@@ -52,6 +53,7 @@ export const CHECKS: readonly Check[] = [
   checkGithubSettings,
   checkPolicy,
   checkAlertBudget,
+  checkHiddenText,
 ];
 
 export interface DoctorItem {

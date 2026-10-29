@@ -2002,5 +2002,10 @@
   "doctor.coexist.blockers": "{tools} também bloqueia comandos destrutivos; o Finite Monkey deixa os bloqueios amplos com ele e mantém os snapshots e os guards próprios",
   "git.snapshot.skipped": "Não copiados, acima do limite de {cap} MB: {list}. Ajuste snapshot.max_mb em .finitemonkey/config.yml para mudar o limite.",
   "git.undo.restored": "{count, plural, one {# arquivo ignorado ou não rastreado voltou} other {# arquivos ignorados ou não rastreados voltaram}}.",
-  "git.undo.conflicts": "Mudaram depois do snapshot e ficaram como estão: {list}. A cópia do snapshot está ao lado de cada um com o sufixo {suffix}."
+  "git.undo.conflicts": "Mudaram depois do snapshot e ficaram como estão: {list}. A cópia do snapshot está ao lado de cada um com o sufixo {suffix}.",
+  "learnings.command.accept": "Aceita uma lição em quarentena para que ela volte a ser injetada",
+  "learnings.quarantined": "[em quarentena: escrita depois de {origin}; não é injetada até `finitemonkey learnings accept {id}`]",
+  "learnings.error.person_only": "Só a pessoa aceita uma lição em quarentena, num terminal",
+  "doctor.hidden.found": "caracteres ocultos ou bidirecionais que o modelo lê e a pessoa não vê: {list}",
+  "doctor.hidden.fix": "Abra cada arquivo na linha indicada e apague os caracteres ocultos, ou reescreva a linha"
 }

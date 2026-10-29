@@ -3,6 +3,7 @@ import { deny } from "../guards/context.js";
 import type { HookDecision } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
 import type { Translate } from "../i18n/translate.js";
+import { inlineData } from "../policy/untrusted.js";
 import { hypothesesFor, type PendingAttempt, stoppedAttempt } from "./attempts.js";
 import { baseOf, record, type SignalScope } from "./context.js";
 import { signalLimits } from "./limits.js";
@@ -16,7 +17,11 @@ export const stopSummary = (t: Translate, entries: readonly SignalEntry[], stopp
   const files = editedFiles(entries);
   const tried = hypothesesFor(entries, stopped.sig);
   return [
-    t("signals.summary.error", { sig: stopped.sig, count: stopped.failed, sample: stopped.sample }),
+    t("signals.summary.error", {
+      sig: stopped.sig,
+      count: stopped.failed,
+      sample: inlineData("tool output", stopped.sample),
+    }),
     ...(files.length === 0 ? [] : [t("signals.summary.files", { files: files.join(", ") })]),
     ...(tried.length === 0 ? [] : [t("signals.stop.tried", { list: tried.join(" | ") })]),
   ].join(" ");

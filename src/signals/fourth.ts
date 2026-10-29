@@ -5,6 +5,7 @@ import type { HookDecision, HookHandler } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
 import { modeOf, readShadow } from "../policy/guards.js";
 import { loadPolicy } from "../policy/policy.js";
+import { inlineData } from "../policy/untrusted.js";
 import { pendingAttempt } from "./attempts.js";
 import { baseOf, record, scopeOf, type SignalScope } from "./context.js";
 import { stopDecision } from "./stop.js";
@@ -58,7 +59,7 @@ export const fourthAttemptGuard: HookHandler = (input): HookDecision => {
   if (noted && mode !== "active") return allow;
   if (!noted) noteFourth(scope, pending.sig, pending.failed, mode);
   const { t } = input;
-  const params = { sig: pending.sig, count: pending.failed, sample: pending.sample };
+  const params = { sig: pending.sig, count: pending.failed, sample: inlineData("tool output", pending.sample) };
   const blocked = deny(modelReason(t, "signals.fourth", params), t("signals.fourth.human", params));
   return blocked.kind === "block" ? { ...blocked, warning: t("signals.fourth.warning", params) } : blocked;
 };

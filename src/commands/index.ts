@@ -49,6 +49,7 @@ import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
 import {
+  learningsAcceptCommand,
   learningsAddCommand,
   learningsCommand,
   learningsDeleteCommand,
@@ -246,6 +247,7 @@ export const REGISTRY = [
   evidenceWhyCommand,
   policyExplainCommand,
   signalsLocateCommand,
+  learningsAcceptCommand,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -2003,7 +2003,12 @@
     "doctor.coexist.blockers": "machine",
     "git.snapshot.skipped": "machine",
     "git.undo.restored": "machine",
-    "git.undo.conflicts": "machine"
+    "git.undo.conflicts": "machine",
+    "learnings.command.accept": "machine",
+    "learnings.quarantined": "machine",
+    "learnings.error.person_only": "machine",
+    "doctor.hidden.found": "machine",
+    "doctor.hidden.fix": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -4009,6 +4014,11 @@
     "doctor.coexist.blockers": "machine",
     "git.snapshot.skipped": "machine",
     "git.undo.restored": "machine",
-    "git.undo.conflicts": "machine"
+    "git.undo.conflicts": "machine",
+    "learnings.command.accept": "machine",
+    "learnings.quarantined": "machine",
+    "learnings.error.person_only": "machine",
+    "doctor.hidden.found": "machine",
+    "doctor.hidden.fix": "machine"
   }
 }

@@ -1,9 +1,16 @@
 import type { Translate } from "../i18n/translate.js";
+import { inlineData } from "../policy/untrusted.js";
 import type { LoopIndex, Thresholds } from "./loop-index.js";
 
 export const evidenceLines = (t: Translate, index: LoopIndex, thresholds: Thresholds): readonly string[] => [
   ...(index.error !== undefined && index.error.count >= Math.min(2, thresholds.errors)
-    ? [t("signals.evidence.error", { sig: index.error.sig, count: index.error.count, sample: index.error.sample })]
+    ? [
+        t("signals.evidence.error", {
+          sig: index.error.sig,
+          count: index.error.count,
+          sample: inlineData("tool output", index.error.sample),
+        }),
+      ]
     : []),
   ...(index.stalledTurns > 0 ? [t("signals.evidence.stalled", { count: index.stalledTurns })] : []),
   ...(index.repeatedPrompts > 0 ? [t("signals.evidence.prompts", { count: index.repeatedPrompts })] : []),
@@ -39,7 +46,13 @@ export const pasteSummary = (t: Translate, index: LoopIndex, task: string | unde
     ...(task === undefined ? [] : [t("signals.summary.task", { task })]),
     ...(index.error === undefined
       ? []
-      : [t("signals.summary.error", { sig: index.error.sig, count: index.error.count, sample: index.error.sample })]),
+      : [
+          t("signals.summary.error", {
+            sig: index.error.sig,
+            count: index.error.count,
+            sample: index.error.sample,
+          }),
+        ]),
     ...(index.files.length === 0 ? [] : [t("signals.summary.files", { files: index.files.join(", ") })]),
     t("signals.summary.ask"),
   ].join(" ");

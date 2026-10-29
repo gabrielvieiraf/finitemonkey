@@ -8,6 +8,7 @@ import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { injectContext } from "../policy/inject.js";
 import { policyNumber } from "../policy/numbers.js";
+import { markUntrusted, readsUntrusted } from "../policy/untrusted.js";
 import { errorSignature } from "../signals/signature.js";
 import type { FmPaths } from "../task/paths.js";
 import { learnFromSignatures } from "./learn.js";
@@ -100,9 +101,19 @@ export const learningsStop: HookHandler = (input) => {
   return ALLOW;
 };
 
+export const untrustedRecorder: HookHandler = (input) => {
+  const tool = toolName(input.payload.raw);
+  if (!readsUntrusted(tool)) return ALLOW;
+  const paths = projectPaths(input);
+  if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return ALLOW;
+  input.runtime.mkdir(toAbsolutePath(dirname(paths.cache(SEEN_FILE))));
+  markUntrusted(input.runtime, paths, input.payload.sessionId ?? "", tool);
+  return ALLOW;
+};
+
 export const LEARNINGS_HANDLERS: HookHandlers = {
   PreToolUse: [learningsInject],
-  PostToolUse: [learningsInject],
+  PostToolUse: [untrustedRecorder, learningsInject],
   PostToolUseFailure: [learningsInject],
   Stop: [learningsStop],
 };

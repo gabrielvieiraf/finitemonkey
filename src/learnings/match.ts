@@ -1,6 +1,7 @@
 import { globToRegExp } from "../core/glob.js";
 import { toPosixPath } from "../core/posix-path.js";
 import { tokenEstimate } from "../instructions/types.js";
+import { dataBlock, hiddenChars } from "../policy/untrusted.js";
 import type { Lesson } from "./store.js";
 
 export const DEFAULT_MAX_LESSONS = 2;
@@ -31,6 +32,14 @@ export const keyMatches = (lesson: Lesson, key: LessonKey): boolean =>
 
 export const lessonLine = (lesson: Lesson): string => `- ${lesson.text.replace(/\s+/g, " ").trim()}`;
 
+const PROTECTED = [".claude/**", ".finitemonkey/**", ".git/**", ".husky/**", ".githooks/**", "**/settings*.json"];
+
+export const touchesControls = (lesson: Lesson): boolean =>
+  lesson.paths.some((glob) => PROTECTED.some((pattern) => globToRegExp(pattern).test(glob.replace(/\*+/g, "x"))));
+
+export const injectable = (lesson: Lesson): boolean =>
+  lesson.quarantined !== true && !touchesControls(lesson) && hiddenChars(lesson.text).length === 0;
+
 export const pickLessons = (
   lessons: readonly Lesson[],
   key: LessonKey,
@@ -40,7 +49,7 @@ export const pickLessons = (
   const kept: Lesson[] = [];
   let tokens = tokenEstimate(LESSONS_HEADER);
   const ranked = lessons
-    .filter((lesson) => keyMatches(lesson, key))
+    .filter((lesson) => injectable(lesson) && keyMatches(lesson, key))
     .filter((lesson) => (key.sig !== undefined && lesson.sig === key.sig) || !seen.has(lesson.id))
     .sort((left, right) => Number(right.sig === key.sig) - Number(left.sig === key.sig) || right.uses - left.uses);
   for (const lesson of ranked) {
@@ -53,4 +62,6 @@ export const pickLessons = (
 };
 
 export const lessonsText = (lessons: readonly Lesson[]): string =>
-  [LESSONS_HEADER, ...lessons.map(lessonLine)].join("\n");
+  [LESSONS_HEADER, dataBlock("finitemonkey lessons (some quote tool output)", lessons.map(lessonLine).join("\n"))].join(
+    "\n",
+  );

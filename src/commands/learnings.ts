@@ -2,7 +2,7 @@ import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
-import { usageProblem } from "../core/problem.js";
+import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import {
   bumpStats,
@@ -13,7 +13,7 @@ import {
   readStats,
   writeLessons,
 } from "../learnings/store.js";
-import { projectRoot } from "../secrets/project.js";
+import { isPerson, projectRoot } from "../secrets/project.js";
 import { FM_DIR } from "../task/paths.js";
 import type { CommandSpec, OptionValues } from "./types.js";
 
@@ -27,6 +27,9 @@ const option = (values: OptionValues, key: string): string | undefined => {
 };
 
 const lessonLine = (ctx: Pick<Ctx, "t">, lesson: Lesson): string =>
+  (lesson.quarantined === true
+    ? `${ctx.t("learnings.quarantined", { id: lesson.id, origin: lesson.origin ?? "" })} `
+    : "") +
   ctx.t("learnings.row", {
     id: lesson.id,
     source: lesson.source,
@@ -160,4 +163,26 @@ export const learningsUnhelpfulCommand: CommandSpec = {
     Promise.resolve(
       change(ctx, args.positionals[0] ?? "", (lesson) => ({ ...lesson, unhelpful: lesson.unhelpful + 1 })),
     ),
+};
+
+export const learningsAcceptCommand: CommandSpec = {
+  path: ["learnings", "accept"],
+  summaryKey: "learnings.command.accept",
+  usage: "finitemonkey learnings accept <id>",
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args) => {
+    if (!isPerson(ctx)) {
+      return Promise.resolve(
+        failureFrom(ctx.t, needsPersonProblem("learnings.error.person_only", "finitemonkey learnings accept <id>")),
+      );
+    }
+    return Promise.resolve(
+      change(ctx, args.positionals[0] ?? "", (lesson) => ({
+        ...lesson,
+        quarantined: false,
+        origin: `${lesson.origin ?? lesson.source}, accepted by the person`,
+      })),
+    );
+  },
 };

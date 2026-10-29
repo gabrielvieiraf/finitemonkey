@@ -2002,5 +2002,10 @@
   "doctor.coexist.blockers": "{tools} also blocks destructive commands; Finite Monkey leaves the broad blocks to it and keeps its snapshots and its own guards",
   "git.snapshot.skipped": "Not copied, over the {cap} MB cap: {list}. Set snapshot.max_mb in .finitemonkey/config.yml to change the cap.",
   "git.undo.restored": "{count, plural, one {# ignored or untracked file} other {# ignored or untracked files}} brought back.",
-  "git.undo.conflicts": "Changed after the snapshot and left as they are: {list}. The snapshot copy is next to each one with the {suffix} suffix."
+  "git.undo.conflicts": "Changed after the snapshot and left as they are: {list}. The snapshot copy is next to each one with the {suffix} suffix.",
+  "learnings.command.accept": "Accept a quarantined lesson so it can be injected again",
+  "learnings.quarantined": "[quarantined: written after {origin}; not injected until `finitemonkey learnings accept {id}`]",
+  "learnings.error.person_only": "Only the person accepts a quarantined lesson, from a terminal",
+  "doctor.hidden.found": "hidden or bidirectional characters that the model reads and the person does not see: {list}",
+  "doctor.hidden.fix": "Open each file at the line shown and delete the hidden characters, or rewrite the line"
 }

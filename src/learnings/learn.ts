@@ -1,4 +1,5 @@
 import type { HookInput } from "../hooks/handlers.js";
+import { untrustedIn } from "../policy/untrusted.js";
 import { readEntries, type SignalEntry, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { type Lesson, newLesson, readLessons, writeLessons } from "./store.js";
@@ -39,6 +40,7 @@ export const learnFromSignatures = (input: HookInput, paths: FmPaths): readonly 
   const entries = readEntries(input.runtime, signalFiles(paths)).filter((entry) => entry.session === session);
   const lessons = readLessons(input.runtime, paths.dir);
   const now = input.runtime.now();
+  const untrusted = untrustedIn(input.runtime, paths, session);
   const added = fixedSignatures(entries)
     .filter((fixed) => !lessons.some((lesson) => lesson.sig === fixed.sig))
     .map((fixed) =>
@@ -48,6 +50,8 @@ export const learnFromSignatures = (input: HookInput, paths: FmPaths): readonly 
           paths: fixed.files,
           sig: fixed.sig,
           source: "signature",
+          origin: untrusted === undefined ? "tool output" : `tool output after ${untrusted}`,
+          quarantined: untrusted !== undefined,
         },
         now,
       ),
