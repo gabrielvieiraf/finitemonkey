@@ -9517,6 +9517,9 @@ var normalizeClaim = (text40) => text40.replace(/\s+/g, " ").trim();
 var claimIdOf = (text40) => entryId("j", normalizeClaim(text40).toLowerCase());
 var claimsIn = (entries2) => entries2.filter((entry2) => entry2.type === "claim");
 var conceptsIn2 = (entries2) => entries2.filter((entry2) => entry2.type === "concept");
+var usedInEvidence = (concept, entries2) => evidenceOf2(entries2).some((entry2) => entry2.proof !== "exposure" && entry2.concepts.includes(concept));
+var conceptStatus = (concept, entries2) => concept.origin === "model" && !usedInEvidence(concept.id, entries2) ? "suggested" : "active";
+var activeConcepts = (entries2) => conceptsIn2(entries2).filter((concept) => conceptStatus(concept, entries2) === "active");
 var resultsIn = (entries2) => entries2.filter((entry2) => entry2.type === "result");
 var lastSupport = (claim, entries2) => entries2.findLast((entry2) => entry2.type === "support" && entry2.claim === claim);
 var supportStateOf = (claim, entries2) => lastSupport(claim, entries2)?.state ?? "model-only";
@@ -9524,7 +9527,7 @@ var escape2 = (text40) => text40.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var mentionsTerm = (text40, term) => term.trim() !== "" && new RegExp(`(^|[^\\p{L}\\p{N}])${escape2(term.trim())}($|[^\\p{L}\\p{N}])`, "iu").test(text40);
 var conceptsMentioned = (text40, concepts) => concepts.filter((concept) => [concept.label, ...concept.synonyms].some((term) => mentionsTerm(text40, term)));
 var touchedConcepts = (claim, entries2) => {
-  const mentioned2 = conceptsMentioned(claim.text, conceptsIn2(entries2)).map((concept) => concept.id);
+  const mentioned2 = conceptsMentioned(claim.text, activeConcepts(entries2)).map((concept) => concept.id);
   return [.../* @__PURE__ */ new Set([...claim.concepts, ...mentioned2])];
 };
 var claimBand = (claim, entries2) => {
@@ -17109,7 +17112,7 @@ var en_default = {
   "command.judge_call.summary": "Answer one judge request read as JSON on stdin",
   "judge.error.usage": "Missing or invalid arguments.",
   "judge.error.rejected": "Not recorded: {detail}.",
-  "judge.error.off": "judge-core is off in policy.yml.",
+  "judge.error.off": "{detail} is off in policy.yml.",
   "judge.error.person": "Only the person at a terminal can do this.",
   "judge.recorded": "recorded {id}",
   "judge.row": "{state} × {band}: {text} ({claim}) {outcome}",
@@ -17125,7 +17128,11 @@ var en_default = {
   "gate.judge.none": "no claim of this task's results rests only on the model",
   "gate.judge.model_only": "not verified ({band}): {text} ({claim}, {source})",
   "gate.judge.count": "{count, plural, one {# claim rests} other {# claims rest}} only on the model; the result is not done",
-  "gate.judge.shadow": "shadow mode: {count, plural, one {# claim rests} other {# claims rest}} only on the model and would hold the gate once judge-core is active"
+  "gate.judge.shadow": "shadow mode: {count, plural, one {# claim rests} other {# claims rest}} only on the model and would hold the gate once judge-core is active",
+  "command.judge_concept.summary": "Add a concept in any field, anchored to a saved source span",
+  "command.judge_domain.summary": "Add a domain with an optional parent",
+  "judge.domain": "{domain}: {band} ({concepts, plural, one {# concept} other {# concepts}}, {evidence} evidence entries with weight)",
+  "judge.concept.suggested": "{concept}: suggested, not counted until an evidence entry uses it"
 };
 
 // src/i18n/es.json
@@ -19816,7 +19823,7 @@ var es_default = {
   "command.judge_call.summary": "Responder un pedido a judge leído como JSON en la entrada estándar",
   "judge.error.usage": "Argumentos ausentes o inválidos.",
   "judge.error.rejected": "No registrado: {detail}.",
-  "judge.error.off": "judge-core está apagado en policy.yml.",
+  "judge.error.off": "{detail} está apagado en policy.yml.",
   "judge.error.person": "Solo la persona en una terminal puede hacer esto.",
   "judge.recorded": "registrado {id}",
   "judge.row": "{state} × {band}: {text} ({claim}) {outcome}",
@@ -19832,7 +19839,11 @@ var es_default = {
   "gate.judge.none": "ninguna afirmación de los resultados de esta tarea depende solo del modelo",
   "gate.judge.model_only": "no verificada ({band}): {text} ({claim}, {source})",
   "gate.judge.count": "{count, plural, one {# afirmación depende} other {# afirmaciones dependen}} solo del modelo; el resultado no está terminado",
-  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmación depende} other {# afirmaciones dependen}} solo del modelo y retendrían el gate con judge-core activo"
+  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmación depende} other {# afirmaciones dependen}} solo del modelo y retendrían el gate con judge-core activo",
+  "command.judge_concept.summary": "Agregar un concepto de cualquier campo, anclado a un fragmento de fuente guardado",
+  "command.judge_domain.summary": "Agregar un dominio con padre opcional",
+  "judge.domain": "{domain}: {band} ({concepts, plural, one {# concepto} other {# conceptos}}, {evidence} evidencias con peso)",
+  "judge.concept.suggested": "{concept}: sugerido, fuera del conteo hasta que una evidencia lo use"
 };
 
 // src/i18n/pt-BR.json
@@ -22523,7 +22534,7 @@ var pt_BR_default = {
   "command.judge_call.summary": "Responder um pedido ao judge lido como JSON na entrada padrão",
   "judge.error.usage": "Argumentos ausentes ou inválidos.",
   "judge.error.rejected": "Não registrado: {detail}.",
-  "judge.error.off": "judge-core está desligado no policy.yml.",
+  "judge.error.off": "{detail} está desligado no policy.yml.",
   "judge.error.person": "Só a pessoa no terminal pode fazer isto.",
   "judge.recorded": "registrado {id}",
   "judge.row": "{state} × {band}: {text} ({claim}) {outcome}",
@@ -22539,7 +22550,11 @@ var pt_BR_default = {
   "gate.judge.none": "nenhuma afirmação dos resultados desta tarefa depende só do modelo",
   "gate.judge.model_only": "não verificada ({band}): {text} ({claim}, {source})",
   "gate.judge.count": "{count, plural, one {# afirmação depende} other {# afirmações dependem}} só do modelo; o resultado não está pronto",
-  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmação depende} other {# afirmações dependem}} só do modelo e segurariam o gate com judge-core ativo"
+  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmação depende} other {# afirmações dependem}} só do modelo e segurariam o gate com judge-core ativo",
+  "command.judge_concept.summary": "Adicionar um conceito de qualquer campo, ancorado num trecho de fonte salvo",
+  "command.judge_domain.summary": "Adicionar um domínio com pai opcional",
+  "judge.domain": "{domain}: {band} ({concepts, plural, one {# conceito} other {# conceitos}}, {evidence} evidências com peso)",
+  "judge.concept.suggested": "{concept}: sugerido, fora da conta até uma evidência usá-lo"
 };
 
 // src/i18n/review.json
@@ -25246,7 +25261,11 @@ var review_default = {
     "gate.judge.none": "machine",
     "gate.judge.model_only": "machine",
     "gate.judge.count": "machine",
-    "gate.judge.shadow": "machine"
+    "gate.judge.shadow": "machine",
+    "command.judge_concept.summary": "machine",
+    "command.judge_domain.summary": "machine",
+    "judge.domain": "machine",
+    "judge.concept.suggested": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -27950,7 +27969,11 @@ var review_default = {
     "gate.judge.none": "machine",
     "gate.judge.model_only": "machine",
     "gate.judge.count": "machine",
-    "gate.judge.shadow": "machine"
+    "gate.judge.shadow": "machine",
+    "command.judge_concept.summary": "machine",
+    "command.judge_domain.summary": "machine",
+    "judge.domain": "machine",
+    "judge.concept.suggested": "machine"
   }
 };
 
@@ -45068,7 +45091,9 @@ var VERBS2 = [
   "fade",
   "report",
   "export",
-  "forget"
+  "forget",
+  "concept",
+  "domain"
 ];
 var response = (verb, fields2 = {}) => ({
   schema: JUDGE_VERBS_SCHEMA,
@@ -45128,6 +45153,7 @@ var conceptView = (id, entries2) => {
   const band = conceptBand(id, entries2);
   return {
     concept: id,
+    status: concept === void 0 ? "active" : conceptStatus(concept, entries2),
     ...concept === void 0 ? {} : { label: concept.label, domain: concept.domain },
     band: band.band,
     ...band.because === void 0 ? {} : { because: band.because },
@@ -66333,7 +66359,7 @@ var resultLines = (t, view3) => [
   }),
   ...view3.rows.map((row4) => rowLine2(t, row4))
 ];
-var conceptLine = (t, view3) => t(view3.because === void 0 ? "judge.concept.none" : "judge.concept", {
+var conceptLine = (t, view3) => view3.status === "suggested" ? t("judge.concept.suggested", { concept: view3.label ?? view3.concept }) : t(view3.because === void 0 ? "judge.concept.none" : "judge.concept", {
   concept: view3.label ?? view3.concept,
   band: view3.band,
   positive: view3.positive,
@@ -66356,6 +66382,7 @@ var judgeLines = (t, data2) => [
   ...data2.result === void 0 ? [] : resultLines(t, data2.result),
   ...(data2.results ?? []).flatMap((view3) => resultLines(t, view3)),
   ...(data2.concepts ?? []).map((view3) => conceptLine(t, view3)),
+  ...(data2.domains ?? []).map((view3) => t("judge.domain", { ...view3, parent: view3.parent ?? "" })),
   ...claimLines(t, data2),
   ...data2.handoff === void 0 ? [] : [t("judge.handoff", { claim: data2.handoff.claim, to: data2.handoff.to, missing: data2.handoff.missing })],
   ...data2.ask === void 0 ? [] : [t("judge.ask", { ...data2.ask })],
@@ -66385,6 +66412,8 @@ var observeOf = (record15) => {
   const proof = oneOf2(PROOF_KINDS, record15["proof"]);
   const result = oneOf2(RESULTS, record15["result"]) ?? "pass";
   const concepts = list8(record15, "concepts");
+  const said = text37(record15, "text");
+  if (said !== void 0) return { verb: "observe", concepts, text: said, proof: "exposure", result: "pass" };
   if (proof === void 0 || concepts.length === 0) return void 0;
   return { verb: "observe", concepts, proof, result, ...optional8(record15, ["ref", "claim"]) };
 };
@@ -66419,13 +66448,78 @@ var BUILDERS2 = {
   fade: (record15) => ({ verb: "fade", ...optional8(record15, ["concept"]) }),
   report: () => ({ verb: "report" }),
   export: () => ({ verb: "export" }),
-  forget: (record15) => ({ verb: "forget", ...optional8(record15, ["id"]) })
+  forget: (record15) => ({ verb: "forget", ...optional8(record15, ["id"]) }),
+  concept: (record15) => {
+    const [label3, domain] = [text37(record15, "label"), text37(record15, "domain")];
+    if (label3 === void 0 || domain === void 0) return void 0;
+    const [source3, span] = [text37(record15, "source"), text37(record15, "span")];
+    if (source3 === void 0 || span === void 0) return void 0;
+    return { verb: "concept", label: label3, domain, synonyms: list8(record15, "synonyms"), source: source3, span };
+  },
+  domain: (record15) => {
+    const domain = text37(record15, "domain");
+    return domain === void 0 ? void 0 : { verb: "domain", domain, ...optional8(record15, ["parent"]) };
+  }
 };
 var parseRequest = (value2) => {
   if (!isRecord(value2)) return void 0;
   const verb = oneOf2(VERBS2, value2["verb"]);
   return verb === void 0 ? void 0 : BUILDERS2[verb](value2);
 };
+
+// src/judge/span.ts
+var QUOTES = [
+  [/[‘’‚‛′]/g, "'"],
+  [/[“”„‟″«»]/g, '"'],
+  [/[‐‑‒–—−]/g, "-"]
+];
+var normalizeSpan = (text40) => QUOTES.reduce((current2, [pattern, plain]) => current2.replace(pattern, plain), text40.normalize("NFKC")).replace(new RegExp("(\\p{L})-\\s*\\n\\s*(\\p{L})", "gu"), "$1$2").replace(/\s+/g, " ").trim().toLowerCase();
+var contentHash = (text40) => sha256Hex(normalizeSpan(text40)).slice(0, 16);
+
+// src/judge/concepts.ts
+var conceptIdOf = (domain, label3) => `${domain}/${label3.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "")}`;
+var spanAnchor = (source3, span) => ({
+  kind: "span",
+  ref: source3,
+  span,
+  hash: contentHash(span)
+});
+var domainsIn = (entries2) => entries2.filter((entry2) => entry2.type === "domain");
+var parentOf = (domain, entries2) => domainsIn(entries2).findLast((entry2) => entry2.id === domain)?.parent ?? (domain.includes("/") ? domain.slice(0, domain.lastIndexOf("/")) : void 0);
+var withinDomain = (domain, candidate2, entries2) => {
+  const seen = /* @__PURE__ */ new Set();
+  for (let current2 = candidate2; current2 !== void 0 && !seen.has(current2); current2 = parentOf(current2, entries2)) {
+    if (current2 === domain) return true;
+    seen.add(current2);
+  }
+  return false;
+};
+var domainView = (domain, entries2) => {
+  const concepts = activeConcepts(entries2).filter((concept) => withinDomain(domain, concept.domain, entries2));
+  const ids4 = new Set(concepts.map((concept) => concept.id));
+  const evidence2 = evidenceOf2(entries2);
+  const contests = entries2.filter((entry2) => entry2.type === "contest");
+  const counted4 = evidence2.filter(
+    (entry2) => entry2.concepts.some((id) => ids4.has(id)) && !isContested(entry2, contests, evidence2) && weightOf(entry2) !== 0
+  );
+  const parent = parentOf(domain, entries2);
+  return {
+    domain,
+    ...parent === void 0 ? {} : { parent },
+    band: countRule(counted4.map(weightOf)),
+    concepts: concepts.length,
+    evidence: counted4.length
+  };
+};
+var domainViews = (entries2) => [
+  .../* @__PURE__ */ new Set([
+    ...domainsIn(entries2).map((entry2) => entry2.id),
+    ...activeConcepts(entries2).map((concept) => concept.domain)
+  ])
+].sort().map((domain) => domainView(domain, entries2));
+
+// src/judge/deps.ts
+var appendNow = (deps, record15) => appendEntry(deps.runtime, deps.paths, { at: deps.runtime.now(), ...record15 });
 
 // src/judge/handoff.ts
 import { join as join189 } from "node:path";
@@ -66491,6 +66585,70 @@ var splitClaims = (text40, proposer) => {
   return [...new Set(sentences4.map((sentence2) => sentence2.replace(/\s+/g, " ").trim()).filter((item2) => item2 !== ""))];
 };
 
+// src/judge/verbs-concepts.ts
+var suggest2 = (deps, text40, entries2) => {
+  const known3 = new Set(conceptsIn2(entries2).map((concept) => concept.id));
+  for (const item2 of deps.suggester?.(text40) ?? []) {
+    const id = conceptIdOf(item2.domain, item2.label);
+    if (known3.has(id)) continue;
+    known3.add(id);
+    appendNow(deps, {
+      type: "concept",
+      id,
+      domain: item2.domain,
+      label: item2.label,
+      synonyms: item2.synonyms ?? [],
+      anchors: [],
+      origin: "model"
+    });
+  }
+};
+var conceptsOf = (deps, request) => {
+  if (request.text === void 0) return request.concepts;
+  const entries2 = readEntries(deps.runtime, deps.paths);
+  suggest2(deps, request.text, entries2);
+  return [
+    .../* @__PURE__ */ new Set([...request.concepts, ...conceptsMentioned(request.text, activeConcepts(entries2)).map((c) => c.id)])
+  ];
+};
+var observe = (deps, request) => {
+  const concepts = conceptsOf(deps, request);
+  if (concepts.length === 0) return response("observe", { concepts: [] });
+  const at6 = deps.runtime.now();
+  const id = entryId("e", concepts.join(","), request.proof, request.ref ?? "", at6);
+  const written = appendNow(deps, {
+    type: "evidence",
+    id,
+    origin: "agent",
+    concepts,
+    proof: request.proof,
+    result: request.result,
+    ref: request.ref,
+    claim: request.claim
+  });
+  if (!written.ok) return response("observe", { reason: written.reason });
+  return response("observe", { entry: id, concepts: conceptViews(readEntries(deps.runtime, deps.paths), concepts) });
+};
+var addConcept = (deps, request) => {
+  const id = conceptIdOf(request.domain, request.label);
+  const written = appendNow(deps, {
+    type: "concept",
+    id,
+    domain: request.domain,
+    label: request.label,
+    synonyms: request.synonyms,
+    anchors: [spanAnchor(request.source, request.span)],
+    origin: "span"
+  });
+  if (!written.ok) return response("concept", { reason: written.reason });
+  return response("concept", { entry: id, concepts: conceptViews(readEntries(deps.runtime, deps.paths), [id]) });
+};
+var addDomain = (deps, request) => {
+  const written = appendNow(deps, { type: "domain", id: request.domain, parent: request.parent });
+  if (!written.ok) return response("domain", { reason: written.reason });
+  return response("domain", { entry: request.domain, domains: domainViews(readEntries(deps.runtime, deps.paths)) });
+};
+
 // src/judge/verify.ts
 var CHECK_TIMEOUT_MS2 = 6e4;
 var notVerified = (outcome3) => ({ verified: false, outcome: outcome3 });
@@ -66521,19 +66679,8 @@ var claimKindOf = (text40) => {
   return "prose";
 };
 var append = (deps, record15) => {
-  const written = appendEntry(deps.runtime, deps.paths, { at: deps.runtime.now(), ...record15 });
+  const written = appendNow(deps, record15);
   return written.ok ? void 0 : response("observe", { reason: written.reason });
-};
-var observe = (deps, request) => {
-  const at6 = deps.runtime.now();
-  const id = entryId("e", request.concepts.join(","), request.proof, request.ref ?? "", at6);
-  const record15 = { type: "evidence", id, origin: "agent", ...request, verb: void 0 };
-  const written = appendEntry(deps.runtime, deps.paths, { ...record15, at: at6 });
-  if (!written.ok) return response("observe", { reason: written.reason });
-  return response("observe", {
-    entry: id,
-    concepts: conceptViews(readEntries(deps.runtime, deps.paths), request.concepts)
-  });
 };
 var classify5 = (deps, request) => {
   const before2 = readEntries(deps.runtime, deps.paths);
@@ -66649,12 +66796,20 @@ var runVerb = (deps, request) => {
       return view(readEntries(deps.runtime, deps.paths), request.concept);
     case "report": {
       const entries2 = readEntries(deps.runtime, deps.paths);
-      return response("report", { concepts: conceptViews(entries2), results: resultViews(entries2) });
+      return response("report", {
+        concepts: conceptViews(entries2),
+        domains: domainViews(entries2),
+        results: resultViews(entries2)
+      });
     }
     case "export":
       return response("export", { export: exportJudge(deps.runtime, deps.paths) });
     case "forget":
       return response("forget", { removed: forgetJudge(deps.runtime, deps.paths, request.id) });
+    case "concept":
+      return addConcept(deps, request);
+    case "domain":
+      return addDomain(deps, request);
   }
 };
 
@@ -66666,6 +66821,18 @@ var refuse = (ctx, key3, fix, detail = "") => failureFrom(ctx.t, {
   fix,
   exitCode: ExitCode.Usage
 });
+var VERB_FEATURES = {
+  concept: "perfil-any-field",
+  domain: "perfil-any-field"
+};
+var switchedOff = (ctx, root, record15) => {
+  const verb = typeof record15["verb"] === "string" ? record15["verb"] : "";
+  const paths = fmPaths(toAbsolutePath(root));
+  const off2 = [JUDGE_FEATURE, VERB_FEATURES[verb] ?? JUDGE_FEATURE].find(
+    (feature) => featureMode(ctx.runtime, paths, feature) === "off"
+  );
+  return off2 === void 0 ? void 0 : refuse(ctx, "judge.error.off", `set ${off2}: shadow in .finitemonkey/policy.yml`, off2);
+};
 var judgeDeps = (ctx, root) => ({
   runtime: ctx.runtime,
   paths: fmPaths(toAbsolutePath(root))
@@ -66684,11 +66851,10 @@ var judgeCommand = (spec2) => ({
   ...spec2.options === void 0 ? {} : { options: spec2.options },
   ...spec2.maxPositionals === void 0 ? {} : { maxPositionals: spec2.maxPositionals },
   run: (ctx, args2) => inGuardianRepo(ctx, (root) => {
-    if (featureMode(ctx.runtime, fmPaths(root), JUDGE_FEATURE) === "off")
-      return refuse(ctx, "judge.error.off", "set judge-core: shadow in .finitemonkey/policy.yml");
     if (spec2.person === true && !isPerson(ctx)) return refuse(ctx, "judge.error.person", spec2.usage);
     const record15 = spec2.build(ctx, args2.values, args2.positionals, root);
-    return record15 === void 0 ? refuse(ctx, "judge.error.usage", spec2.usage) : answer(ctx, root, record15, spec2.usage);
+    if (record15 === void 0) return refuse(ctx, "judge.error.usage", spec2.usage);
+    return switchedOff(ctx, root, record15) ?? answer(ctx, root, record15, spec2.usage);
   })
 });
 var readFileAt = (ctx, root, file) => {
@@ -66698,9 +66864,10 @@ var readFileAt = (ctx, root, file) => {
 var judgeObserveCommand = judgeCommand({
   path: ["judge", "observe"],
   summaryKey: "command.judge_observe.summary",
-  usage: "finitemonkey judge observe --concept <id> --proof <kind> [--result pass|fail] [--ref <hash>] [--claim <id>]",
+  usage: 'finitemonkey judge observe (--concept <id> --proof <kind> [--result pass|fail] [--ref <hash>] [--claim <id>] | --text "<request>")',
   options: {
     concept: { type: "string", multiple: true },
+    text: { type: "string" },
     proof: { type: "string" },
     result: { type: "string" },
     ref: { type: "string" },
@@ -66709,6 +66876,7 @@ var judgeObserveCommand = judgeCommand({
   build: (_ctx, values) => ({
     verb: "observe",
     concepts: listOption(values, "concept"),
+    text: stringOption(values, "text"),
     proof: stringOption(values, "proof"),
     result: stringOption(values, "result"),
     ref: stringOption(values, "ref"),
@@ -66779,9 +66947,7 @@ var judgeCallCommand = {
       const verb = parsed.value["verb"];
       if ((verb === "contest" || verb === "forget") && !isPerson(ctx))
         return refuse(ctx, "judge.error.person", "finitemonkey judge call < request.json");
-      if (featureMode(ctx.runtime, fmPaths(root), JUDGE_FEATURE) === "off")
-        return refuse(ctx, "judge.error.off", "set judge-core: shadow in .finitemonkey/policy.yml");
-      return answer(ctx, root, parsed.value, "finitemonkey judge call < request.json");
+      return switchedOff(ctx, root, parsed.value) ?? answer(ctx, root, parsed.value, "finitemonkey judge call < request.json");
     });
   }
 };
@@ -66827,6 +66993,38 @@ var judgeForgetCommand = judgeCommand({
   person: true,
   build: (_ctx, _values, positionals2) => ({ verb: "forget", id: positionals2[0] })
 });
+var judgeConceptCommand = judgeCommand({
+  path: ["judge", "concept"],
+  summaryKey: "command.judge_concept.summary",
+  usage: 'finitemonkey judge concept "<label>" --domain <id> --source <doi|url|file> --span "<text>" [--synonym <term>]',
+  options: {
+    domain: { type: "string" },
+    synonym: { type: "string", multiple: true },
+    source: { type: "string" },
+    span: { type: "string" }
+  },
+  maxPositionals: 1,
+  build: (_ctx, values, positionals2) => ({
+    verb: "concept",
+    label: positionals2[0],
+    domain: stringOption(values, "domain"),
+    synonyms: listOption(values, "synonym"),
+    source: stringOption(values, "source"),
+    span: stringOption(values, "span")
+  })
+});
+var judgeDomainCommand = judgeCommand({
+  path: ["judge", "domain"],
+  summaryKey: "command.judge_domain.summary",
+  usage: "finitemonkey judge domain <id> [--parent <id>]",
+  options: { parent: { type: "string" } },
+  maxPositionals: 1,
+  build: (_ctx, values, positionals2) => ({
+    verb: "domain",
+    domain: positionals2[0],
+    parent: stringOption(values, "parent")
+  })
+});
 var JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -66838,7 +67036,9 @@ var JUDGE_COMMANDS = [
   judgeReportCommand,
   judgeExportCommand,
   judgeForgetCommand,
-  judgeCallCommand
+  judgeCallCommand,
+  judgeConceptCommand,
+  judgeDomainCommand
 ];
 
 // src/knowledge/asof.ts
@@ -72604,13 +72804,13 @@ var line9 = (runtime, root, args2) => {
   const value2 = result.stdout.trim();
   return result.ok && value2 !== "" ? value2 : void 0;
 };
-var parentOf = (runtime, root) => {
+var parentOf2 = (runtime, root) => {
   const common = commonDirOf(runtime, root);
   const registry = common === void 0 ? void 0 : readRegistry(runtime, common);
   return registry?.ok === true ? entryFor3(registry.value, root)?.parent ?? void 0 : void 0;
 };
 var stackPlan = (runtime, root, defaultBranch2) => {
-  const parent = parentOf(runtime, root);
+  const parent = parentOf2(runtime, root);
   if (parent === void 0 || parent === defaultBranch2) return { kind: "none" };
   const tip = line9(runtime, root, ["rev-parse", "--verify", "--quiet", `${parent}^{commit}`]);
   if (tip === void 0) return { kind: "none" };

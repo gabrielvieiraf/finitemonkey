@@ -83,6 +83,18 @@ describe("judge verbs through every surface", () => {
     assert.equal(field(gate.body, "data", "stateReason"), "unverified:judge(no_verdict)");
   });
 
+  it("concepts for any field follow their own flag", async () => {
+    const repo = project("shadow");
+    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n  perfil-any-field: off\n");
+    const args = ["judge", "concept", "VAT", "--domain", "tax-law", "--source", "10.1/x", "--span", "the VAT rate"];
+    const off = await cliJson(args, { cwd: repo.root, runtime: repoRuntime() });
+    assert.equal(field(off.body, "error", "code"), "judge_refused");
+    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n");
+    const on = await cliJson(args, { cwd: repo.root, runtime: repoRuntime() });
+    const concepts = field(on.body, "data", "concepts");
+    assert.equal(Array.isArray(concepts) ? field(concepts[0], "status") : undefined, "active");
+  });
+
   it("refuses when judge-core is off and lets only the person contest or forget", async () => {
     const off = await cliJson(["judge", "report"], { cwd: project("off").root, runtime: repoRuntime() });
     assert.equal(field(off.body, "error", "code"), "judge_refused");

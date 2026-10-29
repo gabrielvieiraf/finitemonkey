@@ -1,25 +1,18 @@
 import type { JsonObject } from "../core/parsed.js";
-import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
-import type { FmPaths } from "../task/paths.js";
 import { bandSnapshot, claimIdOf, claimsIn, resultsIn, supportStateOf } from "./claims.js";
+import { domainViews } from "./concepts.js";
+import { appendNow, type JudgeDeps } from "./deps.js";
 import { writeHandoff } from "./handoff.js";
 import type { JudgeRequest } from "./request.js";
 import { conceptViews, type JudgeResponse, response, resultView, resultViews } from "./response.js";
-import { type ClaimSplitter, splitClaims } from "./split.js";
-import { appendEntry, entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
+import { splitClaims } from "./split.js";
+import { entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
-import { DEFAULT_VERIFIERS, type SupportProposer, type Verifier, type VerifyRuntime } from "./verify.js";
+import { addConcept, addDomain, observe } from "./verbs-concepts.js";
+import { DEFAULT_VERIFIERS } from "./verify.js";
 
-export type JudgeRuntime = VerifyRuntime & Pick<Runtime, "appendText" | "mkdir" | "writeAtomic" | "remove">;
-
-export interface JudgeDeps {
-  readonly runtime: JudgeRuntime;
-  readonly paths: FmPaths;
-  readonly splitter?: ClaimSplitter;
-  readonly proposer?: SupportProposer;
-  readonly verifiers?: Readonly<Partial<Record<JudgeClaimKind, Verifier>>>;
-}
+export type { JudgeDeps, JudgeRuntime } from "./deps.js";
 
 const CITATION = /\b10\.\d{4,9}\/\S+|https?:\/\/\S+/i;
 const QUOTED = /["“][^"”]{3,}["”]/;
@@ -32,20 +25,8 @@ export const claimKindOf = (text: string): JudgeClaimKind => {
 };
 
 const append = (deps: JudgeDeps, record: JsonObject): JudgeResponse | undefined => {
-  const written = appendEntry(deps.runtime, deps.paths, { at: deps.runtime.now(), ...record });
+  const written = appendNow(deps, record);
   return written.ok ? undefined : response("observe", { reason: written.reason });
-};
-
-const observe = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "observe" }>): JudgeResponse => {
-  const at = deps.runtime.now();
-  const id = entryId("e", request.concepts.join(","), request.proof, request.ref ?? "", at);
-  const record = { type: "evidence", id, origin: "agent", ...request, verb: undefined };
-  const written = appendEntry(deps.runtime, deps.paths, { ...record, at });
-  if (!written.ok) return response("observe", { reason: written.reason });
-  return response("observe", {
-    entry: id,
-    concepts: conceptViews(readEntries(deps.runtime, deps.paths), request.concepts),
-  });
 };
 
 const classify = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "classify" }>): JudgeResponse => {
@@ -173,11 +154,19 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
       return view(readEntries(deps.runtime, deps.paths), request.concept);
     case "report": {
       const entries = readEntries(deps.runtime, deps.paths);
-      return response("report", { concepts: conceptViews(entries), results: resultViews(entries) });
+      return response("report", {
+        concepts: conceptViews(entries),
+        domains: domainViews(entries),
+        results: resultViews(entries),
+      });
     }
     case "export":
       return response("export", { export: exportJudge(deps.runtime, deps.paths) });
     case "forget":
       return response("forget", { removed: forgetJudge(deps.runtime, deps.paths, request.id) });
+    case "concept":
+      return addConcept(deps, request);
+    case "domain":
+      return addDomain(deps, request);
   }
 };

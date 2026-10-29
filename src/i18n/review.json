@@ -2701,7 +2701,11 @@
     "gate.judge.none": "machine",
     "gate.judge.model_only": "machine",
     "gate.judge.count": "machine",
-    "gate.judge.shadow": "machine"
+    "gate.judge.shadow": "machine",
+    "command.judge_concept.summary": "machine",
+    "command.judge_domain.summary": "machine",
+    "judge.domain": "machine",
+    "judge.concept.suggested": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5405,6 +5409,10 @@
     "gate.judge.none": "machine",
     "gate.judge.model_only": "machine",
     "gate.judge.count": "machine",
-    "gate.judge.shadow": "machine"
+    "gate.judge.shadow": "machine",
+    "command.judge_concept.summary": "machine",
+    "command.judge_domain.summary": "machine",
+    "judge.domain": "machine",
+    "judge.concept.suggested": "machine"
   }
 }

@@ -1,4 +1,4 @@
-import { stringOption } from "../core/args.js";
+import { listOption, stringOption } from "../core/args.js";
 import {
   judgeAskCommand,
   judgeCallCommand,
@@ -55,6 +55,41 @@ export const judgeForgetCommand = judgeCommand({
   build: (_ctx, _values, positionals) => ({ verb: "forget", id: positionals[0] }),
 });
 
+export const judgeConceptCommand = judgeCommand({
+  path: ["judge", "concept"],
+  summaryKey: "command.judge_concept.summary",
+  usage:
+    'finitemonkey judge concept "<label>" --domain <id> --source <doi|url|file> --span "<text>" [--synonym <term>]',
+  options: {
+    domain: { type: "string" },
+    synonym: { type: "string", multiple: true },
+    source: { type: "string" },
+    span: { type: "string" },
+  },
+  maxPositionals: 1,
+  build: (_ctx, values, positionals) => ({
+    verb: "concept",
+    label: positionals[0],
+    domain: stringOption(values, "domain"),
+    synonyms: listOption(values, "synonym"),
+    source: stringOption(values, "source"),
+    span: stringOption(values, "span"),
+  }),
+});
+
+export const judgeDomainCommand = judgeCommand({
+  path: ["judge", "domain"],
+  summaryKey: "command.judge_domain.summary",
+  usage: "finitemonkey judge domain <id> [--parent <id>]",
+  options: { parent: { type: "string" } },
+  maxPositionals: 1,
+  build: (_ctx, values, positionals) => ({
+    verb: "domain",
+    domain: positionals[0],
+    parent: stringOption(values, "parent"),
+  }),
+});
+
 export const JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -67,4 +102,6 @@ export const JUDGE_COMMANDS = [
   judgeExportCommand,
   judgeForgetCommand,
   judgeCallCommand,
+  judgeConceptCommand,
+  judgeDomainCommand,
 ] as const satisfies readonly CommandSpec[];

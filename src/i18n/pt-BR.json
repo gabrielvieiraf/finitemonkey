@@ -2685,7 +2685,7 @@
   "command.judge_call.summary": "Responder um pedido ao judge lido como JSON na entrada padrão",
   "judge.error.usage": "Argumentos ausentes ou inválidos.",
   "judge.error.rejected": "Não registrado: {detail}.",
-  "judge.error.off": "judge-core está desligado no policy.yml.",
+  "judge.error.off": "{detail} está desligado no policy.yml.",
   "judge.error.person": "Só a pessoa no terminal pode fazer isto.",
   "judge.recorded": "registrado {id}",
   "judge.row": "{state} × {band}: {text} ({claim}) {outcome}",
@@ -2701,5 +2701,9 @@
   "gate.judge.none": "nenhuma afirmação dos resultados desta tarefa depende só do modelo",
   "gate.judge.model_only": "não verificada ({band}): {text} ({claim}, {source})",
   "gate.judge.count": "{count, plural, one {# afirmação depende} other {# afirmações dependem}} só do modelo; o resultado não está pronto",
-  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmação depende} other {# afirmações dependem}} só do modelo e segurariam o gate com judge-core ativo"
+  "gate.judge.shadow": "modo sombra: {count, plural, one {# afirmação depende} other {# afirmações dependem}} só do modelo e segurariam o gate com judge-core ativo",
+  "command.judge_concept.summary": "Adicionar um conceito de qualquer campo, ancorado num trecho de fonte salvo",
+  "command.judge_domain.summary": "Adicionar um domínio com pai opcional",
+  "judge.domain": "{domain}: {band} ({concepts, plural, one {# conceito} other {# conceitos}}, {evidence} evidências com peso)",
+  "judge.concept.suggested": "{concept}: sugerido, fora da conta até uma evidência usá-lo"
 }

@@ -20,16 +20,18 @@ export const resultLines = (t: Translate, view: ResultView): readonly string[] =
 ];
 
 export const conceptLine = (t: Translate, view: ConceptView): string =>
-  t(view.because === undefined ? "judge.concept.none" : "judge.concept", {
-    concept: view.label ?? view.concept,
-    band: view.band,
-    positive: view.positive,
-    negative: view.negative,
-    evidence: view.because?.evidence ?? "",
-    proof: view.because?.proof ?? "",
-    at: view.because?.at ?? "",
-    request: view.request,
-  });
+  view.status === "suggested"
+    ? t("judge.concept.suggested", { concept: view.label ?? view.concept })
+    : t(view.because === undefined ? "judge.concept.none" : "judge.concept", {
+        concept: view.label ?? view.concept,
+        band: view.band,
+        positive: view.positive,
+        negative: view.negative,
+        evidence: view.because?.evidence ?? "",
+        proof: view.because?.proof ?? "",
+        at: view.because?.at ?? "",
+        request: view.request,
+      });
 
 const claimLines = (t: Translate, data: JudgeResponse): readonly string[] =>
   data.claim === undefined
@@ -48,6 +50,7 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
   ...(data.result === undefined ? [] : resultLines(t, data.result)),
   ...(data.results ?? []).flatMap((view) => resultLines(t, view)),
   ...(data.concepts ?? []).map((view) => conceptLine(t, view)),
+  ...(data.domains ?? []).map((view) => t("judge.domain", { ...view, parent: view.parent ?? "" })),
   ...claimLines(t, data),
   ...(data.handoff === undefined
     ? []

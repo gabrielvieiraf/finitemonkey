@@ -27,6 +27,22 @@ export const refuse = (ctx: Ctx, key: MessageKey, fix: string, detail = ""): Com
     exitCode: ExitCode.Usage,
   });
 
+export const VERB_FEATURES: Readonly<Record<string, string>> = {
+  concept: "perfil-any-field",
+  domain: "perfil-any-field",
+};
+
+export const switchedOff = (ctx: Ctx, root: string, record: JsonObject): CommandResult | undefined => {
+  const verb = typeof record["verb"] === "string" ? record["verb"] : "";
+  const paths = fmPaths(toAbsolutePath(root));
+  const off = [JUDGE_FEATURE, VERB_FEATURES[verb] ?? JUDGE_FEATURE].find(
+    (feature) => featureMode(ctx.runtime, paths, feature) === "off",
+  );
+  return off === undefined
+    ? undefined
+    : refuse(ctx, "judge.error.off", `set ${off}: shadow in .finitemonkey/policy.yml`, off);
+};
+
 export const judgeDeps = (ctx: Ctx, root: string): JudgeDeps => ({
   runtime: ctx.runtime,
   paths: fmPaths(toAbsolutePath(root)),
@@ -58,13 +74,10 @@ export const judgeCommand = (spec: JudgeSpec): CommandSpec => ({
   ...(spec.maxPositionals === undefined ? {} : { maxPositionals: spec.maxPositionals }),
   run: (ctx, args) =>
     inGuardianRepo(ctx, (root) => {
-      if (featureMode(ctx.runtime, fmPaths(root), JUDGE_FEATURE) === "off")
-        return refuse(ctx, "judge.error.off", "set judge-core: shadow in .finitemonkey/policy.yml");
       if (spec.person === true && !isPerson(ctx)) return refuse(ctx, "judge.error.person", spec.usage);
       const record = spec.build(ctx, args.values, args.positionals, root);
-      return record === undefined
-        ? refuse(ctx, "judge.error.usage", spec.usage)
-        : answer(ctx, root, record, spec.usage);
+      if (record === undefined) return refuse(ctx, "judge.error.usage", spec.usage);
+      return switchedOff(ctx, root, record) ?? answer(ctx, root, record, spec.usage);
     }),
 });
 
@@ -76,9 +89,11 @@ const readFileAt = (ctx: Ctx, root: string, file: string): string | undefined =>
 export const judgeObserveCommand = judgeCommand({
   path: ["judge", "observe"],
   summaryKey: "command.judge_observe.summary",
-  usage: "finitemonkey judge observe --concept <id> --proof <kind> [--result pass|fail] [--ref <hash>] [--claim <id>]",
+  usage:
+    'finitemonkey judge observe (--concept <id> --proof <kind> [--result pass|fail] [--ref <hash>] [--claim <id>] | --text "<request>")',
   options: {
     concept: { type: "string", multiple: true },
+    text: { type: "string" },
     proof: { type: "string" },
     result: { type: "string" },
     ref: { type: "string" },
@@ -87,6 +102,7 @@ export const judgeObserveCommand = judgeCommand({
   build: (_ctx, values) => ({
     verb: "observe",
     concepts: listOption(values, "concept"),
+    text: stringOption(values, "text"),
     proof: stringOption(values, "proof"),
     result: stringOption(values, "result"),
     ref: stringOption(values, "ref"),
@@ -162,9 +178,10 @@ export const judgeCallCommand: CommandSpec = {
       const verb = parsed.value["verb"];
       if ((verb === "contest" || verb === "forget") && !isPerson(ctx))
         return refuse(ctx, "judge.error.person", "finitemonkey judge call < request.json");
-      if (featureMode(ctx.runtime, fmPaths(root), JUDGE_FEATURE) === "off")
-        return refuse(ctx, "judge.error.off", "set judge-core: shadow in .finitemonkey/policy.yml");
-      return answer(ctx, root, parsed.value, "finitemonkey judge call < request.json");
+      return (
+        switchedOff(ctx, root, parsed.value) ??
+        answer(ctx, root, parsed.value, "finitemonkey judge call < request.json")
+      );
     });
   },
 };

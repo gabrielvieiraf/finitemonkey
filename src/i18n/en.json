@@ -2685,7 +2685,7 @@
   "command.judge_call.summary": "Answer one judge request read as JSON on stdin",
   "judge.error.usage": "Missing or invalid arguments.",
   "judge.error.rejected": "Not recorded: {detail}.",
-  "judge.error.off": "judge-core is off in policy.yml.",
+  "judge.error.off": "{detail} is off in policy.yml.",
   "judge.error.person": "Only the person at a terminal can do this.",
   "judge.recorded": "recorded {id}",
   "judge.row": "{state} × {band}: {text} ({claim}) {outcome}",
@@ -2701,5 +2701,9 @@
   "gate.judge.none": "no claim of this task's results rests only on the model",
   "gate.judge.model_only": "not verified ({band}): {text} ({claim}, {source})",
   "gate.judge.count": "{count, plural, one {# claim rests} other {# claims rest}} only on the model; the result is not done",
-  "gate.judge.shadow": "shadow mode: {count, plural, one {# claim rests} other {# claims rest}} only on the model and would hold the gate once judge-core is active"
+  "gate.judge.shadow": "shadow mode: {count, plural, one {# claim rests} other {# claims rest}} only on the model and would hold the gate once judge-core is active",
+  "command.judge_concept.summary": "Add a concept in any field, anchored to a saved source span",
+  "command.judge_domain.summary": "Add a domain with an optional parent",
+  "judge.domain": "{domain}: {band} ({concepts, plural, one {# concept} other {# concepts}}, {evidence} evidence entries with weight)",
+  "judge.concept.suggested": "{concept}: suggested, not counted until an evidence entry uses it"
 }
