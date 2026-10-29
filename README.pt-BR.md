@@ -237,6 +237,8 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Envia | `hosts.local.yml`, `FINITEMONKEY_DEPLOY_HOST` | Pelo `ssh`, quando você roda `finitemonkey deploy check` (ou o workflow agendado dele, ou o check `deploy` do gate): comandos só de leitura (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) com o usuário só de leitura, para comparar a produção com a branch. Com `--issue`, uma issue do GitHub é aberta ou comentada pelo `gh`. |
 <!-- generated:footprint:end -->
 
+O plugin também carrega um mod: um módulo de hooks que o Claude Code 2.1.287 ou mais novo roda ao lado dos command hooks. Os command hooks continuam sendo a autoridade de todo bloqueio, veredito e evidência; o mod só desenha, aperta decisões de permissão e mede, e versões antigas, `claude -p` e outros agentes seguem funcionando só com os command hooks. O que o mod engancha e chama, como o `claude plugin validate --json` informa, fica em [plugin/FOOTPRINT.json](plugin/FOOTPRINT.json), e o CI falha quando o código alcança mais do que esse arquivo diz.
+
 ## Perguntas frequentes
 
 Mais perguntas, uma para cada busca real, em [docs/faq.pt-BR.md](docs/faq.pt-BR.md).

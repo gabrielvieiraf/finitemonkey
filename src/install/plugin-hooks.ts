@@ -12,8 +12,10 @@ export const marketplaceFor = (version: string): string =>
   /^\d+\.\d+\.\d+-next\./.test(version) ? NEXT_MARKETPLACE_NAME : MARKETPLACE_NAME;
 export const PLUGIN_DIR = "plugin";
 export const PLUGIN_BIN = "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs";
+export const PLUGIN_MOD = "./register.mjs";
 
 export const pluginHooks = (): JsonObject => ({
+  modules: [PLUGIN_MOD],
   hooks: Object.fromEntries(
     INSTALLED_HOOKS.map((spec) => [
       spec.event,

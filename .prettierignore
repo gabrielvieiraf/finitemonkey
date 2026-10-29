@@ -1,5 +1,7 @@
 dist
 plugin/scripts
+plugin/hooks/register.mjs
+plugin/FOOTPRINT.json
 node_modules
 package.json
 package-lock.json

@@ -52,7 +52,7 @@ jobs:
         run: npm run build && git diff --exit-code dist/
       - name: installed bins run from a prefix with spaces and accents
         run: npm run smoke:install
-      - name: stable and next marketplaces pass claude plugin validate --strict
+      - name: plugin validate --strict, mod footprint, mod load and claude plugin test
         if: matrix.os == 'ubuntu-latest' && matrix.node == fromJSON(github.event_name == 'pull_request' && '22' || '24')
         run: npm install --global @anthropic-ai/claude-code && npm run plugin:validate
 

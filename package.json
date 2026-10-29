@@ -61,6 +61,7 @@
     "prepare": "husky",
     "gif": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/render.ts",
     "social": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/social.ts",
+    "icon": "tsc -p assets/scripts && node --experimental-strip-types assets/scripts/icon.ts",
     "llms": "tsx scripts/build-llms.ts",
     "llms:check": "tsc -p scripts && tsx scripts/build-llms.ts --check",
     "llms:stamp": "tsx scripts/build-llms.ts --stamp",
@@ -77,7 +78,8 @@
     "runbooks:check": "tsx scripts/check-runbooks.ts",
     "e2e:claude": "node --import tsx --test --test-concurrency=1 test/e2e/claude-stop.e2e.ts",
     "plugin:sync": "node scripts/plugin-sync.mjs",
-    "plugin:validate": "node scripts/plugin-validate.mjs",
+    "plugin:validate": "node scripts/plugin-validate.mjs && tsx scripts/mod-check.ts",
+    "plugin:footprint": "npm run build && tsx scripts/mod-check.ts --write",
     "version": "node scripts/plugin-sync.mjs"
   },
   "devDependencies": {

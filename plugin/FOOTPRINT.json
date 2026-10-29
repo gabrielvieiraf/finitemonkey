@@ -1,0 +1,9 @@
+{
+  "schema": "finitemonkey/mod-footprint@1",
+  "module": "./register.mjs",
+  "reach": [
+    "calls: nothing on $",
+    "hooks: session.start"
+  ],
+  "gating": []
+}
