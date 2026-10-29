@@ -47,6 +47,7 @@ export const CHECK_KINDS = [
   "cochange",
   "test-budget",
   "red-green",
+  "cli",
 ] as const;
 
 export type CheckKind = (typeof CHECK_KINDS)[number];

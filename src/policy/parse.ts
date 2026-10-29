@@ -1,6 +1,6 @@
-import { closest } from "../core/suggest.js";
 import { configAt, configMap, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
 import { ALERT_BUDGET_KEYS, parseAlertBudget } from "./budget.js";
+import { issue } from "./issue.js";
 import {
   DEFAULT_POLICY,
   DEFAULT_PROMOTE_AFTER,
@@ -12,7 +12,6 @@ import {
   POLICY_FILE,
   POLICY_KEYS,
   type PolicyIssue,
-  type PolicyIssueKind,
   RETIRED_POLICY_KEYS,
   USER_POLICY_FILE,
 } from "./policy.js";
@@ -20,17 +19,6 @@ import { parseAutonomy, parseCalibrate, parseEvolve, sectionKeyIssues } from "./
 
 const pick = <T extends string>(options: readonly T[], value: unknown, fallback: T): T =>
   options.find((option) => option === value) ?? fallback;
-
-const issue = (
-  kind: PolicyIssueKind,
-  file: string,
-  key: string,
-  candidates: readonly string[],
-  value: string = key,
-): PolicyIssue => {
-  const suggestion = closest(value, candidates);
-  return suggestion === undefined ? { kind, file, key } : { kind, file, key, suggestion };
-};
 
 const guardModes = (tree: ConfigTree, file: string): [Record<string, GuardMode>, PolicyIssue[]] => {
   const guards: Record<string, GuardMode> = {};
