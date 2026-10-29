@@ -47300,7 +47300,7 @@ var notRun2 = (detail) => ({
   exitCode: ExitCode.NotConfigured
 });
 var lastRunRefusal = (ctx) => {
-  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? gitRoot(gitAt(ctx.runtime, ctx.cwd));
   const status = root === void 0 ? void 0 : readGateStatus(ctx.runtime, fmPaths(root));
   if (status?.status === "released_by_cap") {
     return {

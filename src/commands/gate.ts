@@ -5,6 +5,7 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { runBaseline } from "../gate/baseline-run.js";
 import { gitAt, gitRoot } from "../gate/git.js";
+import { findRepoRoot } from "../gate/hooks/common.js";
 import { DEFAULT_GATE_BUDGET_MS } from "../gate/hooks/common.js";
 import { openPrsLine, refreshPrs } from "../gate/hooks/prs.js";
 import { readGateStatus } from "../gate/hooks/status.js";
@@ -30,7 +31,7 @@ const notRun = (detail: string): Problem => ({
 });
 
 export const lastRunRefusal = (ctx: Ctx): Problem | undefined => {
-  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? gitRoot(gitAt(ctx.runtime, ctx.cwd));
   const status = root === undefined ? undefined : readGateStatus(ctx.runtime, fmPaths(root));
   if (status?.status === "released_by_cap") {
     return {
