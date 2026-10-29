@@ -1,0 +1,35 @@
+{
+  "id": "03-research-without-question",
+  "category": "research without a question",
+  "goal": "pick a payment provider",
+  "request": "keep reading provider comparisons",
+  "information": "the last two sources changed nothing and no critical unknown is open",
+  "files": {
+    "docs/plan/02-decision-provider.md": "# Decision: provider\n"
+  },
+  "change": {},
+  "research": {
+    "question": "which provider settles Pix fastest",
+    "decision": "docs/plan/02-decision-provider.md",
+    "unknowns": [],
+    "sources": [
+      ["https://a.example/x", "option"],
+      ["https://b.example/y", "nothing"],
+      ["https://c.example/z", "nothing"]
+    ]
+  },
+  "probe": {
+    "kind": "research"
+  },
+  "expected": 1,
+  "silentWhen": "a source changed an option or a critical unknown is still open",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

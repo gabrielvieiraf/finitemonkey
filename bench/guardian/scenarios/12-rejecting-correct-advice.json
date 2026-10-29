@@ -1,0 +1,33 @@
+{
+  "id": "12-rejecting-correct-advice",
+  "category": "rejecting correct advice for a wrong reason",
+  "goal": "faster checkout",
+  "request": "bring back the client side cart",
+  "information": "goals.yml lists client side cart as a stated rejected option",
+  "files": {
+    ".finitemonkey/goals.yml": "rejected:\n  - id: r1\n    text: client side cart\n    origin: stated\n"
+  },
+  "contract": "id: work\ngoal: bring back the client side cart\nsize: M\nscope:\n  paths: [src/checkout/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {},
+  "probe": {
+    "kind": "tool",
+    "payload": {
+      "tool_name": "Write",
+      "tool_input": {
+        "file_path": "{root}/src/checkout/cart.ts",
+        "content": "export const cart = 1;\n"
+      }
+    }
+  },
+  "expected": 2,
+  "silentWhen": "the rejected option is only inferred",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "override"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

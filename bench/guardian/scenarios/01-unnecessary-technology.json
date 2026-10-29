@@ -1,0 +1,31 @@
+{
+  "id": "01-unnecessary-technology",
+  "category": "unnecessary technology",
+  "goal": "charge 50 clubs a monthly fee",
+  "request": "send renewal emails through a message queue and a separate worker service",
+  "information": "first paying customers, 50 users, nobody on the team has run a queue",
+  "files": {
+    "package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"express\": \"^4.19.0\"\n  }\n}\n",
+    "src/server.ts": "export const app = 1;\n",
+    ".finitemonkey/goals.yml": "context:\n  stage:\n    value: first-customers\n    origin: stated\n"
+  },
+  "contract": "id: work\ngoal: send renewal emails\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {
+    "package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"express\": \"^4.19.0\",\n    \"bullmq\": \"^5.0.0\"\n  }\n}\n",
+    "services/worker/package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"bullmq\": \"^5.0.0\"\n  }\n}\n"
+  },
+  "probe": {
+    "kind": "scan"
+  },
+  "expected": 2,
+  "silentWhen": "the team has demonstrated queues and services, or the stage budget covers them",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

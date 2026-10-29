@@ -1,0 +1,33 @@
+{
+  "id": "05-scope-growth",
+  "category": "scope growth",
+  "goal": "charge cards",
+  "request": "also rewrite the auth module while at it",
+  "information": "the approved contract covered src/billing/ only",
+  "files": {
+    ".finitemonkey/trust.json": "{\"contracts\": {}, \"approved\": {\"work\": \"id: work\\ngoal: charge cards\\nsize: M\\nscope:\\n  paths: [src/billing/]\\nacceptance:\\n  - id: t\\n    check: command\\n    run: npm test\\n\"}}"
+  },
+  "contract": "id: work\ngoal: charge cards\nsize: M\nscope:\n  paths: [src/billing/, src/auth/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {},
+  "probe": {
+    "kind": "tool",
+    "payload": {
+      "tool_name": "Write",
+      "tool_input": {
+        "file_path": "{root}/src/billing/card.ts",
+        "content": "export const card = 1;\n"
+      }
+    }
+  },
+  "expected": 1,
+  "silentWhen": "the contract on disk matches the approved one",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

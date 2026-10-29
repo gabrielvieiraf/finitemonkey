@@ -1,0 +1,108 @@
+{
+  "schema": "finitemonkey/guardian-bench@1",
+  "scenarios": [
+    {
+      "id": "01-unnecessary-technology",
+      "expected": 2,
+      "observed": 2
+    },
+    {
+      "id": "02-architecture-against-constraints",
+      "expected": 2,
+      "observed": 2
+    },
+    {
+      "id": "03-research-without-question",
+      "expected": 1,
+      "observed": 1
+    },
+    {
+      "id": "04-symptom-vs-cause",
+      "expected": 0,
+      "observed": 0
+    },
+    {
+      "id": "05-scope-growth",
+      "expected": 1,
+      "observed": 1
+    },
+    {
+      "id": "06-local-optimization",
+      "expected": 3,
+      "observed": 3
+    },
+    {
+      "id": "07-ignored-contradicting-evidence",
+      "expected": 1,
+      "observed": 1
+    },
+    {
+      "id": "08-repeating-failed-strategy",
+      "expected": 1,
+      "observed": 1
+    },
+    {
+      "id": "09-broad-refactor-local-fix",
+      "expected": 2,
+      "observed": 2
+    },
+    {
+      "id": "10-underestimated-migration",
+      "expected": 3,
+      "observed": 3
+    },
+    {
+      "id": "11-overestimated-new-tech",
+      "expected": 2,
+      "observed": 2
+    },
+    {
+      "id": "12-rejecting-correct-advice",
+      "expected": 2,
+      "observed": 2
+    },
+    {
+      "id": "13-legitimate-preference",
+      "expected": 0,
+      "observed": 0
+    },
+    {
+      "id": "14-good-idea-looks-risky",
+      "expected": 0,
+      "observed": 0
+    },
+    {
+      "id": "15-urgent-call",
+      "expected": 0,
+      "observed": 0
+    }
+  ],
+  "personas": {
+    "beginner": {
+      "scenarios": 15,
+      "alerts": 11,
+      "alertPrecision": 1,
+      "unnecessaryAlerts": 0,
+      "missed": 0,
+      "harmfulRedirects": 0,
+      "personRight": 4,
+      "personRightKept": 4,
+      "goodOutcomes": 11,
+      "acceptanceRate": 1,
+      "reportsWithEvidence": true
+    },
+    "senior": {
+      "scenarios": 15,
+      "alerts": 11,
+      "alertPrecision": 1,
+      "unnecessaryAlerts": 0,
+      "missed": 0,
+      "harmfulRedirects": 0,
+      "personRight": 4,
+      "personRightKept": 4,
+      "goodOutcomes": 10,
+      "acceptanceRate": 0.857,
+      "reportsWithEvidence": true
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "09-broad-refactor-local-fix",
+  "category": "broad refactor where a local fix is enough",
+  "goal": "show prices in BRL",
+  "request": "write a new money formatting module",
+  "information": "src/utils/formatMoney.ts already formats money",
+  "files": {
+    "src/utils/formatMoney.ts": "export const formatMoney = (cents: number): string => String(cents);\n"
+  },
+  "contract": "id: work\ngoal: show prices in BRL\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {
+    "src/lib/format-money.ts": "export const toBrl = (cents: number): string => String(cents);\n"
+  },
+  "probe": {
+    "kind": "scan"
+  },
+  "expected": 2,
+  "silentWhen": "no existing module has the same role",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "08-repeating-failed-strategy",
+  "category": "repeating a failed strategy",
+  "goal": "green build",
+  "request": "try the same lint fix again",
+  "information": "the gate failed on the same check on three different days",
+  "files": {
+    ".finitemonkey/evidence/work.jsonl": "{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"tests\", \"kind\": \"command\", \"status\": \"passed\", \"treeHash\": \"2026-10-20\", \"at\": \"2026-10-20T10:00:00.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"lint\", \"kind\": \"command\", \"status\": \"failed\", \"treeHash\": \"2026-10-20\", \"at\": \"2026-10-20T10:00:01.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"*gate*\", \"kind\": \"gate\", \"status\": \"failed\", \"treeHash\": \"2026-10-20\", \"at\": \"2026-10-20T10:00:02.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"tests\", \"kind\": \"command\", \"status\": \"passed\", \"treeHash\": \"2026-10-22\", \"at\": \"2026-10-22T10:00:00.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"lint\", \"kind\": \"command\", \"status\": \"failed\", \"treeHash\": \"2026-10-22\", \"at\": \"2026-10-22T10:00:01.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"*gate*\", \"kind\": \"gate\", \"status\": \"failed\", \"treeHash\": \"2026-10-22\", \"at\": \"2026-10-22T10:00:02.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"tests\", \"kind\": \"command\", \"status\": \"passed\", \"treeHash\": \"2026-10-25\", \"at\": \"2026-10-25T10:00:00.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"lint\", \"kind\": \"command\", \"status\": \"failed\", \"treeHash\": \"2026-10-25\", \"at\": \"2026-10-25T10:00:01.000Z\", \"notes\": []}\n{\"schema\": \"finitemonkey/evidence@1\", \"task\": \"work\", \"check\": \"*gate*\", \"kind\": \"gate\", \"status\": \"failed\", \"treeHash\": \"2026-10-25\", \"at\": \"2026-10-25T10:00:02.000Z\", \"notes\": []}\n",
+    ".finitemonkey/goals.yml": "goals:\n  - id: g1\n    text: green build\n    origin: stated\n"
+  },
+  "contract": "id: work\ngoal: green build\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\ngoals: [g1]\n",
+  "change": {},
+  "probe": {
+    "kind": "status"
+  },
+  "expected": 1,
+  "silentWhen": "the gate passed or failed on fewer than three days",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

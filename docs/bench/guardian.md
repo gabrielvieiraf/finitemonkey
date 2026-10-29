@@ -23,6 +23,14 @@ A feature is kept when its primary metric moves in the expected direction with t
 | forecast | a forecast from the person's own comparable tasks errs less than the model's estimate | absolute error of the forecast vs the model estimate on the same tasks | prompts with a forecast, dismissals |
 | research log (command output, no hook) | research ends when new sources stop changing the likely answer, without dropping open critical unknowns | sources per decision; sources logged as changing nothing; decisions revisited later | stop notes ignored |
 
+## Scenarios
+
+`bench/guardian/scenarios/` holds fifteen decision scenarios, one per situation in issue #281: project state, goal, request, available information, the expected level (0 means run without a word), when to stay silent, whether the person is right, how a beginner and a senior react to a level 2-3 report, and the consequence of the final decision. Four of them expect the guardian to obey at once.
+
+`node --import tsx scripts/bench-guardian.ts` runs each scenario in a temporary repository with every guardian feature active and writes `bench/guardian/results.json`. Scoring uses the final decision and its consequence: alert precision, unnecessary alerts, missed alerts, harmful redirects (followed a report and the consequence was bad), times the person was right and kept the request, good outcomes, and whether every shown report had evidence. Acceptance rate is reported and never optimized. `test/guardian-bench.test.ts` fails when the results change without the file being regenerated.
+
+The scenarios were written by the same people who wrote the triggers, so they are a regression suite, not an independent evaluation. Reactions are fixed per scenario, not simulated personas. A held-out set written by someone outside development, and the per-release evidence file, come next.
+
 ## Discard rules
 
 - proportionality: if H1 shows no difference in the shadow period, the token budget is dropped and only the reversibility trigger stays. If H2 does not predict, demonstrated concepts leave the weight. If the report only delays without fewer incidents or less rework, it goes back to level 1.

@@ -1,0 +1,26 @@
+{
+  "id": "07-ignored-contradicting-evidence",
+  "category": "ignored contradicting evidence",
+  "goal": "reliable renewals",
+  "request": "reopen the queue decision and choose cron again",
+  "information": "the new record repeats the old facts and adds none",
+  "files": {
+    "docs/plan/02-decision-queue.md": "# Decision\n\nFACT: cron misses jobs under load (https://example.com/incident, 2026-10-01)\n",
+    "docs/plan/05-decision-queue.md": "# Decision\n\nFACT: cron misses jobs under load (https://example.com/incident, 2026-10-01)\n"
+  },
+  "change": {},
+  "probe": {
+    "kind": "status"
+  },
+  "expected": 1,
+  "silentWhen": "the new record brings at least one new FACT line",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}
