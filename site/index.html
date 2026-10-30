@@ -42,6 +42,13 @@
       name="twitter:image"
       content="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/social.png"
     />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/asciinema-player@3.17.0/dist/bundle/asciinema-player.css"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -68,6 +75,16 @@
         --hor-bg: #eff1f4;
         --you: #b97d00;
         --you-bg: #fbecc6;
+        --st-a2: #cfe7da;
+        --st-a1: #e4f2ea;
+        --st-p2: #cddbf2;
+        --st-p1: #e5ecf8;
+        --st-d: #d9c6e8;
+        --st-disc: #6b4a8c;
+        --st-hatch: #f3dedb;
+        --st-hatch-ln: #a8372b;
+        --st-dots: #e9e1d3;
+        --st-dot: #7a5d2c;
         --term-bg: #0a0c0f;
         --term-ink: #c9d1db;
         --term-dim: #6f7884;
@@ -98,6 +115,26 @@
           --hor-bg: #151a21;
           --you: #ffc24d;
           --you-bg: #3b2e10;
+          --st-a2: #183a2a;
+          --st-a1: #12271e;
+          --st-p2: #1d2f52;
+          --st-p1: #15213a;
+          --st-d: #2f2447;
+          --st-disc: #b79be0;
+          --st-hatch: #43211f;
+          --st-hatch-ln: #f08a7e;
+          --st-dots: #3a3020;
+          --st-dot: #e0bb72;
+          --st-a2: #183a2a;
+          --st-a1: #12271e;
+          --st-p2: #1d2f52;
+          --st-p1: #15213a;
+          --st-d: #2f2447;
+          --st-disc: #b79be0;
+          --st-hatch: #43211f;
+          --st-hatch-ln: #f08a7e;
+          --st-dots: #3a3020;
+          --st-dot: #e0bb72;
           --term-bg: #050608;
         }
       }
@@ -222,7 +259,7 @@
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
         gap: 32px;
         padding-block: 44px 40px;
         border-bottom: 1px solid var(--rule);
@@ -292,49 +329,401 @@
         max-width: 60ch;
       }
 
-      .term {
+      .stage {
+        border: 2px solid var(--ink);
+        background: var(--bg);
+        align-self: start;
+        min-width: 0;
+        margin: 0;
+      }
+      .stage-bar {
+        display: none;
+        align-items: stretch;
+        border-bottom: 2px solid var(--ink);
+      }
+      .js .stage-bar {
+        display: flex;
+      }
+      .tabs {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+      }
+      .tab {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        font: inherit;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        text-align: left;
+        background: transparent;
+        color: var(--muted);
+        border: 0;
+        border-right: 1px solid var(--ink);
+        padding: 7px 10px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tab b {
+        font-weight: 700;
+        color: var(--faint);
+        margin-right: 6px;
+      }
+      .tab[aria-selected="true"] {
+        color: var(--ink);
+        background: var(--you-bg);
+      }
+      .tab[aria-selected="true"] b {
+        color: var(--ink);
+      }
+      .tab .pg {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--you);
+        transform-origin: 0 50%;
+        transform: scaleX(0);
+      }
+      .ctl {
+        display: flex;
+      }
+      .ctl button {
+        font: inherit;
+        font-size: 12px;
+        min-width: 40px;
+        background: transparent;
+        color: var(--ink);
+        border: 0;
+        border-left: 1px solid var(--ink);
+        cursor: pointer;
+      }
+      .ctl button:first-child {
+        border-left: 0;
+      }
+      .tab:hover,
+      .ctl button:hover {
+        color: var(--ink);
+        background: var(--grid);
+      }
+      .pane + .pane {
+        border-top: 2px solid var(--ink);
+      }
+      .js .panes {
+        position: relative;
+        aspect-ratio: 100 / 72;
+        overflow: hidden;
+      }
+      @media (max-width: 600px) {
+        .js .panes {
+          aspect-ratio: 100 / 92;
+        }
+      }
+      .js .pane {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-top: 0;
+      }
+      .js .pane:not(.on) {
+        visibility: hidden;
+      }
+      .pane-cast {
         background: var(--term-bg);
         color: var(--term-ink);
-        border: 2px solid var(--ink);
-        font-size: 12.5px;
-        line-height: 1.55;
-        align-self: start;
       }
-      .term .tbar {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 6px 12px;
-        border-bottom: 1px solid #232a33;
-        color: var(--term-dim);
-        font-size: 11px;
+      .pane-cast img {
+        display: block;
+        width: 100%;
+        height: auto;
       }
-      .term pre {
+      .pane-cast pre {
         margin: 0;
-        padding: 14px 16px;
-        overflow-x: auto;
+        padding: 12px 14px;
         font-family: var(--mono);
-        white-space: pre;
-      }
-      .t-d {
-        color: var(--term-dim);
-      }
-      .t-ok {
-        color: var(--term-ok);
-        font-weight: 700;
-      }
-      .t-bad {
-        color: var(--term-bad);
-        font-weight: 700;
-      }
-      .t-you {
-        color: var(--term-you);
-      }
-      .term .tcap {
-        border-top: 1px solid #232a33;
-        padding: 6px 12px;
-        color: var(--term-dim);
         font-size: 11px;
+        line-height: 1.4;
+        overflow-x: auto;
+      }
+      .pane-cast .fallback a {
+        display: block;
+        padding: 14px;
+        color: var(--term-ink);
+        font-size: 12px;
+      }
+      .pane-chart {
+        padding: 10px 12px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .traj {
+        display: block;
+        width: 100%;
+        height: auto;
+        font-family: var(--mono);
+      }
+      .traj .s-a2 {
+        fill: var(--st-a2);
+      }
+      .traj .s-a1 {
+        fill: var(--st-a1);
+      }
+      .traj .s-p2 {
+        fill: var(--st-p2);
+      }
+      .traj .s-p1 {
+        fill: var(--st-p1);
+      }
+      .traj .s-d {
+        fill: var(--st-d);
+      }
+      .traj .s-hatch-bg {
+        fill: var(--st-hatch);
+      }
+      .traj .s-hatch-ln {
+        stroke: var(--st-hatch-ln);
+        stroke-width: 1.1;
+        stroke-opacity: 0.5;
+      }
+      .traj .s-dots-bg {
+        fill: var(--st-dots);
+      }
+      .traj .s-dots-dot {
+        fill: var(--st-dot);
+        fill-opacity: 0.55;
+      }
+      .traj .ceil {
+        stroke: var(--ink);
+        stroke-opacity: 0.35;
+      }
+      .traj .ceil.dash {
+        stroke-dasharray: 2 3;
+        stroke-opacity: 0.18;
+      }
+      .traj .frame {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 0.6;
+        stroke-opacity: 0.35;
+      }
+      .traj .axis {
+        stroke: var(--ink);
+      }
+      .traj .tj-h {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--ink);
+      }
+      .traj .tj-tick {
+        font-size: 11px;
+        fill: var(--muted);
+      }
+      .traj .tj-disc {
+        font-size: 11px;
+        fill: var(--st-disc);
+      }
+      .traj .tj-disc-tick {
+        stroke: var(--st-disc);
+      }
+      .traj .tj-cap {
+        font-size: 10.5px;
+        fill: var(--ink);
+      }
+      .traj .work {
+        fill: none;
+        stroke: var(--you);
+        stroke-width: 2.6;
+        stroke-linecap: round;
+      }
+      .traj .peak {
+        fill: var(--you);
+      }
+      .traj .mr-c,
+      .traj .mh-c {
+        fill: var(--bg);
+        stroke-width: 2;
+      }
+      .traj .mr-c,
+      .traj .mr-x {
+        stroke: var(--bad);
+      }
+      .traj .mr-x {
+        fill: none;
+        stroke-width: 1.8;
+      }
+      .traj .mh-c {
+        stroke: var(--ok);
+      }
+      .traj .mh-d {
+        fill: var(--ok);
+      }
+      .traj .v-bg {
+        fill: var(--bg);
+        fill-opacity: 0.85;
+      }
+      .traj .v {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--ink);
+      }
+      .traj .v-bad {
+        fill: var(--bad);
+      }
+      .traj .v-ok {
+        fill: var(--ok);
+      }
+      .key {
+        list-style: none;
+        margin: 0;
+        padding: 6px 0 0;
+        border-top: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 3px 12px;
+        font-size: 10.5px;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+      @media (max-width: 600px) {
+        .key {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          font-size: 10px;
+        }
+      }
+      .key li {
+        display: flex;
+        gap: 6px;
+        align-items: baseline;
+      }
+      .key i {
+        flex: none;
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border: 0.6px solid var(--faint);
+        transform: translateY(1px);
+      }
+      .key .k-hatch {
+        background: repeating-linear-gradient(
+          45deg,
+          var(--st-hatch) 0 3px,
+          color-mix(in srgb, var(--st-hatch-ln) 50%, var(--st-hatch)) 3px 4px
+        );
+      }
+      .key .k-dots {
+        background: radial-gradient(circle, var(--st-dot) 0.9px, var(--st-dots) 1.1px) 0 0 / 5px 5px;
+      }
+      .key .k-d {
+        background: var(--st-d);
+      }
+      .key .k-p1 {
+        background: var(--st-p1);
+      }
+      .key .k-p2 {
+        background: var(--st-p2);
+      }
+      .key .k-a1 {
+        background: var(--st-a1);
+      }
+      .key .k-a2 {
+        background: var(--st-a2);
+      }
+      .key .k-r,
+      .key .k-h {
+        border: 0;
+        width: auto;
+        height: auto;
+        font-style: normal;
+        font-weight: 700;
+        transform: none;
+      }
+      .key .k-r {
+        color: var(--bad);
+      }
+      .key .k-h {
+        color: var(--ok);
+      }
+      .stage-cap {
+        margin: 0;
+        padding: 6px 12px;
+        border-top: 2px solid var(--ink);
+        font-size: 11px;
+        color: var(--muted);
+        min-height: 2.9em;
+      }
+      .pcap {
+        margin: 0;
+        padding: 6px 12px;
+        font-size: 11px;
+        color: var(--muted);
+        background: var(--bg);
+        border-top: 1px solid var(--rule);
+      }
+      .js .pcap {
+        display: none;
+      }
+      .stage-cap {
+        display: none;
+      }
+      .js .stage-cap {
+        display: block;
+      }
+      .stage .ap-wrapper,
+      .stage .ap-player {
+        border-radius: 0;
+      }
+      @media (max-width: 600px) {
+        .tab b {
+          display: none;
+        }
+        .tab {
+          padding: 7px 8px 10px;
+          font-size: 10px;
+          letter-spacing: 0;
+        }
+      }
+      .stage.auto .ap-overlay-start {
+        display: none;
+      }
+      @media (max-width: 600px) {
+        .traj .tj-cap,
+        .traj .tj-disc {
+          display: none;
+        }
+        .traj .tj-h {
+          font-size: 18px;
+        }
+        .traj .tj-tick {
+          font-size: 12px;
+        }
+        .traj .v {
+          font-size: 16px;
+        }
+      }
+      .asciinema-player-theme-fm {
+        --term-color-foreground: #c9d1db;
+        --term-color-background: var(--term-bg);
+        --term-color-0: #1a2028;
+        --term-color-1: #ff8a7c;
+        --term-color-2: #6fe0ac;
+        --term-color-3: #ffc24d;
+        --term-color-4: #86aef0;
+        --term-color-5: #c4a6f0;
+        --term-color-6: #7fd3e0;
+        --term-color-7: #c9d1db;
+        --term-color-8: #6f7884;
+        --term-color-9: #ff8a7c;
+        --term-color-10: #6fe0ac;
+        --term-color-11: #ffc24d;
+        --term-color-12: #86aef0;
+        --term-color-13: #c4a6f0;
+        --term-color-14: #7fd3e0;
+        --term-color-15: #e6e9ee;
       }
 
       section {
@@ -910,22 +1299,213 @@
               then, a new version on <code>next</code> can break what the previous one did.
             </p>
           </div>
-          <figure class="term" style="margin: 0">
-            <div class="tbar"><span>claude code · ~/shop</span><span data-i="termTag">reconstruction</span></div>
-            <pre><span class="t-d">&gt;</span> <span data-i="termAsk">add the coupon to the cart, no need to run the tests</span>
-<span class="t-d">● Edit</span> src/cart/totals.ts
-<span class="t-d">● Bash</span> finitemonkey gate
-  <span class="t-ok">✓</span> typecheck
-  <span class="t-ok">✓</span> lint
-  <span class="t-bad">✗</span> test  <span class="t-you">total rounds to cents</span>
-      <span class="t-d">expected 10.35, received 10.349999</span>
-<span class="t-d">● Edit</span> src/cart/totals.ts  <span class="t-d" data-i="termFix">(rounds to cents)</span>
-<span class="t-d">● Bash</span> finitemonkey gate
-  <span class="t-ok" data-i="termPass">✓ 10 checks passed on this tree</span>
-<span class="t-d">Stop ·</span> <span class="t-ok" data-i="termGreen">gate green</span> <span class="t-d">· tree 3f2a9c1</span></pre>
-            <figcaption class="tcap" data-i="termCap">
-              Based on the real recording (finitemonkey 0.1.0-next.27 with Claude Code 2.1.283) in the README.
-            </figcaption>
+          <figure class="stage" id="stage" aria-label="Finite Monkey running">
+            <div class="stage-bar">
+              <div class="tabs" role="tablist" aria-label="Demo">
+                <button type="button" class="tab" role="tab" id="tab-0" aria-controls="pane-0" aria-selected="true">
+                  <b>01</b><span data-i="tab0">Claude Code</span><span class="pg"></span>
+                </button>
+                <button
+                  type="button"
+                  class="tab"
+                  role="tab"
+                  id="tab-1"
+                  aria-controls="pane-1"
+                  aria-selected="false"
+                  tabindex="-1"
+                >
+                  <b>02</b><span data-i="tab1">CLI</span><span class="pg"></span>
+                </button>
+                <button
+                  type="button"
+                  class="tab"
+                  role="tab"
+                  id="tab-2"
+                  aria-controls="pane-2"
+                  aria-selected="false"
+                  tabindex="-1"
+                >
+                  <b>03</b><span data-i="tab2">trajectory</span><span class="pg"></span>
+                </button>
+              </div>
+              <div class="ctl">
+                <button type="button" id="st-pause" aria-label="Pause" data-al="pauseL">❚❚</button>
+                <button type="button" id="st-next" aria-label="Next" data-al="nextL">→</button>
+              </div>
+            </div>
+            <div class="panes">
+              <div class="pane pane-cast on" id="pane-0" role="tabpanel" aria-labelledby="tab-0">
+                <div class="fallback" id="cast-0">
+                  <a href="casts/gate.gif" data-i="gifLink">Open the recording (GIF)</a>
+                </div>
+                <noscript
+                  ><img
+                    src="casts/gate.gif"
+                    alt="Real Claude Code session where the Finite Monkey gate fails a test and passes after the fix"
+                    width="1000"
+                    height="640"
+                /></noscript>
+                <p class="pcap" data-i="cap0">
+                  Real recording: finitemonkey 0.1.0-next.27 with Claude Code 2.1.283, sped up 1.3×.
+                </p>
+              </div>
+              <div class="pane pane-cast" id="pane-1" role="tabpanel" aria-labelledby="tab-1">
+                <div class="fallback" id="cast-1">
+                  <pre>
+$ finitemonkey trajectory --domain backend --chart
+domain   W33 W34 W35 W36 W37 W38 W39 W40 W41 W42 W43 W44
+backend    ·   █   -   ░   █   ·   ·   ·   ░   ↯   ●   ·
+█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence
+
+backend
+         ↯● 
+·    ···   ·  beyond the horizon
+·    ···   ·  beyond the horizon
+·    ···━░━·  blind band, no criterion
+·  ━░···░░█·  done alone
+· ▓▓━···███·  done alone
+·━███···███·  done alone</pre>
+                </div>
+                <p class="pcap" data-i="cap1">
+                  Real CLI output on a demo project, finitemonkey 0.1.0-next.41: gate fails, gate passes, x-ray,
+                  trajectory. The concept history comes from the trajectory test fixture.
+                </p>
+              </div>
+              <div class="pane pane-chart" id="pane-2" role="tabpanel" aria-labelledby="tab-2">
+                <svg class="traj" viewBox="0 0 720 372" role="img" aria-labelledby="traj-t">
+                  <title id="traj-t" data-i="trajTitle">Same result, different status: the ricochet</title>
+                  <defs>
+                    <pattern
+                      id="tj-hatch"
+                      width="7"
+                      height="7"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="7" height="7" class="s-hatch-bg" />
+                      <line x1="0" y1="0" x2="0" y2="7" class="s-hatch-ln" />
+                    </pattern>
+                    <pattern id="tj-dots" width="6" height="6" patternUnits="userSpaceOnUse">
+                      <rect width="6" height="6" class="s-dots-bg" />
+                      <circle cx="3" cy="3" r="0.9" class="s-dots-dot" />
+                    </pattern>
+                  </defs>
+                  <g class="panel" data-panel="A">
+                    <text x="215" y="24" class="tj-h" text-anchor="middle" data-i="trajA">Person A</text>
+                    <g class="strata">
+                      <rect x="100" y="257.1" width="230" height="42.9" class="s-a2" />
+                      <rect x="100" y="222.0" width="230" height="35.1" class="s-a1" />
+                      <rect x="100" y="187.7" width="230" height="34.3" class="s-p2" />
+                      <rect x="100" y="171.3" width="230" height="16.4" class="s-p1" />
+                      <rect x="100" y="158.3" width="230" height="13.0" class="s-d" />
+                      <rect x="100" y="111.0" width="230" height="47.3" fill="url(#tj-dots)" />
+                      <rect x="100" y="40.0" width="230" height="71.0" fill="url(#tj-hatch)" />
+                    </g>
+                    <line x1="100" y1="257.1" x2="330" y2="257.1" class="ceil" />
+                    <line x1="100" y1="222.0" x2="330" y2="222.0" class="ceil" />
+                    <line x1="100" y1="187.7" x2="330" y2="187.7" class="ceil dash" />
+                    <line x1="100" y1="158.3" x2="330" y2="158.3" class="ceil" />
+                    <line x1="100" y1="111.0" x2="330" y2="111.0" class="ceil dash" />
+                    <rect x="100" y="40" width="230" height="260" class="frame" />
+                    <line x1="92" y1="164.8" x2="100" y2="164.8" class="tj-disc-tick" />
+                    <text x="88" y="168.8" text-anchor="end" class="tj-disc" data-i="trajDisc">discernment</text>
+                    <line x1="158.9" y1="300" x2="158.9" y2="305" class="axis" />
+                    <line x1="271.1" y1="300" x2="271.1" y2="305" class="axis" />
+                    <text x="158.9" y="319" text-anchor="middle" class="tj-tick" data-i="trajWith">
+                      with assistance
+                    </text>
+                    <text x="271.1" y="319" text-anchor="middle" class="tj-tick" data-i="trajShift">task shifts</text>
+                    <line x1="86" y1="300" x2="344" y2="300" class="axis" />
+                    <path
+                      d="M 112.9 222.0 C 135.9 222.0, 135.9 92.0, 158.9 92.0 C 215.0 92.0, 215.0 222.0, 271.1 222.0"
+                      class="work"
+                    />
+                    <circle cx="158.9" cy="92.0" r="5" class="peak" />
+                    <g class="mark mark-r">
+                      <circle cx="271.1" cy="222.0" r="7" class="mr-c" />
+                      <path
+                        d="M 267.90000000000003 218.8 L 274.3 225.2 M 274.3 218.8 L 267.90000000000003 225.2"
+                        class="mr-x"
+                      />
+                    </g>
+                    <g class="val">
+                      <rect x="143.9" y="62.0" width="30" height="18" class="v-bg" />
+                      <text x="158.9" y="76.0" text-anchor="middle" class="v">80</text>
+                    </g>
+                    <g class="val val-end">
+                      <rect x="256.1" y="190.0" width="30" height="18" class="v-bg" />
+                      <text x="271.1" y="204.0" text-anchor="middle" class="v v-bad">30</text>
+                    </g>
+                    <text x="215" y="344" text-anchor="middle" class="tj-cap">
+                      <tspan x="215" data-i="trajAc1">The 80 sat in the blind band: when the task</tspan>
+                      <tspan x="215" dy="15" data-i="trajAc2">shifts, it falls back to what A can rebuild.</tspan>
+                    </text>
+                  </g>
+                  <g class="panel" data-panel="B">
+                    <text x="555" y="24" class="tj-h" text-anchor="middle" data-i="trajB">Person B</text>
+                    <g class="strata">
+                      <rect x="440" y="221.4" width="230" height="78.6" class="s-a2" />
+                      <rect x="440" y="157.0" width="230" height="64.4" class="s-a1" />
+                      <rect x="440" y="102.4" width="230" height="54.6" class="s-p2" />
+                      <rect x="440" y="72.5" width="230" height="29.9" class="s-p1" />
+                      <rect x="440" y="59.5" width="230" height="13.0" class="s-d" />
+                      <rect x="440" y="51.7" width="230" height="7.8" fill="url(#tj-dots)" />
+                      <rect x="440" y="40.0" width="230" height="11.7" fill="url(#tj-hatch)" />
+                    </g>
+                    <line x1="440" y1="221.4" x2="670" y2="221.4" class="ceil" />
+                    <line x1="440" y1="157.0" x2="670" y2="157.0" class="ceil" />
+                    <line x1="440" y1="102.4" x2="670" y2="102.4" class="ceil dash" />
+                    <line x1="440" y1="59.5" x2="670" y2="59.5" class="ceil" />
+                    <line x1="440" y1="51.7" x2="670" y2="51.7" class="ceil dash" />
+                    <rect x="440" y="40" width="230" height="260" class="frame" />
+                    <line x1="432" y1="66.0" x2="440" y2="66.0" class="tj-disc-tick" />
+                    <text x="428" y="70.0" text-anchor="end" class="tj-disc" data-i="trajDisc">discernment</text>
+                    <line x1="498.9" y1="300" x2="498.9" y2="305" class="axis" />
+                    <line x1="611.1" y1="300" x2="611.1" y2="305" class="axis" />
+                    <text x="498.9" y="319" text-anchor="middle" class="tj-tick" data-i="trajWith">
+                      with assistance
+                    </text>
+                    <text x="611.1" y="319" text-anchor="middle" class="tj-tick" data-i="trajShift">task shifts</text>
+                    <line x1="426" y1="300" x2="684" y2="300" class="axis" />
+                    <path
+                      d="M 452.9 157.0 C 475.9 157.0, 475.9 92.0, 498.9 92.0 C 555.0 92.0, 555.0 97.2, 611.1 97.2"
+                      class="work"
+                    />
+                    <circle cx="498.9" cy="92.0" r="5" class="peak" />
+                    <g class="mark mark-h">
+                      <circle cx="611.1" cy="97.2" r="7" class="mh-c" />
+                      <circle cx="611.1" cy="97.2" r="2.8" class="mh-d" />
+                    </g>
+                    <g class="val">
+                      <rect x="483.9" y="62.0" width="30" height="18" class="v-bg" />
+                      <text x="498.9" y="76.0" text-anchor="middle" class="v">80</text>
+                    </g>
+                    <g class="val val-end">
+                      <rect x="596.1" y="65.2" width="30" height="18" class="v-bg" />
+                      <text x="611.1" y="79.2" text-anchor="middle" class="v v-ok">78</text>
+                    </g>
+                    <text x="555" y="344" text-anchor="middle" class="tj-cap">
+                      <tspan x="555" data-i="trajBc1">The 80 sat in the proximal band: B detects,</tspan>
+                      <tspan x="555" dy="15" data-i="trajBc2">reformulates and holds.</tspan>
+                    </text>
+                  </g>
+                </svg>
+
+                <ul class="key">
+                  <li><i class="k-hatch"></i><span data-i="kHatch">blind: receives without criterion</span></li>
+                  <li><i class="k-dots"></i><span data-i="kDots">blind: receives with criterion</span></li>
+                  <li><i class="k-d"></i><span data-i="kD">unstable boundary</span></li>
+                  <li><i class="k-p1"></i><span data-i="kP1">proximal: detects without explaining</span></li>
+                  <li><i class="k-p2"></i><span data-i="kP2">proximal: judges and explains</span></li>
+                  <li><i class="k-a1"></i><span data-i="kA1">alone: redoes it in a known context</span></li>
+                  <li><i class="k-a2"></i><span data-i="kA2">alone: does it and transfers it</span></li>
+                  <li><i class="k-r">⊗</i><span data-i="kR">ricochet</span></li>
+                  <li><i class="k-h">◉</i><span data-i="kH">holds</span></li>
+                </ul>
+                <p class="pcap" data-i="cap2">The essay's example (The Ricochet Effect, figure 4), not user data.</p>
+              </div>
+            </div>
+            <figcaption class="stage-cap" id="stage-cap" aria-live="polite"></figcaption>
           </figure>
         </div>
 
@@ -1153,6 +1733,11 @@
       </footer>
     </div>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/asciinema-player@3.17.0/dist/bundle/asciinema-player.min.js"
+    ></script>
     <script>
       (function () {
         const REPO = "https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/";
@@ -1171,13 +1756,6 @@
             ctaEssay: "Ler os ensaios",
             prerel:
               "Já dá para instalar pelo canal <code>next</code> do npm. O <code>latest</code> ainda é a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que a bancada disser se ele ajuda; até lá, uma versão nova no <code>next</code> pode quebrar o que a anterior fazia.",
-            termTag: "reconstituição",
-            termAsk: "some o cupom ao carrinho, não precisa rodar os testes",
-            termFix: "(arredonda para centavos)",
-            termPass: "✓ 10 checagens passaram nesta árvore",
-            termGreen: "portão verde",
-            termCap:
-              "Baseado na gravação real (finitemonkey 0.1.0-next.27 com Claude Code 2.1.283) que está no README.",
             doneH: "O que o agente diz e o que é conferido",
             doneK: "definição de pronto",
             doneIntro:
@@ -1300,12 +1878,6 @@
             ctaEssay: "Read the essays",
             prerel:
               "It installs today through npm's <code>next</code> channel. <code>latest</code> is still 0.0.0, a placeholder that only holds the name. v0.1 goes stable after the benchmark says whether it helps; until then, a new version on <code>next</code> can break what the previous one did.",
-            termTag: "reconstruction",
-            termAsk: "add the coupon to the cart, no need to run the tests",
-            termFix: "(rounds to cents)",
-            termPass: "✓ 10 checks passed on this tree",
-            termGreen: "gate green",
-            termCap: "Based on the real recording (finitemonkey 0.1.0-next.27 with Claude Code 2.1.283) in the README.",
             doneH: "What the agent says and what gets checked",
             doneK: "definition of done",
             doneIntro:
@@ -1421,13 +1993,6 @@
             ctaEssay: "Leer los ensayos",
             prerel:
               "Ya se puede instalar por el canal <code>next</code> de npm. <code>latest</code> todavía es la 0.0.0, un marcador que solo reserva el nombre. La v0.1 estable sale cuando el banco de pruebas diga si ayuda; hasta entonces, una versión nueva en <code>next</code> puede romper lo que hacía la anterior.",
-            termTag: "reconstrucción",
-            termAsk: "suma el cupón al carrito, no hace falta correr los tests",
-            termFix: "(redondea a centavos)",
-            termPass: "✓ 10 comprobaciones pasaron en este árbol",
-            termGreen: "portón verde",
-            termCap:
-              "Basado en la grabación real (finitemonkey 0.1.0-next.27 con Claude Code 2.1.283) que está en el README.",
             doneH: "Lo que dice el agente y lo que se comprueba",
             doneK: "definición de listo",
             doneIntro:
@@ -1576,6 +2141,7 @@
             .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
           current = lang;
           if (typeof renderStatus === "function") renderStatus(lang);
+          if (typeof stageLabels === "function" && typeof stage !== "undefined") stageLabels(lang);
         }
         document.querySelectorAll(".seg button").forEach((b) =>
           b.addEventListener("click", () => {
@@ -1767,6 +2333,318 @@
             },
             () => {},
           );
+        const HERO = {
+          pt: {
+            tab0: "Claude Code",
+            tab1: "CLI",
+            tab2: "trajetória",
+            pauseL: "Pausar",
+            playL: "Continuar",
+            nextL: "Próximo",
+            gifLink: "Abrir a gravação (GIF)",
+            cap0: "Gravação real: finitemonkey 0.1.0-next.27 com Claude Code 2.1.283, acelerada 1,3×.",
+            cap1: "Saída real da CLI num projeto de demonstração, finitemonkey 0.1.0-next.41: gate falha, gate passa, x-ray, trajetória. O histórico de conceitos é o fixture dos testes da trajetória.",
+            cap2: "O exemplo do ensaio (Efeito Ricochete, figura 4), não são dados de usuário.",
+            trajTitle: "O mesmo resultado, estatutos diferentes: o ricochete",
+            trajA: "Pessoa A",
+            trajB: "Pessoa B",
+            trajDisc: "discernimento",
+            trajWith: "com assistência",
+            trajShift: "tarefa muda",
+            trajAc1: "O 80 estava na faixa cega: quando a tarefa",
+            trajAc2: "muda, volta ao que A reconstrói.",
+            trajBc1: "O 80 estava na faixa proximal: B detecta,",
+            trajBc2: "reformula e se mantém.",
+            kHatch: "cega: recebe sem critério",
+            kDots: "cega: recebe com critério",
+            kD: "fronteira instável",
+            kP1: "proximal: detecta sem explicar",
+            kP2: "proximal: julga e explica",
+            kA1: "sozinha: refaz no contexto conhecido",
+            kA2: "sozinha: faz e transfere",
+            kR: "ricochete",
+            kH: "se mantém",
+          },
+          en: {
+            tab0: "Claude Code",
+            tab1: "CLI",
+            tab2: "trajectory",
+            pauseL: "Pause",
+            playL: "Play",
+            nextL: "Next",
+            gifLink: "Open the recording (GIF)",
+            cap0: "Real recording: finitemonkey 0.1.0-next.27 with Claude Code 2.1.283, sped up 1.3×.",
+            cap1: "Real CLI output on a demo project, finitemonkey 0.1.0-next.41: gate fails, gate passes, x-ray, trajectory. The concept history is the trajectory test fixture.",
+            cap2: "The essay's example (The Ricochet Effect, figure 4), not user data.",
+            trajTitle: "Same result, different status: the ricochet",
+            trajA: "Person A",
+            trajB: "Person B",
+            trajDisc: "discernment",
+            trajWith: "with assistance",
+            trajShift: "task shifts",
+            trajAc1: "The 80 sat in the blind band: when the task",
+            trajAc2: "shifts, it falls back to what A can rebuild.",
+            trajBc1: "The 80 sat in the proximal band: B detects,",
+            trajBc2: "reformulates and holds.",
+            kHatch: "blind: receives without criterion",
+            kDots: "blind: receives with criterion",
+            kD: "unstable boundary",
+            kP1: "proximal: detects without explaining",
+            kP2: "proximal: judges and explains",
+            kA1: "alone: redoes it in a known context",
+            kA2: "alone: does it and transfers it",
+            kR: "ricochet",
+            kH: "holds",
+          },
+          es: {
+            tab0: "Claude Code",
+            tab1: "CLI",
+            tab2: "trayectoria",
+            pauseL: "Pausar",
+            playL: "Reanudar",
+            nextL: "Siguiente",
+            gifLink: "Abrir la grabación (GIF)",
+            cap0: "Grabación real: finitemonkey 0.1.0-next.27 con Claude Code 2.1.283, acelerada 1,3×.",
+            cap1: "Salida real de la CLI en un proyecto de demostración, finitemonkey 0.1.0-next.41: el gate falla, el gate pasa, x-ray, trayectoria. El historial de conceptos es el fixture de los tests de la trayectoria.",
+            cap2: "El ejemplo del ensayo (Efecto Rebote, figura 4), no son datos de usuarios.",
+            trajTitle: "El mismo resultado, estatus distintos: el rebote",
+            trajA: "Persona A",
+            trajB: "Persona B",
+            trajDisc: "discernimiento",
+            trajWith: "con asistencia",
+            trajShift: "la tarea cambia",
+            trajAc1: "El 80 estaba en la franja ciega: cuando la tarea",
+            trajAc2: "cambia, vuelve a lo que A puede reconstruir.",
+            trajBc1: "El 80 estaba en la franja proximal: B detecta,",
+            trajBc2: "reformula y se mantiene.",
+            kHatch: "ciega: recibe sin criterio",
+            kDots: "ciega: recibe con criterio",
+            kD: "frontera inestable",
+            kP1: "proximal: detecta sin explicar",
+            kP2: "proximal: juzga y explica",
+            kA1: "sola: lo rehace en contexto conocido",
+            kA2: "sola: lo hace y lo transfiere",
+            kR: "rebote",
+            kH: "se mantiene",
+          },
+        };
+        for (const l of Object.keys(HERO)) Object.assign(T[l], HERO[l]);
+        const stage = {
+          idx: 0,
+          paused: false,
+          hover: false,
+          hidden: false,
+          players: [],
+          tl: null,
+          chartAt: 0,
+          chartPlayed: 0,
+          HOLD: 9,
+        };
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const CASTS = ["casts/gate.cast", "casts/cli-demo.cast"];
+        const tabs = [...document.querySelectorAll(".tab")];
+        const panes = [...document.querySelectorAll(".pane")];
+        function stageLabels(lang) {
+          const t = T[lang];
+          document.getElementById("stage-cap").textContent = t["cap" + stage.idx];
+          const pb = document.getElementById("st-pause");
+          pb.textContent = stage.paused ? "▶" : "❚❚";
+          pb.setAttribute("aria-label", stage.paused ? t.playL : t.pauseL);
+          document.getElementById("st-next").setAttribute("aria-label", t.nextL);
+        }
+        function player(i) {
+          if (stage.players[i] !== undefined) return stage.players[i];
+          stage.players[i] = null;
+          if (!window.AsciinemaPlayer) {
+            if (i === 0) {
+              const img = document.createElement("img");
+              img.src = "casts/gate.gif";
+              img.alt = "";
+              document.getElementById("cast-0").replaceChildren(img);
+            }
+            return null;
+          }
+          const el = document.getElementById("cast-" + i);
+          el.replaceChildren();
+          const p = window.AsciinemaPlayer.create(CASTS[i], el, {
+            autoPlay: false,
+            loop: false,
+            idleTimeLimit: 2,
+            speed: i === 0 ? 1.3 : 1,
+            fit: "width",
+            controls: reduce,
+            theme: "fm",
+            terminalFontFamily: "'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace",
+            poster: i === 0 ? "npt:0:38" : "npt:0:40",
+          });
+          const fit = () => {
+            const term = el.querySelector(".ap-term");
+            if (!term) return;
+            term.style.transform = "";
+            const k = el.clientWidth / term.getBoundingClientRect().width;
+            if (k < 1) {
+              term.style.transformOrigin = "0 0";
+              term.style.transform = "scale(" + k + ")";
+            }
+          };
+          p.addEventListener("play", () => requestAnimationFrame(fit));
+          window.addEventListener("resize", () => requestAnimationFrame(fit));
+          p.addEventListener("ended", () => {
+            if (stage.idx === i && !reduce) go(i + 1);
+          });
+          stage.players[i] = p;
+          return p;
+        }
+        const running = () => !stage.paused && !stage.hover && !stage.hidden && !reduce;
+        function chartTimeline() {
+          if (!window.gsap || reduce) return null;
+          const g = window.gsap;
+          const svg = document.querySelector(".traj");
+          const tl = g.timeline({ paused: true });
+          tl.from(svg.querySelectorAll(".strata rect"), {
+            scaleY: 0,
+            transformOrigin: "50% 100%",
+            duration: 0.55,
+            stagger: 0.04,
+            ease: "power2.out",
+          });
+          tl.from(
+            svg.querySelectorAll(".ceil"),
+            { scaleX: 0, transformOrigin: "0% 50%", duration: 0.35, stagger: 0.03 },
+            "-=0.25",
+          );
+          svg.querySelectorAll(".work").forEach((path) => {
+            const len = path.getTotalLength();
+            g.set(path, { strokeDasharray: len });
+            tl.from(path, { strokeDashoffset: len, duration: 0.9, ease: "power1.inOut" }, "<0.1");
+          });
+          tl.from(svg.querySelectorAll(".peak, .val"), { opacity: 0, duration: 0.25 }, "-=0.35");
+          tl.from(
+            svg.querySelectorAll(".mark"),
+            { scale: 0, transformOrigin: "50% 50%", duration: 0.35, ease: "back.out(3)" },
+            "-=0.05",
+          );
+          tl.from(document.querySelectorAll(".key li"), { opacity: 0, y: 4, duration: 0.25, stagger: 0.025 }, "-=0.2");
+          return tl;
+        }
+        function go(i) {
+          i = (i + panes.length) % panes.length;
+          const prev = stage.players[stage.idx];
+          if (prev) prev.pause();
+          if (stage.tl) stage.tl.pause();
+          stage.idx = i;
+          tabs.forEach((tab, j) => {
+            tab.setAttribute("aria-selected", String(j === i));
+            tab.tabIndex = j === i ? 0 : -1;
+            tab.querySelector(".pg").style.transform = "scaleX(0)";
+          });
+          panes.forEach((pane, j) => pane.classList.toggle("on", j === i));
+          if (i < 2) {
+            const p = player(i);
+            if (p) Promise.resolve(p.seek(0)).then(() => running() && p.play());
+          } else {
+            stage.chartPlayed = 0;
+            stage.chartAt = performance.now();
+            if (!stage.tl) stage.tl = chartTimeline();
+            if (stage.tl) {
+              stage.tl.progress(0).pause();
+              if (running()) stage.tl.play();
+              else stage.tl.progress(1);
+            }
+          }
+          stageLabels(current);
+        }
+        function resume() {
+          if (!running()) return;
+          if (stage.idx < 2) {
+            const p = stage.players[stage.idx];
+            if (p) p.play();
+          } else {
+            stage.chartAt = performance.now();
+            if (stage.tl && stage.tl.progress() < 1) stage.tl.play();
+          }
+        }
+        function hold() {
+          if (stage.idx < 2) {
+            const p = stage.players[stage.idx];
+            if (p) p.pause();
+          } else {
+            stage.chartPlayed += (performance.now() - stage.chartAt) / 1000;
+            stage.chartAt = performance.now();
+            if (stage.tl) stage.tl.pause();
+          }
+        }
+        function tick() {
+          const bar = tabs[stage.idx].querySelector(".pg");
+          if (stage.idx < 2) {
+            const p = stage.players[stage.idx];
+            if (!p) return;
+            Promise.all([p.getCurrentTime(), p.getDuration()]).then(([c, d]) => {
+              if (d) bar.style.transform = "scaleX(" + Math.min(1, c / d) + ")";
+            });
+          } else {
+            let played = stage.chartPlayed;
+            if (running()) played += (performance.now() - stage.chartAt) / 1000;
+            const total = (stage.tl ? stage.tl.duration() : 0) + stage.HOLD;
+            bar.style.transform = "scaleX(" + Math.min(1, played / total) + ")";
+            if (played >= total && running()) go(0);
+          }
+        }
+        function setHover(on) {
+          const was = running();
+          stage.hover = on;
+          if (was && !running()) hold();
+          if (!was && running()) resume();
+        }
+        tabs.forEach((tab, j) => {
+          tab.addEventListener("click", () => {
+            stage.hover = false;
+            go(j);
+          });
+          tab.addEventListener("keydown", (e) => {
+            const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+            if (!d) return;
+            e.preventDefault();
+            const k = (j + d + tabs.length) % tabs.length;
+            tabs[k].focus();
+            go(k);
+          });
+        });
+        document.getElementById("st-pause").addEventListener("click", () => {
+          const was = running();
+          stage.paused = !stage.paused;
+          if (was && !running()) hold();
+          if (!was && running()) resume();
+          stageLabels(current);
+        });
+        document.getElementById("st-next").addEventListener("click", () => go(stage.idx + 1));
+        const stageEl = document.getElementById("stage");
+        stageEl.addEventListener("mouseenter", () => setHover(true));
+        stageEl.addEventListener("mouseleave", () => setHover(false));
+        if ("IntersectionObserver" in window)
+          new IntersectionObserver((entries) => {
+            const was = running();
+            stage.hidden = !entries[0].isIntersecting;
+            if (was && !running()) hold();
+            if (!was && running()) resume();
+          }).observe(stageEl);
+        const svgEl = document.querySelector(".traj");
+        const narrow = matchMedia("(max-width: 600px)");
+        const fitChart = () => svgEl.setAttribute("viewBox", narrow.matches ? "80 4 610 326" : "0 0 720 372");
+        fitChart();
+        narrow.addEventListener("change", fitChart);
+        if (!reduce) stageEl.classList.add("auto");
+        if (reduce) {
+          stage.paused = true;
+          document.getElementById("st-pause").hidden = true;
+        }
+        window.addEventListener("DOMContentLoaded", async () => {
+          try {
+            await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]);
+          } catch (e) {}
+          go(reduce ? 2 : 0);
+          if (!reduce) setInterval(tick, 200);
+        });
         let start = "en";
         const q = new URLSearchParams(location.search).get("lang");
         let saved = null;
