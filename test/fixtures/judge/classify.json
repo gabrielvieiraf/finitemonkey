@@ -7,6 +7,7 @@
     "source": "notes/vat.md",
     "total": 3,
     "modelOnly": 3,
+    "handedOff": 0,
     "done": false,
     "rows": [
       {

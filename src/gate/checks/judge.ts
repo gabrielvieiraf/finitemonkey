@@ -14,7 +14,9 @@ export const judgeCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutc
     .filter((result) => result.task === ctx.contract.id)
     .map((result) => resultView(result, entries));
   const open = views.flatMap((view) =>
-    view.rows.filter((row) => row.state === "model-only").map((row) => ({ source: view.source, row })),
+    view.rows
+      .filter((row) => row.state === "model-only" || row.state === "handed-off")
+      .map((row) => ({ source: view.source, row })),
   );
   if (open.length === 0) return passed([note("gate.judge.none")]);
   const notes = open.map(({ source, row }) =>

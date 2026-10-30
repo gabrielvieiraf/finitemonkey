@@ -48,6 +48,8 @@ export const VERBS = [
   "dismiss",
   "probe",
   "skip",
+  "triage",
+  "reply",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
@@ -90,6 +92,7 @@ export interface ResultView {
   readonly source: string;
   readonly total: number;
   readonly modelOnly: number;
+  readonly handedOff: number;
   readonly done: boolean;
   readonly rows: readonly XrayRow[];
 }
@@ -157,6 +160,7 @@ export interface JudgeResponse {
   readonly route?: "verify" | "handoff";
   readonly exceptions?: readonly ExceptionUse[];
   readonly item?: ItemView;
+  readonly triage?: readonly XrayRow[];
   readonly horizon?: readonly HorizonView[];
   readonly horizonDomains?: readonly HorizonDomain[];
 }
@@ -222,7 +226,9 @@ export const rowOf = (claimId: string, entries: readonly JudgeEntry[], outcome?:
 export const resultView = (result: ResultEntry, entries: readonly JudgeEntry[]): ResultView => {
   const rows = orderRows(result.claims.flatMap((id) => rowOf(id, entries) ?? []));
   const modelOnly = rows.filter((row) => row.state === "model-only").length;
-  return { result: result.id, source: result.source, total: rows.length, modelOnly, done: modelOnly === 0, rows };
+  const handedOff = rows.filter((row) => row.state === "handed-off").length;
+  const done = modelOnly === 0 && handedOff === 0;
+  return { result: result.id, source: result.source, total: rows.length, modelOnly, handedOff, done, rows };
 };
 
 const conceptIds = (entries: readonly JudgeEntry[]): readonly string[] => [
