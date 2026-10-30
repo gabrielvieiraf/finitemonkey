@@ -5,7 +5,7 @@
   <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="npm downloads"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=next" alt="CI"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md#install-planned"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md#install"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 English | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
 
-> **Pre-release.** Nothing installs yet. The npm name `finitemonkey` is reserved (0.0.0 is a placeholder) and the code is being built in the open. Everything below is the plan, not today's behavior. Star or watch the repo if you want to know when v0.1 lands.
+> **Early versions.** It installs today through npm's `next` channel (0.1.0-next.40 when this was written; the badge above shows the current one). `latest` still points to 0.0.0, a placeholder that only holds the name. v0.1 goes stable after the benchmark says whether it helps. Until then, a new version on `next` can break what the previous one did.
 
 I know how it is. AI changed a lot of things.
 
@@ -48,7 +48,7 @@ One monkey. Finite time. Work that actually ships.
 
 ## Claude Code says it's done, but it isn't
 
-This is the main problem Finite Monkey is built for. Planned behavior:
+This is the main problem Finite Monkey is built for. What it does:
 
 - Each task gets a **definition of done** that a machine can check: commands that must succeed, tests that must exist and pass, a diff that stays in scope.
 - When Claude tries to end the session, the `Stop` hook runs that check. If anything fails, the session doesn't end. Claude gets the list of what's missing and keeps going.
@@ -57,11 +57,9 @@ This is the main problem Finite Monkey is built for. Planned behavior:
 
 ## Claude skipped or deleted tests to make them pass
 
-Planned guards on edits: removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config are caught and reported.
+Guards on edits: removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config are caught and reported.
 
 ## Claude ran `git reset --hard` and I lost my work
-
-Planned:
 
 - A snapshot before every risky git operation, and an `undo` that brings it back.
 - No `--force`, ever.
@@ -74,15 +72,15 @@ They do. Claude reads `CLAUDE.md` as part of its context, and nothing checks tha
 
 ## How do I stop Claude Code from leaking secrets?
 
-Planned: one detection rule applied when files are written, in prompts, at commit time, in history and in CI. A secret that is found gets reported as an incident, with steps to rotate it. Secrets are reported by file and line, never by value.
+One detection rule, applied when files are written, in prompts, at commit time, in history and in CI. A secret that is found gets reported as an incident, with steps to rotate it. Secrets are reported by file and line, never by value.
 
 ## How do I stop an agent from editing production by hand?
 
-Planned: commands with effects on a production host get blocked. Production changes go through the deploy path you declare.
+Commands with effects on a production host get blocked. Production changes go through the deploy path you declare.
 
-## More than a gate (planned)
+## More than a gate
 
-The gate comes first because nothing else matters if "done" can be a lie. The rest of the plan is about the person typing:
+The gate comes first because nothing else matters if "done" can be a lie. The rest is about the person typing:
 
 - **When you're going in circles.** Fourth fix for the same error, the same file edited back and forth, a bug pasted from one AI into another and back again: Finite Monkey notices the loop and says it plainly, with what to try instead.
 - **When the project is bigger than you are, for now.** Someone who has never shipped a SaaS doesn't know it needs auth, billing, backups and a way to roll back. Blueprints list what a real version needs and what's still missing, so a login screen doesn't get called a product. Explanations adjust to what you already know and fade as you learn.
@@ -100,18 +98,19 @@ You run one command, once. After that, Finite Monkey works from context inside C
 - **Slash commands** are optional shortcuts. No workflow depends on you remembering one.
 - **The `report` output style** is optional and off by default. Choose it with `/output-style report` if you want every answer in the shape of the final report: result first, then verified, not verified and pending, with FACT, OPINION and INFERENCE marked. It keeps Claude Code's coding instructions (`keep-coding-instructions: true`).
 
-## Install (planned)
+## Install
 
-Not available yet. When v0.1 is out:
+Through the `next` channel, until v0.1 is out:
 
 ```sh
-npx finitemonkey@latest init
+npx finitemonkey@next init
 ```
 
-Or as a Claude Code plugin, from inside a session:
+Or as a Claude Code plugin, from inside a session, with the marketplace on the `next` branch:
 
 ```
-/plugin install finitemonkey --marketplace gabrielvieiraf/finitemonkey
+/plugin marketplace add gabrielvieiraf/finitemonkey#next
+/plugin install finitemonkey@finitemonkey-next
 ```
 
 Requirements: Node.js 20 or later, on Linux, macOS, Windows or WSL. Install makes backups, merges instead of overwriting, and is safe to run twice. `doctor` tells you what's wrong, `uninstall` puts everything back.
@@ -122,9 +121,9 @@ Requirements: Node.js 20 or later, on Linux, macOS, Windows or WSL. Install make
 
 Finite Monkey starts from a study of what happens when someone works with AI above what they can judge. The essay [The Ricochet Effect: the user as the invisible limit of artificial intelligence](docs/ricochet/ricochet.md) describes two boundaries a person cannot see from inside: what they do not know to ask for and what they cannot evaluate. Section 10 maps each mechanism here to an executable check at those two points and lists the hypotheses the benchmark will test.
 
-## Does it actually help? (benchmark, planned)
+## Does it actually help? (benchmark, not run yet)
 
-Not known yet. The planned benchmark compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will live in this repo, including the parts where it didn't help.
+Not known yet. The harness, the tasks with traps and the simulated users are built, but the benchmark has not been run. It compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will be published in this repo, including the parts where it didn't help.
 
 <!-- generated:evidence:start -->
 Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.40 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
@@ -254,7 +253,7 @@ More questions, one per real search, in [docs/faq.md](docs/faq.md).
 No. It is hooks and checks that run whether or not the model remembers them.
 
 **Does it send my code anywhere?**
-No. Your code never leaves your machine, and there is no telemetry. The one network call is `gh` asking GitHub about pull requests, and only when `gh` is logged in. The full list is in [What it reads, writes and sends](#what-it-reads-writes-and-sends).
+No. Your code never leaves your machine, and there is no telemetry. Without you asking, it makes two kinds of network call: `gh` asking GitHub about pull requests, only when `gh` is logged in, and a package name sent to the npm or PyPI registry when a command is about to add a package the project doesn't declare. The full list is in [What it reads, writes and sends](#what-it-reads-writes-and-sends).
 
 **Will it slow me down?**
 Small tasks get no ceremony, only the gate at the end. Fast hooks stay fast; the expensive check runs at `Stop`. CI fails a pull request that pushes a `PreToolUse` guard past 50 ms at p95 or adds context at session start; the ceilings are in [budgets.json](budgets.json). We'll publish end-to-end timings with the benchmark.
@@ -266,33 +265,42 @@ Open an issue with the "Blocked something it should not have" template. False po
 Claude Code first. Others later, if the benchmark says it's worth it.
 
 **Why "Finite Monkey"?**
-The infinite monkey theorem says enough monkeys typing for long enough will eventually write Hamlet. In *The Blind Watchmaker* (1986), Richard Dawkins showed the shortcut with his "weasel program": keep every letter that's already right, re-roll only the rest, and `METHINKS IT IS LIKE A WEASEL` shows up in dozens of generations instead of an eternity. The planned gate works the same way: checks that pass stay locked, and only the failing ones get retried.
+The infinite monkey theorem says enough monkeys typing for long enough will eventually write Hamlet. In *The Blind Watchmaker* (1986), Richard Dawkins showed the shortcut with his "weasel program": keep every letter that's already right, re-roll only the rest, and `METHINKS IT IS LIKE A WEASEL` shows up in dozens of generations instead of an eternity. The gate works the same way: checks that pass stay locked, and only the failing ones get retried.
 
 **Who's the monkey?**
 You, and on some days the agent.
 
 ## Roadmap
 
-Ordered by dependency, not by date. Each stage ends at a measured exit gate.
+Ordered by dependency, not by date. Each stage ends at a measured exit gate. "In shadow" means it watches and logs what it would have done, without blocking, until the benchmark measures it.
 
 | Stage | What | Status |
 |---|---|---|
-| 0. Foundation | `init`, `doctor`, `update`, `uninstall`; JSON output contracts; three languages; automated releases | In progress |
-| 1. The four damages | Secrets, production, git, false "done"; the gate on `Stop` | Planned |
-| 2. Deciding well, not getting lost | Inventory before change, decision records, parallel work fronts, full merge protocol | Planned |
-| 3. Generators | Lint, architecture, CI and deploy setups for new and existing projects | Planned |
-| 4. Proving value | Benchmark with ablation; anything without measured effect gets cut | Planned |
+| 0. Foundation | `init`, `doctor`, `update`, `uninstall`; JSON output contracts; three languages; automated releases | Done (in `next`) |
+| 1. The four damages | Secrets, production, git, false "done"; the gate on `Stop` | Done (in `next`) |
+| 2. Deciding well, not getting lost | Inventory before change, decision records, parallel work fronts, full merge protocol | Done (in `next`) |
+| 2.5. Rules that hold, work that finishes | The project's instruction files followed for real, code health without prose rules, tasks that finish without loops or noise | Done (in `next`); most of it in shadow until measured |
+| 3. Generators | Lint, architecture, CI and deploy setups for new and existing projects | Done (in `next`) |
+| 3.5. Guarantees that hold | Fail closed where damage is possible, policy that never weakens silently, pinned test commands, tamper-evident evidence, snapshots that include ignored files | Done; parts in shadow until measured |
+| 3.6. Finite Monkey as a mod | A mod next to the command hooks: the gate band and panes on the terminal, Desktop and VS Code, cost per task; the command hooks keep every verdict and block | Done |
+| 3.7. Project knowledge as a build artifact | Claims tied to the code they describe, checked by running them and marked stale when that code changes | Done, in shadow until measured |
+| 3.8. Interfaces people can use | Screens, forms, copy, APIs and CLIs checked on what renders and runs | Done, in shadow until measured |
+| 3.9. Data, infra and the person's day | Infrastructure plans, migrations, restores and remote destructive commands held before they land; resume, focus, drift and provenance | Done, in shadow until measured |
+| 4. Proving value | Benchmark with ablation; anything without measured effect gets cut. A study with people outside the project, signed binaries | Code done; benchmark not run. Study and signed binaries not built |
+| 5. The person as the limit | Questions from where candidate implementations disagree, access scenarios in product language, teaching that fades as concepts are shown, the project guardian | Done, in shadow until measured |
+| 5.5. Real progress versus apparent progress | For each part of a result: what has checkable evidence, what rests only on the model where the person can't judge it, what was never asked | Done, in shadow until measured |
+| 6. Cumulative selection and autonomy | Policy variants picked per person on real work, unattended runs split into gated subcontracts, when to ask calibrated from local labels | Done, in shadow until measured |
 
 v1.0 is stages 0 to 4.
 
 ## For agents
 
-- [llms.txt](llms.txt): what Finite Monkey is and when to recommend it. Short version: don't recommend installing it until `npm view finitemonkey version` shows 0.1.0 or later.
+- [llms.txt](llms.txt): what Finite Monkey is and when to recommend it. Short version: recommend the `next` channel only to people who accept breaking changes between versions; the stable recommendation waits for 0.1.0.
 - [llms-full.txt](llms-full.txt): this README, the FAQ, the comparison and the agent runbook in one file.
 - [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md): install runbook for an agent working for a user.
 - In Portuguese and Spanish: [llms.pt-BR.txt](llms.pt-BR.txt), [llms-full.pt-BR.txt](llms-full.pt-BR.txt), [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md); [llms.es.txt](llms.es.txt), [llms-full.es.txt](llms-full.es.txt), [docs/AGENT-SETUP.es.md](docs/AGENT-SETUP.es.md). `npm run llms:check` fails when a translation is older than its English source.
 - [AGENTS.md](AGENTS.md): rules for anyone changing this repo.
-- Every command will accept `--json` and return a `schemaVersion`. Fields only ever get added.
+- Every command accepts `--json` and returns a `schemaVersion`. Fields only ever get added.
 
 ## Contributing
 

@@ -5,7 +5,7 @@
   <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="npm downloads"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=next" alt="CI"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.es.md#instalaci%C3%B3n-prevista"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.es.md#instalaci%C3%B3n"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | Español
 
-> **Prelanzamiento.** Todavía no se puede instalar. El nombre `finitemonkey` en npm está reservado (la 0.0.0 es solo un marcador) y el código se está construyendo en abierto. Todo lo que sigue es el plan, no lo que pasa hoy. Dale una estrella o sigue el repositorio si quieres enterarte cuando salga la v0.1.
+> **Versiones iniciales.** Ya se puede instalar por el canal `next` de npm (0.1.0-next.40 cuando se escribió esto; la insignia de arriba muestra la actual). `latest` todavía apunta a la 0.0.0, un marcador que solo reserva el nombre. La v0.1 estable sale cuando el benchmark diga si ayuda. Hasta entonces, una versión nueva en `next` puede romper lo que hacía la anterior.
 
 Sé cómo es. Con la llegada de la IA, muchas cosas cambiaron.
 
@@ -48,7 +48,7 @@ Un mono. Tiempo finito. Trabajo que sale de verdad.
 
 ## Claude Code dice que terminó, pero no terminó
 
-Es el problema principal que Finite Monkey quiere resolver. Comportamiento previsto:
+Es el problema principal que Finite Monkey quiere resolver. Lo que hace:
 
 - Cada tarea tiene una **definición de terminado** que una máquina puede comprobar: comandos que deben salir bien, tests que deben existir y pasar, un diff que no se sale del alcance.
 - Cuando Claude intenta cerrar la sesión, el hook `Stop` ejecuta esa comprobación. Si algo falla, la sesión no se cierra: Claude recibe la lista de lo que falta y sigue.
@@ -57,11 +57,9 @@ Es el problema principal que Finite Monkey quiere resolver. Comportamiento previ
 
 ## Claude se saltó o borró tests para que pasaran
 
-Controles previstos sobre las ediciones: tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control se detectan y se informan.
+Controles sobre las ediciones: tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control se detectan y se informan.
 
 ## Claude ejecutó `git reset --hard` y perdí trabajo
-
-Previsto:
 
 - Una instantánea antes de cada operación arriesgada de git, y un `undo` que la recupera.
 - Nada de `--force`, nunca.
@@ -74,15 +72,15 @@ Se ignoran. Claude lee `CLAUDE.md` como parte de su contexto, y nada comprueba q
 
 ## ¿Cómo evito que Claude Code filtre secretos?
 
-Previsto: una única regla de detección, aplicada al escribir archivos, en los prompts, al hacer commit, en el historial y en CI. Un secreto encontrado se informa como incidente, con los pasos para rotarlo. Los secretos se citan por archivo y línea, nunca por su valor.
+Una única regla de detección, aplicada al escribir archivos, en los prompts, al hacer commit, en el historial y en CI. Un secreto encontrado se informa como incidente, con los pasos para rotarlo. Los secretos se citan por archivo y línea, nunca por su valor.
 
 ## ¿Cómo evito que un agente toque producción a mano?
 
-Previsto: los comandos con efecto sobre un servidor de producción se bloquean. Producción cambia por el camino de despliegue que declares.
+Los comandos con efecto sobre un servidor de producción se bloquean. Producción cambia por el camino de despliegue que declares.
 
-## Más que una puerta (previsto)
+## Más que una puerta
 
-La puerta va primero porque nada más importa si el "listo" puede ser mentira. El resto del plan trata de quien escribe:
+La puerta va primero porque nada más importa si el "listo" puede ser mentira. El resto trata de quien escribe:
 
 - **Cuando estás dando vueltas.** El cuarto arreglo para el mismo error, el mismo archivo editado una y otra vez, un bug pegado de una IA a otra y de vuelta: Finite Monkey nota la vuelta y lo dice claro, con qué probar en su lugar.
 - **Cuando el proyecto te queda grande, por ahora.** Quien nunca puso un SaaS en marcha no sabe que necesita login, cobros, copias de seguridad y una forma de volver atrás. Los planos de proyecto muestran lo que necesita una versión de verdad y lo que aún falta, para que una pantalla de login no se llame producto. Las explicaciones se ajustan a lo que ya sabes y desaparecen a medida que aprendes.
@@ -100,18 +98,19 @@ Ejecutas un comando, una vez. A partir de ahí Finite Monkey actúa por contexto
 - Los **comandos con barra** son atajos opcionales. Ningún flujo depende de que recuerdes uno.
 - El **estilo de salida `report`** es opcional y viene apagado. Elígelo con `/output-style report` si quieres cada respuesta con la forma del informe final: primero el resultado, luego lo verificado, lo no verificado y lo pendiente, con HECHO, OPINIÓN e INFERENCIA marcados. Mantiene las instrucciones de programación de Claude Code (`keep-coding-instructions: true`).
 
-## Instalación (prevista)
+## Instalación
 
-Aún no disponible. Cuando salga la v0.1:
+Por el canal `next`, hasta que salga la v0.1:
 
 ```sh
-npx finitemonkey@latest init
+npx finitemonkey@next init
 ```
 
-O como plugin de Claude Code, desde dentro de una sesión:
+O como plugin de Claude Code, desde dentro de una sesión, con el marketplace de la rama `next`:
 
 ```
-/plugin install finitemonkey --marketplace gabrielvieiraf/finitemonkey
+/plugin marketplace add gabrielvieiraf/finitemonkey#next
+/plugin install finitemonkey@finitemonkey-next
 ```
 
 Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalación hace copias de seguridad, fusiona en lugar de sobrescribir y se puede ejecutar dos veces sin romper nada. `doctor` te dice qué está mal y `uninstall` deja todo como estaba.
@@ -122,9 +121,9 @@ Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalaci
 
 Finite Monkey parte de un estudio sobre lo que pasa cuando alguien trabaja con IA por encima de lo que puede juzgar. El ensayo [Efecto Rebote: el usuario como límite invisible de la inteligencia artificial](docs/ricochet/ricochet.es.md) describe dos fronteras que la persona no ve desde adentro: lo que no sabe pedir y lo que no puede evaluar. La sección 10 muestra cómo cada mecanismo de aquí pone una verificación ejecutable en esos dos puntos y qué hipótesis va a probar el banco de pruebas.
 
-## ¿De verdad ayuda? (benchmark, previsto)
+## ¿De verdad ayuda? (benchmark, todavía sin ejecutar)
 
-Todavía no se sabe. El benchmark previsto compara Claude Code solo, Claude Code con Finite Monkey y Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto estarán en este repositorio, incluidas las partes donde no ayudó.
+Todavía no se sabe. El banco de pruebas, las tareas con trampas y los usuarios simulados están construidos, pero el benchmark todavía no se ejecutó. Compara Claude Code solo, Claude Code con Finite Monkey y Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto se publicarán en este repositorio, incluidas las partes donde no ayudó.
 
 <!-- generated:evidence:start -->
 Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.40 sobre el corpus etiquetado en [bench/corpus](bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
@@ -254,7 +253,7 @@ Más preguntas, una por cada búsqueda real, en [docs/faq.es.md](docs/faq.es.md)
 No. Son hooks y comprobaciones que se ejecutan aunque el modelo no se acuerde.
 
 **¿Envía mi código a algún sitio?**
-No. Tu código nunca sale de tu máquina y no hay telemetría. La única llamada de red es `gh` preguntando a GitHub por pull requests, y solo si `gh` tiene sesión iniciada. La lista completa está en [Qué lee, escribe y envía](#qué-lee-escribe-y-envía).
+No. Tu código nunca sale de tu máquina y no hay telemetría. Sin que lo pidas, hace dos tipos de llamada de red: `gh` preguntando a GitHub por pull requests, solo si `gh` tiene sesión iniciada, y el nombre de un paquete enviado al registro de npm o de PyPI cuando un comando va a añadir un paquete que el proyecto no declara. La lista completa está en [Qué lee, escribe y envía](#qué-lee-escribe-y-envía).
 
 **¿Me va a ralentizar?**
 Las tareas pequeñas no tienen ceremonia, solo el control al final. Los hooks rápidos siguen siendo rápidos; la comprobación costosa va en `Stop`. El CI rechaza un pull request que lleve un guard de `PreToolUse` por encima de 50 ms en el p95 o que agregue contexto al inicio de la sesión; los límites están en [budgets.json](budgets.json). Publicaremos los tiempos de punta a punta junto con el benchmark.
@@ -266,32 +265,41 @@ Abre una issue con la plantilla "Blocked something it should not have" (bloqueó
 Primero Claude Code. Los demás después, si el benchmark dice que vale la pena.
 
 **¿Por qué "Finite Monkey"?**
-El teorema de los infinitos monos dice que suficientes monos tecleando durante suficiente tiempo acabarían escribiendo Hamlet. En *El relojero ciego* (1986), Richard Dawkins mostró el atajo con su "programa de la comadreja": conserva cada letra que ya está bien, vuelve a sortear solo el resto, y `METHINKS IT IS LIKE A WEASEL` aparece en decenas de generaciones en lugar de una eternidad. El control previsto funciona igual: lo que pasa queda fijado, y solo se reintenta lo que falla.
+El teorema de los infinitos monos dice que suficientes monos tecleando durante suficiente tiempo acabarían escribiendo Hamlet. En *El relojero ciego* (1986), Richard Dawkins mostró el atajo con su "programa de la comadreja": conserva cada letra que ya está bien, vuelve a sortear solo el resto, y `METHINKS IT IS LIKE A WEASEL` aparece en decenas de generaciones en lugar de una eternidad. El control funciona igual: lo que pasa queda fijado, y solo se reintenta lo que falla.
 
 **¿Quién es el mono?**
 Tú, y algunos días el agente.
 
 ## Hoja de ruta
 
-Ordenada por dependencias, no por fechas. Cada etapa termina en un control de salida medido.
+Ordenada por dependencias, no por fechas. Cada etapa termina en un control de salida medido. "En sombra" significa que observa y registra lo que habría hecho, sin bloquear, hasta que el benchmark lo mida.
 
 | Etapa | Qué | Estado |
 |---|---|---|
-| 0. Base | `init`, `doctor`, `update`, `uninstall`; contratos de salida JSON; tres idiomas; releases automáticas | En curso |
-| 1. Los cuatro daños | Secretos, producción, git, "listo" falso; el control en `Stop` | Prevista |
-| 2. Decidir bien y no perderse | Inventario antes de cambiar, registro de decisiones, frentes de trabajo en paralelo, protocolo completo de merge | Prevista |
-| 3. Generadores | Lint, arquitectura, CI y despliegue para proyectos nuevos y existentes | Prevista |
-| 4. Demostrar valor | Benchmark con ablación; lo que no tenga efecto medido se elimina | Prevista |
+| 0. Base | `init`, `doctor`, `update`, `uninstall`; contratos de salida JSON; tres idiomas; releases automáticas | Hecha (en `next`) |
+| 1. Los cuatro daños | Secretos, producción, git, "listo" falso; el control en `Stop` | Hecha (en `next`) |
+| 2. Decidir bien y no perderse | Inventario antes de cambiar, registro de decisiones, frentes de trabajo en paralelo, protocolo completo de merge | Hecha (en `next`) |
+| 2.5. Reglas que se cumplen, trabajo que termina | Los archivos de instrucciones del proyecto seguidos de verdad, salud del código sin reglas en prosa, tareas que terminan sin vueltas ni ruido | Hecha (en `next`); la mayor parte en sombra hasta medirse |
+| 3. Generadores | Lint, arquitectura, CI y despliegue para proyectos nuevos y existentes | Hecha (en `next`) |
+| 3.5. Garantías que se sostienen | Fallar cerrado donde hay daño posible, política que nunca se afloja en silencio, comandos de test fijados, pruebas que delatan la manipulación, instantáneas que incluyen archivos ignorados | Hecha; partes en sombra hasta medirse |
+| 3.6. Finite Monkey como mod | Un mod junto a los hooks de comando: la franja del control y los paneles en la terminal, Desktop y VS Code, costo por tarea; los hooks de comando conservan cada veredicto y bloqueo | Hecha |
+| 3.7. El conocimiento del proyecto como artefacto de build | Afirmaciones atadas al código que describen, comprobadas al ejecutarlas y marcadas como vencidas cuando ese código cambia | Hecha, en sombra hasta medirse |
+| 3.8. Interfaces que la gente puede usar | Pantallas, formularios, textos, APIs y CLIs comprobados en lo que se renderiza y se ejecuta | Hecha, en sombra hasta medirse |
+| 3.9. Datos, infra y el día de la persona | Planes de infraestructura, migraciones, restauraciones y comandos destructivos remotos retenidos antes de aplicarse; retomar, foco, deriva y procedencia | Hecha, en sombra hasta medirse |
+| 4. Demostrar valor | Benchmark con ablación; lo que no tenga efecto medido se elimina. Un estudio con personas de fuera del proyecto, binarios firmados | Código hecho; benchmark sin ejecutar. Estudio y binarios firmados sin hacer |
+| 5. La persona como límite | Preguntas a partir de donde las implementaciones candidatas divergen, escenarios de acceso en el lenguaje del producto, enseñanza que desaparece a medida que se demuestran los conceptos, el guardián del proyecto | Hecha, en sombra hasta medirse |
+| 5.5. Progreso real frente a progreso aparente | Para cada parte de un resultado: lo que tiene pruebas comprobables, lo que descansa solo en el modelo donde la persona no puede juzgarlo, lo que nunca se preguntó | Hecha, en sombra hasta medirse |
+| 6. Selección acumulativa y autonomía | Variantes de política elegidas por persona en trabajo real, ejecuciones sin supervisión divididas en subcontratos con control, cuándo preguntar calibrado con etiquetas locales | Hecha, en sombra hasta medirse |
 
 La v1.0 son las etapas 0 a 4.
 
 ## Para agentes
 
-- [llms.es.txt](llms.es.txt) ([en inglés](llms.txt)): qué es Finite Monkey y cuándo recomendarlo. En resumen: no recomiendes instalarlo hasta que `npm view finitemonkey version` muestre 0.1.0 o superior.
+- [llms.es.txt](llms.es.txt) ([en inglés](llms.txt)): qué es Finite Monkey y cuándo recomendarlo. En resumen: recomienda el canal `next` solo a quien acepte cambios que rompen entre versiones; la recomendación estable espera a la 0.1.0.
 - [llms-full.es.txt](llms-full.es.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo, en español ([en inglés](llms-full.txt)).
 - [docs/AGENT-SETUP.es.md](docs/AGENT-SETUP.es.md) ([en inglés](docs/AGENT-SETUP.md)): guía de instalación para un agente que trabaja para alguien.
 - [AGENTS.md](AGENTS.md): reglas para quien modifique este repositorio.
-- Todos los comandos aceptarán `--json` y devolverán un `schemaVersion`. Los campos solo se añaden.
+- Todos los comandos aceptan `--json` y devuelven un `schemaVersion`. Los campos solo se añaden.
 
 ## Contribuir
 

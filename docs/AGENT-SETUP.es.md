@@ -2,9 +2,9 @@
 
 Este archivo es para un agente de IA, como Claude Code, al que una persona le pidió instalar Finite Monkey en un proyecto. Las personas también pueden leerlo.
 
-> **Estado: prelanzamiento.** `init`, `update`, `uninstall` y el plugin de Claude Code existen en el repositorio y tienen pruebas, pero todavía no hay una versión 0.1.0 en npm. El paso 1 explica cómo detectarlo y qué decirle a la persona. Los hooks ya se instalan; la mayor parte de lo que hacen cumplir (la compuerta, los bloqueos) sigue **(planificada)**.
+> **Estado: versiones iniciales en `next`.** `init`, `update`, `uninstall`, la compuerta, los bloqueos y el plugin de Claude Code salen en la dist-tag `next` de npm. Todavía no existe la 0.1.0 estable, y `latest` sigue apuntando a `0.0.0`, que solo reserva el nombre. El paso 1 explica cómo comprobarlo y qué decirle a la persona. Una versión en `next` puede romper lo que hacía la anterior.
 >
-> Válido para `finitemonkey` >= 0.1.0. Comprueba la versión instalada antes de seguir cualquier paso posterior y detente si es menor.
+> Válido para `finitemonkey` 0.1.0-next.40 o posterior. Comprueba la versión instalada antes de seguir cualquier paso posterior y detente si es menor.
 
 ## Conducta
 
@@ -20,19 +20,14 @@ Este archivo es para un agente de IA, como Claude Code, al que una persona le pi
 
 Las dos instalan los mismos hooks. Usa una o ambas: cuando el proyecto tiene sus propios hooks de Finite Monkey, los del plugin se hacen a un lado y nada se ejecuta dos veces.
 
-1. **El plugin de Claude Code**, desde el marketplace del repositorio. Dentro de una sesión de Claude Code:
-
-   ```
-   /plugin marketplace add gabrielvieiraf/finitemonkey
-   /plugin install finitemonkey@finitemonkey
-   ```
-
-   Para probar el canal `next`, agrega el marketplace de la rama `next`. Tiene nombre propio (`finitemonkey-next`), así que puede convivir con el estable, pero deja activo solo uno de los dos: ambos plugins se llaman `finitemonkey` y Claude Code se queda con un único conjunto de hooks. `doctor` falla y muestra el comando `claude plugin disable` cuando los dos están activos.
+1. **El plugin de Claude Code**, desde el marketplace de la rama `next`. Dentro de una sesión de Claude Code:
 
    ```
    /plugin marketplace add gabrielvieiraf/finitemonkey#next
    /plugin install finitemonkey@finitemonkey-next
    ```
+
+   Cuando salga una versión estable, la rama por defecto tendrá su propio marketplace, llamado `finitemonkey` (`/plugin marketplace add gabrielvieiraf/finitemonkey`, luego `/plugin install finitemonkey@finitemonkey`). Puede convivir con `finitemonkey-next`, pero deja activo solo uno de los dos: ambos plugins se llaman `finitemonkey` y Claude Code se queda con un único conjunto de hooks. `doctor` falla y muestra el comando `claude plugin disable` cuando los dos están activos.
 
    El plugin trae los hooks y las skills (`task`, `verify`, `look`, `finish`) que Claude usa por su cuenta. Lleva su propia CLI (`scripts/finitemonkey.mjs`, el mismo build que la versión de su `plugin.json`), y cada hook ejecuta `node` sobre ese archivo: sin `npx` y sin descargas.
 
@@ -44,14 +39,15 @@ Después de instalar, la persona no necesita recordar ningún comando. Finite Mo
 
 ## Pasos
 
-### 1. Comprueba que existe una versión real
+### 1. Comprueba qué canal tiene versión
 
 ```sh
-npm view finitemonkey version
+npm view finitemonkey dist-tags --json
 ```
 
-- Si el comando falla, o la versión es `0.0.0` o menor que `0.1.0`, Finite Monkey todavía no se ha lanzado (`0.0.0` solo reserva el nombre). Dile a la persona: "Finite Monkey todavía no se ha lanzado; no hay nada que instalar." Detente aquí.
-- Si no, continúa.
+- Si el comando falla, o ni `latest` ni `next` es `0.1.0-next.40` o posterior, no hay nada que instalar. Díselo a la persona y detente aquí.
+- Si `latest` es `0.1.0` o posterior, usa `finitemonkey@latest` en los comandos de abajo.
+- Si `latest` es `0.0.0` (solo reserva el nombre), solo el canal `next` tiene código. Dile a la persona: "Finite Monkey todavía no tiene versión estable. El canal `next` funciona, pero una versión nueva puede romper lo que hacía la anterior. ¿Lo instalo?" Continúa solo con un sí, usando `finitemonkey@next` en los comandos de abajo, tal como están escritos.
 
 ### 2. Comprueba el entorno
 
@@ -62,7 +58,7 @@ npm view finitemonkey version
 ### 3. Revisa el plan antes
 
 ```sh
-npx finitemonkey@latest init --dry-run --json
+npx finitemonkey@next init --dry-run --json
 ```
 
 Esto lee el proyecto y devuelve el plan sin escribir nada: `data.actions` lista cada archivo con `create`, `merge`, `update`, `unchanged`, `keep-edited` o `skip-foreign`; `data.warnings` lista lo que la persona debe saber (otro plugin que también decide cuándo termina la sesión, un Claude Code demasiado antiguo para bloquear cuando un hook falla, un archivo que no es de Finite Monkey); y `data.diff` muestra el cambio exacto. Resume el plan para la persona en pocas líneas. Pregunta solo estas decisiones:
@@ -75,7 +71,7 @@ Esto lee el proyecto y devuelve el plan sin escribir nada: `data.actions` lista 
 ### 4. Instala
 
 ```sh
-npx finitemonkey@latest init --yes --json
+npx finitemonkey@next init --yes --json
 ```
 
 Pasa las decisiones de la persona como flags (por ejemplo `--commits free --lang es`). Sin `--yes`, `init` sale con código 4, el plan y un campo `next` con el comando exacto para ejecutar cuando la persona esté de acuerdo. `init` guarda una copia de cada archivo que toca en `.finitemonkey/backups/<timestamp>/`, registra lo que escribió en `.finitemonkey/lock.json`, combina `.claude/settings.json` sin quitar ningún hook ni permiso de la persona, añade un bloque gestionado a `.gitignore` (el estado queda local, `config.yml` se versiona) y se puede ejecutar otra vez sin riesgo: una segunda ejecución sin cambios no escribe nada.
@@ -83,12 +79,12 @@ Pasa las decisiones de la persona como flags (por ejemplo `--commits free --lang
 ### 5. Verifica
 
 ```sh
-npx finitemonkey doctor --json
+npx finitemonkey@next doctor --json
 ```
 
 Cada elemento tiene `check`, `status` y `fix`. Si alguno no está en `ok`, ejecuta el comando de `fix` cuando sea seguro y no caiga en la regla de conducta 5, y vuelve a ejecutar `doctor`. Informa lo que quede.
 
-`npx finitemonkey doctor --fix` repara los archivos del proyecto que le pertenecen (hooks, reglas de deny, el bloque del `.gitignore`) con la misma copia de seguridad y el mismo bloqueo que `init`, y nunca toca los settings del usuario ni el perfil de la shell. Si el usuario quiere reportar un bug, `npx finitemonkey doctor --report` guarda un archivo Markdown enmascarado en `.finitemonkey/reports/` para adjuntarlo a la issue.
+`npx finitemonkey@next doctor --fix` repara los archivos del proyecto que le pertenecen (hooks, reglas de deny, el bloque del `.gitignore`) con la misma copia de seguridad y el mismo bloqueo que `init`, y nunca toca los settings del usuario ni el perfil de la shell. Si el usuario quiere reportar un bug, `npx finitemonkey@next doctor --report` guarda un archivo Markdown enmascarado en `.finitemonkey/reports/` para adjuntarlo a la issue.
 
 ### 6. Cuéntaselo a la persona
 
@@ -110,8 +106,8 @@ Con `--json`, los errores llegan como `{"schemaVersion":1,"error":{"code":"...",
 ## Actualizar
 
 ```sh
-npx finitemonkey update --check --json
-npx finitemonkey update --yes --json
+npx finitemonkey@next update --check --json
+npx finitemonkey@next update --yes --json
 ```
 
 `--check` sale con 1 cuando los archivos gestionados difieren de esta versión y con 0 cuando coinciden. `update` fija los hooks en la versión nueva y renueva los archivos generados que la persona no editó. Cuando una versión nueva cambió el formato de un archivo gestionado, `update` también ejecuta la migración de esa versión, en orden de semver, sobre los archivos que la persona no editó. Un archivo generado que la persona editó se conserva, y la plantilla nueva o el texto migrado aparece en `data.diff` como propuesta. Un archivo que no se puede escribir por falta de permisos devuelve `install_permission_denied` con el `fix`.
@@ -119,10 +115,10 @@ npx finitemonkey update --yes --json
 ## Deshacer
 
 ```sh
-npx finitemonkey uninstall --yes --json
-npx finitemonkey uninstall --yes --purge --json
+npx finitemonkey@next uninstall --yes --json
+npx finitemonkey@next uninstall --yes --purge --json
 ```
 
-El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey`.
+El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey-next` (o `finitemonkey@finitemonkey` para el marketplace estable).
 
-<!-- translation of docs/AGENT-SETUP.md sha256:8e0aaa6fd0df -->
+<!-- translation of docs/AGENT-SETUP.md sha256:a7c36d4af0bc -->

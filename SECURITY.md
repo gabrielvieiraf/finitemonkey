@@ -12,17 +12,17 @@ Include what you can: the affected version, your platform, the steps to reproduc
 
 ## Supported versions
 
-Finite Monkey is pre-release. No version is supported yet. Version `0.0.0` on npm is a name reservation and contains no code. Once releases start, security fixes go to the latest stable version.
+Code ships under the npm `next` dist-tag (`npx finitemonkey@next`). No stable version exists yet, so security fixes go to the latest version on `next`; older `next` versions get no fixes. Version `0.0.0`, which `latest` still points to, is a name reservation and contains no code. Once a stable version exists, security fixes go to the latest stable version.
 
 ## Threat model
 
 [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) lists, per component, what Finite Monkey prevents, detects, records or only makes harder, and what it does not cover, with the code and the test behind each line.
 
-## Design commitments (planned)
+## Design commitments
 
-These describe how Finite Monkey is being built. Each one will be backed by a test before it is claimed as true for a release.
+These describe how Finite Monkey is built. Each one is backed by tests in `test/`.
 
-- Nothing leaves the user's machine by default. No telemetry.
+- No telemetry, and your code never leaves the machine. The network calls made without a command from you (pull request state through `gh`, and a package name sent to the npm or PyPI registry before a new package is added) are listed in the table at the end of this file, and a test fails when the code reaches a program or host the table does not name.
 - Secrets are never printed in output, logs, reports or pull requests; they are referenced by file and line.
 - Guards that prevent damage fail closed: if the gate cannot run, the stop is held once with the reason and the fix, the next stop goes through recorded as not run, and `pr open` and `ci gate` refuse until a real run passes. Advisory guards fail open. The table below lists each one.
 - Packages are published only from CI, with npm provenance.
