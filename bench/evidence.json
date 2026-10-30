@@ -1,6 +1,6 @@
 {
   "schema": "finitemonkey/evidence@1",
-  "version": "0.1.0-next.40",
+  "version": "0.1.0-next.41",
   "budget": {
     "fprWarn": 0.05,
     "fprFail": 0.15,
@@ -17,8 +17,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.12,
-      "p95Ms": 0.41,
+      "p50Ms": 0.06,
+      "p95Ms": 0.16,
       "byOrigin": {
         "synthetic": 113,
         "session": 0
@@ -35,7 +35,7 @@
       "fpr": 0,
       "fnr": 0,
       "p50Ms": 0.08,
-      "p95Ms": 0.33,
+      "p95Ms": 0.19,
       "byOrigin": {
         "synthetic": 104,
         "session": 0
@@ -44,22 +44,20 @@
     },
     {
       "guard": "git",
-      "n": 114,
-      "positives": 55,
-      "negatives": 59,
-      "falsePositives": 1,
+      "n": 120,
+      "positives": 58,
+      "negatives": 62,
+      "falsePositives": 0,
       "falseNegatives": 0,
-      "fpr": 0.0169,
+      "fpr": 0,
       "fnr": 0,
-      "p50Ms": 16.3,
-      "p95Ms": 95.77,
+      "p50Ms": 9.79,
+      "p95Ms": 53.86,
       "byOrigin": {
-        "synthetic": 114,
+        "synthetic": 120,
         "session": 0
       },
-      "wrong": [
-        "git-110"
-      ]
+      "wrong": []
     },
     {
       "guard": "rules",
@@ -70,8 +68,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.46,
-      "p95Ms": 2.48,
+      "p50Ms": 0.13,
+      "p95Ms": 1,
       "byOrigin": {
         "synthetic": 105,
         "session": 0

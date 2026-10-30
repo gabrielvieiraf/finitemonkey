@@ -128,14 +128,14 @@ The second essay, [The illusion of the second brain](docs/second-brain/second-br
 Not known yet. The harness, the tasks with traps and the simulated users are built, but the benchmark has not been run. It compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will be published in this repo, including the parts where it didn't help.
 
 <!-- generated:evidence:start -->
-Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.40 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
+Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.41 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
 
 | Guard | Should block | Should allow | False positives | False negatives | p95 (ms) |
 |---|---|---|---|---|---|
-| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.4 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.3 |
-| `git` | 55 | 59 | 1/59 (1.7%) | 0/55 (0.0%) | 95.8 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 2.5 |
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.2 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 53.9 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.0 |
 
 Cost against plain Claude Code on the same tasks: not measured yet.
 <!-- generated:evidence:end -->
