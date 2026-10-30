@@ -119,7 +119,7 @@ jobs:
 
   release:
     needs: [check, budgets]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
+    if: github.repository == 'gabrielvieiraf/finitemonkey' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: npm
