@@ -2732,5 +2732,11 @@
   "command.judge_accept.summary": "Mark horizon help as taken; help with no criterion counts against the blind band index",
   "command.judge_dismiss.summary": "Dismiss horizon help; it is counted and not shown again in the same task",
   "judge.horizon": "{help}: {kind} \"{text}\" (criterion: {criterion} {answer}) {state}",
-  "judge.horizon.domain": "{domain}: {accepted} taken, {without} with no criterion (index {index}), {dismissed} dismissed"
+  "judge.horizon.domain": "{domain}: {accepted} taken, {without} with no criterion (index {index}), {dismissed} dismissed",
+  "command.judge_probe.summary": "Ask one check question keyed to the source before a decision uses a claim on a concept with no record or beyond",
+  "command.judge_skip.summary": "Skip a check question; a skip counts as zero",
+  "judge.probe.unsupported": "{probe}: which of these claims does {source} not support?",
+  "judge.probe.predict": "{probe}: before looking, which number do you expect {source} to give?",
+  "judge.probe.why": "asked because decision {decision} uses claim {claim}",
+  "judge.probe.skipped": "{claim}: skipped, counted as zero"
 }

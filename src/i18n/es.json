@@ -2732,5 +2732,11 @@
   "command.judge_accept.summary": "Marcar ayuda de horizonte como aceptada; la ayuda sin criterio cuenta contra el índice de franja ciega",
   "command.judge_dismiss.summary": "Descartar ayuda de horizonte; se cuenta y no vuelve en la misma tarea",
   "judge.horizon": "{help}: {kind} \"{text}\" (criterio: {criterion} {answer}) {state}",
-  "judge.horizon.domain": "{domain}: {accepted} aceptadas, {without} sin criterio (índice {index}), {dismissed} descartadas"
+  "judge.horizon.domain": "{domain}: {accepted} aceptadas, {without} sin criterio (índice {index}), {dismissed} descartadas",
+  "command.judge_probe.summary": "Hacer una pregunta de verificación con clave en la fuente antes de que una decisión use una afirmación de un concepto sin registro o más allá",
+  "command.judge_skip.summary": "Saltar una pregunta de verificación; saltar cuenta cero",
+  "judge.probe.unsupported": "{probe}: ¿cuál de estas afirmaciones no sostiene {source}?",
+  "judge.probe.predict": "{probe}: antes de mirar, ¿qué número esperas que dé {source}?",
+  "judge.probe.why": "preguntado porque la decisión {decision} usa la afirmación {claim}",
+  "judge.probe.skipped": "{claim}: saltada, cuenta cero"
 }

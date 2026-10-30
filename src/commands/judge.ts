@@ -41,9 +41,11 @@ export const VERB_FEATURES: Readonly<Record<string, string>> = {
   horizon: "horizon-criterion",
   accept: "horizon-criterion",
   dismiss: "horizon-criterion",
+  probe: "source-probes",
+  skip: "source-probes",
 };
 
-export const PERSON_VERBS: readonly string[] = ["contest", "forget", "answer", "check"];
+export const PERSON_VERBS: readonly string[] = ["contest", "forget", "answer", "check", "skip"];
 
 export const switchedOff = (ctx: Ctx, root: string, record: JsonObject): CommandResult | undefined => {
   const verb = typeof record["verb"] === "string" ? record["verb"] : "";

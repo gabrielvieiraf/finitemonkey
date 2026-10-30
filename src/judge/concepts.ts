@@ -1,4 +1,4 @@
-import { countRule, evidenceOf, isContested, weightOf } from "./band.js";
+import { countRule, effective, evidenceOf, isContested, weightOf } from "./band.js";
 import { activeConcepts } from "./claims.js";
 import { contentHash } from "./span.js";
 import type { Band, ContestEntry, DomainEntry, JudgeEntry } from "./types.js";
@@ -68,7 +68,7 @@ export const domainView = (domain: string, entries: readonly JudgeEntry[]): Doma
   return {
     domain,
     ...(parent === undefined ? {} : { parent }),
-    band: countRule(counted.map(weightOf)),
+    band: countRule(effective(counted).map(weightOf)),
     concepts: concepts.length,
     evidence: counted.length,
   };

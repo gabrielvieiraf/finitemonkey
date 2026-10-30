@@ -46,6 +46,8 @@ export const VERBS = [
   "horizon",
   "accept",
   "dismiss",
+  "probe",
+  "skip",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
@@ -78,6 +80,7 @@ export interface ProbeView {
   readonly prompt: string;
   readonly options: readonly string[];
   readonly answered: boolean;
+  readonly why?: { readonly decision: string; readonly claim: string };
   readonly correct?: boolean;
   readonly span?: string;
 }

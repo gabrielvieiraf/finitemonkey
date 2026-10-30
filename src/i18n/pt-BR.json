@@ -2732,5 +2732,11 @@
   "command.judge_accept.summary": "Marcar ajuda de horizonte como aceita; ajuda sem critério conta contra o índice de faixa cega",
   "command.judge_dismiss.summary": "Dispensar ajuda de horizonte; ela é contada e não volta na mesma tarefa",
   "judge.horizon": "{help}: {kind} \"{text}\" (critério: {criterion} {answer}) {state}",
-  "judge.horizon.domain": "{domain}: {accepted} aceitas, {without} sem critério (índice {index}), {dismissed} dispensadas"
+  "judge.horizon.domain": "{domain}: {accepted} aceitas, {without} sem critério (índice {index}), {dismissed} dispensadas",
+  "command.judge_probe.summary": "Fazer uma pergunta de conferência com gabarito na fonte antes de uma decisão usar afirmação de conceito sem registro ou além",
+  "command.judge_skip.summary": "Pular uma pergunta de conferência; pular conta zero",
+  "judge.probe.unsupported": "{probe}: qual destas afirmações {source} não sustenta?",
+  "judge.probe.predict": "{probe}: antes de olhar, que número você espera que {source} traga?",
+  "judge.probe.why": "perguntado porque a decisão {decision} usa a afirmação {claim}",
+  "judge.probe.skipped": "{claim}: pulada, conta zero"
 }

@@ -81,7 +81,8 @@ export const twoSpans = (
 export const probesIn = (entries: readonly JudgeEntry[]): readonly ProbeEntry[] =>
   entries.filter((entry): entry is ProbeEntry => entry.type === "probe");
 
-export const answerOf = (probe: string, entries: readonly JudgeEntry[]): "right" | "wrong" | undefined => {
+export const answerOf = (probe: string, entries: readonly JudgeEntry[]): "right" | "wrong" | "skipped" | undefined => {
+  if (entries.some((entry) => entry.type === "signal" && entry.ref === `skip:probe:${probe}`)) return "skipped";
   if (entries.some((entry) => entry.type === "evidence" && entry.proof === "probe" && entry.ref === `probe:${probe}`))
     return "right";
   return entries.some((entry) => entry.type === "signal" && entry.ref === `probe:${probe}`) ? "wrong" : undefined;
