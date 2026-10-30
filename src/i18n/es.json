@@ -2620,5 +2620,8 @@
   "command.look_reject.summary": "Rechaza la pantalla actual de una ruta con un motivo (solo la persona)",
   "look.reject.done": "Pantalla {route} rechazada; el motivo queda como regla permanente {id}.",
   "command.look_sheet.summary": "Dibuja una hoja técnica medida de una ruta o componente a partir de la página renderizada",
-  "look.sheet.done": "Hoja de {route}: {variables, plural, one {# variable} other {# variables}}, {changes, plural, one {# dimensión cambió} other {# dimensiones cambiaron}} contra la hoja aprobada."
+  "look.sheet.done": "Hoja de {route}: {variables, plural, one {# variable} other {# variables}}, {changes, plural, one {# dimensión cambió} other {# dimensiones cambiaron}} contra la hoja aprobada.",
+  "command.look_perf_accept.summary": "Acepta una regresión de rendimiento medida de una ruta para el árbol actual (solo la persona)",
+  "look.perf.unknown": "Todavía no hay medición de rendimiento para {route}. Ejecuta look antes.",
+  "look.perf.accepted": "Regresión en {route} aceptada para el árbol {tree}; sus números pasan a ser la nueva base."
 }
