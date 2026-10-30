@@ -66,6 +66,7 @@ export interface SvgProps {
   readonly alt: string;
   readonly width?: number;
   readonly height?: number;
+  readonly isInteractive?: boolean;
   readonly key?: string;
 }
 
@@ -118,6 +119,9 @@ export interface ModApi {
   };
   readonly clock: {
     readonly after: (ms: number, fn: () => void | Promise<void>) => Timer;
+  };
+  readonly config: {
+    readonly list: () => Promise<readonly { readonly key: string; readonly value: unknown }[]>;
   };
   readonly command: {
     readonly register: (spec: CommandSpec) => Promise<unknown>;

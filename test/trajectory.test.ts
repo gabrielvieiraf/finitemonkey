@@ -4,15 +4,9 @@ import { describe, it } from "node:test";
 import type { ConceptId } from "../src/conceitos/concepts.js";
 import { type ConceptEvent, type ConceptEventKind, type Origin, WEIGHTS } from "../src/conceitos/evidence.js";
 import { type HelpMark, trajectoryOf } from "../src/conceitos/trajectory.js";
-import {
-  blockLines,
-  ENGLISH_TABLE,
-  rasterCells,
-  rasterOf,
-  svgOf,
-  tableLines,
-  ZONE_LABEL,
-} from "../src/conceitos/trajectory-chart.js";
+import { chartLines } from "../src/conceitos/trajectory-ansi.js";
+import { BANDS, GROUP_LABEL } from "../src/conceitos/trajectory-bands.js";
+import { ENGLISH_TABLE, rasterCells, rasterOf, svgOf, tableLines } from "../src/conceitos/trajectory-chart.js";
 import { wordingProblems } from "../src/conceitos/wording.js";
 
 const DAY = 86_400_000;
@@ -70,26 +64,19 @@ describe("trajectory", () => {
     );
   });
 
-  it("draws zones, gaps, the work line and both markers in Svg, the terminal chart, the table and Raster cells", () => {
+  it("draws strata, gaps, the work line and both markers in Svg, the terminal block, the table and Raster cells", () => {
     const svg = svgOf(backend);
-    for (const part of [
-      'class="zone-independent"',
-      'class="zone-proximal"',
-      'class="gap"',
-      'class="work"',
-      'class="mark-ricochet"',
-      'class="mark-held"',
-    ])
+    for (const part of ["band band-alone", "band band-proximal", "gap", "work", "mark-ricochet", "mark-held"])
       assert.ok(svg.includes(part), part);
-    const blocks = blockLines(backend).join("\n");
-    for (const glyph of ["↯", "●", "█", "·", "━"]) assert.ok(blocks.includes(glyph), glyph);
+    const blocks = chartLines([backend], { depth: "none", theme: "dark" }).join("\n");
+    for (const glyph of ["X", "O", "#", "*", "\\"]) assert.ok(blocks.includes(glyph), glyph);
     const table = tableLines([backend]).join("\n");
-    assert.ok(table.includes("↯") && table.includes("●") && table.includes("·"));
-    const raster = rasterOf(backend, 48, 8);
+    assert.ok(table.includes("X") && table.includes("O") && table.includes("\\"));
+    const raster = rasterOf(backend, 72, { theme: "dark" });
     const bytes = decode(raster.cells);
-    assert.equal(bytes.length, 48 * 8 * 12);
-    const glyphs = rasterCells(backend, 48, 8).map((cell) => cell.glyph);
-    assert.ok(glyphs.includes("↯") && glyphs.includes("●") && glyphs.includes("━"));
+    assert.equal(bytes.length, raster.columns * raster.rows * 12);
+    const glyphs = rasterCells(backend, 72, { theme: "dark" }).map((cell) => cell.glyph);
+    assert.ok(glyphs.includes("✕") && glyphs.includes("◉") && glyphs.includes("●"));
     assert.equal(bytes[0], (glyphs[0]?.codePointAt(0) ?? 0) & 255);
   });
 
@@ -118,10 +105,11 @@ describe("trajectory", () => {
 
   it("no chart string addresses the person's ability", () => {
     const texts = [
-      ...Object.values(ZONE_LABEL),
+      ...Object.values(BANDS).map((band) => band.label),
+      ...Object.values(GROUP_LABEL),
       ENGLISH_TABLE.legend,
       ENGLISH_TABLE.noData(2),
-      ...blockLines(backend),
+      ...chartLines([backend], { depth: "none", theme: "dark" }),
       ...svgOf(backend).split(/<[^>]+>/),
     ];
     for (const text of texts) assert.deepEqual(wordingProblems(text), [], text);
