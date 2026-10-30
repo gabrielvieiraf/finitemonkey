@@ -30,6 +30,7 @@
       }
     ],
     "@semantic-release/npm",
+    "./scripts/release-evidence.mjs",
     [
       "@semantic-release/git",
       {
