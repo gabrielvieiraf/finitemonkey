@@ -221,6 +221,31 @@ export const judgeSkipCommand = judgeCommand({
   build: (_ctx, _values, positionals) => ({ verb: "skip", probe: positionals[0] }),
 });
 
+export const judgeTriageCommand = judgeCommand({
+  path: ["judge", "triage"],
+  summaryKey: "command.judge_triage.summary",
+  usage: "finitemonkey judge triage <file>",
+  maxPositionals: 1,
+  build: (ctx, values, positionals, root) => {
+    const record = judgeClassifyCommandBuild(ctx, values, positionals, root);
+    return record === undefined ? undefined : { verb: "triage", file: record["file"], text: record["text"] };
+  },
+});
+
+export const judgeReplyCommand = judgeCommand({
+  path: ["judge", "reply"],
+  summaryKey: "command.judge_reply.summary",
+  usage: "finitemonkey judge reply <claim> --verdict holds|fails",
+  options: { verdict: { type: "string" } },
+  maxPositionals: 1,
+  person: true,
+  build: (_ctx, values, positionals) => ({
+    verb: "reply",
+    claim: positionals[0],
+    verdict: stringOption(values, "verdict"),
+  }),
+});
+
 export const JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -249,4 +274,6 @@ export const JUDGE_COMMANDS = [
   settleCommand("dismiss"),
   judgeProbeCommand,
   judgeSkipCommand,
+  judgeTriageCommand,
+  judgeReplyCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -2738,7 +2738,12 @@
     "judge.probe.unsupported": "machine",
     "judge.probe.predict": "machine",
     "judge.probe.why": "machine",
-    "judge.probe.skipped": "machine"
+    "judge.probe.skipped": "machine",
+    "command.judge_triage.summary": "machine",
+    "command.judge_reply.summary": "machine",
+    "judge.triage.head": "machine",
+    "judge.triage.row": "machine",
+    "judge.triage.none": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5479,6 +5484,11 @@
     "judge.probe.unsupported": "machine",
     "judge.probe.predict": "machine",
     "judge.probe.why": "machine",
-    "judge.probe.skipped": "machine"
+    "judge.probe.skipped": "machine",
+    "command.judge_triage.summary": "machine",
+    "command.judge_reply.summary": "machine",
+    "judge.triage.head": "machine",
+    "judge.triage.row": "machine",
+    "judge.triage.none": "machine"
   }
 }

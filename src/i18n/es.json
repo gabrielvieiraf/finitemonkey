@@ -2738,5 +2738,10 @@
   "judge.probe.unsupported": "{probe}: ¿cuál de estas afirmaciones no sostiene {source}?",
   "judge.probe.predict": "{probe}: antes de mirar, ¿qué número esperas que dé {source}?",
   "judge.probe.why": "preguntado porque la decisión {decision} usa la afirmación {claim}",
-  "judge.probe.skipped": "{claim}: saltada, cuenta cero"
+  "judge.probe.skipped": "{claim}: saltada, cuenta cero",
+  "command.judge_triage.summary": "Listar las afirmaciones de un documento que dependen solo del modelo en conceptos sin registro o más allá",
+  "command.judge_reply.summary": "Registrar la respuesta de quien revisó desde fuera una afirmación entregada",
+  "judge.triage.head": "Este documento ahora tiene {count, plural, one {# afirmación} other {# afirmaciones}} que dependen solo del modelo, en conceptos sin registro o más allá. Antes de usarlo, para cada una: verificarla contra su fuente (finitemonkey judge verify), cortarla (judge cut) o entregarla con lo que falta (judge handoff).",
+  "judge.triage.row": "- {claim} ({band}): {text}",
+  "judge.triage.none": "ninguna afirmación de este documento necesita triaje"
 }

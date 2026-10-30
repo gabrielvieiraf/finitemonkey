@@ -2738,5 +2738,10 @@
   "judge.probe.unsupported": "{probe}: which of these claims does {source} not support?",
   "judge.probe.predict": "{probe}: before looking, which number do you expect {source} to give?",
   "judge.probe.why": "asked because decision {decision} uses claim {claim}",
-  "judge.probe.skipped": "{claim}: skipped, counted as zero"
+  "judge.probe.skipped": "{claim}: skipped, counted as zero",
+  "command.judge_triage.summary": "List the claims of a document that rest only on the model on concepts with no record or beyond",
+  "command.judge_reply.summary": "Record the outside reviewer's reply to a handed-off claim",
+  "judge.triage.head": "This document now carries {count, plural, one {# claim} other {# claims}} resting only on the model, on concepts with no record or beyond. Before it is used, for each one: verify it against its source (finitemonkey judge verify), cut it (judge cut), or hand it off with what is missing (judge handoff).",
+  "judge.triage.row": "- {claim} ({band}): {text}",
+  "judge.triage.none": "no claim of this document needs triage"
 }

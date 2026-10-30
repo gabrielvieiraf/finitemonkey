@@ -75,6 +75,8 @@ export type JudgeRequest =
       readonly task?: string;
     }
   | { readonly verb: "skip"; readonly probe: string }
+  | { readonly verb: "triage"; readonly file: string; readonly text: string }
+  | { readonly verb: "reply"; readonly claim: string; readonly verdict: "holds" | "fails" }
   | { readonly verb: "accept"; readonly help: string }
   | { readonly verb: "dismiss"; readonly help: string }
   | { readonly verb: "anchor"; readonly claim: string; readonly run: string; readonly inputs: readonly string[] };
@@ -195,6 +197,16 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
     const [claim, decision] = [text(record, "claim"), text(record, "decision")];
     if (claim === undefined || decision === undefined) return undefined;
     return { verb: "probe", claim, decision, ...optional(record, ["session", "task"]) };
+  },
+  triage: (record) => {
+    const [file, body] = [text(record, "file"), text(record, "text")];
+    return file === undefined || body === undefined ? undefined : { verb: "triage", file, text: body };
+  },
+  reply: (record) => {
+    const claim = text(record, "claim");
+    const verdict = record["verdict"];
+    if (claim === undefined || (verdict !== "holds" && verdict !== "fails")) return undefined;
+    return { verb: "reply", claim, verdict };
   },
   skip: (record) => {
     const probe = text(record, "probe");

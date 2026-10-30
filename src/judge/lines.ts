@@ -80,6 +80,14 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
 ];
 
 const extraLines = (t: Translate, data: JudgeResponse): readonly string[] => [
+  ...(data.triage === undefined
+    ? []
+    : data.triage.length === 0
+      ? [t("judge.triage.none")]
+      : [
+          t("judge.triage.head", { count: data.triage.length }),
+          ...data.triage.map((row) => t("judge.triage.row", { claim: row.claim, band: row.band, text: row.text })),
+        ]),
   ...(data.horizon ?? []).map((help) =>
     t("judge.horizon", {
       help: help.help,

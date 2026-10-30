@@ -85,6 +85,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `focus-card` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `attention` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `drift-sensor` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `triage` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 <!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->

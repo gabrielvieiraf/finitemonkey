@@ -32,6 +32,7 @@ import { detectBypass, noteDenied } from "../guards/bypass/ledger.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
+import { TRIAGE_HANDLERS } from "../judge/triage-hook.js";
 import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
 import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
 import { KNOWLEDGE_MAP_HANDLERS } from "../knowledge/who-knows-hook.js";
@@ -255,6 +256,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
+  { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

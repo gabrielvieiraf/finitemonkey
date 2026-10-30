@@ -34,7 +34,9 @@
         "promote",
         "accept",
         "dismiss",
-        "skip"
+        "skip",
+        "triage",
+        "reply"
       ]
     },
     "ok": {
@@ -59,6 +61,9 @@
           "type": "number"
         },
         "modelOnly": {
+          "type": "number"
+        },
+        "handedOff": {
           "type": "number"
         },
         "done": {
@@ -163,6 +168,7 @@
         "source",
         "total",
         "modelOnly",
+        "handedOff",
         "done",
         "rows"
       ]
@@ -182,6 +188,9 @@
             "type": "number"
           },
           "modelOnly": {
+            "type": "number"
+          },
+          "handedOff": {
             "type": "number"
           },
           "done": {
@@ -286,6 +295,7 @@
           "source",
           "total",
           "modelOnly",
+          "handedOff",
           "done",
           "rows"
         ]
@@ -1474,6 +1484,99 @@
         "instructions",
         "data"
       ]
+    },
+    "triage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "number",
+              "check",
+              "source-span",
+              "prose"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "machine-verified",
+              "person-judged",
+              "model-only",
+              "handed-off",
+              "retracted"
+            ]
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "demonstrated",
+              "proximal",
+              "beyond",
+              "no record"
+            ]
+          },
+          "concepts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "concept": {
+                  "type": "string"
+                },
+                "band": {
+                  "type": "string",
+                  "enum": [
+                    "demonstrated",
+                    "proximal",
+                    "beyond",
+                    "no record"
+                  ]
+                },
+                "because": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "concept",
+                "band"
+              ]
+            }
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "verify",
+                "handoff",
+                "judge",
+                "cut"
+              ]
+            }
+          }
+        },
+        "required": [
+          "claim",
+          "text",
+          "kind",
+          "state",
+          "band",
+          "concepts",
+          "actions"
+        ]
+      }
     },
     "horizon": {
       "type": "array",

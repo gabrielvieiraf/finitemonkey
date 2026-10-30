@@ -12,11 +12,13 @@ import { conceptViews, exceptionUses, type JudgeResponse, response, resultView, 
 import { inScope } from "./scope.js";
 import { splitClaims } from "./split.js";
 import { entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
+import { triageRows } from "./triage.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
 import { anchorCompute, personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
 import { addHelp, settleHelp } from "./verbs-horizon.js";
 import { routeProbe, skipProbe } from "./verbs-probe.js";
+import { decisionExists, reply } from "./verbs-triage.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS, notVerified } from "./verify.js";
 
@@ -113,6 +115,7 @@ const verify = (deps: JudgeDeps, claimId: string): JudgeResponse => {
 
 const ask = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "ask" }>): JudgeResponse => {
   const entries = readEntries(deps.runtime, deps.paths);
+  if (!decisionExists(deps, request.decision)) return response("ask", { reason: "no_decision" });
   if (entries.some((entry) => entry.type === "ask" && entry.task === request.task))
     return response("ask", { reason: "one_per_task" });
   const id = entryId("q", request.task, request.decision);
@@ -231,6 +234,10 @@ const runMore = (deps: JudgeDeps, request: MoreRequest): JudgeResponse => {
       return routeProbe(deps, request, deps.distractors);
     case "skip":
       return skipProbe(deps, request);
+    case "triage":
+      return response("triage", { triage: triageRows(readEntries(deps.runtime, deps.paths), request.text) });
+    case "reply":
+      return reply(deps, request);
     case "accept":
     case "dismiss":
       return settleHelp(deps, request, (claim) => verify(deps, claim));
