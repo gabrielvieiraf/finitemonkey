@@ -1,13 +1,15 @@
-import { join } from "node:path";
+import { type AlertBudgetConfig, DEFAULT_ALERT_BUDGET } from "./budget.js";
+import { JUDGE_GUARDS } from "./judge-guards.js";
+import { type AutonomyConfig, type CalibrateConfig, DEFAULT_STAGE6, type EvolveConfig } from "./stage6.js";
+import { UI_GUARDS } from "./ui-guards.js";
 
-import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
-import type { Runtime } from "../core/runtime.js";
-import { configAt, configMap, parseConfigYaml } from "../git/project-config.js";
+export { loadBasePolicy, loadPolicy, policyPath, type PolicyRuntime, userPolicyPath } from "./load.js";
+export { isPolicyError, parsePolicy, parseUserPolicy } from "./parse.js";
+export type { AutonomyConfig, CalibrateConfig, EvolveConfig } from "./stage6.js";
 
 export const POLICY_FILE = ".finitemonkey/policy.yml";
 export const GUARD_MODES = ["off", "shadow", "active"] as const;
 export const LEVELS = ["light", "standard", "strict"] as const;
-export const SEVERITIES = ["low", "medium", "high"] as const;
 export const DEFAULT_PROMOTE_AFTER = 20;
 export const OPTIONAL_GUARDS = [
   "prose",
@@ -58,8 +60,91 @@ export const OPTIONAL_GUARDS = [
   "ds-sync",
   "python-preset",
   "onboard",
+  "gate-hold",
+  "test-pin",
+  "evidence-inputs",
+  "planta",
+  "perfil",
+  "conceitos",
+  "alert-budget",
+  "syntax-check",
+  "early-loops",
+  "reproduce-first",
+  "scope",
+  "front-scope",
+  "behavior-contract",
+  "divergence-ask",
+  "predict-gate",
+  "access-scenarios",
+  "blind-tests",
+  "decision-hold",
+  "assumptions",
+  "reality",
+  "guardian-reuse",
+  "proportionality",
+  "forecast",
+  "evolve",
+  "calibrate",
+  "autonomy",
+  "mod-tighten",
+  "mod-band",
+  "attribution-trailer",
+  "instruction-drift",
+  "knowledge-claims",
+  "claim-checks",
+  "derived-cache",
+  "memory-quarantine",
+  "claim-promotion",
+  "retrieve",
+  "retrieve-deep",
+  "decision-record",
+  "knowledge-map",
+  "remote-destructive",
+  "migrate-check",
+  "infra-plan",
+  "restore-drill",
+  "api-version",
+  "cochange",
+  "test-budget",
+  "red-green",
+  "explain-approval",
+  "premise-check",
+  "focus-card",
+  "attention",
+  "drift-sensor",
+  "pr-provenance",
+  "team-dashboard",
+  "xray",
+  "probes",
+  "trajectory",
+  ...UI_GUARDS,
+  "api-consistency",
+  "api-breaking",
+  "cli-ux",
+  "ui-copy",
+  ...JUDGE_GUARDS,
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
+export const KNOWN_GUARDS: readonly string[] = [...DAMAGE_GUARDS, ...OPTIONAL_GUARDS];
+export const POLICY_KEYS: readonly string[] = [
+  "level",
+  "promoteAfter",
+  "projectLevel",
+  "guards",
+  "experiments",
+  "rules",
+  "learnings",
+  "reminders",
+  "quality",
+  "alertBudget",
+  "evolve",
+  "calibrate",
+  "autonomy",
+  "knowledge",
+  "person",
+  "judge",
+];
+export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "fourth-attempt",
   "claims",
@@ -73,61 +158,97 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "learnings",
   "rules-stop",
   "gate-isolated",
+  "gate-hold",
+  "test-pin",
+  "syntax-check",
+  "early-loops",
+  "reproduce-first",
+  "scope",
+  "front-scope",
+  "behavior-contract",
+  "divergence-ask",
+  "predict-gate",
+  "access-scenarios",
+  "blind-tests",
+  "decision-hold",
+  "assumptions",
+  "reality",
+  "guardian-reuse",
+  "proportionality",
+  "forecast",
+  "evolve",
+  "calibrate",
+  "autonomy",
+  "attribution-trailer",
+  "knowledge-claims",
+  "claim-checks",
+  "claim-promotion",
+  "retrieve-deep",
+  "knowledge-map",
+  "remote-destructive",
+  "migrate-check",
+  "infra-plan",
+  "restore-drill",
+  "api-version",
+  "cochange",
+  "test-budget",
+  "red-green",
+  "explain-approval",
+  "premise-check",
+  "focus-card",
+  "attention",
+  "drift-sensor",
+  "pr-provenance",
+  "team-dashboard",
+  "xray",
+  "probes",
+  ...UI_GUARDS,
+  "api-consistency",
+  "api-breaking",
+  "cli-ux",
+  "ui-copy",
+  ...JUDGE_GUARDS,
 ]);
 
 export type GuardMode = (typeof GUARD_MODES)[number];
 export type Level = (typeof LEVELS)[number];
-export type Severity = (typeof SEVERITIES)[number];
+export type PolicyIssueKind = "unknown_key" | "retired_key" | "unknown_guard" | "invalid_mode" | "unknown_experiment";
+
+export interface PolicyIssue {
+  readonly kind: PolicyIssueKind;
+  readonly file: string;
+  readonly key: string;
+  readonly suggestion?: string;
+}
 
 export interface Policy {
   readonly exists: boolean;
   readonly level: Level;
-  readonly severity: Severity;
   readonly promoteAfter: number;
   readonly guards: Readonly<Record<string, GuardMode>>;
+  readonly userGuards: Readonly<Record<string, GuardMode>>;
   readonly experiments: Readonly<Record<string, "random">>;
+  readonly alertBudget: AlertBudgetConfig;
+  readonly alertBudgetSet: readonly string[];
+  readonly evolved: Readonly<Record<string, GuardMode>>;
+  readonly evolve: EvolveConfig;
+  readonly calibrate: CalibrateConfig;
+  readonly autonomy: AutonomyConfig;
+  readonly issues: readonly PolicyIssue[];
 }
 
 export const DEFAULT_POLICY: Policy = {
   exists: false,
   level: "standard",
-  severity: "medium",
   promoteAfter: DEFAULT_PROMOTE_AFTER,
   guards: {},
+  userGuards: {},
   experiments: {},
+  alertBudget: DEFAULT_ALERT_BUDGET,
+  alertBudgetSet: [],
+  evolved: {},
+  ...DEFAULT_STAGE6,
+  issues: [],
 };
 
-const pick = <T extends string>(options: readonly T[], value: unknown, fallback: T): T =>
-  options.find((option) => option === value) ?? fallback;
-
-export const parsePolicy = (text: string): Policy => {
-  const tree = parseConfigYaml(text);
-  const raw = configAt(tree, "promoteAfter");
-  const promoteAfter = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
-  const guards = Object.fromEntries(
-    Object.entries(configMap(tree, "guards")).flatMap(([id, mode]): [string, GuardMode][] => {
-      const known = GUARD_MODES.find((option) => option === mode);
-      return known === undefined ? [] : [[id, known]];
-    }),
-  );
-  const experiments = Object.fromEntries(
-    Object.entries(configMap(tree, "experiments")).flatMap(([id, mode]): [string, "random"][] =>
-      mode === "random" ? [[id, "random"]] : [],
-    ),
-  );
-  return {
-    exists: true,
-    level: pick(LEVELS, configAt(tree, "level"), DEFAULT_POLICY.level),
-    severity: pick(SEVERITIES, configAt(tree, "severity"), DEFAULT_POLICY.severity),
-    promoteAfter: Number.isInteger(promoteAfter) && promoteAfter > 0 ? promoteAfter : DEFAULT_PROMOTE_AFTER,
-    guards,
-    experiments,
-  };
-};
-
-export const policyPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(join(root, POLICY_FILE));
-
-export const loadPolicy = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): Policy => {
-  const text = runtime.readText(policyPath(root));
-  return text.ok ? parsePolicy(text.value) : DEFAULT_POLICY;
-};
+export const USER_POLICY_FILE = "~/.finitemonkey/policy.yml";

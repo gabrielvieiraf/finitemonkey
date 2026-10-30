@@ -1,3 +1,4 @@
+import type { HttpRequest, Send } from "../scenarios/run.js";
 import { portOpen, type RunningApp, startApp, stopApp, waitForPort } from "./node-process.js";
 import type { AppProbeRequest, AppProbeResult } from "./types.js";
 
@@ -71,3 +72,22 @@ export const fetchHeaders = async (url: string, timeoutMs: number): Promise<Head
     return undefined;
   }
 };
+
+const LOCAL_TIMEOUT_MS = 10_000;
+
+export const localSend =
+  (url: (path: string) => string): Send =>
+  async (request: HttpRequest) => {
+    try {
+      const response = await fetch(url(request.path), {
+        method: request.method.toUpperCase(),
+        headers: { ...request.headers, ...(request.body === undefined ? {} : { "content-type": "application/json" }) },
+        ...(request.body === undefined ? {} : { body: request.body }),
+        redirect: "manual",
+        signal: AbortSignal.timeout(LOCAL_TIMEOUT_MS),
+      });
+      return { status: response.status, body: await response.text() };
+    } catch {
+      return undefined;
+    }
+  };

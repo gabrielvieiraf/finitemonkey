@@ -20,7 +20,7 @@ export interface Measure {
 
 const SESSION = "budget-session";
 
-const runtime: Runtime = { ...nodeRuntime(), probe: () => found("2.1.300 (Claude Code)"), selfPath: BUNDLE };
+export const runtime: Runtime = { ...nodeRuntime(), probe: () => found("2.1.300 (Claude Code)"), selfPath: BUNDLE };
 
 const git = (cwd: string, ...args: readonly string[]): void => {
   const result = spawnSync("git", ["-c", "commit.gpgsign=false", ...args], { cwd, encoding: "utf8" });

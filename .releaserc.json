@@ -30,6 +30,7 @@
       }
     ],
     "@semantic-release/npm",
+    "./scripts/release-evidence.mjs",
     [
       "@semantic-release/git",
       {
@@ -41,7 +42,14 @@
           "plugin/.claude-plugin/plugin.json",
           "plugin/hooks/hooks.json",
           "plugin/skills/**/SKILL.md",
-          "plugin/commands/*.md"
+          "plugin/commands/*.md",
+          "bench/evidence.json",
+          "README.md",
+          "README.pt-BR.md",
+          "README.es.md",
+          "llms-full.txt",
+          "llms-full.pt-BR.txt",
+          "llms-full.es.txt"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
@@ -52,7 +60,13 @@
         "failComment": false,
         "failTitle": false,
         "successComment": false,
-        "releasedLabels": false
+        "releasedLabels": false,
+        "assets": [
+          {
+            "path": "bench/evidence.json",
+            "label": "evidence.json"
+          }
+        ]
       }
     ]
   ]

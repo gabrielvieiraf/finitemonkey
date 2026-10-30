@@ -1,5 +1,8 @@
 import type { FootprintId } from "../src/core/footprint.js";
 import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
+import { PERSON_FOOTPRINT_TEXT } from "./footprint-person-text.js";
+import { COPY_FOOTPRINT_TEXT } from "./footprint-text-copy.js";
+import { GUARDIAN_FOOTPRINT_TEXT } from "./footprint-text-guardian.js";
 import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
@@ -10,6 +13,8 @@ export type Localized = Readonly<Record<Lang, string>>;
 
 export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
   ...STAGE3_FOOTPRINT_TEXT,
+  ...GUARDIAN_FOOTPRINT_TEXT,
+  ...COPY_FOOTPRINT_TEXT,
   "hook-input": {
     en: "The event Claude Code passes to each hook: the tool call, the prompt or the stop request.",
     "pt-BR": "O evento que o Claude Code passa a cada hook: a chamada de ferramenta, o prompt ou o pedido de parada.",
@@ -40,12 +45,6 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     en: "Project configuration, the guard policy and the optional briefing for subagents.",
     "pt-BR": "A configuração do projeto, a política dos guards e o briefing opcional para subagentes.",
     es: "La configuración del proyecto, la política de los guards y el briefing opcional para subagentes.",
-  },
-  "session-logs": {
-    en: "This project's local Claude Code session logs: read once with `init --look-back`, and read incrementally on each prompt only when a spend budget is set in `.finitemonkey/config.yml`.",
-    "pt-BR":
-      "Os logs locais de sessão do Claude Code deste projeto: lidos uma vez com `init --look-back`, e lidos aos poucos a cada prompt só quando há um teto de gasto em `.finitemonkey/config.yml`.",
-    es: "Los logs locales de sesión de Claude Code de este proyecto: leídos una vez con `init --look-back`, y leídos de a poco en cada prompt solo cuando hay un tope de gasto en `.finitemonkey/config.yml`.",
   },
   "hook-sources": {
     en: "`doctor` reads installed plugins and their hook files to list every hook and find conflicts; `doctor --hooks` also reads the latest Claude Code debug log for hook timings. It never changes another plugin's files.",
@@ -90,10 +89,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Señales de vuelta de `finitemonkey signals`: firmas de error, hashes de edición y huellas de los pedidos (pares de palabras en hash, nunca el texto), el índice de vueltas y los umbrales calibrados. Se borran con `signals forget`.",
   },
   perfil: {
-    en: "The per-domain profile of the person from `finitemonkey perfil`: tool literacy and domain knowledge per domain, raised by technical words in requests and by commits made outside the session, and the concept book with the level shown for each concept seen in the project. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
+    en: "The per-domain profile of the person from `finitemonkey perfil`: tool literacy per domain, raised by commits made outside the session, domain knowledge from the quick start, the concept book with the level shown for each concept seen in the project, and the concept evidence log (exposures, predictions, own changes and repairs, failures after approval) the concept states are counted from, the last x-ray of the changed lines, and the probes with their answers. `xray forget` deletes the evidence log and the x-ray; `probe forget` deletes the probes. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
     "pt-BR":
-      "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta e conhecimento do domínio, que sobem com palavras técnicas nos pedidos e com commits feitos fora da sessão, e o livro de conceitos com o nível mostrado em cada conceito visto no projeto. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
-    es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta y conocimiento del dominio, que suben con palabras técnicas en los pedidos y con commits hechos fuera de la sesión, y el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
+      "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta por domínio, que sobe com commits feitos fora da sessão, conhecimento do domínio vindo do início rápido, o livro de conceitos com o nível mostrado em cada conceito visto no projeto e o registro de evidência por conceito (exposições, previsões, alterações e reparos próprios, falhas depois da aprovação) de onde os estados são contados, o último raio-x das linhas alteradas e as sondas com as respostas. `xray forget` apaga o registro de evidência e o raio-x; `probe forget` apaga as sondas. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
+    es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta por dominio, que sube con commits hechos fuera de la sesión, conocimiento del dominio del inicio rápido, el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto y el registro de evidencia por concepto (exposiciones, predicciones, cambios y reparaciones propios, fallos después de la aprobación) del que se cuentan los estados, la última radiografía de las líneas cambiadas y las sondas con sus respuestas. `xray forget` borra el registro de evidencia y la radiografía; `probe forget` borra las sondas. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
   },
   runs: {
     en: "The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept.",
@@ -123,9 +122,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto.",
   },
   look: {
-    en: "Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash.",
-    "pt-BR": "Capturas de tela, a folha de contato e o resumo JSON que o `look` grava por hash da árvore.",
-    es: "Capturas de pantalla, la hoja de contactos y el resumen JSON que escribe `look` por hash del árbol.",
+    en: "Screen captures, the contact sheet, the JSON summary and the interface findings per rule (`ux.json`, boxed screenshots) that `look` writes per tree hash.",
+    "pt-BR":
+      "Capturas de tela, a folha de contato, o resumo JSON e os achados de interface por regra (`ux.json`, capturas com caixas) que o `look` grava por hash da árvore.",
+    es: "Capturas de pantalla, la hoja de contactos, el resumen JSON y los hallazgos de interfaz por regla (`ux.json`, capturas con recuadros) que escribe `look` por hash del árbol.",
   },
   reports: {
     en: "Masked bug reports that `doctor --report` writes, only when asked, and the report each front writes before it stops.",
@@ -164,10 +164,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.finitemonkey/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.finitemonkey/archive/`.",
   },
   "git-safety": {
-    en: "Snapshots before destructive git commands, the journal that `undo` reads and dropped-line decisions from merges.",
+    en: "Snapshots before destructive git commands and `rm` in the repository, with copies of ignored and untracked secret files up to 50 MB inside .git, the journal that `undo` reads and dropped-line decisions from merges.",
     "pt-BR":
-      "Snapshots antes de comandos git destrutivos, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges.",
-    es: "Snapshots antes de comandos git destructivos, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges.",
+      "Snapshots antes de comandos git destrutivos e de `rm` no repositório, com cópias de arquivos ignorados e de segredos não rastreados até 50 MB dentro do .git, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges.",
+    es: "Snapshots antes de comandos git destructivos y de `rm` en el repositorio, con copias de archivos ignorados y de secretos sin seguimiento hasta 50 MB dentro de .git, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges.",
   },
   review: {
     en: "The review round count used by `review packet`, and, only when `review.playwright: true` is set in the config, a verifier agent with the Playwright MCP.",
@@ -296,6 +296,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Una línea por cada configuración de GitHub que `ci protect` cambió tras el sí de la persona en una terminal: cuándo, el repositorio, la configuración, el valor antes y después, y si GitHub la aceptó. Lo que leyó queda en caché en `.finitemonkey/cache/github-settings.json` para `doctor`.",
   },
   ...DEPLOY_FOOTPRINT_TEXT,
+  ...PERSON_FOOTPRINT_TEXT,
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

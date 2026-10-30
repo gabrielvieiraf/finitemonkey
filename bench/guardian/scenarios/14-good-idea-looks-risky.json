@@ -1,0 +1,28 @@
+{
+  "id": "14-good-idea-looks-risky",
+  "category": "a good idea that looks risky",
+  "goal": "reproducible deploys",
+  "request": "add a Dockerfile",
+  "information": "stable company that already runs containers",
+  "files": {
+    ".finitemonkey/goals.yml": "context:\n  stage:\n    value: stable\n    origin: stated\n  demonstrated:\n    value: [containers]\n    origin: stated\n"
+  },
+  "contract": "id: work\ngoal: reproducible deploys\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {
+    "Dockerfile": "FROM node:22\n"
+  },
+  "probe": {
+    "kind": "scan"
+  },
+  "expected": 0,
+  "silentWhen": "the concept is demonstrated and within the stage budget",
+  "personRight": true,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "override"
+  },
+  "consequences": {
+    "requested": "good",
+    "redirected": "bad"
+  }
+}

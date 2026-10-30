@@ -21,6 +21,10 @@ const RULE_KEYS: Readonly<Record<GitBlockRule, ReasonBase>> = {
   history: "git.block.history",
   "protected-commit": "git.block.protected_commit",
   "protected-push": "git.block.protected_push",
+  "sql-destroy": "git.block.sql_destroy",
+  "terraform-destroy": "git.block.terraform_destroy",
+  "kubectl-delete": "git.block.kubectl_delete",
+  "pipe-shell": "git.block.pipe_shell",
 };
 
 const MAX_FILES = 8;

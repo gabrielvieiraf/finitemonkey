@@ -6,6 +6,7 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { openPr, type PrOpenFailure } from "../pr/open.js";
 import { isPerson, personName } from "../secrets/project.js";
+import { lastRunRefusal } from "./gate.js";
 import { notRepository } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -79,6 +80,8 @@ export const prOpenCommand: CommandSpec = {
     draft: { type: "boolean" },
   },
   run: (ctx, args): Promise<CommandResult> => {
+    const refusal = lastRunRefusal(ctx);
+    if (refusal !== undefined) return Promise.resolve(failureFrom(ctx.t, refusal));
     const person = isPerson(ctx);
     const opened = openPr(ctx.runtime, ctx.cwd, {
       base: stringOption(args.values, "base"),

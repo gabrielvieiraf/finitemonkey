@@ -47,6 +47,12 @@ describe("test runner summaries", () => {
     { runner: "pytest zero", text: "========= no tests ran in 0.01s =========", total: 0, failures: [] },
     { runner: "go zero", text: "?   \texample.com/cart\t[no test files]", total: 0, failures: [] },
     { runner: "colors", text: "\u001b[32mℹ tests 3\u001b[39m", total: 3, failures: [] },
+    {
+      runner: "windows line endings",
+      text: "not ok 1 - adds\r\n# tests 2\r\n# fail 1\r\n",
+      total: 2,
+      failures: ["adds"],
+    },
   ] as const;
   for (const { runner, text, total, failures } of outputs) {
     it(`reads ${runner}`, () => {

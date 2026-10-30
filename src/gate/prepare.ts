@@ -5,12 +5,20 @@ import { nowMs } from "../core/clock.js";
 import type { Env } from "../core/context.js";
 import { accept, type Parsed } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
-import { loadProjectConfig } from "../git/project-config.js";
+import { MIGRATION_FILE } from "../deploy/migrations.js";
+import { PYTHON, UNTYPED_JS } from "../deps/api-version.js";
+import { configAt, loadProjectConfig } from "../git/project-config.js";
+import { touchesInfra } from "../infra/plan-gate.js";
+import { judgeWanted } from "../judge/gate.js";
+import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
 import { maskText } from "../mask/mask.js";
+import { featureMode } from "../policy/feature.js";
+import type { Example } from "../task/examples.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { activeTaskId, type LoadedContract, loadImplicit, type LoadProblem, loadTask } from "../task/load.js";
 import { FM_DIR, type FmPaths, fmPaths } from "../task/paths.js";
 import { type GateTrust, readTrust } from "../task/state.js";
+import type { TaskContract } from "../task/types.js";
 import { readBaseline, readSession } from "./baseline.js";
 import { diffShape } from "./diff-shape.js";
 import {
@@ -121,6 +129,96 @@ const measureSize = (
 ): SizeVerdict =>
   sizeVerdict(contract.size, diffShape(runtime, git, base, changes), sizeConfig(loadProjectConfig(runtime, git.cwd)));
 
+const withCheck = (
+  contract: TaskContract,
+  kind:
+    | "examples"
+    | "scenarios"
+    | "blind-tests"
+    | "claims"
+    | "migrate"
+    | "infra-plan"
+    | "api-version"
+    | "cochange"
+    | "test-budget"
+    | "red-green"
+    | "judge",
+  wanted: boolean,
+): TaskContract =>
+  !wanted || contract.acceptance.some((check) => check.kind === kind)
+    ? contract
+    : { ...contract, acceptance: [...contract.acceptance, { id: kind, kind }] };
+
+const withExamples = (contract: TaskContract, examples: readonly Example[] | undefined): TaskContract =>
+  withCheck(contract, "examples", examples !== undefined && examples.length > 0);
+
+const withConfiguredChecks = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  contract: TaskContract,
+  changes: readonly Change[],
+): TaskContract => {
+  const config = loadProjectConfig(runtime, root);
+  const migrations = changes.some((change) => MIGRATION_FILE.test(change.oldPath ?? change.path));
+  const withMigrate = withCheck(
+    withCheck(
+      withCheck(
+        withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
+        "blind-tests",
+        configAt(config, "blind") !== undefined,
+      ),
+      "claims",
+      featureMode(runtime, fmPaths(root), CLAIM_CHECKS_FEATURE) !== "off" &&
+        readClaims(runtime, fmPaths(root)).some((claim) => lastOf(claim, ["close"]) === undefined),
+    ),
+    "migrate",
+    migrations,
+  );
+  const paths = changes.filter((change) => change.status !== "D").map((change) => change.path);
+  const withInfra = withCheck(
+    withMigrate,
+    "infra-plan",
+    touchesInfra(changes.flatMap((change) => [change.path, change.oldPath ?? ""])),
+  );
+  const withApi = withCheck(
+    withInfra,
+    "api-version",
+    paths.some((path) => UNTYPED_JS.test(path) || PYTHON.test(path)),
+  );
+  const withCochange = withCheck(withApi, "cochange", changes.length > 0);
+  const withBudget = withCheck(
+    withCochange,
+    "test-budget",
+    contract.acceptance.some((check) => check.kind === "tests"),
+  );
+  return withCheck(
+    withBudget,
+    "red-green",
+    contract.testsFirst === true || configAt(config, "red_green") !== undefined,
+  );
+};
+
+const withConfigured = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  contract: TaskContract,
+  changes: readonly Change[],
+): TaskContract =>
+  withCheck(
+    withConfiguredChecks(runtime, root, contract, changes),
+    "judge",
+    judgeWanted(runtime, fmPaths(root), contract.id),
+  );
+
+const shapedContract = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  loaded: LoadedContract,
+  size: SizeVerdict,
+  changes: readonly Change[],
+): TaskContract =>
+  withConfigured(runtime, root, withExamples(applySize(loaded.contract, size), loaded.examples), changes);
+
 export type PrepareResult =
   | { readonly kind: "ready"; readonly prepared: Prepared }
   | { readonly kind: "skipped"; readonly reason: GateSkip }
@@ -155,7 +253,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     runtime: options.runtime,
     git,
     paths,
-    contract: applySize(loaded.value.contract, size),
+    contract: shapedContract(options.runtime, root, loaded.value, size, changes),
     size,
     trusted: loaded.value.trusted,
     treeHash: tree,
@@ -168,6 +266,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     pr,
     mask: options.mask ?? maskText,
     baseline: sessionBaseline(options.runtime, paths, options.sessionId),
+    ...(loaded.value.examples === undefined ? {} : { examples: loaded.value.examples }),
   };
   return { kind: "ready", prepared: { ctx, loaded: loaded.value } };
 };

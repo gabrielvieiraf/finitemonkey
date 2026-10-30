@@ -15,6 +15,8 @@ export interface ApprovedScreen {
   readonly viewport: number;
   readonly structure: readonly string[];
   readonly at: string;
+  readonly image?: boolean;
+  readonly tree?: string;
 }
 
 const approvedPath = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, LOOK_DIR, APPROVED_FILE));
@@ -47,6 +49,18 @@ export const writeLayouts = (
   );
 };
 
+export const latestTree = (runtime: Pick<Runtime, "listDir" | "stat">, paths: FmPaths): string | undefined => {
+  const dirs = runtime.listDir(toAbsolutePath(join(paths.dir, LOOK_DIR)));
+  if (!dirs.ok) return undefined;
+  return dirs.value
+    .map((name) => ({
+      name,
+      at: runtime.stat(toAbsolutePath(join(paths.dir, LOOK_DIR, name, LAYOUT_FILE)))?.mtimeMs ?? -1,
+    }))
+    .filter((entry) => entry.at >= 0)
+    .sort((left, right) => right.at - left.at)[0]?.name;
+};
+
 export const latestLayouts = (
   runtime: Pick<Runtime, "readText" | "listDir" | "stat">,
   paths: FmPaths,
@@ -69,7 +83,16 @@ export const readApproved = (runtime: Pick<Runtime, "readText">, paths: FmPaths)
   return listOf(text.value, "screens").flatMap((item) => {
     const layout = layoutOf(item);
     const at = isRecord(item) ? item["at"] : undefined;
-    return layout === undefined || typeof at !== "string" ? [] : [{ ...layout, at }];
+    if (layout === undefined || typeof at !== "string" || !isRecord(item)) return [];
+    const tree = item["tree"];
+    return [
+      {
+        ...layout,
+        at,
+        ...(item["image"] === true ? { image: true } : {}),
+        ...(typeof tree === "string" ? { tree } : {}),
+      },
+    ];
   });
 };
 
@@ -78,9 +101,12 @@ export const approveRoute = (
   paths: FmPaths,
   route: string,
   pages: readonly PageLayout[],
+  image?: { readonly tree: string },
 ): readonly ApprovedScreen[] => {
   const at = runtime.now();
-  const fresh = pages.filter((page) => page.route === route).map((page) => ({ ...page, at }));
+  const fresh = pages
+    .filter((page) => page.route === route)
+    .map((page) => ({ ...page, at, ...(image === undefined ? {} : { image: true, tree: image.tree }) }));
   const kept = readApproved(runtime, paths).filter((screen) => screen.route !== route);
   if (fresh.length > 0) {
     runtime.writeText(approvedPath(paths), `${JSON.stringify({ screens: [...kept, ...fresh] }, null, 2)}\n`);

@@ -2,7 +2,7 @@
 
 [English](compare.md) | Português (Brasil) | [Español](compare.es.md)
 
-> **Pré-lançamento.** O Finite Monkey ainda não existe como ferramenta funcionando. Tudo o que esta página diz sobre ele é **planejado, ainda não medido**. Tudo o que ela diz sobre os outros projetos é fato que você confere no link ao lado.
+> **Versões iniciais.** O Finite Monkey tem versões iniciais no canal `next` do npm. O que esta página diz sobre ele descreve o que o código faz, e nada disso foi **medido ainda**: o benchmark ainda não rodou. Tudo o que ela diz sobre os outros projetos é fato que você confere no link ao lado.
 
 **Conferido em 2026-10-25**, lendo o código de cada projeto no commit indicado. Nenhum hook de terceiro foi executado. Se algo aqui estiver errado ou desatualizado, abra uma issue ou um pull request e será corrigido.
 
@@ -13,7 +13,7 @@ A pergunta que esta página faz a cada projeto é a mesma: quando o modelo prefe
 - **Mecanismo**: código que roda no harness (um hook, uma regra de permissão, um git hook, uma etapa de CI) e bloqueia ou confere seja qual for a decisão do modelo.
 - **Prosa**: texto que o modelo lê (uma skill, um prompt, um `CLAUDE.md`) e pode seguir. Prosa muitas vezes é a ferramenta certa para planejar, para estilo e para julgamento. Sozinha, não mostra que algo aconteceu.
 
-A maioria das configurações precisa dos dois. O escopo planejado do Finite Monkey é estreito: as poucas coisas que precisam valer sempre (pronto verificado, testes não enfraquecidos, nenhum segredo vazado, nenhum trabalho perdido no git, nenhuma mexida na produção na mão) devem ser mecanismo.
+A maioria das configurações precisa dos dois. O escopo do Finite Monkey é estreito: as poucas coisas que precisam valer sempre (pronto verificado, testes não enfraquecidos, nenhum segredo vazado, nenhum trabalho perdido no git, nenhuma mexida na produção na mão) devem ser mecanismo.
 
 ## Visão geral
 
@@ -28,7 +28,7 @@ A maioria das configurações precisa dos dois. O escopo planejado do Finite Mon
 | [tdd-guard](https://github.com/nizos/tdd-guard) | Obriga teste primeiro | Um trabalho só, feito com foco | Hook nas edições que pode bloquear | O julgamento se a edição seguiu teste primeiro (uma chamada de modelo) |
 | [dcg](https://github.com/Dicklesworthstone/destructive_command_guard) | Guarda de comandos destrutivos | Cobertura de comandos perigosos, falha fechado por tempo | Bloqueio no `PreToolUse` | n/a (não trata de pronto) |
 | [cc-safety-net](https://github.com/kenryu42/cc-safety-net) | Guarda de comandos destrutivos | Um trabalho só, instalação rápida, `doctor` | Bloqueio no `PreToolUse` | n/a (não trata de pronto) |
-| Finite Monkey | Portão planejado em torno de uma definição de pronto | Nada ainda: não foi lançado | Planejado: portão no `Stop`, travas no `PreToolUse`, git hooks, CI | Planejado: nada nos quatro danos |
+| Finite Monkey | Portão em torno de uma definição de pronto | Nada medido ainda: versões iniciais no `next` | Portão no `Stop`, travas no `PreToolUse`, git hooks, CI | Nada nos quatro danos |
 
 ## Superpowers
 
@@ -40,7 +40,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prosa.** Os portões são texto de skill, como "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" em [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). Quem decide chamar o `task-done` é o modelo, e a [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) registra que um comando substituto como `echo "tests passed"` não se distingue de uma execução real de testes.
 
-**Onde o Finite Monkey planeja ser diferente.** O portão roda a checagem ele mesmo, a partir de um hook, toda vez que o agente tenta parar, e comando trivial não conta como prova. O planejamento fica com skills como essas: um design aprovado no Superpowers pode virar a entrada de uma definição de pronto. Planejado, ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão roda a checagem ele mesmo, a partir de um hook, toda vez que o agente tenta parar, e comando trivial não conta como prova. O planejamento fica com skills como essas: um design aprovado no Superpowers pode virar a entrada de uma definição de pronto. Ainda não medido.
 
 ## oh-my-claudecode
 
@@ -52,7 +52,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Onde o modelo decide.** O drift guard deixa o fim passar quando `stop_hook_active` está ligado (linha 910), então bloqueia uma vez. A trava de git só fica ativa nos modos `ralph`, `autopilot`, `team` e `ultragoal` (linha 38) ou com uma variável de ambiente. Nos modos persistentes, concluir é o modelo rodar `/cancel`.
 
-**Onde o Finite Monkey planeja ser diferente.** O portão continua bloqueando enquanto a definição de pronto falhar, e a trava de git fica sempre ligada. Planejado, ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão continua bloqueando enquanto a definição de pronto falhar, e a trava de git fica sempre ligada. Ainda não medido.
 
 ## GSD
 
@@ -64,7 +64,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Onde o modelo decide.** A verificação é um agente LLM ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) que escreve o `VERIFICATION.md`, e o portão de fase em [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) lê o status que esse agente escreveu.
 
-**Onde o Finite Monkey planeja ser diferente.** O veredito vem de comandos que o portão rodou nos arquivos atuais. Planejado, ainda não medido.
+**Onde o Finite Monkey é diferente.** O veredito vem de comandos que o portão rodou nos arquivos atuais. Ainda não medido.
 
 ## Spec Kit
 
@@ -76,7 +76,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prosa.** Hooks de extensão como `after_implement` dependem de o modelo chamá-los: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), linhas 70 a 72). A validação de testes no comando de implementação é uma instrução, e a convergência é declarada pelo modelo. A [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) pede um portão final de qualidade.
 
-**Onde o Finite Monkey planeja ser diferente.** A ideia é encaixar no Spec Kit: o portão como etapa `shell` do workflow ou handler de `Stop`, lendo o `tasks.md` como definição de pronto. Planejado, ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão roda como handler de `Stop` e também é um comando (`finitemonkey gate`) que uma etapa `shell` de workflow do Spec Kit pode rodar, e o `finitemonkey task from-spec` propõe uma definição de pronto a partir de um `tasks.md` sem mexer nele. Ainda não medido.
 
 ## ECC (Everything Claude Code)
 
@@ -88,7 +88,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Onde o modelo decide.** O [`stop-format-typecheck.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/stop-format-typecheck.js) roda no `Stop`, relata e sai 0, ou seja, informa sem bloquear. O [`gateguard-fact-force.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/gateguard-fact-force.js) nega o primeiro toque num arquivo e deixa a repetição passar (linhas 1935 e 1936).
 
-**Onde o Finite Monkey planeja ser diferente.** Um núcleo pequeno com orçamento de contexto conferido no CI, um portão no `Stop` que bloqueia e nenhuma trava que cede na repetição. Planejado, ainda não medido.
+**Onde o Finite Monkey é diferente.** Um núcleo pequeno com orçamento de contexto conferido no CI, um portão no `Stop` que bloqueia e nenhuma trava que cede na repetição. Ainda não medido.
 
 ## ralph-loop
 
@@ -100,7 +100,7 @@ Plugin oficial em [`anthropics/claude-plugins-official`](https://github.com/anth
 
 **Onde o modelo decide.** O laço termina quando a última mensagem do modelo contém `<promise>TEXTO</promise>` igual à promessa de conclusão que você definiu (linhas 129 a 138). A própria mensagem do hook pede ao modelo que não minta para sair.
 
-**Onde o Finite Monkey planeja ser diferente.** O laço terminaria quando a definição de pronto do portão passasse. Planejado, ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão no `Stop` mantém o agente trabalhando até a definição de pronto passar e, depois do limite de bloqueios, termina com um relatório de "não terminado". Ainda não medido.
 
 ## tdd-guard
 
@@ -110,7 +110,7 @@ Commit [`108992d`](https://github.com/nizos/tdd-guard/tree/108992d).
 
 **Mecanismo e julgamento.** O hook bloqueia de verdade. Se uma edição conta como teste primeiro é decidido por uma chamada de modelo a cada edição.
 
-**Onde o Finite Monkey planeja ser diferente.** Ele não obriga teste primeiro. Ele confere que testes não foram removidos, pulados ou enfraquecidos, e que passam nos arquivos finais. Se o que você quer é teste primeiro, o tdd-guard é a ferramenta mais direta.
+**Onde o Finite Monkey é diferente.** Ele não obriga teste primeiro. Ele confere que testes não foram removidos, pulados ou enfraquecidos, e que passam nos arquivos finais. Se o que você quer é teste primeiro, o tdd-guard é a ferramenta mais direta.
 
 ## dcg (destructive_command_guard)
 
@@ -118,7 +118,7 @@ Commit [`b33f3ef`](https://github.com/Dicklesworthstone/destructive_command_guar
 
 **O que faz bem.** Cobertura ampla de comandos destrutivos, suporte a vários agentes e uma direção de falha clara: uma avaliação acima de 1000 ms devolve uma decisão indeterminada, "never allow" ([`src/perf.rs`](https://github.com/Dicklesworthstone/destructive_command_guard/blob/b33f3ef/src/perf.rs), linhas 800 a 812). Os mantenedores acompanham falsos positivos em público, por exemplo na [#560](https://github.com/Dicklesworthstone/destructive_command_guard/issues/560).
 
-**Onde o Finite Monkey planeja ser diferente.** O dcg guarda comandos. O Finite Monkey planeja somar uma fotografia e um `undo` em volta das operações arriscadas no git, e um portão de pronto. Se você só precisa de um guarda de comandos, o dcg é uma escolha focada.
+**Onde o Finite Monkey é diferente.** O dcg guarda comandos. O Finite Monkey soma uma fotografia e um `undo` em volta das operações arriscadas no git, e um portão de pronto. Se você só precisa de um guarda de comandos, o dcg é uma escolha focada.
 
 ## cc-safety-net
 
@@ -126,22 +126,22 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 **O que faz bem.** Bloqueia `git reset --hard`, `git push --force`, `rm -rf` em alvos perigosos e scripts de instalação via pipe, mesmo dentro de `bash -c` ou `python -c` ([`README.md`](https://github.com/kenryu42/cc-safety-net/blob/71baf74/README.md), linha 74). Instala em uma linha e tem `doctor`. Quando o hook ficou lento com `npx`, o mantenedor passou para um binário embutido ([#16](https://github.com/kenryu42/cc-safety-net/issues/16)).
 
-**Onde o Finite Monkey planeja ser diferente.** O mesmo que no dcg: os acréscimos planejados são a fotografia com `undo` e o portão de pronto. Para um guarda de comandos sozinho, o cc-safety-net é a instalação mais simples.
+**Onde o Finite Monkey é diferente.** O mesmo que no dcg: os acréscimos são a fotografia com `undo` e o portão de pronto. Para um guarda de comandos sozinho, o cc-safety-net é a instalação mais simples.
 
-## Onde o Finite Monkey planeja ser diferente
+## Onde o Finite Monkey é diferente
 
-Tudo isto é **planejado, ainda não medido**.
+Nada disto foi **medido ainda**: o benchmark ainda não rodou.
 
 - **Prova das execuções do próprio portão.** Pronto quer dizer que o portão rodou a definição de pronto nos arquivos atuais. Mensagem no chat, arquivo de progresso ou relatório escrito por um agente não contam.
 - **Bloqueio até as checagens passarem.** Ele continua bloqueando enquanto a definição de pronto falha, e termina com um relatório de "não terminado" em vez de um laço sem fim.
 - **Quatro danos numa instalação.** "Pronto" falso, segredo vazado, mexida na produção na mão e trabalho perdido no git, com um `undo` para o git.
 - **Contexto fixo pequeno.** A obrigação mora nos hooks, que não custam token a cada turno, com um orçamento em bytes conferido no CI.
-- **Benchmark.** Um benchmark público com ablação decide quais regras ficam.
+- **Benchmark.** Um benchmark público com ablação decide quais regras ficam. A bancada está pronta; ele ainda não rodou.
 
 ## Onde eles estão na frente hoje
 
-- Eles existem, foram lançados e são usados. O Finite Monkey não.
-- Superpowers, GSD e Spec Kit ajudam a decidir o que construir. O Finite Monkey não planeja construir essa fase; planeja ler o que eles produzem.
+- Eles têm versões estáveis e são usados. O Finite Monkey só tem versões iniciais no `next`.
+- Superpowers, GSD e Spec Kit ajudam a decidir o que construir. O Finite Monkey não constrói essa fase; lê o que eles produzem.
 - Vários funcionam em muitos agentes. O Finite Monkey começa só com o Claude Code.
 
 ## Outros no mesmo espaço

@@ -3,9 +3,10 @@ import { basename, dirname, join } from "node:path";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { GitRun, Runtime } from "../core/runtime.js";
+import { restoreFiles, type RestoreOutcome } from "./file-store.js";
 import { type JournalEntry, readJournal } from "./journal.js";
 import type { Repo } from "./repo.js";
-import { BACKUP_PREFIX, listSnapshots, takeSnapshot } from "./snapshot.js";
+import { BACKUP_PREFIX, listSnapshots, storeName, takeSnapshot } from "./snapshot.js";
 
 export interface SnapshotView {
   readonly ref: string;
@@ -21,6 +22,8 @@ export interface UndoOutcome {
   readonly backup: string;
   readonly mode: "worktree" | "in-place";
   readonly path: AbsolutePath | undefined;
+  readonly restored: readonly string[];
+  readonly conflicts: readonly string[];
 }
 
 const INDEX_SUBJECT = "finitemonkey index:";
@@ -108,10 +111,20 @@ export const undoSnapshot = (
 ): Parsed<UndoOutcome> => {
   const backup = takeSnapshot(runtime, repo, { op: `before undo ${view.ref.replace(BACKUP_PREFIX, "")}` });
   if (!backup.ok) return reject(`snapshot: ${backup.error}`);
+  const files = (target: AbsolutePath): Parsed<RestoreOutcome> =>
+    restoreFiles(runtime, repo, storeName(view.ref), target);
   if (mode === "worktree") {
     const path = intoWorktree(runtime, repo, view);
-    return path.ok ? accept({ snapshot: view, backup: backup.value.ref, mode, path: path.value }) : path;
+    if (!path.ok) return path;
+    const copied = files(path.value);
+    return copied.ok
+      ? accept({ snapshot: view, backup: backup.value.ref, mode, path: path.value, ...copied.value })
+      : copied;
   }
   const restored = inPlace(runtime, repo, view);
-  return restored.ok ? accept({ snapshot: view, backup: backup.value.ref, mode, path: undefined }) : restored;
+  if (!restored.ok) return restored;
+  const copied = files(repo.root);
+  return copied.ok
+    ? accept({ snapshot: view, backup: backup.value.ref, mode, path: undefined, ...copied.value })
+    : copied;
 };

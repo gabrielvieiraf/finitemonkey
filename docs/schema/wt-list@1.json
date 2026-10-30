@@ -29,10 +29,10 @@
           "class": {
             "type": "string",
             "enum": [
+              "running",
               "orphan",
               "dirty",
               "locked",
-              "running",
               "recent",
               "contained",
               "equivalent",

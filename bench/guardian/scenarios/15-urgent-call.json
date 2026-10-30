@@ -1,0 +1,33 @@
+{
+  "id": "15-urgent-call",
+  "category": "an urgent call with incomplete evidence",
+  "goal": "stop the outage",
+  "request": "hotfix the null check in the webhook handler now",
+  "information": "the stack trace points to one line",
+  "files": {
+    "src/billing/webhook.ts": "export const webhook = 1;\n"
+  },
+  "contract": "id: work\ngoal: stop the outage\nsize: M\nscope:\n  paths: [src/billing/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {},
+  "probe": {
+    "kind": "tool",
+    "payload": {
+      "tool_name": "Write",
+      "tool_input": {
+        "file_path": "{root}/src/billing/webhook.ts",
+        "content": "export const webhook = 2;\n"
+      }
+    }
+  },
+  "expected": 0,
+  "silentWhen": "a plain edit with no trigger",
+  "personRight": true,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "override"
+  },
+  "consequences": {
+    "requested": "good",
+    "redirected": "bad"
+  }
+}

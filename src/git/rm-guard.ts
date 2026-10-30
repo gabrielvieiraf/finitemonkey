@@ -8,6 +8,7 @@ const RECURSIVE_SHORT = /^-[A-Za-z]*[rR][A-Za-z]*$/;
 const PS_RECURSE = /^-r(?:e(?:c(?:u(?:r(?:s(?:e)?)?)?)?)?)?$/i;
 const PS_VALUE_PARAMS = ["filter", "include", "exclude", "credential", "stream"] as const;
 const GLOB = /[*?[]/;
+const UNSET_PREFIX = /^\$(?:[A-Za-z_][A-Za-z0-9_]*|[0-9@*]|\{(?:[A-Za-z_][A-Za-z0-9_]*|[0-9]+|[@*])(?::?-[^}]*)?\})\//;
 
 export interface RmContext {
   readonly cwd: string;
@@ -56,7 +57,7 @@ const containsGitDir = (runtime: Runtime, path: string): boolean =>
 
 const targetVerdict = (runtime: Runtime, context: RmContext, command: ShellCommand, raw: string): GitVerdict => {
   if (raw.startsWith("$") || raw.startsWith("~") || raw.startsWith("%")) {
-    return /^~\/*\*?$/.test(raw) || /^\$\{?[A-Za-z_][A-Za-z0-9_]*\}?\//.test(raw) ? block("rm-root", raw) : PASS;
+    return /^~\/*\*?$/.test(raw) || UNSET_PREFIX.test(raw) ? block("rm-root", raw) : PASS;
   }
   if (/(?:^|\/)\.git\/?$/.test(raw.replace(/\\/g, "/"))) return block("rm-worktree", raw);
   const glob = GLOB.test(raw);

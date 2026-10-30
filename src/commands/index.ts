@@ -13,9 +13,11 @@ import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
 import { critiqueVerifyCommand } from "./critique.js";
+import { DATA_COMMANDS } from "./data-commands.js";
 import { dataMapCommand } from "./data-map.js";
 import { debtCommand } from "./debt.js";
 import { decideCheckCommand, decideNewCommand, decideRevokeCommand } from "./decide.js";
+import { decideAcceptCommand } from "./decide-accept.js";
 import { deployStatusCommand } from "./deploy.js";
 import { deployCheckCommand } from "./deploy-check.js";
 import { deployGenerateCommand } from "./deploy-generate.js";
@@ -25,6 +27,8 @@ import { depsConfigCommand } from "./deps-config.js";
 import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
 import { dsSyncCommand } from "./ds-sync.js";
+import { evidenceWhyCommand } from "./evidence-why.js";
+import { EVOLVE_COMMANDS } from "./evolve-registry.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
@@ -40,6 +44,13 @@ import { mergeVerifyCommand } from "./git-merge-verify.js";
 import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { goldenAcceptCommand } from "./golden.js";
+import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
+import { guardianAssumeAddCommand, guardianAssumeListCommand, guardianAssumeVerifyCommand } from "./guardian-assume.js";
+import { guardianForecastCommand } from "./guardian-forecast.js";
+import { guardianReportCommand } from "./guardian-report.js";
+import { guardianReuseCommand, guardianScanCommand } from "./guardian-reuse.js";
+import { guardianForgetCommand, guardianReviewCommand } from "./guardian-review.js";
+import { guardianWeighCommand } from "./guardian-weigh.js";
 import { helpCommand } from "./help.js";
 import { hookCommand } from "./hook.js";
 import { i18nCheckCommand } from "./i18n-check.js";
@@ -47,7 +58,10 @@ import { infraCommand } from "./infra.js";
 import { initCommand } from "./init.js";
 import { instructionsCommand } from "./instructions.js";
 import { inventoryCommand } from "./inventory.js";
+import { JUDGE_COMMANDS } from "./judge-registry.js";
+import { KNOWLEDGE_COMMANDS } from "./knowledge-registry.js";
 import {
+  learningsAcceptCommand,
   learningsAddCommand,
   learningsCommand,
   learningsDeleteCommand,
@@ -58,6 +72,7 @@ import { lookCommand } from "./look.js";
 import { lookApproveCommand } from "./look-approve.js";
 import { mapCommand } from "./map.js";
 import { mergeCommand } from "./merge.js";
+import { MOD_COMMANDS } from "./mod-registry.js";
 import { observeCommand } from "./observe.js";
 import { onboardCommand } from "./onboard.js";
 import { organizeCommand } from "./organize.js";
@@ -71,33 +86,41 @@ import {
   perfilSetCommand,
   perfilStartCommand,
 } from "./perfil.js";
+import { PERSON_COMMANDS } from "./person.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { plantaCommand } from "./planta.js";
-import { policyFalsePositiveCommand } from "./policy.js";
+import { policyExplainCommand, policyFalsePositiveCommand } from "./policy.js";
 import { prOpenCommand } from "./pr-open.js";
 import { presetCommand } from "./preset.js";
 import { proseCheckCommand } from "./prose-check.js";
 import { remindersCommand } from "./reminders.js";
 import { researchCheckCommand, researchNewCommand } from "./research.js";
+import { researchSourceCommand, researchStatusCommand } from "./research-log.js";
 import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
 import { runCommandSpec } from "./run.js";
+import { scenariosCommand, scenariosRunCommand } from "./scenarios.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
 import { secretsScanCommand } from "./secrets-scan.js";
 import { signalsCommand, signalsForgetCommand, signalsNotLoopCommand, signalsReleaseCommand } from "./signals.js";
+import { signalsBlindBandCommand } from "./signals-blind-band.js";
 import { signalsHypothesisCommand } from "./signals-hypothesis.js";
+import { signalsLocateCommand } from "./signals-locate.js";
 import { slopDismissCommand, slopStatsCommand } from "./slop.js";
 import { statuslineCommand } from "./statusline.js";
 import { suggestAcceptCommand, suggestCommand, suggestDismissCommand } from "./suggest.js";
 import { taskDoneCommand, taskNewCommand, taskShowCommand } from "./task.js";
+import { taskDivergeCommand } from "./task-diverge.js";
 import { taskAmendCommand, taskReopenCommand } from "./task-edit.js";
+import { taskExamplesCommand } from "./task-examples.js";
 import { taskFromSpecCommand } from "./task-spec.js";
 import type { CommandSpec } from "./types.js";
 import { uninstallCommand } from "./uninstall.js";
 import { updateCommand } from "./update.js";
+import { UX_COMMANDS } from "./ux-commands.js";
 import { versionCommand } from "./version.js";
 import { wtAdoptCommand, wtNewCommand } from "./wt.js";
 import { wtClassifyCommand, wtDismissCommand } from "./wt-classify.js";
@@ -241,6 +264,38 @@ export const REGISTRY = [
   dsSyncCommand,
   presetCommand,
   onboardCommand,
+  evidenceWhyCommand,
+  policyExplainCommand,
+  signalsLocateCommand,
+  learningsAcceptCommand,
+  taskExamplesCommand,
+  taskDivergeCommand,
+  signalsBlindBandCommand,
+  scenariosCommand,
+  scenariosRunCommand,
+  guardianStatusCommand,
+  guardianGoalAddCommand,
+  guardianGoalConfirmCommand,
+  decideAcceptCommand,
+  guardianReviewCommand,
+  guardianForgetCommand,
+  guardianAssumeListCommand,
+  guardianAssumeAddCommand,
+  guardianAssumeVerifyCommand,
+  guardianReportCommand,
+  guardianReuseCommand,
+  guardianScanCommand,
+  guardianWeighCommand,
+  guardianForecastCommand,
+  researchSourceCommand,
+  researchStatusCommand,
+  ...EVOLVE_COMMANDS,
+  ...DATA_COMMANDS,
+  ...PERSON_COMMANDS,
+  ...MOD_COMMANDS,
+  ...KNOWLEDGE_COMMANDS,
+  ...UX_COMMANDS,
+  ...JUDGE_COMMANDS,
   versionCommand,
   helpCommand,
 ] as const satisfies readonly CommandSpec[];

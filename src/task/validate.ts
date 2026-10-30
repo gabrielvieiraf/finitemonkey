@@ -205,5 +205,6 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
     ...(blueprint === undefined ? {} : { blueprint }),
     implicit,
     ...(clarified.length === 0 ? {} : { clarified }),
+    ...(value["tests_first"] === true ? { testsFirst: true } : {}),
   });
 };

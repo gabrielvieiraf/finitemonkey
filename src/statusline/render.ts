@@ -7,6 +7,8 @@ export interface Segment {
   readonly contextPercent: number | undefined;
   readonly spend?: string;
   readonly fronts?: string | undefined;
+  readonly hooksBroken?: boolean;
+  readonly bypassed?: number;
   readonly blueprint?: { readonly type: string; readonly green: number; readonly total: number } | undefined;
 }
 
@@ -17,6 +19,10 @@ export const segmentText = (t: Translate, segment: Segment): string =>
     "fm",
     ...(segment.task === undefined ? [] : [segment.task]),
     ...(segment.gate === "none" ? [] : [t(`statusline.gate.${segment.gate}`)]),
+    ...(segment.hooksBroken === true ? [t("statusline.hooks_broken")] : []),
+    ...(segment.bypassed === undefined || segment.bypassed === 0
+      ? []
+      : [t("statusline.bypassed", { count: segment.bypassed })]),
     ...(segment.fronts === undefined ? [] : [segment.fronts]),
     ...(segment.blueprint === undefined ? [] : [t("statusline.planta", { ...segment.blueprint })]),
     ...(segment.contextPercent === undefined ? [] : [t("statusline.context", { percent: segment.contextPercent })]),

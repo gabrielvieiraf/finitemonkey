@@ -1,46 +1,32 @@
+import { parseConcept } from "../../conceitos/concepts.js";
+import { recordPrediction } from "../../conceitos/predict.js";
 import { nowMs } from "../../core/clock.js";
 import { logEvent } from "../../evidence/log.js";
 import { type Approval, expiryFrom, type Grant, saveRelease } from "../../guards/release/grants.js";
-import { comesFromPerson, type Marker, parseMarkers } from "../../guards/release/markers.js";
+import { comesFromPerson, type Marker, parseMarkers, type PredictMarker } from "../../guards/release/markers.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
-import { approveAmendments } from "../../task/amend.js";
+import { recordDismissal } from "../../policy/budget.js";
+import { KNOWN_GUARDS } from "../../policy/policy.js";
 import { IMPLICIT_ID } from "../../task/implicit.js";
 import type { FmPaths } from "../../task/paths.js";
-import { readState, readTrust, writeTrust } from "../../task/state.js";
-import { prepareGate } from "../prepare.js";
+import { readState } from "../../task/state.js";
+import { trustContract } from "../trust-contract.js";
 import { allowWith, human, projectPaths } from "./common.js";
 import { readCounter, saveCounter } from "./counter.js";
+import { readGateStatus } from "./status.js";
 
-export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims"]);
+export const RELEASABLE = new Set(["tests", "bypass", "self", "config", "budget", "claims", "predict"]);
 
-const trust = (input: HookInput, paths: FmPaths, task: string): boolean => {
-  const { runtime } = input;
-  const taskId = task === IMPLICIT_ID ? undefined : task;
-  const ready = prepareGate({
-    runtime,
-    cwd: paths.root,
-    env: {},
-    sessionId: undefined,
-    budgetMs: 0,
-    fast: true,
-    noSkip: true,
-    ...(taskId === undefined ? {} : { taskId }),
-  });
-  if (ready.kind !== "ready" || ready.prepared.ctx.contract.id !== task) return false;
-  const lock = readTrust(runtime, paths);
-  const text = runtime.readText(paths.task(task));
-  return writeTrust(runtime, paths, {
-    ...lock,
-    contracts: { ...lock.contracts, [task]: ready.prepared.loaded.hash },
-    approved: task === IMPLICIT_ID || !text.ok ? lock.approved : { ...lock.approved, [task]: text.value },
-  }).ok;
-};
+const trustAndApprove = (input: HookInput, paths: FmPaths, task: string): boolean =>
+  trustContract(input.runtime, paths, task, `person@${input.runtime.now()}`).kind === "trusted";
 
-const trustAndApprove = (input: HookInput, paths: FmPaths, task: string): boolean => {
-  const trusted = trust(input, paths, task);
-  if (trusted) approveAmendments(input.runtime, paths, task, `person@${input.runtime.now()}`);
-  return trusted;
+const predicted = (input: HookInput, paths: FmPaths, marker: PredictMarker): string => {
+  const concept = parseConcept(marker.concept);
+  const recorded = concept === undefined ? undefined : recordPrediction(input.runtime, paths, concept, marker.output);
+  return recorded === undefined
+    ? input.t("predict.not_recorded", { concept: marker.concept })
+    : input.t("predict.recorded", { concept: recorded.concept, output: recorded.output });
 };
 
 const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): readonly string[] => {
@@ -52,6 +38,7 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
   const approvals: Approval[] = [];
   const said: string[] = [];
   const active = readState(runtime, paths).active ?? IMPLICIT_ID;
+  const status = readGateStatus(runtime, paths);
   for (const marker of markers) {
     if (marker.type === "allow" && RELEASABLE.has(marker.guard)) {
       grants.push({
@@ -62,11 +49,19 @@ const apply = (input: HookInput, paths: FmPaths, markers: readonly Marker[]): re
         ...(sessionId === undefined ? {} : { sessionId }),
       });
       said.push(t("gate.release.allowed", { guard: marker.guard, until: expiryFrom(now) }));
+      if (KNOWN_GUARDS.includes(marker.guard)) recordDismissal(runtime, paths, marker.guard);
     } else if (marker.type === "allow") said.push(t("gate.release.unknown_guard", { guard: marker.guard }));
     else if (marker.type === "approve") {
-      approvals.push({ task: marker.task ?? active, check: marker.check, reason: marker.reason, at });
+      approvals.push({
+        task: marker.task ?? active,
+        check: marker.check,
+        reason: marker.reason,
+        at,
+        ...(status?.tree === undefined || status.task !== (marker.task ?? active) ? {} : { treeHash: status.tree }),
+      });
       said.push(t("gate.release.approved", { task: marker.task ?? active, check: marker.check }));
-    } else
+    } else if (marker.type === "predict") said.push(predicted(input, paths, marker));
+    else
       said.push(
         t(trustAndApprove(input, paths, marker.task) ? "gate.release.trusted" : "gate.release.trust_failed", {
           task: marker.task,

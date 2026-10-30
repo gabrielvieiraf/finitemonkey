@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/guardian-status@1.json",
+  "title": "finitemonkey/guardian-status@1",
+  "description": "`data` of `finitemonkey guardian status --json`. Generated from GuardianStatus in src/guardian/status.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/guardian-status@1"
+    },
+    "goals": {
+      "type": "object",
+      "properties": {
+        "stated": {
+          "type": "number"
+        },
+        "inferred": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "stated",
+        "inferred"
+      ]
+    },
+    "tasks": {
+      "type": "number"
+    },
+    "signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "unlinked_task",
+              "scope_growth",
+              "reopened_decision",
+              "stalled",
+              "escalation"
+            ]
+          },
+          "subject": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "subject",
+          "detail"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "goals",
+    "tasks",
+    "signals"
+  ]
+}

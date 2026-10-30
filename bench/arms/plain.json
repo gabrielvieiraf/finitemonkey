@@ -1,0 +1,6 @@
+{
+  "id": "plain",
+  "description": "Claude Code as installed, no Finite Monkey plugin and no hooks.",
+  "finitemonkey": false,
+  "sha": null
+}

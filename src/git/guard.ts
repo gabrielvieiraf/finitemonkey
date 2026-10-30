@@ -56,6 +56,7 @@ export interface GuardContext {
   readonly owner: string;
   readonly facts?: (repo: Repo) => GitFacts;
   readonly chain?: ChainState;
+  readonly repoAt?: (dir: string) => Repo | undefined;
 }
 
 export interface ChainState {
@@ -101,7 +102,7 @@ export const guardGitCommand = (context: GuardContext, command: ShellCommand, de
   const invocation = gitInvocation(command);
   if (invocation === undefined) return [];
   const dir = resolveFrom(context.cwd, command.dir, ...invocation.dirs);
-  const repo = openRepo(context.runtime, toAbsolutePath(dir));
+  const repo = context.repoAt === undefined ? openRepo(context.runtime, toAbsolutePath(dir)) : context.repoAt(dir);
   if (repo === undefined) return [];
   const facts = withChain(context.facts?.(repo) ?? repoFacts(context.runtime, repo), context.chain);
   const expanded = expandAlias(context.runtime, repo, invocation);

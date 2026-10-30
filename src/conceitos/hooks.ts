@@ -3,10 +3,13 @@ import { human, projectPaths } from "../gate/hooks/common.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { maskText } from "../mask/mask.js";
+import { recordHorizon } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile } from "../task/state.js";
 import { levelSum, raise, readBook, writeBook } from "./book.js";
-import { conceptsIn } from "./concepts.js";
+import { conceptsIn, domainOf } from "./concepts.js";
+import { creditPending } from "./credit.js";
+import { recordConceptEvents } from "./evidence.js";
 
 export const PENDING_FILE = "conceitos-pending.txt";
 export const ALARM_STEP = 3;
@@ -34,10 +37,9 @@ export const conceitosStop: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
   const message = textField(input.payload.raw, "last_assistant_message") ?? "";
-  if (message !== "" && conceptsIn(message).length > 0) {
-    input.runtime.writeText(pendingPath(paths), maskText(message).slice(0, MAX_PENDING));
-    input.runtime.spawnSelf(["conceitos", "update"], paths.root);
-  }
+  const exposed = message !== "" && conceptsIn(message).length > 0;
+  if (exposed) input.runtime.writeText(pendingPath(paths), maskText(message).slice(0, MAX_PENDING));
+  if (exposed || creditPending(input.runtime, paths)) input.runtime.spawnSelf(["conceitos", "update"], paths.root);
   const alarm = alarmOf(input, paths);
   return alarm === undefined ? allow : { kind: "allow", output: { systemMessage: human(alarm) } };
 };
@@ -56,16 +58,23 @@ export const teacherRecorder: HookHandler = (input) => {
 };
 
 export const updateFromPending = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "remove" | "now">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "remove" | "now" | "appendText">,
   paths: FmPaths,
 ): readonly string[] => {
   const text = runtime.readText(pendingPath(paths));
   if (!text.ok) return [];
   runtime.remove(pendingPath(paths));
   const ids = conceptsIn(text.value);
+  recordConceptEvents(
+    runtime,
+    paths,
+    ids.map((concept) => ({ concept, kind: "exposure", origin: "agent" })),
+  );
   const before = readBook(runtime, paths);
   const after = ids.reduce((current, id) => raise(current, id, "seen", runtime.now()), before);
   const grew = levelSum(after) > levelSum(before);
+  for (const id of ids.filter((item) => before.concepts[item] === undefined))
+    recordHorizon(runtime, paths, { source: "concept", criterion: "none", domain: domainOf(id) });
   writeBook(
     runtime,
     paths,

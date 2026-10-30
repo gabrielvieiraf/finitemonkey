@@ -82,6 +82,7 @@
       "type": "string",
       "enum": [
         "not_implemented",
+        "needs_approval",
         "tool_missing",
         "timeout",
         "rate_limited",
@@ -93,7 +94,10 @@
         "rewriter",
         "awaiting_person",
         "no_evidence",
-        "no_baseline"
+        "no_baseline",
+        "masked_exit",
+        "no_test_count",
+        "no_verdict"
       ]
     },
     "releasedBy": {
@@ -107,6 +111,72 @@
     },
     "testCount": {
       "type": "number"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "failed",
+        "unverified",
+        "running",
+        "verified",
+        "partial",
+        "invalidated",
+        "blocked",
+        "inconclusive",
+        "needs_approval"
+      ]
+    },
+    "from": {
+      "type": "string",
+      "enum": [
+        "failed",
+        "unverified",
+        "running",
+        "verified",
+        "partial",
+        "invalidated",
+        "blocked",
+        "inconclusive",
+        "needs_approval"
+      ]
+    },
+    "stateReason": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "cwd": {
+          "type": "string"
+        },
+        "lockfiles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tools": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "cwd",
+        "lockfiles",
+        "tools",
+        "env"
+      ]
+    },
+    "scripts": {
+      "type": "string"
     }
   },
   "required": [

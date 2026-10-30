@@ -19,7 +19,7 @@ export type MutationRun =
 
 type Verdict = "killed" | "survived" | "skipped";
 
-const copyWorking = (ctx: GateContext, dir: AbsolutePath): void => {
+export const copyWorking = (ctx: GateContext, dir: AbsolutePath): void => {
   for (const change of ctx.changes) {
     const target = toAbsolutePath(join(dir, change.path));
     if (change.status === "D") {

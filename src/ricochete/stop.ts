@@ -1,9 +1,10 @@
 import { logEvent } from "../evidence/log.js";
-import { human } from "../gate/hooks/common.js";
+import { human, projectPaths } from "../gate/hooks/common.js";
 import { textField } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
+import { criterionOfCheck, domainOfText, recordHorizon } from "../signals/blind-band.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
-import { judgmentSignal, taskInView } from "./context.js";
+import { judgmentSignal, type TaskInView, taskInView } from "./context.js";
 import { criterionIds, hasPerturbation, isHorizonHelp } from "./markers.js";
 import { coverage } from "./perturbation.js";
 
@@ -19,10 +20,23 @@ const block = (reason: string, note: string): HookDecision => ({
 
 const messageOf = (input: HookInput): string => textField(input.payload.raw, "last_assistant_message") ?? "";
 
+const recordSkillHelp = (input: HookInput, message: string, view: TaskInView | undefined): void => {
+  const paths = view?.paths ?? projectPaths(input);
+  if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return;
+  const named = new Set(criterionIds(message));
+  recordHorizon(input.runtime, paths, {
+    source: "skill",
+    criterion: criterionOfCheck(view?.checks.find((check) => named.has(check.id))),
+    domain: domainOfText(message),
+    ...(view === undefined ? {} : { task: view.task }),
+  });
+};
+
 export const horizonGuard: HookHandler = (input) => {
   const message = messageOf(input);
   if (!isHorizonHelp(message)) return allow;
   const view = taskInView(input);
+  recordSkillHelp(input, message, view);
   if (view === undefined || !judgmentSignal(input, view.paths)) return allow;
   const ids = new Set(view.checks.map((check) => check.id));
   const named = criterionIds(message);

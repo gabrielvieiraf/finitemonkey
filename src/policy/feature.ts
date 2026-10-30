@@ -6,7 +6,7 @@ import { experimentArm } from "./experiment.js";
 import { modeOf, readShadow } from "./guards.js";
 import { type GuardMode, loadPolicy } from "./policy.js";
 
-export const featureMode = (runtime: Pick<Runtime, "readText">, paths: FmPaths, id: string): GuardMode => {
+export const featureMode = (runtime: Pick<Runtime, "readText" | "homeDir">, paths: FmPaths, id: string): GuardMode => {
   const policy = loadPolicy(runtime, paths.root);
   return modeOf({ id, damage: false }, policy, readShadow(runtime, paths), experimentArm(runtime, paths, policy, id));
 };

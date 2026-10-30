@@ -45,6 +45,7 @@ export type FileKind = "file" | "dir";
 export interface FileStat {
   readonly kind: FileKind;
   readonly mtimeMs: number;
+  readonly size?: number;
 }
 
 export interface LockOptions {

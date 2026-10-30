@@ -2,6 +2,7 @@ import { CONTRACT_FILE } from "../apicontract/registry.js";
 import { detectStack, hasWebStack } from "../appsec/stack.js";
 import { ARCH_FILE } from "../arch/config.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
+import { CONFIG_FILE, configAt, parseConfigYaml } from "../git/project-config.js";
 import { ONBOARD_FILE, onboardChecks, parseOnboard } from "../onboard/state.js";
 import { detectPython, PIP_DEFAULT, pythonChecks } from "../python/detect.js";
 import type { AcceptanceCheck, TaskContract } from "./types.js";
@@ -61,6 +62,11 @@ const projectChecks = (files: ProjectFiles): readonly AcceptanceCheck[] => {
   return onboard !== undefined && onboard.commands.length > 0 ? onboardChecks(onboard) : detectChecks(files);
 };
 
+const cliDeclared = (files: ProjectFiles): boolean => {
+  const text = files.read(CONFIG_FILE);
+  return text !== undefined && typeof configAt(parseConfigYaml(text), "cli", "bin") === "string";
+};
+
 export const implicitContract = (files: ProjectFiles): TaskContract => {
   const commands = projectChecks(files);
   const hasTests = commands.some((check) => check.kind === "tests");
@@ -84,7 +90,9 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       { id: "regression", kind: "regression" },
       ...(files.exists(ARCH_FILE) ? [{ id: "arch", kind: "arch" as const }] : []),
       ...(files.exists(CONTRACT_FILE) ? [{ id: "contract", kind: "contract" as const }] : []),
+      ...(cliDeclared(files) ? [{ id: "cli", kind: "cli" as const }] : []),
       { id: "pr", kind: "pr", requireOpen: false },
+      { id: "diff", kind: "diff" },
     ],
     decisionsNeeded: [],
     implicit: true,

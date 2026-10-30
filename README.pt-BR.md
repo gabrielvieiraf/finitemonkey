@@ -5,7 +5,7 @@
   <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="npm downloads"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=next" alt="CI"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md#instala%C3%A7%C3%A3o-planejada"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md#instala%C3%A7%C3%A3o"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 [English](README.md) | Português (Brasil) | [Español](README.es.md)
 
-> **Pré-lançamento.** Ainda não dá para instalar. O nome `finitemonkey` no npm está reservado (a 0.0.0 é só um marcador) e o código está sendo feito em público. Tudo abaixo é o plano, não o que acontece hoje. Dê uma estrela ou acompanhe o repositório se quiser saber quando sair a v0.1.
+> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm (0.1.0-next.40 quando isto foi escrito; o selo lá em cima mostra a atual). O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
 
 Eu sei como é. Com o advento da IA, muita coisa mudou.
 
@@ -48,7 +48,7 @@ Um macaco. Tempo finito. Trabalho que sai de verdade.
 
 ## O Claude Code diz que terminou, mas não terminou
 
-Esse é o principal problema que o Finite Monkey quer resolver. Comportamento planejado:
+Esse é o principal problema que o Finite Monkey quer resolver. O que ele faz:
 
 - Cada tarefa ganha uma **definição de pronto** que a máquina consegue checar: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo.
 - Quando o Claude tenta encerrar a sessão, o hook `Stop` roda essa checagem. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
@@ -57,11 +57,9 @@ Esse é o principal problema que o Finite Monkey quer resolver. Comportamento pl
 
 ## O Claude pulou ou apagou testes para eles passarem
 
-Travas planejadas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.
+Travas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.
 
 ## O Claude rodou `git reset --hard` e eu perdi trabalho
-
-Planejado:
 
 - Uma fotografia antes de toda operação arriscada no git, e um `undo` que traz de volta.
 - Nada de `--force`, nunca.
@@ -74,15 +72,15 @@ São mesmo. O Claude lê o `CLAUDE.md` como parte do contexto, e nada confere se
 
 ## Como impedir o Claude Code de vazar segredos?
 
-Planejado: uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é relatado como incidente, com os passos para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
+Uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é relatado como incidente, com os passos para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
 
 ## Como impedir um agente de mexer na produção na mão?
 
-Planejado: comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
+Comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
 
-## Mais que um portão (planejado)
+## Mais que um portão
 
-O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto do plano é sobre quem está digitando:
+O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto é sobre quem está digitando:
 
 - **Quando você está dando voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá, um bug colado de uma IA para outra e de volta: o Finite Monkey percebe a volta e diz isso com todas as letras, com o que tentar no lugar.
 - **Quando o projeto é maior que você, por enquanto.** Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, backup e um jeito de voltar atrás. As plantas de projeto mostram o que uma versão de verdade precisa e o que ainda falta, para uma tela de login não ser chamada de produto. As explicações acompanham o que você já sabe e vão sumindo conforme você aprende.
@@ -100,27 +98,47 @@ Você roda um comando, uma vez. Depois disso o Finite Monkey age pelo contexto, 
 - **Comandos com barra** são atalhos opcionais. Nenhum fluxo depende de você lembrar de um.
 - **O estilo de saída `report`** é opcional e vem desligado. Escolha com `/output-style report` se quiser toda resposta no formato do relatório final: resultado primeiro, depois verificado, não verificado e pendente, com FATO, OPINIÃO e INFERÊNCIA marcados. Ele mantém as instruções de programação do Claude Code (`keep-coding-instructions: true`).
 
-## Instalação (planejada)
+## Instalação
 
-Ainda não disponível. Quando a v0.1 sair:
+Pelo canal `next`, até a v0.1 sair:
 
 ```sh
-npx finitemonkey@latest init
+npx finitemonkey@next init
 ```
 
-Ou como plugin do Claude Code, de dentro da sessão:
+Ou como plugin do Claude Code, de dentro da sessão, com o marketplace da branch `next`:
 
 ```
-/plugin install finitemonkey --marketplace gabrielvieiraf/finitemonkey
+/plugin marketplace add gabrielvieiraf/finitemonkey#next
+/plugin install finitemonkey@finitemonkey-next
 ```
 
 Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instalação faz backup, mescla em vez de sobrescrever e pode rodar duas vezes sem estragar nada. `doctor` diz o que está errado, `uninstall` deixa tudo como estava.
 
 **Mais preguiçoso ainda:** peça ao Claude Code "instale o Finite Monkey seguindo docs/AGENT-SETUP.pt-BR.md". O roteiro manda o agente rodar os comandos sozinho, perguntar só o que for decisão sua e nunca pedir segredo.
 
-## Funciona de verdade? (benchmark, planejado)
+## De onde vem o desenho
 
-Ainda não se sabe. O benchmark planejado compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ficar neste repositório, inclusive onde não ajudou.
+O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha com IA acima do que consegue julgar. O ensaio [Efeito Ricochete: o usuário como limite invisível da inteligência artificial](docs/ricochet/ricochet.pt-BR.md) descreve duas fronteiras que a pessoa não vê de dentro: o que ela não sabe pedir e o que não consegue avaliar. A seção 10 mostra como cada mecanismo daqui põe uma verificação executável nesses dois pontos e quais hipóteses a bancada vai testar.
+
+O segundo ensaio, [A ilusão do segundo cérebro](docs/second-brain/second-brain.pt-BR.md), trata do conhecimento do projeto: por que "segundo cérebro" com LLM e arquivos de contexto envelhecem sem aviso e quase não ajudam o agente, segundo os estudos disponíveis, e como o Finite Monkey propõe tratar cada afirmação sobre o código como artefato de build, presa ao hash do trecho que descreve e verificada por execução.
+
+## Funciona de verdade? (benchmark, ainda não rodado)
+
+Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório, inclusive onde não ajudou.
+
+<!-- generated:evidence:start -->
+Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.40 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
+
+| Guard | Deve bloquear | Deve deixar | Falsos positivos | Falsos negativos | p95 (ms) |
+|---|---|---|---|---|---|
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.4 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.3 |
+| `git` | 55 | 59 | 1/59 (1.7%) | 0/55 (0.0%) | 95.8 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 2.5 |
+
+Custo contra o Claude Code puro nas mesmas tarefas: ainda não medido.
+<!-- generated:evidence:end -->
 
 ## Qual a diferença para...?
 
@@ -156,7 +174,7 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Lê | `stdin` | O evento que o Claude Code passa a cada hook: a chamada de ferramenta, o prompt ou o pedido de parada. |
 | Lê | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | As configurações do Claude Code, para conferir que os hooks estão instalados e que nada os desliga. `$CLAUDE_CONFIG_DIR` substitui `~/.claude` quando definido. |
 | Lê | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Arquivos de instrução, lidos pelo `doctor` para apontar regras que só existem como texto. |
-| Lê | `~/.claude/projects/` | Os logs locais de sessão do Claude Code deste projeto: lidos uma vez com `init --look-back`, e lidos aos poucos a cada prompt só quando há um teto de gasto em `.finitemonkey/config.yml`. |
+| Lê | `~/.claude/projects/` | Os logs locais de sessão do Claude Code deste projeto: lidos uma vez com `init --look-back`, e lidos aos poucos a cada prompt só quando há um teto de gasto em `.finitemonkey/config.yml`. O `finitemonkey drift` (e, salvo com a flag drift-sensor desligada, uma rodada em segundo plano no máximo uma vez por dia depois de um turno) conta chamadas de ferramenta, modelo e versão por dia a partir deles; só essas contagens ficam guardadas, em `.finitemonkey/cache/drift.json`. |
 | Lê | `~/.claude/plugins/`, `~/.claude/debug/latest` | O `doctor` lê os plugins instalados e os arquivos de hook deles para listar cada hook e achar conflitos; o `doctor --hooks` também lê o log de debug mais recente do Claude Code para os tempos dos hooks. Nunca altera arquivos de outro plugin. |
 | Lê | `.git/` | O repositório pelo comando `git`: status, diffs, refs e o reflog. |
 | Lê | `git diff` | Arquivos alterados, varridos atrás de segredos, testes pulados, placeholders e padrões de prosa. |
@@ -168,7 +186,7 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Grava | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | A evidência de cada checagem, ligada ao hash da árvore, e o log do portão. |
 | Grava | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Aprovações e liberações digitadas pela pessoa, e um cache curto dos pull requests abertos. |
 | Grava | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | A baseline de achados aceitos e os incidentes de exposição. Os dois guardam impressões e máscaras, nunca o valor de um segredo. |
-| Grava | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots antes de comandos git destrutivos, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges. |
+| Grava | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/`, `.git/finitemonkey/snapshots/` | Snapshots antes de comandos git destrutivos e de `rm` no repositório, com cópias de arquivos ignorados e de segredos não rastreados até 50 MB dentro do .git, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges. |
 | Grava | `.finitemonkey/reports/` | Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido, e o relatório que cada frente grava antes de parar. |
 | Grava | `.finitemonkey/pr/` | Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch. |
 | Grava | `.finitemonkey/fronts.yml`, `.finitemonkey/briefing.md` | O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit. |
@@ -179,13 +197,12 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Grava | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Só com `supervisor: enabled: true` na configuração: um arquivo de espera de vida curta por sessão no diretório que um supervisor de troca de conta anuncia, enquanto o portão roda ou segura a parada. O `gain` lê o `usage.json` desse diretório. |
 | Grava | `.finitemonkey/semgrep/`, `.finitemonkey/data-map.yml` | O `appsec rules --write` grava as regras do semgrep geradas para a stack detectada, para o CI rodar; sem `--write` ele só imprime. O `data-map` grava uma linha por campo pessoal achado no schema (só nomes). |
 | Grava | `.finitemonkey/rules-compiled.json`, `.github/workflows/finitemonkey-rules.yml` | O `rules compile` grava, para cada regra de `.finitemonkey/rules.yml`: entradas de deny e chaves de configuração em `.claude/settings.json`, uma linha no `AGENTS.md`, a lista do que gravou e, com `--ci`, um workflow que confere as regras nos pull requests. O `uninstall` remove tudo isso. |
-| Grava | `.finitemonkey/look/` | Capturas de tela, a folha de contato e o resumo JSON que o `look` grava por hash da árvore. |
+| Grava | `.finitemonkey/look/` | Capturas de tela, a folha de contato, o resumo JSON e os achados de interface por regra (`ux.json`, capturas com caixas) que o `look` grava por hash da árvore. |
 | Grava | `.finitemonkey/prompts.jsonl` | O que você digita para o Claude Code neste projeto, com segredos mascarados, para o `finitemonkey audit` achar pedidos e decisões que nunca chegaram a um documento. Fica nesta máquina. |
 | Grava | `.finitemonkey/spend.json`, `.finitemonkey/spend-reconcile.jsonl` | O gasto do agente estimado a partir dos logs locais de sessão, por tarefa, dia e mês, e as diferenças achadas pelo `cost reconcile`. |
 | Grava | `docs/plan/` | Documentos de plano em `docs/plan/`: o inventário do que o código faz hoje, registros de decisão, registros de pesquisa, modelos de custo, o plano mestre a partir da primeira tarefa L e a cópia dele guardada antes de cada consolidação. |
-| Grava | `.finitemonkey/map.txt` | O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore, e o registro dos avisos de reuso com o resultado de cada um. |
 | Grava | `.finitemonkey/signals.jsonl`, `.finitemonkey/signals-index.json`, `.finitemonkey/signals-profile.json` | Sinais de volta de `finitemonkey signals`: assinaturas de erro, hashes de edição e impressões dos pedidos (pares de palavras em hash, nunca o texto), o índice de voltas e os limiares calibrados. Apagados por `signals forget`. |
-| Grava | `.finitemonkey/perfil.yml`, `.finitemonkey/perfil-commits.json`, `.finitemonkey/conceitos.yml` | O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta e conhecimento do domínio, que sobem com palavras técnicas nos pedidos e com commits feitos fora da sessão, e o livro de conceitos com o nível mostrado em cada conceito visto no projeto. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`. |
+| Grava | `.finitemonkey/perfil.yml`, `.finitemonkey/perfil-commits.json`, `.finitemonkey/conceitos.yml`, `.finitemonkey/conceitos-events.jsonl`, `.finitemonkey/xray.json`, `.finitemonkey/probes.json` | O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta por domínio, que sobe com commits feitos fora da sessão, conhecimento do domínio vindo do início rápido, o livro de conceitos com o nível mostrado em cada conceito visto no projeto e o registro de evidência por conceito (exposições, previsões, alterações e reparos próprios, falhas depois da aprovação) de onde os estados são contados, o último raio-x das linhas alteradas e as sondas com as respostas. `xray forget` apaga o registro de evidência e o raio-x; `probe forget` apaga as sondas. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`. |
 | Grava | `.finitemonkey/runs/` | A saída inteira dos comandos rodados por `finitemonkey run`, com segredos mascarados; ficam as 30 mais recentes. |
 | Grava | `.finitemonkey/map.txt`, `.finitemonkey/reuse.json` | O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore, e o registro dos avisos de reuso com o resultado de cada um. |
 | Grava | `.finitemonkey/review/`, `.claude/agents/verifier.md` | A contagem de rodadas de revisão usada pelo `review packet` e, só quando `review.playwright: true` está na configuração, um agente verificador com o MCP do Playwright. |
@@ -207,6 +224,14 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Grava | `.github/workflows/ds-sync.yml` | Só com `finitemonkey ds-sync init --write`: um workflow que copia o design system do repositório de protótipos por um GitHub App da organização e mantém um pull request atualizado. O `ds-sync issue --yes`, rodado pela pessoa ou por esse workflow, abre ou edita issues pelo `gh`, reescrevendo só a seção entre os marcadores. |
 | Grava | `ruff.toml`, `pytest.ini`, `scripts/check_no_comments.py`, `.github/workflows/ci.yml` | Só com `finitemonkey preset python --write` num projeto Python: regras do ruff para complexidade e tamanho, opções do pytest que falham com marcadores desconhecidos, um script que rejeita comentários no código, contratos do import-linter quando `.finitemonkey/arch.yml` existe e um workflow de CI com `uv sync --locked`. Um arquivo existente aparece como diff e é mantido. |
 | Grava | `.finitemonkey/onboard.json`, `AGENTS.md` | O `finitemonkey onboard` roda os comandos de build, teste, lint e typecheck que acha nos manifestos e no AGENTS.md ou CLAUDE.md, com limite de tempo, e guarda em `onboard.json` e no seu próprio bloco do AGENTS.md só os que deram certo, mais o número de possíveis segredos achados por uma varredura única do histórico do git. Comandos que publicam, instalam ou ficam rodando não são executados. |
+| Grava | `~/.finitemonkey/ledger.key` | Uma chave aleatória, criada na primeira vez que uma evidência é gravada, que assina cada linha do registro de evidências. Fica na sua pasta pessoal, fora do projeto, legível só por você. Linhas sem assinatura válida são ignoradas e relatadas; apagar a chave faz as evidências antigas contarem como não executadas. |
+| Grava | `.finitemonkey/goals.yml`, `.finitemonkey/decisions.jsonl`, `.finitemonkey/assumptions.jsonl`, `.finitemonkey/research/` | Objetivos do projeto, restrições, não objetivos, critérios de pronto e opções rejeitadas. Uma entrada adicionada de dentro do Claude Code fica `inferred` e nunca conta como aprovada; só o `finitemonkey guardian goal confirm`, rodado pela pessoa num terminal, a marca como `stated`. A seção opcional `context:` (estágio, conceitos demonstrados, quem opera, próximo marco) segue a mesma regra: campo inferido só pode silenciar um relatório. O `decisions.jsonl` guarda cada decisão aceita e cada relatório de nível 2-3: a recomendação, a evidência da época, a escolha e um motivo opcional de uma linha para quando a recomendação não foi seguida; o `guardian forget` apaga uma entrada. Nada sobre a pessoa é guardado. O `assumptions.jsonl` é o registro de premissas: linhas ASSUMPTION exportadas pelo `decide check` e entradas do `guardian assume add`, com impacto, como verificar, um gatilho de reavaliação e um status. O `research/<pergunta>.jsonl` guarda uma pergunta de pesquisa, o registro de decisão a que ela serve, as opções, os critérios, as incógnitas críticas e a condição de parada, e cada fonte com o que ela mudou. |
+| Grava | `.finitemonkey/bypasses.jsonl` | Chamadas de ferramenta que um guard do finitemonkey negou e que rodaram mesmo assim, aprovadas por outro mod, uma regra de settings ou uma ferramenta de permissão: o id da chamada, a ferramenta e um resumo mascarado da entrada. `ci gate` e `pr open` recusam enquanto houver uma não revisada; `finitemonkey bypass review`, digitado pela pessoa, marca como revisada. |
+| Grava | `.finitemonkey/cost.jsonl` | Só quando o mod roda (Claude Code 2.1.287 ou mais novo): as contagens de tokens que a API informou em cada requisição ao modelo (modelo, entrada, saída, leitura e escrita de cache, id do subagente), com a tarefa ativa, os braços de experimento e o preço em dólares. `finitemonkey mod cost` soma por contrato, tentativa e braço. Nenhum texto de pedido ou resposta. |
+| Grava | `.finitemonkey/claims.jsonl`, `.finitemonkey/derived.json`, `.finitemonkey/demoted.json`, `.finitemonkey/retrieve.jsonl`, `.finitemonkey/decision-records/`, `.finitemonkey/decision-reasons.jsonl`, `.finitemonkey/cache/knowledge-map.json`, `.finitemonkey/cache/questions.json` | O `claims.jsonl` guarda afirmações sobre o projeto, escritas com `claims add`: o texto, o arquivo ou a função ancorada com um hash do corpo, de onde a afirmação veio e quando foi registrada. Entradas são acrescentadas e encerradas, nunca apagadas. Uma afirmação cujo código ancorado mudou fica marcada como vencida e fora do contexto até o `claims renew`. Uma afirmação com `--check` roda no gate quando um arquivo em que está ancorada mudou; se passa, é renovada na árvore atual. Uma afirmação pode se apoiar em afirmações registradas, evidências do ledger ou premissas; quando uma delas cai, a afirmação é marcada como fora até o próprio check passar de novo. O `derived.json` registra, para cada arquivo gerado como o `map.txt`, os hashes das entradas e da saída: o arquivo só é refeito quando uma entrada muda, um gerador não pode ler outro arquivo gerado, e uma edição à mão é avisada e guardada como afirmação da pessoa. Uma afirmação adicionada pelo agente depois que a sessão leu saída da web ou de MCP fica marcada como externa e em quarentena até a pessoa rodar `claims promote`; texto com forma de instrução vindo dessa fonte é recusado, e a mesma sessão não consegue escrevê-lo na pasta de memória do próprio Claude Code. O `demoted.json` lista as fontes de conhecimento em que o `experiments report` não achou efeito além da margem de equivalência; elas deixam de ser injetadas. O `retrieve.jsonl` registra cada pergunta do `retrieve` com o degrau da escada que respondeu (grep, mapa, BM25 sobre afirmações válidas e decisões) e o custo em tokens. Quando uma tarefa fecha com mudança de dependência, fornecedor ou arquitetura, o `decision-records/<tarefa>.json` guarda o hash do contrato, as mudanças classificadas, as opções e critérios do registro de pesquisa, a evidência verde e as rodadas de gate, montados sem modelo; o `decision-reasons.jsonl` guarda a frase que a pessoa escreve com `decide why`. Só depois que a pessoa põe `knowledge-map: active` no policy.yml, o `knowledge map` mostra, por área do código, se o conhecimento está com a pessoa, só em afirmações verificadas, só com o agente ou com ninguém, e guarda em cache as áreas da pessoa em `cache/knowledge-map.json`; o `cache/questions.json` guarda quais perguntas espaçadas já foram feitas, no máximo uma por sessão. |
+| Grava | `.finitemonkey/parking.jsonl` | Ideias estacionadas com `finitemonkey park` enquanto uma tarefa está ativa: um id, a tarefa, o texto que você digitou e quando. `finitemonkey unpark <id>` acrescenta uma linha que traz uma de volta. Nada é estacionado sem esse comando. |
+| Grava | `.finitemonkey/cache/copy-rules.json` | O `cache/copy-rules.json` guarda, por regra de texto da interface (rótulo começando com verbo, mensagem de erro com ação, um nome por ação, rótulo vazio), os achados que o check de copy mostrou e os que depois foram corrigidos no catálogo. A razão entre corrigidos e mostrados decide se a regra pode bloquear: só quando `ui-copy` está ativo e a razão chega ao `ui.copy.accept_threshold` do config.yml. Nunca vai para commit. |
+| Grava | `.finitemonkey/judge.jsonl`, `.finitemonkey/judge/` | O `judge.jsonl` é um registro único, só de acréscimos, do que a pessoa consegue julgar, em código e em qualquer campo pesquisado: domínios, conceitos com suas âncoras, evidências com o tipo de prova e um ponteiro para a prova, contestações, afirmações, o estado de sustentação delas, resultados divididos em afirmações, ajudas de horizonte, sinais internos, eventos de trajetória, itens de pesquisa e perguntas. A faixa por conceito nunca é gravada: é calculada das evidências por uma regra de contagem pública, e exposição a um termo pesa zero. O estado de sustentação só muda por uma verificação ou pela pessoa, nunca por um modelo. O `judge/handoffs/<afirmação>.json` guarda o pacote para quem vai revisar de fora, e o `judge/items/<hash>.txt` guarda uma página, documento ou saída de ferramenta lida com `judge read`, como dado citado, com origem e hash do conteúdo. Nada disso é commitado nem enviado; o `judge export` imprime e o `judge forget` apaga. |
 | Envia | `api.github.com` | Pelo `gh`, só quando ele está instalado e logado: o estado do pull request citado numa tarefa e os seus pull requests abertos para a linha da sessão. Código nunca é enviado. |
 | Envia | `127.0.0.1` | Uma requisição ao seu próprio app na porta que a checagem `runtime` declara, depois de subir o app ou achá-lo rodando. Nada sai desta máquina. |
 | Envia | `registry.npmjs.org`, `pypi.org` | O nome do pacote, ao registro do npm ou do PyPI, quando um comando de shell vai adicionar um pacote que o projeto ainda não declara. Nunca com `FINITEMONKEY_OFFLINE=1`. |
@@ -216,7 +241,11 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Envia | `hosts.local.yml` | Pelo `ssh`, só quando uma pessoa roda `finitemonkey infra --remote --yes` num terminal: comandos só de leitura (`docker ps`, `systemctl list-units`) nos hosts de `hosts.local.yml`. Nunca por hook nem por agente. |
 | Envia | `headers.url` | Pelo `curl`, só quando `headers.url` está definido em `.finitemonkey/config.yml` e um contrato de tarefa tem o check `headers`: um GET por rota configurada, para ler os headers de segurança da resposta real. Sem isso, os headers vêm do app que o `look` já subiu em 127.0.0.1. |
 | Envia | `hosts.local.yml`, `FINITEMONKEY_DEPLOY_HOST` | Pelo `ssh`, quando você roda `finitemonkey deploy check` (ou o workflow agendado dele, ou o check `deploy` do gate): comandos só de leitura (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) com o usuário só de leitura, para comparar a produção com a branch. Com `--issue`, uma issue do GitHub é aberta ou comentada pelo `gh`. |
+| Envia | `terraform provider APIs` | Só quando uma mudança toca arquivos Terraform: `terraform plan` e `terraform show -json` rodam com as suas credenciais, então as APIs do provedor são lidas. O arquivo do plano fica em `.finitemonkey/cache/`. Apply nunca roda. |
+| Envia | `doi.org`, `cited URLs` | Só quando o `judge verify` roda numa afirmação com citação e o `cite-span` não está desligado: o DOI citado (pelo doi.org) ou a URL é pedido para conferir que resolve e que o trecho entre aspas aparece nele. Só o identificador é enviado; nenhum texto de afirmação, nota ou evidência sai da máquina. Fonte inalcançável ou com paywall aparece como não verificada. |
 <!-- generated:footprint:end -->
+
+O plugin também carrega um mod: um módulo de hooks que o Claude Code 2.1.287 ou mais novo roda ao lado dos command hooks. Os command hooks continuam sendo a autoridade de todo bloqueio, veredito e evidência; o mod só desenha, aperta decisões de permissão e mede, e versões antigas, `claude -p` e outros agentes seguem funcionando só com os command hooks. O que o mod engancha e chama, como o `claude plugin validate --json` informa, fica em [plugin/FOOTPRINT.json](plugin/FOOTPRINT.json), e o CI falha quando o código alcança mais do que esse arquivo diz.
 
 ## Perguntas frequentes
 
@@ -226,7 +255,7 @@ Mais perguntas, uma para cada busca real, em [docs/faq.pt-BR.md](docs/faq.pt-BR.
 Não. São hooks e checagens que rodam lembrando o modelo ou não.
 
 **Ele manda meu código para algum lugar?**
-Não. Seu código nunca sai da sua máquina, e não há telemetria. A única chamada de rede é o `gh` perguntando ao GitHub sobre pull requests, e só quando o `gh` está logado. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
+Não. Seu código nunca sai da sua máquina, e não há telemetria. Sem você pedir, ele faz dois tipos de chamada de rede: o `gh` perguntando ao GitHub sobre pull requests, só quando o `gh` está logado, e o nome de um pacote enviado ao registro do npm ou do PyPI quando um comando vai acrescentar um pacote que o projeto não declara. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
 
 **Vai me deixar mais lento?**
 Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](budgets.json). Os tempos de ponta a ponta saem junto com o benchmark.
@@ -238,32 +267,41 @@ Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o q
 Primeiro o Claude Code. Os outros depois, se o benchmark disser que vale.
 
 **Por que "Finite Monkey"?**
-O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão planejado funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
+O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
 
 **Quem é o macaco?**
 Você, e em alguns dias o agente.
 
 ## Roteiro
 
-Na ordem das dependências, não das datas. Cada etapa termina num portão de saída medido.
+Na ordem das dependências, não das datas. Cada etapa termina num portão de saída medido. "Em sombra" quer dizer que observa e registra o que teria feito, sem bloquear, até o benchmark medir.
 
 | Etapa | O quê | Situação |
 |---|---|---|
-| 0. Fundação | `init`, `doctor`, `update`, `uninstall`; contratos de saída JSON; três idiomas; releases automáticas | Em andamento |
-| 1. Os quatro danos | Segredos, produção, git, "pronto" falso; o portão no `Stop` | Planejada |
-| 2. Decidir bem e não se perder | Inventário antes de mudar, registro de decisões, frentes de trabalho em paralelo, protocolo completo de merge | Planejada |
-| 3. Geradores | Lint, arquitetura, CI e deploy para projetos novos e existentes | Planejada |
-| 4. Provar valor | Benchmark com ablação; o que não tiver efeito medido sai | Planejada |
+| 0. Fundação | `init`, `doctor`, `update`, `uninstall`; contratos de saída JSON; três idiomas; releases automáticas | Pronta (no `next`) |
+| 1. Os quatro danos | Segredos, produção, git, "pronto" falso; o portão no `Stop` | Pronta (no `next`) |
+| 2. Decidir bem e não se perder | Inventário antes de mudar, registro de decisões, frentes de trabalho em paralelo, protocolo completo de merge | Pronta (no `next`) |
+| 2.5. Regras que valem, trabalho que termina | Os arquivos de instrução do projeto seguidos de verdade, saúde do código sem regra em prosa, tarefas que terminam sem voltas nem ruído | Pronta (no `next`); a maior parte em sombra até ser medida |
+| 3. Geradores | Lint, arquitetura, CI e deploy para projetos novos e existentes | Pronta (no `next`) |
+| 3.5. Garantias que se sustentam | Falhar fechado onde há dano possível, política que nunca afrouxa em silêncio, comandos de teste fixados, prova que denuncia adulteração, fotografias que incluem arquivos ignorados | Pronta; partes em sombra até serem medidas |
+| 3.6. O Finite Monkey como mod | Um mod ao lado dos hooks de comando: a faixa do portão e os painéis no terminal, no Desktop e no VS Code, custo por tarefa; os hooks de comando guardam todo veredito e bloqueio | Pronta |
+| 3.7. Conhecimento do projeto como artefato de build | Afirmações presas ao código que descrevem, checadas rodando e marcadas como vencidas quando esse código muda | Pronta, em sombra até ser medida |
+| 3.8. Interfaces que as pessoas conseguem usar | Telas, formulários, textos, APIs e CLIs checados no que renderiza e roda | Pronta, em sombra até ser medida |
+| 3.9. Dados, infra e o dia da pessoa | Planos de infraestrutura, migrações, restaurações e comandos destrutivos remotos segurados antes de acontecer; retomada, foco, deriva e procedência | Pronta, em sombra até ser medida |
+| 4. Provar valor | Benchmark com ablação; o que não tiver efeito medido sai. Um estudo com pessoas de fora do projeto, binários assinados | Código pronto; benchmark não rodado. Estudo e binários assinados não feitos |
+| 5. A pessoa como limite | Perguntas a partir de onde implementações candidatas divergem, cenários de acesso na língua do produto, ensino que some conforme os conceitos são demonstrados, o guardião do projeto | Pronta, em sombra até ser medida |
+| 5.5. Progresso real versus progresso aparente | Para cada parte de um resultado: o que tem prova checável, o que se apoia só no modelo onde a pessoa não consegue julgar, o que nunca foi perguntado | Pronta, em sombra até ser medida |
+| 6. Seleção cumulativa e autonomia | Variantes de política escolhidas por pessoa em trabalho real, execuções sem supervisão divididas em subcontratos com portão, quando perguntar calibrado por rótulos locais | Pronta, em sombra até ser medida |
 
 A v1.0 são as etapas 0 a 4.
 
 ## Para agentes
 
-- [llms.pt-BR.txt](llms.pt-BR.txt) ([em inglês](llms.txt)): o que é o Finite Monkey e quando recomendar. Resumo: não recomende instalar até `npm view finitemonkey version` mostrar 0.1.0 ou mais.
+- [llms.pt-BR.txt](llms.pt-BR.txt) ([em inglês](llms.txt)): o que é o Finite Monkey e quando recomendar. Resumo: recomende o canal `next` só para quem aceita mudanças que quebram entre versões; a recomendação estável espera a 0.1.0.
 - [llms-full.pt-BR.txt](llms-full.pt-BR.txt): o README, o FAQ, a comparação e o roteiro do agente em um arquivo só, em português ([em inglês](llms-full.txt)).
 - [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md) ([em inglês](docs/AGENT-SETUP.md)): roteiro de instalação para um agente trabalhando para alguém.
 - [AGENTS.md](AGENTS.md): regras para quem altera este repositório.
-- Todo comando vai aceitar `--json` e devolver um `schemaVersion`. Campos só são acrescentados.
+- Todo comando aceita `--json` e devolve um `schemaVersion`. Campos só são acrescentados.
 
 ## Contribuir
 

@@ -1,0 +1,91 @@
+{
+  "schema": "finitemonkey/evidence@1",
+  "version": "0.1.0-next.40",
+  "budget": {
+    "fprWarn": 0.05,
+    "fprFail": 0.15,
+    "minPositives": 50,
+    "minNegatives": 50
+  },
+  "guards": [
+    {
+      "guard": "secrets",
+      "n": 113,
+      "positives": 59,
+      "negatives": 54,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "fpr": 0,
+      "fnr": 0,
+      "p50Ms": 0.12,
+      "p95Ms": 0.41,
+      "byOrigin": {
+        "synthetic": 113,
+        "session": 0
+      },
+      "wrong": []
+    },
+    {
+      "guard": "gate",
+      "n": 104,
+      "positives": 52,
+      "negatives": 52,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "fpr": 0,
+      "fnr": 0,
+      "p50Ms": 0.08,
+      "p95Ms": 0.33,
+      "byOrigin": {
+        "synthetic": 104,
+        "session": 0
+      },
+      "wrong": []
+    },
+    {
+      "guard": "git",
+      "n": 114,
+      "positives": 55,
+      "negatives": 59,
+      "falsePositives": 1,
+      "falseNegatives": 0,
+      "fpr": 0.0169,
+      "fnr": 0,
+      "p50Ms": 16.3,
+      "p95Ms": 95.77,
+      "byOrigin": {
+        "synthetic": 114,
+        "session": 0
+      },
+      "wrong": [
+        "git-110"
+      ]
+    },
+    {
+      "guard": "rules",
+      "n": 105,
+      "positives": 50,
+      "negatives": 55,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "fpr": 0,
+      "fnr": 0,
+      "p50Ms": 0.46,
+      "p95Ms": 2.48,
+      "byOrigin": {
+        "synthetic": 105,
+        "session": 0
+      },
+      "wrong": []
+    }
+  ],
+  "contextBytes": {
+    "sessionStartBytes": 0,
+    "subagentStartBytes": 0,
+    "userPromptSubmitBytes": 0,
+    "postToolUseBytes": 0,
+    "agentsBlockBytes": 510
+  },
+  "arms": [],
+  "review": null
+}

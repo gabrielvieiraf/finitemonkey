@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { ROOT } from "./bundle.mjs";
@@ -12,7 +13,34 @@ const names = readdirSync(dir)
   .sort();
 
 const IDENTITY = /^GIT_(?:AUTHOR|COMMITTER)_(?:NAME|EMAIL|DATE)$/;
-const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !IDENTITY.test(name)));
+const realKey = join(homedir(), ".finitemonkey", "ledger.key");
+const keyStamp = () => {
+  try {
+    const stat = statSync(realKey);
+    return `${stat.size}:${stat.mtimeMs}:${stat.ino}`;
+  } catch {
+    return "absent";
+  }
+};
+const keyBefore = keyStamp();
+const home = realpathSync.native(mkdtempSync(join(tmpdir(), "fm-test-home-")));
+if (process.platform === "win32") {
+  for (const parts of [
+    ["AppData", "Local"],
+    ["AppData", "LocalLow"],
+    ["AppData", "Roaming"],
+    ["Desktop"],
+    ["Documents"],
+    ["Downloads"],
+  ]) {
+    mkdirSync(join(home, ...parts), { recursive: true });
+  }
+}
+const env = {
+  ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !IDENTITY.test(name))),
+  HOME: home,
+  USERPROFILE: home,
+};
 
 const run = (files, extra) =>
   files.length === 0
@@ -31,4 +59,14 @@ const serial = run(
   names.filter((name) => TIMING.has(name)).map((name) => join(dir, name)),
   ["--test-concurrency=1"],
 );
+try {
+  rmSync(home, { recursive: true, force: true });
+} catch {
+  console.error(`could not remove the test home ${home}`);
+}
+const keyAfter = keyStamp();
+if (keyAfter !== keyBefore) {
+  console.error(`tests touched the real ledger key at ${realKey} (${keyBefore} -> ${keyAfter})`);
+  process.exit(1);
+}
 process.exit(parallel === 0 ? serial : parallel);

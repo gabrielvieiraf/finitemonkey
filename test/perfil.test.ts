@@ -138,13 +138,10 @@ describe("perfil: disagreement is answered with a practical question", () => {
 });
 
 describe("perfil: sources while working", () => {
-  it("technical words in requests raise knowledge of that domain only", async () => {
+  it("technical words in requests do not move domain knowledge", async () => {
     const repo = await installed();
     await fire(repo, "UserPromptSubmit", { prompt: "Add a foreign key and a migration for invoices" });
-    const profile = readProfile(repoRuntime(), fmPaths(repo.root));
-    assert.ok(profile !== undefined);
-    assert.ok(profile.domains.backend.knowledge > 50);
-    assert.equal(profile.domains.interface.knowledge, 50);
+    assert.equal(readProfile(repoRuntime(), fmPaths(repo.root)), undefined);
   });
 
   it("commits outside the session raise tool literacy; commits made through the hook log do not", async () => {

@@ -1,5 +1,7 @@
 import { bookPath, raise, readBook, writeBook } from "../conceitos/book.js";
 import { CONCEPT_IDS, CONCEPT_LEVELS, parseConcept, parseConceptLevel } from "../conceitos/concepts.js";
+import { creditGate } from "../conceitos/credit.js";
+import { CONCEPT_EVIDENCE_SCHEMA, conceptSummaries, type ConceptSummary } from "../conceitos/evidence.js";
 import { updateFromPending } from "../conceitos/hooks.js";
 import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
@@ -48,7 +50,43 @@ const exportBook = (ctx: Ctx): CommandResult => {
 
 const update = (ctx: Ctx): CommandResult => {
   const ids = updateFromPending(ctx.runtime, pathsOf(ctx));
-  return success({ schema: CONCEITOS_SCHEMA, seen: [...ids] }, []);
+  const credited = creditGate(ctx.runtime, pathsOf(ctx));
+  return success({ schema: CONCEITOS_SCHEMA, seen: [...ids], credited: credited.length }, []);
+};
+
+const evidenceJson = (summaries: readonly ConceptSummary[]): Readonly<Record<string, unknown>> => ({
+  schema: CONCEPT_EVIDENCE_SCHEMA,
+  concepts: summaries.map((item) => ({
+    concept: item.concept,
+    domain: item.domain,
+    state: item.state,
+    positive: item.positive,
+    negative: item.negative,
+    exposures: item.exposures,
+    last: item.last,
+    evidence: item.evidence.map((event) => ({
+      at: event.at,
+      kind: event.kind,
+      task: event.task ?? null,
+      file: event.file ?? null,
+    })),
+  })),
+});
+
+const evidence = (ctx: Ctx): CommandResult => {
+  const summaries = conceptSummaries(ctx.runtime, pathsOf(ctx));
+  return success(
+    evidenceJson(summaries),
+    summaries.map((item) =>
+      ctx.t("conceitos.evidence.line", {
+        concept: ctx.t(`conceitos.concept.${item.concept}`),
+        state: ctx.t(`conceitos.state.${item.state}`),
+        positive: item.positive,
+        negative: item.negative,
+        exposures: item.exposures,
+      }),
+    ),
+  );
 };
 
 const MARK_USAGE = `finitemonkey conceitos mark <concept> <${CONCEPT_LEVELS.join("|")}>`;
@@ -101,4 +139,12 @@ export const conceitosMarkCommand: CommandSpec = {
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args) => Promise.resolve(mark(ctx, args.positionals[0], args.positionals[1])),
+};
+
+export const conceitosEvidenceCommand: CommandSpec = {
+  path: ["conceitos", "evidence"],
+  summaryKey: "command.conceitos_evidence.summary",
+  usage: "finitemonkey conceitos evidence",
+  status: "ready",
+  run: (ctx) => Promise.resolve(evidence(ctx)),
 };

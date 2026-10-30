@@ -15,7 +15,11 @@ export const recordLook = (
   runtime: Runtime,
   paths: FmPaths,
   tree: string,
-  shot: { readonly results: readonly PageResult[]; readonly sheet: string | undefined },
+  shot: {
+    readonly results: readonly PageResult[];
+    readonly sheet: string | undefined;
+    readonly blocked?: readonly string[];
+  },
   allowed: AllowOutcome,
 ): { readonly kind: "done"; readonly summary: LookSummary; readonly summaryPath: string } => {
   const failures = allowed.findings.filter((item) => item.blocking).length;
@@ -31,6 +35,7 @@ export const recordLook = (
     contactSheet: shot.sheet === undefined ? null : projectRelative(paths, shot.sheet),
     findings: allowed.findings,
     ignoredAllows: allowed.ignored,
+    ...(shot.blocked === undefined || shot.blocked.length === 0 ? {} : { blockedRequests: shot.blocked.slice(0, 50) }),
   };
   const file = summaryPath(paths, tree);
   runtime.writeText(file, `${JSON.stringify(summary, null, 2)}\n`);

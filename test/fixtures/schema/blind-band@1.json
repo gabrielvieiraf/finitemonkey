@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/blind-band@1.json",
+  "title": "finitemonkey/blind-band@1",
+  "description": "`data` of `finitemonkey signals blind-band --json`. Generated from BlindBandData in src/commands/signals-blind-band.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/blind-band@1"
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "enum": ["product", "interface", "backend", "infrastructure", "security", "general"]
+          },
+          "week": {
+            "type": "string"
+          },
+          "helps": {
+            "type": "number"
+          },
+          "withoutCriterion": {
+            "type": "number"
+          },
+          "index": {
+            "type": "number"
+          },
+          "byCriterion": {
+            "type": "object",
+            "properties": {
+              "none": {
+                "type": "number"
+              },
+              "example": {
+                "type": "number"
+              },
+              "property": {
+                "type": "number"
+              },
+              "scenario": {
+                "type": "number"
+              },
+              "check": {
+                "type": "number"
+              }
+            },
+            "required": ["none", "example", "property", "scenario", "check"]
+          },
+          "conceptsMoved": {
+            "type": "number"
+          }
+        },
+        "required": ["domain", "week", "helps", "withoutCriterion", "index", "byCriterion", "conceptsMoved"]
+      }
+    },
+    "total": {
+      "type": "object",
+      "properties": {
+        "helps": {
+          "type": "number"
+        },
+        "withoutCriterion": {
+          "type": "number"
+        },
+        "index": {
+          "type": "number"
+        }
+      },
+      "required": ["helps", "withoutCriterion", "index"]
+    }
+  },
+  "required": ["schema", "rows", "total"]
+}

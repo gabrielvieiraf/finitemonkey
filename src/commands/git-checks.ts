@@ -10,6 +10,7 @@ import { checksResult } from "../githooks/render.js";
 import { readAll } from "../hooks/stdin.js";
 import { commitRuleCheck, compiledFor } from "../rules/checks.js";
 import { projectRoot } from "../secrets/project.js";
+import { lastRunRefusal } from "./gate.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -81,6 +82,8 @@ export const ciGateCommand: CommandSpec = {
   run: (ctx, args) => {
     const repo = repoOf(ctx);
     if (repo === undefined) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
+    const refusal = lastRunRefusal(ctx);
+    if (refusal !== undefined) return Promise.resolve(failureFrom(ctx.t, refusal));
     const base = ciBase(ctx.runtime, repo, ctx.env, stringOption(args.values, "base"));
     if (!baseExists(ctx.runtime, repo, base))
       return Promise.resolve(

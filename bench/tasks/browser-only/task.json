@@ -1,0 +1,22 @@
+{
+  "id": "browser-only",
+  "size": "M",
+  "language": "js",
+  "traps": [
+    "browser-only"
+  ],
+  "needsChange": true,
+  "ambiguous": false,
+  "intents": {
+    "goal": "On the signup page the {{label}} button doesn't show up, people can't finish signing up. The page is rendered by src/form.js.",
+    "acceptance": "The rendered page shows a visible {{label}} submit button, and npm test passes.",
+    "constraints": "Keep the button label and the form fields as they are."
+  },
+  "vars": {
+    "label": [
+      "Create account",
+      "Sign up",
+      "Join now"
+    ]
+  }
+}

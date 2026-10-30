@@ -6,6 +6,7 @@ import { baseOf, projectFile, record, scopeOf, type SignalScope } from "./contex
 import { errorSignature, shortHash } from "./signature.js";
 import type { SignalEntry } from "./store.js";
 import { writeIndex } from "./write-index.js";
+import { writesFiles } from "./writes.js";
 
 const EDIT_TOOLS = new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 export const FAST_ACCEPT_MS = 5000;
@@ -87,10 +88,37 @@ const failedOutput = (raw: JsonObject): string | undefined => {
   return [textField(response, "stdout") ?? "", textField(response, "stderr") ?? ""].join("\n");
 };
 
+const SHELL_TOOLS = new Set(["Bash", "PowerShell"]);
+const NAMED_FILE = /[\w@./\\-]*[\w-]\.[A-Za-z][A-Za-z0-9]{0,5}(?=[:("'\s,]|$)/g;
+const MAX_NAMED = 20;
+
+export const namedFiles = (output: string): readonly string[] => {
+  const names = (output.match(NAMED_FILE) ?? []).map((name) => name.split(/[\\/]/).at(-1) ?? name);
+  return [...new Set(names)].filter((name) => !/^\d/.test(name)).slice(0, MAX_NAMED);
+};
+
 const recordError = (scope: SignalScope, raw: JsonObject, output: string): SignalScope => {
   const signature = errorSignature(output);
   if (signature === undefined) return scope;
-  return record(scope, { ...baseOf(scope), kind: "error", tool: toolName(raw), ...signature });
+  const files = SHELL_TOOLS.has(toolName(raw)) ? namedFiles(output) : [];
+  return record(scope, {
+    ...baseOf(scope),
+    kind: "error",
+    tool: toolName(raw),
+    ...signature,
+    ...(files.length === 0 ? {} : { files }),
+  });
+};
+
+const recordRun = (scope: SignalScope, raw: JsonObject): SignalScope =>
+  SHELL_TOOLS.has(toolName(raw)) && !writesFiles(raw)
+    ? record(scope, { ...baseOf(scope), kind: "run", tool: toolName(raw) })
+    : scope;
+
+const recordFailedEdit = (scope: SignalScope, raw: JsonObject): SignalScope => {
+  const target = textField(toolInput(raw), "file_path", "notebook_path");
+  if (!EDIT_TOOLS.has(toolName(raw)) || target === undefined) return scope;
+  return record(scope, { ...baseOf(scope), kind: "edit_failed", file: projectFile(scope, target), why: "tool" });
 };
 
 export const signalsPostToolUse: HookHandler = (input) => {
@@ -101,7 +129,7 @@ export const signalsPostToolUse: HookHandler = (input) => {
   const after = EDIT_TOOLS.has(toolName(raw))
     ? recordEdit(scope, raw)
     : output === undefined
-      ? scope
+      ? recordRun(scope, raw)
       : recordError(scope, raw, output);
   if (after !== scope) writeIndex(after);
   return allow;
@@ -111,7 +139,8 @@ export const signalsPostToolUseFailure: HookHandler = (input) => {
   const scope = scopeOf(input);
   const raw = input.payload.raw;
   if (scope === undefined || raw["is_interrupt"] === true) return allow;
-  const after = recordError(scope, raw, textField(raw, "error") ?? "");
+  const failed = recordFailedEdit(scope, raw);
+  const after = recordError(failed, raw, textField(raw, "error") ?? "");
   if (after !== scope) writeIndex(after);
   return allow;
 };

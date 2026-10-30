@@ -11,6 +11,7 @@ export interface StatusInput {
   readonly dir: string | undefined;
   readonly contextPercent: number | undefined;
   readonly raw: string;
+  readonly version: string | undefined;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -55,5 +56,6 @@ export const parseStatusInput = (raw: string): StatusInput => {
     contextPercent: contextPercent(record),
     rateLimits: rateLimits(record["rate_limits"]),
     raw,
+    version: text(record["version"]),
   };
 };

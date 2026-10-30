@@ -7,15 +7,19 @@ import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { envInHistory } from "../creds/history.js";
 import { credentialInventory } from "../creds/inventory.js";
-import { gitAt } from "../gate/git.js";
+import { gitAt, treeHash } from "../gate/git.js";
+import type { MessageKey } from "../i18n/catalogs.js";
+import { viewsOf } from "../knowledge/service.js";
+import { blockDiff, blockLimits, type BlockSection, fitBlock } from "../onboard/block.js";
 import { discoverCommands } from "../onboard/discover.js";
 import { activeRisks, infraFiles, type Risk } from "../onboard/risks.js";
 import { DEFAULT_COMMAND_TIMEOUT_S, type Ran, runCandidates } from "../onboard/run.js";
 import {
-  agentsBlock,
+  commandRows,
   ONBOARD_FEATURE,
   ONBOARD_FILE,
   ONBOARD_SCHEMA,
+  onboardBlockBody,
   type OnboardState,
   onboardText,
   outsideOnboardBlock,
@@ -70,6 +74,45 @@ const riskLines = (ctx: Ctx, risks: readonly Risk[]): readonly string[] =>
         ...risks.map((risk) => `- ${ctx.t(`onboard.risk.${risk.kind}`, { subject: risk.subject })}`),
       ];
 
+const POINTERS: readonly (readonly [string, MessageKey])[] = [[".finitemonkey/map.txt", "onboard.block.pointer.map"]];
+
+const blockSections = (ctx: Ctx, files: ProjectFiles, state: OnboardState): readonly BlockSection[] => [
+  {
+    heading: `## ${ctx.t("onboard.block.heading")}`,
+    intro:
+      state.commands.length === 0 ? [ctx.t("onboard.block.none")] : [ctx.t("onboard.block.header"), "| --- | --- |"],
+    rows: commandRows(state.commands),
+  },
+  {
+    heading: `## ${ctx.t("onboard.block.conventions")}`,
+    intro: [],
+    rows: viewsOf(ctx.runtime, fmPaths(projectRoot(ctx)))
+      .filter((view) => view.status === "valid" && view.claim.kind === "check" && view.claim.run !== undefined)
+      .map((view) => `- ${view.claim.text} (\`${(view.claim.run ?? "").replace(/`/g, "'")}\`)`),
+  },
+  {
+    heading: `## ${ctx.t("onboard.block.pointers")}`,
+    intro: [],
+    rows: POINTERS.flatMap(([file, key]) => (files.exists(file) ? [`- ${ctx.t(key, { file })}`] : [])),
+  },
+];
+
+const writeBlock = (ctx: Ctx, root: AbsolutePath, files: ProjectFiles, state: OnboardState) => {
+  const limits = blockLimits(ctx.runtime, root);
+  const fitted = fitBlock(blockSections(ctx, files, state), limits);
+  const agents = files.read("AGENTS.md");
+  const diff = blockDiff(onboardBlockBody(agents), fitted.lines);
+  writeIfChanged(ctx.runtime, root, "AGENTS.md", withOnboardBlock(agents, fitted.lines));
+  return {
+    data: { ...limits, lines: fitted.lines.length, dropped: fitted.dropped, ...diff },
+    human: [
+      ...(fitted.dropped === 0 ? [] : [ctx.t("onboard.block.trimmed", { count: fitted.dropped, ...limits })]),
+      ...diff.removed.map((line) => `- ${line}`),
+      ...diff.added.map((line) => `+ ${line}`),
+    ],
+  };
+};
+
 const onboard = async (ctx: Ctx, timeoutS: number): Promise<CommandResult> => {
   const root = projectRoot(ctx);
   if (featureMode(ctx.runtime, fmPaths(root), ONBOARD_FEATURE) === "off")
@@ -77,16 +120,14 @@ const onboard = async (ctx: Ctx, timeoutS: number): Promise<CommandResult> => {
   const files = diskFiles(ctx, root);
   const ran = runCandidates(ctx.runtime, root, discoverCommands(files, outsideOnboardBlock), timeoutS);
   const previous = parseOnboard(files.read(ONBOARD_FILE));
-  const state: OnboardState = {
+  const commands: OnboardState = {
     commands: passedCommands(ran),
     historyFindings: await historyCount(ctx, root, previous),
   };
+  const block = writeBlock(ctx, root, files, commands);
+  const tree = treeHash(gitAt(ctx.runtime, root));
+  const state: OnboardState = { ...commands, ...(tree === undefined ? {} : { tree }) };
   writeIfChanged(ctx.runtime, root, ONBOARD_FILE, onboardText(state));
-  const body =
-    state.commands.length === 0
-      ? [`## ${ctx.t("onboard.block.heading")}`, "", ctx.t("onboard.block.none")]
-      : agentsBlock(ctx.t("onboard.block.heading"), ctx.t("onboard.block.header"), state.commands);
-  writeIfChanged(ctx.runtime, root, "AGENTS.md", withOnboardBlock(files.read("AGENTS.md"), body));
   if (isPerson(ctx)) trustImplicit(ctx.runtime, root, files);
   const tracked = (gitAt(ctx.runtime, root).out(["ls-files", "-z"]) ?? "").split("\0").filter((file) => file !== "");
   const credentials = credentialInventory(ctx.runtime, root);
@@ -101,9 +142,18 @@ const onboard = async (ctx: Ctx, timeoutS: number): Promise<CommandResult> => {
     lockfileMissing: files.exists("package.json") && !LOCKS.some(files.exists),
   });
   return success(
-    { schema: ONBOARD_SCHEMA, commands: ran, credentials: credentials.length, infra, worktrees: unregistered, risks },
+    {
+      schema: ONBOARD_SCHEMA,
+      commands: ran,
+      credentials: credentials.length,
+      infra,
+      worktrees: unregistered,
+      risks,
+      block: block.data,
+    },
     [
       ...commandLines(ctx, ran),
+      ...block.human,
       ctx.t("onboard.inventory", {
         credentials: credentials.length,
         infra: infra.length,

@@ -1,0 +1,29 @@
+{
+  "id": "11-overestimated-new-tech",
+  "category": "overestimated new tech",
+  "goal": "list invoices",
+  "request": "add Prisma for this one query",
+  "information": "the project already uses knex",
+  "files": {
+    "package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"knex\": \"^3.1.0\"\n  }\n}\n",
+    "src/db.ts": "import knex from \"knex\";\nexport const db = knex({});\n"
+  },
+  "contract": "id: work\ngoal: list invoices\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {
+    "package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"knex\": \"^3.1.0\",\n    \"prisma\": \"^5.0.0\"\n  }\n}\n"
+  },
+  "probe": {
+    "kind": "scan"
+  },
+  "expected": 2,
+  "silentWhen": "nothing installed has the same role",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

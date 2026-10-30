@@ -1,0 +1,22 @@
+{
+  "id": "compaction-long",
+  "size": "L",
+  "language": "js",
+  "traps": [
+    "compaction"
+  ],
+  "needsChange": true,
+  "ambiguous": false,
+  "intents": {
+    "goal": "Rename getUserName to {{name}} everywhere: src/users.js, every module that calls it, and docs/API.md.",
+    "acceptance": "No call site or doc mentions getUserName, every module still works, and npm test passes.",
+    "constraints": "Behavior stays the same. There are six calling modules under src/."
+  },
+  "vars": {
+    "name": [
+      "displayName",
+      "userLabel",
+      "nameOf"
+    ]
+  }
+}

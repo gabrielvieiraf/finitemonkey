@@ -60,7 +60,7 @@ const manifestText = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): s
   }).join("\n");
 
 const passedChecks = (
-  runtime: Pick<Runtime, "readText">,
+  runtime: Pick<Runtime, "readText" | "homeDir">,
   root: AbsolutePath,
   tree: string | undefined,
 ): ((kind: string) => boolean) => {
@@ -71,7 +71,10 @@ const passedChecks = (
   return (kind) => ledger.findLast((entry) => entry.kind === kind && entry.treeHash === tree)?.status === "passed";
 };
 
-export const projectView = (runtime: Pick<Runtime, "exec" | "readText">, root: AbsolutePath): ProjectView => {
+export const projectView = (
+  runtime: Pick<Runtime, "exec" | "readText" | "homeDir">,
+  root: AbsolutePath,
+): ProjectView => {
   const tree = treeHash(gitAt(runtime, root));
   return {
     files: listFiles(runtime, root),

@@ -97,6 +97,15 @@ export const ERROR_CODES = [
   "deploy_generate_blocked",
   "deploy_drift_found",
   "deploy_check_unconfigured",
+  "policy_invalid",
+  "gate_released_by_cap",
+  "guardian_write_failed",
+  "unattended_refused",
+  "unattended_incomplete",
+  "guard_bypassed",
+  "instructions_drift",
+  "restore_failed",
+  "judge_refused",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

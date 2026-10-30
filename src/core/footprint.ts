@@ -80,6 +80,7 @@ export const FOOTPRINT = [
       ".finitemonkey/git-journal.jsonl",
       ".finitemonkey/merge-dropped.json",
       "refs/finitemonkey/backup/",
+      ".git/finitemonkey/snapshots/",
     ],
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
@@ -121,7 +122,6 @@ export const FOOTPRINT = [
   { id: "prompts", kind: "writes", targets: [".finitemonkey/prompts.jsonl"] },
   { id: "spend", kind: "writes", targets: [".finitemonkey/spend.json", ".finitemonkey/spend-reconcile.jsonl"] },
   { id: "plan", kind: "writes", targets: ["docs/plan/"] },
-  { id: "map", kind: "writes", targets: [".finitemonkey/map.txt"] },
   {
     id: "signals",
     kind: "writes",
@@ -130,7 +130,14 @@ export const FOOTPRINT = [
   {
     id: "perfil",
     kind: "writes",
-    targets: [".finitemonkey/perfil.yml", ".finitemonkey/perfil-commits.json", ".finitemonkey/conceitos.yml"],
+    targets: [
+      ".finitemonkey/perfil.yml",
+      ".finitemonkey/perfil-commits.json",
+      ".finitemonkey/conceitos.yml",
+      ".finitemonkey/conceitos-events.jsonl",
+      ".finitemonkey/xray.json",
+      ".finitemonkey/probes.json",
+    ],
   },
   { id: "runs", kind: "writes", targets: [".finitemonkey/runs/"] },
   { id: "map", kind: "writes", targets: [".finitemonkey/map.txt", ".finitemonkey/reuse.json"] },
@@ -200,6 +207,38 @@ export const FOOTPRINT = [
     targets: ["ruff.toml", "pytest.ini", "scripts/check_no_comments.py", ".github/workflows/ci.yml"],
   },
   { id: "onboard", kind: "writes", targets: [".finitemonkey/onboard.json", "AGENTS.md"] },
+  { id: "ledger-key", kind: "writes", targets: ["~/.finitemonkey/ledger.key"] },
+  {
+    id: "guardian",
+    kind: "writes",
+    targets: [
+      ".finitemonkey/goals.yml",
+      ".finitemonkey/decisions.jsonl",
+      ".finitemonkey/assumptions.jsonl",
+      ".finitemonkey/research/",
+    ],
+  },
+  { id: "guard-bypass", kind: "writes", targets: [".finitemonkey/bypasses.jsonl"] },
+  { id: "mod-cost", kind: "writes", targets: [".finitemonkey/cost.jsonl"] },
+  {
+    id: "knowledge",
+    kind: "writes",
+    targets: [
+      ".finitemonkey/claims.jsonl",
+      ".finitemonkey/derived.json",
+      ".finitemonkey/demoted.json",
+      ".finitemonkey/retrieve.jsonl",
+      ".finitemonkey/decision-records/",
+      ".finitemonkey/decision-reasons.jsonl",
+      ".finitemonkey/cache/knowledge-map.json",
+      ".finitemonkey/cache/questions.json",
+    ],
+  },
+  { id: "infra-plan", kind: "sends", targets: ["terraform provider APIs"], via: "terraform" },
+  { id: "parking", kind: "writes", targets: [".finitemonkey/parking.jsonl"] },
+  { id: "ui-copy", kind: "writes", targets: [".finitemonkey/cache/copy-rules.json"] },
+  { id: "judge", kind: "writes", targets: [".finitemonkey/judge.jsonl", ".finitemonkey/judge/"] },
+  { id: "cite-sources", kind: "sends", targets: ["doi.org", "cited URLs"], via: "curl" },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

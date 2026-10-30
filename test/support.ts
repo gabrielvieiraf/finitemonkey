@@ -1,3 +1,5 @@
+import "./isolated-home.js";
+
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

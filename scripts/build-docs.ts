@@ -1,10 +1,11 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { SENDS_HOSTS } from "../src/core/footprint.js";
-import { BLOCKS, CLAIM_FILES, forbiddenPhrases, missingTests, replaceBetween } from "./docs-gen.js";
+import { BLOCKS, CLAIM_FILES, forbiddenPhrases, missingTests, replaceBetween, threatProblems } from "./docs-gen.js";
 import { FAILURE_MODES } from "./failure-modes.js";
+import { THREATS } from "./threat-model.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 
@@ -17,7 +18,10 @@ const read = (file: string): string | undefined => {
 };
 
 const check = process.argv.includes("--check");
-const problems: string[] = [...missingTests(FAILURE_MODES, read)];
+const problems: string[] = [
+  ...missingTests(FAILURE_MODES, read),
+  ...threatProblems(THREATS, read, (path) => existsSync(join(root, path))),
+];
 
 for (const block of BLOCKS) {
   const current = read(block.file) ?? "";

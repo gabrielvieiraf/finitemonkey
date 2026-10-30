@@ -1,3 +1,5 @@
+import { conceptsIn } from "../conceitos/concepts.js";
+import { recordConceptEvents } from "../conceitos/evidence.js";
 import { gitAt } from "../gate/git.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { headShaFromFiles } from "../git/head-file.js";
@@ -6,32 +8,25 @@ import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import { agentCommitsPath, profileOrStart, updateDomain, writeProfile } from "./store.js";
-import { clampScore, DOMAINS, type Profile } from "./types.js";
-import { asksMechanism, domainsMentioned } from "./vocabulary.js";
+import { clampScore, DOMAINS } from "./types.js";
 
 const allow = { kind: "allow" } as const;
 
-export const VOCABULARY_STEP = 2;
-export const MECHANISM_STEP = 1;
 export const PERSON_COMMIT_STEP = 2;
 const KEEP_COMMITS = 200;
 const SCAN_COMMITS = 20;
 
-const fromPrompt = (profile: Profile, prompt: string): Profile => {
-  const step = VOCABULARY_STEP + (asksMechanism(prompt) ? MECHANISM_STEP : 0);
-  return domainsMentioned(prompt).reduce(
-    (current, domain) =>
-      updateDomain(current, domain, (entry) => ({ ...entry, knowledge: clampScore(entry.knowledge + step) })),
-    profile,
-  );
-};
-
 export const perfilPrompt: HookHandler = (input) => {
   const prompt = textField(input.payload.raw, "prompt", "prompt_text") ?? "";
   const paths = projectPaths(input);
-  if (paths === undefined || !comesFromPerson(prompt) || domainsMentioned(prompt).length === 0) return allow;
-  if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
-  writeProfile(input.runtime, paths, fromPrompt(profileOrStart(input.runtime, paths), prompt));
+  if (paths === undefined || !comesFromPerson(prompt)) return allow;
+  const concepts = conceptsIn(prompt);
+  if (concepts.length === 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
+  recordConceptEvents(
+    input.runtime,
+    paths,
+    concepts.map((concept) => ({ concept, kind: "exposure", origin: "person" })),
+  );
   return allow;
 };
 

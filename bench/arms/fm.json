@@ -1,0 +1,6 @@
+{
+  "id": "fm",
+  "description": "Finite Monkey plugin with its default policy.",
+  "finitemonkey": true,
+  "sha": null
+}

@@ -132,7 +132,7 @@ describe("task size from the diff", () => {
     touch(repo, 6);
     const tree = treeHash(gitAt(repoRuntime(), repo.root));
     assert.ok(tree !== undefined);
-    recordReview(repoRuntime(), fmPaths(repo.root), tree, "code-reviewer");
+    recordReview(repoRuntime(), fmPaths(repo.root), tree, "finitemonkey:reviewer", "approve");
     assert.equal(report(repo).items.find((item) => item.id === "size-review")?.status, "passed");
     repo.write("src/f0.js", "export const f = 99;\n");
     assert.equal(report(repo).items.find((item) => item.id === "size-review")?.status, "failed");
@@ -162,9 +162,7 @@ describe("task size from the diff", () => {
     assert.ok(!ids(repo).includes("size-review"));
   });
 
-  it("a reviewer subagent finishing records a review of the tree", async () => {
-    const repo = fresh("S");
-    touch(repo, 6);
+  const reviewerStops = async (repo: Repo, verdict: string): Promise<void> => {
     const runtime = repoRuntime();
     await runHook("SubagentStop", {
       stdin: stdinFrom(
@@ -172,7 +170,8 @@ describe("task size from the diff", () => {
           session_id: "s1",
           cwd: repo.root,
           hook_event_name: "SubagentStop",
-          agent_type: "code-reviewer",
+          agent_type: "finitemonkey:reviewer",
+          last_assistant_message: `Findings above.\n\n\`\`\`json\n{"verdict": "${verdict}", "findings": []}\n\`\`\`\n`,
         }),
       ),
       deadlineMs: 60_000,
@@ -183,6 +182,14 @@ describe("task size from the diff", () => {
       runtime,
       env: {},
     });
+  };
+
+  it("a reviewer subagent finishing records a review of the tree with its verdict", async () => {
+    const repo = fresh("S");
+    touch(repo, 6);
+    await reviewerStops(repo, "request-changes");
+    assert.equal(report(repo).items.find((item) => item.id === "size-review")?.status, "failed");
+    await reviewerStops(repo, "approve");
     assert.equal(report(repo).items.find((item) => item.id === "size-review")?.status, "passed");
   });
 });

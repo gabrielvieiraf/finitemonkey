@@ -1,0 +1,33 @@
+{
+  "id": "02-architecture-against-constraints",
+  "category": "architecture against constraints",
+  "goal": "single club billing",
+  "request": "make billing multi tenant",
+  "information": "goals.yml lists multi tenant as a stated non-goal",
+  "files": {
+    ".finitemonkey/goals.yml": "non_goals:\n  - id: n1\n    text: multi tenant\n    origin: stated\n"
+  },
+  "contract": "id: work\ngoal: make billing multi tenant\nsize: M\nscope:\n  paths: [src/billing/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {},
+  "probe": {
+    "kind": "tool",
+    "payload": {
+      "tool_name": "Write",
+      "tool_input": {
+        "file_path": "{root}/src/billing/tenant.ts",
+        "content": "export const tenant = 1;\n"
+      }
+    }
+  },
+  "expected": 2,
+  "silentWhen": "the non-goal is only inferred or the contract does not match it",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

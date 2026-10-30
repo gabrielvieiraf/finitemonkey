@@ -8,6 +8,8 @@ export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const ENTRY = join(ROOT, "src", "cli.ts");
 export const OUTFILE = join(ROOT, "dist", "finitemonkey.mjs");
 export const PLUGIN_BUNDLE = join(ROOT, "plugin", "scripts", "finitemonkey.mjs");
+export const MOD_ENTRY = join(ROOT, "src", "mod", "register.ts");
+export const MOD_BUNDLE = join(ROOT, "plugin", "hooks", "register.mjs");
 
 export const bundle = async (outfile = OUTFILE) => {
   await build({
@@ -23,6 +25,22 @@ export const bundle = async (outfile = OUTFILE) => {
     logLevel: "warning",
   });
   chmodSync(outfile, 0o755);
+  return outfile;
+};
+
+export const bundleMod = async (outfile = MOD_BUNDLE) => {
+  await build({
+    entryPoints: [MOD_ENTRY],
+    outfile,
+    bundle: true,
+    platform: "neutral",
+    format: "esm",
+    target: "es2022",
+    legalComments: "none",
+    charset: "utf8",
+    external: ["claude-code"],
+    logLevel: "warning",
+  });
   return outfile;
 };
 

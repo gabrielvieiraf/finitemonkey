@@ -58,7 +58,7 @@ export const measurePage = (doc: MiniDocument): PageMeasure => {
   const small = [...doc.querySelectorAll("a, button, input, select, textarea, [role=button], [role=link]")]
     .filter((element) => {
       const box = element.getBoundingClientRect();
-      return box.width > 0 && box.height > 0 && (box.width < 40 || box.height < 40);
+      return box.width > 0 && box.height > 0 && (box.width < 24 || box.height < 24);
     })
     .map((element) => `${element.tagName.toLowerCase()} "${(element.textContent ?? "").trim().slice(0, 40)}"`);
   const broken = [...doc.images]

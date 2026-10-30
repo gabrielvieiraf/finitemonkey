@@ -16,6 +16,8 @@ export interface GainCounts {
   readonly saves: number;
   readonly releases: number;
   readonly falsePositives: number;
+  readonly overridesWithReason: number;
+  readonly overridesWithoutReason: number;
   readonly gateRuns: number;
   readonly gateFailed: number;
   readonly gateUnverified: number;
@@ -49,7 +51,10 @@ export interface GainReport {
 interface LogLine {
   readonly at: number;
   readonly event: string;
+  readonly reason: string;
 }
+
+const OVERRIDES: ReadonlySet<string> = new Set(["person.allow", "person.approve"]);
 
 const readLog = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly LogLine[] => {
   const text = runtime.readText(paths.log);
@@ -57,33 +62,74 @@ const readLog = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly L
   return text.value.split("\n").flatMap((line): LogLine[] => {
     const parsed = parseJsonObject(line);
     if (!parsed.ok || !isRecord(parsed.value)) return [];
-    const { at, event } = parsed.value;
+    const { at, event, reason } = parsed.value;
     const time = typeof at === "string" ? Date.parse(at) : Number.NaN;
-    return typeof event === "string" && Number.isFinite(time) ? [{ at: time, event }] : [];
+    return typeof event === "string" && Number.isFinite(time)
+      ? [{ at: time, event, reason: typeof reason === "string" ? reason.trim() : "" }]
+      : [];
   });
 };
 
-const readGates = (runtime: Pick<Runtime, "readText" | "listDir">, paths: FmPaths): readonly Evidence[] => {
+export const readEvidence = (
+  runtime: Pick<Runtime, "readText" | "listDir" | "homeDir">,
+  paths: FmPaths,
+): readonly Evidence[] => {
   const listed = runtime.listDir(toAbsolutePath(join(paths.dir, "evidence")));
   const files = listed.ok ? listed.value.filter((name) => name.endsWith(".jsonl")) : [];
-  return files
-    .flatMap((name) => readLedger(runtime, paths.evidence(name.replace(/\.jsonl$/, ""))))
-    .filter((entry) => entry.check === GATE_CHECK);
+  return files.flatMap((name) => readLedger(runtime, paths.evidence(name.replace(/\.jsonl$/, ""))));
 };
 
-const countsIn = (log: readonly LogLine[], gates: readonly Evidence[], from: number, to: number): GainCounts => {
+interface Recovery {
+  readonly failedAt: number;
+  readonly passedAt: number;
+}
+
+export const recoveries = (evidence: readonly Evidence[]): readonly Recovery[] => {
+  const byCheck = new Map<string, Evidence[]>();
+  for (const entry of evidence) {
+    const key = `${entry.task}\u0000${entry.check}`;
+    byCheck.set(key, [...(byCheck.get(key) ?? []), entry]);
+  }
+  return [...byCheck.values()].flatMap((entries) => {
+    const sorted = [...entries].sort((left, right) => Date.parse(left.at) - Date.parse(right.at));
+    const found: Recovery[] = [];
+    let failed: Evidence | undefined;
+    for (const entry of sorted) {
+      if (entry.status === "failed") failed = entry;
+      else if (entry.status === "passed") {
+        if (failed !== undefined && failed.treeHash !== entry.treeHash) {
+          found.push({ failedAt: Date.parse(failed.at), passedAt: Date.parse(entry.at) });
+        }
+        failed = undefined;
+      }
+    }
+    return found;
+  });
+};
+
+const countsIn = (
+  log: readonly LogLine[],
+  gates: readonly Evidence[],
+  fixed: readonly Recovery[],
+  from: number,
+  to: number,
+): GainCounts => {
   const inWindow = (at: number): boolean => at >= from && at < to;
   const lines = log.filter((line) => inWindow(line.at));
   const runs = gates.filter((entry) => inWindow(Date.parse(entry.at)));
-  const passedAt = gates.filter((entry) => entry.status === "passed").map((entry) => Date.parse(entry.at));
   const blocks = lines.filter((line) => line.event === "guard_block");
+  const overrides = lines.filter((line) => OVERRIDES.has(line.event));
   return {
     blocks: blocks.length,
-    saves: blocks.filter((block) => passedAt.some((at) => at > block.at && at - block.at <= SAVE_WINDOW_MS)).length,
+    saves: blocks.filter((block) =>
+      fixed.some(
+        (item) => item.failedAt <= block.at && item.passedAt > block.at && item.passedAt - block.at <= SAVE_WINDOW_MS,
+      ),
+    ).length,
     releases: lines.filter((line) => line.event === "person.allow").length,
-    falsePositives:
-      lines.filter((line) => line.event === "person.allow").length +
-      lines.filter((line) => line.event === "guard_false_positive").length,
+    falsePositives: lines.filter((line) => line.event === "guard_false_positive").length,
+    overridesWithReason: overrides.filter((line) => line.reason !== "").length,
+    overridesWithoutReason: overrides.filter((line) => line.reason === "").length,
     gateRuns: runs.length,
     gateFailed: runs.filter((entry) => entry.status === "failed").length,
     gateUnverified: runs.filter((entry) => entry.status === "unverified").length,
@@ -106,7 +152,7 @@ interface ArmLine {
   readonly arm: "active" | "off";
 }
 
-const readArms = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ArmLine[] => {
+export const readArms = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ArmLine[] => {
   const text = runtime.readText(paths.log);
   if (!text.ok) return [];
   return text.value.split("\n").flatMap((line): ArmLine[] => {
@@ -151,7 +197,7 @@ export const armComparison = (
 };
 
 export const gainReport = (
-  runtime: Pick<Runtime, "readText" | "listDir" | "now">,
+  runtime: Pick<Runtime, "readText" | "listDir" | "now" | "homeDir">,
   paths: FmPaths,
   days: number,
   usageText?: string,
@@ -160,14 +206,16 @@ export const gainReport = (
   const to = Date.parse(runtime.now());
   const from = to - days * DAY_MS;
   const log = readLog(runtime, paths);
-  const gates = readGates(runtime, paths);
+  const evidence = readEvidence(runtime, paths);
+  const gates = evidence.filter((entry) => entry.check === GATE_CHECK);
+  const fixed = recoveries(evidence);
   return {
     schema: GAIN_SCHEMA,
     days,
     from: new Date(from).toISOString(),
     to: new Date(to).toISOString(),
-    current: countsIn(log, gates, from, to + 1),
-    previous: countsIn(log, gates, from - days * DAY_MS, from),
+    current: countsIn(log, gates, fixed, from, to + 1),
+    previous: countsIn(log, gates, fixed, from - days * DAY_MS, from),
     ...(() => {
       const usage = numbersIn(usageText);
       return usage === undefined ? {} : { supervisorUsage: usage };

@@ -1,0 +1,33 @@
+{
+  "id": "04-symptom-vs-cause",
+  "category": "symptom vs cause",
+  "goal": "stop double charges",
+  "request": "fix the idempotency key in the charge function instead of retrying less",
+  "information": "the person found the cause in src/billing/charge.ts",
+  "files": {
+    "src/billing/charge.ts": "export const charge = 1;\n"
+  },
+  "contract": "id: work\ngoal: stop double charges\nsize: M\nscope:\n  paths: [src/billing/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {},
+  "probe": {
+    "kind": "tool",
+    "payload": {
+      "tool_name": "Write",
+      "tool_input": {
+        "file_path": "{root}/src/billing/charge.ts",
+        "content": "export const charge = 2;\n"
+      }
+    }
+  },
+  "expected": 0,
+  "silentWhen": "a plain edit inside the approved scope with no trigger",
+  "personRight": true,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "override"
+  },
+  "consequences": {
+    "requested": "good",
+    "redirected": "bad"
+  }
+}

@@ -2,7 +2,16 @@ import type { AbsolutePath } from "../core/brand.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Params } from "../i18n/translate.js";
-import { type Evidence, EVIDENCE_SCHEMA, EVIDENCE_STATUSES, type Note, UNVERIFIED_REASONS } from "./types.js";
+import { ensureKey, type KeyStore, lineTrust, readKey, signLine } from "./sign.js";
+import {
+  COMPLETION_STATES,
+  type Evidence,
+  EVIDENCE_SCHEMA,
+  EVIDENCE_STATUSES,
+  type EvidenceInputs,
+  type Note,
+  UNVERIFIED_REASONS,
+} from "./types.js";
 
 const oneOf = <T extends string>(options: readonly T[], value: unknown): T | undefined =>
   options.find((option) => option === value);
@@ -28,7 +37,25 @@ const text = (record: JsonObject, key: string): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
+const strings = (value: unknown): Readonly<Record<string, string>> =>
+  isRecord(value)
+    ? Object.fromEntries(
+        Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      )
+    : {};
+
+const inputsOf = (value: unknown): EvidenceInputs | undefined => {
+  if (!isRecord(value) || typeof value["cwd"] !== "string") return undefined;
+  return {
+    cwd: value["cwd"],
+    lockfiles: strings(value["lockfiles"]),
+    tools: strings(value["tools"]),
+    env: strings(value["env"]),
+  };
+};
+
 const optional = (record: JsonObject): Partial<Evidence> => {
+  const scripts = text(record, "scripts");
   const exitCode = record["exitCode"];
   const durationMs = record["durationMs"];
   const command = text(record, "command");
@@ -37,6 +64,10 @@ const optional = (record: JsonObject): Partial<Evidence> => {
   const reason = oneOf(UNVERIFIED_REASONS, record["reason"]);
   const failures = record["failures"];
   const testCount = record["testCount"];
+  const state = oneOf(COMPLETION_STATES, record["state"]);
+  const from = oneOf(COMPLETION_STATES, record["from"]);
+  const stateReason = text(record, "stateReason");
+  const inputs = inputsOf(record["inputs"]);
   return {
     ...(command === undefined ? {} : { command }),
     ...(typeof exitCode === "number" || exitCode === null ? { exitCode } : {}),
@@ -48,6 +79,11 @@ const optional = (record: JsonObject): Partial<Evidence> => {
       ? { failures: failures.filter((item): item is string => typeof item === "string") }
       : {}),
     ...(typeof testCount === "number" ? { testCount } : {}),
+    ...(state === undefined ? {} : { state }),
+    ...(from === undefined ? {} : { from }),
+    ...(stateReason === undefined ? {} : { stateReason }),
+    ...(inputs === undefined ? {} : { inputs }),
+    ...(scripts === undefined ? {} : { scripts }),
   };
 };
 
@@ -78,21 +114,45 @@ export const parseEvidence = (line: string): Evidence | undefined => {
   };
 };
 
-export const readLedger = (runtime: Pick<Runtime, "readText">, path: AbsolutePath): readonly Evidence[] => {
+export interface CheckedLedger {
+  readonly entries: readonly Evidence[];
+  readonly tampered: number;
+  readonly oldKey: number;
+}
+
+export type LedgerReader = Pick<Runtime, "readText" | "homeDir">;
+
+export const readLedgerChecked = (runtime: LedgerReader, path: AbsolutePath): CheckedLedger => {
   const content = runtime.readText(path);
-  if (!content.ok) return [];
-  return content.value.split("\n").flatMap((line) => {
-    const entry = line.trim() === "" ? undefined : parseEvidence(line);
-    return entry === undefined ? [] : [entry];
-  });
+  if (!content.ok) return { entries: [], tampered: 0, oldKey: 0 };
+  const key = readKey(runtime);
+  const entries: Evidence[] = [];
+  let tampered = 0;
+  let oldKey = 0;
+  for (const line of content.value.split("\n")) {
+    if (line.trim() === "") continue;
+    const trust = lineTrust(key, line);
+    const entry = parseEvidence(line);
+    if (trust === "old_key") oldKey += 1;
+    else if (trust === "tampered") tampered += 1;
+    else if (entry !== undefined) entries.push(entry);
+  }
+  return { entries, tampered, oldKey };
 };
 
+export const readLedger = (runtime: LedgerReader, path: AbsolutePath): readonly Evidence[] =>
+  readLedgerChecked(runtime, path).entries;
+
 export const appendEvidence = (
-  runtime: Pick<Runtime, "appendText">,
+  runtime: Pick<Runtime, "appendText"> & KeyStore,
   path: AbsolutePath,
   entries: readonly Evidence[],
-): boolean =>
-  entries.length === 0 || runtime.appendText(path, entries.map((entry) => `${JSON.stringify(entry)}\n`).join("")).ok;
+): boolean => {
+  if (entries.length === 0) return true;
+  const key = ensureKey(runtime);
+  if (key === undefined) return false;
+  return runtime.appendText(path, entries.map((entry) => `${signLine(key, { ...entry })}\n`).join("")).ok;
+};
 
 export const latestFor = (
   entries: readonly Evidence[],

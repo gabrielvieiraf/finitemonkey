@@ -1,0 +1,30 @@
+{
+  "id": "13-legitimate-preference",
+  "category": "a legitimate preference against the default",
+  "goal": "send renewal emails",
+  "request": "use a queue the team already runs elsewhere",
+  "information": "the team has demonstrated queues and services",
+  "files": {
+    "package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"express\": \"^4.19.0\"\n  }\n}\n",
+    ".finitemonkey/goals.yml": "context:\n  stage:\n    value: first-customers\n    origin: stated\n  demonstrated:\n    value: [queue, service]\n    origin: stated\n"
+  },
+  "contract": "id: work\ngoal: send renewal emails\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {
+    "package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"express\": \"^4.19.0\",\n    \"bullmq\": \"^5.0.0\"\n  }\n}\n",
+    "services/worker/package.json": "{\n  \"name\": \"app\",\n  \"dependencies\": {\n    \"bullmq\": \"^5.0.0\"\n  }\n}\n"
+  },
+  "probe": {
+    "kind": "scan"
+  },
+  "expected": 0,
+  "silentWhen": "every concept the change brings was demonstrated by the team",
+  "personRight": true,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "override"
+  },
+  "consequences": {
+    "requested": "good",
+    "redirected": "bad"
+  }
+}

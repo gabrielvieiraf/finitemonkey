@@ -26,6 +26,8 @@ export interface Lesson {
   readonly lastMatchedAt: string | undefined;
   readonly uses: number;
   readonly unhelpful: number;
+  readonly origin?: string;
+  readonly quarantined?: boolean;
 }
 
 export interface LessonStats {
@@ -46,6 +48,14 @@ const count = (raw: JsonObject, key: string): number => {
   return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : 0;
 };
 
+const provenance = (raw: JsonObject): Pick<Lesson, "origin" | "quarantined"> => {
+  const origin = text(raw, "origin");
+  return {
+    ...(origin === undefined ? {} : { origin }),
+    ...(raw["quarantined"] === true ? { quarantined: true } : {}),
+  };
+};
+
 const parseLesson = (raw: JsonObject): Lesson | undefined => {
   const id = text(raw, "id");
   const body = text(raw, "text");
@@ -62,6 +72,7 @@ const parseLesson = (raw: JsonObject): Lesson | undefined => {
     lastMatchedAt: text(raw, "lastMatchedAt"),
     uses: count(raw, "uses"),
     unhelpful: count(raw, "unhelpful"),
+    ...provenance(raw),
   };
 };
 
@@ -127,7 +138,10 @@ export const pruneLessons = (
 export const lessonId = (body: string, key: string): string =>
   createHash("sha256").update(`${key}\0${body}`, "utf8").digest("hex").slice(0, 8);
 
-export const newLesson = (input: Pick<Lesson, "text" | "paths" | "sig" | "source">, now: string): Lesson => {
+export const newLesson = (
+  input: Pick<Lesson, "text" | "paths" | "sig" | "source" | "origin" | "quarantined">,
+  now: string,
+): Lesson => {
   const body = maskText(input.text).slice(0, MAX_TEXT);
   return {
     id: lessonId(body, `${input.sig ?? ""}|${input.paths.join(",")}`),
@@ -139,5 +153,7 @@ export const newLesson = (input: Pick<Lesson, "text" | "paths" | "sig" | "source
     lastMatchedAt: undefined,
     uses: 0,
     unhelpful: 0,
+    ...(input.origin === undefined ? {} : { origin: input.origin }),
+    ...(input.quarantined === true ? { quarantined: true } : {}),
   };
 };

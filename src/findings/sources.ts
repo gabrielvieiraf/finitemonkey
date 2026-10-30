@@ -2,7 +2,9 @@ import { scanRepo } from "../appsec/scan.js";
 import { auditRepo, CI_AUDIT_CHECK } from "../ci/audit/audit.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
+import { latestUxRecords, uxFindingsOf } from "../look/ux-govern.js";
 import { scanPath } from "../secrets/scan.js";
+import { fmPaths } from "../task/paths.js";
 import { type Finding, SECRETS_CHECK } from "./baseline.js";
 
 export interface FindingSource {
@@ -34,7 +36,12 @@ const ciAuditSource: FindingSource = {
   scan: (runtime, root) => auditRepo(runtime, root).findings,
 };
 
-export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource, appsecSource, ciAuditSource];
+const lookSource: FindingSource = {
+  check: "look",
+  scan: (runtime, root) => uxFindingsOf(latestUxRecords(runtime, fmPaths(root))),
+};
+
+export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource, appsecSource, ciAuditSource, lookSource];
 
 export const findFinding = (
   runtime: Runtime,

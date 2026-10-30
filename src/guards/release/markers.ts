@@ -16,9 +16,17 @@ export interface TrustMarker {
   readonly task: string;
 }
 
-export type Marker = AllowMarker | ApproveMarker | TrustMarker;
+export interface PredictMarker {
+  readonly type: "predict";
+  readonly concept: string;
+  readonly output: string;
+}
 
-const LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust)\s+(\S+)(?:\s+(.*))?$/i;
+export type Marker = AllowMarker | ApproveMarker | TrustMarker | PredictMarker;
+
+const LINE = /^\s*(?:finitemonkey|fm):\s+(allow|approve|trust|predict)\s+(\S+)(?:\s+(.*))?$/i;
+
+const unquote = (text: string): string => text.replace(/^(["'`])(.*)\1$/, "$2");
 const NAME = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,80}$/;
 const NOT_FROM_PERSON = [
   /<task-notification\b/i,
@@ -33,6 +41,8 @@ export const comesFromPerson = (prompt: string): boolean => !NOT_FROM_PERSON.som
 const toMarker = (verb: string, target: string, rest: string): Marker | undefined => {
   if (!NAME.test(target)) return undefined;
   if (verb === "trust") return { type: "trust", task: target };
+  if (verb === "predict")
+    return rest === "" ? undefined : { type: "predict", concept: target.toLowerCase(), output: unquote(rest) };
   if (verb === "allow") {
     return rest.length >= 3 ? { type: "allow", guard: target.toLowerCase(), reason: rest } : undefined;
   }

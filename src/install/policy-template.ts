@@ -8,7 +8,6 @@ export const policyTemplate = (lang: Lang): string =>
     `# ${GENERATED_MARKER}`,
     ...TEMPLATES[lang].policyHeader.map((line) => `# ${line}`),
     "level: standard",
-    "severity: medium",
     `promoteAfter: ${String(DEFAULT_PROMOTE_AFTER)}`,
     "guards:",
     ...OPTIONAL_GUARDS.filter((id) => !STARTS_IN_SHADOW.has(id)).map((id) => `  ${id}: active`),

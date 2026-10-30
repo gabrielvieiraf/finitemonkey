@@ -12,16 +12,81 @@ Include what you can: the affected version, your platform, the steps to reproduc
 
 ## Supported versions
 
-Finite Monkey is pre-release. No version is supported yet. Version `0.0.0` on npm is a name reservation and contains no code. Once releases start, security fixes go to the latest stable version.
+Code ships under the npm `next` dist-tag (`npx finitemonkey@next`). No stable version exists yet, so security fixes go to the latest version on `next`; older `next` versions get no fixes. Version `0.0.0`, which `latest` still points to, is a name reservation and contains no code. Once a stable version exists, security fixes go to the latest stable version.
 
-## Design commitments (planned)
+## Threat model
 
-These describe how Finite Monkey is being built. Each one will be backed by a test before it is claimed as true for a release.
+[docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) lists, per component, what Finite Monkey prevents, detects, records or only makes harder, and what it does not cover, with the code and the test behind each line.
 
-- Nothing leaves the user's machine by default. No telemetry.
+## Design commitments
+
+These describe how Finite Monkey is built. Each one is backed by tests in `test/`.
+
+- No telemetry, and your code never leaves the machine. The network calls made without a command from you (pull request state through `gh`, and a package name sent to the npm or PyPI registry before a new package is added) are listed in the table at the end of this file, and a test fails when the code reaches a program or host the table does not name.
 - Secrets are never printed in output, logs, reports or pull requests; they are referenced by file and line.
-- Guards fail closed: if a check cannot run, the action is blocked and the reason is shown.
+- Guards that prevent damage fail closed: if the gate cannot run, the stop is held once with the reason and the fix, the next stop goes through recorded as not run, and `pr open` and `ci gate` refuse until a real run passes. Advisory guards fail open. The table below lists each one.
 - Packages are published only from CI, with npm provenance.
+- Each line of the evidence ledger is signed with an HMAC key kept in `~/.finitemonkey/ledger.key`, outside the project. The gate ignores and reports lines without a valid signature and reuses evidence only while the hook entry points and its own scripts hash the same. A process that can read your home folder can still sign lines: this raises the cost of tampering, it does not prevent it.
+
+<!-- generated:guard-failure-modes:start -->
+Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent damage fail closed; advisory guards fail open.
+
+| Guard | Failure mode |
+|---|---|
+| `secrets` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `gate` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `prose` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `git` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `deps` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `creds-static` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `appsec` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `rules` | closed: when it cannot run, the action is blocked with the reason; at `Stop` the gate holds once and then records not run |
+| `signals` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `fourth-attempt` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `ricochete` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `planta` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `label` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `perfil` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `conceitos` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `relay` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reuse` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `quality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `slop` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `tests-hold` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `advisor` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `claims` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `clarify` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `deploy` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `wt-suggest` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `heavy-lock` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `instructions` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `rules-stop` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reminders` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `learnings` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `syntax-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `early-loops` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reproduce-first` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `scope` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `front-scope` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `predict-gate` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `decision-hold` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `assumptions` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `reality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `guardian-reuse` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `proportionality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `forecast` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `evolve` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `calibrate` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `knowledge-claims` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `memory-quarantine` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `knowledge-map` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `explain-approval` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `premise-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `focus-card` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `attention` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `drift-sensor` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `triage` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+<!-- generated:guard-failure-modes:end -->
 
 <!-- generated:footprint:start -->
 ## What it reads, writes and sends
@@ -33,7 +98,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Reads | `stdin` | The event Claude Code passes to each hook: the tool call, the prompt or the stop request. |
 | Reads | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json` | Claude Code settings, to check that the hooks are installed and nothing switches them off. `$CLAUDE_CONFIG_DIR` replaces `~/.claude` when set. |
 | Reads | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/rules/`, `.claudeignore` | Instruction files, read by `doctor` to report rules that exist only as text. |
-| Reads | `~/.claude/projects/` | This project's local Claude Code session logs: read once with `init --look-back`, and read incrementally on each prompt only when a spend budget is set in `.finitemonkey/config.yml`. |
+| Reads | `~/.claude/projects/` | This project's local Claude Code session logs: read once with `init --look-back`, and read incrementally on each prompt only when a spend budget is set in `.finitemonkey/config.yml`. `finitemonkey drift` (and, unless the drift-sensor flag is off, a background run at most once a day after a turn) counts tool calls, model and version per day from them; only those counts are kept, in `.finitemonkey/cache/drift.json`. |
 | Reads | `~/.claude/plugins/`, `~/.claude/debug/latest` | `doctor` reads installed plugins and their hook files to list every hook and find conflicts; `doctor --hooks` also reads the latest Claude Code debug log for hook timings. It never changes another plugin's files. |
 | Reads | `.git/` | The repository through the `git` command: status, diffs, refs and the reflog. |
 | Reads | `git diff` | Changed files, scanned for secrets, test skips, placeholders and prose patterns. |
@@ -45,7 +110,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.finitemonkey/evidence/`, `.finitemonkey/log.jsonl`, `.finitemonkey/prod-evidence.jsonl` | Evidence of each check, tied to the tree hash, and the gate log. |
 | Writes | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Approvals and grants typed by the person, and a short-lived cache of open pull requests. |
 | Writes | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | The accepted-findings baseline and exposure incidents. Both hold fingerprints and masks, never a secret value. |
-| Writes | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/` | Snapshots before destructive git commands, the journal that `undo` reads and dropped-line decisions from merges. |
+| Writes | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/`, `.git/finitemonkey/snapshots/` | Snapshots before destructive git commands and `rm` in the repository, with copies of ignored and untracked secret files up to 50 MB inside .git, the journal that `undo` reads and dropped-line decisions from merges. |
 | Writes | `.finitemonkey/reports/` | Masked bug reports that `doctor --report` writes, only when asked, and the report each front writes before it stops. |
 | Writes | `.finitemonkey/pr/` | Who accepted files outside the task scope in `pr open`, when and why, one file per branch. |
 | Writes | `.finitemonkey/fronts.yml`, `.finitemonkey/briefing.md` | The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed. |
@@ -56,13 +121,12 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Only with `supervisor: enabled: true` in the config: a short-lived hold file per session in the directory an account-switching supervisor announces, while the gate runs or holds the stop. `gain` reads that directory's `usage.json`. |
 | Writes | `.finitemonkey/semgrep/`, `.finitemonkey/data-map.yml` | `appsec rules --write` saves the semgrep rules generated for the detected stack, for CI to run; without `--write` it only prints them. `data-map` writes one row per personal field found in the schema (names only). |
 | Writes | `.finitemonkey/rules-compiled.json`, `.github/workflows/finitemonkey-rules.yml` | `rules compile` writes, per rule in `.finitemonkey/rules.yml`: deny entries and settings keys in `.claude/settings.json`, a line in `AGENTS.md`, the list of what it wrote, and with `--ci` a workflow that checks the rules on pull requests. `uninstall` removes all of it. |
-| Writes | `.finitemonkey/look/` | Screen captures, the contact sheet and the JSON summary that `look` writes per tree hash. |
+| Writes | `.finitemonkey/look/` | Screen captures, the contact sheet, the JSON summary and the interface findings per rule (`ux.json`, boxed screenshots) that `look` writes per tree hash. |
 | Writes | `.finitemonkey/prompts.jsonl` | What you type to Claude Code in this project, with secrets masked, so `finitemonkey audit` can find requests and decisions that never reached a document. It stays on this machine. |
 | Writes | `.finitemonkey/spend.json`, `.finitemonkey/spend-reconcile.jsonl` | Agent spend estimated from the local session logs, per task, day and month, and the differences found by `cost reconcile`. |
 | Writes | `docs/plan/` | Plan documents under `docs/plan/`: the inventory of what the code does today, decision records, research records, cost models, the master plan from the first L task and the copy of it kept before each consolidation. |
-| Writes | `.finitemonkey/map.txt` | The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse. |
 | Writes | `.finitemonkey/signals.jsonl`, `.finitemonkey/signals-index.json`, `.finitemonkey/signals-profile.json` | Loop signals from `finitemonkey signals`: error signatures, edit hashes and prompt fingerprints (hashed word pairs, never the text), the loop index and the calibrated thresholds. Deleted by `signals forget`. |
-| Writes | `.finitemonkey/perfil.yml`, `.finitemonkey/perfil-commits.json`, `.finitemonkey/conceitos.yml` | The per-domain profile of the person from `finitemonkey perfil`: tool literacy and domain knowledge per domain, raised by technical words in requests and by commits made outside the session, and the concept book with the level shown for each concept seen in the project. Never committed and never in PR text or reports. Deleted by `perfil forget`. |
+| Writes | `.finitemonkey/perfil.yml`, `.finitemonkey/perfil-commits.json`, `.finitemonkey/conceitos.yml`, `.finitemonkey/conceitos-events.jsonl`, `.finitemonkey/xray.json`, `.finitemonkey/probes.json` | The per-domain profile of the person from `finitemonkey perfil`: tool literacy per domain, raised by commits made outside the session, domain knowledge from the quick start, the concept book with the level shown for each concept seen in the project, and the concept evidence log (exposures, predictions, own changes and repairs, failures after approval) the concept states are counted from, the last x-ray of the changed lines, and the probes with their answers. `xray forget` deletes the evidence log and the x-ray; `probe forget` deletes the probes. Never committed and never in PR text or reports. Deleted by `perfil forget`. |
 | Writes | `.finitemonkey/runs/` | The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept. |
 | Writes | `.finitemonkey/map.txt`, `.finitemonkey/reuse.json` | The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse. |
 | Writes | `.finitemonkey/review/`, `.claude/agents/verifier.md` | The review round count used by `review packet`, and, only when `review.playwright: true` is set in the config, a verifier agent with the Playwright MCP. |
@@ -84,6 +148,14 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.github/workflows/ds-sync.yml` | Only with `finitemonkey ds-sync init --write`: a workflow that copies the design system from the prototype repository through an organization GitHub App and keeps one pull request updated. `ds-sync issue --yes`, run by the person or by that workflow, opens or edits issues through `gh`, rewriting only the section between its markers. |
 | Writes | `ruff.toml`, `pytest.ini`, `scripts/check_no_comments.py`, `.github/workflows/ci.yml` | Only with `finitemonkey preset python --write` in a Python project: ruff rules for complexity and length, pytest options that fail on unknown markers, a script that rejects code comments, import-linter contracts when `.finitemonkey/arch.yml` exists, and a CI workflow on `uv sync --locked`. An existing file is shown as a diff and kept. |
 | Writes | `.finitemonkey/onboard.json`, `AGENTS.md` | `finitemonkey onboard` runs the build, test, lint and typecheck commands it finds in the manifests and in AGENTS.md or CLAUDE.md, with a time limit, and keeps in `onboard.json` and in its own AGENTS.md block only the ones that succeeded, plus the number of possible secrets found by a one-time scan of the git history. Commands that deploy, publish, install or keep running are not run. |
+| Writes | `~/.finitemonkey/ledger.key` | A random key, created the first time evidence is written, that signs every line of the evidence ledger. It stays in your home folder, outside the project, readable only by you. Lines without a valid signature are ignored and reported; deleting the key makes old evidence count as not run. |
+| Writes | `.finitemonkey/goals.yml`, `.finitemonkey/decisions.jsonl`, `.finitemonkey/assumptions.jsonl`, `.finitemonkey/research/` | Project goals, constraints, non-goals, done criteria and rejected options. An entry added from inside Claude Code is `inferred` and never counts as approved; only `finitemonkey guardian goal confirm`, run by the person in a terminal, marks it `stated`. The optional `context:` section (stage, demonstrated concepts, who operates, next milestone) follows the same rule: inferred fields can only silence a report. `decisions.jsonl` keeps each accepted decision and each level 2-3 report: the recommendation, the evidence at the time, the choice and an optional one-line override reason; `guardian forget` deletes an entry. Nothing about the person is stored. `assumptions.jsonl` is the assumption register: ASSUMPTION lines exported by `decide check` and entries added with `guardian assume add`, with impact, how to verify, a re-evaluation trigger and a status. `research/<question>.jsonl` holds a research question, the decision record it serves, its options, criteria, critical unknowns and stop condition, and each source with what it changed. |
+| Writes | `.finitemonkey/bypasses.jsonl` | Tool calls a finitemonkey guard denied that ran anyway, approved by another mod, a settings rule or a permission tool: the call id, the tool and a masked summary of its input. `ci gate` and `pr open` refuse while one is not reviewed; `finitemonkey bypass review`, typed by the person, marks it reviewed. |
+| Writes | `.finitemonkey/cost.jsonl` | Only when the mod runs (Claude Code 2.1.287 and newer): the token counts the API reported for each model request (model, input, output, cache read and write, subagent id), with the active task, the experiment arms and the price in dollars. `finitemonkey mod cost` adds them up per contract, attempt and arm. No prompt or answer text. |
+| Writes | `.finitemonkey/claims.jsonl`, `.finitemonkey/derived.json`, `.finitemonkey/demoted.json`, `.finitemonkey/retrieve.jsonl`, `.finitemonkey/decision-records/`, `.finitemonkey/decision-reasons.jsonl`, `.finitemonkey/cache/knowledge-map.json`, `.finitemonkey/cache/questions.json` | `claims.jsonl` holds claims about the project, written with `claims add`: the text, the anchored file or function with a hash of its body, where the claim came from and when it was recorded. Entries are appended and closed, never deleted. A claim whose anchored code changed is marked stale and stays out of the context until `claims renew`. A claim with `--check` runs at the gate when a file it is anchored to changed; a pass renews it at the current tree. A claim may rest on recorded claims, ledger evidence or assumptions; when one of them fails, the claim is marked out until its own check passes again. `derived.json` records, for each generated file such as `map.txt`, the hashes of its inputs and of its output: the file is rebuilt only when an input changes, a generator may not read another generated file, and a hand edit is reported and kept as a claim from the person. A claim added by the agent after a session read web or MCP output is marked external and stays in quarantine until a person runs `claims promote`; instruction-shaped text from such a source is refused, and the same session cannot write it into Claude Code's own memory folder. `demoted.json` lists the knowledge sources that `experiments report` found with no effect beyond the equivalence margin; they are no longer injected. `retrieve.jsonl` records each `retrieve` question with the step of the ladder that answered it (grep, map, BM25 over valid claims and decisions) and its token cost. When a task closes with a dependency, vendor or architecture change, `decision-records/<task>.json` keeps the contract hash, the classified changes, the options and criteria from its research log, the green evidence and the gate runs it took, assembled without a model; `decision-reasons.jsonl` holds the one sentence the person writes with `decide why`. Only after the person sets `knowledge-map: active` in policy.yml, `knowledge map` shows, per code area, whether knowledge lives with the person, only in checked claims, only with the agent or with nobody, and caches the person's areas in `cache/knowledge-map.json`; `cache/questions.json` keeps which spaced questions were asked, at most one per session. |
+| Writes | `.finitemonkey/parking.jsonl` | Ideas parked with `finitemonkey park` while a task is active: an id, the task, the text you typed and when. `finitemonkey unpark <id>` adds a line that brings one back. Nothing is parked without that command. |
+| Writes | `.finitemonkey/cache/copy-rules.json` | `cache/copy-rules.json` keeps, per interface copy rule (verb-first labels, error messages with an action, one name per action, empty labels), the findings the copy check showed and the ones later fixed in the catalog. The ratio of fixed over shown decides whether a rule may block: only when `ui-copy` is active and the ratio reaches `ui.copy.accept_threshold` from config.yml. Never committed. |
+| Writes | `.finitemonkey/judge.jsonl`, `.finitemonkey/judge/` | `judge.jsonl` is one append-only log for what the person can judge, in code and in any researched field: domains, concepts with their anchors, evidence with its proof kind and a pointer to the proof, contests, claims, their support state, results split into claims, horizon help, internal signals, trajectory events, research items and questions. A band per concept is never stored: it is computed from the evidence by a public count rule, and exposure to a term weighs zero. A support state can only be set by a check or by the person, never by a model. `judge/handoffs/<claim>.json` holds the package for an outside reviewer, and `judge/items/<hash>.txt` keeps a page, document or tool output read with `judge read`, as quoted data with its origin and content hash. Nothing here is committed or sent; `judge export` prints it and `judge forget` deletes it. |
 | Sends | `api.github.com` | Through `gh`, only when it is installed and logged in: the state of the pull request named in a task, and your open pull requests for the session line. Code is never uploaded. |
 | Sends | `127.0.0.1` | One request to your own app on the port a `runtime` check declares, after starting it or finding it running. Nothing goes past this machine. |
 | Sends | `registry.npmjs.org`, `pypi.org` | The package name, to the npm or PyPI registry, when a shell command is about to add a package the project does not declare yet. Never with `FINITEMONKEY_OFFLINE=1`. |
@@ -93,4 +165,6 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Sends | `hosts.local.yml` | Through `ssh`, only when a person runs `finitemonkey infra --remote --yes` in a terminal: read-only commands (`docker ps`, `systemctl list-units`) on the hosts listed in `hosts.local.yml`. Never from a hook or an agent. |
 | Sends | `headers.url` | Through `curl`, only when `headers.url` is set in `.finitemonkey/config.yml` and a task contract has the `headers` check: one GET per configured route, to read the security headers of the real response. Without it, the headers come from the app `look` already started on 127.0.0.1. |
 | Sends | `hosts.local.yml`, `FINITEMONKEY_DEPLOY_HOST` | Through `ssh`, when you run `finitemonkey deploy check` (or its scheduled workflow, or the `deploy` gate check): read-only commands (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) as the read-only user, to compare production with the branch. With `--issue`, one GitHub issue is opened or commented through `gh`. |
+| Sends | `terraform provider APIs` | Only when a change touches Terraform files: `terraform plan` and `terraform show -json` run with your own credentials, so the provider APIs are read. The plan file stays in `.finitemonkey/cache/`. Apply is never run. |
+| Sends | `doi.org`, `cited URLs` | Only when `judge verify` runs on a claim with a citation and `cite-span` is not off: the cited DOI (through doi.org) or URL is requested to check that it resolves and that the quoted span appears in it. Only the identifier is sent; no claim, note or evidence text leaves the machine. Unreachable or paywalled sources are reported as not verified. |
 <!-- generated:footprint:end -->

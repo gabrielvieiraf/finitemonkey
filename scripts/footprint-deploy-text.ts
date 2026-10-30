@@ -1,6 +1,24 @@
 import type { Localized } from "./footprint-text.js";
 
 export const DEPLOY_FOOTPRINT_TEXT = {
+  "ledger-key": {
+    en: "A random key, created the first time evidence is written, that signs every line of the evidence ledger. It stays in your home folder, outside the project, readable only by you. Lines without a valid signature are ignored and reported; deleting the key makes old evidence count as not run.",
+    "pt-BR":
+      "Uma chave aleatória, criada na primeira vez que uma evidência é gravada, que assina cada linha do registro de evidências. Fica na sua pasta pessoal, fora do projeto, legível só por você. Linhas sem assinatura válida são ignoradas e relatadas; apagar a chave faz as evidências antigas contarem como não executadas.",
+    es: "Una clave aleatoria, creada la primera vez que se escribe una evidencia, que firma cada línea del registro de evidencias. Queda en tu carpeta personal, fuera del proyecto, legible solo por ti. Las líneas sin firma válida se ignoran y se informan; borrar la clave hace que las evidencias antiguas cuenten como no ejecutadas.",
+  },
+  "guard-bypass": {
+    en: "Tool calls a finitemonkey guard denied that ran anyway, approved by another mod, a settings rule or a permission tool: the call id, the tool and a masked summary of its input. `ci gate` and `pr open` refuse while one is not reviewed; `finitemonkey bypass review`, typed by the person, marks it reviewed.",
+    "pt-BR":
+      "Chamadas de ferramenta que um guard do finitemonkey negou e que rodaram mesmo assim, aprovadas por outro mod, uma regra de settings ou uma ferramenta de permissão: o id da chamada, a ferramenta e um resumo mascarado da entrada. `ci gate` e `pr open` recusam enquanto houver uma não revisada; `finitemonkey bypass review`, digitado pela pessoa, marca como revisada.",
+    es: "Llamadas de herramienta que un guard de finitemonkey negó y que corrieron igual, aprobadas por otro mod, una regla de settings o una herramienta de permisos: el id de la llamada, la herramienta y un resumen enmascarado de su entrada. `ci gate` y `pr open` se niegan mientras haya una sin revisar; `finitemonkey bypass review`, escrito por la persona, la marca como revisada.",
+  },
+  "mod-cost": {
+    en: "Only when the mod runs (Claude Code 2.1.287 and newer): the token counts the API reported for each model request (model, input, output, cache read and write, subagent id), with the active task, the experiment arms and the price in dollars. `finitemonkey mod cost` adds them up per contract, attempt and arm. No prompt or answer text.",
+    "pt-BR":
+      "Só quando o mod roda (Claude Code 2.1.287 ou mais novo): as contagens de tokens que a API informou em cada requisição ao modelo (modelo, entrada, saída, leitura e escrita de cache, id do subagente), com a tarefa ativa, os braços de experimento e o preço em dólares. `finitemonkey mod cost` soma por contrato, tentativa e braço. Nenhum texto de pedido ou resposta.",
+    es: "Solo cuando corre el mod (Claude Code 2.1.287 o más nuevo): los conteos de tokens que la API informó en cada solicitud al modelo (modelo, entrada, salida, lectura y escritura de caché, id del subagente), con la tarea activa, los brazos de experimento y el precio en dólares. `finitemonkey mod cost` los suma por contrato, intento y brazo. Ningún texto de pedido o respuesta.",
+  },
   infra: {
     en: "How the project deploys, read from its own files when you run `finitemonkey infra`: level, targets and risks with `file:line`, no address. Production hosts found in deploy files go to `hosts.local.yml`, which git ignores, and only when the `.gitignore` block is there.",
     "pt-BR":
@@ -43,9 +61,25 @@ export const DEPLOY_FOOTPRINT_TEXT = {
       "O `ci-watch` guarda, por pull request, os commits cuja CI falhou e quando o acompanhamento começou, mais uma linha por execução com o commit, o resultado de cada checagem, a classe da falha e a tentativa. Os logs de falha são lidos pelo `gh` com segredos mascarados e só as últimas linhas aparecem, sem ser guardadas.",
     es: "`ci-watch` guarda, por pull request, los commits cuya CI falló y cuándo empezó el seguimiento, más una línea por ejecución con el commit, el resultado de cada verificación, la clase de falla y el intento. Los logs de falla se leen con `gh` con los secretos enmascarados y solo se muestran sus últimas líneas, sin guardarlas.",
   },
+  "infra-plan": {
+    en: "Only when a change touches Terraform files: `terraform plan` and `terraform show -json` run with your own credentials, so the provider APIs are read. The plan file stays in `.finitemonkey/cache/`. Apply is never run.",
+    "pt-BR":
+      "Só quando uma mudança toca arquivos Terraform: `terraform plan` e `terraform show -json` rodam com as suas credenciais, então as APIs do provedor são lidas. O arquivo do plano fica em `.finitemonkey/cache/`. Apply nunca roda.",
+    es: "Solo cuando un cambio toca archivos Terraform: `terraform plan` y `terraform show -json` corren con tus credenciales, así que se leen las APIs del proveedor. El archivo del plan queda en `.finitemonkey/cache/`. Apply nunca se ejecuta.",
+  },
 } as const satisfies Readonly<
   Record<
-    "ci-watch" | "infra" | "infra-remote" | "deploy-drift" | "deploy-generate" | "headers" | "observability",
+    | "ci-watch"
+    | "infra"
+    | "infra-remote"
+    | "deploy-drift"
+    | "deploy-generate"
+    | "headers"
+    | "observability"
+    | "ledger-key"
+    | "guard-bypass"
+    | "mod-cost"
+    | "infra-plan",
     Localized
   >
 >;

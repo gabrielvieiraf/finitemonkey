@@ -24,6 +24,7 @@ export interface OnboardCommand {
 export interface OnboardState {
   readonly commands: readonly OnboardCommand[];
   readonly historyFindings: number | undefined;
+  readonly tree?: string;
 }
 
 const purposeOf = (value: unknown): Purpose | undefined => PURPOSES.find((item) => item === value);
@@ -38,7 +39,12 @@ export const parseOnboard = (text: string | undefined): OnboardState | undefined
     return purpose === undefined ? [] : [{ purpose, run: item["run"] }];
   });
   const history = parsed.value["historyFindings"];
-  return { commands, historyFindings: typeof history === "number" ? history : undefined };
+  const tree = parsed.value["tree"];
+  return {
+    commands,
+    historyFindings: typeof history === "number" ? history : undefined,
+    ...(typeof tree === "string" ? { tree } : {}),
+  };
 };
 
 export const onboardText = (state: OnboardState): string =>
@@ -47,6 +53,7 @@ export const onboardText = (state: OnboardState): string =>
       schema: ONBOARD_SCHEMA,
       commands: state.commands.map((item) => ({ purpose: item.purpose, run: item.run })),
       ...(state.historyFindings === undefined ? {} : { historyFindings: state.historyFindings }),
+      ...(state.tree === undefined ? {} : { tree: state.tree }),
     },
     null,
     2,
@@ -62,17 +69,21 @@ export const onboardChecks = (state: OnboardState): readonly AcceptanceCheck[] =
     run: item.run,
   }));
 
+export const commandRows = (commands: readonly OnboardCommand[]): readonly string[] =>
+  commands.map((item) => `| ${item.purpose} | \`${item.run.replace(/\|/g, "\\|")}\` |`);
+
 export const agentsBlock = (
   heading: string,
   header: string,
   commands: readonly OnboardCommand[],
-): readonly string[] => [
-  `## ${heading}`,
-  "",
-  header,
-  "| --- | --- |",
-  ...commands.map((item) => `| ${item.purpose} | \`${item.run.replace(/\|/g, "\\|")}\` |`),
-];
+): readonly string[] => [`## ${heading}`, "", header, "| --- | --- |", ...commandRows(commands)];
+
+export const onboardBlockBody = (text: string | undefined): readonly string[] => {
+  const lines = (text ?? "").split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trimEnd() === ONBOARD_MARKERS.begin);
+  const end = lines.findIndex((line, index) => index > start && line.trimEnd() === ONBOARD_MARKERS.end);
+  return start < 0 || end < 0 ? [] : lines.slice(start + 1, end);
+};
 
 export const withOnboardBlock = (text: string | undefined, body: readonly string[]): string =>
   withManagedBlock(text, ONBOARD_MARKERS, body);

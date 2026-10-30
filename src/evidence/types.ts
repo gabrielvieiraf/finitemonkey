@@ -20,13 +20,38 @@ export const UNVERIFIED_REASONS = [
   "awaiting_person",
   "no_evidence",
   "no_baseline",
+  "needs_approval",
+  "masked_exit",
+  "no_test_count",
+  "no_verdict",
 ] as const;
 
 export type UnverifiedReason = (typeof UNVERIFIED_REASONS)[number];
 
+export const COMPLETION_STATES = [
+  "unverified",
+  "running",
+  "verified",
+  "partial",
+  "invalidated",
+  "blocked",
+  "failed",
+  "inconclusive",
+  "needs_approval",
+] as const;
+
+export type CompletionState = (typeof COMPLETION_STATES)[number];
+
 export interface Note {
   readonly key: string;
   readonly params: Params;
+}
+
+export interface EvidenceInputs {
+  readonly cwd: string;
+  readonly lockfiles: Readonly<Record<string, string>>;
+  readonly tools: Readonly<Record<string, string>>;
+  readonly env: Readonly<Record<string, string>>;
 }
 
 export interface Evidence {
@@ -46,6 +71,11 @@ export interface Evidence {
   readonly releasedBy?: string;
   readonly failures?: readonly string[];
   readonly testCount?: number;
+  readonly state?: CompletionState;
+  readonly from?: CompletionState;
+  readonly stateReason?: string;
+  readonly inputs?: EvidenceInputs;
+  readonly scripts?: string;
 }
 
 export const GATE_CHECK = "*gate*";

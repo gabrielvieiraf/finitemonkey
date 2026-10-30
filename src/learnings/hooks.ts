@@ -6,8 +6,10 @@ import { toPosixPath } from "../core/posix-path.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
+import { readDemoted } from "../knowledge/arms.js";
 import { injectContext } from "../policy/inject.js";
 import { policyNumber } from "../policy/numbers.js";
+import { markUntrusted, readsUntrusted } from "../policy/untrusted.js";
 import { errorSignature } from "../signals/signature.js";
 import type { FmPaths } from "../task/paths.js";
 import { learnFromSignatures } from "./learn.js";
@@ -73,7 +75,7 @@ export const learningsInject: HookHandler = (input) => {
   const key = keyOf(input, paths);
   if (key === undefined || (key.sig === undefined && key.path === undefined)) return ALLOW;
   const lessons = readLessons(input.runtime, paths.dir);
-  if (lessons.length === 0) return ALLOW;
+  if (lessons.length === 0 || readDemoted(input.runtime, paths).has("learnings")) return ALLOW;
   const seen = readSeen(input, paths);
   const limits = {
     maxLessons: policyNumber(input.runtime, paths.root, ["learnings", "maxLessons"], DEFAULT_MAX_LESSONS),
@@ -100,9 +102,19 @@ export const learningsStop: HookHandler = (input) => {
   return ALLOW;
 };
 
+export const untrustedRecorder: HookHandler = (input) => {
+  const tool = toolName(input.payload.raw);
+  if (!readsUntrusted(tool)) return ALLOW;
+  const paths = projectPaths(input);
+  if (paths === undefined || input.runtime.stat(paths.dir)?.kind !== "dir") return ALLOW;
+  input.runtime.mkdir(toAbsolutePath(dirname(paths.cache(SEEN_FILE))));
+  markUntrusted(input.runtime, paths, input.payload.sessionId ?? "", tool);
+  return ALLOW;
+};
+
 export const LEARNINGS_HANDLERS: HookHandlers = {
   PreToolUse: [learningsInject],
-  PostToolUse: [learningsInject],
+  PostToolUse: [untrustedRecorder, learningsInject],
   PostToolUseFailure: [learningsInject],
   Stop: [learningsStop],
 };

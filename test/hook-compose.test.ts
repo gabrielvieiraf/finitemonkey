@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { UNATTENDED_HANDLERS } from "../src/autonomy/hold.js";
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { PORTAO_HANDLERS } from "../src/gate/hooks/index.js";
@@ -121,7 +122,10 @@ describe("guard composition", () => {
       (count, set) => count + (set.handlers.PreToolUse ?? []).length,
       0,
     );
-    assert.equal(list.length - git, (GIT_HANDLERS.PreToolUse ?? []).length + afterGit);
+    assert.equal(
+      list.length - git,
+      (GIT_HANDLERS.PreToolUse ?? []).length + afterGit + (UNATTENDED_HANDLERS.PreToolUse ?? []).length,
+    );
     assert.equal(
       git - secrets - 1,
       (PORTAO_HANDLERS.PreToolUse ?? []).length + (PROSE_HANDLERS.PreToolUse ?? []).length,

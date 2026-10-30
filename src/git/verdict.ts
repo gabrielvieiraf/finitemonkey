@@ -15,6 +15,10 @@ export const GIT_BLOCK_RULES = [
   "history",
   "protected-commit",
   "protected-push",
+  "sql-destroy",
+  "terraform-destroy",
+  "kubectl-delete",
+  "pipe-shell",
 ] as const;
 
 export type GitBlockRule = (typeof GIT_BLOCK_RULES)[number];

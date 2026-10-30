@@ -1,8 +1,11 @@
-import type { AbsolutePath } from "../core/brand.js";
+import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Env, TextSource } from "../core/context.js";
 import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { PROBE_ID_ENV, recordProbeEvent } from "../doctor/probe.js";
+import { findRepoRoot } from "../gate/hooks/common.js";
 import type { Translate } from "../i18n/translate.js";
+import { fmPaths } from "../task/paths.js";
 import { HOOK_POLICIES, type HookEvent } from "./events.js";
 import { allow, composeDecisions, type HookDecision, type HookHandlers, type HookInput } from "./handlers.js";
 import { type HookPayload, parseHookPayload } from "./payload.js";
@@ -44,6 +47,14 @@ const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Eval
   const parsed = parseHookPayload(event, text, options.stdin.isTTY === true);
   if (!parsed.ok) return { kind: "failed", payload: undefined, detail: parsed.error };
   const payload = parsed.value;
+  const probe = options.env?.[PROBE_ID_ENV];
+  if (probe !== undefined && probe !== "") {
+    const root = findRepoRoot(
+      options.runtime,
+      payload.cwd === undefined ? options.cwd : toAbsolutePath(payload.cwd, options.cwd),
+    );
+    if (root !== undefined) recordProbeEvent(options.runtime, fmPaths(root), probe, event, payload.raw);
+  }
   if (options.env?.[HOOK_PROBE_ENV] === "1") return { kind: "decided", payload, decision: { kind: "allow" } };
   try {
     return {

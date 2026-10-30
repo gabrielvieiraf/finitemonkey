@@ -19,6 +19,8 @@ export interface JournalEntry {
   readonly owner: string | undefined;
   readonly command: string | undefined;
   readonly heads: Readonly<Record<string, string>>;
+  readonly files?: number;
+  readonly skipped?: number;
 }
 
 export const journalPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(join(root, JOURNAL_FILE));
@@ -29,6 +31,14 @@ const headsOf = (value: unknown): Readonly<Record<string, string>> =>
         Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
       )
     : {};
+
+const countOf = (
+  record: Readonly<Record<string, unknown>>,
+  key: "files" | "skipped",
+): Partial<Record<typeof key, number>> => {
+  const value = record[key];
+  return typeof value === "number" && Number.isInteger(value) ? { [key]: value } : {};
+};
 
 export const parseJournalLine = (line: string): JournalEntry | undefined => {
   const parsed = parseJsonObject(line);
@@ -50,6 +60,8 @@ export const parseJournalLine = (line: string): JournalEntry | undefined => {
     owner: optionalString(record, "owner"),
     command: optionalString(record, "command"),
     heads: headsOf(record["heads"]),
+    ...countOf(record, "files"),
+    ...countOf(record, "skipped"),
   };
 };
 

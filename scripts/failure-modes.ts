@@ -24,9 +24,10 @@ export const FAILURE_MODES: readonly FailureMode[] = [
   {
     failure: "A gate that cannot run looks like a pass",
     cause: "A crash, a missing file or an unwritable ledger",
-    mitigation: "The person sees GATE DID NOT RUN instead of a green result",
+    mitigation:
+      "The stop is held once with GATE DID NOT RUN, then let through recorded as not run; `pr open` and `ci gate` refuse until a real run passes",
     file: "test/stop.test.ts",
-    test: "when the gate cannot run, the person sees GATE DID NOT RUN and the stop is not blocked",
+    test: "when the gate cannot run (an unwritable ledger), the stop is held once, then let through as not run",
   },
   {
     failure: "Old evidence passes new code",
@@ -55,6 +56,37 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     mitigation: "The tests check reads the tree diff, not the tool call",
     file: "test/gate.test.ts",
     test: "the tests check catches a skip added through any tool, from the tree diff",
+  },
+  {
+    failure: "The agent redefines what test means",
+    cause: "`scripts.test`, a runner config, the Makefile or a CI workflow changes during the task",
+    mitigation: "With `test-pin` active the check is held as needs approval with the diff until the person approves",
+    file: "test/test-pin.test.ts",
+    test: "redefining scripts.test during a task holds the check until the person approves",
+  },
+  {
+    failure: "A review or approval outlives the code it saw",
+    cause: "An edit after the review or the manual approval, or a reviewer agent written during the task",
+    mitigation:
+      "Reviews count only with a verdict from a trusted reviewer on the current tree; approvals carry the tree hash and go back to needs approval after an edit",
+    file: "test/review-bound.test.ts",
+    test: "an edit after a manual approval sets the check back to needs_approval",
+  },
+  {
+    failure: "A dependency or runtime change keeps old green results",
+    cause: "The tree hash covers code only, not lockfiles, tool versions or the environment",
+    mitigation:
+      "Evidence records its inputs; a changed lockfile, tool version or allowlisted variable, or command evidence past its maximum age, runs the check again, and `evidence why` names the input",
+    file: "test/evidence-inputs.test.ts",
+    test: "a lockfile change invalidates green evidence, and evidence why names it",
+  },
+  {
+    failure: "A forged ledger line passes a check",
+    cause: "The agent appends a passed line with the current tree hash, or edits the scripts the gate trusts",
+    mitigation:
+      "Every ledger line carries an HMAC with a key outside the project; unsigned lines are ignored and reported, and evidence is reused only when the hook entry points and gate scripts hash the same",
+    file: "test/ledger-hmac.test.ts",
+    test: "a hand-written passed line is ignored and reported as tampering",
   },
   {
     failure: "A secret is committed",
@@ -104,5 +136,22 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     mitigation: "The gate blocks and explains in the user's language",
     file: "test/hook.test.ts",
     test: "bundle blocks a gate when stdin is garbage, in the user's language",
+  },
+  {
+    failure: "Another mod approves a call a guard denied",
+    cause:
+      "On a personal login without managed settings, a mod's tool.check allow or a tool.call answered without next runs over a PreToolUse deny",
+    mitigation:
+      "The denied call id is kept; when it reaches PostToolUse it is recorded as guard_bypassed, shown in the status line and the gate band, and `ci gate` and `pr open` refuse until the person runs `finitemonkey bypass review`; `doctor` names installed mods with that reach",
+    file: "test/bypass.test.ts",
+    test: "a call a guard denied that still runs is recorded, and ci gate refuses until the person reviews it",
+  },
+  {
+    failure: "The mod's permission check fails open",
+    cause: "A mod hook that throws or times out is skipped and the call goes on",
+    mitigation:
+      "The mod's tool.check registration has a .catch that denies the call; the command hooks still decide it",
+    file: "test/mod/tighten.test.ts",
+    test: "a guard that throws denies the call",
   },
 ];

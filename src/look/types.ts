@@ -8,6 +8,62 @@ export const LOOK_RULES = [
   "look/banned-copy",
   "look/drift",
   "look/repeated-layout",
+  "a11y/contrast",
+  "a11y/non-text-contrast",
+  "a11y/target-size",
+  "a11y/reflow",
+  "a11y/clipped-text",
+  "a11y/name",
+  "a11y/label",
+  "a11y/alt",
+  "a11y/landmark",
+  "a11y/engine",
+  "keyboard/unreachable",
+  "keyboard/trap",
+  "keyboard/focus-invisible",
+  "keyboard/focus-obscured",
+  "keyboard/order",
+  "keyboard/dialog",
+  "ui-states/not-covered",
+  "ui-states/loading",
+  "ui-states/empty",
+  "ui-states/error-text",
+  "ui-states/error-action",
+  "ui-states/error-color",
+  "ui-states/partial",
+  "ui-states/status",
+  "ui/dont",
+  "ds/off-token",
+  "ds/font-small",
+  "ds/literal",
+  "ds/no-tokens",
+  "default-look/pill",
+  "default-look/gradient",
+  "default-look/default-font",
+  "default-look/emoji-icon",
+  "default-look/same-shadow",
+  "forms/placeholder-label",
+  "forms/premature",
+  "forms/error-not-linked",
+  "forms/focus-not-moved",
+  "forms/input-lost",
+  "forms/error-sticks",
+  "forms/native",
+  "flow/dead-end",
+  "flow/unreachable",
+  "flow/steps",
+  "flow/destructive",
+  "flow/draft-lost",
+  "journey/failed",
+  "journey/weak",
+  "journey/unapproved",
+  "visual/pending",
+  "visual/rejected",
+  "sheet/changed",
+  "sheet/off-scale",
+  "sheet/nested-radius",
+  "perf/regression",
+  "perf/slow-action",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];
@@ -30,6 +86,11 @@ export interface LookFinding {
   readonly detail: string;
   readonly blocking: boolean;
   readonly allowedBy?: string;
+  readonly feature?: string;
+  readonly selector?: string;
+  readonly id?: string;
+  readonly unverified?: true;
+  readonly baseline?: true;
 }
 
 export interface LookCapture {
@@ -48,6 +109,7 @@ export interface LookSummary {
   readonly contactSheet: string | null;
   readonly findings: readonly LookFinding[];
   readonly ignoredAllows: readonly string[];
+  readonly blockedRequests?: readonly string[];
 }
 
 export const LOOK_SCHEMA = "finitemonkey/look@1";

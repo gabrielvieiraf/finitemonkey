@@ -24,7 +24,7 @@ const ALLOW: HookDecision = { kind: "allow" };
 export const isListed = (scope: Pick<TaskScope, "paths" | "testsProtected">, file: string): boolean =>
   !scope.testsProtected || (scope.paths.length > 0 && matchesAny(file, scope.paths));
 
-const activeScope = (runtime: Runtime, paths: FmPaths): TaskScope | undefined => {
+export const activeScope = (runtime: Runtime, paths: FmPaths): TaskScope | undefined => {
   const active = readState(runtime, paths).active;
   if (active === undefined) return undefined;
   const disk = (file: string): string | undefined => {
@@ -35,7 +35,7 @@ const activeScope = (runtime: Runtime, paths: FmPaths): TaskScope | undefined =>
   return loaded.ok ? loaded.value.contract.scope : undefined;
 };
 
-const createdFiles = (runtime: Runtime, paths: FmPaths): readonly string[] => {
+export const createdFiles = (runtime: Runtime, paths: FmPaths): readonly string[] => {
   const list = readJsonFile(runtime, paths.cache(CREATED_FILE))?.["files"];
   return Array.isArray(list) ? list.filter((item): item is string => typeof item === "string") : [];
 };

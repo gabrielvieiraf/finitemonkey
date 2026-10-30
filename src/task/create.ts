@@ -91,7 +91,7 @@ export const draftChecks = (
 };
 
 export const createTask = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "stat" | "appendText" | "now">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "stat" | "appendText" | "now" | "homeDir">,
   paths: FmPaths,
   draft: TaskDraft,
 ): Parsed<{ readonly contract: TaskContract; readonly text: string }, CreateProblem> => {

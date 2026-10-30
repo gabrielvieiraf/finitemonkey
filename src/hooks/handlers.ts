@@ -1,8 +1,13 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
+import { EXPLAIN_APPROVAL_FEATURE, EXPLAIN_APPROVAL_HANDLERS } from "../approve/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
+import { ATTENTION_FEATURE, ATTENTION_HANDLERS } from "../attention/hook.js";
+import { UNATTENDED_HANDLERS } from "../autonomy/hold.js";
+import { CALIBRATE_HANDLERS } from "../calibrate/hooks.js";
 import { CLAIMS_HANDLERS } from "../claims/guard.js";
 import { CLARIFY_HANDLERS } from "../clarify/hook.js";
 import { CONCEITOS_HANDLERS } from "../conceitos/hooks.js";
+import { PREDICT_HANDLERS } from "../conceitos/predict.js";
 import { type TonedConcept, tonedHuman } from "../conceitos/tone.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
@@ -11,17 +16,31 @@ import type { Runtime } from "../core/runtime.js";
 import { credsStaticGuard } from "../creds/static-guard.js";
 import { DEPLOY_HANDLERS } from "../deploy/hooks.js";
 import { depsGuard } from "../deps/guard.js";
+import { DRIFT_FEATURE, DRIFT_HANDLERS } from "../drift/hook.js";
 import { logEvent } from "../evidence/log.js";
+import { EVOLVE_HANDLERS } from "../evolve/hooks.js";
+import { FOCUS_FEATURE, FOCUS_HANDLERS } from "../focus/hook.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
+import { DECISION_HOLD_HANDLERS } from "../guardian/accepted-hold.js";
+import { ASSUMPTION_HANDLERS } from "../guardian/assumption-hook.js";
+import { FORECAST_HANDLERS } from "../guardian/forecast-hook.js";
+import { scanHandlers } from "../guardian/pending.js";
+import { REALITY_HANDLERS } from "../guardian/reality-hook.js";
+import { detectBypass, noteDenied } from "../guards/bypass/ledger.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
+import { TRIAGE_HANDLERS } from "../judge/triage-hook.js";
+import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
+import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
+import { KNOWLEDGE_MAP_HANDLERS } from "../knowledge/who-knows-hook.js";
 import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
+import { PREMISE_FEATURE, PREMISE_HANDLERS } from "../premise/hook.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
@@ -34,8 +53,17 @@ import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/e
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
 import { toolName } from "../secrets/guards/tool-input.js";
+import {
+  EARLY_GUARD,
+  earlyLoopTriggers,
+  REPRO_GUARD,
+  reproduceFirst,
+  SYNTAX_GUARD,
+  syntaxAfterEdit,
+} from "../signals/early.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
+import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
 import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
 import { WT_SUGGEST_HANDLERS } from "../wt/suggest-hooks.js";
@@ -122,6 +150,7 @@ const toned = (input: HookInput, decision: Extract<HookDecision, { kind: "block"
 
 const shaped = (input: HookInput, decision: Extract<HookDecision, { kind: "block" }>): HookDecision => {
   recordBlock(input, decision);
+  if (input.event === "PreToolUse") noteDenied(input);
   if (input.event !== "PreToolUse" || decision.output !== undefined) return decision;
   const human = toned(input, decision);
   const reason = capReason(decision.reason);
@@ -165,7 +194,14 @@ export const SECRETS_HANDLERS: HookHandlers = {
 
 export const GUARD_SETS: readonly GuardSet[] = [
   { id: "secrets", damage: true, handlers: SECRETS_HANDLERS },
-  { id: "gate", damage: true, handlers: PORTAO_HANDLERS },
+  {
+    id: "gate",
+    damage: true,
+    handlers: mergeHandlers(PORTAO_HANDLERS, {
+      PostToolUse: [detectBypass],
+      PostToolUseFailure: [detectBypass],
+    }),
+  },
   { id: "prose", damage: false, handlers: PROSE_HANDLERS },
   { id: "git", damage: true, handlers: GIT_HANDLERS },
   { id: "deps", damage: false, handlers: { PreToolUse: [depsGuard] } },
@@ -194,6 +230,37 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "rules-stop", damage: false, handlers: { Stop: [rulesStop] } },
   { id: "reminders", damage: false, handlers: REMINDERS_HANDLERS },
   { id: "learnings", damage: false, handlers: LEARNINGS_HANDLERS },
+  { id: SYNTAX_GUARD, damage: false, handlers: { PostToolUse: [syntaxAfterEdit] } },
+  {
+    id: EARLY_GUARD,
+    damage: false,
+    handlers: { PostToolUse: [earlyLoopTriggers], PostToolUseFailure: [earlyLoopTriggers] },
+  },
+  { id: REPRO_GUARD, damage: false, handlers: { PreToolUse: [reproduceFirst] } },
+  { id: SCOPE_GUARD, damage: false, handlers: { PostToolUse: [scopeAfterEdit] } },
+  { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
+  { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
+  { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
+  { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
+  { id: "reality", damage: false, handlers: REALITY_HANDLERS },
+  { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
+  { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") },
+  { id: "forecast", damage: false, handlers: FORECAST_HANDLERS },
+  { id: "evolve", damage: false, handlers: EVOLVE_HANDLERS },
+  { id: "calibrate", damage: false, handlers: CALIBRATE_HANDLERS },
+  { id: "knowledge-claims", damage: false, handlers: KNOWLEDGE_CLAIMS_HANDLERS },
+  { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
+  { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
+  { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
+  { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
+  { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
+  { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
+  { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
+  { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
 ];
 
-export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(...GUARD_SETS.map(withPolicy), WT_PLACE_HANDLERS);
+export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(
+  ...GUARD_SETS.map(withPolicy),
+  WT_PLACE_HANDLERS,
+  UNATTENDED_HANDLERS,
+);

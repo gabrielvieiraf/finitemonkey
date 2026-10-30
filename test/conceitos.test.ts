@@ -64,7 +64,7 @@ describe("concept book: the same block in two tones", () => {
       first.message,
       /Kept a credential out.*Why it matters: .*The safe way: .*How to check later: finitemonkey secrets scan comes back green\./,
     );
-    assert.equal(second.message, "finitemonkey: Kept a credential out of a file, command or commit.");
+    assert.match(second.message, /^finitemonkey: Kept a credential out of a file, command or commit\. Next: /);
     assert.equal(readBook(fakeRuntime({ fs }), PATHS).concepts["secret-in-code"]?.level, "explained");
   });
 

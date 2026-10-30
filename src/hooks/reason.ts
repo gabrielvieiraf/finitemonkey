@@ -22,7 +22,12 @@ export type ReasonFamily =
   | "signals.fourth"
   | "quality.block"
   | "claims.block"
-  | "wt.heavy";
+  | "wt.heavy"
+  | "signals.early"
+  | "signals.syntax"
+  | "signals.repro"
+  | "fronts.scope"
+  | "guardian.block";
 
 export type HumanFamily = Extract<`${ReasonFamily}.human`, MessageKey>;
 
@@ -43,6 +48,11 @@ const familyOf = (base: ReasonBase): ReasonFamily => {
     "quality.block",
     "claims.block",
     "wt.heavy",
+    "signals.early",
+    "signals.syntax",
+    "signals.repro",
+    "fronts.scope",
+    "guardian.block",
   ];
   const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
   if (found === undefined) throw new Error(`no reason family for ${base}`);

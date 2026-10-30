@@ -1,0 +1,11 @@
+{
+  "repo": "withmartian/code-review-benchmark",
+  "commit": "e616e849755441da38f18bf3adba2c9583b03803",
+  "goldenDir": "offline/golden_comments",
+  "judgeModel": "anthropic/claude-sonnet-4-5-20250929",
+  "estimate": {
+    "reviewUsdPerPr": 1.5,
+    "candidatesPerPr": 6,
+    "judgeUsdPerPair": 0.003
+  }
+}

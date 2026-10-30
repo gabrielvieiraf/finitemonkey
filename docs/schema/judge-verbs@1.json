@@ -1,0 +1,1758 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/judge-verbs@1.json",
+  "title": "finitemonkey/judge-verbs@1",
+  "description": "`data` of every `finitemonkey judge <verb> --json` and of `judge call`: the same JSON for the CLI, the mod pane, the skill and the gate. Generated from JudgeResponse in src/judge/response.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/judge-verbs@1"
+    },
+    "verb": {
+      "type": "string",
+      "enum": [
+        "failed",
+        "check",
+        "domain",
+        "concept",
+        "probe",
+        "contest",
+        "horizon",
+        "ask",
+        "observe",
+        "classify",
+        "verify",
+        "handoff",
+        "fade",
+        "report",
+        "export",
+        "forget",
+        "judge",
+        "answer",
+        "cut",
+        "anchor",
+        "read",
+        "promote",
+        "accept",
+        "dismiss",
+        "skip",
+        "triage",
+        "reply",
+        "depend",
+        "retract",
+        "contradict",
+        "fixed",
+        "trajectory"
+      ]
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "entry": {
+      "type": "string"
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "total": {
+          "type": "number"
+        },
+        "modelOnly": {
+          "type": "number"
+        },
+        "handedOff": {
+          "type": "number"
+        },
+        "done": {
+          "type": "boolean"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claim": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "number",
+                  "check",
+                  "source-span",
+                  "prose"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "machine-verified",
+                  "person-judged",
+                  "model-only",
+                  "handed-off",
+                  "retracted"
+                ]
+              },
+              "band": {
+                "type": "string",
+                "enum": [
+                  "demonstrated",
+                  "proximal",
+                  "beyond",
+                  "no record"
+                ]
+              },
+              "concepts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "concept": {
+                      "type": "string"
+                    },
+                    "band": {
+                      "type": "string",
+                      "enum": [
+                        "demonstrated",
+                        "proximal",
+                        "beyond",
+                        "no record"
+                      ]
+                    },
+                    "because": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "concept",
+                    "band"
+                  ]
+                }
+              },
+              "outcome": {
+                "type": "string"
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "verify",
+                    "handoff",
+                    "judge",
+                    "cut"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "claim",
+              "text",
+              "kind",
+              "state",
+              "band",
+              "concepts",
+              "actions"
+            ]
+          }
+        }
+      },
+      "required": [
+        "result",
+        "source",
+        "total",
+        "modelOnly",
+        "handedOff",
+        "done",
+        "rows"
+      ]
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "modelOnly": {
+            "type": "number"
+          },
+          "handedOff": {
+            "type": "number"
+          },
+          "done": {
+            "type": "boolean"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "claim": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "number",
+                    "check",
+                    "source-span",
+                    "prose"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "machine-verified",
+                    "person-judged",
+                    "model-only",
+                    "handed-off",
+                    "retracted"
+                  ]
+                },
+                "band": {
+                  "type": "string",
+                  "enum": [
+                    "demonstrated",
+                    "proximal",
+                    "beyond",
+                    "no record"
+                  ]
+                },
+                "concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "concept": {
+                        "type": "string"
+                      },
+                      "band": {
+                        "type": "string",
+                        "enum": [
+                          "demonstrated",
+                          "proximal",
+                          "beyond",
+                          "no record"
+                        ]
+                      },
+                      "because": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "concept",
+                      "band"
+                    ]
+                  }
+                },
+                "outcome": {
+                  "type": "string"
+                },
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "verify",
+                      "handoff",
+                      "judge",
+                      "cut"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "claim",
+                "text",
+                "kind",
+                "state",
+                "band",
+                "concepts",
+                "actions"
+              ]
+            }
+          }
+        },
+        "required": [
+          "result",
+          "source",
+          "total",
+          "modelOnly",
+          "handedOff",
+          "done",
+          "rows"
+        ]
+      }
+    },
+    "concepts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "concept": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suggested"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "demonstrated",
+              "proximal",
+              "beyond",
+              "no record"
+            ]
+          },
+          "because": {
+            "type": "object",
+            "properties": {
+              "band": {
+                "type": "string",
+                "enum": [
+                  "demonstrated",
+                  "proximal",
+                  "beyond",
+                  "no record"
+                ]
+              },
+              "evidence": {
+                "type": "string"
+              },
+              "proof": {
+                "type": "string",
+                "enum": [
+                  "prediction",
+                  "probe",
+                  "own-change",
+                  "person-repair",
+                  "source-check",
+                  "failure-after-acceptance",
+                  "exposure"
+                ]
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "band",
+              "evidence",
+              "proof",
+              "at"
+            ]
+          },
+          "positive": {
+            "type": "number"
+          },
+          "negative": {
+            "type": "number"
+          },
+          "exposures": {
+            "type": "number"
+          },
+          "contested": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "request": {
+            "type": "string",
+            "enum": [
+              "active",
+              "withdrawn"
+            ]
+          }
+        },
+        "required": [
+          "concept",
+          "status",
+          "band",
+          "positive",
+          "negative",
+          "exposures",
+          "contested",
+          "request"
+        ]
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "demonstrated",
+              "proximal",
+              "beyond",
+              "no record"
+            ]
+          },
+          "concepts": {
+            "type": "number"
+          },
+          "evidence": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "domain",
+          "band",
+          "concepts",
+          "evidence"
+        ]
+      }
+    },
+    "claim": {
+      "type": "object",
+      "properties": {
+        "claim": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "machine-verified",
+            "person-judged",
+            "model-only",
+            "handed-off",
+            "retracted"
+          ]
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "proposed": {
+          "type": "string"
+        },
+        "numbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "unit",
+                  "anchored",
+                  "exception",
+                  "magnitude",
+                  "unanchored",
+                  "input-changed"
+                ]
+              },
+              "anchor": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "number",
+              "state"
+            ]
+          }
+        }
+      },
+      "required": [
+        "claim",
+        "text",
+        "state"
+      ]
+    },
+    "handoff": {
+      "type": "object",
+      "properties": {
+        "claim": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "checked": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim",
+        "text",
+        "sources",
+        "checked",
+        "missing",
+        "to",
+        "at"
+      ]
+    },
+    "ask": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "criterion": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision",
+        "question",
+        "criterion"
+      ]
+    },
+    "export": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "finitemonkey/judge@1"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "domain"
+              },
+              "parent": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "concepts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "concept"
+              },
+              "domain": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "synonyms": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "anchors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "span",
+                        "code",
+                        "compute"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "hash": {
+                      "type": "string"
+                    },
+                    "span": {
+                      "type": "string"
+                    },
+                    "inputs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "ref",
+                    "hash"
+                  ]
+                }
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "span",
+                  "detector",
+                  "model"
+                ]
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "domain",
+              "label",
+              "synonyms",
+              "anchors",
+              "origin",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "evidence"
+              },
+              "concepts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "proof": {
+                "type": "string",
+                "enum": [
+                  "prediction",
+                  "probe",
+                  "own-change",
+                  "person-repair",
+                  "source-check",
+                  "failure-after-acceptance",
+                  "exposure"
+                ]
+              },
+              "result": {
+                "type": "string",
+                "enum": [
+                  "fail",
+                  "pass"
+                ]
+              },
+              "ref": {
+                "type": "string"
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "person",
+                  "agent",
+                  "tool"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "concepts",
+              "proof",
+              "result",
+              "ref",
+              "origin",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "contests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "contest"
+              },
+              "target": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "target",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "claim"
+              },
+              "text": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "number",
+                  "check",
+                  "source-span",
+                  "prose"
+                ]
+              },
+              "concepts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "anchors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "span",
+                        "code",
+                        "compute"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "hash": {
+                      "type": "string"
+                    },
+                    "span": {
+                      "type": "string"
+                    },
+                    "inputs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "ref",
+                    "hash"
+                  ]
+                }
+              },
+              "provenance": {
+                "type": "string"
+              },
+              "because": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text",
+              "kind",
+              "concepts",
+              "anchors",
+              "provenance",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "support": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "support"
+              },
+              "claim": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "machine-verified",
+                  "person-judged",
+                  "model-only",
+                  "handed-off",
+                  "retracted"
+                ]
+              },
+              "by": {
+                "type": "string",
+                "enum": [
+                  "person",
+                  "machine"
+                ]
+              },
+              "ref": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "missing": {
+                "type": "string"
+              },
+              "bands": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": [
+                    "demonstrated",
+                    "proximal",
+                    "beyond",
+                    "no record"
+                  ]
+                }
+              },
+              "anchors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "span",
+                        "code",
+                        "compute"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "hash": {
+                      "type": "string"
+                    },
+                    "span": {
+                      "type": "string"
+                    },
+                    "inputs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "ref",
+                    "hash"
+                  ]
+                }
+              },
+              "exceptions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "claim",
+              "state",
+              "by",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "result"
+              },
+              "source": {
+                "type": "string"
+              },
+              "hash": {
+                "type": "string"
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "domain": {
+                "type": "string"
+              },
+              "task": {
+                "type": "string"
+              },
+              "research": {
+                "type": "string"
+              },
+              "decision": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "source",
+              "hash",
+              "claims",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "horizon": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "horizon"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "concept",
+                  "question",
+                  "scope"
+                ]
+              },
+              "text": {
+                "type": "string"
+              },
+              "criterion": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "example",
+                  "check",
+                  "source-span"
+                ]
+              },
+              "answer": {
+                "type": "string"
+              },
+              "domain": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "shown",
+                  "accepted",
+                  "dismissed"
+                ]
+              },
+              "task": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "kind",
+              "text",
+              "criterion",
+              "domain",
+              "state",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "signal"
+              },
+              "family": {
+                "type": "string"
+              },
+              "confidence": {
+                "type": "number"
+              },
+              "state": {
+                "const": "shadow"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "family",
+              "confidence",
+              "state",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "event"
+              },
+              "claim": {
+                "type": "string"
+              },
+              "cause": {
+                "type": "string",
+                "enum": [
+                  "retracted",
+                  "contradicted",
+                  "failed-in-use"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "open",
+                  "held"
+                ]
+              },
+              "support": {
+                "type": "string",
+                "enum": [
+                  "machine-verified",
+                  "person-judged",
+                  "model-only",
+                  "handed-off",
+                  "retracted"
+                ]
+              },
+              "bands": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": [
+                    "demonstrated",
+                    "proximal",
+                    "beyond",
+                    "no record"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "fixedBy": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "claim",
+              "cause",
+              "state",
+              "support",
+              "bands",
+              "sources",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "item"
+              },
+              "origin": {
+                "type": "string"
+              },
+              "hash": {
+                "type": "string"
+              },
+              "instructions": {
+                "type": "number"
+              },
+              "synthesis": {
+                "type": "boolean"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "origin",
+              "hash",
+              "instructions",
+              "synthesis",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "asks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "ask"
+              },
+              "task": {
+                "type": "string"
+              },
+              "decision": {
+                "type": "string"
+              },
+              "question": {
+                "type": "string"
+              },
+              "criterion": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "task",
+              "decision",
+              "question",
+              "criterion",
+              "id",
+              "at"
+            ]
+          }
+        },
+        "probes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "probe"
+              },
+              "claim": {
+                "type": "string"
+              },
+              "concepts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "form": {
+                "type": "string",
+                "enum": [
+                  "two-spans",
+                  "unsupported-claim",
+                  "predict-number"
+                ]
+              },
+              "prompt": {
+                "type": "string"
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "key": {
+                "type": "number"
+              },
+              "keyHash": {
+                "type": "string"
+              },
+              "decision": {
+                "type": "string"
+              },
+              "task": {
+                "type": "string"
+              },
+              "session": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "claim",
+              "concepts",
+              "form",
+              "prompt",
+              "options",
+              "key",
+              "keyHash",
+              "id",
+              "at"
+            ]
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "domains",
+        "concepts",
+        "evidence",
+        "contests",
+        "claims",
+        "support",
+        "results",
+        "horizon",
+        "signals",
+        "events",
+        "items",
+        "asks",
+        "probes"
+      ]
+    },
+    "removed": {
+      "type": "number"
+    },
+    "probe": {
+      "type": "object",
+      "properties": {
+        "probe": {
+          "type": "string"
+        },
+        "claim": {
+          "type": "string"
+        },
+        "form": {
+          "type": "string",
+          "enum": [
+            "two-spans",
+            "unsupported-claim",
+            "predict-number"
+          ]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "answered": {
+          "type": "boolean"
+        },
+        "why": {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "type": "string"
+            },
+            "claim": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "decision",
+            "claim"
+          ]
+        },
+        "correct": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "span": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "probe",
+        "claim",
+        "form",
+        "prompt",
+        "options",
+        "answered"
+      ]
+    },
+    "route": {
+      "type": "string",
+      "enum": [
+        "verify",
+        "handoff"
+      ]
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "claim",
+          "number"
+        ]
+      }
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "number"
+        },
+        "data": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "item",
+        "origin",
+        "source",
+        "hash",
+        "instructions",
+        "data"
+      ]
+    },
+    "triage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "number",
+              "check",
+              "source-span",
+              "prose"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "machine-verified",
+              "person-judged",
+              "model-only",
+              "handed-off",
+              "retracted"
+            ]
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "demonstrated",
+              "proximal",
+              "beyond",
+              "no record"
+            ]
+          },
+          "concepts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "concept": {
+                  "type": "string"
+                },
+                "band": {
+                  "type": "string",
+                  "enum": [
+                    "demonstrated",
+                    "proximal",
+                    "beyond",
+                    "no record"
+                  ]
+                },
+                "because": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "concept",
+                "band"
+              ]
+            }
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "verify",
+                "handoff",
+                "judge",
+                "cut"
+              ]
+            }
+          }
+        },
+        "required": [
+          "claim",
+          "text",
+          "kind",
+          "state",
+          "band",
+          "concepts",
+          "actions"
+        ]
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "event"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "cause": {
+            "type": "string",
+            "enum": [
+              "retracted",
+              "contradicted",
+              "failed-in-use"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "open",
+              "held"
+            ]
+          },
+          "support": {
+            "type": "string",
+            "enum": [
+              "machine-verified",
+              "person-judged",
+              "model-only",
+              "handed-off",
+              "retracted"
+            ]
+          },
+          "bands": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "demonstrated",
+                "proximal",
+                "beyond",
+                "no record"
+              ]
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fixedBy": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "claim",
+          "cause",
+          "state",
+          "support",
+          "bands",
+          "sources",
+          "id",
+          "at"
+        ]
+      }
+    },
+    "horizon": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "help": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "concept",
+              "question",
+              "scope"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "criterion": {
+            "type": "string",
+            "enum": [
+              "none",
+              "example",
+              "check",
+              "source-span"
+            ]
+          },
+          "answer": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "shown",
+              "accepted",
+              "dismissed"
+            ]
+          }
+        },
+        "required": [
+          "help",
+          "kind",
+          "text",
+          "criterion",
+          "domain",
+          "state"
+        ]
+      }
+    },
+    "horizonDomains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "shown": {
+            "type": "number"
+          },
+          "accepted": {
+            "type": "number"
+          },
+          "dismissed": {
+            "type": "number"
+          },
+          "acceptedWithoutCriterion": {
+            "type": "number"
+          },
+          "index": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "domain",
+          "shown",
+          "accepted",
+          "dismissed",
+          "acceptedWithoutCriterion",
+          "index"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "verb",
+    "ok"
+  ]
+}

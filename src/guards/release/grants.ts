@@ -18,6 +18,7 @@ export interface Approval {
   readonly check: string;
   readonly reason: string;
   readonly at: string;
+  readonly treeHash?: string;
 }
 
 type Store = Pick<Runtime, "readText" | "writeText">;
@@ -44,8 +45,9 @@ const toApproval = (value: unknown): Approval | undefined => {
   const task = text(value, "task");
   const check = text(value, "check");
   const at = text(value, "at");
+  const treeHash = text(value, "treeHash");
   if (task === undefined || check === undefined || at === undefined) return undefined;
-  return { task, check, at, reason: text(value, "reason") ?? "" };
+  return { task, check, at, reason: text(value, "reason") ?? "", ...(treeHash === undefined ? {} : { treeHash }) };
 };
 
 const list = <T>(raw: unknown, map: (value: unknown) => T | undefined): readonly T[] =>
@@ -87,3 +89,18 @@ export const saveRelease = (
 };
 
 export const expiryFrom = (now: number): string => new Date(now + GRANT_MINUTES * 60_000).toISOString();
+
+export const bindApproval = (store: Store, paths: FmPaths, approval: Approval, treeHash: string): boolean => {
+  const approvals = readApprovals(store, paths).map((item) =>
+    item.task === approval.task &&
+    item.check === approval.check &&
+    item.at === approval.at &&
+    item.treeHash === undefined
+      ? { ...item, treeHash }
+      : item,
+  );
+  return writeJsonFile(store, paths.grants, {
+    grants: readGrants(store, paths).map((grant) => ({ ...grant })),
+    approvals: approvals.map((item) => ({ ...item })),
+  }).ok;
+};

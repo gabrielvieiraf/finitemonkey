@@ -1,0 +1,33 @@
+{
+  "id": "06-local-optimization",
+  "category": "local optimization that breaks another part",
+  "goal": "speed up the plan list",
+  "request": "denormalize the plans table in schema.prisma",
+  "information": "reports and invoices read the same table",
+  "files": {
+    "prisma/schema.prisma": "model Plan { id Int @id }\n"
+  },
+  "contract": "id: work\ngoal: speed up the plan list\nsize: M\nscope:\n  paths: [src/, prisma/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
+  "change": {},
+  "probe": {
+    "kind": "tool",
+    "payload": {
+      "tool_name": "Write",
+      "tool_input": {
+        "file_path": "{root}/prisma/schema.prisma",
+        "content": "model Plan { id Int @id\n name String }\n"
+      }
+    }
+  },
+  "expected": 3,
+  "silentWhen": "the edit does not touch a persisted schema, a migration, auth or a public API",
+  "personRight": false,
+  "reactions": {
+    "beginner": "follow",
+    "senior": "follow"
+  },
+  "consequences": {
+    "requested": "bad",
+    "redirected": "good"
+  }
+}

@@ -1,5 +1,7 @@
 dist
 plugin/scripts
+plugin/hooks/register.mjs
+plugin/FOOTPRINT.json
 node_modules
 package.json
 package-lock.json
@@ -14,3 +16,5 @@ NOTICE
 .claude
 .releaserc.json
 commitlint.config.mjs
+bench/tasks
+bench/evidence.json

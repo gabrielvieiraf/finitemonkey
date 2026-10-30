@@ -21,6 +21,8 @@ const ROWS: readonly { readonly key: MessageKey; readonly pick: (counts: GainCou
   { key: "gain.row.blocks", pick: (counts) => counts.blocks },
   { key: "gain.row.saves", pick: (counts) => counts.saves },
   { key: "gain.row.false_positives", pick: (counts) => counts.falsePositives },
+  { key: "gain.row.overrides_reason", pick: (counts) => counts.overridesWithReason },
+  { key: "gain.row.overrides_bare", pick: (counts) => counts.overridesWithoutReason },
   { key: "gain.row.gate_runs", pick: (counts) => counts.gateRuns },
   { key: "gain.row.gate_failed", pick: (counts) => counts.gateFailed },
   { key: "gain.row.gate_unverified", pick: (counts) => counts.gateUnverified },

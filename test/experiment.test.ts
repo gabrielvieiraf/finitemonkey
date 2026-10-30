@@ -10,6 +10,7 @@ import { modeOf } from "../src/policy/guards.js";
 import { DEFAULT_POLICY, parsePolicy, STARTS_IN_SHADOW } from "../src/policy/policy.js";
 import { fmPaths } from "../src/task/paths.js";
 import { memoryFs } from "./memory-fs.js";
+import { keySeed, signedTest } from "./signed.js";
 import { cliJson, fakeRuntime, field } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
@@ -78,7 +79,7 @@ describe("experiments: per-feature arms", () => {
 
 describe("finitemonkey gain --by-arm", () => {
   const gate = (task: string, status: "passed" | "failed", durationMs: number): string =>
-    JSON.stringify({
+    signedTest({
       schema: "finitemonkey/evidence@1",
       task,
       check: "*gate*",
@@ -103,6 +104,7 @@ describe("finitemonkey gain --by-arm", () => {
       [at(".finitemonkey/evidence/a.jsonl")]: `${gate("a", "failed", 1000)}\n${gate("a", "passed", 3000)}\n`,
       [at(".finitemonkey/evidence/b.jsonl")]: `${gate("b", "failed", 2000)}\n`,
       [at(".finitemonkey/evidence/c.jsonl")]: `${gate("c", "passed", 4000)}\n`,
+      ...keySeed(),
     });
   };
 

@@ -7,7 +7,9 @@ import { revokeDecision } from "../decide/revoke.js";
 import { DECISION_SCHEMA } from "../decide/sections.js";
 import { renderDecision } from "../decide/template.js";
 import { ExitCode } from "../exit-codes.js";
+import { exportDecisionAssumptions } from "../guardian/assumption-lines.js";
 import { nextNumber, PLAN_DIR, planDir, planFiles, planPath, slugOf } from "../plan/folder.js";
+import { fmPaths } from "../task/paths.js";
 import { notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -75,6 +77,7 @@ export const decideCheckCommand: CommandSpec = {
     inRepo(ctx, (root) => {
       const only = args.positionals[0] === undefined ? undefined : baseName(args.positionals[0]);
       const checked = checkDecisions(ctx.runtime, root, only);
+      exportDecisionAssumptions(ctx.runtime, fmPaths(root));
       const data = { schema: DECISION_SCHEMA, ...checked };
       if (checked.issues.length === 0) return success(data, [ctx.t("decision.clean", { count: checked.records })]);
       return failureFrom(

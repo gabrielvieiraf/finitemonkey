@@ -40,6 +40,7 @@ import {
   VERIFY_SKILL,
 } from "./layout.js";
 import { type EntryKind, type LockEntry, type LockFile, parseLock } from "./lock-file.js";
+import { marketplaceSource } from "./marketplace.js";
 import { applyMigrations } from "./migrate.js";
 import { type Migration, MIGRATIONS } from "./migrations/index.js";
 import { policyTemplate } from "./policy-template.js";
@@ -150,6 +151,8 @@ const actionFor = (before: string | undefined, after: string, existing: Action):
 
 const union = (a: readonly string[], b: readonly string[]): readonly string[] => [...new Set([...a, ...b])];
 
+const withKey = (key: string | undefined) => (key === undefined ? {} : { marketplaceKey: key });
+
 const joinAdded = (previous: SettingsAdded | undefined, next: SettingsAdded): SettingsAdded =>
   previous === undefined
     ? next
@@ -161,6 +164,7 @@ const joinAdded = (previous: SettingsAdded | undefined, next: SettingsAdded): Se
         blockReads: previous.blockReads || next.blockReads,
         marketplace: previous.marketplace || next.marketplace,
         plugin: previous.plugin || next.plugin,
+        ...withKey(previous.marketplace ? previous.marketplaceKey : next.marketplaceKey),
         ...((previous.language ?? next.language) === undefined ? {} : { language: previous.language ?? next.language }),
         ...((previous.statusLine ?? next.statusLine) === undefined
           ? {}
@@ -187,7 +191,7 @@ const settingsItem = (
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
     attributionOff: isOn(input.defaults, "no-attribution"),
-    marketplace: input.marketplace,
+    marketplace: input.marketplace ? marketplaceSource(input.version) : undefined,
     language: input.claudeLanguage,
     statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current.value, input.env) },
   };

@@ -1,0 +1,42 @@
+{
+  "schema": "finitemonkey/judge-verbs@1",
+  "verb": "classify",
+  "ok": true,
+  "result": {
+    "result": "r-bb88872b11",
+    "source": "notes/vat.md",
+    "total": 3,
+    "modelOnly": 3,
+    "handedOff": 0,
+    "done": false,
+    "rows": [
+      {
+        "claim": "j-402b8d6d8a",
+        "text": "VAT on digital services",
+        "kind": "prose",
+        "state": "model-only",
+        "band": "no record",
+        "concepts": [],
+        "actions": ["verify", "handoff", "cut", "judge"]
+      },
+      {
+        "claim": "j-2da869a2aa",
+        "text": "The standard rate is 20% for digital services sold to consumers.",
+        "kind": "number",
+        "state": "model-only",
+        "band": "no record",
+        "concepts": [],
+        "actions": ["verify", "handoff", "cut", "judge"]
+      },
+      {
+        "claim": "j-bea8780a46",
+        "text": "The rule applies from 1 January 2021 because the directive was transposed then.",
+        "kind": "number",
+        "state": "model-only",
+        "band": "no record",
+        "concepts": [],
+        "actions": ["verify", "handoff", "cut", "judge"]
+      }
+    ]
+  }
+}

@@ -51,7 +51,7 @@ const counted = (text: string): { readonly total?: number; readonly failed?: num
 };
 
 export const parseTestSummary = (output: string): TestSummary => {
-  const text = output.replace(ANSI, "");
+  const text = output.replace(ANSI, "").replace(/\r\n?/g, "\n");
   const failures = [
     ...new Set(FAILURE_LINES.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => (match[1] ?? "").trim()))),
   ].filter((name) => name !== "" && !/^failing tests:?$/i.test(name));

@@ -8,11 +8,15 @@ import { checkEnvHygiene } from "./env-hygiene.js";
 import { checkAuthVariables, checkPathCopies, checkSandbox } from "./environment.js";
 import { checkGithubRules } from "./github.js";
 import { checkGithubSettings } from "./github-settings.js";
+import { checkHiddenText } from "./hidden-text.js";
 import { checkHooks } from "./hooks.js";
+import { checkInstructionDrift } from "./instruction-drift.js";
 import { checkInstructionLayers } from "./instruction-layers.js";
 import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
 import { checkAgentsFile } from "./memory.js";
+import { checkMods } from "./mods.js";
+import { checkAlertBudget, checkPolicy } from "./policy.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
 import { checkRewriters } from "./rewriters.js";
@@ -49,6 +53,11 @@ export const CHECKS: readonly Check[] = [
   checkHooks,
   checkInstructionLayers,
   checkGithubSettings,
+  checkPolicy,
+  checkAlertBudget,
+  checkHiddenText,
+  checkMods,
+  checkInstructionDrift,
 ];
 
 export interface DoctorItem {

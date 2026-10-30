@@ -1,7 +1,8 @@
 import { needsPersonProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
-import { takeSnapshot } from "../git/snapshot.js";
+import { capBytes, CONFLICT_SUFFIX, MB, readManifest } from "../git/file-store.js";
+import { storeName, takeSnapshot } from "../git/snapshot.js";
 import { findSnapshot, snapshotViews, undoSnapshot } from "../git/undo.js";
 import { isPerson } from "../secrets/project.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
@@ -30,9 +31,23 @@ export const snapshotCommand: CommandSpec = {
         ),
       );
     }
-    const data = { schema: SNAPSHOT_SCHEMA, ref: taken.value.ref, commit: taken.value.commit, op };
+    const manifest = readManifest(ctx.runtime, repo, storeName(taken.value.ref));
+    const overCap = (manifest?.skipped ?? []).filter((item) => item.reason === "cap").map((item) => item.path);
+    const data = {
+      schema: SNAPSHOT_SCHEMA,
+      ref: taken.value.ref,
+      commit: taken.value.commit,
+      op,
+      files: manifest?.files.length ?? 0,
+      skipped: manifest?.skipped ?? [],
+    };
     return Promise.resolve(
-      success(data, [ctx.t("git.snapshot.done", { ref: data.ref, commit: data.commit.slice(0, 12) })]),
+      success(data, [
+        ctx.t("git.snapshot.done", { ref: data.ref, commit: data.commit.slice(0, 12) }),
+        ...(overCap.length === 0
+          ? []
+          : [ctx.t("git.snapshot.skipped", { list: overCap.join(", "), cap: capBytes(ctx.runtime, repo) / MB })]),
+      ]),
     );
   },
 };
@@ -83,7 +98,13 @@ export const undoCommand: CommandSpec = {
       );
     }
     const params = { ref: view.ref, backup: done.value.backup, path: done.value.path ?? "" };
-    const line = ctx.t(inPlace ? "git.undo.in_place" : "git.undo.worktree", params);
-    return Promise.resolve(success({ schema: UNDO_SCHEMA, action: "restore", ...done.value }, [line]));
+    const lines = [
+      ctx.t(inPlace ? "git.undo.in_place" : "git.undo.worktree", params),
+      ...(done.value.restored.length === 0 ? [] : [ctx.t("git.undo.restored", { count: done.value.restored.length })]),
+      ...(done.value.conflicts.length === 0
+        ? []
+        : [ctx.t("git.undo.conflicts", { list: done.value.conflicts.join(", "), suffix: CONFLICT_SUFFIX })]),
+    ];
+    return Promise.resolve(success({ schema: UNDO_SCHEMA, action: "restore", ...done.value }, lines));
   },
 };

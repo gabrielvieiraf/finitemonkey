@@ -12,5 +12,12 @@
   "latency": {
     "preToolUseP95MsPerGuard": 50,
     "runs": 20
+  },
+  "evidence": {
+    "fprWarn": 0.05,
+    "fprFail": 0.15,
+    "minPositives": 50,
+    "minNegatives": 50,
+    "guards": {}
   }
 }

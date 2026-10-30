@@ -11,7 +11,10 @@ import {
   withEntry,
 } from "../findings/baseline.js";
 import { findFinding } from "../findings/sources.js";
+import { UX_FEATURES } from "../look/ux-features.js";
+import { recordDismissal } from "../policy/budget.js";
 import { isPerson, personName, projectRoot } from "../secrets/project.js";
+import { fmPaths } from "../task/paths.js";
 import { baselineInvalid, writeFailed } from "./secrets-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -64,6 +67,8 @@ const accept = (ctx: Ctx, id: string, reason: string, days: number, owner: strin
   };
   const saved = saveBaseline(ctx.runtime, root, withEntry(baseline.value, entry));
   if (!saved.ok) return fail(ctx, writeFailed(BASELINE_FILE, saved.error));
+  if (falsePositive && UX_FEATURES.some((feature) => feature === finding.check))
+    recordDismissal(ctx.runtime, fmPaths(root), finding.rule);
   return success(entry, [
     ctx.t("findings.accept.done", {
       id: entry.id,
