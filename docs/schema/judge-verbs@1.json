@@ -11,6 +11,7 @@
     "verb": {
       "type": "string",
       "enum": [
+        "check",
         "domain",
         "concept",
         "contest",

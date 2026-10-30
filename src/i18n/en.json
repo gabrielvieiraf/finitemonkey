@@ -2713,5 +2713,6 @@
   "judge.row.actions": "[{actions}]",
   "judge.probe.two_spans": "{probe}: which of these spans appears in {source}?",
   "judge.probe.right": "{claim}: keyed answer recorded",
-  "judge.probe.wrong": "the source says: \"{span}\" ({claim} goes to verification or handoff)"
+  "judge.probe.wrong": "the source says: \"{span}\" ({claim} goes to verification or handoff)",
+  "command.judge_check.summary": "Record the person's own source check of a claim; it counts when it matches the machine check"
 }

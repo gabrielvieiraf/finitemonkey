@@ -2713,5 +2713,6 @@
   "judge.row.actions": "[{actions}]",
   "judge.probe.two_spans": "{probe}: ¿cuál de estos fragmentos aparece en {source}?",
   "judge.probe.right": "{claim}: respuesta con clave registrada",
-  "judge.probe.wrong": "la fuente dice: \"{span}\" ({claim} pasa a verificación o entrega)"
+  "judge.probe.wrong": "la fuente dice: \"{span}\" ({claim} pasa a verificación o entrega)",
+  "command.judge_check.summary": "Registrar la verificación de fuente hecha por la persona; cuenta cuando coincide con la de la máquina"
 }

@@ -2713,7 +2713,8 @@
     "judge.row.actions": "machine",
     "judge.probe.two_spans": "machine",
     "judge.probe.right": "machine",
-    "judge.probe.wrong": "machine"
+    "judge.probe.wrong": "machine",
+    "command.judge_check.summary": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5429,6 +5430,7 @@
     "judge.row.actions": "machine",
     "judge.probe.two_spans": "machine",
     "judge.probe.right": "machine",
-    "judge.probe.wrong": "machine"
+    "judge.probe.wrong": "machine",
+    "command.judge_check.summary": "machine"
   }
 }

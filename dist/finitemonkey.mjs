@@ -3816,9 +3816,9 @@ var stripComment2 = (line13) => {
   return line13;
 };
 var flowList = (value2) => {
-  const trimmed = value2.trim();
-  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return void 0;
-  return trimmed.slice(1, -1).split(",").map(unquote2).filter((item2) => item2 !== "");
+  const trimmed2 = value2.trim();
+  if (!trimmed2.startsWith("[") || !trimmed2.endsWith("]")) return void 0;
+  return trimmed2.slice(1, -1).split(",").map(unquote2).filter((item2) => item2 !== "");
 };
 var keyValue = (body2) => {
   const match = /^("[^"]*"|'[^']*'|[^:]+?)\s*:(?:\s+(.*))?$/.exec(body2);
@@ -17176,7 +17176,8 @@ var en_default = {
   "judge.row.actions": "[{actions}]",
   "judge.probe.two_spans": "{probe}: which of these spans appears in {source}?",
   "judge.probe.right": "{claim}: keyed answer recorded",
-  "judge.probe.wrong": 'the source says: "{span}" ({claim} goes to verification or handoff)'
+  "judge.probe.wrong": 'the source says: "{span}" ({claim} goes to verification or handoff)',
+  "command.judge_check.summary": "Record the person's own source check of a claim; it counts when it matches the machine check"
 };
 
 // src/i18n/es.json
@@ -19895,7 +19896,8 @@ var es_default = {
   "judge.row.actions": "[{actions}]",
   "judge.probe.two_spans": "{probe}: ¿cuál de estos fragmentos aparece en {source}?",
   "judge.probe.right": "{claim}: respuesta con clave registrada",
-  "judge.probe.wrong": 'la fuente dice: "{span}" ({claim} pasa a verificación o entrega)'
+  "judge.probe.wrong": 'la fuente dice: "{span}" ({claim} pasa a verificación o entrega)',
+  "command.judge_check.summary": "Registrar la verificación de fuente hecha por la persona; cuenta cuando coincide con la de la máquina"
 };
 
 // src/i18n/pt-BR.json
@@ -22614,7 +22616,8 @@ var pt_BR_default = {
   "judge.row.actions": "[{actions}]",
   "judge.probe.two_spans": "{probe}: qual destes trechos aparece em {source}?",
   "judge.probe.right": "{claim}: resposta com gabarito registrada",
-  "judge.probe.wrong": 'a fonte diz: "{span}" ({claim} vai para verificação ou entrega)'
+  "judge.probe.wrong": 'a fonte diz: "{span}" ({claim} vai para verificação ou entrega)',
+  "command.judge_check.summary": "Registrar a checagem de fonte feita pela pessoa; conta quando bate com a checagem da máquina"
 };
 
 // src/i18n/review.json
@@ -25333,7 +25336,8 @@ var review_default = {
     "judge.row.actions": "machine",
     "judge.probe.two_spans": "machine",
     "judge.probe.right": "machine",
-    "judge.probe.wrong": "machine"
+    "judge.probe.wrong": "machine",
+    "command.judge_check.summary": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -28049,7 +28053,8 @@ var review_default = {
     "judge.row.actions": "machine",
     "judge.probe.two_spans": "machine",
     "judge.probe.right": "machine",
-    "judge.probe.wrong": "machine"
+    "judge.probe.wrong": "machine",
+    "command.judge_check.summary": "machine"
   }
 };
 
@@ -30974,8 +30979,8 @@ var readSeen = (runtime, root) => {
     )
   );
 };
-var writeSeen = (runtime, root, judged) => {
-  const entries2 = judged.map((vuln) => [keyOf2(vuln), vuln.firstSeen]);
+var writeSeen = (runtime, root, judged2) => {
+  const entries2 = judged2.map((vuln) => [keyOf2(vuln), vuln.firstSeen]);
   const firstSeen = Object.fromEntries(
     entries2.sort(([left], [right2]) => left.localeCompare(right2))
   );
@@ -34480,8 +34485,8 @@ var pathKey = (path) => {
   );
   const drive = DRIVE.exec(posixPath);
   const normalized5 = posix6.normalize(drive === null ? posixPath : posixPath.slice(2) || "/");
-  const trimmed = normalized5.length > 1 ? normalized5.replace(/\/+$/, "") : normalized5;
-  return drive === null ? trimmed : `${(drive[1] ?? "").toLowerCase()}:${trimmed}`.toLowerCase();
+  const trimmed2 = normalized5.length > 1 ? normalized5.replace(/\/+$/, "") : normalized5;
+  return drive === null ? trimmed2 : `${(drive[1] ?? "").toLowerCase()}:${trimmed2}`.toLowerCase();
 };
 var isWithin = (child2, parent) => {
   const childKey = pathKey(child2);
@@ -45172,7 +45177,8 @@ var VERBS2 = [
   "domain",
   "judge",
   "answer",
-  "cut"
+  "cut",
+  "check"
 ];
 var ROW_ACTIONS = ["verify", "handoff", "cut", "judge"];
 var response = (verb, fields2 = {}) => ({
@@ -47863,8 +47869,8 @@ var DEBUG_EXEMPT = /(^|\/)(scripts?|bin|examples?|tools)\//;
 var isSlopCode = (file) => CODE3.test(file);
 var splitLine = (raw, file) => {
   const hash2 = HASH_COMMENT.has(extensionOf2(file));
-  const trimmed = raw.trimStart();
-  if (!hash2 && (trimmed.startsWith("*") || trimmed.startsWith("/*"))) return { code: "", comment: trimmed };
+  const trimmed2 = raw.trimStart();
+  if (!hash2 && (trimmed2.startsWith("*") || trimmed2.startsWith("/*"))) return { code: "", comment: trimmed2 };
   let code2 = "";
   for (let index = 0; index < raw.length; index += 1) {
     const char = raw.charAt(index);
@@ -58618,8 +58624,8 @@ var upsertIssue = (runtime, cwd, title, section3) => {
 var SECTIONS2 = ["tokens", "classes", "components", "assets"];
 var SHOWN5 = 60;
 var value = (text40) => {
-  const trimmed = (text40 ?? "").replace(/\s+/g, " ").trim();
-  return trimmed.length > SHOWN5 ? `${trimmed.slice(0, SHOWN5)}…` : trimmed;
+  const trimmed2 = (text40 ?? "").replace(/\s+/g, " ").trim();
+  return trimmed2.length > SHOWN5 ? `${trimmed2.slice(0, SHOWN5)}…` : trimmed2;
 };
 var rows = (t, section3, withValues) => [
   ...section3.added.map(
@@ -66428,6 +66434,230 @@ var inventoryCommand = {
   }
 };
 
+// src/judge/probe.ts
+var spanKey = (anchor) => anchor.kind === "span" && anchor.span !== void 0 && anchor.hash !== "" ? { ref: anchor.ref, span: anchor.span, hash: anchor.hash } : void 0;
+var claimAnchors = (claim, entries2) => [
+  ...claim.anchors,
+  ...entries2.flatMap((entry2) => entry2.type === "support" && entry2.claim === claim.id ? entry2.anchors ?? [] : [])
+];
+var keyOf9 = (claim, entries2) => claimAnchors(claim, entries2).map(spanKey).findLast((key3) => key3 !== void 0);
+var SWAPS = [
+  [/\bmust\b/i, "may"],
+  [/\bmay\b/i, "must"],
+  [/\balways\b/i, "never"],
+  [/\bnever\b/i, "always"],
+  [/\bincrease(s|d)?\b/i, "decrease$1"],
+  [/\bdecrease(s|d)?\b/i, "increase$1"],
+  [/\bbefore\b/i, "after"],
+  [/\bafter\b/i, "before"],
+  [/\bmore\b/i, "less"],
+  [/\bless\b/i, "more"],
+  [/\bincludes?\b/i, "excludes"],
+  [/\brequired\b/i, "optional"]
+];
+var shiftDigit = (span) => {
+  const match = /\d/.exec(span);
+  if (match === null) return void 0;
+  const digit = (Number(match[0]) + 1) % 10;
+  return `${span.slice(0, match.index)}${String(digit)}${span.slice(match.index + 1)}`;
+};
+var swapWord = (span) => {
+  const swap = SWAPS.find(([pattern]) => pattern.test(span));
+  return swap === void 0 ? void 0 : span.replace(swap[0], swap[1]);
+};
+var swapNeighbours = (span) => {
+  const words7 = span.split(" ");
+  const middle2 = Math.max(1, Math.floor(words7.length / 2));
+  const [left, right2] = [words7[middle2 - 1] ?? "", words7[middle2] ?? ""];
+  return [...words7.slice(0, middle2 - 1), right2, left, ...words7.slice(middle2 + 1)].join(" ");
+};
+var perturb = (span) => shiftDigit(span) ?? swapWord(span) ?? swapNeighbours(span);
+var keyIndex = (seed, size) => Number.parseInt(sha256Hex(seed).slice(0, 8), 16) % size;
+var twoSpans = (claim, key3, concepts) => {
+  const index = keyIndex(`${claim.id}\0${key3.hash}`, 2);
+  const fake = perturb(key3.span);
+  return {
+    claim: claim.id,
+    concepts,
+    form: "two-spans",
+    prompt: key3.ref,
+    options: index === 0 ? [key3.span, fake] : [fake, key3.span],
+    key: index,
+    keyHash: key3.hash
+  };
+};
+var probesIn = (entries2) => entries2.filter((entry2) => entry2.type === "probe");
+var answerOf = (probe, entries2) => {
+  if (entries2.some((entry2) => entry2.type === "evidence" && entry2.proof === "probe" && entry2.ref === `probe:${probe}`))
+    return "right";
+  return entries2.some((entry2) => entry2.type === "signal" && entry2.ref === `probe:${probe}`) ? "wrong" : void 0;
+};
+
+// src/judge/span.ts
+var QUOTES = [
+  [/[‘’‚‛′]/g, "'"],
+  [/[“”„‟″«»]/g, '"'],
+  [/[‐‑‒–—−]/g, "-"]
+];
+var normalizeSpan = (text40) => QUOTES.reduce((current2, [pattern, plain]) => current2.replace(pattern, plain), text40.normalize("NFKC")).replace(new RegExp("(\\p{L})-\\s*\\n\\s*(\\p{L})", "gu"), "$1$2").replace(/\s+/g, " ").trim().toLowerCase();
+var contentHash = (text40) => sha256Hex(normalizeSpan(text40)).slice(0, 16);
+var spanIn = (span, source3) => {
+  const needle = normalizeSpan(span);
+  return needle !== "" && normalizeSpan(source3).includes(needle);
+};
+
+// src/judge/verify.ts
+var CHECK_TIMEOUT_MS2 = 6e4;
+var notVerified = (outcome3) => ({ verified: false, outcome: outcome3 });
+var checkVerifier = (claim, context) => {
+  const command = claim.anchors.find((anchor) => anchor.kind === "compute")?.ref;
+  if (command === void 0) return notVerified("no-check");
+  const result = context.runtime.exec({
+    command,
+    args: [],
+    cwd: context.paths.root,
+    timeoutMs: CHECK_TIMEOUT_MS2,
+    shell: true,
+    env: { CI: "1" }
+  });
+  if (!result.found || result.timedOut) return notVerified("not-run");
+  if (result.exitCode !== 0) return notVerified("failed");
+  return { verified: true, outcome: "passed", ref: sha256Hex(`${command}\0${result.stdout}`).slice(0, 16) };
+};
+var DEFAULT_VERIFIERS = { check: checkVerifier };
+
+// src/judge/cite.ts
+var CITE_FEATURE = "cite-span";
+var LINK = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+var BARE = /\b(10\.\d{4,9}\/[^\s)\]"”,;]+|https?:\/\/[^\s)\]"”,;]+)/g;
+var QUOTE = /[“"]([^”"]{3,})[”"]/g;
+var YEAR = /\b(?:1[89]|20)\d{2}\b/g;
+var NAME3 = new RegExp("\\b\\p{Lu}[\\p{Ll}'-]{2,}\\b", "gu");
+var STOP2 = /* @__PURE__ */ new Set([
+  "The",
+  "And",
+  "For",
+  "With",
+  "From",
+  "Report",
+  "Journal",
+  "Review",
+  "Proceedings",
+  "Press",
+  "News"
+]);
+var trimmed = (id) => id.replace(/[.]+$/, "");
+var idOf4 = (target7) => {
+  const doi = /^https?:\/\/(?:dx\.)?doi\.org\/(10\.\S+)$/i.exec(target7);
+  return trimmed(doi?.[1] ?? target7);
+};
+var enclosing2 = (text40, index, id) => {
+  const open = text40.lastIndexOf("(", index);
+  const close2 = text40.indexOf(")", index);
+  if (open < 0 || close2 < 0 || text40.slice(open, index).includes(")")) return "";
+  return text40.slice(open + 1, close2).replace(id, "");
+};
+var citationsIn2 = (text40) => {
+  const links = [...text40.matchAll(LINK)].map((match) => ({ id: idOf4(match[2] ?? ""), label: match[1] ?? "" }));
+  const outside = text40.replace(LINK, " ");
+  const bare2 = [...outside.matchAll(BARE)].map((match) => {
+    const id = idOf4(match[1] ?? "");
+    return { id, label: enclosing2(outside, match.index, match[1] ?? "") };
+  });
+  const unique3 = /* @__PURE__ */ new Map();
+  for (const item2 of [...links, ...bare2]) if (item2.id !== "" && !unique3.has(item2.id)) unique3.set(item2.id, item2);
+  return [...unique3.values()];
+};
+var quotesIn = (text40) => [...text40.replace(LINK, (_all, label3) => label3).matchAll(QUOTE)].map((match) => match[1] ?? "");
+var labelTerms = (label3) => [
+  ...label3.match(YEAR) ?? [],
+  ...[...label3.matchAll(NAME3)].map((match) => match[0]).filter((word2) => !STOP2.has(word2))
+];
+var caughtMutant = (quote3, content) => {
+  const mutated = normalizeSpan(content).replace(normalizeSpan(quote3), normalizeSpan(perturb(quote3)));
+  return !spanIn(quote3, mutated);
+};
+var quoteAnchors = (quotes, sources) => {
+  const anchors = [];
+  for (const quote3 of quotes) {
+    const source3 = sources.find((item2) => spanIn(quote3, item2.content));
+    if (source3 === void 0) return void 0;
+    anchors.push({ kind: "span", ref: source3.id, span: quote3, hash: contentHash(source3.content) });
+  }
+  return anchors;
+};
+var judged = (resolved, quotes) => {
+  const sources = resolved.flatMap(
+    ({ citation, fetched }) => fetched.status === "ok" ? [{ id: citation.id, content: fetched.content }] : []
+  );
+  const labelsHold = sources.every((source3) => {
+    const label3 = resolved.find((item2) => item2.citation.id === source3.id)?.citation.label ?? "";
+    return labelTerms(label3).every((term) => normalizeSpan(source3.content).includes(normalizeSpan(term)));
+  });
+  const anchors = quoteAnchors(quotes, sources);
+  if (!labelsHold || anchors === void 0) return notVerified("mismatch");
+  if (quotes.length === 0) return { verified: false, outcome: "non-literal" };
+  const weak = quotes.some(
+    (quote3) => !sources.some((source3) => spanIn(quote3, source3.content) && caughtMutant(quote3, source3.content))
+  );
+  return { verified: true, outcome: weak ? "verified-weak" : "verified", ref: anchors[0]?.hash ?? "", anchors };
+};
+var checkCitations = (text40, fetcher) => {
+  const citations = citationsIn2(text40);
+  if (citations.length === 0) return notVerified("no-citation");
+  const resolved = citations.map((citation) => ({ citation, fetched: fetcher(citation.id) }));
+  if (resolved.some((item2) => item2.fetched.status === "not-found")) return notVerified("unresolved");
+  if (resolved.some((item2) => item2.fetched.status === "unreachable")) return notVerified("not-verified");
+  return judged(resolved, quotesIn(text40));
+};
+var citeVerifier = (claim, context) => context.fetcher === void 0 ? notVerified("no-fetcher") : checkCitations(claim.text, context.fetcher);
+
+// src/judge/fetch.ts
+var FETCH_TIMEOUT_S = 20;
+var DOI = /^10\.\d{4,9}\/\S+$/;
+var urlOf = (id) => {
+  if (DOI.test(id)) return `https://doi.org/${id}`;
+  return /^https?:\/\//i.test(id) ? id : void 0;
+};
+var SECRET_FILE = /(?:^|\/)\.env(?:\.|$)|\.(?:pem|key|p12|pfx)$/i;
+var localSource = (id) => !id.startsWith("/") && !/^[A-Za-z]:/.test(id) && !id.split(/[\\/]/).includes("..") && !SECRET_FILE.test(id);
+var STATUS3 = /\n(\d{3})$/;
+var fromCurl = (stdout) => {
+  const match = STATUS3.exec(stdout);
+  const code2 = match === null ? 0 : Number(match[1]);
+  const content = match === null ? stdout : stdout.slice(0, match.index);
+  if (code2 === 404 || code2 === 410) return { status: "not-found" };
+  if (code2 < 200 || code2 >= 300) return { status: "unreachable", detail: `http ${String(code2)}` };
+  if (content.startsWith("%PDF")) return { status: "unreachable", detail: "pdf" };
+  return { status: "ok", content };
+};
+var curlFetcher = (runtime, root) => (id) => {
+  const url2 = urlOf(id);
+  if (url2 === void 0) {
+    if (!localSource(id)) return { status: "unreachable", detail: "outside the project" };
+    const local = runtime.readText(toAbsolutePath(id, toAbsolutePath(root)));
+    return local.ok ? { status: "ok", content: local.value } : { status: "not-found" };
+  }
+  const result = runtime.exec({
+    command: "curl",
+    args: [
+      "-sL",
+      "--max-time",
+      String(FETCH_TIMEOUT_S),
+      "-H",
+      "Accept: text/html, text/plain",
+      "-w",
+      "\n%{http_code}",
+      url2
+    ],
+    cwd: toAbsolutePath(root),
+    timeoutMs: (FETCH_TIMEOUT_S + 5) * 1e3
+  });
+  if (!result.found) return { status: "unreachable", detail: "curl missing" };
+  if (result.timedOut || result.exitCode !== 0) return { status: "unreachable", detail: "network" };
+  return fromCurl(result.stdout);
+};
+
 // src/judge/lines.ts
 var rowLine2 = (t, row4) => [
   t("judge.row", { claim: row4.claim, state: row4.state, band: row4.band, text: row4.text, outcome: row4.outcome ?? "" }),
@@ -66557,6 +66787,12 @@ var BUILDERS2 = {
     const choice = typeof raw === "number" ? raw : Number.parseInt(String(raw), 10);
     return probe === void 0 || !Number.isInteger(choice) ? void 0 : { verb: "answer", probe, choice };
   },
+  check: (record15) => {
+    const claim = text37(record15, "claim");
+    const says = record15["says"];
+    if (claim === void 0 || says !== "verified" && says !== "mismatch") return void 0;
+    return { verb: "check", claim, says };
+  },
   cut: (record15) => {
     const claim = text37(record15, "claim");
     return claim === void 0 ? void 0 : { verb: "cut", claim };
@@ -66571,15 +66807,6 @@ var parseRequest = (value2) => {
   const verb = oneOf2(VERBS2, value2["verb"]);
   return verb === void 0 ? void 0 : BUILDERS2[verb](value2);
 };
-
-// src/judge/span.ts
-var QUOTES = [
-  [/[‘’‚‛′]/g, "'"],
-  [/[“”„‟″«»]/g, '"'],
-  [/[‐‑‒–—−]/g, "-"]
-];
-var normalizeSpan = (text40) => QUOTES.reduce((current2, [pattern, plain]) => current2.replace(pattern, plain), text40.normalize("NFKC")).replace(new RegExp("(\\p{L})-\\s*\\n\\s*(\\p{L})", "gu"), "$1$2").replace(/\s+/g, " ").trim().toLowerCase();
-var contentHash = (text40) => sha256Hex(normalizeSpan(text40)).slice(0, 16);
 
 // src/judge/concepts.ts
 var conceptIdOf = (domain, label3) => `${domain}/${label3.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "")}`;
@@ -66718,6 +66945,37 @@ var splitClaims = (text40, proposer) => {
   return [...new Set(sentences4.map((sentence2) => sentence2.replace(/\s+/g, " ").trim()).filter((item2) => item2 !== ""))];
 };
 
+// src/judge/verbs-cite.ts
+var MATCHING = {
+  verified: "verified",
+  "verified-weak": "verified",
+  mismatch: "mismatch",
+  unresolved: "mismatch"
+};
+var personCheck = (deps, request) => {
+  const entries2 = readEntries(deps.runtime, deps.paths);
+  const claim = claimsIn(entries2).find((item2) => item2.id === request.claim);
+  if (claim === void 0) return response("check", { reason: "unknown_claim" });
+  const machine = entries2.findLast(
+    (entry2) => entry2.type === "support" && entry2.claim === claim.id && entry2.by === "machine" && entry2.outcome !== void 0 && entry2.outcome in MATCHING
+  );
+  if (machine === void 0) return response("check", { reason: "not_checked" });
+  const concepts = touchedConcepts(claim, entries2);
+  const id = entryId("e", claim.id, "source-check", machine.id);
+  const written = appendNow(deps, {
+    type: "evidence",
+    id,
+    concepts,
+    proof: "source-check",
+    result: MATCHING[machine.outcome ?? ""] === request.says ? "pass" : "fail",
+    ref: machine.ref ?? machine.id,
+    origin: "person",
+    claim: claim.id
+  });
+  if (!written.ok) return response("check", { reason: written.reason });
+  return response("check", { entry: id, concepts: conceptViews(readEntries(deps.runtime, deps.paths), concepts) });
+};
+
 // src/judge/verbs-concepts.ts
 var suggest2 = (deps, text40, entries2) => {
   const known3 = new Set(conceptsIn2(entries2).map((concept) => concept.id));
@@ -66780,65 +67038,6 @@ var addDomain = (deps, request) => {
   const written = appendNow(deps, { type: "domain", id: request.domain, parent: request.parent });
   if (!written.ok) return response("domain", { reason: written.reason });
   return response("domain", { entry: request.domain, domains: domainViews(readEntries(deps.runtime, deps.paths)) });
-};
-
-// src/judge/probe.ts
-var spanKey = (anchor) => anchor.kind === "span" && anchor.span !== void 0 && anchor.hash !== "" ? { ref: anchor.ref, span: anchor.span, hash: anchor.hash } : void 0;
-var claimAnchors = (claim, entries2) => [
-  ...claim.anchors,
-  ...entries2.flatMap((entry2) => entry2.type === "support" && entry2.claim === claim.id ? entry2.anchors ?? [] : [])
-];
-var keyOf9 = (claim, entries2) => claimAnchors(claim, entries2).map(spanKey).findLast((key3) => key3 !== void 0);
-var SWAPS = [
-  [/\bmust\b/i, "may"],
-  [/\bmay\b/i, "must"],
-  [/\balways\b/i, "never"],
-  [/\bnever\b/i, "always"],
-  [/\bincrease(s|d)?\b/i, "decrease$1"],
-  [/\bdecrease(s|d)?\b/i, "increase$1"],
-  [/\bbefore\b/i, "after"],
-  [/\bafter\b/i, "before"],
-  [/\bmore\b/i, "less"],
-  [/\bless\b/i, "more"],
-  [/\bincludes?\b/i, "excludes"],
-  [/\brequired\b/i, "optional"]
-];
-var shiftDigit = (span) => {
-  const match = /\d/.exec(span);
-  if (match === null) return void 0;
-  const digit = (Number(match[0]) + 1) % 10;
-  return `${span.slice(0, match.index)}${String(digit)}${span.slice(match.index + 1)}`;
-};
-var swapWord = (span) => {
-  const swap = SWAPS.find(([pattern]) => pattern.test(span));
-  return swap === void 0 ? void 0 : span.replace(swap[0], swap[1]);
-};
-var swapNeighbours = (span) => {
-  const words7 = span.split(" ");
-  const middle2 = Math.max(1, Math.floor(words7.length / 2));
-  const [left, right2] = [words7[middle2 - 1] ?? "", words7[middle2] ?? ""];
-  return [...words7.slice(0, middle2 - 1), right2, left, ...words7.slice(middle2 + 1)].join(" ");
-};
-var perturb = (span) => shiftDigit(span) ?? swapWord(span) ?? swapNeighbours(span);
-var keyIndex = (seed, size) => Number.parseInt(sha256Hex(seed).slice(0, 8), 16) % size;
-var twoSpans = (claim, key3, concepts) => {
-  const index = keyIndex(`${claim.id}\0${key3.hash}`, 2);
-  const fake = perturb(key3.span);
-  return {
-    claim: claim.id,
-    concepts,
-    form: "two-spans",
-    prompt: key3.ref,
-    options: index === 0 ? [key3.span, fake] : [fake, key3.span],
-    key: index,
-    keyHash: key3.hash
-  };
-};
-var probesIn = (entries2) => entries2.filter((entry2) => entry2.type === "probe");
-var answerOf = (probe, entries2) => {
-  if (entries2.some((entry2) => entry2.type === "evidence" && entry2.proof === "probe" && entry2.ref === `probe:${probe}`))
-    return "right";
-  return entries2.some((entry2) => entry2.type === "signal" && entry2.ref === `probe:${probe}`) ? "wrong" : void 0;
 };
 
 // src/judge/verbs-xray.ts
@@ -66939,33 +67138,13 @@ var cut = (deps, request) => {
   return row4 === void 0 ? response("cut", {}) : response("cut", { claim: { claim: row4.claim, text: row4.text, state: row4.state, outcome: "cut" } });
 };
 
-// src/judge/verify.ts
-var CHECK_TIMEOUT_MS2 = 6e4;
-var notVerified = (outcome3) => ({ verified: false, outcome: outcome3 });
-var checkVerifier = (claim, context) => {
-  const command = claim.anchors.find((anchor) => anchor.kind === "compute")?.ref;
-  if (command === void 0) return notVerified("no-check");
-  const result = context.runtime.exec({
-    command,
-    args: [],
-    cwd: context.paths.root,
-    timeoutMs: CHECK_TIMEOUT_MS2,
-    shell: true,
-    env: { CI: "1" }
-  });
-  if (!result.found || result.timedOut) return notVerified("not-run");
-  if (result.exitCode !== 0) return notVerified("failed");
-  return { verified: true, outcome: "passed", ref: sha256Hex(`${command}\0${result.stdout}`).slice(0, 16) };
-};
-var DEFAULT_VERIFIERS = { check: checkVerifier };
-
 // src/judge/verbs.ts
 var CITATION3 = /\b10\.\d{4,9}\/\S+|https?:\/\/\S+/i;
 var QUOTED2 = /["“][^"”]{3,}["”]/;
 var NUMBER5 = /\d/;
 var claimKindOf = (text40) => {
   if (QUOTED2.test(text40) && CITATION3.test(text40)) return "source-span";
-  if (NUMBER5.test(text40)) return "number";
+  if (NUMBER5.test(text40.replace(new RegExp(CITATION3.source, "gi"), " "))) return "number";
   return "prose";
 };
 var append = (deps, record15) => {
@@ -67005,7 +67184,12 @@ var verify2 = (deps, claimId2) => {
   if (claim === void 0) return response("verify", { reason: "unknown_claim" });
   const proposed2 = deps.proposer?.(claim.text);
   const verifier = (deps.verifiers ?? DEFAULT_VERIFIERS)[claim.kind];
-  const verdict4 = verifier?.(claim, { runtime: deps.runtime, paths: deps.paths, entries: entries2 }) ?? {
+  const verdict4 = verifier?.(claim, {
+    runtime: deps.runtime,
+    paths: deps.paths,
+    entries: entries2,
+    ...deps.fetcher === void 0 ? {} : { fetcher: deps.fetcher }
+  }) ?? {
     verified: false,
     outcome: "no-verifier"
   };
@@ -67018,7 +67202,8 @@ var verify2 = (deps, claimId2) => {
       state: verdict4.verified ? "machine-verified" : current2,
       by: "machine",
       outcome: verdict4.outcome,
-      ref: verdict4.ref
+      ref: verdict4.ref,
+      anchors: verdict4.anchors
     });
   }
   const after2 = readEntries(deps.runtime, deps.paths);
@@ -67106,6 +67291,8 @@ var runVerb = (deps, request) => {
       return answer(deps, request);
     case "cut":
       return cut(deps, request);
+    case "check":
+      return personCheck(deps, request);
   }
 };
 
@@ -67122,9 +67309,10 @@ var VERB_FEATURES = {
   domain: "perfil-any-field",
   judge: "xray-research",
   answer: "xray-research",
-  cut: "xray-research"
+  cut: "xray-research",
+  check: "cite-span"
 };
-var PERSON_VERBS = ["contest", "forget", "answer"];
+var PERSON_VERBS = ["contest", "forget", "answer", "check"];
 var switchedOff = (ctx, root, record15) => {
   const verb = typeof record15["verb"] === "string" ? record15["verb"] : "";
   const paths = fmPaths(toAbsolutePath(root));
@@ -67132,10 +67320,16 @@ var switchedOff = (ctx, root, record15) => {
   const off2 = wanted.find((feature) => feature !== void 0 && featureMode(ctx.runtime, paths, feature) === "off");
   return off2 === void 0 ? void 0 : refuse(ctx, "judge.error.off", `set ${off2}: shadow in .finitemonkey/policy.yml`, off2);
 };
-var judgeDeps = (ctx, root) => ({
-  runtime: ctx.runtime,
-  paths: fmPaths(toAbsolutePath(root))
-});
+var judgeDeps = (ctx, root) => {
+  const paths = fmPaths(toAbsolutePath(root));
+  if (featureMode(ctx.runtime, paths, CITE_FEATURE) === "off") return { runtime: ctx.runtime, paths };
+  return {
+    runtime: ctx.runtime,
+    paths,
+    fetcher: curlFetcher(ctx.runtime, root),
+    verifiers: { ...DEFAULT_VERIFIERS, "source-span": citeVerifier, prose: citeVerifier }
+  };
+};
 var answer2 = (ctx, root, record15, usage2) => {
   const request = parseRequest(record15);
   if (request === void 0) return refuse(ctx, "judge.error.usage", usage2);
@@ -67368,6 +67562,15 @@ var judgeCutCommand = judgeCommand({
   maxPositionals: 1,
   build: (_ctx, _values, positionals2) => ({ verb: "cut", claim: positionals2[0] })
 });
+var judgeCheckCommand = judgeCommand({
+  path: ["judge", "check"],
+  summaryKey: "command.judge_check.summary",
+  usage: "finitemonkey judge check <claim> --says verified|mismatch",
+  options: { says: { type: "string" } },
+  maxPositionals: 1,
+  person: true,
+  build: (_ctx, values, positionals2) => ({ verb: "check", claim: positionals2[0], says: stringOption(values, "says") })
+});
 var JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -67385,7 +67588,8 @@ var JUDGE_COMMANDS = [
   judgeXrayCommand,
   judgeThisCommand,
   judgeAnswerCommand,
-  judgeCutCommand
+  judgeCutCommand,
+  judgeCheckCommand
 ];
 
 // src/knowledge/asof.ts
@@ -68146,10 +68350,10 @@ var BM25_K1 = 1.2;
 var BM25_B = 0.75;
 var MAX_TERMS = 8;
 var retrievePath = (paths) => toAbsolutePath(join192(paths.dir, RETRIEVE_FILE));
-var STOP2 = /* @__PURE__ */ new Set(["the", "and", "for", "with", "where", "what", "how", "does", "that", "this", "from", "into"]);
+var STOP3 = /* @__PURE__ */ new Set(["the", "and", "for", "with", "where", "what", "how", "does", "that", "this", "from", "into"]);
 var termsOf = (query) => [
   ...new Set(
-    (query.match(/[A-Za-z_$][\w$]*/g) ?? []).filter((word2) => word2.length >= 3 && !STOP2.has(word2.toLowerCase()))
+    (query.match(/[A-Za-z_$][\w$]*/g) ?? []).filter((word2) => word2.length >= 3 && !STOP3.has(word2.toLowerCase()))
   )
 ].slice(0, MAX_TERMS);
 var isSymbol = (term) => /[a-z][A-Z]|^[A-Z][a-z]+[A-Z]|_/.test(term);
@@ -72092,7 +72296,7 @@ var questionLines = (ctx, question) => [
   ctx.t(question.text),
   ...OPTIONS.map((option3) => `  ${option3}) ${ctx.t(question.options[option3])}`)
 ];
-var STOP3 = /* @__PURE__ */ new Set(["q", "quit", "sair", "salir"]);
+var STOP4 = /* @__PURE__ */ new Set(["q", "quit", "sair", "salir"]);
 var runQuickStart = async (ctx, start2) => {
   if (ctx.io.stdin.isTTY !== true) return { kind: "skipped" };
   const ask8 = lineReader(ctx.io.stdin);
@@ -72107,7 +72311,7 @@ var runQuickStart = async (ctx, start2) => {
     const question = DOMAIN_QUESTIONS[domain];
     say(questionLines(ctx, question));
     const line13 = (await ask8())?.trim().toLowerCase();
-    if (line13 === void 0 || STOP3.has(line13)) break;
+    if (line13 === void 0 || STOP4.has(line13)) break;
     const option3 = parseOption(line13);
     if (option3 === void 0) continue;
     answered += 1;
@@ -76765,14 +76969,14 @@ var taskExamplesCommand = {
 var COMMAND2 = /`((?:npm|pnpm|yarn|npx|bun|bunx|deno|node|pytest|python3?|go|cargo|make|mvn|gradle|dotnet|php|bundle|rake|\.\/)\b[^`]*)`/;
 var GET = /\bGET\b/;
 var ROUTE2 = /\s(\/[A-Za-z0-9_\-/{}:.]*)/;
-var STATUS3 = /\b([1-5]\d\d)\b/;
+var STATUS4 = /\b([1-5]\d\d)\b/;
 var commandCheck3 = (id, item2) => {
   const run10 = COMMAND2.exec(item2.text)?.[1];
   return run10 === void 0 ? void 0 : { id, kind: "command", run: run10.trim(), description: item2.text };
 };
 var runtimeCheck2 = (id, item2, port) => {
   const route = ROUTE2.exec(item2.text)?.[1];
-  const status = STATUS3.exec(item2.text.replace(ROUTE2, " "))?.[1];
+  const status = STATUS4.exec(item2.text.replace(ROUTE2, " "))?.[1];
   if (!item2.ears || !GET.test(item2.text) || route === void 0 || status === void 0 || port === void 0)
     return void 0;
   return { id, kind: "runtime", port, route, status: Number(status), description: item2.text };
