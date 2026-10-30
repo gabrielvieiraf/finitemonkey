@@ -14,6 +14,10 @@ Include what you can: the affected version, your platform, the steps to reproduc
 
 Finite Monkey is pre-release. No version is supported yet. Version `0.0.0` on npm is a name reservation and contains no code. Once releases start, security fixes go to the latest stable version.
 
+## Threat model
+
+[docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) lists, per component, what Finite Monkey prevents, detects, records or only makes harder, and what it does not cover, with the code and the test behind each line.
+
 ## Design commitments (planned)
 
 These describe how Finite Monkey is being built. Each one will be backed by a test before it is claimed as true for a release.
@@ -120,7 +124,6 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.finitemonkey/prompts.jsonl` | What you type to Claude Code in this project, with secrets masked, so `finitemonkey audit` can find requests and decisions that never reached a document. It stays on this machine. |
 | Writes | `.finitemonkey/spend.json`, `.finitemonkey/spend-reconcile.jsonl` | Agent spend estimated from the local session logs, per task, day and month, and the differences found by `cost reconcile`. |
 | Writes | `docs/plan/` | Plan documents under `docs/plan/`: the inventory of what the code does today, decision records, research records, cost models, the master plan from the first L task and the copy of it kept before each consolidation. |
-| Writes | `.finitemonkey/map.txt` | The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse. |
 | Writes | `.finitemonkey/signals.jsonl`, `.finitemonkey/signals-index.json`, `.finitemonkey/signals-profile.json` | Loop signals from `finitemonkey signals`: error signatures, edit hashes and prompt fingerprints (hashed word pairs, never the text), the loop index and the calibrated thresholds. Deleted by `signals forget`. |
 | Writes | `.finitemonkey/perfil.yml`, `.finitemonkey/perfil-commits.json`, `.finitemonkey/conceitos.yml`, `.finitemonkey/conceitos-events.jsonl`, `.finitemonkey/xray.json`, `.finitemonkey/probes.json` | The per-domain profile of the person from `finitemonkey perfil`: tool literacy per domain, raised by commits made outside the session, domain knowledge from the quick start, the concept book with the level shown for each concept seen in the project, and the concept evidence log (exposures, predictions, own changes and repairs, failures after approval) the concept states are counted from, the last x-ray of the changed lines, and the probes with their answers. `xray forget` deletes the evidence log and the x-ray; `probe forget` deletes the probes. Never committed and never in PR text or reports. Deleted by `perfil forget`. |
 | Writes | `.finitemonkey/runs/` | The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept. |
