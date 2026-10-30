@@ -329,6 +329,15 @@
         max-width: 60ch;
       }
 
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
       .stage {
         border: 2px solid var(--ink);
         background: var(--bg);
@@ -1299,7 +1308,7 @@
               then, a new version on <code>next</code> can break what the previous one did.
             </p>
           </div>
-          <figure class="stage" id="stage" aria-label="Finite Monkey running">
+          <figure class="stage" id="stage" aria-label="Finite Monkey">
             <div class="stage-bar">
               <div class="tabs" role="tablist" aria-label="Demo">
                 <button type="button" class="tab" role="tab" id="tab-0" aria-controls="pane-0" aria-selected="true">
@@ -1334,22 +1343,30 @@
               </div>
             </div>
             <div class="panes">
-              <div class="pane pane-cast on" id="pane-0" role="tabpanel" aria-labelledby="tab-0">
+              <div
+                class="pane pane-cast on"
+                id="pane-0"
+                role="tabpanel"
+                aria-labelledby="tab-0"
+                aria-describedby="alt-0"
+              >
                 <div class="fallback" id="cast-0">
                   <a href="casts/gate.gif" data-i="gifLink">Open the recording (GIF)</a>
                 </div>
                 <noscript
                   ><img
                     src="casts/gate.gif"
-                    alt="Real Claude Code session where the Finite Monkey gate fails a test and passes after the fix"
+                    alt='Claude Code session: the Finite Monkey gate fails the test "total rounds to cents", Claude fixes the rounding and the gate passes with 10 checks.'
                     width="1000"
                     height="640"
                 /></noscript>
-                <p class="pcap" data-i="cap0">
-                  Real recording: finitemonkey 0.1.0-next.27 with Claude Code 2.1.283, sped up 1.3×.
+                <p class="sr" id="alt-0" data-i="alt0">
+                  Claude Code session: the Finite Monkey gate fails the test "total rounds to cents", Claude fixes the
+                  rounding and the gate passes with 10 checks.
                 </p>
+                <p class="pcap" data-i="cap0">finitemonkey 0.1.0-next.27 · Claude Code 2.1.283</p>
               </div>
-              <div class="pane pane-cast" id="pane-1" role="tabpanel" aria-labelledby="tab-1">
+              <div class="pane pane-cast" id="pane-1" role="tabpanel" aria-labelledby="tab-1" aria-describedby="alt-1">
                 <div class="fallback" id="cast-1">
                   <pre>
 $ finitemonkey trajectory --domain backend --chart
@@ -1366,12 +1383,13 @@ backend
 · ▓▓━···███·  done alone
 ·━███···███·  done alone</pre>
                 </div>
-                <p class="pcap" data-i="cap1">
-                  Real CLI output on a demo project, finitemonkey 0.1.0-next.41: gate fails, gate passes, x-ray,
-                  trajectory. The concept history comes from the trajectory test fixture.
+                <p class="sr" id="alt-1" data-i="alt1">
+                  Terminal: finitemonkey gate fails the idempotency key test and passes after the fix; finitemonkey xray
+                  and finitemonkey trajectory show the bands and a ricochet.
                 </p>
+                <p class="pcap" data-i="cap1">finitemonkey 0.1.0-next.41 · CLI</p>
               </div>
-              <div class="pane pane-chart" id="pane-2" role="tabpanel" aria-labelledby="tab-2">
+              <div class="pane pane-chart" id="pane-2" role="tabpanel" aria-labelledby="tab-2" aria-describedby="alt-2">
                 <svg class="traj" viewBox="0 0 720 372" role="img" aria-labelledby="traj-t">
                   <title id="traj-t" data-i="trajTitle">Same result, different status: the ricochet</title>
                   <defs>
@@ -1502,7 +1520,11 @@ backend
                   <li><i class="k-r">⊗</i><span data-i="kR">ricochet</span></li>
                   <li><i class="k-h">◉</i><span data-i="kH">holds</span></li>
                 </ul>
-                <p class="pcap" data-i="cap2">The essay's example (The Ricochet Effect, figure 4), not user data.</p>
+                <p class="sr" id="alt-2" data-i="alt2">
+                  Person A reaches 80 in the blind band and falls to 30 when the task shifts (ricochet). Person B
+                  reaches 80 in the proximal band and holds at 78.
+                </p>
+                <p class="pcap" data-i="cap2">The Ricochet Effect, fig. 4</p>
               </div>
             </div>
             <figcaption class="stage-cap" id="stage-cap" aria-live="polite"></figcaption>
@@ -1703,10 +1725,6 @@ backend
               </tbody>
             </table>
           </div>
-          <p class="small" data-i="statusNote">
-            Read by your browser from registry.npmjs.org, api.npmjs.org and api.github.com, and kept for 10 minutes. A
-            dash means the request failed; it links to the source.
-          </p>
         </section>
 
         <section id="bench">
@@ -1726,10 +1744,8 @@ backend
       </main>
 
       <footer>
-        <span>finitemonkey · Apache-2.0</span>
         <a href="https://github.com/gabrielvieiraf/finitemonkey">github.com/gabrielvieiraf/finitemonkey</a>
         <a href="https://www.npmjs.com/package/finitemonkey/v/next">npm</a>
-        <span data-i="foot">Gabriel Vieira Flores</span>
       </footer>
     </div>
 
@@ -1862,7 +1878,6 @@ backend
               "tokens",
               "tempo",
             ],
-            foot: "Gabriel Vieira Flores",
           },
           en: {
             prerelTag: "early versions",
@@ -1977,7 +1992,6 @@ backend
               ["C", "Finite Monkey with one piece removed at a time"],
             ],
             metrics: ["tasks actually finished", "false “done”", "leaked secrets", "lost work", "tokens", "time"],
-            foot: "Gabriel Vieira Flores",
           },
           es: {
             prerelTag: "versiones iniciales",
@@ -2099,7 +2113,6 @@ backend
               "tokens",
               "tiempo",
             ],
-            foot: "Gabriel Vieira Flores",
           },
         };
         const $ = (s) => document.querySelector(s);
@@ -2184,8 +2197,6 @@ backend
             stStars: "estrelas no GitHub",
             stCi: "CI na next",
             stRecent: "últimas 5 versões",
-            statusNote:
-              "Lido pelo seu navegador em registry.npmjs.org, api.npmjs.org e api.github.com, e guardado por 10 minutos. Um traço quer dizer que a consulta falhou; ele leva à fonte.",
             ciOk: "passou",
             ciBad: "falhou",
           },
@@ -2200,8 +2211,6 @@ backend
             stStars: "GitHub stars",
             stCi: "CI on next",
             stRecent: "last 5 versions",
-            statusNote:
-              "Read by your browser from registry.npmjs.org, api.npmjs.org and api.github.com, and kept for 10 minutes. A dash means the request failed; it links to the source.",
             ciOk: "passing",
             ciBad: "failing",
           },
@@ -2216,8 +2225,6 @@ backend
             stStars: "estrellas en GitHub",
             stCi: "CI en next",
             stRecent: "últimas 5 versiones",
-            statusNote:
-              "Lo lee tu navegador en registry.npmjs.org, api.npmjs.org y api.github.com, y se guarda 10 minutos. Un guion significa que la consulta falló; enlaza a la fuente.",
             ciOk: "pasa",
             ciBad: "falla",
           },
@@ -2342,9 +2349,12 @@ backend
             playL: "Continuar",
             nextL: "Próximo",
             gifLink: "Abrir a gravação (GIF)",
-            cap0: "Gravação real: finitemonkey 0.1.0-next.27 com Claude Code 2.1.283, acelerada 1,3×.",
-            cap1: "Saída real da CLI num projeto de demonstração, finitemonkey 0.1.0-next.41: gate falha, gate passa, x-ray, trajetória. O histórico de conceitos é o fixture dos testes da trajetória.",
-            cap2: "O exemplo do ensaio (Efeito Ricochete, figura 4), não são dados de usuário.",
+            cap0: "finitemonkey 0.1.0-next.27 · Claude Code 2.1.283",
+            cap1: "finitemonkey 0.1.0-next.41 · CLI",
+            cap2: "Efeito Ricochete, fig. 4",
+            alt0: 'Sessão do Claude Code: o gate do Finite Monkey reprova o teste "total rounds to cents", o Claude corrige o arredondamento e o gate passa com 10 checagens.',
+            alt1: "Terminal: finitemonkey gate reprova o teste de chave de idempotência, passa depois da correção; finitemonkey xray e finitemonkey trajectory mostram as faixas e um ricochete.",
+            alt2: "Pessoa A chega a 80 na faixa cega e cai para 30 quando a tarefa muda (ricochete). Pessoa B chega a 80 na faixa proximal e se mantém em 78.",
             trajTitle: "O mesmo resultado, estatutos diferentes: o ricochete",
             trajA: "Pessoa A",
             trajB: "Pessoa B",
@@ -2373,9 +2383,12 @@ backend
             playL: "Play",
             nextL: "Next",
             gifLink: "Open the recording (GIF)",
-            cap0: "Real recording: finitemonkey 0.1.0-next.27 with Claude Code 2.1.283, sped up 1.3×.",
-            cap1: "Real CLI output on a demo project, finitemonkey 0.1.0-next.41: gate fails, gate passes, x-ray, trajectory. The concept history is the trajectory test fixture.",
-            cap2: "The essay's example (The Ricochet Effect, figure 4), not user data.",
+            cap0: "finitemonkey 0.1.0-next.27 · Claude Code 2.1.283",
+            cap1: "finitemonkey 0.1.0-next.41 · CLI",
+            cap2: "The Ricochet Effect, fig. 4",
+            alt0: 'Claude Code session: the Finite Monkey gate fails the test "total rounds to cents", Claude fixes the rounding and the gate passes with 10 checks.',
+            alt1: "Terminal: finitemonkey gate fails the idempotency key test and passes after the fix; finitemonkey xray and finitemonkey trajectory show the bands and a ricochet.",
+            alt2: "Person A reaches 80 in the blind band and falls to 30 when the task shifts (ricochet). Person B reaches 80 in the proximal band and holds at 78.",
             trajTitle: "Same result, different status: the ricochet",
             trajA: "Person A",
             trajB: "Person B",
@@ -2404,9 +2417,12 @@ backend
             playL: "Reanudar",
             nextL: "Siguiente",
             gifLink: "Abrir la grabación (GIF)",
-            cap0: "Grabación real: finitemonkey 0.1.0-next.27 con Claude Code 2.1.283, acelerada 1,3×.",
-            cap1: "Salida real de la CLI en un proyecto de demostración, finitemonkey 0.1.0-next.41: el gate falla, el gate pasa, x-ray, trayectoria. El historial de conceptos es el fixture de los tests de la trayectoria.",
-            cap2: "El ejemplo del ensayo (Efecto Rebote, figura 4), no son datos de usuarios.",
+            cap0: "finitemonkey 0.1.0-next.27 · Claude Code 2.1.283",
+            cap1: "finitemonkey 0.1.0-next.41 · CLI",
+            cap2: "Efecto Rebote, fig. 4",
+            alt0: 'Sesión de Claude Code: el gate de Finite Monkey reprueba el test "total rounds to cents", Claude corrige el redondeo y el gate pasa con 10 comprobaciones.',
+            alt1: "Terminal: finitemonkey gate reprueba el test de la clave de idempotencia y pasa tras la corrección; finitemonkey xray y finitemonkey trajectory muestran las franjas y un rebote.",
+            alt2: "La persona A llega a 80 en la franja ciega y cae a 30 cuando la tarea cambia (rebote). La persona B llega a 80 en la franja proximal y se mantiene en 78.",
             trajTitle: "El mismo resultado, estatus distintos: el rebote",
             trajA: "Persona A",
             trajB: "Persona B",
