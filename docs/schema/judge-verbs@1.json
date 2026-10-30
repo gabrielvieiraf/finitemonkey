@@ -26,7 +26,8 @@
         "forget",
         "judge",
         "answer",
-        "cut"
+        "cut",
+        "anchor"
       ]
     },
     "ok": {
@@ -445,6 +446,35 @@
         },
         "proposed": {
           "type": "string"
+        },
+        "numbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "unit",
+                  "anchored",
+                  "exception",
+                  "magnitude",
+                  "unanchored",
+                  "input-changed"
+                ]
+              },
+              "anchor": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "number",
+              "state"
+            ]
+          }
         }
       },
       "required": [
@@ -898,6 +928,12 @@
                     "ref",
                     "hash"
                   ]
+                }
+              },
+              "exceptions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
               },
               "id": {
@@ -1364,6 +1400,24 @@
         "verify",
         "handoff"
       ]
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "claim",
+          "number"
+        ]
+      }
     }
   },
   "required": [

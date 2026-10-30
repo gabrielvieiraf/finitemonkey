@@ -6,17 +6,15 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { readAll } from "../hooks/stdin.js";
 import type { MessageKey } from "../i18n/catalogs.js";
-import { CITE_FEATURE, citeVerifier } from "../judge/cite.js";
-import { curlFetcher } from "../judge/fetch.js";
 import { judgeLines } from "../judge/lines.js";
 import { parseRequest } from "../judge/request.js";
 import { JUDGE_FEATURE } from "../judge/types.js";
-import { type JudgeDeps, runVerb } from "../judge/verbs.js";
-import { DEFAULT_VERIFIERS } from "../judge/verify.js";
+import { runVerb } from "../judge/verbs.js";
 import { featureMode } from "../policy/feature.js";
 import { isPerson } from "../secrets/project.js";
 import { fmPaths } from "../task/paths.js";
 import { inGuardianRepo } from "./guardian.js";
+import { judgeDeps } from "./judge-deps.js";
 import type { CommandSpec, OptionsConfig, OptionValues } from "./types.js";
 
 type Build = (ctx: Ctx, values: OptionValues, positionals: readonly string[], root: string) => JsonObject | undefined;
@@ -37,6 +35,7 @@ export const VERB_FEATURES: Readonly<Record<string, string>> = {
   answer: "xray-research",
   cut: "xray-research",
   check: "cite-span",
+  anchor: "number-anchor",
 };
 
 export const PERSON_VERBS: readonly string[] = ["contest", "forget", "answer", "check"];
@@ -49,17 +48,6 @@ export const switchedOff = (ctx: Ctx, root: string, record: JsonObject): Command
   return off === undefined
     ? undefined
     : refuse(ctx, "judge.error.off", `set ${off}: shadow in .finitemonkey/policy.yml`, off);
-};
-
-export const judgeDeps = (ctx: Ctx, root: string): JudgeDeps => {
-  const paths = fmPaths(toAbsolutePath(root));
-  if (featureMode(ctx.runtime, paths, CITE_FEATURE) === "off") return { runtime: ctx.runtime, paths };
-  return {
-    runtime: ctx.runtime,
-    paths,
-    fetcher: curlFetcher(ctx.runtime, root),
-    verifiers: { ...DEFAULT_VERIFIERS, "source-span": citeVerifier, prose: citeVerifier },
-  };
 };
 
 export const answer = (ctx: Ctx, root: string, record: JsonObject, usage: string): CommandResult => {

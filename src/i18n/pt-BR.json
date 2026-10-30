@@ -2714,5 +2714,8 @@
   "judge.probe.two_spans": "{probe}: qual destes trechos aparece em {source}?",
   "judge.probe.right": "{claim}: resposta com gabarito registrada",
   "judge.probe.wrong": "a fonte diz: \"{span}\" ({claim} vai para verificação ou entrega)",
-  "command.judge_check.summary": "Registrar a checagem de fonte feita pela pessoa; conta quando bate com a checagem da máquina"
+  "command.judge_check.summary": "Registrar a checagem de fonte feita pela pessoa; conta quando bate com a checagem da máquina",
+  "command.judge_anchor.summary": "Ancorar os números de uma afirmação num cálculo com entradas de hash conhecido",
+  "judge.number": "  {number}: {state} {anchor}",
+  "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} pela lista de exceções: {numbers}"
 }

@@ -5,12 +5,12 @@ import { domainViews } from "./concepts.js";
 import { appendNow, type JudgeDeps } from "./deps.js";
 import { writeHandoff } from "./handoff.js";
 import type { JudgeRequest } from "./request.js";
-import { conceptViews, type JudgeResponse, response, resultView, resultViews } from "./response.js";
+import { conceptViews, exceptionUses, type JudgeResponse, response, resultView, resultViews } from "./response.js";
 import { inScope } from "./scope.js";
 import { splitClaims } from "./split.js";
 import { entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
-import { personCheck } from "./verbs-cite.js";
+import { anchorCompute, personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS } from "./verify.js";
@@ -88,6 +88,7 @@ const verify = (deps: JudgeDeps, claimId: string): JudgeResponse => {
       outcome: verdict.outcome,
       ref: verdict.ref,
       anchors: verdict.anchors,
+      exceptions: verdict.numbers?.filter((item) => item.state === "exception").map((item) => item.number),
     });
   }
   const after = readEntries(deps.runtime, deps.paths);
@@ -98,6 +99,7 @@ const verify = (deps: JudgeDeps, claimId: string): JudgeResponse => {
       state: supportStateOf(claim.id, after),
       outcome: verdict.outcome,
       ...(proposed === undefined ? {} : { proposed }),
+      ...(verdict.numbers === undefined ? {} : { numbers: verdict.numbers }),
     },
   });
 };
@@ -167,6 +169,7 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
         concepts: conceptViews(entries),
         domains: domainViews(entries),
         results: resultViews(entries),
+        exceptions: exceptionUses(entries),
       });
     }
     case "export":
@@ -185,5 +188,7 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
       return cut(deps, request);
     case "check":
       return personCheck(deps, request);
+    case "anchor":
+      return anchorCompute(deps, request);
   }
 };

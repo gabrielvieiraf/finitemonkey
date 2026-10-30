@@ -124,6 +124,7 @@ export interface SupportEntry extends EntryBase {
   readonly missing?: string;
   readonly bands?: Readonly<Record<string, Band>>;
   readonly anchors?: readonly JudgeAnchor[];
+  readonly exceptions?: readonly string[];
 }
 
 export interface ResultEntry extends EntryBase {
