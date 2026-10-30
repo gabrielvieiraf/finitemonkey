@@ -142,6 +142,7 @@ export const POLICY_KEYS: readonly string[] = [
   "autonomy",
   "knowledge",
   "person",
+  "judge",
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([

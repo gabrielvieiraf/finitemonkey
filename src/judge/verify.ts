@@ -2,6 +2,7 @@ import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
 import type { SourceFetcher } from "./fetch.js";
+import type { NumberCheck } from "./numbers.js";
 import type { ClaimEntry, JudgeAnchor, JudgeClaimKind, JudgeEntry } from "./types.js";
 
 export const CHECK_TIMEOUT_MS = 60_000;
@@ -11,6 +12,7 @@ export interface Verdict {
   readonly outcome: string;
   readonly ref?: string;
   readonly anchors?: readonly JudgeAnchor[];
+  readonly numbers?: readonly NumberCheck[];
 }
 
 export type VerifyRuntime = Pick<Runtime, "readText" | "exec" | "now">;

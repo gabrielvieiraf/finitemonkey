@@ -2714,5 +2714,8 @@
   "judge.probe.two_spans": "{probe}: ¿cuál de estos fragmentos aparece en {source}?",
   "judge.probe.right": "{claim}: respuesta con clave registrada",
   "judge.probe.wrong": "la fuente dice: \"{span}\" ({claim} pasa a verificación o entrega)",
-  "command.judge_check.summary": "Registrar la verificación de fuente hecha por la persona; cuenta cuando coincide con la de la máquina"
+  "command.judge_check.summary": "Registrar la verificación de fuente hecha por la persona; cuenta cuando coincide con la de la máquina",
+  "command.judge_anchor.summary": "Anclar los números de una afirmación a un cálculo con entradas de hash conocido",
+  "judge.number": "  {number}: {state} {anchor}",
+  "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} por la lista de excepciones: {numbers}"
 }

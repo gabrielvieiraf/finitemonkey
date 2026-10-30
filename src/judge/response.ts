@@ -9,6 +9,7 @@ import {
   supportStateOf,
 } from "./claims.js";
 import type { DomainView } from "./concepts.js";
+import type { NumberCheck } from "./numbers.js";
 import {
   type Band,
   JUDGE_VERBS_SCHEMA,
@@ -37,6 +38,7 @@ export const VERBS = [
   "answer",
   "cut",
   "check",
+  "anchor",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
@@ -102,6 +104,12 @@ export interface ClaimView {
   readonly state: SupportState;
   readonly outcome?: string;
   readonly proposed?: string;
+  readonly numbers?: readonly NumberCheck[];
+}
+
+export interface ExceptionUse {
+  readonly claim: string;
+  readonly number: string;
 }
 
 export interface HandoffPackage {
@@ -137,6 +145,7 @@ export interface JudgeResponse {
   readonly removed?: number;
   readonly probe?: ProbeView;
   readonly route?: "verify" | "handoff";
+  readonly exceptions?: readonly ExceptionUse[];
 }
 
 export const response = (verb: Verb, fields: Omit<JudgeResponse, "schema" | "verb" | "ok"> = {}): JudgeResponse => ({
@@ -232,3 +241,10 @@ export const conceptViews = (entries: readonly JudgeEntry[], only?: readonly str
 
 export const resultViews = (entries: readonly JudgeEntry[]): readonly ResultView[] =>
   resultsIn(entries).map((result) => resultView(result, entries));
+
+export const exceptionUses = (entries: readonly JudgeEntry[]): readonly ExceptionUse[] => {
+  const latest = new Map<string, readonly string[]>();
+  for (const entry of entries)
+    if (entry.type === "support" && entry.outcome !== undefined) latest.set(entry.claim, entry.exceptions ?? []);
+  return [...latest].flatMap(([claim, numbers]) => numbers.map((number) => ({ claim, number })));
+};

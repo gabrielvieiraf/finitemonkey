@@ -389,6 +389,12 @@
               ]
             }
           },
+          "exceptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "id": {
             "type": "string"
           },

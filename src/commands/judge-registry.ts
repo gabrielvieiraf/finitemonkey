@@ -148,6 +148,20 @@ export const judgeCheckCommand = judgeCommand({
   build: (_ctx, values, positionals) => ({ verb: "check", claim: positionals[0], says: stringOption(values, "says") }),
 });
 
+export const judgeAnchorCommand = judgeCommand({
+  path: ["judge", "anchor"],
+  summaryKey: "command.judge_anchor.summary",
+  usage: 'finitemonkey judge anchor <claim> --run "<command>" --input <file> [--input <file>]',
+  options: { run: { type: "string" }, input: { type: "string", multiple: true } },
+  maxPositionals: 1,
+  build: (_ctx, values, positionals) => ({
+    verb: "anchor",
+    claim: positionals[0],
+    run: stringOption(values, "run"),
+    inputs: listOption(values, "input"),
+  }),
+});
+
 export const JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -167,4 +181,5 @@ export const JUDGE_COMMANDS = [
   judgeAnswerCommand,
   judgeCutCommand,
   judgeCheckCommand,
+  judgeAnchorCommand,
 ] as const satisfies readonly CommandSpec[];

@@ -43,6 +43,9 @@ const claimLines = (t: Translate, data: JudgeResponse): readonly string[] =>
   data.claim === undefined
     ? []
     : [
+        ...(data.claim.numbers ?? []).map((item) =>
+          t("judge.number", { number: item.number, state: item.state, anchor: item.anchor ?? "" }),
+        ),
         t("judge.claim_line", {
           claim: data.claim.claim,
           state: data.claim.state,
@@ -65,6 +68,14 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
   ...(data.export === undefined ? [] : [t("judge.export", { count: entriesIn(data) })]),
   ...(data.removed === undefined ? [] : [t("judge.removed", { count: data.removed })]),
   ...(data.probe === undefined ? [] : probeLines(t, data.probe)),
+  ...(data.exceptions === undefined || data.exceptions.length === 0
+    ? []
+    : [
+        t("judge.exceptions", {
+          count: data.exceptions.length,
+          numbers: data.exceptions.map((item) => item.number).join(", "),
+        }),
+      ]),
 ];
 
 const entriesIn = (data: JudgeResponse): number =>

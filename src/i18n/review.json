@@ -2714,7 +2714,10 @@
     "judge.probe.two_spans": "machine",
     "judge.probe.right": "machine",
     "judge.probe.wrong": "machine",
-    "command.judge_check.summary": "machine"
+    "command.judge_check.summary": "machine",
+    "command.judge_anchor.summary": "machine",
+    "judge.number": "machine",
+    "judge.exceptions": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5431,6 +5434,9 @@
     "judge.probe.two_spans": "machine",
     "judge.probe.right": "machine",
     "judge.probe.wrong": "machine",
-    "command.judge_check.summary": "machine"
+    "command.judge_check.summary": "machine",
+    "command.judge_anchor.summary": "machine",
+    "judge.number": "machine",
+    "judge.exceptions": "machine"
   }
 }

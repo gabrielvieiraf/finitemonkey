@@ -107,6 +107,7 @@ const supportOf: Parser = (record, base) => {
   if (claim === undefined || state === undefined || by === undefined) return undefined;
   const bands = bandsOf(record["bands"]);
   const anchors = anchorsOf(record["anchors"]);
+  const exceptions = texts(record, "exceptions");
   return {
     type: "support",
     ...base,
@@ -116,6 +117,7 @@ const supportOf: Parser = (record, base) => {
     ...optional(record, ["ref", "outcome", "to", "missing"]),
     ...(bands === undefined ? {} : { bands }),
     ...(anchors.length === 0 ? {} : { anchors }),
+    ...(exceptions.length === 0 ? {} : { exceptions }),
   };
 };
 
