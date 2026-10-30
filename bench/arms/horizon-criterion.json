@@ -2,6 +2,8 @@
   "id": "horizon-criterion",
   "description": "Finite Monkey with horizon help and its judgment criterion: ricochete active, so Stop holds a horizon answer without one.",
   "finitemonkey": true,
-  "sha": null,
-  "guards": { "ricochete": "active" }
+  "sha": "f3652fcc68e0465feaa73aef12b60261e2394848",
+  "guards": {
+    "ricochete": "active"
+  }
 }
