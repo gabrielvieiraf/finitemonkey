@@ -11,6 +11,9 @@ export const RISKS = ["normal", "high"] as const;
 export const QUIET_RUN = 2;
 
 export type Change = (typeof CHANGES)[number];
+export const STANCES = ["favors", "contests", "unrelated"] as const;
+export type Stance = (typeof STANCES)[number];
+export type StanceBy = "person" | "model";
 export type Risk = (typeof RISKS)[number];
 
 export interface ResearchQuestion {
@@ -30,12 +33,24 @@ export interface ResearchSource {
   readonly target: string;
   readonly resolves: string;
   readonly at: string;
+  readonly stance?: Stance;
+  readonly stanceBy?: StanceBy;
+  readonly claim?: string;
+}
+
+export interface EmptySearch {
+  readonly unknown: string;
+  readonly queries: readonly string[];
+  readonly places: readonly string[];
+  readonly at: string;
 }
 
 export interface ResearchLog {
   readonly slug: string;
   readonly question: ResearchQuestion;
   readonly sources: readonly ResearchSource[];
+  readonly emptySearches: readonly EmptySearch[];
+  readonly closedAt?: string;
 }
 
 export interface ResearchState {
@@ -68,11 +83,31 @@ const questionOf = (record: JsonObject): ResearchQuestion => ({
   at: text(record, "at"),
 });
 
-const sourceOf = (record: JsonObject): ResearchSource => ({
-  url: text(record, "url"),
-  changed: CHANGES.find((item) => item === record["changed"]) ?? "nothing",
-  target: text(record, "target"),
-  resolves: text(record, "resolves"),
+const sourceOf = (record: JsonObject): ResearchSource => {
+  const stance = STANCES.find((item) => item === record["stance"]);
+  const claim = text(record, "claim");
+  return {
+    url: text(record, "url"),
+    changed: CHANGES.find((item) => item === record["changed"]) ?? "nothing",
+    target: text(record, "target"),
+    resolves: text(record, "resolves"),
+    at: text(record, "at"),
+    ...(stance === undefined ? {} : { stance, stanceBy: record["stanceBy"] === "person" ? "person" : "model" }),
+    ...(claim === "" ? {} : { claim }),
+  };
+};
+
+const confirmed = (sources: readonly ResearchSource[], records: readonly JsonObject[]): readonly ResearchSource[] =>
+  sources.map((source) => {
+    const confirmation = records.findLast((record) => record["type"] === "stance" && record["url"] === source.url);
+    const stance = STANCES.find((item) => item === confirmation?.["stance"]);
+    return stance === undefined ? source : { ...source, stance, stanceBy: "person" };
+  });
+
+const emptyOf = (record: JsonObject): EmptySearch => ({
+  unknown: text(record, "unknown"),
+  queries: texts(record, "queries"),
+  places: texts(record, "places"),
   at: text(record, "at"),
 });
 
@@ -89,10 +124,13 @@ export const readResearchLog = (
   });
   const head = records.find((record) => record["type"] === "question");
   if (head === undefined) return undefined;
+  const closed = records.findLast((record) => record["type"] === "close");
   return {
     slug,
     question: questionOf(head),
-    sources: records.filter((record) => record["type"] === "source").map(sourceOf),
+    sources: confirmed(records.filter((record) => record["type"] === "source").map(sourceOf), records),
+    emptySearches: records.filter((record) => record["type"] === "empty-search").map(emptyOf),
+    ...(closed === undefined ? {} : { closedAt: text(closed, "at") }),
   };
 };
 

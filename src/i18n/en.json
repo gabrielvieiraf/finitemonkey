@@ -2720,5 +2720,12 @@
   "judge.exceptions": "{count, plural, one {# number} other {# numbers}} let through by the exception list: {numbers}",
   "command.judge_read.summary": "Keep a page, document or tool output read during research as quoted data with its origin and hash",
   "command.judge_promote.summary": "Move a research claim into project claims, only after a span check and a green task",
-  "judge.item": "{item}: {origin} {source} kept as data; instruction-shaped lines not followed: {instructions}"
+  "judge.item": "{item}: {origin} {source} kept as data; instruction-shaped lines not followed: {instructions}",
+  "command.research_empty.summary": "Log a contrary search that found nothing for a critical unknown, with queries and places searched",
+  "command.research_stance.summary": "Confirm whether a source favors, contests or is unrelated to the leading answer",
+  "command.research_close.summary": "Close a research log; each critical unknown needs a source for and one against, or a logged empty search",
+  "research.sides.open": "open: {unknown} ({favors} favoring, {contests} contesting, {suggested} suggested and not confirmed)",
+  "research.sides.error.usage": "Missing or invalid arguments.",
+  "research.sides.error.person": "Only the person at a terminal can confirm a stance.",
+  "research.sides.error.one_side": "Cannot close: these critical unknowns have only one side and no logged empty search: {unknowns}."
 }

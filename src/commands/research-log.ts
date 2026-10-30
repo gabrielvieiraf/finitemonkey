@@ -11,9 +11,12 @@ import {
   type ResearchLog,
   researchState,
   RISKS,
+  STANCES,
 } from "../research/log.js";
+import { isPerson } from "../secrets/project.js";
 import { fmPaths } from "../task/paths.js";
 import { guardianWriteProblem, inGuardianRepo } from "./guardian.js";
+import { researchLinks, sidesLines } from "./research-sides.js";
 import type { CommandSpec } from "./types.js";
 
 type Root = Parameters<Parameters<typeof inGuardianRepo>[1]>[0];
@@ -34,8 +37,17 @@ const stateLines = (ctx: Ctx, log: ResearchLog): readonly string[] => {
   ];
 };
 
+const stanceFields = (ctx: Ctx, values: Parameters<typeof stringOption>[0]): Readonly<Record<string, string>> => {
+  const stance = STANCES.find((item) => item === stringOption(values, "stance"));
+  const claim = stringOption(values, "claim");
+  return {
+    ...(stance === undefined ? {} : { stance, stanceBy: isPerson(ctx) ? "person" : "model" }),
+    ...(claim === undefined ? {} : { claim }),
+  };
+};
+
 const SOURCE_USAGE =
-  "finitemonkey research source <slug> <url> --changed nothing|option|unknown [--target <option or unknown>] [--resolves <unknown>]";
+  "finitemonkey research source <slug> <url> --changed nothing|option|unknown [--target <option or unknown>] [--resolves <unknown>] [--stance favors|contests|unrelated] [--claim <judge claim>]";
 
 export const researchSourceCommand: CommandSpec = {
   path: ["research", "source"],
@@ -43,7 +55,13 @@ export const researchSourceCommand: CommandSpec = {
   usage: SOURCE_USAGE,
   status: "ready",
   maxPositionals: 2,
-  options: { changed: { type: "string" }, target: { type: "string" }, resolves: { type: "string" } },
+  options: {
+    changed: { type: "string" },
+    target: { type: "string" },
+    resolves: { type: "string" },
+    stance: { type: "string" },
+    claim: { type: "string" },
+  },
   run: (ctx, args) => {
     const [slug = "", url = ""] = args.positionals;
     const changed = CHANGES.find((item) => item === stringOption(args.values, "changed"));
@@ -64,6 +82,7 @@ export const researchSourceCommand: CommandSpec = {
         changed,
         target: stringOption(args.values, "target") ?? "",
         resolves: stringOption(args.values, "resolves") ?? "",
+        ...stanceFields(ctx, args.values),
         at: ctx.runtime.now(),
       });
       const log = readResearchLog(ctx.runtime, paths, slug);
@@ -92,8 +111,15 @@ export const researchStatusCommand: CommandSpec = {
           }),
         );
       return success(
-        { schema: RESEARCH_LOG_SCHEMA, slug, question: log.question, sources: log.sources, state: researchState(log) },
-        stateLines(ctx, log),
+        {
+          schema: RESEARCH_LOG_SCHEMA,
+          slug,
+          question: log.question,
+          sources: log.sources,
+          state: researchState(log),
+          ...researchLinks(ctx, fmPaths(root), log),
+        },
+        [...stateLines(ctx, log), ...sidesLines(ctx, log)],
       );
     });
   },
