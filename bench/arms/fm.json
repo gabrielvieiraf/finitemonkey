@@ -2,5 +2,5 @@
   "id": "fm",
   "description": "Finite Monkey plugin with its default policy.",
   "finitemonkey": true,
-  "sha": null
+  "sha": "f3652fcc68e0465feaa73aef12b60261e2394848"
 }
