@@ -1,7 +1,8 @@
 import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
-import type { ClaimEntry, JudgeClaimKind, JudgeEntry } from "./types.js";
+import type { SourceFetcher } from "./fetch.js";
+import type { ClaimEntry, JudgeAnchor, JudgeClaimKind, JudgeEntry } from "./types.js";
 
 export const CHECK_TIMEOUT_MS = 60_000;
 
@@ -9,6 +10,7 @@ export interface Verdict {
   readonly verified: boolean;
   readonly outcome: string;
   readonly ref?: string;
+  readonly anchors?: readonly JudgeAnchor[];
 }
 
 export type VerifyRuntime = Pick<Runtime, "readText" | "exec" | "now">;
@@ -17,6 +19,7 @@ export interface VerifyContext {
   readonly runtime: VerifyRuntime;
   readonly paths: FmPaths;
   readonly entries: readonly JudgeEntry[];
+  readonly fetcher?: SourceFetcher;
 }
 
 export type Verifier = (claim: ClaimEntry, context: VerifyContext) => Verdict;

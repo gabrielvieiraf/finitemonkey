@@ -36,6 +36,7 @@ export const VERBS = [
   "judge",
   "answer",
   "cut",
+  "check",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;

@@ -10,6 +10,7 @@ import { inScope } from "./scope.js";
 import { splitClaims } from "./split.js";
 import { entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
+import { personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS } from "./verify.js";
@@ -22,7 +23,7 @@ const NUMBER = /\d/;
 
 export const claimKindOf = (text: string): JudgeClaimKind => {
   if (QUOTED.test(text) && CITATION.test(text)) return "source-span";
-  if (NUMBER.test(text)) return "number";
+  if (NUMBER.test(text.replace(new RegExp(CITATION.source, "gi"), " "))) return "number";
   return "prose";
 };
 
@@ -67,7 +68,12 @@ const verify = (deps: JudgeDeps, claimId: string): JudgeResponse => {
   if (claim === undefined) return response("verify", { reason: "unknown_claim" });
   const proposed = deps.proposer?.(claim.text);
   const verifier = (deps.verifiers ?? DEFAULT_VERIFIERS)[claim.kind];
-  const verdict = verifier?.(claim, { runtime: deps.runtime, paths: deps.paths, entries }) ?? {
+  const verdict = verifier?.(claim, {
+    runtime: deps.runtime,
+    paths: deps.paths,
+    entries,
+    ...(deps.fetcher === undefined ? {} : { fetcher: deps.fetcher }),
+  }) ?? {
     verified: false,
     outcome: "no-verifier",
   };
@@ -81,6 +87,7 @@ const verify = (deps: JudgeDeps, claimId: string): JudgeResponse => {
       by: "machine",
       outcome: verdict.outcome,
       ref: verdict.ref,
+      anchors: verdict.anchors,
     });
   }
   const after = readEntries(deps.runtime, deps.paths);
@@ -176,5 +183,7 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
       return answer(deps, request);
     case "cut":
       return cut(deps, request);
+    case "check":
+      return personCheck(deps, request);
   }
 };
