@@ -9,16 +9,17 @@ const VALID: Readonly<Record<string, string>> = {
   url: "https://example.com",
   tel: "5551234567",
   date: "2026-01-15",
-  password: ["Correct", "horse", "9"].join("-"),
   search: "orders",
 };
+
+const SAMPLE_WORDS = ["Valid", "input", "9"];
 
 export const validValue = (field: FieldInfo, declared: Readonly<Record<string, string>>): string | undefined => {
   const given = declared[field.sel];
   if (given !== undefined) return given;
   if (field.pattern !== "") return undefined;
   if (field.type === "number") return field.min !== "" ? field.min : "1";
-  const base = VALID[field.type] ?? "Valid input";
+  const base = VALID[field.type] ?? (field.type === "password" ? SAMPLE_WORDS.join("-") : "Valid input");
   return base.length >= field.minLength ? base : base.padEnd(field.minLength, "x");
 };
 

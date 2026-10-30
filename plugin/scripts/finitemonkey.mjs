@@ -58207,15 +58207,15 @@ var VALID2 = {
   url: "https://example.com",
   tel: "5551234567",
   date: "2026-01-15",
-  password: ["Correct", "horse", "9"].join("-"),
   search: "orders"
 };
+var SAMPLE_WORDS = ["Valid", "input", "9"];
 var validValue = (field, declared) => {
   const given = declared[field.sel];
   if (given !== void 0) return given;
   if (field.pattern !== "") return void 0;
   if (field.type === "number") return field.min !== "" ? field.min : "1";
-  const base = VALID2[field.type] ?? "Valid input";
+  const base = VALID2[field.type] ?? (field.type === "password" ? SAMPLE_WORDS.join("-") : "Valid input");
   return base.length >= field.minLength ? base : base.padEnd(field.minLength, "x");
 };
 var invalidValue = (field) => {
