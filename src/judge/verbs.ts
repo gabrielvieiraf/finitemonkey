@@ -5,6 +5,7 @@ import { bandSnapshot, claimIdOf, claimsIn, resultsIn, supportStateOf } from "./
 import { domainViews } from "./concepts.js";
 import { appendNow, type JudgeDeps } from "./deps.js";
 import { writeHandoff } from "./handoff.js";
+import { horizonDomains } from "./horizon.js";
 import type { JudgeRequest } from "./request.js";
 import { promote, readItem } from "./research.js";
 import { conceptViews, exceptionUses, type JudgeResponse, response, resultView, resultViews } from "./response.js";
@@ -14,6 +15,7 @@ import { entryId, exportJudge, forgetJudge, readEntries } from "./store.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
 import { anchorCompute, personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
+import { addHelp, settleHelp } from "./verbs-horizon.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS, notVerified } from "./verify.js";
 
@@ -151,7 +153,25 @@ const contest = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "contes
 const view = (entries: readonly JudgeEntry[], concept: string | undefined): JudgeResponse =>
   response("fade", { concepts: conceptViews(entries, concept === undefined ? undefined : [concept]) });
 
-export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse => {
+const CORE_VERBS = [
+  "observe",
+  "classify",
+  "verify",
+  "ask",
+  "handoff",
+  "contest",
+  "fade",
+  "report",
+  "export",
+  "forget",
+] as const;
+
+type CoreRequest = Extract<JudgeRequest, { verb: (typeof CORE_VERBS)[number] }>;
+type MoreRequest = Exclude<JudgeRequest, CoreRequest>;
+
+const isCore = (request: JudgeRequest): request is CoreRequest => CORE_VERBS.some((verb) => verb === request.verb);
+
+const runCore = (deps: JudgeDeps, request: CoreRequest): JudgeResponse => {
   switch (request.verb) {
     case "observe":
       return observe(deps, request);
@@ -174,12 +194,18 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
         domains: domainViews(entries),
         results: resultViews(entries),
         exceptions: exceptionUses(entries),
+        horizonDomains: horizonDomains(entries),
       });
     }
     case "export":
       return response("export", { export: exportJudge(deps.runtime, deps.paths) });
     case "forget":
       return response("forget", { removed: forgetJudge(deps.runtime, deps.paths, request.id) });
+  }
+};
+
+const runMore = (deps: JudgeDeps, request: MoreRequest): JudgeResponse => {
+  switch (request.verb) {
     case "concept":
       return addConcept(deps, request);
     case "domain":
@@ -198,5 +224,13 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
       return readItem(deps, request);
     case "promote":
       return promote(deps, request);
+    case "horizon":
+      return addHelp(deps, request);
+    case "accept":
+    case "dismiss":
+      return settleHelp(deps, request, (claim) => verify(deps, claim));
   }
 };
+
+export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =>
+  isCore(request) ? runCore(deps, request) : runMore(deps, request);
