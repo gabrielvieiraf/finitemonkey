@@ -64,6 +64,19 @@ export const approvals: readonly Threat[] = [
       "Person-only commands check for a terminal on stdin and the absence of `CLAUDECODE` and `CLAUDE_CODE_ENTRYPOINT`; a process that fakes both passes",
     code: ["src/secrets/project.ts"],
   },
+  {
+    component: "Contracts and approvals",
+    attacker: "mistaken agent",
+    threat: "A button approval in the mod lands on a contract other than the one shown",
+    outcome: "prevented",
+    mechanism:
+      "Approve sends the hash of the checks and approved examples and the digest of the contract text that were shown; `task trust` refuses when either changed, and the self guard denies the agent the approving form",
+    code: ["src/mod/approve-view.ts", "src/gate/trust-contract.ts", "src/commands/task-trust.ts"],
+    proof: {
+      file: "test/contract-button.test.ts",
+      test: "refuses an approval when the contract changed after it was shown",
+    },
+  },
 ];
 
 export const guards: readonly Threat[] = [
