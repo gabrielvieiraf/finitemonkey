@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-import { launchBrowser, loadPlaywright } from "../src/look/node-playwright.js";
+import { launchBrowser, loadPlaywright, type PlaywrightModule } from "../src/look/node-playwright.js";
 import { type LookRun, runLook } from "../src/look/run.js";
 import { contractHash, parseContract } from "../src/task/load.js";
 import { fmPaths } from "../src/task/paths.js";
@@ -52,11 +52,32 @@ export const freePort = (): Promise<number> =>
     });
   });
 
+const launchErrors = async (playwright: PlaywrightModule | undefined): Promise<string> => {
+  if (playwright === undefined) return "playwright not found";
+  const errors: string[] = [];
+  for (const channel of [undefined, "chrome", "msedge"]) {
+    try {
+      const browser = await playwright.chromium.launch({
+        headless: true,
+        ...(channel === undefined ? {} : { channel }),
+      });
+      await browser.close();
+    } catch (error) {
+      errors.push(
+        `${channel ?? "chromium"}: ${error instanceof Error ? (error.message.split("\n")[0] ?? "") : String(error)}`,
+      );
+    }
+  }
+  return errors.join("; ");
+};
+
 export const hasBrowser = async (): Promise<boolean> => {
   const playwright = await loadPlaywright(ROOT);
   const launched = playwright === undefined ? undefined : await launchBrowser(playwright);
   await launched?.close();
-  if (launched === undefined && process.env["CI"] !== undefined) throw new Error("no browser for look tests in CI");
+  if (launched === undefined && process.env["CI"] !== undefined) {
+    throw new Error(`no browser for look tests in CI (${await launchErrors(playwright)})`);
+  }
   return launched !== undefined;
 };
 

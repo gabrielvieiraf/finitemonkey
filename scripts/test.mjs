@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -24,6 +24,18 @@ const keyStamp = () => {
 };
 const keyBefore = keyStamp();
 const home = realpathSync.native(mkdtempSync(join(tmpdir(), "fm-test-home-")));
+if (process.platform === "win32") {
+  for (const parts of [
+    ["AppData", "Local"],
+    ["AppData", "LocalLow"],
+    ["AppData", "Roaming"],
+    ["Desktop"],
+    ["Documents"],
+    ["Downloads"],
+  ]) {
+    mkdirSync(join(home, ...parts), { recursive: true });
+  }
+}
 const env = {
   ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !IDENTITY.test(name))),
   HOME: home,
