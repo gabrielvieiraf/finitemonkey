@@ -33,7 +33,7 @@ export const recentUntrusted = (runtime: Pick<Runtime, "readText" | "now">, path
   return Number.isFinite(age) && age <= UNTRUSTED_WINDOW_MS && typeof tool === "string" ? tool : undefined;
 };
 
-const greenAfter = (
+export const greenAfter = (
   runtime: Pick<Runtime, "readText" | "homeDir" | "listDir">,
   paths: FmPaths,
   at: string,

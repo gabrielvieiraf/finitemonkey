@@ -8,7 +8,8 @@ import { type Appended, appendEntry } from "./store.js";
 import type { JudgeClaimKind } from "./types.js";
 import type { SupportProposer, Verifier, VerifyRuntime } from "./verify.js";
 
-export type JudgeRuntime = VerifyRuntime & Pick<Runtime, "appendText" | "mkdir" | "writeAtomic" | "remove">;
+export type JudgeRuntime = VerifyRuntime &
+  Pick<Runtime, "appendText" | "mkdir" | "writeAtomic" | "remove" | "homeDir" | "listDir">;
 
 export interface JudgeDeps {
   readonly runtime: JudgeRuntime;

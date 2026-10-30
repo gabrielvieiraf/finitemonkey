@@ -1,10 +1,12 @@
 import type { JsonObject } from "../core/parsed.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
+import { synthesisCited } from "./cite.js";
 import { bandSnapshot, claimIdOf, claimsIn, resultsIn, supportStateOf } from "./claims.js";
 import { domainViews } from "./concepts.js";
 import { appendNow, type JudgeDeps } from "./deps.js";
 import { writeHandoff } from "./handoff.js";
 import type { JudgeRequest } from "./request.js";
+import { promote, readItem } from "./research.js";
 import { conceptViews, exceptionUses, type JudgeResponse, response, resultView, resultViews } from "./response.js";
 import { inScope } from "./scope.js";
 import { splitClaims } from "./split.js";
@@ -13,11 +15,11 @@ import type { JudgeClaimKind, JudgeEntry } from "./types.js";
 import { anchorCompute, personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
-import { DEFAULT_VERIFIERS } from "./verify.js";
+import { DEFAULT_VERIFIERS, notVerified } from "./verify.js";
 
 export type { JudgeDeps, JudgeRuntime } from "./deps.js";
 
-const CITATION = /\b10\.\d{4,9}\/\S+|https?:\/\/\S+/i;
+const CITATION = /\[[^\]]*\]\([^)\s]+\)|\b10\.\d{4,9}\/\S+|https?:\/\/\S+/i;
 const QUOTED = /["“][^"”]{3,}["”]/;
 const NUMBER = /\d/;
 
@@ -68,15 +70,17 @@ const verify = (deps: JudgeDeps, claimId: string): JudgeResponse => {
   if (claim === undefined) return response("verify", { reason: "unknown_claim" });
   const proposed = deps.proposer?.(claim.text);
   const verifier = (deps.verifiers ?? DEFAULT_VERIFIERS)[claim.kind];
-  const verdict = verifier?.(claim, {
-    runtime: deps.runtime,
-    paths: deps.paths,
-    entries,
-    ...(deps.fetcher === undefined ? {} : { fetcher: deps.fetcher }),
-  }) ?? {
-    verified: false,
-    outcome: "no-verifier",
-  };
+  const verdict = synthesisCited(claim.text, entries)
+    ? notVerified("synthesis-source")
+    : (verifier?.(claim, {
+        runtime: deps.runtime,
+        paths: deps.paths,
+        entries,
+        ...(deps.fetcher === undefined ? {} : { fetcher: deps.fetcher }),
+      }) ?? {
+        verified: false,
+        outcome: "no-verifier",
+      });
   const current = supportStateOf(claim.id, entries);
   if (verdict.verified || (verdict.outcome !== "no-verifier" && current === "model-only")) {
     append(deps, {
@@ -190,5 +194,9 @@ export const runVerb = (deps: JudgeDeps, request: JudgeRequest): JudgeResponse =
       return personCheck(deps, request);
     case "anchor":
       return anchorCompute(deps, request);
+    case "read":
+      return readItem(deps, request);
+    case "promote":
+      return promote(deps, request);
   }
 };

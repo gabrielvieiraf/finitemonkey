@@ -2717,5 +2717,8 @@
   "command.judge_check.summary": "Registrar a checagem de fonte feita pela pessoa; conta quando bate com a checagem da máquina",
   "command.judge_anchor.summary": "Ancorar os números de uma afirmação num cálculo com entradas de hash conhecido",
   "judge.number": "  {number}: {state} {anchor}",
-  "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} pela lista de exceções: {numbers}"
+  "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} pela lista de exceções: {numbers}",
+  "command.judge_read.summary": "Guardar uma página, documento ou saída de ferramenta lida na pesquisa como dado citado, com origem e hash",
+  "command.judge_promote.summary": "Levar uma afirmação de pesquisa às afirmações do projeto, só depois da checagem de trecho e de uma tarefa verde",
+  "judge.item": "{item}: {origin} {source} guardado como dado; linhas em forma de instrução ignoradas: {instructions}"
 }

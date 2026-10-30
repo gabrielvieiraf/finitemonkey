@@ -68,6 +68,17 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
   ...(data.export === undefined ? [] : [t("judge.export", { count: entriesIn(data) })]),
   ...(data.removed === undefined ? [] : [t("judge.removed", { count: data.removed })]),
   ...(data.probe === undefined ? [] : probeLines(t, data.probe)),
+  ...(data.item === undefined
+    ? []
+    : [
+        t("judge.item", {
+          item: data.item.item,
+          origin: data.item.origin,
+          source: data.item.source,
+          instructions: data.item.instructions,
+        }),
+        data.item.data,
+      ]),
   ...(data.exceptions === undefined || data.exceptions.length === 0
     ? []
     : [

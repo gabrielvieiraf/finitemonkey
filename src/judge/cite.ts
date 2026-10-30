@@ -2,7 +2,7 @@ import type { Fetched, SourceFetcher } from "./fetch.js";
 import { perturb } from "./probe.js";
 import { contentHash, normalizeSpan, spanIn } from "./span.js";
 import type { JudgeAnchor } from "./types.js";
-import { notVerified, type Verdict, type Verifier } from "./verify.js";
+import { notVerified, type Verdict, type Verifier, type VerifyContext } from "./verify.js";
 
 export const CITE_FEATURE = "cite-span";
 
@@ -59,10 +59,11 @@ export const citationsIn = (text: string): readonly Citation[] => {
 export const quotesIn = (text: string): readonly string[] =>
   [...text.replace(LINK, (_all, label: string) => label).matchAll(QUOTE)].map((match) => match[1] ?? "");
 
-export const labelTerms = (label: string): readonly string[] => [
-  ...(label.match(YEAR) ?? []),
-  ...[...label.matchAll(NAME)].map((match) => match[0]).filter((word) => !STOP.has(word)),
-];
+export const labelTerms = (label: string): readonly string[] => {
+  const years = label.match(YEAR) ?? [];
+  if (years.length === 0) return [];
+  return [...years, ...[...label.matchAll(NAME)].map((match) => match[0]).filter((word) => !STOP.has(word))];
+};
 
 interface Resolved {
   readonly citation: Citation;
@@ -111,6 +112,11 @@ export const checkCitations = (text: string, fetcher: SourceFetcher): Verdict =>
   if (resolved.some((item) => item.fetched.status === "not-found")) return notVerified("unresolved");
   if (resolved.some((item) => item.fetched.status === "unreachable")) return notVerified("not-verified");
   return judged(resolved, quotesIn(text));
+};
+
+export const synthesisCited = (text: string, entries: VerifyContext["entries"]): boolean => {
+  const sources = new Set(entries.flatMap((entry) => (entry.type === "result" ? [entry.source] : [])));
+  return citationsIn(text).some((citation) => sources.has(citation.id));
 };
 
 export const citeVerifier: Verifier = (claim, context) =>

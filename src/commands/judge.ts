@@ -36,6 +36,8 @@ export const VERB_FEATURES: Readonly<Record<string, string>> = {
   cut: "xray-research",
   check: "cite-span",
   anchor: "number-anchor",
+  read: "research-quarantine",
+  promote: "research-quarantine",
 };
 
 export const PERSON_VERBS: readonly string[] = ["contest", "forget", "answer", "check"];
