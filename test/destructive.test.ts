@@ -106,6 +106,7 @@ describe("rm -rf of a path that is not there", () => {
       const opened = openRepo(runtime, repo.root);
       assert.ok(opened);
       assert.deepEqual(snapshotViews(runtime, opened), []);
+      if (process.platform === "win32") return;
       symlinkSync(join(repo.root, "missing"), join(repo.root, "link"));
       await hook(gitPreToolUse, "PreToolUse", repo.root, bash("rm -rf link"));
       assert.equal(snapshotViews(runtime, opened).length, 1);

@@ -177,7 +177,12 @@ const runOne = async (
     const scored = task.evaluate?.(workdir, run.taskSeed, outcome.stdout) ?? {};
     return { ...scored, ...record(config, deps, run, arm, outcome, log), followUps };
   } finally {
-    rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 250 });
+    try {
+      rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 250 });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "EBUSY" && code !== "EPERM") throw error;
+    }
   }
 };
 
