@@ -2743,5 +2743,12 @@
   "command.judge_reply.summary": "Registrar a resposta de quem revisou de fora uma afirmação entregue",
   "judge.triage.head": "Este documento agora tem {count, plural, one {# afirmação} other {# afirmações}} que dependem só do modelo, em conceitos sem registro ou além. Antes do uso, para cada uma: verificar contra a fonte (finitemonkey judge verify), cortar (judge cut) ou entregar com o que falta (judge handoff).",
   "judge.triage.row": "- {claim} ({band}): {text}",
-  "judge.triage.none": "nenhuma afirmação deste documento precisa de triagem"
+  "judge.triage.none": "nenhuma afirmação deste documento precisa de triagem",
+  "command.judge_depend.summary": "Registrar que uma afirmação se apoia em outra",
+  "command.judge_retract.summary": "Retratar uma afirmação; ela e as que se apoiam nela ganham um evento de ricochete",
+  "command.judge_failed.summary": "Registrar que uma afirmação aceita falhou no uso",
+  "command.judge_contradict.summary": "Registrar uma fonte nova que contradiz uma afirmação; só abre com trecho casado ou confirmação da pessoa",
+  "command.judge_fixed.summary": "Registrar quem consertou um evento de ricochete; conserto da pessoa fica marcado como sustentado",
+  "command.judge_trajectory.summary": "Listar eventos de ricochete de afirmações de pesquisa com estado e faixas que tinham no aceite",
+  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}"
 }

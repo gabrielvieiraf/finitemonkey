@@ -11,6 +11,7 @@
     "verb": {
       "type": "string",
       "enum": [
+        "failed",
         "check",
         "domain",
         "concept",
@@ -36,7 +37,12 @@
         "dismiss",
         "skip",
         "triage",
-        "reply"
+        "reply",
+        "depend",
+        "retract",
+        "contradict",
+        "fixed",
+        "trajectory"
       ]
     },
     "ok": {
@@ -1575,6 +1581,84 @@
           "band",
           "concepts",
           "actions"
+        ]
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "event"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "cause": {
+            "type": "string",
+            "enum": [
+              "retracted",
+              "contradicted",
+              "failed-in-use"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "open",
+              "held"
+            ]
+          },
+          "support": {
+            "type": "string",
+            "enum": [
+              "machine-verified",
+              "person-judged",
+              "model-only",
+              "handed-off",
+              "retracted"
+            ]
+          },
+          "bands": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "demonstrated",
+                "proximal",
+                "beyond",
+                "no record"
+              ]
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fixedBy": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "claim",
+          "cause",
+          "state",
+          "support",
+          "bands",
+          "sources",
+          "id",
+          "at"
         ]
       }
     },

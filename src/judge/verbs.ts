@@ -16,9 +16,10 @@ import { triageRows } from "./triage.js";
 import type { JudgeClaimKind, JudgeEntry } from "./types.js";
 import { anchorCompute, personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
+import { contradict, failedInUse, fixed, retract, trajectory } from "./verbs-events.js";
 import { addHelp, settleHelp } from "./verbs-horizon.js";
 import { routeProbe, skipProbe } from "./verbs-probe.js";
-import { decisionExists, reply } from "./verbs-triage.js";
+import { decisionExists, depend, reply } from "./verbs-triage.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS, notVerified } from "./verify.js";
 
@@ -238,6 +239,18 @@ const runMore = (deps: JudgeDeps, request: MoreRequest): JudgeResponse => {
       return response("triage", { triage: triageRows(readEntries(deps.runtime, deps.paths), request.text) });
     case "reply":
       return reply(deps, request);
+    case "depend":
+      return depend(deps, request);
+    case "retract":
+      return retract(deps, request);
+    case "failed":
+      return failedInUse(deps, request);
+    case "contradict":
+      return contradict(deps, request);
+    case "fixed":
+      return fixed(deps, request);
+    case "trajectory":
+      return trajectory(deps);
     case "accept":
     case "dismiss":
       return settleHelp(deps, request, (claim) => verify(deps, claim));

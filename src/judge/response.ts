@@ -14,6 +14,7 @@ import type { NumberCheck } from "./numbers.js";
 import type { ItemView } from "./research.js";
 import {
   type Band,
+  type EventEntry,
   JUDGE_VERBS_SCHEMA,
   type JudgeClaimKind,
   type JudgeEntry,
@@ -50,6 +51,12 @@ export const VERBS = [
   "skip",
   "triage",
   "reply",
+  "depend",
+  "retract",
+  "failed",
+  "contradict",
+  "fixed",
+  "trajectory",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
@@ -161,6 +168,7 @@ export interface JudgeResponse {
   readonly exceptions?: readonly ExceptionUse[];
   readonly item?: ItemView;
   readonly triage?: readonly XrayRow[];
+  readonly events?: readonly EventEntry[];
   readonly horizon?: readonly HorizonView[];
   readonly horizonDomains?: readonly HorizonDomain[];
 }
