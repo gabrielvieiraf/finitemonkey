@@ -68,6 +68,29 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
   ...(data.export === undefined ? [] : [t("judge.export", { count: entriesIn(data) })]),
   ...(data.removed === undefined ? [] : [t("judge.removed", { count: data.removed })]),
   ...(data.probe === undefined ? [] : probeLines(t, data.probe)),
+  ...extraLines(t, data),
+];
+
+const extraLines = (t: Translate, data: JudgeResponse): readonly string[] => [
+  ...(data.horizon ?? []).map((help) =>
+    t("judge.horizon", {
+      help: help.help,
+      kind: help.kind,
+      text: help.text,
+      criterion: help.criterion,
+      answer: help.answer ?? "",
+      state: help.state,
+    }),
+  ),
+  ...(data.horizonDomains ?? []).map((row) =>
+    t("judge.horizon.domain", {
+      domain: row.domain,
+      accepted: row.accepted,
+      without: row.acceptedWithoutCriterion,
+      index: `${String(Math.round(row.index * 100))}%`,
+      dismissed: row.dismissed,
+    }),
+  ),
   ...(data.item === undefined
     ? []
     : [

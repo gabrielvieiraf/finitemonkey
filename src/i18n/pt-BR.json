@@ -2727,5 +2727,10 @@
   "research.sides.open": "aberta: {unknown} ({favors} a favor, {contests} contra, {suggested} sugeridas e não confirmadas)",
   "research.sides.error.usage": "Argumentos ausentes ou inválidos.",
   "research.sides.error.person": "Só a pessoa no terminal pode confirmar uma posição.",
-  "research.sides.error.one_side": "Não dá para fechar: estas incógnitas críticas só têm um lado e nenhuma busca vazia registrada: {unknowns}."
+  "research.sides.error.one_side": "Não dá para fechar: estas incógnitas críticas só têm um lado e nenhuma busca vazia registrada: {unknowns}.",
+  "command.judge_horizon.summary": "Registrar ajuda de horizonte (pergunta do campo, conceito novo, ampliação de escopo) com o critério que a responderia",
+  "command.judge_accept.summary": "Marcar ajuda de horizonte como aceita; ajuda sem critério conta contra o índice de faixa cega",
+  "command.judge_dismiss.summary": "Dispensar ajuda de horizonte; ela é contada e não volta na mesma tarefa",
+  "judge.horizon": "{help}: {kind} \"{text}\" (critério: {criterion} {answer}) {state}",
+  "judge.horizon.domain": "{domain}: {accepted} aceitas, {without} sem critério (índice {index}), {dismissed} dispensadas"
 }

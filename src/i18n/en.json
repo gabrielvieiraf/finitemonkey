@@ -2727,5 +2727,10 @@
   "research.sides.open": "open: {unknown} ({favors} favoring, {contests} contesting, {suggested} suggested and not confirmed)",
   "research.sides.error.usage": "Missing or invalid arguments.",
   "research.sides.error.person": "Only the person at a terminal can confirm a stance.",
-  "research.sides.error.one_side": "Cannot close: these critical unknowns have only one side and no logged empty search: {unknowns}."
+  "research.sides.error.one_side": "Cannot close: these critical unknowns have only one side and no logged empty search: {unknowns}.",
+  "command.judge_horizon.summary": "Record horizon help (a question from the field, a new concept, a scope addition) with the criterion that would answer it",
+  "command.judge_accept.summary": "Mark horizon help as taken; help with no criterion counts against the blind band index",
+  "command.judge_dismiss.summary": "Dismiss horizon help; it is counted and not shown again in the same task",
+  "judge.horizon": "{help}: {kind} \"{text}\" (criterion: {criterion} {answer}) {state}",
+  "judge.horizon.domain": "{domain}: {accepted} taken, {without} with no criterion (index {index}), {dismissed} dismissed"
 }

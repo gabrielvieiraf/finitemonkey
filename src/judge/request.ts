@@ -1,6 +1,16 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { type Verb, VERBS } from "./response.js";
-import { oneOf, PROOF_KINDS, type ProofKind, type ProofResult, RESULTS } from "./types.js";
+import {
+  CRITERION_KINDS,
+  type CriterionKind,
+  HORIZON_KINDS,
+  type HorizonKind,
+  oneOf,
+  PROOF_KINDS,
+  type ProofKind,
+  type ProofResult,
+  RESULTS,
+} from "./types.js";
 
 export type JudgeRequest =
   | {
@@ -48,6 +58,17 @@ export type JudgeRequest =
   | { readonly verb: "check"; readonly claim: string; readonly says: "verified" | "mismatch" }
   | { readonly verb: "read"; readonly origin: string; readonly source: string; readonly content: string }
   | { readonly verb: "promote"; readonly claim: string }
+  | {
+      readonly verb: "horizon";
+      readonly kind: HorizonKind;
+      readonly text: string;
+      readonly domain: string;
+      readonly criterion?: CriterionKind;
+      readonly answer?: string;
+      readonly task?: string;
+    }
+  | { readonly verb: "accept"; readonly help: string }
+  | { readonly verb: "dismiss"; readonly help: string }
   | { readonly verb: "anchor"; readonly claim: string; readonly run: string; readonly inputs: readonly string[] };
 
 const text = (record: JsonObject, key: string): string | undefined => {
@@ -147,6 +168,28 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
   promote: (record) => {
     const claim = text(record, "claim");
     return claim === undefined ? undefined : { verb: "promote", claim };
+  },
+  horizon: (record) => {
+    const kind = oneOf(HORIZON_KINDS, record["kind"]);
+    const [helpText, domain] = [text(record, "text"), text(record, "domain")];
+    if (kind === undefined || helpText === undefined || domain === undefined) return undefined;
+    const criterion = oneOf(CRITERION_KINDS, record["criterion"]);
+    return {
+      verb: "horizon",
+      kind,
+      text: helpText,
+      domain,
+      ...(criterion === undefined ? {} : { criterion }),
+      ...optional(record, ["answer", "task"]),
+    };
+  },
+  accept: (record) => {
+    const help = text(record, "help");
+    return help === undefined ? undefined : { verb: "accept", help };
+  },
+  dismiss: (record) => {
+    const help = text(record, "help");
+    return help === undefined ? undefined : { verb: "dismiss", help };
   },
   anchor: (record) => {
     const [claim, run] = [text(record, "claim"), text(record, "run")];

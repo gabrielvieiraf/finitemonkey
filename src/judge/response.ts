@@ -9,6 +9,7 @@ import {
   supportStateOf,
 } from "./claims.js";
 import type { DomainView } from "./concepts.js";
+import type { HorizonDomain, HorizonView } from "./horizon.js";
 import type { NumberCheck } from "./numbers.js";
 import type { ItemView } from "./research.js";
 import {
@@ -42,6 +43,9 @@ export const VERBS = [
   "anchor",
   "read",
   "promote",
+  "horizon",
+  "accept",
+  "dismiss",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
@@ -150,6 +154,8 @@ export interface JudgeResponse {
   readonly route?: "verify" | "handoff";
   readonly exceptions?: readonly ExceptionUse[];
   readonly item?: ItemView;
+  readonly horizon?: readonly HorizonView[];
+  readonly horizonDomains?: readonly HorizonDomain[];
 }
 
 export const response = (verb: Verb, fields: Omit<JudgeResponse, "schema" | "verb" | "ok"> = {}): JudgeResponse => ({

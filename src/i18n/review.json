@@ -2727,7 +2727,12 @@
     "research.sides.open": "machine",
     "research.sides.error.usage": "machine",
     "research.sides.error.person": "machine",
-    "research.sides.error.one_side": "machine"
+    "research.sides.error.one_side": "machine",
+    "command.judge_horizon.summary": "machine",
+    "command.judge_accept.summary": "machine",
+    "command.judge_dismiss.summary": "machine",
+    "judge.horizon": "machine",
+    "judge.horizon.domain": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5457,6 +5462,11 @@
     "research.sides.open": "machine",
     "research.sides.error.usage": "machine",
     "research.sides.error.person": "machine",
-    "research.sides.error.one_side": "machine"
+    "research.sides.error.one_side": "machine",
+    "command.judge_horizon.summary": "machine",
+    "command.judge_accept.summary": "machine",
+    "command.judge_dismiss.summary": "machine",
+    "judge.horizon": "machine",
+    "judge.horizon.domain": "machine"
   }
 }

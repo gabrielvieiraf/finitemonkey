@@ -17196,7 +17196,12 @@ var en_default = {
   "research.sides.open": "open: {unknown} ({favors} favoring, {contests} contesting, {suggested} suggested and not confirmed)",
   "research.sides.error.usage": "Missing or invalid arguments.",
   "research.sides.error.person": "Only the person at a terminal can confirm a stance.",
-  "research.sides.error.one_side": "Cannot close: these critical unknowns have only one side and no logged empty search: {unknowns}."
+  "research.sides.error.one_side": "Cannot close: these critical unknowns have only one side and no logged empty search: {unknowns}.",
+  "command.judge_horizon.summary": "Record horizon help (a question from the field, a new concept, a scope addition) with the criterion that would answer it",
+  "command.judge_accept.summary": "Mark horizon help as taken; help with no criterion counts against the blind band index",
+  "command.judge_dismiss.summary": "Dismiss horizon help; it is counted and not shown again in the same task",
+  "judge.horizon": '{help}: {kind} "{text}" (criterion: {criterion} {answer}) {state}',
+  "judge.horizon.domain": "{domain}: {accepted} taken, {without} with no criterion (index {index}), {dismissed} dismissed"
 };
 
 // src/i18n/es.json
@@ -19929,7 +19934,12 @@ var es_default = {
   "research.sides.open": "abierta: {unknown} ({favors} a favor, {contests} en contra, {suggested} sugeridas y no confirmadas)",
   "research.sides.error.usage": "Argumentos ausentes o inválidos.",
   "research.sides.error.person": "Solo la persona en una terminal puede confirmar una postura.",
-  "research.sides.error.one_side": "No se puede cerrar: estas incógnitas críticas solo tienen un lado y ninguna búsqueda vacía registrada: {unknowns}."
+  "research.sides.error.one_side": "No se puede cerrar: estas incógnitas críticas solo tienen un lado y ninguna búsqueda vacía registrada: {unknowns}.",
+  "command.judge_horizon.summary": "Registrar ayuda de horizonte (pregunta del campo, concepto nuevo, ampliación de alcance) con el criterio que la respondería",
+  "command.judge_accept.summary": "Marcar ayuda de horizonte como aceptada; la ayuda sin criterio cuenta contra el índice de franja ciega",
+  "command.judge_dismiss.summary": "Descartar ayuda de horizonte; se cuenta y no vuelve en la misma tarea",
+  "judge.horizon": '{help}: {kind} "{text}" (criterio: {criterion} {answer}) {state}',
+  "judge.horizon.domain": "{domain}: {accepted} aceptadas, {without} sin criterio (índice {index}), {dismissed} descartadas"
 };
 
 // src/i18n/pt-BR.json
@@ -22662,7 +22672,12 @@ var pt_BR_default = {
   "research.sides.open": "aberta: {unknown} ({favors} a favor, {contests} contra, {suggested} sugeridas e não confirmadas)",
   "research.sides.error.usage": "Argumentos ausentes ou inválidos.",
   "research.sides.error.person": "Só a pessoa no terminal pode confirmar uma posição.",
-  "research.sides.error.one_side": "Não dá para fechar: estas incógnitas críticas só têm um lado e nenhuma busca vazia registrada: {unknowns}."
+  "research.sides.error.one_side": "Não dá para fechar: estas incógnitas críticas só têm um lado e nenhuma busca vazia registrada: {unknowns}.",
+  "command.judge_horizon.summary": "Registrar ajuda de horizonte (pergunta do campo, conceito novo, ampliação de escopo) com o critério que a responderia",
+  "command.judge_accept.summary": "Marcar ajuda de horizonte como aceita; ajuda sem critério conta contra o índice de faixa cega",
+  "command.judge_dismiss.summary": "Dispensar ajuda de horizonte; ela é contada e não volta na mesma tarefa",
+  "judge.horizon": '{help}: {kind} "{text}" (critério: {criterion} {answer}) {state}',
+  "judge.horizon.domain": "{domain}: {accepted} aceitas, {without} sem critério (índice {index}), {dismissed} dispensadas"
 };
 
 // src/i18n/review.json
@@ -25395,7 +25410,12 @@ var review_default = {
     "research.sides.open": "machine",
     "research.sides.error.usage": "machine",
     "research.sides.error.person": "machine",
-    "research.sides.error.one_side": "machine"
+    "research.sides.error.one_side": "machine",
+    "command.judge_horizon.summary": "machine",
+    "command.judge_accept.summary": "machine",
+    "command.judge_dismiss.summary": "machine",
+    "judge.horizon": "machine",
+    "judge.horizon.domain": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -28125,7 +28145,12 @@ var review_default = {
     "research.sides.open": "machine",
     "research.sides.error.usage": "machine",
     "research.sides.error.person": "machine",
-    "research.sides.error.one_side": "machine"
+    "research.sides.error.one_side": "machine",
+    "command.judge_horizon.summary": "machine",
+    "command.judge_accept.summary": "machine",
+    "command.judge_dismiss.summary": "machine",
+    "judge.horizon": "machine",
+    "judge.horizon.domain": "machine"
   }
 };
 
@@ -34995,9 +35020,9 @@ var inQuietHours = (hour, range) => {
 // src/attention/timebox.ts
 var HORIZON_FILE = "timebox.json";
 var HORIZON_QUANTILE = 0.8;
-var quantile = (values, share3) => {
+var quantile = (values, share4) => {
   const sorted = [...values].sort((a, b) => a - b);
-  const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(share3 * sorted.length) - 1));
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(share4 * sorted.length) - 1));
   return sorted[index] ?? 0;
 };
 var horizonFor = (runtime, paths, tasks, task) => {
@@ -45273,7 +45298,10 @@ var VERBS2 = [
   "check",
   "anchor",
   "read",
-  "promote"
+  "promote",
+  "horizon",
+  "accept",
+  "dismiss"
 ];
 var ROW_ACTIONS = ["verify", "handoff", "cut", "judge"];
 var response = (verb, fields2 = {}) => ({
@@ -66589,6 +66617,28 @@ var judgeLines = (t, data2) => [
   ...data2.export === void 0 ? [] : [t("judge.export", { count: entriesIn(data2) })],
   ...data2.removed === void 0 ? [] : [t("judge.removed", { count: data2.removed })],
   ...data2.probe === void 0 ? [] : probeLines(t, data2.probe),
+  ...extraLines(t, data2)
+];
+var extraLines = (t, data2) => [
+  ...(data2.horizon ?? []).map(
+    (help) => t("judge.horizon", {
+      help: help.help,
+      kind: help.kind,
+      text: help.text,
+      criterion: help.criterion,
+      answer: help.answer ?? "",
+      state: help.state
+    })
+  ),
+  ...(data2.horizonDomains ?? []).map(
+    (row4) => t("judge.horizon.domain", {
+      domain: row4.domain,
+      accepted: row4.accepted,
+      without: row4.acceptedWithoutCriterion,
+      index: `${String(Math.round(row4.index * 100))}%`,
+      dismissed: row4.dismissed
+    })
+  ),
   ...data2.item === void 0 ? [] : [
     t("judge.item", {
       item: data2.item.item,
@@ -66695,6 +66745,28 @@ var BUILDERS2 = {
   promote: (record15) => {
     const claim = text37(record15, "claim");
     return claim === void 0 ? void 0 : { verb: "promote", claim };
+  },
+  horizon: (record15) => {
+    const kind = oneOf2(HORIZON_KINDS, record15["kind"]);
+    const [helpText, domain] = [text37(record15, "text"), text37(record15, "domain")];
+    if (kind === void 0 || helpText === void 0 || domain === void 0) return void 0;
+    const criterion = oneOf2(CRITERION_KINDS, record15["criterion"]);
+    return {
+      verb: "horizon",
+      kind,
+      text: helpText,
+      domain,
+      ...criterion === void 0 ? {} : { criterion },
+      ...optional8(record15, ["answer", "task"])
+    };
+  },
+  accept: (record15) => {
+    const help = text37(record15, "help");
+    return help === void 0 ? void 0 : { verb: "accept", help };
+  },
+  dismiss: (record15) => {
+    const help = text37(record15, "help");
+    return help === void 0 ? void 0 : { verb: "dismiss", help };
   },
   anchor: (record15) => {
     const [claim, run10] = [text37(record15, "claim"), text37(record15, "run")];
@@ -66967,6 +67039,95 @@ var writeHandoff = (deps, claim, entries2, request, at6) => {
 `);
   return pack;
 };
+
+// src/judge/fetch.ts
+var FETCH_TIMEOUT_S = 20;
+var DOI = /^10\.\d{4,9}\/\S+$/;
+var urlOf = (id) => {
+  if (DOI.test(id)) return `https://doi.org/${id}`;
+  return /^https?:\/\//i.test(id) ? id : void 0;
+};
+var SECRET_FILE = /(?:^|\/)\.env(?:\.|$)|\.(?:pem|key|p12|pfx)$/i;
+var localSource = (id) => !id.startsWith("/") && !/^[A-Za-z]:/.test(id) && !id.split(/[\\/]/).includes("..") && !SECRET_FILE.test(id);
+var STATUS3 = /\n(\d{3})$/;
+var fromCurl = (stdout) => {
+  const match = STATUS3.exec(stdout);
+  const code2 = match === null ? 0 : Number(match[1]);
+  const content = match === null ? stdout : stdout.slice(0, match.index);
+  if (code2 === 404 || code2 === 410) return { status: "not-found" };
+  if (code2 < 200 || code2 >= 300) return { status: "unreachable", detail: `http ${String(code2)}` };
+  if (content.startsWith("%PDF")) return { status: "unreachable", detail: "pdf" };
+  return { status: "ok", content };
+};
+var curlFetcher = (runtime, root) => (id) => {
+  const url2 = urlOf(id);
+  if (url2 === void 0) {
+    if (!localSource(id)) return { status: "unreachable", detail: "outside the project" };
+    const local = runtime.readText(toAbsolutePath(id, toAbsolutePath(root)));
+    return local.ok ? { status: "ok", content: local.value } : { status: "not-found" };
+  }
+  const result = runtime.exec({
+    command: "curl",
+    args: [
+      "-sL",
+      "--max-time",
+      String(FETCH_TIMEOUT_S),
+      "-H",
+      "Accept: text/html, text/plain",
+      "-w",
+      "\n%{http_code}",
+      url2
+    ],
+    cwd: toAbsolutePath(root),
+    timeoutMs: (FETCH_TIMEOUT_S + 5) * 1e3
+  });
+  if (!result.found) return { status: "unreachable", detail: "curl missing" };
+  if (result.timedOut || result.exitCode !== 0) return { status: "unreachable", detail: "network" };
+  return fromCurl(result.stdout);
+};
+
+// src/judge/horizon.ts
+var SOURCE_REF = /^(?:10\.\d{4,9}\/\S+|https?:\/\/\S+|[\w./-]+\.\w+)$/;
+var sourceRef = (answer5) => urlOf(answer5) !== void 0 || SOURCE_REF.test(answer5);
+var criterionOf = (wanted, answer5) => {
+  const given = answer5?.trim() ?? "";
+  if (given === "" || wanted === void 0 || wanted === "none") return "none";
+  if (wanted === "source-span") return sourceRef(given.split(/\s+/)[0] ?? "") ? "source-span" : "none";
+  return wanted;
+};
+var latestHelps = (entries2) => {
+  const latest3 = /* @__PURE__ */ new Map();
+  for (const entry2 of entries2) if (entry2.type === "horizon") latest3.set(entry2.id, entry2);
+  return [...latest3.values()];
+};
+var helpView = (entry2) => ({
+  help: entry2.id,
+  kind: entry2.kind,
+  text: entry2.text,
+  criterion: entry2.criterion,
+  ...entry2.answer === void 0 ? {} : { answer: entry2.answer },
+  domain: entry2.domain,
+  state: entry2.state
+});
+var share3 = (part2, whole2) => whole2 === 0 ? 0 : Math.round(part2 / whole2 * 1e3) / 1e3;
+var horizonDomains = (entries2) => {
+  const helps = latestHelps(entries2);
+  return [...new Set(helps.map((help) => help.domain))].sort().map((domain) => {
+    const mine = helps.filter((help) => help.domain === domain);
+    const accepted2 = mine.filter((help) => help.state === "accepted");
+    const without = accepted2.filter((help) => help.criterion === "none").length;
+    return {
+      domain,
+      shown: mine.length,
+      accepted: accepted2.length,
+      dismissed: mine.filter((help) => help.state === "dismissed").length,
+      acceptedWithoutCriterion: without,
+      index: share3(without, accepted2.length)
+    };
+  });
+};
+var bandCriterion = (criterion) => criterion === "source-span" ? "check" : criterion;
+var bandDomain2 = (domain) => DOMAINS.find((item2) => item2 === domain) ?? GENERAL;
 
 // src/judge/research.ts
 import { join as join190 } from "node:path";
@@ -67322,6 +67483,69 @@ var addDomain = (deps, request) => {
   return response("domain", { entry: request.domain, domains: domainViews(readEntries(deps.runtime, deps.paths)) });
 };
 
+// src/judge/verbs-horizon.ts
+var addHelp = (deps, request) => {
+  const entries2 = readEntries(deps.runtime, deps.paths);
+  const id = entryId("h", request.task ?? "", request.text.toLowerCase());
+  const dismissed = latestHelps(entries2).find((help) => help.id === id && help.state === "dismissed");
+  if (dismissed !== void 0)
+    return response("horizon", { reason: "dismissed_in_task", horizon: [helpView(dismissed)] });
+  const written = appendNow(deps, {
+    type: "horizon",
+    id,
+    kind: request.kind,
+    text: request.text,
+    criterion: criterionOf(request.criterion, request.answer),
+    answer: request.answer,
+    domain: request.domain,
+    state: "shown",
+    task: request.task
+  });
+  if (!written.ok || written.entry.type !== "horizon")
+    return response("horizon", { reason: written.ok ? "invalid" : written.reason });
+  return response("horizon", { entry: id, horizon: [helpView(written.entry)] });
+};
+var claimFrom = (deps, help) => {
+  if (help.criterion !== "source-span" || help.answer === void 0) return void 0;
+  const [ref2 = "", ...rest] = help.answer.trim().split(/\s+/);
+  const span = rest.join(" ").replace(/^["“]|["”]$/g, "");
+  const text40 = span === "" ? `${help.text} ([source](${ref2}))` : `"${span}" ([source](${ref2}))`;
+  const id = claimIdOf(text40);
+  if (!claimsIn(readEntries(deps.runtime, deps.paths)).some((claim) => claim.id === id))
+    appendNow(deps, {
+      type: "claim",
+      id,
+      text: text40,
+      kind: span === "" ? "prose" : "source-span",
+      concepts: [],
+      anchors: [],
+      provenance: "horizon"
+    });
+  return id;
+};
+var settleHelp = (deps, request, verify3) => {
+  const entries2 = readEntries(deps.runtime, deps.paths);
+  const help = latestHelps(entries2).find((item2) => item2.id === request.help);
+  if (help === void 0) return response(request.verb, { reason: "unknown_help" });
+  const state = request.verb === "accept" ? "accepted" : "dismissed";
+  const written = appendNow(deps, { ...help, at: deps.runtime.now(), state });
+  if (!written.ok || written.entry.type !== "horizon") return response(request.verb, { reason: "write_failed" });
+  if (state === "accepted")
+    recordHorizon(deps.runtime, deps.paths, {
+      source: "research",
+      criterion: bandCriterion(help.criterion),
+      domain: bandDomain2(help.domain),
+      ...help.task === void 0 ? {} : { task: help.task }
+    });
+  const claim = state === "accepted" ? claimFrom(deps, help) : void 0;
+  const verified2 = claim === void 0 ? void 0 : verify3(claim).claim;
+  return response(request.verb, {
+    horizon: [helpView(written.entry)],
+    horizonDomains: horizonDomains(readEntries(deps.runtime, deps.paths)),
+    ...verified2 === void 0 ? {} : { claim: verified2 }
+  });
+};
+
 // src/judge/verbs-xray.ts
 var probeView = (probe, entries2) => {
   const answer5 = answerOf(probe.id, entries2);
@@ -67537,7 +67761,20 @@ var contest = (deps, request) => {
   return failed9 === void 0 ? response("contest", { entry: id }) : response("contest", { reason: failed9.reason ?? "write_failed" });
 };
 var view = (entries2, concept) => response("fade", { concepts: conceptViews(entries2, concept === void 0 ? void 0 : [concept]) });
-var runVerb = (deps, request) => {
+var CORE_VERBS = [
+  "observe",
+  "classify",
+  "verify",
+  "ask",
+  "handoff",
+  "contest",
+  "fade",
+  "report",
+  "export",
+  "forget"
+];
+var isCore = (request) => CORE_VERBS.some((verb) => verb === request.verb);
+var runCore = (deps, request) => {
   switch (request.verb) {
     case "observe":
       return observe(deps, request);
@@ -67559,13 +67796,18 @@ var runVerb = (deps, request) => {
         concepts: conceptViews(entries2),
         domains: domainViews(entries2),
         results: resultViews(entries2),
-        exceptions: exceptionUses(entries2)
+        exceptions: exceptionUses(entries2),
+        horizonDomains: horizonDomains(entries2)
       });
     }
     case "export":
       return response("export", { export: exportJudge(deps.runtime, deps.paths) });
     case "forget":
       return response("forget", { removed: forgetJudge(deps.runtime, deps.paths, request.id) });
+  }
+};
+var runMore = (deps, request) => {
+  switch (request.verb) {
     case "concept":
       return addConcept(deps, request);
     case "domain":
@@ -67584,54 +67826,14 @@ var runVerb = (deps, request) => {
       return readItem(deps, request);
     case "promote":
       return promote(deps, request);
+    case "horizon":
+      return addHelp(deps, request);
+    case "accept":
+    case "dismiss":
+      return settleHelp(deps, request, (claim) => verify2(deps, claim));
   }
 };
-
-// src/judge/fetch.ts
-var FETCH_TIMEOUT_S = 20;
-var DOI = /^10\.\d{4,9}\/\S+$/;
-var urlOf = (id) => {
-  if (DOI.test(id)) return `https://doi.org/${id}`;
-  return /^https?:\/\//i.test(id) ? id : void 0;
-};
-var SECRET_FILE = /(?:^|\/)\.env(?:\.|$)|\.(?:pem|key|p12|pfx)$/i;
-var localSource = (id) => !id.startsWith("/") && !/^[A-Za-z]:/.test(id) && !id.split(/[\\/]/).includes("..") && !SECRET_FILE.test(id);
-var STATUS3 = /\n(\d{3})$/;
-var fromCurl = (stdout) => {
-  const match = STATUS3.exec(stdout);
-  const code2 = match === null ? 0 : Number(match[1]);
-  const content = match === null ? stdout : stdout.slice(0, match.index);
-  if (code2 === 404 || code2 === 410) return { status: "not-found" };
-  if (code2 < 200 || code2 >= 300) return { status: "unreachable", detail: `http ${String(code2)}` };
-  if (content.startsWith("%PDF")) return { status: "unreachable", detail: "pdf" };
-  return { status: "ok", content };
-};
-var curlFetcher = (runtime, root) => (id) => {
-  const url2 = urlOf(id);
-  if (url2 === void 0) {
-    if (!localSource(id)) return { status: "unreachable", detail: "outside the project" };
-    const local = runtime.readText(toAbsolutePath(id, toAbsolutePath(root)));
-    return local.ok ? { status: "ok", content: local.value } : { status: "not-found" };
-  }
-  const result = runtime.exec({
-    command: "curl",
-    args: [
-      "-sL",
-      "--max-time",
-      String(FETCH_TIMEOUT_S),
-      "-H",
-      "Accept: text/html, text/plain",
-      "-w",
-      "\n%{http_code}",
-      url2
-    ],
-    cwd: toAbsolutePath(root),
-    timeoutMs: (FETCH_TIMEOUT_S + 5) * 1e3
-  });
-  if (!result.found) return { status: "unreachable", detail: "curl missing" };
-  if (result.timedOut || result.exitCode !== 0) return { status: "unreachable", detail: "network" };
-  return fromCurl(result.stdout);
-};
+var runVerb = (deps, request) => isCore(request) ? runCore(deps, request) : runMore(deps, request);
 
 // src/commands/judge-deps.ts
 var numberOptions = (ctx, paths) => {
@@ -67676,7 +67878,10 @@ var VERB_FEATURES = {
   check: "cite-span",
   anchor: "number-anchor",
   read: "research-quarantine",
-  promote: "research-quarantine"
+  promote: "research-quarantine",
+  horizon: "horizon-criterion",
+  accept: "horizon-criterion",
+  dismiss: "horizon-criterion"
 };
 var PERSON_VERBS = ["contest", "forget", "answer", "check"];
 var switchedOff = (ctx, root, record15) => {
@@ -68090,6 +68295,35 @@ var judgeAnchorCommand = judgeCommand({
     inputs: listOption(values, "input")
   })
 });
+var judgeHorizonCommand = judgeCommand({
+  path: ["judge", "horizon"],
+  summaryKey: "command.judge_horizon.summary",
+  usage: 'finitemonkey judge horizon --kind question|concept|scope --text "<help>" --domain <id> [--criterion source-span|example|check|none --answer "<source and span, example or check>"] [--task <id>]',
+  options: {
+    kind: { type: "string" },
+    text: { type: "string" },
+    domain: { type: "string" },
+    criterion: { type: "string" },
+    answer: { type: "string" },
+    task: { type: "string" }
+  },
+  build: (_ctx, values) => ({
+    verb: "horizon",
+    kind: stringOption(values, "kind"),
+    text: stringOption(values, "text"),
+    domain: stringOption(values, "domain"),
+    criterion: stringOption(values, "criterion"),
+    answer: stringOption(values, "answer"),
+    task: stringOption(values, "task")
+  })
+});
+var settleCommand = (verb) => judgeCommand({
+  path: ["judge", verb],
+  summaryKey: verb === "accept" ? "command.judge_accept.summary" : "command.judge_dismiss.summary",
+  usage: `finitemonkey judge ${verb} <help>`,
+  maxPositionals: 1,
+  build: (_ctx, _values, positionals2) => ({ verb, help: positionals2[0] })
+});
 var JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -68112,7 +68346,10 @@ var JUDGE_COMMANDS = [
   judgeAnchorCommand,
   judgeReadCommand,
   judgePromoteCommand,
-  ...RESEARCH_SIDES_COMMANDS
+  ...RESEARCH_SIDES_COMMANDS,
+  judgeHorizonCommand,
+  settleCommand("accept"),
+  settleCommand("dismiss")
 ];
 
 // src/knowledge/asof.ts

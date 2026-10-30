@@ -164,6 +164,39 @@ export const judgeAnchorCommand = judgeCommand({
   }),
 });
 
+export const judgeHorizonCommand = judgeCommand({
+  path: ["judge", "horizon"],
+  summaryKey: "command.judge_horizon.summary",
+  usage:
+    'finitemonkey judge horizon --kind question|concept|scope --text "<help>" --domain <id> [--criterion source-span|example|check|none --answer "<source and span, example or check>"] [--task <id>]',
+  options: {
+    kind: { type: "string" },
+    text: { type: "string" },
+    domain: { type: "string" },
+    criterion: { type: "string" },
+    answer: { type: "string" },
+    task: { type: "string" },
+  },
+  build: (_ctx, values) => ({
+    verb: "horizon",
+    kind: stringOption(values, "kind"),
+    text: stringOption(values, "text"),
+    domain: stringOption(values, "domain"),
+    criterion: stringOption(values, "criterion"),
+    answer: stringOption(values, "answer"),
+    task: stringOption(values, "task"),
+  }),
+});
+
+const settleCommand = (verb: "accept" | "dismiss") =>
+  judgeCommand({
+    path: ["judge", verb],
+    summaryKey: verb === "accept" ? "command.judge_accept.summary" : "command.judge_dismiss.summary",
+    usage: `finitemonkey judge ${verb} <help>`,
+    maxPositionals: 1,
+    build: (_ctx, _values, positionals) => ({ verb, help: positionals[0] }),
+  });
+
 export const JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -187,4 +220,7 @@ export const JUDGE_COMMANDS = [
   judgeReadCommand,
   judgePromoteCommand,
   ...RESEARCH_SIDES_COMMANDS,
+  judgeHorizonCommand,
+  settleCommand("accept"),
+  settleCommand("dismiss"),
 ] as const satisfies readonly CommandSpec[];

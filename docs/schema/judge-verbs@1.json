@@ -15,6 +15,7 @@
         "domain",
         "concept",
         "contest",
+        "horizon",
         "ask",
         "observe",
         "classify",
@@ -29,7 +30,9 @@
         "cut",
         "anchor",
         "read",
-        "promote"
+        "promote",
+        "accept",
+        "dismiss"
       ]
     },
     "ok": {
@@ -1451,6 +1454,93 @@
         "instructions",
         "data"
       ]
+    },
+    "horizon": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "help": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "concept",
+              "question",
+              "scope"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "criterion": {
+            "type": "string",
+            "enum": [
+              "none",
+              "example",
+              "check",
+              "source-span"
+            ]
+          },
+          "answer": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "shown",
+              "accepted",
+              "dismissed"
+            ]
+          }
+        },
+        "required": [
+          "help",
+          "kind",
+          "text",
+          "criterion",
+          "domain",
+          "state"
+        ]
+      }
+    },
+    "horizonDomains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "shown": {
+            "type": "number"
+          },
+          "accepted": {
+            "type": "number"
+          },
+          "dismissed": {
+            "type": "number"
+          },
+          "acceptedWithoutCriterion": {
+            "type": "number"
+          },
+          "index": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "domain",
+          "shown",
+          "accepted",
+          "dismissed",
+          "acceptedWithoutCriterion",
+          "index"
+        ]
+      }
     }
   },
   "required": [
