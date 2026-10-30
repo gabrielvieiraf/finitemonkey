@@ -31313,6 +31313,7 @@ var parseAdded = (value2) => {
   const blockReads = value2["blockReads"] === true;
   const marketplace = value2["marketplace"] === true;
   const plugin = value2["plugin"] === true;
+  const key3 = value2["marketplaceKey"];
   const language = value2["language"];
   const statusLine = parseStatusLineAdded(value2["statusLine"]);
   const added = {
@@ -31323,6 +31324,7 @@ var parseAdded = (value2) => {
     blockReads,
     marketplace,
     plugin,
+    ...typeof key3 === "string" ? { marketplaceKey: key3 } : {},
     ...statusLine === void 0 ? {} : { statusLine }
   };
   return typeof language === "string" ? { ...added, language } : added;
@@ -31769,6 +31771,173 @@ var body = () => [`${STATE_DIR}/*`, ...COMMITTED_STATE.map((path) => `!${STATE_D
 var withBlock = (text40) => withManagedBlock(text40, MARKERS, body());
 var withoutBlock = (text40) => withoutManagedBlock(text40, MARKERS);
 
+// src/install/plugin-yield.ts
+import { join as join69 } from "node:path";
+
+// src/install/settings-merge.ts
+var SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
+var ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false };
+var MARKETPLACE_KEY = "finitemonkey";
+var PLUGIN_ID = "finitemonkey@finitemonkey";
+var withEntry2 = (settings, key3, name, value2) => {
+  const inner = setKey(asRecord(settings[key3]), name, value2);
+  return setKey(settings, key3, Object.keys(inner).length === 0 ? void 0 : inner);
+};
+var hasEntry = (settings, key3, name) => name in asRecord(settings[key3]);
+var replaceInGroup = (group, isOwn, take) => {
+  if (!isRecord(group)) return group;
+  const handlers = asList(group["hooks"]).flatMap((handler) => {
+    if (!isOwn(handler)) return [handler];
+    const replacement = take();
+    return replacement === void 0 ? [] : [replacement];
+  });
+  return handlers.length === 0 ? void 0 : { ...group, hooks: handlers };
+};
+var mergeEvent = (groups, isOwn, wanted) => {
+  let pending = wanted;
+  const take = () => {
+    const next3 = pending;
+    pending = void 0;
+    return next3;
+  };
+  const kept = groups.map((group) => replaceInGroup(group, isOwn, take)).filter((group) => group !== void 0);
+  return pending === void 0 ? kept : [...kept, { hooks: [pending] }];
+};
+var mergeHooks = (hooks, isOwn, wanted) => {
+  const events = [.../* @__PURE__ */ new Set([...Object.keys(hooks), ...Object.keys(wanted)])];
+  const entries2 = events.flatMap((event) => {
+    const groups = hooks[event];
+    if (groups !== void 0 && !Array.isArray(groups)) return [[event, groups]];
+    const merged3 = mergeEvent(asList(groups), isOwn, wanted[event]);
+    return merged3.length === 0 ? [] : [[event, merged3]];
+  });
+  return Object.fromEntries(entries2);
+};
+var withHooks = (settings, hooks) => {
+  return setKey(settings, "hooks", Object.keys(hooks).length === 0 ? void 0 : hooks);
+};
+var BLOCK_READS = "blockReadsOutsideWorkingDirectories";
+var withPermissions = (settings, lists) => {
+  const permissions = asRecord(settings["permissions"]);
+  const withDeny2 = setKey(permissions, "deny", lists.deny.length === 0 ? void 0 : lists.deny);
+  const withAsk = setKey(withDeny2, "ask", lists.ask.length === 0 ? void 0 : lists.ask);
+  const next3 = setKey(withAsk, BLOCK_READS, lists.blockReads);
+  return setKey(settings, "permissions", Object.keys(next3).length === 0 ? void 0 : next3);
+};
+var missing = (wanted, existing) => wanted.filter((rule) => !existing.includes(rule));
+var withoutAdded = (existing, added) => existing.filter((rule) => typeof rule !== "string" || !added.includes(rule));
+var ownHookMatcher = (recorded2) => (handler) => isOwnHandler(handler) || recorded2.some((own) => JSON.stringify(own) === JSON.stringify(handler));
+var marketplaceAdded = (base, source3) => {
+  if (source3 === void 0) return { marketplace: false, plugin: false };
+  const marketplace = !hasEntry(base, "extraKnownMarketplaces", source3.key);
+  const plugin = !hasEntry(base, "enabledPlugins", source3.pluginId);
+  return source3.key === MARKETPLACE_KEY ? { marketplace, plugin } : { marketplace, plugin, marketplaceKey: source3.key };
+};
+var withMarketplace = (settings, added, source3) => {
+  if (source3 === void 0) return settings;
+  const listed14 = added.marketplace ? withEntry2(settings, "extraKnownMarketplaces", source3.key, source3.entry) : settings;
+  return added.plugin ? withEntry2(listed14, "enabledPlugins", source3.pluginId, true) : listed14;
+};
+var statusLineFor = (base, wanted) => {
+  if (wanted.statusLine === void 0 || isOwnStatusLine(base["statusLine"])) return void 0;
+  return { previous: base["statusLine"] ?? null, wrap: wanted.statusLine.wrap ?? null };
+};
+var restoreStatusLine = (settings, added) => {
+  if (added.statusLine === void 0 || !isOwnStatusLine(settings["statusLine"])) return settings;
+  const previous = added.statusLine.previous;
+  return setKey(settings, "statusLine", previous === null ? void 0 : previous);
+};
+var mergeSettings = (current2, wanted, recorded2) => {
+  const schema = Object.keys(current2).length === 0;
+  const base = schema ? { $schema: SETTINGS_SCHEMA_URL } : current2;
+  const hooks = mergeHooks(asRecord(base["hooks"]), ownHookMatcher(recorded2), wanted.hooks);
+  const permissions = asRecord(base["permissions"]);
+  const existingDeny = asList(permissions["deny"]);
+  const existingAsk = asList(permissions["ask"]);
+  const deny2 = missing(wanted.deny, existingDeny);
+  const ask8 = missing(wanted.ask, existingAsk);
+  const blockReads = !(BLOCK_READS in permissions);
+  const attribution = wanted.attributionOff && !("attribution" in base);
+  const market = marketplaceAdded(base, wanted.marketplace);
+  const language = "language" in base ? void 0 : wanted.language;
+  let settings = withPermissions(withHooks(base, hooks), {
+    deny: [...existingDeny, ...deny2],
+    ask: [...existingAsk, ...ask8],
+    blockReads: blockReads ? true : permissions[BLOCK_READS]
+  });
+  if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
+  settings = withMarketplace(settings, market, wanted.marketplace);
+  if (language !== void 0) settings = { ...settings, language };
+  const status = statusLineFor(base, wanted);
+  if (status !== void 0) settings = { ...settings, statusLine: wanted.statusLine?.entry };
+  const added = {
+    schema,
+    deny: deny2,
+    ask: ask8,
+    blockReads,
+    attribution,
+    ...market,
+    ...status === void 0 ? {} : { statusLine: status }
+  };
+  return { settings, added: language === void 0 ? added : { ...added, language } };
+};
+var sameAttribution = (value2) => JSON.stringify(value2) === JSON.stringify(ATTRIBUTION_OFF);
+var unmergeSettings = (current2, added, recorded2) => {
+  const hooks = mergeHooks(asRecord(current2["hooks"]), ownHookMatcher(recorded2), {});
+  const permissions = asRecord(current2["permissions"]);
+  let settings = withPermissions(withHooks(current2, hooks), {
+    deny: withoutAdded(asList(permissions["deny"]), added.deny),
+    ask: withoutAdded(asList(permissions["ask"]), added.ask),
+    blockReads: added.blockReads && permissions[BLOCK_READS] === true ? void 0 : permissions[BLOCK_READS]
+  });
+  if (added.attribution && sameAttribution(settings["attribution"])) {
+    settings = setKey(settings, "attribution", void 0);
+  }
+  const key3 = added.marketplaceKey ?? MARKETPLACE_KEY;
+  if (added.marketplace) settings = withEntry2(settings, "extraKnownMarketplaces", key3, void 0);
+  if (added.plugin) settings = withEntry2(settings, "enabledPlugins", `${PLUGIN_NAME}@${key3}`, void 0);
+  if (added.language !== void 0 && settings["language"] === added.language) {
+    settings = setKey(settings, "language", void 0);
+  }
+  settings = restoreStatusLine(settings, added);
+  if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
+  return settings;
+};
+var ownHandlersIn = (settings) => Object.values(asRecord(settings["hooks"])).flatMap((groups) => asList(groups)).flatMap((group) => asList(asRecord(group)["hooks"])).filter(isOwnHandler).length;
+
+// src/install/plugin-yield.ts
+var PLUGIN_VIA = "plugin";
+var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
+`;
+var projectOwnsHooks = (ctx) => {
+  const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
+  const text40 = ctx.runtime.readText(toAbsolutePath(join69(root, ...SETTINGS_FILE.split("/"))));
+  if (!text40.ok) return false;
+  const parsed = parseJsonObject(text40.value);
+  return parsed.ok && ownHandlersIn(parsed.value) > 0;
+};
+
+// src/install/plugin-hooks.ts
+var PLUGIN_NAME = "finitemonkey";
+var MARKETPLACE_NAME = "finitemonkey";
+var NEXT_MARKETPLACE_NAME = "finitemonkey-next";
+var STABLE_PLUGIN_ID = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
+var NEXT_PLUGIN_ID = `${PLUGIN_NAME}@${NEXT_MARKETPLACE_NAME}`;
+var marketplaceFor = (version2) => /^\d+\.\d+\.\d+-next\./.test(version2) ? NEXT_MARKETPLACE_NAME : MARKETPLACE_NAME;
+
+// src/install/marketplace.ts
+var MARKETPLACE_REPO = "gabrielvieiraf/finitemonkey";
+var NEXT_BRANCH = "next";
+var marketplaceSource = (version2) => {
+  const key3 = marketplaceFor(version2);
+  const github = { source: "github", repo: MARKETPLACE_REPO };
+  return {
+    key: key3,
+    pluginId: `${PLUGIN_NAME}@${key3}`,
+    entry: { source: key3 === NEXT_MARKETPLACE_NAME ? { ...github, ref: NEXT_BRANCH } : github }
+  };
+};
+
 // src/core/semver.ts
 var SEMVER = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
 var parseSemver = (raw) => {
@@ -31880,129 +32049,6 @@ var withoutSandbox = (text40, added) => {
   return Object.keys(rest).length === 0 ? void 0 : renderJson(rest, styleOf(text40));
 };
 
-// src/install/settings-merge.ts
-var SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
-var ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false };
-var MARKETPLACE_ENTRY = { source: { source: "github", repo: "gabrielvieiraf/finitemonkey" } };
-var MARKETPLACE_KEY = "finitemonkey";
-var PLUGIN_ID = "finitemonkey@finitemonkey";
-var withEntry2 = (settings, key3, name, value2) => {
-  const inner = setKey(asRecord(settings[key3]), name, value2);
-  return setKey(settings, key3, Object.keys(inner).length === 0 ? void 0 : inner);
-};
-var hasEntry = (settings, key3, name) => name in asRecord(settings[key3]);
-var replaceInGroup = (group, isOwn, take) => {
-  if (!isRecord(group)) return group;
-  const handlers = asList(group["hooks"]).flatMap((handler) => {
-    if (!isOwn(handler)) return [handler];
-    const replacement = take();
-    return replacement === void 0 ? [] : [replacement];
-  });
-  return handlers.length === 0 ? void 0 : { ...group, hooks: handlers };
-};
-var mergeEvent = (groups, isOwn, wanted) => {
-  let pending = wanted;
-  const take = () => {
-    const next3 = pending;
-    pending = void 0;
-    return next3;
-  };
-  const kept = groups.map((group) => replaceInGroup(group, isOwn, take)).filter((group) => group !== void 0);
-  return pending === void 0 ? kept : [...kept, { hooks: [pending] }];
-};
-var mergeHooks = (hooks, isOwn, wanted) => {
-  const events = [.../* @__PURE__ */ new Set([...Object.keys(hooks), ...Object.keys(wanted)])];
-  const entries2 = events.flatMap((event) => {
-    const groups = hooks[event];
-    if (groups !== void 0 && !Array.isArray(groups)) return [[event, groups]];
-    const merged3 = mergeEvent(asList(groups), isOwn, wanted[event]);
-    return merged3.length === 0 ? [] : [[event, merged3]];
-  });
-  return Object.fromEntries(entries2);
-};
-var withHooks = (settings, hooks) => {
-  return setKey(settings, "hooks", Object.keys(hooks).length === 0 ? void 0 : hooks);
-};
-var BLOCK_READS = "blockReadsOutsideWorkingDirectories";
-var withPermissions = (settings, lists) => {
-  const permissions = asRecord(settings["permissions"]);
-  const withDeny2 = setKey(permissions, "deny", lists.deny.length === 0 ? void 0 : lists.deny);
-  const withAsk = setKey(withDeny2, "ask", lists.ask.length === 0 ? void 0 : lists.ask);
-  const next3 = setKey(withAsk, BLOCK_READS, lists.blockReads);
-  return setKey(settings, "permissions", Object.keys(next3).length === 0 ? void 0 : next3);
-};
-var missing = (wanted, existing) => wanted.filter((rule) => !existing.includes(rule));
-var withoutAdded = (existing, added) => existing.filter((rule) => typeof rule !== "string" || !added.includes(rule));
-var ownHookMatcher = (recorded2) => (handler) => isOwnHandler(handler) || recorded2.some((own) => JSON.stringify(own) === JSON.stringify(handler));
-var statusLineFor = (base, wanted) => {
-  if (wanted.statusLine === void 0 || isOwnStatusLine(base["statusLine"])) return void 0;
-  return { previous: base["statusLine"] ?? null, wrap: wanted.statusLine.wrap ?? null };
-};
-var restoreStatusLine = (settings, added) => {
-  if (added.statusLine === void 0 || !isOwnStatusLine(settings["statusLine"])) return settings;
-  const previous = added.statusLine.previous;
-  return setKey(settings, "statusLine", previous === null ? void 0 : previous);
-};
-var mergeSettings = (current2, wanted, recorded2) => {
-  const schema = Object.keys(current2).length === 0;
-  const base = schema ? { $schema: SETTINGS_SCHEMA_URL } : current2;
-  const hooks = mergeHooks(asRecord(base["hooks"]), ownHookMatcher(recorded2), wanted.hooks);
-  const permissions = asRecord(base["permissions"]);
-  const existingDeny = asList(permissions["deny"]);
-  const existingAsk = asList(permissions["ask"]);
-  const deny2 = missing(wanted.deny, existingDeny);
-  const ask8 = missing(wanted.ask, existingAsk);
-  const blockReads = !(BLOCK_READS in permissions);
-  const attribution = wanted.attributionOff && !("attribution" in base);
-  const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
-  const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
-  const language = "language" in base ? void 0 : wanted.language;
-  let settings = withPermissions(withHooks(base, hooks), {
-    deny: [...existingDeny, ...deny2],
-    ask: [...existingAsk, ...ask8],
-    blockReads: blockReads ? true : permissions[BLOCK_READS]
-  });
-  if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
-  if (marketplace) settings = withEntry2(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
-  if (plugin) settings = withEntry2(settings, "enabledPlugins", PLUGIN_ID, true);
-  if (language !== void 0) settings = { ...settings, language };
-  const status = statusLineFor(base, wanted);
-  if (status !== void 0) settings = { ...settings, statusLine: wanted.statusLine?.entry };
-  const added = {
-    schema,
-    deny: deny2,
-    ask: ask8,
-    blockReads,
-    attribution,
-    marketplace,
-    plugin,
-    ...status === void 0 ? {} : { statusLine: status }
-  };
-  return { settings, added: language === void 0 ? added : { ...added, language } };
-};
-var sameAttribution = (value2) => JSON.stringify(value2) === JSON.stringify(ATTRIBUTION_OFF);
-var unmergeSettings = (current2, added, recorded2) => {
-  const hooks = mergeHooks(asRecord(current2["hooks"]), ownHookMatcher(recorded2), {});
-  const permissions = asRecord(current2["permissions"]);
-  let settings = withPermissions(withHooks(current2, hooks), {
-    deny: withoutAdded(asList(permissions["deny"]), added.deny),
-    ask: withoutAdded(asList(permissions["ask"]), added.ask),
-    blockReads: added.blockReads && permissions[BLOCK_READS] === true ? void 0 : permissions[BLOCK_READS]
-  });
-  if (added.attribution && sameAttribution(settings["attribution"])) {
-    settings = setKey(settings, "attribution", void 0);
-  }
-  if (added.marketplace) settings = withEntry2(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, void 0);
-  if (added.plugin) settings = withEntry2(settings, "enabledPlugins", PLUGIN_ID, void 0);
-  if (added.language !== void 0 && settings["language"] === added.language) {
-    settings = setKey(settings, "language", void 0);
-  }
-  settings = restoreStatusLine(settings, added);
-  if (added.schema && Object.keys(settings).length === 1 && settings["$schema"] === SETTINGS_SCHEMA_URL) return {};
-  return settings;
-};
-var ownHandlersIn = (settings) => Object.values(asRecord(settings["hooks"])).flatMap((groups) => asList(groups)).flatMap((group) => asList(asRecord(group)["hooks"])).filter(isOwnHandler).length;
-
 // src/install/statusline-search.ts
 var LOCAL_SETTINGS_FILE = ".claude/settings.local.json";
 var existingStatusLine = (project, projectSettings, env) => statusLineCommand(projectSettings["statusLine"]) ?? statusLineCommand(statusLineIn(project.read(LOCAL_SETTINGS_FILE))) ?? statusLineCommand(statusLineIn(userSettingsText(project, env)));
@@ -32051,6 +32097,7 @@ var actionFor = (before2, after2, existing) => {
   return before2 === after2 ? "unchanged" : existing;
 };
 var union = (a, b) => [.../* @__PURE__ */ new Set([...a, ...b])];
+var withKey = (key3) => key3 === void 0 ? {} : { marketplaceKey: key3 };
 var joinAdded = (previous, next3) => previous === void 0 ? next3 : {
   schema: previous.schema || next3.schema,
   attribution: previous.attribution || next3.attribution,
@@ -32059,6 +32106,7 @@ var joinAdded = (previous, next3) => previous === void 0 ? next3 : {
   blockReads: previous.blockReads || next3.blockReads,
   marketplace: previous.marketplace || next3.marketplace,
   plugin: previous.plugin || next3.plugin,
+  ...withKey(previous.marketplace ? previous.marketplaceKey : next3.marketplaceKey),
   ...(previous.language ?? next3.language) === void 0 ? {} : { language: previous.language ?? next3.language },
   ...(previous.statusLine ?? next3.statusLine) === void 0 ? {} : { statusLine: previous.statusLine ?? next3.statusLine }
 };
@@ -32075,7 +32123,7 @@ var settingsItem = (project, detection, input, previous) => {
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
     attributionOff: isOn(input.defaults, "no-attribution"),
-    marketplace: input.marketplace,
+    marketplace: input.marketplace ? marketplaceSource(input.version) : void 0,
     language: input.claudeLanguage,
     statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current2.value, input.env) }
   };
@@ -32379,10 +32427,10 @@ var applyFixes = (ctx, write7) => {
 };
 
 // src/doctor/hook-inventory.ts
-import { join as join70 } from "node:path";
+import { join as join71 } from "node:path";
 
 // src/doctor/settings.ts
-import { join as join69 } from "node:path";
+import { join as join70 } from "node:path";
 var MANAGED = {
   darwin: "/Library/Application Support/ClaudeCode/managed-settings.json",
   linux: "/etc/claude-code/managed-settings.json",
@@ -32391,7 +32439,7 @@ var MANAGED = {
 var userSettingsPath = ({ env, runtime }) => {
   const configDir = env["CLAUDE_CONFIG_DIR"];
   return toAbsolutePath(
-    configDir === void 0 ? join69(runtime.homeDir(), ".claude", "settings.json") : join69(configDir, "settings.json")
+    configDir === void 0 ? join70(runtime.homeDir(), ".claude", "settings.json") : join70(configDir, "settings.json")
   );
 };
 var settingsPaths = (env) => {
@@ -32399,8 +32447,8 @@ var settingsPaths = (env) => {
   return [
     ...managed === void 0 ? [] : [{ scope: "managed", path: toAbsolutePath(managed) }],
     { scope: "user", path: userSettingsPath(env) },
-    { scope: "project", path: toAbsolutePath(join69(env.root, ".claude", "settings.json")) },
-    { scope: "local", path: toAbsolutePath(join69(env.root, ".claude", "settings.local.json")) }
+    { scope: "project", path: toAbsolutePath(join70(env.root, ".claude", "settings.json")) },
+    { scope: "local", path: toAbsolutePath(join70(env.root, ".claude", "settings.local.json")) }
   ];
 };
 var readSettings2 = (env) => settingsPaths(env).flatMap(({ scope: scope2, path }) => {
@@ -32430,7 +32478,7 @@ var readJson = (env, path) => {
   const parsed = text40.ok ? parseJsonObject(text40.value) : void 0;
   return parsed?.ok === true ? parsed.value : void 0;
 };
-var pluginsDir = (env) => join70(env.env["CLAUDE_CONFIG_DIR"] ?? join70(env.runtime.homeDir(), ".claude"), "plugins");
+var pluginsDir = (env) => join71(env.env["CLAUDE_CONFIG_DIR"] ?? join71(env.runtime.homeDir(), ".claude"), "plugins");
 var enabledPlugins2 = (env) => {
   const order3 = ["user", "project", "local", "managed"];
   const scoped = readSettings2(env);
@@ -32442,7 +32490,7 @@ var enabledPlugins2 = (env) => {
   return map;
 };
 var installedPlugins = (env) => {
-  const index = readJson(env, join70(pluginsDir(env), "installed_plugins.json"));
+  const index = readJson(env, join71(pluginsDir(env), "installed_plugins.json"));
   const enabled = enabledPlugins2(env);
   return Object.entries(asRecord(index?.["plugins"])).flatMap(([id, value2]) => {
     const records2 = Array.isArray(value2) ? value2.filter(isRecord) : isRecord(value2) ? [value2] : [];
@@ -32479,7 +32527,7 @@ var hookInventory = (env) => {
     )
   );
   const plugins = installedPlugins(env).flatMap((plugin) => {
-    const file = readJson(env, join70(plugin.root, "hooks", "hooks.json"));
+    const file = readJson(env, join71(plugin.root, "hooks", "hooks.json"));
     const owner = plugin.id === PLUGIN_ID ? "finitemonkey" : plugin.id;
     return rowsOf2(`plugin:${plugin.id}`, () => owner, file?.["hooks"], plugin.enabled);
   });
@@ -32609,7 +32657,7 @@ var probeFindings = (result) => {
 };
 
 // src/doctor/report-file.ts
-import { join as join71 } from "node:path";
+import { join as join72 } from "node:path";
 
 // src/hooks/failure-log.ts
 var HOOK_FAILURE_EVENT = "hook.failed";
@@ -32824,12 +32872,12 @@ var reportMarkdown = (env, ctx, envelope) => {
   ];
   return maskText(withoutHome(lines10.join("\n"), env.runtime.homeDir()));
 };
-var reportPath = (env) => toAbsolutePath(join71(env.root, ...REPORTS_DIR.split("/"), `doctor-${stamp(env.runtime.now())}.md`));
+var reportPath = (env) => toAbsolutePath(join72(env.root, ...REPORTS_DIR.split("/"), `doctor-${stamp(env.runtime.now())}.md`));
 
 // src/doctor/briefing.ts
-import { join as join72 } from "node:path";
+import { join as join73 } from "node:path";
 var checkBriefing = (env) => {
-  const text40 = env.runtime.readText(toAbsolutePath(join72(env.root, BRIEFING_FILE)));
+  const text40 = env.runtime.readText(toAbsolutePath(join73(env.root, BRIEFING_FILE)));
   if (!text40.ok) return [];
   const lines10 = lineCount(text40.value);
   return lines10 > BRIEFING_MAX_LINES ? [
@@ -32842,26 +32890,6 @@ var checkBriefing = (env) => {
     )
   ] : [finding("briefing", "ok", "doctor.briefing.ok", { lines: lines10, ceiling: BRIEFING_MAX_LINES })];
 };
-
-// src/install/plugin-yield.ts
-import { join as join73 } from "node:path";
-var PLUGIN_VIA = "plugin";
-var YIELD_STDOUT = `${JSON.stringify({ continue: true })}
-`;
-var projectOwnsHooks = (ctx) => {
-  const root = ctx.env["CLAUDE_PROJECT_DIR"] ?? ctx.cwd;
-  const text40 = ctx.runtime.readText(toAbsolutePath(join73(root, ...SETTINGS_FILE.split("/"))));
-  if (!text40.ok) return false;
-  const parsed = parseJsonObject(text40.value);
-  return parsed.ok && ownHandlersIn(parsed.value) > 0;
-};
-
-// src/install/plugin-hooks.ts
-var PLUGIN_NAME = "finitemonkey";
-var MARKETPLACE_NAME = "finitemonkey";
-var NEXT_MARKETPLACE_NAME = "finitemonkey-next";
-var STABLE_PLUGIN_ID = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
-var NEXT_PLUGIN_ID = `${PLUGIN_NAME}@${NEXT_MARKETPLACE_NAME}`;
 
 // src/doctor/claude-settings.ts
 var AGENT_TEAMS_VAR = "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS";
