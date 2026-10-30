@@ -21,7 +21,9 @@ export const filesUnder = (root: string): readonly string[] => {
   const walk = (dir: string): void => {
     for (const name of readdirSync(dir).sort()) {
       const path = join(dir, name);
-      if (statSync(path).isDirectory()) walk(path);
+      const stat = statSync(path, { throwIfNoEntry: false });
+      if (stat === undefined) continue;
+      if (stat.isDirectory()) walk(path);
       else out.push(relative(root, path).split("\\").join("/"));
     }
   };
