@@ -15,7 +15,7 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.pt-BR.md
   <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="npm downloads"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=next" alt="CI"></a>
   <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md#instala%C3%A7%C3%A3o-planejada"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md#instala%C3%A7%C3%A3o"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
 </p>
 
 <p align="center">
@@ -34,7 +34,7 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.pt-BR.md
 
 [English](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.md) | Português (Brasil) | [Español](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.es.md)
 
-> **Pré-lançamento.** Ainda não dá para instalar. O nome `finitemonkey` no npm está reservado (a 0.0.0 é só um marcador) e o código está sendo feito em público. Tudo abaixo é o plano, não o que acontece hoje. Dê uma estrela ou acompanhe o repositório se quiser saber quando sair a v0.1.
+> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm (0.1.0-next.40 quando isto foi escrito; o selo lá em cima mostra a atual). O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
 
 Eu sei como é. Com o advento da IA, muita coisa mudou.
 
@@ -58,7 +58,7 @@ Um macaco. Tempo finito. Trabalho que sai de verdade.
 
 ## O Claude Code diz que terminou, mas não terminou
 
-Esse é o principal problema que o Finite Monkey quer resolver. Comportamento planejado:
+Esse é o principal problema que o Finite Monkey quer resolver. O que ele faz:
 
 - Cada tarefa ganha uma **definição de pronto** que a máquina consegue checar: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo.
 - Quando o Claude tenta encerrar a sessão, o hook `Stop` roda essa checagem. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
@@ -67,11 +67,9 @@ Esse é o principal problema que o Finite Monkey quer resolver. Comportamento pl
 
 ## O Claude pulou ou apagou testes para eles passarem
 
-Travas planejadas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.
+Travas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.
 
 ## O Claude rodou `git reset --hard` e eu perdi trabalho
-
-Planejado:
 
 - Uma fotografia antes de toda operação arriscada no git, e um `undo` que traz de volta.
 - Nada de `--force`, nunca.
@@ -84,15 +82,15 @@ São mesmo. O Claude lê o `CLAUDE.md` como parte do contexto, e nada confere se
 
 ## Como impedir o Claude Code de vazar segredos?
 
-Planejado: uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é relatado como incidente, com os passos para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
+Uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é relatado como incidente, com os passos para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
 
 ## Como impedir um agente de mexer na produção na mão?
 
-Planejado: comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
+Comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
 
-## Mais que um portão (planejado)
+## Mais que um portão
 
-O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto do plano é sobre quem está digitando:
+O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto é sobre quem está digitando:
 
 - **Quando você está dando voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá, um bug colado de uma IA para outra e de volta: o Finite Monkey percebe a volta e diz isso com todas as letras, com o que tentar no lugar.
 - **Quando o projeto é maior que você, por enquanto.** Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, backup e um jeito de voltar atrás. As plantas de projeto mostram o que uma versão de verdade precisa e o que ainda falta, para uma tela de login não ser chamada de produto. As explicações acompanham o que você já sabe e vão sumindo conforme você aprende.
@@ -110,18 +108,19 @@ Você roda um comando, uma vez. Depois disso o Finite Monkey age pelo contexto, 
 - **Comandos com barra** são atalhos opcionais. Nenhum fluxo depende de você lembrar de um.
 - **O estilo de saída `report`** é opcional e vem desligado. Escolha com `/output-style report` se quiser toda resposta no formato do relatório final: resultado primeiro, depois verificado, não verificado e pendente, com FATO, OPINIÃO e INFERÊNCIA marcados. Ele mantém as instruções de programação do Claude Code (`keep-coding-instructions: true`).
 
-## Instalação (planejada)
+## Instalação
 
-Ainda não disponível. Quando a v0.1 sair:
+Pelo canal `next`, até a v0.1 sair:
 
 ```sh
-npx finitemonkey@latest init
+npx finitemonkey@next init
 ```
 
-Ou como plugin do Claude Code, de dentro da sessão:
+Ou como plugin do Claude Code, de dentro da sessão, com o marketplace da branch `next`:
 
 ```
-/plugin install finitemonkey --marketplace gabrielvieiraf/finitemonkey
+/plugin marketplace add gabrielvieiraf/finitemonkey#next
+/plugin install finitemonkey@finitemonkey-next
 ```
 
 Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instalação faz backup, mescla em vez de sobrescrever e pode rodar duas vezes sem estragar nada. `doctor` diz o que está errado, `uninstall` deixa tudo como estava.
@@ -132,9 +131,9 @@ Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instala�
 
 O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha com IA acima do que consegue julgar. O ensaio [Efeito Ricochete: o usuário como limite invisível da inteligência artificial](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/ricochet/ricochet.pt-BR.md) descreve duas fronteiras que a pessoa não vê de dentro: o que ela não sabe pedir e o que não consegue avaliar. A seção 10 mostra como cada mecanismo daqui põe uma verificação executável nesses dois pontos e quais hipóteses a bancada vai testar.
 
-## Funciona de verdade? (benchmark, planejado)
+## Funciona de verdade? (benchmark, ainda não rodado)
 
-Ainda não se sabe. O benchmark planejado compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ficar neste repositório, inclusive onde não ajudou.
+Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório, inclusive onde não ajudou.
 
 <!-- generated:evidence:start -->
 Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.40 sobre o corpus rotulado em [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/blob/main/bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
@@ -264,7 +263,7 @@ Mais perguntas, uma para cada busca real, em [docs/faq.pt-BR.md](https://github.
 Não. São hooks e checagens que rodam lembrando o modelo ou não.
 
 **Ele manda meu código para algum lugar?**
-Não. Seu código nunca sai da sua máquina, e não há telemetria. A única chamada de rede é o `gh` perguntando ao GitHub sobre pull requests, e só quando o `gh` está logado. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
+Não. Seu código nunca sai da sua máquina, e não há telemetria. Sem você pedir, ele faz dois tipos de chamada de rede: o `gh` perguntando ao GitHub sobre pull requests, só quando o `gh` está logado, e o nome de um pacote enviado ao registro do npm ou do PyPI quando um comando vai acrescentar um pacote que o projeto não declara. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
 
 **Vai me deixar mais lento?**
 Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/main/budgets.json). Os tempos de ponta a ponta saem junto com o benchmark.
@@ -276,32 +275,41 @@ Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o q
 Primeiro o Claude Code. Os outros depois, se o benchmark disser que vale.
 
 **Por que "Finite Monkey"?**
-O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão planejado funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
+O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
 
 **Quem é o macaco?**
 Você, e em alguns dias o agente.
 
 ## Roteiro
 
-Na ordem das dependências, não das datas. Cada etapa termina num portão de saída medido.
+Na ordem das dependências, não das datas. Cada etapa termina num portão de saída medido. "Em sombra" quer dizer que observa e registra o que teria feito, sem bloquear, até o benchmark medir.
 
 | Etapa | O quê | Situação |
 |---|---|---|
-| 0. Fundação | `init`, `doctor`, `update`, `uninstall`; contratos de saída JSON; três idiomas; releases automáticas | Em andamento |
-| 1. Os quatro danos | Segredos, produção, git, "pronto" falso; o portão no `Stop` | Planejada |
-| 2. Decidir bem e não se perder | Inventário antes de mudar, registro de decisões, frentes de trabalho em paralelo, protocolo completo de merge | Planejada |
-| 3. Geradores | Lint, arquitetura, CI e deploy para projetos novos e existentes | Planejada |
-| 4. Provar valor | Benchmark com ablação; o que não tiver efeito medido sai | Planejada |
+| 0. Fundação | `init`, `doctor`, `update`, `uninstall`; contratos de saída JSON; três idiomas; releases automáticas | Pronta (no `next`) |
+| 1. Os quatro danos | Segredos, produção, git, "pronto" falso; o portão no `Stop` | Pronta (no `next`) |
+| 2. Decidir bem e não se perder | Inventário antes de mudar, registro de decisões, frentes de trabalho em paralelo, protocolo completo de merge | Pronta (no `next`) |
+| 2.5. Regras que valem, trabalho que termina | Os arquivos de instrução do projeto seguidos de verdade, saúde do código sem regra em prosa, tarefas que terminam sem voltas nem ruído | Pronta (no `next`); a maior parte em sombra até ser medida |
+| 3. Geradores | Lint, arquitetura, CI e deploy para projetos novos e existentes | Pronta (no `next`) |
+| 3.5. Garantias que se sustentam | Falhar fechado onde há dano possível, política que nunca afrouxa em silêncio, comandos de teste fixados, prova que denuncia adulteração, fotografias que incluem arquivos ignorados | Pronta; partes em sombra até serem medidas |
+| 3.6. O Finite Monkey como mod | Um mod ao lado dos hooks de comando: a faixa do portão e os painéis no terminal, no Desktop e no VS Code, custo por tarefa; os hooks de comando guardam todo veredito e bloqueio | Pronta |
+| 3.7. Conhecimento do projeto como artefato de build | Afirmações presas ao código que descrevem, checadas rodando e marcadas como vencidas quando esse código muda | Pronta, em sombra até ser medida |
+| 3.8. Interfaces que as pessoas conseguem usar | Telas, formulários, textos, APIs e CLIs checados no que renderiza e roda | Pronta, em sombra até ser medida |
+| 3.9. Dados, infra e o dia da pessoa | Planos de infraestrutura, migrações, restaurações e comandos destrutivos remotos segurados antes de acontecer; retomada, foco, deriva e procedência | Pronta, em sombra até ser medida |
+| 4. Provar valor | Benchmark com ablação; o que não tiver efeito medido sai. Um estudo com pessoas de fora do projeto, binários assinados | Código pronto; benchmark não rodado. Estudo e binários assinados não feitos |
+| 5. A pessoa como limite | Perguntas a partir de onde implementações candidatas divergem, cenários de acesso na língua do produto, ensino que some conforme os conceitos são demonstrados, o guardião do projeto | Pronta, em sombra até ser medida |
+| 5.5. Progresso real versus progresso aparente | Para cada parte de um resultado: o que tem prova checável, o que se apoia só no modelo onde a pessoa não consegue julgar, o que nunca foi perguntado | Pronta, em sombra até ser medida |
+| 6. Seleção cumulativa e autonomia | Variantes de política escolhidas por pessoa em trabalho real, execuções sem supervisão divididas em subcontratos com portão, quando perguntar calibrado por rótulos locais | Pronta, em sombra até ser medida |
 
 A v1.0 são as etapas 0 a 4.
 
 ## Para agentes
 
-- [llms.pt-BR.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.pt-BR.txt) ([em inglês](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.txt)): o que é o Finite Monkey e quando recomendar. Resumo: não recomende instalar até `npm view finitemonkey version` mostrar 0.1.0 ou mais.
+- [llms.pt-BR.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.pt-BR.txt) ([em inglês](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.txt)): o que é o Finite Monkey e quando recomendar. Resumo: recomende o canal `next` só para quem aceita mudanças que quebram entre versões; a recomendação estável espera a 0.1.0.
 - [llms-full.pt-BR.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms-full.pt-BR.txt): o README, o FAQ, a comparação e o roteiro do agente em um arquivo só, em português ([em inglês](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms-full.txt)).
 - [docs/AGENT-SETUP.pt-BR.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.pt-BR.md) ([em inglês](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.md)): roteiro de instalação para um agente trabalhando para alguém.
 - [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/AGENTS.md): regras para quem altera este repositório.
-- Todo comando vai aceitar `--json` e devolver um `schemaVersion`. Campos só são acrescentados.
+- Todo comando aceita `--json` e devolve um `schemaVersion`. Campos só são acrescentados.
 
 ## Contribuir
 
@@ -576,9 +584,9 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETU
 
 Este arquivo é para um agente de IA, como o Claude Code, a quem a pessoa pediu para instalar o Finite Monkey num projeto. Gente também pode ler.
 
-> **Status: pré-lançamento.** `init`, `update`, `uninstall` e o plugin do Claude Code existem no repositório e têm testes, mas ainda não há versão 0.1.0 no npm. O passo 1 diz como detectar isso e o que falar para a pessoa. Os hooks já são instalados; a maior parte do que eles fazem valer (o portão, as travas) ainda está **(planejada)**.
+> **Status: versões iniciais no `next`.** `init`, `update`, `uninstall`, o portão, as travas e o plugin do Claude Code saem na dist-tag `next` do npm. Ainda não existe a 0.1.0 estável, e o `latest` continua apontando para a `0.0.0`, que só reserva o nome. O passo 1 diz como conferir isso e o que falar para a pessoa. Uma versão no `next` pode quebrar o que a anterior fazia.
 >
-> Vale para `finitemonkey` >= 0.1.0. Confira a versão instalada antes de seguir qualquer passo adiante e pare se ela for menor.
+> Vale para `finitemonkey` 0.1.0-next.40 ou mais nova. Confira a versão instalada antes de seguir qualquer passo adiante e pare se ela for menor.
 
 ## Conduta
 
@@ -594,19 +602,14 @@ Este arquivo é para um agente de IA, como o Claude Code, a quem a pessoa pediu 
 
 Os dois instalam os mesmos hooks. Use um ou os dois: quando o projeto tem os próprios hooks do Finite Monkey, os hooks do plugin se retiram e nada roda duas vezes.
 
-1. **O plugin do Claude Code**, pelo marketplace do repositório. Dentro de uma sessão do Claude Code:
-
-   ```
-   /plugin marketplace add gabrielvieiraf/finitemonkey
-   /plugin install finitemonkey@finitemonkey
-   ```
-
-   Para testar o canal `next`, adicione o marketplace da branch `next`. Ele tem nome próprio (`finitemonkey-next`), então pode ficar ao lado do estável, mas deixe só um dos dois ativo: os dois plugins se chamam `finitemonkey`, e o Claude Code fica com um único conjunto de hooks. O `doctor` falha e mostra o comando `claude plugin disable` quando os dois estão ativos.
+1. **O plugin do Claude Code**, pelo marketplace da branch `next`. Dentro de uma sessão do Claude Code:
 
    ```
    /plugin marketplace add gabrielvieiraf/finitemonkey#next
    /plugin install finitemonkey@finitemonkey-next
    ```
+
+   Quando sair uma versão estável, a branch padrão ganha o próprio marketplace, chamado `finitemonkey` (`/plugin marketplace add gabrielvieiraf/finitemonkey`, depois `/plugin install finitemonkey@finitemonkey`). Ele pode ficar ao lado do `finitemonkey-next`, mas deixe só um dos dois ativo: os dois plugins se chamam `finitemonkey`, e o Claude Code fica com um único conjunto de hooks. O `doctor` falha e mostra o comando `claude plugin disable` quando os dois estão ativos.
 
    O plugin traz os hooks e as skills (`task`, `verify`, `look`, `finish`) que o Claude usa sozinho. Ele carrega a própria CLI (`scripts/finitemonkey.mjs`, o mesmo build da versão em `plugin.json`), e cada hook roda `node` nesse arquivo: sem `npx` e sem download.
 
@@ -618,14 +621,15 @@ Depois de instalar, a pessoa não precisa lembrar de nenhum comando. O Finite Mo
 
 ## Passos
 
-### 1. Confira se existe uma versão de verdade
+### 1. Confira qual canal tem versão
 
 ```sh
-npm view finitemonkey version
+npm view finitemonkey dist-tags --json
 ```
 
-- Se o comando falhar, ou a versão for `0.0.0` ou menor que `0.1.0`, o Finite Monkey ainda não foi lançado (`0.0.0` só reserva o nome). Diga à pessoa: "O Finite Monkey ainda não foi lançado; não há o que instalar." Pare aqui.
-- Senão, continue.
+- Se o comando falhar, ou nem `latest` nem `next` for `0.1.0-next.40` ou mais nova, não há o que instalar. Diga isso à pessoa e pare aqui.
+- Se `latest` for `0.1.0` ou mais nova, use `finitemonkey@latest` nos comandos abaixo.
+- Se `latest` for `0.0.0` (só reserva o nome), só o canal `next` tem código. Diga à pessoa: "O Finite Monkey ainda não tem versão estável. O canal `next` funciona, mas uma versão nova pode quebrar o que a anterior fazia. Instalo?" Continue só com um sim, usando `finitemonkey@next` nos comandos abaixo, como estão escritos.
 
 ### 2. Confira o ambiente
 
@@ -636,7 +640,7 @@ npm view finitemonkey version
 ### 3. Veja o plano antes
 
 ```sh
-npx finitemonkey@latest init --dry-run --json
+npx finitemonkey@next init --dry-run --json
 ```
 
 Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada arquivo com `create`, `merge`, `update`, `unchanged`, `keep-edited` ou `skip-foreign`; `data.warnings` lista o que a pessoa deve saber (outro plugin que também decide quando a sessão para, um Claude Code antigo demais para bloquear quando um hook quebra, um arquivo que não é do Finite Monkey); e `data.diff` mostra a mudança exata. Resuma o plano para a pessoa em poucas linhas. Pergunte só estas decisões:
@@ -649,7 +653,7 @@ Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada 
 ### 4. Instale
 
 ```sh
-npx finitemonkey@latest init --yes --json
+npx finitemonkey@next init --yes --json
 ```
 
 Passe as decisões da pessoa como flags (por exemplo `--commits free --lang pt-BR`). Sem `--yes`, o `init` sai com código 4, o plano e um campo `next` com o comando exato para rodar depois que a pessoa concordar. O `init` faz backup de cada arquivo que toca em `.finitemonkey/backups/<timestamp>/`, registra o que gravou em `.finitemonkey/lock.json`, mescla o `.claude/settings.json` sem tirar nenhum hook ou permissão da pessoa, acrescenta um bloco gerenciado ao `.gitignore` (o estado fica local, o `config.yml` é versionado) e pode rodar de novo sem risco: uma segunda execução sem mudança não grava nada.
@@ -657,12 +661,12 @@ Passe as decisões da pessoa como flags (por exemplo `--commits free --lang pt-B
 ### 5. Verifique
 
 ```sh
-npx finitemonkey doctor --json
+npx finitemonkey@next doctor --json
 ```
 
 Cada item tem `check`, `status` e `fix`. Se algum item não estiver `ok`, rode o comando de `fix` quando for seguro e não cair na regra de conduta 5, e rode o `doctor` de novo. Relate o que sobrou.
 
-`npx finitemonkey doctor --fix` repara os arquivos do projeto que são dele (hooks, regras de deny, o bloco do `.gitignore`) com o mesmo backup e a mesma trava do `init`, e nunca mexe nos settings do usuário nem no perfil do shell. Se o usuário quiser abrir um bug, `npx finitemonkey doctor --report` grava um arquivo Markdown mascarado em `.finitemonkey/reports/` para anexar na issue.
+`npx finitemonkey@next doctor --fix` repara os arquivos do projeto que são dele (hooks, regras de deny, o bloco do `.gitignore`) com o mesmo backup e a mesma trava do `init`, e nunca mexe nos settings do usuário nem no perfil do shell. Se o usuário quiser abrir um bug, `npx finitemonkey@next doctor --report` grava um arquivo Markdown mascarado em `.finitemonkey/reports/` para anexar na issue.
 
 ### 6. Conte para a pessoa
 
@@ -684,8 +688,8 @@ Com `--json`, os erros vêm como `{"schemaVersion":1,"error":{"code":"...","mess
 ## Atualizar
 
 ```sh
-npx finitemonkey update --check --json
-npx finitemonkey update --yes --json
+npx finitemonkey@next update --check --json
+npx finitemonkey@next update --yes --json
 ```
 
 O `--check` sai com 1 quando os arquivos gerenciados diferem desta versão e com 0 quando batem. O `update` fixa os hooks na versão nova e renova os arquivos gerados que a pessoa não editou. Quando uma versão nova mudou o formato de um arquivo gerenciado, o `update` também roda a migração dessa versão, em ordem de semver, nos arquivos que a pessoa não editou. Um arquivo gerado que ela editou é mantido, e o template novo ou o texto migrado aparece em `data.diff` como proposta. Um arquivo que não pode ser gravado por falta de permissão devolve `install_permission_denied` com o `fix`.
@@ -693,8 +697,8 @@ O `--check` sai com 1 quando os arquivos gerenciados diferem desta versão e com
 ## Desfazer
 
 ```sh
-npx finitemonkey uninstall --yes --json
-npx finitemonkey uninstall --yes --purge --json
+npx finitemonkey@next uninstall --yes --json
+npx finitemonkey@next uninstall --yes --purge --json
 ```
 
-O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey`.
+O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey-next` (ou `finitemonkey@finitemonkey` para o marketplace estável).
