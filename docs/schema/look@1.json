@@ -106,7 +106,9 @@
               "visual/rejected",
               "sheet/changed",
               "sheet/off-scale",
-              "sheet/nested-radius"
+              "sheet/nested-radius",
+              "perf/regression",
+              "perf/slow-action"
             ]
           },
           "route": {

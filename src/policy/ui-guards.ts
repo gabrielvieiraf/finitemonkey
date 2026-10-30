@@ -10,4 +10,5 @@ export const UI_GUARDS = [
   "journeys",
   "visual-approve",
   "ui-sheet",
+  "perf-budget",
 ] as const;

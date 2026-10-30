@@ -1,5 +1,6 @@
 import { journeyApproveCommand, journeyCommand, journeyProposeCommand } from "./journey.js";
 import { lookRejectCommand } from "./look-approve.js";
+import { lookPerfAcceptCommand } from "./look-perf.js";
 import { lookSheetCommand } from "./look-sheet.js";
 import type { CommandSpec } from "./types.js";
 import { uiApproveCommand, uiProposeCommand, uiShowCommand } from "./ui.js";
@@ -17,4 +18,5 @@ export const UX_COMMANDS: readonly CommandSpec[] = [
   journeyApproveCommand,
   lookRejectCommand,
   lookSheetCommand,
+  lookPerfAcceptCommand,
 ];

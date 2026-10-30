@@ -2620,5 +2620,8 @@
   "command.look_reject.summary": "Reject the current screen of a route with a reason (person only)",
   "look.reject.done": "Screen {route} rejected; the reason is kept as standing rule {id}.",
   "command.look_sheet.summary": "Draw a measured technical sheet of a route or component from the rendered page",
-  "look.sheet.done": "Sheet for {route}: {variables, plural, one {# variable} other {# variables}}, {changes, plural, one {# dimension changed} other {# dimensions changed}} against the approved sheet."
+  "look.sheet.done": "Sheet for {route}: {variables, plural, one {# variable} other {# variables}}, {changes, plural, one {# dimension changed} other {# dimensions changed}} against the approved sheet.",
+  "command.look_perf_accept.summary": "Accept a measured performance regression of a route for the current tree (person only)",
+  "look.perf.unknown": "No performance measurement for {route} yet. Run look first.",
+  "look.perf.accepted": "Regression on {route} accepted for tree {tree}; its numbers are the new base."
 }

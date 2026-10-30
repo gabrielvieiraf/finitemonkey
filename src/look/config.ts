@@ -5,6 +5,7 @@ import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, configMap, parseConfigYaml } from "../git/project-config.js";
 import { TARGET_MIN, TARGET_OPTIONS } from "./a11y.js";
 import { COLOR_TOLERANCE } from "./ds.js";
+import { DEFAULT_RUNS } from "./perf.js";
 import { parseStateSpec, type StateSpec } from "./states.js";
 import { LOOK_RULES, type LookRule } from "./types.js";
 import { DEFAULT_MAX_DIFF_PIXELS, DEFAULT_THRESHOLD } from "./visual.js";
@@ -50,6 +51,13 @@ export interface LookConfig {
   readonly formValues: Readonly<Record<string, string>>;
   readonly flow: FlowConfig;
   readonly visual: { readonly threshold: number; readonly maxDiffPixels: number };
+  readonly perf: PerfConfig;
+}
+
+export interface PerfConfig {
+  readonly runs: number;
+  readonly queriesHeader: string | undefined;
+  readonly actions: readonly string[];
 }
 
 export interface FlowConfig {
@@ -138,6 +146,11 @@ export const parseLookConfig = (source: string): LookConfig => {
     forms: routeLists(configList(tree, "forms")),
     formsKeepCleared: configList(tree, "forms_keep_cleared"),
     formValues: configMap(tree, "form_values"),
+    perf: {
+      runs: number(configAt(tree, "perf", "runs")) ?? DEFAULT_RUNS,
+      queriesHeader: text(configAt(tree, "perf", "queries_header")),
+      actions: configList(tree, "perf", "actions"),
+    },
     visual: {
       threshold: ratioOf(configAt(tree, "visual", "threshold")) ?? DEFAULT_THRESHOLD,
       maxDiffPixels: wholeOf(configAt(tree, "visual", "max_diff_pixels")) ?? DEFAULT_MAX_DIFF_PIXELS,
