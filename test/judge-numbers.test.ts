@@ -27,7 +27,9 @@ const sumOf = (fs: MemoryFs) => (request: ExecRequest) => {
 };
 
 const world = (pages: Readonly<Record<string, string>>, locale: NumberLocale = "en") => {
-  const fs = memoryFs({ [`${ROOT}/data.csv`]: "1200\n34\n" }, [toAbsolutePath(`${ROOT}/.finitemonkey`)]);
+  const fs = memoryFs({ [toAbsolutePath(`${ROOT}/data.csv`)]: "1200\n34\n" }, [
+    toAbsolutePath(`${ROOT}/.finitemonkey`),
+  ]);
   const deps: JudgeDeps = {
     runtime: fakeRuntime({ fs, exec: sumOf(fs) }),
     paths: fmPaths(toAbsolutePath(ROOT)),
