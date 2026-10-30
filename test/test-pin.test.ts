@@ -77,7 +77,7 @@ describe("test pinning", () => {
   it("redefining scripts.test during a task holds the check until the person approves", () => {
     const repo = fresh();
     task(repo, ["npm test"]);
-    repo.write("package.json", PACKAGE('echo "# tests 9"'));
+    repo.write("package.json", PACKAGE("node -e \"console.log('# tests 9')\""));
     const held = item(repo, "C1");
     assert.equal(held.status, "unverified");
     assert.equal(held.reason, "needs_approval");
