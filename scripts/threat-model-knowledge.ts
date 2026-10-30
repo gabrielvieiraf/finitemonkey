@@ -184,4 +184,17 @@ export const network: readonly Threat[] = [
     code: ["src/gate/checks/infra-plan.ts"],
     proof: { file: "test/infra-plan.test.ts", test: "runs plan and show only; no code path runs apply" },
   },
+  {
+    component: "Network use",
+    attacker: "injected content",
+    threat: "The app under a look run sends requests outside the machine",
+    outcome: "prevented",
+    mechanism:
+      "The look run refuses an app host that is not loopback, and the browser context aborts and lists every request to a host that is not loopback",
+    code: ["src/look/run.ts", "src/look/node-ux.ts"],
+    proof: {
+      file: "test/look-boot.test.ts",
+      test: "only loopback hosts count as local for the app boot and the request filter",
+    },
+  },
 ];
