@@ -55,6 +55,15 @@ export interface RunRecord extends JsonObject {
   readonly injection: Injection;
 }
 
+const removeRunFolder = (root: string): void => {
+  try {
+    rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 250 });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== "EBUSY" && code !== "EPERM") throw error;
+  }
+};
+
 export const schedule = (
   config: Pick<HarnessConfig, "tasks" | "arms" | "repeats" | "seed" | "only">,
 ): readonly PlannedRun[] =>
@@ -177,12 +186,7 @@ const runOne = async (
     const scored = task.evaluate?.(workdir, run.taskSeed, outcome.stdout) ?? {};
     return { ...scored, ...record(config, deps, run, arm, outcome, log), followUps };
   } finally {
-    try {
-      rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 250 });
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code;
-      if (code !== "EBUSY" && code !== "EPERM") throw error;
-    }
+    removeRunFolder(root);
   }
 };
 
