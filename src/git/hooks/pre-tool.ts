@@ -1,3 +1,5 @@
+import { basename, dirname } from "node:path";
+
 import { toAbsolutePath } from "../../core/brand.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
 import { modelReason } from "../../hooks/reason.js";
@@ -9,7 +11,7 @@ import { commandText } from "../command-text.js";
 import { destructiveHit, externalBlockers, pipeToShell } from "../destructive.js";
 import { memo } from "../facts.js";
 import { guardGitCommand, type GuardOutcome } from "../guard.js";
-import { isWithin, resolveFrom } from "../path-key.js";
+import { isWithin, pathKey, resolveFrom } from "../path-key.js";
 import { openRepo, type Repo } from "../repo.js";
 import { listWorktrees, removalTargets, rmVerdict } from "../rm-guard.js";
 import { takeSnapshot } from "../snapshot.js";
@@ -39,20 +41,28 @@ const BROAD_RULES: ReadonlySet<GitBlockRule> = new Set([
 interface Scan {
   readonly worktrees: () => readonly string[];
   readonly repo: () => Repo | undefined;
+  readonly repoAt: (dir: string) => Repo | undefined;
   readonly blockers: () => readonly string[];
 }
 
 const leftToBlocker = (scan: Scan, rule: GitBlockRule): boolean => BROAD_RULES.has(rule) && scan.blockers().length > 0;
 
+const mayExist = (input: HookInput, target: string, path: string): boolean => {
+  if (/^[$~%]|[*?[]/.test(target) || input.runtime.stat(toAbsolutePath(path)) !== undefined) return true;
+  const siblings = input.runtime.listDir(toAbsolutePath(dirname(path)));
+  return siblings.ok && siblings.value.includes(basename(path));
+};
+
 const inRepo = (input: HookInput, scan: Scan, command: ShellCommand): Repo | undefined => {
+  const present = (removalTargets(command) ?? [])
+    .map((target) => ({ target, path: resolveFrom(input.cwd, command.dir, target) }))
+    .filter(({ target, path }) => mayExist(input, target, path));
+  if (present.length === 0) return undefined;
   const repo = scan.repo();
-  const targets = removalTargets(command);
-  if (repo === undefined || targets === undefined) return undefined;
-  const inside = (target: string): boolean => {
-    const path = resolveFrom(input.cwd, command.dir, target);
-    return isWithin(path, repo.root) || isWithin(input.runtime.realpath(path), repo.root);
-  };
-  return targets.some(inside) ? repo : undefined;
+  return repo !== undefined &&
+    present.some(({ path }) => isWithin(path, repo.root) || isWithin(input.runtime.realpath(path), repo.root))
+    ? repo
+    : undefined;
 };
 
 const rmOutcome = (input: HookInput, command: ShellCommand, scan: Scan): string | SnapshotOutcome | undefined => {
@@ -107,9 +117,11 @@ const handedOver = (scan: Scan, outcome: GuardOutcome): GuardOutcome => {
 
 const scanOf = (input: HookInput): Scan => {
   const repo = memo((): Repo | undefined => openRepo(input.runtime, input.cwd));
+  const cwd = pathKey(input.cwd);
   return {
     worktrees: memo(() => listWorktrees(input.runtime, input.cwd)),
     repo,
+    repoAt: (dir) => (pathKey(dir) === cwd ? repo() : undefined) ?? openRepo(input.runtime, toAbsolutePath(dir)),
     blockers: memo(() => externalBlockers(input.runtime, repo()?.root ?? input.cwd, input.runtime.homeDir())),
   };
 };
@@ -129,7 +141,10 @@ const review = (input: HookInput, commands: readonly ShellCommand[], owner: stri
     if (decision !== undefined) reads.push(decision);
     const destructive = destructiveOutcome(input, command, scan);
     if (destructive !== undefined) return { blocked: destructive, human: "git.block.human", snapshots, reads };
-    for (const found of guardGitCommand({ runtime: input.runtime, cwd: input.cwd, owner, chain }, command)) {
+    for (const found of guardGitCommand(
+      { runtime: input.runtime, cwd: input.cwd, owner, chain, repoAt: scan.repoAt },
+      command,
+    )) {
       const outcome = handedOver(scan, found);
       const message = outcomeMessage(input.t, outcome);
       if (message !== undefined) return { blocked: message, human: "git.block.human", snapshots, reads };

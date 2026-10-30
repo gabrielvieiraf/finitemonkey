@@ -31263,7 +31263,7 @@ var depsScanCommand = {
 };
 
 // src/commands/doctor.ts
-import { dirname as dirname27, join as join169 } from "node:path";
+import { dirname as dirname28, join as join169 } from "node:path";
 
 // src/install/apply.ts
 import { dirname as dirname12 } from "node:path";
@@ -51543,6 +51543,9 @@ var wtPostToolUse = (input) => {
   return addsWorktree(command, tool) ? adopt2(input) : ALLOW15;
 };
 
+// src/git/hooks/pre-tool.ts
+import { basename as basename11, dirname as dirname22 } from "node:path";
+
 // src/git/pathspec.ts
 import { posix as posix11 } from "node:path";
 var MAGIC = /^:(?:\(([^)]*)\)|([!^/]*))(.*)$/s;
@@ -51975,7 +51978,7 @@ var guardGitCommand = (context, command, depth = 0) => {
   const invocation = gitInvocation(command);
   if (invocation === void 0) return [];
   const dir = resolveFrom(context.cwd, command.dir, ...invocation.dirs);
-  const repo = openRepo(context.runtime, toAbsolutePath(dir));
+  const repo = context.repoAt === void 0 ? openRepo(context.runtime, toAbsolutePath(dir)) : context.repoAt(dir);
   if (repo === void 0) return [];
   const facts = withChain(context.facts?.(repo) ?? repoFacts(context.runtime, repo), context.chain);
   const expanded = expandAlias(context.runtime, repo, invocation);
@@ -52051,15 +52054,16 @@ var BROAD_RULES = /* @__PURE__ */ new Set([
   "pipe-shell"
 ]);
 var leftToBlocker = (scan, rule) => BROAD_RULES.has(rule) && scan.blockers().length > 0;
+var mayExist = (input, target7, path) => {
+  if (/^[$~%]|[*?[]/.test(target7) || input.runtime.stat(toAbsolutePath(path)) !== void 0) return true;
+  const siblings = input.runtime.listDir(toAbsolutePath(dirname22(path)));
+  return siblings.ok && siblings.value.includes(basename11(path));
+};
 var inRepo5 = (input, scan, command) => {
+  const present5 = (removalTargets(command) ?? []).map((target7) => ({ target: target7, path: resolveFrom(input.cwd, command.dir, target7) })).filter(({ target: target7, path }) => mayExist(input, target7, path));
+  if (present5.length === 0) return void 0;
   const repo = scan.repo();
-  const targets2 = removalTargets(command);
-  if (repo === void 0 || targets2 === void 0) return void 0;
-  const inside2 = (target7) => {
-    const path = resolveFrom(input.cwd, command.dir, target7);
-    return isWithin(path, repo.root) || isWithin(input.runtime.realpath(path), repo.root);
-  };
-  return targets2.some(inside2) ? repo : void 0;
+  return repo !== void 0 && present5.some(({ path }) => isWithin(path, repo.root) || isWithin(input.runtime.realpath(path), repo.root)) ? repo : void 0;
 };
 var rmOutcome = (input, command, scan) => {
   if (removalTargets(command) === void 0) return void 0;
@@ -52102,9 +52106,11 @@ var handedOver = (scan, outcome3) => {
 };
 var scanOf = (input) => {
   const repo = memo(() => openRepo(input.runtime, input.cwd));
+  const cwd = pathKey(input.cwd);
   return {
     worktrees: memo(() => listWorktrees(input.runtime, input.cwd)),
     repo,
+    repoAt: (dir) => (pathKey(dir) === cwd ? repo() : void 0) ?? openRepo(input.runtime, toAbsolutePath(dir)),
     blockers: memo(() => externalBlockers(input.runtime, repo()?.root ?? input.cwd, input.runtime.homeDir()))
   };
 };
@@ -52123,7 +52129,10 @@ var review = (input, commands, owner, scan) => {
     if (decision2 !== void 0) reads.push(decision2);
     const destructive = destructiveOutcome(input, command, scan);
     if (destructive !== void 0) return { blocked: destructive, human: "git.block.human", snapshots, reads };
-    for (const found of guardGitCommand({ runtime: input.runtime, cwd: input.cwd, owner, chain: chain2 }, command)) {
+    for (const found of guardGitCommand(
+      { runtime: input.runtime, cwd: input.cwd, owner, chain: chain2, repoAt: scan.repoAt },
+      command
+    )) {
       const outcome3 = handedOver(scan, found);
       const message = outcomeMessage(input.t, outcome3);
       if (message !== void 0) return { blocked: message, human: "git.block.human", snapshots, reads };
@@ -52160,7 +52169,7 @@ var gitPreToolUse = (input) => {
 };
 
 // src/git/hooks/session.ts
-import { dirname as dirname22, relative as relative13 } from "node:path";
+import { dirname as dirname23, relative as relative13 } from "node:path";
 var ALLOW17 = { kind: "allow" };
 var EDIT_TOOLS3 = /* @__PURE__ */ new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
 var gitSessionStart = (input) => {
@@ -52173,7 +52182,7 @@ var editedPath = (input) => {
   const raw = optionalString(inputs, "file_path") ?? optionalString(inputs, "notebook_path");
   if (raw === void 0 || raw === "") return void 0;
   const file = toAbsolutePath(raw, input.cwd);
-  const repo = openRepo(input.runtime, toAbsolutePath(dirname22(file))) ?? openRepo(input.runtime, input.cwd);
+  const repo = openRepo(input.runtime, toAbsolutePath(dirname23(file))) ?? openRepo(input.runtime, input.cwd);
   if (repo === void 0) return void 0;
   const path = toPosixPath(relative13(input.runtime.realpath(repo.root), input.runtime.realpath(file)));
   return path === "" || path.startsWith("..") || path.startsWith(STATE_PREFIX) ? void 0 : { repo, path };
@@ -52778,7 +52787,7 @@ var triageAfterWrite = (input) => {
 var TRIAGE_HANDLERS = { PostToolUse: [triageAfterWrite] };
 
 // src/learnings/hooks.ts
-import { dirname as dirname23, relative as relative17 } from "node:path";
+import { dirname as dirname24, relative as relative17 } from "node:path";
 
 // src/policy/inject.ts
 var injectContext = (input, paths, guard, text40, data2) => {
@@ -53020,7 +53029,7 @@ var markUsed = (input, paths, all, used, seen) => {
     paths.dir,
     all.map((lesson) => ids4.has(lesson.id) ? { ...lesson, lastMatchedAt: now, uses: lesson.uses + 1 } : lesson)
   );
-  input.runtime.mkdir(toAbsolutePath(dirname23(paths.cache(SEEN_FILE2))));
+  input.runtime.mkdir(toAbsolutePath(dirname24(paths.cache(SEEN_FILE2))));
   const next3 = { session: input.payload.sessionId ?? "", seen: [.../* @__PURE__ */ new Set([...seen, ...ids4])] };
   input.runtime.writeText(paths.cache(SEEN_FILE2), `${JSON.stringify(next3)}
 `);
@@ -53061,7 +53070,7 @@ var untrustedRecorder = (input) => {
   if (!readsUntrusted(tool)) return ALLOW19;
   const paths = projectPaths(input);
   if (paths === void 0 || input.runtime.stat(paths.dir)?.kind !== "dir") return ALLOW19;
-  input.runtime.mkdir(toAbsolutePath(dirname23(paths.cache(SEEN_FILE2))));
+  input.runtime.mkdir(toAbsolutePath(dirname24(paths.cache(SEEN_FILE2))));
   markUntrusted(input.runtime, paths, input.payload.sessionId ?? "", tool);
   return ALLOW19;
 };
@@ -53099,7 +53108,7 @@ var MEMORY_QUARANTINE_HANDLERS = {
 };
 
 // src/knowledge/who-knows.ts
-import { dirname as dirname24 } from "node:path";
+import { dirname as dirname25 } from "node:path";
 var KNOWLEDGE_MAP_FEATURE = "knowledge-map";
 var QUESTIONS_FILE = "questions.json";
 var SESSION_TAIL_MS = 30 * 6e4;
@@ -53203,7 +53212,7 @@ var takeQuestion = (runtime, paths, session, due4) => {
   const state = readQuestions(runtime, paths);
   const next3 = due4[0];
   if (next3 === void 0 || state.sessions.includes(session)) return void 0;
-  runtime.mkdir(toAbsolutePath(dirname24(paths.cache(QUESTIONS_FILE))));
+  runtime.mkdir(toAbsolutePath(dirname25(paths.cache(QUESTIONS_FILE))));
   writeJsonFile(runtime, paths.cache(QUESTIONS_FILE), {
     asked: [...state.asked, keyOf7(next3)],
     sessions: [...state.sessions, session].slice(-50)
@@ -53212,7 +53221,7 @@ var takeQuestion = (runtime, paths, session, due4) => {
 };
 var MAP_CACHE = "knowledge-map.json";
 var writeMapCache = (runtime, paths, areas) => {
-  runtime.mkdir(toAbsolutePath(dirname24(paths.cache(MAP_CACHE))));
+  runtime.mkdir(toAbsolutePath(dirname25(paths.cache(MAP_CACHE))));
   writeJsonFile(runtime, paths.cache(MAP_CACHE), {
     person: areas.filter((area) => area.holder === "person").map((area) => area.area)
   });
@@ -54107,7 +54116,7 @@ var PLANTA_HANDLERS = { Stop: [refreshBar] };
 var LABEL_HANDLERS = { Stop: [labelGuard] };
 
 // src/premise/hook.ts
-import { basename as basename11 } from "node:path";
+import { basename as basename12 } from "node:path";
 var PREMISE_FEATURE = "premise-check";
 var PENDING_FILE3 = "premise.json";
 var READ_TOOLS2 = /* @__PURE__ */ new Set(["Read", "Grep", "Glob", "LS", "NotebookRead"]);
@@ -54148,7 +54157,7 @@ var pendingOf = (input, paths) => {
 };
 var touches2 = (tool, refs) => {
   const values = Object.values(tool.input).filter((value2) => typeof value2 === "string");
-  return refs.some((ref2) => values.some((value2) => value2.includes(ref2) || value2.includes(basename11(ref2))));
+  return refs.some((ref2) => values.some((value2) => value2.includes(ref2) || value2.includes(basename12(ref2))));
 };
 var checked = (tools, refs) => tools.some(
   (tool) => RUN_TOOLS.has(tool.name) || READ_TOOLS2.has(tool.name) && (refs.length === 0 || touches2(tool, refs))
@@ -54703,7 +54712,7 @@ var relayDetector = (input) => {
 var RELAY_HANDLERS = { UserPromptSubmit: [relayDetector] };
 
 // src/reminders/hooks.ts
-import { dirname as dirname25, relative as relative20 } from "node:path";
+import { dirname as dirname26, relative as relative20 } from "node:path";
 
 // src/rules/manifest.ts
 var MANIFEST_FILE2 = ".finitemonkey/rules-compiled.json";
@@ -54935,7 +54944,7 @@ var triggerOf3 = (input, root) => BUILDERS[input.event]?.(input.payload.raw, roo
 var remember2 = (input, paths, state, ids4, reset) => {
   if (input.event === "SubagentStart") return;
   const seen = reset ? ids4 : [.../* @__PURE__ */ new Set([...state.seen, ...ids4])];
-  input.runtime.mkdir(toAbsolutePath(dirname25(paths.cache(STATE_FILE2))));
+  input.runtime.mkdir(toAbsolutePath(dirname26(paths.cache(STATE_FILE2))));
   input.runtime.writeText(paths.cache(STATE_FILE2), `${JSON.stringify({ session: state.session, seen })}
 `);
 };
@@ -56049,7 +56058,7 @@ var secretsSessionStart = (input) => {
 };
 
 // src/signals/early.ts
-import { basename as basename12, join as join156 } from "node:path";
+import { basename as basename13, join as join156 } from "node:path";
 
 // src/signals/syntax.ts
 import * as nodeModule from "node:module";
@@ -56181,7 +56190,7 @@ var ignoredError = (entries2, file) => {
   if (last?.kind !== "edit" || last.file !== file || before2?.kind !== "error") return void 0;
   if (!SHELL_TOOLS3.has(before2.tool)) return void 0;
   const named2 = before2.files ?? [];
-  return named2.length === 0 || named2.includes(basename12(file)) ? void 0 : named2;
+  return named2.length === 0 || named2.includes(basename13(file)) ? void 0 : named2;
 };
 var trigger = (scope2, file) => {
   const { input } = scope2;
@@ -56569,7 +56578,7 @@ var frontScopeGuard = (input) => {
 };
 
 // src/wt/heavy.ts
-import { basename as basename13, join as join158 } from "node:path";
+import { basename as basename14, join as join158 } from "node:path";
 var HEAVY_DIR = "heavy";
 var DEFAULT_STALE_MINUTES = 30;
 var MINUTE_MS = 6e4;
@@ -56595,7 +56604,7 @@ var runnerHeavy = (program, args2) => {
   return program !== "npm" && SCRIPTS.test(first);
 };
 var isHeavy = (command) => {
-  const program = basename13(command.program).replace(/\.(?:cmd|exe)$/i, "").toLowerCase();
+  const program = basename14(command.program).replace(/\.(?:cmd|exe)$/i, "").toLowerCase();
   if (RUNNERS3.has(program)) return runnerHeavy(program, command.args);
   if (program === "npx") return NPX_HEAVY.test(words4(command.args)[0] ?? "");
   const tool = TOOLS[program];
@@ -57863,7 +57872,7 @@ var instructionFindings = (inventory) => {
 };
 
 // src/instructions/resolve.ts
-import { dirname as dirname26, isAbsolute as isAbsolute5, join as join164, relative as relative27 } from "node:path";
+import { dirname as dirname27, isAbsolute as isAbsolute5, join as join164, relative as relative27 } from "node:path";
 var MAX_IMPORT_HOPS = 4;
 var MAX_WALK_DEPTH = 8;
 var MAX_WALK_DIRS = 3e3;
@@ -57901,7 +57910,7 @@ var ancestorsOf = (cwd) => {
   const chain2 = [];
   let current2 = cwd;
   for (; ; ) {
-    const parent = toAbsolutePath(dirname26(current2));
+    const parent = toAbsolutePath(dirname27(current2));
     if (parent === current2) break;
     chain2.push(current2);
     current2 = parent;
@@ -57997,7 +58006,7 @@ var baseCandidates = (input, settings) => {
 var resolveImport2 = (input, from, target7) => {
   if (target7.startsWith("~/")) return toAbsolutePath(join164(input.home, ...target7.slice(2).split("/")));
   if (isAbsolute5(target7)) return toAbsolutePath(target7);
-  return toAbsolutePath(join164(dirname26(from), ...target7.split("/")));
+  return toAbsolutePath(join164(dirname27(from), ...target7.split("/")));
 };
 var excluded = (settings, item2) => item2.layer !== "managed" && settings.excludes.some((glob) => globToRegExp(glob).test(toPosixPath(item2.path)));
 var displayPath = (input, path) => {
@@ -58815,7 +58824,7 @@ var writeReport = (ctx, data2, result) => {
   const env = doctorEnvFrom(ctx);
   const path = reportPath(env);
   const text40 = reportMarkdown(env, ctx, toEnvelope("doctor", result));
-  const dir = ctx.runtime.mkdir(toAbsolutePath(dirname27(path)));
+  const dir = ctx.runtime.mkdir(toAbsolutePath(dirname28(path)));
   const written = dir.ok ? ctx.runtime.writeAtomic(path, text40) : dir;
   if (!written.ok) return failureFrom(ctx.t, applyProblem({ path, detail: written.error }));
   const human2 = [...result.human ?? [], ctx.t("doctor.report.written", { path })];
@@ -58870,7 +58879,7 @@ var doctorCommand = {
 };
 
 // src/dssync/files.ts
-import { dirname as dirname28, join as join170 } from "node:path";
+import { dirname as dirname29, join as join170 } from "node:path";
 var snapshotOf2 = (runtime, dir) => {
   const files = runtime.walkFiles(dir);
   if (!files.ok) return /* @__PURE__ */ new Map();
@@ -58888,7 +58897,7 @@ var mirror = (runtime, from, to) => {
   let changed = 0;
   for (const file of wanted) {
     const destination2 = toAbsolutePath(join170(to, file));
-    runtime.mkdir(toAbsolutePath(dirname28(destination2)));
+    runtime.mkdir(toAbsolutePath(dirname29(destination2)));
     if (runtime.copyFile(toAbsolutePath(join170(from, file)), destination2).ok) changed += 1;
   }
   for (const file of target7.ok ? target7.value : []) {
@@ -59856,7 +59865,7 @@ var findFinding = (runtime, root, id, sources = FINDING_SOURCES) => {
 import { join as join178 } from "node:path";
 
 // src/look/contract.ts
-import { dirname as dirname29, join as join172 } from "node:path";
+import { dirname as dirname30, join as join172 } from "node:path";
 
 // src/look/schema-check.ts
 var CHECKS2 = {
@@ -59983,7 +59992,7 @@ var proposeUi = (runtime, paths, task, source3) => {
   const parsed = parseUiContract(source3);
   if (!parsed.ok) return parsed;
   const target7 = uiContractPath(paths, task);
-  runtime.mkdir(toAbsolutePath(dirname29(target7)));
+  runtime.mkdir(toAbsolutePath(dirname30(target7)));
   const wrote = runtime.writeText(target7, source3);
   return wrote.ok ? accept(uiHash(source3)) : reject([wrote.error]);
 };
@@ -60735,7 +60744,7 @@ var contractPass = (rules2, widest) => ({
 
 // src/look/node-ds.ts
 import { mkdirSync as mkdirSync4, writeFileSync } from "node:fs";
-import { dirname as dirname30 } from "node:path";
+import { dirname as dirname31 } from "node:path";
 var excludedIn = (kit, doc, selectors) => selectors.flatMap((selector) => {
   const roots = (() => {
     try {
@@ -60758,7 +60767,7 @@ var propose = async (at6, options2) => {
   if (at6.viewport !== options2.widest) return [];
   const probe = await at6.probe();
   if (probe !== void 0) {
-    mkdirSync4(dirname30(options2.proposal), { recursive: true });
+    mkdirSync4(dirname31(options2.proposal), { recursive: true });
     writeFileSync(options2.proposal, `${JSON.stringify(proposeTokens(probe.nodes), null, 2)}
 `);
   }
@@ -60993,7 +61002,7 @@ var focusTargets = (kit, doc, win, composites) => {
 // src/look/node-ux.ts
 import { readFileSync as readFileSync2 } from "node:fs";
 import { createRequire as createRequire2 } from "node:module";
-import { dirname as dirname31, join as join175 } from "node:path";
+import { dirname as dirname32, join as join175 } from "node:path";
 
 // src/look/probe.ts
 var PROBE_LIMIT = 3e3;
@@ -61095,7 +61104,7 @@ var AXE_OWN_RULES = [
 var loadAxeSource = (root) => {
   try {
     const main2 = createRequire2(join175(root, "package.json")).resolve("axe-core");
-    const minified = join175(dirname31(main2), "axe.min.js");
+    const minified = join175(dirname32(main2), "axe.min.js");
     try {
       return readFileSync2(minified, "utf8");
     } catch {
@@ -62012,7 +62021,7 @@ var frontsCloseCommand = {
 };
 
 // src/wt/archive.ts
-import { basename as basename14, join as join179 } from "node:path";
+import { basename as basename15, join as join179 } from "node:path";
 var ARCHIVE_PREFIX = "refs/finitemonkey/archive/";
 var stampOf3 = (iso) => iso.replace(/[:.]/g, "-");
 var refName = (request, stamp2) => `${ARCHIVE_PREFIX}${(request.branch ?? request.id).replace(/[^A-Za-z0-9._/-]/g, "-")}/${stamp2}`;
@@ -62059,7 +62068,7 @@ var archiveWorktree = (runtime, request) => {
     return reject(`update-ref ${ref2}: could not create the archive ref`);
   }
   const target7 = toAbsolutePath(
-    join179(runtime.homeDir(), ".finitemonkey", "archive", basename14(request.mainRoot), request.id, stamp2)
+    join179(runtime.homeDir(), ".finitemonkey", "archive", basename15(request.mainRoot), request.id, stamp2)
   );
   const kept = copyIgnored(runtime, repo, ignoredFiles(runtime, repo, request.generated), target7);
   const again = snapshotTree(runtime, repo, head, `${stamp2}-b`);
@@ -62401,7 +62410,7 @@ var reportMarkdown2 = (report5) => [
 ].join("\n");
 
 // src/merge/resolve-file.ts
-import { basename as basename15 } from "node:path";
+import { basename as basename16 } from "node:path";
 
 // src/merge/align.ts
 var MAX_ALIGN_CELLS = 25e4;
@@ -62667,7 +62676,7 @@ var fileLevel = (path, cls, rule, decision2, action, stop = false) => ({
   droppedSide: void 0,
   sameIntent: []
 });
-var isGenerated = (inputs, context) => LOCKFILES6.has(basename15(inputs.stages.path)) || inputs.linguistGenerated || isDeclaredGenerated(context.scopes, inputs.stages.path) || GENERATED_HEADER.test((inputs.stages.ours ?? "").split("\n").slice(0, 5).join("\n"));
+var isGenerated = (inputs, context) => LOCKFILES6.has(basename16(inputs.stages.path)) || inputs.linguistGenerated || isDeclaredGenerated(context.scopes, inputs.stages.path) || GENERATED_HEADER.test((inputs.stages.ours ?? "").split("\n").slice(0, 5).join("\n"));
 var DECISIONS = {
   C0: "stopped: needs the owner of the file",
   C1: "kept both sides",
@@ -64504,7 +64513,7 @@ var rescueCommand = {
 };
 
 // src/git/undo.ts
-import { basename as basename16, dirname as dirname32, join as join186 } from "node:path";
+import { basename as basename17, dirname as dirname33, join as join186 } from "node:path";
 var INDEX_SUBJECT = "finitemonkey index:";
 var gitLine = (runtime, repo, args2) => {
   const result = runtime.git(args2, repo.root);
@@ -64547,7 +64556,7 @@ var findSnapshot = (views2, wanted) => {
 };
 var stampOf5 = (iso) => iso.replace(/[:.]/g, "-");
 var worktreePath = (runtime, repo) => {
-  const base = join186(dirname32(repo.root), `${basename16(repo.root)}-undo-${stampOf5(runtime.now())}`);
+  const base = join186(dirname33(repo.root), `${basename17(repo.root)}-undo-${stampOf5(runtime.now())}`);
   return toAbsolutePath(runtime.stat(toAbsolutePath(base)) === void 0 ? base : `${base}-2`);
 };
 var intoWorktree = (runtime, repo, view3) => {
@@ -64681,7 +64690,7 @@ var undoCommand = {
 };
 
 // src/commands/golden.ts
-import { dirname as dirname33 } from "node:path";
+import { dirname as dirname34 } from "node:path";
 var GOLDEN_ACCEPT_SCHEMA = "finitemonkey/golden-accept@1";
 var USAGE10 = "finitemonkey golden accept <check-id> [--case <name>] [--task <id>]";
 var invalid2 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE10, { detail });
@@ -64700,7 +64709,7 @@ var store = (ctx, gate, spec2, result) => {
   if (result.kind === "exit") return void 0;
   const path = expectedPath(gate.paths.root, spec2.id, result.name);
   const prior = ctx.runtime.readText(path);
-  ctx.runtime.mkdir(toAbsolutePath(dirname33(path)));
+  ctx.runtime.mkdir(toAbsolutePath(dirname34(path)));
   if (!ctx.runtime.writeText(path, result.stdout).ok) return void 0;
   const accepted2 = {
     case: result.name,
@@ -74682,7 +74691,7 @@ var policyExplainCommand = {
 import { join as join208 } from "node:path";
 
 // src/pr/checklist.ts
-import { basename as basename17 } from "node:path";
+import { basename as basename18 } from "node:path";
 var CODEOWNERS_FILES2 = [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"];
 var API_CONTRACT = [
   "**/openapi*.yml",
@@ -74732,7 +74741,7 @@ var checklistLines = (runtime, root, input) => {
       )
     );
   }
-  for (const path of paths.filter((item2) => LOCKFILES6.has(basename17(item2))))
+  for (const path of paths.filter((item2) => LOCKFILES6.has(basename18(item2))))
     lines10.push(box(false, `Lockfile ${path} changed: dependency change reviewed`));
   return lines10;
 };
@@ -76850,7 +76859,7 @@ var secretsAcceptCommand = {
 };
 
 // src/secrets/runbooks.ts
-import { dirname as dirname34, join as join215 } from "node:path";
+import { dirname as dirname35, join as join215 } from "node:path";
 var PROVIDER_OF_RULE = {
   "aws-access-token": "aws",
   "aws-secret-access-key": "aws",
@@ -76872,7 +76881,7 @@ var RUNBOOKS_URL = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/run
 var runbookProvider = (rule) => PROVIDER_OF_RULE[rule] ?? "generic";
 var runbookLink = (runtime, rule) => {
   const file = `${runbookProvider(rule)}.md`;
-  const local = toAbsolutePath(join215(dirname34(dirname34(runtime.selfPath)), "runbooks", file));
+  const local = toAbsolutePath(join215(dirname35(dirname35(runtime.selfPath)), "runbooks", file));
   return runtime.stat(local)?.kind === "file" ? local : `${RUNBOOKS_URL}/${file}`;
 };
 
@@ -79385,7 +79394,7 @@ var wtDismissCommand = {
 };
 
 // src/wt/clean.ts
-import { basename as basename18 } from "node:path";
+import { basename as basename19 } from "node:path";
 var DEFAULT_INCLUDE = ["contained", "equivalent", "orphan"];
 var actionFor2 = (cls, options2) => {
   if (cls === "unpushed") return "archive-keep";
@@ -79395,7 +79404,7 @@ var actionFor2 = (cls, options2) => {
   return cls === "orphan" ? "prune" : "keep";
 };
 var planItem = (item2, options2) => ({
-  id: item2.entry?.id ?? basename18(item2.path),
+  id: item2.entry?.id ?? basename19(item2.path),
   path: toPosixPath(item2.path),
   branch: item2.branch,
   cls: item2.cls,

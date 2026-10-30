@@ -3,13 +3,14 @@ import { existsSync, readFileSync, rmSync, symlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 
-import { toAbsolutePath } from "../src/core/brand.js";
+import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import { destructiveHit, externalBlockers, pipeToShell } from "../src/git/destructive.js";
 import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { openRepo } from "../src/git/repo.js";
 import { snapshotViews, undoSnapshot } from "../src/git/undo.js";
+import { createTranslator } from "../src/i18n/translate.js";
 import { normalizeCommand } from "../src/shell/normalize.js";
-import { bash, hook, runtime, tempDir, tempRepo, write } from "./git-support.js";
+import { bash, hook, runtime, SESSION, tempDir, tempRepo, write } from "./git-support.js";
 import { memoryFs } from "./memory-fs.js";
 import { fakeRuntime } from "./support.js";
 
@@ -91,6 +92,55 @@ describe("rm -rf through another spelling of the repository path", () => {
       assert.equal(snapshotViews(runtime, opened).length, 1);
     } finally {
       rmSync(dirname(link), { recursive: true, force: true });
+      repo.dispose();
+    }
+  });
+});
+
+describe("rm -rf of a path that is not there", () => {
+  it("takes no snapshot, while a dangling symlink still counts as present", async () => {
+    const repo = tempRepo({ "src/a.ts": "export const a = 1;\n" });
+    try {
+      const decision = await hook(gitPreToolUse, "PreToolUse", repo.root, bash("rm -rf node_modules dist/out"));
+      assert.equal(decision.kind, "allow");
+      const opened = openRepo(runtime, repo.root);
+      assert.ok(opened);
+      assert.deepEqual(snapshotViews(runtime, opened), []);
+      symlinkSync(join(repo.root, "missing"), join(repo.root, "link"));
+      await hook(gitPreToolUse, "PreToolUse", repo.root, bash("rm -rf link"));
+      assert.equal(snapshotViews(runtime, opened).length, 1);
+    } finally {
+      repo.dispose();
+    }
+  });
+});
+
+describe("repository lookup", () => {
+  it("opens the repository once per call when a broad rule asks about other blockers", async () => {
+    const repo = tempRepo({ "README.md": "hello\n" });
+    try {
+      let opened = 0;
+      const counting = {
+        ...runtime,
+        git: (args: readonly string[], cwd: AbsolutePath) => {
+          if (args.includes("--show-toplevel")) opened += 1;
+          return runtime.git(args, cwd);
+        },
+      };
+      const raw = { session_id: SESSION, ...bash("git push --force") };
+      const payload = { hookEventName: "PreToolUse", sessionId: SESSION, cwd: repo.root, stopHookActive: false, raw };
+      const t = createTranslator("en");
+      const decision = await gitPreToolUse({
+        event: "PreToolUse",
+        cwd: repo.root,
+        runtime: counting,
+        t,
+        env: {},
+        payload,
+      });
+      assert.equal(decision.kind, "block");
+      assert.equal(opened, 1);
+    } finally {
       repo.dispose();
     }
   });
