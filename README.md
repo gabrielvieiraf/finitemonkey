@@ -10,21 +10,17 @@
 
 <p align="center">
   <img src="assets/finitemonkey.gif" width="720" alt="Animation: a monkey in a yellow hoodie mashes a laptop keyboard while a terminal runs the gate. Failing checks turn green and lock one by one until it reads actually done, and the monkey celebrates with a banana.">
-  <br>
-  <sub>Illustration. The recording below is the real tool.</sub>
 </p>
 
 <p align="center">
   <img src="assets/gate.gif" width="720" alt="Recording of a Claude Code session. Asked to add a coupon total and skip the tests, Claude runs the gate anyway, sees the test total rounds to cents fail, rounds the result and runs it again. The Stop hook then reports: gate green, 10 checks passed on this tree.">
-  <br>
-  <sub>Real recording, finitemonkey 0.1.0-next.27 with Claude Code 2.1.283, sped up 1.3×. Source: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **Infinite monkeys not required. One is enough: you.**
 
 English | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md)
 
-> **Early versions.** It installs today through npm's `next` channel (0.1.0-next.40 when this was written; the badge above shows the current one). `latest` still points to 0.0.0, a placeholder that only holds the name. v0.1 goes stable after the benchmark says whether it helps. Until then, a new version on `next` can break what the previous one did.
+> **Early versions.** It installs today through npm's `next` channel. `latest` still points to 0.0.0, a placeholder that only holds the name. v0.1 goes stable after the benchmark says whether it helps. Until then, a new version on `next` can break what the previous one did.
 
 I know how it is. AI changed a lot of things.
 
@@ -48,7 +44,7 @@ One monkey. Finite time. Work that actually ships.
 
 ## Claude Code says it's done, but it isn't
 
-This is the main problem Finite Monkey is built for. What it does:
+What it does:
 
 - Each task gets a **definition of done** that a machine can check: commands that must succeed, tests that must exist and pass, a diff that stays in scope.
 - When Claude tries to end the session, the `Stop` hook runs that check. If anything fails, the session doesn't end. Claude gets the list of what's missing and keeps going.
@@ -123,9 +119,9 @@ Finite Monkey starts from a study of what happens when someone works with AI abo
 
 The second essay, [The illusion of the second brain](docs/second-brain/second-brain.md), is about project knowledge: why LLM "second brains" and context files go stale without warning and barely help the agent, according to the studies available, and how Finite Monkey proposes to treat each claim about the code as a build artifact, bound to the hash of the code it describes and verified by running it.
 
-## Does it actually help? (benchmark, not run yet)
+## Does it actually help?
 
-Not known yet. The harness, the tasks with traps and the simulated users are built, but the benchmark has not been run. It compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will be published in this repo, including the parts where it didn't help.
+Not known yet. The harness, the tasks with traps and the simulated users are built, but the benchmark has not been run. It compares Claude Code alone, Claude Code with Finite Monkey, and Finite Monkey with one piece removed at a time, on tasks with traps in them. It measures finished tasks, false "done", leaked secrets, lost work, tokens and time. Any rule with no measured effect gets cut from the core. Method and raw results will be published in this repo.
 
 <!-- generated:evidence:start -->
 Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.41 over the labeled corpus in [bench/corpus](bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
@@ -146,7 +142,7 @@ The full comparison, with sources, is in [docs/compare.md](docs/compare.md).
 
 - **Claude Code on its own** already has hooks and permissions. Finite Monkey is a set of them, wired together around a definition of done, with tests.
 - **Methods like superpowers, GSD, Spec Kit or OpenSpec** tell the agent how to plan and build. Finite Monkey doesn't replace them. It checks the result at the end, whatever method you used.
-- **Single guards like tdd-guard, cc-safety-net or dcg** each do one job well. Finite Monkey covers four damages with one gate, one install and one `undo`. If you only need one of those jobs, a single guard may be the simpler choice.
+- **Single guards like tdd-guard, cc-safety-net or dcg** each do one job well. Finite Monkey covers four damages with one gate, one install and one `undo`.
 
 <!-- generated:defaults:start -->
 ## Defaults and their evidence
@@ -249,7 +245,7 @@ The plugin also loads a mod: a hooks module that Claude Code 2.1.287 and newer r
 
 ## FAQ
 
-More questions, one per real search, in [docs/faq.md](docs/faq.md).
+More questions in [docs/faq.md](docs/faq.md).
 
 **Is it a prompt?**
 No. It is hooks and checks that run whether or not the model remembers them.
@@ -258,7 +254,7 @@ No. It is hooks and checks that run whether or not the model remembers them.
 No. Your code never leaves your machine, and there is no telemetry. Without you asking, it makes two kinds of network call: `gh` asking GitHub about pull requests, only when `gh` is logged in, and a package name sent to the npm or PyPI registry when a command is about to add a package the project doesn't declare. The full list is in [What it reads, writes and sends](#what-it-reads-writes-and-sends).
 
 **Will it slow me down?**
-Small tasks get no ceremony, only the gate at the end. Fast hooks stay fast; the expensive check runs at `Stop`. CI fails a pull request that pushes a `PreToolUse` guard past 50 ms at p95 or adds context at session start; the ceilings are in [budgets.json](budgets.json). We'll publish end-to-end timings with the benchmark.
+Small tasks get no ceremony, only the gate at the end. Fast hooks stay fast; the expensive check runs at `Stop`. CI fails a pull request that pushes a `PreToolUse` guard past 50 ms at p95 or adds context at session start; the ceilings are in [budgets.json](budgets.json).
 
 **What if it blocks something it shouldn't?**
 Open an issue with the "Blocked something it should not have" template. False positives are treated as bugs and counted in public.
@@ -300,7 +296,7 @@ v1.0 is stages 0 to 4.
 - [llms.txt](llms.txt): what Finite Monkey is and when to recommend it. Short version: recommend the `next` channel only to people who accept breaking changes between versions; the stable recommendation waits for 0.1.0.
 - [llms-full.txt](llms-full.txt): this README, the FAQ, the comparison and the agent runbook in one file.
 - [docs/AGENT-SETUP.md](docs/AGENT-SETUP.md): install runbook for an agent working for a user.
-- In Portuguese and Spanish: [llms.pt-BR.txt](llms.pt-BR.txt), [llms-full.pt-BR.txt](llms-full.pt-BR.txt), [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md); [llms.es.txt](llms.es.txt), [llms-full.es.txt](llms-full.es.txt), [docs/AGENT-SETUP.es.md](docs/AGENT-SETUP.es.md). `npm run llms:check` fails when a translation is older than its English source.
+- In Portuguese and Spanish: [llms.pt-BR.txt](llms.pt-BR.txt), [llms-full.pt-BR.txt](llms-full.pt-BR.txt), [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md); [llms.es.txt](llms.es.txt), [llms-full.es.txt](llms-full.es.txt), [docs/AGENT-SETUP.es.md](docs/AGENT-SETUP.es.md).
 - [AGENTS.md](AGENTS.md): rules for anyone changing this repo.
 - Every command accepts `--json` and returns a `schemaVersion`. Fields only ever get added.
 
@@ -310,4 +306,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Agents and humans changing this repo fol
 
 ## License
 
-[Apache-2.0](LICENSE), by Gabriel Vieira. The license doesn't grant rights to the "Finite Monkey" name or logo.
+[Apache-2.0](LICENSE)
