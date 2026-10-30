@@ -112,3 +112,9 @@
 {"id": "git-112", "expect": "allow", "tool": "Bash", "input": {"command": "git shortlog -sn"}, "origin": "synthetic", "note": ""}
 {"id": "git-113", "expect": "allow", "tool": "Bash", "input": {"command": "git fetch origin main"}, "origin": "synthetic", "note": ""}
 {"id": "git-114", "expect": "allow", "tool": "Bash", "input": {"command": "git diff main...HEAD"}, "origin": "synthetic", "note": ""}
+{"id": "git-115", "expect": "block", "tool": "Bash", "input": {"command": "git push --force-with-lease origin feat/own"}, "origin": "synthetic", "note": "dry-run push regression"}
+{"id": "git-116", "expect": "block", "tool": "Bash", "input": {"command": "git push --dry-run --no-dry-run --force-with-lease"}, "origin": "synthetic", "note": "dry-run push regression"}
+{"id": "git-117", "expect": "block", "tool": "Bash", "input": {"command": "git push --force-with-lease=feat/own:abc123 --force-if-includes origin main"}, "origin": "synthetic", "note": "dry-run push regression"}
+{"id": "git-118", "expect": "allow", "tool": "Bash", "input": {"command": "git push -n --force-with-lease origin feat/own"}, "origin": "synthetic", "note": "dry-run push regression"}
+{"id": "git-119", "expect": "allow", "tool": "Bash", "input": {"command": "git push --force-with-lease=feat/own:abc123 --dry-run origin main"}, "origin": "synthetic", "note": "dry-run push regression"}
+{"id": "git-120", "expect": "allow", "tool": "Bash", "input": {"command": "git push --dry-run --force origin main"}, "origin": "synthetic", "note": "dry-run push regression"}
