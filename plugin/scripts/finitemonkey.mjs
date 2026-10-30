@@ -13045,7 +13045,7 @@ var critiqueVerifyCommand = {
     const head = ctx.runtime.git(["rev-parse", "HEAD"], repo.root).stdout.trim();
     const checked2 = reproduce(ctx.runtime, repo.root, { base, head }, critique2.findings);
     const human2 = critiqueLines(ctx.t, critique2, checked2, readLedger2(ctx.runtime, repo.root));
-    const confirmed = checked2.map(settle).filter((item2) => item2.group === "must").length;
+    const confirmed2 = checked2.map(settle).filter((item2) => item2.group === "must").length;
     const data2 = {
       schema: CRITIQUE_SCHEMA,
       verdict: critique2.verdict,
@@ -13053,13 +13053,13 @@ var critiqueVerifyCommand = {
       head,
       checked: checked2.map((item2) => ({ ...item2, settled: settle(item2).group }))
     };
-    if (confirmed === 0) return success(data2, human2);
+    if (confirmed2 === 0) return success(data2, human2);
     return failureFrom(
       ctx.t,
       {
         code: "critique_must_fix",
         messageKey: "critique.error.must_fix",
-        params: { count: confirmed },
+        params: { count: confirmed2 },
         fix: "fix the must-fix findings, then run finitemonkey critique verify again",
         exitCode: ExitCode.CheckFailed,
         data: data2
@@ -13961,9 +13961,9 @@ var restoreDrillCommand = {
         (result) => ctx.t(`restore.drill.${result.status}`, { store: result.store, detail: result.detail })
       )
     ];
-    const bad = results.filter((result) => result.status === "failed" || result.status === "refused").length;
+    const bad2 = results.filter((result) => result.status === "failed" || result.status === "refused").length;
     const data2 = { schema: RESTORE_SCHEMA, drills: results };
-    return bad > 0 ? failureFrom(ctx.t, restoreProblem(bad, data2), lines10) : success(data2, lines10);
+    return bad2 > 0 ? failureFrom(ctx.t, restoreProblem(bad2, data2), lines10) : success(data2, lines10);
   })
 };
 
@@ -17189,7 +17189,14 @@ var en_default = {
   "judge.exceptions": "{count, plural, one {# number} other {# numbers}} let through by the exception list: {numbers}",
   "command.judge_read.summary": "Keep a page, document or tool output read during research as quoted data with its origin and hash",
   "command.judge_promote.summary": "Move a research claim into project claims, only after a span check and a green task",
-  "judge.item": "{item}: {origin} {source} kept as data; instruction-shaped lines not followed: {instructions}"
+  "judge.item": "{item}: {origin} {source} kept as data; instruction-shaped lines not followed: {instructions}",
+  "command.research_empty.summary": "Log a contrary search that found nothing for a critical unknown, with queries and places searched",
+  "command.research_stance.summary": "Confirm whether a source favors, contests or is unrelated to the leading answer",
+  "command.research_close.summary": "Close a research log; each critical unknown needs a source for and one against, or a logged empty search",
+  "research.sides.open": "open: {unknown} ({favors} favoring, {contests} contesting, {suggested} suggested and not confirmed)",
+  "research.sides.error.usage": "Missing or invalid arguments.",
+  "research.sides.error.person": "Only the person at a terminal can confirm a stance.",
+  "research.sides.error.one_side": "Cannot close: these critical unknowns have only one side and no logged empty search: {unknowns}."
 };
 
 // src/i18n/es.json
@@ -19915,7 +19922,14 @@ var es_default = {
   "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} por la lista de excepciones: {numbers}",
   "command.judge_read.summary": "Guardar una página, documento o salida de herramienta leída en la investigación como dato citado, con origen y hash",
   "command.judge_promote.summary": "Llevar una afirmación de investigación a las afirmaciones del proyecto, solo tras la verificación del fragmento y una tarea en verde",
-  "judge.item": "{item}: {origin} {source} guardado como dato; líneas con forma de instrucción ignoradas: {instructions}"
+  "judge.item": "{item}: {origin} {source} guardado como dato; líneas con forma de instrucción ignoradas: {instructions}",
+  "command.research_empty.summary": "Registrar una búsqueda contraria que no encontró nada para una incógnita crítica, con consultas y lugares buscados",
+  "command.research_stance.summary": "Confirmar si una fuente favorece, contradice o no se relaciona con la respuesta que lidera",
+  "command.research_close.summary": "Cerrar un registro de investigación; cada incógnita crítica necesita una fuente a favor y una en contra, o una búsqueda vacía registrada",
+  "research.sides.open": "abierta: {unknown} ({favors} a favor, {contests} en contra, {suggested} sugeridas y no confirmadas)",
+  "research.sides.error.usage": "Argumentos ausentes o inválidos.",
+  "research.sides.error.person": "Solo la persona en una terminal puede confirmar una postura.",
+  "research.sides.error.one_side": "No se puede cerrar: estas incógnitas críticas solo tienen un lado y ninguna búsqueda vacía registrada: {unknowns}."
 };
 
 // src/i18n/pt-BR.json
@@ -22641,7 +22655,14 @@ var pt_BR_default = {
   "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} pela lista de exceções: {numbers}",
   "command.judge_read.summary": "Guardar uma página, documento ou saída de ferramenta lida na pesquisa como dado citado, com origem e hash",
   "command.judge_promote.summary": "Levar uma afirmação de pesquisa às afirmações do projeto, só depois da checagem de trecho e de uma tarefa verde",
-  "judge.item": "{item}: {origin} {source} guardado como dado; linhas em forma de instrução ignoradas: {instructions}"
+  "judge.item": "{item}: {origin} {source} guardado como dado; linhas em forma de instrução ignoradas: {instructions}",
+  "command.research_empty.summary": "Registrar uma busca contrária que não achou nada para uma incógnita crítica, com consultas e lugares buscados",
+  "command.research_stance.summary": "Confirmar se uma fonte favorece, contesta ou não tem relação com a resposta que lidera",
+  "command.research_close.summary": "Fechar um registro de pesquisa; cada incógnita crítica precisa de fonte a favor e contra, ou de busca vazia registrada",
+  "research.sides.open": "aberta: {unknown} ({favors} a favor, {contests} contra, {suggested} sugeridas e não confirmadas)",
+  "research.sides.error.usage": "Argumentos ausentes ou inválidos.",
+  "research.sides.error.person": "Só a pessoa no terminal pode confirmar uma posição.",
+  "research.sides.error.one_side": "Não dá para fechar: estas incógnitas críticas só têm um lado e nenhuma busca vazia registrada: {unknowns}."
 };
 
 // src/i18n/review.json
@@ -25367,7 +25388,14 @@ var review_default = {
     "judge.exceptions": "machine",
     "command.judge_read.summary": "machine",
     "command.judge_promote.summary": "machine",
-    "judge.item": "machine"
+    "judge.item": "machine",
+    "command.research_empty.summary": "machine",
+    "command.research_stance.summary": "machine",
+    "command.research_close.summary": "machine",
+    "research.sides.open": "machine",
+    "research.sides.error.usage": "machine",
+    "research.sides.error.person": "machine",
+    "research.sides.error.one_side": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -28090,7 +28118,14 @@ var review_default = {
     "judge.exceptions": "machine",
     "command.judge_read.summary": "machine",
     "command.judge_promote.summary": "machine",
-    "judge.item": "machine"
+    "judge.item": "machine",
+    "command.research_empty.summary": "machine",
+    "command.research_stance.summary": "machine",
+    "command.research_close.summary": "machine",
+    "research.sides.open": "machine",
+    "research.sides.error.usage": "machine",
+    "research.sides.error.person": "machine",
+    "research.sides.error.one_side": "machine"
   }
 };
 
@@ -33155,8 +33190,8 @@ var invalidCodeownersLines = (text40) => text40.split("\n").flatMap((raw, index)
   const line13 = raw.trim();
   if (line13 === "" || line13.startsWith("#")) return [];
   const [pattern = "", ...owners] = line13.replace(/\s+#.*$/, "").split(/\s+/);
-  const bad = pattern.startsWith("!") || pattern.includes("[") || owners.some((owner) => !OWNER2.test(owner));
-  return bad ? [index + 1] : [];
+  const bad2 = pattern.startsWith("!") || pattern.includes("[") || owners.some((owner) => !OWNER2.test(owner));
+  return bad2 ? [index + 1] : [];
 });
 var codeownersFindings = (env) => {
   const file = CODEOWNERS_FILES.find((name) => env.runtime.readText(toAbsolutePath(join76(env.root, name))).ok);
@@ -42020,6 +42055,7 @@ var RESEARCH_LOG_SCHEMA = "finitemonkey/research-log@1";
 var CHANGES = ["nothing", "option", "unknown"];
 var RISKS = ["normal", "high"];
 var QUIET_RUN = 2;
+var STANCES = ["favors", "contests", "unrelated"];
 var researchLogPath = (paths, slug6) => toAbsolutePath(join105(paths.dir, "research", `${slug6}.jsonl`));
 var text26 = (record15, key3) => {
   const value2 = record15[key3];
@@ -42039,11 +42075,28 @@ var questionOf = (record15) => ({
   risk: RISKS.find((item2) => item2 === record15["risk"]) ?? "normal",
   at: text26(record15, "at")
 });
-var sourceOf = (record15) => ({
-  url: text26(record15, "url"),
-  changed: CHANGES.find((item2) => item2 === record15["changed"]) ?? "nothing",
-  target: text26(record15, "target"),
-  resolves: text26(record15, "resolves"),
+var sourceOf = (record15) => {
+  const stance = STANCES.find((item2) => item2 === record15["stance"]);
+  const claim = text26(record15, "claim");
+  return {
+    url: text26(record15, "url"),
+    changed: CHANGES.find((item2) => item2 === record15["changed"]) ?? "nothing",
+    target: text26(record15, "target"),
+    resolves: text26(record15, "resolves"),
+    at: text26(record15, "at"),
+    ...stance === void 0 ? {} : { stance, stanceBy: record15["stanceBy"] === "person" ? "person" : "model" },
+    ...claim === "" ? {} : { claim }
+  };
+};
+var confirmed = (sources, records2) => sources.map((source3) => {
+  const confirmation = records2.findLast((record15) => record15["type"] === "stance" && record15["url"] === source3.url);
+  const stance = STANCES.find((item2) => item2 === confirmation?.["stance"]);
+  return stance === void 0 ? source3 : { ...source3, stance, stanceBy: "person" };
+});
+var emptyOf = (record15) => ({
+  unknown: text26(record15, "unknown"),
+  queries: texts5(record15, "queries"),
+  places: texts5(record15, "places"),
   at: text26(record15, "at")
 });
 var readResearchLog = (runtime, paths, slug6) => {
@@ -42055,10 +42108,13 @@ var readResearchLog = (runtime, paths, slug6) => {
   });
   const head = records2.find((record15) => record15["type"] === "question");
   if (head === void 0) return void 0;
+  const closed = records2.findLast((record15) => record15["type"] === "close");
   return {
     slug: slug6,
     question: questionOf(head),
-    sources: records2.filter((record15) => record15["type"] === "source").map(sourceOf)
+    sources: confirmed(records2.filter((record15) => record15["type"] === "source").map(sourceOf), records2),
+    emptySearches: records2.filter((record15) => record15["type"] === "empty-search").map(emptyOf),
+    ...closed === void 0 ? {} : { closedAt: text26(closed, "at") }
   };
 };
 var hostOf2 = (url2) => {
@@ -63838,10 +63894,10 @@ var detailOf2 = (check2) => {
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf2(check2), fix: check2.fix });
 var checksResult = (t, schema, code2, checks) => {
   const data2 = { schema, checks };
-  const bad = failing(checks);
-  const human2 = bad.length === 0 ? checks.map((check2) => checkLine(t, check2)) : bad.map((check2) => checkLine(t, check2));
-  if (bad.length === 0) return success(data2, human2);
-  const [first] = bad;
+  const bad2 = failing(checks);
+  const human2 = bad2.length === 0 ? checks.map((check2) => checkLine(t, check2)) : bad2.map((check2) => checkLine(t, check2));
+  if (bad2.length === 0) return success(data2, human2);
+  const [first] = bad2;
   return {
     ok: false,
     exitCode: ExitCode.CheckFailed,
@@ -63849,7 +63905,7 @@ var checksResult = (t, schema, code2, checks) => {
     human: human2,
     error: {
       code: code2,
-      message: t("githooks.error.failed", { count: bad.length }),
+      message: t("githooks.error.failed", { count: bad2.length }),
       fix: first?.fix ?? ""
     }
   };
@@ -65716,14 +65772,14 @@ var withCommits = (defaults, answer5) => {
 };
 
 // src/github/step.ts
-var githubStep = (runtime, root, confirmed) => {
+var githubStep = (runtime, root, confirmed2) => {
   const state = readGithub(runtime, root);
   if (state === void 0) return { state: null, proposal: null, command: null, applied: false };
   writeCache(runtime, root, state);
   if (isProtectedOnGithub(state)) return { state, proposal: null, command: null, applied: false };
   const written = writeProposal(runtime, root);
   const command = applyCommand(state.repo);
-  const applied3 = written && confirmed && applyProposal(runtime, root, state.repo);
+  const applied3 = written && confirmed2 && applyProposal(runtime, root, state.repo);
   if (applied3)
     writeCache(runtime, root, {
       ...state,
@@ -67776,6 +67832,126 @@ var judgePromoteCommand = judgeCommand({
   build: (_ctx, values, positionals2) => ({ verb: "promote", claim: positionals2[0] ?? stringOption(values, "claim") })
 });
 
+// src/research/sides.ts
+var RESEARCH_SIDES_FEATURE = "research-sides";
+var confirmedOn = (sources, unknown, stance) => sources.filter((source3) => source3.resolves === unknown && source3.stance === stance && source3.stanceBy === "person").map((source3) => source3.url);
+var sidesOf = (log) => log.question.unknowns.map((unknown) => {
+  const favors = confirmedOn(log.sources, unknown, "favors");
+  const contests = confirmedOn(log.sources, unknown, "contests");
+  const emptySearch = log.emptySearches.some((search) => search.unknown === unknown && search.queries.length > 0);
+  const suggested = log.sources.filter((source3) => source3.resolves === unknown && source3.stanceBy === "model").map((source3) => source3.url);
+  return {
+    unknown,
+    favors,
+    contests,
+    suggested,
+    emptySearch,
+    open: favors.length === 0 || contests.length === 0 && !emptySearch
+  };
+});
+var openSides = (log) => sidesOf(log).filter((sides) => sides.open).map((sides) => sides.unknown);
+
+// src/commands/research-sides.ts
+var researchLinks = (ctx, paths, log) => ({
+  sides: sidesOf(log),
+  decision: log.question.decision,
+  decisionRecords: readRecords(ctx.runtime, paths).filter((record15) => record15.research.includes(log.slug)).map((record15) => record15.task),
+  claims: log.sources.flatMap((source3) => source3.claim === void 0 ? [] : [source3.claim])
+});
+var sidesLines = (ctx, log) => sidesOf(log).filter((sides) => sides.open).map(
+  (sides) => ctx.t("research.sides.open", {
+    unknown: sides.unknown,
+    favors: sides.favors.length,
+    contests: sides.contests.length,
+    suggested: sides.suggested.length
+  })
+);
+var bad = (ctx, usage2) => Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "research.sides.error.usage", usage2)));
+var withLog = (ctx, slug6, usage2, run10) => inGuardianRepo(ctx, (root) => {
+  const paths = fmPaths(root);
+  const log = readResearchLog(ctx.runtime, paths, slug6);
+  return log === void 0 ? failureFrom(ctx.t, usageProblem("invalid_arguments", "research.log.error.missing", usage2, { slug: slug6 })) : run10(paths, log);
+});
+var appended = (ctx, paths, slug6, record15) => {
+  if (!appendResearch(ctx.runtime, paths, slug6, { ...record15, at: ctx.runtime.now() }))
+    return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug6}.jsonl`));
+  const log = readResearchLog(ctx.runtime, paths, slug6);
+  return success(
+    { schema: RESEARCH_LOG_SCHEMA, slug: slug6, ...log === void 0 ? {} : researchLinks(ctx, paths, log) },
+    log === void 0 ? [] : sidesLines(ctx, log)
+  );
+};
+var EMPTY_USAGE = 'finitemonkey research empty <slug> --unknown "<unknown>" --query "<query>" [--place <where>]';
+var researchEmptyCommand = {
+  path: ["research", "empty"],
+  summaryKey: "command.research_empty.summary",
+  usage: EMPTY_USAGE,
+  status: "ready",
+  maxPositionals: 1,
+  options: {
+    unknown: { type: "string" },
+    query: { type: "string", multiple: true },
+    place: { type: "string", multiple: true }
+  },
+  run: (ctx, args2) => {
+    const slug6 = args2.positionals[0] ?? "";
+    const unknown = stringOption(args2.values, "unknown");
+    const queries = listOption(args2.values, "query");
+    if (slug6 === "" || unknown === void 0 || queries.length === 0) return bad(ctx, EMPTY_USAGE);
+    return withLog(
+      ctx,
+      slug6,
+      EMPTY_USAGE,
+      (paths) => appended(ctx, paths, slug6, { type: "empty-search", unknown, queries, places: listOption(args2.values, "place") })
+    );
+  }
+};
+var STANCE_USAGE = "finitemonkey research stance <slug> <url> --stance favors|contests|unrelated";
+var researchStanceCommand = {
+  path: ["research", "stance"],
+  summaryKey: "command.research_stance.summary",
+  usage: STANCE_USAGE,
+  status: "ready",
+  maxPositionals: 2,
+  options: { stance: { type: "string" } },
+  run: (ctx, args2) => {
+    const [slug6 = "", url2 = ""] = args2.positionals;
+    const stance = STANCES.find((item2) => item2 === stringOption(args2.values, "stance"));
+    if (slug6 === "" || url2 === "" || stance === void 0) return bad(ctx, STANCE_USAGE);
+    if (!isPerson(ctx))
+      return Promise.resolve(
+        failureFrom(ctx.t, usageProblem("needs_confirmation", "research.sides.error.person", STANCE_USAGE))
+      );
+    return withLog(ctx, slug6, STANCE_USAGE, (paths) => appended(ctx, paths, slug6, { type: "stance", url: url2, stance }));
+  }
+};
+var researchCloseCommand = {
+  path: ["research", "close"],
+  summaryKey: "command.research_close.summary",
+  usage: "finitemonkey research close <slug>",
+  status: "ready",
+  maxPositionals: 1,
+  run: (ctx, args2) => {
+    const slug6 = args2.positionals[0] ?? "";
+    return withLog(ctx, slug6, "finitemonkey research close <slug>", (paths, log) => {
+      const open = openSides(log);
+      const mode = featureMode(ctx.runtime, paths, RESEARCH_SIDES_FEATURE);
+      if (open.length > 0 && mode === "active")
+        return failureFrom(
+          ctx.t,
+          usageProblem("research_invalid", "research.sides.error.one_side", "finitemonkey research empty <slug>", {
+            unknowns: open.join(", ")
+          }),
+          sidesLines(ctx, log)
+        );
+      if (open.length > 0 && mode === "shadow")
+        recordFeatureShadow(ctx.runtime, paths, RESEARCH_SIDES_FEATURE, { slug: slug6, open: open.join(",") });
+      return appended(ctx, paths, slug6, { type: "close" });
+    });
+  }
+};
+var RESEARCH_SIDES_COMMANDS = [researchEmptyCommand, researchStanceCommand, researchCloseCommand];
+
 // src/commands/judge-registry.ts
 var judgeContestCommand = judgeCommand({
   path: ["judge", "contest"],
@@ -67935,7 +68111,8 @@ var JUDGE_COMMANDS = [
   judgeCheckCommand,
   judgeAnchorCommand,
   judgeReadCommand,
-  judgePromoteCommand
+  judgePromoteCommand,
+  ...RESEARCH_SIDES_COMMANDS
 ];
 
 // src/knowledge/asof.ts
@@ -70683,14 +70860,14 @@ var gapOf = (domain, state, events, now) => {
   const family = { ...base, wrongConcepts };
   const s = total > 0 && wrongWeight / total >= GAP2.wrongShare && wrongConcepts.length >= GAP2.minConcepts;
   if (!s) return { ...family, state: "coherent" };
-  const confirmed = mine.filter(
+  const confirmed2 = mine.filter(
     (probe) => probe.kind === "clarify" && probe.status === "wrong" && !cleared.has(probe.concept)
   ).length;
   const quiet = !events.some(
     (event) => wrongConcepts.includes(event.concept) && event.origin === "person" && (event.kind === "own_repair" || event.kind === "own_change") && days(event.at, now) < GAP2.quietDays
   );
-  const sustained = confirmed >= GAP2.minRelations && quiet;
-  return { ...family, confirmedRelations: confirmed, state: sustained ? "sustained" : "watching" };
+  const sustained = confirmed2 >= GAP2.minRelations && quiet;
+  return { ...family, confirmedRelations: confirmed2, state: sustained ? "sustained" : "watching" };
 };
 
 // src/conceitos/probes-run.ts
@@ -74361,14 +74538,28 @@ var stateLines = (ctx, log) => {
     ...state.suggestStop ? [ctx.t("research.log.stop_note", { quiet: state.quietRun, stop: log.question.stop || "-" })] : []
   ];
 };
-var SOURCE_USAGE = "finitemonkey research source <slug> <url> --changed nothing|option|unknown [--target <option or unknown>] [--resolves <unknown>]";
+var stanceFields = (ctx, values) => {
+  const stance = STANCES.find((item2) => item2 === stringOption(values, "stance"));
+  const claim = stringOption(values, "claim");
+  return {
+    ...stance === void 0 ? {} : { stance, stanceBy: isPerson(ctx) ? "person" : "model" },
+    ...claim === void 0 ? {} : { claim }
+  };
+};
+var SOURCE_USAGE = "finitemonkey research source <slug> <url> --changed nothing|option|unknown [--target <option or unknown>] [--resolves <unknown>] [--stance favors|contests|unrelated] [--claim <judge claim>]";
 var researchSourceCommand = {
   path: ["research", "source"],
   summaryKey: "command.research_source.summary",
   usage: SOURCE_USAGE,
   status: "ready",
   maxPositionals: 2,
-  options: { changed: { type: "string" }, target: { type: "string" }, resolves: { type: "string" } },
+  options: {
+    changed: { type: "string" },
+    target: { type: "string" },
+    resolves: { type: "string" },
+    stance: { type: "string" },
+    claim: { type: "string" }
+  },
   run: (ctx, args2) => {
     const [slug6 = "", url2 = ""] = args2.positionals;
     const changed = CHANGES.find((item2) => item2 === stringOption(args2.values, "changed"));
@@ -74389,6 +74580,7 @@ var researchSourceCommand = {
         changed,
         target: stringOption(args2.values, "target") ?? "",
         resolves: stringOption(args2.values, "resolves") ?? "",
+        ...stanceFields(ctx, args2.values),
         at: ctx.runtime.now()
       });
       const log = readResearchLog(ctx.runtime, paths, slug6);
@@ -74416,8 +74608,15 @@ var researchStatusCommand = {
           })
         );
       return success(
-        { schema: RESEARCH_LOG_SCHEMA, slug: slug6, question: log.question, sources: log.sources, state: researchState(log) },
-        stateLines(ctx, log)
+        {
+          schema: RESEARCH_LOG_SCHEMA,
+          slug: slug6,
+          question: log.question,
+          sources: log.sources,
+          state: researchState(log),
+          ...researchLinks(ctx, fmPaths(root), log)
+        },
+        [...stateLines(ctx, log), ...sidesLines(ctx, log)]
       );
     });
   }

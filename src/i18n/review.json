@@ -2720,7 +2720,14 @@
     "judge.exceptions": "machine",
     "command.judge_read.summary": "machine",
     "command.judge_promote.summary": "machine",
-    "judge.item": "machine"
+    "judge.item": "machine",
+    "command.research_empty.summary": "machine",
+    "command.research_stance.summary": "machine",
+    "command.research_close.summary": "machine",
+    "research.sides.open": "machine",
+    "research.sides.error.usage": "machine",
+    "research.sides.error.person": "machine",
+    "research.sides.error.one_side": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5443,6 +5450,13 @@
     "judge.exceptions": "machine",
     "command.judge_read.summary": "machine",
     "command.judge_promote.summary": "machine",
-    "judge.item": "machine"
+    "judge.item": "machine",
+    "command.research_empty.summary": "machine",
+    "command.research_stance.summary": "machine",
+    "command.research_close.summary": "machine",
+    "research.sides.open": "machine",
+    "research.sides.error.usage": "machine",
+    "research.sides.error.person": "machine",
+    "research.sides.error.one_side": "machine"
   }
 }

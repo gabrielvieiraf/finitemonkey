@@ -2720,5 +2720,12 @@
   "judge.exceptions": "{count, plural, one {# número liberado} other {# números liberados}} pela lista de exceções: {numbers}",
   "command.judge_read.summary": "Guardar uma página, documento ou saída de ferramenta lida na pesquisa como dado citado, com origem e hash",
   "command.judge_promote.summary": "Levar uma afirmação de pesquisa às afirmações do projeto, só depois da checagem de trecho e de uma tarefa verde",
-  "judge.item": "{item}: {origin} {source} guardado como dado; linhas em forma de instrução ignoradas: {instructions}"
+  "judge.item": "{item}: {origin} {source} guardado como dado; linhas em forma de instrução ignoradas: {instructions}",
+  "command.research_empty.summary": "Registrar uma busca contrária que não achou nada para uma incógnita crítica, com consultas e lugares buscados",
+  "command.research_stance.summary": "Confirmar se uma fonte favorece, contesta ou não tem relação com a resposta que lidera",
+  "command.research_close.summary": "Fechar um registro de pesquisa; cada incógnita crítica precisa de fonte a favor e contra, ou de busca vazia registrada",
+  "research.sides.open": "aberta: {unknown} ({favors} a favor, {contests} contra, {suggested} sugeridas e não confirmadas)",
+  "research.sides.error.usage": "Argumentos ausentes ou inválidos.",
+  "research.sides.error.person": "Só a pessoa no terminal pode confirmar uma posição.",
+  "research.sides.error.one_side": "Não dá para fechar: estas incógnitas críticas só têm um lado e nenhuma busca vazia registrada: {unknowns}."
 }
