@@ -2623,5 +2623,12 @@
   "look.sheet.done": "Sheet for {route}: {variables, plural, one {# variable} other {# variables}}, {changes, plural, one {# dimension changed} other {# dimensions changed}} against the approved sheet.",
   "command.look_perf_accept.summary": "Accept a measured performance regression of a route for the current tree (person only)",
   "look.perf.unknown": "No performance measurement for {route} yet. Run look first.",
-  "look.perf.accepted": "Regression on {route} accepted for tree {tree}; its numbers are the new base."
+  "look.perf.accepted": "Regression on {route} accepted for tree {tree}; its numbers are the new base.",
+  "command.look_pair.summary": "List screen pairs ranked by the critic and the person's picks",
+  "command.look_pair_pick.summary": "Record which variant of a pair the person prefers (person only)",
+  "look.pair.unknown": "There is no pair {id}.",
+  "look.pair.picked": "Pair {id}: the person picked {choice}. Critic and person agree on {agreed} of {decided}.",
+  "look.pair.line": "{id}: critic {critic}, person {person}",
+  "look.pair.agreement": "Agreement: {agreed} of {decided} decided pairs.",
+  "look.opinion": "OPINION ({heuristic}) {route} @{viewport}: {text}"
 }

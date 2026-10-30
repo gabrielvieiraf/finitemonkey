@@ -2623,7 +2623,14 @@
     "look.sheet.done": "machine",
     "command.look_perf_accept.summary": "machine",
     "look.perf.unknown": "machine",
-    "look.perf.accepted": "machine"
+    "look.perf.accepted": "machine",
+    "command.look_pair.summary": "machine",
+    "command.look_pair_pick.summary": "machine",
+    "look.pair.unknown": "machine",
+    "look.pair.picked": "machine",
+    "look.pair.line": "machine",
+    "look.pair.agreement": "machine",
+    "look.opinion": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5249,6 +5256,13 @@
     "look.sheet.done": "machine",
     "command.look_perf_accept.summary": "machine",
     "look.perf.unknown": "machine",
-    "look.perf.accepted": "machine"
+    "look.perf.accepted": "machine",
+    "command.look_pair.summary": "machine",
+    "command.look_pair_pick.summary": "machine",
+    "look.pair.unknown": "machine",
+    "look.pair.picked": "machine",
+    "look.pair.line": "machine",
+    "look.pair.agreement": "machine",
+    "look.opinion": "machine"
   }
 }

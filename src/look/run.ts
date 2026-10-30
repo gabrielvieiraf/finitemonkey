@@ -10,6 +10,7 @@ import { featureMode } from "../policy/feature.js";
 import { fmPaths } from "../task/paths.js";
 import { readApproved, writeLayouts } from "./approved.js";
 import { loadLookConfig, type LookConfig, lookRoutes } from "./config.js";
+import { type Critic, CRITIC_FEATURE, runCritic } from "./critic.js";
 import { applyAllows, pageFindings } from "./findings.js";
 import { captureAll, type PageResult } from "./node-capture.js";
 import { launchBrowser, loadPlaywright } from "./node-playwright.js";
@@ -117,7 +118,28 @@ const recordHeaders = async (runtime: Runtime, ready: Ready): Promise<void> => {
   writeHeaders(runtime, paths, ready.tree, { at: runtime.now(), https: false, routes });
 };
 
-export const runLook = async (runtime: Runtime, cwd: AbsolutePath): Promise<LookRun> => {
+const critique = async (runtime: Runtime, ready: Ready, shot: Shot, critic: Critic | undefined): Promise<void> => {
+  const paths = fmPaths(ready.root);
+  const setup = uxSetup(runtime, ready.root, ready.config, ready.modes);
+  await runCritic({
+    runtime,
+    paths,
+    tree: ready.tree,
+    mode: featureMode(runtime, paths, CRITIC_FEATURE),
+    critic,
+    inputs: shot.results
+      .filter((result) => result.loadError === undefined)
+      .map((result) => ({
+        route: result.route,
+        viewport: result.viewport,
+        screenshot: result.path,
+        contract: setup.screens,
+        tokens: setup.tokenFiles,
+      })),
+  });
+};
+
+export const runLook = async (runtime: Runtime, cwd: AbsolutePath, critic?: Critic): Promise<LookRun> => {
   const ready = prepare(runtime, cwd);
   if ("kind" in ready) return ready;
   const app = await bootApp(ready);
@@ -145,7 +167,9 @@ export const runLook = async (runtime: Runtime, cwd: AbsolutePath): Promise<Look
     const allowed = applyAllows([...base, ...extra, ...ux], ready.config.allow, (decision) =>
       approvals.some((approval) => approval.check === decision),
     );
-    return recordLook(runtime, paths, ready.tree, shot, allowed);
+    const recorded = recordLook(runtime, paths, ready.tree, shot, allowed);
+    await critique(runtime, ready, shot, critic);
+    return recorded;
   } finally {
     if (app !== undefined) await stopApp(app);
   }

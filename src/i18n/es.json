@@ -2623,5 +2623,12 @@
   "look.sheet.done": "Hoja de {route}: {variables, plural, one {# variable} other {# variables}}, {changes, plural, one {# dimensión cambió} other {# dimensiones cambiaron}} contra la hoja aprobada.",
   "command.look_perf_accept.summary": "Acepta una regresión de rendimiento medida de una ruta para el árbol actual (solo la persona)",
   "look.perf.unknown": "Todavía no hay medición de rendimiento para {route}. Ejecuta look antes.",
-  "look.perf.accepted": "Regresión en {route} aceptada para el árbol {tree}; sus números pasan a ser la nueva base."
+  "look.perf.accepted": "Regresión en {route} aceptada para el árbol {tree}; sus números pasan a ser la nueva base.",
+  "command.look_pair.summary": "Lista los pares de pantallas ordenados por el crítico y las elecciones de la persona",
+  "command.look_pair_pick.summary": "Registra qué variante de un par prefiere la persona (solo la persona)",
+  "look.pair.unknown": "No existe el par {id}.",
+  "look.pair.picked": "Par {id}: la persona eligió {choice}. Crítico y persona coinciden en {agreed} de {decided}.",
+  "look.pair.line": "{id}: crítico {critic}, persona {person}",
+  "look.pair.agreement": "Coincidencia: {agreed} de {decided} pares decididos.",
+  "look.opinion": "OPINIÓN ({heuristic}) {route} @{viewport}: {text}"
 }
