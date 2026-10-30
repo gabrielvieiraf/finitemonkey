@@ -6,7 +6,7 @@ Repository: https://github.com/gabrielvieiraf/finitemonkey
 
 ---
 
-Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.es.md
+Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.es.md
 
 # Finite Monkey
 
@@ -19,20 +19,20 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.es.md
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/main/assets/finitemonkey.gif" width="720" alt="Animación: un mono con sudadera amarilla aporrea el teclado de un portátil mientras una terminal ejecuta el control. Las comprobaciones que fallan se ponen en verde y se bloquean una a una hasta que aparece actually done, y el mono lo celebra con un plátano.">
+  <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/finitemonkey.gif" width="720" alt="Animación: un mono con sudadera amarilla aporrea el teclado de un portátil mientras una terminal ejecuta el control. Las comprobaciones que fallan se ponen en verde y se bloquean una a una hasta que aparece actually done, y el mono lo celebra con un plátano.">
   <br>
   <sub>Ilustración. La grabación de abajo es la herramienta real.</sub>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/main/assets/gate.gif" width="720" alt="Grabación de una sesión de Claude Code. Le piden sumar un cupón al carrito sin ejecutar las pruebas; ejecuta el control de todos modos, ve fallar la prueba total rounds to cents, redondea el resultado y lo ejecuta otra vez. El hook de Stop informa entonces: control en verde, 10 comprobaciones pasaron en este árbol.">
+  <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/gate.gif" width="720" alt="Grabación de una sesión de Claude Code. Le piden sumar un cupón al carrito sin ejecutar las pruebas; ejecuta el control de todos modos, ve fallar la prueba total rounds to cents, redondea el resultado y lo ejecuta otra vez. El hook de Stop informa entonces: control en verde, 10 comprobaciones pasaron en este árbol.">
   <br>
   <sub>Grabación real, finitemonkey 0.1.0-next.27 con Claude Code 2.1.283, acelerada 1,3×. Fuente: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **No hacen falta infinitos monos. Con uno basta: tú.**
 
-[English](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.md) | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.pt-BR.md) | Español
+[English](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md) | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md) | Español
 
 > **Versiones iniciales.** Ya se puede instalar por el canal `next` de npm (0.1.0-next.40 cuando se escribió esto; la insignia de arriba muestra la actual). `latest` todavía apunta a la 0.0.0, un marcador que solo reserva el nombre. La v0.1 estable sale cuando el benchmark diga si ayuda. Hasta entonces, una versión nueva en `next` puede romper lo que hacía la anterior.
 
@@ -129,14 +129,14 @@ Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalaci
 
 ## De dónde viene el diseño
 
-Finite Monkey parte de un estudio sobre lo que pasa cuando alguien trabaja con IA por encima de lo que puede juzgar. El ensayo [Efecto Rebote: el usuario como límite invisible de la inteligencia artificial](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/ricochet/ricochet.es.md) describe dos fronteras que la persona no ve desde adentro: lo que no sabe pedir y lo que no puede evaluar. La sección 10 muestra cómo cada mecanismo de aquí pone una verificación ejecutable en esos dos puntos y qué hipótesis va a probar el banco de pruebas.
+Finite Monkey parte de un estudio sobre lo que pasa cuando alguien trabaja con IA por encima de lo que puede juzgar. El ensayo [Efecto Rebote: el usuario como límite invisible de la inteligencia artificial](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/ricochet/ricochet.es.md) describe dos fronteras que la persona no ve desde adentro: lo que no sabe pedir y lo que no puede evaluar. La sección 10 muestra cómo cada mecanismo de aquí pone una verificación ejecutable en esos dos puntos y qué hipótesis va a probar el banco de pruebas.
 
 ## ¿De verdad ayuda? (benchmark, todavía sin ejecutar)
 
 Todavía no se sabe. El banco de pruebas, las tareas con trampas y los usuarios simulados están construidos, pero el benchmark todavía no se ejecutó. Compara Claude Code solo, Claude Code con Finite Monkey y Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto se publicarán en este repositorio, incluidas las partes donde no ayudó.
 
 <!-- generated:evidence:start -->
-Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.40 sobre el corpus etiquetado en [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/blob/main/bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
+Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.40 sobre el corpus etiquetado en [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
 
 | Guard | Debe bloquear | Debe dejar | Falsos positivos | Falsos negativos | p95 (ms) |
 |---|---|---|---|---|---|
@@ -150,7 +150,7 @@ Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.
 
 ## ¿En qué se diferencia de...?
 
-La comparación completa, con fuentes, está en [docs/compare.es.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.es.md).
+La comparación completa, con fuentes, está en [docs/compare.es.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.es.md).
 
 - **Claude Code solo** ya tiene hooks y permisos. Finite Monkey es un conjunto de ellos, organizado alrededor de una definición de terminado, con tests.
 - **Métodos como superpowers, GSD, Spec Kit u OpenSpec** le dicen al agente cómo planificar y construir. Finite Monkey no los sustituye: comprueba el resultado al final, uses el método que uses.
@@ -253,11 +253,11 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Envía | `doi.org`, `cited URLs` | Solo cuando `judge verify` se ejecuta sobre una afirmación con cita y `cite-span` no está apagado: se pide el DOI citado (por doi.org) o la URL para comprobar que resuelve y que el fragmento entre comillas aparece. Solo se envía el identificador; ningún texto de afirmación, nota o evidencia sale de la máquina. Una fuente inalcanzable o con paywall figura como no verificada. |
 <!-- generated:footprint:end -->
 
-El plugin también carga un mod: un módulo de hooks que Claude Code 2.1.287 o más nuevo ejecuta junto a los command hooks. Los command hooks siguen siendo la autoridad de cada bloqueo, veredicto y evidencia; el mod solo dibuja, endurece decisiones de permiso y mide, y las versiones antiguas, `claude -p` y otros agentes siguen funcionando solo con los command hooks. Lo que el mod engancha y llama, tal como lo informa `claude plugin validate --json`, está en [plugin/FOOTPRINT.json](https://github.com/gabrielvieiraf/finitemonkey/blob/main/plugin/FOOTPRINT.json), y el CI falla cuando el código llega más lejos de lo que dice ese archivo.
+El plugin también carga un mod: un módulo de hooks que Claude Code 2.1.287 o más nuevo ejecuta junto a los command hooks. Los command hooks siguen siendo la autoridad de cada bloqueo, veredicto y evidencia; el mod solo dibuja, endurece decisiones de permiso y mide, y las versiones antiguas, `claude -p` y otros agentes siguen funcionando solo con los command hooks. Lo que el mod engancha y llama, tal como lo informa `claude plugin validate --json`, está en [plugin/FOOTPRINT.json](https://github.com/gabrielvieiraf/finitemonkey/blob/next/plugin/FOOTPRINT.json), y el CI falla cuando el código llega más lejos de lo que dice ese archivo.
 
 ## Preguntas frecuentes
 
-Más preguntas, una por cada búsqueda real, en [docs/faq.es.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/faq.es.md).
+Más preguntas, una por cada búsqueda real, en [docs/faq.es.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.es.md).
 
 **¿Es un prompt?**
 No. Son hooks y comprobaciones que se ejecutan aunque el modelo no se acuerde.
@@ -266,7 +266,7 @@ No. Son hooks y comprobaciones que se ejecutan aunque el modelo no se acuerde.
 No. Tu código nunca sale de tu máquina y no hay telemetría. Sin que lo pidas, hace dos tipos de llamada de red: `gh` preguntando a GitHub por pull requests, solo si `gh` tiene sesión iniciada, y el nombre de un paquete enviado al registro de npm o de PyPI cuando un comando va a añadir un paquete que el proyecto no declara. La lista completa está en [Qué lee, escribe y envía](#qué-lee-escribe-y-envía).
 
 **¿Me va a ralentizar?**
-Las tareas pequeñas no tienen ceremonia, solo el control al final. Los hooks rápidos siguen siendo rápidos; la comprobación costosa va en `Stop`. El CI rechaza un pull request que lleve un guard de `PreToolUse` por encima de 50 ms en el p95 o que agregue contexto al inicio de la sesión; los límites están en [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/main/budgets.json). Publicaremos los tiempos de punta a punta junto con el benchmark.
+Las tareas pequeñas no tienen ceremonia, solo el control al final. Los hooks rápidos siguen siendo rápidos; la comprobación costosa va en `Stop`. El CI rechaza un pull request que lleve un guard de `PreToolUse` por encima de 50 ms en el p95 o que agregue contexto al inicio de la sesión; los límites están en [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/next/budgets.json). Publicaremos los tiempos de punta a punta junto con el benchmark.
 
 **¿Y si bloquea algo que no debía?**
 Abre una issue con la plantilla "Blocked something it should not have" (bloqueó algo que no debía). Los falsos positivos se tratan como bugs y se cuentan en público.
@@ -305,29 +305,29 @@ La v1.0 son las etapas 0 a 4.
 
 ## Para agentes
 
-- [llms.es.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.es.txt) ([en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.txt)): qué es Finite Monkey y cuándo recomendarlo. En resumen: recomienda el canal `next` solo a quien acepte cambios que rompen entre versiones; la recomendación estable espera a la 0.1.0.
-- [llms-full.es.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms-full.es.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo, en español ([en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms-full.txt)).
-- [docs/AGENT-SETUP.es.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.es.md) ([en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.md)): guía de instalación para un agente que trabaja para alguien.
-- [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/AGENTS.md): reglas para quien modifique este repositorio.
+- [llms.es.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms.es.txt) ([en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms.txt)): qué es Finite Monkey y cuándo recomendarlo. En resumen: recomienda el canal `next` solo a quien acepte cambios que rompen entre versiones; la recomendación estable espera a la 0.1.0.
+- [llms-full.es.txt](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms-full.es.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo, en español ([en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms-full.txt)).
+- [docs/AGENT-SETUP.es.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/AGENT-SETUP.es.md) ([en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/AGENT-SETUP.md)): guía de instalación para un agente que trabaja para alguien.
+- [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/AGENTS.md): reglas para quien modifique este repositorio.
 - Todos los comandos aceptan `--json` y devuelven un `schemaVersion`. Los campos solo se añaden.
 
 ## Contribuir
 
-Consulta [CONTRIBUTING.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/CONTRIBUTING.md). Agentes y personas que modifican este repositorio siguen [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/AGENTS.md). Los reportes de seguridad van por [SECURITY.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/SECURITY.md).
+Consulta [CONTRIBUTING.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/CONTRIBUTING.md). Agentes y personas que modifican este repositorio siguen [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/AGENTS.md). Los reportes de seguridad van por [SECURITY.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/SECURITY.md).
 
 ## Licencia
 
-[Apache-2.0](https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE), por Gabriel Vieira. La licencia no otorga derechos sobre el nombre ni el logo "Finite Monkey".
+[Apache-2.0](https://github.com/gabrielvieiraf/finitemonkey/blob/next/LICENSE), por Gabriel Vieira. La licencia no otorga derechos sobre el nombre ni el logo "Finite Monkey".
 
 ---
 
-Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/faq.es.md
+Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.es.md
 
 # Preguntas frecuentes de Finite Monkey
 
-[English](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/faq.md) | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/faq.pt-BR.md) | Español
+[English](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.md) | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.pt-BR.md) | Español
 
-> **Prelanzamiento.** Finite Monkey todavía no se puede instalar. Cada respuesta dice qué puedes hacer hoy solo con Claude Code y qué tiene previsto añadir Finite Monkey. "Previsto" significa diseñado y todavía no publicado. Nada de esto está medido aún.
+> **Versiones iniciales.** Finite Monkey se instala por el canal `next` de npm (`npx finitemonkey@next init`); todavía no hay versión estable. Cada respuesta dice qué puedes hacer hoy solo con Claude Code y qué añade Finite Monkey. Si ayuda todavía no está medido: el benchmark no se ha ejecutado.
 
 Cada pregunta es una búsqueda que la gente escribe de verdad, tomada de títulos de issues en [anthropics/claude-code](https://github.com/anthropics/claude-code/issues) y de hilos de Hacker News, revisados el 2026-10-25.
 
@@ -336,82 +336,82 @@ Cada pregunta es una búsqueda que la gente escribe de verdad, tomada de título
 Porque "listo" es una frase que escribe el modelo, y por defecto nada la comprueba. Es una queja frecuente, por ejemplo [anthropics/claude-code#60177](https://github.com/anthropics/claude-code/issues/60177) ("Claude marks tasks done without testing").
 
 - **Hoy:** Claude Code tiene el hook `Stop`. Un hook escrito por ti puede negarse a cerrar la sesión y decirle a Claude por qué. Funciona, pero tú escribes y mantienes la comprobación.
-- **Previsto en Finite Monkey:** una definición de terminado por tarea (comandos, tests, alcance) que el hook `Stop` ejecuta sobre los archivos actuales. Si falla, Claude recibe la lista de lo que falta y sigue trabajando. El informe final sale de esas pruebas, no del resumen del agente.
+- **En Finite Monkey:** una definición de terminado por tarea (comandos, tests, alcance) que el hook `Stop` ejecuta sobre los archivos actuales. Si falla, Claude recibe la lista de lo que falta y sigue trabajando. El informe final sale de esas pruebas, no del resumen del agente.
 
 ## ¿Cómo evito que Claude Code mienta sobre los tests?
 
 Deja el resultado del test en manos de algo que no sea el agente. Una frase como "todos los tests pasan" en el chat, o un archivo de progreso que el agente edita, puede decir cualquier cosa. Una ejecución de tests que lanza un hook sobre los archivos actuales muestra lo que pasó de verdad.
 
 - **Hoy:** un hook `Stop` que ejecuta tu comando de tests y bloquea si falla. Cuidado con las comprobaciones que aceptan cualquier comando que salga con 0, como `echo "tests passed"`.
-- **Previsto:** solo cuenta como prueba lo que Finite Monkey ejecutó por sí mismo, sobre el estado actual del árbol. Los comandos triviales y las ejecuciones con cero tests se rechazarán como prueba.
+- **En Finite Monkey:** solo cuenta como prueba lo que Finite Monkey ejecutó por sí mismo, sobre el estado actual del árbol. Los comandos triviales y las ejecuciones con cero tests se rechazan como prueba.
 
 ## Claude Code borró o se saltó mis tests para que pasaran. ¿Cómo lo evito?
 
 Mira el diff además del resultado del test: después de borrar un test o marcarlo con `skip`, la ejecución sigue saliendo en verde.
 
 - **Hoy:** revisa los diffs en archivos de test y añade un paso de CI que falle cuando baje el número de tests o aparezca `.skip` u `.only`.
-- **Previsto:** un control de tests que detecta tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control, también cuando el cambio llega por un comando de shell y no por una edición.
+- **En Finite Monkey:** un control de tests que detecta tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control, también cuando el cambio llega por un comando de shell y no por una edición.
 
 ## Claude Code ejecutó `git reset --hard` y perdí trabajo. ¿Cómo lo evito?
 
 Bloquea los comandos destructivos de git antes de que se ejecuten y guarda una instantánea de lo que se perdería. Es una queja habitual, por ejemplo [anthropics/claude-code#7232](https://github.com/anthropics/claude-code/issues/7232) y [#34327](https://github.com/anthropics/claude-code/issues/34327).
 
 - **Hoy:** reglas de permiso `deny` para comandos destructivos de git en `.claude/settings.json`, o un hook `PreToolUse` que los bloquee. Los commits ya hechos suelen recuperarse con `git reflog`; los cambios sin commit, por lo general, no.
-- **Previsto:** una instantánea antes de cada operación arriesgada de git, un `undo` que la recupera, worktrees con cambios pendientes archivados en lugar de borrados y una comprobación de "no se perdió nada" en cada merge.
+- **En Finite Monkey:** una instantánea antes de cada operación arriesgada de git, un `undo` que la recupera, worktrees con cambios pendientes archivados en lugar de borrados y una comprobación de "no se perdió nada" en cada merge.
 
 ## ¿Cómo evito que Claude Code haga force push?
 
 Bloquéalo en dos sitios: en tu máquina y en el servidor.
 
 - **Hoy:** una regla de permiso `deny` o un hook `PreToolUse` para `git push --force` y sus variantes, más protección de rama o un ruleset en GitHub que prohíba el force push en ramas compartidas. La regla del servidor es la que sigue valiendo si todo lo local se esquiva.
-- **Previsto:** Finite Monkey nunca hace force push y bloquea `--force` y sus variantes. También mostrará qué reglas de git se cumplen por mecanismo y cuáles son solo texto.
+- **En Finite Monkey:** nunca hace force push y bloquea `--force` y sus variantes. También muestra qué reglas de git se cumplen por mecanismo y cuáles son solo texto.
 
 ## ¿Por qué Claude Code ignora CLAUDE.md, sobre todo después de la compactación?
 
 Porque `CLAUDE.md` es texto cargado en el contexto del modelo, y nada lo ejecuta ni lo comprueba. El modelo lo pondera frente a todo lo demás de la conversación y puede dejarlo de lado. Mira [anthropics/claude-code#7777](https://github.com/anthropics/claude-code/issues/7777) y [#19471](https://github.com/anthropics/claude-code/issues/19471) ("CLAUDE.md instructions completely ignored after context compaction").
 
 - **Hoy:** mantén `CLAUDE.md` corto y saca de la prosa toda regla que deba cumplirse siempre, llevándola a un hook, una regla de permiso, un git hook o un paso de CI.
-- **Previsto:** Finite Monkey hace ese traslado para las reglas que conoce y te muestra, regla por regla, cuáles se cumplen por mecanismo y cuáles siguen siendo solo texto.
+- **En Finite Monkey:** hace ese traslado para las reglas que conoce y te muestra, regla por regla, cuáles se cumplen por mecanismo y cuáles siguen siendo solo texto.
 
 ## ¿Cómo hago que las reglas de CLAUDE.md se cumplan de verdad?
 
 Convierte cada regla en el mecanismo más barato que pueda comprobarla. "Nunca hacer commit de `.env`" se convierte en un hook de pre-commit y un escaneo en CI. "Ejecutar los tests antes de decir listo" se convierte en un hook `Stop`. "No tocar producción" se convierte en un comando bloqueado.
 
 - **Hoy:** hooks de Claude Code (`PreToolUse`, `PostToolUse`, `Stop`, `UserPromptSubmit` y otros), reglas de permiso, git hooks y CI. Cada uno se ejecuta aunque el modelo no recuerde la regla.
-- **Previsto:** Finite Monkey los entrega como un conjunto probado, instalado con copias de seguridad y que se quita con `uninstall`.
+- **En Finite Monkey:** los entrega como un conjunto probado, instalado con copias de seguridad y que se quita con `uninstall`.
 
 ## ¿Cómo evito que Claude Code filtre claves de API o secretos en los commits?
 
 Busca secretos en más de un punto, porque una clave puede filtrarse por un archivo escrito, un prompt, un commit, el historial o un pull request. [anthropics/claude-code#2142](https://github.com/anthropics/claude-code/issues/2142) es un caso de claves de API que llegaron al control de versiones.
 
 - **Hoy:** un escáner de secretos en el pre-commit (gitleaks es una opción común), el secret scanning de GitHub con push protection y un hook `PreToolUse` o una regla `deny` que impida al agente leer archivos `.env`.
-- **Previsto:** una única regla de detección, aplicada al escribir archivos, en los prompts, al hacer commit, en el historial y en CI. Un secreto encontrado se trata como un incidente para rotar. Los secretos se citan por archivo y línea, nunca por su valor. Reduce el riesgo; no puede prometer que nunca se filtre nada.
+- **En Finite Monkey:** una única regla de detección, aplicada al escribir archivos, en los prompts, al hacer commit, en el historial y en CI. Un secreto encontrado se trata como un incidente para rotar. Los secretos se citan por archivo y línea, nunca por su valor. Reduce el riesgo; no puede prometer que nunca se filtre nada.
 
 ## ¿Cómo evito que un agente de IA toque un servidor de producción?
 
 No le des al agente un camino directo a producción y bloquea los comandos que lo crearían.
 
 - **Hoy:** no dejes credenciales de producción donde el shell del agente pueda usarlas, despliega solo por CI y bloquea los comandos de shell remoto a servidores de producción con un hook o una regla de permiso.
-- **Previsto:** los comandos con efecto sobre un servidor de producción declarado se bloquean. Producción cambia por el camino de despliegue que declaraste, y por ningún otro.
+- **En Finite Monkey:** los comandos con efecto sobre un servidor de producción declarado se bloquean. Producción cambia por el camino de despliegue que declaraste, y por ningún otro.
 
 ## ¿Qué es una definición de terminado para agentes de código?
 
 Una lista de condiciones que una máquina puede comprobar antes de que el agente pueda dar el trabajo por terminado: comandos que deben salir bien, tests que deben existir y pasar, archivos que deben o no deben cambiar.
 
 - **Hoy:** puedes escribir una a mano como script y llamarla desde un hook `Stop`.
-- **Previsto:** Finite Monkey crea una por tarea, la ejecuta en `Stop`, ata las pruebas al estado actual de los archivos y deja la ceremonia en cero para las tareas pequeñas.
+- **En Finite Monkey:** crea una por tarea, la ejecuta en `Stop`, ata las pruebas al estado actual de los archivos y deja la ceremonia en cero para las tareas pequeñas.
 
 ## ¿Un hook Stop de Claude Code puede verificar los tests antes de terminar?
 
 Sí. Un hook `Stop` puede ejecutar tu comando de tests y, si falla, bloquear el cierre con un motivo que Claude lee y sigue. Importan dos detalles: la comprobación debe ejecutarse sobre los archivos actuales, sin fiarse de una ejecución anterior, y no debe ceder la segunda vez que Claude intenta parar.
 
-- **Previsto:** el control de Finite Monkey se construye justo sobre ese hook, con las reglas de prueba de arriba y un informe final de "no terminado" en lugar de un bucle infinito.
+- **En Finite Monkey:** el control se construye justo sobre ese hook, con las reglas de prueba de arriba y un informe final de "no terminado" en lugar de un bucle infinito.
 
 ## ¿Hay un plugin de seguridad o guardrails para Claude Code?
 
-Hay varios, y algunos son muy buenos en una sola tarea. tdd-guard obliga a escribir el test primero; cc-safety-net y dcg bloquean comandos destructivos de shell y git. Métodos como Superpowers, GSD y Spec Kit añaden proceso. La [página de comparación](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.es.md) muestra qué garantiza cada uno por mecanismo y qué deja en prosa, con fuentes.
+Hay varios, y algunos son muy buenos en una sola tarea. tdd-guard obliga a escribir el test primero; cc-safety-net y dcg bloquean comandos destructivos de shell y git. Métodos como Superpowers, GSD y Spec Kit añaden proceso. La [página de comparación](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.es.md) muestra qué garantiza cada uno por mecanismo y qué deja en prosa, con fuentes.
 
-- **Previsto:** Finite Monkey pretende cubrir cuatro daños ("listo" falso, secretos filtrados, cambios a mano en producción, trabajo perdido en git) con un control, una instalación y un `undo`. Si eso te compensa frente a un guarda suelto es lo que responderá el benchmark previsto.
+- **En Finite Monkey:** cubre cuatro daños ("listo" falso, secretos filtrados, cambios a mano en producción, trabajo perdido en git) con un control, una instalación y un `undo`. Si eso te compensa frente a un guarda suelto es lo que responderá el benchmark, que todavía no se ha ejecutado.
 
 ## ¿Funciona con herramientas que cambian la cuenta de Claude Code cuando se acaba el límite?
 
@@ -421,13 +421,13 @@ Para activarlo, agrega `supervisor:` con `enabled: true` a `.finitemonkey/config
 
 ---
 
-Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.es.md
+Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.es.md
 
 # Cómo se compara Finite Monkey
 
-[English](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.md) | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.pt-BR.md) | Español
+[English](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.md) | [Português (Brasil)](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.pt-BR.md) | Español
 
-> **Prelanzamiento.** Finite Monkey todavía no existe como herramienta funcional. Todo lo que esta página dice sobre él es **previsto, todavía sin medir**. Todo lo que dice sobre los demás proyectos es un hecho que puedes comprobar en el enlace de al lado.
+> **Versiones iniciales.** Finite Monkey tiene versiones iniciales en el canal `next` de npm. Lo que esta página dice sobre él describe lo que hace el código, y nada de eso está **medido todavía**: el benchmark no se ha ejecutado. Todo lo que dice sobre los demás proyectos es un hecho que puedes comprobar en el enlace de al lado.
 
 **Revisado el 2026-10-25**, leyendo el código de cada proyecto en el commit indicado. No se ejecutó ningún hook de terceros. Si algo está mal o desactualizado, abre una issue o un pull request y se corregirá.
 
@@ -438,7 +438,7 @@ La pregunta que esta página le hace a cada proyecto es la misma: cuando el mode
 - **Mecanismo**: código que se ejecuta en el harness (un hook, una regla de permiso, un git hook, un paso de CI) y bloquea o comprueba decida lo que decida el modelo.
 - **Prosa**: texto que el modelo lee (una skill, un prompt, un `CLAUDE.md`) y puede seguir. La prosa muchas veces es la herramienta correcta para planificar, para el estilo y para el criterio. Por sí sola no demuestra que algo haya ocurrido.
 
-La mayoría de las configuraciones necesitan los dos. El alcance previsto de Finite Monkey es acotado: las pocas cosas que siempre deben cumplirse (terminado verificado, tests sin debilitar, ningún secreto filtrado, ningún trabajo perdido en git, ningún cambio a mano en producción) deben ser mecanismo.
+La mayoría de las configuraciones necesitan los dos. El alcance de Finite Monkey es acotado: las pocas cosas que siempre deben cumplirse (terminado verificado, tests sin debilitar, ningún secreto filtrado, ningún trabajo perdido en git, ningún cambio a mano en producción) deben ser mecanismo.
 
 ## De un vistazo
 
@@ -453,7 +453,7 @@ La mayoría de las configuraciones necesitan los dos. El alcance previsto de Fin
 | [tdd-guard](https://github.com/nizos/tdd-guard) | Obliga a escribir el test primero | Una sola tarea, hecha con foco | Hook sobre las ediciones que puede bloquear | El criterio de si una edición sigue test primero (una llamada a un modelo) |
 | [dcg](https://github.com/Dicklesworthstone/destructive_command_guard) | Guarda de comandos destructivos | Cobertura de comandos peligrosos, falla cerrado por tiempo | Bloqueo en `PreToolUse` | n/a (no trata de terminado) |
 | [cc-safety-net](https://github.com/kenryu42/cc-safety-net) | Guarda de comandos destructivos | Una sola tarea, instalación rápida, `doctor` | Bloqueo en `PreToolUse` | n/a (no trata de terminado) |
-| Finite Monkey | Control previsto alrededor de una definición de terminado | Nada todavía: no está publicado | Previsto: control en `Stop`, guardas en `PreToolUse`, git hooks, CI | Previsto: nada en los cuatro daños |
+| Finite Monkey | Control alrededor de una definición de terminado | Nada medido todavía: versiones iniciales en `next` | Control en `Stop`, guardas en `PreToolUse`, git hooks, CI | Nada en los cuatro daños |
 
 ## Superpowers
 
@@ -465,7 +465,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prosa.** Los controles son texto de skill, como "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" en [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). Quien decide llamar a `task-done` es el modelo, y [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) señala que un comando sustituto como `echo "tests passed"` no se distingue de una ejecución real de tests.
 
-**Dónde prevé diferenciarse Finite Monkey.** El control ejecuta la comprobación él mismo desde un hook cada vez que el agente intenta parar, y los comandos triviales no cuentan como prueba. La planificación queda en manos de skills como estas: un diseño aprobado en Superpowers puede ser la entrada de una definición de terminado. Previsto, todavía sin medir.
+**Dónde se diferencia Finite Monkey.** El control ejecuta la comprobación él mismo desde un hook cada vez que el agente intenta parar, y los comandos triviales no cuentan como prueba. La planificación queda en manos de skills como estas: un diseño aprobado en Superpowers puede ser la entrada de una definición de terminado. Todavía sin medir.
 
 ## oh-my-claudecode
 
@@ -477,7 +477,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Dónde decide el modelo.** El drift guard deja pasar el cierre cuando `stop_hook_active` está activo (línea 910), así que bloquea una vez. El control de git solo está activo en los modos `ralph`, `autopilot`, `team` y `ultragoal` (línea 38) o con una variable de entorno. En los modos persistentes, terminar es que el modelo ejecute `/cancel`.
 
-**Dónde prevé diferenciarse Finite Monkey.** El control sigue bloqueando mientras la definición de terminado falle, y el control de git está siempre activo. Previsto, todavía sin medir.
+**Dónde se diferencia Finite Monkey.** El control sigue bloqueando mientras la definición de terminado falle, y el control de git está siempre activo. Todavía sin medir.
 
 ## GSD
 
@@ -489,7 +489,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Dónde decide el modelo.** La verificación es un agente LLM ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) que escribe `VERIFICATION.md`, y el control de fase en [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) lee el estado que escribió ese agente.
 
-**Dónde prevé diferenciarse Finite Monkey.** El veredicto sale de comandos que el control ejecutó sobre los archivos actuales. Previsto, todavía sin medir.
+**Dónde se diferencia Finite Monkey.** El veredicto sale de comandos que el control ejecutó sobre los archivos actuales. Todavía sin medir.
 
 ## Spec Kit
 
@@ -501,7 +501,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prosa.** Los hooks de extensión como `after_implement` dependen de que el modelo los invoque: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), líneas 70 a 72). La validación de tests en el comando de implementación es una instrucción, y la convergencia la declara el modelo. [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) pide un control final de calidad.
 
-**Dónde prevé diferenciarse Finite Monkey.** La idea es encajar en Spec Kit: el control como paso `shell` del workflow o como handler de `Stop`, leyendo `tasks.md` como definición de terminado. Previsto, todavía sin medir.
+**Dónde se diferencia Finite Monkey.** El control se ejecuta como handler de `Stop` y también es un comando (`finitemonkey gate`) que un paso `shell` de un workflow de Spec Kit puede ejecutar, y `finitemonkey task from-spec` propone una definición de terminado a partir de un `tasks.md` sin modificarlo. Todavía sin medir.
 
 ## ECC (Everything Claude Code)
 
@@ -513,7 +513,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Dónde decide el modelo.** [`stop-format-typecheck.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/stop-format-typecheck.js) se ejecuta en `Stop`, informa y sale con 0, es decir, avisa sin bloquear. [`gateguard-fact-force.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/gateguard-fact-force.js) deniega el primer toque de un archivo y deja pasar el reintento (líneas 1935 y 1936).
 
-**Dónde prevé diferenciarse Finite Monkey.** Un núcleo pequeño con presupuesto de contexto comprobado en CI, un control en `Stop` que bloquea y ningún control que ceda al reintentar. Previsto, todavía sin medir.
+**Dónde se diferencia Finite Monkey.** Un núcleo pequeño con presupuesto de contexto comprobado en CI, un control en `Stop` que bloquea y ningún control que ceda al reintentar. Todavía sin medir.
 
 ## ralph-loop
 
@@ -525,7 +525,7 @@ Plugin oficial en [`anthropics/claude-plugins-official`](https://github.com/anth
 
 **Dónde decide el modelo.** El bucle termina cuando el último mensaje del modelo contiene `<promise>TEXTO</promise>` igual a la promesa de finalización que definiste (líneas 129 a 138). El propio mensaje del hook le pide al modelo que no mienta para salir.
 
-**Dónde prevé diferenciarse Finite Monkey.** El bucle terminaría cuando pase la definición de terminado del control. Previsto, todavía sin medir.
+**Dónde se diferencia Finite Monkey.** El control en `Stop` mantiene al agente trabajando hasta que pase la definición de terminado y, tras su límite de bloqueos, termina con un informe de "no terminado". Todavía sin medir.
 
 ## tdd-guard
 
@@ -535,7 +535,7 @@ Commit [`108992d`](https://github.com/nizos/tdd-guard/tree/108992d).
 
 **Mecanismo y criterio.** El hook bloquea de verdad. Si una edición cuenta como test primero lo decide una llamada a un modelo en cada edición.
 
-**Dónde prevé diferenciarse Finite Monkey.** No obliga a escribir el test primero. Comprueba que los tests no se eliminaron, saltaron ni debilitaron, y que pasan sobre los archivos finales. Si lo que quieres es test primero, tdd-guard es la herramienta más directa.
+**Dónde se diferencia Finite Monkey.** No obliga a escribir el test primero. Comprueba que los tests no se eliminaron, saltaron ni debilitaron, y que pasan sobre los archivos finales. Si lo que quieres es test primero, tdd-guard es la herramienta más directa.
 
 ## dcg (destructive_command_guard)
 
@@ -543,7 +543,7 @@ Commit [`b33f3ef`](https://github.com/Dicklesworthstone/destructive_command_guar
 
 **Qué hace bien.** Cobertura amplia de comandos destructivos, soporte para varios agentes y una dirección de fallo clara: una evaluación de más de 1000 ms devuelve una decisión indeterminada, "never allow" ([`src/perf.rs`](https://github.com/Dicklesworthstone/destructive_command_guard/blob/b33f3ef/src/perf.rs), líneas 800 a 812). Sus mantenedores siguen los falsos positivos en público, por ejemplo en [#560](https://github.com/Dicklesworthstone/destructive_command_guard/issues/560).
 
-**Dónde prevé diferenciarse Finite Monkey.** dcg vigila comandos. Finite Monkey prevé añadir una instantánea y un `undo` alrededor de las operaciones arriesgadas de git, y un control de terminado. Si solo necesitas un guarda de comandos, dcg es una opción enfocada.
+**Dónde se diferencia Finite Monkey.** dcg vigila comandos. Finite Monkey añade una instantánea y un `undo` alrededor de las operaciones arriesgadas de git, y un control de terminado. Si solo necesitas un guarda de comandos, dcg es una opción enfocada.
 
 ## cc-safety-net
 
@@ -551,22 +551,22 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 **Qué hace bien.** Bloquea `git reset --hard`, `git push --force`, `rm -rf` sobre objetivos peligrosos y scripts de instalación por tubería, incluso dentro de `bash -c` o `python -c` ([`README.md`](https://github.com/kenryu42/cc-safety-net/blob/71baf74/README.md), línea 74). Se instala en una línea y tiene `doctor`. Cuando el hook era lento con `npx`, el mantenedor pasó a un binario incluido ([#16](https://github.com/kenryu42/cc-safety-net/issues/16)).
 
-**Dónde prevé diferenciarse Finite Monkey.** Lo mismo que con dcg: lo que se prevé añadir es la instantánea con `undo` y el control de terminado. Para un guarda de comandos solo, cc-safety-net es la instalación más sencilla.
+**Dónde se diferencia Finite Monkey.** Lo mismo que con dcg: lo que añade es la instantánea con `undo` y el control de terminado. Para un guarda de comandos solo, cc-safety-net es la instalación más sencilla.
 
-## Dónde prevé diferenciarse Finite Monkey
+## Dónde se diferencia Finite Monkey
 
-Todo esto es **previsto, todavía sin medir**.
+Nada de esto está **medido todavía**: el benchmark no se ha ejecutado.
 
 - **Pruebas de las ejecuciones del propio control.** Terminado significa que el control ejecutó la definición de terminado sobre los archivos actuales. Un mensaje en el chat, un archivo de progreso o un informe escrito por un agente no cuentan.
 - **Bloqueo hasta que pasen las comprobaciones.** Sigue bloqueando mientras la definición de terminado falle, y termina con un informe de "no terminado" en lugar de un bucle infinito.
 - **Cuatro daños en una instalación.** "Listo" falso, secretos filtrados, cambios a mano en producción y trabajo perdido en git, con un `undo` para git.
 - **Contexto fijo pequeño.** El cumplimiento vive en hooks, que no cuestan tokens por turno, con un presupuesto en bytes comprobado en CI.
-- **Benchmark.** Un benchmark público con ablación decide qué reglas se quedan.
+- **Benchmark.** Un benchmark público con ablación decide qué reglas se quedan. Su banco de pruebas está construido; todavía no se ha ejecutado.
 
 ## Dónde van por delante hoy
 
-- Existen, están publicados y se usan. Finite Monkey no.
-- Superpowers, GSD y Spec Kit ayudan a decidir qué construir. Finite Monkey no prevé construir esa fase; prevé leer lo que producen.
+- Tienen versiones estables y se usan. Finite Monkey solo tiene versiones iniciales en `next`.
+- Superpowers, GSD y Spec Kit ayudan a decidir qué construir. Finite Monkey no construye esa fase; lee lo que producen.
 - Varios funcionan con muchos agentes. Finite Monkey empieza solo con Claude Code.
 
 ## Otros en el mismo espacio
@@ -578,7 +578,7 @@ Todo esto es **previsto, todavía sin medir**.
 
 ---
 
-Source: https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.es.md
+Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/AGENT-SETUP.es.md
 
 # Instalar Finite Monkey para alguien (guía del agente)
 

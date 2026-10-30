@@ -2,7 +2,7 @@
 
 English | [Português (Brasil)](compare.pt-BR.md) | [Español](compare.es.md)
 
-> **Pre-release.** Finite Monkey does not exist as a working tool yet. Everything said about it on this page is **planned, not measured yet**. Everything said about the other projects is a fact you can check at the link next to it.
+> **Early versions.** Finite Monkey ships early versions on npm's `next` channel. What this page says about it describes what the code does, and none of it is **measured yet**: the benchmark has not been run. Everything said about the other projects is a fact you can check at the link next to it.
 
 **Checked on 2026-10-25** by reading each project's code at the commit listed below. No third-party hook was executed. If something here is wrong or out of date, open an issue or a pull request and it will be corrected.
 
@@ -13,7 +13,7 @@ The question this page asks about every project is the same: when the model woul
 - **Mechanism**: code that runs in the harness (a hook, a permission rule, a git hook, a CI step) and blocks or checks no matter what the model decides.
 - **Prose**: text the model reads (a skill, a prompt, a `CLAUDE.md`) and may follow. Prose is often the right tool for planning, style and judgment. On its own it cannot show that something happened.
 
-Most setups need both. Finite Monkey's planned scope is narrow: the few things that must always hold (verified done, tests not weakened, no leaked secrets, no lost git work, no hand edits to production) should be mechanism.
+Most setups need both. Finite Monkey's scope is narrow: the few things that must always hold (verified done, tests not weakened, no leaked secrets, no lost git work, no hand edits to production) should be mechanism.
 
 ## At a glance
 
@@ -28,7 +28,7 @@ Most setups need both. Finite Monkey's planned scope is narrow: the few things t
 | [tdd-guard](https://github.com/nizos/tdd-guard) | Test-first enforcement | One job, done with focus | Hook on edits that can block | The judgment of whether an edit is test-first (a model call) |
 | [dcg](https://github.com/Dicklesworthstone/destructive_command_guard) | Destructive command guard | Coverage of dangerous commands, fails closed on timeout | `PreToolUse` block | n/a (not about done) |
 | [cc-safety-net](https://github.com/kenryu42/cc-safety-net) | Destructive command guard | One job, quick install, `doctor` | `PreToolUse` block | n/a (not about done) |
-| Finite Monkey | Planned gate around a definition of done | Nothing yet: not released | Planned: gate on `Stop`, guards on `PreToolUse`, git hooks, CI | Planned: nothing on the four damages |
+| Finite Monkey | Gate around a definition of done | Not measured yet: early versions on `next` | Gate on `Stop`, guards on `PreToolUse`, git hooks, CI | Nothing on the four damages |
 
 ## Superpowers
 
@@ -40,7 +40,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prose.** The gates are skill text, such as "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" in [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). The model decides whether to call `task-done`, and [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) notes that a stand-in command such as `echo "tests passed"` is indistinguishable from a real test run.
 
-**Where Finite Monkey is planned to differ.** The gate runs the check itself from a hook every time the agent tries to stop, and trivial commands do not count as evidence. It leaves planning to skills like these; an approved Superpowers design could become the input of a definition of done. Planned, not measured yet.
+**Where Finite Monkey differs.** The gate runs the check itself from a hook every time the agent tries to stop, and trivial commands do not count as evidence. It leaves planning to skills like these; an approved Superpowers design could become the input of a definition of done. Not measured yet.
 
 ## oh-my-claudecode
 
@@ -52,7 +52,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Where the model decides.** The drift guard lets the stop through when `stop_hook_active` is set (line 910), so it blocks once. The git guard is active only in the `ralph`, `autopilot`, `team` and `ultragoal` modes (line 38) or with an environment variable. In the persistent modes, completion is the model running `/cancel`.
 
-**Where Finite Monkey is planned to differ.** The gate keeps blocking for as long as the definition of done fails, and the git guard is always on. Planned, not measured yet.
+**Where Finite Monkey differs.** The gate keeps blocking for as long as the definition of done fails, and the git guard is always on. Not measured yet.
 
 ## GSD
 
@@ -64,7 +64,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Where the model decides.** Verification is an LLM agent ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) that writes `VERIFICATION.md`, and the phase gate in [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) reads the status that agent wrote.
 
-**Where Finite Monkey is planned to differ.** The verdict comes from commands the gate ran on the current files. Planned, not measured yet.
+**Where Finite Monkey differs.** The verdict comes from commands the gate ran on the current files. Not measured yet.
 
 ## Spec Kit
 
@@ -76,7 +76,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prose.** Extension hooks such as `after_implement` depend on the model invoking them: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), lines 70 to 72). Test validation in the implement command is an instruction, and convergence is declared by the model. [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) asks for a final quality gate.
 
-**Where Finite Monkey is planned to differ.** It is meant to plug into Spec Kit: the gate as a workflow `shell` step or a `Stop` handler, reading `tasks.md` as the definition of done. Planned, not measured yet.
+**Where Finite Monkey differs.** The gate runs as a `Stop` handler and is also a command (`finitemonkey gate`) that a Spec Kit workflow `shell` step can run, and `finitemonkey task from-spec` proposes a definition of done from a `tasks.md` without changing it. Not measured yet.
 
 ## ECC (Everything Claude Code)
 
@@ -88,7 +88,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Where the model decides.** [`stop-format-typecheck.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/stop-format-typecheck.js) runs on `Stop`, reports and exits 0, so it informs without blocking. [`gateguard-fact-force.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/gateguard-fact-force.js) denies the first touch of a file and lets the retry pass (lines 1935 and 1936).
 
-**Where Finite Monkey is planned to differ.** A small core with a context budget checked in CI, a `Stop` gate that blocks, and no guard that gives way on retry. Planned, not measured yet.
+**Where Finite Monkey differs.** A small core with a context budget checked in CI, a `Stop` gate that blocks, and no guard that gives way on retry. Not measured yet.
 
 ## ralph-loop
 
@@ -100,7 +100,7 @@ Official plugin in [`anthropics/claude-plugins-official`](https://github.com/ant
 
 **Where the model decides.** The loop ends when the model's last message contains `<promise>TEXT</promise>` matching the completion promise you set (lines 129 to 138). The hook's own message asks the model not to lie to exit.
 
-**Where Finite Monkey is planned to differ.** The loop would end when the gate's definition of done passes. Planned, not measured yet.
+**Where Finite Monkey differs.** The `Stop` gate keeps the agent working until the definition of done passes, and after its block limit ends with a "not finished" report. Not measured yet.
 
 ## tdd-guard
 
@@ -110,7 +110,7 @@ Commit [`108992d`](https://github.com/nizos/tdd-guard/tree/108992d).
 
 **Mechanism and judgment.** The hook blocks for real. Whether an edit counts as test-first is decided by a model call on each edit.
 
-**Where Finite Monkey is planned to differ.** It does not enforce test-first. It checks that tests were not removed, skipped or weakened, and that they pass on the final files. If test-first is what you want, tdd-guard is the more direct tool.
+**Where Finite Monkey differs.** It does not enforce test-first. It checks that tests were not removed, skipped or weakened, and that they pass on the final files. If test-first is what you want, tdd-guard is the more direct tool.
 
 ## dcg (destructive_command_guard)
 
@@ -118,7 +118,7 @@ Commit [`b33f3ef`](https://github.com/Dicklesworthstone/destructive_command_guar
 
 **What it does well.** Broad coverage of destructive commands, support for many agents, and a clear failure direction: an evaluation over 1000 ms returns an indeterminate decision, "never allow" ([`src/perf.rs`](https://github.com/Dicklesworthstone/destructive_command_guard/blob/b33f3ef/src/perf.rs), lines 800 to 812). Its maintainers track false positives in public, for example [#560](https://github.com/Dicklesworthstone/destructive_command_guard/issues/560).
 
-**Where Finite Monkey is planned to differ.** dcg guards commands. Finite Monkey plans to add a snapshot and `undo` around risky git operations, and a done gate. If you only need a command guard, dcg is a focused choice.
+**Where Finite Monkey differs.** dcg guards commands. Finite Monkey adds a snapshot and `undo` around risky git operations, and a done gate. If you only need a command guard, dcg is a focused choice.
 
 ## cc-safety-net
 
@@ -126,22 +126,22 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 **What it does well.** It blocks `git reset --hard`, `git push --force`, `rm -rf` on dangerous targets and piped install scripts, even inside `bash -c` or `python -c` ([`README.md`](https://github.com/kenryu42/cc-safety-net/blob/71baf74/README.md), line 74). It installs in one line and has a `doctor`. When the hook was slow under `npx`, the maintainer moved to a bundled binary ([#16](https://github.com/kenryu42/cc-safety-net/issues/16)).
 
-**Where Finite Monkey is planned to differ.** Same as dcg: the planned additions are snapshot and `undo`, and the done gate. For a command guard alone, cc-safety-net is the simpler install.
+**Where Finite Monkey differs.** Same as dcg: the additions are snapshot and `undo`, and the done gate. For a command guard alone, cc-safety-net is the simpler install.
 
-## Where Finite Monkey is planned to differ
+## Where Finite Monkey differs
 
-All of this is **planned, not measured yet**.
+None of this is **measured yet**: the benchmark has not been run.
 
 - **Evidence from the gate's own runs.** Done means the gate ran the definition of done on the current files. A chat message, a progress file or a report written by an agent does not count.
 - **Blocking until the checks pass.** It keeps blocking while the definition of done fails, and ends with a "not finished" report instead of looping forever.
 - **Four damages in one install.** False "done", leaked secrets, hand edits to production and lost git work, with one `undo` for git.
 - **Small fixed context.** Enforcement lives in hooks, which cost no tokens per turn, with a byte budget checked in CI.
-- **Benchmark.** A public benchmark with ablation decides which rules stay.
+- **Benchmark.** A public benchmark with ablation decides which rules stay. Its harness is built; it has not been run.
 
 ## Where they are ahead today
 
-- They exist, are released and are used. Finite Monkey is not.
-- Superpowers, GSD and Spec Kit help decide what to build. Finite Monkey does not plan to build that phase; it plans to read their output.
+- They have stable releases and are used. Finite Monkey has only early versions on `next`.
+- Superpowers, GSD and Spec Kit help decide what to build. Finite Monkey does not build that phase; it reads their output.
 - Several of them work across many agents. Finite Monkey starts with Claude Code only.
 
 ## Also in this space
