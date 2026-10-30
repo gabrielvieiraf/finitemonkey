@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { BLOCKS, CLAIM_FILES, forbiddenPhrases, missingTests, replaceBetween } from "../scripts/docs-gen.js";
+import {
+  BLOCKS,
+  CLAIM_FILES,
+  forbiddenPhrases,
+  missingTests,
+  replaceBetween,
+  threatProblems,
+} from "../scripts/docs-gen.js";
 import { FAILURE_MODES } from "../scripts/failure-modes.js";
+import { ATTACKERS, type Threat, THREATS } from "../scripts/threat-model.js";
 import { FOOTPRINT, SENDS_HOSTS } from "../src/core/footprint.js";
 import { ROOT } from "./support.js";
 
@@ -40,6 +48,47 @@ describe("failure modes", () => {
       file === mode.file ? (read(file) ?? "").replaceAll(`"${mode.test}"`, '"renamed"') : read(file);
     assert.deepEqual(missingTests(FAILURE_MODES, withoutIt), [
       `${mode.file} has no test named "${mode.test}" (failure mode: ${mode.failure})`,
+    ]);
+  });
+});
+
+describe("threat model", () => {
+  const exists = (path: string): boolean => existsSync(join(ROOT, path));
+
+  it("every threat model line cites code that exists and links a test or says not covered", () => {
+    assert.deepEqual(threatProblems(THREATS, read, exists), []);
+  });
+
+  it("every attacker case has at least one line", () => {
+    assert.deepEqual(
+      ATTACKERS.filter((attacker) => !THREATS.some((threat) => threat.attacker === attacker)),
+      [],
+    );
+  });
+
+  it("a missing test, a missing path and a covered line without a test are reported", () => {
+    const line: Threat = {
+      component: "Guards",
+      attacker: "mistaken agent",
+      threat: "t",
+      outcome: "prevented",
+      mechanism: "m",
+      code: ["src/nowhere.ts"],
+      proof: { file: "test/stop.test.ts", test: "renamed" },
+    };
+    const withoutProof: Threat = {
+      component: line.component,
+      attacker: line.attacker,
+      threat: line.threat,
+      outcome: line.outcome,
+      mechanism: line.mechanism,
+      code: line.code,
+    };
+    assert.deepEqual(threatProblems([line, withoutProof], read, exists), [
+      "src/nowhere.ts does not exist (threat model: t)",
+      'test/stop.test.ts has no test named "renamed" (threat model: t)',
+      "src/nowhere.ts does not exist (threat model: t)",
+      "threat model: t names no test",
     ]);
   });
 });
