@@ -4,7 +4,7 @@
 NovusTec, São Paulo, SP, Brazil
 gabrielvieira.ifsc@gmail.com · ORCID [0009-0000-2613-8284](https://orcid.org/0009-0000-2613-8284)
 
-Version 2, October 2026 (version 1: April 2026). English | [Português (Brasil)](second-brain.pt-BR.md) | [Español](second-brain.es.md)
+Version 2.1, October 2026 (version 1: April 2026). English | [Português (Brasil)](second-brain.pt-BR.md) | [Español](second-brain.es.md)
 
 > This essay is the second theoretical basis of [Finite Monkey](../../README.md), alongside the essay [Ricochet Effect](../ricochet/ricochet.md). Sections 1 to 9 analyze the personal "second brain" built with LLMs and propose an evaluation framework. Section 10 gathers what has already been measured about the project and company version of this idea, in which context files and memories are written for coding agents. Section 11 shows what Finite Monkey does with a project's knowledge based on this evidence and what is still a hypothesis to be measured.
 
@@ -375,7 +375,7 @@ Source: author's own elaboration (2026), based on the studies cited.
 
 The previous sections point to three reasons why the second brain fails, both the personal and the project one. Written knowledge **ages without anyone knowing**, because nothing links the note to what it describes. **No one knows where** each claim **came from**, and the model, when compiling syntheses of syntheses, mixes source with derivative. And the person **outsources understanding**, reading a well-written summary that feeds the illusion that they understood (ROZENBLIT; KEIL, 2002).
 
-Finite Monkey already solves a problem with the same shape. Its *gate* does not accept the agent's word that the tests passed: it stores in an evidence ledger the output of the commands that ran, tied to the hash of the git tree on which they ran, and invalidates the evidence when a file changes. The proposal of this section is to extend this design to the project's knowledge. The principle is taken from build systems: a claim about the code is a build task whose output is "is it still true?", and whose inputs are the content of the passages it describes. Build systems with verifying *traces* store the hash of each task's inputs and only redo it when the hash changes (MOKHOV; MITCHELL; PEYTON JONES, 2018). Applied to knowledge, this turns staleness from the model's opinion into computation.
+Finite Monkey already solves a problem with the same shape. Its *gate* does not accept the agent's word that the tests passed: it stores in an evidence ledger the output of the commands that ran, tied to the hash of the git tree on which they ran, and invalidates the evidence when a file changes. This section extends this design to the project's knowledge, and Finite Monkey now implements it, mostly in shadow mode; Table 5 says what was left out. The principle is taken from build systems: a claim about the code is a build task whose output is "is it still true?", and whose inputs are the content of the passages it describes. Build systems with verifying *traces* store the hash of each task's inputs and only redo it when the hash changes (MOKHOV; MITCHELL; PEYTON JONES, 2018). Applied to knowledge, this turns staleness from the model's opinion into computation.
 
 Four design rules follow. The machine stores, invalidates and verifies. The person understands and decides. The model comes in only where the deterministic is not enough. And no piece of memory occupies the context without proving, by measurement, that it helps. Figure 2 contrasts the cycle of an ordinary note with that of an anchored claim.
 
@@ -421,7 +421,7 @@ Figure 4 shows the retrieval ladder with the cost of each rung.
 
 ### 11.4 The person, not the summary
 
-Nothing said so far makes the person understand the project. It makes the agent err less. Section 7.4 and the essay on the Ricochet Effect point in the same direction: the person only judges what they are able to judge, and what they read without generating does not become understanding (FLORES, 2026). Three mechanisms deal with this. All three are hypotheses and only enter as an arm, with consent.
+Nothing said so far makes the person understand the project. It makes the agent err less. Section 7.4 and the essay on the Ricochet Effect point in the same direction: the person only judges what they are able to judge, and what they read without generating does not become understanding (FLORES, 2026). Three mechanisms deal with this, and the effect of all three is a hypothesis. The decision record is on by default; the who-knows-what map runs in shadow mode and only acts with consent; checking by *teach-back* has not been implemented yet.
 
 **The decision sentence.** When a task closes with a change of dependency, vendor or architecture, Finite Monkey assembles the decision record without a model, from the evidence ledger: the contract and its hash, the alternatives considered, the criteria written before the candidates, the green evidence and the measured cost. Afterward it fills in the outcome: whether there was a reversal within seven days, incidents, regressions. The only part the person writes is one sentence: why they chose. Without it, the record appears as "no reason", and the reason is not invented. The format follows the architecture decision record (NYGARD, 2011); the sentence written by the person uses the generation effect in place of a reason written by the model and read by them (SLAMECKA; GRAF, 1978), and directly addresses intent debt (STOREY, 2026).
 
@@ -433,16 +433,18 @@ Nothing said so far makes the person understand the project. It makes the agent 
 
 | Question (section 9) | Mechanism | Basis in Finite Monkey | Status |
 |---|---|---|---|
-| What is the real mechanism? | Typed claims (*check* or *prose*) with declared origin | Contracts, *gate*, evidence ledger | Proposal; strong evidence for the *check* type |
-| What is the token budget? | Retrieval ladder with budget per rung; minimal context | Repository map cached by hash, *onboard* | Proposal; ladder order with mixed evidence |
-| What is the strategy against hallucination? | Hash anchor, chained retraction, generated text as cache | Evidence ledger tied to the tree hash | Proposal; need supported by evidence, calibration to be measured |
-| What is the quality of the input? | Quarantine by origin; contradiction detector | *doctor*, instruction and violation logs | Proposal; threat supported by evidence |
-| What is the counterfactual? | Each memory artifact as an A/B arm | Experiment arms, shadow rules | Proposal; local statistical power to be confirmed |
-| Is the system confusing context with memory? | Decision sentence, *teach-back*, who-knows-what map | Profile, concept ledger, probes | Hypothesis; only in an arm, with consent |
+| What is the real mechanism? | Typed claims (*check* or *prose*) with declared origin | Contracts, *gate*, evidence ledger | Implemented, in shadow mode until measured; strong evidence for the *check* type |
+| What is the token budget? | Retrieval ladder with budget per rung; minimal context | Repository map cached by hash, *onboard* | Implemented; the last rung stays in shadow mode and has no provider by default; ladder order with mixed evidence |
+| What is the strategy against hallucination? | Hash anchor, chained retraction, generated text as cache | Evidence ledger tied to the tree hash | Partial, in shadow mode: the AGENTS.md block is not yet treated as a cache; need supported by evidence, calibration to be measured |
+| What is the quality of the input? | Quarantine by origin; contradiction detector | *doctor*, instruction and violation logs | Implemented; promotion of the agent's claims stays in shadow mode; threat supported by evidence |
+| What is the counterfactual? | Each memory artifact as an A/B arm | Experiment arms, shadow rules | Partial: only claims and learnings become arms; the AGENTS.md block, CLAUDE.md and the automatic memory are left out; local statistical power to be confirmed |
+| Is the system confusing context with memory? | Decision sentence, *teach-back*, who-knows-what map | Profile, concept ledger, probes | Partial: decision record on, map in shadow mode and only with consent, *teach-back* not implemented; effect is a hypothesis |
 
 Source: author's own elaboration (2026).
 
-Figure 5 shows the who-knows-what map as it appears in the dashboard.
+The mechanisms shipped in Finite Monkey 0.1.0-next.41. None has had its effect measured: the benchmark has not yet run the arms that would tell whether any of them helps.
+
+Figure 5 shows the who-knows-what map. In Finite Monkey it comes from the `knowledge map` command, with no dashboard yet.
 
 ![Figure 5](figures/en/fig5.svg)
 
@@ -468,7 +470,7 @@ The practical recommendation remains simple: before putting an LLM on top of a k
 
 ## Conflict of interest
 
-The author is the creator of Finite Monkey, open-source software distributed under the Apache 2.0 license, described in section 11. The project has no commercial purpose as of the date of this version. Sections 1 to 10 do not depend on the software. The mechanisms of section 11 are proposals and hypotheses, not results.
+The author is the creator of Finite Monkey, open-source software distributed under the Apache 2.0 license, described in section 11. The project has no commercial purpose as of the date of this version. Sections 1 to 10 do not depend on the software. The mechanisms of section 11 are implemented, mostly in shadow mode, but their effect has not been measured yet: they are hypotheses, not results.
 
 ## Research data availability
 
