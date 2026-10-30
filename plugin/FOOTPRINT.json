@@ -2,7 +2,7 @@
   "schema": "finitemonkey/mod-footprint@1",
   "module": "./register.mjs",
   "reach": [
-    "calls: $.clock.after (via scheduleRecord, scheduleRefresh, scheduleStatus, scheduleUsage), $.command.register (via registerGateCommand), $.process.run (via runCli), $.session.compact (via handoffNow), $.session.root (via runCli), $.session.surfaces, $.ui.close, $.ui.invalidate (via decideRow, redraw, refreshState, refreshStatus, selectMark), $.ui.log (via registerGateCommand, rejectContract), $.ui.open (via contractNow, costNow, divergeNow, frontsNow, openPane, trajectoryNow, xrayNow), $.ui.resolve, $.ui.status (via refreshStatus)",
+    "calls: $.clock.after (via scheduleRecord, scheduleRefresh, scheduleStatus, scheduleUsage), $.command.register (via registerGateCommand), $.config.list (via readTheme), $.process.run (via runCli), $.session.compact (via handoffNow), $.session.root (via runCli), $.session.surfaces, $.ui.close, $.ui.invalidate (via decideRow, redraw, refreshState, refreshStatus, selectMark), $.ui.log (via registerGateCommand, rejectContract), $.ui.open (via contractNow, costNow, divergeNow, frontsNow, openPane, trajectoryNow, xrayNow), $.ui.resolve, $.ui.status (via refreshStatus)",
     "hooks: session.start, turn.complete, tool.check, tool.call{tool=?}, ui.render{component=AbovePrompt}, ui.render{component=Pane}, command.run{command=?}, attribution.text, prompt.compose, session.compact, turn.step"
   ],
   "gating": [

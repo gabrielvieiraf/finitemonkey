@@ -9,6 +9,7 @@ const week = (key: string, filled: boolean, work: number | null) => ({
   assisted: filled ? 3 : null,
   blindCovered: 0,
   blindBare: filled ? 1 : 0,
+  unstable: filled ? 0 : null,
   work: filled ? work : null,
   evidence: filled ? 1 : 0,
 });
@@ -28,6 +29,7 @@ const DATA = JSON.stringify({
             week: "2026-W43",
             concept: "webhook",
             at: "2026-10-22T10:00:00Z",
+            from: "2026-W41",
             evidence: [
               { kind: "exposure", at: "2026-10-20T10:00:00Z", concept: "webhook", task: "t2", file: "src/webhook.ts" },
               {
@@ -47,14 +49,20 @@ const DATA = JSON.stringify({
   },
 });
 
-const world = (on: StubOn, surfaces: readonly string[]): void => {
+const world = (on: StubOn, surfaces: readonly string[], theme = "dark"): void => {
   mock.clock(on);
+  on("config.list", () => ({ value: [{ key: "theme", value: theme }] }));
   on("session.root", () => ({ value: ROOT }));
   on("session.surfaces", () => ({ value: surfaces }));
   on("ui.open", () => ({ value: { isPlaced: true } }));
   on("ui.close", () => ({ value: undefined }));
   on("ui.render", () => ({ type: "Text", props: {}, children: ["drawn by Claude Code"] }));
   on("process.run", () => ({ value: { exitCode: 0, stdout: DATA, stderr: "" } }));
+};
+
+const sourceOf = (drawn: { readonly props: Readonly<Record<string, unknown>> } | undefined): string => {
+  const source = drawn?.props["source"];
+  return typeof source === "string" ? source : "";
 };
 
 const pane = (surface: string): Readonly<Record<string, unknown>> => ({
@@ -84,22 +92,41 @@ describe("trajectory pane", () => {
     await drawn.unmount();
     const again = await $.ui.mount(pane("terminal"));
     expect(
-      await again.find({ type: "Text", text: /failure_after_approval · task t5 · src\/webhook.ts/ }),
+      await again.find({ type: "Text", text: /evidence: failure_after_approval · task t5 · src\/webhook.ts/ }),
     ).toBeDefined();
+    expect(await again.find({ type: "Text", text: /^✕ ricochet · webhook · 2026-W43$/ })).toBeDefined();
+    expect(await again.find({ type: "Text", text: /accepted in 2026-W41/ })).toBeDefined();
   });
 
-  test("Desktop and VS Code draw the same chart as Svg", async ($, on) => {
-    world(on, ["desktop"]);
+  test("Desktop and VS Code draw the same chart as Svg in the Claude Code theme", async ($, on) => {
+    world(on, ["desktop"], "light");
     await $.command.run({ command: "fm", args: "trajectory" });
     const drawn = await $.ui.mount(pane("desktop"));
-    expect(await drawn.find({ type: "Svg" })).toBeDefined();
+    const svg = await drawn.find({ type: "Svg" });
+    expect(svg).toBeDefined();
+    const source = sourceOf(svg);
+    expect(source).toMatch(/data-theme="light"/);
+    expect(source).toMatch(/fill="#fcfcfd"/);
+    expect(source).toMatch(/hypothesis, not drawn/);
+    expect(source).toMatch(/class="band band-alone/);
     expect(await drawn.find({ type: "Raster" })).toBeUndefined();
   });
 
-  test("in -p the trajectory is a text table", async ($, on) => {
+  test("in VS Code a dark theme draws the dark tokens", async ($, on) => {
+    world(on, ["vscode"], "dark-daltonized");
+    await $.command.run({ command: "fm", args: "trajectory" });
+    const drawn = await $.ui.mount(pane("vscode"));
+    const svg = await drawn.find({ type: "Svg" });
+    expect(sourceOf(svg)).toMatch(/data-theme="dark".*fill="#0d1014"/);
+  });
+
+  test("in -p the trajectory is the plain block with its legend", async ($, on) => {
     world(on, []);
     const result = await $.command.run({ command: "fm", args: "trajectory" });
-    expect(result.text).toMatch(/backend .*↯/);
-    expect(result.text).toMatch(/security +no data/);
+    expect(result.text).toMatch(/^backend, 2026-W41 to 2026-W43, 7 weighted events$/m);
+    expect(result.text).toMatch(/X/);
+    expect(result.text).toMatch(/security: no data \(1 weighted events\)/);
+    expect(result.text).toMatch(/X ricochet {2}O held/);
+    expect(result.text?.includes("\u001b")).toBe(false);
   });
 });

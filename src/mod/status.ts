@@ -32,6 +32,11 @@ export interface GateView {
     readonly helps: number;
     readonly recent: readonly number[];
   } | null;
+  readonly trajectory: {
+    readonly domain: string;
+    readonly band: string | null;
+    readonly ricochet: { readonly concept: string; readonly week: string } | null;
+  } | null;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -90,6 +95,28 @@ const knowledgeOf = (value: unknown): GateView["knowledge"] =>
     ? { stale: value["stale"], contradictions: value["contradictions"], quarantined: value["quarantined"] }
     : null;
 
+const ricochetOf = (value: unknown): NonNullable<GateView["trajectory"]>["ricochet"] =>
+  isRecord(value) && typeof value["concept"] === "string" && typeof value["week"] === "string"
+    ? { concept: value["concept"], week: value["week"] }
+    : null;
+
+const trajectoryOf = (value: unknown): GateView["trajectory"] =>
+  isRecord(value) && typeof value["domain"] === "string"
+    ? {
+        domain: value["domain"],
+        band: typeof value["band"] === "string" ? value["band"] : null,
+        ricochet: ricochetOf(value["ricochet"]),
+      }
+    : null;
+
+export const trajectoryLine = (trajectory: NonNullable<GateView["trajectory"]>): string =>
+  [
+    `trajectory ${trajectory.domain}: ${trajectory.band ?? "no accepted work"}`,
+    trajectory.ricochet === null
+      ? "no ricochet"
+      : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`,
+  ].join(", ");
+
 export const knowledgeLine = (knowledge: NonNullable<GateView["knowledge"]>): string =>
   `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
 
@@ -139,6 +166,7 @@ export const parseStatus = (text: string): GateView | undefined => {
     xray: xrayOf(data["xray"]),
     blindBand: blindOf(data["blindBand"]),
     knowledge: knowledgeOf(data["knowledge"]),
+    trajectory: trajectoryOf(data["trajectory"]),
   };
 };
 
@@ -165,6 +193,7 @@ export const bandLine = (view: GateView): string =>
       : []),
     ...(view.knowledge === null ? [] : [knowledgeLine(view.knowledge)]),
     ...(view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)]),
+    ...(view.trajectory === null ? [] : [trajectoryLine(view.trajectory)]),
     ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
     ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),
     ...(view.xray === null || view.xray.beyond === 0

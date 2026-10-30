@@ -317,6 +317,62 @@
           ]
         }
       ]
+    },
+    "trajectory": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string"
+            },
+            "week": {
+              "type": "string"
+            },
+            "band": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "ricochet": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "concept": {
+                      "type": "string"
+                    },
+                    "week": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "concept",
+                    "week"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "domain",
+            "week",
+            "band",
+            "ricochet"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -336,6 +392,7 @@
     "cost",
     "xray",
     "knowledge",
-    "blindBand"
+    "blindBand",
+    "trajectory"
   ]
 }

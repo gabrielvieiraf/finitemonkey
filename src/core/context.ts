@@ -4,6 +4,7 @@ import type { AbsolutePath } from "./brand.js";
 import type { Runtime } from "./runtime.js";
 
 export interface TextSink {
+  readonly isTTY?: boolean;
   write(chunk: string): unknown;
 }
 

@@ -1,3 +1,4 @@
+import { type TrajectoryNow, trajectoryNowOf } from "../conceitos/trajectory-now.js";
 import { XRAY_FEATURE } from "../conceitos/xray.js";
 import { xrayPath } from "../conceitos/xray-run.js";
 import { nowMs } from "../core/clock.js";
@@ -69,6 +70,7 @@ export interface StatusData {
     readonly helps: number;
     readonly recent: readonly number[];
   } | null;
+  readonly trajectory: TrajectoryNow | null;
 }
 
 const verifyOf = (item: ReportItem): string => item.command ?? GATE_COMMAND;
@@ -193,5 +195,6 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     xray: xrayLine(runtime, paths, report?.task ?? null),
     blindBand: blindBandLine(runtime, paths),
     knowledge: knowledgeCounts(runtime, paths),
+    trajectory: trajectoryNowOf(runtime, paths),
   };
 };
