@@ -1,9 +1,13 @@
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
+import { findRepoRoot } from "../gate/hooks/common.js";
 import { LOOK_CONFIG } from "../look/config.js";
+import { CRITIC_FEATURE, readCritique } from "../look/critic.js";
 import { type LookRun, runLook } from "../look/run.js";
 import { LOOK_SCHEMA, type LookRule } from "../look/types.js";
+import { featureMode } from "../policy/feature.js";
+import { fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
 const MAX_FINDINGS = 10;
@@ -56,6 +60,14 @@ const dataOf = (run: Extract<LookRun, { readonly kind: "done" }>): LookData => (
     .map(({ rule, route, viewport, detail, blocking }) => ({ rule, route, viewport, detail, blocking })),
 });
 
+const opinions = (ctx: Ctx, tree: string): readonly string[] => {
+  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+  if (featureMode(ctx.runtime, paths, CRITIC_FEATURE) !== "active") return [];
+  return (readCritique(ctx.runtime, paths, tree)?.critiques ?? []).map((item) =>
+    ctx.t("look.opinion", { heuristic: item.heuristic, route: item.route, viewport: item.viewport, text: item.text }),
+  );
+};
+
 const doneResult = (ctx: Ctx, data: LookData): CommandResult<LookData> => {
   const human = [
     ...data.captures,
@@ -81,6 +93,8 @@ export const lookCommand: CommandSpec = {
   status: "ready",
   run: async (ctx) => {
     const run = await runLook(ctx.runtime, ctx.cwd);
-    return run.kind === "done" ? doneResult(ctx, dataOf(run)) : setupError(ctx, run);
+    if (run.kind !== "done") return setupError(ctx, run);
+    const result = doneResult(ctx, dataOf(run));
+    return { ...result, human: [...(result.human ?? []), ...opinions(ctx, run.summary.treeHash)] };
   },
 };
