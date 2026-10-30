@@ -197,4 +197,17 @@ export const network: readonly Threat[] = [
       test: "only loopback hosts count as local for the app boot and the request filter",
     },
   },
+  {
+    component: "Network use",
+    attacker: "over-privileged process",
+    threat: "Checking the citations of a research note sends the note to the web",
+    outcome: "reduced",
+    mechanism:
+      "Only the cited DOI or URL is requested, through `curl`; the note, its quotes and its claims stay on the machine, and local sources never read `.env` or key files",
+    code: ["src/judge/fetch.ts"],
+    proof: {
+      file: "test/judge-cite.test.ts",
+      test: "runs offline against a fake fetch and sends only the cited identifier",
+    },
+  },
 ];
