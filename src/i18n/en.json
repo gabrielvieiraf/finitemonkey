@@ -2743,5 +2743,12 @@
   "command.judge_reply.summary": "Record the outside reviewer's reply to a handed-off claim",
   "judge.triage.head": "This document now carries {count, plural, one {# claim} other {# claims}} resting only on the model, on concepts with no record or beyond. Before it is used, for each one: verify it against its source (finitemonkey judge verify), cut it (judge cut), or hand it off with what is missing (judge handoff).",
   "judge.triage.row": "- {claim} ({band}): {text}",
-  "judge.triage.none": "no claim of this document needs triage"
+  "judge.triage.none": "no claim of this document needs triage",
+  "command.judge_depend.summary": "Record that a claim rests on another claim",
+  "command.judge_retract.summary": "Retract a claim; it and every claim resting on it get a ricochet event",
+  "command.judge_failed.summary": "Record that an accepted claim failed in use",
+  "command.judge_contradict.summary": "Record a new source that contradicts a claim; it opens only on a span match or the person's confirmation",
+  "command.judge_fixed.summary": "Record who fixed a ricochet event; a repair by the person is marked held",
+  "command.judge_trajectory.summary": "List ricochet events of research claims with the state and bands they had at acceptance",
+  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}"
 }

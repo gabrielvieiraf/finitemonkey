@@ -36,3 +36,12 @@ export const reply = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "r
         claim: { claim: row.claim, text: row.text, state: row.state, outcome: `reply-${request.verdict}` },
       });
 };
+
+export const depend = (deps: JudgeDeps, request: Extract<JudgeRequest, { verb: "depend" }>): JudgeResponse => {
+  const claims = claimsIn(readEntries(deps.runtime, deps.paths));
+  const claim = claims.find((item) => item.id === request.claim);
+  if (claim === undefined || !claims.some((item) => item.id === request.on))
+    return response("depend", { reason: "unknown_claim" });
+  const written = appendNow(deps, { ...claim, at: deps.runtime.now(), because: [request.on] });
+  return written.ok ? response("depend", { entry: claim.id }) : response("depend", { reason: written.reason });
+};

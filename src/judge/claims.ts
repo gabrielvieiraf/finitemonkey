@@ -6,8 +6,16 @@ export const normalizeClaim = (text: string): string => text.replace(/\s+/g, " "
 
 export const claimIdOf = (text: string): string => entryId("j", normalizeClaim(text).toLowerCase());
 
-export const claimsIn = (entries: readonly JudgeEntry[]): readonly ClaimEntry[] =>
-  entries.filter((entry): entry is ClaimEntry => entry.type === "claim");
+export const claimsIn = (entries: readonly JudgeEntry[]): readonly ClaimEntry[] => {
+  const folded = new Map<string, ClaimEntry>();
+  for (const entry of entries) {
+    if (entry.type !== "claim") continue;
+    const first = folded.get(entry.id);
+    const because = [...new Set([...(first?.because ?? []), ...(entry.because ?? [])])];
+    folded.set(entry.id, { ...(first ?? entry), ...(because.length === 0 ? {} : { because }) });
+  }
+  return [...folded.values()];
+};
 
 export const conceptsIn = (entries: readonly JudgeEntry[]): readonly ConceptEntry[] =>
   entries.filter((entry): entry is ConceptEntry => entry.type === "concept");

@@ -2743,7 +2743,14 @@
     "command.judge_reply.summary": "machine",
     "judge.triage.head": "machine",
     "judge.triage.row": "machine",
-    "judge.triage.none": "machine"
+    "judge.triage.none": "machine",
+    "command.judge_depend.summary": "machine",
+    "command.judge_retract.summary": "machine",
+    "command.judge_failed.summary": "machine",
+    "command.judge_contradict.summary": "machine",
+    "command.judge_fixed.summary": "machine",
+    "command.judge_trajectory.summary": "machine",
+    "judge.event": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5489,6 +5496,13 @@
     "command.judge_reply.summary": "machine",
     "judge.triage.head": "machine",
     "judge.triage.row": "machine",
-    "judge.triage.none": "machine"
+    "judge.triage.none": "machine",
+    "command.judge_depend.summary": "machine",
+    "command.judge_retract.summary": "machine",
+    "command.judge_failed.summary": "machine",
+    "command.judge_contradict.summary": "machine",
+    "command.judge_fixed.summary": "machine",
+    "command.judge_trajectory.summary": "machine",
+    "judge.event": "machine"
   }
 }

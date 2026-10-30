@@ -79,7 +79,21 @@ export const judgeLines = (t: Translate, data: JudgeResponse): readonly string[]
   ...extraLines(t, data),
 ];
 
+const eventLines = (t: Translate, data: JudgeResponse): readonly string[] =>
+  (data.events ?? []).map((event) =>
+    t("judge.event", {
+      event: event.id,
+      claim: event.claim,
+      cause: event.cause,
+      state: event.state,
+      support: event.support,
+      bands: Object.values(event.bands).join(", ") || "no record",
+      fixed: event.fixedBy ?? "-",
+    }),
+  );
+
 const extraLines = (t: Translate, data: JudgeResponse): readonly string[] => [
+  ...eventLines(t, data),
   ...(data.triage === undefined
     ? []
     : data.triage.length === 0

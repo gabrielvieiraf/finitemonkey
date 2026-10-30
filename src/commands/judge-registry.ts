@@ -9,6 +9,7 @@ import {
   judgeObserveCommand,
   judgeVerifyCommand,
 } from "./judge.js";
+import { JUDGE_EVENT_COMMANDS } from "./judge-events.js";
 import { judgePromoteCommand, judgeReadCommand } from "./judge-research.js";
 import { RESEARCH_SIDES_COMMANDS } from "./research-sides.js";
 import type { CommandSpec } from "./types.js";
@@ -276,4 +277,5 @@ export const JUDGE_COMMANDS = [
   judgeSkipCommand,
   judgeTriageCommand,
   judgeReplyCommand,
+  ...JUDGE_EVENT_COMMANDS,
 ] as const satisfies readonly CommandSpec[];

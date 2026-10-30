@@ -76,6 +76,19 @@ export type JudgeRequest =
     }
   | { readonly verb: "skip"; readonly probe: string }
   | { readonly verb: "triage"; readonly file: string; readonly text: string }
+  | { readonly verb: "depend"; readonly claim: string; readonly on: string }
+  | { readonly verb: "retract"; readonly claim: string }
+  | { readonly verb: "failed"; readonly claim: string }
+  | {
+      readonly verb: "contradict";
+      readonly claim: string;
+      readonly source: string;
+      readonly span: string;
+      readonly scope: boolean;
+      readonly confirmed: boolean;
+    }
+  | { readonly verb: "fixed"; readonly event: string; readonly by: "person" | "agent" | "revert" }
+  | { readonly verb: "trajectory" }
   | { readonly verb: "reply"; readonly claim: string; readonly verdict: "holds" | "fails" }
   | { readonly verb: "accept"; readonly help: string }
   | { readonly verb: "dismiss"; readonly help: string }
@@ -198,6 +211,36 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
     if (claim === undefined || decision === undefined) return undefined;
     return { verb: "probe", claim, decision, ...optional(record, ["session", "task"]) };
   },
+  depend: (record) => {
+    const [claim, on] = [text(record, "claim"), text(record, "on")];
+    return claim === undefined || on === undefined ? undefined : { verb: "depend", claim, on };
+  },
+  retract: (record) => {
+    const claim = text(record, "claim");
+    return claim === undefined ? undefined : { verb: "retract", claim };
+  },
+  failed: (record) => {
+    const claim = text(record, "claim");
+    return claim === undefined ? undefined : { verb: "failed", claim };
+  },
+  contradict: (record) => {
+    const [claim, source, span] = [text(record, "claim"), text(record, "source"), text(record, "span")];
+    if (claim === undefined || source === undefined || span === undefined) return undefined;
+    return {
+      verb: "contradict",
+      claim,
+      source,
+      span,
+      scope: record["scope"] === true,
+      confirmed: record["confirmed"] === true,
+    };
+  },
+  fixed: (record) => {
+    const [event, by] = [text(record, "event"), record["by"]];
+    if (event === undefined || (by !== "person" && by !== "agent" && by !== "revert")) return undefined;
+    return { verb: "fixed", event, by };
+  },
+  trajectory: () => ({ verb: "trajectory" }),
   triage: (record) => {
     const [file, body] = [text(record, "file"), text(record, "text")];
     return file === undefined || body === undefined ? undefined : { verb: "triage", file, text: body };
