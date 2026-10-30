@@ -5842,9 +5842,6 @@ var clearPause = (runtime, paths, by) => {
   return pause2;
 };
 
-// src/policy/policy.ts
-import { join as join27 } from "node:path";
-
 // src/core/suggest.ts
 var distance = (a, b) => {
   const row3 = Array.from({ length: b.length + 1 }, (_, index) => index);
@@ -5871,6 +5868,62 @@ var closest = (input, candidates4) => {
   }
   return best?.name;
 };
+
+// src/policy/stage6.ts
+var DEFAULT_EVOLVE_MIN_TASKS = 10;
+var EVOLVE_KEYS = ["minTasks"];
+var parseEvolve = (tree) => {
+  const raw = Number(configMap(tree, "evolve")["minTasks"]);
+  return { minTasks: Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_EVOLVE_MIN_TASKS };
+};
+var CALIBRATE_KEYS = ["minLabels", "askAbove", "abstainAbove"];
+var DEFAULT_CALIBRATE = { minLabels: 30, askAbove: 0.25, abstainAbove: 0.6 };
+var share = (raw, fallback2) => {
+  const value2 = Number(raw);
+  return raw !== void 0 && Number.isFinite(value2) && value2 > 0 && value2 < 1 ? value2 : fallback2;
+};
+var parseCalibrate = (tree) => {
+  const raw = configMap(tree, "calibrate");
+  const min = Number(raw["minLabels"]);
+  const askAbove = share(raw["askAbove"], DEFAULT_CALIBRATE.askAbove);
+  const abstainAbove = share(raw["abstainAbove"], DEFAULT_CALIBRATE.abstainAbove);
+  return {
+    minLabels: Number.isInteger(min) && min > 0 ? min : DEFAULT_CALIBRATE.minLabels,
+    askAbove: Math.min(askAbove, abstainAbove),
+    abstainAbove: Math.max(askAbove, abstainAbove)
+  };
+};
+var AUTONOMY_KEYS = ["publishedHorizonMinutes", "margin", "maxMinutes", "maxUsd"];
+var DEFAULT_AUTONOMY = {
+  publishedHorizonMinutes: 60,
+  margin: 0.5,
+  maxMinutes: 120,
+  maxUsd: 5
+};
+var positive2 = (raw, fallback2) => {
+  const value2 = Number(raw);
+  return raw !== void 0 && Number.isFinite(value2) && value2 > 0 ? value2 : fallback2;
+};
+var parseAutonomy = (tree) => {
+  const raw = configMap(tree, "autonomy");
+  return {
+    publishedHorizonMinutes: positive2(raw["publishedHorizonMinutes"], DEFAULT_AUTONOMY.publishedHorizonMinutes),
+    margin: share(raw["margin"], DEFAULT_AUTONOMY.margin),
+    maxMinutes: positive2(raw["maxMinutes"], DEFAULT_AUTONOMY.maxMinutes),
+    maxUsd: positive2(raw["maxUsd"], DEFAULT_AUTONOMY.maxUsd)
+  };
+};
+var SECTIONS = [
+  ["evolve", EVOLVE_KEYS],
+  ["calibrate", CALIBRATE_KEYS],
+  ["autonomy", AUTONOMY_KEYS]
+];
+var sectionKeyIssues = (tree) => SECTIONS.flatMap(
+  ([section3, keys]) => Object.keys(configMap(tree, section3)).filter((key3) => !keys.includes(key3)).map((key3) => [`${section3}.${key3}`, key3, keys])
+);
+
+// src/policy/load.ts
+import { join as join27 } from "node:path";
 
 // src/policy/evolved.ts
 import { join as join26 } from "node:path";
@@ -5994,58 +6047,18 @@ var trialFor = (runtime, root, policy) => {
   return readEvolve(runtime, root).variants.find((variant) => variant.status === "trial" && appliesTo(variant, task));
 };
 
-// src/policy/stage6.ts
-var DEFAULT_EVOLVE_MIN_TASKS = 10;
-var EVOLVE_KEYS = ["minTasks"];
-var parseEvolve = (tree) => {
-  const raw = Number(configMap(tree, "evolve")["minTasks"]);
-  return { minTasks: Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_EVOLVE_MIN_TASKS };
+// src/policy/load.ts
+var policyPath = (root) => toAbsolutePath(join27(root, POLICY_FILE));
+var userPolicyPath = (home) => toAbsolutePath(join27(home, ".finitemonkey", "policy.yml"));
+var loadBasePolicy = (runtime, root) => {
+  const text34 = runtime.readText(policyPath(root));
+  const project = text34.ok ? parsePolicy(text34.value) : DEFAULT_POLICY;
+  const userText = runtime.readText(userPolicyPath(runtime.homeDir()));
+  if (!userText.ok) return project;
+  const user = parseUserPolicy(userText.value);
+  return { ...project, userGuards: user.userGuards, issues: [...project.issues, ...user.issues] };
 };
-var CALIBRATE_KEYS = ["minLabels", "askAbove", "abstainAbove"];
-var DEFAULT_CALIBRATE = { minLabels: 30, askAbove: 0.25, abstainAbove: 0.6 };
-var share = (raw, fallback2) => {
-  const value2 = Number(raw);
-  return raw !== void 0 && Number.isFinite(value2) && value2 > 0 && value2 < 1 ? value2 : fallback2;
-};
-var parseCalibrate = (tree) => {
-  const raw = configMap(tree, "calibrate");
-  const min = Number(raw["minLabels"]);
-  const askAbove = share(raw["askAbove"], DEFAULT_CALIBRATE.askAbove);
-  const abstainAbove = share(raw["abstainAbove"], DEFAULT_CALIBRATE.abstainAbove);
-  return {
-    minLabels: Number.isInteger(min) && min > 0 ? min : DEFAULT_CALIBRATE.minLabels,
-    askAbove: Math.min(askAbove, abstainAbove),
-    abstainAbove: Math.max(askAbove, abstainAbove)
-  };
-};
-var AUTONOMY_KEYS = ["publishedHorizonMinutes", "margin", "maxMinutes", "maxUsd"];
-var DEFAULT_AUTONOMY = {
-  publishedHorizonMinutes: 60,
-  margin: 0.5,
-  maxMinutes: 120,
-  maxUsd: 5
-};
-var positive2 = (raw, fallback2) => {
-  const value2 = Number(raw);
-  return raw !== void 0 && Number.isFinite(value2) && value2 > 0 ? value2 : fallback2;
-};
-var parseAutonomy = (tree) => {
-  const raw = configMap(tree, "autonomy");
-  return {
-    publishedHorizonMinutes: positive2(raw["publishedHorizonMinutes"], DEFAULT_AUTONOMY.publishedHorizonMinutes),
-    margin: share(raw["margin"], DEFAULT_AUTONOMY.margin),
-    maxMinutes: positive2(raw["maxMinutes"], DEFAULT_AUTONOMY.maxMinutes),
-    maxUsd: positive2(raw["maxUsd"], DEFAULT_AUTONOMY.maxUsd)
-  };
-};
-var SECTIONS = [
-  ["evolve", EVOLVE_KEYS],
-  ["calibrate", CALIBRATE_KEYS],
-  ["autonomy", AUTONOMY_KEYS]
-];
-var sectionKeyIssues = (tree) => SECTIONS.flatMap(
-  ([section3, keys]) => Object.keys(configMap(tree, section3)).filter((key3) => !keys.includes(key3)).map((key3) => [`${section3}.${key3}`, key3, keys])
-);
+var loadPolicy = (runtime, root) => withEvolved(runtime, root, loadBasePolicy(runtime, root));
 
 // src/policy/policy.ts
 var POLICY_FILE = ".finitemonkey/policy.yml";
@@ -6297,17 +6310,6 @@ var parseUserPolicy = (text34) => {
   return { userGuards, issues: [...keyIssues(tree, USER_POLICY_FILE, ["guards"]), ...issues2] };
 };
 var isPolicyError = (found) => found.kind !== "retired_key";
-var policyPath = (root) => toAbsolutePath(join27(root, POLICY_FILE));
-var userPolicyPath = (home) => toAbsolutePath(join27(home, ".finitemonkey", "policy.yml"));
-var loadBasePolicy = (runtime, root) => {
-  const text34 = runtime.readText(policyPath(root));
-  const project = text34.ok ? parsePolicy(text34.value) : DEFAULT_POLICY;
-  const userText = runtime.readText(userPolicyPath(runtime.homeDir()));
-  if (!userText.ok) return project;
-  const user = parseUserPolicy(userText.value);
-  return { ...project, userGuards: user.userGuards, issues: [...project.issues, ...user.issues] };
-};
-var loadPolicy = (runtime, root) => withEvolved(runtime, root, loadBasePolicy(runtime, root));
 
 // src/policy/guards.ts
 var SHADOW_FILE = "shadow.json";

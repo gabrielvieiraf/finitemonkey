@@ -1,11 +1,6 @@
-import { join } from "node:path";
-
-import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
-import type { Runtime } from "../core/runtime.js";
 import { closest } from "../core/suggest.js";
 import { configAt, configMap, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
 import { ALERT_BUDGET_KEYS, type AlertBudgetConfig, DEFAULT_ALERT_BUDGET, parseAlertBudget } from "./budget.js";
-import { withEvolved } from "./evolved.js";
 import {
   type AutonomyConfig,
   type CalibrateConfig,
@@ -19,6 +14,7 @@ import {
   sectionKeyIssues,
 } from "./stage6.js";
 
+export { loadBasePolicy, loadPolicy, policyPath, type PolicyRuntime, userPolicyPath } from "./load.js";
 export type { AutonomyConfig, CalibrateConfig, EvolveConfig } from "./stage6.js";
 
 export const POLICY_FILE = ".finitemonkey/policy.yml";
@@ -316,21 +312,3 @@ export const parseUserPolicy = (text: string): Pick<Policy, "userGuards" | "issu
 };
 
 export const isPolicyError = (found: PolicyIssue): boolean => found.kind !== "retired_key";
-
-export const policyPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(join(root, POLICY_FILE));
-
-export const userPolicyPath = (home: string): AbsolutePath => toAbsolutePath(join(home, ".finitemonkey", "policy.yml"));
-
-export type PolicyRuntime = Pick<Runtime, "readText" | "homeDir">;
-
-export const loadBasePolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy => {
-  const text = runtime.readText(policyPath(root));
-  const project = text.ok ? parsePolicy(text.value) : DEFAULT_POLICY;
-  const userText = runtime.readText(userPolicyPath(runtime.homeDir()));
-  if (!userText.ok) return project;
-  const user = parseUserPolicy(userText.value);
-  return { ...project, userGuards: user.userGuards, issues: [...project.issues, ...user.issues] };
-};
-
-export const loadPolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy =>
-  withEvolved(runtime, root, loadBasePolicy(runtime, root));
