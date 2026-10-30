@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { Readable } from "node:stream";
 import { after, before, describe, it } from "node:test";
 
@@ -124,7 +125,7 @@ describe("sheet: rendered page", () => {
     repos.push(repo);
     const run = await runSheet(repoRuntime(), repo.root, "/card", ".card");
     if (run.kind !== "done") throw new Error(JSON.stringify(run));
-    const html = repo.read(run.html.slice(repo.root.length + 1));
+    const html = readFileSync(run.html, "utf8");
     for (const width of [320, 390, 768, 1440]) assert.ok(html.includes(`${String(width)}px · ideal`), String(width));
     assert.ok(html.includes("1440px · empty"));
     assert.ok(html.includes("[unmeasured]"));

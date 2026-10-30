@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
+import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { type SessionStats, sessionStats } from "../src/drift/collect.js";
 import { driftReport } from "../src/drift/sensor.js";
@@ -108,7 +109,8 @@ describe("drift command", () => {
     cleanups.push(repo.cleanup, () => {
       rmSync(config, { recursive: true, force: true });
     });
-    const dir = join(config, "projects", projectLogKey(repo.root));
+    const top = toAbsolutePath(repo.git("rev-parse", "--show-toplevel").trim());
+    const dir = join(config, "projects", projectLogKey(top));
     mkdirSync(dir, { recursive: true });
     for (let n = 0; n < 14; n += 1) {
       writeFileSync(
