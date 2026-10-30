@@ -124,6 +124,9 @@ export const forgetJudge = (
     return entries.length;
   }
   const kept = entries.filter((entry) => !mentions(entry, id));
+  for (const entry of entries)
+    if (entry.type === "item" && mentions(entry, id))
+      runtime.remove(toAbsolutePath(join(judgeDir(paths), "items", `${entry.hash}.txt`)));
   runtime.writeAtomic(
     judgePath(paths),
     kept.map((entry) => `${JSON.stringify({ schema: JUDGE_SCHEMA, ...entry })}\n`).join(""),

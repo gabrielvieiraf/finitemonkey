@@ -2717,7 +2717,10 @@
     "command.judge_check.summary": "machine",
     "command.judge_anchor.summary": "machine",
     "judge.number": "machine",
-    "judge.exceptions": "machine"
+    "judge.exceptions": "machine",
+    "command.judge_read.summary": "machine",
+    "command.judge_promote.summary": "machine",
+    "judge.item": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5437,6 +5440,9 @@
     "command.judge_check.summary": "machine",
     "command.judge_anchor.summary": "machine",
     "judge.number": "machine",
-    "judge.exceptions": "machine"
+    "judge.exceptions": "machine",
+    "command.judge_read.summary": "machine",
+    "command.judge_promote.summary": "machine",
+    "judge.item": "machine"
   }
 }

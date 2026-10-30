@@ -2717,5 +2717,8 @@
   "command.judge_check.summary": "Record the person's own source check of a claim; it counts when it matches the machine check",
   "command.judge_anchor.summary": "Anchor a claim's numbers to a computation with hashed inputs",
   "judge.number": "  {number}: {state} {anchor}",
-  "judge.exceptions": "{count, plural, one {# number} other {# numbers}} let through by the exception list: {numbers}"
+  "judge.exceptions": "{count, plural, one {# number} other {# numbers}} let through by the exception list: {numbers}",
+  "command.judge_read.summary": "Keep a page, document or tool output read during research as quoted data with its origin and hash",
+  "command.judge_promote.summary": "Move a research claim into project claims, only after a span check and a green task",
+  "judge.item": "{item}: {origin} {source} kept as data; instruction-shaped lines not followed: {instructions}"
 }

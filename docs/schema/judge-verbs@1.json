@@ -27,7 +27,9 @@
         "judge",
         "answer",
         "cut",
-        "anchor"
+        "anchor",
+        "read",
+        "promote"
       ]
     },
     "ok": {
@@ -1418,6 +1420,37 @@
           "number"
         ]
       }
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "number"
+        },
+        "data": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "item",
+        "origin",
+        "source",
+        "hash",
+        "instructions",
+        "data"
+      ]
     }
   },
   "required": [

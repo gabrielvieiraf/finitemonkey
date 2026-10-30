@@ -46,6 +46,8 @@ export type JudgeRequest =
   | { readonly verb: "answer"; readonly probe: string; readonly choice: number }
   | { readonly verb: "cut"; readonly claim: string }
   | { readonly verb: "check"; readonly claim: string; readonly says: "verified" | "mismatch" }
+  | { readonly verb: "read"; readonly origin: string; readonly source: string; readonly content: string }
+  | { readonly verb: "promote"; readonly claim: string }
   | { readonly verb: "anchor"; readonly claim: string; readonly run: string; readonly inputs: readonly string[] };
 
 const text = (record: JsonObject, key: string): string | undefined => {
@@ -135,6 +137,16 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
     const says = record["says"];
     if (claim === undefined || (says !== "verified" && says !== "mismatch")) return undefined;
     return { verb: "check", claim, says };
+  },
+  read: (record) => {
+    const [origin, source, content] = [text(record, "origin"), text(record, "source"), text(record, "content")];
+    return origin === undefined || source === undefined || content === undefined
+      ? undefined
+      : { verb: "read", origin, source, content };
+  },
+  promote: (record) => {
+    const claim = text(record, "claim");
+    return claim === undefined ? undefined : { verb: "promote", claim };
   },
   anchor: (record) => {
     const [claim, run] = [text(record, "claim"), text(record, "run")];

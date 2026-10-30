@@ -10,6 +10,7 @@ import {
 } from "./claims.js";
 import type { DomainView } from "./concepts.js";
 import type { NumberCheck } from "./numbers.js";
+import type { ItemView } from "./research.js";
 import {
   type Band,
   JUDGE_VERBS_SCHEMA,
@@ -39,6 +40,8 @@ export const VERBS = [
   "cut",
   "check",
   "anchor",
+  "read",
+  "promote",
 ] as const;
 
 export const ROW_ACTIONS = ["verify", "handoff", "cut", "judge"] as const;
@@ -146,6 +149,7 @@ export interface JudgeResponse {
   readonly probe?: ProbeView;
   readonly route?: "verify" | "handoff";
   readonly exceptions?: readonly ExceptionUse[];
+  readonly item?: ItemView;
 }
 
 export const response = (verb: Verb, fields: Omit<JudgeResponse, "schema" | "verb" | "ok"> = {}): JudgeResponse => ({
