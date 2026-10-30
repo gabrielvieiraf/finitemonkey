@@ -720,6 +720,75 @@
           padding: 0 10px;
         }
       }
+      .status {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+        gap: 24px 40px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .status {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      table.stat {
+        width: 100%;
+        border-collapse: collapse;
+        border-top: 2px solid var(--ink);
+        font-size: 12.5px;
+      }
+      .stat caption {
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--faint);
+        padding-bottom: 6px;
+      }
+      .stat th,
+      .stat td {
+        padding: 9px 10px 9px 0;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: baseline;
+        text-align: left;
+      }
+      .stat th {
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+        width: 34%;
+      }
+      .stat td.v {
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .stat td.v a {
+        text-decoration-color: var(--rule);
+      }
+      .stat td.d {
+        color: var(--muted);
+        text-align: right;
+        padding-right: 0;
+        font-size: 11.5px;
+      }
+      .stat .ok {
+        color: var(--ok);
+      }
+      .stat .bad {
+        color: var(--bad);
+      }
+      .stat .tg {
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid currentColor;
+        padding: 0 5px;
+        margin-left: 6px;
+        font-weight: 500;
+        color: var(--muted);
+      }
       .small {
         font-size: 12px;
         color: var(--muted);
@@ -811,6 +880,7 @@
           <a href="#how" data-i="navHow">how</a>
           <a href="#essays" data-i="navEssays">essays</a>
           <a href="#install" data-i="navInstall">install</a>
+          <a href="#status" data-i="navStatus">status</a>
         </nav>
         <div class="seg" role="group" aria-label="Idioma / Language / Idioma">
           <button type="button" data-lang="pt" aria-pressed="false">PT</button>
@@ -987,6 +1057,76 @@
               <code>doctor</code> tells you what is wrong, <code>uninstall</code> leaves everything as it was.
             </p>
           </div>
+        </section>
+
+        <section id="status">
+          <div class="sh">
+            <h2 data-i="statusH">Status</h2>
+            <span class="k" data-i="statusK">npm · github · live</span>
+          </div>
+          <div class="status">
+            <table class="stat">
+              <caption data-i="stNow">
+                now
+              </caption>
+              <tbody>
+                <tr>
+                  <th scope="row">next</th>
+                  <td class="v" id="s-next"><a href="https://www.npmjs.com/package/finitemonkey/v/next">—</a></td>
+                  <td class="d" id="s-next-d"></td>
+                </tr>
+                <tr>
+                  <th scope="row">latest</th>
+                  <td class="v" id="s-latest"><a href="https://www.npmjs.com/package/finitemonkey">—</a></td>
+                  <td class="d" id="s-latest-d" data-i="stPlaceholder">
+                    0.0.0 is a placeholder that only holds the name
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stWeek">downloads, last week</th>
+                  <td class="v" id="s-week"><a href="https://www.npmjs.com/package/finitemonkey">—</a></td>
+                  <td class="d" id="s-week-d"></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stMonth">downloads, last month</th>
+                  <td class="v" id="s-month"><a href="https://www.npmjs.com/package/finitemonkey">—</a></td>
+                  <td class="d" id="s-month-d"></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stStars">GitHub stars</th>
+                  <td class="v" id="s-stars">
+                    <a href="https://github.com/gabrielvieiraf/finitemonkey/stargazers">—</a>
+                  </td>
+                  <td class="d"></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stCi">CI on next</th>
+                  <td class="v" id="s-ci">
+                    <a
+                      href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml?query=branch%3Anext"
+                      >—</a
+                    >
+                  </td>
+                  <td class="d" id="s-ci-d"></td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="stat">
+              <caption data-i="stRecent">
+                last 5 versions
+              </caption>
+              <tbody id="s-recent">
+                <tr>
+                  <td class="v"><a href="https://www.npmjs.com/package/finitemonkey?activeTab=versions">—</a></td>
+                  <td class="d"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small" data-i="statusNote">
+            Read by your browser from registry.npmjs.org, api.npmjs.org and api.github.com, and kept for 10 minutes. A
+            dash means the request failed; it links to the source.
+          </p>
         </section>
 
         <section id="bench">
@@ -1434,6 +1574,8 @@
           document
             .querySelectorAll(".seg button")
             .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+          current = lang;
+          if (typeof renderStatus === "function") renderStatus(lang);
         }
         document.querySelectorAll(".seg button").forEach((b) =>
           b.addEventListener("click", () => {
@@ -1464,6 +1606,167 @@
             } catch (e) {}
           }),
         );
+        const ST = {
+          pt: {
+            navStatus: "status",
+            statusH: "Situação",
+            statusK: "npm · github · ao vivo",
+            stNow: "agora",
+            stPlaceholder: "0.0.0 é um marcador que só segura o nome",
+            stWeek: "downloads, última semana",
+            stMonth: "downloads, último mês",
+            stStars: "estrelas no GitHub",
+            stCi: "CI na next",
+            stRecent: "últimas 5 versões",
+            statusNote:
+              "Lido pelo seu navegador em registry.npmjs.org, api.npmjs.org e api.github.com, e guardado por 10 minutos. Um traço quer dizer que a consulta falhou; ele leva à fonte.",
+            ciOk: "passou",
+            ciBad: "falhou",
+          },
+          en: {
+            navStatus: "status",
+            statusH: "Status",
+            statusK: "npm · github · live",
+            stNow: "now",
+            stPlaceholder: "0.0.0 is a placeholder that only holds the name",
+            stWeek: "downloads, last week",
+            stMonth: "downloads, last month",
+            stStars: "GitHub stars",
+            stCi: "CI on next",
+            stRecent: "last 5 versions",
+            statusNote:
+              "Read by your browser from registry.npmjs.org, api.npmjs.org and api.github.com, and kept for 10 minutes. A dash means the request failed; it links to the source.",
+            ciOk: "passing",
+            ciBad: "failing",
+          },
+          es: {
+            navStatus: "estado",
+            statusH: "Estado",
+            statusK: "npm · github · en vivo",
+            stNow: "ahora",
+            stPlaceholder: "0.0.0 es un marcador que solo reserva el nombre",
+            stWeek: "descargas, última semana",
+            stMonth: "descargas, último mes",
+            stStars: "estrellas en GitHub",
+            stCi: "CI en next",
+            stRecent: "últimas 5 versiones",
+            statusNote:
+              "Lo lee tu navegador en registry.npmjs.org, api.npmjs.org y api.github.com, y se guarda 10 minutos. Un guion significa que la consulta falló; enlaza a la fuente.",
+            ciOk: "pasa",
+            ciBad: "falla",
+          },
+        };
+        for (const l of Object.keys(ST)) Object.assign(T[l], ST[l]);
+        const NPM = "https://www.npmjs.com/package/finitemonkey";
+        const GH = "https://github.com/gabrielvieiraf/finitemonkey";
+        const SRC = {
+          reg: "https://registry.npmjs.org/finitemonkey",
+          week: "https://api.npmjs.org/downloads/point/last-week/finitemonkey",
+          month: "https://api.npmjs.org/downloads/point/last-month/finitemonkey",
+          repo: "https://api.github.com/repos/gabrielvieiraf/finitemonkey",
+          ci: "https://api.github.com/repos/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/runs?branch=next&status=completed&per_page=1&exclude_pull_requests=true",
+        };
+        const data = {};
+        let current = "en";
+        const TTL = 10 * 60 * 1000;
+        function slim(key, d) {
+          if (key === "reg") return { tags: d["dist-tags"] || {}, time: d.time || {} };
+          if (key === "week" || key === "month") return { n: d.downloads, start: d.start, end: d.end };
+          if (key === "repo") return { stars: d.stargazers_count };
+          const r = (d.workflow_runs || [])[0];
+          return r ? { conclusion: r.conclusion, url: r.html_url, at: r.updated_at } : null;
+        }
+        async function load(key) {
+          const ck = "fm-status-" + key;
+          try {
+            const c = JSON.parse(sessionStorage.getItem(ck) || "null");
+            if (c && Date.now() - c.t < TTL) return c.v;
+          } catch (e) {}
+          const ctl = new AbortController();
+          const timer = setTimeout(() => ctl.abort(), 8000);
+          try {
+            const r = await fetch(SRC[key], { signal: ctl.signal, headers: { Accept: "application/json" } });
+            if (!r.ok) throw new Error(String(r.status));
+            const v = slim(key, await r.json());
+            try {
+              sessionStorage.setItem(ck, JSON.stringify({ t: Date.now(), v }));
+            } catch (e) {}
+            return v;
+          } finally {
+            clearTimeout(timer);
+          }
+        }
+        const tag = (lang) => (lang === "pt" ? "pt-BR" : lang);
+        const day = (iso, lang) => {
+          const d = new Date(iso);
+          return isNaN(d) ? "" : d.toLocaleDateString(tag(lang), { year: "numeric", month: "short", day: "numeric" });
+        };
+        const short = (iso, lang) => {
+          const d = new Date(iso);
+          return isNaN(d) ? "" : d.toLocaleDateString(tag(lang), { month: "short", day: "numeric" });
+        };
+        const link = (href, text, cls) => `<a href="${href}"${cls ? ` class="${cls}"` : ""}>${esc(String(text))}</a>`;
+        function setv(id, html) {
+          const el = document.getElementById(id);
+          if (el && html !== undefined) el.innerHTML = html;
+        }
+        function renderStatus(lang) {
+          const t = T[lang];
+          const reg = data.reg;
+          if (reg && reg.tags.next) {
+            setv("s-next", link(NPM + "/v/" + reg.tags.next, reg.tags.next));
+            setv("s-next-d", esc(day(reg.time[reg.tags.next], lang)));
+          }
+          if (reg && reg.tags.latest) {
+            setv("s-latest", link(NPM + "/v/" + reg.tags.latest, reg.tags.latest));
+            const ph = reg.tags.latest === "0.0.0";
+            const el = document.getElementById("s-latest-d");
+            if (!ph) {
+              el.removeAttribute("data-i");
+              el.textContent = day(reg.time[reg.tags.latest], lang);
+            }
+          }
+          if (reg) {
+            const tagged = {};
+            for (const [k, v] of Object.entries(reg.tags)) tagged[v] = k;
+            const rows = Object.entries(reg.time)
+              .filter(([v]) => v !== "created" && v !== "modified")
+              .sort((a, b) => (a[1] < b[1] ? 1 : -1))
+              .slice(0, 5)
+              .map(
+                ([v, at]) =>
+                  `<tr><td class="v">${link(NPM + "/v/" + v, v)}${tagged[v] ? `<span class="tg">${esc(tagged[v])}</span>` : ""}</td><td class="d">${esc(day(at, lang))}</td></tr>`,
+              );
+            if (rows.length) setv("s-recent", rows.join(""));
+          }
+          for (const k of ["week", "month"]) {
+            const d = data[k];
+            if (d && typeof d.n === "number") {
+              setv("s-" + k, link(NPM, d.n.toLocaleString(tag(lang))));
+              setv("s-" + k + "-d", esc(short(d.start, lang) + " – " + day(d.end, lang)));
+            }
+          }
+          if (data.repo && typeof data.repo.stars === "number")
+            setv("s-stars", link(GH + "/stargazers", data.repo.stars.toLocaleString(tag(lang))));
+          const ci = data.ci;
+          if (ci && ci.url) {
+            const ok = ci.conclusion === "success";
+            const bad = ci.conclusion === "failure";
+            setv(
+              "s-ci",
+              link(ci.url, ok ? t.ciOk : bad ? t.ciBad : ci.conclusion || "—", ok ? "ok" : bad ? "bad" : ""),
+            );
+            setv("s-ci-d", esc(day(ci.at, lang)));
+          }
+        }
+        for (const key of Object.keys(SRC))
+          load(key).then(
+            (v) => {
+              data[key] = v;
+              renderStatus(current);
+            },
+            () => {},
+          );
         let start = "en";
         const q = new URLSearchParams(location.search).get("lang");
         let saved = null;
