@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -61,11 +61,62 @@ export const spawnClaude = (invocation: Invocation): Promise<RunOutcome> =>
     });
   });
 
-export const realDeps = (repo: string, cacheDir: string): HarnessDeps => ({
-  runner: spawnClaude,
-  claudeVersion: claudeVersion(),
-  pluginFor: pinnedPlugin(repo, cacheDir),
-  tempRoot,
-  insideRepo,
-  now: () => new Date().toISOString(),
-});
+const PENDING = join(".finitemonkey", "cache", "conceitos-pending.txt");
+
+export const settleState = async (workdir: string, limitMs = 20_000, stepMs = 250): Promise<void> => {
+  const until = Date.now() + limitMs;
+  while (existsSync(join(workdir, PENDING)) && Date.now() < until) {
+    await new Promise((resolve) => setTimeout(resolve, stepMs));
+  }
+};
+
+export const VIEWS: Readonly<Record<string, readonly string[]>> = {
+  perfil: ["perfil"],
+  conceitos: ["conceitos", "evidence"],
+  trajectory: ["trajectory"],
+  xray: ["xray", "export"],
+  "blind-band": ["signals", "blind-band"],
+  "probe-gap": ["probe", "gap"],
+  "judge-report": ["judge", "report"],
+};
+
+const CLAUDE_ENV = /^CLAUDE(?:CODE|_CODE_ENTRYPOINT)$/;
+
+export const inspectWith =
+  (pluginFor: (arm: Arm) => PinnedPlugin | undefined) =>
+  (arm: Arm, workdir: string, outDir: string): void => {
+    const plugin = pluginFor(arm);
+    if (plugin === undefined) return;
+    mkdirSync(outDir, { recursive: true });
+    const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !CLAUDE_ENV.test(name)));
+    for (const [name, args] of Object.entries(VIEWS)) {
+      const result = spawnSync(
+        process.execPath,
+        [join(plugin.root, "scripts", "finitemonkey.mjs"), "--json", ...args],
+        {
+          cwd: workdir,
+          encoding: "utf8",
+          env,
+          timeout: 30_000,
+        },
+      );
+      writeFileSync(
+        join(outDir, `${name}.json`),
+        result.stdout === "" ? `${JSON.stringify({ exit: result.status })}\n` : result.stdout,
+      );
+    }
+  };
+
+export const realDeps = (repo: string, cacheDir: string): HarnessDeps => {
+  const pluginFor = pinnedPlugin(repo, cacheDir);
+  return {
+    runner: spawnClaude,
+    claudeVersion: claudeVersion(),
+    pluginFor,
+    tempRoot,
+    insideRepo,
+    now: () => new Date().toISOString(),
+    settle: (workdir) => settleState(workdir),
+    inspect: inspectWith(pluginFor),
+  };
+};

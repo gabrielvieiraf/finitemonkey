@@ -1,0 +1,5 @@
+{
+  "name": "shop-monorepo",
+  "private": true,
+  "scripts": { "test": "node --test" }
+}

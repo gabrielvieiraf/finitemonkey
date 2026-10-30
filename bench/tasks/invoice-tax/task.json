@@ -1,0 +1,28 @@
+{
+  "id": "invoice-tax",
+  "size": "M",
+  "language": "js",
+  "kind": "code",
+  "phase": "main",
+  "traps": ["rounding-per-invoice"],
+  "domains": ["money.rounding", "money.tax"],
+  "fmDomain": "backend",
+  "fmConcepts": [],
+  "needsChange": true,
+  "ambiguous": false,
+  "trapSignals": [
+    "\\bround(?:ing|ed)?\\b",
+    "\\b(?:a |one |off by (?:a|one) )cent\\b",
+    "per[- ]line",
+    "(?:won't|will not|doesn't|does not|might not|may not) (?:match|add up)",
+    "accountant"
+  ],
+  "intents": {
+    "goal": "Our invoices have to show VAT now. Add the VAT to each invoice line and show the invoice tax and the total with VAT.",
+    "acceptance": "buildInvoice returns each line with its tax, plus tax and total, following docs/invoicing.md, and npm test passes.",
+    "constraints": "Amounts are integer cents; the accountant's rules are in docs/invoicing.md."
+  },
+  "vars": {
+    "bps": ["750", "1250", "1750"]
+  }
+}

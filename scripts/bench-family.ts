@@ -7,10 +7,18 @@ import { type Behavior, parseBehavior } from "./bench-persona.js";
 export const SIZES = ["S", "M", "L"] as const;
 export const SOLUTIONS = ["right", "wrong", "alternative"] as const;
 export const PARTITIONS = ["public", "heldout"] as const;
+export const KINDS = ["code", "research"] as const;
+export const BANDS = ["within", "edge", "beyond"] as const;
+export const LEVELS = ["beginner", "intermediate", "advanced"] as const;
+export const PERFIL_DOMAINS = ["product", "interface", "backend", "infrastructure", "security"] as const;
 
 export type Size = (typeof SIZES)[number];
 export type Solution = (typeof SOLUTIONS)[number];
 export type Partition = (typeof PARTITIONS)[number];
+export type Kind = (typeof KINDS)[number];
+export type KnowledgeBand = (typeof BANDS)[number];
+export type Level = (typeof LEVELS)[number];
+export type PerfilDomain = (typeof PERFIL_DOMAINS)[number];
 
 export interface Intents {
   readonly goal: string;
@@ -29,6 +37,12 @@ export interface Family {
   readonly intents: Intents;
   readonly vars: Readonly<Record<string, readonly string[]>>;
   readonly partition: Partition;
+  readonly kind: Kind;
+  readonly phase: string | undefined;
+  readonly domains: readonly string[];
+  readonly fmDomain: string | undefined;
+  readonly fmConcepts: readonly string[];
+  readonly trapSignals: readonly RegExp[];
 }
 
 export interface Persona {
@@ -36,6 +50,8 @@ export interface Persona {
   readonly prompt: string;
   readonly behavior: Behavior;
   readonly record: JsonObject;
+  readonly knowledge: Readonly<Record<string, KnowledgeBand>>;
+  readonly selfReport: Readonly<Partial<Record<PerfilDomain, Level>>>;
 }
 
 const strings = (value: unknown): readonly string[] | undefined =>
@@ -57,6 +73,64 @@ const varsOf = (raw: unknown): Readonly<Record<string, readonly string[]>> | und
   return Object.fromEntries(entries.flatMap(([name, options]) => (options === undefined ? [] : [[name, options]])));
 };
 
+type Extras = Pick<Family, "kind" | "phase" | "domains" | "fmDomain" | "fmConcepts" | "trapSignals">;
+
+const regexes = (raw: readonly string[]): readonly RegExp[] | undefined => {
+  try {
+    return raw.map((source) => new RegExp(source, "i"));
+  } catch {
+    return undefined;
+  }
+};
+
+const familyExtras = (id: string, record: JsonObject): Parsed<Extras> => {
+  const kind = record["kind"] === undefined ? "code" : KINDS.find((option) => option === record["kind"]);
+  if (kind === undefined) return reject(`${id}: kind must be code or research`);
+  const phase = record["phase"];
+  if (phase !== undefined && typeof phase !== "string") return reject(`${id}: phase must be a string`);
+  const fmDomain = record["fmDomain"];
+  if (fmDomain !== undefined && typeof fmDomain !== "string") return reject(`${id}: fmDomain must be a string`);
+  const domains = strings(record["domains"] ?? []);
+  const fmConcepts = strings(record["fmConcepts"] ?? []);
+  const signals = strings(record["trapSignals"] ?? []);
+  if (domains === undefined || fmConcepts === undefined || signals === undefined) {
+    return reject(`${id}: domains, fmConcepts and trapSignals must be lists of strings`);
+  }
+  const trapSignals = regexes(signals);
+  if (trapSignals === undefined) return reject(`${id}: every trapSignals entry must be a valid pattern`);
+  if (phase !== undefined && (domains.length === 0 || fmDomain === undefined || signals.length === 0)) {
+    return reject(`${id}: a family of a phase needs domains, fmDomain and trapSignals`);
+  }
+  return accept({ kind, phase, domains, fmDomain, fmConcepts, trapSignals });
+};
+
+const knowledgeOf = (id: string, raw: unknown): Parsed<Readonly<Record<string, KnowledgeBand>>> => {
+  if (raw === undefined) return accept({});
+  if (!isRecord(raw)) return reject(`${id}: knowledge must map each domain to within, edge or beyond`);
+  const entries: [string, KnowledgeBand][] = [];
+  for (const [domain, band] of Object.entries(raw)) {
+    const known = BANDS.find((option) => option === band);
+    if (known === undefined) return reject(`${id}: knowledge of ${domain} must be within, edge or beyond`);
+    entries.push([domain, known]);
+  }
+  return accept(Object.fromEntries(entries));
+};
+
+const selfReportOf = (id: string, raw: unknown): Parsed<Readonly<Partial<Record<PerfilDomain, Level>>>> => {
+  if (raw === undefined) return accept({});
+  if (!isRecord(raw)) return reject(`${id}: selfReport must map perfil domains to levels`);
+  const entries: [PerfilDomain, Level][] = [];
+  for (const [domain, level] of Object.entries(raw)) {
+    const knownDomain = PERFIL_DOMAINS.find((option) => option === domain);
+    const knownLevel = LEVELS.find((option) => option === level);
+    if (knownDomain === undefined || knownLevel === undefined) {
+      return reject(`${id}: selfReport ${domain} must be a perfil domain with a level of ${LEVELS.join(", ")}`);
+    }
+    entries.push([knownDomain, knownLevel]);
+  }
+  return accept(Object.fromEntries(entries));
+};
+
 export const parseFamily = (record: JsonObject, dir: string, partition: Partition): Parsed<Family> => {
   const { id, size, language, needsChange, ambiguous } = record;
   if (typeof id !== "string" || !/^[a-z][a-z0-9-]*$/.test(id)) return reject(`${dir}: id is required`);
@@ -72,11 +146,25 @@ export const parseFamily = (record: JsonObject, dir: string, partition: Partitio
   if (traps === undefined || intents === undefined || vars === undefined) {
     return reject(`${id}: traps, intents and vars must be well formed`);
   }
+  const extra = familyExtras(id, record);
+  if (!extra.ok) return extra;
   const missing = ["repo", "oracle", ...SOLUTIONS.map((name) => `solutions/${name}`)].filter(
     (part) => !existsSync(join(dir, part)),
   );
   if (missing.length > 0) return reject(`${id}: missing ${missing.join(", ")}`);
-  return accept({ id, dir, size: knownSize, language, traps, needsChange, ambiguous, intents, vars, partition });
+  return accept({
+    id,
+    dir,
+    size: knownSize,
+    language,
+    traps,
+    needsChange,
+    ambiguous,
+    intents,
+    vars,
+    partition,
+    ...extra.value,
+  });
 };
 
 const readJson = (path: string): Parsed<JsonObject> => parseJsonObject(readFileSync(path, "utf8"));
@@ -107,7 +195,18 @@ export const loadPersonas = (root: string): Parsed<readonly Persona[]> => {
     if (typeof id !== "string" || typeof prompt !== "string") return reject(`${name}: id and prompt are required`);
     const behavior = parseBehavior(id, record.value);
     if (!behavior.ok) return reject(`${name}: ${behavior.error}`);
-    personas.push({ id, prompt, behavior: behavior.value, record: record.value });
+    const knowledge = knowledgeOf(id, record.value["knowledge"]);
+    if (!knowledge.ok) return reject(`${name}: ${knowledge.error}`);
+    const selfReport = selfReportOf(id, record.value["selfReport"]);
+    if (!selfReport.ok) return reject(`${name}: ${selfReport.error}`);
+    personas.push({
+      id,
+      prompt,
+      behavior: behavior.value,
+      record: record.value,
+      knowledge: knowledge.value,
+      selfReport: selfReport.value,
+    });
   }
   return accept(personas);
 };

@@ -1,0 +1,28 @@
+{
+  "id": "rename-consumer",
+  "size": "M",
+  "language": "js",
+  "kind": "code",
+  "phase": "main",
+  "traps": ["breaks-external-consumer"],
+  "domains": ["refactor.public-api"],
+  "fmDomain": "backend",
+  "fmConcepts": ["api"],
+  "needsChange": true,
+  "ambiguous": false,
+  "trapSignals": [
+    "(?:other|outside|external) (?:teams?|services?|projects?|code)",
+    "(?:break|breaking) (?:change|them|other|their)",
+    "\\bdeprecat\\w*",
+    "\\balias\\b",
+    "(?:old|previous) name (?:still|keeps?)"
+  ],
+  "intents": {
+    "goal": "formatPrice is a confusing name. Rename it to {{name}} in the money package and in our apps.",
+    "acceptance": "packages/money exports {{name}}, apps/ use it, and npm test passes.",
+    "constraints": "packages/money is published and used by other teams' services; read its README."
+  },
+  "vars": {
+    "name": ["formatMoney", "formatAmount", "toCurrencyText"]
+  }
+}

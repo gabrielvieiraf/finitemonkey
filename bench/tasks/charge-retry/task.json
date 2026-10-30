@@ -1,0 +1,28 @@
+{
+  "id": "charge-retry",
+  "size": "M",
+  "language": "js",
+  "kind": "code",
+  "phase": "main",
+  "traps": ["double-charge-on-retry"],
+  "domains": ["concurrency.idempotency"],
+  "fmDomain": "backend",
+  "fmConcepts": ["idempotency"],
+  "needsChange": true,
+  "ambiguous": false,
+  "trapSignals": [
+    "(?:charged?|bill(?:ed)?|pay(?:s|ing)?) (?:them |the customer |customers )?twice",
+    "double[- ]charg\\w*",
+    "\\bidempoten\\w*",
+    "(?:may|might|could) (?:already )?have (?:been )?charged",
+    "duplicate (?:charges?|payments?)"
+  ],
+  "intents": {
+    "goal": "Customers see \"payment failed\" when the payment provider is slow, and then they try to pay again. Make checkout retry the payment on its own when the provider times out.",
+    "acceptance": "payOrder retries when Payflow times out and the order ends up paid, and npm test passes.",
+    "constraints": "vendor/payflow is third-party code: read its README, do not change it."
+  },
+  "vars": {
+    "amount": ["4990", "12900", "25000"]
+  }
+}
