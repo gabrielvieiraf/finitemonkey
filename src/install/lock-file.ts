@@ -40,6 +40,7 @@ const parseAdded = (value: unknown): SettingsAdded | undefined => {
   const blockReads = value["blockReads"] === true;
   const marketplace = value["marketplace"] === true;
   const plugin = value["plugin"] === true;
+  const key = value["marketplaceKey"];
   const language = value["language"];
   const statusLine = parseStatusLineAdded(value["statusLine"]);
   const added = {
@@ -50,6 +51,7 @@ const parseAdded = (value: unknown): SettingsAdded | undefined => {
     blockReads,
     marketplace,
     plugin,
+    ...(typeof key === "string" ? { marketplaceKey: key } : {}),
     ...(statusLine === undefined ? {} : { statusLine }),
   };
   return typeof language === "string" ? { ...added, language } : added;

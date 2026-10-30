@@ -1,13 +1,14 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { type HookHandlerJson, isOwnHandler } from "./hook-entries.js";
 import { asList, asRecord, setKey } from "./json-text.js";
+import type { MarketplaceSource } from "./marketplace.js";
+import { PLUGIN_NAME } from "./plugin-hooks.js";
 import { isOwnStatusLine, type StatusLineAdded } from "./statusline.js";
 
 export const SETTINGS_SCHEMA_URL = "https://json.schemastore.org/claude-code-settings.json";
 
 export const ATTRIBUTION_OFF = { commit: "", pr: "", sessionUrl: false } as const;
 
-export const MARKETPLACE_ENTRY = { source: { source: "github", repo: "gabrielvieiraf/finitemonkey" } } as const;
 export const MARKETPLACE_KEY = "finitemonkey";
 export const PLUGIN_ID = "finitemonkey@finitemonkey";
 
@@ -16,7 +17,7 @@ export interface SettingsWanted {
   readonly deny: readonly string[];
   readonly ask: readonly string[];
   readonly attributionOff: boolean;
-  readonly marketplace: boolean;
+  readonly marketplace: MarketplaceSource | undefined;
   readonly language: string | undefined;
   readonly statusLine?: { readonly entry: JsonObject; readonly wrap: string | undefined };
 }
@@ -29,6 +30,7 @@ export interface SettingsAdded {
   readonly attribution: boolean;
   readonly marketplace: boolean;
   readonly plugin: boolean;
+  readonly marketplaceKey?: string;
   readonly language?: string;
   readonly statusLine?: StatusLineAdded;
 }
@@ -105,6 +107,21 @@ export const ownHookMatcher =
   (handler: unknown): boolean =>
     isOwnHandler(handler) || recorded.some((own) => JSON.stringify(own) === JSON.stringify(handler));
 
+type MarketplaceAdded = Pick<SettingsAdded, "marketplace" | "plugin" | "marketplaceKey">;
+
+const marketplaceAdded = (base: JsonObject, source: MarketplaceSource | undefined): MarketplaceAdded => {
+  if (source === undefined) return { marketplace: false, plugin: false };
+  const marketplace = !hasEntry(base, "extraKnownMarketplaces", source.key);
+  const plugin = !hasEntry(base, "enabledPlugins", source.pluginId);
+  return source.key === MARKETPLACE_KEY ? { marketplace, plugin } : { marketplace, plugin, marketplaceKey: source.key };
+};
+
+const withMarketplace = (settings: JsonObject, added: MarketplaceAdded, source: MarketplaceSource | undefined) => {
+  if (source === undefined) return settings;
+  const listed = added.marketplace ? withEntry(settings, "extraKnownMarketplaces", source.key, source.entry) : settings;
+  return added.plugin ? withEntry(listed, "enabledPlugins", source.pluginId, true) : listed;
+};
+
 const statusLineFor = (base: JsonObject, wanted: SettingsWanted): StatusLineAdded | undefined => {
   if (wanted.statusLine === undefined || isOwnStatusLine(base["statusLine"])) return undefined;
   return { previous: base["statusLine"] ?? null, wrap: wanted.statusLine.wrap ?? null };
@@ -131,8 +148,7 @@ export const mergeSettings = (
   const ask = missing(wanted.ask, existingAsk);
   const blockReads = !(BLOCK_READS in permissions);
   const attribution = wanted.attributionOff && !("attribution" in base);
-  const marketplace = wanted.marketplace && !hasEntry(base, "extraKnownMarketplaces", MARKETPLACE_KEY);
-  const plugin = wanted.marketplace && !hasEntry(base, "enabledPlugins", PLUGIN_ID);
+  const market = marketplaceAdded(base, wanted.marketplace);
   const language = "language" in base ? undefined : wanted.language;
   let settings = withPermissions(withHooks(base, hooks), {
     deny: [...existingDeny, ...deny],
@@ -140,8 +156,7 @@ export const mergeSettings = (
     blockReads: blockReads ? true : permissions[BLOCK_READS],
   });
   if (attribution) settings = { ...settings, attribution: ATTRIBUTION_OFF };
-  if (marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, MARKETPLACE_ENTRY);
-  if (plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, true);
+  settings = withMarketplace(settings, market, wanted.marketplace);
   if (language !== undefined) settings = { ...settings, language };
   const status = statusLineFor(base, wanted);
   if (status !== undefined) settings = { ...settings, statusLine: wanted.statusLine?.entry };
@@ -151,8 +166,7 @@ export const mergeSettings = (
     ask,
     blockReads,
     attribution,
-    marketplace,
-    plugin,
+    ...market,
     ...(status === undefined ? {} : { statusLine: status }),
   };
   return { settings, added: language === undefined ? added : { ...added, language } };
@@ -175,8 +189,9 @@ export const unmergeSettings = (
   if (added.attribution && sameAttribution(settings["attribution"])) {
     settings = setKey(settings, "attribution", undefined);
   }
-  if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", MARKETPLACE_KEY, undefined);
-  if (added.plugin) settings = withEntry(settings, "enabledPlugins", PLUGIN_ID, undefined);
+  const key = added.marketplaceKey ?? MARKETPLACE_KEY;
+  if (added.marketplace) settings = withEntry(settings, "extraKnownMarketplaces", key, undefined);
+  if (added.plugin) settings = withEntry(settings, "enabledPlugins", `${PLUGIN_NAME}@${key}`, undefined);
   if (added.language !== undefined && settings["language"] === added.language) {
     settings = setKey(settings, "language", undefined);
   }
