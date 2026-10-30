@@ -2665,5 +2665,11 @@
   "gate.cli.prompt_without_tty": "{command} pide datos con stdin fuera de una terminal; omite la pregunta o falla indicando el flag",
   "gate.cli.destructive_unguarded": "{command} está declarado como destructivo pero su ayuda no menciona el flag --force ni una confirmación; pregunta antes de actuar",
   "gate.cli.slow_first_output": "--help tarda {median} ms (mediana), más de {limit} ms; imprime algo antes o sube cli.first_output_ms",
-  "gate.cli.timed_out": "{command} no terminó en {limit} ms con stdin cerrado; asegúrate de que no espere datos, o sube cli.timeout_ms"
+  "gate.cli.timed_out": "{command} no terminó en {limit} ms con stdin cerrado; asegúrate de que no espere datos, o sube cli.timeout_ms",
+  "gate.copy.rules_shadow": "{count, plural, one {# hallazgo de las reglas de texto} other {# hallazgos de las reglas de texto}} (ui-copy en sombra hasta que una regla alcance ui.copy.accept_threshold, sin bloquear)",
+  "gate.copy.rule.verb-first": "{file} clave {key}: el botón \"{text}\" no empieza con un verbo; nombra la acción que realiza",
+  "gate.copy.rule.error-action": "{file} clave {key}: el error \"{text}\" dice qué falló pero no qué hacer; agrega el siguiente paso",
+  "gate.copy.rule.one-name": "{detail} aparece como {text} ({key}); usa un solo nombre para la misma acción",
+  "gate.copy.rule.empty-label": "{file} clave {key}: la etiqueta del botón está vacía; dale un nombre",
+  "gate.copy.rate": "regla {rule}: {accepted} de {shown} hallazgos corregidos hasta ahora"
 }

@@ -2665,5 +2665,11 @@
   "gate.cli.prompt_without_tty": "{command} asks for input with stdin not a terminal; skip the prompt or fail with a flag to pass",
   "gate.cli.destructive_unguarded": "{command} is declared destructive but its help mentions no --force flag or confirmation; ask before acting",
   "gate.cli.slow_first_output": "--help takes {median} ms (median), above {limit} ms; print something sooner or raise cli.first_output_ms",
-  "gate.cli.timed_out": "{command} did not finish in {limit} ms with stdin closed; make sure it does not wait for input, or raise cli.timeout_ms"
+  "gate.cli.timed_out": "{command} did not finish in {limit} ms with stdin closed; make sure it does not wait for input, or raise cli.timeout_ms",
+  "gate.copy.rules_shadow": "{count, plural, one {# copy rule finding} other {# copy rule findings}} (ui-copy in shadow until a rule reaches ui.copy.accept_threshold, not blocking)",
+  "gate.copy.rule.verb-first": "{file} key {key}: button \"{text}\" does not start with a verb; name the action it performs",
+  "gate.copy.rule.error-action": "{file} key {key}: error \"{text}\" says what went wrong but not what to do; add the next step",
+  "gate.copy.rule.one-name": "{detail} is labeled {text} ({key}); use one name for one action",
+  "gate.copy.rule.empty-label": "{file} key {key}: the button label is empty; give it a name",
+  "gate.copy.rate": "rule {rule}: {accepted} of {shown} findings fixed so far"
 }

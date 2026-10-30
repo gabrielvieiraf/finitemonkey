@@ -2665,7 +2665,13 @@
     "gate.cli.prompt_without_tty": "machine",
     "gate.cli.destructive_unguarded": "machine",
     "gate.cli.slow_first_output": "machine",
-    "gate.cli.timed_out": "machine"
+    "gate.cli.timed_out": "machine",
+    "gate.copy.rules_shadow": "machine",
+    "gate.copy.rule.verb-first": "machine",
+    "gate.copy.rule.error-action": "machine",
+    "gate.copy.rule.one-name": "machine",
+    "gate.copy.rule.empty-label": "machine",
+    "gate.copy.rate": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5333,6 +5339,12 @@
     "gate.cli.prompt_without_tty": "machine",
     "gate.cli.destructive_unguarded": "machine",
     "gate.cli.slow_first_output": "machine",
-    "gate.cli.timed_out": "machine"
+    "gate.cli.timed_out": "machine",
+    "gate.copy.rules_shadow": "machine",
+    "gate.copy.rule.verb-first": "machine",
+    "gate.copy.rule.error-action": "machine",
+    "gate.copy.rule.one-name": "machine",
+    "gate.copy.rule.empty-label": "machine",
+    "gate.copy.rate": "machine"
   }
 }

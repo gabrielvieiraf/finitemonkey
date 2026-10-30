@@ -1,8 +1,8 @@
 import type { FootprintId } from "../src/core/footprint.js";
 import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
 import { PERSON_FOOTPRINT_TEXT } from "./footprint-person-text.js";
+import { COPY_FOOTPRINT_TEXT } from "./footprint-text-copy.js";
 import { GUARDIAN_FOOTPRINT_TEXT } from "./footprint-text-guardian.js";
-import { KNOWLEDGE_FOOTPRINT_TEXT } from "./footprint-text-knowledge.js";
 import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
@@ -14,7 +14,7 @@ export type Localized = Readonly<Record<Lang, string>>;
 export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
   ...STAGE3_FOOTPRINT_TEXT,
   ...GUARDIAN_FOOTPRINT_TEXT,
-  ...KNOWLEDGE_FOOTPRINT_TEXT,
+  ...COPY_FOOTPRINT_TEXT,
   "hook-input": {
     en: "The event Claude Code passes to each hook: the tool call, the prompt or the stop request.",
     "pt-BR": "O evento que o Claude Code passa a cada hook: a chamada de ferramenta, o prompt ou o pedido de parada.",
