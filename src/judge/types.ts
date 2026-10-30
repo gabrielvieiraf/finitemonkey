@@ -195,6 +195,7 @@ export interface ProbeEntry extends EntryBase {
   readonly keyHash: string;
   readonly decision?: string;
   readonly task?: string;
+  readonly session?: string;
 }
 
 export type JudgeEntry =

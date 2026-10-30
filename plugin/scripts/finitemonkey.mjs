@@ -9233,11 +9233,16 @@ var countRule = (weights) => {
   if (fresh4 > 0) return "proximal";
   return before2 >= DEMONSTRATED_AFTER ? "proximal" : "beyond";
 };
+var effective2 = (weighted) => {
+  const positives = weighted.filter((entry2) => weightOf(entry2) > 0);
+  const [only4] = positives;
+  return positives.length === 1 && only4?.proof === "probe" ? weighted.filter((entry2) => entry2 !== only4) : weighted;
+};
 var historyOf = (weighted) => {
   const steps = [];
   let current2 = "no record";
   weighted.forEach((entry2, index) => {
-    const band = countRule(weighted.slice(0, index + 1).map(weightOf));
+    const band = countRule(effective2(weighted.slice(0, index + 1)).map(weightOf));
     if (band !== current2) steps.push({ band, evidence: entry2.id, proof: entry2.proof, at: entry2.at });
     current2 = band;
   });
@@ -9254,7 +9259,7 @@ var conceptBand = (concept, entries2) => {
   const because = history.at(-1);
   return {
     concept,
-    band: countRule(weighted.map(weightOf)),
+    band: countRule(effective2(weighted).map(weightOf)),
     ...because === void 0 ? {} : { because },
     history,
     positive: weighted.filter((entry2) => weightOf(entry2) > 0).length,
@@ -9407,7 +9412,7 @@ var probeOf = (record15, base) => {
   const key3 = number2(record15, "key");
   if (claim === void 0 || form === void 0 || prompt === void 0 || keyHash === void 0) return void 0;
   if (!Number.isInteger(key3) || key3 < 0 || key3 >= options2.length) return void 0;
-  const extra = optional(record15, ["decision", "task"]);
+  const extra = optional(record15, ["decision", "task", "session"]);
   return {
     type: "probe",
     ...base,
@@ -17201,7 +17206,13 @@ var en_default = {
   "command.judge_accept.summary": "Mark horizon help as taken; help with no criterion counts against the blind band index",
   "command.judge_dismiss.summary": "Dismiss horizon help; it is counted and not shown again in the same task",
   "judge.horizon": '{help}: {kind} "{text}" (criterion: {criterion} {answer}) {state}',
-  "judge.horizon.domain": "{domain}: {accepted} taken, {without} with no criterion (index {index}), {dismissed} dismissed"
+  "judge.horizon.domain": "{domain}: {accepted} taken, {without} with no criterion (index {index}), {dismissed} dismissed",
+  "command.judge_probe.summary": "Ask one check question keyed to the source before a decision uses a claim on a concept with no record or beyond",
+  "command.judge_skip.summary": "Skip a check question; a skip counts as zero",
+  "judge.probe.unsupported": "{probe}: which of these claims does {source} not support?",
+  "judge.probe.predict": "{probe}: before looking, which number do you expect {source} to give?",
+  "judge.probe.why": "asked because decision {decision} uses claim {claim}",
+  "judge.probe.skipped": "{claim}: skipped, counted as zero"
 };
 
 // src/i18n/es.json
@@ -19939,7 +19950,13 @@ var es_default = {
   "command.judge_accept.summary": "Marcar ayuda de horizonte como aceptada; la ayuda sin criterio cuenta contra el índice de franja ciega",
   "command.judge_dismiss.summary": "Descartar ayuda de horizonte; se cuenta y no vuelve en la misma tarea",
   "judge.horizon": '{help}: {kind} "{text}" (criterio: {criterion} {answer}) {state}',
-  "judge.horizon.domain": "{domain}: {accepted} aceptadas, {without} sin criterio (índice {index}), {dismissed} descartadas"
+  "judge.horizon.domain": "{domain}: {accepted} aceptadas, {without} sin criterio (índice {index}), {dismissed} descartadas",
+  "command.judge_probe.summary": "Hacer una pregunta de verificación con clave en la fuente antes de que una decisión use una afirmación de un concepto sin registro o más allá",
+  "command.judge_skip.summary": "Saltar una pregunta de verificación; saltar cuenta cero",
+  "judge.probe.unsupported": "{probe}: ¿cuál de estas afirmaciones no sostiene {source}?",
+  "judge.probe.predict": "{probe}: antes de mirar, ¿qué número esperas que dé {source}?",
+  "judge.probe.why": "preguntado porque la decisión {decision} usa la afirmación {claim}",
+  "judge.probe.skipped": "{claim}: saltada, cuenta cero"
 };
 
 // src/i18n/pt-BR.json
@@ -22677,7 +22694,13 @@ var pt_BR_default = {
   "command.judge_accept.summary": "Marcar ajuda de horizonte como aceita; ajuda sem critério conta contra o índice de faixa cega",
   "command.judge_dismiss.summary": "Dispensar ajuda de horizonte; ela é contada e não volta na mesma tarefa",
   "judge.horizon": '{help}: {kind} "{text}" (critério: {criterion} {answer}) {state}',
-  "judge.horizon.domain": "{domain}: {accepted} aceitas, {without} sem critério (índice {index}), {dismissed} dispensadas"
+  "judge.horizon.domain": "{domain}: {accepted} aceitas, {without} sem critério (índice {index}), {dismissed} dispensadas",
+  "command.judge_probe.summary": "Fazer uma pergunta de conferência com gabarito na fonte antes de uma decisão usar afirmação de conceito sem registro ou além",
+  "command.judge_skip.summary": "Pular uma pergunta de conferência; pular conta zero",
+  "judge.probe.unsupported": "{probe}: qual destas afirmações {source} não sustenta?",
+  "judge.probe.predict": "{probe}: antes de olhar, que número você espera que {source} traga?",
+  "judge.probe.why": "perguntado porque a decisão {decision} usa a afirmação {claim}",
+  "judge.probe.skipped": "{claim}: pulada, conta zero"
 };
 
 // src/i18n/review.json
@@ -25415,7 +25438,13 @@ var review_default = {
     "command.judge_accept.summary": "machine",
     "command.judge_dismiss.summary": "machine",
     "judge.horizon": "machine",
-    "judge.horizon.domain": "machine"
+    "judge.horizon.domain": "machine",
+    "command.judge_probe.summary": "machine",
+    "command.judge_skip.summary": "machine",
+    "judge.probe.unsupported": "machine",
+    "judge.probe.predict": "machine",
+    "judge.probe.why": "machine",
+    "judge.probe.skipped": "machine"
   },
   es: {
     "command.init.summary": "machine",
@@ -28150,7 +28179,13 @@ var review_default = {
     "command.judge_accept.summary": "machine",
     "command.judge_dismiss.summary": "machine",
     "judge.horizon": "machine",
-    "judge.horizon.domain": "machine"
+    "judge.horizon.domain": "machine",
+    "command.judge_probe.summary": "machine",
+    "command.judge_skip.summary": "machine",
+    "judge.probe.unsupported": "machine",
+    "judge.probe.predict": "machine",
+    "judge.probe.why": "machine",
+    "judge.probe.skipped": "machine"
   }
 };
 
@@ -28275,7 +28310,7 @@ var idOf = (section3) => DECISION_SECTIONS.find((id) => matchesHeading(section3.
 var structureIssues = (sections2) => {
   const ids4 = sections2.flatMap((section3) => idOf(section3) ?? []);
   const missing3 = DECISION_SECTIONS.filter((id) => !ids4.includes(id));
-  const ordered = ids4.every(
+  const ordered2 = ids4.every(
     (id, index) => index === 0 || DECISION_SECTIONS.indexOf(id) > DECISION_SECTIONS.indexOf(ids4[index - 1] ?? id)
   );
   return [
@@ -28286,7 +28321,7 @@ var structureIssues = (sections2) => {
         detail: missing3.map((id) => catalogs.en[decisionKey(id)]).join(", ")
       }
     ],
-    ...ordered ? [] : [{ kind: "order", line: sections2[0]?.line ?? 1, detail: ids4.join(", ") }]
+    ...ordered2 ? [] : [{ kind: "order", line: sections2[0]?.line ?? 1, detail: ids4.join(", ") }]
   ];
 };
 var linesOf2 = (sections2, id) => sections2.find((section3) => idOf(section3) === id)?.lines ?? [];
@@ -32855,8 +32890,8 @@ var cleanupPeriod = (env, all) => {
 };
 var PRECEDENCE = ["user", "project", "local", "managed"];
 var pluginOn = (all, id) => {
-  const ordered = PRECEDENCE.flatMap((scope2) => all.filter((item2) => item2.scope === scope2));
-  const values = ordered.map(({ settings }) => settings["enabledPlugins"]).map((plugins) => isRecord(plugins) ? plugins[id] : void 0).filter((value2) => typeof value2 === "boolean");
+  const ordered2 = PRECEDENCE.flatMap((scope2) => all.filter((item2) => item2.scope === scope2));
+  const values = ordered2.map(({ settings }) => settings["enabledPlugins"]).map((plugins) => isRecord(plugins) ? plugins[id] : void 0).filter((value2) => typeof value2 === "boolean");
   return values.at(-1) === true;
 };
 var pluginChannels = (all) => pluginOn(all, STABLE_PLUGIN_ID) && pluginOn(all, NEXT_PLUGIN_ID) ? [
@@ -37535,12 +37570,12 @@ var npmFacts = (doc, wanted) => {
   const tags = record7(doc, "dist-tags");
   const tagged2 = wanted === void 0 ? tags["latest"] : tags[wanted] ?? wanted;
   const version2 = typeof tagged2 === "string" && tagged2 in versions ? tagged2 : void 0;
-  const ordered = Object.keys(versions).sort((left, right2) => (timeOf(times2[left]) ?? 0) - (timeOf(times2[right2]) ?? 0));
-  const index = version2 === void 0 ? -1 : ordered.indexOf(version2);
-  const previous = index > 0 ? ordered[index - 1] : void 0;
+  const ordered2 = Object.keys(versions).sort((left, right2) => (timeOf(times2[left]) ?? 0) - (timeOf(times2[right2]) ?? 0));
+  const index = version2 === void 0 ? -1 : ordered2.indexOf(version2);
+  const previous = index > 0 ? ordered2[index - 1] : void 0;
   return {
     createdMs: timeOf(times2["created"]),
-    versionCount: ordered.length,
+    versionCount: ordered2.length,
     version: version2,
     versionMs: version2 === void 0 ? void 0 : timeOf(times2[version2]),
     installScript: version2 === void 0 ? false : hasInstallScript(record7(versions, version2)),
@@ -45301,7 +45336,9 @@ var VERBS2 = [
   "promote",
   "horizon",
   "accept",
-  "dismiss"
+  "dismiss",
+  "probe",
+  "skip"
 ];
 var ROW_ACTIONS = ["verify", "handoff", "cut", "judge"];
 var response = (verb, fields2 = {}) => ({
@@ -46978,7 +47015,7 @@ var qualityCheck = (_check, ctx) => {
   if (mode === "off") return passed([note("gate.quality.off")]);
   const analysis = analyzeQuality(qualitySources(ctx), loadLimits(ctx.runtime, ctx.paths.root));
   const blocks2 = blocking2(analysis.findings);
-  const ordered = [...blocks2, ...analysis.findings.filter((finding7) => finding7.level === "warn")];
+  const ordered2 = [...blocks2, ...analysis.findings.filter((finding7) => finding7.level === "warn")];
   if (analysis.findings.length > 0) {
     logEvent(ctx.runtime, ctx.paths, "quality.findings", {
       task: ctx.contract.id,
@@ -46989,7 +47026,7 @@ var qualityCheck = (_check, ctx) => {
     });
   }
   const notes3 = [
-    ...ordered.slice(0, MAX_LISTED26).map(findingNote5),
+    ...ordered2.slice(0, MAX_LISTED26).map(findingNote5),
     ...analysis.metricsSkipped ? [note("gate.quality.no_typescript")] : []
   ];
   if (blocks2.length === 0) return passed([note("gate.quality.clean", { count: analysis.files }), ...notes3]);
@@ -48179,8 +48216,8 @@ var slopCheck = (_check, ctx) => {
     logEvent(ctx.runtime, ctx.paths, "slop.hits", { task: ctx.contract.id, mode, detectors: countByDetector(found) });
   }
   const blocks2 = found.filter((item2) => levelOf3(item2.detector) === "block");
-  const ordered = [...blocks2, ...found.filter((item2) => levelOf3(item2.detector) === "warn")];
-  const notes3 = ordered.slice(0, MAX_LISTED29).map(findingNote6);
+  const ordered2 = [...blocks2, ...found.filter((item2) => levelOf3(item2.detector) === "warn")];
+  const notes3 = ordered2.slice(0, MAX_LISTED29).map(findingNote6);
   if (blocks2.length === 0) return passed([note("gate.slop.clean", { count: files.length }), ...notes3]);
   if (mode === "shadow") return passed([note("gate.slop.shadow", { count: blocks2.length }), ...notes3]);
   return failed4([...notes3, note("gate.slop.fix")]);
@@ -66568,12 +66605,19 @@ var rowLine2 = (t, row4) => [
   t("judge.row", { claim: row4.claim, state: row4.state, band: row4.band, text: row4.text, outcome: row4.outcome ?? "" }),
   ...row4.actions.length === 0 ? [] : [t("judge.row.actions", { actions: row4.actions.join(", ") })]
 ].join(" ");
+var PROMPTS = {
+  "two-spans": "judge.probe.two_spans",
+  "unsupported-claim": "judge.probe.unsupported",
+  "predict-number": "judge.probe.predict"
+};
 var probeLines = (t, probe) => {
   if (probe.span !== void 0) return [t("judge.probe.wrong", { span: probe.span, claim: probe.claim })];
-  if (probe.answered) return [t("judge.probe.right", { claim: probe.claim })];
+  if (probe.answered)
+    return [t(probe.correct === void 0 ? "judge.probe.skipped" : "judge.probe.right", { claim: probe.claim })];
   return [
-    t("judge.probe.two_spans", { probe: probe.probe, source: probe.prompt }),
-    ...probe.options.map((option3, index) => `  ${String(index + 1)}) ${option3}`)
+    t(PROMPTS[probe.form], { probe: probe.probe, source: probe.prompt }),
+    ...probe.options.map((option3, index) => `  ${String(index + 1)}) ${option3}`),
+    ...probe.why === void 0 ? [] : [t("judge.probe.why", { ...probe.why })]
   ];
 };
 var resultLines = (t, view3) => [
@@ -66760,6 +66804,15 @@ var BUILDERS2 = {
       ...optional8(record15, ["answer", "task"])
     };
   },
+  probe: (record15) => {
+    const [claim, decision2] = [text37(record15, "claim"), text37(record15, "decision")];
+    if (claim === void 0 || decision2 === void 0) return void 0;
+    return { verb: "probe", claim, decision: decision2, ...optional8(record15, ["session", "task"]) };
+  },
+  skip: (record15) => {
+    const probe = text37(record15, "probe");
+    return probe === void 0 ? void 0 : { verb: "skip", probe };
+  },
   accept: (record15) => {
     const help = text37(record15, "help");
     return help === void 0 ? void 0 : { verb: "accept", help };
@@ -66842,6 +66895,7 @@ var twoSpans = (claim, key3, concepts) => {
 };
 var probesIn = (entries2) => entries2.filter((entry2) => entry2.type === "probe");
 var answerOf = (probe, entries2) => {
+  if (entries2.some((entry2) => entry2.type === "signal" && entry2.ref === `skip:probe:${probe}`)) return "skipped";
   if (entries2.some((entry2) => entry2.type === "evidence" && entry2.proof === "probe" && entry2.ref === `probe:${probe}`))
     return "right";
   return entries2.some((entry2) => entry2.type === "signal" && entry2.ref === `probe:${probe}`) ? "wrong" : void 0;
@@ -67001,7 +67055,7 @@ var domainView = (domain, entries2) => {
   return {
     domain,
     ...parent === void 0 ? {} : { parent },
-    band: countRule(counted4.map(weightOf)),
+    band: countRule(effective2(counted4).map(weightOf)),
     concepts: concepts.length,
     evidence: counted4.length
   };
@@ -67250,8 +67304,8 @@ var sentencesOf = (paragraph) => {
 };
 var splitClaims = (text40, proposer) => {
   const proposed2 = proposer?.(text40);
-  const sentences4 = proposed2 === void 0 || proposed2.length === 0 ? paragraphs(text40).flatMap(sentencesOf) : proposed2;
-  return [...new Set(sentences4.map((sentence2) => sentence2.replace(/\s+/g, " ").trim()).filter((item2) => item2 !== ""))];
+  const sentences5 = proposed2 === void 0 || proposed2.length === 0 ? paragraphs(text40).flatMap(sentencesOf) : proposed2;
+  return [...new Set(sentences5.map((sentence2) => sentence2.replace(/\s+/g, " ").trim()).filter((item2) => item2 !== ""))];
 };
 
 // src/judge/numbers.ts
@@ -67546,6 +67600,40 @@ var settleHelp = (deps, request, verify3) => {
   });
 };
 
+// src/judge/probe-forms.ts
+var sentences4 = (content) => content.replace(/<[^>]+>/g, " ").split(/(?<=[.!?])\s+/).map((sentence2) => sentence2.replace(/\s+/g, " ").trim()).filter((sentence2) => sentence2.length >= 20);
+var ordered = (seed, options2, key3) => {
+  const first = keyIndex(seed, options2.length);
+  const rotated = [...options2.slice(first), ...options2.slice(0, first)];
+  return { options: rotated, key: rotated.indexOf(key3) };
+};
+var unsupportedClaim = (claim, key3, content, concepts, proposer) => {
+  const other = sentences4(content).find((sentence2) => !spanIn(key3.span, sentence2) && !spanIn(sentence2, key3.span));
+  const candidates4 = [...proposer?.(key3.span, content) ?? [], perturb(key3.span)];
+  const unsupported = candidates4.find(
+    (candidate2) => candidate2.trim() !== "" && normalizeSpan(candidate2) !== normalizeSpan(key3.span) && !spanIn(candidate2, content)
+  );
+  if (other === void 0 || unsupported === void 0) return void 0;
+  const { options: options2, key: index } = ordered(`${claim.id}\0${key3.hash}`, [key3.span, other, unsupported], unsupported);
+  return {
+    claim: claim.id,
+    concepts,
+    form: "unsupported-claim",
+    prompt: key3.ref,
+    options: options2,
+    key: index,
+    keyHash: key3.hash
+  };
+};
+var predictNumber = (claim, key3, concepts) => {
+  const [found] = numbersIn3(key3.span);
+  if (found === void 0 || found.value === 0) return void 0;
+  const values = [found.value, found.value * 10, found.value / 10].map((value2) => String(Number(value2.toPrecision(6))));
+  const right2 = values[0] ?? "";
+  const { options: options2, key: index } = ordered(`${claim.id}\0${key3.hash}\0n`, values, right2);
+  return { claim: claim.id, concepts, form: "predict-number", prompt: key3.ref, options: options2, key: index, keyHash: key3.hash };
+};
+
 // src/judge/verbs-xray.ts
 var probeView = (probe, entries2) => {
   const answer5 = answerOf(probe.id, entries2);
@@ -67556,6 +67644,7 @@ var probeView = (probe, entries2) => {
     prompt: probe.prompt,
     options: probe.options,
     answered: answer5 !== void 0,
+    ...probe.decision === void 0 ? {} : { why: { decision: probe.decision, claim: probe.claim } },
     ...answer5 === void 0 ? {} : { correct: answer5 === "right" },
     ...answer5 === "wrong" ? { span: probe.options[probe.key] ?? "" } : {}
   };
@@ -67642,6 +67731,72 @@ var cut = (deps, request) => {
   if (!written.ok) return response("cut", { reason: written.reason });
   const row4 = rowOf2(claim.id, readEntries(deps.runtime, deps.paths));
   return row4 === void 0 ? response("cut", {}) : response("cut", { claim: { claim: row4.claim, text: row4.text, state: row4.state, outcome: "cut" } });
+};
+
+// src/judge/verbs-probe.ts
+var PROBE_BUDGET = { perSession: 1, perWeek: 5, perDomainWeek: 2 };
+var WEEK_MS = 7 * 864e5;
+var routed2 = (entries2) => probesIn(entries2).filter((probe) => probe.decision !== void 0);
+var domainsOf2 = (concepts, entries2) => new Set(
+  conceptsIn2(entries2).filter((concept) => concepts.includes(concept.id)).map((concept) => concept.domain)
+);
+var overBudget = (entries2, now, session, domains) => {
+  const recent = routed2(entries2).filter((probe) => Date.parse(now) - Date.parse(probe.at) < WEEK_MS);
+  if (session !== void 0 && recent.filter((probe) => probe.session === session).length >= PROBE_BUDGET.perSession)
+    return true;
+  if (recent.length >= PROBE_BUDGET.perWeek) return true;
+  return [...domains].some(
+    (domain) => recent.filter((probe) => domainsOf2(probe.concepts, entries2).has(domain)).length >= PROBE_BUDGET.perDomainWeek
+  );
+};
+var formFor = (deps, claim, entries2, proposer) => {
+  const key3 = keyOf9(claim, entries2);
+  if (key3 === void 0) return void 0;
+  const concepts = touchedConcepts(claim, entries2);
+  if (claim.kind === "number") {
+    const number6 = predictNumber(claim, key3, concepts);
+    if (number6 !== void 0) return number6;
+  }
+  const fetched = deps.fetcher?.(key3.ref);
+  const three = fetched?.status === "ok" ? unsupportedClaim(claim, key3, fetched.content, concepts, proposer) : void 0;
+  return three ?? twoSpans(claim, key3, concepts);
+};
+var routeProbe = (deps, request, proposer) => {
+  const entries2 = readEntries(deps.runtime, deps.paths);
+  const claim = claimsIn(entries2).find((item2) => item2.id === request.claim);
+  if (claim === void 0) return response("probe", { reason: "unknown_claim" });
+  const band = claimBand(claim, entries2).band;
+  if (band !== "no record" && band !== "beyond") return response("probe", { reason: "no_trigger" });
+  const concepts = touchedConcepts(claim, entries2);
+  if (overBudget(entries2, deps.runtime.now(), request.session, domainsOf2(concepts, entries2)))
+    return response("probe", { reason: "budget" });
+  const fields2 = formFor(deps, claim, entries2, proposer);
+  if (fields2 === void 0) return response("probe", { reason: "no_key" });
+  const id = entryId("p", claim.id, request.decision, deps.runtime.now());
+  const written = appendNow(deps, {
+    type: "probe",
+    id,
+    ...fields2,
+    decision: request.decision,
+    session: request.session,
+    task: request.task
+  });
+  return written.ok ? shownProbe("probe", id, deps, { entry: id }) : response("probe", { reason: written.reason });
+};
+var skipProbe = (deps, request) => {
+  const entries2 = readEntries(deps.runtime, deps.paths);
+  const probe = probesIn(entries2).find((item2) => item2.id === request.probe);
+  if (probe === void 0) return response("skip", { reason: "unknown_probe" });
+  if (answerOf(probe.id, entries2) !== void 0) return response("skip", { reason: "answered" });
+  appendNow(deps, {
+    type: "signal",
+    id: entryId("g", probe.id, "skip"),
+    family: "probe-skip",
+    confidence: 0,
+    state: "shadow",
+    ref: `skip:probe:${probe.id}`
+  });
+  return shownProbe("skip", probe.id, deps);
 };
 
 // src/judge/verbs.ts
@@ -67828,6 +67983,10 @@ var runMore = (deps, request) => {
       return promote(deps, request);
     case "horizon":
       return addHelp(deps, request);
+    case "probe":
+      return routeProbe(deps, request, deps.distractors);
+    case "skip":
+      return skipProbe(deps, request);
     case "accept":
     case "dismiss":
       return settleHelp(deps, request, (claim) => verify2(deps, claim));
@@ -67881,9 +68040,11 @@ var VERB_FEATURES = {
   promote: "research-quarantine",
   horizon: "horizon-criterion",
   accept: "horizon-criterion",
-  dismiss: "horizon-criterion"
+  dismiss: "horizon-criterion",
+  probe: "source-probes",
+  skip: "source-probes"
 };
-var PERSON_VERBS = ["contest", "forget", "answer", "check"];
+var PERSON_VERBS = ["contest", "forget", "answer", "check", "skip"];
 var switchedOff = (ctx, root, record15) => {
   const verb = typeof record15["verb"] === "string" ? record15["verb"] : "";
   const paths = fmPaths(toAbsolutePath(root));
@@ -68324,6 +68485,28 @@ var settleCommand = (verb) => judgeCommand({
   maxPositionals: 1,
   build: (_ctx, _values, positionals2) => ({ verb, help: positionals2[0] })
 });
+var judgeProbeCommand = judgeCommand({
+  path: ["judge", "probe"],
+  summaryKey: "command.judge_probe.summary",
+  usage: "finitemonkey judge probe <claim> --decision <id> [--task <id>]",
+  options: { decision: { type: "string" }, task: { type: "string" } },
+  maxPositionals: 1,
+  build: (ctx, values, positionals2) => ({
+    verb: "probe",
+    claim: positionals2[0],
+    decision: stringOption(values, "decision"),
+    task: stringOption(values, "task"),
+    session: ctx.env["CLAUDE_SESSION_ID"]
+  })
+});
+var judgeSkipCommand = judgeCommand({
+  path: ["judge", "skip"],
+  summaryKey: "command.judge_skip.summary",
+  usage: "finitemonkey judge skip <probe>",
+  maxPositionals: 1,
+  person: true,
+  build: (_ctx, _values, positionals2) => ({ verb: "skip", probe: positionals2[0] })
+});
 var JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -68349,7 +68532,9 @@ var JUDGE_COMMANDS = [
   ...RESEARCH_SIDES_COMMANDS,
   judgeHorizonCommand,
   settleCommand("accept"),
-  settleCommand("dismiss")
+  settleCommand("dismiss"),
+  judgeProbeCommand,
+  judgeSkipCommand
 ];
 
 // src/knowledge/asof.ts

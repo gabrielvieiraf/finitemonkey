@@ -762,6 +762,9 @@
           "task": {
             "type": "string"
           },
+          "session": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },

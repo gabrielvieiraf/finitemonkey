@@ -173,7 +173,7 @@ const probeOf: Parser = (record, base) => {
   const key = number(record, "key");
   if (claim === undefined || form === undefined || prompt === undefined || keyHash === undefined) return undefined;
   if (!Number.isInteger(key) || key < 0 || key >= options.length) return undefined;
-  const extra = optional(record, ["decision", "task"]);
+  const extra = optional(record, ["decision", "task", "session"]);
   return {
     type: "probe",
     ...base,

@@ -3,6 +3,7 @@ import type { Runtime } from "../core/runtime.js";
 import type { FmPaths } from "../task/paths.js";
 import type { ConceptSuggester } from "./concepts.js";
 import type { SourceFetcher } from "./fetch.js";
+import type { DistractorProposer } from "./probe-forms.js";
 import type { ClaimSplitter } from "./split.js";
 import { type Appended, appendEntry } from "./store.js";
 import type { JudgeClaimKind } from "./types.js";
@@ -19,6 +20,7 @@ export interface JudgeDeps {
   readonly suggester?: ConceptSuggester;
   readonly verifiers?: Readonly<Partial<Record<JudgeClaimKind, Verifier>>>;
   readonly fetcher?: SourceFetcher;
+  readonly distractors?: DistractorProposer;
 }
 
 export const appendNow = (deps: JudgeDeps, record: JsonObject): Appended =>

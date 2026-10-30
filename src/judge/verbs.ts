@@ -16,6 +16,7 @@ import type { JudgeClaimKind, JudgeEntry } from "./types.js";
 import { anchorCompute, personCheck } from "./verbs-cite.js";
 import { addConcept, addDomain, observe } from "./verbs-concepts.js";
 import { addHelp, settleHelp } from "./verbs-horizon.js";
+import { routeProbe, skipProbe } from "./verbs-probe.js";
 import { answer, cut, judgeThis } from "./verbs-xray.js";
 import { DEFAULT_VERIFIERS, notVerified } from "./verify.js";
 
@@ -226,6 +227,10 @@ const runMore = (deps: JudgeDeps, request: MoreRequest): JudgeResponse => {
       return promote(deps, request);
     case "horizon":
       return addHelp(deps, request);
+    case "probe":
+      return routeProbe(deps, request, deps.distractors);
+    case "skip":
+      return skipProbe(deps, request);
     case "accept":
     case "dismiss":
       return settleHelp(deps, request, (claim) => verify(deps, claim));

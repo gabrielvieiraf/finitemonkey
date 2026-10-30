@@ -2732,7 +2732,13 @@
     "command.judge_accept.summary": "machine",
     "command.judge_dismiss.summary": "machine",
     "judge.horizon": "machine",
-    "judge.horizon.domain": "machine"
+    "judge.horizon.domain": "machine",
+    "command.judge_probe.summary": "machine",
+    "command.judge_skip.summary": "machine",
+    "judge.probe.unsupported": "machine",
+    "judge.probe.predict": "machine",
+    "judge.probe.why": "machine",
+    "judge.probe.skipped": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5467,6 +5473,12 @@
     "command.judge_accept.summary": "machine",
     "command.judge_dismiss.summary": "machine",
     "judge.horizon": "machine",
-    "judge.horizon.domain": "machine"
+    "judge.horizon.domain": "machine",
+    "command.judge_probe.summary": "machine",
+    "command.judge_skip.summary": "machine",
+    "judge.probe.unsupported": "machine",
+    "judge.probe.predict": "machine",
+    "judge.probe.why": "machine",
+    "judge.probe.skipped": "machine"
   }
 }

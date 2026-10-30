@@ -66,11 +66,17 @@ export const countRule = (weights: readonly number[]): Band => {
   return before >= DEMONSTRATED_AFTER ? "proximal" : "beyond";
 };
 
+export const effective = (weighted: readonly EvidenceEntry[]): readonly EvidenceEntry[] => {
+  const positives = weighted.filter((entry) => weightOf(entry) > 0);
+  const [only] = positives;
+  return positives.length === 1 && only?.proof === "probe" ? weighted.filter((entry) => entry !== only) : weighted;
+};
+
 const historyOf = (weighted: readonly EvidenceEntry[]): readonly BandStep[] => {
   const steps: BandStep[] = [];
   let current: Band = "no record";
   weighted.forEach((entry, index) => {
-    const band = countRule(weighted.slice(0, index + 1).map(weightOf));
+    const band = countRule(effective(weighted.slice(0, index + 1)).map(weightOf));
     if (band !== current) steps.push({ band, evidence: entry.id, proof: entry.proof, at: entry.at });
     current = band;
   });
@@ -88,7 +94,7 @@ export const conceptBand = (concept: string, entries: readonly JudgeEntry[]): Co
   const because = history.at(-1);
   return {
     concept,
-    band: countRule(weighted.map(weightOf)),
+    band: countRule(effective(weighted).map(weightOf)),
     ...(because === undefined ? {} : { because }),
     history,
     positive: weighted.filter((entry) => weightOf(entry) > 0).length,

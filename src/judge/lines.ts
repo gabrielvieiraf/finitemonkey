@@ -7,12 +7,20 @@ export const rowLine = (t: Translate, row: XrayRow): string =>
     ...(row.actions.length === 0 ? [] : [t("judge.row.actions", { actions: row.actions.join(", ") })]),
   ].join(" ");
 
+const PROMPTS = {
+  "two-spans": "judge.probe.two_spans",
+  "unsupported-claim": "judge.probe.unsupported",
+  "predict-number": "judge.probe.predict",
+} as const;
+
 const probeLines = (t: Translate, probe: ProbeView): readonly string[] => {
   if (probe.span !== undefined) return [t("judge.probe.wrong", { span: probe.span, claim: probe.claim })];
-  if (probe.answered) return [t("judge.probe.right", { claim: probe.claim })];
+  if (probe.answered)
+    return [t(probe.correct === undefined ? "judge.probe.skipped" : "judge.probe.right", { claim: probe.claim })];
   return [
-    t("judge.probe.two_spans", { probe: probe.probe, source: probe.prompt }),
+    t(PROMPTS[probe.form], { probe: probe.probe, source: probe.prompt }),
     ...probe.options.map((option, index) => `  ${String(index + 1)}) ${option}`),
+    ...(probe.why === undefined ? [] : [t("judge.probe.why", { ...probe.why })]),
   ];
 };
 

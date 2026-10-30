@@ -17,6 +17,7 @@ export const probeView = (probe: ProbeEntry, entries: readonly JudgeEntry[]): Pr
     prompt: probe.prompt,
     options: probe.options,
     answered: answer !== undefined,
+    ...(probe.decision === undefined ? {} : { why: { decision: probe.decision, claim: probe.claim } }),
     ...(answer === undefined ? {} : { correct: answer === "right" }),
     ...(answer === "wrong" ? { span: probe.options[probe.key] ?? "" } : {}),
   };
@@ -26,7 +27,7 @@ export const openProbe = (claim: string, entries: readonly JudgeEntry[]): ProbeE
   probesIn(entries).find((probe) => probe.claim === claim && answerOf(probe.id, entries) === undefined);
 
 export const shownProbe = (
-  verb: "judge" | "answer",
+  verb: "judge" | "answer" | "probe" | "skip",
   id: string,
   deps: JudgeDeps,
   extra: Partial<JudgeResponse> = {},

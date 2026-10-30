@@ -197,6 +197,30 @@ const settleCommand = (verb: "accept" | "dismiss") =>
     build: (_ctx, _values, positionals) => ({ verb, help: positionals[0] }),
   });
 
+export const judgeProbeCommand = judgeCommand({
+  path: ["judge", "probe"],
+  summaryKey: "command.judge_probe.summary",
+  usage: "finitemonkey judge probe <claim> --decision <id> [--task <id>]",
+  options: { decision: { type: "string" }, task: { type: "string" } },
+  maxPositionals: 1,
+  build: (ctx, values, positionals) => ({
+    verb: "probe",
+    claim: positionals[0],
+    decision: stringOption(values, "decision"),
+    task: stringOption(values, "task"),
+    session: ctx.env["CLAUDE_SESSION_ID"],
+  }),
+});
+
+export const judgeSkipCommand = judgeCommand({
+  path: ["judge", "skip"],
+  summaryKey: "command.judge_skip.summary",
+  usage: "finitemonkey judge skip <probe>",
+  maxPositionals: 1,
+  person: true,
+  build: (_ctx, _values, positionals) => ({ verb: "skip", probe: positionals[0] }),
+});
+
 export const JUDGE_COMMANDS = [
   judgeObserveCommand,
   judgeClassifyCommand,
@@ -223,4 +247,6 @@ export const JUDGE_COMMANDS = [
   judgeHorizonCommand,
   settleCommand("accept"),
   settleCommand("dismiss"),
+  judgeProbeCommand,
+  judgeSkipCommand,
 ] as const satisfies readonly CommandSpec[];
