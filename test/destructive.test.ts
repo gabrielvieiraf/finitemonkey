@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
@@ -9,7 +9,7 @@ import { gitPreToolUse } from "../src/git/hooks/pre-tool.js";
 import { openRepo } from "../src/git/repo.js";
 import { snapshotViews, undoSnapshot } from "../src/git/undo.js";
 import { normalizeCommand } from "../src/shell/normalize.js";
-import { bash, hook, runtime, tempRepo, write } from "./git-support.js";
+import { bash, hook, runtime, tempDir, tempRepo, write } from "./git-support.js";
 import { memoryFs } from "./memory-fs.js";
 import { fakeRuntime } from "./support.js";
 
@@ -68,6 +68,29 @@ describe("rm -rf inside the repository", () => {
       assert.equal(readFileSync(join(repo.root, "src/a.ts"), "utf8"), "export const a = 1;\n");
       assert.ok(existsSync(join(repo.root, "src/new.ts")));
     } finally {
+      repo.dispose();
+    }
+  });
+});
+
+describe("rm -rf through another spelling of the repository path", () => {
+  it("takes a snapshot when the session folder is a link to the repository", async (t) => {
+    const repo = tempRepo({ "src/a.ts": "export const a = 1;\n" });
+    const link = join(tempDir("fm-link-"), "repo");
+    try {
+      try {
+        symlinkSync(repo.root, link, "junction");
+      } catch {
+        t.skip("cannot create a link here");
+        return;
+      }
+      const decision = await hook(gitPreToolUse, "PreToolUse", toAbsolutePath(link), bash("rm -rf src"));
+      assert.equal(decision.kind, "allow");
+      const opened = openRepo(runtime, repo.root);
+      assert.ok(opened);
+      assert.equal(snapshotViews(runtime, opened).length, 1);
+    } finally {
+      rmSync(dirname(link), { recursive: true, force: true });
       repo.dispose();
     }
   });

@@ -48,7 +48,11 @@ const inRepo = (input: HookInput, scan: Scan, command: ShellCommand): Repo | und
   const repo = scan.repo();
   const targets = removalTargets(command);
   if (repo === undefined || targets === undefined) return undefined;
-  return targets.some((target) => isWithin(resolveFrom(input.cwd, command.dir, target), repo.root)) ? repo : undefined;
+  const inside = (target: string): boolean => {
+    const path = resolveFrom(input.cwd, command.dir, target);
+    return isWithin(path, repo.root) || isWithin(input.runtime.realpath(path), repo.root);
+  };
+  return targets.some(inside) ? repo : undefined;
 };
 
 const rmOutcome = (input: HookInput, command: ShellCommand, scan: Scan): string | SnapshotOutcome | undefined => {

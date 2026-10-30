@@ -42920,7 +42920,7 @@ var counted = (text40) => {
   return py === void 0 ? {} : { total: py };
 };
 var parseTestSummary = (output) => {
-  const text40 = output.replace(ANSI3, "");
+  const text40 = output.replace(ANSI3, "").replace(/\r\n?/g, "\n");
   const failures = [
     ...new Set(FAILURE_LINES.flatMap((pattern) => [...text40.matchAll(pattern)].map((match) => (match[1] ?? "").trim())))
   ].filter((name) => name !== "" && !/^failing tests:?$/i.test(name));
@@ -52055,7 +52055,11 @@ var inRepo5 = (input, scan, command) => {
   const repo = scan.repo();
   const targets2 = removalTargets(command);
   if (repo === void 0 || targets2 === void 0) return void 0;
-  return targets2.some((target7) => isWithin(resolveFrom(input.cwd, command.dir, target7), repo.root)) ? repo : void 0;
+  const inside2 = (target7) => {
+    const path = resolveFrom(input.cwd, command.dir, target7);
+    return isWithin(path, repo.root) || isWithin(input.runtime.realpath(path), repo.root);
+  };
+  return targets2.some(inside2) ? repo : void 0;
 };
 var rmOutcome = (input, command, scan) => {
   if (removalTargets(command) === void 0) return void 0;
