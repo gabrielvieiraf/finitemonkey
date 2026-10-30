@@ -19,17 +19,17 @@ Cómo funciona: la persona ejecuta `npx finitemonkey@next init` una vez, o insta
 
 ## Documentación
 
-- [README](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.es.md): para qué sirve, qué hace, instalación, hoja de ruta
-- [Preguntas frecuentes](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/faq.es.md): preguntas comunes sobre Claude Code y los agentes de código, con lo que funciona hoy y lo que está planificado
-- [Comparación](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.es.md): Superpowers, oh-my-claudecode, GSD, Spec Kit, ECC, ralph-loop, tdd-guard, dcg y cc-safety-net, mecanismo frente a texto, con fuentes y la fecha de comprobación
-- [Guía de instalación para agentes](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.es.md): pasos y reglas de conducta para un agente que instala Finite Monkey para alguien
-- [Texto completo](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms-full.es.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo
+- [README](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.es.md): para qué sirve, qué hace, instalación, hoja de ruta
+- [Preguntas frecuentes](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.es.md): preguntas comunes sobre Claude Code y los agentes de código, con lo que funciona hoy solo con Claude Code y lo que añade Finite Monkey
+- [Comparación](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.es.md): Superpowers, oh-my-claudecode, GSD, Spec Kit, ECC, ralph-loop, tdd-guard, dcg y cc-safety-net, mecanismo frente a texto, con fuentes y la fecha de comprobación
+- [Guía de instalación para agentes](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/AGENT-SETUP.es.md): pasos y reglas de conducta para un agente que instala Finite Monkey para alguien
+- [Texto completo](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms-full.es.txt): el README, las preguntas frecuentes, la comparación y la guía del agente en un solo archivo
 
 ## Opcional
 
-- [llms.txt en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.txt)
-- [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/AGENTS.md): invariantes para quien cambia el repositorio (en inglés)
-- [Cómo contribuir](https://github.com/gabrielvieiraf/finitemonkey/blob/main/CONTRIBUTING.md) (en inglés)
-- [Política de seguridad](https://github.com/gabrielvieiraf/finitemonkey/blob/main/SECURITY.md) (en inglés)
+- [llms.txt en inglés](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms.txt)
+- [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/AGENTS.md): invariantes para quien cambia el repositorio (en inglés)
+- [Cómo contribuir](https://github.com/gabrielvieiraf/finitemonkey/blob/next/CONTRIBUTING.md) (en inglés)
+- [Política de seguridad](https://github.com/gabrielvieiraf/finitemonkey/blob/next/SECURITY.md) (en inglés)
 
-<!-- translation of llms.txt sha256:027f8c5a4c59 -->
+<!-- translation of llms.txt sha256:d11055cfe636 -->

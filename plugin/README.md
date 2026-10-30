@@ -4,19 +4,14 @@ Infinite monkeys not required. This plugin carries the `finitemonkey` command li
 
 You do not need to remember any command. Claude uses the skills on its own when the situation fits: `task` when non-trivial work starts, `verify` before claiming something works, `look` after visual changes, and `finish` when the gate blocks a stop. `/finitemonkey:doctor` is an optional shortcut.
 
-Install from the repository marketplace:
-
-```
-/plugin marketplace add gabrielvieiraf/finitemonkey
-/plugin install finitemonkey@finitemonkey
-```
-
-The `next` channel has its own marketplace, from the `next` branch. Enable only one of the two, since both plugins are called `finitemonkey`:
+Install from the marketplace on the `next` branch, where the plugin lives until the first stable release:
 
 ```
 /plugin marketplace add gabrielvieiraf/finitemonkey#next
 /plugin install finitemonkey@finitemonkey-next
 ```
+
+The stable channel will have its own marketplace on the default branch (`/plugin marketplace add gabrielvieiraf/finitemonkey`, then `/plugin install finitemonkey@finitemonkey`). Enable only one of the two, since both plugins are called `finitemonkey`.
 
 When a project also ran `npx finitemonkey init`, the project's own hooks take over and the plugin's hooks step aside, so nothing runs twice. Every hook runs `node` on that bundled file: no download and no network, in any hook. Licensed under Apache-2.0.
 

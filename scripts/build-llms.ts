@@ -17,8 +17,8 @@ interface Translation {
 }
 
 const repository = "https://github.com/gabrielvieiraf/finitemonkey";
-const blobBase = `${repository}/blob/main/`;
-const rawBase = "https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/main/";
+const blobBase = `${repository}/blob/next/`;
+const rawBase = "https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/";
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 const editions: readonly Edition[] = [

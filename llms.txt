@@ -19,17 +19,17 @@ How it works: the user runs `npx finitemonkey@next init` once, or installs the C
 
 ## Docs
 
-- [README](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.md): what it is for, what it does, install, roadmap
-- [FAQ](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/faq.md): twelve common questions about Claude Code and coding agents, with what works today and what is planned
-- [Comparison](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/compare.md): Superpowers, oh-my-claudecode, GSD, Spec Kit, ECC, ralph-loop, tdd-guard, dcg and cc-safety-net, mechanism versus prose, with sources and the date checked
-- [Agent setup runbook](https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/AGENT-SETUP.md): steps and conduct rules for an agent installing Finite Monkey for a user
-- [Full text](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms-full.txt): the README, FAQ, comparison and agent runbook in one file
+- [README](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md): what it is for, what it does, install, roadmap
+- [FAQ](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.md): common questions about Claude Code and coding agents, with what works today with Claude Code alone and what Finite Monkey adds
+- [Comparison](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.md): Superpowers, oh-my-claudecode, GSD, Spec Kit, ECC, ralph-loop, tdd-guard, dcg and cc-safety-net, mechanism versus prose, with sources and the date checked
+- [Agent setup runbook](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/AGENT-SETUP.md): steps and conduct rules for an agent installing Finite Monkey for a user
+- [Full text](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms-full.txt): the README, FAQ, comparison and agent runbook in one file
 
 ## Optional
 
-- [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/main/AGENTS.md): invariants for anyone changing the repository
-- [README em português](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.pt-BR.md)
-- [README en español](https://github.com/gabrielvieiraf/finitemonkey/blob/main/README.es.md)
-- [llms.txt em português](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.pt-BR.txt) and [llms.txt en español](https://github.com/gabrielvieiraf/finitemonkey/blob/main/llms.es.txt), each with its own full text and agent runbook
-- [Contributing](https://github.com/gabrielvieiraf/finitemonkey/blob/main/CONTRIBUTING.md)
-- [Security policy](https://github.com/gabrielvieiraf/finitemonkey/blob/main/SECURITY.md)
+- [AGENTS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/AGENTS.md): invariants for anyone changing the repository
+- [README em português](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md)
+- [README en español](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.es.md)
+- [llms.txt em português](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms.pt-BR.txt) and [llms.txt en español](https://github.com/gabrielvieiraf/finitemonkey/blob/next/llms.es.txt), each with its own full text and agent runbook
+- [Contributing](https://github.com/gabrielvieiraf/finitemonkey/blob/next/CONTRIBUTING.md)
+- [Security policy](https://github.com/gabrielvieiraf/finitemonkey/blob/next/SECURITY.md)
