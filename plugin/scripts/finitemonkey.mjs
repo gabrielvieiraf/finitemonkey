@@ -6255,16 +6255,6 @@ var OPTIONAL_GUARDS = [
   "xray",
   "probes",
   "trajectory",
-  "a11y",
-  "keyboard",
-  "ui-states",
-  "ui-contract",
-  "ds-adherence",
-  "default-look",
-  "ui-forms",
-  "ui-flow",
-  "journeys",
-  "visual-approve",
   ...UI_GUARDS
 ];
 var DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"];
@@ -6344,16 +6334,6 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "team-dashboard",
   "xray",
   "probes",
-  "a11y",
-  "keyboard",
-  "ui-states",
-  "ui-contract",
-  "ds-adherence",
-  "default-look",
-  "ui-forms",
-  "ui-flow",
-  "journeys",
-  "visual-approve",
   ...UI_GUARDS
 ]);
 var DEFAULT_POLICY = {
