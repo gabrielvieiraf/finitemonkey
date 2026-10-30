@@ -2,6 +2,9 @@
   "id": "no-detector",
   "description": "Finite Monkey without the horizon detector: ricochete and clarify off.",
   "finitemonkey": true,
-  "sha": null,
-  "guards": { "ricochete": "off", "clarify": "off" }
+  "sha": "e05b8e981b9ace35a554b8466609264a7fefea95",
+  "guards": {
+    "ricochete": "off",
+    "clarify": "off"
+  }
 }

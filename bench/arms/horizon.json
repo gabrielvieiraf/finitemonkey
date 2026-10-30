@@ -2,6 +2,8 @@
   "id": "horizon",
   "description": "Finite Monkey with horizon help only: ricochete in shadow, so an answer without a judgment criterion is logged and not held.",
   "finitemonkey": true,
-  "sha": null,
-  "guards": { "ricochete": "shadow" }
+  "sha": "e05b8e981b9ace35a554b8466609264a7fefea95",
+  "guards": {
+    "ricochete": "shadow"
+  }
 }

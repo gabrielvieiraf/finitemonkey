@@ -2,4 +2,10 @@
 
 Every change to the method after `PREREGISTRATION.md` was frozen goes here, newest last: the date, what changed, why, and which runs it affects. A deviation never edits the frozen file.
 
-None yet.
+## 2026-10-30, before the pilot
+
+- Arms pinned to e05b8e98, the head of the pull request that brings Stages 3.5 to 6, one day after the file was frozen. Reason: the plugin under test changed after the freeze date; the pin is the code that will be released. Affects every run.
+- No held-out partition in this round: nobody outside development has written one yet. Results are reported on the public tasks only and say so.
+- Persona calibration (people outside development labelling final messages) has not happened before the pilot. All personas are reported as uncalibrated until it does.
+- Isolation: runs use a fresh temporary folder outside any repository and a dedicated config dir, but run as the same OS user that owns this repository, so an agent that searched the disk could reach the public oracles. Transcripts of the pilot are read for any access to the repository path; a run that touched it is excluded and reported.
+- Model: `sonnet`, through an API key with a fixed credit budget; `--max-budget-usd` per turn is set from the pilot's measured cost so the primary phase fits the budget, and the value used is recorded with each run.
