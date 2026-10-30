@@ -4,7 +4,6 @@ import { archCommand } from "./arch.js";
 import { auditCommand } from "./audit.js";
 import { briefCommand } from "./brief.js";
 import { budgetCommand, costReconcileCommand } from "./budget.js";
-import { calibrateExplainCommand, calibrateRefitCommand } from "./calibrate.js";
 import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
@@ -29,6 +28,7 @@ import { depsScanCommand } from "./deps-scan.js";
 import { doctorCommand } from "./doctor.js";
 import { dsSyncCommand } from "./ds-sync.js";
 import { evidenceWhyCommand } from "./evidence-why.js";
+import { EVOLVE_COMMANDS } from "./evolve-registry.js";
 import { findingsAcceptCommand, findingsListCommand } from "./findings.js";
 import { frontsPlanCommand, frontsStatusCommand } from "./fronts.js";
 import { frontsCloseCommand } from "./fronts-close.js";
@@ -89,7 +89,6 @@ import { PERSON_COMMANDS } from "./person.js";
 import { planCheckCommand, planConsolidateCommand, planInitCommand } from "./plan.js";
 import { plantaCommand } from "./planta.js";
 import { policyExplainCommand, policyFalsePositiveCommand } from "./policy.js";
-import { policyEvolveCommand, policyHistoryCommand, policyRevertCommand } from "./policy-evolve.js";
 import { prOpenCommand } from "./pr-open.js";
 import { presetCommand } from "./preset.js";
 import { proseCheckCommand } from "./prose-check.js";
@@ -288,11 +287,7 @@ export const REGISTRY = [
   guardianForecastCommand,
   researchSourceCommand,
   researchStatusCommand,
-  policyEvolveCommand,
-  policyHistoryCommand,
-  policyRevertCommand,
-  calibrateRefitCommand,
-  calibrateExplainCommand,
+  ...EVOLVE_COMMANDS,
   ...DATA_COMMANDS,
   ...PERSON_COMMANDS,
   ...MOD_COMMANDS,

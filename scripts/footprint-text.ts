@@ -46,12 +46,6 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     "pt-BR": "A configuração do projeto, a política dos guards e o briefing opcional para subagentes.",
     es: "La configuración del proyecto, la política de los guards y el briefing opcional para subagentes.",
   },
-  "session-logs": {
-    en: "This project's local Claude Code session logs: read once with `init --look-back`, and read incrementally on each prompt only when a spend budget is set in `.finitemonkey/config.yml`. `finitemonkey drift` (and, unless the drift-sensor flag is off, a background run at most once a day after a turn) counts tool calls, model and version per day from them; only those counts are kept, in `.finitemonkey/cache/drift.json`.",
-    "pt-BR":
-      "Os logs locais de sessão do Claude Code deste projeto: lidos uma vez com `init --look-back`, e lidos aos poucos a cada prompt só quando há um teto de gasto em `.finitemonkey/config.yml`. O `finitemonkey drift` (e, salvo com a flag drift-sensor desligada, uma rodada em segundo plano no máximo uma vez por dia depois de um turno) conta chamadas de ferramenta, modelo e versão por dia a partir deles; só essas contagens ficam guardadas, em `.finitemonkey/cache/drift.json`.",
-    es: "Los logs locales de sesión de Claude Code de este proyecto: leídos una vez con `init --look-back`, y leídos de a poco en cada prompt solo cuando hay un tope de gasto en `.finitemonkey/config.yml`. `finitemonkey drift` (y, salvo con la flag drift-sensor apagada, una corrida en segundo plano como mucho una vez al día después de un turno) cuenta llamadas de herramientas, modelo y versión por día a partir de ellos; solo esas cuentas se guardan, en `.finitemonkey/cache/drift.json`.",
-  },
   "hook-sources": {
     en: "`doctor` reads installed plugins and their hook files to list every hook and find conflicts; `doctor --hooks` also reads the latest Claude Code debug log for hook timings. It never changes another plugin's files.",
     "pt-BR":
