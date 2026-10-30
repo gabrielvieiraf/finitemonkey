@@ -162,6 +162,7 @@ describe("git defaults by level", () => {
       assert.equal((await kind(levelPreToolUse, "git pull --rebase")).kind, "block");
       assert.equal((await kind(levelPreToolUse, "git rebase --abort")).kind, "allow");
       assert.match(JSON.stringify(await kind(levelPreToolUse, lease)), /"permissionDecision":"ask"/);
+      assert.doesNotMatch(JSON.stringify(await kind(levelPreToolUse, `${lease} --dry-run`)), /"ask"/);
       withLevel(repo.root, "advanced");
       assert.equal((await kind(prPreToolUse, "gh pr merge 3 --squash")).kind, "allow");
     } finally {

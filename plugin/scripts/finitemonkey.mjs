@@ -13194,8 +13194,8 @@ var currentContext = (context) => {
 };
 var kubectlHit = (command, context) => {
   if (!["kubectl", "oc"].includes(command.program) || subcommand(command.args) !== "delete") return void 0;
-  const dryRun2 = flagValue(command.args, "--dry-run");
-  if (dryRun2 !== void 0 && dryRun2 !== "none") return void 0;
+  const dryRun3 = flagValue(command.args, "--dry-run");
+  if (dryRun3 !== void 0 && dryRun3 !== "none") return void 0;
   const target7 = flagValue(command.args, "--context") ?? currentContext(context) ?? "unknown";
   return LOCAL_CONTEXT.test(target7) ? void 0 : { rule: "kubectl-delete", subject: target7 };
 };
@@ -50270,13 +50270,172 @@ var prPreToolUse = (input) => {
   return ALLOW13;
 };
 
+// src/git/options.ts
+var canonical2 = (name, spec2) => {
+  if (spec2.known.includes(name)) return name;
+  const matches3 = spec2.known.filter((option3) => option3.startsWith(name));
+  return matches3.length === 1 ? matches3[0] ?? name : name;
+};
+var addValue = (building, name, value2) => {
+  building.values.set(name, [...building.values.get(name) ?? [], value2]);
+  building.flags.add(name);
+};
+var longOption = (building, arg, next3, spec2) => {
+  const equals = arg.indexOf("=");
+  const name = canonical2(equals < 0 ? arg : arg.slice(0, equals), spec2);
+  if (equals >= 0) {
+    addValue(building, name, arg.slice(equals + 1));
+    return 1;
+  }
+  if (spec2.withValue.includes(name) && next3 !== void 0) {
+    addValue(building, name, next3);
+    return 2;
+  }
+  building.flags.add(name);
+  return 1;
+};
+var shortCluster = (building, arg, next3, spec2) => {
+  for (let index = 1; index < arg.length; index += 1) {
+    const letter = arg.charAt(index);
+    const name = `-${letter}`;
+    if (spec2.shortWithValue.includes(letter)) {
+      const attached = arg.slice(index + 1);
+      if (attached !== "") {
+        addValue(building, name, attached);
+        return 1;
+      }
+      if (next3 === void 0) {
+        building.flags.add(name);
+        return 1;
+      }
+      addValue(building, name, next3);
+      return 2;
+    }
+    building.flags.add(name);
+  }
+  return 1;
+};
+var parseOptions = (args2, spec2) => {
+  const building = { flags: /* @__PURE__ */ new Set(), values: /* @__PURE__ */ new Map(), positionals: [] };
+  let index = 0;
+  while (index < args2.length) {
+    const arg = args2[index] ?? "";
+    const next3 = args2[index + 1];
+    if (arg === "--") {
+      return { ...building, paths: args2.slice(index + 1), dashdash: true };
+    }
+    if (arg.startsWith("--")) index += longOption(building, arg, next3, spec2);
+    else if (arg.startsWith("-") && arg.length > 1 && !/^-\d+$/.test(arg)) {
+      index += shortCluster(building, arg, next3, spec2);
+    } else {
+      building.positionals.push(arg);
+      index += 1;
+    }
+  }
+  return { ...building, paths: [], dashdash: false };
+};
+var hasAny = (parsed, ...names3) => names3.some((name) => parsed.flags.has(name));
+var valuesOf = (parsed, ...names3) => names3.flatMap((name) => parsed.values.get(name) ?? []);
+var optionSpec = (known3, withValue = [], shortWithValue = "") => ({
+  known: known3,
+  withValue,
+  shortWithValue
+});
+
+// src/git/rules/push.ts
+var PUSH_OPTIONS = optionSpec(
+  [
+    "--force",
+    "--force-with-lease",
+    "--no-force-with-lease",
+    "--force-if-includes",
+    "--no-force-if-includes",
+    "--mirror",
+    "--delete",
+    "--prune",
+    "--all",
+    "--branches",
+    "--tags",
+    "--follow-tags",
+    "--set-upstream",
+    "--dry-run",
+    "--no-dry-run",
+    "--porcelain",
+    "--verbose",
+    "--quiet",
+    "--progress",
+    "--no-verify",
+    "--verify",
+    "--atomic",
+    "--signed",
+    "--push-option",
+    "--repo",
+    "--receive-pack",
+    "--exec",
+    "--recurse-submodules"
+  ],
+  ["--push-option", "--repo", "--receive-pack", "--exec"],
+  "o"
+);
+var branchName = (ref2) => {
+  if (ref2.startsWith("refs/tags/")) return void 0;
+  return ref2.replace(/^refs\/heads\//, "");
+};
+var refspecTarget = (refspec, current2) => {
+  const plain = refspec.replace(/^\+/, "");
+  const colon = plain.indexOf(":");
+  const destination2 = colon < 0 ? plain : plain.slice(colon + 1);
+  if (destination2 === "HEAD" || colon < 0 && plain === "HEAD") return current2;
+  if (destination2 === "" || destination2.startsWith("refs/tags/")) return void 0;
+  return branchName(destination2);
+};
+var pushDestinations = (parsed, facts) => {
+  if (hasAny(parsed, "--all", "--branches", "--mirror")) return "all";
+  const refspecs = parsed.positionals.slice(1).filter((refspec) => refspec !== ":");
+  const current2 = facts.currentBranch();
+  if (refspecs.length === 0) {
+    if (hasAny(parsed, "--tags") || current2 === void 0) return [];
+    return [facts.upstream(current2)?.branch ?? current2];
+  }
+  return refspecs.flatMap((refspec) => {
+    const target7 = refspecTarget(refspec, current2);
+    return target7 === void 0 ? [] : [target7];
+  });
+};
+var leaseVerdict = (parsed, facts) => {
+  const leases = valuesOf(parsed, "--force-with-lease");
+  const explicit = leases.length > 0 && leases.every((lease) => /^[^:]+:.+$/.test(lease));
+  if (!explicit || !hasAny(parsed, "--force-if-includes")) return block3("force-push", "--force-with-lease");
+  const current2 = facts.currentBranch();
+  const leased = leases.map((lease) => branchName(lease.slice(0, lease.indexOf(":"))));
+  const destinations = pushDestinations(parsed, facts);
+  const own = current2 !== void 0 && !facts.isProtected(current2) && leased.every((name) => name === current2) && destinations !== "all" && destinations.every((name) => name === current2);
+  return own ? PASS : block3("lease-not-own", leased.join(", "));
+};
+var dryRun = (parsed) => hasAny(parsed, "--dry-run", "-n") && !hasAny(parsed, "--no-dry-run");
+var isDryRunPush = (args2) => dryRun(parseOptions(args2, PUSH_OPTIONS));
+var pushVerdict = (invocation, facts) => {
+  const parsed = parseOptions(invocation.args, PUSH_OPTIONS);
+  if (dryRun(parsed)) return PASS;
+  if (hasAny(parsed, "--mirror")) return block3("push-mirror");
+  const refspecs = parsed.positionals.slice(1);
+  const deleted = refspecs.find((refspec) => /^\+?:./.test(refspec));
+  if (hasAny(parsed, "--delete", "-d", "--prune") || deleted !== void 0) {
+    return block3("push-delete", deleted?.replace(/^\+?:/, "") ?? refspecs.join(" "));
+  }
+  const forced = refspecs.find((refspec) => refspec.startsWith("+"));
+  if (hasAny(parsed, "--force", "-f") || forced !== void 0) return block3("force-push", forced ?? "--force");
+  if (hasAny(parsed, "--force-with-lease")) return leaseVerdict(parsed, facts);
+  return PASS;
+};
+
 // src/profile/git-hook.ts
 var ALLOW14 = { kind: "allow" };
 var SHELL3 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var REBASE_CONTROL = /* @__PURE__ */ new Set(["--abort", "--continue", "--skip", "--quit", "--edit-todo", "--show-current-patch"]);
 var isLease = (command) => {
   const invocation = gitInvocation(command);
-  return invocation?.subcommand === "push" && invocation.args.some((arg) => arg.startsWith("--force-with-lease"));
+  return invocation?.subcommand === "push" && invocation.args.some((arg) => arg.startsWith("--force-with-lease")) && !isDryRunPush(invocation.args);
 };
 var isRebaseUpdate = (command) => {
   const invocation = gitInvocation(command);
@@ -50370,78 +50529,6 @@ var isBroadPathspec = (spec2) => {
   const posixSpec = toPosixPath(spec2);
   return posixSpec === "." || posixSpec === "./" || posixSpec === ":/" || posixSpec === "*" || GLOB2.test(posixSpec);
 };
-
-// src/git/options.ts
-var canonical2 = (name, spec2) => {
-  if (spec2.known.includes(name)) return name;
-  const matches3 = spec2.known.filter((option3) => option3.startsWith(name));
-  return matches3.length === 1 ? matches3[0] ?? name : name;
-};
-var addValue = (building, name, value2) => {
-  building.values.set(name, [...building.values.get(name) ?? [], value2]);
-  building.flags.add(name);
-};
-var longOption = (building, arg, next3, spec2) => {
-  const equals = arg.indexOf("=");
-  const name = canonical2(equals < 0 ? arg : arg.slice(0, equals), spec2);
-  if (equals >= 0) {
-    addValue(building, name, arg.slice(equals + 1));
-    return 1;
-  }
-  if (spec2.withValue.includes(name) && next3 !== void 0) {
-    addValue(building, name, next3);
-    return 2;
-  }
-  building.flags.add(name);
-  return 1;
-};
-var shortCluster = (building, arg, next3, spec2) => {
-  for (let index = 1; index < arg.length; index += 1) {
-    const letter = arg.charAt(index);
-    const name = `-${letter}`;
-    if (spec2.shortWithValue.includes(letter)) {
-      const attached = arg.slice(index + 1);
-      if (attached !== "") {
-        addValue(building, name, attached);
-        return 1;
-      }
-      if (next3 === void 0) {
-        building.flags.add(name);
-        return 1;
-      }
-      addValue(building, name, next3);
-      return 2;
-    }
-    building.flags.add(name);
-  }
-  return 1;
-};
-var parseOptions = (args2, spec2) => {
-  const building = { flags: /* @__PURE__ */ new Set(), values: /* @__PURE__ */ new Map(), positionals: [] };
-  let index = 0;
-  while (index < args2.length) {
-    const arg = args2[index] ?? "";
-    const next3 = args2[index + 1];
-    if (arg === "--") {
-      return { ...building, paths: args2.slice(index + 1), dashdash: true };
-    }
-    if (arg.startsWith("--")) index += longOption(building, arg, next3, spec2);
-    else if (arg.startsWith("-") && arg.length > 1 && !/^-\d+$/.test(arg)) {
-      index += shortCluster(building, arg, next3, spec2);
-    } else {
-      building.positionals.push(arg);
-      index += 1;
-    }
-  }
-  return { ...building, paths: [], dashdash: false };
-};
-var hasAny = (parsed, ...names3) => names3.some((name) => parsed.flags.has(name));
-var valuesOf = (parsed, ...names3) => names3.flatMap((name) => parsed.values.get(name) ?? []);
-var optionSpec = (known3, withValue = [], shortWithValue = "") => ({
-  known: known3,
-  withValue,
-  shortWithValue
-});
 
 // src/git/rules/branch.ts
 var BRANCH = optionSpec(
@@ -50690,89 +50777,6 @@ var HISTORY_RULES = {
   replace: replaceVerdict,
   "filter-branch": (invocation) => block3("history", subject(invocation)),
   "filter-repo": (invocation) => block3("history", subject(invocation))
-};
-
-// src/git/rules/push.ts
-var PUSH_OPTIONS = optionSpec(
-  [
-    "--force",
-    "--force-with-lease",
-    "--no-force-with-lease",
-    "--force-if-includes",
-    "--no-force-if-includes",
-    "--mirror",
-    "--delete",
-    "--prune",
-    "--all",
-    "--branches",
-    "--tags",
-    "--follow-tags",
-    "--set-upstream",
-    "--dry-run",
-    "--porcelain",
-    "--verbose",
-    "--quiet",
-    "--progress",
-    "--no-verify",
-    "--verify",
-    "--atomic",
-    "--signed",
-    "--push-option",
-    "--repo",
-    "--receive-pack",
-    "--exec",
-    "--recurse-submodules"
-  ],
-  ["--push-option", "--repo", "--receive-pack", "--exec"],
-  "o"
-);
-var branchName = (ref2) => {
-  if (ref2.startsWith("refs/tags/")) return void 0;
-  return ref2.replace(/^refs\/heads\//, "");
-};
-var refspecTarget = (refspec, current2) => {
-  const plain = refspec.replace(/^\+/, "");
-  const colon = plain.indexOf(":");
-  const destination2 = colon < 0 ? plain : plain.slice(colon + 1);
-  if (destination2 === "HEAD" || colon < 0 && plain === "HEAD") return current2;
-  if (destination2 === "" || destination2.startsWith("refs/tags/")) return void 0;
-  return branchName(destination2);
-};
-var pushDestinations = (parsed, facts) => {
-  if (hasAny(parsed, "--all", "--branches", "--mirror")) return "all";
-  const refspecs = parsed.positionals.slice(1).filter((refspec) => refspec !== ":");
-  const current2 = facts.currentBranch();
-  if (refspecs.length === 0) {
-    if (hasAny(parsed, "--tags") || current2 === void 0) return [];
-    return [facts.upstream(current2)?.branch ?? current2];
-  }
-  return refspecs.flatMap((refspec) => {
-    const target7 = refspecTarget(refspec, current2);
-    return target7 === void 0 ? [] : [target7];
-  });
-};
-var leaseVerdict = (parsed, facts) => {
-  const leases = valuesOf(parsed, "--force-with-lease");
-  const explicit = leases.length > 0 && leases.every((lease) => /^[^:]+:.+$/.test(lease));
-  if (!explicit || !hasAny(parsed, "--force-if-includes")) return block3("force-push", "--force-with-lease");
-  const current2 = facts.currentBranch();
-  const leased = leases.map((lease) => branchName(lease.slice(0, lease.indexOf(":"))));
-  const destinations = pushDestinations(parsed, facts);
-  const own = current2 !== void 0 && !facts.isProtected(current2) && leased.every((name) => name === current2) && destinations !== "all" && destinations.every((name) => name === current2);
-  return own ? PASS : block3("lease-not-own", leased.join(", "));
-};
-var pushVerdict = (invocation, facts) => {
-  const parsed = parseOptions(invocation.args, PUSH_OPTIONS);
-  if (hasAny(parsed, "--mirror")) return block3("push-mirror");
-  const refspecs = parsed.positionals.slice(1);
-  const deleted = refspecs.find((refspec) => /^\+?:./.test(refspec));
-  if (hasAny(parsed, "--delete", "-d", "--prune") || deleted !== void 0) {
-    return block3("push-delete", deleted?.replace(/^\+?:/, "") ?? refspecs.join(" "));
-  }
-  const forced = refspecs.find((refspec) => refspec.startsWith("+"));
-  if (hasAny(parsed, "--force", "-f") || forced !== void 0) return block3("force-push", forced ?? "--force");
-  if (hasAny(parsed, "--force-with-lease")) return leaseVerdict(parsed, facts);
-  return PASS;
 };
 
 // src/git/rules/protected.ts
@@ -71472,7 +71476,7 @@ var resolveBase2 = (runtime, repo, request, defaultBranch2) => {
   }
   return accept(request.base ?? defaultBranch2);
 };
-var fetchBase = (runtime, root, base, dryRun2) => !dryRun2 && runtime.gitWith(["fetch", "--quiet", "origin", base], root, { timeoutMs: NETWORK_TIMEOUT_MS }).ok;
+var fetchBase = (runtime, root, base, dryRun3) => !dryRun3 && runtime.gitWith(["fetch", "--quiet", "origin", base], root, { timeoutMs: NETWORK_TIMEOUT_MS }).ok;
 var baseRefOf = (runtime, root, base) => line10(runtime, root, ["rev-parse", "--verify", "--quiet", `refs/remotes/origin/${base}`]) === void 0 ? base : `origin/${base}`;
 var predicted2 = (runtime, root, baseRef) => {
   const result = runtime.gitWith(
@@ -73659,7 +73663,7 @@ var target5 = (provider) => {
   const probe = LIVE_PROBES[provider];
   return { host: probe.host, url: `https://${probe.host}${probe.path}` };
 };
-var dryRun = (ctx, provider, variable) => {
+var dryRun2 = (ctx, provider, variable) => {
   const { host, url: url2 } = target5(provider);
   const data2 = { schema: SECRETS_LIVE_SCHEMA, provider, host, url: url2, variable, sent: false };
   return success(data2, [ctx.t("secrets.live.dry", { host, url: url2, variable, provider })]);
@@ -73700,7 +73704,7 @@ var secretsLiveCommand = {
           })
         )
       );
-    if (args2.values["send"] !== true) return Promise.resolve(dryRun(ctx, provider, variable));
+    if (args2.values["send"] !== true) return Promise.resolve(dryRun2(ctx, provider, variable));
     if (!isPerson(ctx))
       return Promise.resolve(
         failureFrom(

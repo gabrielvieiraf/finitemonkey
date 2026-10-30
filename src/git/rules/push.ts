@@ -19,6 +19,7 @@ export const PUSH_OPTIONS = optionSpec(
     "--follow-tags",
     "--set-upstream",
     "--dry-run",
+    "--no-dry-run",
     "--porcelain",
     "--verbose",
     "--quiet",
@@ -83,8 +84,13 @@ const leaseVerdict = (parsed: ParsedOptions, facts: GitFacts): GitVerdict => {
   return own ? PASS : block("lease-not-own", leased.join(", "));
 };
 
+const dryRun = (parsed: ParsedOptions): boolean => hasAny(parsed, "--dry-run", "-n") && !hasAny(parsed, "--no-dry-run");
+
+export const isDryRunPush = (args: readonly string[]): boolean => dryRun(parseOptions(args, PUSH_OPTIONS));
+
 export const pushVerdict = (invocation: GitInvocation, facts: GitFacts): GitVerdict => {
   const parsed = parseOptions(invocation.args, PUSH_OPTIONS);
+  if (dryRun(parsed)) return PASS;
   if (hasAny(parsed, "--mirror")) return block("push-mirror");
   const refspecs = parsed.positionals.slice(1);
   const deleted = refspecs.find((refspec) => /^\+?:./.test(refspec));

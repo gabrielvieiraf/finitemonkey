@@ -1,5 +1,6 @@
 import { optionalString } from "../core/parsed.js";
 import { gitInvocation } from "../git/invocation.js";
+import { isDryRunPush } from "../git/rules/push.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
 import { toolInput, toolName } from "../secrets/guards/tool-input.js";
@@ -13,7 +14,11 @@ const REBASE_CONTROL = new Set(["--abort", "--continue", "--skip", "--quit", "--
 
 const isLease = (command: ShellCommand): boolean => {
   const invocation = gitInvocation(command);
-  return invocation?.subcommand === "push" && invocation.args.some((arg) => arg.startsWith("--force-with-lease"));
+  return (
+    invocation?.subcommand === "push" &&
+    invocation.args.some((arg) => arg.startsWith("--force-with-lease")) &&
+    !isDryRunPush(invocation.args)
+  );
 };
 
 const isRebaseUpdate = (command: ShellCommand): boolean => {
