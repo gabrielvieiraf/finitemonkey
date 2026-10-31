@@ -4,7 +4,7 @@
 NovusTec, São Paulo, SP, Brasil
 gabrielvieira.ifsc@gmail.com · ORCID [0009-0000-2613-8284](https://orcid.org/0009-0000-2613-8284)
 
-Versión 2, octubre de 2026 (versión 1: abril de 2026). [English](second-brain.md) | [Português (Brasil)](second-brain.pt-BR.md) | Español
+Versión 2.1, octubre de 2026 (versión 1: abril de 2026). [English](second-brain.md) | [Português (Brasil)](second-brain.pt-BR.md) | Español
 
 > Este ensayo es la segunda base teórica de [Finite Monkey](../../README.es.md), junto al ensayo [Efecto Rebote](../ricochet/ricochet.es.md). Las secciones 1 a 9 analizan el "segundo cerebro" personal hecho con LLM y proponen una guía de evaluación. La sección 10 reúne lo que ya se ha medido sobre la versión de proyecto y de empresa de esa idea, en la que archivos de contexto y memorias se escriben para agentes de programación. La sección 11 muestra lo que Finite Monkey hace con el conocimiento de un proyecto a partir de esa evidencia y lo que todavía es hipótesis por medir.
 
@@ -375,7 +375,7 @@ Fuente: elaboración propia (2026), con base en los estudios citados.
 
 Las secciones anteriores señalan tres razones por las que el segundo cerebro falla, tanto el personal como el de proyecto. El conocimiento escrito **envejece sin que nadie lo sepa**, porque nada une la nota con lo que describe. **No se sabe de dónde vino** cada afirmación, y el modelo, al compilar síntesis de síntesis, mezcla la fuente con lo derivado. Y la persona **terceriza el entendimiento**, leyendo un resumen bien escrito que alimenta la ilusión de que entendió (ROZENBLIT; KEIL, 2002).
 
-Finite Monkey ya resuelve un problema con la misma forma. Su *gate* no acepta la palabra del agente de que las pruebas pasaron: guarda en un libro de evidencias la salida de los comandos que corrieron, atada al hash del árbol de git en el que corrieron, e invalida la evidencia cuando un archivo cambia. La propuesta de esta sección es extender ese diseño al conocimiento del proyecto. El principio se toma de los sistemas de build: una afirmación sobre el código es una tarea de build cuya salida es "¿sigue siendo verdad?", y cuyas entradas son el contenido de los fragmentos que describe. Los sistemas de build con *traces* verificados guardan el hash de las entradas de cada tarea y solo la rehacen cuando este cambia (MOKHOV; MITCHELL; PEYTON JONES, 2018). Aplicado al conocimiento, esto transforma la obsolescencia, de opinión del modelo, en cómputo.
+Finite Monkey ya resuelve un problema con la misma forma. Su *gate* no acepta la palabra del agente de que las pruebas pasaron: guarda en un libro de evidencias la salida de los comandos que corrieron, atada al hash del árbol de git en el que corrieron, e invalida la evidencia cuando un archivo cambia. Esta sección extiende ese diseño al conocimiento del proyecto, y Finite Monkey ya lo implementa, la mayor parte en sombra; el Cuadro 5 dice lo que quedó fuera. El principio se toma de los sistemas de build: una afirmación sobre el código es una tarea de build cuya salida es "¿sigue siendo verdad?", y cuyas entradas son el contenido de los fragmentos que describe. Los sistemas de build con *traces* verificados guardan el hash de las entradas de cada tarea y solo la rehacen cuando este cambia (MOKHOV; MITCHELL; PEYTON JONES, 2018). Aplicado al conocimiento, esto transforma la obsolescencia, de opinión del modelo, en cómputo.
 
 De ahí se siguen cuatro reglas de diseño. La máquina guarda, invalida y verifica. La persona entiende y decide. El modelo entra solo donde lo determinista no alcanza. Y ningún fragmento de memoria ocupa el contexto sin probar, mediante medición, que ayuda. La Figura 2 contrasta el ciclo de una nota común con el de una afirmación anclada.
 
@@ -421,7 +421,7 @@ La Figura 4 muestra la escalera de recuperación con el costo de cada peldaño.
 
 ### 11.4 La persona, no el resumen
 
-Nada de lo dicho hasta aquí hace que la persona entienda el proyecto. Hace que el agente se equivoque menos. La sección 7.4 y el ensayo sobre el Efecto Rebote apuntan en la misma dirección: la persona solo juzga lo que logra juzgar, y lo que lee sin generar no se convierte en entendimiento (FLORES, 2026). Tres mecanismos se ocupan de esto. Los tres son hipótesis y solo entran como brazo, con consentimiento.
+Nada de lo dicho hasta aquí hace que la persona entienda el proyecto. Hace que el agente se equivoque menos. La sección 7.4 y el ensayo sobre el Efecto Rebote apuntan en la misma dirección: la persona solo juzga lo que logra juzgar, y lo que lee sin generar no se convierte en entendimiento (FLORES, 2026). Tres mecanismos se ocupan de esto, y el efecto de los tres es hipótesis. El registro de decisión está activo por defecto; el mapa de quién sabe qué corre en sombra y solo actúa con consentimiento; la verificación por *teach-back* todavía no se ha implementado.
 
 **La frase de la decisión.** Cuando una tarea se cierra con un cambio de dependencia, de proveedor o de arquitectura, Finite Monkey arma el registro de decisión sin modelo, a partir del libro de evidencias: el contrato y su hash, las alternativas consideradas, los criterios escritos antes de los candidatos, las evidencias en verde y el costo medido. Después completa el resultado: si hubo reversión en siete días, incidentes, regresiones. La única parte que escribe la persona es una frase: por qué eligió. Sin ella, el registro aparece como "sin razón", y la razón no se inventa. El formato sigue el registro de decisión de arquitectura (NYGARD, 2011); la frase escrita por la persona usa el efecto de generación en lugar de una razón escrita por el modelo y leída por ella (SLAMECKA; GRAF, 1978), y ataca directamente la deuda de intención (STOREY, 2026).
 
@@ -433,16 +433,18 @@ Nada de lo dicho hasta aquí hace que la persona entienda el proyecto. Hace que 
 
 | Pregunta (sección 9) | Mecanismo | Base en Finite Monkey | Situación |
 |---|---|---|---|
-| ¿Cuál es el mecanismo real? | Afirmaciones con tipo (*check* o *prose*) y origen declarado | Contratos, *gate*, libro de evidencias | Propuesta; evidencia fuerte para el tipo *check* |
-| ¿Cuál es el presupuesto de tokens? | Escalera de recuperación con presupuesto por peldaño; contexto mínimo | Mapa del repositorio en caché por hash, *onboard* | Propuesta; orden de la escalera con evidencia mixta |
-| ¿Cuál es la estrategia contra la alucinación? | Ancla por hash, retracción encadenada, texto generado como caché | Libro de evidencias atado al hash del árbol | Propuesta; necesidad con evidencia, calibración por medir |
-| ¿Cuál es la calidad de la entrada? | Cuarentena por origen; detector de contradicciones | *doctor*, registro de instrucciones y de violaciones | Propuesta; amenaza con evidencia |
-| ¿Cuál es el contrafactual? | Cada artefacto de memoria como brazo A/B | Brazos de experimento, reglas en sombra | Propuesta; poder estadístico local por confirmar |
-| ¿El sistema confunde contexto con memoria? | Frase de la decisión, *teach-back*, mapa de quién sabe qué | Perfil, libro de conceptos, sondas | Hipótesis; solo en brazo, con consentimiento |
+| ¿Cuál es el mecanismo real? | Afirmaciones con tipo (*check* o *prose*) y origen declarado | Contratos, *gate*, libro de evidencias | Implementado, en sombra hasta ser medido; evidencia fuerte para el tipo *check* |
+| ¿Cuál es el presupuesto de tokens? | Escalera de recuperación con presupuesto por peldaño; contexto mínimo | Mapa del repositorio en caché por hash, *onboard* | Implementado; el último peldaño queda en sombra y sin proveedor por defecto; orden de la escalera con evidencia mixta |
+| ¿Cuál es la estrategia contra la alucinación? | Ancla por hash, retracción encadenada, texto generado como caché | Libro de evidencias atado al hash del árbol | Parcial, en sombra: el bloque del AGENTS.md todavía no se trata como caché; necesidad con evidencia, calibración por medir |
+| ¿Cuál es la calidad de la entrada? | Cuarentena por origen; detector de contradicciones | *doctor*, registro de instrucciones y de violaciones | Implementado; la promoción de afirmaciones del agente queda en sombra; amenaza con evidencia |
+| ¿Cuál es el contrafactual? | Cada artefacto de memoria como brazo A/B | Brazos de experimento, reglas en sombra | Parcial: solo las afirmaciones y los aprendizajes se vuelven brazo; el bloque del AGENTS.md, el CLAUDE.md y la memoria automática quedan fuera; poder estadístico local por confirmar |
+| ¿El sistema confunde contexto con memoria? | Frase de la decisión, *teach-back*, mapa de quién sabe qué | Perfil, libro de conceptos, sondas | Parcial: registro de decisión activo, mapa en sombra y solo con consentimiento, *teach-back* no implementado; el efecto es hipótesis |
 
 Fuente: elaboración propia (2026).
 
-La Figura 5 muestra el mapa de quién sabe qué tal como aparece en el panel.
+Los mecanismos salieron en la versión 0.1.0-next.41 de Finite Monkey. Ninguno tuvo su efecto medido: la bancada todavía no corrió los brazos que dirían si alguno ayuda.
+
+La Figura 5 muestra el mapa de quién sabe qué. En Finite Monkey sale del comando `knowledge map`, todavía sin panel.
 
 ![Figura 5](figures/es/fig5.svg)
 
@@ -468,7 +470,7 @@ La recomendación práctica sigue siendo simple: antes de poner un LLM sobre una
 
 ## Conflicto de intereses
 
-El autor es el creador de Finite Monkey, software de código abierto distribuido bajo la licencia Apache 2.0, descrito en la sección 11. El proyecto no tiene fines comerciales a la fecha de esta versión. Las secciones 1 a 10 no dependen del software. Los mecanismos de la sección 11 son propuestas e hipótesis, no resultados.
+El autor es el creador de Finite Monkey, software de código abierto distribuido bajo la licencia Apache 2.0, descrito en la sección 11. El proyecto no tiene fines comerciales a la fecha de esta versión. Las secciones 1 a 10 no dependen del software. Los mecanismos de la sección 11 están implementados, la mayor parte en sombra, pero su efecto todavía no se ha medido: son hipótesis, no resultados.
 
 ## Disponibilidad de datos de investigación
 

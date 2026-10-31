@@ -2,9 +2,7 @@
 
 English | [Português (Brasil)](faq.pt-BR.md) | [Español](faq.es.md)
 
-> **Early versions.** Finite Monkey installs through npm's `next` channel (`npx finitemonkey@next init`); there is no stable version yet. Every answer below says what you can do today with Claude Code alone, and what Finite Monkey adds. Whether it helps is not measured yet: the benchmark has not been run.
-
-Each question is a search people actually type, taken from issue titles in [anthropics/claude-code](https://github.com/anthropics/claude-code/issues) and from Hacker News threads, checked on 2026-10-25.
+> **Early versions.** Finite Monkey installs through npm's `next` channel (`npx finitemonkey@next init`); there is no stable version yet.
 
 ## Why does Claude Code say it's done when it isn't?
 
@@ -60,7 +58,7 @@ Turn each rule into the cheapest mechanism that can check it. A rule like "never
 Scan for secrets at more than one point, because a key can leak through a written file, a prompt, a commit, history or a pull request. [anthropics/claude-code#2142](https://github.com/anthropics/claude-code/issues/2142) is one report of API keys reaching version control.
 
 - **Today:** a pre-commit secret scanner (gitleaks is a common choice), GitHub secret scanning with push protection, and a `PreToolUse` hook or deny rule that keeps the agent from reading `.env` files.
-- **In Finite Monkey:** one detection rule applied when files are written, in prompts, at commit time, in history and in CI. A secret found is treated as an incident to rotate. Secrets are reported by file and line, never by value. It reduces the risk; it cannot promise that nothing ever leaks.
+- **In Finite Monkey:** one detection rule applied when files are written, in prompts, at commit time, in history and in CI. A secret found is treated as an incident to rotate. Secrets are reported by file and line, never by value.
 
 ## How do I stop an AI agent from touching a production server?
 
@@ -86,7 +84,7 @@ Yes. A `Stop` hook can run your test command and, if it fails, block the stop wi
 
 Yes, several, and some are good at one job. tdd-guard enforces test-first edits; cc-safety-net and dcg block destructive shell and git commands. Methods like Superpowers, GSD and Spec Kit add process. The [comparison page](compare.md) lists what each one enforces by mechanism and what it leaves to prose, with sources.
 
-- **In Finite Monkey:** it covers four damages (false "done", leaked secrets, hand edits to production, lost git work) with one gate, one install and one `undo`. Whether that beats a single guard for you is what the benchmark is for, and it has not been run yet.
+- **In Finite Monkey:** it covers four damages (false "done", leaked secrets, hand edits to production, lost git work) with one gate, one install and one `undo`.
 
 ## Does it work with tools that switch Claude Code accounts when a limit hits?
 

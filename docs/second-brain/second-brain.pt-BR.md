@@ -4,7 +4,7 @@
 NovusTec, São Paulo, SP, Brasil
 gabrielvieira.ifsc@gmail.com · ORCID [0009-0000-2613-8284](https://orcid.org/0009-0000-2613-8284)
 
-Versão 2, outubro de 2026 (versão 1: abril de 2026). [English](second-brain.md) | Português (Brasil) | [Español](second-brain.es.md)
+Versão 2.1, outubro de 2026 (versão 1: abril de 2026). [English](second-brain.md) | Português (Brasil) | [Español](second-brain.es.md)
 
 > Este ensaio é a segunda base teórica do [Finite Monkey](../../README.pt-BR.md), ao lado do ensaio [Efeito Ricochete](../ricochet/ricochet.pt-BR.md). As seções 1 a 9 analisam o "segundo cérebro" pessoal feito com LLM e propõem um roteiro de avaliação. A seção 10 reúne o que já foi medido sobre a versão de projeto e de empresa dessa ideia, em que arquivos de contexto e memórias são escritos para agentes de programação. A seção 11 mostra o que o Finite Monkey faz com o conhecimento de um projeto a partir dessa evidência e o que ainda é hipótese a medir.
 
@@ -375,7 +375,7 @@ Fonte: elaboração própria (2026), com base nos estudos citados.
 
 As seções anteriores apontam três razões pelas quais o segundo cérebro falha, tanto o pessoal quanto o de projeto. O conhecimento escrito **envelhece sem que ninguém saiba**, porque nada liga a nota ao que ela descreve. **Não se sabe de onde veio** cada afirmação, e o modelo, ao compilar sínteses de sínteses, mistura fonte com derivado. E a pessoa **terceiriza o entendimento**, lendo um resumo bem escrito que alimenta a ilusão de que entendeu (ROZENBLIT; KEIL, 2002).
 
-O Finite Monkey já resolve um problema com a mesma forma. Seu *gate* não aceita a palavra do agente de que os testes passaram: guarda num livro de evidências a saída dos comandos que rodaram, presa ao hash da árvore do git em que rodaram, e invalida a evidência quando um arquivo muda. A proposta desta seção é estender esse desenho ao conhecimento do projeto. O princípio é tomado dos sistemas de build: uma afirmação sobre o código é uma tarefa de build cuja saída é "ainda é verdade?", e cujas entradas são o conteúdo dos trechos que ela descreve. Sistemas de build com *traces* verificados guardam o hash das entradas de cada tarefa e só a refazem quando ele muda (MOKHOV; MITCHELL; PEYTON JONES, 2018). Aplicado ao conhecimento, isso transforma a obsolescência de opinião do modelo em computação.
+O Finite Monkey já resolve um problema com a mesma forma. Seu *gate* não aceita a palavra do agente de que os testes passaram: guarda num livro de evidências a saída dos comandos que rodaram, presa ao hash da árvore do git em que rodaram, e invalida a evidência quando um arquivo muda. Esta seção estende esse desenho ao conhecimento do projeto, e o Finite Monkey já o implementa, a maior parte em sombra; o Quadro 5 diz o que ficou de fora. O princípio é tomado dos sistemas de build: uma afirmação sobre o código é uma tarefa de build cuja saída é "ainda é verdade?", e cujas entradas são o conteúdo dos trechos que ela descreve. Sistemas de build com *traces* verificados guardam o hash das entradas de cada tarefa e só a refazem quando ele muda (MOKHOV; MITCHELL; PEYTON JONES, 2018). Aplicado ao conhecimento, isso transforma a obsolescência de opinião do modelo em computação.
 
 Daí seguem quatro regras de desenho. A máquina guarda, invalida e verifica. A pessoa entende e decide. O modelo entra só onde o determinístico não basta. E nenhum pedaço de memória ocupa o contexto sem provar, por medição, que ajuda. A Figura 2 contrasta o ciclo de uma nota comum com o de uma afirmação ancorada.
 
@@ -421,7 +421,7 @@ A Figura 4 mostra a escada de recuperação com o custo de cada degrau.
 
 ### 11.4 A pessoa, não o resumo
 
-Nada do que foi dito até aqui faz a pessoa entender o projeto. Faz o agente errar menos. A seção 7.4 e o ensaio sobre o Efeito Ricochete apontam na mesma direção: a pessoa só julga o que consegue julgar, e o que ela lê sem gerar não vira entendimento (FLORES, 2026). Três mecanismos tratam disso. Os três são hipóteses e só entram como braço, com consentimento.
+Nada do que foi dito até aqui faz a pessoa entender o projeto. Faz o agente errar menos. A seção 7.4 e o ensaio sobre o Efeito Ricochete apontam na mesma direção: a pessoa só julga o que consegue julgar, e o que ela lê sem gerar não vira entendimento (FLORES, 2026). Três mecanismos tratam disso, e o efeito dos três é hipótese. O registro de decisão está ligado por padrão; o mapa de quem sabe o quê roda em sombra e só age com consentimento; a conferência por *teach-back* ainda não foi implementada.
 
 **A frase da decisão.** Quando uma tarefa fecha com mudança de dependência, de fornecedor ou de arquitetura, o Finite Monkey monta o registro de decisão sem modelo, a partir do livro de evidências: o contrato e seu hash, as alternativas consideradas, os critérios escritos antes dos candidatos, as evidências verdes e o custo medido. Depois preenche o resultado: se houve reversão em sete dias, incidentes, regressões. A única parte que a pessoa escreve é uma frase: por que escolheu. Sem ela, o registro aparece como "sem razão", e a razão não é inventada. O formato segue o registro de decisão de arquitetura (NYGARD, 2011); a frase escrita pela pessoa usa o efeito de geração no lugar de uma razão escrita pelo modelo e lida por ela (SLAMECKA; GRAF, 1978), e ataca diretamente a dívida de intenção (STOREY, 2026).
 
@@ -433,16 +433,18 @@ Nada do que foi dito até aqui faz a pessoa entender o projeto. Faz o agente err
 
 | Pergunta (seção 9) | Mecanismo | Base no Finite Monkey | Situação |
 |---|---|---|---|
-| Qual é o mecanismo real? | Afirmações com tipo (*check* ou *prose*) e origem declarada | Contratos, *gate*, livro de evidências | Proposta; evidência forte para o tipo *check* |
-| Qual é o orçamento de tokens? | Escada de recuperação com orçamento por degrau; contexto mínimo | Mapa do repositório cacheado por hash, *onboard* | Proposta; ordem da escada com evidência mista |
-| Qual é a estratégia contra alucinação? | Âncora por hash, retração encadeada, texto gerado como cache | Livro de evidências preso ao hash da árvore | Proposta; necessidade com evidência, calibragem a medir |
-| Qual é a qualidade da entrada? | Quarentena por origem; detector de contradição | *doctor*, registro de instruções e de violações | Proposta; ameaça com evidência |
-| Qual é o contrafactual? | Cada artefato de memória como braço A/B | Braços de experimento, regras em sombra | Proposta; poder estatístico local a confirmar |
-| O sistema confunde contexto com memória? | Frase da decisão, *teach-back*, mapa de quem sabe o quê | Perfil, livro de conceitos, sondas | Hipótese; só em braço, com consentimento |
+| Qual é o mecanismo real? | Afirmações com tipo (*check* ou *prose*) e origem declarada | Contratos, *gate*, livro de evidências | Implementado, em sombra até ser medido; evidência forte para o tipo *check* |
+| Qual é o orçamento de tokens? | Escada de recuperação com orçamento por degrau; contexto mínimo | Mapa do repositório cacheado por hash, *onboard* | Implementado; o último degrau fica em sombra e sem provedor por padrão; ordem da escada com evidência mista |
+| Qual é a estratégia contra alucinação? | Âncora por hash, retração encadeada, texto gerado como cache | Livro de evidências preso ao hash da árvore | Parcial, em sombra: o bloco do AGENTS.md ainda não é tratado como cache; necessidade com evidência, calibragem a medir |
+| Qual é a qualidade da entrada? | Quarentena por origem; detector de contradição | *doctor*, registro de instruções e de violações | Implementado; a promoção de afirmações do agente fica em sombra; ameaça com evidência |
+| Qual é o contrafactual? | Cada artefato de memória como braço A/B | Braços de experimento, regras em sombra | Parcial: só as afirmações e os aprendizados viram braço; o bloco do AGENTS.md, o CLAUDE.md e a memória automática ficam de fora; poder estatístico local a confirmar |
+| O sistema confunde contexto com memória? | Frase da decisão, *teach-back*, mapa de quem sabe o quê | Perfil, livro de conceitos, sondas | Parcial: registro de decisão ligado, mapa em sombra e só com consentimento, *teach-back* não implementado; efeito é hipótese |
 
 Fonte: elaboração própria (2026).
 
-A Figura 5 mostra o mapa de quem sabe o quê como ele aparece no painel.
+Os mecanismos saíram na versão 0.1.0-next.41 do Finite Monkey. Nenhum teve o efeito medido: a bancada ainda não rodou os braços que diriam se algum deles ajuda.
+
+A Figura 5 mostra o mapa de quem sabe o quê. No Finite Monkey ele sai do comando `knowledge map`, ainda sem painel.
 
 ![Figura 5](figures/pt-BR/fig5.svg)
 
@@ -468,7 +470,7 @@ A recomendação prática continua simples: antes de pôr um LLM sobre uma base 
 
 ## Conflito de interesses
 
-O autor é o criador do Finite Monkey, software de código aberto distribuído sob a licença Apache 2.0, descrito na seção 11. O projeto não tem fins comerciais na data desta versão. As seções 1 a 10 não dependem do software. Os mecanismos da seção 11 são propostas e hipóteses, não resultados.
+O autor é o criador do Finite Monkey, software de código aberto distribuído sob a licença Apache 2.0, descrito na seção 11. O projeto não tem fins comerciais na data desta versão. As seções 1 a 10 não dependem do software. Os mecanismos da seção 11 estão implementados, a maior parte em sombra, mas o efeito deles ainda não foi medido: são hipóteses, não resultados.
 
 ## Disponibilidade de dados de pesquisa
 

@@ -10,21 +10,17 @@
 
 <p align="center">
   <img src="assets/finitemonkey.gif" width="720" alt="Animação: um macaco de moletom amarelo esmurra o teclado de um notebook enquanto um terminal roda o portão. As verificações que falham ficam verdes e travam uma a uma até aparecer actually done, e o macaco comemora com uma banana.">
-  <br>
-  <sub>Ilustração. A gravação abaixo é a ferramenta de verdade.</sub>
 </p>
 
 <p align="center">
   <img src="assets/gate.gif" width="720" alt="Gravação de uma sessão do Claude Code. Pedem para ele somar um cupom ao carrinho sem rodar os testes; ele roda o portão mesmo assim, vê o teste total rounds to cents falhar, arredonda o resultado e roda de novo. O hook de Stop então informa: portão verde, 10 checagens passaram nesta árvore.">
-  <br>
-  <sub>Gravação real, finitemonkey 0.1.0-next.27 com Claude Code 2.1.283, acelerada 1,3×. Fonte: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **Infinitos macacos não são necessários. Um basta: você.**
 
 [English](README.md) | Português (Brasil) | [Español](README.es.md)
 
-> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm (0.1.0-next.40 quando isto foi escrito; o selo lá em cima mostra a atual). O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
+> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm. O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
 
 Eu sei como é. Com o advento da IA, muita coisa mudou.
 
@@ -48,7 +44,7 @@ Um macaco. Tempo finito. Trabalho que sai de verdade.
 
 ## O Claude Code diz que terminou, mas não terminou
 
-Esse é o principal problema que o Finite Monkey quer resolver. O que ele faz:
+O que ele faz:
 
 - Cada tarefa ganha uma **definição de pronto** que a máquina consegue checar: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo.
 - Quando o Claude tenta encerrar a sessão, o hook `Stop` roda essa checagem. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
@@ -123,9 +119,9 @@ O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha 
 
 O segundo ensaio, [A ilusão do segundo cérebro](docs/second-brain/second-brain.pt-BR.md), trata do conhecimento do projeto: por que "segundo cérebro" com LLM e arquivos de contexto envelhecem sem aviso e quase não ajudam o agente, segundo os estudos disponíveis, e como o Finite Monkey propõe tratar cada afirmação sobre o código como artefato de build, presa ao hash do trecho que descreve e verificada por execução.
 
-## Funciona de verdade? (benchmark, ainda não rodado)
+## Funciona de verdade?
 
-Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório, inclusive onde não ajudou.
+Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório.
 
 <!-- generated:evidence:start -->
 Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.41 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
@@ -146,7 +142,7 @@ A comparação completa, com fontes, está em [docs/compare.pt-BR.md](docs/compa
 
 - **O Claude Code puro** já tem hooks e permissões. O Finite Monkey é um conjunto deles, amarrado em torno de uma definição de pronto, com testes.
 - **Métodos como superpowers, GSD, Spec Kit ou OpenSpec** dizem ao agente como planejar e construir. O Finite Monkey não substitui nenhum deles: confere o resultado no fim, seja qual for o método.
-- **Guardas avulsos como tdd-guard, cc-safety-net ou dcg** fazem um trabalho cada um, e bem. O Finite Monkey cobre quatro danos com um portão, uma instalação e um `undo`. Se você só precisa de um desses trabalhos, um guarda avulso pode ser a escolha mais simples.
+- **Guardas avulsos como tdd-guard, cc-safety-net ou dcg** fazem um trabalho cada um, e bem. O Finite Monkey cobre quatro danos com um portão, uma instalação e um `undo`.
 
 <!-- generated:defaults:start -->
 ## Padrões e a evidência de cada um
@@ -249,7 +245,7 @@ O plugin também carrega um mod: um módulo de hooks que o Claude Code 2.1.287 o
 
 ## Perguntas frequentes
 
-Mais perguntas, uma para cada busca real, em [docs/faq.pt-BR.md](docs/faq.pt-BR.md).
+Mais perguntas em [docs/faq.pt-BR.md](docs/faq.pt-BR.md).
 
 **É um prompt?**
 Não. São hooks e checagens que rodam lembrando o modelo ou não.
@@ -258,7 +254,7 @@ Não. São hooks e checagens que rodam lembrando o modelo ou não.
 Não. Seu código nunca sai da sua máquina, e não há telemetria. Sem você pedir, ele faz dois tipos de chamada de rede: o `gh` perguntando ao GitHub sobre pull requests, só quando o `gh` está logado, e o nome de um pacote enviado ao registro do npm ou do PyPI quando um comando vai acrescentar um pacote que o projeto não declara. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
 
 **Vai me deixar mais lento?**
-Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](budgets.json). Os tempos de ponta a ponta saem junto com o benchmark.
+Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](budgets.json).
 
 **E se ele barrar algo que não devia?**
 Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é tratado como bug e contado em público.
@@ -309,4 +305,4 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md). Agentes e pessoas que alteram este repo
 
 ## Licença
 
-[Apache-2.0](LICENSE), por Gabriel Vieira. A licença não dá direito ao nome nem ao logo "Finite Monkey".
+[Apache-2.0](LICENSE)
