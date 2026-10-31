@@ -12,7 +12,8 @@ export interface BenchArgs {
   readonly arms: readonly string[] | undefined;
   readonly only: string | undefined;
   readonly model: string;
-  readonly maxBudgetUsd: number;
+  readonly maxBudgetUsd: number | undefined;
+  readonly phase: string | undefined;
   readonly configDir: string | undefined;
   readonly out: string | undefined;
   readonly heldout: string | undefined;
@@ -28,6 +29,7 @@ const OPTIONS = {
   only: { type: "string" },
   model: { type: "string" },
   "max-budget-usd": { type: "string" },
+  phase: { type: "string" },
   "config-dir": { type: "string" },
   out: { type: "string" },
   heldout: { type: "string" },
@@ -49,8 +51,14 @@ export const parseBenchArgs = (argv: readonly string[]): Parsed<BenchArgs> => {
   if (seed === undefined) return reject("--seed <whole number> is required, so the run can be reproduced");
   const repeats = wholeNumber(values.repeats, 3);
   if (repeats === undefined || repeats < 1) return reject("--repeats must be a whole number of at least 1");
-  const budget = Number.parseFloat(values["max-budget-usd"] ?? "2");
-  if (!Number.isFinite(budget) || budget <= 0) return reject("--max-budget-usd must be a positive number");
+  const budgetText = values["max-budget-usd"];
+  const budget = budgetText === undefined ? undefined : Number.parseFloat(budgetText);
+  if (budget !== undefined && (!Number.isFinite(budget) || budget <= 0)) {
+    return reject("--max-budget-usd must be a positive number");
+  }
+  if (values.phase !== undefined && [values.tasks, values.arms, values.repeats].some((value) => value !== undefined)) {
+    return reject("--phase sets the tasks, arms and repeats; drop --tasks, --arms and --repeats");
+  }
   return accept({
     seed,
     repeats,
@@ -59,6 +67,7 @@ export const parseBenchArgs = (argv: readonly string[]): Parsed<BenchArgs> => {
     only: values.only,
     model: values.model ?? "sonnet",
     maxBudgetUsd: budget,
+    phase: values.phase,
     configDir: values["config-dir"],
     out: values.out,
     heldout: values.heldout,
@@ -74,6 +83,7 @@ export interface RealRunCheck {
   readonly unpinned: readonly string[];
   readonly configDir: string | undefined;
   readonly configHasInstructions: boolean;
+  readonly overCap?: string;
 }
 
 export const realRunProblems = (check: RealRunCheck): readonly string[] => [
@@ -86,7 +96,10 @@ export const realRunProblems = (check: RealRunCheck): readonly string[] => [
   ...check.unpinned.map((arm) => `arm ${arm} has no pinned sha in bench/arms/${arm}.json`),
   ...(check.configDir === undefined ? ["--config-dir <dir> with a logged-in Claude Code config is required"] : []),
   ...(check.configHasInstructions ? ["the config dir has a CLAUDE.md; the bench runs without user instructions"] : []),
+  ...(check.overCap === undefined ? [] : [check.overCap]),
 ];
+
+export const DEFAULT_MAX_BUDGET_USD = 2;
 
 export const estimate = (sessions: number, maxBudgetUsd: number, turnsPerSession = 1): string =>
   `${String(sessions)} sessions of up to ${String(turnsPerSession)} turns, at most US$ ${(sessions * turnsPerSession * maxBudgetUsd).toFixed(2)} at --max-budget-usd ${maxBudgetUsd.toFixed(2)} per turn`;

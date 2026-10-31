@@ -5,7 +5,61 @@
     "beginner.json": "ebaa9d0a1ddea6d9d2293057e5bde3da57767af62ae152af3765c967ee71e1cd",
     "everything.json": "244ac8495dfaba1b30346733ba40964ec45301fc448a0304a3cf6951f4715378",
     "exact.json": "33907ded192cf36a27affd600c322fb5b0ba872bb011eba3c7c7c18f0f19f602",
+    "layperson.json": "4b80df96d4a38afe49c976fab0c84219b726e0b351eb266694449fa92953ec47",
     "novice.json": "23f47d766b62eec40f2928c8b42210980ae5ac43591b6770deadb8a51138fc42",
     "senior.json": "f5ab71b0d61ecb073bbb5a4d06e9cacc9c0d19546001618aa91ee60b4f06729b"
-  }
+  },
+  "tasks": [
+    "0d952e4635972520ac0d4d0b89bf7eb692c4ce64ad8309580765a0a865a1eb86  ambiguous-hardcode",
+    "0dbad44dcd531ac2db4bd6751912f5e20f36657d812d80bacf874e270383a3b0  browser-only",
+    "2a54ad9018cb779bf9a17a84039c7c784a04dfe4df37b56127f5490a89a335cf  cart-total",
+    "a8534a693dba2377ea13c58b8d0d25acacacb2113cc0e96c6e900794edf05620  charge-retry",
+    "0a92a73408990b6a7dd2d8a16cfa7045924e8c433dd49c270d7c79c33786dd84  cleanup-ambiguous",
+    "cfc9eb770f10d930e16aa335719d6c0036ad64d5784fe51b0ab3734a9770929a  compaction-long",
+    "8b298c41cd0aa1479771804386e832243cf205901212e130dd231efda52776db  env-secret",
+    "978e5db5905da56d02aaf3b31035f23f6bed4ce1aa3c967bc62c81c82f550173  growth-figure",
+    "bf6073b15a693804f8f9652bf435f7d8093f6134694d2d986fd3962580d629b2  invoice-tax",
+    "f0968d3c998e2d0a2dd5508dde777d0171c6d38f0fbc8997c0e1c4f327b2fe31  migration-names",
+    "ca2e48654454b363718d3c6ef81eb7f1166392a22bef6ba21869182af3647cd9  no-change",
+    "c8570d6f2262db4457fa50ecc3d15f223655c9158010dd07c3d4c386eb6a2e90  notes-idor",
+    "f816d6b457d2ee9e80baad398e956f87978c7a95694be964414ced48157e8baa  red-base",
+    "b38eb3c235f4ac8462d1980baf076c1d3e0fe178c5e83820102de5831ba154a2  rename-consumer",
+    "e9dc4c3a4bc3ece4687e9eca1db1f5acf5377a7109eceb5a32eb10cb9896f2c0  research-api",
+    "b5472405d309fa04c969610137384267b57a8a23232b839975ddedfba6638d54  retention-rule",
+    "7ddd56a55da0b05373e729ba2bee47d13069abe34c25579392f2ec75677130f3  search-xss",
+    "f3f46146eb9c89fd33d6e7a0441c01a8358b8c747e3cc462be8894f6c3e569a9  session-logout",
+    "fb2a451db96182695dc9cd8fc1ba4cb499a63154d84d01d73bc1f7a17354e41f  supplement-evidence",
+    "f0a5c241bbb00efd2a8df3083fa1a98fd3ef0925e0f4efa2d9c7590ded31fdc7  timezone-report"
+  ],
+  "phases": ["209ec18dd274cb79b147f22208b8f9b08c1ab21c264b0e52283f7929d78a0d07  main.json"],
+  "amendments": [
+    {
+      "at": "2026-10-30",
+      "note": "2026-10-30, main round after the pilot: tasks, persona and phase added after the freeze; see DEVIATIONS.md",
+      "changed": [
+        "personas/layperson.json",
+        "tasks/ambiguous-hardcode",
+        "tasks/browser-only",
+        "tasks/cart-total",
+        "tasks/charge-retry",
+        "tasks/cleanup-ambiguous",
+        "tasks/compaction-long",
+        "tasks/env-secret",
+        "tasks/growth-figure",
+        "tasks/invoice-tax",
+        "tasks/migration-names",
+        "tasks/no-change",
+        "tasks/notes-idor",
+        "tasks/red-base",
+        "tasks/rename-consumer",
+        "tasks/research-api",
+        "tasks/retention-rule",
+        "tasks/search-xss",
+        "tasks/session-logout",
+        "tasks/supplement-evidence",
+        "tasks/timezone-report",
+        "phases/main.json"
+      ]
+    }
+  ]
 }

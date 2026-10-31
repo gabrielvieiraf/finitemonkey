@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { JsonObject } from "../src/core/parsed.js";
@@ -16,7 +16,12 @@ export interface BenchTask {
   readonly materialize: (workdir: string, taskSeed: number) => void;
   readonly evaluate?: (workdir: string, taskSeed: number, transcript: string) => JsonObject;
   readonly followUp?: (transcript: string, turn: number, taskSeed: number) => string | undefined;
+  readonly onboard?: (workdir: string, at: string) => boolean;
+  readonly instruments?: (fmDir: string | undefined) => JsonObject;
 }
+
+export const ONBOARDING = ["none", "self-report"] as const;
+export type Onboarding = (typeof ONBOARDING)[number];
 
 export interface RunOutcome {
   readonly exitCode: number | null;
@@ -34,6 +39,8 @@ export interface HarnessDeps {
   readonly tempRoot: () => string;
   readonly insideRepo: (dir: string) => boolean;
   readonly now: () => string;
+  readonly settle?: (workdir: string) => Promise<void>;
+  readonly inspect?: (arm: Arm, workdir: string, outDir: string) => void;
 }
 
 export interface HarnessConfig {
@@ -47,6 +54,9 @@ export interface HarnessConfig {
   readonly tasks: readonly BenchTask[];
   readonly arms: readonly Arm[];
   readonly only?: string;
+  readonly runs?: readonly PlannedRun[];
+  readonly onboard?: Onboarding;
+  readonly phase?: string;
 }
 
 export interface RunRecord extends JsonObject {
@@ -65,21 +75,31 @@ const removeRunFolder = (root: string): void => {
 };
 
 export const schedule = (
-  config: Pick<HarnessConfig, "tasks" | "arms" | "repeats" | "seed" | "only">,
+  config: Pick<HarnessConfig, "tasks" | "arms" | "repeats" | "seed" | "only" | "runs">,
 ): readonly PlannedRun[] =>
-  plan({
-    tasks: config.tasks.map((task) => task.id),
-    arms: config.arms.map((arm) => arm.id),
-    repeats: config.repeats,
-    seed: config.seed,
-  }).filter((run) => config.only === undefined || run.id === config.only);
+  (
+    config.runs ??
+    plan({
+      tasks: config.tasks.map((task) => task.id),
+      arms: config.arms.map((arm) => arm.id),
+      repeats: config.repeats,
+      seed: config.seed,
+    })
+  ).filter((run) => config.only === undefined || run.id === config.only);
 
 const readIfAny = (path: string): string => (existsSync(path) ? readFileSync(path, "utf8") : "");
 
-const prepare = (task: BenchTask, arm: Arm, run: PlannedRun, root: string): string => {
+const prepare = (
+  task: BenchTask,
+  arm: Arm,
+  run: PlannedRun,
+  root: string,
+  onboard: { readonly mode: Onboarding; readonly at: string },
+): string => {
   const workdir = join(root, "project");
   mkdirSync(workdir, { recursive: true });
   task.materialize(workdir, run.taskSeed);
+  if (arm.finitemonkey && onboard.mode === "self-report") task.onboard?.(workdir, onboard.at);
   const policy = policyYaml(arm);
   if (arm.finitemonkey && policy !== "") {
     const file = join(workdir, ".finitemonkey", "policy.yml");
@@ -101,6 +121,8 @@ const record = (
   return {
     schema: RUN_SCHEMA,
     run: run.id,
+    phase: config.phase ?? null,
+    onboard: arm.finitemonkey ? (config.onboard ?? "none") : null,
     task: run.task,
     arm: arm.id,
     armSha: arm.sha ?? null,
@@ -121,6 +143,14 @@ const record = (
     finishedAt: deps.now(),
     injection: checkInjection(arm, run.id, outcome.stdout, log),
   };
+};
+
+const collectState = (workdir: string, saved: string): string | undefined => {
+  const from = join(workdir, ".finitemonkey");
+  if (!existsSync(from)) return undefined;
+  const to = join(saved, "finitemonkey");
+  cpSync(from, to, { recursive: true });
+  return to;
 };
 
 const converse = async (
@@ -158,7 +188,7 @@ const runOne = async (
   const root = deps.tempRoot();
   try {
     if (deps.insideRepo(dirname(root))) throw new Error(`${root} is inside a git repository`);
-    const workdir = prepare(task, arm, run, root);
+    const workdir = prepare(task, arm, run, root, { mode: config.onboard ?? "none", at: deps.now() });
     const settingsPath = join(root, "settings.json");
     const plugin = deps.pluginFor(arm);
     const persist = task.followUp !== undefined;
@@ -178,13 +208,17 @@ const runOne = async (
     const invocation = invoke(task.prompt(run.taskSeed));
     writeFileSync(settingsPath, `${JSON.stringify(invocation.settings, null, 2)}\n`);
     const { outcome, followUps } = await converse(deps, task, run, invocation, invoke);
+    if (arm.finitemonkey) await deps.settle?.(workdir);
     const log = readIfAny(join(workdir, ".finitemonkey", "log.jsonl"));
     const saved = join(config.outDir, "runs", run.id);
     mkdirSync(saved, { recursive: true });
     writeFileSync(join(saved, "transcript.jsonl"), outcome.stdout);
     writeFileSync(join(saved, "log.jsonl"), log);
+    const fmDir = arm.finitemonkey ? collectState(workdir, saved) : undefined;
+    if (fmDir !== undefined) deps.inspect?.(arm, workdir, join(saved, "views"));
     const scored = task.evaluate?.(workdir, run.taskSeed, outcome.stdout) ?? {};
-    return { ...scored, ...record(config, deps, run, arm, outcome, log), followUps };
+    const instruments = arm.finitemonkey && task.instruments !== undefined ? task.instruments(fmDir) : null;
+    return { ...scored, ...record(config, deps, run, arm, outcome, log), followUps, instruments };
   } finally {
     removeRunFolder(root);
   }

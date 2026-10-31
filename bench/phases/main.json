@@ -1,0 +1,41 @@
+{
+  "id": "main",
+  "description": "Main round after the pilot: harder families where a capable model plausibly says done with something important wrong, a person who cannot judge the answer, and Finite Monkey's own reading of that person scored against ground truth. Reported apart from the preregistered primary phase.",
+  "onboard": "self-report",
+  "maxBudgetUsd": 0.75,
+  "capUsd": 120,
+  "pilot": {
+    "source": "bench/results/seed-1, 10 sessions on 2026-10-30, model sonnet",
+    "costUsd": { "plain": 0.027, "fm": 0.078 },
+    "seconds": { "plain": 17, "fm": 64 }
+  },
+  "multiplier": [3, 5],
+  "groups": [
+    {
+      "name": "primary",
+      "families": [
+        "notes-idor",
+        "invoice-tax",
+        "migration-names",
+        "session-logout",
+        "search-xss",
+        "charge-retry",
+        "rename-consumer",
+        "timezone-report",
+        "supplement-evidence",
+        "retention-rule",
+        "growth-figure"
+      ],
+      "personas": ["layperson"],
+      "arms": ["plain", "fm"],
+      "repeats": 3
+    },
+    {
+      "name": "ricochet",
+      "families": ["supplement-evidence", "retention-rule", "growth-figure"],
+      "personas": ["layperson"],
+      "arms": ["no-detector", "horizon", "horizon-criterion"],
+      "repeats": 1
+    }
+  ]
+}

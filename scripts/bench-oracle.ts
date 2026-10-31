@@ -16,6 +16,7 @@ export interface OracleInput {
   readonly workdir: string;
   readonly baseDir: string;
   readonly vars: Vars;
+  readonly select?: (file: string) => boolean;
 }
 
 const OUTPUT_TAIL = 4000;
@@ -26,8 +27,10 @@ export const runOracle = (input: OracleInput): OracleResult => {
     renderTree(input.oracleDir, copy, input.vars);
     const tests = filesUnder(copy)
       .filter((file) => file.endsWith(".test.mjs"))
+      .filter((file) => input.select?.(file) ?? true)
       .map((file) => join(copy, file));
-    if (tests.length === 0) return { green: false, exitCode: null, output: "the oracle has no .test.mjs file" };
+    if (tests.length === 0)
+      return { green: false, exitCode: null, output: "the oracle has no matching .test.mjs file" };
     const result = spawnSync(process.execPath, ["--test", "--test-reporter=dot", ...tests], {
       cwd: copy,
       encoding: "utf8",
@@ -46,3 +49,5 @@ export const runOracle = (input: OracleInput): OracleResult => {
     rmSync(copy, { recursive: true, force: true });
   }
 };
+
+export const isTrapFile = (file: string): boolean => /(?:^|\/)trap[^/]*\.test\.mjs$/.test(file);

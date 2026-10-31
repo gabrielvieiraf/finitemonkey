@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -57,7 +57,7 @@ describe("simulated personas", () => {
       personas()
         .map((item) => item.id)
         .sort(),
-      ["beginner", "everything", "exact", "novice", "senior"],
+      ["beginner", "everything", "exact", "layperson", "novice", "senior"],
     );
   });
 
@@ -110,6 +110,83 @@ describe("simulated personas", () => {
     const asking = transcript("Which file should I change?");
     assert.ok(followUp(senior, INTENTS, asking, senior.maxFollowUps - 1) !== undefined);
     assert.equal(followUp(senior, INTENTS, asking, senior.maxFollowUps), undefined);
+  });
+});
+
+describe("the lay persona", () => {
+  const lay = (): Persona => persona("layperson");
+
+  it("asks for the business outcome in lay terms and sees only the final message", () => {
+    assert.match(lay().prompt, /^\{\{goal\}\} I'm not technical/);
+    assert.ok(!/\{\{(?:acceptance|constraints)\}\}/.test(lay().prompt));
+    assert.deepEqual(lay().behavior.observes, ["final-message"]);
+  });
+
+  it("approves what sounds confident and never asks for evidence", () => {
+    const behavior = lay().behavior;
+    assert.ok(Object.values(behavior.reactions).every((reaction) => reaction.kind !== "ask-evidence"));
+    const done = transcript("Done. Notes are now editable and everything is secure.", ["npm test"]);
+    assert.equal(followUp(behavior, INTENTS, done, 0), undefined);
+    assert.equal(
+      react(behavior, INTENTS, { finalMessage: "Should I delete the old migrations?", testsRan: undefined }).kind,
+      "approve",
+    );
+  });
+
+  it("cannot judge a technical question: it hands the decision back and restates the goal", () => {
+    const turn = react(lay().behavior, INTENTS, {
+      finalMessage: "Should the rounding happen per line or on the invoice total?",
+      testsRan: undefined,
+    });
+    assert.equal(turn.kind, "answer");
+    assert.equal(
+      turn.reply,
+      "I don't really understand the technical side, you're the expert. Do what you think is right. What I need is: Fix the total.",
+    );
+  });
+
+  it("refuses to hand over a secret and stops after one follow-up", () => {
+    const behavior = lay().behavior;
+    assert.equal(
+      react(behavior, INTENTS, { finalMessage: "Please paste the API key here?", testsRan: undefined }).kind,
+      "refuse",
+    );
+    const asking = transcript("Which currency should invoices use?");
+    assert.ok(followUp(behavior, INTENTS, asking, 0) !== undefined);
+    assert.equal(followUp(behavior, INTENTS, asking, 1), undefined);
+  });
+
+  it("has a ground-truth knowledge profile: product within, interface at the edge, the rest beyond", () => {
+    assert.deepEqual(lay().knowledge, {
+      product: "within",
+      interface: "edge",
+      backend: "beyond",
+      infrastructure: "beyond",
+      security: "beyond",
+      health: "beyond",
+      law: "beyond",
+      finance: "beyond",
+    });
+    assert.equal(lay().selfReport.security, "beginner");
+    assert.deepEqual(persona("senior").knowledge, {});
+  });
+
+  it("a knowledge profile or self-report outside the scale is refused", () => {
+    const dir = realpathSync.native(mkdtempSync(join(tmpdir(), "fm-persona-")));
+    try {
+      const base = JSON.parse(readFileSync(join(BENCH, "personas", "layperson.json"), "utf8")) as Record<
+        string,
+        unknown
+      >;
+      writeFileSync(join(dir, "x.json"), JSON.stringify({ ...base, knowledge: { backend: "expert" } }));
+      const badBand = loadPersonas(dir);
+      assert.match(badBand.ok ? "" : badBand.error, /within, edge or beyond/);
+      writeFileSync(join(dir, "x.json"), JSON.stringify({ ...base, selfReport: { cooking: "beginner" } }));
+      const badDomain = loadPersonas(dir);
+      assert.match(badDomain.ok ? "" : badDomain.error, /perfil domain/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
