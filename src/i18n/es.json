@@ -546,6 +546,7 @@
   "gate.worktree.unavailable": "no se pudo leer el estado git del worktree",
   "gate.worktree.dirty": "archivos cambiados en esta sesión sin commit: {files}",
   "gate.worktree.unpushed": "{count, plural, one {# commit en {branch} existe solo en esta máquina} other {# commits en {branch} existen solo en esta máquina}}",
+  "gate.worktree.uncommitted": "archivos cambiados en esta sesión aún sin commit, y nadie pidió un commit: {files}",
   "gate.worktree.clean": "los cambios de la sesión tienen commit y están enviados",
   "gate.merge.unavailable": "no se pudieron leer las fusiones de la sesión",
   "gate.merge.unanalyzed": "la fusión {commit} no se pudo analizar: {detail}",
