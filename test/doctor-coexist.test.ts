@@ -6,14 +6,15 @@ import { toAbsolutePath } from "../src/core/brand.js";
 import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { checkCoexistence } from "../src/doctor/coexistence.js";
-import { hookInventory, withDebugLog } from "../src/doctor/hook-inventory.js";
+import { hookInventory, withDebugLog, withProbeLatency } from "../src/doctor/hook-inventory.js";
+import { runChecks } from "../src/doctor/run.js";
 import { createTask } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
 import { type Fixture, machine, PLUGIN_INDEX, settings, USER_SETTINGS } from "./doctor-support.js";
 import { FakeClaude, type Step } from "./fake-claude.js";
 import { memoryFs } from "./memory-fs.js";
 import { makeRepo, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
-import { BUNDLE, BUNDLE_TEXT, cli, cliJson, fakeRuntime, field, found } from "./support.js";
+import { BUNDLE, BUNDLE_TEXT, cli, cliJson, execResult, fakeRuntime, field, found } from "./support.js";
 
 const OTHER_ROOT = "/home/test/.claude/plugins/cache/acme/loop/1.0.0";
 
@@ -105,6 +106,18 @@ describe("doctor --hooks", () => {
     const ours = rows.filter((row) => row.ours && row.event === "PreToolUse");
     assert.ok(ours.length > 0);
     assert.ok(ours.every((row) => row.failMode === "fail-closed"));
+  });
+
+  it("fills our hooks' latency per event from the probe run when the debug log has none", () => {
+    const timed = { ...execResult(0, '{"continue":true}\n'), durationMs: 37 };
+    const env = machine({ exec: (request) => (request.args.includes("hook") ? timed : undefined) });
+    const rows = withProbeLatency(withDebugLog(hookInventory(env), undefined), runChecks(env));
+    const ours = rows.filter((row) => row.ours);
+    assert.ok(ours.length > 0);
+    assert.deepEqual([...new Set(ours.map((row) => row.latencyMs))], [37]);
+    const logged = withDebugLog(hookInventory(env), `[DEBUG] Hook Stop ${ours[0]?.command ?? ""} finished in 900ms\n`);
+    const kept = withProbeLatency(logged, runChecks(env)).find((row) => row.ours && row.event === "Stop");
+    assert.equal(kept?.latencyMs, 900);
   });
 
   it("prints the inventory and keeps it in --json, without touching another plugin's files", async () => {

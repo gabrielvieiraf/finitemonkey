@@ -4,7 +4,7 @@ import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, toEnvelope } from "../core/result.js";
 import { applyFixes, type Fixed } from "../doctor/fix.js";
-import { hookInventory, type HookRow, withDebugLog } from "../doctor/hook-inventory.js";
+import { hookInventory, type HookRow, withDebugLog, withProbeLatency } from "../doctor/hook-inventory.js";
 import { probeFindings, type ProbeResult, runProbe } from "../doctor/probe.js";
 import { reportMarkdown, reportPath } from "../doctor/report-file.js";
 import { buildReport, doctorEnvFrom, type DoctorItem, type DoctorReport, runChecks } from "../doctor/run.js";
@@ -115,8 +115,9 @@ const runDoctor = (
   }
   const env = doctorEnvFrom(ctx);
   const probed = probe ? runProbe(ctx.runtime, fmPaths(env.root)) : undefined;
-  const checked = buildReport(ctx, [...runChecks(env), ...(probe ? probeFindings(probed) : [])]);
-  const rows = hooks ? withDebugLog(hookInventory(env), debugLog(ctx)) : undefined;
+  const findings = runChecks(env);
+  const checked = buildReport(ctx, [...findings, ...(probe ? probeFindings(probed) : [])]);
+  const rows = hooks ? withProbeLatency(withDebugLog(hookInventory(env), debugLog(ctx)), findings) : undefined;
   const base: DoctorData = rows === undefined ? checked : { ...checked, hookInventory: rows };
   const withProbe: DoctorData = probed === undefined ? base : { ...base, probe: probed };
   const data: DoctorData = fixed === undefined ? withProbe : { ...withProbe, fixed };
