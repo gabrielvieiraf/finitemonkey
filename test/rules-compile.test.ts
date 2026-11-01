@@ -66,7 +66,8 @@ describe("rules coverage before and after compile", () => {
     const settings = fs.read(at(".claude/settings.json")) ?? "";
     assert.match(settings, /"Bash\(git push --force:\*\)"/);
     assert.match(settings, /finitemonkey:rules-presence/);
-    assert.match(fs.read(at("AGENTS.md")) ?? "", /- Never force push a shared branch \(rule no-force-push\)/);
+    assert.match(fs.read(at("AGENTS.md")) ?? "", /^@AGENTS\.rules\.md$/m);
+    assert.match(fs.read(at("AGENTS.rules.md")) ?? "", /- Never force push a shared branch \(rule no-force-push\)/);
     const workflow = fs.read(at(".github/workflows/finitemonkey-rules.yml")) ?? "";
     assert.match(workflow, /# finitemonkey:rule no-force-push\n {6}# finitemonkey:rule no-wip-commits/);
     assert.match(workflow, /rules check --ci/);

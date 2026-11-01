@@ -1,8 +1,9 @@
 import { nowMs } from "../../core/clock.js";
 import { logEvent } from "../../evidence/log.js";
 import type { Note } from "../../evidence/types.js";
-import { anchorAt, diskReader } from "../../knowledge/anchor.js";
+import { diskReader, reanchor } from "../../knowledge/anchor.js";
 import { appendClaimEvent, type Claim, CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../../knowledge/claims.js";
+import { projectSyntax } from "../../knowledge/syntax.js";
 import { planMutants } from "../../mutation/operators.js";
 import { type Criterion, isDecorative, measureStrength } from "../../mutation/strength.js";
 import { featureMode, recordFeatureShadow } from "../../policy/feature.js";
@@ -42,16 +43,14 @@ export const runClaim = (claim: Claim, at: GateContext): boolean | undefined => 
 
 const renew = (ctx: GateContext, claim: Claim): void => {
   const read = diskReader(ctx.runtime, ctx.paths.root);
+  const syntax = projectSyntax(ctx.runtime, ctx.paths.root);
   appendClaimEvent(ctx.runtime, ctx.paths, {
     event: "renew",
     id: claim.id,
     recordedAt: ctx.runtime.now(),
     tree: ctx.treeHash,
     reason: "check_passed",
-    anchors: claim.anchors.flatMap((anchor) => {
-      const text = read(anchor.path);
-      return text === undefined ? [] : (anchorAt(text, anchor.path, anchor.symbol) ?? []);
-    }),
+    anchors: claim.anchors.flatMap((anchor) => reanchor(anchor, read, syntax) ?? []),
   });
 };
 

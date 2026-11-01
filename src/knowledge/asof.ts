@@ -3,6 +3,7 @@ import { gitAt } from "../gate/git.js";
 import type { FmPaths } from "../task/paths.js";
 import { anchorState } from "./anchor.js";
 import { readClaims } from "./claims.js";
+import { projectSyntax } from "./syntax.js";
 
 export interface AsOfRow {
   readonly id: string;
@@ -17,10 +18,11 @@ export const asOf = (
   commit: string,
 ): readonly AsOfRow[] => {
   const git = gitAt(runtime, paths.root);
+  const syntax = projectSyntax(runtime, paths.root);
   const when = Date.parse(git.out(["show", "-s", "--format=%cI", commit])?.trim() ?? "");
   return readClaims(runtime, paths).map((claim) => {
     const same = claim.anchors.every(
-      (anchor) => anchorState(anchor, git.out(["show", `${commit}:${anchor.path}`])) === "same",
+      (anchor) => anchorState(anchor, git.out(["show", `${commit}:${anchor.path}`]), syntax) === "same",
     );
     return {
       id: claim.id,

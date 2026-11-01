@@ -8,13 +8,14 @@ import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import type { Translate } from "../i18n/translate.js";
 import { tokenEstimate } from "../instructions/types.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
-import { diskReader } from "./anchor.js";
 import { readDemoted, recordInjected } from "./arms.js";
 import { appendClaimEvent, KNOWLEDGE_CLAIMS_FEATURE, lastOf, readClaims } from "./claims.js";
+import { hookOptions, settleMoves, touchClaimFile } from "./moves.js";
 import { withQuarantine } from "./quarantine.js";
 import { withRetractions } from "./retraction.js";
 import { injectable } from "./service.js";
 import { type ClaimView, evaluateClaim } from "./status.js";
+import { recordClaimUse } from "./use.js";
 
 export const MAX_INJECTED = 20;
 const EDIT_TOOLS: ReadonlySet<string> = new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
@@ -38,8 +39,8 @@ export const claimsOnSessionStart: HookHandler = (input) => {
   if (paths === undefined) return allow;
   const claims = readClaims(input.runtime, paths);
   if (claims.length === 0) return allow;
-  const read = diskReader(input.runtime, paths.root);
-  const evaluated = claims.map((claim) => evaluateClaim(claim, { read, candidates: () => [] }));
+  const options = hookOptions(input.runtime, paths);
+  const evaluated = claims.map((claim) => evaluateClaim(claim, options));
   const views = injectable(
     withQuarantine(input.runtime, paths, withRetractions(input.runtime, paths, evaluated), false),
   ).slice(0, MAX_INJECTED);
@@ -52,6 +53,12 @@ export const claimsOnSessionStart: HookHandler = (input) => {
     recordFeatureShadow(input.runtime, paths, KNOWLEDGE_CLAIMS_FEATURE, { injected: views.length });
     return allow;
   }
+  recordClaimUse(
+    input.runtime,
+    paths,
+    "inject",
+    views.map((view) => view.claim.id),
+  );
   const text = [input.t("knowledge.claims.context.title"), ...views.map((view) => claimLine(input.t, view))].join("\n");
   recordInjected(input.runtime, paths, "knowledge-claims", tokenEstimate(text));
   return { kind: "allow", output: contextOutput("SessionStart", text) };
@@ -63,12 +70,16 @@ export const claimsAfterEdit: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined || target === undefined || !EDIT_TOOLS.has(toolName(raw))) return allow;
   const file = toPosixPath(relative(paths.root, toAbsolutePath(target, sessionCwd(input))));
-  const touched = readClaims(input.runtime, paths).filter((claim) =>
-    claim.anchors.some((anchor) => anchor.path === file),
+  const claims = readClaims(input.runtime, paths);
+  if (claims.length === 0) return allow;
+  touchClaimFile(input.runtime, paths, file);
+  const options = hookOptions(input.runtime, paths);
+  const moved = new Set(settleMoves(input.runtime, paths, claims, file, options));
+  const touched = readClaims(input.runtime, paths).filter(
+    (claim) => !moved.has(claim.id) && claim.anchors.some((anchor) => anchor.path === file),
   );
-  const read = diskReader(input.runtime, paths.root);
   for (const claim of touched) {
-    const view = evaluateClaim(claim, { read, candidates: () => [] });
+    const view = evaluateClaim(claim, options);
     const last = lastOf(claim, ["stale", "renew", "add"]);
     if (view.status !== "stale" || last?.event === "stale") continue;
     appendClaimEvent(input.runtime, paths, {

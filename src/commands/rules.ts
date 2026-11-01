@@ -11,6 +11,7 @@ import { type BucketCounts, bucketCounts, type RuleCoverage, ruleCoverage } from
 import { type SURFACES } from "../rules/manifest.js";
 import { coverageRules, effectiveRules } from "../rules/preset.js";
 import { DETERMINISTIC_CEILING } from "../rules/propose.js";
+import { RULES_DOC } from "../rules/rules-doc.js";
 import { type ProjectRule, RULES_FILE } from "../rules/types.js";
 import { projectRoot } from "../secrets/project.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
@@ -131,11 +132,15 @@ export const rulesCompileCommand: CommandSpec = {
           schema: RULES_COMPILE_SCHEMA,
           written: compiled.value.written,
           rules: compiled.value.manifest.rules,
+          edited: compiled.value.edited,
         };
         const never = rules.some((rule) => rule.severity === "never");
         return success(data, [
           ctx.t("rules.compile.done", { count: rules.length, files: compiled.value.written.join(", ") }),
           ...(never && compiled.value.manifest.workflow === undefined ? [ctx.t("rules.compile.ci_missing")] : []),
+          ...(compiled.value.edited.length === 0
+            ? []
+            : [ctx.t("rules.compile.edited", { file: RULES_DOC, lines: compiled.value.edited.join(" / ") })]),
         ]);
       }),
     ),

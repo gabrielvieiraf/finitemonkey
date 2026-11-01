@@ -14,6 +14,7 @@ import { errorSignature } from "../signals/signature.js";
 import type { FmPaths } from "../task/paths.js";
 import { learnFromSignatures } from "./learn.js";
 import { DEFAULT_MAX_LESSONS, DEFAULT_MAX_TOKENS, type LessonKey, lessonsText, pickLessons } from "./match.js";
+import { agentEditRecorder, personRevertScan } from "./reverts-hook.js";
 import { EXPIRE_DAYS, type Lesson, pruneLessons, readLessons, writeLessons } from "./store.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
@@ -114,7 +115,8 @@ export const untrustedRecorder: HookHandler = (input) => {
 
 export const LEARNINGS_HANDLERS: HookHandlers = {
   PreToolUse: [learningsInject],
-  PostToolUse: [untrustedRecorder, learningsInject],
+  PostToolUse: [untrustedRecorder, learningsInject, agentEditRecorder],
+  UserPromptSubmit: [personRevertScan],
   PostToolUseFailure: [learningsInject],
   Stop: [learningsStop],
 };

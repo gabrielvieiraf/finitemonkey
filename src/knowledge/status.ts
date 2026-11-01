@@ -1,6 +1,7 @@
 import type { Anchor, ReadFile } from "./anchor.js";
 import { anchorState, relocate } from "./anchor.js";
 import { type Claim, lastOf } from "./claims.js";
+import type { Syntax } from "./syntax.js";
 
 export const CLAIM_STATUSES = ["valid", "stale", "closed", "out", "quarantined"] as const;
 
@@ -21,12 +22,13 @@ export interface ClaimView {
 export interface EvaluateOptions {
   readonly read: ReadFile;
   readonly candidates: () => readonly string[];
+  readonly syntax?: Syntax;
 }
 
 const report = (anchor: Anchor, options: EvaluateOptions): AnchorReport => {
-  const state = anchorState(anchor, options.read(anchor.path));
+  const state = anchorState(anchor, options.read(anchor.path), options.syntax);
   if (state !== "missing") return { anchor, state };
-  const moved = relocate(anchor, options.candidates(), options.read);
+  const moved = relocate(anchor, options.candidates(), options.read, options.syntax);
   return moved === undefined ? { anchor, state } : { anchor: moved, state: "moved" };
 };
 

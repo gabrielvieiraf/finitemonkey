@@ -6,14 +6,18 @@ import { type Anchor, anchorAt, diskReader } from "../knowledge/anchor.js";
 import {
   appendClaimEvent,
   type Attribution,
+  type ClaimEvent,
   claimId,
   type DerivedFrom,
   ORIGIN_SOURCES,
   type OriginSource,
   readClaims,
 } from "../knowledge/claims.js";
+import { indexClaimFiles } from "../knowledge/moves.js";
 import { instructionLines, recentUntrusted } from "../knowledge/quarantine.js";
 import { parsePremise, premiseExists } from "../knowledge/retraction.js";
+import { trackedFiles } from "../knowledge/service.js";
+import { projectSyntax, type Syntax } from "../knowledge/syntax.js";
 import { classifyStatement, isRuleLike } from "../rules/classify.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
@@ -59,15 +63,21 @@ type AnchorSpec = ReturnType<typeof anchorSpec>;
 const anchorsFor = (
   read: ReturnType<typeof diskReader>,
   specs: readonly AnchorSpec[],
+  syntax: Syntax,
 ): { readonly anchors: readonly Anchor[]; readonly missing: AnchorSpec | undefined } => {
   const found = specs.map((spec) => {
     const content = read(spec.path);
-    return content === undefined ? undefined : anchorAt(content, spec.path, spec.symbol);
+    return content === undefined ? undefined : anchorAt(content, spec.path, spec.symbol, syntax);
   });
   return {
     anchors: found.flatMap((anchor) => anchor ?? []),
     missing: specs.find((_, index) => found[index] === undefined),
   };
+};
+
+const recordClaim = (ctx: Ctx, paths: FmPaths, event: ClaimEvent): void => {
+  appendClaimEvent(ctx.runtime, paths, event);
+  indexClaimFiles(ctx.runtime, paths, readClaims(ctx.runtime, paths), () => trackedFiles(ctx.runtime, paths));
 };
 
 export const claimsAddCommand: CommandSpec = {
@@ -91,7 +101,7 @@ export const claimsAddCommand: CommandSpec = {
     if (text === "" || specs.length === 0) return Promise.resolve(fail(ctx, "knowledge.claims.error.usage", ADD_USAGE));
     return inGuardianRepo(ctx, (root) => {
       const paths = fmPaths(root);
-      const { anchors, missing } = anchorsFor(diskReader(ctx.runtime, root), specs);
+      const { anchors, missing } = anchorsFor(diskReader(ctx.runtime, root), specs, projectSyntax(ctx.runtime, root));
       if (missing !== undefined)
         return fail(ctx, "knowledge.claims.error.anchor", ADD_USAGE, {
           anchor: missing.symbol === undefined ? missing.path : `${missing.path}#${missing.symbol}`,
@@ -107,7 +117,7 @@ export const claimsAddCommand: CommandSpec = {
       const check = stringOption(args.values, "check");
       const recordedAt = ctx.runtime.now();
       const id = claimId(text, recordedAt);
-      appendClaimEvent(ctx.runtime, paths, {
+      recordClaim(ctx, paths, {
         event: "add",
         id,
         recordedAt,

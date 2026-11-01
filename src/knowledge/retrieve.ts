@@ -10,6 +10,8 @@ import { experimentArm } from "../policy/experiment.js";
 import { loadPolicy } from "../policy/policy.js";
 import type { FmPaths } from "../task/paths.js";
 import { viewsOf } from "./service.js";
+import type { ClaimView } from "./status.js";
+import { recordClaimUse } from "./use.js";
 
 export const RETRIEVE_FILE = "retrieve.jsonl";
 export const RETRIEVE_FEATURE = "retrieve";
@@ -143,12 +145,18 @@ export const bm25 = (docs: readonly Doc[], terms: readonly string[]): readonly S
     .map((item) => ({ anchor: item.doc.anchor, text: item.doc.text }));
 };
 
+const retrievable = (view: ClaimView): boolean =>
+  view.status === "valid" || (view.status === "quarantined" && view.claim.origin.source !== "external");
+
+const claimIdsIn = (result: Retrieval): readonly string[] =>
+  result.step === "bm25" ? result.spans.flatMap((span) => /^c-[0-9a-f]{8}(?=\s)/.exec(span.text)?.[0] ?? []) : [];
+
 const knowledgeDocs = (
   runtime: Pick<Runtime, "readText" | "exec" | "homeDir" | "listDir">,
   paths: FmPaths,
 ): readonly Doc[] => [
   ...viewsOf(runtime, paths)
-    .filter((view) => view.status === "valid")
+    .filter(retrievable)
     .map((view) => ({
       anchor:
         view.anchors
@@ -197,14 +205,16 @@ export const retrieve = (runtime: Runtime, paths: FmPaths, query: string, option
 };
 
 const record = (
-  runtime: Pick<Runtime, "appendText" | "now" | "mkdir">,
+  runtime: Pick<Runtime, "readText" | "appendText" | "now" | "mkdir">,
   paths: FmPaths,
   result: Retrieval,
 ): Retrieval => {
+  const claims = claimIdsIn(result);
   runtime.mkdir(paths.dir);
   runtime.appendText(
     retrievePath(paths),
-    `${JSON.stringify({ at: runtime.now(), query: result.query, step: result.step, steps: result.steps, anchors: result.spans.map((span) => span.anchor) })}\n`,
+    `${JSON.stringify({ at: runtime.now(), query: result.query, step: result.step, steps: result.steps, anchors: result.spans.map((span) => span.anchor), claims })}\n`,
   );
+  recordClaimUse(runtime, paths, "retrieve", claims);
   return result;
 };
