@@ -101,16 +101,26 @@ describe("cumulative selection of policy variants", () => {
 
   it("promotes a variant that beats its parent on later tasks and shows it with a revert command", async () => {
     const mine = taskOn("active");
+    const second = taskOn("active", [mine]);
     const parent = taskOn("off");
-    const repo = setup({}, [mine, parent], mine);
+    const other = taskOn("off", [parent]);
+    const repo = setup({}, [mine, second, parent, other], mine);
     const digest = digestOf(repo);
     repo.write(`.finitemonkey/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
-    repo.write(`.finitemonkey/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
+    repo.write(`.finitemonkey/evidence/${second}.jsonl`, finished(second, 2, 1, digest));
+    repo.write(`.finitemonkey/evidence/${parent}.jsonl`, finished(parent, 3, 5, digest, true));
+    repo.write(`.finitemonkey/evidence/${other}.jsonl`, finished(other, 4, 5, digest, true));
     withVariant(
       repo,
-      variant(digest, { [mine]: { arm: "active", mode: "active" }, [parent]: { arm: "off", mode: "active" } }),
+      variant(digest, {
+        [mine]: { arm: "active", mode: "active" },
+        [second]: { arm: "active", mode: "active" },
+        [parent]: { arm: "off", mode: "active" },
+        [other]: { arm: "off", mode: "active" },
+      }),
     );
     assert.deepEqual(run(repo).promoted, [ID]);
+    assert.equal(readEvolve(repoRuntime(), repo.root).variants[0]?.evidence?.test?.passed, true);
     assert.equal(loadPolicy(repoRuntime(), repo.root).evolved["prose"], "shadow");
     const shown = await fireHook(repo, "UserPromptSubmit", { prompt: "next" });
     assert.match(contextOf(shown), new RegExp(`Policy variant ${ID} promoted: guards\\.prose: shadow`));

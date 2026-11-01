@@ -10,8 +10,11 @@ import { policyNumber } from "../policy/numbers.js";
 import { loadPolicy } from "../policy/policy.js";
 import type { FmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
+import { type DropSupport, dropSupport, INSTRUCTION_SOURCES } from "./instruction-arms.js";
+import { localizations, tokensPerTurn } from "./turn-measures.js";
 
 export const KNOWLEDGE_SOURCES = ["knowledge-claims", "learnings"] as const;
+export const ARM_SOURCES: readonly string[] = [...KNOWLEDGE_SOURCES, ...INSTRUCTION_SOURCES];
 export const DEMOTED_FILE = "demoted.json";
 export const DEFAULT_DEMOTE_AFTER = 20;
 export const DEFAULT_EQUIVALENCE_MARGIN_TENTHS = 5;
@@ -24,6 +27,8 @@ export interface ArmOutcome {
   readonly attempts: number | null;
   readonly falseDone: number | null;
   readonly tokens: number | null;
+  readonly tokensPerTurn: number | null;
+  readonly localization: number | null;
 }
 
 export interface SourceReport {
@@ -34,6 +39,7 @@ export interface SourceReport {
   readonly interval: readonly [number, number] | null;
   readonly cost: number | null;
   readonly demoted: boolean;
+  readonly support: DropSupport;
 }
 
 export const demotedPath = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, DEMOTED_FILE));
@@ -88,11 +94,18 @@ const injectedTokens = (
   return totals;
 };
 
-const outcome = (
-  tasks: readonly string[],
-  gates: ReadonlyMap<string, readonly Evidence[]>,
-  tokens: ReadonlyMap<string, number>,
-) => {
+interface Measures {
+  readonly gates: ReadonlyMap<string, readonly Evidence[]>;
+  readonly tokens: ReadonlyMap<string, number>;
+  readonly perTurn: ReadonlyMap<string, number>;
+  readonly localized: ReadonlyMap<string, boolean>;
+}
+
+const share = (flags: readonly boolean[]): number | null =>
+  flags.length === 0 ? null : flags.filter(Boolean).length / flags.length;
+
+const outcome = (tasks: readonly string[], measures: Measures) => {
+  const { gates, tokens } = measures;
   const attempts = tasks.flatMap((task) => attemptsToGreen(gates.get(task) ?? []) ?? []);
   const falseDone = tasks.filter((task) => (gates.get(task) ?? []).some((entry) => entry.status === "failed")).length;
   return {
@@ -102,7 +115,54 @@ const outcome = (
       attempts: mean(attempts),
       falseDone: tasks.length === 0 ? null : falseDone / tasks.length,
       tokens: mean(tasks.flatMap((task) => tokens.get(task) ?? [])),
+      tokensPerTurn: mean(tasks.flatMap((task) => measures.perTurn.get(task) ?? [])),
+      localization: share(tasks.flatMap((task) => measures.localized.get(task) ?? [])),
     } satisfies ArmOutcome,
+  };
+};
+
+const intervalOf = (active: readonly number[], off: readonly number[], effect: number | null) => {
+  if (effect === null || active.length < 2 || off.length < 2) return null;
+  const spread = Z95 * Math.sqrt(variance(active) / active.length + variance(off) / off.length);
+  return [effect - spread, effect + spread] as const;
+};
+
+interface Context {
+  readonly arms: ReturnType<typeof readArms>;
+  readonly gates: ReadonlyMap<string, readonly Evidence[]>;
+  readonly perTurn: ReadonlyMap<string, number>;
+  readonly localized: ReadonlyMap<string, boolean>;
+  readonly support: ReadonlyMap<string, DropSupport>;
+  readonly demoted: ReadonlySet<string>;
+  readonly after: number;
+  readonly margin: number;
+}
+
+const reportFor = (runtime: Pick<Runtime, "readText">, paths: FmPaths, source: string, ctx: Context): SourceReport => {
+  const assigned = ctx.arms.filter((line) => line.feature === source);
+  const measures: Measures = { ...ctx, tokens: injectedTokens(runtime, paths, source) };
+  const pick = (arm: "active" | "off") =>
+    outcome(
+      assigned.filter((line) => line.arm === arm).map((line) => line.task),
+      measures,
+    );
+  const active = pick("active");
+  const off = pick("off");
+  const left = mean(active.values);
+  const right = mean(off.values);
+  const effect = left === null || right === null ? null : left - right;
+  const interval = intervalOf(active.values, off.values, effect);
+  const enough = active.values.length >= ctx.after && off.values.length >= ctx.after;
+  const equivalent = interval !== null && interval[0] >= -ctx.margin && interval[1] <= ctx.margin;
+  return {
+    source,
+    active: active.summary,
+    off: off.summary,
+    effect,
+    interval,
+    cost: active.summary.tokens,
+    demoted: KNOWLEDGE_SOURCES.some((known) => known === source) && (ctx.demoted.has(source) || (enough && equivalent)),
+    support: ctx.support.get(source) ?? null,
   };
 };
 
@@ -111,48 +171,24 @@ export const sourceReports = (
   paths: FmPaths,
 ): readonly SourceReport[] => {
   const policy = loadPolicy(runtime, paths.root);
-  const arms = readArms(runtime, paths);
   const gates = new Map<string, Evidence[]>();
   for (const entry of readEvidence(runtime, paths).filter((item) => item.check === GATE_CHECK))
     gates.set(entry.task, [...(gates.get(entry.task) ?? []), entry]);
-  const after = policyNumber(runtime, paths.root, ["knowledge", "demoteAfter"], DEFAULT_DEMOTE_AFTER);
-  const margin =
-    policyNumber(runtime, paths.root, ["knowledge", "equivalenceMarginTenths"], DEFAULT_EQUIVALENCE_MARGIN_TENTHS) / 10;
-  const demoted = readDemoted(runtime, paths);
-  return KNOWLEDGE_SOURCES.filter((source) => policy.experiments[source] === "random").map((source) => {
-    const assigned = arms.filter((line) => line.feature === source);
-    const tokens = injectedTokens(runtime, paths, source);
-    const active = outcome(
-      assigned.filter((line) => line.arm === "active").map((line) => line.task),
-      gates,
-      tokens,
-    );
-    const off = outcome(
-      assigned.filter((line) => line.arm === "off").map((line) => line.task),
-      gates,
-      tokens,
-    );
-    const left = mean(active.values);
-    const right = mean(off.values);
-    const effect = left === null || right === null ? null : left - right;
-    const spread =
-      active.values.length < 2 || off.values.length < 2
-        ? null
-        : Z95 * Math.sqrt(variance(active.values) / active.values.length + variance(off.values) / off.values.length);
-    const interval: readonly [number, number] | null =
-      effect === null || spread === null ? null : [effect - spread, effect + spread];
-    const enough = active.values.length >= after && off.values.length >= after;
-    const equivalent = interval !== null && interval[0] >= -margin && interval[1] <= margin;
-    return {
-      source,
-      active: active.summary,
-      off: off.summary,
-      effect,
-      interval,
-      cost: active.summary.tokens,
-      demoted: demoted.has(source) || (enough && equivalent),
-    };
-  });
+  const ctx: Context = {
+    arms: readArms(runtime, paths),
+    gates,
+    perTurn: tokensPerTurn(runtime, paths),
+    localized: localizations(runtime, paths),
+    support: dropSupport(runtime, paths),
+    demoted: readDemoted(runtime, paths),
+    after: policyNumber(runtime, paths.root, ["knowledge", "demoteAfter"], DEFAULT_DEMOTE_AFTER),
+    margin:
+      policyNumber(runtime, paths.root, ["knowledge", "equivalenceMarginTenths"], DEFAULT_EQUIVALENCE_MARGIN_TENTHS) /
+      10,
+  };
+  return ARM_SOURCES.filter((source) => policy.experiments[source] === "random").map((source) =>
+    reportFor(runtime, paths, source, ctx),
+  );
 };
 
 export const writeDemotions = (

@@ -6,6 +6,8 @@ import { readShadow, resolveGuard } from "../policy/guards.js";
 import { DAMAGE_GUARDS, type Policy } from "../policy/policy.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
+import { beats } from "./evaluate.js";
+import { reminderProposals } from "./reminder-proposals.js";
 
 export const LOOSEN_DISMISSAL_RATE = 0.3;
 export const MAX_TRIALS = 3;
@@ -15,13 +17,29 @@ export interface Proposal {
   readonly reason: string;
 }
 
-export const changeKey = (change: VariantChange): string =>
-  change.kind === "guard"
-    ? `guard:${change.guard}=${change.mode}`
-    : `alertBudget:${change.key}=${String(change.value)}`;
+export const changeKey = (change: VariantChange): string => {
+  if (change.kind === "guard") return `guard:${change.guard}=${change.mode}`;
+  if (change.kind === "reminder") return `reminder:${change.rule}=${String(change.include)}`;
+  return `alertBudget:${change.key}=${String(change.value)}`;
+};
 
-const targetOf = (change: VariantChange): string =>
-  change.kind === "guard" ? `guard:${change.guard}` : `alertBudget:${change.key}`;
+export const targetOf = (change: VariantChange): string => {
+  if (change.kind === "guard") return `guard:${change.guard}`;
+  if (change.kind === "reminder") return `reminder:${change.rule}`;
+  return `alertBudget:${change.key}`;
+};
+
+export const parentFor = (archive: readonly Variant[], target: string): string | undefined =>
+  archive
+    .filter(
+      (variant) =>
+        variant.status === "promoted" &&
+        targetOf(variant.change) === target &&
+        variant.evidence !== undefined &&
+        beats(variant.evidence.variant, variant.evidence.parent),
+    )
+    .sort((left, right) => (left.decidedAt ?? left.bornAt).localeCompare(right.decidedAt ?? right.bornAt))
+    .at(-1)?.id;
 
 export const variantId = (change: VariantChange): string => `v${sha256Hex(changeKey(change)).slice(0, 8)}`;
 
@@ -59,7 +77,7 @@ export const proposals = (
             reason: `${near.map((rate) => rate.guard).join(", ")} dismissed just under the mute threshold`,
           },
         ];
-  return [...loosen, ...budget];
+  return [...loosen, ...budget, ...reminderProposals(runtime, paths, policy)];
 };
 
 export const newVariants = (
@@ -78,11 +96,13 @@ export const newVariants = (
     const target = targetOf(proposal.change);
     if (seen.has(changeKey(proposal.change)) || busy.has(target)) continue;
     busy.add(target);
+    const parent = parentFor(existing, target);
     added.push({
       id: variantId(proposal.change),
       change: proposal.change,
       reason: proposal.reason,
       bornTask: born.task,
+      ...(parent === undefined ? {} : { parent }),
       bornAt: born.at,
       evaluator: born.evaluator,
       status: "trial",

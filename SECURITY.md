@@ -80,6 +80,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `knowledge-claims` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `memory-quarantine` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `knowledge-map` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `arm-measures` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `explain-approval` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `premise-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `focus-card` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |

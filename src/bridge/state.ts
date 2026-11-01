@@ -6,6 +6,7 @@ import { activeScope, createdFiles, isListed, TESTS_HOLD_GUARD } from "../guards
 import { isSnapshot, isTestFile } from "../guards/tests/patterns.js";
 import { modelReason } from "../hooks/reason.js";
 import type { Translate } from "../i18n/translate.js";
+import { withheldSources } from "../knowledge/instruction-arms.js";
 import { MOD_STATE_SCHEMA, type ModRule, type ModState } from "../mod/state.js";
 import { featureMode } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
@@ -95,6 +96,7 @@ export const modState = (runtime: Runtime, paths: FmPaths, t: Translate): ModSta
   failReason: t("mod.check_failed"),
   attribution: attributionOf(runtime, paths),
   instructions: rulesSection(runtime, paths),
+  withhold: withheldSources(runtime, paths),
   rules: [
     ...(live(runtime, paths, "self") ? [] : selfRules(t)),
     ...(live(runtime, paths, "bypass") ? [] : bypassRules(t)),

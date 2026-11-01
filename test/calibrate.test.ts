@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
 import { CALIBRATE_INPUTS } from "../src/calibrate/inputs.js";
+import type { Label } from "../src/calibrate/labels.js";
+import { dismissedQuestions, questionLabels, sampleTarget } from "../src/calibrate/question-labels.js";
 import { computeCalibration } from "../src/calibrate/refit.js";
 import { fmPaths } from "../src/task/paths.js";
 import { contextOf, fireHook, policyWith } from "./guardian-support.js";
@@ -108,5 +110,42 @@ describe("calibrate: when to ask, from local labels", () => {
     await cli(["calibrate", "refit"], { cwd: repo.root, runtime: repoRuntime() });
     const shown = await fireHook(repo, "UserPromptSubmit", { prompt: "finitemonkey: trust now" });
     assert.match(contextOf(shown), /now: yellow/);
+  });
+
+  it("a dismissed question counts as not needed when the task stays green and as needed when it is reverted", () => {
+    const label = (task: string, why: Label["why"]): Label => ({ task, bad: why.length > 0, why, endMs: 0, areas: [] });
+    const labels = [
+      label("green", []),
+      label("reverted", ["reverted"]),
+      label("false-done", ["false_done"]),
+      label("answered", []),
+      label("never-asked", []),
+    ];
+    const found = questionLabels(labels, new Set(["green", "reverted", "false-done"]));
+    assert.deepEqual(
+      [...found],
+      [
+        ["green", "not_needed"],
+        ["reverted", "needed"],
+      ],
+    );
+    assert.equal(sampleTarget(label("x", ["false_done"]), undefined), 1);
+    assert.equal(sampleTarget(label("x", []), "needed"), 1);
+  });
+
+  it("reads dismissals from the log: asked in active mode and never answered", () => {
+    const asked = (task: string, mode = "active") =>
+      event({ event: "divergence.outcome", task, mode, kind: "question" });
+    const repo = setup(4, `${policyWith({ calibrate: "active" })}calibrate:\n  minLabels: 4\n`, [
+      asked("past1"),
+      asked("past2"),
+      asked("past4"),
+      asked("past3", "shadow"),
+      event({ event: "divergence.answered", task: "past4", letter: "A" }),
+    ]);
+    const paths = fmPaths(repo.root);
+    assert.deepEqual([...dismissedQuestions(repoRuntime(), paths)].sort(), ["past1", "past2"]);
+    const calibration = computeCalibration(repoRuntime(), paths);
+    assert.deepEqual(calibration.questions, { needed: 0, notNeeded: 1 });
   });
 });

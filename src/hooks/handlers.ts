@@ -35,6 +35,7 @@ import { instructionsLoaded } from "../instructions/log.js";
 import { TRIAGE_HANDLERS } from "../judge/triage-hook.js";
 import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
 import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
+import { localizationStop } from "../knowledge/turn-measures.js";
 import { KNOWLEDGE_MAP_HANDLERS } from "../knowledge/who-knows-hook.js";
 import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
@@ -251,6 +252,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "knowledge-claims", damage: false, handlers: KNOWLEDGE_CLAIMS_HANDLERS },
   { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
+  { id: "arm-measures", damage: false, handlers: { Stop: [localizationStop] } },
   { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
   { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
   { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },

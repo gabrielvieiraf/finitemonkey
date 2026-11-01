@@ -13,7 +13,8 @@ var memory = {
   concepts: [],
   trajectory: [],
   selectedMark: void 0,
-  theme: "auto"
+  theme: "auto",
+  dropped: []
 };
 
 // src/mod/attribution-hooks.ts
@@ -39,6 +40,39 @@ async function runCli($, args) {
   return result.exitCode === 0 ? result.stdout : void 0;
 }
 
+// src/mod/withhold.ts
+var RULES_ARM = "rules-section";
+var SECTION_PATTERNS = {
+  "agents-md": /agents[._-]?md/i,
+  "claude-md": /claude[._-]?md/i,
+  "native-memory": /(?:^|[^a-z])(?:auto[._-]?)?memory(?:[^a-z]|$)/i
+};
+var sourceOfSection = (id, withhold) => withhold.find((source) => SECTION_PATTERNS[source]?.test(id) === true);
+var withholdSections = (result, withhold) => {
+  const matched = result.sections.flatMap((section) => {
+    const source = sourceOfSection(section.id, withhold);
+    return source === void 0 ? [] : [{ source, section: section.id }];
+  });
+  const dropped = new Set(matched.map((drop) => drop.section));
+  const missing = withhold.filter((source) => source !== RULES_ARM && !matched.some((drop) => drop.source === source)).map((source) => ({ source, section: void 0 }));
+  return {
+    result: { sections: result.sections.filter((section) => !dropped.has(section.id)) },
+    drops: [...matched, ...missing]
+  };
+};
+var keyOf = (drop) => `${drop.source}\0${drop.section ?? ""}`;
+function reportDrops($, drops) {
+  const fresh = drops.filter((drop) => !memory.dropped.includes(keyOf(drop)));
+  if (fresh.length === 0) return;
+  memory.dropped = [...memory.dropped, ...fresh.map(keyOf)];
+  for (const drop of fresh) {
+    const section = drop.section === void 0 ? [] : ["--section", drop.section];
+    $.clock.after(0, async () => {
+      await runCli($, ["mod", "drop", "--source", drop.source, ...section]);
+    });
+  }
+}
+
 // src/mod/compose-hooks.ts
 var RULES_SECTION = "finitemonkey:rules";
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -62,8 +96,13 @@ async function readHandoff($) {
   const text5 = await runCli($, ["handoff", "--json"]);
   return text5 === void 0 ? void 0 : parseHandoff(text5);
 }
-async function composeRules(_$, e, next) {
-  return withRulesSection(await next(e), memory.state?.instructions ?? "");
+async function composeRules($, e, next) {
+  const withhold = memory.state?.withhold ?? [];
+  const rules = memory.state?.instructions ?? "";
+  const kept = withholdSections(await next(e), withhold);
+  const rulesHeld = withhold.includes(RULES_ARM) && rules !== "";
+  reportDrops($, [...kept.drops, ...rulesHeld ? [{ source: RULES_ARM, section: RULES_SECTION }] : []]);
+  return withRulesSection(kept.result, rulesHeld ? "" : rules);
 }
 async function compactNotes($, e, next) {
   if (e.agentId !== void 0) return next(e);
@@ -1119,7 +1158,7 @@ var blockOf2 = (theme, plot, block) => {
   }
   return `<g class="key-group key-${block.group}">${parts.join("")}</g>`;
 };
-var keyOf = (theme, plot, trajectory) => `<g class="key">${placed(plot, trajectory).map((block) => blockOf2(theme, plot, block)).join("")}</g>`;
+var keyOf2 = (theme, plot, trajectory) => `<g class="key">${placed(plot, trajectory).map((block) => blockOf2(theme, plot, block)).join("")}</g>`;
 
 // src/conceitos/trajectory-svg.ts
 var SVG_WIDTH = 900;
@@ -1277,7 +1316,7 @@ var svgOf = (trajectory, options = {}) => {
     ...gapRects(theme, frame, trajectory.weeks),
     ...strataPaths(theme, frame, trajectory.weeks),
     ...axes(theme, frame, trajectory.weeks),
-    keyOf(theme, frame, trajectory),
+    keyOf2(theme, frame, trajectory),
     ...workLine(theme, frame, trajectory),
     ...marksOf(theme, frame, trajectory, options.selected)
   ]);
@@ -1925,6 +1964,7 @@ var parseModState = (text5) => {
     band,
     rules,
     instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
+    withhold: Array.isArray(data["withhold"]) ? data["withhold"].filter((item) => typeof item === "string") : [],
     ...attribution === void 0 ? {} : { attribution },
     ...typeof failReason === "string" ? { failReason } : {}
   };

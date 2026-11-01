@@ -2,7 +2,7 @@ import { bypassReviewCommand } from "./bypass.js";
 import { conceitosEvidenceCommand } from "./conceitos.js";
 import { frontsBoardCommand } from "./fronts-board.js";
 import { handoffCommand } from "./handoff.js";
-import { modRecordCommand, modStateCommand } from "./mod.js";
+import { modDropCommand, modRecordCommand, modStateCommand } from "./mod.js";
 import { modCostCommand, modUsageCommand } from "./mod-cost.js";
 import {
   probeAnswerCommand,
@@ -22,6 +22,7 @@ import { xrayCommand, xrayDecideCommand, xrayExportCommand, xrayForgetCommand } 
 export const MOD_COMMANDS = [
   modStateCommand,
   modRecordCommand,
+  modDropCommand,
   statusCommand,
   bypassReviewCommand,
   handoffCommand,

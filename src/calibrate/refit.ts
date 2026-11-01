@@ -10,6 +10,13 @@ import { COLORS, decide, type Decision, STATES } from "./decide.js";
 import { CALIBRATE_INPUTS, type Inputs, inputsOf, readSignals, vectorOf } from "./inputs.js";
 import { areaHistory, labelsFor } from "./labels.js";
 import { fitLogistic, type Logistic } from "./model.js";
+import {
+  dismissedQuestions,
+  type QuestionCounts,
+  questionCounts,
+  questionLabels,
+  sampleTarget,
+} from "./question-labels.js";
 
 export const CALIBRATION_FILE = "calibration.json";
 
@@ -18,6 +25,7 @@ export interface Calibration {
   readonly labels: number;
   readonly bad: number;
   readonly minLabels: number;
+  readonly questions: QuestionCounts;
   readonly model?: Logistic;
   readonly decisions: Readonly<Record<string, Decision>>;
 }
@@ -35,9 +43,10 @@ export const computeCalibration = (
   const tasks = knownTasks(runtime, paths);
   const labels = labelsFor(runtime, paths, tasks);
   const signals = readSignals(runtime, paths);
+  const questions = questionLabels(labels, dismissedQuestions(runtime, paths));
   const samples = labels.map((label) => ({
     x: vectorOf(inputsOf(signals.get(label.task), areaHistory(labels, label.areas, label.endMs))),
-    y: label.bad ? (1 as const) : (0 as const),
+    y: sampleTarget(label, questions.get(label.task)),
   }));
   const model = labels.length >= policy.calibrate.minLabels ? fitLogistic(samples, CALIBRATE_INPUTS.length) : undefined;
   const open = tasks.filter((task) => !task.done);
@@ -55,6 +64,7 @@ export const computeCalibration = (
     labels: labels.length,
     bad: labels.filter((label) => label.bad).length,
     minLabels: policy.calibrate.minLabels,
+    questions: questionCounts(questions),
     ...(model === undefined ? {} : { model }),
     decisions,
   };
@@ -67,6 +77,8 @@ export const refitCalibration = (runtime: RefitRuntime, paths: FmPaths): Calibra
   logEvent(runtime, paths, "calibrate.refit", {
     labels: calibration.labels,
     bad: calibration.bad,
+    questionsNeeded: calibration.questions.needed,
+    questionsNotNeeded: calibration.questions.notNeeded,
     by: model === undefined ? "rules" : "model",
   });
   return calibration;

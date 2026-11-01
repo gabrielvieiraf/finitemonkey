@@ -30,6 +30,7 @@ export interface Memory {
   trajectory: readonly DomainTrajectory[];
   selectedMark: Mark | undefined;
   theme: ThemeChoice;
+  dropped: readonly string[];
 }
 
 export const memory: Memory = {
@@ -47,4 +48,5 @@ export const memory: Memory = {
   trajectory: [],
   selectedMark: undefined,
   theme: "auto",
+  dropped: [],
 };

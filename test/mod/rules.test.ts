@@ -9,9 +9,12 @@ interface World {
   readonly clock: MockClock;
   readonly states: string[];
   readonly compacted: string[];
+  readonly runs: string[][];
 }
 
-const stateOf = (instructions: string): string =>
+const CLAUDE_MD = { id: "claude-md:project", text: "Use pnpm. Money is integer cents.", scope: "shared" };
+
+const stateOf = (instructions: string, withhold: readonly string[] = []): string =>
   JSON.stringify({
     data: {
       schema: "finitemonkey/mod-state@1",
@@ -21,25 +24,30 @@ const stateOf = (instructions: string): string =>
       failReason: "x",
       rules: [],
       instructions,
+      withhold,
     },
   });
 
-const world = (on: StubOn): World => {
+const world = (on: StubOn, first: string = stateOf(RULES_V1)): World => {
   const clock = mock.clock(on);
-  const states = [stateOf(RULES_V1)];
+  const states = [first];
   const compacted: string[] = [];
+  const runs: string[][] = [];
   on("session.start", () => ({ cwd: ROOT }));
   on("session.root", () => ({ value: ROOT }));
   on("session.surfaces", () => ({ value: [] }));
   on("command.register", () => ({ value: undefined }));
   on("turn.complete", () => ({ text: "" }));
-  on("prompt.compose", () => ({ sections: [{ id: "intro", text: "You are Claude Code.", scope: "shared" }] }));
+  on("prompt.compose", () => ({
+    sections: [{ id: "intro", text: "You are Claude Code.", scope: "shared" }, CLAUDE_MD],
+  }));
   on("session.compact", (_api, e) => {
     compacted.push(typeof e["instructions"] === "string" ? e["instructions"] : "");
     return { messages: e["messages"] };
   });
   on("process.run", (_api, e) => {
     const argv = Array.isArray(e["argv"]) ? e["argv"].map(String) : [];
+    runs.push(argv);
     if (argv.includes("state")) return { value: { exitCode: 0, stdout: states.at(-1) ?? "", stderr: "" } };
     if (argv.includes("handoff"))
       return {
@@ -51,7 +59,7 @@ const world = (on: StubOn): World => {
       };
     return { value: { exitCode: 1, stdout: "", stderr: "" } };
   });
-  return { clock, states, compacted };
+  return { clock, states, compacted, runs };
 };
 
 const COMPOSE = {
@@ -65,6 +73,12 @@ const COMPOSE = {
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+const sectionIds = (result: unknown): readonly string[] => {
+  const sections: unknown = isRecord(result) ? result["sections"] : undefined;
+  const list: readonly unknown[] = Array.isArray(sections) ? sections : [];
+  return list.filter(isRecord).map((section) => String(section["id"]));
+};
 
 const rulesText = (result: unknown): string | undefined => {
   const sections: unknown = isRecord(result) ? result["sections"] : undefined;
@@ -108,5 +122,36 @@ describe("rules and compaction", () => {
     await start($, clock);
     const answer = await $.command.run({ command: "fm", args: "handoff" });
     expect(answer.text).toBe(BRIEF);
+  });
+
+  test("a task in the off arm for CLAUDE.md runs without that section and the drop is logged", async ($, on) => {
+    const { clock, runs } = world(on, stateOf(RULES_V1, ["claude-md"]));
+    await start($, clock);
+    const result = await $.prompt.compose(COMPOSE);
+    await clock.settle();
+    expect(sectionIds(result)).toEqual(["intro", "finitemonkey:rules"]);
+    const drops = runs.filter((argv) => argv.includes("drop")).map((argv) => argv.slice(-5));
+    expect(drops).toEqual([["drop", "--source", "claude-md", "--section", "claude-md:project"]]);
+  });
+
+  test("a task in the on arm keeps CLAUDE.md, and an off arm without a matching section is reported unsupported", async ($, on) => {
+    const kept = world(on);
+    await start($, kept.clock);
+    expect(sectionIds(await $.prompt.compose(COMPOSE))).toEqual(["intro", "claude-md:project", "finitemonkey:rules"]);
+    kept.states.push(stateOf(RULES_V1, ["agents-md"]));
+    await $.turn.complete({ turnId: "t", answer: "", durationMs: 1, isAborted: false, usage: null });
+    await kept.clock.settle();
+    await $.prompt.compose(COMPOSE);
+    await kept.clock.settle();
+    const drops = kept.runs.filter((argv) => argv.includes("drop")).map((argv) => argv.slice(-3));
+    expect(drops).toEqual([["drop", "--source", "agents-md"]]);
+  });
+
+  test("the rules section is itself an arm: withheld in its off arm", async ($, on) => {
+    const { clock } = world(on, stateOf(RULES_V1, ["rules-section"]));
+    await start($, clock);
+    const result = await $.prompt.compose(COMPOSE);
+    expect(rulesText(result)).toBe(undefined);
+    expect(sectionIds(result)).toEqual(["intro", "claude-md:project"]);
   });
 });
