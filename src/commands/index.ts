@@ -100,7 +100,7 @@ import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
 import { runCommandSpec } from "./run.js";
-import { scenariosCommand, scenariosRunCommand } from "./scenarios.js";
+import { SCENARIO_COMMANDS } from "./scenarios-gen.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
@@ -271,8 +271,7 @@ export const REGISTRY = [
   taskExamplesCommand,
   taskDivergeCommand,
   signalsBlindBandCommand,
-  scenariosCommand,
-  scenariosRunCommand,
+  ...SCENARIO_COMMANDS,
   guardianStatusCommand,
   guardianGoalAddCommand,
   guardianGoalConfirmCommand,

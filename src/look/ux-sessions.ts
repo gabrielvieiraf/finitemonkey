@@ -8,7 +8,14 @@ import type { LookConfig } from "./config.js";
 import { routeLists } from "./config.js";
 import type { UiScreen } from "./contract.js";
 import { destructiveIssues, draftIssues, FLOW_FEATURE, flowPages, type FlowSpec } from "./flow.js";
-import { journeyPages, JOURNEYS_FEATURE, listJourneys } from "./journey.js";
+import {
+  journeyPages,
+  JOURNEYS_FEATURE,
+  type JourneyState,
+  type JourneyUser,
+  listJourneys,
+  runnableJourneys,
+} from "./journey.js";
 import { crawlFlow, type FlowRequest, tryDestructive, tryDraft } from "./node-flow.js";
 import { measureJourney } from "./node-journey.js";
 import { measureRoute, type PerfAction } from "./node-perf.js";
@@ -81,7 +88,29 @@ export interface SessionInput {
   readonly screens: readonly UiScreen[];
   readonly request: FlowRequest;
   readonly captures: readonly { readonly route: string; readonly viewport: number; readonly path: string }[];
+  readonly access?: SessionAccess;
 }
+
+export interface SessionAccess {
+  readonly users: Readonly<Record<JourneyUser, Readonly<Record<string, string>>>>;
+  readonly flowUser?: JourneyUser;
+  readonly seed: () => Promise<void>;
+}
+
+const asUser = (request: FlowRequest, access: SessionAccess | undefined, user: JourneyUser | undefined): FlowRequest =>
+  access === undefined || user === undefined ? request : { ...request, headers: access.users[user] };
+
+const needsSeed = (input: SessionInput, states: readonly JourneyState[]): boolean =>
+  input.access !== undefined &&
+  ((on(input.modes, FLOW_FEATURE) && input.access.flowUser !== undefined) ||
+    (on(input.modes, JOURNEYS_FEATURE) && runnableJourneys(states).some((journey) => journey.user !== undefined)));
+
+const journeyRun = async (browser: Browser, input: SessionInput, states: readonly JourneyState[]) => {
+  const outcomes = [];
+  for (const journey of runnableJourneys(states))
+    outcomes.push(await measureJourney(browser, asUser(input.request, input.access, journey.user), journey));
+  return journeyPages(states, outcomes);
+};
 
 const actionsFor = (input: SessionInput): Readonly<Record<string, PerfAction>> => {
   const out: Record<string, PerfAction> = {};
@@ -125,16 +154,19 @@ const visualRun = async (browser: Browser, input: SessionInput): Promise<readonl
 
 export const sessionPages = async (browser: Browser, input: SessionInput): Promise<readonly UxPage[]> => {
   const pages: UxPage[] = [];
+  const states = on(input.modes, JOURNEYS_FEATURE) ? listJourneys(input.runtime, fmPaths(input.root)) : [];
+  if (needsSeed(input, states)) await input.access?.seed();
   if (on(input.modes, FLOW_FEATURE))
-    pages.push(...(await flowRun(browser, input.request, input.config, input.screens)));
+    pages.push(
+      ...(await flowRun(
+        browser,
+        asUser(input.request, input.access, input.access?.flowUser),
+        input.config,
+        input.screens,
+      )),
+    );
   if (on(input.modes, VISUAL_FEATURE)) pages.push(...(await visualRun(browser, input)));
   if (on(input.modes, PERF_FEATURE)) pages.push(...(await perfRun(browser, input)));
-  if (on(input.modes, JOURNEYS_FEATURE)) {
-    const states = listJourneys(input.runtime, fmPaths(input.root));
-    const outcomes = [];
-    for (const state of states.filter((item) => item.approved && item.journey !== undefined))
-      if (state.journey !== undefined) outcomes.push(await measureJourney(browser, input.request, state.journey));
-    pages.push(...journeyPages(states, outcomes));
-  }
+  if (on(input.modes, JOURNEYS_FEATURE)) pages.push(...(await journeyRun(browser, input, states)));
   return pages;
 };

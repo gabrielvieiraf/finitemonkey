@@ -1,6 +1,7 @@
 import type { Browser, Page } from "playwright-core";
 
-import { type DestructiveResult, type DraftResult, type FlowNode, MAX_DEPTH, MAX_PAGES, UNDO_NAME } from "./flow.js";
+import { DESTRUCTIVE_NAME, type DestructiveResult, type DraftResult, type FlowNode, UNDO_NAME } from "./flow.js";
+import { crawl, type CrawlPage } from "./flow-crawl.js";
 import { blockExternal } from "./node-ux.js";
 
 const SETTLE_MS = 400;
@@ -10,6 +11,7 @@ export interface FlowRequest {
   readonly baseUrl: string;
   readonly timeoutMs: number;
   readonly isolate: boolean;
+  readonly headers?: Readonly<Record<string, string>>;
 }
 
 export const withPage = async <T>(
@@ -19,6 +21,8 @@ export const withPage = async <T>(
 ): Promise<T> => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
   if (request.isolate) await blockExternal(context, new Set());
+  if (request.headers !== undefined && Object.keys(request.headers).length > 0)
+    await context.setExtraHTTPHeaders({ ...request.headers });
   try {
     return await run(await context.newPage());
   } finally {
@@ -27,27 +31,40 @@ export const withPage = async <T>(
 };
 
 const LINKS = `[...document.querySelectorAll("a[href]")].map((a) => a.href)`;
+const NAV_MARK = "data-fm-nav";
+const CLICKABLES = `(() => {
+  const destructive = new RegExp(${JSON.stringify(DESTRUCTIVE_NAME.source)}, "i");
+  const all = [...document.querySelectorAll('[role=link]:not([href]), [role=button], button')]
+    .filter((el) => !el.closest("form") && !el.closest("a[href]") && !el.disabled)
+    .filter((el) => el.getBoundingClientRect().height > 0)
+    .filter((el) => !destructive.test((el.getAttribute("aria-label") || el.textContent || "").trim()));
+  all.forEach((el, index) => el.setAttribute("${NAV_MARK}", String(index)));
+  return all.length;
+})()`;
 
-const localRoute = (base: string, href: string): string | undefined => {
-  try {
-    const url = new URL(href, base);
-    return url.origin === new URL(base).origin && url.protocol.startsWith("http")
-      ? `${url.pathname}${url.search}`
-      : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
-const nodeAt = async (page: Page, request: FlowRequest, route: string, back: string | undefined): Promise<FlowNode> => {
-  await page.goto(`${request.baseUrl}${route}`, { waitUntil: "networkidle", timeout: request.timeoutMs });
-  const raw: unknown = await page.evaluate(LINKS);
-  const links = (Array.isArray(raw) ? raw : [])
-    .flatMap((href: unknown) => (typeof href === "string" ? (localRoute(request.baseUrl, href) ?? []) : []))
-    .filter((target) => target !== route);
-  const hasBack = back !== undefined && !back.startsWith("/") && (await page.locator(back).count()) > 0;
-  return { route, links: [...new Set(links)], back: hasBack };
-};
+export const crawlPage = (page: Page, request: FlowRequest): CrawlPage => ({
+  visit: async (route) => {
+    await page.goto(`${request.baseUrl}${route}`, { waitUntil: "networkidle", timeout: request.timeoutMs });
+  },
+  links: async () => {
+    const raw: unknown = await page.evaluate(LINKS);
+    return (Array.isArray(raw) ? raw : []).flatMap((href: unknown) => (typeof href === "string" ? [href] : []));
+  },
+  clickables: async () => {
+    const count: unknown = await page.evaluate(CLICKABLES);
+    return typeof count === "number" ? count : 0;
+  },
+  click: async (index) => {
+    const before = page.url();
+    await page
+      .locator(`[${NAV_MARK}="${String(index)}"]`)
+      .first()
+      .click({ timeout: 2000 });
+    await page.waitForURL((url) => url.href !== before, { timeout: SETTLE_MS * 2 }).catch(() => undefined);
+  },
+  url: () => page.url(),
+  hasBack: async (selector) => (await page.locator(selector).count()) > 0,
+});
 
 export const crawlFlow = async (
   browser: Browser,
@@ -56,19 +73,10 @@ export const crawlFlow = async (
   backs: Readonly<Record<string, string>>,
 ): Promise<readonly FlowNode[]> =>
   withPage(browser, request, async (page) => {
-    const nodes: FlowNode[] = [];
-    const depth = new Map(routes.map((route) => [route, 0]));
-    const queue = [...routes];
-    for (let route = queue.shift(); route !== undefined && nodes.length < MAX_PAGES; route = queue.shift()) {
-      const node = await nodeAt(page, request, route, backs[route]).catch(() => ({ route, links: [], back: true }));
-      nodes.push(node);
-      const next = (depth.get(route) ?? 0) + 1;
-      for (const link of node.links.filter((item) => !depth.has(item) && next <= MAX_DEPTH)) {
-        depth.set(link, next);
-        queue.push(link);
-      }
-    }
-    return nodes;
+    page.on("dialog", (dialog) => {
+      void dialog.dismiss().catch(() => undefined);
+    });
+    return crawl(crawlPage(page, request), request.baseUrl, routes, backs);
   });
 
 const MODAL = `[...document.querySelectorAll("dialog[open], [role=dialog], [role=alertdialog]")].some((el) => el.getBoundingClientRect().height > 0)`;
