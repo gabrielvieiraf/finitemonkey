@@ -20,21 +20,17 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/finitemonkey.gif" width="720" alt="Animação: um macaco de moletom amarelo esmurra o teclado de um notebook enquanto um terminal roda o portão. As verificações que falham ficam verdes e travam uma a uma até aparecer actually done, e o macaco comemora com uma banana.">
-  <br>
-  <sub>Ilustração. A gravação abaixo é a ferramenta de verdade.</sub>
 </p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/gate.gif" width="720" alt="Gravação de uma sessão do Claude Code. Pedem para ele somar um cupom ao carrinho sem rodar os testes; ele roda o portão mesmo assim, vê o teste total rounds to cents falhar, arredonda o resultado e roda de novo. O hook de Stop então informa: portão verde, 10 checagens passaram nesta árvore.">
-  <br>
-  <sub>Gravação real, finitemonkey 0.1.0-next.27 com Claude Code 2.1.283, acelerada 1,3×. Fonte: <a href="assets/gate.cast">assets/gate.cast</a>.</sub>
 </p>
 
 **Infinitos macacos não são necessários. Um basta: você.**
 
 [English](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.md) | Português (Brasil) | [Español](https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.es.md)
 
-> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm (0.1.0-next.40 quando isto foi escrito; o selo lá em cima mostra a atual). O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
+> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm. O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
 
 Eu sei como é. Com o advento da IA, muita coisa mudou.
 
@@ -58,7 +54,7 @@ Um macaco. Tempo finito. Trabalho que sai de verdade.
 
 ## O Claude Code diz que terminou, mas não terminou
 
-Esse é o principal problema que o Finite Monkey quer resolver. O que ele faz:
+O que ele faz:
 
 - Cada tarefa ganha uma **definição de pronto** que a máquina consegue checar: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo.
 - Quando o Claude tenta encerrar a sessão, o hook `Stop` roda essa checagem. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
@@ -133,9 +129,9 @@ O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha 
 
 O segundo ensaio, [A ilusão do segundo cérebro](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/second-brain/second-brain.pt-BR.md), trata do conhecimento do projeto: por que "segundo cérebro" com LLM e arquivos de contexto envelhecem sem aviso e quase não ajudam o agente, segundo os estudos disponíveis, e como o Finite Monkey propõe tratar cada afirmação sobre o código como artefato de build, presa ao hash do trecho que descreve e verificada por execução.
 
-## Funciona de verdade? (benchmark, ainda não rodado)
+## Funciona de verdade?
 
-Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório, inclusive onde não ajudou.
+Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório.
 
 <!-- generated:evidence:start -->
 Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.41 sobre o corpus rotulado em [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
@@ -156,7 +152,7 @@ A comparação completa, com fontes, está em [docs/compare.pt-BR.md](https://gi
 
 - **O Claude Code puro** já tem hooks e permissões. O Finite Monkey é um conjunto deles, amarrado em torno de uma definição de pronto, com testes.
 - **Métodos como superpowers, GSD, Spec Kit ou OpenSpec** dizem ao agente como planejar e construir. O Finite Monkey não substitui nenhum deles: confere o resultado no fim, seja qual for o método.
-- **Guardas avulsos como tdd-guard, cc-safety-net ou dcg** fazem um trabalho cada um, e bem. O Finite Monkey cobre quatro danos com um portão, uma instalação e um `undo`. Se você só precisa de um desses trabalhos, um guarda avulso pode ser a escolha mais simples.
+- **Guardas avulsos como tdd-guard, cc-safety-net ou dcg** fazem um trabalho cada um, e bem. O Finite Monkey cobre quatro danos com um portão, uma instalação e um `undo`.
 
 <!-- generated:defaults:start -->
 ## Padrões e a evidência de cada um
@@ -259,7 +255,7 @@ O plugin também carrega um mod: um módulo de hooks que o Claude Code 2.1.287 o
 
 ## Perguntas frequentes
 
-Mais perguntas, uma para cada busca real, em [docs/faq.pt-BR.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.pt-BR.md).
+Mais perguntas em [docs/faq.pt-BR.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.pt-BR.md).
 
 **É um prompt?**
 Não. São hooks e checagens que rodam lembrando o modelo ou não.
@@ -268,7 +264,7 @@ Não. São hooks e checagens que rodam lembrando o modelo ou não.
 Não. Seu código nunca sai da sua máquina, e não há telemetria. Sem você pedir, ele faz dois tipos de chamada de rede: o `gh` perguntando ao GitHub sobre pull requests, só quando o `gh` está logado, e o nome de um pacote enviado ao registro do npm ou do PyPI quando um comando vai acrescentar um pacote que o projeto não declara. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
 
 **Vai me deixar mais lento?**
-Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/next/budgets.json). Os tempos de ponta a ponta saem junto com o benchmark.
+Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](https://github.com/gabrielvieiraf/finitemonkey/blob/next/budgets.json).
 
 **E se ele barrar algo que não devia?**
 Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é tratado como bug e contado em público.
@@ -319,7 +315,7 @@ Veja [CONTRIBUTING.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/
 
 ## Licença
 
-[Apache-2.0](https://github.com/gabrielvieiraf/finitemonkey/blob/next/LICENSE), por Gabriel Vieira. A licença não dá direito ao nome nem ao logo "Finite Monkey".
+[Apache-2.0](https://github.com/gabrielvieiraf/finitemonkey/blob/next/LICENSE)
 
 ---
 
@@ -329,9 +325,7 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.pt-BR.
 
 [English](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.md) | Português (Brasil) | [Español](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/faq.es.md)
 
-> **Versões iniciais.** O Finite Monkey se instala pelo canal `next` do npm (`npx finitemonkey@next init`); ainda não há versão estável. Cada resposta abaixo diz o que dá para fazer hoje só com o Claude Code e o que o Finite Monkey acrescenta. Se ele ajuda ainda não foi medido: o benchmark ainda não rodou.
-
-Cada pergunta é uma busca que as pessoas digitam de verdade, tirada de títulos de issues em [anthropics/claude-code](https://github.com/anthropics/claude-code/issues) e de discussões no Hacker News, conferidos em 2026-10-25.
+> **Versões iniciais.** O Finite Monkey se instala pelo canal `next` do npm (`npx finitemonkey@next init`); ainda não há versão estável.
 
 ## Por que o Claude Code diz que terminou quando não terminou?
 
@@ -387,7 +381,7 @@ Transforme cada regra no mecanismo mais barato que consegue checá-la. "Nunca co
 Procure segredos em mais de um ponto, porque uma chave pode vazar por um arquivo escrito, um prompt, um commit, o histórico ou um pull request. A [anthropics/claude-code#2142](https://github.com/anthropics/claude-code/issues/2142) é um relato de chaves de API chegando ao controle de versão.
 
 - **Hoje:** um scanner de segredos no pre-commit (o gitleaks é uma escolha comum), o secret scanning do GitHub com push protection e um hook `PreToolUse` ou regra `deny` que impede o agente de ler arquivos `.env`.
-- **No Finite Monkey:** uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é tratado como incidente para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor. Isso reduz o risco; não dá para prometer que nada nunca vaza.
+- **No Finite Monkey:** uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é tratado como incidente para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
 
 ## Como impedir um agente de IA de mexer num servidor de produção?
 
@@ -413,7 +407,7 @@ Sim. Um hook `Stop` pode rodar o seu comando de teste e, se falhar, bloquear o f
 
 Existem vários, e alguns são ótimos num trabalho só. O tdd-guard obriga a escrever o teste antes; o cc-safety-net e o dcg bloqueiam comandos destrutivos de shell e git. Métodos como Superpowers, GSD e Spec Kit acrescentam processo. A [página de comparação](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.pt-BR.md) mostra o que cada um garante por mecanismo e o que deixa na prosa, com fontes.
 
-- **No Finite Monkey:** ele cobre quatro danos ("pronto" falso, segredo vazado, mexida na produção na mão, trabalho perdido no git) com um portão, uma instalação e um `undo`. Se isso vale mais do que um guarda avulso no seu caso é o que o benchmark vai responder, e ele ainda não rodou.
+- **No Finite Monkey:** ele cobre quatro danos ("pronto" falso, segredo vazado, mexida na produção na mão, trabalho perdido no git) com um portão, uma instalação e um `undo`.
 
 ## Funciona com ferramentas que trocam a conta do Claude Code quando o limite acaba?
 
@@ -429,13 +423,13 @@ Source: https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.pt
 
 [English](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.md) | Português (Brasil) | [Español](https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/compare.es.md)
 
-> **Versões iniciais.** O Finite Monkey tem versões iniciais no canal `next` do npm. O que esta página diz sobre ele descreve o que o código faz, e nada disso foi **medido ainda**: o benchmark ainda não rodou. Tudo o que ela diz sobre os outros projetos é fato que você confere no link ao lado.
+> **Versões iniciais.** O Finite Monkey tem versões iniciais no canal `next` do npm. O benchmark ainda não rodou.
 
-**Conferido em 2026-10-25**, lendo o código de cada projeto no commit indicado. Nenhum hook de terceiro foi executado. Se algo aqui estiver errado ou desatualizado, abra uma issue ou um pull request e será corrigido.
+**Conferido em 2026-10-25**, lendo o código de cada projeto no commit indicado. Nenhum hook de terceiro foi executado.
 
 ## Mecanismo ou prosa
 
-A pergunta que esta página faz a cada projeto é a mesma: quando o modelo prefere pular uma regra, o que continua valendo?
+Para cada projeto: quando o modelo prefere pular uma regra, o que continua valendo?
 
 - **Mecanismo**: código que roda no harness (um hook, uma regra de permissão, um git hook, uma etapa de CI) e bloqueia ou confere seja qual for a decisão do modelo.
 - **Prosa**: texto que o modelo lê (uma skill, um prompt, um `CLAUDE.md`) e pode seguir. Prosa muitas vezes é a ferramenta certa para planejar, para estilo e para julgamento. Sozinha, não mostra que algo aconteceu.
@@ -467,7 +461,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prosa.** Os portões são texto de skill, como "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" em [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). Quem decide chamar o `task-done` é o modelo, e a [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) registra que um comando substituto como `echo "tests passed"` não se distingue de uma execução real de testes.
 
-**Onde o Finite Monkey é diferente.** O portão roda a checagem ele mesmo, a partir de um hook, toda vez que o agente tenta parar, e comando trivial não conta como prova. O planejamento fica com skills como essas: um design aprovado no Superpowers pode virar a entrada de uma definição de pronto. Ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão roda a checagem ele mesmo, a partir de um hook, toda vez que o agente tenta parar, e comando trivial não conta como prova. O planejamento fica com skills como essas: um design aprovado no Superpowers pode virar a entrada de uma definição de pronto.
 
 ## oh-my-claudecode
 
@@ -479,7 +473,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Onde o modelo decide.** O drift guard deixa o fim passar quando `stop_hook_active` está ligado (linha 910), então bloqueia uma vez. A trava de git só fica ativa nos modos `ralph`, `autopilot`, `team` e `ultragoal` (linha 38) ou com uma variável de ambiente. Nos modos persistentes, concluir é o modelo rodar `/cancel`.
 
-**Onde o Finite Monkey é diferente.** O portão continua bloqueando enquanto a definição de pronto falhar, e a trava de git fica sempre ligada. Ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão continua bloqueando enquanto a definição de pronto falhar, e a trava de git fica sempre ligada.
 
 ## GSD
 
@@ -491,7 +485,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Onde o modelo decide.** A verificação é um agente LLM ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) que escreve o `VERIFICATION.md`, e o portão de fase em [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) lê o status que esse agente escreveu.
 
-**Onde o Finite Monkey é diferente.** O veredito vem de comandos que o portão rodou nos arquivos atuais. Ainda não medido.
+**Onde o Finite Monkey é diferente.** O veredito vem de comandos que o portão rodou nos arquivos atuais.
 
 ## Spec Kit
 
@@ -503,7 +497,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prosa.** Hooks de extensão como `after_implement` dependem de o modelo chamá-los: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), linhas 70 a 72). A validação de testes no comando de implementação é uma instrução, e a convergência é declarada pelo modelo. A [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) pede um portão final de qualidade.
 
-**Onde o Finite Monkey é diferente.** O portão roda como handler de `Stop` e também é um comando (`finitemonkey gate`) que uma etapa `shell` de workflow do Spec Kit pode rodar, e o `finitemonkey task from-spec` propõe uma definição de pronto a partir de um `tasks.md` sem mexer nele. Ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão roda como handler de `Stop` e também é um comando (`finitemonkey gate`) que uma etapa `shell` de workflow do Spec Kit pode rodar, e o `finitemonkey task from-spec` propõe uma definição de pronto a partir de um `tasks.md` sem mexer nele.
 
 ## ECC (Everything Claude Code)
 
@@ -515,7 +509,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Onde o modelo decide.** O [`stop-format-typecheck.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/stop-format-typecheck.js) roda no `Stop`, relata e sai 0, ou seja, informa sem bloquear. O [`gateguard-fact-force.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/gateguard-fact-force.js) nega o primeiro toque num arquivo e deixa a repetição passar (linhas 1935 e 1936).
 
-**Onde o Finite Monkey é diferente.** Um núcleo pequeno com orçamento de contexto conferido no CI, um portão no `Stop` que bloqueia e nenhuma trava que cede na repetição. Ainda não medido.
+**Onde o Finite Monkey é diferente.** Um núcleo pequeno com orçamento de contexto conferido no CI, um portão no `Stop` que bloqueia e nenhuma trava que cede na repetição.
 
 ## ralph-loop
 
@@ -527,7 +521,7 @@ Plugin oficial em [`anthropics/claude-plugins-official`](https://github.com/anth
 
 **Onde o modelo decide.** O laço termina quando a última mensagem do modelo contém `<promise>TEXTO</promise>` igual à promessa de conclusão que você definiu (linhas 129 a 138). A própria mensagem do hook pede ao modelo que não minta para sair.
 
-**Onde o Finite Monkey é diferente.** O portão no `Stop` mantém o agente trabalhando até a definição de pronto passar e, depois do limite de bloqueios, termina com um relatório de "não terminado". Ainda não medido.
+**Onde o Finite Monkey é diferente.** O portão no `Stop` mantém o agente trabalhando até a definição de pronto passar e, depois do limite de bloqueios, termina com um relatório de "não terminado".
 
 ## tdd-guard
 
@@ -557,13 +551,11 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 ## Onde o Finite Monkey é diferente
 
-Nada disto foi **medido ainda**: o benchmark ainda não rodou.
-
 - **Prova das execuções do próprio portão.** Pronto quer dizer que o portão rodou a definição de pronto nos arquivos atuais. Mensagem no chat, arquivo de progresso ou relatório escrito por um agente não contam.
 - **Bloqueio até as checagens passarem.** Ele continua bloqueando enquanto a definição de pronto falha, e termina com um relatório de "não terminado" em vez de um laço sem fim.
 - **Quatro danos numa instalação.** "Pronto" falso, segredo vazado, mexida na produção na mão e trabalho perdido no git, com um `undo` para o git.
 - **Contexto fixo pequeno.** A obrigação mora nos hooks, que não custam token a cada turno, com um orçamento em bytes conferido no CI.
-- **Benchmark.** Um benchmark público com ablação decide quais regras ficam. A bancada está pronta; ele ainda não rodou.
+- **Benchmark.** Um benchmark público com ablação decide quais regras ficam.
 
 ## Onde eles estão na frente hoje
 

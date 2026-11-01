@@ -2,9 +2,7 @@
 
 [English](faq.md) | Português (Brasil) | [Español](faq.es.md)
 
-> **Versões iniciais.** O Finite Monkey se instala pelo canal `next` do npm (`npx finitemonkey@next init`); ainda não há versão estável. Cada resposta abaixo diz o que dá para fazer hoje só com o Claude Code e o que o Finite Monkey acrescenta. Se ele ajuda ainda não foi medido: o benchmark ainda não rodou.
-
-Cada pergunta é uma busca que as pessoas digitam de verdade, tirada de títulos de issues em [anthropics/claude-code](https://github.com/anthropics/claude-code/issues) e de discussões no Hacker News, conferidos em 2026-10-25.
+> **Versões iniciais.** O Finite Monkey se instala pelo canal `next` do npm (`npx finitemonkey@next init`); ainda não há versão estável.
 
 ## Por que o Claude Code diz que terminou quando não terminou?
 
@@ -60,7 +58,7 @@ Transforme cada regra no mecanismo mais barato que consegue checá-la. "Nunca co
 Procure segredos em mais de um ponto, porque uma chave pode vazar por um arquivo escrito, um prompt, um commit, o histórico ou um pull request. A [anthropics/claude-code#2142](https://github.com/anthropics/claude-code/issues/2142) é um relato de chaves de API chegando ao controle de versão.
 
 - **Hoje:** um scanner de segredos no pre-commit (o gitleaks é uma escolha comum), o secret scanning do GitHub com push protection e um hook `PreToolUse` ou regra `deny` que impede o agente de ler arquivos `.env`.
-- **No Finite Monkey:** uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é tratado como incidente para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor. Isso reduz o risco; não dá para prometer que nada nunca vaza.
+- **No Finite Monkey:** uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é tratado como incidente para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
 
 ## Como impedir um agente de IA de mexer num servidor de produção?
 
@@ -86,7 +84,7 @@ Sim. Um hook `Stop` pode rodar o seu comando de teste e, se falhar, bloquear o f
 
 Existem vários, e alguns são ótimos num trabalho só. O tdd-guard obriga a escrever o teste antes; o cc-safety-net e o dcg bloqueiam comandos destrutivos de shell e git. Métodos como Superpowers, GSD e Spec Kit acrescentam processo. A [página de comparação](compare.pt-BR.md) mostra o que cada um garante por mecanismo e o que deixa na prosa, com fontes.
 
-- **No Finite Monkey:** ele cobre quatro danos ("pronto" falso, segredo vazado, mexida na produção na mão, trabalho perdido no git) com um portão, uma instalação e um `undo`. Se isso vale mais do que um guarda avulso no seu caso é o que o benchmark vai responder, e ele ainda não rodou.
+- **No Finite Monkey:** ele cobre quatro danos ("pronto" falso, segredo vazado, mexida na produção na mão, trabalho perdido no git) com um portão, uma instalação e um `undo`.
 
 ## Funciona com ferramentas que trocam a conta do Claude Code quando o limite acaba?
 

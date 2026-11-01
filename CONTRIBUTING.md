@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. Finite Monkey is pre-release, so expect things to move. Before changing anything, read [AGENTS.md](AGENTS.md): it lists the invariants of this repository and the checks that enforce them. They apply to humans and agents alike.
+Before changing anything, read [AGENTS.md](AGENTS.md): it lists the invariants of this repository and the checks that enforce them. They apply to humans and agents alike.
 
 ## Setup
 

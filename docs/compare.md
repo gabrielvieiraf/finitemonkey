@@ -2,13 +2,13 @@
 
 English | [Português (Brasil)](compare.pt-BR.md) | [Español](compare.es.md)
 
-> **Early versions.** Finite Monkey ships early versions on npm's `next` channel. What this page says about it describes what the code does, and none of it is **measured yet**: the benchmark has not been run. Everything said about the other projects is a fact you can check at the link next to it.
+> **Early versions.** Finite Monkey ships early versions on npm's `next` channel. The benchmark has not been run.
 
-**Checked on 2026-10-25** by reading each project's code at the commit listed below. No third-party hook was executed. If something here is wrong or out of date, open an issue or a pull request and it will be corrected.
+**Checked on 2026-10-25** by reading each project's code at the commit listed below. No third-party hook was executed.
 
 ## Mechanism or prose
 
-The question this page asks about every project is the same: when the model would rather skip a rule, what still holds?
+For each project: when the model would rather skip a rule, what still holds?
 
 - **Mechanism**: code that runs in the harness (a hook, a permission rule, a git hook, a CI step) and blocks or checks no matter what the model decides.
 - **Prose**: text the model reads (a skill, a prompt, a `CLAUDE.md`) and may follow. Prose is often the right tool for planning, style and judgment. On its own it cannot show that something happened.
@@ -40,7 +40,7 @@ Commit [`2ce8aa1`](https://github.com/obra/superpowers/tree/2ce8aa1) (v7.0.1).
 
 **Prose.** The gates are skill text, such as "NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE" in [`verification-before-completion`](https://github.com/obra/superpowers/blob/2ce8aa1/skills/verification-before-completion/SKILL.md). The model decides whether to call `task-done`, and [obra/superpowers#2549](https://github.com/obra/superpowers/issues/2549) notes that a stand-in command such as `echo "tests passed"` is indistinguishable from a real test run.
 
-**Where Finite Monkey differs.** The gate runs the check itself from a hook every time the agent tries to stop, and trivial commands do not count as evidence. It leaves planning to skills like these; an approved Superpowers design could become the input of a definition of done. Not measured yet.
+**Where Finite Monkey differs.** The gate runs the check itself from a hook every time the agent tries to stop, and trivial commands do not count as evidence. It leaves planning to skills like these; an approved Superpowers design could become the input of a definition of done.
 
 ## oh-my-claudecode
 
@@ -52,7 +52,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Where the model decides.** The drift guard lets the stop through when `stop_hook_active` is set (line 910), so it blocks once. The git guard is active only in the `ralph`, `autopilot`, `team` and `ultragoal` modes (line 38) or with an environment variable. In the persistent modes, completion is the model running `/cancel`.
 
-**Where Finite Monkey differs.** The gate keeps blocking for as long as the definition of done fails, and the git guard is always on. Not measured yet.
+**Where Finite Monkey differs.** The gate keeps blocking for as long as the definition of done fails, and the git guard is always on.
 
 ## GSD
 
@@ -64,7 +64,7 @@ Commit [`5632614`](https://github.com/Yeachan-Heo/oh-my-claudecode/tree/5632614)
 
 **Where the model decides.** Verification is an LLM agent ([`agents/gsd-verifier.md`](https://github.com/open-gsd/gsd-core/blob/754e886/agents/gsd-verifier.md)) that writes `VERIFICATION.md`, and the phase gate in [`src/phase.cts`](https://github.com/open-gsd/gsd-core/blob/754e886/src/phase.cts) reads the status that agent wrote.
 
-**Where Finite Monkey differs.** The verdict comes from commands the gate ran on the current files. Not measured yet.
+**Where Finite Monkey differs.** The verdict comes from commands the gate ran on the current files.
 
 ## Spec Kit
 
@@ -76,7 +76,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Prose.** Extension hooks such as `after_implement` depend on the model invoking them: "mandatory extension hooks rely on the model invoking the hook skill" ([`src/specify_cli/integrations/claude/__init__.py`](https://github.com/github/spec-kit/blob/67e0f72/src/specify_cli/integrations/claude/__init__.py), lines 70 to 72). Test validation in the implement command is an instruction, and convergence is declared by the model. [github/spec-kit#1323](https://github.com/github/spec-kit/issues/1323) asks for a final quality gate.
 
-**Where Finite Monkey differs.** The gate runs as a `Stop` handler and is also a command (`finitemonkey gate`) that a Spec Kit workflow `shell` step can run, and `finitemonkey task from-spec` proposes a definition of done from a `tasks.md` without changing it. Not measured yet.
+**Where Finite Monkey differs.** The gate runs as a `Stop` handler and is also a command (`finitemonkey gate`) that a Spec Kit workflow `shell` step can run, and `finitemonkey task from-spec` proposes a definition of done from a `tasks.md` without changing it.
 
 ## ECC (Everything Claude Code)
 
@@ -88,7 +88,7 @@ Commit [`67e0f72`](https://github.com/github/spec-kit/tree/67e0f72).
 
 **Where the model decides.** [`stop-format-typecheck.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/stop-format-typecheck.js) runs on `Stop`, reports and exits 0, so it informs without blocking. [`gateguard-fact-force.js`](https://github.com/affaan-m/ECC/blob/90606c8/scripts/hooks/gateguard-fact-force.js) denies the first touch of a file and lets the retry pass (lines 1935 and 1936).
 
-**Where Finite Monkey differs.** A small core with a context budget checked in CI, a `Stop` gate that blocks, and no guard that gives way on retry. Not measured yet.
+**Where Finite Monkey differs.** A small core with a context budget checked in CI, a `Stop` gate that blocks, and no guard that gives way on retry.
 
 ## ralph-loop
 
@@ -100,7 +100,7 @@ Official plugin in [`anthropics/claude-plugins-official`](https://github.com/ant
 
 **Where the model decides.** The loop ends when the model's last message contains `<promise>TEXT</promise>` matching the completion promise you set (lines 129 to 138). The hook's own message asks the model not to lie to exit.
 
-**Where Finite Monkey differs.** The `Stop` gate keeps the agent working until the definition of done passes, and after its block limit ends with a "not finished" report. Not measured yet.
+**Where Finite Monkey differs.** The `Stop` gate keeps the agent working until the definition of done passes, and after its block limit ends with a "not finished" report.
 
 ## tdd-guard
 
@@ -130,13 +130,11 @@ Commit [`71baf74`](https://github.com/kenryu42/cc-safety-net/tree/71baf74).
 
 ## Where Finite Monkey differs
 
-None of this is **measured yet**: the benchmark has not been run.
-
 - **Evidence from the gate's own runs.** Done means the gate ran the definition of done on the current files. A chat message, a progress file or a report written by an agent does not count.
 - **Blocking until the checks pass.** It keeps blocking while the definition of done fails, and ends with a "not finished" report instead of looping forever.
 - **Four damages in one install.** False "done", leaked secrets, hand edits to production and lost git work, with one `undo` for git.
 - **Small fixed context.** Enforcement lives in hooks, which cost no tokens per turn, with a byte budget checked in CI.
-- **Benchmark.** A public benchmark with ablation decides which rules stay. Its harness is built; it has not been run.
+- **Benchmark.** A public benchmark with ablation decides which rules stay.
 
 ## Where they are ahead today
 

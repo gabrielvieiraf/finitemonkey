@@ -1,0 +1,2680 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Finite Monkey</title>
+    <meta
+      name="description"
+      content="Finite Monkey is a gate for Claude Code: it runs the definition of done on the current tree and lets the session end only when it passes. Installable through npm's next channel."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fcfcfd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1014" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://gabrielvieiraf.github.io/finitemonkey/" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23fcfcfd'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='ui-monospace,Menlo,Consolas,monospace' font-size='17' font-weight='800' fill='%23121519'%3Efm%3C/text%3E%3C/svg%3E"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Finite Monkey" />
+    <meta property="og:title" content="Finite Monkey" />
+    <meta
+      property="og:description"
+      content="A gate for Claude Code: the session ends only when the definition of done passes on the current tree."
+    />
+    <meta property="og:url" content="https://gabrielvieiraf.github.io/finitemonkey/" />
+    <meta
+      property="og:image"
+      content="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/social.png"
+    />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Finite Monkey" />
+    <meta
+      name="twitter:description"
+      content="A gate for Claude Code: the session ends only when the definition of done passes on the current tree."
+    />
+    <meta name="twitter:url" content="https://gabrielvieiraf.github.io/finitemonkey/" />
+    <meta
+      name="twitter:image"
+      content="https://raw.githubusercontent.com/gabrielvieiraf/finitemonkey/next/assets/social.png"
+    />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/asciinema-player@3.17.0/dist/bundle/asciinema-player.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #fcfcfd;
+        --ink: #121519;
+        --muted: #5d6570;
+        --faint: #8a929c;
+        --rule: #e2e5e9;
+        --grid: #eceef1;
+        --ok: #2a7552;
+        --ok-bg: #e4f2ea;
+        --bad: #a8372b;
+        --bad-bg: #f3dedb;
+        --warn: #7a5d2c;
+        --warn-bg: #efe6d4;
+        --prox: #2c5597;
+        --prox-bg: #e5ecf8;
+        --hor: #6b7480;
+        --hor-bg: #eff1f4;
+        --you: #b97d00;
+        --you-bg: #fbecc6;
+        --st-a2: #cfe7da;
+        --st-a1: #e4f2ea;
+        --st-p2: #cddbf2;
+        --st-p1: #e5ecf8;
+        --st-d: #d9c6e8;
+        --st-disc: #6b4a8c;
+        --st-hatch: #f3dedb;
+        --st-hatch-ln: #a8372b;
+        --st-dots: #e9e1d3;
+        --st-dot: #7a5d2c;
+        --term-bg: #0a0c0f;
+        --term-ink: #c9d1db;
+        --term-dim: #6f7884;
+        --term-ok: #6fe0ac;
+        --term-bad: #ff8a7c;
+        --term-you: #ffc24d;
+        --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+        --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --bg: #0d1014;
+          --ink: #e6e9ee;
+          --muted: #9aa3ae;
+          --faint: #6f7884;
+          --rule: #232a33;
+          --grid: #1a2028;
+          --ok: #5fd09d;
+          --ok-bg: #12271e;
+          --bad: #f08a7e;
+          --bad-bg: #43211f;
+          --warn: #e0bb72;
+          --warn-bg: #3a3020;
+          --prox: #86aef0;
+          --prox-bg: #15213a;
+          --hor: #8994a2;
+          --hor-bg: #151a21;
+          --you: #ffc24d;
+          --you-bg: #3b2e10;
+          --st-a2: #183a2a;
+          --st-a1: #12271e;
+          --st-p2: #1d2f52;
+          --st-p1: #15213a;
+          --st-d: #2f2447;
+          --st-disc: #b79be0;
+          --st-hatch: #43211f;
+          --st-hatch-ln: #f08a7e;
+          --st-dots: #3a3020;
+          --st-dot: #e0bb72;
+          --st-a2: #183a2a;
+          --st-a1: #12271e;
+          --st-p2: #1d2f52;
+          --st-p1: #15213a;
+          --st-d: #2f2447;
+          --st-disc: #b79be0;
+          --st-hatch: #43211f;
+          --st-hatch-ln: #f08a7e;
+          --st-dots: #3a3020;
+          --st-dot: #e0bb72;
+          --term-bg: #050608;
+        }
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0d1014;
+        --ink: #e6e9ee;
+        --muted: #9aa3ae;
+        --faint: #6f7884;
+        --rule: #232a33;
+        --grid: #1a2028;
+        --ok: #5fd09d;
+        --ok-bg: #12271e;
+        --bad: #f08a7e;
+        --bad-bg: #43211f;
+        --warn: #e0bb72;
+        --warn-bg: #3a3020;
+        --prox: #86aef0;
+        --prox-bg: #15213a;
+        --hor: #8994a2;
+        --hor-bg: #151a21;
+        --you: #ffc24d;
+        --you-bg: #3b2e10;
+        --term-bg: #050608;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.55;
+        margin: 0;
+      }
+      a {
+        color: inherit;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+      a:hover {
+        color: var(--you);
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--you);
+        outline-offset: 2px;
+      }
+      .page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding-inline: 20px;
+        padding-block: 0 64px;
+      }
+
+      .bar {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 4;
+        background: var(--bg);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 20px;
+        padding-block: 12px;
+        border-bottom: 2px solid var(--ink);
+      }
+      .brand {
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+      }
+      .tag {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid var(--ink);
+        padding: 2px 7px;
+      }
+      .tag.warn {
+        border-color: var(--warn);
+        color: var(--warn);
+        background: var(--warn-bg);
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 16px;
+        margin-left: auto;
+        font-size: 12px;
+      }
+      .nav a {
+        text-decoration: none;
+        color: var(--muted);
+      }
+      .nav a:hover {
+        color: var(--ink);
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--ink);
+      }
+      .seg button {
+        font: inherit;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        background: transparent;
+        color: var(--ink);
+        border: 0;
+        padding: 3px 9px;
+        cursor: pointer;
+      }
+      .seg button + button {
+        border-left: 1px solid var(--ink);
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--ink);
+        color: var(--bg);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
+        gap: 32px;
+        padding-block: 44px 40px;
+        border-bottom: 1px solid var(--rule);
+      }
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: minmax(0, 1fr);
+          padding-block: 28px;
+        }
+      }
+      .hero h1 {
+        font-weight: 800;
+        font-size: clamp(30px, 5vw, 52px);
+        line-height: 1.1;
+        letter-spacing: -0.035em;
+        margin: 0 0 18px;
+        text-wrap: balance;
+      }
+      .hero h1 em {
+        font-style: normal;
+        background: var(--you-bg);
+        color: var(--ink);
+        padding-inline: 0.12em;
+        box-shadow: inset 0 -3px 0 var(--you);
+      }
+      .lede {
+        font-family: var(--serif);
+        font-size: 18px;
+        line-height: 1.5;
+        max-width: 52ch;
+        margin: 0 0 22px;
+        color: var(--ink);
+      }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .btn {
+        display: inline-block;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 2px solid var(--ink);
+        padding: 7px 14px;
+        background: var(--bg);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .btn.solid {
+        background: var(--ink);
+        color: var(--bg);
+      }
+      .btn.solid:hover {
+        background: var(--you);
+        border-color: var(--you);
+        color: #121519;
+      }
+      .btn:hover {
+        border-color: var(--you);
+      }
+      .prerel {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 18px 0 0;
+        max-width: 60ch;
+      }
+
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .stage {
+        border: 2px solid var(--ink);
+        background: var(--bg);
+        align-self: start;
+        min-width: 0;
+        margin: 0;
+      }
+      .stage-bar {
+        display: none;
+        align-items: stretch;
+        border-bottom: 2px solid var(--ink);
+      }
+      .js .stage-bar {
+        display: flex;
+      }
+      .tabs {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+      }
+      .tab {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        font: inherit;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        text-align: left;
+        background: transparent;
+        color: var(--muted);
+        border: 0;
+        border-right: 1px solid var(--ink);
+        padding: 7px 10px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tab b {
+        font-weight: 700;
+        color: var(--faint);
+        margin-right: 6px;
+      }
+      .tab[aria-selected="true"] {
+        color: var(--ink);
+        background: var(--you-bg);
+      }
+      .tab[aria-selected="true"] b {
+        color: var(--ink);
+      }
+      .tab .pg {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--you);
+        transform-origin: 0 50%;
+        transform: scaleX(0);
+      }
+      .ctl {
+        display: flex;
+      }
+      .ctl button {
+        font: inherit;
+        font-size: 12px;
+        min-width: 40px;
+        background: transparent;
+        color: var(--ink);
+        border: 0;
+        border-left: 1px solid var(--ink);
+        cursor: pointer;
+      }
+      .ctl button:first-child {
+        border-left: 0;
+      }
+      .tab:hover,
+      .ctl button:hover {
+        color: var(--ink);
+        background: var(--grid);
+      }
+      .pane + .pane {
+        border-top: 2px solid var(--ink);
+      }
+      .js .panes {
+        position: relative;
+        aspect-ratio: 100 / 72;
+        overflow: hidden;
+      }
+      @media (max-width: 600px) {
+        .js .panes {
+          aspect-ratio: 100 / 92;
+        }
+      }
+      .js .pane {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-top: 0;
+      }
+      .js .pane:not(.on) {
+        visibility: hidden;
+      }
+      .pane-cast {
+        background: var(--term-bg);
+        color: var(--term-ink);
+      }
+      .pane-cast img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .pane-cast pre {
+        margin: 0;
+        padding: 12px 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.4;
+        overflow-x: auto;
+      }
+      .pane-cast .fallback a {
+        display: block;
+        padding: 14px;
+        color: var(--term-ink);
+        font-size: 12px;
+      }
+      .pane-chart {
+        padding: 10px 12px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .traj {
+        display: block;
+        width: 100%;
+        height: auto;
+        font-family: var(--mono);
+      }
+      .traj .s-a2 {
+        fill: var(--st-a2);
+      }
+      .traj .s-a1 {
+        fill: var(--st-a1);
+      }
+      .traj .s-p2 {
+        fill: var(--st-p2);
+      }
+      .traj .s-p1 {
+        fill: var(--st-p1);
+      }
+      .traj .s-d {
+        fill: var(--st-d);
+      }
+      .traj .s-hatch-bg {
+        fill: var(--st-hatch);
+      }
+      .traj .s-hatch-ln {
+        stroke: var(--st-hatch-ln);
+        stroke-width: 1.1;
+        stroke-opacity: 0.5;
+      }
+      .traj .s-dots-bg {
+        fill: var(--st-dots);
+      }
+      .traj .s-dots-dot {
+        fill: var(--st-dot);
+        fill-opacity: 0.55;
+      }
+      .traj .ceil {
+        stroke: var(--ink);
+        stroke-opacity: 0.35;
+      }
+      .traj .ceil.dash {
+        stroke-dasharray: 2 3;
+        stroke-opacity: 0.18;
+      }
+      .traj .frame {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 0.6;
+        stroke-opacity: 0.35;
+      }
+      .traj .axis {
+        stroke: var(--ink);
+      }
+      .traj .tj-h {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--ink);
+      }
+      .traj .tj-tick {
+        font-size: 11px;
+        fill: var(--muted);
+      }
+      .traj .tj-disc {
+        font-size: 11px;
+        fill: var(--st-disc);
+      }
+      .traj .tj-disc-tick {
+        stroke: var(--st-disc);
+      }
+      .traj .tj-cap {
+        font-size: 10.5px;
+        fill: var(--ink);
+      }
+      .traj .work {
+        fill: none;
+        stroke: var(--you);
+        stroke-width: 2.6;
+        stroke-linecap: round;
+      }
+      .traj .peak {
+        fill: var(--you);
+      }
+      .traj .mr-c,
+      .traj .mh-c {
+        fill: var(--bg);
+        stroke-width: 2;
+      }
+      .traj .mr-c,
+      .traj .mr-x {
+        stroke: var(--bad);
+      }
+      .traj .mr-x {
+        fill: none;
+        stroke-width: 1.8;
+      }
+      .traj .mh-c {
+        stroke: var(--ok);
+      }
+      .traj .mh-d {
+        fill: var(--ok);
+      }
+      .traj .v-bg {
+        fill: var(--bg);
+        fill-opacity: 0.85;
+      }
+      .traj .v {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--ink);
+      }
+      .traj .v-bad {
+        fill: var(--bad);
+      }
+      .traj .v-ok {
+        fill: var(--ok);
+      }
+      .key {
+        list-style: none;
+        margin: 0;
+        padding: 6px 0 0;
+        border-top: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 3px 12px;
+        font-size: 10.5px;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+      @media (max-width: 600px) {
+        .key {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          font-size: 10px;
+        }
+      }
+      .key li {
+        display: flex;
+        gap: 6px;
+        align-items: baseline;
+      }
+      .key i {
+        flex: none;
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border: 0.6px solid var(--faint);
+        transform: translateY(1px);
+      }
+      .key .k-hatch {
+        background: repeating-linear-gradient(
+          45deg,
+          var(--st-hatch) 0 3px,
+          color-mix(in srgb, var(--st-hatch-ln) 50%, var(--st-hatch)) 3px 4px
+        );
+      }
+      .key .k-dots {
+        background: radial-gradient(circle, var(--st-dot) 0.9px, var(--st-dots) 1.1px) 0 0 / 5px 5px;
+      }
+      .key .k-d {
+        background: var(--st-d);
+      }
+      .key .k-p1 {
+        background: var(--st-p1);
+      }
+      .key .k-p2 {
+        background: var(--st-p2);
+      }
+      .key .k-a1 {
+        background: var(--st-a1);
+      }
+      .key .k-a2 {
+        background: var(--st-a2);
+      }
+      .key .k-r,
+      .key .k-h {
+        border: 0;
+        width: auto;
+        height: auto;
+        font-style: normal;
+        font-weight: 700;
+        transform: none;
+      }
+      .key .k-r {
+        color: var(--bad);
+      }
+      .key .k-h {
+        color: var(--ok);
+      }
+      .stage-cap {
+        margin: 0;
+        padding: 6px 12px;
+        border-top: 2px solid var(--ink);
+        font-size: 11px;
+        color: var(--muted);
+        min-height: 2.9em;
+      }
+      .pcap {
+        margin: 0;
+        padding: 6px 12px;
+        font-size: 11px;
+        color: var(--muted);
+        background: var(--bg);
+        border-top: 1px solid var(--rule);
+      }
+      .js .pcap {
+        display: none;
+      }
+      .stage-cap {
+        display: none;
+      }
+      .js .stage-cap {
+        display: block;
+      }
+      .stage .ap-wrapper,
+      .stage .ap-player {
+        border-radius: 0;
+      }
+      @media (max-width: 600px) {
+        .tab b {
+          display: none;
+        }
+        .tab {
+          padding: 7px 8px 10px;
+          font-size: 10px;
+          letter-spacing: 0;
+        }
+      }
+      .stage.auto .ap-overlay-start {
+        display: none;
+      }
+      @media (max-width: 600px) {
+        .traj .tj-cap,
+        .traj .tj-disc {
+          display: none;
+        }
+        .traj .tj-h {
+          font-size: 18px;
+        }
+        .traj .tj-tick {
+          font-size: 12px;
+        }
+        .traj .v {
+          font-size: 16px;
+        }
+      }
+      .asciinema-player-theme-fm {
+        --term-color-foreground: #c9d1db;
+        --term-color-background: var(--term-bg);
+        --term-color-0: #1a2028;
+        --term-color-1: #ff8a7c;
+        --term-color-2: #6fe0ac;
+        --term-color-3: #ffc24d;
+        --term-color-4: #86aef0;
+        --term-color-5: #c4a6f0;
+        --term-color-6: #7fd3e0;
+        --term-color-7: #c9d1db;
+        --term-color-8: #6f7884;
+        --term-color-9: #ff8a7c;
+        --term-color-10: #6fe0ac;
+        --term-color-11: #ffc24d;
+        --term-color-12: #86aef0;
+        --term-color-13: #c4a6f0;
+        --term-color-14: #7fd3e0;
+        --term-color-15: #e6e9ee;
+      }
+
+      section {
+        padding-block: 40px 8px;
+      }
+      .sh {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px 16px;
+        border-top: 2px solid var(--ink);
+        padding-top: 10px;
+        margin-bottom: 18px;
+      }
+      .sh h2 {
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        margin: 0;
+        text-wrap: balance;
+      }
+      .sh .k {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .intro {
+        font-family: var(--serif);
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 66ch;
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      .tablewrap {
+        overflow-x: auto;
+      }
+      table.claims {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        min-width: 640px;
+      }
+      .claims th {
+        font-weight: 500;
+        color: var(--faint);
+        text-align: left;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--ink);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .claims td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      .claims td.say {
+        width: 30%;
+        font-weight: 500;
+      }
+      .claims td.say span {
+        background: var(--bad-bg);
+        color: var(--bad);
+        padding: 1px 6px;
+      }
+      .claims td.check {
+        font-family: var(--serif);
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--ink);
+      }
+      .claims td.check code,
+      .prose code,
+      .prerel code,
+      .small code {
+        font-family: var(--mono);
+        font-size: 12px;
+        background: var(--grid);
+        padding: 0 4px;
+        white-space: nowrap;
+      }
+      .claims td.mark {
+        width: 84px;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border: 1px solid currentColor;
+      }
+      .pill.ok {
+        color: var(--ok);
+        background: var(--ok-bg);
+      }
+
+      .bands {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border: 2px solid var(--ink);
+      }
+      @media (max-width: 760px) {
+        .bands {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .band {
+        padding: 14px 14px 16px;
+        border-right: 1px solid var(--ink);
+        display: grid;
+        gap: 6px;
+        align-content: start;
+        min-height: 170px;
+      }
+      .band:last-child {
+        border-right: 0;
+      }
+      @media (max-width: 760px) {
+        .band:nth-child(2) {
+          border-right: 0;
+        }
+        .band:nth-child(-n + 2) {
+          border-bottom: 1px solid var(--ink);
+        }
+      }
+      .band .bn {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .band .bt {
+        font-family: var(--serif);
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      .band .bf {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: auto;
+      }
+      .b1 {
+        background: var(--ok-bg);
+      }
+      .b1 .bn {
+        color: var(--ok);
+      }
+      .b2 {
+        background: var(--prox-bg);
+      }
+      .b2 .bn {
+        color: var(--prox);
+      }
+      .b3 {
+        background: repeating-linear-gradient(45deg, var(--bad-bg) 0 8px, var(--bg) 8px 11px);
+      }
+      .b3 .bn {
+        color: var(--bad);
+      }
+      .b4 {
+        background: var(--hor-bg);
+      }
+      .b4 .bn {
+        color: var(--hor);
+      }
+      .b3 .bt,
+      .b3 .bf {
+        background: var(--bg);
+        padding: 2px 4px;
+        margin-inline: -4px;
+      }
+      .bandnote {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 8px 40px;
+        margin-top: 20px;
+      }
+      @media (max-width: 900px) {
+        .bandnote {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .prose {
+        font-family: var(--serif);
+        font-size: 15.5px;
+        line-height: 1.6;
+        max-width: 66ch;
+      }
+      .prose p {
+        margin: 0 0 12px;
+      }
+
+      ol.hooks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        border: 2px solid var(--ink);
+        counter-reset: h;
+      }
+      @media (max-width: 900px) {
+        ol.hooks {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      ol.hooks li {
+        counter-increment: h;
+        padding: 12px 14px 16px;
+        border-right: 1px solid var(--rule);
+        display: grid;
+        gap: 6px;
+        align-content: start;
+      }
+      ol.hooks li:last-child {
+        border-right: 0;
+      }
+      @media (max-width: 900px) {
+        ol.hooks li {
+          border-right: 0;
+          border-bottom: 1px solid var(--rule);
+        }
+        ol.hooks li:last-child {
+          border-bottom: 0;
+        }
+      }
+      ol.hooks li::before {
+        content: counter(h, decimal-leading-zero);
+        font-size: 11px;
+        color: var(--faint);
+      }
+      ol.hooks b {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      ol.hooks span {
+        font-family: var(--serif);
+        font-size: 14.5px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+      ol.hooks li.stop {
+        background: var(--you-bg);
+      }
+      ol.hooks li.stop b {
+        box-shadow: inset 0 -2px 0 var(--you);
+      }
+
+      .essays {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0;
+        border: 2px solid var(--ink);
+      }
+      @media (max-width: 760px) {
+        .essays {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .essay {
+        padding: 18px 18px 20px;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        text-decoration: none;
+      }
+      .essay + .essay {
+        border-left: 2px solid var(--ink);
+      }
+      @media (max-width: 760px) {
+        .essay + .essay {
+          border-left: 0;
+          border-top: 2px solid var(--ink);
+        }
+      }
+      .essay:hover {
+        background: var(--you-bg);
+        color: var(--ink);
+      }
+      .essay .en {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .essay .et {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 21px;
+        line-height: 1.25;
+        text-wrap: balance;
+      }
+      .essay .ed {
+        font-family: var(--serif);
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .essay .el {
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .install {
+        display: grid;
+        gap: 10px;
+        max-width: 760px;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .code {
+        display: flex;
+        align-items: stretch;
+        border: 2px solid var(--ink);
+        background: var(--term-bg);
+        color: var(--term-ink);
+      }
+      .code pre {
+        margin: 0;
+        padding: 10px 14px;
+        flex: 1;
+        min-width: 0;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .code button {
+        font: inherit;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: var(--bg);
+        color: var(--ink);
+        border: 0;
+        border-left: 2px solid var(--ink);
+        padding: 0 14px;
+        cursor: pointer;
+        min-width: 84px;
+      }
+      .code button:hover {
+        background: var(--you);
+        color: #121519;
+      }
+      @media (max-width: 600px) {
+        table.claims {
+          min-width: 0;
+        }
+        .claims thead {
+          display: none;
+        }
+        .claims tr {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 8px 10px;
+          padding: 12px 0;
+          border-bottom: 1px solid var(--rule);
+        }
+        .claims td,
+        .claims td.say,
+        .claims td.mark {
+          width: auto;
+          padding: 0;
+          border-bottom: 0;
+        }
+        .claims td.check {
+          grid-column: 1 / -1;
+          grid-row: 2;
+        }
+      }
+      @media (max-width: 600px) {
+        .code pre {
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+        }
+        .code button {
+          min-width: 72px;
+          padding: 0 10px;
+        }
+      }
+      .status {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+        gap: 24px 40px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .status {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      table.stat {
+        width: 100%;
+        border-collapse: collapse;
+        border-top: 2px solid var(--ink);
+        font-size: 12.5px;
+      }
+      .stat caption {
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--faint);
+        padding-bottom: 6px;
+      }
+      .stat th,
+      .stat td {
+        padding: 9px 10px 9px 0;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: baseline;
+        text-align: left;
+      }
+      .stat th {
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+        width: 34%;
+      }
+      .stat td.v {
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .stat td.v a {
+        text-decoration-color: var(--rule);
+      }
+      .stat td.d {
+        color: var(--muted);
+        text-align: right;
+        padding-right: 0;
+        font-size: 11.5px;
+      }
+      .stat .ok {
+        color: var(--ok);
+      }
+      .stat .bad {
+        color: var(--bad);
+      }
+      .stat .tg {
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid currentColor;
+        padding: 0 5px;
+        margin-left: 6px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .small {
+        font-size: 12px;
+        color: var(--muted);
+        max-width: 70ch;
+        margin: 4px 0 0;
+      }
+
+      .bench {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border: 2px solid var(--ink);
+      }
+      @media (max-width: 760px) {
+        .bench {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .arm {
+        padding: 14px;
+        border-right: 1px solid var(--rule);
+        display: grid;
+        gap: 4px;
+      }
+      .arm:last-child {
+        border-right: 0;
+      }
+      @media (max-width: 760px) {
+        .arm {
+          border-right: 0;
+          border-bottom: 1px solid var(--rule);
+        }
+        .arm:last-child {
+          border-bottom: 0;
+        }
+      }
+      .arm b {
+        font-size: 13px;
+      }
+      .arm span {
+        font-family: var(--serif);
+        font-size: 14.5px;
+        color: var(--muted);
+      }
+      .metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 14px;
+      }
+      .metrics span {
+        font-size: 11.5px;
+        border: 1px solid var(--rule);
+        padding: 2px 8px;
+      }
+
+      footer {
+        margin-top: 56px;
+        border-top: 2px solid var(--ink);
+        padding-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      footer a {
+        color: var(--muted);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+      html {
+        scroll-behavior: smooth;
+        background: var(--bg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="bar">
+        <a class="brand" href="#top">finitemonkey</a>
+        <span class="tag warn" data-i="prerelTag">early versions</span>
+        <nav class="nav" aria-label="Sections">
+          <a href="#done" data-i="navDone">done</a>
+          <a href="#person" data-i="navPerson">the person</a>
+          <a href="#how" data-i="navHow">how</a>
+          <a href="#essays" data-i="navEssays">essays</a>
+          <a href="#install" data-i="navInstall">install</a>
+          <a href="#status" data-i="navStatus">status</a>
+        </nav>
+        <div class="seg" role="group" aria-label="Idioma / Language / Idioma">
+          <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+          <button type="button" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang="es" aria-pressed="false">ES</button>
+        </div>
+      </header>
+
+      <main>
+        <div class="hero" id="top">
+          <div>
+            <h1 data-i="h1" data-html>Infinite monkeys not required. <em>One will do: you.</em></h1>
+            <p class="lede" data-i="lede">
+              Claude Code says it is done. Finite Monkey runs the definition of done on the current tree and lets the
+              session end only when it passes. The final report comes from that proof, not from the conversation.
+            </p>
+            <div class="cta">
+              <a class="btn solid" href="#install" data-i="ctaInstall">Install from next</a>
+              <a class="btn" href="https://github.com/gabrielvieiraf/finitemonkey/tree/next" data-i="ctaRepo"
+                >Repository on GitHub</a
+              >
+              <a class="btn" href="#essays" data-i="ctaEssay">Read the essays</a>
+            </div>
+            <p class="prerel" data-i="prerel">
+              It installs today through npm's <code>next</code> channel. <code>latest</code> is still 0.0.0, a
+              placeholder that only holds the name. v0.1 goes stable after the benchmark says whether it helps; until
+              then, a new version on <code>next</code> can break what the previous one did.
+            </p>
+          </div>
+          <figure class="stage" id="stage" aria-label="Finite Monkey">
+            <div class="stage-bar">
+              <div class="tabs" role="tablist" aria-label="Demo">
+                <button type="button" class="tab" role="tab" id="tab-0" aria-controls="pane-0" aria-selected="true">
+                  <b>01</b><span data-i="tab0">Claude Code</span><span class="pg"></span>
+                </button>
+                <button
+                  type="button"
+                  class="tab"
+                  role="tab"
+                  id="tab-1"
+                  aria-controls="pane-1"
+                  aria-selected="false"
+                  tabindex="-1"
+                >
+                  <b>02</b><span data-i="tab1">CLI</span><span class="pg"></span>
+                </button>
+                <button
+                  type="button"
+                  class="tab"
+                  role="tab"
+                  id="tab-2"
+                  aria-controls="pane-2"
+                  aria-selected="false"
+                  tabindex="-1"
+                >
+                  <b>03</b><span data-i="tab2">trajectory</span><span class="pg"></span>
+                </button>
+              </div>
+              <div class="ctl">
+                <button type="button" id="st-pause" aria-label="Pause" data-al="pauseL">❚❚</button>
+                <button type="button" id="st-next" aria-label="Next" data-al="nextL">→</button>
+              </div>
+            </div>
+            <div class="panes">
+              <div
+                class="pane pane-cast on"
+                id="pane-0"
+                role="tabpanel"
+                aria-labelledby="tab-0"
+                aria-describedby="alt-0"
+              >
+                <div class="fallback" id="cast-0">
+                  <a href="casts/gate.gif" data-i="gifLink">Open the recording (GIF)</a>
+                </div>
+                <noscript
+                  ><img
+                    src="casts/gate.gif"
+                    alt='Claude Code session: the Finite Monkey gate fails the test "total rounds to cents", Claude fixes the rounding and the gate passes with 10 checks.'
+                    width="1000"
+                    height="640"
+                /></noscript>
+                <p class="sr" id="alt-0" data-i="alt0">
+                  Claude Code session: the Finite Monkey gate fails the test "total rounds to cents", Claude fixes the
+                  rounding and the gate passes with 10 checks.
+                </p>
+                <p class="pcap" data-i="cap0">finitemonkey 0.1.0-next.27 · Claude Code 2.1.283</p>
+              </div>
+              <div class="pane pane-cast" id="pane-1" role="tabpanel" aria-labelledby="tab-1" aria-describedby="alt-1">
+                <div class="fallback" id="cast-1">
+                  <pre>
+$ finitemonkey trajectory --domain backend --chart
+domain   W33 W34 W35 W36 W37 W38 W39 W40 W41 W42 W43 W44
+backend    ·   █   -   ░   █   ·   ·   ·   ░   ↯   ●   ·
+█ done alone  ▓ proximal  ▒ blind with criterion  ░ blind without  ^ beyond  ↯ ricochet  ● held  - no accepted work  · no evidence
+
+backend
+         ↯● 
+·    ···   ·  beyond the horizon
+·    ···   ·  beyond the horizon
+·    ···━░━·  blind band, no criterion
+·  ━░···░░█·  done alone
+· ▓▓━···███·  done alone
+·━███···███·  done alone</pre>
+                </div>
+                <p class="sr" id="alt-1" data-i="alt1">
+                  Terminal: finitemonkey gate fails the idempotency key test and passes after the fix; finitemonkey xray
+                  and finitemonkey trajectory show the bands and a ricochet.
+                </p>
+                <p class="pcap" data-i="cap1">finitemonkey 0.1.0-next.41 · CLI</p>
+              </div>
+              <div class="pane pane-chart" id="pane-2" role="tabpanel" aria-labelledby="tab-2" aria-describedby="alt-2">
+                <svg class="traj" viewBox="0 0 720 372" role="img" aria-labelledby="traj-t">
+                  <title id="traj-t" data-i="trajTitle">Same result, different status: the ricochet</title>
+                  <defs>
+                    <pattern
+                      id="tj-hatch"
+                      width="7"
+                      height="7"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="7" height="7" class="s-hatch-bg" />
+                      <line x1="0" y1="0" x2="0" y2="7" class="s-hatch-ln" />
+                    </pattern>
+                    <pattern id="tj-dots" width="6" height="6" patternUnits="userSpaceOnUse">
+                      <rect width="6" height="6" class="s-dots-bg" />
+                      <circle cx="3" cy="3" r="0.9" class="s-dots-dot" />
+                    </pattern>
+                  </defs>
+                  <g class="panel" data-panel="A">
+                    <text x="215" y="24" class="tj-h" text-anchor="middle" data-i="trajA">Person A</text>
+                    <g class="strata">
+                      <rect x="100" y="257.1" width="230" height="42.9" class="s-a2" />
+                      <rect x="100" y="222.0" width="230" height="35.1" class="s-a1" />
+                      <rect x="100" y="187.7" width="230" height="34.3" class="s-p2" />
+                      <rect x="100" y="171.3" width="230" height="16.4" class="s-p1" />
+                      <rect x="100" y="158.3" width="230" height="13.0" class="s-d" />
+                      <rect x="100" y="111.0" width="230" height="47.3" fill="url(#tj-dots)" />
+                      <rect x="100" y="40.0" width="230" height="71.0" fill="url(#tj-hatch)" />
+                    </g>
+                    <line x1="100" y1="257.1" x2="330" y2="257.1" class="ceil" />
+                    <line x1="100" y1="222.0" x2="330" y2="222.0" class="ceil" />
+                    <line x1="100" y1="187.7" x2="330" y2="187.7" class="ceil dash" />
+                    <line x1="100" y1="158.3" x2="330" y2="158.3" class="ceil" />
+                    <line x1="100" y1="111.0" x2="330" y2="111.0" class="ceil dash" />
+                    <rect x="100" y="40" width="230" height="260" class="frame" />
+                    <line x1="92" y1="164.8" x2="100" y2="164.8" class="tj-disc-tick" />
+                    <text x="88" y="168.8" text-anchor="end" class="tj-disc" data-i="trajDisc">discernment</text>
+                    <line x1="158.9" y1="300" x2="158.9" y2="305" class="axis" />
+                    <line x1="271.1" y1="300" x2="271.1" y2="305" class="axis" />
+                    <text x="158.9" y="319" text-anchor="middle" class="tj-tick" data-i="trajWith">
+                      with assistance
+                    </text>
+                    <text x="271.1" y="319" text-anchor="middle" class="tj-tick" data-i="trajShift">task shifts</text>
+                    <line x1="86" y1="300" x2="344" y2="300" class="axis" />
+                    <path
+                      d="M 112.9 222.0 C 135.9 222.0, 135.9 92.0, 158.9 92.0 C 215.0 92.0, 215.0 222.0, 271.1 222.0"
+                      class="work"
+                    />
+                    <circle cx="158.9" cy="92.0" r="5" class="peak" />
+                    <g class="mark mark-r">
+                      <circle cx="271.1" cy="222.0" r="7" class="mr-c" />
+                      <path
+                        d="M 267.90000000000003 218.8 L 274.3 225.2 M 274.3 218.8 L 267.90000000000003 225.2"
+                        class="mr-x"
+                      />
+                    </g>
+                    <g class="val">
+                      <rect x="143.9" y="62.0" width="30" height="18" class="v-bg" />
+                      <text x="158.9" y="76.0" text-anchor="middle" class="v">80</text>
+                    </g>
+                    <g class="val val-end">
+                      <rect x="256.1" y="190.0" width="30" height="18" class="v-bg" />
+                      <text x="271.1" y="204.0" text-anchor="middle" class="v v-bad">30</text>
+                    </g>
+                    <text x="215" y="344" text-anchor="middle" class="tj-cap">
+                      <tspan x="215" data-i="trajAc1">The 80 sat in the blind band: when the task</tspan>
+                      <tspan x="215" dy="15" data-i="trajAc2">shifts, it falls back to what A can rebuild.</tspan>
+                    </text>
+                  </g>
+                  <g class="panel" data-panel="B">
+                    <text x="555" y="24" class="tj-h" text-anchor="middle" data-i="trajB">Person B</text>
+                    <g class="strata">
+                      <rect x="440" y="221.4" width="230" height="78.6" class="s-a2" />
+                      <rect x="440" y="157.0" width="230" height="64.4" class="s-a1" />
+                      <rect x="440" y="102.4" width="230" height="54.6" class="s-p2" />
+                      <rect x="440" y="72.5" width="230" height="29.9" class="s-p1" />
+                      <rect x="440" y="59.5" width="230" height="13.0" class="s-d" />
+                      <rect x="440" y="51.7" width="230" height="7.8" fill="url(#tj-dots)" />
+                      <rect x="440" y="40.0" width="230" height="11.7" fill="url(#tj-hatch)" />
+                    </g>
+                    <line x1="440" y1="221.4" x2="670" y2="221.4" class="ceil" />
+                    <line x1="440" y1="157.0" x2="670" y2="157.0" class="ceil" />
+                    <line x1="440" y1="102.4" x2="670" y2="102.4" class="ceil dash" />
+                    <line x1="440" y1="59.5" x2="670" y2="59.5" class="ceil" />
+                    <line x1="440" y1="51.7" x2="670" y2="51.7" class="ceil dash" />
+                    <rect x="440" y="40" width="230" height="260" class="frame" />
+                    <line x1="432" y1="66.0" x2="440" y2="66.0" class="tj-disc-tick" />
+                    <text x="428" y="70.0" text-anchor="end" class="tj-disc" data-i="trajDisc">discernment</text>
+                    <line x1="498.9" y1="300" x2="498.9" y2="305" class="axis" />
+                    <line x1="611.1" y1="300" x2="611.1" y2="305" class="axis" />
+                    <text x="498.9" y="319" text-anchor="middle" class="tj-tick" data-i="trajWith">
+                      with assistance
+                    </text>
+                    <text x="611.1" y="319" text-anchor="middle" class="tj-tick" data-i="trajShift">task shifts</text>
+                    <line x1="426" y1="300" x2="684" y2="300" class="axis" />
+                    <path
+                      d="M 452.9 157.0 C 475.9 157.0, 475.9 92.0, 498.9 92.0 C 555.0 92.0, 555.0 97.2, 611.1 97.2"
+                      class="work"
+                    />
+                    <circle cx="498.9" cy="92.0" r="5" class="peak" />
+                    <g class="mark mark-h">
+                      <circle cx="611.1" cy="97.2" r="7" class="mh-c" />
+                      <circle cx="611.1" cy="97.2" r="2.8" class="mh-d" />
+                    </g>
+                    <g class="val">
+                      <rect x="483.9" y="62.0" width="30" height="18" class="v-bg" />
+                      <text x="498.9" y="76.0" text-anchor="middle" class="v">80</text>
+                    </g>
+                    <g class="val val-end">
+                      <rect x="596.1" y="65.2" width="30" height="18" class="v-bg" />
+                      <text x="611.1" y="79.2" text-anchor="middle" class="v v-ok">78</text>
+                    </g>
+                    <text x="555" y="344" text-anchor="middle" class="tj-cap">
+                      <tspan x="555" data-i="trajBc1">The 80 sat in the proximal band: B detects,</tspan>
+                      <tspan x="555" dy="15" data-i="trajBc2">reformulates and holds.</tspan>
+                    </text>
+                  </g>
+                </svg>
+
+                <ul class="key">
+                  <li><i class="k-hatch"></i><span data-i="kHatch">blind: receives without criterion</span></li>
+                  <li><i class="k-dots"></i><span data-i="kDots">blind: receives with criterion</span></li>
+                  <li><i class="k-d"></i><span data-i="kD">unstable boundary</span></li>
+                  <li><i class="k-p1"></i><span data-i="kP1">proximal: detects without explaining</span></li>
+                  <li><i class="k-p2"></i><span data-i="kP2">proximal: judges and explains</span></li>
+                  <li><i class="k-a1"></i><span data-i="kA1">alone: redoes it in a known context</span></li>
+                  <li><i class="k-a2"></i><span data-i="kA2">alone: does it and transfers it</span></li>
+                  <li><i class="k-r">⊗</i><span data-i="kR">ricochet</span></li>
+                  <li><i class="k-h">◉</i><span data-i="kH">holds</span></li>
+                </ul>
+                <p class="sr" id="alt-2" data-i="alt2">
+                  Person A reaches 80 in the blind band and falls to 30 when the task shifts (ricochet). Person B
+                  reaches 80 in the proximal band and holds at 78.
+                </p>
+                <p class="pcap" data-i="cap2">The Ricochet Effect, fig. 4</p>
+              </div>
+            </div>
+            <figcaption class="stage-cap" id="stage-cap" aria-live="polite"></figcaption>
+          </figure>
+        </div>
+
+        <section id="done">
+          <div class="sh">
+            <h2 data-i="doneH">What the agent says and what gets checked</h2>
+            <span class="k" data-i="doneK">definition of done</span>
+          </div>
+          <p class="intro" data-i="doneIntro">
+            The only proof that counts is a command Finite Monkey ran itself, on the current state of the files. “I ran
+            the tests before the last edit” does not count.
+          </p>
+          <div class="tablewrap">
+            <table class="claims">
+              <thead>
+                <tr>
+                  <th data-i="thSay">the agent says</th>
+                  <th data-i="thCheck">what Finite Monkey does</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="claims"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="person">
+          <div class="sh">
+            <h2 data-i="personH">Whoever is typing has a limit too</h2>
+            <span class="k" data-i="personK">ricochet effect</span>
+          </div>
+          <p class="intro" data-i="personIntro">
+            A good result does not tell whether the person could judge it. For each part of the work, Finite Monkey
+            separates what has proof from what only has the model's word, and asks the person only when their judgment
+            decides something.
+          </p>
+          <div class="bands" id="bands"></div>
+          <div class="bandnote">
+            <div class="prose">
+              <p data-i="personP1">
+                The most misleading band is the third. There the result looks right and the person has no way to tell.
+                Instead of explaining more, Finite Monkey puts an executable check at that point: a behavior example the
+                person approves, a test written without seeing the diff, a two-user scenario.
+              </p>
+            </div>
+            <div class="prose">
+              <p data-i="personP2">
+                The profile moves only with proof: code the person wrote, a prediction they got right, a fix made
+                without help. Vocabulary doesn't count. Nothing leaves the machine, and the person can see and contest
+                every entry. This part still runs in shadow: it logs what it would do, without blocking, until the
+                benchmark measures it.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="how">
+          <div class="sh">
+            <h2 data-i="howH">No commands to memorize</h2>
+            <span class="k" data-i="howK">claude code hooks</span>
+          </div>
+          <p class="intro" data-i="howIntro">
+            You run one command, once. After that Finite Monkey acts through hooks, in the order the session happens.
+          </p>
+          <ol class="hooks" id="hooks"></ol>
+        </section>
+
+        <section id="essays">
+          <div class="sh">
+            <h2 data-i="essaysH">Where the design comes from</h2>
+            <span class="k" data-i="essaysK">two essays · pt · en · es</span>
+          </div>
+          <div class="essays">
+            <a
+              class="essay"
+              id="e1"
+              href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/ricochet/ricochet.md"
+            >
+              <span class="en" data-i="e1n">essay 1</span>
+              <span class="et" data-i="e1t"
+                >The Ricochet Effect: the user as the invisible limit of artificial intelligence</span
+              >
+              <span class="ed" data-i="e1d"
+                >Two boundaries a person can't see from inside: what they don't know to ask for and what they can't
+                evaluate. Section 10 ties each mechanism to a hypothesis the benchmark will test.</span
+              >
+              <span class="el" data-i="read">read →</span>
+            </a>
+            <a
+              class="essay"
+              id="e2"
+              href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/second-brain/second-brain.md"
+            >
+              <span class="en" data-i="e2n">essay 2</span>
+              <span class="et" data-i="e2t">The illusion of the second brain</span>
+              <span class="ed" data-i="e2d"
+                >Context files and memories barely help the agent and go stale without warning. The proposal: each claim
+                about the code bound to the hash of the code it describes and verified by running it.</span
+              >
+              <span class="el" data-i="read">read →</span>
+            </a>
+          </div>
+        </section>
+
+        <section id="install">
+          <div class="sh">
+            <h2 data-i="installH">Install</h2>
+            <span class="k">next · node 20+ · linux · macos · windows · wsl</span>
+          </div>
+          <div class="install">
+            <p class="small" data-i="npxNote">Through the <code>next</code> channel, until v0.1 is out:</p>
+            <div class="code">
+              <pre id="c1">npx finitemonkey@next init</pre>
+              <button type="button" data-copy="c1" data-i="copy">copy</button>
+            </div>
+            <p class="small" data-i="pluginNote">
+              Or as a Claude Code plugin, from inside a session, with the marketplace on the <code>next</code> branch:
+            </p>
+            <div class="code">
+              <pre id="c2">/plugin marketplace add gabrielvieiraf/finitemonkey#next</pre>
+              <button type="button" data-copy="c2" data-i="copy">copy</button>
+            </div>
+            <div class="code">
+              <pre id="c3">/plugin install finitemonkey@finitemonkey-next</pre>
+              <button type="button" data-copy="c3" data-i="copy">copy</button>
+            </div>
+            <p class="small" data-i="installNote">
+              Install backs up, merges instead of overwriting and can run twice without breaking anything.
+              <code>doctor</code> tells you what is wrong, <code>uninstall</code> leaves everything as it was.
+            </p>
+          </div>
+        </section>
+
+        <section id="status">
+          <div class="sh">
+            <h2 data-i="statusH">Status</h2>
+            <span class="k" data-i="statusK">npm · github · live</span>
+          </div>
+          <div class="status">
+            <table class="stat">
+              <caption data-i="stNow">
+                now
+              </caption>
+              <tbody>
+                <tr>
+                  <th scope="row">next</th>
+                  <td class="v" id="s-next"><a href="https://www.npmjs.com/package/finitemonkey/v/next">—</a></td>
+                  <td class="d" id="s-next-d"></td>
+                </tr>
+                <tr>
+                  <th scope="row">latest</th>
+                  <td class="v" id="s-latest"><a href="https://www.npmjs.com/package/finitemonkey">—</a></td>
+                  <td class="d" id="s-latest-d" data-i="stPlaceholder">
+                    0.0.0 is a placeholder that only holds the name
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stWeek">downloads, last week</th>
+                  <td class="v" id="s-week"><a href="https://www.npmjs.com/package/finitemonkey">—</a></td>
+                  <td class="d" id="s-week-d"></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stMonth">downloads, last month</th>
+                  <td class="v" id="s-month"><a href="https://www.npmjs.com/package/finitemonkey">—</a></td>
+                  <td class="d" id="s-month-d"></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stStars">GitHub stars</th>
+                  <td class="v" id="s-stars">
+                    <a href="https://github.com/gabrielvieiraf/finitemonkey/stargazers">—</a>
+                  </td>
+                  <td class="d"></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i="stCi">CI on next</th>
+                  <td class="v" id="s-ci">
+                    <a
+                      href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml?query=branch%3Anext"
+                      >—</a
+                    >
+                  </td>
+                  <td class="d" id="s-ci-d"></td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="stat">
+              <caption data-i="stRecent">
+                last 5 versions
+              </caption>
+              <tbody id="s-recent">
+                <tr>
+                  <td class="v"><a href="https://www.npmjs.com/package/finitemonkey?activeTab=versions">—</a></td>
+                  <td class="d"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="bench">
+          <div class="sh">
+            <h2 data-i="benchH">Does it actually help?</h2>
+            <span class="k" data-i="benchK">benchmark · results pending</span>
+          </div>
+          <p class="intro" data-i="benchIntro">
+            Not known yet. The harness is built: tasks with traps in them, simulated users and three arms. The main
+            round is prepared. Any rule with no measured effect leaves the core, and the method and results will be
+            published in the repo.
+          </p>
+          <div class="bench" id="arms"></div>
+          <div class="metrics" id="metrics"></div>
+        </section>
+      </main>
+
+      <footer>
+        <a href="https://github.com/gabrielvieiraf/finitemonkey">github.com/gabrielvieiraf/finitemonkey</a>
+        <a href="https://www.npmjs.com/package/finitemonkey/v/next">npm</a>
+      </footer>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/asciinema-player@3.17.0/dist/bundle/asciinema-player.min.js"
+    ></script>
+    <script>
+      (function () {
+        const REPO = "https://github.com/gabrielvieiraf/finitemonkey/blob/next/docs/";
+        const T = {
+          pt: {
+            prerelTag: "versões iniciais",
+            navDone: "pronto",
+            navPerson: "a pessoa",
+            navHow: "como",
+            navEssays: "ensaios",
+            navInstall: "instalar",
+            h1: "Infinitos macacos não são necessários. <em>Um basta: você.</em>",
+            lede: "O Claude Code diz que terminou. O Finite Monkey roda a definição de pronto na árvore atual e só deixa a sessão acabar quando ela passa. O relatório final sai dessa prova, não da conversa.",
+            ctaInstall: "Instalar pelo next",
+            ctaRepo: "Repositório no GitHub",
+            ctaEssay: "Ler os ensaios",
+            prerel:
+              "Já dá para instalar pelo canal <code>next</code> do npm. O <code>latest</code> ainda é a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que a bancada disser se ele ajuda; até lá, uma versão nova no <code>next</code> pode quebrar o que a anterior fazia.",
+            doneH: "O que o agente diz e o que é conferido",
+            doneK: "definição de pronto",
+            doneIntro:
+              "Só vale como prova o comando que o próprio Finite Monkey rodou, no estado atual dos arquivos. “Rodei os testes antes da última edição” não conta.",
+            thSay: "o agente diz",
+            thCheck: "o que o Finite Monkey faz",
+            claims: [
+              [
+                "Terminei.",
+                "O hook <code>Stop</code> roda a definição de pronto: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo. Se falha, a sessão continua com a lista do que falta.",
+              ],
+              [
+                "Os testes passam.",
+                "Teste removido, <code>skip</code> ou <code>only</code> novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.",
+              ],
+              [
+                "Só um reset rápido.",
+                "Fotografia antes de toda operação arriscada no git e um <code>undo</code> que traz de volta. Nada de <code>--force</code>. Worktree com mudança pendente é arquivada, não apagada.",
+              ],
+              [
+                "Segui o CLAUDE.md.",
+                "As regras que precisam valer sempre viram hook, permissão, git hook ou passo de CI. Regra por regra, aparece o que ainda é só texto.",
+              ],
+              [
+                "Não tem segredo no código.",
+                "Uma regra de detecção única, aplicada na escrita do arquivo, no prompt, no commit, no histórico e no CI. O segredo é citado por arquivo e linha, nunca pelo valor.",
+              ],
+              [
+                "Só ajustei em produção.",
+                "Comando com efeito num servidor de produção é bloqueado. Produção muda pelo caminho de deploy que você declarar.",
+              ],
+            ],
+            okWord: "conferido",
+            personH: "Quem está digitando também tem limite",
+            personK: "efeito ricochete",
+            personIntro:
+              "Um resultado bom não diz se a pessoa conseguiria julgá-lo. Para cada parte do trabalho, o Finite Monkey separa o que tem prova do que só tem a palavra do modelo, e pergunta à pessoa só quando o julgamento dela decide algo.",
+            bands: [
+              ["sabe sozinha", "Faz e julga sem ajuda.", "o Finite Monkey sai do caminho"],
+              [
+                "julga com ajuda",
+                "A assistência leva mais longe e a pessoa ainda consegue avaliar o que voltou.",
+                "explicação na medida e o apoio some com a prova",
+              ],
+              [
+                "recebe sem julgar",
+                "O resultado parece certo e a pessoa não tem como saber.",
+                "verificação executável no lugar da confiança",
+              ],
+              [
+                "não sabe pedir",
+                "O que existe e a pessoa nem sabe que precisa perguntar.",
+                "ajuda de horizonte sempre com um critério",
+              ],
+            ],
+            personP1:
+              "A faixa que mais engana é a terceira. Ali o resultado parece certo e a pessoa não tem como saber. Em vez de explicar mais, o Finite Monkey põe uma verificação executável nesse ponto: um exemplo de comportamento que a pessoa aprova, um teste escrito sem ver o diff, um cenário com dois usuários.",
+            personP2:
+              "O perfil só se move com prova: código que a pessoa escreveu, previsão que acertou, conserto feito sem ajuda. Vocabulário não conta. Nada sai da máquina, e a pessoa vê e contesta cada registro. Esta parte ainda roda em sombra: registra o que faria, sem bloquear, até a bancada medir.",
+            howH: "Nenhum comando para decorar",
+            howK: "hooks do claude code",
+            howIntro:
+              "Você roda um comando, uma vez. Depois disso o Finite Monkey age pelos hooks, na ordem em que a sessão acontece.",
+            hooks: [
+              ["SessionStart", "recupera o estado da tarefa"],
+              ["UserPromptSubmit", "percebe o que você pediu"],
+              ["PreToolUse", "barra a ação perigosa antes de acontecer"],
+              ["Stop", "não deixa terminar enquanto o pronto falha"],
+              ["SubagentStop", "confere o que os subagentes relatam"],
+            ],
+            essaysH: "De onde vem o desenho",
+            essaysK: "dois ensaios · pt · en · es",
+            e1n: "ensaio 1",
+            e1t: "Efeito Ricochete: o usuário como limite invisível da inteligência artificial",
+            e1d: "Duas fronteiras que a pessoa não vê de dentro: o que ela não sabe pedir e o que não consegue avaliar. A seção 10 liga cada mecanismo a uma hipótese que a bancada vai testar.",
+            e2n: "ensaio 2",
+            e2t: "A ilusão do segundo cérebro",
+            e2d: "Arquivos de contexto e memórias quase não ajudam o agente e envelhecem sem aviso. A proposta: cada afirmação sobre o código presa ao hash do trecho que descreve e verificada por execução.",
+            read: "ler →",
+            e1f: "ricochet/ricochet.pt-BR.md",
+            e2f: "second-brain/second-brain.pt-BR.md",
+            installH: "Instalação",
+            copy: "copiar",
+            copied: "copiado",
+            npxNote: "Pelo canal <code>next</code>, até a v0.1 sair:",
+            pluginNote:
+              "Ou como plugin do Claude Code, de dentro de uma sessão, com o marketplace na branch <code>next</code>:",
+            installNote:
+              "A instalação faz backup, mescla em vez de sobrescrever e pode rodar duas vezes sem estragar nada. <code>doctor</code> diz o que está errado, <code>uninstall</code> deixa tudo como estava.",
+            benchH: "Funciona de verdade?",
+            benchK: "bancada · resultados a publicar",
+            benchIntro:
+              "Ainda não se sabe. A bancada está montada: tarefas com armadilha, usuários simulados e três braços. A rodada principal está preparada. Regra sem efeito medido sai do núcleo, e o método e os resultados vão para o repositório.",
+            arms: [
+              ["A", "Claude Code sozinho"],
+              ["B", "Claude Code com o Finite Monkey"],
+              ["C", "Finite Monkey sem uma peça de cada vez"],
+            ],
+            metrics: [
+              "tarefas terminadas de verdade",
+              "“pronto” falso",
+              "segredo vazado",
+              "trabalho perdido",
+              "tokens",
+              "tempo",
+            ],
+          },
+          en: {
+            prerelTag: "early versions",
+            navDone: "done",
+            navPerson: "the person",
+            navHow: "how",
+            navEssays: "essays",
+            navInstall: "install",
+            h1: "Infinite monkeys not required. <em>One will do: you.</em>",
+            lede: "Claude Code says it is done. Finite Monkey runs the definition of done on the current tree and lets the session end only when it passes. The final report comes from that proof, not from the conversation.",
+            ctaInstall: "Install from next",
+            ctaRepo: "Repository on GitHub",
+            ctaEssay: "Read the essays",
+            prerel:
+              "It installs today through npm's <code>next</code> channel. <code>latest</code> is still 0.0.0, a placeholder that only holds the name. v0.1 goes stable after the benchmark says whether it helps; until then, a new version on <code>next</code> can break what the previous one did.",
+            doneH: "What the agent says and what gets checked",
+            doneK: "definition of done",
+            doneIntro:
+              "The only proof that counts is a command Finite Monkey ran itself, on the current state of the files. “I ran the tests before the last edit” does not count.",
+            thSay: "the agent says",
+            thCheck: "what Finite Monkey does",
+            claims: [
+              [
+                "I'm done.",
+                "The <code>Stop</code> hook runs the definition of done: commands that must pass, tests that must exist and pass, a diff that stays in scope. If it fails, the session goes on with the list of what is missing.",
+              ],
+              [
+                "The tests pass.",
+                "A removed test, a new <code>skip</code> or <code>only</code>, a deleted assertion and edits to the gate's own config are caught and reported.",
+              ],
+              [
+                "Just a quick reset.",
+                "A snapshot before every risky git operation and an <code>undo</code> that brings it back. Never <code>--force</code>. A worktree with pending changes is archived, not deleted.",
+              ],
+              [
+                "I followed CLAUDE.md.",
+                "Rules that must always hold become a hook, a permission, a git hook or a CI step. Rule by rule, you see which are still just text.",
+              ],
+              [
+                "No secrets in the code.",
+                "One detection rule applied on file write, in the prompt, at commit, in history and in CI. Secrets are cited by file and line, never by value.",
+              ],
+              [
+                "Just a tweak in production.",
+                "Commands with effect on a production server are blocked. Production changes through the deploy path you declare.",
+              ],
+            ],
+            okWord: "checked",
+            personH: "Whoever is typing has a limit too",
+            personK: "ricochet effect",
+            personIntro:
+              "A good result does not tell whether the person could judge it. For each part of the work, Finite Monkey separates what has proof from what only has the model's word, and asks the person only when their judgment decides something.",
+            bands: [
+              ["knows alone", "Does it and judges it without help.", "Finite Monkey gets out of the way"],
+              [
+                "judges with help",
+                "Assistance takes them further and they can still evaluate what came back.",
+                "explanation sized to them, support fades with proof",
+              ],
+              [
+                "receives without judging",
+                "The result looks right and the person has no way to tell.",
+                "an executable check instead of trust",
+              ],
+              [
+                "doesn't know to ask",
+                "What exists that the person doesn't know to ask for.",
+                "horizon help always with a criterion",
+              ],
+            ],
+            personP1:
+              "The most misleading band is the third. There the result looks right and the person has no way to tell. Instead of explaining more, Finite Monkey puts an executable check at that point: a behavior example the person approves, a test written without seeing the diff, a two-user scenario.",
+            personP2:
+              "The profile moves only with proof: code the person wrote, a prediction they got right, a fix made without help. Vocabulary doesn't count. Nothing leaves the machine, and the person can see and contest every entry. This part still runs in shadow: it logs what it would do, without blocking, until the benchmark measures it.",
+            howH: "No commands to memorize",
+            howK: "claude code hooks",
+            howIntro:
+              "You run one command, once. After that Finite Monkey acts through hooks, in the order the session happens.",
+            hooks: [
+              ["SessionStart", "restores the task state"],
+              ["UserPromptSubmit", "notices what you asked for"],
+              ["PreToolUse", "stops the dangerous action before it happens"],
+              ["Stop", "won't let it end while done fails"],
+              ["SubagentStop", "checks what subagents report"],
+            ],
+            essaysH: "Where the design comes from",
+            essaysK: "two essays · pt · en · es",
+            e1n: "essay 1",
+            e1t: "The Ricochet Effect: the user as the invisible limit of artificial intelligence",
+            e1d: "Two boundaries a person can't see from inside: what they don't know to ask for and what they can't evaluate. Section 10 ties each mechanism to a hypothesis the benchmark will test.",
+            e2n: "essay 2",
+            e2t: "The illusion of the second brain",
+            e2d: "Context files and memories barely help the agent and go stale without warning. The proposal: each claim about the code bound to the hash of the code it describes and verified by running it.",
+            read: "read →",
+            e1f: "ricochet/ricochet.md",
+            e2f: "second-brain/second-brain.md",
+            installH: "Install",
+            copy: "copy",
+            copied: "copied",
+            npxNote: "Through the <code>next</code> channel, until v0.1 is out:",
+            pluginNote:
+              "Or as a Claude Code plugin, from inside a session, with the marketplace on the <code>next</code> branch:",
+            installNote:
+              "Install backs up, merges instead of overwriting and can run twice without breaking anything. <code>doctor</code> tells you what is wrong, <code>uninstall</code> leaves everything as it was.",
+            benchH: "Does it actually help?",
+            benchK: "benchmark · results pending",
+            benchIntro:
+              "Not known yet. The harness is built: tasks with traps in them, simulated users and three arms. The main round is prepared. Any rule with no measured effect leaves the core, and the method and results will be published in the repo.",
+            arms: [
+              ["A", "Claude Code alone"],
+              ["B", "Claude Code with Finite Monkey"],
+              ["C", "Finite Monkey with one piece removed at a time"],
+            ],
+            metrics: ["tasks actually finished", "false “done”", "leaked secrets", "lost work", "tokens", "time"],
+          },
+          es: {
+            prerelTag: "versiones iniciales",
+            navDone: "listo",
+            navPerson: "la persona",
+            navHow: "cómo",
+            navEssays: "ensayos",
+            navInstall: "instalar",
+            h1: "No hacen falta infinitos monos. <em>Basta uno: tú.</em>",
+            lede: "Claude Code dice que terminó. Finite Monkey corre la definición de listo sobre el árbol actual y solo deja terminar la sesión cuando pasa. El informe final sale de esa prueba, no de la conversación.",
+            ctaInstall: "Instalar desde next",
+            ctaRepo: "Repositorio en GitHub",
+            ctaEssay: "Leer los ensayos",
+            prerel:
+              "Ya se puede instalar por el canal <code>next</code> de npm. <code>latest</code> todavía es la 0.0.0, un marcador que solo reserva el nombre. La v0.1 estable sale cuando el banco de pruebas diga si ayuda; hasta entonces, una versión nueva en <code>next</code> puede romper lo que hacía la anterior.",
+            doneH: "Lo que dice el agente y lo que se comprueba",
+            doneK: "definición de listo",
+            doneIntro:
+              "Solo vale como prueba el comando que el propio Finite Monkey corrió, sobre el estado actual de los archivos. “Corrí los tests antes de la última edición” no cuenta.",
+            thSay: "el agente dice",
+            thCheck: "lo que hace Finite Monkey",
+            claims: [
+              [
+                "Terminé.",
+                "El hook <code>Stop</code> corre la definición de listo: comandos que deben pasar, tests que deben existir y pasar, un diff que no sale del alcance. Si falla, la sesión sigue con la lista de lo que falta.",
+              ],
+              [
+                "Los tests pasan.",
+                "Un test borrado, un <code>skip</code> u <code>only</code> nuevo, una aserción eliminada y cambios en la configuración del propio portón se detectan y se reportan.",
+              ],
+              [
+                "Solo un reset rápido.",
+                "Una foto antes de cada operación riesgosa en git y un <code>undo</code> que la recupera. Nunca <code>--force</code>. Un worktree con cambios pendientes se archiva, no se borra.",
+              ],
+              [
+                "Seguí el CLAUDE.md.",
+                "Las reglas que deben valer siempre se vuelven hook, permiso, git hook o paso de CI. Regla por regla, se ve cuáles siguen siendo solo texto.",
+              ],
+              [
+                "No hay secretos en el código.",
+                "Una única regla de detección, aplicada al escribir el archivo, en el prompt, en el commit, en el historial y en CI. El secreto se cita por archivo y línea, nunca por su valor.",
+              ],
+              [
+                "Solo un ajuste en producción.",
+                "Los comandos con efecto en un servidor de producción se bloquean. Producción cambia por el camino de deploy que declares.",
+              ],
+            ],
+            okWord: "comprobado",
+            personH: "Quien escribe también tiene un límite",
+            personK: "efecto rebote",
+            personIntro:
+              "Un buen resultado no dice si la persona podría juzgarlo. Para cada parte del trabajo, Finite Monkey separa lo que tiene prueba de lo que solo tiene la palabra del modelo, y le pregunta a la persona solo cuando su juicio decide algo.",
+            bands: [
+              ["sabe sola", "Lo hace y lo juzga sin ayuda.", "Finite Monkey se aparta"],
+              [
+                "juzga con ayuda",
+                "La asistencia la lleva más lejos y todavía puede evaluar lo que volvió.",
+                "explicación a su medida y el apoyo desaparece con la prueba",
+              ],
+              [
+                "recibe sin juzgar",
+                "El resultado parece correcto y la persona no tiene cómo saberlo.",
+                "una verificación ejecutable en lugar de confianza",
+              ],
+              [
+                "no sabe pedir",
+                "Lo que existe y la persona ni sabe que debe preguntar.",
+                "ayuda de horizonte siempre con un criterio",
+              ],
+            ],
+            personP1:
+              "La franja que más engaña es la tercera. Ahí el resultado parece correcto y la persona no tiene cómo saberlo. En vez de explicar más, Finite Monkey pone una verificación ejecutable en ese punto: un ejemplo de comportamiento que la persona aprueba, un test escrito sin ver el diff, un escenario con dos usuarios.",
+            personP2:
+              "El perfil solo se mueve con prueba: código que la persona escribió, una predicción acertada, un arreglo hecho sin ayuda. El vocabulario no cuenta. Nada sale de la máquina, y la persona ve y puede impugnar cada registro. Esta parte todavía corre en sombra: registra lo que haría, sin bloquear, hasta que el banco de pruebas lo mida.",
+            howH: "Ningún comando que memorizar",
+            howK: "hooks de claude code",
+            howIntro:
+              "Corres un comando, una vez. Después Finite Monkey actúa por los hooks, en el orden en que ocurre la sesión.",
+            hooks: [
+              ["SessionStart", "recupera el estado de la tarea"],
+              ["UserPromptSubmit", "percibe lo que pediste"],
+              ["PreToolUse", "frena la acción peligrosa antes de que ocurra"],
+              ["Stop", "no deja terminar mientras el listo falle"],
+              ["SubagentStop", "revisa lo que reportan los subagentes"],
+            ],
+            essaysH: "De dónde viene el diseño",
+            essaysK: "dos ensayos · pt · en · es",
+            e1n: "ensayo 1",
+            e1t: "Efecto Rebote: el usuario como límite invisible de la inteligencia artificial",
+            e1d: "Dos fronteras que la persona no ve desde adentro: lo que no sabe pedir y lo que no puede evaluar. La sección 10 une cada mecanismo a una hipótesis que el banco de pruebas va a probar.",
+            e2n: "ensayo 2",
+            e2t: "La ilusión del segundo cerebro",
+            e2d: "Los archivos de contexto y las memorias casi no ayudan al agente y envejecen sin aviso. La propuesta: cada afirmación sobre el código atada al hash del fragmento que describe y verificada al ejecutarla.",
+            read: "leer →",
+            e1f: "ricochet/ricochet.es.md",
+            e2f: "second-brain/second-brain.es.md",
+            installH: "Instalación",
+            copy: "copiar",
+            copied: "copiado",
+            npxNote: "Por el canal <code>next</code>, hasta que salga la v0.1:",
+            pluginNote:
+              "O como plugin de Claude Code, desde una sesión, con el marketplace en la rama <code>next</code>:",
+            installNote:
+              "La instalación hace copia de seguridad, combina en lugar de sobrescribir y puede correr dos veces sin romper nada. <code>doctor</code> dice qué está mal, <code>uninstall</code> deja todo como estaba.",
+            benchH: "¿De verdad ayuda?",
+            benchK: "banco de pruebas · resultados por publicar",
+            benchIntro:
+              "Todavía no se sabe. El banco de pruebas está armado: tareas con trampas, usuarios simulados y tres brazos. La ronda principal está preparada. La regla sin efecto medido sale del núcleo, y el método y los resultados se publicarán en el repositorio.",
+            arms: [
+              ["A", "Claude Code solo"],
+              ["B", "Claude Code con Finite Monkey"],
+              ["C", "Finite Monkey sin una pieza cada vez"],
+            ],
+            metrics: [
+              "tareas terminadas de verdad",
+              "“listo” falso",
+              "secreto filtrado",
+              "trabajo perdido",
+              "tokens",
+              "tiempo",
+            ],
+          },
+        };
+        const $ = (s) => document.querySelector(s);
+        function esc(s) {
+          return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+        }
+        function render(lang) {
+          const t = T[lang];
+          document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
+          document.querySelectorAll("[data-i]").forEach((el) => {
+            const v = t[el.dataset.i];
+            if (typeof v !== "string") return;
+            if (el.hasAttribute("data-html") || /<code>|<em>/.test(v)) el.innerHTML = v;
+            else el.textContent = v;
+          });
+          $("#claims").innerHTML = t.claims
+            .map(
+              ([s, c]) =>
+                `<tr><td class="say"><span>${esc(s)}</span></td><td class="check">${c}</td><td class="mark"><span class="pill ok">${esc(t.okWord)}</span></td></tr>`,
+            )
+            .join("");
+          $("#bands").innerHTML = t.bands
+            .map(
+              ([n, b, f], i) =>
+                `<div class="band b${i + 1}"><span class="bn">${esc(n)}</span><span class="bt">${esc(b)}</span><span class="bf">→ ${esc(f)}</span></div>`,
+            )
+            .join("");
+          $("#hooks").innerHTML = t.hooks
+            .map(([h, d]) => `<li class="${h === "Stop" ? "stop" : ""}"><b>${h}</b><span>${esc(d)}</span></li>`)
+            .join("");
+          $("#arms").innerHTML = t.arms
+            .map(([k, d]) => `<div class="arm"><b>${k}</b><span>${esc(d)}</span></div>`)
+            .join("");
+          $("#metrics").innerHTML = t.metrics.map((m) => `<span>${esc(m)}</span>`).join("");
+          $("#e1").href = REPO + t.e1f;
+          $("#e2").href = REPO + t.e2f;
+          document
+            .querySelectorAll(".seg button")
+            .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+          current = lang;
+          if (typeof renderStatus === "function") renderStatus(lang);
+          if (typeof stageLabels === "function" && typeof stage !== "undefined") stageLabels(lang);
+        }
+        document.querySelectorAll(".seg button").forEach((b) =>
+          b.addEventListener("click", () => {
+            render(b.dataset.lang);
+            try {
+              localStorage.setItem("fm-lang", b.dataset.lang);
+            } catch (e) {}
+          }),
+        );
+        document.querySelectorAll("[data-copy]").forEach((b) =>
+          b.addEventListener("click", () => {
+            const txt = document.getElementById(b.dataset.copy).textContent;
+            const lang = document.querySelector('.seg button[aria-pressed="true"]').dataset.lang;
+            const done = () => {
+              b.textContent = T[lang].copied;
+              setTimeout(() => {
+                b.textContent = T[lang].copy;
+              }, 1400);
+            };
+            try {
+              navigator.clipboard.writeText(txt).then(done, () => {
+                const r = document.createRange();
+                r.selectNodeContents(document.getElementById(b.dataset.copy));
+                const s = getSelection();
+                s.removeAllRanges();
+                s.addRange(r);
+              });
+            } catch (e) {}
+          }),
+        );
+        const ST = {
+          pt: {
+            navStatus: "status",
+            statusH: "Situação",
+            statusK: "npm · github · ao vivo",
+            stNow: "agora",
+            stPlaceholder: "0.0.0 é um marcador que só segura o nome",
+            stWeek: "downloads, última semana",
+            stMonth: "downloads, último mês",
+            stStars: "estrelas no GitHub",
+            stCi: "CI na next",
+            stRecent: "últimas 5 versões",
+            ciOk: "passou",
+            ciBad: "falhou",
+          },
+          en: {
+            navStatus: "status",
+            statusH: "Status",
+            statusK: "npm · github · live",
+            stNow: "now",
+            stPlaceholder: "0.0.0 is a placeholder that only holds the name",
+            stWeek: "downloads, last week",
+            stMonth: "downloads, last month",
+            stStars: "GitHub stars",
+            stCi: "CI on next",
+            stRecent: "last 5 versions",
+            ciOk: "passing",
+            ciBad: "failing",
+          },
+          es: {
+            navStatus: "estado",
+            statusH: "Estado",
+            statusK: "npm · github · en vivo",
+            stNow: "ahora",
+            stPlaceholder: "0.0.0 es un marcador que solo reserva el nombre",
+            stWeek: "descargas, última semana",
+            stMonth: "descargas, último mes",
+            stStars: "estrellas en GitHub",
+            stCi: "CI en next",
+            stRecent: "últimas 5 versiones",
+            ciOk: "pasa",
+            ciBad: "falla",
+          },
+        };
+        for (const l of Object.keys(ST)) Object.assign(T[l], ST[l]);
+        const NPM = "https://www.npmjs.com/package/finitemonkey";
+        const GH = "https://github.com/gabrielvieiraf/finitemonkey";
+        const SRC = {
+          reg: "https://registry.npmjs.org/finitemonkey",
+          week: "https://api.npmjs.org/downloads/point/last-week/finitemonkey",
+          month: "https://api.npmjs.org/downloads/point/last-month/finitemonkey",
+          repo: "https://api.github.com/repos/gabrielvieiraf/finitemonkey",
+          ci: "https://api.github.com/repos/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/runs?branch=next&status=completed&per_page=1&exclude_pull_requests=true",
+        };
+        const data = {};
+        let current = "en";
+        const TTL = 10 * 60 * 1000;
+        function slim(key, d) {
+          if (key === "reg") return { tags: d["dist-tags"] || {}, time: d.time || {} };
+          if (key === "week" || key === "month") return { n: d.downloads, start: d.start, end: d.end };
+          if (key === "repo") return { stars: d.stargazers_count };
+          const r = (d.workflow_runs || [])[0];
+          return r ? { conclusion: r.conclusion, url: r.html_url, at: r.updated_at } : null;
+        }
+        async function load(key) {
+          const ck = "fm-status-" + key;
+          try {
+            const c = JSON.parse(sessionStorage.getItem(ck) || "null");
+            if (c && Date.now() - c.t < TTL) return c.v;
+          } catch (e) {}
+          const ctl = new AbortController();
+          const timer = setTimeout(() => ctl.abort(), 8000);
+          try {
+            const r = await fetch(SRC[key], { signal: ctl.signal, headers: { Accept: "application/json" } });
+            if (!r.ok) throw new Error(String(r.status));
+            const v = slim(key, await r.json());
+            try {
+              sessionStorage.setItem(ck, JSON.stringify({ t: Date.now(), v }));
+            } catch (e) {}
+            return v;
+          } finally {
+            clearTimeout(timer);
+          }
+        }
+        const tag = (lang) => (lang === "pt" ? "pt-BR" : lang);
+        const day = (iso, lang) => {
+          const d = new Date(iso);
+          return isNaN(d) ? "" : d.toLocaleDateString(tag(lang), { year: "numeric", month: "short", day: "numeric" });
+        };
+        const short = (iso, lang) => {
+          const d = new Date(iso);
+          return isNaN(d) ? "" : d.toLocaleDateString(tag(lang), { month: "short", day: "numeric" });
+        };
+        const link = (href, text, cls) => `<a href="${href}"${cls ? ` class="${cls}"` : ""}>${esc(String(text))}</a>`;
+        function setv(id, html) {
+          const el = document.getElementById(id);
+          if (el && html !== undefined) el.innerHTML = html;
+        }
+        function renderStatus(lang) {
+          const t = T[lang];
+          const reg = data.reg;
+          if (reg && reg.tags.next) {
+            setv("s-next", link(NPM + "/v/" + reg.tags.next, reg.tags.next));
+            setv("s-next-d", esc(day(reg.time[reg.tags.next], lang)));
+          }
+          if (reg && reg.tags.latest) {
+            setv("s-latest", link(NPM + "/v/" + reg.tags.latest, reg.tags.latest));
+            const ph = reg.tags.latest === "0.0.0";
+            const el = document.getElementById("s-latest-d");
+            if (!ph) {
+              el.removeAttribute("data-i");
+              el.textContent = day(reg.time[reg.tags.latest], lang);
+            }
+          }
+          if (reg) {
+            const tagged = {};
+            for (const [k, v] of Object.entries(reg.tags)) tagged[v] = k;
+            const rows = Object.entries(reg.time)
+              .filter(([v]) => v !== "created" && v !== "modified")
+              .sort((a, b) => (a[1] < b[1] ? 1 : -1))
+              .slice(0, 5)
+              .map(
+                ([v, at]) =>
+                  `<tr><td class="v">${link(NPM + "/v/" + v, v)}${tagged[v] ? `<span class="tg">${esc(tagged[v])}</span>` : ""}</td><td class="d">${esc(day(at, lang))}</td></tr>`,
+              );
+            if (rows.length) setv("s-recent", rows.join(""));
+          }
+          for (const k of ["week", "month"]) {
+            const d = data[k];
+            if (d && typeof d.n === "number") {
+              setv("s-" + k, link(NPM, d.n.toLocaleString(tag(lang))));
+              setv("s-" + k + "-d", esc(short(d.start, lang) + " – " + day(d.end, lang)));
+            }
+          }
+          if (data.repo && typeof data.repo.stars === "number")
+            setv("s-stars", link(GH + "/stargazers", data.repo.stars.toLocaleString(tag(lang))));
+          const ci = data.ci;
+          if (ci && ci.url) {
+            const ok = ci.conclusion === "success";
+            const bad = ci.conclusion === "failure";
+            setv(
+              "s-ci",
+              link(ci.url, ok ? t.ciOk : bad ? t.ciBad : ci.conclusion || "—", ok ? "ok" : bad ? "bad" : ""),
+            );
+            setv("s-ci-d", esc(day(ci.at, lang)));
+          }
+        }
+        for (const key of Object.keys(SRC))
+          load(key).then(
+            (v) => {
+              data[key] = v;
+              renderStatus(current);
+            },
+            () => {},
+          );
+        const HERO = {
+          pt: {
+            tab0: "Claude Code",
+            tab1: "CLI",
+            tab2: "trajetória",
+            pauseL: "Pausar",
+            playL: "Continuar",
+            nextL: "Próximo",
+            gifLink: "Abrir a gravação (GIF)",
+            cap0: "finitemonkey 0.1.0-next.27 · Claude Code 2.1.283",
+            cap1: "finitemonkey 0.1.0-next.41 · CLI",
+            cap2: "Efeito Ricochete, fig. 4",
+            alt0: 'Sessão do Claude Code: o gate do Finite Monkey reprova o teste "total rounds to cents", o Claude corrige o arredondamento e o gate passa com 10 checagens.',
+            alt1: "Terminal: finitemonkey gate reprova o teste de chave de idempotência, passa depois da correção; finitemonkey xray e finitemonkey trajectory mostram as faixas e um ricochete.",
+            alt2: "Pessoa A chega a 80 na faixa cega e cai para 30 quando a tarefa muda (ricochete). Pessoa B chega a 80 na faixa proximal e se mantém em 78.",
+            trajTitle: "O mesmo resultado, estatutos diferentes: o ricochete",
+            trajA: "Pessoa A",
+            trajB: "Pessoa B",
+            trajDisc: "discernimento",
+            trajWith: "com assistência",
+            trajShift: "tarefa muda",
+            trajAc1: "O 80 estava na faixa cega: quando a tarefa",
+            trajAc2: "muda, volta ao que A reconstrói.",
+            trajBc1: "O 80 estava na faixa proximal: B detecta,",
+            trajBc2: "reformula e se mantém.",
+            kHatch: "cega: recebe sem critério",
+            kDots: "cega: recebe com critério",
+            kD: "fronteira instável",
+            kP1: "proximal: detecta sem explicar",
+            kP2: "proximal: julga e explica",
+            kA1: "sozinha: refaz no contexto conhecido",
+            kA2: "sozinha: faz e transfere",
+            kR: "ricochete",
+            kH: "se mantém",
+          },
+          en: {
+            tab0: "Claude Code",
+            tab1: "CLI",
+            tab2: "trajectory",
+            pauseL: "Pause",
+            playL: "Play",
+            nextL: "Next",
+            gifLink: "Open the recording (GIF)",
+            cap0: "finitemonkey 0.1.0-next.27 · Claude Code 2.1.283",
+            cap1: "finitemonkey 0.1.0-next.41 · CLI",
+            cap2: "The Ricochet Effect, fig. 4",
+            alt0: 'Claude Code session: the Finite Monkey gate fails the test "total rounds to cents", Claude fixes the rounding and the gate passes with 10 checks.',
+            alt1: "Terminal: finitemonkey gate fails the idempotency key test and passes after the fix; finitemonkey xray and finitemonkey trajectory show the bands and a ricochet.",
+            alt2: "Person A reaches 80 in the blind band and falls to 30 when the task shifts (ricochet). Person B reaches 80 in the proximal band and holds at 78.",
+            trajTitle: "Same result, different status: the ricochet",
+            trajA: "Person A",
+            trajB: "Person B",
+            trajDisc: "discernment",
+            trajWith: "with assistance",
+            trajShift: "task shifts",
+            trajAc1: "The 80 sat in the blind band: when the task",
+            trajAc2: "shifts, it falls back to what A can rebuild.",
+            trajBc1: "The 80 sat in the proximal band: B detects,",
+            trajBc2: "reformulates and holds.",
+            kHatch: "blind: receives without criterion",
+            kDots: "blind: receives with criterion",
+            kD: "unstable boundary",
+            kP1: "proximal: detects without explaining",
+            kP2: "proximal: judges and explains",
+            kA1: "alone: redoes it in a known context",
+            kA2: "alone: does it and transfers it",
+            kR: "ricochet",
+            kH: "holds",
+          },
+          es: {
+            tab0: "Claude Code",
+            tab1: "CLI",
+            tab2: "trayectoria",
+            pauseL: "Pausar",
+            playL: "Reanudar",
+            nextL: "Siguiente",
+            gifLink: "Abrir la grabación (GIF)",
+            cap0: "finitemonkey 0.1.0-next.27 · Claude Code 2.1.283",
+            cap1: "finitemonkey 0.1.0-next.41 · CLI",
+            cap2: "Efecto Rebote, fig. 4",
+            alt0: 'Sesión de Claude Code: el gate de Finite Monkey reprueba el test "total rounds to cents", Claude corrige el redondeo y el gate pasa con 10 comprobaciones.',
+            alt1: "Terminal: finitemonkey gate reprueba el test de la clave de idempotencia y pasa tras la corrección; finitemonkey xray y finitemonkey trajectory muestran las franjas y un rebote.",
+            alt2: "La persona A llega a 80 en la franja ciega y cae a 30 cuando la tarea cambia (rebote). La persona B llega a 80 en la franja proximal y se mantiene en 78.",
+            trajTitle: "El mismo resultado, estatus distintos: el rebote",
+            trajA: "Persona A",
+            trajB: "Persona B",
+            trajDisc: "discernimiento",
+            trajWith: "con asistencia",
+            trajShift: "la tarea cambia",
+            trajAc1: "El 80 estaba en la franja ciega: cuando la tarea",
+            trajAc2: "cambia, vuelve a lo que A puede reconstruir.",
+            trajBc1: "El 80 estaba en la franja proximal: B detecta,",
+            trajBc2: "reformula y se mantiene.",
+            kHatch: "ciega: recibe sin criterio",
+            kDots: "ciega: recibe con criterio",
+            kD: "frontera inestable",
+            kP1: "proximal: detecta sin explicar",
+            kP2: "proximal: juzga y explica",
+            kA1: "sola: lo rehace en contexto conocido",
+            kA2: "sola: lo hace y lo transfiere",
+            kR: "rebote",
+            kH: "se mantiene",
+          },
+        };
+        for (const l of Object.keys(HERO)) Object.assign(T[l], HERO[l]);
+        const stage = {
+          idx: 0,
+          paused: false,
+          hover: false,
+          hidden: false,
+          players: [],
+          tl: null,
+          chartAt: 0,
+          chartPlayed: 0,
+          HOLD: 9,
+        };
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const CASTS = ["casts/gate.cast", "casts/cli-demo.cast"];
+        const tabs = [...document.querySelectorAll(".tab")];
+        const panes = [...document.querySelectorAll(".pane")];
+        function stageLabels(lang) {
+          const t = T[lang];
+          document.getElementById("stage-cap").textContent = t["cap" + stage.idx];
+          const pb = document.getElementById("st-pause");
+          pb.textContent = stage.paused ? "▶" : "❚❚";
+          pb.setAttribute("aria-label", stage.paused ? t.playL : t.pauseL);
+          document.getElementById("st-next").setAttribute("aria-label", t.nextL);
+        }
+        function player(i) {
+          if (stage.players[i] !== undefined) return stage.players[i];
+          stage.players[i] = null;
+          if (!window.AsciinemaPlayer) {
+            if (i === 0) {
+              const img = document.createElement("img");
+              img.src = "casts/gate.gif";
+              img.alt = "";
+              document.getElementById("cast-0").replaceChildren(img);
+            }
+            return null;
+          }
+          const el = document.getElementById("cast-" + i);
+          el.replaceChildren();
+          const p = window.AsciinemaPlayer.create(CASTS[i], el, {
+            autoPlay: false,
+            loop: false,
+            idleTimeLimit: 2,
+            speed: i === 0 ? 1.3 : 1,
+            fit: "width",
+            controls: reduce,
+            theme: "fm",
+            terminalFontFamily: "'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace",
+            poster: i === 0 ? "npt:0:38" : "npt:0:40",
+          });
+          const fit = () => {
+            const term = el.querySelector(".ap-term");
+            if (!term) return;
+            term.style.transform = "";
+            const k = el.clientWidth / term.getBoundingClientRect().width;
+            if (k < 1) {
+              term.style.transformOrigin = "0 0";
+              term.style.transform = "scale(" + k + ")";
+            }
+          };
+          p.addEventListener("play", () => requestAnimationFrame(fit));
+          window.addEventListener("resize", () => requestAnimationFrame(fit));
+          p.addEventListener("ended", () => {
+            if (stage.idx === i && !reduce) go(i + 1);
+          });
+          stage.players[i] = p;
+          return p;
+        }
+        const running = () => !stage.paused && !stage.hover && !stage.hidden && !reduce;
+        function chartTimeline() {
+          if (!window.gsap || reduce) return null;
+          const g = window.gsap;
+          const svg = document.querySelector(".traj");
+          const tl = g.timeline({ paused: true });
+          tl.from(svg.querySelectorAll(".strata rect"), {
+            scaleY: 0,
+            transformOrigin: "50% 100%",
+            duration: 0.55,
+            stagger: 0.04,
+            ease: "power2.out",
+          });
+          tl.from(
+            svg.querySelectorAll(".ceil"),
+            { scaleX: 0, transformOrigin: "0% 50%", duration: 0.35, stagger: 0.03 },
+            "-=0.25",
+          );
+          svg.querySelectorAll(".work").forEach((path) => {
+            const len = path.getTotalLength();
+            g.set(path, { strokeDasharray: len });
+            tl.from(path, { strokeDashoffset: len, duration: 0.9, ease: "power1.inOut" }, "<0.1");
+          });
+          tl.from(svg.querySelectorAll(".peak, .val"), { opacity: 0, duration: 0.25 }, "-=0.35");
+          tl.from(
+            svg.querySelectorAll(".mark"),
+            { scale: 0, transformOrigin: "50% 50%", duration: 0.35, ease: "back.out(3)" },
+            "-=0.05",
+          );
+          tl.from(document.querySelectorAll(".key li"), { opacity: 0, y: 4, duration: 0.25, stagger: 0.025 }, "-=0.2");
+          return tl;
+        }
+        function go(i) {
+          i = (i + panes.length) % panes.length;
+          const prev = stage.players[stage.idx];
+          if (prev) prev.pause();
+          if (stage.tl) stage.tl.pause();
+          stage.idx = i;
+          tabs.forEach((tab, j) => {
+            tab.setAttribute("aria-selected", String(j === i));
+            tab.tabIndex = j === i ? 0 : -1;
+            tab.querySelector(".pg").style.transform = "scaleX(0)";
+          });
+          panes.forEach((pane, j) => pane.classList.toggle("on", j === i));
+          if (i < 2) {
+            const p = player(i);
+            if (p) Promise.resolve(p.seek(0)).then(() => running() && p.play());
+          } else {
+            stage.chartPlayed = 0;
+            stage.chartAt = performance.now();
+            if (!stage.tl) stage.tl = chartTimeline();
+            if (stage.tl) {
+              stage.tl.progress(0).pause();
+              if (running()) stage.tl.play();
+              else stage.tl.progress(1);
+            }
+          }
+          stageLabels(current);
+        }
+        function resume() {
+          if (!running()) return;
+          if (stage.idx < 2) {
+            const p = stage.players[stage.idx];
+            if (p) p.play();
+          } else {
+            stage.chartAt = performance.now();
+            if (stage.tl && stage.tl.progress() < 1) stage.tl.play();
+          }
+        }
+        function hold() {
+          if (stage.idx < 2) {
+            const p = stage.players[stage.idx];
+            if (p) p.pause();
+          } else {
+            stage.chartPlayed += (performance.now() - stage.chartAt) / 1000;
+            stage.chartAt = performance.now();
+            if (stage.tl) stage.tl.pause();
+          }
+        }
+        function tick() {
+          const bar = tabs[stage.idx].querySelector(".pg");
+          if (stage.idx < 2) {
+            const p = stage.players[stage.idx];
+            if (!p) return;
+            Promise.all([p.getCurrentTime(), p.getDuration()]).then(([c, d]) => {
+              if (d) bar.style.transform = "scaleX(" + Math.min(1, c / d) + ")";
+            });
+          } else {
+            let played = stage.chartPlayed;
+            if (running()) played += (performance.now() - stage.chartAt) / 1000;
+            const total = (stage.tl ? stage.tl.duration() : 0) + stage.HOLD;
+            bar.style.transform = "scaleX(" + Math.min(1, played / total) + ")";
+            if (played >= total && running()) go(0);
+          }
+        }
+        function setHover(on) {
+          const was = running();
+          stage.hover = on;
+          if (was && !running()) hold();
+          if (!was && running()) resume();
+        }
+        tabs.forEach((tab, j) => {
+          tab.addEventListener("click", () => {
+            stage.hover = false;
+            go(j);
+          });
+          tab.addEventListener("keydown", (e) => {
+            const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+            if (!d) return;
+            e.preventDefault();
+            const k = (j + d + tabs.length) % tabs.length;
+            tabs[k].focus();
+            go(k);
+          });
+        });
+        document.getElementById("st-pause").addEventListener("click", () => {
+          const was = running();
+          stage.paused = !stage.paused;
+          if (was && !running()) hold();
+          if (!was && running()) resume();
+          stageLabels(current);
+        });
+        document.getElementById("st-next").addEventListener("click", () => go(stage.idx + 1));
+        const stageEl = document.getElementById("stage");
+        stageEl.addEventListener("mouseenter", () => setHover(true));
+        stageEl.addEventListener("mouseleave", () => setHover(false));
+        if ("IntersectionObserver" in window)
+          new IntersectionObserver((entries) => {
+            const was = running();
+            stage.hidden = !entries[0].isIntersecting;
+            if (was && !running()) hold();
+            if (!was && running()) resume();
+          }).observe(stageEl);
+        const svgEl = document.querySelector(".traj");
+        const narrow = matchMedia("(max-width: 600px)");
+        const fitChart = () => svgEl.setAttribute("viewBox", narrow.matches ? "80 4 610 326" : "0 0 720 372");
+        fitChart();
+        narrow.addEventListener("change", fitChart);
+        if (!reduce) stageEl.classList.add("auto");
+        if (reduce) {
+          stage.paused = true;
+          document.getElementById("st-pause").hidden = true;
+        }
+        window.addEventListener("DOMContentLoaded", async () => {
+          try {
+            await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]);
+          } catch (e) {}
+          go(reduce ? 2 : 0);
+          if (!reduce) setInterval(tick, 200);
+        });
+        let start = "en";
+        const q = new URLSearchParams(location.search).get("lang");
+        let saved = null;
+        try {
+          saved = localStorage.getItem("fm-lang");
+        } catch (e) {}
+        if (q && T[q]) start = q;
+        else if (saved && T[saved]) start = saved;
+        else {
+          const n = (navigator.language || "").toLowerCase();
+          if (n.startsWith("pt")) start = "pt";
+          else if (n.startsWith("es")) start = "es";
+        }
+        render(start);
+      })();
+    </script>
+  </body>
+</html>
