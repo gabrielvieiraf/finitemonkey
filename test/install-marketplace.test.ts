@@ -39,4 +39,33 @@ describe("marketplace source for init --marketplace", () => {
     assert.equal(field(settingsOf(fs), "extraKnownMarketplaces"), undefined);
     assert.equal(field(settingsOf(fs), "enabledPlugins"), undefined);
   });
+
+  it("--channel picks the marketplace whatever the version says", () => {
+    assert.equal(marketplaceSource("0.1.0", "next").key, "finitemonkey-next");
+    assert.equal(marketplaceSource("0.1.0-next.40", "stable").key, "finitemonkey");
+  });
+
+  it("init --marketplace --channel next on a stable version registers the next marketplace", async () => {
+    for (const argv of [
+      ["init", "--yes", "--marketplace", "--channel", "next"],
+      ["init", "--yes", "--channel", "next"],
+    ]) {
+      const fs = repo();
+      const done = await run(fs, argv, "0.1.0");
+      assert.equal(done.code, 0, done.stdout);
+      const settings = settingsOf(fs);
+      assert.deepEqual(field(settings, "extraKnownMarketplaces", "finitemonkey-next"), {
+        source: { source: "github", repo: "gabrielvieiraf/finitemonkey", ref: "next" },
+      });
+      assert.equal(field(settings, "extraKnownMarketplaces", "finitemonkey"), undefined);
+      assert.equal(field(settings, "enabledPlugins", "finitemonkey@finitemonkey-next"), true);
+    }
+  });
+
+  it("refuses a channel it does not know and writes nothing", async () => {
+    const fs = repo();
+    const refused = await run(fs, ["init", "--yes", "--marketplace", "--channel", "beta"], "0.1.0");
+    assert.equal(refused.code, 2);
+    assert.equal(fs.read(at(SETTINGS_FILE)), undefined);
+  });
 });

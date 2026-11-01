@@ -32073,8 +32073,11 @@ var marketplaceFor = (version2) => /^\d+\.\d+\.\d+-next\./.test(version2) ? NEXT
 // src/install/marketplace.ts
 var MARKETPLACE_REPO = "gabrielvieiraf/finitemonkey";
 var NEXT_BRANCH = "next";
-var marketplaceSource = (version2) => {
-  const key3 = marketplaceFor(version2);
+var CHANNELS = ["stable", "next"];
+var parseChannel = (raw) => CHANNELS.find((channel2) => channel2 === raw);
+var keyFor = (version2, channel2) => channel2 === void 0 ? marketplaceFor(version2) : channel2 === "next" ? NEXT_MARKETPLACE_NAME : MARKETPLACE_NAME;
+var marketplaceSource = (version2, channel2) => {
+  const key3 = keyFor(version2, channel2);
   const github = { source: "github", repo: MARKETPLACE_REPO };
   return {
     key: key3,
@@ -32082,6 +32085,7 @@ var marketplaceSource = (version2) => {
     entry: { source: key3 === NEXT_MARKETPLACE_NAME ? { ...github, ref: NEXT_BRANCH } : github }
   };
 };
+var chosenMarketplace = (version2, choice) => choice === false ? void 0 : marketplaceSource(version2, choice === true ? void 0 : choice);
 
 // src/core/semver.ts
 var SEMVER = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
@@ -32268,7 +32272,7 @@ var settingsItem = (project, detection, input, previous) => {
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
     attributionOff: isOn(input.defaults, "no-attribution"),
-    marketplace: input.marketplace ? marketplaceSource(input.version) : void 0,
+    marketplace: chosenMarketplace(input.version, input.marketplace),
     language: input.claudeLanguage,
     statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current2.value, input.env) }
   };
@@ -32700,6 +32704,25 @@ var withDebugLog = (rows3, log) => {
       latencyMs: latencies.length === 0 ? row4.latencyMs : Math.max(...latencies),
       outputBytes: outputs.length === 0 ? row4.outputBytes : Math.max(...outputs)
     };
+  });
+};
+var PROBED_CHECK = /^hook\.(project|local|plugin)\.(.+)$/;
+var TIMED = /* @__PURE__ */ new Set(["doctor.hooks.ok", "doctor.hooks.slow"]);
+var probedLatency = (findings2) => new Map(
+  findings2.flatMap((finding7) => {
+    const match = PROBED_CHECK.exec(finding7.check);
+    const ms = finding7.params?.["ms"];
+    if (match === null || typeof ms !== "number" || !TIMED.has(finding7.messageKey)) return [];
+    return [[`${match[1] ?? ""}\0${match[2] ?? ""}`, ms]];
+  })
+);
+var withProbeLatency = (rows3, findings2) => {
+  const measured = probedLatency(findings2);
+  return rows3.map((row4) => {
+    if (!row4.ours || row4.latencyMs !== null) return row4;
+    const source3 = row4.source.startsWith("plugin:") ? "plugin" : row4.source;
+    const ms = measured.get(`${source3}\0${row4.event}`);
+    return ms === void 0 ? row4 : { ...row4, latencyMs: ms };
   });
 };
 
@@ -59242,8 +59265,9 @@ var runDoctor = (ctx, fix, report5, hooks, probe) => {
   }
   const env = doctorEnvFrom(ctx);
   const probed = probe ? runProbe(ctx.runtime, fmPaths(env.root)) : void 0;
-  const checked2 = buildReport2(ctx, [...runChecks2(env), ...probe ? probeFindings(probed) : []]);
-  const rows3 = hooks ? withDebugLog(hookInventory(env), debugLog(ctx)) : void 0;
+  const findings2 = runChecks2(env);
+  const checked2 = buildReport2(ctx, [...findings2, ...probe ? probeFindings(probed) : []]);
+  const rows3 = hooks ? withProbeLatency(withDebugLog(hookInventory(env), debugLog(ctx)), findings2) : void 0;
   const base = rows3 === void 0 ? checked2 : { ...checked2, hookInventory: rows3 };
   const withProbe = probed === void 0 ? base : { ...base, probe: probed };
   const data2 = fixed3 === void 0 ? withProbe : { ...withProbe, fixed: fixed3 };
@@ -66580,6 +66604,7 @@ var flagsFor2 = (request) => [
   ...request.commits.kind === "given" ? [`--commits ${request.commits.style}`] : [],
   ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`],
   ...request.marketplace ? ["--marketplace"] : [],
+  ...request.channel === void 0 ? [] : [`--channel ${request.channel}`],
   ...request.sandbox === true ? ["--sandbox"] : []
 ].join(" ");
 var presentPlan = (ctx, request, plan3) => {
@@ -66619,20 +66644,25 @@ var runInstall = (ctx, request) => {
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   const defaults = withCommits(projectDefaults(ctx.runtime, project.root), request.commits);
-  const input = planInputFor(ctx, defaults, request.bin, request.marketplace, request.sandbox === true);
+  const marketplace = request.marketplace && (request.channel ?? true);
+  const input = planInputFor(ctx, defaults, request.bin, marketplace, request.sandbox === true);
   const plan3 = buildPlan2(project, detect(project, gitRoot2, input), input, previous.value);
   if (!plan3.ok) return failureFrom(ctx.t, planProblem(plan3.error));
   const result = ctx.dryRun || !ctx.yes || !needsWrite(plan3.value) ? presentPlan(ctx, request, plan3.value) : applyAndReport(ctx, request, plan3.value);
   return withQuestions(ctx, result, request.commits);
 };
-var initRequest = (args2, commits2) => ({
-  mode: "init",
-  commits: commits2,
-  bin: stringOption(args2.values, "bin"),
-  marketplace: args2.values["marketplace"] === true,
-  sandbox: args2.values["sandbox"] === true,
-  showDiff: false
-});
+var initRequest = (args2, commits2) => {
+  const channel2 = parseChannel(stringOption(args2.values, "channel"));
+  return {
+    mode: "init",
+    commits: commits2,
+    bin: stringOption(args2.values, "bin"),
+    marketplace: args2.values["marketplace"] === true || channel2 !== void 0,
+    ...channel2 === void 0 ? {} : { channel: channel2 },
+    sandbox: args2.values["sandbox"] === true,
+    showDiff: false
+  };
+};
 var withLookBack = (ctx, result) => {
   if (!result.ok) return result;
   const root = openProject(ctx).project.root;
@@ -66653,12 +66683,13 @@ var withGithub = (ctx, result) => {
 var initCommand = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--channel stable|next] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
   status: "ready",
   options: {
     commits: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
+    channel: { type: "string" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
     github: { type: "boolean" }
@@ -66671,6 +66702,14 @@ var initCommand = {
         ctx.t,
         usageProblem("invalid_arguments", "defaults.error.commits", "finitemonkey init --commits conventional", {
           value: raw
+        })
+      );
+    const channel2 = stringOption(args2.values, "channel");
+    if (channel2 !== void 0 && parseChannel(channel2) === void 0)
+      return failureFrom(
+        ctx.t,
+        usageProblem("invalid_arguments", "error.invalid_arguments", "finitemonkey init --marketplace --channel next", {
+          detail: channel2
         })
       );
     const result = runInstall(ctx, initRequest(args2, await commitsAnswer(ctx, flag2)));
@@ -72319,7 +72358,7 @@ var execute = (runtime, root, run10, input) => {
   });
   return { exitCode: result.timedOut || !result.found ? null : result.exitCode, stdout: result.stdout };
 };
-var keyFor = (runtime, root, draft) => {
+var keyFor2 = (runtime, root, draft) => {
   const rule = KEY_RULE[draft.kind];
   if (rule === "none") return null;
   if (rule === "observe")
@@ -72333,7 +72372,7 @@ var keyFor = (runtime, root, draft) => {
 };
 var proposeProbe = (runtime, paths, draft) => {
   const state = readProbeState(runtime, paths);
-  const key3 = keyFor(runtime, paths.root, draft);
+  const key3 = keyFor2(runtime, paths.root, draft);
   const invalid8 = key3 === null && KEY_RULE[draft.kind] !== "none";
   const probe = {
     id: `P${String(state.probes.length + 1)}`,

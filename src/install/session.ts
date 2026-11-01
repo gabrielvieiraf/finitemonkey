@@ -6,6 +6,7 @@ import type { MessageKey } from "../i18n/catalogs.js";
 import { CLAUDE_LANGUAGE, type LangSource } from "../i18n/languages.js";
 import type { Params } from "../i18n/translate.js";
 import type { ApplyFailure } from "./apply.js";
+import type { Channel } from "./marketplace.js";
 import type { PlanError, PlanInput } from "./plan.js";
 import { findGitRoot, type Project, projectAt } from "./project.js";
 import { SANDBOX_PLATFORMS } from "./sandbox.js";
@@ -101,7 +102,7 @@ export const planInputFor = (
   ctx: Ctx,
   defaults: ProjectDefaults,
   bin: string | undefined,
-  marketplace: boolean,
+  marketplace: boolean | Channel,
   sandbox = false,
 ): PlanInput => ({
   defaults,

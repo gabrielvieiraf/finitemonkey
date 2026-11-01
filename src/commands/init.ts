@@ -9,6 +9,7 @@ import { githubLines, type GithubStep, githubStep } from "../github/step.js";
 import { type LookBack, lookBack } from "../history/look-back.js";
 import { PATTERNS } from "../history/patterns.js";
 import { applyPlan } from "../install/apply.js";
+import { type Channel, parseChannel } from "../install/marketplace.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
 import { type InstallQuestion, type PlanData, planData, planLines } from "../install/report.js";
 import { applyProblem, confirmProblem, openProject, planInputFor, planProblem } from "../install/session.js";
@@ -27,6 +28,7 @@ export interface InstallRequest {
   readonly commits: CommitsAnswer;
   readonly bin: string | undefined;
   readonly marketplace: boolean;
+  readonly channel?: Channel;
   readonly sandbox?: boolean;
   readonly showDiff: boolean;
 }
@@ -37,6 +39,7 @@ const flagsFor = (request: InstallRequest): string =>
     ...(request.commits.kind === "given" ? [`--commits ${request.commits.style}`] : []),
     ...(request.bin === undefined ? [] : [`--bin "${request.bin}"`]),
     ...(request.marketplace ? ["--marketplace"] : []),
+    ...(request.channel === undefined ? [] : [`--channel ${request.channel}`]),
     ...(request.sandbox === true ? ["--sandbox"] : []),
   ].join(" ");
 
@@ -82,7 +85,8 @@ export const runInstall = (ctx: Ctx, request: InstallRequest): CommandResult<Pla
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
   const defaults = withCommits(projectDefaults(ctx.runtime, project.root), request.commits);
-  const input = planInputFor(ctx, defaults, request.bin, request.marketplace, request.sandbox === true);
+  const marketplace = request.marketplace && (request.channel ?? true);
+  const input = planInputFor(ctx, defaults, request.bin, marketplace, request.sandbox === true);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const result =
@@ -92,14 +96,18 @@ export const runInstall = (ctx: Ctx, request: InstallRequest): CommandResult<Pla
   return withQuestions(ctx, result, request.commits);
 };
 
-const initRequest = (args: CommandArgs, commits: CommitsAnswer): InstallRequest => ({
-  mode: "init",
-  commits,
-  bin: stringOption(args.values, "bin"),
-  marketplace: args.values["marketplace"] === true,
-  sandbox: args.values["sandbox"] === true,
-  showDiff: false,
-});
+const initRequest = (args: CommandArgs, commits: CommitsAnswer): InstallRequest => {
+  const channel = parseChannel(stringOption(args.values, "channel"));
+  return {
+    mode: "init",
+    commits,
+    bin: stringOption(args.values, "bin"),
+    marketplace: args.values["marketplace"] === true || channel !== undefined,
+    ...(channel === undefined ? {} : { channel }),
+    sandbox: args.values["sandbox"] === true,
+    showDiff: false,
+  };
+};
 
 const withLookBack = (ctx: Ctx, result: CommandResult<PlanData>): CommandResult<PlanData | LookBackData> => {
   if (!result.ok) return result;
@@ -129,12 +137,13 @@ export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+    "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--channel stable|next] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
   status: "ready",
   options: {
     commits: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
+    channel: { type: "string" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
     github: { type: "boolean" },
@@ -147,6 +156,14 @@ export const initCommand: CommandSpec = {
         ctx.t,
         usageProblem("invalid_arguments", "defaults.error.commits", "finitemonkey init --commits conventional", {
           value: raw,
+        }),
+      );
+    const channel = stringOption(args.values, "channel");
+    if (channel !== undefined && parseChannel(channel) === undefined)
+      return failureFrom(
+        ctx.t,
+        usageProblem("invalid_arguments", "error.invalid_arguments", "finitemonkey init --marketplace --channel next", {
+          detail: channel,
         }),
       );
     const result = runInstall(ctx, initRequest(args, await commitsAnswer(ctx, flag)));
