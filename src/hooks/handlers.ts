@@ -64,6 +64,7 @@ import {
 } from "../signals/early.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
+import { CONTRACT_HOLD_GUARD, CONTRACT_HOLD_HANDLERS } from "../task/contract-hold.js";
 import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
 import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
@@ -259,6 +260,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
+  { id: CONTRACT_HOLD_GUARD, damage: false, handlers: CONTRACT_HOLD_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

@@ -1,3 +1,4 @@
+import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import type { Runtime } from "../core/runtime.js";
 import type { EvidenceStatus, Note, UnverifiedReason } from "../evidence/types.js";
@@ -35,6 +36,7 @@ export interface GateContext {
   readonly baseline: Baseline | undefined;
   readonly size?: SizeVerdict;
   readonly examples?: readonly Example[];
+  readonly cwd?: AbsolutePath;
 }
 
 export interface CheckOutcome {

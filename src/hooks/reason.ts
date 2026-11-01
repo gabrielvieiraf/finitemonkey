@@ -27,7 +27,8 @@ export type ReasonFamily =
   | "signals.syntax"
   | "signals.repro"
   | "fronts.scope"
-  | "guardian.block";
+  | "guardian.block"
+  | "task.hold";
 
 export type HumanFamily = Extract<`${ReasonFamily}.human`, MessageKey>;
 
@@ -53,6 +54,7 @@ const familyOf = (base: ReasonBase): ReasonFamily => {
     "signals.repro",
     "fronts.scope",
     "guardian.block",
+    "task.hold",
   ];
   const found = families.find((family) => base.startsWith(`${family}.`) || base === family);
   if (found === undefined) throw new Error(`no reason family for ${base}`);

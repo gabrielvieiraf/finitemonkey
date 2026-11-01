@@ -8,6 +8,7 @@ import type { FmPaths } from "../task/paths.js";
 import { readTrust, writeTrust } from "../task/state.js";
 import type { TaskContract } from "../task/types.js";
 import { prepareGate } from "./prepare.js";
+import { recordReviewerTrust } from "./reviewer-trust.js";
 
 export interface PendingContract {
   readonly task: string;
@@ -75,6 +76,7 @@ export const trustContract = (
     approved: pending.text === undefined ? lock.approved : { ...lock.approved, [task]: pending.text },
   });
   if (!written.ok) return { kind: "failed" };
+  recordReviewerTrust(runtime, paths, pending.contract);
   approveAmendments(runtime, paths, task, approvedBy);
   return { kind: "trusted", hash: pending.hash };
 };

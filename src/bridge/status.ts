@@ -4,7 +4,7 @@ import { xrayPath } from "../conceitos/xray-run.js";
 import { nowMs } from "../core/clock.js";
 import type { Runtime } from "../core/runtime.js";
 import { readLedger } from "../evidence/ledger.js";
-import type { EvidenceStatus } from "../evidence/types.js";
+import type { CompletionState, EvidenceStatus } from "../evidence/types.js";
 import { readGateStatus } from "../gate/hooks/status.js";
 import { prepareGate } from "../gate/prepare.js";
 import { buildReport, type GateReport, type ReportItem } from "../gate/report.js";
@@ -52,6 +52,8 @@ export interface StatusData {
   readonly goal: string;
   readonly contract: { readonly id: string; readonly hash: string } | null;
   readonly gate: StatusGate;
+  readonly state: CompletionState | null;
+  readonly reason: string | null;
   readonly tree: string | null;
   readonly counts: { readonly passed: number; readonly failed: number; readonly unverified: number };
   readonly checks: readonly StatusCheck[];
@@ -184,6 +186,8 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     goal: report?.goal ?? "",
     contract: report === undefined || found === undefined ? null : { id: report.task, hash: found.hash },
     gate: { light: gateLight(runtime, paths), status: gate?.status ?? null, at: gateAt },
+    state: report?.state ?? null,
+    reason: report?.stateReason ?? null,
     tree: report?.treeHash ?? null,
     counts: report?.counts ?? { passed: 0, failed: 0, unverified: 0 },
     checks: items.map(checkOf),

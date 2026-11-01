@@ -86,6 +86,50 @@
         "at"
       ]
     },
+    "state": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "const": "failed"
+        },
+        {
+          "const": "unverified"
+        },
+        {
+          "const": "running"
+        },
+        {
+          "const": "verified"
+        },
+        {
+          "const": "partial"
+        },
+        {
+          "const": "invalidated"
+        },
+        {
+          "const": "blocked"
+        },
+        {
+          "const": "inconclusive"
+        },
+        {
+          "const": "needs_approval"
+        }
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
     "tree": {
       "anyOf": [
         {
@@ -382,6 +426,8 @@
     "goal",
     "contract",
     "gate",
+    "state",
+    "reason",
     "tree",
     "counts",
     "checks",

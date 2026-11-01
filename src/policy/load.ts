@@ -4,6 +4,7 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { withEvolved } from "./evolved.js";
 import { DEFAULT_POLICY, parsePolicy, parseUserPolicy, type Policy, POLICY_FILE } from "./policy.js";
+import { loadTaskGuards } from "./task-guards.js";
 
 export const policyPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(join(root, POLICY_FILE));
 
@@ -20,5 +21,10 @@ export const loadBasePolicy = (runtime: PolicyRuntime, root: AbsolutePath): Poli
   return { ...project, userGuards: user.userGuards, issues: [...project.issues, ...user.issues] };
 };
 
+const withTask = (runtime: PolicyRuntime, root: AbsolutePath, policy: Policy): Policy => {
+  const task = loadTaskGuards(runtime, root);
+  return task === undefined ? policy : { ...policy, task };
+};
+
 export const loadPolicy = (runtime: PolicyRuntime, root: AbsolutePath): Policy =>
-  withEvolved(runtime, root, loadBasePolicy(runtime, root));
+  withTask(runtime, root, withEvolved(runtime, root, loadBasePolicy(runtime, root)));
