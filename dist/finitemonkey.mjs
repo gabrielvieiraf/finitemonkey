@@ -49567,10 +49567,7 @@ var version = (runtime, root, probe) => {
   if (!result.found || result.exitCode !== 0) return "missing";
   return `${result.stdout}${result.stderr}`.trim().split(/\r?\n/)[0] ?? "";
 };
-var relativeCwd = (root, cwd) => {
-  const rel = toPosixPath(relative13(root, cwd));
-  return rel === "" ? "." : rel;
-};
+var relativeCwd = (runtime, root, cwd) => toPosixPath(relative13(runtime.realpath(root), runtime.realpath(cwd))) || ".";
 var currentInputs = (runtime, root, env, config, cwd = root) => {
   const lockfiles = Object.fromEntries(
     LOCKFILES5.flatMap((file) => {
@@ -49589,7 +49586,7 @@ var currentInputs = (runtime, root, env, config, cwd = root) => {
       return [name, value2 === void 0 ? "" : sha256Hex(value2).slice(0, SHORT6)];
     })
   );
-  return { cwd: relativeCwd(root, cwd), lockfiles, tools, env: vars };
+  return { cwd: relativeCwd(runtime, root, cwd), lockfiles, tools, env: vars };
 };
 var changedKeys = (label3, before2, after2) => [.../* @__PURE__ */ new Set([...Object.keys(before2), ...Object.keys(after2)])].filter((key3) => before2[key3] !== after2[key3]).sort().map((key3) => `${label3}:${key3}`);
 var inputsChanged = (prior, now) => {

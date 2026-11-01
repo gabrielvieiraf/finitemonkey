@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { join } from "node:path";
+import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
 
 import { toAbsolutePath } from "../src/core/brand.js";
@@ -120,6 +122,18 @@ describe("evidence freshness", () => {
       (entry) => entry.check === "tests",
     );
     assert.equal(latest?.inputs?.cwd, "src");
+  });
+
+  it("a working directory reached through a symlink is still relative to the root", () => {
+    const repo = fresh();
+    const link = join(mkdtempSync(join(tmpdir(), "fm-link-")), "repo");
+    symlinkSync(repo.root, link, "dir");
+    assert.equal(runs(repo, repoRuntime(), {}, join(link, "src")), 1);
+    const latest = readLedger(repoRuntime(), fmPaths(repo.root).evidence("t1")).findLast(
+      (entry) => entry.check === "tests",
+    );
+    assert.equal(latest?.inputs?.cwd, "src");
+    rmSync(dirname(link), { recursive: true, force: true });
   });
 
   it("the working directory is compared relative to the root; an absolute one from before is not", () => {

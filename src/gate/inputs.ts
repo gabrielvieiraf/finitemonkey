@@ -69,13 +69,11 @@ const version = (runtime: Pick<Runtime, "exec">, root: AbsolutePath, probe: Tool
   return `${result.stdout}${result.stderr}`.trim().split(/\r?\n/)[0] ?? "";
 };
 
-export const relativeCwd = (root: AbsolutePath, cwd: AbsolutePath): string => {
-  const rel = toPosixPath(relative(root, cwd));
-  return rel === "" ? "." : rel;
-};
+export const relativeCwd = (runtime: Pick<Runtime, "realpath">, root: AbsolutePath, cwd: AbsolutePath): string =>
+  toPosixPath(relative(runtime.realpath(root), runtime.realpath(cwd))) || ".";
 
 export const currentInputs = (
-  runtime: Pick<Runtime, "readText" | "exec">,
+  runtime: Pick<Runtime, "readText" | "exec" | "realpath">,
   root: AbsolutePath,
   env: Env,
   config: InputsConfig,
@@ -98,7 +96,7 @@ export const currentInputs = (
       return [name, value === undefined ? "" : sha256(value).slice(0, SHORT)] as const;
     }),
   );
-  return { cwd: relativeCwd(root, cwd), lockfiles, tools, env: vars };
+  return { cwd: relativeCwd(runtime, root, cwd), lockfiles, tools, env: vars };
 };
 
 const changedKeys = (
