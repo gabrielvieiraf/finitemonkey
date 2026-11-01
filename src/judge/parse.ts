@@ -1,3 +1,4 @@
+import { canonicalConcept } from "../conceitos/concepts.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import {
   ANCHOR_KINDS,
@@ -79,7 +80,7 @@ const evidenceOf: Parser = (record, base) => {
   const origin = oneOf(ORIGINS, record["origin"]);
   const ref = text(record, "ref") ?? (proof === "exposure" ? "exposure" : undefined);
   if (proof === undefined || result === undefined || origin === undefined || ref === undefined) return undefined;
-  const concepts = texts(record, "concepts");
+  const concepts = texts(record, "concepts").map(canonicalConcept);
   return { type: "evidence", ...base, concepts, proof, result, ref, origin, ...optional(record, ["claim"]) };
 };
 
@@ -93,7 +94,7 @@ const claimOf: Parser = (record, base) => {
     ...base,
     text: claimText,
     kind,
-    concepts: texts(record, "concepts"),
+    concepts: texts(record, "concepts").map(canonicalConcept),
     anchors: anchorsOf(record["anchors"]),
     provenance: text(record, "provenance") ?? "model",
     ...(because.length === 0 ? {} : { because }),
@@ -178,7 +179,7 @@ const probeOf: Parser = (record, base) => {
     type: "probe",
     ...base,
     claim,
-    concepts: texts(record, "concepts"),
+    concepts: texts(record, "concepts").map(canonicalConcept),
     form,
     prompt,
     options,

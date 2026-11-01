@@ -1,3 +1,4 @@
+import { recordResearchConcepts } from "../conceitos/research.js";
 import { listOption, stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
@@ -88,7 +89,8 @@ export const researchSourceCommand: CommandSpec = {
       const log = readResearchLog(ctx.runtime, paths, slug);
       if (!written || log === undefined)
         return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`));
-      return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log) }, stateLines(ctx, log));
+      const concepts = recordResearchConcepts(ctx.runtime, paths, slug, url, isPerson(ctx) ? "person" : "agent");
+      return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, stateLines(ctx, log));
     });
   },
 };

@@ -37,6 +37,17 @@ export const RULE_OWASP: Readonly<Record<AppsecRule, OwaspId>> = {
   "sql-concat": "A03",
 };
 
+export const RULE_CWE: Readonly<Record<AppsecRule, number>> = {
+  "route-auth": 862,
+  "owner-filter": 639,
+  "webhook-signature": 347,
+  "webhook-replay": 294,
+  ssrf: 918,
+  "cors-credentials": 942,
+  "rate-limit": 307,
+  "sql-concat": 89,
+};
+
 export interface AppsecFinding extends Finding {
   readonly rule: AppsecRule;
   readonly owasp: OwaspId;

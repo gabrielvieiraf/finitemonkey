@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
+import { EMPTY_BOOK, raise, readBook, writeBook } from "../src/conceitos/book.js";
 import { creditGate } from "../src/conceitos/credit.js";
 import {
   type ConceptEvent,
@@ -59,16 +60,35 @@ const agentEdit = (file: string): string =>
   `${JSON.stringify({ at: "2026-10-29T00:00:00Z", session: "s", turn: 1, kind: "edit", file, hash: "h", undo: false })}\n`;
 
 describe("concept evidence", () => {
-  it("a prompt full of domain words leaves the knowledge axis where it was and counts only as exposure", async () => {
+  it("a prompt full of domain words creates no concept and moves nothing", async () => {
     const made = repo();
-    const before = readProfile(runtime, fmPaths(made.root));
-    const raw: JsonObject = { prompt: "Add an idempotency key to the webhook and a migration for the API" };
+    const paths = fmPaths(made.root);
+    const before = readProfile(runtime, paths);
+    const raw: JsonObject = {
+      prompt: "Add an idempotency key to the webhook, round the money, fix the timezone and the logout",
+    };
     await hook(perfilPrompt, "UserPromptSubmit", made.root, raw);
-    assert.deepEqual(readProfile(runtime, fmPaths(made.root)), before);
-    const logged = readConceptEvents(runtime, fmPaths(made.root));
-    assert.ok(logged.length >= 3);
-    assert.ok(logged.every((item) => item.kind === "exposure" && item.weight === 0));
-    assert.equal(summarize("webhook", logged).state, "beyond");
+    assert.deepEqual(readProfile(runtime, paths), before);
+    assert.deepEqual(readConceptEvents(runtime, paths), []);
+    assert.deepEqual(readBook(runtime, paths).concepts, {});
+  });
+
+  it("a prompt naming a concept the work already touched counts only as exposure and leaves its state", async () => {
+    const made = repo();
+    const paths = fmPaths(made.root);
+    recordConceptEvents(runtime, paths, [{ concept: "backend/money/rounding", kind: "own_change", origin: "person" }]);
+    writeBook(runtime, paths, raise(EMPTY_BOOK, "backend/money/rounding", "seen", "2026-10-01T00:00:00Z"));
+    const state = summarize("backend/money/rounding", readConceptEvents(runtime, paths)).state;
+    await hook(perfilPrompt, "UserPromptSubmit", made.root, { prompt: "Check the rounding again" });
+    const logged = readConceptEvents(runtime, paths);
+    assert.deepEqual(
+      logged.map((item) => [item.concept, item.kind, item.weight]),
+      [
+        ["backend/money/rounding", "own_change", 1],
+        ["backend/money/rounding", "exposure", 0],
+      ],
+    );
+    assert.equal(summarize("backend/money/rounding", logged).state, state);
   });
 
   it("states come from counted evidence, keep no record apart from beyond, and go down after a failure", () => {
@@ -117,7 +137,11 @@ describe("concept evidence", () => {
     const theirs = logged.filter((item) => item.file === "src/agent.js");
     assert.deepEqual(
       mine.map((item) => [item.concept, item.kind, item.origin]),
-      [["webhook", "own_repair", "person"]],
+      [["backend/integration/webhook", "own_repair", "person"]],
+    );
+    assert.deepEqual(
+      mine.map((item) => item.source),
+      ["path"],
     );
     assert.ok(theirs.length > 0);
     assert.ok(theirs.every((item) => item.kind === "exposure" && item.origin === "agent"));

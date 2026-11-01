@@ -1,8 +1,9 @@
-import { bookPath, raise, readBook, writeBook } from "../conceitos/book.js";
-import { CONCEPT_IDS, CONCEPT_LEVELS, parseConcept, parseConceptLevel } from "../conceitos/concepts.js";
+import { bookConcepts, bookPath, raise, readBook, writeBook } from "../conceitos/book.js";
+import { CONCEPT_LEVELS, parseConcept, parseConceptLevel } from "../conceitos/concepts.js";
 import { creditGate } from "../conceitos/credit.js";
 import { CONCEPT_EVIDENCE_SCHEMA, conceptSummaries, type ConceptSummary } from "../conceitos/evidence.js";
 import { updateFromPending } from "../conceitos/hooks.js";
+import { conceptLabel } from "../conceitos/label.js";
 import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
@@ -13,14 +14,14 @@ import type { CommandSpec } from "./types.js";
 
 export const CONCEITOS_SCHEMA = "finitemonkey/conceitos@1";
 
-const pathsOf = (ctx: Ctx): FmPaths => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+export const pathsOf = (ctx: Ctx): FmPaths => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 
 const bookJson = (ctx: Ctx): Readonly<Record<string, unknown>> => {
   const book = readBook(ctx.runtime, pathsOf(ctx));
   return {
     schema: CONCEITOS_SCHEMA,
     concepts: Object.fromEntries(
-      CONCEPT_IDS.flatMap((id) => {
+      bookConcepts(book).flatMap((id) => {
         const entry = book.concepts[id];
         return entry === undefined ? [] : [[id, { level: entry.level, updatedAt: entry.updatedAt }]];
       }),
@@ -28,15 +29,15 @@ const bookJson = (ctx: Ctx): Readonly<Record<string, unknown>> => {
   };
 };
 
-const show = (ctx: Ctx): CommandResult => {
+export const show = (ctx: Ctx): CommandResult => {
   const book = readBook(ctx.runtime, pathsOf(ctx));
-  const known = CONCEPT_IDS.filter((id) => book.concepts[id] !== undefined);
+  const known = bookConcepts(book);
   const lines =
     known.length === 0
       ? [ctx.t("conceitos.show.empty")]
       : known.map((id) =>
           ctx.t("conceitos.show.line", {
-            concept: ctx.t(`conceitos.concept.${id}`),
+            concept: conceptLabel(ctx.t, id),
             level: ctx.t(`conceitos.level.${book.concepts[id]?.level ?? "seen"}`),
           }),
         );
@@ -69,6 +70,8 @@ const evidenceJson = (summaries: readonly ConceptSummary[]): Readonly<Record<str
       kind: event.kind,
       task: event.task ?? null,
       file: event.file ?? null,
+      source: event.source ?? null,
+      origin: event.origin,
     })),
   })),
 });
@@ -79,7 +82,7 @@ const evidence = (ctx: Ctx): CommandResult => {
     evidenceJson(summaries),
     summaries.map((item) =>
       ctx.t("conceitos.evidence.line", {
-        concept: ctx.t(`conceitos.concept.${item.concept}`),
+        concept: conceptLabel(ctx.t, item.concept),
         state: ctx.t(`conceitos.state.${item.state}`),
         positive: item.positive,
         negative: item.negative,
@@ -93,7 +96,7 @@ const MARK_USAGE = `finitemonkey conceitos mark <concept> <${CONCEPT_LEVELS.join
 
 const mark = (ctx: Ctx, rawConcept: string | undefined, rawLevel: string | undefined): CommandResult => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("perfil.error.person_only", MARK_USAGE));
-  const concept = parseConcept(rawConcept);
+  const concept = parseConcept(rawConcept, readBook(ctx.runtime, pathsOf(ctx)).aliases);
   const level = parseConceptLevel(rawLevel);
   if (concept === undefined || level === undefined) {
     return failureFrom(

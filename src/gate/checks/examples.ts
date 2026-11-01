@@ -1,4 +1,4 @@
-import { conceptsIn } from "../../conceitos/concepts.js";
+import { recognizedIn } from "../../conceitos/change.js";
 import { recordConceptEvents } from "../../conceitos/evidence.js";
 import { revokeDemonstrated, settlePredictions } from "../../conceitos/predict.js";
 import { nowMs } from "../../core/clock.js";
@@ -106,10 +106,7 @@ const predictionNotes = (ctx: GateContext): readonly Note[] =>
   );
 
 const revokeNotes = (ctx: GateContext): readonly Note[] => {
-  const text = addedLines(ctx.git, ctx.base)
-    .map((line) => line.text)
-    .join("\n");
-  const concepts = conceptsIn(text);
+  const concepts = [...new Set(recognizedIn(addedLines(ctx.git, ctx.base)).map((item) => item.concept))];
   recordConceptEvents(
     ctx.runtime,
     ctx.paths,

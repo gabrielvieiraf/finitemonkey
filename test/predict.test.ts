@@ -66,7 +66,11 @@ const project = async (knowledge: number): Promise<TempRepo> => {
 const edit = (repo: TempRepo): ReturnType<typeof hook> =>
   hook(predictGuard, "PreToolUse", repo.root, {
     tool_name: "Edit",
-    tool_input: { file_path: join(repo.root, "src/hook.js"), old_string: "", new_string: "// webhook handler" },
+    tool_input: {
+      file_path: join(repo.root, "src/webhooks/hook.js"),
+      old_string: "",
+      new_string: "export const on = 1;",
+    },
   });
 
 const predict = (repo: TempRepo, output: string): ReturnType<typeof hook> =>
@@ -104,12 +108,18 @@ describe("predict before the change lands", () => {
       await predict(repo, "refund 50 to card");
       await settle(repo);
     }
-    assert.equal(readBook(repoRuntime(), fmPaths(repo.root)).concepts.webhook?.demonstrated, true);
+    assert.equal(
+      readBook(repoRuntime(), fmPaths(repo.root)).concepts["backend/integration/webhook"]?.demonstrated,
+      true,
+    );
     assert.equal((await edit(repo)).kind, "allow");
     await predict(repo, "refund 50 to wallet");
     const wrong = await settle(repo);
     assert.equal(field(wrong, "key"), "gate.predict.wrong");
-    assert.notEqual(readBook(repoRuntime(), fmPaths(repo.root)).concepts.webhook?.demonstrated, true);
+    assert.notEqual(
+      readBook(repoRuntime(), fmPaths(repo.root)).concepts["backend/integration/webhook"]?.demonstrated,
+      true,
+    );
     assert.equal((await edit(repo)).kind, "block");
   });
 

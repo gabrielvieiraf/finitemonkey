@@ -3,16 +3,6 @@ import type { DomainTrajectory, EvidenceRef, Mark, Week } from "../conceitos/tra
 
 type Domain = DomainTrajectory["domain"];
 const DOMAIN_NAMES: readonly Domain[] = ["product", "interface", "backend", "infrastructure", "security"];
-const CONCEPTS: readonly ConceptId[] = [
-  "api",
-  "migration",
-  "webhook",
-  "idempotency",
-  "force-push",
-  "merge-conflict",
-  "secret-in-code",
-  "immutable-deploy",
-];
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -29,7 +19,7 @@ const orNull = (record: Readonly<Record<string, unknown>>, key: string): number 
 const num = (record: Readonly<Record<string, unknown>>, key: string): number =>
   typeof record[key] === "number" ? record[key] : 0;
 
-const concept = (value: unknown): ConceptId => CONCEPTS.find((item) => item === value) ?? "api";
+const concept = (value: unknown): ConceptId => (typeof value === "string" && value !== "" ? value : "unknown");
 
 const weekOf = (item: Readonly<Record<string, unknown>>): Week => ({
   week: str(item, "week"),

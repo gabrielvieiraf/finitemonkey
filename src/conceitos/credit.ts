@@ -8,7 +8,10 @@ import { prepareGate } from "../gate/prepare.js";
 import { readEntries, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
-import { changeEvents, type ConceptEvent, recordConceptEvents } from "./evidence.js";
+import { raise, readBook, writeBook } from "./book.js";
+import { changeEvents } from "./change.js";
+import { type ConceptEvent, recordConceptEvents } from "./evidence.js";
+import { packageMapOf } from "./packages.js";
 import { saveXray, xrayFor } from "./xray-run.js";
 
 export const CREDIT_FILE = "conceitos-credit.json";
@@ -82,6 +85,15 @@ export const creditGate = (runtime: Runtime, paths: FmPaths): readonly ConceptEv
     agentFiles: agentFiles(runtime, paths),
     repaired,
     task: status.task,
+    packages: packageMapOf(runtime, paths),
   });
-  return recordConceptEvents(runtime, paths, drafts);
+  const events = recordConceptEvents(runtime, paths, drafts);
+  const seen = events.filter((event) => event.origin !== "model-proposed").map((event) => event.concept);
+  if (seen.length > 0)
+    writeBook(
+      runtime,
+      paths,
+      seen.reduce((book, id) => raise(book, id, "seen", runtime.now()), readBook(runtime, paths)),
+    );
+  return events;
 };

@@ -1,3 +1,5 @@
+import { relative } from "node:path";
+
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { logEvent } from "../evidence/log.js";
@@ -12,8 +14,9 @@ import { approvedExamples } from "../task/examples.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, readState, writeJsonFile } from "../task/state.js";
 import { type Book, readBook, writeBook } from "./book.js";
-import { type ConceptId, conceptsIn, domainOf, parseConcept } from "./concepts.js";
+import { type ConceptId, parseConcept, profileDomainOf } from "./concepts.js";
 import { recordConceptEvents } from "./evidence.js";
+import { recognizeCode } from "./recognize.js";
 
 export const PREDICT_FEATURE = "predict-gate";
 export const DEMONSTRATED_AFTER = 3;
@@ -85,7 +88,8 @@ export const probeFor = (runtime: Pick<Runtime, "readText">, paths: FmPaths, tas
 
 const isBeginner = (runtime: Pick<Runtime, "readText" | "now">, paths: FmPaths, concept: ConceptId): boolean => {
   const profile = readProfile(runtime, paths);
-  return profile !== undefined && levelOf(profile.domains[domainOf(concept)].knowledge) === "beginner";
+  const domain = profileDomainOf(concept);
+  return profile !== undefined && domain !== undefined && levelOf(profile.domains[domain].knowledge) === "beginner";
 };
 
 export const isDemonstrated = (book: Book, concept: ConceptId): boolean =>
@@ -111,12 +115,17 @@ export const predictGuard: HookHandler = (input) => {
   if (task === undefined) return allow;
   const book = readBook(runtime, paths);
   const state = readPredictions(runtime, paths);
-  const waiting = conceptsIn(editedText(input.payload.raw)).filter(
-    (concept) =>
-      !isDemonstrated(book, concept) &&
-      !state.predictions.some((item) => item.concept === concept && item.task === task) &&
-      isBeginner(runtime, paths, concept),
-  );
+  const raw = textField(toolInput(input.payload.raw), "file_path", "notebook_path") ?? "";
+  const file = relative(paths.root, raw).replaceAll("\\", "/");
+  const touched = recognizeCode({ file, lines: editedText(input.payload.raw).split("\n") });
+  const waiting = touched
+    .map((item) => item.concept)
+    .filter(
+      (concept) =>
+        !isDemonstrated(book, concept) &&
+        !state.predictions.some((item) => item.concept === concept && item.task === task) &&
+        isBeginner(runtime, paths, concept),
+    );
   const concept = waiting[0];
   if (concept === undefined) return allow;
   const probe = probeFor(runtime, paths, task);

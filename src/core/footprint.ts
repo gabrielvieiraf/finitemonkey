@@ -139,6 +139,11 @@ export const FOOTPRINT = [
       ".finitemonkey/probes.json",
     ],
   },
+  {
+    id: "concept-recognition",
+    kind: "reads",
+    targets: [".finitemonkey/conceitos-map.json", "node_modules/<package>/package.json"],
+  },
   { id: "runs", kind: "writes", targets: [".finitemonkey/runs/"] },
   { id: "map", kind: "writes", targets: [".finitemonkey/map.txt", ".finitemonkey/reuse.json"] },
   { id: "review", kind: "writes", targets: [".finitemonkey/review/", ".claude/agents/verifier.md"] },

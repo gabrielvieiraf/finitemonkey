@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 
-import { CONCEPTS } from "../src/conceitos/concepts.js";
 import { isRecord, type JsonObject } from "../src/core/parsed.js";
 import { levelOf } from "../src/perfil/types.js";
+import { canonConcept, conceptDomainOr, touchesDeclared } from "./bench-concepts.js";
 import { type KnowledgeBand, type Level, PERFIL_DOMAINS } from "./bench-family.js";
 import { json, lines, records, str, unique, yaml } from "./bench-state.js";
 
@@ -30,9 +30,7 @@ const JUDGE_BAND: Readonly<Record<KnowledgeBand, string>> = {
 const MOVE_LEVELS: ReadonlySet<string> = new Set(["predicted", "used", "fixed"]);
 const PROOF_KINDS: ReadonlySet<string> = new Set(["prediction_right", "own_change", "own_repair", "check_right"]);
 
-const conceptDomain = (concept: string): string =>
-  CONCEPTS.find((item) => item.id === concept)?.domain ??
-  (concept.includes("/") ? (concept.split("/")[0] ?? GENERAL) : GENERAL);
+const conceptDomain = (concept: string): string => conceptDomainOr(concept, GENERAL);
 
 const truthOf = (truth: GroundTruth, domain: string): KnowledgeBand | undefined => truth.knowledge[domain];
 
@@ -80,9 +78,7 @@ const xrayOf = (dir: string, truth: GroundTruth): JsonObject => {
   const concepts = (item: JsonObject): readonly string[] =>
     records(item["concepts"]).flatMap((entry) => (typeof entry["concept"] === "string" ? [entry["concept"]] : []));
   const touching =
-    truth.fmConcepts.length === 0
-      ? items
-      : items.filter((item) => concepts(item).some((concept) => truth.fmConcepts.includes(concept)));
+    truth.fmConcepts.length === 0 ? items : items.filter((item) => touchesDeclared(truth.fmConcepts, concepts(item)));
   const observed = unique(touching.flatMap((item) => (typeof item["band"] === "string" ? [item["band"]] : [])));
   const band = truthOf(truth, truth.fmDomain);
   const expected = band === undefined ? null : XRAY_BAND[band];
@@ -209,19 +205,22 @@ const trajectoryOf = (dir: string): JsonObject => {
   const proofs = (concept: string): number =>
     events.filter(
       (event) =>
-        event["concept"] === concept &&
+        canonConcept(event["concept"]) === canonConcept(concept) &&
         event["origin"] === "person" &&
         PROOF_KINDS.has(str(event["kind"]) ?? "") &&
         (typeof event["weight"] !== "number" || event["weight"] > 0),
     ).length;
   const positive = (concept: string): boolean =>
-    events.some((event) => event["concept"] === concept && typeof event["weight"] === "number" && event["weight"] > 0);
+    events.some(
+      (event) =>
+        canonConcept(event["concept"]) === concept && typeof event["weight"] === "number" && event["weight"] > 0,
+    );
   const bookMoved = Object.entries(levels)
     .filter(([, entry]) => isRecord(entry) && MOVE_LEVELS.has(str(entry["level"]) ?? ""))
-    .map(([concept]) => concept);
-  const evidenceMoved = unique(
-    events.flatMap((event) => (typeof event["concept"] === "string" ? [event["concept"]] : [])),
-  ).filter(positive);
+    .map(([concept]) => canonConcept(concept));
+  const evidenceMoved = unique(events.map((event) => canonConcept(event["concept"])).filter((id) => id !== "")).filter(
+    positive,
+  );
   const moved = unique([...bookMoved, ...evidenceMoved]);
   const withoutProof = moved.filter((concept) => proofs(concept) === 0);
   const agentCredit = events.filter(

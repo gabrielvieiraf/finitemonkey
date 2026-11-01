@@ -3,10 +3,10 @@ import { join } from "node:path";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
-import type { AddedLine } from "../gate/git.js";
-import type { Domain } from "../perfil/types.js";
 import type { FmPaths } from "../task/paths.js";
-import { CONCEPT_IDS, type ConceptId, conceptsIn, domainOf, parseConcept } from "./concepts.js";
+import { bookConcepts, readBook } from "./book.js";
+import { type Aliases, type ConceptId, domainOf, parseConcept } from "./concepts.js";
+import { RECOGNITION_SOURCES, type RecognitionSource } from "./recognize.js";
 
 export const CONCEPT_EVENTS_FILE = "conceitos-events.jsonl";
 export const CONCEPT_EVIDENCE_SCHEMA = "finitemonkey/concept-evidence@1";
@@ -24,7 +24,8 @@ export const EVENT_KINDS = [
 ] as const;
 
 export type ConceptEventKind = (typeof EVENT_KINDS)[number];
-export type Origin = "person" | "agent";
+export const ORIGINS = ["person", "agent", "model-proposed"] as const;
+export type Origin = (typeof ORIGINS)[number];
 
 export const WEIGHTS: Readonly<Record<ConceptEventKind, number>> = {
   exposure: 0,
@@ -50,6 +51,8 @@ export interface ConceptEventDraft {
   readonly origin: Origin;
   readonly task?: string;
   readonly file?: string;
+  readonly source?: RecognitionSource;
+  readonly match?: string;
 }
 
 export interface ConceptEvent extends ConceptEventDraft {
@@ -62,7 +65,7 @@ export type ConceptState = (typeof STATES)[number];
 
 export interface ConceptSummary {
   readonly concept: ConceptId;
-  readonly domain: Domain;
+  readonly domain: string;
   readonly state: ConceptState;
   readonly positive: number;
   readonly negative: number;
@@ -73,38 +76,60 @@ export interface ConceptSummary {
 
 export const eventsPath = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, CONCEPT_EVENTS_FILE));
 
-export const settled = (draft: ConceptEventDraft): ConceptEventDraft =>
-  draft.origin === "agent" && PERSON_ONLY.has(draft.kind) ? { ...draft, kind: "exposure" } : draft;
+export const settled = (draft: ConceptEventDraft): ConceptEventDraft => {
+  if (draft.origin === "model-proposed") return { ...draft, kind: "exposure", source: "model-proposed" };
+  return draft.origin === "agent" && PERSON_ONLY.has(draft.kind) ? { ...draft, kind: "exposure" } : draft;
+};
+
+const aliasesAt = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Aliases =>
+  readBook(runtime, paths).aliases ?? {};
+
+const resolved = (draft: ConceptEventDraft, aliases: Aliases): readonly ConceptEventDraft[] => {
+  const concept = parseConcept(draft.concept, aliases);
+  return concept === undefined ? [] : [settled({ ...draft, concept })];
+};
 
 export const recordConceptEvents = (
-  runtime: Pick<Runtime, "appendText" | "now">,
+  runtime: Pick<Runtime, "appendText" | "now" | "readText">,
   paths: FmPaths,
   drafts: readonly ConceptEventDraft[],
 ): readonly ConceptEvent[] => {
   if (drafts.length === 0) return [];
   const at = runtime.now();
-  const events = drafts.map(settled).map((draft) => ({ at, ...draft, weight: WEIGHTS[draft.kind] }));
+  const aliases = aliasesAt(runtime, paths);
+  const events = drafts
+    .flatMap((draft) => resolved(draft, aliases))
+    .map((draft) => ({ at, ...draft, weight: WEIGHTS[draft.kind] }));
+  if (events.length === 0) return [];
   runtime.appendText(eventsPath(paths), events.map((event) => `${JSON.stringify(event)}\n`).join(""));
   return events;
 };
 
 const kindOf = (raw: unknown): ConceptEventKind | undefined => EVENT_KINDS.find((kind) => kind === raw);
 
-const eventOf = (line: string): ConceptEvent | undefined => {
+const sourceOf = (raw: unknown): RecognitionSource | undefined => RECOGNITION_SOURCES.find((item) => item === raw);
+
+const optionalText = (raw: Readonly<Record<string, unknown>>, key: string): Readonly<Record<string, string>> =>
+  typeof raw[key] === "string" ? { [key]: raw[key] } : {};
+
+const eventOf = (line: string, aliases: Aliases): ConceptEvent | undefined => {
   const parsed = parseJsonObject(line);
   if (!parsed.ok || !isRecord(parsed.value)) return undefined;
   const raw = parsed.value;
-  const concept = parseConcept(typeof raw["concept"] === "string" ? raw["concept"] : undefined);
+  const concept = parseConcept(typeof raw["concept"] === "string" ? raw["concept"] : undefined, aliases);
   const kind = kindOf(raw["kind"]);
-  const origin = raw["origin"] === "agent" ? "agent" : raw["origin"] === "person" ? "person" : undefined;
+  const origin = ORIGINS.find((item) => item === raw["origin"]);
+  const source = sourceOf(raw["source"]);
   if (concept === undefined || kind === undefined || origin === undefined || typeof raw["at"] !== "string")
     return undefined;
   const draft = settled({
     concept,
     kind,
     origin,
-    ...(typeof raw["task"] === "string" ? { task: raw["task"] } : {}),
-    ...(typeof raw["file"] === "string" ? { file: raw["file"] } : {}),
+    ...optionalText(raw, "task"),
+    ...optionalText(raw, "file"),
+    ...(source === undefined ? {} : { source }),
+    ...optionalText(raw, "match"),
   });
   return { at: raw["at"], ...draft, weight: WEIGHTS[draft.kind] };
 };
@@ -112,13 +137,15 @@ const eventOf = (line: string): ConceptEvent | undefined => {
 export const readConceptEvents = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ConceptEvent[] => {
   const text = runtime.readText(eventsPath(paths));
   if (!text.ok) return [];
+  const aliases = aliasesAt(runtime, paths);
   return text.value.split("\n").flatMap((line) => {
-    const event = line.trim() === "" ? undefined : eventOf(line);
+    const event = line.trim() === "" ? undefined : eventOf(line, aliases);
     return event === undefined ? [] : [event];
   });
 };
 
-export const stateOf = (events: readonly ConceptEvent[]): ConceptState => {
+export const stateOf = (all: readonly ConceptEvent[]): ConceptState => {
+  const events = all.filter((event) => event.origin !== "model-proposed");
   if (events.length === 0) return "unknown";
   const lastNegative = events.findLastIndex((event) => event.weight < 0);
   const lastPositive = events.findLastIndex((event) => event.weight > 0);
@@ -146,45 +173,11 @@ export const summarize = (concept: ConceptId, all: readonly ConceptEvent[]): Con
   };
 };
 
+export const knownConcepts = (events: readonly ConceptEvent[], extra: Iterable<ConceptId> = []): readonly ConceptId[] =>
+  [...new Set([...events.map((event) => event.concept), ...extra])].sort();
+
 export const conceptSummaries = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ConceptSummary[] => {
   const events = readConceptEvents(runtime, paths);
-  return CONCEPT_IDS.map((concept) => summarize(concept, events));
+  const book = readBook(runtime, paths);
+  return knownConcepts(events, bookConcepts(book)).map((concept) => summarize(concept, events));
 };
-
-const PATH_DETECTORS: readonly { readonly concept: ConceptId; readonly pattern: RegExp }[] = [
-  { concept: "migration", pattern: /(^|\/)(?:db\/)?migrations?\// },
-  { concept: "webhook", pattern: /webhooks?/i },
-  { concept: "api", pattern: /(^|\/)(?:api|routes)\// },
-];
-
-export const conceptsOfFile = (file: string, lines: readonly string[]): readonly ConceptId[] => {
-  const found = new Set<ConceptId>([
-    ...PATH_DETECTORS.filter((detector) => detector.pattern.test(file)).map((detector) => detector.concept),
-    ...conceptsIn(lines.join("\n")),
-  ]);
-  return CONCEPT_IDS.filter((id) => found.has(id));
-};
-
-export const groupByFile = (added: readonly AddedLine[]): ReadonlyMap<string, readonly string[]> => {
-  const files = new Map<string, string[]>();
-  for (const line of added) files.set(line.path, [...(files.get(line.path) ?? []), line.text]);
-  return files;
-};
-
-export interface Provenance {
-  readonly agentFiles: ReadonlySet<string>;
-  readonly repaired: boolean;
-  readonly task: string;
-}
-
-export const changeEvents = (added: readonly AddedLine[], provenance: Provenance): readonly ConceptEventDraft[] =>
-  [...groupByFile(added)].flatMap(([file, lines]) => {
-    const agent = provenance.agentFiles.has(file);
-    return conceptsOfFile(file, lines).map((concept): ConceptEventDraft => ({
-      concept,
-      kind: agent ? "exposure" : provenance.repaired ? "own_repair" : "own_change",
-      origin: agent ? "agent" : "person",
-      task: provenance.task,
-      file,
-    }));
-  });

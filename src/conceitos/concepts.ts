@@ -1,6 +1,8 @@
-import type { Domain } from "../perfil/types.js";
+import { type Domain, DOMAINS } from "../perfil/types.js";
 
-export const CONCEPT_IDS = [
+export type ConceptId = string;
+
+export const LEGACY_NAMES = [
   "api",
   "migration",
   "webhook",
@@ -11,43 +13,72 @@ export const CONCEPT_IDS = [
   "immutable-deploy",
 ] as const;
 
-export type ConceptId = (typeof CONCEPT_IDS)[number];
+export type LegacyConcept = (typeof LEGACY_NAMES)[number];
+
+export const LEGACY_CONCEPTS: Readonly<Record<LegacyConcept, ConceptId>> = {
+  api: "backend/api/endpoint",
+  migration: "backend/data/migration",
+  webhook: "backend/integration/webhook",
+  idempotency: "backend/reliability/idempotency",
+  "force-push": "infrastructure/git/force-push",
+  "merge-conflict": "infrastructure/git/merge-conflict",
+  "secret-in-code": "security/secrets/secret-in-code",
+  "immutable-deploy": "infrastructure/deploy/immutable-deploy",
+};
 
 export const CONCEPT_LEVELS = ["seen", "explained", "predicted", "used", "fixed"] as const;
 
 export type ConceptLevel = (typeof CONCEPT_LEVELS)[number];
 
-export interface Concept {
-  readonly id: ConceptId;
-  readonly domain: Domain;
-  readonly pattern: RegExp;
-}
+export type Aliases = Readonly<Record<string, ConceptId | null>>;
 
-export const CONCEPTS: readonly Concept[] = [
-  { id: "api", domain: "backend", pattern: /\b(?:api|endpoint|rota de api|ruta de api)\b/i },
-  { id: "migration", domain: "backend", pattern: /\bmigra(?:tion|[cç][aã]o|ci[oó]n)s?\b/i },
-  { id: "webhook", domain: "backend", pattern: /\bwebhooks?\b/i },
-  { id: "idempotency", domain: "backend", pattern: /\bidempoten\w*/i },
-  { id: "force-push", domain: "infrastructure", pattern: /\b(?:force[- ]push|push --force|push -f)\b/i },
-  {
-    id: "merge-conflict",
-    domain: "infrastructure",
-    pattern: /\bmerge conflicts?\b|\bconflito de (?:merge|mescla)\b|\bconflicto de (?:merge|fusi[oó]n)\b/i,
-  },
-  {
-    id: "secret-in-code",
-    domain: "security",
-    pattern: /\b(?:api key|secret key|chave secreta|clave secreta|hardcoded secret|segredo no c[oó]digo)\b/i,
-  },
-  {
-    id: "immutable-deploy",
-    domain: "infrastructure",
-    pattern: /\b(?:immutable deploy|deploy imut[aá]vel|despliegue inmutable|rollback)\b/i,
-  },
-];
+const SEGMENT = /^[a-z0-9][a-z0-9-]{0,47}$/;
+const MAX_SEGMENTS = 3;
+const MAX_HOPS = 8;
 
-export const parseConcept = (raw: string | undefined): ConceptId | undefined =>
-  CONCEPT_IDS.find((id) => id === raw?.toLowerCase());
+export const legacyNameOf = (id: ConceptId): LegacyConcept | undefined =>
+  LEGACY_NAMES.find((name) => LEGACY_CONCEPTS[name] === id);
+
+const legacyOf = (raw: string): ConceptId | undefined => {
+  const name = LEGACY_NAMES.find((item) => item === raw);
+  return name === undefined ? undefined : LEGACY_CONCEPTS[name];
+};
+
+export const slugOf = (text: string): string =>
+  text
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48)
+    .replace(/-+$/, "");
+
+export const conceptPathOf = (raw: string | undefined): ConceptId | undefined => {
+  const id = raw?.trim().toLowerCase();
+  if (id === undefined || id === "") return undefined;
+  const legacy = legacyOf(id);
+  if (legacy !== undefined) return legacy;
+  const segments = id.split("/");
+  return segments.length <= MAX_SEGMENTS && segments.every((segment) => SEGMENT.test(segment)) ? id : undefined;
+};
+
+export const resolveConcept = (raw: string | undefined, aliases: Aliases = {}): ConceptId | undefined => {
+  let id = conceptPathOf(raw);
+  for (let hop = 0; id !== undefined && hop < MAX_HOPS && Object.hasOwn(aliases, id); hop += 1) {
+    const next: ConceptId | null | undefined = aliases[id];
+    if (next === null || next === undefined) return undefined;
+    id = next;
+  }
+  return id;
+};
+
+export const canonicalConcept = (raw: string): string => legacyOf(raw.trim().toLowerCase()) ?? raw;
+
+export const parseConcept = (raw: string | undefined, aliases: Aliases = {}): ConceptId | undefined => {
+  const id = resolveConcept(raw, aliases);
+  return id?.includes("/") === true ? id : undefined;
+};
 
 export const parseConceptLevel = (raw: string | undefined): ConceptLevel | undefined =>
   CONCEPT_LEVELS.find((level) => level === raw?.toLowerCase());
@@ -55,7 +86,11 @@ export const parseConceptLevel = (raw: string | undefined): ConceptLevel | undef
 export const rankOf = (level: ConceptLevel | undefined): number =>
   level === undefined ? -1 : CONCEPT_LEVELS.indexOf(level);
 
-export const conceptsIn = (text: string): readonly ConceptId[] =>
-  CONCEPTS.filter((concept) => concept.pattern.test(text)).map((concept) => concept.id);
+export const domainOf = (id: ConceptId): string => {
+  const path = conceptPathOf(id) ?? id;
+  return path.split("/")[0] ?? path;
+};
 
-export const domainOf = (id: ConceptId): Domain => CONCEPTS.find((concept) => concept.id === id)?.domain ?? "backend";
+export const profileDomainOf = (id: ConceptId): Domain | undefined => DOMAINS.find((domain) => domain === domainOf(id));
+
+export const leafOf = (id: ConceptId): string => id.split("/").at(-1) ?? id;

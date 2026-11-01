@@ -1354,22 +1354,12 @@ var rasterOf = (trajectory, columns, options) => {
 
 // src/mod/trajectory-parse.ts
 var DOMAIN_NAMES = ["product", "interface", "backend", "infrastructure", "security"];
-var CONCEPTS = [
-  "api",
-  "migration",
-  "webhook",
-  "idempotency",
-  "force-push",
-  "merge-conflict",
-  "secret-in-code",
-  "immutable-deploy"
-];
 var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var records = (value) => Array.isArray(value) ? value.filter(isRecord6) : [];
 var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var orNull = (record, key) => typeof record[key] === "number" ? record[key] : null;
 var num2 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
-var concept = (value) => CONCEPTS.find((item) => item === value) ?? "api";
+var concept = (value) => typeof value === "string" && value !== "" ? value : "unknown";
 var weekOf = (item) => ({
   week: str3(item, "week"),
   independent: orNull(item, "independent"),

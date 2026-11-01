@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
 
+import { conceptDomainOr, touchesDeclared } from "../scripts/bench-concepts.js";
 import { loadPersonas, type Persona } from "../scripts/bench-family.js";
 import { type GroundTruth, scoreInstruments } from "../scripts/bench-instruments.js";
 import { selfReportYaml } from "../scripts/bench-onboard.js";
@@ -96,7 +97,7 @@ describe("instrument scoring against the persona's ground truth", () => {
     assert.equal(field(scored, "blindBand", "verdict"), "missed");
     assert.equal(field(scored, "probes", "verdict"), "silent");
     assert.equal(field(scored, "trajectory", "verdict"), "moved-without-proof");
-    assert.deepEqual(field(scored, "trajectory", "withoutProof"), ["api"]);
+    assert.deepEqual(field(scored, "trajectory", "withoutProof"), ["backend/api/endpoint"]);
     assert.equal(field(scored, "trajectory", "agentCredit"), 1);
   });
 
@@ -248,5 +249,15 @@ describe("instrument scoring against the persona's ground truth", () => {
       },
     );
     assert.equal(profile.domains.security.claimed, "beginner");
+  });
+
+  it("maps each task's declared concepts through the same resolver as the recorded ones", () => {
+    assert.equal(touchesDeclared(["api"], ["backend/api/endpoint"]), true);
+    assert.equal(touchesDeclared(["idempotency"], ["backend/reliability/idempotency"]), true);
+    assert.equal(touchesDeclared(["migration"], ["backend/api/endpoint"]), false);
+    assert.equal(touchesDeclared(["backend/money/rounding"], ["backend/money/rounding"]), true);
+    assert.equal(conceptDomainOr("secret-in-code", "general"), "security");
+    assert.equal(conceptDomainOr("research/health/supplement-evidence", "general"), "research");
+    assert.equal(conceptDomainOr("unplaced", "general"), "general");
   });
 });

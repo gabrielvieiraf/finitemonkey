@@ -1,5 +1,6 @@
 import { contextFor, scanFiles } from "../../appsec/scan.js";
 import { APPSEC_CHECK, type AppsecFinding, OWASP } from "../../appsec/types.js";
+import { recordFindingConcepts } from "../../conceitos/findings.js";
 import { type DataMapProblem, dataMapProblems } from "../../datamap/check.js";
 import { keyOf } from "../../datamap/map.js";
 import type { Note } from "../../evidence/types.js";
@@ -34,6 +35,7 @@ export const appsecCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOut
   const changed = ctx.changes.filter((change) => change.status !== "D").map((change) => change.path);
   const found = scanFiles(runtime, paths.root, changed, contextFor(runtime, paths.root));
   const outcome = ratchetFor(APPSEC_CHECK, found, baseline.value, runtime.now(), undefined);
+  recordFindingConcepts(runtime, paths, outcome.fresh, ctx.contract.id);
   const dataMap = dataMapProblems(runtime, paths.root, changed);
   const notes = [
     ...outcome.fresh.slice(0, MAX_LISTED).map((finding) => findingNote("gate.appsec.finding", finding)),
