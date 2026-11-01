@@ -102,6 +102,37 @@ jobs:
       - name: same checks as the git hooks, on the pull request's commits
         run: node dist/finitemonkey.mjs ci gate
 
+  supply-chain:
+    name: supply chain and workflow audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OSV_SCANNER_VERSION: 2.7.0
+      OSV_SCANNER_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: one lockfile per ecosystem and frozen installs
+        run: node dist/finitemonkey.mjs deps check
+      - name: the workflows of this repository pass ci audit with no finding
+        run: |
+          node dist/finitemonkey.mjs ci audit
+          node dist/finitemonkey.mjs ci audit --json | jq -e '.data.findings | length == 0' > /dev/null
+      - name: install osv-scanner (pinned, checksum verified)
+        run: |
+          binary="osv-scanner_linux_amd64"
+          curl -sSfL -o "$binary" "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/${binary}"
+          echo "${OSV_SCANNER_SHA256}  ${binary}" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin" && install -m 0755 "$binary" "$HOME/.local/bin/osv-scanner"
+          rm "$binary"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: known vulnerabilities in the lockfile
+        run: node dist/finitemonkey.mjs deps scan
+
   budgets:
     name: context and latency budgets
     runs-on: ubuntu-latest
