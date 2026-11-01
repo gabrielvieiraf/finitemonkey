@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { SENDS_HOSTS } from "../src/core/footprint.js";
 import { BLOCKS, CLAIM_FILES, forbiddenPhrases, missingTests, replaceBetween, threatProblems } from "./docs-gen.js";
 import { FAILURE_MODES } from "./failure-modes.js";
+import { missingTranslations } from "./failure-modes-text.js";
 import { THREATS } from "./threat-model.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -20,6 +21,7 @@ const read = (file: string): string | undefined => {
 const check = process.argv.includes("--check");
 const problems: string[] = [
   ...missingTests(FAILURE_MODES, read),
+  ...missingTranslations(FAILURE_MODES),
   ...threatProblems(THREATS, read, (path) => existsSync(join(root, path))),
 ];
 
