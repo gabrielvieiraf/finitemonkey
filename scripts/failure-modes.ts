@@ -58,6 +58,15 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     test: "the tests check catches a skip added through any tool, from the tree diff",
   },
   {
+    failure: "The suite passes only because an existing test was rewritten",
+    cause:
+      "The agent changes the assertion of a test that existed at the task base, inside a scope that lists the test folder",
+    mitigation:
+      "A passing tests check with changed or removed lines in a pre-existing test waits for the person: the test goes back as it was, or the person approves the change for this tree",
+    file: "test/tests-rewritten.test.ts",
+    test: "is not verified without the person's word, even when the contract lists the test folder",
+  },
+  {
     failure: "The agent redefines what test means",
     cause: "`scripts.test`, a runner config, the Makefile or a CI workflow changes during the task",
     mitigation: "With `test-pin` active the check is held as needs approval with the diff until the person approves",

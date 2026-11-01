@@ -16,6 +16,7 @@ import type { AcceptanceCheck } from "../../task/types.js";
 import { type Change, fileAt } from "../git.js";
 import { type CheckOutcome, failed, type GateContext, note, passed } from "../types.js";
 import { runShellCheck } from "./command.js";
+import { holdRewrittenTests, type RewrittenTest } from "./tests-rewritten.js";
 
 const MAX_LISTED = 10;
 
@@ -37,22 +38,41 @@ const isEditedTest = (change: Change): boolean =>
 const counterFor = (ctx: GateContext, relevant: readonly Change[]): TestCounter =>
   astCounter(relevant.length === 0 ? undefined : loadTypescript(ctx.paths.root));
 
-const editNote = (ctx: GateContext, change: Change, count: TestCounter): Note => {
+interface EditedTest {
+  readonly change: Change;
+  readonly before: string;
+  readonly after: string;
+  readonly added: number;
+  readonly removed: number;
+}
+
+const measure = (ctx: GateContext, change: Change): EditedTest => {
   const before = fileAt(ctx.git, ctx.base, change.oldPath ?? change.path) ?? "";
   const after = working(ctx, change.path) ?? "";
-  const language = testLanguage(change.path) ?? "js";
-  return note("gate.tests.edited", {
-    file: change.path,
+  return {
+    change,
+    before,
+    after,
     added: addedByContent(before, after).length,
     removed: addedByContent(after, before).length,
-    before: count(language, before, change.path).assertions,
-    after: count(language, after, change.path).assertions,
+  };
+};
+
+const editNote = (edit: EditedTest, count: TestCounter): Note => {
+  const language = testLanguage(edit.change.path) ?? "js";
+  return note("gate.tests.edited", {
+    file: edit.change.path,
+    added: edit.added,
+    removed: edit.removed,
+    before: count(language, edit.before, edit.change.path).assertions,
+    after: count(language, edit.after, edit.change.path).assertions,
   });
 };
 
 export interface TestsView {
   readonly violations: readonly TestViolation[];
   readonly notes: readonly Note[];
+  readonly rewritten: readonly RewrittenTest[];
 }
 
 export const testsView = (ctx: GateContext): TestsView => {
@@ -63,6 +83,7 @@ export const testsView = (ctx: GateContext): TestsView => {
   const mode = guardMode(ctx, TESTS_HOLD_GUARD);
   const unlisted = (path: string): boolean => !isListed(ctx.contract.scope, path);
   const edited = relevant.filter(isEditedTest);
+  const measured = edited.map((change) => measure(ctx, change));
   const violations = analyzeTree({
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
@@ -78,16 +99,19 @@ export const testsView = (ctx: GateContext): TestsView => {
   return {
     violations,
     notes: [
-      ...edited.slice(0, MAX_LISTED).map((change) => editNote(ctx, change, count)),
+      ...measured.slice(0, MAX_LISTED).map((edit) => editNote(edit, count)),
       ...shadowHeld.slice(0, MAX_LISTED).map((file) => note("gate.tests.held_shadow", { file })),
     ],
+    rewritten: measured
+      .filter((edit) => edit.removed > 0)
+      .map((edit) => ({ file: edit.change.path, removed: edit.removed })),
   };
 };
 
 export const testsCheck = (check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
-  const { violations, notes: edits } = testsView(ctx);
+  const { violations, notes: edits, rewritten } = testsView(ctx);
   const grant =
-    violations.length === 0
+    violations.length === 0 && rewritten.length === 0
       ? undefined
       : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
   const notes = violations.slice(0, MAX_LISTED).map(violationNote);
@@ -95,7 +119,9 @@ export const testsCheck = (check: AcceptanceCheck, ctx: GateContext): CheckOutco
   const released = grant === undefined ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes =
     grant === undefined ? [] : [...notes, note("gate.note.released", { guard: "tests", reason: grant.reason })];
-  if (check.run === undefined) return { ...passed([note("gate.tests.clean"), ...edits, ...releaseNotes]), ...released };
+  const hold = (outcome: CheckOutcome): CheckOutcome => holdRewrittenTests(ctx, check, rewritten, grant, outcome);
+  if (check.run === undefined)
+    return hold({ ...passed([note("gate.tests.clean"), ...edits, ...releaseNotes]), ...released });
   const outcome = runShellCheck(check, check.run, ctx);
-  return { ...outcome, notes: [...outcome.notes, ...edits, ...releaseNotes], ...released };
+  return hold({ ...outcome, notes: [...outcome.notes, ...edits, ...releaseNotes], ...released });
 };
