@@ -9,6 +9,7 @@ import { commonDirOf } from "../wt/store.js";
 import { applyResolutions, regenerate } from "./apply.js";
 import { commitMerge, type DroppedEntry, finishChecks } from "./finish.js";
 import { type Integration, openIntegration, resolveSides, type Sides, snapshotTips, stampOf } from "./integrate.js";
+import { codeOwners } from "./owners.js";
 import {
   type FileReport,
   MERGE_REPORT_SCHEMA,
@@ -59,7 +60,12 @@ const resolveAll = (run: Run, request: MergeRequest): readonly FileResolution[] 
   );
 };
 
-const fileReport = (run: Run, file: FileResolution, proposal: boolean): FileReport => {
+const fileReport = (
+  run: Run,
+  file: FileResolution,
+  proposal: boolean,
+  owners: (path: string) => readonly string[],
+): FileReport => {
   const { runtime, sides, integration } = run;
   const base = sides.bases[0] ?? sides.targetSha;
   const commits = {
@@ -73,6 +79,7 @@ const fileReport = (run: Run, file: FileResolution, proposal: boolean): FileRepo
     decision: file.decision,
     proposal: proposal ? "rerere" : null,
     hint: file.hint,
+    owners: file.cls === "C0" ? owners(file.path) : [],
     hunks: traceHunks(file.stages, file.hunks, commits, (hunk) => decisionOf(hunk.verdict)),
   };
 };
@@ -178,11 +185,12 @@ export const runMerge = (runtime: Runtime, cwd: AbsolutePath, env: Env, request:
   const commit = stops.length === 0 ? (commitMerge(runtime, dir) ?? null) : null;
   if (stops.length === 0 && commit === null) stops.push({ reason: "commit-failed", path: null });
   const proposals = proposalPaths(files);
+  const owners = codeOwners(runtime, dir);
   const report = reportOf(
     run,
     {
       snapshots: prepared.value.snapshots,
-      files: files.map((file) => fileReport(run, file, proposals.has(file.path))),
+      files: files.map((file) => fileReport(run, file, proposals.has(file.path), owners)),
       dropped: dropsOf(files),
       checks: finished?.checks ?? [],
       semanticCandidates: [...semantic, ...(finished?.callers ?? [])],

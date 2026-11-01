@@ -85,7 +85,11 @@ export const FOOTPRINT = [
   },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
   { id: "pr-scope", kind: "writes", targets: [".finitemonkey/pr/"] },
-  { id: "fronts", kind: "writes", targets: [".finitemonkey/fronts.yml", ".finitemonkey/briefing.md"] },
+  {
+    id: "fronts",
+    kind: "writes",
+    targets: [".finitemonkey/fronts.yml", ".finitemonkey/briefing.md", ".finitemonkey/cache/github-writes.json"],
+  },
   { id: "profile", kind: "reads", targets: [".finitemonkey/profile.yml", "~/.finitemonkey/profile.yml"] },
   { id: "github-ruleset", kind: "writes", targets: [".finitemonkey/github-ruleset.json"] },
   {
@@ -98,6 +102,7 @@ export const FOOTPRINT = [
       ".claude/worktrees/",
       "~/.finitemonkey/worktrees/",
       "~/.finitemonkey/archive/",
+      "~/.finitemonkey/ports/",
       "refs/finitemonkey/archive/",
     ],
   },

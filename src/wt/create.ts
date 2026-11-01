@@ -8,7 +8,7 @@ import type { Runtime } from "../core/runtime.js";
 import type { WorktreeEntry, WorktreeOwner } from "./entry.js";
 import { gitWorktrees } from "./git-list.js";
 import { defaultPlace, isWithinPath, OFFICIAL_DIR, type PlaceProblem, placeProblems, tempDirs } from "./place.js";
-import { allocatePorts } from "./ports.js";
+import { leasePorts } from "./port-leases.js";
 import { commonDirOf, type Registry, updateRegistry, upsertEntry } from "./store.js";
 
 export interface NewWorktree {
@@ -90,7 +90,7 @@ const register = (runtime: Runtime, plan: Planned, registry: Registry): Parsed<W
   if (registry.worktrees.some((item) => item.id === plan.request.id)) {
     return reject({ kind: "taken", id: plan.request.id });
   }
-  const ports = allocatePorts(registry.worktrees, plan.request.portBase);
+  const ports = leasePorts(runtime, plan.path, registry.worktrees, plan.request.portBase);
   if (ports === undefined) return reject({ kind: "no-ports" });
   const added = gitStep(runtime, plan.mainRoot, ["worktree", "add", "-b", plan.branch, plan.path, plan.baseSha]);
   if (!added.ok) return added;

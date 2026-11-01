@@ -36,6 +36,7 @@ export interface FileReport {
   readonly decision: string;
   readonly proposal: string | null;
   readonly hint?: string | null;
+  readonly owners?: readonly string[];
   readonly hunks: readonly HunkReport[];
 }
 
@@ -130,6 +131,9 @@ export const reportMarkdown = (report: MergeReport): string =>
     ),
     "",
     ...report.stops.map((stop) => `- Stop: ${stop.reason}${stop.path === null ? "" : ` (${stop.path})`}`),
+    ...report.files
+      .filter((file) => (file.owners ?? []).length > 0)
+      .map((file) => `- Owners of ${file.path}: ${(file.owners ?? []).join(" ")}`),
     ...report.semanticCandidates.map((item) => `- Semantic candidate: ${item.symbol} in ${item.file} (${item.reason})`),
     ...report.checks.map((check) => `- Check ${check.name}: ${check.ok ? "passed" : "failed"} (\`${check.command}\`)`),
     `- Snapshots: ${report.snapshots.join(", ")}`,

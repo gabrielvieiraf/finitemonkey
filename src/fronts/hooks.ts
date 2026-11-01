@@ -1,8 +1,12 @@
 import { accept, isRecord, optionalString } from "../core/parsed.js";
+import { logEvent } from "../evidence/log.js";
 import { guardRoot } from "../guards/context.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason } from "../hooks/reason.js";
+import { featureMode, recordFeatureShadow } from "../policy/feature.js";
+import { fmPaths } from "../task/paths.js";
+import { budgetHit, FRONTS_BUDGET_FEATURE, waveSpend } from "./budget.js";
 import { frontContext } from "./context.js";
 import { type Front, type FrontsState, readFronts, runningWriteFronts, updateFronts, withFront } from "./state.js";
 
@@ -68,6 +72,25 @@ const launchProblem = (input: HookInput, front: Front): HookDecision | undefined
   };
 };
 
+const budgetProblem = (input: HookInput, state: FrontsState, front: Front): HookDecision | undefined => {
+  const root = guardRoot(input);
+  const hit = budgetHit(state, waveSpend(input.runtime, root, state));
+  if (hit === undefined) return undefined;
+  const paths = fmPaths(root);
+  const mode = featureMode(input.runtime, paths, FRONTS_BUDGET_FEATURE);
+  logEvent(input.runtime, paths, "fronts.budget_stop", { front: front.id, wave: state.wave, ...hit, mode });
+  if (mode !== "active") {
+    if (mode === "shadow") recordFeatureShadow(input.runtime, paths, FRONTS_BUDGET_FEATURE, { front: front.id });
+    return undefined;
+  }
+  const params = { front: front.id, used: hit.used, limit: hit.limit, unit: hit.unit };
+  return {
+    kind: "block",
+    reason: modelReason(input.t, "fronts.block.budget", params),
+    human: input.t("fronts.block.budget_human", params),
+  };
+};
+
 export const frontsPreToolUse: HookHandler = (input) => {
   const tool = toolName(input.payload.raw);
   if (!AGENT_TOOLS.has(tool) && !WORKFLOW_TOOLS.has(tool)) return ALLOW;
@@ -77,7 +100,7 @@ export const frontsPreToolUse: HookHandler = (input) => {
   if (WORKFLOW_TOOLS.has(tool)) return running.length > 0 ? ask(input) : ALLOW;
   const named = frontNamed(state, agentText(input));
   if (named !== undefined) {
-    const misuse = launchProblem(input, named);
+    const misuse = launchProblem(input, named) ?? budgetProblem(input, state, named);
     if (misuse !== undefined) return misuse;
   }
   const type = textField(toolInput(input.payload.raw), "subagent_type") ?? "general-purpose";

@@ -4,7 +4,7 @@ import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js"
 import type { HookPayload } from "../hooks/payload.js";
 import { toolInput, toolName } from "../secrets/guards/tool-input.js";
 import { dialectOf, normalizeCommand } from "../shell/normalize.js";
-import { adoptWorktrees } from "./adopt.js";
+import { adoptFromFiles, adoptWorktrees } from "./adopt.js";
 import type { WorktreeOwner } from "./entry.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
@@ -27,7 +27,10 @@ const adopt = (input: HookInput): HookDecision => {
   return ALLOW;
 };
 
-export const wtSessionStart: HookHandler = (input) => adopt(input);
+export const wtSessionStart: HookHandler = (input) => {
+  adoptFromFiles(input.runtime, input.cwd, hookOwner(input.payload));
+  return ALLOW;
+};
 
 export const wtPostToolUse: HookHandler = (input) => {
   const tool = toolName(input.payload);

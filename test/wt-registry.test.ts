@@ -2,19 +2,19 @@ import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { describe, it } from "node:test";
+import { after, describe, it } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { type AbsolutePath, toAbsolutePath } from "../src/core/brand.js";
 import { toPosixPath } from "../src/core/posix-path.js";
 import { selfGuard } from "../src/guards/self/hook.js";
 import { selfTarget } from "../src/guards/self/protected.js";
-import { adoptWorktrees, mayHaveLinkedWorktrees } from "../src/wt/adopt.js";
+import { adoptFromFiles, adoptWorktrees, mayHaveLinkedWorktrees } from "../src/wt/adopt.js";
 import { wtPostToolUse, wtSessionStart } from "../src/wt/hooks.js";
 import { defaultPlace, placeProblems } from "../src/wt/place.js";
 import { allocatePorts } from "../src/wt/ports.js";
 import { commonDirOf, readRegistry, registryPath } from "../src/wt/store.js";
-import { bash, edit, git, hook, runtime, tempRepo, write } from "./git-support.js";
+import { bash, edit, git, hook, runtime, t, tempDir, tempRepo, write } from "./git-support.js";
 import { BUNDLE, fakeRuntime, field, parseBody, ROOT } from "./support.js";
 
 const registryOf = (root: AbsolutePath) => {
@@ -25,11 +25,16 @@ const registryOf = (root: AbsolutePath) => {
   return { common, entries: read.value.worktrees };
 };
 
+const HOME = tempDir("fm-wt-home-");
+after(() => {
+  rmSync(HOME, { recursive: true, force: true });
+});
+
 const fm = (cwd: string, args: readonly string[]) => {
   const result = spawnSync(process.execPath, [BUNDLE, ...args], {
     cwd,
     encoding: "utf8",
-    env: { PATH: process.env["PATH"], SystemRoot: process.env["SystemRoot"], HOME: cwd, USERPROFILE: cwd },
+    env: { PATH: process.env["PATH"], SystemRoot: process.env["SystemRoot"], HOME, USERPROFILE: HOME },
     timeout: 30000,
   });
   return { code: result.status, stdout: result.stdout, stderr: result.stderr };
@@ -53,6 +58,46 @@ describe("worktree registry: cheap SessionStart", () => {
     assert.ok(adopted.ok);
     assert.deepEqual(adopted.value, []);
     assert.deepEqual(calls, []);
+  });
+
+  it("adopts at SessionStart from git's own files, without a single git call", async () => {
+    const repo = tempRepo({ "a.txt": "one\n" });
+    const tree = `${repo.root}-linked`;
+    try {
+      git(repo.root, "worktree", "add", "-q", tree, "-b", "feat/linked");
+      const calls: string[] = [];
+      const record = (args: readonly string[]) => {
+        calls.push(args.join(" "));
+        return { found: true, ok: false, stdout: "", stderr: "", timedOut: false };
+      };
+      const counting = { ...runtime, git: record, gitWith: record, gitLines: () => Promise.resolve(record([])) };
+      await wtSessionStart({
+        event: "SessionStart",
+        cwd: toAbsolutePath(tree),
+        runtime: counting,
+        t,
+        env: {},
+        payload: {
+          hookEventName: "SessionStart",
+          sessionId: "s1",
+          cwd: toAbsolutePath(tree),
+          stopHookActive: false,
+          raw: {},
+        },
+      });
+      assert.deepEqual(calls, []);
+      const entry = registryOf(repo.root).entries.find((item) => item.branch === "feat/linked");
+      assert.ok(entry);
+      assert.equal(entry.status, "adopted");
+      assert.match(toPosixPath(entry.path), /-linked$/);
+      const again = adoptFromFiles(counting, toAbsolutePath(repo.root));
+      assert.ok(again.ok);
+      assert.deepEqual(again.value, []);
+      assert.deepEqual(calls, []);
+    } finally {
+      rmSync(tree, { recursive: true, force: true });
+      repo.dispose();
+    }
   });
 
   it("still looks when .git/worktrees exists or when inside a linked worktree", () => {
@@ -236,6 +281,24 @@ describe("worktree registry: wt new", () => {
       toPosixPath(defaultPlace(toAbsolutePath("/mnt/c/Users/ana/OneDrive/app"), "/home/ana", "f6")),
       toPosixPath(toAbsolutePath("/home/ana/.finitemonkey/worktrees/app/f6")),
     );
+  });
+
+  it("two projects on the same machine never get the same port range", () => {
+    const one = tempRepo();
+    const two = tempRepo();
+    try {
+      assert.equal(fm(one.root, ["wt", "new", "P1", "--purpose", "one", "--json"]).code, 0);
+      assert.equal(fm(two.root, ["wt", "new", "P2", "--purpose", "two", "--json"]).code, 0);
+      const first = registryOf(one.root).entries[0]?.ports;
+      const second = registryOf(two.root).entries[0]?.ports;
+      assert.ok(first && second);
+      assert.ok(first.to < second.from || second.to < first.from, `${String(first.from)} vs ${String(second.from)}`);
+    } finally {
+      spawnSync("git", ["worktree", "unlock", join(one.root, ".claude", "worktrees", "P1")], { cwd: one.root });
+      spawnSync("git", ["worktree", "unlock", join(two.root, ".claude", "worktrees", "P2")], { cwd: two.root });
+      one.dispose();
+      two.dispose();
+    }
   });
 
   it("allocates port ranges that do not overlap live entries", () => {

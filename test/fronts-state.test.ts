@@ -138,6 +138,30 @@ describe("fronts hooks", () => {
     }
   });
 
+  it("a front over the wave's minute budget does not start its next task", async () => {
+    const repo = tempRepo();
+    try {
+      const started = new Date(Date.now() - 90 * 60_000).toISOString();
+      const state = {
+        ...wave([{ ...front("F1", "running"), startedAt: started }, front("F2", "planned")]),
+        budgetMinutes: 60,
+      };
+      write(repo.root, ".finitemonkey/fronts.yml", serializeState(state));
+      const shadow = await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F2"));
+      assert.equal(shadow.kind, "allow");
+      write(repo.root, ".finitemonkey/policy.yml", "guards:\n  fronts-budget: active\n");
+      const held = await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F2"));
+      assert.ok(held.kind === "block");
+      assert.match(held.reason, /budget \(90 of 60 minutes\)/);
+      write(repo.root, ".finitemonkey/fronts.yml", serializeState({ ...state, budgetMinutes: 120 }));
+      assert.equal((await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F2"))).kind, "allow");
+      const log = readFileSync(join(repo.root, ".finitemonkey", "log.jsonl"), "utf8");
+      assert.equal(log.split("\n").filter((line) => line.includes('"fronts.budget_stop"')).length, 2);
+    } finally {
+      repo.dispose();
+    }
+  });
+
   it("a launched front becomes running and gets its agent id at SubagentStart", async () => {
     const repo = tempRepo();
     try {

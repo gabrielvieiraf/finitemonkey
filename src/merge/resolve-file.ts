@@ -5,7 +5,7 @@ import { classifyHunk, type HunkVerdict, type MergeClass, type MergeSide } from 
 import type { MergeStop } from "./report.js";
 import { isAppendOnly, isDeclaredGenerated, outOfScope, ownerOf, type Scopes } from "./scope.js";
 import { type ConflictSegment, joinLines, parseSegments, type Segment } from "./segments.js";
-import { isStructured, mergeJson } from "./structured.js";
+import { isStructured, mergeJson, structuredMerge } from "./structured.js";
 
 export const LOCKFILES: ReadonlySet<string> = new Set([
   "package-lock.json",
@@ -218,7 +218,7 @@ const resolveCore = (inputs: FileInputs, context: FileContext): Core => {
   }
   if (base === undefined) return fileLevel(path, "C7", "both-created", DECISIONS.C7, { kind: "none" }, true);
   if (isStructured(path) || hintFor(context, path) === "json-merge") {
-    const merged = mergeJson(base, ours, theirs);
+    const merged = isStructured(path) ? structuredMerge(path, base, ours, theirs) : mergeJson(base, ours, theirs);
     if (merged?.text !== undefined)
       return fileLevel(path, "C5", "merged-by-key", DECISIONS.C5, { kind: "write", text: merged.text });
     if (merged !== undefined) {

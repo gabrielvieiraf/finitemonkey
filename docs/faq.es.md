@@ -91,3 +91,12 @@ Hay varios, y algunos son muy buenos en una sola tarea. tdd-guard obliga a escri
 Sí, si la herramienta lee un archivo de espera. Un supervisor que reinicia Claude Code en otra cuenta puede cortar la puerta en medio de un `Stop`, y la sesión reanudada te espera con el trabajo a medio revisar.
 
 Para activarlo, agrega `supervisor:` con `enabled: true` a `.finitemonkey/config.yml` y haz que el supervisor defina `FINITEMONKEY_HOLD_DIR` con un directorio que vigile. Mientras la puerta corre o retiene la parada, Finite Monkey mantiene ahí `<sesión>.hold.json`, con una hora `until`; el supervisor no debe cambiar de cuenta mientras `until` esté en el futuro. El archivo vence solo (10 minutos para una ejecución, 15 para una parada retenida) y se borra cuando la puerta pasa. Cuando la sesión vuelve en la cuenta nueva, `SessionStart` le cuenta a Claude qué esperaba la puerta y la ejecuta otra vez. Los mensajes de reanudación que empiezan con `[supervisor]` no cuentan como tuyos, y un `usage.json` en el mismo directorio aparece en `finitemonkey gain`.
+
+## Mi disco de WSL sigue grande después de quitar worktrees. ¿Finite Monkey lo reduce?
+
+No, y no lo intenta: reducir el disco virtual de WSL 2 necesita derechos de administrador en Windows, así que sigue siendo un paso manual. `wt clean` y `wt archive` liberan el espacio dentro de Linux; Windows solo lo recupera después de compactar el disco.
+
+1. Cierra todas las ventanas de WSL y ejecuta `wsl --shutdown` en PowerShell.
+2. En PowerShell como administrador, ejecuta `Optimize-VHD -Path <ruta del ext4.vhdx> -Mode Full` (módulo Hyper-V), o `diskpart` con `select vdisk file="<ruta del ext4.vhdx>"`, `compact vdisk`.
+
+El `ext4.vhdx` de una distribución está en `%LOCALAPPDATA%\Packages\<distribución>\LocalState\`.

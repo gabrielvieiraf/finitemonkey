@@ -195,9 +195,9 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Writes | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/`, `.git/finitemonkey/snapshots/` | Snapshots before destructive git commands and `rm` in the repository, with copies of ignored and untracked secret files up to 50 MB inside .git, the journal that `undo` reads and dropped-line decisions from merges. |
 | Writes | `.finitemonkey/reports/` | Masked bug reports that `doctor --report` writes, only when asked, and the report each front writes before it stops. |
 | Writes | `.finitemonkey/pr/` | Who accepted files outside the task scope in `pr open`, when and why, one file per branch. |
-| Writes | `.finitemonkey/fronts.yml`, `.finitemonkey/briefing.md` | The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed. |
+| Writes | `.finitemonkey/fronts.yml`, `.finitemonkey/briefing.md`, `.finitemonkey/cache/github-writes.json` | The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed. `fronts sync --github` remembers in `.finitemonkey/cache/github-writes.json` the status it last commented on each issue, so it does not comment twice. |
 | Writes | `.finitemonkey/github-ruleset.json` | The ruleset `init --github` proposes when the default branch has none; it is sent to GitHub only after the person says yes. |
-| Writes | `.git/finitemonkey/worktrees.yml`, `.git/finitemonkey/merges/`, `.git/info/exclude`, `.claude/worktrees/`, `~/.finitemonkey/worktrees/`, `~/.finitemonkey/archive/`, `refs/finitemonkey/archive/` | The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`. |
+| Writes | `.git/finitemonkey/worktrees.yml`, `.git/finitemonkey/merges/`, `.git/info/exclude`, `.claude/worktrees/`, `~/.finitemonkey/worktrees/`, `~/.finitemonkey/archive/`, `~/.finitemonkey/ports/`, `refs/finitemonkey/archive/` | The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` holds one lease per worktree port range, so two projects on the machine never get the same ports. |
 | Writes | `.finitemonkey/creds.yml` | `creds` writes the credential inventory: variable names, where they are read, environments, type and risk. Never a value. |
 | Writes | `.finitemonkey/findings/osv.json`, `.github/dependabot.yml`, `renovate.json` | `deps scan` keeps the date each known vulnerability was first seen, so its deadline holds between runs. `deps config --write` saves the Dependabot or Renovate file; without `--write` it only prints it. |
 | Writes | `$FINITEMONKEY_HOLD_DIR/<session>.hold.json` | Only with `supervisor: enabled: true` in the config: a short-lived hold file per session in the directory an account-switching supervisor announces, while the gate runs or holds the stop. `gain` reads that directory's `usage.json`. |
@@ -415,6 +415,15 @@ Yes, several, and some are good at one job. tdd-guard enforces test-first edits;
 Yes, if the switcher reads a hold file. A supervisor that restarts Claude Code on another account can cut the gate in the middle of a `Stop`, and the resumed session waits for you with the work half checked.
 
 To opt in, add `supervisor:` with `enabled: true` to `.finitemonkey/config.yml`, and have the supervisor set `FINITEMONKEY_HOLD_DIR` to a directory it watches. While the gate runs or holds the stop, Finite Monkey keeps `<session>.hold.json` there, with an `until` time; the supervisor should not switch while `until` is in the future. The file expires on its own (10 minutes for a run, 15 for a held stop) and is deleted when the gate passes. When the session resumes on the new account, `SessionStart` tells Claude what the gate was waiting for and runs the gate again. Resume messages that start with `[supervisor]` are not taken as yours, and a `usage.json` in the same directory shows up in `finitemonkey gain`.
+
+## My WSL disk stays big after removing worktrees. Can Finite Monkey shrink it?
+
+No, and it does not try: shrinking the virtual disk of WSL 2 needs Windows administrator rights, so it stays a manual step. `wt clean` and `wt archive` free the space inside Linux; Windows only gets it back after the disk is compacted.
+
+1. Close every WSL window and run `wsl --shutdown` in PowerShell.
+2. In PowerShell as administrator, run `Optimize-VHD -Path <path to ext4.vhdx> -Mode Full` (Hyper-V module), or `diskpart` with `select vdisk file="<path to ext4.vhdx>"`, `compact vdisk`.
+
+The `ext4.vhdx` of a distribution lives under `%LOCALAPPDATA%\Packages\<distribution>\LocalState\`.
 
 ---
 

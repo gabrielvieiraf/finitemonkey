@@ -1,15 +1,14 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
-import { accept, type Parsed, parseJsonObject, reject } from "../core/parsed.js";
+import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseMergeTreeConflicts } from "../gate/pr-parse.js";
 import { readJournal } from "../git/journal.js";
 import { openRepo, type Repo, repoFacts } from "../git/repo.js";
 import { scopeFromContract } from "../merge/scope.js";
-import { registryDir } from "../wt/store.js";
-import { commonDirOf } from "../wt/store.js";
 import { type Acceptance, prBody } from "./checklist.js";
+import { latestMergeReport, mergeSummary, reviewersOf } from "./merge-report.js";
 import { attachProvenance } from "./provenance-attach.js";
 import { type ChangedFile, changedSince, checkScope } from "./scope.js";
 import { restack, stackPlan } from "./stack.js";
@@ -46,6 +45,7 @@ export interface PrOpened {
   readonly url: string | undefined;
   readonly outside: readonly ChangedFile[];
   readonly fetched: boolean;
+  readonly reviewers: readonly string[];
 }
 
 const line = (runtime: Runtime, root: AbsolutePath, args: readonly string[]): string | undefined => {
@@ -59,18 +59,19 @@ const resolveBase = (
   repo: Repo,
   request: PrOpenRequest,
   defaultBranch: string,
-): Parsed<string, PrOpenFailure> => {
+): Parsed<{ readonly base: string; readonly restacked: boolean }, PrOpenFailure> => {
   const plan = stackPlan(runtime, repo.root, defaultBranch);
   if (plan.kind === "parent-open") {
     return request.base === undefined || request.base === plan.parent
-      ? accept(plan.parent)
+      ? accept({ base: plan.parent, restacked: false })
       : reject({ kind: "parent-open", parent: plan.parent });
   }
-  if (plan.kind === "restack" && !request.dryRun) {
+  const restacking = plan.kind === "restack" && !request.dryRun;
+  if (restacking) {
     const done = restack(runtime, repo, plan.parent, defaultBranch);
     if (!done.ok) return reject({ kind: "restack", detail: done.error });
   }
-  return accept(request.base ?? defaultBranch);
+  return accept({ base: request.base ?? defaultBranch, restacked: restacking });
 };
 
 const fetchBase = (runtime: Runtime, root: AbsolutePath, base: string, dryRun: boolean): boolean =>
@@ -95,25 +96,6 @@ const snapshotsFor = (runtime: Runtime, root: AbsolutePath, branch: string): rea
     .filter((entry) => entry.branch === branch)
     .slice(-5)
     .map((entry) => entry.ref);
-
-const mergeSummary = (runtime: Runtime, root: AbsolutePath, branch: string): string | undefined => {
-  const common = commonDirOf(runtime, root);
-  if (common === undefined) return undefined;
-  const dir = toAbsolutePath(join(registryDir(common), "merges"));
-  const names = runtime.listDir(dir);
-  const reports = (names.ok ? names.value : [])
-    .filter((name) => name.endsWith(".json"))
-    .sort()
-    .reverse();
-  const match = reports.find((name) => {
-    const text = runtime.readText(toAbsolutePath(join(dir, name)));
-    const parsed = text.ok ? parseJsonObject(text.value) : undefined;
-    return parsed?.ok === true && JSON.stringify(parsed.value["integration"] ?? {}).includes(`"branch":"${branch}"`);
-  });
-  const summary =
-    match === undefined ? undefined : runtime.readText(toAbsolutePath(join(dir, match.replace(/\.json$/, ".md"))));
-  return summary?.ok === true ? summary.value.trim() : undefined;
-};
 
 const recordAcceptance = (
   runtime: Runtime,
@@ -141,7 +123,21 @@ export interface Prepared {
   readonly body: string;
   readonly outside: readonly ChangedFile[];
   readonly fetched: boolean;
+  readonly reviewers: readonly string[];
+  readonly restacked: boolean;
 }
+
+const acceptanceOf = (
+  runtime: Runtime,
+  request: PrOpenRequest,
+  outside: readonly ChangedFile[],
+): Acceptance | undefined =>
+  outside.length > 0 && request.acceptOutside !== undefined
+    ? { by: request.acceptedBy, at: runtime.now(), reason: request.acceptOutside }
+    : undefined;
+
+const appendOf = (runtime: Runtime, root: AbsolutePath, contract: string | undefined): readonly string[] =>
+  contract === undefined ? [] : (scopeFromContract(runtime, toAbsolutePath(contract, root))?.append ?? []);
 
 export const preparePr = (
   runtime: Runtime,
@@ -154,10 +150,11 @@ export const preparePr = (
   const branch = facts.currentBranch();
   if (branch === undefined) return reject({ kind: "no-branch" });
   if (facts.isProtected(branch)) return reject({ kind: "protected", branch });
-  const base = resolveBase(runtime, repo, request, facts.defaultBranch());
-  if (!base.ok) return base;
-  const fetched = fetchBase(runtime, repo.root, base.value, request.dryRun);
-  const baseRef = baseRefOf(runtime, repo.root, base.value);
+  const resolved = resolveBase(runtime, repo, request, facts.defaultBranch());
+  if (!resolved.ok) return resolved;
+  const { base, restacked } = resolved.value;
+  const fetched = fetchBase(runtime, repo.root, base, request.dryRun);
+  const baseRef = baseRefOf(runtime, repo.root, base);
   const conflicts = predicted(runtime, repo.root, baseRef);
   if (conflicts.length > 0) return reject({ kind: "conflict", base: baseRef, files: conflicts });
   const baseSha = line(runtime, repo.root, ["merge-base", baseRef, "HEAD"]) ?? baseRef;
@@ -165,25 +162,20 @@ export const preparePr = (
   const scope = checkScope(runtime, repo.root, files, request.contract);
   if (scope.outside.length > 0 && request.acceptOutside === undefined)
     return reject({ kind: "outside", files: scope.outside });
-  const accepted =
-    scope.outside.length > 0 && request.acceptOutside !== undefined
-      ? { by: request.acceptedBy, at: runtime.now(), reason: request.acceptOutside }
-      : undefined;
+  const accepted = acceptanceOf(runtime, request, scope.outside);
   if (accepted !== undefined && !request.dryRun) recordAcceptance(runtime, repo.root, branch, accepted, scope.outside);
-  const append =
-    scope.contract === undefined
-      ? []
-      : (scopeFromContract(runtime, toAbsolutePath(scope.contract, repo.root))?.append ?? []);
+  const append = appendOf(runtime, repo.root, scope.contract);
+  const report = latestMergeReport(runtime, repo.root, branch);
   const plain = prBody(runtime, repo.root, {
     userBody: request.body,
-    base: base.value,
+    base: base,
     baseSha,
     files,
     scope,
     append,
     accepted,
     snapshots: snapshotsFor(runtime, repo.root, branch),
-    mergeSummary: mergeSummary(runtime, repo.root, branch),
+    mergeSummary: mergeSummary(runtime, report),
   });
   const body = attachProvenance(
     runtime,
@@ -191,7 +183,11 @@ export const preparePr = (
     plain,
     files.map((file) => file.path),
   );
-  return accept({ repo, branch, base: base.value, baseSha, body, outside: scope.outside, fetched });
+  return accept({
+    ...{ repo, branch, base: base, baseSha, body, outside: scope.outside, fetched },
+    reviewers: reviewersOf(report),
+    restacked,
+  });
 };
 
 export const openPr = (
@@ -209,9 +205,11 @@ export const openPr = (
     body,
     outside: prepared.value.outside,
     fetched: prepared.value.fetched,
+    reviewers: prepared.value.reviewers,
   };
   if (request.dryRun) return accept({ ...result, url: undefined });
-  const pushed = runtime.gitWith(["push", "--quiet", "-u", "origin", branch], repo.root, {
+  const lease = prepared.value.restacked ? ["--force-with-lease"] : [];
+  const pushed = runtime.gitWith(["push", "--quiet", ...lease, "-u", "origin", branch], repo.root, {
     timeoutMs: NETWORK_TIMEOUT_MS,
   });
   if (!pushed.ok) return reject({ kind: "push", detail: pushed.stderr.trim() });
@@ -230,6 +228,7 @@ export const openPr = (
     "--body-file",
     bodyFile,
     ...(request.draft ? ["--draft"] : []),
+    ...prepared.value.reviewers.flatMap((reviewer) => ["--reviewer", reviewer]),
   ];
   const created = runtime.exec({ command: "gh", args, cwd: repo.root, timeoutMs: NETWORK_TIMEOUT_MS });
   runtime.remove(bodyFile);

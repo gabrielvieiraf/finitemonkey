@@ -8,8 +8,15 @@ const overlaps = (left: PortRange, right: PortRange): boolean => left.from <= ri
 
 const LIVE: ReadonlySet<WorktreeEntry["status"]> = new Set(["active", "adopted", "done"]);
 
-export const allocatePorts = (entries: readonly WorktreeEntry[], base: number): PortRange | undefined => {
-  const taken = entries.flatMap((entry) => (entry.ports !== null && LIVE.has(entry.status) ? [entry.ports] : []));
+export const allocatePorts = (
+  entries: readonly WorktreeEntry[],
+  base: number,
+  elsewhere: readonly PortRange[] = [],
+): PortRange | undefined => {
+  const taken = [
+    ...entries.flatMap((entry) => (entry.ports !== null && LIVE.has(entry.status) ? [entry.ports] : [])),
+    ...elsewhere,
+  ];
   for (let from = base; from + PORT_SPAN - 1 <= MAX_PORT; from += PORT_SPAN) {
     const range = { from, to: from + PORT_SPAN - 1 };
     if (!taken.some((other) => overlaps(range, other))) return range;
