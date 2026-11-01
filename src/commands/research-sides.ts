@@ -2,12 +2,15 @@ import { listOption, stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { shownTriage } from "../judge/triage-raise.js";
+import { triageResearch } from "../judge/triage-record.js";
 import { readRecords } from "../knowledge/decision-record.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import { appendResearch, readResearchLog, RESEARCH_LOG_SCHEMA, type ResearchLog, STANCES } from "../research/log.js";
 import { openSides, RESEARCH_SIDES_FEATURE, sidesOf, type UnknownSides } from "../research/sides.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
+import { readState } from "../task/state.js";
 import { guardianWriteProblem, inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
 
@@ -56,13 +59,25 @@ const withLog = (
       : run(paths, log);
   });
 
-const appended = (ctx: Ctx, paths: FmPaths, slug: string, record: Readonly<Record<string, unknown>>): CommandResult => {
+interface Extra {
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly human: readonly string[];
+}
+
+const appended = (
+  ctx: Ctx,
+  paths: FmPaths,
+  slug: string,
+  record: Readonly<Record<string, unknown>>,
+  after: (log: ResearchLog) => Extra = () => ({ data: {}, human: [] }),
+): CommandResult => {
   if (!appendResearch(ctx.runtime, paths, slug, { ...record, at: ctx.runtime.now() }))
     return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`));
   const log = readResearchLog(ctx.runtime, paths, slug);
+  const extra = log === undefined ? { data: {}, human: [] } : after(log);
   return success(
-    { schema: RESEARCH_LOG_SCHEMA, slug, ...(log === undefined ? {} : researchLinks(ctx, paths, log)) },
-    log === undefined ? [] : sidesLines(ctx, log),
+    { schema: RESEARCH_LOG_SCHEMA, slug, ...(log === undefined ? {} : researchLinks(ctx, paths, log)), ...extra.data },
+    [...(log === undefined ? [] : sidesLines(ctx, log)), ...extra.human],
   );
 };
 
@@ -111,6 +126,18 @@ export const researchStanceCommand: CommandSpec = {
   },
 };
 
+const closeTriage = (ctx: Ctx, paths: FmPaths, log: ResearchLog): Extra => {
+  const task = readState(ctx.runtime, paths).active ?? "none";
+  const claims = log.sources.flatMap((source) => (source.claim === undefined ? [] : [source.claim]));
+  const rows = triageResearch(ctx.runtime, paths, task, { slug: log.slug, claims });
+  return rows.length === 0
+    ? { data: {}, human: [] }
+    : {
+        data: { triage: rows.map((row) => row.claim) },
+        human: shownTriage(ctx.runtime, paths, ctx.t, "research", rows),
+      };
+};
+
 export const researchCloseCommand: CommandSpec = {
   path: ["research", "close"],
   summaryKey: "command.research_close.summary",
@@ -132,7 +159,7 @@ export const researchCloseCommand: CommandSpec = {
         );
       if (open.length > 0 && mode === "shadow")
         recordFeatureShadow(ctx.runtime, paths, RESEARCH_SIDES_FEATURE, { slug, open: open.join(",") });
-      return appended(ctx, paths, slug, { type: "close" });
+      return appended(ctx, paths, slug, { type: "close" }, (closed) => closeTriage(ctx, paths, closed));
     });
   },
 };

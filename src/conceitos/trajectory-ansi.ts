@@ -1,9 +1,11 @@
 import type { DomainTrajectory } from "./trajectory.js";
 import { type Band, BAND_ORDER } from "./trajectory-bands.js";
 import type { Ink, Theme } from "./trajectory-palette.js";
+import { RESEARCH_FIXES, RESEARCH_GLYPH, RESEARCH_PLAIN, researchLane } from "./trajectory-research.js";
 import {
   axisLine,
   type Cellband,
+  ENGLISH_RESEARCH,
   ENGLISH_TERM,
   gridOf,
   type GridSize,
@@ -154,8 +156,21 @@ export const blockOf = (trajectory: DomainTrajectory, options: TermOptions): rea
       const name = names[row] ?? "";
       return name === "" ? body : `${body} ${faint(name, options)}`;
     }),
+    ...laneLines(trajectory, size.perWeek, options),
     faint(axisLine(trajectory, size.perWeek), options),
   ];
+};
+
+const laneLines = (trajectory: DomainTrajectory, perWeek: number, options: TermOptions): readonly string[] => {
+  const marks = trajectory.research ?? [];
+  if (marks.length === 0) return [];
+  const lane = researchLane(
+    trajectory.weeks.map((week) => week.week),
+    marks,
+    perWeek,
+  );
+  const shown = options.depth === "none" ? lane.replace(/[▲↺◇◆]/gu, (glyph) => RESEARCH_PLAIN[glyph] ?? glyph) : lane;
+  return [`${shown} ${faint((options.labels?.research ?? ENGLISH_RESEARCH).lane, options)}`];
 };
 
 const swatch = (band: Cellband, options: TermOptions): string => {
@@ -169,7 +184,7 @@ const inkSwatch = (glyph: string, ink: Ink, options: TermOptions): string =>
     ? (PLAIN_GLYPH[glyph] ?? glyph)
     : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph}${RESET}`;
 
-export const legendLines = (bands: readonly Band[], options: TermOptions): readonly string[] => {
+export const legendLines = (bands: readonly Band[], options: TermOptions, research = false): readonly string[] => {
   const labels = options.labels ?? ENGLISH_TERM;
   const entries = [
     ...bands.map((band) => `${swatch(band, options)} ${labels.band[band]}`),
@@ -185,8 +200,17 @@ export const legendLines = (bands: readonly Band[], options: TermOptions): reado
       `${inkSwatch("✕", "ricochet", options)} ${labels.ricochet}`,
       `${inkSwatch("◉", "held", options)} ${labels.held}`,
     ].join("  "),
+    ...(research ? [researchLegend(options)] : []),
     faint(labels.hypotheses, options),
   ];
+};
+
+const researchLegend = (options: TermOptions): string => {
+  const labels = options.labels?.research ?? ENGLISH_RESEARCH;
+  return RESEARCH_FIXES.map((fix) => {
+    const glyph = RESEARCH_GLYPH[fix];
+    return `${options.depth === "none" ? (RESEARCH_PLAIN[glyph] ?? glyph) : glyph} ${labels[fix]}`;
+  }).join("  ");
 };
 
 export const chartLines = (trajectories: readonly DomainTrajectory[], options: TermOptions): readonly string[] => {
@@ -195,6 +219,15 @@ export const chartLines = (trajectories: readonly DomainTrajectory[], options: T
   const bands = BAND_ORDER.filter((band) => used.has(band));
   return [
     ...trajectories.flatMap((item, index) => [...(index === 0 ? [] : [""]), ...blockOf(item, options)]),
-    ...(drawn.length === 0 ? [] : ["", ...legendLines(bands, options)]),
+    ...(drawn.length === 0
+      ? []
+      : [
+          "",
+          ...legendLines(
+            bands,
+            options,
+            drawn.some((item) => (item.research ?? []).length > 0),
+          ),
+        ]),
   ];
 };

@@ -11,6 +11,7 @@ import {
 } from "../conceitos/trajectory-bands.js";
 import { rasterOf, svgOf } from "../conceitos/trajectory-chart.js";
 import type { ThemeChoice } from "../conceitos/trajectory-palette.js";
+import { RESEARCH_GLYPH } from "../conceitos/trajectory-research.js";
 import type { Elements, ModElement, Surface } from "./api.js";
 
 export { parseTrajectories } from "./trajectory-parse.js";
@@ -68,12 +69,17 @@ const weekRow = (trajectory: DomainTrajectory, week: Week): string => {
   if (week.assisted === null) return `${week.week.slice(-3)}  no evidence`;
   const band = landedIn(trajectory, week);
   const marks = trajectory.marks.filter((mark) => mark.week === week.week);
+  const research = (trajectory.research ?? []).filter((mark) => mark.week === week.week);
+  const events = [
+    ...marks.map((mark) => `${glyph(mark)} ${mark.kind} ${mark.concept}`),
+    ...research.map((mark) => `${RESEARCH_GLYPH[mark.fix]} research ${mark.claim} ${mark.fix}`),
+  ];
   return [
     week.week.slice(-3),
     (band === undefined ? "no accepted work" : describeBand(band)).padEnd(38),
     span(week.independent, week.discernment).padEnd(7),
     span(week.discernment, week.assisted).padEnd(7),
-    marks.length === 0 ? "-" : marks.map((mark) => `${glyph(mark)} ${mark.kind} ${mark.concept}`).join(", "),
+    events.length === 0 ? "-" : events.join(", "),
   ].join("  ");
 };
 

@@ -2765,5 +2765,18 @@
   "command.judge_contradict.summary": "Record a new source that contradicts a claim; it opens only on a span match or the person's confirmation",
   "command.judge_fixed.summary": "Record who fixed a ricochet event; a repair by the person is marked held",
   "command.judge_trajectory.summary": "List ricochet events of research claims with the state and bands they had at acceptance",
-  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}",
+  "doctor.pdf.ok": "{extractor} found: citations to PDFs can be verified",
+  "doctor.pdf.missing": "{extractor} not found: citations to PDFs stay not verified",
+  "doctor.pdf.fix": "Install Poppler to get pdftotext (apt install poppler-utils, brew install poppler, or the Poppler build for Windows)",
+  "judge.triage.head_decision": "This decision record cites {count, plural, one {# claim} other {# claims}} resting only on the model, on concepts with no record or beyond. Before the decision stands, for each one: verify it against its source (finitemonkey judge verify), cut it (judge cut), or hand it off with what is missing (judge handoff).",
+  "judge.triage.head_commit": "This commit references results with {count, plural, one {# claim} other {# claims}} resting only on the model, on concepts with no record or beyond. For each one: verify it against its source (finitemonkey judge verify), cut it (judge cut), or hand it off with what is missing (judge handoff).",
+  "judge.triage.head_research": "This research log closes with {count, plural, one {# claim} other {# claims}} resting only on the model, on concepts with no record or beyond. Before the result is used, for each one: verify it against its source (finitemonkey judge verify), cut it (judge cut), or hand it off with what is missing (judge handoff).",
+  "guardian.report.triage": "Triage: {open} of {flagged} flagged claims still rest only on the model. Verify, cut or hand off each one (finitemonkey judge triage).",
+  "trajectory.research.lane": "research",
+  "trajectory.research.open": "research ricochet, open",
+  "trajectory.research.revert": "fixed by revert",
+  "trajectory.research.agent": "fixed by the agent",
+  "trajectory.research.person": "fixed by the person",
+  "trajectory.research.outside": "research {field} {week}: {claim}, {fix}"
 }

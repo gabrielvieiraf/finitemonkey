@@ -373,6 +373,28 @@
           ]
         }
       ]
+    },
+    "triage": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "flagged": {
+              "type": "number"
+            },
+            "open": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "flagged",
+            "open"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -393,6 +415,7 @@
     "xray",
     "knowledge",
     "blindBand",
-    "trajectory"
+    "trajectory",
+    "triage"
   ]
 }

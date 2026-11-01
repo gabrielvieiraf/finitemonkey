@@ -75,22 +75,44 @@ const caughtMutant = (quote: string, content: string): boolean => {
   return !spanIn(quote, mutated);
 };
 
-const quoteAnchors = (
-  quotes: readonly string[],
-  sources: readonly { readonly id: string; readonly content: string }[],
-): readonly JudgeAnchor[] | undefined => {
+interface Source {
+  readonly id: string;
+  readonly content: string;
+  readonly pages?: readonly string[];
+}
+
+const pageOf = (quote: string, source: Source): { readonly page?: number } => {
+  const index = source.pages?.findIndex((page) => spanIn(quote, page)) ?? -1;
+  return index < 0 ? {} : { page: index + 1 };
+};
+
+const quoteAnchors = (quotes: readonly string[], sources: readonly Source[]): readonly JudgeAnchor[] | undefined => {
   const anchors: JudgeAnchor[] = [];
   for (const quote of quotes) {
     const source = sources.find((item) => spanIn(quote, item.content));
     if (source === undefined) return undefined;
-    anchors.push({ kind: "span", ref: source.id, span: quote, hash: contentHash(source.content) });
+    anchors.push({
+      kind: "span",
+      ref: source.id,
+      span: quote,
+      hash: contentHash(source.content),
+      ...pageOf(quote, source),
+    });
   }
   return anchors;
 };
 
 const judged = (resolved: readonly Resolved[], quotes: readonly string[]): Verdict => {
-  const sources = resolved.flatMap(({ citation, fetched }) =>
-    fetched.status === "ok" ? [{ id: citation.id, content: fetched.content }] : [],
+  const sources = resolved.flatMap(({ citation, fetched }): Source[] =>
+    fetched.status === "ok"
+      ? [
+          {
+            id: citation.id,
+            content: fetched.content,
+            ...(fetched.pages === undefined ? {} : { pages: fetched.pages }),
+          },
+        ]
+      : [],
   );
   const labelsHold = sources.every((source) => {
     const label = resolved.find((item) => item.citation.id === source.id)?.citation.label ?? "";

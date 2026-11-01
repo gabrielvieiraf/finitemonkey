@@ -2765,5 +2765,18 @@
   "command.judge_contradict.summary": "Registrar una fuente nueva que contradice una afirmación; solo se abre con fragmento coincidente o confirmación de la persona",
   "command.judge_fixed.summary": "Registrar quién arregló un evento de rebote; el arreglo de la persona queda marcado como sostenido",
   "command.judge_trajectory.summary": "Listar eventos de rebote de afirmaciones de investigación con el estado y las franjas que tenían al aceptarse",
-  "judge.event": "{event}: {claim} {cause} ({state}); al aceptarse {support}, franjas {bands}; arreglado por {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); al aceptarse {support}, franjas {bands}; arreglado por {fixed}",
+  "doctor.pdf.ok": "{extractor} encontrado: las citas a PDFs se pueden verificar",
+  "doctor.pdf.missing": "{extractor} no encontrado: las citas a PDFs quedan sin verificar",
+  "doctor.pdf.fix": "Instala Poppler para tener pdftotext (apt install poppler-utils, brew install poppler o la versión de Poppler para Windows)",
+  "judge.triage.head_decision": "Este registro de decisión cita {count, plural, one {# afirmación} other {# afirmaciones}} que dependen solo del modelo, en conceptos sin registro o más allá. Antes de que la decisión valga, para cada una: verificarla contra su fuente (finitemonkey judge verify), cortarla (judge cut) o entregarla con lo que falta (judge handoff).",
+  "judge.triage.head_commit": "Este commit referencia resultados con {count, plural, one {# afirmación} other {# afirmaciones}} que dependen solo del modelo, en conceptos sin registro o más allá. Para cada una: verificarla contra su fuente (finitemonkey judge verify), cortarla (judge cut) o entregarla con lo que falta (judge handoff).",
+  "judge.triage.head_research": "Este registro de investigación cierra con {count, plural, one {# afirmación} other {# afirmaciones}} que dependen solo del modelo, en conceptos sin registro o más allá. Antes de usar el resultado, para cada una: verificarla contra su fuente (finitemonkey judge verify), cortarla (judge cut) o entregarla con lo que falta (judge handoff).",
+  "guardian.report.triage": "Triaje: {open} de {flagged} afirmaciones señaladas todavía dependen solo del modelo. Verifica, corta o entrega cada una (finitemonkey judge triage).",
+  "trajectory.research.lane": "investigación",
+  "trajectory.research.open": "rebote de investigación, abierto",
+  "trajectory.research.revert": "corregido por revert",
+  "trajectory.research.agent": "corregido por el agente",
+  "trajectory.research.person": "corregido por la persona",
+  "trajectory.research.outside": "investigación {field} {week}: {claim}, {fix}"
 }

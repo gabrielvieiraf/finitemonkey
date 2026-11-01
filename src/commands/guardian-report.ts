@@ -4,6 +4,7 @@ import { readGoals } from "../guardian/goals.js";
 import { renderReport, showable } from "../guardian/report.js";
 import { activeTask, taskList } from "../guardian/tasks.js";
 import { goalConflicts, growthReports } from "../guardian/triggers.js";
+import { triageNow } from "../judge/triage-raise.js";
 import { fmPaths } from "../task/paths.js";
 import { inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
@@ -19,8 +20,13 @@ export const guardianReportCommand: CommandSpec = {
     inGuardianRepo(ctx, (root) => {
       const paths = fmPaths(root);
       const task = activeTask(ctx.runtime, paths);
+      const triage = triageNow(ctx.runtime, paths);
+      const triageLines = triage === null || triage.open === 0 ? [] : [ctx.t("guardian.report.triage", { ...triage })];
       if (task === undefined)
-        return success({ schema: GUARDIAN_REPORT_SCHEMA, reports: [] }, [ctx.t("guardian.report.none")]);
+        return success(
+          { schema: GUARDIAN_REPORT_SCHEMA, reports: [], triage },
+          triageLines.length === 0 ? [ctx.t("guardian.report.none")] : triageLines,
+        );
       const text = ctx.runtime.readText(paths.task(task.contract.id));
       const ids = text.ok ? taskList(text.value, "assumptions") : [];
       const base = {
@@ -30,9 +36,10 @@ export const guardianReportCommand: CommandSpec = {
         open: openHighImpact(readAssumptions(ctx.runtime, paths), ids),
       };
       const reports = [...goalConflicts(base), ...growthReports(base)].filter(showable);
+      const lines = [...reports.map((report) => renderReport(ctx.t, report)), ...triageLines];
       return success(
-        { schema: GUARDIAN_REPORT_SCHEMA, reports },
-        reports.length === 0 ? [ctx.t("guardian.report.none")] : reports.map((report) => renderReport(ctx.t, report)),
+        { schema: GUARDIAN_REPORT_SCHEMA, reports, triage },
+        lines.length === 0 ? [ctx.t("guardian.report.none")] : lines,
       );
     }),
 };

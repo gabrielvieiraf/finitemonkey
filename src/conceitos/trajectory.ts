@@ -3,6 +3,7 @@ import { DOMAINS } from "../perfil/types.js";
 import { isoWeek } from "../signals/blind-band.js";
 import { type ConceptId, domainOf } from "./concepts.js";
 import { type ConceptEvent, stateOf } from "./evidence.js";
+import type { ResearchMark } from "./trajectory-research.js";
 
 export const TRAJECTORY_SCHEMA = "finitemonkey/trajectory@1";
 export const TRAJECTORY_FEATURE = "trajectory";
@@ -54,6 +55,7 @@ export interface DomainTrajectory {
   readonly weeks: readonly Week[];
   readonly marks: readonly Mark[];
   readonly position: string | null;
+  readonly research?: readonly ResearchMark[];
 }
 
 const DAY = 86_400_000;

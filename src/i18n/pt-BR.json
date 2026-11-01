@@ -2765,5 +2765,18 @@
   "command.judge_contradict.summary": "Registrar uma fonte nova que contradiz uma afirmação; só abre com trecho casado ou confirmação da pessoa",
   "command.judge_fixed.summary": "Registrar quem consertou um evento de ricochete; conserto da pessoa fica marcado como sustentado",
   "command.judge_trajectory.summary": "Listar eventos de ricochete de afirmações de pesquisa com estado e faixas que tinham no aceite",
-  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}",
+  "doctor.pdf.ok": "{extractor} encontrado: citações a PDFs podem ser verificadas",
+  "doctor.pdf.missing": "{extractor} não encontrado: citações a PDFs ficam não verificadas",
+  "doctor.pdf.fix": "Instale o Poppler para ter o pdftotext (apt install poppler-utils, brew install poppler ou a versão do Poppler para Windows)",
+  "judge.triage.head_decision": "Este registro de decisão cita {count, plural, one {# afirmação} other {# afirmações}} que dependem só do modelo, em conceitos sem registro ou além. Antes de a decisão valer, para cada uma: verificar contra a fonte (finitemonkey judge verify), cortar (judge cut) ou entregar com o que falta (judge handoff).",
+  "judge.triage.head_commit": "Este commit referencia resultados com {count, plural, one {# afirmação} other {# afirmações}} que dependem só do modelo, em conceitos sem registro ou além. Para cada uma: verificar contra a fonte (finitemonkey judge verify), cortar (judge cut) ou entregar com o que falta (judge handoff).",
+  "judge.triage.head_research": "Este registro de pesquisa fecha com {count, plural, one {# afirmação} other {# afirmações}} que dependem só do modelo, em conceitos sem registro ou além. Antes de o resultado ser usado, para cada uma: verificar contra a fonte (finitemonkey judge verify), cortar (judge cut) ou entregar com o que falta (judge handoff).",
+  "guardian.report.triage": "Triagem: {open} de {flagged} afirmações sinalizadas ainda dependem só do modelo. Verifique, corte ou entregue cada uma (finitemonkey judge triage).",
+  "trajectory.research.lane": "pesquisa",
+  "trajectory.research.open": "ricochete de pesquisa, aberto",
+  "trajectory.research.revert": "corrigido por revert",
+  "trajectory.research.agent": "corrigido pelo agente",
+  "trajectory.research.person": "corrigido pela pessoa",
+  "trajectory.research.outside": "pesquisa {field} {week}: {claim}, {fix}"
 }

@@ -80,6 +80,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "page": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -264,6 +267,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "page": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -380,6 +386,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "page": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -618,6 +627,9 @@
             }
           },
           "fixedBy": {
+            "type": "string"
+          },
+          "fixedCommit": {
             "type": "string"
           },
           "id": {

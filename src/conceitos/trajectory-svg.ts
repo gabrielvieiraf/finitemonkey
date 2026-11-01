@@ -3,6 +3,7 @@ import { type Band, BAND_ORDER, BANDS, landedIn, markIn, markLevel, peakOf, stra
 import { keyOf, type Plot, swatchOf, yOf } from "./trajectory-key.js";
 import { defsOf, escapeXml, num, paint, styleOf, text } from "./trajectory-paint.js";
 import type { ThemeChoice } from "./trajectory-palette.js";
+import { researchSvg } from "./trajectory-research.js";
 
 export const SVG_WIDTH = 900;
 export const SVG_HEIGHT = 400;
@@ -235,5 +236,10 @@ export const svgOf = (trajectory: DomainTrajectory, options: SvgOptions = {}): s
     keyOf(theme, frame, trajectory),
     ...workLine(theme, frame, trajectory),
     ...marksOf(theme, frame, trajectory, options.selected),
+    ...researchSvg(
+      theme,
+      { xs: frame.xs, weeks: trajectory.weeks.map((week) => week.week), y: frame.y1 + 10 },
+      trajectory.research ?? [],
+    ),
   ]);
 };

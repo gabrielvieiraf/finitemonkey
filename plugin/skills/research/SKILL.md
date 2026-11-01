@@ -14,5 +14,12 @@ when_to_use: >-
 4. Primary sources first. A vendor number is kind `vendor`. A third-party documentation index is kind `index` with its version and date, and never makes a finding strong alone.
 5. When the research serves a decision record, start it with `research new <question> --decision <record> --option <o> --criterion <c> --unknown <critical unknown> --stop <condition>` (add `--risk high` when the decision is costly to undo). Log every source with `research source <slug> <url> --changed nothing|option|unknown` (with `--resolves <unknown>` when it answers one). When the command says to stop or switch focus, propose that to the person instead of reading more.
 6. Run `research check`. Fix what it lists. Bring "Text for the plan" in with `plan consolidate`.
+7. To see which research claims ricocheted and who fixed each one, send the same request the judge pane sends to `judge call`:
+
+   ```sh
+   echo '{"verb":"trajectory"}' | node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" judge call --json
+   ```
+
+   Each event says whether it is open or was fixed by the person, by the agent or by a revert. Close one with `judge fixed <event> --commit <sha>` so the commit decides between a fix and a revert.
 
 If a command answers `unknown_command` or `not_implemented`, say in one line that this part of Finite Monkey is not in this version yet.

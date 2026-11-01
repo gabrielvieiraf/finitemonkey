@@ -46,7 +46,15 @@ const anchorOf = (value: unknown): JudgeAnchor | undefined => {
   const hash = text(value, "hash");
   if (kind === undefined || ref === undefined || hash === undefined) return undefined;
   const inputs = texts(value, "inputs");
-  return { kind, ref, hash, ...optional(value, ["span"]), ...(inputs.length === 0 ? {} : { inputs }) };
+  const page = value["page"];
+  return {
+    kind,
+    ref,
+    hash,
+    ...optional(value, ["span"]),
+    ...(inputs.length === 0 ? {} : { inputs }),
+    ...(typeof page === "number" && Number.isInteger(page) && page > 0 ? { page } : {}),
+  };
 };
 
 export const anchorsOf = (value: unknown): readonly JudgeAnchor[] =>
@@ -155,7 +163,7 @@ const eventOf: Parser = (record, base) => {
   const support = oneOf(SUPPORT_STATES, record["support"]);
   if (claim === undefined || cause === undefined || state === undefined || support === undefined) return undefined;
   const bands = bandsOf(record["bands"]) ?? {};
-  const fixed = optional(record, ["fixedBy"]);
+  const fixed = optional(record, ["fixedBy", "fixedCommit"]);
   return { type: "event", ...base, claim, cause, state, support, bands, sources: texts(record, "sources"), ...fixed };
 };
 

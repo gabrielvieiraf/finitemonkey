@@ -2766,7 +2766,20 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "doctor.pdf.ok": "machine",
+    "doctor.pdf.missing": "machine",
+    "doctor.pdf.fix": "machine",
+    "judge.triage.head_decision": "machine",
+    "judge.triage.head_commit": "machine",
+    "judge.triage.head_research": "machine",
+    "guardian.report.triage": "machine",
+    "trajectory.research.lane": "machine",
+    "trajectory.research.open": "machine",
+    "trajectory.research.revert": "machine",
+    "trajectory.research.agent": "machine",
+    "trajectory.research.person": "machine",
+    "trajectory.research.outside": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5535,6 +5548,19 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "doctor.pdf.ok": "machine",
+    "doctor.pdf.missing": "machine",
+    "doctor.pdf.fix": "machine",
+    "judge.triage.head_decision": "machine",
+    "judge.triage.head_commit": "machine",
+    "judge.triage.head_research": "machine",
+    "guardian.report.triage": "machine",
+    "trajectory.research.lane": "machine",
+    "trajectory.research.open": "machine",
+    "trajectory.research.revert": "machine",
+    "trajectory.research.agent": "machine",
+    "trajectory.research.person": "machine",
+    "trajectory.research.outside": "machine"
   }
 }

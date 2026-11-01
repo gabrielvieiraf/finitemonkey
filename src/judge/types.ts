@@ -66,6 +66,7 @@ export interface JudgeAnchor {
   readonly hash: string;
   readonly span?: string;
   readonly inputs?: readonly string[];
+  readonly page?: number;
 }
 
 interface EntryBase {
@@ -166,6 +167,7 @@ export interface EventEntry extends EntryBase {
   readonly bands: Readonly<Record<string, Band>>;
   readonly sources: readonly string[];
   readonly fixedBy?: string;
+  readonly fixedCommit?: string;
 }
 
 export interface ItemEntry extends EntryBase {

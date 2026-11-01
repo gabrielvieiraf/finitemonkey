@@ -1,5 +1,6 @@
 import type { ConceptId } from "../conceitos/concepts.js";
 import type { DomainTrajectory, EvidenceRef, Mark, Week } from "../conceitos/trajectory.js";
+import { RESEARCH_FIXES, type ResearchMark } from "../conceitos/trajectory-research.js";
 
 type Domain = DomainTrajectory["domain"];
 const DOMAIN_NAMES: readonly Domain[] = ["product", "interface", "backend", "infrastructure", "security"];
@@ -60,6 +61,25 @@ const markOf = (item: Readonly<Record<string, unknown>>): Mark => ({
   evidence: records(item["evidence"]).map(refOf),
 });
 
+const researchOf = (item: Readonly<Record<string, unknown>>): ResearchMark => ({
+  week: str(item, "week"),
+  at: str(item, "at"),
+  event: str(item, "event"),
+  claim: str(item, "claim"),
+  cause: str(item, "cause"),
+  fix: RESEARCH_FIXES.find((fix) => fix === item["fix"]) ?? "open",
+  commit: typeof item["commit"] === "string" ? item["commit"] : null,
+  field: str(item, "field"),
+  concepts: Array.isArray(item["concepts"])
+    ? item["concepts"].filter((value): value is string => typeof value === "string")
+    : [],
+});
+
+const researchIn = (item: Readonly<Record<string, unknown>>): { readonly research?: readonly ResearchMark[] } => {
+  const marks = records(item["research"]).map(researchOf);
+  return marks.length === 0 ? {} : { research: marks };
+};
+
 export const parseTrajectories = (text: string): readonly DomainTrajectory[] => {
   let parsed: unknown;
   try {
@@ -80,6 +100,7 @@ export const parseTrajectories = (text: string): readonly DomainTrajectory[] => 
         weeks: records(item["weeks"]).map(weekOf),
         marks: records(item["marks"]).map(markOf),
         position: typeof item["position"] === "string" ? item["position"] : null,
+        ...researchIn(item),
       },
     ];
   });

@@ -37,6 +37,7 @@ export interface GateView {
     readonly band: string | null;
     readonly ricochet: { readonly concept: string; readonly week: string } | null;
   } | null;
+  readonly triage: { readonly flagged: number; readonly open: number } | null;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -109,6 +110,14 @@ const trajectoryOf = (value: unknown): GateView["trajectory"] =>
       }
     : null;
 
+const triageOf = (value: unknown): GateView["triage"] =>
+  isRecord(value) && typeof value["flagged"] === "number" && typeof value["open"] === "number"
+    ? { flagged: value["flagged"], open: value["open"] }
+    : null;
+
+export const triageLine = (triage: NonNullable<GateView["triage"]>): string =>
+  `triage ${String(triage.open)}/${String(triage.flagged)} open`;
+
 export const trajectoryLine = (trajectory: NonNullable<GateView["trajectory"]>): string =>
   [
     `trajectory ${trajectory.domain}: ${trajectory.band ?? "no accepted work"}`,
@@ -167,6 +176,7 @@ export const parseStatus = (text: string): GateView | undefined => {
     blindBand: blindOf(data["blindBand"]),
     knowledge: knowledgeOf(data["knowledge"]),
     trajectory: trajectoryOf(data["trajectory"]),
+    triage: triageOf(data["triage"]),
   };
 };
 
@@ -194,6 +204,7 @@ export const bandLine = (view: GateView): string =>
     ...(view.knowledge === null ? [] : [knowledgeLine(view.knowledge)]),
     ...(view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)]),
     ...(view.trajectory === null ? [] : [trajectoryLine(view.trajectory)]),
+    ...(view.triage === null || view.triage.open === 0 ? [] : [triageLine(view.triage)]),
     ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
     ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),
     ...(view.xray === null || view.xray.beyond === 0

@@ -17,9 +17,26 @@ export interface TermLabels {
   readonly ricochet: string;
   readonly held: string;
   readonly hypotheses: string;
+  readonly research?: ResearchLabels;
   readonly noData: (evidence: number) => string;
   readonly head: (domain: string, from: string, to: string, evidence: number) => string;
 }
+
+export interface ResearchLabels {
+  readonly lane: string;
+  readonly open: string;
+  readonly revert: string;
+  readonly agent: string;
+  readonly person: string;
+}
+
+export const ENGLISH_RESEARCH: ResearchLabels = {
+  lane: "research",
+  open: "research ricochet, open",
+  revert: "fixed by revert",
+  agent: "fixed by the agent",
+  person: "fixed by the person",
+};
 
 export const ENGLISH_TERM: TermLabels = {
   band: {
@@ -37,6 +54,7 @@ export const ENGLISH_TERM: TermLabels = {
   held: "held",
   hypotheses:
     "not drawn (hypothesis): transfer vs known context, explains vs detects only, recognizable vs out of reach",
+  research: ENGLISH_RESEARCH,
   noData: (evidence) => `no data (${String(evidence)} weighted events)`,
   head: (domain, from, to, evidence) => `${domain}, ${from} to ${to}, ${String(evidence)} weighted events`,
 };
