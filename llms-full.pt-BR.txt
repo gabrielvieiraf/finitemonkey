@@ -63,7 +63,7 @@ O que ele faz:
 
 ## O Claude pulou ou apagou testes para eles passarem
 
-Travas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados.
+Travas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados. Quando os testes só passam depois que um teste que já existia foi alterado, o portão não dá a tarefa como verificada: o teste volta ao que era, ou você lê a mudança e aprova.
 
 ## O Claude rodou `git reset --hard` e eu perdi trabalho
 

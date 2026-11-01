@@ -53,7 +53,7 @@ Lo que hace:
 
 ## Claude se saltó o borró tests para que pasaran
 
-Controles sobre las ediciones: tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control se detectan y se informan.
+Controles sobre las ediciones: tests eliminados, `skip` u `only` nuevos, aserciones borradas y cambios en la configuración del propio control se detectan y se informan. Cuando los tests solo pasan después de cambiar un test que ya existía, el control no da la tarea por verificada: el test vuelve a como estaba, o tú lees el cambio y lo apruebas.
 
 ## Claude ejecutó `git reset --hard` y perdí trabajo
 

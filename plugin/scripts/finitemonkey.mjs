@@ -15916,6 +15916,9 @@ var en_default = {
   "gate.tests.test_edited": "{file}: an existing test was edited and the contract does not list it",
   "gate.tests.edited": "{file}: test edited, +{added} -{removed} lines, assertions {before} to {after}",
   "gate.tests.held_shadow": "shadow mode: the edit to {file} would be held until the person approves it",
+  "gate.tests.rewritten": "{file}: a test that existed before this task was changed (lines changed or removed: {removed}), so this pass is not evidence on its own",
+  "gate.tests.rewritten_fix": "put the test back as it was, or stop and let the person read the change and approve it",
+  "gate.tests.rewritten_approved": "the person read the test changes and approved them at {at}: {reason}",
   "gate.guard.tests.held.claim": "{file} is an existing test, and the contract does not list it for editing",
   "gate.guard.tests.held.requires": "Leave the test as it is and make the code pass it. If the test looks wrong, stop and say so instead of changing it",
   "gate.guard.held.human": "Held an edit to the existing test {file}. If the change is intended, type on its own line: finitemonkey: allow tests <reason>",
@@ -18672,6 +18675,9 @@ var es_default = {
   "gate.tests.test_edited": "{file}: se editó un test existente y el contrato no lista ese archivo",
   "gate.tests.edited": "{file}: test editado, +{added} -{removed} líneas, aserciones de {before} a {after}",
   "gate.tests.held_shadow": "modo sombra: la edición en {file} quedaría retenida hasta que la persona la apruebe",
+  "gate.tests.rewritten": "{file}: un test que ya existía antes de esta tarea fue cambiado (líneas cambiadas o eliminadas: {removed}), así que este resultado no es evidencia por sí solo",
+  "gate.tests.rewritten_fix": "devuelve el test a como estaba, o detente y deja que la persona lea el cambio y lo apruebe",
+  "gate.tests.rewritten_approved": "la persona leyó los cambios en los tests y los aprobó en {at}: {reason}",
   "gate.guard.tests.held.claim": "{file} es un test que ya existe, y el contrato no lo lista para edición",
   "gate.guard.tests.held.requires": "Deja el test como está y haz que el código lo pase. Si el test parece equivocado, detente y dilo en vez de cambiarlo",
   "gate.guard.held.human": "Retuve una edición en el test existente {file}. Si el cambio es intencional, escribe en una línea sola: finitemonkey: allow tests <motivo>",
@@ -21428,6 +21434,9 @@ var pt_BR_default = {
   "gate.tests.test_edited": "{file}: um teste existente foi editado e o contrato não lista esse arquivo",
   "gate.tests.edited": "{file}: teste editado, +{added} -{removed} linhas, asserções de {before} para {after}",
   "gate.tests.held_shadow": "modo sombra: a edição em {file} ficaria retida até a pessoa aprovar",
+  "gate.tests.rewritten": "{file}: um teste que já existia antes desta tarefa foi alterado (linhas alteradas ou removidas: {removed}), então os testes passarem não vale como evidência sozinho",
+  "gate.tests.rewritten_fix": "volte o teste ao que era, ou pare e deixe a pessoa ler a mudança e aprovar",
+  "gate.tests.rewritten_approved": "a pessoa leu as mudanças nos testes e aprovou em {at}: {reason}",
   "gate.guard.tests.held.claim": "{file} é um teste que já existe, e o contrato não o lista para edição",
   "gate.guard.tests.held.requires": "Deixe o teste como está e faça o código passar nele. Se o teste parecer errado, pare e diga isso em vez de mudá-lo",
   "gate.guard.held.human": "Segurei uma edição no teste existente {file}. Se a mudança for intencional, digite numa linha sozinha: finitemonkey: allow tests <motivo>",
@@ -24185,6 +24194,9 @@ var review_default = {
     "gate.tests.test_edited": "machine",
     "gate.tests.edited": "machine",
     "gate.tests.held_shadow": "machine",
+    "gate.tests.rewritten": "machine",
+    "gate.tests.rewritten_fix": "machine",
+    "gate.tests.rewritten_approved": "machine",
     "gate.guard.tests.held.claim": "machine",
     "gate.guard.tests.held.requires": "machine",
     "gate.guard.held.human": "machine",
@@ -26938,6 +26950,9 @@ var review_default = {
     "gate.tests.test_edited": "machine",
     "gate.tests.edited": "machine",
     "gate.tests.held_shadow": "machine",
+    "gate.tests.rewritten": "machine",
+    "gate.tests.rewritten_fix": "machine",
+    "gate.tests.rewritten_approved": "machine",
     "gate.guard.tests.held.claim": "machine",
     "gate.guard.tests.held.requires": "machine",
     "gate.guard.held.human": "machine",
@@ -41545,8 +41560,8 @@ var writePerf = (runtime, paths, store3) => runtime.writeText(perfPath(paths), `
 `).ok;
 var UNITS = { lcp: "ms", cls: "", tbt: "ms", js: " bytes", queries: " queries" };
 var show2 = (metric, value2) => `${metric === "cls" ? value2.toFixed(3) : String(Math.round(value2))}${UNITS[metric]}`;
-var actionIssues = (measure3) => {
-  const action = measure3.action;
+var actionIssues = (measure4) => {
+  const action = measure4.action;
   if (action === void 0 || action.indicator) return [];
   if (action.ms > ACTION_FAIL_MS)
     return [
@@ -41564,12 +41579,12 @@ var actionIssues = (measure3) => {
 };
 var perfOutcome = (measures, store3, tree, now) => {
   const routes = { ...store3.routes };
-  const pages = measures.map((measure3) => {
-    const { sample, spread: spread2 } = summarize3(measure3.samples);
-    const base = store3.routes[measure3.route];
-    const accepted2 = store3.accepted.some((item2) => item2.route === measure3.route && item2.tree === tree);
+  const pages = measures.map((measure4) => {
+    const { sample, spread: spread2 } = summarize3(measure4.samples);
+    const base = store3.routes[measure4.route];
+    const accepted2 = store3.accepted.some((item2) => item2.route === measure4.route && item2.tree === tree);
     const worse2 = base === void 0 ? [] : regressions(base.sample, sample, spread2);
-    routes[measure3.route] = {
+    routes[measure4.route] = {
       sample: base === void 0 ? sample : ratcheted(base.sample, sample),
       last: sample,
       tree,
@@ -41584,9 +41599,9 @@ var perfOutcome = (measures, store3, tree, now) => {
     );
     return {
       feature: PERF_FEATURE,
-      route: measure3.route,
+      route: measure4.route,
       viewport: 1440,
-      issues: [...found, ...actionIssues(measure3)],
+      issues: [...found, ...actionIssues(measure4)],
       metrics: { ...sample }
     };
   });
@@ -48430,8 +48445,42 @@ var forChange = (input, change2) => {
 };
 var analyzeTree = (input) => input.changes.flatMap((change2) => forChange(input, change2));
 
-// src/gate/checks/tests.ts
+// src/gate/checks/tests-rewritten.ts
+var TESTS_APPROVAL_CHECK = "tests";
 var MAX_LISTED31 = 10;
+var approvalFor = (ctx, check2) => {
+  const found = [.../* @__PURE__ */ new Set([check2.id, TESTS_APPROVAL_CHECK])].map((id) => boundApproval(ctx, id)).filter((item2) => item2 !== void 0);
+  return found.find((item2) => item2.kind === "valid") ?? found[0];
+};
+var rewrittenNotes = (rewritten) => rewritten.slice(0, MAX_LISTED31).map((item2) => note("gate.tests.rewritten", { file: item2.file, removed: item2.removed }));
+var holdRewrittenTests = (ctx, check2, rewritten, grant, outcome3) => {
+  if (outcome3.status !== "passed" || rewritten.length === 0 || grant !== void 0) return outcome3;
+  const task = ctx.contract.id;
+  const bound = approvalFor(ctx, check2);
+  if (bound?.kind === "valid") {
+    const { at: at6, reason } = bound.approval;
+    return {
+      ...outcome3,
+      notes: [...outcome3.notes, note("gate.tests.rewritten_approved", { at: at6, reason })],
+      releasedBy: `person@${at6}`
+    };
+  }
+  if (bound?.kind === "stale") {
+    return unverified("needs_approval", [
+      ...rewrittenNotes(rewritten),
+      note("gate.approval.stale", { at: bound.approval.at, task, check: bound.approval.check })
+    ]);
+  }
+  return unverified("awaiting_person", [
+    ...outcome3.notes,
+    ...rewrittenNotes(rewritten),
+    note("gate.tests.rewritten_fix"),
+    note("gate.pin.approve", { task, check: TESTS_APPROVAL_CHECK })
+  ]);
+};
+
+// src/gate/checks/tests.ts
+var MAX_LISTED32 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -48443,16 +48492,25 @@ var working2 = (ctx, path) => {
 };
 var isEditedTest = (change2) => (change2.status === "M" || change2.status === "R") && isTestFile(change2.path) && !isSnapshot(change2.path);
 var counterFor = (ctx, relevant) => astCounter(relevant.length === 0 ? void 0 : loadTypescript(ctx.paths.root));
-var editNote = (ctx, change2, count12) => {
+var measure2 = (ctx, change2) => {
   const before2 = fileAt(ctx.git, ctx.base, change2.oldPath ?? change2.path) ?? "";
   const after2 = working2(ctx, change2.path) ?? "";
-  const language = testLanguage(change2.path) ?? "js";
-  return note("gate.tests.edited", {
-    file: change2.path,
+  return {
+    change: change2,
+    before: before2,
+    after: after2,
     added: addedByContent(before2, after2).length,
-    removed: addedByContent(after2, before2).length,
-    before: count12(language, before2, change2.path).assertions,
-    after: count12(language, after2, change2.path).assertions
+    removed: addedByContent(after2, before2).length
+  };
+};
+var editNote = (edit, count12) => {
+  const language = testLanguage(edit.change.path) ?? "js";
+  return note("gate.tests.edited", {
+    file: edit.change.path,
+    added: edit.added,
+    removed: edit.removed,
+    before: count12(language, edit.before, edit.change.path).assertions,
+    after: count12(language, edit.after, edit.change.path).assertions
   });
 };
 var testsView = (ctx) => {
@@ -48463,6 +48521,7 @@ var testsView = (ctx) => {
   const mode = guardMode(ctx, TESTS_HOLD_GUARD);
   const unlisted = (path) => !isListed(ctx.contract.scope, path);
   const edited = relevant.filter(isEditedTest);
+  const measured = edited.map((change2) => measure2(ctx, change2));
   const violations = analyzeTree({
     changes: relevant,
     before: (path) => fileAt(ctx.git, ctx.base, path),
@@ -48477,21 +48536,24 @@ var testsView = (ctx) => {
   return {
     violations,
     notes: [
-      ...edited.slice(0, MAX_LISTED31).map((change2) => editNote(ctx, change2, count12)),
-      ...shadowHeld.slice(0, MAX_LISTED31).map((file) => note("gate.tests.held_shadow", { file }))
-    ]
+      ...measured.slice(0, MAX_LISTED32).map((edit) => editNote(edit, count12)),
+      ...shadowHeld.slice(0, MAX_LISTED32).map((file) => note("gate.tests.held_shadow", { file }))
+    ],
+    rewritten: measured.filter((edit) => edit.removed > 0).map((edit) => ({ file: edit.change.path, removed: edit.removed }))
   };
 };
 var testsCheck = (check2, ctx) => {
-  const { violations, notes: edits } = testsView(ctx);
-  const grant = violations.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes3 = violations.slice(0, MAX_LISTED31).map(violationNote);
+  const { violations, notes: edits, rewritten } = testsView(ctx);
+  const grant = violations.length === 0 && rewritten.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
+  const notes3 = violations.slice(0, MAX_LISTED32).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed4([...notes3, ...edits, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes3, note("gate.note.released", { guard: "tests", reason: grant.reason })];
-  if (check2.run === void 0) return { ...passed([note("gate.tests.clean"), ...edits, ...releaseNotes]), ...released2 };
+  const hold = (outcome4) => holdRewrittenTests(ctx, check2, rewritten, grant, outcome4);
+  if (check2.run === void 0)
+    return hold({ ...passed([note("gate.tests.clean"), ...edits, ...releaseNotes]), ...released2 });
   const outcome3 = runShellCheck(check2, check2.run, ctx);
-  return { ...outcome3, notes: [...outcome3.notes, ...edits, ...releaseNotes], ...released2 };
+  return hold({ ...outcome3, notes: [...outcome3.notes, ...edits, ...releaseNotes], ...released2 });
 };
 
 // src/git/tree.ts
@@ -49220,10 +49282,10 @@ var findingLabel = (finding7) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED32 = 8;
+var MAX_LISTED33 = 8;
 var listed5 = (items) => {
-  const head = items.slice(0, MAX_LISTED32).join(", ");
-  return items.length > MAX_LISTED32 ? `${head} (+${String(items.length - MAX_LISTED32)})` : head;
+  const head = items.slice(0, MAX_LISTED33).join(", ");
+  return items.length > MAX_LISTED33 ? `${head} (+${String(items.length - MAX_LISTED33)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf3 = (ctx) => ownerKey(ctx.sessionId);
@@ -55770,9 +55832,9 @@ var rulesStop = (input) => {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED33 = 5;
+var MAX_LISTED34 = 5;
 var describeFindings = (t, items) => {
-  const listed14 = items.slice(0, MAX_LISTED33).map(({ ruleId, where: where3 }) => t("secrets.found_item", { rule: ruleId, where: where3 }));
+  const listed14 = items.slice(0, MAX_LISTED34).map(({ ruleId, where: where3 }) => t("secrets.found_item", { rule: ruleId, where: where3 }));
   const rest = items.length - listed14.length;
   return rest > 0 ? `${listed14.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed14.join("; ");
 };
@@ -61591,11 +61653,11 @@ var captureOne = async (browser, request, route, viewport, blocked4) => {
   const url2 = `${request.baseUrl}${route}`;
   const path = join176(request.dir, `${slugOf2(route)}-${String(viewport)}.png`);
   const loadError = await loadAndShoot(page2, url2, path, request.timeoutMs);
-  const measure3 = loadError === void 0 ? parseMeasure(await page2.evaluate(MEASURE_SCRIPT)) : void 0;
+  const measure4 = loadError === void 0 ? parseMeasure(await page2.evaluate(MEASURE_SCRIPT)) : void 0;
   const ux = loadError === void 0 ? await runPasses(page2, request, { route, viewport, url: url2 }, () => true) : [];
   await close2();
   return {
-    result: { route, viewport, path, consoleErrors: events.errors, failedRequests: events.failed, measure: measure3, loadError },
+    result: { route, viewport, path, consoleErrors: events.errors, failedRequests: events.failed, measure: measure4, loadError },
     ux
   };
 };
@@ -64140,10 +64202,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED34 = 5;
+var MAX_LISTED35 = 5;
 var detailOf2 = (check2) => {
-  const listed14 = check2.failures.slice(0, MAX_LISTED34).join("; ");
-  const rest = check2.failures.length - MAX_LISTED34;
+  const listed14 = check2.failures.slice(0, MAX_LISTED35).join("; ");
+  const rest = check2.failures.length - MAX_LISTED35;
   return rest > 0 ? `${listed14}; +${String(rest)}` : listed14;
 };
 var checkLine = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf2(check2), fix: check2.fix });
@@ -66390,10 +66452,10 @@ var instructionsCommand = {
     const records2 = readLoadRecords(ctx.runtime, toAbsolutePath(join188(projectRoot(ctx), FM_DIR)));
     const asked = args2.values["session"];
     const diff = loadDiff(inventory, records2, ctx.platform, typeof asked === "string" ? asked : void 0);
-    const measure3 = instructionsMeasure(inventory, findings2, records2, ctx.platform);
+    const measure4 = instructionsMeasure(inventory, findings2, records2, ctx.platform);
     const files = inventory.files.map(listedFile);
     const drift = projectDrift(ctx, findings2);
-    const data2 = { schema: INSTRUCTIONS_SCHEMA, files, shadowed: inventory.shadowed, findings: findings2, diff, measure: measure3, drift };
+    const data2 = { schema: INSTRUCTIONS_SCHEMA, files, shadowed: inventory.shadowed, findings: findings2, diff, measure: measure4, drift };
     const human2 = [
       ctx.t("instructions.title", { count: files.length }),
       ...files.map(
@@ -66412,7 +66474,7 @@ var instructionsCommand = {
       }),
       ...findings2.map((finding7) => `- ${findingLine(ctx, finding7)}`),
       ...drift.map((finding7) => `- ${driftLine(ctx, finding7)}`),
-      ctx.t("instructions.measure", { ...measure3 })
+      ctx.t("instructions.measure", { ...measure4 })
     ];
     const strict = strictFailure(ctx, args2.values["strict"] === true, drift, data2, human2);
     if (strict !== void 0) return Promise.resolve(strict);
@@ -66491,8 +66553,8 @@ var readRepo = (git4, path, ref2, hash2, covered) => {
 };
 
 // src/inventory/render.ts
-var MAX_LISTED35 = 40;
-var capped = (t, lines10) => lines10.length > MAX_LISTED35 ? [...lines10.slice(0, MAX_LISTED35), `- ${t("inventory.more", { count: lines10.length - MAX_LISTED35 })}`] : lines10;
+var MAX_LISTED36 = 40;
+var capped = (t, lines10) => lines10.length > MAX_LISTED36 ? [...lines10.slice(0, MAX_LISTED36), `- ${t("inventory.more", { count: lines10.length - MAX_LISTED36 })}`] : lines10;
 var listed7 = (t, lines10) => lines10.length === 0 ? [t("inventory.none")] : capped(t, lines10);
 var hitLines = (t, hits) => listed7(
   t,
@@ -69966,12 +70028,12 @@ var listed9 = (ctx) => {
   const dir = dirOf3(ctx);
   const { kept, expired } = pruneLessons(ctx.runtime, dir);
   const stats = readStats(ctx.runtime, dir);
-  const measure3 = { lessons: kept.length, used: kept.filter((lesson) => lesson.uses > 0).length, ...stats };
-  const data2 = { schema: LEARNINGS_SCHEMA, lessons: kept, expiredNow: expired.length, measure: measure3 };
+  const measure4 = { lessons: kept.length, used: kept.filter((lesson) => lesson.uses > 0).length, ...stats };
+  const data2 = { schema: LEARNINGS_SCHEMA, lessons: kept, expiredNow: expired.length, measure: measure4 };
   const human2 = [
     ctx.t("learnings.title", { count: kept.length }),
     ...kept.map((lesson) => lessonLine2(ctx, lesson)),
-    ctx.t("learnings.measure", { ...measure3 })
+    ctx.t("learnings.measure", { ...measure4 })
   ];
   return success(data2, human2);
 };
@@ -70282,14 +70344,14 @@ var finding5 = (result, rule, detail) => ({
 var many = (result, rule, items) => items.slice(0, MAX_PER_RULE).map((item2) => finding5(result, rule, item2));
 var pageFindings = (result) => {
   if (result.loadError !== void 0) return [finding5(result, "look/request-failed", result.loadError)];
-  const measure3 = result.measure;
+  const measure4 = result.measure;
   return [
-    ...measure3 !== void 0 && measure3.overflow > 0 ? [finding5(result, "look/overflow", `${String(measure3.overflow)}px wider than the viewport`)] : [],
+    ...measure4 !== void 0 && measure4.overflow > 0 ? [finding5(result, "look/overflow", `${String(measure4.overflow)}px wider than the viewport`)] : [],
     ...many(result, "look/console-error", result.consoleErrors),
     ...many(result, "look/request-failed", result.failedRequests),
-    ...many(result, "look/i18n-key", measure3?.keys ?? []),
-    ...many(result, "look/broken-image", measure3?.broken ?? []),
-    ...many(result, "look/touch-target", measure3?.small ?? [])
+    ...many(result, "look/i18n-key", measure4?.keys ?? []),
+    ...many(result, "look/broken-image", measure4?.broken ?? []),
+    ...many(result, "look/touch-target", measure4?.small ?? [])
   ];
 };
 var applyAllows = (findings2, allows, decided2) => {
@@ -78986,7 +79048,7 @@ var renderSheet = (sheet2) => [
 ].join("\n");
 
 // src/look/node-sheet-run.ts
-var measure2 = async (page2, url2, selector, timeoutMs) => {
+var measure3 = async (page2, url2, selector, timeoutMs) => {
   await page2.goto(url2, { waitUntil: "networkidle", timeout: timeoutMs });
   const probe = parseProbe(await page2.evaluate(PROBE_SCRIPT));
   const root = await page2.evaluate(runInPage(rootSelector.toString(), ["document", JSON.stringify(selector)]));
@@ -79006,7 +79068,7 @@ var views = async (browser, ready, route, selector, states) => {
     out.push({
       width,
       state: "ideal",
-      ...await measure2(page2, `${base}${route}`, selector, timeout).catch(() => ({
+      ...await measure3(page2, `${base}${route}`, selector, timeout).catch(() => ({
         probe: void 0,
         root: void 0
       }))
@@ -79020,7 +79082,7 @@ var views = async (browser, ready, route, selector, states) => {
     out.push({
       width: widest,
       state: spec2.state,
-      ...await measure2(page2, url2, selector, timeout).catch(() => ({ probe: void 0, root: void 0 }))
+      ...await measure3(page2, url2, selector, timeout).catch(() => ({ probe: void 0, root: void 0 }))
     });
     await context.close();
   }

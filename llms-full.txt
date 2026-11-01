@@ -63,7 +63,7 @@ What it does:
 
 ## Claude skipped or deleted tests to make them pass
 
-Guards on edits: removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config are caught and reported.
+Guards on edits: removed tests, new `skip` or `only`, removed assertions and edits to the gate's own config are caught and reported. When the suite passes only after an existing test was changed, the gate does not call it verified: the test goes back as it was, or you read the change and approve it.
 
 ## Claude ran `git reset --hard` and I lost my work
 
