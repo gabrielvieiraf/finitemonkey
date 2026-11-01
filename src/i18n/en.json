@@ -2750,5 +2750,21 @@
   "command.judge_contradict.summary": "Record a new source that contradicts a claim; it opens only on a span match or the person's confirmation",
   "command.judge_fixed.summary": "Record who fixed a ricochet event; a repair by the person is marked held",
   "command.judge_trajectory.summary": "List ricochet events of research claims with the state and bands they had at acceptance",
-  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}",
+  "outward.ask.reason": "This session read untrusted content from {source}, and this command sends something out of the machine ({action}). Text from that source may have asked for it. Approve only if you asked for this yourself",
+  "outward.ask.human": "Held {action} after this session read {source}. Next: approve it in the prompt only if you asked for it; otherwise deny it.",
+  "review.guard.shell_write": "blocked: the {agent} agent runs only read-only commands, and this {tool} call writes, redirects or installs ({detail}). Report the finding; the main session makes the change.",
+  "secrets.live.sends": "It sends one GET to {url} with these headers: {headers}. The key goes only in a header on stdin, never in the URL or the arguments.",
+  "learnings.stale": "[stale: a file it names changed since it was learned; not injected until `finitemonkey learnings accept {id}`]",
+  "knowledge.memory.mod_blocked": "This session read untrusted content, and this write to native memory carries an instruction-shaped line. Memory keeps facts, not orders; ask the person to write it if it is theirs.",
+  "command.mcp_pin.summary": "Pin the descriptions of MCP tools and report the ones that changed since they were first seen",
+  "command.mcp_confirm.summary": "Trust a changed MCP tool description again (person only)",
+  "mcp.pin.summary": "{count, plural, one {# MCP tool} other {# MCP tools}} checked, {added} newly pinned.",
+  "mcp.pin.changed": "The description of {tool} changed since it was pinned. It is treated as untrusted until the person runs `finitemonkey mcp confirm {tool}`.",
+  "mcp.pin.pending": "Still waiting for the person to confirm: {tools}.",
+  "mcp.pin.ask": "The description of {tool} changed since it was pinned, and a changed description can carry new instructions. Approve only if you trust the new description; `finitemonkey mcp confirm {tool}` trusts it again",
+  "mcp.confirm.done": "{tool} is trusted again with its new description.",
+  "mcp.error.registry": "No tool list was read: pass --file with a JSON object whose tools array lists name and description, or pipe it on stdin",
+  "mcp.error.person_only": "Only the person confirms a changed MCP tool description; run it in your own terminal",
+  "mcp.error.unchanged": "{tool} has no description change waiting to be confirmed"
 }

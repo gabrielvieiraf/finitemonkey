@@ -15,6 +15,12 @@ export interface ModAttribution {
   readonly trailer: string | null;
 }
 
+export interface ModMemoryHold {
+  readonly mode: TightenMode;
+  readonly untrusted: string | null;
+  readonly reason: string;
+}
+
 export interface ModState {
   readonly schema: typeof MOD_STATE_SCHEMA;
   readonly root: string;
@@ -24,6 +30,7 @@ export interface ModState {
   readonly rules: readonly ModRule[];
   readonly attribution: ModAttribution;
   readonly instructions: string;
+  readonly memory: ModMemoryHold;
 }
 
 export interface CompiledRule {
@@ -38,6 +45,7 @@ export interface LoadedState {
   readonly attribution?: ModAttribution;
   readonly instructions: string;
   readonly failReason?: string;
+  readonly memory?: ModMemoryHold;
   readonly rules: readonly CompiledRule[];
 }
 
@@ -71,6 +79,13 @@ const attributionOf = (value: unknown): ModAttribution | undefined => {
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
 
+const memoryOf = (value: unknown): ModMemoryHold | undefined => {
+  if (!isRecord(value) || typeof value["reason"] !== "string") return undefined;
+  const mode = MODES.find((item) => item === value["mode"]) ?? "shadow";
+  const untrusted = value["untrusted"];
+  return { mode, untrusted: typeof untrusted === "string" ? untrusted : null, reason: value["reason"] };
+};
+
 const dataOf = (parsed: unknown): unknown => (isRecord(parsed) && isRecord(parsed["data"]) ? parsed["data"] : parsed);
 
 export const parseModState = (text: string): LoadedState | undefined => {
@@ -88,6 +103,7 @@ export const parseModState = (text: string): LoadedState | undefined => {
   const failReason = data["failReason"];
   const band = MODES.find((item) => item === data["band"]) ?? "active";
   const attribution = attributionOf(data["attribution"]);
+  const memory = memoryOf(data["memory"]);
   return {
     root: data["root"],
     mode,
@@ -95,6 +111,7 @@ export const parseModState = (text: string): LoadedState | undefined => {
     rules,
     instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
     ...(attribution === undefined ? {} : { attribution }),
+    ...(memory === undefined ? {} : { memory }),
     ...(typeof failReason === "string" ? { failReason } : {}),
   };
 };

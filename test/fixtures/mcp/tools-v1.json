@@ -1,0 +1,6 @@
+{
+  "tools": [
+    { "name": "mcp__docs__search", "description": "Search the product documentation and return matching pages." },
+    { "name": "mcp__tickets__list", "description": "List open support tickets." }
+  ]
+}

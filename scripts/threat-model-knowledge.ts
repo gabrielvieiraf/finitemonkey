@@ -47,6 +47,77 @@ export const knowledge: readonly Threat[] = [
       test: "a hidden-character instruction in CLAUDE.md is reported with file, line and code point",
     },
   },
+  {
+    component: "Quarantine of external content and memory",
+    attacker: "injected content",
+    threat: "After reading a web page or an MCP tool output, the agent pushes, sends data out or deploys",
+    outcome: "recorded",
+    mechanism:
+      "`untrusted-outward` starts in shadow and logs `untrusted_outward`; when active, push, sends, publish and deploy in the same session ask the person and name the source",
+    code: ["src/guards/outward/hook.ts", "src/guards/outward/classify.ts"],
+    proof: {
+      file: "test/untrusted-outward.test.ts",
+      test: "after a WebFetch, git push asks the person in active mode and names the source",
+    },
+  },
+  {
+    component: "Quarantine of external content and memory",
+    attacker: "mistaken agent",
+    threat: "A lesson about a file that changed since it was learned is still injected",
+    outcome: "prevented",
+    mechanism:
+      "Lessons carry the hash of the files they name; a changed file marks the lesson stale until the person accepts it",
+    code: ["src/learnings/tree.ts"],
+    proof: {
+      file: "test/lesson-tree.test.ts",
+      test: "a lesson whose file changed is not injected until the person confirms it",
+    },
+  },
+  {
+    component: "Quarantine of external content and memory",
+    attacker: "injected content",
+    threat: "An MCP tool description changes after the tool was trusted",
+    outcome: "detected",
+    mechanism:
+      "`finitemonkey mcp pin` reports a changed description once; with `mcp-pin` active a call to the tool asks the person until `mcp confirm`. Nothing feeds the pin from a live session yet",
+    code: ["src/policy/mcp-pins.ts", "src/policy/mcp-pin-hook.ts"],
+    proof: {
+      file: "test/mcp-pins.test.ts",
+      test: "a changed description is reported once and the tool stays untrusted until the person confirms",
+    },
+  },
+  {
+    component: "Quarantine of external content and memory",
+    attacker: "injected content",
+    threat: "An instruction hidden in HTML, a Markdown comment, zero-width text, tool output, PDF text or alt text",
+    outcome: "prevented",
+    mechanism:
+      "Every case of the corpus is refused from native memory and from claims, and stays readable inside the data block",
+    code: ["src/knowledge/instruction.ts"],
+    proof: { file: "test/injection-corpus.test.ts", test: "has at least eight cases, one per hiding place" },
+  },
+  {
+    component: "The mod",
+    attacker: "injected content",
+    threat: "An instruction from untrusted content reaches native memory while only the mod sees the call",
+    outcome: "prevented",
+    mechanism: "The mod's `tool.check` repeats the memory hold and denies when its state has not loaded",
+    code: ["src/mod/memory-hold.ts", "src/mod/tighten-hooks.ts"],
+    proof: {
+      file: "test/mod-memory-hold.test.ts",
+      test: "holds an instruction line written to native memory after an untrusted read",
+    },
+  },
+  {
+    component: "Guards",
+    attacker: "over-privileged process",
+    threat: "The read-only verifier agent writes a file through Bash",
+    outcome: "prevented",
+    mechanism:
+      "Its Bash calls pass the effect classifier: anything that is not a read, or a redirect into a file, is denied",
+    code: ["src/review/read-only-shell.ts", "src/guards/review/hook.ts"],
+    proof: { file: "test/verifier-shell.test.ts", test: "denies the verifier writing a file through Bash" },
+  },
 ];
 
 export const claims: readonly Threat[] = [

@@ -2750,7 +2750,23 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "outward.ask.reason": "machine",
+    "outward.ask.human": "machine",
+    "review.guard.shell_write": "machine",
+    "secrets.live.sends": "machine",
+    "learnings.stale": "machine",
+    "knowledge.memory.mod_blocked": "machine",
+    "command.mcp_pin.summary": "machine",
+    "command.mcp_confirm.summary": "machine",
+    "mcp.pin.summary": "machine",
+    "mcp.pin.changed": "machine",
+    "mcp.pin.pending": "machine",
+    "mcp.pin.ask": "machine",
+    "mcp.confirm.done": "machine",
+    "mcp.error.registry": "machine",
+    "mcp.error.person_only": "machine",
+    "mcp.error.unchanged": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5503,6 +5519,22 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "outward.ask.reason": "machine",
+    "outward.ask.human": "machine",
+    "review.guard.shell_write": "machine",
+    "secrets.live.sends": "machine",
+    "learnings.stale": "machine",
+    "knowledge.memory.mod_blocked": "machine",
+    "command.mcp_pin.summary": "machine",
+    "command.mcp_confirm.summary": "machine",
+    "mcp.pin.summary": "machine",
+    "mcp.pin.changed": "machine",
+    "mcp.pin.pending": "machine",
+    "mcp.pin.ask": "machine",
+    "mcp.confirm.done": "machine",
+    "mcp.error.registry": "machine",
+    "mcp.error.person_only": "machine",
+    "mcp.error.unchanged": "machine"
   }
 }

@@ -2,8 +2,9 @@ import type { ModApi } from "./api.js";
 import { runCli } from "./cli.js";
 import type { Next, ToolCheckInput, ToolCheckResult } from "./events.js";
 import { memory } from "./memory.js";
+import { MEMORY_HOLD_RULE, memoryHold, untrustedSeen } from "./memory-hold.js";
 import { parseModState } from "./state.js";
-import { FAILED_REASON, ruleFor, stricter, tightenFor } from "./tighten.js";
+import { type CheckResult, FAILED_REASON, ruleFor, stricter, tightenFor } from "./tighten.js";
 
 export async function refreshState($: ModApi): Promise<void> {
   const text = await runCli($, ["mod", "state", "--json"]);
@@ -26,8 +27,17 @@ function scheduleRecord($: ModApi, rule: string, tool: string, mode: string): vo
   $.clock.after(0, () => recordTightening($, rule, tool, mode));
 }
 
+function withMemoryHold($: ModApi, e: ToolCheckInput, decided: ToolCheckResult): ToolCheckResult {
+  const hold = memoryHold(memory.state, e.tool, e.input, memory.untrusted);
+  if (hold === undefined) return decided;
+  scheduleRecord($, MEMORY_HOLD_RULE, e.tool, hold.mode);
+  const denied: CheckResult = { decision: "deny", reason: hold.reason };
+  return hold.mode === "active" ? stricter(decided, denied) : decided;
+}
+
 export async function guardCheck($: ModApi, e: ToolCheckInput, next: Next<"tool.check">): Promise<ToolCheckResult> {
-  const decided = await next(e);
+  memory.untrusted = untrustedSeen(e.tool, memory.untrusted);
+  const decided = withMemoryHold($, e, await next(e));
   const state = memory.state;
   if (state === undefined || state.mode === "off") return decided;
   const rule = ruleFor(state, e.tool, e.input);

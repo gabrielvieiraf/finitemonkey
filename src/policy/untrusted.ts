@@ -22,6 +22,8 @@ export const hiddenChars = (text: string): readonly HiddenChar[] =>
         .map((match) => ({ line: index + 1, code: codeOf(match[0]) })),
     );
 
+export const stripHidden = (text: string): string => text.replace(HIDDEN, "");
+
 export const showHidden = (text: string): string => text.replace(HIDDEN, (char) => `<${codeOf(char)}>`);
 
 const TAG = "untrusted-data";
@@ -63,4 +65,24 @@ export const untrustedIn = (
   if (parsed?.ok !== true || parsed.value["session"] !== session) return undefined;
   const tool = parsed.value["tool"];
   return typeof tool === "string" ? tool : "untrusted";
+};
+
+export interface UntrustedRead {
+  readonly tool: string;
+  readonly at: string;
+}
+
+export const untrustedReadIn = (
+  runtime: Pick<Runtime, "readText" | "now">,
+  paths: FmPaths,
+  session: string,
+  windowMs: number,
+): UntrustedRead | undefined => {
+  const text = runtime.readText(paths.cache(UNTRUSTED_FILE));
+  const parsed = text.ok ? parseJsonObject(text.value) : undefined;
+  if (parsed?.ok !== true || parsed.value["session"] !== session) return undefined;
+  const { tool, at } = parsed.value;
+  if (typeof tool !== "string" || typeof at !== "string") return undefined;
+  const age = Date.parse(runtime.now()) - Date.parse(at);
+  return Number.isFinite(age) && age >= 0 && age <= windowMs ? { tool, at } : undefined;
 };

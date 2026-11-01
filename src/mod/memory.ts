@@ -28,6 +28,7 @@ export interface Memory {
   concepts: readonly ConceptRow[];
   trajectory: readonly DomainTrajectory[];
   selectedMark: Mark | undefined;
+  untrusted: string | undefined;
 }
 
 export const memory: Memory = {
@@ -44,4 +45,5 @@ export const memory: Memory = {
   concepts: [],
   trajectory: [],
   selectedMark: undefined,
+  untrusted: undefined,
 };

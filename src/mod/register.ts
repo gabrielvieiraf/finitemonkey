@@ -21,11 +21,13 @@ import {
   scheduleStatus,
   withTurnLine,
 } from "./gate-hooks.js";
+import { memory } from "./memory.js";
 import { failClosed, guardCheck, scheduleRefresh } from "./tighten-hooks.js";
 
 const WATCHED_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "PowerShell"];
 
 async function onStart($: ModApi, e: SessionStartInput, next: Next<"session.start">): Promise<SessionStartResult> {
+  memory.untrusted = undefined;
   scheduleRefresh($);
   scheduleStatus($, 0);
   await registerGateCommand($);
