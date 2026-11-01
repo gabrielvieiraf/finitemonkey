@@ -7,6 +7,9 @@ import { parseMergeTreeConflicts } from "../gate/pr-parse.js";
 import { readJournal } from "../git/journal.js";
 import { openRepo, type Repo, repoFacts } from "../git/repo.js";
 import { scopeFromContract } from "../merge/scope.js";
+import { staleSection } from "../stale/section.js";
+import { featureDefaults } from "../stale/state.js";
+import { staleMentions } from "../stale/touched.js";
 import { registryDir } from "../wt/store.js";
 import { commonDirOf } from "../wt/store.js";
 import { type Acceptance, prBody } from "./checklist.js";
@@ -133,6 +136,9 @@ const recordAcceptance = (
   runtime.writeText(path, `${JSON.stringify(record, null, 2)}\n`);
 };
 
+const appendOf = (runtime: Runtime, root: AbsolutePath, contract: string | undefined): readonly string[] =>
+  contract === undefined ? [] : (scopeFromContract(runtime, toAbsolutePath(contract, root))?.append ?? []);
+
 export interface Prepared {
   readonly repo: Repo;
   readonly branch: string;
@@ -170,10 +176,7 @@ export const preparePr = (
       ? { by: request.acceptedBy, at: runtime.now(), reason: request.acceptOutside }
       : undefined;
   if (accepted !== undefined && !request.dryRun) recordAcceptance(runtime, repo.root, branch, accepted, scope.outside);
-  const append =
-    scope.contract === undefined
-      ? []
-      : (scopeFromContract(runtime, toAbsolutePath(scope.contract, repo.root))?.append ?? []);
+  const append = appendOf(runtime, repo.root, scope.contract);
   const plain = prBody(runtime, repo.root, {
     userBody: request.body,
     base: base.value,
@@ -184,6 +187,7 @@ export const preparePr = (
     accepted,
     snapshots: snapshotsFor(runtime, repo.root, branch),
     mergeSummary: mergeSummary(runtime, repo.root, branch),
+    stale: staleSection(staleMentions(runtime, repo.root, baseSha, new Set(featureDefaults().keys())), base.value),
   });
   const body = attachProvenance(
     runtime,

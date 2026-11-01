@@ -123,7 +123,8 @@
             "guard_bypassed",
             "instructions_drift",
             "restore_failed",
-            "judge_refused"
+            "judge_refused",
+            "stale_lookup_failed"
           ]
         },
         "message": {

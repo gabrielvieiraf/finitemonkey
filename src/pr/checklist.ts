@@ -34,6 +34,7 @@ export interface BodyInput {
   readonly accepted: Acceptance | undefined;
   readonly snapshots: readonly string[];
   readonly mergeSummary: string | undefined;
+  readonly stale: readonly string[];
 }
 
 const ownerPattern = (pattern: string): string => {
@@ -112,6 +113,7 @@ export const prBody = (runtime: Runtime, root: AbsolutePath, input: BodyInput): 
     ...scopeTable(input),
     "",
     ...(checklist.length === 0 ? [] : ["## Checklist", "", ...checklist, ""]),
+    ...input.stale,
     "## Safety snapshots",
     "",
     ...input.snapshots.map((ref) => `- \`${ref}\``),

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/stale@1.json",
+  "title": "finitemonkey/stale@1",
+  "description": "`data` of `finitemonkey stale --json`: doc lines whose status the code no longer backs. Generated from StaleReport in src/stale/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/stale@1"
+    },
+    "mode": {
+      "const": "shadow"
+    },
+    "online": {
+      "type": "boolean"
+    },
+    "docs": {
+      "type": "number"
+    },
+    "claims": {
+      "type": "number"
+    },
+    "unresolvedIssues": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "stale": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "says": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["unshipped", "unpublished", "experimental"]
+          },
+          "phrase": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "truth": {
+            "type": "string",
+            "enum": ["issue_closed", "command_ready", "feature_ships", "feature_active", "version_published"]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": ["file", "line", "says", "status", "phrase", "subject", "truth", "detail", "evidence"]
+      }
+    },
+    "mentions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "says": {
+            "type": "string"
+          },
+          "mentions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "changedHere": {
+            "type": "boolean"
+          }
+        },
+        "required": ["file", "line", "says", "mentions", "changedHere"]
+      }
+    },
+    "range": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "unclosedIssues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "issue": {
+            "type": "number"
+          },
+          "commits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["issue", "commits"]
+      }
+    },
+    "emptyMilestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "number": {
+            "type": "number"
+          },
+          "closedIssues": {
+            "type": "number"
+          }
+        },
+        "required": ["title", "number", "closedIssues"]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "mode",
+    "online",
+    "docs",
+    "claims",
+    "unresolvedIssues",
+    "stale",
+    "mentions",
+    "range",
+    "unclosedIssues",
+    "emptyMilestones"
+  ]
+}

@@ -150,6 +150,18 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes:
       "`data` of every `finitemonkey judge <verb> --json` and of `judge call`: the same JSON for the CLI, the mod pane, the skill and the gate.",
   },
+  {
+    name: "stale@1",
+    file: "src/stale/report.ts",
+    type: "StaleReport",
+    describes: "`data` of `finitemonkey stale --json`: doc lines whose status the code no longer backs.",
+  },
+  {
+    name: "recap@1",
+    file: "src/recap/recap.ts",
+    type: "RecapReport",
+    describes: "`data` of `finitemonkey recap --json`: what was done in a period, built from the ledger and git.",
+  },
 ];
 
 export const ROOT = fileURLToPath(new URL("..", import.meta.url));
