@@ -8,6 +8,7 @@ import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../hooks/handlers.js";
 import { modelReason, type ReasonBase } from "../hooks/reason.js";
 import type { Params } from "../i18n/translate.js";
+import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import { loadTask } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
@@ -16,6 +17,7 @@ import { baseOf, projectFile, record, scopeOf, type SignalScope } from "./contex
 import { signalLimits } from "./limits.js";
 import { sessionEntries, type SignalEntry } from "./store.js";
 import { syntaxProblem } from "./syntax.js";
+import { projectSyntaxTools } from "./syntax-tools.js";
 import { writesFiles } from "./writes.js";
 
 export const SYNTAX_GUARD = "syntax-check";
@@ -33,7 +35,9 @@ type HumanKey =
   | "signals.early.blind_edits.human"
   | "signals.early.ignored_error.human";
 
-const feedback = (input: HookInput, base: ReasonBase, humanKey: HumanKey, params: Params): HookDecision => {
+type Block = Extract<HookDecision, { readonly kind: "block" }>;
+
+const feedback = (input: HookInput, base: ReasonBase, humanKey: HumanKey, params: Params): Block => {
   const reason = modelReason(input.t, base, params);
   return {
     kind: "block",
@@ -48,16 +52,37 @@ const editedFile = (scope: SignalScope): string | undefined => {
   return EDIT_TOOLS.has(toolName(raw)) && target !== undefined ? projectFile(scope, target) : undefined;
 };
 
+const joined = (first: Block, second: Block): Block => {
+  const reason = `${first.reason}\n\n${second.reason}`;
+  const message = [first.output?.["systemMessage"], second.output?.["systemMessage"]]
+    .filter((item): item is string => typeof item === "string")
+    .join("\n");
+  return { kind: "block", reason, output: { decision: "block", reason, systemMessage: message } };
+};
+
+const loopAfterSyntax = (scope: SignalScope, file: string, syntax: Block): Block => {
+  const { input } = scope;
+  const count = failedInARow(sessionEntries(scope.entries, scope.session), file);
+  if (count !== signalLimits(input.runtime, scope.paths.root).failedEdits) return syntax;
+  const mode = featureMode(input.runtime, scope.paths, EARLY_GUARD);
+  if (mode === "shadow") recordFeatureShadow(input.runtime, scope.paths, EARLY_GUARD, { file, count });
+  if (mode !== "active") return syntax;
+  const loop = feedback(input, "signals.early.failed_edits", "signals.early.failed_edits.human", { file, count });
+  return joined(loop, syntax);
+};
+
 export const syntaxAfterEdit: HookHandler = (input) => {
   const scope = scopeOf(input);
   const file = scope === undefined ? undefined : editedFile(scope);
   if (scope === undefined || file === undefined) return allow;
   const text = input.runtime.readText(toAbsolutePath(join(scope.paths.root, file)));
-  const problem = text.ok ? syntaxProblem(file, text.value) : undefined;
+  if (!text.ok) return allow;
+  const problem = syntaxProblem(file, text.value, projectSyntaxTools(input.runtime, scope.paths.root, file));
   if (problem === undefined) return allow;
-  record(scope, { ...baseOf(scope), kind: "edit_failed", file, why: "syntax" });
+  const recorded = record(scope, { ...baseOf(scope), kind: "edit_failed", file, why: "syntax" });
   const where = problem.line > 0 ? `${file}:${String(problem.line)}` : file;
-  return feedback(input, "signals.syntax", "signals.syntax.human", { file, where, message: problem.message });
+  const syntax = feedback(input, "signals.syntax", "signals.syntax.human", { file, where, message: problem.message });
+  return loopAfterSyntax(recorded, file, syntax);
 };
 
 const outcomes = (entries: readonly SignalEntry[], file: string): readonly boolean[] => {

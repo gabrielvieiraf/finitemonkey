@@ -24,6 +24,8 @@ export interface HorizonHelp {
   readonly criterion: Criterion;
   readonly domain: BandDomain;
   readonly task?: string;
+  readonly file?: string;
+  readonly approvedAt?: string;
 }
 
 export const domainOfText = (text: string): BandDomain => {
@@ -61,6 +63,8 @@ export const recordHorizon = (
     criterion: help.criterion,
     domain: help.domain,
     ...(help.task === undefined ? {} : { task: help.task }),
+    ...(help.file === undefined ? {} : { file: help.file }),
+    ...(help.approvedAt === undefined ? {} : { approvedAt: help.approvedAt }),
   });
 
 export interface BandRow {
@@ -70,6 +74,7 @@ export interface BandRow {
   readonly withoutCriterion: number;
   readonly index: number;
   readonly byCriterion: Readonly<Record<Criterion, number>>;
+  readonly bySource: Readonly<Record<HorizonSource, number>>;
   readonly conceptsMoved: number;
 }
 
@@ -94,6 +99,7 @@ interface Parsed {
   readonly week: string;
   readonly domain: BandDomain;
   readonly criterion: Criterion;
+  readonly source: HorizonSource | undefined;
 }
 
 const bandDomain = (value: unknown): BandDomain => DOMAINS.find((domain) => domain === value) ?? GENERAL;
@@ -105,12 +111,30 @@ const parseLine = (line: string): Parsed | undefined => {
   const week = typeof at === "string" ? isoWeek(at) : undefined;
   const criterion = CRITERIA.find((item) => item === parsed.value["criterion"]);
   if (week === undefined || criterion === undefined) return undefined;
-  return { week, domain: bandDomain(parsed.value["domain"]), criterion };
+  const source = HORIZON_SOURCES.find((item) => item === parsed.value["source"]);
+  return { week, domain: bandDomain(parsed.value["domain"]), criterion, source };
 };
 
 const share = (part: number, whole: number): number => (whole === 0 ? 0 : Math.round((part / whole) * 1000) / 1000);
 
 const emptyCounts = (): Record<Criterion, number> => ({ example: 0, property: 0, scenario: 0, check: 0, none: 0 });
+
+const emptySources = (): Record<HorizonSource, number> => ({
+  skill: 0,
+  clarify: 0,
+  research: 0,
+  divergence: 0,
+  concept: 0,
+  scope: 0,
+  xray: 0,
+});
+
+interface Group {
+  readonly domain: BandDomain;
+  readonly week: string;
+  readonly counts: Record<Criterion, number>;
+  readonly sources: Record<HorizonSource, number>;
+}
 
 const conceptWeeks = (runtime: Pick<Runtime, "readText">, paths: FmPaths): ReadonlyMap<string, number> => {
   const moved = new Map<string, number>();
@@ -126,13 +150,19 @@ const conceptWeeks = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Reado
 };
 
 export const blindBand = (runtime: Pick<Runtime, "readText">, paths: FmPaths, logText: string): BlindBandReport => {
-  const groups = new Map<string, { domain: BandDomain; week: string; counts: Record<Criterion, number> }>();
+  const groups = new Map<string, Group>();
   for (const line of logText.split("\n")) {
     const item = parseLine(line);
     if (item === undefined) continue;
     const key = `${item.domain}|${item.week}`;
-    const group = groups.get(key) ?? { domain: item.domain, week: item.week, counts: emptyCounts() };
+    const group = groups.get(key) ?? {
+      domain: item.domain,
+      week: item.week,
+      counts: emptyCounts(),
+      sources: emptySources(),
+    };
     group.counts[item.criterion] += 1;
+    if (item.source !== undefined) group.sources[item.source] += 1;
     groups.set(key, group);
   }
   const moved = conceptWeeks(runtime, paths);
@@ -146,6 +176,7 @@ export const blindBand = (runtime: Pick<Runtime, "readText">, paths: FmPaths, lo
         withoutCriterion: group.counts.none,
         index: share(group.counts.none, helps),
         byCriterion: { ...group.counts },
+        bySource: { ...group.sources },
         conceptsMoved: moved.get(key) ?? 0,
       };
     })

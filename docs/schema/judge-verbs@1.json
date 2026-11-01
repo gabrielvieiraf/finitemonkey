@@ -13,8 +13,8 @@
       "enum": [
         "failed",
         "check",
-        "domain",
         "concept",
+        "domain",
         "probe",
         "contest",
         "horizon",
@@ -1037,8 +1037,8 @@
                 "type": "string",
                 "enum": [
                   "concept",
-                  "question",
-                  "scope"
+                  "scope",
+                  "question"
                 ]
               },
               "text": {
@@ -1674,8 +1674,8 @@
             "type": "string",
             "enum": [
               "concept",
-              "question",
-              "scope"
+              "scope",
+              "question"
             ]
           },
           "text": {

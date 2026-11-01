@@ -473,8 +473,8 @@
             "type": "string",
             "enum": [
               "concept",
-              "question",
-              "scope"
+              "scope",
+              "question"
             ]
           },
           "text": {

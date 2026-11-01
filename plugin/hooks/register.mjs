@@ -104,6 +104,13 @@ function scheduleUsage($) {
 }
 var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var money = (usd) => `$${(typeof usd === "number" ? usd : 0).toFixed(2)}`;
+var splitLines = (data) => {
+  const build = data["build"];
+  const verification = data["verification"];
+  if (!isRecord2(build) || !isRecord2(verification)) return [];
+  const minutes = typeof verification["gateMinutes"] === "number" ? verification["gateMinutes"] : 0;
+  return [`build ${money(build["usd"])} · verification ${money(verification["usd"])} + gate ${String(minutes)} min`];
+};
 var costLines = (text5) => {
   let parsed;
   try {
@@ -117,6 +124,7 @@ var costLines = (text5) => {
   return [
     `contract ${String(data["task"])}: ${money(data["usd"])} in ${String(data["requests"])} requests`,
     `attempts ${String(data["attempts"])} · per attempt ${data["perAttempt"] === null ? "-" : money(data["perAttempt"])}`,
+    ...splitLines(data),
     ...arms.map((arm) => `arm ${String(arm["arm"])}: ${money(arm["usd"])} in ${String(arm["requests"])} requests`)
   ];
 };

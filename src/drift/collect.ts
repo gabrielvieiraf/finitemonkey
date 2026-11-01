@@ -6,6 +6,9 @@ import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { projectLogDir } from "../history/look-back.js";
 import { isCorrection } from "../premise/detect.js";
+import { type BandDomain, domainOfText } from "../signals/blind-band.js";
+import { fmPaths } from "../task/paths.js";
+import { projectSignals } from "./fm-signals.js";
 
 export const READ_TOOLS: ReadonlySet<string> = new Set(["Read", "Grep", "Glob", "LS", "NotebookRead"]);
 export const EDIT_TOOLS: ReadonlySet<string> = new Set(["Edit", "MultiEdit", "NotebookEdit"]);
@@ -21,7 +24,14 @@ export interface SessionStats {
   readonly writes: number;
   readonly corrections: number;
   readonly files: number;
+  readonly domain?: BandDomain;
+  readonly session?: string;
+  readonly gateHolds?: number;
+  readonly guardFirings?: number;
+  readonly loopScore?: number;
 }
+
+const PROMPT_CHARS = 4_000;
 
 interface Draft {
   day: string;
@@ -32,6 +42,7 @@ interface Draft {
   writes: number;
   corrections: number;
   files: Set<string>;
+  prompts: string;
 }
 
 const bump = (counts: Map<string, number>, key: string): void => {
@@ -62,6 +73,11 @@ const addTool = (draft: Draft, block: unknown): void => {
   if ((EDIT_TOOLS.has(name) || WHOLE_TOOLS.has(name)) && file !== "") draft.files.add(file);
 };
 
+const addPrompt = (draft: Draft, text: string): void => {
+  if (isCorrection(text)) draft.corrections += 1;
+  if (draft.prompts.length < PROMPT_CHARS) draft.prompts = `${draft.prompts}\n${text}`.slice(0, PROMPT_CHARS);
+};
+
 const addLine = (draft: Draft, line: string): void => {
   const parsed = line.trim() === "" ? undefined : parseJsonObject(line);
   if (parsed?.ok !== true) return;
@@ -69,7 +85,7 @@ const addLine = (draft: Draft, line: string): void => {
   const message = isRecord(entry["message"]) ? entry["message"] : {};
   if (draft.day === "" && typeof entry["timestamp"] === "string") draft.day = entry["timestamp"].slice(0, 10);
   if (typeof entry["version"] === "string") bump(draft.versions, entry["version"]);
-  if (entry["type"] === "user" && isCorrection(textOf(message["content"]))) draft.corrections += 1;
+  if (entry["type"] === "user") addPrompt(draft, textOf(message["content"]));
   if (entry["type"] !== "assistant") return;
   if (typeof message["model"] === "string") bump(draft.models, message["model"]);
   const content = message["content"];
@@ -86,6 +102,7 @@ export const sessionStats = (text: string): SessionStats | undefined => {
     writes: 0,
     corrections: 0,
     files: new Set(),
+    prompts: "",
   };
   for (const line of text.split("\n")) addLine(draft, line);
   if (draft.day === "") return undefined;
@@ -98,6 +115,7 @@ export const sessionStats = (text: string): SessionStats | undefined => {
     writes: draft.writes,
     corrections: draft.corrections,
     files: draft.files.size,
+    domain: domainOfText(draft.prompts),
   };
 };
 
@@ -117,8 +135,12 @@ export const collectSessions = (
   const dir = projectLogDir(runtime, root, env);
   const listed = runtime.listDir(toAbsolutePath(dir));
   const files = listed.ok ? listed.value.filter((name) => name.endsWith(".jsonl")).sort() : [];
+  const signalsOf = projectSignals(runtime, fmPaths(toAbsolutePath(root)));
   return files.flatMap((name) => {
     const text = runtime.readText(toAbsolutePath(join(dir, name)));
-    return text.ok ? (sessionStats(text.value) ?? []) : [];
+    const stats = text.ok ? sessionStats(text.value) : undefined;
+    if (stats === undefined) return [];
+    const session = name.slice(0, -".jsonl".length);
+    return [{ ...stats, session, ...signalsOf(session) }];
   });
 };

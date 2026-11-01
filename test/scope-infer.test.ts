@@ -19,7 +19,7 @@ import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from 
 import { FIRST_EDITS, type InferredScope, observeEdit, readInferred } from "../src/task/scope-infer.js";
 import { memoryFs } from "./memory-fs.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
-import { fakeRuntime } from "./support.js";
+import { cliJson, fakeRuntime, field } from "./support.js";
 
 const t = createTranslator("en");
 
@@ -201,5 +201,25 @@ describe("the gate lists out-of-scope files and records the ones the person acce
       reason: "the invoice uses the new total",
       at: "2026-10-26T12:00:00Z",
     });
+  });
+
+  it("an accepted out-of-scope file enters the blind band once, with source scope and no criterion", async () => {
+    const repo = project();
+    saveRelease(repoRuntime(), fmPaths(repo.root), Date.now(), {
+      grants: [],
+      approvals: [{ task: "implicit", check: "diff", reason: "shared total", at: "2026-10-26T12:00:00Z" }],
+    });
+    check(repo);
+    check(repo);
+    const run = await cliJson(["signals", "blind-band"], { cwd: repo.root, runtime: repoRuntime() });
+    assert.equal(run.code, 0, run.stdout);
+    const rows = field(run.body, "data", "rows");
+    assert.ok(Array.isArray(rows));
+    assert.deepEqual(
+      rows.map((row: unknown) => field(row, "bySource", "scope")),
+      [1],
+    );
+    assert.equal(field(run.body, "data", "total", "withoutCriterion"), 1);
+    assert.match(repo.read(".finitemonkey/log.jsonl"), /"source":"scope".*"file":"src\/billing\/invoice\.ts"/);
   });
 });

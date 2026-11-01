@@ -1,6 +1,7 @@
 import type { JsonObject } from "../core/parsed.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { DOMAINS } from "../perfil/types.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import { type DriftReport, type DriftWarning, INDICATORS } from "./sensor.js";
@@ -21,9 +22,11 @@ const warningOf = (value: unknown): DriftWarning | undefined => {
   if (indicator === undefined || (taskClass !== "small" && taskClass !== "large") || typeof since !== "string")
     return undefined;
   if (typeof baseline !== "number" || typeof current !== "number" || !Array.isArray(changes)) return undefined;
+  const domain = DOMAINS.find((item) => item === value["domain"]);
   return {
     indicator,
     taskClass,
+    ...(domain === undefined ? {} : { domain }),
     since,
     baseline,
     current,

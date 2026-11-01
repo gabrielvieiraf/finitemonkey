@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
-import { costOf, parseSteps, recordSteps } from "../src/bridge/cost.js";
+import { costFile, costOf, parseSteps, recordSteps } from "../src/bridge/cost.js";
 import { statusOf } from "../src/bridge/status.js";
+import { appendEvidence } from "../src/evidence/ledger.js";
+import { type Evidence, EVIDENCE_SCHEMA } from "../src/evidence/types.js";
+import { costLines } from "../src/mod/cost-hooks.js";
 import { DEFAULT_PRICES, priceOf, usdOf } from "../src/spend/prices.js";
 import { fmPaths } from "../src/task/paths.js";
 import { writeState } from "../src/task/state.js";
@@ -51,5 +54,42 @@ describe("cost per contract and arm", () => {
       JSON.stringify({ "fourth-attempt": { fired: firings, dismissed: firings } }),
     );
     assert.equal(statusOf(runtime, paths).loop, null);
+  });
+
+  it("shows build and verification cost of a task separately, with gate run minutes", () => {
+    const repo = makeRepo({});
+    repos.push(repo);
+    const runtime = repoRuntime();
+    const paths = fmPaths(repo.root);
+    writeState(runtime, paths, { active: "t1", done: [] });
+    const line = (usd: number, agent: string | null, kind?: string): string =>
+      `${JSON.stringify({ model: "m", agent, input: 1, output: 1, cacheRead: 0, cacheWrite: 0, at: "2026-10-26T12:00:00Z", task: "t1", arms: [], usd, ...(kind === undefined ? {} : { kind }) })}\n`;
+    runtime.appendText(
+      costFile(paths),
+      [
+        line(3, null),
+        line(1, "a1"),
+        line(0.5, "verifier"),
+        line(0.25, "fm:reviewer"),
+        line(0.25, null, "provider"),
+      ].join(""),
+    );
+    const evidence = (check: string, durationMs: number): Evidence => ({
+      schema: EVIDENCE_SCHEMA,
+      task: "t1",
+      check,
+      kind: "command",
+      status: "passed",
+      treeHash: "abc",
+      at: "2026-10-26T12:00:00Z",
+      notes: [],
+      durationMs,
+    });
+    assert.ok(appendEvidence(runtime, paths.evidence("t1"), [evidence("A1", 90_000), evidence("A2", 30_000)]));
+    const cost = costOf(runtime, paths);
+    assert.deepEqual(cost.build, { usd: 4, requests: 2 });
+    assert.deepEqual(cost.verification, { usd: 1, requests: 3, gateMinutes: 2, share: 0.2 });
+    assert.equal(cost.usd, 5);
+    assert.ok(costLines(JSON.stringify(cost)).includes("build $4.00 · verification $1.00 + gate 2 min"));
   });
 });

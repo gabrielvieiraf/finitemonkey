@@ -22,12 +22,17 @@ const usable = (input: HookInput): FmPaths | undefined => {
 export const warningLine = (t: Translate, warning: DriftWarning): string =>
   t("drift.warning", {
     indicator: t(`drift.indicator.${warning.indicator}`),
-    taskClass: warning.taskClass,
+    taskClass: warning.domain === undefined ? warning.taskClass : `${warning.taskClass} ${warning.domain}`,
     since: warning.since,
     baseline: warning.baseline,
     current: warning.current,
     changes: warning.changes.length === 0 ? t("drift.no_change") : warning.changes.join(", "),
   });
+
+const shownKey = (warning: DriftWarning): string =>
+  [warning.indicator, warning.taskClass, ...(warning.domain === undefined ? [] : [warning.domain]), warning.since].join(
+    "|",
+  );
 
 export const driftRefresh: HookHandler = (input) => {
   const paths = usable(input);
@@ -43,7 +48,7 @@ export const driftSession: HookHandler = (input) => {
   const paths = usable(input);
   if (paths === undefined) return allow;
   const fresh = warningsOf(input.runtime, paths).filter((warning) =>
-    onceFor(input.runtime, paths, "drift-shown.json", `${warning.indicator}|${warning.taskClass}|${warning.since}`),
+    onceFor(input.runtime, paths, "drift-shown.json", shownKey(warning)),
   );
   if (fresh.length === 0) return allow;
   if (featureMode(input.runtime, paths, DRIFT_FEATURE) !== "active") {

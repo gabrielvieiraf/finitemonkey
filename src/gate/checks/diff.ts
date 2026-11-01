@@ -1,5 +1,6 @@
 import { matchesAny } from "../../core/glob.js";
 import { readApprovals } from "../../guards/release/grants.js";
+import { recordScopeAdditions } from "../../signals/scope-band.js";
 import { inInferred, readInferred, scopeLabel } from "../../task/scope-infer.js";
 import type { AcceptanceCheck } from "../../task/types.js";
 import { diffShape } from "../diff-shape.js";
@@ -21,6 +22,7 @@ const acceptedOutside = (ctx: GateContext, files: readonly string[]): CheckOutco
     (item) => item.task === ctx.contract.id && item.check === "diff",
   );
   if (approval === undefined) return undefined;
+  recordScopeAdditions(ctx.runtime, ctx.paths, { task: ctx.contract.id, files, approvedAt: approval.at });
   return {
     status: "passed",
     notes: files.map((file) => note("gate.diff.accepted", { file, reason: approval.reason, at: approval.at })),

@@ -1,7 +1,15 @@
+import { type BandDomain, GENERAL } from "../signals/blind-band.js";
 import { classOf, majority, type SessionStats } from "./collect.js";
 
 export const DRIFT_SCHEMA = "finitemonkey/drift@1";
-export const INDICATORS = ["readsPerEdit", "wholeFileShare", "correctionsPerSession"] as const;
+export const INDICATORS = [
+  "readsPerEdit",
+  "wholeFileShare",
+  "correctionsPerSession",
+  "gateHoldsPerSession",
+  "guardFiringsPerSession",
+  "loopIndex",
+] as const;
 export const BASELINE_DAYS = 14;
 export const MIN_BASELINE = 3;
 export const PERSIST_DAYS = 3;
@@ -14,6 +22,7 @@ export type TaskClass = "small" | "large";
 export interface DayPoint {
   readonly day: string;
   readonly taskClass: TaskClass;
+  readonly domain: BandDomain;
   readonly sessions: number;
   readonly mutations: number;
   readonly model: string;
@@ -24,6 +33,7 @@ export interface DayPoint {
 export interface DriftWarning {
   readonly indicator: Indicator;
   readonly taskClass: TaskClass;
+  readonly domain?: BandDomain;
   readonly since: string;
   readonly baseline: number;
   readonly current: number;
@@ -38,8 +48,15 @@ export interface DriftReport {
 
 const round = (value: number): number => Math.round(value * 1000) / 1000;
 
-const pointOf = (day: string, taskClass: TaskClass, sessions: readonly SessionStats[]): DayPoint => {
+interface PointKey {
+  readonly day: string;
+  readonly taskClass: TaskClass;
+  readonly domain: BandDomain;
+}
+
+const pointOf = ({ day, taskClass, domain }: PointKey, sessions: readonly SessionStats[]): DayPoint => {
   const sum = (pick: (item: SessionStats) => number): number => sessions.reduce((total, item) => total + pick(item), 0);
+  const perSession = (pick: (item: SessionStats) => number): number => round(sum(pick) / Math.max(1, sessions.length));
   const mutations = sum((item) => item.edits + item.writes);
   const tally = (pick: (item: SessionStats) => string): string =>
     majority(
@@ -51,6 +68,7 @@ const pointOf = (day: string, taskClass: TaskClass, sessions: readonly SessionSt
   return {
     day,
     taskClass,
+    domain,
     sessions: sessions.length,
     mutations,
     model: tally((item) => item.model),
@@ -58,23 +76,32 @@ const pointOf = (day: string, taskClass: TaskClass, sessions: readonly SessionSt
     values: {
       readsPerEdit: round(sum((item) => item.reads) / Math.max(1, mutations)),
       wholeFileShare: round(sum((item) => item.writes) / Math.max(1, mutations)),
-      correctionsPerSession: round(sum((item) => item.corrections) / Math.max(1, sessions.length)),
+      correctionsPerSession: perSession((item) => item.corrections),
+      gateHoldsPerSession: perSession((item) => item.gateHolds ?? 0),
+      guardFiringsPerSession: perSession((item) => item.guardFirings ?? 0),
+      loopIndex: perSession((item) => item.loopScore ?? 0),
     },
   };
 };
 
 export const dayPoints = (sessions: readonly SessionStats[]): readonly DayPoint[] => {
   const groups = new Map<string, SessionStats[]>();
+  const keys = new Map<string, PointKey>();
   for (const item of sessions) {
-    const key = `${item.day}\u0000${classOf(item)}`;
+    const point: PointKey = { day: item.day, taskClass: classOf(item), domain: item.domain ?? GENERAL };
+    const key = `${point.day}\u0000${point.taskClass}\u0000${point.domain}`;
+    keys.set(key, point);
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
   return [...groups.entries()]
-    .map(([key, items]) => {
-      const [day = "", taskClass = "small"] = key.split("\u0000");
-      return pointOf(day, taskClass === "large" ? "large" : "small", items);
+    .flatMap(([key, items]) => {
+      const point = keys.get(key);
+      return point === undefined ? [] : [pointOf(point, items)];
     })
-    .sort((a, b) => a.day.localeCompare(b.day) || a.taskClass.localeCompare(b.taskClass));
+    .sort(
+      (a, b) =>
+        a.day.localeCompare(b.day) || a.taskClass.localeCompare(b.taskClass) || a.domain.localeCompare(b.domain),
+    );
 };
 
 const mean = (values: readonly number[]): number => values.reduce((a, b) => a + b, 0) / Math.max(1, values.length);
@@ -117,6 +144,7 @@ const warningsFor = (points: readonly DayPoint[], indicator: Indicator): readonl
         warnings.push({
           indicator,
           taskClass: point.taskClass,
+          ...(point.domain === GENERAL ? {} : { domain: point.domain }),
           since: streak[0]?.day ?? point.day,
           baseline: round(baseline),
           current: round(mean(streak.map((item) => item.values[indicator]))),
@@ -133,8 +161,11 @@ const warningsFor = (points: readonly DayPoint[], indicator: Indicator): readonl
 
 export const driftReport = (sessions: readonly SessionStats[]): DriftReport => {
   const days = dayPoints(sessions);
-  const warnings = (["small", "large"] as const).flatMap((taskClass) => {
-    const points = days.filter((point) => point.taskClass === taskClass && point.mutations >= MIN_MUTATIONS);
+  const classes = [...new Set(days.map((point) => `${point.taskClass}\u0000${point.domain}`))].sort();
+  const warnings = classes.flatMap((key) => {
+    const points = days.filter(
+      (point) => `${point.taskClass}\u0000${point.domain}` === key && point.mutations >= MIN_MUTATIONS,
+    );
     return INDICATORS.flatMap((indicator) => warningsFor(points, indicator));
   });
   return { schema: DRIFT_SCHEMA, days, warnings };
