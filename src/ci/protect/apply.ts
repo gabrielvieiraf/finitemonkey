@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
 import type { Runtime } from "../../core/runtime.js";
 import type { GitLevel } from "../../profile/level.js";
+import { applyReviewers, type EnvironmentPlan } from "./environment.js";
 import { type ProtectChange, type ProtectSetting, rulesetFor } from "./plan.js";
 import { gh, type GithubSettings } from "./state.js";
 
@@ -27,8 +28,11 @@ const call = (
   settings: GithubSettings,
   level: GitLevel,
   setting: ProtectSetting,
+  environment: EnvironmentPlan | undefined,
 ): boolean => {
   const repo = settings.repo;
+  if (setting === "environment-reviewers")
+    return environment !== undefined && applyReviewers(runtime, root, repo, environment);
   if (setting === "ruleset") {
     const body = JSON.stringify(rulesetFor(level));
     const args =
@@ -51,10 +55,11 @@ export const applyChanges = (
   settings: GithubSettings,
   level: GitLevel,
   changes: readonly ProtectChange[],
+  environment?: EnvironmentPlan,
 ): readonly AppliedChange[] => {
   runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
   return changes.map((change) => {
-    const ok = call(runtime, root, settings, level, change.setting);
+    const ok = call(runtime, root, settings, level, change.setting, environment);
     runtime.appendText(
       toAbsolutePath(join(root, ...PROTECT_LOG.split("/"))),
       `${JSON.stringify({ at: runtime.now(), repo: settings.repo, ...change, ok })}\n`,

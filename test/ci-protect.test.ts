@@ -18,6 +18,7 @@ interface FakeGh {
   readonly scanning?: "enabled" | "disabled";
   readonly alerts?: boolean;
   readonly writes?: boolean;
+  readonly environment?: unknown;
 }
 
 const fakeGh =
@@ -47,6 +48,12 @@ const fakeGh =
         }),
       );
     }
+    if (args === "api repos/acme/app/environments/production")
+      return options.environment === undefined
+        ? execResult(1, "", "Not Found")
+        : execResult(0, JSON.stringify(options.environment));
+    if (args === "api users/alice --jq .id") return execResult(0, "101\n");
+    if (args === "api orgs/acme/teams/ops --jq .id") return execResult(0, "202\n");
     if (args === "api repos/acme/app/vulnerability-alerts")
       return execResult(options.alerts === true ? 0 : 1, "", "Not Found");
     return execResult(1, "", "unexpected");
@@ -122,6 +129,61 @@ describe("ci protect", () => {
     });
     assert.equal(run.code, 0);
     assert.deepEqual(writesIn(calls), ["api --method PUT repos/acme/app/rulesets/7 --input -"]);
+  });
+
+  it("gives the production environment the reviewers the plan lists", async () => {
+    const calls: ExecRequest[] = [];
+    const plan = { ".finitemonkey/config.yml": 'deploy:\n  reviewers: "@alice, acme/ops"\n' };
+    const settled = {
+      rules: rulesetFor("intermediate").rules as unknown[],
+      scanning: "enabled",
+      alerts: true,
+    } as const;
+    const runtime = runtimeWith(calls, settled, plan);
+    const preview = await cliJson(["ci", "protect"], { runtime, cwd: ROOT, stdin: tty() });
+    assert.deepEqual(field(preview.body, "data", "changes"), [
+      { setting: "environment-reviewers", current: "production: none", proposed: "production: acme/ops, alice" },
+    ]);
+    const run = await cli(["ci", "protect", "--yes"], { runtime, cwd: ROOT, stdin: tty() });
+    assert.equal(run.code, 0, run.stdout + run.stderr);
+    assert.deepEqual(writesIn(calls), ["api --method PUT repos/acme/app/environments/production --input -"]);
+    const body = calls.find((call) => call.args.includes("PUT"))?.input ?? "";
+    assert.deepEqual(JSON.parse(body), {
+      reviewers: [
+        { type: "Team", id: 202 },
+        { type: "User", id: 101 },
+      ],
+    });
+  });
+
+  it("leaves the environment alone when it already has those reviewers, or the plan lists none", async () => {
+    const environment = {
+      protection_rules: [
+        {
+          type: "required_reviewers",
+          reviewers: [
+            { type: "User", reviewer: { login: "alice", id: 101 } },
+            { type: "Team", reviewer: { slug: "ops", id: 202 } },
+          ],
+        },
+      ],
+    };
+    const settled = {
+      rules: rulesetFor("intermediate").rules as unknown[],
+      scanning: "enabled",
+      alerts: true,
+    } as const;
+    const plan = { ".finitemonkey/config.yml": "deploy:\n  reviewers: alice, acme/ops\n" };
+    for (const [options, files] of [
+      [{ ...settled, environment }, plan],
+      [settled, {}],
+    ] as const) {
+      const calls: ExecRequest[] = [];
+      const run = await cliJson(["ci", "protect"], { runtime: runtimeWith(calls, options, files), cwd: ROOT });
+      assert.deepEqual(field(run.body, "data", "changes"), []);
+      const asked = calls.some((call) => call.args.join(" ").includes("environments"));
+      assert.equal(asked, files === plan);
+    }
   });
 
   it("reports a change GitHub refused and exits 1", async () => {

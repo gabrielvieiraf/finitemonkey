@@ -1,5 +1,6 @@
 import { type AppliedChange, applyChanges, PROTECT_LOG } from "../ci/protect/apply.js";
 import { type CodeownersCoverage, codeownersCoverage } from "../ci/protect/coverage.js";
+import { environmentPlan } from "../ci/protect/environment.js";
 import { type ProtectChange, protectChanges } from "../ci/protect/plan.js";
 import { readSettings, writeSettingsCache } from "../ci/protect/state.js";
 import type { Ctx } from "../core/context.js";
@@ -81,7 +82,8 @@ const run = (ctx: Ctx): CommandResult => {
   const level = gitLevel(ctx.runtime, root);
   const project = projectAt(root, ctx.runtime);
   const codeowners = codeownersCoverage(project.read, detectStack(ctx.runtime, root).dirs);
-  const changes = protectChanges(settings, level);
+  const environment = environmentPlan(ctx.runtime, root, settings.repo);
+  const changes = protectChanges(settings, level, environment);
   const data: CiProtectData = {
     schema: CI_PROTECT_SCHEMA,
     repo: settings.repo,
@@ -102,7 +104,11 @@ const run = (ctx: Ctx): CommandResult => {
     recordFeatureShadow(ctx.runtime, paths, CI_PROTECT_FEATURE, { changes: changes.map((change) => change.setting) });
     return success(data, [...human, ctx.t("gen.shadow", { feature: CI_PROTECT_FEATURE })]);
   }
-  return applied(ctx, { ...data, applied: applyChanges(ctx.runtime, root, settings, level, changes) }, human);
+  return applied(
+    ctx,
+    { ...data, applied: applyChanges(ctx.runtime, root, settings, level, changes, environment) },
+    human,
+  );
 };
 
 export const ciProtectCommand: CommandSpec = {
