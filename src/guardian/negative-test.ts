@@ -34,10 +34,12 @@ const pythonTest = (slug: string, criterion: string, premise: string): string =>
     "",
   ].join("\n");
 
+const importIt = (module: string): string => ["import { it } from", `${quoted(module)};`].join(" ");
+
 const jsHeader = (run: string): readonly string[] => {
-  if (/\bvitest\b/.test(run)) return ['import { it } from "vitest";', ""];
+  if (/\bvitest\b/.test(run)) return [importIt("vitest"), ""];
   if (/\bjest\b/.test(run)) return [];
-  return ['import { it } from "node:test";', ""];
+  return [importIt("node:test"), ""];
 };
 
 const jsTest = (run: string, criterion: string, premise: string): string =>

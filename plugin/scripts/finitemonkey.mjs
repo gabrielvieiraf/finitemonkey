@@ -65607,10 +65607,11 @@ var pythonTest = (slug6, criterion, premise) => [
   `    raise AssertionError(${quoted3(`${criterion}: write the case where this premise is false and expect the criterion to fail: ${premise}`)})`,
   ""
 ].join("\n");
+var importIt = (module) => ["import { it } from", `${quoted3(module)};`].join(" ");
 var jsHeader = (run10) => {
-  if (/\bvitest\b/.test(run10)) return ['import { it } from "vitest";', ""];
+  if (/\bvitest\b/.test(run10)) return [importIt("vitest"), ""];
   if (/\bjest\b/.test(run10)) return [];
-  return ['import { it } from "node:test";', ""];
+  return [importIt("node:test"), ""];
 };
 var jsTest = (run10, criterion, premise) => [
   ...jsHeader(run10),

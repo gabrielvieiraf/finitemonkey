@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
 import { negativeTestFor } from "../src/guardian/negative-test.js";
+import { parseContract } from "../src/task/load.js";
 import { tty } from "./guardian-support.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cli, cliJson, field } from "./support.js";
@@ -51,6 +52,27 @@ describe("negative tests for behavior premises", () => {
       at: "2026-10-01T00:00:00.000Z",
     } as const;
     assert.equal(negativeTestFor(item, undefined), undefined);
+  });
+
+  it("writes the import line each runner expects", () => {
+    const item = {
+      id: "a2",
+      text: "an empty cart cannot check out",
+      source: "manual",
+      impact: "high",
+      breaks: "",
+      confidence: "medium",
+      verify: "behavior",
+      status: "unverified",
+      at: "2026-10-01T00:00:00.000Z",
+    } as const;
+    const skeleton = (run: string): string => {
+      const parsed = parseContract("coupons", CONTRACT.replace("coupon-math", "cart").replace("npm test", run));
+      return parsed.ok ? (negativeTestFor(item, parsed.value)?.skeleton ?? "") : "";
+    };
+    assert.match(skeleton("npx vitest run"), /^import \{ it \} from "vitest";\n\nit\("cart: /);
+    assert.match(skeleton("npm test"), /^import \{ it \} from "node:test";\n/);
+    assert.match(skeleton("npx jest"), /^it\("cart: /);
   });
 
   it("a behavior premise gets a negative test proposal naming the criterion, and nothing is written", async () => {
