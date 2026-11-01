@@ -1,8 +1,9 @@
-import { join } from "node:path";
+import { isAbsolute, join, relative } from "node:path";
 
 import type { AbsolutePath } from "../core/brand.js";
 import { toAbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
+import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Evidence, EvidenceInputs } from "../evidence/types.js";
 import { configAt, configList, type ConfigTree } from "../git/project-config.js";
@@ -68,11 +69,15 @@ const version = (runtime: Pick<Runtime, "exec">, root: AbsolutePath, probe: Tool
   return `${result.stdout}${result.stderr}`.trim().split(/\r?\n/)[0] ?? "";
 };
 
+export const relativeCwd = (runtime: Pick<Runtime, "realpath">, root: AbsolutePath, cwd: AbsolutePath): string =>
+  toPosixPath(relative(runtime.realpath(root), runtime.realpath(cwd))) || ".";
+
 export const currentInputs = (
-  runtime: Pick<Runtime, "readText" | "exec">,
+  runtime: Pick<Runtime, "readText" | "exec" | "realpath">,
   root: AbsolutePath,
   env: Env,
   config: InputsConfig,
+  cwd: AbsolutePath = root,
 ): EvidenceInputs => {
   const lockfiles = Object.fromEntries(
     LOCKFILES.flatMap((file) => {
@@ -91,7 +96,7 @@ export const currentInputs = (
       return [name, value === undefined ? "" : sha256(value).slice(0, SHORT)] as const;
     }),
   );
-  return { cwd: root, lockfiles, tools, env: vars };
+  return { cwd: relativeCwd(runtime, root, cwd), lockfiles, tools, env: vars };
 };
 
 const changedKeys = (
@@ -107,6 +112,7 @@ const changedKeys = (
 export const inputsChanged = (prior: EvidenceInputs | undefined, now: EvidenceInputs): readonly string[] => {
   if (prior === undefined) return ["inputs"];
   return [
+    ...(isAbsolute(prior.cwd) || isAbsolute(now.cwd) || prior.cwd === now.cwd ? [] : ["cwd"]),
     ...changedKeys("lockfile", prior.lockfiles, now.lockfiles),
     ...changedKeys("tool", prior.tools, now.tools),
     ...changedKeys("env", prior.env, now.env),

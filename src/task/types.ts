@@ -105,6 +105,8 @@ export interface TaskContract {
   readonly implicit: boolean;
   readonly clarified?: readonly string[];
   readonly testsFirst?: boolean;
+  readonly guards?: Readonly<Record<string, "off" | "shadow" | "active">>;
+  readonly reviewers?: readonly string[];
 }
 
 export const TASK_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;

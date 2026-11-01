@@ -16,7 +16,7 @@ import { type GateRun, runGate } from "../run.js";
 import { canClose } from "../state.js";
 import { allowWith, findRepoRoot, gateBudget, human, sessionCwd } from "./common.js";
 import { nextBlock, readCounter, saveCounter } from "./counter.js";
-import { writeGateStatus } from "./status.js";
+import { recordReleasedByCap, writeGateStatus } from "./status.js";
 
 const failureDetail = (
   t: Translate,
@@ -65,13 +65,10 @@ const onFailed = (input: HookInput, report: GateReport, paths: ReturnType<typeof
   const verdict = nextBlock(readCounter(runtime, paths), report, env);
   if (verdict.kind === "exhausted") {
     saveCounter(runtime, paths, undefined);
-    writeGateStatus(runtime, paths, {
-      status: "not_done",
-      task: report.task,
-      detail: failingList(t, report),
-      state: report.state,
-      tree: report.treeHash,
-    });
+    const detail = failingList(t, report);
+    const extra = { state: report.state, tree: report.treeHash };
+    if (verdict.cause === "cap") recordReleasedByCap(runtime, paths, report.task, detail, extra);
+    else writeGateStatus(runtime, paths, { status: "not_done", task: report.task, detail, ...extra });
     return allowWith({
       systemMessage: human(t("gate.human.not_done", { blocks: verdict.blocks, list: failingList(t, report) })),
     });

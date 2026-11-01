@@ -1,10 +1,9 @@
 import { matchesAny } from "../../core/glob.js";
-import { readApprovals } from "../../guards/release/grants.js";
-import { recordScopeAdditions } from "../../signals/scope-band.js";
 import { inInferred, readInferred, scopeLabel } from "../../task/scope-infer.js";
 import type { AcceptanceCheck } from "../../task/types.js";
 import { diffShape } from "../diff-shape.js";
 import { type CheckOutcome, failed, type GateContext, note, passed } from "../types.js";
+import { acceptedOutside } from "./diff-accepted.js";
 
 const MAX_LISTED = 10;
 
@@ -17,25 +16,12 @@ const inferredOutside = (ctx: GateContext): { readonly files: readonly string[];
   };
 };
 
-const acceptedOutside = (ctx: GateContext, files: readonly string[]): CheckOutcome | undefined => {
-  const approval = readApprovals(ctx.runtime, ctx.paths).findLast(
-    (item) => item.task === ctx.contract.id && item.check === "diff",
-  );
-  if (approval === undefined) return undefined;
-  recordScopeAdditions(ctx.runtime, ctx.paths, { task: ctx.contract.id, files, approvedAt: approval.at });
-  return {
-    status: "passed",
-    notes: files.map((file) => note("gate.diff.accepted", { file, reason: approval.reason, at: approval.at })),
-    releasedBy: `person@${approval.at}`,
-  };
-};
-
 const inferredCheck = (ctx: GateContext): CheckOutcome => {
   const { files, label } = inferredOutside(ctx);
   if (label === "") return passed([note("gate.diff.no_scope")]);
   if (files.length === 0) return passed([note("gate.diff.inferred_within", { scope: label })]);
   return (
-    acceptedOutside(ctx, files) ??
+    acceptedOutside(ctx, files, MAX_LISTED) ??
     failed(
       files
         .slice(0, MAX_LISTED)

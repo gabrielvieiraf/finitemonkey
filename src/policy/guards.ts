@@ -57,10 +57,10 @@ export const writeShadow = (runtime: Pick<Runtime, "writeText">, paths: FmPaths,
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}\n`);
 };
 
-export type ModeSource = "built-in" | "experiment" | "project" | "user" | "default" | "promoted" | "evolved";
+export type ModeSource = "built-in" | "experiment" | "project" | "user" | "default" | "promoted" | "evolved" | "task";
 
 export interface Override {
-  readonly source: "project" | "user";
+  readonly source: "project" | "user" | "task";
   readonly mode: GuardMode;
 }
 
@@ -79,7 +79,34 @@ const fallback = (id: string, shadow: ShadowState): GuardResolution => {
     : { mode: "shadow", source: "default", ignored: [] };
 };
 
-export const resolveGuard = (
+const ignoring = (resolved: GuardResolution, mode: GuardMode): GuardResolution => ({
+  ...resolved,
+  ignored: [...resolved.ignored, { source: "task", mode }],
+});
+
+const tightened = (resolved: GuardResolution, mode: GuardMode | undefined): GuardResolution => {
+  if (mode === undefined || mode === resolved.mode) return resolved;
+  if (STRENGTH[mode] < STRENGTH[resolved.mode] || resolved.source === "experiment") return ignoring(resolved, mode);
+  return { ...resolved, mode, source: "task" };
+};
+
+const relaxed = (set: Pick<GuardSet, "id" | "damage">, policy: Policy, resolved: GuardResolution): GuardResolution => {
+  const mode = policy.task?.approved[set.id];
+  if (mode === undefined || mode === resolved.mode) return resolved;
+  if (STRENGTH[mode] > STRENGTH[resolved.mode]) return tightened(resolved, mode);
+  const explicit = policy.guards[set.id] !== undefined || policy.userGuards[set.id] !== undefined;
+  if (set.damage || explicit || resolved.source === "experiment") return ignoring(resolved, mode);
+  return { ...resolved, mode, source: "task" };
+};
+
+const withTask = (set: Pick<GuardSet, "id" | "damage">, policy: Policy, resolved: GuardResolution): GuardResolution => {
+  if (policy.task === undefined) return resolved;
+  const pending = policy.task.pending[set.id];
+  const after = relaxed(set, policy, resolved);
+  return pending === policy.task.approved[set.id] ? after : tightened(after, pending);
+};
+
+const baseResolution = (
   set: Pick<GuardSet, "id" | "damage">,
   policy: Policy,
   shadow: ShadowState,
@@ -105,6 +132,13 @@ export const resolveGuard = (
     ? { mode: user, source: "user", ignored: [] }
     : { mode: project, source: "project", ignored: [{ source: "user", mode: user }] };
 };
+
+export const resolveGuard = (
+  set: Pick<GuardSet, "id" | "damage">,
+  policy: Policy,
+  shadow: ShadowState,
+  arm?: GuardMode,
+): GuardResolution => withTask(set, policy, baseResolution(set, policy, shadow, arm));
 
 export const modeOf = (
   set: Pick<GuardSet, "id" | "damage">,

@@ -51,4 +51,5 @@ export const recordReleasedByCap = (
   paths: FmPaths,
   task: string,
   detail: string,
-): boolean => writeGateStatus(runtime, paths, { status: "released_by_cap", task, detail });
+  extra: Pick<GateStatus, "state" | "tree"> = {},
+): boolean => writeGateStatus(runtime, paths, { status: "released_by_cap", task, detail, ...extra });
