@@ -1,6 +1,7 @@
 import { frontsPostToolUse, frontsPreToolUse, frontsSubagentStart } from "../../fronts/hooks.js";
 import { frontNotification, frontReportHandback, frontReportStop } from "../../fronts/report-hooks.js";
 import { frontsPrompt, frontsSendMessage } from "../../fronts/routing.js";
+import { frontsSessionStart } from "../../fronts/session.js";
 import { fileLockGuard, fileLockRelease } from "../../guards/files/hook.js";
 import { remotePostToolUse, remotePreToolUse } from "../../guards/remote/hook.js";
 import { scopeCopyGuard } from "../../guards/scope/copy.js";
@@ -13,7 +14,7 @@ import { gitPreToolUse } from "./pre-tool.js";
 import { gitPostToolUse, gitSessionStart } from "./session.js";
 
 export const GIT_HANDLERS: HookHandlers = {
-  SessionStart: [gitSessionStart, wtSessionStart],
+  SessionStart: [gitSessionStart, wtSessionStart, frontsSessionStart],
   SubagentStart: [gitSessionStart, frontsSubagentStart],
   PreToolUse: [
     gitPreToolUse,

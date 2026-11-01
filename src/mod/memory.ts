@@ -2,6 +2,7 @@ import type { DomainTrajectory, Mark } from "../conceitos/trajectory.js";
 import type { ThemeChoice } from "../conceitos/trajectory-palette.js";
 import type { Timer } from "./api.js";
 import type { ContractView, DivergeView } from "./approve-view.js";
+import type { BoardView } from "./fronts-view.js";
 import type { LoadedState } from "./state.js";
 import type { GateView } from "./status.js";
 import type { ConceptRow, XrayView } from "./xray-view.js";
@@ -21,7 +22,8 @@ export interface Memory {
   pending: Timer | undefined;
   steps: readonly StepUsage[];
   cost: readonly string[];
-  board: readonly string[];
+  board: BoardView;
+  boardNote: string | undefined;
   contract: ContractView | undefined;
   divergence: DivergeView | undefined;
   notice: string | undefined;
@@ -38,7 +40,8 @@ export const memory: Memory = {
   pending: undefined,
   steps: [],
   cost: [],
-  board: [],
+  board: { lines: [], sessions: [] },
+  boardNote: undefined,
   contract: undefined,
   divergence: undefined,
   notice: undefined,

@@ -42,6 +42,7 @@ export interface Front {
   readonly lastReport: string | null;
   readonly costUsd: number;
   readonly startedAt: string | null;
+  readonly sessionId?: string;
 }
 
 export interface FrontsState {
@@ -92,6 +93,13 @@ const statusOf = (value: unknown): FrontStatus => FRONT_STATUSES.find((status) =
 
 const record = (value: unknown): JsonObject => (isRecord(value) ? value : {});
 
+export const SESSION_ID = /^[A-Za-z0-9_-]{1,120}$/;
+
+const sessionOf = (item: JsonObject): { readonly sessionId?: string } => {
+  const value = str(item, "session_id");
+  return value !== null && SESSION_ID.test(value) ? { sessionId: value } : {};
+};
+
 export const parseFront = (value: unknown): Front | undefined => {
   const item = record(value);
   const id = str(item, "id");
@@ -120,6 +128,7 @@ export const parseFront = (value: unknown): Front | undefined => {
     lastReport: str(item, "last_report"),
     costUsd: num(item, "cost_usd") ?? 0,
     startedAt: str(item, "started_at"),
+    ...sessionOf(item),
   };
 };
 
@@ -141,6 +150,7 @@ export const frontYaml = (front: Front): YamlValue => ({
   last_report: front.lastReport,
   cost_usd: front.costUsd,
   started_at: front.startedAt,
+  ...(front.sessionId === undefined ? {} : { session_id: front.sessionId }),
 });
 
 export const parseState = (text: string): Parsed<FrontsState> => {

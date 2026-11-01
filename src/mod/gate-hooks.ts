@@ -13,7 +13,7 @@ import type {
   TurnCompleteInput,
   TurnCompleteResult,
 } from "./events.js";
-import { boardLines, FRONTS_PANE, frontsTree } from "./fronts-view.js";
+import { boardText, boardView, FRONTS_PANE, type FrontSession, frontsTree, openNote } from "./fronts-view.js";
 import { bandTree, COST_PANE, costTree, GATE_PANE, paneTree } from "./gate-view.js";
 import { memory } from "./memory.js";
 import { bandLine, parseStatus, statusText, turnLine } from "./status.js";
@@ -90,7 +90,12 @@ export async function renderBand($: ModApi, e: RenderInput, next: Next<"ui.rende
 
 export async function renderPane($: ModApi, e: RenderInput, next: Next<"ui.render">): Promise<ModElement | null> {
   if (e.requestId === FRONTS_PANE)
-    return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
+    return frontsTree($.ui.resolve(e), memory.board, memory.boardNote, {
+      close: () => $.ui.close({ id: FRONTS_PANE }),
+      open: (session) => {
+        showResume($, session);
+      },
+    });
   if (isApprovalPane(e.requestId)) return renderApproval($, e);
   if (e.requestId === XRAY_PANE) return renderXray($, e);
   if (e.requestId === TRAJECTORY_PANE) return renderTrajectory($, e);
@@ -112,15 +117,21 @@ async function costNow($: ModApi): Promise<CommandRunResult> {
   return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
 }
 
+function showResume($: ModApi, session: FrontSession): void {
+  memory.boardNote = openNote(session);
+  $.ui.invalidate("ui.render");
+}
+
 async function frontsNow($: ModApi): Promise<CommandRunResult> {
   const json = await runCli($, ["fronts", "board", "--json"]);
-  memory.board = json === undefined ? [] : boardLines(json);
+  memory.board = json === undefined ? { lines: [], sessions: [] } : boardView(json);
+  memory.boardNote = undefined;
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
     await $.ui.open({ id: FRONTS_PANE, title: "Finite Monkey · fronts" });
     return {};
   }
-  return { text: memory.board.length === 0 ? "finitemonkey: no worktrees found" : memory.board.join("\n") };
+  return { text: memory.board.lines.length === 0 ? "finitemonkey: no worktrees found" : boardText(memory.board) };
 }
 
 async function handoffNow($: ModApi): Promise<CommandRunResult> {

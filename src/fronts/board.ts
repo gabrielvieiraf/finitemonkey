@@ -17,6 +17,8 @@ export interface BoardRow {
   readonly lastActivity: string | null;
   readonly waiting: boolean;
   readonly files: readonly string[];
+  readonly sessionId: string | null;
+  readonly resume: string | null;
 }
 
 export interface Collision {
@@ -52,27 +54,45 @@ const changedFiles = (runtime: Runtime, dir: AbsolutePath, base: string | null):
   return [...new Set([...committed, ...open])].sort();
 };
 
-const waitingPaths = (runtime: Runtime, main: AbsolutePath): ReadonlySet<string> => {
+interface FrontMarks {
+  readonly waiting: ReadonlySet<string>;
+  readonly sessions: ReadonlyMap<string, string>;
+}
+
+const NO_MARKS: FrontMarks = { waiting: new Set(), sessions: new Map() };
+
+const frontMarks = (runtime: Runtime, main: AbsolutePath): FrontMarks => {
   const state = readFronts(runtime, main);
-  if (!state.ok) return new Set();
-  return new Set(
-    state.value.fronts
-      .filter((front) => front.status === "blocked" || front.inbox.length > 0)
-      .flatMap((front) => (front.path === null ? [] : [toAbsolutePath(front.path)])),
+  if (!state.ok) return NO_MARKS;
+  const placed = state.value.fronts.flatMap((front) =>
+    front.path === null ? [] : [{ front, path: toAbsolutePath(front.path) }],
   );
+  return {
+    waiting: new Set(
+      placed.filter(({ front }) => front.status === "blocked" || front.inbox.length > 0).map(({ path }) => path),
+    ),
+    sessions: new Map(
+      placed.flatMap(({ front, path }) => (front.sessionId === undefined ? [] : [[path, front.sessionId] as const])),
+    ),
+  };
 };
 
-const rowOf = (runtime: Runtime, tree: GitWorktree, base: string | null, waiting: ReadonlySet<string>): BoardRow => {
+export const resumeCommand = (sessionId: string): string => `claude --resume ${sessionId}`;
+
+const rowOf = (runtime: Runtime, tree: GitWorktree, base: string | null, marks: FrontMarks): BoardRow => {
   const dir = toAbsolutePath(tree.path);
   const paths = fmPaths(dir);
+  const sessionId = marks.sessions.get(dir) ?? null;
   return {
     path: tree.path,
     branch: tree.branch,
     gate: gateLight(runtime, paths),
     contract: readState(runtime, paths).active ?? null,
     lastActivity: activityOf(runtime, tree) ?? null,
-    waiting: waiting.has(dir),
+    waiting: marks.waiting.has(dir),
     files: tree.main ? [] : changedFiles(runtime, dir, base),
+    sessionId,
+    resume: sessionId === null ? null : resumeCommand(sessionId),
   };
 };
 
@@ -90,7 +110,7 @@ export const boardOf = (runtime: Runtime, cwd: AbsolutePath): BoardData => {
   const trees = (gitWorktrees(runtime, cwd) ?? []).filter((tree) => !tree.bare && !tree.prunable);
   const main = trees.find((tree) => tree.main);
   const base = main?.branch ?? null;
-  const waiting = main === undefined ? new Set<string>() : waitingPaths(runtime, toAbsolutePath(main.path));
-  const rows = trees.map((tree) => rowOf(runtime, tree, base, waiting));
+  const marks = main === undefined ? NO_MARKS : frontMarks(runtime, toAbsolutePath(main.path));
+  const rows = trees.map((tree) => rowOf(runtime, tree, base, marks));
   return { schema: BOARD_SCHEMA, rows, collisions: collisionsOf(rows) };
 };

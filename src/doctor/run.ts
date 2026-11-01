@@ -2,6 +2,7 @@ import type { Ctx } from "../core/context.js";
 import type { Probe, ProbeResult } from "../core/runtime.js";
 import { findGitRoot } from "../install/project.js";
 import { checkBriefing } from "./briefing.js";
+import { checkBypassOrder } from "./bypass-probe.js";
 import { checkClaudeSettings } from "./claude-settings.js";
 import { checkCoexistence } from "./coexistence.js";
 import { checkEnvHygiene } from "./env-hygiene.js";
@@ -57,6 +58,7 @@ export const CHECKS: readonly Check[] = [
   checkAlertBudget,
   checkHiddenText,
   checkMods,
+  checkBypassOrder,
   checkInstructionDrift,
 ];
 

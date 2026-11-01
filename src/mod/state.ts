@@ -8,6 +8,7 @@ export interface ModRule {
   readonly target: RuleTarget;
   readonly pattern: string;
   readonly reason: string;
+  readonly mode?: TightenMode;
 }
 
 export interface ModAttribution {
@@ -62,7 +63,9 @@ const ruleOf = (value: unknown): CompiledRule | undefined => {
   if (typeof id !== "string" || known === undefined || typeof pattern !== "string" || typeof reason !== "string")
     return undefined;
   const regex = compile(pattern);
-  return regex === undefined ? undefined : { rule: { id, target: known, pattern, reason }, regex };
+  const mode = MODES.find((item) => item === value["mode"]);
+  const rule = { id, target: known, pattern, reason, ...(mode === undefined ? {} : { mode }) };
+  return regex === undefined ? undefined : { rule, regex };
 };
 
 const attributionOf = (value: unknown): ModAttribution | undefined => {

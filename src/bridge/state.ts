@@ -10,6 +10,7 @@ import { MOD_STATE_SCHEMA, type ModRule, type ModState } from "../mod/state.js";
 import { featureMode } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
 import { attributionOf } from "./attribution.js";
+import { gitDamageRules, MOD_GIT_GUARD } from "./git-rules.js";
 import { rulesSection } from "./instructions.js";
 
 export const MOD_TIGHTEN_GUARD = "mod-tighten";
@@ -98,6 +99,7 @@ export const modState = (runtime: Runtime, paths: FmPaths, t: Translate): ModSta
   rules: [
     ...(live(runtime, paths, "self") ? [] : selfRules(t)),
     ...(live(runtime, paths, "bypass") ? [] : bypassRules(t)),
+    ...gitDamageRules(t, featureMode(runtime, paths, MOD_GIT_GUARD)),
     ...heldTestRules(runtime, paths, t),
   ],
 });

@@ -26,6 +26,24 @@ export interface ProbeResult {
 const strings = (value: unknown): readonly string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
+const CAPTURED_FIELDS = [
+  "session_id",
+  "hook_event_name",
+  "file_path",
+  "memory_type",
+  "load_reason",
+  "trigger_file_path",
+  "parent_file_path",
+] as const;
+
+export const capturedPayload = (raw: Readonly<Record<string, unknown>>): Readonly<Record<string, string>> =>
+  Object.fromEntries(
+    CAPTURED_FIELDS.flatMap((field) => {
+      const value = raw[field];
+      return typeof value === "string" ? [[field, value]] : [];
+    }),
+  );
+
 export const recordProbeEvent = (
   runtime: Pick<Runtime, "appendText" | "now">,
   paths: FmPaths,
@@ -36,7 +54,11 @@ export const recordProbeEvent = (
   const agent = raw["agent_id"];
   const inside = typeof agent === "string" && agent !== "";
   const label = inside && event === "PreToolUse" ? "PreToolUse:subagent" : event;
-  runtime.appendText(paths.cache(PROBE_EVENTS_FILE), `${JSON.stringify({ id, event: label, at: runtime.now() })}\n`);
+  const payload = event === "InstructionsLoaded" ? { payload: capturedPayload(raw) } : {};
+  runtime.appendText(
+    paths.cache(PROBE_EVENTS_FILE),
+    `${JSON.stringify({ id, event: label, at: runtime.now(), ...payload })}\n`,
+  );
 };
 
 export const probeEvents = (runtime: Pick<Runtime, "readText">, paths: FmPaths, id: string): readonly string[] => {

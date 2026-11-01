@@ -23,6 +23,20 @@ const RULES = [
     pattern: String.raw`\s--no-verify\b`,
     reason: "hooks run on every commit",
   },
+  {
+    id: "git.force_push",
+    target: "command",
+    pattern: String.raw`(?:^|[\s;&|(])git\b[^;&|]*\spush\b[^;&|]*\s(?:--force(?![-\w])|-[A-Za-z]*f[A-Za-z]*(?![-\w])|\+[^\s;&|]+)`,
+    reason: "a forced push can erase commits someone else pushed",
+    mode: "active",
+  },
+  {
+    id: "git.reset_hard",
+    target: "command",
+    pattern: String.raw`(?:^|[\s;&|(])git\b[^;&|]*\sreset\b[^;&|]*\s--hard\b`,
+    reason: "reset --hard throws away uncommitted work",
+    mode: "shadow",
+  },
 ];
 
 const stateJson = (mode: string): string =>
@@ -93,6 +107,35 @@ describe("tighten", () => {
     expect(decided).toEqual({ decision: "allow" });
     await clock.settle();
     expect(recorded).toEqual([["--rule", "bypass.no_verify", "--tool", "Bash", "--mode", "shadow"]]);
+  });
+
+  test(
+    "with the mod on, git push --force is denied even when another mod allows it",
+    { plugins: [allowEverything] },
+    async ($, on) => {
+      const recorded: string[][] = [];
+      const clock = world(on, "active", recorded);
+      await start($, clock);
+      const decided = await $.tool.check({ tool: "Bash", input: { command: "git push --force origin main" } });
+      expect(decided).toEqual({ decision: "deny", reason: "a forced push can erase commits someone else pushed" });
+      const leased = await $.tool.check({
+        tool: "Bash",
+        input: { command: "git push --force-with-lease=main:abc --force-if-includes" },
+      });
+      expect(leased).toEqual({ decision: "allow" });
+      await clock.settle();
+      expect(recorded).toEqual([["--rule", "git.force_push", "--tool", "Bash", "--mode", "active"]]);
+    },
+  );
+
+  test("a git rule still in shadow records and does not deny", { plugins: [allowEverything] }, async ($, on) => {
+    const recorded: string[][] = [];
+    const clock = world(on, "active", recorded);
+    await start($, clock);
+    const decided = await $.tool.check({ tool: "Bash", input: { command: "git reset --hard HEAD~1" } });
+    expect(decided).toEqual({ decision: "allow" });
+    await clock.settle();
+    expect(recorded).toEqual([["--rule", "git.reset_hard", "--tool", "Bash", "--mode", "shadow"]]);
   });
 
   test("a guard that throws denies the call", async ($, on) => {

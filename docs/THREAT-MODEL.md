@@ -23,7 +23,7 @@ Failures of the gate itself (stale evidence, a skipped test, a check that never 
 
 ## Open questions
 
-- A mod that approves a call over a Finite Monkey `PreToolUse` deny is found through the `PostToolUse` that follows the call. The test plays the events through a scripted Claude Code; whether a real session fires `PostToolUse` after a mod approves over a deny has not been confirmed. Until it is, the bypass record is a detection that depends on Claude Code's event order.
+- A mod that approves a call over a Finite Monkey `PreToolUse` deny is found through the `PostToolUse` that follows the call. The test plays the events through a scripted Claude Code; whether a real session fires `PostToolUse` after a mod approves over a deny has not been confirmed. Until it is, the bypass record is a detection that depends on Claude Code's event order. `doctor` shows, per Claude Code version, whether the order is confirmed: "not confirmed" until the bypass probe in [CONTRIBUTING.md](../CONTRIBUTING.md#bypass-probe) has run on that version. The mod's `tool.check` also repeats the git damage classes (forced push without a lease, `reset --hard`, `clean -f`, `branch -D`) in shadow behind the `mod-git` feature, so turning it on denies them even when another mod approves.
 - Person-only commands tell the person from the agent by a terminal on stdin and the absence of the variables Claude Code sets. That is a convention an agent can break on purpose, and the line below says so.
 
 ## Network use

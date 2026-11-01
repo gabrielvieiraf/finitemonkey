@@ -5,7 +5,8 @@ var memory = {
   pending: void 0,
   steps: [],
   cost: [],
-  board: [],
+  board: { lines: [], sessions: [] },
+  boardNote: void 0,
   contract: void 0,
   divergence: void 0,
   notice: void 0,
@@ -506,27 +507,47 @@ var collisionLine = (item) => {
   const branches = Array.isArray(item["branches"]) ? item["branches"].map(String).join(", ") : "";
   return `collision: ${text2(item["file"], "?")} in ${branches}`;
 };
-var boardLines = (json) => {
+var EMPTY_BOARD = { lines: [], sessions: [] };
+var RESUME = /^claude --resume [A-Za-z0-9_-]{1,120}$/;
+var sessionOf = (row2) => {
+  const resume = row2["resume"];
+  return typeof resume === "string" && RESUME.test(resume) ? [{ branch: text2(row2["branch"], text2(row2["path"], "?")), resume }] : [];
+};
+var boardView = (json) => {
   let parsed;
   try {
     parsed = JSON.parse(json);
   } catch {
-    return [];
+    return EMPTY_BOARD;
   }
   const data = isRecord5(parsed) && isRecord5(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord5(data) || data["schema"] !== "finitemonkey/fronts-board@1") return [];
+  if (!isRecord5(data) || data["schema"] !== "finitemonkey/fronts-board@1") return EMPTY_BOARD;
   const rows = Array.isArray(data["rows"]) ? data["rows"].filter(isRecord5) : [];
   const collisions = Array.isArray(data["collisions"]) ? data["collisions"].filter(isRecord5) : [];
-  return [...rows.map(rowLine), ...collisions.map(collisionLine)];
+  return { lines: [...rows.map(rowLine), ...collisions.map(collisionLine)], sessions: rows.flatMap(sessionOf) };
 };
-var frontsTree = (elements, lines, close) => elements.Box({
+var boardText = (board) => [...board.lines, ...board.sessions.map((session) => `open ${session.branch}: ${session.resume}`)].join("\n");
+var frontsTree = (elements, board, note, actions) => elements.Box({
   key: "fm-fronts",
   flexDirection: "column",
   children: [
-    ...(lines.length === 0 ? ["no worktrees found"] : lines).map((line2) => elements.Text({ children: [line2] })),
-    elements.Button({ key: "fm-fronts-close", label: "Close", hotkey: "x", onPress: close })
+    ...(board.lines.length === 0 ? ["no worktrees found"] : board.lines).map(
+      (line2) => elements.Text({ children: [line2] })
+    ),
+    ...board.sessions.map(
+      (session, index) => elements.Button({
+        key: `fm-fronts-open-${String(index)}`,
+        label: `Open ${session.branch}`,
+        onPress: () => {
+          actions.open(session);
+        }
+      })
+    ),
+    ...note === void 0 ? [] : [elements.Text({ key: "fm-fronts-note", children: [note] })],
+    elements.Button({ key: "fm-fronts-close", label: "Close", hotkey: "x", onPress: actions.close })
   ]
 });
+var openNote = (session) => `This version of Claude Code gives a mod no way to open or message another session. In a terminal, run: ${session.resume}`;
 
 // src/mod/gate-view.ts
 var GATE_PANE = "fm-gate";
@@ -1814,7 +1835,12 @@ async function renderBand($, e, next) {
 }
 async function renderPane($, e, next) {
   if (e.requestId === FRONTS_PANE)
-    return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
+    return frontsTree($.ui.resolve(e), memory.board, memory.boardNote, {
+      close: () => $.ui.close({ id: FRONTS_PANE }),
+      open: (session) => {
+        showResume($, session);
+      }
+    });
   if (isApprovalPane(e.requestId)) return renderApproval($, e);
   if (e.requestId === XRAY_PANE) return renderXray($, e);
   if (e.requestId === TRAJECTORY_PANE) return renderTrajectory($, e);
@@ -1834,15 +1860,20 @@ async function costNow($) {
   }
   return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
 }
+function showResume($, session) {
+  memory.boardNote = openNote(session);
+  $.ui.invalidate("ui.render");
+}
 async function frontsNow($) {
   const json = await runCli($, ["fronts", "board", "--json"]);
-  memory.board = json === void 0 ? [] : boardLines(json);
+  memory.board = json === void 0 ? { lines: [], sessions: [] } : boardView(json);
+  memory.boardNote = void 0;
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
     await $.ui.open({ id: FRONTS_PANE, title: "Finite Monkey · fronts" });
     return {};
   }
-  return { text: memory.board.length === 0 ? "finitemonkey: no worktrees found" : memory.board.join("\n") };
+  return { text: memory.board.lines.length === 0 ? "finitemonkey: no worktrees found" : boardText(memory.board) };
 }
 async function handoffNow($) {
   const brief = await readHandoff($);
@@ -1896,7 +1927,9 @@ var ruleOf = (value) => {
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
     return void 0;
   const regex = compile(pattern);
-  return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
+  const mode = MODES.find((item) => item === value["mode"]);
+  const rule = { id, target: known, pattern, reason, ...mode === void 0 ? {} : { mode } };
+  return regex === void 0 ? void 0 : { rule, regex };
 };
 var attributionOf = (value) => {
   if (!isRecord8(value) || typeof value["forbid"] !== "boolean") return void 0;
@@ -1970,6 +2003,11 @@ var ruleFor = (state, tool, input) => {
 };
 var RANK = { allow: 0, ask: 1, deny: 2 };
 var stricter = (decided, tightened) => RANK[tightened.decision] > RANK[decided.decision] ? tightened : decided;
+var MODE_RANK = { off: 0, shadow: 1, active: 2 };
+var modeFor = (stateMode, rule) => {
+  const own = rule.rule.mode;
+  return own === void 0 || MODE_RANK[own] >= MODE_RANK[stateMode] ? stateMode : own;
+};
 var tightenFor = (rule) => ({
   decision: "deny",
   reason: rule.rule.reason
@@ -2000,8 +2038,10 @@ async function guardCheck($, e, next) {
   if (state === void 0 || state.mode === "off") return decided;
   const rule = ruleFor(state, e.tool, e.input);
   if (rule === void 0) return decided;
-  scheduleRecord($, rule.rule.id, e.tool, state.mode);
-  return state.mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
+  const mode = modeFor(state.mode, rule);
+  if (mode === "off") return decided;
+  scheduleRecord($, rule.rule.id, e.tool, mode);
+  return mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
 }
 async function failClosed() {
   return Promise.resolve({ decision: "deny", reason: memory.state?.failReason ?? FAILED_REASON });
