@@ -2765,5 +2765,12 @@
   "command.judge_contradict.summary": "Registrar una fuente nueva que contradice una afirmación; solo se abre con fragmento coincidente o confirmación de la persona",
   "command.judge_fixed.summary": "Registrar quién arregló un evento de rebote; el arreglo de la persona queda marcado como sostenido",
   "command.judge_trajectory.summary": "Listar eventos de rebote de afirmaciones de investigación con el estado y las franjas que tenían al aceptarse",
-  "judge.event": "{event}: {claim} {cause} ({state}); al aceptarse {support}, franjas {bands}; arreglado por {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); al aceptarse {support}, franjas {bands}; arreglado por {fixed}",
+  "doctor.look.engine_missing": "el motor de reglas de accesibilidad {package} no está en este proyecto, así que a11y/engine queda sin verificar",
+  "doctor.look.fix_engine": "ejecuta `finitemonkey init --look` para ver el plan (agrega {package} como dependencia de desarrollo, unos {size} MB); no se instala nada sin --yes",
+  "look.engine.present": "motor de reglas de accesibilidad: {package} ya está en el proyecto",
+  "look.engine.offer": "motor de reglas de accesibilidad: falta {package}, así que a11y/engine queda sin verificar. Agregarlo como dependencia de desarrollo ocupa unos {size} MB: {command}",
+  "look.engine.consent": "no se instaló nada; ejecuta `finitemonkey init --look --yes` para agregarlo",
+  "look.engine.added": "motor de reglas de accesibilidad: {package} agregado como dependencia de desarrollo",
+  "look.engine.failed": "motor de reglas de accesibilidad: `{command}` no terminó; a11y/engine queda sin verificar hasta que se instale {package}"
 }

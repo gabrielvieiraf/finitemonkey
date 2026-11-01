@@ -47,6 +47,7 @@ export interface LookConfig {
   readonly skeleton: string | undefined;
   readonly ds: DsConfig;
   readonly forms: Readonly<Record<string, readonly string[]>>;
+  readonly formSteps: Readonly<Record<string, readonly (readonly string[])[]>>;
   readonly formsKeepCleared: readonly string[];
   readonly formValues: Readonly<Record<string, string>>;
   readonly flow: FlowConfig;
@@ -104,6 +105,14 @@ export const routeLists = (entries: readonly string[]): Readonly<Record<string, 
   return out;
 };
 
+export const stepLists = (entries: readonly string[]): Readonly<Record<string, readonly (readonly string[])[]>> =>
+  Object.fromEntries(
+    Object.entries(routeLists(entries)).map(([route, lines]) => [
+      route,
+      lines.map((line) => line.split(/\s+/)).filter((steps) => steps.length > 1),
+    ]),
+  );
+
 const statesOf = (tree: ReturnType<typeof parseConfigYaml>): Readonly<Record<string, readonly StateSpec[]>> => {
   const node = configAt(tree, "states");
   if (node === undefined || typeof node === "string" || Array.isArray(node)) return {};
@@ -144,6 +153,7 @@ export const parseLookConfig = (source: string): LookConfig => {
     successColor: text(configAt(tree, "ui_states", "success_color")),
     skeleton: text(configAt(tree, "ui_states", "skeleton")),
     forms: routeLists(configList(tree, "forms")),
+    formSteps: stepLists(configList(tree, "forms_steps")),
     formsKeepCleared: configList(tree, "forms_keep_cleared"),
     formValues: configMap(tree, "form_values"),
     perf: {

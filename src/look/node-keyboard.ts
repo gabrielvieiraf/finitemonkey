@@ -1,16 +1,17 @@
 import type { Page } from "playwright-core";
 
 import { isRecord } from "../core/parsed.js";
+import { type DialogResult, KEYBOARD_FEATURE, keyboardIssues } from "./keyboard.js";
 import {
-  type DialogResult,
-  KEYBOARD_FEATURE,
-  keyboardIssues,
-  type KeyboardWalk,
-  MAX_STOPS,
-  type ObservedStop,
-  type Trap,
-} from "./keyboard.js";
-import { COMPOSITES, focusNow, type FocusStop, type FocusTarget, focusTargets, MODALS } from "./keyboard-dom.js";
+  COMPOSITES,
+  focusNow,
+  type FocusStop,
+  type FocusTarget,
+  focusTargets,
+  MODALS,
+  sharedContainer,
+} from "./keyboard-dom.js";
+import { type KeyDriver, walkKeyboard } from "./keyboard-walk.js";
 import { drawBoxes, type PagePass } from "./node-ux.js";
 import { runInPage } from "./probe-dom.js";
 
@@ -20,7 +21,6 @@ const FOCUS_SCRIPT = runInPage(focusNow.toString(), [
   JSON.stringify(COMPOSITES),
   JSON.stringify(MODALS),
 ]);
-const TARGETS_SCRIPT = runInPage(focusTargets.toString(), ["document", "window", JSON.stringify(COMPOSITES)]);
 const SETTLE_MS = 150;
 const INFLATE = 4;
 
@@ -44,8 +44,11 @@ const stopOf = (value: unknown): FocusStop | undefined => {
 
 const focused = async (page: Page): Promise<FocusStop | undefined> => stopOf(await page.evaluate(FOCUS_SCRIPT));
 
-const targetsOf = async (page: Page): Promise<readonly FocusTarget[]> => {
-  const raw: unknown = await page.evaluate(TARGETS_SCRIPT);
+const targetsOf = async (page: Page, extra: readonly string[]): Promise<readonly FocusTarget[]> => {
+  const composites = [COMPOSITES, ...extra].join(", ");
+  const raw: unknown = await page.evaluate(
+    runInPage(focusTargets.toString(), ["document", "window", JSON.stringify(composites)]),
+  );
   return Array.isArray(raw)
     ? raw.flatMap((item: unknown) =>
         isRecord(item) && typeof item["sel"] === "string"
@@ -80,42 +83,26 @@ const focusShows = async (page: Page, stop: FocusStop): Promise<boolean> => {
   }
 };
 
-const escapes = async (page: Page, cycle: readonly string[]): Promise<boolean> => {
-  const inside = new Set(cycle);
-  for (let step = 0; step <= cycle.length; step += 1) {
-    await page.keyboard.press("Shift+Tab");
-    const now = await focused(page);
-    if (now === undefined || !inside.has(now.sel)) return true;
-  }
-  return false;
-};
+const CONTAINER_SOURCE = sharedContainer.toString();
 
-const trapOf = async (page: Page, stops: readonly ObservedStop[], repeat: FocusStop): Promise<Trap | undefined> => {
-  const start = stops.findIndex((stop) => stop.sel === repeat.sel);
-  if (start <= 0) return undefined;
-  const cycle = stops.slice(start).map((stop) => stop.sel);
-  return { cycle, escaped: await escapes(page, cycle), modal: repeat.modal };
-};
-
-export const walkKeyboard = async (page: Page, limit = MAX_STOPS): Promise<KeyboardWalk> => {
-  await page.evaluate("document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)");
-  const stops: ObservedStop[] = [];
-  for (let step = 0; step < limit + 2; step += 1) {
-    await page.keyboard.press("Tab");
-    const now = await focused(page);
-    if (now === undefined) {
-      if (stops.length > 0) return { stops, complete: true, trap: undefined };
-      continue;
-    }
-    if (stops.some((stop) => stop.sel === now.sel)) {
-      const trap = await trapOf(page, stops, now);
-      return { stops, complete: trap === undefined, trap };
-    }
-    if (stops.length >= limit) return { stops, complete: false, trap: undefined };
-    stops.push({ ...now, changed: await focusShows(page, now) });
-  }
-  return { stops, complete: false, trap: undefined };
-};
+export const pageDriver = (page: Page): KeyDriver => ({
+  press: async (key) => page.keyboard.press(key),
+  focused: async () => focused(page),
+  focus: async (sel) => {
+    await page.evaluate(`document.querySelector(${JSON.stringify(sel)})?.focus()`);
+  },
+  reset: async () => {
+    await page.evaluate("document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)");
+  },
+  shows: async (stop) => focusShows(page, stop),
+  container: async (from, to) => {
+    const raw: unknown = await page.evaluate(
+      runInPage(CONTAINER_SOURCE, ["document", JSON.stringify(from), JSON.stringify(to)]),
+    );
+    return typeof raw === "string" ? raw : null;
+  },
+  targets: async (composites) => targetsOf(page, composites),
+});
 
 const dialogCheck = async (page: Page, trigger: string): Promise<DialogResult> => {
   const result = { trigger, opened: false, focusInside: false, closed: false, returned: false };
@@ -140,8 +127,7 @@ export const keyboardPass = (dialogs: Readonly<Record<string, readonly string[]>
   feature: KEYBOARD_FEATURE,
   allWidths: false,
   run: async (page, at) => {
-    const targets = await targetsOf(page);
-    const walk = await walkKeyboard(page);
+    const { walk, targets } = await walkKeyboard(pageDriver(page));
     await drawBoxes(page, walk.stops, at.file("focus"));
     const route = at.route.split("?")[0] ?? at.route;
     const results: DialogResult[] = [];

@@ -12,6 +12,7 @@ import { applyPlan } from "../install/apply.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
 import { type InstallQuestion, type PlanData, planData, planLines } from "../install/report.js";
 import { applyProblem, confirmProblem, openProject, planInputFor, planProblem } from "../install/session.js";
+import { type EnginePlan, enginePlan } from "../look/engine.js";
 import { isPerson } from "../secrets/project.js";
 import { trustImplicit } from "../task/trust.js";
 import type { CommandSpec } from "./types.js";
@@ -125,11 +126,32 @@ const withGithub = (
   return result.ok ? { ...result, data: { ...result.data, github: step }, human } : { ...result, human };
 };
 
+export type LookInitData = (PlanData | LookBackData | GithubInitData) & { readonly look: EnginePlan };
+
+export const engineLines = (t: Ctx["t"], plan: EnginePlan, confirmed: boolean): readonly string[] => {
+  const params = { package: plan.package, size: plan.sizeMb, command: plan.command };
+  if (plan.present) return [t("look.engine.present", params)];
+  if (plan.added) return [t("look.engine.added", params)];
+  if (confirmed) return [t("look.engine.offer", params), t("look.engine.failed", params)];
+  return [t("look.engine.offer", params), t("look.engine.consent", params)];
+};
+
+const withLook = (
+  ctx: Ctx,
+  result: CommandResult<PlanData | LookBackData | GithubInitData>,
+): CommandResult<PlanData | LookBackData | GithubInitData | LookInitData> => {
+  const root = openProject(ctx).project.root;
+  const confirmed = ctx.yes && !ctx.dryRun && isPerson(ctx);
+  const plan = enginePlan(ctx.runtime, root, confirmed);
+  const human = [...(result.human ?? []), ...engineLines(ctx.t, plan, confirmed)];
+  return result.ok ? { ...result, data: { ...result.data, look: plan }, human } : { ...result, human };
+};
+
 export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+    "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--look] [--dry-run] [--yes]",
   status: "ready",
   options: {
     commits: { type: "string" },
@@ -138,6 +160,7 @@ export const initCommand: CommandSpec = {
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
     github: { type: "boolean" },
+    look: { type: "boolean" },
   },
   run: async (ctx, args) => {
     const raw = stringOption(args.values, "commits");
@@ -151,6 +174,7 @@ export const initCommand: CommandSpec = {
       );
     const result = runInstall(ctx, initRequest(args, await commitsAnswer(ctx, flag)));
     const looked = args.values["look-back"] === true ? withLookBack(ctx, result) : result;
-    return args.values["github"] === true ? withGithub(ctx, looked) : looked;
+    const hubbed = args.values["github"] === true ? withGithub(ctx, looked) : looked;
+    return args.values["look"] === true ? withLook(ctx, hubbed) : hubbed;
   },
 };

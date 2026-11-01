@@ -2766,7 +2766,14 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "doctor.look.engine_missing": "machine",
+    "doctor.look.fix_engine": "machine",
+    "look.engine.present": "machine",
+    "look.engine.offer": "machine",
+    "look.engine.consent": "machine",
+    "look.engine.added": "machine",
+    "look.engine.failed": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5535,6 +5542,13 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "doctor.look.engine_missing": "machine",
+    "doctor.look.fix_engine": "machine",
+    "look.engine.present": "machine",
+    "look.engine.offer": "machine",
+    "look.engine.consent": "machine",
+    "look.engine.added": "machine",
+    "look.engine.failed": "machine"
   }
 }

@@ -14,6 +14,7 @@ import { checkInstructionDrift } from "./instruction-drift.js";
 import { checkInstructionLayers } from "./instruction-layers.js";
 import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
+import { checkLookEngine } from "./look-engine.js";
 import { checkAgentsFile } from "./memory.js";
 import { checkMods } from "./mods.js";
 import { checkAlertBudget, checkPolicy } from "./policy.js";
@@ -58,6 +59,7 @@ export const CHECKS: readonly Check[] = [
   checkHiddenText,
   checkMods,
   checkInstructionDrift,
+  checkLookEngine,
 ];
 
 export interface DoctorItem {

@@ -22,6 +22,10 @@ interface Containing extends MiniEl {
   readonly contains: (other: MiniEl) => boolean;
 }
 
+export interface ContainerDoc extends MiniDoc {
+  readonly querySelector: (selector: string) => MiniEl | null;
+}
+
 export interface FocusDoc extends MiniDoc {
   readonly activeElement: Containing | null;
   readonly elementFromPoint: (x: number, y: number) => Containing | null;
@@ -85,4 +89,16 @@ export const focusTargets = (kit: Kit, doc: MiniDoc, win: MiniWin, composites: s
     const composite = element.closest(composites);
     return [{ sel: kit.selectorOf(element), composite: composite === null ? null : kit.selectorOf(composite) }];
   });
+};
+
+export const sharedContainer = (kit: Kit, doc: ContainerDoc, from: string, to: string): string | null => {
+  const start = doc.querySelector(from);
+  const end = doc.querySelector(to);
+  if (start === null || end === null) return null;
+  const above = new Set<MiniEl>();
+  for (let node: MiniEl | null = end.parentElement; node !== null; node = node.parentElement) above.add(node);
+  let box: MiniEl | null = start.parentElement;
+  while (box !== null && !above.has(box)) box = box.parentElement;
+  if (box === null || box === doc.body || box === doc.documentElement) return null;
+  return kit.selectorOf(box);
 };

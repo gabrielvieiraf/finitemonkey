@@ -11,13 +11,15 @@ import {
   type Submitted,
   validValue,
 } from "./forms.js";
-import { type FieldInfo, type FieldState, fieldStates, formFields } from "./forms-dom.js";
+import { type FieldInfo, type FieldState, fieldStates, formChoices, formFields, type StepEntry } from "./forms-dom.js";
+import { redundantEntry, type StepDriver } from "./forms-steps.js";
 import type { PagePass } from "./node-ux.js";
 import { runInPage } from "./probe-dom.js";
 import { issue, type UxIssue } from "./ux.js";
 
 export interface FormsOptions {
   readonly forms: Readonly<Record<string, readonly string[]>>;
+  readonly steps: Readonly<Record<string, readonly (readonly string[])[]>>;
   readonly keepCleared: readonly string[];
   readonly values: Readonly<Record<string, string>>;
   readonly widest: number;
@@ -26,7 +28,7 @@ export interface FormsOptions {
 const text = (value: unknown, key: string): string =>
   isRecord(value) && typeof value[key] === "string" ? value[key] : "";
 
-const fieldsOf = async (page: Page, form: string): Promise<readonly FieldInfo[]> => {
+const fieldsOf = async (page: Page, form: string): Promise<readonly StepEntry[]> => {
   const raw: unknown = await page.evaluate(runInPage(formFields.toString(), ["document", JSON.stringify(form)]));
   return Array.isArray(raw)
     ? raw.flatMap((item: unknown) =>
@@ -42,6 +44,10 @@ const fieldsOf = async (page: Page, form: string): Promise<readonly FieldInfo[]>
                 minLength: typeof item["minLength"] === "number" ? item["minLength"] : 0,
                 labelled: item["labelled"] === true,
                 placeholder: text(item, "placeholder"),
+                name: text(item, "name"),
+                autocomplete: text(item, "autocomplete"),
+                label: text(item, "label"),
+                value: text(item, "value"),
               },
             ]
           : [],
@@ -70,6 +76,40 @@ const statesOf = async (page: Page, selectors: readonly string[]): Promise<reado
           : [],
       )
     : [];
+};
+
+const choicesOf = async (page: Page, form: string): Promise<readonly string[]> => {
+  const raw: unknown = await page.evaluate(runInPage(formChoices.toString(), ["document", JSON.stringify(form)]));
+  return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === "string") : [];
+};
+
+export const stepDriver = (page: Page): StepDriver => ({
+  snapshot: async (step) => {
+    const fields = await fieldsOf(page, step);
+    return fields.length === 0 ? undefined : { fields, choices: await choicesOf(page, step) };
+  },
+  fill: async (sel, value) => page.locator(sel).first().fill(value),
+  submit: async (step) => {
+    const button = page.locator(`${step} button:not([type=button]):not([type=reset]), ${step} input[type=submit]`);
+    if ((await button.count()) > 0) await button.first().click({ timeout: 2000 });
+    else await page.locator(`${step} input`).first().press("Enter");
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+    await page.waitForTimeout(SETTLE_MS);
+  },
+});
+
+const checkSteps = async (page: Page, url: string, steps: readonly string[], options: FormsOptions) => {
+  try {
+    await page.goto(url, { waitUntil: "networkidle" });
+    return await redundantEntry(stepDriver(page), steps, options.values);
+  } catch (error) {
+    const detail = error instanceof Error ? (error.message.split("\n")[0] ?? "") : String(error);
+    return [
+      issue("forms/redundant-entry", steps[0] ?? "form", `steps could not be exercised: ${detail}`, {
+        unverified: true,
+      }),
+    ];
+  }
 };
 
 const premature = async (page: Page, field: FieldInfo, valid: string): Promise<readonly UxIssue[]> => {
@@ -140,8 +180,10 @@ export const formsPass = (options: FormsOptions): PagePass => ({
   allWidths: false,
   run: async (page, at) => {
     const forms = options.forms[at.route] ?? [];
-    if (at.viewport !== options.widest || forms.length === 0) return [];
+    const steps = options.steps[at.route] ?? [];
+    if (at.viewport !== options.widest || forms.length + steps.length === 0) return [];
     const found: UxIssue[] = [];
+    for (const sequence of steps) found.push(...(await checkSteps(page, at.url, sequence, options)));
     for (const form of forms) {
       try {
         found.push(...(await checkForm(page, at.url, form, options)));

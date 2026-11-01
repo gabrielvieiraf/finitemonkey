@@ -2765,5 +2765,12 @@
   "command.judge_contradict.summary": "Record a new source that contradicts a claim; it opens only on a span match or the person's confirmation",
   "command.judge_fixed.summary": "Record who fixed a ricochet event; a repair by the person is marked held",
   "command.judge_trajectory.summary": "List ricochet events of research claims with the state and bands they had at acceptance",
-  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}",
+  "doctor.look.engine_missing": "the accessibility rule engine {package} is not in this project, so a11y/engine stays not verified",
+  "doctor.look.fix_engine": "run `finitemonkey init --look` to see the plan (adds {package} as a dev dependency, about {size} MB); nothing is installed without --yes",
+  "look.engine.present": "accessibility rule engine: {package} is already in the project",
+  "look.engine.offer": "accessibility rule engine: {package} is missing, so a11y/engine stays not verified. Adding it as a dev dependency takes about {size} MB: {command}",
+  "look.engine.consent": "nothing was installed; run `finitemonkey init --look --yes` to add it",
+  "look.engine.added": "accessibility rule engine: added {package} as a dev dependency",
+  "look.engine.failed": "accessibility rule engine: `{command}` did not finish; a11y/engine stays not verified until {package} is installed"
 }

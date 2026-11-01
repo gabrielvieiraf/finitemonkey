@@ -170,6 +170,8 @@ export const startsWithVerb = (text: string, lang: CopyLang): boolean => {
   return lang !== "en" && /^\p{L}{2,}(?:ar|er|ir|ír)$/u.test(word);
 };
 
+export const hasAction = (text: string, lang: CopyLang): boolean => ACTIONS[lang].test(text);
+
 const allowed = (entry: CatalogEntry, allow: readonly string[]): boolean => {
   const normal = entry.text.trim().toLowerCase();
   return allow.some((item) => item === entry.key || item.trim().toLowerCase() === normal);

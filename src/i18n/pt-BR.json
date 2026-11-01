@@ -2765,5 +2765,12 @@
   "command.judge_contradict.summary": "Registrar uma fonte nova que contradiz uma afirmação; só abre com trecho casado ou confirmação da pessoa",
   "command.judge_fixed.summary": "Registrar quem consertou um evento de ricochete; conserto da pessoa fica marcado como sustentado",
   "command.judge_trajectory.summary": "Listar eventos de ricochete de afirmações de pesquisa com estado e faixas que tinham no aceite",
-  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}",
+  "doctor.look.engine_missing": "o motor de regras de acessibilidade {package} não está neste projeto, então a11y/engine fica como não verificado",
+  "doctor.look.fix_engine": "rode `finitemonkey init --look` para ver o plano (adiciona {package} como dependência de desenvolvimento, cerca de {size} MB); nada é instalado sem --yes",
+  "look.engine.present": "motor de regras de acessibilidade: {package} já está no projeto",
+  "look.engine.offer": "motor de regras de acessibilidade: falta {package}, então a11y/engine fica como não verificado. Adicioná-lo como dependência de desenvolvimento ocupa cerca de {size} MB: {command}",
+  "look.engine.consent": "nada foi instalado; rode `finitemonkey init --look --yes` para adicioná-lo",
+  "look.engine.added": "motor de regras de acessibilidade: {package} adicionado como dependência de desenvolvimento",
+  "look.engine.failed": "motor de regras de acessibilidade: `{command}` não terminou; a11y/engine fica como não verificado até {package} ser instalado"
 }
