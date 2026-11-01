@@ -4,6 +4,7 @@ export const DESCRIBED_PREFIXES = [
   "conceitos.evidence.",
   "probe.",
   "trajectory.",
+  "teach.",
 ] as const;
 
 export interface WordingRule {

@@ -11,6 +11,9 @@ var memory = {
   notice: void 0,
   xray: void 0,
   concepts: [],
+  teachCard: void 0,
+  probeCard: void 0,
+  teachNotice: void 0,
   trajectory: [],
   selectedMark: void 0,
   theme: "auto"
@@ -1587,12 +1590,105 @@ async function trajectoryNow($) {
   return { text: domains.length === 0 ? "finitemonkey: no trajectory in this folder" : trajectoryText(domains) };
 }
 
+// src/mod/teach-view.ts
+var isRec = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var str4 = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var dataOf = (text5, schema) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text5);
+  } catch {
+    return void 0;
+  }
+  const data = isRec(parsed) && isRec(parsed["data"]) ? parsed["data"] : void 0;
+  return data?.["schema"] === schema ? data : void 0;
+};
+var strings = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+var parseTeachCard = (text5) => {
+  const question = dataOf(text5, "finitemonkey/teach@1")?.["question"];
+  if (!isRec(question) || question["answered"] === true) return void 0;
+  const id = str4(question, "question");
+  if (id === "") return void 0;
+  return {
+    question: id,
+    concepts: strings(question["concepts"]),
+    run: str4(question, "run"),
+    input: str4(question, "input")
+  };
+};
+var parseTeachReason = (text5) => {
+  const reason = dataOf(text5, "finitemonkey/teach@1")?.["reason"];
+  return typeof reason === "string" ? reason : void 0;
+};
+var parseProbeCard = (text5) => {
+  const probes = dataOf(text5, "finitemonkey/probes@1")?.["probes"];
+  const open = (Array.isArray(probes) ? probes : []).filter(isRec).find((probe) => probe["status"] === "open" && probe["presented"] === true);
+  if (open === void 0) return void 0;
+  const options = (Array.isArray(open["options"]) ? open["options"] : []).filter(isRec).map((option) => ({ id: str4(option, "id"), text: str4(option, "text") }));
+  return { id: str4(open, "id"), question: str4(open, "question"), why: str4(open, "why"), options };
+};
+var teachLines = (card) => [
+  `Teach-back on ${card.concepts.join(", ") || "-"}: what does ${card.run} print for the input ${card.input || "-"}? The answer key comes from running it.`,
+  `Answer at a terminal: finitemonkey teach answer ${card.question} <value>. Skipping changes nothing.`
+];
+var REASON_TEXT = {
+  no_key: "No keyed question for this concept, so nothing changes.",
+  not_at_edge: "This concept is not proximal or beyond on the record.",
+  no_concept: "This block has no concept to ask about."
+};
+var teachTree = (elements, card, actions) => elements.Box({
+  key: "fm-teach-card",
+  flexDirection: "column",
+  children: [
+    ...teachLines(card).map(
+      (line2, index) => elements.Text({ key: `fm-teach-line-${String(index)}`, children: [line2] })
+    ),
+    elements.Button({
+      key: "fm-teach-skip",
+      label: "Skip question",
+      onPress: () => actions.skipQuestion(card.question)
+    })
+  ]
+});
+var probeTree = (elements, card, actions) => elements.Box({
+  key: "fm-probe-card",
+  flexDirection: "column",
+  children: [
+    elements.Text({ key: "fm-probe-question", children: [`${card.id}: ${card.question}`] }),
+    elements.Text({
+      key: "fm-probe-why",
+      dimColor: true,
+      children: [`Why this question: ${card.why}. Skipping changes nothing.`]
+    }),
+    elements.Box({
+      key: "fm-probe-options",
+      flexDirection: "row",
+      columnGap: 2,
+      children: [
+        ...card.options.map(
+          (option) => elements.Button({
+            key: `fm-probe-option-${option.id}`,
+            label: `${option.id}) ${option.text}`,
+            onPress: () => actions.answerProbe(card.id, option.id)
+          })
+        ),
+        elements.Button({ key: "fm-probe-skip", label: "Skip probe", onPress: () => actions.skipProbe(card.id) })
+      ]
+    })
+  ]
+});
+var cardsTree = (elements, teach, probe, notice, actions) => [
+  ...notice === void 0 ? [] : [elements.Text({ key: "fm-teach-notice", dimColor: true, children: [notice] })],
+  ...teach === void 0 ? [] : [teachTree(elements, teach, actions)],
+  ...probe === void 0 ? [] : [probeTree(elements, probe, actions)]
+];
+
 // src/mod/xray-view.ts
 var XRAY_PANE = "fm-xray";
 var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var str4 = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var str5 = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var num3 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
-var dataOf = (text5, schema) => {
+var dataOf2 = (text5, schema) => {
   let parsed;
   try {
     parsed = JSON.parse(text5);
@@ -1604,26 +1700,26 @@ var dataOf = (text5, schema) => {
 };
 var records2 = (value) => Array.isArray(value) ? value.filter(isRecord7) : [];
 var parseXray = (text5) => {
-  const data = dataOf(text5, "finitemonkey/xray@1");
+  const data = dataOf2(text5, "finitemonkey/xray@1");
   if (data === void 0) return void 0;
   return {
-    task: str4(data, "task"),
+    task: str5(data, "task"),
     beyond: num3(data, "beyondWithoutCriterion"),
     items: records2(data["items"]).map((item) => ({
-      file: str4(item, "file"),
+      file: str5(item, "file"),
       start: num3(item, "start"),
       end: num3(item, "end"),
-      band: str4(item, "band"),
-      coverage: str4(item, "coverage"),
-      concepts: records2(item["concepts"]).map((entry) => str4(entry, "concept")),
-      by: str4(item, "by")
+      band: str5(item, "band"),
+      coverage: str5(item, "coverage"),
+      concepts: records2(item["concepts"]).map((entry) => str5(entry, "concept")),
+      by: str5(item, "by")
     }))
   };
 };
-var parseConcepts = (text5) => records2(dataOf(text5, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
-  concept: str4(item, "concept"),
-  domain: str4(item, "domain"),
-  state: str4(item, "state"),
+var parseConcepts = (text5) => records2(dataOf2(text5, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
+  concept: str5(item, "concept"),
+  domain: str5(item, "domain"),
+  state: str5(item, "state"),
   positive: num3(item, "positive"),
   negative: num3(item, "negative"),
   exposures: num3(item, "exposures")
@@ -1664,33 +1760,52 @@ var mapSvg = (concepts) => {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="${String(height)}" viewBox="0 0 560 ${String(height)}">${body}</svg>`;
 };
 var needsAction = (row2) => (row2.band === "beyond" || row2.band === "unknown") && row2.coverage !== "covered";
-var itemTree = (elements, row2, actions) => {
-  const key = `${row2.file}:${String(row2.start)}`;
-  const text5 = elements.Text({ key: `fm-xray-text-${key}`, children: [rowLine2(row2)] });
-  if (!needsAction(row2)) return text5;
+var teachRow = (elements, row2, actions, key) => {
+  const input = elements.Input;
   return elements.Box({
-    key: `fm-xray-item-${key}`,
-    flexDirection: "column",
+    key: `fm-xray-teach-${key}`,
+    flexDirection: "row",
+    columnGap: 2,
     children: [
-      text5,
-      elements.Box({
-        key: `fm-xray-actions-${key}`,
-        flexDirection: "row",
-        columnGap: 2,
-        children: [
-          elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
-          elements.Button({
-            key: `fm-xray-leave-${key}`,
-            label: "Leave it to the machine",
-            onPress: () => actions.leave(row2)
-          }),
-          elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row2) })
-        ]
-      })
+      elements.Button({ key: `fm-xray-predict-${key}`, label: "Predict", onPress: () => actions.predict(row2) }),
+      elements.Button({ key: `fm-xray-know-${key}`, label: "I know this", onPress: () => actions.know(row2) }),
+      ...input === void 0 ? [] : [
+        input({
+          key: `fm-xray-explain-${key}`,
+          label: "Explain",
+          placeholder: "In your words; stored, never graded",
+          submitLabel: "Store",
+          onSubmit: (text5) => actions.explain(row2, text5)
+        })
+      ]
     ]
   });
 };
-var xrayTree = (elements, view, concepts, actions, surface) => {
+var decisionRow = (elements, row2, actions, key) => elements.Box({
+  key: `fm-xray-actions-${key}`,
+  flexDirection: "row",
+  columnGap: 2,
+  children: [
+    elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
+    elements.Button({
+      key: `fm-xray-leave-${key}`,
+      label: "Leave it to the machine",
+      onPress: () => actions.leave(row2)
+    }),
+    elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row2) })
+  ]
+});
+var itemTree = (elements, row2, actions) => {
+  const key = `${row2.file}:${String(row2.start)}`;
+  const text5 = elements.Text({ key: `fm-xray-text-${key}`, children: [rowLine2(row2)] });
+  const rows = [
+    ...needsAction(row2) ? [decisionRow(elements, row2, actions, key)] : [],
+    ...row2.concepts.length > 0 ? [teachRow(elements, row2, actions, key)] : []
+  ];
+  if (rows.length === 0) return text5;
+  return elements.Box({ key: `fm-xray-item-${key}`, flexDirection: "column", children: [text5, ...rows] });
+};
+var xrayTree = (elements, view, concepts, actions, surface, cards = { teach: void 0, probe: void 0, notice: void 0 }) => {
   const svg = surface === "desktop" || surface === "vscode" ? elements.Svg : void 0;
   const map = svg === void 0 ? concepts.filter((row2) => row2.state !== "unknown").map((row2) => elements.Text({ key: `fm-xray-concept-${row2.concept}`, children: [conceptLine(row2)] })) : [svg({ key: "fm-xray-map", source: mapSvg(concepts), alt: "concept evidence on record, one row per concept" })];
   return elements.Box({
@@ -1703,6 +1818,7 @@ var xrayTree = (elements, view, concepts, actions, surface) => {
           view === void 0 ? "no x-ray for this folder" : `X-ray ${view.task}: ${String(view.beyond)} beyond the record with no criterion`
         ]
       }),
+      ...cardsTree(elements, cards.teach, cards.probe, cards.notice, actions),
       ...(view?.items ?? []).map((row2) => itemTree(elements, row2, actions)),
       elements.Text({ key: "fm-xray-map-head", dimColor: true, children: ["What is on record, per concept:"] }),
       ...map,
@@ -1712,12 +1828,29 @@ var xrayTree = (elements, view, concepts, actions, surface) => {
 };
 
 // src/mod/xray-hooks.ts
+var TEACH_OFF = "teach-back is off; it runs after guards: teach-back: active in .finitemonkey/policy.yml";
 async function loadXray($) {
   const xray = await runCli($, ["xray", "--json"]);
   const concepts = await runCli($, ["conceitos", "evidence", "--json"]);
   memory.xray = xray === void 0 ? void 0 : parseXray(xray);
   memory.concepts = concepts === void 0 ? [] : parseConcepts(concepts);
+  const teach = await runCli($, ["teach", "--json"]);
+  const probes = await runCli($, ["probe", "--json"]);
+  memory.teachCard = teach === void 0 ? void 0 : parseTeachCard(teach);
+  memory.probeCard = probes === void 0 ? void 0 : parseProbeCard(probes);
 }
+function noticeOf(out, done) {
+  if (out === void 0) return TEACH_OFF;
+  const reason = parseTeachReason(out);
+  return reason === void 0 ? done : REASON_TEXT[reason] ?? reason;
+}
+async function teachAct($, args, done) {
+  const out = await runCli($, [...args, "--json"]);
+  memory.teachNotice = args[0] === "probe" ? void 0 : noticeOf(out, done);
+  await loadXray($);
+  $.ui.invalidate("ui.render");
+}
+var conceptsArg = (row2) => ["--concepts", row2.concepts.join(",")];
 async function decideRow($, row2, flag) {
   await runCli($, ["xray", "decide", `${row2.file}:${String(row2.start)}`, flag, "--json"]);
   memory.xray = memory.xray === void 0 ? void 0 : {
@@ -1738,9 +1871,20 @@ function renderXray($, e) {
       criterion: () => createCriterion($),
       leave: (row2) => decideRow($, row2, "--leave"),
       skip: (row2) => decideRow($, row2, "--skip"),
+      predict: (row2) => teachAct($, ["teach", "ask", ...conceptsArg(row2)]),
+      know: (row2) => teachAct($, ["teach", "know", ...conceptsArg(row2)]),
+      explain: (row2, text5) => teachAct(
+        $,
+        ["teach", "explain", ...conceptsArg(row2), text5],
+        "Explanation stored as written; it is never graded."
+      ),
+      answerProbe: (probe, option) => teachAct($, ["probe", "answer", probe, option]),
+      skipProbe: (probe) => teachAct($, ["probe", "skip", probe]),
+      skipQuestion: (question) => teachAct($, ["teach", "skip", question]),
       close: () => $.ui.close({ id: XRAY_PANE })
     },
-    e.surface
+    e.surface,
+    { teach: memory.teachCard, probe: memory.probeCard, notice: memory.teachNotice }
   );
 }
 async function xrayNow($) {
@@ -1903,7 +2047,7 @@ var attributionOf = (value) => {
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
-var dataOf2 = (parsed) => isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
+var dataOf3 = (parsed) => isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text5) => {
   let parsed;
   try {
@@ -1911,7 +2055,7 @@ var parseModState = (text5) => {
   } catch {
     return void 0;
   }
-  const data = dataOf2(parsed);
+  const data = dataOf3(parsed);
   if (!isRecord8(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];

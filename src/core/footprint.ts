@@ -238,6 +238,15 @@ export const FOOTPRINT = [
   { id: "parking", kind: "writes", targets: [".finitemonkey/parking.jsonl"] },
   { id: "ui-copy", kind: "writes", targets: [".finitemonkey/cache/copy-rules.json"] },
   { id: "judge", kind: "writes", targets: [".finitemonkey/judge.jsonl", ".finitemonkey/judge/"] },
+  {
+    id: "teach-back",
+    kind: "writes",
+    targets: [
+      ".finitemonkey/teach.jsonl",
+      ".finitemonkey/cache/teach-pause.json",
+      ".finitemonkey/cache/blueprint-asked.json",
+    ],
+  },
   { id: "cite-sources", kind: "sends", targets: ["doi.org", "cited URLs"], via: "curl" },
 ] as const satisfies readonly FootprintEntry[];
 

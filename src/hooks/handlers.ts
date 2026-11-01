@@ -64,6 +64,8 @@ import {
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
 import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
+import { TEACH_HANDLERS } from "../teach/hooks.js";
+import { TEACH_FEATURE } from "../teach/types.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
 import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
 import { WT_SUGGEST_HANDLERS } from "../wt/suggest-hooks.js";
@@ -257,6 +259,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
+  { id: TEACH_FEATURE, damage: false, handlers: TEACH_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

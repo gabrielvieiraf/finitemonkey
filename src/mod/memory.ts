@@ -4,6 +4,7 @@ import type { Timer } from "./api.js";
 import type { ContractView, DivergeView } from "./approve-view.js";
 import type { LoadedState } from "./state.js";
 import type { GateView } from "./status.js";
+import type { ProbeCard, TeachCard } from "./teach-view.js";
 import type { ConceptRow, XrayView } from "./xray-view.js";
 
 export interface StepUsage {
@@ -27,6 +28,9 @@ export interface Memory {
   notice: string | undefined;
   xray: XrayView | undefined;
   concepts: readonly ConceptRow[];
+  teachCard: TeachCard | undefined;
+  probeCard: ProbeCard | undefined;
+  teachNotice: string | undefined;
   trajectory: readonly DomainTrajectory[];
   selectedMark: Mark | undefined;
   theme: ThemeChoice;
@@ -44,6 +48,9 @@ export const memory: Memory = {
   notice: undefined,
   xray: undefined,
   concepts: [],
+  teachCard: undefined,
+  probeCard: undefined,
+  teachNotice: undefined,
   trajectory: [],
   selectedMark: undefined,
   theme: "auto",

@@ -1,4 +1,5 @@
 import type { Elements, ModElement, Surface } from "./api.js";
+import { type CardActions, cardsTree, type ProbeCard, type TeachCard } from "./teach-view.js";
 
 export const XRAY_PANE = "fm-xray";
 
@@ -27,11 +28,20 @@ export interface ConceptRow {
   readonly exposures: number;
 }
 
-export interface XrayActions {
+export interface XrayActions extends CardActions {
   readonly criterion: () => Promise<void>;
   readonly leave: (row: XrayRow) => Promise<void>;
   readonly skip: (row: XrayRow) => Promise<void>;
+  readonly predict: (row: XrayRow) => Promise<void>;
+  readonly know: (row: XrayRow) => Promise<void>;
+  readonly explain: (row: XrayRow, text: string) => Promise<void>;
   readonly close: () => Promise<void>;
+}
+
+export interface TeachState {
+  readonly teach: TeachCard | undefined;
+  readonly probe: ProbeCard | undefined;
+  readonly notice: string | undefined;
 }
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -136,31 +146,55 @@ export const mapSvg = (concepts: readonly ConceptRow[]): string => {
 const needsAction = (row: XrayRow): boolean =>
   (row.band === "beyond" || row.band === "unknown") && row.coverage !== "covered";
 
+const teachRow = (elements: Elements, row: XrayRow, actions: XrayActions, key: string): ModElement => {
+  const input = elements.Input;
+  return elements.Box({
+    key: `fm-xray-teach-${key}`,
+    flexDirection: "row",
+    columnGap: 2,
+    children: [
+      elements.Button({ key: `fm-xray-predict-${key}`, label: "Predict", onPress: () => actions.predict(row) }),
+      elements.Button({ key: `fm-xray-know-${key}`, label: "I know this", onPress: () => actions.know(row) }),
+      ...(input === undefined
+        ? []
+        : [
+            input({
+              key: `fm-xray-explain-${key}`,
+              label: "Explain",
+              placeholder: "In your words; stored, never graded",
+              submitLabel: "Store",
+              onSubmit: (text) => actions.explain(row, text),
+            }),
+          ]),
+    ],
+  });
+};
+
+const decisionRow = (elements: Elements, row: XrayRow, actions: XrayActions, key: string): ModElement =>
+  elements.Box({
+    key: `fm-xray-actions-${key}`,
+    flexDirection: "row",
+    columnGap: 2,
+    children: [
+      elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
+      elements.Button({
+        key: `fm-xray-leave-${key}`,
+        label: "Leave it to the machine",
+        onPress: () => actions.leave(row),
+      }),
+      elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row) }),
+    ],
+  });
+
 const itemTree = (elements: Elements, row: XrayRow, actions: XrayActions): ModElement => {
   const key = `${row.file}:${String(row.start)}`;
   const text = elements.Text({ key: `fm-xray-text-${key}`, children: [rowLine(row)] });
-  if (!needsAction(row)) return text;
-  return elements.Box({
-    key: `fm-xray-item-${key}`,
-    flexDirection: "column",
-    children: [
-      text,
-      elements.Box({
-        key: `fm-xray-actions-${key}`,
-        flexDirection: "row",
-        columnGap: 2,
-        children: [
-          elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
-          elements.Button({
-            key: `fm-xray-leave-${key}`,
-            label: "Leave it to the machine",
-            onPress: () => actions.leave(row),
-          }),
-          elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row) }),
-        ],
-      }),
-    ],
-  });
+  const rows = [
+    ...(needsAction(row) ? [decisionRow(elements, row, actions, key)] : []),
+    ...(row.concepts.length > 0 ? [teachRow(elements, row, actions, key)] : []),
+  ];
+  if (rows.length === 0) return text;
+  return elements.Box({ key: `fm-xray-item-${key}`, flexDirection: "column", children: [text, ...rows] });
 };
 
 export const xrayTree = (
@@ -169,6 +203,7 @@ export const xrayTree = (
   concepts: readonly ConceptRow[],
   actions: XrayActions,
   surface: Surface,
+  cards: TeachState = { teach: undefined, probe: undefined, notice: undefined },
 ): ModElement => {
   const svg = surface === "desktop" || surface === "vscode" ? elements.Svg : undefined;
   const map =
@@ -189,6 +224,7 @@ export const xrayTree = (
             : `X-ray ${view.task}: ${String(view.beyond)} beyond the record with no criterion`,
         ],
       }),
+      ...cardsTree(elements, cards.teach, cards.probe, cards.notice, actions),
       ...(view?.items ?? []).map((row) => itemTree(elements, row, actions)),
       elements.Text({ key: "fm-xray-map-head", dimColor: true, children: ["What is on record, per concept:"] }),
       ...map,
