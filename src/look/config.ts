@@ -72,6 +72,8 @@ export interface DsConfig {
   readonly exclude: readonly string[];
   readonly excludeFiles: readonly string[];
   readonly tolerance: number;
+  readonly readConfig: boolean;
+  readonly config: string | undefined;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -166,6 +168,8 @@ export const parseLookConfig = (source: string): LookConfig => {
       exclude: configList(tree, "ds", "exclude"),
       excludeFiles: configList(tree, "ds", "exclude_files"),
       tolerance: number(configAt(tree, "ds", "tolerance")) ?? COLOR_TOLERANCE,
+      readConfig: configAt(tree, "ds", "read_config") === "true",
+      config: text(configAt(tree, "ds", "config")),
     },
   };
 };

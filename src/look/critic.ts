@@ -7,10 +7,12 @@ import { logEvent } from "../evidence/log.js";
 import { type Arm, experimentArm } from "../policy/experiment.js";
 import type { GuardMode } from "../policy/policy.js";
 import { loadPolicy } from "../policy/policy.js";
+import { sha256Hex } from "../secrets/fingerprint.js";
 import { IMPLICIT_ID } from "../task/implicit.js";
 import { activeTaskId } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
 import type { UiScreen } from "./contract.js";
+import { recordShown } from "./critic-ledger.js";
 import { LOOK_DIR, lookDir } from "./paths.js";
 import type { ProbeBox } from "./probe.js";
 
@@ -48,6 +50,7 @@ export interface RawCritique {
 }
 
 export interface Critique {
+  readonly id: string;
   readonly route: string;
   readonly viewport: number;
   readonly heuristic: ChecklistId;
@@ -73,21 +76,18 @@ const boxOf = (value: unknown): ProbeBox | undefined => {
     : undefined;
 };
 
+export const critiqueId = (route: string, viewport: number, heuristic: string, text: string): string =>
+  sha256Hex([route, String(viewport), heuristic, text].join("\u0000")).slice(0, 8);
+
 export const keepValid = (input: CritiqueInput, raw: readonly RawCritique[]): readonly Critique[] =>
   raw
     .flatMap((item) => {
       const heuristic = CHECKLIST.find((id) => id === item.heuristic);
       const region = boxOf(item.region);
       if (heuristic === undefined || region === undefined) return [];
-      return [
-        {
-          route: input.route,
-          viewport: input.viewport,
-          heuristic,
-          region,
-          text: typeof item.text === "string" ? item.text.slice(0, 300) : "",
-        },
-      ];
+      const text = typeof item.text === "string" ? item.text.slice(0, 300) : "";
+      const { route, viewport } = input;
+      return [{ id: critiqueId(route, viewport, heuristic, text), route, viewport, heuristic, region, text }];
     })
     .slice(0, MAX_CRITIQUES);
 
@@ -157,6 +157,7 @@ export const runCritic = async (run: CriticRun): Promise<CritiqueFile | undefine
     critiques: critiques.slice(0, MAX_CRITIQUES),
   };
   run.runtime.writeText(critiquePath(run.paths, run.tree), `${JSON.stringify(file, null, 2)}\n`);
+  recordShown(run.runtime, run.paths, file.critiques);
   logEvent(run.runtime, run.paths, "ui_critic", {
     task,
     arm: arm ?? "none",

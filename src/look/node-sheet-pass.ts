@@ -3,6 +3,7 @@ import type { FmPaths } from "../task/paths.js";
 import type { PagePass } from "./node-ux.js";
 import { runInPage } from "./probe-dom.js";
 import { buildSheet, diffSheets, type Sheet, SHEET_FEATURE } from "./sheet.js";
+import { activeSheetRefs, boundToContract } from "./sheet-contract.js";
 import { approvedSheetPath, readSheet, rootSelector } from "./sheet-store.js";
 import type { TokenSet } from "./tokens.js";
 import { issue, type UxIssue } from "./ux.js";
@@ -11,13 +12,17 @@ export const approvedSheets = (
   runtime: Pick<Runtime, "readText">,
   paths: FmPaths,
   routes: readonly string[],
-): Readonly<Record<string, Sheet>> =>
-  Object.fromEntries(
+): Readonly<Record<string, Sheet>> => {
+  const refs = activeSheetRefs(runtime, paths);
+  return Object.fromEntries(
     routes.flatMap((route) => {
-      const sheet = readSheet(runtime, approvedSheetPath(paths, route));
-      return sheet === undefined ? [] : [[route, sheet]];
+      const file = approvedSheetPath(paths, route);
+      const text = runtime.readText(file);
+      const sheet = readSheet(runtime, file);
+      return sheet === undefined || !text.ok || !boundToContract(refs, route, text.value) ? [] : [[route, sheet]];
     }),
   );
+};
 
 export const sheetPass = (approved: Readonly<Record<string, Sheet>>, tokens: TokenSet): PagePass => ({
   feature: SHEET_FEATURE,

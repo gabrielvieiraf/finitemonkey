@@ -18,6 +18,7 @@ import {
 } from "./contract.js";
 import { readDont } from "./dont.js";
 import { DEFAULT_LOOK_FEATURE, DS_FEATURE } from "./ds.js";
+import { mergeTokens, utilityConfigTokens } from "./ds-config.js";
 import { type AddedText, staticPages } from "./ds-static.js";
 import { FLOW_FEATURE } from "./flow.js";
 import { FORMS_FEATURE } from "./forms.js";
@@ -69,11 +70,22 @@ export interface UxSetup {
   readonly tokenFiles: readonly string[];
 }
 
+export const projectTokens = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  config: LookConfig,
+  files: readonly string[],
+): TokenSet => {
+  const declared = loadTokens(runtime, root, files);
+  const utility = config.ds.readConfig ? utilityConfigTokens(runtime, root, config.ds.config) : undefined;
+  return utility === undefined ? declared : mergeTokens(declared, utility);
+};
+
 export const uxSetup = (runtime: Runtime, root: AbsolutePath, config: LookConfig, modes: ModeMap): UxSetup => {
   const screens = activeUiScreens(runtime, fmPaths(root));
   const tokenFiles = [...new Set([...config.ds.tokens, ...screens.flatMap((screen) => screen.tokens ?? [])])];
   const wanted = on(modes, DS_FEATURE) || on(modes, DEFAULT_LOOK_FEATURE);
-  return { screens, tokenFiles, tokens: wanted ? loadTokens(runtime, root, tokenFiles) : EMPTY_TOKENS };
+  return { screens, tokenFiles, tokens: wanted ? projectTokens(runtime, root, config, tokenFiles) : EMPTY_TOKENS };
 };
 
 const dsOptions = (root: AbsolutePath, config: LookConfig, setup: UxSetup, tree: string): DsOptions => ({
@@ -101,7 +113,12 @@ export const uxPasses = (
     ...(on(modes, DS_FEATURE) ? [dsPass(ds)] : []),
     ...(on(modes, DEFAULT_LOOK_FEATURE) ? [defaultLookPass(ds)] : []),
     ...(on(modes, SHEET_FEATURE)
-      ? [sheetPass(approvedSheets(runtime, fmPaths(root), config.routes), loadTokens(runtime, root, setup.tokenFiles))]
+      ? [
+          sheetPass(
+            approvedSheets(runtime, fmPaths(root), config.routes),
+            projectTokens(runtime, root, config, setup.tokenFiles),
+          ),
+        ]
       : []),
     ...(on(modes, KEYBOARD_FEATURE) ? [keyboardPass(contractDialogs(setup.screens, config.dialogs))] : []),
     ...(on(modes, FORMS_FEATURE)

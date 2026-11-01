@@ -37,6 +37,8 @@ import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
 import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
 import { KNOWLEDGE_MAP_HANDLERS } from "../knowledge/who-knows-hook.js";
 import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
+import { SHEET_FEATURE } from "../look/sheet.js";
+import { SHEET_HANDLERS } from "../look/sheet-hook.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
@@ -257,6 +259,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
+  { id: SHEET_FEATURE, damage: false, handlers: SHEET_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

@@ -69,6 +69,8 @@ export type StyleFields = Pick<
   | "borderWidth"
   | "spacing"
   | "position"
+  | "zIndex"
+  | "isolates"
 >;
 
 export const clean = (value: string | null): string => (value ?? "").replace(/\s+/g, " ").trim();
@@ -200,6 +202,9 @@ export const styleOf = (kit: Kit, style: MiniStyle): StyleFields => {
       kit.px(get("column-gap")),
     ],
     position: get("position"),
+    zIndex: get("z-index"),
+    isolates:
+      get("isolation") === "isolate" || ![get("transform"), get("filter")].every((v) => v === "" || v === "none"),
   };
 };
 

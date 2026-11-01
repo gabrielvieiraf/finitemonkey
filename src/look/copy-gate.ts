@@ -1,9 +1,11 @@
 import { loadRegistry } from "../apicontract/load.js";
 import { toAbsolutePath } from "../core/brand.js";
+import { logEvent } from "../evidence/log.js";
 import type { Note } from "../evidence/types.js";
 import type { GateContext } from "../gate/types.js";
 import { configAt, configList, loadProjectConfig } from "../git/project-config.js";
 import { featureMode } from "../policy/feature.js";
+import { classShown, type ShowSettings, showSettings } from "./acceptance.js";
 import {
   type CopyLedger,
   DEFAULT_MIN_SHOWN,
@@ -40,6 +42,7 @@ interface CopySettings {
   readonly allow: readonly string[];
   readonly threshold: number | undefined;
   readonly minShown: number;
+  readonly show: ShowSettings;
 }
 
 const note = (key: string, params: Note["params"] = {}): Note => ({ key, params });
@@ -57,6 +60,7 @@ const settingsOf = (ctx: GateContext): CopySettings => {
     allow: configList(tree, "ui", "copy", "allow"),
     threshold: threshold !== undefined && threshold > 0 && threshold <= 1 ? threshold : undefined,
     minShown: minShown !== undefined && minShown >= 1 ? Math.round(minShown) : DEFAULT_MIN_SHOWN,
+    show: showSettings(tree, "copy"),
   };
 };
 
@@ -105,6 +109,13 @@ const rateNotes = (ledger: CopyLedger, rules: readonly CopyRule[]): readonly Not
     return note("gate.copy.rate", { rule, accepted: rate.accepted, shown: rate.shown });
   });
 
+const logHidden = (ctx: GateContext, findings: readonly CopyFinding[], hidden: readonly CopyRule[]): void => {
+  for (const rule of hidden) {
+    const count = findings.filter((finding) => finding.rule === rule).length;
+    if (count > 0) logEvent(ctx.runtime, ctx.paths, "ui_copy_hidden", { rule, count });
+  }
+};
+
 export const copyRulesOutcome = (
   ctx: GateContext,
   files: readonly string[],
@@ -132,9 +143,15 @@ export const copyRulesOutcome = (
   const active = COPY_RULES.filter(
     (rule) => mode === "active" && ruleActive(rateOf(ledger[rule]), settings.threshold, settings.minShown),
   );
-  const fired = COPY_RULES.filter((rule) => findings.some((finding) => finding.rule === rule));
+  const hidden = COPY_RULES.filter(
+    (rule) => !active.includes(rule) && !classShown(rateOf(ledger[rule]), settings.show),
+  );
+  logHidden(ctx, findings, hidden);
+  const fired = COPY_RULES.filter(
+    (rule) => !hidden.includes(rule) && findings.some((finding) => finding.rule === rule),
+  );
   const blocking = findings.filter((finding) => active.includes(finding.rule));
-  const shadow = findings.filter((finding) => !active.includes(finding.rule));
+  const shadow = findings.filter((finding) => !active.includes(finding.rule) && !hidden.includes(finding.rule));
   const listed = [...blocking, ...shadow].slice(0, MAX_LISTED).map(findingNote);
   return {
     notes: [

@@ -13,6 +13,8 @@ export interface TokenSet {
   readonly lengths: readonly number[];
   readonly radii: readonly number[];
   readonly fontSizes: readonly number[];
+  readonly lineHeights: readonly number[];
+  readonly lineRatios: readonly number[];
   readonly fonts: readonly string[];
   readonly shadows: readonly string[];
   readonly sources: readonly string[];
@@ -30,6 +32,8 @@ export const EMPTY_TOKENS: TokenSet = {
   lengths: [],
   radii: [],
   fontSizes: [],
+  lineHeights: [],
+  lineRatios: [],
   fonts: [],
   shadows: [],
   sources: [],
@@ -37,7 +41,13 @@ export const EMPTY_TOKENS: TokenSet = {
 };
 
 export const hasTokens = (tokens: TokenSet): boolean =>
-  tokens.colors.length + tokens.lengths.length + tokens.radii.length + tokens.fontSizes.length + tokens.fonts.length >
+  tokens.colors.length +
+    tokens.lengths.length +
+    tokens.radii.length +
+    tokens.fontSizes.length +
+    tokens.lineHeights.length +
+    tokens.lineRatios.length +
+    tokens.fonts.length >
   0;
 
 export const lengthOf = (raw: string): number | undefined => {
@@ -53,28 +63,48 @@ const firstFont = (raw: string): string =>
     .replace(/^["']|["']$/g, "")
     .toLowerCase();
 
-interface Collected {
+export interface Collected {
   colors: Rgba[];
   lengths: number[];
   radii: number[];
   fontSizes: number[];
+  lineHeights: number[];
+  lineRatios: number[];
   fonts: string[];
   shadows: string[];
   names: TokenName[];
 }
 
-const fresh = (): Collected => ({
+export const fresh = (): Collected => ({
   colors: [],
   lengths: [],
   radii: [],
   fontSizes: [],
+  lineHeights: [],
+  lineRatios: [],
   fonts: [],
   shadows: [],
   names: [],
 });
 
-const place = (into: Collected, path: string, type: string | undefined, raw: string): void => {
+const UNITLESS = /^\d*\.?\d+$/;
+
+const placeLineHeight = (into: Collected, raw: string): void => {
+  const value = raw.trim();
+  if (UNITLESS.test(value)) {
+    into.lineRatios.push(Number.parseFloat(value));
+    return;
+  }
+  const length = lengthOf(value);
+  if (length !== undefined) into.lineHeights.push(length);
+};
+
+export const place = (into: Collected, path: string, type: string | undefined, raw: string): void => {
   const name = path.toLowerCase();
+  if (type === "lineHeight" || /line-?height|leading/.test(name)) {
+    placeLineHeight(into, raw);
+    return;
+  }
   const color = type === "color" || type === undefined ? parseColor(raw) : undefined;
   if (color !== undefined) {
     into.colors.push(color);
@@ -103,7 +133,7 @@ const place = (into: Collected, path: string, type: string | undefined, raw: str
   }
 };
 
-const walkW3c = (node: unknown, path: string, inherited: string | undefined, into: Collected): void => {
+export const walkW3c = (node: unknown, path: string, inherited: string | undefined, into: Collected): void => {
   if (!isRecord(node)) return;
   const type = typeof node["$type"] === "string" ? node["$type"] : inherited;
   const value = node["$value"];

@@ -37,6 +37,8 @@ export interface ProbeNode extends ProbeBox {
   readonly borderWidth: number;
   readonly spacing: readonly number[];
   readonly position: string;
+  readonly zIndex: string;
+  readonly isolates: boolean;
   readonly clipped: boolean;
   readonly live: boolean;
 }
@@ -95,6 +97,8 @@ const parseNode = (value: unknown): ProbeNode | undefined => {
     borderWidth: num(value["borderWidth"]),
     spacing: spacing.length === SPACING_FIELDS ? spacing : new Array<number>(SPACING_FIELDS).fill(0),
     position: str(value["position"]),
+    zIndex: typeof value["zIndex"] === "string" && value["zIndex"] !== "" ? value["zIndex"] : "auto",
+    isolates: bool(value["isolates"]),
     clipped: bool(value["clipped"]),
     live: bool(value["live"]),
   };

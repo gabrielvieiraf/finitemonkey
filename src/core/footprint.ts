@@ -237,6 +237,12 @@ export const FOOTPRINT = [
   { id: "infra-plan", kind: "sends", targets: ["terraform provider APIs"], via: "terraform" },
   { id: "parking", kind: "writes", targets: [".finitemonkey/parking.jsonl"] },
   { id: "ui-copy", kind: "writes", targets: [".finitemonkey/cache/copy-rules.json"] },
+  { id: "ui-critic", kind: "writes", targets: [".finitemonkey/cache/critic-classes.json"] },
+  {
+    id: "ds-config",
+    kind: "reads",
+    targets: ["tailwind.config.js", "tailwind.config.cjs", "tailwind.config.mjs", "tailwind.config.ts"],
+  },
   { id: "judge", kind: "writes", targets: [".finitemonkey/judge.jsonl", ".finitemonkey/judge/"] },
   { id: "cite-sources", kind: "sends", targets: ["doi.org", "cited URLs"], via: "curl" },
 ] as const satisfies readonly FootprintEntry[];
