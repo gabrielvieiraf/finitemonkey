@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 
 import type { ConceptId } from "../src/conceitos/concepts.js";
@@ -168,24 +169,24 @@ describe("trajectory view", () => {
   });
 
   it("finitemonkey trajectory prints the block without color when stdout is not a terminal", async () => {
-    const root = "/home/ana/project";
+    const root = toAbsolutePath("/home/ana/project");
     const runtime = fakeRuntime({
       now: new Date(NOW).toISOString(),
       files: {
-        [`${root}/.finitemonkey/conceitos-events.jsonl`]: LOG.map((item) => JSON.stringify(item)).join("\n"),
+        [join(root, ".finitemonkey", "conceitos-events.jsonl")]: LOG.map((item) => JSON.stringify(item)).join("\n"),
       },
     });
-    const plain = await cli(["trajectory", "--domain", "backend"], { runtime, cwd: toAbsolutePath(root) });
+    const plain = await cli(["trajectory", "--domain", "backend"], { runtime, cwd: root });
     assert.equal(plain.code, 0, plain.stderr);
     assert.match(plain.stdout, /^backend, 2026-W\d\d to 2026-W\d\d, \d+ weighted events/m);
     assert.ok(!plain.stdout.includes("\u001b"));
     const forced = await cli(["trajectory", "--domain", "backend"], {
       runtime,
-      cwd: toAbsolutePath(root),
+      cwd: root,
       env: { FORCE_COLOR: "1" },
     });
     assert.ok(forced.stdout.includes("\u001b[48;5;"));
-    const table = await cli(["trajectory", "--table"], { runtime, cwd: toAbsolutePath(root) });
+    const table = await cli(["trajectory", "--table"], { runtime, cwd: root });
     assert.match(table.stdout, /^backend +.*X/m);
   });
 });
