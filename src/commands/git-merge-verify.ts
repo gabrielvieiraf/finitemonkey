@@ -1,5 +1,6 @@
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
+import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { findingLabel } from "../git/gate-status.js";
@@ -15,6 +16,9 @@ interface Checked {
   readonly commit: string;
   readonly report: VerifyReport;
 }
+
+const USAGE = "finitemonkey merge verify [<merge-commit>] [--since <ref>] [--pr <number>] [--dropped <file>] [--json]";
+const FETCH_TIMEOUT_MS = 60_000;
 
 const short = (sha: string | undefined): string => (sha ?? "?").slice(0, 12);
 
@@ -53,6 +57,30 @@ const targetsOf = (ctx: Ctx, repo: Repo, rev: string | undefined, since: string 
   return headIsMerge(ctx, repo) ? ["HEAD"] : [];
 };
 
+const hasCommit = (ctx: Ctx, repo: Repo, ref: string): boolean =>
+  ctx.runtime.git(["rev-parse", "--verify", "--quiet", `${ref}^{commit}`], repo.root).ok;
+
+const pullMergeRef = (ctx: Ctx, repo: Repo, pr: string): string | undefined => {
+  const ref = `refs/pull/${pr}/merge`;
+  if (hasCommit(ctx, repo, ref)) return ref;
+  const fetch = ["fetch", "--quiet", "--no-tags", "origin", `+${ref}:${ref}`];
+  const fetched = ctx.runtime.gitWith(fetch, repo.root, { timeoutMs: FETCH_TIMEOUT_MS }).ok;
+  return fetched && hasCommit(ctx, repo, ref) ? ref : undefined;
+};
+
+const prTarget = (ctx: Ctx, repo: Repo, pr: string): CommandResult | string => {
+  if (!/^[1-9]\d{0,9}$/.test(pr))
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE, { detail: pr }));
+  const ref = pullMergeRef(ctx, repo, pr);
+  if (ref !== undefined) return ref;
+  const detail = `refs/pull/${pr}/merge is not in this clone and origin did not send it`;
+  const fix = `git fetch origin +refs/pull/${pr}/merge:refs/pull/${pr}/merge`;
+  return failureFrom(ctx.t, {
+    ...gitProblem("merge_unanalyzable", "git.error.merge_unanalyzable", detail, fix),
+    exitCode: ExitCode.Usage,
+  });
+};
+
 const resultOf = (ctx: Ctx, checked: readonly Checked[]): CommandResult => {
   const human = [...checked.flatMap((item) => humanOf(ctx, item)), ctx.t("git.merge.limits")];
   const data = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: checked };
@@ -81,15 +109,18 @@ const resultOf = (ctx: Ctx, checked: readonly Checked[]): CommandResult => {
 export const mergeVerifyCommand: CommandSpec = {
   path: ["merge", "verify"],
   summaryKey: "git.command.merge_verify",
-  usage: "finitemonkey merge verify [<merge-commit>] [--since <ref>] [--dropped <file>] [--json]",
+  usage: USAGE,
   status: "ready",
-  options: { since: { type: "string" }, dropped: { type: "string" } },
+  options: { since: { type: "string" }, dropped: { type: "string" }, pr: { type: "string" } },
   maxPositionals: 1,
   run: (ctx, args): Promise<CommandResult> => {
     const repo = repoOf(ctx);
     if (repo === undefined) return Promise.resolve(failureFrom(ctx.t, notRepository(ctx.cwd)));
     const dropped = stringOption(args.values, "dropped");
-    const targets = targetsOf(ctx, repo, args.positionals[0], stringOption(args.values, "since"));
+    const pr = stringOption(args.values, "pr");
+    const picked = pr === undefined ? args.positionals[0] : prTarget(ctx, repo, pr);
+    if (typeof picked === "object") return Promise.resolve(picked);
+    const targets = targetsOf(ctx, repo, picked, stringOption(args.values, "since"));
     if (targets.length === 0) {
       const data = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: [] };
       return Promise.resolve(success(data, [ctx.t("git.merge.none", { detail: "HEAD" })]));

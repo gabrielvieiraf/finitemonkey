@@ -131,6 +131,39 @@ describe("merge verify command", () => {
   });
 });
 
+describe("merge verify --pr", () => {
+  it("checks the pull request's merge commit and fails one that drops a line", () => {
+    const repo = tempRepo({ "list.txt": "a\n" });
+    try {
+      git(repo.root, "switch", "-q", "-c", "side");
+      write(repo.root, "list.txt", "a\nside\n");
+      git(repo.root, "commit", "-q", "-am", "side");
+      git(repo.root, "switch", "-q", "main");
+      write(repo.root, "other.txt", "o\n");
+      git(repo.root, "add", "other.txt");
+      git(repo.root, "commit", "-q", "-m", "main");
+      const before = git(repo.root, "rev-parse", "HEAD");
+      git(repo.root, "merge", "-q", "--no-edit", "side");
+      git(repo.root, "update-ref", "refs/pull/8/merge", "HEAD");
+      write(repo.root, "list.txt", "a\n");
+      git(repo.root, "commit", "-q", "--amend", "-a", "--no-edit");
+      git(repo.root, "update-ref", "refs/pull/7/merge", "HEAD");
+      git(repo.root, "reset", "-q", "--hard", before);
+      const lost = fm(repo.root, ["merge", "verify", "--pr", "7", "--json"]);
+      assert.equal(lost.code, 1, lost.stdout);
+      assert.equal(field(json(lost), "error", "code"), "merge_lost_work");
+      assert.match(lost.stdout, /side/);
+      assert.equal(fm(repo.root, ["merge", "verify", "--pr", "8"]).code, 0);
+      const missing = fm(repo.root, ["merge", "verify", "--pr", "9", "--json"]);
+      assert.equal(missing.code, 2, missing.stdout);
+      assert.match(String(field(json(missing), "error", "fix")), /refs\/pull\/9\/merge/);
+      assert.equal(fm(repo.root, ["merge", "verify", "--pr", "seven"]).code, 2);
+    } finally {
+      repo.dispose();
+    }
+  });
+});
+
 describe("hooks through the CLI", () => {
   it("PreToolUse denies git push --force with a JSON decision", () => {
     const repo = tempRepo();

@@ -135,7 +135,7 @@ describe("ci protect", () => {
     const calls: ExecRequest[] = [];
     const plan = { ".finitemonkey/config.yml": 'deploy:\n  reviewers: "@alice, acme/ops"\n' };
     const settled = {
-      rules: rulesetFor("intermediate").rules as unknown[],
+      rules: rulesetFor("intermediate")["rules"] as unknown[],
       scanning: "enabled",
       alerts: true,
     } as const;
@@ -169,7 +169,7 @@ describe("ci protect", () => {
       ],
     };
     const settled = {
-      rules: rulesetFor("intermediate").rules as unknown[],
+      rules: rulesetFor("intermediate")["rules"] as unknown[],
       scanning: "enabled",
       alerts: true,
     } as const;
