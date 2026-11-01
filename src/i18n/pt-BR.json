@@ -2391,7 +2391,7 @@
   "teach.reason.answered": "Essa pergunta já foi respondida ou pulada.",
   "teach.reason.write_failed": "Não foi possível gravar .finitemonkey/teach.jsonl.",
   "teach.blueprint.reason": "A tarefa {task} mexe em {domain}, que está na primeira faixa do perfil, e ainda não tem planta. Antes da primeira edição, pergunte à pessoa se instala uma (finitemonkey planta <{types}>) ou segue sem ela. Este aviso aparece uma vez por tarefa.",
-  "teach.blueprint.human": "A tarefa {task} não tem planta. Uma planta lista o que esse tipo de projeto precisa (finitemonkey planta <{types}>). Instale uma agora ou siga sem ela; isso é perguntado uma vez por tarefa.",
+  "teach.blueprint.human": "A tarefa {task} não tem planta. Uma planta lista o que esse tipo de projeto precisa. Próximo passo: rode `finitemonkey planta <tipo>` com um de {types}, ou faça a edição de novo para seguir sem ela. Isso é perguntado uma vez por tarefa.",
   "knowledge.map.person": "{area}: mudada pela pessoa fora das sessões do agente ({person} commits)",
   "knowledge.map.claims": "{area}: só afirmações verificadas cobrem ({claims}); a pessoa não mexeu fora das sessões",
   "knowledge.map.agent": "{area}: só o agente mexeu ({agent} commits em sessões); risco se o contexto do agente se perder",

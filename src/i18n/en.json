@@ -2391,7 +2391,7 @@
   "teach.reason.answered": "That question was already answered or skipped.",
   "teach.reason.write_failed": "Could not write .finitemonkey/teach.jsonl.",
   "teach.blueprint.reason": "Task {task} touches {domain}, which sits in the first band of the profile, and has no blueprint yet. Before the first edit, ask the person whether to install one (finitemonkey planta <{types}>) or go on without it. This prompt appears once per task.",
-  "teach.blueprint.human": "Task {task} has no blueprint. A blueprint lists what this kind of project needs (finitemonkey planta <{types}>). Install one now or go on without it; this is asked once per task.",
+  "teach.blueprint.human": "Task {task} has no blueprint. A blueprint lists what this kind of project needs. Next: run `finitemonkey planta <type>` with one of {types}, or make the edit again to go on without it. This is asked once per task.",
   "knowledge.map.person": "{area}: changed by the person outside agent sessions ({person} commits)",
   "knowledge.map.claims": "{area}: only checked claims hold it ({claims}); the person has not changed it outside sessions",
   "knowledge.map.agent": "{area}: only the agent has changed it ({agent} commits in sessions); a risk if the agent's context is lost",

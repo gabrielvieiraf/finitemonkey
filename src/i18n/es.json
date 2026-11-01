@@ -2391,7 +2391,7 @@
   "teach.reason.answered": "Esa pregunta ya se respondió o se saltó.",
   "teach.reason.write_failed": "No se pudo escribir .finitemonkey/teach.jsonl.",
   "teach.blueprint.reason": "La tarea {task} toca {domain}, que está en la primera banda del perfil, y aún no tiene plano. Antes de la primera edición, pregunta a la persona si instala uno (finitemonkey planta <{types}>) o sigue sin él. Este aviso aparece una vez por tarea.",
-  "teach.blueprint.human": "La tarea {task} no tiene plano. Un plano lista lo que necesita este tipo de proyecto (finitemonkey planta <{types}>). Instala uno ahora o sigue sin él; se pregunta una vez por tarea.",
+  "teach.blueprint.human": "La tarea {task} no tiene plano. Un plano lista lo que necesita este tipo de proyecto. Siguiente paso: ejecuta `finitemonkey planta <tipo>` con uno de {types}, o vuelve a hacer la edición para seguir sin él. Se pregunta una vez por tarea.",
   "knowledge.map.person": "{area}: cambiada por la persona fuera de las sesiones del agente ({person} commits)",
   "knowledge.map.claims": "{area}: solo afirmaciones verificadas la cubren ({claims}); la persona no la cambió fuera de las sesiones",
   "knowledge.map.agent": "{area}: solo el agente la cambió ({agent} commits en sesiones); un riesgo si se pierde el contexto del agente",
