@@ -3,6 +3,7 @@ import { nowMs } from "../core/clock.js";
 import type { Runtime } from "../core/runtime.js";
 import { hostOfUrl, isLocal } from "../git/destructive.js";
 import { configAt, type ConfigTree } from "../git/project-config.js";
+import { type Counts, parseCounts, type RowDrop, rowDrops } from "./counts.js";
 import { type Engine, engineOf } from "./locks.js";
 
 export interface MigrateConfig {
@@ -13,6 +14,9 @@ export interface MigrateConfig {
   readonly dump: string | undefined;
   readonly down: string | undefined;
   readonly baseTests: string | undefined;
+  readonly seed: string | undefined;
+  readonly counts: string | undefined;
+  readonly stats: string | undefined;
 }
 
 const text = (config: ConfigTree, key: string): string | undefined => {
@@ -28,6 +32,9 @@ export const migrateConfig = (config: ConfigTree): MigrateConfig => ({
   dump: text(config, "dump"),
   down: text(config, "down"),
   baseTests: text(config, "base_tests"),
+  seed: text(config, "seed"),
+  counts: text(config, "counts"),
+  stats: text(config, "stats"),
 });
 
 export const isLocalDatabase = (url: string): boolean => {
@@ -41,7 +48,12 @@ export type ThrowawayResult =
   | { readonly kind: "not_configured" }
   | { readonly kind: "refused"; readonly url: string }
   | { readonly kind: "unavailable"; readonly step: string; readonly detail: string }
-  | { readonly kind: "ran"; readonly findings: readonly ThrowawayFinding[]; readonly steps: readonly string[] };
+  | {
+      readonly kind: "ran";
+      readonly findings: readonly ThrowawayFinding[];
+      readonly steps: readonly string[];
+      readonly rows: readonly RowDrop[];
+    };
 
 export interface ThrowawayPlaces {
   readonly root: AbsolutePath;
@@ -76,50 +88,80 @@ const runner =
 const sameSchema = (left: string, right: string): boolean =>
   left.replace(/\r\n/g, "\n").trim() === right.replace(/\r\n/g, "\n").trim();
 
+type Run = (command: string, cwd: AbsolutePath) => Step;
+
+interface Prepared {
+  readonly steps: string[];
+  readonly baseSchema: string | undefined;
+  readonly seeded: Counts | undefined;
+}
+
+const prepareBase = (run: Run, config: MigrateConfig, places: ThrowawayPlaces): Prepared | ThrowawayResult => {
+  const steps: string[] = [];
+  const must = (name: string, command: string | undefined, cwd: AbsolutePath): Step | ThrowawayResult => {
+    if (command === undefined) return { ok: true, stdout: "", detail: "" };
+    steps.push(name);
+    const step = run(command, cwd);
+    return step.ok ? step : { kind: "unavailable", step: name, detail: `${name}: ${step.detail}` };
+  };
+  const plan: readonly [string, string | undefined, AbsolutePath][] = [
+    ["reset", config.reset, places.root],
+    ["apply-base", config.apply, places.base],
+    ["seed", config.seed, places.base],
+    ["dump-base", config.dump, places.root],
+    ["count-base", config.seed === undefined ? undefined : config.counts, places.root],
+  ];
+  const outputs: string[] = [];
+  for (const [name, command, cwd] of plan) {
+    const step = must(name, command, cwd);
+    if ("kind" in step) return step;
+    outputs.push(step.stdout);
+  }
+  return {
+    steps,
+    baseSchema: config.dump === undefined ? undefined : outputs[3],
+    seeded: steps.includes("count-base") ? parseCounts(outputs[4] ?? "") : undefined,
+  };
+};
+
+const seededRows = (run: Run, config: MigrateConfig, root: AbsolutePath, prepared: Prepared): readonly RowDrop[] => {
+  if (prepared.seeded === undefined || config.counts === undefined) return [];
+  prepared.steps.push("count");
+  const counted = run(config.counts, root);
+  return rowDrops(prepared.seeded, counted.ok ? parseCounts(counted.stdout) : {});
+};
+
+const downFindings = (run: Run, config: MigrateConfig, root: AbsolutePath, prepared: Prepared): ThrowawayFinding[] => {
+  if (config.down === undefined || config.dump === undefined) return [];
+  prepared.steps.push("down", "dump-down");
+  const down = run(config.down, root);
+  const after = down.ok ? run(config.dump, root) : undefined;
+  if (!after?.ok) return ["down-failed"];
+  return prepared.baseSchema !== undefined && !sameSchema(prepared.baseSchema, after.stdout) ? ["down-mismatch"] : [];
+};
+
 export const runThrowaway = (
   runtime: Runtime,
   config: MigrateConfig,
   places: ThrowawayPlaces,
   deadline: number,
 ): ThrowawayResult => {
-  const { url, reset, apply, dump } = config;
+  const { url, apply } = config;
   if (url === undefined || apply === undefined) return { kind: "not_configured" };
   if (!isLocalDatabase(url)) return { kind: "refused", url };
   const run = runner(runtime, url, deadline);
-  const steps: string[] = [];
-  const must = (name: string, command: string | undefined, cwd: AbsolutePath): Step | string => {
-    if (command === undefined) return { ok: true, stdout: "", detail: "" };
-    steps.push(name);
-    const step = run(command, cwd);
-    return step.ok ? step : `${name}: ${step.detail}`;
-  };
-  const unavailable = (failure: string): ThrowawayResult => ({
-    kind: "unavailable",
-    step: failure.slice(0, failure.indexOf(":")),
-    detail: failure,
-  });
-  const cleared = must("reset", reset, places.root);
-  if (typeof cleared === "string") return unavailable(cleared);
-  const based = must("apply-base", apply, places.base);
-  if (typeof based === "string") return unavailable(based);
-  const baseSchema = must("dump-base", dump, places.root);
-  if (typeof baseSchema === "string") return unavailable(baseSchema);
-  steps.push("apply");
-  if (!run(apply, places.root).ok) return { kind: "ran", findings: ["apply-failed"], steps };
+  const prepared = prepareBase(run, config, places);
+  if ("kind" in prepared) return prepared;
+  prepared.steps.push("apply");
+  if (!run(apply, places.root).ok) {
+    return { kind: "ran", findings: ["apply-failed"], steps: prepared.steps, rows: [] };
+  }
+  const rows = seededRows(run, config, places.root, prepared);
   const findings: ThrowawayFinding[] = [];
   if (config.baseTests !== undefined) {
-    steps.push("base-tests");
+    prepared.steps.push("base-tests");
     if (!run(config.baseTests, places.base).ok) findings.push("compat-broken");
   }
-  if (config.down !== undefined && dump !== undefined) {
-    steps.push("down");
-    const down = run(config.down, places.root);
-    steps.push("dump-down");
-    const after = down.ok ? run(dump, places.root) : undefined;
-    if (!after?.ok) findings.push("down-failed");
-    else if (typeof baseSchema !== "string" && !sameSchema(baseSchema.stdout, after.stdout)) {
-      findings.push("down-mismatch");
-    }
-  }
-  return { kind: "ran", findings, steps };
+  findings.push(...downFindings(run, config, places.root, prepared));
+  return { kind: "ran", findings, steps: prepared.steps, rows };
 };

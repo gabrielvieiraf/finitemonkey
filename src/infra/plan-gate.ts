@@ -3,8 +3,13 @@ import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
 export const INFRA_FILE = /(?:\.tf|\.tf\.json)$/;
 export const MANIFEST_FILE = /(?:^|\/)(?:k8s|kubernetes|manifests?|deploy)\/.+\.ya?ml$/i;
 
+export const HELM_FILE = /(?:^|\/)(?:charts?|helm)\/.+\.(?:ya?ml|tpl)$|(?:^|\/)Chart\.ya?ml$/;
+export const COMPOSE_FILE = /(?:^|\/)(?:docker-)?compose(?:\.[\w-]+)?\.ya?ml$/i;
+
 export const touchesInfra = (paths: readonly string[]): boolean =>
-  paths.some((path) => INFRA_FILE.test(path) || MANIFEST_FILE.test(path));
+  paths.some(
+    (path) => INFRA_FILE.test(path) || MANIFEST_FILE.test(path) || HELM_FILE.test(path) || COMPOSE_FILE.test(path),
+  );
 
 export type PlanAction = "create" | "update" | "delete" | "replace";
 

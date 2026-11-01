@@ -1,4 +1,5 @@
 import { CI_WORKFLOWS, ciFiles, type CiWorkflow, DEFAULT_WORKFLOWS } from "../ci/gen/plan.js";
+import { RESTORE_DRILL_ENVIRONMENT } from "../ci/gen/restore-drill.js";
 import { REVIEW_TRIGGER } from "../ci/gen/workflows.js";
 import { projectLevel } from "../ci/level.js";
 import { stringOption } from "../core/args.js";
@@ -17,7 +18,7 @@ import type { CommandSpec } from "./types.js";
 
 export const CI_GEN_FEATURE = "ci-gen";
 
-const USAGE = "finitemonkey ci gen [--with deploy,release,review] [--oidc] [--dry-run] [--yes]";
+const USAGE = "finitemonkey ci gen [--with deploy,release,review,restore-drill] [--oidc] [--dry-run] [--yes]";
 
 const chosenFrom = (raw: string | undefined): ReadonlySet<CiWorkflow> | undefined => {
   const asked = raw === undefined ? [] : raw.split(",").map((item) => item.trim());
@@ -32,6 +33,7 @@ const notesFor = (ctx: Ctx, chosen: ReadonlySet<CiWorkflow>, deployScript: boole
     ...(chosen.has("deploy") && level >= 2 ? [ctx.t("ci.gen.reviewers", { level })] : []),
     ...(chosen.has("release") ? [ctx.t("ci.gen.release")] : []),
     ...(chosen.has("review") ? [ctx.t("ci.gen.review", { trigger: REVIEW_TRIGGER })] : []),
+    ...(chosen.has("restore-drill") ? [ctx.t("ci.gen.restore_drill", { environment: RESTORE_DRILL_ENVIRONMENT })] : []),
   ];
 };
 

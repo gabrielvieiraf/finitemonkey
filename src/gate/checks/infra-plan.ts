@@ -5,19 +5,20 @@ import { nowMs } from "../../core/clock.js";
 import { type JsonObject, parseJsonObject } from "../../core/parsed.js";
 import type { Note } from "../../evidence/types.js";
 import { configAt, configList, type ConfigTree, loadProjectConfig } from "../../git/project-config.js";
+import { manifestChanges } from "../../infra/manifests.js";
 import {
+  HELM_FILE,
   INFRA_FILE,
   MANIFEST_FILE,
-  manifestResources,
   type PlanFinding,
   readPlan,
-  removedStateful,
   touchesInfra,
 } from "../../infra/plan-gate.js";
 import { featureMode } from "../../policy/feature.js";
 import type { AcceptanceCheck } from "../../task/types.js";
 import { fileAt } from "../git.js";
 import { type CheckOutcome, failed, type GateContext, note, passed, unverified } from "../types.js";
+import { chartFindings, composeChangeFindings } from "./infra-charts.js";
 
 export const INFRA_PLAN_FEATURE = "infra-plan";
 const PLAN_TIMEOUT_MS = 300_000;
@@ -66,12 +67,14 @@ const terraformPlans = (ctx: GateContext, config: ConfigTree, dirs: readonly str
 
 const manifestFindings = (ctx: GateContext): readonly PlanFinding[] =>
   ctx.changes
-    .filter((change) => MANIFEST_FILE.test(change.oldPath ?? change.path))
+    .filter(
+      (change) => MANIFEST_FILE.test(change.oldPath ?? change.path) && !HELM_FILE.test(change.oldPath ?? change.path),
+    )
     .flatMap((change) => {
       const before = fileAt(ctx.git, ctx.base, change.oldPath ?? change.path) ?? "";
       const now =
         change.status === "D" ? undefined : ctx.runtime.readText(toAbsolutePath(join(ctx.paths.root, change.path)));
-      return removedStateful(manifestResources(before), manifestResources(now?.ok === true ? now.value : ""));
+      return manifestChanges(before, now?.ok === true ? now.value : "");
     });
 
 const criteriaText = (ctx: GateContext): string =>
@@ -98,19 +101,8 @@ const infraDirs = (ctx: GateContext): readonly string[] => [
 const shadowed = (mode: string, outcome: CheckOutcome, notes: readonly Note[]): CheckOutcome =>
   mode === "shadow" ? passed([note("gate.infra_plan.shadow"), ...notes]) : outcome;
 
-export const infraPlanCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
-  const mode = featureMode(ctx.runtime, ctx.paths, INFRA_PLAN_FEATURE);
-  if (mode === "off") return passed([note("gate.infra_plan.off")]);
-  const dirs = infraDirs(ctx);
-  const touched = touchesInfra(ctx.changes.flatMap((change) => [change.path, change.oldPath ?? ""]));
-  if (!touched) return passed([note("gate.infra_plan.none")]);
-  const config = loadProjectConfig(ctx.runtime, ctx.paths.root);
-  const plans: Plans = dirs.length === 0 ? { kind: "plans", plans: [] } : terraformPlans(ctx, config, dirs);
-  if (plans.kind === "not_verified") {
-    const notes = [note("gate.infra_plan.not_verified", { detail: plans.detail })];
-    return shadowed(mode, unverified("tool_missing", notes), notes);
-  }
-  const summaries = plans.plans.map((plan) => readPlan(plan, configList(config, "infra_plan", "stateful")));
+const sumCounts = (plans: readonly JsonObject[], config: ConfigTree) => {
+  const summaries = plans.map((plan) => readPlan(plan, configList(config, "infra_plan", "stateful")));
   const counts = summaries.reduce(
     (total, summary) => ({
       create: total.create + summary.counts.create,
@@ -120,8 +112,38 @@ export const infraPlanCheck = (_check: AcceptanceCheck, ctx: GateContext): Check
     }),
     { create: 0, update: 0, delete: 0, replace: 0 },
   );
+  return { counts, findings: summaries.flatMap((summary) => summary.findings) };
+};
+
+const collect = (
+  ctx: GateContext,
+  config: ConfigTree,
+): { readonly kind: "not_verified"; readonly detail: string } | ReturnType<typeof sumCounts> => {
+  const dirs = infraDirs(ctx);
+  const plans: Plans = dirs.length === 0 ? { kind: "plans", plans: [] } : terraformPlans(ctx, config, dirs);
+  if (plans.kind === "not_verified") return plans;
+  const charts = chartFindings(ctx, config);
+  if (charts.kind === "not_verified") return charts;
+  const summed = sumCounts(plans.plans, config);
+  return {
+    counts: summed.counts,
+    findings: [...summed.findings, ...manifestFindings(ctx), ...charts.findings, ...composeChangeFindings(ctx)],
+  };
+};
+
+export const infraPlanCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
+  const mode = featureMode(ctx.runtime, ctx.paths, INFRA_PLAN_FEATURE);
+  if (mode === "off") return passed([note("gate.infra_plan.off")]);
+  const touched = touchesInfra(ctx.changes.flatMap((change) => [change.path, change.oldPath ?? ""]));
+  if (!touched) return passed([note("gate.infra_plan.none")]);
+  const config = loadProjectConfig(ctx.runtime, ctx.paths.root);
+  const collected = collect(ctx, config);
+  if ("kind" in collected) {
+    const notes = [note("gate.infra_plan.not_verified", { detail: collected.detail })];
+    return shadowed(mode, unverified("tool_missing", notes), notes);
+  }
+  const { counts, findings } = collected;
   const isAllowed = allowed(ctx, config);
-  const findings = [...summaries.flatMap((summary) => summary.findings), ...manifestFindings(ctx)];
   const open = findings.filter((finding) => !isAllowed(finding));
   const countNote = note("gate.infra_plan.counts", counts);
   const accepted = findings

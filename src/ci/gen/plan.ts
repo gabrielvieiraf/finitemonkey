@@ -5,6 +5,7 @@ import type { GenFile } from "../../generate/files.js";
 import type { Stack } from "../../generate/stack.js";
 import { readCache } from "../../github/ruleset.js";
 import { DEPENDABOT_FILE, dependabotConfig, updateEcosystems } from "../../supply/update-config.js";
+import { drillPeriodDays, restoreDrillWorkflow } from "./restore-drill.js";
 import { toolchain } from "./toolchain.js";
 import {
   ciWorkflow,
@@ -15,7 +16,7 @@ import {
   type WorkflowInput,
 } from "./workflows.js";
 
-export const CI_WORKFLOWS = ["ci", "deploy", "release", "security", "dependabot", "review"] as const;
+export const CI_WORKFLOWS = ["ci", "deploy", "release", "security", "dependabot", "review", "restore-drill"] as const;
 
 export type CiWorkflow = (typeof CI_WORKFLOWS)[number];
 
@@ -27,6 +28,7 @@ export const WORKFLOW_FILES: Readonly<Record<Exclude<CiWorkflow, "dependabot">, 
   release: ".github/workflows/release.yml",
   security: ".github/workflows/security.yml",
   review: ".github/workflows/claude-review.yml",
+  "restore-drill": ".github/workflows/restore-drill.yml",
 };
 
 export interface CiGenInput {
@@ -82,6 +84,7 @@ export const ciFiles = (input: CiGenInput, chosen: ReadonlySet<CiWorkflow>): rea
     security: () => securityWorkflow(workflow),
     dependabot: () => dependabot(input),
     review: () => reviewWorkflow(),
+    "restore-drill": () => restoreDrillWorkflow(workflow, drillPeriodDays(input.read)),
   };
   return CI_WORKFLOWS.filter((name) => chosen.has(name)).map((name) => ({
     path: name === "dependabot" ? DEPENDABOT_FILE : WORKFLOW_FILES[name],

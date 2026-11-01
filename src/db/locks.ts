@@ -51,7 +51,7 @@ const MYSQL: readonly LockRule[] = [
 
 const RULES: Readonly<Record<Engine, readonly LockRule[]>> = { postgres: POSTGRES, mysql: MYSQL, sqlite: [] };
 
-const withoutComments = (text: string): string =>
+export const withoutComments = (text: string): string =>
   text
     .replace(/--[^\n]*/g, (comment) => " ".repeat(comment.length))
     .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "));
