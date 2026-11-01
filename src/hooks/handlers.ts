@@ -28,6 +28,7 @@ import { ASSUMPTION_HANDLERS } from "../guardian/assumption-hook.js";
 import { FORECAST_HANDLERS } from "../guardian/forecast-hook.js";
 import { scanHandlers } from "../guardian/pending.js";
 import { REALITY_HANDLERS } from "../guardian/reality-hook.js";
+import { BASH_WRITES_FEATURE, BASH_WRITES_HANDLERS } from "../guardian/shell-hold.js";
 import { detectBypass, noteDenied } from "../guards/bypass/ledger.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
@@ -241,6 +242,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
   { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
   { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
+  { id: BASH_WRITES_FEATURE, damage: false, handlers: BASH_WRITES_HANDLERS },
   { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
   { id: "reality", damage: false, handlers: REALITY_HANDLERS },
   { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },

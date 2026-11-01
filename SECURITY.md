@@ -70,6 +70,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `front-scope` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `predict-gate` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `decision-hold` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `bash-writes` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `assumptions` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `reality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `guardian-reuse` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |

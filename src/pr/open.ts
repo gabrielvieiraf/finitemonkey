@@ -73,6 +73,8 @@ const resolveBase = (
   return accept(request.base ?? defaultBranch);
 };
 
+const pathOf = (file: ChangedFile): string => file.path;
+
 const fetchBase = (runtime: Runtime, root: AbsolutePath, base: string, dryRun: boolean): boolean =>
   !dryRun && runtime.gitWith(["fetch", "--quiet", "origin", base], root, { timeoutMs: NETWORK_TIMEOUT_MS }).ok;
 
@@ -185,12 +187,7 @@ export const preparePr = (
     snapshots: snapshotsFor(runtime, repo.root, branch),
     mergeSummary: mergeSummary(runtime, repo.root, branch),
   });
-  const body = attachProvenance(
-    runtime,
-    repo.root,
-    plain,
-    files.map((file) => file.path),
-  );
+  const body = attachProvenance(runtime, repo.root, plain, files.map(pathOf), baseSha);
   return accept({ repo, branch, base: base.value, baseSha, body, outside: scope.outside, fetched });
 };
 
