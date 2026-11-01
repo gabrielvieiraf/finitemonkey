@@ -1,9 +1,11 @@
 import { bookPath } from "../conceitos/book.js";
 import { eventsPath } from "../conceitos/evidence.js";
+import { forgetConceptEvidence } from "../conceitos/judge-log.js";
 import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
+import { forgetProfile } from "../perfil/log.js";
 import { CORRECT_SCORE, DOMAIN_QUESTIONS, parseOption } from "../perfil/questions.js";
 import { questionLines, runQuickStart } from "../perfil/quick-start.js";
 import {
@@ -11,6 +13,7 @@ import {
   perfilPath,
   profileOrStart,
   readProfile,
+  rebuildProfile,
   updateDomain,
   writeProfile,
 } from "../perfil/store.js";
@@ -52,10 +55,11 @@ const profileLines = (ctx: Ctx, profile: Profile): readonly string[] =>
   });
 
 const show = (ctx: Ctx): CommandResult => {
+  const edited = rebuildProfile(ctx.runtime, pathsOf(ctx)).map((line) => ctx.t("perfil.edited", { line }));
   const stored = readProfile(ctx.runtime, pathsOf(ctx));
   const profile = stored ?? profileOrStart(ctx.runtime, pathsOf(ctx));
   const header = stored === undefined ? [ctx.t("perfil.show.none")] : [];
-  return success(profileJson(profile), [...header, ...profileLines(ctx, profile)]);
+  return success(profileJson(profile), [...edited, ...header, ...profileLines(ctx, profile)]);
 };
 
 const start = async (ctx: Ctx): Promise<CommandResult> => {
@@ -126,7 +130,11 @@ const forget = (ctx: Ctx): CommandResult => {
   const removed = [perfilPath(paths), agentCommitsPath(paths), bookPath(paths), eventsPath(paths)].filter(
     (path) => ctx.runtime.stat(path) !== undefined && ctx.runtime.remove(path).ok,
   );
-  return success({ schema: PERFIL_SCHEMA, removed: removed.length }, [ctx.t("perfil.forget.done")]);
+  const logged = [
+    { file: perfilPath(paths), count: forgetProfile(ctx.runtime, paths) },
+    { file: eventsPath(paths), count: forgetConceptEvidence(ctx.runtime, paths) },
+  ].filter((store) => store.count > 0 && !removed.includes(store.file));
+  return success({ schema: PERFIL_SCHEMA, removed: removed.length + logged.length }, [ctx.t("perfil.forget.done")]);
 };
 
 export const perfilCommand: CommandSpec = {

@@ -1,7 +1,9 @@
 import { existsSync } from "node:fs";
 
 import { CONCEPTS } from "../src/conceitos/concepts.js";
+import { conceitosLog } from "../src/conceitos/judge-log.js";
 import { isRecord, type JsonObject } from "../src/core/parsed.js";
+import { parseEntry } from "../src/judge/parse.js";
 import { levelOf } from "../src/perfil/types.js";
 import { type KnowledgeBand, type Level, PERFIL_DOMAINS } from "./bench-family.js";
 import { json, lines, records, str, unique, yaml } from "./bench-state.js";
@@ -202,8 +204,14 @@ const probesOf = (dir: string, truth: GroundTruth): JsonObject => {
   };
 };
 
+const conceptEvents = (dir: string): readonly JsonObject[] => {
+  const log = conceitosLog(lines(dir, "judge.jsonl").flatMap((record) => parseEntry(record) ?? []));
+  const legacy = log.migrated ? [] : lines(dir, "conceitos-events.jsonl");
+  return [...legacy, ...log.events.map((event): JsonObject => ({ ...event }))];
+};
+
 const trajectoryOf = (dir: string): JsonObject => {
-  const events = lines(dir, "conceitos-events.jsonl");
+  const events = conceptEvents(dir);
   const book = yaml(dir, "conceitos.yml");
   const levels = isRecord(book?.["concepts"]) ? book["concepts"] : {};
   const proofs = (concept: string): number =>

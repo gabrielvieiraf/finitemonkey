@@ -4,17 +4,12 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
-import { stringifyYaml } from "../core/yaml/write.js";
-import type { FmPaths } from "../task/paths.js";
-import {
-  clampScore,
-  type DomainProfile,
-  DOMAINS,
-  parseLevel,
-  type Profile,
-  START_SCORE,
-  startingProfile,
-} from "./types.js";
+import { appendEntry, readEntries } from "../judge/store.js";
+import { buildDerived, DERIVED_FEATURE } from "../knowledge/derived.js";
+import { featureMode } from "../policy/feature.js";
+import { FM_DIR, type FmPaths } from "../task/paths.js";
+import { PERFIL_GENERATOR, profileFromLog, profileInputs, profileRecords, renderProfile } from "./log.js";
+import { clampScore, type DomainProfile, parseLevel, type Profile, START_SCORE, startingProfile } from "./types.js";
 
 export const PERFIL_FILE = "perfil.yml";
 export const AGENT_COMMITS_FILE = "perfil-commits.json";
@@ -56,36 +51,46 @@ export const parseProfile = (text: string, at: string): Profile => {
   };
 };
 
-export const readProfile = (runtime: Pick<Runtime, "readText" | "now">, paths: FmPaths): Profile | undefined => {
+export const readLegacyProfile = (runtime: Pick<Runtime, "readText" | "now">, paths: FmPaths): Profile | undefined => {
   const text = runtime.readText(perfilPath(paths));
   return text.ok ? parseProfile(text.value, runtime.now()) : undefined;
 };
 
+export const readProfile = (runtime: Pick<Runtime, "readText" | "now">, paths: FmPaths): Profile | undefined =>
+  profileFromLog(readEntries(runtime, paths)) ?? readLegacyProfile(runtime, paths);
+
 export const profileOrStart = (runtime: Pick<Runtime, "readText" | "now">, paths: FmPaths): Profile =>
   readProfile(runtime, paths) ?? startingProfile(runtime.now());
 
-export const writeProfile = (runtime: Pick<Runtime, "writeText" | "now">, paths: FmPaths, profile: Profile): boolean =>
-  runtime.writeText(
-    perfilPath(paths),
-    stringifyYaml({
-      schema: "finitemonkey/perfil@1",
-      updated_at: runtime.now(),
-      quick_start: profile.quickStart,
-      domains: Object.fromEntries(
-        DOMAINS.map((domain) => {
-          const entry = profile.domains[domain];
-          return [
-            domain,
-            {
-              tool: entry.tool,
-              knowledge: entry.knowledge,
-              ...(entry.claimed === undefined ? {} : { claimed: entry.claimed }),
-            },
-          ];
-        }),
-      ),
-    }),
-  ).ok;
+export type ProfileRuntime = Pick<Runtime, "readText" | "writeText" | "appendText" | "mkdir" | "now" | "homeDir">;
+
+export const PERFIL_DERIVED = `${FM_DIR}/${PERFIL_FILE}`;
+
+export const rebuildProfile = (runtime: ProfileRuntime, paths: FmPaths): readonly string[] => {
+  const entries = readEntries(runtime, paths);
+  const profile = profileFromLog(entries);
+  if (profile === undefined) return [];
+  if (featureMode(runtime, paths, DERIVED_FEATURE) === "off") {
+    runtime.writeText(perfilPath(paths), renderProfile(profile));
+    return [];
+  }
+  const built = buildDerived(runtime, paths, {
+    file: PERFIL_DERIVED,
+    generator: PERFIL_GENERATOR,
+    inputs: profileInputs(entries),
+    sources: [],
+    render: () => renderProfile(profile),
+  });
+  return built.kind === "built" ? built.edited : [];
+};
+
+export const writeProfile = (runtime: ProfileRuntime, paths: FmPaths, profile: Profile): boolean => {
+  const logged = profileFromLog(readEntries(runtime, paths));
+  const records = profileRecords(runtime.now(), logged, profile);
+  const appended = records.every((record) => appendEntry(runtime, paths, record).ok);
+  rebuildProfile(runtime, paths);
+  return appended;
+};
 
 export const updateDomain = (
   profile: Profile,

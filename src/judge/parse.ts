@@ -80,7 +80,16 @@ const evidenceOf: Parser = (record, base) => {
   const ref = text(record, "ref") ?? (proof === "exposure" ? "exposure" : undefined);
   if (proof === undefined || result === undefined || origin === undefined || ref === undefined) return undefined;
   const concepts = texts(record, "concepts");
-  return { type: "evidence", ...base, concepts, proof, result, ref, origin, ...optional(record, ["claim"]) };
+  return {
+    type: "evidence",
+    ...base,
+    concepts,
+    proof,
+    result,
+    ref,
+    origin,
+    ...optional(record, ["claim", "task", "file"]),
+  };
 };
 
 const claimOf: Parser = (record, base) => {
@@ -188,6 +197,22 @@ const probeOf: Parser = (record, base) => {
   };
 };
 
+const score = (record: JsonObject, key: string): number | undefined => {
+  const value = record[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+};
+
+const profileOf: Parser = (record, base) => {
+  const domain = text(record, "domain");
+  const tool = score(record, "tool");
+  const knowledge = score(record, "knowledge");
+  const quick = optional(record, ["quickStart"]);
+  if (domain === undefined)
+    return quick["quickStart"] === undefined ? undefined : { type: "profile", ...base, ...quick };
+  if (tool === undefined || knowledge === undefined) return undefined;
+  return { type: "profile", ...base, domain, tool, knowledge, ...optional(record, ["claimed"]), ...quick };
+};
+
 const PARSERS: Readonly<Record<string, Parser>> = {
   domain: (record, base) => ({ type: "domain", ...base, ...optional(record, ["parent"]) }),
   concept: conceptOf,
@@ -222,6 +247,7 @@ const PARSERS: Readonly<Record<string, Parser>> = {
     return { type: "item", ...base, origin, hash, instructions, synthesis: record["synthesis"] === true };
   },
   probe: probeOf,
+  profile: profileOf,
   ask: (record, base) => {
     const fields = optional(record, ["task", "decision", "question", "criterion"]);
     const { task, decision, question, criterion } = fields;

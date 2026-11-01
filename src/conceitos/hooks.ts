@@ -58,7 +58,7 @@ export const teacherRecorder: HookHandler = (input) => {
 };
 
 export const updateFromPending = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "remove" | "now" | "appendText">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "remove" | "now" | "appendText" | "mkdir">,
   paths: FmPaths,
 ): readonly string[] => {
   const text = runtime.readText(pendingPath(paths));

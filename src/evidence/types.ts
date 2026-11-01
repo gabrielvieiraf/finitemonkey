@@ -54,6 +54,11 @@ export interface EvidenceInputs {
   readonly env: Readonly<Record<string, string>>;
 }
 
+export interface SourceHash {
+  readonly ref: string;
+  readonly hash: string;
+}
+
 export interface Evidence {
   readonly schema: typeof EVIDENCE_SCHEMA;
   readonly task: string;
@@ -76,6 +81,7 @@ export interface Evidence {
   readonly stateReason?: string;
   readonly inputs?: EvidenceInputs;
   readonly scripts?: string;
+  readonly sources?: readonly SourceHash[];
 }
 
 export const GATE_CHECK = "*gate*";

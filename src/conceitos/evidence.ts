@@ -4,58 +4,33 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { AddedLine } from "../gate/git.js";
+import { appendEntry, readEntries } from "../judge/store.js";
+import { DEMONSTRATED_AFTER } from "../judge/types.js";
 import type { Domain } from "../perfil/types.js";
 import type { FmPaths } from "../task/paths.js";
 import { CONCEPT_IDS, type ConceptId, conceptsIn, domainOf, parseConcept } from "./concepts.js";
+import {
+  type ConceptEvent,
+  type ConceptEventDraft,
+  type ConceptEventKind,
+  EVENT_KINDS,
+  settled,
+  WEIGHTS,
+} from "./evidence-kinds.js";
+import { conceitosLog, evidenceRecord, LIVE_REF } from "./judge-log.js";
+
+export {
+  type ConceptEvent,
+  type ConceptEventDraft,
+  type ConceptEventKind,
+  EVENT_KINDS,
+  type Origin,
+  settled,
+  WEIGHTS,
+} from "./evidence-kinds.js";
 
 export const CONCEPT_EVENTS_FILE = "conceitos-events.jsonl";
 export const CONCEPT_EVIDENCE_SCHEMA = "finitemonkey/concept-evidence@1";
-export const DEMONSTRATED_AFTER = 3;
-
-export const EVENT_KINDS = [
-  "exposure",
-  "prediction_right",
-  "prediction_wrong",
-  "own_change",
-  "own_repair",
-  "failure_after_approval",
-  "check_right",
-  "check_wrong",
-] as const;
-
-export type ConceptEventKind = (typeof EVENT_KINDS)[number];
-export type Origin = "person" | "agent";
-
-export const WEIGHTS: Readonly<Record<ConceptEventKind, number>> = {
-  exposure: 0,
-  prediction_right: 1,
-  prediction_wrong: -1,
-  own_change: 1,
-  own_repair: 1.5,
-  failure_after_approval: -1,
-  check_right: 1,
-  check_wrong: -0.5,
-};
-
-const PERSON_ONLY: ReadonlySet<ConceptEventKind> = new Set([
-  "prediction_right",
-  "own_change",
-  "own_repair",
-  "check_right",
-]);
-
-export interface ConceptEventDraft {
-  readonly concept: ConceptId;
-  readonly kind: ConceptEventKind;
-  readonly origin: Origin;
-  readonly task?: string;
-  readonly file?: string;
-}
-
-export interface ConceptEvent extends ConceptEventDraft {
-  readonly at: string;
-  readonly weight: number;
-}
 
 export const STATES = ["demonstrated", "proximal", "beyond", "unknown"] as const;
 export type ConceptState = (typeof STATES)[number];
@@ -73,18 +48,15 @@ export interface ConceptSummary {
 
 export const eventsPath = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, CONCEPT_EVENTS_FILE));
 
-export const settled = (draft: ConceptEventDraft): ConceptEventDraft =>
-  draft.origin === "agent" && PERSON_ONLY.has(draft.kind) ? { ...draft, kind: "exposure" } : draft;
-
 export const recordConceptEvents = (
-  runtime: Pick<Runtime, "appendText" | "now">,
+  runtime: Pick<Runtime, "appendText" | "mkdir" | "now">,
   paths: FmPaths,
   drafts: readonly ConceptEventDraft[],
 ): readonly ConceptEvent[] => {
   if (drafts.length === 0) return [];
   const at = runtime.now();
   const events = drafts.map(settled).map((draft) => ({ at, ...draft, weight: WEIGHTS[draft.kind] }));
-  runtime.appendText(eventsPath(paths), events.map((event) => `${JSON.stringify(event)}\n`).join(""));
+  events.forEach((event, index) => appendEntry(runtime, paths, evidenceRecord(event, index, LIVE_REF)));
   return events;
 };
 
@@ -109,13 +81,18 @@ const eventOf = (line: string): ConceptEvent | undefined => {
   return { at: raw["at"], ...draft, weight: WEIGHTS[draft.kind] };
 };
 
-export const readConceptEvents = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ConceptEvent[] => {
+export const readLegacyEvents = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ConceptEvent[] => {
   const text = runtime.readText(eventsPath(paths));
   if (!text.ok) return [];
   return text.value.split("\n").flatMap((line) => {
     const event = line.trim() === "" ? undefined : eventOf(line);
     return event === undefined ? [] : [event];
   });
+};
+
+export const readConceptEvents = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly ConceptEvent[] => {
+  const log = conceitosLog(readEntries(runtime, paths));
+  return log.migrated ? log.events : [...readLegacyEvents(runtime, paths), ...log.events];
 };
 
 export const stateOf = (events: readonly ConceptEvent[]): ConceptState => {

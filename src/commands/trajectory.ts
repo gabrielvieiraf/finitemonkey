@@ -1,4 +1,5 @@
 import { eventsPath, readConceptEvents } from "../conceitos/evidence.js";
+import { forgetConceptEvidence } from "../conceitos/judge-log.js";
 import { trajectories, TRAJECTORY_FEATURE, TRAJECTORY_SCHEMA } from "../conceitos/trajectory.js";
 import { chartLines, colorDepth } from "../conceitos/trajectory-ansi.js";
 import { tableLines } from "../conceitos/trajectory-chart.js";
@@ -66,7 +67,8 @@ const show = (ctx: Ctx, domain: string | undefined, table: boolean): CommandResu
 
 const forget = (ctx: Ctx): CommandResult => {
   const removed = ctx.runtime.remove(eventsPath(pathsOf(ctx))).ok;
-  return success({ schema: TRAJECTORY_SCHEMA, removed: removed ? 1 : 0 }, [ctx.t("trajectory.forgotten")]);
+  const dropped = forgetConceptEvidence(ctx.runtime, pathsOf(ctx)) > 0;
+  return success({ schema: TRAJECTORY_SCHEMA, removed: removed || dropped ? 1 : 0 }, [ctx.t("trajectory.forgotten")]);
 };
 
 const exportAll = (ctx: Ctx): CommandResult => {

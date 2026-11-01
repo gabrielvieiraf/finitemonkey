@@ -40,6 +40,7 @@ export const ENTRY_TYPES = [
   "item",
   "ask",
   "probe",
+  "profile",
 ] as const;
 export const PROBE_FORMS = ["two-spans", "unsupported-claim", "predict-number"] as const;
 
@@ -95,6 +96,8 @@ export interface EvidenceEntry extends EntryBase {
   readonly ref: string;
   readonly origin: EvidenceOrigin;
   readonly claim?: string;
+  readonly task?: string;
+  readonly file?: string;
 }
 
 export interface ContestEntry extends EntryBase {
@@ -198,6 +201,15 @@ export interface ProbeEntry extends EntryBase {
   readonly session?: string;
 }
 
+export interface ProfileEntry extends EntryBase {
+  readonly type: "profile";
+  readonly domain?: string;
+  readonly tool?: number;
+  readonly knowledge?: number;
+  readonly claimed?: string;
+  readonly quickStart?: string;
+}
+
 export type JudgeEntry =
   | DomainEntry
   | ConceptEntry
@@ -211,7 +223,8 @@ export type JudgeEntry =
   | EventEntry
   | ItemEntry
   | AskEntry
-  | ProbeEntry;
+  | ProbeEntry
+  | ProfileEntry;
 
 export interface JudgeExport {
   readonly schema: typeof JUDGE_SCHEMA;
@@ -228,6 +241,7 @@ export interface JudgeExport {
   readonly items: readonly ItemEntry[];
   readonly asks: readonly AskEntry[];
   readonly probes: readonly ProbeEntry[];
+  readonly profiles: readonly ProfileEntry[];
 }
 
 export const oneOf = <T extends string>(options: readonly T[], value: unknown): T | undefined =>

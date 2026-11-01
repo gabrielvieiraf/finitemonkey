@@ -184,7 +184,7 @@ const scored = (book: Book, concept: ConceptId, correct: boolean, at: string): B
 };
 
 export const settlePredictions = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "appendText" | "now">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "appendText" | "mkdir" | "now">,
   paths: FmPaths,
   task: string,
   observe: (probe: Probe) => string | undefined,
@@ -211,7 +211,7 @@ export const settlePredictions = (
 };
 
 export const revokeDemonstrated = (
-  runtime: Pick<Runtime, "readText" | "writeText" | "appendText" | "now">,
+  runtime: Pick<Runtime, "readText" | "writeText" | "appendText" | "mkdir" | "now">,
   paths: FmPaths,
   concepts: readonly ConceptId[],
 ): readonly ConceptId[] => {
