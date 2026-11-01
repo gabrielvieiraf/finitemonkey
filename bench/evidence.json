@@ -1,6 +1,6 @@
 {
   "schema": "finitemonkey/evidence@1",
-  "version": "0.1.0-next.41",
+  "version": "0.1.0-next.42",
   "budget": {
     "fprWarn": 0.05,
     "fprFail": 0.15,
@@ -18,7 +18,7 @@
       "fpr": 0,
       "fnr": 0,
       "p50Ms": 0.06,
-      "p95Ms": 0.16,
+      "p95Ms": 0.18,
       "byOrigin": {
         "synthetic": 113,
         "session": 0
@@ -34,8 +34,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.08,
-      "p95Ms": 0.19,
+      "p50Ms": 0.09,
+      "p95Ms": 0.24,
       "byOrigin": {
         "synthetic": 104,
         "session": 0
@@ -51,8 +51,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 9.79,
-      "p95Ms": 53.86,
+      "p50Ms": 12.13,
+      "p95Ms": 65.27,
       "byOrigin": {
         "synthetic": 120,
         "session": 0
@@ -68,8 +68,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.13,
-      "p95Ms": 1,
+      "p50Ms": 0.11,
+      "p95Ms": 0.74,
       "byOrigin": {
         "synthetic": 105,
         "session": 0
