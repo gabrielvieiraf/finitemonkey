@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
+import { toAbsolutePath } from "../src/core/brand.js";
 import type { Env } from "../src/core/context.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { readLedger } from "../src/evidence/ledger.js";
@@ -50,8 +52,8 @@ const withNode = (version: string, base: Runtime = repoRuntime()): Runtime => ({
       : base.exec(request),
 });
 
-const runs = (repo: Repo, runtime: Runtime = repoRuntime(), env: Env = {}): number => {
-  const run = runGate({ runtime, cwd: repo.root, env, sessionId: "s1", budgetMs: 60_000, fast: false });
+const runs = (repo: Repo, runtime: Runtime = repoRuntime(), env: Env = {}, cwd: string = repo.root): number => {
+  const run = runGate({ runtime, cwd: toAbsolutePath(cwd), env, sessionId: "s1", budgetMs: 60_000, fast: false });
   if (run.kind !== "done") throw new Error(`gate did not run: ${JSON.stringify(run)}`);
   return readLedger(repoRuntime(), fmPaths(repo.root).evidence("t1")).filter((entry) => entry.check === "tests").length;
 };
@@ -107,5 +109,22 @@ describe("evidence freshness", () => {
 
   it("evidence without recorded inputs counts as changed", () => {
     assert.deepEqual(inputsChanged(undefined, { cwd: "/x", lockfiles: {}, tools: {}, env: {} }), ["inputs"]);
+  });
+
+  it("changing the working directory inside the repository invalidates green evidence", () => {
+    const repo = fresh();
+    assert.equal(runs(repo), 1);
+    assert.equal(runs(repo, repoRuntime(), {}, join(repo.root, "src")), 2);
+    assert.equal(runs(repo, repoRuntime(), {}, join(repo.root, "src")), 2);
+    const latest = readLedger(repoRuntime(), fmPaths(repo.root).evidence("t1")).findLast(
+      (entry) => entry.check === "tests",
+    );
+    assert.equal(latest?.inputs?.cwd, "src");
+  });
+
+  it("the working directory is compared relative to the root; an absolute one from before is not", () => {
+    const empty = { lockfiles: {}, tools: {}, env: {} };
+    assert.deepEqual(inputsChanged({ cwd: ".", ...empty }, { cwd: "src", ...empty }), ["cwd"]);
+    assert.deepEqual(inputsChanged({ cwd: "/home/ana/project", ...empty }, { cwd: ".", ...empty }), []);
   });
 });
