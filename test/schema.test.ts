@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { before, describe, it } from "node:test";
 
 import { generateSchemas, SCHEMA_DIR, staleSchemas } from "../scripts/schema-gen.js";
+import { COVERAGE_SCHEMA, parseCoverage } from "../src/testbudget/budget.js";
 import { compatProblems, validate } from "./schema-compat.js";
 import { cliJson, field, parseBody, ROOT } from "./support.js";
 
@@ -67,6 +68,17 @@ describe("published JSON schemas", () => {
   it("doctor --json data validates against doctor@1", async () => {
     const { body } = await cliJson(["doctor"]);
     assert.deepEqual(validate(readJson(join(ROOT, SCHEMA_DIR, "doctor@1.json")), field(body, "data")), []);
+  });
+
+  it("a coverage file the test budget reads validates against coverage@1", () => {
+    const file = {
+      schema: COVERAGE_SCHEMA,
+      tests: { "adds two numbers": { lines: ["src/sum.ts:1"], asserts: ["sum(1, 1) === 2"] } },
+    };
+    const schema = readJson(join(ROOT, SCHEMA_DIR, "coverage@1.json"));
+    assert.deepEqual(validate(schema, file), []);
+    assert.notDeepEqual(validate(schema, { tests: { broken: { lines: ["a"] } } }), []);
+    assert.deepEqual([...parseCoverage(file).keys()], ["adds two numbers"]);
   });
 
   it("every --json envelope validates against envelope@1", async () => {

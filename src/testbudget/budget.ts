@@ -44,6 +44,18 @@ export const slowSuite = (runs: readonly SuiteRun[], tolerance = DEFAULT_TOLERAN
   return slow ? { currentMs: current.ms, baseMs, runs: base.length } : undefined;
 };
 
+export const COVERAGE_SCHEMA = "finitemonkey/coverage@1";
+
+export interface CoverageFileTest {
+  readonly lines: readonly string[];
+  readonly asserts: readonly string[];
+}
+
+export interface CoverageFile {
+  readonly schema?: typeof COVERAGE_SCHEMA;
+  readonly tests: Readonly<Record<string, CoverageFileTest>>;
+}
+
 export interface TestCoverage {
   readonly lines: ReadonlySet<string>;
   readonly asserts: ReadonlySet<string>;

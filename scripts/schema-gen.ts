@@ -107,6 +107,13 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
       "`.finitemonkey/reports/<front>.json`, written by a front before it stops and checked by the front-report gate.",
   },
   {
+    name: "coverage@1",
+    file: "src/testbudget/budget.ts",
+    type: "CoverageFile",
+    describes:
+      "The per-test coverage file named by `test_budget.coverage` in `.finitemonkey/config.yml`: for each test id, the lines it runs and the assertions it makes, read by the test-budget check to find redundant tests.",
+  },
+  {
     name: "evidence@1",
     file: "src/evidence/types.ts",
     type: "Evidence",
