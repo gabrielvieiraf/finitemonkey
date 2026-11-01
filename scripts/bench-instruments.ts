@@ -4,6 +4,7 @@ import { CONCEPTS } from "../src/conceitos/concepts.js";
 import { isRecord, type JsonObject } from "../src/core/parsed.js";
 import { levelOf } from "../src/perfil/types.js";
 import { type KnowledgeBand, type Level, PERFIL_DOMAINS } from "./bench-family.js";
+import { splitsAgreement } from "./bench-splits.js";
 import { json, lines, records, str, unique, yaml } from "./bench-state.js";
 
 export const INSTRUMENTS_SCHEMA = "finitemonkey/bench-instruments@1";
@@ -296,5 +297,6 @@ export const scoreInstruments = (fmDir: string | undefined, truth: GroundTruth):
     probes: probesOf(fmDir, truth),
     trajectory: trajectoryOf(fmDir),
     judge: judgeOf(fmDir, truth),
+    splits: splitsAgreement(fmDir, truth),
   };
 };

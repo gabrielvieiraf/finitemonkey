@@ -1,9 +1,11 @@
 import type { DomainTrajectory } from "./trajectory.js";
-import { type Band, BAND_ORDER } from "./trajectory-bands.js";
+import { type Band, BAND_ORDER, drawnSplits } from "./trajectory-bands.js";
 import type { Ink, Theme } from "./trajectory-palette.js";
+import { SPLIT_GROUPS, type SplitGroup } from "./trajectory-split-types.js";
 import {
   axisLine,
   type Cellband,
+  ENGLISH_SPLITS,
   ENGLISH_TERM,
   gridOf,
   type GridSize,
@@ -169,7 +171,21 @@ const inkSwatch = (glyph: string, ink: Ink, options: TermOptions): string =>
     ? (PLAIN_GLYPH[glyph] ?? glyph)
     : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph}${RESET}`;
 
-export const legendLines = (bands: readonly Band[], options: TermOptions): readonly string[] => {
+const splitLines = (labels: TermLabels, drawn: ReadonlySet<SplitGroup>): readonly string[] => {
+  if (drawn.size === 0) return [labels.hypotheses];
+  const split = labels.splits ?? ENGLISH_SPLITS;
+  const names = (keep: boolean): string =>
+    SPLIT_GROUPS.filter((group) => drawn.has(group) === keep)
+      .map((group) => split.name[group])
+      .join(", ");
+  return [split.measured(names(true)), ...(drawn.size === SPLIT_GROUPS.length ? [] : [split.notDrawn(names(false))])];
+};
+
+export const legendLines = (
+  bands: readonly Band[],
+  options: TermOptions,
+  drawn: ReadonlySet<SplitGroup> = new Set(),
+): readonly string[] => {
   const labels = options.labels ?? ENGLISH_TERM;
   const entries = [
     ...bands.map((band) => `${swatch(band, options)} ${labels.band[band]}`),
@@ -185,7 +201,7 @@ export const legendLines = (bands: readonly Band[], options: TermOptions): reado
       `${inkSwatch("✕", "ricochet", options)} ${labels.ricochet}`,
       `${inkSwatch("◉", "held", options)} ${labels.held}`,
     ].join("  "),
-    faint(labels.hypotheses, options),
+    ...splitLines(labels, drawn).map((line) => faint(line, options)),
   ];
 };
 
@@ -193,8 +209,9 @@ export const chartLines = (trajectories: readonly DomainTrajectory[], options: T
   const drawn = trajectories.filter((item) => item.status === "ok");
   const used = new Set(drawn.flatMap(usedBands));
   const bands = BAND_ORDER.filter((band) => used.has(band));
+  const drawnGroups = new Set(drawn.flatMap((item) => [...drawnSplits(item)]));
   return [
     ...trajectories.flatMap((item, index) => [...(index === 0 ? [] : [""]), ...blockOf(item, options)]),
-    ...(drawn.length === 0 ? [] : ["", ...legendLines(bands, options)]),
+    ...(drawn.length === 0 ? [] : ["", ...legendLines(bands, options, drawnGroups)]),
   ];
 };

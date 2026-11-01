@@ -1,5 +1,6 @@
 import type { ConceptId } from "../conceitos/concepts.js";
 import type { DomainTrajectory, EvidenceRef, Mark, Week } from "../conceitos/trajectory.js";
+import type { Split, WeekSplits } from "../conceitos/trajectory-split-types.js";
 
 type Domain = DomainTrajectory["domain"];
 const DOMAIN_NAMES: readonly Domain[] = ["product", "interface", "backend", "infrastructure", "security"];
@@ -31,6 +32,20 @@ const num = (record: Readonly<Record<string, unknown>>, key: string): number =>
 
 const concept = (value: unknown): ConceptId => CONCEPTS.find((item) => item === value) ?? "api";
 
+const splitOf = (value: unknown): Split | undefined =>
+  isRecord(value)
+    ? { lower: num(value, "lower"), upper: num(value, "upper"), evidence: num(value, "evidence") }
+    : undefined;
+
+const splitsIn = (item: Readonly<Record<string, unknown>>): { readonly splits?: WeekSplits } => {
+  const raw = item["splits"];
+  if (!isRecord(raw)) return {};
+  const [alone, proximal, horizon] = [splitOf(raw["alone"]), splitOf(raw["proximal"]), splitOf(raw["horizon"])];
+  return alone === undefined || proximal === undefined || horizon === undefined
+    ? {}
+    : { splits: { alone, proximal, horizon } };
+};
+
 const weekOf = (item: Readonly<Record<string, unknown>>): Week => ({
   week: str(item, "week"),
   independent: orNull(item, "independent"),
@@ -41,6 +56,7 @@ const weekOf = (item: Readonly<Record<string, unknown>>): Week => ({
   unstable: orNull(item, "unstable"),
   work: orNull(item, "work"),
   evidence: num(item, "evidence"),
+  ...splitsIn(item),
 });
 
 const refOf = (item: Readonly<Record<string, unknown>>): EvidenceRef => ({

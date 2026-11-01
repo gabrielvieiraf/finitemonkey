@@ -21,6 +21,8 @@ export const EVENT_KINDS = [
   "failure_after_approval",
   "check_right",
   "check_wrong",
+  "explanation_right",
+  "explanation_wrong",
 ] as const;
 
 export type ConceptEventKind = (typeof EVENT_KINDS)[number];
@@ -35,6 +37,8 @@ export const WEIGHTS: Readonly<Record<ConceptEventKind, number>> = {
   failure_after_approval: -1,
   check_right: 1,
   check_wrong: -0.5,
+  explanation_right: 1,
+  explanation_wrong: -1,
 };
 
 const PERSON_ONLY: ReadonlySet<ConceptEventKind> = new Set([
@@ -42,6 +46,7 @@ const PERSON_ONLY: ReadonlySet<ConceptEventKind> = new Set([
   "own_change",
   "own_repair",
   "check_right",
+  "explanation_right",
 ]);
 
 export interface ConceptEventDraft {

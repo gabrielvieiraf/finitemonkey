@@ -1162,12 +1162,12 @@ var keyText = (raw) => raw.startsWith('"') || raw.startsWith("'") ? parseQuoted(
 var flowMap = (parts) => {
   const out = {};
   for (const part2 of parts) {
-    const pair = splitKey(part2);
-    if (pair === void 0) return reject(`expected "key: value" in flow mapping, got "${part2}"`);
-    const key3 = keyText(pair.key);
+    const pair2 = splitKey(part2);
+    if (pair2 === void 0) return reject(`expected "key: value" in flow mapping, got "${part2}"`);
+    const key3 = keyText(pair2.key);
     if (!key3.ok) return key3;
     if (key3.value in out) return reject(`duplicate key "${key3.value}"`);
-    const value2 = parseValue(pair.rest);
+    const value2 = parseValue(pair2.rest);
     if (!value2.ok) return value2;
     out[key3.value] = value2.value;
   }
@@ -1265,13 +1265,13 @@ var mapping = (lines10, start2, indent) => {
   const out = {};
   let index = start2;
   for (let line13 = lines10[index]; line13?.indent === indent && !isItem(line13.text); line13 = lines10[index]) {
-    const pair = splitKey(line13.text);
-    if (pair === void 0) return fail(line13, `expected "key: value", got "${line13.text}"`);
-    const key3 = pair.key.startsWith('"') || pair.key.startsWith("'") ? parseQuoted(pair.key) : accept(pair.key);
+    const pair2 = splitKey(line13.text);
+    if (pair2 === void 0) return fail(line13, `expected "key: value", got "${line13.text}"`);
+    const key3 = pair2.key.startsWith('"') || pair2.key.startsWith("'") ? parseQuoted(pair2.key) : accept(pair2.key);
     if (!key3.ok) return fail(line13, key3.error);
     if (key3.value in out) return fail(line13, `duplicate key "${key3.value}"`);
-    if (pair.rest !== "") {
-      const value2 = scalar(line13, pair.rest);
+    if (pair2.rest !== "") {
+      const value2 = scalar(line13, pair2.rest);
       if (!value2.ok) return value2;
       out[key3.value] = value2.value;
       index += 1;
@@ -2054,9 +2054,9 @@ var importGroup = (layer) => layerBases(layer).flatMap((base) => [`**/${lastSegm
 var restrictedImports = (config, deny2) => {
   const pairs5 = deniedPairs(config, deny2);
   const blocks2 = config.layers.flatMap((layer) => {
-    const mine = pairs5.filter((pair) => pair.from.name === layer.name);
+    const mine = pairs5.filter((pair2) => pair2.from.name === layer.name);
     if (mine.length === 0) return [];
-    const patterns = mine.map((pair) => ({ group: importGroup(pair.to), message: pair.message }));
+    const patterns = mine.map((pair2) => ({ group: importGroup(pair2.to), message: pair2.message }));
     return [{ files: layer.paths, rules: { "no-restricted-imports": ["error", { patterns }] } }];
   });
   return { path: "eslint.arch.json", content: printJson(blocks2) };
@@ -2065,8 +2065,8 @@ var entryRules = (config) => config.layers.flatMap(
   (layer) => layer.public === void 0 ? [] : [{ target: [layer.name], allow: layer.public.map((glob) => glob.split("/").pop() ?? glob) }]
 );
 var elementRule = (pairs5, layer) => {
-  const mine = pairs5.filter((pair) => pair.from.name === layer.name);
-  return mine.map((pair) => ({ from: [layer.name], disallow: [pair.to.name], message: pair.message }));
+  const mine = pairs5.filter((pair2) => pair2.from.name === layer.name);
+  return mine.map((pair2) => ({ from: [layer.name], disallow: [pair2.to.name], message: pair2.message }));
 };
 var boundaries = (config, deny2) => {
   const pairs5 = deniedPairs(config, deny2);
@@ -2088,12 +2088,12 @@ var boundaries = (config, deny2) => {
 var regexOf = (glob) => globToRegExp(glob).source.replace(/\\\//g, "/");
 var pathRegex = (layer) => layer.paths.map(regexOf).join("|");
 var dependencyCruiser = (config, deny2) => {
-  const forbidden = deniedPairs(config, deny2).map((pair) => ({
-    name: `${slug(pair.from.name)}-not-to-${slug(pair.to.name)}`,
-    comment: pair.message,
+  const forbidden = deniedPairs(config, deny2).map((pair2) => ({
+    name: `${slug(pair2.from.name)}-not-to-${slug(pair2.to.name)}`,
+    comment: pair2.message,
     severity: "error",
-    from: { path: pathRegex(pair.from) },
-    to: { path: pathRegex(pair.to) }
+    from: { path: pathRegex(pair2.from) },
+    to: { path: pathRegex(pair2.to) }
   }));
   const privates = config.layers.flatMap(
     (layer) => layer.public === void 0 ? [] : [
@@ -2121,15 +2121,15 @@ var rootOf = (config) => {
 };
 var indented = (items) => items.map((item2) => `    ${item2}`);
 var importLinter = (config, deny2) => {
-  const contracts = deniedPairs(config, deny2).flatMap((pair, index) => [
+  const contracts = deniedPairs(config, deny2).flatMap((pair2, index) => [
     "",
     `[importlinter:contract:${String(index + 1)}]`,
-    `name = ${pair.message}`,
+    `name = ${pair2.message}`,
     "type = forbidden",
     "source_modules =",
-    ...indented(modules(pair.from)),
+    ...indented(modules(pair2.from)),
     "forbidden_modules =",
-    ...indented(modules(pair.to))
+    ...indented(modules(pair2.to))
   ]);
   return {
     path: ".importlinter",
@@ -2143,21 +2143,21 @@ var rootPackage = (config) => {
   return shared2.join(".") || first.join(".");
 };
 var packagePattern = (layer) => `..${modules(layer)[0]?.split(".").pop() ?? layer.name}..`;
-var javaRules = (config, deny2) => deniedPairs(config, deny2).flatMap((pair) => [
+var javaRules = (config, deny2) => deniedPairs(config, deny2).flatMap((pair2) => [
   "",
   "  @ArchTest",
-  `  static final ArchRule ${camel(`${pair.from.name} not ${pair.to.name}`)} =`,
-  `      noClasses().that().resideInAPackage(${JSON.stringify(packagePattern(pair.from))})`,
-  `          .should().dependOnClassesThat().resideInAPackage(${JSON.stringify(packagePattern(pair.to))})`,
-  `          .because(${JSON.stringify(pair.message)});`
+  `  static final ArchRule ${camel(`${pair2.from.name} not ${pair2.to.name}`)} =`,
+  `      noClasses().that().resideInAPackage(${JSON.stringify(packagePattern(pair2.from))})`,
+  `          .should().dependOnClassesThat().resideInAPackage(${JSON.stringify(packagePattern(pair2.to))})`,
+  `          .because(${JSON.stringify(pair2.message)});`
 ]);
-var kotlinRules = (config, deny2) => deniedPairs(config, deny2).flatMap((pair) => [
+var kotlinRules = (config, deny2) => deniedPairs(config, deny2).flatMap((pair2) => [
   "",
   "    @ArchTest",
-  `    val ${camel(`${pair.from.name} not ${pair.to.name}`)}: ArchRule =`,
-  `        noClasses().that().resideInAPackage(${JSON.stringify(packagePattern(pair.from))})`,
-  `            .should().dependOnClassesThat().resideInAPackage(${JSON.stringify(packagePattern(pair.to))})`,
-  `            .because(${JSON.stringify(pair.message)})`
+  `    val ${camel(`${pair2.from.name} not ${pair2.to.name}`)}: ArchRule =`,
+  `        noClasses().that().resideInAPackage(${JSON.stringify(packagePattern(pair2.from))})`,
+  `            .should().dependOnClassesThat().resideInAPackage(${JSON.stringify(packagePattern(pair2.to))})`,
+  `            .because(${JSON.stringify(pair2.message)})`
 ]);
 var IMPORTS = [
   "import com.tngtech.archunit.core.importer.ImportOption",
@@ -2205,7 +2205,7 @@ var archUnit = (config, deny2, kotlin) => {
 var depguard = (config, deny2, goModule) => {
   const pairs5 = deniedPairs(config, deny2);
   const rules2 = config.layers.flatMap((layer) => {
-    const mine = pairs5.filter((pair) => pair.from.name === layer.name);
+    const mine = pairs5.filter((pair2) => pair2.from.name === layer.name);
     if (mine.length === 0) return [];
     return [
       `      ${JSON.stringify(layer.name)}:`,
@@ -2213,9 +2213,9 @@ var depguard = (config, deny2, goModule) => {
       ...layer.paths.map((glob) => `          - ${JSON.stringify(`**/${glob}`)}`),
       "        deny:",
       ...mine.flatMap(
-        (pair) => layerBases(pair.to).flatMap((base) => [
+        (pair2) => layerBases(pair2.to).flatMap((base) => [
           `          - pkg: ${JSON.stringify(`${goModule}/${base}`)}`,
-          `            desc: ${JSON.stringify(pair.message)}`
+          `            desc: ${JSON.stringify(pair2.message)}`
         ])
       )
     ];
@@ -3839,14 +3839,14 @@ var placeLine = (stack, indent, body2) => {
     addItem(top2, unquote2(body2.slice(2)));
     return;
   }
-  const pair = keyValue(body2);
-  if (pair === void 0) return;
+  const pair2 = keyValue(body2);
+  if (pair2 === void 0) return;
   const parentTree = top2.key === void 0 ? top2.tree : ensureTree(top2.tree, top2.key);
-  if (pair.value === "") {
-    stack.push({ indent, tree: parentTree, key: pair.key });
+  if (pair2.value === "") {
+    stack.push({ indent, tree: parentTree, key: pair2.key });
     return;
   }
-  parentTree[pair.key] = flowList(pair.value) ?? unquote2(pair.value);
+  parentTree[pair2.key] = flowList(pair2.value) ?? unquote2(pair2.value);
 };
 var ensureTree = (tree, key3) => {
   const existing = tree[key3];
@@ -10972,7 +10972,9 @@ var EVENT_KINDS = [
   "own_repair",
   "failure_after_approval",
   "check_right",
-  "check_wrong"
+  "check_wrong",
+  "explanation_right",
+  "explanation_wrong"
 ];
 var WEIGHTS = {
   exposure: 0,
@@ -10982,13 +10984,16 @@ var WEIGHTS = {
   own_repair: 1.5,
   failure_after_approval: -1,
   check_right: 1,
-  check_wrong: -0.5
+  check_wrong: -0.5,
+  explanation_right: 1,
+  explanation_wrong: -1
 };
 var PERSON_ONLY2 = /* @__PURE__ */ new Set([
   "prediction_right",
   "own_change",
   "own_repair",
-  "check_right"
+  "check_right",
+  "explanation_right"
 ]);
 var eventsPath = (paths) => toAbsolutePath(join50(paths.dir, CONCEPT_EVENTS_FILE));
 var settled = (draft) => draft.origin === "agent" && PERSON_ONLY2.has(draft.kind) ? { ...draft, kind: "exposure" } : draft;
@@ -13163,11 +13168,11 @@ var readDismissed = (runtime, paths) => {
   );
 };
 var supportOf2 = (commits2, left, right2) => commits2.filter((commit2) => commit2.files.includes(left) && commit2.files.includes(right2)).length;
-var dismissPair = (runtime, paths, commits2, pair, reason) => {
-  const dismissal = { reason, support: supportOf2(commits2, pair[0], pair[1]) };
+var dismissPair = (runtime, paths, commits2, pair2, reason) => {
+  const dismissal = { reason, support: supportOf2(commits2, pair2[0], pair2[1]) };
   writeJsonFile(runtime, paths.cache(DISMISSED_FILE), {
     ...readDismissed(runtime, paths),
-    [pairKey(pair[0], pair[1])]: dismissal
+    [pairKey(pair2[0], pair2[1])]: dismissal
   });
   return dismissal;
 };
@@ -17068,6 +17073,11 @@ var en_default = {
   "trajectory.ricochet": "ricochet",
   "trajectory.held": "held",
   "trajectory.hypotheses": "not drawn (hypothesis): transfer vs known context, explains vs detects only, recognizable vs out of reach",
+  "trajectory.split.alone": "transfer vs known context",
+  "trajectory.split.proximal": "explains vs detects only",
+  "trajectory.split.horizon": "recognizable vs out of reach",
+  "trajectory.split_measured": "measured from the record (calibration, dashed in the chart): {splits}",
+  "trajectory.split_hypotheses": "not drawn (hypothesis): {splits}",
   "trajectory.head": "{domain}, {from} to {to}, {evidence} weighted events",
   "trajectory.forgotten": "Concept evidence deleted; the trajectory starts over.",
   "handoff.assumption": "Open assumption {id} ({impact} impact): {text}; verify: {verify}",
@@ -19839,6 +19849,11 @@ var es_default = {
   "trajectory.ricochet": "rebote",
   "trajectory.held": "aguantó",
   "trajectory.hypotheses": "no dibujadas (hipótesis): transferencia vs contexto conocido, explica vs solo detecta, reconocible vs fuera de alcance",
+  "trajectory.split.alone": "transferencia vs contexto conocido",
+  "trajectory.split.proximal": "explica vs solo detecta",
+  "trajectory.split.horizon": "reconocible vs fuera de alcance",
+  "trajectory.split_measured": "medidas a partir del registro (calibración, discontinuas en el gráfico): {splits}",
+  "trajectory.split_hypotheses": "no dibujadas (hipótesis): {splits}",
   "trajectory.head": "{domain}, {from} a {to}, {evidence} eventos con peso",
   "trajectory.forgotten": "Evidencia de conceptos borrada; la trayectoria empieza de nuevo.",
   "handoff.assumption": "Supuesto abierto {id} (impacto {impact}): {text}; verificar: {verify}",
@@ -22610,6 +22625,11 @@ var pt_BR_default = {
   "trajectory.ricochet": "ricochete",
   "trajectory.held": "segurou",
   "trajectory.hypotheses": "não desenhadas (hipótese): transferência vs contexto conhecido, explica vs só detecta, reconhecível vs fora de alcance",
+  "trajectory.split.alone": "transferência vs contexto conhecido",
+  "trajectory.split.proximal": "explica vs só detecta",
+  "trajectory.split.horizon": "reconhecível vs fora de alcance",
+  "trajectory.split_measured": "medidas a partir do registro (calibração, tracejadas no gráfico): {splits}",
+  "trajectory.split_hypotheses": "não desenhadas (hipótese): {splits}",
   "trajectory.head": "{domain}, {from} a {to}, {evidence} eventos com peso",
   "trajectory.forgotten": "Evidência de conceitos apagada; a trajetória recomeça.",
   "handoff.assumption": "Premissa aberta {id} (impacto {impact}): {text}; verificar: {verify}",
@@ -25382,6 +25402,11 @@ var review_default = {
     "trajectory.ricochet": "machine",
     "trajectory.held": "machine",
     "trajectory.hypotheses": "machine",
+    "trajectory.split.alone": "machine",
+    "trajectory.split.proximal": "machine",
+    "trajectory.split.horizon": "machine",
+    "trajectory.split_measured": "machine",
+    "trajectory.split_hypotheses": "machine",
     "trajectory.head": "machine",
     "trajectory.forgotten": "machine",
     "handoff.assumption": "machine",
@@ -28151,6 +28176,11 @@ var review_default = {
     "trajectory.ricochet": "machine",
     "trajectory.held": "machine",
     "trajectory.hypotheses": "machine",
+    "trajectory.split.alone": "machine",
+    "trajectory.split.proximal": "machine",
+    "trajectory.split.horizon": "machine",
+    "trajectory.split_measured": "machine",
+    "trajectory.split_hypotheses": "machine",
     "trajectory.head": "machine",
     "trajectory.forgotten": "machine",
     "handoff.assumption": "machine",
@@ -39614,16 +39644,16 @@ var repoContradictions = (input) => {
   );
 };
 var contradictions = (input) => [
-  ...input.conflicts.map((pair) => ({
+  ...input.conflicts.map((pair2) => ({
     kind: "contradiction",
-    at: at4(input, pair.first.file, pair.first.line),
-    other: at4(input, pair.second.file, pair.second.line),
+    at: at4(input, pair2.first.file, pair2.first.line),
+    other: at4(input, pair2.second.file, pair2.second.line),
     proposal: false
   })),
-  ...input.proposer(input.files).map((pair) => ({
+  ...input.proposer(input.files).map((pair2) => ({
     kind: "contradiction",
-    at: at4(input, pair.first.file, pair.first.line),
-    other: at4(input, pair.second.file, pair.second.line),
+    at: at4(input, pair2.first.file, pair2.first.line),
+    other: at4(input, pair2.second.file, pair2.second.line),
     proposal: true
   }))
 ];
@@ -40259,19 +40289,185 @@ var compactionClaimLines = (runtime, paths, t, tree) => {
   return views2.length === 0 ? [] : [t("handoff.claims", { tree: tree ?? "-" }), ...views2.map((view3) => claimLine(t, view3))];
 };
 
+// src/judge/fetch.ts
+var FETCH_TIMEOUT_S = 20;
+var DOI = /^10\.\d{4,9}\/\S+$/;
+var urlOf = (id) => {
+  if (DOI.test(id)) return `https://doi.org/${id}`;
+  return /^https?:\/\//i.test(id) ? id : void 0;
+};
+var SECRET_FILE = /(?:^|\/)\.env(?:\.|$)|\.(?:pem|key|p12|pfx)$/i;
+var localSource = (id) => !id.startsWith("/") && !/^[A-Za-z]:/.test(id) && !id.split(/[\\/]/).includes("..") && !SECRET_FILE.test(id);
+var STATUS2 = /\n(\d{3})$/;
+var fromCurl = (stdout) => {
+  const match = STATUS2.exec(stdout);
+  const code2 = match === null ? 0 : Number(match[1]);
+  const content = match === null ? stdout : stdout.slice(0, match.index);
+  if (code2 === 404 || code2 === 410) return { status: "not-found" };
+  if (code2 < 200 || code2 >= 300) return { status: "unreachable", detail: `http ${String(code2)}` };
+  if (content.startsWith("%PDF")) return { status: "unreachable", detail: "pdf" };
+  return { status: "ok", content };
+};
+var curlFetcher = (runtime, root) => (id) => {
+  const url2 = urlOf(id);
+  if (url2 === void 0) {
+    if (!localSource(id)) return { status: "unreachable", detail: "outside the project" };
+    const local = runtime.readText(toAbsolutePath(id, toAbsolutePath(root)));
+    return local.ok ? { status: "ok", content: local.value } : { status: "not-found" };
+  }
+  const result = runtime.exec({
+    command: "curl",
+    args: [
+      "-sL",
+      "--max-time",
+      String(FETCH_TIMEOUT_S),
+      "-H",
+      "Accept: text/html, text/plain",
+      "-w",
+      "\n%{http_code}",
+      url2
+    ],
+    cwd: toAbsolutePath(root),
+    timeoutMs: (FETCH_TIMEOUT_S + 5) * 1e3
+  });
+  if (!result.found) return { status: "unreachable", detail: "curl missing" };
+  if (result.timedOut || result.exitCode !== 0) return { status: "unreachable", detail: "network" };
+  return fromCurl(result.stdout);
+};
+
+// src/judge/horizon.ts
+var SOURCE_REF = /^(?:10\.\d{4,9}\/\S+|https?:\/\/\S+|[\w./-]+\.\w+)$/;
+var sourceRef = (answer5) => urlOf(answer5) !== void 0 || SOURCE_REF.test(answer5);
+var criterionOf = (wanted, answer5) => {
+  const given = answer5?.trim() ?? "";
+  if (given === "" || wanted === void 0 || wanted === "none") return "none";
+  if (wanted === "source-span") return sourceRef(given.split(/\s+/)[0] ?? "") ? "source-span" : "none";
+  return wanted;
+};
+var latestHelps = (entries2) => {
+  const latest4 = /* @__PURE__ */ new Map();
+  for (const entry2 of entries2) if (entry2.type === "horizon") latest4.set(entry2.id, entry2);
+  return [...latest4.values()];
+};
+var helpView = (entry2) => ({
+  help: entry2.id,
+  kind: entry2.kind,
+  text: entry2.text,
+  criterion: entry2.criterion,
+  ...entry2.answer === void 0 ? {} : { answer: entry2.answer },
+  domain: entry2.domain,
+  state: entry2.state
+});
+var share3 = (part2, whole2) => whole2 === 0 ? 0 : Math.round(part2 / whole2 * 1e3) / 1e3;
+var horizonDomains = (entries2) => {
+  const helps = latestHelps(entries2);
+  return [...new Set(helps.map((help) => help.domain))].sort().map((domain) => {
+    const mine = helps.filter((help) => help.domain === domain);
+    const accepted2 = mine.filter((help) => help.state === "accepted");
+    const without = accepted2.filter((help) => help.criterion === "none").length;
+    return {
+      domain,
+      shown: mine.length,
+      accepted: accepted2.length,
+      dismissed: mine.filter((help) => help.state === "dismissed").length,
+      acceptedWithoutCriterion: without,
+      index: share3(without, accepted2.length)
+    };
+  });
+};
+var bandCriterion = (criterion) => criterion === "source-span" ? "check" : criterion;
+var bandDomain2 = (domain) => DOMAINS.find((item2) => item2 === domain) ?? GENERAL;
+
+// src/judge/horizon-outcome.ts
+var HORIZON_OUTCOME_EVENT = "horizon.outcome";
+var OUTCOMES = ["recognizable", "out_of_reach"];
+var outcomeOfReason = (reason) => reason === "accepted" ? "recognizable" : "out_of_reach";
+var helpDomain = (domain) => bandDomain2(domain.split("/")[0] ?? domain);
+var recordOutcome = (runtime, paths, help, reason) => logEvent(runtime, paths, HORIZON_OUTCOME_EVENT, {
+  help: help.id,
+  outcome: outcomeOfReason(reason),
+  reason,
+  domain: helpDomain(help.domain),
+  ...help.task === void 0 ? {} : { task: help.task }
+});
+var outcomeMarks = (log) => log.split("\n").flatMap((line13) => {
+  if (!line13.includes(HORIZON_OUTCOME_EVENT)) return [];
+  const parsed = parseJsonObject(line13);
+  if (!parsed.ok || parsed.value["event"] !== HORIZON_OUTCOME_EVENT) return [];
+  const { at: at6, domain, help } = parsed.value;
+  const outcome3 = OUTCOMES.find((item2) => item2 === parsed.value["outcome"]);
+  return typeof at6 === "string" && typeof domain === "string" && typeof help === "string" && outcome3 !== void 0 ? [{ at: at6, domain, help, outcome: outcome3 }] : [];
+});
+var closeHorizon = (runtime, paths, task) => {
+  const log = runtime.readText(paths.log);
+  const settled2 = new Set(outcomeMarks(log.ok ? log.value : "").map((item2) => item2.help));
+  const open = latestHelps(readEntries(runtime, paths)).filter(
+    (help) => help.task === task && help.state === "shown" && !settled2.has(help.id)
+  );
+  return open.filter((help) => recordOutcome(runtime, paths, help, "ignored")).length;
+};
+
+// src/conceitos/trajectory-split-types.ts
+var MIN_EVIDENCE = 6;
+var SPLIT_GROUPS = ["alone", "proximal", "horizon"];
+
+// src/conceitos/trajectory-splits.ts
+var INDEPENDENT = /* @__PURE__ */ new Set(["own_change", "own_repair"]);
+var DETECTS = /* @__PURE__ */ new Set(["prediction_right", "check_right"]);
+var areaOf = (file) => {
+  const parts = file.replaceAll("\\", "/").split("/").filter((part2) => part2 !== "" && part2 !== ".");
+  const folders = parts.slice(0, Math.max(0, parts.length - 1)).slice(0, 2);
+  return folders.length === 0 ? "." : folders.join("/");
+};
+var proofOf = (event) => event.origin === "person" && event.weight > 0;
+var aloneSideOf = (events, index) => {
+  const event = events[index];
+  if (event?.file === void 0 || !INDEPENDENT.has(event.kind) || !proofOf(event)) return void 0;
+  const before2 = events.slice(0, index).filter((item2) => item2.concept === event.concept);
+  if (stateOf2(before2) !== "demonstrated") return void 0;
+  const known3 = new Set(
+    before2.flatMap((item2) => proofOf(item2) && item2.file !== void 0 ? [areaOf(item2.file)] : [])
+  );
+  return known3.has(areaOf(event.file)) ? "known" : "transfer";
+};
+var classify2 = (events) => events.flatMap((event, index) => {
+  const alone = aloneSideOf(events, index);
+  if (alone !== void 0) return [{ event, side: alone }];
+  if (event.origin !== "person") return [];
+  if (event.kind === "explanation_right") return [{ event, side: "explains" }];
+  return DETECTS.has(event.kind) ? [{ event, side: "detects" }] : [];
+});
+var conceptsWith = (items, side) => new Set(items.filter((item2) => item2.side === side).map((item2) => item2.event.concept));
+var pair = (items, first, second) => {
+  const winner = conceptsWith(items, first);
+  const rest = [...conceptsWith(items, second)].filter((concept) => !winner.has(concept));
+  const evidence2 = items.filter((item2) => item2.side === first || item2.side === second).length;
+  return { lower: winner.size, upper: rest.length, evidence: evidence2 };
+};
+var splitsOf = (classified2, outcomes2, domain, key3) => {
+  const upTo = classified2.filter((item2) => (isoWeek(item2.event.at) ?? "") <= key3);
+  const mine = outcomes2.filter((item2) => item2.domain === domain && (isoWeek(item2.at) ?? "") <= key3);
+  const recognizable = mine.filter((item2) => item2.outcome === "recognizable").length;
+  const alone = pair(upTo, "transfer", "known");
+  return {
+    alone: { lower: alone.upper, upper: alone.lower, evidence: alone.evidence },
+    proximal: pair(upTo, "explains", "detects"),
+    horizon: { lower: recognizable, upper: mine.length - recognizable, evidence: mine.length }
+  };
+};
+
 // src/conceitos/trajectory.ts
 var TRAJECTORY_SCHEMA = "finitemonkey/trajectory@1";
 var TRAJECTORY_FEATURE = "trajectory";
 var WEEKS = 12;
-var MIN_EVIDENCE = 6;
 var MIN_WEEKS = 2;
 var DAY = 864e5;
 var weekKeys = (now, count12 = WEEKS) => Array.from(
   { length: count12 },
   (_, index) => isoWeek(new Date(now - (count12 - 1 - index) * 7 * DAY).toISOString()) ?? ""
 );
-var INDEPENDENT = /* @__PURE__ */ new Set(["own_change", "own_repair"]);
-var DISCERNMENT = /* @__PURE__ */ new Set(["prediction_right", "check_right"]);
+var INDEPENDENT2 = /* @__PURE__ */ new Set(["own_change", "own_repair"]);
+var DISCERNMENT = /* @__PURE__ */ new Set(["prediction_right", "check_right", "explanation_right"]);
 var refOf = (event) => ({
   kind: event.kind,
   at: event.at,
@@ -40291,7 +40487,7 @@ var marksOf = (events) => events.flatMap((event, index) => {
   const kind = repair === void 0 ? "ricochet" : "held";
   return [{ kind, week, concept: event.concept, at: event.at, from, evidence: evidence2 }];
 });
-var WRONG = /* @__PURE__ */ new Set(["prediction_wrong", "check_wrong"]);
+var WRONG = /* @__PURE__ */ new Set(["prediction_wrong", "check_wrong", "explanation_wrong"]);
 var unstableCount = (events) => {
   const right2 = new Set(events.filter((event) => DISCERNMENT.has(event.kind)).map((event) => event.concept));
   return new Set(
@@ -40299,7 +40495,7 @@ var unstableCount = (events) => {
   ).size;
 };
 var distinct = (events, keep) => new Set(events.filter(keep).map((event) => event.concept)).size;
-var ACCEPTED = (event) => INDEPENDENT.has(event.kind) || event.kind === "exposure" && event.origin === "agent";
+var ACCEPTED = (event) => INDEPENDENT2.has(event.kind) || event.kind === "exposure" && event.origin === "agent";
 var middle = (from, to) => to > from ? (from + to) / 2 : to;
 var landedLevel = (inWeek, upTo, series) => {
   const touched2 = [...new Set(inWeek.filter(ACCEPTED).map((event) => event.concept))];
@@ -40312,7 +40508,7 @@ var landedLevel = (inWeek, upTo, series) => {
   });
   return Math.max(...levels);
 };
-var trajectoryOf = (domain, all, helps, now) => {
+var seriesOf = (domain, all, helps, now) => {
   const events = all.filter((event) => domainOf(event.concept) === domain);
   const keys = weekKeys(now);
   const weighted = events.filter((event) => event.weight !== 0 || event.origin === "agent");
@@ -40325,7 +40521,7 @@ var trajectoryOf = (domain, all, helps, now) => {
     const inWeek = events.filter((event) => isoWeek(event.at) === key3);
     const domainHelps = helps.filter((help) => help.domain === domain && isoWeek(help.at) === key3);
     const has = inWeek.some((event) => event.weight !== 0 || event.origin === "agent");
-    const independent = distinct(upTo, (event) => INDEPENDENT.has(event.kind));
+    const independent = distinct(upTo, (event) => INDEPENDENT2.has(event.kind));
     const discernment = Math.max(
       independent,
       distinct(upTo, (event) => DISCERNMENT.has(event.kind))
@@ -40356,7 +40552,13 @@ var trajectoryOf = (domain, all, helps, now) => {
     position: enough && last !== void 0 ? last.week : null
   };
 };
-var trajectories = (events, helps, now) => DOMAINS.map((domain) => trajectoryOf(domain, events, helps, now));
+var trajectoryOf = (domain, all, helps, now, outcomes2 = []) => {
+  const series = seriesOf(domain, all, helps, now);
+  const classified2 = classify2(all.filter((event) => domainOf(event.concept) === domain));
+  const weeks = series.weeks.map((week) => ({ ...week, splits: splitsOf(classified2, outcomes2, domain, week.week) }));
+  return { ...series, weeks };
+};
+var trajectories = (events, helps, now, outcomes2 = []) => DOMAINS.map((domain) => trajectoryOf(domain, events, helps, now, outcomes2));
 
 // src/conceitos/trajectory-bands.ts
 var BANDS3 = {
@@ -40375,6 +40577,7 @@ var GROUP_LABEL = {
   proximal: "proximal band",
   alone: "does alone"
 };
+var SPLIT_BAND = { alone: "alone", proximal: "proximal", horizon: "beyond" };
 var BAND_ORDER = [
   "alone",
   "proximal",
@@ -40431,6 +40634,19 @@ var landedIn = (trajectory2, week) => {
   return level === null ? void 0 : bandAt(week, level, peakOf(trajectory2));
 };
 var describeBand = (band) => band === "beyond" || band === "blind" ? GROUP_LABEL[BANDS3[band].group] : `${GROUP_LABEL[BANDS3[band].group]}, ${BANDS3[band].label}`;
+var splitAt = (week, group, peak) => {
+  const split = week.splits?.[group];
+  if (split === void 0 || split.evidence < MIN_EVIDENCE || split.lower + split.upper === 0) return void 0;
+  const stratum = strataOf(week, peak).find((item2) => item2.band === SPLIT_BAND[group]);
+  if (stratum === void 0) return void 0;
+  return stratum.from + (stratum.to - stratum.from) * split.lower / (split.lower + split.upper);
+};
+var drawnSplits = (trajectory2) => {
+  const peak = peakOf(trajectory2);
+  return new Set(
+    SPLIT_GROUPS.filter((group) => trajectory2.weeks.some((week) => splitAt(week, group, peak) !== void 0))
+  );
+};
 
 // src/conceitos/trajectory-now.ts
 var helpMarks = (log) => log.split("\n").flatMap((line13) => {
@@ -40461,7 +40677,8 @@ var trajectoryNowOf = (runtime, paths) => {
   const events = readConceptEvents(runtime, paths);
   if (events.length === 0) return null;
   const log = runtime.readText(paths.log);
-  return nowOf(trajectories(events, helpMarks(log.ok ? log.value : ""), nowMs(runtime)));
+  const text41 = log.ok ? log.value : "";
+  return nowOf(trajectories(events, helpMarks(text41), nowMs(runtime), outcomeMarks(text41)));
 };
 
 // src/gate/state.ts
@@ -42705,7 +42922,7 @@ var readReason = (runtime, paths, task) => {
     return value2?.["task"] === task && typeof value2["sentence"] === "string" ? [value2["sentence"]] : [];
   }).at(-1);
 };
-var recordOutcome = (runtime, paths, record15) => {
+var recordOutcome2 = (runtime, paths, record15) => {
   const entry2 = {
     id: record15.task,
     source: "decide",
@@ -43252,7 +43469,7 @@ ${result.stderr}`;
     ]
   };
 };
-var classify2 = (check2, ctx, result, timeoutMs) => {
+var classify3 = (check2, ctx, result, timeoutMs) => {
   const run10 = check2.run ?? "";
   if (!result.found) return unverified("tool_missing", [note("gate.note.tool_missing", { command: run10 })]);
   if (result.timedOut)
@@ -43322,7 +43539,7 @@ var executeShell = (check2, run10, ctx) => {
     exitCode: result.exitCode,
     stdoutSha256: sha256Hex(result.stdout),
     durationMs: result.durationMs,
-    ...classify2({ ...check2, run: run10 }, ctx, result, timeoutMs)
+    ...classify3({ ...check2, run: run10 }, ctx, result, timeoutMs)
   };
 };
 var runShellCheck = (check2, run10, ctx, options2 = {}) => {
@@ -43668,7 +43885,7 @@ var callersRate = (runtime, paths) => {
     if (parsed === void 0 || !parsed.ok || !isRecord(parsed.value)) continue;
     const event = parsed.value["event"];
     const target7 = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
-    if (target7 !== void 0) for (const pair of pairs2(parsed.value)) target7.add(pair);
+    if (target7 !== void 0) for (const pair2 of pairs2(parsed.value)) target7.add(pair2);
   }
   const total = (/* @__PURE__ */ new Set([...flagged, ...released2])).size;
   const rate = total === 0 ? 0 : released2.size / total;
@@ -47215,17 +47432,17 @@ var newClones = (inputs, size) => {
   const clones = [];
   for (const [first, second] of fresh4) {
     if (first === void 0 || second === void 0) continue;
-    const pair = `${first.file}
+    const pair2 = `${first.file}
 ${second.file}`;
-    const open = covered.get(pair);
+    const open = covered.get(pair2);
     if (open !== void 0 && first.line <= open.end) {
       const grown = { ...open.clone, lines: open.clone.lines + 1 };
       clones[clones.indexOf(open.clone)] = grown;
-      covered.set(pair, { end: Math.max(open.end, first.end), clone: grown });
+      covered.set(pair2, { end: Math.max(open.end, first.end), clone: grown });
       continue;
     }
     const clone = { file: first.file, line: first.line, otherFile: second.file, otherLine: second.line, lines: size };
-    covered.set(pair, { end: first.end, clone });
+    covered.set(pair2, { end: first.end, clone });
     clones.push(clone);
   }
   return clones.slice(0, MAX_CLONES);
@@ -49374,7 +49591,7 @@ var missingSymbols = (file, side, hunks, present5) => {
 
 // src/git/merge/verify-file.ts
 var created2 = (diff) => diff?.status === "added" || diff?.status === "copied";
-var resultPathOf = (context, pair) => [pair.ours?.newPath, pair.theirs?.newPath, pair.key].find(
+var resultPathOf = (context, pair2) => [pair2.ours?.newPath, pair2.theirs?.newPath, pair2.key].find(
   (path) => path !== void 0 && context.resultText(path) !== void 0
 );
 var finding4 = (kind, file, side, text41) => ({
@@ -49385,52 +49602,52 @@ var finding4 = (kind, file, side, text41) => ({
   text: text41,
   weak: false
 });
-var binaryFindings = (context, pair, path) => {
+var binaryFindings = (context, pair2, path) => {
   const { runtime, repo, inputs } = context;
   const result = path === void 0 ? void 0 : blobId(runtime, repo, inputs.result, path);
-  const ours = pair.ours?.newPath === void 0 ? void 0 : blobId(runtime, repo, inputs.ours, pair.ours.newPath);
-  const theirs = pair.theirs?.newPath === void 0 ? void 0 : blobId(runtime, repo, inputs.theirs, pair.theirs.newPath);
-  const file = path ?? pair.key;
-  if (pair.ours !== void 0 && pair.theirs !== void 0 && ours !== theirs) {
+  const ours = pair2.ours?.newPath === void 0 ? void 0 : blobId(runtime, repo, inputs.ours, pair2.ours.newPath);
+  const theirs = pair2.theirs?.newPath === void 0 ? void 0 : blobId(runtime, repo, inputs.theirs, pair2.theirs.newPath);
+  const file = path ?? pair2.key;
+  if (pair2.ours !== void 0 && pair2.theirs !== void 0 && ours !== theirs) {
     if (result === ours) return [finding4("binary", file, "theirs", file)];
     if (result === theirs) return [finding4("binary", file, "ours", file)];
     return [finding4("binary", file, void 0, file)];
   }
-  const side = pair.ours === void 0 ? "theirs" : "ours";
+  const side = pair2.ours === void 0 ? "theirs" : "ours";
   const expected = side === "ours" ? ours : theirs;
   return result === expected ? [] : [finding4("binary", file, side, file)];
 };
 var elsewhereOf = (context) => (lines10) => context.resultFiles().some((path) => containsSequence(contentLines(context.resultText(path)), lines10));
-var symbolFindings = (context, pair, path, text41) => {
+var symbolFindings = (context, pair2, path, text41) => {
   const present5 = (symbol) => text41 !== void 0 && containsSymbol(text41, symbol) || context.resultFiles().some((other) => containsSymbol(context.resultText(other) ?? "", symbol));
   return [
-    ...missingSymbols(path, "ours", pair.ours?.hunks ?? [], present5),
-    ...missingSymbols(path, "theirs", pair.theirs?.hunks ?? [], present5)
+    ...missingSymbols(path, "ours", pair2.ours?.hunks ?? [], present5),
+    ...missingSymbols(path, "theirs", pair2.theirs?.hunks ?? [], present5)
   ];
 };
-var verifyFile = (context, pair) => {
-  const path = resultPathOf(context, pair);
-  if (pair.ours?.binary === true || pair.theirs?.binary === true) return binaryFindings(context, pair, path);
+var verifyFile = (context, pair2) => {
+  const path = resultPathOf(context, pair2);
+  if (pair2.ours?.binary === true || pair2.theirs?.binary === true) return binaryFindings(context, pair2, path);
   const missing3 = ["ours", "theirs"].flatMap(
-    (side) => created2(pair[side]) && path === void 0 ? [finding4("missing-file", pair.key, side, pair.key)] : []
+    (side) => created2(pair2[side]) && path === void 0 ? [finding4("missing-file", pair2.key, side, pair2.key)] : []
   );
   if (missing3.length > 0) return missing3;
-  const copied = [pair.ours, pair.theirs].find((diff) => diff?.status === "copied");
-  const baseSource = copied?.oldPath ?? (created2(pair.ours) || created2(pair.theirs) ? void 0 : pair.key);
+  const copied = [pair2.ours, pair2.theirs].find((diff) => diff?.status === "copied");
+  const baseSource = copied?.oldPath ?? (created2(pair2.ours) || created2(pair2.theirs) ? void 0 : pair2.key);
   const baseText2 = baseSource === void 0 ? void 0 : blobText(context.runtime, context.repo, context.inputs.base, baseSource);
   const text41 = path === void 0 ? void 0 : context.resultText(path);
-  const file = path ?? pair.key;
+  const file = path ?? pair2.key;
   const lines10 = checkFile(
     {
       path: file,
       base: contentLines(baseText2),
       result: contentLines(text41),
-      ours: pair.ours?.hunks ?? [],
-      theirs: pair.theirs?.hunks ?? []
+      ours: pair2.ours?.hunks ?? [],
+      theirs: pair2.theirs?.hunks ?? []
     },
     elsewhereOf(context)
   );
-  return [...lines10, ...symbolFindings(context, pair, file, text41)];
+  return [...lines10, ...symbolFindings(context, pair2, file, text41)];
 };
 
 // src/git/merge/verify.ts
@@ -49466,8 +49683,8 @@ var contextOf2 = (runtime, repo, inputs, pairs5) => {
     inputs,
     resultText: resultText2,
     resultFiles: memo(
-      () => pairs5.flatMap((pair) => {
-        const path = resultPathOf(context, pair);
+      () => pairs5.flatMap((pair2) => {
+        const path = resultPathOf(context, pair2);
         return path === void 0 ? [] : [path];
       })
     )
@@ -49488,19 +49705,19 @@ var verifyMerge = (runtime, repo, options2 = {}) => {
   const generated = generatedPaths(
     runtime,
     repo,
-    pairs5.map((pair) => pair.key),
+    pairs5.map((pair2) => pair2.key),
     generators
   );
   const context = contextOf2(
     runtime,
     repo,
     inputs.value,
-    pairs5.filter((pair) => !generated.has(pair.key))
+    pairs5.filter((pair2) => !generated.has(pair2.key))
   );
   const regenerated = verifyGenerated(runtime, repo, inputs.value, [...generated], generators);
   if (!regenerated.ok) return failed5(regenerated.error, inputs.value);
   const all = [
-    ...pairs5.filter((pair) => !generated.has(pair.key)).flatMap((pair) => verifyFile(context, pair)),
+    ...pairs5.filter((pair2) => !generated.has(pair2.key)).flatMap((pair2) => verifyFile(context, pair2)),
     ...regenerated.value
   ];
   const open = [...dropped.value.invalid, ...all.filter((item2) => !isDropped(item2, dropped.value.items))];
@@ -49900,6 +50117,7 @@ var markDone = (input, report5, root) => {
   if (state.active !== report5.task) return;
   writeState(input.runtime, root, closeTask(state, report5.task));
   recordOnClose(input.runtime, root, report5.task);
+  closeHorizon(input.runtime, root, report5.task);
 };
 var onFailed = (input, report5, paths) => {
   const { t, runtime, env } = input;
@@ -50391,7 +50609,7 @@ var classOf2 = (context, facts, tree, entry2) => {
   if (isRecent(context, facts.activityAt)) return "recent";
   return branchClass(context, facts.tip, entry2?.target ?? null);
 };
-var classify3 = (context, tree, entry2) => {
+var classify4 = (context, tree, entry2) => {
   const path = tree?.path ?? entry2?.path ?? "";
   const dir = toAbsolutePath(path);
   const exists3 = context.runtime.stat(dir)?.kind === "dir";
@@ -53443,7 +53661,7 @@ var KNOWLEDGE_MAP_FEATURE = "knowledge-map";
 var QUESTIONS_FILE = "questions.json";
 var SESSION_TAIL_MS = 30 * 6e4;
 var LOOKBACK_DAYS = 180;
-var areaOf = (path) => {
+var areaOf2 = (path) => {
   const parts = path.split("/").filter((part2) => part2 !== "");
   return parts.length <= 1 ? "." : parts.slice(0, Math.min(2, parts.length - 1)).join("/");
 };
@@ -53489,13 +53707,13 @@ var knowledgeMap = (runtime, paths) => {
     counts2.set(area, { ...current2, [key3]: current2[key3] + 1 });
   };
   for (const file of trackedFiles2(runtime, paths).filter((path) => !path.startsWith(".finitemonkey/")))
-    counts2.set(areaOf(file), counts2.get(areaOf(file)) ?? { person: 0, agent: 0, claims: 0 });
+    counts2.set(areaOf2(file), counts2.get(areaOf2(file)) ?? { person: 0, agent: 0, claims: 0 });
   for (const commit2 of commits(runtime, paths))
-    for (const area of new Set(commit2.files.map(areaOf)))
+    for (const area of new Set(commit2.files.map(areaOf2)))
       if (counts2.has(area)) bump2(area, inSession(commit2.at) ? "agent" : "person");
   for (const view3 of viewsOf(runtime, paths))
     if (view3.status === "valid" && view3.claim.kind === "check") {
-      for (const area of new Set(view3.claim.anchors.map((anchor) => areaOf(anchor.path))))
+      for (const area of new Set(view3.claim.anchors.map((anchor) => areaOf2(anchor.path))))
         if (counts2.has(area)) bump2(area, "claims");
     }
   return [...counts2].map(([area, count12]) => ({
@@ -53536,7 +53754,7 @@ var changedRenewals = (claim) => {
 };
 var dueQuestions = (runtime, paths, personAreas) => {
   const asked = new Set(readQuestions(runtime, paths).asked);
-  return readClaims(runtime, paths).filter((claim) => claim.anchors.some((anchor) => personAreas.has(areaOf(anchor.path)))).flatMap(changedRenewals).filter((question) => !asked.has(keyOf7(question)));
+  return readClaims(runtime, paths).filter((claim) => claim.anchors.some((anchor) => personAreas.has(areaOf2(anchor.path)))).flatMap(changedRenewals).filter((question) => !asked.has(keyOf7(question)));
 };
 var takeQuestion = (runtime, paths, session, due4) => {
   const state = readQuestions(runtime, paths);
@@ -55444,7 +55662,7 @@ var REUSE_LOG = "reuse.json";
 var RETIRE_AFTER = 100;
 var RETIRE_BELOW = 0.2;
 var reuseLogPath = (paths) => toAbsolutePath(join152(paths.dir, REUSE_LOG));
-var OUTCOMES = ["pending", "reused", "kept"];
+var OUTCOMES2 = ["pending", "reused", "kept"];
 var text33 = (raw, key3) => {
   const value2 = raw[key3];
   return typeof value2 === "string" ? value2 : "";
@@ -55455,7 +55673,7 @@ var readReuseLog = (runtime, paths) => {
   return {
     warnings: list13.flatMap((item2) => {
       if (!isRecord(item2)) return [];
-      const outcome3 = OUTCOMES.find((value2) => value2 === item2["outcome"]) ?? "pending";
+      const outcome3 = OUTCOMES2.find((value2) => value2 === item2["outcome"]) ?? "pending";
       const id = typeof item2["id"] === "number" ? item2["id"] : 0;
       return [
         {
@@ -57131,11 +57349,11 @@ var loadInventory = (runtime, cwd, staleDays) => {
 var entryFor3 = (registry, path) => registry.worktrees.find((entry2) => samePath(entry2.path, path));
 var classifyAll = (inventory) => {
   const linked = inventory.trees.filter((tree) => !tree.main && !tree.bare);
-  const fromGit = linked.map((tree) => classify3(inventory.context, tree, entryFor3(inventory.registry, tree.path)));
+  const fromGit = linked.map((tree) => classify4(inventory.context, tree, entryFor3(inventory.registry, tree.path)));
   const stray = inventory.registry.worktrees.filter(
     (entry2) => !["removed", "archived"].includes(entry2.status) && !linked.some((tree) => samePath(tree.path, entry2.path))
   );
-  return [...fromGit, ...stray.map((entry2) => classify3(inventory.context, void 0, entry2))];
+  return [...fromGit, ...stray.map((entry2) => classify4(inventory.context, void 0, entry2))];
 };
 var findWorktree = (items, wanted, cwd) => items.find(
   (item2) => item2.entry?.id === wanted || item2.branch === wanted || samePath(item2.path, wanted) || samePath(item2.path, toAbsolutePath(wanted, cwd))
@@ -57566,7 +57784,7 @@ var run7 = (exec, invocation, cwd, env, input) => exec({
   ...input === void 0 ? {} : { input }
 });
 var firstLine4 = (text41) => maskText(text41.trim().split("\n")[0] ?? "").slice(0, 160);
-var classify4 = (result) => {
+var classify5 = (result) => {
   if (!result.found) return { kind: "failed", problem: "missing", detail: "" };
   if (result.timedOut) return { kind: "failed", problem: "timeout", detail: "" };
   if (result.exitCode !== 0) {
@@ -57576,7 +57794,7 @@ var classify4 = (result) => {
   if (!answer5.ok) return { kind: "failed", problem: "output", detail: firstLine4(result.stdout) };
   return { kind: "answered", durationMs: result.durationMs };
 };
-var fireHook = (exec, entry2, invocation, cwd, env) => classify4(run7(exec, invocation, cwd, env, syntheticPayload(entry2.event, cwd)));
+var fireHook = (exec, entry2, invocation, cwd, env) => classify5(run7(exec, invocation, cwd, env, syntheticPayload(entry2.event, cwd)));
 var executableVersion = (exec, invocation, cwd, env) => {
   const query = versionInvocation(invocation);
   if (query === void 0) return void 0;
@@ -57664,7 +57882,7 @@ var runProblems = (context, entry2, invocation) => {
   const params2 = { ...base, ms: Math.round(fired.durationMs) };
   return [{ health: "degraded", messageKey: "doctor.hooks.slow", fixKey: "doctor.hooks.fix_slow", params: params2 }];
 };
-var STATUS2 = { ok: "ok", degraded: "warn", broken: "fail" };
+var STATUS3 = { ok: "ok", degraded: "warn", broken: "fail" };
 var toFinding3 = (entry2, problems, ms) => {
   const check2 = `hook.${entry2.source}.${entry2.event}`;
   const worst4 = problems.find((problem5) => problem5.health === "broken") ?? problems[0];
@@ -57674,7 +57892,7 @@ var toFinding3 = (entry2, problems, ms) => {
   }
   return {
     check: check2,
-    status: STATUS2[worst4.health],
+    status: STATUS3[worst4.health],
     hook: worst4.health,
     messageKey: worst4.messageKey,
     params: worst4.params,
@@ -67657,95 +67875,6 @@ var writeHandoff = (deps, claim, entries2, request, at6) => {
   return pack;
 };
 
-// src/judge/fetch.ts
-var FETCH_TIMEOUT_S = 20;
-var DOI = /^10\.\d{4,9}\/\S+$/;
-var urlOf = (id) => {
-  if (DOI.test(id)) return `https://doi.org/${id}`;
-  return /^https?:\/\//i.test(id) ? id : void 0;
-};
-var SECRET_FILE = /(?:^|\/)\.env(?:\.|$)|\.(?:pem|key|p12|pfx)$/i;
-var localSource = (id) => !id.startsWith("/") && !/^[A-Za-z]:/.test(id) && !id.split(/[\\/]/).includes("..") && !SECRET_FILE.test(id);
-var STATUS3 = /\n(\d{3})$/;
-var fromCurl = (stdout) => {
-  const match = STATUS3.exec(stdout);
-  const code2 = match === null ? 0 : Number(match[1]);
-  const content = match === null ? stdout : stdout.slice(0, match.index);
-  if (code2 === 404 || code2 === 410) return { status: "not-found" };
-  if (code2 < 200 || code2 >= 300) return { status: "unreachable", detail: `http ${String(code2)}` };
-  if (content.startsWith("%PDF")) return { status: "unreachable", detail: "pdf" };
-  return { status: "ok", content };
-};
-var curlFetcher = (runtime, root) => (id) => {
-  const url2 = urlOf(id);
-  if (url2 === void 0) {
-    if (!localSource(id)) return { status: "unreachable", detail: "outside the project" };
-    const local = runtime.readText(toAbsolutePath(id, toAbsolutePath(root)));
-    return local.ok ? { status: "ok", content: local.value } : { status: "not-found" };
-  }
-  const result = runtime.exec({
-    command: "curl",
-    args: [
-      "-sL",
-      "--max-time",
-      String(FETCH_TIMEOUT_S),
-      "-H",
-      "Accept: text/html, text/plain",
-      "-w",
-      "\n%{http_code}",
-      url2
-    ],
-    cwd: toAbsolutePath(root),
-    timeoutMs: (FETCH_TIMEOUT_S + 5) * 1e3
-  });
-  if (!result.found) return { status: "unreachable", detail: "curl missing" };
-  if (result.timedOut || result.exitCode !== 0) return { status: "unreachable", detail: "network" };
-  return fromCurl(result.stdout);
-};
-
-// src/judge/horizon.ts
-var SOURCE_REF = /^(?:10\.\d{4,9}\/\S+|https?:\/\/\S+|[\w./-]+\.\w+)$/;
-var sourceRef = (answer5) => urlOf(answer5) !== void 0 || SOURCE_REF.test(answer5);
-var criterionOf = (wanted, answer5) => {
-  const given = answer5?.trim() ?? "";
-  if (given === "" || wanted === void 0 || wanted === "none") return "none";
-  if (wanted === "source-span") return sourceRef(given.split(/\s+/)[0] ?? "") ? "source-span" : "none";
-  return wanted;
-};
-var latestHelps = (entries2) => {
-  const latest4 = /* @__PURE__ */ new Map();
-  for (const entry2 of entries2) if (entry2.type === "horizon") latest4.set(entry2.id, entry2);
-  return [...latest4.values()];
-};
-var helpView = (entry2) => ({
-  help: entry2.id,
-  kind: entry2.kind,
-  text: entry2.text,
-  criterion: entry2.criterion,
-  ...entry2.answer === void 0 ? {} : { answer: entry2.answer },
-  domain: entry2.domain,
-  state: entry2.state
-});
-var share3 = (part2, whole2) => whole2 === 0 ? 0 : Math.round(part2 / whole2 * 1e3) / 1e3;
-var horizonDomains = (entries2) => {
-  const helps = latestHelps(entries2);
-  return [...new Set(helps.map((help) => help.domain))].sort().map((domain) => {
-    const mine = helps.filter((help) => help.domain === domain);
-    const accepted2 = mine.filter((help) => help.state === "accepted");
-    const without = accepted2.filter((help) => help.criterion === "none").length;
-    return {
-      domain,
-      shown: mine.length,
-      accepted: accepted2.length,
-      dismissed: mine.filter((help) => help.state === "dismissed").length,
-      acceptedWithoutCriterion: without,
-      index: share3(without, accepted2.length)
-    };
-  });
-};
-var bandCriterion = (criterion) => criterion === "source-span" ? "check" : criterion;
-var bandDomain2 = (domain) => DOMAINS.find((item2) => item2 === domain) ?? GENERAL;
-
 // src/judge/research.ts
 import { join as join190 } from "node:path";
 var ITEMS_DIR = "items";
@@ -67927,9 +68056,9 @@ var inputHash = (context, input) => {
   return text41.ok ? sha256Hex(text41.value).slice(0, 16) : "missing";
 };
 var computePool = (anchor, context, locale) => {
-  const changed = (anchor.inputs ?? []).some((pair) => {
-    const split = pair.lastIndexOf(":");
-    return inputHash(context, pair.slice(0, split)) !== pair.slice(split + 1);
+  const changed = (anchor.inputs ?? []).some((pair2) => {
+    const split = pair2.lastIndexOf(":");
+    return inputHash(context, pair2.slice(0, split)) !== pair2.slice(split + 1);
   });
   if (changed) return "input-changed";
   const result = context.runtime.exec({
@@ -68015,7 +68144,7 @@ var anchorCompute = (deps, request) => {
   if (claim === void 0) return response("anchor", { reason: "unknown_claim" });
   const context = { runtime: deps.runtime, paths: deps.paths, entries: entries2 };
   const inputs = request.inputs.map((input) => `${input}:${inputHash(context, input)}`);
-  if (inputs.some((pair) => pair.endsWith(":missing"))) return response("anchor", { reason: "missing_input" });
+  if (inputs.some((pair2) => pair2.endsWith(":missing"))) return response("anchor", { reason: "missing_input" });
   const id = entryId("s", claim.id, "anchor", request.run, inputs.join(","));
   const written = appendNow(deps, {
     type: "support",
@@ -68251,6 +68380,7 @@ var settleHelp = (deps, request, verify3) => {
   const state = request.verb === "accept" ? "accepted" : "dismissed";
   const written = appendNow(deps, { ...help, at: deps.runtime.now(), state });
   if (!written.ok || written.entry.type !== "horizon") return response(request.verb, { reason: "write_failed" });
+  recordOutcome(deps.runtime, deps.paths, help, state);
   if (state === "accepted")
     recordHorizon(deps.runtime, deps.paths, {
       source: "research",
@@ -68515,7 +68645,7 @@ var append = (deps, record15) => {
   const written = appendNow(deps, record15);
   return written.ok ? void 0 : response("observe", { reason: written.reason });
 };
-var classify5 = (deps, request) => {
+var classify6 = (deps, request) => {
   const before2 = readEntries(deps.runtime, deps.paths);
   const known3 = new Set(claimsIn(before2).map((claim) => claim.id));
   const texts7 = splitClaims(request.text, deps.splitter).filter(inScope3);
@@ -68638,7 +68768,7 @@ var runCore = (deps, request) => {
     case "observe":
       return observe(deps, request);
     case "classify":
-      return classify5(deps, request);
+      return classify6(deps, request);
     case "verify":
       return verify2(deps, request.claim);
     case "ask":
@@ -69744,7 +69874,7 @@ var decideRecordsCommand = {
     const rows3 = records2.map((record15) => ({
       ...record15,
       reason: readReason(ctx.runtime, paths, record15.task) ?? null,
-      outcome: recordOutcome(ctx.runtime, paths, record15)
+      outcome: recordOutcome2(ctx.runtime, paths, record15)
     }));
     return success(
       { schema: DECISION_RECORDS_SCHEMA, records: rows3 },
@@ -70527,8 +70657,8 @@ var readPairs = (runtime, paths) => {
 var writePairs = (runtime, paths, pairs5) => runtime.writeText(pairsPath(paths), `${JSON.stringify({ pairs: pairs5 }, null, 2)}
 `).ok;
 var agreement = (pairs5) => {
-  const decided2 = pairs5.filter((pair) => pair.person !== null);
-  return { decided: decided2.length, agreed: decided2.filter((pair) => pair.person === pair.critic).length };
+  const decided2 = pairs5.filter((pair2) => pair2.person !== null);
+  return { decided: decided2.length, agreed: decided2.filter((pair2) => pair2.person === pair2.critic).length };
 };
 
 // src/look/approved.ts
@@ -72618,6 +72748,15 @@ var TERM_PALETTE = {
 };
 
 // src/conceitos/trajectory-term.ts
+var ENGLISH_SPLITS = {
+  name: {
+    alone: "transfer vs known context",
+    proximal: "explains vs detects only",
+    horizon: "recognizable vs out of reach"
+  },
+  measured: (splits) => `measured from the record (calibration, dashed in the chart): ${splits}`,
+  notDrawn: (splits) => `not drawn (hypothesis): ${splits}`
+};
 var ENGLISH_TERM = {
   band: {
     alone: "does alone",
@@ -72816,7 +72955,13 @@ var swatch = (band, options2) => {
   return `${style(null, band === "gap" ? palette.gap : palette.band[band], options2.depth, false)}  ${RESET2}`;
 };
 var inkSwatch = (glyph, ink, options2) => options2.depth === "none" ? PLAIN_GLYPH[glyph] ?? glyph : `${style(termPalette(options2.theme).ink[ink], null, options2.depth, true)}${glyph}${RESET2}`;
-var legendLines = (bands, options2) => {
+var splitLines3 = (labels, drawn) => {
+  if (drawn.size === 0) return [labels.hypotheses];
+  const split = labels.splits ?? ENGLISH_SPLITS;
+  const names3 = (keep) => SPLIT_GROUPS.filter((group) => drawn.has(group) === keep).map((group) => split.name[group]).join(", ");
+  return [split.measured(names3(true)), ...drawn.size === SPLIT_GROUPS.length ? [] : [split.notDrawn(names3(false))]];
+};
+var legendLines = (bands, options2, drawn = /* @__PURE__ */ new Set()) => {
   const labels = options2.labels ?? ENGLISH_TERM;
   const entries2 = [
     ...bands.map((band) => `${swatch(band, options2)} ${labels.band[band]}`),
@@ -72833,16 +72978,17 @@ var legendLines = (bands, options2) => {
       `${inkSwatch("✕", "ricochet", options2)} ${labels.ricochet}`,
       `${inkSwatch("◉", "held", options2)} ${labels.held}`
     ].join("  "),
-    faint(labels.hypotheses, options2)
+    ...splitLines3(labels, drawn).map((line13) => faint(line13, options2))
   ];
 };
 var chartLines = (trajectories2, options2) => {
   const drawn = trajectories2.filter((item2) => item2.status === "ok");
   const used = new Set(drawn.flatMap(usedBands));
   const bands = BAND_ORDER.filter((band) => used.has(band));
+  const drawnGroups = new Set(drawn.flatMap((item2) => [...drawnSplits(item2)]));
   return [
     ...trajectories2.flatMap((item2, index) => [...index === 0 ? [] : [""], ...blockOf3(item2, options2)]),
-    ...drawn.length === 0 ? [] : ["", ...legendLines(bands, options2)]
+    ...drawn.length === 0 ? [] : ["", ...legendLines(bands, options2, drawnGroups)]
   ];
 };
 
@@ -72886,7 +73032,8 @@ var pathsOf5 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 var compute = (ctx) => {
   const paths = pathsOf5(ctx);
   const log = ctx.runtime.readText(paths.log);
-  return trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(log.ok ? log.value : ""), nowMs(ctx.runtime));
+  const text41 = log.ok ? log.value : "";
+  return trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(text41), nowMs(ctx.runtime), outcomeMarks(text41));
 };
 var termLabels = (ctx) => ({
   band: {
@@ -72903,6 +73050,15 @@ var termLabels = (ctx) => ({
   ricochet: ctx.t("trajectory.ricochet"),
   held: ctx.t("trajectory.held"),
   hypotheses: ctx.t("trajectory.hypotheses"),
+  splits: {
+    name: {
+      alone: ctx.t("trajectory.split.alone"),
+      proximal: ctx.t("trajectory.split.proximal"),
+      horizon: ctx.t("trajectory.split.horizon")
+    },
+    measured: (splits) => ctx.t("trajectory.split_measured", { splits }),
+    notDrawn: (splits) => ctx.t("trajectory.split_hypotheses", { splits })
+  },
   noData: (evidence2) => ctx.t("trajectory.no_data", { evidence: evidence2 }),
   head: (domain, from, to, evidence2) => ctx.t("trajectory.head", { domain, from, to, evidence: evidence2 })
 });
@@ -78511,6 +78667,7 @@ var doneTask = (ctx, id) => {
   if (!result.ok || run10.kind !== "done" || run10.report.implicit || !canClose(run10.report.state)) return result;
   writeState(ctx.runtime, paths, closeTask(readState(ctx.runtime, paths), run10.report.task));
   recordOnClose(ctx.runtime, paths, run10.report.task);
+  closeHorizon(ctx.runtime, paths, run10.report.task);
   return {
     ...result,
     human: [
@@ -79332,9 +79489,9 @@ var pick6 = (ctx, id, raw) => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("look.approve.person_only", USAGE32));
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const pairs5 = readPairs(ctx.runtime, paths);
-  if (!pairs5.some((pair) => pair.id === id))
+  if (!pairs5.some((pair2) => pair2.id === id))
     return failureFrom(ctx.t, usageProblem("invalid_arguments", "look.pair.unknown", "finitemonkey look pair", { id }));
-  const next3 = pairs5.map((pair) => pair.id === id ? { ...pair, person: choice } : pair);
+  const next3 = pairs5.map((pair2) => pair2.id === id ? { ...pair2, person: choice } : pair2);
   writePairs(ctx.runtime, paths, next3);
   const score = agreement(next3);
   logEvent(ctx.runtime, paths, "ui_critic_pick", { id, person: choice, ...score });
@@ -79354,7 +79511,7 @@ var lookPairCommand = {
     return Promise.resolve(
       success({ schema: LOOK_PAIRS_SCHEMA, pairs: pairs5, ...score }, [
         ...pairs5.map(
-          (pair) => ctx.t("look.pair.line", { id: pair.id, critic: pair.critic, person: pair.person ?? "-" })
+          (pair2) => ctx.t("look.pair.line", { id: pair2.id, critic: pair2.critic, person: pair2.person ?? "-" })
         ),
         ctx.t("look.pair.agreement", { agreed: score.agreed, decided: score.decided })
       ])
@@ -79831,7 +79988,7 @@ var versionCommand = {
 
 // src/commands/wt-classify.ts
 var WT_CLASSES_SCHEMA = "finitemonkey/wt-classes@1";
-var classify6 = (ctx) => {
+var classify7 = (ctx) => {
   const inventory = loadInventory(ctx.runtime, ctx.cwd, void 0);
   if (inventory === void 0) return failureFrom(ctx.t, notRepository(ctx.cwd));
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
@@ -79854,7 +80011,7 @@ var wtClassifyCommand = {
   summaryKey: "wt.command.classify",
   usage: "finitemonkey wt classify",
   status: "ready",
-  run: (ctx) => Promise.resolve(classify6(ctx))
+  run: (ctx) => Promise.resolve(classify7(ctx))
 };
 var wtDismissCommand = {
   path: ["wt", "dismiss"],

@@ -693,6 +693,10 @@ var themeOf = (value) => {
   return "auto";
 };
 
+// src/conceitos/trajectory-split-types.ts
+var MIN_EVIDENCE = 6;
+var SPLIT_GROUPS = ["alone", "proximal", "horizon"];
+
 // src/conceitos/trajectory-bands.ts
 var BANDS = {
   alone: { group: "alone", label: "own change or repair, gate green", status: "measured" },
@@ -716,6 +720,12 @@ var HYPOTHESES = {
   proximal: "explains vs detects only",
   alone: "transfer vs known context"
 };
+var SPLIT_LABEL = {
+  alone: ["known context", "transfer"],
+  proximal: ["explains", "detects only"],
+  horizon: ["recognizable", "out of reach"]
+};
+var SPLIT_BAND = { alone: "alone", proximal: "proximal", horizon: "beyond" };
 var BAND_ORDER = [
   "alone",
   "proximal",
@@ -772,8 +782,31 @@ var landedIn = (trajectory, week) => {
   return level === null ? void 0 : bandAt(week, level, peakOf(trajectory));
 };
 var describeBand = (band) => band === "beyond" || band === "blind" ? GROUP_LABEL[BANDS[band].group] : `${GROUP_LABEL[BANDS[band].group]}, ${BANDS[band].label}`;
+var splitAt = (week, group, peak) => {
+  const split = week.splits?.[group];
+  if (split === void 0 || split.evidence < MIN_EVIDENCE || split.lower + split.upper === 0) return void 0;
+  const stratum = strataOf(week, peak).find((item) => item.band === SPLIT_BAND[group]);
+  if (stratum === void 0) return void 0;
+  return stratum.from + (stratum.to - stratum.from) * split.lower / (split.lower + split.upper);
+};
+var drawnSplits = (trajectory) => {
+  const peak = peakOf(trajectory);
+  return new Set(
+    SPLIT_GROUPS.filter((group) => trajectory.weeks.some((week) => splitAt(week, group, peak) !== void 0))
+  );
+};
+var describeSplit = (group) => `${SPLIT_LABEL[group][1]} above, ${SPLIT_LABEL[group][0]} below`;
 
 // src/conceitos/trajectory-term.ts
+var ENGLISH_SPLITS = {
+  name: {
+    alone: "transfer vs known context",
+    proximal: "explains vs detects only",
+    horizon: "recognizable vs out of reach"
+  },
+  measured: (splits) => `measured from the record (calibration, dashed in the chart): ${splits}`,
+  notDrawn: (splits) => `not drawn (hypothesis): ${splits}`
+};
 var ENGLISH_TERM = {
   band: {
     alone: "does alone",
@@ -964,7 +997,13 @@ var swatch = (band, options) => {
   return `${style(null, band === "gap" ? palette.gap : palette.band[band], options.depth, false)}  ${RESET}`;
 };
 var inkSwatch = (glyph2, ink, options) => options.depth === "none" ? PLAIN_GLYPH[glyph2] ?? glyph2 : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph2}${RESET}`;
-var legendLines = (bands, options) => {
+var splitLines = (labels, drawn) => {
+  if (drawn.size === 0) return [labels.hypotheses];
+  const split = labels.splits ?? ENGLISH_SPLITS;
+  const names = (keep) => SPLIT_GROUPS.filter((group) => drawn.has(group) === keep).map((group) => split.name[group]).join(", ");
+  return [split.measured(names(true)), ...drawn.size === SPLIT_GROUPS.length ? [] : [split.notDrawn(names(false))]];
+};
+var legendLines = (bands, options, drawn = /* @__PURE__ */ new Set()) => {
   const labels = options.labels ?? ENGLISH_TERM;
   const entries = [
     ...bands.map((band) => `${swatch(band, options)} ${labels.band[band]}`),
@@ -981,16 +1020,17 @@ var legendLines = (bands, options) => {
       `${inkSwatch("✕", "ricochet", options)} ${labels.ricochet}`,
       `${inkSwatch("◉", "held", options)} ${labels.held}`
     ].join("  "),
-    faint(labels.hypotheses, options)
+    ...splitLines(labels, drawn).map((line2) => faint(line2, options))
   ];
 };
 var chartLines = (trajectories, options) => {
   const drawn = trajectories.filter((item) => item.status === "ok");
   const used = new Set(drawn.flatMap(usedBands));
   const bands = BAND_ORDER.filter((band) => used.has(band));
+  const drawnGroups = new Set(drawn.flatMap((item) => [...drawnSplits(item)]));
   return [
     ...trajectories.flatMap((item, index) => [...index === 0 ? [] : [""], ...blockOf(item, options)]),
-    ...drawn.length === 0 ? [] : ["", ...legendLines(bands, options)]
+    ...drawn.length === 0 ? [] : ["", ...legendLines(bands, options, drawnGroups)]
   ];
 };
 
@@ -1041,12 +1081,14 @@ var GROUP_INK = {
 };
 var swatchOf = (band) => band === "blindBare" ? "url(#hatch)" : band === "blindCovered" ? "url(#dots)" : BAND_FILL[band];
 var seen = (trajectory) => new Set(trajectory.weeks.flatMap((week) => strataOf(week, peakOf(trajectory)).map((stratum) => stratum.band)));
-var linesOf = (group, present) => {
+var isSplit = (group) => SPLIT_GROUPS.includes(group);
+var linesOf = (group, present, drawn) => {
   const bands = BAND_ORDER.filter((band) => BANDS[band].group === group && (band !== "blind" || present.has(band)));
   const hypothesis = HYPOTHESES[group];
+  const split = isSplit(group) && drawn.has(group) ? `${describeSplit(group)} · calibration` : void 0;
   return [
     ...bands.map((band) => ({ kind: "band", band })),
-    ...hypothesis === void 0 ? [] : [{ kind: "hypothesis", label: hypothesis }]
+    ...hypothesis === void 0 ? [] : [{ kind: "hypothesis", label: hypothesis, drawn: split }]
   ];
 };
 var rangeOf = (week, group, peak) => {
@@ -1060,9 +1102,10 @@ var GAP = 8;
 var placed = (plot, trajectory) => {
   const week = lastWeek(trajectory);
   const present = seen(trajectory);
+  const drawn = drawnSplits(trajectory);
   let floor = plot.top;
   const blocks = GROUPS.map((group) => {
-    const lines = linesOf(group, present);
+    const lines = linesOf(group, present, drawn);
     const range = rangeOf(week, group, plot.peak);
     const height = LH * (1 + lines.reduce((sum, line2) => sum + (line2.kind === "hypothesis" ? 2 : 1), 0));
     const want = range === void 0 ? floor : (yOf(plot, range[1]) + yOf(plot, range[0])) / 2 - height / 2;
@@ -1087,10 +1130,10 @@ var bandLine2 = (theme, band, x, y) => {
     text3(theme, { x: x + 14, y }, label, { size: 10, fill: "muted" })
   ].join("");
 };
-var hypothesisLine = (theme, label, x, y) => [
-  `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8" stroke-dasharray="2 2" ${paint(theme, { cls: `key-hypothesis`, stroke: "faint" })}/>`,
-  text3(theme, { x: x + 14, y }, label, { size: 10, fill: "faint", extra: 'font-style="italic"' }),
-  text3(theme, { x: x + 14, y: y + LH }, "hypothesis, not drawn", {
+var hypothesisLine = (theme, line2, x, y) => [
+  `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8" stroke-dasharray="2 2" ${paint(theme, { cls: line2.drawn === void 0 ? "key-hypothesis" : "key-split", stroke: line2.drawn === void 0 ? "faint" : "muted" })}/>`,
+  text3(theme, { x: x + 14, y }, line2.label, { size: 10, fill: "faint", extra: 'font-style="italic"' }),
+  text3(theme, { x: x + 14, y: y + LH }, line2.drawn ?? "hypothesis, not drawn", {
     size: 9.5,
     fill: "faint",
     extra: 'font-style="italic"'
@@ -1114,12 +1157,33 @@ var blockOf2 = (theme, plot, block) => {
   let row2 = 1;
   for (const line2 of block.lines) {
     const y = ty + LH * row2;
-    parts.push(line2.kind === "band" ? bandLine2(theme, line2.band, kx, y) : hypothesisLine(theme, line2.label, kx, y));
+    parts.push(line2.kind === "band" ? bandLine2(theme, line2.band, kx, y) : hypothesisLine(theme, line2, kx, y));
     row2 += line2.kind === "hypothesis" ? 2 : 1;
   }
   return `<g class="key-group key-${block.group}">${parts.join("")}</g>`;
 };
 var keyOf = (theme, plot, trajectory) => `<g class="key">${placed(plot, trajectory).map((block) => blockOf2(theme, plot, block)).join("")}</g>`;
+
+// src/conceitos/trajectory-split-svg.ts
+var runsOf = (levels) => levels.reduce((runs, level, index) => {
+  if (level === void 0) return runs;
+  const last = runs.at(-1);
+  if (last?.at(-1) === index - 1) last.push(index);
+  else runs.push([index]);
+  return runs;
+}, []);
+var pointsOf = (frame, run, levels) => run.flatMap((index) => {
+  const x = frame.xs[index] ?? 0;
+  const y = yOf(frame, levels[index] ?? 0);
+  return run.length === 1 ? [`${num(x - frame.half * 0.8)} ${num(y)}`, `${num(x + frame.half * 0.8)} ${num(y)}`] : [`${num(x)} ${num(y)}`];
+});
+var groupPaths = (theme, frame, weeks, group) => {
+  const levels = weeks.map((week) => splitAt(week, group, frame.peak));
+  return runsOf(levels).map(
+    (run) => `<path d="M ${pointsOf(frame, run, levels).join(" L ")}" stroke-width="1" stroke-dasharray="4 3" ${paint(theme, { cls: `split split-${group}`, stroke: GROUP_INK[group] })}><title>${escapeXml(`${describeSplit(group)} · calibration`)}</title></path>`
+  );
+};
+var splitPaths = (theme, frame, weeks) => SPLIT_GROUPS.flatMap((group) => groupPaths(theme, frame, weeks, group));
 
 // src/conceitos/trajectory-svg.ts
 var SVG_WIDTH = 900;
@@ -1137,7 +1201,7 @@ var frameOf = (trajectory) => {
   const y0 = SVG_HEIGHT - BOTTOM;
   return { x0, x1, y0, y1: TOP, top: TOP, bottom: y0, peak: peakOf(trajectory), xs, half };
 };
-var runsOf = (weeks, keep) => {
+var runsOf2 = (weeks, keep) => {
   const runs = [];
   let run = [];
   weeks.forEach((week, index) => {
@@ -1169,7 +1233,7 @@ var bandPath = (theme, frame, band, columns) => {
   const opacity = band === "unstable" ? ' fill-opacity="0.85"' : "";
   return `<path d="${d}"${opacity} ${paint(theme, { cls: `band band-${band}`, fill: swatchOf(band) })}><title>${escapeXml(BANDS[band].label)}</title></path>${edge}`;
 };
-var strataPaths = (theme, frame, weeks) => runsOf(weeks, filled2).flatMap((run) => {
+var strataPaths = (theme, frame, weeks) => runsOf2(weeks, filled2).flatMap((run) => {
   const single = run.length === 1;
   const points = run.flatMap((index) => {
     const week = weeks[index];
@@ -1214,7 +1278,7 @@ var curve = (points) => points.reduce((path, [x, y], index) => {
   const mid = (px + x) / 2;
   return `${path} C ${num(mid)} ${num(py)}, ${num(mid)} ${num(y)}, ${num(x)} ${num(y)}`;
 }, "");
-var workLine = (theme, frame, trajectory) => runsOf(trajectory.weeks, (week) => week.work !== null).flatMap((run) => {
+var workLine = (theme, frame, trajectory) => runsOf2(trajectory.weeks, (week) => week.work !== null).flatMap((run) => {
   const points = run.map((index) => [
     frame.xs[index] ?? 0,
     yOf(frame, trajectory.weeks[index]?.work ?? 0)
@@ -1276,6 +1340,7 @@ var svgOf = (trajectory, options = {}) => {
     `<rect x="${num(frame.x0)}" y="${num(frame.y1)}" width="${num(frame.x1 - frame.x0)}" height="${num(frame.y0 - frame.y1)}" ${paint(theme, { cls: `plot`, fill: "h2" })}/>`,
     ...gapRects(theme, frame, trajectory.weeks),
     ...strataPaths(theme, frame, trajectory.weeks),
+    ...splitPaths(theme, frame, trajectory.weeks),
     ...axes(theme, frame, trajectory.weeks),
     keyOf(theme, frame, trajectory),
     ...workLine(theme, frame, trajectory),
@@ -1370,6 +1435,13 @@ var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var orNull = (record, key) => typeof record[key] === "number" ? record[key] : null;
 var num2 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
 var concept = (value) => CONCEPTS.find((item) => item === value) ?? "api";
+var splitOf = (value) => isRecord6(value) ? { lower: num2(value, "lower"), upper: num2(value, "upper"), evidence: num2(value, "evidence") } : void 0;
+var splitsIn = (item) => {
+  const raw = item["splits"];
+  if (!isRecord6(raw)) return {};
+  const [alone, proximal, horizon] = [splitOf(raw["alone"]), splitOf(raw["proximal"]), splitOf(raw["horizon"])];
+  return alone === void 0 || proximal === void 0 || horizon === void 0 ? {} : { splits: { alone, proximal, horizon } };
+};
 var weekOf = (item) => ({
   week: str3(item, "week"),
   independent: orNull(item, "independent"),
@@ -1379,7 +1451,8 @@ var weekOf = (item) => ({
   blindBare: num2(item, "blindBare"),
   unstable: orNull(item, "unstable"),
   work: orNull(item, "work"),
-  evidence: num2(item, "evidence")
+  evidence: num2(item, "evidence"),
+  ...splitsIn(item)
 });
 var refOf = (item) => ({
   kind: str3(item, "kind"),

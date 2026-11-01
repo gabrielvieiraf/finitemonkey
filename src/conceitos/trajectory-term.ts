@@ -1,6 +1,7 @@
 import type { DomainTrajectory, Week } from "./trajectory.js";
 import { type Band, BAND_ORDER, bandAt, lastWeek, markIn, markLevel, peakOf } from "./trajectory-bands.js";
 import { type Ink, TERM_PALETTE, type Theme } from "./trajectory-palette.js";
+import type { SplitGroup } from "./trajectory-split-types.js";
 
 export type Cellband = Band | "gap";
 
@@ -10,6 +11,22 @@ export interface TermCell {
   readonly ink: Ink | null;
 }
 
+export interface SplitLabels {
+  readonly name: Readonly<Record<SplitGroup, string>>;
+  readonly measured: (splits: string) => string;
+  readonly notDrawn: (splits: string) => string;
+}
+
+export const ENGLISH_SPLITS: SplitLabels = {
+  name: {
+    alone: "transfer vs known context",
+    proximal: "explains vs detects only",
+    horizon: "recognizable vs out of reach",
+  },
+  measured: (splits) => `measured from the record (calibration, dashed in the chart): ${splits}`,
+  notDrawn: (splits) => `not drawn (hypothesis): ${splits}`,
+};
+
 export interface TermLabels {
   readonly band: Readonly<Record<Band, string>>;
   readonly gap: string;
@@ -17,6 +34,7 @@ export interface TermLabels {
   readonly ricochet: string;
   readonly held: string;
   readonly hypotheses: string;
+  readonly splits?: SplitLabels;
   readonly noData: (evidence: number) => string;
   readonly head: (domain: string, from: string, to: string, evidence: number) => string;
 }

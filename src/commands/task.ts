@@ -10,6 +10,7 @@ import { currentReport } from "../gate/hooks/snapshot.js";
 import { reportLines } from "../gate/render.js";
 import { runGate } from "../gate/run.js";
 import { canClose } from "../gate/state.js";
+import { closeHorizon } from "../judge/horizon-outcome.js";
 import { recordOnClose } from "../knowledge/decision-record.js";
 import { initPlan } from "../plan/master.js";
 import { spendLine } from "../spend/hook.js";
@@ -177,6 +178,7 @@ const doneTask = (ctx: Ctx, id: string | undefined): CommandResult => {
   if (!result.ok || run.kind !== "done" || run.report.implicit || !canClose(run.report.state)) return result;
   writeState(ctx.runtime, paths, closeTask(readState(ctx.runtime, paths), run.report.task));
   recordOnClose(ctx.runtime, paths, run.report.task);
+  closeHorizon(ctx.runtime, paths, run.report.task);
   return {
     ...result,
     human: [

@@ -3,6 +3,8 @@ import {
   type Band,
   BAND_ORDER,
   BANDS,
+  describeSplit,
+  drawnSplits,
   type Group,
   GROUP_LABEL,
   GROUPS,
@@ -13,6 +15,7 @@ import {
 } from "./trajectory-bands.js";
 import { num, paint, text } from "./trajectory-paint.js";
 import { BAND_FILL, type ThemeChoice, type Token } from "./trajectory-palette.js";
+import { SPLIT_GROUPS, type SplitGroup } from "./trajectory-split-types.js";
 
 export interface Plot {
   readonly x0: number;
@@ -39,17 +42,25 @@ export type Fill = Token | `url(#${string})`;
 export const swatchOf = (band: Band): Fill =>
   band === "blindBare" ? "url(#hatch)" : band === "blindCovered" ? "url(#dots)" : BAND_FILL[band];
 
-type Line = { readonly kind: "band"; readonly band: Band } | { readonly kind: "hypothesis"; readonly label: string };
+interface Hypothesis {
+  readonly kind: "hypothesis";
+  readonly label: string;
+  readonly drawn: string | undefined;
+}
+type Line = { readonly kind: "band"; readonly band: Band } | Hypothesis;
 
 const seen = (trajectory: DomainTrajectory): ReadonlySet<Band> =>
   new Set(trajectory.weeks.flatMap((week) => strataOf(week, peakOf(trajectory)).map((stratum) => stratum.band)));
 
-const linesOf = (group: Group, present: ReadonlySet<Band>): readonly Line[] => {
+const isSplit = (group: Group): group is SplitGroup => (SPLIT_GROUPS as readonly string[]).includes(group);
+
+const linesOf = (group: Group, present: ReadonlySet<Band>, drawn: ReadonlySet<SplitGroup>): readonly Line[] => {
   const bands = BAND_ORDER.filter((band) => BANDS[band].group === group && (band !== "blind" || present.has(band)));
   const hypothesis = HYPOTHESES[group];
+  const split = isSplit(group) && drawn.has(group) ? `${describeSplit(group)} · calibration` : undefined;
   return [
     ...bands.map((band): Line => ({ kind: "band", band })),
-    ...(hypothesis === undefined ? [] : [{ kind: "hypothesis" as const, label: hypothesis }]),
+    ...(hypothesis === undefined ? [] : [{ kind: "hypothesis" as const, label: hypothesis, drawn: split }]),
   ];
 };
 
@@ -74,9 +85,10 @@ interface Block {
 const placed = (plot: Plot, trajectory: DomainTrajectory): readonly Block[] => {
   const week = lastWeek(trajectory);
   const present = seen(trajectory);
+  const drawn = drawnSplits(trajectory);
   let floor = plot.top;
   const blocks = GROUPS.map((group): Block => {
-    const lines = linesOf(group, present);
+    const lines = linesOf(group, present, drawn);
     const range = rangeOf(week, group, plot.peak);
     const height = LH * (1 + lines.reduce((sum, line) => sum + (line.kind === "hypothesis" ? 2 : 1), 0));
     const want = range === undefined ? floor : (yOf(plot, range[1]) + yOf(plot, range[0])) / 2 - height / 2;
@@ -103,11 +115,11 @@ const bandLine = (theme: ThemeChoice, band: Band, x: number, y: number): string 
   ].join("");
 };
 
-const hypothesisLine = (theme: ThemeChoice, label: string, x: number, y: number): string =>
+const hypothesisLine = (theme: ThemeChoice, line: Hypothesis, x: number, y: number): string =>
   [
-    `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8" stroke-dasharray="2 2" ${paint(theme, { cls: `key-hypothesis`, stroke: "faint" })}/>`,
-    text(theme, { x: x + 14, y }, label, { size: 10, fill: "faint", extra: 'font-style="italic"' }),
-    text(theme, { x: x + 14, y: y + LH }, "hypothesis, not drawn", {
+    `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8" stroke-dasharray="2 2" ${paint(theme, { cls: line.drawn === undefined ? "key-hypothesis" : "key-split", stroke: line.drawn === undefined ? "faint" : "muted" })}/>`,
+    text(theme, { x: x + 14, y }, line.label, { size: 10, fill: "faint", extra: 'font-style="italic"' }),
+    text(theme, { x: x + 14, y: y + LH }, line.drawn ?? "hypothesis, not drawn", {
       size: 9.5,
       fill: "faint",
       extra: 'font-style="italic"',
@@ -132,7 +144,7 @@ const blockOf = (theme: ThemeChoice, plot: Plot, block: Block): string => {
   let row = 1;
   for (const line of block.lines) {
     const y = ty + LH * row;
-    parts.push(line.kind === "band" ? bandLine(theme, line.band, kx, y) : hypothesisLine(theme, line.label, kx, y));
+    parts.push(line.kind === "band" ? bandLine(theme, line.band, kx, y) : hypothesisLine(theme, line, kx, y));
     row += line.kind === "hypothesis" ? 2 : 1;
   }
   return `<g class="key-group key-${block.group}">${parts.join("")}</g>`;

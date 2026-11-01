@@ -10,6 +10,7 @@ import { nowMs } from "../core/clock.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, success } from "../core/result.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
+import { outcomeMarks } from "../judge/horizon-outcome.js";
 import { featureMode } from "../policy/feature.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
@@ -19,7 +20,8 @@ const pathsOf = (ctx: Ctx): FmPaths => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd
 const compute = (ctx: Ctx) => {
   const paths = pathsOf(ctx);
   const log = ctx.runtime.readText(paths.log);
-  return trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(log.ok ? log.value : ""), nowMs(ctx.runtime));
+  const text = log.ok ? log.value : "";
+  return trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(text), nowMs(ctx.runtime), outcomeMarks(text));
 };
 
 const termLabels = (ctx: Ctx): TermLabels => ({
@@ -37,6 +39,15 @@ const termLabels = (ctx: Ctx): TermLabels => ({
   ricochet: ctx.t("trajectory.ricochet"),
   held: ctx.t("trajectory.held"),
   hypotheses: ctx.t("trajectory.hypotheses"),
+  splits: {
+    name: {
+      alone: ctx.t("trajectory.split.alone"),
+      proximal: ctx.t("trajectory.split.proximal"),
+      horizon: ctx.t("trajectory.split.horizon"),
+    },
+    measured: (splits) => ctx.t("trajectory.split_measured", { splits }),
+    notDrawn: (splits) => ctx.t("trajectory.split_hypotheses", { splits }),
+  },
   noData: (evidence) => ctx.t("trajectory.no_data", { evidence }),
   head: (domain, from, to, evidence) => ctx.t("trajectory.head", { domain, from, to, evidence }),
 });

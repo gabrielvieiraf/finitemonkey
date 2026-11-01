@@ -1,6 +1,7 @@
 import { textField } from "../../hooks/fields.js";
 import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
+import { closeHorizon } from "../../judge/horizon-outcome.js";
 import { recordOnClose } from "../../knowledge/decision-record.js";
 import { featureMode, recordFeatureShadow } from "../../policy/feature.js";
 import { sha256Hex as sha256 } from "../../secrets/fingerprint.js";
@@ -58,6 +59,7 @@ const markDone = (input: HookInput, report: GateReport, root: ReturnType<typeof 
   if (state.active !== report.task) return;
   writeState(input.runtime, root, closeTask(state, report.task));
   recordOnClose(input.runtime, root, report.task);
+  closeHorizon(input.runtime, root, report.task);
 };
 
 const onFailed = (input: HookInput, report: GateReport, paths: ReturnType<typeof fmPaths>): HookDecision => {
