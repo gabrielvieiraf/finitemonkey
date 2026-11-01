@@ -72,6 +72,7 @@
     "bench:freeze": "tsx scripts/bench-freeze.ts",
     "bench:agreement": "tsx scripts/bench-agreement.ts",
     "bench:analysis": "tsx scripts/bench-analysis.ts",
+    "bench:people": "tsx scripts/bench-people.ts",
     "evidence": "tsx scripts/evidence.ts",
     "bench:review": "tsx scripts/review-bench.ts",
     "docs": "tsx scripts/build-docs.ts",

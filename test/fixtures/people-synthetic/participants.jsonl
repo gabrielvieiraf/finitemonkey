@@ -1,0 +1,11 @@
+{"synthetic": true, "participant": "B01", "profile": "beginner", "withdrawn": false, "recordingConsent": true, "perceivedSpeedupPercent": 20}
+{"synthetic": true, "participant": "B02", "profile": "beginner", "withdrawn": false, "recordingConsent": false, "perceivedSpeedupPercent": 30}
+{"synthetic": true, "participant": "B03", "profile": "beginner", "withdrawn": false, "recordingConsent": true, "perceivedSpeedupPercent": 10}
+{"synthetic": true, "participant": "B04", "profile": "beginner", "withdrawn": false, "recordingConsent": false, "perceivedSpeedupPercent": 25}
+{"synthetic": true, "participant": "B05", "profile": "beginner", "withdrawn": false, "recordingConsent": true, "perceivedSpeedupPercent": null}
+{"synthetic": true, "participant": "E01", "profile": "experienced", "withdrawn": false, "recordingConsent": false, "perceivedSpeedupPercent": 15}
+{"synthetic": true, "participant": "E02", "profile": "experienced", "withdrawn": false, "recordingConsent": true, "perceivedSpeedupPercent": 0}
+{"synthetic": true, "participant": "E03", "profile": "experienced", "withdrawn": false, "recordingConsent": false, "perceivedSpeedupPercent": 20}
+{"synthetic": true, "participant": "E04", "profile": "experienced", "withdrawn": false, "recordingConsent": true, "perceivedSpeedupPercent": -5}
+{"synthetic": true, "participant": "E05", "profile": "experienced", "withdrawn": true, "recordingConsent": false, "perceivedSpeedupPercent": null}
+{"synthetic": true, "participant": "E06", "profile": "experienced", "withdrawn": false, "recordingConsent": true, "perceivedSpeedupPercent": 10}
