@@ -17,6 +17,8 @@ const SURFACE = [
       "--settings",
       "--output-format",
       "--no-session-persistence",
+      "--tools",
+      "--allowed-tools",
     ],
   },
   { path: ["plugin", "validate"], flags: ["--strict"] },

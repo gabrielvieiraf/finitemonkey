@@ -239,6 +239,12 @@ export const FOOTPRINT = [
   { id: "ui-copy", kind: "writes", targets: [".finitemonkey/cache/copy-rules.json"] },
   { id: "judge", kind: "writes", targets: [".finitemonkey/judge.jsonl", ".finitemonkey/judge/"] },
   { id: "cite-sources", kind: "sends", targets: ["doi.org", "cited URLs"], via: "curl" },
+  {
+    id: "provider",
+    kind: "writes",
+    targets: [".finitemonkey/provider.json", ".finitemonkey/provider-proposals.jsonl"],
+  },
+  { id: "model-provider", kind: "sends", targets: ["api.anthropic.com"], via: "claude" },
 ] as const satisfies readonly FootprintEntry[];
 
 export type FootprintId = (typeof FOOTPRINT)[number]["id"];

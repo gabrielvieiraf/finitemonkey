@@ -4,6 +4,8 @@ import type { Ctx } from "../core/context.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { gitAt, gitRoot } from "../gate/git.js";
+import { spentToday } from "../provider/ledger.js";
+import { maxUsdPerDay } from "../provider/store.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
@@ -22,6 +24,12 @@ const withProject = (ctx: Ctx, run: (paths: FmPaths) => CommandResult): CommandR
 
 const money = (usd: number): string => `$${usd.toFixed(2)}`;
 
+const cappedLine = (ctx: Ctx, paths: FmPaths): readonly string[] => {
+  const spent = spentToday(ctx.runtime, paths);
+  const cap = maxUsdPerDay(ctx.runtime, paths);
+  return spent > 0 && spent >= cap ? [ctx.t("provider.capped", { cap: money(cap) })] : [];
+};
+
 const showCost = (ctx: Ctx): CommandResult =>
   withProject(ctx, (paths) => {
     const cost = costOf(ctx.runtime, paths);
@@ -33,6 +41,16 @@ const showCost = (ctx: Ctx): CommandResult =>
         attempts: cost.attempts,
       }),
       ...cost.byArm.map((arm) => ctx.t("mod.cost.arm", { arm: arm.arm, usd: money(arm.usd), requests: arm.requests })),
+      ...cost.byKind.map((kind) =>
+        ctx.t("mod.cost.kind", {
+          kind: kind.kind,
+          usd: money(kind.usd),
+          calls: kind.calls,
+          tokens: kind.tokens,
+          seconds: Math.round(kind.durationMs / 1000),
+        }),
+      ),
+      ...cappedLine(ctx, paths),
     ]);
   });
 

@@ -13,6 +13,7 @@ import {
   probeProposeCommand,
   probeSkipCommand,
 } from "./probe.js";
+import { PROVIDER_COMMANDS } from "./provider-run.js";
 import { statusCommand } from "./status.js";
 import { taskTrustCommand } from "./task-trust.js";
 import { trajectoryCommand, trajectoryExportCommand, trajectoryForgetCommand } from "./trajectory.js";
@@ -44,4 +45,5 @@ export const MOD_COMMANDS = [
   trajectoryCommand,
   trajectoryForgetCommand,
   trajectoryExportCommand,
+  ...PROVIDER_COMMANDS,
 ] as const satisfies readonly CommandSpec[];

@@ -3,10 +3,12 @@ import { type CommandResult, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import { LOOK_CONFIG } from "../look/config.js";
-import { CRITIC_FEATURE, readCritique } from "../look/critic.js";
+import { type Critic, CRITIC_FEATURE, readCritique } from "../look/critic.js";
 import { type LookRun, runLook } from "../look/run.js";
 import { LOOK_SCHEMA, type LookRule } from "../look/types.js";
 import { featureMode } from "../policy/feature.js";
+import { providerCritic, whenEnabled } from "../provider/adapters.js";
+import { providerDeps } from "../provider/wire.js";
 import { fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
@@ -86,13 +88,16 @@ const doneResult = (ctx: Ctx, data: LookData): CommandResult<LookData> => {
   };
 };
 
+const lookCritic = (ctx: Ctx): Critic | undefined =>
+  whenEnabled(providerDeps(ctx, fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd)), "critic", providerCritic);
+
 export const lookCommand: CommandSpec = {
   path: ["look"],
   summaryKey: "command.look.summary",
   usage: "finitemonkey look",
   status: "ready",
   run: async (ctx) => {
-    const run = await runLook(ctx.runtime, ctx.cwd);
+    const run = await runLook(ctx.runtime, ctx.cwd, lookCritic(ctx));
     if (run.kind !== "done") return setupError(ctx, run);
     const result = doneResult(ctx, dataOf(run));
     return { ...result, human: [...(result.human ?? []), ...opinions(ctx, run.summary.treeHash)] };

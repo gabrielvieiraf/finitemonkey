@@ -3,6 +3,7 @@ import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
 import { PERSON_FOOTPRINT_TEXT } from "./footprint-person-text.js";
 import { COPY_FOOTPRINT_TEXT } from "./footprint-text-copy.js";
 import { GUARDIAN_FOOTPRINT_TEXT } from "./footprint-text-guardian.js";
+import { PROVIDER_FOOTPRINT_TEXT } from "./footprint-text-provider.js";
 import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
@@ -297,6 +298,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
   },
   ...DEPLOY_FOOTPRINT_TEXT,
   ...PERSON_FOOTPRINT_TEXT,
+  ...PROVIDER_FOOTPRINT_TEXT,
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

@@ -29,12 +29,22 @@ export interface CostLine extends Step {
   readonly task: string;
   readonly arms: readonly string[];
   readonly usd: number;
+  readonly kind?: string;
+  readonly durationMs?: number;
 }
 
 export interface ArmCost {
   readonly arm: string;
   readonly usd: number;
   readonly requests: number;
+}
+
+export interface KindCost {
+  readonly kind: string;
+  readonly usd: number;
+  readonly calls: number;
+  readonly tokens: number;
+  readonly durationMs: number;
 }
 
 export interface CostSummary {
@@ -45,6 +55,7 @@ export interface CostSummary {
   readonly attempts: number;
   readonly perAttempt: number | null;
   readonly byArm: readonly ArmCost[];
+  readonly byKind: readonly KindCost[];
 }
 
 export const costFile = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, COST_FILE));
@@ -99,10 +110,11 @@ const lineOf = (text: string): CostLine | undefined => {
   const parsed = parseJsonObject(text);
   if (!parsed.ok) return undefined;
   const step = stepOf(parsed.value);
-  const { at, task, arms, usd } = parsed.value;
+  const { at, task, arms, usd, kind, durationMs } = parsed.value;
   if (step === undefined || typeof at !== "string" || typeof task !== "string") return undefined;
   const list = Array.isArray(arms) ? arms.filter((arm): arm is string => typeof arm === "string") : [];
-  return { ...step, at, task, arms: list, usd: count(usd) };
+  const line = { ...step, at, task, arms: list, usd: count(usd) };
+  return typeof kind === "string" ? { ...line, kind, durationMs: count(durationMs) } : line;
 };
 
 export const readCost = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly CostLine[] => {
@@ -116,6 +128,18 @@ export const readCost = (runtime: Pick<Runtime, "readText">, paths: FmPaths): re
 };
 
 const sum = (lines: readonly CostLine[]): number => lines.reduce((total, line) => total + line.usd, 0);
+
+export const byKindOf = (lines: readonly CostLine[]): readonly KindCost[] =>
+  [...new Set(lines.flatMap((line) => (line.kind === undefined ? [] : [line.kind])))].sort().map((kind) => {
+    const own = lines.filter((line) => line.kind === kind);
+    return {
+      kind,
+      usd: sum(own),
+      calls: own.length,
+      tokens: own.reduce((total, line) => total + line.input + line.output + line.cacheRead + line.cacheWrite, 0),
+      durationMs: own.reduce((total, line) => total + (line.durationMs ?? 0), 0),
+    };
+  });
 
 const attemptsOf = (runtime: Runtime, paths: FmPaths, task: string): number =>
   new Set(readLedger(runtime, paths.evidence(task)).map((entry) => entry.treeHash)).size;
@@ -137,5 +161,6 @@ export const costOf = (runtime: Runtime, paths: FmPaths): CostSummary => {
       const own = lines.filter((line) => line.arms.includes(arm));
       return { arm, usd: sum(own), requests: own.length };
     }),
+    byKind: byKindOf(lines),
   };
 };

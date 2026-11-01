@@ -42,6 +42,8 @@ import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { PREMISE_FEATURE, PREMISE_HANDLERS } from "../premise/hook.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
+import { PROVIDER_HANDLERS } from "../provider/hook.js";
+import { PROVIDER_FEATURE } from "../provider/kinds.js";
 import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
 import { REMINDERS_HANDLERS } from "../reminders/hooks.js";
@@ -257,6 +259,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
+  { id: PROVIDER_FEATURE, damage: false, handlers: PROVIDER_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

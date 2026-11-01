@@ -210,4 +210,49 @@ export const network: readonly Threat[] = [
       test: "runs offline against a fake fetch and sends only the cited identifier",
     },
   },
+  {
+    component: "Network use",
+    attacker: "over-privileged process",
+    threat: "A proposal run on the person's own Claude Code sends project text to the model provider",
+    outcome: "reduced",
+    mechanism:
+      "Off by default: only kinds the person turned on in a terminal run, each with a fixed prompt, a turn limit and only the tools it needs, and never from a synchronous hook; `provider enable` prints what the kind sends and its cost before the yes, and `providers.maxUsdPerDay` stops calls for the day",
+    code: ["src/provider/call.ts", "src/commands/provider.ts"],
+    proof: { file: "test/provider.test.ts", test: "with no kind enabled, no command or hook spawns claude" },
+  },
+  {
+    component: "Network use",
+    attacker: "bypassing agent",
+    threat: "The agent turns a proposal kind on to get model output into the flow",
+    outcome: "prevented",
+    mechanism:
+      "`provider enable` is person-only (a terminal on stdin and no `CLAUDECODE`), and the self guard blocks tool writes to `.finitemonkey/provider.json`",
+    code: ["src/commands/provider.ts", "src/guards/self/protected.ts"],
+    proof: { file: "test/provider.test.ts", test: "provider enable run by the agent is refused" },
+  },
+  {
+    component: "Network use",
+    attacker: "wrong tool output",
+    threat: "The model returns malformed output, or calls everything supported or correct",
+    outcome: "prevented",
+    mechanism:
+      "Output is validated against the interface type and dropped and logged when invalid; a proposal is stored with origin `model-proposed` and never sets a gate verdict, a band, a support state or an approved example",
+    code: ["src/provider/validate.ts", "src/provider/call.ts"],
+    proof: {
+      file: "test/provider-kinds.test.ts",
+      test: "a malformed or yes-saying model moves no support state, band or concept",
+    },
+  },
+  {
+    component: "Network use",
+    attacker: "mistaken agent",
+    threat: "A divergence or blind-test generator edits the person's working tree",
+    outcome: "prevented",
+    mechanism: "Both run in a throwaway worktree that Finite Monkey adds at the base commit and removes afterwards",
+    code: ["src/provider/generators.ts"],
+    proof: {
+      file: "test/provider-worktree.test.ts",
+      test: "divergence and blind-test calls leave the working tree byte-identical",
+    },
+  },
 ];

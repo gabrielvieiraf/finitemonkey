@@ -19,6 +19,8 @@ import { resolveInstructions } from "../instructions/resolve.js";
 import { type Inventory, listedFile } from "../instructions/types.js";
 import { featureMode } from "../policy/feature.js";
 import { policyNumber } from "../policy/numbers.js";
+import { providerInstructionConflicts, whenEnabled } from "../provider/adapters.js";
+import { providerDeps } from "../provider/wire.js";
 import { projectRoot } from "../secrets/project.js";
 import { fmPaths } from "../task/paths.js";
 import { FM_DIR } from "../task/paths.js";
@@ -93,7 +95,7 @@ export const driftLine = (ctx: Pick<Ctx, "t">, finding: DriftFinding): string =>
 };
 
 export const projectDrift = (
-  ctx: Pick<Ctx, "cwd" | "runtime">,
+  ctx: Pick<Ctx, "cwd" | "runtime" | "env">,
   findings: readonly InstructionFinding[],
 ): readonly DriftFinding[] => {
   const root = projectRoot(ctx);
@@ -109,7 +111,10 @@ export const projectDrift = (
       : [],
   );
   const violationLimit = policyNumber(ctx.runtime, root, ["knowledge", "violationLimit"], DEFAULT_VIOLATION_LIMIT);
-  return instructionDrift(gitDriftInput(ctx.runtime, root, { conflicts, violationLimit }));
+  const proposer = whenEnabled(providerDeps(ctx, fmPaths(root)), "instruction-conflicts", providerInstructionConflicts);
+  return instructionDrift(
+    gitDriftInput(ctx.runtime, root, { conflicts, violationLimit, ...(proposer === undefined ? {} : { proposer }) }),
+  );
 };
 
 const strictFailure = <TData>(
