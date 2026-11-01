@@ -1,1 +1,4 @@
 * text=auto eol=lf
+dist/finitemonkey.mjs linguist-generated=true
+plugin/scripts/finitemonkey.mjs linguist-generated=true
+plugin/hooks/register.mjs linguist-generated=true

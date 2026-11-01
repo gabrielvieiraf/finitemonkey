@@ -24,13 +24,16 @@ export const worktreeCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckO
   if (repo === undefined) return unverified("tool_missing", [note("gate.worktree.unavailable")]);
   const status = worktreeGateStatus(ctx.runtime, repo, ownerOf(ctx));
   const unpushed = declaresDestination(ctx) ? [] : status.unpushed;
+  const holdsDirty = !ctx.contract.implicit;
   const notes: Note[] = [
-    ...(status.dirty.length > 0 ? [note("gate.worktree.dirty", { files: listed(status.dirty) })] : []),
+    ...(holdsDirty && status.dirty.length > 0 ? [note("gate.worktree.dirty", { files: listed(status.dirty) })] : []),
     ...(unpushed.length > 0
       ? [note("gate.worktree.unpushed", { count: unpushed.length, branch: status.branch ?? "HEAD" })]
       : []),
   ];
-  return notes.length > 0 ? failed(notes) : passed([note("gate.worktree.clean")]);
+  if (notes.length > 0) return failed(notes);
+  if (status.dirty.length > 0) return passed([note("gate.worktree.uncommitted", { files: listed(status.dirty) })]);
+  return passed([note("gate.worktree.clean")]);
 };
 
 export const mergeCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {

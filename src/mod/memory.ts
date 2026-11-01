@@ -1,4 +1,5 @@
 import type { DomainTrajectory, Mark } from "../conceitos/trajectory.js";
+import type { ThemeChoice } from "../conceitos/trajectory-palette.js";
 import type { Timer } from "./api.js";
 import type { ContractView, DivergeView } from "./approve-view.js";
 import type { LoadedState } from "./state.js";
@@ -29,6 +30,7 @@ export interface Memory {
   trajectory: readonly DomainTrajectory[];
   selectedMark: Mark | undefined;
   untrusted: string | undefined;
+  theme: ThemeChoice;
 }
 
 export const memory: Memory = {
@@ -46,4 +48,5 @@ export const memory: Memory = {
   trajectory: [],
   selectedMark: undefined,
   untrusted: undefined,
+  theme: "auto",
 };
