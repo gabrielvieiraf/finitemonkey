@@ -262,7 +262,7 @@
   "error.task_not_found": "Task \"{task}\" was not found",
   "task.created": "Created task {task} in {file}. It is the active task now.",
   "task.hold.claim": "the contract of task {task} has checks the person has not approved yet, and this write changes {file}",
-  "task.hold.requires": "show the person the pending contract (finitemonkey task trust {task} prints it) and wait for their approval; files under .finitemonkey/ are not held",
+  "task.hold.requires": "show the person the checks of {task} that wait for approval and stop until they approve them; files under .finitemonkey/ are not held",
   "task.hold.not": "writing the same file through a shell command, or approving the contract yourself",
   "task.hold.human": "Held a write to {file}: the contract of {task} waits for your approval. Next: review it with `finitemonkey task trust {task}`.",
   "task.done": "Task {task} is done: every check passed on this tree.",

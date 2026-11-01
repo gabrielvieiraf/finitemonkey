@@ -262,7 +262,7 @@
   "error.task_not_found": "A tarefa \"{task}\" não foi encontrada",
   "task.created": "Tarefa {task} criada em {file}. Ela é a tarefa ativa agora.",
   "task.hold.claim": "o contrato da tarefa {task} tem checagens que a pessoa ainda não aprovou, e esta escrita muda {file}",
-  "task.hold.requires": "mostre à pessoa o contrato pendente (finitemonkey task trust {task} o imprime) e espere a aprovação dela; arquivos em .finitemonkey/ não são segurados",
+  "task.hold.requires": "mostre à pessoa as checagens de {task} que esperam aprovação e pare até ela aprová-las; arquivos em .finitemonkey/ não são segurados",
   "task.hold.not": "escrever o mesmo arquivo por um comando de shell, ou aprovar o contrato você mesmo",
   "task.hold.human": "Segurei uma escrita em {file}: o contrato de {task} espera a sua aprovação. Próximo: revise com `finitemonkey task trust {task}`.",
   "task.done": "Tarefa {task} concluída: todas as checagens passaram nesta árvore.",

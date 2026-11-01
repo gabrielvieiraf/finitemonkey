@@ -73,6 +73,7 @@ describe("writes wait while the contract has unapproved checks", () => {
     assert.ok(held.kind === "block");
     assert.match(held.reason, /contract of task t1 has checks the person has not approved yet/);
     assert.match(JSON.stringify(held.output), /finitemonkey task trust t1/);
+    assert.doesNotMatch(held.reason, /task trust/);
     assert.equal((await write(repo, "src/a.js")).kind, "allow");
   });
 

@@ -262,7 +262,7 @@
   "error.task_not_found": "No se encontró la tarea \"{task}\"",
   "task.created": "Tarea {task} creada en {file}. Ahora es la tarea activa.",
   "task.hold.claim": "el contrato de la tarea {task} tiene verificaciones que la persona todavía no aprobó, y esta escritura cambia {file}",
-  "task.hold.requires": "muestra a la persona el contrato pendiente (finitemonkey task trust {task} lo imprime) y espera su aprobación; los archivos en .finitemonkey/ no se retienen",
+  "task.hold.requires": "muestra a la persona las verificaciones de {task} que esperan aprobación y detente hasta que las apruebe; los archivos en .finitemonkey/ no se retienen",
   "task.hold.not": "escribir el mismo archivo con un comando de shell, o aprobar el contrato tú mismo",
   "task.hold.human": "Retuve una escritura en {file}: el contrato de {task} espera tu aprobación. Siguiente: revísalo con `finitemonkey task trust {task}`.",
   "task.done": "Tarea {task} terminada: todas las verificaciones pasaron en este árbol.",
