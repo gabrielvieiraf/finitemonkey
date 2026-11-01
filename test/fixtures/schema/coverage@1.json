@@ -26,14 +26,9 @@
             }
           }
         },
-        "required": [
-          "lines",
-          "asserts"
-        ]
+        "required": ["lines", "asserts"]
       }
     }
   },
-  "required": [
-    "tests"
-  ]
+  "required": ["tests"]
 }
