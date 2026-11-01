@@ -6,9 +6,10 @@ import { performance } from "node:perf_hooks";
 
 import type { AbsolutePath } from "../src/core/brand.js";
 import type { JsonObject } from "../src/core/parsed.js";
+import { isRecord } from "../src/core/parsed.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { gitSessionStart } from "../src/git/hooks/session.js";
-import type { HookHandler, HookInput } from "../src/hooks/handlers.js";
+import type { HookDecision, HookHandler, HookInput } from "../src/hooks/handlers.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { cli } from "../test/support.js";
 import type { CorpusCase } from "./evidence-corpus.js";
@@ -102,11 +103,22 @@ const seed = (root: string, item: CorpusCase): (() => void) => {
   };
 };
 
+export type Stops = (decision: HookDecision) => boolean;
+
+export const blocks: Stops = (decision) => decision.kind === "block";
+
+export const blocksOrAsks: Stops = (decision) => {
+  if (decision.kind === "block") return true;
+  const specific = decision.output?.["hookSpecificOutput"];
+  return isRecord(specific) && specific["permissionDecision"] === "ask";
+};
+
 export const replayCase = async (
   runtime: Runtime,
   root: AbsolutePath,
   handlers: readonly HookHandler[],
   item: CorpusCase,
+  stops: Stops = blocks,
 ): Promise<CaseResult> => {
   const restore = seed(root, item);
   try {
@@ -121,7 +133,7 @@ export const replayCase = async (
     const start = performance.now();
     let blocked = false;
     for (const handler of handlers) {
-      if ((await handler(input)).kind === "block") {
+      if (stops(await handler(input))) {
         blocked = true;
         break;
       }
@@ -137,8 +149,9 @@ export const replayGuard = async (
   root: AbsolutePath,
   handlers: readonly HookHandler[],
   cases: readonly CorpusCase[],
+  stops: Stops = blocks,
 ): Promise<readonly CaseResult[]> => {
   const results: CaseResult[] = [];
-  for (const item of cases) results.push(await replayCase(runtime, root, handlers, item));
+  for (const item of cases) results.push(await replayCase(runtime, root, handlers, item, stops));
   return results;
 };

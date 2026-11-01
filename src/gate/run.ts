@@ -1,10 +1,12 @@
 import { nowMs } from "../core/clock.js";
 import { appendEvidence, latestFor, readLedger, readLedgerChecked } from "../evidence/ledger.js";
 import { logEvent } from "../evidence/log.js";
+import { ledgerRewrite, writeLedgerNote } from "../evidence/notes.js";
 import { type Evidence, EVIDENCE_SCHEMA, type EvidenceInputs, GATE_CHECK } from "../evidence/types.js";
 import { loadProjectConfig } from "../git/project-config.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import type { GuardMode } from "../policy/policy.js";
+import { mirrorStore, restoreStore } from "../task/mirror.js";
 import type { AcceptanceCheck } from "../task/types.js";
 import { DEFAULT_CHECKS } from "./checks/index.js";
 import { currentInputs, EVIDENCE_INPUTS_FEATURE, inputsConfig, staleReasons } from "./inputs.js";
@@ -195,12 +197,37 @@ const evaluate = (options: GateOptions, prepared: Prepared, registry: CheckRegis
   return { kind: "done", report: report(prepared, readLedger(options.runtime, path), false, tampered) };
 };
 
+const withLedgerNotes = (options: GateOptions, prepared: Prepared, run: GateRun): GateRun => {
+  if (run.kind !== "done") return run;
+  const { root } = prepared.ctx.paths;
+  const task = prepared.ctx.contract.id;
+  const ledger = prepared.ctx.paths.evidence(task);
+  const rewrite = ledgerRewrite(options.runtime, root, task, ledger);
+  if (rewrite !== undefined) {
+    logEvent(options.runtime, prepared.ctx.paths, "ledger_rewritten", {
+      task,
+      lines: rewrite.lines,
+      commit: rewrite.commit,
+    });
+    return { kind: "done", report: { ...run.report, rewritten: rewrite.lines } };
+  }
+  writeLedgerNote(options.runtime, root, task, ledger);
+  return run;
+};
+
+const gateRun = (options: GateOptions, prepared: Prepared, registry: CheckRegistry): GateRun => {
+  if (options.isolated !== true) return evaluate(options, prepared, registry, options.fast);
+  const isolated = withIsolatedTree(options.runtime, prepared, (inside) => evaluate(options, inside, registry, false));
+  return isolated.ok ? isolated.value : { kind: "failed", failure: isolated.error };
+};
+
 export const runGate = (options: GateOptions, registry: CheckRegistry = DEFAULT_CHECKS): GateRun => {
   const ready = prepareGate(options);
   if (ready.kind !== "ready") return ready;
-  if (options.isolated !== true) return evaluate(options, ready.prepared, registry, options.fast);
-  const isolated = withIsolatedTree(options.runtime, ready.prepared, (prepared) =>
-    evaluate(options, prepared, registry, false),
-  );
-  return isolated.ok ? isolated.value : { kind: "failed", failure: isolated.error };
+  const { paths } = ready.prepared.ctx;
+  const restored = restoreStore(options.runtime, paths.root);
+  if (restored !== undefined) logEvent(options.runtime, paths, "store_restored", { ...restored });
+  const run = withLedgerNotes(options, ready.prepared, gateRun(options, ready.prepared, registry));
+  if (run.kind === "done") mirrorStore(options.runtime, ready.prepared.ctx.paths.root);
+  return run;
 };

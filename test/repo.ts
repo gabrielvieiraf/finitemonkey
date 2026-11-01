@@ -92,6 +92,7 @@ export const repoRuntime = (options: RepoRuntimeOptions = {}): Runtime => {
   const gh = options.gh ?? GH_NOT_LOGGED_IN;
   return {
     ...base,
+    ancestors: () => [],
     exec: (request: ExecRequest) =>
       request.command === "gh" ? (gh(request.args) ?? execResult(1, "", "unexpected gh call")) : base.exec(request),
     ...(options.now === undefined ? {} : { now: options.now }),

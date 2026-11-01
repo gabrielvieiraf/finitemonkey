@@ -40,6 +40,7 @@ export interface GateReport {
   readonly decisionsNeeded: readonly string[];
   readonly fastPath: boolean;
   readonly tampered: number;
+  readonly rewritten?: number;
 }
 
 const fromEvidence = (id: string, kind: string, entry: Evidence | undefined, stale: boolean): ReportItem => {

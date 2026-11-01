@@ -1,3 +1,6 @@
+import { isAbsolute, join } from "node:path";
+
+import { toAbsolutePath } from "../../core/brand.js";
 import { optionalString } from "../../core/parsed.js";
 import { logEvent } from "../../evidence/log.js";
 import { projectPaths } from "../../gate/hooks/common.js";
@@ -7,7 +10,8 @@ import type { HookDecision, HookHandler, HookInput } from "../../hooks/handlers.
 import { maskText } from "../../mask/mask.js";
 import { featureMode } from "../../policy/feature.js";
 import { callOf } from "./catalog.js";
-import { type Classification, classifyCall, isCandidate, NO_EXTENSION, remoteExtension } from "./classify.js";
+import { type Classification, classifyWithScripts, isCandidate, NO_EXTENSION, remoteExtension } from "./classify.js";
+import type { ScriptReader } from "./script-file.js";
 
 export const REMOTE_FEATURE = "remote-destructive";
 
@@ -15,17 +19,29 @@ const ALLOW: HookDecision = { kind: "allow" };
 
 type Decision = "held" | "shadow" | "ran";
 
+const SCRIPT_LIMIT_BYTES = 512 * 1024;
+
+const scriptReader =
+  (input: HookInput): ScriptReader =>
+  (file) => {
+    const path = toAbsolutePath(isAbsolute(file) ? file : join(input.cwd, file));
+    const stat = input.runtime.stat(path);
+    if (stat?.kind !== "file" || (stat.size ?? 0) > SCRIPT_LIMIT_BYTES) return undefined;
+    const text = input.runtime.readText(path);
+    return text.ok ? text.value : undefined;
+  };
+
 const classified = (input: HookInput): Classification | undefined => {
   const tool = toolName(input.payload.raw);
   if (!isCandidate(tool)) return undefined;
   const paths = projectPaths(input);
   const extension = paths === undefined ? NO_EXTENSION : remoteExtension(loadProjectConfig(input.runtime, paths.root));
-  const result = classifyCall(callOf(tool, toolInput(input.payload.raw)), extension);
-  return result.effect === "destroy" ? result : undefined;
+  const result = classifyWithScripts(callOf(tool, toolInput(input.payload.raw)), extension, scriptReader(input));
+  return result.effect === "destroy" || result.effect === "write" ? result : undefined;
 };
 
 const heldMode = (input: HookInput, found: Classification): "held" | "shadow" | "off" => {
-  if (!found.heuristic) return "held";
+  if (found.effect === "destroy" && !found.heuristic) return "held";
   const paths = projectPaths(input);
   const mode = paths === undefined ? "shadow" : featureMode(input.runtime, paths, REMOTE_FEATURE);
   return mode === "active" ? "held" : mode;
@@ -37,6 +53,7 @@ const record = (input: HookInput, found: Classification, decision: Decision | "a
   logEvent(input.runtime, paths, "remote_hold", {
     tool: toolName(input.payload.raw),
     entry: found.entry,
+    effect: found.effect,
     target: maskText(found.target),
     heuristic: found.heuristic,
     decision,
@@ -53,15 +70,18 @@ export const remotePreToolUse: HookHandler = (input) => {
   record(input, found, mode);
   if (mode === "shadow") return ALLOW;
   const params = { target: maskText(found.target), entry: found.entry };
+  const write = found.effect === "write";
+  const reason = write ? input.t("remote.write.reason", params) : input.t("remote.hold.reason", params);
+  const human = write ? input.t("remote.write.human", params) : input.t("remote.hold.human", params);
   return {
     kind: "allow",
     output: {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "ask",
-        permissionDecisionReason: input.t("remote.hold.reason", params),
+        permissionDecisionReason: reason,
       },
-      systemMessage: `finitemonkey: ${input.t("remote.hold.human", params)}`,
+      systemMessage: `finitemonkey: ${human}`,
     },
   };
 };

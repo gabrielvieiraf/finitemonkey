@@ -82,6 +82,11 @@ export interface ProcessInfo {
   readonly cwd: string;
 }
 
+export interface AncestorInfo {
+  readonly pid: number;
+  readonly command: string;
+}
+
 export type StopSignal = "SIGTERM" | "SIGKILL";
 
 export interface Runtime {
@@ -111,6 +116,7 @@ export interface Runtime {
   readonly homeDir: () => string;
   readonly systemLocale: () => string | undefined;
   readonly processes: () => readonly ProcessInfo[];
+  readonly ancestors: () => readonly AncestorInfo[];
   readonly signal: (pid: number, signal: StopSignal) => boolean;
   readonly alive: (pid: number) => boolean;
   readonly exclusiveBytes: (dir: AbsolutePath) => number | undefined;

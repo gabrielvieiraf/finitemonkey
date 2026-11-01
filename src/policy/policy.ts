@@ -117,6 +117,7 @@ export const OPTIONAL_GUARDS = [
   "xray",
   "probes",
   "trajectory",
+  "secret-context",
   ...UI_GUARDS,
   "api-consistency",
   "api-breaking",
@@ -146,6 +147,7 @@ export const POLICY_KEYS: readonly string[] = [
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
+  "secret-context",
   "fourth-attempt",
   "claims",
   "clarify",

@@ -16,6 +16,7 @@ import {
   type HookInput,
   mergeHandlers,
   mergeOutputs,
+  SECRETS_HANDLERS,
 } from "../src/hooks/handlers.js";
 import { EMPTY_PAYLOAD } from "../src/hooks/payload.js";
 import { runHook } from "../src/hooks/runner.js";
@@ -127,7 +128,7 @@ describe("guard composition", () => {
       (GIT_HANDLERS.PreToolUse ?? []).length + afterGit + (UNATTENDED_HANDLERS.PreToolUse ?? []).length,
     );
     assert.equal(
-      git - secrets - 1,
+      git - secrets - (SECRETS_HANDLERS.PreToolUse ?? []).length,
       (PORTAO_HANDLERS.PreToolUse ?? []).length + (PROSE_HANDLERS.PreToolUse ?? []).length,
     );
   });

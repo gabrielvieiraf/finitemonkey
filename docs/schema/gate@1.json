@@ -194,6 +194,9 @@
     },
     "tampered": {
       "type": "number"
+    },
+    "rewritten": {
+      "type": "number"
     }
   },
   "required": [

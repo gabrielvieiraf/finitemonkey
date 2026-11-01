@@ -142,6 +142,7 @@ Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na 
 | `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.2 |
 | `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 53.9 |
 | `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.0 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 1.8 |
 
 Custo contra o Claude Code puro nas mesmas tarefas: ainda não medido.
 <!-- generated:evidence:end -->
@@ -193,6 +194,7 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Grava | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Aprovações e liberações digitadas pela pessoa, e um cache curto dos pull requests abertos. |
 | Grava | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | A baseline de achados aceitos e os incidentes de exposição. Os dois guardam impressões e máscaras, nunca o valor de um segredo. |
 | Grava | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/`, `.git/finitemonkey/snapshots/` | Snapshots antes de comandos git destrutivos e de `rm` no repositório, com cópias de arquivos ignorados e de segredos não rastreados até 50 MB dentro do .git, o diário que o `undo` lê e as decisões sobre linhas descartadas em merges. |
+| Grava | `.git/finitemonkey/mirror/`, `~/.finitemonkey/projects/`, `refs/notes/finitemonkey` | Uma cópia assinada das aprovações, dos incidentes e dos backups de `.finitemonkey/`, guardada dentro do .git e em `~/.finitemonkey/projects/<id>/` e copiada de volta quando `.finitemonkey/` é apagado, e uma nota do git por rodada do gate com o hash acumulado do registro de evidências (as notas não sobem a menos que você as envie). |
 | Grava | `.finitemonkey/reports/` | Relatórios de bug mascarados que o `doctor --report` grava, só quando pedido, e o relatório que cada frente grava antes de parar. |
 | Grava | `.finitemonkey/pr/` | Quem aceitou arquivos fora do escopo da tarefa no `pr open`, quando e por quê, um arquivo por branch. |
 | Grava | `.finitemonkey/fronts.yml`, `.finitemonkey/briefing.md` | O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit. |

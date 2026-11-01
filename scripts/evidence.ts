@@ -20,6 +20,7 @@ import {
   parseReviewEvidence,
   type ReviewEvidence,
 } from "./evidence-rates.js";
+import { REMOTE_CORPUS, replayRemote } from "./evidence-remote.js";
 import { prepareFixture, replayGuard } from "./evidence-replay.js";
 import { EVIDENCE_FILE, renderEvidence } from "./evidence-text.js";
 
@@ -82,6 +83,9 @@ const measured = await withFixtureProject(async (project) => {
       await replayGuard(runtime, project, handlers, cases);
       guards.push(guardEvidence(set.id, await replayGuard(runtime, project, handlers, cases)));
     }
+    const remote = expanded((corpus.ok ? corpus.value[REMOTE_CORPUS] : undefined) ?? []);
+    await replayRemote(runtime, project, remote);
+    guards.push(guardEvidence(REMOTE_CORPUS, await replayRemote(runtime, project, remote)));
     const context = await measureContext(project);
     return { guards, context };
   } finally {

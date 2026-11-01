@@ -59,10 +59,14 @@ export const approvals: readonly Threat[] = [
     component: "Contracts and approvals",
     attacker: "bypassing agent",
     threat: "The agent runs a person-only command in a pseudo-terminal with `CLAUDECODE` unset",
-    outcome: "not covered",
+    outcome: "reduced",
     mechanism:
-      "Person-only commands check for a terminal on stdin and the absence of `CLAUDECODE` and `CLAUDE_CODE_ENTRYPOINT`; a process that fakes both passes",
-    code: ["src/secrets/project.ts"],
+      "Person-only commands also walk the process ancestry (`/proc` on Linux, `ps` on macOS) and refuse when a Claude Code process is an ancestor. On Windows the ancestry is not read, and a process that leaves the Claude Code tree first (a daemon re-parented to init, an ssh session to the same machine) still passes",
+    code: ["src/secrets/project.ts", "src/core/ancestry.ts"],
+    proof: {
+      file: "test/person-ancestry.test.ts",
+      test: "a person-only command spawned under a Claude Code ancestor is refused even with a terminal and no Claude Code variables",
+    },
   },
   {
     component: "Contracts and approvals",
@@ -108,9 +112,14 @@ export const guards: readonly Threat[] = [
     component: "Guards",
     attacker: "mistaken agent",
     threat: "A credential with no known shape and low entropy",
-    outcome: "not covered",
-    mechanism: "Rules match known shapes and high-entropy strings",
-    code: ["src/secrets/guards/pre-tool.ts"],
+    outcome: "recorded",
+    mechanism:
+      "A literal value assigned to a name such as `password`, `secret`, `token` or `api_key` in a config, env or code file is reported whatever its entropy, except documented placeholders, references and test fixtures. The `secret-context` flag starts in shadow: recorded, blocked only when active. A value with no telling name is not caught",
+    code: ["src/secrets/context.ts", "src/secrets/guards/context-hook.ts"],
+    proof: {
+      file: "test/secret-context.test.ts",
+      test: "a password literal in a config file is recorded in shadow without the value and blocked when active",
+    },
   },
   {
     component: "Guards",
@@ -223,9 +232,14 @@ export const guards: readonly Threat[] = [
     component: "Guards",
     attacker: "over-privileged process",
     threat: "A remote write through an MCP tool or a POST outside the catalog and without a destroy verb",
-    outcome: "not covered",
-    mechanism: "Only catalogued tools, HTTP DELETE and GraphQL delete mutations are classified",
-    code: ["src/guards/remote/catalog.ts"],
+    outcome: "recorded",
+    mechanism:
+      "MCP tools named with a write verb (create, update, send, post, insert, upsert, publish) and agent-built POST, PUT and PATCH to a host that is not local, inline or in a script file passed to an interpreter, are classified `remote-write`: recorded in shadow, held when `remote-destructive` is active. A write through a program the guard does not parse (an SDK call in a compiled binary, a CLI such as `gh`) is not caught",
+    code: ["src/guards/remote/catalog.ts", "src/guards/remote/script-file.ts"],
+    proof: {
+      file: "test/remote-write.test.ts",
+      test: "a fixture MCP send_email and a POST to a non-local host are held; a GET is not; a script file with the same call is held",
+    },
   },
   {
     component: "Guards",

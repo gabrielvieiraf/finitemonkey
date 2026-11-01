@@ -83,6 +83,11 @@ export const FOOTPRINT = [
       ".git/finitemonkey/snapshots/",
     ],
   },
+  {
+    id: "store-mirror",
+    kind: "writes",
+    targets: [".git/finitemonkey/mirror/", "~/.finitemonkey/projects/", "refs/notes/finitemonkey"],
+  },
   { id: "reports", kind: "writes", targets: [".finitemonkey/reports/"] },
   { id: "pr-scope", kind: "writes", targets: [".finitemonkey/pr/"] },
   { id: "fronts", kind: "writes", targets: [".finitemonkey/fronts.yml", ".finitemonkey/briefing.md"] },

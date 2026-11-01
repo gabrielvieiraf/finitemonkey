@@ -49,6 +49,7 @@ import { REUSE_HANDLERS } from "../reuse/hook.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { rulesGuard } from "../rules/guard.js";
 import { rulesStop } from "../rules/stop.js";
+import { secretContextPreToolUse } from "../secrets/guards/context-hook.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
@@ -186,7 +187,7 @@ export const mergeHandlers = (...sets: readonly HookHandlers[]): HookHandlers =>
 };
 
 export const SECRETS_HANDLERS: HookHandlers = {
-  PreToolUse: [secretsPreToolUse],
+  PreToolUse: [secretsPreToolUse, secretContextPreToolUse],
   UserPromptSubmit: [secretsUserPromptSubmit],
   PostToolUse: [secretsPostToolUse],
   SessionStart: [secretsSessionStart],

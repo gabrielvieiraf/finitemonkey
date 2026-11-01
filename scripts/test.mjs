@@ -2,12 +2,14 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { ROOT } from "./bundle.mjs";
 
 const TIMING = new Set(["hook-latency.test.ts", "secrets-rules.test.ts"]);
 
 const dir = join(ROOT, "test");
+const HERMETIC = pathToFileURL(join(dir, "hermetic-ancestry.ts")).href;
 const names = readdirSync(dir)
   .filter((name) => name.endsWith(".test.ts"))
   .sort();
@@ -45,11 +47,15 @@ const env = {
 const run = (files, extra) =>
   files.length === 0
     ? 0
-    : (spawnSync(process.execPath, ["--import", "tsx", "--test", ...extra, ...files, ...process.argv.slice(2)], {
-        cwd: ROOT,
-        env,
-        stdio: "inherit",
-      }).status ?? 1);
+    : (spawnSync(
+        process.execPath,
+        ["--import", "tsx", "--import", HERMETIC, "--test", ...extra, ...files, ...process.argv.slice(2)],
+        {
+          cwd: ROOT,
+          env,
+          stdio: "inherit",
+        },
+      ).status ?? 1);
 
 const parallel = run(
   names.filter((name) => !TIMING.has(name)).map((name) => join(dir, name)),

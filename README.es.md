@@ -132,6 +132,7 @@ Tasas de error de los guards siempre activos, reproducidas con `npm run evidence
 | `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.2 |
 | `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 53.9 |
 | `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.0 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 1.8 |
 
 Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.
 <!-- generated:evidence:end -->
@@ -183,6 +184,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Escribe | `.finitemonkey/trust.json`, `.finitemonkey/allow/`, `.finitemonkey/cache/` | Aprobaciones y permisos escritos por la persona, y una caché breve de los pull requests abiertos. |
 | Escribe | `.finitemonkey/findings/baseline.json`, `.finitemonkey/incidents/` | La línea base de hallazgos aceptados y los incidentes de exposición. Ambos guardan huellas y máscaras, nunca el valor de un secreto. |
 | Escribe | `.finitemonkey/git/`, `.finitemonkey/git-journal.jsonl`, `.finitemonkey/merge-dropped.json`, `refs/finitemonkey/backup/`, `.git/finitemonkey/snapshots/` | Snapshots antes de comandos git destructivos y de `rm` en el repositorio, con copias de archivos ignorados y de secretos sin seguimiento hasta 50 MB dentro de .git, el diario que lee `undo` y las decisiones sobre líneas descartadas en merges. |
+| Escribe | `.git/finitemonkey/mirror/`, `~/.finitemonkey/projects/`, `refs/notes/finitemonkey` | Una copia firmada de las aprobaciones, los incidentes y las copias de seguridad de `.finitemonkey/`, guardada dentro de .git y en `~/.finitemonkey/projects/<id>/` y copiada de vuelta cuando se borra `.finitemonkey/`, y una nota de git por ejecución del gate con el hash acumulado del registro de evidencias (las notas no se suben salvo que tú las envíes). |
 | Escribe | `.finitemonkey/reports/` | Informes de error enmascarados que escribe `doctor --report`, solo cuando se pide, y el informe que cada frente escribe antes de parar. |
 | Escribe | `.finitemonkey/pr/` | Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama. |
 | Escribe | `.finitemonkey/fronts.yml`, `.finitemonkey/briefing.md` | El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea. |
