@@ -1,5 +1,6 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
+import { POWERSHELL, toastArgs, toastProbeArgs, WINDOWS_TIMEOUT_MS } from "./windows.js";
 
 export interface Notice {
   readonly title: string;
@@ -9,20 +10,36 @@ export interface Notice {
 export interface NotifyCommand {
   readonly command: string;
   readonly args: readonly string[];
+  readonly timeoutMs: number;
 }
 
 export type Channel = "desktop" | "bell";
 
 const quoted = (text: string): string => `"${text.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
+const UNIX_TIMEOUT_MS = 2000;
+
 export const notifyCommand = (platform: string, notice: Notice): NotifyCommand | undefined => {
   if (platform === "darwin") {
     return {
       command: "osascript",
       args: ["-e", `display notification ${quoted(notice.body)} with title ${quoted(notice.title)}`],
+      timeoutMs: UNIX_TIMEOUT_MS,
     };
   }
-  if (platform === "linux") return { command: "notify-send", args: [notice.title, notice.body] };
+  if (platform === "linux") {
+    return { command: "notify-send", args: [notice.title, notice.body], timeoutMs: UNIX_TIMEOUT_MS };
+  }
+  if (platform === "win32") {
+    return { command: POWERSHELL, args: toastArgs(notice.title, notice.body), timeoutMs: WINDOWS_TIMEOUT_MS };
+  }
+  return undefined;
+};
+
+export const probeCommand = (platform: string): NotifyCommand | undefined => {
+  if (platform === "darwin") return { command: "osascript", args: ["-e", "return 1"], timeoutMs: UNIX_TIMEOUT_MS };
+  if (platform === "linux") return { command: "notify-send", args: ["--version"], timeoutMs: UNIX_TIMEOUT_MS };
+  if (platform === "win32") return { command: POWERSHELL, args: toastProbeArgs(), timeoutMs: WINDOWS_TIMEOUT_MS };
   return undefined;
 };
 
@@ -34,7 +51,7 @@ export const deliver = (
 ): Channel => {
   const found = notifyCommand(platform, notice);
   if (found === undefined) return "bell";
-  const result = runtime.exec({ command: found.command, args: found.args, cwd, timeoutMs: 2000 });
+  const result = runtime.exec({ command: found.command, args: found.args, cwd, timeoutMs: found.timeoutMs });
   return result.found && result.exitCode === 0 ? "desktop" : "bell";
 };
 

@@ -16,6 +16,7 @@ import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
 import { checkAgentsFile } from "./memory.js";
 import { checkMods } from "./mods.js";
+import { checkNotifications } from "./notifications.js";
 import { checkAlertBudget, checkPolicy } from "./policy.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
@@ -58,6 +59,7 @@ export const CHECKS: readonly Check[] = [
   checkHiddenText,
   checkMods,
   checkInstructionDrift,
+  checkNotifications,
 ];
 
 export interface DoctorItem {
