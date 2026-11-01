@@ -108,7 +108,8 @@
               "sheet/off-scale",
               "sheet/nested-radius",
               "perf/regression",
-              "perf/slow-action"
+              "perf/slow-action",
+              "perf/n-plus-one"
             ]
           },
           "route": {

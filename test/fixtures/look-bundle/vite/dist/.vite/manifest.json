@@ -1,0 +1,11 @@
+{
+  "index.html": {
+    "file": "assets/index-a1.js",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": ["_vendor-b2.js"],
+    "css": ["assets/index-c3.css"]
+  },
+  "_vendor-b2.js": { "file": "assets/vendor-b2.js" },
+  "src/lazy.ts": { "file": "assets/lazy-d4.js", "isDynamicEntry": true }
+}

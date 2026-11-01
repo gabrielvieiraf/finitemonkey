@@ -4,6 +4,7 @@ import { isRecord } from "../core/parsed.js";
 import { type FlowRequest } from "./node-flow.js";
 import { blockExternal } from "./node-ux.js";
 import type { RouteMeasure, Sample } from "./perf.js";
+import type { QueryCount, QueryLog } from "./queries.js";
 
 const SETTLE_MS = 300;
 const ACTION_LIMIT_MS = 2000;
@@ -66,34 +67,53 @@ const timeAction = async (page: Page, action: PerfAction): Promise<RouteMeasure[
   };
 };
 
+export interface MeasureOptions {
+  readonly runs: number;
+  readonly queriesHeader: string | undefined;
+  readonly action: PerfAction | undefined;
+  readonly queryLog?: QueryLog | undefined;
+}
+
+interface Once {
+  readonly sample: Sample;
+  readonly action: RouteMeasure["action"];
+  readonly logged: QueryCount | undefined;
+}
+
+const queriesOf = (header: string | undefined, logged: QueryCount | undefined): number =>
+  header !== undefined ? Number(header) || 0 : (logged?.total ?? 0);
+
 const once = async (
   browser: Browser,
   request: FlowRequest,
   route: string,
-  queriesHeader: string | undefined,
+  options: MeasureOptions,
   action: PerfAction | undefined,
-): Promise<{ readonly sample: Sample; readonly action: RouteMeasure["action"] }> => {
+): Promise<Once> => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   if (request.isolate) await blockExternal(context, new Set());
   try {
     const page = await context.newPage();
     await page.addInitScript(OBSERVE);
+    const mark = options.queryLog?.mark();
     const response = await page.goto(`${request.baseUrl}${route}`, {
       waitUntil: "networkidle",
       timeout: request.timeoutMs,
     });
     await page.waitForTimeout(SETTLE_MS);
+    const logged = mark === undefined ? undefined : options.queryLog?.since(mark);
     const raw: unknown = await page.evaluate(READ);
     const values = isRecord(raw) ? raw : {};
-    const header = queriesHeader === undefined ? undefined : response?.headers()[queriesHeader.toLowerCase()];
+    const name = options.queriesHeader?.toLowerCase();
+    const header = name === undefined ? undefined : response?.headers()[name];
     const sample: Sample = {
       lcp: num(values["lcp"]),
       cls: num(values["cls"]),
       tbt: num(values["tbt"]),
       js: num(values["js"]),
-      queries: header === undefined ? 0 : Number(header) || 0,
+      queries: queriesOf(header, logged),
     };
-    return { sample, action: action === undefined ? undefined : await timeAction(page, action) };
+    return { sample, logged, action: action === undefined ? undefined : await timeAction(page, action) };
   } finally {
     await context.close();
   }
@@ -103,18 +123,16 @@ export const measureRoute = async (
   browser: Browser,
   request: FlowRequest,
   route: string,
-  options: {
-    readonly runs: number;
-    readonly queriesHeader: string | undefined;
-    readonly action: PerfAction | undefined;
-  },
+  options: MeasureOptions,
 ): Promise<RouteMeasure> => {
   const samples: Sample[] = [];
   let action: RouteMeasure["action"];
+  let repeated: RouteMeasure["repeated"];
   for (let run = 0; run < options.runs; run += 1) {
-    const result = await once(browser, request, route, options.queriesHeader, run === 0 ? options.action : undefined);
+    const result = await once(browser, request, route, options, run === 0 ? options.action : undefined);
     samples.push(result.sample);
     action ??= result.action;
+    repeated ??= result.logged?.repeated;
   }
-  return { route, samples, action };
+  return { route, samples, action, ...(repeated === undefined ? {} : { repeated }) };
 };

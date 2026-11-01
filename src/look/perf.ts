@@ -5,6 +5,7 @@ import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { FmPaths } from "../task/paths.js";
 import { LOOK_DIR } from "./paths.js";
+import type { RepeatedQuery } from "./queries.js";
 import { issue, type UxIssue, type UxPage } from "./ux.js";
 
 export const PERF_FEATURE = "perf-budget";
@@ -139,7 +140,17 @@ export interface RouteMeasure {
   readonly route: string;
   readonly samples: readonly Sample[];
   readonly action: { readonly ms: number; readonly indicator: boolean; readonly name: string } | undefined;
+  readonly repeated?: readonly RepeatedQuery[];
 }
+
+export const repeatedIssues = (measure: RouteMeasure): readonly UxIssue[] =>
+  (measure.repeated ?? []).map((item) =>
+    issue(
+      "perf/n-plus-one",
+      item.shape.slice(0, 120),
+      `${String(item.count)} queries with the same shape on one request`,
+    ),
+  );
 
 const UNITS: Readonly<Record<Metric, string>> = { lcp: "ms", cls: "", tbt: "ms", js: " bytes", queries: " queries" };
 
@@ -197,7 +208,7 @@ export const perfOutcome = (
       feature: PERF_FEATURE,
       route: measure.route,
       viewport: 1440,
-      issues: [...found, ...actionIssues(measure)],
+      issues: [...found, ...actionIssues(measure), ...repeatedIssues(measure)],
       metrics: { ...sample },
     };
   });

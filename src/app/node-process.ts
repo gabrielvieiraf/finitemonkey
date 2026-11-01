@@ -1,5 +1,5 @@
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
-import { connect } from "node:net";
+import { connect, createServer } from "node:net";
 
 const MAX_OUTPUT = 64 * 1024;
 const POLL_MS = 150;
@@ -31,6 +31,21 @@ export const portOpen = (host: string, port: number): Promise<boolean> =>
     });
     socket.once("error", () => {
       done(false);
+    });
+  });
+
+export const freePort = (host: string): Promise<number | undefined> =>
+  new Promise((resolve) => {
+    const server = createServer();
+    server.once("error", () => {
+      resolve(undefined);
+    });
+    server.listen(0, host, () => {
+      const address = server.address();
+      const port = typeof address === "object" && address !== null ? address.port : undefined;
+      server.close(() => {
+        resolve(port);
+      });
     });
   });
 

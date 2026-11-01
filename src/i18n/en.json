@@ -71,6 +71,8 @@
   "doctor.path.fix_chars": "Finite Monkey handles this path; if another tool fails here, move the project to a path without spaces or accents",
   "doctor.path.synced": "Project is inside a synced folder (OneDrive, Dropbox, iCloud or Google Drive): {path}",
   "doctor.path.fix_synced": "Move the project out of the synced folder to avoid sync conflicts and slow git",
+  "doctor.browser.libraries": "The browser for look is missing system libraries: {libraries}",
+  "doctor.browser.fix_libraries": "Install the packages: sudo apt-get install {packages} (or run npx playwright install-deps chromium)",
   "doctor.path.wsl_mount": "Project is on a Windows drive mounted in WSL: {path}",
   "doctor.path.fix_wsl_mount": "Move the project into the Linux home (for example ~/projects) for faster git and correct permissions",
   "doctor.node.unsupported": "Node.js {version} stopped getting security fixes on {date}",

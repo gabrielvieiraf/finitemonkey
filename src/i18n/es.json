@@ -71,6 +71,8 @@
   "doctor.path.fix_chars": "Finite Monkey maneja esta ruta; si otra herramienta falla aquí, mueve el proyecto a una ruta sin espacios ni acentos",
   "doctor.path.synced": "El proyecto está en una carpeta sincronizada (OneDrive, Dropbox, iCloud o Google Drive): {path}",
   "doctor.path.fix_synced": "Mueve el proyecto fuera de la carpeta sincronizada para evitar conflictos de sincronización y git lento",
+  "doctor.browser.libraries": "Faltan bibliotecas del sistema para el navegador de look: {libraries}",
+  "doctor.browser.fix_libraries": "Instala los paquetes: sudo apt-get install {packages} (o ejecuta npx playwright install-deps chromium)",
   "doctor.path.wsl_mount": "El proyecto está en un disco de Windows montado en WSL: {path}",
   "doctor.path.fix_wsl_mount": "Mueve el proyecto a la home de Linux (por ejemplo ~/proyectos) para tener git rápido y permisos correctos",
   "doctor.node.unsupported": "Node.js {version} dejó de recibir correcciones de seguridad el {date}",

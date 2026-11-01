@@ -64,6 +64,7 @@ export const LOOK_RULES = [
   "sheet/nested-radius",
   "perf/regression",
   "perf/slow-action",
+  "perf/n-plus-one",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

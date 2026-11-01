@@ -11,10 +11,10 @@ import { destructiveIssues, draftIssues, FLOW_FEATURE, flowPages, type FlowSpec 
 import { journeyPages, JOURNEYS_FEATURE, listJourneys } from "./journey.js";
 import { crawlFlow, type FlowRequest, tryDestructive, tryDraft } from "./node-flow.js";
 import { measureJourney } from "./node-journey.js";
-import { measureRoute, type PerfAction } from "./node-perf.js";
 import { visualDiffs } from "./node-visual.js";
 import { lookDir } from "./paths.js";
-import { PERF_FEATURE, perfOutcome, readPerf, writePerf } from "./perf.js";
+import { PERF_FEATURE } from "./perf.js";
+import { perfRun } from "./perf-run.js";
 import type { UxPage } from "./ux.js";
 import type { ModeMap } from "./ux-features.js";
 import { approvedImagesDir, readVerdicts, VISUAL_FEATURE, visualPages } from "./visual.js";
@@ -82,34 +82,6 @@ export interface SessionInput {
   readonly request: FlowRequest;
   readonly captures: readonly { readonly route: string; readonly viewport: number; readonly path: string }[];
 }
-
-const actionsFor = (input: SessionInput): Readonly<Record<string, PerfAction>> => {
-  const out: Record<string, PerfAction> = {};
-  for (const screen of input.screens) if (screen.primaryAction !== undefined) out[screen.screen] = screen.primaryAction;
-  for (const entry of input.config.perf.actions) {
-    const match = /^(\S+)\s+(\S+)\s+(.+)$/.exec(entry.trim());
-    if (match?.[1] !== undefined && match[2] !== undefined && match[3] !== undefined)
-      out[match[1]] = { role: match[2], name: match[3].trim() };
-  }
-  return out;
-};
-
-const perfRun = async (browser: Browser, input: SessionInput): Promise<readonly UxPage[]> => {
-  const paths = fmPaths(input.root);
-  const actions = actionsFor(input);
-  const measures = [];
-  for (const route of input.config.routes.filter((item) => !item.includes("?")))
-    measures.push(
-      await measureRoute(browser, input.request, route, {
-        runs: input.config.perf.runs,
-        queriesHeader: input.config.perf.queriesHeader,
-        action: actions[route],
-      }),
-    );
-  const outcome = perfOutcome(measures, readPerf(input.runtime, paths), input.tree, input.runtime.now());
-  writePerf(input.runtime, paths, outcome.store);
-  return outcome.pages;
-};
 
 const visualRun = async (browser: Browser, input: SessionInput): Promise<readonly UxPage[]> => {
   const paths = fmPaths(input.root);

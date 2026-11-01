@@ -54,10 +54,19 @@ export interface LookConfig {
   readonly perf: PerfConfig;
 }
 
+export const PERF_BASES = ["stored", "same-run"] as const;
+export type PerfBase = (typeof PERF_BASES)[number];
+export const PERF_BUNDLES = ["loaded", "build"] as const;
+export type PerfBundle = (typeof PERF_BUNDLES)[number];
+
 export interface PerfConfig {
   readonly runs: number;
   readonly queriesHeader: string | undefined;
   readonly actions: readonly string[];
+  readonly base: PerfBase;
+  readonly bundle: PerfBundle;
+  readonly manifest: string | undefined;
+  readonly queriesLog: string | undefined;
 }
 
 export interface FlowConfig {
@@ -125,6 +134,16 @@ const wholeOf = (value: unknown): number | undefined => {
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : undefined;
 };
 
+const perfOf = (tree: ReturnType<typeof parseConfigYaml>): PerfConfig => ({
+  runs: number(configAt(tree, "perf", "runs")) ?? DEFAULT_RUNS,
+  queriesHeader: text(configAt(tree, "perf", "queries_header")),
+  actions: configList(tree, "perf", "actions"),
+  base: PERF_BASES.find((item) => item === configAt(tree, "perf", "base")) ?? "stored",
+  bundle: PERF_BUNDLES.find((item) => item === configAt(tree, "perf", "bundle")) ?? "loaded",
+  manifest: text(configAt(tree, "perf", "manifest")),
+  queriesLog: text(configAt(tree, "perf", "queries_log")),
+});
+
 export const parseLookConfig = (source: string): LookConfig => {
   const tree = parseConfigYaml(source);
   const screens = configAt(tree, "screens");
@@ -146,11 +165,7 @@ export const parseLookConfig = (source: string): LookConfig => {
     forms: routeLists(configList(tree, "forms")),
     formsKeepCleared: configList(tree, "forms_keep_cleared"),
     formValues: configMap(tree, "form_values"),
-    perf: {
-      runs: number(configAt(tree, "perf", "runs")) ?? DEFAULT_RUNS,
-      queriesHeader: text(configAt(tree, "perf", "queries_header")),
-      actions: configList(tree, "perf", "actions"),
-    },
+    perf: perfOf(tree),
     visual: {
       threshold: ratioOf(configAt(tree, "visual", "threshold")) ?? DEFAULT_THRESHOLD,
       maxDiffPixels: wholeOf(configAt(tree, "visual", "max_diff_pixels")) ?? DEFAULT_MAX_DIFF_PIXELS,
