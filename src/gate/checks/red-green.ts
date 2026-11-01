@@ -82,35 +82,70 @@ const redOf = (
   return { key, outcome };
 };
 
-export const redGreenCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
-  const mode = featureMode(ctx.runtime, ctx.paths, RED_GREEN_FEATURE);
-  const arm = experimentArm(ctx.runtime, ctx.paths, loadPolicy(ctx.runtime, ctx.paths.root), RED_GREEN_FEATURE);
-  if (mode === "off") {
-    if (arm !== undefined)
-      logEvent(ctx.runtime, ctx.paths, "red_green", { task: ctx.contract.id, arm, mode, outcome: null });
-    return passed([note("gate.red_green.off")]);
-  }
-  if (!appliesTo(ctx, configList(loadProjectConfig(ctx.runtime, ctx.paths.root), "red_green", "paths"))) {
-    return passed([note("gate.red_green.not_opted")]);
-  }
-  const files = newTestFiles(ctx).filter(isTestFile);
-  if (files.length === 0) return passed([note("gate.red_green.no_new_test")]);
+interface Proof {
+  readonly criterion: string | undefined;
+  readonly run: string | undefined;
+}
+
+const proofsFor = (ctx: GateContext): readonly Proof[] => {
   const tests = ctx.contract.acceptance.find((item) => item.kind === "tests" && item.run !== undefined);
-  if (tests?.run === undefined) return unverified("no_evidence", [note("gate.red_green.no_command")]);
-  if (!ctx.trusted) return unverified("untrusted", [note("gate.note.untrusted", { task: ctx.contract.id })]);
-  const red = redOf(ctx, tests.run, files);
+  if (appliesTo(ctx, configList(loadProjectConfig(ctx.runtime, ctx.paths.root), "red_green", "paths")))
+    return [{ criterion: undefined, run: tests?.run }];
+  return ctx.contract.acceptance
+    .filter((item) => item.testsFirst === true)
+    .map((item) => ({ criterion: item.id, run: item.run ?? tests?.run }));
+};
+
+interface Proven {
+  readonly status: CheckOutcome["status"] | "held";
+  readonly notes: CheckOutcome["notes"];
+}
+
+const prove = (ctx: GateContext, proof: Proof & { readonly run: string }, files: readonly string[]): Proven => {
+  const red = redOf(ctx, proof.run, files);
   logEvent(ctx.runtime, ctx.paths, "red_green", {
     task: ctx.contract.id,
-    arm: arm ?? null,
-    mode,
+    arm: experimentArm(ctx.runtime, ctx.paths, loadPolicy(ctx.runtime, ctx.paths.root), RED_GREEN_FEATURE) ?? null,
+    mode: featureMode(ctx.runtime, ctx.paths, RED_GREEN_FEATURE),
     outcome: red.outcome,
     redKey: red.key,
     greenTree: ctx.treeHash,
     files: [...files],
+    criterion: proof.criterion ?? null,
   });
   const params = { files: files.join(", "), red: red.key.slice(0, 12), green: ctx.treeHash.slice(0, 12) };
-  if (red.outcome === "red") return passed([note("gate.red_green.proven", params)]);
-  if (red.outcome === "unavailable") return unverified("tool_missing", [note("gate.red_green.unavailable", params)]);
-  const notes = [note(`gate.red_green.${red.outcome}`, params)];
-  return mode === "shadow" ? passed([note("gate.red_green.shadow"), ...notes]) : failed(notes);
+  const lead = proof.criterion === undefined ? [] : [note("gate.red_green.criterion", { criterion: proof.criterion })];
+  if (red.outcome === "red") return { status: "passed", notes: [...lead, note("gate.red_green.proven", params)] };
+  if (red.outcome === "unavailable")
+    return { status: "unverified", notes: [...lead, note("gate.red_green.unavailable", params)] };
+  return { status: "held", notes: [...lead, note(`gate.red_green.${red.outcome}`, params)] };
+};
+
+const verdict = (results: readonly Proven[], mode: string): CheckOutcome => {
+  const notes = results.flatMap((result) => result.notes);
+  const held = results.filter((result) => result.status === "held").flatMap((result) => result.notes);
+  if (held.length > 0) return mode === "shadow" ? passed([note("gate.red_green.shadow"), ...held]) : failed(held);
+  if (results.some((result) => result.status === "unverified")) return unverified("tool_missing", notes);
+  return passed(notes);
+};
+
+export const redGreenCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
+  const mode = featureMode(ctx.runtime, ctx.paths, RED_GREEN_FEATURE);
+  if (mode === "off") {
+    const arm = experimentArm(ctx.runtime, ctx.paths, loadPolicy(ctx.runtime, ctx.paths.root), RED_GREEN_FEATURE);
+    if (arm !== undefined)
+      logEvent(ctx.runtime, ctx.paths, "red_green", { task: ctx.contract.id, arm, mode, outcome: null });
+    return passed([note("gate.red_green.off")]);
+  }
+  const proofs = proofsFor(ctx);
+  if (proofs.length === 0) return passed([note("gate.red_green.not_opted")]);
+  const files = newTestFiles(ctx).filter(isTestFile);
+  if (files.length === 0) return passed([note("gate.red_green.no_new_test")]);
+  const runnable = proofs.flatMap((proof) => (proof.run === undefined ? [] : [{ ...proof, run: proof.run }]));
+  if (runnable.length < proofs.length) return unverified("no_evidence", [note("gate.red_green.no_command")]);
+  if (!ctx.trusted) return unverified("untrusted", [note("gate.note.untrusted", { task: ctx.contract.id })]);
+  return verdict(
+    runnable.map((proof) => prove(ctx, proof, files)),
+    mode,
+  );
 };

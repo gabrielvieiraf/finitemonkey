@@ -194,7 +194,9 @@ const withConfiguredChecks = (
   return withCheck(
     withBudget,
     "red-green",
-    contract.testsFirst === true || configAt(config, "red_green") !== undefined,
+    contract.testsFirst === true ||
+      contract.acceptance.some((check) => check.testsFirst === true) ||
+      configAt(config, "red_green") !== undefined,
   );
 };
 

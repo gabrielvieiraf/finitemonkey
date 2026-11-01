@@ -13,6 +13,7 @@ import { analyzeTree } from "../../guards/tests/tree.js";
 import { guardMode } from "../../quality/gate-sources.js";
 import { loadTypescript } from "../../quality/ts-api.js";
 import type { AcceptanceCheck } from "../../task/types.js";
+import { recordDurations, reportPlan } from "../../testbudget/durations.js";
 import { type Change, fileAt } from "../git.js";
 import { type CheckOutcome, failed, type GateContext, note, passed } from "../types.js";
 import { runShellCheck } from "./command.js";
@@ -108,6 +109,13 @@ export const testsView = (ctx: GateContext): TestsView => {
   };
 };
 
+const timedRun = (check: AcceptanceCheck, run: string, ctx: GateContext): CheckOutcome => {
+  const plan = ctx.trusted ? reportPlan(ctx.runtime, ctx.paths, run) : undefined;
+  const outcome = runShellCheck(check, run, ctx, plan === undefined ? {} : { exec: plan.exec });
+  if (plan !== undefined) recordDurations(ctx.runtime, ctx.paths, plan, ctx.treeHash);
+  return outcome;
+};
+
 export const testsCheck = (check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
   const { violations, notes: edits, rewritten } = testsView(ctx);
   const grant =
@@ -122,6 +130,6 @@ export const testsCheck = (check: AcceptanceCheck, ctx: GateContext): CheckOutco
   const hold = (outcome: CheckOutcome): CheckOutcome => holdRewrittenTests(ctx, check, rewritten, grant, outcome);
   if (check.run === undefined)
     return hold({ ...passed([note("gate.tests.clean"), ...edits, ...releaseNotes]), ...released });
-  const outcome = runShellCheck(check, check.run, ctx);
+  const outcome = timedRun(check, check.run, ctx);
   return hold({ ...outcome, notes: [...outcome.notes, ...edits, ...releaseNotes], ...released });
 };

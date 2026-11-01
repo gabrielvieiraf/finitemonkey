@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testsuite name="math" time="1.240471" disabled="0" errors="0" tests="2" failures="0" skipped="0" hostname="example">
+		<testcase name="adds &amp; sums" time="0.002377" classname="test" file="/repo/test/math.test.mjs"/>
+		<testcase name="slow one" time="1.235167" classname="test" file="/repo/test/math.test.mjs"/>
+	</testsuite>
+	<testcase name="top level" time="0.000539" classname="test" file="/repo/test/math.test.mjs"/>
+	<!-- tests 3 -->
+	<!-- pass 3 -->
+	<!-- fail 0 -->
+</testsuites>

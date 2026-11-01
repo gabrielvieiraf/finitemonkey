@@ -119,12 +119,12 @@ const shadowed = (ctx: GateContext, check: AcceptanceCheck, real: CheckOutcome, 
   return { ...real, notes: [...real.notes, ...pinned.notes, note("gate.pin.shadow", { status: pinned.status })] };
 };
 
-const executeShell = (check: AcceptanceCheck, run: string, ctx: GateContext): CheckOutcome => {
+const executeShell = (check: AcceptanceCheck, run: string, ctx: GateContext, exec = run): CheckOutcome => {
   const remaining = ctx.deadline - nowMs(ctx.runtime);
   if (remaining < MIN_REMAINING_MS) return { ...unverified("budget", [note("gate.note.budget")]), command: run };
   const timeoutMs = Math.min(remaining, (check.timeoutS ?? DEFAULT_CHECK_TIMEOUT_S) * 1000);
   const result = ctx.runtime.exec({
-    command: run,
+    command: exec,
     args: [],
     cwd: ctx.paths.root,
     timeoutMs,
@@ -143,6 +143,7 @@ const executeShell = (check: AcceptanceCheck, run: string, ctx: GateContext): Ch
 
 export interface ShellOptions {
   readonly pin?: boolean;
+  readonly exec?: string;
 }
 
 export const runShellCheck = (
@@ -156,10 +157,10 @@ export const runShellCheck = (
     return { ...unverified("untrusted", [note("gate.note.untrusted", { task: ctx.contract.id })]), command: run };
   if (REWRITERS.test(run)) return { ...unverified("rewriter", [note("gate.note.rewriter")]), command: run };
   const mode = options.pin === false ? "off" : featureMode(ctx.runtime, ctx.paths, TEST_PIN_FEATURE);
-  if (mode === "off") return executeShell(check, run, ctx);
+  if (mode === "off") return executeShell(check, run, ctx, options.exec);
   const held = before(check, ctx, run);
   if (held !== undefined && mode === "active") return { ...held, command: run };
-  const real = executeShell(check, run, ctx);
+  const real = executeShell(check, run, ctx, options.exec);
   const pinned = held === undefined ? after(check, ctx, run, real) : { ...real, ...held };
   if (mode === "active") return pinned === real ? real : { ...real, ...pinned };
   return shadowed(ctx, check, real, pinned);

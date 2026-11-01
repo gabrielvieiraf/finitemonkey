@@ -105,6 +105,8 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
   const field = str(record, "field", at, issues, false);
   const open = record["require_open"];
   if (open !== undefined && typeof open !== "boolean") issues.push(`${at}require_open: must be true or false`);
+  const first = record["tests_first"];
+  if (first !== undefined && typeof first !== "boolean") issues.push(`${at}tests_first: must be true or false`);
   return {
     ...(run === undefined ? {} : { run }),
     ...(timeoutS === undefined ? {} : { timeoutS }),
@@ -115,6 +117,7 @@ const checkFields = (record: JsonObject, kind: CheckKind, at: string, issues: Is
     ...(versionUrl === undefined ? {} : { versionUrl }),
     ...(field === undefined ? {} : { field }),
     ...extraFields(record, kind, at, issues),
+    ...(first === true ? { testsFirst: true } : {}),
   };
 };
 
