@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { parseJsonObject } from "../src/core/parsed.js";
+import type { GuardianEvidence } from "./evidence-guardian.js";
 import { type ArmOverhead, type Evidence, type GuardBudget, parseEvidence } from "./evidence-rates.js";
 import type { Lang } from "./footprint-text.js";
 
@@ -16,6 +17,8 @@ interface EvidenceWords {
   readonly runsIntro: string;
   readonly reviewIntro: (benchmark: string, commit: string, judge: string) => string;
   readonly reviewColumns: readonly string[];
+  readonly guardianIntro: (source: string) => string;
+  readonly guardianColumns: readonly string[];
 }
 
 const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
@@ -30,6 +33,16 @@ const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
     reviewIntro: (benchmark, commit, judge) =>
       `Review against ${benchmark} at \`${commit.slice(0, 12)}\`, judged by ${judge}:`,
     reviewColumns: ["Arm", "PRs", "Precision", "Recall", "F1"],
+    guardianIntro: (source) =>
+      `Guardian scenarios replayed with \`npm run bench:guardian\` (${source}): a false positive is an alert on a scenario that needed none, a false negative is silence on one that needed an alert.`,
+    guardianColumns: [
+      "Scenarios",
+      "Needed an alert",
+      "Needed none",
+      "False positives",
+      "False negatives",
+      "Exact level",
+    ],
   },
   "pt-BR": {
     intro: (version, budget, synthetic) =>
@@ -42,6 +55,9 @@ const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
     reviewIntro: (benchmark, commit, judge) =>
       `Revisão contra ${benchmark} em \`${commit.slice(0, 12)}\`, com ${judge} como juiz:`,
     reviewColumns: ["Braço", "PRs", "Precisão", "Revocação", "F1"],
+    guardianIntro: (source) =>
+      `Cenários do guardian reproduzidos com \`npm run bench:guardian\` (${source}): falso positivo é um alerta num cenário que não pedia nenhum, falso negativo é silêncio num cenário que pedia alerta.`,
+    guardianColumns: ["Cenários", "Pediam alerta", "Não pediam", "Falsos positivos", "Falsos negativos", "Nível exato"],
   },
   es: {
     intro: (version, budget, synthetic) =>
@@ -54,6 +70,16 @@ const WORDS: Readonly<Record<Lang, EvidenceWords>> = {
     reviewIntro: (benchmark, commit, judge) =>
       `Revisión contra ${benchmark} en \`${commit.slice(0, 12)}\`, con ${judge} como juez:`,
     reviewColumns: ["Brazo", "PRs", "Precisión", "Exhaustividad", "F1"],
+    guardianIntro: (source) =>
+      `Escenarios del guardian reproducidos con \`npm run bench:guardian\` (${source}): un falso positivo es una alerta en un escenario que no la necesitaba, un falso negativo es silencio en uno que sí la necesitaba.`,
+    guardianColumns: [
+      "Escenarios",
+      "Pedían alerta",
+      "No pedían",
+      "Falsos positivos",
+      "Falsos negativos",
+      "Nivel exacto",
+    ],
   },
 };
 
@@ -77,6 +103,25 @@ const armRow = (arm: ArmOverhead): string =>
     dash(arm.wallMsMedian, (value) => (value / 1000).toFixed(1)),
     dash(arm.falseDoneRate, (value) => `${(value * 100).toFixed(1)}%`),
   ]);
+
+const guardianLines = (words: EvidenceWords, guardian: GuardianEvidence | null): readonly string[] =>
+  guardian === null
+    ? []
+    : [
+        "",
+        words.guardianIntro(guardian.source),
+        "",
+        row(words.guardianColumns),
+        divider(words.guardianColumns.length),
+        row([
+          String(guardian.scenarios),
+          String(guardian.positives),
+          String(guardian.negatives),
+          rate(guardian.falsePositives, guardian.negatives, guardian.fpr),
+          rate(guardian.falseNegatives, guardian.positives, guardian.fnr),
+          `${String(guardian.levelMatches)}/${String(guardian.scenarios)}`,
+        ]),
+      ];
 
 export const renderEvidence = (lang: Lang, evidence: Evidence | undefined): string => {
   const words = WORDS[lang];
@@ -114,7 +159,15 @@ export const renderEvidence = (lang: Lang, evidence: Evidence | undefined): stri
             row([`\`${arm.arm}\``, String(arm.reviews), percent(arm.precision), percent(arm.recall), percent(arm.f1)]),
           ),
         ];
-  return [words.intro(evidence.version, evidence.budget, synthetic), "", ...guards, "", ...arms, ...review].join("\n");
+  return [
+    words.intro(evidence.version, evidence.budget, synthetic),
+    "",
+    ...guards,
+    "",
+    ...arms,
+    ...review,
+    ...guardianLines(words, evidence.guardian),
+  ].join("\n");
 };
 
 export const readEvidence = (root: string): Evidence | undefined => {

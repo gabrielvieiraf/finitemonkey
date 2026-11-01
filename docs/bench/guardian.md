@@ -29,7 +29,9 @@ A feature is kept when its primary metric moves in the expected direction with t
 
 `node --import tsx scripts/bench-guardian.ts` runs each scenario in a temporary repository with every guardian feature active and writes `bench/guardian/results.json`. Scoring uses the final decision and its consequence: alert precision, unnecessary alerts, missed alerts, harmful redirects (followed a report and the consequence was bad), times the person was right and kept the request, good outcomes, and whether every shown report had evidence. Acceptance rate is reported and never optimized. `test/guardian-bench.test.ts` fails when the results change without the file being regenerated.
 
-The scenarios were written by the same people who wrote the triggers, so they are a regression suite, not an independent evaluation. Reactions are fixed per scenario, not simulated personas. A held-out set written by someone outside development, and the per-release evidence file, come next.
+The scenarios were written by the same people who wrote the triggers, so they are a regression suite, not an independent evaluation. Reactions are fixed per scenario, not simulated personas. A held-out set written by someone outside development comes next.
+
+`npm run evidence` reads `bench/guardian/results.json` into the `guardian` key of `bench/evidence.json` and holds it to the same budget rules as the guards: a scenario that expects level 0 and gets an alert is a false positive, one that expects an alert and gets silence is a false negative, and the minimums in `budgets.json` (`evidence.guards.guardian`) are the current scenario counts, so removing a scenario fails the release. Any harmful redirect also fails it. A missing or malformed results file stops the evidence run.
 
 ## Discard rules
 

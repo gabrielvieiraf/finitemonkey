@@ -18,6 +18,11 @@
     "fprFail": 0.15,
     "minPositives": 50,
     "minNegatives": 50,
-    "guards": {}
+    "guards": {
+      "guardian": {
+        "minPositives": 11,
+        "minNegatives": 4
+      }
+    }
   }
 }

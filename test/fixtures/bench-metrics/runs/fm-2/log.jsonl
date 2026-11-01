@@ -1,0 +1,3 @@
+{"at":"2026-10-30T11:00:00.000Z","event":"journey.proposed","name":"signup","hash":"j1"}
+{"at":"2026-10-30T11:02:00.000Z","event":"journey.approved","name":"signup","hash":"j1"}
+{"at":"2026-10-30T11:03:00.000Z","event":"mutation.score","task":"t2","mode":"shadow","score":0.6,"min":0.6,"total":5}

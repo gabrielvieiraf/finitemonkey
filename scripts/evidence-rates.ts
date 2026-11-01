@@ -1,5 +1,6 @@
 import { accept, isRecord, type JsonObject, type Parsed, reject } from "../src/core/parsed.js";
 import type { CorpusCase, Origin } from "./evidence-corpus.js";
+import { type GuardianEvidence, parseGuardianEvidence } from "./evidence-guardian.js";
 
 export const EVIDENCE_SCHEMA = "finitemonkey/evidence@1";
 
@@ -41,6 +42,7 @@ export interface Evidence {
   readonly contextBytes: Readonly<Record<string, number>>;
   readonly arms: readonly ArmOverhead[];
   readonly review: ReviewEvidence | null;
+  readonly guardian: GuardianEvidence | null;
 }
 
 export interface ReviewArmScore {
@@ -178,7 +180,10 @@ export const parseEvidenceBudgets = (raw: unknown): Parsed<EvidenceBudgets> => {
 
 const percent = (value: number): string => `${(value * 100).toFixed(1)}%`;
 
-export const judge = (evidence: GuardEvidence, budgets: EvidenceBudgets): GuardVerdict => {
+export const judge = (
+  evidence: Pick<GuardEvidence, "guard" | "positives" | "negatives" | "fpr">,
+  budgets: EvidenceBudgets,
+): GuardVerdict => {
   const budget = { ...budgets.defaults, ...budgets.guards[evidence.guard] };
   const failures: string[] = [];
   if (evidence.positives < budget.minPositives) {
@@ -284,5 +289,6 @@ export const parseEvidence = (raw: JsonObject): Parsed<Evidence> => {
     ),
     arms: arms.flatMap((item) => (item === undefined ? [] : [item])),
     review: parseReviewEvidence(raw["review"]),
+    guardian: parseGuardianEvidence(raw["guardian"]),
   });
 };
