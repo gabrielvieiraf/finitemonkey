@@ -13,6 +13,7 @@ import { readResearchLog } from "../research/log.js";
 import { parseContract } from "../task/load.js";
 import type { FmPaths } from "../task/paths.js";
 import { readTrust } from "../task/state.js";
+import { divergenceAlternatives, usdFor } from "./decision-inputs.js";
 
 export const DECISION_RECORD_FEATURE = "decision-record";
 export const RECORD_DIR = "decision-records";
@@ -37,7 +38,7 @@ export interface DecisionRecord {
   readonly criteria: readonly string[];
   readonly research: readonly string[];
   readonly evidence: string | null;
-  readonly cost: { readonly gateRuns: number; readonly minutesToGreen: number | null };
+  readonly cost: { readonly gateRuns: number; readonly minutesToGreen: number | null; readonly usd: number | null };
 }
 
 const MANIFESTS = ["package.json", "pyproject.toml", "requirements.txt", "go.mod", "Cargo.toml", "Gemfile"] as const;
@@ -136,6 +137,7 @@ const researchFor = (runtime: Pick<Runtime, "readText" | "listDir">, paths: FmPa
 };
 
 const costOf = (runtime: Pick<Runtime, "readText" | "homeDir">, paths: FmPaths, task: string) => {
+  const usd = usdFor(runtime, paths, task);
   const ledger = readLedger(runtime, paths.evidence(task));
   const gates = ledger.filter((entry) => entry.check === GATE_CHECK);
   const passed = gates.findIndex((entry) => entry.status === "passed");
@@ -150,6 +152,7 @@ const costOf = (runtime: Pick<Runtime, "readText" | "homeDir">, paths: FmPaths, 
         first === undefined || done === undefined
           ? null
           : Math.round((Date.parse(done.at) - Date.parse(first.at)) / 60_000),
+      usd,
     },
   };
 };
@@ -172,7 +175,9 @@ export const assembleRecord = (
     at: runtime.now(),
     changes,
     paths: touched,
-    alternatives: [...new Set(research.flatMap((log) => log.question.options))],
+    alternatives: [
+      ...new Set([...research.flatMap((log) => log.question.options), ...divergenceAlternatives(runtime, paths, task)]),
+    ],
     criteria: [...new Set(research.flatMap((log) => log.question.criteria))],
     research: research.map((log) => log.slug),
     ...costOf(runtime, paths, task),
@@ -272,6 +277,7 @@ export const readRecords = (
         cost: {
           gateRuns: typeof cost["gateRuns"] === "number" ? cost["gateRuns"] : 0,
           minutesToGreen: typeof cost["minutesToGreen"] === "number" ? cost["minutesToGreen"] : null,
+          usd: typeof cost["usd"] === "number" ? cost["usd"] : null,
         },
       },
     ];

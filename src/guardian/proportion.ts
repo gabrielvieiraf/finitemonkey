@@ -2,6 +2,7 @@ import { isRecord } from "../core/parsed.js";
 import { parseYaml } from "../core/yaml/parse.js";
 import type { Translate } from "../i18n/translate.js";
 import { type CompanyContext, raisingBudget } from "./context.js";
+import type { ContextQuestion } from "./context-ask.js";
 import { GOALS_FILE } from "./goals.js";
 import { LEVEL_OF, type RealityReport } from "./report.js";
 import type { SolutionWeight } from "./weight.js";
@@ -24,6 +25,7 @@ export interface Proportion {
   readonly tokens: number;
   readonly problem: ProblemWeight;
   readonly askScale: boolean;
+  readonly askContext: readonly ContextQuestion[];
 }
 
 const numbersIn = (value: unknown): readonly string[] => {
@@ -50,15 +52,35 @@ export const weigh = (
   context: CompanyContext,
   problem: ProblemWeight,
   decided: (concept: string) => boolean,
+  missing: readonly ContextQuestion[] = [],
 ): Proportion => {
   const budget = raisingBudget(context);
-  const base = { budget, tokens: weight.tokens, problem, askScale: false };
+  const base = { budget, tokens: weight.tokens, problem, askScale: false, askContext: [] };
   if (weight.concepts.length === 0 && weight.tokens === 0) return { ...base, verdict: "silent", reason: "nothing_new" };
   if (weight.tokens <= budget && weight.reversibility === "A")
     return { ...base, verdict: "silent", reason: "within_budget" };
   if (weight.beyond.length === 0) return { ...base, verdict: "silent", reason: "demonstrated" };
   if (weight.beyond.every(decided)) return { ...base, verdict: "silent", reason: "decided" };
-  return { ...base, verdict: "report", askScale: problem.scale.length === 0 };
+  return {
+    ...base,
+    verdict: "report",
+    askScale: problem.scale.length === 0,
+    askContext: weight.reversibility === "B" ? missing : [],
+  };
+};
+
+const nextStepOf = (t: Translate, proportion: Proportion): string => {
+  const scale = proportion.askScale ? [t("guardian.weigh.ask_scale")] : [];
+  const context =
+    proportion.askContext.length === 0
+      ? []
+      : [
+          t("guardian.context.ask", {
+            questions: proportion.askContext.map((question) => t(`guardian.context.question.${question}`)).join(" "),
+          }),
+        ];
+  const steps = [...context, ...scale];
+  return steps.length === 0 ? t("guardian.trigger.proportionality.next") : steps.join(" ");
 };
 
 export const proportionReport = (
@@ -95,7 +117,7 @@ export const proportionReport = (
     ],
     recommendation: t("guardian.trigger.proportionality.recommendation"),
     certainty: "medium",
-    nextStep: proportion.askScale ? t("guardian.weigh.ask_scale") : t("guardian.trigger.proportionality.next"),
+    nextStep: nextStepOf(t, proportion),
     paths: [],
     key: weight.concepts.join(","),
   };

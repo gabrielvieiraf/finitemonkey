@@ -25,6 +25,7 @@ import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import { DECISION_HOLD_HANDLERS } from "../guardian/accepted-hold.js";
 import { ASSUMPTION_HANDLERS } from "../guardian/assumption-hook.js";
+import { CONTEXT_ANSWER_HANDLERS, PROPORTION_FEATURE } from "../guardian/context-answer.js";
 import { FORECAST_HANDLERS } from "../guardian/forecast-hook.js";
 import { scanHandlers } from "../guardian/pending.js";
 import { REALITY_HANDLERS } from "../guardian/reality-hook.js";
@@ -244,7 +245,11 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
   { id: "reality", damage: false, handlers: REALITY_HANDLERS },
   { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
-  { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") },
+  {
+    id: PROPORTION_FEATURE,
+    damage: false,
+    handlers: mergeHandlers(scanHandlers(PROPORTION_FEATURE), CONTEXT_ANSWER_HANDLERS),
+  },
   { id: "forecast", damage: false, handlers: FORECAST_HANDLERS },
   { id: "evolve", damage: false, handlers: EVOLVE_HANDLERS },
   { id: "calibrate", damage: false, handlers: CALIBRATE_HANDLERS },

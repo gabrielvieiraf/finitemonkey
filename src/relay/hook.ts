@@ -10,7 +10,8 @@ import { textField } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import type { Translate } from "../i18n/translate.js";
 import type { FmPaths } from "../task/paths.js";
-import { detectRelay, type ProjectFacts, type RelayFinding } from "./detect.js";
+import { acceptedChoices } from "./decisions.js";
+import { detectRelay, type ProjectFacts, type RelayFinding, type RelayMarker } from "./detect.js";
 
 const JS_MANIFESTS = ["package.json"];
 const PYTHON_MANIFESTS = ["requirements.txt", "pyproject.toml", "Pipfile"];
@@ -34,7 +35,7 @@ const recentClaims = (runtime: Pick<Runtime, "readText">, paths: FmPaths): reado
     });
 };
 
-export const projectFacts = (runtime: Pick<Runtime, "readText">, paths: FmPaths): ProjectFacts => {
+export const projectFacts = (runtime: Pick<Runtime, "readText" | "listDir">, paths: FmPaths): ProjectFacts => {
   const js = JS_MANIFESTS.flatMap((name) => read(runtime, paths.root, name) ?? []);
   const python = PYTHON_MANIFESTS.flatMap((name) => read(runtime, paths.root, name) ?? []);
   return {
@@ -42,19 +43,24 @@ export const projectFacts = (runtime: Pick<Runtime, "readText">, paths: FmPaths)
     hasJs: js.length > 0,
     hasPython: python.length > 0,
     ownOutput: recentClaims(runtime, paths),
+    decisions: acceptedChoices(runtime, paths.root),
   };
+};
+
+const markerText = (t: Translate, finding: RelayFinding, marker: RelayMarker): string => {
+  if (marker === "missing_import") return t("relay.marker.missing_import", { list: finding.missing.join(", ") });
+  if (marker === "placeholder") return t("relay.marker.placeholder", { list: finding.placeholders.join(", ") });
+  if (marker === "decision")
+    return t("relay.marker.decision", {
+      list: finding.contradicted.map((item) => t("relay.decision.item", { ...item })).join("; "),
+    });
+  return t(`relay.marker.${marker}`);
 };
 
 export const relayNote = (t: Translate, finding: RelayFinding): string =>
   [
     t("relay.note.found", { count: finding.blocks, lines: finding.lines }),
-    ...finding.markers.map((marker) =>
-      marker === "missing_import"
-        ? t("relay.marker.missing_import", { list: finding.missing.join(", ") })
-        : marker === "placeholder"
-          ? t("relay.marker.placeholder", { list: finding.placeholders.join(", ") })
-          : t(`relay.marker.${marker}`),
-    ),
+    ...finding.markers.map((marker) => markerText(t, finding, marker)),
     t("relay.note.source"),
   ].join(" ");
 
@@ -69,6 +75,7 @@ export const relayDetector: HookHandler = (input) => {
       markers: [...finding.markers],
       blocks: finding.blocks,
       lines: finding.lines,
+      decisions: finding.contradicted.map((item) => item.file),
     });
   }
   return { kind: "allow", output: contextOutput("UserPromptSubmit", relayNote(input.t, finding)) };

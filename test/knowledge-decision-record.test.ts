@@ -97,6 +97,50 @@ describe("decision records", () => {
     assert.match(records.stdout, /"class":"architecture","detail":"src\/reports\/"/);
   });
 
+  it("lists divergence readings as alternatives and the model cost in USD", async () => {
+    const repo = project("pay3");
+    write(
+      repo.root,
+      "package.json",
+      `${JSON.stringify({ name: "shop", dependencies: { express: "4.0.0", stripe: "14.0.0" } }, null, 2)}\n`,
+    );
+    const divergence = {
+      at: "2026-10-30T10:00:00.000Z",
+      event: "divergence.outcome",
+      task: "pay3",
+      mode: "active",
+      kind: "question",
+      input: "10.00 BRL",
+      options: ["A: R$ 10,00", "B: 1000 cents"],
+    };
+    const step = { model: "claude-x", agent: null, input: 10, output: 5, cacheRead: 0, cacheWrite: 0, arms: [] };
+    write(repo.root, ".finitemonkey/log.jsonl", `${JSON.stringify(divergence)}\n`);
+    write(
+      repo.root,
+      ".finitemonkey/cost.jsonl",
+      [
+        { ...step, at: "2026-10-30T10:01:00.000Z", task: "pay3", usd: 0.25 },
+        { ...step, at: "2026-10-30T10:02:00.000Z", task: "pay3", usd: 0.5 },
+        { ...step, at: "2026-10-30T10:03:00.000Z", task: "other", usd: 9 },
+      ]
+        .map((line) => `${JSON.stringify(line)}\n`)
+        .join(""),
+    );
+    const done = await cliJson(["task", "done", "pay3"], { cwd: repo.root, runtime: nodeRuntime() });
+    assert.equal(done.code, 0, done.stdout);
+    const records = await cliJson(["decide", "records", "pay3"], { cwd: repo.root, runtime: nodeRuntime() });
+    const list = field(records.body, "data", "records");
+    const record: unknown = Array.isArray(list) ? list[0] : undefined;
+    assert.deepEqual(field(record, "alternatives"), [
+      "A: R$ 10,00 (input 10.00 BRL)",
+      "B: 1000 cents (input 10.00 BRL)",
+    ]);
+    assert.equal(field(record, "cost", "usd"), 0.75);
+    const human = await cli(["decide", "records", "pay3"], { cwd: repo.root, runtime: nodeRuntime() });
+    assert.match(human.stdout, /alternatives: A: R\$ 10,00/);
+    assert.match(human.stdout, /model cost: 0\.75 USD/);
+  });
+
   it("only dependency, vendor and architecture changes trigger a record", () => {
     const repo = project("copy");
     write(repo.root, "src/app/index.ts", "export const app = 2;\n");

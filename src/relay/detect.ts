@@ -1,6 +1,7 @@
+import { type AcceptedChoice, type Contradiction, contradictions } from "./decisions.js";
 import { type ImportedPackage, importedPackages } from "./imports.js";
 
-export const RELAY_MARKERS = ["chat", "placeholder", "missing_import", "own_output"] as const;
+export const RELAY_MARKERS = ["chat", "placeholder", "missing_import", "own_output", "decision"] as const;
 
 export type RelayMarker = (typeof RELAY_MARKERS)[number];
 
@@ -15,6 +16,7 @@ export interface RelayFinding {
   readonly markers: readonly RelayMarker[];
   readonly missing: readonly string[];
   readonly placeholders: readonly string[];
+  readonly contradicted: readonly Contradiction[];
 }
 
 const PASTED = /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content>/gi;
@@ -57,6 +59,7 @@ export interface ProjectFacts {
   readonly hasJs: boolean;
   readonly hasPython: boolean;
   readonly ownOutput: readonly string[];
+  readonly decisions: readonly AcceptedChoice[];
 }
 
 export const detectRelay = (prompt: string, facts: ProjectFacts): RelayFinding | undefined => {
@@ -64,14 +67,20 @@ export const detectRelay = (prompt: string, facts: ProjectFacts): RelayFinding |
   if (blocks.length === 0) return undefined;
   const text = blocks.map((block) => block.text).join("\n");
   const placeholders = [...new Set([...text.matchAll(PLACEHOLDER)].map((match) => match[0]))].slice(0, 5);
-  const missing = importedPackages(text)
+  const imported = importedPackages(text);
+  const missing = imported
     .filter((pkg) => (pkg.language === "js" ? facts.hasJs : facts.hasPython) && isMissing(pkg, facts.manifests))
     .map((pkg) => pkg.name);
+  const contradicted = contradictions(
+    imported.map((pkg) => pkg.name),
+    facts.decisions,
+  );
   const markers: RelayMarker[] = [
     ...(CHAT.some((pattern) => pattern.test(text)) ? (["chat"] as const) : []),
     ...(placeholders.length > 0 ? (["placeholder"] as const) : []),
     ...(missing.length > 0 ? (["missing_import"] as const) : []),
     ...(facts.ownOutput.some((line) => line.length >= 20 && text.includes(line)) ? (["own_output"] as const) : []),
+    ...(contradicted.length > 0 ? (["decision"] as const) : []),
   ];
   if (markers.length === 0) return undefined;
   return {
@@ -80,5 +89,6 @@ export const detectRelay = (prompt: string, facts: ProjectFacts): RelayFinding |
     markers,
     missing,
     placeholders,
+    contradicted,
   };
 };
