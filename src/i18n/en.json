@@ -542,6 +542,7 @@
   "gate.worktree.unavailable": "could not read the git state of the worktree",
   "gate.worktree.dirty": "files changed in this session are not committed: {files}",
   "gate.worktree.unpushed": "{count, plural, one {# commit on {branch} exists only on this machine} other {# commits on {branch} exist only on this machine}}",
+  "gate.worktree.uncommitted": "files changed in this session are not committed yet, and nobody asked for a commit: {files}",
   "gate.worktree.clean": "the session's changes are committed and pushed",
   "gate.merge.unavailable": "could not read the merges of the session",
   "gate.merge.unanalyzed": "merge {commit} could not be analyzed: {detail}",
