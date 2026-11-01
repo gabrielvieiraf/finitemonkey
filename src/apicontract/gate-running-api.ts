@@ -6,7 +6,7 @@ import type { GateContext } from "../gate/types.js";
 import { loadProjectConfig } from "../git/project-config.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import { API_CONSISTENCY_FEATURE } from "./consistency.js";
-import { liveConfig } from "./live.js";
+import { liveConfig } from "./running-api.js";
 
 const RUN_TIMEOUT_MS = 120_000;
 const MIN_REMAINING_MS = 5_000;

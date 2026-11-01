@@ -14,7 +14,7 @@ import {
   versionBumped,
 } from "./breaking.js";
 import { API_CONSISTENCY_FEATURE, consistencyProblems } from "./consistency.js";
-import { liveOutcome } from "./gate-live.js";
+import { liveOutcome } from "./gate-running-api.js";
 import { type ApiRegistry, CONTRACT_FILE, parseRegistry } from "./registry.js";
 import { parseShape } from "./shape.js";
 

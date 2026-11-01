@@ -12648,7 +12648,7 @@ var accessConfig = (tree) => {
   };
 };
 
-// src/apicontract/live.ts
+// src/apicontract/running-api.ts
 var PARAM2 = /:([A-Za-z_][A-Za-z0-9_]*)|\{([A-Za-z_][A-Za-z0-9_]*)\}/g;
 var MISSING_ID = "finitemonkey-missing-0";
 var RESPONSE_FIELDS = {
@@ -45625,7 +45625,7 @@ var breakingChanges = (base, head) => base.registry.endpoints.flatMap((before2) 
 });
 var versionBumped = (base, head) => head.shape.version !== void 0 && head.shape.version !== base.shape.version;
 
-// src/apicontract/gate-live.ts
+// src/apicontract/gate-running-api.ts
 var RUN_TIMEOUT_MS2 = 12e4;
 var MIN_REMAINING_MS3 = 5e3;
 var MAX_LISTED8 = 10;

@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
 import { consistencyProblems } from "../src/apicontract/consistency.js";
-import { liveOutcome, parseLive } from "../src/apicontract/gate-live.js";
-import { liveConfig, liveProblems, runLive } from "../src/apicontract/live.js";
+import { liveOutcome, parseLive } from "../src/apicontract/gate-running-api.js";
 import { parseRegistry } from "../src/apicontract/registry.js";
+import { liveConfig, liveProblems, runLive } from "../src/apicontract/running-api.js";
 import { parseShape } from "../src/apicontract/shape.js";
 import type { ExecResult } from "../src/core/runtime.js";
 import { prepareGate } from "../src/gate/prepare.js";

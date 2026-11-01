@@ -1,9 +1,9 @@
 import { join } from "node:path";
 
 import { consistencyProblems } from "../apicontract/consistency.js";
-import { liveConfig, liveProblems, runLive } from "../apicontract/live.js";
 import { loadRegistry } from "../apicontract/load.js";
 import { CONTRACT_FILE } from "../apicontract/registry.js";
+import { liveConfig, liveProblems, runLive } from "../apicontract/running-api.js";
 import { parseShape } from "../apicontract/shape.js";
 import { localSend } from "../app/node-probe.js";
 import { toAbsolutePath } from "../core/brand.js";
