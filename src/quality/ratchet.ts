@@ -14,6 +14,9 @@ export const QUALITY_RULES = [
   "call_chain",
   "statement_identifiers",
   "unused_export",
+  "deep_import",
+  "unused_dependency",
+  "duplicated_config",
 ] as const;
 
 export type QualityRule = (typeof QUALITY_RULES)[number];

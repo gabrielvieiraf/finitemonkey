@@ -1,8 +1,9 @@
 import { logEvent } from "../../evidence/log.js";
 import type { Note } from "../../evidence/types.js";
 import type { AcceptanceCheck } from "../../task/types.js";
+import { chosenSites } from "../callers/choose.js";
 import { callersRate, FLAGGED_EVENT, RELEASED_EVENT } from "../callers/rate.js";
-import { type CallSite, callSites, removedSymbols } from "../callers/scan.js";
+import { type CallSite, removedSymbols } from "../callers/scan.js";
 import { type CheckOutcome, failed, type GateContext, note, passed } from "../types.js";
 
 const MAX_SITES = 10;
@@ -27,7 +28,7 @@ const record = (ctx: GateContext, event: string, names: readonly string[]): void
 
 export const callersCheck = (_check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
   const symbols = removedSymbols(ctx.runtime, ctx.git, ctx.base, ctx.changes);
-  const grouped = byName(callSites(ctx.runtime, ctx.git, symbols));
+  const grouped = byName(chosenSites(ctx, symbols));
   const ignore = new Set(ctx.contract.callersIgnore ?? []);
   const open = new Map([...grouped].filter(([name]) => !ignore.has(name)));
   record(

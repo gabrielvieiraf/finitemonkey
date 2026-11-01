@@ -23,7 +23,7 @@ export interface CallSite {
 
 type Reader = Pick<Runtime, "readText">;
 
-const current = (runtime: Reader, root: AbsolutePath, path: string): string => {
+export const current = (runtime: Reader, root: AbsolutePath, path: string): string => {
   const text = runtime.readText(toAbsolutePath(join(root, path)));
   return text.ok ? text.value : "";
 };
@@ -63,7 +63,7 @@ export const removedSymbols = (
   return [...found.values()].slice(0, MAX_SYMBOLS);
 };
 
-interface GrepHit {
+export interface GrepHit {
   readonly file: string;
   readonly line: number;
   readonly text: string;
@@ -81,7 +81,7 @@ const parseGrep = (output: string): readonly GrepHit[] =>
         : [{ file: toPosixPath(file), line: number, text: rest.join("\0") }];
     });
 
-const grep = (git: Git, names: readonly string[]): readonly GrepHit[] => {
+export const grepHits = (git: Git, names: readonly string[]): readonly GrepHit[] => {
   if (names.length === 0) return [];
   const patterns = names.flatMap((name) => ["-e", name]);
   return parseGrep(
@@ -93,7 +93,7 @@ const mentions = (text: string, name: string): boolean =>
   new RegExp(`(?<![\\w$])${name.replace(/[$?!]/g, "\\$&")}(?![\\w$])`).test(text);
 
 export const callSites = (runtime: Reader, git: Git, symbols: readonly RemovedSymbol[]): readonly CallSite[] => {
-  const hits = grep(git, [...new Set(symbols.map((symbol) => symbol.name))]);
+  const hits = grepHits(git, [...new Set(symbols.map((symbol) => symbol.name))]);
   const texts = new Map<string, string>();
   const textOf = (file: string): string => {
     const cached = texts.get(file) ?? current(runtime, git.cwd, file);

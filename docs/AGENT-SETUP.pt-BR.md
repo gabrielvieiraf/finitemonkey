@@ -64,6 +64,7 @@ npx finitemonkey@next init --dry-run --json
 Isso lê o projeto e devolve o plano sem gravar nada: `data.actions` lista cada arquivo com `create`, `merge`, `update`, `unchanged`, `keep-edited` ou `skip-foreign`; `data.warnings` lista o que a pessoa deve saber (outro plugin que também decide quando a sessão para, um Claude Code antigo demais para bloquear quando um hook quebra, um arquivo que não é do Finite Monkey); e `data.diff` mostra a mudança exata. Resuma o plano para a pessoa em poucas linhas. Pergunte só estas decisões:
 
 - Estilo de commit, só quando a saída disser que a maioria dos commits recentes não segue Conventional Commits: `--commits free` mantém o estilo do repositório, `--commits conventional` adota o padrão. Os outros padrões valem para todo mundo; o README lista cada um com a sua evidência, e qualquer um desliga depois no `config.yml`.
+- Executor de testes, linter e pasta do código, só quando a saída listar `conventionQuestions` com status `pending` (o recurso `defaults-adapt` está ativo): `--tests vitest`, `--lint biome` ou `--layout src` adotam o que foi detectado, e `--tests off` (idem `--lint off`, `--layout off`) mantém o padrão embutido. Um status `shadow` só informa a detecção; nada é perguntado.
 - Se registra o marketplace do plugin no projeto (`--marketplace`).
 - Se liga o sandbox do Claude Code para esta pessoa (`--sandbox`, só macOS, Linux e WSL2). Ele vai para o `.claude/settings.local.json`, não para as configurações versionadas: o Claude Code passa a se recusar a iniciar sem o sandbox, os comandos no sandbox não leem `~/.ssh`, `~/.aws` nem os `.env` do projeto, e só chegam aos hosts de `sandbox.hosts` no `config.yml` (npm e GitHub por padrão).
 - Se olha uma vez as sessões locais do Claude Code neste projeto (`--look-back`). Ele lê os logs de sessão desta máquina e mostra contagens estimadas do que o Finite Monkey teria bloqueado, com segredos mascarados. Nada é salvo nem enviado. Sem a flag, nenhum log de sessão é lido.
@@ -121,4 +122,4 @@ npx finitemonkey@next uninstall --yes --purge --json
 
 O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey-next` (ou `finitemonkey@finitemonkey` para o marketplace estável).
 
-<!-- translation of docs/AGENT-SETUP.md sha256:a7c36d4af0bc -->
+<!-- translation of docs/AGENT-SETUP.md sha256:257220cfd761 -->

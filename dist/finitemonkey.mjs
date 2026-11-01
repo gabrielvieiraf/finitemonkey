@@ -4022,6 +4022,26 @@ var auditCommand = {
 // src/fronts/brief.ts
 import { join as join16 } from "node:path";
 
+// src/defaults/conventions.ts
+var CONVENTION_IDS = ["tests", "lint", "layout"];
+var CONVENTION_OFF = "off";
+var VALUE = /^[a-z][\w.-]{0,39}$/;
+var isConventionValue = (raw) => raw !== void 0 && VALUE.test(raw);
+var conventionsFromTree = (tree) => Object.fromEntries(
+  CONVENTION_IDS.flatMap((id) => {
+    const value2 = configAt(tree, "conventions", id);
+    return typeof value2 === "string" && isConventionValue(value2) ? [[id, value2]] : [];
+  })
+);
+var conventionsYaml = (conventions) => CONVENTION_IDS.flatMap((id) => {
+  const value2 = conventions?.[id];
+  return value2 === void 0 ? [] : [`  ${id}: ${value2}`];
+});
+var adaptedConvention = (read12, id) => {
+  const text41 = read12(CONFIG_FILE);
+  return text41 === void 0 ? void 0 : conventionsFromTree(parseConfigYaml(text41))[id];
+};
+
 // src/defaults/items.ts
 var DEFAULT_ITEMS = [
   "no-attribution",
@@ -4056,7 +4076,8 @@ var defaultsFromConfig = (text41) => {
     if (value2 !== void 0 && ON.has(value2)) return false;
     return legacy.includes(item2) || item2 === "conventional-commits" && commits2 === "free";
   });
-  return { off: off2, commits: commits2 };
+  const conventions = conventionsFromTree(tree);
+  return Object.keys(conventions).length === 0 ? { off: off2, commits: commits2 } : { off: off2, commits: commits2, conventions };
 };
 var isOn = (defaults, item2) => !defaults.off.includes(item2);
 var projectDefaults = (runtime, root) => {
@@ -4066,9 +4087,13 @@ var projectDefaults = (runtime, root) => {
 var defaultOn = (runtime, root, item2) => isOn(projectDefaults(runtime, root), item2);
 var defaultsYaml = (defaults) => {
   const off2 = defaults.off.filter((item2) => item2 !== "conventional-commits");
+  const conventions = [
+    ...defaults.commits === void 0 ? [] : [`  commits: ${defaults.commits}`],
+    ...conventionsYaml(defaults.conventions)
+  ];
   return [
     ...off2.length === 0 ? [] : ["defaults:", ...off2.map((item2) => `  ${item2}: off`)],
-    ...defaults.commits === void 0 ? [] : ["conventions:", `  commits: ${defaults.commits}`]
+    ...conventions.length === 0 ? [] : ["conventions:", ...conventions]
   ];
 };
 var withoutLegacyPreset = (text41) => {
@@ -5885,7 +5910,7 @@ var SECTIONS = [
   ["person", PERSON_KEYS]
 ];
 var sectionKeyIssues = (tree) => SECTIONS.flatMap(
-  ([section3, keys]) => Object.keys(configMap(tree, section3)).filter((key3) => !keys.includes(key3)).map((key3) => [`${section3}.${key3}`, key3, keys])
+  ([section3, keys2]) => Object.keys(configMap(tree, section3)).filter((key3) => !keys2.includes(key3)).map((key3) => [`${section3}.${key3}`, key3, keys2])
 );
 var DEFAULT_STAGE6 = {
   evolve: { minTasks: DEFAULT_EVOLVE_MIN_TASKS },
@@ -6156,7 +6181,7 @@ var parsePolicy = (text41) => {
     issues: [
       ...keyIssues(tree, POLICY_FILE, POLICY_KEYS),
       ...Object.keys(configMap(tree, "alertBudget")).filter((key3) => !ALERT_BUDGET_KEYS.includes(key3)).map((key3) => issue("unknown_key", POLICY_FILE, `alertBudget.${key3}`, ALERT_BUDGET_KEYS, key3)),
-      ...sectionKeyIssues(tree).map(([path, key3, keys]) => issue("unknown_key", POLICY_FILE, path, keys, key3)),
+      ...sectionKeyIssues(tree).map(([path, key3, keys2]) => issue("unknown_key", POLICY_FILE, path, keys2, key3)),
       ...guardIssues,
       ...experimentIssues
     ]
@@ -6275,6 +6300,9 @@ var OPTIONAL_GUARDS = [
   "focus-card",
   "attention",
   "drift-sensor",
+  "quality-detectors",
+  "callers-syntax",
+  "defaults-adapt",
   "pr-provenance",
   "team-dashboard",
   "xray",
@@ -6361,6 +6389,9 @@ var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
   "focus-card",
   "attention",
   "drift-sensor",
+  "quality-detectors",
+  "callers-syntax",
+  "defaults-adapt",
   "pr-provenance",
   "team-dashboard",
   "xray",
@@ -6591,9 +6622,9 @@ var listOf2 = (stdout) => {
   return parsed.ok && Array.isArray(parsed.value) ? parsed.value : [];
 };
 var relative2 = (root, file) => {
-  const posix17 = toPosixPath(file);
+  const posix20 = toPosixPath(file);
   const base = `${toPosixPath(root)}/`;
-  return posix17.startsWith(base) ? posix17.slice(base.length) : posix17;
+  return posix20.startsWith(base) ? posix20.slice(base.length) : posix20;
 };
 var actionlint = (runtime, root, files) => {
   const run10 = runtime.exec({
@@ -7161,8 +7192,8 @@ var updateEcosystems = (files) => {
   const uvDirs = new Set(files.filter((file) => baseOf(file) === "uv.lock").map(dirOf));
   for (const file of files) {
     if (file.split("/").includes("node_modules")) continue;
-    const manifest2 = MANIFESTS[baseOf(file)];
-    if (manifest2 !== void 0) add(map, manifest2 === "pip" && uvDirs.has(dirOf(file)) ? "uv" : manifest2, dirOf(file));
+    const manifest3 = MANIFESTS[baseOf(file)];
+    if (manifest3 !== void 0) add(map, manifest3 === "pip" && uvDirs.has(dirOf(file)) ? "uv" : manifest3, dirOf(file));
     if (/^Dockerfile(?:\..+)?$/.test(baseOf(file))) add(map, "docker", dirOf(file));
     if (file.startsWith(".github/workflows/")) add(map, "github-actions", "");
   }
@@ -7620,8 +7651,8 @@ var FORMAT_TIMEOUT_MS = 2e4;
 var PRETTIER_DIR = ["node_modules", "prettier"];
 var FORMATTED = /\.(?:[cm]?[jt]sx?|json|ya?ml|md)$/;
 var prettierBin = (runtime, root) => {
-  const manifest2 = runtime.readText(toAbsolutePath(join32(root, ...PRETTIER_DIR, "package.json")));
-  const parsed = manifest2.ok ? parseJsonObject(manifest2.value) : void 0;
+  const manifest3 = runtime.readText(toAbsolutePath(join32(root, ...PRETTIER_DIR, "package.json")));
+  const parsed = manifest3.ok ? parseJsonObject(manifest3.value) : void 0;
   if (parsed?.ok !== true) return void 0;
   const bin = parsed.value["bin"];
   const relative30 = typeof bin === "string" ? bin : isRecord(bin) ? bin["prettier"] : void 0;
@@ -7944,6 +7975,10 @@ var manifest = (project) => {
   const parsed = text41 === void 0 ? void 0 : parseJsonObject(text41);
   return parsed?.ok === true ? parsed.value : {};
 };
+var lintOf = (project) => {
+  const chosen = adaptedConvention(project.read, "lint");
+  return chosen === void 0 ? {} : { lintConvention: chosen };
+};
 var detectStack2 = (runtime, root) => {
   const project = projectAt(root, runtime);
   const pkg = manifest(project);
@@ -7963,6 +7998,7 @@ var detectStack2 = (runtime, root) => {
     httpClients: HTTP_CLIENTS.filter((name) => dependencies3.has(name)),
     defaultExports: DEFAULT_EXPORT_FRAMEWORKS.some((name) => dependencies3.has(name)),
     testRunner: TEST_RUNNERS.find((name) => dependencies3.has(name)),
+    ...lintOf(project),
     dirs: (candidates4) => candidates4.filter((dir) => project.isDir(dir))
   };
 };
@@ -9013,14 +9049,14 @@ var lockedNpm = (runtime, root, pkg) => {
 };
 var npmSurface = (runtime, root, pkg) => {
   const dir = join41(root, "node_modules", pkg);
-  const manifest2 = parseJsonObject(read(runtime, join41(dir, "package.json")) ?? "");
-  if (!manifest2.ok) return { kind: "unknown", detail: "not installed", version: "" };
-  const version2 = typeof manifest2.value["version"] === "string" ? manifest2.value["version"] : "";
+  const manifest3 = parseJsonObject(read(runtime, join41(dir, "package.json")) ?? "");
+  if (!manifest3.ok) return { kind: "unknown", detail: "not installed", version: "" };
+  const version2 = typeof manifest3.value["version"] === "string" ? manifest3.value["version"] : "";
   const locked = lockedNpm(runtime, root, pkg);
   if (locked !== void 0 && locked !== version2) {
     return { kind: "unknown", detail: `installed ${version2}, lockfile ${locked}`, version: version2 };
   }
-  const typesField = manifest2.value["types"] ?? manifest2.value["typings"];
+  const typesField = manifest3.value["types"] ?? manifest3.value["typings"];
   const candidates4 = [
     ...typeof typesField === "string" ? [join41(dir, typesField)] : [],
     join41(dir, "index.d.ts"),
@@ -9286,8 +9322,8 @@ var texts3 = (record15, key3) => {
   const value2 = record15[key3];
   return Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string" && item2 !== "") : [];
 };
-var optional = (record15, keys) => Object.fromEntries(
-  keys.flatMap((key3) => {
+var optional = (record15, keys2) => Object.fromEntries(
+  keys2.flatMap((key3) => {
     const found = text7(record15, key3);
     return found === void 0 ? [] : [[key3, found]];
   })
@@ -9583,8 +9619,8 @@ var escape2 = (text41) => text41.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 var mentionsTerm = (text41, term) => term.trim() !== "" && new RegExp(`(^|[^\\p{L}\\p{N}])${escape2(term.trim())}($|[^\\p{L}\\p{N}])`, "iu").test(text41);
 var conceptsMentioned = (text41, concepts) => concepts.filter((concept) => [concept.label, ...concept.synonyms].some((term) => mentionsTerm(text41, term)));
 var touchedConcepts = (claim, entries2) => {
-  const mentioned2 = conceptsMentioned(claim.text, activeConcepts(entries2)).map((concept) => concept.id);
-  return [.../* @__PURE__ */ new Set([...claim.concepts, ...mentioned2])];
+  const mentioned3 = conceptsMentioned(claim.text, activeConcepts(entries2)).map((concept) => concept.id);
+  return [.../* @__PURE__ */ new Set([...claim.concepts, ...mentioned3])];
 };
 var claimBand = (claim, entries2) => {
   const concepts = touchedConcepts(claim, entries2).map((id) => conceptBand(id, entries2));
@@ -9711,8 +9747,8 @@ var originOf = (value2) => {
   return { source: source3, attributedTo, derivedFrom: derivedOf(value2["derivedFrom"]) };
 };
 var strings6 = (value2) => Array.isArray(value2) ? value2.filter((item2) => typeof item2 === "string" && item2 !== "") : [];
-var optionalText = (record15, keys) => Object.fromEntries(
-  keys.flatMap((key3) => {
+var optionalText = (record15, keys2) => Object.fromEntries(
+  keys2.flatMap((key3) => {
     const found = text8(record15, key3);
     return found === void 0 ? [] : [[key3, found]];
   })
@@ -11608,6 +11644,7 @@ var conceitosEvidenceCommand = {
 import { join as join54 } from "node:path";
 
 // src/apicontract/framework.ts
+var TEST_RUNNERS2 = ["vitest", "jest", "node"];
 var dependencies = (packageJson) => {
   const parsed = packageJson === void 0 ? void 0 : parseJsonObject(packageJson);
   if (parsed?.ok !== true) return /* @__PURE__ */ new Set();
@@ -11623,11 +11660,18 @@ var frameworkOf = (deps) => {
   if ([...deps].some((name) => name.startsWith("@remix-run/")) || deps.has("@react-router/dev")) return "remix";
   return deps.has("vite") ? "vite" : void 0;
 };
+var adaptedRunner = (read12) => {
+  const chosen = adaptedConvention(read12, "tests");
+  if (chosen === CONVENTION_OFF) return "node";
+  return TEST_RUNNERS2.find((runner3) => runner3 === chosen);
+};
 var detectProject = (read12, exists3) => {
   const deps = dependencies(read12("package.json"));
   const framework = frameworkOf(deps);
-  const base = framework === "remix" ? "app" : framework === "next" && !exists3("src") ? "lib" : "src";
-  const runner3 = deps.has("vitest") ? "vitest" : deps.has("jest") ? "jest" : "node";
+  const layout2 = adaptedConvention(read12, "layout");
+  const detectedBase = framework === "remix" ? "app" : framework === "next" && !exists3("src") ? "lib" : "src";
+  const base = layout2 === void 0 || layout2 === CONVENTION_OFF ? detectedBase : layout2;
+  const runner3 = adaptedRunner(read12) ?? (deps.has("vitest") ? "vitest" : deps.has("jest") ? "jest" : "node");
   return { framework, base, runner: runner3 };
 };
 
@@ -14148,14 +14192,14 @@ var objectBody = (text41, start2) => {
   return text41.slice(start2 + 1);
 };
 var topLevelKeys = (body2) => {
-  const keys = [];
+  const keys2 = [];
   let depth = 0;
   for (const match of body2.matchAll(OBJECT_KEY)) {
-    const before2 = body2.slice(keys.length === 0 ? 0 : keys.at(-1)?.index ?? 0, match.index);
+    const before2 = body2.slice(keys2.length === 0 ? 0 : keys2.at(-1)?.index ?? 0, match.index);
     depth += (before2.match(/[({[]/g) ?? []).length - (before2.match(/[)}\]]/g) ?? []).length;
-    if (depth <= 0) keys.push({ name: match[1] ?? "", index: match.index });
+    if (depth <= 0) keys2.push({ name: match[1] ?? "", index: match.index });
   }
-  return keys;
+  return keys2;
 };
 var drizzleFields = (file, text41) => [...text41.matchAll(DRIZZLE_TABLE)].flatMap((table3) => {
   const open = table3.index + table3[0].length - 1;
@@ -14316,9 +14360,9 @@ var pathspecOf = (covered) => [
   ...SKIPPED3
 ];
 var linesOf = (text41) => (text41 ?? "").split("\n").map(withoutCarriageReturn).filter((line13) => line13 !== "");
-var grepAt = (git4, hash2, grep2, covered) => {
-  const flags = grep2.ignoreCase === true ? ["-i"] : [];
-  const out = git4.out(["grep", "-n", "-I", "-E", ...flags, "-e", grep2.pattern, hash2, "--", ...pathspecOf(covered)]);
+var grepAt = (git4, hash2, grep, covered) => {
+  const flags = grep.ignoreCase === true ? ["-i"] : [];
+  const out = git4.out(["grep", "-n", "-I", "-E", ...flags, "-e", grep.pattern, hash2, "--", ...pathspecOf(covered)]);
   return linesOf(out).flatMap((line13) => {
     const match = GREP_LINE.exec(line13);
     if (match?.[1] === void 0 || match[2] === void 0) return [];
@@ -15882,6 +15926,10 @@ var en_default = {
   "gate.quality.call_chain": "warning: {file}:{line}: {name} chains {value} calls in one expression, over {max} (it had {before})",
   "gate.quality.statement_identifiers": "warning: {file}:{line}: {name} has a statement with {value} identifiers, over {max} (it had {before})",
   "gate.quality.unused_export": "warning: {file}: new export {name} has no consumer",
+  "gate.quality.deep_import": "{file}:{line}: imports {specifier}, past the entry points that {package} declares; import from its public entry",
+  "gate.quality.unused_dependency": "{file}:{line}: new dependency {name} is not imported, nor run by a script or named in a config",
+  "gate.quality.duplicated_config": "{file}: {tool} sets {key} to different values in {files}; keep one config",
+  "gate.quality.no_python": "python3 was not found or could not parse a touched Python file, so its function metrics were not verified",
   "quality.warn.size": "{file} would have {lines} lines, over the {max}-line limit; split it instead of growing it",
   "quality.block.size.claim": "{file} would have {lines} lines, over the {max}-line limit, and it would grow",
   "quality.block.size.requires": "Move part of it into a new module, or make the change without growing the file",
@@ -16068,6 +16116,11 @@ var en_default = {
   "defaults.question.commits": "{conventional} of the last {total} commits here follow Conventional Commits. Use Conventional Commits from now on? [Y/n]",
   "defaults.question.commits_pending": "Question for the person: only {conventional} of the last {total} commits follow Conventional Commits, the default here. Keep the repository's style with `finitemonkey init --yes --commits free`, or adopt the default with `--commits conventional`.",
   "defaults.error.commits": 'Unknown commit style "{value}". Use conventional or free',
+  "defaults.question.tests": "Tests here run with {value} ({evidence}). Use {value} for generated tests from now on? [Y/n]",
+  "defaults.question.lint": "{value} lints this repository ({evidence}). Keep {value} as the linter when generating lint setup? [Y/n]",
+  "defaults.question.layout": "Source code lives in {evidence} here. Put generated code in {evidence} from now on? [Y/n]",
+  "defaults.question.convention_pending": "Question for the person: {evidence} shows {value} for {id}. Adopt it with `finitemonkey init --yes --{id} {value}`, or keep the built-in default with `--{id} off`.",
+  "defaults.error.convention": 'Unknown value "{value}" for --{id}. Use a lowercase word such as {example}, or off',
   "gain.arm": "{feature}: on {onDone} of {onTasks} tasks done, {onFailed} failed gates; off {offDone} of {offTasks} done, {offFailed} failed gates",
   "gain.arm.none": "No feature is in a random experiment. Set experiments: <feature>: random in policy.yml.",
   "gen.command.lint": "Generate lint rules for this project: no comments, architecture and strict",
@@ -16093,6 +16146,7 @@ var en_default = {
   "gen.lint.install": "ESLint is not in package.json. Install the dev dependencies: {packages}",
   "gen.lint.no_ts_eslint": "TypeScript files are left out until typescript-eslint is installed; the strict TypeScript rules need it.",
   "gen.lint.legacy": "{file} uses the old ESLint config format. Move to eslint.config.mjs with `npx @eslint/migrate-config {file}`, then run this again to merge.",
+  "gen.lint.convention": "{tool} is the linter here (conventions.lint in .finitemonkey/config.yml), so no ESLint config was generated.",
   "gen.lint.python": "Add `python {file} .` to the lint step; it fails on every comment except tool directives.",
   "gen.lint.no_stack": "No package.json or Python project found here, so there is nothing to generate.",
   "gen.command.pr_template": "Generate the pull request template in the project language",
@@ -18653,6 +18707,10 @@ var es_default = {
   "gate.quality.call_chain": "aviso: {file}:{line}: {name} encadena {value} llamadas en una expresión, por encima de {max} (tenía {before})",
   "gate.quality.statement_identifiers": "aviso: {file}:{line}: {name} tiene una sentencia con {value} identificadores, por encima de {max} (tenía {before})",
   "gate.quality.unused_export": "aviso: {file}: el export nuevo {name} no tiene quien lo use",
+  "gate.quality.deep_import": "{file}:{line}: importa {specifier}, más allá de los puntos de entrada que {package} declara; importa desde su entrada pública",
+  "gate.quality.unused_dependency": "{file}:{line}: la dependencia nueva {name} no se importa, ni la ejecuta un script, ni aparece en una config",
+  "gate.quality.duplicated_config": "{file}: {tool} define {key} con valores distintos en {files}; deja una sola config",
+  "gate.quality.no_python": "no se encontró python3 o no pudo leer un archivo Python modificado, así que sus métricas de función no se verificaron",
   "quality.warn.size": "{file} quedaría con {lines} líneas, por encima del límite de {max}; divídelo en vez de crecerlo",
   "quality.block.size.claim": "{file} quedaría con {lines} líneas, por encima del límite de {max}, y crecería",
   "quality.block.size.requires": "Mueve una parte a un módulo nuevo, o haz el cambio sin crecer el archivo",
@@ -18839,6 +18897,11 @@ var es_default = {
   "defaults.question.commits": "{conventional} de los últimos {total} commits aquí siguen Conventional Commits. ¿Usar Conventional Commits de ahora en adelante? [S/n]",
   "defaults.question.commits_pending": "Pregunta para la persona: solo {conventional} de los últimos {total} commits siguen Conventional Commits, el predeterminado aquí. Mantén el estilo del repositorio con `finitemonkey init --yes --commits free`, o adopta el predeterminado con `--commits conventional`.",
   "defaults.error.commits": 'Estilo de commit desconocido "{value}". Usa conventional o free',
+  "defaults.question.tests": "Las pruebas aquí corren con {value} ({evidence}). ¿Usar {value} en las pruebas generadas de ahora en adelante? [S/n]",
+  "defaults.question.lint": "{value} hace el lint de este repositorio ({evidence}). ¿Mantener {value} como linter al generar la configuración de lint? [S/n]",
+  "defaults.question.layout": "El código fuente vive en {evidence} aquí. ¿Poner el código generado en {evidence} de ahora en adelante? [S/n]",
+  "defaults.question.convention_pending": "Pregunta para la persona: {evidence} muestra {value} para {id}. Adóptalo con `finitemonkey init --yes --{id} {value}`, o mantén el predeterminado incorporado con `--{id} off`.",
+  "defaults.error.convention": 'Valor desconocido "{value}" para --{id}. Usa una palabra en minúsculas como {example}, u off',
   "gain.arm": "{feature}: activada {onDone} de {onTasks} tareas terminadas, {onFailed} controles fallidos; desactivada {offDone} de {offTasks}, {offFailed} fallidos",
   "gain.arm.none": "Ninguna función está en un experimento aleatorio. Usa experiments: <feature>: random en policy.yml.",
   "gen.command.lint": "Genera reglas de lint para este proyecto: sin comentarios, arquitectura y estricto",
@@ -18864,6 +18927,7 @@ var es_default = {
   "gen.lint.install": "ESLint no está en package.json. Instala las dependencias de desarrollo: {packages}",
   "gen.lint.no_ts_eslint": "Los archivos TypeScript quedan fuera hasta instalar typescript-eslint; las reglas estrictas de TypeScript lo necesitan.",
   "gen.lint.legacy": "{file} usa el formato antiguo de configuración de ESLint. Pasa a eslint.config.mjs con `npx @eslint/migrate-config {file}` y ejecuta de nuevo para fusionar.",
+  "gen.lint.convention": "{tool} es el linter aquí (conventions.lint en .finitemonkey/config.yml), así que no se generó ninguna config de ESLint.",
   "gen.lint.python": "Agrega `python {file} .` al paso de lint; falla en todo comentario que no sea una directiva de herramienta.",
   "gen.lint.no_stack": "No hay package.json ni proyecto Python aquí, así que no hay nada que generar.",
   "gen.command.pr_template": "Genera la plantilla de pull request en el idioma del proyecto",
@@ -21424,6 +21488,10 @@ var pt_BR_default = {
   "gate.quality.call_chain": "aviso: {file}:{line}: {name} encadeia {value} chamadas numa expressão, acima de {max} (tinha {before})",
   "gate.quality.statement_identifiers": "aviso: {file}:{line}: {name} tem uma instrução com {value} identificadores, acima de {max} (tinha {before})",
   "gate.quality.unused_export": "aviso: {file}: o export novo {name} não tem quem use",
+  "gate.quality.deep_import": "{file}:{line}: importa {specifier}, além dos pontos de entrada que {package} declara; importe pela entrada pública",
+  "gate.quality.unused_dependency": "{file}:{line}: a dependência nova {name} não é importada, nem rodada por um script, nem citada numa config",
+  "gate.quality.duplicated_config": "{file}: {tool} define {key} com valores diferentes em {files}; mantenha uma config só",
+  "gate.quality.no_python": "python3 não foi encontrado ou não conseguiu ler um arquivo Python alterado, então as métricas de função dele não foram verificadas",
   "quality.warn.size": "{file} ficaria com {lines} linhas, acima do limite de {max}; divida em vez de crescer",
   "quality.block.size.claim": "{file} ficaria com {lines} linhas, acima do limite de {max}, e cresceria",
   "quality.block.size.requires": "Mova parte dele para um módulo novo, ou faça a mudança sem crescer o arquivo",
@@ -21610,6 +21678,11 @@ var pt_BR_default = {
   "defaults.question.commits": "{conventional} dos últimos {total} commits aqui seguem Conventional Commits. Usar Conventional Commits daqui em diante? [S/n]",
   "defaults.question.commits_pending": "Pergunta para a pessoa: só {conventional} dos últimos {total} commits seguem Conventional Commits, o padrão aqui. Mantenha o estilo do repositório com `finitemonkey init --yes --commits free`, ou adote o padrão com `--commits conventional`.",
   "defaults.error.commits": 'Estilo de commit desconhecido "{value}". Use conventional ou free',
+  "defaults.question.tests": "Os testes aqui rodam com {value} ({evidence}). Usar {value} nos testes gerados daqui em diante? [S/n]",
+  "defaults.question.lint": "{value} faz o lint deste repositório ({evidence}). Manter {value} como linter ao gerar a configuração de lint? [S/n]",
+  "defaults.question.layout": "O código-fonte fica em {evidence} aqui. Colocar o código gerado em {evidence} daqui em diante? [S/n]",
+  "defaults.question.convention_pending": "Pergunta para a pessoa: {evidence} mostra {value} para {id}. Adote com `finitemonkey init --yes --{id} {value}`, ou mantenha o padrão embutido com `--{id} off`.",
+  "defaults.error.convention": 'Valor desconhecido "{value}" para --{id}. Use uma palavra em minúsculas como {example}, ou off',
   "gain.arm": "{feature}: ligado {onDone} de {onTasks} tarefas concluídas, {onFailed} gates reprovados; desligado {offDone} de {offTasks}, {offFailed} reprovados",
   "gain.arm.none": "Nenhuma feature está num experimento aleatório. Use experiments: <feature>: random no policy.yml.",
   "gen.command.lint": "Gera regras de lint para este projeto: sem comentários, arquitetura e estrito",
@@ -21635,6 +21708,7 @@ var pt_BR_default = {
   "gen.lint.install": "O ESLint não está no package.json. Instale as dependências de desenvolvimento: {packages}",
   "gen.lint.no_ts_eslint": "Os arquivos TypeScript ficam de fora até o typescript-eslint ser instalado; as regras estritas de TypeScript dependem dele.",
   "gen.lint.legacy": "{file} usa o formato antigo de configuração do ESLint. Passe para eslint.config.mjs com `npx @eslint/migrate-config {file}` e rode de novo para mesclar.",
+  "gen.lint.convention": "{tool} é o linter aqui (conventions.lint em .finitemonkey/config.yml), então nenhuma config do ESLint foi gerada.",
   "gen.lint.python": "Acrescente `python {file} .` ao passo de lint; ele falha em todo comentário que não seja diretiva de ferramenta.",
   "gen.lint.no_stack": "Não há package.json nem projeto Python aqui, então não há o que gerar.",
   "gen.command.pr_template": "Gera o modelo de pull request no idioma do projeto",
@@ -24196,6 +24270,10 @@ var review_default = {
     "gate.quality.call_chain": "machine",
     "gate.quality.statement_identifiers": "machine",
     "gate.quality.unused_export": "machine",
+    "gate.quality.deep_import": "machine",
+    "gate.quality.unused_dependency": "machine",
+    "gate.quality.duplicated_config": "machine",
+    "gate.quality.no_python": "machine",
     "quality.warn.size": "machine",
     "quality.block.size.claim": "machine",
     "quality.block.size.requires": "machine",
@@ -24382,6 +24460,11 @@ var review_default = {
     "defaults.question.commits": "machine",
     "defaults.question.commits_pending": "machine",
     "defaults.error.commits": "machine",
+    "defaults.question.tests": "machine",
+    "defaults.question.lint": "machine",
+    "defaults.question.layout": "machine",
+    "defaults.question.convention_pending": "machine",
+    "defaults.error.convention": "machine",
     "gain.arm": "machine",
     "gain.arm.none": "machine",
     "gen.command.lint": "machine",
@@ -24407,6 +24490,7 @@ var review_default = {
     "gen.lint.install": "machine",
     "gen.lint.no_ts_eslint": "machine",
     "gen.lint.legacy": "machine",
+    "gen.lint.convention": "machine",
     "gen.lint.python": "machine",
     "gen.lint.no_stack": "machine",
     "gen.command.pr_template": "machine",
@@ -26965,6 +27049,10 @@ var review_default = {
     "gate.quality.call_chain": "machine",
     "gate.quality.statement_identifiers": "machine",
     "gate.quality.unused_export": "machine",
+    "gate.quality.deep_import": "machine",
+    "gate.quality.unused_dependency": "machine",
+    "gate.quality.duplicated_config": "machine",
+    "gate.quality.no_python": "machine",
     "quality.warn.size": "machine",
     "quality.block.size.claim": "machine",
     "quality.block.size.requires": "machine",
@@ -27151,6 +27239,11 @@ var review_default = {
     "defaults.question.commits": "machine",
     "defaults.question.commits_pending": "machine",
     "defaults.error.commits": "machine",
+    "defaults.question.tests": "machine",
+    "defaults.question.lint": "machine",
+    "defaults.question.layout": "machine",
+    "defaults.question.convention_pending": "machine",
+    "defaults.error.convention": "machine",
     "gain.arm": "machine",
     "gain.arm.none": "machine",
     "gen.command.lint": "machine",
@@ -27176,6 +27269,7 @@ var review_default = {
     "gen.lint.install": "machine",
     "gen.lint.no_ts_eslint": "machine",
     "gen.lint.legacy": "machine",
+    "gen.lint.convention": "machine",
     "gen.lint.python": "machine",
     "gen.lint.no_stack": "machine",
     "gen.command.pr_template": "machine",
@@ -29689,8 +29783,8 @@ var scalarLine = (key3, value2) => {
   return line13;
 };
 var withTopFields = (text41, fields2) => {
-  const keys = new Set(Object.keys(fields2));
-  const kept = text41.replace(/\r\n/g, "\n").split("\n").filter((line13) => !keys.has(/^([\w-]+):/.exec(line13)?.[1] ?? ""));
+  const keys2 = new Set(Object.keys(fields2));
+  const kept = text41.replace(/\r\n/g, "\n").split("\n").filter((line13) => !keys2.has(/^([\w-]+):/.exec(line13)?.[1] ?? ""));
   const schema = kept.findIndex((line13) => line13.startsWith("schema:"));
   const added = Object.entries(fields2).map(([key3, value2]) => scalarLine(key3, value2));
   return [...kept.slice(0, schema + 1), ...added, ...kept.slice(schema + 1)].join("\n");
@@ -31634,8 +31728,8 @@ var preCommitBody = (runner3, indent) => {
 };
 var TOP_KEY = /^[A-Za-z_][\w-]*:/;
 var reposIsLast = (text41) => {
-  const keys = withoutManagedBlock(text41, HOOK_MARKERS).split(/\r?\n/).filter((line13) => TOP_KEY.test(line13));
-  return keys.at(-1)?.startsWith("repos:") === true;
+  const keys2 = withoutManagedBlock(text41, HOOK_MARKERS).split(/\r?\n/).filter((line13) => TOP_KEY.test(line13));
+  return keys2.at(-1)?.startsWith("repos:") === true;
 };
 var preCommitItem = (project, runner3) => {
   const before2 = project.read(PRE_COMMIT_FILE) ?? "";
@@ -32319,12 +32413,12 @@ var restore = (project, items) => {
   }
 };
 var backupItems = (project, dir, items) => {
-  const manifest2 = items.map((item2) => ({ path: item2.path, hash: hashText(item2.before ?? "") }));
+  const manifest3 = items.map((item2) => ({ path: item2.path, hash: hashText(item2.before ?? "") }));
   for (const item2 of items) {
     const saved = writeText(project, `${dir}/${item2.path}`, item2.before ?? "");
     if (!saved.ok) return saved;
   }
-  return writeText(project, `${dir}/manifest.json`, `${JSON.stringify(manifest2, null, 2)}
+  return writeText(project, `${dir}/manifest.json`, `${JSON.stringify(manifest3, null, 2)}
 `);
 };
 var entryOf6 = (plan3, item2, backupDir) => {
@@ -36506,9 +36600,9 @@ var blockedKeys = (scope2) => {
   return Array.isArray(raw) ? raw.filter((item2) => typeof item2 === "string") : [];
 };
 var firstTime = (scope2, key3) => {
-  const keys = blockedKeys(scope2);
-  if (keys.includes(key3)) return false;
-  writeJsonFile(scope2.input.runtime, scope2.paths.cache(BLOCKED_FILE), { blocked: [...keys, key3].slice(-KEEP_KEYS) });
+  const keys2 = blockedKeys(scope2);
+  if (keys2.includes(key3)) return false;
+  writeJsonFile(scope2.input.runtime, scope2.paths.cache(BLOCKED_FILE), { blocked: [...keys2, key3].slice(-KEEP_KEYS) });
   return true;
 };
 var reasons = (scope2, claim, gate, files) => {
@@ -37733,9 +37827,9 @@ var record7 = (value2, key3) => {
   return isRecord(inner) ? inner : {};
 };
 var INSTALL_SCRIPTS = ["preinstall", "install", "postinstall"];
-var hasInstallScript = (manifest2) => {
-  if (manifest2["hasInstallScript"] === true) return true;
-  const scripts2 = record7(manifest2, "scripts");
+var hasInstallScript = (manifest3) => {
+  if (manifest3["hasInstallScript"] === true) return true;
+  const scripts2 = record7(manifest3, "scripts");
   return INSTALL_SCRIPTS.some((name) => typeof scripts2[name] === "string");
 };
 var npmFacts = (doc, wanted) => {
@@ -38346,8 +38440,8 @@ var focusPrompt = (input) => {
 var relativeFile = (root, target7) => {
   const rel = relative5(root, toAbsolutePath(target7, toAbsolutePath(root)));
   if (rel === "" || rel.startsWith("..") || isAbsolute2(rel)) return void 0;
-  const posix17 = toPosixPath(rel);
-  return posix17.startsWith(".finitemonkey/") || posix17.startsWith(".git/") ? void 0 : posix17;
+  const posix20 = toPosixPath(rel);
+  return posix20.startsWith(".finitemonkey/") || posix20.startsWith(".git/") ? void 0 : posix20;
 };
 var scopeGlobs = (paths) => paths.flatMap((path) => path.endsWith("/") ? [path, `${path}**`] : [path, `${path}/**`]);
 var focusAfterEdit = (input) => {
@@ -40314,13 +40408,13 @@ var landedLevel = (inWeek, upTo, series) => {
 };
 var trajectoryOf = (domain, all, helps, now) => {
   const events = all.filter((event) => domainOf(event.concept) === domain);
-  const keys = weekKeys(now);
+  const keys2 = weekKeys(now);
   const weighted = events.filter((event) => event.weight !== 0 || event.origin === "agent");
   const weeksWith = new Set(weighted.map((event) => isoWeek(event.at)));
-  const marks = marksOf(events).filter((mark2) => keys.includes(mark2.week));
+  const marks = marksOf(events).filter((mark2) => keys2.includes(mark2.week));
   const evidence2 = events.filter((event) => event.weight !== 0).length;
-  const enough = evidence2 >= MIN_EVIDENCE && keys.filter((key3) => weeksWith.has(key3)).length >= MIN_WEEKS;
-  const weeks = keys.map((key3) => {
+  const enough = evidence2 >= MIN_EVIDENCE && keys2.filter((key3) => weeksWith.has(key3)).length >= MIN_WEEKS;
+  const weeks = keys2.map((key3) => {
     const upTo = events.filter((event) => (isoWeek(event.at) ?? "") <= key3);
     const inWeek = events.filter((event) => isoWeek(event.at) === key3);
     const domainHelps = helps.filter((help) => help.domain === domain && isoWeek(help.at) === key3);
@@ -43125,9 +43219,9 @@ var working = (ctx, path) => {
   return text41.ok ? text41.value : void 0;
 };
 var isPinnedFile = (path) => {
-  const posix17 = toPosixPath(path);
-  const name = posix17.split("/").pop() ?? "";
-  return RUNNER_CONFIG.test(name) || MAKEFILE.test(name) || WORKFLOW5.test(posix17);
+  const posix20 = toPosixPath(path);
+  const name = posix20.split("/").pop() ?? "";
+  return RUNNER_CONFIG.test(name) || MAKEFILE.test(name) || WORKFLOW5.test(posix20);
 };
 var SHORT3 = 60;
 var short2 = (text41) => text41 === void 0 ? "(none)" : text41.length > SHORT3 ? `${text41.slice(0, SHORT3)}…` : text41;
@@ -43649,80 +43743,6 @@ var blindCheck = (_check, ctx) => {
   return passed([summary2, ...disagreements, note("gate.blind.shadow", { count: disagreements.length })]);
 };
 
-// src/gate/callers/rate.ts
-var FLAGGED_EVENT = "callers.flagged";
-var RELEASED_EVENT = "callers.released";
-var MIN_SAMPLE = 20;
-var MAX_FALSE_POSITIVE = 0.05;
-var pairs2 = (record15) => {
-  const { task, names: names3 } = record15;
-  if (typeof task !== "string" || !Array.isArray(names3)) return [];
-  return names3.filter((name) => typeof name === "string").map((name) => `${task}\0${name}`);
-};
-var callersRate = (runtime, paths) => {
-  const text41 = runtime.readText(paths.log);
-  const flagged = /* @__PURE__ */ new Set();
-  const released2 = /* @__PURE__ */ new Set();
-  for (const line13 of text41.ok ? text41.value.split("\n") : []) {
-    const parsed = line13.trim() === "" ? void 0 : parseJsonObject(line13);
-    if (parsed === void 0 || !parsed.ok || !isRecord(parsed.value)) continue;
-    const event = parsed.value["event"];
-    const target7 = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
-    if (target7 !== void 0) for (const pair of pairs2(parsed.value)) target7.add(pair);
-  }
-  const total = (/* @__PURE__ */ new Set([...flagged, ...released2])).size;
-  const rate = total === 0 ? 0 : released2.size / total;
-  return {
-    flagged: total,
-    released: released2.size,
-    rate,
-    downgraded: total >= MIN_SAMPLE && rate > MAX_FALSE_POSITIVE
-  };
-};
-
-// src/gate/callers/scan.ts
-import { join as join113 } from "node:path";
-
-// src/gate/callers/imports.ts
-import { posix as posix7 } from "node:path";
-var JS_SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)["']([^"']+)["']/g;
-var JS_EXTENSION = /\.(?:[cm]?[jt]sx?)$/;
-var stripModule = (path) => path.replace(JS_EXTENSION, "").replace(/\/index$/, "");
-var jsSpecifiers = (text41) => [...text41.matchAll(JS_SPECIFIER)].map((match) => match[1] ?? "");
-var jsImports2 = (callerPath, callerText, origin) => {
-  const target7 = stripModule(origin);
-  return jsSpecifiers(callerText).some((specifier) => {
-    if (specifier.startsWith(".")) {
-      return stripModule(posix7.normalize(posix7.join(posix7.dirname(callerPath), specifier))) === target7;
-    }
-    const bare2 = stripModule(specifier.replace(/^[@~#]\//, ""));
-    return target7 === bare2 || target7.endsWith(`/${bare2}`);
-  });
-};
-var pyImports2 = (callerText, origin) => {
-  const stem = posix7.basename(origin).replace(/\.py$/, "");
-  const module = stem === "__init__" ? posix7.basename(posix7.dirname(origin)) : stem;
-  const word2 = new RegExp(`\\b${module}\\b`);
-  return callerText.split(/\r?\n/).some((line13) => /^\s*(?:from|import)\s/.test(line13) && word2.test(line13));
-};
-var goImports = (callerPath, callerText, origin) => {
-  const dir = posix7.dirname(origin);
-  if (posix7.dirname(callerPath) === dir) return true;
-  const last = posix7.basename(dir);
-  return new RegExp(`"[^"]*\\b${last}"`).test(callerText);
-};
-var importsOrigin = (language, callerPath, callerText, origins) => origins.some((origin) => {
-  if (callerPath === origin) return true;
-  switch (language.imports) {
-    case "none":
-      return true;
-    case "package":
-      return goImports(callerPath, callerText, origin);
-    case "module":
-      return language.id === "py" ? pyImports2(callerText, origin) : jsImports2(callerPath, callerText, origin);
-  }
-});
-
 // src/gate/callers/languages.ts
 import { extname as extname2 } from "node:path";
 var JS_NAME = "[A-Za-z_$][\\w$]*";
@@ -43803,6 +43823,48 @@ var definitionsIn = (language, text41) => {
 var definesName = (language, line13, name) => language.definitions.some((pattern) => pattern.exec(line13)?.[1] === name);
 
 // src/gate/callers/scan.ts
+import { join as join113 } from "node:path";
+
+// src/gate/callers/imports.ts
+import { posix as posix7 } from "node:path";
+var JS_SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)["']([^"']+)["']/g;
+var JS_EXTENSION = /\.(?:[cm]?[jt]sx?)$/;
+var stripModule = (path) => path.replace(JS_EXTENSION, "").replace(/\/index$/, "");
+var jsSpecifiers = (text41) => [...text41.matchAll(JS_SPECIFIER)].map((match) => match[1] ?? "");
+var specifierReaches = (callerPath, specifier, origin) => {
+  const target7 = stripModule(origin);
+  if (specifier.startsWith(".")) {
+    return stripModule(posix7.normalize(posix7.join(posix7.dirname(callerPath), specifier))) === target7;
+  }
+  const bare2 = stripModule(specifier.replace(/^[@~#]\//, ""));
+  return target7 === bare2 || target7.endsWith(`/${bare2}`);
+};
+var jsImports2 = (callerPath, callerText, origin) => jsSpecifiers(callerText).some((specifier) => specifierReaches(callerPath, specifier, origin));
+var pyImports2 = (callerText, origin) => {
+  const stem = posix7.basename(origin).replace(/\.py$/, "");
+  const module = stem === "__init__" ? posix7.basename(posix7.dirname(origin)) : stem;
+  const word2 = new RegExp(`\\b${module}\\b`);
+  return callerText.split(/\r?\n/).some((line13) => /^\s*(?:from|import)\s/.test(line13) && word2.test(line13));
+};
+var goImports = (callerPath, callerText, origin) => {
+  const dir = posix7.dirname(origin);
+  if (posix7.dirname(callerPath) === dir) return true;
+  const last = posix7.basename(dir);
+  return new RegExp(`"[^"]*\\b${last}"`).test(callerText);
+};
+var importsOrigin = (language, callerPath, callerText, origins) => origins.some((origin) => {
+  if (callerPath === origin) return true;
+  switch (language.imports) {
+    case "none":
+      return true;
+    case "package":
+      return goImports(callerPath, callerText, origin);
+    case "module":
+      return language.id === "py" ? pyImports2(callerText, origin) : jsImports2(callerPath, callerText, origin);
+  }
+});
+
+// src/gate/callers/scan.ts
 var MAX_SYMBOLS = 200;
 var current = (runtime, root, path) => {
   const text41 = runtime.readText(toAbsolutePath(join113(root, path)));
@@ -43810,13 +43872,13 @@ var current = (runtime, root, path) => {
 };
 var keyOf3 = (language, name) => `${language.id}\0${name}`;
 var redefinedNames = (runtime, git4, changes) => {
-  const keys = /* @__PURE__ */ new Set();
+  const keys2 = /* @__PURE__ */ new Set();
   for (const change2 of changes) {
     const language = languageOf(change2.path);
     if (language === void 0 || change2.status === "D") continue;
-    for (const name of definitionsIn(language, current(runtime, git4.cwd, change2.path))) keys.add(keyOf3(language, name));
+    for (const name of definitionsIn(language, current(runtime, git4.cwd, change2.path))) keys2.add(keyOf3(language, name));
   }
-  return keys;
+  return keys2;
 };
 var removedSymbols = (runtime, git4, base, changes) => {
   const redefined = redefinedNames(runtime, git4, changes);
@@ -43840,7 +43902,7 @@ var parseGrep = (output) => output.split("\n").filter((row4) => row4 !== "").fla
   const number6 = Number(line13);
   return file === "" || !Number.isInteger(number6) ? [] : [{ file: toPosixPath(file), line: number6, text: rest.join("\0") }];
 });
-var grep = (git4, names3) => {
+var grepHits = (git4, names3) => {
   if (names3.length === 0) return [];
   const patterns = names3.flatMap((name) => ["-e", name]);
   return parseGrep(
@@ -43849,7 +43911,7 @@ var grep = (git4, names3) => {
 };
 var mentions4 = (text41, name) => new RegExp(`(?<![\\w$])${name.replace(/[$?!]/g, "\\$&")}(?![\\w$])`).test(text41);
 var callSites = (runtime, git4, symbols) => {
-  const hits = grep(git4, [...new Set(symbols.map((symbol) => symbol.name))]);
+  const hits = grepHits(git4, [...new Set(symbols.map((symbol) => symbol.name))]);
   const texts7 = /* @__PURE__ */ new Map();
   const textOf13 = (file) => {
     const cached4 = texts7.get(file) ?? current(runtime, git4.cwd, file);
@@ -43859,6 +43921,126 @@ var callSites = (runtime, git4, symbols) => {
   return symbols.flatMap(
     (symbol) => hits.filter((hit3) => languageOf(hit3.file)?.id === symbol.language.id && mentions4(hit3.text, symbol.name)).filter((hit3) => !symbol.language.comment.test(hit3.text) && !definesName(symbol.language, hit3.text, symbol.name)).filter((hit3) => importsOrigin(symbol.language, hit3.file, textOf13(hit3.file), symbol.origins)).map((hit3) => ({ name: symbol.name, file: hit3.file, line: hit3.line }))
   );
+};
+
+// src/gate/callers/syntax.ts
+var reaches2 = (ts, file, node, origins) => node !== void 0 && ts.isStringLiteral(node) && origins.some((origin) => specifierReaches(file, node.text, origin));
+var bindingsOf = (ts, source3, symbol) => {
+  const file = source3.fileName;
+  const locals = new Set(symbol.origins.includes(file) ? [symbol.name] : []);
+  const namespaces = /* @__PURE__ */ new Set();
+  const lines10 = [];
+  for (const statement of source3.statements) {
+    if (ts.isImportDeclaration(statement) && reaches2(ts, file, statement.moduleSpecifier, symbol.origins)) {
+      const named2 = statement.importClause?.namedBindings;
+      if (named2 !== void 0 && ts.isNamespaceImport(named2)) namespaces.add(named2.name.text);
+      if (named2 !== void 0 && ts.isNamedImports(named2)) {
+        for (const item2 of named2.elements) {
+          if ((item2.propertyName ?? item2.name).getText(source3) !== symbol.name) continue;
+          locals.add(item2.name.text);
+          lines10.push(lineOf6(source3, statement.getStart(source3)));
+        }
+      }
+    }
+    if (ts.isExportDeclaration(statement) && reaches2(ts, file, statement.moduleSpecifier, symbol.origins)) {
+      const clause = statement.exportClause;
+      const names3 = clause !== void 0 && ts.isNamedExports(clause) ? clause.elements : [];
+      if (names3.some((item2) => (item2.propertyName ?? item2.name).getText(source3) === symbol.name)) {
+        lines10.push(lineOf6(source3, statement.getStart(source3)));
+      }
+    }
+  }
+  return { locals, namespaces, lines: lines10 };
+};
+var isDeclarationName = (ts, node) => {
+  const { parent } = node;
+  if (ts.isExportSpecifier(parent) || ts.isShorthandPropertyAssignment(parent)) return false;
+  if (ts.isImportSpecifier(parent) || ts.isImportClause(parent) || ts.isNamespaceImport(parent)) return true;
+  if (ts.isPropertyAccessExpression(parent) && parent.name === node) return true;
+  if ((ts.isPropertyAssignment(parent) || ts.isMethodDeclaration(parent)) && parent.name === node) return true;
+  return "name" in parent && parent.name === node && !ts.isPropertyAccessExpression(parent);
+};
+var usesIn = (ts, source3, name, bindings) => {
+  const found = new Set(bindings.lines);
+  const visit3 = (node) => {
+    if (ts.isIdentifier(node) && bindings.locals.has(node.text) && !isDeclarationName(ts, node)) {
+      found.add(lineOf6(source3, node.getStart(source3)));
+    }
+    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) && bindings.namespaces.has(node.expression.text) && node.name.text === name) {
+      found.add(lineOf6(source3, node.getStart(source3)));
+    }
+    node.forEachChild(visit3);
+  };
+  visit3(source3);
+  return found;
+};
+var syntaxSitesIn = (ts, file, text41, symbol) => {
+  const source3 = parseSource(ts, file, text41);
+  const bindings = bindingsOf(ts, source3, symbol);
+  if (bindings.locals.size === 0 && bindings.namespaces.size === 0 && bindings.lines.length === 0) return [];
+  return [...usesIn(ts, source3, symbol.name, bindings)].sort((a, b) => a - b).map((line13) => ({ name: symbol.name, file, line: line13 }));
+};
+var syntaxCallSites = (runtime, git4, ts, symbols) => {
+  const scripts2 = symbols.filter((symbol) => symbol.language.id === "js");
+  const files = [...new Set(grepHits(git4, [...new Set(scripts2.map((symbol) => symbol.name))]).map((hit3) => hit3.file))];
+  const texts7 = new Map(files.map((file) => [file, current(runtime, git4.cwd, file)]));
+  return scripts2.flatMap(
+    (symbol) => files.filter((file) => /\.(?:[cm]?[jt]sx?)$/.test(file)).flatMap((file) => syntaxSitesIn(ts, file, texts7.get(file) ?? "", symbol))
+  );
+};
+
+// src/gate/callers/choose.ts
+var CALLERS_SYNTAX_FEATURE = "callers-syntax";
+var keys = (sites) => new Set(sites.map((site) => `${site.name}\0${site.file}\0${String(site.line)}`));
+var chosenSites = (ctx, symbols) => {
+  const byText = callSites(ctx.runtime, ctx.git, symbols);
+  if (!symbols.some((symbol) => symbol.language.id === "js")) return byText;
+  const mode = guardMode(ctx, CALLERS_SYNTAX_FEATURE);
+  const ts = mode === "off" ? void 0 : loadTypescript(ctx.paths.root);
+  if (ts === void 0) return byText;
+  const bySyntax = syntaxCallSites(ctx.runtime, ctx.git, ts, symbols);
+  if (mode === "active") return [...byText.filter((site) => languageOf(site.file)?.id !== "js"), ...bySyntax];
+  const text41 = keys(byText.filter((site) => languageOf(site.file)?.id === "js"));
+  const syntax = keys(bySyntax);
+  recordFeatureShadow(ctx.runtime, ctx.paths, CALLERS_SYNTAX_FEATURE, {
+    task: ctx.contract.id,
+    text: text41.size,
+    syntax: syntax.size,
+    onlySyntax: [...syntax].filter((key3) => !text41.has(key3)).length,
+    onlyText: [...text41].filter((key3) => !syntax.has(key3)).length
+  });
+  return byText;
+};
+
+// src/gate/callers/rate.ts
+var FLAGGED_EVENT = "callers.flagged";
+var RELEASED_EVENT = "callers.released";
+var MIN_SAMPLE = 20;
+var MAX_FALSE_POSITIVE = 0.05;
+var pairs2 = (record15) => {
+  const { task, names: names3 } = record15;
+  if (typeof task !== "string" || !Array.isArray(names3)) return [];
+  return names3.filter((name) => typeof name === "string").map((name) => `${task}\0${name}`);
+};
+var callersRate = (runtime, paths) => {
+  const text41 = runtime.readText(paths.log);
+  const flagged = /* @__PURE__ */ new Set();
+  const released2 = /* @__PURE__ */ new Set();
+  for (const line13 of text41.ok ? text41.value.split("\n") : []) {
+    const parsed = line13.trim() === "" ? void 0 : parseJsonObject(line13);
+    if (parsed === void 0 || !parsed.ok || !isRecord(parsed.value)) continue;
+    const event = parsed.value["event"];
+    const target7 = event === FLAGGED_EVENT ? flagged : event === RELEASED_EVENT ? released2 : void 0;
+    if (target7 !== void 0) for (const pair of pairs2(parsed.value)) target7.add(pair);
+  }
+  const total = (/* @__PURE__ */ new Set([...flagged, ...released2])).size;
+  const rate = total === 0 ? 0 : released2.size / total;
+  return {
+    flagged: total,
+    released: released2.size,
+    rate,
+    downgraded: total >= MIN_SAMPLE && rate > MAX_FALSE_POSITIVE
+  };
 };
 
 // src/gate/checks/callers.ts
@@ -43877,7 +44059,7 @@ var record8 = (ctx, event, names3) => {
 };
 var callersCheck = (_check, ctx) => {
   const symbols = removedSymbols(ctx.runtime, ctx.git, ctx.base, ctx.changes);
-  const grouped3 = byName(callSites(ctx.runtime, ctx.git, symbols));
+  const grouped3 = byName(chosenSites(ctx, symbols));
   const ignore = new Set(ctx.contract.callersIgnore ?? []);
   const open = new Map([...grouped3].filter(([name]) => !ignore.has(name)));
   record8(
@@ -44814,12 +44996,12 @@ var bindingKeys = (sources, operations) => {
   for (const source3 of sources) {
     const lines10 = source3.text.split(/\r?\n/);
     lines10.forEach((line13, index) => {
-      const keys = keysIn(line13);
-      if (keys.length === 0) return;
+      const keys2 = keysIn(line13);
+      if (keys2.length === 0) return;
       const near2 = lines10.slice(Math.max(0, index - WINDOW), index + WINDOW + 1);
       for (const binding of near2.flatMap((text41) => bindingsIn(text41, operations))) {
         const set2 = found.get(binding) ?? /* @__PURE__ */ new Set();
-        for (const key3 of keys) set2.add(key3);
+        for (const key3 of keys2) set2.add(key3);
         found.set(binding, set2);
       }
     });
@@ -44830,8 +45012,8 @@ var normal = (text41) => text41.trim().toLowerCase().replace(/\s+/g, " ");
 var oneNameFindings = (bindings, entries2, allow29) => {
   const source3 = entries2.filter((entry2) => entry2.lang === "en");
   const pool = source3.length > 0 ? source3 : entries2;
-  return [...bindings].flatMap(([binding, keys]) => {
-    const labelled = [...keys].flatMap((key3) => {
+  return [...bindings].flatMap(([binding, keys2]) => {
+    const labelled = [...keys2].flatMap((key3) => {
       const entry2 = pool.find((item2) => item2.key === key3);
       return entry2 === void 0 || allow29.includes(key3) ? [] : [entry2];
     });
@@ -44884,9 +45066,9 @@ var operationsOf = (ctx) => {
 };
 var currentText = (entries2, bindings, allow29) => (rule, id) => {
   if (rule === "one-name") {
-    const keys = bindings.get(id);
-    if (keys === void 0) return void 0;
-    return [...keys].map((key3) => `"${entries2.find((entry3) => entry3.key === key3)?.text ?? ""}"`).join(" / ");
+    const keys2 = bindings.get(id);
+    if (keys2 === void 0) return void 0;
+    return [...keys2].map((key3) => `"${entries2.find((entry3) => entry3.key === key3)?.text ?? ""}"`).join(" / ");
   }
   const entry2 = entries2.find((item2) => `${item2.file}#${item2.key}` === id);
   return entry2 === void 0 || allow29.includes(entry2.key) || allow29.includes(entry2.text) ? void 0 : entry2.text;
@@ -47392,6 +47574,354 @@ var analyzeQuality = (sources, limits) => {
   };
 };
 
+// src/quality/config-dupes.ts
+import { posix as posix10 } from "node:path";
+var TOOL_CONFIGS = [
+  { tool: "prettier", files: [".prettierrc", ".prettierrc.json"], packageKey: "prettier" },
+  { tool: "eslint", files: [".eslintrc", ".eslintrc.json"], packageKey: "eslintConfig" },
+  { tool: "babel", files: [".babelrc", ".babelrc.json", "babel.config.json"], packageKey: "babel" },
+  { tool: "jest", files: ["jest.config.json"], packageKey: "jest" },
+  { tool: "stylelint", files: [".stylelintrc", ".stylelintrc.json"], packageKey: "stylelint" }
+];
+var objectOf = (text41) => {
+  const parsed = text41 === void 0 ? void 0 : parseJsonObject(text41);
+  return parsed?.ok === true ? parsed.value : void 0;
+};
+var configsIn = (read12, dir, config) => {
+  const own = config.files.flatMap((name) => {
+    const path = posix10.join(dir, name);
+    const value2 = objectOf(read12(path));
+    return value2 === void 0 ? [] : [[path, value2]];
+  });
+  const manifestPath = posix10.join(dir, "package.json");
+  const embedded = objectOf(read12(manifestPath))?.[config.packageKey];
+  return isRecord(embedded) ? [...own, [`${manifestPath}#${config.packageKey}`, embedded]] : own;
+};
+var conflictsIn = (read12, dir, config) => {
+  const values = /* @__PURE__ */ new Map();
+  for (const [path, object] of configsIn(read12, dir, config)) {
+    for (const [key3, value2] of Object.entries(object)) {
+      const seen = values.get(key3) ?? /* @__PURE__ */ new Map();
+      seen.set(path, JSON.stringify(value2));
+      values.set(key3, seen);
+    }
+  }
+  return [...values].flatMap(
+    ([key3, seen]) => new Set(seen.values()).size > 1 ? [{ id: `${dir}\0${config.tool}\0${key3}`, tool: config.tool, key: key3, files: [...seen.keys()] }] : []
+  );
+};
+var groupsTouched = (changed) => changed.flatMap((file) => {
+  const name = posix10.basename(file);
+  return TOOL_CONFIGS.filter((config) => name === "package.json" || config.files.includes(name)).map(
+    (config) => [posix10.dirname(file), config, file]
+  );
+});
+var duplicatedConfigFindings = (sources) => {
+  const seen = /* @__PURE__ */ new Set();
+  return groupsTouched(sources.changed).flatMap(([dir, config, file]) => {
+    const old = new Set(conflictsIn(sources.before, dir, config).map((conflict) => conflict.id));
+    return conflictsIn(sources.after, dir, config).filter((conflict) => !old.has(conflict.id) && !seen.has(conflict.id)).map((conflict) => {
+      seen.add(conflict.id);
+      const files = conflict.files.join(", ");
+      return {
+        rule: "duplicated_config",
+        level: "block",
+        file,
+        line: 1,
+        params: { tool: conflict.tool, key: conflict.key, files }
+      };
+    });
+  });
+};
+
+// src/quality/deep-imports.ts
+import { posix as posix11 } from "node:path";
+
+// src/quality/specifiers.ts
+var PATTERNS2 = [
+  /(?:^|[\s;])import\s+(?:type\s+)?(?:[\w*{}\s,$]+?\s+from\s+)?["']([^"']+)["']/g,
+  /(?:^|[\s;])export\s+(?:type\s+)?[\w*{}\s,$]*?\s+from\s+["']([^"']+)["']/g,
+  /\b(?:require|import)\(\s*["']([^"']+)["']\s*\)/g
+];
+var moduleSpecifiers = (text41) => {
+  const code2 = stripComments(text41);
+  return [...new Set(PATTERNS2.flatMap((pattern) => [...code2.matchAll(pattern)].map((match) => match[1] ?? "")))];
+};
+var ALIAS = /^(?:[.#~/]|@\/|[a-z][\w+.-]*:)/;
+var packageSpecifier = (specifier) => {
+  if (specifier === "" || ALIAS.test(specifier)) return void 0;
+  const parts = specifier.split("/");
+  const size = specifier.startsWith("@") ? 2 : 1;
+  if (parts.length < size || parts.slice(0, size).some((part2) => part2 === "")) return void 0;
+  return { specifier, name: parts.slice(0, size).join("/"), subpath: parts.slice(size).join("/") };
+};
+var lineOfText = (text41, needle) => {
+  const index = text41.indexOf(needle);
+  return index < 0 ? 1 : text41.slice(0, index).split("\n").length;
+};
+
+// src/quality/deep-imports.ts
+var INTERNAL = /* @__PURE__ */ new Set(["src", "lib", "dist", "internal", "_internal", "build", "esm", "cjs", "es"]);
+var exportKeys = (manifest3) => {
+  const declared = manifest3["exports"];
+  if (declared === void 0 || declared === null) return void 0;
+  if (!isRecord(declared)) return ["."];
+  const keys2 = Object.keys(declared);
+  return keys2.some((key3) => key3.startsWith(".")) ? keys2 : ["."];
+};
+var keyMatches = (key3, target7) => {
+  if (key3 === target7) return true;
+  if (key3.endsWith("/")) return target7.startsWith(key3);
+  const star = key3.indexOf("*");
+  if (star < 0) return false;
+  const head = key3.slice(0, star);
+  const tail2 = key3.slice(star + 1);
+  return target7.length >= head.length + tail2.length && target7.startsWith(head) && target7.endsWith(tail2);
+};
+var pastEntryPoints = (manifest3, subpath) => {
+  const keys2 = exportKeys(manifest3);
+  if (keys2 === void 0) return subpath.split("/").some((segment2) => INTERNAL.has(segment2));
+  return !keys2.some((key3) => keyMatches(key3, `./${subpath}`));
+};
+var manifestNear = (sources, file, name) => {
+  const dirs = posix11.dirname(file).split("/");
+  for (let size = dirs.length; size >= 0; size -= 1) {
+    const base = dirs.slice(0, size).filter((part2) => part2 !== ".").join("/");
+    const text41 = sources.after(posix11.join(base, "node_modules", name, "package.json"));
+    if (text41 === void 0) continue;
+    const parsed = parseJsonObject(text41);
+    return parsed.ok ? parsed.value : void 0;
+  }
+  return void 0;
+};
+var deepIn = (sources, file, after2) => {
+  const before2 = sources.before(file);
+  const old = new Set(before2 === void 0 ? [] : moduleSpecifiers(before2));
+  return moduleSpecifiers(after2).flatMap((specifier) => {
+    const target7 = old.has(specifier) ? void 0 : packageSpecifier(specifier);
+    if (target7 === void 0 || target7.subpath === "") return [];
+    const manifest3 = manifestNear(sources, file, target7.name);
+    if (manifest3 === void 0 || !pastEntryPoints(manifest3, target7.subpath)) return [];
+    const line13 = lineOfText(after2, specifier);
+    return [{ rule: "deep_import", level: "block", file, line: line13, params: { specifier, package: target7.name } }];
+  });
+};
+var deepImportFindings = (sources, touched2) => touched2.filter(isTsFamily).flatMap((file) => {
+  const after2 = sources.after(file);
+  return after2 === void 0 ? [] : deepIn(sources, file, after2);
+});
+
+// src/quality/python-metrics.ts
+var PYTHON_METRICS_SCRIPT = [
+  "import ast, json, sys",
+  "FUNCS = (ast.FunctionDef, ast.AsyncFunctionDef)",
+  "SKIP = FUNCS + (ast.ClassDef, ast.Lambda)",
+  "NEST = tuple(t for t in (ast.For, ast.AsyncFor, ast.While, ast.ExceptHandler, ast.IfExp, getattr(ast, 'Match', None)) if t)",
+  "def walk_if(node, depth, acc):",
+  "    visit(node.test, depth, acc)",
+  "    block(node.body, depth + 1, acc)",
+  "    rest = node.orelse",
+  "    if len(rest) == 1 and isinstance(rest[0], ast.If):",
+  "        acc[0] += 1",
+  "        walk_if(rest[0], depth, acc)",
+  "    elif rest:",
+  "        acc[0] += 1",
+  "        block(rest, depth + 1, acc)",
+  "def block(nodes, depth, acc):",
+  "    for item in nodes:",
+  "        visit(item, depth, acc)",
+  "def visit(node, depth, acc):",
+  "    if isinstance(node, SKIP):",
+  "        return",
+  "    if isinstance(node, ast.If) or isinstance(node, NEST):",
+  "        acc[0] += 1 + depth",
+  "        acc[1] = max(acc[1], depth + 1)",
+  "        if isinstance(node, ast.If):",
+  "            return walk_if(node, depth, acc)",
+  "        return block(list(ast.iter_child_nodes(node)), depth + 1, acc)",
+  "    if isinstance(node, ast.BoolOp):",
+  "        acc[0] += 1",
+  "    block(list(ast.iter_child_nodes(node)), depth, acc)",
+  "def params(args):",
+  "    names = list(getattr(args, 'posonlyargs', [])) + list(args.args)",
+  "    count = len(names) + len(args.kwonlyargs) + (1 if args.vararg else 0) + (1 if args.kwarg else 0)",
+  "    return count - 1 if names and names[0].arg in ('self', 'cls') else count",
+  "def collect(node, scope, seen, out):",
+  "    for child in ast.iter_child_nodes(node):",
+  "        if isinstance(child, FUNCS):",
+  "            scoped = child.name if not scope else scope + '>' + child.name",
+  "            seen[scoped] = seen.get(scoped, 0) + 1",
+  "            key = scoped if seen[scoped] == 1 else scoped + '#' + str(seen[scoped])",
+  "            acc = [0, 0]",
+  "            block(child.body, 0, acc)",
+  "            end = getattr(child, 'end_lineno', None) or child.lineno",
+  "            out.append({'key': key, 'name': child.name, 'line': child.lineno, 'lines': end - child.lineno + 1, 'params': params(child.args), 'cognitive': acc[0], 'nesting': acc[1]})",
+  "            collect(child, scoped, seen, out)",
+  "        elif isinstance(child, ast.ClassDef):",
+  "            collect(child, child.name if not scope else scope + '>' + child.name, seen, out)",
+  "        else:",
+  "            collect(child, scope, seen, out)",
+  "try:",
+  "    tree = ast.parse(sys.stdin.read())",
+  "except SyntaxError:",
+  "    print('null')",
+  "    sys.exit(0)",
+  "found = []",
+  "collect(tree, '', {}, found)",
+  "print(json.dumps(found))"
+].join("\n");
+var NUMBERS = ["line", "lines", "params", "cognitive", "nesting"];
+var parsePythonMetrics = (stdout) => {
+  const parsed = parseJson(stdout.trim());
+  if (!parsed.ok || !Array.isArray(parsed.value)) return void 0;
+  const items = parsed.value;
+  return items.flatMap((item2) => {
+    if (!isRecord(item2) || typeof item2["key"] !== "string" || typeof item2["name"] !== "string") return [];
+    const numbers4 = NUMBERS.map((field) => item2[field]);
+    if (!numbers4.every((value2) => typeof value2 === "number")) return [];
+    const [line13 = 0, lines10 = 0, params2 = 0, cognitive = 0, nesting = 0] = numbers4.map(Number);
+    return [
+      { key: item2["key"], name: item2["name"], line: line13, lines: lines10, params: params2, cognitive, nesting, chain: 0, identifiers: 0 }
+    ];
+  });
+};
+var asFile = (functions) => ({
+  lines: 0,
+  functions,
+  nestedTernaries: [],
+  exports: []
+});
+var pythonFindings = (sources, touched2, limits) => {
+  let skipped2 = false;
+  const findings2 = touched2.filter((file) => file.endsWith(".py")).flatMap((file) => {
+    const text41 = sources.after(file);
+    const after2 = text41 === void 0 ? void 0 : sources.python(text41);
+    if (after2 === void 0) {
+      skipped2 ||= text41 !== void 0;
+      return [];
+    }
+    const old = sources.before(file);
+    const before2 = old === void 0 ? void 0 : sources.python(old);
+    return compareFile(file, before2 === void 0 ? void 0 : asFile(before2), asFile(after2), limits);
+  });
+  return { findings: findings2, skipped: skipped2 };
+};
+
+// src/quality/unused-deps.ts
+import { posix as posix12 } from "node:path";
+var SECTIONS2 = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
+var PLUGIN_PREFIX = /^(?:eslint-plugin-|eslint-config-|prettier-plugin-|babel-plugin-|babel-preset-|stylelint-config-)/;
+var manifestOf = (text41) => {
+  const parsed = text41 === void 0 ? void 0 : parseJsonObject(text41);
+  return parsed?.ok === true ? parsed.value : void 0;
+};
+var declaredDependencies = (manifest3) => new Set(
+  SECTIONS2.flatMap((section3) => {
+    const value2 = manifest3?.[section3];
+    return isRecord(value2) ? Object.keys(value2) : [];
+  })
+);
+var binNames = (sources, dir, name) => {
+  const bin = manifestOf(sources.after(posix12.join(dir, "node_modules", name, "package.json")))?.["bin"];
+  if (typeof bin === "string") return [name.split("/").pop() ?? name];
+  return isRecord(bin) ? Object.keys(bin) : [];
+};
+var lookupNames = (name, bins) => {
+  const scope2 = name.startsWith("@") ? name.split("/")[0] ?? name : void 0;
+  const local = name.split("/").pop() ?? name;
+  const short5 = PLUGIN_PREFIX.test(local) ? local.replace(PLUGIN_PREFIX, "") : void 0;
+  const scoped = scope2 !== void 0 && /^(?:eslint-plugin|eslint-config)$/.test(local) ? scope2 : void 0;
+  return [
+    .../* @__PURE__ */ new Set([name, ...bins, ...short5 === void 0 ? [] : [short5], ...scoped === void 0 ? [] : [scoped]])
+  ];
+};
+var scriptsText = (manifest3) => {
+  const scripts2 = manifest3["scripts"];
+  return isRecord(scripts2) ? Object.values(scripts2).filter((value2) => typeof value2 === "string").join("\n") : "";
+};
+var mentioned2 = (text41, word2) => new RegExp(`(?<![\\w@/-])${word2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w-])`).test(text41);
+var unusedIn = (sources, file) => {
+  const text41 = sources.after(file);
+  const after2 = manifestOf(text41);
+  if (text41 === void 0 || after2 === void 0) return [];
+  const old = declaredDependencies(manifestOf(sources.before(file)));
+  const scripts2 = scriptsText(after2);
+  const dir = posix12.dirname(file);
+  return [...declaredDependencies(after2)].filter((name) => !old.has(name) && !name.startsWith("@types/")).filter((name) => {
+    const names3 = lookupNames(name, binNames(sources, dir, name));
+    return !names3.some((word2) => mentioned2(scripts2, word2) || sources.referenced(word2, [file]));
+  }).map((name) => ({
+    rule: "unused_dependency",
+    level: "block",
+    file,
+    line: lineOfText(text41, `"${name}"`),
+    params: { name }
+  }));
+};
+var unusedDependencyFindings = (sources) => sources.changed.filter((file) => posix12.basename(file) === "package.json" && !file.includes("node_modules/")).flatMap((file) => unusedIn(sources, file));
+
+// src/quality/detectors.ts
+var DETECTORS_FEATURE = "quality-detectors";
+var analyzeDetectors = (sources, limits) => {
+  const touched2 = sources.changed.filter((file) => isQualityFile(file, limits));
+  const python2 = pythonFindings(sources, touched2, limits);
+  return {
+    findings: [
+      ...deepImportFindings(sources, touched2),
+      ...unusedDependencyFindings(sources),
+      ...duplicatedConfigFindings(sources),
+      ...python2.findings
+    ],
+    pythonSkipped: python2.skipped
+  };
+};
+
+// src/quality/gate-detectors.ts
+var PYTHON_TIMEOUT_MS = 1e4;
+var MAX_CONFIRM = 40;
+var NOT_SOURCE = [
+  "package.json",
+  "package-lock.json",
+  "npm-shrinkwrap.json",
+  "yarn.lock",
+  "pnpm-lock.yaml",
+  "bun.lock",
+  "*.md"
+];
+var escaped = (word2) => word2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+var referencedBy = (ctx) => (name, exclude) => {
+  const skip = [
+    ...NOT_SOURCE.map((glob) => `:(exclude,glob)**/${glob}`),
+    ...exclude.map((file) => `:(exclude)${file}`)
+  ];
+  const found = ctx.git.out(["grep", "--untracked", "-l", "-F", "-e", name, "--", ".", ...skip, EXCLUDE_FM]);
+  const word2 = new RegExp(`(?<![\\w-])${escaped(name)}(?![\\w-])`);
+  return (found ?? "").split("\n").filter((file) => file !== "").slice(0, MAX_CONFIRM).some((file) => word2.test(readWorking(ctx, file) ?? ""));
+};
+var pythonRunner = (ctx) => {
+  let missing3 = false;
+  return (text41) => {
+    if (missing3) return void 0;
+    const result = ctx.runtime.exec({
+      command: "python3",
+      args: ["-c", PYTHON_METRICS_SCRIPT],
+      cwd: ctx.paths.root,
+      timeoutMs: PYTHON_TIMEOUT_MS,
+      input: text41
+    });
+    if (!result.found) missing3 = true;
+    if (!result.found || result.timedOut || result.exitCode !== 0) return void 0;
+    return parsePythonMetrics(result.stdout);
+  };
+};
+var detectorSources = (ctx) => ({
+  changed: changedPaths(ctx),
+  before: (file) => baseText(ctx, file),
+  after: (file) => readWorking(ctx, file),
+  referenced: referencedBy(ctx),
+  python: pythonRunner(ctx)
+});
+
 // src/gate/checks/quality.ts
 var MAX_LISTED26 = 15;
 var findingNote5 = (finding7) => note(`gate.quality.${finding7.rule}`, { file: finding7.file, line: finding7.line, ...finding7.params });
@@ -47400,24 +47930,41 @@ var countsByRule = (findings2) => {
   for (const finding7 of findings2) counts2[finding7.rule] = (counts2[finding7.rule] ?? 0) + 1;
   return counts2;
 };
+var activeDetectors = (ctx, limits) => {
+  const mode = guardMode(ctx, DETECTORS_FEATURE);
+  if (mode === "off") return void 0;
+  const analysis = analyzeDetectors(detectorSources(ctx), limits);
+  if (mode === "active") return analysis;
+  if (analysis.findings.length === 0 && !analysis.pythonSkipped) return void 0;
+  recordFeatureShadow(ctx.runtime, ctx.paths, DETECTORS_FEATURE, {
+    task: ctx.contract.id,
+    rules: countsByRule(analysis.findings),
+    pythonSkipped: analysis.pythonSkipped
+  });
+  return void 0;
+};
 var qualityCheck = (_check, ctx) => {
   const mode = guardMode(ctx, QUALITY_GUARD);
   if (mode === "off") return passed([note("gate.quality.off")]);
-  const analysis = analyzeQuality(qualitySources(ctx), loadLimits(ctx.runtime, ctx.paths.root));
-  const blocks2 = blocking2(analysis.findings);
-  const ordered2 = [...blocks2, ...analysis.findings.filter((finding7) => finding7.level === "warn")];
-  if (analysis.findings.length > 0) {
+  const limits = loadLimits(ctx.runtime, ctx.paths.root);
+  const analysis = analyzeQuality(qualitySources(ctx), limits);
+  const detectors = activeDetectors(ctx, limits);
+  const findings2 = [...analysis.findings, ...detectors?.findings ?? []];
+  const blocks2 = blocking2(findings2);
+  const ordered2 = [...blocks2, ...findings2.filter((finding7) => finding7.level === "warn")];
+  if (findings2.length > 0) {
     logEvent(ctx.runtime, ctx.paths, "quality.findings", {
       task: ctx.contract.id,
       mode,
       block: blocks2.length,
-      warn: analysis.findings.length - blocks2.length,
-      rules: countsByRule(analysis.findings)
+      warn: findings2.length - blocks2.length,
+      rules: countsByRule(findings2)
     });
   }
   const notes3 = [
     ...ordered2.slice(0, MAX_LISTED26).map(findingNote5),
-    ...analysis.metricsSkipped ? [note("gate.quality.no_typescript")] : []
+    ...analysis.metricsSkipped ? [note("gate.quality.no_typescript")] : [],
+    ...detectors?.pythonSkipped === true ? [note("gate.quality.no_python")] : []
   ];
   if (blocks2.length === 0) return passed([note("gate.quality.clean", { count: analysis.files }), ...notes3]);
   if (mode === "shadow") return passed([note("gate.quality.shadow", { count: blocks2.length }), ...notes3]);
@@ -47756,9 +48303,9 @@ var sizeNotes = (ctx) => {
     ...size.sensitive.slice(0, MAX_SENSITIVE).map((file) => note("gate.size.sensitive", { file }))
   ];
 };
-var PLUGIN_PREFIX = "finitemonkey:";
+var PLUGIN_PREFIX2 = "finitemonkey:";
 var trustedReviewer = (ctx, agent) => {
-  if (agent.startsWith(PLUGIN_PREFIX)) return true;
+  if (agent.startsWith(PLUGIN_PREFIX2)) return true;
   if (agent.includes(":")) return false;
   const file = `.claude/agents/${agent}.md`;
   return fileAt(ctx.git, ctx.base, file) !== void 0 && !ctx.changes.some((change2) => change2.path === file);
@@ -48381,15 +48928,15 @@ var loadSlopConfig = (runtime, root) => {
 var isAllowed = (config, file) => file.startsWith(".finitemonkey/") || matchesAny(file, config.allow);
 
 // src/slop/files.ts
-import { posix as posix10 } from "node:path";
+import { posix as posix13 } from "node:path";
 var REEXPORT = /^\s*(?:export\s+(?:type\s+)?(?:\*|\{[^}]*\})(?:\s+as\s+[\w$]+)?\s+from\s+["'][^"']+["'];?|module\.exports\s*=\s*require\(\s*["'][^"']+["']\s*\);?)\s*$/;
 var SCRIPT4 = /\.(?:[cm]?[jt]sx?)$/;
 var BARREL = /(^|\/)index\.[cm]?[jt]sx?$/;
 var SUMMARY = /(?:summary|implementation)[^/]*\.(?:md|markdown)$/i;
 var IN_DOCS = /(^|\/)docs?\//;
 var siblingOf = (file, exists3) => {
-  const dir = posix10.dirname(file);
-  const base = posix10.basename(file);
+  const dir = posix13.dirname(file);
+  const base = posix13.basename(file);
   const dot = base.indexOf(".", 1);
   const stem = dot < 0 ? base : base.slice(0, dot);
   const ext = dot < 0 ? "" : base.slice(dot);
@@ -49292,8 +49839,8 @@ var expectations = (file, hunks, removal) => {
   const addsOf = (side) => tally(hunks.filter((item2) => item2.side === side).flatMap((item2) => item2.added));
   const ours = addsOf("ours");
   const theirs = addsOf("theirs");
-  const keys = /* @__PURE__ */ new Set([...base.keys(), ...ours.keys(), ...theirs.keys(), ...removal.union.keys()]);
-  return [...keys].map((line13) => {
+  const keys2 = /* @__PURE__ */ new Set([...base.keys(), ...ours.keys(), ...theirs.keys(), ...removal.union.keys()]);
+  return [...keys2].map((line13) => {
     const left = countOf2(ours, line13);
     const right2 = countOf2(theirs, line13);
     const kept = countOf2(base, line13) - countOf2(removal.union, line13);
@@ -49451,8 +49998,8 @@ var failed5 = (error, inputs) => ({
 });
 var keyOf5 = (diff) => (diff.status === "added" || diff.status === "copied" ? diff.newPath : diff.oldPath ?? diff.newPath) ?? "";
 var pairsOf = (ours, theirs) => {
-  const keys = [...new Set([...ours, ...theirs].map(keyOf5))].filter((key3) => key3 !== "").sort();
-  return keys.map((key3) => ({
+  const keys2 = [...new Set([...ours, ...theirs].map(keyOf5))].filter((key3) => key3 !== "").sort();
+  return keys2.map((key3) => ({
     key: key3,
     ours: ours.find((diff) => keyOf5(diff) === key3),
     theirs: theirs.find((diff) => keyOf5(diff) === key3)
@@ -50883,8 +51430,8 @@ var targetOf3 = (call2) => {
   return `${call2.tool}${parts.length === 0 ? "" : ` ${parts.join(" ")}`}`.slice(0, TARGET_LIMIT);
 };
 var mcpMethod = (pattern) => (call2) => call2.tool.startsWith("mcp__") && pattern.test(methodOf2(call2.tool)) ? targetOf3(call2) : void 0;
-var textArg = (input, keys) => {
-  for (const key3 of keys) {
+var textArg = (input, keys2) => {
+  for (const key3 of keys2) {
     const value2 = input[key3];
     if (typeof value2 === "string") return value2;
   }
@@ -51347,11 +51894,11 @@ var saveFiles = (runtime, repo, name, at6, cap) => {
     total += size;
     files.push({ path, size });
   }
-  const manifest2 = { schema: FILES_SCHEMA, at: at6, files, skipped: skipped2 };
+  const manifest3 = { schema: FILES_SCHEMA, at: at6, files, skipped: skipped2 };
   runtime.mkdir(dir);
-  const written = runtime.writeText(toAbsolutePath(join145(dir, "manifest.json")), `${JSON.stringify(manifest2)}
+  const written = runtime.writeText(toAbsolutePath(join145(dir, "manifest.json")), `${JSON.stringify(manifest3)}
 `);
-  return written.ok ? accept(manifest2) : reject(`manifest: ${written.error}`);
+  return written.ok ? accept(manifest3) : reject(`manifest: ${written.error}`);
 };
 var stringOf = (value2) => typeof value2 === "string" ? value2 : void 0;
 var readManifest = (runtime, repo, name) => {
@@ -51377,11 +51924,11 @@ var readManifest = (runtime, repo, name) => {
   };
 };
 var restoreFiles = (runtime, repo, name, target7) => {
-  const manifest2 = readManifest(runtime, repo, name);
-  if (manifest2 === void 0) return accept({ restored: [], conflicts: [] });
+  const manifest3 = readManifest(runtime, repo, name);
+  if (manifest3 === void 0) return accept({ restored: [], conflicts: [] });
   const restored = [];
   const conflicts2 = [];
-  for (const file of manifest2.files) {
+  for (const file of manifest3.files) {
     const from = toAbsolutePath(join145(storeDir(repo, name), "files", file.path));
     const to = toAbsolutePath(join145(target7, file.path));
     const current2 = runtime.readText(to);
@@ -51877,7 +52424,7 @@ var wtPostToolUse = (input) => {
 import { basename as basename11, dirname as dirname22 } from "node:path";
 
 // src/git/pathspec.ts
-import { posix as posix11 } from "node:path";
+import { posix as posix14 } from "node:path";
 var MAGIC = /^:(?:\(([^)]*)\)|([!^/]*))(.*)$/s;
 var GLOB2 = /[*?[]/;
 var specOf3 = (raw, prefix2) => {
@@ -51887,12 +52434,12 @@ var specOf3 = (raw, prefix2) => {
   const rest = magic === null ? posixRaw : magic[3] ?? "";
   const exclude = /(?:^|,)exclude(?:,|$)|[!^]/.test(words7);
   const top2 = /(?:^|,)top(?:,|$)|\//.test(words7);
-  const joined = posix11.normalize(top2 ? rest : posix11.join(prefix2 === "" ? "." : prefix2, rest));
+  const joined = posix14.normalize(top2 ? rest : posix14.join(prefix2 === "" ? "." : prefix2, rest));
   return { pattern: joined === "./" ? "." : joined.replace(/\/$/, ""), exclude };
 };
 var globRegex4 = (pattern) => {
-  const escaped = pattern.replace(/[.+^${}()|\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
-  return new RegExp(`^${escaped}(?:/.*)?$`);
+  const escaped2 = pattern.replace(/[.+^${}()|\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
+  return new RegExp(`^${escaped2}(?:/.*)?$`);
 };
 var matchesOne = (file, pattern) => {
   if (pattern === "." || pattern === "") return true;
@@ -53299,7 +53846,7 @@ var pathMatches = (lesson, path) => {
     return pattern.test(file) || pattern.test(file.slice(file.lastIndexOf("/") + 1));
   });
 };
-var keyMatches = (lesson, key3) => key3.sig !== void 0 && lesson.sig === key3.sig || pathMatches(lesson, key3.path);
+var keyMatches2 = (lesson, key3) => key3.sig !== void 0 && lesson.sig === key3.sig || pathMatches(lesson, key3.path);
 var lessonLine = (lesson) => `- ${lesson.text.replace(/\s+/g, " ").trim()}`;
 var PROTECTED = [".claude/**", ".finitemonkey/**", ".git/**", ".husky/**", ".githooks/**", "**/settings*.json"];
 var touchesControls = (lesson) => lesson.paths.some((glob) => PROTECTED.some((pattern) => globToRegExp(pattern).test(glob.replace(/\*+/g, "x"))));
@@ -53307,7 +53854,7 @@ var injectable2 = (lesson) => lesson.quarantined !== true && !touchesControls(le
 var pickLessons = (lessons, key3, limits, seen = /* @__PURE__ */ new Set()) => {
   const kept = [];
   let tokens = tokenEstimate(LESSONS_HEADER);
-  const ranked = lessons.filter((lesson) => injectable2(lesson) && keyMatches(lesson, key3)).filter((lesson) => key3.sig !== void 0 && lesson.sig === key3.sig || !seen.has(lesson.id)).sort((left, right2) => Number(right2.sig === key3.sig) - Number(left.sig === key3.sig) || right2.uses - left.uses);
+  const ranked = lessons.filter((lesson) => injectable2(lesson) && keyMatches2(lesson, key3)).filter((lesson) => key3.sig !== void 0 && lesson.sig === key3.sig || !seen.has(lesson.id)).sort((left, right2) => Number(right2.sig === key3.sig) - Number(left.sig === key3.sig) || right2.uses - left.uses);
   for (const lesson of ranked) {
     const cost2 = tokenEstimate(lessonLine(lesson)) + 1;
     if (kept.length >= limits.maxLessons || tokens + cost2 > limits.maxTokens) continue;
@@ -53700,7 +54247,7 @@ var LABELS = ["saas", "production", "done"];
 var READY = String.raw`(?:ready|done|finished|complete|completed|live|launched|pronto|pronta|prontos|conclu[ií]d[oa]|finalizad[oa]|terminad[oa]|no ar|listo|lista|terminado|completado|acabado|funcionando)`;
 var PRODUCT = String.raw`(?:saas|app|application|aplicativo|aplicaci[oó]n|product|produto|producto|platform|plataforma|system|sistema|site|website|landing(?: page)?|p[aá]gina|project|projeto|proyecto)`;
 var GAP = String.raw`(?:\s+\S+){0,5}?\s+`;
-var PATTERNS2 = {
+var PATTERNS3 = {
   saas: [new RegExp(String.raw`\bsaas\b${GAP}${READY}\b`, "i"), new RegExp(String.raw`\b${READY}${GAP}saas\b`, "i")],
   production: [
     /\b(?:production[- ]ready|ready for production|ready to ship|in production|prod[- ]ready)\b/i,
@@ -53716,7 +54263,7 @@ var sentences2 = (text41) => text41.split(/(?<=[.!?\n])\s+/).map((sentence2) => 
 var findLabels = (text41) => {
   const hits = [];
   for (const label3 of LABELS) {
-    const phrase = sentences2(text41).find((sentence2) => PATTERNS2[label3].some((pattern) => pattern.test(sentence2)));
+    const phrase = sentences2(text41).find((sentence2) => PATTERNS3[label3].some((pattern) => pattern.test(sentence2)));
     if (phrase !== void 0) hits.push({ label: label3, phrase: phrase.slice(0, 160) });
   }
   return hits;
@@ -54964,8 +55511,8 @@ var pastedBlocks = (prompt) => {
   return blocks2.map((text41) => ({ text: text41, lines: lineCount5(text41) })).filter((block7) => explicit.length > 0 || block7.lines >= MIN_LINES2 || block7.text.length >= MIN_CHARS);
 };
 var isMissing = (pkg, manifests) => {
-  const escaped = pkg.name.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
-  const pattern = pkg.language === "js" ? new RegExp(`["']${escaped}["']\\s*:`) : new RegExp(`(?:^|["'\\s])${escaped.replace(/[-_]/g, "[-_]")}(?:\\s|[=<>~\\[;"',]|$)`, "im");
+  const escaped2 = pkg.name.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  const pattern = pkg.language === "js" ? new RegExp(`["']${escaped2}["']\\s*:`) : new RegExp(`(?:^|["'\\s])${escaped2.replace(/[-_]/g, "[-_]")}(?:\\s|[=<>~\\[;"',]|$)`, "im");
   return !pattern.test(manifests);
 };
 var detectRelay = (prompt, facts) => {
@@ -55078,7 +55625,7 @@ var readManifest2 = (runtime, root) => {
     workflow: typeof workflow === "string" ? workflow : void 0
   };
 };
-var writeManifest = (runtime, root, manifest2) => runtime.writeText(toAbsolutePath(MANIFEST_FILE2, root), `${JSON.stringify(manifest2, null, 2)}
+var writeManifest = (runtime, root, manifest3) => runtime.writeText(toAbsolutePath(MANIFEST_FILE2, root), `${JSON.stringify(manifest3, null, 2)}
 `);
 
 // src/rules/types.ts
@@ -55833,12 +56380,12 @@ var recordGuardViolation = (input, root, rule) => {
 };
 var rulesGuard = (input) => {
   const root = guardRoot(input);
-  const manifest2 = readManifest2(input.runtime, root);
-  if (Object.keys(manifest2.rules).length === 0) return ALLOW24;
+  const manifest3 = readManifest2(input.runtime, root);
+  if (Object.keys(manifest3.rules).length === 0) return ALLOW24;
   const rules2 = effectiveRules(input.runtime, root);
   if (!rules2.ok) return ALLOW24;
   const hit3 = rules2.value.find(
-    (rule) => manifest2.rules[rule.id]?.surfaces.includes("guard") === true && broken(input, rule)
+    (rule) => manifest3.rules[rule.id]?.surfaces.includes("guard") === true && broken(input, rule)
   );
   if (hit3 === void 0) return ALLOW24;
   recordGuardViolation(input, root, hit3);
@@ -55878,8 +56425,8 @@ var withDeny = (settings, add3, remove) => {
   return setKey(settings, "permissions", Object.keys(nextPermissions).length === 0 ? void 0 : nextPermissions);
 };
 var sameJson = (left, right2) => JSON.stringify(left) === JSON.stringify(right2);
-var withoutCompiledSettings = (settings, manifest2) => {
-  const compiled = Object.values(manifest2.rules);
+var withoutCompiledSettings = (settings, manifest3) => {
+  const compiled = Object.values(manifest3.rules);
   const deny2 = compiled.flatMap((rule) => rule.deny);
   const keyed = compiled.flatMap((rule) => Object.entries(rule.settings));
   const cleaned = keyed.reduce(
@@ -56868,8 +57415,8 @@ var targetOf4 = (input) => {
 var inside = (root, target7) => {
   const rel = relative26(root, toAbsolutePath(target7, toAbsolutePath(root)));
   if (rel === "" || rel.startsWith("..") || isAbsolute4(rel)) return void 0;
-  const posix17 = toPosixPath(rel);
-  return posix17.startsWith(".finitemonkey/") || posix17.startsWith(".git/") ? void 0 : posix17;
+  const posix20 = toPosixPath(rel);
+  return posix20.startsWith(".finitemonkey/") || posix20.startsWith(".git/") ? void 0 : posix20;
 };
 var advise2 = (input, paths, event, params2) => {
   const mode = featureMode(input.runtime, paths, SCOPE_GUARD);
@@ -57806,13 +58353,13 @@ var installedPlugin = (env) => {
   const installPath = record15 === void 0 ? void 0 : optionalString(record15, "installPath");
   if (record15 === void 0 || installPath === void 0) return void 0;
   const root = toAbsolutePath(installPath);
-  const manifest2 = readJson2(env, toAbsolutePath(join161(root, ".claude-plugin", "plugin.json")));
+  const manifest3 = readJson2(env, toAbsolutePath(join161(root, ".claude-plugin", "plugin.json")));
   const hooksPath = toAbsolutePath(join161(root, "hooks", "hooks.json"));
   const text41 = env.runtime.readText(hooksPath);
   const parsed = text41.ok ? parseJsonObject(text41.value) : void 0;
   return {
     root,
-    version: (manifest2 === void 0 ? void 0 : optionalString(manifest2, "version")) ?? optionalString(record15, "version"),
+    version: (manifest3 === void 0 ? void 0 : optionalString(manifest3, "version")) ?? optionalString(record15, "version"),
     hooksFile: parsed?.ok === true ? { source: "plugin", path: hooksPath, hooks: parsed.value["hooks"] } : void 0,
     hooksText: text41.ok ? text41.value : void 0
   };
@@ -58719,15 +59266,15 @@ var proseText = (runtime, root) => {
   const extra = rules2.ok ? rules2.value.filter((name) => name.endsWith(".md")).map((name) => `.claude/rules/${name}`) : [];
   return [...PROSE_FILES, ...extra].map((file) => read8(runtime, root, file) ?? "").join("\n").toLowerCase();
 };
-var configured = (settingsText2, manifest2, id) => {
-  const compiled = manifest2.rules[id];
+var configured = (settingsText2, manifest3, id) => {
+  const compiled = manifest3.rules[id];
   const parsed = parseSettings(settingsText2);
   if (compiled === void 0 || !parsed.ok) return false;
   const deny2 = asList(asRecord(parsed.value["permissions"])["deny"]).map(String);
-  const keys = Object.entries(compiled.settings).every(
+  const keys2 = Object.entries(compiled.settings).every(
     ([key3, value2]) => JSON.stringify(parsed.value[key3]) === JSON.stringify(value2)
   );
-  return compiled.deny.every((entry2) => deny2.includes(entry2)) && keys;
+  return compiled.deny.every((entry2) => deny2.includes(entry2)) && keys2;
 };
 var statusOf7 = (applicable2, present5) => {
   const enforced = present5.filter((surface) => surface !== "text");
@@ -58741,18 +59288,18 @@ var bucketCounts = (rules2) => ({
   reminder: rules2.filter((rule) => rule.bucket === "reminder").length
 });
 var ruleCoverage = (runtime, root, rules2) => {
-  const manifest2 = readManifest2(runtime, root);
+  const manifest3 = readManifest2(runtime, root);
   const settings = read8(runtime, root, SETTINGS_FILE);
-  const workflow = manifest2.workflow === void 0 ? void 0 : read8(runtime, root, manifest2.workflow);
+  const workflow = manifest3.workflow === void 0 ? void 0 : read8(runtime, root, manifest3.workflow);
   const inWorkflow = workflow === void 0 ? /* @__PURE__ */ new Set() : workflowRuleIds(workflow);
   const prose = proseText(runtime, root);
   const agents = read8(runtime, root, "AGENTS.md") ?? "";
   const block7 = agents.includes(AGENTS_MARKERS.begin) ? agents.slice(agents.indexOf(AGENTS_MARKERS.begin)) : "";
   return rules2.map((rule) => {
-    const compiled = manifest2.rules[rule.id]?.surfaces ?? [];
+    const compiled = manifest3.rules[rule.id]?.surfaces ?? [];
     const present5 = [];
     if (compiled.includes("guard")) present5.push("guard");
-    if (compiled.includes("config") && configured(settings, manifest2, rule.id)) present5.push("config");
+    if (compiled.includes("config") && configured(settings, manifest3, rule.id)) present5.push("config");
     if (compiled.includes("git")) present5.push("git");
     if (inWorkflow.has(rule.id)) present5.push("ci");
     if (block7.includes(`(rule ${rule.id})`) || prose.includes(rule.text.toLowerCase()) || prose.includes(rule.id))
@@ -58986,8 +59533,8 @@ var checkRules = ({ root, runtime }) => {
       )
     ];
   });
-  const manifest2 = readManifest2(runtime, root);
-  const ci = manifest2.workflow !== void 0 && ciRequirement(runtime, root) === "not required" ? [finding("rules.ci", "warn", "rules.doctor.ci_not_required", { job: CI_JOB }, "rules.doctor.fix_ruleset")] : [];
+  const manifest3 = readManifest2(runtime, root);
+  const ci = manifest3.workflow !== void 0 && ciRequirement(runtime, root) === "not required" ? [finding("rules.ci", "warn", "rules.doctor.ci_not_required", { job: CI_JOB }, "rules.doctor.fix_ruleset")] : [];
   const enforced = bucketCounts(rules2.value).enforced;
   const many2 = enforced > DETERMINISTIC_CEILING ? [
     finding(
@@ -59307,7 +59854,7 @@ var upsertIssue = (runtime, cwd, title, section3) => {
 };
 
 // src/dssync/render.ts
-var SECTIONS2 = ["tokens", "classes", "components", "assets"];
+var SECTIONS3 = ["tokens", "classes", "components", "assets"];
 var SHOWN5 = 60;
 var value = (text41) => {
   const trimmed2 = (text41 ?? "").replace(/\s+/g, " ").trim();
@@ -59323,7 +59870,7 @@ var rows = (t, section3, withValues) => [
   ...section3.removed.map((item2) => `- ${t("ds.summary.removed", { name: item2.name })}`)
 ];
 var renderSummary = (t, summary2) => {
-  const parts = SECTIONS2.flatMap((name) => {
+  const parts = SECTIONS3.flatMap((name) => {
     const lines10 = rows(t, summary2[name], name === "tokens");
     return [`### ${t(`ds.summary.${name}`)}`, "", ...lines10.length === 0 ? [t("ds.summary.none")] : lines10, ""];
   });
@@ -59337,7 +59884,7 @@ var renderSummary = (t, summary2) => {
 };
 
 // src/dssync/summary.ts
-import { posix as posix12 } from "node:path";
+import { posix as posix15 } from "node:path";
 var STYLE = /\.(?:css|scss|sass|less)$/;
 var TOKEN_JSON = /(?:^|\/)(?:tokens\/[^/]+|[^/]+\.tokens)\.json$/;
 var ASSET = /\.(?:svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf)$/i;
@@ -59385,7 +59932,7 @@ var componentsOf = (snapshot2) => sortedMap(
 );
 var assetsOf = (snapshot2) => sortedMap(
   [...snapshot2].flatMap(
-    ([path, text41]) => ASSET.test(path) ? [[posix12.normalize(path), hash(text41)]] : []
+    ([path, text41]) => ASSET.test(path) ? [[posix15.normalize(path), hash(text41)]] : []
   )
 );
 var compare = (before2, after2) => {
@@ -60056,8 +60603,8 @@ var governUx = (input) => {
 };
 var uxPath = (paths, tree) => toAbsolutePath(join171(lookDir(paths, tree), UX_FILE));
 var counted3 = (records2, fired) => {
-  const keys = [...new Set(records2.map((record15) => `${record15.check}\0${record15.rule}`))].sort();
-  return keys.map((key3) => {
+  const keys2 = [...new Set(records2.map((record15) => `${record15.check}\0${record15.rule}`))].sort();
+  return keys2.map((key3) => {
     const [check2 = "", rule = ""] = key3.split("\0");
     const mine = records2.filter((record15) => record15.check === check2 && record15.rule === rule);
     const [firings, dismissed] = fired(rule);
@@ -61772,10 +62319,10 @@ var buildSheet = (input) => {
 var diffSheets = (before2, after2) => after2.views.flatMap((view3) => {
   const old = before2.views.find((item2) => item2.width === view3.width && item2.state === view3.state);
   if (old === void 0) return [];
-  const keys = [
+  const keys2 = [
     .../* @__PURE__ */ new Set([...old.elements.map((element) => element.key), ...view3.elements.map((element) => element.key)])
   ];
-  return keys.flatMap((key3) => {
+  return keys2.flatMap((key3) => {
     const was = old.elements.find((element) => element.key === key3);
     const now = view3.elements.find((element) => element.key === key3);
     return PROPERTIES.flatMap((property) => {
@@ -61803,12 +62350,12 @@ var measurePage = (doc) => {
   const MAX_STRUCTURE = 200;
   const LAYOUT = "header, nav, main, section, article, aside, footer, form, table, h1, h2, h3, ul, ol";
   const walker = doc.createTreeWalker(doc.body, SHOW_TEXT);
-  const keys = /* @__PURE__ */ new Set();
+  const keys2 = /* @__PURE__ */ new Set();
   const seen = [];
   let length = 0;
   for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
     const text41 = (node.textContent ?? "").trim();
-    if (KEY2.test(text41) && !NOT_KEY.test(text41) || PLACEHOLDER3.test(text41)) keys.add(text41.slice(0, 80));
+    if (KEY2.test(text41) && !NOT_KEY.test(text41) || PLACEHOLDER3.test(text41)) keys2.add(text41.slice(0, 80));
     if (text41 !== "" && length < MAX_TEXT5) {
       seen.push(text41);
       length += text41.length + 1;
@@ -61823,7 +62370,7 @@ var measurePage = (doc) => {
   const root = doc.documentElement;
   return {
     overflow: Math.max(0, root.scrollWidth - root.clientWidth),
-    keys: [...keys],
+    keys: [...keys2],
     small,
     broken: broken2,
     text: seen.join("\n").slice(0, MAX_TEXT5),
@@ -62943,9 +63490,9 @@ var mergeValue = (path, base, ours, theirs, conflicts2) => {
   return ours;
 };
 var mergeObject = (path, base, ours, theirs, conflicts2) => {
-  const keys = [.../* @__PURE__ */ new Set([...Object.keys(ours), ...Object.keys(theirs)])];
+  const keys2 = [.../* @__PURE__ */ new Set([...Object.keys(ours), ...Object.keys(theirs)])];
   const out = {};
-  for (const key3 of keys) {
+  for (const key3 of keys2) {
     const merged3 = mergeValue(
       path === "" ? key3 : `${path}.${key3}`,
       slot(base, key3),
@@ -63105,8 +63652,8 @@ var resolveCore = (inputs, context) => {
     if (merged3?.text !== void 0)
       return fileLevel(path, "C5", "merged-by-key", DECISIONS.C5, { kind: "write", text: merged3.text });
     if (merged3 !== void 0) {
-      const keys = merged3.conflicts.map((item2) => item2.key).join(", ");
-      return fileLevel(path, "C7", `same-key-different-values: ${keys}`, DECISIONS.C7, { kind: "none" }, true);
+      const keys2 = merged3.conflicts.map((item2) => item2.key).join(", ");
+      return fileLevel(path, "C7", `same-key-different-values: ${keys2}`, DECISIONS.C7, { kind: "none" }, true);
     }
   }
   return lineBased(inputs, context);
@@ -64121,11 +64668,21 @@ var eslintFiles = (t, stack, presets, read12) => {
     notes: notes3
   };
 };
+var otherLinter = (stack) => {
+  const chosen = stack.lintConvention;
+  return chosen === void 0 || chosen === "eslint" || chosen === "off" ? void 0 : chosen;
+};
+var nodeLint = (t, stack, presets, read12) => {
+  const other = otherLinter(stack);
+  if (other !== void 0) return { files: [], notes: [t("gen.lint.convention", { tool: other })] };
+  return stack.node ? eslintFiles(t, stack, presets, read12) : { files: [], notes: [] };
+};
 var lintPlan = (t, stack, presets, read12) => {
-  const eslint = stack.node ? eslintFiles(t, stack, presets, read12) : { files: [], notes: [] };
+  const eslint = nodeLint(t, stack, presets, read12);
   const python2 = stack.python && presets.has("no-comments") ? [{ path: PYTHON_CHECKER, text: pythonChecker(t("gen.lint.no_comments")) }] : [];
   const pythonNotes = python2.length > 0 ? [t("gen.lint.python", { file: PYTHON_CHECKER })] : [];
-  const none = eslint.files.length === 0 && python2.length === 0 ? [t("gen.lint.no_stack")] : [];
+  const silent = eslint.files.length === 0 && python2.length === 0 && otherLinter(stack) === void 0;
+  const none = silent ? [t("gen.lint.no_stack")] : [];
   return { files: [...eslint.files, ...python2], notes: [...eslint.notes, ...pythonNotes, ...none] };
 };
 
@@ -64500,9 +65057,9 @@ var checksResult = (t, schema, code2, checks) => {
 var FIX2 = "follow the project rule named in the failure, or change it in .finitemonkey/rules.yml";
 var RECORD2 = "";
 var compiledFor = (runtime, root, surface) => {
-  const manifest2 = readManifest2(runtime, root);
+  const manifest3 = readManifest2(runtime, root);
   const rules2 = effectiveRules(runtime, root);
-  return rules2.ok ? rules2.value.filter((rule) => manifest2.rules[rule.id]?.surfaces.includes(surface) === true) : [];
+  return rules2.ok ? rules2.value.filter((rule) => manifest3.rules[rule.id]?.surfaces.includes(surface) === true) : [];
 };
 var failure3 = (rule, where3) => `${where3}: rule ${rule.id} (${rule.text})`;
 var commitRuleCheck = (rules2, message) => ({
@@ -64948,15 +65505,15 @@ var snapshotCommand = {
         )
       );
     }
-    const manifest2 = readManifest(ctx.runtime, repo, storeName(taken.value.ref));
-    const overCap = (manifest2?.skipped ?? []).filter((item2) => item2.reason === "cap").map((item2) => item2.path);
+    const manifest3 = readManifest(ctx.runtime, repo, storeName(taken.value.ref));
+    const overCap = (manifest3?.skipped ?? []).filter((item2) => item2.reason === "cap").map((item2) => item2.path);
     const data2 = {
       schema: SNAPSHOT_SCHEMA,
       ref: taken.value.ref,
       commit: taken.value.commit,
       op,
-      files: manifest2?.files.length ?? 0,
-      skipped: manifest2?.skipped ?? []
+      files: manifest3?.files.length ?? 0,
+      skipped: manifest3?.skipped ?? []
     };
     return Promise.resolve(
       success(data2, [
@@ -66282,6 +66839,138 @@ var infraCommand = {
   }
 };
 
+// src/defaults/convention-plan.ts
+var EXAMPLES = { tests: "vitest", lint: "eslint", layout: "src" };
+var conventionFlags = (ctx, args2) => {
+  const flags = {};
+  for (const id of CONVENTION_IDS) {
+    const raw = stringOption(args2.values, id);
+    if (raw === void 0) continue;
+    if (!isConventionValue(raw)) {
+      const problem5 = usageProblem(
+        "invalid_arguments",
+        "defaults.error.convention",
+        `finitemonkey init --${id} ${EXAMPLES[id]}`,
+        {
+          id,
+          value: raw,
+          example: EXAMPLES[id]
+        }
+      );
+      return { ok: false, result: failureFrom(ctx.t, problem5) };
+    }
+    flags[id] = raw;
+  }
+  return { ok: true, flags };
+};
+var questionOf2 = (answer5) => answer5.kind === "given" ? [] : [
+  {
+    id: answer5.detected.id,
+    status: answer5.kind,
+    detected: answer5.detected.value,
+    evidence: answer5.detected.evidence,
+    options: [`--${answer5.detected.id} ${answer5.detected.value}`, `--${answer5.detected.id} ${CONVENTION_OFF}`]
+  }
+];
+var withConventionQuestions = (ctx, result, answers) => {
+  const questions = answers.flatMap(questionOf2);
+  if (questions.length === 0) return result;
+  const pending = questions.filter((question) => question.status === "pending");
+  const lines10 = pending.map(
+    (question) => ctx.t("defaults.question.convention_pending", {
+      id: question.id,
+      value: question.detected,
+      evidence: question.evidence
+    })
+  );
+  const human2 = [...result.human ?? [], ...lines10];
+  if (result.ok) return { ...result, data: { ...result.data, conventionQuestions: questions }, human: human2 };
+  return result.data === void 0 ? { ...result, human: human2 } : { ...result, data: { ...result.data, conventionQuestions: questions }, human: human2 };
+};
+
+// src/defaults/detect-conventions.ts
+var RUNNERS4 = ["vitest", "jest", "mocha", "ava"];
+var ESLINT_FILES = [
+  "eslint.config.js",
+  "eslint.config.mjs",
+  "eslint.config.cjs",
+  "eslint.config.ts",
+  ".eslintrc",
+  ".eslintrc.js",
+  ".eslintrc.cjs",
+  ".eslintrc.json",
+  ".eslintrc.yml"
+];
+var LINTERS = [
+  ["eslint", ESLINT_FILES],
+  ["biome", ["biome.json", "biome.jsonc"]],
+  ["ruff", ["ruff.toml", ".ruff.toml"]]
+];
+var LAYOUTS = ["src", "app", "lib"];
+var manifest2 = (files) => {
+  const text41 = files.read("package.json");
+  const parsed = text41 === void 0 ? void 0 : parseJsonObject(text41);
+  return parsed?.ok === true ? parsed.value : void 0;
+};
+var sectionHas = (pkg, name) => ["dependencies", "devDependencies"].some((key3) => {
+  const section3 = pkg?.[key3];
+  return isRecord(section3) && section3[name] !== void 0;
+});
+var testRunner = (files) => {
+  const pkg = manifest2(files);
+  const runner3 = RUNNERS4.find((name) => sectionHas(pkg, name));
+  if (runner3 !== void 0) return { id: "tests", value: runner3, evidence: `package.json (${runner3})` };
+  const scripts2 = pkg?.["scripts"];
+  const test = isRecord(scripts2) ? scripts2["test"] : void 0;
+  if (typeof test === "string" && /\bnode\b.*--test\b/.test(test))
+    return { id: "tests", value: "node", evidence: "package.json (scripts.test)" };
+  const pytest = ["pytest.ini", "conftest.py"].find((file) => files.exists(file));
+  return pytest === void 0 ? void 0 : { id: "tests", value: "pytest", evidence: pytest };
+};
+var linter = (files) => {
+  for (const [value2, candidates4] of LINTERS) {
+    const found = candidates4.find((file) => files.exists(file));
+    if (found !== void 0) return { id: "lint", value: value2, evidence: found };
+  }
+  return void 0;
+};
+var layout = (files) => {
+  const dir = LAYOUTS.find((name) => files.isDir(name));
+  return dir === void 0 ? void 0 : { id: "layout", value: dir, evidence: `${dir}/` };
+};
+var detectConventions = (files) => [testRunner(files), linter(files), layout(files)].flatMap((item2) => item2 === void 0 ? [] : [item2]);
+
+// src/defaults/convention-question.ts
+var DEFAULTS_ADAPT_FEATURE = "defaults-adapt";
+var NO = /* @__PURE__ */ new Set(["n", "no", "não", "nao"]);
+var askOne = async (ctx, ask8, detected) => {
+  ctx.io.stderr.write(`${ctx.t(`defaults.question.${detected.id}`, { ...detected })} `);
+  const answer5 = (await ask8())?.trim().toLowerCase() ?? "";
+  return { kind: "given", id: detected.id, value: NO.has(answer5) ? CONVENTION_OFF : detected.value };
+};
+var conventionAnswers = async (ctx, flags, ask8) => {
+  const root = projectRoot(ctx);
+  const known3 = projectDefaults(ctx.runtime, root).conventions ?? {};
+  const detected = detectConventions(projectAt(root, ctx.runtime));
+  const mode = featureMode(ctx.runtime, fmPaths(root), DEFAULTS_ADAPT_FEATURE);
+  const answers = [];
+  for (const id of CONVENTION_IDS) {
+    const flag2 = flags[id];
+    const found = detected.find((item2) => item2.id === id);
+    if (flag2 !== void 0) answers.push({ kind: "given", id, value: flag2 });
+    else if (known3[id] !== void 0 || found === void 0 || mode === "off") continue;
+    else if (mode === "shadow") answers.push({ kind: "shadow", detected: found });
+    else if (!isPerson(ctx)) answers.push({ kind: "pending", detected: found });
+    else answers.push(await askOne(ctx, ask8(), found));
+  }
+  return answers;
+};
+var withConventions = (defaults, answers) => {
+  const given = answers.flatMap((answer5) => answer5.kind === "given" ? [[answer5.id, answer5.value]] : []);
+  if (given.length === 0) return defaults;
+  return { ...defaults, conventions: { ...defaults.conventions, ...Object.fromEntries(given) } };
+};
+
 // src/perfil/lines.ts
 var lineReader = (source3) => {
   const ready = [];
@@ -66334,9 +67023,9 @@ var detectCommitStyle = (runtime, root) => {
 };
 
 // src/defaults/question.ts
-var NO = /* @__PURE__ */ new Set(["n", "no", "não", "nao"]);
+var NO2 = /* @__PURE__ */ new Set(["n", "no", "não", "nao"]);
 var parseCommitStyle = (raw) => COMMIT_STYLES.find((style2) => style2 === raw);
-var commitsAnswer = async (ctx, flag2) => {
+var commitsAnswer = async (ctx, flag2, ask8) => {
   if (flag2 !== void 0) return { kind: "given", style: flag2 };
   const root = projectRoot(ctx);
   if (projectDefaults(ctx.runtime, root).commits !== void 0) return { kind: "none" };
@@ -66344,13 +67033,14 @@ var commitsAnswer = async (ctx, flag2) => {
   if (detected?.style !== "free") return { kind: "none" };
   if (!isPerson(ctx)) return { kind: "pending", detected };
   ctx.io.stderr.write(`${ctx.t("defaults.question.commits", { ...detected })} `);
-  const answer5 = (await lineReader(ctx.io.stdin)())?.trim().toLowerCase() ?? "";
-  return { kind: "given", style: NO.has(answer5) ? "free" : "conventional" };
+  const answer5 = (await (ask8 ?? lineReader(ctx.io.stdin))())?.trim().toLowerCase() ?? "";
+  return { kind: "given", style: NO2.has(answer5) ? "free" : "conventional" };
 };
 var withCommits = (defaults, answer5) => {
   if (answer5.kind !== "given") return defaults;
   const off2 = defaults.off.filter((item2) => item2 !== "conventional-commits");
   return {
+    ...defaults,
     off: answer5.style === "free" ? [...off2, "conventional-commits"] : off2,
     commits: answer5.style
   };
@@ -66462,6 +67152,9 @@ var trustImplicit = (runtime, root, files) => {
 var flagsFor2 = (request) => [
   `finitemonkey ${request.mode} --yes`,
   ...request.commits.kind === "given" ? [`--commits ${request.commits.style}`] : [],
+  ...(request.conventions ?? []).flatMap(
+    (answer5) => answer5.kind === "given" ? [`--${answer5.id} ${answer5.value}`] : []
+  ),
   ...request.bin === void 0 ? [] : [`--bin "${request.bin}"`],
   ...request.marketplace ? ["--marketplace"] : [],
   ...request.sandbox === true ? ["--sandbox"] : []
@@ -66502,16 +67195,21 @@ var runInstall = (ctx, request) => {
   const { project, gitRoot: gitRoot2 } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const defaults = withCommits(projectDefaults(ctx.runtime, project.root), request.commits);
+  const conventions = request.conventions ?? [];
+  const defaults = withConventions(
+    withCommits(projectDefaults(ctx.runtime, project.root), request.commits),
+    conventions
+  );
   const input = planInputFor(ctx, defaults, request.bin, request.marketplace, request.sandbox === true);
   const plan3 = buildPlan2(project, detect(project, gitRoot2, input), input, previous.value);
   if (!plan3.ok) return failureFrom(ctx.t, planProblem(plan3.error));
   const result = ctx.dryRun || !ctx.yes || !needsWrite(plan3.value) ? presentPlan(ctx, request, plan3.value) : applyAndReport(ctx, request, plan3.value);
-  return withQuestions(ctx, result, request.commits);
+  return withConventionQuestions(ctx, withQuestions(ctx, result, request.commits), conventions);
 };
-var initRequest = (args2, commits2) => ({
+var initRequest = (args2, commits2, conventions) => ({
   mode: "init",
   commits: commits2,
+  conventions,
   bin: stringOption(args2.values, "bin"),
   marketplace: args2.values["marketplace"] === true,
   sandbox: args2.values["sandbox"] === true,
@@ -66534,10 +67232,17 @@ var withGithub = (ctx, result) => {
   const human2 = [...result.human ?? [], ...githubLines(ctx.t, step4)];
   return result.ok ? { ...result, data: { ...result.data, github: step4 }, human: human2 } : { ...result, human: human2 };
 };
+var sharedAsk = (ctx) => {
+  let reader2;
+  return () => {
+    reader2 ??= lineReader(ctx.io.stdin);
+    return reader2;
+  };
+};
 var initCommand = {
   path: ["init"],
   summaryKey: "command.init.summary",
-  usage: "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+  usage: "finitemonkey init [--commits conventional|free] [--tests <runner>] [--lint <tool>] [--layout <dir>] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
   status: "ready",
   options: {
     commits: { type: "string" },
@@ -66545,7 +67250,10 @@ var initCommand = {
     marketplace: { type: "boolean" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
-    github: { type: "boolean" }
+    github: { type: "boolean" },
+    tests: { type: "string" },
+    lint: { type: "string" },
+    layout: { type: "string" }
   },
   run: async (ctx, args2) => {
     const raw = stringOption(args2.values, "commits");
@@ -66557,7 +67265,12 @@ var initCommand = {
           value: raw
         })
       );
-    const result = runInstall(ctx, initRequest(args2, await commitsAnswer(ctx, flag2)));
+    const conventions = conventionFlags(ctx, args2);
+    if (!conventions.ok) return conventions.result;
+    const ask8 = sharedAsk(ctx);
+    const commits2 = await commitsAnswer(ctx, flag2, () => ask8()());
+    const answers = await conventionAnswers(ctx, conventions.flags, ask8);
+    const result = runInstall(ctx, initRequest(args2, commits2, answers));
     const looked = args2.values["look-back"] === true ? withLookBack(ctx, result) : result;
     return args2.values["github"] === true ? withGithub(ctx, looked) : looked;
   }
@@ -66601,9 +67314,9 @@ var filesOf = (finding7) => {
 };
 var instructionsMeasure = (inventory, findings2, records2, platform) => {
   const pathOf2 = new Map(inventory.files.map((file) => [file.display, keyOf8(file.path, platform)]));
-  const keys = (kind) => findings2.filter((finding7) => finding7.kind === kind).map((finding7) => filesOf(finding7).map((file) => pathOf2.get(file) ?? file));
-  const conflicts2 = keys("conflict");
-  const volatile2 = keys("volatile");
+  const keys2 = (kind) => findings2.filter((finding7) => finding7.kind === kind).map((finding7) => filesOf(finding7).map((file) => pathOf2.get(file) ?? file));
+  const conflicts2 = keys2("conflict");
+  const volatile2 = keys2("volatile");
   const sessions = [...sessionsOf(records2).values()].map(
     (list13) => new Set(list13.map((record15) => keyOf8(record15.file, platform)))
   );
@@ -67242,8 +67955,8 @@ var text37 = (record15, key3) => {
   const value2 = record15[key3];
   return typeof value2 === "string" && value2.trim() !== "" ? value2 : void 0;
 };
-var optional8 = (record15, keys) => Object.fromEntries(
-  keys.flatMap((key3) => {
+var optional8 = (record15, keys2) => Object.fromEntries(
+  keys2.flatMap((key3) => {
     const found = text37(record15, key3);
     return found === void 0 ? [] : [[key3, found]];
   })
@@ -69848,7 +70561,7 @@ var knowledgeMapCommand = {
 import { join as join194 } from "node:path";
 
 // src/map/build.ts
-import { join as join193, posix as posix13 } from "node:path";
+import { join as join193, posix as posix16 } from "node:path";
 
 // src/knowledge/derived.ts
 import { join as join192 } from "node:path";
@@ -70020,7 +70733,7 @@ var rank2 = (folder) => {
 var grouped2 = (definitions) => {
   const folders = /* @__PURE__ */ new Map();
   for (const { file, name } of definitions) {
-    const folder = posix13.dirname(file);
+    const folder = posix16.dirname(file);
     folders.set(folder, (folders.get(folder) ?? /* @__PURE__ */ new Set()).add(name));
   }
   return [...folders].map(([folder, names3]) => [folder, [...names3].sort((a, b) => a.localeCompare(b))]).sort(([a], [b]) => rank2(a) - rank2(b) || a.localeCompare(b));
@@ -70575,13 +71288,13 @@ var readApproved = (runtime, paths) => {
   const text41 = runtime.readText(approvedPath(paths));
   if (!text41.ok) return [];
   return listOf4(text41.value, "screens").flatMap((item2) => {
-    const layout = layoutOf(item2);
+    const layout2 = layoutOf(item2);
     const at6 = isRecord(item2) ? item2["at"] : void 0;
-    if (layout === void 0 || typeof at6 !== "string" || !isRecord(item2)) return [];
+    if (layout2 === void 0 || typeof at6 !== "string" || !isRecord(item2)) return [];
     const tree = item2["tree"];
     return [
       {
-        ...layout,
+        ...layout2,
         at: at6,
         ...item2["image"] === true ? { image: true } : {},
         ...typeof tree === "string" ? { tree } : {}
@@ -73642,10 +74355,10 @@ var onboardCommand = {
 };
 
 // src/commands/organize.ts
-import { isAbsolute as isAbsolute6, join as join205, posix as posix16 } from "node:path";
+import { isAbsolute as isAbsolute6, join as join205, posix as posix19 } from "node:path";
 
 // src/organize/plan.ts
-import { posix as posix14 } from "node:path";
+import { posix as posix17 } from "node:path";
 var PLAN_DIR2 = "docs/organize";
 var MAX_TARGETS = 3;
 var CHUNK_LINES = 300;
@@ -73660,9 +74373,9 @@ var declarations = (file, text41) => {
   });
 };
 var destinationFor = (file, first) => {
-  const extension = posix14.extname(file);
-  const stem = posix14.basename(file, extension);
-  return posix14.join(posix14.dirname(file), stem, `${first}${extension}`);
+  const extension = posix17.extname(file);
+  const stem = posix17.basename(file, extension);
+  return posix17.join(posix17.dirname(file), stem, `${first}${extension}`);
 };
 var responsibilities = (file, text41, chunk = CHUNK_LINES) => {
   const found = declarations(file, text41);
@@ -73711,7 +74424,7 @@ var planMarkdown = (input, parts) => [
   ...planSteps(input, parts).flatMap((step4, index) => [`## Step ${String(index + 1)}: ${step4}`, ""])
 ].join("\n");
 var stepsIn = (markdown) => markdown.split(/\r?\n/).flatMap((line13) => /^## Step \d+: (.+)$/.exec(line13)?.[1] ?? []).map((goal) => goal.trim());
-var planPath2 = (file) => posix14.join(PLAN_DIR2, `${file.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+/, "")}.md`);
+var planPath2 = (file) => posix17.join(PLAN_DIR2, `${file.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+/, "")}.md`);
 
 // src/organize/rank.ts
 var DEFAULT_SENSITIVE2 = [
@@ -73762,7 +74475,7 @@ var rankHotspots = (facts, history, sensitive) => {
 };
 
 // src/organize/scan.ts
-import { posix as posix15 } from "node:path";
+import { posix as posix18 } from "node:path";
 
 // src/organize/history.ts
 var CHURN_DAYS = 90;
@@ -73794,7 +74507,7 @@ var readHistory2 = (git4) => {
 // src/organize/scan.ts
 var CACHE = "organize-rank.json";
 var JS3 = /\.(?:[cm]?[jt]sx?)$/;
-var stemOf3 = (path) => posix15.basename(path).replace(/\.[^.]+$/, "").replace(/(?:\.test|\.spec|_test|Test|Tests)$/, "").replace(/^test_/, "").toLowerCase();
+var stemOf3 = (path) => posix18.basename(path).replace(/\.[^.]+$/, "").replace(/(?:\.test|\.spec|_test|Test|Tests)$/, "").replace(/^test_/, "").toLowerCase();
 var complexityOf = (root, path, text41) => {
   const ts = JS3.test(path) ? loadTypescript(root) : void 0;
   if (ts === void 0) return branchComplexity(text41);
@@ -73819,10 +74532,10 @@ var projectFacts2 = (runtime, git4, root) => {
     ];
   });
 };
-var NUMBERS = ["score", "churn", "complexity", "lines", "importers", "fixes"];
+var NUMBERS2 = ["score", "churn", "complexity", "lines", "importers", "fixes"];
 var hotspotFrom = (value2) => {
   if (!isRecord(value2) || typeof value2["path"] !== "string") return void 0;
-  const numbers4 = NUMBERS.map((key3) => value2[key3]);
+  const numbers4 = NUMBERS2.map((key3) => value2[key3]);
   if (!numbers4.every((item2) => typeof item2 === "number")) return void 0;
   const [score = 0, churn = 0, complexity = 0, lines10 = 0, importers = 0, fixes = 0] = numbers4;
   return {
@@ -73906,9 +74619,9 @@ var USAGE19 = "finitemonkey organize [--top <n>] | organize plan <file> | organi
 var DEFAULT_TOP = 10;
 var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE19, { detail });
 var relativeFile3 = (ctx, root, raw) => {
-  if (isAbsolute6(raw)) return posix16.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
+  if (isAbsolute6(raw)) return posix19.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
   const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
-  return posix16.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
+  return posix19.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
 };
 var rank3 = (ctx, top2) => {
   const root = projectRoot(ctx);
@@ -73951,7 +74664,7 @@ var plan = (ctx, raw) => {
   const tree = workingTree(ctx.runtime, gitAt(ctx.runtime, root), root, []);
   const importerDirs = [
     ...new Set(
-      importEdges(tree).filter((edge) => edge.to === file).map((edge) => posix16.dirname(edge.from))
+      importEdges(tree).filter((edge) => edge.to === file).map((edge) => posix19.dirname(edge.from))
     )
   ].sort();
   const parts = responsibilities(file, text41.value);
@@ -75619,12 +76332,12 @@ var DEV_TOOLS = ["ruff", "pytest", "vulture"];
 // src/commands/preset.ts
 var PRESET_SCHEMA = "finitemonkey/preset@1";
 var USAGE23 = "finitemonkey preset python [--write] [--overwrite]";
-var presetFiles = (project, linter) => [
+var presetFiles = (project, linter2) => [
   ...[...project.sections].some((name) => name.startsWith("ruff")) ? [] : [{ path: "ruff.toml", content: RUFF_TOML }],
   ...project.sections.has("pytest.ini_options") ? [] : [{ path: "pytest.ini", content: PYTEST_INI }],
   { path: "scripts/check_no_comments.py", content: NO_COMMENTS_SCRIPT },
-  ...linter === void 0 ? [] : [linter],
-  { path: ".github/workflows/ci.yml", content: pythonCi(linter !== void 0) }
+  ...linter2 === void 0 ? [] : [linter2],
+  { path: ".github/workflows/ci.yml", content: pythonCi(linter2 !== void 0) }
 ];
 var python = (ctx, values) => {
   const root = projectRoot(ctx);
@@ -75640,12 +76353,12 @@ var python = (ctx, values) => {
   if (project === void 0) return failureFrom(ctx.t, usageProblem("invalid_arguments", "preset.not_python", USAGE23));
   const arch = loadArch(ctx.runtime, root);
   const deny2 = (from, allowed5) => ctx.t("arch.generated.not_allowed", { from, allowed: allowed5.join(", ") });
-  const linter = arch.kind === "ok" ? importLinter(arch.config, deny2) : void 0;
-  const tools = [...DEV_TOOLS, ...linter === void 0 ? [] : ["import-linter"]].join(" ");
+  const linter2 = arch.kind === "ok" ? importLinter(arch.config, deny2) : void 0;
+  const tools = [...DEV_TOOLS, ...linter2 === void 0 ? [] : ["import-linter"]].join(" ");
   return generateResult({
     ctx,
     root,
-    files: presetFiles(project, linter),
+    files: presetFiles(project, linter2),
     values,
     usage: USAGE23,
     data: { schema: PRESET_SCHEMA, stack: "python", manager: project.manager },
@@ -76255,13 +76968,13 @@ var settingsText = (runtime, root, change2) => {
 var compileRules = (runtime, root, rules2, options2) => {
   const previous = readManifest2(runtime, root);
   const ci = options2.ci || previous.workflow !== void 0;
-  const manifest2 = {
+  const manifest3 = {
     schemaVersion: 1,
     rules: Object.fromEntries(rules2.map((rule) => [rule.id, compiledRule(rule, ci)])),
     presenceHook: true,
     workflow: ci ? WORKFLOW_FILE : void 0
   };
-  const settings = settingsText(runtime, root, (value2) => withCompiledSettings(value2, previous, manifest2));
+  const settings = settingsText(runtime, root, (value2) => withCompiledSettings(value2, previous, manifest3));
   if (!settings.ok) return settings;
   const steps = [
     write4(runtime, root, SETTINGS_FILE, settings.value),
@@ -76269,17 +76982,17 @@ var compileRules = (runtime, root, rules2, options2) => {
     ...ci ? [write4(runtime, root, WORKFLOW_FILE, workflowText2(rules2, options2.version))] : []
   ];
   for (const step4 of steps) if (!step4.ok) return step4;
-  const saved = writeManifest(runtime, root, manifest2);
+  const saved = writeManifest(runtime, root, manifest3);
   if (!saved.ok) return reject(`${MANIFEST_FILE2}: ${saved.error}`);
-  return accept({ manifest: manifest2, written: [...steps.flatMap((step4) => step4.ok ? [step4.value] : []), MANIFEST_FILE2] });
+  return accept({ manifest: manifest3, written: [...steps.flatMap((step4) => step4.ok ? [step4.value] : []), MANIFEST_FILE2] });
 };
 var removeCompiled = (runtime, root) => {
-  const manifest2 = readManifest2(runtime, root);
+  const manifest3 = readManifest2(runtime, root);
   if (read10(runtime, root, MANIFEST_FILE2) === void 0) return accept([]);
   const touched2 = [];
   const settings = read10(runtime, root, SETTINGS_FILE);
   if (settings !== void 0) {
-    const text41 = settingsText(runtime, root, (value2) => withoutCompiledSettings(value2, manifest2));
+    const text41 = settingsText(runtime, root, (value2) => withoutCompiledSettings(value2, manifest3));
     if (!text41.ok) return text41;
     if (text41.value !== settings) touched2.push(SETTINGS_FILE);
     write4(runtime, root, SETTINGS_FILE, text41.value);
@@ -76293,9 +77006,9 @@ var removeCompiled = (runtime, root) => {
       else write4(runtime, root, AGENTS_FILE, text41);
     }
   }
-  if (manifest2.workflow !== void 0 && read10(runtime, root, manifest2.workflow) !== void 0) {
-    runtime.remove(toAbsolutePath(manifest2.workflow, root));
-    touched2.push(manifest2.workflow);
+  if (manifest3.workflow !== void 0 && read10(runtime, root, manifest3.workflow) !== void 0) {
+    runtime.remove(toAbsolutePath(manifest3.workflow, root));
+    touched2.push(manifest3.workflow);
   }
   runtime.remove(toAbsolutePath(MANIFEST_FILE2, root));
   return accept([...touched2, MANIFEST_FILE2]);
@@ -76517,11 +77230,11 @@ var itemRange = (lines10, id) => {
   }
   return { start: start2, end, indent };
 };
-var withoutFields = (lines10, fieldIndent, keys) => {
+var withoutFields = (lines10, fieldIndent, keys2) => {
   const out = [];
   let skipping = false;
   for (const line13 of lines10) {
-    const own = indentOf3(line13) === fieldIndent && keys.some((key3) => line13.trimStart().startsWith(`${key3}:`));
+    const own = indentOf3(line13) === fieldIndent && keys2.some((key3) => line13.trimStart().startsWith(`${key3}:`));
     if (own) skipping = true;
     else if (skipping && (line13.trim() === "" || indentOf3(line13) <= fieldIndent)) skipping = false;
     if (!own && !skipping) out.push(line13);
@@ -79433,8 +80146,8 @@ var plan2 = (view3, variables) => {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${String(PLAN_WIDTH)}" height="${String(bottom * k + 2)}" viewBox="-1 -1 ${String(PLAN_WIDTH + 2)} ${String(bottom * k + 2)}"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 6L6 0" stroke="#000" stroke-width="0.5"/></pattern></defs>${shapes.join("")}</svg>`;
 };
 var rows2 = (sheet2, view3) => {
-  const keys = [...new Set(sheet2.views.flatMap((item2) => item2.elements.map((element) => element.key)))];
-  return keys.map((key3) => {
+  const keys2 = [...new Set(sheet2.views.flatMap((item2) => item2.elements.map((element) => element.key)))];
+  return keys2.map((key3) => {
     const element = view3.elements.find((item2) => item2.key === key3);
     const text41 = element === void 0 ? UNMEASURED : label2(element, sheet2.variables);
     return `<tr><td><code>${escape7(key3)}</code></td><td>${escape7(text41)}</td><td>${element?.layer ?? ""}</td></tr>`;

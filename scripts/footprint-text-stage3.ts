@@ -1,7 +1,7 @@
 import type { Localized } from "./footprint-text.js";
 
 export const STAGE3_FOOTPRINT_TEXT: Readonly<
-  Record<"golden" | "organize" | "api-contract" | "ds-sync" | "python-preset" | "onboard", Localized>
+  Record<"golden" | "organize" | "api-contract" | "ds-sync" | "python-preset" | "python-metrics" | "onboard", Localized>
 > = {
   golden: {
     en: "Expected outputs of golden cases, one file per case, plus `accepted.jsonl` with who recorded each one and when. Only `finitemonkey golden accept`, run by the person in a terminal, writes them.",
@@ -32,6 +32,12 @@ export const STAGE3_FOOTPRINT_TEXT: Readonly<
     "pt-BR":
       "Só com `finitemonkey preset python --write` num projeto Python: regras do ruff para complexidade e tamanho, opções do pytest que falham com marcadores desconhecidos, um script que rejeita comentários no código, contratos do import-linter quando `.finitemonkey/arch.yml` existe e um workflow de CI com `uv sync --locked`. Um arquivo existente aparece como diff e é mantido.",
     es: "Solo con `finitemonkey preset python --write` en un proyecto Python: reglas de ruff para complejidad y longitud, opciones de pytest que fallan con marcadores desconocidos, un script que rechaza comentarios en el código, contratos de import-linter cuando existe `.finitemonkey/arch.yml` y un workflow de CI con `uv sync --locked`. Un archivo existente se muestra como diff y se conserva.",
+  },
+  "python-metrics": {
+    en: "Only when `quality-detectors` is active or in shadow and a changed `.py` file is checked: the file text goes to a local `python3` on standard input, which parses it with the standard `ast` module and returns per-function metrics. Nothing is written. Without `python3`, the metrics are reported as not verified.",
+    "pt-BR":
+      "Só quando `quality-detectors` está ativo ou em shadow e um arquivo `.py` alterado é checado: o texto do arquivo vai para um `python3` local pela entrada padrão, que o lê com o módulo padrão `ast` e devolve métricas por função. Nada é escrito. Sem `python3`, as métricas aparecem como não verificadas.",
+    es: "Solo cuando `quality-detectors` está activo o en shadow y se revisa un archivo `.py` modificado: el texto del archivo va a un `python3` local por la entrada estándar, que lo lee con el módulo estándar `ast` y devuelve métricas por función. No se escribe nada. Sin `python3`, las métricas se reportan como no verificadas.",
   },
   onboard: {
     en: "`finitemonkey onboard` runs the build, test, lint and typecheck commands it finds in the manifests and in AGENTS.md or CLAUDE.md, with a time limit, and keeps in `onboard.json` and in its own AGENTS.md block only the ones that succeeded, plus the number of possible secrets found by a one-time scan of the git history. Commands that deploy, publish, install or keep running are not run.",

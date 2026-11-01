@@ -206,6 +206,7 @@ export const FOOTPRINT = [
     kind: "writes",
     targets: ["ruff.toml", "pytest.ini", "scripts/check_no_comments.py", ".github/workflows/ci.yml"],
   },
+  { id: "python-metrics", kind: "reads", targets: ["changed .py files"], via: "python3" },
   { id: "onboard", kind: "writes", targets: [".finitemonkey/onboard.json", "AGENTS.md"] },
   { id: "ledger-key", kind: "writes", targets: ["~/.finitemonkey/ledger.key"] },
   {
