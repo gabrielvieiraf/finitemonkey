@@ -45,6 +45,7 @@ export const OPTIONAL_GUARDS = [
   "ci-audit",
   "ci-protect",
   "ci-watch",
+  "ci-gate-callers",
   "infra",
   "deploy-plan",
   "deploy-generate",
@@ -146,6 +147,7 @@ export const POLICY_KEYS: readonly string[] = [
 ];
 export const RETIRED_POLICY_KEYS: readonly string[] = ["severity"];
 export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
+  "ci-gate-callers",
   "fourth-attempt",
   "claims",
   "clarify",

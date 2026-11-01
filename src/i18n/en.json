@@ -249,7 +249,7 @@
   "error.install_permission_denied": "no permission to write {path} ({detail}); nothing was changed",
   "error.not_installed": "Finite Monkey is not installed in this project (no .finitemonkey/lock.json)",
   "error.install_outdated": "the files Finite Monkey manages differ from this version",
-  "command.gate.summary": "Run the done contract and record evidence",
+  "command.gate.summary": "Run the done contract and record evidence; --fast only reuses a green run of the task on the same tree (the pushed range is checked by push check and ci gate)",
   "command.task_new.summary": "Create a done contract for a task",
   "command.task_show.summary": "Show a task contract and its evidence",
   "command.task_done.summary": "Run the gate and close the task when it passes",

@@ -6208,6 +6208,7 @@ var OPTIONAL_GUARDS = [
   "ci-audit",
   "ci-protect",
   "ci-watch",
+  "ci-gate-callers",
   "infra",
   "deploy-plan",
   "deploy-generate",
@@ -6309,6 +6310,7 @@ var POLICY_KEYS = [
 ];
 var RETIRED_POLICY_KEYS = ["severity"];
 var STARTS_IN_SHADOW = /* @__PURE__ */ new Set([
+  "ci-gate-callers",
   "fourth-attempt",
   "claims",
   "clarify",
@@ -14798,7 +14800,7 @@ var en_default = {
   "error.install_permission_denied": "no permission to write {path} ({detail}); nothing was changed",
   "error.not_installed": "Finite Monkey is not installed in this project (no .finitemonkey/lock.json)",
   "error.install_outdated": "the files Finite Monkey manages differ from this version",
-  "command.gate.summary": "Run the done contract and record evidence",
+  "command.gate.summary": "Run the done contract and record evidence; --fast only reuses a green run of the task on the same tree (the pushed range is checked by push check and ci gate)",
   "command.task_new.summary": "Create a done contract for a task",
   "command.task_show.summary": "Show a task contract and its evidence",
   "command.task_done.summary": "Run the gate and close the task when it passes",
@@ -17569,7 +17571,7 @@ var es_default = {
   "error.install_permission_denied": "sin permiso para escribir {path} ({detail}); no se cambió nada",
   "error.not_installed": "Finite Monkey no está instalado en este proyecto (no hay .finitemonkey/lock.json)",
   "error.install_outdated": "los archivos que gestiona Finite Monkey difieren de esta versión",
-  "command.gate.summary": "Ejecuta el contrato de terminado y registra la evidencia",
+  "command.gate.summary": "Ejecuta el contrato de terminado y registra la evidencia; --fast solo reutiliza una ejecución verde de la tarea en el mismo árbol (el rango enviado en el push lo revisan push check y ci gate)",
   "command.task_new.summary": "Crea un contrato de terminado para una tarea",
   "command.task_show.summary": "Muestra el contrato de una tarea y su evidencia",
   "command.task_done.summary": "Ejecuta la compuerta y cierra la tarea cuando pasa",
@@ -20340,7 +20342,7 @@ var pt_BR_default = {
   "error.install_permission_denied": "sem permissão para gravar {path} ({detail}); nada foi alterado",
   "error.not_installed": "O Finite Monkey não está instalado neste projeto (sem .finitemonkey/lock.json)",
   "error.install_outdated": "os arquivos que o Finite Monkey gerencia diferem desta versão",
-  "command.gate.summary": "Roda o contrato de pronto e grava a evidência",
+  "command.gate.summary": "Roda o contrato de pronto e grava a evidência; --fast só reaproveita uma rodada verde da tarefa na mesma árvore (o intervalo enviado no push é conferido por push check e ci gate)",
   "command.task_new.summary": "Cria um contrato de pronto para uma tarefa",
   "command.task_show.summary": "Mostra o contrato de uma tarefa e a evidência dele",
   "command.task_done.summary": "Roda o portão e fecha a tarefa quando passa",
@@ -64434,6 +64436,28 @@ var ownershipCheck = (runtime, root) => {
   return { id: "ownership", failures, fix: FIX };
 };
 
+// src/githooks/callers.ts
+var CI_CALLERS_FEATURE = "ci-gate-callers";
+var FIX2 = "keep the removed function, or update each caller listed, then push again";
+var callerFailures = (runtime, repo, base) => {
+  const git4 = gitAt(runtime, repo.root);
+  const from = git4.out(["merge-base", base, "HEAD"])?.trim() ?? base;
+  const symbols = removedSymbols(runtime, git4, from, changedFiles(git4, from));
+  return callSites(runtime, git4, symbols).map(
+    (site) => `${site.name} was removed but ${site.file}:${String(site.line)} still calls it`
+  );
+};
+var callersInRange = (runtime, repo, base) => {
+  const paths = fmPaths(repo.root);
+  const mode = featureMode(runtime, paths, CI_CALLERS_FEATURE);
+  const failures = mode === "off" ? [] : callerFailures(runtime, repo, base);
+  if (mode === "shadow" && failures.length > 0) {
+    recordFeatureShadow(runtime, paths, CI_CALLERS_FEATURE, { failures: [...failures] });
+    return { id: "callers", failures: [], fix: FIX2 };
+  }
+  return { id: "callers", failures, fix: FIX2 };
+};
+
 // src/githooks/checks.ts
 var DIFF_FLAGS2 = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"];
 var short3 = (sha) => sha.slice(0, 12);
@@ -64485,7 +64509,8 @@ var ciChecks2 = (runtime, repo, base) => {
     secretsInRange(runtime, repo.root, range),
     commitMessagesInRange(runtime, repo.root, range),
     mergesInRange(runtime, repo, range),
-    ownershipCheck(runtime, repo.root)
+    ownershipCheck(runtime, repo.root),
+    callersInRange(runtime, repo, base)
   ];
 };
 
@@ -64563,7 +64588,7 @@ var checksResult = (t, schema, code2, checks) => {
 };
 
 // src/rules/checks.ts
-var FIX2 = "follow the project rule named in the failure, or change it in .finitemonkey/rules.yml";
+var FIX3 = "follow the project rule named in the failure, or change it in .finitemonkey/rules.yml";
 var RECORD2 = "";
 var compiledFor = (runtime, root, surface) => {
   const manifest2 = readManifest2(runtime, root);
@@ -64574,7 +64599,7 @@ var failure3 = (rule, where3) => `${where3}: rule ${rule.id} (${rule.text})`;
 var commitRuleCheck = (rules2, message) => ({
   id: "rules",
   failures: rules2.filter((rule) => textMatches(rule, "commit", message)).map((rule) => failure3(rule, "commit message")),
-  fix: FIX2
+  fix: FIX3
 });
 var pullRequestOf = (runtime, env) => {
   const path = env["GITHUB_EVENT_PATH"];
@@ -64611,7 +64636,7 @@ ${pr.body}`) ? [failure3(rule, "pull request")] : [],
     ...commits2.filter((commit2) => textMatches(rule, "commit", commit2.body)).map((commit2) => failure3(rule, commit2.sha)),
     ...changed.filter((file) => rule.detector?.kind === "path" && pathMatches2(rule, rule.detector.tools[0] ?? "Write", file)).map((file) => failure3(rule, file))
   ]);
-  return { id: "rules", failures, fix: FIX2 };
+  return { id: "rules", failures, fix: FIX3 };
 };
 
 // src/commands/git-checks.ts
@@ -74772,11 +74797,11 @@ var readCommits = (runtime, root) => {
   return result.ok ? parseLog3(result.stdout) : [];
 };
 var REVERT = /^(?:Revert "|revert(?:\([^)]*\))?!?:)/;
-var FIX3 = /^fix(?:\([^)]*\))?!?:/;
+var FIX4 = /^fix(?:\([^)]*\))?!?:/;
 var REWORK_DAYS = 14;
 var DAY_MS14 = 864e5;
-var isRework = (commit2, earlier) => FIX3.test(commit2.subject) && earlier.some(
-  (prior) => !FIX3.test(prior.subject) && Date.parse(commit2.at) - Date.parse(prior.at) <= REWORK_DAYS * DAY_MS14 && prior.files.some((file) => commit2.files.includes(file))
+var isRework = (commit2, earlier) => FIX4.test(commit2.subject) && earlier.some(
+  (prior) => !FIX4.test(prior.subject) && Date.parse(commit2.at) - Date.parse(prior.at) <= REWORK_DAYS * DAY_MS14 && prior.files.some((file) => commit2.files.includes(file))
 );
 
 // src/team/render.ts
@@ -75187,11 +75212,11 @@ var explainPolicy = (runtime, paths) => {
 };
 
 // src/commands/policy.ts
-var FIX4 = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
+var FIX5 = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
 var recordFalsePositive = (ctx, guard) => {
-  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX4));
+  if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX5));
   if (!OPTIONAL_GUARDS.some((id) => id === guard)) {
-    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", FIX4, { detail: guard }));
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", FIX5, { detail: guard }));
   }
   const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
   const state = readShadow(ctx.runtime, paths);
@@ -75207,7 +75232,7 @@ var recordFalsePositive = (ctx, guard) => {
 var policyFalsePositiveCommand = {
   path: ["policy", "false-positive"],
   summaryKey: "command.policy_false_positive.summary",
-  usage: FIX4,
+  usage: FIX5,
   status: "ready",
   maxPositionals: 1,
   run: (ctx, args2) => Promise.resolve(recordFalsePositive(ctx, args2.positionals[0] ?? ""))

@@ -249,7 +249,7 @@
   "error.install_permission_denied": "sem permissão para gravar {path} ({detail}); nada foi alterado",
   "error.not_installed": "O Finite Monkey não está instalado neste projeto (sem .finitemonkey/lock.json)",
   "error.install_outdated": "os arquivos que o Finite Monkey gerencia diferem desta versão",
-  "command.gate.summary": "Roda o contrato de pronto e grava a evidência",
+  "command.gate.summary": "Roda o contrato de pronto e grava a evidência; --fast só reaproveita uma rodada verde da tarefa na mesma árvore (o intervalo enviado no push é conferido por push check e ci gate)",
   "command.task_new.summary": "Cria um contrato de pronto para uma tarefa",
   "command.task_show.summary": "Mostra o contrato de uma tarefa e a evidência dele",
   "command.task_done.summary": "Roda o portão e fecha a tarefa quando passa",

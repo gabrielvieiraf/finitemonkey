@@ -249,7 +249,7 @@
   "error.install_permission_denied": "sin permiso para escribir {path} ({detail}); no se cambió nada",
   "error.not_installed": "Finite Monkey no está instalado en este proyecto (no hay .finitemonkey/lock.json)",
   "error.install_outdated": "los archivos que gestiona Finite Monkey difieren de esta versión",
-  "command.gate.summary": "Ejecuta el contrato de terminado y registra la evidencia",
+  "command.gate.summary": "Ejecuta el contrato de terminado y registra la evidencia; --fast solo reutiliza una ejecución verde de la tarea en el mismo árbol (el rango enviado en el push lo revisan push check y ci gate)",
   "command.task_new.summary": "Crea un contrato de terminado para una tarea",
   "command.task_show.summary": "Muestra el contrato de una tarea y su evidencia",
   "command.task_done.summary": "Ejecuta la compuerta y cierra la tarea cuando pasa",
