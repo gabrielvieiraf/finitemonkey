@@ -108,6 +108,26 @@ describe("gate band and pane", () => {
     ).toBeDefined();
   });
 
+  test("the band carries one trajectory segment when the status has one", async ($, on) => {
+    const { clock, statuses } = world(on, ["terminal"]);
+    const withTrajectory = JSON.parse(status("green", false, 0)) as { data: Record<string, unknown> };
+    withTrajectory.data["trajectory"] = {
+      domain: "backend",
+      week: "2026-W43",
+      band: "blind band, receives without criterion",
+      ricochet: { concept: "webhook", week: "2026-W43" },
+    };
+    statuses.push(JSON.stringify(withTrajectory));
+    await start($, clock);
+    const band = await $.ui.mount({ ...BAND, surface: "terminal" });
+    expect(
+      await band.find({
+        type: "Text",
+        text: "FM  gate ✓ 2/2 · contract c7f2 · trajectory backend: blind band, receives without criterion, last ricochet webhook W43",
+      }),
+    ).toBeDefined();
+  });
+
   test("the band button opens the pane, which lists what is not verified with the command to verify it", async ($, on) => {
     const { clock, statuses, opened } = world(on, ["terminal"]);
     statuses.push(status("red", true, 2));

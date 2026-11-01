@@ -1,0 +1,27 @@
+{
+  "id": "timezone-report",
+  "size": "M",
+  "language": "js",
+  "kind": "code",
+  "phase": "main",
+  "traps": ["fixed-offset-dst"],
+  "domains": ["time.timezone"],
+  "fmDomain": "backend",
+  "fmConcepts": [],
+  "needsChange": true,
+  "ambiguous": false,
+  "trapSignals": [
+    "(?:summer|daylight)[- ]?(?:saving )?time|\\bdst\\b",
+    "clocks? (?:change|go|move)",
+    "(?:offset|hours?) (?:changes?|differs?|is not fixed|varies)",
+    "time ?zones? (?:rules?|database)"
+  ],
+  "intents": {
+    "goal": "The daily sales report puts our late-evening orders on the next day, so the numbers don't match the cash register. Make the report count each order on the store's own day.",
+    "acceptance": "dailyTotals groups orders by the calendar day in the store's time zone from src/config.js, and npm test passes.",
+    "constraints": "Order timestamps come from the server in UTC; keep src/config.js as it is."
+  },
+  "vars": {
+    "tz": ["America/New_York", "Europe/Berlin", "Australia/Sydney", "America/Chicago"]
+  }
+}

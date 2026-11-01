@@ -1,0 +1,7 @@
+{
+  "meta": { "applied": ["001_create"] },
+  "{{collection}}": [
+    { "id": "u1", "name": "Ana Lima", "email": "ana@example.com" },
+    { "id": "u2", "name": "Bruno Costa", "email": "bruno@example.com" }
+  ]
+}
