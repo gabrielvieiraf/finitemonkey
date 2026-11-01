@@ -1,5 +1,5 @@
 import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 
 import type { JsonObject } from "../src/core/parsed.js";
 import { type Arm, policyYaml } from "./bench-arms.js";
@@ -145,11 +145,13 @@ const record = (
   };
 };
 
+const isCacheDir = (root: string, source: string): boolean => relative(root, source).split(sep)[0] === "cache";
+
 const collectState = (workdir: string, saved: string): string | undefined => {
   const from = join(workdir, ".finitemonkey");
   if (!existsSync(from)) return undefined;
   const to = join(saved, "finitemonkey");
-  cpSync(from, to, { recursive: true });
+  cpSync(from, to, { recursive: true, filter: (source) => !isCacheDir(from, source) });
   return to;
 };
 
