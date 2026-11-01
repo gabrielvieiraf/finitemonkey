@@ -18,3 +18,5 @@ NOTICE
 commitlint.config.mjs
 bench/tasks
 bench/evidence.json
+test/fixtures/release
+test/fixtures/sbom

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+
+PackageIdentifier: "GabrielVieira.FiniteMonkey"
+PackageVersion: "1.2.3"
+PackageLocale: "en-US"
+Publisher: "Gabriel Vieira"
+PublisherUrl: "https://github.com/gabrielvieiraf"
+PackageName: "Finite Monkey"
+PackageUrl: "https://github.com/gabrielvieiraf/finitemonkey"
+License: "Apache-2.0"
+LicenseUrl: "https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"
+ShortDescription: "Hooks that stop coding agents from saying done before the tests pass"
+Moniker: "finitemonkey"
+Tags:
+  - "claude-code"
+  - "hooks"
+  - "coding-agent"
+  - "definition-of-done"
+ReleaseNotesUrl: "https://github.com/gabrielvieiraf/finitemonkey/releases/tag/v1.2.3"
+ManifestType: "defaultLocale"
+ManifestVersion: "1.6.0"

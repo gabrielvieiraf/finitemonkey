@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+
+PackageIdentifier: "GabrielVieira.FiniteMonkey"
+PackageVersion: "1.2.3"
+InstallerType: "zip"
+NestedInstallerType: "portable"
+NestedInstallerFiles:
+  - RelativeFilePath: "finitemonkey.exe"
+    PortableCommandAlias: "finitemonkey"
+Installers:
+  - Architecture: "x64"
+    InstallerUrl: "https://github.com/gabrielvieiraf/finitemonkey/releases/download/v1.2.3/finitemonkey-1.2.3-windows-x64.zip"
+    InstallerSha256: "3A7D1A42E9262B0D8F206673B026609A1F7F61627A9BA7640AF83D5E7CB913C6"
+  - Architecture: "arm64"
+    InstallerUrl: "https://github.com/gabrielvieiraf/finitemonkey/releases/download/v1.2.3/finitemonkey-1.2.3-windows-arm64.zip"
+    InstallerSha256: "D9188CCEE3AC8BAB7A9D848E004C2BAB2D27746EC9D721FC630D30C874CF8990"
+ManifestType: "installer"
+ManifestVersion: "1.6.0"
