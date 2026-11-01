@@ -86,17 +86,79 @@ describe("library calls against the installed version", () => {
     assert.equal(kinds(runtime, "app.py", "from lazy import thing\nthing()\n")[0]?.[0], "uncertain");
   });
 
+  it("reports a function removed in a JS package without type files, with the version", () => {
+    const runtime = runtimeWith({
+      "node_modules/slugs/package.json": JSON.stringify({ name: "slugs", version: "4.1.0", main: "lib/main" }),
+      "node_modules/slugs/lib/main.js": [
+        '"use strict";',
+        'Object.defineProperty(exports, "__esModule", { value: true });',
+        "exports.slugify = exports.trim = void 0;",
+        "function slugify(text, separator) { return text; }",
+        "exports.slugify = slugify;",
+        "const trim = (text) => text.trim();",
+        "exports.trim = trim;",
+      ].join("\n"),
+    });
+    assert.deepEqual(kinds(runtime, "src/a.js", 'import { toSlug } from "slugs";\ntoSlug("x");\n'), [
+      ["missing", "toSlug", "4.1.0", ""],
+    ]);
+    assert.deepEqual(
+      kinds(runtime, "src/a.js", 'const { slugify, trim } = require("slugs");\nslugify("a", "-", 3);\n'),
+      [["arity", "slugify", "4.1.0", "3 > 2"]],
+    );
+  });
+
+  it("reads ESM exports and module.exports objects from package source", () => {
+    const runtime = runtimeWith({
+      "node_modules/esm-lib/package.json": JSON.stringify({
+        name: "esm-lib",
+        version: "2.0.0",
+        exports: { ".": { import: "./src/index.mjs" } },
+      }),
+      "node_modules/esm-lib/src/index.mjs": "export function one(a) {}\nexport const two = (a, b = 1) => a;\n",
+      "node_modules/cjs-lib/package.json": JSON.stringify({ name: "cjs-lib", version: "1.0.0" }),
+      "node_modules/cjs-lib/index.js": "function run(task) {}\nmodule.exports = { run, stop: function (id) {} };\n",
+      "node_modules/whole/package.json": JSON.stringify({ name: "whole", version: "1.0.0" }),
+      "node_modules/whole/index.js": "module.exports = makeThing();\n",
+    });
+    assert.deepEqual(kinds(runtime, "a.mjs", 'import { one, two, three } from "esm-lib";\none(1, 2);\ntwo(1, 2);\n'), [
+      ["arity", "one", "2.0.0", "2 > 1"],
+      ["missing", "three", "2.0.0", ""],
+    ]);
+    assert.deepEqual(kinds(runtime, "a.js", 'const { run, stop } = require("cjs-lib");\nrun(1, 2);\nstop(1);\n'), [
+      ["arity", "run", "1.0.0", "2 > 1"],
+    ]);
+    assert.equal(kinds(runtime, "a.js", 'const { make } = require("whole");\n')[0]?.[0], "uncertain");
+  });
+
+  it("resolves a Python function re-exported two levels deep", () => {
+    const runtime = runtimeWith({
+      [`${PY_SITE}/deep/__init__.py`]: "from .api import fetch\n",
+      [`${PY_SITE}/deep/api/__init__.py`]: "from .core import fetch as fetch\n",
+      [`${PY_SITE}/deep/api/core.py`]: "def fetch(url, *, retries=0):\n    pass\n",
+      [`${PY_SITE}/deep-1.4.0.dist-info/METADATA`]: "Version: 1.4.0\n",
+    });
+    assert.deepEqual(kinds(runtime, "app.py", "from deep import fetch\nfetch('u', 'v')\nfetch('u', retry=1)\n"), [
+      ["arity", "fetch", "1.4.0", "2 > 1"],
+      ["keyword", "fetch", "1.4.0", "retry"],
+    ]);
+  });
+
   it("never executes installed package code", () => {
     const calls: string[] = [];
     const runtime = runtimeWith(
       {
         ...npm("chrono", "3.0.0", "export declare function parse(): void;\n"),
-        [`${PY_SITE}/reqs/__init__.py`]: "def get(url):\n    pass\n",
+        [`${PY_SITE}/reqs/__init__.py`]: "from .inner import get\n",
+        [`${PY_SITE}/reqs/inner.py`]: "def get(url):\n    pass\n",
+        "node_modules/plain/package.json": JSON.stringify({ name: "plain", version: "1.0.0" }),
+        "node_modules/plain/index.js": "exports.go = function (a) {};\n",
       },
       calls,
     );
     apiFindings(runtime, ROOT, [
       { path: "a.js", text: 'import { parse } from "chrono";\nparse();\n' },
+      { path: "c.js", text: 'const { go } = require("plain");\ngo(1);\n' },
       { path: "b.py", text: "from reqs import get\nget('x')\n" },
     ]);
     assert.deepEqual(calls, []);

@@ -1851,7 +1851,7 @@
   "gate.organize.open_caller": "{file} still imports {name} from {origin}, whose re-export was removed",
   "gate.organize.shadow": "the step mixes moving with changing logic or leaves callers open (shadow mode, not blocking)",
   "gate.organize.fix": "keep this step to moving code; change behavior in its own step with a parity matrix",
-  "command.contract.summary": "Generate the API registry, typed client and MSW mocks from api/contract.yml, and check their coverage",
+  "command.contract.summary": "Generate the API registry, typed client and MSW mocks from api/contract.yml, check their coverage, and call the running app (run)",
   "contract.error.no_registry": "{file} does not exist: list the error codes and the endpoints (id, method, path, summary, domain, input, output, screens) there first",
   "contract.error.invalid": "api/contract.yml is invalid: {issues}",
   "contract.next": "Registry, client and coverage test under {base}/api ({framework}). Next: `finitemonkey contract mocks`.",
@@ -2679,7 +2679,7 @@
   "gate.cli.ansi_with_no_color": "{command} prints color codes with NO_COLOR set; turn color off when NO_COLOR is set",
   "gate.cli.prompt_without_tty": "{command} asks for input with stdin not a terminal; skip the prompt or fail with a flag to pass",
   "gate.cli.destructive_unguarded": "{command} is declared destructive but its help mentions no --force flag or confirmation; ask before acting",
-  "gate.cli.slow_first_output": "--help takes {median} ms (median), above {limit} ms; print something sooner or raise cli.first_output_ms",
+  "gate.cli.slow_first_output": "--help takes {median} ms to its first output (median), above {limit} ms; print something sooner or raise cli.first_output_ms",
   "gate.cli.timed_out": "{command} did not finish in {limit} ms with stdin closed; make sure it does not wait for input, or raise cli.timeout_ms",
   "gate.copy.rules_shadow": "{count, plural, one {# copy rule finding} other {# copy rule findings}} (ui-copy in shadow until a rule reaches ui.copy.accept_threshold, not blocking)",
   "gate.copy.rule.verb-first": "{file} key {key}: button \"{text}\" does not start with a verb; name the action it performs",
@@ -2765,5 +2765,14 @@
   "command.judge_contradict.summary": "Record a new source that contradicts a claim; it opens only on a span match or the person's confirmation",
   "command.judge_fixed.summary": "Record who fixed a ricochet event; a repair by the person is marked held",
   "command.judge_trajectory.summary": "List ricochet events of research claims with the state and bands they had at acceptance",
-  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); at acceptance {support}, bands {bands}; fixed by {fixed}",
+  "help.examples": "Examples",
+  "gate.api_version.sites": "{symbol} is called at {sites}",
+  "contract.live.not_configured": "calling the running API needs its port in api: port",
+  "contract.live.app_failed": "The app did not answer on 127.0.0.1:{port} ({state}); no operation was called.",
+  "contract.live.clean": "{count, plural, one {# call} other {# calls}} to the running API: one error shape and the declared pagination",
+  "gate.contract.live.not_run": "the running API was not called (untrusted task, no time left, app down or no answer)",
+  "gate.contract.api.live_error_shapes": "the running API returns more than one error shape ({shapes}), though the contract file may agree; pick one and declare it as error_shape",
+  "gate.contract.api.live_error_shape_mismatch": "{id} answered an error as {shape} at runtime, but error_shape declares {declared}",
+  "gate.contract.api.live_pagination": "{id} is a list but its running response does not page ({scheme}); return an object with the items and the paging field"
 }

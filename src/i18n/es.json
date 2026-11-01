@@ -1851,7 +1851,7 @@
   "gate.organize.open_caller": "{file} todavía importa {name} desde {origin}, cuyo re-export se quitó",
   "gate.organize.shadow": "el paso mezcla mover con cambiar lógica o deja llamadores abiertos (modo sombra, sin bloquear)",
   "gate.organize.fix": "deja este paso solo moviendo código; cambia el comportamiento en un paso propio con matriz de paridad",
-  "command.contract.summary": "Genera el registro de la API, el cliente tipado y los mocks MSW desde api/contract.yml, y comprueba su cobertura",
+  "command.contract.summary": "Genera el registro de la API, el cliente tipado y los mocks MSW desde api/contract.yml, comprueba su cobertura y llama a la app en marcha (run)",
   "contract.error.no_registry": "{file} no existe: lista allí los códigos de error y los endpoints (id, method, path, summary, domain, input, output, screens) primero",
   "contract.error.invalid": "el api/contract.yml no es válido: {issues}",
   "contract.next": "Registro, cliente y test de cobertura en {base}/api ({framework}). Siguiente: `finitemonkey contract mocks`.",
@@ -2679,7 +2679,7 @@
   "gate.cli.ansi_with_no_color": "{command} imprime códigos de color con NO_COLOR definido; apaga el color cuando NO_COLOR exista",
   "gate.cli.prompt_without_tty": "{command} pide datos con stdin fuera de una terminal; omite la pregunta o falla indicando el flag",
   "gate.cli.destructive_unguarded": "{command} está declarado como destructivo pero su ayuda no menciona el flag --force ni una confirmación; pregunta antes de actuar",
-  "gate.cli.slow_first_output": "--help tarda {median} ms (mediana), más de {limit} ms; imprime algo antes o sube cli.first_output_ms",
+  "gate.cli.slow_first_output": "--help tarda {median} ms hasta su primera salida (mediana), más de {limit} ms; imprime algo antes o sube cli.first_output_ms",
   "gate.cli.timed_out": "{command} no terminó en {limit} ms con stdin cerrado; asegúrate de que no espere datos, o sube cli.timeout_ms",
   "gate.copy.rules_shadow": "{count, plural, one {# hallazgo de las reglas de texto} other {# hallazgos de las reglas de texto}} (ui-copy en sombra hasta que una regla alcance ui.copy.accept_threshold, sin bloquear)",
   "gate.copy.rule.verb-first": "{file} clave {key}: el botón \"{text}\" no empieza con un verbo; nombra la acción que realiza",
@@ -2765,5 +2765,14 @@
   "command.judge_contradict.summary": "Registrar una fuente nueva que contradice una afirmación; solo se abre con fragmento coincidente o confirmación de la persona",
   "command.judge_fixed.summary": "Registrar quién arregló un evento de rebote; el arreglo de la persona queda marcado como sostenido",
   "command.judge_trajectory.summary": "Listar eventos de rebote de afirmaciones de investigación con el estado y las franjas que tenían al aceptarse",
-  "judge.event": "{event}: {claim} {cause} ({state}); al aceptarse {support}, franjas {bands}; arreglado por {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); al aceptarse {support}, franjas {bands}; arreglado por {fixed}",
+  "help.examples": "Ejemplos",
+  "gate.api_version.sites": "{symbol} se llama en {sites}",
+  "contract.live.not_configured": "llamar a la API en marcha necesita su puerto en api: port",
+  "contract.live.app_failed": "La app no respondió en 127.0.0.1:{port} ({state}); no se llamó a ninguna operación.",
+  "contract.live.clean": "{count, plural, one {# llamada} other {# llamadas}} a la API en marcha: una forma de error y la paginación declarada",
+  "gate.contract.live.not_run": "no se llamó a la API en marcha (tarea no confiable, sin tiempo, app caída o sin respuesta)",
+  "gate.contract.api.live_error_shapes": "la API en marcha devuelve más de una forma de error ({shapes}), aunque el archivo de contrato coincida; elige una y declárala en error_shape",
+  "gate.contract.api.live_error_shape_mismatch": "{id} respondió un error como {shape} en ejecución, pero error_shape declara {declared}",
+  "gate.contract.api.live_pagination": "{id} es una lista, pero su respuesta en ejecución no pagina ({scheme}); devuelve un objeto con los elementos y el campo de paginación"
 }

@@ -36,8 +36,8 @@ const located = (
   return { root: repo.root, resources: resourcesOf(scanRoutes(ctx.runtime, repo.root)) };
 };
 
-const withApp = async <T>(
-  config: AccessConfig,
+export const withApp = async <T>(
+  config: Pick<AccessConfig, "start" | "port">,
   root: string,
   work: () => Promise<T>,
 ): Promise<{ readonly value: T } | { readonly failed: string }> => {

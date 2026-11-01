@@ -64,6 +64,7 @@ export interface ExecRequest {
   readonly env?: Env;
   readonly unset?: readonly string[];
   readonly input?: string;
+  readonly firstByte?: boolean;
 }
 
 export interface ExecResult {
@@ -73,6 +74,7 @@ export interface ExecResult {
   readonly stderr: string;
   readonly timedOut: boolean;
   readonly durationMs: number;
+  readonly firstOutputMs?: number;
 }
 
 export type Exec = (request: ExecRequest) => ExecResult;

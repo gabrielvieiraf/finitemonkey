@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 import type { AbsolutePath } from "./brand.js";
+import { execFirstByte, type FirstByteTarget } from "./node-first-byte.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Exec } from "./runtime.js";
 import { resolveWindowsCommand, windowsCommandLine } from "./windows-command.js";
@@ -36,6 +37,14 @@ export const nodeExec: Exec = (request) => {
     process.platform === "win32" && request.shell !== true
       ? resolveWindowsCommand(request.command, options.env, existsSync)
       : undefined;
+  const target: FirstByteTarget =
+    request.shell === true
+      ? { command: [request.command, ...request.args].join(" "), args: [], shell: true }
+      : resolved?.shell === true
+        ? { command: windowsCommandLine(resolved, request.args), args: [], shell: true }
+        : { command: resolved?.command ?? request.command, args: request.args, shell: false };
+  const timed = request.firstByte === true ? execFirstByte(request, target, options.env) : undefined;
+  if (timed !== undefined) return timed;
   const result =
     request.shell === true
       ? spawnSync([request.command, ...request.args].join(" "), { ...options, shell: true })

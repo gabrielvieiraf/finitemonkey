@@ -1851,7 +1851,7 @@
   "gate.organize.open_caller": "{file} ainda importa {name} de {origin}, cujo re-export foi removido",
   "gate.organize.shadow": "o passo mistura mover com mudar lógica ou deixa chamadores abertos (modo sombra, sem bloquear)",
   "gate.organize.fix": "deixe este passo só movendo código; mude comportamento num passo próprio com matriz de paridade",
-  "command.contract.summary": "Gera o registro da API, o cliente tipado e os mocks MSW a partir de api/contract.yml, e checa a cobertura",
+  "command.contract.summary": "Gera o registro da API, o cliente tipado e os mocks MSW a partir de api/contract.yml, checa a cobertura e chama o app rodando (run)",
   "contract.error.no_registry": "{file} não existe: liste lá os códigos de erro e os endpoints (id, method, path, summary, domain, input, output, screens) primeiro",
   "contract.error.invalid": "o api/contract.yml é inválido: {issues}",
   "contract.next": "Registro, cliente e teste de cobertura em {base}/api ({framework}). Próximo: `finitemonkey contract mocks`.",
@@ -2679,7 +2679,7 @@
   "gate.cli.ansi_with_no_color": "{command} imprime códigos de cor com NO_COLOR definido; desligue a cor quando NO_COLOR existir",
   "gate.cli.prompt_without_tty": "{command} pede entrada com o stdin fora de um terminal; pule a pergunta ou falhe indicando a flag",
   "gate.cli.destructive_unguarded": "{command} está declarado como destrutivo mas a ajuda não cita flag --force nem confirmação; pergunte antes de agir",
-  "gate.cli.slow_first_output": "--help leva {median} ms (mediana), acima de {limit} ms; imprima algo antes ou suba cli.first_output_ms",
+  "gate.cli.slow_first_output": "--help leva {median} ms até a primeira saída (mediana), acima de {limit} ms; imprima algo antes ou suba cli.first_output_ms",
   "gate.cli.timed_out": "{command} não terminou em {limit} ms com o stdin fechado; garanta que não espera entrada, ou suba cli.timeout_ms",
   "gate.copy.rules_shadow": "{count, plural, one {# achado das regras de texto} other {# achados das regras de texto}} (ui-copy em sombra até uma regra atingir ui.copy.accept_threshold, sem bloquear)",
   "gate.copy.rule.verb-first": "{file} chave {key}: o botão \"{text}\" não começa com verbo; diga a ação que ele faz",
@@ -2765,5 +2765,14 @@
   "command.judge_contradict.summary": "Registrar uma fonte nova que contradiz uma afirmação; só abre com trecho casado ou confirmação da pessoa",
   "command.judge_fixed.summary": "Registrar quem consertou um evento de ricochete; conserto da pessoa fica marcado como sustentado",
   "command.judge_trajectory.summary": "Listar eventos de ricochete de afirmações de pesquisa com estado e faixas que tinham no aceite",
-  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}"
+  "judge.event": "{event}: {claim} {cause} ({state}); no aceite {support}, faixas {bands}; consertado por {fixed}",
+  "help.examples": "Exemplos",
+  "gate.api_version.sites": "{symbol} é chamado em {sites}",
+  "contract.live.not_configured": "chamar a API rodando precisa da porta em api: port",
+  "contract.live.app_failed": "O app não respondeu em 127.0.0.1:{port} ({state}); nenhuma operação foi chamada.",
+  "contract.live.clean": "{count, plural, one {# chamada} other {# chamadas}} à API rodando: uma forma de erro e a paginação declarada",
+  "gate.contract.live.not_run": "a API rodando não foi chamada (tarefa não confiável, sem tempo, app fora do ar ou sem resposta)",
+  "gate.contract.api.live_error_shapes": "a API rodando devolve mais de uma forma de erro ({shapes}), mesmo que o arquivo de contrato concorde; escolha uma e declare em error_shape",
+  "gate.contract.api.live_error_shape_mismatch": "{id} respondeu um erro como {shape} rodando, mas o error_shape declara {declared}",
+  "gate.contract.api.live_pagination": "{id} é uma lista, mas a resposta rodando não pagina ({scheme}); devolva um objeto com os itens e o campo de paginação"
 }

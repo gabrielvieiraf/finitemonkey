@@ -2,17 +2,19 @@ import { join } from "node:path";
 
 import type { AbsolutePath } from "../core/brand.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
+import { jsSourceOf, jsSourceSurface } from "./api-js.js";
 import {
   type ApiFinding,
   type ApiFindingKind,
   type ApiRuntime,
   callsOf,
   closing,
+  DEPRECATED_DOC,
   type Imported,
+  jsSignature,
   read,
   type Resolved,
   type Signature,
-  splitTopLevel,
   type Surface,
 } from "./api-parse.js";
 import { pyImports, pySurfaceOf, sitePackages } from "./api-python.js";
@@ -37,15 +39,6 @@ export const jsImports = (source: string): readonly Imported[] =>
       return [{ pkg: packageName(match[2] ?? ""), symbol, local: local ?? symbol }];
     }),
   );
-
-const DEPRECATED_DOC = /\/\*\*(?:(?!\*\/)[\s\S])*@deprecated(?:(?!\*\/)[\s\S])*\*\/\s*$/;
-
-const jsSignature = (params: string, before: string): Signature => {
-  const list = splitTopLevel(params).filter((item) => !/^this\s*:/.test(item));
-  const rest = list.some((item) => item.startsWith("..."));
-  const required = list.filter((item) => !item.startsWith("...") && !/^\w+\?|=/.test(item)).length;
-  return { required, max: rest ? Infinity : list.length, keywords: undefined, deprecated: DEPRECATED_DOC.test(before) };
-};
 
 export const dtsSurface = (text: string, version: string): Surface => {
   const exports = new Map<string, Signature>();
@@ -118,9 +111,11 @@ export const npmSurface = (runtime: ApiRuntime, root: string, pkg: string): Reso
     join(root, "node_modules", "@types", pkg.replace(/^@([^/]+)\//, "$1__"), "index.d.ts"),
   ];
   const text = candidates.map((path) => read(runtime, path)).find((item) => item !== undefined);
-  return text === undefined
+  if (text !== undefined) return { kind: "surface", surface: dtsSurface(text, version) };
+  const source = jsSourceOf(runtime, dir, manifest.value);
+  return source === undefined
     ? { kind: "unknown", detail: "no type declarations", version }
-    : { kind: "surface", surface: dtsSurface(text, version) };
+    : { kind: "surface", surface: jsSourceSurface(source, version) };
 };
 
 export const checkCalls = (

@@ -4,6 +4,7 @@ import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success, type SuccessResult } from "../core/result.js";
 import { EXIT_CODE_NAMES, ExitCode, exitCodeDocs, type ExitCodeName, type ExitCodeValue } from "../exit-codes.js";
 import type { MessageKey } from "../i18n/catalogs.js";
+import { exampleLines, examplesOf, OVERVIEW_EXAMPLES } from "./help-examples.js";
 import { commandName, type CommandSpec, type CommandStatus } from "./types.js";
 
 export const GLOBAL_FLAGS = [
@@ -71,6 +72,7 @@ const overview = (ctx: Ctx, registry: readonly CommandSpec[]): SuccessResult<Hel
     "",
     `${ctx.t("help.exit_codes")}:`,
     ...exitCodes.map(({ summary }) => `  ${summary}`),
+    ...exampleLines(ctx.t("help.examples"), OVERVIEW_EXAMPLES),
     "",
     ctx.t("help.more"),
   ];
@@ -84,6 +86,7 @@ export const helpFor = (ctx: Ctx, spec: CommandSpec): SuccessResult<{ readonly c
     "",
     summaryLine(ctx, help),
     ...(help.options.length > 0 ? ["", `${ctx.t("help.options")}: ${help.options.join(", ")}`] : []),
+    ...exampleLines(ctx.t("help.examples"), examplesOf(spec)),
   ];
   return success({ command: help }, human);
 };

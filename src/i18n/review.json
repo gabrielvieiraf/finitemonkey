@@ -2766,7 +2766,16 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "help.examples": "machine",
+    "gate.api_version.sites": "machine",
+    "contract.live.not_configured": "machine",
+    "contract.live.app_failed": "machine",
+    "contract.live.clean": "machine",
+    "gate.contract.live.not_run": "machine",
+    "gate.contract.api.live_error_shapes": "machine",
+    "gate.contract.api.live_error_shape_mismatch": "machine",
+    "gate.contract.api.live_pagination": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -5535,6 +5544,15 @@
     "command.judge_contradict.summary": "machine",
     "command.judge_fixed.summary": "machine",
     "command.judge_trajectory.summary": "machine",
-    "judge.event": "machine"
+    "judge.event": "machine",
+    "help.examples": "machine",
+    "gate.api_version.sites": "machine",
+    "contract.live.not_configured": "machine",
+    "contract.live.app_failed": "machine",
+    "contract.live.clean": "machine",
+    "gate.contract.live.not_run": "machine",
+    "gate.contract.api.live_error_shapes": "machine",
+    "gate.contract.api.live_error_shape_mismatch": "machine",
+    "gate.contract.api.live_pagination": "machine"
   }
 }
