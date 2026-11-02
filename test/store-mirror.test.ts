@@ -10,6 +10,8 @@ import { hook, runtime, tempRepo, write } from "./git-support.js";
 const GRANTS = '{"grants":[],"approvals":[{"task":"t1","check":"manual-1","reason":"looked at it"}]}\n';
 const INCIDENT = '{"schemaVersion":1,"id":"inc-000000000001","state":"aberto"}\n';
 
+const quiet = { ...runtime, spawnSelf: () => true };
+
 const seed = (root: string): void => {
   write(root, ".finitemonkey/allow/grants.json", GRANTS);
   write(root, ".finitemonkey/incidents/inc-000000000001.json", INCIDENT);
@@ -22,7 +24,7 @@ describe("store mirror", () => {
       seed(repo.root);
       assert.equal(mirrorStore(runtime, repo.root), 2);
       rmSync(join(repo.root, ".finitemonkey"), { recursive: true, force: true });
-      const started = await hook(sessionStart, "SessionStart", repo.root, { source: "startup" });
+      const started = await hook(sessionStart, "SessionStart", repo.root, { source: "startup" }, quiet);
       assert.equal(readFileSync(join(repo.root, ".finitemonkey/allow/grants.json"), "utf8"), GRANTS);
       assert.equal(readFileSync(join(repo.root, ".finitemonkey/incidents/inc-000000000001.json"), "utf8"), INCIDENT);
       assert.match(readFileSync(join(repo.root, ".finitemonkey/log.jsonl"), "utf8"), /"event":"store_restored"/);
