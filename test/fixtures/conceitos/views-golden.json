@@ -300,7 +300,24 @@
           "blindBare": 0,
           "unstable": 0,
           "work": null,
-          "evidence": 1
+          "evidence": 1,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 1,
+              "evidence": 1
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W34",
@@ -311,7 +328,24 @@
           "blindBare": 0,
           "unstable": 0,
           "work": 0.5,
-          "evidence": 1
+          "evidence": 1,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 1,
+              "evidence": 1
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W35",
@@ -322,7 +356,24 @@
           "blindBare": 0,
           "unstable": null,
           "work": null,
-          "evidence": 0
+          "evidence": 0,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 1,
+              "evidence": 1
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W36",
@@ -333,7 +384,24 @@
           "blindBare": 0,
           "unstable": 0,
           "work": null,
-          "evidence": 2
+          "evidence": 2,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 2,
+              "evidence": 2
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W37",
@@ -344,7 +412,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": 1.5,
-          "evidence": 2
+          "evidence": 2,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 2,
+              "evidence": 2
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W38",
@@ -355,7 +440,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": null,
-          "evidence": 1
+          "evidence": 1,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 2,
+              "evidence": 2
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W39",
@@ -366,7 +468,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": null,
-          "evidence": 1
+          "evidence": 1,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 2,
+              "evidence": 3
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W40",
@@ -377,7 +496,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": 1,
-          "evidence": 2
+          "evidence": 2,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 2,
+              "evidence": 3
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W41",
@@ -388,7 +524,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": 3,
-          "evidence": 2
+          "evidence": 2,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 2,
+              "evidence": 4
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W42",
@@ -399,7 +552,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": null,
-          "evidence": 1
+          "evidence": 1,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 3,
+              "evidence": 5
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W43",
@@ -410,7 +580,24 @@
           "blindBare": 0,
           "unstable": 1,
           "work": 1.5,
-          "evidence": 1
+          "evidence": 1,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 3,
+              "evidence": 5
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         },
         {
           "week": "2026-W44",
@@ -421,7 +608,24 @@
           "blindBare": 0,
           "unstable": null,
           "work": null,
-          "evidence": 0
+          "evidence": 0,
+          "splits": {
+            "alone": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            },
+            "proximal": {
+              "lower": 0,
+              "upper": 3,
+              "evidence": 5
+            },
+            "horizon": {
+              "lower": 0,
+              "upper": 0,
+              "evidence": 0
+            }
+          }
         }
       ],
       "marks": [],

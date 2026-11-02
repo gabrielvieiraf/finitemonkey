@@ -29,7 +29,11 @@ const project = (knowledge: number, guards = "guards:\n  teach-back: active\n"):
 const edit = (repo: TempRepo): ReturnType<typeof hook> =>
   hook(blueprintFirst, "PreToolUse", repo.root, {
     tool_name: "Edit",
-    tool_input: { file_path: join(repo.root, "src/hook.js"), old_string: "", new_string: "// webhook handler" },
+    tool_input: {
+      file_path: join(repo.root, "src/webhooks/stripe.js"),
+      old_string: "",
+      new_string: "export const handle = (req) => req.body;",
+    },
   });
 
 describe("blueprint before the first edit in a domain at the start of the profile", () => {

@@ -40,8 +40,8 @@ describe("manual trajectory fixture", () => {
       assert.deepEqual(
         marks.map((mark) => [mark.kind, mark.concept]),
         [
-          ["ricochet", "webhook"],
-          ["held", "idempotency"],
+          ["ricochet", "backend/integration/webhook"],
+          ["held", "backend/reliability/idempotency"],
         ],
       );
       assert.notEqual(marks[0]?.week, marks[1]?.week);
@@ -53,7 +53,7 @@ describe("manual trajectory fixture", () => {
   it("turns the trajectory on and feeds the band segment and the blind band", () => {
     const { runtime, paths } = seeded(NOWS[0] ?? "");
     assert.equal(featureMode(runtime, paths, TRAJECTORY_FEATURE), "active");
-    assert.equal(trajectoryNowOf(runtime, paths)?.ricochet?.concept, "webhook");
+    assert.equal(trajectoryNowOf(runtime, paths)?.ricochet?.concept, "backend/integration/webhook");
     const log = runtime.readText(paths.log);
     assert.ok(log.ok);
     assert.ok(blindBand(runtime, paths, log.value).rows.some((row) => row.withoutCriterion > 0));

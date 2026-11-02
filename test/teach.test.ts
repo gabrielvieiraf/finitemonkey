@@ -102,26 +102,32 @@ describe("teach-back keyed by execution", () => {
 
   it("moves a concept to demonstrated after three keyed correct answers and not after one", async () => {
     const { deps } = await project();
-    assert.equal(answerOnce(deps, "webhook", "42"), true);
-    assert.notEqual(conceptBand("webhook", readEntries(deps.runtime, deps.paths)).band, "demonstrated");
-    assert.equal(conceptBand("webhook", readEntries(deps.runtime, deps.paths)).band, "no record");
-    assert.equal(answerOnce(deps, "webhook", "42.0"), true);
-    assert.equal(answerOnce(deps, "webhook", "42"), true);
-    assert.equal(conceptBand("webhook", readEntries(deps.runtime, deps.paths)).band, "demonstrated");
+    assert.equal(answerOnce(deps, "backend/integration/webhook", "42"), true);
+    assert.notEqual(
+      conceptBand("backend/integration/webhook", readEntries(deps.runtime, deps.paths)).band,
+      "demonstrated",
+    );
+    assert.equal(conceptBand("backend/integration/webhook", readEntries(deps.runtime, deps.paths)).band, "no record");
+    assert.equal(answerOnce(deps, "backend/integration/webhook", "42.0"), true);
+    assert.equal(answerOnce(deps, "backend/integration/webhook", "42"), true);
+    assert.equal(
+      conceptBand("backend/integration/webhook", readEntries(deps.runtime, deps.paths)).band,
+      "demonstrated",
+    );
   });
 
   it("stores an explanation and never changes a band with it", async () => {
     const { deps } = await project();
-    assert.equal(answerOnce(deps, "webhook", "40"), false);
-    const before = conceptBand("webhook", readEntries(deps.runtime, deps.paths));
-    assert.ok(explain(deps, ["webhook"], "it doubles the number it reads", "terminal"));
-    assert.deepEqual(conceptBand("webhook", readEntries(deps.runtime, deps.paths)), before);
+    assert.equal(answerOnce(deps, "backend/integration/webhook", "40"), false);
+    const before = conceptBand("backend/integration/webhook", readEntries(deps.runtime, deps.paths));
+    assert.ok(explain(deps, ["backend/integration/webhook"], "it doubles the number it reads", "terminal"));
+    assert.deepEqual(conceptBand("backend/integration/webhook", readEntries(deps.runtime, deps.paths)), before);
     assert.ok(readTeach(deps.runtime, deps.paths).some((entry) => entry.type === "explanation"));
   });
 
   it("asks at the edge only and asks nothing when there is no key", async () => {
     const { deps } = await project();
-    assert.deepEqual(askQuestion(deps, { concepts: ["webhook"], origin: "edge" }), {
+    assert.deepEqual(askQuestion(deps, { concepts: ["backend/integration/webhook"], origin: "edge" }), {
       ok: false,
       reason: "not_at_edge",
     });
@@ -129,18 +135,18 @@ describe("teach-back keyed by execution", () => {
       at: deps.runtime.now(),
       type: "evidence",
       id: "e-own",
-      concepts: ["webhook"],
+      concepts: ["backend/integration/webhook"],
       proof: "own-change",
       result: "pass",
       ref: "commit:abc",
       origin: "person",
     });
-    assert.equal(askQuestion(deps, { concepts: ["webhook"], origin: "edge" }).ok, true);
+    assert.equal(askQuestion(deps, { concepts: ["backend/integration/webhook"], origin: "edge" }).ok, true);
     const bare = tempRepo({ "README.md": "app\n" });
     repos.push(bare);
     const none = askQuestion(
       { runtime: ticking(), paths: fmPaths(bare.root) },
-      { concepts: ["webhook"], origin: "know" },
+      { concepts: ["backend/integration/webhook"], origin: "know" },
     );
     assert.deepEqual(none, { ok: false, reason: "no_key" });
     assert.deepEqual(readTeach(repoRuntime(), fmPaths(bare.root)), []);
@@ -151,7 +157,10 @@ describe("teach-back keyed by execution", () => {
     const refused = await cliJson(["teach"], { cwd: repo.root, runtime: repoRuntime() });
     assert.notEqual(refused.code, 0);
     write(repo.root, ".finitemonkey/policy.yml", OPT_IN);
-    const asked = await cliJson(["teach", "ask", "--concepts", "webhook"], { cwd: repo.root, runtime: repoRuntime() });
+    const asked = await cliJson(["teach", "ask", "--concepts", "backend/integration/webhook"], {
+      cwd: repo.root,
+      runtime: repoRuntime(),
+    });
     const id = String(field(asked.body, "data", "question", "question"));
     assert.equal(field(asked.body, "data", "question", "input"), "21");
     assert.equal(field(asked.body, "data", "question", "actual"), undefined);
@@ -186,7 +195,7 @@ describe("probes at natural pauses", () => {
     for (const index of [1, 2, 3, 4])
       proposeProbe(runtime, deps.paths, {
         kind: "language",
-        concept: "webhook",
+        concept: "backend/integration/webhook",
         question: `What does webhook ${String(index)} mean here?`,
         why: "the change adds a webhook",
         options: [
