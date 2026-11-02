@@ -2,11 +2,11 @@ import type { Ctx } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import { projectDefaults } from "../defaults/items.js";
 import { type ApplyFailure, applyPlan } from "../install/apply.js";
-import { GITIGNORE_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../install/layout.js";
+import { GITIGNORE_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_CORE, VENDOR_PACKAGE } from "../install/layout.js";
 import { buildPlan, CHANGING, detect, type PlanError, readPreviousLock } from "../install/plan.js";
 import { openProject, planInputFor } from "../install/session.js";
 
-export const FIXABLE_FILES = [SETTINGS_FILE, GITIGNORE_FILE, VENDOR_BIN, VENDOR_PACKAGE] as const;
+export const FIXABLE_FILES = [SETTINGS_FILE, GITIGNORE_FILE, VENDOR_BIN, VENDOR_CORE, VENDOR_PACKAGE] as const;
 
 export interface Fixed {
   readonly installed: boolean;

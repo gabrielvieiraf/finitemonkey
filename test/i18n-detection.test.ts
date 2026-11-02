@@ -8,7 +8,7 @@ import { langSettings } from "../src/i18n/lang-settings.js";
 import { claudeLanguageToLang, detectLang } from "../src/i18n/languages.js";
 import { CONFIG_FILE, SETTINGS_FILE } from "../src/install/layout.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, cliJson, fakeRuntime, field, found, parseBody } from "./support.js";
+import { BUNDLE, cliJson, CORE, fakeRuntime, field, found, parseBody } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const at = (relative: string): string => join(ROOT, relative);
@@ -105,6 +105,7 @@ describe("init and the Claude Code language setting", () => {
     memoryFs(
       {
         [BUNDLE]: "#!/usr/bin/env node\nconsole.log('finitemonkey');\n",
+        [CORE]: "#!/usr/bin/env node\nexport const main = () => 'finitemonkey';\n",
         ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
       },
       [at(".git")],

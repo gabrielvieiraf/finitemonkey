@@ -9,6 +9,7 @@ export const INSTALL_LOCK = ".finitemonkey/locks/install.lock";
 export const VERIFY_SKILL = ".claude/skills/verify/SKILL.md";
 export const LOCAL_BIN = "node_modules/finitemonkey/dist/finitemonkey.mjs";
 export const VENDOR_BIN = ".finitemonkey/runtime/dist/finitemonkey.mjs";
+export const VENDOR_CORE = ".finitemonkey/runtime/dist/finitemonkey-core.mjs";
 export const VENDOR_PACKAGE = ".finitemonkey/runtime/package.json";
 export const LOCK_SCHEMA = "finitemonkey/lock@1";
 export const PLAN_SCHEMA = "finitemonkey/install-plan@1";

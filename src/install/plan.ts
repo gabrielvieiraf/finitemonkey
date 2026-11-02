@@ -50,7 +50,7 @@ import { mergeSettings, type SettingsAdded } from "./settings-merge.js";
 import { isOwnSkill, verifySkillTemplate } from "./skill-template.js";
 import { ownStatusLine } from "./statusline.js";
 import { existingStatusLine } from "./statusline-search.js";
-import { vendoredFiles } from "./vendor.js";
+import { type VendorBundle, vendoredFiles } from "./vendor.js";
 
 export const ACTIONS = ["create", "merge", "update", "unchanged", "keep-edited", "skip-foreign"] as const;
 
@@ -105,7 +105,7 @@ export interface PlanInput {
   readonly sandbox: boolean;
   readonly offerSandbox: boolean;
   readonly platform: NodeJS.Platform;
-  readonly bundle: string | undefined;
+  readonly bundle: VendorBundle | undefined;
   readonly env: Env;
   readonly t: Translate;
 }

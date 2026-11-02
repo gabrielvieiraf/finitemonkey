@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { currentAncestors } from "./ancestry.js";
 import { type AbsolutePath, toAbsolutePath } from "./brand.js";
+import { binPath } from "./bundle-files.js";
 import { nodeAppendText, nodeExec, nodeSpawnSelf } from "./node-exec.js";
 import {
   nodeListDir,
@@ -68,7 +69,7 @@ export const nodeRealpath = (path: string): string => {
   }
 };
 
-const SELF_PATH = toAbsolutePath(fileURLToPath(import.meta.url));
+const SELF_PATH = toAbsolutePath(binPath(fileURLToPath(import.meta.url)));
 
 export const nodeRuntime = (): Runtime => ({
   nodeVersion: process.versions.node,

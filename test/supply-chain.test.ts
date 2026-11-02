@@ -9,7 +9,7 @@ import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, BUNDLE_TEXT, cliJson, execMissing, execResult, fakeRuntime, field, stdinFrom } from "./support.js";
+import { BUNDLE_FILES, cliJson, execMissing, execResult, fakeRuntime, field, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const at = (path: string): string => toAbsolutePath(path, ROOT);
@@ -20,7 +20,7 @@ const repo = (
   exec?: (request: ExecRequest) => ExecResult | undefined,
 ): { readonly runtime: Runtime; readonly read: (path: string) => string | undefined } => {
   const fs = memoryFs(
-    { [BUNDLE]: BUNDLE_TEXT, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
+    { ...BUNDLE_FILES, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
     [],
     NOW,
   );

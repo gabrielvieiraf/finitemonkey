@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { corePath } from "../core/bundle-files.js";
 import { parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { LOCAL_BIN, SETTINGS_FILE, VENDOR_BIN } from "../install/layout.js";
@@ -10,6 +11,9 @@ const fileHash = (runtime: Pick<Runtime, "readText">, path: AbsolutePath): strin
   const text = runtime.readText(path);
   return text.ok ? sha256(text.value) : "-";
 };
+
+const bundleHash = (runtime: Pick<Runtime, "readText">, bin: AbsolutePath): string =>
+  `${fileHash(runtime, bin)}+${fileHash(runtime, toAbsolutePath(corePath(bin)))}`;
 
 const hooksHash = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): string => {
   const text = runtime.readText(toAbsolutePath(join(root, SETTINGS_FILE)));
@@ -21,9 +25,9 @@ const hooksHash = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): stri
 export const scriptsDigest = (runtime: Pick<Runtime, "readText" | "selfPath">, root: AbsolutePath): string =>
   sha256(
     [
-      `self:${fileHash(runtime, runtime.selfPath)}`,
-      `vendor:${fileHash(runtime, toAbsolutePath(join(root, VENDOR_BIN)))}`,
-      `local:${fileHash(runtime, toAbsolutePath(join(root, LOCAL_BIN)))}`,
+      `self:${bundleHash(runtime, runtime.selfPath)}`,
+      `vendor:${bundleHash(runtime, toAbsolutePath(join(root, VENDOR_BIN)))}`,
+      `local:${bundleHash(runtime, toAbsolutePath(join(root, LOCAL_BIN)))}`,
       `hooks:${hooksHash(runtime, root)}`,
     ].join("\n"),
   ).slice(0, 32);
