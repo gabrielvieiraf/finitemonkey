@@ -1,0 +1,18 @@
+{
+  "dropped": [
+    {
+      "file": "src/gate/checks/diff.ts",
+      "side": "ours",
+      "line": "import { recordScopeAdditions } from \"../../signals/scope-band.js\";",
+      "reason": "movido_para",
+      "to": "src/gate/checks/diff-accepted.ts"
+    },
+    {
+      "file": "src/gate/checks/diff.ts",
+      "side": "ours",
+      "line": "recordScopeAdditions(ctx.runtime, ctx.paths, { task: ctx.contract.id, files, approvedAt: approval.at });",
+      "reason": "movido_para",
+      "to": "src/gate/checks/diff-accepted.ts"
+    }
+  ]
+}
