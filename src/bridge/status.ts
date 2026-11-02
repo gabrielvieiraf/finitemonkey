@@ -9,6 +9,8 @@ import { readGateStatus } from "../gate/hooks/status.js";
 import { prepareGate } from "../gate/prepare.js";
 import { buildReport, type GateReport, type ReportItem } from "../gate/report.js";
 import { unreviewedBypasses } from "../guards/bypass/ledger.js";
+import type { TriageCount } from "../judge/triage.js";
+import { triageNow } from "../judge/triage-raise.js";
 import { type KnowledgeCounts, knowledgeCounts } from "../knowledge/freshness.js";
 import { isMuted, readBudget } from "../policy/budget.js";
 import { featureMode } from "../policy/feature.js";
@@ -73,6 +75,7 @@ export interface StatusData {
     readonly recent: readonly number[];
   } | null;
   readonly trajectory: TrajectoryNow | null;
+  readonly triage: TriageCount | null;
 }
 
 const verifyOf = (item: ReportItem): string => item.command ?? GATE_COMMAND;
@@ -200,5 +203,6 @@ export const statusOf = (runtime: Runtime, paths: FmPaths): StatusData => {
     blindBand: blindBandLine(runtime, paths),
     knowledge: knowledgeCounts(runtime, paths),
     trajectory: trajectoryNowOf(runtime, paths),
+    triage: triageNow(runtime, paths),
   };
 };

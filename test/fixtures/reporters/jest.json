@@ -1,0 +1,54 @@
+{
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 1,
+  "numPassedTests": 3,
+  "numPendingTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 3,
+  "startTime": 1793361600000,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["math"],
+          "duration": 2,
+          "failureMessages": [],
+          "fullName": "math adds",
+          "location": null,
+          "numPassingAsserts": 1,
+          "status": "passed",
+          "title": "adds"
+        },
+        {
+          "ancestorTitles": ["math"],
+          "duration": 1251,
+          "failureMessages": [],
+          "fullName": "math slow one",
+          "location": null,
+          "numPassingAsserts": 1,
+          "status": "passed",
+          "title": "slow one"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "pending one",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "pending",
+          "title": "pending one"
+        }
+      ],
+      "endTime": 1793361601300,
+      "message": "",
+      "name": "/repo/src/math.test.js",
+      "startTime": 1793361600010,
+      "status": "passed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}

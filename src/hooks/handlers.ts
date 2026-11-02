@@ -1,7 +1,8 @@
 import { ADVISOR_HANDLERS } from "../advisor/hook.js";
 import { EXPLAIN_APPROVAL_FEATURE, EXPLAIN_APPROVAL_HANDLERS } from "../approve/hook.js";
 import { appsecEditWarning } from "../appsec/hook.js";
-import { ATTENTION_FEATURE, ATTENTION_HANDLERS } from "../attention/hook.js";
+import { ATTENTION_FEATURE } from "../attention/feature.js";
+import { ATTENTION_HANDLERS } from "../attention/hook.js";
 import { UNATTENDED_HANDLERS } from "../autonomy/hold.js";
 import { CALIBRATE_HANDLERS } from "../calibrate/hooks.js";
 import { CLAIMS_HANDLERS } from "../claims/guard.js";
@@ -38,14 +39,19 @@ import { instructionsLoaded } from "../instructions/log.js";
 import { TRIAGE_HANDLERS } from "../judge/triage-hook.js";
 import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
 import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
+import { localizationStop } from "../knowledge/turn-measures.js";
 import { KNOWLEDGE_MAP_HANDLERS } from "../knowledge/who-knows-hook.js";
 import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
+import { SHEET_FEATURE } from "../look/sheet.js";
+import { SHEET_HANDLERS } from "../look/sheet-hook.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
 import { MCP_PIN_FEATURE, MCP_PIN_HANDLERS } from "../policy/mcp-pin-hook.js";
 import { PREMISE_FEATURE, PREMISE_HANDLERS } from "../premise/hook.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
+import { PROVIDER_HANDLERS } from "../provider/hook.js";
+import { PROVIDER_FEATURE } from "../provider/kinds.js";
 import { QUALITY_HANDLERS } from "../quality/hook.js";
 import { RELAY_HANDLERS } from "../relay/hook.js";
 import { REMINDERS_HANDLERS } from "../reminders/hooks.js";
@@ -53,6 +59,7 @@ import { REUSE_HANDLERS } from "../reuse/hook.js";
 import { RICOCHETE_HANDLERS } from "../ricochete/stop.js";
 import { rulesGuard } from "../rules/guard.js";
 import { rulesStop } from "../rules/stop.js";
+import { secretContextPreToolUse } from "../secrets/guards/context-hook.js";
 import { secretsPostToolUse, secretsUserPromptSubmit } from "../secrets/guards/exposure.js";
 import { secretsPreToolUse } from "../secrets/guards/pre-tool.js";
 import { secretsSessionStart } from "../secrets/guards/session.js";
@@ -69,6 +76,8 @@ import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
 import { CONTRACT_HOLD_GUARD, CONTRACT_HOLD_HANDLERS } from "../task/contract-hold.js";
 import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
+import { TEACH_HANDLERS } from "../teach/hooks.js";
+import { TEACH_FEATURE } from "../teach/types.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
 import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
 import { WT_SUGGEST_HANDLERS } from "../wt/suggest-hooks.js";
@@ -191,7 +200,7 @@ export const mergeHandlers = (...sets: readonly HookHandlers[]): HookHandlers =>
 };
 
 export const SECRETS_HANDLERS: HookHandlers = {
-  PreToolUse: [secretsPreToolUse],
+  PreToolUse: [secretsPreToolUse, secretContextPreToolUse],
   UserPromptSubmit: [secretsUserPromptSubmit],
   PostToolUse: [secretsPostToolUse],
   SessionStart: [secretsSessionStart],
@@ -263,6 +272,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: OUTWARD_FEATURE, damage: false, handlers: OUTWARD_HANDLERS },
   { id: MCP_PIN_FEATURE, damage: false, handlers: MCP_PIN_HANDLERS },
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
+  { id: "arm-measures", damage: false, handlers: { Stop: [localizationStop] } },
   { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
   { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },
   { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
@@ -270,6 +280,9 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
   { id: CONTRACT_HOLD_GUARD, damage: false, handlers: CONTRACT_HOLD_HANDLERS },
+  { id: PROVIDER_FEATURE, damage: false, handlers: PROVIDER_HANDLERS },
+  { id: TEACH_FEATURE, damage: false, handlers: TEACH_HANDLERS },
+  { id: SHEET_FEATURE, damage: false, handlers: SHEET_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

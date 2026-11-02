@@ -1,8 +1,10 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const DEFAULT_SCRIPTS = ["docs", "llms"];
+const REPO = dirname(dirname(fileURLToPath(import.meta.url)));
 
 export const prepare = (pluginConfig, context) => {
   const file = join(context.cwd, "bench", "evidence.json");
@@ -13,4 +15,11 @@ export const prepare = (pluginConfig, context) => {
     execFileSync("npm", ["run", script], { cwd: context.cwd, stdio: "inherit" });
   }
   context.logger.log(`evidence labeled with ${version}, README tables and llms-full rebuilt`);
+};
+
+export const generateNotes = (pluginConfig, context) => {
+  if (pluginConfig.notes !== true) return "";
+  const script = join(REPO, "scripts", "evidence-notes.ts");
+  const args = ["--import", "tsx", script, "--root", context.cwd, "--version", context.nextRelease.version];
+  return execFileSync(process.execPath, args, { cwd: REPO, encoding: "utf8" });
 };

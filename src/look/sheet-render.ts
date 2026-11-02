@@ -1,4 +1,4 @@
-import { type Sheet, type SheetElement, type SheetVariable, type SheetView, UNMEASURED } from "./sheet.js";
+import { type Sheet, type SheetElement, type SheetVariable, type SheetView, UNMEASURED, Z_INDEX } from "./sheet.js";
 
 const PLAN_WIDTH = 560;
 const STROKES = [2, 1.25, 0.75] as const;
@@ -14,6 +14,18 @@ const refOf = (
   if (px === null || px === undefined) return UNMEASURED;
   if (px === 0) return "0";
   return variables.find((variable) => variable.kind === kind && variable.px === px)?.name ?? `${String(px)}px`;
+};
+
+const layerText = (element: SheetElement | undefined): string => {
+  if (element === undefined) return "";
+  const z = element.values[Z_INDEX];
+  return [
+    element.layer,
+    z === undefined || z === null ? undefined : `z ${String(z)}`,
+    element.stacking ? "stacking" : undefined,
+  ]
+    .filter((part) => part !== undefined)
+    .join(" · ");
 };
 
 const label = (element: SheetElement, variables: readonly SheetVariable[]): string => {
@@ -44,7 +56,7 @@ const rows = (sheet: Sheet, view: SheetView): string => {
     .map((key) => {
       const element = view.elements.find((item) => item.key === key);
       const text = element === undefined ? UNMEASURED : label(element, sheet.variables);
-      return `<tr><td><code>${escape(key)}</code></td><td>${escape(text)}</td><td>${element?.layer ?? ""}</td></tr>`;
+      return `<tr><td><code>${escape(key)}</code></td><td>${escape(text)}</td><td>${layerText(element)}</td></tr>`;
     })
     .join("");
 };

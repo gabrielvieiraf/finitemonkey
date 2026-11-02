@@ -53,12 +53,15 @@ export const judgeContradictCommand = judgeCommand({
 export const judgeFixedCommand = judgeCommand({
   path: ["judge", "fixed"],
   summaryKey: "command.judge_fixed.summary",
-  usage: "finitemonkey judge fixed <event> --by person|agent|revert",
-  options: { by: { type: "string" } },
+  usage: "finitemonkey judge fixed <event> (--by person|agent|revert | --commit <sha>)",
+  options: { by: { type: "string" }, commit: { type: "string" } },
   maxPositionals: 1,
   build: (ctx, values, positionals) => {
     const by = stringOption(values, "by");
-    return by === "person" && !isPerson(ctx) ? undefined : { verb: "fixed", event: positionals[0], by };
+    const commit = stringOption(values, "commit");
+    return by === "person" && !isPerson(ctx)
+      ? undefined
+      : { verb: "fixed", event: positionals[0], by, ...(commit === undefined ? {} : { commit }) };
   },
 });
 

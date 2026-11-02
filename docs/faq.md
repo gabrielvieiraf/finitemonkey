@@ -91,3 +91,12 @@ Yes, several, and some are good at one job. tdd-guard enforces test-first edits;
 Yes, if the switcher reads a hold file. A supervisor that restarts Claude Code on another account can cut the gate in the middle of a `Stop`, and the resumed session waits for you with the work half checked.
 
 To opt in, add `supervisor:` with `enabled: true` to `.finitemonkey/config.yml`, and have the supervisor set `FINITEMONKEY_HOLD_DIR` to a directory it watches. While the gate runs or holds the stop, Finite Monkey keeps `<session>.hold.json` there, with an `until` time; the supervisor should not switch while `until` is in the future. The file expires on its own (10 minutes for a run, 15 for a held stop) and is deleted when the gate passes. When the session resumes on the new account, `SessionStart` tells Claude what the gate was waiting for and runs the gate again. Resume messages that start with `[supervisor]` are not taken as yours, and a `usage.json` in the same directory shows up in `finitemonkey gain`.
+
+## My WSL disk stays big after removing worktrees. Can Finite Monkey shrink it?
+
+No, and it does not try: shrinking the virtual disk of WSL 2 needs Windows administrator rights, so it stays a manual step. `wt clean` and `wt archive` free the space inside Linux; Windows only gets it back after the disk is compacted.
+
+1. Close every WSL window and run `wsl --shutdown` in PowerShell.
+2. In PowerShell as administrator, run `Optimize-VHD -Path <path to ext4.vhdx> -Mode Full` (Hyper-V module), or `diskpart` with `select vdisk file="<path to ext4.vhdx>"`, `compact vdisk`.
+
+The `ext4.vhdx` of a distribution lives under `%LOCALAPPDATA%\Packages\<distribution>\LocalState\`.

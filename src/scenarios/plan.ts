@@ -3,20 +3,14 @@ import { join } from "node:path";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, type ConfigTree } from "../git/project-config.js";
+import { fileRoutes } from "./file-routes.js";
+import { callRoutes, type Method, type Route } from "./routes.js";
 
 export const SCENARIOS_FEATURE = "access-scenarios";
 export const SCENARIOS_SCHEMA = "finitemonkey/scenarios@1";
 export const LOCALHOST = "127.0.0.1";
 
-export const METHODS = ["get", "post", "put", "patch", "delete"] as const;
-
-export type Method = (typeof METHODS)[number];
-
-export interface Route {
-  readonly method: Method;
-  readonly path: string;
-  readonly file: string;
-}
+export { type Method, METHODS, type Route } from "./routes.js";
 
 export interface Resource {
   readonly name: string;
@@ -46,20 +40,19 @@ export interface AccessConfig {
   readonly userB: string;
   readonly body: string;
   readonly idField: string;
+  readonly flowUser?: "A" | "B";
 }
 
-const ROUTE = /\.(get|post|put|patch|delete)\(\s*["'`](\/[A-Za-z0-9_\-/:{}]*)["'`]/gi;
-const SOURCE = /\.(?:[cm]?[jt]sx?)$/;
-const SKIP_DIR = /(?:^|\/)(?:node_modules|\.git|dist|build|coverage|\.finitemonkey)\//;
-const PARAM = /\/(?::[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})$/;
+const SOURCE = /\.(?:[cm]?[jt]sx?|py)$/;
+const SKIP_DIR =
+  /(?:^|\/)(?:node_modules|\.git|dist|build|coverage|\.finitemonkey|\.next|\.svelte-kit|\.nuxt|\.output|\.?venv|__pycache__)\//;
+const PARAM = /\/(?::[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})(\/?)$/;
 const MAX_FILES = 2000;
 
-export const routesIn = (file: string, text: string): readonly Route[] =>
-  [...text.matchAll(ROUTE)].flatMap((match) => {
-    const method = METHODS.find((item) => item === match[1]?.toLowerCase());
-    const path = match[2];
-    return method === undefined || path === undefined ? [] : [{ method, path, file }];
-  });
+export const routesIn = (file: string, text: string): readonly Route[] => {
+  const byFile = fileRoutes(file, text);
+  return byFile.length > 0 ? byFile : callRoutes(file, text);
+};
 
 export const isRouteFile = (file: string, text: string): boolean =>
   SOURCE.test(file) && routesIn(file, text).length > 0;
@@ -86,7 +79,7 @@ export const resourcesOf = (routes: readonly Route[]): readonly Resource[] => {
   const byItem = new Map<string, Method[]>();
   for (const route of items) byItem.set(route.path, [...(byItem.get(route.path) ?? []), route.method]);
   return [...byItem.entries()].flatMap(([item, methods]): Resource[] => {
-    const collection = item.replace(PARAM, "") || "/";
+    const collection = item.replace(PARAM, "$1") || "/";
     if (!collections.has(collection) || !methods.includes("get")) return [];
     const name = singular(
       collection
@@ -144,6 +137,11 @@ const text = (tree: ConfigTree, key: string, fallback: string): string => {
   return typeof value === "string" && value.trim() !== "" ? value : fallback;
 };
 
+const flowUserOf = (value: string): { readonly flowUser?: "A" | "B" } => {
+  const upper = value.trim().toUpperCase();
+  return upper === "A" || upper === "B" ? { flowUser: upper } : {};
+};
+
 export const accessConfig = (tree: ConfigTree): AccessConfig | undefined => {
   const port = Number.parseInt(text(tree, "port", ""), 10);
   const userA = text(tree, "user_a", "");
@@ -157,5 +155,6 @@ export const accessConfig = (tree: ConfigTree): AccessConfig | undefined => {
     userB,
     body: text(tree, "body", "{}"),
     idField: text(tree, "id_field", "id"),
+    ...flowUserOf(text(tree, "flow_user", "")),
   };
 };

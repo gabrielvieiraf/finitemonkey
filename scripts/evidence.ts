@@ -8,6 +8,7 @@ import { GUARD_SETS } from "../src/hooks/handlers.js";
 import { SAMPLES } from "../test/secret-samples.js";
 import { measureContext, runtime, withFixtureProject } from "./budget-measure.js";
 import { type CorpusCase, expandCase, loadCorpus } from "./evidence-corpus.js";
+import { GUARDIAN_RESULTS, guardianEvidence, harmfulRedirectReasons } from "./evidence-guardian.js";
 import {
   armOverhead,
   DEFAULT_GUARD_BUDGET,
@@ -15,11 +16,13 @@ import {
   EVIDENCE_SCHEMA,
   type GuardEvidence,
   guardEvidence,
+  type GuardVerdict,
   judge,
   parseEvidenceBudgets,
   parseReviewEvidence,
   type ReviewEvidence,
 } from "./evidence-rates.js";
+import { REMOTE_CORPUS, replayRemote } from "./evidence-remote.js";
 import { prepareFixture, replayGuard } from "./evidence-replay.js";
 import { EVIDENCE_FILE, renderEvidence } from "./evidence-text.js";
 
@@ -70,6 +73,12 @@ const reviewScores = (path: string | undefined): ReviewEvidence | null => {
   return parsed ?? fail(`${path} is not a bench:review score file`);
 };
 
+const guardianFile = join(root, GUARDIAN_RESULTS);
+if (!existsSync(guardianFile)) fail(`${GUARDIAN_RESULTS} is missing; run node --import tsx scripts/bench-guardian.ts`);
+const guardianRaw = parseJsonObject(readFileSync(guardianFile, "utf8"));
+const guardian = guardianRaw.ok ? guardianEvidence(guardianRaw.value, GUARDIAN_RESULTS) : fail(guardianRaw.error);
+if (!guardian.ok) fail(guardian.error);
+
 const alwaysOn = GUARD_SETS.filter((set) => set.damage);
 
 const measured = await withFixtureProject(async (project) => {
@@ -82,6 +91,9 @@ const measured = await withFixtureProject(async (project) => {
       await replayGuard(runtime, project, handlers, cases);
       guards.push(guardEvidence(set.id, await replayGuard(runtime, project, handlers, cases)));
     }
+    const remote = expanded((corpus.ok ? corpus.value[REMOTE_CORPUS] : undefined) ?? []);
+    await replayRemote(runtime, project, remote);
+    guards.push(guardEvidence(REMOTE_CORPUS, await replayRemote(runtime, project, remote)));
     const context = await measureContext(project);
     return { guards, context };
   } finally {
@@ -102,6 +114,7 @@ const evidence: Evidence = {
   ),
   arms: armOverhead(runRecords(values.runs)),
   review: reviewScores(values.review),
+  guardian: guardian.ok ? guardian.value : null,
 };
 
 const out = values.out ?? join(root, EVIDENCE_FILE);
@@ -112,7 +125,15 @@ console.log(table);
 const summary = process.env["GITHUB_STEP_SUMMARY"];
 if (summary !== undefined && summary !== "") appendFileSync(summary, `${table}\n`);
 
-const verdicts = budgets.ok ? evidence.guards.map((guard) => judge(guard, budgets.value)) : [];
+const guardianVerdict = (): readonly GuardVerdict[] => {
+  if (evidence.guardian === null || !budgets.ok) return [];
+  const verdict = judge(evidence.guardian, budgets.value);
+  const harmful = harmfulRedirectReasons(evidence.guardian);
+  return [harmful.length === 0 ? verdict : { ...verdict, verdict: "fail", reasons: [...verdict.reasons, ...harmful] }];
+};
+const verdicts = budgets.ok
+  ? [...evidence.guards.map((guard) => judge(guard, budgets.value)), ...guardianVerdict()]
+  : [];
 for (const verdict of verdicts) {
   if (verdict.verdict === "ok") continue;
   const wrong = evidence.guards.find((guard) => guard.guard === verdict.guard)?.wrong ?? [];

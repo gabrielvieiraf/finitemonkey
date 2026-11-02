@@ -2,10 +2,11 @@ import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { nowMs } from "../core/clock.js";
-import { parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, type ConfigTree } from "../git/project-config.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
+import { type Counts, parseCounts } from "./counts.js";
+import { compareSchema, comparisonDetail } from "./restore-schema.js";
 import { isLocalDatabase } from "./throwaway.js";
 
 export const RESTORE_FEATURE = "restore-drill";
@@ -22,6 +23,8 @@ export interface DataStore {
   readonly target: string | undefined;
   readonly counts: string | undefined;
   readonly expect: readonly string[];
+  readonly schemaDump: string | undefined;
+  readonly schema: string | undefined;
 }
 
 export interface RestoreConfig {
@@ -58,6 +61,8 @@ export const restoreConfig = (config: ConfigTree): RestoreConfig => {
               target: field("target"),
               counts: field("counts"),
               expect: configList(config, "restore", "stores", name, "expect"),
+              schemaDump: field("schema_dump"),
+              schema: field("schema"),
             };
           }),
   };
@@ -119,23 +124,40 @@ export interface DrillResult {
 const DRILL_TIMEOUT_MS = 30 * 60_000;
 const DETAIL_LIMIT = 300;
 
-export const parseCounts = (stdout: string): Readonly<Record<string, number>> => {
-  const json = parseJsonObject(stdout.trim());
-  if (json.ok) {
-    return Object.fromEntries(
-      Object.entries(json.value).filter((entry): entry is [string, number] => typeof entry[1] === "number"),
-    );
+type DrillExec = (command: string) => ReturnType<Runtime["exec"]>;
+
+interface Verdict {
+  readonly failed?: string;
+  readonly counts: Counts;
+}
+
+const countVerdict = (exec: DrillExec, store: DataStore): Verdict => {
+  if (store.counts === undefined) return { counts: {} };
+  const counted = exec(store.counts);
+  if (counted.exitCode !== 0) return { failed: counted.stderr.trim().slice(-DETAIL_LIMIT), counts: {} };
+  const counts = parseCounts(counted.stdout);
+  const empty = store.expect.filter((table) => (counts[table] ?? 0) === 0);
+  return empty.length > 0 ? { failed: `empty: ${empty.join(", ")}`, counts } : { counts };
+};
+
+const schemaFailure = (
+  runtime: Pick<Runtime, "readText">,
+  root: AbsolutePath,
+  exec: DrillExec,
+  store: DataStore,
+): string | undefined => {
+  if (store.schema === undefined) return undefined;
+  if (store.schemaDump === undefined) return `schema_dump not declared for ${store.schema}`;
+  const dumped = exec(store.schemaDump);
+  if (!dumped.found || dumped.exitCode !== 0 || dumped.timedOut) {
+    return `schema_dump: ${(dumped.stderr || dumped.stdout).trim().slice(-DETAIL_LIMIT)}`;
   }
-  return Object.fromEntries(
-    stdout.split("\n").flatMap((line): [string, number][] => {
-      const match = /^\s*([\w.-]+)\s*[:\s]\s*(\d+)\s*$/.exec(line);
-      return match?.[1] === undefined || match[2] === undefined ? [] : [[match[1], Number(match[2])]];
-    }),
-  );
+  const comparison = compareSchema(runtime, root, store.schema, dumped.stdout);
+  return comparison.ok ? undefined : comparisonDetail(comparison);
 };
 
 export const runDrill = (runtime: Runtime, root: AbsolutePath, store: DataStore): DrillResult => {
-  const result = (status: DrillStatus, detail = "", counts: Readonly<Record<string, number>> = {}): DrillResult => ({
+  const result = (status: DrillStatus, detail = "", counts: Counts = {}): DrillResult => ({
     store: store.name,
     status,
     source: store.backup,
@@ -144,7 +166,7 @@ export const runDrill = (runtime: Runtime, root: AbsolutePath, store: DataStore)
   });
   if (store.restore === undefined || store.target === undefined) return result("not_configured");
   if (!isLocalDatabase(store.target)) return result("refused", store.target.replace(/\/\/[^@/]*@/, "//***@"));
-  const exec = (command: string) =>
+  const exec: DrillExec = (command) =>
     runtime.exec({
       command,
       args: [],
@@ -158,14 +180,11 @@ export const runDrill = (runtime: Runtime, root: AbsolutePath, store: DataStore)
   if (!restored.found || restored.exitCode !== 0 || restored.timedOut) {
     return result("failed", (restored.stderr || restored.stdout).trim().slice(-DETAIL_LIMIT));
   }
-  if (store.counts === undefined) return result("passed", `${String(nowMs(runtime) - started)} ms`);
-  const counted = exec(store.counts);
-  const counts = counted.exitCode === 0 ? parseCounts(counted.stdout) : {};
-  const empty = store.expect.filter((table) => (counts[table] ?? 0) === 0);
-  if (counted.exitCode !== 0 || empty.length > 0) {
-    return result("failed", empty.length > 0 ? `empty: ${empty.join(", ")}` : counted.stderr.trim(), counts);
-  }
-  return result("passed", `${String(nowMs(runtime) - started)} ms`, counts);
+  const verdict = countVerdict(exec, store);
+  if (verdict.failed !== undefined) return result("failed", verdict.failed, verdict.counts);
+  const schema = schemaFailure(runtime, root, exec, store);
+  if (schema !== undefined) return result("failed", schema, verdict.counts);
+  return result("passed", `${String(nowMs(runtime) - started)} ms`, verdict.counts);
 };
 
 export const isStale = (lastPassed: string | undefined, now: number, periodDays: number): boolean =>

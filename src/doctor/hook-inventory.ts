@@ -6,7 +6,7 @@ import { isOwnHandler } from "../install/hook-entries.js";
 import { asList, asRecord } from "../install/json-text.js";
 import { PLUGIN_ID } from "../install/settings-merge.js";
 import { readSettings } from "./settings.js";
-import type { DoctorEnv } from "./types.js";
+import type { CheckFinding, DoctorEnv } from "./types.js";
 
 export interface HookRow {
   readonly source: string;
@@ -135,5 +135,28 @@ export const withDebugLog = (rows: readonly HookRow[], log: string | undefined):
       latencyMs: latencies.length === 0 ? row.latencyMs : Math.max(...latencies),
       outputBytes: outputs.length === 0 ? row.outputBytes : Math.max(...outputs),
     };
+  });
+};
+
+const PROBED_CHECK = /^hook\.(project|local|plugin)\.(.+)$/;
+const TIMED: ReadonlySet<string> = new Set(["doctor.hooks.ok", "doctor.hooks.slow"]);
+
+const probedLatency = (findings: readonly CheckFinding[]): ReadonlyMap<string, number> =>
+  new Map(
+    findings.flatMap((finding): [string, number][] => {
+      const match = PROBED_CHECK.exec(finding.check);
+      const ms = finding.params?.["ms"];
+      if (match === null || typeof ms !== "number" || !TIMED.has(finding.messageKey)) return [];
+      return [[`${match[1] ?? ""}\u0000${match[2] ?? ""}`, ms]];
+    }),
+  );
+
+export const withProbeLatency = (rows: readonly HookRow[], findings: readonly CheckFinding[]): readonly HookRow[] => {
+  const measured = probedLatency(findings);
+  return rows.map((row) => {
+    if (!row.ours || row.latencyMs !== null) return row;
+    const source = row.source.startsWith("plugin:") ? "plugin" : row.source;
+    const ms = measured.get(`${source}\u0000${row.event}`);
+    return ms === undefined ? row : { ...row, latencyMs: ms };
   });
 };

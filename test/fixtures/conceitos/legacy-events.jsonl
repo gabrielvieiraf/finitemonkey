@@ -1,0 +1,22 @@
+{"at": "2026-08-03T10:00:00.000Z", "concept": "webhook", "kind": "exposure", "origin": "person", "weight": 0}
+{"at": "2026-08-04T10:00:00.000Z", "concept": "migration", "kind": "exposure", "origin": "agent", "task": "t1", "file": "db/migrations/001.sql", "weight": 0}
+{"at": "2026-08-05T10:00:00.000Z", "concept": "webhook", "kind": "own_change", "origin": "person", "task": "t1", "file": "src/hooks/webhook.js", "weight": 1}
+{"at": "2026-08-06T10:00:00.000Z", "concept": "migration", "kind": "own_change", "origin": "agent", "task": "t1", "file": "db/migrations/002.sql", "weight": 1}
+{"at": "2026-08-10T10:00:00.000Z", "concept": "api", "kind": "exposure", "origin": "person", "weight": 0}
+{"at": "2026-08-12T10:00:00.000Z", "concept": "webhook", "kind": "prediction_right", "origin": "person", "weight": 1}
+{"at": "2026-08-18T10:00:00.000Z", "concept": "api", "kind": "exposure", "origin": "person", "weight": 0}
+{"at": "2026-08-20T10:00:00.000Z", "concept": "webhook", "kind": "own_repair", "origin": "person", "task": "t2", "file": "src/hooks/webhook.js", "weight": 1.5}
+{"at": "2026-08-22T10:00:00.000Z", "concept": "secret-in-code", "kind": "exposure", "origin": "person", "weight": 0}
+{"at": "2026-09-01T10:00:00.000Z", "concept": "api", "kind": "check_right", "origin": "person", "weight": 1}
+{"at": "2026-09-02T10:00:00.000Z", "concept": "webhook", "kind": "failure_after_approval", "origin": "person", "task": "t3", "weight": -1}
+{"at": "2026-09-08T10:00:00.000Z", "concept": "api", "kind": "check_wrong", "origin": "person", "weight": -0.5}
+{"at": "2026-09-10T10:00:00.000Z", "concept": "webhook", "kind": "own_change", "origin": "person", "task": "t4", "file": "src/hooks/retry.js", "weight": 1}
+{"at": "2026-09-15T10:00:00.000Z", "concept": "migration", "kind": "prediction_wrong", "origin": "agent", "weight": -1}
+{"at": "2026-09-21T10:00:00.000Z", "concept": "api", "kind": "prediction_right", "origin": "person", "weight": 1}
+{"at": "2026-09-25T10:00:00.000Z", "concept": "force-push", "kind": "prediction_wrong", "origin": "person", "weight": -1}
+{"at": "2026-10-01T10:00:00.000Z", "concept": "api", "kind": "own_change", "origin": "person", "task": "t5", "file": "src/api/users.ts", "weight": 1}
+{"at": "2026-10-03T10:00:00.000Z", "concept": "api", "kind": "own_repair", "origin": "person", "task": "t6", "file": "src/api/users.ts", "weight": 1.5}
+{"at": "2026-10-05T10:00:00.000Z", "concept": "api", "kind": "prediction_right", "origin": "person", "weight": 1}
+{"at": "2026-10-10T10:00:00.000Z", "concept": "idempotency", "kind": "own_change", "origin": "person", "task": "t7", "file": "src/pay.ts", "weight": 1}
+{"at": "2026-10-12T10:00:00.000Z", "concept": "idempotency", "kind": "prediction_right", "origin": "person", "weight": 1}
+{"at": "2026-10-20T10:00:00.000Z", "concept": "idempotency", "kind": "own_repair", "origin": "person", "task": "t8", "file": "src/pay.ts", "weight": 1.5}

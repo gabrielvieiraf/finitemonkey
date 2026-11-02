@@ -10,16 +10,17 @@ const stripModule = (path: string): string => path.replace(JS_EXTENSION, "").rep
 const jsSpecifiers = (text: string): readonly string[] =>
   [...text.matchAll(JS_SPECIFIER)].map((match) => match[1] ?? "");
 
-const jsImports = (callerPath: string, callerText: string, origin: string): boolean => {
+export const specifierReaches = (callerPath: string, specifier: string, origin: string): boolean => {
   const target = stripModule(origin);
-  return jsSpecifiers(callerText).some((specifier) => {
-    if (specifier.startsWith(".")) {
-      return stripModule(posix.normalize(posix.join(posix.dirname(callerPath), specifier))) === target;
-    }
-    const bare = stripModule(specifier.replace(/^[@~#]\//, ""));
-    return target === bare || target.endsWith(`/${bare}`);
-  });
+  if (specifier.startsWith(".")) {
+    return stripModule(posix.normalize(posix.join(posix.dirname(callerPath), specifier))) === target;
+  }
+  const bare = stripModule(specifier.replace(/^[@~#]\//, ""));
+  return target === bare || target.endsWith(`/${bare}`);
 };
+
+const jsImports = (callerPath: string, callerText: string, origin: string): boolean =>
+  jsSpecifiers(callerText).some((specifier) => specifierReaches(callerPath, specifier, origin));
 
 const pyImports = (callerText: string, origin: string): boolean => {
   const stem = posix.basename(origin).replace(/\.py$/, "");

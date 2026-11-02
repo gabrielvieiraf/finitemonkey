@@ -1,5 +1,6 @@
 import type { AbsolutePath } from "../core/brand.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
+import { adaptedConvention } from "../defaults/conventions.js";
 import { detectPackageManager, type PackageManager } from "../install/detect.js";
 import { type Project, projectAt, type ProjectRuntime } from "../install/project.js";
 
@@ -40,6 +41,7 @@ export interface Stack {
   readonly httpClients: readonly string[];
   readonly defaultExports: boolean;
   readonly testRunner: string | undefined;
+  readonly lintConvention?: string;
   readonly dirs: (candidates: readonly string[]) => readonly string[];
 }
 
@@ -49,6 +51,11 @@ const manifest = (project: Project): Readonly<Record<string, unknown>> => {
   const text = project.read("package.json");
   const parsed = text === undefined ? undefined : parseJsonObject(text);
   return parsed?.ok === true ? parsed.value : {};
+};
+
+const lintOf = (project: Project): { readonly lintConvention?: string } => {
+  const chosen = adaptedConvention(project.read, "lint");
+  return chosen === undefined ? {} : { lintConvention: chosen };
 };
 
 export const detectStack = (runtime: ProjectRuntime, root: AbsolutePath): Stack => {
@@ -70,6 +77,7 @@ export const detectStack = (runtime: ProjectRuntime, root: AbsolutePath): Stack 
     httpClients: HTTP_CLIENTS.filter((name) => dependencies.has(name)),
     defaultExports: DEFAULT_EXPORT_FRAMEWORKS.some((name) => dependencies.has(name)),
     testRunner: TEST_RUNNERS.find((name) => dependencies.has(name)),
+    ...lintOf(project),
     dirs: (candidates) => candidates.filter((dir) => project.isDir(dir)),
   };
 };

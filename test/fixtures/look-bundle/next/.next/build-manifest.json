@@ -1,0 +1,8 @@
+{
+  "polyfillFiles": ["static/chunks/polyfills-1.js"],
+  "rootMainFiles": [],
+  "pages": {
+    "/": ["static/chunks/webpack-2.js", "static/chunks/main-3.js", "static/chunks/pages/index-4.js"],
+    "/_app": ["static/chunks/webpack-2.js", "static/chunks/main-3.js", "static/css/app.css"]
+  }
+}

@@ -8,9 +8,12 @@ import { comesFromPerson } from "../guards/release/markers.js";
 import type { HookEvent } from "../hooks/events.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
+import { excludedReminders } from "../policy/evolved.js";
 import { injectContext } from "../policy/inject.js";
 import { policyNumber } from "../policy/numbers.js";
+import { loadPolicy } from "../policy/policy.js";
 import { effectiveRules } from "../rules/preset.js";
+import type { ProjectRule } from "../rules/types.js";
 import { readSummary, writeSummary } from "../rules/violations.js";
 import type { FmPaths } from "../task/paths.js";
 import {
@@ -37,6 +40,16 @@ const readSeen = (input: HookInput, paths: FmPaths): SeenState => {
   if (parsed?.ok !== true || parsed.value["session"] !== session) return { session, seen: [] };
   const seen = parsed.value["seen"];
   return { session, seen: Array.isArray(seen) ? seen.filter((item): item is string => typeof item === "string") : [] };
+};
+
+export const injectableRules = (
+  runtime: Pick<HookInput["runtime"], "readText" | "homeDir">,
+  root: FmPaths["root"],
+): readonly ProjectRule[] | undefined => {
+  const rules = effectiveRules(runtime, root);
+  if (!rules.ok) return undefined;
+  const excluded = excludedReminders(loadPolicy(runtime, root));
+  return excluded.size === 0 ? rules.value : rules.value.filter((rule) => !excluded.has(rule.id));
 };
 
 export const limitsOf = (runtime: HookInput["runtime"], root: FmPaths["root"]): Limits => ({
@@ -79,11 +92,11 @@ export const remindersHook: HookHandler = (input) => {
   if (paths === undefined) return ALLOW;
   const trigger = triggerOf(input, paths.root);
   if (trigger === undefined) return ALLOW;
-  const rules = effectiveRules(input.runtime, paths.root);
-  if (!rules.ok || !rules.value.some((rule) => rule.bucket === "reminder")) return ALLOW;
+  const rules = injectableRules(input.runtime, paths.root);
+  if (rules?.some((rule) => rule.bucket === "reminder") !== true) return ALLOW;
   const summary = readSummary(input.runtime, paths.dir);
   const state = readSeen(input, paths);
-  const selection = selectReminders(rules.value, trigger, {
+  const selection = selectReminders(rules, trigger, {
     counts: summary.counts,
     pending: summary.pending,
     seen: new Set(state.seen),

@@ -1,10 +1,12 @@
 import { assumptionLines, openAssumptions } from "../../bridge/handoff.js";
 import { nowMs } from "../../core/clock.js";
 import type { Runtime } from "../../core/runtime.js";
+import { logEvent } from "../../evidence/log.js";
 import { loadBaseline } from "../../findings/baseline.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler, HookInput } from "../../hooks/handlers.js";
 import type { Translate } from "../../i18n/translate.js";
+import { mirrorStore, restoreStore } from "../../task/mirror.js";
 import type { FmPaths } from "../../task/paths.js";
 import { readState } from "../../task/state.js";
 import { readBaseline, writeSession } from "../baseline.js";
@@ -49,6 +51,13 @@ const markSession = (input: HookInput, paths: FmPaths): void => {
   if (cachedPrs(runtime, paths) === undefined) runtime.spawnSelf(["gate", "--prs"], paths.root);
 };
 
+export const restoredLine = (t: Translate, runtime: Runtime, paths: FmPaths): readonly string[] => {
+  const restored = restoreStore(runtime, paths.root);
+  if (restored === undefined) return [];
+  logEvent(runtime, paths, "store_restored", { from: restored.from, files: restored.files });
+  return [t("gate.human.store_restored", { count: restored.files, from: restored.from })];
+};
+
 const compactionFacts = (runtime: Runtime, paths: FmPaths, t: Translate): string | undefined => {
   const lines = assumptionLines(t, openAssumptions(runtime, paths));
   return lines.length === 0 ? undefined : lines.join("\n");
@@ -58,10 +67,12 @@ export const sessionStart: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined) return { kind: "allow" };
   const { t, runtime } = input;
+  const restored = restoredLine(t, runtime, paths);
   const source = textField(input.payload.raw, "source") ?? "startup";
   if (source !== "compact") markSession(input, paths);
   recordConfigHooks(runtime, paths, input.env);
-  const lines = [...notRunLine(t, runtime, paths), ...openPrsLine(t, runtime, paths)];
+  mirrorStore(runtime, paths.root);
+  const lines = [...restored, ...notRunLine(t, runtime, paths), ...openPrsLine(t, runtime, paths)];
   const systemMessage = lines.length === 0 ? undefined : human(lines.join(" "));
   const snapshot = REINJECT_SOURCES.has(source) ? snapshotFacts(t, readState(runtime, paths).snapshot) : undefined;
   const knowledge = source === "compact" ? compactionFacts(runtime, paths, t) : undefined;

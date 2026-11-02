@@ -44,13 +44,25 @@ const eslintFiles = (t: Translate, stack: Stack, presets: ReadonlySet<LintPreset
   };
 };
 
+const otherLinter = (stack: Stack): string | undefined => {
+  const chosen = stack.lintConvention;
+  return chosen === undefined || chosen === "eslint" || chosen === "off" ? undefined : chosen;
+};
+
+const nodeLint = (t: Translate, stack: Stack, presets: ReadonlySet<LintPreset>, read: ReadFile): LintPlan => {
+  const other = otherLinter(stack);
+  if (other !== undefined) return { files: [], notes: [t("gen.lint.convention", { tool: other })] };
+  return stack.node ? eslintFiles(t, stack, presets, read) : { files: [], notes: [] };
+};
+
 export const lintPlan = (t: Translate, stack: Stack, presets: ReadonlySet<LintPreset>, read: ReadFile): LintPlan => {
-  const eslint = stack.node ? eslintFiles(t, stack, presets, read) : { files: [], notes: [] };
+  const eslint = nodeLint(t, stack, presets, read);
   const python =
     stack.python && presets.has("no-comments")
       ? [{ path: PYTHON_CHECKER, text: pythonChecker(t("gen.lint.no_comments")) }]
       : [];
   const pythonNotes = python.length > 0 ? [t("gen.lint.python", { file: PYTHON_CHECKER })] : [];
-  const none = eslint.files.length === 0 && python.length === 0 ? [t("gen.lint.no_stack")] : [];
+  const silent = eslint.files.length === 0 && python.length === 0 && otherLinter(stack) === undefined;
+  const none = silent ? [t("gen.lint.no_stack")] : [];
   return { files: [...eslint.files, ...python], notes: [...eslint.notes, ...pythonNotes, ...none] };
 };

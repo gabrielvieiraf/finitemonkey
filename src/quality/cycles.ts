@@ -25,7 +25,8 @@ const IMPORTS = [
 ];
 const MAX_VISITED = 3000;
 
-const stripComments = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
+export const stripComments = (text: string): string =>
+  text.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
 
 export const importSpecifiers = (text: string): readonly string[] => {
   const code = stripComments(text);

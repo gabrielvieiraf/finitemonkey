@@ -65,7 +65,7 @@ describe("concept book: the same block in two tones", () => {
       /Kept a credential out.*Why it matters: .*The safe way: .*How to check later: finitemonkey secrets scan comes back green\./,
     );
     assert.match(second.message, /^finitemonkey: Kept a credential out of a file, command or commit\. Next: /);
-    assert.equal(readBook(fakeRuntime({ fs }), PATHS).concepts["secret-in-code"]?.level, "explained");
+    assert.equal(readBook(fakeRuntime({ fs }), PATHS).concepts["security/secrets/secret-in-code"]?.level, "explained");
   });
 
   it("a person advanced in security gets the one-line message from the start", async () => {
@@ -77,8 +77,8 @@ describe("concept book: the same block in two tones", () => {
 });
 
 describe("concept book: updated in the background at Stop, local and deleted by perfil forget", () => {
-  it("Stop leaves the message for a background update, which records the concepts seen", async () => {
-    const fs = projectFs();
+  it("Stop leaves the message for a background update, which records only concepts the work already named", async () => {
+    const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  webhook:\n    level: seen\n" });
     const spawned: string[][] = [];
     await fire(
       fs,
@@ -89,20 +89,36 @@ describe("concept book: updated in the background at Stop, local and deleted by 
     assert.deepEqual(spawned, [["conceitos", "update"]]);
     const runtime = fakeRuntime({ fs });
     const updated = await cliJson(["conceitos", "update"], { cwd: PROJECT, runtime });
-    assert.deepEqual(field(updated.body, "data", "seen"), ["webhook", "idempotency"]);
+    assert.deepEqual(field(updated.body, "data", "seen"), ["backend/integration/webhook"]);
     assert.equal(fs.read(at(".finitemonkey/cache/conceitos-pending.txt")), undefined);
-    const shown = await cliJson(["conceitos"], { cwd: PROJECT, runtime });
-    assert.equal(field(shown.body, "data", "concepts", "webhook", "level"), "seen");
+    const book = readBook(runtime, PATHS);
+    assert.equal(book.concepts["backend/integration/webhook"]?.level, "seen");
+    assert.equal(book.concepts["backend/reliability/idempotency"], undefined);
   });
 
-  it("the teacher agent marks the concepts it explained", async () => {
+  it("words in a message create no concept when nothing in the work named one", async () => {
     const fs = projectFs();
+    const spawned: string[][] = [];
+    await fire(
+      fs,
+      "Stop",
+      { stop_hook_active: false, last_assistant_message: "Rounded the money and fixed the timezone." },
+      spawned,
+    );
+    assert.deepEqual(spawned, []);
+    assert.deepEqual(readBook(fakeRuntime({ fs }), PATHS).concepts, {});
+  });
+
+  it("the teacher agent marks the concepts it explained, only among the concepts already in the book", async () => {
+    const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  migration:\n    level: seen\n" });
     await fire(fs, "PostToolUse", {
       tool_name: "Agent",
-      tool_input: { subagent_type: "finitemonkey:teacher", prompt: "Explain database migration for this person" },
+      tool_input: { subagent_type: "finitemonkey:teacher", prompt: "Explain database migration and idempotency" },
       tool_response: {},
     });
-    assert.equal(readBook(fakeRuntime({ fs }), PATHS).concepts.migration?.level, "explained");
+    const book = readBook(fakeRuntime({ fs }), PATHS);
+    assert.equal(book.concepts["backend/data/migration"]?.level, "explained");
+    assert.equal(book.concepts["backend/reliability/idempotency"], undefined);
   });
 
   it("lives in an ignored path and perfil forget deletes it", async () => {
@@ -118,7 +134,7 @@ describe("concept book: updated in the background at Stop, local and deleted by 
     const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  api:\n    level: seen\n" });
     const exported = await cliJson(["conceitos", "export"], { cwd: PROJECT, runtime: fakeRuntime({ fs }) });
     assert.equal(exported.code, 0);
-    assert.equal(field(exported.body, "data", "concepts", "api", "level"), "seen");
+    assert.equal(field(exported.body, "data", "concepts", "backend/api/endpoint", "level"), "seen");
   });
 });
 

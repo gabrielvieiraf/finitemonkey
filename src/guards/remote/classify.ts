@@ -1,6 +1,15 @@
 import { globToRegExp } from "../../core/glob.js";
 import { configList, type ConfigTree } from "../../git/project-config.js";
-import { CATALOG, type CatalogEntry, hasDestroyVerb, methodOf, type RemoteCall, type RemoteEffect } from "./catalog.js";
+import {
+  CATALOG,
+  type CatalogEntry,
+  hasDestroyVerb,
+  hasWriteVerb,
+  methodOf,
+  type RemoteCall,
+  type RemoteEffect,
+} from "./catalog.js";
+import { scriptFileCall, type ScriptReader } from "./script-file.js";
 
 export interface Classification {
   readonly effect: RemoteEffect | "unknown";
@@ -47,5 +56,23 @@ export const classifyCall = (
   if (call.tool.startsWith("mcp__") && hasDestroyVerb(methodOf(call.tool))) {
     return { effect: "destroy", entry: "destroy-verb", target: call.tool, heuristic: true };
   }
+  if (call.tool.startsWith("mcp__") && hasWriteVerb(methodOf(call.tool))) {
+    return { effect: "write", entry: "write-verb", target: call.tool, heuristic: true };
+  }
   return UNKNOWN;
+};
+
+const NO_READER: ScriptReader = () => undefined;
+
+export const classifyWithScripts = (
+  call: RemoteCall,
+  extension: RemoteExtension = NO_EXTENSION,
+  read: ScriptReader = NO_READER,
+): Classification => {
+  const found = classifyCall(call, extension);
+  if (found.effect !== "unknown") return found;
+  const script = scriptFileCall(call, read);
+  if (script === undefined) return found;
+  const entry = script.effect === "destroy" ? "script-file-delete" : "script-file-write";
+  return { effect: script.effect, entry, target: script.target, heuristic: false };
 };

@@ -40,7 +40,7 @@ import {
   VERIFY_SKILL,
 } from "./layout.js";
 import { type EntryKind, type LockEntry, type LockFile, parseLock } from "./lock-file.js";
-import { marketplaceSource } from "./marketplace.js";
+import { type Channel, chosenMarketplace } from "./marketplace.js";
 import { applyMigrations } from "./migrate.js";
 import { type Migration, MIGRATIONS } from "./migrations/index.js";
 import { policyTemplate } from "./policy-template.js";
@@ -101,7 +101,7 @@ export interface PlanInput {
   readonly claudeLanguage: string | undefined;
   readonly bin: string | undefined;
   readonly version: string;
-  readonly marketplace: boolean;
+  readonly marketplace: boolean | Channel;
   readonly sandbox: boolean;
   readonly offerSandbox: boolean;
   readonly platform: NodeJS.Platform;
@@ -191,7 +191,7 @@ const settingsItem = (
     deny: [...DENY_RULES, ...claudeignoreRules(CLAUDEIGNORE_FILES.map((path) => project.read(path)))],
     ask: ASK_RULES,
     attributionOff: isOn(input.defaults, "no-attribution"),
-    marketplace: input.marketplace ? marketplaceSource(input.version) : undefined,
+    marketplace: chosenMarketplace(input.version, input.marketplace),
     language: input.claudeLanguage,
     statusLine: { entry: ownStatusLine(detection.runner), wrap: existingStatusLine(project, current.value, input.env) },
   };

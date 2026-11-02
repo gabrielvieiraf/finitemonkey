@@ -1,7 +1,7 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
 import type { Runtime } from "../core/runtime.js";
-import type { EvidenceStatus, Note, UnverifiedReason } from "../evidence/types.js";
+import type { EvidenceStatus, Note, SourceHash, UnverifiedReason } from "../evidence/types.js";
 import type { Example } from "../task/examples.js";
 import type { FmPaths } from "../task/paths.js";
 import type { GateTrust } from "../task/state.js";
@@ -50,6 +50,7 @@ export interface CheckOutcome {
   readonly releasedBy?: string;
   readonly failures?: readonly string[];
   readonly testCount?: number;
+  readonly sources?: readonly SourceHash[];
 }
 
 export type CheckRunner = (check: AcceptanceCheck, ctx: GateContext) => CheckOutcome;

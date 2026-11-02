@@ -103,18 +103,22 @@ const axeIssues = (value: unknown): readonly UxIssue[] =>
       })
     : [];
 
+export const missingEngine = (widest: boolean): readonly UxIssue[] =>
+  widest
+    ? [
+        issue(
+          "a11y/engine",
+          "html",
+          "axe-core is not installed; names, roles and ARIA rules beyond the built-in ones",
+          {
+            unverified: true,
+          },
+        ),
+      ]
+    : [];
+
 const engineIssues = async (page: Page, source: string | undefined, widest: boolean): Promise<readonly UxIssue[]> => {
-  if (source === undefined)
-    return widest
-      ? [
-          issue(
-            "a11y/engine",
-            "html",
-            "axe-core is not installed; names, roles and ARIA rules beyond the built-in ones",
-            { unverified: true },
-          ),
-        ]
-      : [];
+  if (source === undefined) return missingEngine(widest);
   try {
     await page.evaluate(source);
     return axeIssues(await page.evaluate(AXE_RUN));

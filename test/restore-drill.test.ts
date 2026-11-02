@@ -4,7 +4,8 @@ import { after, describe, it } from "node:test";
 
 import { parseJsonObject } from "../src/core/parsed.js";
 import type { ExecRequest } from "../src/core/runtime.js";
-import { parseCounts, reachFindings, restoreConfig } from "../src/db/restore.js";
+import { parseCounts } from "../src/db/counts.js";
+import { reachFindings, restoreConfig } from "../src/db/restore.js";
 import { parseConfigYaml } from "../src/git/project-config.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cliJson, field } from "./support.js";

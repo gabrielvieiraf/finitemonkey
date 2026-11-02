@@ -5,7 +5,17 @@ const BOARD = {
   schema: "finitemonkey/fronts-board@1",
   rows: [
     { path: "/work", branch: "main", gate: "none", contract: null, lastActivity: null, waiting: false, files: [] },
-    { path: "/w/a", branch: "front-a", gate: "green", contract: "t1", lastActivity: null, waiting: false, files: [] },
+    {
+      path: "/w/a",
+      branch: "front-a",
+      gate: "green",
+      contract: "t1",
+      lastActivity: null,
+      waiting: false,
+      files: [],
+      sessionId: "sess-front-a",
+      resume: "claude --resume sess-front-a",
+    },
     { path: "/w/b", branch: "front-b", gate: "red", contract: "t2", lastActivity: null, waiting: true, files: [] },
   ],
   collisions: [{ file: "src/shared.js", branches: ["front-a", "front-b"] }],
@@ -57,9 +67,21 @@ describe("fronts board", () => {
     });
   }
 
+  test("a front with a recorded session gets a button that names how to open it", async ($, on) => {
+    const opened: string[] = [];
+    world(on, ["terminal"], opened);
+    await $.command.run({ command: "fm", args: "fronts" });
+    const pane = await $.ui.mount({ ...PANE, surface: "terminal" });
+    expect(await pane.find({ key: "fm-fronts-open-0" })).toBeDefined();
+    expect(await pane.find({ key: "fm-fronts-open-1" })).toBeUndefined();
+    await pane.press({ key: "fm-fronts-open-0" });
+    expect(await pane.find({ type: "Text", text: /In a terminal, run: claude --resume sess-front-a$/ })).toBeDefined();
+  });
+
   test("in -p the board comes back as text", async ($, on) => {
     world(on, [], []);
     const answer = await $.command.run({ command: "fm", args: "fronts" });
     expect(answer.text).toMatch(/^● main {2}gate · {2}contract -\n● front-a/);
+    expect(answer.text).toMatch(/\nopen front-a: claude --resume sess-front-a$/);
   });
 });

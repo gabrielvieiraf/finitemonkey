@@ -1,9 +1,13 @@
 import type { DomainTrajectory } from "./trajectory.js";
-import { type Band, BAND_ORDER } from "./trajectory-bands.js";
+import { type Band, BAND_ORDER, drawnSplits } from "./trajectory-bands.js";
 import type { Ink, Theme } from "./trajectory-palette.js";
+import { RESEARCH_FIXES, RESEARCH_GLYPH, RESEARCH_PLAIN, researchLane } from "./trajectory-research.js";
+import { SPLIT_GROUPS, type SplitGroup } from "./trajectory-split-types.js";
 import {
   axisLine,
   type Cellband,
+  ENGLISH_RESEARCH,
+  ENGLISH_SPLITS,
   ENGLISH_TERM,
   gridOf,
   type GridSize,
@@ -154,8 +158,21 @@ export const blockOf = (trajectory: DomainTrajectory, options: TermOptions): rea
       const name = names[row] ?? "";
       return name === "" ? body : `${body} ${faint(name, options)}`;
     }),
+    ...laneLines(trajectory, size.perWeek, options),
     faint(axisLine(trajectory, size.perWeek), options),
   ];
+};
+
+const laneLines = (trajectory: DomainTrajectory, perWeek: number, options: TermOptions): readonly string[] => {
+  const marks = trajectory.research ?? [];
+  if (marks.length === 0) return [];
+  const lane = researchLane(
+    trajectory.weeks.map((week) => week.week),
+    marks,
+    perWeek,
+  );
+  const shown = options.depth === "none" ? lane.replace(/[▲↺◇◆]/gu, (glyph) => RESEARCH_PLAIN[glyph] ?? glyph) : lane;
+  return [`${shown} ${faint((options.labels?.research ?? ENGLISH_RESEARCH).lane, options)}`];
 };
 
 const swatch = (band: Cellband, options: TermOptions): string => {
@@ -169,7 +186,22 @@ const inkSwatch = (glyph: string, ink: Ink, options: TermOptions): string =>
     ? (PLAIN_GLYPH[glyph] ?? glyph)
     : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph}${RESET}`;
 
-export const legendLines = (bands: readonly Band[], options: TermOptions): readonly string[] => {
+const splitLines = (labels: TermLabels, drawn: ReadonlySet<SplitGroup>): readonly string[] => {
+  if (drawn.size === 0) return [labels.hypotheses];
+  const split = labels.splits ?? ENGLISH_SPLITS;
+  const names = (keep: boolean): string =>
+    SPLIT_GROUPS.filter((group) => drawn.has(group) === keep)
+      .map((group) => split.name[group])
+      .join(", ");
+  return [split.measured(names(true)), ...(drawn.size === SPLIT_GROUPS.length ? [] : [split.notDrawn(names(false))])];
+};
+
+export const legendLines = (
+  bands: readonly Band[],
+  options: TermOptions,
+  drawn: ReadonlySet<SplitGroup> = new Set(),
+  research = false,
+): readonly string[] => {
   const labels = options.labels ?? ENGLISH_TERM;
   const entries = [
     ...bands.map((band) => `${swatch(band, options)} ${labels.band[band]}`),
@@ -185,16 +217,36 @@ export const legendLines = (bands: readonly Band[], options: TermOptions): reado
       `${inkSwatch("✕", "ricochet", options)} ${labels.ricochet}`,
       `${inkSwatch("◉", "held", options)} ${labels.held}`,
     ].join("  "),
-    faint(labels.hypotheses, options),
+    ...(research ? [researchLegend(options)] : []),
+    ...splitLines(labels, drawn).map((line) => faint(line, options)),
   ];
+};
+
+const researchLegend = (options: TermOptions): string => {
+  const labels = options.labels?.research ?? ENGLISH_RESEARCH;
+  return RESEARCH_FIXES.map((fix) => {
+    const glyph = RESEARCH_GLYPH[fix];
+    return `${options.depth === "none" ? (RESEARCH_PLAIN[glyph] ?? glyph) : glyph} ${labels[fix]}`;
+  }).join("  ");
 };
 
 export const chartLines = (trajectories: readonly DomainTrajectory[], options: TermOptions): readonly string[] => {
   const drawn = trajectories.filter((item) => item.status === "ok");
   const used = new Set(drawn.flatMap(usedBands));
   const bands = BAND_ORDER.filter((band) => used.has(band));
+  const drawnGroups = new Set(drawn.flatMap((item) => [...drawnSplits(item)]));
   return [
     ...trajectories.flatMap((item, index) => [...(index === 0 ? [] : [""]), ...blockOf(item, options)]),
-    ...(drawn.length === 0 ? [] : ["", ...legendLines(bands, options)]),
+    ...(drawn.length === 0
+      ? []
+      : [
+          "",
+          ...legendLines(
+            bands,
+            options,
+            drawnGroups,
+            drawn.some((item) => (item.research ?? []).length > 0),
+          ),
+        ]),
   ];
 };

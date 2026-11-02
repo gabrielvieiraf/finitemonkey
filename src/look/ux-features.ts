@@ -1,8 +1,10 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { matchesAny } from "../core/glob.js";
 import type { Runtime } from "../core/runtime.js";
 import { addedLines, gitAt, resolveBase, untracked } from "../gate/git.js";
+import { configList, loadProjectConfig } from "../git/project-config.js";
 import { featureMode } from "../policy/feature.js";
 import type { GuardMode } from "../policy/policy.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
@@ -16,14 +18,17 @@ import {
   UI_CONTRACT_FEATURE,
   type UiScreen,
 } from "./contract.js";
+import { catalogEntries, UI_COPY_FEATURE } from "./copy-rules.js";
 import { readDont } from "./dont.js";
 import { DEFAULT_LOOK_FEATURE, DS_FEATURE } from "./ds.js";
+import { mergeTokens, utilityConfigTokens } from "./ds-config.js";
 import { type AddedText, staticPages } from "./ds-static.js";
 import { FLOW_FEATURE } from "./flow.js";
 import { FORMS_FEATURE } from "./forms.js";
 import { JOURNEYS_FEATURE } from "./journey.js";
 import { KEYBOARD_FEATURE } from "./keyboard.js";
 import { contractPass } from "./node-contract.js";
+import { copyPass, type CopyPassOptions } from "./node-copy.js";
 import { defaultLookPass, type DsOptions, dsPass } from "./node-ds.js";
 import { formsPass } from "./node-forms.js";
 import { keyboardPass } from "./node-keyboard.js";
@@ -36,6 +41,7 @@ import { SHEET_FEATURE } from "./sheet.js";
 import { optionsOf, STATES_FEATURE } from "./states.js";
 import { EMPTY_TOKENS, loadTokens, type TokenSet } from "./tokens.js";
 import { VIEWPORTS } from "./types.js";
+import { loadUiConfig } from "./ui.js";
 import type { UxPage } from "./ux.js";
 import { VISUAL_FEATURE } from "./visual.js";
 
@@ -52,6 +58,7 @@ export const UX_FEATURES = [
   VISUAL_FEATURE,
   SHEET_FEATURE,
   PERF_FEATURE,
+  UI_COPY_FEATURE,
 ] as const;
 
 export type ModeMap = Readonly<Record<string, GuardMode>>;
@@ -69,11 +76,22 @@ export interface UxSetup {
   readonly tokenFiles: readonly string[];
 }
 
+export const projectTokens = (
+  runtime: Runtime,
+  root: AbsolutePath,
+  config: LookConfig,
+  files: readonly string[],
+): TokenSet => {
+  const declared = loadTokens(runtime, root, files);
+  const utility = config.ds.readConfig ? utilityConfigTokens(runtime, root, config.ds.config) : undefined;
+  return utility === undefined ? declared : mergeTokens(declared, utility);
+};
+
 export const uxSetup = (runtime: Runtime, root: AbsolutePath, config: LookConfig, modes: ModeMap): UxSetup => {
   const screens = activeUiScreens(runtime, fmPaths(root));
   const tokenFiles = [...new Set([...config.ds.tokens, ...screens.flatMap((screen) => screen.tokens ?? [])])];
   const wanted = on(modes, DS_FEATURE) || on(modes, DEFAULT_LOOK_FEATURE);
-  return { screens, tokenFiles, tokens: wanted ? loadTokens(runtime, root, tokenFiles) : EMPTY_TOKENS };
+  return { screens, tokenFiles, tokens: wanted ? projectTokens(runtime, root, config, tokenFiles) : EMPTY_TOKENS };
 };
 
 const dsOptions = (root: AbsolutePath, config: LookConfig, setup: UxSetup, tree: string): DsOptions => ({
@@ -101,23 +119,42 @@ export const uxPasses = (
     ...(on(modes, DS_FEATURE) ? [dsPass(ds)] : []),
     ...(on(modes, DEFAULT_LOOK_FEATURE) ? [defaultLookPass(ds)] : []),
     ...(on(modes, SHEET_FEATURE)
-      ? [sheetPass(approvedSheets(runtime, fmPaths(root), config.routes), loadTokens(runtime, root, setup.tokenFiles))]
+      ? [
+          sheetPass(
+            approvedSheets(runtime, fmPaths(root), config.routes),
+            projectTokens(runtime, root, config, setup.tokenFiles),
+          ),
+        ]
       : []),
     ...(on(modes, KEYBOARD_FEATURE) ? [keyboardPass(contractDialogs(setup.screens, config.dialogs))] : []),
     ...(on(modes, FORMS_FEATURE)
       ? [
           formsPass({
             forms: contractForms(setup.screens, config.forms),
+            steps: config.formSteps,
             keepCleared: config.formsKeepCleared,
             values: config.formValues,
             widest,
           }),
         ]
       : []),
+    ...(on(modes, UI_COPY_FEATURE) ? [copyPass({ ...copyInputs(runtime, root), widest })] : []),
     ...(on(modes, STATES_FEATURE)
       ? [statesPass(contractStates(setup.screens, config.states), optionsOf(config.successColor, config.skeleton))]
       : []),
   ];
+};
+
+const copyInputs = (runtime: Runtime, root: AbsolutePath): Pick<CopyPassOptions, "entries" | "allow"> => {
+  const patterns = loadUiConfig(runtime, root).catalogs;
+  const files = (gitAt(runtime, root).out(["ls-files", "-z", "--cached", "--others", "--exclude-standard"]) ?? "")
+    .split("\u0000")
+    .filter((file) => file !== "" && matchesAny(file, patterns));
+  const entries = files.flatMap((file) => {
+    const text = runtime.readText(toAbsolutePath(join(root, file)));
+    return text.ok ? catalogEntries(file, text.value) : [];
+  });
+  return { entries, allow: configList(loadProjectConfig(runtime, root), "ui", "copy", "allow") };
 };
 
 const addedText = (runtime: Runtime, root: AbsolutePath): readonly AddedText[] => {

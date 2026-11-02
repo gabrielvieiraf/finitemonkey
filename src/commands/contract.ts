@@ -11,11 +11,12 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import type { GeneratedFile } from "../generate/plan.js";
 import { projectRoot } from "../secrets/project.js";
+import { runContractLive } from "./contract-run.js";
 import { GENERATE_OPTIONS, generateResult } from "./generate-run.js";
 import type { CommandSpec, OptionValue } from "./types.js";
 
 export const API_CONTRACT_SCHEMA = "finitemonkey/api-contract@1";
-const USAGE = "finitemonkey contract [mocks|coverage] [--write] [--overwrite]";
+const USAGE = "finitemonkey contract [mocks|coverage|run] [--write] [--overwrite] [--json]";
 
 const projectAt = (ctx: Ctx, root: AbsolutePath): Project =>
   detectProject(
@@ -80,6 +81,11 @@ export const contractCommand: CommandSpec = {
   path: ["contract"],
   summaryKey: "command.contract.summary",
   usage: USAGE,
+  examples: [
+    "finitemonkey contract --write",
+    "finitemonkey contract mocks --write",
+    "finitemonkey contract run --json",
+  ],
   status: "ready",
   maxPositionals: 1,
   options: GENERATE_OPTIONS,
@@ -87,6 +93,7 @@ export const contractCommand: CommandSpec = {
     const [action = ""] = args.positionals;
     if (action === "mocks") return Promise.resolve(generate(ctx, args.values, mockFiles, "contract.mocks.next"));
     if (action === "coverage") return Promise.resolve(coverage(ctx));
+    if (action === "run") return runContractLive(ctx, API_CONTRACT_SCHEMA, USAGE);
     if (action !== "")
       return Promise.resolve(
         failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", USAGE, { detail: action })),

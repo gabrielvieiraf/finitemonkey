@@ -78,14 +78,23 @@ export const contradict = (deps: JudgeDeps, request: Request<"contradict">): Jud
   return listed("contradict", deps);
 };
 
+const REVERT = /^Revert\b|^This reverts commit [0-9a-f]{7,40}/im;
+
+export const revertCommit = (deps: JudgeDeps, commit: string): boolean => {
+  const message = deps.runtime.git(["log", "-1", "--format=%B", commit, "--"], deps.paths.root);
+  return message.ok && REVERT.test(message.stdout);
+};
+
 export const fixed = (deps: JudgeDeps, request: Request<"fixed">): JudgeResponse => {
   const event = eventsIn(readEntries(deps.runtime, deps.paths)).find((item) => item.id === request.event);
   if (event === undefined) return response("fixed", { reason: "unknown_event" });
+  const by = request.commit !== undefined && revertCommit(deps, request.commit) ? "revert" : request.by;
   appendNow(deps, {
     ...event,
     at: deps.runtime.now(),
-    fixedBy: request.by,
-    state: request.by === "person" ? "held" : event.state,
+    fixedBy: by,
+    ...(request.commit === undefined ? {} : { fixedCommit: request.commit }),
+    state: by === "person" ? "held" : event.state,
   });
   return listed("fixed", deps);
 };

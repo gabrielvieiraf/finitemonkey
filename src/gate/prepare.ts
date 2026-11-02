@@ -13,6 +13,7 @@ import { judgeWanted } from "../judge/gate.js";
 import { CLAIM_CHECKS_FEATURE, lastOf, readClaims } from "../knowledge/claims.js";
 import { maskText } from "../mask/mask.js";
 import { featureMode } from "../policy/feature.js";
+import { isEnabled } from "../provider/store.js";
 import type { Example } from "../task/examples.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { activeTaskId, type LoadedContract, loadImplicit, type LoadProblem, loadTask } from "../task/load.js";
@@ -165,7 +166,7 @@ const withConfiguredChecks = (
       withCheck(
         withCheck(contract, "scenarios", configAt(config, "access") !== undefined),
         "blind-tests",
-        configAt(config, "blind") !== undefined,
+        configAt(config, "blind") !== undefined || isEnabled(runtime, fmPaths(root), "blind-writer"),
       ),
       "claims",
       featureMode(runtime, fmPaths(root), CLAIM_CHECKS_FEATURE) !== "off" &&
@@ -194,7 +195,9 @@ const withConfiguredChecks = (
   return withCheck(
     withBudget,
     "red-green",
-    contract.testsFirst === true || configAt(config, "red_green") !== undefined,
+    contract.testsFirst === true ||
+      contract.acceptance.some((check) => check.testsFirst === true) ||
+      configAt(config, "red_green") !== undefined,
   );
 };
 

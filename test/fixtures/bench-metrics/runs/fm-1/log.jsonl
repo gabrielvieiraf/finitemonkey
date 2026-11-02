@@ -1,0 +1,8 @@
+{"at":"2026-10-30T10:00:00.000Z","event":"divergence.answered","task":"t1","letter":"a","own":false,"example":"e1"}
+{"at":"2026-10-30T10:01:00.000Z","event":"ui.proposed","task":"t1","hash":"h1"}
+{"at":"2026-10-30T10:01:30.000Z","event":"ui.approved","task":"t1","hash":"h1"}
+{"at":"2026-10-30T10:02:00.000Z","event":"probe.result","id":"p1","kind":"vocabulary","concept":"c1","status":"right"}
+{"at":"2026-10-30T10:02:10.000Z","event":"probe.result","id":"p2","kind":"judgment","concept":"c1","status":"wrong"}
+{"at":"2026-10-30T10:02:20.000Z","event":"probe.result","id":"p3","kind":"judgment","concept":"c1","status":"skipped"}
+{"at":"2026-10-30T10:03:00.000Z","event":"mutation.score","task":"t1","mode":"shadow","score":0.8,"min":0.6,"total":10}
+{"at":"2026-10-30T10:04:00.000Z","event":"quality.findings","task":"t1","mode":"shadow","block":1,"warn":2,"rules":{}}

@@ -1,0 +1,3 @@
+{"schema":"finitemonkey/bench-run@1","run":"plain-1","arm":"plain","family":"cart-total","durationMs":20000,"costUsd":0.02,"inputTokens":1000,"outputTokens":200,"turns":2,"falseDone":true,"oracleGreen":false}
+{"schema":"finitemonkey/bench-run@1","run":"fm-1","arm":"fm","family":"cart-total","durationMs":60000,"costUsd":0.08,"inputTokens":3000,"outputTokens":600,"turns":4,"falseDone":false,"oracleGreen":true}
+{"schema":"finitemonkey/bench-run@1","run":"fm-2","arm":"fm","family":"notes-idor","durationMs":40000,"costUsd":0.06,"inputTokens":2000,"outputTokens":400,"turns":3,"falseDone":false,"oracleGreen":false}

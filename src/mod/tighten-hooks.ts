@@ -4,7 +4,7 @@ import type { Next, ToolCheckInput, ToolCheckResult } from "./events.js";
 import { memory } from "./memory.js";
 import { MEMORY_HOLD_RULE, memoryHold, untrustedSeen } from "./memory-hold.js";
 import { parseModState } from "./state.js";
-import { type CheckResult, FAILED_REASON, ruleFor, stricter, tightenFor } from "./tighten.js";
+import { type CheckResult, FAILED_REASON, modeFor, ruleFor, stricter, tightenFor } from "./tighten.js";
 
 export async function refreshState($: ModApi): Promise<void> {
   const text = await runCli($, ["mod", "state", "--json"]);
@@ -42,8 +42,10 @@ export async function guardCheck($: ModApi, e: ToolCheckInput, next: Next<"tool.
   if (state === undefined || state.mode === "off") return decided;
   const rule = ruleFor(state, e.tool, e.input);
   if (rule === undefined) return decided;
-  scheduleRecord($, rule.rule.id, e.tool, state.mode);
-  return state.mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
+  const mode = modeFor(state.mode, rule);
+  if (mode === "off") return decided;
+  scheduleRecord($, rule.rule.id, e.tool, mode);
+  return mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
 }
 
 export async function failClosed(): Promise<ToolCheckResult> {

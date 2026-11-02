@@ -16,6 +16,7 @@ export const HOOK_CHECKS = [
   "rules",
   "ownership",
   "provenance",
+  "callers",
 ] as const;
 
 export type HookCheckId = (typeof HOOK_CHECKS)[number];

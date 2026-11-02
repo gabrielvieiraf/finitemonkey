@@ -10,9 +10,9 @@ import { logEvent } from "../evidence/log.js";
 import { DIVERGENCE_EVENT } from "../knowledge/decision-inputs.js";
 import { maskText } from "../mask/mask.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
+import { divergenceSource, providerDeps } from "../provider/wire.js";
 import {
   beginnerIn,
-  commandSource,
   DIVERGENCE_FEATURE,
   divergenceConfig,
   eligible,
@@ -115,24 +115,29 @@ const ask = (ctx: Ctx, paths: FmPaths, task: string): CommandResult => {
   const state = readPending(ctx.runtime, paths);
   const used = state.rounds[task] ?? 0;
   if (used >= config.rounds) return skipped(ctx, task, "budget");
-  if (config.generator === undefined) return skipped(ctx, task, "no_generator");
+  const generator = divergenceSource(providerDeps(ctx, paths), config.generator, loaded.contract.base);
+  if (generator === undefined) return skipped(ctx, task, "no_generator");
   writePending(ctx.runtime, paths, { ...state, rounds: { ...state.rounds, [task]: used + 1 } });
-  const candidates = commandSource(ctx.runtime, paths.root, config.generator).generate({
-    task,
-    goal: loaded.contract.goal,
-    readings: config.readings,
-    examples,
-  });
-  if (candidates === undefined) return skipped(ctx, task, "generator_failed");
-  const outcome = findDivergence({
-    runtime: ctx.runtime,
-    root: paths.root,
-    task,
-    examples,
-    candidates: { ...candidates, readings: candidates.readings.slice(0, config.readings) },
-    beginner: beginnerIn(ctx.runtime, paths),
-  });
-  return report(ctx, paths, task, outcome, mode);
+  try {
+    const candidates = generator.source.generate({
+      task,
+      goal: loaded.contract.goal,
+      readings: config.readings,
+      examples,
+    });
+    if (candidates === undefined) return skipped(ctx, task, "generator_failed");
+    const outcome = findDivergence({
+      runtime: ctx.runtime,
+      root: paths.root,
+      task,
+      examples,
+      candidates: { ...candidates, readings: candidates.readings.slice(0, config.readings) },
+      beginner: beginnerIn(ctx.runtime, paths),
+    });
+    return report(ctx, paths, task, outcome, mode);
+  } finally {
+    generator.cleanup();
+  }
 };
 
 const pendingOf = (ctx: Ctx, paths: FmPaths, task: string): CommandResult => {

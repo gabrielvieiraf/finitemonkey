@@ -48,7 +48,7 @@ export interface Probe {
   readonly id: string;
   readonly kind: ProbeKind;
   readonly concept: ConceptId;
-  readonly domain: Domain;
+  readonly domain: string;
   readonly question: string;
   readonly why: string;
   readonly options: readonly ProbeOption[];
@@ -131,7 +131,7 @@ export const budgetFor = (
   session: string | undefined,
   now: number,
   events: readonly ConceptEvent[],
-  sustained: ReadonlySet<Domain>,
+  sustained: ReadonlySet<string>,
 ): BudgetCheck => {
   const shown = state.probes.filter(
     (item): item is Probe & { readonly presentedAt: string } => item.presentedAt !== undefined,

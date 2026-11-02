@@ -10,6 +10,7 @@ import {
   EVIDENCE_STATUSES,
   type EvidenceInputs,
   type Note,
+  type SourceHash,
   UNVERIFIED_REASONS,
 } from "./types.js";
 
@@ -54,6 +55,15 @@ const inputsOf = (value: unknown): EvidenceInputs | undefined => {
   };
 };
 
+const sourcesOf = (value: unknown): readonly SourceHash[] =>
+  Array.isArray(value)
+    ? value.flatMap((item: unknown) =>
+        isRecord(item) && typeof item["ref"] === "string" && typeof item["hash"] === "string"
+          ? [{ ref: item["ref"], hash: item["hash"] }]
+          : [],
+      )
+    : [];
+
 const optional = (record: JsonObject): Partial<Evidence> => {
   const scripts = text(record, "scripts");
   const session = text(record, "session");
@@ -69,6 +79,7 @@ const optional = (record: JsonObject): Partial<Evidence> => {
   const from = oneOf(COMPLETION_STATES, record["from"]);
   const stateReason = text(record, "stateReason");
   const inputs = inputsOf(record["inputs"]);
+  const sources = sourcesOf(record["sources"]);
   return {
     ...(command === undefined ? {} : { command }),
     ...(typeof exitCode === "number" || exitCode === null ? { exitCode } : {}),
@@ -86,6 +97,7 @@ const optional = (record: JsonObject): Partial<Evidence> => {
     ...(inputs === undefined ? {} : { inputs }),
     ...(scripts === undefined ? {} : { scripts }),
     ...(session === undefined ? {} : { session }),
+    ...(sources.length === 0 ? {} : { sources }),
   };
 };
 

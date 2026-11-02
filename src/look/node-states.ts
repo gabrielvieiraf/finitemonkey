@@ -1,6 +1,7 @@
 import type { Page } from "playwright-core";
 
 import { sleep } from "../app/node-process.js";
+import { isRecord } from "../core/parsed.js";
 import { withMock } from "./config.js";
 import { type PagePass } from "./node-ux.js";
 import { parseProbe, PROBE_SCRIPT } from "./probe.js";
@@ -10,6 +11,8 @@ import {
   loadingIssues,
   type LoadingObservation,
   notCovered,
+  type SkeletonBlock,
+  skeletonIssues,
   stateIssues,
   STATES_FEATURE,
   type StatesOptions,
@@ -17,7 +20,7 @@ import {
   STATUS_WATCH_MS,
   statusIssues,
 } from "./states.js";
-import { hasIndicator, LIVE_SELECTOR, watchText } from "./states-dom.js";
+import { hasIndicator, LIVE_SELECTOR, shimmerBlocks, watchText } from "./states-dom.js";
 import { issue, type UxIssue } from "./ux.js";
 
 const POLL_MS = 40;
@@ -28,6 +31,22 @@ const watchScript = (ms: number): string =>
 export const changedWithoutLive = async (page: Page, ms = STATUS_WATCH_MS): Promise<readonly string[]> => {
   const raw: unknown = await page.evaluate(watchScript(ms));
   return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === "string") : [];
+};
+
+const num = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
+
+export const unmarkedSkeletons = async (page: Page, skeleton: string): Promise<readonly SkeletonBlock[]> => {
+  const marked = [LIVE_SELECTOR, "[aria-busy=true]", ...(skeleton === "" ? [] : [skeleton])].join(", ");
+  const raw: unknown = await page.evaluate(
+    runInPage(shimmerBlocks.toString(), ["document", "window", JSON.stringify(marked)]),
+  );
+  return Array.isArray(raw)
+    ? raw.flatMap((item: unknown) =>
+        isRecord(item) && typeof item["sel"] === "string"
+          ? [{ sel: item["sel"], x: num(item["x"]), y: num(item["y"]), w: num(item["w"]), h: num(item["h"]) }]
+          : [],
+      )
+    : [];
 };
 
 const observeLoading = async (page: Page, url: string, skeleton: string): Promise<LoadingObservation> => {
@@ -100,7 +119,10 @@ export const statesPass = (
   allWidths: false,
   run: async (page, at) => {
     if (at.route.includes("?")) return [];
-    const found: UxIssue[] = [...statusIssues(await changedWithoutLive(page))];
+    const found: UxIssue[] = [
+      ...statusIssues(await changedWithoutLive(page)),
+      ...skeletonIssues(await unmarkedSkeletons(page, options.skeleton ?? "")),
+    ];
     for (const spec of (states[at.route] ?? []).filter((item) => item.state !== "ideal"))
       found.push(...(await checkState(page, at, spec, options)));
     if ((states[at.route] ?? []).length > 0)

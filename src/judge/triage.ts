@@ -36,3 +36,23 @@ export const flagsFor = (entries: readonly JudgeEntry[], task: string): TaskFlag
     flags: new Set(refs.map((parts) => parts[1] ?? "")).size,
   };
 };
+
+export interface TriageCount {
+  readonly flagged: number;
+  readonly open: number;
+}
+
+export const triageCount = (entries: readonly JudgeEntry[]): TriageCount => {
+  const claims = [
+    ...new Set(
+      entries.flatMap((entry) =>
+        entry.type === "signal" && entry.family === "triage-flag" ? [entry.ref?.split("\u0000")[2] ?? ""] : [],
+      ),
+    ),
+  ].filter((claim) => claim !== "");
+  const open = claims.filter((claim) => {
+    const row = rowOf(claim, entries);
+    return row !== undefined && needsTriage(row);
+  }).length;
+  return { flagged: claims.length, open };
+};

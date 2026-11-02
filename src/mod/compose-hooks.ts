@@ -8,6 +8,7 @@ import type {
   SessionCompactResult,
 } from "./events.js";
 import { memory } from "./memory.js";
+import { reportDrops, RULES_ARM, withholdSections } from "./withhold.js";
 
 export const RULES_SECTION = "finitemonkey:rules";
 
@@ -43,11 +44,16 @@ export async function readHandoff($: ModApi): Promise<string | undefined> {
 }
 
 export async function composeRules(
-  _$: ModApi,
+  $: ModApi,
   e: PromptComposeInput,
   next: Next<"prompt.compose">,
 ): Promise<PromptComposeResult> {
-  return withRulesSection(await next(e), memory.state?.instructions ?? "");
+  const withhold = memory.state?.withhold ?? [];
+  const rules = memory.state?.instructions ?? "";
+  const kept = withholdSections(await next(e), withhold);
+  const rulesHeld = withhold.includes(RULES_ARM) && rules !== "";
+  reportDrops($, [...kept.drops, ...(rulesHeld ? [{ source: RULES_ARM, section: RULES_SECTION }] : [])]);
+  return withRulesSection(kept.result, rulesHeld ? "" : rules);
 }
 
 export async function compactNotes(

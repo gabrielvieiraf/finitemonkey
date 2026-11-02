@@ -1,9 +1,16 @@
 import { isRecord } from "../../core/parsed.js";
 import { REQUIRED_CHECK } from "../../github/ruleset.js";
 import type { GitLevel } from "../../profile/level.js";
+import { type EnvironmentPlan, reviewersSummary } from "./environment.js";
 import { type GithubSettings, PROTECT_RULESET_NAME, type Toggle } from "./state.js";
 
-export const PROTECT_SETTINGS = ["ruleset", "secret-scanning", "push-protection", "dependabot-alerts"] as const;
+export const PROTECT_SETTINGS = [
+  "ruleset",
+  "secret-scanning",
+  "push-protection",
+  "dependabot-alerts",
+  "environment-reviewers",
+] as const;
 
 export type ProtectSetting = (typeof PROTECT_SETTINGS)[number];
 
@@ -81,7 +88,17 @@ export const rulesSummary = (rules: readonly unknown[] | undefined): string =>
 const toggleChange = (setting: ProtectSetting, current: Toggle): readonly ProtectChange[] =>
   current === "enabled" ? [] : [{ setting, current, proposed: "enabled" }];
 
-export const protectChanges = (settings: GithubSettings, level: GitLevel): readonly ProtectChange[] => {
+const environmentChange = (plan: EnvironmentPlan | undefined): readonly ProtectChange[] => {
+  if (plan === undefined || plan.wanted.join(",") === plan.current.join(",")) return [];
+  const current = reviewersSummary(plan.name, plan.current);
+  return [{ setting: "environment-reviewers", current, proposed: reviewersSummary(plan.name, plan.wanted) }];
+};
+
+export const protectChanges = (
+  settings: GithubSettings,
+  level: GitLevel,
+  environment?: EnvironmentPlan,
+): readonly ProtectChange[] => {
   const proposedRules = rulesetFor(level)["rules"];
   const proposed = rulesSummary(Array.isArray(proposedRules) ? proposedRules : []);
   const current = rulesSummary(settings.ruleset?.rules);
@@ -90,5 +107,6 @@ export const protectChanges = (settings: GithubSettings, level: GitLevel): reado
     ...toggleChange("secret-scanning", settings.secretScanning),
     ...toggleChange("push-protection", settings.pushProtection),
     ...toggleChange("dependabot-alerts", settings.dependabotAlerts),
+    ...environmentChange(environment),
   ];
 };

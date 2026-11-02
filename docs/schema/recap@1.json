@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/recap@1.json",
+  "title": "finitemonkey/recap@1",
+  "description": "`data` of `finitemonkey recap --json`: what was done in a period, built from the ledger and git. Generated from RecapReport in src/recap/recap.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/recap@1"
+    },
+    "since": {
+      "type": "string"
+    },
+    "until": {
+      "type": "string"
+    },
+    "commits": {
+      "type": "number"
+    },
+    "tasksFinished": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "task",
+          "at"
+        ]
+      }
+    },
+    "shipped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sha": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "off",
+                    "shadow"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "mode"
+              ]
+            }
+          }
+        },
+        "required": [
+          "sha",
+          "type",
+          "subject",
+          "features"
+        ]
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "task",
+          "at",
+          "changes"
+        ]
+      }
+    },
+    "activeTask": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "inShadow": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "staleDocs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "says": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unshipped",
+              "unpublished",
+              "experimental"
+            ]
+          },
+          "phrase": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "truth": {
+            "type": "string",
+            "enum": [
+              "issue_closed",
+              "command_ready",
+              "feature_ships",
+              "feature_active",
+              "version_published"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "line",
+          "says",
+          "status",
+          "phrase",
+          "subject",
+          "truth",
+          "detail",
+          "evidence"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "since",
+    "until",
+    "commits",
+    "tasksFinished",
+    "shipped",
+    "decisions",
+    "activeTask",
+    "inShadow",
+    "staleDocs"
+  ]
+}

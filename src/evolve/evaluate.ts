@@ -1,5 +1,6 @@
 import type { ArmSummary, Variant, VariantEvidence } from "../policy/evolved.js";
 import type { TaskOutcome } from "./outcome.js";
+import { significance } from "./significance.js";
 
 export type Verdict =
   | { readonly kind: "waiting"; readonly variantTasks: number; readonly parentTasks: number }
@@ -56,10 +57,12 @@ export const verdictFor = (
 ): Verdict => {
   if (counted.variant.length < minTasks || counted.parent.length < minTasks)
     return { kind: "waiting", variantTasks: counted.variant.length, parentTasks: counted.parent.length };
+  const test = significance(counted.variant, counted.parent);
   const evidence: VariantEvidence = {
     variant: summarize(counted.variant),
     parent: summarize(counted.parent),
     evaluator: variant.evaluator,
+    test,
   };
-  return { kind: beats(evidence.variant, evidence.parent) ? "promote" : "reject", evidence };
+  return { kind: beats(evidence.variant, evidence.parent) && test.passed ? "promote" : "reject", evidence };
 };

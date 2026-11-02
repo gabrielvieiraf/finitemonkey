@@ -1,0 +1,447 @@
+{
+  "bands": [
+    {
+      "concept": "backend/api/endpoint",
+      "domain": "backend",
+      "state": "demonstrated",
+      "positive": 5,
+      "negative": 1,
+      "exposures": 2,
+      "last": "2026-10-05T10:00:00.000Z",
+      "evidence": [
+        {
+          "at": "2026-09-01T10:00:00.000Z",
+          "concept": "backend/api/endpoint",
+          "kind": "check_right",
+          "origin": "person",
+          "weight": 1
+        },
+        {
+          "at": "2026-09-08T10:00:00.000Z",
+          "concept": "backend/api/endpoint",
+          "kind": "check_wrong",
+          "origin": "person",
+          "weight": -0.5
+        },
+        {
+          "at": "2026-09-21T10:00:00.000Z",
+          "concept": "backend/api/endpoint",
+          "kind": "prediction_right",
+          "origin": "person",
+          "weight": 1
+        },
+        {
+          "at": "2026-10-01T10:00:00.000Z",
+          "concept": "backend/api/endpoint",
+          "kind": "own_change",
+          "origin": "person",
+          "task": "t5",
+          "file": "src/api/users.ts",
+          "weight": 1
+        },
+        {
+          "at": "2026-10-03T10:00:00.000Z",
+          "concept": "backend/api/endpoint",
+          "kind": "own_repair",
+          "origin": "person",
+          "task": "t6",
+          "file": "src/api/users.ts",
+          "weight": 1.5
+        },
+        {
+          "at": "2026-10-05T10:00:00.000Z",
+          "concept": "backend/api/endpoint",
+          "kind": "prediction_right",
+          "origin": "person",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "concept": "backend/data/migration",
+      "domain": "backend",
+      "state": "beyond",
+      "positive": 0,
+      "negative": 1,
+      "exposures": 2,
+      "last": "2026-09-15T10:00:00.000Z",
+      "evidence": [
+        {
+          "at": "2026-09-15T10:00:00.000Z",
+          "concept": "backend/data/migration",
+          "kind": "prediction_wrong",
+          "origin": "agent",
+          "weight": -1
+        }
+      ]
+    },
+    {
+      "concept": "backend/integration/webhook",
+      "domain": "backend",
+      "state": "proximal",
+      "positive": 4,
+      "negative": 1,
+      "exposures": 1,
+      "last": "2026-09-10T10:00:00.000Z",
+      "evidence": [
+        {
+          "at": "2026-08-05T10:00:00.000Z",
+          "concept": "backend/integration/webhook",
+          "kind": "own_change",
+          "origin": "person",
+          "task": "t1",
+          "file": "src/hooks/webhook.js",
+          "weight": 1
+        },
+        {
+          "at": "2026-08-12T10:00:00.000Z",
+          "concept": "backend/integration/webhook",
+          "kind": "prediction_right",
+          "origin": "person",
+          "weight": 1
+        },
+        {
+          "at": "2026-08-20T10:00:00.000Z",
+          "concept": "backend/integration/webhook",
+          "kind": "own_repair",
+          "origin": "person",
+          "task": "t2",
+          "file": "src/hooks/webhook.js",
+          "weight": 1.5
+        },
+        {
+          "at": "2026-09-02T10:00:00.000Z",
+          "concept": "backend/integration/webhook",
+          "kind": "failure_after_approval",
+          "origin": "person",
+          "task": "t3",
+          "weight": -1
+        },
+        {
+          "at": "2026-09-10T10:00:00.000Z",
+          "concept": "backend/integration/webhook",
+          "kind": "own_change",
+          "origin": "person",
+          "task": "t4",
+          "file": "src/hooks/retry.js",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "concept": "backend/reliability/idempotency",
+      "domain": "backend",
+      "state": "demonstrated",
+      "positive": 3,
+      "negative": 0,
+      "exposures": 0,
+      "last": "2026-10-20T10:00:00.000Z",
+      "evidence": [
+        {
+          "at": "2026-10-10T10:00:00.000Z",
+          "concept": "backend/reliability/idempotency",
+          "kind": "own_change",
+          "origin": "person",
+          "task": "t7",
+          "file": "src/pay.ts",
+          "weight": 1
+        },
+        {
+          "at": "2026-10-12T10:00:00.000Z",
+          "concept": "backend/reliability/idempotency",
+          "kind": "prediction_right",
+          "origin": "person",
+          "weight": 1
+        },
+        {
+          "at": "2026-10-20T10:00:00.000Z",
+          "concept": "backend/reliability/idempotency",
+          "kind": "own_repair",
+          "origin": "person",
+          "task": "t8",
+          "file": "src/pay.ts",
+          "weight": 1.5
+        }
+      ]
+    },
+    {
+      "concept": "infrastructure/git/force-push",
+      "domain": "infrastructure",
+      "state": "beyond",
+      "positive": 0,
+      "negative": 1,
+      "exposures": 0,
+      "last": "2026-09-25T10:00:00.000Z",
+      "evidence": [
+        {
+          "at": "2026-09-25T10:00:00.000Z",
+          "concept": "infrastructure/git/force-push",
+          "kind": "prediction_wrong",
+          "origin": "person",
+          "weight": -1
+        }
+      ]
+    },
+    {
+      "concept": "security/secrets/secret-in-code",
+      "domain": "security",
+      "state": "beyond",
+      "positive": 0,
+      "negative": 0,
+      "exposures": 1,
+      "last": "2026-08-22T10:00:00.000Z",
+      "evidence": []
+    }
+  ],
+  "xray": [
+    ["backend/api/endpoint", "demonstrated"],
+    ["backend/data/migration", "beyond"],
+    ["backend/integration/webhook", "proximal"],
+    ["backend/reliability/idempotency", "demonstrated"],
+    ["infrastructure/git/force-push", "beyond"],
+    ["security/secrets/secret-in-code", "beyond"]
+  ],
+  "probes": [
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    },
+    {
+      "ok": true
+    }
+  ],
+  "gaps": [
+    {
+      "domain": "product",
+      "validProbes": 0,
+      "termRequests": 0,
+      "wrongConcepts": [],
+      "confirmedRelations": 0,
+      "state": "no_data"
+    },
+    {
+      "domain": "interface",
+      "validProbes": 0,
+      "termRequests": 0,
+      "wrongConcepts": [],
+      "confirmedRelations": 0,
+      "state": "no_data"
+    },
+    {
+      "domain": "backend",
+      "validProbes": 0,
+      "termRequests": 3,
+      "wrongConcepts": [],
+      "confirmedRelations": 0,
+      "state": "no_data"
+    },
+    {
+      "domain": "infrastructure",
+      "validProbes": 0,
+      "termRequests": 0,
+      "wrongConcepts": [],
+      "confirmedRelations": 0,
+      "state": "no_data"
+    },
+    {
+      "domain": "security",
+      "validProbes": 0,
+      "termRequests": 1,
+      "wrongConcepts": [],
+      "confirmedRelations": 0,
+      "state": "no_data"
+    }
+  ],
+  "trajectory": [
+    {
+      "domain": "product",
+      "status": "no_data",
+      "evidence": 0,
+      "weeks": [],
+      "marks": [],
+      "position": null
+    },
+    {
+      "domain": "interface",
+      "status": "no_data",
+      "evidence": 0,
+      "weeks": [],
+      "marks": [],
+      "position": null
+    },
+    {
+      "domain": "backend",
+      "status": "ok",
+      "evidence": 15,
+      "weeks": [
+        {
+          "week": "2026-W33",
+          "independent": 1,
+          "discernment": 1,
+          "assisted": 2,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 0,
+          "work": null,
+          "evidence": 1
+        },
+        {
+          "week": "2026-W34",
+          "independent": 1,
+          "discernment": 1,
+          "assisted": 2,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 0,
+          "work": 0.5,
+          "evidence": 1
+        },
+        {
+          "week": "2026-W35",
+          "independent": null,
+          "discernment": null,
+          "assisted": null,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": null,
+          "work": null,
+          "evidence": 0
+        },
+        {
+          "week": "2026-W36",
+          "independent": 1,
+          "discernment": 2,
+          "assisted": 3,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 0,
+          "work": null,
+          "evidence": 2
+        },
+        {
+          "week": "2026-W37",
+          "independent": 1,
+          "discernment": 2,
+          "assisted": 3,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": 1.5,
+          "evidence": 2
+        },
+        {
+          "week": "2026-W38",
+          "independent": 1,
+          "discernment": 2,
+          "assisted": 3,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": null,
+          "evidence": 1
+        },
+        {
+          "week": "2026-W39",
+          "independent": 1,
+          "discernment": 2,
+          "assisted": 3,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": null,
+          "evidence": 1
+        },
+        {
+          "week": "2026-W40",
+          "independent": 2,
+          "discernment": 2,
+          "assisted": 3,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": 1,
+          "evidence": 2
+        },
+        {
+          "week": "2026-W41",
+          "independent": 3,
+          "discernment": 3,
+          "assisted": 4,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": 3,
+          "evidence": 2
+        },
+        {
+          "week": "2026-W42",
+          "independent": 3,
+          "discernment": 3,
+          "assisted": 4,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": null,
+          "evidence": 1
+        },
+        {
+          "week": "2026-W43",
+          "independent": 3,
+          "discernment": 3,
+          "assisted": 4,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": 1,
+          "work": 1.5,
+          "evidence": 1
+        },
+        {
+          "week": "2026-W44",
+          "independent": null,
+          "discernment": null,
+          "assisted": null,
+          "blindCovered": 0,
+          "blindBare": 0,
+          "unstable": null,
+          "work": null,
+          "evidence": 0
+        }
+      ],
+      "marks": [],
+      "position": "2026-W43"
+    },
+    {
+      "domain": "infrastructure",
+      "status": "no_data",
+      "evidence": 1,
+      "weeks": [],
+      "marks": [],
+      "position": null
+    },
+    {
+      "domain": "security",
+      "status": "no_data",
+      "evidence": 0,
+      "weeks": [],
+      "marks": [],
+      "position": null
+    }
+  ]
+}

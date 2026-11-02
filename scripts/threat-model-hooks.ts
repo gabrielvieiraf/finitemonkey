@@ -38,10 +38,14 @@ export const hooks: readonly Threat[] = [
     component: "Command hooks",
     attacker: "process able to edit the guard",
     threat: "Someone with a shell deletes `.finitemonkey/`",
-    outcome: "not covered",
+    outcome: "detected",
     mechanism:
-      "The gate finds no evidence and runs every check again, but backups, incidents and approvals stored there are gone",
-    code: ["src/task/paths.ts"],
+      "Approvals, incidents and backups are mirrored with a signed index to `.git/finitemonkey/mirror/` and `~/.finitemonkey/projects/<id>/`; when the store comes back without its mirror marker, the session start and the gate copy back every file whose hash matches and log `store_restored`. Task contracts and evidence are not mirrored (the gate runs every check again), and a process that also deletes both mirrors or the key leaves nothing to restore",
+    code: ["src/task/mirror.ts", "src/gate/hooks/session.ts"],
+    proof: {
+      file: "test/store-mirror.test.ts",
+      test: "deleting .finitemonkey/ in a fixture restores approvals and incidents from the mirror and records it",
+    },
   },
   {
     component: "Command hooks",
@@ -202,10 +206,23 @@ export const ledger: readonly Threat[] = [
   {
     component: "Signed ledger and its key",
     attacker: "over-privileged process",
-    threat: "A process running as the same user signs lines with the key",
+    threat: "A process running as the same user rewrites older ledger lines and signs them with the key",
+    outcome: "detected",
+    mechanism:
+      "Every gate run writes the running hash of the ledger as a git note (`refs/notes/finitemonkey`) on the current commit; the next gate compares the ledger with the notes of the last 200 commits, reports the rewrite and writes no new note over it. A process that also rewrites the notes is not caught",
+    code: ["src/evidence/notes.ts", "src/gate/run.ts"],
+    proof: {
+      file: "test/ledger-notes.test.ts",
+      test: "a rewritten older ledger line is reported against the git notes even when it is signed with the key",
+    },
+  },
+  {
+    component: "Signed ledger and its key",
+    attacker: "over-privileged process",
+    threat: "A process running as the same user appends new lines signed with the key",
     outcome: "not covered",
     mechanism:
-      "The key is a file readable by the user; signing raises the cost of tampering and does not prevent it from a process with the user's rights",
+      "The key is a file readable by the user and is not kept in an OS key store; a process with the user's rights can sign a new line, so signing raises the cost of tampering and does not prevent it",
     code: ["src/evidence/sign.ts"],
   },
   {

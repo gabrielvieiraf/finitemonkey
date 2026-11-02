@@ -10,6 +10,7 @@ import { UNTRUSTED_FILE } from "../policy/untrusted.js";
 import type { FmPaths } from "../task/paths.js";
 import { appendClaimEvent, type Claim, lastOf } from "./claims.js";
 import type { ClaimView } from "./status.js";
+import { usedGreen } from "./use.js";
 
 export const MEMORY_QUARANTINE_FEATURE = "memory-quarantine";
 export const CLAIM_PROMOTION_FEATURE = "claim-promotion";
@@ -52,12 +53,13 @@ export const withQuarantine = (
   const mode = featureMode(runtime, paths, MEMORY_QUARANTINE_FEATURE);
   if (mode === "off") return views;
   const promotion = featureMode(runtime, paths, CLAIM_PROMOTION_FEATURE) === "active";
+  const used = promotion && ledgers ? usedGreen(runtime, paths) : new Set<string>();
   return views.map((view): ClaimView => {
     const { claim } = view;
     if (claim.origin.source === "person" || promoted(claim) || view.status !== "valid") return view;
     if (claim.origin.source === "external")
       return { ...view, status: "quarantined", reason: "external origin; a person promotes it" };
-    if (!promotion || (ledgers && greenAfter(runtime, paths, claim.recordedAt))) return view;
+    if (!promotion || used.has(claim.id)) return view;
     return { ...view, status: "quarantined", reason: "waiting for a task that ends green" };
   });
 };
@@ -67,6 +69,7 @@ export const settlePromotions = (
   paths: FmPaths,
   views: readonly ClaimView[],
 ): void => {
+  const used = usedGreen(runtime, paths);
   for (const view of views) {
     const { claim } = view;
     if (
@@ -76,7 +79,7 @@ export const settlePromotions = (
       claim.origin.source === "external"
     )
       continue;
-    if (!greenAfter(runtime, paths, claim.recordedAt)) continue;
+    if (!used.has(claim.id)) continue;
     appendClaimEvent(runtime, paths, {
       event: "promote",
       id: claim.id,

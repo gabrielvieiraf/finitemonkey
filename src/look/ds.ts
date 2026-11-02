@@ -61,6 +61,15 @@ const SPACING_NAMES = [
 ];
 const SPACING_INDEX = [0, 2, 4, 5, 6, 7, 8, 9];
 
+export const lineHeightOk = (node: ProbeNode, tokens: TokenSet): boolean =>
+  near(node.lineHeight, tokens.lineHeights) ||
+  tokens.lineRatios.some((ratio) => Math.abs(ratio * node.fontSize - node.lineHeight) <= LENGTH_TOLERANCE);
+
+const lineHeightChecks = (node: ProbeNode, tokens: TokenSet): readonly Checked[] =>
+  tokens.lineHeights.length + tokens.lineRatios.length === 0 || node.text === "" || node.lineHeight <= 0
+    ? []
+    : [{ property: "line-height", ok: lineHeightOk(node, tokens), actual: `${String(node.lineHeight)}px` }];
+
 const lengthChecks = (node: ProbeNode, tokens: TokenSet): readonly Checked[] => [
   ...(tokens.lengths.length === 0
     ? []
@@ -76,6 +85,7 @@ const lengthChecks = (node: ProbeNode, tokens: TokenSet): readonly Checked[] => 
   ...(tokens.fontSizes.length === 0 || node.text === ""
     ? []
     : [{ property: "font-size", ok: near(node.fontSize, tokens.fontSizes), actual: `${String(node.fontSize)}px` }]),
+  ...lineHeightChecks(node, tokens),
   ...(tokens.fonts.length === 0 || node.text === ""
     ? []
     : [{ property: "font-family", ok: tokens.fonts.includes(firstFamily(node.fontFamily)), actual: node.fontFamily }]),

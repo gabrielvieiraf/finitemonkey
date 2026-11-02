@@ -180,6 +180,24 @@
     },
     "session": {
       "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "hash"
+        ]
+      }
     }
   },
   "required": [

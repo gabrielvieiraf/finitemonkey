@@ -64,6 +64,7 @@ export interface ExecRequest {
   readonly env?: Env;
   readonly unset?: readonly string[];
   readonly input?: string;
+  readonly firstByte?: boolean;
 }
 
 export interface ExecResult {
@@ -73,6 +74,7 @@ export interface ExecResult {
   readonly stderr: string;
   readonly timedOut: boolean;
   readonly durationMs: number;
+  readonly firstOutputMs?: number;
 }
 
 export type Exec = (request: ExecRequest) => ExecResult;
@@ -80,6 +82,11 @@ export type Exec = (request: ExecRequest) => ExecResult;
 export interface ProcessInfo {
   readonly pid: number;
   readonly cwd: string;
+}
+
+export interface AncestorInfo {
+  readonly pid: number;
+  readonly command: string;
 }
 
 export type StopSignal = "SIGTERM" | "SIGKILL";
@@ -111,6 +118,7 @@ export interface Runtime {
   readonly homeDir: () => string;
   readonly systemLocale: () => string | undefined;
   readonly processes: () => readonly ProcessInfo[];
+  readonly ancestors: () => readonly AncestorInfo[];
   readonly signal: (pid: number, signal: StopSignal) => boolean;
   readonly alive: (pid: number) => boolean;
   readonly exclusiveBytes: (dir: AbsolutePath) => number | undefined;

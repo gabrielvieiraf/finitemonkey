@@ -11,6 +11,7 @@ import {
   splitTopLevel,
   type Surface,
 } from "./api-parse.js";
+import { followReexports } from "./api-python-reexport.js";
 
 const PY_FROM = /^from\s+([A-Za-z_][\w]*)(?:\.[\w.]+)?\s+import\s+\(?([^)\n]+)\)?/gm;
 export const pyImports = (source: string): readonly Imported[] =>
@@ -115,8 +116,14 @@ export const pySurfaceOf = (runtime: ApiRuntime, root: string, site: string, pkg
   if (locked !== undefined && locked !== version) {
     return { kind: "unknown", detail: `installed ${version === "" ? "?" : version}, lockfile ${locked}`, version };
   }
-  const text = read(runtime, join(site, pkg, "__init__.py")) ?? read(runtime, join(site, `${pkg}.py`));
-  return text === undefined
+  const start = [join(site, pkg, "__init__.py"), join(site, `${pkg}.py`)].flatMap((path) => {
+    const text = read(runtime, path);
+    return text === undefined ? [] : [{ path, text }];
+  })[0];
+  return start === undefined
     ? { kind: "unknown", detail: "not installed", version }
-    : { kind: "surface", surface: pySurface(text, version) };
+    : {
+        kind: "surface",
+        surface: followReexports(runtime, site, pkg, start, (text) => pySurface(text, version)),
+      };
 };

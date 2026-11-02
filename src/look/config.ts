@@ -47,6 +47,7 @@ export interface LookConfig {
   readonly skeleton: string | undefined;
   readonly ds: DsConfig;
   readonly forms: Readonly<Record<string, readonly string[]>>;
+  readonly formSteps: Readonly<Record<string, readonly (readonly string[])[]>>;
   readonly formsKeepCleared: readonly string[];
   readonly formValues: Readonly<Record<string, string>>;
   readonly flow: FlowConfig;
@@ -54,10 +55,19 @@ export interface LookConfig {
   readonly perf: PerfConfig;
 }
 
+export const PERF_BASES = ["stored", "same-run"] as const;
+export type PerfBase = (typeof PERF_BASES)[number];
+export const PERF_BUNDLES = ["loaded", "build"] as const;
+export type PerfBundle = (typeof PERF_BUNDLES)[number];
+
 export interface PerfConfig {
   readonly runs: number;
   readonly queriesHeader: string | undefined;
   readonly actions: readonly string[];
+  readonly base: PerfBase;
+  readonly bundle: PerfBundle;
+  readonly manifest: string | undefined;
+  readonly queriesLog: string | undefined;
 }
 
 export interface FlowConfig {
@@ -72,6 +82,8 @@ export interface DsConfig {
   readonly exclude: readonly string[];
   readonly excludeFiles: readonly string[];
   readonly tolerance: number;
+  readonly readConfig: boolean;
+  readonly config: string | undefined;
 }
 
 const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
@@ -104,6 +116,14 @@ export const routeLists = (entries: readonly string[]): Readonly<Record<string, 
   return out;
 };
 
+export const stepLists = (entries: readonly string[]): Readonly<Record<string, readonly (readonly string[])[]>> =>
+  Object.fromEntries(
+    Object.entries(routeLists(entries)).map(([route, lines]) => [
+      route,
+      lines.map((line) => line.split(/\s+/)).filter((steps) => steps.length > 1),
+    ]),
+  );
+
 const statesOf = (tree: ReturnType<typeof parseConfigYaml>): Readonly<Record<string, readonly StateSpec[]>> => {
   const node = configAt(tree, "states");
   if (node === undefined || typeof node === "string" || Array.isArray(node)) return {};
@@ -125,6 +145,16 @@ const wholeOf = (value: unknown): number | undefined => {
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : undefined;
 };
 
+const perfOf = (tree: ReturnType<typeof parseConfigYaml>): PerfConfig => ({
+  runs: number(configAt(tree, "perf", "runs")) ?? DEFAULT_RUNS,
+  queriesHeader: text(configAt(tree, "perf", "queries_header")),
+  actions: configList(tree, "perf", "actions"),
+  base: PERF_BASES.find((item) => item === configAt(tree, "perf", "base")) ?? "stored",
+  bundle: PERF_BUNDLES.find((item) => item === configAt(tree, "perf", "bundle")) ?? "loaded",
+  manifest: text(configAt(tree, "perf", "manifest")),
+  queriesLog: text(configAt(tree, "perf", "queries_log")),
+});
+
 export const parseLookConfig = (source: string): LookConfig => {
   const tree = parseConfigYaml(source);
   const screens = configAt(tree, "screens");
@@ -144,13 +174,10 @@ export const parseLookConfig = (source: string): LookConfig => {
     successColor: text(configAt(tree, "ui_states", "success_color")),
     skeleton: text(configAt(tree, "ui_states", "skeleton")),
     forms: routeLists(configList(tree, "forms")),
+    formSteps: stepLists(configList(tree, "forms_steps")),
     formsKeepCleared: configList(tree, "forms_keep_cleared"),
     formValues: configMap(tree, "form_values"),
-    perf: {
-      runs: number(configAt(tree, "perf", "runs")) ?? DEFAULT_RUNS,
-      queriesHeader: text(configAt(tree, "perf", "queries_header")),
-      actions: configList(tree, "perf", "actions"),
-    },
+    perf: perfOf(tree),
     visual: {
       threshold: ratioOf(configAt(tree, "visual", "threshold")) ?? DEFAULT_THRESHOLD,
       maxDiffPixels: wholeOf(configAt(tree, "visual", "max_diff_pixels")) ?? DEFAULT_MAX_DIFF_PIXELS,
@@ -166,6 +193,8 @@ export const parseLookConfig = (source: string): LookConfig => {
       exclude: configList(tree, "ds", "exclude"),
       excludeFiles: configList(tree, "ds", "exclude_files"),
       tolerance: number(configAt(tree, "ds", "tolerance")) ?? COLOR_TOLERANCE,
+      readConfig: configAt(tree, "ds", "read_config") === "true",
+      config: text(configAt(tree, "ds", "config")),
     },
   };
 };

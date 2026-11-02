@@ -11,7 +11,8 @@ import {
   replaceBetween,
   threatProblems,
 } from "../scripts/docs-gen.js";
-import { FAILURE_MODES } from "../scripts/failure-modes.js";
+import { FAILURE_MODES, type FailureMode } from "../scripts/failure-modes.js";
+import { missingTranslations } from "../scripts/failure-modes-text.js";
 import { ATTACKERS, type Threat, THREATS } from "../scripts/threat-model.js";
 import { FOOTPRINT, SENDS_HOSTS } from "../src/core/footprint.js";
 import { ROOT } from "./support.js";
@@ -48,6 +49,24 @@ describe("failure modes", () => {
       file === mode.file ? (read(file) ?? "").replaceAll(`"${mode.test}"`, '"renamed"') : read(file);
     assert.deepEqual(missingTests(FAILURE_MODES, withoutIt), [
       `${mode.file} has no test named "${mode.test}" (failure mode: ${mode.failure})`,
+    ]);
+  });
+});
+
+describe("failure modes in three languages", () => {
+  it("docs:check generates the table in English, Brazilian Portuguese and Spanish, and every line is translated", () => {
+    const files = BLOCKS.filter((block) => block.marker === "failure-modes").map((block) => block.file);
+    assert.deepEqual(files, ["docs/FAILURE-MODES.md", "docs/FAILURE-MODES.pt-BR.md", "docs/FAILURE-MODES.es.md"]);
+    assert.deepEqual(missingTranslations(FAILURE_MODES), []);
+  });
+
+  it("a failure mode without a translation is reported", () => {
+    const [first] = FAILURE_MODES;
+    assert.ok(first !== undefined);
+    const added: FailureMode = { ...first, failure: "A new way to fail" };
+    assert.deepEqual(missingTranslations([...FAILURE_MODES, added]), [
+      'scripts/failure-modes-pt-BR.ts has no translation of "A new way to fail"',
+      'scripts/failure-modes-es.ts has no translation of "A new way to fail"',
     ]);
   });
 });

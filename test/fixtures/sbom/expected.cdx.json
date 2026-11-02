@@ -1,0 +1,197 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:37268a3d-1f5d-553c-9b89-4ce3ee54b214",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-01-01T00:00:00Z",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "finitemonkey-sbom",
+          "version": "2.0.0"
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:npm/demo-cli@2.0.0",
+      "name": "demo-cli",
+      "version": "2.0.0",
+      "purl": "pkg:npm/demo-cli@2.0.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40scope/util@1.0.0",
+      "group": "@scope",
+      "name": "util",
+      "version": "1.0.0",
+      "purl": "pkg:npm/%40scope/util@1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "434d9061adf955790b0859c8a03758c0d3f0cde3c0f712aa55e1079f33cdea4d6335b40507c4e1a73566966fad4f759c4163ed78cba14c203a17cc5e54fd683e"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.npmjs.org/@scope/util/-/util-1.0.0.tgz"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40scope/util@2.0.0",
+      "group": "@scope",
+      "name": "util",
+      "version": "2.0.0",
+      "purl": "pkg:npm/%40scope/util@2.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "af695fc3d6b7df4992dba248f03e8223a8ec45713180a2fe03b5c820f2fb6c2673d1f983862cf8eb0cb75bae0461d05e5e6e57ff4f9c6e309b9f6ad2ac53dcb2"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "(MIT OR Apache-2.0)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.npmjs.org/@scope/util/-/util-2.0.0.tgz"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/left-pad@1.3.0",
+      "name": "left-pad",
+      "version": "1.3.0",
+      "purl": "pkg:npm/left-pad@1.3.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "37d0c93c5e17a51e1729bba4f5aa1587707964edb9ff2aaff9992a6536ee3978ce4a9fc147b5b3bae0b2e86cdde4eef33cb58b3452a13dfac2bf6c46ebb7d87c"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "WTFPL"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/tester@3.1.0",
+      "name": "tester",
+      "version": "3.1.0",
+      "purl": "pkg:npm/tester@3.1.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "ab4d8d2a5f480a137067da17100271cd176607a1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "SEE LICENSE IN LICENSE.md"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.npmjs.org/tester/-/tester-3.1.0.tgz"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/watcher@1.0.0",
+      "name": "watcher",
+      "version": "1.0.0",
+      "purl": "pkg:npm/watcher@1.0.0",
+      "scope": "optional",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0b43a846aa257fca29863b2f5576e5b102d45b00bea097894224f2697444a22be90fe3ce94538861bbbb117903c57c143d5db65c31b74798d52d725c225b0231"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "ISC"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://registry.npmjs.org/watcher/-/watcher-1.0.0.tgz"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/%40scope/util@1.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/%40scope/util@2.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/demo-cli@2.0.0",
+      "dependsOn": [
+        "pkg:npm/%40scope/util@2.0.0",
+        "pkg:npm/left-pad@1.3.0",
+        "pkg:npm/tester@3.1.0",
+        "pkg:npm/watcher@1.0.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/left-pad@1.3.0",
+      "dependsOn": [
+        "pkg:npm/%40scope/util@1.0.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/tester@3.1.0",
+      "dependsOn": [
+        "pkg:npm/left-pad@1.3.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/watcher@1.0.0",
+      "dependsOn": []
+    }
+  ]
+}

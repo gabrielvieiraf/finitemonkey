@@ -12,6 +12,7 @@ import type { Ctx, Env, TextSource } from "../src/core/context.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../src/core/parsed.js";
 import { run } from "../src/core/run.js";
 import type {
+  AncestorInfo,
   ExecRequest,
   ExecResult,
   GitResult,
@@ -50,6 +51,7 @@ export interface FakeRuntimeOptions {
   readonly gitWith?: Runtime["gitWith"];
   readonly systemLocale?: string;
   readonly processes?: readonly ProcessInfo[];
+  readonly ancestors?: readonly AncestorInfo[];
   readonly signals?: { pid: number; signal: StopSignal }[];
 }
 
@@ -120,6 +122,7 @@ export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
     homeDir: () => "/home/test",
     systemLocale: () => options.systemLocale,
     processes: () => options.processes ?? [],
+    ancestors: () => options.ancestors ?? [],
     signal: (pid, signal) => {
       options.signals?.push({ pid, signal });
       return true;

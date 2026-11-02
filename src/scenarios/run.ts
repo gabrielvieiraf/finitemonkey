@@ -36,7 +36,7 @@ export interface ScenarioResult {
   readonly passed: boolean;
 }
 
-const ITEM_PARAM = /(?::[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})$/;
+const ITEM_PARAM = /(?::[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})(\/?)$/;
 const ORDER: readonly ScenarioKind[] = [
   "owner_reads",
   "other_reads",
@@ -102,7 +102,7 @@ const runResource = async (
   });
   const id = createdId(created, config.idField);
   if (id === undefined) return [setupFailed(resource, created?.status ?? null)];
-  const path = resource.item.replace(ITEM_PARAM, encodeURIComponent(id));
+  const path = resource.item.replace(ITEM_PARAM, `${encodeURIComponent(id)}$1`);
   const planned = [...scenariosFor(resource)].sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
   const results: ScenarioResult[] = [];
   for (const scenario of planned) results.push(await runOne(scenario, path, config, send));
@@ -118,3 +118,33 @@ export const runScenarios = async (
   for (const resource of resources) results.push(...(await runResource(resource, config, send)));
   return results;
 };
+
+export interface SeededItem {
+  readonly resource: string;
+  readonly actor: "A" | "B";
+  readonly id: string | undefined;
+}
+
+export const seedHttp = async (
+  resources: readonly Resource[],
+  config: AccessConfig,
+  send: Send,
+): Promise<readonly SeededItem[]> => {
+  const seeded: SeededItem[] = [];
+  for (const resource of resources)
+    for (const actor of ["A", "B"] as const) {
+      const created = await send({
+        method: "post",
+        path: resource.collection,
+        headers: headersFor(actor, config),
+        body: config.body,
+      });
+      seeded.push({ resource: resource.name, actor, id: createdId(created, config.idField) });
+    }
+  return seeded;
+};
+
+export const userHeaders = (config: AccessConfig): Readonly<Record<"A" | "B", Readonly<Record<string, string>>>> => ({
+  A: headersFor("A", config),
+  B: headersFor("B", config),
+});

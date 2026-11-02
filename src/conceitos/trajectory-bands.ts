@@ -1,4 +1,5 @@
 import type { DomainTrajectory, Mark, Week } from "./trajectory.js";
+import { MIN_EVIDENCE, SPLIT_GROUPS, type SplitGroup } from "./trajectory-split-types.js";
 
 export type Band = "alone" | "proximal" | "unstable" | "blindCovered" | "blindBare" | "blind" | "beyond";
 export type Group = "horizon" | "blind" | "discernment" | "proximal" | "alone";
@@ -35,6 +36,16 @@ export const HYPOTHESES: Readonly<Partial<Record<Group, string>>> = {
   proximal: "explains vs detects only",
   alone: "transfer vs known context",
 };
+
+export const SPLIT_LABEL: Readonly<Record<SplitGroup, readonly [string, string]>> = {
+  alone: ["known context", "transfer"],
+  proximal: ["explains", "detects only"],
+  horizon: ["recognizable", "out of reach"],
+};
+
+export const SPLIT_STATUS: BandStatus = "calibration";
+
+const SPLIT_BAND: Readonly<Record<SplitGroup, Band>> = { alone: "alone", proximal: "proximal", horizon: "beyond" };
 
 export const BAND_ORDER: readonly Band[] = [
   "alone",
@@ -114,3 +125,21 @@ export const describeBand = (band: Band): string =>
   band === "beyond" || band === "blind"
     ? GROUP_LABEL[BANDS[band].group]
     : `${GROUP_LABEL[BANDS[band].group]}, ${BANDS[band].label}`;
+
+export const splitAt = (week: Week, group: SplitGroup, peak: number): number | undefined => {
+  const split = week.splits?.[group];
+  if (split === undefined || split.evidence < MIN_EVIDENCE || split.lower + split.upper === 0) return undefined;
+  const stratum = strataOf(week, peak).find((item) => item.band === SPLIT_BAND[group]);
+  if (stratum === undefined) return undefined;
+  return stratum.from + ((stratum.to - stratum.from) * split.lower) / (split.lower + split.upper);
+};
+
+export const drawnSplits = (trajectory: DomainTrajectory): ReadonlySet<SplitGroup> => {
+  const peak = peakOf(trajectory);
+  return new Set(
+    SPLIT_GROUPS.filter((group) => trajectory.weeks.some((week) => splitAt(week, group, peak) !== undefined)),
+  );
+};
+
+export const describeSplit = (group: SplitGroup): string =>
+  `${SPLIT_LABEL[group][1]} above, ${SPLIT_LABEL[group][0]} below`;

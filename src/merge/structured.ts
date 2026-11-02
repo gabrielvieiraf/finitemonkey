@@ -1,4 +1,7 @@
 import { isRecord, type JsonObject, parseJson } from "../core/parsed.js";
+import type { KeyedMerge } from "./keyed.js";
+import { mergeTomlText } from "./toml-merge.js";
+import { mergeYamlText } from "./yaml-merge.js";
 
 export interface KeyConflict {
   readonly key: string;
@@ -68,4 +71,23 @@ export const mergeJson = (base: string, ours: string, theirs: string): Structure
   return { text: `${JSON.stringify(merged, null, indentOf(ours))}${newline}`, conflicts };
 };
 
-export const isStructured = (path: string): boolean => /\.json$/i.test(path);
+const fromKeyed = (merged: KeyedMerge | undefined, ours: string): StructuredMerge | undefined => {
+  if (merged === undefined) return undefined;
+  const conflicts = merged.conflicts.map((key) => ({ key }));
+  if (conflicts.length > 0) return { text: undefined, conflicts };
+  const newline = /\r?\n$/.exec(ours)?.[0] ?? "";
+  return { text: `${merged.lines.join(newline === "\r\n" ? "\r\n" : "\n")}${newline}`, conflicts };
+};
+
+export const isStructured = (path: string): boolean => /\.(json|ya?ml|toml)$/i.test(path);
+
+export const structuredMerge = (
+  path: string,
+  base: string,
+  ours: string,
+  theirs: string,
+): StructuredMerge | undefined => {
+  if (/\.ya?ml$/i.test(path)) return fromKeyed(mergeYamlText(base, ours, theirs), ours);
+  if (/\.toml$/i.test(path)) return fromKeyed(mergeTomlText(base, ours, theirs), ours);
+  return mergeJson(base, ours, theirs);
+};

@@ -12,6 +12,13 @@ export interface FieldInfo {
   readonly placeholder: string;
 }
 
+export interface StepEntry extends FieldInfo {
+  readonly name: string;
+  readonly autocomplete: string;
+  readonly label: string;
+  readonly value: string;
+}
+
 export interface FieldState {
   readonly sel: string;
   readonly value: string;
@@ -31,7 +38,7 @@ export interface FormDoc extends MiniDoc {
   readonly querySelector: (selector: string) => FieldEl | null;
 }
 
-export const formFields = (kit: Kit, doc: MiniDoc, form: string): readonly FieldInfo[] => {
+export const formFields = (kit: Kit, doc: MiniDoc, form: string): readonly StepEntry[] => {
   const root = [...doc.querySelectorAll(form)][0];
   if (root === undefined) return [];
   const skip = ["hidden", "submit", "button", "reset", "image", "checkbox", "radio", "file"];
@@ -39,6 +46,7 @@ export const formFields = (kit: Kit, doc: MiniDoc, form: string): readonly Field
     const type = kit.clean(field.getAttribute("type")).toLowerCase() || "text";
     if (skip.includes(type) || field.hasAttribute("disabled")) return [];
     const attr = (name: string): string => kit.clean(field.getAttribute(name));
+    const label = kit.labelText(kit, doc, field);
     return [
       {
         sel: kit.selectorOf(field),
@@ -48,11 +56,35 @@ export const formFields = (kit: Kit, doc: MiniDoc, form: string): readonly Field
         min: attr("min"),
         max: attr("max"),
         minLength: Number.parseInt(attr("minlength"), 10) || 0,
-        labelled: kit.labelText(kit, doc, field) !== "" || attr("title") !== "",
+        labelled: label !== "" || attr("title") !== "",
         placeholder: attr("placeholder"),
+        name: attr("name"),
+        autocomplete: attr("autocomplete").toLowerCase(),
+        label: label === "" ? attr("placeholder") : label,
+        value: "value" in field && typeof field.value === "string" ? field.value : "",
       },
     ];
   });
+};
+
+export const formChoices = (kit: Kit, doc: MiniDoc, form: string): readonly string[] => {
+  const root = [...doc.querySelectorAll(form)][0];
+  if (root === undefined) return [];
+  const options = [...root.querySelectorAll("option, [role=option]")].flatMap((option) => [
+    kit.clean(option.textContent),
+    kit.clean(option.getAttribute("value")),
+  ]);
+  const picks = [...root.querySelectorAll("input[type=radio], input[type=checkbox]")].flatMap((pick) => [
+    kit.labelText(kit, doc, pick),
+    kit.clean(pick.getAttribute("value")),
+  ]);
+  const lists = [...root.querySelectorAll("input[list]")].flatMap((input) => {
+    const list = doc.getElementById(kit.clean(input.getAttribute("list")));
+    return list === null
+      ? []
+      : [...list.querySelectorAll("option")].map((option) => kit.clean(option.getAttribute("value")));
+  });
+  return [...options, ...picks, ...lists].filter((text) => text !== "").slice(0, 200);
 };
 
 export const fieldStates = (

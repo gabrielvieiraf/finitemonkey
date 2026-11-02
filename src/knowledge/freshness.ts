@@ -12,9 +12,9 @@ import { featureMode } from "../policy/feature.js";
 import { policyNumber } from "../policy/numbers.js";
 import { loadPolicy } from "../policy/policy.js";
 import type { FmPaths } from "../task/paths.js";
-import { diskReader } from "./anchor.js";
 import { KNOWLEDGE_CLAIMS_FEATURE, readClaims } from "./claims.js";
 import { claimLine, MAX_INJECTED } from "./hook.js";
+import { hookOptions } from "./moves.js";
 import { withQuarantine } from "./quarantine.js";
 import { withRetractions } from "./retraction.js";
 import { injectable, viewsOf } from "./service.js";
@@ -49,14 +49,14 @@ export const knowledgeCounts = (runtime: CountRuntime, paths: FmPaths): Knowledg
 };
 
 export const compactionClaims = (
-  runtime: Pick<Runtime, "readText" | "homeDir" | "listDir">,
+  runtime: Pick<Runtime, "readText" | "homeDir" | "listDir" | "exec">,
   paths: FmPaths,
 ): readonly ClaimView[] => {
   if (featureMode(runtime, paths, KNOWLEDGE_CLAIMS_FEATURE) !== "active") return [];
   const claims = readClaims(runtime, paths);
   if (claims.length === 0) return [];
-  const read = diskReader(runtime, paths.root);
-  const evaluated = claims.map((claim) => evaluateClaim(claim, { read, candidates: () => [] }));
+  const options = hookOptions(runtime, paths);
+  const evaluated = claims.map((claim) => evaluateClaim(claim, options));
   return injectable(withQuarantine(runtime, paths, withRetractions(runtime, paths, evaluated), false)).slice(
     0,
     MAX_INJECTED,
@@ -64,7 +64,7 @@ export const compactionClaims = (
 };
 
 export const compactionClaimLines = (
-  runtime: Pick<Runtime, "readText" | "homeDir" | "listDir">,
+  runtime: Pick<Runtime, "readText" | "homeDir" | "listDir" | "exec">,
   paths: FmPaths,
   t: Translate,
   tree: string | null,

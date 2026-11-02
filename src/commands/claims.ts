@@ -2,16 +2,20 @@ import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { success } from "../core/result.js";
 import { gitAt, headSha, treeHash } from "../gate/git.js";
-import { anchorAt, diskReader } from "../knowledge/anchor.js";
+import { diskReader, reanchor } from "../knowledge/anchor.js";
 import { asOf } from "../knowledge/asof.js";
 import { appendClaimEvent, type Claim } from "../knowledge/claims.js";
+import { indexClaimFiles } from "../knowledge/moves.js";
 import { settlePromotions } from "../knowledge/quarantine.js";
 import { outDecisions, settleRetractions } from "../knowledge/retraction.js";
-import { viewsOf } from "../knowledge/service.js";
+import { trackedFiles, viewsOf } from "../knowledge/service.js";
+import { projectSyntax } from "../knowledge/syntax.js";
 import { whyChain } from "../knowledge/why.js";
+import { readProposals } from "../premise/proposal.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { claimsAddCommand } from "./claims-add.js";
+import { claimsApproveCommand, claimsRejectCommand } from "./claims-approve.js";
 import { CLAIMS_SCHEMA, fail, viewLine, withClaim } from "./claims-shared.js";
 import { inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
@@ -29,7 +33,14 @@ export const claimsListCommand: CommandSpec = {
       const views = viewsOf(ctx.runtime, paths);
       settleRetractions(ctx.runtime, paths, views);
       settlePromotions(ctx.runtime, paths, views);
+      indexClaimFiles(
+        ctx.runtime,
+        paths,
+        views.map((view) => view.claim),
+        () => trackedFiles(ctx.runtime, paths),
+      );
       const decisions = outDecisions(ctx.runtime, paths);
+      const proposals = readProposals(ctx.runtime, paths).filter((item) => item.state === "proposed");
       return success(
         {
           schema: CLAIMS_SCHEMA,
@@ -45,10 +56,14 @@ export const claimsListCommand: CommandSpec = {
             recordedAt: view.claim.recordedAt,
           })),
           decisions,
+          proposals,
         },
         [
           ...(views.length === 0 ? [ctx.t("knowledge.claims.empty")] : views.map((view) => viewLine(ctx, view))),
           ...decisions.map((item) => ctx.t("knowledge.claims.decision_out", { ...item })),
+          ...proposals.map((item) =>
+            ctx.t("knowledge.claims.proposal", { id: item.id, text: item.text, run: item.run }),
+          ),
         ],
       );
     }),
@@ -120,10 +135,8 @@ const recorded = (
   reason: string | undefined,
 ): void => {
   const read = diskReader(ctx.runtime, paths.root);
-  const anchors = claim.anchors.flatMap((anchor) => {
-    const content = read(anchor.path);
-    return content === undefined ? [] : (anchorAt(content, anchor.path, anchor.symbol) ?? []);
-  });
+  const syntax = projectSyntax(ctx.runtime, paths.root);
+  const anchors = claim.anchors.flatMap((anchor) => reanchor(anchor, read, syntax) ?? []);
   const git = gitAt(ctx.runtime, paths.root);
   const tree = treeHash(git);
   const commit = headSha(git);
@@ -219,4 +232,6 @@ export const CLAIMS_COMMANDS = [
   claimsRenewCommand,
   claimsCloseCommand,
   claimsPromoteCommand,
+  claimsApproveCommand,
+  claimsRejectCommand,
 ] as const;

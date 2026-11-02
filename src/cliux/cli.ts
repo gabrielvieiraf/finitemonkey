@@ -25,6 +25,7 @@ export interface CliRun {
   readonly stderr: string;
   readonly timedOut: boolean;
   readonly durationMs: number;
+  readonly firstOutputMs?: number;
 }
 
 export interface CliRuns {

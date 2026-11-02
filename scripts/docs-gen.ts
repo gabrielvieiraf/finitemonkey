@@ -6,6 +6,7 @@ import { type GuardFailureMode, guardFailureModes } from "../src/hooks/failure-m
 import { DEFAULTS_SECTION, DEFAULTS_TEXT } from "./defaults-text.js";
 import { readEvidence, renderEvidence } from "./evidence-text.js";
 import { FAILURE_MODES, type FailureMode } from "./failure-modes.js";
+import { FAILURE_MODES_COLUMNS, failureModeText } from "./failure-modes-text.js";
 import { FOOTPRINT_TEXT, type Lang, SECTION_TEXT } from "./footprint-text.js";
 import { ATTACKERS, COMPONENTS, OUTCOMES, type Threat, THREATS } from "./threat-model.js";
 
@@ -50,14 +51,14 @@ export const renderDefaults = (lang: Lang): string => {
   ].join("\n");
 };
 
-export const renderFailureModes = (modes: readonly FailureMode[]): string =>
+export const renderFailureModes = (modes: readonly FailureMode[], lang: Lang = "en"): string =>
   [
-    "| Failure | Cause | Mitigation | Proving test |",
+    `| ${FAILURE_MODES_COLUMNS[lang].join(" | ")} |`,
     "|---|---|---|---|",
-    ...modes.map(
-      (mode) =>
-        `| ${cell(mode.failure)} | ${cell(mode.cause)} | ${cell(mode.mitigation)} | \`${mode.file}\`: "${cell(mode.test)}" |`,
-    ),
+    ...modes.map((mode) => {
+      const text = failureModeText(mode, lang);
+      return `| ${cell(text.failure)} | ${cell(text.cause)} | ${cell(text.mitigation)} | \`${mode.file}\`: "${cell(mode.test)}" |`;
+    }),
   ].join("\n");
 
 const MODE_TEXT: Readonly<Record<GuardFailureMode["mode"], string>> = {
@@ -176,6 +177,12 @@ export const forbiddenPhrases = (text: string, hosts: readonly string[]): readon
 
 export const BLOCKS: readonly { readonly file: string; readonly marker: string; readonly render: () => string }[] = [
   { file: "docs/FAILURE-MODES.md", marker: "failure-modes", render: () => renderFailureModes(FAILURE_MODES) },
+  {
+    file: "docs/FAILURE-MODES.pt-BR.md",
+    marker: "failure-modes",
+    render: () => renderFailureModes(FAILURE_MODES, "pt-BR"),
+  },
+  { file: "docs/FAILURE-MODES.es.md", marker: "failure-modes", render: () => renderFailureModes(FAILURE_MODES, "es") },
   { file: "docs/THREAT-MODEL.md", marker: "threat-model", render: () => renderThreatModel(THREATS) },
   { file: "README.md", marker: "footprint", render: () => renderFootprint("en") },
   { file: "README.pt-BR.md", marker: "footprint", render: () => renderFootprint("pt-BR") },

@@ -3,6 +3,7 @@ import { DEPLOY_FOOTPRINT_TEXT } from "./footprint-deploy-text.js";
 import { PERSON_FOOTPRINT_TEXT } from "./footprint-person-text.js";
 import { COPY_FOOTPRINT_TEXT } from "./footprint-text-copy.js";
 import { GUARDIAN_FOOTPRINT_TEXT } from "./footprint-text-guardian.js";
+import { PROVIDER_FOOTPRINT_TEXT } from "./footprint-text-provider.js";
 import { STAGE3_FOOTPRINT_TEXT } from "./footprint-text-stage3.js";
 
 export const LANGS = ["en", "pt-BR", "es"] as const;
@@ -140,10 +141,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
   },
   fronts: {
-    en: "The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed.",
+    en: "The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed. `fronts sync --github` remembers in `.finitemonkey/cache/github-writes.json` the status it last commented on each issue, so it does not comment twice.",
     "pt-BR":
-      "O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit.",
-    es: "El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea.",
+      "O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit. O `fronts sync --github` guarda em `.finitemonkey/cache/github-writes.json` o status que comentou por último em cada issue, para não comentar duas vezes.",
+    es: "El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea. `fronts sync --github` guarda en `.finitemonkey/cache/github-writes.json` el estado que comentó por última vez en cada issue, para no comentar dos veces.",
   },
   profile: {
     en: "The person's level per domain; the infrastructure level picks the git defaults (intermediate when missing).",
@@ -158,10 +159,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "El ruleset que `init --github` propone cuando la rama por defecto no tiene ninguno; solo se envía a GitHub tras el sí de la persona.",
   },
   worktrees: {
-    en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`.",
+    en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` holds one lease per worktree port range, so two projects on the machine never get the same ports.",
     "pt-BR":
-      "O registro de worktrees e os relatórios de mescla no diretório comum do git (nunca vão para commit), a linha de exclusão local para `.claude/worktrees/` e os worktrees criados pelo `wt new`; repositório em `/mnt/<disco>` ou em pasta sincronizada recebe os seus em `~/.finitemonkey/worktrees/`. O `wt archive` guarda um worktree em `refs/finitemonkey/archive/` e copia arquivos ignorados que não são segredo para `~/.finitemonkey/archive/`.",
-    es: "El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.finitemonkey/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.finitemonkey/archive/`.",
+      "O registro de worktrees e os relatórios de mescla no diretório comum do git (nunca vão para commit), a linha de exclusão local para `.claude/worktrees/` e os worktrees criados pelo `wt new`; repositório em `/mnt/<disco>` ou em pasta sincronizada recebe os seus em `~/.finitemonkey/worktrees/`. O `wt archive` guarda um worktree em `refs/finitemonkey/archive/` e copia arquivos ignorados que não são segredo para `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` guarda uma reserva por faixa de portas de worktree, para dois projetos na máquina nunca receberem as mesmas portas.",
+    es: "El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.finitemonkey/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` guarda una reserva por rango de puertos de worktree, para que dos proyectos en la máquina nunca reciban los mismos puertos.",
   },
   "git-safety": {
     en: "Snapshots before destructive git commands and `rm` in the repository, with copies of ignored and untracked secret files up to 50 MB inside .git, the journal that `undo` reads and dropped-line decisions from merges.",
@@ -278,10 +279,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`rules propose` agrega a `.finitemonkey/rules.yml` solo las entradas que confirmas en una terminal. Cada regla incumplida al final de un turno, bloqueada por un guard o informada con `rules violation` deja una línea en `rule-violations.jsonl` (regla, origen, detalle enmascarado), la evidencia para promover un recordatorio.",
   },
   learnings: {
-    en: "Lessons from earlier work: a short text keyed by file paths or by the signature of an error that stopped after a change, how often each was used and when it last matched. A lesson unused for 90 days or marked unhelpful twice is deleted; `learnings delete` removes one by hand.",
+    en: "Lessons from earlier work: a short text keyed by file paths or by the signature of an error that stopped after a change, how often each was used and when it last matched. A lesson unused for 90 days or marked unhelpful twice is deleted; `learnings delete` removes one by hand. `cache/agent-changes.json` keeps the agent's recent edits; when the person reverts the same change in the same place twice, it becomes one lesson proposal with origin person, used only after `learnings accept`.",
     "pt-BR":
-      "Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão.",
-    es: "Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano.",
+      "Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão. O `cache/agent-changes.json` guarda as edições recentes do agente; quando a pessoa desfaz duas vezes a mesma mudança no mesmo lugar, isso vira uma proposta de lição com origem pessoa, usada só depois de `learnings accept`.",
+    es: "Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano. `cache/agent-changes.json` guarda las ediciones recientes del agente; cuando la persona deshace dos veces el mismo cambio en el mismo lugar, se convierte en una propuesta de lección con origen persona, usada solo después de `learnings accept`.",
   },
   ownership: {
     en: "`gen ownership` writes one entry per component (name, vocabulary type, owner, consumers) after the person passes `--yes`; `ci gate`, `ownership check` and `plan check` read it, or read `catalog-info.yaml` when that exists.",
@@ -297,6 +298,7 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
   },
   ...DEPLOY_FOOTPRINT_TEXT,
   ...PERSON_FOOTPRINT_TEXT,
+  ...PROVIDER_FOOTPRINT_TEXT,
 };
 
 export { SECTION_TEXT } from "./footprint-sections.js";

@@ -1,4 +1,5 @@
 import { eventsPath, readConceptEvents } from "../conceitos/evidence.js";
+import { forgetConceptEvidence } from "../conceitos/judge-log.js";
 import { BANDS, COVERAGES, type Xray, XRAY_FEATURE, XRAY_SCHEMA, type XrayItem } from "../conceitos/xray.js";
 import { saveXray, xrayFor, xrayPath } from "../conceitos/xray-run.js";
 import type { Ctx } from "../core/context.js";
@@ -77,7 +78,8 @@ const show = (ctx: Ctx): CommandResult => {
 const forget = (ctx: Ctx): CommandResult => {
   const paths = pathsOf(ctx);
   const removed = [xrayPath(paths), eventsPath(paths)].filter((path) => ctx.runtime.remove(path).ok);
-  return success({ schema: XRAY_SCHEMA, removed: removed.length }, [ctx.t("xray.forgotten")]);
+  const dropped = forgetConceptEvidence(ctx.runtime, paths) > 0 ? 1 : 0;
+  return success({ schema: XRAY_SCHEMA, removed: removed.length + dropped }, [ctx.t("xray.forgotten")]);
 };
 
 const exportAll = (ctx: Ctx): CommandResult => {

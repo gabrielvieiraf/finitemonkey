@@ -1,0 +1,60 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 2,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 3,
+  "numPassedTests": 3,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "startTime": 1793361600000,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["math"],
+          "fullName": "math adds",
+          "status": "passed",
+          "title": "adds",
+          "duration": 3,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["math"],
+          "fullName": "math slow one",
+          "status": "passed",
+          "title": "slow one",
+          "duration": 1250.4,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1793361600010,
+      "endTime": 1793361601300,
+      "status": "passed",
+      "message": "",
+      "name": "/repo/test/math.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "top level",
+          "status": "passed",
+          "title": "top level",
+          "duration": 1,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1793361600010,
+      "endTime": 1793361600020,
+      "status": "passed",
+      "message": "",
+      "name": "/repo/test/other.test.ts"
+    }
+  ]
+}

@@ -8,12 +8,11 @@ import { after, describe, it } from "node:test";
 
 import { check as prettierCheck } from "prettier";
 
-import { auditWorkflow } from "../src/ci/audit/rules.js";
-import { parseWorkflow } from "../src/ci/audit/workflow.js";
+import { toAbsolutePath } from "../src/core/brand.js";
 import type { TextSource } from "../src/core/context.js";
 import { composeFile, deployWorkflow, driftWorkflow, remoteScript } from "../src/deploy/templates.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
-import { cli, cliJson, field } from "./support.js";
+import { cli, cliJson, fakeRuntime, field } from "./support.js";
 
 const repos: Repo[] = [];
 const dirs: string[] = [];
@@ -31,16 +30,29 @@ const INPUT = {
   health: "/health",
 };
 
-const auditRules = (file: string, text: string): readonly string[] => {
-  const parsed = parseWorkflow(file, text);
-  assert.ok(parsed.ok, file);
-  return auditWorkflow(parsed.value, { level: 3, publicRepo: true }).map((hit) => `${hit.rule}: ${hit.detail}`);
+const AUDIT_ROOT = toAbsolutePath("/home/ana/shop");
+
+const auditRules = async (file: string, text: string): Promise<readonly string[]> => {
+  const at = (path: string): string => toAbsolutePath(path, AUDIT_ROOT);
+  const runtime = fakeRuntime({
+    files: {
+      [at(`.github/workflows/${file}`)]: text,
+      [at(".finitemonkey/policy.yml")]: "projectLevel: 3\nguards:\n  ci-audit: active\n",
+      [at(".finitemonkey/cache/github.json")]: '{"visibility":"public"}\n',
+    },
+  });
+  const run = await cliJson(["ci", "audit"], { runtime, cwd: AUDIT_ROOT });
+  assert.deepEqual(field(run.body, "data", "files"), [`.github/workflows/${file}`]);
+  assert.equal(field(run.body, "data", "level"), 3);
+  const findings = field(run.body, "data", "findings");
+  assert.ok(Array.isArray(findings));
+  return findings.map((item) => `${String(field(item, "rule"))}: ${String(field(item, "detail"))}`);
 };
 
 describe("deploy generate templates", () => {
   it("the workflow passes ci audit at the strictest level and prettier parses it unchanged", async () => {
     const workflow = deployWorkflow(INPUT);
-    assert.deepEqual(auditRules("deploy.yml", workflow), []);
+    assert.deepEqual(await auditRules("deploy.yml", workflow), []);
     assert.ok(await prettierCheck(workflow, { parser: "yaml" }), workflow);
     assert.ok(await prettierCheck(composeFile(3000), { parser: "yaml" }));
     assert.match(workflow, /StrictHostKeyChecking=yes/);
@@ -49,7 +61,7 @@ describe("deploy generate templates", () => {
 
   it("the scheduled drift workflow passes ci audit too", async () => {
     const drift = driftWorkflow("main", "1.2.3");
-    assert.deepEqual(auditRules("drift.yml", drift), []);
+    assert.deepEqual(await auditRules("drift.yml", drift), []);
     assert.ok(await prettierCheck(drift, { parser: "yaml" }), drift);
     assert.match(drift, /deploy check --issue/);
     assert.match(drift, /issues: write/);
@@ -152,11 +164,11 @@ describe("finitemonkey deploy generate", () => {
     assert.match(done.stdout, /exists and differs, kept: deploy\/compose\.yml/);
     assert.equal(repo.read("deploy/compose.yml"), "services: {}\n");
     const workflow = repo.read(".github/workflows/deploy.yml");
-    assert.deepEqual(auditRules("deploy.yml", workflow), []);
+    assert.deepEqual(await auditRules("deploy.yml", workflow), []);
     assert.match(workflow, /run: npm ci/);
     assert.match(workflow, /run: npm run test/);
     assert.match(repo.read("deploy/remote.sh"), /rolled back to/);
-    assert.deepEqual(auditRules("drift.yml", repo.read(".github/workflows/drift.yml")), []);
+    assert.deepEqual(await auditRules("drift.yml", repo.read(".github/workflows/drift.yml")), []);
   });
 
   it("refuses projects that are not one server", async () => {

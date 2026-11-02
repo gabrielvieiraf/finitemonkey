@@ -19,6 +19,7 @@ export interface KeyboardWalk {
   readonly stops: readonly ObservedStop[];
   readonly complete: boolean;
   readonly trap: Trap | undefined;
+  readonly reverse?: readonly string[];
 }
 
 export interface DialogResult {
@@ -63,6 +64,20 @@ const orderIssues = (stops: readonly ObservedStop[]): readonly UxIssue[] => {
   return [issue("keyboard/order", first.sel, detail, { advisory: true })];
 };
 
+export const reverseIssues = (walk: KeyboardWalk): readonly UxIssue[] => {
+  if (walk.reverse === undefined || !walk.complete || walk.trap !== undefined) return [];
+  const expected = walk.stops.map((stop) => stop.sel).reverse();
+  const got = walk.reverse;
+  const length = Math.max(expected.length, got.length);
+  const differs = Array.from({ length }, (_, index) => index).filter((index) => expected[index] !== got[index]);
+  const first = differs[0];
+  if (first === undefined) return [];
+  const want = expected[first] ?? "the start of the page";
+  const seen = got[first] ?? "the start of the page";
+  const detail = `Shift+Tab from the last stop reaches ${seen} where the reverse Tab order has ${want} (step ${String(first + 1)}, ${String(differs.length)} differences)`;
+  return [issue("keyboard/reverse-order", got[first] ?? want, detail, { advisory: true })];
+};
+
 export const dialogIssues = (results: readonly DialogResult[]): readonly UxIssue[] =>
   results.flatMap((result) => {
     const problems = [
@@ -93,5 +108,6 @@ export const keyboardIssues = (
         issue("keyboard/focus-obscured", stop.sel, "focused element is under a fixed or sticky element", { box: stop }),
       ),
     ...orderIssues(walk.stops),
+    ...reverseIssues(walk),
     ...dialogIssues(dialogs),
   ]);

@@ -4,7 +4,15 @@ import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
-import { approveUi, proposeUi, uiContractRelative, type UiContractState, uiContractState } from "../look/contract.js";
+import {
+  approveUi,
+  parseUiContract,
+  proposeUi,
+  uiContractRelative,
+  type UiContractState,
+  uiContractState,
+} from "../look/contract.js";
+import { budgetProposal } from "../look/contract-propose.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
@@ -48,6 +56,12 @@ const show = (ctx: Ctx, paths: FmPaths, task: string): CommandResult<UiContractD
   ]);
 };
 
+const invalid = (ctx: Ctx, errors: readonly string[]): CommandResult =>
+  failureFrom(
+    ctx.t,
+    usageProblem("invalid_arguments", "ui.invalid", PROPOSE_USAGE, { errors: errors.slice(0, 5).join("; ") }),
+  );
+
 const propose = (ctx: Ctx, paths: FmPaths, task: string, from: string | undefined): CommandResult => {
   const source = from === undefined ? undefined : ctx.runtime.readText(toAbsolutePath(from, ctx.cwd));
   if (source?.ok !== true)
@@ -55,16 +69,26 @@ const propose = (ctx: Ctx, paths: FmPaths, task: string, from: string | undefine
       ctx.t,
       usageProblem("invalid_arguments", "error.invalid_arguments", PROPOSE_USAGE, { detail: "--from" }),
     );
-  const made = proposeUi(ctx.runtime, paths, task, source.value);
-  if (!made.ok)
-    return failureFrom(
-      ctx.t,
-      usageProblem("invalid_arguments", "ui.invalid", PROPOSE_USAGE, { errors: made.error.slice(0, 5).join("; ") }),
-    );
-  logEvent(ctx.runtime, paths, "ui.proposed", { task, hash: made.value });
+  const parsed = parseUiContract(source.value);
+  if (!parsed.ok) return invalid(ctx, parsed.error);
+  const budgeted = budgetProposal(ctx.runtime, paths, task, source.value);
+  const made = proposeUi(ctx.runtime, paths, task, budgeted.source);
+  if (!made.ok) return invalid(ctx, made.error);
+  logEvent(ctx.runtime, paths, "ui.proposed", { task, hash: made.value, dropped: budgeted.dropped.length });
   return {
     ...show(ctx, paths, task),
-    human: [ctx.t("ui.proposed", { task, hash: made.value })],
+    human: [
+      ...(budgeted.applied
+        ? [
+            ctx.t("ui.trimmed", {
+              size: budgeted.size ?? "",
+              count: budgeted.dropped.length,
+              sections: budgeted.dropped.slice(0, 5).join("; "),
+            }),
+          ]
+        : []),
+      ctx.t("ui.proposed", { task, hash: made.value }),
+    ],
     next: `finitemonkey ui approve ${task} --hash ${made.value}`,
   };
 };

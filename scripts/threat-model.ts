@@ -1,6 +1,7 @@
 import { approvals, guards } from "./threat-model-guards.js";
 import { hooks, ledger, mod } from "./threat-model-hooks.js";
-import { claims, knowledge, network, unattended } from "./threat-model-knowledge.js";
+import { claims, knowledge, unattended } from "./threat-model-knowledge.js";
+import { network } from "./threat-model-network.js";
 
 export const ATTACKERS = [
   "mistaken agent",

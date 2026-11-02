@@ -1,6 +1,354 @@
 {
   "dropped": [
     {
+      "file": "src/mod/tighten-hooks.ts",
+      "line": "import { FAILED_REASON, modeFor, ruleFor, stricter, tightenFor } from \"./tighten.js\";",
+      "reason": "mesma_intencao_outro_lado",
+      "side": "ours"
+    },
+    {
+      "file": "src/mod/tighten-hooks.ts",
+      "line": "import { type CheckResult, FAILED_REASON, ruleFor, stricter, tightenFor } from \"./tighten.js\";",
+      "reason": "mesma_intencao_outro_lado",
+      "side": "theirs"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| mistaken agent | 9 | 0 | 0 | 1 | 1 |",
+      "reason": "regenerado",
+      "side": "ours"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| over-privileged process | 5 | 1 | 1 | 3 | 2 |",
+      "reason": "regenerado",
+      "side": "ours"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| over-privileged process | 6 | 1 | 1 | 2 | 2 |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "component: \"Network use\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "{",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "attacker: \"injected content\"",
+      "reason": "movido_para",
+      "side": "theirs"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "outcome: \"reduced\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "mechanism:",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "}",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "outcome: \"prevented\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "proof: {",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "];",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "attacker: \"wrong tool output\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "attacker: \"over-privileged process\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "attacker: \"bypassing agent\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "export const network: readonly Threat[] = [",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "attacker: \"compromised dependency\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"Code in `src/` opens a connection the footprint does not list\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"`src/` opens no socket; every program that reaches the network is in the footprint with its host, and the README tables are generated from it\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/core/footprint.ts\"]",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "proof: { file: \"test/docs-generated.test.ts\", test: \"src opens no socket of its own\" }",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"A hook downloads code at run time\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "mechanism: \"Hooks run the bundled CLI with `node`, never `npx`\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"plugin/hooks/hooks.json\"]",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "proof: { file: \"test/hook-latency.test.ts\", test: \"plugin hooks never call npx\" }",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"The package registry lookup of the deps guard leaks package names\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "mechanism: \"Only the package name is sent, and `FINITEMONKEY_OFFLINE=1` turns the lookup off\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/deps/registry.ts\"]",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "file: \"test/deps-guard.test.ts\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "test: \"makes no request with FINITEMONKEY_OFFLINE and keeps the local spelling check\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"The infra plan check changes infrastructure\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"The check runs `terraform plan` and `terraform show` only, which read the provider APIs with the credentials terraform finds; no code path runs apply\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/gate/checks/infra-plan.ts\"]",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "proof: { file: \"test/infra-plan.test.ts\", test: \"runs plan and show only; no code path runs apply\" }",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"The app under a look run sends requests outside the machine\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"The look run refuses an app host that is not loopback, and the browser context aborts and lists every request to a host that is not loopback\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/look/run.ts\", \"src/look/node-ux.ts\"]",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "file: \"test/look-boot.test.ts\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "test: \"only loopback hosts count as local for the app boot and the request filter\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"Checking the citations of a research note sends the note to the web\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"Only the cited DOI or URL is requested, through `curl`; the note, its quotes and its claims stay on the machine, and local sources never read `.env` or key files\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/judge/fetch.ts\"]",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "file: \"test/judge-cite.test.ts\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "test: \"runs offline against a fake fetch and sends only the cited identifier\"",
+      "reason": "movido_para"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"A proposal run on the person's own Claude Code sends project text to the model provider\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"Off by default: only kinds the person turned on in a terminal run, each with a fixed prompt, a turn limit and only the tools it needs, and never from a synchronous hook; `provider enable` prints what the kind sends and its cost before the yes, and `providers.maxUsdPerDay` stops calls for the day\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/provider/call.ts\", \"src/commands/provider.ts\"]",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "proof: { file: \"test/provider.test.ts\", test: \"with no kind enabled, no command or hook spawns claude\" }",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"The agent turns a proposal kind on to get model output into the flow\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"`provider enable` is person-only (a terminal on stdin and no `CLAUDECODE`), and the self guard blocks tool writes to `.finitemonkey/provider.json`\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/commands/provider.ts\", \"src/guards/self/protected.ts\"]",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "proof: { file: \"test/provider.test.ts\", test: \"provider enable run by the agent is refused\" }",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"The model returns malformed output, or calls everything supported or correct\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "\"Output is validated against the interface type and dropped and logged when invalid; a proposal is stored with origin `model-proposed` and never sets a gate verdict, a band, a support state or an approved example\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/provider/validate.ts\", \"src/provider/call.ts\"]",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "file: \"test/provider-kinds.test.ts\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "test: \"a malformed or yes-saying model moves no support state, band or concept\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "threat: \"A divergence or blind-test generator edits the person's working tree\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "mechanism: \"Both run in a throwaway worktree that Finite Monkey adds at the base commit and removes afterwards\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "code: [\"src/provider/generators.ts\"]",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "file: \"test/provider-worktree.test.ts\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
+      "file": "scripts/threat-model-knowledge.ts",
+      "line": "test: \"divergence and blind-test calls leave the working tree byte-identical\"",
+      "reason": "movido_para",
+      "side": "ours"
+    },
+    {
       "file": "src/gate/checks/diff.ts",
       "side": "ours",
       "line": "import { recordScopeAdditions } from \"../../signals/scope-band.js\";",
@@ -13,6 +361,24 @@
       "line": "recordScopeAdditions(ctx.runtime, ctx.paths, { task: ctx.contract.id, files, approvedAt: approval.at });",
       "reason": "movido_para",
       "to": "src/gate/checks/diff-accepted.ts"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| mistaken agent | 8 | 0 | 1 | 1 | 0 |",
+      "reason": "regenerado",
+      "side": "ours"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| over-privileged process | 5 | 2 | 2 | 2 | 1 |",
+      "reason": "regenerado",
+      "side": "ours"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| mistaken agent | 9 | 0 | 0 | 1 | 1 |",
+      "reason": "regenerado",
+      "side": "theirs"
     }
   ]
 }

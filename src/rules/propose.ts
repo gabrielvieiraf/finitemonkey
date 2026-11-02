@@ -55,7 +55,7 @@ export const slug = (text: string): string =>
     .slice(0, MAX_ID)
     .replace(/-+$/, "");
 
-const uniqueId = (wanted: string, taken: Set<string>): string => {
+export const uniqueId = (wanted: string, taken: Set<string>): string => {
   const base = wanted === "" ? "rule" : wanted;
   let id = base;
   for (let n = 2; taken.has(id); n += 1) id = `${base}-${String(n)}`;

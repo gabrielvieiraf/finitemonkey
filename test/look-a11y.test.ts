@@ -55,7 +55,7 @@ const node = (overrides: Partial<ProbeNode>): ProbeNode => ({
   borderWidth: 0,
   spacing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   position: "static",
-  clipped: false,
+  ...{ zIndex: "auto", isolates: false, clipped: false },
   live: false,
   ...overrides,
 });

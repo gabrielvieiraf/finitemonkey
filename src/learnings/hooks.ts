@@ -21,6 +21,7 @@ import {
   lessonsText,
   pickLessons,
 } from "./match.js";
+import { agentEditRecorder, personRevertScan } from "./reverts-hook.js";
 import { EXPIRE_DAYS, type Lesson, pruneLessons, readLessons, writeLessons } from "./store.js";
 import { treeChanged } from "./tree.js";
 
@@ -136,7 +137,8 @@ export const untrustedRecorder: HookHandler = (input) => {
 
 export const LEARNINGS_HANDLERS: HookHandlers = {
   PreToolUse: [learningsInject],
-  PostToolUse: [untrustedRecorder, learningsInject],
+  PostToolUse: [untrustedRecorder, learningsInject, agentEditRecorder],
+  UserPromptSubmit: [personRevertScan],
   PostToolUseFailure: [learningsInject],
   Stop: [learningsStop],
 };

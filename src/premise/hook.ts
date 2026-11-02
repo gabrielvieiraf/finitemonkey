@@ -13,6 +13,7 @@ import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import { agrees, type Premise, premiseIn } from "./detect.js";
+import { proposeCheck } from "./proposal.js";
 
 export const PREMISE_FEATURE = "premise-check";
 const PENDING_FILE = "premise.json";
@@ -51,8 +52,15 @@ export const premiseOnPrompt: HookHandler = (input) => {
   const session = input.payload.sessionId ?? "";
   writeJsonFile(input.runtime, paths.cache(PENDING_FILE), { session, kind: premise.kind, refs: [...premise.refs] });
   logEvent(input.runtime, paths, "premise.detected", { kind: premise.kind, refs: premise.refs.length });
-  if (featureMode(input.runtime, paths, PREMISE_FEATURE) === "active") register(input, paths, premise);
-  return allow;
+  if (featureMode(input.runtime, paths, PREMISE_FEATURE) !== "active") return allow;
+  register(input, paths, premise);
+  const proposal = proposeCheck(input.runtime, paths, premise);
+  if (proposal === undefined) return allow;
+  logEvent(input.runtime, paths, "premise.proposed", { id: proposal.id });
+  return {
+    kind: "allow",
+    output: { systemMessage: human(input.t("premise.proposed", { id: proposal.id, run: proposal.run })) },
+  };
 };
 
 const pendingOf = (input: HookInput, paths: FmPaths): Pending | undefined => {

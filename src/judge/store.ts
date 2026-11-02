@@ -99,6 +99,7 @@ export const exportOf = (entries: readonly JudgeEntry[]): JudgeExport => ({
   items: only(entries, "item"),
   asks: only(entries, "ask"),
   probes: only(entries, "probe"),
+  profiles: only(entries, "profile"),
 });
 
 export const exportJudge = (runtime: Pick<Runtime, "readText">, paths: FmPaths): JudgeExport =>
@@ -127,9 +128,36 @@ export const forgetJudge = (
   for (const entry of entries)
     if (entry.type === "item" && mentions(entry, id))
       runtime.remove(toAbsolutePath(join(judgeDir(paths), "items", `${entry.hash}.txt`)));
-  runtime.writeAtomic(
-    judgePath(paths),
-    kept.map((entry) => `${JSON.stringify({ schema: JUDGE_SCHEMA, ...entry })}\n`).join(""),
-  );
+  runtime.writeAtomic(judgePath(paths), serialized(kept));
   return entries.length - kept.length;
+};
+
+const serialized = (entries: readonly JudgeEntry[]): string =>
+  entries.map((entry) => `${JSON.stringify({ schema: JUDGE_SCHEMA, ...entry })}\n`).join("");
+
+export const dropEntries = (
+  runtime: Pick<Runtime, "readText" | "writeAtomic">,
+  paths: FmPaths,
+  drop: (entry: JudgeEntry) => boolean,
+): number => {
+  const entries = readEntries(runtime, paths);
+  const kept = entries.filter((entry) => !drop(entry));
+  if (kept.length === entries.length) return 0;
+  runtime.writeAtomic(judgePath(paths), serialized(kept));
+  return entries.length - kept.length;
+};
+
+export const prependEntries = (
+  runtime: Pick<Runtime, "readText" | "writeAtomic" | "mkdir">,
+  paths: FmPaths,
+  records: readonly JsonObject[],
+): boolean => {
+  const entries = records.flatMap((record) => {
+    const entry = rejectionOf(record) === undefined ? parseEntry(record) : undefined;
+    return entry === undefined ? [] : [entry];
+  });
+  if (entries.length !== records.length) return false;
+  const current = runtime.readText(judgePath(paths));
+  runtime.mkdir(paths.dir);
+  return runtime.writeAtomic(judgePath(paths), `${serialized(entries)}${current.ok ? current.value : ""}`).ok;
 };

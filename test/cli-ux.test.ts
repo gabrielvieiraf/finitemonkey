@@ -6,9 +6,14 @@ import { after, describe, it } from "node:test";
 
 import { type CliConfig, cliFindings, type CliRun, type CliRuns, median } from "../src/cliux/cli.js";
 import { probeCli } from "../src/cliux/run.js";
+import { helpFor } from "../src/commands/help.js";
+import { examplesOf } from "../src/commands/help-examples.js";
+import { REGISTRY } from "../src/commands/index.js";
 import { toAbsolutePath } from "../src/core/brand.js";
 import { nodeRuntime } from "../src/core/node-runtime.js";
-import { BUNDLE, ROOT } from "./support.js";
+import type { ExecRequest, ExecResult } from "../src/core/runtime.js";
+import { createTranslator } from "../src/i18n/translate.js";
+import { BUNDLE, execResult, fakeCtx, ROOT } from "./support.js";
 
 const cleanups: (() => void)[] = [];
 after(() => {
@@ -109,8 +114,8 @@ describe("cli conventions", () => {
     const probed = probeCli(nodeRuntime(), ROOT, config);
     assert.ok(probed !== undefined);
     const found = kinds(cliFindings(probed, config.firstOutputMs, config.timeoutMs));
-    assert.ok(found.includes("help_no_example"));
     for (const kind of [
+      "help_no_example",
       "error_exit_zero",
       "error_on_stdout",
       "json_invalid",
@@ -118,5 +123,92 @@ describe("cli conventions", () => {
       "prompt_without_tty",
     ])
       assert.ok(!found.includes(kind), kind);
+  });
+
+  it("every command's help shows an Examples section that the CLI check accepts, in every language", () => {
+    for (const lang of ["en", "pt-BR", "es"] as const) {
+      const ctx = fakeCtx({ lang, t: createTranslator(lang) });
+      for (const spec of REGISTRY) {
+        const help = (helpFor(ctx, spec).human ?? []).join("\n");
+        const probed = runs({ help: run([...spec.path, "--help"], { stdout: help }) });
+        assert.deepEqual(kinds(cliFindings(probed, 100)), [], `${lang} ${spec.path.join(" ")}`);
+      }
+    }
+  });
+});
+
+describe("help examples", () => {
+  it("derives a runnable example from the usage line, plus one with --json when offered", () => {
+    assert.deepEqual(
+      examplesOf({ usage: "finitemonkey decide accept <record> [--choice <what>] [--reason <one line>]" }),
+      ["finitemonkey decide accept <record>"],
+    );
+    assert.deepEqual(examplesOf({ usage: "finitemonkey deploy plan [--level <0-3> [--decision <file>]] [--json]" }), [
+      "finitemonkey deploy plan",
+      "finitemonkey deploy plan --json",
+    ]);
+    assert.deepEqual(
+      examplesOf({ usage: "finitemonkey critique verify [--base <ref>] (or the findings JSON on stdin)" }),
+      ["finitemonkey critique verify"],
+    );
+    assert.deepEqual(examplesOf({ usage: "finitemonkey x", examples: ["finitemonkey x run"] }), ["finitemonkey x run"]);
+  });
+});
+
+describe("time to first output", () => {
+  it("measures the help timing at the first byte, not the total run", () => {
+    const requests: ExecRequest[] = [];
+    const runtime = {
+      exec: (request: ExecRequest): ExecResult => {
+        requests.push(request);
+        return { ...execResult(0, "Usage: slow\n\nExamples:\n  $ slow go\n"), durationMs: 5000, firstOutputMs: 2000 };
+      },
+    };
+    const config: CliConfig = {
+      bin: ["slow"],
+      errors: [],
+      json: [],
+      destructive: [],
+      firstOutputMs: 100,
+      runs: 3,
+      timeoutMs: 60_000,
+    };
+    const probed = probeCli(runtime, toAbsolutePath("/p"), config);
+    assert.ok(probed !== undefined);
+    assert.deepEqual(probed.timings, [2000, 2000, 2000]);
+    assert.ok(requests.every((request) => request.firstByte === true));
+    assert.deepEqual(cliFindings(probed, config.firstOutputMs), [
+      { kind: "slow_first_output", median: 2000, limit: 100 },
+    ]);
+  });
+
+  it("a real CLI that prints its first line after 2 s is measured at that first byte", () => {
+    const dir = mkdtempSync(join(tmpdir(), "fm-cli-first-"));
+    cleanups.push(() => {
+      rmSync(dir, { recursive: true, force: true });
+    });
+    const script = join(dir, "late-cli.mjs");
+    writeFileSync(
+      script,
+      [
+        "setTimeout(() => {",
+        "  process.stdout.write('Usage: late\\n');",
+        "  setTimeout(() => { process.stdout.write('Examples:\\n  $ late go\\n'); }, 800);",
+        "}, 2000);",
+      ].join("\n"),
+    );
+    const result = nodeRuntime().exec({
+      command: process.execPath,
+      args: [script],
+      cwd: toAbsolutePath(dir),
+      timeoutMs: 60_000,
+      input: "",
+      firstByte: true,
+    });
+    assert.equal(result.exitCode, 0);
+    assert.match(result.stdout, /Usage: late\n[\s\S]*\$ late go/);
+    const first = result.firstOutputMs ?? -1;
+    assert.ok(first >= 1900, `first byte at ${String(first)} ms`);
+    assert.ok(result.durationMs - first >= 500, `first ${String(first)} ms, total ${String(result.durationMs)} ms`);
   });
 });

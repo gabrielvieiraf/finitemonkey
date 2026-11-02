@@ -6,6 +6,7 @@ import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
 import { type Anchor, ANCHOR_MODES } from "./anchor.js";
+import { PARSERS } from "./syntax.js";
 
 export const CLAIMS_FILE = "claims.jsonl";
 export const CLAIM_SCHEMA = "finitemonkey/claim@1";
@@ -79,8 +80,9 @@ const anchorOf = (value: unknown): Anchor | undefined => {
   const hash = text(value, "hash");
   const mode = oneOf(ANCHOR_MODES, value["mode"]);
   const symbol = text(value, "symbol");
+  const parser = oneOf(PARSERS, value["parser"]);
   if (path === undefined || hash === undefined || mode === undefined) return undefined;
-  return { path, mode, hash, ...(symbol === undefined ? {} : { symbol }) };
+  return { path, mode, hash, ...(symbol === undefined ? {} : { symbol }), ...(parser === undefined ? {} : { parser }) };
 };
 
 const derivedOf = (value: unknown): DerivedFrom => {

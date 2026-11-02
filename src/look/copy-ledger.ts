@@ -25,7 +25,7 @@ const byRule = (make: (rule: CopyRule) => RuleLedger): CopyLedger => ({
 export const findingId = (finding: CopyFinding): string =>
   finding.rule === "one-name" ? finding.detail : `${finding.file}#${finding.key}`;
 
-const ruleOf = (value: unknown): RuleLedger => {
+export const ruleLedgerOf = (value: unknown): RuleLedger => {
   if (!isRecord(value)) return EMPTY;
   const shown = isRecord(value["shown"])
     ? Object.fromEntries(
@@ -42,7 +42,7 @@ export const readCopyLedger = (runtime: Pick<Runtime, "readText">, paths: FmPath
   const text = runtime.readText(paths.cache(COPY_STATE_FILE));
   const parsed = text.ok ? parseJsonObject(text.value) : undefined;
   const root = parsed?.ok === true ? parsed.value : {};
-  return byRule((rule) => ruleOf(root[rule]));
+  return byRule((rule) => ruleLedgerOf(root[rule]));
 };
 
 export const writeCopyLedger = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, ledger: CopyLedger): void => {

@@ -109,6 +109,24 @@ export const statusIssues = (changed: readonly string[]): readonly UxIssue[] =>
     issue("ui-states/status", selector, "content changes without a live region, role=status or role=alert"),
   );
 
+export interface SkeletonBlock {
+  readonly sel: string;
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+export const skeletonIssues = (blocks: readonly SkeletonBlock[]): readonly UxIssue[] =>
+  blocks.map((block) =>
+    issue(
+      "ui-states/unmarked-skeleton",
+      block.sel,
+      "possible unmarked skeleton: an animated block with no text after the loading window, outside a live region and without aria-busy",
+      { advisory: true, box: block },
+    ),
+  );
+
 export const notCovered = (spec: StateSpec): UxIssue =>
   issue("ui-states/not-covered", "body", `state "${spec.state}" is required and has no mock`);
 

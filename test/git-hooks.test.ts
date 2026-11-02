@@ -163,6 +163,35 @@ describe("finitemonkey ci gate", () => {
   });
 });
 
+describe("finitemonkey ci gate: callers of a removed function", () => {
+  it("fails with each caller once the check is active, and only records it in shadow", async () => {
+    git(box.repo, "switch", "-q", "-c", "callers-base", "origin/main");
+    write(box.repo, "lib.ts", "export const total = (n: number): number => n * 2;\nexport const kept = 1;\n");
+    write(box.repo, "use.ts", 'import { total } from "./lib.js";\n\nexport const shown = total(2);\n');
+    git(box.repo, "add", "lib.ts", "use.ts");
+    git(box.repo, "commit", "-q", "--no-verify", "-m", "feat: total");
+    git(box.repo, "push", "-q", "--no-verify", "origin", "HEAD:main");
+    git(box.repo, "fetch", "-q", "origin");
+    git(box.repo, "switch", "-q", "-c", "callers-drop", "origin/main");
+    write(box.repo, "lib.ts", "export const kept = 1;\n");
+    git(box.repo, "commit", "-q", "--no-verify", "-am", "refactor: drop total");
+    const cwd = toAbsolutePath(box.repo);
+    const shadow = await cli(["ci", "gate", "--base", "origin/main"], { cwd, runtime, env: {} });
+    assert.equal(shadow.code, 0, shadow.stdout);
+    const policy = join(box.repo, ".finitemonkey", "policy.yml");
+    const text = readFileSync(policy, "utf8");
+    assert.match(text, /^guards:$/m);
+    write(box.repo, ".finitemonkey/policy.yml", text.replace(/^guards:$/m, "guards:\n  ci-gate-callers: active"));
+    try {
+      const active = await cli(["ci", "gate", "--base", "origin/main"], { cwd, runtime, env: {} });
+      assert.equal(active.code, 1, active.stdout);
+      assert.match(active.stdout, /^FAIL callers: total was removed but use\.ts:\d still calls it.*use\.ts:3/m);
+    } finally {
+      write(box.repo, ".finitemonkey/policy.yml", text);
+    }
+  });
+});
+
 describe("commit message rules", () => {
   const cases = [
     ["feat(init): detect husky", []],

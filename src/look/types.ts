@@ -24,6 +24,7 @@ export const LOOK_RULES = [
   "keyboard/focus-obscured",
   "keyboard/order",
   "keyboard/dialog",
+  "keyboard/reverse-order",
   "ui-states/not-covered",
   "ui-states/loading",
   "ui-states/empty",
@@ -32,6 +33,10 @@ export const LOOK_RULES = [
   "ui-states/error-color",
   "ui-states/partial",
   "ui-states/status",
+  "ui-states/unmarked-skeleton",
+  "ui-copy/verb-first",
+  "ui-copy/error-action",
+  "ui-copy/empty-label",
   "ui/dont",
   "ds/off-token",
   "ds/font-small",
@@ -49,6 +54,7 @@ export const LOOK_RULES = [
   "forms/input-lost",
   "forms/error-sticks",
   "forms/native",
+  "forms/redundant-entry",
   "flow/dead-end",
   "flow/unreachable",
   "flow/steps",
@@ -64,6 +70,7 @@ export const LOOK_RULES = [
   "sheet/nested-radius",
   "perf/regression",
   "perf/slow-action",
+  "perf/n-plus-one",
 ] as const;
 
 export type LookRule = (typeof LOOK_RULES)[number];

@@ -14,7 +14,11 @@ export type VariantStatus = (typeof VARIANT_STATUSES)[number];
 
 export type VariantChange =
   | { readonly kind: "guard"; readonly guard: string; readonly mode: GuardMode }
-  | { readonly kind: "alertBudget"; readonly key: "muteAbove"; readonly value: number };
+  | { readonly kind: "alertBudget"; readonly key: "muteAbove"; readonly value: number }
+  | { readonly kind: "reminder"; readonly rule: string; readonly include: boolean };
+
+export const REMINDER_KEY_PREFIX = "reminder:";
+export const SIGNIFICANCE_TEST = "welch95";
 
 export interface ArmRecord {
   readonly arm: "active" | "off";
@@ -28,10 +32,19 @@ export interface ArmSummary {
   readonly medianWallMs: number;
 }
 
+export type Interval = readonly [number, number];
+
+export interface SignificanceResult {
+  readonly name: typeof SIGNIFICANCE_TEST;
+  readonly passed: boolean;
+  readonly intervals: Readonly<Record<string, Interval | null>>;
+}
+
 export interface VariantEvidence {
   readonly variant: ArmSummary;
   readonly parent: ArmSummary;
   readonly evaluator: string;
+  readonly test?: SignificanceResult;
 }
 
 export interface Variant {
@@ -39,6 +52,7 @@ export interface Variant {
   readonly change: VariantChange;
   readonly reason: string;
   readonly bornTask: string | null;
+  readonly parent?: string;
   readonly bornAt: string;
   readonly evaluator: string;
   readonly status: VariantStatus;
@@ -69,6 +83,8 @@ const changeOf = (value: unknown): VariantChange | undefined => {
   const amount = value["value"];
   if (value["kind"] === "alertBudget" && value["key"] === "muteAbove" && typeof amount === "number")
     return { kind: "alertBudget", key: "muteAbove", value: amount };
+  if (value["kind"] === "reminder" && typeof value["rule"] === "string" && typeof value["include"] === "boolean")
+    return { kind: "reminder", rule: value["rule"], include: value["include"] };
   return undefined;
 };
 
@@ -83,11 +99,25 @@ const summaryOf = (value: unknown): ArmSummary | undefined => {
   return { tasks: strings(value["tasks"]), falseDone, dismissals, medianWallMs };
 };
 
+const intervalOf = (value: unknown): Interval | null =>
+  Array.isArray(value) && value.length === 2 && value.every((item) => typeof item === "number")
+    ? [Number(value[0]), Number(value[1])]
+    : null;
+
+const testOf = (value: unknown): SignificanceResult | undefined => {
+  if (!isRecord(value) || value["name"] !== SIGNIFICANCE_TEST || typeof value["passed"] !== "boolean") return undefined;
+  const raw = isRecord(value["intervals"]) ? value["intervals"] : {};
+  const intervals = Object.fromEntries(Object.entries(raw).map(([metric, item]) => [metric, intervalOf(item)]));
+  return { name: SIGNIFICANCE_TEST, passed: value["passed"], intervals };
+};
+
 const evidenceOf = (value: unknown): VariantEvidence | undefined => {
   if (!isRecord(value) || typeof value["evaluator"] !== "string") return undefined;
   const variant = summaryOf(value["variant"]);
   const parent = summaryOf(value["parent"]);
-  return variant === undefined || parent === undefined ? undefined : { variant, parent, evaluator: value["evaluator"] };
+  const test = testOf(value["test"]);
+  if (variant === undefined || parent === undefined) return undefined;
+  return { variant, parent, evaluator: value["evaluator"], ...(test === undefined ? {} : { test }) };
 };
 
 const armsOf = (value: unknown): Readonly<Record<string, ArmRecord>> =>
@@ -113,11 +143,13 @@ const variantOf = (raw: unknown): Variant | undefined => {
   if (status === undefined) return undefined;
   const decidedAt = str(raw, "decidedAt");
   const evidence = evidenceOf(raw["evidence"]);
+  const parent = str(raw, "parent");
   return {
     id,
     change,
     reason: str(raw, "reason") ?? "",
     bornTask: str(raw, "bornTask") ?? null,
+    ...(parent === undefined ? {} : { parent }),
     bornAt,
     evaluator,
     status,
@@ -174,6 +206,11 @@ export const appliesTo = (variant: Variant, task: string | undefined): boolean =
 
 const applyChange = (policy: Policy, change: VariantChange): Policy => {
   if (change.kind === "guard") return { ...policy, evolved: { ...policy.evolved, [change.guard]: change.mode } };
+  if (change.kind === "reminder")
+    return {
+      ...policy,
+      evolved: { ...policy.evolved, [`${REMINDER_KEY_PREFIX}${change.rule}`]: change.include ? "active" : "off" },
+    };
   if (policy.alertBudgetSet.includes(change.key)) return policy;
   return { ...policy, alertBudget: { ...policy.alertBudget, [change.key]: change.value } };
 };
@@ -198,3 +235,10 @@ export const trialFor = (
   if (evolveModeOf(policy, task) !== "active") return undefined;
   return readEvolve(runtime, root).variants.find((variant) => variant.status === "trial" && appliesTo(variant, task));
 };
+
+export const excludedReminders = (policy: Policy): ReadonlySet<string> =>
+  new Set(
+    Object.entries(policy.evolved).flatMap(([key, mode]) =>
+      key.startsWith(REMINDER_KEY_PREFIX) && mode === "off" ? [key.slice(REMINDER_KEY_PREFIX.length)] : [],
+    ),
+  );

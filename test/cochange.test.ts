@@ -6,12 +6,13 @@ import { gitAt } from "../src/gate/git.js";
 import { prepareGate } from "../src/gate/prepare.js";
 import {
   type Commit,
+  DEFAULT_OPTIONS,
   dismissPair,
-  historyOf,
   missingPartners,
   notDismissed,
   readDismissed,
 } from "../src/git/cochange.js";
+import { historyOf } from "../src/git/cochange-history.js";
 import { createTask } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
@@ -89,6 +90,64 @@ describe("co-change pairs", () => {
       commit("c4", "a.ts", "c.ts"),
     ];
     assert.deepEqual(missingPartners(history, ["a.ts"]), []);
+  });
+});
+
+describe("co-change by recency", () => {
+  const DAY = 86_400;
+  const NOW = 1_800_000_000;
+  const at = (hash: string, daysAgo: number, ...files: readonly string[]): Commit => ({
+    hash,
+    files,
+    time: NOW - daysAgo * DAY,
+  });
+
+  it("an old pair with no recent co-change stops warning, a recent one still warns", () => {
+    const pair = (daysAgo: number) =>
+      [1, 2, 3, 4, 5].map((index) => at(`p${String(index)}`, daysAgo + index, "src/a.ts", "src/b.ts"));
+    const today = at("n1", 0, "src/c.ts", "src/d.ts");
+    assert.deepEqual(missingPartners([today, ...pair(400)], ["src/a.ts"]), []);
+    const recent = missingPartners([today, ...pair(10)], ["src/a.ts"]);
+    const top = recent[0];
+    assert.ok(top);
+    assert.equal(top.partner, "src/b.ts");
+    assert.ok(top.recentSupport > 4);
+    const longMemory = { ...DEFAULT_OPTIONS, halfLifeDays: 3650 };
+    assert.equal(missingPartners([today, ...pair(400)], ["src/a.ts"], longMemory)[0]?.partner, "src/b.ts");
+  });
+
+  it("adding one commit reads only that commit and keeps the cached history", () => {
+    const repo = coupled();
+    const paths = fmPaths(repo.root);
+    const runtime = repoRuntime();
+    const base = gitAt(runtime, repo.root);
+    const logs: (readonly string[])[] = [];
+    const git = {
+      ...base,
+      out: (args: readonly string[]) => {
+        if (args[0] === "log") logs.push(args);
+        return base.out(args);
+      },
+    };
+    const first = historyOf(runtime, paths, git);
+    assert.equal(first.length, 6);
+    assert.ok(first.every((item) => typeof item.time === "number"));
+    const old = repo.git("rev-parse", "HEAD").trim();
+    repo.write("i18n/en.json", '{"k7": "v"}\n');
+    repo.write("src/catalog.ts", "export const keys = [7];\n");
+    repo.commit("add key 7");
+    const head = repo.git("rev-parse", "HEAD").trim();
+    const second = historyOf(runtime, paths, git);
+    assert.equal(logs.length, 2);
+    assert.equal(
+      logs[0]?.some((arg) => arg.includes("..")),
+      false,
+    );
+    assert.equal(logs[1]?.at(-1), `${old}..${head}`);
+    assert.deepEqual(
+      second.map((item) => item.hash),
+      [head, ...first.map((item) => item.hash)],
+    );
   });
 });
 

@@ -1,5 +1,6 @@
 import { join } from "node:path";
 
+import { stringOption } from "../core/args.js";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
@@ -8,13 +9,14 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { lineReader } from "../perfil/lines.js";
 import { policyNumber } from "../policy/numbers.js";
+import { taskProposals } from "../rules/from-task.js";
 import { effectiveRules } from "../rules/preset.js";
 import { buildProposals, confirmable, DEFAULT_PROMOTE_AFTER, type Proposal } from "../rules/propose.js";
-import { RULES_FILE } from "../rules/types.js";
+import { type ProjectRule, RULES_FILE } from "../rules/types.js";
 import { readViolations, recordViolation } from "../rules/violations.js";
 import { withNewRules, withPromotion } from "../rules/write.js";
 import { isPerson, projectRoot } from "../secrets/project.js";
-import { FM_DIR } from "../task/paths.js";
+import { FM_DIR, fmPaths } from "../task/paths.js";
 import { projectInventory } from "./instructions.js";
 import type { CommandSpec } from "./types.js";
 
@@ -86,23 +88,30 @@ const invalid = (ctx: Ctx, detail: string): CommandResult =>
     usageProblem("invalid_arguments", "rules.error.invalid", `edit ${RULES_FILE}`, { file: RULES_FILE, detail }),
   );
 
+const inventoryProposals = (ctx: Ctx, root: AbsolutePath, rules: readonly ProjectRule[]): readonly Proposal[] =>
+  buildProposals(
+    projectInventory(ctx),
+    rules,
+    readViolations(ctx.runtime, fmDir(root)),
+    policyNumber(ctx.runtime, root, ["rules", "promoteAfter"], DEFAULT_PROMOTE_AFTER),
+  );
+
 export const rulesProposeCommand: CommandSpec = {
   path: ["rules", "propose"],
   summaryKey: "rules.command.propose",
-  usage: "finitemonkey rules propose [--yes]",
+  usage: "finitemonkey rules propose [--from-task <task>] [--yes]",
   status: "ready",
   maxPositionals: 0,
-  run: async (ctx) => {
+  options: { "from-task": { type: "string" } },
+  run: async (ctx, args) => {
     const root = projectRoot(ctx);
     const rules = effectiveRules(ctx.runtime, root);
     if (!rules.ok) return invalid(ctx, rules.error);
-    const promoteAfter = policyNumber(ctx.runtime, root, ["rules", "promoteAfter"], DEFAULT_PROMOTE_AFTER);
-    const proposals = buildProposals(
-      projectInventory(ctx),
-      rules.value,
-      readViolations(ctx.runtime, fmDir(root)),
-      promoteAfter,
-    );
+    const task = stringOption(args.values, "from-task");
+    const proposals =
+      task === undefined
+        ? inventoryProposals(ctx, root, rules.value)
+        : taskProposals(ctx.runtime, fmPaths(root), ctx.t, task, rules.value);
     const listed = proposals.flatMap((proposal) => proposalLines(ctx, proposal));
     const data = { schema: RULES_PROPOSE_SCHEMA, proposals, written: [] as readonly string[] };
     if (proposals.length === 0) return success(data, [ctx.t("rules.propose.none")]);

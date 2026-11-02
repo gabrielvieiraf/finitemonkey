@@ -15,6 +15,7 @@ import { oneOf } from "../judge/types.js";
 import { DEFAULT_VERIFIERS } from "../judge/verify.js";
 import { featureMode } from "../policy/feature.js";
 import { policyPath } from "../policy/policy.js";
+import { providerDeps, providerJudge } from "../provider/wire.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 
 export const numberOptions = (ctx: Pick<Ctx, "runtime">, paths: FmPaths): NumberOptions => {
@@ -34,6 +35,7 @@ export const judgeDeps = (ctx: Ctx, root: string): JudgeDeps => {
   return {
     runtime: ctx.runtime,
     paths,
+    ...providerJudge(providerDeps(ctx, paths)),
     ...(cite ? { fetcher: curlFetcher(ctx.runtime, root) } : {}),
     verifiers: {
       ...DEFAULT_VERIFIERS,

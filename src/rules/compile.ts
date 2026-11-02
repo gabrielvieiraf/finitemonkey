@@ -1,10 +1,11 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
-import type { Runtime } from "../core/runtime.js";
 import { DEFAULT_STYLE, parseSettings, renderJson, styleOf } from "../install/json-text.js";
 import { AGENTS_FILE, SETTINGS_FILE } from "../install/layout.js";
+import { withManagedBlock } from "../install/managed-block.js";
 import { type Manifest, MANIFEST_FILE, readManifest, writeManifest } from "./manifest.js";
 import {
+  AGENTS_MARKERS,
   withCompiledSettings,
   withoutCompiledSettings,
   withoutRulesBlock,
@@ -13,9 +14,10 @@ import {
   workflowText,
 } from "./outputs.js";
 import { compiledRule } from "./plan.js";
+import { type DocRuntime, RULES_DOC, RULES_DOC_MARK, RULES_INCLUDE, rulesAsDoc, writeRulesDoc } from "./rules-doc.js";
 import type { ProjectRule } from "./types.js";
 
-type FsRuntime = Pick<Runtime, "readText" | "writeText" | "mkdir" | "remove">;
+type FsRuntime = DocRuntime;
 
 export interface CompileOptions {
   readonly ci: boolean;
@@ -45,12 +47,38 @@ const settingsText = (
   return accept(renderJson(change(parsed.value), current === undefined ? DEFAULT_STYLE : styleOf(current)));
 };
 
+interface AgentsText {
+  readonly steps: readonly Parsed<string>[];
+  readonly edited: readonly string[];
+}
+
+const agentsText = (runtime: FsRuntime, root: AbsolutePath, rules: readonly ProjectRule[]): AgentsText => {
+  const current = read(runtime, root, AGENTS_FILE);
+  if (!rulesAsDoc(runtime, root))
+    return { steps: [write(runtime, root, AGENTS_FILE, withRulesBlock(current, rules))], edited: [] };
+  const doc = writeRulesDoc(runtime, root, rules);
+  const agents = withManagedBlock(current, AGENTS_MARKERS, [RULES_INCLUDE]);
+  return {
+    steps: [
+      ...(agents === current ? [] : [write(runtime, root, AGENTS_FILE, agents)]),
+      ...(doc.built ? [accept(RULES_DOC)] : []),
+    ],
+    edited: doc.edited,
+  };
+};
+
+export interface Compiled {
+  readonly manifest: Manifest;
+  readonly written: readonly string[];
+  readonly edited: readonly string[];
+}
+
 export const compileRules = (
   runtime: FsRuntime,
   root: AbsolutePath,
   rules: readonly ProjectRule[],
   options: CompileOptions,
-): Parsed<{ readonly manifest: Manifest; readonly written: readonly string[] }> => {
+): Parsed<Compiled> => {
   const previous = readManifest(runtime, root);
   const ci = options.ci || previous.workflow !== undefined;
   const manifest: Manifest = {
@@ -61,15 +89,20 @@ export const compileRules = (
   };
   const settings = settingsText(runtime, root, (value) => withCompiledSettings(value, previous, manifest));
   if (!settings.ok) return settings;
+  const agents = agentsText(runtime, root, rules);
   const steps = [
     write(runtime, root, SETTINGS_FILE, settings.value),
-    write(runtime, root, AGENTS_FILE, withRulesBlock(read(runtime, root, AGENTS_FILE), rules)),
+    ...agents.steps,
     ...(ci ? [write(runtime, root, WORKFLOW_FILE, workflowText(rules, options.version))] : []),
   ];
   for (const step of steps) if (!step.ok) return step;
   const saved = writeManifest(runtime, root, manifest);
   if (!saved.ok) return reject(`${MANIFEST_FILE}: ${saved.error}`);
-  return accept({ manifest, written: [...steps.flatMap((step) => (step.ok ? [step.value] : [])), MANIFEST_FILE] });
+  return accept({
+    manifest,
+    written: [...steps.flatMap((step) => (step.ok ? [step.value] : [])), MANIFEST_FILE],
+    edited: agents.edited,
+  });
 };
 
 export const removeCompiled = (runtime: FsRuntime, root: AbsolutePath): Parsed<readonly string[]> => {
@@ -91,6 +124,10 @@ export const removeCompiled = (runtime: FsRuntime, root: AbsolutePath): Parsed<r
       if (text.trim() === "") runtime.remove(toAbsolutePath(AGENTS_FILE, root));
       else write(runtime, root, AGENTS_FILE, text);
     }
+  }
+  if (read(runtime, root, RULES_DOC)?.startsWith(RULES_DOC_MARK) === true) {
+    runtime.remove(toAbsolutePath(RULES_DOC, root));
+    touched.push(RULES_DOC);
   }
   if (manifest.workflow !== undefined && read(runtime, root, manifest.workflow) !== undefined) {
     runtime.remove(toAbsolutePath(manifest.workflow, root));

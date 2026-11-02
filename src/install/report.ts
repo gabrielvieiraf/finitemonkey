@@ -22,6 +22,15 @@ export interface PlanData {
   readonly diff: readonly string[];
   readonly backup?: string;
   readonly questions?: readonly InstallQuestion[];
+  readonly conventionQuestions?: readonly ConventionQuestion[];
+}
+
+export interface ConventionQuestion {
+  readonly id: string;
+  readonly status: "pending" | "shadow";
+  readonly detected: string;
+  readonly evidence: string;
+  readonly options: readonly string[];
 }
 
 export interface InstallQuestion {

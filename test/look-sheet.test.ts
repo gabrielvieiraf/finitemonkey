@@ -33,6 +33,7 @@ const element = (
   box,
   values,
   layer: undefined,
+  stacking: false,
 });
 
 describe("sheet: drawing from measured values", () => {

@@ -123,6 +123,12 @@
               }
             ]
           },
+          "owners": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "hunks": {
             "type": "array",
             "items": {

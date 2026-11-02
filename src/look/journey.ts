@@ -33,6 +33,7 @@ export const JOURNEY_SCHEMA: JsonSchema = {
   required: ["says", "steps"],
   properties: {
     says: { type: "string", minLength: 1 },
+    user: { type: "string", enum: ["A", "B"] },
     steps: {
       type: "array",
       items: {
@@ -75,9 +76,12 @@ export interface JourneyStep {
   readonly expect: Oracle;
 }
 
+export type JourneyUser = "A" | "B";
+
 export interface Journey {
   readonly name: string;
   readonly says: string;
+  readonly user?: JourneyUser;
   readonly steps: readonly JourneyStep[];
 }
 
@@ -117,7 +121,9 @@ export const parseJourney = (name: string, source: string): Parsed<Journey, read
   );
   const empty = steps.findIndex((step) => step.expect.text === undefined && step.expect.url === undefined);
   if (empty >= 0) return reject([`$.steps[${String(empty)}].expect: needs text or url`]);
-  return accept({ name, says: typeof root["says"] === "string" ? root["says"] : "", steps });
+  const named = root["user"];
+  const user: { readonly user?: JourneyUser } = named === "A" || named === "B" ? { user: named } : {};
+  return accept({ name, says: typeof root["says"] === "string" ? root["says"] : "", ...user, steps });
 };
 
 export const journeysDir = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, LOOK_DIR, "journeys"));
@@ -197,6 +203,9 @@ export const approveJourney = (
   });
   return saved.ok ? accept(uiHash(source.value)) : reject("write");
 };
+
+export const runnableJourneys = (states: readonly JourneyState[]): readonly Journey[] =>
+  states.flatMap((state) => (state.approved && state.journey !== undefined ? [state.journey] : []));
 
 export interface JourneyRun {
   readonly passed: boolean;

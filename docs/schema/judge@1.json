@@ -80,6 +80,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "page": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -161,6 +164,18 @@
             ]
           },
           "claim": {
+            "type": "string"
+          },
+          "task": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "match": {
             "type": "string"
           },
           "id": {
@@ -264,6 +279,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "page": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -380,6 +398,9 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "page": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -620,6 +641,9 @@
           "fixedBy": {
             "type": "string"
           },
+          "fixedCommit": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -785,6 +809,43 @@
           "at"
         ]
       }
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "profile"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "tool": {
+            "type": "number"
+          },
+          "knowledge": {
+            "type": "number"
+          },
+          "claimed": {
+            "type": "string"
+          },
+          "quickStart": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "at"
+        ]
+      }
     }
   },
   "required": [
@@ -801,6 +862,7 @@
     "events",
     "items",
     "asks",
-    "probes"
+    "probes",
+    "profiles"
   ]
 }

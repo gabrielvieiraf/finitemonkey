@@ -3,6 +3,7 @@ import type { Runtime } from "../core/runtime.js";
 import { type Repo, repoFacts } from "../git/repo.js";
 import { ownershipCheck } from "../ownership/gate.js";
 import { provenanceCheck } from "../pr/provenance-verify.js";
+import { callersInRange } from "./callers.js";
 import { commitMessagesInRange, type HookCheck, mergesInRange, secretsInRange } from "./checks.js";
 
 export const ciBase = (runtime: Runtime, repo: Repo, env: Env, base: string | undefined): string => {
@@ -23,5 +24,6 @@ export const ciChecks = (runtime: Runtime, repo: Repo, base: string, env: Env): 
     mergesInRange(runtime, repo, range),
     ownershipCheck(runtime, repo.root),
     provenanceCheck(runtime, env),
+    callersInRange(runtime, repo, base),
   ];
 };

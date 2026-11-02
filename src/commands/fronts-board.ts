@@ -6,14 +6,15 @@ import type { CommandSpec } from "./types.js";
 const show = (ctx: Ctx): CommandResult => {
   const board = boardOf(ctx.runtime, ctx.cwd);
   return success(board, [
-    ...board.rows.map((row) =>
+    ...board.rows.flatMap((row) => [
       ctx.t("fronts.board.row", {
         branch: row.branch ?? "-",
         gate: row.gate,
         contract: row.contract ?? "-",
         waiting: row.waiting ? ctx.t("fronts.board.waiting") : "",
       }),
-    ),
+      ...(row.resume === null ? [] : [ctx.t("fronts.board.resume", { command: row.resume })]),
+    ]),
     ...board.collisions.map((item) =>
       ctx.t("fronts.board.collision", { file: item.file, branches: item.branches.join(", ") }),
     ),

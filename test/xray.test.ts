@@ -24,17 +24,17 @@ const lines = (path: string, start: number, ...texts: readonly string[]): readon
 
 const ADDED: readonly AddedLine[] = [
   ...lines("src/payments/webhook.ts", 10, "export const onWebhook = (event) => {", "  return store(event);", "};"),
-  ...lines("src/payments/refund.ts", 3, "const key = idempotency(request);"),
+  ...lines("src/payments/refund.ts", 3, 'const key = request.headers["idempotency-key"];'),
   ...lines("db/migrations/0042.sql", 1, "alter table orders add column refunded int;"),
   ...lines("src/api/orders.ts", 7, "router.get('/orders', list);"),
   ...lines("src/util/format.ts", 1, "export const money = (cents) => cents / 100;"),
 ];
 
 const STATES: ReadonlyMap<ConceptId, ConceptState> = new Map<ConceptId, ConceptState>([
-  ["webhook", "beyond"],
-  ["idempotency", "beyond"],
-  ["migration", "proximal"],
-  ["api", "demonstrated"],
+  ["backend/integration/webhook", "beyond"],
+  ["backend/reliability/idempotency", "beyond"],
+  ["backend/data/migration", "proximal"],
+  ["backend/api/endpoint", "demonstrated"],
 ]);
 
 const REFS: readonly CriterionRef[] = [

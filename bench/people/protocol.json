@@ -1,0 +1,7 @@
+{
+  "seed": 251,
+  "tasks": ["cart-total", "invoice-tax", "notes-idor", "timezone-report"],
+  "perProfile": 5,
+  "spares": 3,
+  "timeCapMinutes": 45
+}

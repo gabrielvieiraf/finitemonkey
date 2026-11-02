@@ -5,6 +5,7 @@ import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
 import { ExitCode } from "../exit-codes.js";
 import { gitAt, gitRoot } from "../gate/git.js";
+import { isInstructionSource, recordDrop } from "../knowledge/instruction-arms.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
@@ -47,6 +48,33 @@ const recordTightening = (ctx: Ctx, rule: string | undefined, tool: string | und
     });
   logEvent(ctx.runtime, paths, "mod_tightened", { rule, tool, mode });
   return success({ rule, tool, mode }, []);
+};
+
+const DROP_USAGE = "finitemonkey mod drop --source <agents-md|claude-md|native-memory|rules-section> [--section <id>]";
+
+const recordSectionDrop = (ctx: Ctx, source: string | undefined, section: string | undefined): CommandResult => {
+  const paths = projectOf(ctx);
+  if (paths === undefined) return noRepo(ctx);
+  if (source === undefined || !isInstructionSource(source))
+    return failureFrom(ctx.t, {
+      code: "invalid_arguments",
+      messageKey: "error.invalid_arguments",
+      params: { detail: "--source" },
+      fix: DROP_USAGE,
+      exitCode: ExitCode.Usage,
+    });
+  recordDrop(ctx.runtime, paths, source, section);
+  return success({ source, section: section ?? null, supported: section !== undefined }, []);
+};
+
+export const modDropCommand: CommandSpec = {
+  path: ["mod", "drop"],
+  summaryKey: "command.mod_drop.summary",
+  usage: DROP_USAGE,
+  status: "ready",
+  options: { source: { type: "string" }, section: { type: "string" } },
+  run: (ctx, args) =>
+    Promise.resolve(recordSectionDrop(ctx, stringOption(args.values, "source"), stringOption(args.values, "section"))),
 };
 
 export const modStateCommand: CommandSpec = {

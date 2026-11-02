@@ -5,16 +5,22 @@ var memory = {
   pending: void 0,
   steps: [],
   cost: [],
-  board: [],
+  board: { lines: [], sessions: [] },
+  boardNote: void 0,
   contract: void 0,
   divergence: void 0,
   notice: void 0,
   xray: void 0,
   concepts: [],
+  teachCard: void 0,
+  probeCard: void 0,
+  teachNotice: void 0,
   trajectory: [],
   selectedMark: void 0,
   untrusted: void 0,
-  theme: "auto"
+  theme: "auto",
+  dropped: [],
+  judge: []
 };
 
 // src/mod/attribution-hooks.ts
@@ -40,19 +46,52 @@ async function runCli($, args) {
   return result.exitCode === 0 ? result.stdout : void 0;
 }
 
+// src/mod/withhold.ts
+var RULES_ARM = "rules-section";
+var SECTION_PATTERNS = {
+  "agents-md": /agents[._-]?md/i,
+  "claude-md": /claude[._-]?md/i,
+  "native-memory": /(?:^|[^a-z])(?:auto[._-]?)?memory(?:[^a-z]|$)/i
+};
+var sourceOfSection = (id, withhold) => withhold.find((source) => SECTION_PATTERNS[source]?.test(id) === true);
+var withholdSections = (result, withhold) => {
+  const matched = result.sections.flatMap((section) => {
+    const source = sourceOfSection(section.id, withhold);
+    return source === void 0 ? [] : [{ source, section: section.id }];
+  });
+  const dropped = new Set(matched.map((drop) => drop.section));
+  const missing = withhold.filter((source) => source !== RULES_ARM && !matched.some((drop) => drop.source === source)).map((source) => ({ source, section: void 0 }));
+  return {
+    result: { sections: result.sections.filter((section) => !dropped.has(section.id)) },
+    drops: [...matched, ...missing]
+  };
+};
+var keyOf = (drop) => `${drop.source}\0${drop.section ?? ""}`;
+function reportDrops($, drops) {
+  const fresh = drops.filter((drop) => !memory.dropped.includes(keyOf(drop)));
+  if (fresh.length === 0) return;
+  memory.dropped = [...memory.dropped, ...fresh.map(keyOf)];
+  for (const drop of fresh) {
+    const section = drop.section === void 0 ? [] : ["--section", drop.section];
+    $.clock.after(0, async () => {
+      await runCli($, ["mod", "drop", "--source", drop.source, ...section]);
+    });
+  }
+}
+
 // src/mod/compose-hooks.ts
 var RULES_SECTION = "finitemonkey:rules";
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var withRulesSection = (result, text5) => text5 === "" ? result : {
+var withRulesSection = (result, text6) => text6 === "" ? result : {
   sections: [
     ...result.sections.filter((section) => section.id !== RULES_SECTION),
-    { id: RULES_SECTION, text: text5, scope: "session" }
+    { id: RULES_SECTION, text: text6, scope: "session" }
   ]
 };
-var parseHandoff = (text5) => {
+var parseHandoff = (text6) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return void 0;
   }
@@ -60,11 +99,16 @@ var parseHandoff = (text5) => {
   return isRecord(data) && data["schema"] === "finitemonkey/handoff@1" && typeof data["text"] === "string" ? data["text"] : void 0;
 };
 async function readHandoff($) {
-  const text5 = await runCli($, ["handoff", "--json"]);
-  return text5 === void 0 ? void 0 : parseHandoff(text5);
+  const text6 = await runCli($, ["handoff", "--json"]);
+  return text6 === void 0 ? void 0 : parseHandoff(text6);
 }
-async function composeRules(_$, e, next) {
-  return withRulesSection(await next(e), memory.state?.instructions ?? "");
+async function composeRules($, e, next) {
+  const withhold = memory.state?.withhold ?? [];
+  const rules = memory.state?.instructions ?? "";
+  const kept = withholdSections(await next(e), withhold);
+  const rulesHeld = withhold.includes(RULES_ARM) && rules !== "";
+  reportDrops($, [...kept.drops, ...rulesHeld ? [{ source: RULES_ARM, section: RULES_SECTION }] : []]);
+  return withRulesSection(kept.result, rulesHeld ? "" : rules);
 }
 async function compactNotes($, e, next) {
   if (e.agentId !== void 0) return next(e);
@@ -112,10 +156,10 @@ var splitLines = (data) => {
   const minutes = typeof verification["gateMinutes"] === "number" ? verification["gateMinutes"] : 0;
   return [`build ${money(build["usd"])} · verification ${money(verification["usd"])} + gate ${String(minutes)} min`];
 };
-var costLines = (text5) => {
+var costLines = (text6) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return [];
   }
@@ -130,8 +174,8 @@ var costLines = (text5) => {
   ];
 };
 async function refreshCost($) {
-  const text5 = await runCli($, ["mod", "cost", "--json"]);
-  memory.cost = text5 === void 0 ? [] : costLines(text5);
+  const text6 = await runCli($, ["mod", "cost", "--json"]);
+  memory.cost = text6 === void 0 ? [] : costLines(text6);
   return memory.cost;
 }
 
@@ -141,10 +185,10 @@ var DIVERGE_PANE = "fm-diverge";
 var TASK_SCHEMA = "finitemonkey/task@1";
 var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var str = (record, key) => typeof record[key] === "string" ? record[key] : "";
-var taskData = (text5) => {
+var taskData = (text6) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return void 0;
   }
@@ -156,8 +200,8 @@ var items = (value) => (Array.isArray(value) ? value.filter(isRecord3) : []).map
   says: str(item, "says"),
   status: str(item, "status")
 }));
-var parseContractView = (text5) => {
-  const data = taskData(text5);
+var parseContractView = (text6) => {
+  const data = taskData(text6);
   if (data === void 0 || typeof data["hash"] !== "string" || typeof data["task"] !== "string") return void 0;
   return {
     task: data["task"],
@@ -169,8 +213,8 @@ var parseContractView = (text5) => {
     examples: items(data["examples"])
   };
 };
-var parseDivergeView = (text5) => {
-  const data = taskData(text5);
+var parseDivergeView = (text6) => {
+  const data = taskData(text6);
   const question = data === void 0 ? void 0 : data["question"];
   if (data === void 0 || !isRecord3(question)) return void 0;
   const options = (Array.isArray(question["options"]) ? question["options"].filter(isRecord3) : []).map((option) => ({
@@ -285,12 +329,12 @@ var divergeTree = (elements, view, notice, actions) => {
 
 // src/mod/approve-hooks.ts
 async function loadContract($) {
-  const text5 = await runCli($, ["task", "trust", "--json"]);
-  memory.contract = text5 === void 0 ? void 0 : parseContractView(text5);
+  const text6 = await runCli($, ["task", "trust", "--json"]);
+  memory.contract = text6 === void 0 ? void 0 : parseContractView(text6);
 }
 async function loadDivergence($) {
-  const text5 = await runCli($, ["task", "diverge", "--pending", "--json"]);
-  memory.divergence = text5 === void 0 ? void 0 : parseDivergeView(text5);
+  const text6 = await runCli($, ["task", "diverge", "--pending", "--json"]);
+  memory.divergence = text6 === void 0 ? void 0 : parseDivergeView(text6);
 }
 function redraw($, notice) {
   memory.notice = notice;
@@ -418,6 +462,8 @@ var trajectoryOf = (value) => isRecord4(value) && typeof value["domain"] === "st
   band: typeof value["band"] === "string" ? value["band"] : null,
   ricochet: ricochetOf(value["ricochet"])
 } : null;
+var triageOf = (value) => isRecord4(value) && typeof value["flagged"] === "number" && typeof value["open"] === "number" ? { flagged: value["flagged"], open: value["open"] } : null;
+var triageLine = (triage) => `triage ${String(triage.open)}/${String(triage.flagged)} open`;
 var trajectoryLine = (trajectory) => [
   `trajectory ${trajectory.domain}: ${trajectory.band ?? "no accepted work"}`,
   trajectory.ricochet === null ? "no ricochet" : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`
@@ -426,10 +472,10 @@ var knowledgeLine = (knowledge) => `knowledge: ${String(knowledge.stale)} stale 
 var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
 var blindLine = (blind) => `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
-var parseStatus = (text5) => {
+var parseStatus = (text6) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return void 0;
   }
@@ -462,7 +508,8 @@ var parseStatus = (text5) => {
     xray: xrayOf(data["xray"]),
     blindBand: blindOf(data["blindBand"]),
     knowledge: knowledgeOf(data["knowledge"]),
-    trajectory: trajectoryOf(data["trajectory"])
+    trajectory: trajectoryOf(data["trajectory"]),
+    triage: triageOf(data["triage"])
   };
 };
 var MARK = {
@@ -483,6 +530,7 @@ var bandLine = (view) => [
   ...view.knowledge === null ? [] : [knowledgeLine(view.knowledge)],
   ...view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)],
   ...view.trajectory === null ? [] : [trajectoryLine(view.trajectory)],
+  ...view.triage === null || view.triage.open === 0 ? [] : [triageLine(view.triage)],
   ...view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`],
   ...view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`],
   ...view.xray === null || view.xray.beyond === 0 ? [] : [`x-ray ${String(view.xray.beyond)} beyond the record without criterion`]
@@ -515,32 +563,52 @@ var collisionLine = (item) => {
   const branches = Array.isArray(item["branches"]) ? item["branches"].map(String).join(", ") : "";
   return `collision: ${text2(item["file"], "?")} in ${branches}`;
 };
-var boardLines = (json) => {
+var EMPTY_BOARD = { lines: [], sessions: [] };
+var RESUME = /^claude --resume [A-Za-z0-9_-]{1,120}$/;
+var sessionOf = (row2) => {
+  const resume = row2["resume"];
+  return typeof resume === "string" && RESUME.test(resume) ? [{ branch: text2(row2["branch"], text2(row2["path"], "?")), resume }] : [];
+};
+var boardView = (json) => {
   let parsed;
   try {
     parsed = JSON.parse(json);
   } catch {
-    return [];
+    return EMPTY_BOARD;
   }
   const data = isRecord5(parsed) && isRecord5(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord5(data) || data["schema"] !== "finitemonkey/fronts-board@1") return [];
+  if (!isRecord5(data) || data["schema"] !== "finitemonkey/fronts-board@1") return EMPTY_BOARD;
   const rows = Array.isArray(data["rows"]) ? data["rows"].filter(isRecord5) : [];
   const collisions = Array.isArray(data["collisions"]) ? data["collisions"].filter(isRecord5) : [];
-  return [...rows.map(rowLine), ...collisions.map(collisionLine)];
+  return { lines: [...rows.map(rowLine), ...collisions.map(collisionLine)], sessions: rows.flatMap(sessionOf) };
 };
-var frontsTree = (elements, lines, close) => elements.Box({
+var boardText = (board) => [...board.lines, ...board.sessions.map((session) => `open ${session.branch}: ${session.resume}`)].join("\n");
+var frontsTree = (elements, board, note, actions) => elements.Box({
   key: "fm-fronts",
   flexDirection: "column",
   children: [
-    ...(lines.length === 0 ? ["no worktrees found"] : lines).map((line2) => elements.Text({ children: [line2] })),
-    elements.Button({ key: "fm-fronts-close", label: "Close", hotkey: "x", onPress: close })
+    ...(board.lines.length === 0 ? ["no worktrees found"] : board.lines).map(
+      (line2) => elements.Text({ children: [line2] })
+    ),
+    ...board.sessions.map(
+      (session, index) => elements.Button({
+        key: `fm-fronts-open-${String(index)}`,
+        label: `Open ${session.branch}`,
+        onPress: () => {
+          actions.open(session);
+        }
+      })
+    ),
+    ...note === void 0 ? [] : [elements.Text({ key: "fm-fronts-note", children: [note] })],
+    elements.Button({ key: "fm-fronts-close", label: "Close", hotkey: "x", onPress: actions.close })
   ]
 });
+var openNote = (session) => `This version of Claude Code gives a mod no way to open or message another session. In a terminal, run: ${session.resume}`;
 
 // src/mod/gate-view.ts
 var GATE_PANE = "fm-gate";
 var COST_PANE = "fm-cost";
-var line = (elements, text5, key, dim = false) => elements.Text({ key, children: [text5], ...dim ? { dimColor: true } : {} });
+var line = (elements, text6, key, dim = false) => elements.Text({ key, children: [text6], ...dim ? { dimColor: true } : {} });
 var bandTree = (elements, view, open) => elements.Box({
   key: "fm-band",
   flexDirection: "row",
@@ -578,10 +646,19 @@ var costTree = (elements, lines, close) => elements.Box({
   flexDirection: "column",
   children: [
     ...(lines.length === 0 ? ["no cost recorded for this contract"] : lines).map(
-      (text5) => elements.Text({ children: [text5] })
+      (text6) => elements.Text({ children: [text6] })
     ),
     elements.Button({ key: "fm-cost-close", label: "Close", hotkey: "x", onPress: close })
   ]
+});
+
+// src/judge/call.ts
+var JUDGE_CALL_ARGS = ["judge", "call", "--json"];
+var JUDGE_PANE_REQUEST = { verb: "trajectory" };
+var requestBody = (request) => JSON.stringify(request);
+var judgeProcess = (request) => ({
+  args: JUDGE_CALL_ARGS,
+  stdin: requestBody(request)
 });
 
 // src/conceitos/trajectory-palette.ts
@@ -702,6 +779,151 @@ var themeOf = (value) => {
   return "auto";
 };
 
+// src/conceitos/trajectory-paint.ts
+var FONT = "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+var escapeXml = (text6) => text6.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+var base = (theme) => SVG_TOKENS[theme === "dark" ? "dark" : "light"];
+var isToken = (value) => TOKENS.includes(value);
+var paint = (theme, ink) => {
+  const tokens = base(theme);
+  const fill = ink.fill;
+  const classes = [
+    ...ink.cls === void 0 ? [] : [ink.cls],
+    ...fill !== void 0 && isToken(fill) ? [`f-${fill}`] : [],
+    ...ink.stroke === void 0 ? [] : [`s-${ink.stroke}`]
+  ];
+  const fillValue = fill === void 0 ? "none" : isToken(fill) ? tokens[fill] : fill;
+  return [
+    ...classes.length === 0 ? [] : [`class="${classes.join(" ")}"`],
+    `fill="${fillValue}"`,
+    ...ink.stroke === void 0 ? [] : [`stroke="${tokens[ink.stroke]}"`]
+  ].join(" ");
+};
+var styleOf = (theme) => {
+  if (theme !== "auto") return "";
+  const dark = SVG_TOKENS.dark;
+  const rules = TOKENS.map((token) => `.f-${token}{fill:${dark[token]}}.s-${token}{stroke:${dark[token]}}`).join("");
+  return `<style>@media (prefers-color-scheme: dark){${rules}}</style>`;
+};
+var text3 = (theme, at, body, options = {}) => `<text x="${num(at.x)}" y="${num(at.y)}" font-family="${FONT}" font-size="${String(options.size ?? 10.5)}"${options.anchor === void 0 ? "" : ` text-anchor="${options.anchor}"`}${options.extra === void 0 ? "" : ` ${options.extra}`} ${paint(theme, { fill: options.fill ?? "faint" })}>${escapeXml(body)}</text>`;
+var num = (value) => String(Math.round(value * 10) / 10);
+var defsOf = (theme) => [
+  "<defs>",
+  `<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" ${paint(theme, { fill: "b1" })}/><line x1="0" y1="0" x2="0" y2="7" stroke-width="1.1" stroke-opacity="0.5" ${paint(theme, { stroke: "bInk" })}/></pattern>`,
+  `<pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" ${paint(theme, { fill: "bCov" })}/><circle cx="3" cy="3" r="0.9" fill-opacity="0.55" ${paint(theme, { fill: "bCovInk" })}/></pattern>`,
+  `<pattern id="gap" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="5" height="5" ${paint(theme, { fill: "bg" })}/><line x1="0" y1="0" x2="0" y2="5" stroke-width="1" ${paint(theme, { stroke: "rule" })}/></pattern>`,
+  "</defs>"
+].join("");
+
+// src/conceitos/trajectory-research.ts
+var RESEARCH_FIXES = ["open", "revert", "agent", "person"];
+var fixOf = (event) => {
+  if (event.fixedBy === "revert" || event.fixedBy === "agent" || event.fixedBy === "person") return event.fixedBy;
+  return event.state === "held" ? "person" : "open";
+};
+var RESEARCH_GLYPH = {
+  open: "▲",
+  revert: "↺",
+  agent: "◇",
+  person: "◆"
+};
+var RESEARCH_PLAIN = { "▲": "^", "↺": "R", "◇": "a", "◆": "P" };
+var RANK = { open: 0, revert: 1, agent: 2, person: 3 };
+var weekFix = (marks, week) => marks.filter((mark) => mark.week === week).map((mark) => mark.fix).sort((a, b) => RANK[a] - RANK[b])[0];
+var researchLane = (weeks, marks, perWeek) => weeks.map((week) => {
+  const fix = weekFix(marks, week);
+  return (fix === void 0 ? " " : RESEARCH_GLYPH[fix]).padEnd(perWeek);
+}).join("");
+var shapeOf = (theme, fix, x, y) => {
+  const diamond = `M ${num(x)} ${num(y - 6)} L ${num(x + 6)} ${num(y)} L ${num(x)} ${num(y + 6)} L ${num(x - 6)} ${num(y)} Z`;
+  if (fix === "open")
+    return `<path d="M ${num(x)} ${num(y - 6)} L ${num(x + 6)} ${num(y + 5)} L ${num(x - 6)} ${num(y + 5)} Z" stroke-width="1.8" ${paint(theme, { fill: "bg", stroke: "bInk" })}/>`;
+  if (fix === "revert")
+    return `<rect x="${num(x - 5)}" y="${num(y - 5)}" width="10" height="10" stroke-width="1.8" stroke-dasharray="2 2" ${paint(theme, { fill: "bg", stroke: "bInk" })}/>`;
+  if (fix === "agent")
+    return `<path d="${diamond}" stroke-width="1.8" ${paint(theme, { fill: "bg", stroke: "ink" })}/>`;
+  return `<path d="${diamond}" ${paint(theme, { fill: "iInk" })}/>`;
+};
+var titleOf = (mark) => `research ${mark.cause} · ${mark.claim} · ${mark.fix === "open" ? "open" : `fixed by ${mark.fix}`}${mark.commit === null ? "" : ` in ${mark.commit}`} · ${mark.at}`;
+var researchSvg = (theme, lane, marks) => marks.flatMap((mark) => {
+  const index = lane.weeks.indexOf(mark.week);
+  const x = lane.xs[index];
+  if (index < 0 || x === void 0) return [];
+  const offset = marks.filter((item) => item.week === mark.week).indexOf(mark) * 14;
+  return [
+    `<g class="research-${mark.fix}">${shapeOf(theme, mark.fix, x + offset, lane.y)}<title>${escapeXml(titleOf(mark))}</title></g>`
+  ];
+});
+
+// src/mod/judge-view.ts
+var JUDGE_PANE = "fm-judge";
+var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var text4 = (value) => typeof value === "string" ? value : "";
+var eventLine = (event) => {
+  const fix = fixOf({
+    state: event["state"] === "held" ? "held" : event["state"] === "pending" ? "pending" : "open",
+    ...typeof event["fixedBy"] === "string" ? { fixedBy: event["fixedBy"] } : {}
+  });
+  const commit = text4(event["fixedCommit"]);
+  return [
+    `${RESEARCH_GLYPH[fix]} ${text4(event["claim"])}`,
+    text4(event["cause"]),
+    fix === "open" ? "open" : `fixed by ${fix}${commit === "" ? "" : ` in ${commit.slice(0, 7)}`}`,
+    text4(event["at"]).slice(0, 10)
+  ].join("  ");
+};
+var judgeLines = (json) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord6(data) || data["verb"] !== "trajectory") return [];
+  const events = Array.isArray(data["events"]) ? data["events"].filter(isRecord6) : [];
+  return events.map(eventLine);
+};
+var judgeTree = (elements, lines, close) => elements.Box({
+  key: "fm-judge",
+  flexDirection: "column",
+  children: [
+    ...(lines.length === 0 ? ["no research ricochet recorded"] : lines).map(
+      (line2) => elements.Text({ children: [line2] })
+    ),
+    elements.Button({ key: "fm-judge-close", label: "Close", hotkey: "x", onPress: close })
+  ]
+});
+
+// src/mod/judge-hooks.ts
+async function judgeCall($, request) {
+  const root = await $.session.root();
+  const call = judgeProcess(request);
+  const result = await $.process.run(cliArgv($, call.args), {
+    cwd: root,
+    timeoutMs: CLI_TIMEOUT_MS,
+    stdin: call.stdin
+  });
+  return result.exitCode === 0 ? result.stdout : void 0;
+}
+function renderJudge($, e) {
+  return judgeTree($.ui.resolve(e), memory.judge, () => $.ui.close({ id: JUDGE_PANE }));
+}
+async function judgeNow($) {
+  const json = await judgeCall($, JUDGE_PANE_REQUEST);
+  memory.judge = json === void 0 ? [] : judgeLines(json);
+  const surfaces = await $.session.surfaces();
+  if (surfaces.length > 0) {
+    await $.ui.open({ id: JUDGE_PANE, title: "Finite Monkey · judge" });
+    return {};
+  }
+  return { text: memory.judge.length === 0 ? "finitemonkey: no research ricochet recorded" : memory.judge.join("\n") };
+}
+
+// src/conceitos/trajectory-split-types.ts
+var MIN_EVIDENCE = 6;
+var SPLIT_GROUPS = ["alone", "proximal", "horizon"];
+
 // src/conceitos/trajectory-bands.ts
 var BANDS = {
   alone: { group: "alone", label: "own change or repair, gate green", status: "measured" },
@@ -725,6 +947,12 @@ var HYPOTHESES = {
   proximal: "explains vs detects only",
   alone: "transfer vs known context"
 };
+var SPLIT_LABEL = {
+  alone: ["known context", "transfer"],
+  proximal: ["explains", "detects only"],
+  horizon: ["recognizable", "out of reach"]
+};
+var SPLIT_BAND = { alone: "alone", proximal: "proximal", horizon: "beyond" };
 var BAND_ORDER = [
   "alone",
   "proximal",
@@ -781,8 +1009,38 @@ var landedIn = (trajectory, week) => {
   return level === null ? void 0 : bandAt(week, level, peakOf(trajectory));
 };
 var describeBand = (band) => band === "beyond" || band === "blind" ? GROUP_LABEL[BANDS[band].group] : `${GROUP_LABEL[BANDS[band].group]}, ${BANDS[band].label}`;
+var splitAt = (week, group, peak) => {
+  const split = week.splits?.[group];
+  if (split === void 0 || split.evidence < MIN_EVIDENCE || split.lower + split.upper === 0) return void 0;
+  const stratum = strataOf(week, peak).find((item) => item.band === SPLIT_BAND[group]);
+  if (stratum === void 0) return void 0;
+  return stratum.from + (stratum.to - stratum.from) * split.lower / (split.lower + split.upper);
+};
+var drawnSplits = (trajectory) => {
+  const peak = peakOf(trajectory);
+  return new Set(
+    SPLIT_GROUPS.filter((group) => trajectory.weeks.some((week) => splitAt(week, group, peak) !== void 0))
+  );
+};
+var describeSplit = (group) => `${SPLIT_LABEL[group][1]} above, ${SPLIT_LABEL[group][0]} below`;
 
 // src/conceitos/trajectory-term.ts
+var ENGLISH_SPLITS = {
+  name: {
+    alone: "transfer vs known context",
+    proximal: "explains vs detects only",
+    horizon: "recognizable vs out of reach"
+  },
+  measured: (splits) => `measured from the record (calibration, dashed in the chart): ${splits}`,
+  notDrawn: (splits) => `not drawn (hypothesis): ${splits}`
+};
+var ENGLISH_RESEARCH = {
+  lane: "research",
+  open: "research ricochet, open",
+  revert: "fixed by revert",
+  agent: "fixed by the agent",
+  person: "fixed by the person"
+};
 var ENGLISH_TERM = {
   band: {
     alone: "does alone",
@@ -798,6 +1056,7 @@ var ENGLISH_TERM = {
   ricochet: "ricochet",
   held: "held",
   hypotheses: "not drawn (hypothesis): transfer vs known context, explains vs detects only, recognizable vs out of reach",
+  research: ENGLISH_RESEARCH,
   noData: (evidence) => `no data (${String(evidence)} weighted events)`,
   head: (domain, from, to, evidence) => `${domain}, ${from} to ${to}, ${String(evidence)} weighted events`
 };
@@ -964,8 +1223,20 @@ var blockOf = (trajectory, options) => {
       const name = names[row2] ?? "";
       return name === "" ? body : `${body} ${faint(name, options)}`;
     }),
+    ...laneLines(trajectory, size.perWeek, options),
     faint(axisLine(trajectory, size.perWeek), options)
   ];
+};
+var laneLines = (trajectory, perWeek, options) => {
+  const marks = trajectory.research ?? [];
+  if (marks.length === 0) return [];
+  const lane = researchLane(
+    trajectory.weeks.map((week) => week.week),
+    marks,
+    perWeek
+  );
+  const shown = options.depth === "none" ? lane.replace(/[▲↺◇◆]/gu, (glyph2) => RESEARCH_PLAIN[glyph2] ?? glyph2) : lane;
+  return [`${shown} ${faint((options.labels?.research ?? ENGLISH_RESEARCH).lane, options)}`];
 };
 var swatch = (band, options) => {
   if (options.depth === "none") return PLAIN[band] === " " ? "' '" : PLAIN[band];
@@ -973,7 +1244,13 @@ var swatch = (band, options) => {
   return `${style(null, band === "gap" ? palette.gap : palette.band[band], options.depth, false)}  ${RESET}`;
 };
 var inkSwatch = (glyph2, ink, options) => options.depth === "none" ? PLAIN_GLYPH[glyph2] ?? glyph2 : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph2}${RESET}`;
-var legendLines = (bands, options) => {
+var splitLines2 = (labels, drawn) => {
+  if (drawn.size === 0) return [labels.hypotheses];
+  const split = labels.splits ?? ENGLISH_SPLITS;
+  const names = (keep) => SPLIT_GROUPS.filter((group) => drawn.has(group) === keep).map((group) => split.name[group]).join(", ");
+  return [split.measured(names(true)), ...drawn.size === SPLIT_GROUPS.length ? [] : [split.notDrawn(names(false))]];
+};
+var legendLines = (bands, options, drawn = /* @__PURE__ */ new Set(), research = false) => {
   const labels = options.labels ?? ENGLISH_TERM;
   const entries = [
     ...bands.map((band) => `${swatch(band, options)} ${labels.band[band]}`),
@@ -990,54 +1267,35 @@ var legendLines = (bands, options) => {
       `${inkSwatch("✕", "ricochet", options)} ${labels.ricochet}`,
       `${inkSwatch("◉", "held", options)} ${labels.held}`
     ].join("  "),
-    faint(labels.hypotheses, options)
+    ...research ? [researchLegend(options)] : [],
+    ...splitLines2(labels, drawn).map((line2) => faint(line2, options))
   ];
+};
+var researchLegend = (options) => {
+  const labels = options.labels?.research ?? ENGLISH_RESEARCH;
+  return RESEARCH_FIXES.map((fix) => {
+    const glyph2 = RESEARCH_GLYPH[fix];
+    return `${options.depth === "none" ? RESEARCH_PLAIN[glyph2] ?? glyph2 : glyph2} ${labels[fix]}`;
+  }).join("  ");
 };
 var chartLines = (trajectories, options) => {
   const drawn = trajectories.filter((item) => item.status === "ok");
   const used = new Set(drawn.flatMap(usedBands));
   const bands = BAND_ORDER.filter((band) => used.has(band));
+  const drawnGroups = new Set(drawn.flatMap((item) => [...drawnSplits(item)]));
   return [
     ...trajectories.flatMap((item, index) => [...index === 0 ? [] : [""], ...blockOf(item, options)]),
-    ...drawn.length === 0 ? [] : ["", ...legendLines(bands, options)]
+    ...drawn.length === 0 ? [] : [
+      "",
+      ...legendLines(
+        bands,
+        options,
+        drawnGroups,
+        drawn.some((item) => (item.research ?? []).length > 0)
+      )
+    ]
   ];
 };
-
-// src/conceitos/trajectory-paint.ts
-var FONT = "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-var escapeXml = (text5) => text5.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-var base = (theme) => SVG_TOKENS[theme === "dark" ? "dark" : "light"];
-var isToken = (value) => TOKENS.includes(value);
-var paint = (theme, ink) => {
-  const tokens = base(theme);
-  const fill = ink.fill;
-  const classes = [
-    ...ink.cls === void 0 ? [] : [ink.cls],
-    ...fill !== void 0 && isToken(fill) ? [`f-${fill}`] : [],
-    ...ink.stroke === void 0 ? [] : [`s-${ink.stroke}`]
-  ];
-  const fillValue = fill === void 0 ? "none" : isToken(fill) ? tokens[fill] : fill;
-  return [
-    ...classes.length === 0 ? [] : [`class="${classes.join(" ")}"`],
-    `fill="${fillValue}"`,
-    ...ink.stroke === void 0 ? [] : [`stroke="${tokens[ink.stroke]}"`]
-  ].join(" ");
-};
-var styleOf = (theme) => {
-  if (theme !== "auto") return "";
-  const dark = SVG_TOKENS.dark;
-  const rules = TOKENS.map((token) => `.f-${token}{fill:${dark[token]}}.s-${token}{stroke:${dark[token]}}`).join("");
-  return `<style>@media (prefers-color-scheme: dark){${rules}}</style>`;
-};
-var text3 = (theme, at, body, options = {}) => `<text x="${num(at.x)}" y="${num(at.y)}" font-family="${FONT}" font-size="${String(options.size ?? 10.5)}"${options.anchor === void 0 ? "" : ` text-anchor="${options.anchor}"`}${options.extra === void 0 ? "" : ` ${options.extra}`} ${paint(theme, { fill: options.fill ?? "faint" })}>${escapeXml(body)}</text>`;
-var num = (value) => String(Math.round(value * 10) / 10);
-var defsOf = (theme) => [
-  "<defs>",
-  `<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" ${paint(theme, { fill: "b1" })}/><line x1="0" y1="0" x2="0" y2="7" stroke-width="1.1" stroke-opacity="0.5" ${paint(theme, { stroke: "bInk" })}/></pattern>`,
-  `<pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" ${paint(theme, { fill: "bCov" })}/><circle cx="3" cy="3" r="0.9" fill-opacity="0.55" ${paint(theme, { fill: "bCovInk" })}/></pattern>`,
-  `<pattern id="gap" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="5" height="5" ${paint(theme, { fill: "bg" })}/><line x1="0" y1="0" x2="0" y2="5" stroke-width="1" ${paint(theme, { stroke: "rule" })}/></pattern>`,
-  "</defs>"
-].join("");
 
 // src/conceitos/trajectory-key.ts
 var yOf = (plot, level) => plot.y0 - level / plot.peak * (plot.y0 - plot.y1);
@@ -1050,12 +1308,14 @@ var GROUP_INK = {
 };
 var swatchOf = (band) => band === "blindBare" ? "url(#hatch)" : band === "blindCovered" ? "url(#dots)" : BAND_FILL[band];
 var seen = (trajectory) => new Set(trajectory.weeks.flatMap((week) => strataOf(week, peakOf(trajectory)).map((stratum) => stratum.band)));
-var linesOf = (group, present) => {
+var isSplit = (group) => SPLIT_GROUPS.includes(group);
+var linesOf = (group, present, drawn) => {
   const bands = BAND_ORDER.filter((band) => BANDS[band].group === group && (band !== "blind" || present.has(band)));
   const hypothesis = HYPOTHESES[group];
+  const split = isSplit(group) && drawn.has(group) ? `${describeSplit(group)} · calibration` : void 0;
   return [
     ...bands.map((band) => ({ kind: "band", band })),
-    ...hypothesis === void 0 ? [] : [{ kind: "hypothesis", label: hypothesis }]
+    ...hypothesis === void 0 ? [] : [{ kind: "hypothesis", label: hypothesis, drawn: split }]
   ];
 };
 var rangeOf = (week, group, peak) => {
@@ -1069,9 +1329,10 @@ var GAP = 8;
 var placed = (plot, trajectory) => {
   const week = lastWeek(trajectory);
   const present = seen(trajectory);
+  const drawn = drawnSplits(trajectory);
   let floor = plot.top;
   const blocks = GROUPS.map((group) => {
-    const lines = linesOf(group, present);
+    const lines = linesOf(group, present, drawn);
     const range = rangeOf(week, group, plot.peak);
     const height = LH * (1 + lines.reduce((sum, line2) => sum + (line2.kind === "hypothesis" ? 2 : 1), 0));
     const want = range === void 0 ? floor : (yOf(plot, range[1]) + yOf(plot, range[0])) / 2 - height / 2;
@@ -1096,10 +1357,10 @@ var bandLine2 = (theme, band, x, y) => {
     text3(theme, { x: x + 14, y }, label, { size: 10, fill: "muted" })
   ].join("");
 };
-var hypothesisLine = (theme, label, x, y) => [
-  `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8" stroke-dasharray="2 2" ${paint(theme, { cls: `key-hypothesis`, stroke: "faint" })}/>`,
-  text3(theme, { x: x + 14, y }, label, { size: 10, fill: "faint", extra: 'font-style="italic"' }),
-  text3(theme, { x: x + 14, y: y + LH }, "hypothesis, not drawn", {
+var hypothesisLine = (theme, line2, x, y) => [
+  `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8" stroke-dasharray="2 2" ${paint(theme, { cls: line2.drawn === void 0 ? "key-hypothesis" : "key-split", stroke: line2.drawn === void 0 ? "faint" : "muted" })}/>`,
+  text3(theme, { x: x + 14, y }, line2.label, { size: 10, fill: "faint", extra: 'font-style="italic"' }),
+  text3(theme, { x: x + 14, y: y + LH }, line2.drawn ?? "hypothesis, not drawn", {
     size: 9.5,
     fill: "faint",
     extra: 'font-style="italic"'
@@ -1123,12 +1384,33 @@ var blockOf2 = (theme, plot, block) => {
   let row2 = 1;
   for (const line2 of block.lines) {
     const y = ty + LH * row2;
-    parts.push(line2.kind === "band" ? bandLine2(theme, line2.band, kx, y) : hypothesisLine(theme, line2.label, kx, y));
+    parts.push(line2.kind === "band" ? bandLine2(theme, line2.band, kx, y) : hypothesisLine(theme, line2, kx, y));
     row2 += line2.kind === "hypothesis" ? 2 : 1;
   }
   return `<g class="key-group key-${block.group}">${parts.join("")}</g>`;
 };
-var keyOf = (theme, plot, trajectory) => `<g class="key">${placed(plot, trajectory).map((block) => blockOf2(theme, plot, block)).join("")}</g>`;
+var keyOf2 = (theme, plot, trajectory) => `<g class="key">${placed(plot, trajectory).map((block) => blockOf2(theme, plot, block)).join("")}</g>`;
+
+// src/conceitos/trajectory-split-svg.ts
+var runsOf = (levels) => levels.reduce((runs, level, index) => {
+  if (level === void 0) return runs;
+  const last = runs.at(-1);
+  if (last?.at(-1) === index - 1) last.push(index);
+  else runs.push([index]);
+  return runs;
+}, []);
+var pointsOf = (frame, run, levels) => run.flatMap((index) => {
+  const x = frame.xs[index] ?? 0;
+  const y = yOf(frame, levels[index] ?? 0);
+  return run.length === 1 ? [`${num(x - frame.half * 0.8)} ${num(y)}`, `${num(x + frame.half * 0.8)} ${num(y)}`] : [`${num(x)} ${num(y)}`];
+});
+var groupPaths = (theme, frame, weeks, group) => {
+  const levels = weeks.map((week) => splitAt(week, group, frame.peak));
+  return runsOf(levels).map(
+    (run) => `<path d="M ${pointsOf(frame, run, levels).join(" L ")}" stroke-width="1" stroke-dasharray="4 3" ${paint(theme, { cls: `split split-${group}`, stroke: GROUP_INK[group] })}><title>${escapeXml(`${describeSplit(group)} · calibration`)}</title></path>`
+  );
+};
+var splitPaths = (theme, frame, weeks) => SPLIT_GROUPS.flatMap((group) => groupPaths(theme, frame, weeks, group));
 
 // src/conceitos/trajectory-svg.ts
 var SVG_WIDTH = 900;
@@ -1146,7 +1428,7 @@ var frameOf = (trajectory) => {
   const y0 = SVG_HEIGHT - BOTTOM;
   return { x0, x1, y0, y1: TOP, top: TOP, bottom: y0, peak: peakOf(trajectory), xs, half };
 };
-var runsOf = (weeks, keep) => {
+var runsOf2 = (weeks, keep) => {
   const runs = [];
   let run = [];
   weeks.forEach((week, index) => {
@@ -1178,7 +1460,7 @@ var bandPath = (theme, frame, band, columns) => {
   const opacity = band === "unstable" ? ' fill-opacity="0.85"' : "";
   return `<path d="${d}"${opacity} ${paint(theme, { cls: `band band-${band}`, fill: swatchOf(band) })}><title>${escapeXml(BANDS[band].label)}</title></path>${edge}`;
 };
-var strataPaths = (theme, frame, weeks) => runsOf(weeks, filled2).flatMap((run) => {
+var strataPaths = (theme, frame, weeks) => runsOf2(weeks, filled2).flatMap((run) => {
   const single = run.length === 1;
   const points = run.flatMap((index) => {
     const week = weeks[index];
@@ -1223,7 +1505,7 @@ var curve = (points) => points.reduce((path, [x, y], index) => {
   const mid = (px + x) / 2;
   return `${path} C ${num(mid)} ${num(py)}, ${num(mid)} ${num(y)}, ${num(x)} ${num(y)}`;
 }, "");
-var workLine = (theme, frame, trajectory) => runsOf(trajectory.weeks, (week) => week.work !== null).flatMap((run) => {
+var workLine = (theme, frame, trajectory) => runsOf2(trajectory.weeks, (week) => week.work !== null).flatMap((run) => {
   const points = run.map((index) => [
     frame.xs[index] ?? 0,
     yOf(frame, trajectory.weeks[index]?.work ?? 0)
@@ -1285,10 +1567,16 @@ var svgOf = (trajectory, options = {}) => {
     `<rect x="${num(frame.x0)}" y="${num(frame.y1)}" width="${num(frame.x1 - frame.x0)}" height="${num(frame.y0 - frame.y1)}" ${paint(theme, { cls: `plot`, fill: "h2" })}/>`,
     ...gapRects(theme, frame, trajectory.weeks),
     ...strataPaths(theme, frame, trajectory.weeks),
+    ...splitPaths(theme, frame, trajectory.weeks),
     ...axes(theme, frame, trajectory.weeks),
-    keyOf(theme, frame, trajectory),
+    keyOf2(theme, frame, trajectory),
     ...workLine(theme, frame, trajectory),
-    ...marksOf(theme, frame, trajectory, options.selected)
+    ...marksOf(theme, frame, trajectory, options.selected),
+    ...researchSvg(
+      theme,
+      { xs: frame.xs, weeks: trajectory.weeks.map((week) => week.week), y: frame.y1 + 10 },
+      trajectory.research ?? []
+    )
   ]);
 };
 
@@ -1363,22 +1651,19 @@ var rasterOf = (trajectory, columns, options) => {
 
 // src/mod/trajectory-parse.ts
 var DOMAIN_NAMES = ["product", "interface", "backend", "infrastructure", "security"];
-var CONCEPTS = [
-  "api",
-  "migration",
-  "webhook",
-  "idempotency",
-  "force-push",
-  "merge-conflict",
-  "secret-in-code",
-  "immutable-deploy"
-];
-var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var records = (value) => Array.isArray(value) ? value.filter(isRecord6) : [];
+var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var records = (value) => Array.isArray(value) ? value.filter(isRecord7) : [];
 var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var orNull = (record, key) => typeof record[key] === "number" ? record[key] : null;
 var num2 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
-var concept = (value) => CONCEPTS.find((item) => item === value) ?? "api";
+var concept = (value) => typeof value === "string" && value !== "" ? value : "unknown";
+var splitOf = (value) => isRecord7(value) ? { lower: num2(value, "lower"), upper: num2(value, "upper"), evidence: num2(value, "evidence") } : void 0;
+var splitsIn = (item) => {
+  const raw = item["splits"];
+  if (!isRecord7(raw)) return {};
+  const [alone, proximal, horizon] = [splitOf(raw["alone"]), splitOf(raw["proximal"]), splitOf(raw["horizon"])];
+  return alone === void 0 || proximal === void 0 || horizon === void 0 ? {} : { splits: { alone, proximal, horizon } };
+};
 var weekOf = (item) => ({
   week: str3(item, "week"),
   independent: orNull(item, "independent"),
@@ -1388,7 +1673,8 @@ var weekOf = (item) => ({
   blindBare: num2(item, "blindBare"),
   unstable: orNull(item, "unstable"),
   work: orNull(item, "work"),
-  evidence: num2(item, "evidence")
+  evidence: num2(item, "evidence"),
+  ...splitsIn(item)
 });
 var refOf = (item) => ({
   kind: str3(item, "kind"),
@@ -1405,15 +1691,30 @@ var markOf2 = (item) => ({
   from: typeof item["from"] === "string" ? item["from"] : null,
   evidence: records(item["evidence"]).map(refOf)
 });
-var parseTrajectories = (text5) => {
+var researchOf = (item) => ({
+  week: str3(item, "week"),
+  at: str3(item, "at"),
+  event: str3(item, "event"),
+  claim: str3(item, "claim"),
+  cause: str3(item, "cause"),
+  fix: RESEARCH_FIXES.find((fix) => fix === item["fix"]) ?? "open",
+  commit: typeof item["commit"] === "string" ? item["commit"] : null,
+  field: str3(item, "field"),
+  concepts: Array.isArray(item["concepts"]) ? item["concepts"].filter((value) => typeof value === "string") : []
+});
+var researchIn = (item) => {
+  const marks = records(item["research"]).map(researchOf);
+  return marks.length === 0 ? {} : { research: marks };
+};
+var parseTrajectories = (text6) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return [];
   }
-  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord6(data) || data["schema"] !== "finitemonkey/trajectory@1") return [];
+  const data = isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord7(data) || data["schema"] !== "finitemonkey/trajectory@1") return [];
   return records(data["domains"]).flatMap((item) => {
     const domain = DOMAIN_NAMES.find((name) => name === item["domain"]);
     if (domain === void 0) return [];
@@ -1424,7 +1725,8 @@ var parseTrajectories = (text5) => {
         evidence: num2(item, "evidence"),
         weeks: records(item["weeks"]).map(weekOf),
         marks: records(item["marks"]).map(markOf2),
-        position: typeof item["position"] === "string" ? item["position"] : null
+        position: typeof item["position"] === "string" ? item["position"] : null,
+        ...researchIn(item)
       }
     ];
   });
@@ -1456,12 +1758,17 @@ var weekRow = (trajectory, week) => {
   if (week.assisted === null) return `${week.week.slice(-3)}  no evidence`;
   const band = landedIn(trajectory, week);
   const marks = trajectory.marks.filter((mark) => mark.week === week.week);
+  const research = (trajectory.research ?? []).filter((mark) => mark.week === week.week);
+  const events = [
+    ...marks.map((mark) => `${glyph(mark)} ${mark.kind} ${mark.concept}`),
+    ...research.map((mark) => `${RESEARCH_GLYPH[mark.fix]} research ${mark.claim} ${mark.fix}`)
+  ];
   return [
     week.week.slice(-3),
     (band === void 0 ? "no accepted work" : describeBand(band)).padEnd(38),
     span(week.independent, week.discernment).padEnd(7),
     span(week.discernment, week.assisted).padEnd(7),
-    marks.length === 0 ? "-" : marks.map((mark) => `${glyph(mark)} ${mark.kind} ${mark.concept}`).join(", ")
+    events.length === 0 ? "-" : events.join(", ")
   ].join("  ");
 };
 var weekLines = (trajectory) => [
@@ -1583,8 +1890,8 @@ function renderTrajectory($, e) {
   );
 }
 async function trajectoryNow($) {
-  const text5 = await runCli($, ["trajectory", "--json"]);
-  const domains = text5 === void 0 ? [] : parseTrajectories(text5);
+  const text6 = await runCli($, ["trajectory", "--json"]);
+  const domains = text6 === void 0 ? [] : parseTrajectories(text6);
   memory.trajectory = domains;
   memory.selectedMark = void 0;
   const surfaces = await $.session.surfaces();
@@ -1596,43 +1903,136 @@ async function trajectoryNow($) {
   return { text: domains.length === 0 ? "finitemonkey: no trajectory in this folder" : trajectoryText(domains) };
 }
 
-// src/mod/xray-view.ts
-var XRAY_PANE = "fm-xray";
-var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+// src/mod/teach-view.ts
+var isRec = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var str4 = (record, key) => typeof record[key] === "string" ? record[key] : "";
-var num3 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
-var dataOf = (text5, schema) => {
+var dataOf = (text6, schema) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return void 0;
   }
-  const data = isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
-  return isRecord7(data) && data["schema"] === schema ? data : void 0;
+  const data = isRec(parsed) && isRec(parsed["data"]) ? parsed["data"] : void 0;
+  return data?.["schema"] === schema ? data : void 0;
 };
-var records2 = (value) => Array.isArray(value) ? value.filter(isRecord7) : [];
-var parseXray = (text5) => {
-  const data = dataOf(text5, "finitemonkey/xray@1");
+var strings = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+var parseTeachCard = (text6) => {
+  const question = dataOf(text6, "finitemonkey/teach@1")?.["question"];
+  if (!isRec(question) || question["answered"] === true) return void 0;
+  const id = str4(question, "question");
+  if (id === "") return void 0;
+  return {
+    question: id,
+    concepts: strings(question["concepts"]),
+    run: str4(question, "run"),
+    input: str4(question, "input")
+  };
+};
+var parseTeachReason = (text6) => {
+  const reason = dataOf(text6, "finitemonkey/teach@1")?.["reason"];
+  return typeof reason === "string" ? reason : void 0;
+};
+var parseProbeCard = (text6) => {
+  const probes = dataOf(text6, "finitemonkey/probes@1")?.["probes"];
+  const open = (Array.isArray(probes) ? probes : []).filter(isRec).find((probe) => probe["status"] === "open" && probe["presented"] === true);
+  if (open === void 0) return void 0;
+  const options = (Array.isArray(open["options"]) ? open["options"] : []).filter(isRec).map((option) => ({ id: str4(option, "id"), text: str4(option, "text") }));
+  return { id: str4(open, "id"), question: str4(open, "question"), why: str4(open, "why"), options };
+};
+var teachLines = (card) => [
+  `Teach-back on ${card.concepts.join(", ") || "-"}: what does ${card.run} print for the input ${card.input || "-"}? The answer key comes from running it.`,
+  `Answer at a terminal: finitemonkey teach answer ${card.question} <value>. Skipping changes nothing.`
+];
+var REASON_TEXT = {
+  no_key: "No keyed question for this concept, so nothing changes.",
+  not_at_edge: "This concept is not proximal or beyond on the record.",
+  no_concept: "This block has no concept to ask about."
+};
+var teachTree = (elements, card, actions) => elements.Box({
+  key: "fm-teach-card",
+  flexDirection: "column",
+  children: [
+    ...teachLines(card).map(
+      (line2, index) => elements.Text({ key: `fm-teach-line-${String(index)}`, children: [line2] })
+    ),
+    elements.Button({
+      key: "fm-teach-skip",
+      label: "Skip question",
+      onPress: () => actions.skipQuestion(card.question)
+    })
+  ]
+});
+var probeTree = (elements, card, actions) => elements.Box({
+  key: "fm-probe-card",
+  flexDirection: "column",
+  children: [
+    elements.Text({ key: "fm-probe-question", children: [`${card.id}: ${card.question}`] }),
+    elements.Text({
+      key: "fm-probe-why",
+      dimColor: true,
+      children: [`Why this question: ${card.why}. Skipping changes nothing.`]
+    }),
+    elements.Box({
+      key: "fm-probe-options",
+      flexDirection: "row",
+      columnGap: 2,
+      children: [
+        ...card.options.map(
+          (option) => elements.Button({
+            key: `fm-probe-option-${option.id}`,
+            label: `${option.id}) ${option.text}`,
+            onPress: () => actions.answerProbe(card.id, option.id)
+          })
+        ),
+        elements.Button({ key: "fm-probe-skip", label: "Skip probe", onPress: () => actions.skipProbe(card.id) })
+      ]
+    })
+  ]
+});
+var cardsTree = (elements, teach, probe, notice, actions) => [
+  ...notice === void 0 ? [] : [elements.Text({ key: "fm-teach-notice", dimColor: true, children: [notice] })],
+  ...teach === void 0 ? [] : [teachTree(elements, teach, actions)],
+  ...probe === void 0 ? [] : [probeTree(elements, probe, actions)]
+];
+
+// src/mod/xray-view.ts
+var XRAY_PANE = "fm-xray";
+var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var str5 = (record, key) => typeof record[key] === "string" ? record[key] : "";
+var num3 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
+var dataOf2 = (text6, schema) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text6);
+  } catch {
+    return void 0;
+  }
+  const data = isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
+  return isRecord8(data) && data["schema"] === schema ? data : void 0;
+};
+var records2 = (value) => Array.isArray(value) ? value.filter(isRecord8) : [];
+var parseXray = (text6) => {
+  const data = dataOf2(text6, "finitemonkey/xray@1");
   if (data === void 0) return void 0;
   return {
-    task: str4(data, "task"),
+    task: str5(data, "task"),
     beyond: num3(data, "beyondWithoutCriterion"),
     items: records2(data["items"]).map((item) => ({
-      file: str4(item, "file"),
+      file: str5(item, "file"),
       start: num3(item, "start"),
       end: num3(item, "end"),
-      band: str4(item, "band"),
-      coverage: str4(item, "coverage"),
-      concepts: records2(item["concepts"]).map((entry) => str4(entry, "concept")),
-      by: str4(item, "by")
+      band: str5(item, "band"),
+      coverage: str5(item, "coverage"),
+      concepts: records2(item["concepts"]).map((entry) => str5(entry, "concept")),
+      by: str5(item, "by")
     }))
   };
 };
-var parseConcepts = (text5) => records2(dataOf(text5, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
-  concept: str4(item, "concept"),
-  domain: str4(item, "domain"),
-  state: str4(item, "state"),
+var parseConcepts = (text6) => records2(dataOf2(text6, "finitemonkey/concept-evidence@1")?.["concepts"]).map((item) => ({
+  concept: str5(item, "concept"),
+  domain: str5(item, "domain"),
+  state: str5(item, "state"),
   positive: num3(item, "positive"),
   negative: num3(item, "negative"),
   exposures: num3(item, "exposures")
@@ -1660,7 +2060,7 @@ var STATE_COLOR = {
   proximal: "#c28a1a",
   beyond: "#b3412f"
 };
-var escape = (text5) => text5.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+var escape = (text6) => text6.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 var mapSvg = (concepts) => {
   const known = concepts.filter((row2) => row2.state !== "unknown");
   const height = 24 * Math.max(known.length, 1) + 8;
@@ -1673,33 +2073,52 @@ var mapSvg = (concepts) => {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="${String(height)}" viewBox="0 0 560 ${String(height)}">${body}</svg>`;
 };
 var needsAction = (row2) => (row2.band === "beyond" || row2.band === "unknown") && row2.coverage !== "covered";
-var itemTree = (elements, row2, actions) => {
-  const key = `${row2.file}:${String(row2.start)}`;
-  const text5 = elements.Text({ key: `fm-xray-text-${key}`, children: [rowLine2(row2)] });
-  if (!needsAction(row2)) return text5;
+var teachRow = (elements, row2, actions, key) => {
+  const input = elements.Input;
   return elements.Box({
-    key: `fm-xray-item-${key}`,
-    flexDirection: "column",
+    key: `fm-xray-teach-${key}`,
+    flexDirection: "row",
+    columnGap: 2,
     children: [
-      text5,
-      elements.Box({
-        key: `fm-xray-actions-${key}`,
-        flexDirection: "row",
-        columnGap: 2,
-        children: [
-          elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
-          elements.Button({
-            key: `fm-xray-leave-${key}`,
-            label: "Leave it to the machine",
-            onPress: () => actions.leave(row2)
-          }),
-          elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row2) })
-        ]
-      })
+      elements.Button({ key: `fm-xray-predict-${key}`, label: "Predict", onPress: () => actions.predict(row2) }),
+      elements.Button({ key: `fm-xray-know-${key}`, label: "I know this", onPress: () => actions.know(row2) }),
+      ...input === void 0 ? [] : [
+        input({
+          key: `fm-xray-explain-${key}`,
+          label: "Explain",
+          placeholder: "In your words; stored, never graded",
+          submitLabel: "Store",
+          onSubmit: (text6) => actions.explain(row2, text6)
+        })
+      ]
     ]
   });
 };
-var xrayTree = (elements, view, concepts, actions, surface) => {
+var decisionRow = (elements, row2, actions, key) => elements.Box({
+  key: `fm-xray-actions-${key}`,
+  flexDirection: "row",
+  columnGap: 2,
+  children: [
+    elements.Button({ key: `fm-xray-criterion-${key}`, label: "Create criterion", onPress: actions.criterion }),
+    elements.Button({
+      key: `fm-xray-leave-${key}`,
+      label: "Leave it to the machine",
+      onPress: () => actions.leave(row2)
+    }),
+    elements.Button({ key: `fm-xray-skip-${key}`, label: "Skip", onPress: () => actions.skip(row2) })
+  ]
+});
+var itemTree = (elements, row2, actions) => {
+  const key = `${row2.file}:${String(row2.start)}`;
+  const text6 = elements.Text({ key: `fm-xray-text-${key}`, children: [rowLine2(row2)] });
+  const rows = [
+    ...needsAction(row2) ? [decisionRow(elements, row2, actions, key)] : [],
+    ...row2.concepts.length > 0 ? [teachRow(elements, row2, actions, key)] : []
+  ];
+  if (rows.length === 0) return text6;
+  return elements.Box({ key: `fm-xray-item-${key}`, flexDirection: "column", children: [text6, ...rows] });
+};
+var xrayTree = (elements, view, concepts, actions, surface, cards = { teach: void 0, probe: void 0, notice: void 0 }) => {
   const svg = surface === "desktop" || surface === "vscode" ? elements.Svg : void 0;
   const map = svg === void 0 ? concepts.filter((row2) => row2.state !== "unknown").map((row2) => elements.Text({ key: `fm-xray-concept-${row2.concept}`, children: [conceptLine(row2)] })) : [svg({ key: "fm-xray-map", source: mapSvg(concepts), alt: "concept evidence on record, one row per concept" })];
   return elements.Box({
@@ -1712,6 +2131,7 @@ var xrayTree = (elements, view, concepts, actions, surface) => {
           view === void 0 ? "no x-ray for this folder" : `X-ray ${view.task}: ${String(view.beyond)} beyond the record with no criterion`
         ]
       }),
+      ...cardsTree(elements, cards.teach, cards.probe, cards.notice, actions),
       ...(view?.items ?? []).map((row2) => itemTree(elements, row2, actions)),
       elements.Text({ key: "fm-xray-map-head", dimColor: true, children: ["What is on record, per concept:"] }),
       ...map,
@@ -1721,12 +2141,29 @@ var xrayTree = (elements, view, concepts, actions, surface) => {
 };
 
 // src/mod/xray-hooks.ts
+var TEACH_OFF = "teach-back is off; it runs after guards: teach-back: active in .finitemonkey/policy.yml";
 async function loadXray($) {
   const xray = await runCli($, ["xray", "--json"]);
   const concepts = await runCli($, ["conceitos", "evidence", "--json"]);
   memory.xray = xray === void 0 ? void 0 : parseXray(xray);
   memory.concepts = concepts === void 0 ? [] : parseConcepts(concepts);
+  const teach = await runCli($, ["teach", "--json"]);
+  const probes = await runCli($, ["probe", "--json"]);
+  memory.teachCard = teach === void 0 ? void 0 : parseTeachCard(teach);
+  memory.probeCard = probes === void 0 ? void 0 : parseProbeCard(probes);
 }
+function noticeOf(out, done) {
+  if (out === void 0) return TEACH_OFF;
+  const reason = parseTeachReason(out);
+  return reason === void 0 ? done : REASON_TEXT[reason] ?? reason;
+}
+async function teachAct($, args, done) {
+  const out = await runCli($, [...args, "--json"]);
+  memory.teachNotice = args[0] === "probe" ? void 0 : noticeOf(out, done);
+  await loadXray($);
+  $.ui.invalidate("ui.render");
+}
+var conceptsArg = (row2) => ["--concepts", row2.concepts.join(",")];
 async function decideRow($, row2, flag) {
   await runCli($, ["xray", "decide", `${row2.file}:${String(row2.start)}`, flag, "--json"]);
   memory.xray = memory.xray === void 0 ? void 0 : {
@@ -1747,9 +2184,20 @@ function renderXray($, e) {
       criterion: () => createCriterion($),
       leave: (row2) => decideRow($, row2, "--leave"),
       skip: (row2) => decideRow($, row2, "--skip"),
+      predict: (row2) => teachAct($, ["teach", "ask", ...conceptsArg(row2)]),
+      know: (row2) => teachAct($, ["teach", "know", ...conceptsArg(row2)]),
+      explain: (row2, text6) => teachAct(
+        $,
+        ["teach", "explain", ...conceptsArg(row2), text6],
+        "Explanation stored as written; it is never graded."
+      ),
+      answerProbe: (probe, option) => teachAct($, ["probe", "answer", probe, option]),
+      skipProbe: (probe) => teachAct($, ["probe", "skip", probe]),
+      skipQuestion: (question) => teachAct($, ["teach", "skip", question]),
       close: () => $.ui.close({ id: XRAY_PANE })
     },
-    e.surface
+    e.surface,
+    { teach: memory.teachCard, probe: memory.probeCard, notice: memory.teachNotice }
   );
 }
 async function xrayNow($) {
@@ -1772,8 +2220,8 @@ function bandOn() {
   return (memory.state?.band ?? "active") !== "off";
 }
 async function refreshStatus($) {
-  const text5 = await runCli($, ["status", "--json"]);
-  const view = text5 === void 0 ? void 0 : parseStatus(text5);
+  const text6 = await runCli($, ["status", "--json"]);
+  const view = text6 === void 0 ? void 0 : parseStatus(text6);
   if (view === void 0) return;
   memory.view = view;
   $.ui.invalidate("ui.render");
@@ -1823,10 +2271,16 @@ async function renderBand($, e, next) {
 }
 async function renderPane($, e, next) {
   if (e.requestId === FRONTS_PANE)
-    return frontsTree($.ui.resolve(e), memory.board, () => $.ui.close({ id: FRONTS_PANE }));
+    return frontsTree($.ui.resolve(e), memory.board, memory.boardNote, {
+      close: () => $.ui.close({ id: FRONTS_PANE }),
+      open: (session) => {
+        showResume($, session);
+      }
+    });
   if (isApprovalPane(e.requestId)) return renderApproval($, e);
   if (e.requestId === XRAY_PANE) return renderXray($, e);
   if (e.requestId === TRAJECTORY_PANE) return renderTrajectory($, e);
+  if (e.requestId === JUDGE_PANE) return renderJudge($, e);
   if (e.requestId === COST_PANE) return costTree($.ui.resolve(e), memory.cost, () => $.ui.close({ id: COST_PANE }));
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
@@ -1843,15 +2297,20 @@ async function costNow($) {
   }
   return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
 }
+function showResume($, session) {
+  memory.boardNote = openNote(session);
+  $.ui.invalidate("ui.render");
+}
 async function frontsNow($) {
   const json = await runCli($, ["fronts", "board", "--json"]);
-  memory.board = json === void 0 ? [] : boardLines(json);
+  memory.board = json === void 0 ? { lines: [], sessions: [] } : boardView(json);
+  memory.boardNote = void 0;
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
     await $.ui.open({ id: FRONTS_PANE, title: "Finite Monkey · fronts" });
     return {};
   }
-  return { text: memory.board.length === 0 ? "finitemonkey: no worktrees found" : memory.board.join("\n") };
+  return { text: memory.board.lines.length === 0 ? "finitemonkey: no worktrees found" : boardText(memory.board) };
 }
 async function handoffNow($) {
   const brief = await readHandoff($);
@@ -1868,6 +2327,7 @@ async function runGateCommand($, e) {
   if (e.args.trim() === "diverge") return divergeNow($);
   if (e.args.trim() === "xray") return xrayNow($);
   if (e.args.trim() === "trajectory") return trajectoryNow($);
+  if (e.args.trim() === "judge") return judgeNow($);
   if (memory.view === void 0) await refreshStatus($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
@@ -1887,7 +2347,7 @@ ${line2}` };
 }
 
 // src/core/parsed.ts
-var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 
 // src/hooks/fields.ts
 var textField = (record, ...names) => {
@@ -1906,7 +2366,7 @@ var editsOf = (input) => {
   const edits = input["edits"];
   if (!Array.isArray(edits)) return [];
   return edits.flatMap((edit) => {
-    if (!isRecord8(edit)) return [];
+    if (!isRecord9(edit)) return [];
     const oldText = textField(edit, "old_string");
     const newText = textField(edit, "new_string");
     return oldText === void 0 || newText === void 0 ? [] : [{ oldText, newText, all: edit["replace_all"] === true }];
@@ -1915,7 +2375,7 @@ var editsOf = (input) => {
 
 // src/policy/untrusted.ts
 var HIDDEN = /[\u200B-\u200D\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]|\uDB40[\uDC00-\uDC7F]/g;
-var stripHidden = (text5) => text5.replace(HIDDEN, "");
+var stripHidden = (text6) => text6.replace(HIDDEN, "");
 var READERS = /* @__PURE__ */ new Set(["WebFetch", "WebSearch"]);
 var readsUntrusted = (tool) => READERS.has(tool) || tool.startsWith("mcp__");
 
@@ -1923,7 +2383,7 @@ var readsUntrusted = (tool) => READERS.has(tool) || tool.startsWith("mcp__");
 var INSTRUCTION = /(?:^|[.!?:]\s+|^\s*(?:[-*+]|\d+[.)])\s+)(?:always|never|ignore|disregard|forget|override|run|execute|install|curl|wget|you must|you should|do not|don't|please run|sempre|nunca|ignore|execute|rode|siempre|ignora|ejecuta)\b/i;
 var MEMORY_DIR = /[\\/]\.claude[\\/]projects[\\/][^\\/]+[\\/]memory[\\/][^\\/]+$/;
 var isNativeMemory = (file) => MEMORY_DIR.test(file);
-var instructionLines = (text5) => stripHidden(text5).split(/\r?\n/).map((line2) => line2.trim()).filter((line2) => line2 !== "" && INSTRUCTION.test(line2));
+var instructionLines = (text6) => stripHidden(text6).split(/\r?\n/).map((line2) => line2.trim()).filter((line2) => line2 !== "" && INSTRUCTION.test(line2));
 
 // src/mod/memory-hold.ts
 var MEMORY_HOLD_RULE = "memory.untrusted";
@@ -1932,7 +2392,7 @@ var WRITERS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
 var written = (input) => textField(input, "content") ?? editsOf(input).map((edit) => edit.newText).join("\n");
 var untrustedSeen = (tool, before) => readsUntrusted(tool) ? tool : before;
 var memoryHold = (state, tool, input, seen2) => {
-  if (!WRITERS.has(tool) || !isRecord8(input)) return void 0;
+  if (!WRITERS.has(tool) || !isRecord9(input)) return void 0;
   if (!isNativeMemory(textField(input, "file_path") ?? "")) return void 0;
   const hold = state?.memory;
   if (hold?.mode === "off") return void 0;
@@ -1943,7 +2403,7 @@ var memoryHold = (state, tool, input, seen2) => {
 
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord10 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -1954,35 +2414,37 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord9(value)) return void 0;
+  if (!isRecord10(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
     return void 0;
   const regex = compile(pattern);
-  return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
+  const mode = MODES.find((item) => item === value["mode"]);
+  const rule = { id, target: known, pattern, reason, ...mode === void 0 ? {} : { mode } };
+  return regex === void 0 ? void 0 : { rule, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord9(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord10(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
 var memoryOf = (value) => {
-  if (!isRecord9(value) || typeof value["reason"] !== "string") return void 0;
+  if (!isRecord10(value) || typeof value["reason"] !== "string") return void 0;
   const mode = MODES.find((item) => item === value["mode"]) ?? "shadow";
   const untrusted = value["untrusted"];
   return { mode, untrusted: typeof untrusted === "string" ? untrusted : null, reason: value["reason"] };
 };
-var dataOf2 = (parsed) => isRecord9(parsed) && isRecord9(parsed["data"]) ? parsed["data"] : parsed;
-var parseModState = (text5) => {
+var dataOf3 = (parsed) => isRecord10(parsed) && isRecord10(parsed["data"]) ? parsed["data"] : parsed;
+var parseModState = (text6) => {
   let parsed;
   try {
-    parsed = JSON.parse(text5);
+    parsed = JSON.parse(text6);
   } catch {
     return void 0;
   }
-  const data = dataOf2(parsed);
-  if (!isRecord9(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  const data = dataOf3(parsed);
+  if (!isRecord10(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
@@ -1996,6 +2458,7 @@ var parseModState = (text5) => {
     band,
     rules,
     instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
+    withhold: Array.isArray(data["withhold"]) ? data["withhold"].filter((item) => typeof item === "string") : [],
     ...attribution === void 0 ? {} : { attribution },
     ...memory2 === void 0 ? {} : { memory: memory2 },
     ...typeof failReason === "string" ? { failReason } : {}
@@ -2005,9 +2468,9 @@ var parseModState = (text5) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord10 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var text4 = (input, ...names) => {
-  if (!isRecord10(input)) return void 0;
+var isRecord11 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var text5 = (input, ...names) => {
+  if (!isRecord11(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;
@@ -2025,13 +2488,13 @@ var relativeTo = (root, path) => {
 var firstMatch = (rules, value) => rules.find((rule) => rule.regex.test(value));
 var ruleFor = (state, tool, input) => {
   if (FILE_TOOLS.has(tool)) {
-    const path = text4(input, "file_path", "notebook_path");
+    const path = text5(input, "file_path", "notebook_path");
     if (path === void 0) return void 0;
     const rules = state.rules.filter((rule) => rule.rule.target === "path");
     return firstMatch(rules, relativeTo(state.root, path));
   }
   if (SHELL_TOOLS.has(tool)) {
-    const command = text4(input, "command");
+    const command = text5(input, "command");
     if (command === void 0) return void 0;
     return firstMatch(
       state.rules.filter((rule) => rule.rule.target === "command"),
@@ -2040,8 +2503,13 @@ var ruleFor = (state, tool, input) => {
   }
   return void 0;
 };
-var RANK = { allow: 0, ask: 1, deny: 2 };
-var stricter = (decided, tightened) => RANK[tightened.decision] > RANK[decided.decision] ? tightened : decided;
+var RANK2 = { allow: 0, ask: 1, deny: 2 };
+var stricter = (decided, tightened) => RANK2[tightened.decision] > RANK2[decided.decision] ? tightened : decided;
+var MODE_RANK = { off: 0, shadow: 1, active: 2 };
+var modeFor = (stateMode, rule) => {
+  const own = rule.rule.mode;
+  return own === void 0 || MODE_RANK[own] >= MODE_RANK[stateMode] ? stateMode : own;
+};
 var tightenFor = (rule) => ({
   decision: "deny",
   reason: rule.rule.reason
@@ -2050,8 +2518,8 @@ var FAILED_REASON = "finitemonkey: the mod's permission check failed, so this ca
 
 // src/mod/tighten-hooks.ts
 async function refreshState($) {
-  const text5 = await runCli($, ["mod", "state", "--json"]);
-  const state = text5 === void 0 ? void 0 : parseModState(text5);
+  const text6 = await runCli($, ["mod", "state", "--json"]);
+  const state = text6 === void 0 ? void 0 : parseModState(text6);
   if (state === void 0) return;
   const before = memory.state?.instructions;
   memory.state = state;
@@ -2080,8 +2548,10 @@ async function guardCheck($, e, next) {
   if (state === void 0 || state.mode === "off") return decided;
   const rule = ruleFor(state, e.tool, e.input);
   if (rule === void 0) return decided;
-  scheduleRecord($, rule.rule.id, e.tool, state.mode);
-  return state.mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
+  const mode = modeFor(state.mode, rule);
+  if (mode === "off") return decided;
+  scheduleRecord($, rule.rule.id, e.tool, mode);
+  return mode === "active" ? stricter(decided, tightenFor(rule)) : decided;
 }
 async function failClosed() {
   return Promise.resolve({ decision: "deny", reason: memory.state?.failReason ?? FAILED_REASON });

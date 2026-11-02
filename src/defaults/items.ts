@@ -1,6 +1,7 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { CONFIG_FILE, configAt, configMap, parseConfigYaml } from "../git/project-config.js";
+import { type Conventions, conventionsFromTree, conventionsYaml } from "./conventions.js";
 
 export const DEFAULT_ITEMS = [
   "no-attribution",
@@ -28,6 +29,7 @@ export const LEGACY_NEUTRAL_OFF: readonly DefaultItem[] = [
 export interface ProjectDefaults {
   readonly off: readonly DefaultItem[];
   readonly commits: CommitStyle | undefined;
+  readonly conventions?: Conventions;
 }
 
 export const ALL_ON: ProjectDefaults = { off: [], commits: undefined };
@@ -48,7 +50,8 @@ export const defaultsFromConfig = (text: string): ProjectDefaults => {
     if (value !== undefined && ON.has(value)) return false;
     return legacy.includes(item) || (item === "conventional-commits" && commits === "free");
   });
-  return { off, commits };
+  const conventions = conventionsFromTree(tree);
+  return Object.keys(conventions).length === 0 ? { off, commits } : { off, commits, conventions };
 };
 
 export const isOn = (defaults: ProjectDefaults, item: DefaultItem): boolean => !defaults.off.includes(item);
@@ -63,9 +66,13 @@ export const defaultOn = (runtime: Pick<Runtime, "readText">, root: AbsolutePath
 
 export const defaultsYaml = (defaults: ProjectDefaults): readonly string[] => {
   const off = defaults.off.filter((item) => item !== "conventional-commits");
+  const conventions = [
+    ...(defaults.commits === undefined ? [] : [`  commits: ${defaults.commits}`]),
+    ...conventionsYaml(defaults.conventions),
+  ];
   return [
     ...(off.length === 0 ? [] : ["defaults:", ...off.map((item) => `  ${item}: off`)]),
-    ...(defaults.commits === undefined ? [] : ["conventions:", `  commits: ${defaults.commits}`]),
+    ...(conventions.length === 0 ? [] : ["conventions:", ...conventions]),
   ];
 };
 

@@ -56,9 +56,11 @@ const sandbox = (): Box => {
   };
 };
 
-const fm = (box: Box, args: readonly string[]) => {
+const fm = (box: Box, args: readonly string[]) => fmIn(box, box.root, args);
+
+const fmIn = (box: Box, cwd: string, args: readonly string[]) => {
   const result = spawnSync(process.execPath, [BUNDLE, ...args, "--json"], {
-    cwd: box.root,
+    cwd,
     encoding: "utf8",
     env: {
       PATH: `${box.bin}${delimiter}${process.env["PATH"] ?? ""}`,
@@ -161,6 +163,74 @@ describe("pr open", () => {
       ]);
       assert.match(git(box.remote, "branch", "--list", "feat/12-checkout"), /feat\/12-checkout/);
     } finally {
+      box.dispose();
+    }
+  });
+});
+
+describe("pr open: owners and stacked branches", () => {
+  it("a pull request after a C0 conflict requests every listed owner as reviewer", () => {
+    const box = sandbox();
+    try {
+      commit(box, "src/app.ts", "export const app = 2;\n");
+      const merges = join(box.root, ".git", "finitemonkey", "merges");
+      const report = {
+        schema: "finitemonkey/merge-report@1",
+        integration: { branch: "feat/12-checkout", path: box.root, id: "integration" },
+        files: [
+          { path: "src/app.ts", class: "C0", owners: ["@ana", "@acme/payments", "ops@acme.example"] },
+          { path: "src/routes.ts", class: "C1", owners: [] },
+        ],
+      };
+      write(merges, "20261101T000000Z.json", JSON.stringify(report));
+      const run = fm(box, ["pr", "open", "--task", "contract.yml", "--title", "feat: checkout"]);
+      assert.equal(run.code, 0, JSON.stringify(run.body));
+      const args = (ghCalls(box)[0]?.["args"] ?? []) as readonly string[];
+      const reviewers = args.filter((_, index) => args[index - 1] === "--reviewer");
+      assert.deepEqual(reviewers, ["ana", "acme/payments"]);
+    } finally {
+      box.dispose();
+    }
+  });
+
+  it("a child branch opens against its parent and is rebased after the parent is merged", () => {
+    const box = sandbox();
+    try {
+      git(box.root, "switch", "-q", "-c", "feat/10-cart", "main");
+      commit(box, "src/cart.ts", "export const cart = 1;\n");
+      const created = fm(box, [
+        "wt",
+        "new",
+        "child",
+        "--purpose",
+        "pay",
+        "--base",
+        "feat/10-cart",
+        "--parent",
+        "feat/10-cart",
+      ]);
+      assert.equal(created.code, 0, JSON.stringify(created.body));
+      const child = String(field(created.body, "data", "worktree", "path"));
+      assert.ok(existsSync(join(child, "src", "app.ts")), child);
+      write(child, "src/pay.ts", "export const pay = 1;\n");
+      git(child, "add", "-A");
+      git(child, "commit", "-q", "-m", "feat: pay");
+      const first = fmIn(box, child, ["pr", "open", "--task", "contract.yml", "--title", "feat: pay"]);
+      assert.equal(first.code, 0, JSON.stringify(first.body));
+      assert.equal(field(first.body, "data", "base"), "feat/10-cart");
+      git(box.root, "switch", "-q", "main");
+      git(box.root, "merge", "-q", "--squash", "feat/10-cart");
+      git(box.root, "commit", "-q", "-m", "feat: cart (#10)");
+      git(box.root, "push", "-q", "origin", "main");
+      const second = fmIn(box, child, ["pr", "open", "--task", "contract.yml", "--title", "feat: pay"]);
+      assert.equal(second.code, 0, JSON.stringify(second.body));
+      assert.equal(field(second.body, "data", "base"), "main");
+      const bases = ghCalls(box).map((call) => (call["args"] as readonly string[])[3]);
+      assert.deepEqual(bases, ["feat/10-cart", "main"]);
+      assert.equal(git(child, "rev-list", "--count", "main..HEAD"), "1");
+      assert.equal(git(child, "rev-parse", "HEAD^"), git(box.root, "rev-parse", "main"));
+    } finally {
+      spawnSync("git", ["worktree", "unlock", join(box.root, ".claude", "worktrees", "child")], { cwd: box.root });
       box.dispose();
     }
   });

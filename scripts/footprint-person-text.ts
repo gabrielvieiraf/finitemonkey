@@ -13,4 +13,10 @@ export const PERSON_FOOTPRINT_TEXT = {
       "Ideias estacionadas com `finitemonkey park` enquanto uma tarefa está ativa: um id, a tarefa, o texto que você digitou e quando. `finitemonkey unpark <id>` acrescenta uma linha que traz uma de volta. Nada é estacionado sem esse comando.",
     es: "Ideas aparcadas con `finitemonkey park` mientras hay una tarea activa: un id, la tarea, el texto que escribiste y cuándo. `finitemonkey unpark <id>` agrega una línea que recupera una. Nada se aparca sin ese comando.",
   },
-} as const satisfies Readonly<Record<"session-logs" | "parking", Localized>>;
+  "concept-recognition": {
+    en: "When a gate turns green, the concepts the change touches are recognized from its imports, calls, paths and dependencies. Your own package-to-concept map in `.finitemonkey/conceitos-map.json` and the `keywords` an installed package declares in its own `package.json` extend the shipped map. Nothing is read from a prompt for this, and nothing is sent anywhere.",
+    "pt-BR":
+      "Quando um gate fica verde, os conceitos que a mudança toca são reconhecidos pelos imports, chamadas, caminhos e dependências dela. O seu mapa de pacote para conceito em `.finitemonkey/conceitos-map.json` e as `keywords` que um pacote instalado declara no próprio `package.json` estendem o mapa que vem pronto. Nada é lido de um prompt para isso, e nada é enviado a lugar nenhum.",
+    es: "Cuando un gate queda en verde, los conceptos que el cambio toca se reconocen por sus imports, llamadas, rutas y dependencias. Tu propio mapa de paquete a concepto en `.finitemonkey/conceitos-map.json` y las `keywords` que un paquete instalado declara en su propio `package.json` amplían el mapa que viene incluido. Para esto no se lee nada de un prompt, y nada se envía a ningún lado.",
+  },
+} as const satisfies Readonly<Record<"session-logs" | "parking" | "concept-recognition", Localized>>;

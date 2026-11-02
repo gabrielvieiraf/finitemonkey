@@ -2,7 +2,7 @@ import { bypassReviewCommand } from "./bypass.js";
 import { conceitosEvidenceCommand } from "./conceitos.js";
 import { frontsBoardCommand } from "./fronts-board.js";
 import { handoffCommand } from "./handoff.js";
-import { modRecordCommand, modStateCommand } from "./mod.js";
+import { modDropCommand, modRecordCommand, modStateCommand } from "./mod.js";
 import { modCostCommand, modUsageCommand } from "./mod-cost.js";
 import {
   probeAnswerCommand,
@@ -13,6 +13,7 @@ import {
   probeProposeCommand,
   probeSkipCommand,
 } from "./probe.js";
+import { PROVIDER_COMMANDS } from "./provider-run.js";
 import { statusCommand } from "./status.js";
 import { taskTrustCommand } from "./task-trust.js";
 import { trajectoryCommand, trajectoryExportCommand, trajectoryForgetCommand } from "./trajectory.js";
@@ -22,6 +23,7 @@ import { xrayCommand, xrayDecideCommand, xrayExportCommand, xrayForgetCommand } 
 export const MOD_COMMANDS = [
   modStateCommand,
   modRecordCommand,
+  modDropCommand,
   statusCommand,
   bypassReviewCommand,
   handoffCommand,
@@ -44,4 +46,5 @@ export const MOD_COMMANDS = [
   trajectoryCommand,
   trajectoryForgetCommand,
   trajectoryExportCommand,
+  ...PROVIDER_COMMANDS,
 ] as const satisfies readonly CommandSpec[];

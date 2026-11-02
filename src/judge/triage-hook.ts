@@ -1,44 +1,70 @@
 import { relative } from "node:path";
 
+import { toAbsolutePath } from "../core/brand.js";
+import { optionalString } from "../core/parsed.js";
 import { projectPaths } from "../gate/hooks/common.js";
-import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
-import { featureMode } from "../policy/feature.js";
-import { toolInput, toolName, writtenTexts } from "../secrets/guards/tool-input.js";
+import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
+import { RECORD_DIR } from "../knowledge/decision-record.js";
+import { toolInput, toolName, type WrittenText, writtenTexts } from "../secrets/guards/tool-input.js";
+import type { FmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
-import { appendEntry, entryId, readEntries } from "./store.js";
-import { DOCUMENT, flagsFor, TRIAGE_CLAIMS_PER_FLAG, TRIAGE_FLAGS_PER_TASK, triageRows } from "./triage.js";
-import { JUDGE_FEATURE } from "./types.js";
+import type { XrayRow } from "./response.js";
+import { DOCUMENT, triageRows } from "./triage.js";
+import { raiseTriage, triageLines, triageOff } from "./triage-raise.js";
+import { commitRows, decisionRows, type TriageTrigger } from "./triage-triggers.js";
+import type { JudgeEntry } from "./types.js";
 
 const allow = { kind: "allow" } as const;
 
-export const triageAfterWrite: HookHandler = (input) => {
-  const paths = projectPaths(input);
-  if (paths === undefined || featureMode(input.runtime, paths, JUDGE_FEATURE) === "off") return allow;
-  const docs = writtenTexts(toolName(input.payload), toolInput(input.payload)).filter(
-    (item) => DOCUMENT.test(item.file) && !relative(paths.root, item.file).split(/[\\/]/).includes(".finitemonkey"),
+const GIT_COMMIT = /(?:^|[;&|]\s*)git\s+(?:-[^\s]+\s+)*commit\b/;
+
+const partsOf = (paths: FmPaths, file: string): readonly string[] => relative(paths.root, file).split(/[\\/]/);
+
+const isRecordFile = (paths: FmPaths, file: string): boolean => {
+  const parts = partsOf(paths, file);
+  return parts[0] === ".finitemonkey" && parts[1] === RECORD_DIR && file.endsWith(".json");
+};
+
+const wholeText = (input: HookInput, item: WrittenText): string => {
+  const text = input.runtime.readText(toAbsolutePath(item.file, input.cwd));
+  return text.ok ? text.value : item.text;
+};
+
+type RowPick = (entries: readonly JudgeEntry[]) => readonly XrayRow[];
+
+const pickOf = (
+  input: HookInput,
+  paths: FmPaths,
+): { readonly trigger: TriageTrigger; readonly pick: RowPick } | undefined => {
+  const tool = toolName(input.payload);
+  if (tool === "Bash") {
+    if (!GIT_COMMIT.test(optionalString(toolInput(input.payload), "command") ?? "")) return undefined;
+    const message = input.runtime.git(["log", "-1", "--format=%B"], paths.root);
+    return message.ok ? { trigger: "commit", pick: (entries) => commitRows(entries, message.stdout) } : undefined;
+  }
+  const written = writtenTexts(tool, toolInput(input.payload));
+  const records = written.filter((item) => isRecordFile(paths, item.file));
+  if (records.length > 0)
+    return {
+      trigger: "decision",
+      pick: (entries) => records.flatMap((item) => decisionRows(entries, wholeText(input, item))),
+    };
+  const docs = written.filter(
+    (item) => DOCUMENT.test(item.file) && !partsOf(paths, item.file).includes(".finitemonkey"),
   );
-  if (docs.length === 0) return allow;
-  const entries = readEntries(input.runtime, paths);
+  return docs.length === 0
+    ? undefined
+    : { trigger: "document", pick: (entries) => docs.flatMap((doc) => triageRows(entries, doc.text)) };
+};
+
+export const triageAfterWrite: HookHandler = (input): HookDecision => {
+  const paths = projectPaths(input);
+  if (paths === undefined || triageOff(input.runtime, paths)) return allow;
+  const found = pickOf(input, paths);
+  if (found === undefined) return allow;
   const task = readState(input.runtime, paths).active ?? "none";
-  const flagged = flagsFor(entries, task);
-  const rows = docs
-    .flatMap((doc) => triageRows(entries, doc.text))
-    .filter((row) => !flagged.claims.includes(row.claim))
-    .slice(0, TRIAGE_CLAIMS_PER_FLAG);
-  if (rows.length === 0 || flagged.flags >= TRIAGE_FLAGS_PER_TASK) return allow;
-  const flag = entryId("t", task, input.runtime.now());
-  for (const row of rows)
-    appendEntry(input.runtime, paths, {
-      type: "signal",
-      id: entryId("g", task, row.claim),
-      at: input.runtime.now(),
-      family: "triage-flag",
-      confidence: 0,
-      state: "shadow",
-      ref: [task, flag, row.claim].join("\u0000"),
-    });
-  const lines = rows.map((row) => input.t("judge.triage.row", { claim: row.claim, band: row.band, text: row.text }));
-  return { kind: "block", reason: [input.t("judge.triage.head", { count: rows.length }), ...lines].join("\n") };
+  const rows = raiseTriage(input.runtime, paths, { task, ...found });
+  return rows.length === 0 ? allow : { kind: "block", reason: triageLines(input.t, found.trigger, rows).join("\n") };
 };
 
 export const TRIAGE_HANDLERS: HookHandlers = { PostToolUse: [triageAfterWrite] };

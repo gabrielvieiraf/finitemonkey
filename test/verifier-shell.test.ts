@@ -44,6 +44,9 @@ const WRITES = [
   "node -e \"require('fs').writeFileSync('x', '1')\"",
   "git checkout -- src/a.ts",
   "finitemonkey critique verify --base main > out.txt",
+  "npm test > results.txt",
+  "npx vitest run -u",
+  "npx jest --updateSnapshot",
 ];
 
 const READS = [
@@ -52,6 +55,10 @@ const READS = [
   "ls -la src",
   'echo \'{"verdict":"approve","findings":[]}\' | finitemonkey critique verify --base main',
   "npx finitemonkey critique verify --base main --file review.json",
+  "npm test",
+  "npx vitest run",
+  "pytest -q",
+  "node --test test/a.test.js",
 ];
 
 describe("the verifier agent runs Bash read-only", () => {

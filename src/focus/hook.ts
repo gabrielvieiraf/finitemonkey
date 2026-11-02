@@ -1,13 +1,11 @@
-import { isAbsolute, relative } from "node:path";
+import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
-import { matchesAny } from "../core/glob.js";
 import type { JsonObject } from "../core/parsed.js";
-import { toPosixPath } from "../core/posix-path.js";
 import { readFronts } from "../fronts/state.js";
 import { contextOutput, projectPaths } from "../gate/hooks/common.js";
 import { onceFor } from "../guardian/once.js";
-import { activeTask, knownTasks } from "../guardian/tasks.js";
+import { activeTask, type KnownTask, knownTasks } from "../guardian/tasks.js";
 import { FILE_TOOLS } from "../guards/context.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
@@ -17,6 +15,8 @@ import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import { cardFor, cardLines } from "./card.js";
 import { loadPerson } from "./config.js";
+import { historyLimit } from "./limit.js";
+import { type Deviation, deviationOf, pathMentions } from "./scope.js";
 
 export const FOCUS_FEATURE = "focus-card";
 const SEEN_FILE = "focus.json";
@@ -55,6 +55,14 @@ const limitLines = (input: HookInput, paths: FmPaths): readonly string[] => {
   return open > limit ? [input.t("focus.limit", { open, limit })] : [];
 };
 
+const proposalLines = (input: HookInput, paths: FmPaths): readonly string[] => {
+  const proposal = historyLimit(input.runtime, paths, knownTasks(input.runtime, paths));
+  if (proposal === undefined || proposal.limit === loadPerson(input.runtime, paths.root).projectLimit) return [];
+  if (!onceFor(input.runtime, paths, "focus-limit-proposal.json", String(proposal.limit))) return [];
+  const weeks = proposal.weeks.map((week) => `${week.week} (${String(week.open)})`).join(", ");
+  return [input.t("focus.limit.proposal", { limit: proposal.limit, weeks })];
+};
+
 const idleReturn = (input: HookInput, paths: FmPaths): boolean => {
   const file = paths.cache(SEEN_FILE);
   const last = readJsonFile(input.runtime, file)?.["lastPromptAt"];
@@ -78,7 +86,7 @@ const shown = (lines: readonly string[], reason: string): JsonObject => ({
 export const focusSession: HookHandler = (input) => {
   const paths = usable(input);
   if (paths === undefined) return allow;
-  const lines = [...cardText(input, paths), ...limitLines(input, paths)];
+  const lines = [...cardText(input, paths), ...limitLines(input, paths), ...proposalLines(input, paths)];
   return emit(input, paths, lines, shown(lines, textField(input.payload.raw, "source") ?? "startup"));
 };
 
@@ -89,15 +97,11 @@ export const focusPrompt: HookHandler = (input) => {
   return emit(input, paths, lines, shown(lines, "prompt"));
 };
 
-const relativeFile = (root: string, target: string): string | undefined => {
-  const rel = relative(root, toAbsolutePath(target, toAbsolutePath(root)));
-  if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) return undefined;
-  const posix = toPosixPath(rel);
-  return posix.startsWith(".finitemonkey/") || posix.startsWith(".git/") ? undefined : posix;
-};
+const askPark = (input: HookInput, paths: FmPaths, task: KnownTask, found: Deviation): boolean =>
+  onceFor(input.runtime, paths, "focus-parking.json", `${task.contract.id}\u0000${found.area}`);
 
-const scopeGlobs = (paths: readonly string[]): readonly string[] =>
-  paths.flatMap((path) => (path.endsWith("/") ? [path, `${path}**`] : [path, `${path}/**`]));
+const parkQuestion = (input: HookInput, task: KnownTask, found: Deviation): string =>
+  input.t("focus.park.ask", { file: found.file, task: task.contract.id, scope: task.contract.scope.paths.join(", ") });
 
 export const focusAfterEdit: HookHandler = (input) => {
   const raw = input.payload.raw;
@@ -105,17 +109,25 @@ export const focusAfterEdit: HookHandler = (input) => {
   const paths = usable(input);
   const task = paths === undefined ? undefined : activeTask(input.runtime, paths);
   if (target === undefined || paths === undefined || task === undefined || task.contract.implicit) return allow;
-  const scope = task.contract.scope.paths;
-  const file = relativeFile(paths.root, target);
-  if (file === undefined || scope.length === 0 || matchesAny(file, scopeGlobs(scope))) return allow;
-  const area = file.includes("/") ? file.slice(0, file.indexOf("/")) : file;
-  if (!onceFor(input.runtime, paths, "focus-parking.json", `${task.contract.id}\u0000${area}`)) return allow;
-  const line = input.t("focus.park.ask", { file, task: task.contract.id, scope: scope.join(", ") });
-  return emit(input, paths, [line], { reason: "park", area });
+  const found = deviationOf(paths.root, task.contract.scope.paths, target);
+  if (found === undefined || !askPark(input, paths, task, found)) return allow;
+  return emit(input, paths, [parkQuestion(input, task, found)], { reason: "park", area: found.area });
+};
+
+export const focusPromptScope: HookHandler = (input) => {
+  const paths = usable(input);
+  const task = paths === undefined ? undefined : activeTask(input.runtime, paths);
+  if (paths === undefined || task === undefined || task.contract.implicit) return allow;
+  const exists = (file: string): boolean => input.runtime.stat(toAbsolutePath(join(paths.root, file))) !== undefined;
+  const mentioned = pathMentions(textField(input.payload.raw, "prompt") ?? "", exists);
+  const deviations = mentioned.flatMap((file) => deviationOf(paths.root, task.contract.scope.paths, file) ?? []);
+  const found = deviations.find((item) => askPark(input, paths, task, item));
+  if (found === undefined) return allow;
+  return emit(input, paths, [parkQuestion(input, task, found)], { reason: "park-prompt", area: found.area });
 };
 
 export const FOCUS_HANDLERS: HookHandlers = {
   SessionStart: [focusSession],
-  UserPromptSubmit: [focusPrompt],
+  UserPromptSubmit: [focusPrompt, focusPromptScope],
   PostToolUse: [focusAfterEdit],
 };

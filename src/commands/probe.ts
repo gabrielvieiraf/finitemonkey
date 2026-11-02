@@ -48,6 +48,7 @@ const shown = (probe: Probe): Readonly<Record<string, unknown>> => ({
   why: probe.why,
   options: probe.options.map((option) => ({ id: option.id, text: option.text })),
   status: probe.status,
+  presented: probe.presentedAt !== undefined,
 });
 
 const cardLines = (ctx: Ctx, probe: Probe): readonly string[] => [

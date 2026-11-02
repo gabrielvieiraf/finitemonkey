@@ -1,26 +1,59 @@
 import { eventsPath, readConceptEvents } from "../conceitos/evidence.js";
-import { trajectories, TRAJECTORY_FEATURE, TRAJECTORY_SCHEMA } from "../conceitos/trajectory.js";
+import { forgetConceptEvidence } from "../conceitos/judge-log.js";
+import { trajectories, TRAJECTORY_FEATURE, TRAJECTORY_SCHEMA, weekKeys } from "../conceitos/trajectory.js";
 import { chartLines, colorDepth } from "../conceitos/trajectory-ansi.js";
 import { tableLines } from "../conceitos/trajectory-chart.js";
 import { helpMarks } from "../conceitos/trajectory-now.js";
 import type { Theme } from "../conceitos/trajectory-palette.js";
-import type { TermLabels } from "../conceitos/trajectory-term.js";
+import { type ResearchMark, type WithResearch, withResearch } from "../conceitos/trajectory-research.js";
+import { researchMarks } from "../conceitos/trajectory-research-read.js";
+import type { ResearchLabels, TermLabels } from "../conceitos/trajectory-term.js";
 import { stringOption } from "../core/args.js";
 import { nowMs } from "../core/clock.js";
 import type { Ctx } from "../core/context.js";
 import { type CommandResult, success } from "../core/result.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
+import { EVENTS_FEATURE } from "../judge/events.js";
+import { outcomeMarks } from "../judge/horizon-outcome.js";
+import { readEntries } from "../judge/store.js";
+import { JUDGE_FEATURE } from "../judge/types.js";
 import { featureMode } from "../policy/feature.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
 
 const pathsOf = (ctx: Ctx): FmPaths => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 
-const compute = (ctx: Ctx) => {
+const researchOf = (ctx: Ctx, paths: FmPaths): readonly ResearchMark[] =>
+  featureMode(ctx.runtime, paths, JUDGE_FEATURE) === "off" || featureMode(ctx.runtime, paths, EVENTS_FEATURE) === "off"
+    ? []
+    : researchMarks(readEntries(ctx.runtime, paths));
+
+const compute = (ctx: Ctx): WithResearch => {
   const paths = pathsOf(ctx);
   const log = ctx.runtime.readText(paths.log);
-  return trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(log.ok ? log.value : ""), nowMs(ctx.runtime));
+  const text = log.ok ? log.value : "";
+  const now = nowMs(ctx.runtime);
+  const domains = trajectories(readConceptEvents(ctx.runtime, paths), helpMarks(text), now, outcomeMarks(text));
+  return withResearch(domains, researchOf(ctx, paths), weekKeys(now));
 };
+
+const researchLabels = (ctx: Ctx): ResearchLabels => ({
+  lane: ctx.t("trajectory.research.lane"),
+  open: ctx.t("trajectory.research.open"),
+  revert: ctx.t("trajectory.research.revert"),
+  agent: ctx.t("trajectory.research.agent"),
+  person: ctx.t("trajectory.research.person"),
+});
+
+const outsideLines = (ctx: Ctx, outside: readonly ResearchMark[]): readonly string[] =>
+  outside.map((mark) =>
+    ctx.t("trajectory.research.outside", {
+      field: mark.field,
+      week: mark.week,
+      claim: mark.claim,
+      fix: researchLabels(ctx)[mark.fix],
+    }),
+  );
 
 const termLabels = (ctx: Ctx): TermLabels => ({
   band: {
@@ -37,6 +70,16 @@ const termLabels = (ctx: Ctx): TermLabels => ({
   ricochet: ctx.t("trajectory.ricochet"),
   held: ctx.t("trajectory.held"),
   hypotheses: ctx.t("trajectory.hypotheses"),
+  research: researchLabels(ctx),
+  splits: {
+    name: {
+      alone: ctx.t("trajectory.split.alone"),
+      proximal: ctx.t("trajectory.split.proximal"),
+      horizon: ctx.t("trajectory.split.horizon"),
+    },
+    measured: (splits) => ctx.t("trajectory.split_measured", { splits }),
+    notDrawn: (splits) => ctx.t("trajectory.split_hypotheses", { splits }),
+  },
   noData: (evidence) => ctx.t("trajectory.no_data", { evidence }),
   head: (domain, from, to, evidence) => ctx.t("trajectory.head", { domain, from, to, evidence }),
 });
@@ -49,7 +92,9 @@ export const terminalTheme = (env: Ctx["env"]): Theme =>
 const show = (ctx: Ctx, domain: string | undefined, table: boolean): CommandResult => {
   const mode = featureMode(ctx.runtime, pathsOf(ctx), TRAJECTORY_FEATURE);
   if (mode === "off") return success({ schema: TRAJECTORY_SCHEMA, mode, domains: [] }, [ctx.t("trajectory.off")]);
-  const all = compute(ctx).filter((item) => domain === undefined || item.domain === domain);
+  const computed = compute(ctx);
+  const all = computed.domains.filter((item) => domain === undefined || item.domain === domain);
+  const outside = domain === undefined ? computed.outside : [];
   const lines = table
     ? tableLines(all, {
         domain: ctx.t("trajectory.domain"),
@@ -61,18 +106,24 @@ const show = (ctx: Ctx, domain: string | undefined, table: boolean): CommandResu
         theme: terminalTheme(ctx.env),
         labels: termLabels(ctx),
       });
-  return success({ schema: TRAJECTORY_SCHEMA, mode, domains: all }, lines);
+  return success({ schema: TRAJECTORY_SCHEMA, mode, domains: all, research: outside }, [
+    ...lines,
+    ...outsideLines(ctx, outside),
+  ]);
 };
 
 const forget = (ctx: Ctx): CommandResult => {
   const removed = ctx.runtime.remove(eventsPath(pathsOf(ctx))).ok;
-  return success({ schema: TRAJECTORY_SCHEMA, removed: removed ? 1 : 0 }, [ctx.t("trajectory.forgotten")]);
+  const dropped = forgetConceptEvidence(ctx.runtime, pathsOf(ctx)) > 0;
+  return success({ schema: TRAJECTORY_SCHEMA, removed: removed || dropped ? 1 : 0 }, [ctx.t("trajectory.forgotten")]);
 };
 
 const exportAll = (ctx: Ctx): CommandResult => {
+  const computed = compute(ctx);
   const data = {
     schema: TRAJECTORY_SCHEMA,
-    domains: compute(ctx),
+    domains: computed.domains,
+    research: computed.outside,
     events: readConceptEvents(ctx.runtime, pathsOf(ctx)),
   };
   return success(data, [JSON.stringify(data, null, 2)]);

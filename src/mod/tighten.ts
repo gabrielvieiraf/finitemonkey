@@ -1,4 +1,4 @@
-import type { CompiledRule, LoadedState } from "./state.js";
+import type { CompiledRule, LoadedState, TightenMode } from "./state.js";
 
 export type Decision = "allow" | "ask" | "deny";
 
@@ -57,6 +57,13 @@ const RANK: Readonly<Record<Decision, number>> = { allow: 0, ask: 1, deny: 2 };
 
 export const stricter = (decided: CheckResult, tightened: CheckResult): CheckResult =>
   RANK[tightened.decision] > RANK[decided.decision] ? tightened : decided;
+
+const MODE_RANK: Readonly<Record<TightenMode, number>> = { off: 0, shadow: 1, active: 2 };
+
+export const modeFor = (stateMode: TightenMode, rule: CompiledRule): TightenMode => {
+  const own = rule.rule.mode;
+  return own === undefined || MODE_RANK[own] >= MODE_RANK[stateMode] ? stateMode : own;
+};
 
 export const tightenFor = (rule: CompiledRule): CheckResult => ({
   decision: "deny",

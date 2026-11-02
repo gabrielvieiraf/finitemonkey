@@ -5,6 +5,7 @@ import { SETTINGS_FILE } from "../install/layout.js";
 import { type Manifest, readManifest, type Surface } from "./manifest.js";
 import { AGENTS_MARKERS, workflowRuleIds } from "./outputs.js";
 import { applicableSurfaces } from "./plan.js";
+import { RULES_DOC, RULES_DOC_MARK } from "./rules-doc.js";
 import type { ProjectRule, RuleBucket, RuleSeverity } from "./types.js";
 
 export const COVERAGE_STATUSES = ["full", "partial", "text only", "none"] as const;
@@ -82,7 +83,8 @@ export const ruleCoverage = (
   const inWorkflow = workflow === undefined ? new Set<string>() : workflowRuleIds(workflow);
   const prose = proseText(runtime, root);
   const agents = read(runtime, root, "AGENTS.md") ?? "";
-  const block = agents.includes(AGENTS_MARKERS.begin) ? agents.slice(agents.indexOf(AGENTS_MARKERS.begin)) : "";
+  const doc = read(runtime, root, RULES_DOC) ?? "";
+  const block = `${agents.includes(AGENTS_MARKERS.begin) ? agents.slice(agents.indexOf(AGENTS_MARKERS.begin)) : ""}\n${doc.startsWith(RULES_DOC_MARK) ? doc : ""}`;
   return rules.map((rule) => {
     const compiled = manifest.rules[rule.id]?.surfaces ?? [];
     const present: Surface[] = [];

@@ -94,6 +94,8 @@ const button = (radius: number): ProbeNode => ({
   borderWidth: 0,
   spacing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   position: "static",
+  zIndex: "auto",
+  isolates: false,
   clipped: false,
   live: false,
 });

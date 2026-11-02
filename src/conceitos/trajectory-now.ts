@@ -1,6 +1,7 @@
 import { nowMs } from "../core/clock.js";
 import { parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import { outcomeMarks } from "../judge/horizon-outcome.js";
 import { isMuted, readBudget } from "../policy/budget.js";
 import { featureMode } from "../policy/feature.js";
 import { loadPolicy } from "../policy/policy.js";
@@ -54,5 +55,6 @@ export const trajectoryNowOf = (runtime: Runtime, paths: FmPaths): TrajectoryNow
   const events = readConceptEvents(runtime, paths);
   if (events.length === 0) return null;
   const log = runtime.readText(paths.log);
-  return nowOf(trajectories(events, helpMarks(log.ok ? log.value : ""), nowMs(runtime)));
+  const text = log.ok ? log.value : "";
+  return nowOf(trajectories(events, helpMarks(text), nowMs(runtime), outcomeMarks(text)));
 };

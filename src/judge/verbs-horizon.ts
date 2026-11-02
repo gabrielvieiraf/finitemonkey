@@ -10,6 +10,7 @@ import {
   type HorizonProposer,
   latestHelps,
 } from "./horizon.js";
+import { recordOutcome } from "./horizon-outcome.js";
 import type { JudgeRequest } from "./request.js";
 import { type JudgeResponse, response } from "./response.js";
 import { entryId, readEntries } from "./store.js";
@@ -69,6 +70,7 @@ export const settleHelp = (
   const state = request.verb === "accept" ? "accepted" : "dismissed";
   const written = appendNow(deps, { ...help, at: deps.runtime.now(), state });
   if (!written.ok || written.entry.type !== "horizon") return response(request.verb, { reason: "write_failed" });
+  recordOutcome(deps.runtime, deps.paths, help, state);
   if (state === "accepted")
     recordHorizon(deps.runtime, deps.paths, {
       source: "research",

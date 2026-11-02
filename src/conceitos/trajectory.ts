@@ -3,11 +3,14 @@ import { DOMAINS } from "../perfil/types.js";
 import { isoWeek } from "../signals/blind-band.js";
 import { type ConceptId, domainOf } from "./concepts.js";
 import { type ConceptEvent, stateOf } from "./evidence.js";
+import type { ResearchMark } from "./trajectory-research.js";
+import { MIN_EVIDENCE, type OutcomeMark, type WeekSplits } from "./trajectory-split-types.js";
+import { classify, splitsOf } from "./trajectory-splits.js";
 
 export const TRAJECTORY_SCHEMA = "finitemonkey/trajectory@1";
 export const TRAJECTORY_FEATURE = "trajectory";
 export const WEEKS = 12;
-export const MIN_EVIDENCE = 6;
+export { MIN_EVIDENCE } from "./trajectory-split-types.js";
 export const MIN_WEEKS = 2;
 
 export interface HelpMark {
@@ -26,6 +29,7 @@ export interface Week {
   readonly unstable: number | null;
   readonly work: number | null;
   readonly evidence: number;
+  readonly splits?: WeekSplits;
 }
 
 export type MarkKind = "ricochet" | "held";
@@ -54,6 +58,7 @@ export interface DomainTrajectory {
   readonly weeks: readonly Week[];
   readonly marks: readonly Mark[];
   readonly position: string | null;
+  readonly research?: readonly ResearchMark[];
 }
 
 const DAY = 86_400_000;
@@ -65,7 +70,7 @@ export const weekKeys = (now: number, count = WEEKS): readonly string[] =>
   );
 
 const INDEPENDENT = new Set(["own_change", "own_repair"]);
-const DISCERNMENT = new Set(["prediction_right", "check_right"]);
+const DISCERNMENT = new Set(["prediction_right", "check_right", "explanation_right"]);
 
 const refOf = (event: ConceptEvent): EvidenceRef => ({
   kind: event.kind,
@@ -91,7 +96,7 @@ export const marksOf = (events: readonly ConceptEvent[]): readonly Mark[] =>
     return [{ kind, week, concept: event.concept, at: event.at, from, evidence }];
   });
 
-const WRONG = new Set(["prediction_wrong", "check_wrong"]);
+const WRONG = new Set(["prediction_wrong", "check_wrong", "explanation_wrong"]);
 
 export const unstableCount = (events: readonly ConceptEvent[]): number => {
   const right = new Set(events.filter((event) => DISCERNMENT.has(event.kind)).map((event) => event.concept));
@@ -130,7 +135,7 @@ export const landedLevel = (
   return Math.max(...levels);
 };
 
-export const trajectoryOf = (
+const seriesOf = (
   domain: Domain,
   all: readonly ConceptEvent[],
   helps: readonly HelpMark[],
@@ -180,8 +185,22 @@ export const trajectoryOf = (
   };
 };
 
+export const trajectoryOf = (
+  domain: Domain,
+  all: readonly ConceptEvent[],
+  helps: readonly HelpMark[],
+  now: number,
+  outcomes: readonly OutcomeMark[] = [],
+): DomainTrajectory => {
+  const series = seriesOf(domain, all, helps, now);
+  const classified = classify(all.filter((event) => domainOf(event.concept) === domain));
+  const weeks = series.weeks.map((week) => ({ ...week, splits: splitsOf(classified, outcomes, domain, week.week) }));
+  return { ...series, weeks };
+};
+
 export const trajectories = (
   events: readonly ConceptEvent[],
   helps: readonly HelpMark[],
   now: number,
-): readonly DomainTrajectory[] => DOMAINS.map((domain) => trajectoryOf(domain, events, helps, now));
+  outcomes: readonly OutcomeMark[] = [],
+): readonly DomainTrajectory[] => DOMAINS.map((domain) => trajectoryOf(domain, events, helps, now, outcomes));

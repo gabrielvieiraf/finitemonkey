@@ -1,3 +1,4 @@
+import { canonicalConcept } from "../conceitos/concepts.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import {
   ANCHOR_KINDS,
@@ -46,7 +47,15 @@ const anchorOf = (value: unknown): JudgeAnchor | undefined => {
   const hash = text(value, "hash");
   if (kind === undefined || ref === undefined || hash === undefined) return undefined;
   const inputs = texts(value, "inputs");
-  return { kind, ref, hash, ...optional(value, ["span"]), ...(inputs.length === 0 ? {} : { inputs }) };
+  const page = value["page"];
+  return {
+    kind,
+    ref,
+    hash,
+    ...optional(value, ["span"]),
+    ...(inputs.length === 0 ? {} : { inputs }),
+    ...(typeof page === "number" && Number.isInteger(page) && page > 0 ? { page } : {}),
+  };
 };
 
 export const anchorsOf = (value: unknown): readonly JudgeAnchor[] =>
@@ -79,8 +88,17 @@ const evidenceOf: Parser = (record, base) => {
   const origin = oneOf(ORIGINS, record["origin"]);
   const ref = text(record, "ref") ?? (proof === "exposure" ? "exposure" : undefined);
   if (proof === undefined || result === undefined || origin === undefined || ref === undefined) return undefined;
-  const concepts = texts(record, "concepts");
-  return { type: "evidence", ...base, concepts, proof, result, ref, origin, ...optional(record, ["claim"]) };
+  const concepts = texts(record, "concepts").map(canonicalConcept);
+  return {
+    type: "evidence",
+    ...base,
+    concepts,
+    proof,
+    result,
+    ref,
+    origin,
+    ...optional(record, ["claim", "task", "file", "source", "match"]),
+  };
 };
 
 const claimOf: Parser = (record, base) => {
@@ -93,7 +111,7 @@ const claimOf: Parser = (record, base) => {
     ...base,
     text: claimText,
     kind,
-    concepts: texts(record, "concepts"),
+    concepts: texts(record, "concepts").map(canonicalConcept),
     anchors: anchorsOf(record["anchors"]),
     provenance: text(record, "provenance") ?? "model",
     ...(because.length === 0 ? {} : { because }),
@@ -155,7 +173,7 @@ const eventOf: Parser = (record, base) => {
   const support = oneOf(SUPPORT_STATES, record["support"]);
   if (claim === undefined || cause === undefined || state === undefined || support === undefined) return undefined;
   const bands = bandsOf(record["bands"]) ?? {};
-  const fixed = optional(record, ["fixedBy"]);
+  const fixed = optional(record, ["fixedBy", "fixedCommit"]);
   return { type: "event", ...base, claim, cause, state, support, bands, sources: texts(record, "sources"), ...fixed };
 };
 
@@ -178,7 +196,7 @@ const probeOf: Parser = (record, base) => {
     type: "probe",
     ...base,
     claim,
-    concepts: texts(record, "concepts"),
+    concepts: texts(record, "concepts").map(canonicalConcept),
     form,
     prompt,
     options,
@@ -186,6 +204,22 @@ const probeOf: Parser = (record, base) => {
     keyHash,
     ...extra,
   };
+};
+
+const score = (record: JsonObject, key: string): number | undefined => {
+  const value = record[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+};
+
+const profileOf: Parser = (record, base) => {
+  const domain = text(record, "domain");
+  const tool = score(record, "tool");
+  const knowledge = score(record, "knowledge");
+  const quick = optional(record, ["quickStart"]);
+  if (domain === undefined)
+    return quick["quickStart"] === undefined ? undefined : { type: "profile", ...base, ...quick };
+  if (tool === undefined || knowledge === undefined) return undefined;
+  return { type: "profile", ...base, domain, tool, knowledge, ...optional(record, ["claimed"]), ...quick };
 };
 
 const PARSERS: Readonly<Record<string, Parser>> = {
@@ -222,6 +256,7 @@ const PARSERS: Readonly<Record<string, Parser>> = {
     return { type: "item", ...base, origin, hash, instructions, synthesis: record["synthesis"] === true };
   },
   probe: probeOf,
+  profile: profileOf,
   ask: (record, base) => {
     const fields = optional(record, ["task", "decision", "question", "criterion"]);
     const { task, decision, question, criterion } = fields;

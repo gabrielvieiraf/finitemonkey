@@ -14,6 +14,7 @@ import {
   versionBumped,
 } from "./breaking.js";
 import { API_CONSISTENCY_FEATURE, consistencyProblems } from "./consistency.js";
+import { liveOutcome } from "./gate-running-api.js";
 import { type ApiRegistry, CONTRACT_FILE, parseRegistry } from "./registry.js";
 import { parseShape } from "./shape.js";
 
@@ -113,6 +114,6 @@ export const apiOutcome = (ctx: GateContext): ApiOutcome => {
   const source = readWorking(ctx, CONTRACT_FILE);
   const head = source === undefined ? undefined : sideOf(source);
   if (head === undefined) return NONE;
-  const parts = [consistency(ctx, head), breaking(ctx, head)];
+  const parts = [consistency(ctx, head), liveOutcome(ctx), breaking(ctx, head)];
   return { notes: parts.flatMap((part) => part.notes), blocking: parts.some((part) => part.blocking) };
 };

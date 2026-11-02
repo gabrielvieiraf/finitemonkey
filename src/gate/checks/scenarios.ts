@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { toAbsolutePath } from "../../core/brand.js";
 import { nowMs } from "../../core/clock.js";
 import { isRecord, parseJsonObject } from "../../core/parsed.js";
+import { migrateConfig } from "../../db/throwaway.js";
 import { logEvent } from "../../evidence/log.js";
 import type { Note } from "../../evidence/types.js";
 import { loadProjectConfig } from "../../git/project-config.js";
@@ -14,13 +15,15 @@ import { type CheckOutcome, failed, type GateContext, note, passed, unverified }
 const RUN_TIMEOUT_MS = 180_000;
 const MIN_REMAINING_MS = 5_000;
 const KINDS = new Set(["owner_reads", "other_reads", "other_changes", "other_deletes", "anonymous_reads", "setup"]);
+const ROW_KINDS = new Set(["owner_reads", "other_reads"]);
+const MIGRATION = /(?:^|\/)(?:migrations|supabase)\/.*\.sql$/;
 
 export const touchesAccess = (ctx: GateContext): boolean => {
   if ((ctx.size?.sensitive.length ?? 0) > 0) return true;
   return ctx.changes.some((change) => {
     if (change.status === "D") return false;
     const text = ctx.runtime.readText(toAbsolutePath(join(ctx.paths.root, change.path)));
-    return text.ok && isRouteFile(change.path, text.value);
+    return text.ok && (isRouteFile(change.path, text.value) || MIGRATION.test(change.path.replaceAll("\\", "/")));
   });
 };
 
@@ -31,12 +34,36 @@ interface Ran {
   readonly status: string;
 }
 
-const resultsOf = (stdout: string): readonly Ran[] | undefined => {
+const rowsOf = (data: Readonly<Record<string, unknown>>): readonly Ran[] => {
+  const rows = data["rows"];
+  const results = isRecord(rows) ? rows["results"] : undefined;
+  return (Array.isArray(results) ? results : []).flatMap((item: unknown): Ran[] =>
+    isRecord(item) &&
+    typeof item["kind"] === "string" &&
+    ROW_KINDS.has(item["kind"]) &&
+    typeof item["table"] === "string" &&
+    typeof item["passed"] === "boolean"
+      ? [
+          {
+            kind: `rows_${item["kind"]}`,
+            resource: item["table"],
+            passed: item["passed"],
+            status: typeof item["count"] === "number" ? String(item["count"]) : "-",
+          },
+        ]
+      : [],
+  );
+};
+
+const rowsBlocked = (stdout: string): boolean => {
   const body = parseJsonObject(stdout.trim().split("\n").at(-1) ?? "");
   const data = body.ok ? body.value["data"] : undefined;
-  const results = isRecord(data) ? data["results"] : undefined;
-  if (!isRecord(data) || data["ran"] !== true || !Array.isArray(results)) return undefined;
-  return results.flatMap((item: unknown): Ran[] =>
+  const rows = isRecord(data) ? data["rows"] : undefined;
+  return isRecord(rows) && (rows["state"] === "unavailable" || rows["state"] === "refused");
+};
+
+const httpOf = (results: readonly unknown[]): readonly Ran[] =>
+  results.flatMap((item: unknown): Ran[] =>
     isRecord(item) &&
     typeof item["kind"] === "string" &&
     KINDS.has(item["kind"]) &&
@@ -52,6 +79,13 @@ const resultsOf = (stdout: string): readonly Ran[] | undefined => {
         ]
       : [],
   );
+
+const resultsOf = (stdout: string): readonly Ran[] | undefined => {
+  const body = parseJsonObject(stdout.trim().split("\n").at(-1) ?? "");
+  const data = body.ok ? body.value["data"] : undefined;
+  const results = isRecord(data) ? data["results"] : undefined;
+  if (!isRecord(data) || data["ran"] !== true || !Array.isArray(results)) return undefined;
+  return [...httpOf(results), ...rowsOf(data)];
 };
 
 const resultNote = (item: Ran): Note =>
@@ -64,7 +98,8 @@ export const scenariosCheck = (_check: AcceptanceCheck, ctx: GateContext): Check
   const mode = featureMode(ctx.runtime, ctx.paths, SCENARIOS_FEATURE);
   if (mode === "off") return passed([note("gate.scenarios.off")]);
   if (!touchesAccess(ctx)) return passed([note("gate.scenarios.untouched")]);
-  if (accessConfig(loadProjectConfig(ctx.runtime, ctx.paths.root)) === undefined) {
+  const tree = loadProjectConfig(ctx.runtime, ctx.paths.root);
+  if (accessConfig(tree) === undefined && migrateConfig(tree).url === undefined) {
     const missing = note("gate.scenarios.not_configured");
     return mode === "active" ? unverified("tool_missing", [missing]) : passed([missing]);
   }
@@ -74,6 +109,8 @@ export const scenariosCheck = (_check: AcceptanceCheck, ctx: GateContext): Check
   const run = ctx.runtime.execSelf(["scenarios", "run", "--json"], ctx.paths.root, Math.min(remaining, RUN_TIMEOUT_MS));
   const results = run.timedOut ? undefined : resultsOf(run.stdout);
   if (results === undefined) return unverified("no_evidence", [note("gate.scenarios.not_run")]);
+  if (rowsBlocked(run.stdout) && mode === "active")
+    return unverified("no_evidence", [note("gate.scenarios.rows_unavailable")]);
   const failures = results.filter((item) => !item.passed);
   logEvent(ctx.runtime, ctx.paths, "scenarios.ran", {
     task: ctx.contract.id,
@@ -81,7 +118,10 @@ export const scenariosCheck = (_check: AcceptanceCheck, ctx: GateContext): Check
     total: results.length,
     failed: failures.length,
   });
-  const notes = results.map(resultNote);
+  const notes = [
+    ...results.map(resultNote),
+    ...(rowsBlocked(run.stdout) ? [note("gate.scenarios.rows_unavailable")] : []),
+  ];
   if (failures.length === 0) return passed(notes);
   if (mode === "active") return failed(notes);
   recordFeatureShadow(ctx.runtime, ctx.paths, SCENARIOS_FEATURE, { task: ctx.contract.id, failed: failures.length });

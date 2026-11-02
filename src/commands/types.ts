@@ -17,6 +17,7 @@ export interface CommandSpec {
   readonly path: readonly [string, ...string[]];
   readonly summaryKey: MessageKey;
   readonly usage: string;
+  readonly examples?: readonly string[];
   readonly status: CommandStatus;
   readonly options?: OptionsConfig;
   readonly maxPositionals?: number;

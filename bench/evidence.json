@@ -78,6 +78,23 @@
         "session": 0
       },
       "wrong": []
+    },
+    {
+      "guard": "remote",
+      "n": 108,
+      "positives": 54,
+      "negatives": 54,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "fpr": 0,
+      "fnr": 0,
+      "p50Ms": 0.28,
+      "p95Ms": 1.84,
+      "byOrigin": {
+        "synthetic": 108,
+        "session": 0
+      },
+      "wrong": []
     }
   ],
   "contextBytes": {

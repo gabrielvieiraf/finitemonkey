@@ -6,12 +6,13 @@ import type { Runtime } from "../core/runtime.js";
 import { addedLines, type Git } from "../gate/git.js";
 import type { GateContext } from "../gate/types.js";
 import { featureMode } from "../policy/feature.js";
-import { type Criterion, recordHorizon } from "../signals/blind-band.js";
+import { bandDomainOf, type Criterion, recordHorizon } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
-import { CONCEPT_IDS, type ConceptId, domainOf } from "./concepts.js";
+import type { ConceptId } from "./concepts.js";
 import { agentFiles, untrackedLines } from "./credit.js";
-import { type ConceptState, readConceptEvents, stateOf } from "./evidence.js";
+import { type ConceptState, knownConcepts, readConceptEvents, stateOf } from "./evidence.js";
+import { packageMapOf } from "./packages.js";
 import { type CriterionRef, stemOf, type Xray, XRAY_FEATURE, XRAY_SCHEMA, type XrayItem, xrayOf } from "./xray.js";
 
 export const XRAY_FILE = "xray.json";
@@ -25,7 +26,7 @@ export const conceptStates = (
   paths: FmPaths,
 ): ReadonlyMap<ConceptId, ConceptState> => {
   const events = readConceptEvents(runtime, paths);
-  return new Map(CONCEPT_IDS.map((id) => [id, stateOf(events.filter((event) => event.concept === id))]));
+  return new Map(knownConcepts(events).map((id) => [id, stateOf(events.filter((event) => event.concept === id))]));
 };
 
 const decorativeIds = (runtime: Pick<Runtime, "readText">, paths: FmPaths, task: string): ReadonlySet<string> => {
@@ -92,6 +93,7 @@ export const xrayFor = (runtime: Runtime, paths: FmPaths, ctx: GateContext): Xra
     states: conceptStates(runtime, paths),
     refs: criterionRefs(runtime, ctx, files),
     agentFiles: agentFiles(runtime, paths),
+    packages: packageMapOf(runtime, paths),
   });
 };
 
@@ -116,7 +118,7 @@ export const saveXray = (
     recordHorizon(runtime, paths, {
       source: "xray",
       criterion: helpCriterion(item),
-      domain: domainOf(item.concepts[0]?.concept ?? "api"),
+      domain: bandDomainOf(item.concepts[0]?.concept),
       task,
     });
   return { recorded: beyond.length };

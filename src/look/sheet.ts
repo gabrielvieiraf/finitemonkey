@@ -6,6 +6,7 @@ export const SHEET_SCHEMA = "finitemonkey/look-sheet@1";
 export const SHEET_WIDTHS = [320, 390, 768, 1440] as const;
 export const MAX_ELEMENTS = 60;
 export const UNMEASURED = "[unmeasured]";
+export const Z_INDEX = "z-index";
 const TOLERANCE = 0.5;
 const FILL_SLACK = 2;
 
@@ -27,6 +28,7 @@ export interface SheetElement {
   readonly box: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
   readonly values: Readonly<Record<string, number | null>>;
   readonly layer: string | undefined;
+  readonly stacking: boolean;
 }
 
 export interface SheetView {
@@ -72,6 +74,8 @@ const PROPERTIES: readonly { readonly name: string; readonly kind: Kind; readonl
     { name: "border", kind: "border", at: (node) => node.borderWidth },
   ];
 
+const DIFFED: readonly string[] = [...PROPERTIES.map((property) => property.name), Z_INDEX];
+
 const subtree = (
   nodes: readonly ProbeNode[],
   root: number,
@@ -97,6 +101,18 @@ const slotOf = (node: ProbeNode, parent: ProbeNode | undefined): string => {
 const layerOf = (node: ProbeNode): string | undefined =>
   node.position === "fixed" || node.position === "sticky" || node.position === "absolute" ? node.position : undefined;
 
+export const zIndexOf = (node: ProbeNode): number | null => {
+  const parsed = Number.parseInt(node.zIndex, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+export const stacksOf = (node: ProbeNode): boolean =>
+  node.position === "fixed" ||
+  node.position === "sticky" ||
+  (node.position !== "static" && node.position !== "" && zIndexOf(node) !== null) ||
+  node.opacity < 1 ||
+  node.isolates;
+
 const viewOf = (view: MeasuredView): SheetView => {
   const nodes = view.probe?.nodes ?? [];
   const rootIndex = nodes.findIndex((node) => node.sel === view.root);
@@ -111,8 +127,12 @@ const viewOf = (view: MeasuredView): SheetView => {
         slot: slotOf(node, nodes[node.parent]),
         depth,
         box: { x: node.x - root.x, y: node.y - root.y, w: node.w, h: node.h },
-        values: Object.fromEntries(PROPERTIES.map((property) => [property.name, property.at(node)])),
+        values: {
+          ...Object.fromEntries(PROPERTIES.map((property) => [property.name, property.at(node)])),
+          [Z_INDEX]: zIndexOf(node),
+        },
         layer: layerOf(node),
+        stacking: stacksOf(node),
       },
     ];
   });
@@ -238,10 +258,11 @@ export const diffSheets = (before: Sheet, after: Sheet): readonly DimensionChang
     return keys.flatMap((key) => {
       const was = old.elements.find((element) => element.key === key);
       const now = view.elements.find((element) => element.key === key);
-      return PROPERTIES.flatMap((property) => {
-        const from = was?.values[property.name] ?? null;
-        const to = now?.values[property.name] ?? null;
-        return from === to ? [] : [{ width: view.width, state: view.state, key, property: property.name, from, to }];
+      return DIFFED.flatMap((name) => {
+        if (name === Z_INDEX && was !== undefined && !(Z_INDEX in was.values)) return [];
+        const from = was?.values[name] ?? null;
+        const to = now?.values[name] ?? null;
+        return from === to ? [] : [{ width: view.width, state: view.state, key, property: name, from, to }];
       });
     });
   });

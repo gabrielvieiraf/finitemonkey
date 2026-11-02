@@ -1,5 +1,5 @@
 import type { Ctx } from "../core/context.js";
-import { lineReader } from "../perfil/lines.js";
+import { type AskLine, lineReader } from "../perfil/lines.js";
 import { isPerson, projectRoot } from "../secrets/project.js";
 import { detectCommitStyle, type DetectedCommits } from "./detect.js";
 import { COMMIT_STYLES, type CommitStyle, type ProjectDefaults, projectDefaults } from "./items.js";
@@ -14,7 +14,7 @@ export type CommitsAnswer =
 export const parseCommitStyle = (raw: string | undefined): CommitStyle | undefined =>
   COMMIT_STYLES.find((style) => style === raw);
 
-export const commitsAnswer = async (ctx: Ctx, flag: CommitStyle | undefined): Promise<CommitsAnswer> => {
+export const commitsAnswer = async (ctx: Ctx, flag: CommitStyle | undefined, ask?: AskLine): Promise<CommitsAnswer> => {
   if (flag !== undefined) return { kind: "given", style: flag };
   const root = projectRoot(ctx);
   if (projectDefaults(ctx.runtime, root).commits !== undefined) return { kind: "none" };
@@ -22,7 +22,7 @@ export const commitsAnswer = async (ctx: Ctx, flag: CommitStyle | undefined): Pr
   if (detected?.style !== "free") return { kind: "none" };
   if (!isPerson(ctx)) return { kind: "pending", detected };
   ctx.io.stderr.write(`${ctx.t("defaults.question.commits", { ...detected })} `);
-  const answer = (await lineReader(ctx.io.stdin)())?.trim().toLowerCase() ?? "";
+  const answer = (await (ask ?? lineReader(ctx.io.stdin))())?.trim().toLowerCase() ?? "";
   return { kind: "given", style: NO.has(answer) ? "free" : "conventional" };
 };
 
@@ -30,6 +30,7 @@ export const withCommits = (defaults: ProjectDefaults, answer: CommitsAnswer): P
   if (answer.kind !== "given") return defaults;
   const off = defaults.off.filter((item) => item !== "conventional-commits");
   return {
+    ...defaults,
     off: answer.style === "free" ? [...off, "conventional-commits"] : off,
     commits: answer.style,
   };

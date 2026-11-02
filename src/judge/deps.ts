@@ -10,7 +10,7 @@ import type { JudgeClaimKind } from "./types.js";
 import type { SupportProposer, Verifier, VerifyRuntime } from "./verify.js";
 
 export type JudgeRuntime = VerifyRuntime &
-  Pick<Runtime, "appendText" | "mkdir" | "writeAtomic" | "remove" | "homeDir" | "listDir">;
+  Pick<Runtime, "appendText" | "mkdir" | "writeAtomic" | "remove" | "homeDir" | "listDir" | "git">;
 
 export interface JudgeDeps {
   readonly runtime: JudgeRuntime;

@@ -3,15 +3,20 @@ import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { conventionFlags, withConventionQuestions } from "../defaults/convention-plan.js";
+import { type ConventionAnswer, conventionAnswers, withConventions } from "../defaults/convention-question.js";
 import { projectDefaults } from "../defaults/items.js";
 import { type CommitsAnswer, commitsAnswer, parseCommitStyle, withCommits } from "../defaults/question.js";
 import { githubLines, type GithubStep, githubStep } from "../github/step.js";
 import { type LookBack, lookBack } from "../history/look-back.js";
 import { PATTERNS } from "../history/patterns.js";
 import { applyPlan } from "../install/apply.js";
+import { type Channel, parseChannel } from "../install/marketplace.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
 import { type InstallQuestion, type PlanData, planData, planLines } from "../install/report.js";
 import { applyProblem, confirmProblem, openProject, planInputFor, planProblem } from "../install/session.js";
+import { type EnginePlan, enginePlan } from "../look/engine.js";
+import { type AskLine, lineReader } from "../perfil/lines.js";
 import { isPerson } from "../secrets/project.js";
 import { trustImplicit } from "../task/trust.js";
 import type { CommandSpec } from "./types.js";
@@ -25,8 +30,10 @@ export interface LookBackData extends PlanData {
 export interface InstallRequest {
   readonly mode: InstallMode;
   readonly commits: CommitsAnswer;
+  readonly conventions?: readonly ConventionAnswer[];
   readonly bin: string | undefined;
   readonly marketplace: boolean;
+  readonly channel?: Channel;
   readonly sandbox?: boolean;
   readonly showDiff: boolean;
 }
@@ -35,8 +42,12 @@ const flagsFor = (request: InstallRequest): string =>
   [
     `finitemonkey ${request.mode} --yes`,
     ...(request.commits.kind === "given" ? [`--commits ${request.commits.style}`] : []),
+    ...(request.conventions ?? []).flatMap((answer) =>
+      answer.kind === "given" ? [`--${answer.id} ${answer.value}`] : [],
+    ),
     ...(request.bin === undefined ? [] : [`--bin "${request.bin}"`]),
     ...(request.marketplace ? ["--marketplace"] : []),
+    ...(request.channel === undefined ? [] : [`--channel ${request.channel}`]),
     ...(request.sandbox === true ? ["--sandbox"] : []),
   ].join(" ");
 
@@ -81,25 +92,39 @@ export const runInstall = (ctx: Ctx, request: InstallRequest): CommandResult<Pla
   const { project, gitRoot } = openProject(ctx);
   const previous = readPreviousLock(project);
   if (!previous.ok) return failureFrom(ctx.t, planProblem(previous.error));
-  const defaults = withCommits(projectDefaults(ctx.runtime, project.root), request.commits);
-  const input = planInputFor(ctx, defaults, request.bin, request.marketplace, request.sandbox === true);
+  const conventions = request.conventions ?? [];
+  const defaults = withConventions(
+    withCommits(projectDefaults(ctx.runtime, project.root), request.commits),
+    conventions,
+  );
+  const marketplace = request.marketplace && (request.channel ?? true);
+  const input = planInputFor(ctx, defaults, request.bin, marketplace, request.sandbox === true);
   const plan = buildPlan(project, detect(project, gitRoot, input), input, previous.value);
   if (!plan.ok) return failureFrom(ctx.t, planProblem(plan.error));
   const result =
     ctx.dryRun || !ctx.yes || !needsWrite(plan.value)
       ? presentPlan(ctx, request, plan.value)
       : applyAndReport(ctx, request, plan.value);
-  return withQuestions(ctx, result, request.commits);
+  return withConventionQuestions(ctx, withQuestions(ctx, result, request.commits), conventions);
 };
 
-const initRequest = (args: CommandArgs, commits: CommitsAnswer): InstallRequest => ({
-  mode: "init",
-  commits,
-  bin: stringOption(args.values, "bin"),
-  marketplace: args.values["marketplace"] === true,
-  sandbox: args.values["sandbox"] === true,
-  showDiff: false,
-});
+const initRequest = (
+  args: CommandArgs,
+  commits: CommitsAnswer,
+  conventions: readonly ConventionAnswer[],
+): InstallRequest => {
+  const channel = parseChannel(stringOption(args.values, "channel"));
+  return {
+    mode: "init",
+    commits,
+    conventions,
+    bin: stringOption(args.values, "bin"),
+    marketplace: args.values["marketplace"] === true || channel !== undefined,
+    ...(channel === undefined ? {} : { channel }),
+    sandbox: args.values["sandbox"] === true,
+    showDiff: false,
+  };
+};
 
 const withLookBack = (ctx: Ctx, result: CommandResult<PlanData>): CommandResult<PlanData | LookBackData> => {
   if (!result.ok) return result;
@@ -125,19 +150,53 @@ const withGithub = (
   return result.ok ? { ...result, data: { ...result.data, github: step }, human } : { ...result, human };
 };
 
+export type LookInitData = (PlanData | LookBackData | GithubInitData) & { readonly look: EnginePlan };
+
+export const engineLines = (t: Ctx["t"], plan: EnginePlan, confirmed: boolean): readonly string[] => {
+  const params = { package: plan.package, size: plan.sizeMb, command: plan.command };
+  if (plan.present) return [t("look.engine.present", params)];
+  if (plan.added) return [t("look.engine.added", params)];
+  if (confirmed) return [t("look.engine.offer", params), t("look.engine.failed", params)];
+  return [t("look.engine.offer", params), t("look.engine.consent", params)];
+};
+
+const withLook = (
+  ctx: Ctx,
+  result: CommandResult<PlanData | LookBackData | GithubInitData>,
+): CommandResult<PlanData | LookBackData | GithubInitData | LookInitData> => {
+  const root = openProject(ctx).project.root;
+  const confirmed = ctx.yes && !ctx.dryRun && isPerson(ctx);
+  const plan = enginePlan(ctx.runtime, root, confirmed);
+  const human = [...(result.human ?? []), ...engineLines(ctx.t, plan, confirmed)];
+  return result.ok ? { ...result, data: { ...result.data, look: plan }, human } : { ...result, human };
+};
+
+const sharedAsk = (ctx: Ctx): (() => AskLine) => {
+  let reader: AskLine | undefined;
+  return () => {
+    reader ??= lineReader(ctx.io.stdin);
+    return reader;
+  };
+};
+
 export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--commits conventional|free] [--bin <path>] [--marketplace] [--sandbox] [--look-back] [--github] [--dry-run] [--yes]",
+    "finitemonkey init [--commits conventional|free] [--tests <runner>] [--lint <tool>] [--layout <dir>] [--bin <path>] [--marketplace] [--channel stable|next] [--sandbox] [--look-back] [--github] [--look] [--dry-run] [--yes]",
   status: "ready",
   options: {
     commits: { type: "string" },
     bin: { type: "string" },
     marketplace: { type: "boolean" },
+    channel: { type: "string" },
     sandbox: { type: "boolean" },
     "look-back": { type: "boolean" },
     github: { type: "boolean" },
+    look: { type: "boolean" },
+    tests: { type: "string" },
+    lint: { type: "string" },
+    layout: { type: "string" },
   },
   run: async (ctx, args) => {
     const raw = stringOption(args.values, "commits");
@@ -149,8 +208,22 @@ export const initCommand: CommandSpec = {
           value: raw,
         }),
       );
-    const result = runInstall(ctx, initRequest(args, await commitsAnswer(ctx, flag)));
+    const channel = stringOption(args.values, "channel");
+    if (channel !== undefined && parseChannel(channel) === undefined)
+      return failureFrom(
+        ctx.t,
+        usageProblem("invalid_arguments", "error.invalid_arguments", "finitemonkey init --marketplace --channel next", {
+          detail: channel,
+        }),
+      );
+    const conventions = conventionFlags(ctx, args);
+    if (!conventions.ok) return conventions.result;
+    const ask = sharedAsk(ctx);
+    const commits = await commitsAnswer(ctx, flag, () => ask()());
+    const answers = await conventionAnswers(ctx, conventions.flags, ask);
+    const result = runInstall(ctx, initRequest(args, commits, answers));
     const looked = args.values["look-back"] === true ? withLookBack(ctx, result) : result;
-    return args.values["github"] === true ? withGithub(ctx, looked) : looked;
+    const hubbed = args.values["github"] === true ? withGithub(ctx, looked) : looked;
+    return args.values["look"] === true ? withLook(ctx, hubbed) : hubbed;
   },
 };

@@ -22,7 +22,7 @@ const SCHEME_FIELDS: Readonly<Record<PaginationScheme, readonly string[]>> = {
 
 const squash = (name: string): string => name.toLowerCase().replace(/_/g, "");
 
-const schemeOf = (endpoint: Endpoint): PaginationScheme | undefined =>
+export const schemeOf = (endpoint: Endpoint): PaginationScheme | undefined =>
   (Object.keys(SCHEME_FIELDS) as PaginationScheme[]).find((scheme) =>
     endpoint.input.some((field) => SCHEME_FIELDS[scheme].includes(squash(field.name))),
   );

@@ -7,6 +7,7 @@ export const runCli = (
   root: AbsolutePath,
   config: CliConfig,
   args: readonly string[],
+  firstByte = false,
 ): CliRun => {
   const [command = "", ...prefix] = config.bin;
   const result = runtime.exec({
@@ -17,6 +18,7 @@ export const runCli = (
     env: { NO_COLOR: "1" },
     unset: ["FORCE_COLOR", "CLICOLOR_FORCE"],
     input: "",
+    ...(firstByte ? { firstByte } : {}),
   });
   return {
     args,
@@ -26,8 +28,11 @@ export const runCli = (
     stderr: result.stderr,
     timedOut: result.timedOut,
     durationMs: result.durationMs,
+    ...(result.firstOutputMs === undefined ? {} : { firstOutputMs: result.firstOutputMs }),
   };
 };
+
+export const firstOutputOf = (run: CliRun): number => run.firstOutputMs ?? run.durationMs;
 
 export const probeCli = (
   runtime: Pick<Runtime, "exec">,
@@ -35,11 +40,13 @@ export const probeCli = (
   config: CliConfig,
 ): CliRuns | undefined => {
   const run = (args: readonly string[]): CliRun => runCli(runtime, root, config, args);
-  const help = run(["--help"]);
+  const help = runCli(runtime, root, config, ["--help"], true);
   if (!help.found) return undefined;
   const timings = [
-    help.durationMs,
-    ...Array.from({ length: Math.max(0, config.runs - 1) }, () => run(["--help"]).durationMs),
+    firstOutputOf(help),
+    ...Array.from({ length: Math.max(0, config.runs - 1) }, () =>
+      firstOutputOf(runCli(runtime, root, config, ["--help"], true)),
+    ),
   ];
   return {
     help,

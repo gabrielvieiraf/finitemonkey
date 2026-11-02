@@ -6,6 +6,7 @@ import { type Claim, readClaims } from "./claims.js";
 import { withQuarantine } from "./quarantine.js";
 import { withRetractions } from "./retraction.js";
 import { type ClaimView, evaluateClaim, memoCandidates } from "./status.js";
+import { projectSyntax } from "./syntax.js";
 
 export type ClaimsRuntime = Pick<Runtime, "readText" | "exec" | "homeDir" | "listDir">;
 
@@ -22,6 +23,7 @@ export const viewsOf = (
   const options = {
     read: diskReader(runtime, paths.root),
     candidates: memoCandidates(() => trackedFiles(runtime, paths)),
+    syntax: projectSyntax(runtime, paths.root),
   };
   return withQuarantine(
     runtime,

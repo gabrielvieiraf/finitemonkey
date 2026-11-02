@@ -4,9 +4,18 @@ import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
+import type { YamlValue } from "../core/yaml/scalar.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 import type { FmPaths } from "../task/paths.js";
-import { CONCEPT_IDS, type ConceptId, type ConceptLevel, parseConceptLevel, rankOf } from "./concepts.js";
+import {
+  type Aliases,
+  type ConceptId,
+  type ConceptLevel,
+  conceptPathOf,
+  parseConcept,
+  parseConceptLevel,
+  rankOf,
+} from "./concepts.js";
 
 export const BOOK_FILE = "conceitos.yml";
 
@@ -21,6 +30,7 @@ export interface Book {
   readonly concepts: Readonly<Partial<Record<ConceptId, ConceptEntry>>>;
   readonly baselineGreen: number;
   readonly alarmGreen: number;
+  readonly aliases?: Aliases;
 }
 
 export const EMPTY_BOOK: Book = { concepts: {}, baselineGreen: 0, alarmGreen: -1 };
@@ -46,23 +56,59 @@ const entryOf = (raw: unknown): ConceptEntry | undefined => {
   };
 };
 
+const aliasesOf = (raw: unknown): Aliases => {
+  if (!isRecord(raw)) return {};
+  return Object.fromEntries(
+    Object.entries(raw).flatMap(([from, to]): readonly (readonly [string, ConceptId | null])[] => {
+      const key = conceptPathOf(from);
+      if (key === undefined) return [];
+      if (to === null || to === "") return [[key, null]];
+      const target = typeof to === "string" ? conceptPathOf(to) : undefined;
+      return target === undefined ? [] : [[key, target]];
+    }),
+  );
+};
+
+const stronger = (left: ConceptEntry | undefined, right: ConceptEntry): ConceptEntry =>
+  left === undefined || rankOf(right.level) > rankOf(left.level)
+    ? { ...right, ...(left?.demonstrated === true ? { demonstrated: true } : {}) }
+    : { ...left, ...(right.demonstrated === true ? { demonstrated: true } : {}) };
+
+export const conceptsOf = (raw: unknown, aliases: Aliases): Readonly<Record<ConceptId, ConceptEntry>> => {
+  const merged: Record<ConceptId, ConceptEntry> = {};
+  for (const [key, value] of Object.entries(isRecord(raw) ? raw : {})) {
+    const id = parseConcept(key, aliases);
+    const entry = entryOf(value);
+    if (id !== undefined && entry !== undefined) merged[id] = stronger(merged[id], entry);
+  }
+  return merged;
+};
+
 export const readBook = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Book => {
   const text = runtime.readText(bookPath(paths));
   const parsed = text.ok ? parseYaml(text.value) : undefined;
   if (parsed?.ok !== true || !isRecord(parsed.value)) return EMPTY_BOOK;
   const root = parsed.value;
-  const concepts = isRecord(root["concepts"]) ? root["concepts"] : {};
+  const aliases = aliasesOf(root["aliases"]);
   return {
-    concepts: Object.fromEntries(
-      CONCEPT_IDS.flatMap((id) => {
-        const entry = entryOf(concepts[id]);
-        return entry === undefined ? [] : [[id, entry]];
-      }),
-    ),
+    concepts: conceptsOf(root["concepts"], aliases),
     baselineGreen: integer(root["baseline_green"], 0),
     alarmGreen: integer(root["alarm_green"], -1),
+    ...(Object.keys(aliases).length === 0 ? {} : { aliases }),
   };
 };
+
+const entryYaml = (entry: ConceptEntry): YamlValue => ({
+  level: entry.level,
+  updated_at: entry.updatedAt,
+  ...(entry.streak === undefined || entry.streak === 0 ? {} : { streak: entry.streak }),
+  ...(entry.demonstrated === true ? { demonstrated: true } : {}),
+});
+
+export const bookConcepts = (book: Book): readonly ConceptId[] =>
+  Object.keys(book.concepts)
+    .filter((id) => book.concepts[id] !== undefined)
+    .sort();
 
 export const writeBook = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, book: Book): boolean =>
   runtime.writeText(
@@ -71,22 +117,11 @@ export const writeBook = (runtime: Pick<Runtime, "writeText">, paths: FmPaths, b
       schema: "finitemonkey/conceitos@1",
       baseline_green: book.baselineGreen,
       alarm_green: book.alarmGreen,
+      ...(book.aliases === undefined || Object.keys(book.aliases).length === 0 ? {} : { aliases: book.aliases }),
       concepts: Object.fromEntries(
-        CONCEPT_IDS.flatMap((id) => {
+        bookConcepts(book).flatMap((id) => {
           const entry = book.concepts[id];
-          return entry === undefined
-            ? []
-            : [
-                [
-                  id,
-                  {
-                    level: entry.level,
-                    updated_at: entry.updatedAt,
-                    ...(entry.streak === undefined || entry.streak === 0 ? {} : { streak: entry.streak }),
-                    ...(entry.demonstrated === true ? { demonstrated: true } : {}),
-                  },
-                ],
-              ];
+          return entry === undefined ? [] : [[id, entryYaml(entry)]];
         }),
       ),
     }),
@@ -99,4 +134,4 @@ export const raise = (book: Book, id: ConceptId, level: ConceptLevel, at: string
 };
 
 export const levelSum = (book: Book): number =>
-  CONCEPT_IDS.reduce((sum, id) => sum + rankOf(book.concepts[id]?.level) + 1, 0);
+  bookConcepts(book).reduce((sum, id) => sum + rankOf(book.concepts[id]?.level) + 1, 0);

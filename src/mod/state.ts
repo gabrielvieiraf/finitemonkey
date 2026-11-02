@@ -8,6 +8,7 @@ export interface ModRule {
   readonly target: RuleTarget;
   readonly pattern: string;
   readonly reason: string;
+  readonly mode?: TightenMode;
 }
 
 export interface ModAttribution {
@@ -31,6 +32,7 @@ export interface ModState {
   readonly attribution: ModAttribution;
   readonly instructions: string;
   readonly memory: ModMemoryHold;
+  readonly withhold: readonly string[];
 }
 
 export interface CompiledRule {
@@ -44,6 +46,7 @@ export interface LoadedState {
   readonly band: TightenMode;
   readonly attribution?: ModAttribution;
   readonly instructions: string;
+  readonly withhold: readonly string[];
   readonly failReason?: string;
   readonly memory?: ModMemoryHold;
   readonly rules: readonly CompiledRule[];
@@ -70,7 +73,9 @@ const ruleOf = (value: unknown): CompiledRule | undefined => {
   if (typeof id !== "string" || known === undefined || typeof pattern !== "string" || typeof reason !== "string")
     return undefined;
   const regex = compile(pattern);
-  return regex === undefined ? undefined : { rule: { id, target: known, pattern, reason }, regex };
+  const mode = MODES.find((item) => item === value["mode"]);
+  const rule = { id, target: known, pattern, reason, ...(mode === undefined ? {} : { mode }) };
+  return regex === undefined ? undefined : { rule, regex };
 };
 
 const attributionOf = (value: unknown): ModAttribution | undefined => {
@@ -110,6 +115,9 @@ export const parseModState = (text: string): LoadedState | undefined => {
     band,
     rules,
     instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
+    withhold: Array.isArray(data["withhold"])
+      ? data["withhold"].filter((item): item is string => typeof item === "string")
+      : [],
     ...(attribution === undefined ? {} : { attribution }),
     ...(memory === undefined ? {} : { memory }),
     ...(typeof failReason === "string" ? { failReason } : {}),

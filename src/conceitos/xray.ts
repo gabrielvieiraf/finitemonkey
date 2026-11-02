@@ -2,7 +2,8 @@ import { basename, extname } from "node:path";
 
 import type { AddedLine } from "../gate/git.js";
 import type { ConceptId } from "./concepts.js";
-import { conceptsOfFile, type ConceptState } from "./evidence.js";
+import type { ConceptState } from "./evidence.js";
+import { NO_PACKAGES, type PackageMap, type RecognitionSource, recognizeCode } from "./recognize.js";
 
 export const XRAY_SCHEMA = "finitemonkey/xray@1";
 export const XRAY_FEATURE = "xray";
@@ -32,7 +33,11 @@ export interface XrayItem {
   readonly start: number;
   readonly end: number;
   readonly by: "agent" | "person";
-  readonly concepts: readonly { readonly concept: ConceptId; readonly state: ConceptState }[];
+  readonly concepts: readonly {
+    readonly concept: ConceptId;
+    readonly state: ConceptState;
+    readonly source: RecognitionSource;
+  }[];
   readonly band: Band;
   readonly coverage: Coverage;
   readonly criteria: readonly string[];
@@ -108,15 +113,18 @@ export interface XrayInput {
   readonly states: ReadonlyMap<ConceptId, ConceptState>;
   readonly refs: readonly CriterionRef[];
   readonly agentFiles: ReadonlySet<string>;
+  readonly packages?: PackageMap;
 }
 
 const order = (item: XrayItem): number => BANDS.indexOf(item.band) * 3 + COVERAGES.indexOf(item.coverage);
 
 export const xrayOf = (input: XrayInput): Xray => {
   const items = hunksOf(input.added).map((hunk): XrayItem => {
-    const concepts = conceptsOfFile(hunk.file, hunk.lines).map((concept) => ({
-      concept,
-      state: input.states.get(concept) ?? "unknown",
+    const found = recognizeCode({ file: hunk.file, lines: hunk.lines }, input.packages ?? NO_PACKAGES);
+    const concepts = found.map((item) => ({
+      concept: item.concept,
+      state: input.states.get(item.concept) ?? "unknown",
+      source: item.source,
     }));
     const { coverage, criteria, criterion } = coverageOf(hunk.file, input.refs);
     return {

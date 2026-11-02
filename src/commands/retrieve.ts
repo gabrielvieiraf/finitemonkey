@@ -3,6 +3,8 @@ import { usageProblem } from "../core/problem.js";
 import { failureFrom, success } from "../core/result.js";
 import { DEFAULT_STEP_BUDGET, retrieve, RETRIEVE_FEATURE } from "../knowledge/retrieve.js";
 import { featureMode } from "../policy/feature.js";
+import { providerDeepSearch, whenEnabled } from "../provider/adapters.js";
+import { providerDeps } from "../provider/wire.js";
 import { fmPaths } from "../task/paths.js";
 import { inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
@@ -28,7 +30,8 @@ export const retrieveCommand: CommandSpec = {
       if (featureMode(ctx.runtime, paths, RETRIEVE_FEATURE) === "off")
         return failureFrom(ctx.t, usageProblem("invalid_arguments", "knowledge.retrieve.off", USAGE));
       const budget = Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_STEP_BUDGET;
-      const result = retrieve(ctx.runtime, paths, query, { budget });
+      const deep = whenEnabled(providerDeps(ctx, paths), "retrieve-deep", providerDeepSearch);
+      const result = retrieve(ctx.runtime, paths, query, { budget, ...(deep === undefined ? {} : { deep }) });
       return success({ schema: RETRIEVE_SCHEMA, ...result }, [
         result.step === null
           ? ctx.t("knowledge.retrieve.none")

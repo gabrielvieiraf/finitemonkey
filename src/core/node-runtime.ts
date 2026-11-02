@@ -3,6 +3,7 @@ import { readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
+import { currentAncestors } from "./ancestry.js";
 import { type AbsolutePath, toAbsolutePath } from "./brand.js";
 import { nodeAppendText, nodeExec, nodeSpawnSelf } from "./node-exec.js";
 import {
@@ -102,6 +103,7 @@ export const nodeRuntime = (): Runtime => ({
   homeDir: homedir,
   systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale,
   processes: nodeProcesses,
+  ancestors: currentAncestors,
   signal: nodeSignal,
   alive: nodeAlive,
   exclusiveBytes: nodeExclusiveBytes,

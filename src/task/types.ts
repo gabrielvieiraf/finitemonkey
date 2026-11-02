@@ -78,6 +78,7 @@ export interface AcceptanceCheck {
   readonly cases?: string;
   readonly tolerance?: number;
   readonly minScore?: number;
+  readonly testsFirst?: boolean;
 }
 
 export interface DiffBudget {

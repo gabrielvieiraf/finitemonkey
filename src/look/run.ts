@@ -18,6 +18,7 @@ import { contactSheet } from "./node-sheet.js";
 import { isLoopback } from "./node-ux.js";
 import { lookDir } from "./paths.js";
 import { recordLook } from "./record.js";
+import { sessionAccess } from "./session-access.js";
 import { type LookSummary, VIEWPORTS } from "./types.js";
 import { loadUiConfig, UI_FEATURE } from "./ui.js";
 import { layoutsOf, uiFindings } from "./ui-findings.js";
@@ -70,6 +71,11 @@ interface Shot {
   readonly blocked: readonly string[];
 }
 
+const accessOf = (runtime: Runtime, root: AbsolutePath) => {
+  const access = sessionAccess(runtime, root);
+  return access === undefined ? {} : { access };
+};
+
 const capture = async (runtime: Runtime, ready: Ready): Promise<Shot | LookRun> => {
   const playwright = await loadPlaywright(ready.root);
   if (playwright === undefined) return { kind: "playwright_missing" };
@@ -98,6 +104,7 @@ const capture = async (runtime: Runtime, ready: Ready): Promise<Shot | LookRun> 
       modes: ready.modes,
       screens: uxSetup(runtime, ready.root, ready.config, ready.modes).screens,
       request: { baseUrl, timeoutMs: ready.config.timeoutS * 1000, isolate: true },
+      ...accessOf(runtime, ready.root),
     });
     return {
       results: output.results,

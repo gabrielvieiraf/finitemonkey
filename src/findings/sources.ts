@@ -5,6 +5,7 @@ import type { Runtime } from "../core/runtime.js";
 import { latestUxRecords, uxFindingsOf } from "../look/ux-govern.js";
 import { scanPath } from "../secrets/scan.js";
 import { fmPaths } from "../task/paths.js";
+import { budgetFindings, TEST_BUDGET_CHECK } from "../testbudget/findings.js";
 import { type Finding, SECRETS_CHECK } from "./baseline.js";
 
 export interface FindingSource {
@@ -41,7 +42,15 @@ const lookSource: FindingSource = {
   scan: (runtime, root) => uxFindingsOf(latestUxRecords(runtime, fmPaths(root))),
 };
 
-export const FINDING_SOURCES: readonly FindingSource[] = [secretsSource, appsecSource, ciAuditSource, lookSource];
+const testBudgetSource: FindingSource = { check: TEST_BUDGET_CHECK, scan: budgetFindings };
+
+export const FINDING_SOURCES: readonly FindingSource[] = [
+  secretsSource,
+  appsecSource,
+  ciAuditSource,
+  lookSource,
+  testBudgetSource,
+];
 
 export const findFinding = (
   runtime: Runtime,

@@ -1,9 +1,9 @@
 import { nowMs } from "../core/clock.js";
 import type { Ctx } from "../core/context.js";
-import { parseJsonObject } from "../core/parsed.js";
 import type { Problem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { evidenceHash, isStale, reachFindings, RESTORE_FEATURE, restoreConfig, runDrill } from "../db/restore.js";
+import { lastPassedDrills } from "../db/restore-log.js";
 import { logEvent } from "../evidence/log.js";
 import { ExitCode } from "../exit-codes.js";
 import { loadProjectConfig } from "../git/project-config.js";
@@ -28,20 +28,6 @@ const restoreProblem = <T>(count: number, data: T): Problem<T> => ({
   data,
 });
 
-export const lastPassedDrills = (ctx: Ctx, paths: FmPaths): Readonly<Record<string, string>> => {
-  const log = ctx.runtime.readText(paths.log);
-  const last: Record<string, string> = {};
-  if (!log.ok) return last;
-  for (const line of log.value.split("\n")) {
-    if (!line.includes('"restore_drill"')) continue;
-    const parsed = parseJsonObject(line);
-    if (!parsed.ok || parsed.value["status"] !== "passed") continue;
-    const { store, at } = parsed.value;
-    if (typeof store === "string" && typeof at === "string") last[store] = at;
-  }
-  return last;
-};
-
 export const restoreCheckCommand: CommandSpec = {
   path: ["restore", "check"],
   summaryKey: "command.restore_check.summary",
@@ -52,7 +38,7 @@ export const restoreCheckCommand: CommandSpec = {
       const mode = featureMode(ctx.runtime, paths, RESTORE_FEATURE);
       const config = restoreConfig(loadProjectConfig(ctx.runtime, paths.root));
       const reach = mode === "off" ? [] : reachFindings(ctx.runtime, paths.root, config);
-      const last = lastPassedDrills(ctx, paths);
+      const last = lastPassedDrills(ctx.runtime, paths);
       const stale = config.stores
         .filter((store) => mode !== "off" && isStale(last[store.name], nowMs(ctx.runtime), config.periodDays))
         .map((store) => ({ store: store.name, lastPassed: last[store.name] ?? null }));

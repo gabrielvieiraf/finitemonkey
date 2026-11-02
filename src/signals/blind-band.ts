@@ -1,5 +1,6 @@
-import { readBook } from "../conceitos/book.js";
-import { CONCEPT_IDS, conceptsIn, domainOf } from "../conceitos/concepts.js";
+import { bookConcepts, readBook } from "../conceitos/book.js";
+import { type ConceptId, profileDomainOf } from "../conceitos/concepts.js";
+import { firstMentionedDomainConcept } from "../conceitos/mentions.js";
 import { parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { logEvent } from "../evidence/log.js";
@@ -28,10 +29,10 @@ export interface HorizonHelp {
   readonly approvedAt?: string;
 }
 
-export const domainOfText = (text: string): BandDomain => {
-  const first = conceptsIn(text)[0];
-  return first === undefined ? GENERAL : domainOf(first);
-};
+export const bandDomainOf = (concept: ConceptId | undefined): BandDomain =>
+  (concept === undefined ? undefined : profileDomainOf(concept)) ?? GENERAL;
+
+export const domainOfText = (text: string): BandDomain => bandDomainOf(firstMentionedDomainConcept(text));
 
 const KIND_CRITERION: Readonly<Partial<Record<CheckKind, Criterion>>> = {
   examples: "example",
@@ -139,11 +140,11 @@ interface Group {
 const conceptWeeks = (runtime: Pick<Runtime, "readText">, paths: FmPaths): ReadonlyMap<string, number> => {
   const moved = new Map<string, number>();
   const book = readBook(runtime, paths);
-  for (const id of CONCEPT_IDS) {
+  for (const id of bookConcepts(book)) {
     const at = book.concepts[id]?.updatedAt;
     const week = at === undefined ? undefined : isoWeek(at);
     if (week === undefined) continue;
-    const key = `${domainOf(id)}|${week}`;
+    const key = `${bandDomainOf(id)}|${week}`;
     moved.set(key, (moved.get(key) ?? 0) + 1);
   }
   return moved;

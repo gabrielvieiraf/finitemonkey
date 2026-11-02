@@ -6,10 +6,12 @@ import { logEvent } from "../evidence/log.js";
 import { ExitCode } from "../exit-codes.js";
 import { runSheet } from "../look/node-sheet-run.js";
 import { projectRelative } from "../look/paths.js";
-import type { DimensionChange, SheetIssue } from "../look/sheet.js";
+import type { DimensionChange, Sheet, SheetIssue } from "../look/sheet.js";
+import { approveSheetInContract, sheetHash } from "../look/sheet-contract.js";
 import { approvedSheetPath, sheetsDir } from "../look/sheet-store.js";
 import { isPerson } from "../secrets/project.js";
-import { fmPaths } from "../task/paths.js";
+import { type FmPaths, fmPaths } from "../task/paths.js";
+import { readState } from "../task/state.js";
 import type { CommandSpec } from "./types.js";
 
 export const LOOK_SHEET_SCHEMA = "finitemonkey/look-sheet-run@1";
@@ -24,7 +26,33 @@ export interface LookSheetData {
   readonly issues: readonly SheetIssue[];
   readonly diff: readonly DimensionChange[] | null;
   readonly approved: boolean;
+  readonly contractHash: string | null;
 }
+
+const approveSheet = (ctx: Ctx, paths: FmPaths, route: string, made: Sheet): string | undefined => {
+  const text = `${JSON.stringify(made, null, 2)}\n`;
+  const file = approvedSheetPath(paths, route);
+  ctx.runtime.mkdir(sheetsDir(paths));
+  ctx.runtime.writeText(file, text);
+  const task = readState(ctx.runtime, paths).active;
+  const ref = {
+    route,
+    selector: made.selector,
+    file: projectRelative(paths, file),
+    hash: sheetHash(text),
+    variables: made.variables.length,
+  };
+  const bound = task === undefined ? undefined : approveSheetInContract(ctx.runtime, paths, task, ref);
+  const contractHash = bound?.ok === true ? bound.value.contractHash : undefined;
+  logEvent(ctx.runtime, paths, "look.sheet_approved", {
+    route,
+    tree: made.tree,
+    hash: ref.hash,
+    ...(task === undefined ? {} : { task }),
+    ...(contractHash === undefined ? {} : { contractHash }),
+  });
+  return contractHash;
+};
 
 const sheet = async (
   ctx: Ctx,
@@ -49,11 +77,7 @@ const sheet = async (
     };
   }
   const paths = fmPaths(run.root);
-  if (approve) {
-    ctx.runtime.mkdir(sheetsDir(paths));
-    ctx.runtime.writeText(approvedSheetPath(paths, route), `${JSON.stringify(run.sheet, null, 2)}\n`);
-    logEvent(ctx.runtime, paths, "look.sheet_approved", { route, tree: run.sheet.tree });
-  }
+  const contract = approve ? approveSheet(ctx, paths, route, run.sheet) : undefined;
   const data: LookSheetData = {
     schema: LOOK_SHEET_SCHEMA,
     route,
@@ -63,6 +87,7 @@ const sheet = async (
     issues: run.sheet.issues,
     diff: run.diff ?? null,
     approved: approve,
+    contractHash: contract ?? null,
   };
   return success(data, [
     data.html,
@@ -71,6 +96,7 @@ const sheet = async (
       (change) =>
         `${String(change.width)} ${change.state} ${change.key} ${change.property}: ${String(change.from)} → ${String(change.to)}`,
     ),
+    ...(contract === undefined ? [] : [ctx.t("look.sheet.contract", { hash: contract })]),
     ctx.t("look.sheet.done", { route, variables: data.variables, changes: data.diff?.length ?? 0 }),
   ]);
 };

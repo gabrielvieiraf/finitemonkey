@@ -18,6 +18,7 @@ const checkYaml = (check: AcceptanceCheck): YamlValue => ({
   ...(check.cases === undefined ? {} : { cases: check.cases }),
   ...(check.tolerance === undefined ? {} : { tolerance: check.tolerance }),
   ...(check.minScore === undefined ? {} : { min_score: check.minScore }),
+  ...(check.testsFirst === true ? { tests_first: true } : {}),
 });
 
 export const contractYaml = (contract: TaskContract): YamlValue => ({

@@ -92,6 +92,17 @@ export const callsOf = (source: string, local: string): readonly Call[] => {
   return calls;
 };
 
+export const DEPRECATED_DOC = /\/\*\*(?:(?!\*\/)[\s\S])*@deprecated(?:(?!\*\/)[\s\S])*\*\/\s*$/;
+
+export const ANY_SIGNATURE: Signature = { required: 0, max: Infinity, keywords: undefined, deprecated: false };
+
+export const jsSignature = (params: string, before: string): Signature => {
+  const list = splitTopLevel(params).filter((item) => !/^this\s*:/.test(item));
+  const rest = list.some((item) => item.startsWith("..."));
+  const required = list.filter((item) => !item.startsWith("...") && !/^\w+\?|=/.test(item)).length;
+  return { required, max: rest ? Infinity : list.length, keywords: undefined, deprecated: DEPRECATED_DOC.test(before) };
+};
+
 export type Resolved =
   | { readonly kind: "surface"; readonly surface: Surface }
   | { readonly kind: "unknown"; readonly detail: string; readonly version: string };

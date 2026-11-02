@@ -15,6 +15,7 @@ import {
 import { loadFamilies, loadPersonas } from "./bench-family.js";
 import { runBench, schedule } from "./bench-harness.js";
 import { loadPhase, phaseEstimate, phaseProblems, phaseRuns } from "./bench-phase.js";
+import { pilotProblems, readPilotState, realGit } from "./bench-pilot-lib.js";
 import { verifyFrozen } from "./bench-prereg.js";
 import { suiteTasks } from "./bench-suite.js";
 
@@ -91,6 +92,8 @@ const problems = realRunProblems({
     : {}),
 });
 if (problems.length > 0) fail(problems.join("\n"));
+const prePilot = pilotProblems(readPilotState(benchDir, freeze, arms, realGit(repo)));
+if (prePilot.length > 0) fail([...prePilot, "run npm run bench:pilot for the checklist"].join("\n"));
 
 const outDir =
   args.out ?? join(benchDir, "results", `${phase === undefined ? "" : `${phase.id}-`}seed-${String(args.seed)}`);

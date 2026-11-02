@@ -37,6 +37,16 @@ Do not add AI attribution to commits or PRs (no `Co-Authored-By` for AI tools, n
 4. Changes to user-facing text go in all three languages (English, Brazilian Portuguese, Spanish) in the same PR.
 5. CI must pass. Say how you verified the change.
 
+## Bypass probe
+
+Bypass detection assumes that Claude Code fires `PostToolUse` after another mod approves a call a Finite Monkey guard denied at `PreToolUse`. The tests only play that order through a scripted Claude Code. To check it on a real session, a person runs the probe; it is never run in CI or by an agent.
+
+1. From a checkout of this repository, at a terminal, run `npx tsx scripts/bypass-probe.ts --project <your project> --yes`. It prints what it will do first; without `--yes` or without a terminal it stops.
+2. It starts one `claude -p` session (at most 4 turns) on your login, in a temporary git repository, with this repository's `plugin/` and a fixture mod that answers `allow` to every `tool.check`. The prompt asks for one `Write` to `.finitemonkey/cache/probe-bypass.txt`, which the command hooks deny.
+3. It records one outcome for your Claude Code version in `<your project>/.finitemonkey/cache/bypass-probe.json`: `fired` (the call ran and `PostToolUse` recorded the bypass), `missed` (the call ran with no `PostToolUse`), `held` (the deny held, so nothing ran) or `inconclusive` (no deny was seen). `finitemonkey doctor` in that project then shows the result instead of "not confirmed".
+4. It writes the `InstructionsLoaded` events of the same session to `<your project>/.finitemonkey/cache/instructions-capture.jsonl`. To replace `test/fixtures/instructions/session.jsonl` with it, rewrite the home and project paths to the fixture's `/home/test` and `/home/ana/project`, keep the order of the lines, and run `test/instructions.test.ts`.
+5. Put the outcome and the Claude Code version in the pull request that updates the threat model's open question.
+
 ## Releases
 
 Releases are fully automated. Nobody edits `version` in `package.json` or `CHANGELOG.md` by hand.
@@ -45,6 +55,15 @@ Releases are fully automated. Nobody edits `version` in `package.json` or `CHANG
 - **`next` (pre-release).** Every push to the `next` branch with a releasable commit publishes a pre-release such as `0.1.0-next.40` under the npm `next` tag. Changes target `next`; users opt in with `npx finitemonkey@next`. Promotion to stable happens by a PR from `next` to `main`.
 
 Publishing happens only from CI, through npm trusted publishing with provenance. No one publishes from a laptop.
+
+### SBOM and package manager manifests
+
+Two generators prepare release artifacts. Neither one touches the network, and both exit with 1 and write nothing when an input is missing or a generated file fails validation.
+
+- `npm run sbom -- --out finitemonkey.cdx.json` writes a CycloneDX 1.5 JSON SBOM from `package-lock.json`: every locked package with its purl, the lockfile hash, the license and the dependency graph. Development packages carry `scope: excluded`, since the published package has no runtime dependencies. Set `SOURCE_DATE_EPOCH` or `--timestamp` for a reproducible file.
+- `npm run release:manifests -- --checksums SHA256SUMS --out <dir> [--version <x.y.z>]` writes the Homebrew formula, the Scoop manifest and the three winget manifests (schema 1.6.0) for one release. `SHA256SUMS` is the `sha256sum` output for the six archives `finitemonkey-<version>-<os>-<arch>.<ext>`, with `os` one of `darwin`, `linux` or `windows`, `arch` one of `x64` or `arm64`, and `ext` `zip` on Windows and `tar.gz` elsewhere. Each archive holds a single `finitemonkey` binary (`finitemonkey.exe` on Windows).
+
+The release job does not run them yet, and no standalone binary is built yet: signed binaries, the Homebrew tap and the winget and Scoop submissions are planned.
 
 For an editorial summary accompanying a release, start with the [release notes template](.github/RELEASE_NOTES_TEMPLATE.md). Describe what changed for users and the case behind it. Keep any humor to one line.
 

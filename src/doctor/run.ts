@@ -2,6 +2,8 @@ import type { Ctx } from "../core/context.js";
 import type { Probe, ProbeResult } from "../core/runtime.js";
 import { findGitRoot } from "../install/project.js";
 import { checkBriefing } from "./briefing.js";
+import { checkBrowserLibraries } from "./browser-libs.js";
+import { checkBypassOrder } from "./bypass-probe.js";
 import { checkClaudeSettings } from "./claude-settings.js";
 import { checkCoexistence } from "./coexistence.js";
 import { checkEnvHygiene } from "./env-hygiene.js";
@@ -14,11 +16,15 @@ import { checkInstructionDrift } from "./instruction-drift.js";
 import { checkInstructionLayers } from "./instruction-layers.js";
 import { checkInstructions } from "./instructions.js";
 import { checkLineEndings } from "./line-endings.js";
+import { checkLookEngine } from "./look-engine.js";
 import { checkAgentsFile } from "./memory.js";
 import { checkMods } from "./mods.js";
+import { checkNotifications } from "./notifications.js";
+import { checkPdfExtractor } from "./pdf.js";
 import { checkAlertBudget, checkPolicy } from "./policy.js";
 import { checkProjectFiles } from "./project-files.js";
 import { checkRemoteCredentials } from "./remotes.js";
+import { checkRestoreDrill } from "./restore.js";
 import { checkRewriters } from "./rewriters.js";
 import { checkRules } from "./rules.js";
 import { checkSupplyChain } from "./supply-chain.js";
@@ -34,6 +40,7 @@ export const CHECKS: readonly Check[] = [
   checkClaude,
   checkOs,
   checkPath,
+  checkBrowserLibraries,
   checkSandbox,
   checkPathCopies,
   checkAuthVariables,
@@ -57,7 +64,12 @@ export const CHECKS: readonly Check[] = [
   checkAlertBudget,
   checkHiddenText,
   checkMods,
+  checkBypassOrder,
   checkInstructionDrift,
+  checkNotifications,
+  checkPdfExtractor,
+  checkLookEngine,
+  checkRestoreDrill,
 ];
 
 export interface DoctorItem {

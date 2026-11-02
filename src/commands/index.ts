@@ -8,7 +8,7 @@ import { ciAuditCommand } from "./ci-audit.js";
 import { ciGenCommand } from "./ci-gen.js";
 import { ciProtectCommand } from "./ci-protect.js";
 import { ciWatchCommand } from "./ci-watch.js";
-import { conceitosCommand, conceitosExportCommand, conceitosMarkCommand, conceitosUpdateCommand } from "./conceitos.js";
+import { CONCEITOS_COMMANDS } from "./conceitos-curate.js";
 import { contractCommand } from "./contract.js";
 import { costCheckCommand, costInitCommand } from "./cost.js";
 import { credsCommand } from "./creds.js";
@@ -100,7 +100,7 @@ import { reviewPacketCommand } from "./review.js";
 import { rulesCheckCommand, rulesCompileCommand, rulesCoverageCommand } from "./rules.js";
 import { rulesProposeCommand, rulesViolationCommand } from "./rules-propose.js";
 import { runCommandSpec } from "./run.js";
-import { scenariosCommand, scenariosRunCommand } from "./scenarios.js";
+import { SCENARIO_COMMANDS } from "./scenarios-gen.js";
 import { secretsAcceptCommand } from "./secrets-accept.js";
 import { secretsIncidentCommand } from "./secrets-incident.js";
 import { secretsLiveCommand } from "./secrets-live.js";
@@ -219,10 +219,7 @@ export const REGISTRY = [
   perfilSetCommand,
   perfilAnswerCommand,
   perfilForgetCommand,
-  conceitosCommand,
-  conceitosExportCommand,
-  conceitosUpdateCommand,
-  conceitosMarkCommand,
+  ...CONCEITOS_COMMANDS,
   signalsHypothesisCommand,
   deployStatusCommand,
   lookApproveCommand,
@@ -271,8 +268,7 @@ export const REGISTRY = [
   taskExamplesCommand,
   taskDivergeCommand,
   signalsBlindBandCommand,
-  scenariosCommand,
-  scenariosRunCommand,
+  ...SCENARIO_COMMANDS,
   guardianStatusCommand,
   guardianGoalAddCommand,
   guardianGoalConfirmCommand,

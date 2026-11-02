@@ -45,6 +45,21 @@ export const UI_CONTRACT_SCHEMA: JsonSchema = {
         },
       },
     },
+    sheets: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["route", "file", "hash"],
+        properties: {
+          route: text,
+          selector: text,
+          file: text,
+          hash: text,
+          variables: { type: "integer", minimum: 0 },
+        },
+      },
+    },
   },
 };
 

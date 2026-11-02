@@ -6,11 +6,13 @@ import { activeScope, createdFiles, isListed, TESTS_HOLD_GUARD } from "../guards
 import { isSnapshot, isTestFile } from "../guards/tests/patterns.js";
 import { modelReason } from "../hooks/reason.js";
 import type { Translate } from "../i18n/translate.js";
+import { withheldSources } from "../knowledge/instruction-arms.js";
 import { MEMORY_QUARANTINE_FEATURE, recentUntrusted } from "../knowledge/quarantine.js";
 import { MOD_STATE_SCHEMA, type ModRule, type ModState } from "../mod/state.js";
 import { featureMode } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
 import { attributionOf } from "./attribution.js";
+import { gitDamageRules, MOD_GIT_GUARD } from "./git-rules.js";
 import { rulesSection } from "./instructions.js";
 
 export const MOD_TIGHTEN_GUARD = "mod-tighten";
@@ -101,9 +103,11 @@ export const modState = (runtime: Runtime, paths: FmPaths, t: Translate): ModSta
     untrusted: recentUntrusted(runtime, paths) ?? null,
     reason: t("knowledge.memory.mod_blocked"),
   },
+  withhold: withheldSources(runtime, paths),
   rules: [
     ...(live(runtime, paths, "self") ? [] : selfRules(t)),
     ...(live(runtime, paths, "bypass") ? [] : bypassRules(t)),
+    ...gitDamageRules(t, featureMode(runtime, paths, MOD_GIT_GUARD)),
     ...heldTestRules(runtime, paths, t),
   ],
 });

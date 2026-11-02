@@ -12,6 +12,7 @@ import { configAt, loadProjectConfig } from "../git/project-config.js";
 import { knownTasks } from "../guardian/tasks.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import { loadPolicy } from "../policy/policy.js";
+import { providerDeps, unattendedAgent } from "../provider/wire.js";
 import { isPerson } from "../secrets/project.js";
 import { fmPaths } from "../task/paths.js";
 import type { TaskContract } from "../task/types.js";
@@ -48,6 +49,15 @@ export const commandDeps = (
   },
   gate: (task) => gateStatus(runtime.execSelf(["gate", "--task", task, "--json"], root, GATE_TIMEOUT_MS).stdout),
 });
+
+export const PROVIDER_AGENT = "provider:agent";
+
+const providedDeps =
+  (ctx: Ctx, agent: UnattendedDeps["agent"]) =>
+  (root: AbsolutePath): UnattendedDeps => ({
+    agent,
+    gate: (task) => gateStatus(ctx.runtime.execSelf(["gate", "--task", task, "--json"], root, GATE_TIMEOUT_MS).stdout),
+  });
 
 const minutes = (ms: number): string => (ms / 60_000).toFixed(0);
 
@@ -140,11 +150,15 @@ export const unattended = (ctx: Ctx, id: string | undefined, options: Unattended
       planLines(ctx, contract, plan),
     );
   const mode = featureMode(ctx.runtime, paths, AUTONOMY_FEATURE);
-  const agent = configAt(loadProjectConfig(ctx.runtime, root), "autonomy", "agent");
-  if (mode !== "active" || typeof agent !== "string" || agent.trim() === "") {
+  const configured = configAt(loadProjectConfig(ctx.runtime, root), "autonomy", "agent");
+  const command = typeof configured === "string" && configured.trim() !== "" ? configured : undefined;
+  const provided = command === undefined ? unattendedAgent(providerDeps(ctx, paths)) : undefined;
+  const agent = command ?? (provided === undefined ? undefined : PROVIDER_AGENT);
+  if (mode !== "active" || agent === undefined) {
     recordFeatureShadow(ctx.runtime, paths, AUTONOMY_FEATURE, { task: contract.id, plan: plan.kind });
     return success({ ...data, ran: false }, [...planLines(ctx, contract, plan), ctx.t("autonomy.not_run")]);
   }
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("autonomy.error.person_only", UNATTENDED_USAGE));
-  return execute(ctx, { root, contract, plan, agent, data }, options);
+  const withAgent = provided === undefined ? options : { deps: options.deps ?? providedDeps(ctx, provided) };
+  return execute(ctx, { root, contract, plan, agent, data }, withAgent);
 };

@@ -3,10 +3,11 @@ import type { ArmSummary, Variant, VariantChange } from "../policy/evolved.js";
 
 export const REVERT_COMMAND = "finitemonkey policy revert";
 
-export const changeText = (change: VariantChange): string =>
-  change.kind === "guard"
-    ? `guards.${change.guard}: ${change.mode}`
-    : `alertBudget.${change.key}: ${String(change.value)}`;
+export const changeText = (change: VariantChange): string => {
+  if (change.kind === "guard") return `guards.${change.guard}: ${change.mode}`;
+  if (change.kind === "reminder") return `reminders.${change.rule}: ${change.include ? "injected" : "withheld"}`;
+  return `alertBudget.${change.key}: ${String(change.value)}`;
+};
 
 const percent = (value: number): string => `${String(Math.round(value * 100))}%`;
 const hours = (ms: number): string => (ms / 3_600_000).toFixed(1);

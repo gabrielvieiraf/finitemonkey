@@ -87,12 +87,19 @@ export type JudgeRequest =
       readonly scope: boolean;
       readonly confirmed: boolean;
     }
-  | { readonly verb: "fixed"; readonly event: string; readonly by: "person" | "agent" | "revert" }
+  | {
+      readonly verb: "fixed";
+      readonly event: string;
+      readonly by: "person" | "agent" | "revert";
+      readonly commit?: string;
+    }
   | { readonly verb: "trajectory" }
   | { readonly verb: "reply"; readonly claim: string; readonly verdict: "holds" | "fails" }
   | { readonly verb: "accept"; readonly help: string }
   | { readonly verb: "dismiss"; readonly help: string }
   | { readonly verb: "anchor"; readonly claim: string; readonly run: string; readonly inputs: readonly string[] };
+
+const COMMIT = /^[0-9a-f]{4,40}$/i;
 
 const text = (record: JsonObject, key: string): string | undefined => {
   const value = record[key];
@@ -236,9 +243,11 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
     };
   },
   fixed: (record) => {
-    const [event, by] = [text(record, "event"), record["by"]];
+    const [event, commit] = [text(record, "event"), text(record, "commit")];
+    const by = record["by"] ?? (commit === undefined ? undefined : "agent");
     if (event === undefined || (by !== "person" && by !== "agent" && by !== "revert")) return undefined;
-    return { verb: "fixed", event, by };
+    if (commit !== undefined && !COMMIT.test(commit)) return undefined;
+    return { verb: "fixed", event, by, ...(commit === undefined ? {} : { commit }) };
   },
   trajectory: () => ({ verb: "trajectory" }),
   triage: (record) => {
