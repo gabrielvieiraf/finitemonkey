@@ -25,10 +25,13 @@ import { PORTAO_HANDLERS } from "../gate/hooks/index.js";
 import { GIT_HANDLERS } from "../git/hooks/index.js";
 import { DECISION_HOLD_HANDLERS } from "../guardian/accepted-hold.js";
 import { ASSUMPTION_HANDLERS } from "../guardian/assumption-hook.js";
+import { CONTEXT_ANSWER_HANDLERS, PROPORTION_FEATURE } from "../guardian/context-answer.js";
 import { FORECAST_HANDLERS } from "../guardian/forecast-hook.js";
 import { scanHandlers } from "../guardian/pending.js";
 import { REALITY_HANDLERS } from "../guardian/reality-hook.js";
+import { BASH_WRITES_FEATURE, BASH_WRITES_HANDLERS } from "../guardian/shell-hold.js";
 import { detectBypass, noteDenied } from "../guards/bypass/ledger.js";
+import { OUTWARD_FEATURE, OUTWARD_HANDLERS } from "../guards/outward/hook.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
@@ -40,6 +43,7 @@ import { LEARNINGS_HANDLERS } from "../learnings/hooks.js";
 import { PERFIL_HANDLERS } from "../perfil/hooks.js";
 import { LABEL_HANDLERS, PLANTA_HANDLERS } from "../planta/hooks.js";
 import { type GuardSet, withPolicy } from "../policy/guards.js";
+import { MCP_PIN_FEATURE, MCP_PIN_HANDLERS } from "../policy/mcp-pin-hook.js";
 import { PREMISE_FEATURE, PREMISE_HANDLERS } from "../premise/hook.js";
 import { PROSE_HANDLERS } from "../prose/hooks.js";
 import { QUALITY_HANDLERS } from "../quality/hook.js";
@@ -242,15 +246,22 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
   { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
   { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
+  { id: BASH_WRITES_FEATURE, damage: false, handlers: BASH_WRITES_HANDLERS },
   { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
   { id: "reality", damage: false, handlers: REALITY_HANDLERS },
   { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
-  { id: "proportionality", damage: false, handlers: scanHandlers("proportionality") },
+  {
+    id: PROPORTION_FEATURE,
+    damage: false,
+    handlers: mergeHandlers(scanHandlers(PROPORTION_FEATURE), CONTEXT_ANSWER_HANDLERS),
+  },
   { id: "forecast", damage: false, handlers: FORECAST_HANDLERS },
   { id: "evolve", damage: false, handlers: EVOLVE_HANDLERS },
   { id: "calibrate", damage: false, handlers: CALIBRATE_HANDLERS },
   { id: "knowledge-claims", damage: false, handlers: KNOWLEDGE_CLAIMS_HANDLERS },
   { id: "memory-quarantine", damage: false, handlers: MEMORY_QUARANTINE_HANDLERS },
+  { id: OUTWARD_FEATURE, damage: false, handlers: OUTWARD_HANDLERS },
+  { id: MCP_PIN_FEATURE, damage: false, handlers: MCP_PIN_HANDLERS },
   { id: "knowledge-map", damage: false, handlers: KNOWLEDGE_MAP_HANDLERS },
   { id: EXPLAIN_APPROVAL_FEATURE, damage: false, handlers: EXPLAIN_APPROVAL_HANDLERS },
   { id: PREMISE_FEATURE, damage: false, handlers: PREMISE_HANDLERS },

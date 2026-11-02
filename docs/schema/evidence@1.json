@@ -177,6 +177,9 @@
     },
     "scripts": {
       "type": "string"
+    },
+    "session": {
+      "type": "string"
     }
   },
   "required": [

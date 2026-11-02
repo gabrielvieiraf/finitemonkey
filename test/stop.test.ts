@@ -3,6 +3,7 @@ import { after, describe, it } from "node:test";
 
 import type { Env } from "../src/core/context.js";
 import type { Runtime } from "../src/core/runtime.js";
+import { readLedger } from "../src/evidence/ledger.js";
 import { readGateStatus } from "../src/gate/hooks/status.js";
 import { DEFAULT_HANDLERS } from "../src/hooks/handlers.js";
 import { type HookOutcome, runHook } from "../src/hooks/runner.js";
@@ -81,6 +82,10 @@ describe("Stop gate", () => {
     breakTests(repo);
     const outcome = await stop(repo);
     assert.equal(outcome.verdict, "block");
+    const gates = readLedger(repoRuntime(), fmPaths(repo.root).evidence("t1")).filter(
+      (entry) => entry.check === "*gate*",
+    );
+    assert.equal(gates.at(-1)?.session, "s1");
     const body = parseBody(outcome.stdout);
     assert.equal(field(body, "decision"), "block");
     const reason = String(field(body, "reason"));

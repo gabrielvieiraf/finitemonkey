@@ -5,6 +5,7 @@ import { untrustedIn } from "../policy/untrusted.js";
 import { readEntries, type SignalEntry, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { type Lesson, newLesson, readLessons, writeLessons } from "./store.js";
+import { stampTree } from "./tree.js";
 
 export const MIN_REPEATS = 2;
 const MAX_FILES = 3;
@@ -53,16 +54,20 @@ export const learnFromSignatures = (input: HookInput, paths: FmPaths): readonly 
   const added = fixedSignatures(entries)
     .filter((fixed) => !lessons.some((lesson) => lesson.sig === fixed.sig))
     .map((fixed) =>
-      newLesson(
-        {
-          text: input.t("learnings.from_signature", { sample: fixed.sample, files: fixed.files.join(", ") }),
-          paths: fixed.files,
-          sig: fixed.sig,
-          source: "signature",
-          origin,
-          quarantined: untrusted !== undefined || variant !== undefined,
-        },
-        now,
+      stampTree(
+        input.runtime,
+        paths.root,
+        newLesson(
+          {
+            text: input.t("learnings.from_signature", { sample: fixed.sample, files: fixed.files.join(", ") }),
+            paths: fixed.files,
+            sig: fixed.sig,
+            source: "signature",
+            origin,
+            quarantined: untrusted !== undefined || variant !== undefined,
+          },
+          now,
+        ),
       ),
     );
   if (added.length > 0) writeLessons(input.runtime, paths.dir, [...lessons, ...added]);

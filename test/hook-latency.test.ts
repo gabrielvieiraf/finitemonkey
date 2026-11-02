@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
@@ -90,6 +90,36 @@ describe("hook latency through the vendored CLI", () => {
     }
     t.diagnostic(`all hooks p95 ${p95(all).toFixed(0)} ms over ${String(all.length)} runs; ${report.join("; ")}`);
     assert.ok(p95(all) < P95_LIMIT_MS, `p95 ${p95(all).toFixed(1)} ms`);
+  });
+
+  it(`PostToolUse on a Bash call that writes a file answers with median under ${String(P95_LIMIT_MS)} ms`, async () => {
+    const root = toAbsolutePath(join(base, "bash writes"));
+    mkdirSync(join(root, "src"), { recursive: true });
+    spawnSync("git", ["init", "-q", "-b", "main"], { cwd: root });
+    assert.equal((await cliJson(["init", "--yes"], { cwd: root, runtime, env: {}, version: "1.0.0" })).code, 0);
+    const bin = join(root, VENDOR_BIN);
+    const samples = Array.from({ length: RUNS }, (_, run) => {
+      const tool = {
+        tool_name: "Bash",
+        tool_use_id: `b${String(run)}`,
+        tool_input: { command: "sed -i s/a/b/ src/a.ts" },
+      };
+      const send = (event: string): number => {
+        const input = JSON.stringify({ ...common(event, root), ...tool });
+        const start = process.hrtime.bigint();
+        const result = spawnSync(process.execPath, [bin, "hook", event], { cwd: root, input, encoding: "utf8" });
+        assert.ok(result.status === 0 || result.status === 2, `${event}: ${result.stderr}`);
+        return Number(process.hrtime.bigint() - start) / 1e6;
+      };
+      send("PreToolUse");
+      writeFileSync(join(root, "src", "a.ts"), `export const a = ${String(run)};\n`);
+      return send("PostToolUse");
+    });
+    assert.ok(median(samples) < P95_LIMIT_MS, `PostToolUse Bash median ${median(samples).toFixed(1)} ms`);
+    assert.match(
+      readFileSync(join(root, ".finitemonkey", "signals.jsonl"), "utf8"),
+      /"kind":"bash_write","file":"src\/a\.ts"/,
+    );
   });
 
   it("the vendored CLI reports the version that installed it", async () => {

@@ -19,7 +19,7 @@ export interface GuardianSignal {
   readonly detail: string;
 }
 
-export const STALLED_DAYS = 3;
+export const STALLED_SESSIONS = 3;
 
 export const unlinkedTasks = (tasks: readonly KnownTask[], goals: Goals): readonly GuardianSignal[] => {
   const stated = new Set(statedGoals(goals).map((entry: GoalEntry) => entry.id));
@@ -105,14 +105,17 @@ export const almostDone = (ledger: readonly Evidence[]): boolean => {
   return failing.size <= 1;
 };
 
-export const failingDays = (ledger: readonly Evidence[]): number => {
+const sittingOf = (entry: Evidence): string =>
+  entry.session === undefined ? `day:${day(entry)}` : `session:${entry.session}`;
+
+export const failingSittings = (ledger: readonly Evidence[]): number => {
   const gates = ledger.filter((entry) => entry.check === GATE_CHECK);
   const lastPass = gates.findLastIndex((entry) => entry.status === "passed");
   return new Set(
     gates
       .slice(lastPass + 1)
       .filter((entry) => entry.status === "failed")
-      .map(day),
+      .map(sittingOf),
   ).size;
 };
 
@@ -124,8 +127,8 @@ export const stalledTasks = (
   tasks.flatMap((task) => {
     if (task.done) return [];
     const ledger = readLedger(runtime, paths.evidence(task.contract.id));
-    const days = failingDays(ledger);
-    return days >= STALLED_DAYS && almostDone(ledger)
-      ? [{ kind: "stalled", subject: task.contract.id, detail: String(days) }]
+    const sittings = failingSittings(ledger);
+    return sittings >= STALLED_SESSIONS && almostDone(ledger)
+      ? [{ kind: "stalled", subject: task.contract.id, detail: String(sittings) }]
       : [];
   });

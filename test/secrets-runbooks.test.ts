@@ -151,7 +151,11 @@ describe("optional live-key check", () => {
     const result = await live(["secrets", "live", "github", "--env", "GH_TOKEN", "--send"], tty(), { GH_TOKEN: key });
     assert.equal(result.code, 0);
     assert.match(result.events[0] ?? "", /^stderr:Contacting api\.github\.com/);
-    assert.equal(result.events[1], "exec");
+    assert.match(
+      result.events[1] ?? "",
+      /^stderr:It sends one GET to https:\/\/api\.github\.com\/user with these headers: Authorization, User-Agent\./,
+    );
+    assert.equal(result.events[2], "exec");
     const [request] = result.requests;
     assert.ok(request !== undefined);
     assert.equal(request.command, "curl");

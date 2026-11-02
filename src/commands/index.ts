@@ -45,7 +45,7 @@ import { rescueCommand } from "./git-rescue.js";
 import { snapshotCommand, undoCommand } from "./git-undo.js";
 import { goldenAcceptCommand } from "./golden.js";
 import { guardianGoalAddCommand, guardianGoalConfirmCommand, guardianStatusCommand } from "./guardian.js";
-import { guardianAssumeAddCommand, guardianAssumeListCommand, guardianAssumeVerifyCommand } from "./guardian-assume.js";
+import { ASSUME_COMMANDS } from "./guardian-assume-test.js";
 import { guardianForecastCommand } from "./guardian-forecast.js";
 import { guardianReportCommand } from "./guardian-report.js";
 import { guardianReuseCommand, guardianScanCommand } from "./guardian-reuse.js";
@@ -279,9 +279,7 @@ export const REGISTRY = [
   decideAcceptCommand,
   guardianReviewCommand,
   guardianForgetCommand,
-  guardianAssumeListCommand,
-  guardianAssumeAddCommand,
-  guardianAssumeVerifyCommand,
+  ...ASSUME_COMMANDS,
   guardianReportCommand,
   guardianReuseCommand,
   guardianScanCommand,

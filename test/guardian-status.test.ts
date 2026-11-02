@@ -54,7 +54,7 @@ const repoWith = (files: Readonly<Record<string, string>>): Repo => {
 const kindsFor = (repo: Repo): readonly (readonly [string, string])[] =>
   guardianStatus(runtime(), fmPaths(repo.root)).signals.map((item) => [item.kind, item.subject] as const);
 
-const gate = (status: string, at: string, tree: string): string =>
+const gate = (status: string, at: string, tree: string, session?: string): string =>
   signedLine(repoRuntime(), {
     schema: "finitemonkey/evidence@1",
     task: "slow",
@@ -64,6 +64,7 @@ const gate = (status: string, at: string, tree: string): string =>
     treeHash: tree,
     at,
     notes: [],
+    ...(session === undefined ? {} : { session }),
   });
 
 const check = (name: string, status: string, at: string, tree: string): string =>
@@ -147,6 +148,31 @@ describe("guardian status", () => {
       ".finitemonkey/evidence/slow.jsonl": ledger(["2026-10-24", "2026-10-25"]),
     });
     assert.deepEqual(kindsFor(recent), []);
+  });
+
+  it("counts sessions when the ledger records them: three sessions in one day stall, three runs in one session do not", () => {
+    const ledger = (sessions: readonly string[]): string =>
+      `${sessions
+        .flatMap((session, index) => {
+          const at = `2026-10-27T1${String(index)}:00:0`;
+          const tree = `t${String(index)}`;
+          return [
+            check("tests", "passed", `${at}0.000Z`, tree),
+            check("lint", "failed", `${at}1.000Z`, tree),
+            gate("failed", `${at}2.000Z`, tree, session),
+          ];
+        })
+        .join("\n")}\n`;
+    const three = repoWith({
+      ".finitemonkey/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
+      ".finitemonkey/evidence/slow.jsonl": ledger(["s1", "s2", "s3"]),
+    });
+    assert.deepEqual(kindsFor(three), [["stalled", "slow"]]);
+    const one = repoWith({
+      ".finitemonkey/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
+      ".finitemonkey/evidence/slow.jsonl": ledger(["s1", "s1", "s1"]),
+    });
+    assert.deepEqual(kindsFor(one), []);
   });
 
   it("status --json carries the frozen schema", async () => {

@@ -1,3 +1,5 @@
+import { GO_JAVA_ROLES, goModuleCandidates } from "./roles-jvm-go.js";
+
 export const ROLES: Readonly<Record<string, readonly string[]>> = {
   "http client": [
     "axios",
@@ -43,10 +45,18 @@ export const ROLES: Readonly<Record<string, readonly string[]>> = {
 };
 
 const BY_PACKAGE: ReadonlyMap<string, string> = new Map(
-  Object.entries(ROLES).flatMap(([role, names]) => names.map((name) => [name.toLowerCase(), role] as const)),
+  [...Object.entries(ROLES), ...Object.entries(GO_JAVA_ROLES)].flatMap(([role, names]) =>
+    names.map((name) => [name.toLowerCase(), role] as const),
+  ),
 );
 
-export const roleOf = (name: string): string | undefined => BY_PACKAGE.get(name.toLowerCase());
+export const roleOf = (name: string): string | undefined => {
+  const lower = name.toLowerCase();
+  const direct = BY_PACKAGE.get(lower);
+  if (direct !== undefined) return direct;
+  const module = goModuleCandidates(lower).find((candidate) => BY_PACKAGE.has(candidate));
+  return module === undefined ? undefined : BY_PACKAGE.get(module);
+};
 
 const IMPORT =
   /(?:\bfrom\s+["']([^"']+)["']|\brequire\(\s*["']([^"']+)["']\s*\)|\bimport\(\s*["']([^"']+)["']\s*\)|^\s*import\s+([\w.]+)|^\s*from\s+([\w.]+)\s+import)/gm;

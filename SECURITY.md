@@ -70,6 +70,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `front-scope` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `predict-gate` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `decision-hold` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `bash-writes` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `assumptions` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `reality` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `guardian-reuse` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
@@ -79,6 +80,8 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `calibrate` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `knowledge-claims` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `memory-quarantine` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `untrusted-outward` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `mcp-pin` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `knowledge-map` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `explain-approval` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `premise-check` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
@@ -161,7 +164,7 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Sends | `127.0.0.1` | One request to your own app on the port a `runtime` check declares, after starting it or finding it running. Nothing goes past this machine. |
 | Sends | `registry.npmjs.org`, `pypi.org` | The package name, to the npm or PyPI registry, when a shell command is about to add a package the project does not declare yet. Never with `FINITEMONKEY_OFFLINE=1`. |
 | Sends | `api.osv.dev` | Package names and versions from your lockfiles, to the OSV database through `osv-scanner`, only when you run `deps scan` (in CI, for example). Never from a hook. |
-| Sends | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com` | Through `curl`, only when you run `finitemonkey secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent. |
+| Sends | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com`, `api.mailgun.net`, `api.sendgrid.com`, `gitlab.com`, `registry.npmjs.org`, `huggingface.co` | Through `curl`, only when you run `finitemonkey secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent. |
 | Sends | `deploy.version_url` | Through `curl`, only when `deploy.version_url` is set in `.finitemonkey/config.yml`: a GET to that URL after a push, to read which commit is live. With `deploy.environment`, the same question goes to GitHub deployments through `gh`. |
 | Sends | `hosts.local.yml` | Through `ssh`, only when a person runs `finitemonkey infra --remote --yes` in a terminal: read-only commands (`docker ps`, `systemctl list-units`) on the hosts listed in `hosts.local.yml`. Never from a hook or an agent. |
 | Sends | `headers.url` | Through `curl`, only when `headers.url` is set in `.finitemonkey/config.yml` and a task contract has the `headers` check: one GET per configured route, to read the security headers of the real response. Without it, the headers come from the app `look` already started on 127.0.0.1. |

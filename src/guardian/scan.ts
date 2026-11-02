@@ -4,6 +4,7 @@ import type { Translate } from "../i18n/translate.js";
 import { planFiles, planPath } from "../plan/folder.js";
 import type { FmPaths } from "../task/paths.js";
 import { companyContext } from "./context.js";
+import { askedContext, missingContext } from "./context-ask.js";
 import { diffSnapshot, existingMatches } from "./existing.js";
 import { readGoals } from "./goals.js";
 import { problemWeight, type Proportion, proportionReport, weigh } from "./proportion.js";
@@ -59,6 +60,7 @@ export const scanChange = (runtime: ScanRuntime, t: Translate, paths: FmPaths, b
     context,
     problemWeight(contract?.ok === true ? contract.value : ""),
     decidedConcept(runtime, paths),
+    askedContext(runtime, paths) === undefined ? missingContext(runtime, paths.root, context) : [],
   );
   const reuse = existingMatches(runtime, paths.root, snap).map((match) => ({
     feature: "guardian-reuse" as const,

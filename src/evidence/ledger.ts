@@ -56,6 +56,7 @@ const inputsOf = (value: unknown): EvidenceInputs | undefined => {
 
 const optional = (record: JsonObject): Partial<Evidence> => {
   const scripts = text(record, "scripts");
+  const session = text(record, "session");
   const exitCode = record["exitCode"];
   const durationMs = record["durationMs"];
   const command = text(record, "command");
@@ -84,6 +85,7 @@ const optional = (record: JsonObject): Partial<Evidence> => {
     ...(stateReason === undefined ? {} : { stateReason }),
     ...(inputs === undefined ? {} : { inputs }),
     ...(scripts === undefined ? {} : { scripts }),
+    ...(session === undefined ? {} : { session }),
   };
 };
 

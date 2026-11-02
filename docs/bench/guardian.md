@@ -13,6 +13,7 @@ Written before the first run. Changes after a run starts go in the "Changes" sec
 | Feature | Hypothesis | Primary metric | Guardrails |
 |---|---|---|---|
 | decision-hold | fewer decision records accepted without the person | records reaching `accepted` without `decide accept`, per 100 records | holds dismissed |
+| bash-writes | decision records stop changing through shell commands that bypass the Edit hold | holds raised by in-place editors (`sed -i`, `perl -pi`, redirects, `tee`, interpreter one-liners) per 100 tasks; share of agent writes made through Bash; "unknown" attributions per PR | holds dismissed |
 | assumptions | more high-impact assumptions verified before the step that depends on them | assumptions verified before vs after the dependent step; assumptions later found false | holds per 100 tasks, wall time |
 | reality | level 1-3 reports change the final decision only when it was wrong | precision of level 2-3 reports judged later; harmful redirects (advice followed, then reverted) | dismissals, wall time |
 | guardian-reuse | fewer second implementations of a role the project already covers | reports per 100 tasks; accepted reuse vs new code kept | dismissals |

@@ -21,7 +21,7 @@ export const prProvenanceCommand: CommandSpec = {
     inGuardianRepo(ctx, (root) => {
       const base = stringOption(args.values, "base") ?? "origin/main";
       const files = changedSince(ctx.runtime, root, base).map((file) => file.path);
-      const block = renderBlock(provenanceSources(ctx.runtime, root, files));
+      const block = renderBlock(provenanceSources(ctx.runtime, root, files, base));
       const file = stringOption(args.values, "check");
       if (file === undefined) return success({ schema: PROVENANCE_SCHEMA, block, result: null }, [block]);
       const body = ctx.runtime.readText(toAbsolutePath(file, root));

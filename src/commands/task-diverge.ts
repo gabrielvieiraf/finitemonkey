@@ -3,9 +3,12 @@ import { join } from "node:path";
 import { stringOption } from "../core/args.js";
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import type { JsonObject } from "../core/parsed.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
+import { DIVERGENCE_EVENT } from "../knowledge/decision-inputs.js";
+import { maskText } from "../mask/mask.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
 import {
   beginnerIn,
@@ -56,8 +59,20 @@ export const questionLines = (ctx: Ctx, question: Question): readonly string[] =
   ctx.t("divergence.choose", { task: question.task }),
 ];
 
+const READING_MAX = 200;
+
+const readingsOf = (outcome: Outcome): JsonObject =>
+  outcome.kind === "question"
+    ? {
+        input: maskText(outcome.question.input).slice(0, READING_MAX),
+        options: outcome.question.options.map((option) =>
+          maskText(`${option.letter}: ${option.output}`).slice(0, READING_MAX),
+        ),
+      }
+    : {};
+
 const report = (ctx: Ctx, paths: FmPaths, task: string, outcome: Outcome, mode: string): CommandResult => {
-  logEvent(ctx.runtime, paths, "divergence.outcome", { task, mode, kind: outcome.kind });
+  logEvent(ctx.runtime, paths, DIVERGENCE_EVENT, { task, mode, kind: outcome.kind, ...readingsOf(outcome) });
   const data = { schema: TASK_SCHEMA, task, mode, outcome: outcome.kind };
   if (outcome.kind === "no_change") return success({ ...data }, [ctx.t("divergence.no_change", { task })]);
   if (outcome.kind === "agree")
