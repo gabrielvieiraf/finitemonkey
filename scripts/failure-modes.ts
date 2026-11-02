@@ -163,4 +163,12 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     file: "test/mod/tighten.test.ts",
     test: "a guard that throws denies the call",
   },
+  {
+    failure: "A hand-edited provenance block passes review",
+    cause: "Someone changes the generated block in the pull request body",
+    mitigation:
+      "The block carries a hash of its own text; `ci gate` recomputes it from the pull request event without the local ledger and fails when it differs",
+    file: "test/bash-writes.test.ts",
+    test: "passes an untouched block and fails a hand-edited one, without the local ledger",
+  },
 ];

@@ -28,6 +28,7 @@ import { ASSUMPTION_HANDLERS } from "../guardian/assumption-hook.js";
 import { FORECAST_HANDLERS } from "../guardian/forecast-hook.js";
 import { scanHandlers } from "../guardian/pending.js";
 import { REALITY_HANDLERS } from "../guardian/reality-hook.js";
+import { BASH_WRITES_FEATURE, BASH_WRITES_HANDLERS } from "../guardian/shell-hold.js";
 import { detectBypass, noteDenied } from "../guards/bypass/ledger.js";
 import { OUTWARD_FEATURE, OUTWARD_HANDLERS } from "../guards/outward/hook.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
@@ -65,6 +66,7 @@ import {
 } from "../signals/early.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
+import { CONTRACT_HOLD_GUARD, CONTRACT_HOLD_HANDLERS } from "../task/contract-hold.js";
 import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
 import { HEAVY_HANDLERS } from "../wt/heavy-hooks.js";
 import { WT_PLACE_HANDLERS } from "../wt/place-hook.js";
@@ -243,6 +245,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: FRONT_SCOPE_GUARD, damage: false, handlers: { PreToolUse: [frontScopeGuard] } },
   { id: "predict-gate", damage: false, handlers: PREDICT_HANDLERS },
   { id: "decision-hold", damage: false, handlers: DECISION_HOLD_HANDLERS },
+  { id: BASH_WRITES_FEATURE, damage: false, handlers: BASH_WRITES_HANDLERS },
   { id: "assumptions", damage: false, handlers: ASSUMPTION_HANDLERS },
   { id: "reality", damage: false, handlers: REALITY_HANDLERS },
   { id: "guardian-reuse", damage: false, handlers: scanHandlers("guardian-reuse") },
@@ -261,6 +264,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
+  { id: CONTRACT_HOLD_GUARD, damage: false, handlers: CONTRACT_HOLD_HANDLERS },
 ];
 
 export const DEFAULT_HANDLERS: HookHandlers = mergeHandlers(

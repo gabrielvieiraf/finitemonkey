@@ -5,6 +5,7 @@ import type { Runtime } from "../core/runtime.js";
 import { type AddedLine, addedLines, type Git } from "../gate/git.js";
 import { readGateStatus } from "../gate/hooks/status.js";
 import { prepareGate } from "../gate/prepare.js";
+import { agentWrites } from "../signals/agent-writes.js";
 import { readEntries, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
@@ -39,11 +40,7 @@ export const creditPending = (runtime: Pick<Runtime, "readText">, paths: FmPaths
 };
 
 export const agentFiles = (runtime: Pick<Runtime, "readText">, paths: FmPaths): ReadonlySet<string> =>
-  new Set(
-    readEntries(runtime, signalFiles(paths)).flatMap((entry) =>
-      entry.kind === "edit" && entry.file !== "" ? [entry.file] : [],
-    ),
-  );
+  new Set(agentWrites(readEntries(runtime, signalFiles(paths))).map((write) => write.file));
 
 const MAX_UNTRACKED_BYTES = 200_000;
 

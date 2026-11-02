@@ -1,6 +1,7 @@
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import { BLUEPRINT_TYPES, parseBlueprintType } from "../planta/types.js";
+import { parseTaskGuards } from "../policy/task-guards.js";
 import { parseShortcuts } from "./shortcuts.js";
 import {
   type AcceptanceCheck,
@@ -188,6 +189,8 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
   const shortcuts = parseShortcuts(value["shortcuts"], checks, issues);
   const blueprint = parseBlueprintType(str(value, "blueprint", "", issues, false));
   const clarified = strings(value["clarified"], "clarified", issues);
+  const guards = parseTaskGuards(value["guards"], issues);
+  const reviewers = strings(value["reviewers"], "reviewers", issues);
   if (value["blueprint"] !== undefined && blueprint === undefined) {
     issues.push(`blueprint: use ${BLUEPRINT_TYPES.join(", ")}`);
   }
@@ -206,5 +209,7 @@ export const validateContract = (value: unknown, implicit = false): Parsed<TaskC
     implicit,
     ...(clarified.length === 0 ? {} : { clarified }),
     ...(value["tests_first"] === true ? { testsFirst: true } : {}),
+    ...(Object.keys(guards).length === 0 ? {} : { guards }),
+    ...(reviewers.length === 0 ? {} : { reviewers }),
   });
 };

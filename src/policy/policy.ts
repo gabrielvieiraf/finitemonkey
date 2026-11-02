@@ -1,6 +1,7 @@
 import { type AlertBudgetConfig, DEFAULT_ALERT_BUDGET } from "./budget.js";
 import { JUDGE_GUARDS } from "./judge-guards.js";
 import { type AutonomyConfig, type CalibrateConfig, DEFAULT_STAGE6, type EvolveConfig } from "./stage6.js";
+import type { TaskGuards } from "./task-guards.js";
 import { UI_GUARDS } from "./ui-guards.js";
 
 export { loadBasePolicy, loadPolicy, policyPath, type PolicyRuntime, userPolicyPath } from "./load.js";
@@ -78,6 +79,7 @@ export const OPTIONAL_GUARDS = [
   "access-scenarios",
   "blind-tests",
   "decision-hold",
+  "bash-writes",
   "assumptions",
   "reality",
   "guardian-reuse",
@@ -119,6 +121,7 @@ export const OPTIONAL_GUARDS = [
   "xray",
   "probes",
   "trajectory",
+  "contract-hold",
   ...UI_GUARDS,
   "api-consistency",
   "api-breaking",
@@ -173,6 +176,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "access-scenarios",
   "blind-tests",
   "decision-hold",
+  "bash-writes",
   "assumptions",
   "reality",
   "guardian-reuse",
@@ -206,6 +210,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "team-dashboard",
   "xray",
   "probes",
+  "contract-hold",
   ...UI_GUARDS,
   "api-consistency",
   "api-breaking",
@@ -239,6 +244,7 @@ export interface Policy {
   readonly calibrate: CalibrateConfig;
   readonly autonomy: AutonomyConfig;
   readonly issues: readonly PolicyIssue[];
+  readonly task?: TaskGuards;
 }
 
 export const DEFAULT_POLICY: Policy = {
