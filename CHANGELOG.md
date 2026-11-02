@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.0-next.42](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.41...v0.1.0-next.42) (2026-11-01)
+
+### Features
+
+* **mod:** draw the trajectory with sub-bands like the trajectory view ([#367](https://github.com/gabrielvieiraf/finitemonkey/issues/367)) ([07fec38](https://github.com/gabrielvieiraf/finitemonkey/commit/07fec385d15f459cd77a52059f350757ed497228))
+
+### Bug Fixes
+
+* **gate:** hold a passing tests check when an existing test was changed ([#398](https://github.com/gabrielvieiraf/finitemonkey/issues/398)) ([3ea9e23](https://github.com/gabrielvieiraf/finitemonkey/commit/3ea9e236571151095ad254611bd0db540a2df19b)), closes [#395](https://github.com/gabrielvieiraf/finitemonkey/issues/395)
+
 ## [0.1.0-next.41](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.40...v0.1.0-next.41) (2026-10-30)
 
 ### Features

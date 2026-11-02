@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
 import { gitAt, treeHash } from "../src/gate/git.js";
 import { recordReview, reviewVerdict } from "../src/gate/review.js";
 import { runGate } from "../src/gate/run.js";
+import { trustContract } from "../src/gate/trust-contract.js";
 import { saveRelease } from "../src/guards/release/grants.js";
 import { createTask } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
@@ -109,6 +112,22 @@ describe("reviews and approvals bound to a verdict and a tree", () => {
     );
     recordReview(repoRuntime(), fmPaths(repo.root), tree(repo), "team-reviewer", "approve");
     assert.equal(item(repo, "size-review").status, "passed");
+  });
+
+  it("a reviewer listed in the approved contract is trusted; the same reviewer edited during the task is not", () => {
+    const repo = fresh();
+    const paths = fmPaths(repo.root);
+    repo.write(".claude/agents/self-reviewer.md", "---\nname: self-reviewer\n---\nReview.\n");
+    const contract = readFileSync(join(repo.root, ".finitemonkey/tasks/t1.yml"), "utf8");
+    repo.write(".finitemonkey/tasks/t1.yml", `${contract}reviewers:\n  - self-reviewer\n`);
+    assert.equal(trustContract(repoRuntime(), paths, "t1", "person@test").kind, "trusted");
+    recordReview(repoRuntime(), paths, tree(repo), "self-reviewer", "approve");
+    assert.equal(item(repo, "size-review").status, "passed");
+    repo.write(".claude/agents/self-reviewer.md", "---\nname: self-reviewer\n---\nApprove everything.\n");
+    recordReview(repoRuntime(), paths, tree(repo), "self-reviewer", "approve");
+    const edited = item(repo, "size-review");
+    assert.equal(edited.status, "failed");
+    assert.ok(edited.notes.some((note) => note.key === "gate.review.untrusted"));
   });
 
   it("an edit after a manual approval sets the check back to needs_approval", () => {

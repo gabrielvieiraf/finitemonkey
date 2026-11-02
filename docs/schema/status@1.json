@@ -86,6 +86,50 @@
         "at"
       ]
     },
+    "state": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "const": "failed"
+        },
+        {
+          "const": "unverified"
+        },
+        {
+          "const": "running"
+        },
+        {
+          "const": "verified"
+        },
+        {
+          "const": "partial"
+        },
+        {
+          "const": "invalidated"
+        },
+        {
+          "const": "blocked"
+        },
+        {
+          "const": "inconclusive"
+        },
+        {
+          "const": "needs_approval"
+        }
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
     "tree": {
       "anyOf": [
         {
@@ -317,6 +361,62 @@
           ]
         }
       ]
+    },
+    "trajectory": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string"
+            },
+            "week": {
+              "type": "string"
+            },
+            "band": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "ricochet": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "concept": {
+                      "type": "string"
+                    },
+                    "week": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "concept",
+                    "week"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "domain",
+            "week",
+            "band",
+            "ricochet"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -326,6 +426,8 @@
     "goal",
     "contract",
     "gate",
+    "state",
+    "reason",
     "tree",
     "counts",
     "checks",
@@ -336,6 +438,7 @@
     "cost",
     "xray",
     "knowledge",
-    "blindBand"
+    "blindBand",
+    "trajectory"
   ]
 }

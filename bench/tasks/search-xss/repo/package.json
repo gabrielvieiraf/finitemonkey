@@ -1,0 +1,5 @@
+{
+  "name": "shop-search",
+  "private": true,
+  "scripts": { "test": "node --test" }
+}

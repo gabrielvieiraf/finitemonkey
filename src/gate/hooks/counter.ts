@@ -24,14 +24,16 @@ export const failureSignature = (report: GateReport): string =>
   );
 
 export type CounterVerdict =
-  { readonly kind: "block"; readonly counter: BlockCounter } | { readonly kind: "exhausted"; readonly blocks: number };
+  | { readonly kind: "block"; readonly counter: BlockCounter }
+  | { readonly kind: "exhausted"; readonly blocks: number; readonly cause: "cap" | "no_progress" };
 
 export const nextBlock = (previous: BlockCounter | undefined, report: GateReport, env: Env): CounterVerdict => {
   const signature = failureSignature(report);
   const sameTask = previous?.task === report.task;
   const consecutive = (sameTask ? previous.consecutive : 0) + 1;
   const same = sameTask && previous.signature === signature ? previous.same + 1 : 1;
-  if (consecutive > maxBlocks(env) || same > NO_PROGRESS_MAX) return { kind: "exhausted", blocks: consecutive - 1 };
+  if (consecutive > maxBlocks(env)) return { kind: "exhausted", blocks: consecutive - 1, cause: "cap" };
+  if (same > NO_PROGRESS_MAX) return { kind: "exhausted", blocks: consecutive - 1, cause: "no_progress" };
   return { kind: "block", counter: { task: report.task, signature, consecutive, same } };
 };
 

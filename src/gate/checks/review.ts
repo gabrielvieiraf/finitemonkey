@@ -1,6 +1,7 @@
 import type { AcceptanceCheck } from "../../task/types.js";
 import { fileAt } from "../git.js";
 import { APPROVING, readReviews, type Review } from "../review.js";
+import { agentFile, listedReviewerTrusted, type ReviewerScope } from "../reviewer-trust.js";
 import { type CheckOutcome, failed, type GateContext, note, passed, unverified } from "../types.js";
 import { boundApproval } from "./approval.js";
 
@@ -22,11 +23,17 @@ const sizeNotes = (ctx: GateContext): CheckOutcome["notes"] => {
 
 const PLUGIN_PREFIX = "finitemonkey:";
 
-export const trustedReviewer = (ctx: Pick<GateContext, "git" | "base" | "changes">, agent: string): boolean => {
+export const trustedReviewer = (
+  ctx: Pick<GateContext, "git" | "base" | "changes"> & Partial<ReviewerScope>,
+  agent: string,
+): boolean => {
   if (agent.startsWith(PLUGIN_PREFIX)) return true;
   if (agent.includes(":")) return false;
-  const file = `.claude/agents/${agent}.md`;
-  return fileAt(ctx.git, ctx.base, file) !== undefined && !ctx.changes.some((change) => change.path === file);
+  const file = agentFile(agent);
+  if (fileAt(ctx.git, ctx.base, file) !== undefined && !ctx.changes.some((change) => change.path === file)) return true;
+  const { runtime, paths, contract, trusted } = ctx;
+  if (runtime === undefined || paths === undefined || contract === undefined || trusted === undefined) return false;
+  return listedReviewerTrusted({ runtime, paths, contract, trusted }, agent);
 };
 
 const fromReview = (review: Review): CheckOutcome => {

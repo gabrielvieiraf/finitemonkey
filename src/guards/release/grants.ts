@@ -13,12 +13,18 @@ export interface Grant {
   readonly expiresAt: string;
 }
 
+export interface AcceptedFile {
+  readonly path: string;
+  readonly hash: string;
+}
+
 export interface Approval {
   readonly task: string;
   readonly check: string;
   readonly reason: string;
   readonly at: string;
   readonly treeHash?: string;
+  readonly accepted?: readonly AcceptedFile[];
 }
 
 type Store = Pick<Runtime, "readText" | "writeText">;
@@ -40,14 +46,32 @@ const toGrant = (value: unknown): Grant | undefined => {
   return { guard, reason, grantedAt, expiresAt, ...(sessionId === undefined ? {} : { sessionId }) };
 };
 
+const toAccepted = (value: unknown): readonly AcceptedFile[] | undefined =>
+  Array.isArray(value)
+    ? value.flatMap((item: unknown) => {
+        if (!isRecord(item)) return [];
+        const path = text(item, "path");
+        const hash = text(item, "hash");
+        return path === undefined || hash === undefined ? [] : [{ path, hash }];
+      })
+    : undefined;
+
 const toApproval = (value: unknown): Approval | undefined => {
   if (!isRecord(value)) return undefined;
   const task = text(value, "task");
   const check = text(value, "check");
   const at = text(value, "at");
   const treeHash = text(value, "treeHash");
+  const accepted = toAccepted(value["accepted"]);
   if (task === undefined || check === undefined || at === undefined) return undefined;
-  return { task, check, at, reason: text(value, "reason") ?? "", ...(treeHash === undefined ? {} : { treeHash }) };
+  return {
+    task,
+    check,
+    at,
+    reason: text(value, "reason") ?? "",
+    ...(treeHash === undefined ? {} : { treeHash }),
+    ...(accepted === undefined ? {} : { accepted }),
+  };
 };
 
 const list = <T>(raw: unknown, map: (value: unknown) => T | undefined): readonly T[] =>
@@ -77,6 +101,11 @@ export const activeGrant = (
 ): Grant | undefined =>
   readGrants(store, paths).findLast((grant) => grant.guard === guard && isLive(grant, now, sessionId));
 
+const approvalJson = (item: Approval) => ({
+  ...item,
+  ...(item.accepted === undefined ? {} : { accepted: item.accepted.map((file) => ({ ...file })) }),
+});
+
 export const saveRelease = (
   store: Store,
   paths: FmPaths,
@@ -84,23 +113,32 @@ export const saveRelease = (
   added: { readonly grants: readonly Grant[]; readonly approvals: readonly Approval[] },
 ): boolean => {
   const grants = [...readGrants(store, paths).filter((grant) => Date.parse(grant.expiresAt) > now), ...added.grants];
-  const approvals = [...readApprovals(store, paths), ...added.approvals];
-  return writeJsonFile(store, paths.grants, { grants: [...grants], approvals: [...approvals] }).ok;
+  const approvals = [...readApprovals(store, paths), ...added.approvals].map(approvalJson);
+  return writeJsonFile(store, paths.grants, { grants: [...grants], approvals }).ok;
 };
 
 export const expiryFrom = (now: number): string => new Date(now + GRANT_MINUTES * 60_000).toISOString();
 
-export const bindApproval = (store: Store, paths: FmPaths, approval: Approval, treeHash: string): boolean => {
-  const approvals = readApprovals(store, paths).map((item) =>
-    item.task === approval.task &&
-    item.check === approval.check &&
-    item.at === approval.at &&
-    item.treeHash === undefined
-      ? { ...item, treeHash }
-      : item,
-  );
-  return writeJsonFile(store, paths.grants, {
+const sameApproval = (left: Approval, right: Approval): boolean =>
+  left.task === right.task && left.check === right.check && left.at === right.at;
+
+const rewriteApprovals = (store: Store, paths: FmPaths, change: (item: Approval) => Approval): boolean =>
+  writeJsonFile(store, paths.grants, {
     grants: readGrants(store, paths).map((grant) => ({ ...grant })),
-    approvals: approvals.map((item) => ({ ...item })),
+    approvals: readApprovals(store, paths).map(change).map(approvalJson),
   }).ok;
-};
+
+export const bindApproval = (store: Store, paths: FmPaths, approval: Approval, treeHash: string): boolean =>
+  rewriteApprovals(store, paths, (item) =>
+    sameApproval(item, approval) && item.treeHash === undefined ? { ...item, treeHash } : item,
+  );
+
+export const bindAccepted = (
+  store: Store,
+  paths: FmPaths,
+  approval: Approval,
+  accepted: readonly AcceptedFile[],
+): boolean =>
+  rewriteApprovals(store, paths, (item) =>
+    sameApproval(item, approval) && item.accepted === undefined ? { ...item, accepted } : item,
+  );

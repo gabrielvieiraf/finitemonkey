@@ -23,6 +23,7 @@ export interface Week {
   readonly assisted: number | null;
   readonly blindCovered: number;
   readonly blindBare: number;
+  readonly unstable: number | null;
   readonly work: number | null;
   readonly evidence: number;
 }
@@ -42,6 +43,7 @@ export interface Mark {
   readonly week: string;
   readonly concept: ConceptId;
   readonly at: string;
+  readonly from: string | null;
   readonly evidence: readonly EvidenceRef[];
 }
 
@@ -84,8 +86,19 @@ export const marksOf = (events: readonly ConceptEvent[]): readonly Mark[] =>
       .find((item) => item.concept === event.concept && item.kind === "own_repair" && item.origin === "person");
     const week = isoWeek(event.at) ?? "";
     const evidence = [...accepted, event, ...(repair === undefined ? [] : [repair])].map(refOf);
-    return [{ kind: repair === undefined ? "ricochet" : "held", week, concept: event.concept, at: event.at, evidence }];
+    const from = accepted[0] === undefined ? null : (isoWeek(accepted[0].at) ?? null);
+    const kind = repair === undefined ? "ricochet" : "held";
+    return [{ kind, week, concept: event.concept, at: event.at, from, evidence }];
   });
+
+const WRONG = new Set(["prediction_wrong", "check_wrong"]);
+
+export const unstableCount = (events: readonly ConceptEvent[]): number => {
+  const right = new Set(events.filter((event) => DISCERNMENT.has(event.kind)).map((event) => event.concept));
+  return new Set(
+    events.filter((event) => WRONG.has(event.kind) && right.has(event.concept)).map((event) => event.concept),
+  ).size;
+};
 
 const distinct = (events: readonly ConceptEvent[], keep: (event: ConceptEvent) => boolean): number =>
   new Set(events.filter(keep).map((event) => event.concept)).size;
@@ -151,6 +164,7 @@ export const trajectoryOf = (
       assisted: has ? assisted : null,
       blindCovered: domainHelps.filter((help) => help.criterion !== "none").length,
       blindBare: domainHelps.filter((help) => help.criterion === "none").length,
+      unstable: has ? unstableCount(upTo) : null,
       work: has ? landedLevel(inWeek, upTo, { independent, discernment, assisted }) : null,
       evidence: inWeek.filter((event) => event.weight !== 0).length,
     };

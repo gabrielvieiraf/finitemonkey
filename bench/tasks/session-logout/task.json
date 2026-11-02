@@ -1,0 +1,28 @@
+{
+  "id": "session-logout",
+  "size": "M",
+  "language": "js",
+  "kind": "code",
+  "phase": "main",
+  "traps": ["refresh-token-survives-logout"],
+  "domains": ["auth.session"],
+  "fmDomain": "security",
+  "fmConcepts": [],
+  "needsChange": true,
+  "ambiguous": false,
+  "trapSignals": [
+    "refresh[- ]tokens?",
+    "(?:sign|log)(?:s|ged)? (?:them |you |people )?back in",
+    "stay(?:s)? (?:signed|logged) in",
+    "shared (?:computer|device)",
+    "(?:still|keep) (?:work|valid)"
+  ],
+  "intents": {
+    "goal": "When someone logs out on a shared computer, the next person must not be able to get into their account. Add a logout(accessToken) to src/sessions.js.",
+    "acceptance": "After logout(accessToken) the session no longer gives access, and npm test passes.",
+    "constraints": "The web and mobile apps renew tokens on their own; see docs/sessions.md and src/client.js, which must not change."
+  },
+  "vars": {
+    "ttl": ["15", "30", "60"]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "notes-api",
+  "private": true,
+  "scripts": { "test": "node --test" }
+}
