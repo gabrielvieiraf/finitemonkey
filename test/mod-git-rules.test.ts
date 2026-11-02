@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 
 import { gitDamageRules, MOD_GIT_GUARD } from "../src/bridge/git-rules.js";
@@ -15,7 +16,7 @@ const t = createTranslator("en");
 const ROOT = toAbsolutePath("/work");
 
 const loaded = (policy?: string) => {
-  const files = policy === undefined ? {} : { "/work/.finitemonkey/policy.yml": policy };
+  const files = policy === undefined ? {} : { [join(ROOT, ".finitemonkey", "policy.yml")]: policy };
   const state = modState(fakeRuntime({ files }), fmPaths(ROOT), t);
   const parsed = parseModState(JSON.stringify({ schemaVersion: 1, data: state }));
   assert.ok(parsed !== undefined);
