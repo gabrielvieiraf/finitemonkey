@@ -96,18 +96,18 @@ Ejecutas un comando, una vez. A partir de ahí Finite Monkey actúa por contexto
 
 ## Instalación
 
-Por el canal `next`, hasta que salga la v0.1:
-
 ```sh
-npx finitemonkey@next init
+npx finitemonkey init
 ```
 
-O como plugin de Claude Code, desde dentro de una sesión, con el marketplace de la rama `next`:
+O como plugin de Claude Code, desde dentro de una sesión. El plugin trae también el mod, que Claude Code 2.1.287 o más nuevo carga junto a los hooks:
 
 ```
-/plugin marketplace add gabrielvieiraf/finitemonkey#next
-/plugin install finitemonkey@finitemonkey-next
+/plugin marketplace add gabrielvieiraf/finitemonkey
+/plugin install finitemonkey@finitemonkey
 ```
+
+Para probar lo que todavía no salió, usa el canal `next`: `npx finitemonkey@next init`, o el marketplace de la rama `next` (`/plugin marketplace add gabrielvieiraf/finitemonkey#next` y después `/plugin install finitemonkey@finitemonkey-next`).
 
 Requisitos: Node.js 20 o posterior, en Linux, macOS, Windows o WSL. La instalación hace copias de seguridad, fusiona en lugar de sobrescribir y se puede ejecutar dos veces sin romper nada. `doctor` te dice qué está mal y `uninstall` deja todo como estaba.
 
