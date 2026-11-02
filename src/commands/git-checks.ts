@@ -10,7 +10,7 @@ import { checksResult } from "../githooks/render.js";
 import { readAll } from "../hooks/stdin.js";
 import { commitRuleCheck, compiledFor } from "../rules/checks.js";
 import { projectRoot } from "../secrets/project.js";
-import { lastRunRefusal } from "./gate.js";
+import { gateStatusRefusal, lastRunRefusal } from "./gate.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
 import type { CommandSpec } from "./types.js";
 
@@ -35,6 +35,8 @@ export const commitMsgCommand: CommandSpec = {
           usageProblem("invalid_arguments", "error.invalid_arguments", COMMIT_MSG_USAGE, { detail: "<message-file>" }),
         ),
       );
+    const refusal = gateStatusRefusal(ctx);
+    if (refusal !== undefined) return Promise.resolve(failureFrom(ctx.t, refusal));
     const text = ctx.runtime.readText(toAbsolutePath(file, ctx.cwd));
     if (!text.ok)
       return Promise.resolve(
@@ -66,6 +68,8 @@ export const pushCheckCommand: CommandSpec = {
   run: async (ctx, args): Promise<CommandResult> => {
     const repo = repoOf(ctx);
     if (repo === undefined) return failureFrom(ctx.t, notRepository(ctx.cwd));
+    const refusal = gateStatusRefusal(ctx);
+    if (refusal !== undefined) return failureFrom(ctx.t, refusal);
     const piped = parsePushUpdates(ctx.io.stdin.isTTY === true ? "" : await readAll(ctx.io.stdin));
     const updates = piped.length > 0 ? piped : updatesFromEnv(ctx.env);
     const checks = prePushChecks(ctx.runtime, repo, args.positionals[0] ?? "origin", updates);
@@ -97,6 +101,8 @@ export const ciGateCommand: CommandSpec = {
           ),
         ),
       );
-    return Promise.resolve(checksResult(ctx.t, CI_GATE_SCHEMA, "ci_gate_failed", ciChecks(ctx.runtime, repo, base)));
+    return Promise.resolve(
+      checksResult(ctx.t, CI_GATE_SCHEMA, "ci_gate_failed", ciChecks(ctx.runtime, repo, base, ctx.env)),
+    );
   },
 };

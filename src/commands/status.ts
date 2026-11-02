@@ -16,6 +16,7 @@ const humanLines = (ctx: Ctx, data: StatusData): readonly string[] => [
     task: data.task ?? "-",
   }),
   ...(data.contract === null ? [] : [ctx.t("status.contract", { id: data.contract.id, hash: data.contract.hash })]),
+  ...(data.state === null ? [] : [ctx.t("status.state", { state: data.state, reason: data.reason ?? "" })]),
   ...(data.editsSinceGate !== null && data.editsSinceGate > 0
     ? [ctx.t("status.edits", { count: data.editsSinceGate })]
     : []),

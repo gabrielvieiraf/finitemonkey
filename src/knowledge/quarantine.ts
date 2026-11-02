@@ -15,15 +15,6 @@ export const MEMORY_QUARANTINE_FEATURE = "memory-quarantine";
 export const CLAIM_PROMOTION_FEATURE = "claim-promotion";
 export const UNTRUSTED_WINDOW_MS = 24 * 3_600_000;
 
-const INSTRUCTION =
-  /(?:^|[.!?:]\s+|^\s*(?:[-*+]|\d+[.)])\s+)(?:always|never|ignore|disregard|forget|override|run|execute|install|curl|wget|you must|you should|do not|don't|please run|sempre|nunca|ignore|execute|rode|siempre|ignora|ejecuta)\b/i;
-
-export const instructionLines = (text: string): readonly string[] =>
-  text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line !== "" && INSTRUCTION.test(line));
-
 export const recentUntrusted = (runtime: Pick<Runtime, "readText" | "now">, paths: FmPaths): string | undefined => {
   const text = runtime.readText(paths.cache(UNTRUSTED_FILE));
   const parsed = text.ok ? parseJsonObject(text.value) : undefined;

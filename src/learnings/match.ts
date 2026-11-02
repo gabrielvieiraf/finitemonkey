@@ -38,7 +38,10 @@ export const touchesControls = (lesson: Lesson): boolean =>
   lesson.paths.some((glob) => PROTECTED.some((pattern) => globToRegExp(pattern).test(glob.replace(/\*+/g, "x"))));
 
 export const injectable = (lesson: Lesson): boolean =>
-  lesson.quarantined !== true && !touchesControls(lesson) && hiddenChars(lesson.text).length === 0;
+  lesson.quarantined !== true &&
+  lesson.stale !== true &&
+  !touchesControls(lesson) &&
+  hiddenChars(lesson.text).length === 0;
 
 export const pickLessons = (
   lessons: readonly Lesson[],

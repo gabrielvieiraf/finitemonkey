@@ -35,7 +35,8 @@ export const freshnessFor = (ctx: GateContext): Freshness | undefined => {
   const mode = featureMode(ctx.runtime, ctx.paths, EVIDENCE_INPUTS_FEATURE);
   if (mode === "off") return undefined;
   const config = inputsConfig(loadProjectConfig(ctx.runtime, ctx.paths.root));
-  return { inputs: currentInputs(ctx.runtime, ctx.paths.root, ctx.env, config), maxAgeMs: config.maxAgeMs, mode };
+  const inputs = currentInputs(ctx.runtime, ctx.paths.root, ctx.env, config, ctx.cwd ?? ctx.paths.root);
+  return { inputs, maxAgeMs: config.maxAgeMs, mode };
 };
 
 const toEvidence = (

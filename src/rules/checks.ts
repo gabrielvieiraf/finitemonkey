@@ -1,9 +1,8 @@
 import type { AbsolutePath } from "../core/brand.js";
-import { toAbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
-import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { HookCheck } from "../githooks/checks.js";
+import { pullRequestOf } from "../githooks/pull-request.js";
 import { readManifest, type Surface } from "./manifest.js";
 import { pathMatches, textMatches } from "./match.js";
 import { effectiveRules } from "./preset.js";
@@ -29,23 +28,6 @@ export const commitRuleCheck = (rules: readonly ProjectRule[], message: string):
   failures: rules.filter((rule) => textMatches(rule, "commit", message)).map((rule) => failure(rule, "commit message")),
   fix: FIX,
 });
-
-interface PullRequest {
-  readonly title: string;
-  readonly body: string;
-}
-
-const pullRequestOf = (runtime: Pick<Runtime, "readText">, env: Env): PullRequest | undefined => {
-  const path = env["GITHUB_EVENT_PATH"];
-  if (path === undefined || path === "") return undefined;
-  const text = runtime.readText(toAbsolutePath(path));
-  const event = text.ok ? parseJsonObject(text.value) : undefined;
-  const pr = event?.ok === true ? event.value["pull_request"] : undefined;
-  if (!isRecord(pr)) return undefined;
-  const title = pr["title"];
-  const body = pr["body"];
-  return { title: typeof title === "string" ? title : "", body: typeof body === "string" ? body : "" };
-};
 
 const commitsIn = (runtime: Pick<Runtime, "git">, root: AbsolutePath, base: string) => {
   const log = runtime.git(["log", "--no-merges", `--format=%h%x00%B${RECORD}`, `${base}..HEAD`, "--"], root);

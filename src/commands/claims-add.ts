@@ -12,7 +12,8 @@ import {
   type OriginSource,
   readClaims,
 } from "../knowledge/claims.js";
-import { instructionLines, recentUntrusted } from "../knowledge/quarantine.js";
+import { instructionLines } from "../knowledge/instruction.js";
+import { recentUntrusted } from "../knowledge/quarantine.js";
 import { parsePremise, premiseExists } from "../knowledge/retraction.js";
 import { classifyStatement, isRuleLike } from "../rules/classify.js";
 import { isPerson } from "../secrets/project.js";

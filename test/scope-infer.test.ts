@@ -6,7 +6,7 @@ import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { diffCheck } from "../src/gate/checks/diff.js";
 import { prepareGate } from "../src/gate/prepare.js";
-import { saveRelease } from "../src/guards/release/grants.js";
+import { readApprovals, saveRelease } from "../src/guards/release/grants.js";
 import type { HookEvent } from "../src/hooks/events.js";
 import { composeDecisions, type HookHandler, type HookInput } from "../src/hooks/handlers.js";
 import { parseHookPayload } from "../src/hooks/payload.js";
@@ -201,5 +201,37 @@ describe("the gate lists out-of-scope files and records the ones the person acce
       reason: "the invoice uses the new total",
       at: "2026-10-26T12:00:00Z",
     });
+  });
+
+  it("the approval keeps the accepted files; a new or changed out-of-scope file needs a new approval", () => {
+    const repo = project();
+    const paths = fmPaths(repo.root);
+    const approval = { task: "implicit", check: "diff", reason: "invoice", at: "2026-10-26T12:00:00Z" };
+    saveRelease(repoRuntime(), paths, Date.now(), { grants: [], approvals: [approval] });
+    assert.equal(check(repo).status, "passed");
+    const stored = readApprovals(repoRuntime(), paths)[0]?.accepted ?? [];
+    assert.deepEqual(
+      stored.map((file) => file.path),
+      ["src/billing/invoice.ts"],
+    );
+    assert.match(stored[0]?.hash ?? "", /^[0-9a-f]{64}$/);
+    repo.write("src/billing/tax.ts", "export const tax = 1;\n");
+    const added = check(repo);
+    assert.equal(added.status, "failed");
+    assert.deepEqual(
+      added.notes.map((item) => [item.key, item.params["file"]]),
+      [["gate.diff.not_accepted", "src/billing/tax.ts"]],
+    );
+    repo.remove("src/billing/tax.ts");
+    repo.write("src/billing/invoice.ts", "export const invoice = 3;\n");
+    assert.deepEqual(
+      check(repo).notes.map((item) => item.key),
+      ["gate.diff.changed_since_accepted"],
+    );
+    saveRelease(repoRuntime(), paths, Date.now(), {
+      grants: [],
+      approvals: [{ ...approval, at: "2026-10-26T13:00:00Z" }],
+    });
+    assert.equal(check(repo).status, "passed");
   });
 });

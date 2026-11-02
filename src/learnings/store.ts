@@ -28,6 +28,8 @@ export interface Lesson {
   readonly unhelpful: number;
   readonly origin?: string;
   readonly quarantined?: boolean;
+  readonly tree?: string;
+  readonly stale?: boolean;
 }
 
 export interface LessonStats {
@@ -48,11 +50,14 @@ const count = (raw: JsonObject, key: string): number => {
   return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : 0;
 };
 
-const provenance = (raw: JsonObject): Pick<Lesson, "origin" | "quarantined"> => {
+const provenance = (raw: JsonObject): Pick<Lesson, "origin" | "quarantined" | "tree" | "stale"> => {
   const origin = text(raw, "origin");
+  const tree = text(raw, "tree");
   return {
     ...(origin === undefined ? {} : { origin }),
     ...(raw["quarantined"] === true ? { quarantined: true } : {}),
+    ...(tree === undefined ? {} : { tree }),
+    ...(raw["stale"] === true ? { stale: true } : {}),
   };
 };
 

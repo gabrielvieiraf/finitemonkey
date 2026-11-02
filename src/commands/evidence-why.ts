@@ -56,7 +56,7 @@ export const evidenceWhyCommand: CommandSpec = {
       );
     const config = inputsConfig(loadProjectConfig(ctx.runtime, gate.paths.root));
     const changed = staleReasons(prior, {
-      inputs: currentInputs(ctx.runtime, gate.paths.root, ctx.env, config),
+      inputs: currentInputs(ctx.runtime, gate.paths.root, ctx.env, config, gate.cwd ?? gate.paths.root),
       treeHash: gate.treeHash,
       atMs: nowMs(ctx.runtime),
       maxAgeMs: config.maxAgeMs,

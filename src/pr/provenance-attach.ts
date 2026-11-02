@@ -14,11 +14,12 @@ export const attachProvenance = (
   root: AbsolutePath,
   body: string,
   files: readonly string[],
+  base?: string,
 ): string => {
   const paths = fmPaths(root);
   const mode = featureMode(runtime, paths, PROVENANCE_FEATURE);
   if (mode === "off") return body;
-  const sources = provenanceSources(runtime, root, files);
+  const sources = provenanceSources(runtime, root, files, base);
   const block = renderBlock(sources);
   if (mode === "active") return `${body.trimEnd()}\n\n${block}\n`;
   runtime.writeText(paths.cache(PROVENANCE_CACHE), `${block}\n`);

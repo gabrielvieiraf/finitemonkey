@@ -13,6 +13,7 @@ import {
   readStats,
   writeLessons,
 } from "../learnings/store.js";
+import { stampTree } from "../learnings/tree.js";
 import { isPerson, projectRoot } from "../secrets/project.js";
 import { FM_DIR } from "../task/paths.js";
 import type { CommandSpec, OptionValues } from "./types.js";
@@ -26,10 +27,13 @@ const option = (values: OptionValues, key: string): string | undefined => {
   return typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
 };
 
-const lessonLine = (ctx: Pick<Ctx, "t">, lesson: Lesson): string =>
+const flags = (ctx: Pick<Ctx, "t">, lesson: Lesson): string =>
   (lesson.quarantined === true
     ? `${ctx.t("learnings.quarantined", { id: lesson.id, origin: lesson.origin ?? "" })} `
-    : "") +
+    : "") + (lesson.stale === true ? `${ctx.t("learnings.stale", { id: lesson.id })} ` : "");
+
+const lessonLine = (ctx: Pick<Ctx, "t">, lesson: Lesson): string =>
+  flags(ctx, lesson) +
   ctx.t("learnings.row", {
     id: lesson.id,
     source: lesson.source,
@@ -110,7 +114,11 @@ export const learningsAddCommand: CommandSpec = {
       );
     const dir = dirOf(ctx);
     const { kept } = pruneLessons(ctx.runtime, dir);
-    const lesson = newLesson({ text: body, paths, sig, source }, ctx.runtime.now());
+    const lesson = stampTree(
+      ctx.runtime,
+      projectRoot(ctx),
+      newLesson({ text: body, paths, sig, source }, ctx.runtime.now()),
+    );
     ctx.runtime.mkdir(dir);
     writeLessons(ctx.runtime, dir, [...kept.filter((item) => item.id !== lesson.id), lesson]);
     return Promise.resolve(
@@ -178,11 +186,13 @@ export const learningsAcceptCommand: CommandSpec = {
       );
     }
     return Promise.resolve(
-      change(ctx, args.positionals[0] ?? "", (lesson) => ({
-        ...lesson,
-        quarantined: false,
-        origin: `${lesson.origin ?? lesson.source}, accepted by the person`,
-      })),
+      change(ctx, args.positionals[0] ?? "", (lesson) =>
+        stampTree(ctx.runtime, projectRoot(ctx), {
+          ...lesson,
+          quarantined: false,
+          origin: `${lesson.origin ?? lesson.source}, accepted by the person`,
+        }),
+      ),
     );
   },
 };

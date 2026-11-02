@@ -2,7 +2,8 @@ import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
 import { appendClaimEvent, claimId } from "../knowledge/claims.js";
-import { greenAfter, instructionLines } from "../knowledge/quarantine.js";
+import { instructionLines } from "../knowledge/instruction.js";
+import { greenAfter } from "../knowledge/quarantine.js";
 import { dataBlock } from "../policy/untrusted.js";
 import { claimsIn, lastSupport } from "./claims.js";
 import { appendNow, type JudgeDeps } from "./deps.js";

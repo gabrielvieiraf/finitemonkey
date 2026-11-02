@@ -8,7 +8,7 @@ import { gitAt, gitRoot } from "../gate/git.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import { DEFAULT_GATE_BUDGET_MS } from "../gate/hooks/common.js";
 import { openPrsLine, refreshPrs } from "../gate/hooks/prs.js";
-import { readGateStatus } from "../gate/hooks/status.js";
+import { readGateStatus, writeGateStatus } from "../gate/hooks/status.js";
 import { ISOLATED_FEATURE } from "../gate/isolated.js";
 import { reportLines } from "../gate/render.js";
 import type { GateReport } from "../gate/report.js";
@@ -31,17 +31,11 @@ const notRun = (detail: string): Problem => ({
   exitCode: ExitCode.NotConfigured,
 });
 
-export const lastRunRefusal = (ctx: Ctx): Problem | undefined => {
-  const root = findRepoRoot(ctx.runtime, ctx.cwd) ?? gitRoot(gitAt(ctx.runtime, ctx.cwd));
-  const bypassed = root === undefined ? [] : unreviewedBypasses(ctx.runtime, fmPaths(root));
-  if (bypassed.length > 0)
-    return {
-      code: "guard_bypassed",
-      messageKey: "bypass.refused",
-      params: { count: bypassed.length },
-      fix: "finitemonkey bypass review",
-      exitCode: ExitCode.CheckFailed,
-    };
+const repoRootOf = (ctx: Ctx): ReturnType<typeof gitRoot> =>
+  findRepoRoot(ctx.runtime, ctx.cwd) ?? gitRoot(gitAt(ctx.runtime, ctx.cwd));
+
+export const gateStatusRefusal = (ctx: Ctx): Problem | undefined => {
+  const root = repoRootOf(ctx);
   const status = root === undefined ? undefined : readGateStatus(ctx.runtime, fmPaths(root));
   if (status?.status === "released_by_cap") {
     return {
@@ -60,6 +54,20 @@ export const lastRunRefusal = (ctx: Ctx): Problem | undefined => {
     fix: "finitemonkey gate",
     exitCode: ExitCode.CheckFailed,
   };
+};
+
+export const lastRunRefusal = (ctx: Ctx): Problem | undefined => {
+  const root = repoRootOf(ctx);
+  const bypassed = root === undefined ? [] : unreviewedBypasses(ctx.runtime, fmPaths(root));
+  if (bypassed.length > 0)
+    return {
+      code: "guard_bypassed",
+      messageKey: "bypass.refused",
+      params: { count: bypassed.length },
+      fix: "finitemonkey bypass review",
+      exitCode: ExitCode.CheckFailed,
+    };
+  return gateStatusRefusal(ctx);
 };
 
 export const gateResult = (ctx: Ctx, report: GateReport, strict: boolean): CommandResult<GateReport> => {
@@ -86,6 +94,19 @@ const failureDetail = (ctx: Ctx, failure: Extract<GateRun, { kind: "failed" }>["
   if (failure.kind === "contract") return `${failure.problem.kind}: ${failure.problem.id}`;
   if (failure.kind === "isolated") return ctx.t("gate.fail.isolated", { step: failure.step, detail: failure.detail });
   return failure.kind;
+};
+
+const notePassed = (ctx: Ctx, run: GateRun): void => {
+  if (run.kind !== "done" || run.report.verdict !== "passed") return;
+  const root = gitRoot(gitAt(ctx.runtime, ctx.cwd));
+  if (root === undefined) return;
+  writeGateStatus(ctx.runtime, fmPaths(root), {
+    status: "passed",
+    task: run.report.task,
+    detail: "",
+    state: run.report.state,
+    tree: run.report.treeHash,
+  });
 };
 
 type IsolatedChoice = "isolated" | "in_place" | "off";
@@ -144,8 +165,8 @@ export const gateCommand: CommandSpec = {
     }
     const choice = isolatedChoice(ctx, args.values["isolated"] === true);
     if (choice === "off") return Promise.resolve(failureFrom(ctx.t, notRun(ctx.t("gate.isolated.off"))));
-    return Promise.resolve(
-      runResult(ctx, runGate({ ...options, isolated: choice === "isolated" }), args.values["strict"] === true),
-    );
+    const run = runGate({ ...options, isolated: choice === "isolated" });
+    notePassed(ctx, run);
+    return Promise.resolve(runResult(ctx, run, args.values["strict"] === true));
   },
 };

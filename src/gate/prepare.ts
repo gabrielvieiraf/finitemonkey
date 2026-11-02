@@ -266,6 +266,7 @@ export const prepareGate = (options: GateOptions): PrepareResult => {
     pr,
     mask: options.mask ?? maskText,
     baseline: sessionBaseline(options.runtime, paths, options.sessionId),
+    cwd: options.cwd,
     ...(loaded.value.examples === undefined ? {} : { examples: loaded.value.examples }),
   };
   return { kind: "ready", prepared: { ctx, loaded: loaded.value } };
