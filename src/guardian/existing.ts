@@ -5,6 +5,7 @@ import { parseManifest } from "../inventory/dependencies.js";
 import { isCode } from "../map/defs.js";
 import type { FmPaths } from "../task/paths.js";
 import { importedPackages, roleOf, stemOf } from "./roles.js";
+import { goImports } from "./roles-jvm-go.js";
 
 export const MATCH_KINDS = ["dependency", "import", "name"] as const;
 export type MatchKind = (typeof MATCH_KINDS)[number];
@@ -30,7 +31,7 @@ export interface DiffSnapshot {
   readonly otherFiles: readonly string[];
 }
 
-const MANIFEST = /(^|\/)(package\.json|requirements\.txt|go\.mod)$/;
+const MANIFEST = /(^|\/)(package\.json|requirements\.txt|go\.mod|pom\.xml|build\.gradle(\.kts)?)$/;
 const MAX_FILES = 2000;
 
 const lines = (text: string | undefined): readonly string[] =>
@@ -94,7 +95,8 @@ const dependencyMatches = (snap: DiffSnapshot): readonly ExistingMatch[] =>
 
 const importsIn = (runtime: Pick<Runtime, "readText">, root: FmPaths["root"], file: string): readonly string[] => {
   const text = runtime.readText(toAbsolutePath(file, root));
-  return text.ok ? importedPackages(text.value) : [];
+  if (!text.ok) return [];
+  return file.endsWith(".go") ? goImports(text.value) : importedPackages(text.value);
 };
 
 const importMatches = (

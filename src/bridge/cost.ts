@@ -24,11 +24,25 @@ export interface Step {
   readonly cacheWrite: number;
 }
 
+export const COST_KINDS = ["build", "verify", "provider"] as const;
+export type CostKind = (typeof COST_KINDS)[number];
+
 export interface CostLine extends Step {
   readonly at: string;
   readonly task: string;
   readonly arms: readonly string[];
   readonly usd: number;
+  readonly kind?: CostKind;
+}
+
+export interface PartCost {
+  readonly usd: number;
+  readonly requests: number;
+}
+
+export interface VerificationCost extends PartCost {
+  readonly gateMinutes: number;
+  readonly share: number | null;
 }
 
 export interface ArmCost {
@@ -45,6 +59,8 @@ export interface CostSummary {
   readonly attempts: number;
   readonly perAttempt: number | null;
   readonly byArm: readonly ArmCost[];
+  readonly build: PartCost;
+  readonly verification: VerificationCost;
 }
 
 export const costFile = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, COST_FILE));
@@ -102,7 +118,8 @@ const lineOf = (text: string): CostLine | undefined => {
   const { at, task, arms, usd } = parsed.value;
   if (step === undefined || typeof at !== "string" || typeof task !== "string") return undefined;
   const list = Array.isArray(arms) ? arms.filter((arm): arm is string => typeof arm === "string") : [];
-  return { ...step, at, task, arms: list, usd: count(usd) };
+  const kind = COST_KINDS.find((item) => item === parsed.value["kind"]);
+  return { ...step, at, task, arms: list, usd: count(usd), ...(kind === undefined ? {} : { kind }) };
 };
 
 export const readCost = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly CostLine[] => {
@@ -117,13 +134,40 @@ export const readCost = (runtime: Pick<Runtime, "readText">, paths: FmPaths): re
 
 const sum = (lines: readonly CostLine[]): number => lines.reduce((total, line) => total + line.usd, 0);
 
-const attemptsOf = (runtime: Runtime, paths: FmPaths, task: string): number =>
-  new Set(readLedger(runtime, paths.evidence(task)).map((entry) => entry.treeHash)).size;
+const VERIFIER_AGENT = /(^|:)[\w-]*(reviewer|verifier)$/i;
+
+export const isVerification = (line: CostLine): boolean =>
+  line.kind === "verify" || line.kind === "provider" || (line.agent !== null && VERIFIER_AGENT.test(line.agent));
+
+const part = (lines: readonly CostLine[]): PartCost => ({ usd: sum(lines), requests: lines.length });
+
+const minutes = (ms: number): number => Math.round((ms / 60_000) * 100) / 100;
+
+export const splitCost = (
+  lines: readonly CostLine[],
+  gateMs: number,
+): { readonly build: PartCost; readonly verification: VerificationCost } => {
+  const verify = part(lines.filter(isVerification));
+  const build = part(lines.filter((line) => !isVerification(line)));
+  const total = verify.usd + build.usd;
+  return {
+    build,
+    verification: {
+      ...verify,
+      gateMinutes: minutes(gateMs),
+      share: total === 0 ? null : Math.round((verify.usd / total) * 1000) / 1000,
+    },
+  };
+};
+
+const ledgerOf = (runtime: Runtime, paths: FmPaths, task: string) => readLedger(runtime, paths.evidence(task));
 
 export const costOf = (runtime: Runtime, paths: FmPaths): CostSummary => {
   const task = taskOf(runtime, paths);
   const lines = readCost(runtime, paths).filter((line) => line.task === task);
-  const attempts = attemptsOf(runtime, paths, task);
+  const ledger = ledgerOf(runtime, paths, task);
+  const attempts = new Set(ledger.map((entry) => entry.treeHash)).size;
+  const gateMs = ledger.reduce((total, entry) => total + (entry.durationMs ?? 0), 0);
   const usd = sum(lines);
   const arms = [...new Set(lines.flatMap((line) => line.arms))].sort();
   return {
@@ -137,5 +181,6 @@ export const costOf = (runtime: Runtime, paths: FmPaths): CostSummary => {
       const own = lines.filter((line) => line.arms.includes(arm));
       return { arm, usd: sum(own), requests: own.length };
     }),
+    ...splitCost(lines, gateMs),
   };
 };

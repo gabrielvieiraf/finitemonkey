@@ -8,6 +8,10 @@ export interface LiveProbe {
 
 const bearer = (key: string): readonly string[] => [`Authorization: Bearer ${key}`];
 
+const basicApi = (key: string): readonly string[] => [
+  `Authorization: Basic ${Buffer.from(`api:${key}`, "utf8").toString("base64")}`,
+];
+
 export const LIVE_PROBES = {
   github: {
     host: "api.github.com",
@@ -28,6 +32,11 @@ export const LIVE_PROBES = {
     path: "/v3/finance/balance",
     headers: (key) => [`access_token: ${key}`, "User-Agent: finitemonkey"],
   },
+  mailgun: { host: "api.mailgun.net", path: "/v3/domains", headers: basicApi },
+  sendgrid: { host: "api.sendgrid.com", path: "/v3/scopes", headers: bearer },
+  gitlab: { host: "gitlab.com", path: "/api/v4/user", headers: (key) => [`PRIVATE-TOKEN: ${key}`] },
+  npm: { host: "registry.npmjs.org", path: "/-/whoami", headers: bearer },
+  huggingface: { host: "huggingface.co", path: "/api/whoami-v2", headers: bearer },
 } as const satisfies Readonly<Record<string, LiveProbe>>;
 
 export type LiveProvider = keyof typeof LIVE_PROBES;
@@ -38,6 +47,9 @@ export const LIVE_HOSTS: readonly string[] = LIVE_PROVIDERS.map((name) => LIVE_P
 
 export const liveProvider = (name: string | undefined): LiveProvider | undefined =>
   LIVE_PROVIDERS.find((provider) => provider === name);
+
+export const sentHeaders = (provider: LiveProvider): readonly string[] =>
+  LIVE_PROBES[provider].headers("").map((line) => line.slice(0, line.indexOf(":")));
 
 export const LIVE_TIMEOUT_MS = 15_000;
 

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { toAbsolutePath } from "../../core/brand.js";
 import { type AcceptedFile, type Approval, bindAccepted, readApprovals } from "../../guards/release/grants.js";
 import { sha256Hex } from "../../secrets/fingerprint.js";
+import { recordScopeAdditions } from "../../signals/scope-band.js";
 import { type CheckOutcome, failed, type GateContext, note } from "../types.js";
 
 export const ABSENT = "absent";
@@ -45,6 +46,7 @@ export const acceptedOutside = (
         .slice(0, maxListed)
         .map((item) => note(item.key, { file: item.file, at: approval.at, task: ctx.contract.id })),
     );
+  recordScopeAdditions(ctx.runtime, ctx.paths, { task: ctx.contract.id, files, approvedAt: approval.at });
   return {
     status: "passed",
     notes: files.map((file) => note("gate.diff.accepted", { file, reason: approval.reason, at: approval.at })),

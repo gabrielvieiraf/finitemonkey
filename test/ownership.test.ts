@@ -88,7 +88,7 @@ describe("ownership check", () => {
     });
     assert.deepEqual(ownershipCheck(shadow, ROOT).failures, []);
     const active = runtimeWith({ ".finitemonkey/ownership.yml": bad });
-    const gate = ciChecks(active, { root: ROOT, gitDir: ROOT, prefix: "" }, "origin/main");
+    const gate = ciChecks(active, { root: ROOT, gitDir: ROOT, prefix: "" }, "origin/main", {});
     assert.deepEqual(gate.find((check) => check.id === "ownership")?.failures, [
       "no_owner: payments (service) in .finitemonkey/ownership.yml",
     ]);

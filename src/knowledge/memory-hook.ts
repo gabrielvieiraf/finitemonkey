@@ -3,13 +3,10 @@ import { editsOf, textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { untrustedRecorder } from "../learnings/hooks.js";
 import { untrustedIn } from "../policy/untrusted.js";
-import { instructionLines } from "./quarantine.js";
+import { instructionLines, isNativeMemory } from "./instruction.js";
 
 const WRITERS: ReadonlySet<string> = new Set(["Write", "Edit", "MultiEdit"]);
-const MEMORY_DIR = /[\\/]\.claude[\\/]projects[\\/][^\\/]+[\\/]memory[\\/][^\\/]+$/;
 const allow = { kind: "allow" } as const;
-
-export const isNativeMemory = (file: string): boolean => MEMORY_DIR.test(file);
 
 const writtenText = (raw: Parameters<typeof toolInput>[0]): string => {
   const input = toolInput(raw);

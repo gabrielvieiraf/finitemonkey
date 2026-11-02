@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
 import { selfGuard } from "../src/guards/self/hook.js";
@@ -91,6 +92,11 @@ describe("divergence question", () => {
     assert.deepEqual(
       options.map((option: unknown) => field(option, "output")),
       ["nothing to refund", "error: negative amount"],
+    );
+    const logged = readFileSync(join(repo.root, ".finitemonkey/log.jsonl"), "utf8");
+    assert.match(
+      logged,
+      /"event":"divergence.outcome"[^\n]*"options":\["A: nothing to refund","B: error: negative amount"\]/,
     );
   });
 

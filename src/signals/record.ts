@@ -1,8 +1,10 @@
+import { toAbsolutePath } from "../core/brand.js";
 import { nowMs } from "../core/clock.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import { editsOf, textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler } from "../hooks/handlers.js";
 import { baseOf, projectFile, record, scopeOf, type SignalScope } from "./context.js";
+import { writtenLines } from "./edit-lines.js";
 import { errorSignature, shortHash } from "./signature.js";
 import type { SignalEntry } from "./store.js";
 import { writeIndex } from "./write-index.js";
@@ -62,6 +64,11 @@ const approvalOf = (scope: SignalScope, raw: JsonObject, file: string, lines: nu
   return { ...baseOf(scope), kind: "approved", file, lines, ms, fast };
 };
 
+const afterText = (scope: SignalScope, target: string): string | undefined => {
+  const text = scope.input.runtime.readText(toAbsolutePath(target, scope.paths.root));
+  return text.ok ? text.value : undefined;
+};
+
 const recordEdit = (scope: SignalScope, raw: JsonObject): SignalScope => {
   const input = toolInput(raw);
   const target = textField(input, "file_path", "notebook_path");
@@ -74,6 +81,7 @@ const recordEdit = (scope: SignalScope, raw: JsonObject): SignalScope => {
     file,
     hash: hashes.forward,
     undo: isUndo(scope, file, hashes),
+    ...writtenLines(input, afterText(scope, target)),
   });
   const approved = approvalOf(edited, raw, file, changedLines(input));
   return approved === undefined ? edited : record(edited, approved);

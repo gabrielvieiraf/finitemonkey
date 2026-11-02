@@ -39,7 +39,19 @@ export type SignalEntry =
       readonly tool: string;
       readonly files?: readonly string[];
     })
-  | (EntryBase & { readonly kind: "edit"; readonly file: string; readonly hash: string; readonly undo: boolean })
+  | (EntryBase & {
+      readonly kind: "edit";
+      readonly file: string;
+      readonly hash: string;
+      readonly undo: boolean;
+      readonly lines?: readonly string[];
+    })
+  | (EntryBase & {
+      readonly kind: "bash_write";
+      readonly file: string;
+      readonly tool: string;
+      readonly lines?: readonly string[];
+    })
   | (EntryBase & { readonly kind: "prompt"; readonly fp: readonly string[]; readonly progress: string })
   | (EntryBase & { readonly kind: "permission"; readonly key: string })
   | (EntryBase & {
@@ -74,6 +86,9 @@ const count = (raw: JsonObject, key: string): number => {
 const strings = (value: unknown): readonly string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
+const linesOf = (raw: JsonObject): { readonly lines?: readonly string[] } =>
+  Array.isArray(raw["lines"]) ? { lines: strings(raw["lines"]) } : {};
+
 const parseEarly = (raw: JsonObject, base: EntryBase): SignalEntry | undefined => {
   switch (raw["kind"]) {
     case "run":
@@ -95,6 +110,8 @@ const parseEarly = (raw: JsonObject, base: EntryBase): SignalEntry | undefined =
       };
     case "checkpoint":
       return { ...base, kind: "checkpoint", task: text(raw, "task") };
+    case "bash_write":
+      return { ...base, kind: "bash_write", file: text(raw, "file"), tool: text(raw, "tool"), ...linesOf(raw) };
     default:
       return undefined;
   }
@@ -115,7 +132,14 @@ const parseEntry = (raw: JsonObject): SignalEntry | undefined => {
       };
     }
     case "edit":
-      return { ...base, kind: "edit", file: text(raw, "file"), hash: text(raw, "hash"), undo: raw["undo"] === true };
+      return {
+        ...base,
+        kind: "edit",
+        file: text(raw, "file"),
+        hash: text(raw, "hash"),
+        undo: raw["undo"] === true,
+        ...linesOf(raw),
+      };
     case "prompt":
       return { ...base, kind: "prompt", fp: strings(raw["fp"]), progress: text(raw, "progress") };
     case "permission":

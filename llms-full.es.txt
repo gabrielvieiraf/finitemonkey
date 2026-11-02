@@ -134,14 +134,14 @@ El segundo ensayo, [La ilusión del segundo cerebro](https://github.com/gabrielv
 Todavía no se sabe. El banco de pruebas, las tareas con trampas y los usuarios simulados están construidos, pero el benchmark todavía no se ejecutó. Compara Claude Code solo, Claude Code con Finite Monkey y Finite Monkey sin una pieza cada vez, en tareas con trampas. Mide tareas terminadas de verdad, "listo" falso, secretos filtrados, trabajo perdido, tokens y tiempo. La regla sin efecto medido sale del núcleo. El método y los resultados en bruto se publicarán en este repositorio.
 
 <!-- generated:evidence:start -->
-Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.42 sobre el corpus etiquetado en [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
+Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.43 sobre el corpus etiquetado en [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
 
 | Guard | Debe bloquear | Debe dejar | Falsos positivos | Falsos negativos | p95 (ms) |
 |---|---|---|---|---|---|
-| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 0.2 |
-| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 65.3 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.7 |
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.1 |
+| `gate` | 52 | 52 | 2/52 (3.9%) | 0/52 (0.0%) | 22.9 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 50.8 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.8 |
 | `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 1.8 |
 
 Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.
@@ -244,7 +244,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Envía | `127.0.0.1` | Una petición a tu propia app en el puerto que declara la comprobación `runtime`, después de arrancarla o encontrarla en marcha. Nada sale de esta máquina. |
 | Envía | `registry.npmjs.org`, `pypi.org` | El nombre del paquete, al registro de npm o de PyPI, cuando un comando de shell va a añadir un paquete que el proyecto aún no declara. Nunca con `FINITEMONKEY_OFFLINE=1`. |
 | Envía | `api.osv.dev` | Nombres y versiones de paquetes de tus lockfiles, a la base de OSV mediante `osv-scanner`, solo cuando ejecutas `deps scan` (en CI, por ejemplo). Nunca desde un hook. |
-| Envía | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com` | A través de `curl`, solo cuando tú ejecutas `finitemonkey secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada. |
+| Envía | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com`, `api.mailgun.net`, `api.sendgrid.com`, `gitlab.com`, `registry.npmjs.org`, `huggingface.co` | A través de `curl`, solo cuando tú ejecutas `finitemonkey secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada. |
 | Envía | `deploy.version_url` | A través de `curl`, solo cuando `deploy.version_url` está definido en `.finitemonkey/config.yml`: un GET a esa URL después de un push, para leer qué commit está en producción. Con `deploy.environment`, la misma pregunta va a los deployments de GitHub a través de `gh`. |
 | Envía | `hosts.local.yml` | A través de `ssh`, solo cuando una persona ejecuta `finitemonkey infra --remote --yes` en una terminal: comandos de solo lectura (`docker ps`, `systemctl list-units`) en los hosts de `hosts.local.yml`. Nunca desde un hook ni un agente. |
 | Envía | `headers.url` | A través de `curl`, solo cuando `headers.url` está definido en `.finitemonkey/config.yml` y un contrato de tarea tiene el check `headers`: un GET por ruta configurada, para leer los headers de seguridad de la respuesta real. Sin eso, los headers vienen de la app que `look` ya arrancó en 127.0.0.1. |

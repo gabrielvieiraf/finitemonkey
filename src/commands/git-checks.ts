@@ -101,6 +101,8 @@ export const ciGateCommand: CommandSpec = {
           ),
         ),
       );
-    return Promise.resolve(checksResult(ctx.t, CI_GATE_SCHEMA, "ci_gate_failed", ciChecks(ctx.runtime, repo, base)));
+    return Promise.resolve(
+      checksResult(ctx.t, CI_GATE_SCHEMA, "ci_gate_failed", ciChecks(ctx.runtime, repo, base, ctx.env)),
+    );
   },
 };

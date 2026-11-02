@@ -91,6 +91,51 @@ describe("relay detector: flags pastes that look relayed", () => {
   });
 });
 
+describe("relay detector: compares the paste with accepted decisions", () => {
+  const DECISION = [
+    "---",
+    "schema: finitemonkey/decision@1",
+    "topic: http",
+    "status: accepted",
+    "---",
+    "",
+    "# Decision: http",
+    "",
+    "## Short answer",
+    "",
+    "Use ky for every HTTP call.",
+    "",
+  ].join("\n");
+
+  const decided = (status = "accepted"): MemoryFs => {
+    const fs = projectFs();
+    fs.writeText(
+      at("package.json"),
+      '{"dependencies":{"react":"19.0.0","zod":"3.23.0","ky":"1.7.0","axios":"1.7.0"}}\n',
+    );
+    fs.writeText(at("docs/plan/02-decision-http.md"), DECISION.replace("status: accepted", `status: ${status}`));
+    return fs;
+  };
+
+  it("reports a paste that uses another library for a role an accepted decision settled", async () => {
+    const note = noteOf(await send(decided(), AXIOS_PASTE));
+    assert.match(
+      note,
+      /goes against an accepted decision: docs\/plan\/02-decision-http\.md chose ky, the paste uses axios\./,
+    );
+    assert.doesNotMatch(note, /not in the project's manifests/);
+  });
+
+  it("says nothing about a decision that is only proposed, or a paste that follows it", async () => {
+    assert.equal(noteOf(await send(decided("proposed"), AXIOS_PASTE)), "");
+    const following = AXIOS_PASTE.replace('import axios from "axios";', 'import ky from "ky";').replace(
+      "axios.get",
+      "ky.get",
+    );
+    assert.equal(noteOf(await send(decided(), following)), "");
+  });
+});
+
 describe("relay detector: leaves ordinary pastes alone", () => {
   it("does not flag short pastes without markers", async () => {
     const fs = projectFs();

@@ -108,8 +108,8 @@ describe("syntax right after the edit", () => {
     );
     assert.equal(syntaxProblem("a.md", "# {{ not code"), undefined, "unknown types are skipped");
     const strip = (code: string): string => code.replace(": number", "");
-    assert.ok(syntaxProblem("a.ts", "const b: number = ;\n", strip));
-    assert.equal(syntaxProblem("a.ts", "const b: number = 2;\n", strip), undefined);
+    assert.ok(syntaxProblem("a.ts", "const b: number = ;\n", { strip }));
+    assert.equal(syntaxProblem("a.ts", "const b: number = 2;\n", { strip }), undefined);
   });
 });
 

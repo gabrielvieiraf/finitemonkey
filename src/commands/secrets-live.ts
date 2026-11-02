@@ -10,6 +10,7 @@ import {
   type LiveProvider,
   liveProvider,
   liveRequest,
+  sentHeaders,
 } from "../secrets/live.js";
 import { isPerson } from "../secrets/project.js";
 import type { CommandSpec } from "./types.js";
@@ -20,22 +21,32 @@ const USAGE = `finitemonkey secrets live <${LIVE_PROVIDERS.join("|")}> --env <VA
 
 const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
-const target = (provider: LiveProvider): { readonly host: string; readonly url: string } => {
+interface Target {
+  readonly host: string;
+  readonly url: string;
+  readonly sends: readonly string[];
+}
+
+const target = (provider: LiveProvider): Target => {
   const probe = LIVE_PROBES[provider];
-  return { host: probe.host, url: `https://${probe.host}${probe.path}` };
+  return { host: probe.host, url: `https://${probe.host}${probe.path}`, sends: sentHeaders(provider) };
 };
 
 const dryRun = (ctx: Ctx, provider: LiveProvider, variable: string): CommandResult => {
-  const { host, url } = target(provider);
-  const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url, variable, sent: false };
-  return success(data, [ctx.t("secrets.live.dry", { host, url, variable, provider })]);
+  const { host, url, sends } = target(provider);
+  const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url, variable, sent: false, sends };
+  return success(data, [
+    ctx.t("secrets.live.dry", { host, url, variable, provider }),
+    ctx.t("secrets.live.sends", { url, headers: sends.join(", ") }),
+  ]);
 };
 
 const send = (ctx: Ctx, provider: LiveProvider, variable: string, key: string): CommandResult => {
-  const { host, url } = target(provider);
+  const { host, url, sends } = target(provider);
   ctx.io.stderr.write(`${ctx.t("secrets.live.contacting", { host, url })}\n`);
+  ctx.io.stderr.write(`${ctx.t("secrets.live.sends", { url, headers: sends.join(", ") })}\n`);
   const outcome = liveOutcome(ctx.runtime.exec(liveRequest(provider, key, ctx.cwd)));
-  const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url, variable, sent: true, ...outcome };
+  const data = { schema: SECRETS_LIVE_SCHEMA, provider, host, url, variable, sent: true, sends, ...outcome };
   const line = ctx.t(`secrets.live.${outcome.verdict}`, { host, status: outcome.status ?? 0, variable });
   if (outcome.verdict !== "unreachable") return success(data, [line]);
   return failureFrom(ctx.t, {

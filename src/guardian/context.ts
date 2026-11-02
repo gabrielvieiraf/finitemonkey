@@ -23,6 +23,9 @@ export interface CompanyContext {
   readonly demonstrated: readonly ContextField<string>[];
   readonly operates?: ContextField<string>;
   readonly milestone?: ContextField<string>;
+  readonly cost?: ContextField<string>;
+  readonly deploy?: ContextField<string>;
+  readonly maintains?: ContextField<string>;
 }
 
 const fieldOf = (raw: unknown): ContextField<string> | undefined => {
@@ -48,18 +51,23 @@ const listOf = (raw: unknown): readonly ContextField<string>[] => {
     : [];
 };
 
+const TEXT_FIELDS = ["operates", "milestone", "cost", "deploy", "maintains"] as const;
+
 export const companyContext = (goals: Goals): CompanyContext => {
   const raw = goals.extra["context"];
   if (!isRecord(raw)) return { demonstrated: [] };
   const stageField = fieldOf(raw["stage"]);
   const stage = STAGES.find((item) => item === stageField?.value);
-  const operates = fieldOf(raw["operates"]);
-  const milestone = fieldOf(raw["milestone"]);
+  const fields = Object.fromEntries(
+    TEXT_FIELDS.flatMap((key) => {
+      const field = fieldOf(raw[key]);
+      return field === undefined ? [] : [[key, field]];
+    }),
+  );
   return {
     ...(stage === undefined || stageField === undefined ? {} : { stage: { value: stage, origin: stageField.origin } }),
     demonstrated: listOf(raw["demonstrated"]),
-    ...(operates === undefined ? {} : { operates }),
-    ...(milestone === undefined ? {} : { milestone }),
+    ...fields,
   };
 };
 

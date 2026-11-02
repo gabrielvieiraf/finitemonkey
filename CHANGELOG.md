@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0-next.43](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.42...v0.1.0-next.43) (2026-11-02)
+
+### Features
+
+* ask before outward actions after untrusted reads and pin mcp tool descriptions ([#402](https://github.com/gabrielvieiraf/finitemonkey/issues/402)) ([5b8ade1](https://github.com/gabrielvieiraf/finitemonkey/commit/5b8ade124a8c4ba385c7fd6613ca8dbe0a7b8cc4)), closes [#371](https://github.com/gabrielvieiraf/finitemonkey/issues/371)
+* **gate:** finish the stage 3.5 gate guarantees ([#400](https://github.com/gabrielvieiraf/finitemonkey/issues/400)) ([f3016e3](https://github.com/gabrielvieiraf/finitemonkey/commit/f3016e3bf9b4b6a1f024bd45a4de37a908101b1e)), closes [#369](https://github.com/gabrielvieiraf/finitemonkey/issues/369) [#369](https://github.com/gabrielvieiraf/finitemonkey/issues/369)
+* **guardian:** negative tests for behavior premises, Go and Java reuse, context asked once, sessions for stalled ([#403](https://github.com/gabrielvieiraf/finitemonkey/issues/403)) ([c64d3b1](https://github.com/gabrielvieiraf/finitemonkey/commit/c64d3b1fcb5e2ebf8de90188333152e2014c653e)), closes [#368](https://github.com/gabrielvieiraf/finitemonkey/issues/368) [#58](https://github.com/gabrielvieiraf/finitemonkey/issues/58)
+* **provenance:** see writes made through bash, attribute per hunk and check the pr block in ci ([#401](https://github.com/gabrielvieiraf/finitemonkey/issues/401)) ([c0664d9](https://github.com/gabrielvieiraf/finitemonkey/commit/c0664d9db11980e96a6e6dae7f1c3fff560e286a)), closes [#370](https://github.com/gabrielvieiraf/finitemonkey/issues/370)
+
+### Bug Fixes
+
+* **gate:** let verified work stop uncommitted and let a session fix its own tests ([#399](https://github.com/gabrielvieiraf/finitemonkey/issues/399)) ([e775402](https://github.com/gabrielvieiraf/finitemonkey/commit/e775402730ec0fe39d981fd78845eaa0aa6d1a34)), closes [#371](https://github.com/gabrielvieiraf/finitemonkey/issues/371) [#366](https://github.com/gabrielvieiraf/finitemonkey/issues/366)
+
 ## [0.1.0-next.42](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.41...v0.1.0-next.42) (2026-11-01)
 
 ### Features

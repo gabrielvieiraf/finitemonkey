@@ -10,15 +10,16 @@ export interface SyntaxProblem {
 export const SYNTAX_MAX_BYTES = 256 * 1024;
 
 const SCRIPT_EXTENSIONS = new Set([".js", ".cjs", ".mjs"]);
+const MODULE_EXTENSIONS = new Set([".mjs"]);
 const TYPESCRIPT_EXTENSIONS = new Set([".ts", ".mts", ".cts"]);
 const MODULE_ONLY =
   /import statement outside a module|Unexpected token 'export'|import\.meta|await is only valid|Cannot use import/;
 
 const MAX_MESSAGE = 200;
 
-const oneLine = (message: string): string => message.replace(/\s+/g, " ").trim().slice(0, MAX_MESSAGE);
+export const oneLine = (message: string): string => message.replace(/\s+/g, " ").trim().slice(0, MAX_MESSAGE);
 
-const lineAt = (text: string, offset: number): number => text.slice(0, offset).split("\n").length;
+export const lineAt = (text: string, offset: number): number => text.slice(0, offset).split("\n").length;
 
 const jsonProblem = (text: string): SyntaxProblem | undefined => {
   try {
@@ -46,9 +47,17 @@ const scriptProblem = (file: string, text: string): SyntaxProblem | undefined =>
   }
 };
 
-type Strip = (code: string) => string;
+export type Strip = (code: string) => string;
+export type Parse = (file: string, text: string) => SyntaxProblem | undefined;
 
-const stripper = (): Strip | undefined => {
+export interface SyntaxTools {
+  readonly strip?: Strip | undefined;
+  readonly typescript?: Parse | undefined;
+  readonly module?: Parse | undefined;
+  readonly esm?: boolean;
+}
+
+export const stripper = (): Strip | undefined => {
   const candidate: unknown = Reflect.get(nodeModule, "stripTypeScriptTypes");
   if (typeof candidate !== "function") return undefined;
   return (code) => {
@@ -63,8 +72,7 @@ const stripper = (): Strip | undefined => {
   };
 };
 
-const typescriptProblem = (file: string, text: string, strip: Strip | undefined): SyntaxProblem | undefined => {
-  if (strip === undefined) return undefined;
+const strippedProblem = (file: string, text: string, strip: Strip): SyntaxProblem | undefined => {
   try {
     return scriptProblem(file, strip(text));
   } catch (error) {
@@ -75,15 +83,31 @@ const typescriptProblem = (file: string, text: string, strip: Strip | undefined)
   }
 };
 
+const typescriptProblem = (file: string, text: string, tools: SyntaxTools): SyntaxProblem | undefined => {
+  if (tools.strip !== undefined) return strippedProblem(file, text, tools.strip);
+  return tools.typescript?.(file, text);
+};
+
+const javascriptProblem = (
+  file: string,
+  text: string,
+  extension: string,
+  tools: SyntaxTools,
+): SyntaxProblem | undefined => {
+  const isModule = MODULE_EXTENSIONS.has(extension) || (extension === ".js" && tools.esm === true);
+  if (isModule && tools.module !== undefined) return tools.module(file, text);
+  return scriptProblem(file, text);
+};
+
 export const syntaxProblem = (
   file: string,
   text: string,
-  strip: Strip | undefined = stripper(),
+  tools: SyntaxTools = { strip: stripper() },
 ): SyntaxProblem | undefined => {
   if (Buffer.byteLength(text, "utf8") > SYNTAX_MAX_BYTES) return undefined;
   const extension = extname(file).toLowerCase();
   if (extension === ".json") return jsonProblem(text);
-  if (SCRIPT_EXTENSIONS.has(extension)) return scriptProblem(file, text);
-  if (TYPESCRIPT_EXTENSIONS.has(extension)) return typescriptProblem(file, text, strip);
+  if (SCRIPT_EXTENSIONS.has(extension)) return javascriptProblem(file, text, extension, tools);
+  if (TYPESCRIPT_EXTENSIONS.has(extension)) return typescriptProblem(file, text, tools);
   return undefined;
 };

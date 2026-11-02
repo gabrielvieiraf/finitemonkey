@@ -7,8 +7,11 @@ import { after, describe, it } from "node:test";
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { type SessionStats, sessionStats } from "../src/drift/collect.js";
+import { blocksBySession } from "../src/drift/fm-signals.js";
+import { warningLine } from "../src/drift/hook.js";
 import { driftReport } from "../src/drift/sensor.js";
 import { projectLogKey } from "../src/history/look-back.js";
+import { createTranslator } from "../src/i18n/translate.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cli } from "./support.js";
 
@@ -89,7 +92,59 @@ describe("drift sensor", () => {
       writes: 1,
       corrections: 1,
       files: 2,
+      domain: "general",
     });
+  });
+
+  it("warns naming guard firings per session when they rise and stay up", () => {
+    const fired = (n: number, guardFirings: number): SessionStats => ({
+      ...session(n, "model-a", 60, 2),
+      guardFirings,
+    });
+    const sessions = [
+      ...Array.from({ length: 10 }, (_, n) => fired(n, 1)),
+      ...Array.from({ length: 4 }, (_, n) => fired(10 + n, 5)),
+    ];
+    const warnings = driftReport(sessions).warnings;
+    assert.deepEqual(
+      warnings.map((warning) => [warning.indicator, warning.since, warning.baseline, warning.current]),
+      [["guardFiringsPerSession", day(10), 1, 5]],
+    );
+    assert.match(warningLine(createTranslator("en"), warnings[0] ?? assert.fail()), /guard firings per session/);
+  });
+
+  it("keeps a baseline per domain, so a rise in one domain is not hidden by another", () => {
+    const tagged = (n: number, domain: "interface" | "backend", loopScore: number): SessionStats => ({
+      ...session(n, "model-a", 60, 2),
+      domain,
+      loopScore,
+    });
+    const sessions = Array.from({ length: 14 }, (_, n) => [
+      tagged(n, "backend", 0.2),
+      tagged(n, "interface", n < 10 ? 0.2 : 1),
+    ]).flat();
+    const warnings = driftReport(sessions).warnings;
+    assert.deepEqual(
+      warnings.map((warning) => [warning.indicator, warning.domain]),
+      [["loopIndex", "interface"]],
+    );
+    assert.match(warningLine(createTranslator("en"), warnings[0] ?? assert.fail()), /small interface tasks/);
+  });
+
+  it("counts gate holds and guard firings per session from the Finite Monkey log", () => {
+    const block = (sessionId: string, hook: string): string =>
+      JSON.stringify({ at: "2026-09-01T10:00:00Z", event: "guard_block", hook, tool: "Edit", sessionId });
+    const blocks = blocksBySession(
+      [block("s1", "Stop"), block("s1", "PreToolUse"), block("s1", "PostToolUse"), block("s2", "Stop"), "x"].join("\n"),
+    );
+    assert.deepEqual(
+      [...blocks.holds],
+      [
+        ["s1", 1],
+        ["s2", 1],
+      ],
+    );
+    assert.deepEqual([...blocks.firings], [["s1", 2]]);
   });
 });
 

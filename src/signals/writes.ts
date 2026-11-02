@@ -6,7 +6,7 @@ import { normalizeCommand } from "../shell/normalize.js";
 
 export const FILE_WRITERS = new Set(["Edit", "MultiEdit", "Write", "NotebookEdit"]);
 
-const POWERSHELL_WRITERS = new Set([
+export const POWERSHELL_WRITERS = new Set([
   "set-content",
   "add-content",
   "clear-content",

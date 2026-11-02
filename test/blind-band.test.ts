@@ -101,6 +101,15 @@ describe("blind band index", () => {
       ],
     );
     assert.deepEqual(report.total, { helps: 6, withoutCriterion: 3, index: 0.5 });
+    assert.deepEqual(report.rows[0]?.bySource, {
+      skill: 1,
+      clarify: 1,
+      research: 1,
+      divergence: 1,
+      concept: 0,
+      scope: 0,
+      xray: 0,
+    });
   });
 
   it("answers signals blind-band --json with the frozen schema", async () => {

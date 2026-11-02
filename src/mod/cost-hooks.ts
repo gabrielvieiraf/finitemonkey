@@ -45,6 +45,14 @@ const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
 
 const money = (usd: unknown): string => `$${(typeof usd === "number" ? usd : 0).toFixed(2)}`;
 
+const splitLines = (data: Readonly<Record<string, unknown>>): readonly string[] => {
+  const build = data["build"];
+  const verification = data["verification"];
+  if (!isRecord(build) || !isRecord(verification)) return [];
+  const minutes = typeof verification["gateMinutes"] === "number" ? verification["gateMinutes"] : 0;
+  return [`build ${money(build["usd"])} · verification ${money(verification["usd"])} + gate ${String(minutes)} min`];
+};
+
 export const costLines = (text: string): readonly string[] => {
   let parsed: unknown;
   try {
@@ -58,6 +66,7 @@ export const costLines = (text: string): readonly string[] => {
   return [
     `contract ${String(data["task"])}: ${money(data["usd"])} in ${String(data["requests"])} requests`,
     `attempts ${String(data["attempts"])} · per attempt ${data["perAttempt"] === null ? "-" : money(data["perAttempt"])}`,
+    ...splitLines(data),
     ...arms.map((arm) => `arm ${String(arm["arm"])}: ${money(arm["usd"])} in ${String(arm["requests"])} requests`),
   ];
 };

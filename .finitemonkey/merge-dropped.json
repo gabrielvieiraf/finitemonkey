@@ -1,0 +1,42 @@
+{
+  "dropped": [
+    {
+      "file": "src/gate/checks/diff.ts",
+      "side": "ours",
+      "line": "import { recordScopeAdditions } from \"../../signals/scope-band.js\";",
+      "reason": "movido_para",
+      "to": "src/gate/checks/diff-accepted.ts"
+    },
+    {
+      "file": "src/gate/checks/diff.ts",
+      "side": "ours",
+      "line": "recordScopeAdditions(ctx.runtime, ctx.paths, { task: ctx.contract.id, files, approvedAt: approval.at });",
+      "reason": "movido_para",
+      "to": "src/gate/checks/diff-accepted.ts"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| mistaken agent | 8 | 0 | 1 | 1 | 0 |",
+      "reason": "regenerado",
+      "side": "ours"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| over-privileged process | 5 | 2 | 2 | 2 | 1 |",
+      "reason": "regenerado",
+      "side": "ours"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| mistaken agent | 9 | 0 | 0 | 1 | 1 |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "docs/THREAT-MODEL.md",
+      "line": "| over-privileged process | 6 | 1 | 1 | 2 | 2 |",
+      "reason": "regenerado",
+      "side": "theirs"
+    }
+  ]
+}

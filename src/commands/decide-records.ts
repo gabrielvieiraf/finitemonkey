@@ -1,6 +1,13 @@
 import { usageProblem } from "../core/problem.js";
 import { failureFrom, success } from "../core/result.js";
-import { appendReason, readReason, readRecords, recordOutcome } from "../knowledge/decision-record.js";
+import type { Translate } from "../i18n/translate.js";
+import {
+  appendReason,
+  type DecisionRecord,
+  readReason,
+  readRecords,
+  recordOutcome,
+} from "../knowledge/decision-record.js";
 import { isPerson } from "../secrets/project.js";
 import { fmPaths } from "../task/paths.js";
 import { inGuardianRepo } from "./guardian.js";
@@ -9,6 +16,13 @@ import type { CommandSpec } from "./types.js";
 export const DECISION_RECORDS_SCHEMA = "finitemonkey/decision-records@1";
 
 const WHY_USAGE = 'finitemonkey decide why <task> "<one sentence: why>"';
+
+const detailLines = (t: Translate, record: DecisionRecord): readonly string[] => [
+  ...(record.alternatives.length === 0
+    ? []
+    : [t("knowledge.records.alternatives", { list: record.alternatives.join("; ") })]),
+  ...(record.cost.usd === null ? [] : [t("knowledge.records.usd", { usd: record.cost.usd.toFixed(2) })]),
+];
 
 export const decideRecordsCommand: CommandSpec = {
   path: ["decide", "records"],
@@ -32,14 +46,15 @@ export const decideRecordsCommand: CommandSpec = {
         { schema: DECISION_RECORDS_SCHEMA, records: rows },
         rows.length === 0
           ? [ctx.t("knowledge.records.none")]
-          : rows.map((row) =>
+          : rows.flatMap((row) => [
               ctx.t("knowledge.records.row", {
                 task: row.task,
                 changes: row.changes.map((change) => `${change.class} ${change.detail}`).join(", "),
                 reason: row.reason ?? ctx.t("knowledge.records.no_reason"),
                 reverted: row.outcome.reverted.length,
               }),
-            ),
+              ...detailLines(ctx.t, row),
+            ]),
       );
     }),
 };

@@ -63,6 +63,41 @@
               "check"
             ]
           },
+          "bySource": {
+            "type": "object",
+            "properties": {
+              "skill": {
+                "type": "number"
+              },
+              "clarify": {
+                "type": "number"
+              },
+              "research": {
+                "type": "number"
+              },
+              "divergence": {
+                "type": "number"
+              },
+              "concept": {
+                "type": "number"
+              },
+              "scope": {
+                "type": "number"
+              },
+              "xray": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "skill",
+              "clarify",
+              "research",
+              "divergence",
+              "concept",
+              "scope",
+              "xray"
+            ]
+          },
           "conceptsMoved": {
             "type": "number"
           }
@@ -74,6 +109,7 @@
           "withoutCriterion",
           "index",
           "byCriterion",
+          "bySource",
           "conceptsMoved"
         ]
       }

@@ -170,6 +170,9 @@ const summaryEntry = (
     notes: [],
     ...(freshness === undefined ? {} : { inputs: freshness.inputs }),
     scripts,
+    ...(prepared.ctx.sessionId === undefined || prepared.ctx.sessionId === ""
+      ? {}
+      : { session: prepared.ctx.sessionId }),
   };
 };
 

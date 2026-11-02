@@ -1,5 +1,6 @@
 import { stringOption } from "../core/args.js";
 import { success } from "../core/result.js";
+import { noteContextAsked } from "../guardian/context-answer.js";
 import { findExisting } from "../guardian/existing.js";
 import { recordScan } from "../guardian/pending.js";
 import { renderReport } from "../guardian/report.js";
@@ -42,10 +43,12 @@ export const guardianScanCommand: CommandSpec = {
     inGuardianRepo(ctx, (root) => {
       const paths = fmPaths(root);
       const scanned = scanChange(ctx.runtime, ctx.t, paths, stringOption(args.values, "base") ?? "HEAD");
-      const recorded = args.values["record"] === true ? recordScan(ctx.runtime, paths, scanned.reports) : 0;
+      const record = args.values["record"] === true;
+      const recorded = record ? recordScan(ctx.runtime, paths, scanned.reports) : 0;
+      if (record) noteContextAsked(ctx.runtime, paths, scanned.proportion.askContext);
       return success(
         { schema: GUARDIAN_SCAN_SCHEMA, ...scanned, recorded },
-        args.values["record"] === true ? [] : scanned.reports.map((item) => renderReport(ctx.t, item.report)),
+        record ? [] : scanned.reports.map((item) => renderReport(ctx.t, item.report)),
       );
     }),
 };

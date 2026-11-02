@@ -1,9 +1,11 @@
 import { stringOption } from "../core/args.js";
 import { usageProblem } from "../core/problem.js";
 import { failureFrom, success } from "../core/result.js";
+import { logEvent } from "../evidence/log.js";
 import { assumptionLine } from "../guardian/assumption-hook.js";
 import { draftOf, registerAssumptions } from "../guardian/assumption-lines.js";
 import { readAssumptions, refreshTriggers, writeAssumptions } from "../guardian/assumptions.js";
+import { proposalLines, proposalsFor } from "../guardian/negative-contract.js";
 import { fmPaths } from "../task/paths.js";
 import { guardianWriteProblem, inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
@@ -44,8 +46,15 @@ export const guardianAssumeAddCommand: CommandSpec = {
       return Promise.resolve(failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.error.add", ADD_USAGE)));
     return inGuardianRepo(ctx, (root) => {
       const source = stringOption(args.values, "source") ?? "manual";
-      const added = registerAssumptions(ctx.runtime, fmPaths(root), source, [draftOf(line)]);
-      return success({ schema: ASSUMPTIONS_SCHEMA, assumptions: added }, added.map(assumptionLine));
+      const paths = fmPaths(root);
+      const added = registerAssumptions(ctx.runtime, paths, source, [draftOf(line)]);
+      const proposals = proposalsFor(ctx.runtime, paths, added);
+      for (const proposal of proposals)
+        logEvent(ctx.runtime, paths, "guardian.negative_test.proposed", { assumption: proposal.assumption });
+      return success({ schema: ASSUMPTIONS_SCHEMA, assumptions: added, proposals }, [
+        ...added.map(assumptionLine),
+        ...proposals.flatMap((proposal) => proposalLines(ctx.t, proposal)),
+      ]);
     });
   },
 };

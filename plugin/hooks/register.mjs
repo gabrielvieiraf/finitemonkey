@@ -13,6 +13,7 @@ var memory = {
   concepts: [],
   trajectory: [],
   selectedMark: void 0,
+  untrusted: void 0,
   theme: "auto"
 };
 
@@ -104,6 +105,13 @@ function scheduleUsage($) {
 }
 var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var money = (usd) => `$${(typeof usd === "number" ? usd : 0).toFixed(2)}`;
+var splitLines = (data) => {
+  const build = data["build"];
+  const verification = data["verification"];
+  if (!isRecord2(build) || !isRecord2(verification)) return [];
+  const minutes = typeof verification["gateMinutes"] === "number" ? verification["gateMinutes"] : 0;
+  return [`build ${money(build["usd"])} · verification ${money(verification["usd"])} + gate ${String(minutes)} min`];
+};
 var costLines = (text5) => {
   let parsed;
   try {
@@ -117,6 +125,7 @@ var costLines = (text5) => {
   return [
     `contract ${String(data["task"])}: ${money(data["usd"])} in ${String(data["requests"])} requests`,
     `attempts ${String(data["attempts"])} · per attempt ${data["perAttempt"] === null ? "-" : money(data["perAttempt"])}`,
+    ...splitLines(data),
     ...arms.map((arm) => `arm ${String(arm["arm"])}: ${money(arm["usd"])} in ${String(arm["requests"])} requests`)
   ];
 };
@@ -1877,9 +1886,64 @@ function withTurnLine(e, result) {
 ${line2}` };
 }
 
+// src/core/parsed.ts
+var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+
+// src/hooks/fields.ts
+var textField = (record, ...names) => {
+  for (const name of names) {
+    const value = record[name];
+    if (typeof value === "string") return value;
+  }
+  return void 0;
+};
+var editsOf = (input) => {
+  const single = textField(input, "old_string");
+  const replacement = textField(input, "new_string");
+  if (single !== void 0 && replacement !== void 0) {
+    return [{ oldText: single, newText: replacement, all: input["replace_all"] === true }];
+  }
+  const edits = input["edits"];
+  if (!Array.isArray(edits)) return [];
+  return edits.flatMap((edit) => {
+    if (!isRecord8(edit)) return [];
+    const oldText = textField(edit, "old_string");
+    const newText = textField(edit, "new_string");
+    return oldText === void 0 || newText === void 0 ? [] : [{ oldText, newText, all: edit["replace_all"] === true }];
+  });
+};
+
+// src/policy/untrusted.ts
+var HIDDEN = /[\u200B-\u200D\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]|\uDB40[\uDC00-\uDC7F]/g;
+var stripHidden = (text5) => text5.replace(HIDDEN, "");
+var READERS = /* @__PURE__ */ new Set(["WebFetch", "WebSearch"]);
+var readsUntrusted = (tool) => READERS.has(tool) || tool.startsWith("mcp__");
+
+// src/knowledge/instruction.ts
+var INSTRUCTION = /(?:^|[.!?:]\s+|^\s*(?:[-*+]|\d+[.)])\s+)(?:always|never|ignore|disregard|forget|override|run|execute|install|curl|wget|you must|you should|do not|don't|please run|sempre|nunca|ignore|execute|rode|siempre|ignora|ejecuta)\b/i;
+var MEMORY_DIR = /[\\/]\.claude[\\/]projects[\\/][^\\/]+[\\/]memory[\\/][^\\/]+$/;
+var isNativeMemory = (file) => MEMORY_DIR.test(file);
+var instructionLines = (text5) => stripHidden(text5).split(/\r?\n/).map((line2) => line2.trim()).filter((line2) => line2 !== "" && INSTRUCTION.test(line2));
+
+// src/mod/memory-hold.ts
+var MEMORY_HOLD_RULE = "memory.untrusted";
+var MEMORY_HOLD_REASON = "finitemonkey: this session read untrusted content, and this write to native memory carries an instruction-shaped line. Memory keeps facts, not orders; ask the person to write it if it is theirs.";
+var WRITERS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
+var written = (input) => textField(input, "content") ?? editsOf(input).map((edit) => edit.newText).join("\n");
+var untrustedSeen = (tool, before) => readsUntrusted(tool) ? tool : before;
+var memoryHold = (state, tool, input, seen2) => {
+  if (!WRITERS.has(tool) || !isRecord8(input)) return void 0;
+  if (!isNativeMemory(textField(input, "file_path") ?? "")) return void 0;
+  const hold = state?.memory;
+  if (hold?.mode === "off") return void 0;
+  const source = seen2 ?? hold?.untrusted ?? void 0;
+  if (source === void 0 || instructionLines(written(input)).length === 0) return void 0;
+  return { mode: hold?.mode ?? "active", reason: hold?.reason ?? MEMORY_HOLD_REASON };
+};
+
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -1890,7 +1954,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord8(value)) return void 0;
+  if (!isRecord9(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -1899,11 +1963,17 @@ var ruleOf = (value) => {
   return regex === void 0 ? void 0 : { rule: { id, target: known, pattern, reason }, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord8(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord9(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
-var dataOf2 = (parsed) => isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
+var memoryOf = (value) => {
+  if (!isRecord9(value) || typeof value["reason"] !== "string") return void 0;
+  const mode = MODES.find((item) => item === value["mode"]) ?? "shadow";
+  const untrusted = value["untrusted"];
+  return { mode, untrusted: typeof untrusted === "string" ? untrusted : null, reason: value["reason"] };
+};
+var dataOf2 = (parsed) => isRecord9(parsed) && isRecord9(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text5) => {
   let parsed;
   try {
@@ -1912,13 +1982,14 @@ var parseModState = (text5) => {
     return void 0;
   }
   const data = dataOf2(parsed);
-  if (!isRecord8(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  if (!isRecord9(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
   const failReason = data["failReason"];
   const band = MODES.find((item) => item === data["band"]) ?? "active";
   const attribution = attributionOf(data["attribution"]);
+  const memory2 = memoryOf(data["memory"]);
   return {
     root: data["root"],
     mode,
@@ -1926,6 +1997,7 @@ var parseModState = (text5) => {
     rules,
     instructions: typeof data["instructions"] === "string" ? data["instructions"] : "",
     ...attribution === void 0 ? {} : { attribution },
+    ...memory2 === void 0 ? {} : { memory: memory2 },
     ...typeof failReason === "string" ? { failReason } : {}
   };
 };
@@ -1933,9 +2005,9 @@ var parseModState = (text5) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord10 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text4 = (input, ...names) => {
-  if (!isRecord9(input)) return void 0;
+  if (!isRecord10(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;
@@ -1994,8 +2066,16 @@ async function recordTightening($, rule, tool, mode) {
 function scheduleRecord($, rule, tool, mode) {
   $.clock.after(0, () => recordTightening($, rule, tool, mode));
 }
+function withMemoryHold($, e, decided) {
+  const hold = memoryHold(memory.state, e.tool, e.input, memory.untrusted);
+  if (hold === void 0) return decided;
+  scheduleRecord($, MEMORY_HOLD_RULE, e.tool, hold.mode);
+  const denied = { decision: "deny", reason: hold.reason };
+  return hold.mode === "active" ? stricter(decided, denied) : decided;
+}
 async function guardCheck($, e, next) {
-  const decided = await next(e);
+  memory.untrusted = untrustedSeen(e.tool, memory.untrusted);
+  const decided = withMemoryHold($, e, await next(e));
   const state = memory.state;
   if (state === void 0 || state.mode === "off") return decided;
   const rule = ruleFor(state, e.tool, e.input);
@@ -2010,6 +2090,7 @@ async function failClosed() {
 // src/mod/register.ts
 var WATCHED_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "PowerShell"];
 async function onStart($, e, next) {
+  memory.untrusted = void 0;
   scheduleRefresh($);
   scheduleStatus($, 0);
   await registerGateCommand($);

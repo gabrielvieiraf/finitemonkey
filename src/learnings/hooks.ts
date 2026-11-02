@@ -13,8 +13,16 @@ import { markUntrusted, readsUntrusted } from "../policy/untrusted.js";
 import { errorSignature } from "../signals/signature.js";
 import type { FmPaths } from "../task/paths.js";
 import { learnFromSignatures } from "./learn.js";
-import { DEFAULT_MAX_LESSONS, DEFAULT_MAX_TOKENS, type LessonKey, lessonsText, pickLessons } from "./match.js";
+import {
+  DEFAULT_MAX_LESSONS,
+  DEFAULT_MAX_TOKENS,
+  keyMatches,
+  type LessonKey,
+  lessonsText,
+  pickLessons,
+} from "./match.js";
 import { EXPIRE_DAYS, type Lesson, pruneLessons, readLessons, writeLessons } from "./store.js";
+import { treeChanged } from "./tree.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
 const SEEN_FILE = "learnings-seen.json";
@@ -69,13 +77,27 @@ const markUsed = (
   input.runtime.writeText(paths.cache(SEEN_FILE), `${JSON.stringify(next)}\n`);
 };
 
+const withStale = (input: HookInput, paths: FmPaths, lessons: readonly Lesson[], key: LessonKey): readonly Lesson[] => {
+  const changed = new Set(
+    lessons
+      .filter((lesson) => lesson.stale !== true && keyMatches(lesson, key))
+      .filter((lesson) => treeChanged(input.runtime, paths.root, lesson))
+      .map((lesson) => lesson.id),
+  );
+  if (changed.size === 0) return lessons;
+  const next = lessons.map((lesson) => (changed.has(lesson.id) ? { ...lesson, stale: true } : lesson));
+  writeLessons(input.runtime, paths.dir, next);
+  return next;
+};
+
 export const learningsInject: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined) return ALLOW;
   const key = keyOf(input, paths);
   if (key === undefined || (key.sig === undefined && key.path === undefined)) return ALLOW;
-  const lessons = readLessons(input.runtime, paths.dir);
-  if (lessons.length === 0 || readDemoted(input.runtime, paths).has("learnings")) return ALLOW;
+  const stored = readLessons(input.runtime, paths.dir);
+  if (stored.length === 0 || readDemoted(input.runtime, paths).has("learnings")) return ALLOW;
+  const lessons = withStale(input, paths, stored, key);
   const seen = readSeen(input, paths);
   const limits = {
     maxLessons: policyNumber(input.runtime, paths.root, ["learnings", "maxLessons"], DEFAULT_MAX_LESSONS),
