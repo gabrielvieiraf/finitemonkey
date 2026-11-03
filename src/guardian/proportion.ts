@@ -101,7 +101,11 @@ export const proportionReport = (
       budget: proportion.budget,
       stage,
     }),
-    evidence: [...weight.evidence, `${GOALS_FILE}: context.stage ${stage} (${context.stage?.origin ?? "missing"})`],
+    evidence: [
+      ...weight.evidence,
+      `${GOALS_FILE}: context.stage ${stage} (${context.stage?.origin ?? "missing"})`,
+      ...(context.cost === undefined ? [] : [`context.cost ${context.cost.value} (${context.cost.origin})`]),
+    ],
     assumptions: proportion.askScale ? [t("guardian.weigh.scale_unknown")] : proportion.problem.scale,
     consequences: t("guardian.trigger.proportionality.consequences"),
     alternatives: [

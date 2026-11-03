@@ -5673,10 +5673,10 @@ var texts2 = (value2) => isRecord(value2) ? Object.fromEntries(
 ) : {};
 var messageOf2 = (value2) => {
   if (!isRecord(value2)) return void 0;
-  const { at: at9, model, usd, tokens, task } = value2;
-  if (typeof at9 !== "string" || typeof model !== "string" || typeof usd !== "number" || typeof tokens !== "number")
+  const { at: at9, model, usd: usd2, tokens, task } = value2;
+  if (typeof at9 !== "string" || typeof model !== "string" || typeof usd2 !== "number" || typeof tokens !== "number")
     return void 0;
-  return { at: at9, model, usd, tokens, ...typeof task === "string" ? { task } : {} };
+  return { at: at9, model, usd: usd2, tokens, ...typeof task === "string" ? { task } : {} };
 };
 var readLedger = (runtime, paths) => {
   const raw = readJsonFile(runtime, spendPath(paths)) ?? {};
@@ -6310,9 +6310,9 @@ var changeOf = (value2) => {
   const mode = modeOf2(value2["mode"]);
   if (value2["kind"] === "guard" && typeof value2["guard"] === "string" && mode !== void 0)
     return { kind: "guard", guard: value2["guard"], mode };
-  const amount = value2["value"];
-  if (value2["kind"] === "alertBudget" && value2["key"] === "muteAbove" && typeof amount === "number")
-    return { kind: "alertBudget", key: "muteAbove", value: amount };
+  const amount2 = value2["value"];
+  if (value2["kind"] === "alertBudget" && value2["key"] === "muteAbove" && typeof amount2 === "number")
+    return { kind: "alertBudget", key: "muteAbove", value: amount2 };
   if (value2["kind"] === "reminder" && typeof value2["rule"] === "string" && typeof value2["include"] === "boolean")
     return { kind: "reminder", rule: value2["rule"], include: value2["include"] };
   return void 0;
@@ -9883,10 +9883,10 @@ var pollUntilDone = async (runtime, root, pr, limits, counter) => {
     await sleep2(runtime, limits.intervalMs);
   }
 };
-var failureOutcome = (classification, attempt2, usd, limits) => {
+var failureOutcome = (classification, attempt2, usd2, limits) => {
   if (classification === "asks") return "ask";
   if (attempt2 >= limits.maxAttempts) return "attempts";
-  return usd >= limits.maxUsd ? "cost" : "fix";
+  return usd2 >= limits.maxUsd ? "cost" : "fix";
 };
 var watchPullRequest = async (runtime, root, pr, limits, counter) => {
   const state = readWatch(runtime, root, pr.number);
@@ -9898,8 +9898,8 @@ var watchPullRequest = async (runtime, root, pr, limits, counter) => {
   const first2 = failed9[0];
   const log = first2 === void 0 ? "" : failedLog(runtime, root, counter, first2);
   const classification = first2 === void 0 ? null : classifyLog(log);
-  const usd = spentSince(runtime, root, state.startedAt);
-  const outcome3 = classification !== null ? failureOutcome(classification, attempt2, usd, limits) : pending3 ? counter.calls >= limits.maxCalls ? "calls" : "pending" : "green";
+  const usd2 = spentSince(runtime, root, state.startedAt);
+  const outcome3 = classification !== null ? failureOutcome(classification, attempt2, usd2, limits) : pending3 ? counter.calls >= limits.maxCalls ? "calls" : "pending" : "green";
   writeWatch(runtime, root, pr.number, { startedAt: state.startedAt, failed: shas });
   const report5 = {
     pr: pr.number,
@@ -9910,7 +9910,7 @@ var watchPullRequest = async (runtime, root, pr, limits, counter) => {
     classification,
     attempt: attempt2,
     maxAttempts: limits.maxAttempts,
-    usd,
+    usd: usd2,
     maxUsd: limits.maxUsd,
     calls: counter.calls,
     log
@@ -14316,10 +14316,10 @@ var lineOf5 = (text45) => {
   const parsed = parseJsonObject(text45);
   if (!parsed.ok) return void 0;
   const step5 = stepOf2(parsed.value);
-  const { at: at9, task, arms, usd, kind, durationMs } = parsed.value;
+  const { at: at9, task, arms, usd: usd2, kind, durationMs } = parsed.value;
   if (step5 === void 0 || typeof at9 !== "string" || typeof task !== "string") return void 0;
   const list15 = Array.isArray(arms) ? arms.filter((arm) => typeof arm === "string") : [];
-  const line14 = { ...step5, at: at9, task, arms: list15, usd: count4(usd) };
+  const line14 = { ...step5, at: at9, task, arms: list15, usd: count4(usd2) };
   return typeof kind === "string" ? { ...line14, kind, durationMs: count4(durationMs) } : line14;
 };
 var readCost = (runtime, paths) => {
@@ -14363,15 +14363,15 @@ var costOf = (runtime, paths) => {
   const ledger = ledgerOf(runtime, paths, task);
   const attempts = new Set(ledger.map((entry2) => entry2.treeHash)).size;
   const gateMs = ledger.reduce((total, entry2) => total + (entry2.durationMs ?? 0), 0);
-  const usd = sum(lines11);
+  const usd2 = sum(lines11);
   const arms = [...new Set(lines11.flatMap((line14) => line14.arms))].sort();
   return {
     schema: MOD_COST_SCHEMA,
     task,
-    usd,
+    usd: usd2,
     requests: lines11.length,
     attempts,
-    perAttempt: attempts === 0 ? null : usd / attempts,
+    perAttempt: attempts === 0 ? null : usd2 / attempts,
     byArm: arms.map((arm) => {
       const own = lines11.filter((line14) => line14.arms.includes(arm));
       return { arm, usd: sum(own), requests: own.length };
@@ -17616,6 +17616,12 @@ const computed = [
   { id: "break_even_operations", unit: "operations per month", readable: "platform_fixed_brl / (price_per_operation_brl - unit_cost_brl)" },
 ];
 
+const monthly = [
+  { fact: "price_per_call_usd", readable: "price_per_call_usd * calls_per_operation * operations_per_month" },
+  { fact: "tax_on_foreign_services", readable: "price_per_call_usd * calls_per_operation * operations_per_month * tax_on_foreign_services" },
+  { fact: "platform_fixed_brl", readable: "platform_fixed_brl / fx_usd_brl" },
+];
+
 const limits = [
   { provider: "provider", limit: "request size", value: 10, unit: "MB", accepted: 10, next_layer: "reverse proxy body limit", next_value: 10, source: "https://replace-with-the-provider-limits-page", date: DATE },
 ];
@@ -17644,6 +17650,10 @@ const evaluate = (scenario) => {
 };
 
 const values = { base: evaluate("base"), conservative: evaluate("conservative") };
+const monthlyUsd = (row, scenario) => {
+  if (!SAFE.test(row.readable)) throw new Error("only arithmetic is allowed in " + row.fact);
+  return Function("return (" + substitute(row.readable, (id) => "(" + values[scenario].get(id) + ")") + ")")();
+};
 const csvCell = (value) => {
   const text = String(value ?? "");
   return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
@@ -17657,6 +17667,14 @@ writeFileSync(
     ["id", "unit", "type", "source", "date", "base", "conservative", "readable"],
     ...inputs.map((row) => [row.id, row.unit, row.type, row.source, row.date, row.base, row.conservative ?? row.base, ""]),
     ...computed.map((row) => [row.id, row.unit, "COMPUTED", "", "", formula(row, SCENARIOS.base), formula(row, SCENARIOS.conservative), row.readable]),
+  ]),
+);
+
+writeFileSync(
+  STEM.replace(/-cost-model$/, "-cost-monthly") + ".csv",
+  csv([
+    ["fact", "unit", "base", "conservative", "readable"],
+    ...monthly.map((row) => [row.fact, "USD per month", monthlyUsd(row, "base"), monthlyUsd(row, "conservative"), row.readable]),
   ]),
 );
 
@@ -17684,6 +17702,9 @@ writeFileSync(
     "## " + TEXT.unit, "", pair(KEYS.unit), "",
     "## " + TEXT.fixed, "", pair(KEYS.fixed), "",
     "## " + TEXT.breakEven, "", pair(KEYS.breakEven), "",
+    "## " + TEXT.monthly, "",
+    ...table(["fact", TEXT.base, TEXT.conservative], monthly.map((row) => [row.fact, round(monthlyUsd(row, "base")), round(monthlyUsd(row, "conservative"))])),
+    "",
     "## " + TEXT.scenarios, "",
     ...table(["id", TEXT.base, TEXT.conservative, "type", "unit"], rows.map((row) => [marked(row) + row.id, round(values.base.get(row.id)), round(values.conservative.get(row.id)), row.type ?? "COMPUTED", row.unit])),
     "",
@@ -17709,6 +17730,7 @@ var costScript = (t, topic, date) => SCRIPT.replace(
     unit: t("cost.report.unit"),
     fixed: t("cost.report.fixed"),
     breakEven: t("cost.report.break_even"),
+    monthly: t("cost.report.monthly"),
     scenarios: t("cost.report.scenarios"),
     base: t("cost.report.base"),
     conservative: t("cost.report.conservative"),
@@ -20005,6 +20027,7 @@ var en_default = {
   "cost.report.unit": "Unit cost per operation (base / conservative)",
   "cost.report.fixed": "Fixed platform cost (base / conservative)",
   "cost.report.break_even": "Break-even (base / conservative)",
+  "cost.report.monthly": "Monthly cost per FACT, in USD (base / conservative)",
   "cost.report.scenarios": "Scenarios",
   "cost.report.base": "base",
   "cost.report.conservative": "conservative",
@@ -23121,6 +23144,7 @@ var es_default = {
   "cost.report.unit": "Costo unitario por operación (base / conservador)",
   "cost.report.fixed": "Costo fijo de la plataforma (base / conservador)",
   "cost.report.break_even": "Punto de equilibrio (base / conservador)",
+  "cost.report.monthly": "Costo mensual por FACT, en USD (base / conservador)",
   "cost.report.scenarios": "Escenarios",
   "cost.report.base": "base",
   "cost.report.conservative": "conservador",
@@ -26237,6 +26261,7 @@ var pt_BR_default = {
   "cost.report.unit": "Custo unitário por operação (base / conservador)",
   "cost.report.fixed": "Custo fixo da plataforma (base / conservador)",
   "cost.report.break_even": "Ponto de equilíbrio (base / conservador)",
+  "cost.report.monthly": "Custo mensal por FACT, em USD (base / conservador)",
   "cost.report.scenarios": "Cenários",
   "cost.report.base": "base",
   "cost.report.conservative": "conservador",
@@ -29354,6 +29379,7 @@ var review_default = {
     "cost.report.unit": "machine",
     "cost.report.fixed": "machine",
     "cost.report.break_even": "machine",
+    "cost.report.monthly": "machine",
     "cost.report.scenarios": "machine",
     "cost.report.base": "machine",
     "cost.report.conservative": "machine",
@@ -32468,6 +32494,7 @@ var review_default = {
     "cost.report.unit": "machine",
     "cost.report.fixed": "machine",
     "cost.report.break_even": "machine",
+    "cost.report.monthly": "machine",
     "cost.report.scenarios": "machine",
     "cost.report.base": "machine",
     "cost.report.conservative": "machine",
@@ -45215,7 +45242,7 @@ var researchFor = (runtime, paths, task) => {
   });
 };
 var costOf2 = (runtime, paths, task) => {
-  const usd = usdFor(runtime, paths, task);
+  const usd2 = usdFor(runtime, paths, task);
   const ledger = readLedger2(runtime, paths.evidence(task));
   const gates = ledger.filter((entry2) => entry2.check === GATE_CHECK);
   const passed2 = gates.findIndex((entry2) => entry2.status === "passed");
@@ -45227,7 +45254,7 @@ var costOf2 = (runtime, paths, task) => {
     cost: {
       gateRuns: passed2 < 0 ? gates.length : passed2 + 1,
       minutesToGreen: first2 === void 0 || done3 === void 0 ? null : Math.round((Date.parse(done3.at) - Date.parse(first2.at)) / 6e4),
-      usd
+      usd: usd2
     }
   };
 };
@@ -60708,9 +60735,9 @@ var loggedUsd = (runtime, root, since) => {
   return text45.value.split("\n").reduce((total, line14) => {
     const parsed = line14.trim() === "" ? void 0 : parseJsonObject(line14);
     if (parsed?.ok !== true) return total;
-    const { at: at9, usd } = parsed.value;
+    const { at: at9, usd: usd2 } = parsed.value;
     const when = typeof at9 === "string" ? Date.parse(at9) : Number.NaN;
-    return typeof usd === "number" && Number.isFinite(usd) && when >= since ? total + usd : total;
+    return typeof usd2 === "number" && Number.isFinite(usd2) && when >= since ? total + usd2 : total;
   }, 0);
 };
 var waveSpend = (runtime, root, state) => {
@@ -63502,6 +63529,33 @@ var companyContext = (goals) => {
 };
 var raisingBudget = (context) => context.stage?.origin === "stated" ? STAGE_BUDGET[context.stage.value] : MOST_PERMISSIVE_BUDGET;
 
+// src/cost/monthly.ts
+var MONTHLY_SUFFIX = "-cost-monthly.csv";
+var amount = (raw) => {
+  const value2 = Number((raw ?? "").trim());
+  return (raw ?? "").trim() !== "" && Number.isFinite(value2) ? value2 : void 0;
+};
+var factsIn2 = (text45) => {
+  const [header3 = [], ...body2] = parseCsv(text45);
+  const at9 = (name) => header3.indexOf(name);
+  if (at9("fact") === -1 || at9("base") === -1 || at9("conservative") === -1) return [];
+  return body2.flatMap((row4) => {
+    const fact = (row4[at9("fact")] ?? "").trim();
+    const base = amount(row4[at9("base")]);
+    const conservative = amount(row4[at9("conservative")]) ?? base;
+    return fact === "" || base === void 0 || conservative === void 0 ? [] : [{ fact, base, conservative }];
+  });
+};
+var readMonthlyCost = (runtime, root) => {
+  const name = planFiles2(runtime, root).filter((item2) => item2.endsWith(MONTHLY_SUFFIX)).at(-1);
+  if (name === void 0) return void 0;
+  const text45 = runtime.readText(planPath(root, name));
+  const facts = text45.ok ? factsIn2(text45.value) : [];
+  return facts.length === 0 ? void 0 : { file: `${PLAN_DIR}/${name}`, facts };
+};
+var usd = (value2) => String(Math.round(value2 * 100) / 100);
+var monthlySummary = (cost2) => `${cost2.file}: ${cost2.facts.map((item2) => `${item2.fact} ${usd(item2.base)} / ${usd(item2.conservative)} USD`).join(", ")}`;
+
 // src/guardian/context-ask.ts
 var CONTEXT_QUESTIONS = ["stage", "cost", "deploy", "maintains"];
 var ASKED_FILE2 = "guardian-context.json";
@@ -63510,11 +63564,16 @@ var ownerKnown = (runtime, root) => {
   const ownership = readOwnership(runtime, root);
   return ownership?.ok === true && ownership.value.components.some((component) => component.owner !== "");
 };
+var withDerivedCost = (runtime, root, context) => {
+  if (context.cost !== void 0) return context;
+  const cost2 = readMonthlyCost(runtime, root);
+  return cost2 === void 0 ? context : { ...context, cost: { value: monthlySummary(cost2), origin: "inferred" } };
+};
 var missingContext = (runtime, root, context) => CONTEXT_QUESTIONS.filter((question) => {
   if (question === "stage") return context.stage?.origin !== "stated";
   if (question === "deploy") return context.deploy === void 0 && readLevel(runtime, root) === void 0;
   if (question === "maintains") return context.maintains === void 0 && !ownerKnown(runtime, root);
-  return context.cost === void 0;
+  return withDerivedCost(runtime, root, context).cost === void 0;
 });
 var askedContext = (runtime, paths) => {
   const raw = readJsonFile(runtime, paths.cache(ASKED_FILE2));
@@ -67429,6 +67488,47 @@ var goImports2 = (text45) => [
     ...[...text45.matchAll(GO_IMPORT_LINE)].map((match) => match[1] ?? "")
   ])
 ].filter((item2) => item2 !== "");
+var JAVA_PACKAGES = {
+  okhttp3: "com.squareup.okhttp3:okhttp",
+  "org.apache.http": "org.apache.httpcomponents:httpclient",
+  "org.apache.hc.client5": "org.apache.httpcomponents.client5:httpclient5",
+  retrofit2: "com.squareup.retrofit2:retrofit",
+  "org.asynchttpclient": "org.asynchttpclient:async-http-client",
+  "kong.unirest": "com.konghq:unirest-java",
+  "org.joda.time": "joda-time:joda-time",
+  "org.hibernate.validator": "org.hibernate.validator:hibernate-validator",
+  "ch.qos.logback": "ch.qos.logback:logback-classic",
+  "org.apache.logging.log4j": "org.apache.logging.log4j:log4j-core",
+  "redis.clients.jedis": "redis.clients:jedis",
+  "io.lettuce.core": "io.lettuce:lettuce-core",
+  "com.github.benmanes.caffeine": "com.github.ben-manes.caffeine:caffeine",
+  "org.apache.kafka": "org.apache.kafka:kafka-clients",
+  "com.rabbitmq.client": "com.rabbitmq:amqp-client",
+  "org.hibernate": "org.hibernate.orm:hibernate-core",
+  "org.apache.ibatis": "org.mybatis:mybatis",
+  "org.jooq": "org.jooq:jooq",
+  "org.junit.jupiter": "org.junit.jupiter:junit-jupiter",
+  "org.junit": "junit:junit",
+  "org.testng": "org.testng:testng",
+  "org.springframework.web": "org.springframework.boot:spring-boot-starter-web",
+  "io.javalin": "io.javalin:javalin",
+  "io.micronaut.http.server": "io.micronaut:micronaut-http-server-netty"
+};
+var JAVA_IMPORT = /^\s*import\s+(?:static\s+)?([\w.]+)/gm;
+var JVM_SOURCE = /\.(java|kt)$/;
+var javaArtifactOf = (name) => {
+  const parts = name.split(".");
+  const prefix2 = parts.map((_, index) => parts.slice(0, parts.length - index).join(".")).find((candidate2) => Object.hasOwn(JAVA_PACKAGES, candidate2));
+  return prefix2 === void 0 ? void 0 : JAVA_PACKAGES[prefix2];
+};
+var javaImports = (text45) => [
+  ...new Set(
+    [...text45.matchAll(JAVA_IMPORT)].flatMap((match) => {
+      const artifact = javaArtifactOf(match[1] ?? "");
+      return artifact === void 0 ? [] : [artifact];
+    })
+  )
+];
 
 // src/guardian/roles.ts
 var ROLES = {
@@ -80092,6 +80192,7 @@ var guardianReportCommand = {
 // src/guardian/existing.ts
 var MANIFEST2 = /(^|\/)(package\.json|requirements\.txt|go\.mod|pom\.xml|build\.gradle(\.kts)?)$/;
 var MAX_FILES10 = 2e3;
+var isSource = (file) => isCode(file) || JVM_SOURCE.test(file) && !SKIPPED_PATH.test(file);
 var lines9 = (text45) => (text45 ?? "").split("\n").map((line14) => line14.trim()).filter((line14) => line14 !== "");
 var manifestsAt = (runtime, git5, root, base, files) => {
   const now = files.flatMap((file) => {
@@ -80122,7 +80223,7 @@ var diffSnapshot = (runtime, paths, base) => {
     ...manifestsAt(runtime, git5, paths.root, base, manifests),
     addedFiles,
     changedFiles: changedFiles5,
-    otherFiles: tracked2.filter((file) => isCode(file) && !added.has(file)).slice(0, MAX_FILES10)
+    otherFiles: tracked2.filter((file) => isSource(file) && !added.has(file)).slice(0, MAX_FILES10)
   };
 };
 var dependencyMatches = (snap) => snap.addedDeps.flatMap((dep) => {
@@ -80133,10 +80234,11 @@ var dependencyMatches = (snap) => snap.addedDeps.flatMap((dep) => {
 var importsIn2 = (runtime, root, file) => {
   const text45 = runtime.readText(toAbsolutePath(file, root));
   if (!text45.ok) return [];
-  return file.endsWith(".go") ? goImports2(text45.value) : importedPackages(text45.value);
+  if (file.endsWith(".go")) return goImports2(text45.value);
+  return JVM_SOURCE.test(file) ? javaImports(text45.value) : importedPackages(text45.value);
 };
 var importMatches = (runtime, root, snap) => {
-  const used = snap.addedFiles.filter(isCode).flatMap(
+  const used = snap.addedFiles.filter(isSource).flatMap(
     (file) => importsIn2(runtime, root, file).flatMap((name) => {
       const role = roleOf2(name);
       return role === void 0 ? [] : [{ file, name, role }];
@@ -80236,7 +80338,11 @@ var proportionReport = (t, weight2, context, proportion, request) => {
       budget: proportion.budget,
       stage
     }),
-    evidence: [...weight2.evidence, `${GOALS_FILE}: context.stage ${stage} (${context.stage?.origin ?? "missing"})`],
+    evidence: [
+      ...weight2.evidence,
+      `${GOALS_FILE}: context.stage ${stage} (${context.stage?.origin ?? "missing"})`,
+      ...context.cost === void 0 ? [] : [`context.cost ${context.cost.value} (${context.cost.origin})`]
+    ],
     assumptions: proportion.askScale ? [t("guardian.weigh.scale_unknown")] : proportion.problem.scale,
     consequences: t("guardian.trigger.proportionality.consequences"),
     alternatives: [
@@ -80311,7 +80417,7 @@ var decidedConcept = (runtime, paths) => (concept) => planFiles2(runtime, paths.
 var scanChange = (runtime, t, paths, base) => {
   const task = activeTask(runtime, paths);
   const goal = task?.contract.goal ?? "";
-  const context = companyContext(readGoals(runtime, paths.root));
+  const context = withDerivedCost(runtime, paths.root, companyContext(readGoals(runtime, paths.root)));
   const snap = diffSnapshot(runtime, paths, base);
   const weight2 = solutionWeight(
     {
@@ -86289,7 +86395,7 @@ var withProject = (ctx, run11) => {
     exitCode: ExitCode.NotConfigured
   }) : run11(fmPaths(root));
 };
-var money2 = (usd) => `$${usd.toFixed(2)}`;
+var money2 = (usd2) => `$${usd2.toFixed(2)}`;
 var cappedLine = (ctx, paths) => {
   const spent = spentToday(ctx.runtime, paths);
   const cap = maxUsdPerDay(ctx.runtime, paths);
@@ -86539,7 +86645,7 @@ var probeForgetCommand = {
 // src/commands/provider.ts
 var ENABLE_USAGE = "finitemonkey provider enable <kind> [--yes]";
 var DISABLE_USAGE = "finitemonkey provider disable <kind>";
-var money3 = (usd) => `$${usd.toFixed(2)}`;
+var money3 = (usd2) => `$${usd2.toFixed(2)}`;
 var pathsOf5 = (ctx) => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 var badKind = (ctx, usage2, value2) => failureFrom(
   ctx.t,

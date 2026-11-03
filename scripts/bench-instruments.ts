@@ -4,7 +4,7 @@ import { conceitosLog } from "../src/conceitos/judge-log.js";
 import { isRecord, type JsonObject } from "../src/core/parsed.js";
 import { parseEntry } from "../src/judge/parse.js";
 import { levelOf } from "../src/perfil/types.js";
-import { canonConcept, conceptDomainOr, touchesDeclared } from "./bench-concepts.js";
+import { type ConceptResolver, resolverAt } from "./bench-concepts.js";
 import { type KnowledgeBand, type Level, PERFIL_DOMAINS } from "./bench-family.js";
 import { splitsAgreement } from "./bench-splits.js";
 import { json, lines, records, str, unique, yaml } from "./bench-state.js";
@@ -32,8 +32,6 @@ const JUDGE_BAND: Readonly<Record<KnowledgeBand, string>> = {
 };
 const MOVE_LEVELS: ReadonlySet<string> = new Set(["predicted", "used", "fixed"]);
 const PROOF_KINDS: ReadonlySet<string> = new Set(["prediction_right", "own_change", "own_repair", "check_right"]);
-
-const conceptDomain = (concept: string): string => conceptDomainOr(concept, GENERAL);
 
 const truthOf = (truth: GroundTruth, domain: string): KnowledgeBand | undefined => truth.knowledge[domain];
 
@@ -74,14 +72,14 @@ const perfilOf = (dir: string, truth: GroundTruth): JsonObject => {
   };
 };
 
-const xrayOf = (dir: string, truth: GroundTruth): JsonObject => {
+const xrayOf = (dir: string, truth: GroundTruth, resolver: ConceptResolver): JsonObject => {
   const xray = json(dir, "xray.json");
   if (xray === undefined) return { present: false, expected: null, observed: [], verdict: "absent" };
   const items = records(xray["items"]);
   const concepts = (item: JsonObject): readonly string[] =>
     records(item["concepts"]).flatMap((entry) => (typeof entry["concept"] === "string" ? [entry["concept"]] : []));
   const touching =
-    truth.fmConcepts.length === 0 ? items : items.filter((item) => touchesDeclared(truth.fmConcepts, concepts(item)));
+    truth.fmConcepts.length === 0 ? items : items.filter((item) => resolver.touches(truth.fmConcepts, concepts(item)));
   const observed = unique(touching.flatMap((item) => (typeof item["band"] === "string" ? [item["band"]] : [])));
   const band = truthOf(truth, truth.fmDomain);
   const expected = band === undefined ? null : XRAY_BAND[band];
@@ -157,7 +155,8 @@ interface Fired {
   readonly domain: string;
 }
 
-const firedOf = (dir: string): readonly Fired[] => {
+const firedOf = (dir: string, resolver: ConceptResolver): readonly Fired[] => {
+  const conceptDomain = (concept: string): string => resolver.domainOr(concept, GENERAL);
   const predicted = lines(dir, "log.jsonl")
     .filter((line) => line["event"] === "predict.asked")
     .map((line) => str(line["concept"]) ?? "")
@@ -185,8 +184,8 @@ const firedOf = (dir: string): readonly Fired[] => {
   return [...predicted, ...pending, ...probes, ...judged];
 };
 
-const probesOf = (dir: string, truth: GroundTruth): JsonObject => {
-  const fired = firedOf(dir);
+const probesOf = (dir: string, truth: GroundTruth, resolver: ConceptResolver): JsonObject => {
+  const fired = firedOf(dir, resolver);
   const hits = fired.filter((item) => truthOf(truth, item.domain) === "beyond");
   const falsePositives = fired.filter((item) => truthOf(truth, item.domain) === "within");
   const shouldFire = truthOf(truth, truth.fmDomain) === "beyond";
@@ -207,7 +206,8 @@ const conceptEvents = (dir: string): readonly JsonObject[] => {
   return [...legacy, ...log.events.map((event): JsonObject => ({ ...event }))];
 };
 
-const trajectoryOf = (dir: string): JsonObject => {
+const trajectoryOf = (dir: string, resolver: ConceptResolver): JsonObject => {
+  const canonConcept = resolver.canon;
   const events = conceptEvents(dir);
   const book = yaml(dir, "conceitos.yml");
   const levels = isRecord(book?.["concepts"]) ? book["concepts"] : {};
@@ -226,7 +226,8 @@ const trajectoryOf = (dir: string): JsonObject => {
     );
   const bookMoved = Object.entries(levels)
     .filter(([, entry]) => isRecord(entry) && MOVE_LEVELS.has(str(entry["level"]) ?? ""))
-    .map(([concept]) => canonConcept(concept));
+    .map(([concept]) => canonConcept(concept))
+    .filter((id) => id !== "");
   const evidenceMoved = unique(events.map((event) => canonConcept(event["concept"])).filter((id) => id !== "")).filter(
     positive,
   );
@@ -239,7 +240,7 @@ const trajectoryOf = (dir: string): JsonObject => {
       typeof event["weight"] === "number" &&
       event["weight"] > 0,
   ).length;
-  const domains = unique(moved.map(conceptDomain));
+  const domains = unique(moved.map((concept) => resolver.domainOr(concept, GENERAL)));
   const verdict =
     withoutProof.length > 0 || agentCredit > 0
       ? "moved-without-proof"
@@ -293,16 +294,17 @@ const judgeOf = (dir: string, truth: GroundTruth): JsonObject => {
 
 export const scoreInstruments = (fmDir: string | undefined, truth: GroundTruth): JsonObject => {
   if (fmDir === undefined || !existsSync(fmDir)) return { schema: INSTRUMENTS_SCHEMA, collected: false };
+  const resolver = resolverAt(fmDir);
   return {
     schema: INSTRUMENTS_SCHEMA,
     collected: true,
     fmDomain: truth.fmDomain,
     truth: truthOf(truth, truth.fmDomain) ?? null,
     perfil: perfilOf(fmDir, truth),
-    xray: xrayOf(fmDir, truth),
+    xray: xrayOf(fmDir, truth, resolver),
     blindBand: blindBandOf(fmDir, truth),
-    probes: probesOf(fmDir, truth),
-    trajectory: trajectoryOf(fmDir),
+    probes: probesOf(fmDir, truth, resolver),
+    trajectory: trajectoryOf(fmDir, resolver),
     judge: judgeOf(fmDir, truth),
     splits: splitsAgreement(fmDir, truth),
   };

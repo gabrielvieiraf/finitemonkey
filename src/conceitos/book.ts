@@ -58,7 +58,7 @@ const entryOf = (raw: unknown): ConceptEntry | undefined => {
   };
 };
 
-const aliasesOf = (raw: unknown): Aliases => {
+export const aliasesOf = (raw: unknown): Aliases => {
   if (!isRecord(raw)) return {};
   return Object.fromEntries(
     Object.entries(raw).flatMap(([from, to]): readonly (readonly [string, ConceptId | null])[] => {

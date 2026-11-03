@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
 import { parseCsv } from "../src/cost/csv.js";
+import { readMonthlyCost } from "../src/cost/monthly.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cliJson, field, ROOT } from "./support.js";
 
@@ -108,6 +109,28 @@ describe("finitemonkey cost", () => {
     const total = rows.findIndex((row) => row[0] === "total_cost_brl") + 1;
     assert.ok(Math.abs(base(total) - (base(unit) * 10000 + 300)) < 1e-6);
     assert.ok(parseCsv(repo.read("docs/plan/01-cost-limits.csv")).length > 1);
+    assert.equal((await cliJson(["cost", "check"], { cwd: repo.root, runtime: runtime() })).code, 0);
+  });
+
+  it("writes the monthly cost of each FACT in USD, and the guardian reads it", async () => {
+    const repo = makeRepo({ "README.md": "# app\n" });
+    repos.push(repo);
+    await cliJson(["cost", "init"], { cwd: repo.root, runtime: runtime() });
+    spawnSync(process.execPath, [join(repo.root, "docs", "plan", "01-cost-model.mjs")], { encoding: "utf8" });
+    const rows = parseCsv(repo.read("docs/plan/01-cost-monthly.csv"));
+    assert.deepEqual(rows[0], ["fact", "unit", "base", "conservative", "readable"]);
+    const monthly = readMonthlyCost(runtime(), repo.root);
+    assert.ok(monthly !== undefined);
+    assert.equal(monthly.file, "docs/plan/01-cost-monthly.csv");
+    const of = (fact: string) => monthly.facts.find((item) => item.fact === fact);
+    assert.ok(Math.abs((of("price_per_call_usd")?.base ?? 0) - 0.002 * 3 * 10000) < 1e-9);
+    assert.ok(Math.abs((of("price_per_call_usd")?.conservative ?? 0) - 0.003 * 5 * 25000) < 1e-9);
+    assert.ok(Math.abs((of("platform_fixed_brl")?.base ?? 0) - 300 / 5.4) < 1e-9);
+    assert.ok(Math.abs((of("tax_on_foreign_services")?.base ?? 0) - 60 * 0.0638) < 1e-9);
+    assert.match(
+      repo.read("docs/plan/01-cost-model.md"),
+      /^## Monthly cost per FACT, in USD \(base \/ conservative\)$/m,
+    );
     assert.equal((await cliJson(["cost", "check"], { cwd: repo.root, runtime: runtime() })).code, 0);
   });
 

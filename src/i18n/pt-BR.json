@@ -955,6 +955,7 @@
   "cost.report.unit": "Custo unitário por operação (base / conservador)",
   "cost.report.fixed": "Custo fixo da plataforma (base / conservador)",
   "cost.report.break_even": "Ponto de equilíbrio (base / conservador)",
+  "cost.report.monthly": "Custo mensal por FACT, em USD (base / conservador)",
   "cost.report.scenarios": "Cenários",
   "cost.report.base": "base",
   "cost.report.conservative": "conservador",

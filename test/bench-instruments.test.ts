@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
 
-import { conceptDomainOr, touchesDeclared } from "../scripts/bench-concepts.js";
+import { conceptDomainOr, conceptResolver, touchesDeclared } from "../scripts/bench-concepts.js";
 import { loadPersonas, type Persona } from "../scripts/bench-family.js";
 import { type GroundTruth, scoreInstruments } from "../scripts/bench-instruments.js";
 import { selfReportYaml } from "../scripts/bench-onboard.js";
@@ -259,5 +259,32 @@ describe("instrument scoring against the persona's ground truth", () => {
     assert.equal(conceptDomainOr("secret-in-code", "general"), "security");
     assert.equal(conceptDomainOr("research/health/supplement-evidence", "general"), "research");
     assert.equal(conceptDomainOr("unplaced", "general"), "general");
+  });
+  it("resolves declared concepts through the person's renames, merges and forgets, as the product does", () => {
+    const resolver = conceptResolver({
+      "backend/money/rounding": "backend/money/precision",
+      "backend/api/endpoint": null,
+    });
+    assert.equal(resolver.touches(["backend/money/rounding"], ["backend/money/precision"]), true);
+    assert.equal(resolver.touches(["api"], ["backend/api/endpoint"]), false);
+    assert.equal(resolver.canon("api"), "");
+    assert.equal(resolver.domainOr("backend/money/rounding", "general"), "backend");
+    const truth: GroundTruth = {
+      knowledge: layperson().knowledge,
+      fmDomain: "backend",
+      fmConcepts: ["backend/money/rounding"],
+    };
+    const xray = {
+      items: [{ concepts: [{ concept: "backend/money/precision", state: "beyond" }], band: "beyond" }],
+    };
+    const renamed = scoreInstruments(
+      fixture({
+        "xray.json": xray,
+        "conceitos.yml": "aliases:\n  backend/money/rounding: backend/money/precision\n",
+      }),
+      truth,
+    );
+    assert.equal(field(renamed, "xray", "touching"), 1);
+    assert.equal(field(scoreInstruments(fixture({ "xray.json": xray }), truth), "xray", "touching"), 0);
   });
 });
