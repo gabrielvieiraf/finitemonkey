@@ -102,8 +102,13 @@ const pointRows = (trajectory: DomainTrajectory, peak: number, rows: number): re
     return level === null ? null : rowOf(level, peak, rows);
   });
 
+const SEPARATED = 4;
+const SEPARATOR: TermCell = { glyph: " ", band: null, ink: null };
+
+const centerOf = (perWeek: number): number => Math.floor((perWeek - (perWeek >= SEPARATED ? 1 : 0)) / 2);
+
 const trailRow = (points: readonly (number | null)[], column: number, perWeek: number): number | null => {
-  const center = Math.floor(perWeek / 2);
+  const center = centerOf(perWeek);
   const index = Math.floor((column - center) / perWeek);
   const from = points[index];
   const to = points[index + 1];
@@ -116,12 +121,13 @@ const trailRow = (points: readonly (number | null)[], column: number, perWeek: n
 export const gridOf = (trajectory: DomainTrajectory, size: GridSize): readonly (readonly TermCell[])[] => {
   const peak = peakOf(trajectory);
   const points = pointRows(trajectory, peak, size.rows);
-  const center = Math.floor(size.perWeek / 2);
+  const center = centerOf(size.perWeek);
   return Array.from({ length: size.rows }, (_, row) => {
     const level = (peak * (size.rows - row - 0.5)) / size.rows;
     return trajectory.weeks.flatMap((week, index) =>
       Array.from({ length: size.perWeek }, (_unused, offset): TermCell => {
-        const cell = bandCell(week, level, peak);
+        const separator = size.perWeek >= SEPARATED && offset === size.perWeek - 1;
+        const cell = separator ? SEPARATOR : bandCell(week, level, peak);
         if (offset === center && points[index] === row) return pointCell(trajectory, week, cell.band);
         if (trailRow(points, index * size.perWeek + offset, size.perWeek) === row)
           return { glyph: "·", band: cell.band, ink: "line" };

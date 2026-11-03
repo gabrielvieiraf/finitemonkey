@@ -85162,16 +85162,16 @@ var taskTrustCommand = {
 var TERM_PALETTE = {
   dark: {
     band: {
-      alone: 1788469,
-      proximal: 2112102,
-      unstable: 4009301,
-      blindCovered: 4864540,
-      blindBare: 5907488,
-      blind: 3876643,
-      beyond: 1646117
+      alone: 3111506,
+      proximal: 3103902,
+      unstable: 6112899,
+      blindCovered: 9071135,
+      blindBare: 10107699,
+      blind: 7030336,
+      beyond: 2830651
     },
-    ink: { line: 16761421, ricochet: 16747132, held: 7332012, faint: 7305348 },
-    gap: 2436150,
+    ink: { line: 16765806, ricochet: 16777215, held: 9433284, faint: 8226451 },
+    gap: 4870752,
     select: 15133166
   },
   light: {
@@ -85268,8 +85268,11 @@ var pointRows = (trajectory2, peak, rows3) => trajectory2.weeks.map((week) => {
   const level = markIn(trajectory2.marks, week.week) === void 0 ? week.work : markLevel(week);
   return level === null ? null : rowOf5(level, peak, rows3);
 });
+var SEPARATED = 4;
+var SEPARATOR4 = { glyph: " ", band: null, ink: null };
+var centerOf = (perWeek) => Math.floor((perWeek - (perWeek >= SEPARATED ? 1 : 0)) / 2);
 var trailRow = (points, column2, perWeek) => {
-  const center2 = Math.floor(perWeek / 2);
+  const center2 = centerOf(perWeek);
   const index = Math.floor((column2 - center2) / perWeek);
   const from = points[index];
   const to = points[index + 1];
@@ -85281,12 +85284,13 @@ var trailRow = (points, column2, perWeek) => {
 var gridOf = (trajectory2, size) => {
   const peak = peakOf(trajectory2);
   const points = pointRows(trajectory2, peak, size.rows);
-  const center2 = Math.floor(size.perWeek / 2);
+  const center2 = centerOf(size.perWeek);
   return Array.from({ length: size.rows }, (_, row4) => {
     const level = peak * (size.rows - row4 - 0.5) / size.rows;
     return trajectory2.weeks.flatMap(
       (week, index) => Array.from({ length: size.perWeek }, (_unused, offset) => {
-        const cell4 = bandCell(week, level, peak);
+        const separator = size.perWeek >= SEPARATED && offset === size.perWeek - 1;
+        const cell4 = separator ? SEPARATOR4 : bandCell(week, level, peak);
         if (offset === center2 && points[index] === row4) return pointCell(trajectory2, week, cell4.band);
         if (trailRow(points, index * size.perWeek + offset, size.perWeek) === row4)
           return { glyph: "·", band: cell4.band, ink: "line" };
@@ -85335,14 +85339,6 @@ var rgb = (color) => [
   color & 255
 ];
 var PICKED = /* @__PURE__ */ new Map([
-  [1788469, 22],
-  [2112102, 17],
-  [4009301, 60],
-  [4864540, 58],
-  [5907488, 52],
-  [3876643, 95],
-  [1646117, 234],
-  [2436150, 238],
   [13625306, 151],
   [13491186, 153],
   [14272232, 183],
@@ -85388,12 +85384,15 @@ var PLAIN = {
 };
 var PLAIN_GLYPH = { "●": "*", "·": "+", "✕": "X", "◉": "O" };
 var plainCell = (cell4) => cell4.glyph === " " ? cell4.band === null ? " " : PLAIN[cell4.band] : PLAIN_GLYPH[cell4.glyph] ?? cell4.glyph;
+var HATCH = "╱";
 var cellStyle = (cell4, theme, depth) => {
   const palette = termPalette(theme);
-  const bg = cell4.band === null ? null : cell4.band === "gap" ? palette.gap : palette.band[cell4.band];
+  if (cell4.band === "gap" && cell4.ink === null) return style(palette.gap, null, depth, false);
+  const bg = cell4.band === null || cell4.band === "gap" ? null : palette.band[cell4.band];
   const fg = cell4.ink === null ? null : palette.ink[cell4.ink];
   return style(fg, bg, depth, cell4.ink !== null && cell4.glyph !== "·");
 };
+var glyphOf = (cell4) => cell4.band === "gap" && cell4.glyph === " " ? HATCH : cell4.glyph;
 var colorRow = (cells, theme, depth) => {
   let out = "";
   let current2;
@@ -85401,15 +85400,23 @@ var colorRow = (cells, theme, depth) => {
     const next3 = cellStyle(cell4, theme, depth);
     if (next3 !== current2) out += `${current2 === void 0 ? "" : RESET2}${next3}`;
     current2 = next3;
-    out += cell4.glyph;
+    out += glyphOf(cell4);
   }
   return `${out}${RESET2}`;
 };
 var faint = (body2, options2) => options2.depth === "none" || body2 === "" ? body2 : `${style(termPalette(options2.theme).ink.faint, null, options2.depth, false)}${body2}${RESET2}`;
-var blockOf4 = (trajectory2, options2) => {
+var CHART_COLUMNS = 48;
+var widthPerWeek = (weeks) => Math.min(10, Math.max(5, Math.floor(CHART_COLUMNS / Math.max(1, weeks))));
+var fromFirstEvidence = (trajectory2) => {
+  const researched = new Set((trajectory2.research ?? []).map((mark2) => mark2.week));
+  const first2 = trajectory2.weeks.findIndex((week) => filled(week) || researched.has(week.week));
+  return first2 <= 0 ? trajectory2 : { ...trajectory2, weeks: trajectory2.weeks.slice(first2) };
+};
+var blockOf4 = (whole2, options2) => {
   const labels = options2.labels ?? ENGLISH_TERM;
+  const trajectory2 = fromFirstEvidence(whole2);
   if (trajectory2.status === "no_data") return [`${trajectory2.domain}: ${labels.noData(trajectory2.evidence)}`];
-  const size = options2.size ?? { rows: 12, perWeek: 4 };
+  const size = options2.size ?? { rows: 12, perWeek: widthPerWeek(trajectory2.weeks.length) };
   const grid = gridOf(trajectory2, size);
   const names3 = rowLabels(trajectory2, size.rows, labels);
   const head = labels.head(
@@ -85443,7 +85450,8 @@ var laneLines = (trajectory2, perWeek, options2) => {
 var swatch = (band, options2) => {
   if (options2.depth === "none") return PLAIN[band] === " " ? "' '" : PLAIN[band];
   const palette = termPalette(options2.theme);
-  return `${style(null, band === "gap" ? palette.gap : palette.band[band], options2.depth, false)}  ${RESET2}`;
+  if (band === "gap") return `${style(palette.gap, null, options2.depth, false)}${HATCH}${HATCH}${RESET2}`;
+  return `${style(null, palette.band[band], options2.depth, false)}  ${RESET2}`;
 };
 var inkSwatch = (glyph, ink, options2) => options2.depth === "none" ? PLAIN_GLYPH[glyph] ?? glyph : `${style(termPalette(options2.theme).ink[ink], null, options2.depth, true)}${glyph}${RESET2}`;
 var splitLines3 = (labels, drawn) => {
@@ -87279,9 +87287,9 @@ var prProvenanceCommand = {
 };
 
 // src/team/history.ts
-var SEPARATOR4 = "";
+var SEPARATOR5 = "";
 var FIELD2 = "";
-var parseLog4 = (text45) => text45.split(SEPARATOR4).map((chunk) => chunk.trim()).filter((chunk) => chunk !== "").flatMap((chunk) => {
+var parseLog4 = (text45) => text45.split(SEPARATOR5).map((chunk) => chunk.trim()).filter((chunk) => chunk !== "").flatMap((chunk) => {
   const [header3 = "", ...rest] = chunk.split("\n");
   const [sha, at8, email, subject2] = header3.split(FIELD2);
   if (sha === void 0 || at8 === void 0 || email === void 0 || subject2 === void 0) return [];
@@ -87290,7 +87298,7 @@ var parseLog4 = (text45) => text45.split(SEPARATOR4).map((chunk) => chunk.trim()
 });
 var readCommits = (runtime, root) => {
   const result2 = runtime.git(
-    ["log", "--no-merges", "--reverse", `--format=${SEPARATOR4}%H${FIELD2}%cI${FIELD2}%ae${FIELD2}%s`, "--name-only"],
+    ["log", "--no-merges", "--reverse", `--format=${SEPARATOR5}%H${FIELD2}%cI${FIELD2}%ae${FIELD2}%s`, "--name-only"],
     root
   );
   return result2.ok ? parseLog4(result2.stdout) : [];
@@ -90759,7 +90767,7 @@ var parseStatusInput = (raw) => {
 };
 
 // src/statusline/render.ts
-var SEPARATOR5 = " | ";
+var SEPARATOR6 = " | ";
 var segmentText = (t, segment2) => [
   "fm",
   ...segment2.task === void 0 ? [] : [segment2.task],
@@ -90781,7 +90789,7 @@ var fit2 = (line13, columns) => {
 var composeLine = (wrapped, segment2, columns) => {
   const lines11 = wrapped === "" ? [] : wrapped.split(/\r?\n/);
   const last = lines11.pop();
-  const joined2 = last === void 0 || last.trim() === "" ? segment2 : `${last}${SEPARATOR5}${segment2}`;
+  const joined2 = last === void 0 || last.trim() === "" ? segment2 : `${last}${SEPARATOR6}${segment2}`;
   return [...lines11, joined2].map((line13) => fit2(line13, columns)).join("\n");
 };
 

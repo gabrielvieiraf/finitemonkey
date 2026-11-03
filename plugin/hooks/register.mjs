@@ -736,16 +736,16 @@ var SVG_TOKENS = {
 var TERM_PALETTE = {
   dark: {
     band: {
-      alone: 1788469,
-      proximal: 2112102,
-      unstable: 4009301,
-      blindCovered: 4864540,
-      blindBare: 5907488,
-      blind: 3876643,
-      beyond: 1646117
+      alone: 3111506,
+      proximal: 3103902,
+      unstable: 6112899,
+      blindCovered: 9071135,
+      blindBare: 10107699,
+      blind: 7030336,
+      beyond: 2830651
     },
-    ink: { line: 16761421, ricochet: 16747132, held: 7332012, faint: 7305348 },
-    gap: 2436150,
+    ink: { line: 16765806, ricochet: 16777215, held: 9433284, faint: 8226451 },
+    gap: 4870752,
     select: 15133166
   },
   light: {
@@ -1074,8 +1074,11 @@ var pointRows = (trajectory, peak, rows) => trajectory.weeks.map((week) => {
   const level = markIn(trajectory.marks, week.week) === void 0 ? week.work : markLevel(week);
   return level === null ? null : rowOf(level, peak, rows);
 });
+var SEPARATED = 4;
+var SEPARATOR = { glyph: " ", band: null, ink: null };
+var centerOf = (perWeek) => Math.floor((perWeek - (perWeek >= SEPARATED ? 1 : 0)) / 2);
 var trailRow = (points, column, perWeek) => {
-  const center = Math.floor(perWeek / 2);
+  const center = centerOf(perWeek);
   const index = Math.floor((column - center) / perWeek);
   const from = points[index];
   const to = points[index + 1];
@@ -1087,12 +1090,13 @@ var trailRow = (points, column, perWeek) => {
 var gridOf = (trajectory, size) => {
   const peak = peakOf(trajectory);
   const points = pointRows(trajectory, peak, size.rows);
-  const center = Math.floor(size.perWeek / 2);
+  const center = centerOf(size.perWeek);
   return Array.from({ length: size.rows }, (_, row2) => {
     const level = peak * (size.rows - row2 - 0.5) / size.rows;
     return trajectory.weeks.flatMap(
       (week, index) => Array.from({ length: size.perWeek }, (_unused, offset) => {
-        const cell = bandCell(week, level, peak);
+        const separator = size.perWeek >= SEPARATED && offset === size.perWeek - 1;
+        const cell = separator ? SEPARATOR : bandCell(week, level, peak);
         if (offset === center && points[index] === row2) return pointCell(trajectory, week, cell.band);
         if (trailRow(points, index * size.perWeek + offset, size.perWeek) === row2)
           return { glyph: "·", band: cell.band, ink: "line" };
@@ -1133,14 +1137,6 @@ var rgb = (color) => [
   color & 255
 ];
 var PICKED = /* @__PURE__ */ new Map([
-  [1788469, 22],
-  [2112102, 17],
-  [4009301, 60],
-  [4864540, 58],
-  [5907488, 52],
-  [3876643, 95],
-  [1646117, 234],
-  [2436150, 238],
   [13625306, 151],
   [13491186, 153],
   [14272232, 183],
@@ -1186,12 +1182,15 @@ var PLAIN = {
 };
 var PLAIN_GLYPH = { "●": "*", "·": "+", "✕": "X", "◉": "O" };
 var plainCell = (cell) => cell.glyph === " " ? cell.band === null ? " " : PLAIN[cell.band] : PLAIN_GLYPH[cell.glyph] ?? cell.glyph;
+var HATCH = "╱";
 var cellStyle = (cell, theme, depth) => {
   const palette = termPalette(theme);
-  const bg = cell.band === null ? null : cell.band === "gap" ? palette.gap : palette.band[cell.band];
+  if (cell.band === "gap" && cell.ink === null) return style(palette.gap, null, depth, false);
+  const bg = cell.band === null || cell.band === "gap" ? null : palette.band[cell.band];
   const fg = cell.ink === null ? null : palette.ink[cell.ink];
   return style(fg, bg, depth, cell.ink !== null && cell.glyph !== "·");
 };
+var glyphOf = (cell) => cell.band === "gap" && cell.glyph === " " ? HATCH : cell.glyph;
 var colorRow = (cells, theme, depth) => {
   let out = "";
   let current;
@@ -1199,15 +1198,23 @@ var colorRow = (cells, theme, depth) => {
     const next = cellStyle(cell, theme, depth);
     if (next !== current) out += `${current === void 0 ? "" : RESET}${next}`;
     current = next;
-    out += cell.glyph;
+    out += glyphOf(cell);
   }
   return `${out}${RESET}`;
 };
 var faint = (body, options) => options.depth === "none" || body === "" ? body : `${style(termPalette(options.theme).ink.faint, null, options.depth, false)}${body}${RESET}`;
-var blockOf = (trajectory, options) => {
+var CHART_COLUMNS = 48;
+var widthPerWeek = (weeks) => Math.min(10, Math.max(5, Math.floor(CHART_COLUMNS / Math.max(1, weeks))));
+var fromFirstEvidence = (trajectory) => {
+  const researched = new Set((trajectory.research ?? []).map((mark) => mark.week));
+  const first = trajectory.weeks.findIndex((week) => filled(week) || researched.has(week.week));
+  return first <= 0 ? trajectory : { ...trajectory, weeks: trajectory.weeks.slice(first) };
+};
+var blockOf = (whole, options) => {
   const labels = options.labels ?? ENGLISH_TERM;
+  const trajectory = fromFirstEvidence(whole);
   if (trajectory.status === "no_data") return [`${trajectory.domain}: ${labels.noData(trajectory.evidence)}`];
-  const size = options.size ?? { rows: 12, perWeek: 4 };
+  const size = options.size ?? { rows: 12, perWeek: widthPerWeek(trajectory.weeks.length) };
   const grid = gridOf(trajectory, size);
   const names = rowLabels(trajectory, size.rows, labels);
   const head = labels.head(
@@ -1241,7 +1248,8 @@ var laneLines = (trajectory, perWeek, options) => {
 var swatch = (band, options) => {
   if (options.depth === "none") return PLAIN[band] === " " ? "' '" : PLAIN[band];
   const palette = termPalette(options.theme);
-  return `${style(null, band === "gap" ? palette.gap : palette.band[band], options.depth, false)}  ${RESET}`;
+  if (band === "gap") return `${style(palette.gap, null, options.depth, false)}${HATCH}${HATCH}${RESET}`;
+  return `${style(null, palette.band[band], options.depth, false)}  ${RESET}`;
 };
 var inkSwatch = (glyph2, ink, options) => options.depth === "none" ? PLAIN_GLYPH[glyph2] ?? glyph2 : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph2}${RESET}`;
 var splitLines2 = (labels, drawn) => {
