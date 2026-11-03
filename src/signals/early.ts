@@ -113,6 +113,10 @@ export const editsSinceRun = (entries: readonly SignalEntry[]): number => {
 
 const NOISE = new Set(["permission", "approved"]);
 
+const TEST_NAME = /^(?:test_)?(.+?)(?:[._-](?:test|spec))?(?:\.[^.]+)+$/;
+
+export const subjectOf = (name: string): string => TEST_NAME.exec(name)?.[1] ?? name;
+
 export const ignoredError = (entries: readonly SignalEntry[], file: string): readonly string[] | undefined => {
   const actions = entries.filter((entry) => !NOISE.has(entry.kind));
   const last = actions.at(-1);
@@ -120,7 +124,10 @@ export const ignoredError = (entries: readonly SignalEntry[], file: string): rea
   if (last?.kind !== "edit" || last.file !== file || before?.kind !== "error") return undefined;
   if (!SHELL_TOOLS.has(before.tool)) return undefined;
   const named = before.files ?? [];
-  return named.length === 0 || named.includes(basename(file)) ? undefined : named;
+  const subject = subjectOf(basename(file));
+  return named.length === 0 || named.some((name) => name === basename(file) || subjectOf(name) === subject)
+    ? undefined
+    : named;
 };
 
 const trigger = (scope: SignalScope, file: string): HookDecision => {

@@ -10,8 +10,9 @@ import type { FmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 import { ALERT_BUDGET_FEATURE, isMuted, recordFiring } from "./budget.js";
 import { experimentArm } from "./experiment.js";
+import { levelMode } from "./levels.js";
 import { pausedFor } from "./pause.js";
-import { type GuardMode, loadPolicy, type Policy, STARTS_IN_SHADOW } from "./policy.js";
+import { type GuardMode, type Level, loadPolicy, type Policy, STARTS_IN_SHADOW } from "./policy.js";
 
 export interface GuardSet {
   readonly id: string;
@@ -57,7 +58,8 @@ export const writeShadow = (runtime: Pick<Runtime, "writeText">, paths: FmPaths,
   runtime.writeText(paths.cache(SHADOW_FILE), `${JSON.stringify(state, null, 2)}\n`);
 };
 
-export type ModeSource = "built-in" | "experiment" | "project" | "user" | "default" | "promoted" | "evolved" | "task";
+export type ModeSource =
+  "built-in" | "experiment" | "project" | "user" | "default" | "level" | "promoted" | "evolved" | "task";
 
 export interface Override {
   readonly source: "project" | "user" | "task";
@@ -72,8 +74,9 @@ export interface GuardResolution {
 
 const STRENGTH: Readonly<Record<GuardMode, number>> = { off: 0, shadow: 1, active: 2 };
 
-const fallback = (id: string, shadow: ShadowState): GuardResolution => {
+const fallback = (id: string, shadow: ShadowState, level: Level): GuardResolution => {
   if (!STARTS_IN_SHADOW.has(id)) return { mode: "active", source: "default", ignored: [] };
+  if (levelMode(id, level) === "active") return { mode: "active", source: "level", ignored: [] };
   return shadow[id]?.promoted === true
     ? { mode: "active", source: "promoted", ignored: [] }
     : { mode: "shadow", source: "default", ignored: [] };
@@ -126,7 +129,7 @@ const baseResolution = (
   if (project === undefined && user === undefined && evolved !== undefined)
     return { mode: evolved, source: "evolved", ignored: [] };
   if (project === undefined)
-    return user === undefined ? fallback(set.id, shadow) : { mode: user, source: "user", ignored: [] };
+    return user === undefined ? fallback(set.id, shadow, policy.level) : { mode: user, source: "user", ignored: [] };
   if (user === undefined || user === project) return { mode: project, source: "project", ignored: [] };
   return STRENGTH[user] > STRENGTH[project]
     ? { mode: user, source: "user", ignored: [] }
@@ -174,7 +177,7 @@ const recordShadow = (input: HookInput, paths: FmPaths, set: GuardSet, policy: P
 const firesAlert = (decision: HookDecision): boolean =>
   decision.kind === "block" || typeof decision.output?.["systemMessage"] === "string";
 
-const MUTABLE: ReadonlySet<ModeSource> = new Set(["default", "promoted", "evolved"]);
+const MUTABLE: ReadonlySet<ModeSource> = new Set(["default", "level", "promoted", "evolved"]);
 
 const muted = (
   input: HookInput,

@@ -114,13 +114,15 @@ describe("reality report and intervention levels", () => {
     assert.equal(denied(await fireHook(repo, "PreToolUse", migrate)), false);
   });
 
-  it("runs without a word on a reversible command and starts in shadow", async () => {
+  it("runs without a word on a reversible command, acts at the default level and only logs at level light", async () => {
     const repo = setup("charge cards");
     assert.equal(
       silent(await fireHook(repo, "PreToolUse", { tool_name: "Bash", tool_input: { command: "npm test" } })),
       true,
     );
-    const shadow = setup("build the mobile app", { ".finitemonkey/policy.yml": "level: standard\n" });
+    const standard = setup("build the mobile app", { ".finitemonkey/policy.yml": "level: standard\n" });
+    assert.equal(denied(await edit(standard, "src/billing/a.ts")), true);
+    const shadow = setup("build the mobile app", { ".finitemonkey/policy.yml": "level: light\n" });
     assert.equal(denied(await edit(shadow, "src/billing/a.ts")), false);
     assert.equal(readDecisions(repoRuntime(), fmPaths(shadow.root)).length, 0);
   });

@@ -7372,6 +7372,40 @@ var stringLeaves = (value2, out = []) => {
   return out;
 };
 
+// src/policy/levels.ts
+var ACTIVE_AT_STANDARD = /* @__PURE__ */ new Set([
+  "guardian-reuse",
+  "quality",
+  "slop",
+  "quality-detectors",
+  "syntax-check",
+  "callers-syntax",
+  "clarify",
+  "premise-check",
+  "divergence-ask",
+  "decision-hold",
+  "early-loops",
+  "fourth-attempt",
+  "assumptions",
+  "reality",
+  "proportionality",
+  "tests-hold",
+  "regression",
+  "red-green",
+  "test-pin",
+  "teach-back",
+  "xray",
+  "probes",
+  "predict-gate",
+  "explain-approval",
+  "secret-context",
+  "untrusted-outward",
+  "bash-writes",
+  "migrate-check",
+  ...JUDGE_GUARDS
+]);
+var levelMode = (id, level) => level === "strict" || level === "standard" && ACTIVE_AT_STANDARD.has(id) ? "active" : "shadow";
+
 // src/policy/pause.ts
 var PAUSE_FILE = "pause.json";
 var readPause = (runtime, paths) => {
@@ -7428,8 +7462,9 @@ var writeShadow = (runtime, paths, state) => {
 `);
 };
 var STRENGTH2 = { off: 0, shadow: 1, active: 2 };
-var fallback = (id, shadow) => {
+var fallback = (id, shadow, level) => {
   if (!STARTS_IN_SHADOW.has(id)) return { mode: "active", source: "default", ignored: [] };
+  if (levelMode(id, level) === "active") return { mode: "active", source: "level", ignored: [] };
   return shadow[id]?.promoted === true ? { mode: "active", source: "promoted", ignored: [] } : { mode: "shadow", source: "default", ignored: [] };
 };
 var ignoring = (resolved3, mode) => ({
@@ -7470,7 +7505,7 @@ var baseResolution = (set2, policy, shadow, arm) => {
   if (project === void 0 && user === void 0 && evolved !== void 0)
     return { mode: evolved, source: "evolved", ignored: [] };
   if (project === void 0)
-    return user === void 0 ? fallback(set2.id, shadow) : { mode: user, source: "user", ignored: [] };
+    return user === void 0 ? fallback(set2.id, shadow, policy.level) : { mode: user, source: "user", ignored: [] };
   if (user === void 0 || user === project) return { mode: project, source: "project", ignored: [] };
   return STRENGTH2[user] > STRENGTH2[project] ? { mode: user, source: "user", ignored: [] } : { mode: project, source: "project", ignored: [{ source: "user", mode: user }] };
 };
@@ -7500,7 +7535,7 @@ var recordShadow = (input, paths, set2, policy, reason) => {
   }
 };
 var firesAlert = (decision2) => decision2.kind === "block" || typeof decision2.output?.["systemMessage"] === "string";
-var MUTABLE = /* @__PURE__ */ new Set(["default", "promoted", "evolved"]);
+var MUTABLE = /* @__PURE__ */ new Set(["default", "level", "promoted", "evolved"]);
 var muted = (input, paths, set2, policy, resolved3, shadow) => {
   const { runtime } = input;
   const state = recordFiring(runtime, paths, set2.id);
@@ -49909,14 +49944,15 @@ ${result2.stderr}`;
   const fresh5 = summary2.failures.filter((name) => !known4.has(name));
   const old = summary2.failures.length - fresh5.length;
   const baselineNote = old > 0 ? [note("gate.note.baseline", { count: old })] : [];
+  const counted4 = summary2.total === void 0 ? {} : { testCount: summary2.total };
   if (summary2.failures.length > 0 && fresh5.length === 0) {
-    return { status: "passed", notes: baselineNote, failures: summary2.failures };
+    return { status: "passed", notes: baselineNote, failures: summary2.failures, ...counted4 };
   }
   const last = ctx.mask(tail(output));
   return {
     status: "failed",
     failures: summary2.failures,
-    ...summary2.total === void 0 ? {} : { testCount: summary2.total },
+    ...counted4,
     notes: [
       note("gate.note.exit", { code: result2.exitCode ?? -1 }),
       ...fresh5.slice(0, MAX_FAILURES2).map((name) => note("gate.note.new_failure", { name: ctx.mask(name) })),
@@ -66462,6 +66498,8 @@ var editsSinceRun = (entries3) => {
   return entries3.slice(lastRun + 1).filter((entry2) => entry2.kind === "edit").length;
 };
 var NOISE2 = /* @__PURE__ */ new Set(["permission", "approved"]);
+var TEST_NAME = /^(?:test_)?(.+?)(?:[._-](?:test|spec))?(?:\.[^.]+)+$/;
+var subjectOf2 = (name) => TEST_NAME.exec(name)?.[1] ?? name;
 var ignoredError = (entries3, file) => {
   const actions2 = entries3.filter((entry2) => !NOISE2.has(entry2.kind));
   const last = actions2.at(-1);
@@ -66469,7 +66507,8 @@ var ignoredError = (entries3, file) => {
   if (last?.kind !== "edit" || last.file !== file || before2?.kind !== "error") return void 0;
   if (!SHELL_TOOLS3.has(before2.tool)) return void 0;
   const named3 = before2.files ?? [];
-  return named3.length === 0 || named3.includes(basename16(file)) ? void 0 : named3;
+  const subject2 = subjectOf2(basename16(file));
+  return named3.length === 0 || named3.some((name) => name === basename16(file) || subjectOf2(name) === subject2) ? void 0 : named3;
 };
 var trigger = (scope2, file) => {
   const { input } = scope2;
@@ -81990,7 +82029,12 @@ var publishedVersion = (runtime, root) => {
   }
   return void 0;
 };
-var featureDefaults = () => new Map(KNOWN_GUARDS.map((id) => [id, STARTS_IN_SHADOW.has(id) ? "shadow" : "active"]));
+var featureDefaults = () => new Map(
+  KNOWN_GUARDS.map((id) => [
+    id,
+    STARTS_IN_SHADOW.has(id) ? levelMode(id, DEFAULT_POLICY.level) : "active"
+  ])
+);
 var commandStatuses = (registry) => new Map(registry.map((spec3) => [spec3.path.join(" "), spec3.status]));
 var localState = (runtime, root, registry, issues2) => ({
   commands: commandStatuses(registry),

@@ -1,6 +1,7 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
-import { KNOWN_GUARDS, STARTS_IN_SHADOW } from "../policy/policy.js";
+import { levelMode } from "../policy/levels.js";
+import { DEFAULT_POLICY, KNOWN_GUARDS, STARTS_IN_SHADOW } from "../policy/policy.js";
 import type { FeatureDefault, IssueFact, ProjectState } from "./resolve.js";
 
 export interface CommandEntry {
@@ -22,7 +23,12 @@ export const publishedVersion = (runtime: Pick<Runtime, "readText">, root: Absol
 };
 
 export const featureDefaults = (): ReadonlyMap<string, FeatureDefault> =>
-  new Map(KNOWN_GUARDS.map((id): [string, FeatureDefault] => [id, STARTS_IN_SHADOW.has(id) ? "shadow" : "active"]));
+  new Map(
+    KNOWN_GUARDS.map((id): [string, FeatureDefault] => [
+      id,
+      STARTS_IN_SHADOW.has(id) ? levelMode(id, DEFAULT_POLICY.level) : "active",
+    ]),
+  );
 
 export const commandStatuses = (registry: readonly CommandEntry[]): ReadonlyMap<string, "ready" | "planned"> =>
   new Map(registry.map((spec): [string, "ready" | "planned"] => [spec.path.join(" "), spec.status]));

@@ -116,8 +116,9 @@ describe("signals: loop fixtures fire and exploration fixtures stay quiet", () =
 
   for (const file of FIXTURE_FILES) {
     const fixture = loadFixture(file);
+    const isolated = (): MemoryFs => projectFs({ ...fixture.files, ".finitemonkey/policy.yml": "level: light\n" });
     it(`${fixture.name} ${fixture.expect === "loop" ? "fires" : "stays quiet"}`, async () => {
-      const outcomes = await replay(fixture);
+      const outcomes = await replay(fixture, isolated());
       for (const outcome of outcomes) assert.equal(outcome.verdict, "allow");
       const lines = injected(outcomes);
       if (fixture.expect === "quiet") {
@@ -125,7 +126,7 @@ describe("signals: loop fixtures fire and exploration fixtures stay quiet", () =
         return;
       }
       assert.equal(lines.length, 1, lines.join("\n"));
-      const fs = projectFs(fixture.files);
+      const fs = isolated();
       await replay(fixture, fs);
       const index = field(
         parseBody(fs.read(toAbsolutePath(join(PROJECT, ".finitemonkey", "signals-index.json"))) ?? "{}"),

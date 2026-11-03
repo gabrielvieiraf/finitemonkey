@@ -81,7 +81,7 @@ describe("assumption register", () => {
   });
 
   it("shows an unverified high-impact assumption before an irreversible step of the task that relies on it", async () => {
-    const repo = setup(policyWith({ assumptions: "active" }));
+    const repo = setup(`level: light\n${policyWith({ assumptions: "active" })}`);
     await cli(["decide", "check"], { cwd: repo.root, runtime: repoRuntime() });
     const migrate = { tool_name: "Bash", tool_input: { command: "npx prisma migrate deploy" } };
     const first = await fireHook(repo, "PreToolUse", migrate);
@@ -93,7 +93,7 @@ describe("assumption register", () => {
   });
 
   it("stays silent once the assumption is verified", async () => {
-    const repo = setup(policyWith({ assumptions: "active" }));
+    const repo = setup(`level: light\n${policyWith({ assumptions: "active" })}`);
     await cli(["decide", "check"], { cwd: repo.root, runtime: repoRuntime() });
     await cli(["guardian", "assume", "verify", "a1", "--evidence", "provider changelog 2026-10-20"], {
       cwd: repo.root,

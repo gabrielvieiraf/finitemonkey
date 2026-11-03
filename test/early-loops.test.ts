@@ -78,6 +78,11 @@ describe("early loop triggers: fixtures with hard negatives", () => {
   it("an error in tool output that the next edit ignores", () => {
     assert.deepEqual(ignoredError([error(["parser.ts"]), edit("src/view.ts")], "src/view.ts"), ["parser.ts"]);
     assert.equal(
+      ignoredError([error(["cookie.test.ts"]), edit("src/auth/cookie.ts")], "src/auth/cookie.ts"),
+      undefined,
+      "a failing test names the module it tests",
+    );
+    assert.equal(
       ignoredError([error(["parser.ts"]), edit("src/parser.ts")], "src/parser.ts"),
       undefined,
       "edits what failed",
@@ -158,8 +163,13 @@ describe("early loop hooks", () => {
     assert.match(reasonOf(syntax), /data\.json does not parse after this edit/);
   });
 
-  it("starts in shadow: the syntax error is logged, not returned", async () => {
-    const { fs, runtime } = project({ "data.json": '{"a": ,}' });
+  it("acts at the default level without a policy file", async () => {
+    const { runtime } = project({ "data.json": '{"a": ,}' });
+    assert.equal((await afterEdit(runtime, "data.json")).syntax.kind, "block");
+  });
+
+  it("at level light the syntax error is logged, not returned", async () => {
+    const { fs, runtime } = project({ [POLICY_FILE]: "level: light\n", "data.json": '{"a": ,}' });
     const { syntax } = await afterEdit(runtime, "data.json");
     assert.equal(syntax.kind, "allow");
     assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /"event":"guard_shadow","guard":"syntax-check"/);
@@ -238,7 +248,16 @@ describe("reproduce first on M and L tasks", () => {
     assert.equal((await before(located)).kind, "allow");
   });
 
-  it("starts in shadow", async () => {
+  it("only logs at the default level, and prompts when turned on", async () => {
+    const { runtime } = project({
+      [POLICY_FILE]: "guards:\n  reproduce-first: active\n",
+      ".finitemonkey/state.json": '{"active":"fix"}\n',
+      ".finitemonkey/tasks/fix.yml": TASK("L"),
+    });
+    assert.equal((await before(runtime)).kind, "block");
+  });
+
+  it("only logs without a policy file", async () => {
     const { fs, runtime } = project({
       ".finitemonkey/state.json": '{"active":"fix"}\n',
       ".finitemonkey/tasks/fix.yml": TASK("L"),

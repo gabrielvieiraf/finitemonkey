@@ -152,9 +152,11 @@ describe("migrate check with rollback plans, seeded rows and statistics", () => 
     assert.ok(keys(planned).includes("gate.migrate.rollback_planned"));
   });
 
-  it("in shadow the missing rollback plan is reported without blocking", () => {
+  it("holds the missing rollback plan at the default level and only reports it at level light", () => {
     const repo = project(false);
     repo.write("migrations/002_drop.sql", "ALTER TABLE users DROP COLUMN email;\n");
+    assert.equal(run(repo).status, "failed");
+    repo.write(".finitemonkey/policy.yml", "level: light\n");
     const shadow = run(repo);
     assert.equal(shadow.status, "passed");
     assert.ok(keys(shadow).includes("gate.migrate.destructive.drop-column"));
