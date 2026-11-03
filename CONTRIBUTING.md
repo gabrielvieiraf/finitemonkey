@@ -51,7 +51,7 @@ Bypass detection assumes that Claude Code fires `PostToolUse` after another mod 
 
 Releases are fully automated. Nobody edits `version` in `package.json` or `CHANGELOG.md` by hand.
 
-- **`latest` (stable).** No stable version has been released yet; `latest` points to `0.0.0`, a placeholder that holds the name. Every push to `main` runs CI. If the commits since the last release include a `feat`, `fix`, `perf` or breaking change, semantic-release computes the version, updates the changelog, publishes to npm with provenance and creates a GitHub release.
+- **`latest` (stable).** Stable releases since 0.1.0. Every push to `main` runs CI. If the commits since the last release include a `feat`, `fix`, `perf` or breaking change, semantic-release computes the version, updates the changelog, publishes to npm with provenance and creates a GitHub release.
 - **`next` (pre-release).** Every push to the `next` branch with a releasable commit publishes a pre-release such as `0.1.0-next.40` under the npm `next` tag. Changes target `next`; users opt in with `npx finitemonkey@next`. Promotion to stable happens by a PR from `next` to `main`.
 
 Publishing happens only from CI, through npm trusted publishing with provenance. No one publishes from a laptop.

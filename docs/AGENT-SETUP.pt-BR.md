@@ -2,7 +2,7 @@
 
 Este arquivo é para um agente de IA, como o Claude Code, a quem a pessoa pediu para instalar o Finite Monkey num projeto. Gente também pode ler.
 
-> **Status: versões iniciais no `next`.** `init`, `update`, `uninstall`, o portão, as travas e o plugin do Claude Code saem na dist-tag `next` do npm. Ainda não existe a 0.1.0 estável, e o `latest` continua apontando para a `0.0.0`, que só reserva o nome. O passo 1 diz como conferir isso e o que falar para a pessoa. Uma versão no `next` pode quebrar o que a anterior fazia.
+> **Status: estável desde a 0.1.0.** `init`, `update`, `uninstall`, o portão, as travas e o plugin do Claude Code saem na dist-tag `latest` do npm; prévias da próxima versão saem no `next`.
 >
 > Vale para `finitemonkey` 0.1.0-next.40 ou mais nova. Confira a versão instalada antes de seguir qualquer passo adiante e pare se ela for menor.
 
@@ -47,7 +47,7 @@ npm view finitemonkey dist-tags --json
 
 - Se o comando falhar, ou nem `latest` nem `next` for `0.1.0-next.40` ou mais nova, não há o que instalar. Diga isso à pessoa e pare aqui.
 - Se `latest` for `0.1.0` ou mais nova, use `finitemonkey@latest` nos comandos abaixo.
-- Se `latest` for `0.0.0` (só reserva o nome), só o canal `next` tem código. Diga à pessoa: "O Finite Monkey ainda não tem versão estável. O canal `next` funciona, mas uma versão nova pode quebrar o que a anterior fazia. Instalo?" Continue só com um sim, usando `finitemonkey@next` nos comandos abaixo, como estão escritos.
+- Se `latest` for `0.0.0` (só reserva o nome), só o canal `next` tem código. Diga à pessoa: "O canal estável está vazio aqui. O canal `next` funciona, mas uma versão nova pode quebrar o que a anterior fazia. Instalo?" Siga só com um sim, usando `finitemonkey@next` nos comandos abaixo, como estão escritos.
 
 ### 2. Confira o ambiente
 
@@ -122,4 +122,4 @@ npx finitemonkey@next uninstall --yes --purge --json
 
 O primeiro tira o que o Finite Monkey acrescentou e restaura os backups, mantendo `.finitemonkey/` (backups e evidências). O `--purge` apaga também `.finitemonkey/`; depois de `init` e `uninstall --purge`, o projeto fica idêntico byte a byte ao que era. Arquivos que a pessoa editou depois de instalar são mantidos e listados em `data.kept`. Sem `--yes`, sai com 4 e o plano. O plugin, se instalado, sai à parte: `claude plugin uninstall finitemonkey@finitemonkey-next` (ou `finitemonkey@finitemonkey` para o marketplace estável).
 
-<!-- translation of docs/AGENT-SETUP.md sha256:62ad6a4fe4df -->
+<!-- translation of docs/AGENT-SETUP.md sha256:0525eae761b4 -->

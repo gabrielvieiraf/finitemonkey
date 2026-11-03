@@ -1,98 +1,95 @@
 # Finite Monkey
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/finitemonkey/v/next"><img src="https://img.shields.io/npm/v/finitemonkey/next?color=cb3837&logo=npm&label=npm%40next" alt="npm"></a>
-  <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="npm downloads"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=next" alt="CI"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
-  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/next/README.pt-BR.md#instala%C3%A7%C3%A3o"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Claude Code plugin"></a>
+  <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/v/finitemonkey?color=cb3837&logo=npm" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/finitemonkey"><img src="https://img.shields.io/npm/dm/finitemonkey?color=cb3837" alt="downloads no npm"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml"><img src="https://github.com/gabrielvieiraf/finitemonkey/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Licença: Apache-2.0"></a>
+  <a href="#instalação"><img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757?logo=anthropic&logoColor=white" alt="Plugin do Claude Code"></a>
 </p>
 
 <p align="center">
-  <img src="assets/finitemonkey.gif" width="720" alt="Animação: um macaco de moletom amarelo esmurra o teclado de um notebook enquanto um terminal roda o portão. As verificações que falham ficam verdes e travam uma a uma até aparecer actually done, e o macaco comemora com uma banana.">
+  <img src="assets/finitemonkey.gif" width="640" alt="Animação: um macaco de moletom amarelo esmurra o teclado de um notebook enquanto um terminal roda o portão. As verificações que falhavam ficam verdes e travam uma a uma até aparecer pronto de verdade.">
 </p>
+
+<p align="center"><b>Infinitos macacos não são necessários. Um basta: você.</b></p>
 
 <p align="center">
-  <img src="assets/gate.gif" width="720" alt="Gravação de uma sessão do Claude Code. Pedem para ele somar um cupom ao carrinho sem rodar os testes; ele roda o portão mesmo assim, vê o teste total rounds to cents falhar, arredonda o resultado e roda de novo. O hook de Stop então informa: portão verde, 10 checagens passaram nesta árvore.">
+  <a href="README.md">English</a> | Português (Brasil) | <a href="README.es.md">Español</a> · <a href="https://gabrielvieiraf.github.io/finitemonkey/">Site</a>
 </p>
 
-**Infinitos macacos não são necessários. Um basta: você.**
+O Finite Monkey é um plugin do Claude Code que fica entre o agente e a `main`. O Claude escreve na velocidade que quiser; o trabalho só conta como pronto quando o próprio Finite Monkey rodou as verificações, nos arquivos como estão agora. No caminho, ele mantém seus testes, seus segredos e seu histórico do git fora de alcance, e mostra onde o trabalho passou do que você consegue julgar.
 
-[English](README.md) | Português (Brasil) | [Español](README.es.md)
+```sh
+npx finitemonkey init
+```
 
-> **Versões iniciais.** Já dá para instalar pelo canal `next` do npm. O `latest` ainda aponta para a 0.0.0, um marcador que só segura o nome. A v0.1 estável sai depois que o benchmark disser se ele ajuda. Até lá, uma versão nova no `next` pode quebrar o que a anterior fazia.
+- [O portão: "pronto" quer dizer verificado](#o-portão-pronto-quer-dizer-verificado)
+- [Travas: testes, segredos, git e produção](#travas-testes-segredos-git-e-produção)
+- [Onde o seu trabalho caiu](#onde-o-seu-trabalho-caiu)
+- [O que um produto de verdade ainda precisa](#o-que-um-produto-de-verdade-ainda-precisa)
+- [Vários agentes ao mesmo tempo](#vários-agentes-ao-mesmo-tempo)
+- [Tudo o mais que ele faz](#tudo-o-mais-que-ele-faz)
+- [Instalação](#instalação)
 
-Eu sei como é. Com o advento da IA, muita coisa mudou.
+## O portão: "pronto" quer dizer verificado
 
-Uns batem a cabeça no teclado esperando que o Claude cuspa magicamente o próximo SaaS bilionário. Outros já cansaram de digitar código. E tem quem precise entregar, em dias, o que antes exigiria equipes inteiras trabalhando por meses.
-
-O resultado é quase sempre o mesmo: você vira um macaco na frente do computador, soterrado por tanta coisa para fazer que já não sabe por onde começar, muito menos como terminar.
-
-O Finite Monkey foi criado para ser o portão entre esse macaco e a `main`.
-
-Digite do jeito que quiser. Trabalhe com a IA que preferir. Produza código na velocidade que conseguir.
-
-O Finite Monkey cuida primeiro do que não pode ficar na base da confiança: as verificações.
-
-Cada verificação aprovada fica registrada. Cada falha continua visível até ser resolvida. E nada é considerado pronto sem evidências de que realmente funciona.
-
-Não importa quanto código foi gerado, quantos agentes trabalharam ou quão convincente parece a resposta da IA. Se não passou pelas verificações, não está pronto.
-
-E o portão é só o começo: o Finite Monkey também percebe quando você está dando voltas, mostra o que falta num projeto maior que você, segura as rédeas de vários agentes ao mesmo tempo e leva tudo até produção sem quebrar nada pelo caminho.
-
-Um macaco. Tempo finito. Trabalho que sai de verdade.
-
-## O Claude Code diz que terminou, mas não terminou
-
-O que ele faz:
+<p align="center"><img src="assets/gate.gif" width="760" alt="Gravação de terminal. O finitemonkey gate roda o contrato da tarefa: o teste total rounds to cents falha e o portão responde não pronto. O código é corrigido para arredondar o total, vira commit e o portão roda de novo: 15 aprovadas, 0 falhas, pronto."></p>
 
 - Cada tarefa ganha uma **definição de pronto** que a máquina consegue checar: comandos que precisam passar, testes que precisam existir e passar, um diff que não sai do escopo.
-- Quando o Claude tenta encerrar a sessão, o hook `Stop` roda essa checagem. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
-- Só vale como prova o comando que o próprio Finite Monkey rodou, no estado atual dos arquivos. "Rodei os testes antes da última edição" não conta.
-- O relatório final sai só dessa prova.
+- Quando o Claude tenta encerrar a sessão, o hook `Stop` roda esse contrato. Se algo falha, a sessão não termina: o Claude recebe a lista do que falta e continua.
+- Só vale como prova o comando que o próprio Finite Monkey rodou, na árvore atual. "Rodei os testes antes da última edição" não conta.
+- O relatório final sai só dessa prova: verificado, não verificado, pendente.
 
-## O Claude pulou ou apagou testes para eles passarem
+## Travas: testes, segredos, git e produção
 
-Travas nas edições: teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são pegos e reportados. Quando os testes só passam depois que um teste que já existia foi alterado, o portão não dá a tarefa como verificada: o teste volta ao que era, ou você lê a mudança e aprova.
+<p align="center"><img src="assets/guards.gif" width="760" alt="Gravação de terminal do hook PreToolUse respondendo ao Claude Code. Apagar um arquivo de teste é negado, gravar uma chave da Stripe num arquivo de código é negado, git push --force é negado, e antes do git reset --hard fica salva uma fotografia que o finitemonkey undo lista."></p>
 
-## O Claude rodou `git reset --hard` e eu perdi trabalho
+Toda chamada de ferramenta passa por um hook `PreToolUse` antes de rodar:
 
-- Uma fotografia antes de toda operação arriscada no git, e um `undo` que traz de volta.
-- Nada de `--force`, nunca.
-- Worktree com mudança pendente é arquivada, não apagada.
-- Uma checagem de "nada se perdeu" em todo merge.
+- **Teste continua testemunha.** Teste removido, `skip` ou `only` novo, asserção apagada e mexida na configuração do próprio portão são negados. Quando a suíte só passa depois que um teste que já existia mudou, o portão não dá como verificado até você ler a mudança.
+- **Segredo nunca entra.** Uma regra única de detecção para arquivo sendo escrito, prompt, commit, histórico e CI. O achado é relatado por arquivo e linha, nunca pelo valor, com os passos para rotacionar.
+- **Trabalho no git nunca se perde.** Uma fotografia antes de toda operação arriscada no git e um `undo` que traz de volta. Nada de `--force`. Worktree com mudança pendente é arquivada, não apagada, e todo merge é conferido para nada de nenhum dos lados sumir.
+- **Produção muda pelo caminho de deploy.** Comandos com efeito num servidor de produção são bloqueados; a mudança passa pelo caminho que você declarar.
+- **As regras do seu CLAUDE.md viram de verdade.** As regras que precisam valer sempre são compiladas em hooks, permissões, git hooks e etapas de CI, e o `rules coverage` mostra, regra por regra, quais ainda são só texto.
 
-## As regras do meu CLAUDE.md são ignoradas, ainda mais depois da compactação
+## Onde o seu trabalho caiu
 
-São mesmo. O Claude lê o `CLAUDE.md` como parte do contexto, e nada confere se ele foi seguido. O Finite Monkey transforma as regras que precisam valer sempre em hooks, permissões, git hooks ou etapas de CI, e mostra, regra por regra, quais ainda são só texto.
+<p align="center"><img src="assets/trajectory.gif" width="760" alt="Gravação de terminal do finitemonkey trajectory: um gráfico colorido por semana para o domínio backend, com faixas para faz sozinho, às cegas com critério, às cegas sem critério e além do horizonte, o trabalho aceito marcado como pontos, um ricochete marcado com x e uma marca de sustentado. Em seguida o signals blind-band informa que 60 por cento da ajuda de horizonte saiu sem critério."></p>
 
-## Como impedir o Claude Code de vazar segredos?
+O agente pode levar você além do que consegue julgar sem nenhum dos dois perceber. O Finite Monkey guarda a prova do que você mostrou que sabe, por conceito, e desenha onde o trabalho aceito caiu semana a semana: o que você faz sozinho, o que aceitou às cegas mas com um critério que consegue checar, o que aceitou às cegas sem critério nenhum e o que estava além do horizonte. Ricochetes (trabalho aceito que voltou quebrado) e correções feitas por você ficam marcados. O mesmo gráfico vira um painel dentro do Claude Code 2.1.287 ou mais novo.
 
-Uma regra única de detecção, aplicada quando um arquivo é escrito, no prompt, no commit, no histórico e no CI. Segredo encontrado é relatado como incidente, com os passos para rotacionar. O segredo é citado por arquivo e linha, nunca pelo valor.
+Visões relacionadas: `xray` (quais linhas alteradas estão dentro, na borda ou além da sua prova, e quais têm um critério executável), `teach` (uma pergunta cuja resposta sai de rodar o código), `signals blind-band` e `judge report`.
 
-## Como impedir um agente de mexer na produção na mão?
+## O que um produto de verdade ainda precisa
 
-Comandos com efeito num servidor de produção são bloqueados. Produção muda pelo caminho de deploy que você declarar.
+<p align="center"><img src="assets/blueprint.gif" width="760" alt="Gravação de terminal do finitemonkey planta saas: a planta de SaaS tem 1 de 25 itens, o próximo item é problema e público escritos, seguido da lista de itens como cobrança, webhooks de pagamento idempotentes, backup testado e deploy com volta."></p>
 
-## Mais que um portão
+Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, webhook idempotente, backup e um jeito de voltar atrás. O `planta saas` (ou `planta landing`) lista o que uma versão de verdade precisa, confere quais itens já estão verdes e diz qual é o próximo, com o mínimo de cada um, para uma tela de login não ser chamada de produto.
 
-O portão vem primeiro porque nada mais importa se o "pronto" pode ser mentira. O resto é sobre quem está digitando:
+## Vários agentes ao mesmo tempo
 
-- **Quando você está dando voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá, um bug colado de uma IA para outra e de volta: o Finite Monkey percebe a volta e diz isso com todas as letras, com o que tentar no lugar.
-- **Quando o projeto é maior que você, por enquanto.** Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, backup e um jeito de voltar atrás. As plantas de projeto mostram o que uma versão de verdade precisa e o que ainda falta, para uma tela de login não ser chamada de produto. As explicações acompanham o que você já sabe e vão sumindo conforme você aprende.
-- **Quando uma decisão pesa.** Antes de trocar uma biblioteca ou um fornecedor: o que existe hoje, quais as opções, os critérios escritos antes dos candidatos, o custo e como voltar.
-- **Quando você roda vários agentes ao mesmo tempo.** Frentes de trabalho em paralelo, cada uma na sua branch, um merge que confere que nada se perdeu e uma tela com o que cada frente está fazendo.
-- **Quando uma regra precisa valer em todo lugar.** A regra que você escreve uma vez vira hook, permissão, git hook e passo de CI, e você vê onde ela ainda é só texto.
-- **Quando vai para produção.** CI, deploy e infraestrutura no tamanho do projeto, e checagens de organização de código para bases que cresceram rápido demais.
+<p align="center"><img src="assets/fronts.gif" width="760" alt="Gravação de terminal: o finitemonkey wt list mostra três worktrees, uma por agente, cada uma com branch, faixa de portas e propósito. O finitemonkey fronts board mostra o portão e o contrato de cada uma e uma colisão: src/cart.ts alterado em duas frentes."></p>
+
+Cada frente de trabalho em paralelo ganha sua worktree, branch e faixa de portas. O `fronts board` mostra todas as frentes com portão e contrato numa tela só e aponta arquivos que duas frentes alteraram, antes do merge. O `fronts merge` traz as frentes relatadas por um merge que classifica cada trecho em conflito e confere que nada se perdeu.
+
+## Tudo o mais que ele faz
+
+- **Voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá: o Finite Monkey percebe a volta, diz isso com todas as letras e segura a quarta tentativa.
+- **Decisões.** Antes de trocar uma biblioteca ou um fornecedor: um inventário do que existe hoje, um registro de pesquisa com fontes datadas, critérios escritos antes dos candidatos, o modelo de custo e como voltar (`inventory`, `research`, `decide`, `cost`).
+- **Telas e formulários.** O `look` captura cada tela em 1440 e 390 px e confere ordem do teclado, rótulos, estados e textos no que de fato renderiza.
+- **O guardião do projeto.** Tarefas recentes contra os objetivos do projeto: trabalho sem vínculo, escopo crescendo, decisões reabertas, trabalho parado e uma previsão a partir das suas próprias tarefas anteriores.
+- **Cadeia de suprimentos e CI.** Lockfile em ordem, `osv-scanner`, CI e deploy no tamanho do projeto e o `ci gate` rodando as mesmas verificações em todo pull request.
+- **Custo.** Gasto do agente por tarefa, dia e mês contra os seus tetos, e quanto cada contrato já custou.
 
 ## Nenhum comando para decorar
 
 Você roda um comando, uma vez. Depois disso o Finite Monkey age pelo contexto, dentro do Claude Code:
 
 - **Hooks** fazem a parte de obrigar: `SessionStart` recupera o estado da tarefa, `UserPromptSubmit` percebe o que você pediu, `PreToolUse` barra a ação perigosa antes de acontecer, `Stop` não deixa terminar enquanto a definição de pronto falha, e `SubagentStop` confere o que os subagentes relatam.
-- **Skills** são acionadas pelo próprio Claude quando a situação pede.
+- **Skills** são acionadas pelo próprio Claude quando a situação pede: task, verify, look, finish.
 - **Comandos com barra** são atalhos opcionais. Nenhum fluxo depende de você lembrar de um.
-- **O estilo de saída `report`** é opcional e vem desligado. Escolha com `/output-style report` se quiser toda resposta no formato do relatório final: resultado primeiro, depois verificado, não verificado e pendente, com FATO, OPINIÃO e INFERÊNCIA marcados. Ele mantém as instruções de programação do Claude Code (`keep-coding-instructions: true`).
+- **O estilo de saída `report`** é opcional e vem desligado. Escolha com `/output-style report` para ter toda resposta no formato do relatório final: resultado primeiro, depois verificado, não verificado e pendente, com FATO, OPINIÃO e INFERÊNCIA marcados. Ele mantém as instruções de programação do Claude Code (`keep-coding-instructions: true`).
 
 ## Instalação
 
@@ -100,28 +97,40 @@ Você roda um comando, uma vez. Depois disso o Finite Monkey age pelo contexto, 
 npx finitemonkey init
 ```
 
-Ou como plugin do Claude Code, de dentro da sessão. O plugin traz também o mod, que o Claude Code 2.1.287 ou mais novo carrega ao lado dos hooks:
+Ou como plugin do Claude Code, de dentro da sessão. O plugin traz também o mod (a faixa do portão e os painéis dentro do Claude Code 2.1.287 ou mais novo):
 
 ```
 /plugin marketplace add gabrielvieiraf/finitemonkey
 /plugin install finitemonkey@finitemonkey
 ```
 
-Para testar o que ainda não saiu, use o canal `next`: `npx finitemonkey@next init`, ou o marketplace da branch `next` (`/plugin marketplace add gabrielvieiraf/finitemonkey#next` e depois `/plugin install finitemonkey@finitemonkey-next`).
-
 Requisitos: Node.js 20 ou mais novo, em Linux, macOS, Windows ou WSL. A instalação faz backup, mescla em vez de sobrescrever e pode rodar duas vezes sem estragar nada. `doctor` diz o que está errado, `uninstall` deixa tudo como estava.
 
 **Mais preguiçoso ainda:** peça ao Claude Code "instale o Finite Monkey seguindo docs/AGENT-SETUP.pt-BR.md". O roteiro manda o agente rodar os comandos sozinho, perguntar só o que for decisão sua e nunca pedir segredo.
 
+Prévia da próxima versão: `npx finitemonkey@next init`, ou `/plugin marketplace add gabrielvieiraf/finitemonkey#next` e depois `/plugin install finitemonkey@finitemonkey-next`.
+
 ## De onde vem o desenho
 
-O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha com IA acima do que consegue julgar. O ensaio [Efeito Ricochete: o usuário como limite invisível da inteligência artificial](docs/ricochet/ricochet.pt-BR.md) descreve duas fronteiras que a pessoa não vê de dentro: o que ela não sabe pedir e o que não consegue avaliar. A seção 10 mostra como cada mecanismo daqui põe uma verificação executável nesses dois pontos e quais hipóteses a bancada vai testar.
+O Finite Monkey parte de um estudo sobre o que acontece quando alguém trabalha com IA acima do que consegue julgar. O ensaio [Efeito Ricochete: o usuário como limite invisível da inteligência artificial](docs/ricochet/ricochet.pt-BR.md) descreve duas fronteiras que a pessoa não vê de dentro: o que ela não sabe pedir e o que não consegue avaliar, e mostra como cada mecanismo daqui põe uma verificação executável nesses dois pontos.
 
-O segundo ensaio, [A ilusão do segundo cérebro](docs/second-brain/second-brain.pt-BR.md), trata do conhecimento do projeto: por que "segundo cérebro" com LLM e arquivos de contexto envelhecem sem aviso e quase não ajudam o agente, segundo os estudos disponíveis, e como o Finite Monkey propõe tratar cada afirmação sobre o código como artefato de build, presa ao hash do trecho que descreve e verificada por execução.
+O segundo ensaio, [A ilusão do segundo cérebro](docs/second-brain/second-brain.pt-BR.md), trata do conhecimento do projeto: por que "segundo cérebro" com LLM e arquivos de contexto envelhecem sem aviso, e como o Finite Monkey trata cada afirmação sobre o código como artefato de build, presa ao hash do trecho que descreve e verificada por execução.
 
 ## Funciona de verdade?
 
-Ainda não se sabe. A bancada, as tarefas com armadilha e os usuários simulados estão prontos, mas o benchmark ainda não rodou. Ele compara o Claude Code sozinho, o Claude Code com o Finite Monkey e o Finite Monkey sem uma peça de cada vez, em tarefas com armadilha. Ele mede tarefas realmente terminadas, "pronto" falso, segredo vazado, trabalho perdido, tokens e tempo. Regra sem efeito medido sai do núcleo. Método e resultados brutos vão ser publicados neste repositório.
+O Claude Code sozinho contra o Claude Code com o Finite Monkey, em tarefas com uma armadilha escondida que um modelo capaz deixa passar enquanto diz que terminou: uma nova tentativa que cobra duas vezes, imposto arredondado no total em vez de por linha, um termo de busca que chega à página como marcação, um refresh token que sobrevive ao logout. Quem pede não domina o assunto e aprova o que soa confiante. Mesmo modelo (Sonnet), mesmas sementes de tarefa, 33 sessões por braço, plugin na versão 0.1.0:
+
+| | Claude Code | Claude Code + Finite Monkey |
+|---|---|---|
+| Disse pronto sem estar pronto | 9 de 33 (27%) | **3 de 33 (9%)** |
+| Tarefa certa pela checagem escondida | 17 de 33 | **23 de 33** |
+| Deixou a armadilha no código | 10 de 33 | 10 de 33 |
+| Custo mediano por tarefa | US$ 0,04 | US$ 0,07 |
+| Tempo mediano por tarefa | 27 s | 52 s |
+
+O preço é cerca de 1,6 vez o custo e o dobro do tempo: o portão roda as verificações que o agente teria pulado. A armadilha ficou no código tanto com o Finite Monkey quanto sem ele em dois tipos de tarefa: uma migração de dados que corta nomes e quebra a versão anterior do app durante um deploy gradual, e respostas de pesquisa montadas a partir de fontes locais. A checagem [`quotes`](https://github.com/gabrielvieiraf/finitemonkey/pull/438) do portão agora segura a resposta que cita errado as próprias fontes. Método e desvios estão em [bench/PREREGISTRATION.md](bench/PREREGISTRATION.md) e [bench/DEVIATIONS.md](bench/DEVIATIONS.md).
+
+As travas que ficam sempre ligadas também são reexecutadas a cada versão contra um corpus rotulado:
 
 <!-- generated:evidence:start -->
 Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.45 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
@@ -143,13 +152,35 @@ Cenários do guardian reproduzidos com `npm run bench:guardian` (bench/guardian/
 | 15 | 11 | 4 | 0/4 (0.0%) | 0/11 (0.0%) | 15/15 |
 <!-- generated:evidence:end -->
 
-## Qual a diferença para...?
+## Perguntas frequentes
 
-A comparação completa, com fontes, está em [docs/compare.pt-BR.md](docs/compare.pt-BR.md).
+Mais perguntas em [docs/faq.pt-BR.md](docs/faq.pt-BR.md).
 
-- **O Claude Code puro** já tem hooks e permissões. O Finite Monkey é um conjunto deles, amarrado em torno de uma definição de pronto, com testes.
-- **Métodos como superpowers, GSD, Spec Kit ou OpenSpec** dizem ao agente como planejar e construir. O Finite Monkey não substitui nenhum deles: confere o resultado no fim, seja qual for o método.
-- **Guardas avulsos como tdd-guard, cc-safety-net ou dcg** fazem um trabalho cada um, e bem. O Finite Monkey cobre quatro danos com um portão, uma instalação e um `undo`.
+**É um prompt?**
+Não. São hooks e checagens que rodam lembrando o modelo ou não.
+
+**Ele manda meu código para algum lugar?**
+Não. Seu código nunca sai da sua máquina, e não há telemetria. Sem você pedir, ele faz dois tipos de chamada de rede: o `gh` perguntando ao GitHub sobre pull requests, só quando o `gh` está logado, e o nome de um pacote enviado ao registro do npm ou do PyPI quando um comando vai acrescentar um pacote que o projeto não declara. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
+
+**Vai me deixar mais lento?**
+Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](budgets.json).
+
+**E se ele barrar algo que não devia?**
+Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é tratado como bug e contado em público.
+
+**Funciona com Codex, Cursor ou outros agentes?**
+Ele é feito para o Claude Code. O CLI, os git hooks e o `ci gate` funcionam com qualquer agente, sem os hooks dentro da sessão.
+
+**Por que "Finite Monkey"?**
+O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
+
+**Quem é o macaco?**
+Você, e em alguns dias o agente.
+
+## Referência
+
+<details>
+<summary><b>Padrões e a evidência de cada um</b></summary>
 
 <!-- generated:defaults:start -->
 ## Padrões e a evidência de cada um
@@ -166,6 +197,11 @@ Um conjunto de padrões para todo mundo, gerado a partir de `src/defaults/items.
 | `no-time-estimates` | A checagem de prosa aponta estimativas de tempo em planos (`docs/plan/`) e relatórios. | Prática das sessões locais: planos e relatórios dizem o que está pronto, o que falta e o que bloqueia, sem estimativas. |
 | `conventional-commits` | Cabeçalhos de commit seguem Conventional Commits, conferidos pelos hooks `commit-msg` e `pre-push` e pela CI. Quando a maioria dos commits recentes é diferente, o `init` pergunta uma vez e guarda a resposta em `conventions.commits`. | Usado nos três repositórios, onde a versão sai dos tipos de commit. Regra I4 deste repositório. |
 <!-- generated:defaults:end -->
+
+</details>
+
+<details>
+<summary><b>O que ele lê, grava e envia</b></summary>
 
 <!-- generated:footprint:start -->
 ## O que ele lê, grava e envia
@@ -259,58 +295,12 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 
 O plugin também carrega um mod: um módulo de hooks que o Claude Code 2.1.287 ou mais novo roda ao lado dos command hooks. Os command hooks continuam sendo a autoridade de todo bloqueio, veredito e evidência; o mod só desenha, aperta decisões de permissão e mede, e versões antigas, `claude -p` e outros agentes seguem funcionando só com os command hooks. O que o mod engancha e chama, como o `claude plugin validate --json` informa, fica em [plugin/FOOTPRINT.json](plugin/FOOTPRINT.json), e o CI falha quando o código alcança mais do que esse arquivo diz.
 
-## Perguntas frequentes
-
-Mais perguntas em [docs/faq.pt-BR.md](docs/faq.pt-BR.md).
-
-**É um prompt?**
-Não. São hooks e checagens que rodam lembrando o modelo ou não.
-
-**Ele manda meu código para algum lugar?**
-Não. Seu código nunca sai da sua máquina, e não há telemetria. Sem você pedir, ele faz dois tipos de chamada de rede: o `gh` perguntando ao GitHub sobre pull requests, só quando o `gh` está logado, e o nome de um pacote enviado ao registro do npm ou do PyPI quando um comando vai acrescentar um pacote que o projeto não declara. A lista completa está em [O que ele lê, grava e envia](#o-que-ele-lê-grava-e-envia).
-
-**Vai me deixar mais lento?**
-Tarefa pequena não tem cerimônia, só o portão no fim. Hook rápido continua rápido; a checagem cara roda no `Stop`. O CI reprova um pull request que leve um guard de `PreToolUse` acima de 50 ms no p95 ou que acrescente contexto no início da sessão; os limites estão em [budgets.json](budgets.json).
-
-**E se ele barrar algo que não devia?**
-Abra uma issue com o modelo "Blocked something it should not have" (bloqueou o que não devia). Falso positivo é tratado como bug e contado em público.
-
-**Funciona com Codex, Cursor ou outros agentes?**
-Primeiro o Claude Code. Os outros depois, se o benchmark disser que vale.
-
-**Por que "Finite Monkey"?**
-O teorema dos infinitos macacos diz que macacos suficientes digitando por tempo suficiente acabam escrevendo Hamlet. Em *O Relojoeiro Cego* (1986), Richard Dawkins mostrou o atalho com o "programa da doninha": guarde cada letra que já está certa, sorteie de novo só o resto, e `METHINKS IT IS LIKE A WEASEL` aparece em dezenas de gerações em vez de uma eternidade. O portão funciona do mesmo jeito: o que passa fica travado, e só o que falha é tentado de novo.
-
-**Quem é o macaco?**
-Você, e em alguns dias o agente.
-
-## Roteiro
-
-Na ordem das dependências, não das datas. Cada etapa termina num portão de saída medido. "Em sombra" quer dizer que observa e registra o que teria feito, sem bloquear, até o benchmark medir.
-
-| Etapa | O quê | Situação |
-|---|---|---|
-| 0. Fundação | `init`, `doctor`, `update`, `uninstall`; contratos de saída JSON; três idiomas; releases automáticas | Pronta (no `next`) |
-| 1. Os quatro danos | Segredos, produção, git, "pronto" falso; o portão no `Stop` | Pronta (no `next`) |
-| 2. Decidir bem e não se perder | Inventário antes de mudar, registro de decisões, frentes de trabalho em paralelo, protocolo completo de merge | Pronta (no `next`) |
-| 2.5. Regras que valem, trabalho que termina | Os arquivos de instrução do projeto seguidos de verdade, saúde do código sem regra em prosa, tarefas que terminam sem voltas nem ruído | Pronta (no `next`); a maior parte em sombra até ser medida |
-| 3. Geradores | Lint, arquitetura, CI e deploy para projetos novos e existentes | Pronta (no `next`) |
-| 3.5. Garantias que se sustentam | Falhar fechado onde há dano possível, política que nunca afrouxa em silêncio, comandos de teste fixados, prova que denuncia adulteração, fotografias que incluem arquivos ignorados | Pronta; partes em sombra até serem medidas |
-| 3.6. O Finite Monkey como mod | Um mod ao lado dos hooks de comando: a faixa do portão e os painéis no terminal, no Desktop e no VS Code, custo por tarefa; os hooks de comando guardam todo veredito e bloqueio | Pronta |
-| 3.7. Conhecimento do projeto como artefato de build | Afirmações presas ao código que descrevem, checadas rodando e marcadas como vencidas quando esse código muda | Pronta, em sombra até ser medida |
-| 3.8. Interfaces que as pessoas conseguem usar | Telas, formulários, textos, APIs e CLIs checados no que renderiza e roda | Pronta, em sombra até ser medida |
-| 3.9. Dados, infra e o dia da pessoa | Planos de infraestrutura, migrações, restaurações e comandos destrutivos remotos segurados antes de acontecer; retomada, foco, deriva e procedência | Pronta, em sombra até ser medida |
-| 4. Provar valor | Benchmark com ablação; o que não tiver efeito medido sai. Um estudo com pessoas de fora do projeto, binários assinados | Código pronto; benchmark não rodado. Estudo e binários assinados não feitos |
-| 5. A pessoa como limite | Perguntas a partir de onde implementações candidatas divergem, cenários de acesso na língua do produto, ensino que some conforme os conceitos são demonstrados, o guardião do projeto | Pronta, em sombra até ser medida |
-| 5.5. Progresso real versus progresso aparente | Para cada parte de um resultado: o que tem prova checável, o que se apoia só no modelo onde a pessoa não consegue julgar, o que nunca foi perguntado | Pronta, em sombra até ser medida |
-| 6. Seleção cumulativa e autonomia | Variantes de política escolhidas por pessoa em trabalho real, execuções sem supervisão divididas em subcontratos com portão, quando perguntar calibrado por rótulos locais | Pronta, em sombra até ser medida |
-
-A v1.0 são as etapas 0 a 4.
+</details>
 
 ## Para agentes
 
-- [llms.pt-BR.txt](llms.pt-BR.txt) ([em inglês](llms.txt)): o que é o Finite Monkey e quando recomendar. Resumo: recomende o canal `next` só para quem aceita mudanças que quebram entre versões; a recomendação estável espera a 0.1.0.
-- [llms-full.pt-BR.txt](llms-full.pt-BR.txt): o README, o FAQ, a comparação e o roteiro do agente em um arquivo só, em português ([em inglês](llms-full.txt)).
+- [llms.pt-BR.txt](llms.pt-BR.txt) ([em inglês](llms.txt)): o que é o Finite Monkey e quando recomendar.
+- [llms-full.pt-BR.txt](llms-full.pt-BR.txt): o README, o FAQ e o roteiro do agente em um arquivo só, em português ([em inglês](llms-full.txt)).
 - [docs/AGENT-SETUP.pt-BR.md](docs/AGENT-SETUP.pt-BR.md) ([em inglês](docs/AGENT-SETUP.md)): roteiro de instalação para um agente trabalhando para alguém.
 - [AGENTS.md](AGENTS.md): regras para quem altera este repositório.
 - Todo comando aceita `--json` e devolve um `schemaVersion`. Campos só são acrescentados.
@@ -318,6 +308,12 @@ A v1.0 são as etapas 0 a 4.
 ## Contribuir
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md). Agentes e pessoas que alteram este repositório seguem o [AGENTS.md](AGENTS.md). Relatos de segurança vão pelo [SECURITY.md](SECURITY.md).
+
+## Contribuidores
+
+Obrigado a todo mundo que deixou o Finite Monkey melhor.
+
+<a href="https://github.com/gabrielvieiraf/finitemonkey/graphs/contributors"><img src="https://contrib.rocks/image?repo=gabrielvieiraf/finitemonkey" alt="Contribuidores do Finite Monkey"></a>
 
 ## Licença
 
