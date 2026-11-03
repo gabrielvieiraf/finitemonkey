@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { format, resolveConfig } from "prettier";
 
 import { siteCss } from "./essays-css.js";
+import { inlineFigure, standaloneFigure } from "./essays-figures.js";
 import { hero } from "./essays-hero.js";
 import { escapeHtml, inline, type LinkMap, parseBlocks, plain, renderBlocks } from "./essays-markdown.js";
 import { page } from "./essays-page.js";
@@ -36,14 +37,12 @@ function linkMap(essay: Essay): LinkMap {
 function figureHtml(essay: Essay, lang: Lang): (src: string, caption: string) => string {
   return (src, caption) => {
     const svg = readFileSync(join(root, "docs", essay.slug, src), "utf8");
-    const width = /<svg[^>]*\swidth="(\d+)/.exec(svg)?.[1] ?? "1200";
-    const height = /<svg[^>]*\sheight="(\d+)/.exec(svg)?.[1] ?? "600";
     const split = /\s((?:Source|Fonte|Fuente):.*)$/.exec(caption);
     const main = split ? caption.slice(0, split.index) : caption;
     const note = split ? ` <span class="src">${split[1] ?? ""}</span>` : "";
-    const alt = escapeHtml(plain(main));
+    const alt = plain(main);
     return `<figure class="fig">
-<a class="plate" href="${src}" title="${escapeHtml(UI[lang].fullSize)}"><img src="${src}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${alt}" /></a>
+<a class="plate" href="${src}" title="${escapeHtml(UI[lang].fullSize)}">${inlineFigure(essay.slug, src, svg, alt)}</a>
 <figcaption>${main}${note}</figcaption>
 </figure>`;
   };
@@ -94,7 +93,9 @@ function figures(essay: Essay): Map<string, Buffer> {
   const base = join(root, "docs", essay.slug, "figures");
   for (const dir of readdirSync(base)) {
     for (const file of readdirSync(join(base, dir)).filter((f) => f.endsWith(".svg"))) {
-      out.set(`${SITE_DIR}/${essay.slug}/figures/${dir}/${file}`, readFileSync(join(base, dir, file)));
+      const raw = readFileSync(join(base, dir, file));
+      const redrawn = standaloneFigure(essay.slug, file, raw.toString("utf8"));
+      out.set(`${SITE_DIR}/${essay.slug}/figures/${dir}/${file}`, redrawn ?? raw);
     }
   }
   return out;

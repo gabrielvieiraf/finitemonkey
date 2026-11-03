@@ -2,6 +2,7 @@ const SHARED: readonly RegExp[] = [
   /^:root/,
   /^@media \(prefers-color-scheme/,
   /^@media \(prefers-reduced-motion/,
+  /^@keyframes brand-/,
   /^\*$/,
   /^body$/,
   /^html$/,
