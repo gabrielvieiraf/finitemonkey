@@ -3066,5 +3066,16 @@
   "gate.scenarios.fail.rows_other_reads": "failed: user B cannot read user A's rows in {resource} ({status} rows)",
   "gate.scenarios.rows_unavailable": "the row-level scenarios could not run on the throwaway database",
   "journey.no_proposer": "No journey proposer is set. Add journeys: proposer (a command that reads the sentence as JSON on stdin and prints the steps) to .finitemonkey/config.yml, or write the steps and use --from.",
-  "journey.proposed_from_sentence": "Journey {name} proposed from the sentence with hash {hash}. Read the steps; it runs only after the person approves it."
+  "journey.proposed_from_sentence": "Journey {name} proposed from the sentence with hash {hash}. Read the steps; it runs only after the person approves it.",
+  "look.browser.present": "browser for look: {browser} is already installed",
+  "look.browser.offer": "browser for look: {browser} is missing, so look cannot capture screens. Installing it downloads about {size} MB: {command}",
+  "look.browser.consent": "nothing was downloaded; run `finitemonkey init --look --yes` to install it",
+  "look.browser.added": "browser for look: installed {browser}",
+  "look.browser.failed": "browser for look: `{command}` did not finish; look stays unavailable until {browser} is installed",
+  "install.adopt.offer": "worktrees that Finite Monkey does not track yet: {count}. Register them with `finitemonkey init --adopt` or `finitemonkey wt adopt`:",
+  "install.adopt.done": "existing worktrees registered: {count} (`finitemonkey wt list` shows them)",
+  "look.deep.absent": "deep pass: lighthouse is not in node_modules/.bin, so nothing ran; add it with `npm install --save-dev lighthouse`",
+  "look.deep.title": "deep pass (lighthouse with error reporting off), scores from 0 to 100:",
+  "fronts.route.recorded": "decision record written: {record}",
+  "statusline.loop": "loop {count}"
 }

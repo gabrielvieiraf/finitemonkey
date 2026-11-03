@@ -3066,5 +3066,16 @@
   "gate.scenarios.fail.rows_other_reads": "falhou: o usuário B não lê as linhas do usuário A em {resource} ({status} linhas)",
   "gate.scenarios.rows_unavailable": "os cenários por linha não rodaram no banco descartável",
   "journey.no_proposer": "Nenhum propositor de jornada configurado. Adicione journeys: proposer (um comando que lê a frase em JSON pela entrada e imprime os passos) em .finitemonkey/config.yml, ou escreva os passos e use --from.",
-  "journey.proposed_from_sentence": "Jornada {name} proposta a partir da frase com hash {hash}. Leia os passos; ela só roda depois que a pessoa aprovar."
+  "journey.proposed_from_sentence": "Jornada {name} proposta a partir da frase com hash {hash}. Leia os passos; ela só roda depois que a pessoa aprovar.",
+  "look.browser.present": "navegador do look: {browser} já está instalado",
+  "look.browser.offer": "navegador do look: {browser} não está instalado, então o look não captura telas. Instalar baixa cerca de {size} MB: {command}",
+  "look.browser.consent": "nada foi baixado; rode `finitemonkey init --look --yes` para instalar",
+  "look.browser.added": "navegador do look: {browser} instalado",
+  "look.browser.failed": "navegador do look: `{command}` não terminou; o look fica indisponível até {browser} ser instalado",
+  "install.adopt.offer": "worktrees que o Finite Monkey ainda não acompanha: {count}. Registre com `finitemonkey init --adopt` ou `finitemonkey wt adopt`:",
+  "install.adopt.done": "worktrees existentes registrados: {count} (`finitemonkey wt list` mostra)",
+  "look.deep.absent": "passada profunda: lighthouse não está em node_modules/.bin, então nada rodou; adicione com `npm install --save-dev lighthouse`",
+  "look.deep.title": "passada profunda (lighthouse com envio de erros desligado), notas de 0 a 100:",
+  "fronts.route.recorded": "registro de decisão gravado: {record}",
+  "statusline.loop": "volta {count}"
 }

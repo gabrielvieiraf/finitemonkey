@@ -11,7 +11,7 @@ import { gitAt, treeHash } from "../gate/git.js";
 import type { MessageKey } from "../i18n/catalogs.js";
 import { viewsOf } from "../knowledge/service.js";
 import { blockDiff, blockLimits, type BlockSection, fitBlock } from "../onboard/block.js";
-import { discoverCommands } from "../onboard/discover.js";
+import { discoverCommands, startEntry } from "../onboard/discover.js";
 import { activeRisks, infraFiles, type Risk } from "../onboard/risks.js";
 import { DEFAULT_COMMAND_TIMEOUT_S, type Ran, runCandidates } from "../onboard/run.js";
 import {
@@ -34,9 +34,7 @@ import { scanHistory } from "../secrets/scan.js";
 import type { ProjectFiles } from "../task/implicit.js";
 import { fmPaths } from "../task/paths.js";
 import { trustImplicit } from "../task/trust.js";
-import { adoptable } from "../wt/adopt.js";
-import { gitWorktrees } from "../wt/git-list.js";
-import { commonDirOf, readRegistry } from "../wt/store.js";
+import { unregisteredWorktrees } from "../wt/adopt-offer.js";
 import type { CommandSpec } from "./types.js";
 
 const USAGE = "finitemonkey onboard [--timeout <seconds>]";
@@ -54,13 +52,6 @@ const historyCount = async (ctx: Ctx, root: AbsolutePath, previous: OnboardState
   if (previous?.historyFindings !== undefined) return previous.historyFindings;
   const scanned = await scanHistory(ctx.runtime, root);
   return scanned.ok ? scanned.value.length : undefined;
-};
-
-const unregisteredWorktrees = (ctx: Ctx, root: AbsolutePath): readonly string[] => {
-  const common = commonDirOf(ctx.runtime, root);
-  const trees = gitWorktrees(ctx.runtime, root) ?? [];
-  const registry = common === undefined ? undefined : readRegistry(ctx.runtime, common);
-  return registry?.ok === true ? adoptable(registry.value, trees).map((tree) => tree.path) : [];
 };
 
 const commandLines = (ctx: Ctx, ran: readonly Ran[]): readonly string[] =>
@@ -126,12 +117,12 @@ const onboard = async (ctx: Ctx, timeoutS: number): Promise<CommandResult> => {
   };
   const block = writeBlock(ctx, root, files, commands);
   const tree = treeHash(gitAt(ctx.runtime, root));
-  const state: OnboardState = { ...commands, ...(tree === undefined ? {} : { tree }) };
+  const state: OnboardState = { ...commands, ...startEntry(files), ...(tree === undefined ? {} : { tree }) };
   writeIfChanged(ctx.runtime, root, ONBOARD_FILE, onboardText(state));
   if (isPerson(ctx)) trustImplicit(ctx.runtime, root, files);
   const tracked = (gitAt(ctx.runtime, root).out(["ls-files", "-z"]) ?? "").split("\0").filter((file) => file !== "");
   const credentials = credentialInventory(ctx.runtime, root);
-  const unregistered = unregisteredWorktrees(ctx, root);
+  const unregistered = unregisteredWorktrees(ctx.runtime, root);
   const infra = infraFiles(tracked);
   const risks = activeRisks({
     ran,

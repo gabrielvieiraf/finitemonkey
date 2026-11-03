@@ -3067,7 +3067,18 @@
     "gate.scenarios.fail.rows_other_reads": "machine",
     "gate.scenarios.rows_unavailable": "machine",
     "journey.no_proposer": "machine",
-    "journey.proposed_from_sentence": "machine"
+    "journey.proposed_from_sentence": "machine",
+    "look.browser.present": "machine",
+    "look.browser.offer": "machine",
+    "look.browser.consent": "machine",
+    "look.browser.added": "machine",
+    "look.browser.failed": "machine",
+    "install.adopt.offer": "machine",
+    "install.adopt.done": "machine",
+    "look.deep.absent": "machine",
+    "look.deep.title": "machine",
+    "fronts.route.recorded": "machine",
+    "statusline.loop": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -6137,6 +6148,17 @@
     "gate.scenarios.fail.rows_other_reads": "machine",
     "gate.scenarios.rows_unavailable": "machine",
     "journey.no_proposer": "machine",
-    "journey.proposed_from_sentence": "machine"
+    "journey.proposed_from_sentence": "machine",
+    "look.browser.present": "machine",
+    "look.browser.offer": "machine",
+    "look.browser.consent": "machine",
+    "look.browser.added": "machine",
+    "look.browser.failed": "machine",
+    "install.adopt.offer": "machine",
+    "install.adopt.done": "machine",
+    "look.deep.absent": "machine",
+    "look.deep.title": "machine",
+    "fronts.route.recorded": "machine",
+    "statusline.loop": "machine"
   }
 }
