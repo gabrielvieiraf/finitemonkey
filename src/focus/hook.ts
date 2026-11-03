@@ -17,6 +17,7 @@ import { cardFor, cardLines } from "./card.js";
 import { loadPerson } from "./config.js";
 import { historyLimit } from "./limit.js";
 import { type Deviation, deviationOf, pathMentions } from "./scope.js";
+import { readSymbolIndex, symbolDeviations } from "./symbols.js";
 
 export const FOCUS_FEATURE = "focus-card";
 const SEEN_FILE = "focus.json";
@@ -119,8 +120,12 @@ export const focusPromptScope: HookHandler = (input) => {
   const task = paths === undefined ? undefined : activeTask(input.runtime, paths);
   if (paths === undefined || task === undefined || task.contract.implicit) return allow;
   const exists = (file: string): boolean => input.runtime.stat(toAbsolutePath(join(paths.root, file))) !== undefined;
-  const mentioned = pathMentions(textField(input.payload.raw, "prompt") ?? "", exists);
-  const deviations = mentioned.flatMap((file) => deviationOf(paths.root, task.contract.scope.paths, file) ?? []);
+  const prompt = textField(input.payload.raw, "prompt") ?? "";
+  const scope = task.contract.scope.paths;
+  const deviations = [
+    ...pathMentions(prompt, exists).flatMap((file) => deviationOf(paths.root, scope, file) ?? []),
+    ...symbolDeviations(prompt, readSymbolIndex(input.runtime, paths.root), scope),
+  ];
   const found = deviations.find((item) => askPark(input, paths, task, item));
   if (found === undefined) return allow;
   return emit(input, paths, [parkQuestion(input, task, found)], { reason: "park-prompt", area: found.area });

@@ -460,17 +460,19 @@ var ricochetOf = (value) => isRecord4(value) && typeof value["concept"] === "str
 var trajectoryOf = (value) => isRecord4(value) && typeof value["domain"] === "string" ? {
   domain: value["domain"],
   band: typeof value["band"] === "string" ? value["band"] : null,
-  ricochet: ricochetOf(value["ricochet"])
+  ricochet: ricochetOf(value["ricochet"]),
+  recent: numbers(value["recent"])
 } : null;
 var triageOf = (value) => isRecord4(value) && typeof value["flagged"] === "number" && typeof value["open"] === "number" ? { flagged: value["flagged"], open: value["open"] } : null;
 var triageLine = (triage) => `triage ${String(triage.open)}/${String(triage.flagged)} open`;
+var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
+var trajectorySpark = (recent) => recent === void 0 || recent.length < 2 ? "" : ` ${sparkline(recent)}`;
 var trajectoryLine = (trajectory) => [
-  `trajectory ${trajectory.domain}: ${trajectory.band ?? "no accepted work"}`,
+  `trajectory ${trajectory.domain}${trajectorySpark(trajectory.recent)}: ${trajectory.band ?? "no accepted work"}`,
   trajectory.ricochet === null ? "no ricochet" : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`
 ].join(", ");
 var knowledgeLine = (knowledge) => `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
-var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
 var blindLine = (blind) => `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
 var parseStatus = (text6) => {
   let parsed;
@@ -1023,6 +1025,17 @@ var drawnSplits = (trajectory) => {
   );
 };
 var describeSplit = (group) => `${SPLIT_LABEL[group][1]} above, ${SPLIT_LABEL[group][0]} below`;
+var workInterval = (week) => {
+  const { work, independent, discernment, assisted } = week;
+  if (work === null || independent === null || discernment === null || assisted === null) return void 0;
+  const steps = [
+    [0, independent],
+    [independent, discernment],
+    [discernment, Math.max(assisted, discernment + 1)]
+  ];
+  const hit = steps.find(([from, to]) => to > from && (from + to) / 2 === work);
+  return hit === void 0 ? void 0 : { low: hit[0], high: hit[1] };
+};
 
 // src/conceitos/trajectory-term.ts
 var ENGLISH_SPLITS = {
@@ -1524,6 +1537,21 @@ var workLine = (theme, frame, trajectory) => runsOf2(trajectory.weeks, (week) =>
   ] : [];
   return [...line2, ...dots];
 });
+var UNCERTAINTY_TITLE = "count rule interval: the line marks the middle of the band the work counted into, anywhere in this span fits the same counts";
+var uncertaintyBand = (theme, frame, weeks) => runsOf2(weeks, (week) => workInterval(week) !== void 0).map((run) => {
+  const columns = run.flatMap((index) => {
+    const span2 = weeks[index] === void 0 ? void 0 : workInterval(weeks[index]);
+    const x = frame.xs[index] ?? 0;
+    if (span2 === void 0) return [];
+    return run.length === 1 ? [
+      { x: x - frame.half * 0.3, span: span2 },
+      { x: x + frame.half * 0.3, span: span2 }
+    ] : [{ x, span: span2 }];
+  });
+  const top = columns.map(({ x, span: span2 }) => `${num(x)} ${num(yOf(frame, span2.high))}`);
+  const bottom = columns.map(({ x, span: span2 }) => `${num(x)} ${num(yOf(frame, span2.low))}`).reverse();
+  return `<path d="M ${top.join(" L ")} L ${bottom.join(" L ")} Z" fill-opacity="0.18" ${paint(theme, { cls: "uncertainty", fill: "you" })}><title>${escapeXml(UNCERTAINTY_TITLE)}</title></path>`;
+});
 var markTitle = (mark) => `${mark.kind} · ${mark.concept} · ${mark.evidence.map((item) => `${item.kind} ${item.task ?? "-"} ${item.file ?? "-"} ${item.at}`).join("; ")}`;
 var markShape = (theme, mark, x, y) => mark.kind === "ricochet" ? `<circle cx="${num(x)}" cy="${num(y)}" r="6.5" stroke-width="2" ${paint(theme, { fill: "bg", stroke: "bInk" })}/><path d="M ${num(x - 3)} ${num(y - 3)} L ${num(x + 3)} ${num(y + 3)} M ${num(x + 3)} ${num(y - 3)} L ${num(x - 3)} ${num(y + 3)}" stroke-width="1.8" ${paint(theme, { stroke: "bInk" })}/>` : `<circle cx="${num(x)}" cy="${num(y)}" r="6.5" stroke-width="2" ${paint(theme, { fill: "bg", stroke: "iInk" })}/><circle cx="${num(x)}" cy="${num(y)}" r="2.6" ${paint(theme, { fill: "iInk" })}/>`;
 var pointOf = (frame, weeks, key) => {
@@ -1570,6 +1598,7 @@ var svgOf = (trajectory, options = {}) => {
     ...splitPaths(theme, frame, trajectory.weeks),
     ...axes(theme, frame, trajectory.weeks),
     keyOf2(theme, frame, trajectory),
+    ...uncertaintyBand(theme, frame, trajectory.weeks),
     ...workLine(theme, frame, trajectory),
     ...marksOf(theme, frame, trajectory, options.selected),
     ...researchSvg(
@@ -1620,7 +1649,32 @@ var textCells = (body, width, fg) => Array.from({ length: width }, (_, index) =>
 var rasterShape = (trajectory, columns) => {
   const weeks = Math.max(trajectory.weeks.length, 1);
   const perWeek = Math.min(6, Math.max(2, Math.floor((columns - LABEL_WIDTH - 1) / weeks)));
-  return { perWeek, columns: weeks * perWeek + 1 + LABEL_WIDTH, rows: GRID_ROWS + 1 };
+  const lane = (trajectory.research ?? []).length > 0 ? 1 : 0;
+  return { perWeek, columns: weeks * perWeek + 1 + LABEL_WIDTH, rows: GRID_ROWS + 1 + lane };
+};
+var fixInk = (palette) => ({
+  open: palette.ink.ricochet,
+  revert: palette.ink.line,
+  agent: palette.ink.line,
+  person: palette.ink.held
+});
+var fixOfGlyph = (glyph2) => RESEARCH_FIXES.find((fix) => RESEARCH_GLYPH[fix] === glyph2);
+var laneCells = (trajectory, perWeek, options) => {
+  const marks = trajectory.research ?? [];
+  if (marks.length === 0) return [];
+  const palette = termPalette(options.theme);
+  const inks = fixInk(palette);
+  const lane = researchLane(
+    trajectory.weeks.map((week) => week.week),
+    marks,
+    perWeek
+  );
+  const plot = Array.from(lane, (glyph2) => {
+    const fix = fixOfGlyph(glyph2);
+    return { glyph: glyph2, fg: fix === void 0 ? DEFAULT_COLOR : inks[fix], bg: DEFAULT_COLOR };
+  });
+  const name = (options.labels?.research ?? ENGLISH_RESEARCH).lane;
+  return [...plot, ...textCells(` ${name}`, LABEL_WIDTH + 1, palette.ink.faint)];
 };
 var rasterCells = (trajectory, columns, options) => {
   const shape = rasterShape(trajectory, columns);
@@ -1635,6 +1689,7 @@ var rasterCells = (trajectory, columns, options) => {
       ),
       ...textCells(` ${names[row2] ?? ""}`, LABEL_WIDTH + 1, faint2)
     ]),
+    ...laneCells(trajectory, shape.perWeek, options),
     ...textCells(axisLine(trajectory, shape.perWeek), plotWidth, faint2),
     ...textCells("", LABEL_WIDTH + 1, faint2)
   ];

@@ -92,6 +92,9 @@
           "type": "null"
         },
         {
+          "const": "inconclusive"
+        },
+        {
           "const": "failed"
         },
         {
@@ -111,9 +114,6 @@
         },
         {
           "const": "blocked"
-        },
-        {
-          "const": "inconclusive"
         },
         {
           "const": "needs_approval"
@@ -407,13 +407,20 @@
                   ]
                 }
               ]
+            },
+            "recent": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
             }
           },
           "required": [
             "domain",
             "week",
             "band",
-            "ricochet"
+            "ricochet",
+            "recent"
           ]
         }
       ]

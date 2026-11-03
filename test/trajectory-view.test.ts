@@ -107,6 +107,7 @@ describe("trajectory view", () => {
       "rect.key-swatch.key-proximal",
       "g.key-group.key-alone",
       "rect.key-swatch.key-alone",
+      "path.uncertainty",
       "circle.point",
       "path.work",
       "path.ricochet-arc",
@@ -165,6 +166,9 @@ describe("trajectory view", () => {
     assert.equal(now.ricochet?.concept, "webhook");
     const line = trajectoryLine({ domain: "backend", band: now.band, ricochet: now.ricochet });
     assert.match(line, /^trajectory backend: .+, last ricochet webhook W\d\d$/);
+    assert.ok(now.recent.length >= 2 && now.recent.every((value) => value >= 0 && value <= 1));
+    const sparked = trajectoryLine({ domain: "backend", band: now.band, ricochet: now.ricochet, recent: now.recent });
+    assert.match(sparked, /^trajectory backend [▁▂▃▄▅▆▇█]{2,6}: .+, last ricochet webhook W\d\d$/);
     assert.equal(nowOf([trajectoryOf("security", [], [], NOW)]), null);
   });
 

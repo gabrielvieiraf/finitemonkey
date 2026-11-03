@@ -4,7 +4,8 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
-import { JUDGE_PANE_REQUEST, judgeProcess } from "../src/judge/call.js";
+import { GATE_JUDGE_REQUEST, JUDGE_PANE_REQUEST, judgeProcess } from "../src/judge/call.js";
+import { gateJudgeCall } from "../src/judge/gate-call.js";
 import { appendEntry } from "../src/judge/store.js";
 import { judgeLines } from "../src/mod/judge-view.js";
 import { fmPaths } from "../src/task/paths.js";
@@ -96,6 +97,15 @@ describe("one judge request through the CLI, the pane, the skill and the shipped
       JSON.stringify(field(parseBody(shipped.stdout), "data")),
       JSON.stringify(field(parseBody(viaPane.stdout), "data")),
     );
+  });
+
+  it("the gate reads the same judge call JSON as the CLI, byte for byte", async () => {
+    const repo = project();
+    const gate = judgeProcess(GATE_JUDGE_REQUEST);
+    const viaCli = await cli(gate.args, { cwd: repo.root, runtime: repoRuntime(), stdin: stdinFrom(gate.stdin) });
+    assert.equal(viaCli.code, 0, viaCli.stdout);
+    const viaGate = gateJudgeCall({ runtime: repoRuntime(), paths: fmPaths(repo.root) });
+    assert.equal(JSON.stringify(viaGate), JSON.stringify(field(parseBody(viaCli.stdout), "data")));
   });
 
   it("the pane marks a revert and a person's fix differently", async () => {

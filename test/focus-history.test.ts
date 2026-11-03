@@ -3,6 +3,7 @@ import { after, describe, it } from "node:test";
 
 import { historyLimit, proposeLimit, type WeekLoad, weekStart } from "../src/focus/limit.js";
 import { pathMentions } from "../src/focus/scope.js";
+import { parseMapIndex, symbolDeviations, symbolTokens } from "../src/focus/symbols.js";
 import { knownTasks } from "../src/guardian/tasks.js";
 import { fmPaths } from "../src/task/paths.js";
 import { contextOf, fireHook, policyWith } from "./guardian-support.js";
@@ -136,5 +137,34 @@ describe("out-of-scope requests in the prompt", () => {
       tool_input: { file_path: `${repo.root}/docs/ideas.md` },
     });
     assert.doesNotMatch(contextOf(edit), /outside the scope/);
+  });
+
+  it("reads symbol names from the cached map and keeps prose words out", () => {
+    const index = parseMapIndex(
+      "# finitemonkey map tree=t budget=4000 source=git-grep folders=3 shown=2\nsrc/billing: totalOf\nsrc/shipping: quoteShipping, rateTable\n… 1 more folders\n",
+    );
+    assert.deepEqual(index.get("quoteShipping"), ["src/shipping"]);
+    assert.deepEqual(symbolTokens("make quoteShipping round up, call `rateTable` and fix the total of orders"), [
+      "rateTable",
+      "quoteShipping",
+    ]);
+    assert.deepEqual(symbolDeviations("fix totalOf and rateTable()", index, ["src/billing/"]), [
+      { file: "rateTable (src/shipping)", area: "src" },
+    ]);
+    assert.deepEqual(symbolDeviations("fix rateTable()", index, []), []);
+  });
+
+  it("asks once for a symbol defined outside scope, read from the map cache without a scan", async () => {
+    const map =
+      "# finitemonkey map tree=t budget=4000 source=git-grep folders=2 shown=2\nsrc/billing: totalOf\nsrc/shipping: quoteShipping\n";
+    const repo = setup({ ".finitemonkey/map.txt": map });
+    const ask = async (prompt: string): Promise<string> =>
+      contextOf(await fireHook(repo, "UserPromptSubmit", { prompt }, repoRuntime({ now: () => NOW })));
+    assert.doesNotMatch(await ask("fix totalOf for refunds"), /outside the scope/);
+    assert.match(
+      await ask("also make quoteShipping round up"),
+      /quoteShipping \(src\/shipping\) is outside the scope of task e/,
+    );
+    assert.doesNotMatch(await ask("and quoteShipping again"), /outside the scope/);
   });
 });

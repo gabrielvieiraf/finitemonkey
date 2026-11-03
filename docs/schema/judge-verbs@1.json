@@ -1169,9 +1169,9 @@
               "state": {
                 "type": "string",
                 "enum": [
+                  "held",
                   "pending",
-                  "open",
-                  "held"
+                  "open"
                 ]
               },
               "support": {
@@ -1668,9 +1668,9 @@
           "state": {
             "type": "string",
             "enum": [
+              "held",
               "pending",
-              "open",
-              "held"
+              "open"
             ]
           },
           "support": {

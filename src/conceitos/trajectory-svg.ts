@@ -1,5 +1,15 @@
 import type { DomainTrajectory, Mark, Week } from "./trajectory.js";
-import { type Band, BAND_ORDER, BANDS, landedIn, markIn, markLevel, peakOf, strataOf } from "./trajectory-bands.js";
+import {
+  type Band,
+  BAND_ORDER,
+  BANDS,
+  landedIn,
+  markIn,
+  markLevel,
+  peakOf,
+  strataOf,
+  workInterval,
+} from "./trajectory-bands.js";
 import { keyOf, type Plot, swatchOf, yOf } from "./trajectory-key.js";
 import { defsOf, escapeXml, num, paint, styleOf, text } from "./trajectory-paint.js";
 import type { ThemeChoice } from "./trajectory-palette.js";
@@ -161,6 +171,27 @@ const workLine = (theme: ThemeChoice, frame: Frame, trajectory: DomainTrajectory
     return [...line, ...dots];
   });
 
+const UNCERTAINTY_TITLE =
+  "count rule interval: the line marks the middle of the band the work counted into, anywhere in this span fits the same counts";
+
+const uncertaintyBand = (theme: ThemeChoice, frame: Frame, weeks: readonly Week[]): readonly string[] =>
+  runsOf(weeks, (week) => workInterval(week) !== undefined).map((run) => {
+    const columns = run.flatMap((index) => {
+      const span = weeks[index] === undefined ? undefined : workInterval(weeks[index]);
+      const x = frame.xs[index] ?? 0;
+      if (span === undefined) return [];
+      return run.length === 1
+        ? [
+            { x: x - frame.half * 0.3, span },
+            { x: x + frame.half * 0.3, span },
+          ]
+        : [{ x, span }];
+    });
+    const top = columns.map(({ x, span }) => `${num(x)} ${num(yOf(frame, span.high))}`);
+    const bottom = columns.map(({ x, span }) => `${num(x)} ${num(yOf(frame, span.low))}`).reverse();
+    return `<path d="M ${top.join(" L ")} L ${bottom.join(" L ")} Z" fill-opacity="0.18" ${paint(theme, { cls: "uncertainty", fill: "you" })}><title>${escapeXml(UNCERTAINTY_TITLE)}</title></path>`;
+  });
+
 const markTitle = (mark: Mark): string =>
   `${mark.kind} · ${mark.concept} · ${mark.evidence.map((item) => `${item.kind} ${item.task ?? "-"} ${item.file ?? "-"} ${item.at}`).join("; ")}`;
 
@@ -236,6 +267,7 @@ export const svgOf = (trajectory: DomainTrajectory, options: SvgOptions = {}): s
     ...splitPaths(theme, frame, trajectory.weeks),
     ...axes(theme, frame, trajectory.weeks),
     keyOf(theme, frame, trajectory),
+    ...uncertaintyBand(theme, frame, trajectory.weeks),
     ...workLine(theme, frame, trajectory),
     ...marksOf(theme, frame, trajectory, options.selected),
     ...researchSvg(

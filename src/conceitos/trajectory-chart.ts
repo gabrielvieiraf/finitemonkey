@@ -1,8 +1,10 @@
 import type { DomainTrajectory, Mark, Week } from "./trajectory.js";
 import { landedIn, markIn } from "./trajectory-bands.js";
 import type { Theme } from "./trajectory-palette.js";
+import { RESEARCH_FIXES, RESEARCH_GLYPH, type ResearchFix, researchLane } from "./trajectory-research.js";
 import {
   axisLine,
+  ENGLISH_RESEARCH,
   ENGLISH_TERM,
   gridOf,
   rowLabels,
@@ -125,7 +127,36 @@ export const rasterShape = (
 ): { readonly perWeek: number; readonly columns: number; readonly rows: number } => {
   const weeks = Math.max(trajectory.weeks.length, 1);
   const perWeek = Math.min(6, Math.max(2, Math.floor((columns - LABEL_WIDTH - 1) / weeks)));
-  return { perWeek, columns: weeks * perWeek + 1 + LABEL_WIDTH, rows: GRID_ROWS + 1 };
+  const lane = (trajectory.research ?? []).length > 0 ? 1 : 0;
+  return { perWeek, columns: weeks * perWeek + 1 + LABEL_WIDTH, rows: GRID_ROWS + 1 + lane };
+};
+
+const fixInk = (palette: ReturnType<typeof termPalette>): Readonly<Record<ResearchFix, number>> => ({
+  open: palette.ink.ricochet,
+  revert: palette.ink.line,
+  agent: palette.ink.line,
+  person: palette.ink.held,
+});
+
+const fixOfGlyph = (glyph: string): ResearchFix | undefined =>
+  RESEARCH_FIXES.find((fix) => RESEARCH_GLYPH[fix] === glyph);
+
+const laneCells = (trajectory: DomainTrajectory, perWeek: number, options: RasterOptions): readonly RasterCell[] => {
+  const marks = trajectory.research ?? [];
+  if (marks.length === 0) return [];
+  const palette = termPalette(options.theme);
+  const inks = fixInk(palette);
+  const lane = researchLane(
+    trajectory.weeks.map((week) => week.week),
+    marks,
+    perWeek,
+  );
+  const plot = Array.from(lane, (glyph) => {
+    const fix = fixOfGlyph(glyph);
+    return { glyph, fg: fix === undefined ? DEFAULT_COLOR : inks[fix], bg: DEFAULT_COLOR };
+  });
+  const name = (options.labels?.research ?? ENGLISH_RESEARCH).lane;
+  return [...plot, ...textCells(` ${name}`, LABEL_WIDTH + 1, palette.ink.faint)];
 };
 
 export const rasterCells = (
@@ -145,6 +176,7 @@ export const rasterCells = (
       ),
       ...textCells(` ${names[row] ?? ""}`, LABEL_WIDTH + 1, faint),
     ]),
+    ...laneCells(trajectory, shape.perWeek, options),
     ...textCells(axisLine(trajectory, shape.perWeek), plotWidth, faint),
     ...textCells("", LABEL_WIDTH + 1, faint),
   ];

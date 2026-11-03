@@ -199,11 +199,21 @@ describe("optional live-key check", () => {
   });
 
   it("never runs from a hook: only the command module imports the live check", () => {
-    const importers = (dir: string): readonly string[] =>
+    const importers = (dir: string, module: RegExp): readonly string[] =>
       readdirSync(dir, { recursive: true, encoding: "utf8" })
         .filter((name) => name.endsWith(".ts"))
-        .filter((name) => /secrets\/live\.js|\.\/live\.js/.test(readFileSync(join(dir, name), "utf8")))
-        .map((name) => name.split("\\").join("/"));
-    assert.deepEqual(importers(join(REPO, "src")), ["commands/secrets-live.ts"]);
+        .filter((name) => module.test(readFileSync(join(dir, name), "utf8")))
+        .map((name) => name.split("\\").join("/"))
+        .sort();
+    const src = join(REPO, "src");
+    assert.deepEqual(importers(src, /secrets\/live\.js|\.\/live\.js/), [
+      "commands/secrets-live-aws.ts",
+      "commands/secrets-live.ts",
+      "secrets/aws-live.ts",
+    ]);
+    assert.deepEqual(importers(src, /secrets\/aws-live\.js|\.\/aws-live\.js/), [
+      "commands/secrets-live-aws.ts",
+      "commands/secrets-live.ts",
+    ]);
   });
 });
