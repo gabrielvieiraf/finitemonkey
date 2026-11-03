@@ -30,6 +30,7 @@ npx finitemonkey init
 - [O que um produto de verdade ainda precisa](#o-que-um-produto-de-verdade-ainda-precisa)
 - [Vários agentes ao mesmo tempo](#vários-agentes-ao-mesmo-tempo)
 - [Tudo o mais que ele faz](#tudo-o-mais-que-ele-faz)
+- [Não é só para código: um jeito de pensar com IA](#não-é-só-para-código-um-jeito-de-pensar-com-ia)
 - [Instalação](#instalação)
 
 ## O portão: "pronto" quer dizer verificado
@@ -81,6 +82,18 @@ Cada frente de trabalho em paralelo ganha sua worktree, branch e faixa de portas
 - **O guardião do projeto.** Tarefas recentes contra os objetivos do projeto: trabalho sem vínculo, escopo crescendo, decisões reabertas, trabalho parado e uma previsão a partir das suas próprias tarefas anteriores.
 - **Cadeia de suprimentos e CI.** Lockfile em ordem, `osv-scanner`, CI e deploy no tamanho do projeto e o `ci gate` rodando as mesmas verificações em todo pull request.
 - **Custo.** Gasto do agente por tarefa, dia e mês contra os seus tetos, e quanto cada contrato já custou.
+
+## Não é só para código: um jeito de pensar com IA
+
+Quase tudo o que dá errado com um agente não é código: é a pergunta que ninguém fez, a fonte que ninguém abriu, a decisão tomada antes de as opções estarem na mesa. O mesmo mecanismo vale para pesquisa, escrita e decisões:
+
+- **Olhe antes de construir.** Antes de o agente escrever um módulo novo ou acrescentar uma dependência, o `guardian reuse` procura um que o projeto já tem para esse papel.
+- **Faça a pergunta que muda a resposta.** Quando o pedido é ambíguo ou depende de uma premissa que ninguém conferiu, o Finite Monkey pergunta uma vez, antes do trabalho, em vez de deixar o agente adivinhar.
+- **Pesquise com fontes que dá para conferir.** `research new`, `research source` e `research status` guardam a pergunta, cada fonte com a data e o que ela mudou, e quando parar. Uma citação precisa estar na fonte que cita, um número precisa vir de uma fonte, e uma questão em aberto precisa dos dois lados citados antes de a resposta contar como pronta.
+- **Decida com registro.** O `decide new` escreve as opções, os critérios escritos antes dos candidatos, "não fazer nada" como opção e o caminho de volta; o `inventory` escreve o que existe hoje antes de qualquer troca.
+- **Saiba o que você consegue julgar.** O x-ray e a trajetória mostram quais partes de um resultado você confere sozinho e quais dependem só do modelo, e perguntas curtas com gabarito vindo de rodar o código (`teach`) levam um conceito de "o agente fez" para "você mostrou".
+
+Isso vem ligado por padrão (`level: standard`). `level: light` no `.finitemonkey/policy.yml` faz esses recursos só observarem e registrarem; `level: strict` liga tudo.
 
 ## Nenhum comando para decorar
 
@@ -283,6 +296,9 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Envia | `registry.npmjs.org`, `pypi.org` | O nome do pacote, ao registro do npm ou do PyPI, quando um comando de shell vai adicionar um pacote que o projeto ainda não declara. Nunca com `FINITEMONKEY_OFFLINE=1`. |
 | Envia | `registry.npmjs.org` | O seu gerenciador de pacotes baixa o `axe-core` do registro do npm, só depois de um `init --look --yes` seu. Sem `--yes` ele só imprime o comando. |
 | Envia | `registry.npmjs.org` | O nome do pacote do package.json, ao registro do npm (`npm view <nome> dist-tags --json`), só quando você roda `stale --online` ou `stale --after-merge`, para checar docs que dizem que o pacote não está publicado. Offline, quem responde é o changelog. |
+| Envia | `cdn.playwright.dev` | O Playwright baixa o Chromium (cerca de 180 MB) do servidor de downloads dele, só depois de um `init --look --yes` seu. Sem `--yes` ele só imprime o comando e o tamanho. |
+| Envia | `127.0.0.1` | O `look --deep` roda o `lighthouse` do próprio projeto, de `node_modules/.bin`, contra o app no loopback, com o envio de erros desligado. Nada roda sem `--deep` ou quando o lighthouse não está instalado. |
+| Envia | `remote of the merge target` | O `merge` roda `git fetch` do upstream do branch de destino antes de mesclar, só quando `merge-fetch` está ativo no policy.yml, e anota quando a base andou. |
 | Envia | `api.osv.dev` | Nomes e versões de pacotes dos seus lockfiles, para a base do OSV pelo `osv-scanner`, só quando você roda `deps scan` (no CI, por exemplo). Nunca a partir de um hook. |
 | Envia | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com`, `api.mailgun.net`, `api.sendgrid.com`, `gitlab.com`, `registry.npmjs.org`, `huggingface.co`, `sts.amazonaws.com` | Pelo `curl`, só quando você roda `finitemonkey secrets live <provedor> --env <VARIAVEL> --send`: uma requisição com aquela chave para a API do provedor para ver se ela ainda funciona. Desligado por padrão, nunca roda por hook, e o host aparece antes de qualquer envio. |
 | Envia | `deploy.version_url` | Pelo `curl`, só quando `deploy.version_url` está definido em `.finitemonkey/config.yml`: um GET nessa URL depois de um push, para ler qual commit está no ar. Com `deploy.environment`, a mesma pergunta vai aos deployments do GitHub pelo `gh`. |

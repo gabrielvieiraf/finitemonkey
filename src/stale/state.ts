@@ -1,9 +1,8 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
-import { KNOWN_GUARDS, STARTS_IN_SHADOW } from "../policy/policy.js";
-import { type PublishedVersion, registryVersion } from "./registry.js";
 import { levelMode } from "../policy/levels.js";
 import { DEFAULT_POLICY, KNOWN_GUARDS, STARTS_IN_SHADOW } from "../policy/policy.js";
+import { type PublishedVersion, registryVersion } from "./registry.js";
 import type { FeatureDefault, IssueFact, ProjectState } from "./resolve.js";
 
 export interface CommandEntry {

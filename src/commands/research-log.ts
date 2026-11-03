@@ -113,14 +113,12 @@ export const researchSourceCommand: CommandSpec = {
       const log = readResearchLog(ctx.runtime, paths, slug);
       if (!written || log === undefined)
         return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`));
-      const concepts = recordResearchConcepts(ctx.runtime, paths, slug, url, isPerson(ctx) ? "person" : "agent");
+      const work = { slug, url, question: log.question.question, decision: log.question.decision };
+      const concepts = recordResearchConcepts(ctx.runtime, paths, work, isPerson(ctx) ? "person" : "agent");
       return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, [
         ...stateLines(ctx, log),
         ...suggestionLines(ctx, slug, url, fields),
       ]);
-      const work = { slug, url, question: log.question.question, decision: log.question.decision };
-      const concepts = recordResearchConcepts(ctx.runtime, paths, work, isPerson(ctx) ? "person" : "agent");
-      return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, stateLines(ctx, log));
     });
   },
 };

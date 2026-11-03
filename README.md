@@ -30,6 +30,7 @@ npx finitemonkey init
 - [What a real product still needs](#what-a-real-product-still-needs)
 - [Several agents at once](#several-agents-at-once)
 - [Everything else it does](#everything-else-it-does)
+- [Not only for code: a way to think with AI](#not-only-for-code-a-way-to-think-with-ai)
 - [Install](#install)
 
 ## The gate: "done" means checked
@@ -81,6 +82,18 @@ Parallel work fronts get their own worktree, branch and port range. `fronts boar
 - **The project guardian.** Recent tasks against the project goals: unlinked work, growing scope, reopened decisions, stalled work, and a forecast from your own past tasks.
 - **Supply chain and CI.** Lockfile hygiene, `osv-scanner`, CI and deploy setups sized for the project, and `ci gate` running the same checks on every pull request.
 - **Cost.** Agent spend per task, day and month against your ceilings, and the cost of each contract so far.
+
+## Not only for code: a way to think with AI
+
+Most of what goes wrong with an agent is not code: it is a question nobody asked, a source nobody opened, a decision made before the options were on the table. The same machinery applies to research, writing and decisions:
+
+- **Look before you build.** Before the agent writes a new module or adds a dependency, `guardian reuse` looks for one the project already has for that role.
+- **Ask the question that changes the answer.** When a request is ambiguous or rests on a premise nobody checked, Finite Monkey asks once, before the work, instead of letting the agent guess.
+- **Research with sources you can check.** `research new`, `research source` and `research status` keep a question, every source with its date and what it changed, and when to stop. A quote must be in the source it cites, a number must come from a source, and an open question needs both sides cited before the answer counts as done.
+- **Decide on the record.** `decide new` writes the options, the criteria written before the candidates, "do nothing" as an option and the way back; `inventory` writes what exists today before anything is replaced.
+- **Know what you can judge.** The x-ray and the trajectory show which parts of a result you can check yourself and which rest only on the model, and short questions keyed to running the code (`teach`) move a concept from "the agent did it" to "you showed it".
+
+These start on by default (`level: standard`). `level: light` in `.finitemonkey/policy.yml` makes them observe and log only; `level: strict` turns on everything.
 
 ## Zero commands to remember
 
@@ -283,6 +296,9 @@ Generated from `src/core/footprint.ts`, the list the tests hold the code to. No 
 | Sends | `registry.npmjs.org`, `pypi.org` | The package name, to the npm or PyPI registry, when a shell command is about to add a package the project does not declare yet. Never with `FINITEMONKEY_OFFLINE=1`. |
 | Sends | `registry.npmjs.org` | Your package manager downloads `axe-core` from the npm registry, only after `init --look --yes` from you. Without `--yes` it only prints the command. |
 | Sends | `registry.npmjs.org` | The package name from package.json, to the npm registry (`npm view <name> dist-tags --json`), only when you run `stale --online` or `stale --after-merge`, to check docs that say the package is not published. Offline, the changelog answers instead. |
+| Sends | `cdn.playwright.dev` | Playwright downloads Chromium (about 180 MB) from its download host, only after `init --look --yes` from you. Without `--yes` it only prints the command and the size. |
+| Sends | `127.0.0.1` | `look --deep` runs the project's own `lighthouse` from `node_modules/.bin` against the app on loopback, with its error reporting turned off. Nothing runs without `--deep` or when lighthouse is not installed. |
+| Sends | `remote of the merge target` | `merge` runs `git fetch` of the target branch's upstream before merging, only when `merge-fetch` is active in policy.yml, and notes when the base moved. |
 | Sends | `api.osv.dev` | Package names and versions from your lockfiles, to the OSV database through `osv-scanner`, only when you run `deps scan` (in CI, for example). Never from a hook. |
 | Sends | `api.github.com`, `api.stripe.com`, `api.openai.com`, `api.anthropic.com`, `api.digitalocean.com`, `api.cloudflare.com`, `api.asaas.com`, `api.mailgun.net`, `api.sendgrid.com`, `gitlab.com`, `registry.npmjs.org`, `huggingface.co`, `sts.amazonaws.com` | Through `curl`, only when you run `finitemonkey secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent. |
 | Sends | `deploy.version_url` | Through `curl`, only when `deploy.version_url` is set in `.finitemonkey/config.yml`: a GET to that URL after a push, to read which commit is live. With `deploy.environment`, the same question goes to GitHub deployments through `gh`. |
