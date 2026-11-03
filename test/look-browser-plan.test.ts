@@ -11,7 +11,9 @@ import { execResult, fakeRuntime } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/app");
 const file = (name: string) => toAbsolutePath(`${ROOT}/${name}`);
-const INSTALLED = { [join("/home/test", ".cache", "ms-playwright", "chromium-1140", "INSTALLATION_COMPLETE")]: "" };
+const INSTALLED = {
+  [toAbsolutePath(join("/home/test", ".cache", "ms-playwright", "chromium-1140", "INSTALLATION_COMPLETE"))]: "",
+};
 
 const runtimeWith = (files: Readonly<Record<string, string>>, calls: ExecRequest[]) =>
   fakeRuntime({
