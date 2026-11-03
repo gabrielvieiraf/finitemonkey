@@ -13,6 +13,7 @@ import { raise, readBook, writeBook } from "./book.js";
 import { changeEvents } from "./change.js";
 import { type ConceptEvent, recordConceptEvents } from "./evidence.js";
 import { packageMapOf } from "./packages.js";
+import type { ConceptProposer } from "./propose.js";
 import { saveXray, xrayFor } from "./xray-run.js";
 
 export const CREDIT_FILE = "conceitos-credit.json";
@@ -57,7 +58,7 @@ export const untrackedLines = (runtime: Pick<Runtime, "readText">, git: Git, pat
       return text.value.split("\n").map((line, index) => ({ path: file, line: index + 1, text: line }));
     });
 
-export const creditGate = (runtime: Runtime, paths: FmPaths): readonly ConceptEvent[] => {
+export const creditGate = (runtime: Runtime, paths: FmPaths, proposer?: ConceptProposer): readonly ConceptEvent[] => {
   const status = readGateStatus(runtime, paths);
   if (status?.tree === undefined) return [];
   const before = readCredited(runtime, paths);
@@ -83,6 +84,7 @@ export const creditGate = (runtime: Runtime, paths: FmPaths): readonly ConceptEv
     repaired,
     task: status.task,
     packages: packageMapOf(runtime, paths),
+    ...(proposer === undefined ? {} : { proposer }),
   });
   const events = recordConceptEvents(runtime, paths, drafts);
   const seen = events.filter((event) => event.origin !== "model-proposed").map((event) => event.concept);

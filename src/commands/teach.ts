@@ -4,6 +4,9 @@ import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
 import type { MessageKey } from "../i18n/catalogs.js";
+import { whenEnabled } from "../provider/adapters.js";
+import { providerTeachInput } from "../provider/adapters-more.js";
+import { providerDeps } from "../provider/wire.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import {
@@ -41,11 +44,15 @@ const optedIn = (ctx: Ctx, usage: string, run: (paths: FmPaths) => CommandResult
     return run(paths);
   });
 
-const depsOf = (ctx: Ctx, paths: FmPaths): TeachDeps => ({
-  runtime: ctx.runtime,
-  paths,
-  locale: numberOptions(ctx, paths).locale,
-});
+const depsOf = (ctx: Ctx, paths: FmPaths): TeachDeps => {
+  const proposer = whenEnabled(providerDeps(ctx, paths), "teach-input", providerTeachInput);
+  return {
+    runtime: ctx.runtime,
+    paths,
+    locale: numberOptions(ctx, paths).locale,
+    ...(proposer === undefined ? {} : { proposer }),
+  };
+};
 
 const concepts = (values: OptionValues): readonly string[] =>
   listOption(values, "concepts").flatMap((item) =>

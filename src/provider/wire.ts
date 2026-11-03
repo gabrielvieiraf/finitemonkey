@@ -5,7 +5,15 @@ import { gitAt, resolveBase } from "../gate/git.js";
 import type { JudgeDeps } from "../judge/deps.js";
 import { commandSource } from "../ricochete/divergence.js";
 import type { FmPaths } from "../task/paths.js";
-import { providerConcepts, providerDistractors, providerSplitter, providerSupport, whenEnabled } from "./adapters.js";
+import {
+  providerClaimContradictions,
+  providerConcepts,
+  providerDistractors,
+  providerHorizon,
+  providerSplitter,
+  providerSupport,
+  whenEnabled,
+} from "./adapters.js";
 import type { ProviderDeps } from "./call.js";
 import { providerAgent, providerBlindTests, type ProviderCandidates, providerCandidates } from "./generators.js";
 import { isEnabled } from "./store.js";
@@ -16,18 +24,25 @@ export const providerDeps = (ctx: Pick<Ctx, "runtime" | "env">, paths: FmPaths):
   env: ctx.env,
 });
 
-type JudgeProposers = Pick<JudgeDeps, "splitter" | "proposer" | "suggester" | "distractors">;
+type JudgeProposers = Pick<
+  JudgeDeps,
+  "splitter" | "proposer" | "suggester" | "distractors" | "horizon" | "contradictions"
+>;
 
 export const providerJudge = (deps: ProviderDeps): JudgeProposers => {
   const splitter = whenEnabled(deps, "claim-split", providerSplitter);
   const proposer = whenEnabled(deps, "support", providerSupport);
   const suggester = whenEnabled(deps, "concepts", providerConcepts);
   const distractors = whenEnabled(deps, "distractors", providerDistractors);
+  const horizon = whenEnabled(deps, "horizon", providerHorizon);
+  const contradictions = whenEnabled(deps, "claim-contradictions", providerClaimContradictions);
   return {
     ...(splitter === undefined ? {} : { splitter }),
     ...(proposer === undefined ? {} : { proposer }),
     ...(suggester === undefined ? {} : { suggester }),
     ...(distractors === undefined ? {} : { distractors }),
+    ...(horizon === undefined ? {} : { horizon }),
+    ...(contradictions === undefined ? {} : { contradictions }),
   };
 };
 

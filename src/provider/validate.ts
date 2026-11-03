@@ -97,3 +97,19 @@ export const pick = (value: unknown): "a" | "b" | undefined =>
 
 export const done = (value: unknown): boolean | undefined =>
   isRecord(value) && typeof value["done"] === "boolean" ? value["done"] : undefined;
+
+const MAX_FILE = 20_000;
+
+export const fileContent = (value: unknown): string | undefined => {
+  if (!isRecord(value)) return undefined;
+  const content = value["content"];
+  return typeof content === "string" && content.trim() !== "" && content.length <= MAX_FILE ? content : undefined;
+};
+
+export const inputOnly = (value: unknown): { readonly input: string } | undefined => {
+  const input = isRecord(value) ? text(value["input"]) : undefined;
+  return input === undefined ? undefined : { input };
+};
+
+export const journeySteps = (value: unknown): { readonly steps: readonly unknown[] } | undefined =>
+  isRecord(value) && Array.isArray(value["steps"]) && value["steps"].length > 0 ? { steps: value["steps"] } : undefined;

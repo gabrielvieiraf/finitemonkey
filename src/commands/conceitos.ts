@@ -8,6 +8,9 @@ import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
+import { whenEnabled } from "../provider/adapters.js";
+import { providerCodeConcepts } from "../provider/adapters-more.js";
+import { providerDeps } from "../provider/wire.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
@@ -50,8 +53,10 @@ const exportBook = (ctx: Ctx): CommandResult => {
 };
 
 const update = (ctx: Ctx): CommandResult => {
-  const ids = updateFromPending(ctx.runtime, pathsOf(ctx));
-  const credited = creditGate(ctx.runtime, pathsOf(ctx));
+  const paths = pathsOf(ctx);
+  const ids = updateFromPending(ctx.runtime, paths);
+  const proposer = whenEnabled(providerDeps(ctx, paths), "code-concepts", providerCodeConcepts);
+  const credited = creditGate(ctx.runtime, paths, proposer);
   return success({ schema: CONCEITOS_SCHEMA, seen: [...ids], credited: credited.length }, []);
 };
 
