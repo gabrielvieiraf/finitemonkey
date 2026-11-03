@@ -1,6 +1,6 @@
 {
   "schema": "finitemonkey/evidence@1",
-  "version": "0.1.0-next.45",
+  "version": "0.1.0-next.46",
   "budget": {
     "fprWarn": 0.05,
     "fprFail": 0.15,
@@ -17,8 +17,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.07,
-      "p95Ms": 0.19,
+      "p50Ms": 0.06,
+      "p95Ms": 0.16,
       "byOrigin": {
         "synthetic": 113,
         "session": 0
@@ -34,8 +34,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.12,
-      "p95Ms": 30.09,
+      "p50Ms": 0.13,
+      "p95Ms": 25.64,
       "byOrigin": {
         "synthetic": 104,
         "session": 0
@@ -51,8 +51,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 12.43,
-      "p95Ms": 60.64,
+      "p50Ms": 10.04,
+      "p95Ms": 55.95,
       "byOrigin": {
         "synthetic": 120,
         "session": 0
@@ -68,8 +68,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.13,
-      "p95Ms": 1.01,
+      "p50Ms": 0.15,
+      "p95Ms": 0.89,
       "byOrigin": {
         "synthetic": 105,
         "session": 0
@@ -85,8 +85,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.14,
-      "p95Ms": 0.41,
+      "p50Ms": 0.13,
+      "p95Ms": 0.39,
       "byOrigin": {
         "synthetic": 108,
         "session": 0

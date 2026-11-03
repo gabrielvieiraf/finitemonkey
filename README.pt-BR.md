@@ -133,14 +133,14 @@ O preço é cerca de 1,6 vez o custo e o dobro do tempo: o portão roda as verif
 As travas que ficam sempre ligadas também são reexecutadas a cada versão contra um corpus rotulado:
 
 <!-- generated:evidence:start -->
-Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.45 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
+Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.46 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
 
 | Guard | Deve bloquear | Deve deixar | Falsos positivos | Falsos negativos | p95 (ms) |
 |---|---|---|---|---|---|
 | `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 30.1 |
-| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 60.6 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.0 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 25.6 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 56.0 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.9 |
 | `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.4 |
 
 Custo contra o Claude Code puro nas mesmas tarefas: ainda não medido.

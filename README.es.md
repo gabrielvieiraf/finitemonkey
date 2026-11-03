@@ -133,14 +133,14 @@ El precio es cerca de 1,6 veces el costo y el doble del tiempo: el control ejecu
 Las guardas siempre activas también se vuelven a ejecutar en cada versión contra un corpus etiquetado:
 
 <!-- generated:evidence:start -->
-Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.45 sobre el corpus etiquetado en [bench/corpus](bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
+Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.46 sobre el corpus etiquetado en [bench/corpus](bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
 
 | Guard | Debe bloquear | Debe dejar | Falsos positivos | Falsos negativos | p95 (ms) |
 |---|---|---|---|---|---|
 | `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 30.1 |
-| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 60.6 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.0 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 25.6 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 56.0 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.9 |
 | `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.4 |
 
 Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.

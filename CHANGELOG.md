@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-next.46](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.45...v0.1.0-next.46) (2026-11-03)
+
+### Features
+
+* **gate:** check that quotes cited to a repository file are in that file ([#438](https://github.com/gabrielvieiraf/finitemonkey/issues/438)) ([7330e3b](https://github.com/gabrielvieiraf/finitemonkey/commit/7330e3b05ac14972869ae18c65ba58d9619259fd))
+* **trajectory:** draw the terminal chart from the first week with evidence, one column per week ([#439](https://github.com/gabrielvieiraf/finitemonkey/issues/439)) ([5b4f6ff](https://github.com/gabrielvieiraf/finitemonkey/commit/5b4f6ff42da1a9b7fb862a0dfbec3f5bb1308d20))
+
 ## [0.1.0-next.45](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.44...v0.1.0-next.45) (2026-11-02)
 
 ### Features
