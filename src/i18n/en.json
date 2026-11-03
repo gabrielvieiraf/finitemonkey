@@ -955,6 +955,7 @@
   "cost.report.unit": "Unit cost per operation (base / conservative)",
   "cost.report.fixed": "Fixed platform cost (base / conservative)",
   "cost.report.break_even": "Break-even (base / conservative)",
+  "cost.report.monthly": "Monthly cost per FACT, in USD (base / conservative)",
   "cost.report.scenarios": "Scenarios",
   "cost.report.base": "base",
   "cost.report.conservative": "conservative",

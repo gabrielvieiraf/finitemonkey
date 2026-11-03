@@ -86,3 +86,51 @@ export const goImports = (text: string): readonly string[] =>
       ...[...text.matchAll(GO_IMPORT_LINE)].map((match) => match[1] ?? ""),
     ]),
   ].filter((item) => item !== "");
+
+const JAVA_PACKAGES: Readonly<Record<string, string>> = {
+  okhttp3: "com.squareup.okhttp3:okhttp",
+  "org.apache.http": "org.apache.httpcomponents:httpclient",
+  "org.apache.hc.client5": "org.apache.httpcomponents.client5:httpclient5",
+  retrofit2: "com.squareup.retrofit2:retrofit",
+  "org.asynchttpclient": "org.asynchttpclient:async-http-client",
+  "kong.unirest": "com.konghq:unirest-java",
+  "org.joda.time": "joda-time:joda-time",
+  "org.hibernate.validator": "org.hibernate.validator:hibernate-validator",
+  "ch.qos.logback": "ch.qos.logback:logback-classic",
+  "org.apache.logging.log4j": "org.apache.logging.log4j:log4j-core",
+  "redis.clients.jedis": "redis.clients:jedis",
+  "io.lettuce.core": "io.lettuce:lettuce-core",
+  "com.github.benmanes.caffeine": "com.github.ben-manes.caffeine:caffeine",
+  "org.apache.kafka": "org.apache.kafka:kafka-clients",
+  "com.rabbitmq.client": "com.rabbitmq:amqp-client",
+  "org.hibernate": "org.hibernate.orm:hibernate-core",
+  "org.apache.ibatis": "org.mybatis:mybatis",
+  "org.jooq": "org.jooq:jooq",
+  "org.junit.jupiter": "org.junit.jupiter:junit-jupiter",
+  "org.junit": "junit:junit",
+  "org.testng": "org.testng:testng",
+  "org.springframework.web": "org.springframework.boot:spring-boot-starter-web",
+  "io.javalin": "io.javalin:javalin",
+  "io.micronaut.http.server": "io.micronaut:micronaut-http-server-netty",
+};
+
+const JAVA_IMPORT = /^\s*import\s+(?:static\s+)?([\w.]+)/gm;
+
+export const JVM_SOURCE = /\.(java|kt)$/;
+
+export const javaArtifactOf = (name: string): string | undefined => {
+  const parts = name.split(".");
+  const prefix = parts
+    .map((_, index) => parts.slice(0, parts.length - index).join("."))
+    .find((candidate) => Object.hasOwn(JAVA_PACKAGES, candidate));
+  return prefix === undefined ? undefined : JAVA_PACKAGES[prefix];
+};
+
+export const javaImports = (text: string): readonly string[] => [
+  ...new Set(
+    [...text.matchAll(JAVA_IMPORT)].flatMap((match) => {
+      const artifact = javaArtifactOf(match[1] ?? "");
+      return artifact === undefined ? [] : [artifact];
+    }),
+  ),
+];

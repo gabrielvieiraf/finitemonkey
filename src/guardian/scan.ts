@@ -4,7 +4,7 @@ import type { Translate } from "../i18n/translate.js";
 import { planFiles, planPath } from "../plan/folder.js";
 import type { FmPaths } from "../task/paths.js";
 import { companyContext } from "./context.js";
-import { askedContext, missingContext } from "./context-ask.js";
+import { askedContext, missingContext, withDerivedCost } from "./context-ask.js";
 import { diffSnapshot, existingMatches } from "./existing.js";
 import { readGoals } from "./goals.js";
 import { problemWeight, type Proportion, proportionReport, weigh } from "./proportion.js";
@@ -43,7 +43,7 @@ const decidedConcept =
 export const scanChange = (runtime: ScanRuntime, t: Translate, paths: FmPaths, base: string): ScanResult => {
   const task = activeTask(runtime, paths);
   const goal = task?.contract.goal ?? "";
-  const context = companyContext(readGoals(runtime, paths.root));
+  const context = withDerivedCost(runtime, paths.root, companyContext(readGoals(runtime, paths.root)));
   const snap = diffSnapshot(runtime, paths, base);
   const weight = solutionWeight(
     {

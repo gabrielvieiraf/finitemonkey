@@ -25,6 +25,12 @@ const computed = [
   { id: "break_even_operations", unit: "operations per month", readable: "platform_fixed_brl / (price_per_operation_brl - unit_cost_brl)" },
 ];
 
+const monthly = [
+  { fact: "price_per_call_usd", readable: "price_per_call_usd * calls_per_operation * operations_per_month" },
+  { fact: "tax_on_foreign_services", readable: "price_per_call_usd * calls_per_operation * operations_per_month * tax_on_foreign_services" },
+  { fact: "platform_fixed_brl", readable: "platform_fixed_brl / fx_usd_brl" },
+];
+
 const limits = [
   { provider: "provider", limit: "request size", value: 10, unit: "MB", accepted: 10, next_layer: "reverse proxy body limit", next_value: 10, source: "https://replace-with-the-provider-limits-page", date: DATE },
 ];
@@ -53,6 +59,10 @@ const evaluate = (scenario) => {
 };
 
 const values = { base: evaluate("base"), conservative: evaluate("conservative") };
+const monthlyUsd = (row, scenario) => {
+  if (!SAFE.test(row.readable)) throw new Error("only arithmetic is allowed in " + row.fact);
+  return Function("return (" + substitute(row.readable, (id) => "(" + values[scenario].get(id) + ")") + ")")();
+};
 const csvCell = (value) => {
   const text = String(value ?? "");
   return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
@@ -66,6 +76,14 @@ writeFileSync(
     ["id", "unit", "type", "source", "date", "base", "conservative", "readable"],
     ...inputs.map((row) => [row.id, row.unit, row.type, row.source, row.date, row.base, row.conservative ?? row.base, ""]),
     ...computed.map((row) => [row.id, row.unit, "COMPUTED", "", "", formula(row, SCENARIOS.base), formula(row, SCENARIOS.conservative), row.readable]),
+  ]),
+);
+
+writeFileSync(
+  STEM.replace(/-cost-model$/, "-cost-monthly") + ".csv",
+  csv([
+    ["fact", "unit", "base", "conservative", "readable"],
+    ...monthly.map((row) => [row.fact, "USD per month", monthlyUsd(row, "base"), monthlyUsd(row, "conservative"), row.readable]),
   ]),
 );
 
@@ -93,6 +111,9 @@ writeFileSync(
     "## " + TEXT.unit, "", pair(KEYS.unit), "",
     "## " + TEXT.fixed, "", pair(KEYS.fixed), "",
     "## " + TEXT.breakEven, "", pair(KEYS.breakEven), "",
+    "## " + TEXT.monthly, "",
+    ...table(["fact", TEXT.base, TEXT.conservative], monthly.map((row) => [row.fact, round(monthlyUsd(row, "base")), round(monthlyUsd(row, "conservative"))])),
+    "",
     "## " + TEXT.scenarios, "",
     ...table(["id", TEXT.base, TEXT.conservative, "type", "unit"], rows.map((row) => [marked(row) + row.id, round(values.base.get(row.id)), round(values.conservative.get(row.id)), row.type ?? "COMPUTED", row.unit])),
     "",
@@ -120,6 +141,7 @@ export const costScript = (t: Translate, topic: string, date: string): string =>
       unit: t("cost.report.unit"),
       fixed: t("cost.report.fixed"),
       breakEven: t("cost.report.break_even"),
+      monthly: t("cost.report.monthly"),
       scenarios: t("cost.report.scenarios"),
       base: t("cost.report.base"),
       conservative: t("cost.report.conservative"),
