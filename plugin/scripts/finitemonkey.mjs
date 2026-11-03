@@ -48521,7 +48521,6 @@ var markIn = (marks, week) => {
   const here = marks.filter((mark2) => mark2.week === week);
   return here.find((mark2) => mark2.kind === "ricochet") ?? here[0];
 };
-var lastWeek = (trajectory2) => [...trajectory2.weeks].reverse().find((week) => filled(week));
 var landedIn = (trajectory2, week) => {
   const level = week.work;
   return level === null ? void 0 : bandAt(week, level, peakOf(trajectory2));
@@ -87007,45 +87006,73 @@ var ENGLISH_TERM = {
   noData: (evidence2) => `no data (${String(evidence2)} weighted events)`,
   head: (domain, from, to, evidence2) => `${domain}, ${from} to ${to}, ${String(evidence2)} weighted events`
 };
-var rowOf5 = (level, peak, rows3) => Math.min(rows3 - 1, Math.max(0, Math.round(rows3 - level / peak * rows3 - 0.5)));
-var bandCell = (week, level, peak) => {
-  const band = bandAt(week, level, peak);
-  return { glyph: " ", band: band ?? "gap", ink: null };
+var layersOf = (trajectory2, rows3) => {
+  const bands = usedBands(trajectory2);
+  const base = Math.floor(rows3 / Math.max(1, bands.length));
+  const extra = rows3 - base * bands.length;
+  let at9 = 0;
+  return bands.map((band, index) => {
+    const from = at9;
+    at9 += base + (index < extra ? 1 : 0);
+    return { band, from, to: at9 };
+  });
+};
+var layerAt = (layers, row4) => layers.find((layer) => row4 >= layer.from && row4 < layer.to);
+var rowIn = (layers, week, level, peak) => {
+  const strata = strataOf(week, peak);
+  const stratum = strata.find((item2) => level >= item2.from && level < item2.to) ?? strata.at(-1);
+  const layer = layers.find((item2) => item2.band === stratum?.band);
+  if (stratum === void 0 || layer === void 0) return null;
+  const height = layer.to - layer.from;
+  const share5 = (level - stratum.from) / Math.max(Number.EPSILON, stratum.to - stratum.from);
+  return layer.from + Math.min(height - 1, Math.max(0, Math.floor(share5 * height)));
 };
 var pointCell = (trajectory2, week, band) => {
   const mark2 = markIn(trajectory2.marks, week.week);
   if (mark2 === void 0) return { glyph: "●", band, ink: "line" };
   return mark2.kind === "ricochet" ? { glyph: "✕", band, ink: "ricochet" } : { glyph: "◉", band, ink: "held" };
 };
-var pointRows = (trajectory2, peak, rows3) => trajectory2.weeks.map((week) => {
-  const level = markIn(trajectory2.marks, week.week) === void 0 ? week.work : markLevel(week);
-  return level === null ? null : rowOf5(level, peak, rows3);
-});
-var SEPARATED = 4;
-var SEPARATOR4 = { glyph: " ", band: null, ink: null };
-var centerOf = (perWeek) => Math.floor((perWeek - (perWeek >= SEPARATED ? 1 : 0)) / 2);
-var trailRow = (points, column2, perWeek) => {
+var pointRows = (trajectory2, layers, rows3) => {
+  const peak = peakOf(trajectory2);
+  return trajectory2.weeks.map((week) => {
+    const level = markIn(trajectory2.marks, week.week) === void 0 ? week.work : markLevel(week);
+    const row4 = level === null || !filled(week) ? null : rowIn(layers, week, level, peak);
+    return row4 === null ? null : rows3 - 1 - row4;
+  });
+};
+var centerOf = (perWeek) => Math.floor(perWeek / 2);
+var trailAt = (points, column2, perWeek) => {
   const center2 = centerOf(perWeek);
   const index = Math.floor((column2 - center2) / perWeek);
   const from = points[index];
   const to = points[index + 1];
-  if (from === null || from === void 0 || to === null || to === void 0) return null;
-  const offset = column2 - (index * perWeek + center2);
-  if (offset <= 0 || offset >= perWeek) return null;
-  return Math.round(from + (to - from) * offset / perWeek);
+  if (from === null || from === void 0 || to === null || to === void 0) return void 0;
+  return from + (to - from) * (column2 - (index * perWeek + center2)) / perWeek;
+};
+var onTrail = (points, column2, perWeek, row4) => {
+  const here = trailAt(points, column2, perWeek);
+  if (here === void 0) return false;
+  const before2 = trailAt(points, column2 - 0.5, perWeek) ?? here;
+  const after2 = trailAt(points, column2 + 0.5, perWeek) ?? here;
+  const low = Math.round(Math.min(before2, after2));
+  const high = Math.round(Math.max(before2, after2));
+  return row4 >= low && row4 <= high;
+};
+var backCell = (week, band) => {
+  if (band === void 0) return { glyph: " ", band: "gap", ink: null };
+  return filled(week) ? { glyph: " ", band, ink: null } : { glyph: "╱", band, ink: "faint" };
 };
 var gridOf = (trajectory2, size) => {
-  const peak = peakOf(trajectory2);
-  const points = pointRows(trajectory2, peak, size.rows);
+  const layers = layersOf(trajectory2, size.rows);
+  const points = pointRows(trajectory2, layers, size.rows);
   const center2 = centerOf(size.perWeek);
   return Array.from({ length: size.rows }, (_, row4) => {
-    const level = peak * (size.rows - row4 - 0.5) / size.rows;
+    const band = layerAt(layers, size.rows - 1 - row4)?.band;
     return trajectory2.weeks.flatMap(
       (week, index) => Array.from({ length: size.perWeek }, (_unused, offset) => {
-        const separator = size.perWeek >= SEPARATED && offset === size.perWeek - 1;
-        const cell4 = separator ? SEPARATOR4 : bandCell(week, level, peak);
+        const cell4 = backCell(week, band);
         if (offset === center2 && points[index] === row4) return pointCell(trajectory2, week, cell4.band);
-        if (trailRow(points, index * size.perWeek + offset, size.perWeek) === row4)
+        if (onTrail(points, index * size.perWeek + offset, size.perWeek, row4))
           return { glyph: "·", band: cell4.band, ink: "line" };
         return cell4;
       })
@@ -87053,21 +87080,21 @@ var gridOf = (trajectory2, size) => {
   });
 };
 var rowLabels = (trajectory2, rows3, labels) => {
-  const peak = peakOf(trajectory2);
-  const week = lastWeek(trajectory2);
-  let previous = "";
+  const layers = layersOf(trajectory2, rows3);
   return Array.from({ length: rows3 }, (_, row4) => {
-    const band = week === void 0 ? void 0 : bandAt(week, peak * (rows3 - row4 - 0.5) / rows3, peak);
-    const label3 = band === void 0 ? "" : labels.band[band];
-    const shown12 = label3 === previous ? "" : label3;
-    previous = label3;
-    return shown12;
+    const layer = layerAt(layers, rows3 - 1 - row4);
+    if (layer === void 0) return "";
+    return rows3 - 1 - row4 === layer.from + Math.floor((layer.to - layer.from - 1) / 2) ? labels.band[layer.band] : "";
   });
 };
-var axisLine = (trajectory2, perWeek) => trajectory2.weeks.map((week) => week.week.slice(-3).padEnd(perWeek).slice(0, perWeek)).join("");
+var axisLine = (trajectory2, perWeek) => trajectory2.weeks.map((week) => {
+  const name = week.week.slice(-3);
+  const lead = Math.max(0, Math.min(perWeek - name.length, centerOf(perWeek) - 1));
+  return `${" ".repeat(lead)}${name}`.padEnd(perWeek).slice(0, perWeek);
+}).join("");
 var usedBands = (trajectory2) => {
-  const grid = gridOf(trajectory2, { rows: 12, perWeek: 1 });
-  const seen = new Set(grid.flat().map((cell4) => cell4.band));
+  const peak = peakOf(trajectory2);
+  const seen = new Set(trajectory2.weeks.flatMap((week) => strataOf(week, peak).map((stratum) => stratum.band)));
   return BAND_ORDER.filter((band) => seen.has(band));
 };
 var termPalette = (theme) => TERM_PALETTE[theme];
@@ -87135,7 +87162,7 @@ var PLAIN = {
   beyond: " ",
   gap: "\\"
 };
-var PLAIN_GLYPH = { "●": "*", "·": "+", "✕": "X", "◉": "O" };
+var PLAIN_GLYPH = { "●": "*", "·": "+", "✕": "X", "◉": "O", "╱": "\\" };
 var plainCell = (cell4) => cell4.glyph === " " ? cell4.band === null ? " " : PLAIN[cell4.band] : PLAIN_GLYPH[cell4.glyph] ?? cell4.glyph;
 var HATCH = "╱";
 var cellStyle = (cell4, theme, depth) => {
@@ -87143,7 +87170,7 @@ var cellStyle = (cell4, theme, depth) => {
   if (cell4.band === "gap" && cell4.ink === null) return style(palette.gap, null, depth, false);
   const bg = cell4.band === null || cell4.band === "gap" ? null : palette.band[cell4.band];
   const fg = cell4.ink === null ? null : palette.ink[cell4.ink];
-  return style(fg, bg, depth, cell4.ink !== null && cell4.glyph !== "·");
+  return style(fg, bg, depth, cell4.ink !== null && cell4.ink !== "faint" && cell4.glyph !== "·");
 };
 var glyphOf = (cell4) => cell4.band === "gap" && cell4.glyph === " " ? HATCH : cell4.glyph;
 var colorRow = (cells, theme, depth) => {
@@ -89047,9 +89074,9 @@ var prProvenanceCommand = {
 };
 
 // src/team/history.ts
-var SEPARATOR5 = "";
+var SEPARATOR4 = "";
 var FIELD4 = "";
-var parseLog4 = (text45) => text45.split(SEPARATOR5).map((chunk) => chunk.trim()).filter((chunk) => chunk !== "").flatMap((chunk) => {
+var parseLog4 = (text45) => text45.split(SEPARATOR4).map((chunk) => chunk.trim()).filter((chunk) => chunk !== "").flatMap((chunk) => {
   const [header3 = "", ...rest] = chunk.split("\n");
   const [sha, at9, email, subject2] = header3.split(FIELD4);
   if (sha === void 0 || at9 === void 0 || email === void 0 || subject2 === void 0) return [];
@@ -89058,7 +89085,7 @@ var parseLog4 = (text45) => text45.split(SEPARATOR5).map((chunk) => chunk.trim()
 });
 var readCommits = (runtime, root) => {
   const result2 = runtime.git(
-    ["log", "--no-merges", "--reverse", `--format=${SEPARATOR5}%H${FIELD4}%cI${FIELD4}%ae${FIELD4}%s`, "--name-only"],
+    ["log", "--no-merges", "--reverse", `--format=${SEPARATOR4}%H${FIELD4}%cI${FIELD4}%ae${FIELD4}%s`, "--name-only"],
     root
   );
   return result2.ok ? parseLog4(result2.stdout) : [];
@@ -92716,7 +92743,7 @@ var loopIndex = (runtime, paths, task) => {
 };
 
 // src/statusline/render.ts
-var SEPARATOR6 = " | ";
+var SEPARATOR5 = " | ";
 var segmentText = (t, segment2) => [
   "fm",
   ...segment2.task === void 0 ? [] : [segment2.task],
@@ -92739,7 +92766,7 @@ var fit2 = (line14, columns) => {
 var composeLine = (wrapped, segment2, columns) => {
   const lines11 = wrapped === "" ? [] : wrapped.split(/\r?\n/);
   const last = lines11.pop();
-  const joined2 = last === void 0 || last.trim() === "" ? segment2 : `${last}${SEPARATOR6}${segment2}`;
+  const joined2 = last === void 0 || last.trim() === "" ? segment2 : `${last}${SEPARATOR5}${segment2}`;
   return [...lines11, joined2].map((line14) => fit2(line14, columns)).join("\n");
 };
 
