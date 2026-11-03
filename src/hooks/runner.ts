@@ -1,4 +1,5 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { nowMs } from "../core/clock.js";
 import type { Env, TextSource } from "../core/context.js";
 import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
@@ -6,14 +7,16 @@ import { PROBE_ID_ENV, recordProbeEvent } from "../doctor/probe.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
 import type { Translate } from "../i18n/translate.js";
 import { fmPaths } from "../task/paths.js";
+import { boundedRuntime } from "./bounded-runtime.js";
 import { HOOK_POLICIES, type HookEvent } from "./events.js";
 import { allow, composeDecisions, type HookDecision, type HookHandlers, type HookInput } from "./handlers.js";
 import { type HookPayload, parseHookPayload } from "./payload.js";
+import { repairsItself } from "./repair.js";
 import { readAll, withDeadline } from "./stdin.js";
 
 export const HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 
-export type HookVerdict = "allow" | "block" | "failed_open" | "failed_closed" | "stop_released";
+export type HookVerdict = "allow" | "block" | "failed_open" | "failed_closed" | "stop_released" | "repair_allowed";
 
 export interface HookOutcome {
   readonly exitCode: 0 | 2;
@@ -42,11 +45,16 @@ const messageOf = (error: unknown): string => (error instanceof Error ? error.me
 const decide = (input: HookInput, handlers: HookHandlers): Promise<HookDecision> =>
   composeDecisions(input, handlers[input.event] ?? [allow]);
 
-const evaluate = async (event: HookEvent, options: HookRunOptions): Promise<Evaluation> => {
+interface Seen {
+  payload: HookPayload | undefined;
+}
+
+const evaluate = async (event: HookEvent, options: HookRunOptions, seen: Seen): Promise<Evaluation> => {
   const text = await readAll(options.stdin);
   const parsed = parseHookPayload(event, text, options.stdin.isTTY === true);
   if (!parsed.ok) return { kind: "failed", payload: undefined, detail: parsed.error };
   const payload = parsed.value;
+  seen.payload = payload;
   const probe = options.env?.[PROBE_ID_ENV];
   if (probe !== undefined && probe !== "") {
     const root = findRepoRoot(
@@ -86,20 +94,29 @@ const released = (event: HookEvent, detail: string, t: Translate): HookOutcome =
   verdict: "stop_released",
 });
 
-const failed = (event: HookEvent, detail: string, t: Translate): HookOutcome =>
-  HOOK_POLICIES[event].failClosed
-    ? {
-        exitCode: 2,
-        stdout: "",
-        stderr: `finitemonkey: ${t("hook.failed_closed", { event, detail })}\n`,
-        verdict: "failed_closed",
-      }
-    : {
-        exitCode: 0,
-        stdout: "",
-        stderr: `finitemonkey: ${t("hook.failed_open", { event, detail })}\n`,
-        verdict: "failed_open",
-      };
+const repairAllowed = (event: HookEvent, detail: string, t: Translate): HookOutcome => ({
+  exitCode: 0,
+  stdout: ALLOW_STDOUT,
+  stderr: `finitemonkey: ${t("hook.repair_allowed", { event, detail })}\n`,
+  verdict: "repair_allowed",
+});
+
+const failed = (event: HookEvent, detail: string, t: Translate, payload?: HookPayload): HookOutcome =>
+  HOOK_POLICIES[event].failClosed && repairsItself(event, payload)
+    ? repairAllowed(event, detail, t)
+    : HOOK_POLICIES[event].failClosed
+      ? {
+          exitCode: 2,
+          stdout: "",
+          stderr: `finitemonkey: ${t("hook.failed_closed", { event, detail })}\n`,
+          verdict: "failed_closed",
+        }
+      : {
+          exitCode: 0,
+          stdout: "",
+          stderr: `finitemonkey: ${t("hook.failed_open", { event, detail })}\n`,
+          verdict: "failed_open",
+        };
 
 const worktreeCreated = (output: JsonObject | undefined, t: Translate): HookOutcome => {
   const path = output?.["worktreePath"];
@@ -111,7 +128,7 @@ const worktreeCreated = (output: JsonObject | undefined, t: Translate): HookOutc
 const conclude = (event: HookEvent, evaluation: Evaluation, t: Translate, probe: boolean): HookOutcome => {
   const stopActive = evaluation.payload?.stopHookActive === true;
   if (evaluation.kind === "failed") {
-    return stopActive ? released(event, evaluation.detail, t) : failed(event, evaluation.detail, t);
+    return stopActive ? released(event, evaluation.detail, t) : failed(event, evaluation.detail, t, evaluation.payload);
   }
   const { decision } = evaluation;
   if (decision.kind === "allow") {
@@ -125,14 +142,16 @@ const conclude = (event: HookEvent, evaluation: Evaluation, t: Translate, probe:
 };
 
 export const runHook = async (event: HookEvent, options: HookRunOptions): Promise<HookOutcome> => {
+  const seen: Seen = { payload: undefined };
+  const bounded = { ...options, runtime: boundedRuntime(options.runtime, nowMs(options.runtime) + options.deadlineMs) };
   try {
     return conclude(
       event,
-      await withDeadline(evaluate(event, options), options.deadlineMs, options.startTimer),
+      await withDeadline(evaluate(event, bounded, seen), options.deadlineMs, options.startTimer),
       options.t,
       options.env?.[HOOK_PROBE_ENV] === "1",
     );
   } catch (error) {
-    return failed(event, messageOf(error), options.t);
+    return failed(event, messageOf(error), options.t, seen.payload);
   }
 };
