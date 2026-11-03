@@ -3,9 +3,10 @@ import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
-import { agreement, readPairs, writePairs } from "../look/critic.js";
+import { agreement, CHECKLIST, rankPair, readPairs, writePairs } from "../look/critic.js";
 import { isPerson } from "../secrets/project.js";
 import { fmPaths } from "../task/paths.js";
+import { lookCritic } from "./look.js";
 import type { CommandSpec } from "./types.js";
 
 export const LOOK_PAIRS_SCHEMA = "finitemonkey/look-pairs@1";
@@ -61,4 +62,34 @@ export const lookPairPickCommand: CommandSpec = {
   status: "ready",
   maxPositionals: 2,
   run: (ctx, args) => Promise.resolve(pick(ctx, args.positionals[0], args.positionals[1])),
+};
+
+const RANK_USAGE = "finitemonkey look pair rank <a.png> <b.png>";
+
+const rank = async (ctx: Ctx, a: string | undefined, b: string | undefined): Promise<CommandResult> => {
+  if (a === undefined || b === undefined)
+    return failureFrom(
+      ctx.t,
+      usageProblem("invalid_arguments", "error.invalid_arguments", RANK_USAGE, { detail: "<a> <b>" }),
+    );
+  const critic = lookCritic(ctx);
+  if (critic === undefined)
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "look.pair.no_critic", RANK_USAGE));
+  const paths = fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
+  const made = await rankPair(ctx.runtime, paths, critic, { a, b, checklist: CHECKLIST }).catch(() => undefined);
+  if (made === undefined)
+    return failureFrom(ctx.t, usageProblem("invalid_arguments", "look.pair.no_ranking", RANK_USAGE));
+  const pairs = readPairs(ctx.runtime, paths);
+  return success({ schema: LOOK_PAIRS_SCHEMA, pairs, ...agreement(pairs) }, [
+    ctx.t("look.pair.ranked", { id: made.id, critic: made.critic }),
+  ]);
+};
+
+export const lookPairRankCommand: CommandSpec = {
+  path: ["look", "pair", "rank"],
+  summaryKey: "command.look_pair_rank.summary",
+  usage: RANK_USAGE,
+  status: "ready",
+  maxPositionals: 2,
+  run: (ctx, args) => rank(ctx, args.positionals[0], args.positionals[1]),
 };

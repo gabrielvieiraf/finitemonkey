@@ -95,7 +95,7 @@ const doneResult = (ctx: Ctx, data: LookData): CommandResult<LookData> => {
   };
 };
 
-const lookCritic = (ctx: Ctx): Critic | undefined =>
+export const lookCritic = (ctx: Ctx): Critic | undefined =>
   whenEnabled(providerDeps(ctx, fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd)), "critic", providerCritic);
 
 export const lookCommand: CommandSpec = {

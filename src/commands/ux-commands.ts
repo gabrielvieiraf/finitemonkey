@@ -1,7 +1,7 @@
 import { journeyApproveCommand, journeyCommand, journeyProposeCommand } from "./journey.js";
 import { lookRejectCommand } from "./look-approve.js";
 import { lookOpinionAcceptCommand } from "./look-opinion.js";
-import { lookPairCommand, lookPairPickCommand } from "./look-pair.js";
+import { lookPairCommand, lookPairPickCommand, lookPairRankCommand } from "./look-pair.js";
 import { lookPerfAcceptCommand } from "./look-perf.js";
 import { lookSheetCommand } from "./look-sheet.js";
 import type { CommandSpec } from "./types.js";
@@ -23,5 +23,6 @@ export const UX_COMMANDS: readonly CommandSpec[] = [
   lookPerfAcceptCommand,
   lookPairCommand,
   lookPairPickCommand,
+  lookPairRankCommand,
   lookOpinionAcceptCommand,
 ];

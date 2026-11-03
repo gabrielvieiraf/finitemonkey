@@ -1813,6 +1813,28 @@
           "index"
         ]
       }
+    },
+    "proposedContradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "span": {
+            "type": "string"
+          },
+          "origin": {
+            "const": "model-proposed"
+          }
+        },
+        "required": [
+          "source",
+          "span",
+          "origin"
+        ]
+      }
     }
   },
   "required": [
