@@ -50,6 +50,20 @@ describe("transfer vs known context", () => {
     );
   });
 
+  it("research evidence takes its area from the cited field and concepts meet through the resolver", () => {
+    const topic = "research/health/supplement-evidence";
+    const cited = (days: number, url: string) => event(days, topic, "own_change", { match: url });
+    const shown = [
+      cited(40, "https://pubmed.ncbi.nlm.nih.gov/1/"),
+      cited(33, "https://www.who.int/a"),
+      cited(26, "https://www.nejm.org/b"),
+    ];
+    assert.equal(sidesOf([...shown, cited(5, "https://eur-lex.europa.eu/x")]).at(-1), "transfer");
+    assert.equal(sidesOf([...shown, cited(5, "https://www.bmj.com/y")]).at(-1), "known");
+    const aliased = [...DEMONSTRATED, event(5, "backend/api/endpoint", "own_change", { file: "src/api/x.ts" })];
+    assert.equal(sidesOf(aliased).at(-1), "known");
+  });
+
   it("a demonstrated concept succeeding in a new area is transfer, in a known area known context", () => {
     const transfer = [...DEMONSTRATED, event(5, "api", "own_change", { file: "lib/payments/charge.ts" })];
     const known = [...DEMONSTRATED, event(5, "api", "own_repair", { file: "src/api/orders.ts" })];

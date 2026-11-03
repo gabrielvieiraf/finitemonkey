@@ -1,10 +1,11 @@
 import { bandSnapshot, claimsIn, supportStateOf, touchedConcepts } from "./claims.js";
 import { appendNow, type JudgeDeps } from "./deps.js";
 import { answerOf, keyOf, probesIn, twoSpans } from "./probe.js";
+import { typedNumberRight } from "./probe-forms.js";
 import type { JudgeRequest } from "./request.js";
 import { type JudgeResponse, type ProbeView, response, rowOf } from "./response.js";
 import { entryId, readEntries } from "./store.js";
-import type { JudgeEntry, ProbeEntry } from "./types.js";
+import { type JudgeEntry, OPEN_FORMS, type ProbeEntry } from "./types.js";
 
 type Request<V extends JudgeRequest["verb"]> = Extract<JudgeRequest, { verb: V }>;
 
@@ -15,7 +16,7 @@ export const probeView = (probe: ProbeEntry, entries: readonly JudgeEntry[]): Pr
     claim: probe.claim,
     form: probe.form,
     prompt: probe.prompt,
-    options: probe.options,
+    options: OPEN_FORMS.has(probe.form) ? [] : probe.options,
     answered: answer !== undefined,
     ...(probe.decision === undefined ? {} : { why: { decision: probe.decision, claim: probe.claim } }),
     ...(answer === undefined ? {} : { correct: answer === "right" }),
@@ -88,7 +89,10 @@ export const answer = (deps: JudgeDeps, request: Request<"answer">): JudgeRespon
   const probe = probesIn(entries).find((item) => item.id === request.probe);
   if (probe === undefined) return response("answer", { reason: "unknown_probe" });
   if (answerOf(probe.id, entries) !== undefined) return response("answer", { reason: "answered" });
-  if (request.choice === probe.key) {
+  const correct = OPEN_FORMS.has(probe.form)
+    ? typedNumberRight(probe.options[probe.key] ?? "", request.value)
+    : request.choice === probe.key;
+  if (correct) {
     right(deps, probe, entries);
     return shownProbe("answer", probe.id, deps);
   }

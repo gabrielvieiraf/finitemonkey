@@ -379,6 +379,147 @@
       "line": "| mistaken agent | 9 | 0 | 0 | 1 | 1 |",
       "reason": "regenerado",
       "side": "theirs"
+    },
+    {
+      "file": "README.es.md",
+      "line": "| Envía | `cdn.playwright.dev` | Playwright descarga Chromium (unos 180 MB) desde su servidor de descargas, solo después de un `init --look --yes` tuyo. Sin `--yes` solo imprime el comando y el tamaño. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.es.md",
+      "line": "| Envía | `127.0.0.1` | `look --deep` ejecuta el `lighthouse` del propio proyecto, desde `node_modules/.bin`, contra la app en loopback, con el envío de errores apagado. No se ejecuta nada sin `--deep` o si lighthouse no está instalado. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.es.md",
+      "line": "| Envía | `remote of the merge target` | `merge` ejecuta `git fetch` del upstream de la rama de destino antes de fusionar, solo cuando `merge-fetch` está activo en policy.yml, y anota cuando la base avanzó. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.md",
+      "line": "| Sends | `cdn.playwright.dev` | Playwright downloads Chromium (about 180 MB) from its download host, only after `init --look --yes` from you. Without `--yes` it only prints the command and the size. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.md",
+      "line": "| Sends | `127.0.0.1` | `look --deep` runs the project's own `lighthouse` from `node_modules/.bin` against the app on loopback, with its error reporting turned off. Nothing runs without `--deep` or when lighthouse is not installed. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.md",
+      "line": "| Sends | `remote of the merge target` | `merge` runs `git fetch` of the target branch's upstream before merging, only when `merge-fetch` is active in policy.yml, and notes when the base moved. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.pt-BR.md",
+      "line": "| Envia | `cdn.playwright.dev` | O Playwright baixa o Chromium (cerca de 180 MB) do servidor de downloads dele, só depois de um `init --look --yes` seu. Sem `--yes` ele só imprime o comando e o tamanho. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.pt-BR.md",
+      "line": "| Envia | `127.0.0.1` | O `look --deep` roda o `lighthouse` do próprio projeto, de `node_modules/.bin`, contra o app no loopback, com o envio de erros desligado. Nada roda sem `--deep` ou quando o lighthouse não está instalado. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "README.pt-BR.md",
+      "line": "| Envia | `remote of the merge target` | O `merge` roda `git fetch` do upstream do branch de destino antes de mesclar, só quando `merge-fetch` está ativo no policy.yml, e anota quando a base andou. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "SECURITY.md",
+      "line": "| Sends | `cdn.playwright.dev` | Playwright downloads Chromium (about 180 MB) from its download host, only after `init --look --yes` from you. Without `--yes` it only prints the command and the size. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "SECURITY.md",
+      "line": "| Sends | `127.0.0.1` | `look --deep` runs the project's own `lighthouse` from `node_modules/.bin` against the app on loopback, with its error reporting turned off. Nothing runs without `--deep` or when lighthouse is not installed. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "SECURITY.md",
+      "line": "| Sends | `remote of the merge target` | `merge` runs `git fetch` of the target branch's upstream before merging, only when `merge-fetch` is active in policy.yml, and notes when the base moved. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.es.txt",
+      "line": "| Envía | `cdn.playwright.dev` | Playwright descarga Chromium (unos 180 MB) desde su servidor de descargas, solo después de un `init --look --yes` tuyo. Sin `--yes` solo imprime el comando y el tamaño. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.es.txt",
+      "line": "| Envía | `127.0.0.1` | `look --deep` ejecuta el `lighthouse` del propio proyecto, desde `node_modules/.bin`, contra la app en loopback, con el envío de errores apagado. No se ejecuta nada sin `--deep` o si lighthouse no está instalado. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.es.txt",
+      "line": "| Envía | `remote of the merge target` | `merge` ejecuta `git fetch` del upstream de la rama de destino antes de fusionar, solo cuando `merge-fetch` está activo en policy.yml, y anota cuando la base avanzó. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.pt-BR.txt",
+      "line": "| Envia | `cdn.playwright.dev` | O Playwright baixa o Chromium (cerca de 180 MB) do servidor de downloads dele, só depois de um `init --look --yes` seu. Sem `--yes` ele só imprime o comando e o tamanho. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.pt-BR.txt",
+      "line": "| Envia | `127.0.0.1` | O `look --deep` roda o `lighthouse` do próprio projeto, de `node_modules/.bin`, contra o app no loopback, com o envio de erros desligado. Nada roda sem `--deep` ou quando o lighthouse não está instalado. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.pt-BR.txt",
+      "line": "| Envia | `remote of the merge target` | O `merge` roda `git fetch` do upstream do branch de destino antes de mesclar, só quando `merge-fetch` está ativo no policy.yml, e anota quando a base andou. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.txt",
+      "line": "| Sends | `cdn.playwright.dev` | Playwright downloads Chromium (about 180 MB) from its download host, only after `init --look --yes` from you. Without `--yes` it only prints the command and the size. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.txt",
+      "line": "| Sends | `127.0.0.1` | `look --deep` runs the project's own `lighthouse` from `node_modules/.bin` against the app on loopback, with its error reporting turned off. Nothing runs without `--deep` or when lighthouse is not installed. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "llms-full.txt",
+      "line": "| Sends | `remote of the merge target` | `merge` runs `git fetch` of the target branch's upstream before merging, only when `merge-fetch` is active in policy.yml, and notes when the base moved. |",
+      "reason": "regenerado",
+      "side": "theirs"
+    },
+    {
+      "file": "src/commands/research-log.ts",
+      "line": "const concepts = recordResearchConcepts(ctx.runtime, paths, slug, url, isPerson(ctx) ? \"person\" : \"agent\");",
+      "reason": "mesma_intencao_outro_lado"
+    },
+    {
+      "file": "src/commands/research-log.ts",
+      "line": "return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, stateLines(ctx, log));",
+      "reason": "mesma_intencao_outro_lado"
+    },
+    {
+      "file": "src/stale/state.ts",
+      "line": "import { KNOWN_GUARDS, STARTS_IN_SHADOW } from \"../policy/policy.js\";",
+      "reason": "mesma_intencao_outro_lado"
     }
   ]
 }

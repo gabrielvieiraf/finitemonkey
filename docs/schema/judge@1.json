@@ -605,9 +605,9 @@
           "state": {
             "type": "string",
             "enum": [
+              "held",
               "pending",
-              "open",
-              "held"
+              "open"
             ]
           },
           "support": {
@@ -762,7 +762,8 @@
             "enum": [
               "two-spans",
               "unsupported-claim",
-              "predict-number"
+              "predict-number",
+              "predict-number-open"
             ]
           },
           "prompt": {

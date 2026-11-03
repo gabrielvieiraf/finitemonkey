@@ -1,3 +1,4 @@
+import { withOnboardStart } from "../../app/onboard-start.js";
 import { parseAppCheck } from "../../app/parse.js";
 import { type AppProbeResult, DEFAULT_APP_TIMEOUT_S, DEFAULT_ROUTE, DEFAULT_STATUS } from "../../app/types.js";
 import { nowMs } from "../../core/clock.js";
@@ -75,7 +76,8 @@ const outcome = (check: AcceptanceCheck, result: AppProbeResult, ctx: GateContex
   };
 };
 
-export const runtimeCheck = (check: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
+export const runtimeCheck = (declared: AcceptanceCheck, ctx: GateContext): CheckOutcome => {
+  const check = withOnboardStart(ctx.runtime, ctx.paths, declared);
   if (check.port === undefined) return failed([note("gate.runtime.no_port_declared")]);
   if (check.run !== undefined && !ctx.trusted)
     return { ...unverified("untrusted", [note("gate.note.untrusted", { task: ctx.contract.id })]), command: check.run };

@@ -15,10 +15,12 @@ import { type Channel, parseChannel } from "../install/marketplace.js";
 import { buildPlan, detect, needsWrite, type Plan, readPreviousLock } from "../install/plan.js";
 import { type InstallQuestion, type PlanData, planData, planLines } from "../install/report.js";
 import { applyProblem, confirmProblem, openProject, planInputFor, planProblem } from "../install/session.js";
+import { type BrowserPlan, browserPlan } from "../look/browser-plan.js";
 import { type EnginePlan, enginePlan } from "../look/engine.js";
 import { type AskLine, lineReader } from "../perfil/lines.js";
 import { isPerson } from "../secrets/project.js";
 import { trustImplicit } from "../task/trust.js";
+import { withAdopt } from "./init-adopt.js";
 import type { CommandSpec } from "./types.js";
 
 export type InstallMode = PlanData["mode"];
@@ -150,7 +152,10 @@ const withGithub = (
   return result.ok ? { ...result, data: { ...result.data, github: step }, human } : { ...result, human };
 };
 
-export type LookInitData = (PlanData | LookBackData | GithubInitData) & { readonly look: EnginePlan };
+export type LookInitData = (PlanData | LookBackData | GithubInitData) & {
+  readonly look: EnginePlan;
+  readonly browser?: BrowserPlan;
+};
 
 export const engineLines = (t: Ctx["t"], plan: EnginePlan, confirmed: boolean): readonly string[] => {
   const params = { package: plan.package, size: plan.sizeMb, command: plan.command };
@@ -160,6 +165,14 @@ export const engineLines = (t: Ctx["t"], plan: EnginePlan, confirmed: boolean): 
   return [t("look.engine.offer", params), t("look.engine.consent", params)];
 };
 
+export const browserLines = (t: Ctx["t"], plan: BrowserPlan, confirmed: boolean): readonly string[] => {
+  const params = { browser: plan.browser, size: plan.sizeMb, command: plan.command };
+  if (plan.present) return [t("look.browser.present", params)];
+  if (plan.added) return [t("look.browser.added", params)];
+  if (confirmed) return [t("look.browser.offer", params), t("look.browser.failed", params)];
+  return [t("look.browser.offer", params), t("look.browser.consent", params)];
+};
+
 const withLook = (
   ctx: Ctx,
   result: CommandResult<PlanData | LookBackData | GithubInitData>,
@@ -167,8 +180,13 @@ const withLook = (
   const root = openProject(ctx).project.root;
   const confirmed = ctx.yes && !ctx.dryRun && isPerson(ctx);
   const plan = enginePlan(ctx.runtime, root, confirmed);
-  const human = [...(result.human ?? []), ...engineLines(ctx.t, plan, confirmed)];
-  return result.ok ? { ...result, data: { ...result.data, look: plan }, human } : { ...result, human };
+  const browser = browserPlan(ctx.runtime, root, ctx.env, confirmed);
+  const human = [
+    ...(result.human ?? []),
+    ...engineLines(ctx.t, plan, confirmed),
+    ...browserLines(ctx.t, browser, confirmed),
+  ];
+  return result.ok ? { ...result, data: { ...result.data, look: plan, browser }, human } : { ...result, human };
 };
 
 const sharedAsk = (ctx: Ctx): (() => AskLine) => {
@@ -183,7 +201,7 @@ export const initCommand: CommandSpec = {
   path: ["init"],
   summaryKey: "command.init.summary",
   usage:
-    "finitemonkey init [--commits conventional|free] [--tests <runner>] [--lint <tool>] [--layout <dir>] [--bin <path>] [--marketplace] [--channel stable|next] [--sandbox] [--look-back] [--github] [--look] [--dry-run] [--yes]",
+    "finitemonkey init [--commits conventional|free] [--tests <runner>] [--lint <tool>] [--layout <dir>] [--bin <path>] [--marketplace] [--channel stable|next] [--sandbox] [--look-back] [--github] [--look] [--adopt] [--dry-run] [--yes]",
   status: "ready",
   options: {
     commits: { type: "string" },
@@ -194,6 +212,7 @@ export const initCommand: CommandSpec = {
     "look-back": { type: "boolean" },
     github: { type: "boolean" },
     look: { type: "boolean" },
+    adopt: { type: "boolean" },
     tests: { type: "string" },
     lint: { type: "string" },
     layout: { type: "string" },
@@ -224,6 +243,7 @@ export const initCommand: CommandSpec = {
     const result = runInstall(ctx, initRequest(args, commits, answers));
     const looked = args.values["look-back"] === true ? withLookBack(ctx, result) : result;
     const hubbed = args.values["github"] === true ? withGithub(ctx, looked) : looked;
-    return args.values["look"] === true ? withLook(ctx, hubbed) : hubbed;
+    const engined = args.values["look"] === true ? withLook(ctx, hubbed) : hubbed;
+    return withAdopt(ctx, engined, args.values["adopt"] === true);
   },
 };

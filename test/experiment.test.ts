@@ -7,6 +7,7 @@ import { gainReport } from "../src/gain/gain.js";
 import { armOf, experimentArm, recordArms } from "../src/policy/experiment.js";
 import { featureMode } from "../src/policy/feature.js";
 import { modeOf } from "../src/policy/guards.js";
+import { ACTIVE_AT_STANDARD } from "../src/policy/levels.js";
 import { DEFAULT_POLICY, parsePolicy, STARTS_IN_SHADOW } from "../src/policy/policy.js";
 import { fmPaths } from "../src/task/paths.js";
 import { memoryFs } from "./memory-fs.js";
@@ -48,19 +49,16 @@ describe("experiments: per-feature arms", () => {
     assert.equal(modeOf({ id: "secrets", damage: true }, policy, {}, "off"), "active");
   });
 
-  it("new features that block or inject start in shadow without a policy file", () => {
-    for (const id of [
-      "quality",
-      "slop",
-      "tests-hold",
-      "regression",
-      "advisor",
-      "reminders",
-      "learnings",
-      "rules-stop",
-    ]) {
-      assert.ok(STARTS_IN_SHADOW.has(id), id);
-      assert.equal(modeOf({ id, damage: false }, DEFAULT_POLICY, {}), "shadow", id);
+  it("new features act at the default level only when the level lists them, and follow light and strict", () => {
+    const light = { ...DEFAULT_POLICY, level: "light" as const };
+    const strict = { ...DEFAULT_POLICY, level: "strict" as const };
+    for (const id of ["quality", "slop", "tests-hold", "regression"]) assert.ok(ACTIVE_AT_STANDARD.has(id), id);
+    for (const id of ["advisor", "reminders", "learnings", "rules-stop"]) assert.ok(!ACTIVE_AT_STANDARD.has(id), id);
+    for (const id of STARTS_IN_SHADOW) {
+      const standard = ACTIVE_AT_STANDARD.has(id) ? "active" : "shadow";
+      assert.equal(modeOf({ id, damage: false }, DEFAULT_POLICY, {}), standard, id);
+      assert.equal(modeOf({ id, damage: false }, light, {}), "shadow", id);
+      assert.equal(modeOf({ id, damage: false }, strict, {}), "active", id);
     }
   });
 

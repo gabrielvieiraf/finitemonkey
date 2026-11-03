@@ -10,7 +10,7 @@ import {
   type HorizonProposer,
   latestHelps,
 } from "./horizon.js";
-import { recordOutcome } from "./horizon-outcome.js";
+import { openHelps, recordOutcome } from "./horizon-outcome.js";
 import type { JudgeRequest } from "./request.js";
 import { type JudgeResponse, response } from "./response.js";
 import { entryId, readEntries } from "./store.js";
@@ -24,6 +24,14 @@ export const addHelp = (deps: JudgeDeps, request: Request<"horizon">): JudgeResp
   const dismissed = latestHelps(entries).find((help) => help.id === id && help.state === "dismissed");
   if (dismissed !== undefined)
     return response("horizon", { reason: "dismissed_in_task", horizon: [helpView(dismissed)] });
+  const asked = request.answer?.trim() === "" ? undefined : request.answer;
+  const shown = latestHelps(entries).find(
+    (help) => help.id === id && help.state === "shown" && help.answer === undefined,
+  );
+  if (shown !== undefined && asked !== undefined && request.task !== undefined) {
+    const open = openHelps(deps.runtime, deps.paths, request.task).some((help) => help.id === id);
+    if (open) recordOutcome(deps.runtime, deps.paths, shown, "answered");
+  }
   const written = appendNow(deps, {
     type: "horizon",
     id,

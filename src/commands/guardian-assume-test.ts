@@ -1,11 +1,21 @@
+import { stringOption } from "../core/args.js";
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
 import { readAssumptions } from "../guardian/assumptions.js";
-import { proposalLines, proposalsFor } from "../guardian/negative-contract.js";
+import {
+  approvedFuller,
+  fullerLines,
+  proposalLines,
+  proposalsFor,
+  proposeFuller,
+} from "../guardian/negative-contract.js";
 import type { NegativeTest } from "../guardian/negative-test.js";
+import { whenEnabled } from "../provider/adapters.js";
+import { providerNegativeTest } from "../provider/adapters-more.js";
+import { providerDeps } from "../provider/wire.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import { guardianWriteProblem, inGuardianRepo } from "./guardian.js";
@@ -17,9 +27,9 @@ import {
 } from "./guardian-assume.js";
 import type { CommandSpec } from "./types.js";
 
-const USAGE = "finitemonkey guardian assume test <id> [--write]";
+const USAGE = "finitemonkey guardian assume test <id> [--write [--fuller <hash>]]";
 
-const written = (ctx: Ctx, paths: FmPaths, proposal: NegativeTest): CommandResult => {
+const written = (ctx: Ctx, paths: FmPaths, proposal: NegativeTest, content: string): CommandResult => {
   if (proposal.file === null)
     return failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.assumptions.no_file", USAGE));
   const target = toAbsolutePath(proposal.file, paths.root);
@@ -29,12 +39,33 @@ const written = (ctx: Ctx, paths: FmPaths, proposal: NegativeTest): CommandResul
       usageProblem("invalid_arguments", "guardian.assumptions.exists", USAGE, { file: proposal.file }),
     );
   const folder = toAbsolutePath(proposal.file.split("/").slice(0, -1).join("/") || ".", paths.root);
-  if (!ctx.runtime.mkdir(folder).ok || !ctx.runtime.writeText(target, proposal.skeleton).ok)
+  if (!ctx.runtime.mkdir(folder).ok || !ctx.runtime.writeText(target, content).ok)
     return failureFrom(ctx.t, guardianWriteProblem(proposal.file));
-  logEvent(ctx.runtime, paths, "guardian.negative_test.accepted", { assumption: proposal.assumption });
+  logEvent(ctx.runtime, paths, "guardian.negative_test.accepted", {
+    assumption: proposal.assumption,
+    fuller: content !== proposal.skeleton,
+  });
   return success({ schema: ASSUMPTIONS_SCHEMA, proposal, written: true }, [
     ctx.t("guardian.assumptions.written", { file: proposal.file, criterion: proposal.criterion }),
   ]);
+};
+
+const shown = (ctx: Ctx, paths: FmPaths, proposal: NegativeTest): CommandResult => {
+  const writer = whenEnabled(providerDeps(ctx, paths), "negative-test", providerNegativeTest);
+  const fuller = proposeFuller(ctx.runtime, paths, proposal, writer);
+  return success(
+    {
+      schema: ASSUMPTIONS_SCHEMA,
+      proposal,
+      written: false,
+      ...(fuller === undefined ? {} : { fuller: { hash: fuller.hash, origin: fuller.origin } }),
+    },
+    [
+      ...proposalLines(ctx.t, proposal),
+      proposal.skeleton,
+      ...(fuller === undefined ? [] : fullerLines(ctx.t, proposal.assumption, fuller)),
+    ],
+  );
 };
 
 export const guardianAssumeTestCommand: CommandSpec = {
@@ -43,7 +74,7 @@ export const guardianAssumeTestCommand: CommandSpec = {
   usage: USAGE,
   status: "ready",
   maxPositionals: 1,
-  options: { write: { type: "boolean" } },
+  options: { write: { type: "boolean" }, fuller: { type: "string" } },
   run: (ctx, args) => {
     const id = args.positionals[0]?.trim() ?? "";
     if (id === "")
@@ -59,13 +90,14 @@ export const guardianAssumeTestCommand: CommandSpec = {
           ctx.t,
           usageProblem("invalid_arguments", "guardian.assumptions.not_behavior", USAGE, { id }),
         );
-      if (args.values["write"] !== true)
-        return success({ schema: ASSUMPTIONS_SCHEMA, proposal, written: false }, [
-          ...proposalLines(ctx.t, proposal),
-          proposal.skeleton,
-        ]);
+      if (args.values["write"] !== true) return shown(ctx, paths, proposal);
       if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("guardian.assumptions.person_only", USAGE));
-      return written(ctx, paths, proposal);
+      const hash = stringOption(args.values, "fuller");
+      if (hash === undefined) return written(ctx, paths, proposal, proposal.skeleton);
+      const content = approvedFuller(ctx.runtime, paths, proposal.assumption, hash);
+      return content === undefined
+        ? failureFrom(ctx.t, usageProblem("invalid_arguments", "guardian.assumptions.fuller_missing", USAGE, { hash }))
+        : written(ctx, paths, proposal, content);
     });
   },
 };

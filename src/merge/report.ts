@@ -37,6 +37,7 @@ export interface FileReport {
   readonly proposal: string | null;
   readonly hint?: string | null;
   readonly owners?: readonly string[];
+  readonly proposalTest?: "passed" | "failed";
   readonly hunks: readonly HunkReport[];
 }
 
@@ -87,6 +88,7 @@ export interface MergeReport {
   readonly conclusion: "pull-request" | "fast-forward-allowed" | "none";
   readonly undo: string;
   readonly reportPath: string;
+  readonly notes?: readonly string[];
 }
 
 export const reportPathFor = (commonDir: AbsolutePath, stamp: string): AbsolutePath =>
@@ -130,10 +132,14 @@ export const reportMarkdown = (report: MergeReport): string =>
       ),
     ),
     "",
+    ...(report.notes ?? []).map((note) => `- Note: ${note}`),
     ...report.stops.map((stop) => `- Stop: ${stop.reason}${stop.path === null ? "" : ` (${stop.path})`}`),
     ...report.files
       .filter((file) => (file.owners ?? []).length > 0)
       .map((file) => `- Owners of ${file.path}: ${(file.owners ?? []).join(" ")}`),
+    ...report.files
+      .filter((file) => file.proposalTest !== undefined)
+      .map((file) => `- Proposal for ${file.path} tested in a throwaway worktree: ${file.proposalTest ?? ""}`),
     ...report.semanticCandidates.map((item) => `- Semantic candidate: ${item.symbol} in ${item.file} (${item.reason})`),
     ...report.checks.map((check) => `- Check ${check.name}: ${check.ok ? "passed" : "failed"} (\`${check.command}\`)`),
     `- Snapshots: ${report.snapshots.join(", ")}`,

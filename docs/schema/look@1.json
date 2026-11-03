@@ -139,6 +139,69 @@
           "blocking"
         ]
       }
+    },
+    "deep": {
+      "type": "object",
+      "properties": {
+        "tool": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "route": {
+                "type": "string"
+              },
+              "scores": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "type": "string"
+                    },
+                    "score": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "category",
+                    "score"
+                  ]
+                }
+              },
+              "error": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "route",
+              "scores",
+              "error"
+            ]
+          }
+        }
+      },
+      "required": [
+        "tool",
+        "routes"
+      ]
     }
   },
   "required": [

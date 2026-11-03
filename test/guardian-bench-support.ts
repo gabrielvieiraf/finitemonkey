@@ -30,6 +30,7 @@ export interface Scenario {
 }
 
 const GUARDIAN_POLICY = [
+  "level: light",
   "guards:",
   "  reality: active",
   "  assumptions: active",

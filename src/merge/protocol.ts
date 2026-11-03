@@ -7,12 +7,16 @@ import { levelRules } from "../profile/level.js";
 import type { WorktreeOwner } from "../wt/entry.js";
 import { commonDirOf } from "../wt/store.js";
 import { applyResolutions, regenerate } from "./apply.js";
+import { type CandidateTest, testCandidates } from "./candidates.js";
+import { type BaseFetch, fetchBase, fetchNotes } from "./fetch.js";
 import { commitMerge, type DroppedEntry, finishChecks } from "./finish.js";
+import { formatC3, mergeFormatter } from "./format.js";
 import { type Integration, openIntegration, resolveSides, type Sides, snapshotTips, stampOf } from "./integrate.js";
 import { codeOwners } from "./owners.js";
 import {
   type FileReport,
   MERGE_REPORT_SCHEMA,
+  type MergeCheck,
   type MergeReport,
   type MergeStop,
   reportPathFor,
@@ -63,7 +67,7 @@ const resolveAll = (run: Run, request: MergeRequest): readonly FileResolution[] 
 const fileReport = (
   run: Run,
   file: FileResolution,
-  proposal: boolean,
+  proposal: CandidateTest | boolean,
   owners: (path: string) => readonly string[],
 ): FileReport => {
   const { runtime, sides, integration } = run;
@@ -77,7 +81,8 @@ const fileReport = (
     class: file.cls,
     rule: file.rule,
     decision: file.decision,
-    proposal: proposal ? "rerere" : null,
+    proposal: proposal === true || proposal === "passed" ? "rerere" : null,
+    ...(typeof proposal === "string" ? { proposalTest: proposal } : {}),
     hint: file.hint,
     owners: file.cls === "C0" ? owners(file.path) : [],
     hunks: traceHunks(file.stages, file.hunks, commits, (hunk) => decisionOf(hunk.verdict)),
@@ -146,9 +151,11 @@ interface Prepared {
   readonly snapshots: readonly string[];
   readonly commonDir: AbsolutePath;
   readonly base: string;
+  readonly fetched: BaseFetch | undefined;
 }
 
 const prepare = (runtime: Runtime, cwd: AbsolutePath, env: Env, request: MergeRequest): Parsed<Prepared> => {
+  const fetched = fetchBase(runtime, cwd, request.target);
   const sides = resolveSides(runtime, cwd, request.source, request.target);
   if (!sides.ok) return sides;
   const commonDir = commonDirOf(runtime, cwd);
@@ -167,7 +174,43 @@ const prepare = (runtime: Runtime, cwd: AbsolutePath, env: Env, request: MergeRe
       loadScope(runtime, cwd, request.sourceContract, diffNames(runtime, cwd, base, sides.value.sourceSha)),
   };
   const run: Run = { runtime, cwd, sides: sides.value, integration: integration.value, scopes };
-  return accept({ run, stamp, snapshots, commonDir, base });
+  return accept({ run, stamp, snapshots, commonDir, base, fetched });
+};
+
+interface Applied {
+  readonly files: readonly FileResolution[];
+  readonly stops: readonly MergeStop[];
+  readonly checks: readonly MergeCheck[];
+}
+
+const applyAll = (run: Run, request: MergeRequest): Applied => {
+  const { runtime } = run;
+  const dir = run.integration.path;
+  const files = resolveAll(run, request);
+  const stops = [
+    ...files.flatMap((file) => (file.stop === undefined ? [] : [file.stop])),
+    ...applyResolutions(runtime, dir, files),
+    ...regenerate(runtime, dir, files),
+  ];
+  const formatted = formatC3(runtime, dir, files, mergeFormatter(loadProjectConfig(runtime, run.cwd)));
+  return {
+    files,
+    stops: [...stops, ...formatted.stops],
+    checks: formatted.check === undefined ? [] : [formatted.check],
+  };
+};
+
+const proposalsOf = (run: Run, request: MergeRequest, files: readonly FileResolution[]) => {
+  const proposals = proposalPaths(files);
+  const tested = testCandidates({
+    runtime: run.runtime,
+    cwd: run.cwd,
+    sides: run.sides,
+    files,
+    proposals,
+    checks: request.checks,
+  });
+  return (path: string): CandidateTest | boolean => (proposals.has(path) ? (tested ?? true) : false);
 };
 
 export const runMerge = (runtime: Runtime, cwd: AbsolutePath, env: Env, request: MergeRequest): Parsed<MergeReport> => {
@@ -175,28 +218,30 @@ export const runMerge = (runtime: Runtime, cwd: AbsolutePath, env: Env, request:
   if (!prepared.ok) return prepared;
   const { run, base } = prepared.value;
   const dir = run.integration.path;
-  const files = resolveAll(run, request);
-  const stops: MergeStop[] = files.flatMap((file) => (file.stop === undefined ? [] : [file.stop]));
-  stops.push(...applyResolutions(runtime, dir, files), ...regenerate(runtime, dir, files));
+  const applied = applyAll(run, request);
+  const { files } = applied;
+  const stops: MergeStop[] = [...applied.stops];
   const conflicted = new Set(files.map((file) => file.path));
   const semantic = sameSymbolBothSides(runtime, dir, base, run.sides.targetSha, run.sides.sourceSha, conflicted);
   const finished = stops.length === 0 ? finishChecks(runtime, dir, base, request.checks, dropsOf(files)) : undefined;
   stops.push(...(finished?.stops ?? []));
   const commit = stops.length === 0 ? (commitMerge(runtime, dir) ?? null) : null;
   if (stops.length === 0 && commit === null) stops.push({ reason: "commit-failed", path: null });
-  const proposals = proposalPaths(files);
+  const proposal = proposalsOf(run, request, files);
   const owners = codeOwners(runtime, dir);
+  const notes = fetchNotes(prepared.value.fetched, run.sides.targetRef);
   const report = reportOf(
     run,
     {
       snapshots: prepared.value.snapshots,
-      files: files.map((file) => fileReport(run, file, proposals.has(file.path), owners)),
+      files: files.map((file) => fileReport(run, file, proposal(file.path), owners)),
       dropped: dropsOf(files),
-      checks: finished?.checks ?? [],
+      checks: [...applied.checks, ...(finished?.checks ?? [])],
       semanticCandidates: [...semantic, ...(finished?.callers ?? [])],
       stops,
       outcome: stops.length === 0 ? "merged" : "stopped",
       commit,
+      ...(notes.length === 0 ? {} : { notes }),
     },
     prepared.value.stamp,
     prepared.value.commonDir,

@@ -1,3 +1,4 @@
+import { spanIn } from "../judge/span.js";
 import type { Domain } from "../perfil/types.js";
 import { type ConceptId, domainOf } from "./concepts.js";
 import type { ConceptEvent } from "./evidence.js";
@@ -54,6 +55,7 @@ export interface Probe {
   readonly options: readonly ProbeOption[];
   readonly run?: string;
   readonly input?: string;
+  readonly source?: string;
   readonly key: string | null;
   readonly status: ProbeStatus;
   readonly at: string;
@@ -101,7 +103,16 @@ export const EMPTY_STATE: ProbeState = { probes: [], skips: {}, pausedUntil: {} 
 const DAY = 86_400_000;
 const days = (from: string, to: number): number => (to - Date.parse(from)) / DAY;
 
-const executable = (probe: Probe): boolean => probe.kind !== "language" && probe.kind !== "clarify";
+export const spanKey = (options: readonly ProbeOption[], content: string): string | null => {
+  const hits = options.filter((option) => option.text.trim() !== "" && spanIn(option.text, content));
+  return hits.length === 1 ? (hits[0]?.id ?? null) : null;
+};
+
+export const spanKeyed = (probe: Pick<Probe, "kind" | "source" | "key">): boolean =>
+  probe.kind === "language" && probe.source !== undefined && probe.key !== null;
+
+export const executable = (probe: Pick<Probe, "kind" | "source" | "key">): boolean =>
+  (probe.kind !== "language" && probe.kind !== "clarify") || spanKeyed(probe);
 
 export const asked = (probe: Probe): boolean => probe.status !== "invalid";
 

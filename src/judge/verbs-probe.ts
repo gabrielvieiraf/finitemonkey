@@ -1,7 +1,7 @@
 import { claimBand, claimsIn, conceptsIn, touchedConcepts } from "./claims.js";
 import { appendNow, type JudgeDeps } from "./deps.js";
 import { answerOf, keyOf, probesIn, twoSpans } from "./probe.js";
-import { type DistractorProposer, predictNumber, unsupportedClaim } from "./probe-forms.js";
+import { type DistractorProposer, predictNumber, predictNumberOpen, unsupportedClaim } from "./probe-forms.js";
 import type { JudgeRequest } from "./request.js";
 import { type JudgeResponse, response } from "./response.js";
 import { entryId, readEntries } from "./store.js";
@@ -45,12 +45,13 @@ const formFor = (
   claim: ClaimEntry,
   entries: readonly JudgeEntry[],
   proposer: DistractorProposer | undefined,
+  open: boolean,
 ): Omit<ProbeEntry, "id" | "at" | "type"> | undefined => {
   const key = keyOf(claim, entries);
   if (key === undefined) return undefined;
   const concepts = touchedConcepts(claim, entries);
   if (claim.kind === "number") {
-    const number = predictNumber(claim, key, concepts);
+    const number = open ? predictNumberOpen(claim, key, concepts) : predictNumber(claim, key, concepts);
     if (number !== undefined) return number;
   }
   const fetched = deps.fetcher?.(key.ref);
@@ -72,7 +73,7 @@ export const routeProbe = (
   const concepts = touchedConcepts(claim, entries);
   if (overBudget(entries, deps.runtime.now(), request.session, domainsOf(concepts, entries)))
     return response("probe", { reason: "budget" });
-  const fields = formFor(deps, claim, entries, proposer);
+  const fields = formFor(deps, claim, entries, proposer, request.open === true);
   if (fields === undefined) return response("probe", { reason: "no_key" });
   const id = entryId("p", claim.id, request.decision, deps.runtime.now());
   const written = appendNow(deps, {

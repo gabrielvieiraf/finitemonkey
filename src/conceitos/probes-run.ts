@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
@@ -14,6 +14,7 @@ import {
   type BudgetCheck,
   budgetFor,
   EMPTY_STATE,
+  executable,
   type Execution,
   gapOf,
   KEY_RULE,
@@ -26,6 +27,8 @@ import {
   type ProbeState,
   type ProbeStatus,
   settle,
+  spanKey,
+  spanKeyed,
 } from "./probes.js";
 
 export const PROBES_FILE = "probes.json";
@@ -71,6 +74,7 @@ const probeOf = (value: unknown): Probe | undefined => {
     at,
     ...optional("run"),
     ...optional("input"),
+    ...optional("source"),
     ...optional("session"),
     ...optional("presentedAt"),
     ...optional("answer"),
@@ -140,9 +144,18 @@ export interface ProbeDraft {
   readonly options: readonly ProbeOption[];
   readonly run?: string;
   readonly input?: string;
+  readonly source?: string;
 }
 
+const sourceText = (runtime: Pick<Runtime, "readText">, root: AbsolutePath, source: string): string => {
+  if (isAbsolute(source) || source.split(/[\\/]/).includes("..")) return "";
+  const text = runtime.readText(toAbsolutePath(join(root, source)));
+  return text.ok ? text.value : "";
+};
+
 export const keyFor = (runtime: Runtime, root: AbsolutePath, draft: ProbeDraft): string | null => {
+  if (draft.kind === "language" && draft.source !== undefined)
+    return spanKey(draft.options, sourceText(runtime, root, draft.source));
   const rule = KEY_RULE[draft.kind];
   if (rule === "none") return null;
   if (rule === "observe")
@@ -160,7 +173,7 @@ export const keyFor = (runtime: Runtime, root: AbsolutePath, draft: ProbeDraft):
 export const proposeProbe = (runtime: Runtime, paths: FmPaths, draft: ProbeDraft): Probe => {
   const state = readProbeState(runtime, paths);
   const key = keyFor(runtime, paths.root, draft);
-  const invalid = key === null && KEY_RULE[draft.kind] !== "none";
+  const invalid = key === null && (KEY_RULE[draft.kind] !== "none" || draft.source !== undefined);
   const probe: Probe = {
     id: `P${String(state.probes.length + 1)}`,
     kind: draft.kind,
@@ -174,6 +187,7 @@ export const proposeProbe = (runtime: Runtime, paths: FmPaths, draft: ProbeDraft
     at: runtime.now(),
     ...(draft.run === undefined ? {} : { run: draft.run }),
     ...(draft.input === undefined ? {} : { input: draft.input }),
+    ...(draft.source === undefined ? {} : { source: draft.source }),
   };
   writeProbeState(runtime, paths, { ...state, probes: [...state.probes, probe] });
   return probe;
@@ -225,14 +239,15 @@ export const answerProbe = (
   const probe = next.probes.find((item) => item.id === id);
   if (probe === undefined || next === state) return undefined;
   writeProbeState(runtime, paths, next);
-  const executable = probe.kind !== "language" && probe.kind !== "clarify";
-  if (executable && (probe.status === "right" || probe.status === "wrong"))
-    recordConceptEvents(runtime, paths, [
-      {
-        concept: probe.concept,
-        kind: probe.status === "right" ? "prediction_right" : "prediction_wrong",
-        origin: "person",
-      },
-    ]);
+  const right = probe.status === "right";
+  const kind = spanKeyed(probe)
+    ? right
+      ? "check_right"
+      : "check_wrong"
+    : right
+      ? "prediction_right"
+      : "prediction_wrong";
+  if (executable(probe) && (right || probe.status === "wrong"))
+    recordConceptEvents(runtime, paths, [{ concept: probe.concept, kind, origin: "person" }]);
   return probe;
 };

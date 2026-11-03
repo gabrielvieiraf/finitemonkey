@@ -164,8 +164,8 @@ describe("fourth-attempt guard: active mode blocks", () => {
 });
 
 describe("fourth-attempt guard: the mode comes from policy.yml", () => {
-  it("without a mode in policy.yml it warns, records the shadow firing and lets the write through", async () => {
-    const fs = projectFs("level: standard\n");
+  it("at level light it warns, records the shadow firing and lets the write through", async () => {
+    const fs = projectFs("level: light\n");
     await threeFailures(fs);
     const outcome = await fire(fs, "PreToolUse", edit);
     assert.equal(denied(outcome), "");
@@ -175,12 +175,10 @@ describe("fourth-attempt guard: the mode comes from policy.yml", () => {
     assert.equal(context(await fire(fs, "PreToolUse", edit)), "");
   });
 
-  it("without policy.yml it also starts as a warning", async () => {
+  it("without policy.yml it blocks at the default level", async () => {
     const fs = projectFs();
     await threeFailures(fs);
-    const outcome = await fire(fs, "PreToolUse", edit);
-    assert.equal(denied(outcome), "");
-    assert.match(context(outcome), /fourth correction/);
+    assert.match(denied(await fire(fs, "PreToolUse", edit)), /fourth correction/);
   });
 
   it("off in policy.yml does nothing", async () => {

@@ -8,7 +8,15 @@ import { findRepoRoot } from "../gate/hooks/common.js";
 import { loadProjectConfig } from "../git/project-config.js";
 import { loadLookConfig } from "../look/config.js";
 import { approveJourney, type JourneyState, listJourneys, proposeJourney } from "../look/journey.js";
-import { commandProposer, proposeFromSentence, proposerCommand } from "../look/journey-propose.js";
+import {
+  commandProposer,
+  type JourneyProposer,
+  proposeFromSentence,
+  proposerCommand,
+} from "../look/journey-propose.js";
+import { whenEnabled } from "../provider/adapters.js";
+import { providerJourney } from "../provider/adapters-more.js";
+import { providerDeps } from "../provider/wire.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
@@ -66,19 +74,20 @@ const propose = (ctx: Ctx, name: string, from: string | undefined): CommandResul
   };
 };
 
+const sentenceProposer = (ctx: Ctx, paths: FmPaths): JourneyProposer | undefined => {
+  const command = proposerCommand(loadProjectConfig(ctx.runtime, paths.root));
+  return command === undefined
+    ? whenEnabled(providerDeps(ctx, paths), "journey", providerJourney)
+    : commandProposer(ctx.runtime, paths.root, command);
+};
+
 const fromSentence = async (ctx: Ctx, name: string, says: string): Promise<CommandResult> => {
   const paths = pathsOf(ctx);
-  const command = proposerCommand(loadProjectConfig(ctx.runtime, paths.root));
-  if (command === undefined)
+  const proposer = sentenceProposer(ctx, paths);
+  if (proposer === undefined)
     return failureFrom(ctx.t, usageProblem("invalid_arguments", "journey.no_proposer", PROPOSE_USAGE));
   const routes = loadLookConfig(ctx.runtime, paths.root)?.routes ?? [];
-  const made = await proposeFromSentence(
-    ctx.runtime,
-    paths,
-    name,
-    { sentence: says, routes },
-    commandProposer(ctx.runtime, paths.root, command),
-  );
+  const made = await proposeFromSentence(ctx.runtime, paths, name, { sentence: says, routes }, proposer);
   if (!made.ok)
     return failureFrom(
       ctx.t,

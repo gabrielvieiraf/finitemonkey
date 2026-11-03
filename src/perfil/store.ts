@@ -9,7 +9,15 @@ import { buildDerived, DERIVED_FEATURE } from "../knowledge/derived.js";
 import { featureMode } from "../policy/feature.js";
 import { FM_DIR, type FmPaths } from "../task/paths.js";
 import { PERFIL_GENERATOR, profileFromLog, profileInputs, profileRecords, renderProfile } from "./log.js";
-import { clampScore, type DomainProfile, parseLevel, type Profile, START_SCORE, startingProfile } from "./types.js";
+import {
+  clampScore,
+  type DomainProfile,
+  parseField,
+  parseLevel,
+  type Profile,
+  START_SCORE,
+  startingProfile,
+} from "./types.js";
 
 export const PERFIL_FILE = "perfil.yml";
 export const AGENT_COMMITS_FILE = "perfil-commits.json";
@@ -32,6 +40,16 @@ const domainFrom = (raw: unknown): DomainProfile => {
   };
 };
 
+const fieldsFrom = (domains: Readonly<Record<string, unknown>>): Pick<Profile, "fields"> => {
+  const fields = Object.fromEntries(
+    Object.entries(domains).flatMap(([name, raw]) => {
+      const field = parseField(name);
+      return field === undefined ? [] : [[field, domainFrom(raw)]];
+    }),
+  );
+  return Object.keys(fields).length === 0 ? {} : { fields };
+};
+
 export const parseProfile = (text: string, at: string): Profile => {
   const parsed = parseYaml(text);
   if (!parsed.ok || !isRecord(parsed.value)) return startingProfile(at);
@@ -46,6 +64,7 @@ export const parseProfile = (text: string, at: string): Profile => {
       infrastructure: domainFrom(domains["infrastructure"]),
       security: domainFrom(domains["security"]),
     },
+    ...fieldsFrom(domains),
     quickStart: quick === "done" || quick === "skipped" ? quick : "never",
     updatedAt: typeof root["updated_at"] === "string" ? root["updated_at"] : at,
   };

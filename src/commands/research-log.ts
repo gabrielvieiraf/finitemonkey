@@ -4,6 +4,8 @@ import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { PLAN_DIR, planPath, slugOf } from "../plan/folder.js";
+import { providerStance, whenEnabled } from "../provider/adapters.js";
+import { providerDeps } from "../provider/wire.js";
 import {
   appendResearch,
   CHANGES,
@@ -14,8 +16,9 @@ import {
   RISKS,
   STANCES,
 } from "../research/log.js";
+import { suggestStance } from "../research/sides.js";
 import { isPerson } from "../secrets/project.js";
-import { fmPaths } from "../task/paths.js";
+import { type FmPaths, fmPaths } from "../task/paths.js";
 import { guardianWriteProblem, inGuardianRepo } from "./guardian.js";
 import { researchLinks, sidesLines } from "./research-sides.js";
 import type { CommandSpec } from "./types.js";
@@ -38,14 +41,34 @@ const stateLines = (ctx: Ctx, log: ResearchLog): readonly string[] => {
   ];
 };
 
-const stanceFields = (ctx: Ctx, values: Parameters<typeof stringOption>[0]): Readonly<Record<string, string>> => {
+type Values = Parameters<typeof stringOption>[0];
+
+const suggested = (ctx: Ctx, root: FmPaths, url: string, values: Values): Readonly<Record<string, string>> => {
+  const proposer = whenEnabled(providerDeps(ctx, root), "stance", providerStance);
+  const stance = suggestStance(proposer, url, stringOption(values, "resolves") ?? "");
+  return stance === undefined ? {} : { stance, stanceBy: "model" };
+};
+
+const stanceFields = (ctx: Ctx, paths: FmPaths, url: string, values: Values): Readonly<Record<string, string>> => {
   const stance = STANCES.find((item) => item === stringOption(values, "stance"));
   const claim = stringOption(values, "claim");
   return {
-    ...(stance === undefined ? {} : { stance, stanceBy: isPerson(ctx) ? "person" : "model" }),
+    ...(stance === undefined
+      ? suggested(ctx, paths, url, values)
+      : { stance, stanceBy: isPerson(ctx) ? "person" : "model" }),
     ...(claim === undefined ? {} : { claim }),
   };
 };
+
+const suggestionLines = (
+  ctx: Ctx,
+  slug: string,
+  url: string,
+  fields: Readonly<Record<string, string>>,
+): readonly string[] =>
+  fields["stanceBy"] === "model" && fields["stance"] !== undefined
+    ? [ctx.t("research.sides.suggested", { url, stance: fields["stance"], slug })]
+    : [];
 
 const SOURCE_USAGE =
   "finitemonkey research source <slug> <url> --changed nothing|option|unknown [--target <option or unknown>] [--resolves <unknown>] [--stance favors|contests|unrelated] [--claim <judge claim>]";
@@ -77,20 +100,25 @@ export const researchSourceCommand: CommandSpec = {
           ctx.t,
           usageProblem("invalid_arguments", "research.log.error.missing", SOURCE_USAGE, { slug }),
         );
+      const fields = stanceFields(ctx, paths, url, args.values);
       const written = appendResearch(ctx.runtime, paths, slug, {
         type: "source",
         url,
         changed,
         target: stringOption(args.values, "target") ?? "",
         resolves: stringOption(args.values, "resolves") ?? "",
-        ...stanceFields(ctx, args.values),
+        ...fields,
         at: ctx.runtime.now(),
       });
       const log = readResearchLog(ctx.runtime, paths, slug);
       if (!written || log === undefined)
         return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`));
-      const concepts = recordResearchConcepts(ctx.runtime, paths, slug, url, isPerson(ctx) ? "person" : "agent");
-      return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, stateLines(ctx, log));
+      const work = { slug, url, question: log.question.question, decision: log.question.decision };
+      const concepts = recordResearchConcepts(ctx.runtime, paths, work, isPerson(ctx) ? "person" : "agent");
+      return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, [
+        ...stateLines(ctx, log),
+        ...suggestionLines(ctx, slug, url, fields),
+      ]);
     });
   },
 };

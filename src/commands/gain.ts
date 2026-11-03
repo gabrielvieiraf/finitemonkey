@@ -26,6 +26,8 @@ const ROWS: readonly { readonly key: MessageKey; readonly pick: (counts: GainCou
   { key: "gain.row.gate_runs", pick: (counts) => counts.gateRuns },
   { key: "gain.row.gate_failed", pick: (counts) => counts.gateFailed },
   { key: "gain.row.gate_unverified", pick: (counts) => counts.gateUnverified },
+  { key: "gain.row.outward_asked", pick: (counts) => counts.outwardAsked },
+  { key: "gain.row.outward_approved", pick: (counts) => counts.outwardApproved },
 ];
 
 const linesOf = (ctx: Ctx, report: GainReport): readonly string[] => [

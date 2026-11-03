@@ -61,6 +61,16 @@ describe("outward actions after untrusted reads", () => {
     assert.match(logOf(repo), /"event":"untrusted_outward".*"action":"git push".*"decision":"asked"/);
   });
 
+  it("after a WebFetch, git push asks the person at the default level and only logs at level light", async () => {
+    const repo = makeRepo({ ".finitemonkey/.gitkeep": "" });
+    repos.push(repo);
+    await fetchPage(repo);
+    assert.equal(decision(await bash(repo, "git push origin feat/notes")), "ask");
+    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    assert.notEqual(decision(await bash(repo, "git push origin feat/notes")), "ask");
+    assert.match(logOf(repo), /"event":"untrusted_outward".*"decision":"shadow"/);
+  });
+
   it("in shadow the same push is logged and not asked", async () => {
     const repo = setup("shadow");
     await fetchPage(repo);

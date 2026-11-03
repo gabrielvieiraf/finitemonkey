@@ -10,6 +10,7 @@ import { FILE_TOOLS } from "../guards/context.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
+import { recapBrief, recapBriefLines } from "../recap/brief.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
@@ -17,6 +18,7 @@ import { cardFor, cardLines } from "./card.js";
 import { loadPerson } from "./config.js";
 import { historyLimit } from "./limit.js";
 import { type Deviation, deviationOf, pathMentions } from "./scope.js";
+import { readSymbolIndex, symbolDeviations } from "./symbols.js";
 
 export const FOCUS_FEATURE = "focus-card";
 const SEEN_FILE = "focus.json";
@@ -38,6 +40,11 @@ const cardText = (input: HookInput, paths: FmPaths): readonly string[] => {
   const task = activeTask(input.runtime, paths);
   if (task === undefined || task.contract.implicit) return [];
   return cardLines(input.t, cardFor(input.runtime, paths, task.contract));
+};
+
+const resumeCard = (input: HookInput, paths: FmPaths): readonly string[] => {
+  const card = cardText(input, paths);
+  return card.length === 0 ? [] : [...card, ...recapBriefLines(input.t, recapBrief(input.runtime, paths))];
 };
 
 export const openProjects = (input: HookInput, paths: FmPaths): number => {
@@ -86,7 +93,7 @@ const shown = (lines: readonly string[], reason: string): JsonObject => ({
 export const focusSession: HookHandler = (input) => {
   const paths = usable(input);
   if (paths === undefined) return allow;
-  const lines = [...cardText(input, paths), ...limitLines(input, paths), ...proposalLines(input, paths)];
+  const lines = [...resumeCard(input, paths), ...limitLines(input, paths), ...proposalLines(input, paths)];
   return emit(input, paths, lines, shown(lines, textField(input.payload.raw, "source") ?? "startup"));
 };
 
@@ -119,8 +126,12 @@ export const focusPromptScope: HookHandler = (input) => {
   const task = paths === undefined ? undefined : activeTask(input.runtime, paths);
   if (paths === undefined || task === undefined || task.contract.implicit) return allow;
   const exists = (file: string): boolean => input.runtime.stat(toAbsolutePath(join(paths.root, file))) !== undefined;
-  const mentioned = pathMentions(textField(input.payload.raw, "prompt") ?? "", exists);
-  const deviations = mentioned.flatMap((file) => deviationOf(paths.root, task.contract.scope.paths, file) ?? []);
+  const prompt = textField(input.payload.raw, "prompt") ?? "";
+  const scope = task.contract.scope.paths;
+  const deviations = [
+    ...pathMentions(prompt, exists).flatMap((file) => deviationOf(paths.root, scope, file) ?? []),
+    ...symbolDeviations(prompt, readSymbolIndex(input.runtime, paths.root), scope),
+  ];
   const found = deviations.find((item) => askPark(input, paths, task, item));
   if (found === undefined) return allow;
   return emit(input, paths, [parkQuestion(input, task, found)], { reason: "park-prompt", area: found.area });

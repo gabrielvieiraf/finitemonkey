@@ -86,8 +86,15 @@ const branchIssue = (runtime: Pick<Runtime, "git">, root: AbsolutePath): readonl
   return found === undefined ? [] : [Number(found)];
 };
 
-export const changedFiles = (runtime: Pick<Runtime, "git">, root: AbsolutePath, base: string): readonly string[] => {
-  const names = runtime.git(["diff", "--name-only", `${base}...HEAD`], root);
+const against = (base: string, worktree: boolean): string => (worktree ? base : `${base}...HEAD`);
+
+export const changedFiles = (
+  runtime: Pick<Runtime, "git">,
+  root: AbsolutePath,
+  base: string,
+  worktree = false,
+): readonly string[] => {
+  const names = runtime.git(["diff", "--name-only", against(base, worktree)], root);
   return names.ok ? names.stdout.split("\n").filter((path) => path !== "") : [];
 };
 
@@ -96,11 +103,12 @@ export const touchedSince = (
   root: AbsolutePath,
   base: string,
   features: ReadonlySet<string>,
+  worktree = false,
 ): Touched => {
-  const paths = changedFiles(runtime, root, base).filter((path) => !path.endsWith(".md"));
+  const paths = changedFiles(runtime, root, base, worktree).filter((path) => !path.endsWith(".md"));
   const code = paths.filter((path) => CODE_ONLY.test(path));
   const diff =
-    code.length === 0 ? undefined : runtime.git(["diff", "--unified=0", `${base}...HEAD`, "--", ...code], root);
+    code.length === 0 ? undefined : runtime.git(["diff", "--unified=0", against(base, worktree), "--", ...code], root);
   const text = diff?.ok === true ? diff.stdout : "";
   const issues = [
     ...branchIssue(runtime, root),
