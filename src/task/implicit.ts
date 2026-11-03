@@ -82,6 +82,7 @@ export const implicitContract = (files: ProjectFiles): TaskContract => {
       { id: "secrets", kind: "secrets" },
       ...(hasWebStack(detectStack(files.read)) ? [{ id: "appsec", kind: "appsec" as const }] : []),
       { id: "prose", kind: "prose" },
+      { id: "quotes", kind: "quotes" },
       { id: "worktree", kind: "worktree" },
       { id: "merge", kind: "merge" },
       { id: "callers", kind: "callers" },

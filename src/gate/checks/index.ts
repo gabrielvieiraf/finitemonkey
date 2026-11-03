@@ -34,6 +34,7 @@ import { prOutcome } from "./pr.js";
 import { prodCheck } from "./prod.js";
 import { proseCheck } from "./prose.js";
 import { qualityCheck } from "./quality.js";
+import { quotesCheck } from "./quotes.js";
 import { redGreenCheck } from "./red-green.js";
 import { regressionCheck } from "./regression.js";
 import { researchCheck } from "./research.js";
@@ -56,6 +57,7 @@ export const DEFAULT_CHECKS: CheckRegistry = {
   manual: manualCheck,
   secrets: secretsCheck,
   prose: proseCheck,
+  quotes: quotesCheck,
   worktree: worktreeCheck,
   merge: mergeCheck,
   review: reviewCheck,

@@ -6473,7 +6473,8 @@ var CHECK_KINDS = [
   "test-budget",
   "red-green",
   "cli",
-  "judge"
+  "judge",
+  "quotes"
 ];
 var GIT_REQUIREMENTS = ["committed", "pushed", "pr_open"];
 var SIZES = ["S", "M", "L"];
@@ -7086,9 +7087,9 @@ var listOf2 = (stdout) => {
   return parsed.ok && Array.isArray(parsed.value) ? parsed.value : [];
 };
 var relative2 = (root, file) => {
-  const posix22 = toPosixPath(file);
+  const posix23 = toPosixPath(file);
   const base = `${toPosixPath(root)}/`;
-  return posix22.startsWith(base) ? posix22.slice(base.length) : posix22;
+  return posix23.startsWith(base) ? posix23.slice(base.length) : posix23;
 };
 var actionlint = (runtime, root, files) => {
   const run11 = runtime.exec({
@@ -12612,6 +12613,7 @@ var implicitContract = (files) => {
       { id: "secrets", kind: "secrets" },
       ...hasWebStack(detectStack(files.read)) ? [{ id: "appsec", kind: "appsec" }] : [],
       { id: "prose", kind: "prose" },
+      { id: "quotes", kind: "quotes" },
       { id: "worktree", kind: "worktree" },
       { id: "merge", kind: "merge" },
       { id: "callers", kind: "callers" },
@@ -18162,6 +18164,9 @@ var en_default = {
   "gate.prose.finding": "{file}:{line} reads as machine-written ({rules})",
   "gate.prose.warning": "warning only, prose-blocks is off in .finitemonkey/config.yml: {file}:{line} reads as machine-written ({rules})",
   "gate.prose.clean": "{count, plural, one {# changed Markdown file, it does not read} other {# changed Markdown files, none reads}} as machine-written",
+  "gate.quotes.unavailable": "could not read the changed Markdown files (git unavailable)",
+  "gate.quotes.missing": '{at}: "{quote}" is not word for word in {source}',
+  "gate.quotes.ok": "{count, plural, =0 {no quote cited to a file in the repository} one {# quote cited to a file in the repository, found word for word} other {# quotes cited to files in the repository, all found word for word}}",
   "git.command.snapshot": "Save the working tree, index and untracked files to a backup ref without touching them",
   "git.command.undo": "List the snapshots or restore one, into a new worktree by default",
   "git.command.rescue": "List lost commits from the reflog and fsck, and restore one into a new branch",
@@ -21231,6 +21236,9 @@ var es_default = {
   "gate.prose.finding": "{file}:{line} parece escrito por una máquina ({rules})",
   "gate.prose.warning": "solo aviso, prose-blocks está apagado en .finitemonkey/config.yml: {file}:{line} parece escrito por una máquina ({rules})",
   "gate.prose.clean": "{count, plural, one {# archivo Markdown cambiado, no parece escrito} other {# archivos Markdown cambiados, ninguno parece escrito}} por una máquina",
+  "gate.quotes.unavailable": "no se pudieron leer los archivos Markdown cambiados (git no disponible)",
+  "gate.quotes.missing": '{at}: "{quote}" no está palabra por palabra en {source}',
+  "gate.quotes.ok": "{count, plural, =0 {ninguna cita atribuida a un archivo del repositorio} one {# cita atribuida a un archivo del repositorio, encontrada palabra por palabra} other {# citas atribuidas a archivos del repositorio, todas encontradas palabra por palabra}}",
   "git.command.snapshot": "Guarda el árbol de trabajo, el índice y los archivos sin seguimiento en una ref de respaldo sin tocarlos",
   "git.command.undo": "Lista las instantáneas o restaura una, por defecto en un worktree nuevo",
   "git.command.rescue": "Lista commits perdidos por el reflog y el fsck, y restaura uno en una rama nueva",
@@ -24300,6 +24308,9 @@ var pt_BR_default = {
   "gate.prose.finding": "{file}:{line} tem cara de texto de máquina ({rules})",
   "gate.prose.warning": "só aviso, prose-blocks está desligado em .finitemonkey/config.yml: {file}:{line} tem cara de texto de máquina ({rules})",
   "gate.prose.clean": "{count, plural, one {# arquivo Markdown alterado, sem cara} other {# arquivos Markdown alterados, nenhum com cara}} de texto de máquina",
+  "gate.quotes.unavailable": "não deu para ler os arquivos Markdown alterados (git indisponível)",
+  "gate.quotes.missing": '{at}: "{quote}" não está palavra por palavra em {source}',
+  "gate.quotes.ok": "{count, plural, =0 {nenhuma citação atribuída a um arquivo do repositório} one {# citação atribuída a um arquivo do repositório, encontrada palavra por palavra} other {# citações atribuídas a arquivos do repositório, todas encontradas palavra por palavra}}",
   "git.command.snapshot": "Salva árvore de trabalho, índice e arquivos não rastreados numa ref de backup sem mexer neles",
   "git.command.undo": "Lista as fotografias ou restaura uma, por padrão num worktree novo",
   "git.command.rescue": "Lista commits perdidos pelo reflog e pelo fsck, e restaura um numa branch nova",
@@ -27370,6 +27381,9 @@ var review_default = {
     "gate.prose.finding": "machine",
     "gate.prose.warning": "machine",
     "gate.prose.clean": "machine",
+    "gate.quotes.unavailable": "machine",
+    "gate.quotes.missing": "machine",
+    "gate.quotes.ok": "machine",
     "git.command.snapshot": "machine",
     "git.command.undo": "machine",
     "git.command.rescue": "machine",
@@ -30437,6 +30451,9 @@ var review_default = {
     "gate.prose.finding": "machine",
     "gate.prose.warning": "machine",
     "gate.prose.clean": "machine",
+    "gate.quotes.unavailable": "machine",
+    "gate.quotes.missing": "machine",
+    "gate.quotes.ok": "machine",
     "git.command.snapshot": "machine",
     "git.command.undo": "machine",
     "git.command.rescue": "machine",
@@ -43509,8 +43526,8 @@ import { isAbsolute as isAbsolute3, relative as relative6 } from "node:path";
 var relativeFile = (root, target7) => {
   const rel = relative6(root, toAbsolutePath(target7, toAbsolutePath(root)));
   if (rel === "" || rel.startsWith("..") || isAbsolute3(rel)) return void 0;
-  const posix22 = toPosixPath(rel);
-  return posix22.startsWith(".finitemonkey/") || posix22.startsWith(".git/") ? void 0 : posix22;
+  const posix23 = toPosixPath(rel);
+  return posix23.startsWith(".finitemonkey/") || posix23.startsWith(".git/") ? void 0 : posix23;
 };
 var scopeGlobs = (paths) => paths.flatMap((path) => path.endsWith("/") ? [path, `${path}**`] : [path, `${path}/**`]);
 var deviationOf = (root, scope2, target7) => {
@@ -43943,9 +43960,9 @@ var working = (ctx, path) => {
   return text45.ok ? text45.value : void 0;
 };
 var isPinnedFile = (path) => {
-  const posix22 = toPosixPath(path);
-  const name = posix22.split("/").pop() ?? "";
-  return RUNNER_CONFIG.test(name) || MAKEFILE.test(name) || WORKFLOW5.test(posix22);
+  const posix23 = toPosixPath(path);
+  const name = posix23.split("/").pop() ?? "";
+  return RUNNER_CONFIG.test(name) || MAKEFILE.test(name) || WORKFLOW5.test(posix23);
 };
 var SHORT3 = 60;
 var short2 = (text45) => text45 === void 0 ? "(none)" : text45.length > SHORT3 ? `${text45.slice(0, SHORT3)}…` : text45;
@@ -54773,6 +54790,86 @@ var qualityCheck = (_check, ctx) => {
   return failed4([...notes3, note("gate.quality.fix")]);
 };
 
+// src/quotes/spans.ts
+import { posix as posix15 } from "node:path";
+var MIN_SPAN = 12;
+var QUOTE = /["“]([^"“”\n]+)["”]\s*(?:\(|\[)\s*(?:\[[^\]\n]*\]\()?\s*<?([^\s()<>[\]]+?\.[A-Za-z0-9]{1,8})(?::\d+(?:-\d+)?)?>?\s*[)\]]/g;
+var URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+var ELLIPSIS = /\.\.\.|…|\[\.\.\.\]|\[…\]/;
+var flatText = (text45) => text45.replace(/[“”«»„]/g, '"').replace(/[‘’]/g, "'").replace(/[*_`>]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+var localPath2 = (raw) => {
+  if (URL_SCHEME.test(raw) || raw.startsWith("#")) return void 0;
+  const clean5 = raw.replace(/#.*$/, "");
+  return clean5 === "" ? void 0 : clean5;
+};
+var citedQuotes = (text45) => text45.split("\n").flatMap(
+  (content, index) => [...content.matchAll(QUOTE)].flatMap((match) => {
+    const span = match[1] ?? "";
+    const cited = localPath2(match[2] ?? "");
+    return span.trim().length < MIN_SPAN || cited === void 0 ? [] : [{ line: index + 1, span, cited }];
+  })
+);
+var resolveCited = (file, cited) => {
+  const fromRoot = posix15.normalize(cited.replace(/^\/+/, ""));
+  const fromFile = posix15.normalize(posix15.join(posix15.dirname(file), cited));
+  return [.../* @__PURE__ */ new Set([fromRoot, fromFile])].filter((path) => !path.startsWith(".."));
+};
+var quoteIn = (span, source4) => {
+  const haystack = flatText(source4);
+  let from = 0;
+  for (const piece of span.split(ELLIPSIS).map(flatText).filter((part3) => part3 !== "")) {
+    const at8 = haystack.indexOf(piece, from);
+    if (at8 === -1) return false;
+    from = at8 + piece.length;
+  }
+  return true;
+};
+
+// src/gate/checks/quotes.ts
+var MAX_LISTED28 = 10;
+var SHOWN4 = 60;
+var shorten = (span) => {
+  const flat = span.replace(/\s+/g, " ").trim();
+  return flat.length > SHOWN4 ? `${flat.slice(0, SHOWN4 - 1)}…` : flat;
+};
+var sourceOf5 = (runtime, root, file, cited) => {
+  for (const path of resolveCited(file, cited)) {
+    const text45 = runtime.readText(toAbsolutePath(path, root));
+    if (text45.ok) return { path, text: text45.value };
+  }
+  return void 0;
+};
+var problemsIn = (ctx, file) => {
+  const text45 = ctx.runtime.readText(toAbsolutePath(file, ctx.paths.root));
+  if (!text45.ok) return { checked: 0, notes: [] };
+  const notes3 = [];
+  let checked2 = 0;
+  for (const quote3 of citedQuotes(text45.value)) {
+    const source4 = sourceOf5(ctx.runtime, ctx.paths.root, file, quote3.cited);
+    if (source4 === void 0) continue;
+    checked2 += 1;
+    if (!quoteIn(quote3.span, source4.text)) {
+      notes3.push(
+        note("gate.quotes.missing", {
+          at: `${file}:${String(quote3.line)}`,
+          quote: shorten(quote3.span),
+          source: source4.path
+        })
+      );
+    }
+  }
+  return { checked: checked2, notes: notes3 };
+};
+var quotesCheck = (_check, ctx) => {
+  const files = changedMarkdown(ctx.runtime, ctx.paths.root);
+  if (!files.ok) return unverified("tool_missing", [note("gate.quotes.unavailable")]);
+  const results = files.value.map((file) => problemsIn(ctx, file));
+  const checked2 = results.reduce((sum2, result2) => sum2 + result2.checked, 0);
+  const notes3 = results.flatMap((result2) => result2.notes);
+  if (notes3.length === 0) return passed([note("gate.quotes.ok", { count: checked2 })]);
+  return failed4(notes3.slice(0, MAX_LISTED28));
+};
+
 // src/gate/checks/red-green.ts
 import { dirname as dirname21, join as join149 } from "node:path";
 
@@ -55104,7 +55201,7 @@ var addedDependencies = (ctx) => ctx.changes.filter((change2) => change2.status 
 });
 
 // src/gate/checks/research.ts
-var MAX_LISTED28 = 10;
+var MAX_LISTED29 = 10;
 var required = (ctx) => defaultOn(ctx.runtime, ctx.paths.root, "research-first") || configAt(loadProjectConfig(ctx.runtime, ctx.paths.root), "research", "required") === "true";
 var findings = (ctx) => {
   const records3 = researchRecords(ctx.runtime, ctx.paths.root);
@@ -55124,7 +55221,7 @@ var findings = (ctx) => {
         paths: rules2.slice(0, 3).map((change2) => change2.path).join(", ")
       })
     ] : []
-  ].slice(0, MAX_LISTED28);
+  ].slice(0, MAX_LISTED29);
 };
 var researchCheck = (_check, ctx) => {
   const notes3 = findings(ctx);
@@ -55542,7 +55639,7 @@ var secretsGateStatus = (runtime, root, since) => {
 };
 
 // src/gate/checks/secrets.ts
-var MAX_LISTED29 = 10;
+var MAX_LISTED30 = 10;
 var EPOCH = "1970-01-01T00:00:00.000Z";
 var sinceOf = (ctx) => {
   const session = readSession(ctx.runtime, ctx.paths);
@@ -55569,12 +55666,12 @@ var secretsCheck = (_check, ctx) => {
   const { findings: findings2, openIncidents } = status.value;
   const warnings = [
     ...grewNotes(ctx),
-    ...findings2.filter(isWarning).slice(0, MAX_LISTED29).map((finding7) => note("gate.secrets.warning", { file: finding7.file, line: finding7.line, rule: finding7.ruleId }))
+    ...findings2.filter(isWarning).slice(0, MAX_LISTED30).map((finding7) => note("gate.secrets.warning", { file: finding7.file, line: finding7.line, rule: finding7.ruleId }))
   ];
   const notes3 = [
-    ...blocking(findings2).slice(0, MAX_LISTED29).map((finding7) => note("gate.secrets.finding", { file: finding7.file, line: finding7.line, rule: finding7.ruleId })),
-    ...openIncidents.slice(0, MAX_LISTED29).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state })),
-    ...envNotes(ctx).slice(0, MAX_LISTED29)
+    ...blocking(findings2).slice(0, MAX_LISTED30).map((finding7) => note("gate.secrets.finding", { file: finding7.file, line: finding7.line, rule: finding7.ruleId })),
+    ...openIncidents.slice(0, MAX_LISTED30).map((incident) => note("gate.secrets.incident", { id: incident.id, state: incident.state })),
+    ...envNotes(ctx).slice(0, MAX_LISTED30)
   ];
   if (notes3.length > 0) return failed4([...notes3, ...warnings]);
   return passed(warnings.length > 0 ? warnings : [note("gate.secrets.clean")]);
@@ -55706,15 +55803,15 @@ var loadSlopConfig = (runtime, root) => {
 var isAllowed = (config, file) => file.startsWith(".finitemonkey/") || matchesAny(file, config.allow);
 
 // src/slop/files.ts
-import { posix as posix15 } from "node:path";
+import { posix as posix16 } from "node:path";
 var REEXPORT = /^\s*(?:export\s+(?:type\s+)?(?:\*|\{[^}]*\})(?:\s+as\s+[\w$]+)?\s+from\s+["'][^"']+["'];?|module\.exports\s*=\s*require\(\s*["'][^"']+["']\s*\);?)\s*$/;
 var SCRIPT4 = /\.(?:[cm]?[jt]sx?)$/;
 var BARREL = /(^|\/)index\.[cm]?[jt]sx?$/;
 var SUMMARY = /(?:summary|implementation)[^/]*\.(?:md|markdown)$/i;
 var IN_DOCS = /(^|\/)docs?\//;
 var siblingOf = (file, exists3) => {
-  const dir = posix15.dirname(file);
-  const base = posix15.basename(file);
+  const dir = posix16.dirname(file);
+  const base = posix16.basename(file);
   const dot = base.indexOf(".", 1);
   const stem = dot < 0 ? base : base.slice(0, dot);
   const ext = dot < 0 ? "" : base.slice(dot);
@@ -55889,7 +55986,7 @@ var detectorRates = (store3) => SLOP_DETECTORS.map((detector) => {
 });
 
 // src/gate/checks/slop.ts
-var MAX_LISTED30 = 15;
+var MAX_LISTED31 = 15;
 var trackedAdditions = (ctx) => {
   const diff = ctx.git.out(["diff", "-U0", "-M", "--no-color", "--no-ext-diff", ctx.base, "--", ".", EXCLUDE_FM]);
   const grouped3 = /* @__PURE__ */ new Map();
@@ -55932,7 +56029,7 @@ var slopCheck = (_check, ctx) => {
   }
   const blocks2 = found2.filter((item2) => levelOf3(item2.detector) === "block");
   const ordered2 = [...blocks2, ...found2.filter((item2) => levelOf3(item2.detector) === "warn")];
-  const notes3 = ordered2.slice(0, MAX_LISTED30).map(findingNote6);
+  const notes3 = ordered2.slice(0, MAX_LISTED31).map(findingNote6);
   if (blocks2.length === 0) return passed([note("gate.slop.clean", { count: files.length }), ...notes3]);
   if (mode === "shadow") return passed([note("gate.slop.shadow", { count: blocks2.length }), ...notes3]);
   return failed4([...notes3, note("gate.slop.fix")]);
@@ -56143,7 +56240,7 @@ var budgetFindings = (runtime, root) => {
 };
 
 // src/gate/checks/test-budget.ts
-var MAX_LISTED31 = 10;
+var MAX_LISTED32 = 10;
 var allLedgers = (ctx) => {
   const dir = toAbsolutePath(dirname22(ctx.paths.evidence(ctx.contract.id)));
   const listed14 = ctx.runtime.listDir(dir);
@@ -56184,7 +56281,7 @@ var testBudgetCheck = (_check, ctx) => {
   const known4 = ratchet2.known.length > 0 ? [note("gate.test_budget.known", { count: ratchet2.known.length })] : [];
   const notes3 = [
     ...slow === void 0 ? [] : [note("gate.test_budget.slow", { current: slow.currentMs, base: slow.baseMs, runs: slow.runs })],
-    ...blocking3.slice(0, MAX_LISTED31).map((finding7) => findingNote7(finding7, limit))
+    ...blocking3.slice(0, MAX_LISTED32).map((finding7) => findingNote7(finding7, limit))
   ];
   if (notes3.length === 0) return passed([note("gate.test_budget.ok"), ...known4]);
   if (mode === "shadow") return passed([note("gate.test_budget.shadow"), ...notes3, ...known4]);
@@ -56262,12 +56359,12 @@ var analyzeTree = (input) => input.changes.flatMap((change2) => forChange(input,
 
 // src/gate/checks/tests-rewritten.ts
 var TESTS_APPROVAL_CHECK = "tests";
-var MAX_LISTED32 = 10;
+var MAX_LISTED33 = 10;
 var approvalFor = (ctx, check2) => {
   const found2 = [.../* @__PURE__ */ new Set([check2.id, TESTS_APPROVAL_CHECK])].map((id) => boundApproval(ctx, id)).filter((item2) => item2 !== void 0);
   return found2.find((item2) => item2.kind === "valid") ?? found2[0];
 };
-var rewrittenNotes = (rewritten) => rewritten.slice(0, MAX_LISTED32).map((item2) => note("gate.tests.rewritten", { file: item2.file, removed: item2.removed }));
+var rewrittenNotes = (rewritten) => rewritten.slice(0, MAX_LISTED33).map((item2) => note("gate.tests.rewritten", { file: item2.file, removed: item2.removed }));
 var holdRewrittenTests = (ctx, check2, rewritten, grant, outcome3) => {
   if (outcome3.status !== "passed" || rewritten.length === 0 || grant !== void 0) return outcome3;
   const task = ctx.contract.id;
@@ -56295,7 +56392,7 @@ var holdRewrittenTests = (ctx, check2, rewritten, grant, outcome3) => {
 };
 
 // src/gate/checks/tests.ts
-var MAX_LISTED33 = 10;
+var MAX_LISTED34 = 10;
 var violationNote = (violation) => note(`gate.tests.${violation.kind}`, {
   file: violation.path,
   before: violation.before ?? 0,
@@ -56351,8 +56448,8 @@ var testsView = (ctx) => {
   return {
     violations,
     notes: [
-      ...measured3.slice(0, MAX_LISTED33).map((edit) => editNote(edit, count13)),
-      ...shadowHeld.slice(0, MAX_LISTED33).map((file) => note("gate.tests.held_shadow", { file }))
+      ...measured3.slice(0, MAX_LISTED34).map((edit) => editNote(edit, count13)),
+      ...shadowHeld.slice(0, MAX_LISTED34).map((file) => note("gate.tests.held_shadow", { file }))
     ],
     rewritten: measured3.filter((edit) => edit.removed > 0).map((edit) => ({ file: edit.change.path, removed: edit.removed }))
   };
@@ -56366,7 +56463,7 @@ var timedRun = (check2, run11, ctx) => {
 var testsCheck = (check2, ctx) => {
   const { violations, notes: edits, rewritten } = testsView(ctx);
   const grant = violations.length === 0 && rewritten.length === 0 ? void 0 : activeGrant(ctx.runtime, ctx.paths, "tests", nowMs(ctx.runtime), ctx.sessionId);
-  const notes3 = violations.slice(0, MAX_LISTED33).map(violationNote);
+  const notes3 = violations.slice(0, MAX_LISTED34).map(violationNote);
   if (violations.length > 0 && grant === void 0) return failed4([...notes3, ...edits, note("gate.tests.fix")]);
   const released2 = grant === void 0 ? {} : { releasedBy: `person@${grant.grantedAt}` };
   const releaseNotes = grant === void 0 ? [] : [...notes3, note("gate.note.released", { guard: "tests", reason: grant.reason })];
@@ -57103,10 +57200,10 @@ var findingLabel = (finding7) => {
 };
 
 // src/gate/checks/worktree.ts
-var MAX_LISTED34 = 8;
+var MAX_LISTED35 = 8;
 var listed5 = (items2) => {
-  const head = items2.slice(0, MAX_LISTED34).join(", ");
-  return items2.length > MAX_LISTED34 ? `${head} (+${String(items2.length - MAX_LISTED34)})` : head;
+  const head = items2.slice(0, MAX_LISTED35).join(", ");
+  return items2.length > MAX_LISTED35 ? `${head} (+${String(items2.length - MAX_LISTED35)})` : head;
 };
 var repoOf2 = (ctx) => openRepo(ctx.runtime, ctx.paths.root);
 var ownerOf3 = (ctx) => ownerKey(ctx.sessionId);
@@ -57164,6 +57261,7 @@ var DEFAULT_CHECKS = {
   manual: manualCheck,
   secrets: secretsCheck,
   prose: proseCheck,
+  quotes: quotesCheck,
   worktree: worktreeCheck,
   merge: mergeCheck,
   review: reviewCheck,
@@ -58859,7 +58957,7 @@ var hasWriteVerb = (method) => wordsOf4(method).some((word2) => WRITE_VERBS.incl
 var callOf = (tool, input) => ({ tool, input: isRecord(input) ? input : {} });
 
 // src/guards/remote/script-file.ts
-import { posix as posix16 } from "node:path";
+import { posix as posix17 } from "node:path";
 var SCRIPT_FILE = /\.(?:py|js|mjs|cjs|ts|mts|cts|rb)$/i;
 var INLINE_FLAGS = /* @__PURE__ */ new Set(["-c", "-e", "--eval", "-m"]);
 var scriptPaths = (call2) => shellCommands(call2).flatMap((command) => {
@@ -58867,7 +58965,7 @@ var scriptPaths = (call2) => shellCommands(call2).flatMap((command) => {
   if (command.args.some((arg) => INLINE_FLAGS.has(arg))) return [];
   const file = command.args.find((arg) => !arg.startsWith("-") && SCRIPT_FILE.test(arg));
   if (file === void 0) return [];
-  return [command.dir === void 0 ? file : posix16.join(command.dir, file)];
+  return [command.dir === void 0 ? file : posix17.join(command.dir, file)];
 });
 var scriptFileCall = (call2, read12) => {
   for (const file of scriptPaths(call2)) {
@@ -59708,7 +59806,7 @@ var wtPostToolUse = (input) => {
 import { basename as basename13, dirname as dirname25 } from "node:path";
 
 // src/git/pathspec.ts
-import { posix as posix17 } from "node:path";
+import { posix as posix18 } from "node:path";
 var MAGIC = /^:(?:\(([^)]*)\)|([!^/]*))(.*)$/s;
 var GLOB2 = /[*?[]/;
 var specOf3 = (raw, prefix2) => {
@@ -59718,7 +59816,7 @@ var specOf3 = (raw, prefix2) => {
   const rest = magic === null ? posixRaw : magic[3] ?? "";
   const exclude = /(?:^|,)exclude(?:,|$)|[!^]/.test(words10);
   const top2 = /(?:^|,)top(?:,|$)|\//.test(words10);
-  const joined2 = posix17.normalize(top2 ? rest : posix17.join(prefix2 === "" ? "." : prefix2, rest));
+  const joined2 = posix18.normalize(top2 ? rest : posix18.join(prefix2 === "" ? "." : prefix2, rest));
   return { pattern: joined2 === "./" ? "." : joined2.replace(/\/$/, ""), exclude };
 };
 var globRegex4 = (pattern) => {
@@ -60969,9 +61067,9 @@ var powershellTargets2 = (command) => [
 ];
 var shellWriteTargets = (tool, command) => tool === "PowerShell" ? normalizeCommand(command, "powershell").commands.flatMap(powershellTargets2) : normalizeCommand(command, "bash").commands.flatMap(bashTargets);
 var asRecord2 = (root, cwd, candidate2) => {
-  const posix22 = toPosixPath(candidate2.trim());
-  if (posix22 === "" || /\s/.test(posix22)) return void 0;
-  const file = toPosixPath(relative21(root, toAbsolutePath(posix22, cwd)));
+  const posix23 = toPosixPath(candidate2.trim());
+  if (posix23 === "" || /\s/.test(posix23)) return void 0;
+  const file = toPosixPath(relative21(root, toAbsolutePath(posix23, cwd)));
   return file.startsWith(`${PLAN_DIR}/`) && DECISION_FILE.test(file.slice(PLAN_DIR.length + 1)) ? file : void 0;
 };
 var decisionTarget = (root, cwd, candidate2) => asRecord2(root, cwd, candidate2) ?? MENTIONED.exec(toPosixPath(candidate2))?.[1];
@@ -64132,7 +64230,7 @@ var flagValues = (args2, spec3) => {
   }
   return out;
 };
-var sourceOf5 = (value2, isFile3, segment2, heredocs) => {
+var sourceOf6 = (value2, isFile3, segment2, heredocs) => {
   const inline5 = heredocIn(value2, heredocs);
   if (inline5 !== void 0) return { kind: "inline", text: inline5 };
   if (!isFile3) return { kind: "inline", text: value2 };
@@ -64144,8 +64242,8 @@ var collect4 = (target7, segment2, args2, spec3, heredocs) => {
   const values = flagValues(args2, spec3);
   if (values.length === 0) return void 0;
   const title = values.find((item2) => spec3.title.includes(item2.flag));
-  const bodies3 = values.filter((item2) => !spec3.title.includes(item2.flag)).map((item2) => sourceOf5(item2.value, spec3.file.includes(item2.flag), segment2, heredocs));
-  return { target: target7, title: title === void 0 ? void 0 : sourceOf5(title.value, false, segment2, heredocs), bodies: bodies3 };
+  const bodies3 = values.filter((item2) => !spec3.title.includes(item2.flag)).map((item2) => sourceOf6(item2.value, spec3.file.includes(item2.flag), segment2, heredocs));
+  return { target: target7, title: title === void 0 ? void 0 : sourceOf6(title.value, false, segment2, heredocs), bodies: bodies3 };
 };
 var gitSubcommand = (args2) => {
   let index = 0;
@@ -65845,9 +65943,9 @@ var secretContextPreToolUse = (input) => {
 };
 
 // src/secrets/guards/describe.ts
-var MAX_LISTED35 = 5;
+var MAX_LISTED36 = 5;
 var describeFindings = (t, items2) => {
-  const listed14 = items2.slice(0, MAX_LISTED35).map(({ ruleId, where: where3 }) => t("secrets.found_item", { rule: ruleId, where: where3 }));
+  const listed14 = items2.slice(0, MAX_LISTED36).map(({ ruleId, where: where3 }) => t("secrets.found_item", { rule: ruleId, where: where3 }));
   const rest = items2.length - listed14.length;
   return rest > 0 ? `${listed14.join("; ")}; ${t("secrets.found_more", { count: rest })}` : listed14.join("; ");
 };
@@ -66962,8 +67060,8 @@ var targetOf5 = (input) => {
 var inside = (root, target7) => {
   const rel = relative36(root, toAbsolutePath(target7, toAbsolutePath(root)));
   if (rel === "" || rel.startsWith("..") || isAbsolute9(rel)) return void 0;
-  const posix22 = toPosixPath(rel);
-  return posix22.startsWith(".finitemonkey/") || posix22.startsWith(".git/") ? void 0 : posix22;
+  const posix23 = toPosixPath(rel);
+  return posix23.startsWith(".finitemonkey/") || posix23.startsWith(".git/") ? void 0 : posix23;
 };
 var advise2 = (input, paths, event, params2) => {
   const mode = featureMode(input.runtime, paths, SCOPE_GUARD);
@@ -68751,7 +68849,7 @@ import { join as join200 } from "node:path";
 var INSTRUCTION_LINE_CEILING = 200;
 var TOP_INSTRUCTIONS = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md"];
 var RULES_DIR3 = ".claude/rules";
-var SHOWN4 = 3;
+var SHOWN5 = 3;
 var readProjectFile2 = (env, relative41) => {
   const text45 = env.runtime.readText(toAbsolutePath(join200(env.root, ...relative41.split("/"))));
   return text45.ok ? text45.value : void 0;
@@ -68764,7 +68862,7 @@ var instructionFiles = (env) => {
     return text45 === void 0 ? [] : [{ path, text: text45 }];
   });
 };
-var shortList = (items2) => items2.length <= SHOWN4 ? items2.join(", ") : `${items2.slice(0, SHOWN4).join(", ")} (+${String(items2.length - SHOWN4)})`;
+var shortList = (items2) => items2.length <= SHOWN5 ? items2.join(", ") : `${items2.slice(0, SHOWN5).join(", ")} (+${String(items2.length - SHOWN5)})`;
 var claudeignore = (env, deny2) => {
   const present5 = CLAUDEIGNORE_FILES.filter((path) => readProjectFile2(env, path) !== void 0);
   if (present5.length === 0) return [];
@@ -69500,7 +69598,7 @@ var DEFAULT_VERIFIERS = { check: checkVerifier };
 var CITE_FEATURE = "cite-span";
 var LINK = /\[([^\]]+)\]\(([^)\s]+)\)/g;
 var BARE = /\b(10\.\d{4,9}\/[^\s)\]"”,;]+|https?:\/\/[^\s)\]"”,;]+)/g;
-var QUOTE = /[“"]([^”"]{3,})[”"]/g;
+var QUOTE2 = /[“"]([^”"]{3,})[”"]/g;
 var YEAR = /\b(?:1[89]|20)\d{2}\b/g;
 var NAME4 = new RegExp("\\b\\p{Lu}[\\p{Ll}'-]{2,}\\b", "gu");
 var STOP3 = /* @__PURE__ */ new Set([
@@ -69538,7 +69636,7 @@ var citationsIn2 = (text45) => {
   for (const item2 of [...links, ...bare2]) if (item2.id !== "" && !unique5.has(item2.id)) unique5.set(item2.id, item2);
   return [...unique5.values()];
 };
-var quotesIn = (text45) => [...text45.replace(LINK, (_all, label3) => label3).matchAll(QUOTE)].map((match) => match[1] ?? "");
+var quotesIn = (text45) => [...text45.replace(LINK, (_all, label3) => label3).matchAll(QUOTE2)].map((match) => match[1] ?? "");
 var labelTerms = (label3) => {
   const years = label3.match(YEAR) ?? [];
   if (years.length === 0) return [];
@@ -70425,10 +70523,10 @@ var upsertIssue = (runtime, cwd, title, section3) => {
 
 // src/dssync/render.ts
 var SECTIONS3 = ["tokens", "classes", "components", "assets"];
-var SHOWN5 = 60;
+var SHOWN6 = 60;
 var value = (text45) => {
   const trimmed2 = (text45 ?? "").replace(/\s+/g, " ").trim();
-  return trimmed2.length > SHOWN5 ? `${trimmed2.slice(0, SHOWN5)}…` : trimmed2;
+  return trimmed2.length > SHOWN6 ? `${trimmed2.slice(0, SHOWN6)}…` : trimmed2;
 };
 var rows = (t, section3, withValues) => [
   ...section3.added.map(
@@ -70454,7 +70552,7 @@ var renderSummary = (t, summary2) => {
 };
 
 // src/dssync/summary.ts
-import { posix as posix18 } from "node:path";
+import { posix as posix19 } from "node:path";
 var STYLE = /\.(?:css|scss|sass|less)$/;
 var TOKEN_JSON = /(?:^|\/)(?:tokens\/[^/]+|[^/]+\.tokens)\.json$/;
 var ASSET = /\.(?:svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf)$/i;
@@ -70502,7 +70600,7 @@ var componentsOf = (snapshot2) => sortedMap(
 );
 var assetsOf = (snapshot2) => sortedMap(
   [...snapshot2].flatMap(
-    ([path, text45]) => ASSET.test(path) ? [[posix18.normalize(path), hash(text45)]] : []
+    ([path, text45]) => ASSET.test(path) ? [[posix19.normalize(path), hash(text45)]] : []
   )
 );
 var compare = (before2, after2) => {
@@ -75812,10 +75910,10 @@ var prePushChecks = (runtime, repo, remote, updates) => {
 };
 
 // src/githooks/render.ts
-var MAX_LISTED36 = 5;
+var MAX_LISTED37 = 5;
 var detailOf2 = (check2) => {
-  const listed14 = check2.failures.slice(0, MAX_LISTED36).join("; ");
-  const rest = check2.failures.length - MAX_LISTED36;
+  const listed14 = check2.failures.slice(0, MAX_LISTED37).join("; ");
+  const rest = check2.failures.length - MAX_LISTED37;
   return rest > 0 ? `${listed14}; +${String(rest)}` : listed14;
 };
 var checkLine2 = (t, check2) => check2.failures.length === 0 ? t("githooks.pass", { check: check2.id }) : t("githooks.fail", { check: check2.id, detail: detailOf2(check2), fix: check2.fix });
@@ -78761,8 +78859,8 @@ var readRepo = (git5, path, ref2, hash2, covered) => {
 };
 
 // src/inventory/render.ts
-var MAX_LISTED37 = 40;
-var capped3 = (t, lines11) => lines11.length > MAX_LISTED37 ? [...lines11.slice(0, MAX_LISTED37), `- ${t("inventory.more", { count: lines11.length - MAX_LISTED37 })}`] : lines11;
+var MAX_LISTED38 = 40;
+var capped3 = (t, lines11) => lines11.length > MAX_LISTED38 ? [...lines11.slice(0, MAX_LISTED38), `- ${t("inventory.more", { count: lines11.length - MAX_LISTED38 })}`] : lines11;
 var listed7 = (t, lines11) => lines11.length === 0 ? [t("inventory.none")] : capped3(t, lines11);
 var hitLines = (t, hits) => listed7(
   t,
@@ -81108,7 +81206,7 @@ var anchorSpec = (spec3) => {
   const [path = "", symbol] = spec3.split("#");
   return { path: path.replace(/^\.\//, ""), ...symbol === void 0 || symbol === "" ? {} : { symbol } };
 };
-var sourceOf6 = (ctx, paths, wanted) => {
+var sourceOf7 = (ctx, paths, wanted) => {
   const asked = ORIGIN_SOURCES.find((item2) => item2 === wanted);
   if (isPerson(ctx)) return asked ?? "person";
   if (asked === "external" || recentUntrusted(ctx.runtime, paths) !== void 0) return "external";
@@ -81176,7 +81274,7 @@ var claimsAddCommand = {
       const git5 = gitAt(ctx.runtime, root);
       const commit2 = headSha(git5);
       const tree = treeHash(git5);
-      const source4 = sourceOf6(ctx, paths, stringOption(args2.values, "origin"));
+      const source4 = sourceOf7(ctx, paths, stringOption(args2.values, "origin"));
       if (source4 === "external" && instructionLines(text45).length > 0)
         return fail3(ctx, "knowledge.claims.error.instruction", ADD_USAGE3);
       const check2 = stringOption(args2.values, "check");
@@ -83527,7 +83625,7 @@ var FILES_OF = {
   next: nextFiles
 };
 var kindOf6 = (path) => path.endsWith("build-manifest.json") ? "next" : "vite";
-var sourceOf7 = (manifest3) => {
+var sourceOf8 = (manifest3) => {
   if (manifest3 === void 0) return MANIFESTS5;
   const kind = kindOf6(manifest3);
   const assets = kind === "vite" && manifest3.endsWith(".vite/manifest.json") ? dirname43(dirname43(manifest3)) : dirname43(manifest3);
@@ -83544,7 +83642,7 @@ var measured2 = (runtime, root, source4) => {
   return { manifest: source4.path, kind: source4.kind, bytes, files };
 };
 var buildBundleSize = (runtime, root, manifest3) => {
-  for (const source4 of sourceOf7(manifest3)) {
+  for (const source4 of sourceOf8(manifest3)) {
     const size = measured2(runtime, root, source4);
     if (size !== void 0) return size;
   }
@@ -86364,10 +86462,10 @@ var onboardCommand = {
 };
 
 // src/commands/organize.ts
-import { isAbsolute as isAbsolute12, join as join242, posix as posix21 } from "node:path";
+import { isAbsolute as isAbsolute12, join as join242, posix as posix22 } from "node:path";
 
 // src/organize/plan.ts
-import { posix as posix19 } from "node:path";
+import { posix as posix20 } from "node:path";
 var PLAN_DIR2 = "docs/organize";
 var MAX_TARGETS = 3;
 var CHUNK_LINES = 300;
@@ -86382,9 +86480,9 @@ var declarations = (file, text45) => {
   });
 };
 var destinationFor = (file, first2) => {
-  const extension = posix19.extname(file);
-  const stem = posix19.basename(file, extension);
-  return posix19.join(posix19.dirname(file), stem, `${first2}${extension}`);
+  const extension = posix20.extname(file);
+  const stem = posix20.basename(file, extension);
+  return posix20.join(posix20.dirname(file), stem, `${first2}${extension}`);
 };
 var responsibilities = (file, text45, chunk = CHUNK_LINES) => {
   const found2 = declarations(file, text45);
@@ -86433,7 +86531,7 @@ var planMarkdown = (input, parts) => [
   ...planSteps(input, parts).flatMap((step5, index) => [`## Step ${String(index + 1)}: ${step5}`, ""])
 ].join("\n");
 var stepsIn = (markdown) => markdown.split(/\r?\n/).flatMap((line13) => /^## Step \d+: (.+)$/.exec(line13)?.[1] ?? []).map((goal) => goal.trim());
-var planPath2 = (file) => posix19.join(PLAN_DIR2, `${file.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+/, "")}.md`);
+var planPath2 = (file) => posix20.join(PLAN_DIR2, `${file.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+/, "")}.md`);
 
 // src/organize/rank.ts
 var DEFAULT_SENSITIVE2 = [
@@ -86484,7 +86582,7 @@ var rankHotspots = (facts, history, sensitive) => {
 };
 
 // src/organize/scan.ts
-import { posix as posix20 } from "node:path";
+import { posix as posix21 } from "node:path";
 
 // src/organize/history.ts
 var CHURN_DAYS = 90;
@@ -86516,7 +86614,7 @@ var readHistory2 = (git5) => {
 // src/organize/scan.ts
 var CACHE = "organize-rank.json";
 var JS3 = /\.(?:[cm]?[jt]sx?)$/;
-var stemOf3 = (path) => posix20.basename(path).replace(/\.[^.]+$/, "").replace(/(?:\.test|\.spec|_test|Test|Tests)$/, "").replace(/^test_/, "").toLowerCase();
+var stemOf3 = (path) => posix21.basename(path).replace(/\.[^.]+$/, "").replace(/(?:\.test|\.spec|_test|Test|Tests)$/, "").replace(/^test_/, "").toLowerCase();
 var complexityOf = (root, path, text45) => {
   const ts = JS3.test(path) ? loadTypescript(root) : void 0;
   if (ts === void 0) return branchComplexity(text45);
@@ -86628,9 +86726,9 @@ var USAGE26 = "finitemonkey organize [--top <n>] | organize plan <file> | organi
 var DEFAULT_TOP = 10;
 var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE26, { detail });
 var relativeFile3 = (ctx, root, raw) => {
-  if (isAbsolute12(raw)) return posix21.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
+  if (isAbsolute12(raw)) return posix22.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
   const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
-  return posix21.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
+  return posix22.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
 };
 var rank3 = (ctx, top2) => {
   const root = projectRoot(ctx);
@@ -86673,7 +86771,7 @@ var plan = (ctx, raw) => {
   const tree = workingTree(ctx.runtime, gitAt(ctx.runtime, root), root, []);
   const importerDirs = [
     ...new Set(
-      importEdges(tree).filter((edge) => edge.to === file).map((edge) => posix21.dirname(edge.from))
+      importEdges(tree).filter((edge) => edge.to === file).map((edge) => posix22.dirname(edge.from))
     )
   ].sort();
   const parts = responsibilities(file, text45.value);
@@ -90952,6 +91050,7 @@ var draftChecks = (runtime, paths, draft) => {
     { id: "secrets", kind: "secrets" },
     ...hasWebStack(detectStack(disk.read)) ? [{ id: "appsec", kind: "appsec" }] : [],
     { id: "prose", kind: "prose" },
+    { id: "quotes", kind: "quotes" },
     { id: "worktree", kind: "worktree" },
     { id: "merge", kind: "merge" },
     { id: "callers", kind: "callers" },
