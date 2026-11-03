@@ -119,7 +119,11 @@ const pointCell = (trajectory: DomainTrajectory, week: Week, band: Cellband | nu
   return mark.kind === "ricochet" ? { glyph: "✕", band, ink: "ricochet" } : { glyph: "◉", band, ink: "held" };
 };
 
-const pointRows = (trajectory: DomainTrajectory, layers: readonly Layer[], rows: number): readonly (number | null)[] => {
+const pointRows = (
+  trajectory: DomainTrajectory,
+  layers: readonly Layer[],
+  rows: number,
+): readonly (number | null)[] => {
   const peak = peakOf(trajectory);
   return trajectory.weeks.map((week) => {
     const level = markIn(trajectory.marks, week.week) === undefined ? week.work : markLevel(week);
