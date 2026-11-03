@@ -12,7 +12,7 @@ export interface Step {
 
 export interface Placed {
   readonly item: SvgItem;
-  readonly motion?: Motion;
+  readonly motion?: Motion | undefined;
 }
 
 export interface Plan {

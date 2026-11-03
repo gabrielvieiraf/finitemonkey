@@ -88,8 +88,8 @@ function essayPage(essay: Essay, lang: Lang): string {
   });
 }
 
-function figures(essay: Essay): Map<string, Buffer> {
-  const out = new Map<string, Buffer>();
+function figures(essay: Essay): Map<string, string | Buffer> {
+  const out = new Map<string, string | Buffer>();
   const base = join(root, "docs", essay.slug, "figures");
   for (const dir of readdirSync(base)) {
     for (const file of readdirSync(join(base, dir)).filter((f) => f.endsWith(".svg"))) {
