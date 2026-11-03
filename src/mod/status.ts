@@ -36,6 +36,7 @@ export interface GateView {
     readonly domain: string;
     readonly band: string | null;
     readonly ricochet: { readonly concept: string; readonly week: string } | null;
+    readonly recent?: readonly number[];
   } | null;
   readonly triage: { readonly flagged: number; readonly open: number } | null;
 }
@@ -107,6 +108,7 @@ const trajectoryOf = (value: unknown): GateView["trajectory"] =>
         domain: value["domain"],
         band: typeof value["band"] === "string" ? value["band"] : null,
         ricochet: ricochetOf(value["ricochet"]),
+        recent: numbers(value["recent"]),
       }
     : null;
 
@@ -118,9 +120,19 @@ const triageOf = (value: unknown): GateView["triage"] =>
 export const triageLine = (triage: NonNullable<GateView["triage"]>): string =>
   `triage ${String(triage.open)}/${String(triage.flagged)} open`;
 
+const SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+
+export const sparkline = (values: readonly number[]): string =>
+  values
+    .map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "")
+    .join("");
+
+const trajectorySpark = (recent: readonly number[] | undefined): string =>
+  recent === undefined || recent.length < 2 ? "" : ` ${sparkline(recent)}`;
+
 export const trajectoryLine = (trajectory: NonNullable<GateView["trajectory"]>): string =>
   [
-    `trajectory ${trajectory.domain}: ${trajectory.band ?? "no accepted work"}`,
+    `trajectory ${trajectory.domain}${trajectorySpark(trajectory.recent)}: ${trajectory.band ?? "no accepted work"}`,
     trajectory.ricochet === null
       ? "no ricochet"
       : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`,
@@ -128,13 +140,6 @@ export const trajectoryLine = (trajectory: NonNullable<GateView["trajectory"]>):
 
 export const knowledgeLine = (knowledge: NonNullable<GateView["knowledge"]>): string =>
   `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
-
-const SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-
-export const sparkline = (values: readonly number[]): string =>
-  values
-    .map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "")
-    .join("");
 
 export const blindLine = (blind: NonNullable<GateView["blindBand"]>): string =>
   `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;

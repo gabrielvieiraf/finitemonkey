@@ -2,6 +2,7 @@ import { dirname, join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, toEnvelope } from "../core/result.js";
 import { applyFixes, type Fixed } from "../doctor/fix.js";
 import { hookInventory, type HookRow, withDebugLog, withProbeLatency } from "../doctor/hook-inventory.js";
@@ -11,6 +12,7 @@ import { buildReport, doctorEnvFrom, type DoctorItem, type DoctorReport, runChec
 import { ExitCode } from "../exit-codes.js";
 import { applyProblem, planProblem } from "../install/session.js";
 import { fmPaths } from "../task/paths.js";
+import { type BypassRun, bypassStep } from "./doctor-bypass.js";
 import type { CommandSpec } from "./types.js";
 
 const MARK = { ok: "ok  ", warn: "warn", fail: "FAIL" } as const;
@@ -25,6 +27,7 @@ export interface DoctorData extends DoctorReport {
   readonly reportPath?: string;
   readonly hookInventory?: readonly HookRow[];
   readonly probe?: ProbeResult;
+  readonly bypassProbe?: BypassRun;
 }
 
 const debugLog = (ctx: Ctx): string | undefined => {
@@ -129,19 +132,40 @@ const runDoctor = (
   return report ? writeReport(ctx, data, result) : result;
 };
 
+const runBypassDoctor = (ctx: Ctx): CommandResult => {
+  const step = bypassStep(ctx, doctorEnvFrom(ctx).root);
+  if (step.kind === "refused") return step.result;
+  const checked = buildReport(ctx, runChecks(doctorEnvFrom(ctx)));
+  const result = doctorResult(ctx, { ...checked, bypassProbe: step.run }, step.lines);
+  return step.next === undefined ? result : { ...result, next: step.next };
+};
+
+const DOCTOR_USAGE = "finitemonkey doctor [--hooks] [--probe [bypass]] [--fix] [--report] [--dry-run] [--json]";
+
 export const doctorCommand: CommandSpec = {
   path: ["doctor"],
   summaryKey: "command.doctor.summary",
-  usage: "finitemonkey doctor [--hooks] [--probe] [--fix] [--report] [--dry-run] [--json]",
+  usage: DOCTOR_USAGE,
   status: "ready",
+  maxPositionals: 1,
   options: {
     fix: { type: "boolean" },
     report: { type: "boolean" },
     hooks: { type: "boolean" },
     probe: { type: "boolean" },
   },
-  run: (ctx, args) =>
-    Promise.resolve(
+  run: (ctx, args) => {
+    const target = args.positionals[0];
+    if (target !== undefined)
+      return Promise.resolve(
+        target === "bypass" && args.values["probe"] === true
+          ? runBypassDoctor(ctx)
+          : failureFrom(
+              ctx.t,
+              usageProblem("invalid_arguments", "error.invalid_arguments", DOCTOR_USAGE, { detail: target }),
+            ),
+      );
+    return Promise.resolve(
       runDoctor(
         ctx,
         args.values["fix"] === true,
@@ -149,5 +173,6 @@ export const doctorCommand: CommandSpec = {
         args.values["hooks"] === true,
         args.values["probe"] === true,
       ),
-    ),
+    );
+  },
 };

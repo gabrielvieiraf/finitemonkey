@@ -22,6 +22,10 @@ const log = [
   { at: hoursAgo(5), event: "person.allow", guard: "tests", reason: "flaky upstream" },
   { at: hoursAgo(5), event: "person.approve", check: "visual", reason: "" },
   { at: hoursAgo(4), event: "guard_false_positive", guard: "prose" },
+  { at: hoursAgo(3), event: "untrusted_outward", action: "git push", source: "WebFetch", decision: "asked" },
+  { at: hoursAgo(3), event: "untrusted_outward", action: "git push", source: "WebFetch", decision: "approved" },
+  { at: hoursAgo(2), event: "untrusted_outward", action: "npm publish", source: "WebFetch", decision: "asked" },
+  { at: hoursAgo(1), event: "untrusted_outward", action: "curl", source: "WebFetch", decision: "shadow" },
   { at: hoursAgo(24 * 9), event: "guard_block", hook: "PreToolUse" },
   { at: hoursAgo(24 * 9), event: "guard_block", hook: "PreToolUse" },
   { at: hoursAgo(24 * 9), event: "guard_block", hook: "PreToolUse" },
@@ -77,6 +81,8 @@ describe("finitemonkey gain", () => {
       gateFailed: 1,
       gateUnverified: 1,
       gateMs: 180_000,
+      outwardAsked: 2,
+      outwardApproved: 1,
     });
     assert.equal(report.previous.blocks, 4);
   });
@@ -106,6 +112,8 @@ describe("finitemonkey gain", () => {
     assert.match(text, /1 gate run failed/);
     assert.match(text, /1 gate run ended not verified/);
     assert.match(text, /3 minutes spent in the gate/);
+    assert.match(text, /2 outward actions after an untrusted read asked the person first/);
+    assert.match(text, /1 outward action after an untrusted read approved by the person/);
   });
 
   it("--json follows the envelope with the gain@1 data", async () => {

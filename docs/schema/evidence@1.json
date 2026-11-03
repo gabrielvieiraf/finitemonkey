@@ -115,6 +115,7 @@
     "state": {
       "type": "string",
       "enum": [
+        "inconclusive",
         "failed",
         "unverified",
         "running",
@@ -122,13 +123,13 @@
         "partial",
         "invalidated",
         "blocked",
-        "inconclusive",
         "needs_approval"
       ]
     },
     "from": {
       "type": "string",
       "enum": [
+        "inconclusive",
         "failed",
         "unverified",
         "running",
@@ -136,7 +137,6 @@
         "partial",
         "invalidated",
         "blocked",
-        "inconclusive",
         "needs_approval"
       ]
     },

@@ -9,14 +9,25 @@ import { HORIZON_EVENT } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readConceptEvents } from "./evidence.js";
 import { type DomainTrajectory, type HelpMark, trajectories, TRAJECTORY_FEATURE } from "./trajectory.js";
-import { describeBand, landedIn } from "./trajectory-bands.js";
+import { describeBand, landedIn, peakOf } from "./trajectory-bands.js";
 
 export interface TrajectoryNow {
   readonly domain: string;
   readonly week: string;
   readonly band: string | null;
   readonly ricochet: { readonly concept: string; readonly week: string } | null;
+  readonly recent: readonly number[];
 }
+
+const RECENT_WEEKS = 6;
+
+export const recentWork = (item: DomainTrajectory, upTo: string): readonly number[] => {
+  const peak = peakOf(item);
+  return item.weeks
+    .filter((week) => week.week <= upTo)
+    .flatMap((week) => (week.work === null ? [] : [Math.round((week.work / peak) * 100) / 100]))
+    .slice(-RECENT_WEEKS);
+};
 
 export const helpMarks = (log: string): readonly HelpMark[] =>
   log.split("\n").flatMap((line) => {
@@ -45,6 +56,7 @@ export const nowOf = (items: readonly DomainTrajectory[]): TrajectoryNow | null 
     week: week.week,
     band: band === undefined ? null : describeBand(band),
     ricochet: ricochet === undefined ? null : { concept: ricochet.concept, week: ricochet.week },
+    recent: recentWork(item, week.week),
   };
 };
 

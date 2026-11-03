@@ -605,9 +605,9 @@
           "state": {
             "type": "string",
             "enum": [
+              "held",
               "pending",
-              "open",
-              "held"
+              "open"
             ]
           },
           "support": {

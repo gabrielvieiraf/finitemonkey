@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, describe, it } from "node:test";
+import { describe, it } from "node:test";
 
-import { APPROVE_MOD, PROBE_PROMPT, writeApproveMod, writeProbeProject } from "../scripts/bypass-probe.js";
 import { toAbsolutePath } from "../src/core/brand.js";
 import {
   BYPASS_PROBE_FILE,
@@ -16,6 +13,7 @@ import {
   readBypassProbe,
   writeBypassProbe,
 } from "../src/doctor/bypass-probe.js";
+import { APPROVE_MOD, BYPASS_PROMPT, writeApproveMod, writeProbeProject } from "../src/doctor/bypass-run.js";
 import { recordProbeEvent } from "../src/doctor/probe.js";
 import { fmPaths } from "../src/task/paths.js";
 import { machine } from "./doctor-support.js";
@@ -32,11 +30,6 @@ const runtimeWith = (files: Readonly<Record<string, string>> = {}) =>
     fs: memoryFs(files, [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache")], NOW),
     tools: { claude: found("2.1.300 (Claude Code)") },
   });
-
-const dirs: string[] = [];
-after(() => {
-  for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
-});
 
 describe("bypass probe", () => {
   it("never run, doctor says the event order is not confirmed for this Claude Code", () => {
@@ -107,13 +100,25 @@ describe("bypass probe", () => {
   });
 
   it("builds the scratch project and the approving fixture mod without starting claude", () => {
-    const dir = mkdtempSync(join(tmpdir(), "fm-bypass-fixture-"));
-    dirs.push(dir);
-    const work = writeProbeProject(dir);
-    const mod = writeApproveMod(dir);
-    assert.ok(existsSync(join(work, ".git")));
-    assert.match(readFileSync(join(work, ".finitemonkey", "policy.yml"), "utf8"), /mod-tighten: off/);
-    assert.equal(readFileSync(join(mod, "hooks", "register.mjs"), "utf8"), APPROVE_MOD);
-    assert.match(PROBE_PROMPT, new RegExp(BYPASS_PROBE_FILE.replace(/\./g, "\\.")));
+    const gitCalls: (readonly string[])[] = [];
+    const runtime = fakeRuntime({
+      fs: memoryFs({}, [], NOW),
+      git: (args) => {
+        gitCalls.push(args);
+        return { found: true, ok: true, stdout: "" };
+      },
+    });
+    const dir = toAbsolutePath(join(ROOT, ".finitemonkey", "cache", "bypass-probe-run", "x"));
+    const work = writeProbeProject(runtime, dir);
+    const mod = writeApproveMod(runtime, dir);
+    assert.deepEqual(
+      gitCalls.map((args) => args.find((arg) => ["init", "add", "commit"].includes(arg))),
+      ["init", "add", "commit"],
+    );
+    const policy = runtime.readText(toAbsolutePath(join(work, ".finitemonkey", "policy.yml")));
+    assert.ok(policy.ok && policy.value.includes("mod-tighten: off"));
+    const register = runtime.readText(toAbsolutePath(join(mod, "hooks", "register.mjs")));
+    assert.ok(register.ok && register.value === APPROVE_MOD);
+    assert.match(BYPASS_PROMPT, new RegExp(BYPASS_PROBE_FILE.replace(/\./g, "\\.")));
   });
 });

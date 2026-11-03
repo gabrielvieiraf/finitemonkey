@@ -1,7 +1,8 @@
 import type { SourceHash } from "../../evidence/types.js";
 import { resultsIn } from "../../judge/claims.js";
 import { sourcesUsed } from "../../judge/gate.js";
-import { resultView } from "../../judge/response.js";
+import { gateJudgeCall } from "../../judge/gate-call.js";
+import type { ResultView } from "../../judge/response.js";
 import { readEntries } from "../../judge/store.js";
 import { JUDGE_FEATURE, type JudgeEntry } from "../../judge/types.js";
 import { featureMode, recordFeatureShadow } from "../../policy/feature.js";
@@ -13,10 +14,20 @@ const MAX_NOTES = 10;
 const withSources = (outcome: CheckOutcome, sources: readonly SourceHash[]): CheckOutcome =>
   sources.length === 0 ? outcome : { ...outcome, sources };
 
+const taskViews = (entries: readonly JudgeEntry[], ctx: GateContext): readonly ResultView[] | undefined => {
+  const report = gateJudgeCall({ runtime: ctx.runtime, paths: ctx.paths });
+  if (report === undefined || !report.ok || report.results === undefined) return undefined;
+  const ids = new Set(
+    resultsIn(entries)
+      .filter((result) => result.task === ctx.contract.id)
+      .map((result) => result.id),
+  );
+  return report.results.filter((view) => ids.has(view.result));
+};
+
 const judgeOutcome = (entries: readonly JudgeEntry[], ctx: GateContext): CheckOutcome => {
-  const views = resultsIn(entries)
-    .filter((result) => result.task === ctx.contract.id)
-    .map((result) => resultView(result, entries));
+  const views = taskViews(entries, ctx);
+  if (views === undefined) return unverified("no_verdict", [note("gate.judge.unreadable")]);
   const open = views.flatMap((view) =>
     view.rows
       .filter((row) => row.state === "model-only" || row.state === "handed-off")

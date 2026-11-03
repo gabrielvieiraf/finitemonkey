@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { tmpdir } from "node:os";
 import { describe, it } from "node:test";
 
 import { deliver, notifyCommand } from "../src/attention/notify.js";
 import { decodeCommand, POWERSHELL, psString } from "../src/attention/windows.js";
 import { toAbsolutePath } from "../src/core/brand.js";
+import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { ExecRequest, ExecResult } from "../src/core/runtime.js";
 import { runChecks } from "../src/doctor/run.js";
 import { machine } from "./doctor-support.js";
@@ -64,4 +66,13 @@ describe("native notifications on Windows", () => {
     assert.equal(notificationsOf("linux", { ...execResult(null), found: false }), "ok doctor.notifications.bell");
     assert.equal(notificationsOf("freebsd", execResult(0)), "ok doctor.notifications.bell");
   });
+
+  it(
+    "on Windows the real runtime attempts the native toast and answers desktop or bell",
+    { skip: process.platform !== "win32" },
+    () => {
+      const channel = deliver(nodeRuntime(), toAbsolutePath(tmpdir()), "win32", NOTICE);
+      assert.match(channel, /^(desktop|bell)$/);
+    },
+  );
 });

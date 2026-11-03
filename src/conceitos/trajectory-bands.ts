@@ -143,3 +143,20 @@ export const drawnSplits = (trajectory: DomainTrajectory): ReadonlySet<SplitGrou
 
 export const describeSplit = (group: SplitGroup): string =>
   `${SPLIT_LABEL[group][1]} above, ${SPLIT_LABEL[group][0]} below`;
+
+export interface WorkInterval {
+  readonly low: number;
+  readonly high: number;
+}
+
+export const workInterval = (week: Week): WorkInterval | undefined => {
+  const { work, independent, discernment, assisted } = week;
+  if (work === null || independent === null || discernment === null || assisted === null) return undefined;
+  const steps: readonly (readonly [number, number])[] = [
+    [0, independent],
+    [independent, discernment],
+    [discernment, Math.max(assisted, discernment + 1)],
+  ];
+  const hit = steps.find(([from, to]) => to > from && (from + to) / 2 === work);
+  return hit === undefined ? undefined : { low: hit[0], high: hit[1] };
+};

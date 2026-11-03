@@ -181,6 +181,7 @@ export const FOOTPRINT = [
       "gitlab.com",
       "registry.npmjs.org",
       "huggingface.co",
+      "sts.amazonaws.com",
     ],
     via: "curl",
   },
