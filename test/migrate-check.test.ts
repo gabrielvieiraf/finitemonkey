@@ -139,13 +139,15 @@ describe("migration lock risks", () => {
 });
 
 describe("migrate gate check", () => {
-  it("reports an edited migration that exists on the base, in shadow and then blocking", () => {
+  it("blocks an edited migration that exists on the base at the default level and only reports it at level light", () => {
     const repo = project("lang: en\n");
     repo.write("migrations/001_users.sql", "ALTER TABLE users ADD COLUMN mail text;\n");
+    assert.equal(run(repo).status, "failed");
+    repo.write(".finitemonkey/policy.yml", "level: light\n");
     const shadow = run(repo);
     assert.equal(shadow.status, "passed");
     assert.ok(keys(shadow).includes("gate.migrate.applied-edited"));
-    repo.write(".finitemonkey/policy.yml", "guards:\n  migrate-check: active\n");
+    repo.write(".finitemonkey/policy.yml", "level: light\nguards:\n  migrate-check: active\n");
     assert.equal(run(repo).status, "failed");
   });
 

@@ -81,7 +81,7 @@ describe("triage before a result is used", () => {
     const reason = decision.kind === "block" ? decision.reason : "";
     assert.match(reason, /The reduced VAT rate for e-books in Germany is 7%/);
     assert.match(reason, /judge verify/);
-    const shadow = world("guards:\n  judge-core: shadow\n");
+    const shadow = world("level: light\nguards:\n  judge-core: shadow\n");
     beyond(shadow);
     call(shadow.deps, { verb: "classify", file: "notes/vat.md", text: REPORT });
     const governed = withPolicy({ id: "triage", damage: false, handlers: TRIAGE_HANDLERS }).PostToolUse?.[0];

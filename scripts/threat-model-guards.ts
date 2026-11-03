@@ -112,13 +112,13 @@ export const guards: readonly Threat[] = [
     component: "Guards",
     attacker: "mistaken agent",
     threat: "A credential with no known shape and low entropy",
-    outcome: "recorded",
+    outcome: "prevented",
     mechanism:
-      "A literal value assigned to a name such as `password`, `secret`, `token` or `api_key` in a config, env or code file is reported whatever its entropy, except documented placeholders, references and test fixtures. The `secret-context` flag starts in shadow: recorded, blocked only when active. A value with no telling name is not caught",
+      "A literal value assigned to a name such as `password`, `secret`, `token` or `api_key` in a config, env or code file is reported whatever its entropy, except documented placeholders, references and test fixtures. The `secret-context` flag blocks at the default level and only records at level light. A value with no telling name is not caught",
     code: ["src/secrets/context.ts", "src/secrets/guards/context-hook.ts"],
     proof: {
       file: "test/secret-context.test.ts",
-      test: "a password literal in a config file is recorded in shadow without the value and blocked when active",
+      test: "a password literal in a config file is blocked at the default level and recorded without the value at level light",
     },
   },
   {
@@ -267,11 +267,11 @@ export const guards: readonly Threat[] = [
     attacker: "looping agent",
     threat: "The agent keeps editing the same error",
     outcome: "detected",
-    mechanism: "The fourth correction of the same failure warns by default and blocks when the policy makes it active",
+    mechanism: "The fourth correction of the same failure blocks at the default level and only warns at level light",
     code: ["src/signals/fourth.ts"],
     proof: {
       file: "test/signals-fourth.test.ts",
-      test: "without a mode in policy.yml it warns, records the shadow firing and lets the write through",
+      test: "without policy.yml it blocks at the default level",
     },
   },
 ];

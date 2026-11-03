@@ -35,6 +35,7 @@
               "project",
               "user",
               "default",
+              "level",
               "promoted",
               "evolved",
               "task"
