@@ -37,6 +37,7 @@ Do not break these. Every invariant names the check that enforces it. When you a
 - Do not claim a feature works in docs, PR bodies or release notes until a test proves it. Docs say "planned" for what is not built, and "in shadow" for what only observes and logs until the benchmark measures it.
 - Do not add fixed context (more lines in this file, in `CLAUDE.md` or in a `SessionStart` hook) without a reason you can state in the PR.
 - Do not touch the release configuration (`.releaserc.json`, `.github/workflows/`) in a PR about something else.
+- A new npm dependency is allowed only once it is listed here with its reason. Allowed development dependencies added since the initial set: `postject`, pinned exactly, which injects the bundle into a Node.js binary for the standalone release binaries (`npm run sea`, `sea-config.json`), as the Node.js single executable application docs prescribe.
 
 ## Where things are
 

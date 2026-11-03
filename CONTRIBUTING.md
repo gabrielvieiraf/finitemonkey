@@ -56,14 +56,16 @@ Releases are fully automated. Nobody edits `version` in `package.json` or `CHANG
 
 Publishing happens only from CI, through npm trusted publishing with provenance. No one publishes from a laptop.
 
-### SBOM and package manager manifests
+### SBOM, standalone binaries and package manager manifests
 
 Two generators prepare release artifacts. Neither one touches the network, and both exit with 1 and write nothing when an input is missing or a generated file fails validation.
 
 - `npm run sbom -- --out finitemonkey.cdx.json` writes a CycloneDX 1.5 JSON SBOM from `package-lock.json`: every locked package with its purl, the lockfile hash, the license and the dependency graph. Development packages carry `scope: excluded`, since the published package has no runtime dependencies. Set `SOURCE_DATE_EPOCH` or `--timestamp` for a reproducible file.
 - `npm run release:manifests -- --checksums SHA256SUMS --out <dir> [--version <x.y.z>]` writes the Homebrew formula, the Scoop manifest and the three winget manifests (schema 1.6.0) for one release. `SHA256SUMS` is the `sha256sum` output for the six archives `finitemonkey-<version>-<os>-<arch>.<ext>`, with `os` one of `darwin`, `linux` or `windows`, `arch` one of `x64` or `arm64`, and `ext` `zip` on Windows and `tar.gz` elsewhere. Each archive holds a single `finitemonkey` binary (`finitemonkey.exe` on Windows).
 
-The release job does not run them yet, and no standalone binary is built yet: signed binaries, the Homebrew tap and the winget and Scoop submissions are planned.
+- `npm run sea -- [--smoke]` builds the standalone binary for the current platform with Node.js 24 as a [single executable application](https://nodejs.org/api/single-executable-applications.html): it turns `dist/finitemonkey.mjs` into a CommonJS entry with the version embedded (`build/sea/finitemonkey.cjs`), writes the blob from `sea-config.json`, injects it into a copy of the Node.js binary with `postject` (ad hoc signed on macOS) and, with `--smoke`, runs `--version` and `doctor --json` with the result. `--asset-name` prints the archive name for the current platform.
+
+When the release job publishes a tag, CI builds the binary on macOS (arm64, x64), Linux (x64, arm64) and Windows (x64, arm64), archives each one, writes `SHA256SUMS`, generates the manifests from it, attests build provenance for the archives (`gh attestation verify <archive> --repo gabrielvieiraf/finitemonkey`), signs each archive keyless with Sigstore (`<archive>.sigstore.json`, checked with `cosign verify-blob --bundle`), and attaches the archives, bundles, `SHA256SUMS`, manifests and SBOM to the GitHub release. Apple Developer ID signing and notarization, Windows Authenticode signing, the Homebrew tap and the winget and Scoop submissions are planned.
 
 For an editorial summary accompanying a release, start with the [release notes template](.github/RELEASE_NOTES_TEMPLATE.md). Describe what changed for users and the case behind it. Keep any humor to one line.
 
