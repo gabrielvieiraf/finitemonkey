@@ -1,4 +1,5 @@
 import { bookConcepts, bookPath, raise, readBook, writeBook } from "../conceitos/book.js";
+import { recordLevels } from "../conceitos/book-log.js";
 import { CONCEPT_LEVELS, parseConcept, parseConceptLevel } from "../conceitos/concepts.js";
 import { creditGate } from "../conceitos/credit.js";
 import { CONCEPT_EVIDENCE_SCHEMA, conceptSummaries, type ConceptSummary } from "../conceitos/evidence.js";
@@ -112,7 +113,10 @@ const mark = (ctx: Ctx, rawConcept: string | undefined, rawLevel: string | undef
     );
   }
   const paths = pathsOf(ctx);
-  writeBook(ctx.runtime, paths, raise(readBook(ctx.runtime, paths), concept, level, ctx.runtime.now()));
+  const before = readBook(ctx.runtime, paths);
+  const after = raise(before, concept, level, ctx.runtime.now());
+  writeBook(ctx.runtime, paths, after);
+  recordLevels(ctx.runtime, paths, { before, after }, "person");
   return show(ctx);
 };
 

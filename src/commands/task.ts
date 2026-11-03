@@ -23,6 +23,7 @@ import { type FmPaths, fmPaths } from "../task/paths.js";
 import { contractJson } from "../task/serialize.js";
 import { closeTask, readState, writeState } from "../task/state.js";
 import { GIT_REQUIREMENTS, type GitRequirement, SIZES, TASK_SCHEMA } from "../task/types.js";
+import { probeAtClose } from "../teach/pause.js";
 import { runResult } from "./gate.js";
 import type { CommandSpec, OptionValues } from "./types.js";
 
@@ -183,6 +184,7 @@ const doneTask = (ctx: Ctx, id: string | undefined): CommandResult => {
     ? triageRecord(ctx.runtime, paths, run.report.task)
     : [];
   closeHorizon(ctx.runtime, paths, run.report.task);
+  const probe = probeAtClose(ctx.runtime, paths, ctx.t);
   return {
     ...result,
     human: [
@@ -190,6 +192,7 @@ const doneTask = (ctx: Ctx, id: string | undefined): CommandResult => {
       ctx.t("task.done", { task: run.report.task }),
       ...closeShortcuts(ctx, paths, run.report.task),
       ...shownTriage(ctx.runtime, paths, ctx.t, "decision", triage),
+      ...probe,
     ],
   };
 };

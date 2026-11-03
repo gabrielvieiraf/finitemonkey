@@ -10,7 +10,8 @@ import { readEntries, signalFiles } from "../signals/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import { raise, readBook, writeBook } from "./book.js";
-import { changeEvents } from "./change.js";
+import { recordLevels } from "./book-log.js";
+import { changeEvents, criteriaEvents } from "./change.js";
 import { type ConceptEvent, recordConceptEvents } from "./evidence.js";
 import { packageMapOf } from "./packages.js";
 import type { ConceptProposer } from "./propose.js";
@@ -86,13 +87,14 @@ export const creditGate = (runtime: Runtime, paths: FmPaths, proposer?: ConceptP
     packages: packageMapOf(runtime, paths),
     ...(proposer === undefined ? {} : { proposer }),
   });
-  const events = recordConceptEvents(runtime, paths, drafts);
+  const criteria = criteriaEvents(ctx.contract.acceptance, status.task, drafts);
+  const events = recordConceptEvents(runtime, paths, [...drafts, ...criteria]);
   const seen = events.filter((event) => event.origin !== "model-proposed").map((event) => event.concept);
-  if (seen.length > 0)
-    writeBook(
-      runtime,
-      paths,
-      seen.reduce((book, id) => raise(book, id, "seen", runtime.now()), readBook(runtime, paths)),
-    );
+  if (seen.length > 0) {
+    const before = readBook(runtime, paths);
+    const after = seen.reduce((book, id) => raise(book, id, "seen", runtime.now()), before);
+    writeBook(runtime, paths, after);
+    recordLevels(runtime, paths, { before, after }, "tool");
+  }
   return events;
 };

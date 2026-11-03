@@ -120,15 +120,25 @@ export const recognizeCode = (touch: CodeTouch, map: PackageMap = NO_PACKAGES): 
   ]);
 };
 
-export const recognizeChecks = (runs: readonly string[]): readonly Recognition[] =>
-  firstPerConcept(
-    runs.flatMap((run) =>
-      run
-        .split(/\s+/)
-        .filter((token) => token.includes("/") || /\.[a-z]{1,4}$/.test(token))
-        .flatMap((token) => pathRecognitions(token, "check")),
-    ),
-  );
+export const pathTokens = (text: string): readonly string[] =>
+  text
+    .split(/\s+/)
+    .map((token) => token.replace(/^[("'`[<]+|[)"'`\],.;:!?>]+$/g, ""))
+    .filter((token) => !/^[a-z][a-z0-9+.-]*:\/\//i.test(token))
+    .filter((token) => token.includes("/") || /\.[a-z]{1,4}$/.test(token));
+
+const tokenRecognitions = (texts: readonly string[], source: RecognitionSource): readonly Recognition[] =>
+  firstPerConcept(texts.flatMap((text) => pathTokens(text).flatMap((token) => pathRecognitions(token, source))));
+
+export const recognizeChecks = (runs: readonly string[]): readonly Recognition[] => tokenRecognitions(runs, "check");
+
+export interface CriterionText {
+  readonly run?: string;
+  readonly description?: string;
+}
+
+export const recognizeCriteria = (criteria: readonly CriterionText[]): readonly Recognition[] =>
+  recognizeChecks(criteria.flatMap((criterion) => [criterion.run ?? "", criterion.description ?? ""]));
 
 export const conceptOfCwe = (cwe: number): ConceptId =>
   RULES.find((rule) => rule.cwe?.includes(cwe) === true)?.concept ?? `security/cwe/cwe-${String(cwe)}`;
@@ -151,6 +161,8 @@ export const recognizeFindings = (cwes: readonly (string | number)[]): readonly 
 export interface ResearchTouch {
   readonly slug: string;
   readonly urls: readonly string[];
+  readonly question?: string;
+  readonly decision?: string;
 }
 
 const hostOf = (url: string): string | undefined => {
@@ -168,15 +180,21 @@ export const fieldOfUrl = (url: string): string | undefined => {
     : RESEARCH_FIELDS.find((item) => item.hosts.some((pattern) => pattern.test(host)))?.field;
 };
 
+const urlsIn = (text: string | undefined): readonly string[] =>
+  [...(text ?? "").matchAll(/https?:\/\/[^\s)"'<>\]]+/g)].map((match) => match[0].replace(/[.,;:!?]+$/, ""));
+
 export const recognizeResearch = (touch: ResearchTouch): readonly Recognition[] => {
   const topic = slugOf(touch.slug);
   if (topic === "") return [];
-  return firstPerConcept(
-    touch.urls.flatMap((url) => {
+  const written = [touch.question ?? "", touch.decision ?? ""];
+  const urls = [...touch.urls, ...written.flatMap(urlsIn)];
+  return firstPerConcept([
+    ...urls.flatMap((url) => {
       const field = fieldOfUrl(url);
       return field === undefined
         ? []
         : [{ concept: `research/${field}/${topic}`, source: "research" as const, match: url }];
     }),
-  );
+    ...tokenRecognitions(written, "research"),
+  ]);
 };

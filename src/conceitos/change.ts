@@ -1,7 +1,14 @@
 import type { AddedLine } from "../gate/git.js";
 import type { ConceptEventDraft } from "./evidence.js";
 import { type ConceptProposer, proposedFor } from "./propose.js";
-import { NO_PACKAGES, type PackageMap, type Recognition, recognizeCode } from "./recognize.js";
+import {
+  type CriterionText,
+  NO_PACKAGES,
+  type PackageMap,
+  type Recognition,
+  recognizeCode,
+  recognizeCriteria,
+} from "./recognize.js";
 
 export const groupByFile = (added: readonly AddedLine[]): ReadonlyMap<string, readonly string[]> => {
   const files = new Map<string, string[]>();
@@ -53,3 +60,21 @@ export const changeEvents = (added: readonly AddedLine[], provenance: Provenance
     const found = recognizeCode({ file, lines }, provenance.packages ?? NO_PACKAGES);
     return found.length > 0 ? recognizedEvents(file, found, provenance) : proposalEvents(file, lines, provenance);
   });
+
+export const criteriaEvents = (
+  criteria: readonly CriterionText[],
+  task: string,
+  seen: readonly ConceptEventDraft[],
+): readonly ConceptEventDraft[] => {
+  const known = new Set(seen.map((draft) => draft.concept));
+  return recognizeCriteria(criteria)
+    .filter((item) => !known.has(item.concept))
+    .map((item): ConceptEventDraft => ({
+      concept: item.concept,
+      kind: "exposure",
+      origin: "agent",
+      task,
+      source: item.source,
+      match: item.match,
+    }));
+};

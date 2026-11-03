@@ -3,6 +3,7 @@ export const JUDGE_VERBS_SCHEMA = "finitemonkey/judge-verbs@1";
 export const JUDGE_FEATURE = "judge-core";
 export const JUDGE_FILE = "judge.jsonl";
 export const DEMONSTRATED_AFTER = 3;
+export const BOOK_LEVEL_REF = "conceitos:book";
 
 export const BANDS = ["demonstrated", "proximal", "beyond", "no record"] as const;
 export const SUPPORT_STATES = ["machine-verified", "person-judged", "model-only", "handed-off", "retracted"] as const;
@@ -42,7 +43,8 @@ export const ENTRY_TYPES = [
   "probe",
   "profile",
 ] as const;
-export const PROBE_FORMS = ["two-spans", "unsupported-claim", "predict-number"] as const;
+export const PROBE_FORMS = ["two-spans", "unsupported-claim", "predict-number", "predict-number-open"] as const;
+export const OPEN_FORMS: ReadonlySet<string> = new Set(["predict-number-open"]);
 
 export type Band = (typeof BANDS)[number];
 export type SupportState = (typeof SUPPORT_STATES)[number];

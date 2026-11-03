@@ -14,6 +14,7 @@ export interface DomainProfile {
 
 export interface Profile {
   readonly domains: Readonly<Record<Domain, DomainProfile>>;
+  readonly fields?: Readonly<Record<string, DomainProfile>>;
   readonly quickStart: "done" | "skipped" | "never";
   readonly updatedAt: string;
 }
@@ -38,6 +39,20 @@ export const clampScore = (score: number): number => Math.min(MAX_SCORE, Math.ma
 
 export const parseDomain = (raw: string | undefined): Domain | undefined =>
   DOMAINS.find((domain) => domain === raw?.toLowerCase());
+
+const FIELD = /^[a-z0-9][a-z0-9-]{0,47}$/;
+
+export const isDefaultDomain = (name: string): name is Domain => DOMAINS.some((domain) => domain === name);
+
+export const parseField = (raw: string | undefined): string | undefined => {
+  const name = raw?.trim().toLowerCase();
+  return name === undefined || !FIELD.test(name) || isDefaultDomain(name) ? undefined : name;
+};
+
+export const fieldNames = (profile: Profile): readonly string[] => Object.keys(profile.fields ?? {}).sort();
+
+export const areaProfileOf = (profile: Profile, name: string): DomainProfile | undefined =>
+  isDefaultDomain(name) ? profile.domains[name] : profile.fields?.[name];
 
 export const parseLevel = (raw: string | undefined): Level | undefined =>
   LEVELS.find((level) => level === raw?.toLowerCase());

@@ -118,6 +118,9 @@ export const researchSourceCommand: CommandSpec = {
         ...stateLines(ctx, log),
         ...suggestionLines(ctx, slug, url, fields),
       ]);
+      const work = { slug, url, question: log.question.question, decision: log.question.decision };
+      const concepts = recordResearchConcepts(ctx.runtime, paths, work, isPerson(ctx) ? "person" : "agent");
+      return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, stateLines(ctx, log));
     });
   },
 };

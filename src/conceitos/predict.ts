@@ -16,6 +16,7 @@ import { readJsonFile, readState, writeJsonFile } from "../task/state.js";
 import { type Book, readBook, writeBook } from "./book.js";
 import { type ConceptId, parseConcept, profileDomainOf } from "./concepts.js";
 import { recordConceptEvents } from "./evidence.js";
+import { packageMapOf } from "./packages.js";
 import { recognizeCode } from "./recognize.js";
 
 export const PREDICT_FEATURE = "predict-gate";
@@ -117,7 +118,10 @@ export const predictGuard: HookHandler = (input) => {
   const state = readPredictions(runtime, paths);
   const raw = textField(toolInput(input.payload.raw), "file_path", "notebook_path") ?? "";
   const file = relative(paths.root, raw).replaceAll("\\", "/");
-  const touched = recognizeCode({ file, lines: editedText(input.payload.raw).split("\n") });
+  const touched = recognizeCode(
+    { file, lines: editedText(input.payload.raw).split("\n") },
+    packageMapOf(runtime, paths),
+  );
   const waiting = touched
     .map((item) => item.concept)
     .filter(

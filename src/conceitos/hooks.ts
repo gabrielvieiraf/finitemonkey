@@ -3,10 +3,11 @@ import { human, projectPaths } from "../gate/hooks/common.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookHandlers } from "../hooks/handlers.js";
 import { maskText } from "../mask/mask.js";
-import { bandDomainOf, recordHorizon } from "../signals/blind-band.js";
+import { conceptDomain, recordHorizon } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile } from "../task/state.js";
 import { bookConcepts, levelSum, raise, readBook, writeBook } from "./book.js";
+import { recordLevels } from "./book-log.js";
 import { creditPending } from "./credit.js";
 import { knownConcepts, readConceptEvents, recordConceptEvents } from "./evidence.js";
 import { mentionedConcepts } from "./mentions.js";
@@ -76,12 +77,13 @@ export const updateFromPending = (
   const after = ids.reduce((current, id) => raise(current, id, "seen", runtime.now()), before);
   const grew = levelSum(after) > levelSum(before);
   for (const id of ids.filter((item) => before.concepts[item] === undefined))
-    recordHorizon(runtime, paths, { source: "concept", criterion: "none", domain: bandDomainOf(id) });
+    recordHorizon(runtime, paths, { source: "concept", criterion: "none", ...conceptDomain(id) });
   writeBook(
     runtime,
     paths,
     grew ? { ...after, baselineGreen: blueprintGreen(runtime, paths) ?? after.baselineGreen } : after,
   );
+  recordLevels(runtime, paths, { before, after }, "agent");
   return ids;
 };
 

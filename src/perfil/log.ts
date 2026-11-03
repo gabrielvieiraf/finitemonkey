@@ -1,15 +1,19 @@
 import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
+import type { YamlValue } from "../core/yaml/scalar.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 import { dropEntries, entryId } from "../judge/store.js";
 import type { JudgeEntry, ProfileEntry } from "../judge/types.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
 import {
+  areaProfileOf,
   clampScore,
   type Domain,
   type DomainProfile,
   DOMAINS,
+  fieldNames,
+  parseField,
   parseLevel,
   type Profile,
   startingProfile,
@@ -34,11 +38,17 @@ const snapshotOf = (entry: ProfileEntry): DomainProfile => {
   };
 };
 
+const withField = (profile: Profile, entry: ProfileEntry): Pick<Profile, "fields"> => {
+  const field = parseField(entry.domain);
+  if (field !== undefined) return { fields: { ...profile.fields, [field]: snapshotOf(entry) } };
+  return profile.fields === undefined ? {} : { fields: profile.fields };
+};
+
 const applied = (profile: Profile, entry: ProfileEntry): Profile => {
   const domain = domainOf(entry.domain);
   const quickStart = quickOf(entry.quickStart) ?? profile.quickStart;
   const domains = domain === undefined ? profile.domains : { ...profile.domains, [domain]: snapshotOf(entry) };
-  return { domains, quickStart, updatedAt: entry.at };
+  return { domains, ...withField(profile, entry), quickStart, updatedAt: entry.at };
 };
 
 export const profileFromLog = (entries: readonly JudgeEntry[]): Profile | undefined => {
@@ -50,7 +60,7 @@ export const profileFromLog = (entries: readonly JudgeEntry[]): Profile | undefi
 const sameDomain = (left: DomainProfile, right: DomainProfile): boolean =>
   left.tool === right.tool && left.knowledge === right.knowledge && left.claimed === right.claimed;
 
-const domainRecord = (at: string, domain: Domain, entry: DomainProfile): JsonObject => ({
+const domainRecord = (at: string, domain: string, entry: DomainProfile): JsonObject => ({
   type: "profile",
   id: entryId("p", at, domain, String(entry.tool), String(entry.knowledge), entry.claimed ?? ""),
   at,
@@ -64,12 +74,25 @@ export const profileRecords = (at: string, logged: Profile | undefined, next: Pr
   const domains = DOMAINS.filter(
     (domain) => logged === undefined || !sameDomain(logged.domains[domain], next.domains[domain]),
   ).map((domain) => domainRecord(at, domain, next.domains[domain]));
+  const fields = fieldNames(next).flatMap((field) => {
+    const entry = next.fields?.[field];
+    const before = logged?.fields?.[field];
+    return entry === undefined || (before !== undefined && sameDomain(before, entry))
+      ? []
+      : [domainRecord(at, field, entry)];
+  });
   const quick =
     logged?.quickStart === next.quickStart
       ? []
       : [{ type: "profile", id: entryId("p", at, "quick", next.quickStart), at, quickStart: next.quickStart }];
-  return [...domains, ...quick];
+  return [...domains, ...fields, ...quick];
 };
+
+const domainYaml = (entry: DomainProfile): YamlValue => ({
+  tool: entry.tool,
+  knowledge: entry.knowledge,
+  ...(entry.claimed === undefined ? {} : { claimed: entry.claimed }),
+});
 
 export const renderProfile = (profile: Profile): string =>
   stringifyYaml({
@@ -77,16 +100,9 @@ export const renderProfile = (profile: Profile): string =>
     updated_at: profile.updatedAt,
     quick_start: profile.quickStart,
     domains: Object.fromEntries(
-      DOMAINS.map((domain) => {
-        const entry = profile.domains[domain];
-        return [
-          domain,
-          {
-            tool: entry.tool,
-            knowledge: entry.knowledge,
-            ...(entry.claimed === undefined ? {} : { claimed: entry.claimed }),
-          },
-        ];
+      [...DOMAINS, ...fieldNames(profile)].flatMap((name) => {
+        const entry = areaProfileOf(profile, name);
+        return entry === undefined ? [] : [[name, domainYaml(entry)]];
       }),
     ),
   });

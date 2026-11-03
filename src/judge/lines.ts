@@ -11,6 +11,7 @@ const PROMPTS = {
   "two-spans": "judge.probe.two_spans",
   "unsupported-claim": "judge.probe.unsupported",
   "predict-number": "judge.probe.predict",
+  "predict-number-open": "judge.probe.predict_open",
 } as const;
 
 const probeLines = (t: Translate, probe: ProbeView): readonly string[] => {

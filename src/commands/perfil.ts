@@ -17,7 +17,18 @@ import {
   updateDomain,
   writeProfile,
 } from "../perfil/store.js";
-import { DOMAINS, levelOf, parseDomain, parseLevel, type Profile, scoreOf } from "../perfil/types.js";
+import {
+  areaProfileOf,
+  type DomainProfile,
+  DOMAINS,
+  fieldNames,
+  isDefaultDomain,
+  levelOf,
+  parseDomain,
+  parseLevel,
+  type Profile,
+  scoreOf,
+} from "../perfil/types.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
@@ -26,33 +37,35 @@ export const PERFIL_SCHEMA = "finitemonkey/perfil@1";
 
 const pathsOf = (ctx: Ctx): FmPaths => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 
+const areasOf = (profile: Profile): readonly (readonly [string, DomainProfile])[] =>
+  [...DOMAINS, ...fieldNames(profile)].flatMap((name) => {
+    const entry = areaProfileOf(profile, name);
+    return entry === undefined ? [] : [[name, entry] as const];
+  });
+
 const profileJson = (profile: Profile): Readonly<Record<string, unknown>> => ({
   schema: PERFIL_SCHEMA,
   quickStart: profile.quickStart,
   domains: Object.fromEntries(
-    DOMAINS.map((domain) => {
-      const entry = profile.domains[domain];
-      return [
-        domain,
-        {
-          tool: { score: entry.tool, level: levelOf(entry.tool) },
-          knowledge: { score: entry.knowledge, level: levelOf(entry.knowledge) },
-          claimed: entry.claimed ?? null,
-        },
-      ];
-    }),
+    areasOf(profile).map(([name, entry]) => [
+      name,
+      {
+        tool: { score: entry.tool, level: levelOf(entry.tool) },
+        knowledge: { score: entry.knowledge, level: levelOf(entry.knowledge) },
+        claimed: entry.claimed ?? null,
+      },
+    ]),
   ),
 });
 
 const profileLines = (ctx: Ctx, profile: Profile): readonly string[] =>
-  DOMAINS.map((domain) => {
-    const entry = profile.domains[domain];
-    return ctx.t("perfil.show.line", {
-      domain: ctx.t(`perfil.domain.${domain}`),
+  areasOf(profile).map(([name, entry]) =>
+    ctx.t("perfil.show.line", {
+      domain: isDefaultDomain(name) ? ctx.t(`perfil.domain.${name}`) : name,
       tool: ctx.t(`perfil.level.${levelOf(entry.tool)}`),
       knowledge: ctx.t(`perfil.level.${levelOf(entry.knowledge)}`),
-    });
-  });
+    }),
+  );
 
 const show = (ctx: Ctx): CommandResult => {
   const edited = rebuildProfile(ctx.runtime, pathsOf(ctx)).map((line) => ctx.t("perfil.edited", { line }));

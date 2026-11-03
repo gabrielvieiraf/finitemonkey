@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
+import { readConceptEvents } from "../src/conceitos/evidence.js";
 import { proposeProbe } from "../src/conceitos/probes-run.js";
+import { classify } from "../src/conceitos/trajectory-splits.js";
 import { toAbsolutePath } from "../src/core/brand.js";
 import type { ExecRequest, Runtime } from "../src/core/runtime.js";
 import { writeGateStatus } from "../src/gate/hooks/status.js";
@@ -12,7 +14,7 @@ import { appendEntry, readEntries } from "../src/judge/store.js";
 import { fmPaths } from "../src/task/paths.js";
 import { answerQuestion, askQuestion, explain, type TeachDeps } from "../src/teach/flow.js";
 import { keyedQuestion, sameAnswer } from "../src/teach/key.js";
-import { teachPause } from "../src/teach/pause.js";
+import { probeAtClose, teachPause } from "../src/teach/pause.js";
 import { readTeach } from "../src/teach/store.js";
 import { type TempRepo, tempRepo, write } from "./git-support.js";
 import { repoRuntime } from "./repo.js";
@@ -116,6 +118,24 @@ describe("teach-back keyed by execution", () => {
     );
   });
 
+  it("a keyed teach-back answer is recorded as an explanation right or wrong for the proximal split", async () => {
+    const { deps } = await project();
+    assert.equal(answerOnce(deps, "backend/integration/webhook", "42"), true);
+    assert.equal(answerOnce(deps, "backend/integration/webhook", "41"), false);
+    const events = readConceptEvents(deps.runtime, deps.paths);
+    assert.deepEqual(
+      events.map((event) => [event.concept, event.kind, event.origin]),
+      [
+        ["backend/integration/webhook", "explanation_right", "person"],
+        ["backend/integration/webhook", "explanation_wrong", "person"],
+      ],
+    );
+    assert.deepEqual(
+      classify(events).map((item) => item.side),
+      ["explains"],
+    );
+  });
+
   it("stores an explanation and never changes a band with it", async () => {
     const { deps } = await project();
     assert.equal(answerOnce(deps, "backend/integration/webhook", "40"), false);
@@ -213,6 +233,25 @@ describe("probes at natural pauses", () => {
     assert.doesNotMatch(shown[1] ?? "", /P3/);
     await cliJson(["probe", "answer", "P2", "a"], { cwd: deps.paths.root, runtime: repoRuntime() });
     assert.equal(message(await pause(deps, "s4")), "");
+  });
+
+  it("fires the pending probe when the task is closed, once per gate pass", async () => {
+    const { deps } = await project();
+    const runtime = deps.runtime as Runtime;
+    proposeProbe(runtime, deps.paths, {
+      kind: "language",
+      concept: "backend/integration/webhook",
+      question: "What does the webhook mean here?",
+      why: "the change adds a webhook",
+      options: [
+        { id: "a", text: "a call the provider makes to us" },
+        { id: "b", text: "a call we make to the provider" },
+      ],
+    });
+    writeGateStatus(runtime, deps.paths, { status: "passed", task: "twice", detail: "" });
+    const t = createTranslator("en");
+    assert.match(probeAtClose(runtime, deps.paths, t).join("\n"), /P1/);
+    assert.deepEqual(probeAtClose(runtime, deps.paths, t), []);
   });
 
   it("says nothing at a pause without the opt-in", async () => {

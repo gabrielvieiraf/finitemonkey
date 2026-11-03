@@ -123,6 +123,12 @@ export const SCHEMA_SOURCES: readonly SchemaSource[] = [
     describes: "`data` of `finitemonkey signals blind-band --json`.",
   },
   {
+    name: "blind-band@2",
+    file: "src/commands/signals-blind-band.ts",
+    type: "OpenBlindBandData",
+    describes: "`data` of `finitemonkey signals blind-band --fields --json`: rows keyed by any top-level field.",
+  },
+  {
     name: "guardian-status@1",
     file: "src/guardian/status.ts",
     type: "GuardianStatus",

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { after, describe, it } from "node:test";
 
 import type { ConceptId } from "../src/conceitos/concepts.js";
-import { type ConceptEvent, WEIGHTS } from "../src/conceitos/evidence.js";
+import { type ConceptEvent, readConceptEvents, WEIGHTS } from "../src/conceitos/evidence.js";
 import {
   BUDGET,
   budgetFor,
@@ -13,7 +13,7 @@ import {
   type ProbeState,
   settle,
 } from "../src/conceitos/probes.js";
-import { type ProbeDraft, proposeProbe, readProbeState } from "../src/conceitos/probes-run.js";
+import { answerProbe, type ProbeDraft, proposeProbe, readProbeState } from "../src/conceitos/probes-run.js";
 import { selfGuard } from "../src/guards/self/hook.js";
 import { fmPaths } from "../src/task/paths.js";
 import { bash, hook, runtime, type TempRepo, tempRepo } from "./git-support.js";
@@ -76,6 +76,33 @@ const terms = (count: number): readonly ConceptEvent[] =>
   Array.from({ length: count }, (_, index) => event("idempotency", "exposure", 20 - index));
 
 describe("probes", () => {
+  it("a language probe keyed by a span of a repository file counts, one without a key stays weight zero", () => {
+    const repo = tempRepo({
+      "docs/glossary.md": "A webhook is a call the provider makes to us when a payment settles.\n",
+    });
+    repos.push(repo);
+    const paths = fmPaths(repo.root);
+    runtime.mkdir(paths.dir);
+    const keyed = proposeProbe(runtime, paths, draft("language", { source: "docs/glossary.md" }));
+    assert.deepEqual([keyed.key, keyed.status], [null, "invalid"]);
+    const options = [
+      { id: "a", text: "a call we make to the provider" },
+      { id: "b", text: "a call the provider makes to us" },
+    ];
+    const spanned = proposeProbe(runtime, paths, draft("language", { source: "docs/glossary.md", options }));
+    assert.deepEqual([spanned.key, spanned.status], ["b", "open"]);
+    const outside = proposeProbe(runtime, paths, draft("language", { source: "../secret.md", options }));
+    assert.equal(outside.status, "invalid");
+    const bare = proposeProbe(runtime, paths, draft("language", { options }));
+    assert.equal(answerProbe(runtime, paths, bare.id, "b")?.status, "answered");
+    assert.deepEqual(readConceptEvents(runtime, paths), []);
+    assert.equal(answerProbe(runtime, paths, spanned.id, "b")?.status, "right");
+    assert.deepEqual(
+      readConceptEvents(runtime, paths).map((item) => [item.kind, item.weight]),
+      [["check_right", 1]],
+    );
+  });
+
   it("every probe type gets its answer key from running the code, and an ambiguous run discards the probe", () => {
     const repo = tempRepo();
     repos.push(repo);

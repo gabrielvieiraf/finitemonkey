@@ -2906,6 +2906,7 @@
   "command.judge_skip.summary": "Pular uma pergunta de conferência; pular conta zero",
   "judge.probe.unsupported": "{probe}: qual destas afirmações {source} não sustenta?",
   "judge.probe.predict": "{probe}: antes de olhar, que número você espera que {source} traga?",
+  "judge.probe.predict_open": "{probe}: antes de olhar, digite o número que você espera que {source} traga.",
   "judge.probe.why": "perguntado porque a decisão {decision} usa a afirmação {claim}",
   "judge.probe.skipped": "{claim}: pulada, conta zero",
   "command.judge_triage.summary": "Listar as afirmações de um documento que dependem só do modelo em conceitos sem registro ou além",

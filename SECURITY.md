@@ -92,6 +92,7 @@ Generated from `GUARD_SETS` in `src/hooks/handlers.ts`. Guards that prevent dama
 | `drift-sensor` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `stale-docs` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `triage` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
+| `horizon-criterion` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `contract-hold` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `model-provider` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
 | `teach-back` | open: when it cannot run, the action goes through and `guard_failed_open` is logged |
