@@ -2,7 +2,6 @@
 
 [English](faq.md) | Português (Brasil) | [Español](faq.es.md)
 
-> **Versões iniciais.** O Finite Monkey se instala pelo canal `next` do npm (`npx finitemonkey@next init`); ainda não há versão estável.
 
 ## Por que o Claude Code diz que terminou quando não terminou?
 
@@ -82,7 +81,7 @@ Sim. Um hook `Stop` pode rodar o seu comando de teste e, se falhar, bloquear o f
 
 ## Existe plugin de segurança ou guardrails para o Claude Code?
 
-Existem vários, e alguns são ótimos num trabalho só. O tdd-guard obriga a escrever o teste antes; o cc-safety-net e o dcg bloqueiam comandos destrutivos de shell e git. Métodos como Superpowers, GSD e Spec Kit acrescentam processo. A [página de comparação](compare.pt-BR.md) mostra o que cada um garante por mecanismo e o que deixa na prosa, com fontes.
+O Claude Code traz hooks e permissões, e um plugin pode juntá-los em travas que valem lembrando o modelo da regra ou não. É isso que o Finite Monkey é.
 
 - **No Finite Monkey:** ele cobre quatro danos ("pronto" falso, segredo vazado, mexida na produção na mão, trabalho perdido no git) com um portão, uma instalação e um `undo`.
 

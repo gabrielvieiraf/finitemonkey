@@ -2,7 +2,7 @@
 
 This file is for an AI agent, such as Claude Code, that a user asked to install Finite Monkey in a project. Humans can read it too.
 
-> **Status: early versions on `next`.** `init`, `update`, `uninstall`, the gate, the guards and the Claude Code plugin ship under the npm `next` dist-tag. No stable 0.1.0 exists yet, and `latest` still points to `0.0.0`, a name reservation. Step 1 tells you how to check that, and what to say to the user. A version on `next` can break what the previous one did.
+> **Status: stable since 0.1.0.** `init`, `update`, `uninstall`, the gate, the guards and the Claude Code plugin ship under the npm `latest` dist-tag; previews of the next version ship under `next`.
 >
 > Valid for `finitemonkey` 0.1.0-next.40 or later. Check the installed version before following any later step, and stop if it is lower.
 
@@ -47,7 +47,7 @@ npm view finitemonkey dist-tags --json
 
 - If the command fails, or neither `latest` nor `next` is `0.1.0-next.40` or later, there is nothing to install. Tell the user and stop here.
 - If `latest` is `0.1.0` or later, use `finitemonkey@latest` in the commands below.
-- If `latest` is `0.0.0` (a name reservation), only the `next` channel has code. Tell the user: "Finite Monkey has no stable version yet. The `next` channel works, but a new version can break what the previous one did. Install it?" Continue only with a yes, using `finitemonkey@next` in the commands below, as written.
+- If `latest` is `0.0.0` (a name reservation), only the `next` channel has code. Tell the user: "The stable channel is empty here. The `next` channel works, but a new version can break what the previous one did. Install it?" Continue only with a yes, using `finitemonkey@next` in the commands below, as written.
 
 ### 2. Check the environment
 
