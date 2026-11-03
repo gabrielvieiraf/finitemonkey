@@ -2896,6 +2896,7 @@
   "command.judge_skip.summary": "Skip a check question; a skip counts as zero",
   "judge.probe.unsupported": "{probe}: which of these claims does {source} not support?",
   "judge.probe.predict": "{probe}: before looking, which number do you expect {source} to give?",
+  "judge.probe.predict_open": "{probe}: before looking, type the number you expect {source} to give.",
   "judge.probe.why": "asked because decision {decision} uses claim {claim}",
   "judge.probe.skipped": "{claim}: skipped, counted as zero",
   "command.judge_triage.summary": "List the claims of a document that rest only on the model on concepts with no record or beyond",

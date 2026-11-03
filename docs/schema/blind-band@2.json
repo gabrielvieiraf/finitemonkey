@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/blind-band@2.json",
+  "title": "finitemonkey/blind-band@2",
+  "description": "`data` of `finitemonkey signals blind-band --fields --json`: rows keyed by any top-level field. Generated from OpenBlindBandData in src/commands/signals-blind-band.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "finitemonkey/blind-band@2"
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "week": {
+            "type": "string"
+          },
+          "helps": {
+            "type": "number"
+          },
+          "withoutCriterion": {
+            "type": "number"
+          },
+          "index": {
+            "type": "number"
+          },
+          "byCriterion": {
+            "type": "object",
+            "properties": {
+              "none": {
+                "type": "number"
+              },
+              "example": {
+                "type": "number"
+              },
+              "property": {
+                "type": "number"
+              },
+              "scenario": {
+                "type": "number"
+              },
+              "check": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "none",
+              "example",
+              "property",
+              "scenario",
+              "check"
+            ]
+          },
+          "bySource": {
+            "type": "object",
+            "properties": {
+              "skill": {
+                "type": "number"
+              },
+              "clarify": {
+                "type": "number"
+              },
+              "research": {
+                "type": "number"
+              },
+              "divergence": {
+                "type": "number"
+              },
+              "concept": {
+                "type": "number"
+              },
+              "scope": {
+                "type": "number"
+              },
+              "xray": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "skill",
+              "clarify",
+              "research",
+              "divergence",
+              "concept",
+              "scope",
+              "xray"
+            ]
+          },
+          "conceptsMoved": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "domain",
+          "week",
+          "helps",
+          "withoutCriterion",
+          "index",
+          "byCriterion",
+          "bySource",
+          "conceptsMoved"
+        ]
+      }
+    },
+    "total": {
+      "type": "object",
+      "properties": {
+        "helps": {
+          "type": "number"
+        },
+        "withoutCriterion": {
+          "type": "number"
+        },
+        "index": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "helps",
+        "withoutCriterion",
+        "index"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "rows",
+    "total"
+  ]
+}

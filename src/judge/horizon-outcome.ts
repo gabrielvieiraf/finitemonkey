@@ -9,13 +9,13 @@ import type { HorizonEntry } from "./types.js";
 
 export const HORIZON_OUTCOME_EVENT = "horizon.outcome";
 export const OUTCOMES = ["recognizable", "out_of_reach"] as const;
-export const OUTCOME_REASONS = ["accepted", "dismissed", "ignored"] as const;
+export const OUTCOME_REASONS = ["accepted", "dismissed", "ignored", "ran_check", "edited", "answered"] as const;
 
 export type Outcome = (typeof OUTCOMES)[number];
 export type OutcomeReason = (typeof OUTCOME_REASONS)[number];
 
 export const outcomeOfReason = (reason: OutcomeReason): Outcome =>
-  reason === "accepted" ? "recognizable" : "out_of_reach";
+  reason === "dismissed" || reason === "ignored" ? "out_of_reach" : "recognizable";
 
 export const helpDomain = (domain: string): string => bandDomain(domain.split("/")[0] ?? domain);
 
@@ -49,15 +49,20 @@ export const outcomeMarks = (log: string): readonly LoggedOutcome[] =>
       : [];
   });
 
+export const openHelps = (
+  runtime: Pick<Runtime, "readText">,
+  paths: FmPaths,
+  task: string,
+): readonly HorizonEntry[] => {
+  const log = runtime.readText(paths.log);
+  const settled = new Set(outcomeMarks(log.ok ? log.value : "").map((item) => item.help));
+  return latestHelps(readEntries(runtime, paths)).filter(
+    (help) => help.task === task && help.state === "shown" && !settled.has(help.id),
+  );
+};
+
 export const closeHorizon = (
   runtime: Pick<Runtime, "readText" | "appendText" | "now">,
   paths: FmPaths,
   task: string,
-): number => {
-  const log = runtime.readText(paths.log);
-  const settled = new Set(outcomeMarks(log.ok ? log.value : "").map((item) => item.help));
-  const open = latestHelps(readEntries(runtime, paths)).filter(
-    (help) => help.task === task && help.state === "shown" && !settled.has(help.id),
-  );
-  return open.filter((help) => recordOutcome(runtime, paths, help, "ignored")).length;
-};
+): number => openHelps(runtime, paths, task).filter((help) => recordOutcome(runtime, paths, help, "ignored")).length;

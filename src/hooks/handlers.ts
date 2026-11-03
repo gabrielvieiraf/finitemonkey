@@ -36,6 +36,8 @@ import { OUTWARD_FEATURE, OUTWARD_HANDLERS } from "../guards/outward/hook.js";
 import { TESTS_HOLD_HANDLERS } from "../guards/tests/hold.js";
 import type { Translate } from "../i18n/translate.js";
 import { instructionsLoaded } from "../instructions/log.js";
+import { HORIZON_FEATURE } from "../judge/horizon.js";
+import { HORIZON_HANDLERS } from "../judge/horizon-acted.js";
 import { TRIAGE_HANDLERS } from "../judge/triage-hook.js";
 import { KNOWLEDGE_CLAIMS_HANDLERS } from "../knowledge/hook.js";
 import { MEMORY_QUARANTINE_HANDLERS } from "../knowledge/memory-hook.js";
@@ -279,6 +281,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
+  { id: HORIZON_FEATURE, damage: false, handlers: HORIZON_HANDLERS },
   { id: CONTRACT_HOLD_GUARD, damage: false, handlers: CONTRACT_HOLD_HANDLERS },
   { id: PROVIDER_FEATURE, damage: false, handlers: PROVIDER_HANDLERS },
   { id: TEACH_FEATURE, damage: false, handlers: TEACH_HANDLERS },

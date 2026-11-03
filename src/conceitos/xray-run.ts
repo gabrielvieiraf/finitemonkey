@@ -6,7 +6,7 @@ import type { Runtime } from "../core/runtime.js";
 import { addedLines, type Git } from "../gate/git.js";
 import type { GateContext } from "../gate/types.js";
 import { featureMode } from "../policy/feature.js";
-import { bandDomainOf, type Criterion, recordHorizon } from "../signals/blind-band.js";
+import { conceptDomain, type Criterion, recordHorizon } from "../signals/blind-band.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
 import type { ConceptId } from "./concepts.js";
@@ -118,7 +118,7 @@ export const saveXray = (
     recordHorizon(runtime, paths, {
       source: "xray",
       criterion: helpCriterion(item),
-      domain: bandDomainOf(item.concepts[0]?.concept),
+      ...conceptDomain(item.concepts[0]?.concept),
       task,
     });
   return { recorded: beyond.length };

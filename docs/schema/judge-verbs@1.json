@@ -1326,7 +1326,8 @@
                 "enum": [
                   "two-spans",
                   "unsupported-claim",
-                  "predict-number"
+                  "predict-number",
+                  "predict-number-open"
                 ]
               },
               "prompt": {
@@ -1447,7 +1448,8 @@
           "enum": [
             "two-spans",
             "unsupported-claim",
-            "predict-number"
+            "predict-number",
+            "predict-number-open"
           ]
         },
         "prompt": {
