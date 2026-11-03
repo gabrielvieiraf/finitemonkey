@@ -94,7 +94,7 @@ const PLAIN: Readonly<Record<Cellband, string>> = {
   gap: "\\",
 };
 
-const PLAIN_GLYPH: Readonly<Record<string, string>> = { "●": "*", "·": "+", "✕": "X", "◉": "O" };
+const PLAIN_GLYPH: Readonly<Record<string, string>> = { "●": "*", "·": "+", "✕": "X", "◉": "O", "╱": "\\" };
 
 const plainCell = (cell: TermCell): string =>
   cell.glyph === " " ? (cell.band === null ? " " : PLAIN[cell.band]) : (PLAIN_GLYPH[cell.glyph] ?? cell.glyph);
@@ -106,7 +106,7 @@ const cellStyle = (cell: TermCell, theme: Theme, depth: ColorDepth): string => {
   if (cell.band === "gap" && cell.ink === null) return style(palette.gap, null, depth, false);
   const bg = cell.band === null || cell.band === "gap" ? null : palette.band[cell.band];
   const fg = cell.ink === null ? null : palette.ink[cell.ink];
-  return style(fg, bg, depth, cell.ink !== null && cell.glyph !== "·");
+  return style(fg, bg, depth, cell.ink !== null && cell.ink !== "faint" && cell.glyph !== "·");
 };
 
 const glyphOf = (cell: TermCell): string => (cell.band === "gap" && cell.glyph === " " ? HATCH : cell.glyph);
