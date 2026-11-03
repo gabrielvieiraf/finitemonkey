@@ -1,5 +1,6 @@
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
+import { recordContractChange } from "../fronts/contract-record.js";
 import { appendInbox } from "../fronts/routing.js";
 import { readFronts } from "../fronts/state.js";
 import { mainRoot } from "./fronts.js";
@@ -29,10 +30,21 @@ export const frontsRouteCommand: CommandSpec = {
     }
     const kind = args.values["contract"] === true ? "contract" : "message";
     appendInbox(ctx.runtime, root, id, message.trim(), kind);
+    const record = kind === "contract" ? recordContractChange(ctx.runtime, root, front, message.trim()) : undefined;
     return Promise.resolve(
-      success({ schema: FRONTS_ROUTE_SCHEMA, front: id, kind, message: message.trim() }, [
-        ctx.t(kind === "contract" ? "fronts.route.contract" : "fronts.route.message", { front: id }),
-      ]),
+      success(
+        {
+          schema: FRONTS_ROUTE_SCHEMA,
+          front: id,
+          kind,
+          message: message.trim(),
+          ...(record === undefined ? {} : { record }),
+        },
+        [
+          ctx.t(kind === "contract" ? "fronts.route.contract" : "fronts.route.message", { front: id }),
+          ...(record === undefined ? [] : [ctx.t("fronts.route.recorded", { record })]),
+        ],
+      ),
     );
   },
 };

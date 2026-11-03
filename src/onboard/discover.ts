@@ -43,6 +43,22 @@ const fromPackage = (files: ProjectFiles): readonly Candidate[] => {
   });
 };
 
+const START_SCRIPTS = ["dev", "start", "serve"] as const;
+
+export const discoverStart = (files: ProjectFiles): string | undefined => {
+  const text = files.read("package.json");
+  const parsed = text === undefined ? undefined : parseJsonObject(text);
+  const scripts = parsed?.ok === true ? parsed.value["scripts"] : undefined;
+  if (!isRecord(scripts)) return undefined;
+  const name = START_SCRIPTS.find((script) => typeof scripts[script] === "string");
+  return name === undefined ? undefined : `${packageManager(files)} run ${name}`;
+};
+
+export const startEntry = (files: ProjectFiles): { readonly start?: string } => {
+  const start = discoverStart(files);
+  return start === undefined ? {} : { start };
+};
+
 const fromMakefile = (files: ProjectFiles): readonly Candidate[] => {
   const text = files.read("Makefile") ?? "";
   return ["build", "lint", "test", "check"].flatMap((target): Candidate[] =>

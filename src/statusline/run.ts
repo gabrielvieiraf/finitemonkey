@@ -14,6 +14,7 @@ import { type FmPaths, fmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 import { gateLight } from "./gate-state.js";
 import { parseStatusInput, type StatusInput } from "./input.js";
+import { loopIndex } from "./loop.js";
 import { composeLine, type Segment, segmentText } from "./render.js";
 import { runWrapped } from "./wrap.js";
 
@@ -80,8 +81,10 @@ const lineFor = async (ctx: Ctx, input: StatusInput): Promise<string> => {
           timeoutMs: WRAP_MS,
           session: input.sessionId ?? "none",
         });
+  const task = paths === undefined ? undefined : readState(ctx.runtime, paths).active;
   const segment = segmentText(ctx.t, {
-    task: paths === undefined ? undefined : readState(ctx.runtime, paths).active,
+    task,
+    loop: paths === undefined ? undefined : loopIndex(ctx.runtime, paths, task),
     gate: paths === undefined ? "none" : gateLight(ctx.runtime, paths),
     contextPercent: input.contextPercent,
     ...spendSegment(ctx, paths, input),

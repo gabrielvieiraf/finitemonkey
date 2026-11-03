@@ -3099,5 +3099,16 @@
   "look.pair.ranked": "Par {id} registrado: el crítico eligió {critic}. La persona elige con finitemonkey look pair pick {id} <a|b>.",
   "guardian.assumptions.fuller": "El modelo propuso una prueba negativa más completa para {id} ({hash}):",
   "guardian.assumptions.fuller_hint": "No se escribió nada. Para quedarse con esta versión en lugar del esqueleto, la persona corre: finitemonkey guardian assume test {id} --write --fuller {hash}",
-  "guardian.assumptions.fuller_missing": "No hay prueba propuesta con el hash {hash} para esta suposición. Corre finitemonkey guardian assume test <id> otra vez para ver la actual."
+  "guardian.assumptions.fuller_missing": "No hay prueba propuesta con el hash {hash} para esta suposición. Corre finitemonkey guardian assume test <id> otra vez para ver la actual.",
+  "look.browser.present": "navegador de look: {browser} ya está instalado",
+  "look.browser.offer": "navegador de look: falta {browser}, así que look no puede capturar pantallas. Instalarlo descarga unos {size} MB: {command}",
+  "look.browser.consent": "no se descargó nada; ejecuta `finitemonkey init --look --yes` para instalarlo",
+  "look.browser.added": "navegador de look: {browser} instalado",
+  "look.browser.failed": "navegador de look: `{command}` no terminó; look sigue sin funcionar hasta que se instale {browser}",
+  "install.adopt.offer": "worktrees que Finite Monkey todavía no sigue: {count}. Regístralos con `finitemonkey init --adopt` o `finitemonkey wt adopt`:",
+  "install.adopt.done": "worktrees existentes registrados: {count} (`finitemonkey wt list` los muestra)",
+  "look.deep.absent": "pasada profunda: lighthouse no está en node_modules/.bin, así que no se ejecutó nada; agrégalo con `npm install --save-dev lighthouse`",
+  "look.deep.title": "pasada profunda (lighthouse con el envío de errores apagado), puntajes de 0 a 100:",
+  "fronts.route.recorded": "registro de decisión escrito: {record}",
+  "statusline.loop": "vuelta {count}"
 }

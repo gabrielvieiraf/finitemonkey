@@ -25,6 +25,7 @@ export interface OnboardState {
   readonly commands: readonly OnboardCommand[];
   readonly historyFindings: number | undefined;
   readonly tree?: string;
+  readonly start?: string;
 }
 
 const purposeOf = (value: unknown): Purpose | undefined => PURPOSES.find((item) => item === value);
@@ -40,10 +41,12 @@ export const parseOnboard = (text: string | undefined): OnboardState | undefined
   });
   const history = parsed.value["historyFindings"];
   const tree = parsed.value["tree"];
+  const start = parsed.value["start"];
   return {
     commands,
     historyFindings: typeof history === "number" ? history : undefined,
     ...(typeof tree === "string" ? { tree } : {}),
+    ...(typeof start === "string" && start.trim() !== "" ? { start } : {}),
   };
 };
 
@@ -54,6 +57,7 @@ export const onboardText = (state: OnboardState): string =>
       commands: state.commands.map((item) => ({ purpose: item.purpose, run: item.run })),
       ...(state.historyFindings === undefined ? {} : { historyFindings: state.historyFindings }),
       ...(state.tree === undefined ? {} : { tree: state.tree }),
+      ...(state.start === undefined ? {} : { start: state.start }),
     },
     null,
     2,

@@ -3100,7 +3100,18 @@
     "look.pair.ranked": "machine",
     "guardian.assumptions.fuller": "machine",
     "guardian.assumptions.fuller_hint": "machine",
-    "guardian.assumptions.fuller_missing": "machine"
+    "guardian.assumptions.fuller_missing": "machine",
+    "look.browser.present": "machine",
+    "look.browser.offer": "machine",
+    "look.browser.consent": "machine",
+    "look.browser.added": "machine",
+    "look.browser.failed": "machine",
+    "install.adopt.offer": "machine",
+    "install.adopt.done": "machine",
+    "look.deep.absent": "machine",
+    "look.deep.title": "machine",
+    "fronts.route.recorded": "machine",
+    "statusline.loop": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -6203,6 +6214,17 @@
     "look.pair.ranked": "machine",
     "guardian.assumptions.fuller": "machine",
     "guardian.assumptions.fuller_hint": "machine",
-    "guardian.assumptions.fuller_missing": "machine"
+    "guardian.assumptions.fuller_missing": "machine",
+    "look.browser.present": "machine",
+    "look.browser.offer": "machine",
+    "look.browser.consent": "machine",
+    "look.browser.added": "machine",
+    "look.browser.failed": "machine",
+    "install.adopt.offer": "machine",
+    "install.adopt.done": "machine",
+    "look.deep.absent": "machine",
+    "look.deep.title": "machine",
+    "fronts.route.recorded": "machine",
+    "statusline.loop": "machine"
   }
 }

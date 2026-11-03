@@ -164,6 +164,9 @@ export const FOOTPRINT = [
   { id: "deps-registry", kind: "sends", targets: ["registry.npmjs.org", "pypi.org"], via: "curl" },
   { id: "a11y-engine", kind: "sends", targets: ["registry.npmjs.org"], via: "npm" },
   { id: "stale-registry", kind: "sends", targets: ["registry.npmjs.org"], via: "npm" },
+  { id: "look-browser", kind: "sends", targets: ["cdn.playwright.dev"], via: "playwright" },
+  { id: "look-deep", kind: "sends", targets: ["127.0.0.1"], via: "lighthouse" },
+  { id: "merge-fetch", kind: "sends", targets: ["remote of the merge target"], via: "git fetch" },
   { id: "osv", kind: "sends", targets: ["api.osv.dev"], via: "osv-scanner" },
   {
     id: "secrets-live",

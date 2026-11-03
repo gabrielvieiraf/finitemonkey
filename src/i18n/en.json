@@ -3099,5 +3099,16 @@
   "look.pair.ranked": "Pair {id} recorded: the critic picked {critic}. The person picks with finitemonkey look pair pick {id} <a|b>.",
   "guardian.assumptions.fuller": "The model proposed a fuller negative test for {id} ({hash}):",
   "guardian.assumptions.fuller_hint": "Nothing was written. To keep this version instead of the skeleton, the person runs: finitemonkey guardian assume test {id} --write --fuller {hash}",
-  "guardian.assumptions.fuller_missing": "There is no proposed test with hash {hash} for this assumption. Run finitemonkey guardian assume test <id> again to see the current one."
+  "guardian.assumptions.fuller_missing": "There is no proposed test with hash {hash} for this assumption. Run finitemonkey guardian assume test <id> again to see the current one.",
+  "look.browser.present": "browser for look: {browser} is already installed",
+  "look.browser.offer": "browser for look: {browser} is missing, so look cannot capture screens. Installing it downloads about {size} MB: {command}",
+  "look.browser.consent": "nothing was downloaded; run `finitemonkey init --look --yes` to install it",
+  "look.browser.added": "browser for look: installed {browser}",
+  "look.browser.failed": "browser for look: `{command}` did not finish; look stays unavailable until {browser} is installed",
+  "install.adopt.offer": "worktrees that Finite Monkey does not track yet: {count}. Register them with `finitemonkey init --adopt` or `finitemonkey wt adopt`:",
+  "install.adopt.done": "existing worktrees registered: {count} (`finitemonkey wt list` shows them)",
+  "look.deep.absent": "deep pass: lighthouse is not in node_modules/.bin, so nothing ran; add it with `npm install --save-dev lighthouse`",
+  "look.deep.title": "deep pass (lighthouse with error reporting off), scores from 0 to 100:",
+  "fronts.route.recorded": "decision record written: {record}",
+  "statusline.loop": "loop {count}"
 }
