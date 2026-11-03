@@ -90,16 +90,16 @@ export interface TermPalette {
 export const TERM_PALETTE: Readonly<Record<Theme, TermPalette>> = {
   dark: {
     band: {
-      alone: 0x1b4a35,
-      proximal: 0x203a66,
-      unstable: 0x3d2d55,
-      blindCovered: 0x4a3a1c,
-      blindBare: 0x5a2420,
-      blind: 0x3b2723,
-      beyond: 0x191e25,
+      alone: 0x2f7a52,
+      proximal: 0x2f5c9e,
+      unstable: 0x5d4683,
+      blindCovered: 0x8a6a1f,
+      blindBare: 0x9a3b33,
+      blind: 0x6b4640,
+      beyond: 0x2b313b,
     },
-    ink: { line: 0xffc24d, ricochet: 0xff8a7c, held: 0x6fe0ac, faint: 0x6f7884 },
-    gap: 0x252c36,
+    ink: { line: 0xffd36e, ricochet: 0xffffff, held: 0x8ff0c4, faint: 0x7d8693 },
+    gap: 0x4a5260,
     select: 0xe6e9ee,
   },
   light: {

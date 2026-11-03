@@ -63,7 +63,7 @@ export interface Stratum {
   readonly to: number;
 }
 
-const filled = (week: Week): week is Week & { independent: number; discernment: number; assisted: number } =>
+export const filled = (week: Week): week is Week & { independent: number; discernment: number; assisted: number } =>
   week.independent !== null && week.discernment !== null && week.assisted !== null;
 
 const blindStrata = (week: Week, from: number, to: number): readonly Stratum[] => {
