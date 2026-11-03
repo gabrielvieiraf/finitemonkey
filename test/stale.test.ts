@@ -89,7 +89,9 @@ describe("stale status claims", () => {
     const changelog = "# Changelog\n\n## [0.1.0-next.42](https://example.com) (2026-11-01)\n";
     const published = publishedIn(changelog);
     assert.equal(published, "0.1.0-next.42");
-    const result = resolve("Nothing installs yet: the package is not on npm.", { published });
+    const result = resolve("Nothing installs yet: the package is not on npm.", {
+      published: { version: published, source: "changelog" },
+    });
     assert.deepEqual(
       result.stale.map((claim) => [claim.truth, claim.detail]),
       [["version_published", "0.1.0-next.42"]],

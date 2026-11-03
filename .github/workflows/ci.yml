@@ -178,3 +178,16 @@ jobs:
           GIT_AUTHOR_EMAIL: 48156370+gabrielvieiraf@users.noreply.github.com
           GIT_COMMITTER_NAME: Gabriel Vieira
           GIT_COMMITTER_EMAIL: 48156370+gabrielvieiraf@users.noreply.github.com
+      - name: attach the CycloneDX SBOM to the release this run published
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="$(git describe --exact-match --tags HEAD 2>/dev/null || true)"
+          if [ -z "$tag" ]; then echo "no release published by this run"; exit 0; fi
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct HEAD)" npm run sbom -- --out finitemonkey.cdx.json
+          gh release upload "$tag" finitemonkey.cdx.json --clobber
+      - name: report issues closed by these commits but still open, empty milestones and stale docs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node dist/finitemonkey.mjs stale --after-merge

@@ -163,6 +163,7 @@ export const FOOTPRINT = [
   { id: "local-app", kind: "sends", targets: ["127.0.0.1"], via: "app check" },
   { id: "deps-registry", kind: "sends", targets: ["registry.npmjs.org", "pypi.org"], via: "curl" },
   { id: "a11y-engine", kind: "sends", targets: ["registry.npmjs.org"], via: "npm" },
+  { id: "stale-registry", kind: "sends", targets: ["registry.npmjs.org"], via: "npm" },
   { id: "osv", kind: "sends", targets: ["api.osv.dev"], via: "osv-scanner" },
   {
     id: "secrets-live",

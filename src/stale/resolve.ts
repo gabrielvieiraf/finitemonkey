@@ -1,6 +1,7 @@
 import { claimUnits, type DocUnit } from "./docs.js";
 import { type StatusKind, statusOf } from "./phrases.js";
 import { refsOf } from "./refs.js";
+import type { PublishedVersion } from "./registry.js";
 
 export type FeatureDefault = "off" | "shadow" | "active";
 
@@ -13,7 +14,7 @@ export interface IssueFact {
 export interface ProjectState {
   readonly commands: ReadonlyMap<string, "ready" | "planned">;
   readonly features: ReadonlyMap<string, FeatureDefault>;
-  readonly published: string | undefined;
+  readonly published: PublishedVersion | undefined;
   readonly issues: ReadonlyMap<number, IssueFact> | undefined;
 }
 
@@ -84,6 +85,21 @@ const unshippedContradictions = (refs: ReturnType<typeof refsOf>, state: Project
   }),
 ];
 
+const publishedContradiction = (published: PublishedVersion): Contradiction =>
+  published.source === "registry"
+    ? {
+        subject: "registry",
+        truth: "version_published",
+        detail: published.version,
+        evidence: `the npm registry lists ${published.version} under the dist-tag ${published.tag ?? "latest"}`,
+      }
+    : {
+        subject: "release",
+        truth: "version_published",
+        detail: published.version,
+        evidence: `the changelog lists the published version ${published.version}`,
+      };
+
 const contradictionsOf = (
   kind: StatusKind,
   refs: ReturnType<typeof refsOf>,
@@ -99,16 +115,7 @@ const contradictionsOf = (
         detail: "active",
         evidence: `feature \`${id}\` is active by default`,
       }));
-  return state.published === undefined
-    ? []
-    : [
-        {
-          subject: "release",
-          truth: "version_published",
-          detail: state.published,
-          evidence: `the changelog lists the published version ${state.published}`,
-        },
-      ];
+  return state.published === undefined ? [] : [publishedContradiction(state.published)];
 };
 
 interface Sets {
