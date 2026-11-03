@@ -10,6 +10,7 @@ import { FILE_TOOLS } from "../guards/context.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
 import { featureMode, recordFeatureShadow } from "../policy/feature.js";
+import { recapBrief, recapBriefLines } from "../recap/brief.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
@@ -38,6 +39,11 @@ const cardText = (input: HookInput, paths: FmPaths): readonly string[] => {
   const task = activeTask(input.runtime, paths);
   if (task === undefined || task.contract.implicit) return [];
   return cardLines(input.t, cardFor(input.runtime, paths, task.contract));
+};
+
+const resumeCard = (input: HookInput, paths: FmPaths): readonly string[] => {
+  const card = cardText(input, paths);
+  return card.length === 0 ? [] : [...card, ...recapBriefLines(input.t, recapBrief(input.runtime, paths))];
 };
 
 export const openProjects = (input: HookInput, paths: FmPaths): number => {
@@ -86,7 +92,7 @@ const shown = (lines: readonly string[], reason: string): JsonObject => ({
 export const focusSession: HookHandler = (input) => {
   const paths = usable(input);
   if (paths === undefined) return allow;
-  const lines = [...cardText(input, paths), ...limitLines(input, paths), ...proposalLines(input, paths)];
+  const lines = [...resumeCard(input, paths), ...limitLines(input, paths), ...proposalLines(input, paths)];
   return emit(input, paths, lines, shown(lines, textField(input.payload.raw, "source") ?? "startup"));
 };
 

@@ -74,6 +74,7 @@ import {
 } from "../signals/early.js";
 import { FOURTH_ATTEMPT_HANDLERS, SIGNALS_HANDLERS } from "../signals/hooks.js";
 import { SLOP_HANDLERS } from "../slop/hook.js";
+import { STALE_DOCS_FEATURE, STALE_DOCS_HANDLERS } from "../stale/stop.js";
 import { CONTRACT_HOLD_GUARD, CONTRACT_HOLD_HANDLERS } from "../task/contract-hold.js";
 import { FRONT_SCOPE_GUARD, frontScopeGuard, SCOPE_GUARD, scopeAfterEdit } from "../task/scope-hooks.js";
 import { TEACH_HANDLERS } from "../teach/hooks.js";
@@ -278,6 +279,7 @@ export const GUARD_SETS: readonly GuardSet[] = [
   { id: FOCUS_FEATURE, damage: false, handlers: FOCUS_HANDLERS },
   { id: ATTENTION_FEATURE, damage: false, handlers: ATTENTION_HANDLERS },
   { id: DRIFT_FEATURE, damage: false, handlers: DRIFT_HANDLERS },
+  { id: STALE_DOCS_FEATURE, damage: false, handlers: STALE_DOCS_HANDLERS },
   { id: "triage", damage: false, handlers: TRIAGE_HANDLERS },
   { id: CONTRACT_HOLD_GUARD, damage: false, handlers: CONTRACT_HOLD_HANDLERS },
   { id: PROVIDER_FEATURE, damage: false, handlers: PROVIDER_HANDLERS },
