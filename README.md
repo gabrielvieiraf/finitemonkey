@@ -118,17 +118,17 @@ The second essay, [The illusion of the second brain](docs/second-brain/second-br
 
 ## Does it actually help?
 
-Claude Code alone against Claude Code with Finite Monkey, on tasks with a hidden trap that a capable model can miss while saying done: a retry that charges twice, VAT rounded on the total instead of per line, a search term that reaches the page as markup, a refresh token that survives logout. The person asking does not master the subject and approves whatever sounds confident. Same model (Sonnet), same task seeds, 33 sessions per arm, plugin version 0.1.0-next.41:
+Claude Code alone against Claude Code with Finite Monkey, on tasks with a hidden trap that a capable model can miss while saying done: a retry that charges twice, VAT rounded on the total instead of per line, a search term that reaches the page as markup, a refresh token that survives logout. The person asking does not master the subject and approves whatever sounds confident. Same model (Sonnet), same task seeds, 33 sessions per arm, plugin version 0.1.0:
 
 | | Claude Code | Claude Code + Finite Monkey |
 |---|---|---|
-| Said done when it wasn't | 9 of 33 (27%) | **2 of 33 (6%)** |
-| Left the trap in the code | 10 of 33 | **0 of 33** |
-| Task right by the hidden check | 18 of 33 | **20 of 33** |
-| Median cost per task | US$ 0.04 | US$ 0.09 |
-| Median time per task | 35 s | 137 s |
+| Said done when it wasn't | 9 of 33 (27%) | **3 of 33 (9%)** |
+| Task right by the hidden check | 17 of 33 | **23 of 33** |
+| Left the trap in the code | 10 of 33 | 10 of 33 |
+| Median cost per task | US$ 0.04 | US$ 0.07 |
+| Median time per task | 27 s | 52 s |
 
-The price is about twice the tokens and four times the wall time: the gate runs the checks the agent would have skipped. Method and deviations are in [bench/PREREGISTRATION.md](bench/PREREGISTRATION.md) and [bench/DEVIATIONS.md](bench/DEVIATIONS.md).
+The price is about 1.6 times the cost and twice the wall time: the gate runs the checks the agent would have skipped. The trap stayed in as often with Finite Monkey as without it in two kinds of task: a data migration that cuts names and breaks the previous app version during a rolling deploy, and research answers built from local sources. The [`quotes`](https://github.com/gabrielvieiraf/finitemonkey/pull/438) gate check now holds an answer that misquotes its sources. Method and deviations are in [bench/PREREGISTRATION.md](bench/PREREGISTRATION.md) and [bench/DEVIATIONS.md](bench/DEVIATIONS.md).
 
 The always-on guards are also replayed on every release against a labeled corpus:
 

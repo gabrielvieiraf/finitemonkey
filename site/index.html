@@ -1194,52 +1194,37 @@
         margin: 4px 0 0;
       }
 
-      .bench {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+      .results-wrap {
+        overflow-x: auto;
         border: 2px solid var(--ink);
       }
-      @media (max-width: 760px) {
-        .bench {
-          grid-template-columns: minmax(0, 1fr);
-        }
+      .results {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
       }
-      .arm {
-        padding: 14px;
-        border-right: 1px solid var(--rule);
-        display: grid;
-        gap: 4px;
+      .results th,
+      .results td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--rule);
       }
-      .arm:last-child {
-        border-right: 0;
+      .results thead th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
-      @media (max-width: 760px) {
-        .arm {
-          border-right: 0;
-          border-bottom: 1px solid var(--rule);
-        }
-        .arm:last-child {
-          border-bottom: 0;
-        }
-      }
-      .arm b {
-        font-size: 13px;
-      }
-      .arm span {
+      .results tbody th {
+        font-weight: 400;
         font-family: var(--serif);
-        font-size: 14.5px;
+      }
+      .results td.win {
+        font-weight: 700;
+      }
+      .results-note {
+        margin-top: 12px;
+        font-size: 14px;
         color: var(--muted);
-      }
-      .metrics {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 14px;
-      }
-      .metrics span {
-        font-size: 11.5px;
-        border: 1px solid var(--rule);
-        padding: 2px 8px;
       }
 
       footer {
@@ -1826,9 +1811,8 @@
             <span class="k" data-i="benchK">benchmark · tasks with traps</span>
           </div>
           <p class="intro" data-i="benchIntro"></p>
-          <div class="bench" id="arms"></div>
-          <div class="metrics" id="metrics"></div>
-          <div id="bench-results"></div>
+          <div class="results-wrap"><table class="results" id="results"></table></div>
+          <p class="results-note" data-i="resultsNote"></p>
         </section>
 
         <section id="essays">
@@ -2024,13 +2008,17 @@
             benchH: "Does it actually help?",
             benchK: "benchmark · tasks with traps",
             benchIntro:
-              "Claude Code alone against Claude Code with Finite Monkey, on tasks with a hidden trap that a capable model can miss while saying done, and simulated users who cannot judge the answer. Tasks, method and raw runs are in the repository.",
-            arms: [
-              ["A", "Claude Code alone"],
-              ["B", "Claude Code with Finite Monkey"],
-              ["C", "Finite Monkey with one piece removed at a time"],
+              "Claude Code alone against Claude Code with Finite Monkey 0.1.0, on 11 tasks with a hidden trap a capable model can miss while saying done (a retry that charges twice, VAT rounded on the total, a search term that reaches the page as markup, a refresh token that survives logout), asked by a person who approves whatever sounds confident. Same model (Sonnet), same task seeds, 33 sessions per arm.",
+            resultsHead: ["", "Claude Code", "+ Finite Monkey"],
+            results: [
+              ["Said done when it wasn't", "9 of 33", "3 of 33", true],
+              ["Task right by the hidden check", "17 of 33", "23 of 33", true],
+              ["Left the trap in the code", "10 of 33", "10 of 33", false],
+              ["Median cost per task", "US$ 0.04", "US$ 0.07", false],
+              ["Median time per task", "27 s", "52 s", false],
             ],
-            metrics: ["tasks really finished", "false “done”", "leaked secrets", "lost work", "tokens", "time"],
+            resultsNote:
+              "The trap stayed in as often in two kinds of task: a data migration that breaks the previous app version during a rolling deploy, and research answers built from local sources. Answers that misquote their sources are now held by the gate's quotes check.",
             essaysH: "Where the design comes from",
             essaysK: "two essays · pt · en · es",
             e1n: "essay 1",
@@ -2214,20 +2202,17 @@
             benchH: "Funciona de verdade?",
             benchK: "bancada · tarefas com armadilha",
             benchIntro:
-              "Claude Code sozinho contra Claude Code com o Finite Monkey, em tarefas com uma armadilha escondida que um modelo capaz pode deixar passar dizendo que terminou, e usuários simulados que não conseguem julgar a resposta. Tarefas, método e execuções brutas estão no repositório.",
-            arms: [
-              ["A", "Claude Code sozinho"],
-              ["B", "Claude Code com o Finite Monkey"],
-              ["C", "Finite Monkey sem uma peça de cada vez"],
+              "O Claude Code sozinho contra o Claude Code com o Finite Monkey 0.1.0, em 11 tarefas com uma armadilha escondida que um modelo capaz deixa passar enquanto diz que terminou (uma nova tentativa que cobra duas vezes, imposto arredondado no total, um termo de busca que chega à página como marcação, um refresh token que sobrevive ao logout), pedidas por uma pessoa que aprova o que soa confiante. Mesmo modelo (Sonnet), mesmas sementes, 33 sessões por braço.",
+            resultsHead: ["", "Claude Code", "+ Finite Monkey"],
+            results: [
+              ["Disse pronto sem estar pronto", "9 de 33", "3 de 33", true],
+              ["Tarefa certa pela checagem escondida", "17 de 33", "23 de 33", true],
+              ["Deixou a armadilha no código", "10 de 33", "10 de 33", false],
+              ["Custo mediano por tarefa", "US$ 0,04", "US$ 0,07", false],
+              ["Tempo mediano por tarefa", "27 s", "52 s", false],
             ],
-            metrics: [
-              "tarefas terminadas de verdade",
-              "“pronto” falso",
-              "segredo vazado",
-              "trabalho perdido",
-              "tokens",
-              "tempo",
-            ],
+            resultsNote:
+              "A armadilha ficou no código na mesma medida em dois tipos de tarefa: uma migração de dados que quebra a versão anterior do app durante um deploy gradual, e respostas de pesquisa montadas a partir de fontes locais. A resposta que cita errado as próprias fontes agora é segurada pela checagem quotes do portão.",
             essaysH: "De onde vem o desenho",
             essaysK: "dois ensaios · pt · en · es",
             e1n: "ensaio 1",
@@ -2407,20 +2392,17 @@
             benchH: "¿Ayuda de verdad?",
             benchK: "banco de pruebas · tareas con trampa",
             benchIntro:
-              "Claude Code solo frente a Claude Code con Finite Monkey, en tareas con una trampa escondida que un modelo capaz puede pasar por alto mientras dice que terminó, y usuarios simulados que no pueden juzgar la respuesta. Tareas, método y ejecuciones en bruto están en el repositorio.",
-            arms: [
-              ["A", "Claude Code solo"],
-              ["B", "Claude Code con Finite Monkey"],
-              ["C", "Finite Monkey sin una pieza cada vez"],
+              "Claude Code solo contra Claude Code con Finite Monkey 0.1.0, en 11 tareas con una trampa escondida que un modelo capaz deja pasar mientras dice que terminó (un reintento que cobra dos veces, el IVA redondeado sobre el total, un término de búsqueda que llega a la página como marcado, un refresh token que sobrevive al logout), pedidas por una persona que aprueba lo que suena seguro. Mismo modelo (Sonnet), mismas semillas, 33 sesiones por brazo.",
+            resultsHead: ["", "Claude Code", "+ Finite Monkey"],
+            results: [
+              ["Dijo terminado sin estarlo", "9 de 33", "3 de 33", true],
+              ["Tarea correcta según la comprobación oculta", "17 de 33", "23 de 33", true],
+              ["Dejó la trampa en el código", "10 de 33", "10 de 33", false],
+              ["Costo mediano por tarea", "US$ 0,04", "US$ 0,07", false],
+              ["Tiempo mediano por tarea", "27 s", "52 s", false],
             ],
-            metrics: [
-              "tareas terminadas de verdad",
-              "“listo” falso",
-              "secreto filtrado",
-              "trabajo perdido",
-              "tokens",
-              "tiempo",
-            ],
+            resultsNote:
+              "La trampa quedó en el código en la misma medida en dos tipos de tarea: una migración de datos que rompe la versión anterior de la app durante un despliegue gradual, y respuestas de investigación hechas a partir de fuentes locales. La respuesta que cita mal sus propias fuentes ahora la retiene la comprobación quotes del control.",
             essaysH: "De dónde viene el diseño",
             essaysK: "dos ensayos · pt · en · es",
             e1n: "ensayo 1",
@@ -2479,10 +2461,15 @@
           $("#hooks").innerHTML = t.hooks
             .map(([h, d]) => `<li class="${h === "Stop" ? "stop" : ""}"><b>${h}</b><span>${esc(d)}</span></li>`)
             .join("");
-          $("#arms").innerHTML = t.arms
-            .map(([k, d]) => `<div class="arm"><b>${k}</b><span>${esc(d)}</span></div>`)
-            .join("");
-          $("#metrics").innerHTML = t.metrics.map((m) => `<span>${esc(m)}</span>`).join("");
+          $("#results").innerHTML = [
+            `<thead><tr>${t.resultsHead.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>`,
+            `<tbody>${t.results
+              .map(
+                ([label, plain, fm, win]) =>
+                  `<tr><th>${esc(label)}</th><td>${esc(plain)}</td><td class="${win ? "win" : ""}">${esc(fm)}</td></tr>`,
+              )
+              .join("")}</tbody>`,
+          ].join("");
           $("#e1").href = REPO + t.e1f;
           $("#e2").href = REPO + t.e2f;
           document

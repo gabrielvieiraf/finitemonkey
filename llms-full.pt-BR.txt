@@ -128,17 +128,17 @@ O segundo ensaio, [A ilusão do segundo cérebro](https://github.com/gabrielviei
 
 ## Funciona de verdade?
 
-O Claude Code sozinho contra o Claude Code com o Finite Monkey, em tarefas com uma armadilha escondida que um modelo capaz deixa passar enquanto diz que terminou: uma nova tentativa que cobra duas vezes, imposto arredondado no total em vez de por linha, um termo de busca que chega à página como marcação, um refresh token que sobrevive ao logout. Quem pede não domina o assunto e aprova o que soa confiante. Mesmo modelo (Sonnet), mesmas sementes de tarefa, 33 sessões por braço, plugin na versão 0.1.0-next.41:
+O Claude Code sozinho contra o Claude Code com o Finite Monkey, em tarefas com uma armadilha escondida que um modelo capaz deixa passar enquanto diz que terminou: uma nova tentativa que cobra duas vezes, imposto arredondado no total em vez de por linha, um termo de busca que chega à página como marcação, um refresh token que sobrevive ao logout. Quem pede não domina o assunto e aprova o que soa confiante. Mesmo modelo (Sonnet), mesmas sementes de tarefa, 33 sessões por braço, plugin na versão 0.1.0:
 
 | | Claude Code | Claude Code + Finite Monkey |
 |---|---|---|
-| Disse pronto sem estar pronto | 9 de 33 (27%) | **2 de 33 (6%)** |
-| Deixou a armadilha no código | 10 de 33 | **0 de 33** |
-| Tarefa certa pela checagem escondida | 18 de 33 | **20 de 33** |
-| Custo mediano por tarefa | US$ 0,04 | US$ 0,09 |
-| Tempo mediano por tarefa | 35 s | 137 s |
+| Disse pronto sem estar pronto | 9 de 33 (27%) | **3 de 33 (9%)** |
+| Tarefa certa pela checagem escondida | 17 de 33 | **23 de 33** |
+| Deixou a armadilha no código | 10 de 33 | 10 de 33 |
+| Custo mediano por tarefa | US$ 0,04 | US$ 0,07 |
+| Tempo mediano por tarefa | 27 s | 52 s |
 
-O preço é cerca do dobro de tokens e quatro vezes o tempo: o portão roda as verificações que o agente teria pulado. Método e desvios estão em [bench/PREREGISTRATION.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/PREREGISTRATION.md) e [bench/DEVIATIONS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/DEVIATIONS.md).
+O preço é cerca de 1,6 vez o custo e o dobro do tempo: o portão roda as verificações que o agente teria pulado. A armadilha ficou no código tanto com o Finite Monkey quanto sem ele em dois tipos de tarefa: uma migração de dados que corta nomes e quebra a versão anterior do app durante um deploy gradual, e respostas de pesquisa montadas a partir de fontes locais. A checagem [`quotes`](https://github.com/gabrielvieiraf/finitemonkey/pull/438) do portão agora segura a resposta que cita errado as próprias fontes. Método e desvios estão em [bench/PREREGISTRATION.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/PREREGISTRATION.md) e [bench/DEVIATIONS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/DEVIATIONS.md).
 
 As travas que ficam sempre ligadas também são reexecutadas a cada versão contra um corpus rotulado:
 

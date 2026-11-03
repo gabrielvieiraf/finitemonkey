@@ -128,17 +128,17 @@ El segundo ensayo, [La ilusión del segundo cerebro](https://github.com/gabrielv
 
 ## ¿De verdad ayuda?
 
-Claude Code solo contra Claude Code con Finite Monkey, en tareas con una trampa escondida que un modelo capaz deja pasar mientras dice que terminó: un reintento que cobra dos veces, el IVA redondeado sobre el total en lugar de por línea, un término de búsqueda que llega a la página como marcado, un refresh token que sobrevive al logout. Quien pide no domina el tema y aprueba lo que suena seguro. Mismo modelo (Sonnet), mismas semillas de tarea, 33 sesiones por brazo, plugin en la versión 0.1.0-next.41:
+Claude Code solo contra Claude Code con Finite Monkey, en tareas con una trampa escondida que un modelo capaz deja pasar mientras dice que terminó: un reintento que cobra dos veces, el IVA redondeado sobre el total en lugar de por línea, un término de búsqueda que llega a la página como marcado, un refresh token que sobrevive al logout. Quien pide no domina el tema y aprueba lo que suena seguro. Mismo modelo (Sonnet), mismas semillas de tarea, 33 sesiones por brazo, plugin en la versión 0.1.0:
 
 | | Claude Code | Claude Code + Finite Monkey |
 |---|---|---|
-| Dijo terminado sin estarlo | 9 de 33 (27%) | **2 de 33 (6%)** |
-| Dejó la trampa en el código | 10 de 33 | **0 de 33** |
-| Tarea correcta según la comprobación oculta | 18 de 33 | **20 de 33** |
-| Costo mediano por tarea | US$ 0,04 | US$ 0,09 |
-| Tiempo mediano por tarea | 35 s | 137 s |
+| Dijo terminado sin estarlo | 9 de 33 (27%) | **3 de 33 (9%)** |
+| Tarea correcta según la comprobación oculta | 17 de 33 | **23 de 33** |
+| Dejó la trampa en el código | 10 de 33 | 10 de 33 |
+| Costo mediano por tarea | US$ 0,04 | US$ 0,07 |
+| Tiempo mediano por tarea | 27 s | 52 s |
 
-El precio es cerca del doble de tokens y cuatro veces el tiempo: el control ejecuta las comprobaciones que el agente se habría saltado. Método y desviaciones en [bench/PREREGISTRATION.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/PREREGISTRATION.md) y [bench/DEVIATIONS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/DEVIATIONS.md).
+El precio es cerca de 1,6 veces el costo y el doble del tiempo: el control ejecuta las comprobaciones que el agente se habría saltado. La trampa quedó en el código tanto con Finite Monkey como sin él en dos tipos de tarea: una migración de datos que corta nombres y rompe la versión anterior de la app durante un despliegue gradual, y respuestas de investigación hechas a partir de fuentes locales. La comprobación [`quotes`](https://github.com/gabrielvieiraf/finitemonkey/pull/438) del control ahora retiene la respuesta que cita mal sus propias fuentes. Método y desviaciones en [bench/PREREGISTRATION.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/PREREGISTRATION.md) y [bench/DEVIATIONS.md](https://github.com/gabrielvieiraf/finitemonkey/blob/next/bench/DEVIATIONS.md).
 
 Las guardas siempre activas también se vuelven a ejecutar en cada versión contra un corpus etiquetado:
 
