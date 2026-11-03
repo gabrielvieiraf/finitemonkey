@@ -89,7 +89,8 @@
     "plugin:sync": "node scripts/plugin-sync.mjs",
     "plugin:validate": "node scripts/plugin-validate.mjs && tsx scripts/mod-check.ts",
     "plugin:footprint": "npm run build && tsx scripts/mod-check.ts --write",
-    "version": "node scripts/plugin-sync.mjs"
+    "version": "node scripts/plugin-sync.mjs",
+    "demos": "bash assets/demos/record.sh"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
