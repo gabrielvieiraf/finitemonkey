@@ -1,0 +1,343 @@
+:root {
+  --bg: #fcfcfd;
+  --ink: #121519;
+  --muted: #5d6570;
+  --faint: #8a929c;
+  --rule: #e2e5e9;
+  --grid: #eceef1;
+  --ok: #2a7552;
+  --ok-bg: #e4f2ea;
+  --bad: #a8372b;
+  --bad-bg: #f3dedb;
+  --warn: #7a5d2c;
+  --warn-bg: #efe6d4;
+  --prox: #2c5597;
+  --prox-bg: #e5ecf8;
+  --hor: #6b7480;
+  --hor-bg: #eff1f4;
+  --you: #b97d00;
+  --you-bg: #fbecc6;
+  --st-a2: #cfe7da;
+  --st-a1: #e4f2ea;
+  --st-p2: #cddbf2;
+  --st-p1: #e5ecf8;
+  --st-d: #d9c6e8;
+  --st-disc: #6b4a8c;
+  --st-hatch: #f3dedb;
+  --st-hatch-ln: #a8372b;
+  --st-dots: #e9e1d3;
+  --st-dot: #7a5d2c;
+  --term-bg: #0a0c0f;
+  --term-ink: #c9d1db;
+  --term-dim: #6f7884;
+  --term-ok: #6fe0ac;
+  --term-bad: #ff8a7c;
+  --term-you: #ffc24d;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d1014;
+    --ink: #e6e9ee;
+    --muted: #9aa3ae;
+    --faint: #6f7884;
+    --rule: #232a33;
+    --grid: #1a2028;
+    --ok: #5fd09d;
+    --ok-bg: #12271e;
+    --bad: #f08a7e;
+    --bad-bg: #43211f;
+    --warn: #e0bb72;
+    --warn-bg: #3a3020;
+    --prox: #86aef0;
+    --prox-bg: #15213a;
+    --hor: #8994a2;
+    --hor-bg: #151a21;
+    --you: #ffc24d;
+    --you-bg: #3b2e10;
+    --st-a2: #183a2a;
+    --st-a1: #12271e;
+    --st-p2: #1d2f52;
+    --st-p1: #15213a;
+    --st-d: #2f2447;
+    --st-disc: #b79be0;
+    --st-hatch: #43211f;
+    --st-hatch-ln: #f08a7e;
+    --st-dots: #3a3020;
+    --st-dot: #e0bb72;
+    --st-a2: #183a2a;
+    --st-a1: #12271e;
+    --st-p2: #1d2f52;
+    --st-p1: #15213a;
+    --st-d: #2f2447;
+    --st-disc: #b79be0;
+    --st-hatch: #43211f;
+    --st-hatch-ln: #f08a7e;
+    --st-dots: #3a3020;
+    --st-dot: #e0bb72;
+    --term-bg: #050608;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1014;
+  --ink: #e6e9ee;
+  --muted: #9aa3ae;
+  --faint: #6f7884;
+  --rule: #232a33;
+  --grid: #1a2028;
+  --ok: #5fd09d;
+  --ok-bg: #12271e;
+  --bad: #f08a7e;
+  --bad-bg: #43211f;
+  --warn: #e0bb72;
+  --warn-bg: #3a3020;
+  --prox: #86aef0;
+  --prox-bg: #15213a;
+  --hor: #8994a2;
+  --hor-bg: #151a21;
+  --you: #ffc24d;
+  --you-bg: #3b2e10;
+  --term-bg: #050608;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+a:hover {
+  color: var(--you);
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--you);
+  outline-offset: 2px;
+}
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 0 64px;
+}
+.bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 4;
+  background: var(--bg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  padding-block: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+.brand {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+.tag {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  padding: 2px 7px;
+}
+.tag.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: var(--warn-bg);
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-left: auto;
+  font-size: 12px;
+}
+.nav a {
+  text-decoration: none;
+  color: var(--muted);
+}
+.nav a:hover {
+  color: var(--ink);
+}
+.seg {
+  display: flex;
+  border: 1px solid var(--ink);
+}
+.seg button {
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  background: transparent;
+  color: var(--ink);
+  border: 0;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.seg button + button {
+  border-left: 1px solid var(--ink);
+}
+.seg button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+}
+.traj {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--mono);
+}
+.traj .s-a2 {
+  fill: var(--st-a2);
+}
+.traj .s-a1 {
+  fill: var(--st-a1);
+}
+.traj .s-p2 {
+  fill: var(--st-p2);
+}
+.traj .s-p1 {
+  fill: var(--st-p1);
+}
+.traj .s-d {
+  fill: var(--st-d);
+}
+.traj .s-hatch-bg {
+  fill: var(--st-hatch);
+}
+.traj .s-hatch-ln {
+  stroke: var(--st-hatch-ln);
+  stroke-width: 1.1;
+  stroke-opacity: 0.5;
+}
+.traj .s-dots-bg {
+  fill: var(--st-dots);
+}
+.traj .s-dots-dot {
+  fill: var(--st-dot);
+  fill-opacity: 0.55;
+}
+.traj .ceil {
+  stroke: var(--ink);
+  stroke-opacity: 0.35;
+}
+.traj .ceil.dash {
+  stroke-dasharray: 2 3;
+  stroke-opacity: 0.18;
+}
+.traj .frame {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.6;
+  stroke-opacity: 0.35;
+}
+.traj .axis {
+  stroke: var(--ink);
+}
+.traj .tj-h {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.traj .tj-tick {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.traj .tj-disc {
+  font-size: 11px;
+  fill: var(--st-disc);
+}
+.traj .tj-disc-tick {
+  stroke: var(--st-disc);
+}
+.traj .tj-cap {
+  font-size: 10.5px;
+  fill: var(--ink);
+}
+.traj .work {
+  fill: none;
+  stroke: var(--you);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+.traj .peak {
+  fill: var(--you);
+}
+.traj .mr-c,
+.traj .mh-c {
+  fill: var(--bg);
+  stroke-width: 2;
+}
+.traj .mr-c,
+.traj .mr-x {
+  stroke: var(--bad);
+}
+.traj .mr-x {
+  fill: none;
+  stroke-width: 1.8;
+}
+.traj .mh-c {
+  stroke: var(--ok);
+}
+.traj .mh-d {
+  fill: var(--ok);
+}
+.traj .v-bg {
+  fill: var(--bg);
+  fill-opacity: 0.85;
+}
+.traj .v {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.traj .v-bad {
+  fill: var(--bad);
+}
+.traj .v-ok {
+  fill: var(--ok);
+}
+footer {
+  margin-top: 56px;
+  border-top: 2px solid var(--ink);
+  padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 12px;
+  color: var(--muted);
+}
+footer a {
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+.tag.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: var(--ok-bg);
+}

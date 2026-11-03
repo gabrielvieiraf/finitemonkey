@@ -1821,21 +1821,13 @@
             <span class="k" data-i="essaysK">two essays · pt · en · es</span>
           </div>
           <div class="essays">
-            <a
-              class="essay"
-              id="e1"
-              href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/ricochet/ricochet.md"
-            >
+            <a class="essay" id="e1" href="essays/ricochet/">
               <span class="en" data-i="e1n">essay 1</span>
               <span class="et" data-i="e1t"></span>
               <span class="ed" data-i="e1d"></span>
               <span class="el" data-i="read">read →</span>
             </a>
-            <a
-              class="essay"
-              id="e2"
-              href="https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/second-brain/second-brain.md"
-            >
+            <a class="essay" id="e2" href="essays/second-brain/">
               <span class="en" data-i="e2n">essay 2</span>
               <span class="et" data-i="e2t"></span>
               <span class="ed" data-i="e2d"></span>
@@ -2028,8 +2020,8 @@
             e2t: "The illusion of the second brain",
             e2d: "Context files and memories barely help the agent and go stale without warning. The proposal: each claim about the code bound to the hash of the code it describes and verified by running it.",
             read: "read →",
-            e1f: "ricochet/ricochet.md",
-            e2f: "second-brain/second-brain.md",
+            e1f: "essays/ricochet/",
+            e2f: "essays/second-brain/",
             trajTitle: "Same result, different status: the ricochet",
             trajA: "Person A",
             trajB: "Person B",
@@ -2222,8 +2214,8 @@
             e2t: "A ilusão do segundo cérebro",
             e2d: "Arquivos de contexto e memórias quase não ajudam o agente e envelhecem sem aviso. A proposta: cada afirmação sobre o código presa ao hash do trecho que descreve e verificada por execução.",
             read: "ler →",
-            e1f: "ricochet/ricochet.pt-BR.md",
-            e2f: "second-brain/second-brain.pt-BR.md",
+            e1f: "essays/ricochet/pt.html",
+            e2f: "essays/second-brain/pt.html",
             trajTitle: "O mesmo resultado, estatutos diferentes: o ricochete",
             trajA: "Pessoa A",
             trajB: "Pessoa B",
@@ -2412,8 +2404,8 @@
             e2t: "La ilusión del segundo cerebro",
             e2d: "Los archivos de contexto y las memorias apenas ayudan al agente y envejecen sin aviso. La propuesta: cada afirmación sobre el código atada al hash del código que describe y verificada al ejecutarla.",
             read: "leer →",
-            e1f: "ricochet/ricochet.es.md",
-            e2f: "second-brain/second-brain.es.md",
+            e1f: "essays/ricochet/es.html",
+            e2f: "essays/second-brain/es.html",
             trajTitle: "El mismo resultado, estatus distintos: el rebote",
             trajA: "Persona A",
             trajB: "Persona B",
@@ -2435,7 +2427,6 @@
             kH: "se mantiene",
           },
         };
-        const REPO = "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/";
         const $ = (s) => document.querySelector(s);
         const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
         const rich = (s) => (/<code>|<em>/.test(s) ? s : esc(s));
@@ -2470,8 +2461,8 @@
               )
               .join("")}</tbody>`,
           ].join("");
-          $("#e1").href = REPO + t.e1f;
-          $("#e2").href = REPO + t.e2f;
+          $("#e1").href = t.e1f;
+          $("#e2").href = t.e2f;
           document
             .querySelectorAll(".seg button")
             .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
