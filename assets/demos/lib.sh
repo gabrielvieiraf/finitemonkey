@@ -3,7 +3,7 @@ set -euo pipefail
 
 FM_BIN="${FM_BIN:?FM_BIN must point to dist/finitemonkey.mjs}"
 export GIT_AUTHOR_NAME=demo GIT_AUTHOR_EMAIL=demo@example.com GIT_COMMITTER_NAME=demo GIT_COMMITTER_EMAIL=demo@example.com
-export FORCE_COLOR=1 NO_UPDATE_NOTIFIER=1 GIT_PAGER=cat PAGER=cat
+export FORCE_COLOR=3 COLORTERM=truecolor NO_UPDATE_NOTIFIER=1 GIT_PAGER=cat PAGER=cat
 
 finitemonkey() { node "$FM_BIN" "$@"; }
 
