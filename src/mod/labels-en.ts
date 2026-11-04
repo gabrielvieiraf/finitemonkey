@@ -11,8 +11,12 @@ export const MOD_LABELS_EN = {
   "mod.view.no_accepted_work": "no accepted work",
   "mod.view.no_ricochet": "no ricochet",
   "mod.view.last_ricochet": "last ricochet {concept} {week}",
-  "mod.view.knowledge":
-    "knowledge: {stale} stale · {contradictions, plural, one {# rule contradicts} other {# rules contradict}} code · {quarantined} in quarantine",
+  "mod.view.knowledge_rules":
+    "{count, plural, one {# rule in AGENTS.md/CLAUDE.md does} other {# rules in AGENTS.md/CLAUDE.md do}} not match the code (finitemonkey instructions)",
+  "mod.view.knowledge_stale":
+    "{count, plural, one {# recorded fact points} other {# recorded facts point}} at code that changed (finitemonkey claims list)",
+  "mod.view.knowledge_quarantined":
+    "{count, plural, one {# recorded fact waits} other {# recorded facts wait}} for a green gate or your approval (finitemonkey claims list)",
   "mod.view.blind": "blind band {domain} {index} {spark} ({without}/{helps} help without criterion)",
   "mod.view.bypassed": "⚠ {count, plural, one {# guard} other {# guards}} bypassed",
   "mod.view.gate": "gate {mark} {passed}/{total}",
@@ -20,7 +24,10 @@ export const MOD_LABELS_EN = {
   "mod.view.not_verified_count": "{count} not verified",
   "mod.view.contract_short": "contract {hash}",
   "mod.view.evidence_old": "evidence {count, plural, one {# edit} other {# edits}} old",
-  "mod.view.loop": "loop {count}/{limit}",
+  "mod.view.loop":
+    "same error back {count, plural, one {# time} other {# times}}, research due at try {limit} (finitemonkey signals)",
+  "mod.view.loop_held":
+    "same error back {count, plural, one {# time} other {# times}}: research before the next edit (finitemonkey signals)",
   "mod.view.cost_usd": "{usd} this contract",
   "mod.view.cost_tokens": "{tokens} tokens this contract",
   "mod.view.xray": "x-ray {count} beyond the record without criterion",

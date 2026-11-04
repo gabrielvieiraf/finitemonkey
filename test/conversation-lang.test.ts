@@ -90,8 +90,8 @@ describe("mod labels", () => {
     useLabels(set);
     assert.equal(label("mod.view.not_verified_title"), "não verificado:");
     assert.equal(
-      label("mod.view.knowledge", { stale: 1, contradictions: 2, quarantined: 0 }),
-      "conhecimento: 1 desatualizado · 2 regras contradizem o código · 0 em quarentena",
+      label("mod.view.knowledge_rules", { count: 2 }),
+      "2 regras do AGENTS.md/CLAUDE.md não batem com o código (finitemonkey instructions)",
     );
     useLabels({ lang: "pt-BR", labels: {} });
     assert.equal(label("mod.view.run_gate"), "Run gate");

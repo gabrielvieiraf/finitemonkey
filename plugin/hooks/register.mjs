@@ -230,7 +230,9 @@ var MOD_LABELS_EN = {
   "mod.view.no_accepted_work": "no accepted work",
   "mod.view.no_ricochet": "no ricochet",
   "mod.view.last_ricochet": "last ricochet {concept} {week}",
-  "mod.view.knowledge": "knowledge: {stale} stale · {contradictions, plural, one {# rule contradicts} other {# rules contradict}} code · {quarantined} in quarantine",
+  "mod.view.knowledge_rules": "{count, plural, one {# rule in AGENTS.md/CLAUDE.md does} other {# rules in AGENTS.md/CLAUDE.md do}} not match the code (finitemonkey instructions)",
+  "mod.view.knowledge_stale": "{count, plural, one {# recorded fact points} other {# recorded facts point}} at code that changed (finitemonkey claims list)",
+  "mod.view.knowledge_quarantined": "{count, plural, one {# recorded fact waits} other {# recorded facts wait}} for a green gate or your approval (finitemonkey claims list)",
   "mod.view.blind": "blind band {domain} {index} {spark} ({without}/{helps} help without criterion)",
   "mod.view.bypassed": "⚠ {count, plural, one {# guard} other {# guards}} bypassed",
   "mod.view.gate": "gate {mark} {passed}/{total}",
@@ -238,7 +240,8 @@ var MOD_LABELS_EN = {
   "mod.view.not_verified_count": "{count} not verified",
   "mod.view.contract_short": "contract {hash}",
   "mod.view.evidence_old": "evidence {count, plural, one {# edit} other {# edits}} old",
-  "mod.view.loop": "loop {count}/{limit}",
+  "mod.view.loop": "same error back {count, plural, one {# time} other {# times}}, research due at try {limit} (finitemonkey signals)",
+  "mod.view.loop_held": "same error back {count, plural, one {# time} other {# times}}: research before the next edit (finitemonkey signals)",
   "mod.view.cost_usd": "{usd} this contract",
   "mod.view.cost_tokens": "{tokens} tokens this contract",
   "mod.view.xray": "x-ray {count} beyond the record without criterion",
@@ -704,11 +707,12 @@ var trajectoryLine = (trajectory) => [
     week: trajectory.ricochet.week.slice(-3)
   })
 ].join(", ");
-var knowledgeLine = (knowledge) => label("mod.view.knowledge", {
-  stale: knowledge.stale,
-  contradictions: knowledge.contradictions,
-  quarantined: knowledge.quarantined
-});
+var knowledgeLine = (knowledge) => [
+  ...knowledge.contradictions > 0 ? [label("mod.view.knowledge_rules", { count: knowledge.contradictions })] : [],
+  ...knowledge.stale > 0 ? [label("mod.view.knowledge_stale", { count: knowledge.stale })] : [],
+  ...knowledge.quarantined > 0 ? [label("mod.view.knowledge_quarantined", { count: knowledge.quarantined })] : []
+].join(" · ");
+var loopLine = (loop) => loop.count + 1 >= loop.limit ? label("mod.view.loop_held", { count: loop.count }) : label("mod.view.loop", { count: loop.count, limit: loop.limit });
 var blindLine = (blind) => label("mod.view.blind", {
   domain: blind.domain,
   index: blind.index.toFixed(2),
@@ -776,7 +780,7 @@ var bandLine = (view) => [
   ...view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)],
   ...view.trajectory === null ? [] : [trajectoryLine(view.trajectory)],
   ...view.triage === null || view.triage.open === 0 ? [] : [triageLine(view.triage)],
-  ...view.loop === null ? [] : [label("mod.view.loop", { count: view.loop.count, limit: view.loop.limit })],
+  ...view.loop === null ? [] : [loopLine(view.loop)],
   ...view.cost === null ? [] : [costBand(view.cost)],
   ...view.xray === null || view.xray.beyond === 0 ? [] : [label("mod.view.xray", { count: view.xray.beyond })]
 ].join(" · ");
