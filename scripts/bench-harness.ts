@@ -145,10 +145,13 @@ const record = (
   };
 };
 
+export const stateDirOf = (workdir: string): string =>
+  existsSync(join(workdir, ".fm")) ? join(workdir, ".fm") : join(workdir, ".finitemonkey");
+
 const isCacheDir = (root: string, source: string): boolean => relative(root, source).split(sep)[0] === "cache";
 
 const collectState = (workdir: string, saved: string): string | undefined => {
-  const from = join(workdir, ".finitemonkey");
+  const from = stateDirOf(workdir);
   if (!existsSync(from)) return undefined;
   const to = join(saved, "finitemonkey");
   cpSync(from, to, { recursive: true, filter: (source) => !isCacheDir(from, source) });
@@ -211,7 +214,7 @@ const runOne = async (
     writeFileSync(settingsPath, `${JSON.stringify(invocation.settings, null, 2)}\n`);
     const { outcome, followUps } = await converse(deps, task, run, invocation, invoke);
     if (arm.finitemonkey) await deps.settle?.(workdir);
-    const log = readIfAny(join(workdir, ".finitemonkey", "log.jsonl"));
+    const log = readIfAny(join(stateDirOf(workdir), "log.jsonl"));
     const saved = join(config.outDir, "runs", run.id);
     mkdirSync(saved, { recursive: true });
     writeFileSync(join(saved, "transcript.jsonl"), outcome.stdout);

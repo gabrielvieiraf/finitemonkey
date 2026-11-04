@@ -1,12 +1,13 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, optionalString, type Parsed, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { type DirtyEntry, parsePorcelainV2 } from "./facts.js";
 import type { Repo } from "./repo.js";
 
-export const OWNERSHIP_DIR = ".finitemonkey/git";
+export const OWNERSHIP_DIR = `${DATA_DIR}/git`;
 
 export type Hashes = Readonly<Record<string, string>>;
 

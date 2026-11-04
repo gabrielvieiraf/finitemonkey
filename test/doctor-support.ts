@@ -42,7 +42,7 @@ export const installedHooks = (): Readonly<Record<string, unknown>> =>
 
 export const INSTALLED_PROJECT: Readonly<Record<string, string>> = {
   ".claude/settings.json": settings({ hooks: installedHooks() }),
-  ".finitemonkey/lock.json": "{}",
+  ".fm/lock.json": "{}",
 };
 
 export const pluginFiles = (

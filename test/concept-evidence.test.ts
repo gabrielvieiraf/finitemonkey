@@ -51,7 +51,7 @@ const CONTRACT = [
 const repo = (): TempRepo => {
   const made = tempRepo({ "src/a.js": "export const a = 1;\n" });
   repos.push(made);
-  write(made.root, ".finitemonkey/policy.yml", "guards: {}\n");
+  write(made.root, ".fm/policy.yml", "guards: {}\n");
   trustContract(made.root, "t1", CONTRACT);
   return made;
 };

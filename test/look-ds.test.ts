@@ -171,6 +171,6 @@ describe("ds-adherence: computed style on the render", () => {
       [["ds/no-tokens", true]],
     );
     assert.ok(!run.summary.findings.some((item) => item.blocking));
-    assert.ok(existsSync(join(repo.root, ".finitemonkey", "look", run.summary.treeHash, "tokens.proposed.json")));
+    assert.ok(existsSync(join(repo.root, ".fm", "look", run.summary.treeHash, "tokens.proposed.json")));
   });
 });

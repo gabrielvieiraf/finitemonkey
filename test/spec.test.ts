@@ -69,7 +69,7 @@ describe("finitemonkey task from-spec", () => {
       ["2.1", "manual", false],
     ]);
     assert.equal(field(proposal.body, "data", "written"), false);
-    assert.throws(() => repo.read(".finitemonkey/tasks/add-pix.yml"));
+    assert.throws(() => repo.read(".fm/tasks/add-pix.yml"));
     const spec = await cliJson(
       ["task", "from-spec", "openspec/changes/add-pix/specs/payments/spec.md", "--port", "8080"],
       {
@@ -83,7 +83,7 @@ describe("finitemonkey task from-spec", () => {
       runtime: repoRuntime(),
     });
     assert.equal(field(written.body, "data", "written"), true);
-    assert.match(repo.read(".finitemonkey/tasks/add-pix.yml"), /run: pnpm vitest run payments/);
+    assert.match(repo.read(".fm/tasks/add-pix.yml"), /run: pnpm vitest run payments/);
     assert.equal(sha(tasks), before);
   });
 });

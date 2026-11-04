@@ -67,7 +67,7 @@ const FIXTURE_FILES = readdirSync(FIXTURES).filter((file) => file.endsWith(".jso
 const projectFs = (files: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(PROJECT, ".git", "HEAD"))]: "ref: refs/heads/main\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "config.yml"))]: "lang: en\n",
+    [toAbsolutePath(join(PROJECT, ".fm", "config.yml"))]: "lang: en\n",
     ...Object.fromEntries(Object.entries(files).map(([path, text]) => [toAbsolutePath(join(PROJECT, path)), text])),
   });
 
@@ -116,7 +116,7 @@ describe("signals: loop fixtures fire and exploration fixtures stay quiet", () =
 
   for (const file of FIXTURE_FILES) {
     const fixture = loadFixture(file);
-    const isolated = (): MemoryFs => projectFs({ ...fixture.files, ".finitemonkey/policy.yml": "level: light\n" });
+    const isolated = (): MemoryFs => projectFs({ ...fixture.files, ".fm/policy.yml": "level: light\n" });
     it(`${fixture.name} ${fixture.expect === "loop" ? "fires" : "stays quiet"}`, async () => {
       const outcomes = await replay(fixture, isolated());
       for (const outcome of outcomes) assert.equal(outcome.verdict, "allow");
@@ -129,7 +129,7 @@ describe("signals: loop fixtures fire and exploration fixtures stay quiet", () =
       const fs = isolated();
       await replay(fixture, fs);
       const index = field(
-        parseBody(fs.read(toAbsolutePath(join(PROJECT, ".finitemonkey", "signals-index.json"))) ?? "{}"),
+        parseBody(fs.read(toAbsolutePath(join(PROJECT, ".fm", "signals-index.json"))) ?? "{}"),
         "index",
       );
       assert.equal(field(index, "firing"), true);
@@ -164,7 +164,7 @@ describe("signals: second loop and calibration", () => {
   });
 
   it("a not-loop answer raises the threshold so the same repeats no longer fire", async () => {
-    const fs = projectFs({ ".finitemonkey/signals-profile.json": `{"threshold":${String(DEFAULT_THRESHOLD + 1)}}` });
+    const fs = projectFs({ ".fm/signals-profile.json": `{"threshold":${String(DEFAULT_THRESHOLD + 1)}}` });
     assert.deepEqual(injected(await replay(loadFixture("loop-same-test-error.json"), fs)), []);
     const runtime = fakeRuntime({ fs });
     const stdin = Object.assign(stdinFrom(""), { isTTY: true });
@@ -176,7 +176,7 @@ describe("signals: second loop and calibration", () => {
   });
 
   it("signals forget deletes the profile, the index and the log", async () => {
-    const fs = projectFs({ ".finitemonkey/signals-profile.json": '{"threshold":5}' });
+    const fs = projectFs({ ".fm/signals-profile.json": '{"threshold":5}' });
     await replay(loadFixture("loop-person-repeats.json"), fs);
     const runtime = fakeRuntime({ fs });
     const shown = await cliJson(["signals"], { cwd: PROJECT, runtime });
@@ -266,7 +266,7 @@ describe("signals: judgment and signatures", () => {
 });
 
 describe("signals: all data stays local", () => {
-  it("writes only ignored files under .finitemonkey, never the prompt text, and calls nothing", async () => {
+  it("writes only ignored files under .fm, never the prompt text, and calls nothing", async () => {
     const fs = projectFs();
     const before = new Set(Object.keys(fs.files()));
     const calls: string[] = [];
@@ -294,13 +294,13 @@ describe("signals: all data stays local", () => {
     }
     assert.deepEqual(calls, []);
     const written = Object.keys(fs.files()).filter((path) => !before.has(path));
-    const prefix = `${toPosixPath(PROJECT)}/.finitemonkey/`;
+    const prefix = `${toPosixPath(PROJECT)}/.fm/`;
     for (const path of written) {
       assert.ok(toPosixPath(path).startsWith(prefix), path);
       const local = toPosixPath(path).slice(prefix.length);
       assert.ok(!COMMITTED_STATE.some((kept) => local.startsWith(kept)), local);
     }
-    const log = fs.read(toAbsolutePath(join(PROJECT, ".finitemonkey", "signals.jsonl"))) ?? "";
+    const log = fs.read(toAbsolutePath(join(PROJECT, ".fm", "signals.jsonl"))) ?? "";
     assert.ok(log.length > 0);
     assert.doesNotMatch(log, /work on mobile|make the|please/i);
   });

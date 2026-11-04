@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { usageProblem } from "../core/problem.js";
 import { failureFrom, success } from "../core/result.js";
 import { park, type ParkedIdea, readParking, unpark } from "../focus/parking.js";
@@ -9,7 +10,7 @@ import type { CommandSpec } from "./types.js";
 
 export const PARKING_SCHEMA = "finitemonkey/parking@1";
 
-const PARK_USAGE = 'finitemonkey park "<idea>" | finitemonkey park --list';
+const PARK_USAGE = 'fm park "<idea>" | fm park --list';
 const UNPARK_USAGE = "finitemonkey unpark <id>";
 
 const ideaLine = (t: Translate, idea: ParkedIdea): string =>
@@ -35,7 +36,7 @@ export const parkCommand: CommandSpec = {
         );
       }
       const idea = park(ctx.runtime, paths, readState(ctx.runtime, paths).active, text);
-      if (idea === undefined) return failureFrom(ctx.t, guardianWriteProblem(".finitemonkey/parking.jsonl"));
+      if (idea === undefined) return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/parking.jsonl`));
       return success({ schema: PARKING_SCHEMA, ideas: [idea] }, [ctx.t("focus.park.done", { id: idea.id })]);
     }),
 };

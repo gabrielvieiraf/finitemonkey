@@ -29,7 +29,7 @@ describe("guardian decisions", () => {
   it("holds a model write of status: accepted, lets proposed through and only logs at level light", async () => {
     const repo = makeRepo({
       "docs/plan/02-decision-queue.md": record("queue", "keep cron", "src/jobs/"),
-      ".finitemonkey/policy.yml": policyWith({ "decision-hold": "active" }),
+      ".fm/policy.yml": policyWith({ "decision-hold": "active" }),
     });
     repos.push(repo);
     const file = `${repo.root}/docs/plan/02-decision-queue.md`;
@@ -45,9 +45,9 @@ describe("guardian decisions", () => {
       tool_input: { file_path: `${repo.root}/docs/plan/05-decision-cache.md`, content: record("cache", "x", "y") },
     });
     assert.equal(denied(fresh), false);
-    repo.write(".finitemonkey/policy.yml", "level: standard\n");
+    repo.write(".fm/policy.yml", "level: standard\n");
     assert.equal(denied(await edit("status: proposed", "status: accepted")), true);
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/policy.yml", "level: light\n");
     assert.equal(denied(await edit("status: proposed", "status: accepted")), false);
   });
 
@@ -83,9 +83,9 @@ describe("guardian decisions", () => {
       "docs/plan/03-decision-cache.md": record("cache", "no cache", "src/cache/"),
       "src/jobs/run.ts": "export const run = 1;\n",
       "src/cache/store.ts": "export const store = 1;\n",
-      ".finitemonkey/tasks/jobs.yml":
+      ".fm/tasks/jobs.yml":
         "id: jobs\ngoal: jobs\nscope:\n  paths: [src/jobs/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
-      ".finitemonkey/evidence/jobs.jsonl": `${signedLine(repoRuntime(), {
+      ".fm/evidence/jobs.jsonl": `${signedLine(repoRuntime(), {
         schema: "finitemonkey/evidence@1",
         task: "jobs",
         check: "*gate*",

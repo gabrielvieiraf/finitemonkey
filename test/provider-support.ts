@@ -75,10 +75,10 @@ const policyOf = (options: WorldOptions): string =>
   ].join("\n");
 
 export const world = (options: WorldOptions = {}): World => {
-  const files: Record<string, string> = { [at(".finitemonkey/policy.yml")]: policyOf(options) };
-  if (options.kinds !== undefined) files[at(".finitemonkey/provider.json")] = providerJson(options.kinds);
+  const files: Record<string, string> = { [at(".fm/policy.yml")]: policyOf(options) };
+  if (options.kinds !== undefined) files[at(".fm/provider.json")] = providerJson(options.kinds);
   for (const [path, text] of Object.entries(options.files ?? {})) files[at(path)] = text;
-  const fs = memoryFs(files, [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache")], NOW);
+  const fs = memoryFs(files, [at(".git"), at(".fm"), at(".fm/cache")], NOW);
   const calls: ExecRequest[] = [];
   const spawned: string[][] = [];
   const runtime = fakeRuntime({ fs, spawned, exec: claudeExec(calls, options.fake) });

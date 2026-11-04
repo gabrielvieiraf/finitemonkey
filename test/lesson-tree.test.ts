@@ -46,12 +46,12 @@ const inputOf = (runtime: Runtime, event: HookEvent, raw: Readonly<Record<string
 const project = () => {
   const fs = memoryFs(
     {
-      [at(".finitemonkey/signals.jsonl")]: `${signals}\n`,
-      [at(".finitemonkey/policy.yml")]: "guards:\n  learnings: active\n",
+      [at(".fm/signals.jsonl")]: `${signals}\n`,
+      [at(".fm/policy.yml")]: "guards:\n  learnings: active\n",
       [at("src/a.ts")]: "export const charge = (order) => order.total;\n",
       [at("src/b.ts")]: "export const b = 1;\n",
     },
-    [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache"), at("src")],
+    [at(".git"), at(".fm"), at(".fm/cache"), at("src")],
     NOW,
   );
   return { fs, runtime: fakeRuntime({ fs }) };

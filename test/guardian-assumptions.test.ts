@@ -46,9 +46,9 @@ const setup = (policy: string): Repo => {
   const repo = makeRepo({
     "docs/plan/02-decision-provider.md": DECISION,
     "src/billing/provider.ts": "export const provider = 1;\n",
-    ".finitemonkey/tasks/billing.yml": CONTRACT,
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "billing", done: [] }),
-    ".finitemonkey/policy.yml": policy,
+    ".fm/tasks/billing.yml": CONTRACT,
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "billing", done: [] }),
+    ".fm/policy.yml": policy,
   });
   repos.push(repo);
   return repo;

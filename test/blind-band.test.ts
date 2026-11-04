@@ -41,7 +41,7 @@ const FIXTURE = [
 
 const horizons = (repo: Repo): readonly JsonObject[] =>
   repo
-    .read(".finitemonkey/log.jsonl")
+    .read(".fm/log.jsonl")
     .split("\n")
     .filter((text) => text.includes(HORIZON_EVENT))
     .flatMap((text) => {
@@ -115,9 +115,9 @@ describe("blind band index", () => {
   it("answers signals blind-band --json with the frozen schema", async () => {
     const repo = makeRepo();
     repos.push(repo);
-    repo.write(".finitemonkey/log.jsonl", FIXTURE);
+    repo.write(".fm/log.jsonl", FIXTURE);
     repo.write(
-      ".finitemonkey/conceitos.yml",
+      ".fm/conceitos.yml",
       "concepts:\n  webhook:\n    level: seen\n    updated_at: 2026-10-27T10:00:00.000Z\n",
     );
     const run = await cliJson(["signals", "blind-band"], { cwd: repo.root, runtime: repoRuntime() });
@@ -149,7 +149,7 @@ describe("blind band index", () => {
   it("logs horizon help from clarify and research", async () => {
     const repo = makeRepo({ "README.md": "x\n" });
     repos.push(repo);
-    repo.write(".finitemonkey/policy.yml", "guards:\n  clarify: active\n");
+    repo.write(".fm/policy.yml", "guards:\n  clarify: active\n");
     await hook(clarifyPrompt, "UserPromptSubmit", repo.root, {
       prompt: "build a marketplace app with payments, webhooks and admin from scratch",
     });

@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { type AlertBudgetConfig, DEFAULT_ALERT_BUDGET } from "./budget.js";
 import { JUDGE_GUARDS } from "./judge-guards.js";
 import { MERGE_GUARDS } from "./merge-guards.js";
@@ -9,7 +10,7 @@ export { loadBasePolicy, loadPolicy, policyPath, type PolicyRuntime, userPolicyP
 export { isPolicyError, parsePolicy, parseUserPolicy } from "./parse.js";
 export type { AutonomyConfig, CalibrateConfig, EvolveConfig } from "./stage6.js";
 
-export const POLICY_FILE = ".finitemonkey/policy.yml";
+export const POLICY_FILE = `${DATA_DIR}/policy.yml`;
 export const GUARD_MODES = ["off", "shadow", "active"] as const;
 export const LEVELS = ["light", "standard", "strict"] as const;
 export const DEFAULT_PROMOTE_AFTER = 20;

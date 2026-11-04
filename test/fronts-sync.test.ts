@@ -69,7 +69,7 @@ describe("plan check against the task map", () => {
       const repo = tempRepo({ "README.md": "# app\n", ...layered(fixture) });
       const bin = tempDir("fm-sync-bin-");
       try {
-        write(repo.root, ".finitemonkey/cache/issues.json", JSON.stringify({ at: "x", source: "gh", issues: ISSUES }));
+        write(repo.root, ".fm/cache/issues.json", JSON.stringify({ at: "x", source: "gh", issues: ISSUES }));
         const result = run(repo.root, bin, ["plan", "check"]);
         assert.deepEqual(kinds(result.body), expected);
         assert.equal(result.code, expected.length === 0 ? 0 : 1);
@@ -99,7 +99,7 @@ const front: Front = {
   status: "reported",
   blockedBy: [],
   inbox: [],
-  lastReport: ".finitemonkey/reports/F1.json",
+  lastReport: ".fm/reports/F1.json",
   costUsd: 0,
   startedAt: null,
 };
@@ -107,11 +107,11 @@ const front: Front = {
 const withWave = (root: AbsolutePath): void => {
   write(
     root,
-    ".finitemonkey/fronts.yml",
+    ".fm/fronts.yml",
     serializeState({
       wave: 1,
       base: "main@abc",
-      briefing: ".finitemonkey/briefing.md",
+      briefing: ".fm/briefing.md",
       maxConcurrent: 3,
       budgetUsd: null,
       budgetMinutes: null,
@@ -132,9 +132,9 @@ describe("fronts sync", () => {
       assert.equal(result.code, 0, JSON.stringify(result.body));
       assert.equal(field(result.body, "data", "source"), "github");
       const map = readFileSync(join(repo.root, "docs", "plan", "01-task-map.md"), "utf8");
-      assert.match(map, /\| #70 \| worktree registry \| F1 \| reported \| \.finitemonkey\/reports\/F1\.json \|/);
+      assert.match(map, /\| #70 \| worktree registry \| F1 \| reported \| \.fm\/reports\/F1\.json \|/);
       assert.match(map, /\| #71 \| wt clean \| - \| open \| - \|/);
-      assert.match(readFileSync(join(repo.root, ".finitemonkey", "cache", "issues.json"), "utf8"), /"number": 71/);
+      assert.match(readFileSync(join(repo.root, ".fm", "cache", "issues.json"), "utf8"), /"number": 71/);
     } finally {
       repo.dispose();
       rmSync(bin, { recursive: true, force: true });

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/look@1.json",
   "title": "finitemonkey/look@1",
-  "description": "`data` of `finitemonkey look --json`. Generated from LookData in src/commands/look.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm look --json`. Generated from LookData in src/commands/look.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

@@ -67,7 +67,7 @@ export interface CommandArgs {
 }
 
 export const strictArgs = (argv: readonly string[], spec: CommandSpec): Parsed<CommandArgs, Problem> => {
-  const fix = `finitemonkey help ${spec.path.join(" ")}`;
+  const fix = `fm help ${spec.path.join(" ")}`;
   let parsed: { values: OptionValues; positionals: string[] };
   try {
     parsed = parseArgs({

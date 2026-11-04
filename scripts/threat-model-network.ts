@@ -84,7 +84,7 @@ export const network: readonly Threat[] = [
     threat: "The agent turns a proposal kind on to get model output into the flow",
     outcome: "prevented",
     mechanism:
-      "`provider enable` is person-only (a terminal on stdin and no `CLAUDECODE`), and the self guard blocks tool writes to `.finitemonkey/provider.json`",
+      "`provider enable` is person-only (a terminal on stdin and no `CLAUDECODE`), and the self guard blocks tool writes to `.fm/provider.json`",
     code: ["src/commands/provider.ts", "src/guards/self/protected.ts"],
     proof: { file: "test/provider.test.ts", test: "provider enable run by the agent is refused" },
   },

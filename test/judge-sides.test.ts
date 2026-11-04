@@ -23,7 +23,7 @@ const tty = (): TextSource => Object.assign(Readable.from([]), { isTTY: true });
 const start = async (): Promise<Repo> => {
   const repo = makeRepo({
     "docs/plan/03-decision-vat.md": "# Decision: VAT rate\n",
-    ".finitemonkey/policy.yml": "guards:\n  research-sides: active\n",
+    ".fm/policy.yml": "guards:\n  research-sides: active\n",
   });
   repos.push(repo);
   const opened = await cli(
@@ -117,7 +117,7 @@ describe("research with a source for and a source against", () => {
   it("the research record links its sources' claims and the decision record", async () => {
     const repo = await start();
     repo.write(
-      ".finitemonkey/decision-records/t.json",
+      ".fm/decision-records/t.json",
       `${JSON.stringify({ schema: "finitemonkey/decision-record@1", task: "t", at: "2026-10-29T12:00:00.000Z", research: [SLUG], changes: [], paths: [] })}\n`,
     );
     await run(

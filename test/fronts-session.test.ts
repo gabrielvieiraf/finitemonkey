@@ -40,7 +40,7 @@ const fixture = () => {
   const a = linked(repo, "front-a");
   const b = linked(repo, "front-b");
   repo.write(
-    ".finitemonkey/fronts.yml",
+    ".fm/fronts.yml",
     serializeState({ ...EMPTY_STATE, fronts: [frontAt("a", a, "front-a"), frontAt("b", b, "front-b")] }),
   );
   return { repo, a, b };
@@ -59,7 +59,7 @@ describe("fronts session id", () => {
     mkdirSync(nested, { recursive: true });
     assert.equal(recordFrontSession(repoRuntime(), toAbsolutePath(nested), "sess-1"), "a");
     assert.deepEqual(sessions(repo), ["sess-1", undefined]);
-    assert.match(repo.read(".finitemonkey/fronts.yml"), /session_id: sess-1/);
+    assert.match(repo.read(".fm/fronts.yml"), /session_id: sess-1/);
   });
 
   it("a later session in the same worktree keeps the first id", () => {

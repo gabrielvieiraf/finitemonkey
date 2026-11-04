@@ -23,7 +23,7 @@ const restoreProblem = <T>(count: number, data: T): Problem<T> => ({
   code: "restore_failed",
   messageKey: "restore.failed",
   params: { count },
-  fix: "move the backup out of reach of the app credentials, or run `finitemonkey restore drill`",
+  fix: "move the backup out of reach of the app credentials, or run `fm restore drill`",
   exitCode: ExitCode.CheckFailed,
   data,
 });

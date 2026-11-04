@@ -59,7 +59,7 @@ describe("plain-language effect before an approval", () => {
 
 describe("explain-approval hook", () => {
   const setup = (mode: string): Repo => {
-    const repo = makeRepo({ ".finitemonkey/policy.yml": policyWith({ "explain-approval": mode }) });
+    const repo = makeRepo({ ".fm/policy.yml": policyWith({ "explain-approval": mode }) });
     repos.push(repo);
     return repo;
   };
@@ -75,7 +75,7 @@ describe("explain-approval hook", () => {
     const repo = setup("shadow");
     const outcome = await fireHook(repo, "PermissionRequest", payload);
     assert.equal(outcome.stdout.trim() === "" || parseBody(outcome.stdout)["systemMessage"] === undefined, true);
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.match(log, /"feature":"explain-approval".*"effect":"deletes".*"reversal":"undo"/);
     assert.doesNotMatch(log, /rm -rf/);
   });

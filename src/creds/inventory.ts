@@ -1,4 +1,5 @@
 import type { AbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 import {
   type Cloud,
@@ -13,7 +14,7 @@ import { envFiles, environmentOf, envNames, isEnvTemplate } from "./env-files.js
 import type { CredsRuntime } from "./files.js";
 import { type EnvRead, envReads } from "./reads.js";
 
-export const CREDS_FILE = ".finitemonkey/creds.yml";
+export const CREDS_FILE = `${DATA_DIR}/creds.yml`;
 
 export interface Credential {
   readonly name: string;

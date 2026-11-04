@@ -74,7 +74,7 @@ const reportFor = (path: string, id: string, passed: number, home: AbsolutePath)
     notes: [],
     testCount: 41,
   };
-  write(path, `.finitemonkey/evidence/${id}.jsonl`, `${signedLine({ ...runtime, homeDir: () => home }, entry)}\n`);
+  write(path, `.fm/evidence/${id}.jsonl`, `${signedLine({ ...runtime, homeDir: () => home }, entry)}\n`);
   const report = {
     front: id,
     branch: `front/${id}`,
@@ -89,9 +89,9 @@ const reportFor = (path: string, id: string, passed: number, home: AbsolutePath)
       id === "F2"
         ? [{ decision: "invites expire in 7 days", options: ["7", "30"], recommendation: "7", needs_human: true }]
         : [],
-    evidence: `.finitemonkey/evidence/${id}.jsonl`,
+    evidence: `.fm/evidence/${id}.jsonl`,
   };
-  write(path, `.finitemonkey/reports/${id}.json`, JSON.stringify(report));
+  write(path, `.fm/reports/${id}.json`, JSON.stringify(report));
 };
 
 interface Wave {
@@ -122,11 +122,11 @@ const waveOf = (claimed: Readonly<Record<string, number>> = {}): Wave => {
   const base = git(repo.root, "rev-parse", "--short=7", "HEAD");
   write(
     repo.root,
-    ".finitemonkey/fronts.yml",
+    ".fm/fronts.yml",
     serializeState({
       wave: 1,
       base: `main@${base}`,
-      briefing: ".finitemonkey/briefing.md",
+      briefing: ".fm/briefing.md",
       maxConcurrent: 3,
       budgetUsd: null,
       budgetMinutes: null,
@@ -207,7 +207,7 @@ describe("per-file policies are class hints", () => {
   it("prefer-front keeps the front only when it already has the other side's change", () => {
     const box = sandbox({
       "src/pages/home.ts": page,
-      ".finitemonkey/config.yml": 'merge:\n  policies:\n    "src/pages/**": prefer-front\n',
+      ".fm/config.yml": 'merge:\n  policies:\n    "src/pages/**": prefer-front\n',
     });
     try {
       sides(
@@ -226,8 +226,7 @@ describe("per-file policies are class hints", () => {
     const box = sandbox({
       "src/pages/home.ts": page,
       "src/routes.ts": ROUTES,
-      ".finitemonkey/config.yml":
-        'merge:\n  policies:\n    "src/pages/**": prefer-front\n    "src/routes.ts": keep-both\n',
+      ".fm/config.yml": 'merge:\n  policies:\n    "src/pages/**": prefer-front\n    "src/routes.ts": keep-both\n',
     });
     try {
       sides(

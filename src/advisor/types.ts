@@ -1,5 +1,6 @@
+import { DATA_DIR } from "../core/data-dir.js";
 export const ADVISOR_GUARD = "advisor";
-export const SUGGESTIONS_FILE = ".finitemonkey/suggestions.jsonl";
+export const SUGGESTIONS_FILE = `${DATA_DIR}/suggestions.jsonl`;
 export const MAX_SUGGESTIONS = 3;
 export const PERSON_MUTE_AFTER = 3;
 export const RETIRE_RATE = 0.1;

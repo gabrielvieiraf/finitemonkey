@@ -8,7 +8,7 @@ when_to_use: >-
 
 # Verificar: evidência, não promessa
 
-1. Na raiz do projeto, rode `node .finitemonkey/runtime/dist/finitemonkey.mjs gate --fast --json`.
+1. Na raiz do projeto, rode `node .fm/runtime/dist/finitemonkey.mjs gate --fast --json`.
 2. Leia `data`; para cada item que falhou, corrija a causa, nunca a checagem.
 3. Cite o comando e o código de saída ao relatar um resultado. Resultado de antes da sua última edição não vale mais.
 

@@ -98,7 +98,7 @@ const report = (ctx: Ctx, paths: FmPaths, task: string, outcome: Outcome, mode: 
   });
   return {
     ...success({ ...data, question }, questionLines(ctx, question)),
-    next: `finitemonkey task diverge ${task} --choose A`,
+    next: `fm task diverge ${task} --choose A`,
   };
 };
 

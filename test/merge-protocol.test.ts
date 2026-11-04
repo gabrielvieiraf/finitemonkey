@@ -61,7 +61,7 @@ describe("merge protocol: git fault cases", () => {
       "gen.mjs": generator,
       "package.json": pkg('    "base": "1.0.0"'),
       "pnpm-lock.yaml": "lockfileVersion: 9\nbase: 1.0.0\n",
-      ".finitemonkey/config.yml": 'merge:\n  generators:\n    pnpm-lock.yaml: "node gen.mjs"\n',
+      ".fm/config.yml": 'merge:\n  generators:\n    pnpm-lock.yaml: "node gen.mjs"\n',
     });
     try {
       sides(

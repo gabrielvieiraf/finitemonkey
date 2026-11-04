@@ -37,16 +37,16 @@ const ledgerOf = (task: string, start: number, hours: number): string => {
 const setup = (): Repo => {
   const past = Object.fromEntries(
     [1, 2, 3, 4, 5].flatMap((n) => [
-      [`.finitemonkey/tasks/p${String(n)}.yml`, contract(`p${String(n)}`)],
-      [`.finitemonkey/evidence/p${String(n)}.jsonl`, ledgerOf(`p${String(n)}`, DAY, n)],
+      [`.fm/tasks/p${String(n)}.yml`, contract(`p${String(n)}`)],
+      [`.fm/evidence/p${String(n)}.jsonl`, ledgerOf(`p${String(n)}`, DAY, n)],
     ]),
   );
   const repo = makeRepo({
     ...past,
-    ".finitemonkey/policy.yml": policyWith({ attention: "active" }),
-    ".finitemonkey/tasks/now.yml": contract("now"),
-    ".finitemonkey/evidence/now.jsonl": ledgerOf("now", START, 0),
-    ".finitemonkey/state.json": JSON.stringify({
+    ".fm/policy.yml": policyWith({ attention: "active" }),
+    ".fm/tasks/now.yml": contract("now"),
+    ".fm/evidence/now.jsonl": ledgerOf("now", START, 0),
+    ".fm/state.json": JSON.stringify({
       schemaVersion: 1,
       active: "now",
       done: ["p1", "p2", "p3", "p4", "p5"],
@@ -82,7 +82,7 @@ describe("timebox answers", () => {
     assert.match(await promptAt(repo, 6, "go on"), ASKED);
     assert.doesNotMatch(await promptAt(repo, 6.5, "fix the rounding"), ASKED);
     assert.match(await promptAt(repo, 9, "and now the tests"), ASKED);
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"attention.timebox","task":"now","answer":"ignored"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"attention.timebox","task":"now","answer":"ignored"/);
   });
 
   it('silences the question for the task after "continue"', async () => {
@@ -91,14 +91,14 @@ describe("timebox answers", () => {
     assert.match(await promptAt(repo, 6.5, "continue"), /silenced for this task/);
     assert.doesNotMatch(await promptAt(repo, 9, "and now the tests"), ASKED);
     assert.doesNotMatch(await promptAt(repo, 13, "still here"), ASKED);
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"answer":"continue"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"answer":"continue"/);
   });
 
   it('parks the task after "stop" and does not ask again', async () => {
     const repo = setup();
     assert.match(await promptAt(repo, 6, "go on"), ASKED);
-    assert.match(await promptAt(repo, 6.5, "parar"), /parked as p1.*finitemonkey unpark p1/);
-    assert.match(repo.read(".finitemonkey/parking.jsonl"), /"task":"now"/);
+    assert.match(await promptAt(repo, 6.5, "parar"), /parked as p1.*fm unpark p1/);
+    assert.match(repo.read(".fm/parking.jsonl"), /"task":"now"/);
     assert.doesNotMatch(await promptAt(repo, 9, "hello"), ASKED);
   });
 });

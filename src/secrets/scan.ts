@@ -14,7 +14,7 @@ export type ScanMode = (typeof SCAN_MODES)[number];
 
 export const MAX_FILE_BYTES = 2 * 1024 * 1024;
 
-const SKIPPED = /(?:^|\/)(?:\.git|node_modules|\.finitemonkey)\//;
+const SKIPPED = /(?:^|\/)(?:\.git|node_modules|\.(?:fm|finitemonkey))\//;
 
 const DIFF_FLAGS = ["-U0", "--no-color", "--no-ext-diff", "--no-renames"] as const;
 

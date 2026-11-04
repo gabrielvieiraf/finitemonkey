@@ -18,7 +18,7 @@ after(() => {
 const project = async (size?: "S" | "M" | "L", goal = "Member pays with Pix"): Promise<Repo> => {
   const repo = makeRepo({
     "src/pay.ts": "export const pay = () => 1;\n",
-    ".finitemonkey/look.yml": "port: 5173\nstart: npm run dev\n",
+    ".fm/look.yml": "port: 5173\nstart: npm run dev\n",
   });
   repos.push(repo);
   if (size !== undefined) {
@@ -84,14 +84,14 @@ describe("SessionStart startup routine", () => {
 describe("PermissionDenied in the log", () => {
   it("records the tool and the rule", async () => {
     const repo = await project();
-    repo.write(".finitemonkey/config.yml", "lang: en\n");
+    repo.write(".fm/config.yml", "lang: en\n");
     await fire(repo, "PermissionDenied", {
       tool_name: "Bash",
       tool_input: { command: "git push origin main" },
       tool_use_id: "toolu_1",
       reason: "Bash(git push:*) denied by auto mode",
     });
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.match(log, /"event":"permission.denied","tool":"Bash","rule":"Bash\(git push:\*\) denied by auto mode"/);
   });
 });

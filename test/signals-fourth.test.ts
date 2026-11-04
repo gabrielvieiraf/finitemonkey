@@ -21,8 +21,8 @@ const FILE = join(PROJECT, "src", "checkout.ts");
 const projectFs = (policy?: string): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(PROJECT, ".git", "HEAD"))]: "ref: refs/heads/main\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "config.yml"))]: "lang: en\n",
-    ...(policy === undefined ? {} : { [toAbsolutePath(join(PROJECT, ".finitemonkey", "policy.yml"))]: policy }),
+    [toAbsolutePath(join(PROJECT, ".fm", "config.yml"))]: "lang: en\n",
+    ...(policy === undefined ? {} : { [toAbsolutePath(join(PROJECT, ".fm", "policy.yml"))]: policy }),
   });
 
 const fire = async (fs: MemoryFs, event: HookEvent, payload: JsonObject): Promise<HookOutcome> => {
@@ -158,7 +158,7 @@ describe("fourth-attempt guard: active mode blocks", () => {
     const released = await cliJson(["signals", "release", sig], { cwd: PROJECT, runtime, stdin });
     assert.equal(released.code, 0, released.stdout);
     assert.equal(denied(await fire(fs, "PreToolUse", edit)), "");
-    const log = fs.read(toAbsolutePath(join(PROJECT, ".finitemonkey", "log.jsonl"))) ?? "";
+    const log = fs.read(toAbsolutePath(join(PROJECT, ".fm", "log.jsonl"))) ?? "";
     assert.match(log, new RegExp(`"event":"signals.release","sig":"${sig}"`));
   });
 });
@@ -170,7 +170,7 @@ describe("fourth-attempt guard: the mode comes from policy.yml", () => {
     const outcome = await fire(fs, "PreToolUse", edit);
     assert.equal(denied(outcome), "");
     assert.match(context(outcome), /fourth correction on error signature [0-9a-f]{4}/);
-    const shadow = parseBody(fs.read(toAbsolutePath(join(PROJECT, ".finitemonkey", "cache", "shadow.json"))) ?? "{}");
+    const shadow = parseBody(fs.read(toAbsolutePath(join(PROJECT, ".fm", "cache", "shadow.json"))) ?? "{}");
     assert.equal(field(shadow, "fourth-attempt", "firings"), 1);
     assert.equal(context(await fire(fs, "PreToolUse", edit)), "");
   });

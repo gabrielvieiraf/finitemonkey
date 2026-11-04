@@ -10,8 +10,8 @@ import { proseInCommand } from "../src/prose/command-text.js";
 import { fakeRuntime, field, parseBody, reasonText, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
-const DEFAULTS = { [`${ROOT}/.finitemonkey/config.yml`]: "schemaVersion: 1\nlang: en\n" };
-const OFF = { [`${ROOT}/.finitemonkey/config.yml`]: "schemaVersion: 1\nlang: en\ndefaults:\n  prose-blocks: off\n" };
+const DEFAULTS = { [`${ROOT}/.fm/config.yml`]: "schemaVersion: 1\nlang: en\n" };
+const OFF = { [`${ROOT}/.fm/config.yml`]: "schemaVersion: 1\nlang: en\ndefaults:\n  prose-blocks: off\n" };
 const BAD = "This change leverages the invite flow for a seamless, robust first run. Nobody is lazy here.";
 const GOOD = "An accepted finding came back as new on every run, so the command exited 1 on a clean repository.";
 const MARKER = "<!-- finitemonkey:prose-allow -->";
@@ -42,7 +42,7 @@ const commands = [
   { name: "git -C dir commit -am", command: `git -C app commit -am "${BAD}"`, target: "commit" },
   {
     name: "finitemonkey pr open --body",
-    command: `finitemonkey pr open --title "feat: x" --body "${BAD}"`,
+    command: `fm pr open --title "feat: x" --body "${BAD}"`,
     target: "PR",
   },
   { name: "gh pr edit --body=", command: `gh pr edit 3 --body="${BAD}"`, target: "PR" },
@@ -91,7 +91,7 @@ describe("prose check on commit, PR and issue text", () => {
 
   const clean = [
     `git commit -m "fix(secrets): read the baseline first" -m "${GOOD}"`,
-    `finitemonkey pr open --title "fix: baseline" --body "${GOOD}"`,
+    `fm pr open --title "fix: baseline" --body "${GOOD}"`,
     "git commit --amend --no-edit",
     "git log --oneline -5",
     `echo "${BAD}"`,

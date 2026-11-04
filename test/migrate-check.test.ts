@@ -48,7 +48,7 @@ if (mode === "dump") console.log([...db.columns].sort().join("\\n"));
 if (mode === "test") process.exit(db.columns.includes("email") ? 0 : 1);
 `;
 
-const IGNORE = ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\ndb.json\n";
+const IGNORE = ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\ndb.json\n";
 
 const config = (url: string, extra = ""): string =>
   [
@@ -65,7 +65,7 @@ const config = (url: string, extra = ""): string =>
 const project = (configText: string): Repo => {
   const repo = makeRepo({
     ".gitignore": IGNORE,
-    ".finitemonkey/config.yml": configText,
+    ".fm/config.yml": configText,
     "tools/db.mjs": DB_TOOL,
     "migrations/001_users.sql": "ALTER TABLE users ADD COLUMN email text;\n-- down: DROP COLUMN email\n",
   });
@@ -143,11 +143,11 @@ describe("migrate gate check", () => {
     const repo = project("lang: en\n");
     repo.write("migrations/001_users.sql", "ALTER TABLE users ADD COLUMN mail text;\n");
     assert.equal(run(repo).status, "failed");
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/policy.yml", "level: light\n");
     const shadow = run(repo);
     assert.equal(shadow.status, "passed");
     assert.ok(keys(shadow).includes("gate.migrate.applied-edited"));
-    repo.write(".finitemonkey/policy.yml", "level: light\nguards:\n  migrate-check: active\n");
+    repo.write(".fm/policy.yml", "level: light\nguards:\n  migrate-check: active\n");
     assert.equal(run(repo).status, "failed");
   });
 
@@ -165,14 +165,14 @@ describe("migrate gate check", () => {
 
   it("dropping a column the base app still reads fails the compatibility run", () => {
     const repo = project("");
-    repo.write(".finitemonkey/config.yml", config(localUrl(repo)));
+    repo.write(".fm/config.yml", config(localUrl(repo)));
     repo.write("migrations/002_drop.sql", "ALTER TABLE users DROP COLUMN email;\n");
     assert.ok(keys(run(repo)).includes("gate.migrate.compat-broken"));
   });
 
   it("a down migration that does not restore the base schema is reported; a correct one passes", () => {
     const repo = project("");
-    repo.write(".finitemonkey/config.yml", config(localUrl(repo), '  down: "node tools/db.mjs down"'));
+    repo.write(".fm/config.yml", config(localUrl(repo), '  down: "node tools/db.mjs down"'));
     repo.write("migrations/002_age.sql", "ALTER TABLE users ADD COLUMN age int;\n-- down: ADD COLUMN junk\n");
     assert.ok(keys(run(repo)).includes("gate.migrate.down-mismatch"));
     repo.write("migrations/002_age.sql", "ALTER TABLE users ADD COLUMN age int;\n-- down: DROP COLUMN age\n");

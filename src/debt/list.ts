@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { defaultOn } from "../defaults/items.js";
 import { gitAt } from "../gate/git.js";
@@ -34,7 +35,7 @@ const markerItems = (runtime: Runtime, paths: FmPaths): readonly Omit<DebtItem, 
       "--",
       ".",
       ":(exclude)docs/plan",
-      ":(exclude).finitemonkey",
+      `:(exclude)${DATA_DIR}`,
     ]),
   ).flatMap((line) => {
     const at = /^(.+?):(\d+):(.*)$/.exec(line);

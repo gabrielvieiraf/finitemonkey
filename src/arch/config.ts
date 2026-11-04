@@ -1,11 +1,12 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type JsonObject, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
 
-export const ARCH_FILE = ".finitemonkey/arch.yml";
+export const ARCH_FILE = `${DATA_DIR}/arch.yml`;
 export const ARCH_FEATURE = "arch";
 
 export interface Layer {

@@ -8,52 +8,52 @@ export const DEPLOY_FOOTPRINT_TEXT = {
     es: "Una clave aleatoria, creada la primera vez que se escribe una evidencia, que firma cada línea del registro de evidencias. Queda en tu carpeta personal, fuera del proyecto, legible solo por ti. Las líneas sin firma válida se ignoran y se informan; borrar la clave hace que las evidencias antiguas cuenten como no ejecutadas.",
   },
   "guard-bypass": {
-    en: "Tool calls a finitemonkey guard denied that ran anyway, approved by another mod, a settings rule or a permission tool: the call id, the tool and a masked summary of its input. `ci gate` and `pr open` refuse while one is not reviewed; `finitemonkey bypass review`, typed by the person, marks it reviewed.",
+    en: "Tool calls a finitemonkey guard denied that ran anyway, approved by another mod, a settings rule or a permission tool: the call id, the tool and a masked summary of its input. `ci gate` and `pr open` refuse while one is not reviewed; `fm bypass review`, typed by the person, marks it reviewed.",
     "pt-BR":
-      "Chamadas de ferramenta que um guard do finitemonkey negou e que rodaram mesmo assim, aprovadas por outro mod, uma regra de settings ou uma ferramenta de permissão: o id da chamada, a ferramenta e um resumo mascarado da entrada. `ci gate` e `pr open` recusam enquanto houver uma não revisada; `finitemonkey bypass review`, digitado pela pessoa, marca como revisada.",
-    es: "Llamadas de herramienta que un guard de finitemonkey negó y que corrieron igual, aprobadas por otro mod, una regla de settings o una herramienta de permisos: el id de la llamada, la herramienta y un resumen enmascarado de su entrada. `ci gate` y `pr open` se niegan mientras haya una sin revisar; `finitemonkey bypass review`, escrito por la persona, la marca como revisada.",
+      "Chamadas de ferramenta que um guard do finitemonkey negou e que rodaram mesmo assim, aprovadas por outro mod, uma regra de settings ou uma ferramenta de permissão: o id da chamada, a ferramenta e um resumo mascarado da entrada. `ci gate` e `pr open` recusam enquanto houver uma não revisada; `fm bypass review`, digitado pela pessoa, marca como revisada.",
+    es: "Llamadas de herramienta que un guard de finitemonkey negó y que corrieron igual, aprobadas por otro mod, una regla de settings o una herramienta de permisos: el id de la llamada, la herramienta y un resumen enmascarado de su entrada. `ci gate` y `pr open` se niegan mientras haya una sin revisar; `fm bypass review`, escrito por la persona, la marca como revisada.",
   },
   "mod-cost": {
-    en: "Only when the mod runs (Claude Code 2.1.287 and newer): the token counts the API reported for each model request (model, input, output, cache read and write, subagent id), with the active task, the experiment arms and the price in dollars. Each call of a kind turned on with `finitemonkey provider enable` adds a line with its kind, tokens, dollars and duration from the `claude -p` output. `finitemonkey mod cost` adds them up per contract, attempt, arm and kind. No prompt or answer text.",
+    en: "Only when the mod runs (Claude Code 2.1.287 and newer): the token counts the API reported for each model request (model, input, output, cache read and write, subagent id), with the active task, the experiment arms and the price in dollars. Each call of a kind turned on with `fm provider enable` adds a line with its kind, tokens, dollars and duration from the `claude -p` output. `fm mod cost` adds them up per contract, attempt, arm and kind. No prompt or answer text.",
     "pt-BR":
-      "Só quando o mod roda (Claude Code 2.1.287 ou mais novo): as contagens de tokens que a API informou em cada requisição ao modelo (modelo, entrada, saída, leitura e escrita de cache, id do subagente), com a tarefa ativa, os braços de experimento e o preço em dólares. Cada chamada de um tipo ligado com `finitemonkey provider enable` acrescenta uma linha com o tipo, os tokens, os dólares e a duração vindos da saída do `claude -p`. `finitemonkey mod cost` soma por contrato, tentativa, braço e tipo. Nenhum texto de pedido ou resposta.",
-    es: "Solo cuando corre el mod (Claude Code 2.1.287 o más nuevo): los conteos de tokens que la API informó en cada solicitud al modelo (modelo, entrada, salida, lectura y escritura de caché, id del subagente), con la tarea activa, los brazos de experimento y el precio en dólares. Cada llamada de un tipo encendido con `finitemonkey provider enable` agrega una línea con su tipo, tokens, dólares y duración tomados de la salida de `claude -p`. `finitemonkey mod cost` los suma por contrato, intento, brazo y tipo. Ningún texto de pedido o respuesta.",
+      "Só quando o mod roda (Claude Code 2.1.287 ou mais novo): as contagens de tokens que a API informou em cada requisição ao modelo (modelo, entrada, saída, leitura e escrita de cache, id do subagente), com a tarefa ativa, os braços de experimento e o preço em dólares. Cada chamada de um tipo ligado com `fm provider enable` acrescenta uma linha com o tipo, os tokens, os dólares e a duração vindos da saída do `claude -p`. `fm mod cost` soma por contrato, tentativa, braço e tipo. Nenhum texto de pedido ou resposta.",
+    es: "Solo cuando corre el mod (Claude Code 2.1.287 o más nuevo): los conteos de tokens que la API informó en cada solicitud al modelo (modelo, entrada, salida, lectura y escritura de caché, id del subagente), con la tarea activa, los brazos de experimento y el precio en dólares. Cada llamada de un tipo encendido con `fm provider enable` agrega una línea con su tipo, tokens, dólares y duración tomados de la salida de `claude -p`. `fm mod cost` los suma por contrato, intento, brazo y tipo. Ningún texto de pedido o respuesta.",
   },
   infra: {
-    en: "How the project deploys, read from its own files when you run `finitemonkey infra`: level, targets and risks with `file:line`, no address. Production hosts found in deploy files go to `hosts.local.yml`, which git ignores, and only when the `.gitignore` block is there.",
+    en: "How the project deploys, read from its own files when you run `fm infra`: level, targets and risks with `file:line`, no address. Production hosts found in deploy files go to `hosts.local.yml`, which git ignores, and only when the `.gitignore` block is there.",
     "pt-BR":
-      "Como o projeto faz deploy, lido dos próprios arquivos quando você roda `finitemonkey infra`: nível, alvos e riscos com `arquivo:linha`, sem endereço. Hosts de produção achados nos arquivos de deploy vão para `hosts.local.yml`, que o git ignora, e só quando o bloco do `.gitignore` existe.",
-    es: "Cómo despliega el proyecto, leído de sus propios archivos cuando ejecutas `finitemonkey infra`: nivel, destinos y riesgos con `archivo:línea`, sin direcciones. Los hosts de producción hallados en los archivos de despliegue van a `hosts.local.yml`, que git ignora, y solo si el bloque del `.gitignore` existe.",
+      "Como o projeto faz deploy, lido dos próprios arquivos quando você roda `fm infra`: nível, alvos e riscos com `arquivo:linha`, sem endereço. Hosts de produção achados nos arquivos de deploy vão para `hosts.local.yml`, que o git ignora, e só quando o bloco do `.gitignore` existe.",
+    es: "Cómo despliega el proyecto, leído de sus propios archivos cuando ejecutas `fm infra`: nivel, destinos y riesgos con `archivo:línea`, sin direcciones. Los hosts de producción hallados en los archivos de despliegue van a `hosts.local.yml`, que git ignora, y solo si el bloque del `.gitignore` existe.",
   },
   "infra-remote": {
-    en: "Through `ssh`, only when a person runs `finitemonkey infra --remote --yes` in a terminal: read-only commands (`docker ps`, `systemctl list-units`) on the hosts listed in `hosts.local.yml`. Never from a hook or an agent.",
+    en: "Through `ssh`, only when a person runs `fm infra --remote --yes` in a terminal: read-only commands (`docker ps`, `systemctl list-units`) on the hosts listed in `hosts.local.yml`. Never from a hook or an agent.",
     "pt-BR":
-      "Pelo `ssh`, só quando uma pessoa roda `finitemonkey infra --remote --yes` num terminal: comandos só de leitura (`docker ps`, `systemctl list-units`) nos hosts de `hosts.local.yml`. Nunca por hook nem por agente.",
-    es: "A través de `ssh`, solo cuando una persona ejecuta `finitemonkey infra --remote --yes` en una terminal: comandos de solo lectura (`docker ps`, `systemctl list-units`) en los hosts de `hosts.local.yml`. Nunca desde un hook ni un agente.",
+      "Pelo `ssh`, só quando uma pessoa roda `fm infra --remote --yes` num terminal: comandos só de leitura (`docker ps`, `systemctl list-units`) nos hosts de `hosts.local.yml`. Nunca por hook nem por agente.",
+    es: "A través de `ssh`, solo cuando una persona ejecuta `fm infra --remote --yes` en una terminal: comandos de solo lectura (`docker ps`, `systemctl list-units`) en los hosts de `hosts.local.yml`. Nunca desde un hook ni un agente.",
   },
   "deploy-drift": {
-    en: "Through `ssh`, when you run `finitemonkey deploy check` (or its scheduled workflow, or the `deploy` gate check): read-only commands (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) as the read-only user, to compare production with the branch. With `--issue`, one GitHub issue is opened or commented through `gh`.",
+    en: "Through `ssh`, when you run `fm deploy check` (or its scheduled workflow, or the `deploy` gate check): read-only commands (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) as the read-only user, to compare production with the branch. With `--issue`, one GitHub issue is opened or commented through `gh`.",
     "pt-BR":
-      "Pelo `ssh`, quando você roda `finitemonkey deploy check` (ou o workflow agendado dele, ou o check `deploy` do gate): comandos só de leitura (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) com o usuário só de leitura, para comparar a produção com a branch. Com `--issue`, uma issue do GitHub é aberta ou comentada pelo `gh`.",
-    es: "A través de `ssh`, cuando ejecutas `finitemonkey deploy check` (o su workflow programado, o el check `deploy` del gate): comandos de solo lectura (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) con el usuario de solo lectura, para comparar producción con la rama. Con `--issue`, se abre o se comenta una issue de GitHub a través de `gh`.",
+      "Pelo `ssh`, quando você roda `fm deploy check` (ou o workflow agendado dele, ou o check `deploy` do gate): comandos só de leitura (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) com o usuário só de leitura, para comparar a produção com a branch. Com `--issue`, uma issue do GitHub é aberta ou comentada pelo `gh`.",
+    es: "A través de `ssh`, cuando ejecutas `fm deploy check` (o su workflow programado, o el check `deploy` del gate): comandos de solo lectura (`docker ps`, `git status --porcelain`, `git rev-parse HEAD`) con el usuario de solo lectura, para comparar producción con la rama. Con `--issue`, se abre o se comenta una issue de GitHub a través de `gh`.",
   },
   "deploy-generate": {
-    en: "Only with `finitemonkey deploy generate --yes`, and only files that do not exist yet: the deploy and drift workflows, the script the server runs and its compose file. An existing file is never overwritten; its diff is shown instead.",
+    en: "Only with `fm deploy generate --yes`, and only files that do not exist yet: the deploy and drift workflows, the script the server runs and its compose file. An existing file is never overwritten; its diff is shown instead.",
     "pt-BR":
-      "Só com `finitemonkey deploy generate --yes`, e só arquivos que ainda não existem: os workflows de deploy e de drift, o script que o servidor roda e o compose dele. Um arquivo existente nunca é sobrescrito; o diff aparece no lugar.",
-    es: "Solo con `finitemonkey deploy generate --yes`, y solo archivos que aún no existen: los workflows de despliegue y de drift, el script que corre el servidor y su compose. Un archivo existente nunca se sobrescribe; en su lugar se muestra el diff.",
+      "Só com `fm deploy generate --yes`, e só arquivos que ainda não existem: os workflows de deploy e de drift, o script que o servidor roda e o compose dele. Um arquivo existente nunca é sobrescrito; o diff aparece no lugar.",
+    es: "Solo con `fm deploy generate --yes`, y solo archivos que aún no existen: los workflows de despliegue y de drift, el script que corre el servidor y su compose. Un archivo existente nunca se sobrescribe; en su lugar se muestra el diff.",
   },
   headers: {
-    en: "Through `curl`, only when `headers.url` is set in `.finitemonkey/config.yml` and a task contract has the `headers` check: one GET per configured route, to read the security headers of the real response. Without it, the headers come from the app `look` already started on 127.0.0.1.",
+    en: "Through `curl`, only when `headers.url` is set in `.fm/config.yml` and a task contract has the `headers` check: one GET per configured route, to read the security headers of the real response. Without it, the headers come from the app `look` already started on 127.0.0.1.",
     "pt-BR":
-      "Pelo `curl`, só quando `headers.url` está definido em `.finitemonkey/config.yml` e um contrato de tarefa tem o check `headers`: um GET por rota configurada, para ler os headers de segurança da resposta real. Sem isso, os headers vêm do app que o `look` já subiu em 127.0.0.1.",
-    es: "A través de `curl`, solo cuando `headers.url` está definido en `.finitemonkey/config.yml` y un contrato de tarea tiene el check `headers`: un GET por ruta configurada, para leer los headers de seguridad de la respuesta real. Sin eso, los headers vienen de la app que `look` ya arrancó en 127.0.0.1.",
+      "Pelo `curl`, só quando `headers.url` está definido em `.fm/config.yml` e um contrato de tarefa tem o check `headers`: um GET por rota configurada, para ler os headers de segurança da resposta real. Sem isso, os headers vêm do app que o `look` já subiu em 127.0.0.1.",
+    es: "A través de `curl`, solo cuando `headers.url` está definido en `.fm/config.yml` y un contrato de tarea tiene el check `headers`: un GET por ruta configurada, para leer los headers de seguridad de la respuesta real. Sin eso, los headers vienen de la app que `look` ya arrancó en 127.0.0.1.",
   },
   observability: {
-    en: "Only with `finitemonkey observe --yes`, and only files that do not exist yet: an error-report scrubber, a JSON logger with an allow-list of fields and, from level 2, a plan to fill in. No account is created anywhere.",
+    en: "Only with `fm observe --yes`, and only files that do not exist yet: an error-report scrubber, a JSON logger with an allow-list of fields and, from level 2, a plan to fill in. No account is created anywhere.",
     "pt-BR":
-      "Só com `finitemonkey observe --yes`, e só arquivos que ainda não existem: um scrubber de relatórios de erro, um logger em JSON com lista de campos permitidos e, a partir do nível 2, um plano para preencher. Nenhuma conta é criada em lugar nenhum.",
-    es: "Solo con `finitemonkey observe --yes`, y solo archivos que aún no existen: un scrubber de reportes de error, un logger en JSON con lista de campos permitidos y, desde el nivel 2, un plan para completar. No se crea ninguna cuenta en ningún sitio.",
+      "Só com `fm observe --yes`, e só arquivos que ainda não existem: um scrubber de relatórios de erro, um logger em JSON com lista de campos permitidos e, a partir do nível 2, um plano para preencher. Nenhuma conta é criada em lugar nenhum.",
+    es: "Solo con `fm observe --yes`, y solo archivos que aún no existen: un scrubber de reportes de error, un logger en JSON con lista de campos permitidos y, desde el nivel 2, un plan para completar. No se crea ninguna cuenta en ningún sitio.",
   },
   "ci-watch": {
     en: "`ci-watch` keeps, per pull request, the commits whose CI failed and when the watch started, plus one line per run with the commit, each check's result, the failure class and the attempt. Failed logs are read through `gh` with secrets masked and only their last lines are shown, never stored.",
@@ -62,10 +62,10 @@ export const DEPLOY_FOOTPRINT_TEXT = {
     es: "`ci-watch` guarda, por pull request, los commits cuya CI falló y cuándo empezó el seguimiento, más una línea por ejecución con el commit, el resultado de cada verificación, la clase de falla y el intento. Los logs de falla se leen con `gh` con los secretos enmascarados y solo se muestran sus últimas líneas, sin guardarlas.",
   },
   "infra-plan": {
-    en: "Only when a change touches Terraform files: `terraform plan` and `terraform show -json` run with your own credentials, so the provider APIs are read. The plan file stays in `.finitemonkey/cache/`. Apply is never run.",
+    en: "Only when a change touches Terraform files: `terraform plan` and `terraform show -json` run with your own credentials, so the provider APIs are read. The plan file stays in `.fm/cache/`. Apply is never run.",
     "pt-BR":
-      "Só quando uma mudança toca arquivos Terraform: `terraform plan` e `terraform show -json` rodam com as suas credenciais, então as APIs do provedor são lidas. O arquivo do plano fica em `.finitemonkey/cache/`. Apply nunca roda.",
-    es: "Solo cuando un cambio toca archivos Terraform: `terraform plan` y `terraform show -json` corren con tus credenciales, así que se leen las APIs del proveedor. El archivo del plan queda en `.finitemonkey/cache/`. Apply nunca se ejecuta.",
+      "Só quando uma mudança toca arquivos Terraform: `terraform plan` e `terraform show -json` rodam com as suas credenciais, então as APIs do provedor são lidas. O arquivo do plano fica em `.fm/cache/`. Apply nunca roda.",
+    es: "Solo cuando un cambio toca archivos Terraform: `terraform plan` y `terraform show -json` corren con tus credenciales, así que se leen las APIs del proveedor. El archivo del plan queda en `.fm/cache/`. Apply nunca se ejecuta.",
   },
 } as const satisfies Readonly<
   Record<

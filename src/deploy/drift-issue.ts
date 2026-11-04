@@ -15,7 +15,7 @@ const gh = (runtime: Pick<Runtime, "exec">, cwd: AbsolutePath, args: readonly st
 
 export const driftBody = (branch: string, expected: string, hosts: readonly HostDrift[], at: string): string =>
   [
-    `Checked at ${at} by \`finitemonkey deploy check\`. Expected \`${expected.slice(0, 12)}\` from \`${branch}\`.`,
+    `Checked at ${at} by \`fm deploy check\`. Expected \`${expected.slice(0, 12)}\` from \`${branch}\`.`,
     "",
     ...hosts
       .filter((host) => host.state === "diverged")

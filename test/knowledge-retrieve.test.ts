@@ -32,7 +32,7 @@ describe("retrieval ladder", () => {
     assert.equal(answer.code, 0, answer.stdout);
     assert.equal(field(answer.body, "data", "step"), "grep");
     assert.match(JSON.stringify(field(answer.body, "data", "spans")), /src\/billing\/totals\.ts:1/);
-    const log = repo.read(".finitemonkey/retrieve.jsonl");
+    const log = repo.read(".fm/retrieve.jsonl");
     assert.match(log, /"step":"grep"/);
     assert.match(log, /"tokens":[1-9]/);
   });
@@ -75,8 +75,8 @@ describe("retrieval ladder", () => {
     const task = Array.from({ length: 50 }, (_, index) => `task${String(index)}`).find(
       (id) => armOf(id, "retrieve-deep") === "active",
     );
-    repo.write(".finitemonkey/policy.yml", "experiments:\n  retrieve-deep: random\n");
-    repo.write(".finitemonkey/state.json", JSON.stringify({ schemaVersion: 1, active: task, done: [] }));
+    repo.write(".fm/policy.yml", "experiments:\n  retrieve-deep: random\n");
+    repo.write(".fm/state.json", JSON.stringify({ schemaVersion: 1, active: task, done: [] }));
     const found = retrieve(repoRuntime(), paths, "zzqq nothing matches", { budget: 600, deep });
     assert.equal(found.step, "deep");
     assert.equal(calls, 1);

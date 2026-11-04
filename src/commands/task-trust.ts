@@ -54,7 +54,7 @@ const approve = (ctx: Ctx, paths: FmPaths, task: string, hash: string, digest: s
   if (outcome.kind === "stale")
     return failureFrom(
       ctx.t,
-      usageProblem("invalid_arguments", "trust.stale", `finitemonkey task trust ${task}`, {
+      usageProblem("invalid_arguments", "trust.stale", `fm task trust ${task}`, {
         task,
         shown: hash.slice(0, 12),
         current: outcome.hash.slice(0, 12),

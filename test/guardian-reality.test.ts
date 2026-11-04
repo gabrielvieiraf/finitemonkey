@@ -29,10 +29,10 @@ const GOALS = [
 
 const setup = (goal: string, extra: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/tasks/work.yml": contract(goal),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
-    ".finitemonkey/goals.yml": GOALS,
-    ".finitemonkey/policy.yml": policyWith({ reality: "active" }),
+    ".fm/tasks/work.yml": contract(goal),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
+    ".fm/goals.yml": GOALS,
+    ".fm/policy.yml": policyWith({ reality: "active" }),
     ...extra,
   });
   repos.push(repo);
@@ -68,7 +68,7 @@ describe("reality report and intervention levels", () => {
   it("a report without evidence lines is never shown", () => {
     assert.equal(showable(REPORT), false);
     assert.equal(showable({ ...REPORT, evidence: ["  "] }), false);
-    assert.equal(showable({ ...REPORT, evidence: [".finitemonkey/goals.yml: non_goals n1"] }), true);
+    assert.equal(showable({ ...REPORT, evidence: [".fm/goals.yml: non_goals n1"] }), true);
   });
 
   it("level 2: a task matching a stated non-goal gets a report once, with evidence", async () => {
@@ -88,13 +88,13 @@ describe("reality report and intervention levels", () => {
   it("level 1: scope growth after approval is a note, and an unchanged contract runs silently", async () => {
     const approved = JSON.stringify({ contracts: {}, approved: { work: contract("charge cards") } });
     const grown = setup("charge cards", {
-      ".finitemonkey/trust.json": approved,
-      ".finitemonkey/tasks/work.yml": contract("charge cards", "[src/billing/, src/auth/]"),
+      ".fm/trust.json": approved,
+      ".fm/tasks/work.yml": contract("charge cards", "[src/billing/, src/auth/]"),
     });
     const note = await edit(grown, "src/billing/a.ts");
     assert.equal(denied(note), false);
     assert.match(contextOf(note), /level 1 \(scope_growth\)[\s\S]*\+src\/auth\//);
-    const same = setup("charge cards", { ".finitemonkey/trust.json": approved });
+    const same = setup("charge cards", { ".fm/trust.json": approved });
     assert.equal(silent(await edit(same, "src/billing/a.ts")), true);
   });
 
@@ -120,9 +120,9 @@ describe("reality report and intervention levels", () => {
       silent(await fireHook(repo, "PreToolUse", { tool_name: "Bash", tool_input: { command: "npm test" } })),
       true,
     );
-    const standard = setup("build the mobile app", { ".finitemonkey/policy.yml": "level: standard\n" });
+    const standard = setup("build the mobile app", { ".fm/policy.yml": "level: standard\n" });
     assert.equal(denied(await edit(standard, "src/billing/a.ts")), true);
-    const shadow = setup("build the mobile app", { ".finitemonkey/policy.yml": "level: light\n" });
+    const shadow = setup("build the mobile app", { ".fm/policy.yml": "level: light\n" });
     assert.equal(denied(await edit(shadow, "src/billing/a.ts")), false);
     assert.equal(readDecisions(repoRuntime(), fmPaths(shadow.root)).length, 0);
   });

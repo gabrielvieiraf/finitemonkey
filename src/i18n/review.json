@@ -3159,7 +3159,9 @@
     "mod.view.no_status": "machine",
     "command.mod_labels.summary": "machine",
     "mod.labels.summary": "machine",
-    "mod.cost.tokens": "machine"
+    "mod.cost.tokens": "machine",
+    "git.error.merge_accept_refused": "machine",
+    "git.merge.accepted": "machine"
   },
   "es": {
     "command.init.summary": "machine",
@@ -6321,6 +6323,8 @@
     "mod.view.no_status": "machine",
     "command.mod_labels.summary": "machine",
     "mod.labels.summary": "machine",
-    "mod.cost.tokens": "machine"
+    "mod.cost.tokens": "machine",
+    "git.error.merge_accept_refused": "machine",
+    "git.merge.accepted": "machine"
   }
 }

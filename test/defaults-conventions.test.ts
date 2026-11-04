@@ -51,7 +51,7 @@ describe("defaults adapt to the test runner, lint and layout", () => {
   });
 
   it("a repository with a test runner gets one question, and the default follows the answer", async () => {
-    const yes = repo({ "package.json": VITEST, ".finitemonkey/policy.yml": ADAPT });
+    const yes = repo({ "package.json": VITEST, ".fm/policy.yml": ADAPT });
     const first = await init(yes, tty("y\n"));
     assert.equal(first.code, 0, first.stdout);
     assert.equal(first.stderr.match(/\[Y\/n\]/g)?.length, 1);
@@ -62,14 +62,14 @@ describe("defaults adapt to the test runner, lint and layout", () => {
     assert.doesNotMatch(again.stderr, /Tests here run with/);
     assert.match(config(yes), /tests: vitest/);
 
-    const no = repo({ "package.json": VITEST, ".finitemonkey/policy.yml": ADAPT });
+    const no = repo({ "package.json": VITEST, ".fm/policy.yml": ADAPT });
     assert.equal((await init(no, tty("n\n"))).code, 0);
     assert.match(config(no), /tests: off/);
     assert.equal(runnerAfter(no), "node");
   });
 
   it("without a person it asks through the report and changes nothing", async () => {
-    const fs = repo({ "package.json": VITEST, ".finitemonkey/policy.yml": ADAPT });
+    const fs = repo({ "package.json": VITEST, ".fm/policy.yml": ADAPT });
     const result = await init(fs, Readable.from([]));
     assert.match(result.stderr + result.stdout, /--tests vitest/);
     const questions = field(result.body, "data", "conventionQuestions");
@@ -112,7 +112,7 @@ describe("defaults adapt to the test runner, lint and layout", () => {
     const plan = lintPlan(createTranslator("en"), stack, new Set(), (path) => fs.read(at(path)));
     assert.deepEqual(plan.files, []);
     assert.deepEqual(plan.notes, [
-      "biome is the linter here (conventions.lint in .finitemonkey/config.yml), so no ESLint config was generated.",
+      "biome is the linter here (conventions.lint in .fm/config.yml), so no ESLint config was generated.",
     ]);
   });
 });

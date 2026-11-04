@@ -31,7 +31,7 @@ const fetcher =
     pages[id] ?? { status: "not-found" };
 
 const deps = (pages: Readonly<Record<string, Fetched>>): JudgeDeps => {
-  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.finitemonkey")]);
+  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.fm")]);
   return {
     runtime: fakeRuntime({ fs }),
     paths: fmPaths(toAbsolutePath("/home/ana/project")),
@@ -127,7 +127,7 @@ describe("citation checks through the CLI", () => {
   it("runs offline against a fake fetch and sends only the cited identifier", async () => {
     const repo = tempRepo({ "note.md": `"${QUOTE}" ([Walters; Wilder 2023](https://doi.org/${DOI})).\n` });
     repos.push(repo);
-    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n");
+    write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: shadow\n");
     const sent: ExecRequest[] = [];
     const base = repoRuntime();
     const runtime = {

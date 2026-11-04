@@ -92,7 +92,7 @@ const session = (repo: Repo, extra: readonly string[]): void => {
 };
 
 const failedAtStop = (repo: Repo): number =>
-  readFileSync(join(repo.root, ".finitemonkey", "evidence", "t1.jsonl"), "utf8")
+  readFileSync(join(repo.root, ".fm", "evidence", "t1.jsonl"), "utf8")
     .split("\n")
     .filter((line) => line.includes('"status":"failed"')).length;
 

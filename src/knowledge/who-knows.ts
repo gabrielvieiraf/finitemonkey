@@ -2,6 +2,7 @@ import { dirname } from "node:path";
 
 import { readPrompts } from "../audit/log.js";
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt } from "../gate/git.js";
@@ -96,7 +97,7 @@ export const knowledgeMap = (
     const current = counts.get(area) ?? { person: 0, agent: 0, claims: 0 };
     counts.set(area, { ...current, [key]: current[key] + 1 });
   };
-  for (const file of trackedFiles(runtime, paths).filter((path) => !path.startsWith(".finitemonkey/")))
+  for (const file of trackedFiles(runtime, paths).filter((path) => !path.startsWith(`${DATA_DIR}/`)))
     counts.set(areaOf(file), counts.get(areaOf(file)) ?? { person: 0, agent: 0, claims: 0 });
   for (const commit of commits(runtime, paths))
     for (const area of new Set(commit.files.map(areaOf)))

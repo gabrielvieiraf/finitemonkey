@@ -26,7 +26,7 @@ const written = (body: unknown): readonly unknown[] => {
 
 describe("the generated part of AGENTS.md as a derived file", () => {
   it("keeps the person's text in AGENTS.md and the rule lines in a registered file", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES, "AGENTS.md": PROSE });
+    const fs = repo({ ".fm/rules.yml": RULES, "AGENTS.md": PROSE });
     const compiled = await run(fs, ["rules", "compile"]);
     assert.equal(compiled.code, 0, compiled.stdout);
     const agents = fs.read(at("AGENTS.md")) ?? "";
@@ -39,13 +39,13 @@ describe("the generated part of AGENTS.md as a derived file", () => {
   });
 
   it("rebuilds the file only when the rules change", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES });
+    const fs = repo({ ".fm/rules.yml": RULES });
     assert.ok(written((await run(fs, ["rules", "compile"])).body).includes("AGENTS.rules.md"));
     const again = await run(fs, ["rules", "compile"]);
     assert.ok(!written(again.body).includes("AGENTS.rules.md"));
     assert.ok(!written(again.body).includes("AGENTS.md"));
     fakeRuntime({ fs }).writeText(
-      toAbsolutePath(at(".finitemonkey/rules.yml")),
+      toAbsolutePath(at(".fm/rules.yml")),
       RULES.replace("Never force push a shared branch", "Never force push to main"),
     );
     const changed = await run(fs, ["rules", "compile"]);
@@ -54,24 +54,21 @@ describe("the generated part of AGENTS.md as a derived file", () => {
   });
 
   it("reports a hand edit and records it as a correction by the person", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES });
+    const fs = repo({ ".fm/rules.yml": RULES });
     await run(fs, ["rules", "compile"]);
     const runtime = fakeRuntime({ fs });
     const path = toAbsolutePath(at("AGENTS.rules.md"));
     runtime.writeText(path, `${fs.read(at("AGENTS.rules.md")) ?? ""}- Squash before merging\n`);
     const compiled = await run(fs, ["rules", "compile"]);
     assert.deepEqual(field(compiled.body, "data", "edited"), ["- Squash before merging"]);
-    assert.match(
-      fs.read(at(".finitemonkey/claims.jsonl")) ?? "",
-      /Correction to AGENTS\.rules\.md: - Squash before merging/,
-    );
+    assert.match(fs.read(at(".fm/claims.jsonl")) ?? "", /Correction to AGENTS\.rules\.md: - Squash before merging/);
     assert.doesNotMatch(fs.read(at("AGENTS.rules.md")) ?? "", /Squash/);
   });
 
   it("keeps the rule lines inside AGENTS.md when the derived cache is off", async () => {
     const fs = repo({
-      ".finitemonkey/rules.yml": RULES,
-      ".finitemonkey/policy.yml": "guards:\n  derived-cache: off\n",
+      ".fm/rules.yml": RULES,
+      ".fm/policy.yml": "guards:\n  derived-cache: off\n",
     });
     await run(fs, ["rules", "compile"]);
     assert.match(fs.read(at("AGENTS.md")) ?? "", /- Never force push a shared branch \(rule no-force-push\)/);

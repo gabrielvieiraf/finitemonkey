@@ -77,7 +77,7 @@ const front = (id: string, status: Front["status"], agentId: string | null = nul
 const wave = (fronts: readonly Front[], pending: readonly string[] = []): FrontsState => ({
   wave: 1,
   base: "main@abc1234",
-  briefing: ".finitemonkey/briefing.md",
+  briefing: ".fm/briefing.md",
   maxConcurrent: 3,
   budgetUsd: null,
   budgetMinutes: null,
@@ -112,7 +112,7 @@ describe("fronts hooks", () => {
     try {
       write(
         repo.root,
-        ".finitemonkey/fronts.yml",
+        ".fm/fronts.yml",
         serializeState(
           wave([front("F1", "running"), front("F2", "running"), front("F3", "running"), front("F4", "planned")]),
         ),
@@ -127,11 +127,7 @@ describe("fronts hooks", () => {
       );
       const workflow = await fire(frontsPreToolUse, "PreToolUse", repo.root, { tool_name: "Workflow", tool_input: {} });
       assert.match(JSON.stringify(workflow), /"permissionDecision":"ask"/);
-      write(
-        repo.root,
-        ".finitemonkey/fronts.yml",
-        serializeState(wave([front("F1", "running"), front("F4", "planned")])),
-      );
+      write(repo.root, ".fm/fronts.yml", serializeState(wave([front("F1", "running"), front("F4", "planned")])));
       assert.equal((await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F4"))).kind, "allow");
     } finally {
       repo.dispose();
@@ -146,16 +142,16 @@ describe("fronts hooks", () => {
         ...wave([{ ...front("F1", "running"), startedAt: started }, front("F2", "planned")]),
         budgetMinutes: 60,
       };
-      write(repo.root, ".finitemonkey/fronts.yml", serializeState(state));
+      write(repo.root, ".fm/fronts.yml", serializeState(state));
       const shadow = await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F2"));
       assert.equal(shadow.kind, "allow");
-      write(repo.root, ".finitemonkey/policy.yml", "guards:\n  fronts-budget: active\n");
+      write(repo.root, ".fm/policy.yml", "guards:\n  fronts-budget: active\n");
       const held = await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F2"));
       assert.ok(held.kind === "block");
       assert.match(held.reason, /budget \(90 of 60 minutes\)/);
-      write(repo.root, ".finitemonkey/fronts.yml", serializeState({ ...state, budgetMinutes: 120 }));
+      write(repo.root, ".fm/fronts.yml", serializeState({ ...state, budgetMinutes: 120 }));
       assert.equal((await fire(frontsPreToolUse, "PreToolUse", repo.root, agent("Front: F2"))).kind, "allow");
-      const log = readFileSync(join(repo.root, ".finitemonkey", "log.jsonl"), "utf8");
+      const log = readFileSync(join(repo.root, ".fm", "log.jsonl"), "utf8");
       assert.equal(log.split("\n").filter((line) => line.includes('"fronts.budget_stop"')).length, 2);
     } finally {
       repo.dispose();
@@ -167,14 +163,14 @@ describe("fronts hooks", () => {
     try {
       write(
         repo.root,
-        ".finitemonkey/fronts.yml",
+        ".fm/fronts.yml",
         serializeState(wave([front("F1-checkout", "planned"), front("F2-invites", "planned")])),
       );
       await fire(
         frontsPostToolUse,
         "PostToolUse",
         repo.root,
-        agent("Read .finitemonkey/briefing.md\nFront: F2-invites\nGoal: invites"),
+        agent("Read .fm/briefing.md\nFront: F2-invites\nGoal: invites"),
       );
       await fire(frontsSubagentStart, "SubagentStart", repo.root, {
         agent_id: "agent-42",

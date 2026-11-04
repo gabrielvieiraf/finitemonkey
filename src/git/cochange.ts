@@ -19,7 +19,7 @@ const IGNORED = [
   /(?:^|\/)(?:CHANGELOG|CHANGES|HISTORY|NEWS)(?:\.[\w.]+)?$/i,
   /(?:^|\/)(?:dist|build|out|vendor|node_modules|coverage)\//,
   /\.(?:min\.js|map|snap|lock)$/,
-  /(?:^|\/)\.finitemonkey\//,
+  /(?:^|\/)\.(?:fm|finitemonkey)\//,
 ];
 
 export const isIgnored = (path: string): boolean => IGNORED.some((pattern) => pattern.test(path));

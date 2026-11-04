@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { type Markers, withManagedBlock, withoutManagedBlock } from "../install/managed-block.js";
@@ -8,7 +9,7 @@ import type { AcceptanceCheck } from "../task/types.js";
 import { type Purpose, PURPOSES } from "./purpose.js";
 import type { Ran } from "./run.js";
 
-export const ONBOARD_FILE = ".finitemonkey/onboard.json";
+export const ONBOARD_FILE = `${DATA_DIR}/onboard.json`;
 export const ONBOARD_SCHEMA = "finitemonkey/onboard@1";
 export const ONBOARD_FEATURE = "onboard";
 export const ONBOARD_MARKERS: Markers = {

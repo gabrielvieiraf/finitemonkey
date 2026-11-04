@@ -4,7 +4,7 @@ Este archivo es para un agente de IA, como Claude Code, al que una persona le pi
 
 > **Estado: estable desde la 0.1.0.** `init`, `update`, `uninstall`, la compuerta, los bloqueos y el plugin de Claude Code salen en la dist-tag `latest` de npm; las vistas previas de la próxima versión salen en `next`.
 >
-> Válido para `finitemonkey` 0.1.0-next.40 o posterior. Comprueba la versión instalada antes de seguir cualquier paso posterior y detente si es menor.
+> Válido para `fm` 0.1.0-next.40 o posterior. Comprueba la versión instalada antes de seguir cualquier paso posterior y detente si es menor.
 
 ## Conducta
 
@@ -27,11 +27,11 @@ Las dos instalan los mismos hooks. Usa una o ambas: cuando el proyecto tiene sus
    /plugin install finitemonkey@finitemonkey-next
    ```
 
-   Cuando salga una versión estable, la rama por defecto tendrá su propio marketplace, llamado `finitemonkey` (`/plugin marketplace add gabrielvieiraf/finitemonkey`, luego `/plugin install finitemonkey@finitemonkey`). Puede convivir con `finitemonkey-next`, pero deja activo solo uno de los dos: ambos plugins se llaman `finitemonkey` y Claude Code se queda con un único conjunto de hooks. `doctor` falla y muestra el comando `claude plugin disable` cuando los dos están activos.
+   Cuando salga una versión estable, la rama por defecto tendrá su propio marketplace, llamado `fm` (`/plugin marketplace add gabrielvieiraf/finitemonkey`, luego `/plugin install finitemonkey@finitemonkey`). Puede convivir con `finitemonkey-next`, pero deja activo solo uno de los dos: ambos plugins se llaman `fm` y Claude Code se queda con un único conjunto de hooks. `doctor` falla y muestra el comando `claude plugin disable` cuando los dos están activos.
 
    El plugin trae los hooks y las skills (`task`, `verify`, `look`, `finish`) que Claude usa por su cuenta. Lleva su propia CLI (`scripts/finitemonkey.mjs`, el mismo build que la versión de su `plugin.json`), y cada hook ejecuta `node` sobre ese archivo: sin `npx` y sin descargas.
 
-2. **`npx finitemonkey init`** en el proyecto (pasos abajo). Escribe en el proyecto los hooks, el piso de `permissions.deny` (más una regla `Read` de bloqueo por cada patrón de `.claudeignore`), reglas `ask` para los push a `main`/`master` y para comandos de publicación y despliegue, `permissions.blockReadsOutsideWorkingDirectories: true`, `.finitemonkey/config.yml`, una skill `verify` del proyecto (`.claude/skills/verify/SKILL.md`, que ejecuta la compuerta rápida antes de cada commit) y un bloque gestionado corto en `AGENTS.md`, que `CLAUDE.md` importa con `@AGENTS.md` (cada archivo se crea si no existe; todo lo que está fuera del bloque queda como estaba). Nunca define `defaultMode` ni `autoMode`, solo añade reglas que la configuración todavía no tiene y deja como está una skill `verify` que el proyecto ya tenga. Los hooks ejecutan `node` sobre `node_modules/finitemonkey` cuando el proyecto lo tiene como dependencia; si no, `init` copia la CLI que lo está ejecutando a `.finitemonkey/runtime/` (versionada, para que el equipo y las sesiones en la nube usen la misma versión) y los hooks ejecutan esa copia. Ningún hook llama a `npx`. Esto también vale donde los plugins no cargan (las sesiones en la nube de un repositorio leen el `.claude/settings.json` versionado). Añade `--marketplace` para registrar además el marketplace del plugin en la configuración del proyecto, para todos los que confíen en la carpeta; queda desactivado salvo que la persona lo pida. El marketplace sigue el canal de la versión en ejecución; `--channel next` o `--channel stable` elige uno.
+2. **`npx finitemonkey init`** en el proyecto (pasos abajo). Escribe en el proyecto los hooks, el piso de `permissions.deny` (más una regla `Read` de bloqueo por cada patrón de `.claudeignore`), reglas `ask` para los push a `main`/`master` y para comandos de publicación y despliegue, `permissions.blockReadsOutsideWorkingDirectories: true`, `.fm/config.yml`, una skill `verify` del proyecto (`.claude/skills/verify/SKILL.md`, que ejecuta la compuerta rápida antes de cada commit) y un bloque gestionado corto en `AGENTS.md`, que `CLAUDE.md` importa con `@AGENTS.md` (cada archivo se crea si no existe; todo lo que está fuera del bloque queda como estaba). Nunca define `defaultMode` ni `autoMode`, solo añade reglas que la configuración todavía no tiene y deja como está una skill `verify` que el proyecto ya tenga. Los hooks ejecutan `node` sobre `node_modules/finitemonkey` cuando el proyecto lo tiene como dependencia; si no, `init` copia la CLI que lo está ejecutando a `.fm/runtime/` (versionada, para que el equipo y las sesiones en la nube usen la misma versión) y los hooks ejecutan esa copia. Ningún hook llama a `npx`. Esto también vale donde los plugins no cargan (las sesiones en la nube de un repositorio leen el `.claude/settings.json` versionado). Añade `--marketplace` para registrar además el marketplace del plugin en la configuración del proyecto, para todos los que confíen en la carpeta; queda desactivado salvo que la persona lo pida. El marketplace sigue el canal de la versión en ejecución; `--channel next` o `--channel stable` elige uno.
 
 ## Qué obtiene la persona
 
@@ -75,7 +75,7 @@ Esto lee el proyecto y devuelve el plan sin escribir nada: `data.actions` lista 
 npx finitemonkey@next init --yes --json
 ```
 
-Pasa las decisiones de la persona como flags (por ejemplo `--commits free --lang es`). Sin `--yes`, `init` sale con código 4, el plan y un campo `next` con el comando exacto para ejecutar cuando la persona esté de acuerdo. `init` guarda una copia de cada archivo que toca en `.finitemonkey/backups/<timestamp>/`, registra lo que escribió en `.finitemonkey/lock.json`, combina `.claude/settings.json` sin quitar ningún hook ni permiso de la persona, añade un bloque gestionado a `.gitignore` (el estado queda local, `config.yml` se versiona) y se puede ejecutar otra vez sin riesgo: una segunda ejecución sin cambios no escribe nada.
+Pasa las decisiones de la persona como flags (por ejemplo `--commits free --lang es`). Sin `--yes`, `init` sale con código 4, el plan y un campo `next` con el comando exacto para ejecutar cuando la persona esté de acuerdo. `init` guarda una copia de cada archivo que toca en `.fm/backups/<timestamp>/`, registra lo que escribió en `.fm/lock.json`, combina `.claude/settings.json` sin quitar ningún hook ni permiso de la persona, añade un bloque gestionado a `.gitignore` (el estado queda local, `config.yml` se versiona) y se puede ejecutar otra vez sin riesgo: una segunda ejecución sin cambios no escribe nada.
 
 ### 5. Verifica
 
@@ -85,7 +85,7 @@ npx finitemonkey@next doctor --json
 
 Cada elemento tiene `check`, `status` y `fix`. Si alguno no está en `ok`, ejecuta el comando de `fix` cuando sea seguro y no caiga en la regla de conducta 5, y vuelve a ejecutar `doctor`. Informa lo que quede.
 
-`npx finitemonkey@next doctor --fix` repara los archivos del proyecto que le pertenecen (hooks, reglas de deny, el bloque del `.gitignore`) con la misma copia de seguridad y el mismo bloqueo que `init`, y nunca toca los settings del usuario ni el perfil de la shell. Si el usuario quiere reportar un bug, `npx finitemonkey@next doctor --report` guarda un archivo Markdown enmascarado en `.finitemonkey/reports/` para adjuntarlo a la issue.
+`npx finitemonkey@next doctor --fix` repara los archivos del proyecto que le pertenecen (hooks, reglas de deny, el bloque del `.gitignore`) con la misma copia de seguridad y el mismo bloqueo que `init`, y nunca toca los settings del usuario ni el perfil de la shell. Si el usuario quiere reportar un bug, `npx finitemonkey@next doctor --report` guarda un archivo Markdown enmascarado en `.fm/reports/` para adjuntarlo a la issue.
 
 ### 6. Cuéntaselo a la persona
 
@@ -120,6 +120,6 @@ npx finitemonkey@next uninstall --yes --json
 npx finitemonkey@next uninstall --yes --purge --json
 ```
 
-El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.finitemonkey/` (copias y evidencias). `--purge` borra también `.finitemonkey/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey-next` (o `finitemonkey@finitemonkey` para el marketplace estable).
+El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.fm/` (copias y evidencias). `--purge` borra también `.fm/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey-next` (o `finitemonkey@finitemonkey` para el marketplace estable).
 
-<!-- translation of docs/AGENT-SETUP.md sha256:0525eae761b4 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:cc64d53b0681 -->

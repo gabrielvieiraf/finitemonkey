@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { HOME_DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { ensureKey, lineTrust, readKey, signLine } from "../evidence/sign.js";
@@ -34,7 +35,7 @@ export const projectId = (runtime: Pick<Runtime, "realpath">, root: AbsolutePath
 
 export const mirrorDirs = (runtime: MirrorRuntime, root: AbsolutePath): readonly AbsolutePath[] => {
   const common = gitCommonDir(runtime, root);
-  const home = toAbsolutePath(join(runtime.homeDir(), FM_DIR, "projects", projectId(runtime, root)));
+  const home = toAbsolutePath(join(runtime.homeDir(), HOME_DATA_DIR, "projects", projectId(runtime, root)));
   return common === undefined ? [home] : [toAbsolutePath(join(common, "finitemonkey", "mirror")), home];
 };
 

@@ -1,11 +1,12 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml, type YamlValue } from "../core/yaml/parse.js";
 
-export const OWNERSHIP_FILE = ".finitemonkey/ownership.yml";
+export const OWNERSHIP_FILE = `${DATA_DIR}/ownership.yml`;
 export const CATALOG_FILE = "catalog-info.yaml";
 
 export interface Component {

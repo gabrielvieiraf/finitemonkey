@@ -19,7 +19,7 @@ import type { CommandSpec } from "./types.js";
 
 export { SECRETS_LIVE_SCHEMA };
 
-const USAGE = `finitemonkey secrets live <${[...LIVE_PROVIDERS, AWS_PROVIDER].join("|")}> --env <VARIABLE> [--secret-env <VARIABLE>] [--send]`;
+const USAGE = `fm secrets live <${[...LIVE_PROVIDERS, AWS_PROVIDER].join("|")}> --env <VARIABLE> [--secret-env <VARIABLE>] [--send]`;
 
 const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
 

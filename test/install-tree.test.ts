@@ -88,7 +88,7 @@ describe("init then uninstall leaves the tree byte-identical", () => {
     });
   }
 
-  it("the default level keeps .finitemonkey/ and removes the rest", async () => {
+  it("the default level keeps .fm/ and removes the rest", async () => {
     const root = fresh({ ".gitignore": "x\n" });
     const before = snapshot(root);
     await fm(root, ["init", "--yes"]);
@@ -96,10 +96,10 @@ describe("init then uninstall leaves the tree byte-identical", () => {
     assert.equal(result.code, ExitCode.Ok);
     const left = Object.keys(snapshot(root)).filter((path) => !(path in before));
     assert.ok(
-      left.every((path) => path.startsWith(".finitemonkey")),
+      left.every((path) => path.startsWith(".fm")),
       left.join(", "),
     );
-    assert.ok(!left.includes(join(".finitemonkey", "lock.json")));
+    assert.ok(!left.includes(join(".fm", "lock.json")));
   });
 
   it("uninstall without --yes exits 4 and changes nothing; without an install it exits 3", async () => {
@@ -189,7 +189,7 @@ describe("init trusts the project's own check commands", () => {
   it("records the implicit contract hash so the gate runs the detected commands", async () => {
     const root = fresh({ "package.json": JSON.stringify({ scripts: { test: "node --test" } }) });
     assert.equal((await fm(root, ["init", "--yes"])).code, ExitCode.Ok);
-    const trust = parseBody(readFileSync(join(root, ".finitemonkey", "trust.json"), "utf8"));
+    const trust = parseBody(readFileSync(join(root, ".fm", "trust.json"), "utf8"));
     const files = {
       read: (path: string) =>
         path === "package.json" ? JSON.stringify({ scripts: { test: "node --test" } }) : undefined,

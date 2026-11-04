@@ -1,4 +1,5 @@
 import type { AbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import type { Runtime } from "../../core/runtime.js";
 import { isOn, type ProjectDefaults } from "../../defaults/items.js";
 import type { GenFile } from "../../generate/files.js";
@@ -74,7 +75,7 @@ export const ciFiles = (input: CiGenInput, chosen: ReadonlySet<CiWorkflow>): rea
     defaultBranch: input.defaultBranch,
     attribution: isOn(input.defaults, "no-attribution"),
     oidc: input.oidc,
-    drift: input.exists(".finitemonkey/infra.yml") && !input.exists(".github/workflows/drift.yml"),
+    drift: input.exists(`${DATA_DIR}/infra.yml`) && !input.exists(".github/workflows/drift.yml"),
   };
   const deployCommand = DEPLOY_SCRIPTS.find(input.exists);
   const texts: Readonly<Record<CiWorkflow, () => string>> = {

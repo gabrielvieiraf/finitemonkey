@@ -16,7 +16,7 @@ import { cliJson, fakeRuntime, field, stdinFrom } from "./support.js";
 
 const PROJECT = toAbsolutePath("/home/ana/project");
 const at = (path: string): AbsolutePath => toAbsolutePath(path, PROJECT);
-const FM = at(".finitemonkey");
+const FM = at(".fm");
 
 const AGENTS = [
   "# Agents",
@@ -34,8 +34,8 @@ const AGENTS = [
 const projectFs = (files: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/feature\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
-    [at(".finitemonkey/policy.yml")]:
+    [at(".fm/config.yml")]: "lang: en\n",
+    [at(".fm/policy.yml")]:
       "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     [at("AGENTS.md")]: AGENTS,
     ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
@@ -57,7 +57,7 @@ const proposalsOf = (body: unknown): readonly Readonly<Record<string, unknown>>[
 };
 
 const rulesIn = (fs: MemoryFs) => {
-  const text = fs.read(at(".finitemonkey/rules.yml"));
+  const text = fs.read(at(".fm/rules.yml"));
   if (text === undefined) return undefined;
   const parsed = parseRules(text);
   if (!parsed.ok) throw new Error(parsed.error);
@@ -91,7 +91,7 @@ describe("rules propose: three buckets from the instruction files", () => {
     const rules = "rules:\n  - id: tests\n    text: Run the tests before you say a task is done\n    severity: must\n";
     const block =
       "<!-- finitemonkey:rules begin -->\n- Keep every migration reversible with a down step (rule x)\n<!-- finitemonkey:rules end -->\n";
-    const { body } = await propose(projectFs({ ".finitemonkey/rules.yml": rules, "AGENTS.md": `${AGENTS}${block}` }));
+    const { body } = await propose(projectFs({ ".fm/rules.yml": rules, "AGENTS.md": `${AGENTS}${block}` }));
     const texts = proposalsOf(body).map((item) => item["text"]);
     assert.ok(!texts.includes("Run the tests before you say a task is done."));
     assert.ok(!texts.some((text) => String(text).includes("migration")));
@@ -142,9 +142,9 @@ describe("rules propose: nothing reaches rules.yml without confirmation", () => 
   it("--yes in a terminal accepts the whole proposal and keeps the person's entries", async () => {
     const existing =
       "# team rules\nrules:\n- id: mine\n  text: Keep the changelog out of feature commits\n  severity: prefer\n";
-    const fs = projectFs({ ".finitemonkey/rules.yml": existing });
+    const fs = projectFs({ ".fm/rules.yml": existing });
     await propose(fs, { stdin: tty(""), yes: true });
-    const text = fs.read(at(".finitemonkey/rules.yml")) ?? "";
+    const text = fs.read(at(".fm/rules.yml")) ?? "";
     assert.ok(text.startsWith("# team rules\nrules:\n- id: mine\n"));
     assert.equal(rulesIn(fs)?.length, 8);
   });
@@ -170,8 +170,8 @@ describe("rules propose: reminders broken three times are promoted with their lo
     const log =
       [1, 2, 3].map((n) => VIOLATION("dist-by-hand", n)).join("") + VIOLATION("tone", 4) + VIOLATION("tone", 5);
     const fs = projectFs({
-      ".finitemonkey/rules.yml": RULES,
-      ".finitemonkey/rule-violations.jsonl": log,
+      ".fm/rules.yml": RULES,
+      ".fm/rule-violations.jsonl": log,
       "AGENTS.md": "# empty\n",
     });
     const { body } = await propose(fs);
@@ -194,7 +194,7 @@ describe("rules propose: reminders broken three times are promoted with their lo
   });
 
   it("rules violation records the person's report", async () => {
-    const fs = projectFs({ ".finitemonkey/rules.yml": RULES });
+    const fs = projectFs({ ".fm/rules.yml": RULES });
     const { code, body } = await cliJson(["rules", "violation", "tone", "--detail", "three paragraphs for a yes"], {
       runtime: fakeRuntime({ fs }),
       cwd: PROJECT,
@@ -257,7 +257,7 @@ describe("rules checked at Stop", () => {
   const EDIT = { name: "Edit", input: { file_path: at("src/total.ts"), old_string: "a", new_string: "b" } };
 
   it("blocks the end of the turn when code changed and no test ran after it, and logs the violation", async () => {
-    const fs = projectFs({ ".finitemonkey/rules.yml": STOP_RULES, "t.jsonl": transcript([EDIT]) });
+    const fs = projectFs({ ".fm/rules.yml": STOP_RULES, "t.jsonl": transcript([EDIT]) });
     const outcome = await stop(fs);
     assert.equal(outcome.verdict, "block");
     assert.match(outcome.stdout + outcome.stderr, /tests-ran/);
@@ -269,7 +269,7 @@ describe("rules checked at Stop", () => {
 
   it("lets the turn end when the tests ran after the last edit", async () => {
     const ran = { name: "Bash", input: { command: "npm test" } };
-    const fs = projectFs({ ".finitemonkey/rules.yml": STOP_RULES, "t.jsonl": transcript([EDIT, ran]) });
+    const fs = projectFs({ ".fm/rules.yml": STOP_RULES, "t.jsonl": transcript([EDIT, ran]) });
     assert.equal((await stop(fs)).verdict, "allow");
   });
 
@@ -278,7 +278,7 @@ describe("rules checked at Stop", () => {
       "rules:\n  - id: pt\n    text: Always answer in Portuguese\n    severity: must\n    detector:\n      check: language\n      value: pt-BR\n";
     const english =
       "I changed the total and it is now right. The tests are green and the page shows the value that the person expects, so this is done for the checkout.";
-    const fs = projectFs({ ".finitemonkey/rules.yml": rules, "t.jsonl": transcript([], english) });
+    const fs = projectFs({ ".fm/rules.yml": rules, "t.jsonl": transcript([], english) });
     assert.equal((await stop(fs, { last_assistant_message: english })).verdict, "block");
     const portuguese =
       "Eu mudei o total e agora está certo. Os testes passam e a página mostra o valor que a pessoa espera, então isso não precisa de mais nada, e também está no ar.";
@@ -287,8 +287,8 @@ describe("rules checked at Stop", () => {
 
   it("only records in shadow mode", async () => {
     const fs = projectFs({
-      ".finitemonkey/rules.yml": STOP_RULES,
-      ".finitemonkey/policy.yml": "guards:\n  rules-stop: shadow\n",
+      ".fm/rules.yml": STOP_RULES,
+      ".fm/policy.yml": "guards:\n  rules-stop: shadow\n",
       "t.jsonl": transcript([EDIT]),
     });
     assert.equal((await stop(fs)).verdict, "allow");

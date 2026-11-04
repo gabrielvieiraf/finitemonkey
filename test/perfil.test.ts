@@ -91,8 +91,8 @@ describe("perfil: never in git, PR text or reports", () => {
   it("the profile is ignored by git and absent from the gate report", async () => {
     const repo = await installed();
     await cliJson(["perfil", "start"], { cwd: repo.root, runtime: runtime(), stdin: tty("c\nb\nb\nb\nb\na\n") });
-    assert.match(repo.read(".finitemonkey/perfil.yml"), /knowledge: 70/);
-    assert.equal(repo.git("check-ignore", ".finitemonkey/perfil.yml").trim(), ".finitemonkey/perfil.yml");
+    assert.match(repo.read(".fm/perfil.yml"), /knowledge: 70/);
+    assert.equal(repo.git("check-ignore", ".fm/perfil.yml").trim(), ".fm/perfil.yml");
     repo.git("add", "-A");
     assert.doesNotMatch(repo.git("status", "--porcelain"), /perfil/);
     const gate = await cliJson(["gate"], { cwd: repo.root, runtime: runtime() });
@@ -111,7 +111,7 @@ describe("perfil: disagreement is answered with a practical question", () => {
     assert.equal(said.code, 0, said.stderr);
     assert.match(said.stdout, /One practical question about backend and data/);
     assert.match(said.stdout, /same payment confirmation twice/);
-    assert.match(said.stdout, /finitemonkey perfil answer backend <a\|b\|c>/);
+    assert.match(said.stdout, /fm perfil answer backend <a\|b\|c>/);
     assert.doesNotMatch(said.stdout, /wrong|you do not know|não sabe/i);
     const shown = await cliJson(["perfil"], { cwd: repo.root, runtime: runtime() });
     assert.equal(level(shown.body, "backend", "knowledge"), "intermediate");

@@ -1,6 +1,7 @@
 import { isAbsolute, relative } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { matchesAny } from "../core/glob.js";
 import { toPosixPath } from "../core/posix-path.js";
 
@@ -13,7 +14,7 @@ export const relativeFile = (root: string, target: string): string | undefined =
   const rel = relative(root, toAbsolutePath(target, toAbsolutePath(root)));
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) return undefined;
   const posix = toPosixPath(rel);
-  return posix.startsWith(".finitemonkey/") || posix.startsWith(".git/") ? undefined : posix;
+  return posix.startsWith(`${DATA_DIR}/`) || posix.startsWith(".git/") ? undefined : posix;
 };
 
 const scopeGlobs = (paths: readonly string[]): readonly string[] =>

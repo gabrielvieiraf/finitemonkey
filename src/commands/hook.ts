@@ -29,7 +29,7 @@ const recordBenchHook = (ctx: Pick<Ctx, "env" | "cwd" | "runtime">, run: string,
 export const hookCommand: CommandSpec = {
   path: ["hook"],
   summaryKey: "command.hook.summary",
-  usage: `finitemonkey hook <${HOOK_EVENTS.join("|")}>`,
+  usage: `fm hook <${HOOK_EVENTS.join("|")}>`,
   status: "ready",
   maxPositionals: 1,
   options: { via: { type: "string" }, "bench-run": { type: "string" } },

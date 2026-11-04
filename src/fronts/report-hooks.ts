@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, optionalString, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { maxBlocks, NO_PROGRESS_MAX } from "../gate/hooks/counter.js";
@@ -13,7 +14,7 @@ import { checkReport, type ReportCheck, reportSummary } from "./report-gate.js";
 import { type Front, readFronts, updateFronts, withFront } from "./state.js";
 
 const ALLOW: HookDecision = { kind: "allow" };
-const COUNTER_FILE = ".finitemonkey/cache/front-blocks.json";
+const COUNTER_FILE = `${DATA_DIR}/cache/front-blocks.json`;
 
 interface Counter {
   readonly consecutive: number;

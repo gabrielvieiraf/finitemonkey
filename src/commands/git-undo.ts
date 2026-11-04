@@ -88,7 +88,7 @@ export const undoCommand: CommandSpec = {
     const inPlace = args.values["in-place"] === true;
     if (inPlace && !(ctx.yes && isPerson(ctx))) {
       return Promise.resolve(
-        failureFrom(ctx.t, needsPersonProblem("git.undo.confirm", `finitemonkey undo ${view.ref} --in-place --yes`)),
+        failureFrom(ctx.t, needsPersonProblem("git.undo.confirm", `fm undo ${view.ref} --in-place --yes`)),
       );
     }
     const done = undoSnapshot(ctx.runtime, repo, view, inPlace ? "in-place" : "worktree");

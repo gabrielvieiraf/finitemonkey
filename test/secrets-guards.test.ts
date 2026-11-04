@@ -268,7 +268,7 @@ describe("PostToolUse secrets guard", () => {
       incidents.map((item) => [item.state, item.where]),
       [["aberto", "tool-output:Bash:2"]],
     );
-    assert.equal(runtime.readText(toAbsolutePath(`${ROOT}/.finitemonkey/incidents/.gitignore`)).ok, true);
+    assert.equal(runtime.readText(toAbsolutePath(`${ROOT}/.fm/incidents/.gitignore`)).ok, true);
   });
 
   it("the same secret twice keeps one incident", async () => {

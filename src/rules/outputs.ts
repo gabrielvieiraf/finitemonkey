@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import type { JsonObject } from "../core/parsed.js";
 import { asList, asRecord, setKey } from "../install/json-text.js";
 import { type Markers, withManagedBlock, withoutManagedBlock } from "../install/managed-block.js";
@@ -11,7 +12,7 @@ export const AGENTS_MARKERS: Markers = {
 export const WORKFLOW_FILE = ".github/workflows/finitemonkey-rules.yml";
 export const CI_JOB = "finitemonkey rules";
 export const PRESENCE_MARK = "finitemonkey:rules-presence";
-export const PRESENCE_COMMAND = `sh -c 'command -v finitemonkey >/dev/null 2>&1 || test -f .finitemonkey/runtime/dist/finitemonkey.mjs || echo "Finite Monkey is not active in this session: its executable is missing, so the project rules in .finitemonkey/rules.yml are not enforced here." # ${PRESENCE_MARK}'`;
+export const PRESENCE_COMMAND = `sh -c 'command -v finitemonkey >/dev/null 2>&1 || test -f ${DATA_DIR}/runtime/dist/finitemonkey.mjs || echo "Finite Monkey is not active in this session: its executable is missing, so the project rules in ${DATA_DIR}/rules.yml are not enforced here." # ${PRESENCE_MARK}'`;
 
 export const ruleLine = (rule: Pick<ProjectRule, "id" | "text">): string => `- ${rule.text} (rule ${rule.id})`;
 

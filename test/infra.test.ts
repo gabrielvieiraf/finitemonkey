@@ -122,10 +122,10 @@ describe("infra inventory", () => {
   });
 });
 
-const IGNORE = ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/infra.yml\n";
+const IGNORE = ".fm/*\n!.fm/config.yml\n!.fm/infra.yml\n";
 
 const project = (files: Files): Repo => {
-  const repo = makeRepo({ ".gitignore": IGNORE, ".finitemonkey/config.yml": "lang: en\n", ...files });
+  const repo = makeRepo({ ".gitignore": IGNORE, ".fm/config.yml": "lang: en\n", ...files });
   repos.push(repo);
   return repo;
 };
@@ -156,16 +156,16 @@ describe("finitemonkey infra", () => {
     });
     const run = await cliJson(["infra"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(run.code, 0, run.stdout);
-    const infra = repo.read(".finitemonkey/infra.yml");
+    const infra = repo.read(".fm/infra.yml");
     for (const secret of ["203.0.113.7", "shop.example.com", "deploy@", "ops@"]) {
       assert.ok(!infra.includes(secret), `${secret} leaked into infra.yml`);
       assert.ok(!run.stdout.includes(secret), `${secret} leaked into the output`);
     }
-    const hosts = repo.read(".finitemonkey/hosts.local.yml");
+    const hosts = repo.read(".fm/hosts.local.yml");
     assert.match(hosts, /203\.0\.113\.7/);
     assert.match(hosts, /shop\.example\.com/);
-    assert.equal(repo.git("status", "--porcelain", "--", ".finitemonkey/hosts.local.yml").trim(), "");
-    assert.match(repo.git("status", "--porcelain", "--", ".finitemonkey/infra.yml"), /infra\.yml/);
+    assert.equal(repo.git("status", "--porcelain", "--", ".fm/hosts.local.yml").trim(), "");
+    assert.match(repo.git("status", "--porcelain", "--", ".fm/infra.yml"), /infra\.yml/);
   });
 
   it("refuses to write addresses when git would track them", async () => {
@@ -174,20 +174,20 @@ describe("finitemonkey infra", () => {
     const run = await cli(["infra"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(run.code, 0);
     assert.match(run.stdout, /not ignored by git/);
-    assert.throws(() => repo.read(".finitemonkey/hosts.local.yml"));
+    assert.throws(() => repo.read(".fm/hosts.local.yml"));
   });
 
   it("shows a diff and keeps the file when it changed, until --yes", async () => {
     const repo = project({ "fly.toml": "app = 'shop'\n" });
     await cli(["infra"], { cwd: repo.root, runtime: repoRuntime() });
     repo.write("Dockerfile", "FROM node:22\n");
-    const before = repo.read(".finitemonkey/infra.yml");
+    const before = repo.read(".fm/infra.yml");
     const pending = await cliJson(["infra"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(field(pending.body, "data", "infraFile"), "pending");
     assert.equal(pending.body["next"], "finitemonkey infra --yes");
-    assert.equal(repo.read(".finitemonkey/infra.yml"), before);
+    assert.equal(repo.read(".fm/infra.yml"), before);
     await cli(["infra", "--yes"], { cwd: repo.root, runtime: repoRuntime() });
-    assert.match(repo.read(".finitemonkey/infra.yml"), /root-container/);
+    assert.match(repo.read(".fm/infra.yml"), /root-container/);
   });
 
   it("--remote needs the person's yes in a terminal; an agent cannot start it", async () => {
@@ -216,9 +216,9 @@ describe("finitemonkey infra", () => {
   });
 
   it("does nothing when policy turns it off", async () => {
-    const repo = project({ ".finitemonkey/policy.yml": "guards:\n  infra: off\n", "fly.toml": "app = 'x'\n" });
+    const repo = project({ ".fm/policy.yml": "guards:\n  infra: off\n", "fly.toml": "app = 'x'\n" });
     const run = await cli(["infra"], { cwd: repo.root, runtime: repoRuntime() });
     assert.match(run.stdout, /off/);
-    assert.throws(() => repo.read(".finitemonkey/infra.yml"));
+    assert.throws(() => repo.read(".fm/infra.yml"));
   });
 });

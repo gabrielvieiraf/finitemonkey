@@ -32,7 +32,7 @@ const project = (): TempRepo => {
     "package.json": `${JSON.stringify({ scripts: { test: "node -e 0" }, dependencies: { lodash: "4" } })}\n`,
     "package-lock.json": "{}\n",
     "src/app.ts": "export const parseConfig = (): number => 1;\n",
-    ".finitemonkey/rules.yml": "rules:\n  - id: no-console\n    text: no console.log\n",
+    ".fm/rules.yml": "rules:\n  - id: no-console\n    text: no console.log\n",
   });
   repos.push(repo);
   return repo;
@@ -95,7 +95,7 @@ describe("instruction drift", () => {
 
   it("names a rule that keeps being violated", () => {
     const repo = project();
-    writeFileSync(join(repo.root, ".finitemonkey/rule-violations.jsonl"), `${violations("no-console", 3)}\n`);
+    writeFileSync(join(repo.root, ".fm/rule-violations.jsonl"), `${violations("no-console", 3)}\n`);
     const found = drift(repo).find((item) => item.kind === "violated_rule");
     assert.equal(
       found?.kind === "violated_rule" ? `${found.ref}:${String(found.count)}:${String(found.at.line)}` : "",

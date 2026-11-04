@@ -24,7 +24,7 @@ const PLUGIN_SCRIPT = join(ROOT, "plugin", "scripts", "finitemonkey.mjs");
 const project = (): TempRepo => {
   const repo = tempRepo({ "README.md": "hello\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n");
+  write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: shadow\n");
   const runtime = repoRuntime();
   const paths = fmPaths(repo.root);
   const base = { cause: "failed-in-use", support: "machine-verified", bands: {}, sources: [] };

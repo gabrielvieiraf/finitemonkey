@@ -31,7 +31,7 @@ interface Setup {
 }
 
 const setup = (config: string): Setup => {
-  const repo = makeRepo({ ".finitemonkey/config.yml": config, "README.md": "# app\n" });
+  const repo = makeRepo({ ".fm/config.yml": config, "README.md": "# app\n" });
   repos.push(repo);
   const home = `${repo.root}-claude`;
   homes.push(home);
@@ -73,8 +73,8 @@ describe("agent spend from the session transcripts", () => {
     assert.ok(Math.abs(total(ready) - first) < 1e-12);
     log("s1.jsonl", [assistant("m2", 1000)]);
     assert.ok(Math.abs(total(ready) - first) < 1e-12);
-    const spend = repo.read(".finitemonkey/spend.json");
-    repo.write(".finitemonkey/spend.json", spend.replace(/"cursors": \{[^}]*\}/, '"cursors": {}'));
+    const spend = repo.read(".fm/spend.json");
+    repo.write(".fm/spend.json", spend.replace(/"cursors": \{[^}]*\}/, '"cursors": {}'));
     assert.ok(Math.abs(total(ready) - first) < 1e-12);
   });
 
@@ -129,7 +129,7 @@ describe("agent spend from the session transcripts", () => {
     const run = await cliJson(["cost", "reconcile"], { cwd: repo.root, runtime: withTool, env });
     assert.equal(run.code, 0, JSON.stringify(run.body));
     await cliJson(["cost", "reconcile"], { cwd: repo.root, runtime: withTool, env });
-    const records = repo.read(".finitemonkey/spend-reconcile.jsonl").trim().split("\n");
+    const records = repo.read(".fm/spend-reconcile.jsonl").trim().split("\n");
     assert.equal(records.length, 2);
     assert.match(records[0] ?? "", /"date":"2026-10-27","ours":0\.08,"theirs":0\.1,"diff":-0\.02/);
     assert.ok(Math.abs(total(ready) - before) < 1e-12);

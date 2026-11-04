@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { bucketCounts, ruleCoverage } from "../rules/coverage.js";
 import { readManifest } from "../rules/manifest.js";
 import { CI_JOB } from "../rules/outputs.js";
@@ -10,7 +11,7 @@ export const checkRules: Check = ({ root, runtime }) => {
   const rules = coverageRules(runtime, root);
   if (!rules.ok)
     return [
-      finding("rules.file", "fail", "rules.error.invalid", { file: ".finitemonkey/rules.yml", detail: rules.error }),
+      finding("rules.file", "fail", "rules.error.invalid", { file: `${DATA_DIR}/rules.yml`, detail: rules.error }),
     ];
   if (rules.value.length === 0) return [];
   const coverage: readonly CheckFinding[] = ruleCoverage(runtime, root, rules.value).flatMap((item) => {

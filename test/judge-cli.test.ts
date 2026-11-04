@@ -37,7 +37,7 @@ after(() => {
 const project = (mode: string): TempRepo => {
   const repo = tempRepo({ "notes/vat.md": NOTE });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", `guards:\n  judge-core: ${mode}\n`);
+  write(repo.root, ".fm/policy.yml", `guards:\n  judge-core: ${mode}\n`);
   return repo;
 };
 
@@ -85,11 +85,11 @@ describe("judge verbs through every surface", () => {
 
   it("concepts for any field follow their own flag", async () => {
     const repo = project("shadow");
-    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n  perfil-any-field: off\n");
+    write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: shadow\n  perfil-any-field: off\n");
     const args = ["judge", "concept", "VAT", "--domain", "tax-law", "--source", "10.1/x", "--span", "the VAT rate"];
     const off = await cliJson(args, { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(field(off.body, "error", "code"), "judge_refused");
-    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n");
+    write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: shadow\n");
     const on = await cliJson(args, { cwd: repo.root, runtime: repoRuntime() });
     const concepts = field(on.body, "data", "concepts");
     assert.equal(Array.isArray(concepts) ? field(concepts[0], "status") : undefined, "active");

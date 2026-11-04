@@ -9,7 +9,12 @@ var CORE_FILE = "finitemonkey-core.mjs";
 
 // src/core/compile-cache.ts
 import { dirname, isAbsolute, join } from "node:path";
-var COMPILE_CACHE_DIR = join(".finitemonkey", "compile-cache");
+
+// src/core/data-dir-name.ts
+var HOME_DATA_DIR = ".finitemonkey";
+
+// src/core/compile-cache.ts
+var COMPILE_CACHE_DIR = join(HOME_DATA_DIR, "compile-cache");
 var insideRepository = (dir, exists) => {
   if (exists(join(dir, ".git"))) return true;
   const parent = dirname(dir);

@@ -169,9 +169,7 @@ const fakePsql = (tables: readonly Table[], seen: ExecRequest[]) => (request: Ex
 const project = (url: string): Repo => {
   const repo = makeRepo({
     "supabase/migrations/0001_init.sql": MIGRATION,
-    ".finitemonkey/config.yml": ["migrate:", `  url: "${url}"`, "  reset: reset-db", "  apply: apply-db", ""].join(
-      "\n",
-    ),
+    ".fm/config.yml": ["migrate:", `  url: "${url}"`, "  reset: reset-db", "  apply: apply-db", ""].join("\n"),
   });
   repos.push(repo);
   return repo;

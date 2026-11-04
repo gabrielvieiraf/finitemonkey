@@ -79,7 +79,7 @@ export const genCodeownersCommand: CommandSpec = {
         feature: PR_GEN_FEATURE,
         files: [file],
         notes,
-        rerun: `finitemonkey gen codeowners --owner ${owner} --yes`,
+        rerun: `fm gen codeowners --owner ${owner} --yes`,
       }),
     );
   },

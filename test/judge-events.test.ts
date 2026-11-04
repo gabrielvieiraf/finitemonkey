@@ -22,7 +22,7 @@ interface World {
 }
 
 const world = (): World => {
-  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.finitemonkey")]);
+  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.fm")]);
   const pages: Readonly<Record<string, string>> = { "10.1000/old": OLD, "10.1000/new": NEW };
   return {
     fs,

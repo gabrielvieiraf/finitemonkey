@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { matchesAny } from "../core/glob.js";
 import type { Runtime } from "../core/runtime.js";
 import { CONFIG_FILE, configAt, configList, parseConfigYaml } from "../git/project-config.js";
@@ -50,4 +51,4 @@ export const loadSlopConfig = (runtime: Pick<Runtime, "readText">, root: Absolut
 };
 
 export const isAllowed = (config: SlopConfig, file: string): boolean =>
-  file.startsWith(".finitemonkey/") || matchesAny(file, config.allow);
+  file.startsWith(`${DATA_DIR}/`) || matchesAny(file, config.allow);

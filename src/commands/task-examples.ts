@@ -63,7 +63,7 @@ const propose = (ctx: Ctx, paths: FmPaths, task: string, draft: ExampleDraft): C
     ...success({ schema: TASK_SCHEMA, task, example: made.value }, [
       ctx.t("examples.proposed", { id: made.value.id, task, says: made.value.says }),
     ]),
-    next: `finitemonkey task examples ${task} --approve ${made.value.id}`,
+    next: `fm task examples ${task} --approve ${made.value.id}`,
   };
 };
 

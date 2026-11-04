@@ -81,7 +81,7 @@ const filesOf = (value: unknown): Readonly<Record<string, string>> =>
       )
     : {};
 
-const EVIDENCE_FILE = /^\.finitemonkey\/evidence\/[^/]+\.jsonl$/;
+const EVIDENCE_FILE = /^\.fm\/evidence\/[^/]+\.jsonl$/;
 
 const signedLedger = (text: string): string =>
   text
@@ -103,11 +103,11 @@ const prepare = (scenario: Scenario): Repo => {
     contract === ""
       ? {}
       : {
-          ".finitemonkey/tasks/work.yml": contract,
-          ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
+          ".fm/tasks/work.yml": contract,
+          ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
         };
   const repo = makeRepo({
-    ".finitemonkey/policy.yml": GUARDIAN_POLICY,
+    ".fm/policy.yml": GUARDIAN_POLICY,
     ...task,
     ...seeded(filesOf(scenario.raw["files"])),
   });
@@ -146,7 +146,7 @@ const researchLevel = (repo: Repo, scenario: Scenario): Level => {
       return { type: "source", url, changed };
     }),
   ];
-  repo.write(".finitemonkey/research/bench.jsonl", lines.map((line) => JSON.stringify(line)).join("\n"));
+  repo.write(".fm/research/bench.jsonl", lines.map((line) => JSON.stringify(line)).join("\n"));
   const log = readResearchLog(repoRuntime(), fmPaths(repo.root), "bench");
   return log !== undefined && researchState(log).suggestStop ? 1 : 0;
 };

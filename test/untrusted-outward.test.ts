@@ -14,7 +14,7 @@ after(() => {
 });
 
 const setup = (mode: string): Repo => {
-  const repo = makeRepo({ ".finitemonkey/policy.yml": policyWith({ "untrusted-outward": mode }) });
+  const repo = makeRepo({ ".fm/policy.yml": policyWith({ "untrusted-outward": mode }) });
   repos.push(repo);
   return repo;
 };
@@ -42,7 +42,7 @@ const reason = (outcome: HookOutcome): string => {
 
 const logOf = (repo: Repo): string => {
   try {
-    return repo.read(".finitemonkey/log.jsonl");
+    return repo.read(".fm/log.jsonl");
   } catch {
     return "";
   }
@@ -62,11 +62,11 @@ describe("outward actions after untrusted reads", () => {
   });
 
   it("after a WebFetch, git push asks the person at the default level and only logs at level light", async () => {
-    const repo = makeRepo({ ".finitemonkey/.gitkeep": "" });
+    const repo = makeRepo({ ".fm/.gitkeep": "" });
     repos.push(repo);
     await fetchPage(repo);
     assert.equal(decision(await bash(repo, "git push origin feat/notes")), "ask");
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/policy.yml", "level: light\n");
     assert.notEqual(decision(await bash(repo, "git push origin feat/notes")), "ask");
     assert.match(logOf(repo), /"event":"untrusted_outward".*"decision":"shadow"/);
   });

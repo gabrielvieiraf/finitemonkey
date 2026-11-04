@@ -174,8 +174,8 @@ describe("gate contract check, breaking against the base", () => {
   const removedField = (extra: Readonly<Record<string, string>> = {}): Repo => {
     const repo = repoWith({
       "api/contract.yml": contract(ORDER),
-      ".finitemonkey/ownership.yml": OWNERSHIP,
-      ".finitemonkey/policy.yml": ACTIVE,
+      ".fm/ownership.yml": OWNERSHIP,
+      ".fm/policy.yml": ACTIVE,
     });
     repo.write("api/contract.yml", contract(ORDER.replace("      total: number\n", "")));
     for (const [path, text] of Object.entries(extra)) repo.write(path, text);
@@ -208,7 +208,7 @@ describe("gate contract check, breaking against the base", () => {
 
   it("only reports in shadow, the default", () => {
     const repo = removedField();
-    repo.write(".finitemonkey/policy.yml", "guards:\n  contract: off\n");
+    repo.write(".fm/policy.yml", "guards:\n  contract: off\n");
     const outcome = contractCheck(CHECK, context(repo));
     assert.equal(outcome.status, "passed");
     assert.ok(outcome.notes.some((item) => item.key === "gate.contract.break_shadow"));

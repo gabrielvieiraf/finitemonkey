@@ -1,4 +1,5 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { type GateLight, gateLight } from "../statusline/gate-state.js";
 import { fmPaths } from "../task/paths.js";
@@ -50,7 +51,7 @@ const changedFiles = (runtime: Runtime, dir: AbsolutePath, base: string | null):
     .split(/\r?\n/)
     .filter((line) => line.length > 3)
     .map((line) => line.slice(3).replace(/^.* -> /, ""))
-    .filter((file) => !file.startsWith(".finitemonkey/"));
+    .filter((file) => !file.startsWith(`${DATA_DIR}/`));
   return [...new Set([...committed, ...open])].sort();
 };
 

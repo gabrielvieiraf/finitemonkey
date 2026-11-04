@@ -1,5 +1,6 @@
 import { listOption, stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { shownTriage } from "../judge/triage-raise.js";
@@ -72,7 +73,7 @@ const appended = (
   after: (log: ResearchLog) => Extra = () => ({ data: {}, human: [] }),
 ): CommandResult => {
   if (!appendResearch(ctx.runtime, paths, slug, { ...record, at: ctx.runtime.now() }))
-    return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`));
+    return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/research/${slug}.jsonl`));
   const log = readResearchLog(ctx.runtime, paths, slug);
   const extra = log === undefined ? { data: {}, human: [] } : after(log);
   return success(

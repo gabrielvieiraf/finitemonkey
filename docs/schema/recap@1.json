@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/recap@1.json",
   "title": "finitemonkey/recap@1",
-  "description": "`data` of `finitemonkey recap --json`: what was done in a period, built from the ledger and git. Generated from RecapReport in src/recap/recap.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm recap --json`: what was done in a period, built from the ledger and git. Generated from RecapReport in src/recap/recap.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

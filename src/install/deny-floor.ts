@@ -1,3 +1,17 @@
+import { DATA_DIR_NAMES } from "../core/data-dir.js";
+
+const PROOF_FILES = [
+  "evidence/**",
+  "runtime/**",
+  "lock.json",
+  "log.jsonl",
+  "state.md",
+  "state.json",
+  "trust.json",
+  "allow/**",
+  "cache/**",
+] as const;
+
 export const DENY_FLOOR = {
   secrets: ["Read(./.env)", "Read(./.env.*)", "Read(./**/.env)", "Read(./**/.env.*)", "Read(./**/*.pem)"],
   git: [
@@ -7,17 +21,7 @@ export const DENY_FLOOR = {
     "Bash(git reset --hard*)",
     "Bash(git worktree remove --force*)",
   ],
-  proof: [
-    "Edit(./.finitemonkey/evidence/**)",
-    "Edit(./.finitemonkey/runtime/**)",
-    "Edit(./.finitemonkey/lock.json)",
-    "Edit(./.finitemonkey/log.jsonl)",
-    "Edit(./.finitemonkey/state.md)",
-    "Edit(./.finitemonkey/state.json)",
-    "Edit(./.finitemonkey/trust.json)",
-    "Edit(./.finitemonkey/allow/**)",
-    "Edit(./.finitemonkey/cache/**)",
-  ],
+  proof: DATA_DIR_NAMES.flatMap((dir) => PROOF_FILES.map((file) => `Edit(./${dir}/${file})`)),
 } as const;
 
 export const DENY_RULES: readonly string[] = [...DENY_FLOOR.secrets, ...DENY_FLOOR.git, ...DENY_FLOOR.proof];

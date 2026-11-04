@@ -94,10 +94,10 @@ const signals = [
 const project = (files: Readonly<Record<string, string>> = {}) => {
   const fs = memoryFs(
     {
-      [at(".finitemonkey/signals.jsonl")]: `${signals}\n`,
+      [at(".fm/signals.jsonl")]: `${signals}\n`,
       ...Object.fromEntries(Object.entries(files).map(([k, v]) => [at(k), v])),
     },
-    [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache")],
+    [at(".git"), at(".fm"), at(".fm/cache")],
     NOW,
   );
   return { fs, runtime: fakeRuntime({ fs }) };
@@ -105,7 +105,7 @@ const project = (files: Readonly<Record<string, string>> = {}) => {
 
 describe("lessons carry provenance and quarantine", () => {
   it("a lesson written after reading a web page is quarantined and not injected until the person accepts it", async () => {
-    const { runtime } = project({ ".finitemonkey/policy.yml": "guards:\n  learnings: active\n" });
+    const { runtime } = project({ ".fm/policy.yml": "guards:\n  learnings: active\n" });
     await untrustedRecorder(
       inputOf(runtime, "PostToolUse", { tool_name: "WebFetch", tool_input: { url: "https://x.dev" } }),
     );
@@ -149,7 +149,7 @@ describe("lessons carry provenance and quarantine", () => {
   });
 
   it("the injected lesson from a tool error reaches the agent wrapped", async () => {
-    const { runtime } = project({ ".finitemonkey/policy.yml": "guards:\n  learnings: active\n" });
+    const { runtime } = project({ ".fm/policy.yml": "guards:\n  learnings: active\n" });
     learnFromSignatures(inputOf(runtime, "Stop", {}), fmPaths(ROOT));
     const decision = await learningsInject(
       inputOf(runtime, "PostToolUseFailure", {

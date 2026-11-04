@@ -79,12 +79,12 @@ describe("golden outputs with tolerance", () => {
     const runtime = repoRuntime();
     const accepted = await cliJson(["golden", "accept", "totals"], { cwd: repo.root, runtime, stdin: tty() });
     assert.equal(accepted.code, 0, accepted.stdout);
-    assert.equal(readFileSync(join(repo.root, ".finitemonkey/golden/totals/a.txt.out"), "utf8"), "total: 6\n");
-    const history = readFileSync(join(repo.root, ".finitemonkey/golden/totals/accepted.jsonl"), "utf8");
+    assert.equal(readFileSync(join(repo.root, ".fm/golden/totals/a.txt.out"), "utf8"), "total: 6\n");
+    const history = readFileSync(join(repo.root, ".fm/golden/totals/accepted.jsonl"), "utf8");
     assert.match(history, /"person":"Ana","check":"totals","case":"a.txt","before":null/);
     const clean = await cliJson(["gate"], { cwd: repo.root, runtime });
     assert.equal(field(goldenItem(clean.body), "status"), "passed");
-    write(repo.root, ".finitemonkey/golden/totals/b.txt.out", "total: 29\n");
+    write(repo.root, ".fm/golden/totals/b.txt.out", "total: 29\n");
     const drift = await cliJson(["gate"], { cwd: repo.root, runtime });
     const item = goldenItem(drift.body);
     assert.equal(field(item, "status"), "failed");
@@ -109,8 +109,8 @@ describe("golden outputs with tolerance", () => {
       stdin: tty(),
     });
     assert.equal(field(refused.body, "error", "code"), "needs_confirmation");
-    assert.equal(selfTarget(repo.root, ".finitemonkey/golden/totals/a.out"), "policy");
-    assert.equal(selfTarget(repo.root, join(repo.root, ".finitemonkey", "golden", "totals", "a.out")), "policy");
+    assert.equal(selfTarget(repo.root, ".fm/golden/totals/a.out"), "policy");
+    assert.equal(selfTarget(repo.root, join(repo.root, ".fm", "golden", "totals", "a.out")), "policy");
   });
 
   it("a contract golden check must name the case placeholder", () => {

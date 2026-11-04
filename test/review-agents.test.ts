@@ -178,7 +178,7 @@ describe("review converges", () => {
 
 describe("init writes a Playwright verifier only when the project asks", () => {
   it("adds .claude/agents/verifier.md with the Playwright MCP and nothing else", async () => {
-    const repo = makeRepo({ ".finitemonkey/config.yml": "review:\n  playwright: true\n" });
+    const repo = makeRepo({ ".fm/config.yml": "review:\n  playwright: true\n" });
     repos.push(repo);
     const runtime = { ...repoRuntime(), selfPath: BUNDLE };
     const init = await cliJson(["init", "--yes"], { cwd: repo.root, runtime, env: {} });

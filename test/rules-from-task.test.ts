@@ -26,7 +26,7 @@ const failedTests = (at: string, failures: readonly string[]) => ({
 });
 
 const setup = (): Repo => {
-  const repo = makeRepo({ ".finitemonkey/rules.yml": RULES });
+  const repo = makeRepo({ ".fm/rules.yml": RULES });
   repos.push(repo);
   appendEvidence(repoRuntime(), fmPaths(repo.root).evidence("t1"), [
     failedTests("2026-10-01T10:00:00.000Z", ["money > rounds half up", "money > parses null"]),
@@ -54,7 +54,7 @@ describe("rules propose --from-task", () => {
     assert.match(String(field(found[0], "text")), /tests.*money > rounds half up/);
     assert.equal(field(found[0], "origin"), "task t1");
     assert.deepEqual(field(listed.body, "data", "written"), []);
-    assert.equal(repo.read(".finitemonkey/rules.yml"), RULES);
+    assert.equal(repo.read(".fm/rules.yml"), RULES);
   });
 
   it("refuses to write without a person confirming", async () => {
@@ -65,7 +65,7 @@ describe("rules propose --from-task", () => {
       env: { CLAUDECODE: "1" },
     });
     assert.notEqual(forced.code, 0);
-    assert.equal(repo.read(".finitemonkey/rules.yml"), RULES);
+    assert.equal(repo.read(".fm/rules.yml"), RULES);
   });
 
   it("lists nothing for a task without repeated findings", async () => {

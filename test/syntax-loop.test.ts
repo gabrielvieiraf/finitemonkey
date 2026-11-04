@@ -81,7 +81,7 @@ describe("the edit loop trigger with syntax-check active", () => {
         [at(POLICY_FILE)]: "guards:\n  syntax-check: active\n  early-loops: active\n",
         [at("data.json")]: '{"a": ,}',
       },
-      [at(".git"), at(".finitemonkey")],
+      [at(".git"), at(".fm")],
       "2026-10-26T12:00:00.000Z",
     );
     const runtime = fakeRuntime({ fs });

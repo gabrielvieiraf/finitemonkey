@@ -68,10 +68,10 @@ const setup = (extra: Readonly<Record<string, string>> = {}, policy = policyWith
   const runtime = repoRuntime();
   const lines = LEDGER.map((item) => signedLine(runtime, { ...item }));
   const repo = makeRepo({
-    ".finitemonkey/tasks/billing.yml": contractText("billing"),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "billing", done: [] }),
-    ".finitemonkey/evidence/billing.jsonl": `${lines.join("\n")}\n`,
-    ".finitemonkey/policy.yml": policy,
+    ".fm/tasks/billing.yml": contractText("billing"),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "billing", done: [] }),
+    ".fm/evidence/billing.jsonl": `${lines.join("\n")}\n`,
+    ".fm/policy.yml": policy,
     ...extra,
   });
   repos.push(repo);
@@ -94,13 +94,13 @@ describe("focus-card hooks", () => {
     const edit = (file: string) =>
       fireHook(repo, "PostToolUse", { tool_name: "Edit", tool_input: { file_path: `${repo.root}/${file}` } });
     assert.equal(contextOf(await edit("src/billing/total.ts")), "");
-    assert.match(contextOf(await edit("docs/ideas.md")), /outside the scope of task billing.*finitemonkey park/);
+    assert.match(contextOf(await edit("docs/ideas.md")), /outside the scope of task billing.*fm park/);
     assert.equal(contextOf(await edit("docs/other.md")), "");
   });
 
   it("suggests closing a project once above the limit and never blocks", async () => {
     const repo = setup(
-      { ".finitemonkey/tasks/other.yml": contractText("other") },
+      { ".fm/tasks/other.yml": contractText("other") },
       `${policyWith({ "focus-card": "active" })}person:\n  projectLimit: 1\n`,
     );
     const first = await fireHook(repo, "UserPromptSubmit", { prompt: "keep going" });
@@ -115,7 +115,7 @@ describe("focus-card hooks", () => {
   it("stays silent in shadow and only logs", async () => {
     const repo = setup({}, "");
     assert.doesNotMatch(contextOf(await fireHook(repo, "SessionStart", { source: "startup" })), /Where this stands/);
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"feature":"focus-card"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"feature":"focus-card"/);
   });
 });
 
@@ -124,7 +124,7 @@ describe("parking lot", () => {
     const repo = setup();
     const parked = await cli(["park", "try a cache for totals"], { cwd: repo.root, runtime: repoRuntime() });
     assert.match(parked.stdout, /Parked as p1/);
-    assert.match(repo.read(".finitemonkey/parking.jsonl"), /"task":"billing"/);
+    assert.match(repo.read(".fm/parking.jsonl"), /"task":"billing"/);
     const listed = await cli(["park", "--list"], { cwd: repo.root, runtime: repoRuntime() });
     assert.match(listed.stdout, /p1: try a cache for totals/);
     const back = await cli(["unpark", "p1"], { cwd: repo.root, runtime: repoRuntime() });

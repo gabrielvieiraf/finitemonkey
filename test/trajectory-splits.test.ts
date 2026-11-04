@@ -117,7 +117,7 @@ describe("explains vs detects only", () => {
 });
 
 const world = (): JudgeDeps => {
-  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.finitemonkey")]);
+  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.fm")]);
   return {
     runtime: fakeRuntime({ fs }),
     paths: fmPaths(toAbsolutePath("/home/ana/project")),

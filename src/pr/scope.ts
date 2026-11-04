@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { matchesAny } from "../core/glob.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
@@ -49,7 +50,7 @@ export const contractFor = (runtime: Runtime, root: AbsolutePath, explicit: stri
   const fromRegistry = registryContract(runtime, root);
   if (fromRegistry !== undefined) return fromRegistry;
   const active = readState(runtime, fmPaths(root)).active;
-  return active === undefined ? undefined : toPosixPath(join(".finitemonkey", "tasks", `${active}.yml`));
+  return active === undefined ? undefined : toPosixPath(join(DATA_DIR, "tasks", `${active}.yml`));
 };
 
 const declaredOf = (scope: SideScope | undefined): readonly string[] =>

@@ -74,7 +74,7 @@ const write = (file: string) => ({ tool_name: "Write", tool_input: { file_path: 
 
 describe("edit-time scope warning", () => {
   const setup = (policy?: string) => {
-    const fs = memoryFs(policy === undefined ? {} : { [at(POLICY_FILE)]: policy }, [at(".git"), at(".finitemonkey")]);
+    const fs = memoryFs(policy === undefined ? {} : { [at(POLICY_FILE)]: policy }, [at(".git"), at(".fm")]);
     return { fs, runtime: fakeRuntime({ fs }) };
   };
   const edit = (runtime: Runtime, file: string) =>
@@ -98,7 +98,7 @@ describe("edit-time scope warning", () => {
     for (const file of ["src/cart/a.ts", "src/cart/b.ts", "src/cart/c.ts", "src/shared/m.ts"])
       await edit(runtime, file);
     assert.equal(context(await edit(runtime, "src/billing/i.ts")), "{}");
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /"event":"scope.outside".*"mode":"shadow"/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /"event":"scope.outside".*"mode":"shadow"/);
   });
 });
 
@@ -118,7 +118,7 @@ describe("fronts are held to their declared paths", () => {
     "",
   ].join("\n");
   const setup = (policy: string) => {
-    const fs = memoryFs({ [at(POLICY_FILE)]: policy, [at(".finitemonkey/fronts.yml")]: FRONTS }, [at(".git")]);
+    const fs = memoryFs({ [at(POLICY_FILE)]: policy, [at(".fm/fronts.yml")]: FRONTS }, [at(".git")]);
     return fakeRuntime({ fs });
   };
   const before = (runtime: Runtime, file: string) =>
@@ -158,7 +158,7 @@ describe("the gate lists out-of-scope files and records the ones the person acce
     repos.push(repo);
     repo.write("src/cart/total.ts", "export const total = 2;\n");
     repo.write("src/billing/invoice.ts", "export const invoice = 2;\n");
-    repo.write(".finitemonkey/cache/scope.json", '{"task":"implicit","dirs":["src/cart"],"seen":3,"widened":true}\n');
+    repo.write(".fm/cache/scope.json", '{"task":"implicit","dirs":["src/cart"],"seen":3,"widened":true}\n');
     return repo;
   };
 
@@ -220,7 +220,7 @@ describe("the gate lists out-of-scope files and records the ones the person acce
       [1],
     );
     assert.equal(field(run.body, "data", "total", "withoutCriterion"), 1);
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"source":"scope".*"file":"src\/billing\/invoice\.ts"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"source":"scope".*"file":"src\/billing\/invoice\.ts"/);
   });
 
   it("the approval keeps the accepted files; a new or changed out-of-scope file needs a new approval", () => {

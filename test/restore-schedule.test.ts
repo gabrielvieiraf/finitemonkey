@@ -31,8 +31,8 @@ const STORE_LINES = [
 
 const project = (config: string, files: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
-    ".gitignore": ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\n",
-    ".finitemonkey/config.yml": config,
+    ".gitignore": ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\n",
+    ".fm/config.yml": config,
     ...files,
   });
   repos.push(repo);
@@ -86,7 +86,7 @@ describe("scheduled restore drill", () => {
       files: {
         [at("package.json")]: JSON.stringify({ name: "app", scripts: { test: "vitest run" } }),
         [at("package-lock.json")]: "{}\n",
-        [at(".finitemonkey/config.yml")]: config,
+        [at(".fm/config.yml")]: config,
       },
     });
     const run = await cliJson(["ci", "gen", "--yes", "--with", "restore-drill"], { runtime, cwd: ROOT });
@@ -122,8 +122,8 @@ describe("scheduled restore drill", () => {
   it("doctor reminds when the drill period passed, only when restore-drill is active", () => {
     const config = [...STORE_LINES, ""].join("\n");
     const log = `${JSON.stringify({ event: "restore_drill", store: "db", status: "passed", at: "2026-10-01T00:00:00.000Z" })}\n`;
-    const files = { ".finitemonkey/config.yml": config, ".finitemonkey/log.jsonl": log };
-    const active = { ...files, ".finitemonkey/policy.yml": "guards:\n  restore-drill: active\n" };
+    const files = { ".fm/config.yml": config, ".fm/log.jsonl": log };
+    const active = { ...files, ".fm/policy.yml": "guards:\n  restore-drill: active\n" };
     assert.deepEqual(checkRestoreDrill(doctorEnv(files, "2026-11-01T00:00:00.000Z")), []);
     const overdue = checkRestoreDrill(doctorEnv(active, "2026-11-01T00:00:00.000Z"));
     assert.equal(overdue[0]?.status, "warn");

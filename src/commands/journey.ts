@@ -70,7 +70,7 @@ const propose = (ctx: Ctx, name: string, from: string | undefined): CommandResul
   return {
     ...listed(ctx, paths),
     human: [ctx.t("journey.proposed", { name, hash: made.value })],
-    next: `finitemonkey journey approve ${name} --hash ${made.value}`,
+    next: `fm journey approve ${name} --hash ${made.value}`,
   };
 };
 
@@ -98,7 +98,7 @@ const fromSentence = async (ctx: Ctx, name: string, says: string): Promise<Comma
   return {
     ...listed(ctx, paths),
     human: [ctx.t("journey.proposed_from_sentence", { name, hash: made.value })],
-    next: `finitemonkey journey approve ${name} --hash ${made.value}`,
+    next: `fm journey approve ${name} --hash ${made.value}`,
   };
 };
 

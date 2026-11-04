@@ -86,7 +86,7 @@ describe("appsec scan with the findings baseline", () => {
 
   it("a route listed in routes-public.yml with a reason passes", async () => {
     const repo = webRepo();
-    repo.write(".finitemonkey/routes-public.yml", "routes:\n  - route: /api/invoices\n    reason: public price list\n");
+    repo.write(".fm/routes-public.yml", "routes:\n  - route: /api/invoices\n    reason: public price list\n");
     const run = await cliJson(["appsec", "scan"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(run.code, 0, run.stdout);
   });
@@ -116,7 +116,7 @@ describe("appsec check at Stop", () => {
       outcome.notes.map((item) => [item.key, item.params["file"], item.params["owasp"]]),
       [["gate.appsec.finding", "app/api/orders/route.ts", "A01:2021 Broken Access Control"]],
     );
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/policy.yml", "level: light\n");
     assert.equal(gate(repo).status, "passed");
   });
 

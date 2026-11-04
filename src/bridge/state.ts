@@ -1,4 +1,5 @@
 import { nowMs } from "../core/clock.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt } from "../gate/git.js";
 import { activeGrant } from "../guards/release/grants.js";
@@ -19,10 +20,10 @@ export const MOD_TIGHTEN_GUARD = "mod-tighten";
 export const MOD_BAND_GUARD = "mod-band";
 export const MAX_HELD_FILES = 500;
 
-const POLICY_PATH = String.raw`(?:^|/)\.finitemonkey/(?!reports/[^/]+\.json$)`;
+const POLICY_PATH = String.raw`(?:^|/)\.(?:fm|finitemonkey)/(?!reports/[^/]+\.json$)`;
 const REGISTRY_PATH = String.raw`(?:^|/)\.git/(?:worktrees/[^/]+/)?finitemonkey(?:/|$)`;
 const LEAKS_IGNORE = String.raw`(?:^|/)\.gitleaksignore$`;
-const SHELL_WRITE_FM = String.raw`(?:>|\btee\b|\brm\b|\bmv\b|\bcp\b|\btruncate\b|\bsed\s+-i)[^;&|]*\.finitemonkey/(?!reports/)`;
+const SHELL_WRITE_FM = String.raw`(?:>|\btee\b|\brm\b|\bmv\b|\bcp\b|\btruncate\b|\bsed\s+-i)[^;&|]*\.(?:fm|finitemonkey)/(?!reports/)`;
 const NO_VERIFY = String.raw`(?:^|[\s;&|(])git\b[^;&|]*\s--no-verify\b`;
 const HOOKS_PATH = String.raw`core\.hooks[Pp]ath`;
 
@@ -36,7 +37,7 @@ const selfRules = (t: Translate): readonly ModRule[] => [
     id: "self.policy",
     target: "path",
     pattern: POLICY_PATH,
-    reason: modelReason(t, "gate.guard.self.policy", { file: ".finitemonkey/" }),
+    reason: modelReason(t, "gate.guard.self.policy", { file: `${DATA_DIR}/` }),
   },
   {
     id: "self.registry",
@@ -54,7 +55,7 @@ const selfRules = (t: Translate): readonly ModRule[] => [
     id: "self.shell",
     target: "command",
     pattern: SHELL_WRITE_FM,
-    reason: modelReason(t, "gate.guard.self.policy", { file: ".finitemonkey/" }),
+    reason: modelReason(t, "gate.guard.self.policy", { file: `${DATA_DIR}/` }),
   },
 ];
 

@@ -85,7 +85,7 @@ describe("finitemonkey audit", () => {
     await prompt(repo, `Use this token for the deploy ${SAMPLES.githubPat} and never commit it`);
     await prompt(repo, "<task-notification>subagent finished the refund job</task-notification>");
     await prompt(repo, "[Subagent hand-back] keep the refund window of 30 days");
-    const log = repo.read(".finitemonkey/prompts.jsonl");
+    const log = repo.read(".fm/prompts.jsonl");
     const lines = log.trim().split("\n");
     assert.equal(lines.length, 1);
     assert.ok(!log.includes(SAMPLES.githubPat));

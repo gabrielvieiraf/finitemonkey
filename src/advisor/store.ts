@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import {
@@ -110,7 +111,7 @@ export const appendSuggestions = (
   items: readonly Suggestion[],
 ): boolean => {
   if (items.length === 0) return true;
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR)));
   return runtime.appendText(suggestionsPath(root), items.map((item) => `${JSON.stringify(item)}\n`).join("")).ok;
 };
 

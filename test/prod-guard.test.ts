@@ -63,7 +63,7 @@ describe("prod-edit guard", () => {
 
   before(() => {
     repo = tempRepo({
-      ".finitemonkey/config.yml": CONFIG,
+      ".fm/config.yml": CONFIG,
       ".github/workflows/deploy.yml": WORKFLOW,
       "README.md": "x\n",
     });

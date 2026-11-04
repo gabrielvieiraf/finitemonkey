@@ -134,7 +134,7 @@ describe("defaults: a repository with another commit convention", () => {
 const fsFiles = (fs: MemoryFs): Readonly<Record<string, string>> =>
   Object.fromEntries(
     Object.entries(fs.files())
-      .filter(([path]) => path.includes(".finitemonkey/config.yml"))
+      .filter(([path]) => path.includes(".fm/config.yml"))
       .map(([, text]) => [CONFIG_FILE, text]),
   );
 

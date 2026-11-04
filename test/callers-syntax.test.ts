@@ -82,7 +82,7 @@ describe("callers check with callers-syntax active", () => {
       "src/cart.js": CART,
       "src/app.js": APP,
       "test/a.test.js": PASSING_TEST,
-      ".finitemonkey/policy.yml": "guards:\n  callers-syntax: active\n",
+      ".fm/policy.yml": "guards:\n  callers-syntax: active\n",
     });
     repos.push(repo);
     const created = createTask(repoRuntime(), fmPaths(repo.root), {

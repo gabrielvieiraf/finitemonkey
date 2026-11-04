@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/gate@1.json",
   "title": "finitemonkey/gate@1",
-  "description": "`data` of `finitemonkey gate --json`. Generated from GateReport in src/gate/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm gate --json`. Generated from GateReport in src/gate/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

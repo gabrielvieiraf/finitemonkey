@@ -145,7 +145,7 @@ describe("task amend", () => {
     const gate = await cliJson(["gate"], { cwd: repo.root, runtime: repoRuntime({ gh: NO_PR }) });
     assert.equal(field(gate.body, "data", "contractEdited"), true);
     await hook(repo, "UserPromptSubmit", { prompt: "fm: trust t1" });
-    const lines = repo.read(".finitemonkey/tasks/amendments.jsonl").trim().split("\n");
+    const lines = repo.read(".fm/tasks/amendments.jsonl").trim().split("\n");
     const last = JSON.parse(lines.at(-1) ?? "{}") as Record<string, unknown>;
     assert.equal(last["criterion"], "A2");
     assert.equal(last["reason"], "the old check timed out on CI");

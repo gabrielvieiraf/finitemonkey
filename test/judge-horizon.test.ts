@@ -22,7 +22,7 @@ const PAGE = "<p>Under the 2022 directive the reduced rate for e-books is 5%.</p
 
 const world = (): JudgeDeps => {
   const fs = memoryFs({ [toAbsolutePath("/home/ana/project/.git/HEAD")]: "ref: refs/heads/main\n" }, [
-    toAbsolutePath("/home/ana/project/.finitemonkey"),
+    toAbsolutePath("/home/ana/project/.fm"),
   ]);
   return {
     runtime: fakeRuntime({ fs }),

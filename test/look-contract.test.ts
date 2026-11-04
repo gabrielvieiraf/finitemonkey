@@ -163,7 +163,7 @@ describe("ui contract: standing don't rules", () => {
     assert.equal(added.code, 0, added.stdout);
     const retired = await cliJson(["ui", "dont", "retire", "D1", "--reason", "brand changed"], options);
     assert.equal(retired.code, 0, retired.stdout);
-    assert.ok(repo.read(".finitemonkey/log.jsonl").includes("ui.dont_retired"));
+    assert.ok(repo.read(".fm/log.jsonl").includes("ui.dont_retired"));
     const pattern = await cliJson(["ui", "dont", "add", "--reason", "no pills", "--pattern", "pill"], options);
     assert.equal(pattern.code, 0, pattern.stdout);
     assert.ok(JSON.stringify(field(pattern.body, "data", "rules")).includes('"pattern":"pill"'));
@@ -193,7 +193,7 @@ describe("ui contract: a rejected pattern comes back", () => {
         routes: ["/", "/glass"],
         policy: "guards:\n  a11y: off\n  keyboard: off\n  ui-states: off\n",
         files: {
-          ".finitemonkey/look/dont.json": JSON.stringify({ schema: "finitemonkey/look-dont@1", rules: [RULE] }),
+          ".fm/look/dont.json": JSON.stringify({ schema: "finitemonkey/look-dont@1", rules: [RULE] }),
         },
       },
     );

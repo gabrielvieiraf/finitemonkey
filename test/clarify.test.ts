@@ -20,8 +20,8 @@ const VAGUE = "Build a delivery app";
 const projectFs = (policy: string = ACTIVE, extra: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(PROJECT, ".git", "HEAD"))]: "ref: refs/heads/main\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "config.yml"))]: "lang: en\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "policy.yml"))]: policy,
+    [toAbsolutePath(join(PROJECT, ".fm", "config.yml"))]: "lang: en\n",
+    [toAbsolutePath(join(PROJECT, ".fm", "policy.yml"))]: policy,
     ...extra,
   });
 
@@ -78,7 +78,7 @@ describe("clarify: one round of questions before work without a contract", () =>
   it("small requests and tasks with a contract get no extra context", async () => {
     assert.equal(context(await prompt(projectFs(), "Fix the typo in the README header")), "");
     const contracted = projectFs(ACTIVE, {
-      [toAbsolutePath(join(PROJECT, ".finitemonkey", "state.json"))]: JSON.stringify({ active: "pix" }),
+      [toAbsolutePath(join(PROJECT, ".fm", "state.json"))]: JSON.stringify({ active: "pix" }),
     });
     assert.equal(context(await prompt(contracted, VAGUE)), "");
   });
@@ -86,7 +86,7 @@ describe("clarify: one round of questions before work without a contract", () =>
   it("shadow records what it would ask and adds nothing; off does nothing", async () => {
     const shadow = projectFs("guards:\n  clarify: shadow\n");
     assert.equal(context(await prompt(shadow, VAGUE)), "");
-    const log = shadow.readText(toAbsolutePath(join(PROJECT, ".finitemonkey", "log.jsonl")));
+    const log = shadow.readText(toAbsolutePath(join(PROJECT, ".fm", "log.jsonl")));
     assert.ok(log.ok && log.value.includes('"feature_shadow"') && log.value.includes('"clarify.asked"'));
     const off = projectFs("guards:\n  clarify: off\n");
     assert.equal(context(await prompt(off, VAGUE)), "");
@@ -121,7 +121,7 @@ describe("clarify: the confirmed answers become the contract", () => {
     );
     assert.equal(created.code, 0);
     assert.deepEqual(field(created.body, "data", "contract", "clarified"), answers);
-    const parsed = parseContract("delivery", repo.read(".finitemonkey/tasks/delivery.yml"));
+    const parsed = parseContract("delivery", repo.read(".fm/tasks/delivery.yml"));
     assert.ok(parsed.ok);
     assert.deepEqual(parsed.value.clarified, answers);
   });

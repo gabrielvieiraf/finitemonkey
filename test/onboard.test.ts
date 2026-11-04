@@ -91,22 +91,22 @@ describe("onboard", () => {
     const { runtime, historyScans } = counting();
     await cliJson(["onboard"], { cwd: repo.root, runtime });
     const agents = readFileSync(join(repo.root, "AGENTS.md"), "utf8");
-    const state = readFileSync(join(repo.root, ".finitemonkey/onboard.json"), "utf8");
+    const state = readFileSync(join(repo.root, ".fm/onboard.json"), "utf8");
     await cliJson(["onboard"], { cwd: repo.root, runtime });
     assert.equal(readFileSync(join(repo.root, "AGENTS.md"), "utf8"), agents);
-    assert.equal(readFileSync(join(repo.root, ".finitemonkey/onboard.json"), "utf8"), state);
+    assert.equal(readFileSync(join(repo.root, ".fm/onboard.json"), "utf8"), state);
     assert.equal(historyScans(), 1);
   });
 
   it("feeds the implicit contract and only the person's run trusts it", async () => {
     const repo = project();
     await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime(), env: { CLAUDECODE: "1" }, stdin: tty() });
-    assert.ok(!existsSync(join(repo.root, ".finitemonkey/trust.json")));
+    assert.ok(!existsSync(join(repo.root, ".fm/trust.json")));
     await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime(), stdin: tty() });
-    assert.match(readFileSync(join(repo.root, ".finitemonkey/trust.json"), "utf8"), /"implicit"/);
-    const state = readFileSync(join(repo.root, ".finitemonkey/onboard.json"), "utf8");
+    assert.match(readFileSync(join(repo.root, ".fm/trust.json"), "utf8"), /"implicit"/);
+    const state = readFileSync(join(repo.root, ".fm/onboard.json"), "utf8");
     const contract = implicitContract({
-      read: (path) => (path === ".finitemonkey/onboard.json" ? state : undefined),
+      read: (path) => (path === ".fm/onboard.json" ? state : undefined),
       exists: () => false,
     });
     assert.deepEqual(
@@ -118,7 +118,7 @@ describe("onboard", () => {
   it("never writes the block past the configured lines and tokens", async () => {
     const repo = project();
     const policy = "knowledge:\n  blockMaxLines: 5\n  blockMaxTokens: 400\n";
-    const dir = join(repo.root, ".finitemonkey");
+    const dir = join(repo.root, ".fm");
     await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });
     writeFileSync(join(dir, "policy.yml"), policy);
     const run = await cliJson(["onboard"], { cwd: repo.root, runtime: nodeRuntime() });

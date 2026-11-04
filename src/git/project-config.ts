@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 
 export type ConfigNode = string | readonly string[] | ConfigTree;
@@ -19,7 +20,7 @@ interface Frame {
   readonly key: string | undefined;
 }
 
-export const CONFIG_FILE = ".finitemonkey/config.yml";
+export const CONFIG_FILE = `${DATA_DIR}/config.yml`;
 
 const unquote = (value: string): string => value.trim().replace(/^(["'])(.*)\1$/s, "$2");
 

@@ -28,7 +28,7 @@ describe("generated text is a cache keyed by its inputs", () => {
     const paths = fmPaths(repo.root);
     let renders = 0;
     const spec = (input: string) => ({
-      file: ".finitemonkey/summary.txt",
+      file: ".fm/summary.txt",
       generator: "toy",
       inputs: { "src/money.ts": input },
       sources: ["src/money.ts"],
@@ -48,20 +48,20 @@ describe("generated text is a cache keyed by its inputs", () => {
     const repo = project();
     const paths = fmPaths(repo.root);
     buildDerived(nodeRuntime(), paths, {
-      file: ".finitemonkey/summary.txt",
+      file: ".fm/summary.txt",
       generator: "toy",
       inputs: { a: "1" },
       sources: [],
       render: () => "summary\n",
     });
     const second = buildDerived(nodeRuntime(), paths, {
-      file: ".finitemonkey/overview.txt",
+      file: ".fm/overview.txt",
       generator: "toy2",
       inputs: { a: "1" },
-      sources: [".finitemonkey/summary.txt"],
+      sources: [".fm/summary.txt"],
       render: () => "overview\n",
     });
-    assert.deepEqual(second, { kind: "refused", source: ".finitemonkey/summary.txt" });
+    assert.deepEqual(second, { kind: "refused", source: ".fm/summary.txt" });
     const derived = new Set(readDerived(nodeRuntime(), paths).keys());
     assert.ok(!MAP_GENERATOR.sources.some((source) => derived.has(source)));
   });
@@ -70,13 +70,13 @@ describe("generated text is a cache keyed by its inputs", () => {
     const repo = project();
     const first = await cliJson(["map"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(first.code, 0, first.stdout);
-    const file = join(repo.root, ".finitemonkey/map.txt");
+    const file = join(repo.root, ".fm/map.txt");
     writeFileSync(file, `${readFileSync(file, "utf8")}money totals are rounded in the caller\n`);
     const second = await cliJson(["map"], { cwd: repo.root, runtime: repoRuntime() });
     assert.match(second.stdout, /money totals are rounded in the caller/);
     assert.doesNotMatch(readFileSync(file, "utf8"), /rounded in the caller/);
-    const claims = readFileSync(join(repo.root, ".finitemonkey/claims.jsonl"), "utf8");
-    assert.match(claims, /Correction to \.finitemonkey\/map\.txt: money totals are rounded in the caller/);
+    const claims = readFileSync(join(repo.root, ".fm/claims.jsonl"), "utf8");
+    assert.match(claims, /Correction to \.fm\/map\.txt: money totals are rounded in the caller/);
     assert.match(claims, /"source":"person"/);
   });
 });

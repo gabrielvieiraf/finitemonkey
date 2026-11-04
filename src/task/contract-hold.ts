@@ -1,6 +1,7 @@
 import { isAbsolute, relative } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
 import { logEvent } from "../evidence/log.js";
@@ -23,7 +24,7 @@ const allow: HookDecision = { kind: "allow" };
 const heldFile = (root: string, target: string): string | undefined => {
   const rel = toPosixPath(relative(root, toAbsolutePath(target, toAbsolutePath(root))));
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) return undefined;
-  return rel.startsWith(".finitemonkey/") || rel.startsWith(".git/") ? undefined : rel;
+  return rel.startsWith(`${DATA_DIR}/`) || rel.startsWith(".git/") ? undefined : rel;
 };
 
 export const pendingHash = (runtime: Pick<Runtime, "readText">, paths: FmPaths, task: string): string | undefined => {

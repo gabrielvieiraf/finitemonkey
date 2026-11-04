@@ -79,7 +79,7 @@ export const knowledge: readonly Threat[] = [
     threat: "An MCP tool description changes after the tool was trusted",
     outcome: "detected",
     mechanism:
-      "`finitemonkey mcp pin` reports a changed description once; with `mcp-pin` active a call to the tool asks the person until `mcp confirm`. Nothing feeds the pin from a live session yet",
+      "`fm mcp pin` reports a changed description once; with `mcp-pin` active a call to the tool asks the person until `mcp confirm`. Nothing feeds the pin from a live session yet",
     code: ["src/policy/mcp-pins.ts", "src/policy/mcp-pin-hook.ts"],
     proof: {
       file: "test/mcp-pins.test.ts",

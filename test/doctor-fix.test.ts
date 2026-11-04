@@ -137,10 +137,10 @@ describe("doctor --report", () => {
     fs.writeText(toAbsolutePath(at("AGENTS.md")), rule);
     fs.writeText(toAbsolutePath(at("CLAUDE.md")), rule);
     const failure = { at: "2026-10-25T12:00:00.000Z", event: HOOK_FAILURE_EVENT, hook: "PreToolUse", detail: key };
-    fs.writeText(toAbsolutePath(at(".finitemonkey/log.jsonl")), `${JSON.stringify(failure)}\n`);
+    fs.writeText(toAbsolutePath(at(".fm/log.jsonl")), `${JSON.stringify(failure)}\n`);
     const result = await doctor(fs, ["--report"], { GITHUB_TOKEN: key });
     const path = String(field(result.body, "data", "reportPath"));
-    assert.ok(path.startsWith(join(ROOT, ".finitemonkey", "reports")), path);
+    assert.ok(path.startsWith(join(ROOT, ".fm", "reports")), path);
     const text = fs.read(path) ?? "";
     assert.doesNotMatch(text, new RegExp(key));
     assert.doesNotMatch(result.stdout, new RegExp(key));
@@ -154,23 +154,23 @@ describe("doctor --report", () => {
 });
 
 describe("hook failure log", () => {
-  it("a hook that fails is recorded, masked, in .finitemonkey/log.jsonl", async () => {
-    const fs = repo({ ".finitemonkey/config.yml": "" });
+  it("a hook that fails is recorded, masked, in .fm/log.jsonl", async () => {
+    const fs = repo({ ".fm/config.yml": "" });
     const result = await cli(["hook", "PreToolUse"], {
       cwd: ROOT,
       runtime: runtimeOf(fs),
       stdin: stdinFrom(`not json ${SAMPLES.githubPat}`),
     });
     assert.equal(result.code, 2);
-    const log = fs.read(at(".finitemonkey/log.jsonl")) ?? "";
+    const log = fs.read(at(".fm/log.jsonl")) ?? "";
     assert.match(log, /"event":"hook.failed","hook":"PreToolUse","verdict":"failed_closed"/);
     assert.doesNotMatch(log, new RegExp(SAMPLES.githubPat));
   });
 
-  it("is not written when the project has no .finitemonkey directory", async () => {
+  it("is not written when the project has no .fm directory", async () => {
     const fs = repo();
     await cli(["hook", "PreToolUse"], { cwd: ROOT, runtime: runtimeOf(fs), stdin: stdinFrom("not json") });
-    assert.equal(fs.read(at(".finitemonkey/log.jsonl")), undefined);
+    assert.equal(fs.read(at(".fm/log.jsonl")), undefined);
   });
 });
 

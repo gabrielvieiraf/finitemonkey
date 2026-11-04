@@ -14,7 +14,7 @@ const writeFile = (root: string, path: string, content: string): JsonObject => (
 });
 
 const shadows = (root: string): readonly JsonObject[] => {
-  const file = join(root, ".finitemonkey", "log.jsonl");
+  const file = join(root, ".fm", "log.jsonl");
   if (!existsSync(file)) return [];
   return readFileSync(file, "utf8")
     .split("\n")
@@ -51,13 +51,13 @@ describe("secret-context hook", () => {
     try {
       const call = writeFile(repo.root, "config/db.yml", 'password: "hunter2"\n');
       assert.equal((await hook(secretContextPreToolUse, "PreToolUse", repo.root, call)).kind, "block");
-      write(repo.root, ".finitemonkey/policy.yml", "level: light\n");
+      write(repo.root, ".fm/policy.yml", "level: light\n");
       const shadow = await hook(secretContextPreToolUse, "PreToolUse", repo.root, call);
       assert.equal(shadow.kind, "allow");
       const [logged] = shadows(repo.root);
       assert.deepEqual(logged?.["findings"], [{ name: "password", file: "config/db.yml", line: 1 }]);
-      assert.ok(!readFileSync(join(repo.root, ".finitemonkey", "log.jsonl"), "utf8").includes("hunter2"));
-      write(repo.root, ".finitemonkey/policy.yml", "level: light\nguards:\n  secret-context: active\n");
+      assert.ok(!readFileSync(join(repo.root, ".fm", "log.jsonl"), "utf8").includes("hunter2"));
+      write(repo.root, ".fm/policy.yml", "level: light\nguards:\n  secret-context: active\n");
       const active = await hook(secretContextPreToolUse, "PreToolUse", repo.root, call);
       assert.equal(active.kind, "block");
       const placeholder = writeFile(repo.root, "config/db.yml", 'password: "changeme"\n');

@@ -1,4 +1,5 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
@@ -35,7 +36,7 @@ export const changedMarkdown = (runtime: Runtime, root: AbsolutePath): Parsed<re
   const untracked = listed(runtime, root, ["ls-files", "-z", "--others", "--exclude-standard"]);
   if (!untracked.ok) return untracked;
   const files = [...tracked.value, ...untracked.value].filter(
-    (file) => MARKDOWN.test(file) && !file.startsWith(".finitemonkey/"),
+    (file) => MARKDOWN.test(file) && !file.startsWith(`${DATA_DIR}/`),
   );
   return accept([...new Set(files)].sort());
 };

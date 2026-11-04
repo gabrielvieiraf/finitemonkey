@@ -24,7 +24,7 @@ const endToEnd = (contract: TaskContract): string | undefined => {
   const runtime = contract.acceptance.find((check) => check.kind === "runtime" && check.port !== undefined);
   if (runtime?.port !== undefined) {
     const start = runtime.run === undefined ? "" : ` --start ${quote(runtime.run)}`;
-    return `finitemonkey app check --port ${String(runtime.port)}${start} --route ${runtime.route ?? "/"}`;
+    return `fm app check --port ${String(runtime.port)}${start} --route ${runtime.route ?? "/"}`;
   }
   const command = contract.acceptance.find(
     (check) => (check.kind === "command" || check.kind === "tests") && check.run !== undefined,

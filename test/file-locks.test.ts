@@ -106,7 +106,7 @@ describe("file locks outside git", () => {
         writeBy("front-1", join(repo.root, "src/a.ts")),
       );
       assert.equal(decision.kind, "allow");
-      assert.ok(!existsSync(join(repo.root, ".finitemonkey", "locks")));
+      assert.ok(!existsSync(join(repo.root, ".fm", "locks")));
     } finally {
       repo.dispose();
     }

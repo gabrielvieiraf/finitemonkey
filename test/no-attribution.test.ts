@@ -10,9 +10,9 @@ import { at, repo, ROOT, run } from "./install-support.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cliJson, fakeRuntime, field, stdinFrom } from "./support.js";
 
-const STRICT = { ".finitemonkey/config.yml": "schemaVersion: 1\nlang: en\n" };
-const OFF = { ".finitemonkey/config.yml": "schemaVersion: 1\nlang: en\ndefaults:\n  no-attribution: off\n" };
-const DECLARED = { ".finitemonkey/rules.yml": "rules:\n  - id: no-attribution\n    preset: attribution\n" };
+const STRICT = { ".fm/config.yml": "schemaVersion: 1\nlang: en\n" };
+const OFF = { ".fm/config.yml": "schemaVersion: 1\nlang: en\ndefaults:\n  no-attribution: off\n" };
+const DECLARED = { ".fm/rules.yml": "rules:\n  - id: no-attribution\n    preset: attribution\n" };
 const CO_AUTHOR = "Co-Authored-By: Claude Opus <noreply@anthropic.com>";
 
 const fire = (runtime: Runtime, command: string): Promise<HookOutcome> =>

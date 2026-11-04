@@ -16,7 +16,7 @@ const at = (path: string) => toAbsolutePath(join(PROJECT, path));
 const projectFs = (): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/main\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
+    [at(".fm/config.yml")]: "lang: en\n",
     [at("package.json")]: '{"dependencies":{"react":"19.0.0","zod":"3.23.0"},"devDependencies":{"vitest":"2.0.0"}}\n',
   });
 
@@ -77,7 +77,7 @@ describe("relay detector: flags pastes that look relayed", () => {
   it("flags Finite Monkey's own earlier text coming back as a request", async () => {
     const fs = projectFs();
     fs.writeText(
-      at(".finitemonkey/log.jsonl"),
+      at(".fm/log.jsonl"),
       `${JSON.stringify({ at: "x", event: "guard_block", claim: "blocked: the commit adds a secret in src/pay.ts" })}\n`,
     );
     const pasted = [
@@ -175,12 +175,12 @@ describe("relay detector: stores nothing beyond the signal", () => {
     await send(fs, AXIOS_PASTE);
     const changed = Object.keys(fs.files())
       .filter((path) => !before.has(path))
-      .map((path) => path.slice(path.indexOf(".finitemonkey")));
-    assert.ok(changed.includes(".finitemonkey/log.jsonl"), changed.join(","));
-    for (const path of changed.filter((item) => item !== ".finitemonkey/prompts.jsonl")) {
+      .map((path) => path.slice(path.indexOf(".fm")));
+    assert.ok(changed.includes(".fm/log.jsonl"), changed.join(","));
+    for (const path of changed.filter((item) => item !== ".fm/prompts.jsonl")) {
       assert.doesNotMatch(fs.read(at(path)) ?? "", /axios|fetchInvoices|invoices/, path);
     }
-    const log = fs.read(at(".finitemonkey/log.jsonl")) ?? "";
+    const log = fs.read(at(".fm/log.jsonl")) ?? "";
     assert.match(log, /"event":"relay.flagged","markers":\["missing_import"\],"blocks":1,"lines":\d+/);
     assert.doesNotMatch(log, /axios|fetchInvoices|invoices/);
   });

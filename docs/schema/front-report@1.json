@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/front-report@1.json",
   "title": "finitemonkey/front-report@1",
-  "description": "`.finitemonkey/reports/<front>.json`, written by a front before it stops and checked by the front-report gate. Generated from FrontReport in src/fronts/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`.fm/reports/<front>.json`, written by a front before it stops and checked by the front-report gate. Generated from FrontReport in src/fronts/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

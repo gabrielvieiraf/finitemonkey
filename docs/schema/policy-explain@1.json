@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/policy-explain@1.json",
   "title": "finitemonkey/policy-explain@1",
-  "description": "`data` of `finitemonkey policy explain --json`. Generated from PolicyExplainData in src/policy/explain.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm policy explain --json`. Generated from PolicyExplainData in src/policy/explain.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

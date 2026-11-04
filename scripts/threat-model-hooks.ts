@@ -14,7 +14,7 @@ export const hooks: readonly Threat[] = [
   {
     component: "Command hooks",
     attacker: "process able to edit the guard",
-    threat: "The agent writes to `.finitemonkey/` through a tool call",
+    threat: "The agent writes to `.fm/` through a tool call",
     outcome: "reduced",
     mechanism:
       "The self guard blocks Edit and Write there and shell writers it can parse (`rm`, `cp`, `sed -i`, redirects, inline `node -e`); a script file run by an interpreter is not read",
@@ -37,14 +37,14 @@ export const hooks: readonly Threat[] = [
   {
     component: "Command hooks",
     attacker: "process able to edit the guard",
-    threat: "Someone with a shell deletes `.finitemonkey/`",
+    threat: "Someone with a shell deletes `.fm/`",
     outcome: "detected",
     mechanism:
       "Approvals, incidents and backups are mirrored with a signed index to `.git/finitemonkey/mirror/` and `~/.finitemonkey/projects/<id>/`; when the store comes back without its mirror marker, the session start and the gate copy back every file whose hash matches and log `store_restored`. Task contracts and evidence are not mirrored (the gate runs every check again), and a process that also deletes both mirrors or the key leaves nothing to restore",
     code: ["src/task/mirror.ts", "src/gate/hooks/session.ts"],
     proof: {
       file: "test/store-mirror.test.ts",
-      test: "deleting .finitemonkey/ in a fixture restores approvals and incidents from the mirror and records it",
+      test: "deleting .fm/ in a fixture restores approvals and incidents from the mirror and records it",
     },
   },
   {
@@ -109,7 +109,7 @@ export const hooks: readonly Threat[] = [
     attacker: "inconsistent policy",
     threat: "Instruction files point at deleted scripts or contradict the repository",
     outcome: "detected",
-    mechanism: "`finitemonkey instructions` and `doctor` report the line, the file and the commit that wrote it",
+    mechanism: "`fm instructions` and `doctor` report the line, the file and the commit that wrote it",
     code: ["src/instructions"],
     proof: {
       file: "test/instruction-drift.test.ts",

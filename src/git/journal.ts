@@ -1,10 +1,11 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, optionalString, type Parsed, parseJsonObject, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 
-export const JOURNAL_FILE = ".finitemonkey/git-journal.jsonl";
+export const JOURNAL_FILE = `${DATA_DIR}/git-journal.jsonl`;
 export const JOURNAL_SCHEMA = "finitemonkey/git-journal@1";
 
 export interface JournalEntry {
@@ -76,7 +77,7 @@ export const readJournal = (runtime: Runtime, root: AbsolutePath): readonly Jour
 
 export const appendJournal = (runtime: Runtime, root: AbsolutePath, entry: JournalEntry): Parsed<undefined> => {
   const path = journalPath(root);
-  const made = runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
+  const made = runtime.mkdir(toAbsolutePath(join(root, DATA_DIR)));
   if (!made.ok) return made;
   const previous = runtime.readText(path);
   const before = previous.ok ? previous.value : "";

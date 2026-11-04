@@ -85,8 +85,8 @@ const start = async (ctx: Ctx): Promise<CommandResult> => {
   return success(profileJson(profile), [head, ...profileLines(ctx, profile)]);
 };
 
-const SET_USAGE = `finitemonkey perfil set <${DOMAINS.join("|")}> <beginner|intermediate|advanced>`;
-const ANSWER_USAGE = `finitemonkey perfil answer <${DOMAINS.join("|")}> <a|b|c>`;
+const SET_USAGE = `fm perfil set <${DOMAINS.join("|")}> <beginner|intermediate|advanced>`;
+const ANSWER_USAGE = `fm perfil answer <${DOMAINS.join("|")}> <a|b|c>`;
 
 const set = (ctx: Ctx, rawDomain: string | undefined, rawLevel: string | undefined): CommandResult => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("perfil.error.person_only", SET_USAGE));
@@ -110,7 +110,7 @@ const set = (ctx: Ctx, rawDomain: string | undefined, rawLevel: string | undefin
   return success(profileJson(updated), [
     ctx.t("perfil.set.question", { domain: ctx.t(`perfil.domain.${domain}`) }),
     ...questionLines(ctx, DOMAIN_QUESTIONS[domain]),
-    ctx.t("perfil.set.how", { command: `finitemonkey perfil answer ${domain} <a|b|c>` }),
+    ctx.t("perfil.set.how", { command: `fm perfil answer ${domain} <a|b|c>` }),
   ]);
 };
 

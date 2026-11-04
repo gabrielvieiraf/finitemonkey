@@ -72,9 +72,9 @@ describe("secrets scan against a real git repository", () => {
     assert.equal(run.code, 1, run.stderr);
     const body = parseBody(run.stdout);
     assert.equal(field(body, "data", "summary", "new"), 1);
-    const incidents = readdirSync(join(repo, ".finitemonkey", "incidents")).filter((name) => name.endsWith(".json"));
+    const incidents = readdirSync(join(repo, ".fm", "incidents")).filter((name) => name.endsWith(".json"));
     assert.equal(incidents.length, 1);
-    assert.ok(existsSync(join(repo, ".finitemonkey", "incidents", ".gitignore")));
+    assert.ok(existsSync(join(repo, ".fm", "incidents", ".gitignore")));
     const status = spawnSync("git", ["status", "--porcelain", "--untracked-files=all"], {
       cwd: repo,
       encoding: "utf8",

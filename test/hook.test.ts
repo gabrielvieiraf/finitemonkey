@@ -132,7 +132,7 @@ describe("hook runner", () => {
       const outcome = await runHook(event, options(text, handlers, timer));
       assert.equal(outcome.exitCode, exit);
       assert.equal(outcome.verdict, exit === 2 ? "failed_closed" : "failed_open");
-      assert.match(outcome.stderr, /finitemonkey doctor/);
+      assert.match(outcome.stderr, /fm doctor/);
     });
   }
 

@@ -87,7 +87,7 @@ export const mergeCommand: CommandSpec = {
           branch: report.value.integration.branch,
           count: report.value.stops.length,
         }),
-        fix: `finitemonkey wt archive ${report.value.integration.id}`,
+        fix: `fm wt archive ${report.value.integration.id}`,
       },
       data: report.value,
       human,

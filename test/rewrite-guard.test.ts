@@ -48,7 +48,7 @@ describe("a hook that rewrites the command after Finite Monkey checked it", () =
 
   const logText = (): string => {
     assert.ok(repo);
-    const text = runtime.readText(toAbsolutePath(join(repo.root, ".finitemonkey", "log.jsonl")));
+    const text = runtime.readText(toAbsolutePath(join(repo.root, ".fm", "log.jsonl")));
     return text.ok ? text.value : "";
   };
 

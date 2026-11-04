@@ -1,9 +1,10 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 
 export type CredsRuntime = Pick<Runtime, "git" | "listDir" | "readText">;
 
-const SKIPPED = new Set(["node_modules", "dist", "build", "vendor", ".git", ".finitemonkey", "coverage"]);
+const SKIPPED = new Set(["node_modules", "dist", "build", "vendor", ".git", DATA_DIR, "coverage"]);
 
 export const repoFiles = (runtime: CredsRuntime, root: AbsolutePath): readonly string[] => {
   const tracked = runtime.git(["ls-files", "--cached", "--others", "--exclude-standard"], root);

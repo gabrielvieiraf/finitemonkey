@@ -35,13 +35,13 @@ const pending = (policy: string): Repo => {
     budget: undefined,
   });
   assert.ok(created.ok);
-  repo.write(".finitemonkey/policy.yml", policy);
-  const file = join(repo.root, ".finitemonkey/tasks/t1.yml");
+  repo.write(".fm/policy.yml", policy);
+  const file = join(repo.root, ".fm/tasks/t1.yml");
   const text = readFileSync(file, "utf8").replace(
     "acceptance:\n",
     "acceptance:\n  - id: lint\n    check: command\n    run: npm run lint\n",
   );
-  repo.write(".finitemonkey/tasks/t1.yml", text);
+  repo.write(".fm/tasks/t1.yml", text);
   return repo;
 };
 
@@ -66,13 +66,13 @@ const write = async (repo: Repo, file: string) => {
 };
 
 describe("writes wait while the contract has unapproved checks", () => {
-  it("in active mode, a write outside .finitemonkey/ is held once with the next action", async () => {
+  it("in active mode, a write outside .fm/ is held once with the next action", async () => {
     const repo = pending("guards:\n  contract-hold: active\n");
-    assert.equal((await write(repo, ".finitemonkey/notes.md")).kind, "allow");
+    assert.equal((await write(repo, ".fm/notes.md")).kind, "allow");
     const held = await write(repo, "src/a.js");
     assert.ok(held.kind === "block");
     assert.match(held.reason, /contract of task t1 has checks the person has not approved yet/);
-    assert.match(JSON.stringify(held.output), /finitemonkey task trust t1/);
+    assert.match(JSON.stringify(held.output), /fm task trust t1/);
     assert.doesNotMatch(held.reason, /task trust/);
     assert.equal((await write(repo, "src/a.js")).kind, "allow");
   });
@@ -86,7 +86,7 @@ describe("writes wait while the contract has unapproved checks", () => {
   it("starts in shadow: the write goes through and the hold is logged", async () => {
     const repo = pending("level: standard\n");
     assert.equal((await write(repo, "src/a.js")).kind, "allow");
-    const log = readFileSync(join(repo.root, ".finitemonkey/log.jsonl"), "utf8");
+    const log = readFileSync(join(repo.root, ".fm/log.jsonl"), "utf8");
     assert.match(log, /"event":"guard_shadow".*"guard":"contract-hold"/);
   });
 });

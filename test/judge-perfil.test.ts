@@ -17,7 +17,7 @@ interface World {
 }
 
 const world = (extra: Partial<JudgeDeps> = {}): World => {
-  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.finitemonkey")]);
+  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.fm")]);
   return { fs, deps: { runtime: fakeRuntime({ fs }), paths, ...extra } };
 };
 

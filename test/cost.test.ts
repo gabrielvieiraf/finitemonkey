@@ -158,7 +158,7 @@ describe("finitemonkey cost", () => {
   it("fails on a price older than the validity, and the validity is configurable", async () => {
     const repo = fixture("valid", "expired");
     assert.deepEqual(await kinds(repo), ["expired"]);
-    repo.write(".finitemonkey/config.yml", "cost:\n  validity_days: 200\n");
+    repo.write(".fm/config.yml", "cost:\n  validity_days: 200\n");
     assert.deepEqual(await kinds(repo), []);
   });
 

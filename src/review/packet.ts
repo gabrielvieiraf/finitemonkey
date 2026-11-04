@@ -1,13 +1,14 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { taskRelative } from "../task/load.js";
 import { fmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 
-export const REVIEW_STATE_FILE = ".finitemonkey/review/state.json";
+export const REVIEW_STATE_FILE = `${DATA_DIR}/review/state.json`;
 export const FULL_ROUNDS = 3;
 export const REVIEW_FILE_MAX_LINES = 200;
 export const LEDGER_MAX_LINES = 100;
@@ -76,7 +77,7 @@ export const buildPacket = (runtime: Runtime, root: AbsolutePath, base: string, 
   const state = nextState(previous, base, head);
   const from = state.rounds > FULL_ROUNDS && previous !== undefined ? previous.lastHead : base;
   const range = `${from}...${head}`;
-  const diff = git(runtime, root, ["diff", "--no-color", "--no-ext-diff", range, "--", ".", ":(exclude).finitemonkey"]);
+  const diff = git(runtime, root, ["diff", "--no-color", "--no-ext-diff", range, "--", ".", `:(exclude)${DATA_DIR}`]);
   const owners = reviewFile(runtime, root, base);
   const text = [
     `# Review packet (round ${String(state.rounds)}, ${range})`,
@@ -86,7 +87,7 @@ export const buildPacket = (runtime: Runtime, root: AbsolutePath, base: string, 
     ...taskSections(runtime, root),
     ...(owners === undefined ? [] : [section("REVIEW.md (base branch)", owners, "")]),
   ].join("\n");
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey", "review")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR, "review")));
   runtime.writeAtomic(statePath(root), `${JSON.stringify(state, null, 2)}\n`);
   return { round: state.rounds, base, head, range, text };
 };

@@ -15,7 +15,7 @@ export const staleSection = (mentions: readonly Mention[], base: string): readon
     "Docs that mention files, symbols, flags or issues this diff touched. Update them here if they no longer hold.",
     "",
     ...shown.map(mentionLine),
-    ...(rest > 0 ? [`- ${String(rest)} more: \`finitemonkey stale --diff ${base}\``] : []),
+    ...(rest > 0 ? [`- ${String(rest)} more: \`fm stale --diff ${base}\``] : []),
     "",
   ];
 };

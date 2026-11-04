@@ -74,7 +74,7 @@ describe("PR state from gh", () => {
     );
     assert.deepEqual(result.notes[1]?.params, { number: 42, base: "main" });
     assert.deepEqual(result.notes[2]?.params, { file: "src/cart.ts" });
-    assert.equal(repo.git("status", "--porcelain", "--", ".", ":(exclude).finitemonkey").trim(), "?? src/other.ts");
+    assert.equal(repo.git("status", "--porcelain", "--", ".", ":(exclude).fm").trim(), "?? src/other.ts");
   });
 
   it("DIRTY alone also counts as a conflict", () => {

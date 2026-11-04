@@ -27,9 +27,9 @@ const setup = (files: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
     "package.json": pkg({ express: "^4.0.0" }),
     "src/app.ts": "export const app = 1;\n",
-    ".finitemonkey/tasks/work.yml": CONTRACT,
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
-    ".finitemonkey/policy.yml": policyWith({ proportionality: "active" }),
+    ".fm/tasks/work.yml": CONTRACT,
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
+    ".fm/policy.yml": policyWith({ proportionality: "active" }),
     ...files,
   });
   repos.push(repo);
@@ -41,8 +41,8 @@ const scan = (repo: Repo) => cli(["guardian", "scan", "--record"], { cwd: repo.r
 describe("proportionality asks for the missing context once", () => {
   it("does not ask what the infra inventory and the ownership file already answer", () => {
     const repo = setup({
-      ".finitemonkey/infra.yml": "schema: finitemonkey/infra@1\nlevel: 2\n",
-      ".finitemonkey/ownership.yml": "components:\n  - name: api\n    type: service\n    owner: ana\n",
+      ".fm/infra.yml": "schema: finitemonkey/infra@1\nlevel: 2\n",
+      ".fm/ownership.yml": "components:\n  - name: api\n    type: service\n    owner: ana\n",
     });
     const context = companyContext(readGoals(repoRuntime(), repo.root));
     assert.deepEqual(missingContext(repoRuntime(), repo.root, context), ["stage", "cost"]);
@@ -74,7 +74,7 @@ describe("proportionality asks for the missing context once", () => {
       prompt: "stage: growing\ncost: 40\ndeploy: manual over ssh\nmaintains: Ana",
     });
     assert.match(contextOf(answer), /saved the person's answer .* stage, cost, deploy, maintains/);
-    const goals = repo.read(".finitemonkey/goals.yml");
+    const goals = repo.read(".fm/goals.yml");
     assert.match(goals, /stage:\n\s+value: growing\n\s+origin: stated/);
     assert.match(goals, /maintains:\n\s+value: Ana\n\s+origin: stated/);
     const context = companyContext(readGoals(repoRuntime(), repo.root));
@@ -101,7 +101,7 @@ describe("proportionality asks for the missing context once", () => {
 
   it("keeps the stated cost over the cost model", () => {
     const repo = setup({
-      ".finitemonkey/goals.yml": 'context:\n  cost:\n    value: "40"\n    origin: stated\n',
+      ".fm/goals.yml": 'context:\n  cost:\n    value: "40"\n    origin: stated\n',
       "docs/plan/01-cost-monthly.csv":
         "fact,unit,base,conservative,readable\nprice_per_call_usd,USD per month,60,375,a\n",
     });

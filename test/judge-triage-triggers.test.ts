@@ -40,7 +40,7 @@ const call = (deps: JudgeDeps, record: Readonly<Record<string, unknown>>) => {
 const world = (policy = "guards:\n  judge-core: shadow\n  triage: active\n"): World => {
   const repo = tempRepo({ "README.md": "hello\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", policy);
+  write(repo.root, ".fm/policy.yml", policy);
   const deps = { runtime: repoRuntime(), paths: fmPaths(repo.root) };
   const concept = call(deps, { verb: "concept", label: "VAT", domain: "tax-law", source: "10.1/x", span: "VAT" });
   appendEntry(deps.runtime, deps.paths, {
@@ -85,8 +85,8 @@ const reasonOf = async (input: HookInput): Promise<string> => {
 describe("triage on every trigger it names", () => {
   it("a decision record citing a model-only claim on a beyond concept produces the triage list", async () => {
     const w = world();
-    const file = join(w.repo.root, ".finitemonkey", "decision-records", "t1.json");
-    write(w.repo.root, ".finitemonkey/decision-records/t1.json", RECORD);
+    const file = join(w.repo.root, ".fm", "decision-records", "t1.json");
+    write(w.repo.root, ".fm/decision-records/t1.json", RECORD);
     const reason = await reasonOf(hookInput(w, "Write", { file_path: file, content: RECORD }));
     assert.match(reason, /This decision record cites 1 claim/);
     assert.match(reason, /The reduced VAT rate for e-books in Germany is 7%/);
@@ -94,7 +94,7 @@ describe("triage on every trigger it names", () => {
 
   it("the decision record written on close is triaged once, and a second trigger skips the same claim", () => {
     const w = world();
-    write(w.repo.root, ".finitemonkey/decision-records/t1.json", RECORD);
+    write(w.repo.root, ".fm/decision-records/t1.json", RECORD);
     assert.deepEqual(
       triageRecord(w.deps.runtime, w.deps.paths, "t1").map((row) => row.claim),
       [w.claim],

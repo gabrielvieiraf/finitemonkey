@@ -30,7 +30,7 @@ const pairs = (found: readonly Recognition[]): readonly (readonly [string, strin
 
 const project = () =>
   fakeRuntime({
-    fs: memoryFs({ [at(".git/HEAD")]: "ref: refs/heads/main\n", [at(".finitemonkey/config.yml")]: "lang: en\n" }),
+    fs: memoryFs({ [at(".git/HEAD")]: "ref: refs/heads/main\n", [at(".fm/config.yml")]: "lang: en\n" }),
   });
 
 const tty = () => Object.assign(Readable.from([""]), { isTTY: true });
@@ -69,7 +69,7 @@ describe("concepts from the contract and the research question", () => {
 
   it("the blueprint prompt reads the person's package map", () => {
     const fs = memoryFs({
-      [at(".finitemonkey/conceitos-map.json")]: JSON.stringify({ packages: { "acme-auth": "security/session/x" } }),
+      [at(".fm/conceitos-map.json")]: JSON.stringify({ packages: { "acme-auth": "security/session/x" } }),
     });
     const runtime = fakeRuntime({ fs });
     const text = 'import { login } from "acme-auth";';

@@ -43,8 +43,8 @@ const fixture = (source: string, helps: boolean): Repo => {
   const tasks = Array.from({ length: 40 }, (_, index) => `t${String(index + 1)}`);
   const repo = makeRepo({
     "src/a.ts": "export function a(): number {\n  return 1;\n}\n",
-    ".finitemonkey/policy.yml": policy(source),
-    ".finitemonkey/log.jsonl": `${tasks.map((task) => arm(source, task)).join("\n")}\n`,
+    ".fm/policy.yml": policy(source),
+    ".fm/log.jsonl": `${tasks.map((task) => arm(source, task)).join("\n")}\n`,
   });
   repos.push(repo);
   const runtime = repoRuntime();
@@ -87,8 +87,8 @@ describe("knowledge sources as A/B arms", () => {
     assert.ok(off !== undefined);
     const repo = makeRepo({
       "src/a.ts": "export function a(): number {\n  return 1;\n}\n",
-      ".finitemonkey/policy.yml": "guards:\n  knowledge-claims: active\nexperiments:\n  knowledge-claims: random\n",
-      ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: off, done: [] }),
+      ".fm/policy.yml": "guards:\n  knowledge-claims: active\nexperiments:\n  knowledge-claims: random\n",
+      ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: off, done: [] }),
     });
     repos.push(repo);
     const added = await cliJson(["claims", "add", "a returns one", "--anchor", "src/a.ts#a", "--origin", "person"], {
@@ -99,7 +99,7 @@ describe("knowledge sources as A/B arms", () => {
     const started = await fireHook(repo, "SessionStart", { source: "startup" });
     assert.equal(contextOf(started), "");
     assert.match(
-      repo.read(".finitemonkey/log.jsonl"),
+      repo.read(".fm/log.jsonl"),
       new RegExp(`"event":"experiment_drop","feature":"knowledge-claims","task":"${off}"`),
     );
   });

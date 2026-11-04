@@ -20,7 +20,7 @@ const NOW = "2026-10-28T12:00:00.000Z";
 const POLICY = "guards:\n  quality: active\nexperiments:\n  reminders: random\n  slop: random\n  quality: random\n";
 
 const project = (files: Readonly<Record<string, string>> = {}) =>
-  memoryFs({ [at(".finitemonkey/policy.yml")]: POLICY, ...files }, [at(".git")], NOW);
+  memoryFs({ [at(".fm/policy.yml")]: POLICY, ...files }, [at(".git")], NOW);
 
 describe("experiments: per-feature arms", () => {
   it("reads random arms from policy.yml and ignores other values", () => {
@@ -37,7 +37,7 @@ describe("experiments: per-feature arms", () => {
   });
 
   it("an experiment overrides the guard mode for the active task, and only with an active task", () => {
-    const fs = project({ [at(".finitemonkey/state.json")]: '{"active":"checkout"}\n' });
+    const fs = project({ [at(".fm/state.json")]: '{"active":"checkout"}\n' });
     const runtime = fakeRuntime({ fs });
     const paths = fmPaths(ROOT);
     const policy = parsePolicy(POLICY);
@@ -66,7 +66,7 @@ describe("experiments: per-feature arms", () => {
     const fs = project();
     const runtime = fakeRuntime({ fs });
     recordArms(runtime, fmPaths(ROOT), parsePolicy(POLICY), "checkout");
-    const lines = (fs.read(at(".finitemonkey/log.jsonl")) ?? "").trim().split("\n");
+    const lines = (fs.read(at(".fm/log.jsonl")) ?? "").trim().split("\n");
     assert.equal(lines.length, 3);
     assert.match(
       lines[0] ?? "",
@@ -98,10 +98,10 @@ describe("finitemonkey gain --by-arm", () => {
       .map((line) => JSON.stringify({ at: NOW, event: "experiment_arm", ...line }))
       .join("\n");
     return project({
-      [at(".finitemonkey/log.jsonl")]: `${arms}\n`,
-      [at(".finitemonkey/evidence/a.jsonl")]: `${gate("a", "failed", 1000)}\n${gate("a", "passed", 3000)}\n`,
-      [at(".finitemonkey/evidence/b.jsonl")]: `${gate("b", "failed", 2000)}\n`,
-      [at(".finitemonkey/evidence/c.jsonl")]: `${gate("c", "passed", 4000)}\n`,
+      [at(".fm/log.jsonl")]: `${arms}\n`,
+      [at(".fm/evidence/a.jsonl")]: `${gate("a", "failed", 1000)}\n${gate("a", "passed", 3000)}\n`,
+      [at(".fm/evidence/b.jsonl")]: `${gate("b", "failed", 2000)}\n`,
+      [at(".fm/evidence/c.jsonl")]: `${gate("c", "passed", 4000)}\n`,
       ...keySeed(),
     });
   };

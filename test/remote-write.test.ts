@@ -19,7 +19,7 @@ const permission = (output: JsonObject | undefined): unknown => {
 };
 
 const holds = (root: string): readonly JsonObject[] => {
-  const file = join(root, ".finitemonkey", "log.jsonl");
+  const file = join(root, ".fm", "log.jsonl");
   if (!existsSync(file)) return [];
   return readFileSync(file, "utf8")
     .split("\n")
@@ -85,7 +85,7 @@ describe("remote write hook", () => {
   it("a fixture MCP send_email and a POST to a non-local host are held; a GET is not; a script file with the same call is held", async () => {
     const repo = tempRepo();
     try {
-      write(repo.root, ".finitemonkey/policy.yml", ACTIVE);
+      write(repo.root, ".fm/policy.yml", ACTIVE);
       write(repo.root, "scripts/notify.py", POST_SCRIPT);
       const email = await hook(remotePreToolUse, "PreToolUse", repo.root, mcp("mcp__gmail__send_email", { to: "a" }));
       assert.equal(permission(email.output), "ask");

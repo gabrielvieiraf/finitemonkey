@@ -86,7 +86,7 @@ describe("inner loop selection", () => {
     assert.deepEqual(linkedTests(tree, ["src/a.ts"]), ["test/a.test.ts"]);
     assert.deepEqual(linkedTests(tree, ["src/b.ts"]), ["test/b.test.ts"]);
 
-    const repo = makeRepo({ ...files, ".gitignore": ".finitemonkey/*\n" });
+    const repo = makeRepo({ ...files, ".gitignore": ".fm/*\n" });
     repos.push(repo);
     const created = createTask(repoRuntime(), fmPaths(repo.root), {
       id: "t1",

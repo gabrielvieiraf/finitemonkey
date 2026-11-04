@@ -69,7 +69,7 @@ describe("model provider is off by default", () => {
   });
 
   it("the Stop hook only starts the blind writer in the background, and only when it is on", async () => {
-    const off = world({ files: { ".finitemonkey/state.json": '{"active":"t1"}\n' } });
+    const off = world({ files: { ".fm/state.json": '{"active":"t1"}\n' } });
     const input = (w: ReturnType<typeof world>): HookInput => ({
       event: "Stop",
       payload: { hookEventName: "Stop", sessionId: "s1", cwd: PROJECT, stopHookActive: false, raw: {} },
@@ -80,7 +80,7 @@ describe("model provider is off by default", () => {
     });
     await providerStop(input(off));
     assert.deepEqual(off.spawned, []);
-    const on = world({ kinds: ["blind-writer"], files: { ".finitemonkey/state.json": '{"active":"t1"}\n' } });
+    const on = world({ kinds: ["blind-writer"], files: { ".fm/state.json": '{"active":"t1"}\n' } });
     await providerStop(input(on));
     assert.deepEqual(on.spawned, [["provider", "run", "blind-writer", "--task", "t1"]]);
     assert.deepEqual(on.calls, []);
@@ -133,7 +133,7 @@ describe("provider calls", () => {
       kinds: ["claim-split", "support"],
       mode: "active",
       fake: { answer: answer(["one", "two"]), usd: 0.02 },
-      files: { ".finitemonkey/state.json": '{"active":"t1"}\n' },
+      files: { ".fm/state.json": '{"active":"t1"}\n' },
     });
     assert.deepEqual(callProvider(w.deps, split), { status: "ok", value: ["one", "two"] });
     callProvider(w.deps, split);

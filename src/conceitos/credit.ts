@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { type AddedLine, addedLines, type Git } from "../gate/git.js";
 import { readGateStatus } from "../gate/hooks/status.js";
@@ -52,7 +53,7 @@ const MAX_UNTRACKED_BYTES = 200_000;
 export const untrackedLines = (runtime: Pick<Runtime, "readText">, git: Git, paths: FmPaths): readonly AddedLine[] =>
   (git.out(["ls-files", "--others", "--exclude-standard", "-z"]) ?? "")
     .split("\0")
-    .filter((file) => file !== "" && !file.startsWith(".finitemonkey/"))
+    .filter((file) => file !== "" && !file.startsWith(`${DATA_DIR}/`))
     .flatMap((file) => {
       const text = runtime.readText(toAbsolutePath(join(paths.root, file)));
       if (!text.ok || text.value.length > MAX_UNTRACKED_BYTES) return [];

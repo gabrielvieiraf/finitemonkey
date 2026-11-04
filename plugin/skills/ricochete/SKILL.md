@@ -29,7 +29,7 @@ Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" perfil --json` when i
 ## Judgment: results approved and caught later, or approved within seconds
 
 1. Explain in layers, in the person's words: what changes; why it works; how to check it alone; when it stops working.
-2. Executable proof instead of trust: a test whose name is a sentence ("refund returns the money to the same card"), a mock scenario, or a click path with screenshots from `finitemonkey look`. The person only judges whether the criterion describes what they wanted.
+2. Executable proof instead of trust: a test whose name is a sentence ("refund returns the money to the same card"), a mock scenario, or a click path with screenshots from `fm look`. The person only judges whether the criterion describes what they wanted.
 3. In learn mode, ask for the prediction first.
 4. At the end, perturb on purpose: under **Perturbation questions**, ask what happens if the requirement changes, the input is invalid, the data is empty, it runs twice, or an outside service fails, and name the contract check that covers each. When a task with judgment signals closes, the Stop hook adds this list once with the coverage it found.
 

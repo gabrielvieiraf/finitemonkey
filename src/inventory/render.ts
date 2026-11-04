@@ -81,7 +81,7 @@ const whenPresent = (t: Translate, repo: RepoRead, incidents: readonly string[])
   ),
   ...optional(
     t("inventory.history"),
-    incidents.map((name) => `- ${code(`.finitemonkey/incidents/${name}`)}`),
+    incidents.map((name) => `- ${code(`.fm/incidents/${name}`)}`),
   ),
   ...optional(
     t("inventory.worktrees"),

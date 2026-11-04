@@ -67,9 +67,9 @@ describe("find what the project already has", () => {
 
   it("runs outside the synchronous hooks: Stop only spawns the scan, the next prompt shows the result", async () => {
     const repo = base();
-    repo.write(".finitemonkey/tasks/work.yml", CONTRACT);
-    repo.write(".finitemonkey/state.json", JSON.stringify({ schemaVersion: 1, active: "work", done: [] }));
-    repo.write(".finitemonkey/policy.yml", policyWith({ "guardian-reuse": "active" }));
+    repo.write(".fm/tasks/work.yml", CONTRACT);
+    repo.write(".fm/state.json", JSON.stringify({ schemaVersion: 1, active: "work", done: [] }));
+    repo.write(".fm/policy.yml", policyWith({ "guardian-reuse": "active" }));
     const spawned: string[][] = [];
     const stop = await fireHook(repo, "Stop", {}, repoRuntime({ spawned }));
     assert.equal(silent(stop), true);

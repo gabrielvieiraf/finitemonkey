@@ -44,7 +44,7 @@ const project = async (frontier: "judgment" | "exploration" | "none"): Promise<R
     ],
     { cwd: repo.root, runtime: repoRuntime() },
   );
-  if (frontier !== "none") repo.write(".finitemonkey/signals-index.json", judgmentIndex("s1", frontier));
+  if (frontier !== "none") repo.write(".fm/signals-index.json", judgmentIndex("s1", frontier));
   return repo;
 };
 
@@ -119,7 +119,7 @@ describe("ricochete: closing a task with judgment signals", () => {
   const closing = async (frontier: "judgment" | "exploration"): Promise<Repo> => {
     const repo = await project(frontier);
     repo.write(
-      ".finitemonkey/cache/gate-status.json",
+      ".fm/cache/gate-status.json",
       `${JSON.stringify({ schemaVersion: 1, status: "passed", task: "t1", detail: "", at: new Date().toISOString() })}\n`,
     );
     return repo;

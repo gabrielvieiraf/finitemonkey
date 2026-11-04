@@ -14,7 +14,7 @@ import type { CommandSpec } from "./types.js";
 
 const GEN_USAGE = "finitemonkey scenarios gen [--json]";
 const APPROVE_USAGE = "finitemonkey scenarios approve --hash <hash>";
-const CONFIG_HINT = "add access: port, user_a and user_b to .finitemonkey/config.yml";
+const CONFIG_HINT = "add access: port, user_a and user_b to .fm/config.yml";
 
 const generate = (ctx: Ctx): CommandResult => {
   const repo = repoOf(ctx);
@@ -34,7 +34,7 @@ const generate = (ctx: Ctx): CommandResult => {
       { schema: SCENARIOS_SCHEMA, generated: true, hash: made.value, proposal: proposalPath(paths), resources },
       [ctx.t("scenarios.gen.proposed", { path: proposalPath(paths), hash: made.value })],
     ),
-    next: `finitemonkey scenarios approve --hash ${made.value}`,
+    next: `fm scenarios approve --hash ${made.value}`,
   };
 };
 

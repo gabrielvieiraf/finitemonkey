@@ -6,7 +6,7 @@ import { memory } from "./memory.js";
 import { parseProbeCard, parseTeachCard, parseTeachReason, REASON_TEXT } from "./teach-view.js";
 import { parseConcepts, parseXray, XRAY_PANE, xrayLines, type XrayRow, xrayTree } from "./xray-view.js";
 
-const TEACH_OFF = "teach-back is off; it runs after guards: teach-back: active in .finitemonkey/policy.yml";
+const TEACH_OFF = "teach-back is off; it runs after guards: teach-back: active in .fm/policy.yml";
 
 async function loadXray($: ModApi): Promise<void> {
   const xray = await runCli($, ["xray", "--json"]);

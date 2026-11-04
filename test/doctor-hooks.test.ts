@@ -35,7 +35,7 @@ const exitOf = (fixture: Fixture): number => doctorResult(ctx, buildReport(ctx, 
 
 const hookArgs = (request: ExecRequest): boolean => request.args.includes("hook");
 
-const NO_PROJECT_HOOKS = { ".claude/settings.json": undefined, ".finitemonkey/lock.json": undefined };
+const NO_PROJECT_HOOKS = { ".claude/settings.json": undefined, ".fm/lock.json": undefined };
 
 describe("doctor fires each hook", () => {
   it("a healthy install reports every hook ok and fires nothing red", () => {

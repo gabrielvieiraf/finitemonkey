@@ -39,7 +39,7 @@ const machine = (config = ""): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(A, ".git"))]: "gitdir: /home/ana/shop/.git/worktrees/a\n",
     [toAbsolutePath(join(B, ".git"))]: "gitdir: /home/ana/shop/.git/worktrees/b\n",
-    [toAbsolutePath(join(A, ".finitemonkey", "config.yml"))]: config,
+    [toAbsolutePath(join(A, ".fm", "config.yml"))]: config,
   });
 
 const fire = (

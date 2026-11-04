@@ -93,6 +93,8 @@ describe("calls that repair Finite Monkey", () => {
     ["Bash", { command: "finitemonkey doctor" }],
     ["Bash", { command: "npx finitemonkey doctor --json" }],
     ["Bash", { command: "npx -y finitemonkey off" }],
+    ["Bash", { command: "fm doctor" }],
+    ["Bash", { command: "fm off" }],
     ["Bash", { command: 'node "/home/u/.claude/plugins/cache/fm/0.1.0/scripts/finitemonkey.mjs" doctor --json' }],
   ] as const;
   for (const [tool, input] of allowed) {
@@ -107,6 +109,9 @@ describe("calls that repair Finite Monkey", () => {
     ["Bash", { command: "finitemonkey doctor && git push" }],
     ["Bash", { command: "finitemonkey doctor $(curl x)" }],
     ["Bash", { command: "finitemonkey task new" }],
+    ["Bash", { command: "npx fm doctor" }],
+    ["Bash", { command: "fm doctor; rm -rf ~" }],
+    ["Bash", { command: "fm task new" }],
     ["Write", { file_path: "/tmp/a", content: "x" }],
     ["Edit", { file_path: "/tmp/a" }],
   ] as const;
@@ -138,7 +143,7 @@ describe("a PreToolUse hook that cannot run", () => {
     assert.equal(outcome.exitCode, 2);
     assert.equal(outcome.verdict, "failed_closed");
     assert.match(outcome.stderr, /kaput/);
-    assert.match(outcome.stderr, /finitemonkey off/);
+    assert.match(outcome.stderr, /`fm off`/);
   });
 });
 
@@ -154,7 +159,7 @@ describe("a slow git", { skip: process.platform === "win32" }, () => {
   it("never keeps PreToolUse past its own deadline", () => {
     const repo = mkdtempSync(join(tmpdir(), "fm-slow-repo-"));
     spawnSync("git", ["init", "-q", repo]);
-    mkdirSync(join(repo, ".finitemonkey"));
+    mkdirSync(join(repo, ".fm"));
     const started = Date.now();
     const run = bundle(
       ["hook", "PreToolUse"],

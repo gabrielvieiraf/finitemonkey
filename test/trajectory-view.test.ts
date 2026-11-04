@@ -178,7 +178,7 @@ describe("trajectory view", () => {
     const runtime = fakeRuntime({
       now: new Date(NOW).toISOString(),
       files: {
-        [join(root, ".finitemonkey", "conceitos-events.jsonl")]: LOG.map((item) => JSON.stringify(item)).join("\n"),
+        [join(root, ".fm", "conceitos-events.jsonl")]: LOG.map((item) => JSON.stringify(item)).join("\n"),
       },
     });
     const plain = await cli(["trajectory", "--domain", "backend"], { runtime, cwd: root });

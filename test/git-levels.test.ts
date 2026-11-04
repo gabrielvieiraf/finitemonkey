@@ -39,13 +39,10 @@ describe("GitHub ruleset proposal", () => {
     const runtime = githubRuntime(calls, false);
     const step = githubStep(runtime, ROOT, false);
     assert.equal(step.applied, false);
-    assert.equal(step.proposal, ".finitemonkey/github-ruleset.json");
-    assert.equal(
-      step.command,
-      "gh api --method POST repos/acme/app/rulesets --input .finitemonkey/github-ruleset.json",
-    );
+    assert.equal(step.proposal, ".fm/github-ruleset.json");
+    assert.equal(step.command, "gh api --method POST repos/acme/app/rulesets --input .fm/github-ruleset.json");
     assert.equal(posts(calls), 0);
-    const proposal = runtime.readText(toAbsolutePath(`${ROOT}/.finitemonkey/github-ruleset.json`));
+    const proposal = runtime.readText(toAbsolutePath(`${ROOT}/.fm/github-ruleset.json`));
     assert.ok(proposal.ok);
     assert.match(proposal.value, /"non_fast_forward"/);
     assert.match(proposal.value, /"require_code_owner_review": true/);
@@ -72,11 +69,7 @@ describe("GitHub ruleset proposal", () => {
   it("without a ruleset the default branch stays protected locally", async () => {
     const repo = tempRepo();
     try {
-      write(
-        repo.root,
-        ".finitemonkey/cache/github.json",
-        JSON.stringify({ repo: "acme/app", defaultBranch: "main", rules: [] }),
-      );
+      write(repo.root, ".fm/cache/github.json", JSON.stringify({ repo: "acme/app", defaultBranch: "main", rules: [] }));
       write(repo.root, "a.txt", "a\n");
       git(repo.root, "add", "a.txt");
       const decision = await hook(gitPreToolUse, "PreToolUse", repo.root, bash("git commit -m 'feat: a'"));
@@ -89,7 +82,7 @@ describe("GitHub ruleset proposal", () => {
         version: "1.0.0",
         runtime: fakeRuntime({
           files: {
-            [`${repo.root}/.finitemonkey/cache/github.json`]: JSON.stringify({
+            [`${repo.root}/.fm/cache/github.json`]: JSON.stringify({
               repo: "acme/app",
               defaultBranch: "main",
               rules: [],
@@ -109,7 +102,7 @@ describe("doctor: merge queue and CODEOWNERS", () => {
     const cache = JSON.stringify({ repo: "acme/app", defaultBranch: "main", rules: ["merge_queue"], mergeQueue: true });
     const runtime = fakeRuntime({
       files: {
-        [`${ROOT}/.finitemonkey/cache/github.json`]: cache,
+        [`${ROOT}/.fm/cache/github.json`]: cache,
         [`${ROOT}/.github/workflows/ci.yml`]: "on:\n  pull_request:\n",
         [`${ROOT}/.github/CODEOWNERS`]: "* @acme/core\nsrc/api/ owner-without-at\n!docs @ana\n",
       },
@@ -123,7 +116,7 @@ describe("doctor: merge queue and CODEOWNERS", () => {
 });
 
 const withLevel = (root: AbsolutePath, level: string): void => {
-  write(root, ".finitemonkey/profile.yml", `domains:\n  infrastructure: ${level}\n`);
+  write(root, ".fm/profile.yml", `domains:\n  infrastructure: ${level}\n`);
 };
 
 describe("git defaults by level", () => {
@@ -136,7 +129,7 @@ describe("git defaults by level", () => {
       assert.equal(gitLevel(fromHome, repo.root), "advanced");
       const project = fakeRuntime({
         files: {
-          [`${repo.root}/.finitemonkey/profile.yml`]: "domains:\n  infrastructure: beginner\n",
+          [`${repo.root}/.fm/profile.yml`]: "domains:\n  infrastructure: beginner\n",
           [HOME_PROFILE]: "domains:\n  infrastructure: advanced\n",
         },
       });

@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { HOME_DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
@@ -14,7 +15,7 @@ interface Lease extends PortRange {
 }
 
 export const portsDir = (runtime: Pick<Runtime, "homeDir">): AbsolutePath =>
-  toAbsolutePath(join(runtime.homeDir(), ".finitemonkey", "ports"));
+  toAbsolutePath(join(runtime.homeDir(), HOME_DATA_DIR, "ports"));
 
 const leaseOf = (text: string): Lease | undefined => {
   const parsed = parseJsonObject(text);

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/merge-verify@1.json",
   "title": "finitemonkey/merge-verify@1",
-  "description": "Report of one merge checked by `finitemonkey merge verify`. Generated from VerifyReport in src/git/merge/verify.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "Report of one merge checked by `fm merge verify`. Generated from VerifyReport in src/git/merge/verify.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

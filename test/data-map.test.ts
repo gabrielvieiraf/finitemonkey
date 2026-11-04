@@ -144,12 +144,12 @@ describe("data map", () => {
       rows.map((row: unknown) => field(row, "field")),
       ["patients.cpf", "patients.diagnosis", "User.email", "User.name", "customers.phone", "customers.birthDate"],
     );
-    assert.match(repo.read(".finitemonkey/data-map.yml"), /- field: User\.email\n {4}legalBasis: ""/);
+    assert.match(repo.read(".fm/data-map.yml"), /- field: User\.email\n {4}legalBasis: ""/);
   });
 
   it("reports a new personal field without a row at Stop, blocking at level standard", () => {
     const repo = project();
-    repo.write(".finitemonkey/data-map.yml", filled(ALL));
+    repo.write(".fm/data-map.yml", filled(ALL));
     repo.commit("map");
     assert.equal(stop(repo).status, "passed");
     repo.write(
@@ -166,18 +166,18 @@ describe("data map", () => {
 
   it("takes the level from policy.yml: a warning at light, a block at strict", () => {
     const repo = project();
-    repo.write(".finitemonkey/data-map.yml", filled(ALL.slice(1)));
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/data-map.yml", filled(ALL.slice(1)));
+    repo.write(".fm/policy.yml", "level: light\n");
     const light = stop(repo);
     assert.equal(light.status, "passed");
     assert.ok(light.notes.some((item) => item.key === "gate.datamap.missing"));
-    repo.write(".finitemonkey/policy.yml", "level: strict\n");
+    repo.write(".fm/policy.yml", "level: strict\n");
     assert.equal(stop(repo).status, "failed");
   });
 
   it("requires a recorded decision before a mapped field goes to an AI provider", () => {
     const repo = project();
-    repo.write(".finitemonkey/data-map.yml", filled(ALL));
+    repo.write(".fm/data-map.yml", filled(ALL));
     repo.commit("map");
     repo.write(
       "src/summary.ts",
@@ -189,7 +189,7 @@ describe("data map", () => {
       outcome.notes.map((item) => [item.key, item.params["field"], item.params["line"]]),
       [["gate.datamap.ai", "User.email", 3]],
     );
-    repo.write(".finitemonkey/data-map.yml", filled(ALL, "approved in DEC-12, masked before sending"));
+    repo.write(".fm/data-map.yml", filled(ALL, "approved in DEC-12, masked before sending"));
     assert.equal(stop(repo).status, "passed");
   });
 });

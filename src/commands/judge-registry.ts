@@ -194,7 +194,7 @@ const settleCommand = (verb: "accept" | "dismiss") =>
   judgeCommand({
     path: ["judge", verb],
     summaryKey: verb === "accept" ? "command.judge_accept.summary" : "command.judge_dismiss.summary",
-    usage: `finitemonkey judge ${verb} <help>`,
+    usage: `fm judge ${verb} <help>`,
     maxPositionals: 1,
     build: (_ctx, _values, positionals) => ({ verb, help: positionals[0] }),
   });

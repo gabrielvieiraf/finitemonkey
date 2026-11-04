@@ -52,7 +52,7 @@ after(() => {
 const project = (files: Readonly<Record<string, string>>, id: string, check: string, mode?: string): TempRepo => {
   const repo = tempRepo(files);
   repos.push(repo);
-  if (mode !== undefined) write(repo.root, ".finitemonkey/policy.yml", `guards:\n  behavior-contract: ${mode}\n`);
+  if (mode !== undefined) write(repo.root, ".fm/policy.yml", `guards:\n  behavior-contract: ${mode}\n`);
   trustContract(repo.root, id, contractFor(id, check));
   return repo;
 };
@@ -170,7 +170,7 @@ describe("behavior contract", () => {
       decorative.map((note) => field(note, "params", "id")),
       ["E2"],
     );
-    const ledger = readFileSync(join(repo.root, ".finitemonkey", "log.jsonl"), "utf8");
+    const ledger = readFileSync(join(repo.root, ".fm", "log.jsonl"), "utf8");
     assert.match(ledger, /"event":"contract\.strength".*"decorative":\["E2"\]/);
   });
 
@@ -188,10 +188,10 @@ describe("behavior contract", () => {
     assert.equal(denied.kind, "block");
     const edit = await hook(selfGuard, "PreToolUse", repo.root, {
       tool_name: "Edit",
-      tool_input: { file_path: join(repo.root, ".finitemonkey", "tasks", "locked", "examples.yml") },
+      tool_input: { file_path: join(repo.root, ".fm", "tasks", "locked", "examples.yml") },
     });
     assert.equal(edit.kind, "block");
-    const file = join(".finitemonkey", "tasks", "locked", "examples.yml");
+    const file = join(".fm", "tasks", "locked", "examples.yml");
     const text = readFileSync(join(repo.root, file), "utf8");
     write(repo.root, file, text.replace("refund 7 to card", "anything"));
     write(repo.root, "src/refund.js", JS_REFUND.replace("to card", "to wallet"));

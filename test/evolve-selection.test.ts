@@ -64,10 +64,10 @@ const injected = (count: number): string =>
 
 const setup = (files: Readonly<Record<string, string>>, done: readonly string[], active = "now"): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/tasks/now.yml": contract("now"),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active, done }),
-    ".finitemonkey/policy.yml": `${policyWith({ evolve: "active", reminders: "active" })}evolve:\n  minTasks: 3\n`,
-    ".finitemonkey/rules.yml": RULES,
+    ".fm/tasks/now.yml": contract("now"),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active, done }),
+    ".fm/policy.yml": `${policyWith({ evolve: "active", reminders: "active" })}evolve:\n  minTasks: 3\n`,
+    ".fm/rules.yml": RULES,
     ...files,
   });
   repos.push(repo);
@@ -106,7 +106,7 @@ const outcome = (task: string, hours: number): TaskOutcome => ({
 
 describe("evolve: reminder sets, descendants and a significance test", () => {
   it("proposes withholding a reminder injected often and never violated, born on the active task", () => {
-    const repo = setup({ ".finitemonkey/log.jsonl": `${injected(12)}\n` }, []);
+    const repo = setup({ ".fm/log.jsonl": `${injected(12)}\n` }, []);
     const result = runEvolve(repoRuntime(), fmPaths(repo.root), true);
     assert.deepEqual(result.proposed, [ID]);
     const stored = readEvolve(repoRuntime(), repo.root).variants[0];
@@ -119,8 +119,8 @@ describe("evolve: reminder sets, descendants and a significance test", () => {
   it("never promotes the reminder variant on the task where it was born, however good that task looks", () => {
     const repo = setup({}, ["now"]);
     const digest = scriptsDigest(repoRuntime(), repo.root);
-    repo.write(".finitemonkey/evidence/now.jsonl", finished("now", 1, 1, digest));
-    repo.write(".finitemonkey/cache/evolve.json", JSON.stringify({ variants: [trial(digest, {}, "now")], unseen: [] }));
+    repo.write(".fm/evidence/now.jsonl", finished("now", 1, 1, digest));
+    repo.write(".fm/cache/evolve.json", JSON.stringify({ variants: [trial(digest, {}, "now")], unseen: [] }));
     const result = runEvolve(repoRuntime(), fmPaths(repo.root), true);
     assert.deepEqual(result.promoted, []);
     assert.equal(readEvolve(repoRuntime(), repo.root).variants[0]?.tasks["now"]?.arm, "off");
@@ -134,15 +134,12 @@ describe("evolve: reminder sets, descendants and a significance test", () => {
     const digest = scriptsDigest(repoRuntime(), repo.root);
     const hours = [1, 6, 2, 5, 3, 4];
     [...mine, ...parents].forEach((task, index) => {
-      repo.write(`.finitemonkey/evidence/${task}.jsonl`, finished(task, index + 1, hours[index] ?? 1, digest));
+      repo.write(`.fm/evidence/${task}.jsonl`, finished(task, index + 1, hours[index] ?? 1, digest));
     });
     const tasks: Record<string, ArmRecord> = {};
     for (const task of mine) tasks[task] = { arm: "active", mode: "active" };
     for (const task of parents) tasks[task] = { arm: "off", mode: "active" };
-    repo.write(
-      ".finitemonkey/cache/evolve.json",
-      JSON.stringify({ variants: [trial(digest, tasks, null)], unseen: [] }),
-    );
+    repo.write(".fm/cache/evolve.json", JSON.stringify({ variants: [trial(digest, tasks, null)], unseen: [] }));
     const result = runEvolve(repoRuntime(), fmPaths(repo.root), false);
     assert.deepEqual(result.promoted, []);
     assert.deepEqual(result.rejected, [ID]);
@@ -183,7 +180,7 @@ describe("evolve: reminder sets, descendants and a significance test", () => {
     const repo = setup({}, []);
     assert.match(rulesSection(repoRuntime(), fmPaths(repo.root)), /Keep answers short and concrete/);
     const promoted: Variant = { ...trial("e", {}, null), status: "promoted" };
-    repo.write(".finitemonkey/cache/evolve.json", JSON.stringify({ variants: [promoted], unseen: [] }));
+    repo.write(".fm/cache/evolve.json", JSON.stringify({ variants: [promoted], unseen: [] }));
     assert.deepEqual([...excludedReminders(loadPolicy(repoRuntime(), repo.root))], ["short"]);
     assert.equal(rulesSection(repoRuntime(), fmPaths(repo.root)), "");
   });

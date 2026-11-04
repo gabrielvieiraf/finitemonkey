@@ -1,6 +1,7 @@
 import { toAbsolutePath } from "../core/brand.js";
 import { corePath } from "../core/bundle-files.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Problem } from "../core/problem.js";
 import type { ProjectDefaults } from "../defaults/items.js";
 import { ExitCode } from "../exit-codes.js";
@@ -41,7 +42,7 @@ const problem = (
 export const planProblem = (error: PlanError): Problem => {
   if (error.kind === "bundle") {
     return problem("install_failed", "error.install_failed", "npx finitemonkey@latest init", ExitCode.NotConfigured, {
-      path: ".finitemonkey/runtime/dist/finitemonkey.mjs",
+      path: `${DATA_DIR}/runtime/dist/finitemonkey.mjs`,
       detail: error.detail,
     });
   }

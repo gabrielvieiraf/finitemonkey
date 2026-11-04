@@ -25,9 +25,9 @@ const RULES = [
 const project = (mode: string) =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/feature\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
-    [at(".finitemonkey/policy.yml")]: `guards:\n  reminders: ${mode}\n`,
-    [at(".finitemonkey/rules.yml")]: RULES,
+    [at(".fm/config.yml")]: "lang: en\n",
+    [at(".fm/policy.yml")]: `guards:\n  reminders: ${mode}\n`,
+    [at(".fm/rules.yml")]: RULES,
   });
 
 const sessionContext = async (mode: string): Promise<string> => {

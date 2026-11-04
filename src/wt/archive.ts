@@ -1,6 +1,7 @@
 import { basename, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR, HOME_DATA_DIR } from "../core/data-dir.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { openRepo, type Repo } from "../git/repo.js";
@@ -50,7 +51,7 @@ const ignoredFiles = (runtime: Runtime, repo: Repo, generated: readonly string[]
   if (!listed.ok) return [];
   return listed.stdout
     .split("\u0000")
-    .filter((path) => path !== "" && !isGeneratedPath(path, generated) && !path.startsWith(".finitemonkey/"));
+    .filter((path) => path !== "" && !isGeneratedPath(path, generated) && !path.startsWith(`${DATA_DIR}/`));
 };
 
 const copyIgnored = (
@@ -95,7 +96,7 @@ export const archiveWorktree = (runtime: Runtime, request: ArchiveRequest): Pars
     return reject(`update-ref ${ref}: could not create the archive ref`);
   }
   const target = toAbsolutePath(
-    join(runtime.homeDir(), ".finitemonkey", "archive", basename(request.mainRoot), request.id, stamp),
+    join(runtime.homeDir(), HOME_DATA_DIR, "archive", basename(request.mainRoot), request.id, stamp),
   );
   const kept = copyIgnored(runtime, repo, ignoredFiles(runtime, repo, request.generated), target);
   const again = snapshotTree(runtime, repo, head, `${stamp}-b`);

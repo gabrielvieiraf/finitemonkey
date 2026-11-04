@@ -16,7 +16,7 @@ const BEFORE = "export const limit = 10;\n";
 const AFTER = "export const limit = 20;\n";
 
 const setup = (): Repo => {
-  const repo = makeRepo({ "src/limits.ts": BEFORE, ".finitemonkey/policy.yml": policyWith({ learnings: "active" }) });
+  const repo = makeRepo({ "src/limits.ts": BEFORE, ".fm/policy.yml": policyWith({ learnings: "active" }) });
   repos.push(repo);
   return repo;
 };

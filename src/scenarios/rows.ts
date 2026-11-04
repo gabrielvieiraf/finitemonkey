@@ -14,7 +14,7 @@ export const DEFAULT_AS_USER = [
 export const DEFAULT_SQL = 'psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -At -q';
 
 const MIGRATION_DIR = /(?:^|\/)(?:supabase\/migrations|db\/migrations|prisma\/migrations|migrations)\//;
-const SKIP = /(?:^|\/)(?:node_modules|\.git|dist|\.finitemonkey)\//;
+const SKIP = /(?:^|\/)(?:node_modules|\.git|dist|\.(?:fm|finitemonkey))\//;
 const IDENTITY = /\b(?:auth\.uid|auth\.jwt|current_setting|current_user|session_user)\b/i;
 
 export interface RowsConfig {

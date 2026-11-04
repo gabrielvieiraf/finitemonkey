@@ -37,8 +37,8 @@ const auditRules = async (file: string, text: string): Promise<readonly string[]
   const runtime = fakeRuntime({
     files: {
       [at(`.github/workflows/${file}`)]: text,
-      [at(".finitemonkey/policy.yml")]: "projectLevel: 3\nguards:\n  ci-audit: active\n",
-      [at(".finitemonkey/cache/github.json")]: '{"visibility":"public"}\n',
+      [at(".fm/policy.yml")]: "projectLevel: 3\nguards:\n  ci-audit: active\n",
+      [at(".fm/cache/github.json")]: '{"visibility":"public"}\n',
     },
   });
   const run = await cliJson(["ci", "audit"], { runtime, cwd: AUDIT_ROOT });

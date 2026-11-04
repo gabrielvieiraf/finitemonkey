@@ -4,8 +4,8 @@ Written before the first run. Changes to this file after a run starts go in the 
 
 ## Assignment
 
-- Each feature below reads its mode from `.finitemonkey/policy.yml`. Under `experiments:`, `<feature>: random` turns it on or off per task. The arm comes from a hash of the task id and the feature id, so a task keeps its arm for its whole life.
-- The arm is written to `.finitemonkey/log.jsonl` as `experiment_arm` when the task is created. Analysis is by intention to treat: a task counts in the arm it was given, whether or not the feature ever fired in it.
+- Each feature below reads its mode from `.fm/policy.yml`. Under `experiments:`, `<feature>: random` turns it on or off per task. The arm comes from a hash of the task id and the feature id, so a task keeps its arm for its whole life.
+- The arm is written to `.fm/log.jsonl` as `experiment_arm` when the task is created. Analysis is by intention to treat: a task counts in the arm it was given, whether or not the feature ever fired in it.
 - Tasks without a contract are not assigned. Damage guards (secrets, gate, git, rules) are never in an experiment.
 
 ## Metrics
@@ -45,7 +45,7 @@ A feature is kept when its primary metric moves in the expected direction with t
 
 ## Report
 
-`finitemonkey gain --by-arm` lists, per feature and arm, tasks, completed tasks, gate runs, failed gate runs and the median gate time. The other metrics come from the bench harness. Results are published as they come out, including features that did not help.
+`fm gain --by-arm` lists, per feature and arm, tasks, completed tasks, gate runs, failed gate runs and the median gate time. The other metrics come from the bench harness. Results are published as they come out, including features that did not help.
 
 ## Changes
 

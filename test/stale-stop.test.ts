@@ -53,7 +53,7 @@ const editedRepo = (mode: string | undefined): Repo => {
     ...FILES,
     ...(mode === undefined ? {} : { [POLICY_FILE]: `guards:\n  stale-docs: ${mode}\n` }),
   });
-  target.write(".finitemonkey/state.json", '{"schemaVersion":1,"done":[]}\n');
+  target.write(".fm/state.json", '{"schemaVersion":1,"done":[]}\n');
   target.write("src/app.ts", "export const app = 2;\n");
   return target;
 };
@@ -75,7 +75,7 @@ describe("stale docs at task end", () => {
     const target = editedRepo(undefined);
     assert.equal(await systemMessage(stopInput(target)), "");
     const logged = target
-      .read(".finitemonkey/log.jsonl")
+      .read(".fm/log.jsonl")
       .split("\n")
       .filter((line) => line.includes('"feature_shadow"'));
     assert.equal(logged.length, 1);
@@ -92,7 +92,7 @@ describe("stale docs at task end", () => {
 
   it("never blocks, even with nothing to diff against", async () => {
     const target = repo({});
-    target.write(".finitemonkey/state.json", '{"schemaVersion":1,"done":[]}\n');
+    target.write(".fm/state.json", '{"schemaVersion":1,"done":[]}\n');
     assert.deepEqual(await staleDocsStop(stopInput(target)), { kind: "allow" });
   });
 });
@@ -165,7 +165,7 @@ describe("recap line on the resume card", () => {
     target.write("src/a.ts", "export const a = 3;\n");
     target.commit("chore: tidy");
     assert.deepEqual(recapBriefLines(t, recapBrief(runtime, paths)), [
-      "Last 7 days: 0 tasks finished, 1 changes shipped. `finitemonkey recap` lists them.",
+      "Last 7 days: 0 tasks finished, 1 changes shipped. `fm recap` lists them.",
     ]);
   });
 });

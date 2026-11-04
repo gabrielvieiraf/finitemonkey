@@ -36,7 +36,7 @@ const MONEY = [
 ].join("\n");
 
 const project = (): Repo => {
-  const repo = makeRepo({ "src/lib/money.ts": MONEY, ".finitemonkey/config.yml": "lang: en\n" });
+  const repo = makeRepo({ "src/lib/money.ts": MONEY, ".fm/config.yml": "lang: en\n" });
   repos.push(repo);
   return repo;
 };
@@ -136,7 +136,7 @@ describe("reuse warning: outcome per warning", () => {
         ["parseAmount", "kept"],
       ],
     );
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"reuse.warning","id":1,"name":"formatMoney"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"reuse.warning","id":1,"name":"formatMoney"/);
   });
 });
 
@@ -154,7 +154,7 @@ describe("reuse warning: fails open", () => {
     const outcome = await write(repo, "src/page/x.ts", "export const formatMoney = 1;\n", broken);
     assert.equal(outcome.verdict, "allow");
     assert.equal(contextOf(outcome), "");
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"reuse.failed","detail":"git not found"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"reuse.failed","detail":"git not found"/);
   });
 
   it("lets the edit through and logs the failure when the index throws", async () => {
@@ -169,7 +169,7 @@ describe("reuse warning: fails open", () => {
     };
     const outcome = await write(repo, "src/page/x.ts", "export const formatMoney = 1;\n", throwing);
     assert.equal(outcome.verdict, "allow");
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"reuse.failed","detail":"index exploded"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"reuse.failed","detail":"index exploded"/);
   });
 });
 

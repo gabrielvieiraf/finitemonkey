@@ -66,9 +66,9 @@ const variant = (evaluator: string, tasks: Variant["tasks"], born = "born"): Var
 
 const setup = (files: Readonly<Record<string, string>>, done: readonly string[], active = "now"): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/tasks/now.yml": contract("now"),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active, done }),
-    ".finitemonkey/policy.yml": `${policyWith({ evolve: "active" })}evolve:\n  minTasks: 1\n`,
+    ".fm/tasks/now.yml": contract("now"),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active, done }),
+    ".fm/policy.yml": `${policyWith({ evolve: "active" })}evolve:\n  minTasks: 1\n`,
     ...files,
   });
   repos.push(repo);
@@ -78,7 +78,7 @@ const setup = (files: Readonly<Record<string, string>>, done: readonly string[],
 const digestOf = (repo: Repo): string => scriptsDigest(repoRuntime(), repo.root);
 
 const withVariant = (repo: Repo, value: Variant): void => {
-  repo.write(".finitemonkey/cache/evolve.json", JSON.stringify({ variants: [value], unseen: [] }));
+  repo.write(".fm/cache/evolve.json", JSON.stringify({ variants: [value], unseen: [] }));
 };
 
 const run = (repo: Repo): ReturnType<typeof runEvolve> => runEvolve(repoRuntime(), fmPaths(repo.root), true);
@@ -88,8 +88,8 @@ describe("cumulative selection of policy variants", () => {
     const parent = taskOn("off");
     const repo = setup({}, ["born", parent]);
     const digest = digestOf(repo);
-    repo.write(".finitemonkey/evidence/born.jsonl", finished("born", 1, 1, digest));
-    repo.write(`.finitemonkey/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
+    repo.write(".fm/evidence/born.jsonl", finished("born", 1, 1, digest));
+    repo.write(`.fm/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
     withVariant(
       repo,
       variant(digest, { born: { arm: "active", mode: "active" }, [parent]: { arm: "off", mode: "active" } }),
@@ -106,10 +106,10 @@ describe("cumulative selection of policy variants", () => {
     const other = taskOn("off", [parent]);
     const repo = setup({}, [mine, second, parent, other], mine);
     const digest = digestOf(repo);
-    repo.write(`.finitemonkey/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
-    repo.write(`.finitemonkey/evidence/${second}.jsonl`, finished(second, 2, 1, digest));
-    repo.write(`.finitemonkey/evidence/${parent}.jsonl`, finished(parent, 3, 5, digest, true));
-    repo.write(`.finitemonkey/evidence/${other}.jsonl`, finished(other, 4, 5, digest, true));
+    repo.write(`.fm/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
+    repo.write(`.fm/evidence/${second}.jsonl`, finished(second, 2, 1, digest));
+    repo.write(`.fm/evidence/${parent}.jsonl`, finished(parent, 3, 5, digest, true));
+    repo.write(`.fm/evidence/${other}.jsonl`, finished(other, 4, 5, digest, true));
     withVariant(
       repo,
       variant(digest, {
@@ -142,8 +142,8 @@ describe("cumulative selection of policy variants", () => {
     const parent = taskOn("off");
     const repo = setup({}, [mine, parent], mine);
     const digest = digestOf(repo);
-    repo.write(`.finitemonkey/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
-    repo.write(`.finitemonkey/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
+    repo.write(`.fm/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
+    repo.write(`.fm/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
     withVariant(
       repo,
       variant("0".repeat(32), { [mine]: { arm: "active", mode: "active" }, [parent]: { arm: "off", mode: "active" } }),
@@ -159,8 +159,8 @@ describe("cumulative selection of policy variants", () => {
     const parent = taskOn("off");
     const repo = setup({}, [mine, parent], mine);
     const digest = digestOf(repo);
-    repo.write(`.finitemonkey/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
-    repo.write(`.finitemonkey/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
+    repo.write(`.fm/evidence/${mine}.jsonl`, finished(mine, 1, 1, digest));
+    repo.write(`.fm/evidence/${parent}.jsonl`, finished(parent, 2, 5, digest, true));
     withVariant(
       repo,
       variant(digest, { [mine]: { arm: "active", mode: "shadow" }, [parent]: { arm: "off", mode: "shadow" } }),
@@ -172,7 +172,7 @@ describe("cumulative selection of policy variants", () => {
     const now = Date.parse("2026-10-20T00:00:00.000Z");
     const times = (count: number): number[] => Array.from({ length: count }, (_, index) => now - index * 60_000);
     const repo = setup(
-      { ".finitemonkey/cache/alert-budget.json": JSON.stringify({ prose: { fired: times(10), dismissed: times(4) } }) },
+      { ".fm/cache/alert-budget.json": JSON.stringify({ prose: { fired: times(10), dismissed: times(4) } }) },
       [],
     );
     const runtime = { ...repoRuntime(), now: () => "2026-10-20T00:00:00.000Z" };
@@ -183,7 +183,7 @@ describe("cumulative selection of policy variants", () => {
     assert.deepEqual(stored.change, CHANGE);
     assert.equal(loadPolicy(repoRuntime(), repo.root).evolved["prose"], undefined);
     const other = taskOn("active", ["now"]);
-    repo.write(".finitemonkey/state.json", JSON.stringify({ schemaVersion: 1, active: other, done: [] }));
+    repo.write(".fm/state.json", JSON.stringify({ schemaVersion: 1, active: other, done: [] }));
     assert.equal(loadPolicy(repoRuntime(), repo.root).evolved["prose"], "shadow");
   });
 });

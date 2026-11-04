@@ -5,7 +5,7 @@
   "request": "add a Dockerfile",
   "information": "stable company that already runs containers",
   "files": {
-    ".finitemonkey/goals.yml": "context:\n  stage:\n    value: stable\n    origin: stated\n  demonstrated:\n    value: [containers]\n    origin: stated\n"
+    ".fm/goals.yml": "context:\n  stage:\n    value: stable\n    origin: stated\n  demonstrated:\n    value: [containers]\n    origin: stated\n"
   },
   "contract": "id: work\ngoal: reproducible deploys\nsize: M\nscope:\n  paths: [src/]\nacceptance:\n  - id: t\n    check: command\n    run: npm test\n",
   "change": {

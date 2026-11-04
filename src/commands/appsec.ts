@@ -5,6 +5,7 @@ import { APPSEC_CHECK, type AppsecFinding, OWASP } from "../appsec/types.js";
 import { stringOption } from "../core/args.js";
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
@@ -103,7 +104,7 @@ const runScan = (ctx: Ctx, acceptExisting: boolean, reason: string): CommandResu
       code: "appsec_found",
       messageKey: "appsec.scan.blocked",
       params: { count: blocking },
-      fix: "fix the findings, list public routes in .finitemonkey/routes-public.yml, or have the person accept them with finitemonkey findings accept",
+      fix: "fix the findings, list public routes in .fm/routes-public.yml, or have the person accept them with finitemonkey findings accept",
       exitCode: ExitCode.CheckFailed,
       data,
     },
@@ -150,7 +151,7 @@ export const appsecRulesCommand: CommandSpec = {
     const data = { schema: "finitemonkey/appsec-rules@1", stack, file: SEMGREP_FILE, text };
     if (args.values["write"] !== true)
       return Promise.resolve(success(data, [text, ctx.t("appsec.rules.preview", { file: SEMGREP_FILE })]));
-    const made = ctx.runtime.mkdir(toAbsolutePath(".finitemonkey/semgrep", root));
+    const made = ctx.runtime.mkdir(toAbsolutePath(`${DATA_DIR}/semgrep`, root));
     const saved = made.ok ? ctx.runtime.writeText(toAbsolutePath(SEMGREP_FILE, root), text) : made;
     if (!saved.ok) return Promise.resolve(failureFrom(ctx.t, writeFailed(SEMGREP_FILE, saved.error)));
     return Promise.resolve(success(data, [ctx.t("appsec.rules.written", { file: SEMGREP_FILE })]));

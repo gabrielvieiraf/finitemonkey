@@ -1,6 +1,7 @@
 import { relative } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
@@ -31,7 +32,7 @@ export const recordLookRead = (
 
 export const lookCaptureOf = (paths: FmPaths, file: string): string | undefined => {
   const relativePath = toPosixPath(relative(paths.root, toAbsolutePath(file, paths.root)));
-  return relativePath.startsWith(".finitemonkey/look/") && relativePath.endsWith(".png") ? relativePath : undefined;
+  return relativePath.startsWith(`${DATA_DIR}/look/`) && relativePath.endsWith(".png") ? relativePath : undefined;
 };
 
 export const lookReadTracker: HookHandler = (input) => {

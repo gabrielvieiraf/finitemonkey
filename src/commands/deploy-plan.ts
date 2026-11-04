@@ -65,7 +65,7 @@ const showPlan = (ctx: Ctx, root: AbsolutePath): CommandResult => {
   const result = success(data, [...planLines(ctx, plan, level), ...confirmLine(ctx, level)]);
   return level.source === "confirmed"
     ? result
-    : { ...result, next: `finitemonkey deploy plan --level ${String(level.level)} --yes` };
+    : { ...result, next: `fm deploy plan --level ${String(level.level)} --yes` };
 };
 
 const parseLevel = (raw: string | undefined): DeployLevel | "invalid" | undefined => {

@@ -68,9 +68,9 @@ describe("secrets on Windows: backslash paths and CRLF git output", () => {
 
   it("the fake file system treats both separators as the same file", () => {
     const runtime = fakeRuntime();
-    runtime.writeText(toAbsolutePath(`${ROOT}\\.finitemonkey\\incidents\\x.json`), "{}");
-    assert.ok(runtime.readText(toAbsolutePath(`${ROOT}/.finitemonkey/incidents/x.json`)).ok);
-    const listed = runtime.listDir(toAbsolutePath(`${ROOT}\\.finitemonkey\\incidents`));
+    runtime.writeText(toAbsolutePath(`${ROOT}\\.fm\\incidents\\x.json`), "{}");
+    assert.ok(runtime.readText(toAbsolutePath(`${ROOT}/.fm/incidents/x.json`)).ok);
+    const listed = runtime.listDir(toAbsolutePath(`${ROOT}\\.fm\\incidents`));
     assert.ok(listed.ok);
     assert.deepEqual(listed.value, ["x.json"]);
   });

@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseMergeTreeConflicts } from "../gate/pr-parse.js";
@@ -109,8 +110,8 @@ const recordAcceptance = (
   acceptance: Acceptance,
   files: readonly ChangedFile[],
 ): void => {
-  const path = toAbsolutePath(join(root, ".finitemonkey", "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey", "pr")));
+  const path = toAbsolutePath(join(root, DATA_DIR, "pr", `${branch.replace(/[^A-Za-z0-9._-]+/g, "-")}.json`));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR, "pr")));
   const record = {
     schema: "finitemonkey/pr-scope@1",
     branch,

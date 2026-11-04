@@ -23,7 +23,7 @@ const fresh = (files: Readonly<Record<string, string>> = {}, policy = ACTIVE): R
     "src/a.js": "export const a = 1;\n",
     "test/a.test.js": PASSING_TEST,
     "package.json": PACKAGE("node --test"),
-    ".finitemonkey/policy.yml": policy,
+    ".fm/policy.yml": policy,
     ...files,
   });
   repos.push(repo);

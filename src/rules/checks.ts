@@ -8,7 +8,7 @@ import { pathMatches, textMatches } from "./match.js";
 import { effectiveRules } from "./preset.js";
 import type { ProjectRule } from "./types.js";
 
-const FIX = "follow the project rule named in the failure, or change it in .finitemonkey/rules.yml";
+const FIX = "follow the project rule named in the failure, or change it in .fm/rules.yml";
 const RECORD = "\u0001";
 
 export const compiledFor = (

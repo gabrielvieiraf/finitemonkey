@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
@@ -15,12 +16,12 @@ import {
   RISK_FIX,
 } from "./types.js";
 
-export const INFRA_FILE = ".finitemonkey/infra.yml";
-export const HOSTS_FILE = ".finitemonkey/hosts.local.yml";
+export const INFRA_FILE = `${DATA_DIR}/infra.yml`;
+export const HOSTS_FILE = `${DATA_DIR}/hosts.local.yml`;
 export const INFRA_SCHEMA = "finitemonkey/infra@1";
 const HEADER = [
   "# Written by finitemonkey infra. No host, IP or secret goes here:",
-  "# real addresses live in .finitemonkey/hosts.local.yml, which git ignores.",
+  "# real addresses live in .fm/hosts.local.yml, which git ignores.",
 ];
 
 export type LevelSource = "detected" | "confirmed";

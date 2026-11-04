@@ -104,7 +104,7 @@ describe("evidence freshness", () => {
 
   it("with evidence-inputs off, inputs are ignored", () => {
     const repo = fresh();
-    repo.write(".finitemonkey/policy.yml", "guards:\n  evidence-inputs: off\n");
+    repo.write(".fm/policy.yml", "guards:\n  evidence-inputs: off\n");
     assert.equal(runs(repo, withNode("v22.0.0")), 1);
     assert.equal(runs(repo, withNode("v24.1.0")), 1);
   });

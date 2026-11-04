@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/stale@1.json",
   "title": "finitemonkey/stale@1",
-  "description": "`data` of `finitemonkey stale --json`: doc lines whose status the code no longer backs. Generated from StaleReport in src/stale/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm stale --json`: doc lines whose status the code no longer backs. Generated from StaleReport in src/stale/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

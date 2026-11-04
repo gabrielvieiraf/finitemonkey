@@ -72,10 +72,10 @@ const project = (head: string): { readonly repo: TempRepo; readonly seen: string
   );
   write(
     repo.root,
-    ".finitemonkey/config.yml",
+    ".fm/config.yml",
     `blind:\n  writer: node ${JSON.stringify(join(tools, "writer.cjs").replaceAll("\\", "/"))}\n`,
   );
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  blind-tests: active\n");
+  write(repo.root, ".fm/policy.yml", "guards:\n  blind-tests: active\n");
   trustContract(repo.root, "max", CONTRACT.replace("id: max", `id: max\nbase: ${git(repo.root, "rev-parse", "HEAD")}`));
   write(repo.root, "src/max.js", head);
   return { repo, seen };

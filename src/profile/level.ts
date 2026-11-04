@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR, HOME_DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, parseConfigYaml } from "../git/project-config.js";
 
@@ -10,7 +11,7 @@ export type GitLevel = (typeof GIT_LEVELS)[number];
 
 export const DEFAULT_GIT_LEVEL: GitLevel = "intermediate";
 
-export const PROFILE_FILE = ".finitemonkey/profile.yml";
+export const PROFILE_FILE = `${DATA_DIR}/profile.yml`;
 
 export const INFRA_DOMAIN = "infrastructure";
 
@@ -63,7 +64,7 @@ const levelIn = (runtime: Runtime, path: AbsolutePath): GitLevel | undefined => 
 
 export const gitLevel = (runtime: Runtime, root: AbsolutePath): GitLevel =>
   levelIn(runtime, toAbsolutePath(join(root, PROFILE_FILE))) ??
-  levelIn(runtime, toAbsolutePath(join(runtime.homeDir(), PROFILE_FILE))) ??
+  levelIn(runtime, toAbsolutePath(join(runtime.homeDir(), HOME_DATA_DIR, "profile.yml"))) ??
   DEFAULT_GIT_LEVEL;
 
 export const levelRules = (runtime: Runtime, root: AbsolutePath): LevelRules => LEVEL_RULES[gitLevel(runtime, root)];

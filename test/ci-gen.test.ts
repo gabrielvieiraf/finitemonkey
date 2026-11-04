@@ -86,7 +86,7 @@ describe("ci gen", () => {
 
   it("adds merge_group when the repository has a merge queue", async () => {
     const cache = JSON.stringify({ repo: "acme/app", defaultBranch: "main", rules: ["merge_queue"], mergeQueue: true });
-    const { read } = await generate({ ...NODE_PROJECT, ".finitemonkey/cache/github.json": cache });
+    const { read } = await generate({ ...NODE_PROJECT, ".fm/cache/github.json": cache });
     assert.match(read(".github/workflows/ci.yml"), /^ {2}merge_group:$/m);
   });
 
@@ -117,7 +117,7 @@ describe("ci gen", () => {
   });
 
   it("security checks production drift only when deploy is declared and no drift workflow exists", async () => {
-    const infra = { ".finitemonkey/infra.yml": "level: 1\n" };
+    const infra = { ".fm/infra.yml": "level: 1\n" };
     const withDrift = (await generate({ ...NODE_PROJECT, ...infra })).read(".github/workflows/security.yml");
     assert.match(withDrift, /deploy check --issue/);
     const ownWorkflow = await generate({ ...NODE_PROJECT, ...infra, ".github/workflows/drift.yml": "name: drift\n" });
@@ -148,7 +148,7 @@ describe("ci gen", () => {
   it("adds the attribution job unless the project turned no-attribution off", async () => {
     const on = await generate(NODE_PROJECT);
     assert.match(on.read(".github/workflows/ci.yml"), /no AI attribution/);
-    const off = await generate({ ...NODE_PROJECT, ".finitemonkey/config.yml": "defaults:\n  no-attribution: off\n" });
+    const off = await generate({ ...NODE_PROJECT, ".fm/config.yml": "defaults:\n  no-attribution: off\n" });
     assert.doesNotMatch(off.read(".github/workflows/ci.yml"), /no AI attribution/);
   });
 

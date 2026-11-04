@@ -108,7 +108,7 @@ export const fixtureRepo = async (pages: FixturePages, options: FixtureOptions):
   const port = await freePort();
   const repo = makeRepo({
     "server.js": serverSource(pages),
-    ".finitemonkey/look.yml": [
+    ".fm/look.yml": [
       `port: ${String(port)}`,
       "start: node server.js",
       "routes:",
@@ -116,7 +116,7 @@ export const fixtureRepo = async (pages: FixturePages, options: FixtureOptions):
       ...(options.look ?? []),
       "",
     ].join("\n"),
-    ...(options.policy === undefined ? {} : { ".finitemonkey/policy.yml": options.policy }),
+    ...(options.policy === undefined ? {} : { ".fm/policy.yml": options.policy }),
     ...options.files,
   });
   activate(repo);

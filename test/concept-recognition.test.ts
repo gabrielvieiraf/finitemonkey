@@ -117,7 +117,7 @@ describe("concept recognition from what the work touches", () => {
   });
 
   it("appsec findings record their concept through the rule's CWE, as exposure only", () => {
-    const runtime = fakeRuntime({ fs: memoryFs({ [at(".finitemonkey/config.yml")]: "lang: en\n" }) });
+    const runtime = fakeRuntime({ fs: memoryFs({ [at(".fm/config.yml")]: "lang: en\n" }) });
     const events = recordFindingConcepts(
       runtime,
       PATHS,
@@ -150,7 +150,7 @@ describe("concept recognition from what the work touches", () => {
   it("an installed package's own keywords and the person's map extend the shipped map", () => {
     const fs = memoryFs({
       [at("node_modules/tiny-money/package.json")]: JSON.stringify({ name: "tiny-money", keywords: ["Currency"] }),
-      [at(".finitemonkey/conceitos-map.json")]: JSON.stringify({ packages: { "acme-ledger": "backend/money/ledger" } }),
+      [at(".fm/conceitos-map.json")]: JSON.stringify({ packages: { "acme-ledger": "backend/money/ledger" } }),
     });
     const map = packageMapOf(fakeRuntime({ fs }), PATHS);
     assert.deepEqual(pairs(recognizeCode({ file: "src/a.ts", lines: ['import m from "tiny-money";'] }, map)), [
@@ -168,7 +168,7 @@ const added = (path: string, ...texts: readonly string[]): readonly AddedLine[] 
 
 describe("model proposals stay in shadow", () => {
   it("a proposal is stored with origin model-proposed and never moves a band", () => {
-    const runtime = fakeRuntime({ fs: memoryFs({ [at(".finitemonkey/config.yml")]: "lang: en\n" }) });
+    const runtime = fakeRuntime({ fs: memoryFs({ [at(".fm/config.yml")]: "lang: en\n" }) });
     const drafts = changeEvents(added("src/odd.ts", "export const f = (x) => x;"), {
       agentFiles: new Set(),
       repaired: true,

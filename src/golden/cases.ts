@@ -2,12 +2,13 @@ import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import { nowMs } from "../core/clock.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
 import { compareOutput, type GoldenDifference } from "./compare.js";
 
 export const GOLDEN_FEATURE = "golden";
-export const GOLDEN_DIR = ".finitemonkey/golden";
+export const GOLDEN_DIR = `${DATA_DIR}/golden`;
 export const CASE_PLACEHOLDER = "{case}";
 export const DEFAULT_CASE_TIMEOUT_MS = 60_000;
 const CASE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;

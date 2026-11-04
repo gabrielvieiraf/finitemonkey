@@ -1,11 +1,11 @@
 import type { GeneratedTemplates } from "./types.js";
 
 export const en: GeneratedTemplates = {
-  configHeader: "Finite Monkey project settings. Commit this file. `finitemonkey update` keeps your edits.",
+  configHeader: "Finite Monkey project settings. Commit this file. `fm update` keeps your edits.",
   policyHeader: [
     "Guard policy for this project. Modes: off, shadow (record what it would block), active.",
     "The guards for secrets, production, lost git work and false done stay active whatever this file says.",
-    "A guard missing from this list keeps its default: active, or shadow for new guards until promoteAfter firings pass without a false positive. Run `finitemonkey policy explain` to see each mode and where it came from.",
+    "A guard missing from this list keeps its default: active, or shadow for new guards until promoteAfter firings pass without a false positive. Run `fm policy explain` to see each mode and where it came from.",
   ],
   agentsBlock: ({ gate, doctor }) => [
     "## Finite Monkey",

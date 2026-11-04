@@ -130,7 +130,7 @@ const reportOf = (
     id: run.integration.entry.id,
   },
   conclusion: conclusionFor(run, parts.outcome),
-  undo: `finitemonkey wt archive ${run.integration.entry.id}`,
+  undo: `fm wt archive ${run.integration.entry.id}`,
   reportPath: reportPathFor(commonDir, stamp),
   ...parts,
 });

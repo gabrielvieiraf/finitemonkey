@@ -12,7 +12,7 @@ import { fmPaths } from "../src/task/paths.js";
 import { fakeRuntime } from "./support.js";
 
 const ROOT = toAbsolutePath(join("/home", "ana", "app"));
-const ACTIVE = { [join(ROOT, ".finitemonkey", "policy.yml")]: "guards:\n  statusline-loop: active\n" };
+const ACTIVE = { [join(ROOT, ".fm", "policy.yml")]: "guards:\n  statusline-loop: active\n" };
 
 const gates = (files: Readonly<Record<string, string>>, statuses: readonly EvidenceStatus[]) => {
   const runtime = fakeRuntime({ files });

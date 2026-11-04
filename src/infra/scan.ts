@@ -11,7 +11,7 @@ import type { HostEntry, Inventory, SourceFile } from "./types.js";
 export const MAX_FILES = 20_000;
 export const MAX_READ = 400;
 export const MAX_BYTES = 256 * 1024;
-const SKIP = /(^|\/)(node_modules|vendor|dist|build|\.git|\.finitemonkey)\//;
+const SKIP = /(^|\/)(node_modules|vendor|dist|build|\.git|\.(?:fm|finitemonkey))\//;
 
 export const listProjectFiles = (runtime: Pick<Runtime, "git">, root: AbsolutePath): readonly string[] => {
   const listed = runtime.git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"], root);

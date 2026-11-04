@@ -198,7 +198,7 @@ describe("gen lint plan", () => {
   it("is off when policy.yml turns lint-gen off", async () => {
     const root = toAbsolutePath("/home/ana/project");
     const runtime = fakeRuntime({
-      files: { [`${root}/package.json`]: PACKAGE, [`${root}/.finitemonkey/policy.yml`]: "guards:\n  lint-gen: off\n" },
+      files: { [`${root}/package.json`]: PACKAGE, [`${root}/.fm/policy.yml`]: "guards:\n  lint-gen: off\n" },
     });
     const run = await cliJson(["gen", "lint", "--yes"], { runtime, cwd: root });
     assert.equal(field(run.body, "data", "mode"), "off");

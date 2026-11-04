@@ -26,10 +26,10 @@ after(() => {
 const project = (): TempRepo => {
   const repo = tempRepo({ "src/max.mjs": MAX });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  claim-checks: active\n");
+  write(repo.root, ".fm/policy.yml", "guards:\n  claim-checks: active\n");
   write(
     repo.root,
-    ".finitemonkey/decisions.jsonl",
+    ".fm/decisions.jsonl",
     `${JSON.stringify({
       id: "d1",
       source: "decide",

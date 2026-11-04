@@ -18,7 +18,7 @@ export interface FalsePositiveData {
   readonly falsePositives: number;
 }
 
-const FIX = `finitemonkey policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
+const FIX = `fm policy false-positive <${OPTIONAL_GUARDS.join("|")}>`;
 
 const recordFalsePositive = (ctx: Ctx, guard: string): CommandResult<FalsePositiveData> => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("policy.error.person_only", FIX));
@@ -63,7 +63,7 @@ const invalidPolicy = (data: PolicyExplainData): Problem<PolicyExplainData> => (
   code: "policy_invalid",
   messageKey: "policy.error.invalid",
   params: { count: data.errors },
-  fix: "fix the keys named above in .finitemonkey/policy.yml, then run `finitemonkey policy explain` again",
+  fix: "fix the keys named above in .fm/policy.yml, then run `fm policy explain` again",
   exitCode: ExitCode.Usage,
   data,
 });

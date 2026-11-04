@@ -1,4 +1,5 @@
 import { stringOption } from "../core/args.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { usageProblem } from "../core/problem.js";
 import { failureFrom, success } from "../core/result.js";
 import { logEvent } from "../evidence/log.js";
@@ -88,7 +89,7 @@ export const guardianAssumeVerifyCommand: CommandSpec = {
         item.id === id ? { ...item, status, verify: `${item.verify} -> ${evidence}`.trim() } : item,
       );
       if (!writeAssumptions(ctx.runtime, paths, next))
-        return failureFrom(ctx.t, guardianWriteProblem(".finitemonkey/assumptions.jsonl"));
+        return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/assumptions.jsonl`));
       return success({ schema: ASSUMPTIONS_SCHEMA, id, status }, [
         ctx.t("guardian.assumptions.marked", { id, status }),
       ]);

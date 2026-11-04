@@ -20,11 +20,11 @@ after(() => {
   for (const repo of repos) repo.cleanup();
 });
 
-const IGNORE = ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/infra.yml\n";
+const IGNORE = ".fm/*\n!.fm/config.yml\n!.fm/infra.yml\n";
 const SSH_SCRIPT = "#!/bin/sh\nssh deploy@shop.example.com 'docker compose pull && docker compose up -d'\n";
 
 const project = (files: Readonly<Record<string, string>>): Repo => {
-  const repo = makeRepo({ ".gitignore": IGNORE, ".finitemonkey/config.yml": "lang: en\n", ...files });
+  const repo = makeRepo({ ".gitignore": IGNORE, ".fm/config.yml": "lang: en\n", ...files });
   repos.push(repo);
   return repo;
 };
@@ -83,7 +83,7 @@ describe("deploy plan", () => {
   it("asks once for the level, only a person confirms it, and the answer sticks", async () => {
     const repo = project({ "scripts/deploy.sh": SSH_SCRIPT });
     const first = await cliJson(["deploy", "plan"], { cwd: repo.root, runtime: repoRuntime() });
-    assert.equal(first.body["next"], "finitemonkey deploy plan --level 1 --yes");
+    assert.equal(first.body["next"], "fm deploy plan --level 1 --yes");
     const agent = await cli(["deploy", "plan", "--level", "1", "--yes"], {
       cwd: repo.root,
       runtime: repoRuntime(),
@@ -97,12 +97,12 @@ describe("deploy plan", () => {
       stdin: tty(),
     });
     assert.equal(person.code, 0, person.stdout);
-    assert.match(repo.read(".finitemonkey/infra.yml"), /^level_source: confirmed$/m);
+    assert.match(repo.read(".fm/infra.yml"), /^level_source: confirmed$/m);
     const again = await cliJson(["deploy", "plan"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(again.body["next"], undefined);
     assert.equal(field(again.body, "data", "levelSource"), "confirmed");
     await cli(["infra", "--yes"], { cwd: repo.root, runtime: repoRuntime() });
-    assert.match(repo.read(".finitemonkey/infra.yml"), /^level_source: confirmed$/m);
+    assert.match(repo.read(".fm/infra.yml"), /^level_source: confirmed$/m);
   });
 
   it("refuses a level above the detected one without an accepted decision", async () => {

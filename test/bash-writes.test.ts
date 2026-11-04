@@ -22,7 +22,7 @@ after(() => {
 });
 
 const repoWith = (files: Readonly<Record<string, string>>): Repo => {
-  const repo = makeRepo({ ".finitemonkey/.gitkeep": "", ...files });
+  const repo = makeRepo({ ".fm/.gitkeep": "", ...files });
   cleanups.push(repo.cleanup);
   return repo;
 };
@@ -37,7 +37,7 @@ const bash = (repo: Repo, command: string, id: string) => ({
 
 const logOf = (repo: Repo): string => {
   try {
-    return repo.read(".finitemonkey/log.jsonl");
+    return repo.read(".fm/log.jsonl");
   } catch {
     return "";
   }
@@ -47,18 +47,18 @@ describe("bash writes: the decision hold", () => {
   it("holds sed -i on a decision record at the default level and only logs it at level light", async () => {
     const repo = repoWith({ "docs/plan/02-decision-queue.md": RECORD });
     assert.equal(denied(await bash(repo, SED, "t0").pre()), true);
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/policy.yml", "level: light\n");
     const shadow = await bash(repo, SED, "t1").pre();
     assert.equal(denied(shadow), false);
     assert.match(logOf(repo), /"event":"guard_shadow","guard":"bash-writes"/);
-    repo.write(".finitemonkey/policy.yml", `level: light\n${policyWith({ "bash-writes": "active" })}`);
+    repo.write(".fm/policy.yml", `level: light\n${policyWith({ "bash-writes": "active" })}`);
     assert.equal(denied(await bash(repo, SED, "t2").pre()), true);
   });
 
   it("holds redirects, tee and interpreter one-liners, and lets reads and other files through", async () => {
     const repo = repoWith({
       "docs/plan/02-decision-queue.md": RECORD,
-      ".finitemonkey/policy.yml": policyWith({ "bash-writes": "active" }),
+      ".fm/policy.yml": policyWith({ "bash-writes": "active" }),
     });
     const held = [
       "echo 'status: accepted' >> docs/plan/02-decision-queue.md",
@@ -190,7 +190,7 @@ describe("provenance block: the CI step", () => {
 
   it("passes an untouched block and fails a hand-edited one, without the local ledger", async () => {
     const { repo, block } = branchWithBlock();
-    repo.remove(".finitemonkey");
+    repo.remove(".fm");
     const intact = await ciGate(repo, `Summary\r\n\r\n${block.replace(/\n/g, "\r\n")}\r\n`, "intact");
     assert.equal(intact.code, 0, intact.stdout);
     const edited = await ciGate(repo, `Summary\n\n${block.replace("unknown", "agent edits (3)")}\n`, "edited");

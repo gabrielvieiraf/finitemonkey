@@ -18,9 +18,9 @@ after(() => {
 
 const project = (policy: string, id = "t1"): Repo => {
   const repo = makeRepo({
-    ".gitignore": ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\n",
-    ".finitemonkey/config.yml": "lang: en\nred_green:\n  paths: [src/**]\n",
-    ".finitemonkey/policy.yml": policy,
+    ".gitignore": ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\n",
+    ".fm/config.yml": "lang: en\nred_green:\n  paths: [src/**]\n",
+    ".fm/policy.yml": policy,
     "package.json": '{"type": "module"}\n',
     "src/math.mjs": "export const add = (a, b) => 0;\n",
   });
@@ -111,7 +111,7 @@ describe("red before green", () => {
     const seen: string[] = [];
     const outcome = check(repo, seen);
     const event = repo
-      .read(join(".finitemonkey", "log.jsonl"))
+      .read(join(".fm", "log.jsonl"))
       .split("\n")
       .map((line) => parseJsonObject(line))
       .flatMap((parsed) => (parsed.ok && parsed.value["event"] === "red_green" ? [parsed.value] : []))[0];
@@ -131,7 +131,7 @@ describe("red before green", () => {
     repo.write("src/math.mjs", "export const add = (a, b) => a + b;\n");
     const seen: string[] = [];
     assert.equal(check(repo, seen).notes[0]?.key, "gate.red_green.off");
-    assert.ok(repo.read(join(".finitemonkey", "log.jsonl")).includes('"arm":"off"'));
+    assert.ok(repo.read(join(".fm", "log.jsonl")).includes('"arm":"off"'));
     assert.ok(!seen.includes("node --test"));
   });
 });

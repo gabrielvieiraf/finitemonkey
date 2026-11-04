@@ -25,7 +25,7 @@ interface World {
 }
 
 const world = (extra: Partial<JudgeDeps> = {}): World => {
-  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.finitemonkey")]);
+  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.fm")]);
   return { fs, deps: { runtime: fakeRuntime({ fs }), paths, ...extra } };
 };
 
@@ -191,7 +191,7 @@ describe("judge core: invariants", () => {
     assert.equal(exported.claims.length, 1);
     assert.equal(exported.support.length, 1);
     call(w.deps, { verb: "forget" });
-    const left = Object.keys(w.fs.files()).filter((path) => path.includes("/.finitemonkey/judge"));
+    const left = Object.keys(w.fs.files()).filter((path) => path.includes("/.fm/judge"));
     assert.deepEqual(left, []);
     assert.ok(!COMMITTED_STATE.some((path) => path.startsWith("judge")));
   });

@@ -28,11 +28,7 @@ export const teamReportCommand: CommandSpec = {
       if (featureMode(ctx.runtime, paths, TEAM_FEATURE) === "off")
         return failureFrom(
           ctx.t,
-          usageProblem(
-            "invalid_arguments",
-            "team.report.off",
-            "set guards.team-dashboard: shadow in .finitemonkey/policy.yml",
-          ),
+          usageProblem("invalid_arguments", "team.report.off", "set guards.team-dashboard: shadow in .fm/policy.yml"),
         );
       const k = Number(stringOption(args.values, "k") ?? DEFAULT_K);
       if (!Number.isInteger(k) || k < 1)

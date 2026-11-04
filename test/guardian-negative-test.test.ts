@@ -28,8 +28,8 @@ const CONTRACT = [
 
 const setup = (): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/tasks/coupons.yml": CONTRACT,
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "coupons", done: [] }),
+    ".fm/tasks/coupons.yml": CONTRACT,
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "coupons", done: [] }),
     "src/coupon.ts": "export const apply = (total: number): number => total;\n",
   });
   repos.push(repo);

@@ -23,7 +23,7 @@ const PATHS = fmPaths(PROJECT);
 const projectFs = (files: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/main\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
+    [at(".fm/config.yml")]: "lang: en\n",
     ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
   });
 
@@ -70,7 +70,7 @@ describe("concept book: the same block in two tones", () => {
 
   it("a person advanced in security gets the one-line message from the start", async () => {
     const perfil = "domains:\n  security:\n    tool: 80\n    knowledge: 85\n";
-    const outcome = parts(await fire(projectFs({ ".finitemonkey/perfil.yml": perfil }), "PreToolUse", secretWrite));
+    const outcome = parts(await fire(projectFs({ ".fm/perfil.yml": perfil }), "PreToolUse", secretWrite));
     assert.doesNotMatch(outcome.message, /Why it matters/);
     assert.match(outcome.reason, /blocked/);
   });
@@ -78,7 +78,7 @@ describe("concept book: the same block in two tones", () => {
 
 describe("concept book: updated in the background at Stop, local and deleted by perfil forget", () => {
   it("Stop leaves the message for a background update, which records only concepts the work already named", async () => {
-    const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  webhook:\n    level: seen\n" });
+    const fs = projectFs({ ".fm/conceitos.yml": "concepts:\n  webhook:\n    level: seen\n" });
     const spawned: string[][] = [];
     await fire(
       fs,
@@ -90,7 +90,7 @@ describe("concept book: updated in the background at Stop, local and deleted by 
     const runtime = fakeRuntime({ fs });
     const updated = await cliJson(["conceitos", "update"], { cwd: PROJECT, runtime });
     assert.deepEqual(field(updated.body, "data", "seen"), ["backend/integration/webhook"]);
-    assert.equal(fs.read(at(".finitemonkey/cache/conceitos-pending.txt")), undefined);
+    assert.equal(fs.read(at(".fm/cache/conceitos-pending.txt")), undefined);
     const book = readBook(runtime, PATHS);
     assert.equal(book.concepts["backend/integration/webhook"]?.level, "seen");
     assert.equal(book.concepts["backend/reliability/idempotency"], undefined);
@@ -110,7 +110,7 @@ describe("concept book: updated in the background at Stop, local and deleted by 
   });
 
   it("the teacher agent marks the concepts it explained, only among the concepts already in the book", async () => {
-    const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  migration:\n    level: seen\n" });
+    const fs = projectFs({ ".fm/conceitos.yml": "concepts:\n  migration:\n    level: seen\n" });
     await fire(fs, "PostToolUse", {
       tool_name: "Agent",
       tool_input: { subagent_type: "finitemonkey:teacher", prompt: "Explain database migration and idempotency" },
@@ -122,16 +122,16 @@ describe("concept book: updated in the background at Stop, local and deleted by 
   });
 
   it("lives in an ignored path and perfil forget deletes it", async () => {
-    const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  api:\n    level: seen\n" });
+    const fs = projectFs({ ".fm/conceitos.yml": "concepts:\n  api:\n    level: seen\n" });
     assert.ok(!COMMITTED_STATE.some((kept) => "conceitos.yml".startsWith(kept)));
     const runtime = fakeRuntime({ fs });
     const forgot = await cliJson(["perfil", "forget"], { cwd: PROJECT, runtime });
     assert.equal(field(forgot.body, "data", "removed"), 1);
-    assert.equal(fs.read(at(".finitemonkey/conceitos.yml")), undefined);
+    assert.equal(fs.read(at(".fm/conceitos.yml")), undefined);
   });
 
-  it("leaves .finitemonkey only through conceitos export", async () => {
-    const fs = projectFs({ ".finitemonkey/conceitos.yml": "concepts:\n  api:\n    level: seen\n" });
+  it("leaves .fm only through conceitos export", async () => {
+    const fs = projectFs({ ".fm/conceitos.yml": "concepts:\n  api:\n    level: seen\n" });
     const exported = await cliJson(["conceitos", "export"], { cwd: PROJECT, runtime: fakeRuntime({ fs }) });
     assert.equal(exported.code, 0);
     assert.equal(field(exported.body, "data", "concepts", "backend/api/endpoint", "level"), "seen");
@@ -151,12 +151,12 @@ describe("concept book: alarm when the blueprint grows and the book stays flat",
   it("fires once on the fixture and proposes a you-do-I-review task", async () => {
     const data = fixture();
     const fs = projectFs({
-      ".finitemonkey/conceitos.yml": String(data["book"]),
-      ".finitemonkey/cache/planta.json": planta(data["plantaBefore"]),
+      ".fm/conceitos.yml": String(data["book"]),
+      ".fm/cache/planta.json": planta(data["plantaBefore"]),
     });
     const quiet = parts2(await fire(fs, "Stop", { stop_hook_active: false, last_assistant_message: "ok" }));
     assert.equal(quiet, "");
-    fs.writeText(at(".finitemonkey/cache/planta.json"), planta(data["plantaAfter"]));
+    fs.writeText(at(".fm/cache/planta.json"), planta(data["plantaAfter"]));
     const alarm = parts2(await fire(fs, "Stop", { stop_hook_active: false, last_assistant_message: "ok" }));
     assert.match(alarm, /gained 4 blueprint items while the concept book stayed at 1 levels/);
     assert.match(alarm, /"you do, I review"/);

@@ -24,7 +24,7 @@ const VERSION = "2.1.300";
 const tty = (): TextSource => Object.assign(Readable.from([]), { isTTY: true });
 
 const world = () => {
-  const fs = memoryFs({}, [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache")], NOW);
+  const fs = memoryFs({}, [at(".git"), at(".fm"), at(".fm/cache")], NOW);
   const calls: ExecRequest[] = [];
   const runtime = fakeRuntime({
     fs,
@@ -36,7 +36,7 @@ const world = () => {
       const id = request.env?.[PROBE_ID_ENV] ?? "";
       const call = { id: "t1", tool: "Write", summary: "probe" };
       fs.writeText(work.cache(DENIED_FILE), JSON.stringify({ schemaVersion: 1, calls: [call] }));
-      fs.writeText(toAbsolutePath(join(work.root, ".finitemonkey", "bypasses.jsonl")), `${JSON.stringify(call)}\n`);
+      fs.writeText(toAbsolutePath(join(work.root, ".fm", "bypasses.jsonl")), `${JSON.stringify(call)}\n`);
       fs.writeText(toAbsolutePath(join(work.root, BYPASS_PROBE_FILE)), "probe");
       const loaded = { session_id: "s1", hook_event_name: "InstructionsLoaded", file_path: "/x/CLAUDE.md" };
       fs.writeText(

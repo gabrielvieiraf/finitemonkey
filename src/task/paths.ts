@@ -1,8 +1,9 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 
-export const FM_DIR = ".finitemonkey";
+export const FM_DIR = DATA_DIR;
 
 export interface FmPaths {
   readonly root: AbsolutePath;

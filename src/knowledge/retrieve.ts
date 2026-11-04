@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { gitAt } from "../gate/git.js";
 import { readDecisions } from "../guardian/decisions.js";
@@ -92,7 +93,7 @@ const grepStep = (runtime: Pick<Runtime, "exec">, root: AbsolutePath, terms: rea
       ...wanted.flatMap((term) => ["-e", term]),
       "--",
       ".",
-      ":(exclude).finitemonkey",
+      `:(exclude)${DATA_DIR}`,
     ]) ?? "";
   const scored = out.split("\n").flatMap((line) => {
     const match = GREP_LINE.exec(line);

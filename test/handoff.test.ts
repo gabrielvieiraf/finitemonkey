@@ -30,7 +30,7 @@ describe("finitemonkey handoff", () => {
         sample: "tsc TS2345 in src/a.ts",
         tool: "Bash",
       });
-    repo.write(".finitemonkey/signals.jsonl", `${error(1)}\n${error(2)}\n`);
+    repo.write(".fm/signals.jsonl", `${error(1)}\n${error(2)}\n`);
     const { code, body } = await cliJson(["handoff"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(code, 0);
     const hash = String(field(body, "data", "contract", "hash"));
@@ -57,7 +57,7 @@ describe("finitemonkey handoff", () => {
         at: "2026-10-29T10:00:00Z",
       });
     repo.write(
-      ".finitemonkey/assumptions.jsonl",
+      ".fm/assumptions.jsonl",
       [
         line("A1", "the gateway retries webhooks", "low", "unverified"),
         line("A2", "refunds never exceed the charge", "high", "review"),

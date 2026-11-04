@@ -137,7 +137,7 @@ describe("ds-adherence: utility-CSS config", () => {
     repos.push(repo);
     const calls: ExecRequest[] = [];
     assert.equal(utilityConfigTokens(fakeNode(calls, "", 1), repo.root, undefined), undefined);
-    assert.ok(repo.read(".finitemonkey/log.jsonl").includes("ds_config_failed"));
+    assert.ok(repo.read(".fm/log.jsonl").includes("ds_config_failed"));
   });
 
   it("maps the resolved theme to the token kinds", () => {

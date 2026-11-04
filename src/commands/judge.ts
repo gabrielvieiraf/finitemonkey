@@ -1,6 +1,7 @@
 import { listOption, stringOption } from "../core/args.js";
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { type JsonObject, parseJsonObject } from "../core/parsed.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
@@ -62,7 +63,7 @@ export const switchedOff = (ctx: Ctx, root: string, record: JsonObject): Command
   const off = wanted.find((feature) => feature !== undefined && featureMode(ctx.runtime, paths, feature) === "off");
   return off === undefined
     ? undefined
-    : refuse(ctx, "judge.error.off", `set ${off}: shadow in .finitemonkey/policy.yml`, off);
+    : refuse(ctx, "judge.error.off", `set ${off}: shadow in ${DATA_DIR}/policy.yml`, off);
 };
 
 export const answer = (ctx: Ctx, root: string, record: JsonObject, usage: string): CommandResult => {

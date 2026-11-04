@@ -6,7 +6,7 @@ const READ_TOOLS = new Set(["Read", "Grep", "Glob", "LS"]);
 const SHELL_TOOLS = new Set(["Bash", "PowerShell"]);
 const CHAINING = /[;&|`$()<>\n\r]/;
 const REPAIR_COMMAND =
-  /^\s*(?:npx\s+(?:-y\s+)?)?(?:finitemonkey|node\s+(?:"[^"]*finitemonkey\.mjs"|'[^']*finitemonkey\.mjs'|\S*finitemonkey\.mjs))\s+(?:doctor|off|on|status|help|--version)(?:\s+--?[\w-]+)*\s*$/;
+  /^\s*(?:(?:npx\s+(?:-y\s+)?)?finitemonkey|fm|node\s+(?:"[^"]*finitemonkey\.mjs"|'[^']*finitemonkey\.mjs'|\S*finitemonkey\.mjs))\s+(?:doctor|off|on|status|help|--version)(?:\s+--?[\w-]+)*\s*$/;
 
 const repairCommand = (command: string): boolean => !CHAINING.test(command) && REPAIR_COMMAND.test(command);
 

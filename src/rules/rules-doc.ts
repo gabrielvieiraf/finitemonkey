@@ -1,4 +1,5 @@
 import type { AbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { buildDerived, DERIVED_FEATURE } from "../knowledge/derived.js";
 import { featureMode } from "../policy/feature.js";
@@ -8,12 +9,11 @@ import { ruleLine } from "./outputs.js";
 import type { ProjectRule } from "./types.js";
 
 export const RULES_DOC = "AGENTS.rules.md";
-export const RULES_DOC_MARK =
-  "<!-- finitemonkey:generated from .finitemonkey/rules.yml; edit rules.yml, not this file -->";
+export const RULES_DOC_MARK = "<!-- finitemonkey:generated from .fm/rules.yml; edit rules.yml, not this file -->";
 export const RULES_GENERATOR = {
   file: RULES_DOC,
   generator: "rules",
-  sources: [".finitemonkey/rules.yml"] as readonly string[],
+  sources: [`${DATA_DIR}/rules.yml`] as readonly string[],
 };
 export const RULES_INCLUDE = `@${RULES_DOC}`;
 

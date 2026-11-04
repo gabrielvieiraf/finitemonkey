@@ -1,11 +1,12 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type JsonObject, type Parsed, parseJsonObject, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "./fingerprint.js";
 
-export const INCIDENTS_DIR = ".finitemonkey/incidents";
+export const INCIDENTS_DIR = `${DATA_DIR}/incidents`;
 export const INCIDENT_STATES = ["aberto", "exposicao-local", "rotacionado", "fechado"] as const;
 export const INCIDENT_SOURCES = ["tool-output", "prompt", "history", "scan"] as const;
 

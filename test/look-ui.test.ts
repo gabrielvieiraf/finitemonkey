@@ -47,7 +47,7 @@ describe("look: banned interface copy", () => {
   it("a banned phrase in a catalog fails the copy check with the file and key", () => {
     const repo = makeRepo({
       "README.md": "# shop\n",
-      ".finitemonkey/config.yml": "lang: en\nui:\n  banned_copy:\n    - processed by Stripe\n",
+      ".fm/config.yml": "lang: en\nui:\n  banned_copy:\n    - processed by Stripe\n",
       "src/locales/pt-BR.json": JSON.stringify({ checkout: { footer: "Pagamento processed by Stripe" } }),
     });
     repos.push(repo);
@@ -68,14 +68,14 @@ describe("look: banned interface copy", () => {
       key: "checkout.footer",
       phrase: "processed by Stripe",
     });
-    repo.write(".finitemonkey/policy.yml", "guards:\n  ui-review: shadow\n");
+    repo.write(".fm/policy.yml", "guards:\n  ui-review: shadow\n");
     assert.equal(copyCheck({ id: "copy", kind: "copy" }, ready.prepared.ctx).status, "passed");
   });
 
   it("new contracts get the copy check when config.yml lists banned copy", () => {
     const root = toAbsolutePath("/home/ana/project");
     const fs = memoryFs({
-      [toAbsolutePath(join(root, ".finitemonkey", "config.yml"))]: "ui:\n  banned_copy: [fictitious data]\n",
+      [toAbsolutePath(join(root, ".fm", "config.yml"))]: "ui:\n  banned_copy: [fictitious data]\n",
     });
     const draft = {
       id: "t",

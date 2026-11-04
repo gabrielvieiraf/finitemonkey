@@ -1,11 +1,12 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml, type YamlValue } from "../core/yaml/parse.js";
 import type { ScanContext } from "./types.js";
 
-export const ROUTES_PUBLIC_FILE = ".finitemonkey/routes-public.yml";
-export const APPSEC_CONFIG_FILE = ".finitemonkey/appsec.yml";
+export const ROUTES_PUBLIC_FILE = `${DATA_DIR}/routes-public.yml`;
+export const APPSEC_CONFIG_FILE = `${DATA_DIR}/appsec.yml`;
 
 export const DEFAULT_GUARDS = [
   "requireAuth",

@@ -210,7 +210,7 @@ describe("Stop gate", () => {
     `${JSON.stringify({ at: "2026-01-01T00:00:00.000Z", session: "s1", turn: 1, kind: "edit", file, hash: "h", undo: false })}\n`;
 
   const untaskedRepo = (signals: string): Repo => {
-    const repo = makeRepo({ "src/a.js": "export const a = 1;\n", ".finitemonkey/signals.jsonl": signals });
+    const repo = makeRepo({ "src/a.js": "export const a = 1;\n", ".fm/signals.jsonl": signals });
     repos.push(repo);
     return repo;
   };

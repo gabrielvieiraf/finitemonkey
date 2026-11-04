@@ -69,7 +69,7 @@ describe("shortcuts in the contract", () => {
     assert.equal(evaluateTrigger(runtime, root, "date:2026-10-01").state, "expired");
     assert.equal(evaluateTrigger(runtime, root, "date:2026-12-01").state, "waiting");
     assert.equal(evaluateTrigger(runtime, root, undefined).state, "no-trigger");
-    const repo = makeRepo({ ".finitemonkey/config.yml": 'debt:\n  counts:\n    users: node -e "console.log(120)"\n' });
+    const repo = makeRepo({ ".fm/config.yml": 'debt:\n  counts:\n    users: node -e "console.log(120)"\n' });
     repos.push(repo);
     assert.deepEqual(evaluateTrigger(repoRuntime(), repo.root, "count:users > 100"), {
       state: "expired",
@@ -82,7 +82,7 @@ describe("shortcuts in the contract", () => {
   it("task done lists shortcuts without a trigger and debt lists them across tasks", async () => {
     const repo = makeRepo({
       "src/tax.js": "// shortcut: tax table copied by hand trigger: date:2026-01-01\nexport const tax = 5;\n",
-      ".finitemonkey/config.yml": "preset: neutral\n",
+      ".fm/config.yml": "preset: neutral\n",
     });
     repos.push(repo);
     activate(

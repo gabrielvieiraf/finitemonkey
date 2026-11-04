@@ -146,7 +146,7 @@ describe("journeys: proposed from a sentence", () => {
   });
 
   it("the command runs the configured proposer with the sentence and leaves the journey waiting for approval", async () => {
-    const repo = makeRepo({ "README.md": "x\n", ".finitemonkey/config.yml": "journeys:\n  proposer: fake-proposer\n" });
+    const repo = makeRepo({ "README.md": "x\n", ".fm/config.yml": "journeys:\n  proposer: fake-proposer\n" });
     repos.push(repo);
     const inputs: string[] = [];
     const base = repoRuntime();

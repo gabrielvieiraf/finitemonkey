@@ -79,7 +79,7 @@ describe("the research gate check", () => {
   const project = (preset: string): Repo => {
     const repo = makeRepo({
       "package.json": '{\n  "dependencies": {\n    "express": "4.21.0"\n  }\n}\n',
-      ".finitemonkey/config.yml": `preset: ${preset}\n`,
+      ".fm/config.yml": `preset: ${preset}\n`,
     });
     repos.push(repo);
     activateContract(repo, "t1", ["research"]);

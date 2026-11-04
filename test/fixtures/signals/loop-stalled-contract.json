@@ -3,8 +3,8 @@
   "loopedBy": "model",
   "description": "Five different requests while the active contract keeps failing on the same item.",
   "files": {
-    ".finitemonkey/state.json": "{\"schemaVersion\":1,\"active\":\"t-cart\"}\n",
-    ".finitemonkey/cache/gate-status.json": "{\"schemaVersion\":1,\"status\":\"failed\",\"task\":\"t-cart\",\"detail\":\"C-tests (exit 1)\",\"at\":\"2026-10-25T11:00:00.000Z\"}\n"
+    ".fm/state.json": "{\"schemaVersion\":1,\"active\":\"t-cart\"}\n",
+    ".fm/cache/gate-status.json": "{\"schemaVersion\":1,\"status\":\"failed\",\"task\":\"t-cart\",\"detail\":\"C-tests (exit 1)\",\"at\":\"2026-10-25T11:00:00.000Z\"}\n"
   },
   "events": [
     {

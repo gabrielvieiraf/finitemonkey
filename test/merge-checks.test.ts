@@ -23,7 +23,7 @@ describe("merge: formatter on C3, tested candidates and fetch of the base", () =
     const box = sandbox({
       "fmt.mjs": FORMATTER,
       "src/f.ts": "export function f(a, b) { return a + b; }\n",
-      ".finitemonkey/config.yml": 'merge:\n  formatter: "node fmt.mjs"\n',
+      ".fm/config.yml": 'merge:\n  formatter: "node fmt.mjs"\n',
     });
     try {
       sides(
@@ -59,7 +59,7 @@ describe("merge: formatter on C3, tested candidates and fetch of the base", () =
     git(box.root, "add", "-A");
     git(box.root, "-c", "rerere.enabled=true", "commit", "-q", "--no-edit");
     git(box.root, "reset", "-q", "--hard", "HEAD~1");
-    if (active) write(box.root, ".finitemonkey/policy.yml", ACTIVE("merge-candidates"));
+    if (active) write(box.root, ".fm/policy.yml", ACTIVE("merge-candidates"));
     const report = merge(box, "--check", `node -e "process.exit(${String(checkCode)})"`);
     return { box, file: filesOf(report).find((item) => item["path"] === "src/a.ts") };
   };
@@ -90,7 +90,7 @@ describe("merge: formatter on C3, tested candidates and fetch of the base", () =
       commitOn(remote, "main", { "README.md": "two\n" });
       const root = toAbsolutePath(clone);
       assert.equal(fetchBase(runtime, root, "main"), undefined);
-      write(clone, ".finitemonkey/policy.yml", ACTIVE("merge-fetch"));
+      write(clone, ".fm/policy.yml", ACTIVE("merge-fetch"));
       const fetched = fetchBase(runtime, root, "main");
       assert.deepEqual(fetched, { upstream: "origin/main", fetched: true, behind: 1 });
       assert.deepEqual(fetchNotes(fetched, "main"), [

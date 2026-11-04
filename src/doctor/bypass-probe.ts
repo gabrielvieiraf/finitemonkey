@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { bypassesFile, DENIED_FILE } from "../guards/bypass/ledger.js";
@@ -33,7 +34,7 @@ export const classifyBypass = (facts: BypassFacts): BypassOutcome => {
 };
 
 export const BYPASS_PROBE_TOOL = "Write";
-export const BYPASS_PROBE_FILE = ".finitemonkey/cache/probe-bypass.txt";
+export const BYPASS_PROBE_FILE = `${DATA_DIR}/cache/probe-bypass.txt`;
 
 const mentionsTool = (text: string): boolean => text.includes(`"tool":"${BYPASS_PROBE_TOOL}"`);
 

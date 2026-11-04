@@ -126,7 +126,7 @@ describe("sheet: z-index and stacking contexts", () => {
 const CONTRACT = "ui:\n  - screen: /card\n    primary_action:\n      role: button\n      name: Save\n";
 
 const activeRepo = (policy = ""): Repo => {
-  const repo = makeRepo(policy === "" ? {} : { ".finitemonkey/policy.yml": policy });
+  const repo = makeRepo(policy === "" ? {} : { ".fm/policy.yml": policy });
   repos.push(repo);
   const runtime = repoRuntime();
   const paths = fmPaths(repo.root);
@@ -164,7 +164,7 @@ describe("sheet: inside the UI contract", () => {
     assert.equal(done.value.contractHash, after.hash);
     assert.equal(after.approved, true);
     assert.deepEqual(after.errors, []);
-    const source = repo.read(".finitemonkey/tasks/t1/ui.yml");
+    const source = repo.read(".fm/tasks/t1/ui.yml");
     assert.ok(source.startsWith(CONTRACT.trimEnd()));
     assert.deepEqual(
       sheetRefs(source).map((ref) => ref.route),
@@ -228,7 +228,7 @@ describe("sheet: delivered at the next prompt", () => {
     const repo = activeRepo("guards:\n  ui-sheet: active\n");
     assert.ok(approveSheet(repo, sheetWith({ position: "absolute", zIndex: "10" })).ok);
     const first = context(await prompt(repo));
-    assert.ok(first.includes("Approved component sheet for /card (.card): .finitemonkey/look/sheets/"), first);
+    assert.ok(first.includes("Approved component sheet for /card (.card): .fm/look/sheets/"), first);
     assert.ok(first.includes("S1 8px"), first);
     assert.ok(!context(await prompt(repo)).includes("Approved component sheet"));
   });
@@ -237,7 +237,7 @@ describe("sheet: delivered at the next prompt", () => {
     const repo = activeRepo();
     assert.ok(approveSheet(repo, sheetWith({})).ok);
     assert.ok(!context(await prompt(repo)).includes("Approved component sheet"));
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.ok(log.includes('"feature_shadow"') && log.includes('"ui-sheet"'), log);
   });
 });

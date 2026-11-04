@@ -42,20 +42,17 @@ describe("mod tightening", () => {
   it("the CLI state protects the evidence and leaves front reports alone", () => {
     const state = loaded();
     assert.equal(state.mode, "active");
-    assert.equal(
-      ruleFor(state, "Write", { file_path: "/work/.finitemonkey/evidence/t1.jsonl" })?.rule.id,
-      "self.policy",
-    );
-    assert.equal(ruleFor(state, "Write", { file_path: "/work/.finitemonkey/reports/front.json" }), undefined);
+    assert.equal(ruleFor(state, "Write", { file_path: "/work/.fm/evidence/t1.jsonl" })?.rule.id, "self.policy");
+    assert.equal(ruleFor(state, "Write", { file_path: "/work/.fm/reports/front.json" }), undefined);
     assert.equal(
       ruleFor(state, "Edit", { file_path: "/work/.git/finitemonkey/worktrees.yml" })?.rule.id,
       "self.registry",
     );
     assert.equal(ruleFor(state, "Write", { file_path: "/work/src/a.ts" }), undefined);
-    assert.equal(ruleFor(state, "Read", { file_path: "/work/.finitemonkey/state.json" }), undefined);
+    assert.equal(ruleFor(state, "Read", { file_path: "/work/.fm/state.json" }), undefined);
     assert.equal(ruleFor(state, "Bash", { command: "git commit -m x --no-verify" })?.rule.id, "bypass.no_verify");
-    assert.equal(ruleFor(state, "Bash", { command: "echo hi > .finitemonkey/state.json" })?.rule.id, "self.shell");
-    assert.equal(ruleFor(state, "Bash", { command: "cat .finitemonkey/state.json" }), undefined);
+    assert.equal(ruleFor(state, "Bash", { command: "echo hi > .fm/state.json" })?.rule.id, "self.shell");
+    assert.equal(ruleFor(state, "Bash", { command: "cat .fm/state.json" }), undefined);
   });
 
   it("relative paths work for POSIX and Windows roots", () => {

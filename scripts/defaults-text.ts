@@ -125,19 +125,19 @@ export const DEFAULTS_SECTION: Readonly<
   en: {
     heading: "Defaults and their evidence",
     intro:
-      "One set of defaults for everyone, generated from `src/defaults/items.ts`. Each item comes from practices found in 78 local sessions and three repositories. Guidance that helps a beginner can slow down an expert (expertise reversal, Kalyuga et al. 2003), so any item turns off with `defaults: <item>: off` in `.finitemonkey/config.yml`, and a repository convention that differs from a default is asked about once.",
+      "One set of defaults for everyone, generated from `src/defaults/items.ts`. Each item comes from practices found in 78 local sessions and three repositories. Guidance that helps a beginner can slow down an expert (expertise reversal, Kalyuga et al. 2003), so any item turns off with `defaults: <item>: off` in `.fm/config.yml`, and a repository convention that differs from a default is asked about once.",
     columns: ["Default", "What it does", "Evidence"],
   },
   "pt-BR": {
     heading: "Padrões e a evidência de cada um",
     intro:
-      "Um conjunto de padrões para todo mundo, gerado a partir de `src/defaults/items.ts`. Cada item vem de práticas encontradas em 78 sessões locais e três repositórios. Orientação que ajuda quem começa pode atrapalhar quem já domina (efeito de reversão da expertise, Kalyuga et al. 2003), então qualquer item desliga com `defaults: <item>: off` em `.finitemonkey/config.yml`, e uma convenção do repositório diferente de um padrão gera uma pergunta, uma vez.",
+      "Um conjunto de padrões para todo mundo, gerado a partir de `src/defaults/items.ts`. Cada item vem de práticas encontradas em 78 sessões locais e três repositórios. Orientação que ajuda quem começa pode atrapalhar quem já domina (efeito de reversão da expertise, Kalyuga et al. 2003), então qualquer item desliga com `defaults: <item>: off` em `.fm/config.yml`, e uma convenção do repositório diferente de um padrão gera uma pergunta, uma vez.",
     columns: ["Padrão", "O que faz", "Evidência"],
   },
   es: {
     heading: "Valores predeterminados y su evidencia",
     intro:
-      "Un solo conjunto de valores predeterminados para todos, generado desde `src/defaults/items.ts`. Cada elemento viene de prácticas encontradas en 78 sesiones locales y tres repositorios. Una guía que ayuda a quien empieza puede frenar a quien ya domina (efecto de reversión de la experticia, Kalyuga et al. 2003), así que cualquier elemento se apaga con `defaults: <item>: off` en `.finitemonkey/config.yml`, y una convención del repositorio distinta de un predeterminado genera una pregunta, una sola vez.",
+      "Un solo conjunto de valores predeterminados para todos, generado desde `src/defaults/items.ts`. Cada elemento viene de prácticas encontradas en 78 sesiones locales y tres repositorios. Una guía que ayuda a quien empieza puede frenar a quien ya domina (efecto de reversión de la experticia, Kalyuga et al. 2003), así que cualquier elemento se apaga con `defaults: <item>: off` en `.fm/config.yml`, y una convención del repositorio distinta de un predeterminado genera una pregunta, una sola vez.",
     columns: ["Predeterminado", "Qué hace", "Evidencia"],
   },
 };

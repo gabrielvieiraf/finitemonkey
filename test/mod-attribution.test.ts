@@ -25,13 +25,13 @@ describe("attribution for the mod", () => {
   });
 
   it("keeps the credit when the project turns the default off", () => {
-    const repo = project({ ".finitemonkey/config.yml": "defaults:\n  no-attribution: off\n" });
+    const repo = project({ ".fm/config.yml": "defaults:\n  no-attribution: off\n" });
     assert.equal(attributionOf(repoRuntime(), fmPaths(repo.root)).forbid, false);
   });
 
   it("the trailer starts in shadow and, turned on, names the last gate verdict and tree", () => {
     assert.ok(STARTS_IN_SHADOW.has("attribution-trailer"));
-    const repo = project({ ".finitemonkey/policy.yml": "guards:\n  attribution-trailer: active\n" });
+    const repo = project({ ".fm/policy.yml": "guards:\n  attribution-trailer: active\n" });
     const paths = fmPaths(repo.root);
     assert.equal(attributionOf(repoRuntime(), paths).trailer, null);
     writeGateStatus(repoRuntime(), paths, { status: "passed", task: "t1", detail: "", tree: "9a1e77" });

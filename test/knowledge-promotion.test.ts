@@ -17,8 +17,8 @@ after(() => {
 const setup = (guards: Readonly<Record<string, string>>): Repo => {
   const repo = makeRepo({
     "src/billing.ts": "export function roundTotal(value: number): number {\n  return Math.round(value);\n}\n",
-    ".finitemonkey/policy.yml": policyWith(guards),
-    ".finitemonkey/state.json": `${JSON.stringify({ schemaVersion: 1, active: "t1", done: [] })}\n`,
+    ".fm/policy.yml": policyWith(guards),
+    ".fm/state.json": `${JSON.stringify({ schemaVersion: 1, active: "t1", done: [] })}\n`,
   });
   repos.push(repo);
   return repo;
@@ -68,8 +68,8 @@ describe("promotion by direct use", () => {
     );
     gatePassed(repo, "t1");
     assert.deepEqual(await statuses(repo), { [used]: "valid", [unused]: "quarantined" });
-    assert.match(repo.read(".finitemonkey/claims.jsonl"), new RegExp(`"event":"promote","id":"${used}"`));
-    assert.doesNotMatch(repo.read(".finitemonkey/claims.jsonl"), new RegExp(`"event":"promote","id":"${unused}"`));
+    assert.match(repo.read(".fm/claims.jsonl"), new RegExp(`"event":"promote","id":"${used}"`));
+    assert.doesNotMatch(repo.read(".fm/claims.jsonl"), new RegExp(`"event":"promote","id":"${unused}"`));
   });
 
   it("does not promote a use whose green gate belongs to another task", async () => {
@@ -87,6 +87,6 @@ describe("promotion by direct use", () => {
     assert.match(contextOf(started), /dunning calendar/);
     gatePassed(repo, "t1");
     await statuses(repo);
-    assert.match(repo.read(".finitemonkey/claims.jsonl"), new RegExp(`"event":"promote","id":"${injected}"`));
+    assert.match(repo.read(".fm/claims.jsonl"), new RegExp(`"event":"promote","id":"${injected}"`));
   });
 });

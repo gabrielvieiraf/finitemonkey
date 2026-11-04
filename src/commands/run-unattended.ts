@@ -2,6 +2,7 @@ import { type GateStatus, type MorningReport, runChain, subcontracts, type Unatt
 import { estimateOf, historyRuns, localHorizon, type Plan, planRun } from "../autonomy/plan.js";
 import type { AbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
@@ -114,7 +115,7 @@ const execute = (ctx: Ctx, ready: Ready, options: UnattendedOptions): CommandRes
           code: "unattended_incomplete",
           messageKey: "autonomy.incomplete",
           params: { run: report.run },
-          fix: `read .finitemonkey/reports/unattended-${report.run}.json`,
+          fix: `read ${DATA_DIR}/reports/unattended-${report.run}.json`,
           exitCode: ExitCode.CheckFailed,
           data: result,
         },

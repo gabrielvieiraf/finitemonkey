@@ -1,13 +1,14 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import type { Runtime } from "../../core/runtime.js";
 import type { GitLevel } from "../../profile/level.js";
 import { applyReviewers, type EnvironmentPlan } from "./environment.js";
 import { type ProtectChange, type ProtectSetting, rulesetFor } from "./plan.js";
 import { gh, type GithubSettings } from "./state.js";
 
-export const PROTECT_LOG = ".finitemonkey/ci-protect.jsonl";
+export const PROTECT_LOG = `${DATA_DIR}/ci-protect.jsonl`;
 
 export interface AppliedChange extends ProtectChange {
   readonly ok: boolean;
@@ -57,7 +58,7 @@ export const applyChanges = (
   changes: readonly ProtectChange[],
   environment?: EnvironmentPlan,
 ): readonly AppliedChange[] => {
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR)));
   return changes.map((change) => {
     const ok = call(runtime, root, settings, level, change.setting, environment);
     runtime.appendText(

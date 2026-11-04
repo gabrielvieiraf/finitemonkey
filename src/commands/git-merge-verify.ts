@@ -1,10 +1,14 @@
 import { stringOption } from "../core/args.js";
+import type { AbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
 import { findingLabel } from "../git/gate-status.js";
+import { DROPPED_FILE } from "../git/merge/dropped.js";
+import { acceptFindings, PERSON_ONLY_REASON } from "../git/merge/dropped-accept.js";
 import { mergeCommitsSince, mergeInProgress } from "../git/merge/inputs.js";
+import { DROPPED_REASONS } from "../git/merge/types.js";
 import { verifyMerge, type VerifyReport } from "../git/merge/verify.js";
 import type { Repo } from "../git/repo.js";
 import { gitProblem, notRepository, repoOf } from "./git-problems.js";
@@ -17,7 +21,8 @@ interface Checked {
   readonly report: VerifyReport;
 }
 
-const USAGE = "finitemonkey merge verify [<merge-commit>] [--since <ref>] [--pr <number>] [--dropped <file>] [--json]";
+const USAGE =
+  "finitemonkey merge verify [<merge-commit>] [--since <ref>] [--pr <number>] [--dropped <file>] [--accept <reason>] [--json]";
 const FETCH_TIMEOUT_MS = 60_000;
 
 const short = (sha: string | undefined): string => (sha ?? "?").slice(0, 12);
@@ -81,6 +86,23 @@ const prTarget = (ctx: Ctx, repo: Repo, pr: string): CommandResult | string => {
   });
 };
 
+const acceptedOf = (ctx: Ctx, root: AbsolutePath, checked: readonly Checked[], reason: string): CommandResult => {
+  const broken = checked.find((item) => item.report.exit === 2);
+  if (broken !== undefined) return resultOf(ctx, checked);
+  const findings = checked.flatMap((item) => item.report.findings);
+  const recorded = acceptFindings(ctx.runtime, root, findings, reason);
+  if (!recorded.ok)
+    return failureFrom(ctx.t, {
+      code: "merge_accept_refused",
+      messageKey: "git.error.merge_accept_refused",
+      params: { detail: recorded.error },
+      fix: `finitemonkey merge verify --accept ${DROPPED_REASONS.filter((item) => item !== PERSON_ONLY_REASON).join("|")}`,
+      exitCode: ExitCode.Usage,
+    });
+  const data = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: checked, accepted: recorded.value, reason };
+  return success(data, [ctx.t("git.merge.accepted", { count: recorded.value, reason, file: DROPPED_FILE })]);
+};
+
 const resultOf = (ctx: Ctx, checked: readonly Checked[]): CommandResult => {
   const human = [...checked.flatMap((item) => humanOf(ctx, item)), ctx.t("git.merge.limits")];
   const data = { schema: MERGE_VERIFY_RUN_SCHEMA, merges: checked };
@@ -98,7 +120,7 @@ const resultOf = (ctx: Ctx, checked: readonly Checked[]): CommandResult => {
       code: "merge_lost_work",
       messageKey: "git.error.merge_lost",
       params: { count: lost },
-      fix: "finitemonkey merge verify --dropped .finitemonkey/merge-dropped.json",
+      fix: "finitemonkey merge verify --dropped .fm/merge-dropped.json",
       exitCode: ExitCode.CheckFailed,
       data,
     },
@@ -111,7 +133,12 @@ export const mergeVerifyCommand: CommandSpec = {
   summaryKey: "git.command.merge_verify",
   usage: USAGE,
   status: "ready",
-  options: { since: { type: "string" }, dropped: { type: "string" }, pr: { type: "string" } },
+  options: {
+    since: { type: "string" },
+    dropped: { type: "string" },
+    pr: { type: "string" },
+    accept: { type: "string" },
+  },
   maxPositionals: 1,
   run: (ctx, args): Promise<CommandResult> => {
     const repo = repoOf(ctx);
@@ -132,6 +159,7 @@ export const mergeVerifyCommand: CommandSpec = {
         ...(dropped === undefined ? {} : { droppedFile: dropped }),
       }),
     }));
-    return Promise.resolve(resultOf(ctx, checked));
+    const reason = stringOption(args.values, "accept");
+    return Promise.resolve(reason === undefined ? resultOf(ctx, checked) : acceptedOf(ctx, repo.root, checked, reason));
   },
 };

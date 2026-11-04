@@ -1,6 +1,8 @@
 import { dirname, isAbsolute, join } from "node:path";
 
-export const COMPILE_CACHE_DIR = join(".finitemonkey", "compile-cache");
+import { HOME_DATA_DIR } from "./data-dir-name.js";
+
+export const COMPILE_CACHE_DIR = join(HOME_DATA_DIR, "compile-cache");
 
 const insideRepository = (dir: string, exists: (path: string) => boolean): boolean => {
   if (exists(join(dir, ".git"))) return true;

@@ -26,7 +26,7 @@ import type { CommandSpec } from "./types.js";
 const START_TIMEOUT_MS = 60_000;
 const ROWS_BUDGET_MS = 300_000;
 const CONFIG_HINT =
-  "add access: start, port, user_a and user_b (a header line such as authorization: Bearer <token>) to .finitemonkey/config.yml";
+  "add access: start, port, user_a and user_b (a header line such as authorization: Bearer <token>) to .fm/config.yml";
 
 export const sentence = (ctx: Pick<Ctx, "t">, item: Pick<Scenario, "kind" | "resource"> | ScenarioResult): string =>
   item.kind === "setup"

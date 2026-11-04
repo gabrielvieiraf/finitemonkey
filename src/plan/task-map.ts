@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { PLAN_DIR, planFiles, planPath } from "./folder.js";
@@ -9,7 +10,7 @@ import { table } from "./markdown.js";
 const textOf = (value: unknown): string => (typeof value === "string" ? value : "");
 
 export const TASK_MAP_SUFFIX = "-task-map.md";
-export const ISSUES_CACHE = ".finitemonkey/cache/issues.json";
+export const ISSUES_CACHE = `${DATA_DIR}/cache/issues.json`;
 
 export interface IssueRef {
   readonly number: number;
@@ -50,7 +51,7 @@ export const renderTaskMap = (rows: readonly Omit<TaskMapRow, "line">[], at: str
   [
     "# Task map",
     "",
-    `One row per issue, kept by \`finitemonkey fronts sync\` (last run ${at}). \`finitemonkey plan check\` fails on an issue without a row and on a row without an issue.`,
+    `One row per issue, kept by \`fm fronts sync\` (last run ${at}). \`fm plan check\` fails on an issue without a row and on a row without an issue.`,
     "",
     ...table(
       ["Issue", "Title", "Front", "State", "Report"],

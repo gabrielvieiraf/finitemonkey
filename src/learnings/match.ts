@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { globToRegExp } from "../core/glob.js";
 import { toPosixPath } from "../core/posix-path.js";
 import { tokenEstimate } from "../instructions/types.js";
@@ -32,7 +33,7 @@ export const keyMatches = (lesson: Lesson, key: LessonKey): boolean =>
 
 export const lessonLine = (lesson: Lesson): string => `- ${lesson.text.replace(/\s+/g, " ").trim()}`;
 
-const PROTECTED = [".claude/**", ".finitemonkey/**", ".git/**", ".husky/**", ".githooks/**", "**/settings*.json"];
+const PROTECTED = [".claude/**", `${DATA_DIR}/**`, ".git/**", ".husky/**", ".githooks/**", "**/settings*.json"];
 
 export const touchesControls = (lesson: Lesson): boolean =>
   lesson.paths.some((glob) => PROTECTED.some((pattern) => globToRegExp(pattern).test(glob.replace(/\*+/g, "x"))));

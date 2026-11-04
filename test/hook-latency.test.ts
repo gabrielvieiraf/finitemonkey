@@ -117,10 +117,7 @@ describe("hook latency through the vendored CLI", () => {
       return send("PostToolUse");
     });
     assert.ok(median(samples) < P95_LIMIT_MS, `PostToolUse Bash median ${median(samples).toFixed(1)} ms`);
-    assert.match(
-      readFileSync(join(root, ".finitemonkey", "signals.jsonl"), "utf8"),
-      /"kind":"bash_write","file":"src\/a\.ts"/,
-    );
+    assert.match(readFileSync(join(root, ".fm", "signals.jsonl"), "utf8"), /"kind":"bash_write","file":"src\/a\.ts"/);
   });
 
   it("the vendored CLI reports the version that installed it", async () => {

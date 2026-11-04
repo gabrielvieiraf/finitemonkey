@@ -33,7 +33,7 @@ const transcript = (prompt: string, tools: readonly { name: string; input: objec
 
 const session = async (prompt: string, tools: readonly { name: string; input: object }[], mode = "active") => {
   const repo = makeRepo({
-    ".finitemonkey/policy.yml": policyWith({ "premise-check": mode }),
+    ".fm/policy.yml": policyWith({ "premise-check": mode }),
     "src/money.ts": "export const parseAmount = (v: string) => Number(v);\n",
   });
   repos.push(repo);
@@ -94,8 +94,8 @@ describe("premise-check hook", () => {
   it("only logs in shadow, and registers the premise in the assumption register when active", async () => {
     const shadow = await session(PROMPT, [], "shadow");
     assert.equal(notice(shadow.stop.stdout), "");
-    assert.match(shadow.repo.read(".finitemonkey/log.jsonl"), /"feature":"premise-check"/);
+    assert.match(shadow.repo.read(".fm/log.jsonl"), /"feature":"premise-check"/);
     const active = await session(PROMPT, []);
-    assert.match(active.repo.read(".finitemonkey/assumptions.jsonl"), /"source":"premise"/);
+    assert.match(active.repo.read(".fm/assumptions.jsonl"), /"source":"premise"/);
   });
 });

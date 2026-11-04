@@ -45,6 +45,7 @@ export const ERROR_CODES = [
   "git_undo_failed",
   "git_rescue_failed",
   "merge_lost_work",
+  "merge_accept_refused",
   "merge_unanalyzable",
   "app_check_failed",
   "githook_failed",

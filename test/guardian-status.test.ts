@@ -46,7 +46,7 @@ const GOALS = [
 ].join("\n");
 
 const repoWith = (files: Readonly<Record<string, string>>): Repo => {
-  const repo = makeRepo({ ".finitemonkey/goals.yml": GOALS, ...files });
+  const repo = makeRepo({ ".fm/goals.yml": GOALS, ...files });
   repos.push(repo);
   return repo;
 };
@@ -94,8 +94,8 @@ describe("guardian status", () => {
 
   it("never uses an inferred goal as approved: a task linked only to it is reported", () => {
     const repo = repoWith({
-      ".finitemonkey/tasks/app.yml": contract("app", ["goals: [g2]"]),
-      ".finitemonkey/tasks/plans.yml": contract("plans", ["goals: [g1]"]),
+      ".fm/tasks/app.yml": contract("app", ["goals: [g2]"]),
+      ".fm/tasks/plans.yml": contract("plans", ["goals: [g1]"]),
     });
     assert.deepEqual(kindsFor(repo), [["unlinked_task", "app"]]);
   });
@@ -103,9 +103,9 @@ describe("guardian status", () => {
   it("reports scope that grew after approval and stays quiet when it did not", () => {
     const approved = contract("grow", ["goals: [g1]"]);
     const repo = repoWith({
-      ".finitemonkey/tasks/grow.yml": contract("grow", ["goals: [g1]"], ["src/api/", "src/billing/"], "M"),
-      ".finitemonkey/tasks/same.yml": contract("same", ["goals: [g1]"]),
-      ".finitemonkey/trust.json": JSON.stringify({
+      ".fm/tasks/grow.yml": contract("grow", ["goals: [g1]"], ["src/api/", "src/billing/"], "M"),
+      ".fm/tasks/same.yml": contract("same", ["goals: [g1]"]),
+      ".fm/trust.json": JSON.stringify({
         contracts: {},
         approved: { grow: approved, same: contract("same", ["goals: [g1]"]) },
       }),
@@ -139,13 +139,13 @@ describe("guardian status", () => {
         ])
         .join("\n")}\n`;
     const stalled = repoWith({
-      ".finitemonkey/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
-      ".finitemonkey/evidence/slow.jsonl": ledger(["2026-10-20", "2026-10-22", "2026-10-25"]),
+      ".fm/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
+      ".fm/evidence/slow.jsonl": ledger(["2026-10-20", "2026-10-22", "2026-10-25"]),
     });
     assert.deepEqual(kindsFor(stalled), [["stalled", "slow"]]);
     const recent = repoWith({
-      ".finitemonkey/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
-      ".finitemonkey/evidence/slow.jsonl": ledger(["2026-10-24", "2026-10-25"]),
+      ".fm/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
+      ".fm/evidence/slow.jsonl": ledger(["2026-10-24", "2026-10-25"]),
     });
     assert.deepEqual(kindsFor(recent), []);
   });
@@ -164,19 +164,19 @@ describe("guardian status", () => {
         })
         .join("\n")}\n`;
     const three = repoWith({
-      ".finitemonkey/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
-      ".finitemonkey/evidence/slow.jsonl": ledger(["s1", "s2", "s3"]),
+      ".fm/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
+      ".fm/evidence/slow.jsonl": ledger(["s1", "s2", "s3"]),
     });
     assert.deepEqual(kindsFor(three), [["stalled", "slow"]]);
     const one = repoWith({
-      ".finitemonkey/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
-      ".finitemonkey/evidence/slow.jsonl": ledger(["s1", "s1", "s1"]),
+      ".fm/tasks/slow.yml": contract("slow", ["goals: [g1]"]),
+      ".fm/evidence/slow.jsonl": ledger(["s1", "s1", "s1"]),
     });
     assert.deepEqual(kindsFor(one), []);
   });
 
   it("status --json carries the frozen schema", async () => {
-    const repo = repoWith({ ".finitemonkey/tasks/plans.yml": contract("plans", ["goals: [g1]"]) });
+    const repo = repoWith({ ".fm/tasks/plans.yml": contract("plans", ["goals: [g1]"]) });
     const run = await cliJson(["guardian", "status"], { cwd: repo.root, runtime: runtime() });
     assert.equal(run.code, 0);
     assert.equal(field(run.body, "data", "schema"), "finitemonkey/guardian-status@1");
@@ -206,9 +206,6 @@ describe("guardian status", () => {
       runtime: runtime(),
     });
     assert.equal(confirmed.code, 0);
-    assert.match(
-      repo.read(".finitemonkey/goals.yml"),
-      new RegExp(`id: ${id}\\n {4}text: Ship billing\\n {4}origin: stated`),
-    );
+    assert.match(repo.read(".fm/goals.yml"), new RegExp(`id: ${id}\\n {4}text: Ship billing\\n {4}origin: stated`));
   });
 });

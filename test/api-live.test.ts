@@ -198,14 +198,14 @@ describe("gate contract check, running API", () => {
   });
 
   it("lists a running error shape in shadow and blocks once api-consistency is active", () => {
-    const repo = repoWith({ "api/contract.yml": CONTRACT, ".finitemonkey/config.yml": "api:\n  port: 4010\n" });
+    const repo = repoWith({ "api/contract.yml": CONTRACT, ".fm/config.yml": "api:\n  port: 4010\n" });
     const shadow = liveOutcome(contextWith(repo, () => ran([SECOND_SHAPE])));
     assert.equal(shadow.blocking, false);
     assert.deepEqual(
       shadow.notes.map((note) => note.key),
       ["gate.contract.api_shadow", "gate.contract.api.live_error_shapes"],
     );
-    repo.write(".finitemonkey/policy.yml", "guards:\n  api-consistency: active\n");
+    repo.write(".fm/policy.yml", "guards:\n  api-consistency: active\n");
     const active = liveOutcome(contextWith(repo, () => ran([SECOND_SHAPE])));
     assert.equal(active.blocking, true);
   });
@@ -213,8 +213,8 @@ describe("gate contract check, running API", () => {
   it("fails closed when active and the running API cannot be called", () => {
     const repo = repoWith({
       "api/contract.yml": CONTRACT,
-      ".finitemonkey/config.yml": "api:\n  port: 4010\n",
-      ".finitemonkey/policy.yml": "guards:\n  api-consistency: active\n",
+      ".fm/config.yml": "api:\n  port: 4010\n",
+      ".fm/policy.yml": "guards:\n  api-consistency: active\n",
     });
     const outcome = liveOutcome(contextWith(repo, () => ({ ...ran([]), stdout: "garbage" })));
     assert.deepEqual(outcome, { notes: [{ key: "gate.contract.live.not_run", params: {} }], blocking: true });

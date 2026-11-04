@@ -16,7 +16,7 @@ import type { CommandSpec } from "./types.js";
 
 export const RUN_SCHEMA = "finitemonkey/run@1";
 export const RUNS_DIR = "runs";
-const USAGE = `finitemonkey run [--shell ${SHELLS.join("|")}] [--timeout <seconds>] -- <command> | finitemonkey run --unattended <task>`;
+const USAGE = `fm run [--shell ${SHELLS.join("|")}] [--timeout <seconds>] -- <command> | fm run --unattended <task>`;
 const DEFAULT_TIMEOUT_S = 600;
 const KEEP_RUNS = 30;
 const NOT_FOUND_EXIT = 127;
