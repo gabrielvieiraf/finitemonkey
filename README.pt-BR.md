@@ -18,20 +18,27 @@
   <a href="README.md">English</a> | Português (Brasil) | <a href="README.es.md">Español</a> · <a href="https://gabrielvieiraf.github.io/finitemonkey/">Site</a>
 </p>
 
-O Finite Monkey é um plugin do Claude Code que fica entre o agente e a `main`. O Claude escreve na velocidade que quiser; o trabalho só conta como pronto quando o próprio Finite Monkey rodou as verificações, nos arquivos como estão agora. No caminho, ele mantém seus testes, seus segredos e seu histórico do git fora de alcance, e mostra onde o trabalho passou do que você consegue julgar.
+O Finite Monkey é um plugin do Claude Code para quem constrói com um agente de IA e quer que o resultado se sustente. O trabalho termina pronto e conferido nos arquivos como estão agora. Ele aproveita o código que o projeto já tem, fica limpo o bastante para continuar mudando, parte de perguntas feitas e fontes lidas antes da primeira linha, e fica dentro do que você consegue julgar.
+
+Ele funciona com hooks e checagens que agem quer o modelo lembre deles ou não. Você instala uma vez e continua trabalhando do jeito que já trabalha, sem comando para decorar. Os mesmos hábitos valem para pesquisa, escrita e decisões que você toma com IA, fora do código também.
 
 ```sh
 npx finitemonkey init
 ```
 
-- [O portão: "pronto" quer dizer verificado](#o-portão-pronto-quer-dizer-verificado)
-- [Travas: testes, segredos, git e produção](#travas-testes-segredos-git-e-produção)
-- [Onde o seu trabalho caiu](#onde-o-seu-trabalho-caiu)
-- [O que um produto de verdade ainda precisa](#o-que-um-produto-de-verdade-ainda-precisa)
-- [Vários agentes ao mesmo tempo](#vários-agentes-ao-mesmo-tempo)
-- [Tudo o mais que ele faz](#tudo-o-mais-que-ele-faz)
-- [Não é só para código: um jeito de pensar com IA](#não-é-só-para-código-um-jeito-de-pensar-com-ia)
-- [Instalação](#instalação)
+Plugin, requisitos e prévias estão em [Instalação](#instalação).
+
+## O que muda quando você constrói com ele
+
+- **Pronto quer dizer conferido.** Cada tarefa ganha uma definição de pronto, e o próprio Finite Monkey roda essa definição antes de a sessão poder acabar. [O portão](#o-portão-pronto-quer-dizer-verificado)
+- **Nada que você não consiga recuperar.** Testes, segredos, histórico do git e produção ficam protegidos antes de cada comando rodar. [Travas](#travas-testes-segredos-git-e-produção)
+- **Reaproveitar antes de escrever.** Quando o agente define algo que o projeto já tem, ele fica sabendo onde está o que já existe. [Reaproveitamento e código limpo](#reaproveitamento-e-código-limpo)
+- **Código que continua limpo.** O código alterado não passa dos limites de tamanho, complexidade e duplicação, e os tiques de código de IA ficam retidos no fim. [Reaproveitamento e código limpo](#reaproveitamento-e-código-limpo)
+- **Pensar antes de construir.** Uma tarefa de verdade começa com uma proposta curta e as poucas perguntas que mudam a resposta. A pesquisa guarda fontes datadas, e as decisões ficam escritas com um caminho de volta. [Pense antes de construir](#pense-antes-de-construir)
+- **Aprender no caminho.** O Finite Monkey guarda o que você mostrou que sabe, por conceito, e desenha onde o trabalho aceito caiu em relação a isso. [Aprenda enquanto constrói](#aprenda-enquanto-constrói-onde-o-seu-trabalho-caiu)
+- **O produto inteiro.** Uma planta lista o que um SaaS ou uma landing page de verdade precisa e quais itens já estão verdes. [O que um produto de verdade ainda precisa](#o-que-um-produto-de-verdade-ainda-precisa)
+- **Vários agentes ao mesmo tempo.** Cada um ganha uma worktree, e um quadro mostra todos. [Vários agentes ao mesmo tempo](#vários-agentes-ao-mesmo-tempo)
+- **Além do código.** Pesquisa, escrita e decisões passam pelas mesmas checagens. [Um jeito de pensar com IA](#não-é-só-para-código-um-jeito-de-pensar-com-ia)
 
 ## O portão: "pronto" quer dizer verificado
 
@@ -54,13 +61,31 @@ Toda chamada de ferramenta passa por um hook `PreToolUse` antes de rodar:
 - **Produção muda pelo caminho de deploy.** Comandos com efeito num servidor de produção são bloqueados; a mudança passa pelo caminho que você declarar.
 - **As regras do seu CLAUDE.md viram de verdade.** As regras que precisam valer sempre são compiladas em hooks, permissões, git hooks e etapas de CI, e o `rules coverage` mostra, regra por regra, quais ainda são só texto.
 
-## Onde o seu trabalho caiu
+## Reaproveitamento e código limpo
+
+Um agente escreve rápido. Sozinho, ele cria uma segunda cópia de uma função que o projeto já tem, e cada edição deixa o arquivo um pouco mais comprido e mais embolado. O Finite Monkey acompanha o código enquanto ele é escrito:
+
+- **Procure antes.** Quando uma edição define uma função, classe ou módulo com um nome que o projeto já usa em outro lugar, o agente fica sabendo onde está o que já existe. Antes de um módulo ou dependência nova, o `guardian reuse` procura um que já cumpre esse papel. O registro guarda se cada aviso levou ao reaproveitamento.
+- **Limites no que você mexe.** No fim, um arquivo ou função que a mudança tocou não pode passar dos limites de tamanho, complexidade cognitiva e aninhamento, ganhar um ternário aninhado, repetir linhas que existem em outro lugar nem criar um ciclo de imports. Dívida antiga que ninguém tocou nunca bloqueia.
+- **Tiques de código de IA.** Comentário que narra a mudança, erro capturado e descartado, `any` sem motivo, saída de depuração, emoji no código e arquivo novo ao lado do que deveria ter sido editado ficam retidos no fim. Nome genérico, nome com versão e valor padrão literal recebem aviso. Só você dispensa um achado, do seu próprio terminal.
+
+## Pense antes de construir
+
+Quase tudo o que dá errado com um agente começa antes do código: a pergunta que ninguém fez, a fonte que ninguém abriu, a escolha feita antes de as opções estarem na mesa.
+
+- **As perguntas que mudam a resposta.** Um pedido grande o bastante para ser tarefa, ainda sem contrato, ganha uma proposta curta antes de qualquer edição: o objetivo, o escopo, o que existe hoje e como conferir que ficou pronto, mais no máximo algumas perguntas de múltipla escolha, cada uma com uma recomendação. Quando o agente concorda com algo que você disse sobre o código sem ler o código, você fica sabendo.
+- **Pesquisa com fontes que dá para conferir.** `research new`, `research source` e `research status` guardam a pergunta, cada fonte com a data e o que ela mudou, e quando parar. Uma citação precisa estar na fonte que cita, um número precisa vir de uma fonte, e uma questão em aberto precisa dos dois lados citados antes de a resposta contar como pronta.
+- **Decida com registro.** O `decide new` escreve as opções, os critérios escritos antes dos candidatos, "não fazer nada" como opção e o caminho de volta. O `inventory` escreve o que existe hoje antes de qualquer troca, e o `cost` monta o modelo de custo de uma API paga ou de um plano antes de você assinar.
+- **Ache antes de chutar.** A skill `retrieve` responde "onde fica" e "quem chama" a partir do código e das afirmações registradas, com arquivo e linha, e o `map` guarda uma linha por pasta com o que ela define.
+- **Volta em círculo tem nome.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá: o Finite Monkey diz isso com todas as letras e segura a quarta tentativa.
+
+## Aprenda enquanto constrói: onde o seu trabalho caiu
 
 <p align="center"><img src="assets/trajectory.gif" width="760" alt="Gravação de terminal do finitemonkey trajectory: um gráfico colorido por semana para o domínio backend, com faixas para faz sozinho, às cegas com critério, às cegas sem critério e além do horizonte, o trabalho aceito marcado como pontos, um ricochete marcado com x e uma marca de sustentado. Em seguida o signals blind-band informa que 60 por cento da ajuda de horizonte saiu sem critério."></p>
 
 O agente pode levar você além do que consegue julgar sem nenhum dos dois perceber. O Finite Monkey guarda a prova do que você mostrou que sabe, por conceito, e desenha onde o trabalho aceito caiu semana a semana: o que você faz sozinho, o que aceitou às cegas mas com um critério que consegue checar, o que aceitou às cegas sem critério nenhum e o que estava além do horizonte. Ricochetes (trabalho aceito que voltou quebrado) e correções feitas por você ficam marcados. O mesmo gráfico vira um painel dentro do Claude Code 2.1.287 ou mais novo.
 
-Visões relacionadas: `xray` (quais linhas alteradas estão dentro, na borda ou além da sua prova, e quais têm um critério executável), `teach` (uma pergunta cuja resposta sai de rodar o código), `signals blind-band` e `judge report`.
+O aprendizado acontece no mesmo ciclo. Um agente professor, só de leitura, explica um conceito no nível que o seu caderno de conceitos mostra, citando linhas do seu próprio projeto; depois que você viu a explicação, ele faz uma pergunta de previsão no lugar. O `teach` faz uma pergunta cuja resposta sai de rodar o exemplo da tarefa, e o `xray` mostra quais linhas alteradas estão dentro, na borda ou além da sua prova. Visões relacionadas: `signals blind-band` e `judge report`.
 
 ## O que um produto de verdade ainda precisa
 
@@ -74,26 +99,23 @@ Quem nunca colocou um SaaS no ar não sabe que ele precisa de login, cobrança, 
 
 Cada frente de trabalho em paralelo ganha sua worktree, branch e faixa de portas. O `fronts board` mostra todas as frentes com portão e contrato numa tela só e aponta arquivos que duas frentes alteraram, antes do merge. O `fronts merge` traz as frentes relatadas por um merge que classifica cada trecho em conflito e confere que nada se perdeu.
 
+## Não é só para código: um jeito de pensar com IA
+
+Os hábitos acima são sobre como você trabalha com uma IA, então valem tanto para um estudo de mercado, um relatório ou a escolha de um fornecedor quanto para um pull request:
+
+- **Afirmação conferida na fonte.** Quando um documento, um registro de decisão ou um registro de pesquisa traz afirmações que dependem só do modelo, o Finite Monkey lista cada uma. Cada uma é conferida na fonte (o `judge verify` confere se o DOI ou a URL citada abre e contém o trecho citado), cortada ou repassada com o que falta.
+- **Texto que parece escrito por uma pessoa.** A skill `write` e o `prose check` apontam os padrões que o leitor reconhece como escritos por máquina, num README, na descrição de um PR, em notas de versão ou numa landing page.
+- **Os mesmos registros de pesquisa e de decisão.** `research` e `decide` não precisam de código: uma pergunta com fontes datadas e critérios fixados antes das opções serve para qualquer escolha.
+- **Saiba o que você consegue julgar, em qualquer área.** A prova do que você sabe fica guardada por domínio, então as mesmas faixas valem para o trabalho que você aceita fora do código.
+
+Reaproveitamento, código limpo, as perguntas antes do trabalho, as voltas em círculo e a conferência de afirmações vêm ligados por padrão (`level: standard`). `level: light` no `.finitemonkey/policy.yml` faz esses recursos só observarem e registrarem; `level: strict` liga tudo.
+
 ## Tudo o mais que ele faz
 
-- **Voltas.** A quarta correção para o mesmo erro, o mesmo arquivo editado para lá e para cá: o Finite Monkey percebe a volta, diz isso com todas as letras e segura a quarta tentativa.
-- **Decisões.** Antes de trocar uma biblioteca ou um fornecedor: um inventário do que existe hoje, um registro de pesquisa com fontes datadas, critérios escritos antes dos candidatos, o modelo de custo e como voltar (`inventory`, `research`, `decide`, `cost`).
 - **Telas e formulários.** O `look` captura cada tela em 1440 e 390 px e confere ordem do teclado, rótulos, estados e textos no que de fato renderiza.
 - **O guardião do projeto.** Tarefas recentes contra os objetivos do projeto: trabalho sem vínculo, escopo crescendo, decisões reabertas, trabalho parado e uma previsão a partir das suas próprias tarefas anteriores.
 - **Cadeia de suprimentos e CI.** Lockfile em ordem, `osv-scanner`, CI e deploy no tamanho do projeto e o `ci gate` rodando as mesmas verificações em todo pull request.
 - **Custo.** Gasto do agente por tarefa, dia e mês contra os seus tetos, e quanto cada contrato já custou.
-
-## Não é só para código: um jeito de pensar com IA
-
-Quase tudo o que dá errado com um agente não é código: é a pergunta que ninguém fez, a fonte que ninguém abriu, a decisão tomada antes de as opções estarem na mesa. O mesmo mecanismo vale para pesquisa, escrita e decisões:
-
-- **Olhe antes de construir.** Antes de o agente escrever um módulo novo ou acrescentar uma dependência, o `guardian reuse` procura um que o projeto já tem para esse papel.
-- **Faça a pergunta que muda a resposta.** Quando o pedido é ambíguo ou depende de uma premissa que ninguém conferiu, o Finite Monkey pergunta uma vez, antes do trabalho, em vez de deixar o agente adivinhar.
-- **Pesquise com fontes que dá para conferir.** `research new`, `research source` e `research status` guardam a pergunta, cada fonte com a data e o que ela mudou, e quando parar. Uma citação precisa estar na fonte que cita, um número precisa vir de uma fonte, e uma questão em aberto precisa dos dois lados citados antes de a resposta contar como pronta.
-- **Decida com registro.** O `decide new` escreve as opções, os critérios escritos antes dos candidatos, "não fazer nada" como opção e o caminho de volta; o `inventory` escreve o que existe hoje antes de qualquer troca.
-- **Saiba o que você consegue julgar.** O x-ray e a trajetória mostram quais partes de um resultado você confere sozinho e quais dependem só do modelo, e perguntas curtas com gabarito vindo de rodar o código (`teach`) levam um conceito de "o agente fez" para "você mostrou".
-
-Isso vem ligado por padrão (`level: standard`). `level: light` no `.finitemonkey/policy.yml` faz esses recursos só observarem e registrarem; `level: strict` liga tudo.
 
 ## Nenhum comando para decorar
 

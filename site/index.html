@@ -1342,6 +1342,102 @@
         font-size: 11px;
         color: var(--muted);
       }
+      .promise-body {
+        margin: 0;
+        padding: 16px 18px 18px;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+        font-family: var(--mono);
+        font-size: 14px;
+        line-height: 1.4;
+        color: #e6e9ee;
+      }
+      .promise-body li {
+        display: grid;
+        grid-template-columns: 1.4em minmax(0, 1fr);
+        align-items: baseline;
+      }
+      .promise-body li::before {
+        content: "✓";
+        color: #5fd09d;
+      }
+      .promise-body b {
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .promise-body span {
+        display: block;
+        color: #9aa4b2;
+        font-size: 12.5px;
+      }
+      .cards.areas {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      @media (max-width: 1000px) {
+        .cards.areas {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 600px) {
+        .cards.areas {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .card a.cmd {
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .card a.cmd:hover,
+      .card a.cmd:focus-visible {
+        border-color: var(--ink);
+      }
+      .feat.plain .feat-list {
+        border: 2px solid var(--ink);
+        padding: 14px 16px 6px;
+        margin: 0;
+      }
+      .feat.plain .feat-list h4 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .feat.plain .feat-list ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      .feat.plain .feat-list li {
+        font-family: var(--serif);
+        font-size: 15px;
+        line-height: 1.45;
+        color: var(--muted);
+        padding: 0 0 8px 18px;
+        position: relative;
+        border-bottom: 1px solid var(--rule);
+      }
+      .feat.plain .feat-list li:last-child {
+        border-bottom: 0;
+      }
+      .feat.plain .feat-list li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--ok);
+      }
+      .feat.plain .feat-list code {
+        font-family: var(--mono);
+        font-size: 12px;
+        background: var(--grid);
+        padding: 0 4px;
+      }
       .feats {
         display: grid;
         gap: 0;
@@ -1555,7 +1651,7 @@
             <p class="lede" data-i="lede"></p>
             <div class="cta">
               <a class="btn solid" href="#install" data-i="ctaInstall">Install</a>
-              <a class="btn" href="#features" data-i="ctaFeat">See it work</a>
+              <a class="btn" href="#areas" data-i="ctaFeat">What it does</a>
               <a class="btn" href="https://github.com/gabrielvieiraf/finitemonkey" data-i="ctaRepo">GitHub</a>
             </div>
             <div class="code hero-install">
@@ -1563,20 +1659,21 @@
               <button type="button" data-copy="c0" data-i="copy">copy</button>
             </div>
           </div>
-          <figure class="rec" data-cast="casts/gate.cast">
-            <div class="rec-bar"><i></i><i></i><i></i><span>finitemonkey gate</span></div>
-            <div class="rec-body">
-              <img
-                src="media/gate.gif"
-                width="1009"
-                height="772"
-                loading="eager"
-                alt='The finitemonkey gate fails the test "total rounds to cents", the code is fixed and committed, and the gate passes 15 checks.'
-              />
-            </div>
-            <figcaption data-i="recHero"></figcaption>
+          <figure class="rec promise">
+            <div class="rec-bar"><i></i><i></i><i></i><span data-i="promiseBar">what comes out of a session</span></div>
+            <ul class="promise-body" id="promise"></ul>
+            <figcaption data-i="promiseCap"></figcaption>
           </figure>
         </div>
+
+        <section id="areas">
+          <div class="sh">
+            <h2 data-i="areasH">What changes when you build with it</h2>
+            <span class="k" data-i="areasK">nine areas · one install</span>
+          </div>
+          <p class="intro" data-i="areasIntro"></p>
+          <div class="cards areas" id="areas-grid"></div>
+        </section>
 
         <section id="features">
           <div class="sh">
@@ -1585,7 +1682,7 @@
           </div>
           <p class="intro" data-i="featIntro"></p>
           <div class="feats">
-            <article class="feat">
+            <article class="feat" id="gate">
               <div class="feat-text">
                 <span class="feat-n" data-i="f1n"></span>
                 <h3 data-i="f1h"></h3>
@@ -1607,7 +1704,7 @@
                 <figcaption data-i="f1c"></figcaption>
               </figure>
             </article>
-            <article class="feat">
+            <article class="feat" id="guards">
               <div class="feat-text">
                 <span class="feat-n" data-i="f2n"></span>
                 <h3 data-i="f2h"></h3>
@@ -1629,7 +1726,31 @@
                 <figcaption data-i="f2c"></figcaption>
               </figure>
             </article>
-            <article class="feat">
+            <article class="feat plain" id="reuse">
+              <div class="feat-text">
+                <span class="feat-n" data-i="g3n"></span>
+                <h3 data-i="g3h"></h3>
+                <p data-i="g3p"></p>
+                <code class="cmd">finitemonkey guardian reuse</code>
+              </div>
+              <div class="feat-list">
+                <h4 data-i="g3k"></h4>
+                <ul data-list="g3l"></ul>
+              </div>
+            </article>
+            <article class="feat plain" id="think">
+              <div class="feat-text">
+                <span class="feat-n" data-i="g4n"></span>
+                <h3 data-i="g4h"></h3>
+                <p data-i="g4p"></p>
+                <code class="cmd">finitemonkey research new</code>
+              </div>
+              <div class="feat-list">
+                <h4 data-i="g4k"></h4>
+                <ul data-list="g4l"></ul>
+              </div>
+            </article>
+            <article class="feat" id="learn">
               <div class="feat-text">
                 <span class="feat-n" data-i="f3n"></span>
                 <h3 data-i="f3h"></h3>
@@ -1783,7 +1904,7 @@
                 </ul>
               </div>
             </article>
-            <article class="feat">
+            <article class="feat" id="blueprints">
               <div class="feat-text">
                 <span class="feat-n" data-i="f4n"></span>
                 <h3 data-i="f4h"></h3>
@@ -1805,7 +1926,7 @@
                 <figcaption data-i="f4c"></figcaption>
               </figure>
             </article>
-            <article class="feat">
+            <article class="feat" id="fronts">
               <div class="feat-text">
                 <span class="feat-n" data-i="f5n"></span>
                 <h3 data-i="f5h"></h3>
@@ -1826,6 +1947,18 @@
                 </div>
                 <figcaption data-i="f5c"></figcaption>
               </figure>
+            </article>
+            <article class="feat plain" id="beyond">
+              <div class="feat-text">
+                <span class="feat-n" data-i="g8n"></span>
+                <h3 data-i="g8h"></h3>
+                <p data-i="g8p"></p>
+                <code class="cmd">finitemonkey judge verify</code>
+              </div>
+              <div class="feat-list">
+                <h4 data-i="g8k"></h4>
+                <ul data-list="g8l"></ul>
+              </div>
             </article>
           </div>
         </section>
@@ -1928,16 +2061,116 @@
             navBench: "benchmark",
             navEssays: "essays",
             h1: "Infinite monkeys not required. <em>One will do: you.</em>",
-            lede: "Claude Code says it is done. Finite Monkey runs your definition of done on the current files and lets the session end only when it passes. Deleted tests, leaked keys, force pushes and hand edits to production are stopped before they run.",
+            lede: "You build with an AI agent. Finite Monkey makes what comes out hold up: finished and checked on the current files, built on the code you already have, clean enough to keep changing, thought through before the first line, and within what you can judge. You install it once; hooks do the rest inside Claude Code.",
             ctaInstall: "Install",
-            ctaFeat: "See it work",
+            ctaFeat: "What it does",
             ctaRepo: "GitHub",
             copy: "copy",
             copied: "copied",
             gifLink: "Open the recording (GIF)",
-            recHero: "finitemonkey gate on a demo shop: red, the fix, green",
-            featH: "What it does, recorded",
-            featK: "real cli output · v0.1.0",
+            promiseBar: "what comes out of a session",
+            promiseCap: "one install · hooks inside Claude Code · no commands to memorize",
+            areasH: "What changes when you build with it",
+            areasK: "nine areas · one install",
+            areasIntro:
+              "The gate that refuses a false done is one of them. Each area below runs through the same hooks, with no command for you to remember.",
+            promise: [
+              ["Done, and checked", "Finite Monkey ran the checks itself, on the files as they are now"],
+              ["Built on what exists", "the agent is told when the project already has it"],
+              ["Clean code", "touched code stays inside the size, complexity and clone limits"],
+              ["Thought through", "questions asked first, sources dated, decisions with a way back"],
+              ["Within what you can judge", "what you accepted blind is marked, per concept"],
+              ["Nothing lost", "tests, keys, git history and production guarded"],
+            ],
+            areas: [
+              [
+                "Done means checked",
+                "Each task gets a definition of done. Finite Monkey runs it itself, on the current files, before the session can end.",
+                "#gate",
+                "the gate",
+              ],
+              [
+                "Nothing you can't get back",
+                "Tests, secrets, git history and production are guarded before each command runs.",
+                "#guards",
+                "guards",
+              ],
+              [
+                "Reuse before writing",
+                "When the agent defines something the project already has, it is told where the existing one lives.",
+                "#reuse",
+                "reuse",
+              ],
+              [
+                "Code that stays clean",
+                "Touched code can't grow past the size, complexity and clone limits, and AI code tics are held at the end.",
+                "#reuse",
+                "clean code",
+              ],
+              [
+                "Think before building",
+                "A real task starts with a short proposal and the few questions that change the answer. Research keeps dated sources.",
+                "#think",
+                "questions and records",
+              ],
+              [
+                "Learn as you go",
+                "What you showed you know is kept per concept, and accepted work is drawn against it week by week.",
+                "#learn",
+                "trajectory",
+              ],
+              [
+                "The whole product",
+                "A blueprint lists what a real SaaS or landing page needs and which items are green.",
+                "#blueprints",
+                "blueprints",
+              ],
+              [
+                "Several agents at once",
+                "Each one gets a worktree, and one board shows every front and the files two of them changed.",
+                "#fronts",
+                "fronts",
+              ],
+              [
+                "Beyond code",
+                "Claims checked against their source, writing that reads like a person wrote it, research and decisions for any choice.",
+                "#beyond",
+                "thinking with AI",
+              ],
+            ],
+            g3n: "03 · reuse and clean code",
+            g3h: "The agent finds what exists before it writes a copy, and the code stays clean.",
+            g3p: "An agent writes fast. Left alone, it adds a second copy of a helper the project already has, and each edit leaves the file a little longer and more tangled. Finite Monkey checks the code as it is written.",
+            g3k: "while the agent writes",
+            g3l: [
+              "When an edit defines a name the project already uses elsewhere, the agent is told where the existing one lives; <code>guardian reuse</code> does the same before a new module or dependency",
+              "A touched file or function can't grow past the size, cognitive complexity and nesting limits, repeat lines from elsewhere or add an import cycle; old debt nobody touched never blocks",
+              "Narrating comments, swallowed errors, <code>any</code> without a reason, debug output and a new file next to the one it should have edited are held at the end",
+              "Only you can dismiss a finding, from your own terminal",
+            ],
+            g4n: "04 · think before you build",
+            g4h: "The questions that change the answer come before the code.",
+            g4p: "Most of what goes wrong with an agent starts before the code: a question nobody asked, a source nobody opened, a choice made before the options were on the table.",
+            g4k: "before the first edit",
+            g4l: [
+              "A request big enough to be a task gets one short proposal first: goal, scope, what exists today, how to check it is done, and at most a few multiple-choice questions",
+              "When the agent agrees with something you said about the code without reading it, you are told",
+              "Research records keep each source with its date and what it changed; a quote must be in the source it cites",
+              "Decision records fix the criteria before the candidates, include doing nothing and write the way back",
+              "The fourth fix for the same error is held until you choose another way",
+            ],
+            g8n: "08 · beyond code",
+            g8h: "The same habits for anything you do with AI.",
+            g8p: "These checks are about how you work with an AI, so they hold for a market study, a report or a choice of vendor as much as for a pull request.",
+            g8k: "research, writing and decisions",
+            g8l: [
+              "Claims that rest only on the model are listed, then verified against their source, cut or handed off with what is missing",
+              "<code>judge verify</code> checks that a cited DOI or URL resolves and contains the quoted span",
+              "The <code>write</code> skill and <code>prose check</code> flag text that reads as machine-written",
+              "Research and decision records need no codebase",
+            ],
+            featH: "What it does",
+            featK: "recordings are real cli output · v0.1.0",
             featIntro:
               "Every recording below is the real output of finitemonkey 0.1.0 on a throwaway project. The scripts that make them live in the repository, so anyone can record them again.",
             f1n: "01 · the gate",
@@ -1959,17 +2192,18 @@
               "Commands with effects on a declared production host are blocked: production changes go through your deploy path",
             ],
             f2c: "a deleted test, a Stripe key, a force push and a reset --hard, as the hook answers them",
-            f3n: "03 · the person",
+            f3n: "05 · learn as you build",
             f3h: "See where your accepted work lands, week by week.",
             f3p: "A good result does not say whether you could judge it. Per domain and week, Finite Monkey records whether accepted work was something you do alone, something you took with a criterion you can check, or something you took blind.",
             f3l: [
               "A ricochet is marked when accepted work comes back as a failure, a hold when you fixed it yourself",
               "The blind band index: the share of help that went out without a criterion you can check",
               "Your level moves only with proof, such as code you wrote or a prediction you got right; it stays on your machine and you can contest every entry",
+              "A read-only teacher agent explains a concept at your level, citing lines from your own project; once you have seen it, you get a prediction question instead",
             ],
             f3c: "the trajectory chart for backend and the blind band index",
             whyH: "Why it matters: same result, different status",
-            f4n: "04 · blueprints",
+            f4n: "06 · blueprints",
             f4h: "A login screen is not a product. See what a real one still needs.",
             f4p: "A blueprint lists what a real SaaS or landing page needs and shows which items are green in your project, so neither you nor the agent calls a prototype done.",
             f4l: [
@@ -1978,7 +2212,7 @@
               "Items a machine cannot check are confirmed by you, in writing",
             ],
             f4c: "a fresh project has 1 of the 25 items a SaaS needs",
-            f5n: "05 · parallel agents",
+            f5n: "07 · parallel agents",
             f5h: "Several agents at once, one screen, no lost work.",
             f5p: "Each front gets its own worktree, branch and port range. The board shows every front with its gate and contract, and the files two fronts both changed, before they meet in a merge.",
             f5l: [
@@ -2001,9 +2235,9 @@
                 "finitemonkey secrets scan",
               ],
               [
-                "Decisions and research",
-                "Decision records with criteria written before the candidates and the do-nothing option; research records with dated sources.",
-                "finitemonkey decide new",
+                "Review",
+                "A read-only reviewer reads the finished diff; each must-fix finding is reproduced on the base and head commits, so only real, new problems block.",
+                "finitemonkey review packet",
               ],
               [
                 "Screens",
@@ -2011,9 +2245,9 @@
                 "finitemonkey look",
               ],
               [
-                "Loops",
-                "Notices the fourth attempt at the same error and holds it until you choose another way.",
-                "finitemonkey signals",
+                "Code map",
+                "One line per folder with what it defines. The retrieve skill answers where is and who calls with file and line.",
+                "finitemonkey map",
               ],
               [
                 "Two-user scenarios",
@@ -2022,14 +2256,10 @@
               ],
               [
                 "Guardian",
-                "Compares recent tasks with the project goals: scope growth, reopened decisions, stalled work, a module you already have.",
+                "Compares recent tasks with the project goals: scope growth, reopened decisions, stalled work.",
                 "finitemonkey guardian status",
               ],
-              [
-                "Teach-back",
-                "One question whose answer key comes from running the task's example. Only a keyed answer counts.",
-                "finitemonkey teach ask",
-              ],
+              ["CI gate", "The same checks on every pull request, whichever agent wrote it.", "finitemonkey ci gate"],
               ["Spend", "Agent spend per task, day and month against the ceilings you set.", "finitemonkey budget"],
               [
                 "Dependencies",
@@ -2118,16 +2348,116 @@
             navBench: "bancada",
             navEssays: "ensaios",
             h1: "Infinitos macacos não são necessários. <em>Um basta: você.</em>",
-            lede: "O Claude Code diz que terminou. O Finite Monkey roda a sua definição de pronto nos arquivos atuais e só deixa a sessão acabar quando ela passa. Teste apagado, chave vazada, force push e edição na mão em produção são barrados antes de rodar.",
+            lede: "Você constrói com um agente de IA. O Finite Monkey faz o que sai disso se sustentar: pronto e conferido nos arquivos atuais, feito em cima do código que você já tem, limpo o bastante para continuar mudando, pensado antes da primeira linha e dentro do que você consegue julgar. Você instala uma vez; os hooks fazem o resto dentro do Claude Code.",
             ctaInstall: "Instalar",
-            ctaFeat: "Ver funcionando",
+            ctaFeat: "O que ele faz",
             ctaRepo: "GitHub",
             copy: "copiar",
             copied: "copiado",
             gifLink: "Abrir a gravação (GIF)",
-            recHero: "finitemonkey gate numa loja de exemplo: vermelho, a correção, verde",
-            featH: "O que ele faz, gravado",
-            featK: "saída real do cli · v0.1.0",
+            promiseBar: "o que sai de uma sessão",
+            promiseCap: "uma instalação · hooks dentro do Claude Code · nenhum comando para decorar",
+            areasH: "O que muda quando você constrói com ele",
+            areasK: "nove áreas · uma instalação",
+            areasIntro:
+              "O portão que recusa um pronto falso é uma delas. Cada área abaixo roda pelos mesmos hooks, sem comando para você lembrar.",
+            promise: [
+              ["Pronto, e conferido", "o próprio Finite Monkey rodou as checagens, nos arquivos como estão agora"],
+              ["Feito em cima do que existe", "o agente fica sabendo quando o projeto já tem aquilo"],
+              ["Código limpo", "o código alterado fica dentro dos limites de tamanho, complexidade e duplicação"],
+              ["Pensado antes", "perguntas primeiro, fontes datadas, decisões com caminho de volta"],
+              ["Dentro do que você julga", "o que você aceitou às cegas fica marcado, por conceito"],
+              ["Nada perdido", "testes, chaves, histórico do git e produção protegidos"],
+            ],
+            areas: [
+              [
+                "Pronto quer dizer conferido",
+                "Cada tarefa ganha uma definição de pronto. O próprio Finite Monkey roda essa definição, nos arquivos atuais, antes de a sessão poder acabar.",
+                "#gate",
+                "o portão",
+              ],
+              [
+                "Nada que você não recupere",
+                "Testes, segredos, histórico do git e produção ficam protegidos antes de cada comando rodar.",
+                "#guards",
+                "travas",
+              ],
+              [
+                "Reaproveitar antes de escrever",
+                "Quando o agente define algo que o projeto já tem, ele fica sabendo onde está o que já existe.",
+                "#reuse",
+                "reaproveitamento",
+              ],
+              [
+                "Código que continua limpo",
+                "O código alterado não passa dos limites de tamanho, complexidade e duplicação, e os tiques de código de IA ficam retidos no fim.",
+                "#reuse",
+                "código limpo",
+              ],
+              [
+                "Pensar antes de construir",
+                "Uma tarefa de verdade começa com uma proposta curta e as poucas perguntas que mudam a resposta. A pesquisa guarda fontes datadas.",
+                "#think",
+                "perguntas e registros",
+              ],
+              [
+                "Aprender no caminho",
+                "O que você mostrou que sabe fica guardado por conceito, e o trabalho aceito é desenhado contra isso semana a semana.",
+                "#learn",
+                "trajetória",
+              ],
+              [
+                "O produto inteiro",
+                "Uma planta lista o que um SaaS ou uma landing page de verdade precisa e quais itens já estão verdes.",
+                "#blueprints",
+                "plantas",
+              ],
+              [
+                "Vários agentes ao mesmo tempo",
+                "Cada um ganha uma worktree, e um quadro mostra todas as frentes e os arquivos que duas delas mudaram.",
+                "#fronts",
+                "frentes",
+              ],
+              [
+                "Além do código",
+                "Afirmação conferida na fonte, texto que parece escrito por uma pessoa, pesquisa e decisão para qualquer escolha.",
+                "#beyond",
+                "pensar com IA",
+              ],
+            ],
+            g3n: "03 · reaproveitamento e código limpo",
+            g3h: "O agente acha o que já existe antes de escrever uma cópia, e o código continua limpo.",
+            g3p: "Um agente escreve rápido. Sozinho, ele cria uma segunda cópia de uma função que o projeto já tem, e cada edição deixa o arquivo um pouco mais comprido e mais embolado. O Finite Monkey confere o código enquanto ele é escrito.",
+            g3k: "enquanto o agente escreve",
+            g3l: [
+              "Quando uma edição define um nome que o projeto já usa em outro lugar, o agente fica sabendo onde está o que já existe; o <code>guardian reuse</code> faz o mesmo antes de um módulo ou dependência nova",
+              "Um arquivo ou função alterado não passa dos limites de tamanho, complexidade cognitiva e aninhamento, não repete linhas de outro lugar nem cria ciclo de imports; dívida antiga que ninguém tocou nunca bloqueia",
+              "Comentário que narra a mudança, erro engolido, <code>any</code> sem motivo, saída de depuração e arquivo novo ao lado do que deveria ter sido editado ficam retidos no fim",
+              "Só você dispensa um achado, do seu próprio terminal",
+            ],
+            g4n: "04 · pense antes de construir",
+            g4h: "As perguntas que mudam a resposta vêm antes do código.",
+            g4p: "Quase tudo o que dá errado com um agente começa antes do código: a pergunta que ninguém fez, a fonte que ninguém abriu, a escolha feita antes de as opções estarem na mesa.",
+            g4k: "antes da primeira edição",
+            g4l: [
+              "Um pedido grande o bastante para ser tarefa ganha primeiro uma proposta curta: objetivo, escopo, o que existe hoje, como conferir que ficou pronto e no máximo algumas perguntas de múltipla escolha",
+              "Quando o agente concorda com algo que você disse sobre o código sem ler o código, você fica sabendo",
+              "Registros de pesquisa guardam cada fonte com a data e o que ela mudou; uma citação precisa estar na fonte que cita",
+              "Registros de decisão fixam os critérios antes dos candidatos, incluem não fazer nada e escrevem o caminho de volta",
+              "A quarta correção para o mesmo erro fica retida até você escolher outro caminho",
+            ],
+            g8n: "08 · além do código",
+            g8h: "Os mesmos hábitos para tudo o que você faz com IA.",
+            g8p: "Essas checagens são sobre como você trabalha com uma IA, então valem tanto para um estudo de mercado, um relatório ou a escolha de um fornecedor quanto para um pull request.",
+            g8k: "pesquisa, escrita e decisões",
+            g8l: [
+              "Afirmações que dependem só do modelo são listadas e depois conferidas na fonte, cortadas ou repassadas com o que falta",
+              "O <code>judge verify</code> confere se o DOI ou a URL citada abre e contém o trecho citado",
+              "A skill <code>write</code> e o <code>prose check</code> apontam texto que parece escrito por máquina",
+              "Registros de pesquisa e de decisão não precisam de código",
+            ],
+            featH: "O que ele faz",
+            featK: "gravações com saída real do cli · v0.1.0",
             featIntro:
               "Cada gravação abaixo é a saída real do finitemonkey 0.1.0 num projeto descartável. Os scripts que as geram estão no repositório, então qualquer pessoa pode gravar de novo.",
             f1n: "01 · o portão",
@@ -2149,17 +2479,18 @@
               "Comando com efeito num servidor de produção declarado é bloqueado: produção muda pelo seu caminho de deploy",
             ],
             f2c: "um teste apagado, uma chave da Stripe, um force push e um reset --hard, do jeito que o hook responde",
-            f3n: "03 · a pessoa",
+            f3n: "05 · aprenda enquanto constrói",
             f3h: "Veja onde cai o trabalho que você aceitou, semana a semana.",
             f3p: "Um resultado bom não diz se você conseguiria julgá-lo. Por domínio e semana, o Finite Monkey registra se o trabalho aceito era algo que você faz sozinho, algo que recebeu com um critério que consegue conferir ou algo que recebeu às cegas.",
             f3l: [
               "Ricochete marcado quando o trabalho aceito volta como falha, e se mantém quando você mesmo consertou",
               "O índice da faixa cega: a parte da ajuda que saiu sem um critério que você consiga conferir",
               "Seu nível só se move com prova, como código que você escreveu ou uma previsão que acertou; fica na sua máquina e você contesta cada registro",
+              "Um agente professor, só de leitura, explica um conceito no seu nível, citando linhas do seu próprio projeto; depois que você viu a explicação, vem uma pergunta de previsão no lugar",
             ],
             f3c: "o gráfico de trajetória do backend e o índice da faixa cega",
             whyH: "Por que importa: o mesmo resultado, estatutos diferentes",
-            f4n: "04 · plantas",
+            f4n: "06 · plantas",
             f4h: "Uma tela de login não é um produto. Veja o que um de verdade ainda precisa.",
             f4p: "Uma planta lista o que um SaaS ou uma landing page de verdade precisa e mostra quais itens já estão verdes no seu projeto, para nem você nem o agente chamarem um protótipo de pronto.",
             f4l: [
@@ -2168,7 +2499,7 @@
               "O que uma máquina não confere é confirmado por você, por escrito",
             ],
             f4c: "um projeto novo tem 1 dos 25 itens de que um SaaS precisa",
-            f5n: "05 · agentes em paralelo",
+            f5n: "07 · agentes em paralelo",
             f5h: "Vários agentes ao mesmo tempo, uma tela, nenhum trabalho perdido.",
             f5p: "Cada frente ganha sua worktree, sua branch e sua faixa de portas. O quadro mostra cada frente com seu portão e contrato, e os arquivos que duas frentes mudaram, antes de se encontrarem num merge.",
             f5l: [
@@ -2191,9 +2522,9 @@
                 "finitemonkey secrets scan",
               ],
               [
-                "Decisões e pesquisa",
-                "Registros de decisão com critérios escritos antes dos candidatos e a opção de não fazer nada; registros de pesquisa com fontes datadas.",
-                "finitemonkey decide new",
+                "Revisão",
+                "Um revisor só de leitura lê o diff pronto; cada achado obrigatório é reproduzido nos commits de base e de topo, então só problema real e novo bloqueia.",
+                "finitemonkey review packet",
               ],
               [
                 "Telas",
@@ -2201,9 +2532,9 @@
                 "finitemonkey look",
               ],
               [
-                "Voltas em círculo",
-                "Percebe a quarta tentativa no mesmo erro e segura até você escolher outro caminho.",
-                "finitemonkey signals",
+                "Mapa do código",
+                "Uma linha por pasta com o que ela define. A skill retrieve responde onde fica e quem chama, com arquivo e linha.",
+                "finitemonkey map",
               ],
               [
                 "Cenários com dois usuários",
@@ -2212,13 +2543,13 @@
               ],
               [
                 "Guardião",
-                "Compara as tarefas recentes com os objetivos do projeto: escopo crescendo, decisão reaberta, trabalho parado, módulo que você já tem.",
+                "Compara as tarefas recentes com os objetivos do projeto: escopo crescendo, decisão reaberta, trabalho parado.",
                 "finitemonkey guardian status",
               ],
               [
-                "Pergunta de volta",
-                "Uma pergunta cuja resposta vem de rodar o exemplo da tarefa. Só resposta com gabarito conta.",
-                "finitemonkey teach ask",
+                "Portão na CI",
+                "As mesmas checagens em todo pull request, seja qual for o agente que escreveu.",
+                "finitemonkey ci gate",
               ],
               [
                 "Gasto",
@@ -2312,16 +2643,119 @@
             navBench: "banco de pruebas",
             navEssays: "ensayos",
             h1: "No hacen falta infinitos monos. <em>Basta uno: tú.</em>",
-            lede: "Claude Code dice que terminó. Finite Monkey ejecuta tu definición de listo sobre los archivos actuales y solo deja que la sesión termine cuando pasa. Tests borrados, claves filtradas, force push y cambios a mano en producción se frenan antes de ejecutarse.",
+            lede: "Construyes con un agente de IA. Finite Monkey hace que lo que sale se sostenga: terminado y comprobado sobre los archivos actuales, hecho sobre el código que ya tienes, lo bastante limpio para seguir cambiándolo, pensado antes de la primera línea y dentro de lo que puedes juzgar. Lo instalas una vez; los hooks hacen el resto dentro de Claude Code.",
             ctaInstall: "Instalar",
-            ctaFeat: "Verlo funcionar",
+            ctaFeat: "Qué hace",
             ctaRepo: "GitHub",
             copy: "copiar",
             copied: "copiado",
             gifLink: "Abrir la grabación (GIF)",
-            recHero: "finitemonkey gate en una tienda de ejemplo: rojo, la corrección, verde",
-            featH: "Lo que hace, grabado",
-            featK: "salida real del cli · v0.1.0",
+            promiseBar: "lo que sale de una sesión",
+            promiseCap: "una instalación · hooks dentro de Claude Code · ningún comando que memorizar",
+            areasH: "Qué cambia cuando construyes con él",
+            areasK: "nueve áreas · una instalación",
+            areasIntro:
+              "La puerta que rechaza un terminado falso es una de ellas. Cada área de abajo funciona con los mismos hooks, sin comandos que tengas que recordar.",
+            promise: [
+              [
+                "Terminado, y comprobado",
+                "Finite Monkey ejecutó las comprobaciones por sí mismo, sobre los archivos tal como están",
+              ],
+              ["Hecho sobre lo que existe", "el agente se entera cuando el proyecto ya lo tiene"],
+              ["Código limpio", "el código tocado queda dentro de los límites de tamaño, complejidad y duplicación"],
+              ["Pensado antes", "preguntas primero, fuentes fechadas, decisiones con camino de vuelta"],
+              ["Dentro de lo que juzgas", "lo que aceptaste a ciegas queda marcado, por concepto"],
+              ["Nada perdido", "tests, claves, historial de git y producción protegidos"],
+            ],
+            areas: [
+              [
+                "Terminado significa comprobado",
+                "Cada tarea tiene una definición de terminado. Finite Monkey la ejecuta por sí mismo, sobre los archivos actuales, antes de que la sesión pueda cerrarse.",
+                "#gate",
+                "la puerta",
+              ],
+              [
+                "Nada que no puedas recuperar",
+                "Los tests, los secretos, el historial de git y producción quedan protegidos antes de que se ejecute cada comando.",
+                "#guards",
+                "guardas",
+              ],
+              [
+                "Reutilizar antes de escribir",
+                "Cuando el agente define algo que el proyecto ya tiene, se le dice dónde está lo que ya existe.",
+                "#reuse",
+                "reutilización",
+              ],
+              [
+                "Código que sigue limpio",
+                "El código tocado no pasa de los límites de tamaño, complejidad y duplicación, y los tics de código de IA se retienen al final.",
+                "#reuse",
+                "código limpio",
+              ],
+              [
+                "Pensar antes de construir",
+                "Una tarea de verdad empieza con una propuesta corta y las pocas preguntas que cambian la respuesta. La investigación guarda fuentes fechadas.",
+                "#think",
+                "preguntas y registros",
+              ],
+              [
+                "Aprender por el camino",
+                "Lo que demostraste saber se guarda por concepto, y el trabajo aceptado se dibuja frente a eso semana a semana.",
+                "#learn",
+                "trayectoria",
+              ],
+              [
+                "El producto entero",
+                "Un plano lista lo que necesita un SaaS o una landing page de verdad y qué elementos ya están en verde.",
+                "#blueprints",
+                "planos",
+              ],
+              [
+                "Varios agentes a la vez",
+                "Cada uno tiene su worktree, y un tablero muestra todos los frentes y los archivos que dos de ellos cambiaron.",
+                "#fronts",
+                "frentes",
+              ],
+              [
+                "Más allá del código",
+                "Afirmaciones comprobadas en su fuente, texto que parece escrito por una persona, investigación y decisión para cualquier elección.",
+                "#beyond",
+                "pensar con IA",
+              ],
+            ],
+            g3n: "03 · reutilización y código limpio",
+            g3h: "El agente encuentra lo que ya existe antes de escribir una copia, y el código sigue limpio.",
+            g3p: "Un agente escribe rápido. Solo, agrega una segunda copia de una función que el proyecto ya tiene, y cada edición deja el archivo un poco más largo y más enredado. Finite Monkey comprueba el código mientras se escribe.",
+            g3k: "mientras el agente escribe",
+            g3l: [
+              "Cuando una edición define un nombre que el proyecto ya usa en otro lugar, se le dice al agente dónde está lo que ya existe; <code>guardian reuse</code> hace lo mismo antes de un módulo o una dependencia nueva",
+              "Un archivo o una función tocada no pasa de los límites de tamaño, complejidad cognitiva y anidamiento, no repite líneas de otro lugar ni crea un ciclo de imports; la deuda vieja que nadie tocó nunca bloquea",
+              "Comentarios que narran el cambio, errores tragados, <code>any</code> sin motivo, salida de depuración y un archivo nuevo junto al que debía editarse se retienen al final",
+              "Solo tú puedes descartar un hallazgo, desde tu propia terminal",
+            ],
+            g4n: "04 · piensa antes de construir",
+            g4h: "Las preguntas que cambian la respuesta llegan antes del código.",
+            g4p: "Casi todo lo que sale mal con un agente empieza antes del código: la pregunta que nadie hizo, la fuente que nadie abrió, la elección hecha antes de que las opciones estuvieran sobre la mesa.",
+            g4k: "antes de la primera edición",
+            g4l: [
+              "Un pedido lo bastante grande para ser una tarea recibe primero una propuesta corta: objetivo, alcance, lo que existe hoy, cómo comprobar que está terminado y como mucho unas pocas preguntas de opción múltiple",
+              "Cuando el agente acepta algo que dijiste sobre el código sin leer el código, te enteras",
+              "Los registros de investigación guardan cada fuente con su fecha y lo que cambió; una cita tiene que estar en la fuente que cita",
+              "Los registros de decisión fijan los criterios antes de los candidatos, incluyen no hacer nada y escriben el camino de vuelta",
+              "El cuarto arreglo para el mismo error se retiene hasta que elijas otro camino",
+            ],
+            g8n: "08 · más allá del código",
+            g8h: "Los mismos hábitos para todo lo que haces con IA.",
+            g8p: "Estas comprobaciones tratan de cómo trabajas con una IA, así que valen tanto para un estudio de mercado, un informe o la elección de un proveedor como para un pull request.",
+            g8k: "investigación, escritura y decisiones",
+            g8l: [
+              "Las afirmaciones que dependen solo del modelo se listan y luego se comprueban en su fuente, se cortan o se entregan con lo que falta",
+              "<code>judge verify</code> comprueba que el DOI o la URL citada abre y contiene el fragmento citado",
+              "La skill <code>write</code> y <code>prose check</code> señalan el texto que parece escrito por una máquina",
+              "Los registros de investigación y de decisión no necesitan código",
+            ],
+            featH: "Qué hace",
+            featK: "grabaciones con salida real del cli · v0.1.0",
             featIntro:
               "Cada grabación de abajo es la salida real de finitemonkey 0.1.0 en un proyecto desechable. Los scripts que las generan están en el repositorio, así que cualquiera puede volver a grabarlas.",
             f1n: "01 · la puerta",
@@ -2343,17 +2777,18 @@
               "Los comandos con efecto en un servidor de producción declarado se bloquean: producción cambia por tu camino de despliegue",
             ],
             f2c: "un test borrado, una clave de Stripe, un force push y un reset --hard, tal como los responde el hook",
-            f3n: "03 · la persona",
+            f3n: "05 · aprende mientras construyes",
             f3h: "Mira dónde cae el trabajo que aceptaste, semana a semana.",
             f3p: "Un buen resultado no dice si podrías juzgarlo. Por dominio y semana, Finite Monkey registra si el trabajo aceptado era algo que haces solo, algo que recibiste con un criterio que puedes comprobar o algo que recibiste a ciegas.",
             f3l: [
               "Se marca un rebote cuando el trabajo aceptado vuelve como fallo, y se mantiene cuando lo arreglaste tú",
               "El índice de franja ciega: la parte de la ayuda que salió sin un criterio que puedas comprobar",
               "Tu nivel solo se mueve con pruebas, como código que escribiste o una predicción que acertaste; queda en tu máquina y puedes impugnar cada registro",
+              "Un agente profesor, de solo lectura, explica un concepto a tu nivel, citando líneas de tu propio proyecto; cuando ya viste la explicación, recibes una pregunta de predicción en su lugar",
             ],
             f3c: "el gráfico de trayectoria de backend y el índice de franja ciega",
             whyH: "Por qué importa: el mismo resultado, estatus distintos",
-            f4n: "04 · planos",
+            f4n: "06 · planos",
             f4h: "Una pantalla de login no es un producto. Mira lo que uno de verdad todavía necesita.",
             f4p: "Un plano lista lo que un SaaS o una landing page de verdad necesita y muestra qué elementos ya están en verde en tu proyecto, para que ni tú ni el agente llamen terminado a un prototipo.",
             f4l: [
@@ -2362,7 +2797,7 @@
               "Lo que una máquina no puede comprobar lo confirmas tú, por escrito",
             ],
             f4c: "un proyecto nuevo tiene 1 de los 25 elementos que necesita un SaaS",
-            f5n: "05 · agentes en paralelo",
+            f5n: "07 · agentes en paralelo",
             f5h: "Varios agentes a la vez, una pantalla, nada de trabajo perdido.",
             f5p: "Cada frente recibe su worktree, su rama y su rango de puertos. El tablero muestra cada frente con su puerta y su contrato, y los archivos que dos frentes cambiaron, antes de que se encuentren en un merge.",
             f5l: [
@@ -2385,9 +2820,9 @@
                 "finitemonkey secrets scan",
               ],
               [
-                "Decisiones e investigación",
-                "Registros de decisión con criterios escritos antes de los candidatos y la opción de no hacer nada; registros de investigación con fuentes fechadas.",
-                "finitemonkey decide new",
+                "Revisión",
+                "Un revisor de solo lectura lee el diff terminado; cada hallazgo obligatorio se reproduce en los commits base y final, así que solo bloquean los problemas reales y nuevos.",
+                "finitemonkey review packet",
               ],
               [
                 "Pantallas",
@@ -2395,9 +2830,9 @@
                 "finitemonkey look",
               ],
               [
-                "Vueltas en círculo",
-                "Detecta el cuarto intento sobre el mismo error y lo retiene hasta que elijas otro camino.",
-                "finitemonkey signals",
+                "Mapa del código",
+                "Una línea por carpeta con lo que define. La skill retrieve responde dónde está y quién llama, con archivo y línea.",
+                "finitemonkey map",
               ],
               [
                 "Escenarios con dos usuarios",
@@ -2406,13 +2841,13 @@
               ],
               [
                 "Guardián",
-                "Compara las tareas recientes con los objetivos del proyecto: alcance que crece, decisiones reabiertas, trabajo parado, un módulo que ya tienes.",
+                "Compara las tareas recientes con los objetivos del proyecto: alcance que crece, decisiones reabiertas, trabajo parado.",
                 "finitemonkey guardian status",
               ],
               [
-                "Pregunta de vuelta",
-                "Una pregunta cuya respuesta sale de ejecutar el ejemplo de la tarea. Solo cuenta una respuesta con clave.",
-                "finitemonkey teach ask",
+                "Puerta en CI",
+                "Las mismas comprobaciones en cada pull request, lo haya escrito el agente que sea.",
+                "finitemonkey ci gate",
               ],
               ["Gasto", "Gasto del agente por tarea, día y mes frente a los topes que definas.", "finitemonkey budget"],
               [
@@ -2511,6 +2946,15 @@
           document.querySelectorAll("[data-list]").forEach((el) => {
             el.innerHTML = t[el.dataset.list].map((item) => `<li>${rich(item)}</li>`).join("");
           });
+          $("#promise").innerHTML = t.promise
+            .map(([head, detail]) => `<li><div><b>${esc(head)}</b><span>${esc(detail)}</span></div></li>`)
+            .join("");
+          $("#areas-grid").innerHTML = t.areas
+            .map(
+              ([title, text, href, label]) =>
+                `<div class="card"><b>${esc(title)}</b><span>${esc(text)}</span><a class="cmd" href="${href}">${esc(label)} ↓</a></div>`,
+            )
+            .join("");
           $("#cards").innerHTML = t.cards
             .map(
               ([title, text, cmd]) =>
@@ -2614,6 +3058,9 @@
         fitChart();
         narrow.addEventListener("change", fitChart);
         window.addEventListener("DOMContentLoaded", () => {
+          if (window.gsap && !reduce) {
+            window.gsap.from("#promise li", { opacity: 0, x: -8, duration: 0.35, stagger: 0.09, ease: "power2.out" });
+          }
           const recs = [...document.querySelectorAll(".rec[data-cast]")];
           let chart = null;
           if (!("IntersectionObserver" in window)) return;

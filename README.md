@@ -18,20 +18,27 @@
   English | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.es.md">Español</a> · <a href="https://gabrielvieiraf.github.io/finitemonkey/">Website</a>
 </p>
 
-Finite Monkey is a Claude Code plugin that stands between the agent and `main`. Claude can write as fast as it wants; the work only counts as done when Finite Monkey ran the checks itself, on the files as they are now. On the way it keeps your tests, your secrets and your git history out of reach, and shows you where the work went beyond what you can judge.
+Finite Monkey is a Claude Code plugin for people who build with an AI agent and want the result to hold up. The work ends finished and checked on the files as they are now. It reuses the code the project already has, stays clean enough to keep changing, rests on questions asked and sources read before the first line, and stays within what you can judge.
+
+It runs as hooks and checks that act whether or not the model remembers them. You install it once and keep working the way you already do, with no command to memorize. The same habits apply to research, writing and decisions you make with AI, outside code too.
 
 ```sh
 npx finitemonkey init
 ```
 
-- [The gate: "done" means checked](#the-gate-done-means-checked)
-- [Guards: tests, secrets, git and production](#guards-tests-secrets-git-and-production)
-- [Where your work landed](#where-your-work-landed)
-- [What a real product still needs](#what-a-real-product-still-needs)
-- [Several agents at once](#several-agents-at-once)
-- [Everything else it does](#everything-else-it-does)
-- [Not only for code: a way to think with AI](#not-only-for-code-a-way-to-think-with-ai)
-- [Install](#install)
+Plugin install, requirements and previews are under [Install](#install).
+
+## What changes when you build with it
+
+- **Done means checked.** Each task gets a definition of done, and Finite Monkey runs it itself before the session can end. [The gate](#the-gate-done-means-checked)
+- **Nothing you can't get back.** Tests, secrets, git history and production are guarded before each command runs. [Guards](#guards-tests-secrets-git-and-production)
+- **Reuse before writing.** When the agent defines something the project already has, it is told where the existing one lives. [Reuse and clean code](#reuse-and-clean-code)
+- **Code that stays clean.** Touched code can't grow past the size, complexity and clone limits, and AI code tics are held at the end. [Reuse and clean code](#reuse-and-clean-code)
+- **Think before building.** A real task starts with a short proposal and the few questions that change the answer. Research keeps dated sources, and decisions are written down with a way back. [Think before you build](#think-before-you-build)
+- **Learn as you go.** Finite Monkey keeps what you showed you know, per concept, and draws where accepted work landed against it. [Learn as you build](#learn-as-you-build-where-your-work-landed)
+- **The whole product.** A blueprint lists what a real SaaS or landing page needs and which items are green. [What a real product still needs](#what-a-real-product-still-needs)
+- **Several agents at once.** Each one gets a worktree, and one board shows them all. [Several agents at once](#several-agents-at-once)
+- **Beyond code.** Research, writing and decisions get the same checks. [A way to think with AI](#not-only-for-code-a-way-to-think-with-ai)
 
 ## The gate: "done" means checked
 
@@ -54,13 +61,31 @@ Every tool call goes through a `PreToolUse` hook before it runs:
 - **Production goes through the deploy path.** Commands with effects on a production host are blocked; changes go through the path you declare.
 - **Your CLAUDE.md rules become real.** Rules that must always hold are compiled into hooks, permissions, git hooks and CI steps, and `rules coverage` shows, rule by rule, which ones are still only text.
 
-## Where your work landed
+## Reuse and clean code
+
+An agent writes fast. Left alone, it adds a second copy of a helper the project already has, and each edit leaves the file a little longer and more tangled. Finite Monkey watches the code as it is written:
+
+- **Look for it first.** When an edit defines a function, class or module whose name the project already uses elsewhere, the agent is told where the existing one lives. Before a new module or dependency, `guardian reuse` looks for one that already plays that role. The log keeps whether each warning led to reuse.
+- **Limits on what you touch.** At the end, a file or function the change touched can't grow past the size, cognitive complexity and nesting limits, add a nested ternary, repeat lines that exist elsewhere or create an import cycle. Old debt nobody touched never blocks.
+- **AI code tics.** Comments that narrate the change, errors caught and dropped, `any` without a reason, debug output, emoji in code, and a new file next to the one it should have edited are held at the end. Generic names, names with a version in them and literal fallbacks get a warning. Only you can dismiss a finding, from your own terminal.
+
+## Think before you build
+
+Most of what goes wrong with an agent starts before the code: a question nobody asked, a source nobody opened, a choice made before the options were on the table.
+
+- **The questions that change the answer.** A request big enough to be a task, with no contract yet, gets one short proposal before any edit: the goal, the scope, what exists today and how to check it is done, plus at most a few multiple-choice questions, each with a recommendation. When the agent agrees with something you said about the code without reading it, you are told.
+- **Research with sources you can check.** `research new`, `research source` and `research status` keep a question, every source with its date and what it changed, and when to stop. A quote must be in the source it cites, a number must come from a source, and an open question needs both sides cited before the answer counts as done.
+- **Decide on the record.** `decide new` writes the options, the criteria written before the candidates, "do nothing" as an option and the way back. `inventory` writes what exists today before anything is replaced, and `cost` models a paid API or plan before you sign up for it.
+- **Find it before guessing.** The `retrieve` skill answers "where is" and "who calls" from the code and recorded claims, with file and line, and `map` keeps one line per folder with what it defines.
+- **Loops get named.** The fourth fix for the same error, the same file edited back and forth: Finite Monkey says it plainly and holds the fourth attempt.
+
+## Learn as you build: where your work landed
 
 <p align="center"><img src="assets/trajectory.gif" width="760" alt="Terminal recording of finitemonkey trajectory: a colored chart per week for the backend domain, with bands for does alone, blind with criterion, blind without criterion and beyond the horizon, work landed marked as dots, a ricochet marked with an x and a held mark. Then signals blind-band reports 60 percent of horizon help went out without a criterion."></p>
 
 The agent can take you past what you can judge without either of you noticing. Finite Monkey keeps the evidence of what you showed you know, per concept, and draws where accepted work landed week by week: what you do alone, what you accepted blind but with a criterion you can check, what you accepted blind without one, and what was beyond the horizon. Ricochets (accepted work that came back broken) and fixes you made yourself are marked. The same chart is a pane inside Claude Code 2.1.287 and newer.
 
-Related views: `xray` (which changed lines sit within, at the edge of or beyond your evidence, and which have an executable criterion), `teach` (one question whose answer comes from running the code), `signals blind-band` and `judge report`.
+Learning happens in the same loop. A read-only teacher agent explains a concept at the level your concept book shows, citing lines from your own project; once you have seen the explanation, it asks a prediction question instead. `teach` asks one question whose answer comes from running the task's example, and `xray` shows which changed lines sit within, at the edge of or beyond your evidence. Related views: `signals blind-band` and `judge report`.
 
 ## What a real product still needs
 
@@ -74,26 +99,23 @@ Someone who has never shipped a SaaS doesn't know it needs auth, billing, idempo
 
 Parallel work fronts get their own worktree, branch and port range. `fronts board` shows every front with its gate and contract on one screen and flags files that two fronts both changed, before the merge. `fronts merge` brings the reported fronts in through a merge that classifies every conflict hunk and checks nothing was lost.
 
+## Not only for code: a way to think with AI
+
+The habits above are about how you work with an AI, so they hold for a market study, a report or a choice of vendor as much as for a pull request:
+
+- **Claims get checked against their source.** When a document, a decision record or a research log carries claims that rest only on the model, Finite Monkey lists them. Each one gets verified against its source (`judge verify` checks that a cited DOI or URL resolves and contains the quoted span), cut, or handed off with what is missing.
+- **Writing that reads like a person wrote it.** The `write` skill and `prose check` flag the patterns readers recognize as machine-written, in a README, a PR body, release notes or a landing page.
+- **The same research and decision records.** `research` and `decide` need no codebase: a question with dated sources and criteria fixed before the options works for any choice.
+- **Know what you can judge, in any field.** The evidence of what you know is kept per domain, so the same bands apply to work you accept outside code.
+
+Reuse, clean code, the questions up front, loops and the claim checks start on by default (`level: standard`). `level: light` in `.finitemonkey/policy.yml` makes them observe and log only; `level: strict` turns on everything.
+
 ## Everything else it does
 
-- **Loops.** Fourth fix for the same error, the same file edited back and forth: Finite Monkey notices the loop, says it plainly and holds the fourth attempt.
-- **Decisions.** Before replacing a library or a vendor: an inventory of what exists today, a research record with dated sources, criteria written before the candidates, the cost model and how to go back (`inventory`, `research`, `decide`, `cost`).
 - **Screens and forms.** `look` captures each screen at 1440 and 390 px and checks keyboard order, labels, states and copy on what actually renders.
 - **The project guardian.** Recent tasks against the project goals: unlinked work, growing scope, reopened decisions, stalled work, and a forecast from your own past tasks.
 - **Supply chain and CI.** Lockfile hygiene, `osv-scanner`, CI and deploy setups sized for the project, and `ci gate` running the same checks on every pull request.
 - **Cost.** Agent spend per task, day and month against your ceilings, and the cost of each contract so far.
-
-## Not only for code: a way to think with AI
-
-Most of what goes wrong with an agent is not code: it is a question nobody asked, a source nobody opened, a decision made before the options were on the table. The same machinery applies to research, writing and decisions:
-
-- **Look before you build.** Before the agent writes a new module or adds a dependency, `guardian reuse` looks for one the project already has for that role.
-- **Ask the question that changes the answer.** When a request is ambiguous or rests on a premise nobody checked, Finite Monkey asks once, before the work, instead of letting the agent guess.
-- **Research with sources you can check.** `research new`, `research source` and `research status` keep a question, every source with its date and what it changed, and when to stop. A quote must be in the source it cites, a number must come from a source, and an open question needs both sides cited before the answer counts as done.
-- **Decide on the record.** `decide new` writes the options, the criteria written before the candidates, "do nothing" as an option and the way back; `inventory` writes what exists today before anything is replaced.
-- **Know what you can judge.** The x-ray and the trajectory show which parts of a result you can check yourself and which rest only on the model, and short questions keyed to running the code (`teach`) move a concept from "the agent did it" to "you showed it".
-
-These start on by default (`level: standard`). `level: light` in `.finitemonkey/policy.yml` makes them observe and log only; `level: strict` turns on everything.
 
 ## Zero commands to remember
 
