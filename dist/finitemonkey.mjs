@@ -60481,6 +60481,16 @@ var runGate = (options2, registry = DEFAULT_CHECKS) => {
   return run11;
 };
 
+// src/gate/hooks/session-touched.ts
+import { isAbsolute as isAbsolute6 } from "node:path";
+var insideRepo2 = (file) => file !== "" && !isAbsolute6(file) && !file.startsWith("..");
+var sessionTouchedRepo = (runtime, paths, sessionId) => {
+  if (sessionId === void 0 || sessionId === "") return true;
+  return readEntries2(runtime, signalFiles(paths)).some(
+    (entry2) => entry2.session === sessionId && (entry2.kind === "edit" || entry2.kind === "bash_write") && insideRepo2(entry2.file)
+  );
+};
+
 // src/gate/hooks/stop.ts
 var failureDetail = (t, failure7) => {
   switch (failure7.kind) {
@@ -60610,6 +60620,8 @@ var notRun2 = (input, detail, state) => {
   if (root === void 0) return message;
   const paths = fmPaths(root);
   writeGateStatus(runtime, paths, { status: "not_run", task: "", detail, state });
+  if (readState(runtime, paths).active === void 0 && !sessionTouchedRepo(runtime, paths, input.payload.sessionId))
+    return message;
   const signature = sha256Hex(JSON.stringify(["not_run", detail]));
   const previous = readCounter(runtime, paths);
   if (previous?.task === NOT_RUN_TASK && previous.signature === signature) return message;
@@ -61552,7 +61564,7 @@ var fileLockRelease = (input) => {
 };
 
 // src/guards/remote/hook.ts
-import { isAbsolute as isAbsolute6, join as join176 } from "node:path";
+import { isAbsolute as isAbsolute7, join as join176 } from "node:path";
 
 // src/guards/remote/http.ts
 var TARGET_LIMIT = 200;
@@ -61950,7 +61962,7 @@ var REMOTE_FEATURE = "remote-destructive";
 var ALLOW11 = { kind: "allow" };
 var SCRIPT_LIMIT_BYTES = 512 * 1024;
 var scriptReader = (input) => (file) => {
-  const path = toAbsolutePath(isAbsolute6(file) ? file : join176(input.cwd, file));
+  const path = toAbsolutePath(isAbsolute7(file) ? file : join176(input.cwd, file));
   const stat = input.runtime.stat(path);
   if (stat?.kind !== "file" || (stat.size ?? 0) > SCRIPT_LIMIT_BYTES) return void 0;
   const text45 = input.runtime.readText(path);
@@ -65952,7 +65964,7 @@ var sheetPrompt = (input) => {
 var SHEET_HANDLERS = { UserPromptSubmit: [sheetPrompt] };
 
 // src/git/head-file.ts
-import { isAbsolute as isAbsolute7, join as join187, resolve as resolve3 } from "node:path";
+import { isAbsolute as isAbsolute8, join as join187, resolve as resolve3 } from "node:path";
 var SHA2 = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 var text38 = (runtime, path) => {
   const read12 = runtime.readText(toAbsolutePath(path));
@@ -65965,7 +65977,7 @@ var gitDirOf = (runtime, root) => {
   if (kind !== "file") return void 0;
   const pointer = /^gitdir:\s*(.+)$/m.exec(text38(runtime, dotGit) ?? "")?.[1]?.trim();
   if (pointer === void 0) return void 0;
-  return isAbsolute7(pointer) ? pointer : resolve3(root, pointer);
+  return isAbsolute8(pointer) ? pointer : resolve3(root, pointer);
 };
 var packedRef = (runtime, dir, ref2) => (text38(runtime, join187(dir, "packed-refs")) ?? "").split("\n").map((line14) => line14.trim().split(" ")).find((parts) => parts[1] === ref2)?.[0];
 var refSha = (runtime, dirs, ref2) => {
@@ -65986,7 +65998,7 @@ var headShaFromFiles = (runtime, root) => {
   const ref2 = /^ref:\s*(\S+)$/.exec(head)?.[1];
   if (ref2 === void 0) return void 0;
   const common = text38(runtime, join187(gitDir, "commondir"));
-  const dirs = common === void 0 ? [gitDir] : [gitDir, isAbsolute7(common) ? common : resolve3(gitDir, common)];
+  const dirs = common === void 0 ? [gitDir] : [gitDir, isAbsolute8(common) ? common : resolve3(gitDir, common)];
   return refSha(runtime, dirs, ref2);
 };
 
@@ -70193,13 +70205,13 @@ var staleDocsStop = (input) => {
 var STALE_DOCS_HANDLERS = { Stop: [staleDocsStop] };
 
 // src/task/contract-hold.ts
-import { isAbsolute as isAbsolute8, relative as relative36 } from "node:path";
+import { isAbsolute as isAbsolute9, relative as relative36 } from "node:path";
 var CONTRACT_HOLD_GUARD = "contract-hold";
 var CONTRACT_HOLD_FILE = "contract-hold.json";
 var allow29 = { kind: "allow" };
 var heldFile = (root, target7) => {
   const rel = toPosixPath(relative36(root, toAbsolutePath(target7, toAbsolutePath(root))));
-  if (rel === "" || rel.startsWith("..") || isAbsolute8(rel)) return void 0;
+  if (rel === "" || rel.startsWith("..") || isAbsolute9(rel)) return void 0;
   return rel.startsWith(".finitemonkey/") || rel.startsWith(".git/") ? void 0 : rel;
 };
 var pendingHash = (runtime, paths, task) => {
@@ -70232,7 +70244,7 @@ var contractHold = (input) => {
 var CONTRACT_HOLD_HANDLERS = { PreToolUse: [contractHold] };
 
 // src/task/scope-hooks.ts
-import { isAbsolute as isAbsolute9, relative as relative37 } from "node:path";
+import { isAbsolute as isAbsolute10, relative as relative37 } from "node:path";
 var SCOPE_GUARD = "scope";
 var FRONT_SCOPE_GUARD = "front-scope";
 var allow30 = { kind: "allow" };
@@ -70242,7 +70254,7 @@ var targetOf5 = (input) => {
 };
 var inside = (root, target7) => {
   const rel = relative37(root, toAbsolutePath(target7, toAbsolutePath(root)));
-  if (rel === "" || rel.startsWith("..") || isAbsolute9(rel)) return void 0;
+  if (rel === "" || rel.startsWith("..") || isAbsolute10(rel)) return void 0;
   const posix23 = toPosixPath(rel);
   return posix23.startsWith(".finitemonkey/") || posix23.startsWith(".git/") ? void 0 : posix23;
 };
@@ -70498,7 +70510,7 @@ var gapOf = (domain, state, events, now) => {
 };
 
 // src/conceitos/probes-run.ts
-import { isAbsolute as isAbsolute10, join as join200 } from "node:path";
+import { isAbsolute as isAbsolute11, join as join200 } from "node:path";
 var PROBES_FILE = "probes.json";
 var RUN_TIMEOUT_MS5 = 3e4;
 var STATUSES = ["open", "right", "wrong", "answered", "skipped", "invalid"];
@@ -70586,7 +70598,7 @@ var execute = (runtime, root, run11, input) => {
   return { exitCode: result2.timedOut || !result2.found ? null : result2.exitCode, stdout: result2.stdout };
 };
 var sourceText2 = (runtime, root, source4) => {
-  if (isAbsolute10(source4) || source4.split(/[\\/]/).includes("..")) return "";
+  if (isAbsolute11(source4) || source4.split(/[\\/]/).includes("..")) return "";
   const text45 = runtime.readText(toAbsolutePath(join200(root, source4)));
   return text45.ok ? text45.value : "";
 };
@@ -72285,7 +72297,7 @@ var instructionFindings = (inventory) => {
 };
 
 // src/instructions/resolve.ts
-import { dirname as dirname37, isAbsolute as isAbsolute11, join as join208, relative as relative39 } from "node:path";
+import { dirname as dirname37, isAbsolute as isAbsolute12, join as join208, relative as relative39 } from "node:path";
 var MAX_IMPORT_HOPS = 4;
 var MAX_WALK_DEPTH = 8;
 var MAX_WALK_DIRS = 3e3;
@@ -72418,14 +72430,14 @@ var baseCandidates = (input, settings) => {
 };
 var resolveImport2 = (input, from, target7) => {
   if (target7.startsWith("~/")) return toAbsolutePath(join208(input.home, ...target7.slice(2).split("/")));
-  if (isAbsolute11(target7)) return toAbsolutePath(target7);
+  if (isAbsolute12(target7)) return toAbsolutePath(target7);
   return toAbsolutePath(join208(dirname37(from), ...target7.split("/")));
 };
 var excluded = (settings, item2) => item2.layer !== "managed" && settings.excludes.some((glob) => globToRegExp(glob).test(toPosixPath(item2.path)));
 var displayPath = (input, path) => {
   const inside2 = (base) => {
     const rel = relative39(base, path);
-    return rel === "" || rel.startsWith("..") || isAbsolute11(rel) ? void 0 : toPosixPath(rel);
+    return rel === "" || rel.startsWith("..") || isAbsolute12(rel) ? void 0 : toPosixPath(rel);
   };
   const project = inside2(input.root);
   if (project !== void 0) return project;
@@ -85442,7 +85454,7 @@ var measureRoute = async (browser, request, route2, options2) => {
 };
 
 // src/look/queries.ts
-import { isAbsolute as isAbsolute12, join as join244 } from "node:path";
+import { isAbsolute as isAbsolute13, join as join244 } from "node:path";
 var N_PLUS_ONE_MIN = 5;
 var STATEMENT = /\b(select|insert|update|delete|with)\b[\s\S]*$/i;
 var queryShape = (sql) => sql.replace(/'(?:[^']|'')*'/g, "?").replace(/"(?:[^"\\]|\\.)*"/g, (quoted7) => /^"\w+"$/.test(quoted7) ? quoted7 : "?").replace(/\$\d+|:\w+|@\w+/g, "?").replace(/\b\d+(?:\.\d+)?\b/g, "?").replace(/\(\s*\?(?:\s*,\s*\?)*\s*\)/g, "(?)").replace(/\s+/g, " ").replace(/\s*;\s*$/, "").trim().toLowerCase();
@@ -85460,7 +85472,7 @@ var countQueries = (text45, min = N_PLUS_ONE_MIN) => {
   const repeated = [...counts2.entries()].filter(([, count13]) => count13 >= min).map(([shape3, count13]) => ({ shape: shape3, count: count13 })).sort((left, right2) => right2.count - left.count || left.shape.localeCompare(right2.shape));
   return { total: statements2.length, repeated };
 };
-var queryLogPath = (root, file) => toAbsolutePath(isAbsolute12(file) ? file : join244(root, file));
+var queryLogPath = (root, file) => toAbsolutePath(isAbsolute13(file) ? file : join244(root, file));
 var fileQueryLog = (runtime, path) => {
   const read12 = () => {
     const text45 = runtime.readText(path);
@@ -88204,7 +88216,7 @@ var onboardCommand = {
 };
 
 // src/commands/organize.ts
-import { isAbsolute as isAbsolute13, join as join248, posix as posix22 } from "node:path";
+import { isAbsolute as isAbsolute14, join as join248, posix as posix22 } from "node:path";
 
 // src/organize/plan.ts
 import { posix as posix20 } from "node:path";
@@ -88468,7 +88480,7 @@ var USAGE26 = "finitemonkey organize [--top <n>] | organize plan <file> | organi
 var DEFAULT_TOP = 10;
 var invalid3 = (detail) => usageProblem("invalid_arguments", "error.invalid_arguments", USAGE26, { detail });
 var relativeFile3 = (ctx, root, raw) => {
-  if (isAbsolute13(raw)) return posix22.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
+  if (isAbsolute14(raw)) return posix22.normalize(toPosixPath(raw).slice(toPosixPath(root).length + 1));
   const prefix2 = ctx.runtime.git(["rev-parse", "--show-prefix"], ctx.cwd);
   return posix22.normalize(`${prefix2.ok ? prefix2.stdout.trim() : ""}${toPosixPath(raw)}`);
 };

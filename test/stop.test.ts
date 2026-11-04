@@ -195,6 +195,40 @@ describe("Stop gate", () => {
       return repoRuntime();
     }));
 
+  const crashingGit = (): Runtime => {
+    const base = repoRuntime();
+    return {
+      ...base,
+      exec: (request) => {
+        if (request.command === "git") throw new Error("git exploded");
+        return base.exec(request);
+      },
+    };
+  };
+
+  const editSignal = (file: string): string =>
+    `${JSON.stringify({ at: "2026-01-01T00:00:00.000Z", session: "s1", turn: 1, kind: "edit", file, hash: "h", undo: false })}\n`;
+
+  const untaskedRepo = (signals: string): Repo => {
+    const repo = makeRepo({ "src/a.js": "export const a = 1;\n", ".finitemonkey/signals.jsonl": signals });
+    repos.push(repo);
+    return repo;
+  };
+
+  it("when the gate cannot run and the session changed nothing in the repository, the stop is not held", async () => {
+    const repo = untaskedRepo(editSignal("../other-repo/src/b.js"));
+    const outcome = await stop(repo, { runtime: crashingGit() });
+    assert.equal(outcome.verdict, "allow");
+    assert.match(String(field(parseBody(outcome.stdout), "systemMessage")), /GATE DID NOT RUN/);
+    assert.equal(readGateStatus(repoRuntime(), fmPaths(repo.root))?.status, "not_run");
+  });
+
+  it("when the gate cannot run and the session edited a file in the repository, the stop is held once", async () => {
+    const repo = untaskedRepo(editSignal("src/a.js"));
+    const outcome = await stop(repo, { runtime: crashingGit() });
+    assert.equal(outcome.verdict, "block");
+  });
+
   it("a session that did not touch the tree is not gated", async () => {
     const repo = makeRepo({ "a.txt": "x" });
     repos.push(repo);
