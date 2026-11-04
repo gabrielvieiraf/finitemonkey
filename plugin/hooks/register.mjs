@@ -460,17 +460,19 @@ var ricochetOf = (value) => isRecord4(value) && typeof value["concept"] === "str
 var trajectoryOf = (value) => isRecord4(value) && typeof value["domain"] === "string" ? {
   domain: value["domain"],
   band: typeof value["band"] === "string" ? value["band"] : null,
-  ricochet: ricochetOf(value["ricochet"])
+  ricochet: ricochetOf(value["ricochet"]),
+  recent: numbers(value["recent"])
 } : null;
 var triageOf = (value) => isRecord4(value) && typeof value["flagged"] === "number" && typeof value["open"] === "number" ? { flagged: value["flagged"], open: value["open"] } : null;
 var triageLine = (triage) => `triage ${String(triage.open)}/${String(triage.flagged)} open`;
+var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
+var trajectorySpark = (recent) => recent === void 0 || recent.length < 2 ? "" : ` ${sparkline(recent)}`;
 var trajectoryLine = (trajectory) => [
-  `trajectory ${trajectory.domain}: ${trajectory.band ?? "no accepted work"}`,
+  `trajectory ${trajectory.domain}${trajectorySpark(trajectory.recent)}: ${trajectory.band ?? "no accepted work"}`,
   trajectory.ricochet === null ? "no ricochet" : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`
 ].join(", ");
 var knowledgeLine = (knowledge) => `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
-var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
 var blindLine = (blind) => `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
 var parseStatus = (text6) => {
   let parsed;
@@ -736,16 +738,16 @@ var SVG_TOKENS = {
 var TERM_PALETTE = {
   dark: {
     band: {
-      alone: 1788469,
-      proximal: 2112102,
-      unstable: 4009301,
-      blindCovered: 4864540,
-      blindBare: 5907488,
-      blind: 3876643,
-      beyond: 1646117
+      alone: 3111506,
+      proximal: 3103902,
+      unstable: 6112899,
+      blindCovered: 9071135,
+      blindBare: 10107699,
+      blind: 7030336,
+      beyond: 2830651
     },
-    ink: { line: 16761421, ricochet: 16747132, held: 7332012, faint: 7305348 },
-    gap: 2436150,
+    ink: { line: 16765806, ricochet: 16777215, held: 9433284, faint: 8226451 },
+    gap: 4870752,
     select: 15133166
   },
   light: {
@@ -1023,6 +1025,17 @@ var drawnSplits = (trajectory) => {
   );
 };
 var describeSplit = (group) => `${SPLIT_LABEL[group][1]} above, ${SPLIT_LABEL[group][0]} below`;
+var workInterval = (week) => {
+  const { work, independent, discernment, assisted } = week;
+  if (work === null || independent === null || discernment === null || assisted === null) return void 0;
+  const steps = [
+    [0, independent],
+    [independent, discernment],
+    [discernment, Math.max(assisted, discernment + 1)]
+  ];
+  const hit = steps.find(([from, to]) => to > from && (from + to) / 2 === work);
+  return hit === void 0 ? void 0 : { low: hit[0], high: hit[1] };
+};
 
 // src/conceitos/trajectory-term.ts
 var ENGLISH_SPLITS = {
@@ -1060,41 +1073,73 @@ var ENGLISH_TERM = {
   noData: (evidence) => `no data (${String(evidence)} weighted events)`,
   head: (domain, from, to, evidence) => `${domain}, ${from} to ${to}, ${String(evidence)} weighted events`
 };
-var rowOf = (level, peak, rows) => Math.min(rows - 1, Math.max(0, Math.round(rows - level / peak * rows - 0.5)));
-var bandCell = (week, level, peak) => {
-  const band = bandAt(week, level, peak);
-  return { glyph: " ", band: band ?? "gap", ink: null };
+var layersOf = (trajectory, rows) => {
+  const bands = usedBands(trajectory);
+  const base2 = Math.floor(rows / Math.max(1, bands.length));
+  const extra = rows - base2 * bands.length;
+  let at = 0;
+  return bands.map((band, index) => {
+    const from = at;
+    at += base2 + (index < extra ? 1 : 0);
+    return { band, from, to: at };
+  });
+};
+var layerAt = (layers, row2) => layers.find((layer) => row2 >= layer.from && row2 < layer.to);
+var rowIn = (layers, week, level, peak) => {
+  const strata = strataOf(week, peak);
+  const stratum = strata.find((item) => level >= item.from && level < item.to) ?? strata.at(-1);
+  const layer = layers.find((item) => item.band === stratum?.band);
+  if (stratum === void 0 || layer === void 0) return null;
+  const height = layer.to - layer.from;
+  const share = (level - stratum.from) / Math.max(Number.EPSILON, stratum.to - stratum.from);
+  return layer.from + Math.min(height - 1, Math.max(0, Math.floor(share * height)));
 };
 var pointCell = (trajectory, week, band) => {
   const mark = markIn(trajectory.marks, week.week);
   if (mark === void 0) return { glyph: "●", band, ink: "line" };
   return mark.kind === "ricochet" ? { glyph: "✕", band, ink: "ricochet" } : { glyph: "◉", band, ink: "held" };
 };
-var pointRows = (trajectory, peak, rows) => trajectory.weeks.map((week) => {
-  const level = markIn(trajectory.marks, week.week) === void 0 ? week.work : markLevel(week);
-  return level === null ? null : rowOf(level, peak, rows);
-});
-var trailRow = (points, column, perWeek) => {
-  const center = Math.floor(perWeek / 2);
+var pointRows = (trajectory, layers, rows) => {
+  const peak = peakOf(trajectory);
+  return trajectory.weeks.map((week) => {
+    const level = markIn(trajectory.marks, week.week) === void 0 ? week.work : markLevel(week);
+    const row2 = level === null || !filled(week) ? null : rowIn(layers, week, level, peak);
+    return row2 === null ? null : rows - 1 - row2;
+  });
+};
+var centerOf = (perWeek) => Math.floor(perWeek / 2);
+var trailAt = (points, column, perWeek) => {
+  const center = centerOf(perWeek);
   const index = Math.floor((column - center) / perWeek);
   const from = points[index];
   const to = points[index + 1];
-  if (from === null || from === void 0 || to === null || to === void 0) return null;
-  const offset = column - (index * perWeek + center);
-  if (offset <= 0 || offset >= perWeek) return null;
-  return Math.round(from + (to - from) * offset / perWeek);
+  if (from === null || from === void 0 || to === null || to === void 0) return void 0;
+  return from + (to - from) * (column - (index * perWeek + center)) / perWeek;
+};
+var onTrail = (points, column, perWeek, row2) => {
+  const here = trailAt(points, column, perWeek);
+  if (here === void 0) return false;
+  const before = trailAt(points, column - 0.5, perWeek) ?? here;
+  const after = trailAt(points, column + 0.5, perWeek) ?? here;
+  const low = Math.round(Math.min(before, after));
+  const high = Math.round(Math.max(before, after));
+  return row2 >= low && row2 <= high;
+};
+var backCell = (week, band) => {
+  if (band === void 0) return { glyph: " ", band: "gap", ink: null };
+  return filled(week) ? { glyph: " ", band, ink: null } : { glyph: "╱", band, ink: "faint" };
 };
 var gridOf = (trajectory, size) => {
-  const peak = peakOf(trajectory);
-  const points = pointRows(trajectory, peak, size.rows);
-  const center = Math.floor(size.perWeek / 2);
+  const layers = layersOf(trajectory, size.rows);
+  const points = pointRows(trajectory, layers, size.rows);
+  const center = centerOf(size.perWeek);
   return Array.from({ length: size.rows }, (_, row2) => {
-    const level = peak * (size.rows - row2 - 0.5) / size.rows;
+    const band = layerAt(layers, size.rows - 1 - row2)?.band;
     return trajectory.weeks.flatMap(
       (week, index) => Array.from({ length: size.perWeek }, (_unused, offset) => {
-        const cell = bandCell(week, level, peak);
+        const cell = backCell(week, band);
         if (offset === center && points[index] === row2) return pointCell(trajectory, week, cell.band);
-        if (trailRow(points, index * size.perWeek + offset, size.perWeek) === row2)
+        if (onTrail(points, index * size.perWeek + offset, size.perWeek, row2))
           return { glyph: "·", band: cell.band, ink: "line" };
         return cell;
       })
@@ -1102,21 +1147,21 @@ var gridOf = (trajectory, size) => {
   });
 };
 var rowLabels = (trajectory, rows, labels) => {
-  const peak = peakOf(trajectory);
-  const week = lastWeek(trajectory);
-  let previous = "";
+  const layers = layersOf(trajectory, rows);
   return Array.from({ length: rows }, (_, row2) => {
-    const band = week === void 0 ? void 0 : bandAt(week, peak * (rows - row2 - 0.5) / rows, peak);
-    const label = band === void 0 ? "" : labels.band[band];
-    const shown = label === previous ? "" : label;
-    previous = label;
-    return shown;
+    const layer = layerAt(layers, rows - 1 - row2);
+    if (layer === void 0) return "";
+    return rows - 1 - row2 === layer.from + Math.floor((layer.to - layer.from - 1) / 2) ? labels.band[layer.band] : "";
   });
 };
-var axisLine = (trajectory, perWeek) => trajectory.weeks.map((week) => week.week.slice(-3).padEnd(perWeek).slice(0, perWeek)).join("");
+var axisLine = (trajectory, perWeek) => trajectory.weeks.map((week) => {
+  const name = week.week.slice(-3);
+  const lead = Math.max(0, Math.min(perWeek - name.length, centerOf(perWeek) - 1));
+  return `${" ".repeat(lead)}${name}`.padEnd(perWeek).slice(0, perWeek);
+}).join("");
 var usedBands = (trajectory) => {
-  const grid = gridOf(trajectory, { rows: 12, perWeek: 1 });
-  const seen2 = new Set(grid.flat().map((cell) => cell.band));
+  const peak = peakOf(trajectory);
+  const seen2 = new Set(trajectory.weeks.flatMap((week) => strataOf(week, peak).map((stratum) => stratum.band)));
   return BAND_ORDER.filter((band) => seen2.has(band));
 };
 var termPalette = (theme) => TERM_PALETTE[theme];
@@ -1133,14 +1178,6 @@ var rgb = (color) => [
   color & 255
 ];
 var PICKED = /* @__PURE__ */ new Map([
-  [1788469, 22],
-  [2112102, 17],
-  [4009301, 60],
-  [4864540, 58],
-  [5907488, 52],
-  [3876643, 95],
-  [1646117, 234],
-  [2436150, 238],
   [13625306, 151],
   [13491186, 153],
   [14272232, 183],
@@ -1184,14 +1221,17 @@ var PLAIN = {
   beyond: " ",
   gap: "\\"
 };
-var PLAIN_GLYPH = { "●": "*", "·": "+", "✕": "X", "◉": "O" };
+var PLAIN_GLYPH = { "●": "*", "·": "+", "✕": "X", "◉": "O", "╱": "\\" };
 var plainCell = (cell) => cell.glyph === " " ? cell.band === null ? " " : PLAIN[cell.band] : PLAIN_GLYPH[cell.glyph] ?? cell.glyph;
+var HATCH = "╱";
 var cellStyle = (cell, theme, depth) => {
   const palette = termPalette(theme);
-  const bg = cell.band === null ? null : cell.band === "gap" ? palette.gap : palette.band[cell.band];
+  if (cell.band === "gap" && cell.ink === null) return style(palette.gap, null, depth, false);
+  const bg = cell.band === null || cell.band === "gap" ? null : palette.band[cell.band];
   const fg = cell.ink === null ? null : palette.ink[cell.ink];
-  return style(fg, bg, depth, cell.ink !== null && cell.glyph !== "·");
+  return style(fg, bg, depth, cell.ink !== null && cell.ink !== "faint" && cell.glyph !== "·");
 };
+var glyphOf = (cell) => cell.band === "gap" && cell.glyph === " " ? HATCH : cell.glyph;
 var colorRow = (cells, theme, depth) => {
   let out = "";
   let current;
@@ -1199,15 +1239,23 @@ var colorRow = (cells, theme, depth) => {
     const next = cellStyle(cell, theme, depth);
     if (next !== current) out += `${current === void 0 ? "" : RESET}${next}`;
     current = next;
-    out += cell.glyph;
+    out += glyphOf(cell);
   }
   return `${out}${RESET}`;
 };
 var faint = (body, options) => options.depth === "none" || body === "" ? body : `${style(termPalette(options.theme).ink.faint, null, options.depth, false)}${body}${RESET}`;
-var blockOf = (trajectory, options) => {
+var CHART_COLUMNS = 48;
+var widthPerWeek = (weeks) => Math.min(10, Math.max(5, Math.floor(CHART_COLUMNS / Math.max(1, weeks))));
+var fromFirstEvidence = (trajectory) => {
+  const researched = new Set((trajectory.research ?? []).map((mark) => mark.week));
+  const first = trajectory.weeks.findIndex((week) => filled(week) || researched.has(week.week));
+  return first <= 0 ? trajectory : { ...trajectory, weeks: trajectory.weeks.slice(first) };
+};
+var blockOf = (whole, options) => {
   const labels = options.labels ?? ENGLISH_TERM;
+  const trajectory = fromFirstEvidence(whole);
   if (trajectory.status === "no_data") return [`${trajectory.domain}: ${labels.noData(trajectory.evidence)}`];
-  const size = options.size ?? { rows: 12, perWeek: 4 };
+  const size = options.size ?? { rows: 12, perWeek: widthPerWeek(trajectory.weeks.length) };
   const grid = gridOf(trajectory, size);
   const names = rowLabels(trajectory, size.rows, labels);
   const head = labels.head(
@@ -1241,7 +1289,8 @@ var laneLines = (trajectory, perWeek, options) => {
 var swatch = (band, options) => {
   if (options.depth === "none") return PLAIN[band] === " " ? "' '" : PLAIN[band];
   const palette = termPalette(options.theme);
-  return `${style(null, band === "gap" ? palette.gap : palette.band[band], options.depth, false)}  ${RESET}`;
+  if (band === "gap") return `${style(palette.gap, null, options.depth, false)}${HATCH}${HATCH}${RESET}`;
+  return `${style(null, palette.band[band], options.depth, false)}  ${RESET}`;
 };
 var inkSwatch = (glyph2, ink, options) => options.depth === "none" ? PLAIN_GLYPH[glyph2] ?? glyph2 : `${style(termPalette(options.theme).ink[ink], null, options.depth, true)}${glyph2}${RESET}`;
 var splitLines2 = (labels, drawn) => {
@@ -1524,6 +1573,21 @@ var workLine = (theme, frame, trajectory) => runsOf2(trajectory.weeks, (week) =>
   ] : [];
   return [...line2, ...dots];
 });
+var UNCERTAINTY_TITLE = "count rule interval: the line marks the middle of the band the work counted into, anywhere in this span fits the same counts";
+var uncertaintyBand = (theme, frame, weeks) => runsOf2(weeks, (week) => workInterval(week) !== void 0).map((run) => {
+  const columns = run.flatMap((index) => {
+    const span2 = weeks[index] === void 0 ? void 0 : workInterval(weeks[index]);
+    const x = frame.xs[index] ?? 0;
+    if (span2 === void 0) return [];
+    return run.length === 1 ? [
+      { x: x - frame.half * 0.3, span: span2 },
+      { x: x + frame.half * 0.3, span: span2 }
+    ] : [{ x, span: span2 }];
+  });
+  const top = columns.map(({ x, span: span2 }) => `${num(x)} ${num(yOf(frame, span2.high))}`);
+  const bottom = columns.map(({ x, span: span2 }) => `${num(x)} ${num(yOf(frame, span2.low))}`).reverse();
+  return `<path d="M ${top.join(" L ")} L ${bottom.join(" L ")} Z" fill-opacity="0.18" ${paint(theme, { cls: "uncertainty", fill: "you" })}><title>${escapeXml(UNCERTAINTY_TITLE)}</title></path>`;
+});
 var markTitle = (mark) => `${mark.kind} · ${mark.concept} · ${mark.evidence.map((item) => `${item.kind} ${item.task ?? "-"} ${item.file ?? "-"} ${item.at}`).join("; ")}`;
 var markShape = (theme, mark, x, y) => mark.kind === "ricochet" ? `<circle cx="${num(x)}" cy="${num(y)}" r="6.5" stroke-width="2" ${paint(theme, { fill: "bg", stroke: "bInk" })}/><path d="M ${num(x - 3)} ${num(y - 3)} L ${num(x + 3)} ${num(y + 3)} M ${num(x + 3)} ${num(y - 3)} L ${num(x - 3)} ${num(y + 3)}" stroke-width="1.8" ${paint(theme, { stroke: "bInk" })}/>` : `<circle cx="${num(x)}" cy="${num(y)}" r="6.5" stroke-width="2" ${paint(theme, { fill: "bg", stroke: "iInk" })}/><circle cx="${num(x)}" cy="${num(y)}" r="2.6" ${paint(theme, { fill: "iInk" })}/>`;
 var pointOf = (frame, weeks, key) => {
@@ -1570,6 +1634,7 @@ var svgOf = (trajectory, options = {}) => {
     ...splitPaths(theme, frame, trajectory.weeks),
     ...axes(theme, frame, trajectory.weeks),
     keyOf2(theme, frame, trajectory),
+    ...uncertaintyBand(theme, frame, trajectory.weeks),
     ...workLine(theme, frame, trajectory),
     ...marksOf(theme, frame, trajectory, options.selected),
     ...researchSvg(
@@ -1620,7 +1685,32 @@ var textCells = (body, width, fg) => Array.from({ length: width }, (_, index) =>
 var rasterShape = (trajectory, columns) => {
   const weeks = Math.max(trajectory.weeks.length, 1);
   const perWeek = Math.min(6, Math.max(2, Math.floor((columns - LABEL_WIDTH - 1) / weeks)));
-  return { perWeek, columns: weeks * perWeek + 1 + LABEL_WIDTH, rows: GRID_ROWS + 1 };
+  const lane = (trajectory.research ?? []).length > 0 ? 1 : 0;
+  return { perWeek, columns: weeks * perWeek + 1 + LABEL_WIDTH, rows: GRID_ROWS + 1 + lane };
+};
+var fixInk = (palette) => ({
+  open: palette.ink.ricochet,
+  revert: palette.ink.line,
+  agent: palette.ink.line,
+  person: palette.ink.held
+});
+var fixOfGlyph = (glyph2) => RESEARCH_FIXES.find((fix) => RESEARCH_GLYPH[fix] === glyph2);
+var laneCells = (trajectory, perWeek, options) => {
+  const marks = trajectory.research ?? [];
+  if (marks.length === 0) return [];
+  const palette = termPalette(options.theme);
+  const inks = fixInk(palette);
+  const lane = researchLane(
+    trajectory.weeks.map((week) => week.week),
+    marks,
+    perWeek
+  );
+  const plot = Array.from(lane, (glyph2) => {
+    const fix = fixOfGlyph(glyph2);
+    return { glyph: glyph2, fg: fix === void 0 ? DEFAULT_COLOR : inks[fix], bg: DEFAULT_COLOR };
+  });
+  const name = (options.labels?.research ?? ENGLISH_RESEARCH).lane;
+  return [...plot, ...textCells(` ${name}`, LABEL_WIDTH + 1, palette.ink.faint)];
 };
 var rasterCells = (trajectory, columns, options) => {
   const shape = rasterShape(trajectory, columns);
@@ -1635,6 +1725,7 @@ var rasterCells = (trajectory, columns, options) => {
       ),
       ...textCells(` ${names[row2] ?? ""}`, LABEL_WIDTH + 1, faint2)
     ]),
+    ...laneCells(trajectory, shape.perWeek, options),
     ...textCells(axisLine(trajectory, shape.perWeek), plotWidth, faint2),
     ...textCells("", LABEL_WIDTH + 1, faint2)
   ];

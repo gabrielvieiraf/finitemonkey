@@ -1169,9 +1169,9 @@
               "state": {
                 "type": "string",
                 "enum": [
+                  "held",
                   "pending",
-                  "open",
-                  "held"
+                  "open"
                 ]
               },
               "support": {
@@ -1326,7 +1326,8 @@
                 "enum": [
                   "two-spans",
                   "unsupported-claim",
-                  "predict-number"
+                  "predict-number",
+                  "predict-number-open"
                 ]
               },
               "prompt": {
@@ -1447,7 +1448,8 @@
           "enum": [
             "two-spans",
             "unsupported-claim",
-            "predict-number"
+            "predict-number",
+            "predict-number-open"
           ]
         },
         "prompt": {
@@ -1668,9 +1670,9 @@
           "state": {
             "type": "string",
             "enum": [
+              "held",
               "pending",
-              "open",
-              "held"
+              "open"
             ]
           },
           "support": {
@@ -1811,6 +1813,28 @@
           "dismissed",
           "acceptedWithoutCriterion",
           "index"
+        ]
+      }
+    },
+    "proposedContradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "span": {
+            "type": "string"
+          },
+          "origin": {
+            "const": "model-proposed"
+          }
+        },
+        "required": [
+          "source",
+          "span",
+          "origin"
         ]
       }
     }

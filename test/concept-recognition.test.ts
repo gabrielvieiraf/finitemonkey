@@ -98,7 +98,7 @@ describe("concept recognition from what the work touches", () => {
       ["research/law/retention-rule", "research"],
     ]);
     assert.deepEqual(
-      researchEvents("supplement-evidence", "https://www.who.int/news", "agent").map((item) => [
+      researchEvents({ slug: "supplement-evidence", url: "https://www.who.int/news" }, "agent").map((item) => [
         item.concept,
         item.kind,
         item.source,

@@ -1,5 +1,6 @@
 import { type AlertBudgetConfig, DEFAULT_ALERT_BUDGET } from "./budget.js";
 import { JUDGE_GUARDS } from "./judge-guards.js";
+import { MERGE_GUARDS } from "./merge-guards.js";
 import { type AutonomyConfig, type CalibrateConfig, DEFAULT_STAGE6, type EvolveConfig } from "./stage6.js";
 import type { TaskGuards } from "./task-guards.js";
 import { UI_GUARDS } from "./ui-guards.js";
@@ -126,6 +127,7 @@ export const OPTIONAL_GUARDS = [
   "focus-card",
   "attention",
   "drift-sensor",
+  "stale-docs",
   "quality-detectors",
   "callers-syntax",
   "defaults-adapt",
@@ -142,6 +144,7 @@ export const OPTIONAL_GUARDS = [
   "cli-ux",
   "ui-copy",
   ...JUDGE_GUARDS,
+  ...MERGE_GUARDS,
   "model-provider",
 ] as const;
 export const DAMAGE_GUARDS = ["secrets", "gate", "git", "rules"] as const;
@@ -233,6 +236,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "focus-card",
   "attention",
   "drift-sensor",
+  "stale-docs",
   "quality-detectors",
   "callers-syntax",
   "defaults-adapt",
@@ -247,6 +251,7 @@ export const STARTS_IN_SHADOW: ReadonlySet<string> = new Set([
   "cli-ux",
   "ui-copy",
   ...JUDGE_GUARDS,
+  ...MERGE_GUARDS,
   "model-provider",
 ]);
 

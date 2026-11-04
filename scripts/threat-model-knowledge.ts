@@ -51,13 +51,13 @@ export const knowledge: readonly Threat[] = [
     component: "Quarantine of external content and memory",
     attacker: "injected content",
     threat: "After reading a web page or an MCP tool output, the agent pushes, sends data out or deploys",
-    outcome: "recorded",
+    outcome: "prevented",
     mechanism:
-      "`untrusted-outward` starts in shadow and logs `untrusted_outward`; when active, push, sends, publish and deploy in the same session ask the person and name the source",
+      "`untrusted-outward` acts at the default level: push, sends, publish and deploy in the same session ask the person and name the source. At level light it only logs `untrusted_outward`",
     code: ["src/guards/outward/hook.ts", "src/guards/outward/classify.ts"],
     proof: {
       file: "test/untrusted-outward.test.ts",
-      test: "after a WebFetch, git push asks the person in active mode and names the source",
+      test: "after a WebFetch, git push asks the person at the default level and only logs at level light",
     },
   },
   {

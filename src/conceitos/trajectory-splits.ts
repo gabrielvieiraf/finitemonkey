@@ -1,6 +1,7 @@
 import { isoWeek } from "../signals/blind-band.js";
-import type { ConceptId } from "./concepts.js";
+import { type ConceptId, parseConcept } from "./concepts.js";
 import { type ConceptEvent, stateOf } from "./evidence.js";
+import { fieldOfUrl } from "./recognize.js";
 import type { AloneSide, OutcomeMark, Split, WeekSplits } from "./trajectory-split-types.js";
 
 export {
@@ -25,17 +26,28 @@ export const areaOf = (file: string): string => {
   return folders.length === 0 ? "." : folders.join("/");
 };
 
+export const researchFieldOf = (concept: ConceptId): string | undefined => {
+  const [top, field] = (parseConcept(concept) ?? "").split("/");
+  return top === "research" && field !== undefined && field !== "" ? `research/${field}` : undefined;
+};
+
+export const eventAreaOf = (event: Pick<ConceptEvent, "concept" | "file" | "match">): string | undefined => {
+  if (event.file !== undefined) return areaOf(event.file);
+  const cited = event.match === undefined ? undefined : fieldOfUrl(event.match);
+  return cited === undefined ? researchFieldOf(event.concept) : `research/${cited}`;
+};
+
 const proofOf = (event: ConceptEvent): boolean => event.origin === "person" && event.weight > 0;
 
 export const aloneSideOf = (events: readonly ConceptEvent[], index: number): AloneSide | undefined => {
   const event = events[index];
-  if (event?.file === undefined || !INDEPENDENT.has(event.kind) || !proofOf(event)) return undefined;
-  const before = events.slice(0, index).filter((item) => item.concept === event.concept);
+  const area = event === undefined ? undefined : eventAreaOf(event);
+  if (event === undefined || area === undefined || !INDEPENDENT.has(event.kind) || !proofOf(event)) return undefined;
+  const concept = parseConcept(event.concept) ?? event.concept;
+  const before = events.slice(0, index).filter((item) => (parseConcept(item.concept) ?? item.concept) === concept);
   if (stateOf(before) !== "demonstrated") return undefined;
-  const known = new Set(
-    before.flatMap((item) => (proofOf(item) && item.file !== undefined ? [areaOf(item.file)] : [])),
-  );
-  return known.has(areaOf(event.file)) ? "known" : "transfer";
+  const known = new Set(before.flatMap((item) => (proofOf(item) ? (eventAreaOf(item) ?? []) : [])));
+  return known.has(area) ? "known" : "transfer";
 };
 
 export interface Classified {

@@ -148,6 +148,12 @@ export interface AskView {
   readonly criterion: string;
 }
 
+export interface ProposedContradiction {
+  readonly source: string;
+  readonly span: string;
+  readonly origin: "model-proposed";
+}
+
 export interface JudgeResponse {
   readonly schema: typeof JUDGE_VERBS_SCHEMA;
   readonly verb: Verb;
@@ -171,6 +177,7 @@ export interface JudgeResponse {
   readonly events?: readonly EventEntry[];
   readonly horizon?: readonly HorizonView[];
   readonly horizonDomains?: readonly HorizonDomain[];
+  readonly proposedContradictions?: readonly ProposedContradiction[];
 }
 
 export const response = (verb: Verb, fields: Omit<JudgeResponse, "schema" | "verb" | "ok"> = {}): JudgeResponse => ({

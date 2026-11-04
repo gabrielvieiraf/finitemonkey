@@ -1,5 +1,6 @@
 import type { AbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
+import { monthlySummary, readMonthlyCost } from "../cost/monthly.js";
 import { readLevel } from "../infra/file.js";
 import { readOwnership } from "../ownership/file.js";
 import type { FmPaths } from "../task/paths.js";
@@ -24,8 +25,20 @@ const ownerKnown = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): boo
   return ownership?.ok === true && ownership.value.components.some((component) => component.owner !== "");
 };
 
+type ContextRuntime = Pick<Runtime, "readText" | "listDir">;
+
+export const withDerivedCost = (
+  runtime: ContextRuntime,
+  root: AbsolutePath,
+  context: CompanyContext,
+): CompanyContext => {
+  if (context.cost !== undefined) return context;
+  const cost = readMonthlyCost(runtime, root);
+  return cost === undefined ? context : { ...context, cost: { value: monthlySummary(cost), origin: "inferred" } };
+};
+
 export const missingContext = (
-  runtime: Pick<Runtime, "readText">,
+  runtime: ContextRuntime,
   root: AbsolutePath,
   context: CompanyContext,
 ): readonly ContextQuestion[] =>
@@ -33,7 +46,7 @@ export const missingContext = (
     if (question === "stage") return context.stage?.origin !== "stated";
     if (question === "deploy") return context.deploy === undefined && readLevel(runtime, root) === undefined;
     if (question === "maintains") return context.maintains === undefined && !ownerKnown(runtime, root);
-    return context.cost === undefined;
+    return withDerivedCost(runtime, root, context).cost === undefined;
   });
 
 export const askedContext = (runtime: Pick<Runtime, "readText">, paths: FmPaths): AskedContext | undefined => {

@@ -1,5 +1,5 @@
 import type { DomainTrajectory, Week } from "./trajectory.js";
-import { type Band, BAND_ORDER, bandAt, lastWeek, markIn, markLevel, peakOf } from "./trajectory-bands.js";
+import { type Band, BAND_ORDER, filled, markIn, markLevel, peakOf, strataOf } from "./trajectory-bands.js";
 import { type Ink, TERM_PALETTE, type Theme } from "./trajectory-palette.js";
 import type { SplitGroup } from "./trajectory-split-types.js";
 
@@ -82,12 +82,35 @@ export interface GridSize {
   readonly perWeek: number;
 }
 
-const rowOf = (level: number, peak: number, rows: number): number =>
-  Math.min(rows - 1, Math.max(0, Math.round(rows - (level / peak) * rows - 0.5)));
+interface Layer {
+  readonly band: Band;
+  readonly from: number;
+  readonly to: number;
+}
 
-const bandCell = (week: Week, level: number, peak: number): TermCell => {
-  const band = bandAt(week, level, peak);
-  return { glyph: " ", band: band ?? "gap", ink: null };
+const layersOf = (trajectory: DomainTrajectory, rows: number): readonly Layer[] => {
+  const bands = usedBands(trajectory);
+  const base = Math.floor(rows / Math.max(1, bands.length));
+  const extra = rows - base * bands.length;
+  let at = 0;
+  return bands.map((band, index) => {
+    const from = at;
+    at += base + (index < extra ? 1 : 0);
+    return { band, from, to: at };
+  });
+};
+
+const layerAt = (layers: readonly Layer[], row: number): Layer | undefined =>
+  layers.find((layer) => row >= layer.from && row < layer.to);
+
+const rowIn = (layers: readonly Layer[], week: Week, level: number, peak: number): number | null => {
+  const strata = strataOf(week, peak);
+  const stratum = strata.find((item) => level >= item.from && level < item.to) ?? strata.at(-1);
+  const layer = layers.find((item) => item.band === stratum?.band);
+  if (stratum === undefined || layer === undefined) return null;
+  const height = layer.to - layer.from;
+  const share = (level - stratum.from) / Math.max(Number.EPSILON, stratum.to - stratum.from);
+  return layer.from + Math.min(height - 1, Math.max(0, Math.floor(share * height)));
 };
 
 const pointCell = (trajectory: DomainTrajectory, week: Week, band: Cellband | null): TermCell => {
@@ -96,34 +119,56 @@ const pointCell = (trajectory: DomainTrajectory, week: Week, band: Cellband | nu
   return mark.kind === "ricochet" ? { glyph: "✕", band, ink: "ricochet" } : { glyph: "◉", band, ink: "held" };
 };
 
-const pointRows = (trajectory: DomainTrajectory, peak: number, rows: number): readonly (number | null)[] =>
-  trajectory.weeks.map((week) => {
+const pointRows = (
+  trajectory: DomainTrajectory,
+  layers: readonly Layer[],
+  rows: number,
+): readonly (number | null)[] => {
+  const peak = peakOf(trajectory);
+  return trajectory.weeks.map((week) => {
     const level = markIn(trajectory.marks, week.week) === undefined ? week.work : markLevel(week);
-    return level === null ? null : rowOf(level, peak, rows);
+    const row = level === null || !filled(week) ? null : rowIn(layers, week, level, peak);
+    return row === null ? null : rows - 1 - row;
   });
+};
 
-const trailRow = (points: readonly (number | null)[], column: number, perWeek: number): number | null => {
-  const center = Math.floor(perWeek / 2);
+const centerOf = (perWeek: number): number => Math.floor(perWeek / 2);
+
+const trailAt = (points: readonly (number | null)[], column: number, perWeek: number): number | undefined => {
+  const center = centerOf(perWeek);
   const index = Math.floor((column - center) / perWeek);
   const from = points[index];
   const to = points[index + 1];
-  if (from === null || from === undefined || to === null || to === undefined) return null;
-  const offset = column - (index * perWeek + center);
-  if (offset <= 0 || offset >= perWeek) return null;
-  return Math.round(from + ((to - from) * offset) / perWeek);
+  if (from === null || from === undefined || to === null || to === undefined) return undefined;
+  return from + ((to - from) * (column - (index * perWeek + center))) / perWeek;
+};
+
+const onTrail = (points: readonly (number | null)[], column: number, perWeek: number, row: number): boolean => {
+  const here = trailAt(points, column, perWeek);
+  if (here === undefined) return false;
+  const before = trailAt(points, column - 0.5, perWeek) ?? here;
+  const after = trailAt(points, column + 0.5, perWeek) ?? here;
+  const low = Math.round(Math.min(before, after));
+  const high = Math.round(Math.max(before, after));
+  return row >= low && row <= high;
+};
+
+const backCell = (week: Week, band: Band | undefined): TermCell => {
+  if (band === undefined) return { glyph: " ", band: "gap", ink: null };
+  return filled(week) ? { glyph: " ", band, ink: null } : { glyph: "╱", band, ink: "faint" };
 };
 
 export const gridOf = (trajectory: DomainTrajectory, size: GridSize): readonly (readonly TermCell[])[] => {
-  const peak = peakOf(trajectory);
-  const points = pointRows(trajectory, peak, size.rows);
-  const center = Math.floor(size.perWeek / 2);
+  const layers = layersOf(trajectory, size.rows);
+  const points = pointRows(trajectory, layers, size.rows);
+  const center = centerOf(size.perWeek);
   return Array.from({ length: size.rows }, (_, row) => {
-    const level = (peak * (size.rows - row - 0.5)) / size.rows;
+    const band = layerAt(layers, size.rows - 1 - row)?.band;
     return trajectory.weeks.flatMap((week, index) =>
       Array.from({ length: size.perWeek }, (_unused, offset): TermCell => {
-        const cell = bandCell(week, level, peak);
+        const cell = backCell(week, band);
         if (offset === center && points[index] === row) return pointCell(trajectory, week, cell.band);
-        if (trailRow(points, index * size.perWeek + offset, size.perWeek) === row)
+        if (onTrail(points, index * size.perWeek + offset, size.perWeek, row))
           return { glyph: "·", band: cell.band, ink: "line" };
         return cell;
       }),
@@ -132,24 +177,26 @@ export const gridOf = (trajectory: DomainTrajectory, size: GridSize): readonly (
 };
 
 export const rowLabels = (trajectory: DomainTrajectory, rows: number, labels: TermLabels): readonly string[] => {
-  const peak = peakOf(trajectory);
-  const week = lastWeek(trajectory);
-  let previous = "";
+  const layers = layersOf(trajectory, rows);
   return Array.from({ length: rows }, (_, row) => {
-    const band = week === undefined ? undefined : bandAt(week, (peak * (rows - row - 0.5)) / rows, peak);
-    const label = band === undefined ? "" : labels.band[band];
-    const shown = label === previous ? "" : label;
-    previous = label;
-    return shown;
+    const layer = layerAt(layers, rows - 1 - row);
+    if (layer === undefined) return "";
+    return rows - 1 - row === layer.from + Math.floor((layer.to - layer.from - 1) / 2) ? labels.band[layer.band] : "";
   });
 };
 
 export const axisLine = (trajectory: DomainTrajectory, perWeek: number): string =>
-  trajectory.weeks.map((week) => week.week.slice(-3).padEnd(perWeek).slice(0, perWeek)).join("");
+  trajectory.weeks
+    .map((week) => {
+      const name = week.week.slice(-3);
+      const lead = Math.max(0, Math.min(perWeek - name.length, centerOf(perWeek) - 1));
+      return `${" ".repeat(lead)}${name}`.padEnd(perWeek).slice(0, perWeek);
+    })
+    .join("");
 
 export const usedBands = (trajectory: DomainTrajectory): readonly Band[] => {
-  const grid = gridOf(trajectory, { rows: 12, perWeek: 1 });
-  const seen = new Set(grid.flat().map((cell) => cell.band));
+  const peak = peakOf(trajectory);
+  const seen = new Set(trajectory.weeks.flatMap((week) => strataOf(week, peak).map((stratum) => stratum.band)));
   return BAND_ORDER.filter((band) => seen.has(band));
 };
 

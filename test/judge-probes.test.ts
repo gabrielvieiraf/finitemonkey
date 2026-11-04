@@ -139,4 +139,25 @@ describe("probes keyed to the source, used to route verification", () => {
     w.fs.tick(8 * 86_400_000);
     assert.equal(ask("s4").ok, true);
   });
+
+  it("an open number probe hides the key and compares the typed number with the source", () => {
+    const span = "The threshold for distance sales is 10,000 euros across the union";
+    const ask = (w: World) => {
+      vatConcept(w);
+      const claim = keyedClaim(w, "The threshold for distance sales is 10,000 euros (Directive 2017/2455).", span);
+      return call(w.deps, { verb: "probe", claim, decision: "d1", open: true }).probe;
+    };
+    const right = world();
+    const open = ask(right);
+    assert.equal(open?.form, "predict-number-open");
+    assert.deepEqual(open.options, []);
+    const typed = call(right.deps, { verb: "answer", probe: open.probe, value: "10000" });
+    assert.equal(typed.probe?.correct, true);
+    const wrong = world();
+    const other = ask(wrong);
+    const missed = call(wrong.deps, { verb: "answer", probe: other?.probe, value: "1,000" });
+    assert.equal(missed.probe?.correct, false);
+    assert.equal(missed.route, "verify");
+    assert.deepEqual(call(wrong.deps, { verb: "export" }).export?.evidence ?? [], []);
+  });
 });

@@ -141,6 +141,46 @@
         "cached"
       ]
     },
+    "bypassProbe": {
+      "type": "object",
+      "properties": {
+        "ran": {
+          "type": "boolean"
+        },
+        "probe": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "at": {
+              "type": "string"
+            },
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "fired",
+                "missed",
+                "held",
+                "inconclusive"
+              ]
+            },
+            "instructions": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "version",
+            "at",
+            "outcome",
+            "instructions"
+          ]
+        }
+      },
+      "required": [
+        "ran"
+      ]
+    },
     "schema": {
       "const": "finitemonkey/doctor@1"
     },

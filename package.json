@@ -1,6 +1,6 @@
 {
   "name": "finitemonkey",
-  "version": "0.1.0-next.44",
+  "version": "0.1.0-next.46",
   "description": "Claude Code hooks that stop a coding agent from saying done before the tests pass: a machine-checked definition of done, plus guardrails for secrets, git safety and production. Pre-release.",
   "type": "module",
   "license": "Apache-2.0",
@@ -85,11 +85,14 @@
     "manual:trajectory": "tsx scripts/manual-trajectory.ts",
     "sbom": "tsx scripts/sbom.ts",
     "release:manifests": "tsx scripts/release-manifests.ts",
+    "sea": "tsx scripts/sea-build.ts",
     "e2e:claude": "node --import tsx --test --test-concurrency=1 test/e2e/claude-stop.e2e.ts",
     "plugin:sync": "node scripts/plugin-sync.mjs",
     "plugin:validate": "node scripts/plugin-validate.mjs && tsx scripts/mod-check.ts",
     "plugin:footprint": "npm run build && tsx scripts/mod-check.ts --write",
-    "version": "node scripts/plugin-sync.mjs"
+    "version": "node scripts/plugin-sync.mjs",
+    "demos": "bash assets/demos/record.sh",
+    "site:essays": "tsx scripts/build-essays.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
@@ -105,6 +108,7 @@
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "husky": "^9.1.7",
     "playwright-core": "^1.64.1",
+    "postject": "1.0.0-alpha.6",
     "prettier": "^3.9.10",
     "semantic-release": "^25.0.9",
     "tsx": "^4.23.15",

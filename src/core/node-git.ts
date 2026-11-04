@@ -8,13 +8,14 @@ const GIT_ENV = { ...process.env, GIT_PAGER: "cat", GIT_TERMINAL_PROMPT: "0", LC
 
 const notFound = (error: unknown): boolean => error instanceof Error && "code" in error && error.code === "ENOENT";
 
-export const nodeGit: Git = (args, cwd) => {
+export const nodeGit: Git = (args, cwd, timeoutMs) => {
   const result = spawnSync("git", [...args], {
     cwd,
     encoding: "utf8",
     maxBuffer: MAX_BUFFER,
     windowsHide: true,
     env: GIT_ENV,
+    ...(timeoutMs === undefined ? {} : { timeout: timeoutMs }),
   });
   const stdout: unknown = result.stdout;
   return {

@@ -11,6 +11,7 @@ import { logEvent } from "../evidence/log.js";
 import { allowWith, human, projectPaths } from "../gate/hooks/common.js";
 import { readGateStatus } from "../gate/hooks/status.js";
 import type { HookHandler } from "../hooks/handlers.js";
+import type { Translate } from "../i18n/translate.js";
 import { featureMode } from "../policy/feature.js";
 import type { FmPaths } from "../task/paths.js";
 import { readJsonFile, writeJsonFile } from "../task/state.js";
@@ -33,7 +34,7 @@ export const touchedConcepts = (runtime: Pick<Runtime, "readText">, paths: FmPat
   return [...new Set(found)];
 };
 
-const freshPause = (runtime: Runtime, paths: FmPaths): boolean => {
+export const freshPause = (runtime: Runtime, paths: FmPaths): boolean => {
   const status = readGateStatus(runtime, paths);
   if (status?.status !== "passed") return false;
   if (readJsonFile(runtime, paths.cache(PAUSE_FILE))?.["at"] === status.at) return false;
@@ -55,9 +56,22 @@ export const teachPause: HookHandler = (input) => {
     logEvent(runtime, paths, "teach.asked", { question: asked.view.question, origin: "edge" });
     return allowWith({ systemMessage: human(questionLines(t, asked.view).join("\n")) });
   }
-  if (featureMode(runtime, paths, PROBES_FEATURE) === "off") return allow;
-  const found = nextProbe(runtime, paths, session, nowMs(runtime));
-  if (found.probe === undefined) return allow;
-  logEvent(runtime, paths, "teach.probe_shown", { probe: found.probe.id });
-  return allowWith({ systemMessage: human(probeLines(t, found.probe).join("\n")) });
+  const lines = pauseProbe(runtime, paths, t, session);
+  return lines.length === 0 ? allow : allowWith({ systemMessage: human(lines.join("\n")) });
 };
+
+export const pauseProbe = (
+  runtime: Runtime,
+  paths: FmPaths,
+  t: Translate,
+  session: string | undefined,
+): readonly string[] => {
+  if (featureMode(runtime, paths, PROBES_FEATURE) === "off") return [];
+  const found = nextProbe(runtime, paths, session, nowMs(runtime));
+  if (found.probe === undefined) return [];
+  logEvent(runtime, paths, "teach.probe_shown", { probe: found.probe.id });
+  return probeLines(t, found.probe);
+};
+
+export const probeAtClose = (runtime: Runtime, paths: FmPaths, t: Translate): readonly string[] =>
+  teachOptedIn(runtime, paths) && freshPause(runtime, paths) ? pauseProbe(runtime, paths, t, undefined) : [];

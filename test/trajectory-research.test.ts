@@ -6,7 +6,7 @@ import type { ConceptId } from "../src/conceitos/concepts.js";
 import { type ConceptEvent, type ConceptEventKind, WEIGHTS } from "../src/conceitos/evidence.js";
 import { trajectoryOf, weekKeys } from "../src/conceitos/trajectory.js";
 import { chartLines } from "../src/conceitos/trajectory-ansi.js";
-import { svgOf } from "../src/conceitos/trajectory-chart.js";
+import { rasterCells, rasterOf, rasterShape, svgOf } from "../src/conceitos/trajectory-chart.js";
 import { withResearch } from "../src/conceitos/trajectory-research.js";
 import { researchMarks } from "../src/conceitos/trajectory-research-read.js";
 import { toAbsolutePath } from "../src/core/brand.js";
@@ -123,6 +123,30 @@ describe("research events beside code events", () => {
     assert.equal((svg.match(/class="research-person"/g) ?? []).length, 1);
     assert.match(svg, /fixed by revert in abc1234/);
     assert.ok(!svg.includes("research-open"));
+  });
+
+  it("the mod's raster draws the research lane with a different glyph and ink for revert and person", () => {
+    const shape = rasterShape(backend, 72);
+    const cells = rasterCells(backend, 72, { theme: "dark" });
+    assert.equal(cells.length, shape.columns * shape.rows);
+    const rows = Array.from({ length: shape.rows }, (_, row) =>
+      cells.slice(row * shape.columns, (row + 1) * shape.columns),
+    );
+    const lane =
+      rows.find((row) =>
+        row
+          .map((cell) => cell.glyph)
+          .join("")
+          .trimEnd()
+          .endsWith("research"),
+      ) ?? [];
+    const revert = lane.find((cell) => cell.glyph === "↺");
+    const person = lane.find((cell) => cell.glyph === "◆");
+    assert.ok(revert !== undefined && person !== undefined);
+    assert.notEqual(revert.fg, person.fg);
+    const plain = trajectoryOf("backend", LOG, [], NOW);
+    assert.equal(rasterShape(plain, 72).rows, shape.rows - 1);
+    assert.equal(rasterOf(backend, 72, { theme: "dark" }).rows, shape.rows);
   });
 
   it("the mod reads the research marks back from the JSON", () => {

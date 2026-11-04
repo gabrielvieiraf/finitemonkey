@@ -1,4 +1,4 @@
-import { numbersIn } from "./numbers.js";
+import { compareNumber, numbersIn } from "./numbers.js";
 import { keyIndex, perturb, type ProbeKey } from "./probe.js";
 import { normalizeSpan, spanIn } from "./span.js";
 import type { ClaimEntry, ProbeEntry } from "./types.js";
@@ -61,4 +61,28 @@ export const predictNumber = (
   const right = values[0] ?? "";
   const { options, key: index } = ordered(`${claim.id}\u0000${key.hash}\u0000n`, values, right);
   return { claim: claim.id, concepts, form: "predict-number", prompt: key.ref, options, key: index, keyHash: key.hash };
+};
+
+export const predictNumberOpen = (
+  claim: ClaimEntry,
+  key: ProbeKey,
+  concepts: readonly string[],
+): ProbeFields | undefined => {
+  const [found] = numbersIn(key.span);
+  if (found === undefined) return undefined;
+  return {
+    claim: claim.id,
+    concepts,
+    form: "predict-number-open",
+    prompt: key.ref,
+    options: [found.raw],
+    key: 0,
+    keyHash: key.hash,
+  };
+};
+
+export const typedNumberRight = (expected: string, typed: string | undefined): boolean => {
+  const [wanted] = numbersIn(expected);
+  const given = numbersIn(typed ?? "");
+  return wanted !== undefined && given.length === 1 && compareNumber(wanted, given) === "same";
 };

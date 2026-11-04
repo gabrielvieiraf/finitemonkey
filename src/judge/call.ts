@@ -13,3 +13,5 @@ export const judgeProcess = (request: Readonly<Record<string, unknown>>): JudgeP
   args: JUDGE_CALL_ARGS,
   stdin: requestBody(request),
 });
+
+export const GATE_JUDGE_REQUEST = { verb: "report" } as const;

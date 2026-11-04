@@ -43,14 +43,15 @@ const failedRun = (check: AcceptanceCheck, ctx: GateContext, result: ExecResult)
   const fresh = summary.failures.filter((name) => !known.has(name));
   const old = summary.failures.length - fresh.length;
   const baselineNote: readonly Note[] = old > 0 ? [note("gate.note.baseline", { count: old })] : [];
+  const counted = summary.total === undefined ? {} : { testCount: summary.total };
   if (summary.failures.length > 0 && fresh.length === 0) {
-    return { status: "passed", notes: baselineNote, failures: summary.failures };
+    return { status: "passed", notes: baselineNote, failures: summary.failures, ...counted };
   }
   const last = ctx.mask(tail(output));
   return {
     status: "failed",
     failures: summary.failures,
-    ...(summary.total === undefined ? {} : { testCount: summary.total }),
+    ...counted,
     notes: [
       note("gate.note.exit", { code: result.exitCode ?? -1 }),
       ...fresh.slice(0, MAX_FAILURES).map((name) => note("gate.note.new_failure", { name: ctx.mask(name) })),

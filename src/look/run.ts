@@ -11,6 +11,7 @@ import { fmPaths } from "../task/paths.js";
 import { readApproved, writeLayouts } from "./approved.js";
 import { loadLookConfig, type LookConfig, lookRoutes } from "./config.js";
 import { type Critic, CRITIC_FEATURE, runCritic } from "./critic.js";
+import type { DeepReport, DeepRunner } from "./deep.js";
 import { applyAllows, pageFindings } from "./findings.js";
 import { captureAll, type PageResult } from "./node-capture.js";
 import { launchBrowser, loadPlaywright } from "./node-playwright.js";
@@ -30,7 +31,22 @@ import { sessionPages } from "./ux-sessions.js";
 export type LookRun =
   | { readonly kind: "not_a_repo" | "not_configured" | "playwright_missing" | "browser_missing" }
   | { readonly kind: "app_failed"; readonly detail: string }
-  | { readonly kind: "done"; readonly summary: LookSummary; readonly summaryPath: string };
+  | {
+      readonly kind: "done";
+      readonly summary: LookSummary;
+      readonly summaryPath: string;
+      readonly deep?: DeepReport;
+    };
+
+export interface LookOptions {
+  readonly routes?: readonly string[];
+  readonly deep?: DeepRunner;
+}
+
+const onlyRoutes = (config: LookConfig, routes: readonly string[] | undefined): LookConfig =>
+  routes === undefined || routes.length === 0
+    ? config
+    : { ...config, routes: config.routes.filter((route) => routes.includes(route)) };
 
 export interface Ready {
   readonly root: AbsolutePath;
@@ -146,9 +162,20 @@ const critique = async (runtime: Runtime, ready: Ready, shot: Shot, critic: Crit
   });
 };
 
-export const runLook = async (runtime: Runtime, cwd: AbsolutePath, critic?: Critic): Promise<LookRun> => {
-  const ready = prepare(runtime, cwd);
-  if ("kind" in ready) return ready;
+const deepPass = (ready: Ready, deep: DeepRunner | undefined): { readonly deep?: DeepReport } =>
+  deep === undefined
+    ? {}
+    : { deep: deep(`http://${ready.config.host}:${String(ready.config.port)}`, ready.config.routes) };
+
+export const runLook = async (
+  runtime: Runtime,
+  cwd: AbsolutePath,
+  critic?: Critic,
+  options: LookOptions = {},
+): Promise<LookRun> => {
+  const prepared = prepare(runtime, cwd);
+  if ("kind" in prepared) return prepared;
+  const ready = { ...prepared, config: { ...onlyRoutes(prepared.config, options.routes), port: prepared.config.port } };
   const app = await bootApp(ready);
   if (app !== undefined && "detail" in app) return { kind: "app_failed", detail: app.detail };
   try {
@@ -176,7 +203,7 @@ export const runLook = async (runtime: Runtime, cwd: AbsolutePath, critic?: Crit
     );
     const recorded = recordLook(runtime, paths, ready.tree, shot, allowed);
     await critique(runtime, ready, shot, critic);
-    return recorded;
+    return { ...recorded, ...deepPass(ready, options.deep) };
   } finally {
     if (app !== undefined) await stopApp(app);
   }

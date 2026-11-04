@@ -9,7 +9,7 @@ import { ansi256, chartLines, colorDepth } from "../src/conceitos/trajectory-ans
 import { strataOf } from "../src/conceitos/trajectory-bands.js";
 import { svgOf } from "../src/conceitos/trajectory-chart.js";
 import { nowOf } from "../src/conceitos/trajectory-now.js";
-import { SVG_TOKENS } from "../src/conceitos/trajectory-palette.js";
+import { SVG_TOKENS, TERM_PALETTE } from "../src/conceitos/trajectory-palette.js";
 import { toAbsolutePath } from "../src/core/brand.js";
 import { trajectoryLine } from "../src/mod/status.js";
 import { cli, fakeRuntime } from "./support.js";
@@ -107,6 +107,7 @@ describe("trajectory view", () => {
       "rect.key-swatch.key-proximal",
       "g.key-group.key-alone",
       "rect.key-swatch.key-alone",
+      "path.uncertainty",
       "circle.point",
       "path.work",
       "path.ricochet-arc",
@@ -142,11 +143,12 @@ describe("trajectory view", () => {
     assert.match(plain, /\* work landed {2}X ricochet {2}O held/);
     assert.match(plain, /not drawn \(hypothesis\)/);
     const indexed = chartLines([backend], { depth: "256", theme: "dark" }).join("\n");
-    assert.ok(indexed.includes("\u001b[48;5;22m"));
-    assert.ok(indexed.includes("\u001b[1;38;5;210m✕"));
+    assert.ok(indexed.includes(`\u001b[48;5;${String(ansi256(TERM_PALETTE.dark.band.alone))}m`));
+    assert.ok(indexed.includes(`\u001b[1;38;5;${String(ansi256(TERM_PALETTE.dark.ink.ricochet))}m✕`));
+    assert.ok(!indexed.includes(`\u001b[48;5;${String(ansi256(TERM_PALETTE.dark.gap))}m`));
     const truecolor = chartLines([backend], { depth: "truecolor", theme: "light" }).join("\n");
     assert.ok(truecolor.includes("\u001b[48;2;207;231;218m"));
-    assert.equal(ansi256(0x5a2420), 52);
+    assert.equal(ansi256(0xcfe7da), 151);
   });
 
   it("color depth follows NO_COLOR, the TTY and COLORTERM", () => {
@@ -165,6 +167,9 @@ describe("trajectory view", () => {
     assert.equal(now.ricochet?.concept, "webhook");
     const line = trajectoryLine({ domain: "backend", band: now.band, ricochet: now.ricochet });
     assert.match(line, /^trajectory backend: .+, last ricochet webhook W\d\d$/);
+    assert.ok(now.recent.length >= 2 && now.recent.every((value) => value >= 0 && value <= 1));
+    const sparked = trajectoryLine({ domain: "backend", band: now.band, ricochet: now.ricochet, recent: now.recent });
+    assert.match(sparked, /^trajectory backend [▁▂▃▄▅▆▇█]{2,6}: .+, last ricochet webhook W\d\d$/);
     assert.equal(nowOf([trajectoryOf("security", [], [], NOW)]), null);
   });
 

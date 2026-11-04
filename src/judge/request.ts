@@ -53,7 +53,7 @@ export type JudgeRequest =
     }
   | { readonly verb: "domain"; readonly domain: string; readonly parent?: string }
   | { readonly verb: "judge"; readonly claim: string; readonly decision?: string; readonly task?: string }
-  | { readonly verb: "answer"; readonly probe: string; readonly choice: number }
+  | { readonly verb: "answer"; readonly probe: string; readonly choice: number; readonly value?: string }
   | { readonly verb: "cut"; readonly claim: string }
   | { readonly verb: "check"; readonly claim: string; readonly says: "verified" | "mismatch" }
   | { readonly verb: "read"; readonly origin: string; readonly source: string; readonly content: string }
@@ -73,6 +73,7 @@ export type JudgeRequest =
       readonly decision: string;
       readonly session?: string;
       readonly task?: string;
+      readonly open?: boolean;
     }
   | { readonly verb: "skip"; readonly probe: string }
   | { readonly verb: "triage"; readonly file: string; readonly text: string }
@@ -178,10 +179,12 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
     return claim === undefined ? undefined : { verb: "judge", claim, ...optional(record, ["decision", "task"]) };
   },
   answer: (record) => {
-    const probe = text(record, "probe");
+    const [probe, value] = [text(record, "probe"), text(record, "value")];
     const raw = record["choice"];
-    const choice = typeof raw === "number" ? raw : Number.parseInt(String(raw), 10);
-    return probe === undefined || !Number.isInteger(choice) ? undefined : { verb: "answer", probe, choice };
+    const parsed = typeof raw === "number" ? raw : Number.parseInt(String(raw), 10);
+    const choice = raw === undefined && value !== undefined ? -1 : parsed;
+    if (probe === undefined || !Number.isInteger(choice)) return undefined;
+    return { verb: "answer", probe, choice, ...(value === undefined ? {} : { value }) };
   },
   check: (record) => {
     const claim = text(record, "claim");
@@ -216,7 +219,8 @@ const BUILDERS: Readonly<Record<Verb, (record: JsonObject) => JudgeRequest | und
   probe: (record) => {
     const [claim, decision] = [text(record, "claim"), text(record, "decision")];
     if (claim === undefined || decision === undefined) return undefined;
-    return { verb: "probe", claim, decision, ...optional(record, ["session", "task"]) };
+    const open = record["open"] === true ? { open: true } : {};
+    return { verb: "probe", claim, decision, ...optional(record, ["session", "task"]), ...open };
   },
   depend: (record) => {
     const [claim, on] = [text(record, "claim"), text(record, "on")];

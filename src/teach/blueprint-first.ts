@@ -1,7 +1,8 @@
 import { dirname, relative } from "node:path";
 
 import { profileDomainOf } from "../conceitos/concepts.js";
-import { recognizeCode } from "../conceitos/recognize.js";
+import { packageMapOf } from "../conceitos/packages.js";
+import { NO_PACKAGES, type PackageMap, recognizeCode } from "../conceitos/recognize.js";
 import { toAbsolutePath } from "../core/brand.js";
 import { isRecord, type JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
@@ -31,8 +32,8 @@ const editedText = (raw: JsonObject): string => {
   ].join("\n");
 };
 
-export const domainsOfEdit = (file: string, text: string): readonly Domain[] => {
-  const recognized = recognizeCode({ file, lines: text.split("\n") }).flatMap(
+export const domainsOfEdit = (file: string, text: string, map: PackageMap = NO_PACKAGES): readonly Domain[] => {
+  const recognized = recognizeCode({ file, lines: text.split("\n") }, map).flatMap(
     (item) => profileDomainOf(item.concept) ?? [],
   );
   const found = [...new Set(recognized)];
@@ -72,7 +73,11 @@ export const blueprintFirst: HookHandler = (input) => {
   if (askedTasks(runtime, paths).includes(task)) return allow;
   const raw = textField(toolInput(input.payload.raw), "file_path", "notebook_path") ?? "";
   const file = relative(paths.root, raw).replaceAll("\\", "/");
-  const domain = beginnerDomain(runtime, paths, domainsOfEdit(file, editedText(input.payload.raw)));
+  const domain = beginnerDomain(
+    runtime,
+    paths,
+    domainsOfEdit(file, editedText(input.payload.raw), packageMapOf(runtime, paths)),
+  );
   if (domain === undefined) return allow;
   remember(runtime, paths, task);
   logEvent(runtime, paths, "teach.blueprint_asked", { task, domain });

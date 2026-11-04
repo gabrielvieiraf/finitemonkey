@@ -22,7 +22,7 @@ import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec, OptionValues } from "./types.js";
 
 const PROPOSE_USAGE =
-  "finitemonkey probe propose --kind <kind> --concept <concept> --question <text> --why <text> --option a=<text> [--option-run a=<cmd>] [--run <cmd>] [--input <stdin>]";
+  "finitemonkey probe propose --kind <kind> --concept <concept> --question <text> --why <text> --option a=<text> [--option-run a=<cmd>] [--run <cmd>] [--input <stdin>] [--source <file>]";
 
 const pathsOf = (ctx: Ctx): FmPaths => fmPaths(findRepoRoot(ctx.runtime, ctx.cwd) ?? ctx.cwd);
 
@@ -79,6 +79,7 @@ const propose = (ctx: Ctx, values: OptionValues): CommandResult => {
   });
   const run = stringOption(values, "run");
   const input = stringOption(values, "input");
+  const source = stringOption(values, "source");
   const probe = proposeProbe(ctx.runtime, paths, {
     kind,
     concept,
@@ -87,6 +88,7 @@ const propose = (ctx: Ctx, values: OptionValues): CommandResult => {
     options,
     ...(run === undefined ? {} : { run }),
     ...(input === undefined ? {} : { input }),
+    ...(source === undefined ? {} : { source }),
   });
   return success({ schema: PROBES_SCHEMA, probe: shown(probe) }, [
     ctx.t(probe.status === "invalid" ? "probe.invalid" : "probe.proposed", { id: probe.id }),
@@ -172,6 +174,7 @@ const PROPOSE_OPTIONS = {
   "option-run": { type: "string", multiple: true },
   run: { type: "string" },
   input: { type: "string" },
+  source: { type: "string" },
 } as const;
 
 export const probeCommand: CommandSpec = {

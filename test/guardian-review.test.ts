@@ -26,7 +26,7 @@ const record = (topic: string, recommendation: string, delta: string): string =>
     .replace("- Modified:", `- Modified: ${delta}`);
 
 describe("guardian decisions", () => {
-  it("holds a model write of status: accepted, lets proposed through and starts in shadow", async () => {
+  it("holds a model write of status: accepted, lets proposed through and only logs at level light", async () => {
     const repo = makeRepo({
       "docs/plan/02-decision-queue.md": record("queue", "keep cron", "src/jobs/"),
       ".finitemonkey/policy.yml": policyWith({ "decision-hold": "active" }),
@@ -46,6 +46,8 @@ describe("guardian decisions", () => {
     });
     assert.equal(denied(fresh), false);
     repo.write(".finitemonkey/policy.yml", "level: standard\n");
+    assert.equal(denied(await edit("status: proposed", "status: accepted")), true);
+    repo.write(".finitemonkey/policy.yml", "level: light\n");
     assert.equal(denied(await edit("status: proposed", "status: accepted")), false);
   });
 

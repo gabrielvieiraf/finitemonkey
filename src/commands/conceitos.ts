@@ -1,4 +1,5 @@
 import { bookConcepts, bookPath, raise, readBook, writeBook } from "../conceitos/book.js";
+import { recordLevels } from "../conceitos/book-log.js";
 import { CONCEPT_LEVELS, parseConcept, parseConceptLevel } from "../conceitos/concepts.js";
 import { creditGate } from "../conceitos/credit.js";
 import { CONCEPT_EVIDENCE_SCHEMA, conceptSummaries, type ConceptSummary } from "../conceitos/evidence.js";
@@ -8,6 +9,9 @@ import type { Ctx } from "../core/context.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { findRepoRoot } from "../gate/hooks/common.js";
+import { whenEnabled } from "../provider/adapters.js";
+import { providerCodeConcepts } from "../provider/adapters-more.js";
+import { providerDeps } from "../provider/wire.js";
 import { isPerson } from "../secrets/project.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import type { CommandSpec } from "./types.js";
@@ -50,8 +54,10 @@ const exportBook = (ctx: Ctx): CommandResult => {
 };
 
 const update = (ctx: Ctx): CommandResult => {
-  const ids = updateFromPending(ctx.runtime, pathsOf(ctx));
-  const credited = creditGate(ctx.runtime, pathsOf(ctx));
+  const paths = pathsOf(ctx);
+  const ids = updateFromPending(ctx.runtime, paths);
+  const proposer = whenEnabled(providerDeps(ctx, paths), "code-concepts", providerCodeConcepts);
+  const credited = creditGate(ctx.runtime, paths, proposer);
   return success({ schema: CONCEITOS_SCHEMA, seen: [...ids], credited: credited.length }, []);
 };
 
@@ -107,7 +113,10 @@ const mark = (ctx: Ctx, rawConcept: string | undefined, rawLevel: string | undef
     );
   }
   const paths = pathsOf(ctx);
-  writeBook(ctx.runtime, paths, raise(readBook(ctx.runtime, paths), concept, level, ctx.runtime.now()));
+  const before = readBook(ctx.runtime, paths);
+  const after = raise(before, concept, level, ctx.runtime.now());
+  writeBook(ctx.runtime, paths, after);
+  recordLevels(ctx.runtime, paths, { before, after }, "person");
   return show(ctx);
 };
 

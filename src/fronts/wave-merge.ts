@@ -8,6 +8,7 @@ import { openCallers } from "../merge/semantic.js";
 import type { WorktreeOwner } from "../wt/entry.js";
 import { checkReport, type ReportCheck } from "./report-gate.js";
 import type { Front, FrontsState } from "./state.js";
+import { waveGateChecks } from "./wave-checks.js";
 
 export type WaveFailure =
   | { readonly kind: "no-fronts" }
@@ -127,7 +128,11 @@ export const mergeWave = (options: WaveOptions, state: FrontsState): Parsed<Wave
     merges.push({ front: front.id, report: report.value });
   }
   const last = merges[merges.length - 1]?.report;
-  const failed = last === undefined ? undefined : waveChecks(options, last, base);
+  const failed =
+    last === undefined
+      ? undefined
+      : (waveChecks(options, last, base) ??
+        waveGateChecks(options.runtime, options.root, last.integration.path, base, order));
   if (failed !== undefined) return reject({ kind: "wave-checks", detail: failed });
   const head = line(options.runtime, options.root, ["rev-parse", `refs/heads/${branch.value}`]) ?? "";
   return accept({ branch: branch.value, head, merges, checks });

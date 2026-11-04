@@ -2,7 +2,9 @@ import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { FmPaths } from "../task/paths.js";
 import type { ConceptSuggester } from "./concepts.js";
+import type { ContradictionProposer } from "./events.js";
 import type { SourceFetcher } from "./fetch.js";
+import type { HorizonProposer } from "./horizon.js";
 import type { DistractorProposer } from "./probe-forms.js";
 import type { ClaimSplitter } from "./split.js";
 import { type Appended, appendEntry } from "./store.js";
@@ -21,6 +23,8 @@ export interface JudgeDeps {
   readonly verifiers?: Readonly<Partial<Record<JudgeClaimKind, Verifier>>>;
   readonly fetcher?: SourceFetcher;
   readonly distractors?: DistractorProposer;
+  readonly horizon?: HorizonProposer;
+  readonly contradictions?: ContradictionProposer;
 }
 
 export const appendNow = (deps: JudgeDeps, record: JsonObject): Appended =>

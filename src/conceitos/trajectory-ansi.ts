@@ -1,5 +1,5 @@
 import type { DomainTrajectory } from "./trajectory.js";
-import { type Band, BAND_ORDER, drawnSplits } from "./trajectory-bands.js";
+import { type Band, BAND_ORDER, drawnSplits, filled } from "./trajectory-bands.js";
 import type { Ink, Theme } from "./trajectory-palette.js";
 import { RESEARCH_FIXES, RESEARCH_GLYPH, RESEARCH_PLAIN, researchLane } from "./trajectory-research.js";
 import { SPLIT_GROUPS, type SplitGroup } from "./trajectory-split-types.js";
@@ -44,14 +44,6 @@ const rgb = (color: number): readonly [number, number, number] => [
 ];
 
 const PICKED: ReadonlyMap<number, number> = new Map([
-  [0x1b4a35, 22],
-  [0x203a66, 17],
-  [0x3d2d55, 60],
-  [0x4a3a1c, 58],
-  [0x5a2420, 52],
-  [0x3b2723, 95],
-  [0x191e25, 234],
-  [0x252c36, 238],
   [0xcfe7da, 151],
   [0xcddbf2, 153],
   [0xd9c6e8, 183],
@@ -102,17 +94,22 @@ const PLAIN: Readonly<Record<Cellband, string>> = {
   gap: "\\",
 };
 
-const PLAIN_GLYPH: Readonly<Record<string, string>> = { "●": "*", "·": "+", "✕": "X", "◉": "O" };
+const PLAIN_GLYPH: Readonly<Record<string, string>> = { "●": "*", "·": "+", "✕": "X", "◉": "O", "╱": "\\" };
 
 const plainCell = (cell: TermCell): string =>
   cell.glyph === " " ? (cell.band === null ? " " : PLAIN[cell.band]) : (PLAIN_GLYPH[cell.glyph] ?? cell.glyph);
 
+const HATCH = "╱";
+
 const cellStyle = (cell: TermCell, theme: Theme, depth: ColorDepth): string => {
   const palette = termPalette(theme);
-  const bg = cell.band === null ? null : cell.band === "gap" ? palette.gap : palette.band[cell.band];
+  if (cell.band === "gap" && cell.ink === null) return style(palette.gap, null, depth, false);
+  const bg = cell.band === null || cell.band === "gap" ? null : palette.band[cell.band];
   const fg = cell.ink === null ? null : palette.ink[cell.ink];
-  return style(fg, bg, depth, cell.ink !== null && cell.glyph !== "·");
+  return style(fg, bg, depth, cell.ink !== null && cell.ink !== "faint" && cell.glyph !== "·");
 };
+
+const glyphOf = (cell: TermCell): string => (cell.band === "gap" && cell.glyph === " " ? HATCH : cell.glyph);
 
 const colorRow = (cells: readonly TermCell[], theme: Theme, depth: ColorDepth): string => {
   let out = "";
@@ -121,7 +118,7 @@ const colorRow = (cells: readonly TermCell[], theme: Theme, depth: ColorDepth): 
     const next = cellStyle(cell, theme, depth);
     if (next !== current) out += `${current === undefined ? "" : RESET}${next}`;
     current = next;
-    out += cell.glyph;
+    out += glyphOf(cell);
   }
   return `${out}${RESET}`;
 };
@@ -138,10 +135,22 @@ const faint = (body: string, options: TermOptions): string =>
     ? body
     : `${style(termPalette(options.theme).ink.faint, null, options.depth, false)}${body}${RESET}`;
 
-export const blockOf = (trajectory: DomainTrajectory, options: TermOptions): readonly string[] => {
+const CHART_COLUMNS = 48;
+
+const widthPerWeek = (weeks: number): number =>
+  Math.min(10, Math.max(5, Math.floor(CHART_COLUMNS / Math.max(1, weeks))));
+
+const fromFirstEvidence = (trajectory: DomainTrajectory): DomainTrajectory => {
+  const researched = new Set((trajectory.research ?? []).map((mark) => mark.week));
+  const first = trajectory.weeks.findIndex((week) => filled(week) || researched.has(week.week));
+  return first <= 0 ? trajectory : { ...trajectory, weeks: trajectory.weeks.slice(first) };
+};
+
+export const blockOf = (whole: DomainTrajectory, options: TermOptions): readonly string[] => {
   const labels = options.labels ?? ENGLISH_TERM;
+  const trajectory = fromFirstEvidence(whole);
   if (trajectory.status === "no_data") return [`${trajectory.domain}: ${labels.noData(trajectory.evidence)}`];
-  const size = options.size ?? { rows: 12, perWeek: 4 };
+  const size = options.size ?? { rows: 12, perWeek: widthPerWeek(trajectory.weeks.length) };
   const grid = gridOf(trajectory, size);
   const names = rowLabels(trajectory, size.rows, labels);
   const head = labels.head(
@@ -178,7 +187,8 @@ const laneLines = (trajectory: DomainTrajectory, perWeek: number, options: TermO
 const swatch = (band: Cellband, options: TermOptions): string => {
   if (options.depth === "none") return PLAIN[band] === " " ? "' '" : PLAIN[band];
   const palette = termPalette(options.theme);
-  return `${style(null, band === "gap" ? palette.gap : palette.band[band], options.depth, false)}  ${RESET}`;
+  if (band === "gap") return `${style(palette.gap, null, options.depth, false)}${HATCH}${HATCH}${RESET}`;
+  return `${style(null, palette.band[band], options.depth, false)}  ${RESET}`;
 };
 
 const inkSwatch = (glyph: string, ink: Ink, options: TermOptions): string =>

@@ -5,7 +5,7 @@ import type { ConceptId } from "../src/conceitos/concepts.js";
 import { type ConceptEvent, type ConceptEventKind, type Origin, WEIGHTS } from "../src/conceitos/evidence.js";
 import { type HelpMark, trajectoryOf } from "../src/conceitos/trajectory.js";
 import { chartLines } from "../src/conceitos/trajectory-ansi.js";
-import { BANDS, GROUP_LABEL } from "../src/conceitos/trajectory-bands.js";
+import { BANDS, GROUP_LABEL, workInterval } from "../src/conceitos/trajectory-bands.js";
 import { ENGLISH_TABLE, rasterCells, rasterOf, svgOf, tableLines } from "../src/conceitos/trajectory-chart.js";
 import { wordingProblems } from "../src/conceitos/wording.js";
 
@@ -78,6 +78,23 @@ describe("trajectory", () => {
     const glyphs = rasterCells(backend, 72, { theme: "dark" }).map((cell) => cell.glyph);
     assert.ok(glyphs.includes("✕") && glyphs.includes("◉") && glyphs.includes("●"));
     assert.equal(bytes[0], (glyphs[0]?.codePointAt(0) ?? 0) & 255);
+  });
+
+  it("the Svg draws the count rule's interval around the work line", () => {
+    const landed = backend.weeks.filter((week) => week.work !== null);
+    assert.ok(landed.length > 0);
+    for (const week of landed) {
+      const span = workInterval(week);
+      if (span === undefined) continue;
+      assert.ok(span.low < span.high);
+      assert.equal((span.low + span.high) / 2, week.work);
+    }
+    const svg = svgOf(backend, { theme: "light" });
+    assert.ok((svg.match(/class="uncertainty /g) ?? []).length >= 1);
+    assert.match(svg, /count rule interval/);
+    assert.ok(svg.indexOf('class="uncertainty ') < svg.indexOf('class="work '));
+    const first = landed[0] ?? assert.fail("no landed week");
+    assert.equal(workInterval({ ...first, work: null }), undefined);
   });
 
   it("a domain with too little evidence shows no data", () => {

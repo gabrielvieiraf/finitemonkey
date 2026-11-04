@@ -1,5 +1,6 @@
 import {
   type Band,
+  BOOK_LEVEL_REF,
   type ContestEntry,
   DEMONSTRATED_AFTER,
   type EvidenceEntry,
@@ -84,7 +85,7 @@ const historyOf = (weighted: readonly EvidenceEntry[]): readonly BandStep[] => {
 };
 
 export const conceptBand = (concept: string, entries: readonly JudgeEntry[]): ConceptBand => {
-  const evidence = evidenceOf(entries);
+  const evidence = evidenceOf(entries).filter((entry) => entry.ref !== BOOK_LEVEL_REF);
   const contests = contestsOf(entries);
   const mine = evidence.filter((entry) => entry.concepts.includes(concept));
   const contested = mine.filter((entry) => isContested(entry, contests, evidence));

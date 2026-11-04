@@ -1,7 +1,14 @@
 import type { JsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { dropEntries, entryId } from "../judge/store.js";
-import type { EvidenceEntry, EvidenceOrigin, JudgeEntry, ProofKind, ProofResult } from "../judge/types.js";
+import {
+  BOOK_LEVEL_REF,
+  type EvidenceEntry,
+  type EvidenceOrigin,
+  type JudgeEntry,
+  type ProofKind,
+  type ProofResult,
+} from "../judge/types.js";
 import type { FmPaths } from "../task/paths.js";
 import { type Aliases, parseConcept } from "./concepts.js";
 import { type ConceptEvent, type ConceptEventKind, type Origin, settled, WEIGHTS } from "./evidence-kinds.js";
@@ -94,4 +101,8 @@ export const conceitosLog = (entries: readonly JudgeEntry[], aliases: Aliases = 
 };
 
 export const forgetConceptEvidence = (runtime: Pick<Runtime, "readText" | "writeAtomic">, paths: FmPaths): number =>
-  dropEntries(runtime, paths, isConceitosEvidence);
+  dropEntries(
+    runtime,
+    paths,
+    (entry) => entry.type === "evidence" && [LIVE_REF, MIGRATED_REF, BOOK_LEVEL_REF].includes(entry.ref),
+  );

@@ -17,6 +17,10 @@ export const PROVIDER_KINDS = [
   "support",
   "distractors",
   "agent",
+  "code-concepts",
+  "negative-test",
+  "teach-input",
+  "journey",
 ] as const;
 
 export type ProviderKind = (typeof PROVIDER_KINDS)[number];
@@ -57,6 +61,10 @@ export const KIND_SPECS: Readonly<Record<ProviderKind, KindSpec>> = {
   support: answer(0.02),
   distractors: answer(0.02),
   agent: { tools: [...EDITS, "Bash"], maxTurns: 60, timeoutMs: 60 * MINUTE, defaultUsd: 2, workdir: "project" },
+  "code-concepts": answer(0.02),
+  "negative-test": answer(0.05),
+  "teach-input": answer(0.02),
+  journey: answer(0.03),
 };
 
 export const parseKind = (value: string | undefined): ProviderKind | undefined =>

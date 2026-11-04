@@ -2,7 +2,15 @@ import type { Localized } from "./footprint-text.js";
 import { KNOWLEDGE_JUDGE_FOOTPRINT_TEXT } from "./footprint-text-judge.js";
 
 export const COPY_FOOTPRINT_TEXT: Readonly<
-  Record<keyof typeof KNOWLEDGE_JUDGE_FOOTPRINT_TEXT | "ui-copy" | "a11y-engine" | "ui-critic" | "ds-config", Localized>
+  Record<
+    | keyof typeof KNOWLEDGE_JUDGE_FOOTPRINT_TEXT
+    | "ui-copy"
+    | "a11y-engine"
+    | "stale-registry"
+    | "ui-critic"
+    | "ds-config",
+    Localized
+  >
 > = {
   ...KNOWLEDGE_JUDGE_FOOTPRINT_TEXT,
   "ui-copy": {
@@ -16,6 +24,12 @@ export const COPY_FOOTPRINT_TEXT: Readonly<
     "pt-BR":
       "O seu gerenciador de pacotes baixa o `axe-core` do registro do npm, só depois de um `init --look --yes` seu. Sem `--yes` ele só imprime o comando.",
     es: "Tu gestor de paquetes descarga `axe-core` del registro de npm, solo después de un `init --look --yes` tuyo. Sin `--yes` solo imprime el comando.",
+  },
+  "stale-registry": {
+    en: "The package name from package.json, to the npm registry (`npm view <name> dist-tags --json`), only when you run `stale --online` or `stale --after-merge`, to check docs that say the package is not published. Offline, the changelog answers instead.",
+    "pt-BR":
+      "O nome do pacote do package.json, ao registro do npm (`npm view <nome> dist-tags --json`), só quando você roda `stale --online` ou `stale --after-merge`, para checar docs que dizem que o pacote não está publicado. Offline, quem responde é o changelog.",
+    es: "El nombre del paquete de package.json, al registro de npm (`npm view <nombre> dist-tags --json`), solo cuando ejecutas `stale --online` o `stale --after-merge`, para revisar docs que dicen que el paquete no está publicado. Sin conexión, responde el changelog.",
   },
   "ui-critic": {
     en: "`cache/critic-classes.json` keeps, per critic checklist class, the opinions the critic produced and the ones the person accepted with `finitemonkey look opinion accept <id>`. With `ui.critic.show_threshold` set in config.yml, a class shows in the `look` output only after its accepted-over-shown ratio reaches it over at least `ui.critic.min_shown` opinions; below it, the class is only logged. Never committed.",

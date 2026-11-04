@@ -1,8 +1,9 @@
+import { recordConceptEvents } from "../conceitos/evidence.js";
 import { probeFor } from "../conceitos/predict.js";
 import type { Runtime } from "../core/runtime.js";
 import { conceptBand } from "../judge/band.js";
 import type { NumberLocale } from "../judge/numbers.js";
-import { appendEntry, entryId, readEntries } from "../judge/store.js";
+import { entryId, readEntries } from "../judge/store.js";
 import type { FmPaths } from "../task/paths.js";
 import { readState } from "../task/state.js";
 import { keyedQuestion, sameAnswer } from "./key.js";
@@ -96,17 +97,18 @@ export const askQuestion = (deps: TeachDeps, request: AskRequest): TeachOutcome 
   return { ok: true, view: viewOf(question, [question]) };
 };
 
-const recordDemonstration = (deps: TeachDeps, question: TeachQuestion): void => {
-  appendEntry(deps.runtime, deps.paths, {
-    at: deps.runtime.now(),
-    type: "evidence",
-    id: entryId("e", question.id, "teach"),
-    concepts: [...question.concepts],
-    proof: "probe",
-    result: "pass",
-    ref: `teach:${question.id}`,
-    origin: "person",
-  });
+const recordExplanation = (deps: TeachDeps, question: TeachQuestion, correct: boolean): void => {
+  recordConceptEvents(
+    deps.runtime,
+    deps.paths,
+    question.concepts.map((concept) => ({
+      concept,
+      kind: correct ? "explanation_right" : "explanation_wrong",
+      origin: "person",
+      ...(question.task === undefined ? {} : { task: question.task }),
+      match: `teach:${question.id}`,
+    })),
+  );
 };
 
 const pending = (deps: TeachDeps, id: string): TeachQuestion | string => {
@@ -123,7 +125,7 @@ export const answerQuestion = (deps: TeachDeps, id: string, answer: string): Tea
   const at = deps.runtime.now();
   const record: TeachEntry = { type: "answer", id: entryId("a", id, at), at, question: id, answer, correct };
   if (!appendTeach(deps.runtime, deps.paths, record)) return { ok: false, reason: "write_failed" };
-  if (correct) recordDemonstration(deps, question);
+  recordExplanation(deps, question, correct);
   return { ok: true, view: viewOf(question, [question, record]) };
 };
 

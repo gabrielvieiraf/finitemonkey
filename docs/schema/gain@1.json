@@ -49,6 +49,12 @@
         },
         "gateMs": {
           "type": "number"
+        },
+        "outwardAsked": {
+          "type": "number"
+        },
+        "outwardApproved": {
+          "type": "number"
         }
       },
       "required": [
@@ -61,7 +67,9 @@
         "gateRuns",
         "gateFailed",
         "gateUnverified",
-        "gateMs"
+        "gateMs",
+        "outwardAsked",
+        "outwardApproved"
       ]
     },
     "previous": {
@@ -96,6 +104,12 @@
         },
         "gateMs": {
           "type": "number"
+        },
+        "outwardAsked": {
+          "type": "number"
+        },
+        "outwardApproved": {
+          "type": "number"
         }
       },
       "required": [
@@ -108,7 +122,9 @@
         "gateRuns",
         "gateFailed",
         "gateUnverified",
-        "gateMs"
+        "gateMs",
+        "outwardAsked",
+        "outwardApproved"
       ]
     },
     "supervisorUsage": {

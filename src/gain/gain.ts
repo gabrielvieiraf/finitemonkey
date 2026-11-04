@@ -22,6 +22,8 @@ export interface GainCounts {
   readonly gateFailed: number;
   readonly gateUnverified: number;
   readonly gateMs: number;
+  readonly outwardAsked: number;
+  readonly outwardApproved: number;
 }
 
 export interface ArmCounts {
@@ -52,7 +54,10 @@ interface LogLine {
   readonly at: number;
   readonly event: string;
   readonly reason: string;
+  readonly decision: string;
 }
+
+const OUTWARD_EVENT = "untrusted_outward";
 
 const OVERRIDES: ReadonlySet<string> = new Set(["person.allow", "person.approve"]);
 
@@ -62,10 +67,17 @@ const readLog = (runtime: Pick<Runtime, "readText">, paths: FmPaths): readonly L
   return text.value.split("\n").flatMap((line): LogLine[] => {
     const parsed = parseJsonObject(line);
     if (!parsed.ok || !isRecord(parsed.value)) return [];
-    const { at, event, reason } = parsed.value;
+    const { at, event, reason, decision } = parsed.value;
     const time = typeof at === "string" ? Date.parse(at) : Number.NaN;
     return typeof event === "string" && Number.isFinite(time)
-      ? [{ at: time, event, reason: typeof reason === "string" ? reason.trim() : "" }]
+      ? [
+          {
+            at: time,
+            event,
+            reason: typeof reason === "string" ? reason.trim() : "",
+            decision: typeof decision === "string" ? decision : "",
+          },
+        ]
       : [];
   });
 };
@@ -119,6 +131,8 @@ const countsIn = (
   const runs = gates.filter((entry) => inWindow(Date.parse(entry.at)));
   const blocks = lines.filter((line) => line.event === "guard_block");
   const overrides = lines.filter((line) => OVERRIDES.has(line.event));
+  const outward = (decision: string): number =>
+    lines.filter((line) => line.event === OUTWARD_EVENT && line.decision === decision).length;
   return {
     blocks: blocks.length,
     saves: blocks.filter((block) =>
@@ -134,6 +148,8 @@ const countsIn = (
     gateFailed: runs.filter((entry) => entry.status === "failed").length,
     gateUnverified: runs.filter((entry) => entry.status === "unverified").length,
     gateMs: runs.reduce((sum, entry) => sum + (entry.durationMs ?? 0), 0),
+    outwardAsked: outward("asked"),
+    outwardApproved: outward("approved"),
   };
 };
 

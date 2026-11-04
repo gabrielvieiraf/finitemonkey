@@ -221,7 +221,7 @@ const gate = (repo: Repo, spawned: string[] = []) => {
 };
 
 describe("detectors in the quality gate", () => {
-  it("blocks when active and stays silent in shadow, the default", () => {
+  it("blocks when active, as at the default level, and stays silent in shadow at level light", () => {
     const repo = makeRepo({ "package.json": manifest({}), ".finitemonkey/policy.yml": ACTIVE });
     repos.push(repo);
     repo.write("package.json", manifest({ leftpad: "1" }));
@@ -229,6 +229,8 @@ describe("detectors in the quality gate", () => {
     assert.equal(active.status, "failed");
     assert.ok(active.notes.some((item) => item.key === "gate.quality.unused_dependency"));
     repo.write(".finitemonkey/policy.yml", "guards:\n  quality: active\n");
+    assert.equal(gate(repo).status, "failed");
+    repo.write(".finitemonkey/policy.yml", "level: light\nguards:\n  quality: active\n");
     const shadow = gate(repo);
     assert.equal(shadow.status, "passed");
     assert.ok(!shadow.notes.some((item) => item.key === "gate.quality.unused_dependency"));

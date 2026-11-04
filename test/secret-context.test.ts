@@ -46,16 +46,18 @@ describe("secret-context detection", () => {
 });
 
 describe("secret-context hook", () => {
-  it("a password literal in a config file is recorded in shadow without the value and blocked when active", async () => {
+  it("a password literal in a config file is blocked at the default level and recorded without the value at level light", async () => {
     const repo = tempRepo();
     try {
       const call = writeFile(repo.root, "config/db.yml", 'password: "hunter2"\n');
+      assert.equal((await hook(secretContextPreToolUse, "PreToolUse", repo.root, call)).kind, "block");
+      write(repo.root, ".finitemonkey/policy.yml", "level: light\n");
       const shadow = await hook(secretContextPreToolUse, "PreToolUse", repo.root, call);
       assert.equal(shadow.kind, "allow");
       const [logged] = shadows(repo.root);
       assert.deepEqual(logged?.["findings"], [{ name: "password", file: "config/db.yml", line: 1 }]);
       assert.ok(!readFileSync(join(repo.root, ".finitemonkey", "log.jsonl"), "utf8").includes("hunter2"));
-      write(repo.root, ".finitemonkey/policy.yml", "guards:\n  secret-context: active\n");
+      write(repo.root, ".finitemonkey/policy.yml", "level: light\nguards:\n  secret-context: active\n");
       const active = await hook(secretContextPreToolUse, "PreToolUse", repo.root, call);
       assert.equal(active.kind, "block");
       const placeholder = writeFile(repo.root, "config/db.yml", 'password: "changeme"\n');

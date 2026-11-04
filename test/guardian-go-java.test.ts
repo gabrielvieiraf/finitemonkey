@@ -3,7 +3,7 @@ import { after, describe, it } from "node:test";
 
 import { findExisting } from "../src/guardian/existing.js";
 import { roleOf } from "../src/guardian/roles.js";
-import { goImports } from "../src/guardian/roles-jvm-go.js";
+import { goImports, javaImports } from "../src/guardian/roles-jvm-go.js";
 import { parseManifest } from "../src/inventory/dependencies.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, type Repo, repoRuntime } from "./repo.js";
@@ -100,6 +100,50 @@ describe("reuse roles for Go and Java", () => {
     assert.deepEqual(
       findExisting(repoRuntime(), fmPaths(repo.root)).map((item) => [item.kind, item.added, item.existing]),
       [["dependency", "org.apache.httpcomponents.client5:httpclient5", "com.squareup.okhttp3:okhttp"]],
+    );
+  });
+  it("maps Java and Kotlin imports to their Maven artifacts, longest package first", () => {
+    const java = [
+      "package shop;",
+      "",
+      "import okhttp3.OkHttpClient;",
+      "import static org.junit.jupiter.api.Assertions.assertEquals;",
+      "import org.hibernate.validator.constraints.Length;",
+      "import org.hibernate.Session;",
+      "import java.util.List;",
+    ].join("\n");
+    assert.deepEqual(javaImports(java), [
+      "com.squareup.okhttp3:okhttp",
+      "org.junit.jupiter:junit-jupiter",
+      "org.hibernate.validator:hibernate-validator",
+      "org.hibernate.orm:hibernate-core",
+    ]);
+    assert.deepEqual(javaImports("import retrofit2.Retrofit\n"), ["com.squareup.retrofit2:retrofit"]);
+  });
+
+  it("reports a second HTTP client in Java found by import when no dependency was added", () => {
+    const pom =
+      "<project><dependencies><dependency><groupId>com.squareup.okhttp3</groupId><artifactId>okhttp</artifactId></dependency></dependencies></project>\n";
+    const repo = makeRepo({
+      "pom.xml": pom,
+      "src/main/java/shop/Api.java": "package shop;\n\nimport okhttp3.OkHttpClient;\n\nclass Api {}\n",
+      "src/main/java/shop/Plans.java": "package shop;\n\nimport java.util.List;\n\nclass Plans {}\n",
+    });
+    repos.push(repo);
+    repo.write(
+      "src/main/java/shop/Fetch.java",
+      "package shop;\n\nimport org.apache.hc.client5.http.classic.HttpClient;\n\nclass Fetch {}\n",
+    );
+    assert.deepEqual(
+      findExisting(repoRuntime(), fmPaths(repo.root)).map((item) => [item.kind, item.added, item.existing, item.role]),
+      [
+        [
+          "import",
+          "src/main/java/shop/Fetch.java (org.apache.httpcomponents.client5:httpclient5)",
+          "src/main/java/shop/Api.java",
+          "http client",
+        ],
+      ],
     );
   });
 });

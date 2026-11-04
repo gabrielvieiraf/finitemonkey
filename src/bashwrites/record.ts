@@ -1,5 +1,6 @@
 import { nowMs } from "../core/clock.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
+import { boundedRuntime } from "../hooks/bounded-runtime.js";
 import { textField, toolInput, toolName } from "../hooks/fields.js";
 import type { HookHandler, HookInput } from "../hooks/handlers.js";
 import { baseOf, record, scopeOf, type SignalScope } from "../signals/context.js";
@@ -11,6 +12,10 @@ import { addedHashes, changedPaths, type PathMark, takeSnapshot, type TreeSnapsh
 export const SHELL_WRITERS = new Set(["Bash", "PowerShell"]);
 export const MAX_RECORDED_FILES = 200;
 const SNAPSHOT_PREFIX = "bash-before-";
+export const SNAPSHOT_BUDGET_MS = 1000;
+
+const budgeted = (input: HookInput): HookInput["runtime"] =>
+  boundedRuntime(input.runtime, nowMs(input.runtime) + SNAPSHOT_BUDGET_MS);
 
 const allow = { kind: "allow" } as const;
 
@@ -70,7 +75,7 @@ export const bashSnapshot: HookHandler = (input) => {
   const scope = scopeOf(input);
   if (scope === undefined) return allow;
   pruneStale(input, scope.paths);
-  const snapshot = takeSnapshot(input.runtime, scope.paths.root, true);
+  const snapshot = takeSnapshot(budgeted(input), scope.paths.root, true);
   if (snapshot !== undefined)
     input.runtime.writeText(
       snapshotFile(scope.paths, input),
@@ -104,7 +109,7 @@ export const bashWriteRecorder: HookHandler = (input) => {
   const scope = scopeOf(input);
   if (scope === undefined) return allow;
   const before = readSnapshot(input, scope);
-  const after = before === undefined ? undefined : takeSnapshot(input.runtime, scope.paths.root, false);
+  const after = before === undefined ? undefined : takeSnapshot(budgeted(input), scope.paths.root, false);
   if (before === undefined || after === undefined) return allow;
   const changed = changedPaths(before, after).slice(0, MAX_RECORDED_FILES);
   const present = changed.filter((path) => (after.marks[path]?.size ?? -1) >= 0);

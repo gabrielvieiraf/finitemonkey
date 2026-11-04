@@ -129,6 +129,13 @@
               "type": "string"
             }
           },
+          "proposalTest": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed"
+            ]
+          },
           "hunks": {
             "type": "array",
             "items": {
@@ -375,6 +382,12 @@
     },
     "reportPath": {
       "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

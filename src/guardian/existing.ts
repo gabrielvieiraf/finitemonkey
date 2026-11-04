@@ -2,10 +2,10 @@ import { toAbsolutePath } from "../core/brand.js";
 import type { Runtime } from "../core/runtime.js";
 import { fileAt, type Git, gitAt, untracked } from "../gate/git.js";
 import { parseManifest } from "../inventory/dependencies.js";
-import { isCode } from "../map/defs.js";
+import { isCode, SKIPPED_PATH } from "../map/defs.js";
 import type { FmPaths } from "../task/paths.js";
 import { importedPackages, roleOf, stemOf } from "./roles.js";
-import { goImports } from "./roles-jvm-go.js";
+import { goImports, javaImports, JVM_SOURCE } from "./roles-jvm-go.js";
 
 export const MATCH_KINDS = ["dependency", "import", "name"] as const;
 export type MatchKind = (typeof MATCH_KINDS)[number];
@@ -33,6 +33,8 @@ export interface DiffSnapshot {
 
 const MANIFEST = /(^|\/)(package\.json|requirements\.txt|go\.mod|pom\.xml|build\.gradle(\.kts)?)$/;
 const MAX_FILES = 2000;
+
+const isSource = (file: string): boolean => isCode(file) || (JVM_SOURCE.test(file) && !SKIPPED_PATH.test(file));
 
 const lines = (text: string | undefined): readonly string[] =>
   (text ?? "")
@@ -80,7 +82,7 @@ export const diffSnapshot = (
     ...manifestsAt(runtime, git, paths.root, base, manifests),
     addedFiles,
     changedFiles,
-    otherFiles: tracked.filter((file) => isCode(file) && !added.has(file)).slice(0, MAX_FILES),
+    otherFiles: tracked.filter((file) => isSource(file) && !added.has(file)).slice(0, MAX_FILES),
   };
 };
 
@@ -96,7 +98,8 @@ const dependencyMatches = (snap: DiffSnapshot): readonly ExistingMatch[] =>
 const importsIn = (runtime: Pick<Runtime, "readText">, root: FmPaths["root"], file: string): readonly string[] => {
   const text = runtime.readText(toAbsolutePath(file, root));
   if (!text.ok) return [];
-  return file.endsWith(".go") ? goImports(text.value) : importedPackages(text.value);
+  if (file.endsWith(".go")) return goImports(text.value);
+  return JVM_SOURCE.test(file) ? javaImports(text.value) : importedPackages(text.value);
 };
 
 const importMatches = (
@@ -104,7 +107,7 @@ const importMatches = (
   root: FmPaths["root"],
   snap: DiffSnapshot,
 ): readonly ExistingMatch[] => {
-  const used = snap.addedFiles.filter(isCode).flatMap((file) =>
+  const used = snap.addedFiles.filter(isSource).flatMap((file) =>
     importsIn(runtime, root, file).flatMap((name) => {
       const role = roleOf(name);
       return role === undefined ? [] : [{ file, name, role }];

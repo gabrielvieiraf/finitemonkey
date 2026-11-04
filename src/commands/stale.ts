@@ -9,7 +9,11 @@ import { inGuardianRepo } from "./guardian.js";
 import type { CommandSpec } from "./types.js";
 
 const truthOf = (ctx: Ctx, claim: StaleClaim): string => {
-  const truth = ctx.t(`stale.truth.${claim.truth}`, { subject: claim.subject, detail: claim.detail });
+  const params = { subject: claim.subject, detail: claim.detail };
+  const truth =
+    claim.truth === "version_published" && claim.subject === "registry"
+      ? ctx.t("stale.truth.version_on_registry", params)
+      : ctx.t(`stale.truth.${claim.truth}`, params);
   return claim.truth === "issue_closed" && claim.detail !== ""
     ? `${truth} ${ctx.t("stale.closed_by", { prs: claim.detail })}`
     : truth;

@@ -44,12 +44,14 @@ const logOf = (repo: Repo): string => {
 };
 
 describe("bash writes: the decision hold", () => {
-  it("holds sed -i on a decision record in active mode and only logs it in shadow", async () => {
+  it("holds sed -i on a decision record at the default level and only logs it at level light", async () => {
     const repo = repoWith({ "docs/plan/02-decision-queue.md": RECORD });
+    assert.equal(denied(await bash(repo, SED, "t0").pre()), true);
+    repo.write(".finitemonkey/policy.yml", "level: light\n");
     const shadow = await bash(repo, SED, "t1").pre();
     assert.equal(denied(shadow), false);
     assert.match(logOf(repo), /"event":"guard_shadow","guard":"bash-writes"/);
-    repo.write(".finitemonkey/policy.yml", policyWith({ "bash-writes": "active" }));
+    repo.write(".finitemonkey/policy.yml", `level: light\n${policyWith({ "bash-writes": "active" })}`);
     assert.equal(denied(await bash(repo, SED, "t2").pre()), true);
   });
 

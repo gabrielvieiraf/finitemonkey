@@ -6,6 +6,8 @@ import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
 import type { YamlValue } from "../core/yaml/scalar.js";
 import { stringifyYaml } from "../core/yaml/write.js";
+import { readEntries } from "../judge/store.js";
+import { BOOK_LEVEL_REF, type JudgeEntry } from "../judge/types.js";
 import type { FmPaths } from "../task/paths.js";
 import {
   type Aliases,
@@ -56,7 +58,7 @@ const entryOf = (raw: unknown): ConceptEntry | undefined => {
   };
 };
 
-const aliasesOf = (raw: unknown): Aliases => {
+export const aliasesOf = (raw: unknown): Aliases => {
   if (!isRecord(raw)) return {};
   return Object.fromEntries(
     Object.entries(raw).flatMap(([from, to]): readonly (readonly [string, ConceptId | null])[] => {
@@ -84,7 +86,33 @@ export const conceptsOf = (raw: unknown, aliases: Aliases): Readonly<Record<Conc
   return merged;
 };
 
-export const readBook = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Book => {
+export const LEVEL_PREFIX = "level:";
+
+export const loggedLevels = (
+  entries: readonly JudgeEntry[],
+  aliases: Aliases,
+): Readonly<Record<ConceptId, ConceptEntry>> => {
+  const merged: Record<ConceptId, ConceptEntry> = {};
+  for (const entry of entries) {
+    if (entry.type !== "evidence" || entry.ref !== BOOK_LEVEL_REF || !entry.source?.startsWith(LEVEL_PREFIX)) continue;
+    const id = parseConcept(entry.concepts[0], aliases);
+    const level = parseConceptLevel(entry.source.slice(LEVEL_PREFIX.length));
+    if (id !== undefined && level !== undefined) merged[id] = stronger(merged[id], { level, updatedAt: entry.at });
+  }
+  return merged;
+};
+
+const withLogged = (book: Book, logged: Readonly<Record<ConceptId, ConceptEntry>>): Book => {
+  const concepts: Record<ConceptId, ConceptEntry> = {};
+  for (const id of bookConcepts(book)) {
+    const entry = book.concepts[id];
+    if (entry !== undefined) concepts[id] = entry;
+  }
+  for (const [id, entry] of Object.entries(logged)) concepts[id] = stronger(concepts[id], entry);
+  return { ...book, concepts };
+};
+
+export const readBookFile = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Book => {
   const text = runtime.readText(bookPath(paths));
   const parsed = text.ok ? parseYaml(text.value) : undefined;
   if (parsed?.ok !== true || !isRecord(parsed.value)) return EMPTY_BOOK;
@@ -96,6 +124,12 @@ export const readBook = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Bo
     alarmGreen: integer(root["alarm_green"], -1),
     ...(Object.keys(aliases).length === 0 ? {} : { aliases }),
   };
+};
+
+export const readBook = (runtime: Pick<Runtime, "readText">, paths: FmPaths): Book => {
+  const book = readBookFile(runtime, paths);
+  const logged = loggedLevels(readEntries(runtime, paths), book.aliases ?? {});
+  return Object.keys(logged).length === 0 ? book : withLogged(book, logged);
 };
 
 const entryYaml = (entry: ConceptEntry): YamlValue => ({

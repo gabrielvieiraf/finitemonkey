@@ -128,6 +128,27 @@ describe("gate band and pane", () => {
     ).toBeDefined();
   });
 
+  test("the band draws the trajectory sparkline next to the domain when the status has recent weeks", async ($, on) => {
+    const { clock, statuses } = world(on, ["terminal"]);
+    const withTrajectory = JSON.parse(status("green", false, 0)) as { data: Record<string, unknown> };
+    withTrajectory.data["trajectory"] = {
+      domain: "backend",
+      week: "2026-W43",
+      band: "proximal band, prediction or check right",
+      ricochet: null,
+      recent: [0.1, 0.5, 1],
+    };
+    statuses.push(JSON.stringify(withTrajectory));
+    await start($, clock);
+    const band = await $.ui.mount({ ...BAND, surface: "terminal" });
+    expect(
+      await band.find({
+        type: "Text",
+        text: "FM  gate ✓ 2/2 · contract c7f2 · trajectory backend ▂▅█: proximal band, prediction or check right, no ricochet",
+      }),
+    ).toBeDefined();
+  });
+
   test("the band button opens the pane, which lists what is not verified with the command to verify it", async ($, on) => {
     const { clock, statuses, opened } = world(on, ["terminal"]);
     statuses.push(status("red", true, 2));

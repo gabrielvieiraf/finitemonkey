@@ -19,7 +19,7 @@ export const DECISION_RECORD_FEATURE = "decision-record";
 export const RECORD_DIR = "decision-records";
 export const REASONS_FILE = "decision-reasons.jsonl";
 export const RECORD_SCHEMA = "finitemonkey/decision-record@1";
-export const CHANGE_CLASSES = ["dependency", "vendor", "architecture"] as const;
+export const CHANGE_CLASSES = ["dependency", "vendor", "architecture", "contract"] as const;
 
 export type ChangeClass = (typeof CHANGE_CLASSES)[number];
 

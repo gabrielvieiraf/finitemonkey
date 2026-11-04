@@ -18,7 +18,7 @@ import {
 } from "./sources.js";
 
 export const RECAP_SCHEMA = "finitemonkey/recap@1";
-const SHIPPED_TYPES: ReadonlySet<string> = new Set(["feat", "fix", "perf"]);
+export const SHIPPED_TYPES: ReadonlySet<string> = new Set(["feat", "fix", "perf"]);
 
 export interface FeatureState {
   readonly id: string;
@@ -45,7 +45,7 @@ export interface RecapReport {
   readonly staleDocs: readonly StaleClaim[];
 }
 
-type RecapRuntime = Pick<Runtime, "git" | "readText" | "listDir" | "homeDir" | "now">;
+type RecapRuntime = Pick<Runtime, "git" | "readText" | "exec" | "listDir" | "homeDir" | "now">;
 
 const escape = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
