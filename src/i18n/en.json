@@ -3158,5 +3158,7 @@
   "mod.view.no_status": "finitemonkey: no gate status in this folder",
   "command.mod_labels.summary": "Print the mod pane labels in the detected language",
   "mod.labels.summary": "labels in {lang} (from {source})",
-  "mod.cost.tokens": "contract {task}: {tokens} tokens in {requests, plural, one {# request} other {# requests}}, {attempts, plural, one {# attempt} other {# attempts}}"
+  "mod.cost.tokens": "contract {task}: {tokens} tokens in {requests, plural, one {# request} other {# requests}}, {attempts, plural, one {# attempt} other {# attempts}}",
+  "git.error.merge_accept_refused": "Could not record the dropped lines: {detail}",
+  "git.merge.accepted": "{count, plural, one {# dropped line recorded} other {# dropped lines recorded}} in {file} with reason {reason}; review them in the diff before committing."
 }

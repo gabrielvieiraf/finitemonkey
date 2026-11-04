@@ -3158,5 +3158,7 @@
   "mod.view.no_status": "finitemonkey: no hay estado de la compuerta en esta carpeta",
   "command.mod_labels.summary": "Muestra las etiquetas del panel del mod en el idioma detectado",
   "mod.labels.summary": "etiquetas en {lang} (desde {source})",
-  "mod.cost.tokens": "contrato {task}: {tokens} tokens en {requests, plural, one {# solicitud} other {# solicitudes}}, {attempts, plural, one {# intento} other {# intentos}}"
+  "mod.cost.tokens": "contrato {task}: {tokens} tokens en {requests, plural, one {# solicitud} other {# solicitudes}}, {attempts, plural, one {# intento} other {# intentos}}",
+  "git.error.merge_accept_refused": "No se pudieron registrar las líneas descartadas: {detail}",
+  "git.merge.accepted": "{count, plural, one {# línea descartada registrada} other {# líneas descartadas registradas}} en {file} con el motivo {reason}; revísalas en el diff antes del commit."
 }

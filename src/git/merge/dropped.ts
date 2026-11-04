@@ -19,6 +19,11 @@ const ALIASES: Readonly<Record<string, string>> = {
   human_decision: "decisao_humana",
 };
 
+export const reasonOf = (value: string): string | undefined => {
+  const reason = ALIASES[value] ?? value;
+  return REASONS.has(reason) ? reason : undefined;
+};
+
 const sideOf = (value: string | undefined): Side | undefined =>
   value === "ours" || value === "theirs" ? value : undefined;
 

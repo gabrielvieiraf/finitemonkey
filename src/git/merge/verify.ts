@@ -4,6 +4,7 @@ import { configMap, loadProjectConfig } from "../project-config.js";
 import type { Repo } from "../repo.js";
 import { isDropped, loadDropped } from "./dropped.js";
 import { generatedPaths, verifyGenerated } from "./generated.js";
+import { withoutGeneratedBlocks } from "./generated-blocks.js";
 import { blobText, resolveMergeInputs, sideDiff } from "./inputs.js";
 import type { FileDiff, Finding, MergeInputs } from "./types.js";
 import { type FilePair, resultPathOf, type VerifyContext, verifyFile } from "./verify-file.js";
@@ -102,7 +103,12 @@ export const verifyMerge = (runtime: Runtime, repo: Repo, options: VerifyOptions
   const regenerated = verifyGenerated(runtime, repo, inputs.value, [...generated], generators);
   if (!regenerated.ok) return failed(regenerated.error, inputs.value);
   const all = [
-    ...pairs.filter((pair) => !generated.has(pair.key)).flatMap((pair) => verifyFile(context, pair)),
+    ...withoutGeneratedBlocks(
+      runtime,
+      repo,
+      inputs.value,
+      pairs.filter((pair) => !generated.has(pair.key)).flatMap((pair) => verifyFile(context, pair)),
+    ),
     ...regenerated.value,
   ];
   const open = [...dropped.value.invalid, ...all.filter((item) => !isDropped(item, dropped.value.items))];

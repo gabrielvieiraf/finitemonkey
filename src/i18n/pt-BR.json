@@ -3158,5 +3158,7 @@
   "mod.view.no_status": "finitemonkey: nenhum estado do portão nesta pasta",
   "command.mod_labels.summary": "Mostra os rótulos do painel do mod no idioma detectado",
   "mod.labels.summary": "rótulos em {lang} (via {source})",
-  "mod.cost.tokens": "contrato {task}: {tokens} tokens em {requests, plural, one {# requisição} other {# requisições}}, {attempts, plural, one {# tentativa} other {# tentativas}}"
+  "mod.cost.tokens": "contrato {task}: {tokens} tokens em {requests, plural, one {# requisição} other {# requisições}}, {attempts, plural, one {# tentativa} other {# tentativas}}",
+  "git.error.merge_accept_refused": "Não deu para registrar as linhas descartadas: {detail}",
+  "git.merge.accepted": "{count, plural, one {# linha descartada registrada} other {# linhas descartadas registradas}} em {file} com o motivo {reason}; revise no diff antes do commit."
 }
