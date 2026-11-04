@@ -16,7 +16,6 @@ var isEntryPoint = (moduleUrl, argv1, realpath, platform) => {
 // src/core/node-runtime.ts
 import { spawnSync as spawnSync4 } from "node:child_process";
 import { readFileSync as readFileSync2, realpathSync } from "node:fs";
-import { homedir } from "node:os";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // src/core/ancestry.ts
@@ -484,6 +483,16 @@ var nodeGitWith = (args2, cwd, options2) => {
   };
 };
 
+// src/core/node-home.ts
+import { homedir, tmpdir } from "node:os";
+var safeHomeDir = (resolve5 = homedir, fallback2 = tmpdir) => {
+  try {
+    return resolve5();
+  } catch {
+    return fallback2();
+  }
+};
+
 // src/core/node-system.ts
 import { execFileSync as execFileSync2 } from "node:child_process";
 import { copyFileSync, lstatSync, mkdirSync as mkdirSync3, readdirSync as readdirSync2, readlinkSync } from "node:fs";
@@ -633,7 +642,7 @@ var nodeRuntime = () => ({
   execSelf: (args2, cwd, timeoutMs) => nodeExec({ command: process.execPath, args: [SELF_PATH, ...args2], cwd, timeoutMs }),
   gitWith: nodeGitWith,
   realpath: nodeRealpath,
-  homeDir: homedir,
+  homeDir: () => safeHomeDir(),
   systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale,
   processes: nodeProcesses,
   ancestors: currentAncestors,

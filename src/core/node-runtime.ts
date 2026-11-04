@@ -1,6 +1,5 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
-import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { currentAncestors } from "./ancestry.js";
@@ -19,6 +18,7 @@ import {
   nodeWriteText,
 } from "./node-fs.js";
 import { nodeGit, nodeGitLines, nodeGitWith } from "./node-git.js";
+import { safeHomeDir } from "./node-home.js";
 import { nodeAlive, nodeCopyFile, nodeExclusiveBytes, nodeProcesses, nodeSignal } from "./node-system.js";
 import { accept, type Parsed, reject } from "./parsed.js";
 import type { Probe, Runtime } from "./runtime.js";
@@ -101,7 +101,7 @@ export const nodeRuntime = (): Runtime => ({
     nodeExec({ command: process.execPath, args: [SELF_PATH, ...args], cwd, timeoutMs }),
   gitWith: nodeGitWith,
   realpath: nodeRealpath,
-  homeDir: homedir,
+  homeDir: () => safeHomeDir(),
   systemLocale: () => Intl.DateTimeFormat().resolvedOptions().locale,
   processes: nodeProcesses,
   ancestors: currentAncestors,
