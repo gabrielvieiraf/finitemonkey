@@ -60,6 +60,14 @@ export interface KindCost {
   readonly durationMs: number;
 }
 
+export interface TokenCount {
+  readonly input: number;
+  readonly output: number;
+  readonly cacheRead: number;
+  readonly cacheWrite: number;
+  readonly total: number;
+}
+
 export interface CostSummary {
   readonly schema: typeof MOD_COST_SCHEMA;
   readonly task: string;
@@ -71,6 +79,7 @@ export interface CostSummary {
   readonly build: PartCost;
   readonly verification: VerificationCost;
   readonly byKind: readonly KindCost[];
+  readonly tokens: TokenCount;
 }
 
 export const costFile = (paths: FmPaths): AbsolutePath => toAbsolutePath(join(paths.dir, COST_FILE));
@@ -172,6 +181,19 @@ export const splitCost = (
   };
 };
 
+const tokenTotal = (step: Step): number => step.input + step.output + step.cacheRead + step.cacheWrite;
+
+export const tokensOf = (lines: readonly Step[]): TokenCount => {
+  const add = (pick: (step: Step) => number): number => lines.reduce((total, line) => total + pick(line), 0);
+  return {
+    input: add((line) => line.input),
+    output: add((line) => line.output),
+    cacheRead: add((line) => line.cacheRead),
+    cacheWrite: add((line) => line.cacheWrite),
+    total: add(tokenTotal),
+  };
+};
+
 const ledgerOf = (runtime: Runtime, paths: FmPaths, task: string) => readLedger(runtime, paths.evidence(task));
 
 export const byKindOf = (lines: readonly CostLine[]): readonly KindCost[] =>
@@ -181,7 +203,7 @@ export const byKindOf = (lines: readonly CostLine[]): readonly KindCost[] =>
       kind,
       usd: sum(own),
       calls: own.length,
-      tokens: own.reduce((total, line) => total + line.input + line.output + line.cacheRead + line.cacheWrite, 0),
+      tokens: own.reduce((total, line) => total + tokenTotal(line), 0),
       durationMs: own.reduce((total, line) => total + (line.durationMs ?? 0), 0),
     };
   });
@@ -207,5 +229,6 @@ export const costOf = (runtime: Runtime, paths: FmPaths): CostSummary => {
     }),
     ...splitCost(lines, gateMs),
     byKind: byKindOf(lines),
+    tokens: tokensOf(lines),
   };
 };

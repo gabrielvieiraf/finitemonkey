@@ -17,6 +17,7 @@ import { boardText, boardView, FRONTS_PANE, type FrontSession, frontsTree, openN
 import { bandTree, COST_PANE, costTree, GATE_PANE, paneTree } from "./gate-view.js";
 import { judgeNow, renderJudge } from "./judge-hooks.js";
 import { JUDGE_PANE } from "./judge-view.js";
+import { label } from "./labels.js";
 import { memory } from "./memory.js";
 import { bandLine, parseStatus, statusText, turnLine } from "./status.js";
 import { renderTrajectory, trajectoryNow } from "./trajectory-hooks.js";
@@ -50,11 +51,11 @@ export async function registerGateCommand($: ModApi): Promise<void> {
   try {
     await $.command.register({
       name: GATE_COMMAND,
-      description: "Finite Monkey: gate state, contract and what is not verified",
+      description: label("mod.view.command_description"),
       immediate: true,
     });
   } catch {
-    $.ui.log("finitemonkey: /fm is taken by another command; the gate panel opens from the band");
+    $.ui.log(label("mod.view.command_taken"));
   }
 }
 
@@ -106,7 +107,7 @@ export async function renderPane($: ModApi, e: RenderInput, next: Next<"ui.rende
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
   const view = memory.view;
-  if (view === undefined) return elements.Text({ key: "fm-loading", children: ["finitemonkey: reading the gate…"] });
+  if (view === undefined) return elements.Text({ key: "fm-loading", children: [label("mod.view.loading")] });
   return paneTree(elements, view, { runGate: () => runGateNow($), close: () => closePane($) });
 }
 
@@ -114,10 +115,10 @@ async function costNow($: ModApi): Promise<CommandRunResult> {
   const lines = await refreshCost($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
-    await $.ui.open({ id: COST_PANE, title: "Finite Monkey · cost" });
+    await $.ui.open({ id: COST_PANE, title: label("mod.view.cost_title") });
     return {};
   }
-  return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
+  return { text: lines.length === 0 ? `finitemonkey: ${label("mod.view.no_cost")}` : lines.join("\n") };
 }
 
 function showResume($: ModApi, session: FrontSession): void {
@@ -131,15 +132,15 @@ async function frontsNow($: ModApi): Promise<CommandRunResult> {
   memory.boardNote = undefined;
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
-    await $.ui.open({ id: FRONTS_PANE, title: "Finite Monkey · fronts" });
+    await $.ui.open({ id: FRONTS_PANE, title: label("mod.view.fronts_title") });
     return {};
   }
-  return { text: memory.board.lines.length === 0 ? "finitemonkey: no worktrees found" : boardText(memory.board) };
+  return { text: memory.board.lines.length === 0 ? label("mod.view.no_worktrees") : boardText(memory.board) };
 }
 
 async function handoffNow($: ModApi): Promise<CommandRunResult> {
   const brief = await readHandoff($);
-  if (brief === undefined) return { text: "finitemonkey: no handoff in this folder" };
+  if (brief === undefined) return { text: label("mod.view.no_handoff") };
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) await $.session.compact({ instructions: brief });
   return { text: brief };
@@ -161,7 +162,7 @@ export async function runGateCommand($: ModApi, e: CommandRunInput): Promise<Com
     return {};
   }
   const view = memory.view;
-  return { text: view === undefined ? "finitemonkey: no gate status in this folder" : statusText(view) };
+  return { text: view === undefined ? label("mod.view.no_status") : statusText(view) };
 }
 
 export function withTurnLine(e: TurnCompleteInput, result: TurnCompleteResult): TurnCompleteResult {

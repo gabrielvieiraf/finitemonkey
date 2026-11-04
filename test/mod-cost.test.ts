@@ -37,7 +37,10 @@ describe("cost per contract and arm", () => {
     assert.equal(cost.byArm.length, 1);
     assert.match(cost.byArm[0]?.arm ?? "", /^clarify=(off|shadow|active)$/);
     assert.ok(Math.abs((cost.byArm[0]?.usd ?? 0) - expected) < 1e-9);
-    assert.deepEqual(statusOf(runtime, paths).cost, { usd: cost.usd, requests: 2 });
+    const status = statusOf(runtime, paths, { ANTHROPIC_API_KEY: "set" });
+    assert.deepEqual(status.cost, { usd: cost.usd, requests: 2 });
+    assert.equal(status.costTokens, 7080);
+    assert.equal(status.billing, "api");
   });
 
   it("the loop count leaves the status while the alert budget mutes the fourth-attempt class", () => {

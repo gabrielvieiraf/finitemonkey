@@ -103,7 +103,7 @@ describe("gate band and pane", () => {
     expect(
       await after.find({
         type: "Text",
-        text: "FM  gate ✓ 1/2 · 1 not verified · contract c7f2 · evidence 1 edits old",
+        text: "FM  gate ✓ 1/2 · 1 not verified · contract c7f2 · evidence 1 edit old",
       }),
     ).toBeDefined();
   });

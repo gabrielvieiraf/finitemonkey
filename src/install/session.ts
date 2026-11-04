@@ -96,7 +96,7 @@ const selfBundle = (ctx: Ctx): string | undefined => {
   return text.ok ? text.value : undefined;
 };
 
-const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "claude-settings"]);
+const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "conversation", "claude-settings"]);
 
 export const planInputFor = (
   ctx: Ctx,
