@@ -1,6 +1,6 @@
 {
   "schema": "finitemonkey/evidence@1",
-  "version": "0.1.0-next.46",
+  "version": "0.1.0-next.47",
   "budget": {
     "fprWarn": 0.05,
     "fprFail": 0.15,
@@ -17,8 +17,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.06,
-      "p95Ms": 0.16,
+      "p50Ms": 0.07,
+      "p95Ms": 0.19,
       "byOrigin": {
         "synthetic": 113,
         "session": 0
@@ -34,8 +34,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.13,
-      "p95Ms": 25.64,
+      "p50Ms": 0.11,
+      "p95Ms": 25.96,
       "byOrigin": {
         "synthetic": 104,
         "session": 0
@@ -51,8 +51,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 10.04,
-      "p95Ms": 55.95,
+      "p50Ms": 10.17,
+      "p95Ms": 54.68,
       "byOrigin": {
         "synthetic": 120,
         "session": 0
@@ -68,8 +68,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.15,
-      "p95Ms": 0.89,
+      "p50Ms": 0.12,
+      "p95Ms": 1.35,
       "byOrigin": {
         "synthetic": 105,
         "session": 0
@@ -85,8 +85,8 @@
       "falseNegatives": 0,
       "fpr": 0,
       "fnr": 0,
-      "p50Ms": 0.13,
-      "p95Ms": 0.39,
+      "p50Ms": 0.11,
+      "p95Ms": 0.34,
       "byOrigin": {
         "synthetic": 108,
         "session": 0

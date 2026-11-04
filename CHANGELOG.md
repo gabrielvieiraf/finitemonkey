@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.1.0-next.47](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.46...v0.1.0-next.47) (2026-11-04)
+
+### Features
+
+* bring in the six pull requests for the remaining 0.1.0 issues ([#447](https://github.com/gabrielvieiraf/finitemonkey/issues/447)) ([1e4333b](https://github.com/gabrielvieiraf/finitemonkey/commit/1e4333b947ec690583a58df4ed68aebefa587937)), closes [#441](https://github.com/gabrielvieiraf/finitemonkey/issues/441) [#364](https://github.com/gabrielvieiraf/finitemonkey/issues/364) [#389](https://github.com/gabrielvieiraf/finitemonkey/issues/389) [#250](https://github.com/gabrielvieiraf/finitemonkey/issues/250) [#442](https://github.com/gabrielvieiraf/finitemonkey/issues/442) [#443](https://github.com/gabrielvieiraf/finitemonkey/issues/443) [#381](https://github.com/gabrielvieiraf/finitemonkey/issues/381) [#391](https://github.com/gabrielvieiraf/finitemonkey/issues/391) [#444](https://github.com/gabrielvieiraf/finitemonkey/issues/444) [#368](https://github.com/gabrielvieiraf/finitemonkey/issues/368) [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#375](https://github.com/gabrielvieiraf/finitemonkey/issues/375) [#377](https://github.com/gabrielvieiraf/finitemonkey/issues/377) [#382](https://github.com/gabrielvieiraf/finitemonkey/issues/382) [#445](https://github.com/gabrielvieiraf/finitemonkey/issues/445) [#378](https://github.com/gabrielvieiraf/finitemonkey/issues/378) [#373](https://github.com/gabrielvieiraf/finitemonkey/issues/373) [#371](https://github.com/gabrielvieiraf/finitemonkey/issues/371) [#386](https://github.com/gabrielvieiraf/finitemonkey/issues/386) [#446](https://github.com/gabrielvieiraf/finitemonkey/issues/446) [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#376](https://github.com/gabrielvieiraf/finitemonkey/issues/376) [#393](https://github.com/gabrielvieiraf/finitemonkey/issues/393) [#446](https://github.com/gabrielvieiraf/finitemonkey/issues/446) [#444](https://github.com/gabrielvieiraf/finitemonkey/issues/444) [#364](https://github.com/gabrielvieiraf/finitemonkey/issues/364) [#368](https://github.com/gabrielvieiraf/finitemonkey/issues/368) [#371](https://github.com/gabrielvieiraf/finitemonkey/issues/371) [#373](https://github.com/gabrielvieiraf/finitemonkey/issues/373) [#376](https://github.com/gabrielvieiraf/finitemonkey/issues/376) [#377](https://github.com/gabrielvieiraf/finitemonkey/issues/377) [#381](https://github.com/gabrielvieiraf/finitemonkey/issues/381) [#382](https://github.com/gabrielvieiraf/finitemonkey/issues/382) [#389](https://github.com/gabrielvieiraf/finitemonkey/issues/389) [#391](https://github.com/gabrielvieiraf/finitemonkey/issues/391) [#393](https://github.com/gabrielvieiraf/finitemonkey/issues/393) [#250](https://github.com/gabrielvieiraf/finitemonkey/issues/250) [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#375](https://github.com/gabrielvieiraf/finitemonkey/issues/375)
+* **guardian:** java imports in reuse, monthly cost per fact from the cost model ([#449](https://github.com/gabrielvieiraf/finitemonkey/issues/449)) ([1196efa](https://github.com/gabrielvieiraf/finitemonkey/commit/1196efac582bb10feaaa3aab362140f88e6e1def)), closes [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#432](https://github.com/gabrielvieiraf/finitemonkey/issues/432) [#447](https://github.com/gabrielvieiraf/finitemonkey/issues/447) [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#375](https://github.com/gabrielvieiraf/finitemonkey/issues/375) [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#375](https://github.com/gabrielvieiraf/finitemonkey/issues/375) [#361](https://github.com/gabrielvieiraf/finitemonkey/issues/361) [#375](https://github.com/gabrielvieiraf/finitemonkey/issues/375)
+* **site:** animate essay figures, justify the text and add an animated logo ([#456](https://github.com/gabrielvieiraf/finitemonkey/issues/456)) ([fe0f69e](https://github.com/gabrielvieiraf/finitemonkey/commit/fe0f69e69bed81f2902f2f834ee1bd410098dc8a)), closes [#454](https://github.com/gabrielvieiraf/finitemonkey/issues/454)
+* **site:** publish both essays as article pages in en, pt-BR and es ([#452](https://github.com/gabrielvieiraf/finitemonkey/issues/452)) ([90db233](https://github.com/gabrielvieiraf/finitemonkey/commit/90db2339d6ae00e79b34fcd0e617655d664216f2))
+
+### Bug Fixes
+
+* **gate:** do not hold a stop the gate cannot check when the session changed nothing ([#458](https://github.com/gabrielvieiraf/finitemonkey/issues/458)) ([14464f6](https://github.com/gabrielvieiraf/finitemonkey/commit/14464f6965f927a05602276f4bb3971a72da417e)), closes [#455](https://github.com/gabrielvieiraf/finitemonkey/issues/455) [#455](https://github.com/gabrielvieiraf/finitemonkey/issues/455)
+* **hooks:** bound git by the hook deadline and let repair calls through ([#455](https://github.com/gabrielvieiraf/finitemonkey/issues/455)) ([7fee412](https://github.com/gabrielvieiraf/finitemonkey/commit/7fee412340ee7251c61ee61347571c759da18d1d))
+* **look:** key the installed browser fixture by its absolute path on Windows ([#448](https://github.com/gabrielvieiraf/finitemonkey/issues/448)) ([e689e42](https://github.com/gabrielvieiraf/finitemonkey/commit/e689e4275eeebbf18e08473daf3437edd980ba51))
+* **trajectory:** draw terminal bands as straight fixed strata like the site chart ([#451](https://github.com/gabrielvieiraf/finitemonkey/issues/451)) ([aba42e0](https://github.com/gabrielvieiraf/finitemonkey/commit/aba42e0778a4494c05bed91e202277156fe916c4))
+
+
+### Evidence
+
+Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.47 over the labeled corpus in [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/tree/v0.1.0-next.47/bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
+
+| Guard | Should block | Should allow | False positives | False negatives | p95 (ms) |
+|---|---|---|---|---|---|
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 26.0 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 54.7 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.4 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.3 |
+
+Cost against plain Claude Code on the same tasks: not measured yet.
+
+Guardian scenarios replayed with `npm run bench:guardian` (bench/guardian/results.json): a false positive is an alert on a scenario that needed none, a false negative is silence on one that needed an alert.
+
+| Scenarios | Needed an alert | Needed none | False positives | False negatives | Exact level |
+|---|---|---|---|---|---|
+| 15 | 11 | 4 | 0/4 (0.0%) | 0/11 (0.0%) | 15/15 |
+
 ## [0.1.0-next.46](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.45...v0.1.0-next.46) (2026-11-03)
 
 ### Features
