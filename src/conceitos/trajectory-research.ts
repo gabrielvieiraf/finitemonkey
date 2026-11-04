@@ -38,10 +38,15 @@ export const withResearch = (
   weeks: readonly string[],
 ): WithResearch => ({
   domains: domains.map((item) => {
-    const mine = marks.filter((mark) => codeDomain(mark.field) === item.domain && weeks.includes(mark.week));
+    const mine = marks.filter((mark) => mark.field === item.domain && weeks.includes(mark.week));
     return item.status === "ok" && mine.length > 0 ? { ...item, research: mine } : item;
   }),
-  outside: marks.filter((mark) => codeDomain(mark.field) === undefined && weeks.includes(mark.week)),
+  outside: marks.filter(
+    (mark) =>
+      codeDomain(mark.field) === undefined &&
+      !domains.some((item) => item.domain === mark.field && item.status === "ok") &&
+      weeks.includes(mark.week),
+  ),
 });
 
 export const RESEARCH_GLYPH: Readonly<Record<ResearchFix, string>> = {
