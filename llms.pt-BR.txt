@@ -34,4 +34,4 @@ Como funciona: a pessoa roda `npx finitemonkey init` uma vez, ou instala o plugi
 - [Como contribuir](https://github.com/gabrielvieiraf/finitemonkey/blob/main/CONTRIBUTING.md) (em inglês)
 - [Política de segurança](https://github.com/gabrielvieiraf/finitemonkey/blob/main/SECURITY.md) (em inglês)
 
-<!-- translation of llms.txt sha256:7dbe691c6cb8 -->
+<!-- translation of llms.txt sha256:4c2370d3fae1 -->

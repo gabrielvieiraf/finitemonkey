@@ -1,6 +1,6 @@
 # Finite Monkey plugin for Claude Code
 
-Infinite monkeys not required. This plugin carries the `fm` command line tool itself (`scripts/finitemonkey.mjs`, the readable, unminified build of the version in `.claude-plugin/plugin.json`). Its hooks run on session start, every prompt, every tool call and every stop, so a task is only "done" when the done contract passes, secrets and destructive git commands are guarded, and the agent cannot rewrite the evidence that judges it.
+Infinite monkeys not required. This plugin carries the `fm` command line tool itself (`scripts/finitemonkey.mjs`, a small launcher, and `scripts/finitemonkey-core.mjs`, the readable, unminified build of the version in `.claude-plugin/plugin.json`). Its hooks run on session start, every prompt, every tool call and every stop, so a task is only "done" when the done contract passes, secrets and destructive git commands are guarded, and the agent cannot rewrite the evidence that judges it.
 
 You do not need to remember any command. Claude uses the skills on its own when the situation fits: `task` when non-trivial work starts, `verify` before claiming something works, `look` after visual changes, and `finish` when the gate blocks a stop. `/finitemonkey:doctor` is an optional shortcut.
 

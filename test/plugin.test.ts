@@ -89,6 +89,7 @@ describe("plugin manifest", () => {
     const text = read(PLUGIN_DIR, "hooks", "hooks.json");
     assert.doesNotMatch(text, /npx|npm |@latest|https?:/);
     assert.equal(read(PLUGIN_DIR, "scripts", "finitemonkey.mjs"), read("dist", "finitemonkey.mjs"));
+    assert.equal(read(PLUGIN_DIR, "scripts", "finitemonkey-core.mjs"), read("dist", "finitemonkey-core.mjs"));
     const skills = walk(join(pluginRoot, "skills")).map((path) => readFileSync(path, "utf8"));
     assert.ok(skills.every((body) => !body.includes("npx")));
   });

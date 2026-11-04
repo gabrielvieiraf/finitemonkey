@@ -191,6 +191,7 @@ export const FOOTPRINT = [
   },
   { id: "deploy", kind: "sends", targets: ["deploy.version_url"], via: "curl" },
   { id: "heavy", kind: "writes", targets: ["~/.finitemonkey/heavy/"] },
+  { id: "compile-cache", kind: "writes", targets: ["~/.finitemonkey/compile-cache/"] },
   {
     id: "instruction-layers",
     kind: "reads",

@@ -103,10 +103,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "La salida completa de los comandos ejecutados con `fm run`, con los secretos enmascarados; se guardan las 30 más recientes.",
   },
   "data-dir": {
-    en: "On first use in a project that still has `.fm/`, renames it to `.fm/`. It keeps `.fm/` when the rename fails, when `.fm` belongs to another tool, or when hooks run from `.fm/runtime/`. When git does not ignore `.fm/` yet, it appends one line, `.fm/*`, to `.gitignore`.",
+    en: "On first use in a project that still has `.finitemonkey/`, renames it to `.fm/`. It keeps `.finitemonkey/` when the rename fails, when `.fm` belongs to another tool, or when hooks run from `.finitemonkey/runtime/`. When git does not ignore `.fm/` yet, it appends one line, `.fm/*`, to `.gitignore`.",
     "pt-BR":
-      "No primeiro uso num projeto que ainda tem `.fm/`, renomeia a pasta para `.fm/`. Mantém `.fm/` quando a renomeação falha, quando `.fm` é de outra ferramenta ou quando os hooks rodam de `.fm/runtime/`. Quando o git ainda não ignora `.fm/`, acrescenta uma linha, `.fm/*`, ao `.gitignore`.",
-    es: "En el primer uso en un proyecto que todavía tiene `.fm/`, renombra la carpeta a `.fm/`. Mantiene `.fm/` cuando el cambio de nombre falla, cuando `.fm` es de otra herramienta o cuando los hooks se ejecutan desde `.fm/runtime/`. Cuando git todavía no ignora `.fm/`, agrega una línea, `.fm/*`, a `.gitignore`.",
+      "No primeiro uso num projeto que ainda tem `.finitemonkey/`, renomeia a pasta para `.fm/`. Mantém `.finitemonkey/` quando a renomeação falha, quando `.fm` é de outra ferramenta ou quando os hooks rodam de `.finitemonkey/runtime/`. Quando o git ainda não ignora `.fm/`, acrescenta uma linha, `.fm/*`, ao `.gitignore`.",
+    es: "En el primer uso en un proyecto que todavía tiene `.finitemonkey/`, renombra la carpeta a `.fm/`. Mantiene `.finitemonkey/` cuando el cambio de nombre falla, cuando `.fm` es de otra herramienta o cuando los hooks se ejecutan desde `.finitemonkey/runtime/`. Cuando git todavía no ignora `.fm/`, agrega una línea, `.fm/*`, a `.gitignore`.",
   },
   tasks: {
     en: "Task contracts and which task is active.",

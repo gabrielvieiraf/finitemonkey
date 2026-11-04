@@ -19,11 +19,11 @@ import { nodeLock } from "../src/core/node-fs.js";
 import { nodeRuntime } from "../src/core/node-runtime.js";
 import type { Runtime } from "../src/core/runtime.js";
 import { ExitCode } from "../src/exit-codes.js";
-import { CONFIG_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_PACKAGE } from "../src/install/layout.js";
+import { CONFIG_FILE, SETTINGS_FILE, VENDOR_BIN, VENDOR_CORE, VENDOR_PACKAGE } from "../src/install/layout.js";
 import { implicitContract } from "../src/task/implicit.js";
 import { contractHash, loadImplicit } from "../src/task/load.js";
 import { fmPaths } from "../src/task/paths.js";
-import { BUNDLE, cliJson, field, found, parseBody } from "./support.js";
+import { BUNDLE, cliJson, CORE, field, found, parseBody } from "./support.js";
 
 const base = mkdtempSync(join(tmpdir(), "fm-tree-"));
 after(() => {
@@ -139,6 +139,7 @@ describe("update", () => {
     assert.match(readFileSync(config, "utf8"), /custom: true/);
     assert.equal(field(parseBody(readFileSync(join(root, VENDOR_PACKAGE), "utf8")), "version"), "1.1.0");
     assert.equal(readFileSync(join(root, VENDOR_BIN), "utf8"), readFileSync(BUNDLE, "utf8"));
+    assert.equal(readFileSync(join(root, VENDOR_CORE), "utf8"), readFileSync(CORE, "utf8"));
     const diff = field(updated.body, "data", "diff");
     assert.ok(Array.isArray(diff) && diff.some((line) => line === "+ custom: true" || line === "- custom: true"));
     assert.equal((await fm(root, ["update", "--check"], "1.1.0")).code, ExitCode.Ok);

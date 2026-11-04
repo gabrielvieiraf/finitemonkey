@@ -17,7 +17,7 @@ import { fmPaths } from "../src/task/paths.js";
 import { FakeClaude, type Step } from "./fake-claude.js";
 import { memoryFs } from "./memory-fs.js";
 import { makeRepo, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
-import { BUNDLE, BUNDLE_TEXT, cli, cliJson, fakeRuntime, field, found, stdinFrom } from "./support.js";
+import { BUNDLE, BUNDLE_FILES, cli, cliJson, fakeRuntime, field, found, stdinFrom } from "./support.js";
 
 const repos: Repo[] = [];
 const dirs: string[] = [];
@@ -162,7 +162,7 @@ describe("account-switching supervisor", () => {
   it("usage published by the supervisor feeds the gain report", async () => {
     const root = toAbsolutePath("/home/ana/project");
     const fs = memoryFs({
-      [BUNDLE]: BUNDLE_TEXT,
+      ...BUNDLE_FILES,
       [toAbsolutePath(".fm/config.yml", root)]: "schemaVersion: 1\nsupervisor:\n  enabled: true\n",
       [toAbsolutePath("/tmp/holds/usage.json")]: JSON.stringify({ tokens: 1200, costUsd: 0.42, account: "b" }),
     });

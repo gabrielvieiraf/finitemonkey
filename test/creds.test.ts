@@ -10,7 +10,7 @@ import { type HookOutcome, runHook } from "../src/hooks/runner.js";
 import { createTranslator } from "../src/i18n/translate.js";
 import { fmPaths } from "../src/task/paths.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, BUNDLE_TEXT, cliJson, fakeRuntime, field, reasonText, stdinFrom } from "./support.js";
+import { BUNDLE_FILES, cliJson, fakeRuntime, field, reasonText, stdinFrom } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/project");
 const at = (path: string): string => toAbsolutePath(path, ROOT);
@@ -23,7 +23,7 @@ interface RepoOptions {
 
 const repo = (files: Readonly<Record<string, string>>, options: RepoOptions = {}) => {
   const fs = memoryFs(
-    { [BUNDLE]: BUNDLE_TEXT, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
+    { ...BUNDLE_FILES, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
     [],
   );
   const listed = Object.keys(files).filter((file) => !(options.ignored ?? []).includes(file));

@@ -13,7 +13,18 @@ import { INSTALLED_HOOKS } from "../src/install/hook-entries.js";
 import { at, repo, ROOT } from "./install-support.js";
 import type { MemoryFs } from "./memory-fs.js";
 import { SAMPLES } from "./secret-samples.js";
-import { BUNDLE, cli, cliJson, fakeRuntime, field, found, parseBody, ROOT as REPO, stdinFrom } from "./support.js";
+import {
+  BUNDLE,
+  cli,
+  cliJson,
+  CORE,
+  fakeRuntime,
+  field,
+  found,
+  parseBody,
+  ROOT as REPO,
+  stdinFrom,
+} from "./support.js";
 
 const USER_SETTINGS = toAbsolutePath("/home/test/.claude/settings.json");
 const PROFILE = toAbsolutePath("/home/test/.bashrc");
@@ -96,7 +107,7 @@ describe("doctor --fix", () => {
     assert.match(result.stdout, /Remove "disableAllHooks"/);
     assert.match(result.stdout, /unset ANTHROPIC_BASE_URL/);
     const touched = Object.keys(fs.files()).filter(
-      (path) => !path.startsWith(toPosixPath(ROOT)) && path !== toPosixPath(BUNDLE),
+      (path) => !path.startsWith(toPosixPath(ROOT)) && path !== toPosixPath(BUNDLE) && path !== toPosixPath(CORE),
     );
     assert.deepEqual(touched.sort(), [PROFILE, USER_SETTINGS].map(toPosixPath).sort());
   });

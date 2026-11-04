@@ -63,7 +63,7 @@ describe("finitemonkey status", () => {
     assert.ok(view !== undefined);
     assert.match(
       bandLine({ ...view, loop: { count: 2, limit: 4 } }),
-      /blind band backend 0\.50 ▅ \(1\/2 help without criterion\) · loop 2\/4/,
+      /blind band backend 0\.50 ▅ \(1\/2 help without criterion\) · same error back 2 times, research due at try 4 \(finitemonkey signals\)/,
     );
   });
 

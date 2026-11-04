@@ -9,12 +9,13 @@ import {
   LOCK_FILE,
   SETTINGS_FILE,
   VENDOR_BIN,
+  VENDOR_CORE,
   VENDOR_PACKAGE,
   VERIFY_SKILL,
 } from "../src/install/layout.js";
-import { actions, at, FAKE_BUNDLE, repo, ROOT, run } from "./install-support.js";
+import { actions, at, FAKE_BUNDLE_FILES, repo, ROOT, run } from "./install-support.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, cli, cliJson, fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
+import { cli, cliJson, fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 
 const settingsOf = (fs: ReturnType<typeof memoryFs>): unknown => parseBody(fs.read(at(SETTINGS_FILE)) ?? "{}");
 
@@ -86,7 +87,7 @@ describe("init detection matrix", () => {
   it("outside git it installs at the current folder and warns", async () => {
     const { body } = await cliJson(["init", "--dry-run"], {
       cwd: ROOT,
-      runtime: fakeRuntime({ fs: memoryFs({ [BUNDLE]: FAKE_BUNDLE }) }),
+      runtime: fakeRuntime({ fs: memoryFs(FAKE_BUNDLE_FILES) }),
       env: {},
     });
     assert.equal(field(body, "data", "detection", "gitRoot"), false);
@@ -109,6 +110,7 @@ describe("init writes only when asked", () => {
       [CONFIG_FILE]: "create",
       [VERIFY_SKILL]: "create",
       ".fm/policy.yml": "create",
+      [VENDOR_CORE]: "create",
       [VENDOR_BIN]: "create",
       [VENDOR_PACKAGE]: "create",
     });
@@ -258,6 +260,7 @@ describe("a teammate who clones an installed repository", () => {
         CONFIG_FILE,
         ".fm/policy.yml",
         VERIFY_SKILL,
+        VENDOR_CORE,
         VENDOR_BIN,
         VENDOR_PACKAGE,
       ].map((path) => [path, first.read(at(path)) ?? ""]),
@@ -281,7 +284,7 @@ describe("Windows-style paths in the fake file system", () => {
   it("plan, apply and uninstall treat backslash and slash paths as the same file", async () => {
     const original = '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"mine"}]}]}}\n';
     const fs = memoryFs(
-      { [BUNDLE]: FAKE_BUNDLE, [windows(at(SETTINGS_FILE))]: original, [windows(at(".gitignore"))]: "x\r\n" },
+      { ...FAKE_BUNDLE_FILES, [windows(at(SETTINGS_FILE))]: original, [windows(at(".gitignore"))]: "x\r\n" },
       [windows(at(".git"))],
     );
     const installed = await run(fs, ["init", "--yes"]);

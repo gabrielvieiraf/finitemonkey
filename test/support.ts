@@ -29,6 +29,11 @@ export const ROOT = toAbsolutePath(join(dirname(fileURLToPath(import.meta.url)),
 export const BUNDLE = toAbsolutePath(join(ROOT, "dist", "finitemonkey.mjs"));
 export const TEST_VERSION = "9.9.9-test";
 export const BUNDLE_TEXT = readFileSync(BUNDLE, "utf8");
+export const CORE = toAbsolutePath(join(ROOT, "dist", "finitemonkey-core.mjs"));
+export const BUNDLE_FILES: Readonly<Record<string, string>> = {
+  [BUNDLE]: BUNDLE_TEXT,
+  [CORE]: readFileSync(CORE, "utf8"),
+};
 
 export const found = (stdout: string): ProbeResult => ({ found: true, ok: true, stdout, timedOut: false });
 export const missing: ProbeResult = { found: false, ok: false, stdout: "", timedOut: false };
@@ -95,7 +100,7 @@ const timers: Readonly<Record<TimerMode, Runtime["startTimer"]>> = {
 };
 
 export const fakeRuntime = (options: FakeRuntimeOptions = {}): Runtime => {
-  const fs = options.fs ?? memoryFs({ [BUNDLE]: BUNDLE_TEXT, ...options.files }, [], options.now);
+  const fs = options.fs ?? memoryFs({ ...BUNDLE_FILES, ...options.files }, [], options.now);
   return {
     ...fs,
     nodeVersion: options.nodeVersion ?? "22.11.0",

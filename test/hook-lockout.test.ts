@@ -143,7 +143,7 @@ describe("a PreToolUse hook that cannot run", () => {
     assert.equal(outcome.exitCode, 2);
     assert.equal(outcome.verdict, "failed_closed");
     assert.match(outcome.stderr, /kaput/);
-    assert.match(outcome.stderr, /finitemonkey off/);
+    assert.match(outcome.stderr, /`fm off`/);
   });
 });
 

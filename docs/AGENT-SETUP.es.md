@@ -122,4 +122,4 @@ npx finitemonkey@next uninstall --yes --purge --json
 
 El primero quita lo que Finite Monkey añadió y restaura las copias de seguridad, conservando `.fm/` (copias y evidencias). `--purge` borra también `.fm/`; después de `init` y `uninstall --purge`, el proyecto queda idéntico byte a byte a como estaba. Los archivos que la persona editó después de instalar se conservan y se listan en `data.kept`. Sin `--yes`, sale con 4 y el plan. El plugin, si está instalado, se quita aparte: `claude plugin uninstall finitemonkey@finitemonkey-next` (o `finitemonkey@finitemonkey` para el marketplace estable).
 
-<!-- translation of docs/AGENT-SETUP.md sha256:0525eae761b4 -->
+<!-- translation of docs/AGENT-SETUP.md sha256:cc64d53b0681 -->
