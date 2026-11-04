@@ -14,7 +14,7 @@ import { type Fixture, machine, PLUGIN_INDEX, settings, USER_SETTINGS } from "./
 import { FakeClaude, type Step } from "./fake-claude.js";
 import { memoryFs } from "./memory-fs.js";
 import { makeRepo, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
-import { BUNDLE, BUNDLE_TEXT, cli, cliJson, execResult, fakeRuntime, field, found } from "./support.js";
+import { BUNDLE, BUNDLE_FILES, cli, cliJson, execResult, fakeRuntime, field, found } from "./support.js";
 
 const OTHER_ROOT = "/home/test/.claude/plugins/cache/acme/loop/1.0.0";
 
@@ -123,7 +123,7 @@ describe("doctor --hooks", () => {
   it("prints the inventory and keeps it in --json, without touching another plugin's files", async () => {
     const files = otherPlugin(true, { Stop: command("${CLAUDE_PLUGIN_ROOT}/loop.sh") });
     const fs = memoryFs({
-      [BUNDLE]: BUNDLE_TEXT,
+      ...BUNDLE_FILES,
       ...Object.fromEntries(Object.entries(files).map(([p, t]) => [toAbsolutePath(p), t])),
     });
     const runtime = fakeRuntime({ fs, tools: { claude: found("2.1.300 (Claude Code)") } });

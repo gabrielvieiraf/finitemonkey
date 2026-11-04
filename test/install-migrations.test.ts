@@ -12,7 +12,7 @@ import { pendingMigrations } from "../src/install/migrate.js";
 import type { Migration } from "../src/install/migrations/index.js";
 import { buildPlan, detect, type PlanInput, readPreviousLock } from "../src/install/plan.js";
 import { projectAt } from "../src/install/project.js";
-import { at, FAKE_BUNDLE, repo, ROOT, run } from "./install-support.js";
+import { at, FAKE_BUNDLE, FAKE_CORE, repo, ROOT, run } from "./install-support.js";
 import { fakeRuntime, field, found } from "./support.js";
 
 const semver = (raw: string) => {
@@ -67,7 +67,7 @@ describe("update applies per-version migrations with backup", () => {
       sandbox: false,
       offerSandbox: false,
       platform: "linux",
-      bundle: FAKE_BUNDLE,
+      bundle: { bin: FAKE_BUNDLE, core: FAKE_CORE },
       env: {},
       t: createTranslator("en"),
     };

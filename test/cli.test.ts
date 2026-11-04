@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { describe, it } from "node:test";
 
 import { REGISTRY } from "../src/commands/index.js";
 import { commandName } from "../src/commands/types.js";
-import { BUNDLE, cli, cliJson, field, TEST_VERSION } from "./support.js";
+import { BUNDLE, cli, cliJson, CORE, field, TEST_VERSION } from "./support.js";
 
 const names = (value: unknown): readonly unknown[] =>
   Array.isArray(value) ? value.map((item) => field(item, "name")) : [];
@@ -75,9 +76,19 @@ describe("dispatch", () => {
 });
 
 describe("bundle", () => {
-  it("starts with a shebang and imports only node builtins", () => {
+  for (const file of [BUNDLE, CORE]) {
+    it(`${basename(file)} starts with a shebang and imports only node builtins`, () => {
+      const text = readFileSync(file, "utf8");
+      assert.ok(text.startsWith("#!/usr/bin/env node\n"));
+      assert.doesNotMatch(text, /from\s+"(?!node:)[^"]+"/);
+    });
+  }
+
+  it("the launcher is small and loads only its sibling core", () => {
     const text = readFileSync(BUNDLE, "utf8");
-    assert.ok(text.startsWith("#!/usr/bin/env node\n"));
-    assert.doesNotMatch(text, /from\s+"(?!node:)[^"]+"/);
+    assert.ok(text.length < 4096, `${String(text.length)} bytes`);
+    assert.match(text, /var CORE_FILE = "finitemonkey-core\.mjs"/);
+    assert.match(text, /import\(new URL\(CORE_FILE, import\.meta\.url\)\.href\)/);
+    assert.deepEqual(text.match(/import\(/g), ["import("]);
   });
 });

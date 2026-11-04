@@ -168,15 +168,15 @@ O preço é cerca de 1,6 vez o custo e o dobro do tempo: o portão roda as verif
 As travas que ficam sempre ligadas também são reexecutadas a cada versão contra um corpus rotulado:
 
 <!-- generated:evidence:start -->
-Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.47 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
+Taxas de erro dos guards sempre ligados, reproduzidas com `npm run evidence` na versão 0.1.0-next.48 sobre o corpus rotulado em [bench/corpus](bench/corpus). Uma release falha quando a taxa de falso positivo de um guard passa de 15% ou quando o corpus dele tem menos de 50 casos que devem bloquear ou 50 que devem passar. Por enquanto todo caso é sintético, escrito a partir das listas de teste dos próprios guards; casos de sessões reais vão ser contados à parte.
 
 | Guard | Deve bloquear | Deve deixar | Falsos positivos | Falsos negativos | p95 (ms) |
 |---|---|---|---|---|---|
 | `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 26.0 |
-| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 54.7 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.4 |
-| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.3 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 27.7 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 62.3 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.9 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.4 |
 
 Custo contra o Claude Code puro nas mesmas tarefas: ainda não medido.
 
@@ -287,6 +287,7 @@ Gerado a partir de `src/core/footprint.ts`, a lista que os testes cobram do cód
 | Grava | `.finitemonkey/regression/` | Um worktree descartável do git no commit base, usado para checar que o teste novo de uma correção de bug falha sem a correção. Ele é removido depois da execução. |
 | Grava | `.finitemonkey/suggestions.jsonl` | Sugestões de refatoração mostradas no fim de uma tarefa depois que o portão passa, com o que foi aceito, descartado ou fechado. Nada é mudado no código. |
 | Grava | `~/.finitemonkey/heavy/` | Um arquivo de trava por instalação, compilação ou suíte de testes em andamento, compartilhado por todas as worktrees da máquina, para que rodem uma de cada vez (por padrão no WSL). |
+| Grava | `~/.finitemonkey/compile-cache/` | O código já compilado da CLI pelo Node, para cada hook começar mais rápido depois da primeira execução (Node 22.1 ou mais novo; `NODE_DISABLE_COMPILE_CACHE=1` desliga). Fica só no seu usuário, nunca dentro de um projeto (nada é gravado quando a sua pasta pessoal está num repositório git), e pode ser apagado à vontade. No Windows, `%USERPROFILE%` substitui `~`. |
 | Grava | `.finitemonkey/instructions.jsonl` | O hook `InstructionsLoaded` acrescenta uma linha por arquivo de instruções que o Claude Code carrega: a sessão, o caminho, o motivo e quando. O `finitemonkey instructions` compara com o que ele resolveu. Nenhum conteúdo de arquivo é copiado. |
 | Grava | `.finitemonkey/rules.yml`, `.finitemonkey/rule-violations.jsonl` | O `rules propose` acrescenta a `.finitemonkey/rules.yml` só as entradas que você confirma num terminal. Cada regra descumprida no fim de um turno, bloqueada por um guard ou informada com `rules violation` ganha uma linha em `rule-violations.jsonl` (regra, origem, detalhe mascarado), a evidência para promover um lembrete. |
 | Grava | `.finitemonkey/learnings.jsonl`, `.finitemonkey/cache/agent-changes.json` | Lições de trabalhos anteriores: um texto curto ligado a caminhos de arquivo ou à assinatura de um erro que parou depois de uma mudança, quantas vezes cada uma foi usada e quando combinou pela última vez. Uma lição sem uso por 90 dias ou marcada como inútil duas vezes é apagada; `learnings delete` remove uma à mão. O `cache/agent-changes.json` guarda as edições recentes do agente; quando a pessoa desfaz duas vezes a mesma mudança no mesmo lugar, isso vira uma proposta de lição com origem pessoa, usada só depois de `learnings accept`. |

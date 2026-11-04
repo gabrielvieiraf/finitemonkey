@@ -1,6 +1,12 @@
 import type { Localized } from "./footprint-text.js";
 
-export const GUARDIAN_FOOTPRINT_TEXT: Readonly<Record<"guardian", Localized>> = {
+export const GUARDIAN_FOOTPRINT_TEXT: Readonly<Record<"guardian" | "compile-cache", Localized>> = {
+  "compile-cache": {
+    en: "Node's compiled code for the CLI, so each hook starts faster after the first run (Node 22.1 or later; `NODE_DISABLE_COMPILE_CACHE=1` turns it off). It is yours alone, never inside a project (none is written when your home folder is in a git repository), and safe to delete. `%USERPROFILE%` replaces `~` on Windows.",
+    "pt-BR":
+      "O código já compilado da CLI pelo Node, para cada hook começar mais rápido depois da primeira execução (Node 22.1 ou mais novo; `NODE_DISABLE_COMPILE_CACHE=1` desliga). Fica só no seu usuário, nunca dentro de um projeto (nada é gravado quando a sua pasta pessoal está num repositório git), e pode ser apagado à vontade. No Windows, `%USERPROFILE%` substitui `~`.",
+    es: "El código ya compilado de la CLI por Node, para que cada hook arranque más rápido después de la primera ejecución (Node 22.1 o posterior; `NODE_DISABLE_COMPILE_CACHE=1` lo desactiva). Es solo de tu usuario, nunca está dentro de un proyecto (no se escribe nada cuando tu carpeta personal está en un repositorio git) y se puede borrar cuando quieras. En Windows, `%USERPROFILE%` reemplaza `~`.",
+  },
   guardian: {
     en: "Project goals, constraints, non-goals, done criteria and rejected options. An entry added from inside Claude Code is `inferred` and never counts as approved; only `finitemonkey guardian goal confirm`, run by the person in a terminal, marks it `stated`. The optional `context:` section (stage, demonstrated concepts, who operates, next milestone) follows the same rule: inferred fields can only silence a report. `decisions.jsonl` keeps each accepted decision and each level 2-3 report: the recommendation, the evidence at the time, the choice and an optional one-line override reason; `guardian forget` deletes an entry. Nothing about the person is stored. `assumptions.jsonl` is the assumption register: ASSUMPTION lines exported by `decide check` and entries added with `guardian assume add`, with impact, how to verify, a re-evaluation trigger and a status. `research/<question>.jsonl` holds a research question, the decision record it serves, its options, criteria, critical unknowns and stop condition, and each source with what it changed.",
     "pt-BR":

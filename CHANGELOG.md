@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.1.0-next.48](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.47...v0.1.0-next.48) (2026-11-04)
+
+### Features
+
+* follow the conversation language and show tokens on subscription ([#465](https://github.com/gabrielvieiraf/finitemonkey/issues/465)) ([2376745](https://github.com/gabrielvieiraf/finitemonkey/commit/23767453054ebb59fdd97155a447f8805eec104e)), closes [#460](https://github.com/gabrielvieiraf/finitemonkey/issues/460)
+
+### Performance Improvements
+
+* enable the node compile cache for the cli and hooks ([#435](https://github.com/gabrielvieiraf/finitemonkey/issues/435)) ([d451e0c](https://github.com/gabrielvieiraf/finitemonkey/commit/d451e0cdadc920375791bdd1cc1221a7908c1c78))
+
+
+### Evidence
+
+Error rates of the always-on guards, replayed with `npm run evidence` on version 0.1.0-next.48 over the labeled corpus in [bench/corpus](https://github.com/gabrielvieiraf/finitemonkey/tree/v0.1.0-next.48/bench/corpus). A release fails when a guard's false positive rate goes over 15% or its corpus has fewer than 50 cases that should block or 50 that should pass. Every case so far is synthetic, written from the guards' own test lists; cases from real sessions will be counted apart.
+
+| Guard | Should block | Should allow | False positives | False negatives | p95 (ms) |
+|---|---|---|---|---|---|
+| `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 27.7 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 62.3 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.9 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.4 |
+
+Cost against plain Claude Code on the same tasks: not measured yet.
+
+Guardian scenarios replayed with `npm run bench:guardian` (bench/guardian/results.json): a false positive is an alert on a scenario that needed none, a false negative is silence on one that needed an alert.
+
+| Scenarios | Needed an alert | Needed none | False positives | False negatives | Exact level |
+|---|---|---|---|---|---|
+| 15 | 11 | 4 | 0/4 (0.0%) | 0/11 (0.0%) | 15/15 |
+
 ## [0.1.0-next.47](https://github.com/gabrielvieiraf/finitemonkey/compare/v0.1.0-next.46...v0.1.0-next.47) (2026-11-04)
 
 ### Features

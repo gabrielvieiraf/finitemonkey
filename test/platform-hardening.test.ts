@@ -11,7 +11,7 @@ import { locationOf } from "../src/install/plan.js";
 import { git, tempRepo } from "./git-support.js";
 import { at, repo, ROOT } from "./install-support.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, BUNDLE_TEXT, cliJson, fakeRuntime, field, found, gitMissing, ROOT as REPO_ROOT } from "./support.js";
+import { BUNDLE, BUNDLE_FILES, cliJson, fakeRuntime, field, found, gitMissing, ROOT as REPO_ROOT } from "./support.js";
 
 describe("Windows commands resolve through PATHEXT", () => {
   const env = { Path: "C:\\nodejs;C:\\Program Files\\GitHub CLI", PATHEXT: ".COM;.EXE;.BAT;.CMD" };
@@ -63,7 +63,7 @@ describe("init warns about WSL drive mounts and synced folders", () => {
       const result = await cliJson(["init", "--dry-run", "--lang", lang], {
         cwd: root,
         runtime: fakeRuntime({
-          fs: memoryFs({ [BUNDLE]: BUNDLE_TEXT }, [join(root, ".git")]),
+          fs: memoryFs({ ...BUNDLE_FILES }, [join(root, ".git")]),
           tools: { claude: found("2.1.300 (Claude Code)") },
         }),
         env: { WSL_DISTRO_NAME: "Ubuntu" },

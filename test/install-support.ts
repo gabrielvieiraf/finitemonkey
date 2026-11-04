@@ -2,16 +2,18 @@ import { join } from "node:path";
 
 import { toAbsolutePath } from "../src/core/brand.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, cliJson, fakeRuntime, field, found } from "./support.js";
+import { BUNDLE, cliJson, CORE, fakeRuntime, field, found } from "./support.js";
 
 export const ROOT = toAbsolutePath("/home/ana/project");
 export const at = (relative: string): string => join(ROOT, relative);
 
 export const FAKE_BUNDLE = "#!/usr/bin/env node\nconsole.log('finitemonkey');\n";
+export const FAKE_CORE = "#!/usr/bin/env node\nexport const main = () => 'finitemonkey';\n";
+export const FAKE_BUNDLE_FILES: Readonly<Record<string, string>> = { [BUNDLE]: FAKE_BUNDLE, [CORE]: FAKE_CORE };
 
 export const repo = (files: Readonly<Record<string, string>> = {}): ReturnType<typeof memoryFs> =>
   memoryFs(
-    { [BUNDLE]: FAKE_BUNDLE, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
+    { ...FAKE_BUNDLE_FILES, ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])) },
     [at(".git")],
   );
 
