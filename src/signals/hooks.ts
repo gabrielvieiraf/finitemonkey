@@ -1,11 +1,12 @@
 import { bashSnapshot, bashWriteRecorder } from "../bashwrites/record.js";
 import type { HookHandlers } from "../hooks/handlers.js";
+import { conversationLangPrompt } from "./conversation-lang.js";
 import { fourthAttemptGuard, researchRecorder } from "./fourth.js";
 import { signalsPrompt } from "./prompt.js";
 import { signalsPermissionRequest, signalsPostToolUse, signalsPostToolUseFailure } from "./record.js";
 
 export const SIGNALS_HANDLERS: HookHandlers = {
-  UserPromptSubmit: [signalsPrompt],
+  UserPromptSubmit: [conversationLangPrompt, signalsPrompt],
   PreToolUse: [bashSnapshot],
   PostToolUse: [signalsPostToolUse, bashWriteRecorder, researchRecorder],
   SubagentStop: [researchRecorder],

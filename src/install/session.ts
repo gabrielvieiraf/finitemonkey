@@ -99,7 +99,7 @@ const selfBundle = (ctx: Ctx): VendorBundle | undefined => {
   return bin.ok && core.ok ? { bin: bin.value, core: core.value } : undefined;
 };
 
-const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "claude-settings"]);
+const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "conversation", "claude-settings"]);
 
 export const planInputFor = (
   ctx: Ctx,

@@ -273,6 +273,23 @@
         }
       ]
     },
+    "costTokens": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "billing": {
+      "type": "string",
+      "enum": [
+        "api",
+        "subscription"
+      ]
+    },
     "xray": {
       "anyOf": [
         {
@@ -465,6 +482,8 @@
     "bypasses",
     "loop",
     "cost",
+    "costTokens",
+    "billing",
     "xray",
     "knowledge",
     "blindBand",

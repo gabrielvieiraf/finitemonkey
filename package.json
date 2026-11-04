@@ -1,6 +1,6 @@
 {
   "name": "finitemonkey",
-  "version": "0.1.0-next.46",
+  "version": "0.1.0-next.47",
   "description": "Claude Code hooks that stop a coding agent from saying done before the tests pass: a machine-checked definition of done, plus guardrails for secrets, git safety and production. Pre-release.",
   "type": "module",
   "license": "Apache-2.0",
@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/gabrielvieiraf/finitemonkey.git"
   },
-  "homepage": "https://github.com/gabrielvieiraf/finitemonkey#readme",
+  "homepage": "https://gabrielvieiraf.github.io/finitemonkey",
   "bugs": {
     "url": "https://github.com/gabrielvieiraf/finitemonkey/issues"
   },

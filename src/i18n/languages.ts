@@ -36,6 +36,7 @@ export type LangSource =
   | "flag"
   | "FINITEMONKEY_LANG"
   | "config"
+  | "conversation"
   | "claude-settings"
   | (typeof LOCALE_ENV_ORDER)[number]
   | "system"
@@ -48,6 +49,7 @@ export interface DetectedLang {
 
 export interface LangSettings {
   readonly config?: string | undefined;
+  readonly conversation?: string | undefined;
   readonly claude?: string | undefined;
   readonly system?: string | undefined;
   readonly reviewedOnly?: boolean;
@@ -58,6 +60,7 @@ export const detectLang = (flag: string | undefined, env: Env, settings: LangSet
     ["flag", normalizeLang(flag)],
     ["FINITEMONKEY_LANG", normalizeLang(env["FINITEMONKEY_LANG"])],
     ["config", normalizeLang(settings.config)],
+    ["conversation", normalizeLang(settings.conversation)],
     ["claude-settings", claudeLanguageToLang(settings.claude)],
     ...LOCALE_ENV_ORDER.map((name) => [name, normalizeLang(env[name])] as const),
     ["system", normalizeLang(settings.system)],

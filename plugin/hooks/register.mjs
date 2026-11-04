@@ -118,18 +118,199 @@ async function compactNotes($, e, next) {
   return next({ ...e, instructions });
 }
 
+// src/i18n/message.ts
+var ARG = /^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?:,\s*(plural|select)\s*,)?/;
+var closingBrace = (cursor) => {
+  let depth = 0;
+  for (let index = cursor.index; index < cursor.source.length; index += 1) {
+    const char = cursor.source.charAt(index);
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      if (depth === 0) return index;
+      depth -= 1;
+    }
+  }
+  return -1;
+};
+var parseBranches = (body, inPlural) => {
+  const branches = {};
+  const cursor = { source: body, index: 0 };
+  for (; ; ) {
+    const rest = body.slice(cursor.index);
+    const head = /^\s*(=?[a-zA-Z0-9_]+)\s*\{/.exec(rest);
+    if (head === null) return rest.trim() === "" && "other" in branches ? branches : void 0;
+    cursor.index += head[0].length;
+    const end = closingBrace(cursor);
+    if (end < 0) return void 0;
+    branches[head[1] ?? ""] = parseNodes(body.slice(cursor.index, end), inPlural);
+    cursor.index = end + 1;
+  }
+};
+var parseNodes = (source, inPlural) => {
+  const nodes = [];
+  let text6 = "";
+  const flush = () => {
+    if (text6 !== "") nodes.push({ kind: "text", text: text6 });
+    text6 = "";
+  };
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source.charAt(index);
+    if (char === "#" && inPlural) {
+      flush();
+      nodes.push({ kind: "count" });
+      continue;
+    }
+    if (char !== "{") {
+      text6 += char;
+      continue;
+    }
+    const cursor = { source, index: index + 1 };
+    const end = closingBrace(cursor);
+    const inner = end < 0 ? void 0 : source.slice(index + 1, end);
+    const match = inner === void 0 ? null : ARG.exec(inner);
+    if (inner === void 0 || match === null) {
+      text6 += char;
+      continue;
+    }
+    const name = match[1] ?? "";
+    const type = match[2] === "plural" || match[2] === "select" ? match[2] : void 0;
+    if (type === void 0 && match[0].trim().length !== inner.trim().length) {
+      text6 += char;
+      continue;
+    }
+    const branches = type === void 0 ? void 0 : parseBranches(inner.slice(match[0].length), type === "plural");
+    if (type !== void 0 && branches === void 0) {
+      text6 += char;
+      continue;
+    }
+    flush();
+    nodes.push(type === void 0 || branches === void 0 ? { kind: "arg", name } : { kind: type, name, branches });
+    index = end;
+  }
+  flush();
+  return nodes;
+};
+var parseMessage = (source) => parseNodes(source, false);
+var pluralRules = /* @__PURE__ */ new Map();
+var rulesFor = (locale) => {
+  const known = pluralRules.get(locale);
+  if (known !== void 0) return known;
+  const rules = new Intl.PluralRules(locale);
+  pluralRules.set(locale, rules);
+  return rules;
+};
+var branchFor = (node, value, locale) => {
+  const { branches } = node;
+  if (node.kind === "select") return branches[String(value)] ?? branches["other"];
+  const count3 = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(count3)) return branches["other"];
+  return branches[`=${String(count3)}`] ?? branches[rulesFor(locale).select(count3)] ?? branches["other"];
+};
+var render = (nodes, params, locale, count3) => nodes.map((node) => {
+  if (node.kind === "text") return node.text;
+  if (node.kind === "count") return count3 === void 0 ? "#" : String(count3);
+  const value = params[node.name];
+  if (node.kind === "arg") return value === void 0 ? `{${node.name}}` : String(value);
+  const branch = branchFor(node, value, locale) ?? [];
+  return render(branch, params, locale, node.kind === "plural" ? value : count3);
+}).join("");
+var formatMessage = (source, params, locale) => render(parseMessage(source), params, locale, void 0);
+
+// src/mod/labels-en.ts
+var MOD_LABELS_EN = {
+  "mod.view.band_button": "gate panel",
+  "mod.view.no_contract": "no contract",
+  "mod.view.contract_full": "contract {id} {hash}",
+  "mod.view.not_verified_title": "not verified:",
+  "mod.view.run_gate": "Run gate",
+  "mod.view.close": "Close",
+  "mod.view.no_cost": "no cost recorded for this contract",
+  "mod.view.triage": "triage {open}/{flagged} open",
+  "mod.view.trajectory": "trajectory {domain}{spark}: {band}",
+  "mod.view.no_accepted_work": "no accepted work",
+  "mod.view.no_ricochet": "no ricochet",
+  "mod.view.last_ricochet": "last ricochet {concept} {week}",
+  "mod.view.knowledge": "knowledge: {stale} stale · {contradictions, plural, one {# rule contradicts} other {# rules contradict}} code · {quarantined} in quarantine",
+  "mod.view.blind": "blind band {domain} {index} {spark} ({without}/{helps} help without criterion)",
+  "mod.view.bypassed": "⚠ {count, plural, one {# guard} other {# guards}} bypassed",
+  "mod.view.gate": "gate {mark} {passed}/{total}",
+  "mod.view.gate_mark": "gate {mark}",
+  "mod.view.not_verified_count": "{count} not verified",
+  "mod.view.contract_short": "contract {hash}",
+  "mod.view.evidence_old": "evidence {count, plural, one {# edit} other {# edits}} old",
+  "mod.view.loop": "loop {count}/{limit}",
+  "mod.view.cost_usd": "{usd} this contract",
+  "mod.view.cost_tokens": "{tokens} tokens this contract",
+  "mod.view.xray": "x-ray {count} beyond the record without criterion",
+  "mod.view.criteria_without_check": "{count, plural, one {# criterion} other {# criteria}} without check",
+  "mod.view.stale": "(stale)",
+  "mod.view.cost_contract_usd": "contract {task}: {usd} in {requests, plural, one {# request} other {# requests}}",
+  "mod.view.cost_contract_tokens": "contract {task}: {tokens} tokens in {requests, plural, one {# request} other {# requests}}",
+  "mod.view.cost_token_split": "input {input} · output {output} · cache read {cacheRead} · cache write {cacheWrite}",
+  "mod.view.attempts": "attempts {attempts} · per attempt {perAttempt}",
+  "mod.view.split": "build {build} · verification {verification} + gate {minutes} min",
+  "mod.view.arm": "arm {arm}: {usd} in {requests, plural, one {# request} other {# requests}}",
+  "mod.view.command_description": "Finite Monkey: gate state, contract and what is not verified",
+  "mod.view.command_taken": "finitemonkey: /fm is taken by another command; the gate panel opens from the band",
+  "mod.view.loading": "finitemonkey: reading the gate…",
+  "mod.view.cost_title": "Finite Monkey · cost",
+  "mod.view.fronts_title": "Finite Monkey · fronts",
+  "mod.view.no_worktrees": "finitemonkey: no worktrees found",
+  "mod.view.no_handoff": "finitemonkey: no handoff in this folder",
+  "mod.view.no_status": "finitemonkey: no gate status in this folder"
+};
+var MOD_LABELS_SCHEMA = "finitemonkey/mod-labels@1";
+
+// src/mod/labels.ts
+var ENGLISH = { lang: "en", labels: MOD_LABELS_EN };
+var current = ENGLISH;
+var useLabels = (set) => {
+  current = set ?? ENGLISH;
+};
+var label = (key, params = {}) => {
+  const own = current.labels[key];
+  return own === void 0 ? formatMessage(MOD_LABELS_EN[key], params, ENGLISH.lang) : formatMessage(own, params, current.lang);
+};
+var count = (value) => new Intl.NumberFormat(current.lang).format(value);
+var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isKey = (key) => key in MOD_LABELS_EN;
+var parseLabels = (text6) => {
+  let parsed;
+  try {
+    parsed = JSON.parse(text6);
+  } catch {
+    return void 0;
+  }
+  const data = isRecord2(parsed) && isRecord2(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord2(data) || data["schema"] !== MOD_LABELS_SCHEMA || typeof data["lang"] !== "string") return void 0;
+  const raw = isRecord2(data["labels"]) ? data["labels"] : {};
+  const labels = {};
+  for (const [key, value] of Object.entries(raw)) if (isKey(key) && typeof value === "string") labels[key] = value;
+  return { lang: data["lang"], labels };
+};
+async function refreshLabels($) {
+  const text6 = await runCli($, ["mod", "labels", "--json"]);
+  const set = text6 === void 0 ? void 0 : parseLabels(text6);
+  if (set === void 0) return;
+  useLabels(set);
+  $.ui.invalidate("ui.render");
+}
+function scheduleLabels($) {
+  $.clock.after(0, () => refreshLabels($));
+}
+
 // src/mod/cost-hooks.ts
-var count = (value) => typeof value === "number" && Number.isFinite(value) ? value : 0;
+var count2 = (value) => typeof value === "number" && Number.isFinite(value) ? value : 0;
 var usageOf = (result, agent) => {
   const usage = result.usage;
   if (usage === void 0 || usage === null) return void 0;
   return {
     model: typeof usage.model === "string" ? usage.model : "unknown",
     agent: agent ?? null,
-    input: count(usage.input_tokens),
-    output: count(usage.output_tokens),
-    cacheRead: count(usage.cache_read_input_tokens),
-    cacheWrite: count(usage.cache_creation_input_tokens)
+    input: count2(usage.input_tokens),
+    output: count2(usage.output_tokens),
+    cacheRead: count2(usage.cache_read_input_tokens),
+    cacheWrite: count2(usage.cache_creation_input_tokens)
   };
 };
 async function* stepUsage(_$, e, next) {
@@ -147,14 +328,55 @@ function scheduleUsage($) {
   memory.steps = [];
   $.clock.after(0, () => flushUsage($, steps));
 }
-var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var money = (usd) => `$${(typeof usd === "number" ? usd : 0).toFixed(2)}`;
 var splitLines = (data) => {
   const build = data["build"];
   const verification = data["verification"];
-  if (!isRecord2(build) || !isRecord2(verification)) return [];
+  if (!isRecord3(build) || !isRecord3(verification)) return [];
   const minutes = typeof verification["gateMinutes"] === "number" ? verification["gateMinutes"] : 0;
-  return [`build ${money(build["usd"])} · verification ${money(verification["usd"])} + gate ${String(minutes)} min`];
+  return [
+    label("mod.view.split", {
+      build: money(build["usd"]),
+      verification: money(verification["usd"]),
+      minutes
+    })
+  ];
+};
+var tally = (value) => typeof value === "number" ? value : 0;
+var tokenLines = (data) => {
+  const tokens = isRecord3(data["tokens"]) ? data["tokens"] : {};
+  return [
+    label("mod.view.cost_contract_tokens", {
+      task: String(data["task"]),
+      tokens: count(tally(tokens["total"])),
+      requests: tally(data["requests"])
+    }),
+    label("mod.view.cost_token_split", {
+      input: count(tally(tokens["input"])),
+      output: count(tally(tokens["output"])),
+      cacheRead: count(tally(tokens["cacheRead"])),
+      cacheWrite: count(tally(tokens["cacheWrite"]))
+    })
+  ];
+};
+var usdLines = (data) => {
+  const arms = Array.isArray(data["byArm"]) ? data["byArm"].filter(isRecord3) : [];
+  return [
+    label("mod.view.cost_contract_usd", {
+      task: String(data["task"]),
+      usd: money(data["usd"]),
+      requests: tally(data["requests"])
+    }),
+    label("mod.view.attempts", {
+      attempts: tally(data["attempts"]),
+      perAttempt: data["perAttempt"] === null ? "-" : money(data["perAttempt"])
+    }),
+    ...splitLines(data),
+    ...arms.map(
+      (arm) => label("mod.view.arm", { arm: String(arm["arm"]), usd: money(arm["usd"]), requests: tally(arm["requests"]) })
+    )
+  ];
 };
 var costLines = (text6) => {
   let parsed;
@@ -163,15 +385,9 @@ var costLines = (text6) => {
   } catch {
     return [];
   }
-  const data = isRecord2(parsed) && isRecord2(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord2(data) || data["schema"] !== "finitemonkey/mod-cost@1") return [];
-  const arms = Array.isArray(data["byArm"]) ? data["byArm"].filter(isRecord2) : [];
-  return [
-    `contract ${String(data["task"])}: ${money(data["usd"])} in ${String(data["requests"])} requests`,
-    `attempts ${String(data["attempts"])} · per attempt ${data["perAttempt"] === null ? "-" : money(data["perAttempt"])}`,
-    ...splitLines(data),
-    ...arms.map((arm) => `arm ${String(arm["arm"])}: ${money(arm["usd"])} in ${String(arm["requests"])} requests`)
-  ];
+  const data = isRecord3(parsed) && isRecord3(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord3(data) || data["schema"] !== "finitemonkey/mod-cost@1") return [];
+  return data["billing"] === "subscription" ? tokenLines(data) : usdLines(data);
 };
 async function refreshCost($) {
   const text6 = await runCli($, ["mod", "cost", "--json"]);
@@ -183,7 +399,7 @@ async function refreshCost($) {
 var CONTRACT_PANE = "fm-contract";
 var DIVERGE_PANE = "fm-diverge";
 var TASK_SCHEMA = "finitemonkey/task@1";
-var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var str = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var taskData = (text6) => {
   let parsed;
@@ -192,10 +408,10 @@ var taskData = (text6) => {
   } catch {
     return void 0;
   }
-  const data = isRecord3(parsed) && isRecord3(parsed["data"]) ? parsed["data"] : parsed;
-  return isRecord3(data) && data["schema"] === TASK_SCHEMA ? data : void 0;
+  const data = isRecord4(parsed) && isRecord4(parsed["data"]) ? parsed["data"] : parsed;
+  return isRecord4(data) && data["schema"] === TASK_SCHEMA ? data : void 0;
 };
-var items = (value) => (Array.isArray(value) ? value.filter(isRecord3) : []).map((item) => ({
+var items = (value) => (Array.isArray(value) ? value.filter(isRecord4) : []).map((item) => ({
   id: str(item, "id"),
   says: str(item, "says"),
   status: str(item, "status")
@@ -216,8 +432,8 @@ var parseContractView = (text6) => {
 var parseDivergeView = (text6) => {
   const data = taskData(text6);
   const question = data === void 0 ? void 0 : data["question"];
-  if (data === void 0 || !isRecord3(question)) return void 0;
-  const options = (Array.isArray(question["options"]) ? question["options"].filter(isRecord3) : []).map((option) => ({
+  if (data === void 0 || !isRecord4(question)) return void 0;
+  const options = (Array.isArray(question["options"]) ? question["options"].filter(isRecord4) : []).map((option) => ({
     letter: str(option, "letter"),
     output: str(option, "output")
   }));
@@ -440,40 +656,66 @@ async function divergeNow($) {
 }
 
 // src/mod/status.ts
-var isRecord4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord5 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var str2 = (record, key) => typeof record[key] === "string" ? record[key] : "";
-var list = (value) => Array.isArray(value) ? value.filter(isRecord4) : [];
-var contractOf = (value) => isRecord4(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
-var loopOf = (value) => isRecord4(value) && typeof value["count"] === "number" && typeof value["limit"] === "number" ? { count: value["count"], limit: value["limit"] } : null;
-var costOf = (value) => isRecord4(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number" ? { usd: value["usd"], requests: value["requests"] } : null;
-var xrayOf = (value) => isRecord4(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number" ? { beyond: value["beyondWithoutCriterion"], blocks: value["blocks"] } : null;
+var list = (value) => Array.isArray(value) ? value.filter(isRecord5) : [];
+var contractOf = (value) => isRecord5(value) && typeof value["id"] === "string" && typeof value["hash"] === "string" ? { id: value["id"], hash: value["hash"] } : null;
+var loopOf = (value) => isRecord5(value) && typeof value["count"] === "number" && typeof value["limit"] === "number" ? { count: value["count"], limit: value["limit"] } : null;
+var costOf = (data) => {
+  const value = data["cost"];
+  const tokens = data["costTokens"];
+  return isRecord5(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number" ? {
+    usd: value["usd"],
+    requests: value["requests"],
+    tokens: typeof tokens === "number" ? tokens : 0,
+    billing: data["billing"] === "subscription" ? "subscription" : "api"
+  } : null;
+};
+var xrayOf = (value) => isRecord5(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number" ? { beyond: value["beyondWithoutCriterion"], blocks: value["blocks"] } : null;
 var numbers = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "number") : [];
-var blindOf = (value) => isRecord4(value) && typeof value["domain"] === "string" && typeof value["index"] === "number" && typeof value["withoutCriterion"] === "number" && typeof value["helps"] === "number" ? {
+var blindOf = (value) => isRecord5(value) && typeof value["domain"] === "string" && typeof value["index"] === "number" && typeof value["withoutCriterion"] === "number" && typeof value["helps"] === "number" ? {
   domain: value["domain"],
   index: value["index"],
   withoutCriterion: value["withoutCriterion"],
   helps: value["helps"],
   recent: numbers(value["recent"])
 } : null;
-var knowledgeOf = (value) => isRecord4(value) && typeof value["stale"] === "number" && typeof value["contradictions"] === "number" && typeof value["quarantined"] === "number" && value["stale"] + value["contradictions"] + value["quarantined"] > 0 ? { stale: value["stale"], contradictions: value["contradictions"], quarantined: value["quarantined"] } : null;
-var ricochetOf = (value) => isRecord4(value) && typeof value["concept"] === "string" && typeof value["week"] === "string" ? { concept: value["concept"], week: value["week"] } : null;
-var trajectoryOf = (value) => isRecord4(value) && typeof value["domain"] === "string" ? {
+var knowledgeOf = (value) => isRecord5(value) && typeof value["stale"] === "number" && typeof value["contradictions"] === "number" && typeof value["quarantined"] === "number" && value["stale"] + value["contradictions"] + value["quarantined"] > 0 ? { stale: value["stale"], contradictions: value["contradictions"], quarantined: value["quarantined"] } : null;
+var ricochetOf = (value) => isRecord5(value) && typeof value["concept"] === "string" && typeof value["week"] === "string" ? { concept: value["concept"], week: value["week"] } : null;
+var trajectoryOf = (value) => isRecord5(value) && typeof value["domain"] === "string" ? {
   domain: value["domain"],
   band: typeof value["band"] === "string" ? value["band"] : null,
   ricochet: ricochetOf(value["ricochet"]),
   recent: numbers(value["recent"])
 } : null;
-var triageOf = (value) => isRecord4(value) && typeof value["flagged"] === "number" && typeof value["open"] === "number" ? { flagged: value["flagged"], open: value["open"] } : null;
-var triageLine = (triage) => `triage ${String(triage.open)}/${String(triage.flagged)} open`;
+var triageOf = (value) => isRecord5(value) && typeof value["flagged"] === "number" && typeof value["open"] === "number" ? { flagged: value["flagged"], open: value["open"] } : null;
+var triageLine = (triage) => label("mod.view.triage", { open: triage.open, flagged: triage.flagged });
 var SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 var sparkline = (values) => values.map((value) => SPARK[Math.min(SPARK.length - 1, Math.max(0, Math.round(value * (SPARK.length - 1))))] ?? "").join("");
 var trajectorySpark = (recent) => recent === void 0 || recent.length < 2 ? "" : ` ${sparkline(recent)}`;
 var trajectoryLine = (trajectory) => [
-  `trajectory ${trajectory.domain}${trajectorySpark(trajectory.recent)}: ${trajectory.band ?? "no accepted work"}`,
-  trajectory.ricochet === null ? "no ricochet" : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`
+  label("mod.view.trajectory", {
+    domain: trajectory.domain,
+    spark: trajectorySpark(trajectory.recent),
+    band: trajectory.band ?? label("mod.view.no_accepted_work")
+  }),
+  trajectory.ricochet === null ? label("mod.view.no_ricochet") : label("mod.view.last_ricochet", {
+    concept: trajectory.ricochet.concept,
+    week: trajectory.ricochet.week.slice(-3)
+  })
 ].join(", ");
-var knowledgeLine = (knowledge) => `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
-var blindLine = (blind) => `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
+var knowledgeLine = (knowledge) => label("mod.view.knowledge", {
+  stale: knowledge.stale,
+  contradictions: knowledge.contradictions,
+  quarantined: knowledge.quarantined
+});
+var blindLine = (blind) => label("mod.view.blind", {
+  domain: blind.domain,
+  index: blind.index.toFixed(2),
+  spark: sparkline(blind.recent),
+  without: blind.withoutCriterion,
+  helps: blind.helps
+});
 var parseStatus = (text6) => {
   let parsed;
   try {
@@ -481,15 +723,15 @@ var parseStatus = (text6) => {
   } catch {
     return void 0;
   }
-  const data = isRecord4(parsed) && isRecord4(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord4(data) || data["schema"] !== "finitemonkey/status@1") return void 0;
+  const data = isRecord5(parsed) && isRecord5(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord5(data) || data["schema"] !== "finitemonkey/status@1") return void 0;
   const checks = list(data["checks"]).map((item) => ({
     id: str2(item, "id"),
     status: str2(item, "status"),
     stale: item["stale"] === true,
     verify: str2(item, "verify")
   }));
-  const gate = isRecord4(data["gate"]) ? data["gate"] : {};
+  const gate = isRecord5(data["gate"]) ? data["gate"] : {};
   const edits = data["editsSinceGate"];
   return {
     task: typeof data["task"] === "string" ? data["task"] : null,
@@ -506,7 +748,7 @@ var parseStatus = (text6) => {
     editsSinceGate: typeof edits === "number" ? edits : null,
     bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
     loop: loopOf(data["loop"]),
-    cost: costOf(data["cost"]),
+    cost: costOf(data),
     xray: xrayOf(data["xray"]),
     blindBand: blindOf(data["blindBand"]),
     knowledge: knowledgeOf(data["knowledge"]),
@@ -523,36 +765,37 @@ var MARK = {
 };
 var markOf = (light) => MARK[light] ?? "·";
 var short = (hash) => hash.slice(0, 4);
+var costBand = (cost) => cost.billing === "subscription" ? label("mod.view.cost_tokens", { tokens: count(cost.tokens) }) : label("mod.view.cost_usd", { usd: `$${cost.usd.toFixed(2)}` });
 var bandLine = (view) => [
-  ...view.bypasses > 0 ? [`⚠ ${String(view.bypasses)} guard bypassed`] : [],
-  `gate ${markOf(view.light)} ${String(view.passed)}/${String(view.total)}`,
-  ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : [],
-  ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`],
-  ...view.editsSinceGate !== null && view.editsSinceGate > 0 ? [`evidence ${String(view.editsSinceGate)} edits old`] : [],
+  ...view.bypasses > 0 ? [label("mod.view.bypassed", { count: view.bypasses })] : [],
+  label("mod.view.gate", { mark: markOf(view.light), passed: view.passed, total: view.total }),
+  ...view.notVerified.length > 0 ? [label("mod.view.not_verified_count", { count: view.notVerified.length })] : [],
+  ...view.contract === null ? [] : [label("mod.view.contract_short", { hash: short(view.contract.hash) })],
+  ...view.editsSinceGate !== null && view.editsSinceGate > 0 ? [label("mod.view.evidence_old", { count: view.editsSinceGate })] : [],
   ...view.knowledge === null ? [] : [knowledgeLine(view.knowledge)],
   ...view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)],
   ...view.trajectory === null ? [] : [trajectoryLine(view.trajectory)],
   ...view.triage === null || view.triage.open === 0 ? [] : [triageLine(view.triage)],
-  ...view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`],
-  ...view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`],
-  ...view.xray === null || view.xray.beyond === 0 ? [] : [`x-ray ${String(view.xray.beyond)} beyond the record without criterion`]
+  ...view.loop === null ? [] : [label("mod.view.loop", { count: view.loop.count, limit: view.loop.limit })],
+  ...view.cost === null ? [] : [costBand(view.cost)],
+  ...view.xray === null || view.xray.beyond === 0 ? [] : [label("mod.view.xray", { count: view.xray.beyond })]
 ].join(" · ");
 var turnLine = (view) => [
-  `gate ${markOf(view.light)}`,
-  ...view.notVerified.length > 0 ? [`${String(view.notVerified.length)} criteria without check`] : [],
-  ...view.contract === null ? [] : [`contract ${short(view.contract.hash)}`]
+  label("mod.view.gate_mark", { mark: markOf(view.light) }),
+  ...view.notVerified.length > 0 ? [label("mod.view.criteria_without_check", { count: view.notVerified.length })] : [],
+  ...view.contract === null ? [] : [label("mod.view.contract_short", { hash: short(view.contract.hash) })]
 ].join(" · ");
-var checkLine = (check) => `${check.status === "passed" ? "✓" : check.status === "failed" ? "✗" : "○"} ${check.id}${check.stale ? " (stale)" : ""}`;
+var checkLine = (check) => `${check.status === "passed" ? "✓" : check.status === "failed" ? "✗" : "○"} ${check.id}${check.stale ? ` ${label("mod.view.stale")}` : ""}`;
 var notVerifiedLine = (item) => `○ ${item.id}: ${item.reason} → ${item.verify}`;
 var statusText = (view) => [
   `finitemonkey ${bandLine(view)}`,
   ...view.checks.map(checkLine),
-  ...view.notVerified.length > 0 ? ["not verified:", ...view.notVerified.map(notVerifiedLine)] : []
+  ...view.notVerified.length > 0 ? [label("mod.view.not_verified_title"), ...view.notVerified.map(notVerifiedLine)] : []
 ].join("\n");
 
 // src/mod/fronts-view.ts
 var FRONTS_PANE = "fm-fronts";
-var isRecord5 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text2 = (value, fallback) => typeof value === "string" ? value : fallback;
 var rowLine = (row2) => [
   `${row2["waiting"] === true ? "◆" : "●"} ${text2(row2["branch"], text2(row2["path"], "?"))}`,
@@ -578,10 +821,10 @@ var boardView = (json) => {
   } catch {
     return EMPTY_BOARD;
   }
-  const data = isRecord5(parsed) && isRecord5(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord5(data) || data["schema"] !== "finitemonkey/fronts-board@1") return EMPTY_BOARD;
-  const rows = Array.isArray(data["rows"]) ? data["rows"].filter(isRecord5) : [];
-  const collisions = Array.isArray(data["collisions"]) ? data["collisions"].filter(isRecord5) : [];
+  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord6(data) || data["schema"] !== "finitemonkey/fronts-board@1") return EMPTY_BOARD;
+  const rows = Array.isArray(data["rows"]) ? data["rows"].filter(isRecord6) : [];
+  const collisions = Array.isArray(data["collisions"]) ? data["collisions"].filter(isRecord6) : [];
   return { lines: [...rows.map(rowLine), ...collisions.map(collisionLine)], sessions: rows.flatMap(sessionOf) };
 };
 var boardText = (board) => [...board.lines, ...board.sessions.map((session) => `open ${session.branch}: ${session.resume}`)].join("\n");
@@ -617,10 +860,10 @@ var bandTree = (elements, view, open) => elements.Box({
   columnGap: 2,
   children: [
     line(elements, `FM  ${bandLine(view)}`, "fm-band-text"),
-    elements.Button({ key: "fm-open", label: "gate panel", hotkey: "g", onPress: open })
+    elements.Button({ key: "fm-open", label: label("mod.view.band_button"), hotkey: "g", onPress: open })
   ]
 });
-var contractLine = (view) => view.contract === null ? "no contract" : `contract ${view.contract.id} ${view.contract.hash.slice(0, 12)}`;
+var contractLine = (view) => view.contract === null ? label("mod.view.no_contract") : label("mod.view.contract_full", { id: view.contract.id, hash: view.contract.hash.slice(0, 12) });
 var paneTree = (elements, view, actions) => elements.Box({
   key: "fm-pane",
   flexDirection: "column",
@@ -629,7 +872,7 @@ var paneTree = (elements, view, actions) => elements.Box({
     line(elements, contractLine(view), "fm-pane-contract", true),
     ...view.checks.map((check) => line(elements, checkLine(check), `fm-check-${check.id}`)),
     ...view.notVerified.length > 0 ? [
-      line(elements, "not verified:", "fm-not-verified"),
+      line(elements, label("mod.view.not_verified_title"), "fm-not-verified"),
       ...view.notVerified.map((item) => line(elements, notVerifiedLine(item), `fm-nv-${item.id}`))
     ] : [],
     elements.Box({
@@ -637,8 +880,13 @@ var paneTree = (elements, view, actions) => elements.Box({
       flexDirection: "row",
       columnGap: 2,
       children: [
-        elements.Button({ key: "fm-run-gate", label: "Run gate", hotkey: "r", onPress: actions.runGate }),
-        elements.Button({ key: "fm-close", label: "Close", hotkey: "x", onPress: actions.close })
+        elements.Button({
+          key: "fm-run-gate",
+          label: label("mod.view.run_gate"),
+          hotkey: "r",
+          onPress: actions.runGate
+        }),
+        elements.Button({ key: "fm-close", label: label("mod.view.close"), hotkey: "x", onPress: actions.close })
       ]
     })
   ]
@@ -647,10 +895,8 @@ var costTree = (elements, lines, close) => elements.Box({
   key: "fm-cost",
   flexDirection: "column",
   children: [
-    ...(lines.length === 0 ? ["no cost recorded for this contract"] : lines).map(
-      (text6) => elements.Text({ children: [text6] })
-    ),
-    elements.Button({ key: "fm-cost-close", label: "Close", hotkey: "x", onPress: close })
+    ...(lines.length === 0 ? [label("mod.view.no_cost")] : lines).map((text6) => elements.Text({ children: [text6] })),
+    elements.Button({ key: "fm-cost-close", label: label("mod.view.close"), hotkey: "x", onPress: close })
   ]
 });
 
@@ -859,7 +1105,7 @@ var researchSvg = (theme, lane, marks) => marks.flatMap((mark) => {
 
 // src/mod/judge-view.ts
 var JUDGE_PANE = "fm-judge";
-var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text4 = (value) => typeof value === "string" ? value : "";
 var eventLine = (event) => {
   const fix = fixOf({
@@ -881,9 +1127,9 @@ var judgeLines = (json) => {
   } catch {
     return [];
   }
-  const data = isRecord6(parsed) && isRecord6(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord6(data) || data["verb"] !== "trajectory") return [];
-  const events = Array.isArray(data["events"]) ? data["events"].filter(isRecord6) : [];
+  const data = isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord7(data) || data["verb"] !== "trajectory") return [];
+  const events = Array.isArray(data["events"]) ? data["events"].filter(isRecord7) : [];
   return events.map(eventLine);
 };
 var judgeTree = (elements, lines, close) => elements.Box({
@@ -1234,11 +1480,11 @@ var cellStyle = (cell, theme, depth) => {
 var glyphOf = (cell) => cell.band === "gap" && cell.glyph === " " ? HATCH : cell.glyph;
 var colorRow = (cells, theme, depth) => {
   let out = "";
-  let current;
+  let current2;
   for (const cell of cells) {
     const next = cellStyle(cell, theme, depth);
-    if (next !== current) out += `${current === void 0 ? "" : RESET}${next}`;
-    current = next;
+    if (next !== current2) out += `${current2 === void 0 ? "" : RESET}${next}`;
+    current2 = next;
     out += glyphOf(cell);
   }
   return `${out}${RESET}`;
@@ -1398,12 +1644,12 @@ var placed = (plot, trajectory) => {
 };
 var bandLine2 = (theme, band, x, y) => {
   const info = BANDS[band];
-  const label = info.status === "calibration" ? `${info.label} · calibration` : info.label;
+  const label2 = info.status === "calibration" ? `${info.label} · calibration` : info.label;
   const dashed = band === "unstable" ? ` stroke-dasharray="3 2"` : "";
   const stroke = band === "unstable" ? "uInk" : "rule";
   return [
     `<rect x="${num(x)}" y="${num(y - 8)}" width="9" height="9" stroke-width="0.8"${dashed} ${paint(theme, { cls: `key-swatch key-${band}`, fill: swatchOf(band), stroke })}/>`,
-    text3(theme, { x: x + 14, y }, label, { size: 10, fill: "muted" })
+    text3(theme, { x: x + 14, y }, label2, { size: 10, fill: "muted" })
   ].join("");
 };
 var hypothesisLine = (theme, line2, x, y) => [
@@ -1742,16 +1988,16 @@ var rasterOf = (trajectory, columns, options) => {
 
 // src/mod/trajectory-parse.ts
 var DOMAIN_NAMES = ["product", "interface", "backend", "infrastructure", "security"];
-var isRecord7 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var records = (value) => Array.isArray(value) ? value.filter(isRecord7) : [];
+var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var records = (value) => Array.isArray(value) ? value.filter(isRecord8) : [];
 var str3 = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var orNull = (record, key) => typeof record[key] === "number" ? record[key] : null;
 var num2 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
 var concept = (value) => typeof value === "string" && value !== "" ? value : "unknown";
-var splitOf = (value) => isRecord7(value) ? { lower: num2(value, "lower"), upper: num2(value, "upper"), evidence: num2(value, "evidence") } : void 0;
+var splitOf = (value) => isRecord8(value) ? { lower: num2(value, "lower"), upper: num2(value, "upper"), evidence: num2(value, "evidence") } : void 0;
 var splitsIn = (item) => {
   const raw = item["splits"];
-  if (!isRecord7(raw)) return {};
+  if (!isRecord8(raw)) return {};
   const [alone, proximal, horizon] = [splitOf(raw["alone"]), splitOf(raw["proximal"]), splitOf(raw["horizon"])];
   return alone === void 0 || proximal === void 0 || horizon === void 0 ? {} : { splits: { alone, proximal, horizon } };
 };
@@ -1804,8 +2050,8 @@ var parseTrajectories = (text6) => {
   } catch {
     return [];
   }
-  const data = isRecord7(parsed) && isRecord7(parsed["data"]) ? parsed["data"] : parsed;
-  if (!isRecord7(data) || data["schema"] !== "finitemonkey/trajectory@1") return [];
+  const data = isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
+  if (!isRecord8(data) || data["schema"] !== "finitemonkey/trajectory@1") return [];
   return records(data["domains"]).flatMap((item) => {
     const domain = DOMAIN_NAMES.find((name) => name === item["domain"]);
     if (domain === void 0) return [];
@@ -2089,7 +2335,7 @@ var cardsTree = (elements, teach, probe, notice, actions) => [
 
 // src/mod/xray-view.ts
 var XRAY_PANE = "fm-xray";
-var isRecord8 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var str5 = (record, key) => typeof record[key] === "string" ? record[key] : "";
 var num3 = (record, key) => typeof record[key] === "number" ? record[key] : 0;
 var dataOf2 = (text6, schema) => {
@@ -2099,10 +2345,10 @@ var dataOf2 = (text6, schema) => {
   } catch {
     return void 0;
   }
-  const data = isRecord8(parsed) && isRecord8(parsed["data"]) ? parsed["data"] : parsed;
-  return isRecord8(data) && data["schema"] === schema ? data : void 0;
+  const data = isRecord9(parsed) && isRecord9(parsed["data"]) ? parsed["data"] : parsed;
+  return isRecord9(data) && data["schema"] === schema ? data : void 0;
 };
-var records2 = (value) => Array.isArray(value) ? value.filter(isRecord8) : [];
+var records2 = (value) => Array.isArray(value) ? value.filter(isRecord9) : [];
 var parseXray = (text6) => {
   const data = dataOf2(text6, "finitemonkey/xray@1");
   if (data === void 0) return void 0;
@@ -2327,11 +2573,11 @@ async function registerGateCommand($) {
   try {
     await $.command.register({
       name: GATE_COMMAND,
-      description: "Finite Monkey: gate state, contract and what is not verified",
+      description: label("mod.view.command_description"),
       immediate: true
     });
   } catch {
-    $.ui.log("finitemonkey: /fm is taken by another command; the gate panel opens from the band");
+    $.ui.log(label("mod.view.command_taken"));
   }
 }
 async function afterTool($, e, next) {
@@ -2376,17 +2622,17 @@ async function renderPane($, e, next) {
   if (e.requestId !== GATE_PANE) return next(e);
   const elements = $.ui.resolve(e);
   const view = memory.view;
-  if (view === void 0) return elements.Text({ key: "fm-loading", children: ["finitemonkey: reading the gate…"] });
+  if (view === void 0) return elements.Text({ key: "fm-loading", children: [label("mod.view.loading")] });
   return paneTree(elements, view, { runGate: () => runGateNow($), close: () => closePane($) });
 }
 async function costNow($) {
   const lines = await refreshCost($);
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
-    await $.ui.open({ id: COST_PANE, title: "Finite Monkey · cost" });
+    await $.ui.open({ id: COST_PANE, title: label("mod.view.cost_title") });
     return {};
   }
-  return { text: lines.length === 0 ? "finitemonkey: no cost recorded for this contract" : lines.join("\n") };
+  return { text: lines.length === 0 ? `finitemonkey: ${label("mod.view.no_cost")}` : lines.join("\n") };
 }
 function showResume($, session) {
   memory.boardNote = openNote(session);
@@ -2398,14 +2644,14 @@ async function frontsNow($) {
   memory.boardNote = void 0;
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) {
-    await $.ui.open({ id: FRONTS_PANE, title: "Finite Monkey · fronts" });
+    await $.ui.open({ id: FRONTS_PANE, title: label("mod.view.fronts_title") });
     return {};
   }
-  return { text: memory.board.lines.length === 0 ? "finitemonkey: no worktrees found" : boardText(memory.board) };
+  return { text: memory.board.lines.length === 0 ? label("mod.view.no_worktrees") : boardText(memory.board) };
 }
 async function handoffNow($) {
   const brief = await readHandoff($);
-  if (brief === void 0) return { text: "finitemonkey: no handoff in this folder" };
+  if (brief === void 0) return { text: label("mod.view.no_handoff") };
   const surfaces = await $.session.surfaces();
   if (surfaces.length > 0) await $.session.compact({ instructions: brief });
   return { text: brief };
@@ -2426,7 +2672,7 @@ async function runGateCommand($, e) {
     return {};
   }
   const view = memory.view;
-  return { text: view === void 0 ? "finitemonkey: no gate status in this folder" : statusText(view) };
+  return { text: view === void 0 ? label("mod.view.no_status") : statusText(view) };
 }
 function withTurnLine(e, result) {
   const view = memory.view;
@@ -2438,7 +2684,7 @@ ${line2}` };
 }
 
 // src/core/parsed.ts
-var isRecord9 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord10 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 
 // src/hooks/fields.ts
 var textField = (record, ...names) => {
@@ -2457,7 +2703,7 @@ var editsOf = (input) => {
   const edits = input["edits"];
   if (!Array.isArray(edits)) return [];
   return edits.flatMap((edit) => {
-    if (!isRecord9(edit)) return [];
+    if (!isRecord10(edit)) return [];
     const oldText = textField(edit, "old_string");
     const newText = textField(edit, "new_string");
     return oldText === void 0 || newText === void 0 ? [] : [{ oldText, newText, all: edit["replace_all"] === true }];
@@ -2483,7 +2729,7 @@ var WRITERS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit"]);
 var written = (input) => textField(input, "content") ?? editsOf(input).map((edit) => edit.newText).join("\n");
 var untrustedSeen = (tool, before) => readsUntrusted(tool) ? tool : before;
 var memoryHold = (state, tool, input, seen2) => {
-  if (!WRITERS.has(tool) || !isRecord9(input)) return void 0;
+  if (!WRITERS.has(tool) || !isRecord10(input)) return void 0;
   if (!isNativeMemory(textField(input, "file_path") ?? "")) return void 0;
   const hold = state?.memory;
   if (hold?.mode === "off") return void 0;
@@ -2494,7 +2740,7 @@ var memoryHold = (state, tool, input, seen2) => {
 
 // src/mod/state.ts
 var MOD_STATE_SCHEMA = "finitemonkey/mod-state@1";
-var isRecord10 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord11 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var MODES = ["off", "shadow", "active"];
 var TARGETS = ["path", "command"];
 var compile = (pattern) => {
@@ -2505,7 +2751,7 @@ var compile = (pattern) => {
   }
 };
 var ruleOf = (value) => {
-  if (!isRecord10(value)) return void 0;
+  if (!isRecord11(value)) return void 0;
   const { id, target, pattern, reason } = value;
   const known = TARGETS.find((item) => item === target);
   if (typeof id !== "string" || known === void 0 || typeof pattern !== "string" || typeof reason !== "string")
@@ -2516,17 +2762,17 @@ var ruleOf = (value) => {
   return regex === void 0 ? void 0 : { rule, regex };
 };
 var attributionOf = (value) => {
-  if (!isRecord10(value) || typeof value["forbid"] !== "boolean") return void 0;
+  if (!isRecord11(value) || typeof value["forbid"] !== "boolean") return void 0;
   const trailer = value["trailer"];
   return { forbid: value["forbid"], trailer: typeof trailer === "string" && trailer !== "" ? trailer : null };
 };
 var memoryOf = (value) => {
-  if (!isRecord10(value) || typeof value["reason"] !== "string") return void 0;
+  if (!isRecord11(value) || typeof value["reason"] !== "string") return void 0;
   const mode = MODES.find((item) => item === value["mode"]) ?? "shadow";
   const untrusted = value["untrusted"];
   return { mode, untrusted: typeof untrusted === "string" ? untrusted : null, reason: value["reason"] };
 };
-var dataOf3 = (parsed) => isRecord10(parsed) && isRecord10(parsed["data"]) ? parsed["data"] : parsed;
+var dataOf3 = (parsed) => isRecord11(parsed) && isRecord11(parsed["data"]) ? parsed["data"] : parsed;
 var parseModState = (text6) => {
   let parsed;
   try {
@@ -2535,7 +2781,7 @@ var parseModState = (text6) => {
     return void 0;
   }
   const data = dataOf3(parsed);
-  if (!isRecord10(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
+  if (!isRecord11(data) || data["schema"] !== MOD_STATE_SCHEMA || typeof data["root"] !== "string") return void 0;
   const mode = MODES.find((item) => item === data["mode"]) ?? "shadow";
   const raw = Array.isArray(data["rules"]) ? data["rules"] : [];
   const rules = raw.map(ruleOf).filter((rule) => rule !== void 0);
@@ -2559,9 +2805,9 @@ var parseModState = (text6) => {
 // src/mod/tighten.ts
 var FILE_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
-var isRecord11 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord12 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var text5 = (input, ...names) => {
-  if (!isRecord11(input)) return void 0;
+  if (!isRecord12(input)) return void 0;
   for (const name of names) {
     const value = input[name];
     if (typeof value === "string" && value !== "") return value;
@@ -2653,12 +2899,14 @@ var WATCHED_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Powe
 async function onStart($, e, next) {
   memory.untrusted = void 0;
   scheduleRefresh($);
+  await refreshLabels($);
   scheduleStatus($, 0);
   await registerGateCommand($);
   return next(e);
 }
 async function onTurnComplete($, e, next) {
   scheduleRefresh($);
+  scheduleLabels($);
   scheduleStatus($, 0);
   if (e.agentId === void 0) scheduleUsage($);
   return withTurnLine(e, await next(e));

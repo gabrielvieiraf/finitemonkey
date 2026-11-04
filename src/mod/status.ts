@@ -1,3 +1,5 @@
+import { count, label } from "./labels.js";
+
 export interface ViewCheck {
   readonly id: string;
   readonly status: string;
@@ -22,7 +24,12 @@ export interface GateView {
   readonly editsSinceGate: number | null;
   readonly bypasses: number;
   readonly loop: { readonly count: number; readonly limit: number } | null;
-  readonly cost: { readonly usd: number; readonly requests: number } | null;
+  readonly cost: {
+    readonly usd: number;
+    readonly requests: number;
+    readonly tokens: number;
+    readonly billing: "api" | "subscription";
+  } | null;
   readonly xray: { readonly beyond: number; readonly blocks: number } | null;
   readonly knowledge: { readonly stale: number; readonly contradictions: number; readonly quarantined: number } | null;
   readonly blindBand: {
@@ -60,10 +67,18 @@ const loopOf = (value: unknown): GateView["loop"] =>
     ? { count: value["count"], limit: value["limit"] }
     : null;
 
-const costOf = (value: unknown): GateView["cost"] =>
-  isRecord(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number"
-    ? { usd: value["usd"], requests: value["requests"] }
+const costOf = (data: Readonly<Record<string, unknown>>): GateView["cost"] => {
+  const value = data["cost"];
+  const tokens = data["costTokens"];
+  return isRecord(value) && typeof value["usd"] === "number" && typeof value["requests"] === "number"
+    ? {
+        usd: value["usd"],
+        requests: value["requests"],
+        tokens: typeof tokens === "number" ? tokens : 0,
+        billing: data["billing"] === "subscription" ? "subscription" : "api",
+      }
     : null;
+};
 
 const xrayOf = (value: unknown): GateView["xray"] =>
   isRecord(value) && typeof value["beyondWithoutCriterion"] === "number" && typeof value["blocks"] === "number"
@@ -118,7 +133,7 @@ const triageOf = (value: unknown): GateView["triage"] =>
     : null;
 
 export const triageLine = (triage: NonNullable<GateView["triage"]>): string =>
-  `triage ${String(triage.open)}/${String(triage.flagged)} open`;
+  label("mod.view.triage", { open: triage.open, flagged: triage.flagged });
 
 const SPARK = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 
@@ -132,17 +147,34 @@ const trajectorySpark = (recent: readonly number[] | undefined): string =>
 
 export const trajectoryLine = (trajectory: NonNullable<GateView["trajectory"]>): string =>
   [
-    `trajectory ${trajectory.domain}${trajectorySpark(trajectory.recent)}: ${trajectory.band ?? "no accepted work"}`,
+    label("mod.view.trajectory", {
+      domain: trajectory.domain,
+      spark: trajectorySpark(trajectory.recent),
+      band: trajectory.band ?? label("mod.view.no_accepted_work"),
+    }),
     trajectory.ricochet === null
-      ? "no ricochet"
-      : `last ricochet ${trajectory.ricochet.concept} ${trajectory.ricochet.week.slice(-3)}`,
+      ? label("mod.view.no_ricochet")
+      : label("mod.view.last_ricochet", {
+          concept: trajectory.ricochet.concept,
+          week: trajectory.ricochet.week.slice(-3),
+        }),
   ].join(", ");
 
 export const knowledgeLine = (knowledge: NonNullable<GateView["knowledge"]>): string =>
-  `knowledge: ${String(knowledge.stale)} stale · ${String(knowledge.contradictions)} rules contradict code · ${String(knowledge.quarantined)} in quarantine`;
+  label("mod.view.knowledge", {
+    stale: knowledge.stale,
+    contradictions: knowledge.contradictions,
+    quarantined: knowledge.quarantined,
+  });
 
 export const blindLine = (blind: NonNullable<GateView["blindBand"]>): string =>
-  `blind band ${blind.domain} ${blind.index.toFixed(2)} ${sparkline(blind.recent)} (${String(blind.withoutCriterion)}/${String(blind.helps)} help without criterion)`;
+  label("mod.view.blind", {
+    domain: blind.domain,
+    index: blind.index.toFixed(2),
+    spark: sparkline(blind.recent),
+    without: blind.withoutCriterion,
+    helps: blind.helps,
+  });
 
 export const parseStatus = (text: string): GateView | undefined => {
   let parsed: unknown;
@@ -176,7 +208,7 @@ export const parseStatus = (text: string): GateView | undefined => {
     editsSinceGate: typeof edits === "number" ? edits : null,
     bypasses: typeof data["bypasses"] === "number" ? data["bypasses"] : 0,
     loop: loopOf(data["loop"]),
-    cost: costOf(data["cost"]),
+    cost: costOf(data),
     xray: xrayOf(data["xray"]),
     blindBand: blindOf(data["blindBand"]),
     knowledge: knowledgeOf(data["knowledge"]),
@@ -197,35 +229,40 @@ export const markOf = (light: string): string => MARK[light] ?? "·";
 
 const short = (hash: string): string => hash.slice(0, 4);
 
+export const costBand = (cost: NonNullable<GateView["cost"]>): string =>
+  cost.billing === "subscription"
+    ? label("mod.view.cost_tokens", { tokens: count(cost.tokens) })
+    : label("mod.view.cost_usd", { usd: `$${cost.usd.toFixed(2)}` });
+
 export const bandLine = (view: GateView): string =>
   [
-    ...(view.bypasses > 0 ? [`⚠ ${String(view.bypasses)} guard bypassed`] : []),
-    `gate ${markOf(view.light)} ${String(view.passed)}/${String(view.total)}`,
-    ...(view.notVerified.length > 0 ? [`${String(view.notVerified.length)} not verified`] : []),
-    ...(view.contract === null ? [] : [`contract ${short(view.contract.hash)}`]),
+    ...(view.bypasses > 0 ? [label("mod.view.bypassed", { count: view.bypasses })] : []),
+    label("mod.view.gate", { mark: markOf(view.light), passed: view.passed, total: view.total }),
+    ...(view.notVerified.length > 0 ? [label("mod.view.not_verified_count", { count: view.notVerified.length })] : []),
+    ...(view.contract === null ? [] : [label("mod.view.contract_short", { hash: short(view.contract.hash) })]),
     ...(view.editsSinceGate !== null && view.editsSinceGate > 0
-      ? [`evidence ${String(view.editsSinceGate)} edits old`]
+      ? [label("mod.view.evidence_old", { count: view.editsSinceGate })]
       : []),
     ...(view.knowledge === null ? [] : [knowledgeLine(view.knowledge)]),
     ...(view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)]),
     ...(view.trajectory === null ? [] : [trajectoryLine(view.trajectory)]),
     ...(view.triage === null || view.triage.open === 0 ? [] : [triageLine(view.triage)]),
-    ...(view.loop === null ? [] : [`loop ${String(view.loop.count)}/${String(view.loop.limit)}`]),
-    ...(view.cost === null ? [] : [`$${view.cost.usd.toFixed(2)} this contract`]),
-    ...(view.xray === null || view.xray.beyond === 0
-      ? []
-      : [`x-ray ${String(view.xray.beyond)} beyond the record without criterion`]),
+    ...(view.loop === null ? [] : [label("mod.view.loop", { count: view.loop.count, limit: view.loop.limit })]),
+    ...(view.cost === null ? [] : [costBand(view.cost)]),
+    ...(view.xray === null || view.xray.beyond === 0 ? [] : [label("mod.view.xray", { count: view.xray.beyond })]),
   ].join(" · ");
 
 export const turnLine = (view: GateView): string =>
   [
-    `gate ${markOf(view.light)}`,
-    ...(view.notVerified.length > 0 ? [`${String(view.notVerified.length)} criteria without check`] : []),
-    ...(view.contract === null ? [] : [`contract ${short(view.contract.hash)}`]),
+    label("mod.view.gate_mark", { mark: markOf(view.light) }),
+    ...(view.notVerified.length > 0
+      ? [label("mod.view.criteria_without_check", { count: view.notVerified.length })]
+      : []),
+    ...(view.contract === null ? [] : [label("mod.view.contract_short", { hash: short(view.contract.hash) })]),
   ].join(" · ");
 
 export const checkLine = (check: ViewCheck): string =>
-  `${check.status === "passed" ? "✓" : check.status === "failed" ? "✗" : "○"} ${check.id}${check.stale ? " (stale)" : ""}`;
+  `${check.status === "passed" ? "✓" : check.status === "failed" ? "✗" : "○"} ${check.id}${check.stale ? ` ${label("mod.view.stale")}` : ""}`;
 
 export const notVerifiedLine = (item: ViewNotVerified): string => `○ ${item.id}: ${item.reason} → ${item.verify}`;
 
@@ -233,5 +270,7 @@ export const statusText = (view: GateView): string =>
   [
     `finitemonkey ${bandLine(view)}`,
     ...view.checks.map(checkLine),
-    ...(view.notVerified.length > 0 ? ["not verified:", ...view.notVerified.map(notVerifiedLine)] : []),
+    ...(view.notVerified.length > 0
+      ? [label("mod.view.not_verified_title"), ...view.notVerified.map(notVerifiedLine)]
+      : []),
   ].join("\n");

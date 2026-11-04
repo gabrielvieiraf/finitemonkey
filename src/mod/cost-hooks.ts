@@ -1,6 +1,7 @@
 import type { ModApi } from "./api.js";
 import { runCli } from "./cli.js";
 import type { StreamNext, TurnStepInput, TurnStepResult } from "./events.js";
+import { count as num, label } from "./labels.js";
 import { memory, type StepUsage } from "./memory.js";
 
 const count = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
@@ -50,7 +51,51 @@ const splitLines = (data: Readonly<Record<string, unknown>>): readonly string[] 
   const verification = data["verification"];
   if (!isRecord(build) || !isRecord(verification)) return [];
   const minutes = typeof verification["gateMinutes"] === "number" ? verification["gateMinutes"] : 0;
-  return [`build ${money(build["usd"])} · verification ${money(verification["usd"])} + gate ${String(minutes)} min`];
+  return [
+    label("mod.view.split", {
+      build: money(build["usd"]),
+      verification: money(verification["usd"]),
+      minutes,
+    }),
+  ];
+};
+
+const tally = (value: unknown): number => (typeof value === "number" ? value : 0);
+
+const tokenLines = (data: Readonly<Record<string, unknown>>): readonly string[] => {
+  const tokens = isRecord(data["tokens"]) ? data["tokens"] : {};
+  return [
+    label("mod.view.cost_contract_tokens", {
+      task: String(data["task"]),
+      tokens: num(tally(tokens["total"])),
+      requests: tally(data["requests"]),
+    }),
+    label("mod.view.cost_token_split", {
+      input: num(tally(tokens["input"])),
+      output: num(tally(tokens["output"])),
+      cacheRead: num(tally(tokens["cacheRead"])),
+      cacheWrite: num(tally(tokens["cacheWrite"])),
+    }),
+  ];
+};
+
+const usdLines = (data: Readonly<Record<string, unknown>>): readonly string[] => {
+  const arms = Array.isArray(data["byArm"]) ? data["byArm"].filter(isRecord) : [];
+  return [
+    label("mod.view.cost_contract_usd", {
+      task: String(data["task"]),
+      usd: money(data["usd"]),
+      requests: tally(data["requests"]),
+    }),
+    label("mod.view.attempts", {
+      attempts: tally(data["attempts"]),
+      perAttempt: data["perAttempt"] === null ? "-" : money(data["perAttempt"]),
+    }),
+    ...splitLines(data),
+    ...arms.map((arm) =>
+      label("mod.view.arm", { arm: String(arm["arm"]), usd: money(arm["usd"]), requests: tally(arm["requests"]) }),
+    ),
+  ];
 };
 
 export const costLines = (text: string): readonly string[] => {
@@ -62,13 +107,7 @@ export const costLines = (text: string): readonly string[] => {
   }
   const data = isRecord(parsed) && isRecord(parsed["data"]) ? parsed["data"] : parsed;
   if (!isRecord(data) || data["schema"] !== "finitemonkey/mod-cost@1") return [];
-  const arms = Array.isArray(data["byArm"]) ? data["byArm"].filter(isRecord) : [];
-  return [
-    `contract ${String(data["task"])}: ${money(data["usd"])} in ${String(data["requests"])} requests`,
-    `attempts ${String(data["attempts"])} · per attempt ${data["perAttempt"] === null ? "-" : money(data["perAttempt"])}`,
-    ...splitLines(data),
-    ...arms.map((arm) => `arm ${String(arm["arm"])}: ${money(arm["usd"])} in ${String(arm["requests"])} requests`),
-  ];
+  return data["billing"] === "subscription" ? tokenLines(data) : usdLines(data);
 };
 
 export async function refreshCost($: ModApi): Promise<readonly string[]> {

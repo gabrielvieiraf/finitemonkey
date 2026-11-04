@@ -21,6 +21,7 @@ import {
   scheduleStatus,
   withTurnLine,
 } from "./gate-hooks.js";
+import { refreshLabels, scheduleLabels } from "./labels.js";
 import { memory } from "./memory.js";
 import { failClosed, guardCheck, scheduleRefresh } from "./tighten-hooks.js";
 
@@ -29,6 +30,7 @@ const WATCHED_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Po
 async function onStart($: ModApi, e: SessionStartInput, next: Next<"session.start">): Promise<SessionStartResult> {
   memory.untrusted = undefined;
   scheduleRefresh($);
+  await refreshLabels($);
   scheduleStatus($, 0);
   await registerGateCommand($);
   return next(e);
@@ -40,6 +42,7 @@ async function onTurnComplete(
   next: Next<"turn.complete">,
 ): Promise<TurnCompleteResult> {
   scheduleRefresh($);
+  scheduleLabels($);
   scheduleStatus($, 0);
   if (e.agentId === undefined) scheduleUsage($);
   return withTurnLine(e, await next(e));
