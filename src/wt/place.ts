@@ -2,6 +2,7 @@ import { basename, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
+import { HOME_DATA_DIR } from "../core/data-dir.js";
 import { toPosixPath } from "../core/posix-path.js";
 
 export const PLACE_PROBLEMS = ["temp", "nested", "slow"] as const;
@@ -46,5 +47,5 @@ export const OFFICIAL_DIR = ".claude/worktrees";
 
 export const defaultPlace = (mainRoot: AbsolutePath, home: string, id: string): AbsolutePath =>
   isSlowPlace(mainRoot)
-    ? toAbsolutePath(join(home, ".finitemonkey", "worktrees", basename(mainRoot), id))
+    ? toAbsolutePath(join(home, HOME_DATA_DIR, "worktrees", basename(mainRoot), id))
     : toAbsolutePath(join(mainRoot, OFFICIAL_DIR, id));

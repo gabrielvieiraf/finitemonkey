@@ -43,8 +43,8 @@ describe("onboarding records the start command and the runtime check uses it", (
   it("when active, a runtime check without run starts the app from the record", () => {
     const runtime = fakeRuntime({
       files: {
-        [at(".finitemonkey/onboard.json")]: record,
-        [at(".finitemonkey/policy.yml")]: "guards:\n  onboard-start: active\n",
+        [at(".fm/onboard.json")]: record,
+        [at(".fm/policy.yml")]: "guards:\n  onboard-start: active\n",
       },
     });
     assert.equal(withOnboardStart(runtime, fmPaths(ROOT), RUNTIME_CHECK).run, "npm run dev");
@@ -53,7 +53,7 @@ describe("onboarding records the start command and the runtime check uses it", (
   });
 
   it("in shadow, the default, the check stays as declared", () => {
-    const runtime = fakeRuntime({ files: { [at(".finitemonkey/onboard.json")]: record } });
+    const runtime = fakeRuntime({ files: { [at(".fm/onboard.json")]: record } });
     assert.equal(withOnboardStart(runtime, fmPaths(ROOT), RUNTIME_CHECK).run, undefined);
   });
 });

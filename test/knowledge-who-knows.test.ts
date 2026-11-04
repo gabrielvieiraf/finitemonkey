@@ -36,8 +36,8 @@ const setup = (policy: string): Repo => {
   repo.write("src/auth/login.ts", "export function login(): boolean {\n  return true;\n}\n");
   commitAt(repo, "auth in a session", iso(5));
   repo.write("src/reports/sum.ts", "export const sum = 1;\n");
-  repo.write(".finitemonkey/prompts.jsonl", `${JSON.stringify({ at: iso(5.2), session: "s0", text: "add login" })}\n`);
-  repo.write(".finitemonkey/policy.yml", policy);
+  repo.write(".fm/prompts.jsonl", `${JSON.stringify({ at: iso(5.2), session: "s0", text: "add login" })}\n`);
+  repo.write(".fm/policy.yml", policy);
   return repo;
 };
 

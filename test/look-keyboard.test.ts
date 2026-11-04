@@ -149,7 +149,7 @@ describe("keyboard: fixtures against a clean twin", () => {
     assert.deepEqual(rules("/dialog"), ["keyboard/dialog #launch"]);
     assert.deepEqual(rules("/clean"), []);
     assert.ok(run.summary.findings.every((item) => !item.blocking));
-    const dir = join(repo.root, ".finitemonkey", "look", run.summary.treeHash);
+    const dir = join(repo.root, ".fm", "look", run.summary.treeHash);
     assert.ok(existsSync(join(dir, "clean-1440.focus.png")));
   });
 });

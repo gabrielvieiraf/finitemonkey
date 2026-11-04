@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { GitRun, Runtime } from "../core/runtime.js";
 import { isSensitivePath } from "../secrets/guards/paths.js";
@@ -76,7 +77,7 @@ export const worktreeTree = (
   withTempIndex(runtime, repo, options, (env) => {
     const read = run(runtime, repo, head === undefined ? ["read-tree", "--empty"] : ["read-tree", head], env, options);
     if (!read.ok) return read;
-    const added = run(runtime, repo, ["add", "-A", "--", ":/", ":(exclude,top).finitemonkey"], env, options);
+    const added = run(runtime, repo, ["add", "-A", "--", ":/", `:(exclude,top)${DATA_DIR}`], env, options);
     if (!added.ok) return added;
     const cleaned = dropSensitive(runtime, repo, env, options);
     if (!cleaned.ok) return cleaned;

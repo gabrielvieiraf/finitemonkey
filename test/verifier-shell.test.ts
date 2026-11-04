@@ -53,7 +53,7 @@ const READS = [
   "cat src/a.ts | grep charge",
   "git diff main -- src/a.ts",
   "ls -la src",
-  'echo \'{"verdict":"approve","findings":[]}\' | finitemonkey critique verify --base main',
+  'echo \'{"verdict":"approve","findings":[]}\' | fm critique verify --base main',
   "npx finitemonkey critique verify --base main --file review.json",
   "npm test",
   "npx vitest run",

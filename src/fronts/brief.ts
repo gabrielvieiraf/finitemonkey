@@ -1,12 +1,13 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { defaultOn } from "../defaults/items.js";
 import type { Front, FrontsState } from "./state.js";
 
-export const BRIEFING_FILE = ".finitemonkey/briefing.md";
+export const BRIEFING_FILE = `${DATA_DIR}/briefing.md`;
 export const BRIEFING_MAX_LINES = 120;
 
 const READING = ["AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "docs/plan"] as const;
@@ -44,14 +45,14 @@ const reading = (runtime: Runtime, root: AbsolutePath): readonly string[] => [
 const verify = (runtime: Runtime, root: AbsolutePath, available: readonly string[]): readonly string[] => [
   ...commandsFor(available, VERIFY_SCRIPTS),
   "- `finitemonkey gate` before reporting; the report numbers must match its evidence.",
-  ...(exists(runtime, root, ".finitemonkey/look.yml")
+  ...(exists(runtime, root, `${DATA_DIR}/look.yml`)
     ? ["- `finitemonkey look` on the screens you touched (1440 and 390 px)."]
     : []),
   "- Dev servers use your port range: `$FINITEMONKEY_PORT` (also `$PORT`).",
 ];
 
 const REPORT = [
-  "Write `.finitemonkey/reports/<front-id>.json` (`finitemonkey/front-report@1`) before you stop:",
+  "Write `.fm/reports/<front-id>.json` (`finitemonkey/front-report@1`) before you stop:",
   "`front`, `branch`, `head`, `commits`, `delivered`, `endpoints`, `tests` (`command`, `passed`, `failed`, `added`),",
   "`screenshots` (`path`, `viewport`, `opened`), `left_out` (`what`, `why`), `provisional_decisions`, `evidence`.",
   "Stopping early is fine: list what is missing in `left_out`.",

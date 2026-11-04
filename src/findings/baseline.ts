@@ -1,12 +1,13 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type JsonObject, type Parsed, parseJsonObject, reject } from "../core/parsed.js";
 import { toPosixPath } from "../core/posix-path.js";
 import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 
-export const BASELINE_FILE = ".finitemonkey/findings/baseline.json";
+export const BASELINE_FILE = `${DATA_DIR}/findings/baseline.json`;
 export const BASELINE_SCHEMA = "finitemonkey/findings-baseline@1";
 export const LEGACY_SECRETS_SCHEMA = "finitemonkey/secrets-baseline@1";
 export const BASELINE_STATES = ["aceito", "falso-positivo"] as const;

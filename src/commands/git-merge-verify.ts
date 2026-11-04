@@ -98,7 +98,7 @@ const resultOf = (ctx: Ctx, checked: readonly Checked[]): CommandResult => {
       code: "merge_lost_work",
       messageKey: "git.error.merge_lost",
       params: { count: lost },
-      fix: "finitemonkey merge verify --dropped .finitemonkey/merge-dropped.json",
+      fix: "finitemonkey merge verify --dropped .fm/merge-dropped.json",
       exitCode: ExitCode.CheckFailed,
       data,
     },

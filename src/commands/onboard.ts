@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { stringOption } from "../core/args.js";
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { envInHistory } from "../creds/history.js";
@@ -65,7 +66,7 @@ const riskLines = (ctx: Ctx, risks: readonly Risk[]): readonly string[] =>
         ...risks.map((risk) => `- ${ctx.t(`onboard.risk.${risk.kind}`, { subject: risk.subject })}`),
       ];
 
-const POINTERS: readonly (readonly [string, MessageKey])[] = [[".finitemonkey/map.txt", "onboard.block.pointer.map"]];
+const POINTERS: readonly (readonly [string, MessageKey])[] = [[`${DATA_DIR}/map.txt`, "onboard.block.pointer.map"]];
 
 const blockSections = (ctx: Ctx, files: ProjectFiles, state: OnboardState): readonly BlockSection[] => [
   {

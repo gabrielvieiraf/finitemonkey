@@ -31,13 +31,13 @@ const problemOf = (ctx: Ctx, failure: PrOpenFailure): Problem => {
         branch: failure.branch,
       });
     case "parent-open":
-      return problem("pr_parent_open", "pr.error.parent_open", `finitemonkey pr open --base ${failure.parent}`, {
+      return problem("pr_parent_open", "pr.error.parent_open", `fm pr open --base ${failure.parent}`, {
         parent: failure.parent,
       });
     case "restack":
       return problem("pr_failed", "pr.error.restack", "finitemonkey undo --list", { detail: failure.detail });
     case "conflict":
-      return problem("pr_conflict", "pr.error.conflict", `finitemonkey merge ${failure.base}`, {
+      return problem("pr_conflict", "pr.error.conflict", `fm merge ${failure.base}`, {
         base: failure.base,
         files: failure.files.join(", "),
       });

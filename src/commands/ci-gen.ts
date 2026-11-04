@@ -78,7 +78,7 @@ export const ciGenCommand: CommandSpec = {
         feature: CI_GEN_FEATURE,
         files,
         notes: notesFor(ctx, chosen, project.exists("scripts/deploy.sh") || project.exists("deploy.sh")),
-        rerun: `finitemonkey ci gen${flags} --yes`,
+        rerun: `fm ci gen${flags} --yes`,
       }),
     );
   },

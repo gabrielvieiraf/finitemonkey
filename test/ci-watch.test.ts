@@ -78,7 +78,7 @@ describe("ci-watch", () => {
     const spend = JSON.stringify({
       messages: { m1: { at: "2026-10-25T12:00:00.000Z", model: "claude", usd: 6, tokens: 10 } },
     });
-    const { watch } = setup({ sha: "c1", buckets: ["fail"], log: LINT_LOG }, { ".finitemonkey/spend.json": spend });
+    const { watch } = setup({ sha: "c1", buckets: ["fail"], log: LINT_LOG }, { ".fm/spend.json": spend });
     const run = await watch(["--max-usd", "5"]);
     assert.equal(run.code, 4);
     assert.equal(field(run.body, "data", "outcome"), "cost");
@@ -96,7 +96,7 @@ describe("ci-watch", () => {
     const { watch, runtime } = setup({ sha: "e1f2", buckets: ["pass", "skipping"], log: "" });
     const run = await watch();
     assert.equal(run.code, 0);
-    const log = runtime.readText(toAbsolutePath(at(".finitemonkey/ci-watch/pr-12.jsonl")));
+    const log = runtime.readText(toAbsolutePath(at(".fm/ci-watch/pr-12.jsonl")));
     assert.ok(log.ok);
     const line = JSON.parse(log.value.trim()) as unknown;
     assert.equal(field(line, "sha"), "e1f2");
@@ -108,7 +108,7 @@ describe("ci-watch", () => {
     const { calls, runtime } = setup(
       { sha: "f1", buckets: ["fail"], log: LINT_LOG },
       {
-        ".finitemonkey/policy.yml": "guards:\n  ci-watch: off\n",
+        ".fm/policy.yml": "guards:\n  ci-watch: off\n",
       },
     );
     const run = await cli(["ci-watch"], { runtime, cwd: ROOT });

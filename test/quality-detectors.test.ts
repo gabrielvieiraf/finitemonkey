@@ -222,22 +222,22 @@ const gate = (repo: Repo, spawned: string[] = []) => {
 
 describe("detectors in the quality gate", () => {
   it("blocks when active, as at the default level, and stays silent in shadow at level light", () => {
-    const repo = makeRepo({ "package.json": manifest({}), ".finitemonkey/policy.yml": ACTIVE });
+    const repo = makeRepo({ "package.json": manifest({}), ".fm/policy.yml": ACTIVE });
     repos.push(repo);
     repo.write("package.json", manifest({ leftpad: "1" }));
     const active = gate(repo);
     assert.equal(active.status, "failed");
     assert.ok(active.notes.some((item) => item.key === "gate.quality.unused_dependency"));
-    repo.write(".finitemonkey/policy.yml", "guards:\n  quality: active\n");
+    repo.write(".fm/policy.yml", "guards:\n  quality: active\n");
     assert.equal(gate(repo).status, "failed");
-    repo.write(".finitemonkey/policy.yml", "level: light\nguards:\n  quality: active\n");
+    repo.write(".fm/policy.yml", "level: light\nguards:\n  quality: active\n");
     const shadow = gate(repo);
     assert.equal(shadow.status, "passed");
     assert.ok(!shadow.notes.some((item) => item.key === "gate.quality.unused_dependency"));
   });
 
   it("says Python metrics were not verified when python3 is missing", () => {
-    const repo = makeRepo({ "package.json": "{}\n", ".finitemonkey/policy.yml": ACTIVE });
+    const repo = makeRepo({ "package.json": "{}\n", ".fm/policy.yml": ACTIVE });
     repos.push(repo);
     repo.write("app/route.py", "def route(a):\n    return a\n");
     const spawned: string[] = [];

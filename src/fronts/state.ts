@@ -1,13 +1,14 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type JsonObject, type Parsed, reject } from "../core/parsed.js";
 import { pause } from "../core/pause.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml, type YamlValue } from "../core/yaml/parse.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 
-export const FRONTS_FILE = ".finitemonkey/fronts.yml";
+export const FRONTS_FILE = `${DATA_DIR}/fronts.yml`;
 export const FRONTS_SCHEMA = "finitemonkey/fronts@1";
 export const DEFAULT_MAX_CONCURRENT = 3;
 
@@ -59,7 +60,7 @@ export interface FrontsState {
 export const EMPTY_STATE: FrontsState = {
   wave: 0,
   base: "",
-  briefing: ".finitemonkey/briefing.md",
+  briefing: `${DATA_DIR}/briefing.md`,
   maxConcurrent: DEFAULT_MAX_CONCURRENT,
   budgetUsd: null,
   budgetMinutes: null,
@@ -206,7 +207,7 @@ export const updateFronts = <T>(
   change: (state: FrontsState) => Parsed<{ readonly state: FrontsState; readonly result: T }>,
 ): Parsed<T> => {
   const path = frontsPath(root);
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR)));
   const lock = acquire(runtime, toAbsolutePath(`${path}.lock`));
   if (!lock.ok) return lock;
   try {

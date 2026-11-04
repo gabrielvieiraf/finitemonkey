@@ -16,7 +16,7 @@ after(() => {
   for (const repo of repos) repo.dispose();
 });
 
-const OWN = /^(\.git|\.finitemonkey)(\/|$)/;
+const OWN = /^(\.git|\.fm)(\/|$)/;
 
 const snapshot = (root: string): string =>
   JSON.stringify(
@@ -34,7 +34,7 @@ const snapshot = (root: string): string =>
 
 const state = (root: string): readonly string[] => [
   snapshot(root),
-  git(root, "status", "--porcelain", "--untracked-files=all", "--", ".", ":(exclude).finitemonkey"),
+  git(root, "status", "--porcelain", "--untracked-files=all", "--", ".", ":(exclude).fm"),
   git(root, "worktree", "list", "--porcelain"),
 ];
 
@@ -81,8 +81,8 @@ const refund = (negative: string): string =>
 const divergenceRepo = (): TempRepo => {
   const repo = tempRepo({ "src/refund.js": 'console.log("not built yet");\n' });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  divergence-ask: active\n  model-provider: active\n");
-  write(repo.root, ".finitemonkey/provider.json", providerJson(["divergence"]));
+  write(repo.root, ".fm/policy.yml", "guards:\n  divergence-ask: active\n  model-provider: active\n");
+  write(repo.root, ".fm/provider.json", providerJson(["divergence"]));
   trustContract(repo.root, "refund", REFUND_CONTRACT);
   return repo;
 };
@@ -140,8 +140,8 @@ const TESTS = {
 const blindRepo = (): TempRepo => {
   const repo = tempRepo({ "src/max.js": MAX("() => 0") });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  blind-tests: active\n  model-provider: active\n");
-  write(repo.root, ".finitemonkey/provider.json", providerJson(["blind-writer"]));
+  write(repo.root, ".fm/policy.yml", "guards:\n  blind-tests: active\n  model-provider: active\n");
+  write(repo.root, ".fm/provider.json", providerJson(["blind-writer"]));
   trustContract(
     repo.root,
     "max",

@@ -23,8 +23,8 @@ const repo = (files: Readonly<Record<string, string>> = {}): Repo => {
 const options = (target: Repo) => ({ cwd: target.root, runtime: repoRuntime(), platform: process.platform });
 
 const logs = (target: Repo): readonly string[] =>
-  readdirSync(join(target.root, ".finitemonkey", "runs")).map((name) =>
-    readFileSync(join(target.root, ".finitemonkey", "runs", name), "utf8"),
+  readdirSync(join(target.root, ".fm", "runs")).map((name) =>
+    readFileSync(join(target.root, ".fm", "runs", name), "utf8"),
   );
 
 describe("finitemonkey run: exit code", () => {
@@ -33,7 +33,7 @@ describe("finitemonkey run: exit code", () => {
     const result = await cli(["run", "--", "node", "fail.js"], options(target));
     assert.equal(result.code, 3);
     assert.match(result.stdout, /^ERROR Error: database is locked$/m);
-    assert.match(result.stdout, /exit 3 in \d+ ms; full output: \.finitemonkey\/runs\/.+\.log/);
+    assert.match(result.stdout, /exit 3 in \d+ ms; full output: \.fm\/runs\/.+\.log/);
   });
 
   it("returns 0 with no ERROR lines when the command passes", async () => {

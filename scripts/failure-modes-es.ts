@@ -110,7 +110,7 @@ export const FAILURE_MODES_ES: Readonly<Record<string, FailureModeText>> = {
     cause:
       "En un login personal sin configuración gestionada, un allow de tool.check de un mod o un tool.call respondido sin next pasa por encima de un deny de PreToolUse",
     mitigation:
-      "El id de la llamada negada se guarda; cuando llega a PostToolUse se registra como guard_bypassed, se muestra en la línea de estado y en la franja de la compuerta, y `ci gate` y `pr open` se niegan hasta que la persona ejecute `finitemonkey bypass review`; `doctor` nombra los mods instalados con ese alcance",
+      "El id de la llamada negada se guarda; cuando llega a PostToolUse se registra como guard_bypassed, se muestra en la línea de estado y en la franja de la compuerta, y `ci gate` y `pr open` se niegan hasta que la persona ejecute `fm bypass review`; `doctor` nombra los mods instalados con ese alcance",
   },
   "The mod's permission check fails open": {
     failure: "La revisión de permisos del mod falla abierta",

@@ -131,7 +131,7 @@ after(() => {
 
 const project = (): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/policy.yml":
+    ".fm/policy.yml":
       "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     "package.json": "{}\n",
     "src/legacy.ts": "console.log(boot);\nexport const legacy = 1;\n",
@@ -209,7 +209,7 @@ describe("slop check at Stop", () => {
 
   it("only warns in shadow mode", () => {
     const repo = project();
-    repo.write(".finitemonkey/policy.yml", "guards:\n  slop: shadow\n");
+    repo.write(".fm/policy.yml", "guards:\n  slop: shadow\n");
     repo.write("src/legacy.ts", "console.log(boot);\nexport const legacy = 1;\nconsole.log(legacy);\n");
     const outcome = gate(repo);
     assert.equal(outcome.status, "passed");

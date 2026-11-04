@@ -9,7 +9,7 @@ when_to_use: >-
 # Decide: criteria first, then options
 
 1. Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" decide new <topic>`. It writes `docs/plan/NN-decision-<topic>.md` with the required sections in order. Keep the order.
-2. Fill "Today" from the inventory (`finitemonkey inventory <topic>`) on L tasks.
+2. Fill "Today" from the inventory (`fm inventory <topic>`) on L tasks.
 3. Write the criteria table (criterion, weight 1 to 5, origin) before you list any alternative. Do not change a weight after scoring.
 4. Score every alternative, "Do nothing" included. When a critical criterion has no evidence, write and run a small test and put the command and its result under "Proof".
 5. Mark claims: `FACT: <claim> (<source URL or file:line>, YYYY-MM-DD)`. A FACT without source and date fails the check; write ASSUMPTION or OPINION instead. An assumption can carry fields after ` | `: `ASSUMPTION: <claim> | impact: high | verify: <cheapest check> | trigger: file:<path>` (or `date:YYYY-MM-DD`); `decide check` copies it to the assumption register, and a task that relies on it lists its id under `assumptions:` in the contract.
@@ -27,7 +27,7 @@ When the choice needs the person, set status to `needs-person` and ask with exac
 - **Cost:** money and time of the recommendation
 - **Risk:** what goes wrong if it is wrong, and the way back
 
-Leave the status at `proposed` or `needs-person`. Only the person accepts a record, with `finitemonkey decide accept <record>` in a terminal; a write that sets `accepted` from here is held.
+Leave the status at `proposed` or `needs-person`. Only the person accepts a record, with `fm decide accept <record>` in a terminal; a write that sets `accepted` from here is held.
 
 To replace a decision, write the new record, then `decide revoke <old> --by <new>`. The old record keeps its text and gains a banner. Never delete a record.
 

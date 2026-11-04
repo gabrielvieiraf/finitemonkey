@@ -1,4 +1,5 @@
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { failureFrom, success } from "../core/result.js";
 import { DATA_MAP_FILE, dataMapYaml, isComplete, mergedRows, personalFields, readDataMap } from "../datamap/map.js";
 import { projectRoot } from "../secrets/project.js";
@@ -15,7 +16,7 @@ export const dataMapCommand: CommandSpec = {
     const root = projectRoot(ctx);
     const before = readDataMap(ctx.runtime, root);
     const rows = mergedRows(personalFields(ctx.runtime, root), before);
-    const made = ctx.runtime.mkdir(toAbsolutePath(".finitemonkey", root));
+    const made = ctx.runtime.mkdir(toAbsolutePath(DATA_DIR, root));
     const saved = made.ok ? ctx.runtime.writeText(toAbsolutePath(DATA_MAP_FILE, root), dataMapYaml(rows)) : made;
     if (!saved.ok) return Promise.resolve(failureFrom(ctx.t, writeFailed(DATA_MAP_FILE, saved.error)));
     const open = rows.filter((row) => !isComplete(row)).map((row) => row.field);

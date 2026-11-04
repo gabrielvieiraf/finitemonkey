@@ -16,7 +16,7 @@ import { cliJson, fakeRuntime, field, parseBody, stdinFrom } from "./support.js"
 
 const PROJECT = toAbsolutePath("/home/ana/project");
 const at = (path: string): AbsolutePath => toAbsolutePath(path, PROJECT);
-const FM = at(".finitemonkey");
+const FM = at(".fm");
 const ERROR = "FAIL test/pay.test.ts > charges\nTypeError: cannot read properties of undefined (reading 'amount')";
 const SIG = errorSignature(ERROR)?.sig ?? "";
 
@@ -36,12 +36,12 @@ const lesson = (overrides: Partial<Lesson>): Lesson => ({
 const projectFs = (lessons: readonly Lesson[] = [], files: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/feature\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
-    [at(".finitemonkey/policy.yml")]:
+    [at(".fm/config.yml")]: "lang: en\n",
+    [at(".fm/policy.yml")]:
       "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     ...(lessons.length === 0
       ? {}
-      : { [at(".finitemonkey/learnings.jsonl")]: lessons.map((item) => `${JSON.stringify(item)}\n`).join("") }),
+      : { [at(".fm/learnings.jsonl")]: lessons.map((item) => `${JSON.stringify(item)}\n`).join("") }),
     ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
   });
 
@@ -121,9 +121,9 @@ describe("learnings: injected only on a key match", () => {
   });
 
   it("only logs in shadow mode", async () => {
-    const fs = projectFs(LESSONS, { ".finitemonkey/policy.yml": "guards:\n  learnings: shadow\n" });
+    const fs = projectFs(LESSONS, { ".fm/policy.yml": "guards:\n  learnings: shadow\n" });
     assert.equal(lessonsOf(await fire(fs, "PreToolUse", edit("src/api/pay.ts"))), "");
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /learning_shadow/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /learning_shadow/);
   });
 });
 

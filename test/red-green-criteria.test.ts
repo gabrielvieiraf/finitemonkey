@@ -21,8 +21,8 @@ const SINGLE = "node --test test/add.test.mjs";
 
 const project = (): Repo => {
   const repo = makeRepo({
-    ".gitignore": ".finitemonkey/*\n!.finitemonkey/policy.yml\n",
-    ".finitemonkey/policy.yml": "guards:\n  red-green: active\n",
+    ".gitignore": ".fm/*\n!.fm/policy.yml\n",
+    ".fm/policy.yml": "guards:\n  red-green: active\n",
     "package.json": '{"type": "module"}\n',
     "src/math.mjs": "export const add = (a, b) => 0;\n",
   });

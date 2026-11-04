@@ -117,7 +117,7 @@ const movedRepo = async (): Promise<{ readonly repo: Repo; readonly id: string }
   const repo = makeRepo({
     "src/totals.ts": TOTALS,
     "src/other.ts": "export const x = 1;\n",
-    ".finitemonkey/policy.yml": policyWith({ "knowledge-claims": "active" }),
+    ".fm/policy.yml": policyWith({ "knowledge-claims": "active" }),
   });
   repos.push(repo);
   const added = await cliJson(["claims", "add", "total counts items", "--anchor", "src/totals.ts#total"], {
@@ -128,7 +128,7 @@ const movedRepo = async (): Promise<{ readonly repo: Repo; readonly id: string }
   return { repo, id: String(field(added.body, "data", "id")) };
 };
 
-const events = (repo: Repo): string => repo.read(".finitemonkey/claims.jsonl");
+const events = (repo: Repo): string => repo.read(".fm/claims.jsonl");
 
 describe("moves seen in hooks without git", () => {
   it("keeps the claim when the symbol is written to a new file before the old one loses it", async () => {

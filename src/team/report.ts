@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Evidence } from "../evidence/types.js";
 import { GATE_CHECK } from "../evidence/types.js";
 import { type CommitFact, isRework, REVERT, REWORK_DAYS } from "./history.js";
@@ -56,12 +57,12 @@ export const METHOD: readonly MethodLine[] = [
   {
     metric: "falseDone",
     definition: "gate runs at a done claim that did not pass",
-    source: ".finitemonkey/evidence/<task>.jsonl, *gate* entries",
+    source: `${DATA_DIR}/evidence/<task>.jsonl, *gate* entries`,
   },
   {
     metric: "firstTry",
     definition: "tasks whose first gate run passed, with a 95% Wilson interval over the tasks of the period",
-    source: ".finitemonkey/evidence/<task>.jsonl, first *gate* entry",
+    source: `${DATA_DIR}/evidence/<task>.jsonl, first *gate* entry`,
   },
   {
     metric: "rework",
@@ -72,7 +73,7 @@ export const METHOD: readonly MethodLine[] = [
   {
     metric: "spendPerTask",
     definition: "median dollars per task, from the token counts the API reported",
-    source: ".finitemonkey/cost.jsonl",
+    source: `${DATA_DIR}/cost.jsonl`,
   },
   {
     metric: "reviewTime",

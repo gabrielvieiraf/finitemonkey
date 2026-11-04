@@ -1,11 +1,12 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJson } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 
-export const GITHUB_CACHE = ".finitemonkey/cache/github.json";
-export const RULESET_PROPOSAL = ".finitemonkey/github-ruleset.json";
+export const GITHUB_CACHE = `${DATA_DIR}/cache/github.json`;
+export const RULESET_PROPOSAL = `${DATA_DIR}/github-ruleset.json`;
 export const REQUIRED_CHECK = "finitemonkey ci gate";
 const GH_TIMEOUT_MS = 15_000;
 

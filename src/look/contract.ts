@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
@@ -122,7 +123,7 @@ export const parseUiContract = (source: string): Parsed<readonly UiScreen[], rea
   return accept(Array.isArray(list) ? list.flatMap((item: unknown) => screenOf(item) ?? []) : []);
 };
 
-export const uiContractRelative = (task: string): string => `.finitemonkey/tasks/${task}/ui.yml`;
+export const uiContractRelative = (task: string): string => `${DATA_DIR}/tasks/${task}/ui.yml`;
 
 export const uiContractPath = (paths: FmPaths, task: string): AbsolutePath =>
   toAbsolutePath(join(paths.dir, "tasks", task, "ui.yml"));

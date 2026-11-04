@@ -13,7 +13,7 @@
    /plugin install finitemonkey@finitemonkey-next
    ```
 
-   Activa solo este plugin llamado `finitemonkey`, no también el estable.
+   Activa solo este plugin llamado `fm`, no también el estable.
 
 2. Desde un clon de este repositorio, crea un proyecto descartable con una trayectoria conocida:
 
@@ -23,10 +23,10 @@
    cd ../fm-trajectory-check && git init -q
    ```
 
-   El script rechaza una carpeta que ya tiene `.finitemonkey/`, así que nunca toca un registro real. Escribe tres archivos, con fechas relativas a hoy:
-   - `.finitemonkey/policy.yml` activa la función `trajectory` (`guards: trajectory: active`), para que la banda muestre el segmento de trayectoria.
-   - `.finitemonkey/conceitos-events.jsonl` tiene 13 eventos. El dominio `backend` tiene evidencia suficiente para dibujar: semanas sin evidencia (rayadas), un rebote en `webhook` la semana pasada (✕) y una marca de "aguantó" en `idempotency` esta semana (◉). `infrastructure` tiene un evento con peso, así que aparece como "no data".
-   - `.finitemonkey/log.jsonl` tiene cinco ayudas de horizonte en `backend`, algunas sin criterio, para que se dibuje la franja ciega y la banda también muestre su segmento al lado de la trayectoria.
+   El script rechaza una carpeta que ya tiene `.fm/`, así que nunca toca un registro real. Escribe tres archivos, con fechas relativas a hoy:
+   - `.fm/policy.yml` activa la función `trajectory` (`guards: trajectory: active`), para que la banda muestre el segmento de trayectoria.
+   - `.fm/conceitos-events.jsonl` tiene 13 eventos. El dominio `backend` tiene evidencia suficiente para dibujar: semanas sin evidencia (rayadas), un rebote en `webhook` la semana pasada (✕) y una marca de "aguantó" en `idempotency` esta semana (◉). `infrastructure` tiene un evento con peso, así que aparece como "no data".
+   - `.fm/log.jsonl` tiene cinco ayudas de horizonte en `backend`, algunas sin criterio, para que se dibuje la franja ciega y la banda también muestre su segmento al lado de la trayectoria.
 
    `test/manual-trajectory.test.ts` mantiene honesto este fixture: falla si el seed deja de producir las dos marcas en semanas distintas, las semanas rayadas, la fila "no data" o los segmentos de la banda.
 

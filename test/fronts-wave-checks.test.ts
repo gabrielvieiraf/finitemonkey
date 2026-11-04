@@ -41,8 +41,8 @@ const LOOK = "port: 3000\nroutes:\n  - /\n  - /explore\n  - /checkout\n";
 const waveRuntime = (policy: string | undefined, calls: ExecRequest[], failing = "") =>
   fakeRuntime({
     files: {
-      [at(WAVE, ".finitemonkey/look.yml")]: LOOK,
-      ...(policy === undefined ? {} : { [at(ROOT, ".finitemonkey/policy.yml")]: policy }),
+      [at(WAVE, ".fm/look.yml")]: LOOK,
+      ...(policy === undefined ? {} : { [at(ROOT, ".fm/policy.yml")]: policy }),
     },
     git: (args) =>
       args[0] === "diff"
@@ -92,12 +92,10 @@ describe("wave merges check routes and contracts", () => {
     const runtime = fakeRuntime();
     const task = recordContractChange(runtime, ROOT, front("a", "t1", ["src/a.ts"]), "price in cents");
     assert.match(task ?? "", /^t1-contract-\d{14}$/);
-    const written = runtime.readText(
-      toAbsolutePath(join(ROOT, ".finitemonkey", "decision-records", `${task ?? ""}.json`)),
-    );
+    const written = runtime.readText(toAbsolutePath(join(ROOT, ".fm", "decision-records", `${task ?? ""}.json`)));
     assert.ok(written.ok);
     assert.match(written.value, /"class": "contract"[\s\S]*"detail": "a: price in cents"/);
-    const off = fakeRuntime({ files: { [at(ROOT, ".finitemonkey/policy.yml")]: "guards:\n  decision-record: off\n" } });
+    const off = fakeRuntime({ files: { [at(ROOT, ".fm/policy.yml")]: "guards:\n  decision-record: off\n" } });
     assert.equal(recordContractChange(off, ROOT, front("a", "t1"), "x"), undefined);
   });
 });

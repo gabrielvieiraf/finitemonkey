@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { failureFrom, success } from "../core/result.js";
 import { forgetDecision, readDecisions } from "../guardian/decisions.js";
@@ -68,7 +69,7 @@ export const guardianForgetCommand: CommandSpec = {
           usageProblem("invalid_arguments", "guardian.error.unknown_entry", FORGET_USAGE, { id }),
         );
       if (!forgetDecision(ctx.runtime, paths, id))
-        return failureFrom(ctx.t, guardianWriteProblem(".finitemonkey/decisions.jsonl"));
+        return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/decisions.jsonl`));
       return success({ schema: GUARDIAN_REVIEW_SCHEMA, forgotten: id }, [ctx.t("guardian.forgotten", { id })]);
     });
   },

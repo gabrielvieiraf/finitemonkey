@@ -33,7 +33,7 @@ const TREE: Readonly<Record<string, string>> = {
   "/home/test/.claude/rules/publish.md": "- Never run npm publish from a local machine without review\n",
   "/home/ana/CLAUDE.md": "# Above the project\n- Keep secrets out of every repository in this folder\n",
   "/home/ana/project/.git/HEAD": "ref: refs/heads/main\n",
-  "/home/ana/project/.finitemonkey/config.yml": "lang: en\n",
+  "/home/ana/project/.fm/config.yml": "lang: en\n",
   "/home/ana/project/CLAUDE.md":
     "# Project\n@docs/conventions.md\n- Run npm publish from the local machine after review\n",
   "/home/ana/project/docs/conventions.md": "- Commit messages follow Conventional Commits in English\n",
@@ -191,7 +191,7 @@ describe("instructions: what the session really loaded", () => {
     const outcome = await fire(fs, { session_id: "s1", file_path: "CLAUDE.md", load_reason: "session_start" });
     assert.equal(outcome.verdict, "allow");
     assert.doesNotMatch(outcome.stdout, /additionalContext|systemMessage/);
-    const records = readLoadRecords(fakeRuntime({ fs }), at("/home/ana/project/.finitemonkey"));
+    const records = readLoadRecords(fakeRuntime({ fs }), at("/home/ana/project/.fm"));
     assert.deepEqual(
       records.map((record) => [record.session, record.file, record.reason]),
       [["s1", abs("/home/ana/project/CLAUDE.md"), "session_start"]],
@@ -201,7 +201,7 @@ describe("instructions: what the session really loaded", () => {
   it("the resolved list matches a recorded session", async () => {
     const fs = treeFs();
     for (const payload of recorded()) await fire(fs, payload);
-    const records = readLoadRecords(fakeRuntime({ fs }), at("/home/ana/project/.finitemonkey"));
+    const records = readLoadRecords(fakeRuntime({ fs }), at("/home/ana/project/.fm"));
     const diff = loadDiff(resolve(fs), records, "linux");
     assert.equal(diff.session, "rec-1");
     assert.equal(diff.recorded, 10);
@@ -212,7 +212,7 @@ describe("instructions: what the session really loaded", () => {
   it("reports a file the session loaded that the resolver missed", async () => {
     const fs = treeFs();
     await fire(fs, { session_id: "s2", file_path: "/opt/other/CLAUDE.md", load_reason: "session_start" });
-    const records = readLoadRecords(fakeRuntime({ fs }), at("/home/ana/project/.finitemonkey"));
+    const records = readLoadRecords(fakeRuntime({ fs }), at("/home/ana/project/.fm"));
     const diff = loadDiff(resolve(fs), records, "linux");
     assert.deepEqual(diff.unexpected, [abs("/opt/other/CLAUDE.md")]);
     assert.ok(diff.missing.includes("CLAUDE.md"));
@@ -224,9 +224,9 @@ describe("instructions: what the session really loaded", () => {
   });
 
   it("is off when policy.yml turns it off", async () => {
-    const fs = treeFs({ "/home/ana/project/.finitemonkey/policy.yml": "guards:\n  instructions: off\n" });
+    const fs = treeFs({ "/home/ana/project/.fm/policy.yml": "guards:\n  instructions: off\n" });
     await fire(fs, { session_id: "s1", file_path: "CLAUDE.md", load_reason: "session_start" });
-    assert.equal(fs.read(at("/home/ana/project/.finitemonkey/instructions.jsonl")), undefined);
+    assert.equal(fs.read(at("/home/ana/project/.fm/instructions.jsonl")), undefined);
   });
 });
 

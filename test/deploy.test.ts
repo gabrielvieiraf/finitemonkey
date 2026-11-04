@@ -27,7 +27,7 @@ interface Fakes {
 }
 
 const project = (config: string): Repo => {
-  const repo = makeRepo({ "README.md": "# shop\n", ".finitemonkey/config.yml": `lang: en\n${config}` });
+  const repo = makeRepo({ "README.md": "# shop\n", ".fm/config.yml": `lang: en\n${config}` });
   repos.push(repo);
   return repo;
 };
@@ -104,9 +104,9 @@ describe("deploy status: no network without deploy configured", () => {
 describe("deploy status: version endpoint", () => {
   it("a lagging endpoint shows not live, then the commit with what to test", async () => {
     const repo = project(`deploy:\n  version_url: ${URL}\n`);
-    repo.write(".finitemonkey/state.json", JSON.stringify({ active: "pix" }));
+    repo.write(".fm/state.json", JSON.stringify({ active: "pix" }));
     repo.write(
-      ".finitemonkey/tasks/pix.yml",
+      ".fm/tasks/pix.yml",
       "id: pix\ngoal: Pay with Pix\nacceptance:\n  - id: M1\n    check: manual\n    description: pay R$ 1 with Pix on the checkout\n",
     );
     const { runtime } = fakes([version(OLD), version(head(repo))]);

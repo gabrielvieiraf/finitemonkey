@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 export interface GrepPattern {
   readonly pattern: string;
   readonly ignoreCase?: boolean;
@@ -52,7 +53,7 @@ export const SKIPPED = [
   ":(exclude,glob)**/yarn.lock",
   ":(exclude,glob)**/pnpm-lock.yaml",
   ":(exclude,glob)docs/plan/**",
-  ":(exclude,glob).finitemonkey/**",
+  `:(exclude,glob)${DATA_DIR}/**`,
 ];
 
 export const TEST_FILE = /(^|\/)(tests?|__tests__|spec)\/|\.(test|spec)\.[a-z]+$|_test\.(go|py)$|(^|\/)test_[^/]+\.py$/;

@@ -23,7 +23,7 @@ const STEPS = [
 
 describe("cost per contract and arm", () => {
   it("adds up the recorded API usage per contract and per experiment arm", () => {
-    const repo = makeRepo({ ".finitemonkey/policy.yml": "experiments:\n  clarify: random\n" });
+    const repo = makeRepo({ ".fm/policy.yml": "experiments:\n  clarify: random\n" });
     repos.push(repo);
     const runtime = repoRuntime();
     const paths = fmPaths(repo.root);
@@ -48,12 +48,12 @@ describe("cost per contract and arm", () => {
     repos.push(repo);
     const runtime = repoRuntime();
     const paths = fmPaths(repo.root);
-    repo.write(".finitemonkey/signals-index.json", JSON.stringify({ index: { error: { count: 2 } } }));
+    repo.write(".fm/signals-index.json", JSON.stringify({ index: { error: { count: 2 } } }));
     assert.deepEqual(statusOf(runtime, paths).loop, { count: 2, limit: 4 });
     const now = Date.now();
     const firings = Array.from({ length: 12 }, (_, index) => now - index * 1000);
     repo.write(
-      ".finitemonkey/cache/alert-budget.json",
+      ".fm/cache/alert-budget.json",
       JSON.stringify({ "fourth-attempt": { fired: firings, dismissed: firings } }),
     );
     assert.equal(statusOf(runtime, paths).loop, null);

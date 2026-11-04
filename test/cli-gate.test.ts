@@ -59,7 +59,7 @@ describe("finitemonkey task and gate", () => {
     hasShape(body["data"], "taskNew");
     assert.equal(field(body, "data", "schema"), field(frozen, "taskNew", "schema"));
     assert.equal(body["next"], "finitemonkey gate");
-    assert.match(target.read(".finitemonkey/tasks/coupon.yml"), /^id: coupon\ngoal: Fix the coupon\n/);
+    assert.match(target.read(".fm/tasks/coupon.yml"), /^id: coupon\ngoal: Fix the coupon\n/);
   });
 
   it("task new refuses an existing id and an empty folder that is not a repo", async () => {

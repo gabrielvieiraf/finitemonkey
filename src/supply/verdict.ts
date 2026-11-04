@@ -1,9 +1,10 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Vulnerability, VulnSeverity } from "./osv.js";
 
-export const OSV_SEEN_FILE = ".finitemonkey/findings/osv.json";
+export const OSV_SEEN_FILE = `${DATA_DIR}/findings/osv.json`;
 
 const DAY_MS = 86_400_000;
 

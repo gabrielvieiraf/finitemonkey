@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
@@ -29,7 +30,7 @@ export type ExampleDraft = Omit<Example, "id" | "status">;
 
 const EXAMPLE_ID = /^E[0-9]{1,3}$/;
 
-export const examplesRelative = (task: string): string => `.finitemonkey/tasks/${task}/examples.yml`;
+export const examplesRelative = (task: string): string => `${DATA_DIR}/tasks/${task}/examples.yml`;
 
 export const examplesPath = (paths: FmPaths, task: string): AbsolutePath =>
   toAbsolutePath(join(paths.dir, "tasks", task, "examples.yml"));

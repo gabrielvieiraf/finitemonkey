@@ -76,15 +76,15 @@ describe("bypass guard", () => {
 
 describe("self guard", () => {
   const files = [
-    [".finitemonkey/evidence/t.jsonl", "policy"],
-    ["/home/ana/project/.finitemonkey/lock.json", "policy"],
-    [".finitemonkey/allow/grants.json", "allow_store"],
+    [".fm/evidence/t.jsonl", "policy"],
+    ["/home/ana/project/.fm/lock.json", "policy"],
+    [".fm/allow/grants.json", "allow_store"],
     [".gitleaksignore", "policy"],
-    [".finitemonkey/findings/baseline.json", "policy"],
-    [".finitemonkey/incidents/inc-0123456789ab.json", "policy"],
-    [".finitemonkey/runtime/dist/finitemonkey.mjs", "policy"],
-    [".finitemonkey/trust.json", "policy"],
-    [".finitemonkey\\lock.json", "policy"],
+    [".fm/findings/baseline.json", "policy"],
+    [".fm/incidents/inc-0123456789ab.json", "policy"],
+    [".fm/runtime/dist/finitemonkey.mjs", "policy"],
+    [".fm/trust.json", "policy"],
+    [".fm\\lock.json", "policy"],
     ["src/app.ts", undefined],
     ["/home/ana/other/.finitemonkeyish", undefined],
   ] as const;
@@ -95,18 +95,18 @@ describe("self guard", () => {
   }
 
   const commands = [
-    ["echo '{}' > .finitemonkey/state.json", ["policy"]],
-    ["rm -rf .finitemonkey", ["policy"]],
-    ["sed -i s/a/b/ .finitemonkey/policy.yml", ["policy"]],
-    ["tee -a .finitemonkey/allow/grants.json", ["allow_store"]],
-    [`node -e "require('fs').writeFileSync('.finitemonkey/evidence/x.jsonl','')"`, ["policy"]],
-    ["cp /tmp/fake.json .finitemonkey/lock.json", ["policy"]],
-    ["git checkout -- .finitemonkey/evidence", ["policy"]],
-    ["cat .finitemonkey/tasks/t.yml", []],
-    ["cp .finitemonkey/tasks/t.yml /tmp/copy.yml", []],
+    ["echo '{}' > .fm/state.json", ["policy"]],
+    ["rm -rf .fm", ["policy"]],
+    ["sed -i s/a/b/ .fm/policy.yml", ["policy"]],
+    ["tee -a .fm/allow/grants.json", ["allow_store"]],
+    [`node -e "require('fs').writeFileSync('.fm/evidence/x.jsonl','')"`, ["policy"]],
+    ["cp /tmp/fake.json .fm/lock.json", ["policy"]],
+    ["git checkout -- .fm/evidence", ["policy"]],
+    ["cat .fm/tasks/t.yml", []],
+    ["cp .fm/tasks/t.yml /tmp/copy.yml", []],
     ["finitemonkey task new t --goal x", []],
-    ["sed -n 1p .finitemonkey/lock.json", []],
-    ["ls .finitemonkey", []],
+    ["sed -n 1p .fm/lock.json", []],
+    ["ls .fm", []],
   ] as const;
   for (const [command, kinds] of commands) {
     it(`bash ${kinds.length > 0 ? "blocks" : "passes"}: ${command}`, () => {

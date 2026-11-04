@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { HOME_DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { withEvolved } from "./evolved.js";
 import { DEFAULT_POLICY, parsePolicy, parseUserPolicy, type Policy, POLICY_FILE } from "./policy.js";
@@ -8,7 +9,7 @@ import { loadTaskGuards } from "./task-guards.js";
 
 export const policyPath = (root: AbsolutePath): AbsolutePath => toAbsolutePath(join(root, POLICY_FILE));
 
-export const userPolicyPath = (home: string): AbsolutePath => toAbsolutePath(join(home, ".finitemonkey", "policy.yml"));
+export const userPolicyPath = (home: string): AbsolutePath => toAbsolutePath(join(home, HOME_DATA_DIR, "policy.yml"));
 
 export type PolicyRuntime = Pick<Runtime, "readText" | "homeDir">;
 

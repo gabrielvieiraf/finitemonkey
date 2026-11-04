@@ -26,8 +26,8 @@ const commit = (hash: string, ...files: readonly string[]): Commit => ({ hash, f
 
 const coupled = (): Repo => {
   const repo = makeRepo({
-    ".gitignore": ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\n",
-    ".finitemonkey/config.yml": "lang: en\n",
+    ".gitignore": ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\n",
+    ".fm/config.yml": "lang: en\n",
     "i18n/en.json": "{}\n",
     "src/catalog.ts": "export const keys = [];\n",
     "src/other.ts": "export const x = 0;\n",
@@ -53,7 +53,7 @@ const coupled = (): Repo => {
     budget: undefined,
   });
   assert.ok(created.ok);
-  repo.write(".finitemonkey/policy.yml", "guards:\n  cochange: active\n");
+  repo.write(".fm/policy.yml", "guards:\n  cochange: active\n");
   return repo;
 };
 

@@ -2,6 +2,7 @@ import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Envelope } from "../core/result.js";
 import { HOOK_FAILURE_EVENT } from "../hooks/failure-log.js";
@@ -12,7 +13,7 @@ import { detectOs } from "./system.js";
 import { PROBE_TIMEOUT_MS } from "./tools.js";
 import type { DoctorEnv } from "./types.js";
 
-export const REPORTS_DIR = ".finitemonkey/reports";
+export const REPORTS_DIR = `${DATA_DIR}/reports`;
 export const MAX_FAILURES = 20;
 
 const FENCE = "```";
@@ -57,7 +58,7 @@ export const reportMarkdown = (env: DoctorEnv, ctx: Pick<Ctx, "version" | "lang"
     "",
     `## Last hook failures (${String(failures.length)})`,
     "",
-    ...(failures.length === 0 ? ["None in .finitemonkey/log.jsonl."] : [`${FENCE}jsonl`, ...failures, FENCE]),
+    ...(failures.length === 0 ? ["None in .fm/log.jsonl."] : [`${FENCE}jsonl`, ...failures, FENCE]),
     "",
   ];
   return maskText(withoutHome(lines.join("\n"), env.runtime.homeDir()));

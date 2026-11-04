@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/merge-report@1.json",
   "title": "finitemonkey/merge-report@1",
-  "description": "Report of one merge run by `finitemonkey merge`, also `data` of its `--json` output. Generated from MergeReport in src/merge/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "Report of one merge run by `fm merge`, also `data` of its `--json` output. Generated from MergeReport in src/merge/report.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

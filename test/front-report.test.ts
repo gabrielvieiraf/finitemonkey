@@ -63,19 +63,19 @@ const setup = (ids: readonly string[]): Wave => {
       notes: [],
       testCount: 41,
     };
-    write(path, `.finitemonkey/evidence/${id}.jsonl`, `${signedLine(runtime, entry)}\n`);
+    write(path, `.fm/evidence/${id}.jsonl`, `${signedLine(runtime, entry)}\n`);
   });
   const state = {
     wave: 1,
     base: "main@abc",
-    briefing: ".finitemonkey/briefing.md",
+    briefing: ".fm/briefing.md",
     maxConcurrent: 3,
     budgetUsd: null,
     budgetMinutes: null,
     fronts: ids.map((id, index) => frontOf(id, paths[index] ?? "", `agent-${id}`)),
     pending: [],
   };
-  write(repo.root, ".finitemonkey/fronts.yml", serializeState(state));
+  write(repo.root, ".fm/fronts.yml", serializeState(state));
   return {
     root: repo.root,
     front: (id) => paths[ids.indexOf(id)] ?? repo.root,
@@ -90,7 +90,7 @@ const report = (wave: Wave, id: string, overrides: JsonObject = {}): void => {
   const path = wave.front(id);
   write(
     path,
-    `.finitemonkey/reports/${id}.json`,
+    `.fm/reports/${id}.json`,
     JSON.stringify({
       front: id,
       branch: `front/${id}`,
@@ -102,7 +102,7 @@ const report = (wave: Wave, id: string, overrides: JsonObject = {}): void => {
       screenshots: [],
       left_out: [],
       provisional_decisions: [],
-      evidence: `.finitemonkey/evidence/${id}.jsonl`,
+      evidence: `.fm/evidence/${id}.jsonl`,
       ...overrides,
     }),
   );

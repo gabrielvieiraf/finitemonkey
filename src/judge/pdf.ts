@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { sha256Hex } from "../secrets/fingerprint.js";
 import type { Fetched } from "./fetch.js";
@@ -32,7 +33,7 @@ export const extractPdf = (runtime: Pick<Runtime, "exec">, file: AbsolutePath, c
 };
 
 export const pdfCachePath = (root: string, url: string): AbsolutePath =>
-  toAbsolutePath(join(root, ".finitemonkey", "judge", "pdf", `${sha256Hex(url).slice(0, 16)}.pdf`));
+  toAbsolutePath(join(root, DATA_DIR, "judge", "pdf", `${sha256Hex(url).slice(0, 16)}.pdf`));
 
 export const downloadPdf = (runtime: Pick<Runtime, "exec">, root: string, url: string, timeoutS: number): Fetched => {
   const file = pdfCachePath(root, url);

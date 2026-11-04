@@ -129,7 +129,7 @@ const inputOf = (runtime: Runtime, event: HookEvent, raw: Readonly<Record<string
 const project = (files: Readonly<Record<string, string>>) => {
   const fs = memoryFs(
     Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
-    [at(".git"), at(".finitemonkey")],
+    [at(".git"), at(".fm")],
     "2026-10-26T12:00:00.000Z",
   );
   return { fs, runtime: fakeRuntime({ fs }) };
@@ -172,7 +172,7 @@ describe("early loop hooks", () => {
     const { fs, runtime } = project({ [POLICY_FILE]: "level: light\n", "data.json": '{"a": ,}' });
     const { syntax } = await afterEdit(runtime, "data.json");
     assert.equal(syntax.kind, "allow");
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /"event":"guard_shadow","guard":"syntax-check"/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /"event":"guard_shadow","guard":"syntax-check"/);
   });
 
   it("the third edit with nothing run in between gets one nudge, and a run in between avoids it", async () => {
@@ -215,8 +215,8 @@ describe("reproduce first on M and L tasks", () => {
   const write = { tool_name: "Write", tool_input: { file_path: at("src/a.ts"), content: "x" } };
   const files = (size: string) => ({
     [POLICY_FILE]: "guards:\n  reproduce-first: active\n",
-    ".finitemonkey/state.json": '{"active":"fix"}\n',
-    ".finitemonkey/tasks/fix.yml": TASK(size),
+    ".fm/state.json": '{"active":"fix"}\n',
+    ".fm/tasks/fix.yml": TASK(size),
   });
   const before = (runtime: Runtime) =>
     composeDecisions(inputOf(runtime, "PreToolUse", write), guarded(REPRO_GUARD, "PreToolUse", reproduceFirst));
@@ -251,18 +251,18 @@ describe("reproduce first on M and L tasks", () => {
   it("only logs at the default level, and prompts when turned on", async () => {
     const { runtime } = project({
       [POLICY_FILE]: "guards:\n  reproduce-first: active\n",
-      ".finitemonkey/state.json": '{"active":"fix"}\n',
-      ".finitemonkey/tasks/fix.yml": TASK("L"),
+      ".fm/state.json": '{"active":"fix"}\n',
+      ".fm/tasks/fix.yml": TASK("L"),
     });
     assert.equal((await before(runtime)).kind, "block");
   });
 
   it("only logs without a policy file", async () => {
     const { fs, runtime } = project({
-      ".finitemonkey/state.json": '{"active":"fix"}\n',
-      ".finitemonkey/tasks/fix.yml": TASK("L"),
+      ".fm/state.json": '{"active":"fix"}\n',
+      ".fm/tasks/fix.yml": TASK("L"),
     });
     assert.equal((await before(runtime)).kind, "allow");
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /"guard":"reproduce-first"/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /"guard":"reproduce-first"/);
   });
 });

@@ -1,13 +1,14 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
 import type { YamlValue } from "../core/yaml/scalar.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 
-export const GOALS_FILE = ".finitemonkey/goals.yml";
+export const GOALS_FILE = `${DATA_DIR}/goals.yml`;
 export const GOALS_SCHEMA = "finitemonkey/goals@1";
 export const GOAL_KINDS = ["goals", "constraints", "non_goals", "done", "rejected"] as const;
 export const ORIGINS = ["stated", "inferred"] as const;
@@ -74,7 +75,7 @@ export const writeGoals = (
   root: AbsolutePath,
   goals: Goals,
 ): boolean => {
-  const made = runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
+  const made = runtime.mkdir(toAbsolutePath(join(root, DATA_DIR)));
   return made.ok && runtime.writeText(goalsPath(root), renderGoals(goals)).ok;
 };
 

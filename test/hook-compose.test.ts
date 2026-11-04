@@ -173,7 +173,7 @@ describe("guards through the PreToolUse hook", () => {
     {
       name: "Write to the evidence ledger",
       tool: "Write",
-      args: { file_path: `${ROOT}/.finitemonkey/evidence/t.jsonl`, content: "{}" },
+      args: { file_path: `${ROOT}/.fm/evidence/t.jsonl`, content: "{}" },
       deny: /written only by the finitemonkey/,
     },
     {
@@ -202,7 +202,7 @@ describe("guards through the PreToolUse hook", () => {
     });
   }
 
-  const grantFile = `${ROOT}/.finitemonkey/allow/grants.json`;
+  const grantFile = `${ROOT}/.fm/allow/grants.json`;
   const grants = (guard: string, expiresAt: string): string =>
     JSON.stringify({
       grants: [{ guard, reason: "fixture", grantedAt: "2026-10-25T11:50:00.000Z", expiresAt, sessionId: "s1" }],
@@ -235,7 +235,7 @@ describe("guards through the PreToolUse hook", () => {
   it("a config change accepted by hash in the lock passes", async () => {
     const lock = JSON.stringify({ configs: { "eslint.config.mjs": configDigest("eslint.config.mjs", "b") } });
     const runtime = fakeRuntime({
-      files: { [`${ROOT}/eslint.config.mjs`]: "a", [`${ROOT}/.finitemonkey/trust.json`]: lock },
+      files: { [`${ROOT}/eslint.config.mjs`]: "a", [`${ROOT}/.fm/trust.json`]: lock },
     });
     const outcome = await hook(
       "PreToolUse",

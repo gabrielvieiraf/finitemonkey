@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { type FmPaths, fmPaths } from "../task/paths.js";
 import {
@@ -46,7 +47,7 @@ export const writeApproveMod = (runtime: Pick<Runtime, "writeText">, dir: Absolu
 export const writeProbeProject = (runtime: Pick<Runtime, "writeText" | "git">, dir: AbsolutePath): AbsolutePath => {
   const work = at(dir, "work");
   runtime.writeText(at(work, "README.md"), "bypass probe\n");
-  runtime.writeText(at(work, ".finitemonkey", "policy.yml"), PROBE_POLICY);
+  runtime.writeText(at(work, DATA_DIR, "policy.yml"), PROBE_POLICY);
   for (const args of [
     ["init", "-q"],
     ["add", "."],

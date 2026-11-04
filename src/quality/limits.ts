@@ -1,4 +1,5 @@
 import type { AbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { matchesAny } from "../core/glob.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, type ConfigTree, parseConfigYaml } from "../git/project-config.js";
@@ -81,4 +82,4 @@ export const loadLimits = (runtime: Pick<Runtime, "readText">, root: AbsolutePat
 const CODE = /\.(?:[cm]?[jt]sx?|py|go|rs|rb|java|kt|cs|php|swift|c|cc|cpp|h|hpp)$/;
 
 export const isQualityFile = (file: string, limits: QualityLimits): boolean =>
-  CODE.test(file) && !file.startsWith(".finitemonkey/") && !matchesAny(file, limits.ignore);
+  CODE.test(file) && !file.startsWith(`${DATA_DIR}/`) && !matchesAny(file, limits.ignore);

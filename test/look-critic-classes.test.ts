@@ -27,7 +27,7 @@ const INPUT = { route: "/", viewport: 390, screenshot: "x.png", contract: [], to
 const CONFIG = "ui:\n  critic:\n    show_threshold: 0.5\n    min_shown: 1\n";
 
 const critiqued = async (config: string) => {
-  const repo = makeRepo(config === "" ? {} : { ".finitemonkey/config.yml": config });
+  const repo = makeRepo(config === "" ? {} : { ".fm/config.yml": config });
   repos.push(repo);
   const runtime = repoRuntime();
   const paths = fmPaths(repo.root);
@@ -40,7 +40,7 @@ describe("critic: classes earn their place by acceptance", () => {
   it("a class below the threshold stays hidden and logged, and shows once the person accepts enough of it", async () => {
     const { repo, runtime, paths, critiques } = await critiqued(CONFIG);
     assert.deepEqual(shownCritiques(runtime, paths, critiques), []);
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.ok(log.includes('"ui_critic_hidden"') && log.includes('"heuristic":"N8-minimal"'), log);
     const minimal = critiques.find((item) => item.heuristic === "N8-minimal");
     if (minimal === undefined) throw new Error("no N8 critique");

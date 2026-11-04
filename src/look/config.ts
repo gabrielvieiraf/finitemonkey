@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, configList, configMap, parseConfigYaml } from "../git/project-config.js";
 import { TARGET_MIN, TARGET_OPTIONS } from "./a11y.js";
@@ -10,7 +11,7 @@ import { parseStateSpec, type StateSpec } from "./states.js";
 import { LOOK_RULES, type LookRule } from "./types.js";
 import { DEFAULT_MAX_DIFF_PIXELS, DEFAULT_THRESHOLD } from "./visual.js";
 
-export const LOOK_CONFIG = ".finitemonkey/look.yml";
+export const LOOK_CONFIG = `${DATA_DIR}/look.yml`;
 
 export const DEFAULT_SCREENS: readonly string[] = [
   "**/*.tsx",

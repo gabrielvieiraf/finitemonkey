@@ -46,14 +46,14 @@ const event = (data: Readonly<Record<string, unknown>>): string =>
 const setup = (count: number, policy: string, log: readonly string[] = []): Repo => {
   const names = Array.from({ length: count }, (_, index) => `past${String(index + 1)}`);
   const files: Record<string, string> = {
-    ".finitemonkey/tasks/now.yml": contract("now"),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "now", done: names }),
-    ".finitemonkey/policy.yml": policy,
-    ".finitemonkey/log.jsonl": `${log.join("\n")}\n`,
+    ".fm/tasks/now.yml": contract("now"),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "now", done: names }),
+    ".fm/policy.yml": policy,
+    ".fm/log.jsonl": `${log.join("\n")}\n`,
   };
   names.forEach((name, index) => {
-    files[`.finitemonkey/tasks/${name}.yml`] = contract(name);
-    files[`.finitemonkey/evidence/${name}.jsonl`] = finished(name, index + 1, index % 2 === 0);
+    files[`.fm/tasks/${name}.yml`] = contract(name);
+    files[`.fm/evidence/${name}.jsonl`] = finished(name, index + 1, index % 2 === 0);
   });
   const repo = makeRepo(files);
   repos.push(repo);

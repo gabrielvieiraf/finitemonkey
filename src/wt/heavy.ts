@@ -2,6 +2,7 @@ import { basename, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
 import type { Env } from "../core/context.js";
+import { HOME_DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { configAt, type ConfigTree } from "../git/project-config.js";
@@ -66,7 +67,7 @@ export interface Holder {
 }
 
 export const heavyDir = (runtime: Pick<Runtime, "homeDir">): AbsolutePath =>
-  toAbsolutePath(join(runtime.homeDir(), ".finitemonkey", HEAVY_DIR));
+  toAbsolutePath(join(runtime.homeDir(), HOME_DATA_DIR, HEAVY_DIR));
 
 export const slotPath = (runtime: Pick<Runtime, "homeDir">, slot: number): AbsolutePath =>
   toAbsolutePath(join(heavyDir(runtime), `slot-${String(slot)}.lock`));

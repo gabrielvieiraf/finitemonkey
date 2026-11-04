@@ -1,9 +1,10 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import type { YamlValue } from "../core/yaml/scalar.js";
 import { stringifyYaml } from "../core/yaml/write.js";
 import type { Stack } from "./stack.js";
 import { type AppsecRule, OWASP, RULE_OWASP } from "./types.js";
 
-export const SEMGREP_FILE = ".finitemonkey/semgrep/appsec.yml";
+export const SEMGREP_FILE = `${DATA_DIR}/semgrep/appsec.yml`;
 
 const JS = ["javascript", "typescript"];
 const PY = ["python"];

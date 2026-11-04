@@ -18,7 +18,7 @@ after(() => {
   for (const repo of repos) repo.cleanup();
 });
 
-const IGNORE = ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\nplan.json\n";
+const IGNORE = ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\nplan.json\n";
 
 const change = (address: string, type: string, actions: readonly string[], after: object = {}) => ({
   address,
@@ -44,11 +44,11 @@ const WILDCARD = {
 const project = (config: string, active = true): Repo => {
   const repo = makeRepo({
     ".gitignore": IGNORE,
-    ".finitemonkey/config.yml": config,
+    ".fm/config.yml": config,
     "infra/main.tf": 'resource "aws_db_instance" "main" {}\n',
   });
   repos.push(repo);
-  if (active) repo.write(".finitemonkey/policy.yml", "guards:\n  infra-plan: active\n");
+  if (active) repo.write(".fm/policy.yml", "guards:\n  infra-plan: active\n");
   const created = createTask(repoRuntime(), fmPaths(repo.root), {
     id: "t1",
     goal: "change the database",

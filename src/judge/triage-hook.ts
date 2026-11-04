@@ -1,6 +1,7 @@
 import { relative } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { optionalString } from "../core/parsed.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import type { HookDecision, HookHandler, HookHandlers, HookInput } from "../hooks/handlers.js";
@@ -22,7 +23,7 @@ const partsOf = (paths: FmPaths, file: string): readonly string[] => relative(pa
 
 const isRecordFile = (paths: FmPaths, file: string): boolean => {
   const parts = partsOf(paths, file);
-  return parts[0] === ".finitemonkey" && parts[1] === RECORD_DIR && file.endsWith(".json");
+  return parts[0] === DATA_DIR && parts[1] === RECORD_DIR && file.endsWith(".json");
 };
 
 const wholeText = (input: HookInput, item: WrittenText): string => {
@@ -49,9 +50,7 @@ const pickOf = (
       trigger: "decision",
       pick: (entries) => records.flatMap((item) => decisionRows(entries, wholeText(input, item))),
     };
-  const docs = written.filter(
-    (item) => DOCUMENT.test(item.file) && !partsOf(paths, item.file).includes(".finitemonkey"),
-  );
+  const docs = written.filter((item) => DOCUMENT.test(item.file) && !partsOf(paths, item.file).includes(DATA_DIR));
   return docs.length === 0
     ? undefined
     : { trigger: "document", pick: (entries) => docs.flatMap((doc) => triageRows(entries, doc.text)) };

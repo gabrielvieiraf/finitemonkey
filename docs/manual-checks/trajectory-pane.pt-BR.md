@@ -13,7 +13,7 @@
    /plugin install finitemonkey@finitemonkey-next
    ```
 
-   Ative só este plugin chamado `finitemonkey`, não o estável junto.
+   Ative só este plugin chamado `fm`, não o estável junto.
 
 2. Num clone deste repositório, crie um projeto descartável com uma trajetória conhecida:
 
@@ -23,10 +23,10 @@
    cd ../fm-trajectory-check && git init -q
    ```
 
-   O script recusa uma pasta que já tem `.finitemonkey/`, então nunca mexe num registro real. Ele grava três arquivos, com datas relativas a hoje:
-   - `.finitemonkey/policy.yml` liga o recurso `trajectory` (`guards: trajectory: active`), para a faixa mostrar o segmento de trajetória.
-   - `.finitemonkey/conceitos-events.jsonl` tem 13 eventos. O domínio `backend` tem evidência suficiente para desenhar: semanas sem evidência (hachuradas), um ricochete em `webhook` na semana passada (✕) e uma marca de "segurou" em `idempotency` nesta semana (◉). `infrastructure` tem um evento com peso, então aparece como "no data".
-   - `.finitemonkey/log.jsonl` tem cinco ajudas de horizonte em `backend`, algumas sem critério, para a faixa cega ser desenhada e a faixa também mostrar o segmento da faixa cega ao lado da trajetória.
+   O script recusa uma pasta que já tem `.fm/`, então nunca mexe num registro real. Ele grava três arquivos, com datas relativas a hoje:
+   - `.fm/policy.yml` liga o recurso `trajectory` (`guards: trajectory: active`), para a faixa mostrar o segmento de trajetória.
+   - `.fm/conceitos-events.jsonl` tem 13 eventos. O domínio `backend` tem evidência suficiente para desenhar: semanas sem evidência (hachuradas), um ricochete em `webhook` na semana passada (✕) e uma marca de "segurou" em `idempotency` nesta semana (◉). `infrastructure` tem um evento com peso, então aparece como "no data".
+   - `.fm/log.jsonl` tem cinco ajudas de horizonte em `backend`, algumas sem critério, para a faixa cega ser desenhada e a faixa também mostrar o segmento da faixa cega ao lado da trajetória.
 
    `test/manual-trajectory.test.ts` mantém esse fixture honesto: ele falha se o seed deixar de produzir as duas marcas em semanas diferentes, as semanas hachuradas, a linha "no data" ou os segmentos da faixa.
 

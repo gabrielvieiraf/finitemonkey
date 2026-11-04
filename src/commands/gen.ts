@@ -59,7 +59,7 @@ export const genLintCommand: CommandSpec = {
         feature: LINT_GEN_FEATURE,
         files: plan.files,
         notes: plan.notes,
-        rerun: `finitemonkey gen lint${preset} --yes`,
+        rerun: `fm gen lint${preset} --yes`,
       }),
     );
   },

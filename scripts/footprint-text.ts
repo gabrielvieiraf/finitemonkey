@@ -62,10 +62,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`init` y `update`: la configuración de los hooks (y, con `--sandbox`, el sandbox en tu configuración local), la skill verify, un bloque gestionado corto en `AGENTS.md` que `CLAUDE.md` importa, una línea en `.gitignore`, el runtime fijado y una copia de cada archivo que cambian.",
   },
   prompts: {
-    en: "What you type to Claude Code in this project, with secrets masked, so `finitemonkey audit` can find requests and decisions that never reached a document. It stays on this machine.",
+    en: "What you type to Claude Code in this project, with secrets masked, so `fm audit` can find requests and decisions that never reached a document. It stays on this machine.",
     "pt-BR":
-      "O que você digita para o Claude Code neste projeto, com segredos mascarados, para o `finitemonkey audit` achar pedidos e decisões que nunca chegaram a um documento. Fica nesta máquina.",
-    es: "Lo que escribes a Claude Code en este proyecto, con los secretos enmascarados, para que `finitemonkey audit` encuentre pedidos y decisiones que nunca llegaron a un documento. Se queda en esta máquina.",
+      "O que você digita para o Claude Code neste projeto, com segredos mascarados, para o `fm audit` achar pedidos e decisões que nunca chegaram a um documento. Fica nesta máquina.",
+    es: "Lo que escribes a Claude Code en este proyecto, con los secretos enmascarados, para que `fm audit` encuentre pedidos y decisiones que nunca llegaron a un documento. Se queda en esta máquina.",
   },
   spend: {
     en: "Agent spend estimated from the local session logs, per task, day and month, and the differences found by `cost reconcile`.",
@@ -80,28 +80,33 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Documentos de plan en `docs/plan/`: el inventario de lo que hace el código hoy, registros de decisión, registros de investigación, modelos de costo, el plan maestro desde la primera tarea L y la copia que se guarda antes de cada consolidación.",
   },
   map: {
-    en: "The code map from `finitemonkey map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse.",
+    en: "The code map from `fm map`: one line per folder with its top-level definitions, cached by tree hash, and the log of reuse warnings with whether each one led to reuse.",
     "pt-BR":
-      "O mapa do código de `finitemonkey map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore, e o registro dos avisos de reuso com o resultado de cada um.",
-    es: "El mapa del código de `finitemonkey map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol, y el registro de los avisos de reutilización con el resultado de cada uno.",
+      "O mapa do código de `fm map`: uma linha por pasta com as definições de topo, em cache pelo hash da árvore, e o registro dos avisos de reuso com o resultado de cada um.",
+    es: "El mapa del código de `fm map`: una línea por carpeta con sus definiciones de nivel superior, en caché por el hash del árbol, y el registro de los avisos de reutilización con el resultado de cada uno.",
   },
   signals: {
-    en: "Loop signals from `finitemonkey signals`: error signatures, edit hashes and prompt fingerprints (hashed word pairs, never the text), the loop index and the calibrated thresholds. Deleted by `signals forget`.",
+    en: "Loop signals from `fm signals`: error signatures, edit hashes and prompt fingerprints (hashed word pairs, never the text), the loop index and the calibrated thresholds. Deleted by `signals forget`.",
     "pt-BR":
-      "Sinais de volta de `finitemonkey signals`: assinaturas de erro, hashes de edição e impressões dos pedidos (pares de palavras em hash, nunca o texto), o índice de voltas e os limiares calibrados. Apagados por `signals forget`.",
-    es: "Señales de vuelta de `finitemonkey signals`: firmas de error, hashes de edición y huellas de los pedidos (pares de palabras en hash, nunca el texto), el índice de vueltas y los umbrales calibrados. Se borran con `signals forget`.",
+      "Sinais de volta de `fm signals`: assinaturas de erro, hashes de edição e impressões dos pedidos (pares de palavras em hash, nunca o texto), o índice de voltas e os limiares calibrados. Apagados por `signals forget`.",
+    es: "Señales de vuelta de `fm signals`: firmas de error, hashes de edición y huellas de los pedidos (pares de palabras en hash, nunca el texto), el índice de vueltas y los umbrales calibrados. Se borran con `signals forget`.",
   },
   perfil: {
-    en: "The per-domain profile of the person from `finitemonkey perfil`: tool literacy per domain, raised by commits made outside the session, domain knowledge from the quick start, the concept book with the level shown for each concept seen in the project, and the concept evidence log (exposures, predictions, own changes and repairs, failures after approval) the concept states are counted from, the last x-ray of the changed lines, and the probes with their answers. `xray forget` deletes the evidence log and the x-ray; `probe forget` deletes the probes. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
+    en: "The per-domain profile of the person from `fm perfil`: tool literacy per domain, raised by commits made outside the session, domain knowledge from the quick start, the concept book with the level shown for each concept seen in the project, and the concept evidence log (exposures, predictions, own changes and repairs, failures after approval) the concept states are counted from, the last x-ray of the changed lines, and the probes with their answers. `xray forget` deletes the evidence log and the x-ray; `probe forget` deletes the probes. Never committed and never in PR text or reports. Deleted by `perfil forget`.",
     "pt-BR":
-      "O perfil da pessoa por domínio, de `finitemonkey perfil`: literacia na ferramenta por domínio, que sobe com commits feitos fora da sessão, conhecimento do domínio vindo do início rápido, o livro de conceitos com o nível mostrado em cada conceito visto no projeto e o registro de evidência por conceito (exposições, previsões, alterações e reparos próprios, falhas depois da aprovação) de onde os estados são contados, o último raio-x das linhas alteradas e as sondas com as respostas. `xray forget` apaga o registro de evidência e o raio-x; `probe forget` apaga as sondas. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
-    es: "El perfil de la persona por dominio, de `finitemonkey perfil`: alfabetización en la herramienta por dominio, que sube con commits hechos fuera de la sesión, conocimiento del dominio del inicio rápido, el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto y el registro de evidencia por concepto (exposiciones, predicciones, cambios y reparaciones propios, fallos después de la aprobación) del que se cuentan los estados, la última radiografía de las líneas cambiadas y las sondas con sus respuestas. `xray forget` borra el registro de evidencia y la radiografía; `probe forget` borra las sondas. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
+      "O perfil da pessoa por domínio, de `fm perfil`: literacia na ferramenta por domínio, que sobe com commits feitos fora da sessão, conhecimento do domínio vindo do início rápido, o livro de conceitos com o nível mostrado em cada conceito visto no projeto e o registro de evidência por conceito (exposições, previsões, alterações e reparos próprios, falhas depois da aprovação) de onde os estados são contados, o último raio-x das linhas alteradas e as sondas com as respostas. `xray forget` apaga o registro de evidência e o raio-x; `probe forget` apaga as sondas. Nunca vai para commit, texto de PR ou relatório. Apagado por `perfil forget`.",
+    es: "El perfil de la persona por dominio, de `fm perfil`: alfabetización en la herramienta por dominio, que sube con commits hechos fuera de la sesión, conocimiento del dominio del inicio rápido, el libro de conceptos con el nivel mostrado en cada concepto visto en el proyecto y el registro de evidencia por concepto (exposiciones, predicciones, cambios y reparaciones propios, fallos después de la aprobación) del que se cuentan los estados, la última radiografía de las líneas cambiadas y las sondas con sus respuestas. `xray forget` borra el registro de evidencia y la radiografía; `probe forget` borra las sondas. Nunca va a un commit, a texto de PR ni a informes. Se borra con `perfil forget`.",
   },
   runs: {
-    en: "The full output of commands run through `finitemonkey run`, with secrets masked; the 30 most recent are kept.",
+    en: "The full output of commands run through `fm run`, with secrets masked; the 30 most recent are kept.",
+    "pt-BR": "A saída inteira dos comandos rodados por `fm run`, com segredos mascarados; ficam as 30 mais recentes.",
+    es: "La salida completa de los comandos ejecutados con `fm run`, con los secretos enmascarados; se guardan las 30 más recientes.",
+  },
+  "data-dir": {
+    en: "On first use in a project that still has `.fm/`, renames it to `.fm/`. It keeps `.fm/` when the rename fails, when `.fm` belongs to another tool, or when hooks run from `.fm/runtime/`. When git does not ignore `.fm/` yet, it appends one line, `.fm/*`, to `.gitignore`.",
     "pt-BR":
-      "A saída inteira dos comandos rodados por `finitemonkey run`, com segredos mascarados; ficam as 30 mais recentes.",
-    es: "La salida completa de los comandos ejecutados con `finitemonkey run`, con los secretos enmascarados; se guardan las 30 más recientes.",
+      "No primeiro uso num projeto que ainda tem `.fm/`, renomeia a pasta para `.fm/`. Mantém `.fm/` quando a renomeação falha, quando `.fm` é de outra ferramenta ou quando os hooks rodam de `.fm/runtime/`. Quando o git ainda não ignora `.fm/`, acrescenta uma linha, `.fm/*`, ao `.gitignore`.",
+    es: "En el primer uso en un proyecto que todavía tiene `.fm/`, renombra la carpeta a `.fm/`. Mantiene `.fm/` cuando el cambio de nombre falla, cuando `.fm` es de otra herramienta o cuando los hooks se ejecutan desde `.fm/runtime/`. Cuando git todavía no ignora `.fm/`, agrega una línea, `.fm/*`, a `.gitignore`.",
   },
   tasks: {
     en: "Task contracts and which task is active.",
@@ -143,10 +148,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Quién aceptó archivos fuera del alcance de la tarea en `pr open`, cuándo y por qué, un archivo por rama.",
   },
   fronts: {
-    en: "The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed. `fronts sync --github` remembers in `.finitemonkey/cache/github-writes.json` the status it last commented on each issue, so it does not comment twice.",
+    en: "The state of a wave of parallel fronts (scope, worktree, branch, port, agent, status and inbox of each front) and the briefing every front prompt cites. Local, never committed. `fronts sync --github` remembers in `.fm/cache/github-writes.json` the status it last commented on each issue, so it does not comment twice.",
     "pt-BR":
-      "O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit. O `fronts sync --github` guarda em `.finitemonkey/cache/github-writes.json` o status que comentou por último em cada issue, para não comentar duas vezes.",
-    es: "El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea. `fronts sync --github` guarda en `.finitemonkey/cache/github-writes.json` el estado que comentó por última vez en cada issue, para no comentar dos veces.",
+      "O estado de uma onda de frentes paralelas (escopo, worktree, branch, porta, agente, status e inbox de cada frente) e o briefing que todo prompt de frente cita. Local, nunca vai para commit. O `fronts sync --github` guarda em `.fm/cache/github-writes.json` o status que comentou por último em cada issue, para não comentar duas vezes.",
+    es: "El estado de una ola de frentes paralelas (alcance, worktree, rama, puerto, agente, estado e inbox de cada frente) y el briefing que cita cada prompt de frente. Local, nunca se commitea. `fronts sync --github` guarda en `.fm/cache/github-writes.json` el estado que comentó por última vez en cada issue, para no comentar dos veces.",
   },
   profile: {
     en: "The person's level per domain; the infrastructure level picks the git defaults (intermediate when missing).",
@@ -161,10 +166,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "El ruleset que `init --github` propone cuando la rama por defecto no tiene ninguno; solo se envía a GitHub tras el sí de la persona.",
   },
   worktrees: {
-    en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.finitemonkey/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` holds one lease per worktree port range, so two projects on the machine never get the same ports.",
+    en: "The worktree registry and merge reports in the git common dir (never committed), the local exclude line for `.claude/worktrees/`, and worktrees created by `wt new`; repos on `/mnt/<drive>` or a synced folder get theirs under `~/.fm/worktrees/`. `wt archive` saves a worktree into `refs/finitemonkey/archive/` and copies ignored files that are not secrets to `~/.fm/archive/`. `~/.fm/ports/` holds one lease per worktree port range, so two projects on the machine never get the same ports.",
     "pt-BR":
-      "O registro de worktrees e os relatórios de mescla no diretório comum do git (nunca vão para commit), a linha de exclusão local para `.claude/worktrees/` e os worktrees criados pelo `wt new`; repositório em `/mnt/<disco>` ou em pasta sincronizada recebe os seus em `~/.finitemonkey/worktrees/`. O `wt archive` guarda um worktree em `refs/finitemonkey/archive/` e copia arquivos ignorados que não são segredo para `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` guarda uma reserva por faixa de portas de worktree, para dois projetos na máquina nunca receberem as mesmas portas.",
-    es: "El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.finitemonkey/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.finitemonkey/archive/`. `~/.finitemonkey/ports/` guarda una reserva por rango de puertos de worktree, para que dos proyectos en la máquina nunca reciban los mismos puertos.",
+      "O registro de worktrees e os relatórios de mescla no diretório comum do git (nunca vão para commit), a linha de exclusão local para `.claude/worktrees/` e os worktrees criados pelo `wt new`; repositório em `/mnt/<disco>` ou em pasta sincronizada recebe os seus em `~/.fm/worktrees/`. O `wt archive` guarda um worktree em `refs/finitemonkey/archive/` e copia arquivos ignorados que não são segredo para `~/.fm/archive/`. `~/.fm/ports/` guarda uma reserva por faixa de portas de worktree, para dois projetos na máquina nunca receberem as mesmas portas.",
+    es: "El registro de worktrees y los informes de fusión en el directorio común de git (nunca se commitean), la línea de exclusión local para `.claude/worktrees/` y los worktrees que crea `wt new`; un repositorio en `/mnt/<disco>` o en una carpeta sincronizada recibe los suyos en `~/.fm/worktrees/`. `wt archive` guarda un worktree en `refs/finitemonkey/archive/` y copia los archivos ignorados que no son secretos a `~/.fm/archive/`. `~/.fm/ports/` guarda una reserva por rango de puertos de worktree, para que dos proyectos en la máquina nunca reciban los mismos puertos.",
   },
   "git-safety": {
     en: "Snapshots before destructive git commands and `rm` in the repository, with copies of ignored and untracked secret files up to 50 MB inside .git, the journal that `undo` reads and dropped-line decisions from merges.",
@@ -239,16 +244,16 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`appsec rules --write` guarda las reglas de semgrep generadas para la stack detectada, para que CI las ejecute; sin `--write` solo las imprime. `data-map` escribe una fila por campo personal encontrado en el esquema (solo nombres).",
   },
   rules: {
-    en: "`rules compile` writes, per rule in `.finitemonkey/rules.yml`: deny entries and settings keys in `.claude/settings.json`, a line in `AGENTS.md`, the list of what it wrote, and with `--ci` a workflow that checks the rules on pull requests. `uninstall` removes all of it.",
+    en: "`rules compile` writes, per rule in `.fm/rules.yml`: deny entries and settings keys in `.claude/settings.json`, a line in `AGENTS.md`, the list of what it wrote, and with `--ci` a workflow that checks the rules on pull requests. `uninstall` removes all of it.",
     "pt-BR":
-      "O `rules compile` grava, para cada regra de `.finitemonkey/rules.yml`: entradas de deny e chaves de configuração em `.claude/settings.json`, uma linha no `AGENTS.md`, a lista do que gravou e, com `--ci`, um workflow que confere as regras nos pull requests. O `uninstall` remove tudo isso.",
-    es: "`rules compile` escribe, por cada regla de `.finitemonkey/rules.yml`: entradas de deny y claves de configuración en `.claude/settings.json`, una línea en `AGENTS.md`, la lista de lo que escribió y, con `--ci`, un workflow que revisa las reglas en los pull requests. `uninstall` lo quita todo.",
+      "O `rules compile` grava, para cada regra de `.fm/rules.yml`: entradas de deny e chaves de configuração em `.claude/settings.json`, uma linha no `AGENTS.md`, a lista do que gravou e, com `--ci`, um workflow que confere as regras nos pull requests. O `uninstall` remove tudo isso.",
+    es: "`rules compile` escribe, por cada regla de `.fm/rules.yml`: entradas de deny y claves de configuración en `.claude/settings.json`, una línea en `AGENTS.md`, la lista de lo que escribió y, con `--ci`, un workflow que revisa las reglas en los pull requests. `uninstall` lo quita todo.",
   },
   "secrets-live": {
-    en: "Through `curl`, only when you run `finitemonkey secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent.",
+    en: "Through `curl`, only when you run `fm secrets live <provider> --env <VARIABLE> --send` yourself: one request with that key to the provider's API to see whether it still works. Off by default, never run by a hook, and the host is printed before anything is sent.",
     "pt-BR":
-      "Pelo `curl`, só quando você roda `finitemonkey secrets live <provedor> --env <VARIAVEL> --send`: uma requisição com aquela chave para a API do provedor para ver se ela ainda funciona. Desligado por padrão, nunca roda por hook, e o host aparece antes de qualquer envio.",
-    es: "A través de `curl`, solo cuando tú ejecutas `finitemonkey secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada.",
+      "Pelo `curl`, só quando você roda `fm secrets live <provedor> --env <VARIAVEL> --send`: uma requisição com aquela chave para a API do provedor para ver se ela ainda funciona. Desligado por padrão, nunca roda por hook, e o host aparece antes de qualquer envio.",
+    es: "A través de `curl`, solo cuando tú ejecutas `fm secrets live <proveedor> --env <VARIABLE> --send`: una petición con esa clave a la API del proveedor para ver si aún funciona. Apagado por defecto, nunca lo ejecuta un hook, y el host se muestra antes de enviar nada.",
   },
   heavy: {
     en: "One lock file per running install, build or full test run, shared by every worktree on the machine, so they run one at a time (by default on WSL).",
@@ -257,28 +262,28 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "Un archivo de bloqueo por instalación, compilación o suite de pruebas en curso, compartido por todos los worktrees de la máquina, para que corran de a uno (por defecto en WSL).",
   },
   deploy: {
-    en: "Through `curl`, only when `deploy.version_url` is set in `.finitemonkey/config.yml`: a GET to that URL after a push, to read which commit is live. With `deploy.environment`, the same question goes to GitHub deployments through `gh`.",
+    en: "Through `curl`, only when `deploy.version_url` is set in `.fm/config.yml`: a GET to that URL after a push, to read which commit is live. With `deploy.environment`, the same question goes to GitHub deployments through `gh`.",
     "pt-BR":
-      "Pelo `curl`, só quando `deploy.version_url` está definido em `.finitemonkey/config.yml`: um GET nessa URL depois de um push, para ler qual commit está no ar. Com `deploy.environment`, a mesma pergunta vai aos deployments do GitHub pelo `gh`.",
-    es: "A través de `curl`, solo cuando `deploy.version_url` está definido en `.finitemonkey/config.yml`: un GET a esa URL después de un push, para leer qué commit está en producción. Con `deploy.environment`, la misma pregunta va a los deployments de GitHub a través de `gh`.",
+      "Pelo `curl`, só quando `deploy.version_url` está definido em `.fm/config.yml`: um GET nessa URL depois de um push, para ler qual commit está no ar. Com `deploy.environment`, a mesma pergunta vai aos deployments do GitHub pelo `gh`.",
+    es: "A través de `curl`, solo cuando `deploy.version_url` está definido en `.fm/config.yml`: un GET a esa URL después de un push, para leer qué commit está en producción. Con `deploy.environment`, la misma pregunta va a los deployments de GitHub a través de `gh`.",
   },
   "instruction-layers": {
-    en: "`finitemonkey instructions` and `doctor` read every instruction file Claude Code would load: the managed `CLAUDE.md`, your `~/.claude/CLAUDE.md` and `~/.claude/rules/`, and each `CLAUDE.md`, `CLAUDE.local.md` and `AGENTS.md` from the folder you work in up to the disk root, to list them and find rules that contradict each other.",
+    en: "`fm instructions` and `doctor` read every instruction file Claude Code would load: the managed `CLAUDE.md`, your `~/.claude/CLAUDE.md` and `~/.claude/rules/`, and each `CLAUDE.md`, `CLAUDE.local.md` and `AGENTS.md` from the folder you work in up to the disk root, to list them and find rules that contradict each other.",
     "pt-BR":
-      "O `finitemonkey instructions` e o `doctor` leem cada arquivo de instruções que o Claude Code carregaria: o `CLAUDE.md` gerenciado, o seu `~/.claude/CLAUDE.md` e `~/.claude/rules/`, e cada `CLAUDE.md`, `CLAUDE.local.md` e `AGENTS.md` da pasta onde você trabalha até a raiz do disco, para listá-los e achar regras que se contradizem.",
-    es: "`finitemonkey instructions` y `doctor` leen cada archivo de instrucciones que Claude Code cargaría: el `CLAUDE.md` administrado, tu `~/.claude/CLAUDE.md` y `~/.claude/rules/`, y cada `CLAUDE.md`, `CLAUDE.local.md` y `AGENTS.md` desde la carpeta donde trabajas hasta la raíz del disco, para listarlos y encontrar reglas que se contradicen.",
+      "O `fm instructions` e o `doctor` leem cada arquivo de instruções que o Claude Code carregaria: o `CLAUDE.md` gerenciado, o seu `~/.claude/CLAUDE.md` e `~/.claude/rules/`, e cada `CLAUDE.md`, `CLAUDE.local.md` e `AGENTS.md` da pasta onde você trabalha até a raiz do disco, para listá-los e achar regras que se contradizem.",
+    es: "`fm instructions` y `doctor` leen cada archivo de instrucciones que Claude Code cargaría: el `CLAUDE.md` administrado, tu `~/.claude/CLAUDE.md` y `~/.claude/rules/`, y cada `CLAUDE.md`, `CLAUDE.local.md` y `AGENTS.md` desde la carpeta donde trabajas hasta la raíz del disco, para listarlos y encontrar reglas que se contradicen.",
   },
   "instructions-log": {
-    en: "The `InstructionsLoaded` hook appends one line per instruction file Claude Code loads: the session, the path, why it loaded and when. `finitemonkey instructions` compares it with what it resolved. No file content is copied.",
+    en: "The `InstructionsLoaded` hook appends one line per instruction file Claude Code loads: the session, the path, why it loaded and when. `fm instructions` compares it with what it resolved. No file content is copied.",
     "pt-BR":
-      "O hook `InstructionsLoaded` acrescenta uma linha por arquivo de instruções que o Claude Code carrega: a sessão, o caminho, o motivo e quando. O `finitemonkey instructions` compara com o que ele resolveu. Nenhum conteúdo de arquivo é copiado.",
-    es: "El hook `InstructionsLoaded` agrega una línea por cada archivo de instrucciones que carga Claude Code: la sesión, la ruta, el motivo y cuándo. `finitemonkey instructions` lo compara con lo que resolvió. No se copia el contenido de ningún archivo.",
+      "O hook `InstructionsLoaded` acrescenta uma linha por arquivo de instruções que o Claude Code carrega: a sessão, o caminho, o motivo e quando. O `fm instructions` compara com o que ele resolveu. Nenhum conteúdo de arquivo é copiado.",
+    es: "El hook `InstructionsLoaded` agrega una línea por cada archivo de instrucciones que carga Claude Code: la sesión, la ruta, el motivo y cuándo. `fm instructions` lo compara con lo que resolvió. No se copia el contenido de ningún archivo.",
   },
   "rules-propose": {
-    en: "`rules propose` adds to `.finitemonkey/rules.yml` only the entries you confirm in a terminal. Every rule broken at the end of a turn, blocked by a guard or reported with `rules violation` gets one line in `rule-violations.jsonl` (rule, source, masked detail), the evidence for promoting a reminder.",
+    en: "`rules propose` adds to `.fm/rules.yml` only the entries you confirm in a terminal. Every rule broken at the end of a turn, blocked by a guard or reported with `rules violation` gets one line in `rule-violations.jsonl` (rule, source, masked detail), the evidence for promoting a reminder.",
     "pt-BR":
-      "O `rules propose` acrescenta a `.finitemonkey/rules.yml` só as entradas que você confirma num terminal. Cada regra descumprida no fim de um turno, bloqueada por um guard ou informada com `rules violation` ganha uma linha em `rule-violations.jsonl` (regra, origem, detalhe mascarado), a evidência para promover um lembrete.",
-    es: "`rules propose` agrega a `.finitemonkey/rules.yml` solo las entradas que confirmas en una terminal. Cada regla incumplida al final de un turno, bloqueada por un guard o informada con `rules violation` deja una línea en `rule-violations.jsonl` (regla, origen, detalle enmascarado), la evidencia para promover un recordatorio.",
+      "O `rules propose` acrescenta a `.fm/rules.yml` só as entradas que você confirma num terminal. Cada regra descumprida no fim de um turno, bloqueada por um guard ou informada com `rules violation` ganha uma linha em `rule-violations.jsonl` (regra, origem, detalhe mascarado), a evidência para promover um lembrete.",
+    es: "`rules propose` agrega a `.fm/rules.yml` solo las entradas que confirmas en una terminal. Cada regla incumplida al final de un turno, bloqueada por un guard o informada con `rules violation` deja una línea en `rule-violations.jsonl` (regla, origen, detalle enmascarado), la evidencia para promover un recordatorio.",
   },
   learnings: {
     en: "Lessons from earlier work: a short text keyed by file paths or by the signature of an error that stopped after a change, how often each was used and when it last matched. A lesson unused for 90 days or marked unhelpful twice is deleted; `learnings delete` removes one by hand. `cache/agent-changes.json` keeps the agent's recent edits; when the person reverts the same change in the same place twice, it becomes one lesson proposal with origin person, used only after `learnings accept`.",
@@ -293,10 +298,10 @@ export const FOOTPRINT_TEXT: Readonly<Record<FootprintId, Localized>> = {
     es: "`gen ownership` escribe una entrada por componente (nombre, tipo del vocabulario, dueño, consumidores) después de que la persona pasa `--yes`; `ci gate`, `ownership check` y `plan check` lo leen, o leen `catalog-info.yaml` cuando existe.",
   },
   "ci-protect": {
-    en: "One line per GitHub setting `ci protect` changed after the person's yes in a terminal: when, the repository, the setting, the value before and after, and whether GitHub accepted it. The settings it read are cached in `.finitemonkey/cache/github-settings.json` for `doctor`.",
+    en: "One line per GitHub setting `ci protect` changed after the person's yes in a terminal: when, the repository, the setting, the value before and after, and whether GitHub accepted it. The settings it read are cached in `.fm/cache/github-settings.json` for `doctor`.",
     "pt-BR":
-      "Uma linha por configuração do GitHub que o `ci protect` mudou depois do sim da pessoa num terminal: quando, o repositório, a configuração, o valor antes e depois, e se o GitHub aceitou. O que ele leu fica em cache em `.finitemonkey/cache/github-settings.json` para o `doctor`.",
-    es: "Una línea por cada configuración de GitHub que `ci protect` cambió tras el sí de la persona en una terminal: cuándo, el repositorio, la configuración, el valor antes y después, y si GitHub la aceptó. Lo que leyó queda en caché en `.finitemonkey/cache/github-settings.json` para `doctor`.",
+      "Uma linha por configuração do GitHub que o `ci protect` mudou depois do sim da pessoa num terminal: quando, o repositório, a configuração, o valor antes e depois, e se o GitHub aceitou. O que ele leu fica em cache em `.fm/cache/github-settings.json` para o `doctor`.",
+    es: "Una línea por cada configuración de GitHub que `ci protect` cambió tras el sí de la persona en una terminal: cuándo, el repositorio, la configuración, el valor antes y después, y si GitHub la aceptó. Lo que leyó queda en caché en `.fm/cache/github-settings.json` para `doctor`.",
   },
   ...DEPLOY_FOOTPRINT_TEXT,
   ...PERSON_FOOTPRINT_TEXT,

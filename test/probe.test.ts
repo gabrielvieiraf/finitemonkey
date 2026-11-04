@@ -19,7 +19,7 @@ const PATHS = fmPaths(ROOT);
 const NOW = "2026-10-26T12:00:00.000Z";
 
 const setup = (version: string, fired: readonly { event: string; agent?: string }[]) => {
-  const fs = memoryFs({}, [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache")], NOW);
+  const fs = memoryFs({}, [at(".git"), at(".fm"), at(".fm/cache")], NOW);
   const calls: ExecRequest[] = [];
   const runtime = fakeRuntime({
     fs,
@@ -84,10 +84,7 @@ describe("doctor --probe", () => {
       runtime,
       env: { [PROBE_ID_ENV]: "p1" },
     });
-    assert.match(
-      fs.read(at(`.finitemonkey/cache/${PROBE_EVENTS_FILE}`)) ?? "",
-      /"id":"p1","event":"PreToolUse:subagent"/,
-    );
+    assert.match(fs.read(at(`.fm/cache/${PROBE_EVENTS_FILE}`)) ?? "", /"id":"p1","event":"PreToolUse:subagent"/);
   });
 });
 

@@ -31,14 +31,14 @@ describe("gen pr-template", () => {
     ["es", "## Qué cambia"],
   ] as const) {
     it(`writes the template in ${lang} with the sections and checklist`, async () => {
-      const runtime = fakeRuntime({ files: { [at(".finitemonkey/config.yml")]: `lang: ${lang}\n` } });
+      const runtime = fakeRuntime({ files: { [at(".fm/config.yml")]: `lang: ${lang}\n` } });
       const run = await cli(["gen", "pr-template", "--yes"], { runtime, cwd: ROOT });
       assert.equal(run.code, 0, run.stdout);
       const text = read(runtime, ".github/pull_request_template.md") ?? "";
       assert.match(text, new RegExp(heading));
       assert.equal((text.match(/^## /gm) ?? []).length, 7);
       assert.match(text, /Closes #/);
-      assert.match(text, /- \[ \] `finitemonkey gate`/);
+      assert.match(text, /- \[ \] `fm gate`/);
     });
   }
 

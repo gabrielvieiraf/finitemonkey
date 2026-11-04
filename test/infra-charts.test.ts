@@ -20,7 +20,7 @@ after(() => {
   for (const repo of repos) repo.cleanup();
 });
 
-const IGNORE = ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\n";
+const IGNORE = ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\n";
 
 const statefulSet = (storageClass: string): string =>
   [
@@ -72,9 +72,9 @@ const fakeHelm = (request: ExecRequest) => {
 };
 
 const project = (files: Readonly<Record<string, string>>, active = true): Repo => {
-  const repo = makeRepo({ ".gitignore": IGNORE, ".finitemonkey/config.yml": "lang: en\n", ...files });
+  const repo = makeRepo({ ".gitignore": IGNORE, ".fm/config.yml": "lang: en\n", ...files });
   repos.push(repo);
-  if (active) repo.write(".finitemonkey/policy.yml", "guards:\n  infra-plan: active\n");
+  if (active) repo.write(".fm/policy.yml", "guards:\n  infra-plan: active\n");
   const created = createTask(repoRuntime(), fmPaths(repo.root), {
     id: "t1",
     goal: "change the database",

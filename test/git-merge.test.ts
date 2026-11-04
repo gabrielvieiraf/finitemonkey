@@ -28,7 +28,7 @@ const mergeWith = (scenario: Scenario): VerifyReport => {
     git(repo.root, "commit", "-q", "-am", "ours");
     spawnSync("git", ["merge", "-q", "--no-edit", "theirs"], { cwd: repo.root, encoding: "utf8" });
     write(repo.root, FILE, scenario.result);
-    if (scenario.dropped !== undefined) write(repo.root, ".finitemonkey/merge-dropped.json", scenario.dropped);
+    if (scenario.dropped !== undefined) write(repo.root, ".fm/merge-dropped.json", scenario.dropped);
     git(repo.root, "add", FILE);
     git(repo.root, "commit", "-q", "--no-edit");
     const opened = openRepo(runtime, toAbsolutePath(repo.root));

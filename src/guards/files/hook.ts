@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import { optionalString } from "../../core/parsed.js";
 import { toPosixPath } from "../../core/posix-path.js";
 import type { Runtime } from "../../core/runtime.js";
@@ -10,7 +11,7 @@ import { modelReason } from "../../hooks/reason.js";
 import { FILE_TOOLS, guardRoot } from "../context.js";
 import { claimFile, releaseOwner } from "./locks.js";
 
-export const BACKUPS_DIR = ".finitemonkey/backups";
+export const BACKUPS_DIR = `${DATA_DIR}/backups`;
 
 const ALLOW: HookDecision = { kind: "allow" };
 

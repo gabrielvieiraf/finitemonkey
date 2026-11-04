@@ -36,7 +36,7 @@ interface World {
 const world = (policy = "guards:\n  judge-core: shadow\n  triage: active\n"): World => {
   const repo = tempRepo({ "README.md": "hello\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", policy);
+  write(repo.root, ".fm/policy.yml", policy);
   return { repo, deps: { runtime: repoRuntime(), paths: fmPaths(repo.root) } };
 };
 
@@ -95,7 +95,7 @@ describe("triage before a result is used", () => {
     const claim = result?.rows[0]?.claim ?? "";
     const handed = call(w.deps, { verb: "handoff", claim, to: "tax advisor", missing: "the rate table for 2026" });
     assert.equal(handed.handoff?.to, "tax advisor");
-    assert.ok(existsSync(join(w.repo.root, ".finitemonkey", "judge", "handoffs", `${claim}.json`)));
+    assert.ok(existsSync(join(w.repo.root, ".fm", "judge", "handoffs", `${claim}.json`)));
     const after = call(w.deps, { verb: "classify", file: "notes/vat.md", text: REPORT }).result;
     assert.equal(after?.handedOff, 1);
     assert.equal(after.done, false);
@@ -138,7 +138,7 @@ describe("triage before a result is used", () => {
     call(w.deps, { verb: "handoff", claim: result?.rows[0]?.claim, to: "advisor", missing: "rates" });
     git(w.repo.root, "add", "-A");
     const staged = git(w.repo.root, "diff", "--cached", "--name-only");
-    assert.ok(!staged.includes(".finitemonkey/judge"), staged);
-    assert.ok(existsSync(toAbsolutePath(join(w.repo.root, ".finitemonkey", "judge.jsonl"))));
+    assert.ok(!staged.includes(".fm/judge"), staged);
+    assert.ok(existsSync(toAbsolutePath(join(w.repo.root, ".fm", "judge.jsonl"))));
   });
 });

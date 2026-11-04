@@ -76,7 +76,7 @@ describe("finitemonkey map", () => {
     assert.equal(field(second.body, "data", "cached"), true);
     assert.equal(counted.greps(), greps);
     assert.equal(textOf(second.body), textOf(first.body));
-    assert.match(repo.read(".finitemonkey/map.txt"), /^# finitemonkey map tree=w[0-9a-f]+ budget=4000 /);
+    assert.match(repo.read(".fm/map.txt"), /^# finitemonkey map tree=w[0-9a-f]+ budget=4000 /);
     repo.write("src/lib/tax.js", "export function addTax(value) { return value; }\n");
     const third = await cliJson(["map"], { cwd: repo.root, runtime: counted.runtime });
     assert.equal(field(third.body, "data", "cached"), false);
@@ -94,7 +94,7 @@ describe("finitemonkey map", () => {
     const flag = await cliJson(["map", "--budget", "300"], { cwd: repo.root, runtime: withoutAstGrep(repoRuntime()) });
     assert.ok(textOf(flag.body).length <= 300, textOf(flag.body));
     assert.match(textOf(flag.body), /… \d+ more folders$/);
-    repo.write(".finitemonkey/config.yml", "map:\n  budget: 500\n");
+    repo.write(".fm/config.yml", "map:\n  budget: 500\n");
     const config = await cliJson(["map"], { cwd: repo.root, runtime: withoutAstGrep(repoRuntime()) });
     assert.equal(field(config.body, "data", "budget"), 500);
     assert.ok(textOf(config.body).length <= 500);

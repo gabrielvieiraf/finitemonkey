@@ -37,8 +37,8 @@ const ASSUMPTION = JSON.stringify({
 const setup = async (): Promise<Repo> => {
   const repo = makeRepo({
     "src/totals.ts": TOTALS,
-    ".finitemonkey/policy.yml": policyWith({ "knowledge-claims": "active" }),
-    ".finitemonkey/assumptions.jsonl": `${ASSUMPTION}\n`,
+    ".fm/policy.yml": policyWith({ "knowledge-claims": "active" }),
+    ".fm/assumptions.jsonl": `${ASSUMPTION}\n`,
   });
   repos.push(repo);
   const run = (args: readonly string[]) => cliJson(args, { cwd: repo.root, runtime: repoRuntime() });

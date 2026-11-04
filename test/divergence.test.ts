@@ -49,13 +49,13 @@ const candidate = (negative: string): string => {
 const project = (readings: readonly string[], inputs: readonly unknown[], mode = "active"): TempRepo => {
   const repo = tempRepo({ "src/refund.js": OLD });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", `guards:\n  divergence-ask: ${mode}\n`);
+  write(repo.root, ".fm/policy.yml", `guards:\n  divergence-ask: ${mode}\n`);
   const answer = JSON.stringify({
     readings: readings.map((dir, index) => ({ dir, summary: `reading ${String(index)}` })),
     inputs,
   });
   write(repo.root, "generator.mjs", `process.stdout.write(${JSON.stringify(answer)});\n`);
-  write(repo.root, ".finitemonkey/config.yml", "divergence:\n  generator: node generator.mjs\n");
+  write(repo.root, ".fm/config.yml", "divergence:\n  generator: node generator.mjs\n");
   trustContract(repo.root, "refund", CONTRACT);
   return repo;
 };
@@ -93,7 +93,7 @@ describe("divergence question", () => {
       options.map((option: unknown) => field(option, "output")),
       ["nothing to refund", "error: negative amount"],
     );
-    const logged = readFileSync(join(repo.root, ".finitemonkey/log.jsonl"), "utf8");
+    const logged = readFileSync(join(repo.root, ".fm/log.jsonl"), "utf8");
     assert.match(
       logged,
       /"event":"divergence.outcome"[^\n]*"options":\["A: nothing to refund","B: error: negative amount"\]/,
@@ -153,11 +153,7 @@ describe("divergence question", () => {
       [candidate("nothing to refund"), candidate("error: negative amount")],
       [{ input: "-5", topic: "technical", domain: "backend" }],
     );
-    write(
-      repo.root,
-      ".finitemonkey/perfil.yml",
-      "domains:\n  backend:\n    tool: 10\n    knowledge: 10\nquick_start: done\n",
-    );
+    write(repo.root, ".fm/perfil.yml", "domains:\n  backend:\n    tool: 10\n    knowledge: 10\nquick_start: done\n");
     await withExample(repo);
     const asked = await run(repo, ["task", "diverge", "refund"]);
     assert.equal(field(asked.body, "data", "outcome"), "agree");

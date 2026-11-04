@@ -1,12 +1,13 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import { accept, isRecord, optionalString, type Parsed, parseJson, reject } from "../../core/parsed.js";
 import type { Runtime } from "../../core/runtime.js";
 import { normalizeLine } from "./lines.js";
 import { DROPPED_REASONS, type DroppedItem, type Finding, type Side } from "./types.js";
 
-export const DROPPED_FILE = ".finitemonkey/merge-dropped.json";
+export const DROPPED_FILE = `${DATA_DIR}/merge-dropped.json`;
 
 const REASONS: ReadonlySet<string> = new Set(DROPPED_REASONS);
 

@@ -30,9 +30,9 @@ const context = (stage: string, origin: string, demonstrated: readonly string[] 
 const setup = (goals: string, extra = ""): Repo => {
   const repo = makeRepo({
     "package.json": pkg({ express: "^4.19.0" }),
-    ".finitemonkey/goals.yml": goals,
-    ".finitemonkey/tasks/work.yml": contract(extra),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
+    ".fm/goals.yml": goals,
+    ".fm/tasks/work.yml": contract(extra),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "work", done: [] }),
   });
   repos.push(repo);
   return repo;

@@ -4,7 +4,7 @@ This file is for an AI agent, such as Claude Code, that a user asked to install 
 
 > **Status: stable since 0.1.0.** `init`, `update`, `uninstall`, the gate, the guards and the Claude Code plugin ship under the npm `latest` dist-tag; previews of the next version ship under `next`.
 >
-> Valid for `finitemonkey` 0.1.0-next.40 or later. Check the installed version before following any later step, and stop if it is lower.
+> Valid for `fm` 0.1.0-next.40 or later. Check the installed version before following any later step, and stop if it is lower.
 
 ## Conduct
 
@@ -27,11 +27,11 @@ Both give the same hooks. Use one, or both: when a project has its own Finite Mo
    /plugin install finitemonkey@finitemonkey-next
    ```
 
-   Once a stable version is out, the default branch gets its own marketplace, named `finitemonkey` (`/plugin marketplace add gabrielvieiraf/finitemonkey`, then `/plugin install finitemonkey@finitemonkey`). It can be added next to `finitemonkey-next`, but keep only one of the two enabled: both plugins are called `finitemonkey`, and Claude Code keeps a single set of hooks. `doctor` fails and prints the `claude plugin disable` command when both are enabled.
+   Once a stable version is out, the default branch gets its own marketplace, named `fm` (`/plugin marketplace add gabrielvieiraf/finitemonkey`, then `/plugin install finitemonkey@finitemonkey`). It can be added next to `finitemonkey-next`, but keep only one of the two enabled: both plugins are called `fm`, and Claude Code keeps a single set of hooks. `doctor` fails and prints the `claude plugin disable` command when both are enabled.
 
    The plugin brings the hooks and the skills (`task`, `verify`, `look`, `finish`) that Claude uses on its own. It carries the CLI itself (`scripts/finitemonkey.mjs`, the same build as the version in its `plugin.json`), and every hook runs `node` on that file: no `npx` and no download.
 
-2. **`npx finitemonkey init`** in the project (steps below). It writes the hooks, the `permissions.deny` floor (plus a `Read` deny rule for each `.claudeignore` pattern), `ask` rules for pushes to `main`/`master` and for publish and deploy commands, `permissions.blockReadsOutsideWorkingDirectories: true`, `.finitemonkey/config.yml`, a project `verify` skill (`.claude/skills/verify/SKILL.md`, which runs the fast gate before each commit), and a short managed block in `AGENTS.md` that `CLAUDE.md` imports with `@AGENTS.md` (each file is created when absent; everything outside the block stays as it was) into the project. It never sets `defaultMode` or `autoMode`, only adds rules the settings do not already have, and leaves a `verify` skill the project already has as it is. The hooks run `node` on `node_modules/finitemonkey` when the project has it as a dependency; otherwise `init` copies the CLI that is running it into `.finitemonkey/runtime/` (committed, so teammates and cloud sessions get the same version) and the hooks run that copy. No hook calls `npx`. This also holds where plugins do not load (cloud sessions of a repository read the committed `.claude/settings.json`). Add `--marketplace` to also register the plugin's marketplace in the project settings for everyone who trusts the folder; it is off unless the user asks. The marketplace follows the channel of the running version; `--channel next` or `--channel stable` picks one.
+2. **`npx finitemonkey init`** in the project (steps below). It writes the hooks, the `permissions.deny` floor (plus a `Read` deny rule for each `.claudeignore` pattern), `ask` rules for pushes to `main`/`master` and for publish and deploy commands, `permissions.blockReadsOutsideWorkingDirectories: true`, `.fm/config.yml`, a project `verify` skill (`.claude/skills/verify/SKILL.md`, which runs the fast gate before each commit), and a short managed block in `AGENTS.md` that `CLAUDE.md` imports with `@AGENTS.md` (each file is created when absent; everything outside the block stays as it was) into the project. It never sets `defaultMode` or `autoMode`, only adds rules the settings do not already have, and leaves a `verify` skill the project already has as it is. The hooks run `node` on `node_modules/finitemonkey` when the project has it as a dependency; otherwise `init` copies the CLI that is running it into `.fm/runtime/` (committed, so teammates and cloud sessions get the same version) and the hooks run that copy. No hook calls `npx`. This also holds where plugins do not load (cloud sessions of a repository read the committed `.claude/settings.json`). Add `--marketplace` to also register the plugin's marketplace in the project settings for everyone who trusts the folder; it is off unless the user asks. The marketplace follows the channel of the running version; `--channel next` or `--channel stable` picks one.
 
 ## What the user gets
 
@@ -75,7 +75,7 @@ This reads the project and returns the plan without writing anything: `data.acti
 npx finitemonkey@next init --yes --json
 ```
 
-Pass the user's decisions as flags (for example `--commits free --lang pt-BR`). Without `--yes`, `init` exits 4 with the plan and a `next` field holding the exact command to run after the user agrees. `init` backs up every file it touches to `.finitemonkey/backups/<timestamp>/`, records what it wrote in `.finitemonkey/lock.json`, merges `.claude/settings.json` without removing any user hook or permission, adds a managed block to `.gitignore` (state stays local, `config.yml` is committed), and is safe to run again: a second run with no change writes nothing.
+Pass the user's decisions as flags (for example `--commits free --lang pt-BR`). Without `--yes`, `init` exits 4 with the plan and a `next` field holding the exact command to run after the user agrees. `init` backs up every file it touches to `.fm/backups/<timestamp>/`, records what it wrote in `.fm/lock.json`, merges `.claude/settings.json` without removing any user hook or permission, adds a managed block to `.gitignore` (state stays local, `config.yml` is committed), and is safe to run again: a second run with no change writes nothing.
 
 ### 5. Verify
 
@@ -85,7 +85,7 @@ npx finitemonkey@next doctor --json
 
 Every item has `check`, `status` and `fix`. If any item is not `ok`, run the `fix` command when it is safe and does not fall under conduct rule 5, then run `doctor` again. Report what is left.
 
-`npx finitemonkey@next doctor --fix` repairs the project files it owns (hooks, deny rules, the `.gitignore` block) with the same backup and lock as `init`, and never touches user settings or the shell profile. If the user wants to file a bug, `npx finitemonkey@next doctor --report` writes a masked Markdown file under `.finitemonkey/reports/` to attach to the issue.
+`npx finitemonkey@next doctor --fix` repairs the project files it owns (hooks, deny rules, the `.gitignore` block) with the same backup and lock as `init`, and never touches user settings or the shell profile. If the user wants to file a bug, `npx finitemonkey@next doctor --report` writes a masked Markdown file under `.fm/reports/` to attach to the issue.
 
 ### 6. Tell the user
 
@@ -120,4 +120,4 @@ npx finitemonkey@next uninstall --yes --json
 npx finitemonkey@next uninstall --yes --purge --json
 ```
 
-The first removes what Finite Monkey added and restores the backups, keeping `.finitemonkey/` (backups and evidence). `--purge` also deletes `.finitemonkey/`; after `init` then `uninstall --purge`, the project is byte-identical to before. Files the user edited after install are kept and listed in `data.kept`. Without `--yes` it exits 4 with the plan. The plugin, if installed, is removed separately: `claude plugin uninstall finitemonkey@finitemonkey-next` (or `finitemonkey@finitemonkey` for the stable marketplace).
+The first removes what Finite Monkey added and restores the backups, keeping `.fm/` (backups and evidence). `--purge` also deletes `.fm/`; after `init` then `uninstall --purge`, the project is byte-identical to before. Files the user edited after install are kept and listed in `data.kept`. Without `--yes` it exits 4 with the plan. The plugin, if installed, is removed separately: `claude plugin uninstall finitemonkey@finitemonkey-next` (or `finitemonkey@finitemonkey` for the stable marketplace).

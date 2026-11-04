@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { FrontsState } from "./state.js";
@@ -27,7 +28,7 @@ const waveStart = (state: FrontsState): number | undefined => {
 };
 
 const loggedUsd = (runtime: Runtime, root: AbsolutePath, since: number): number => {
-  const text = runtime.readText(toAbsolutePath(join(root, ".finitemonkey", "cost.jsonl")));
+  const text = runtime.readText(toAbsolutePath(join(root, DATA_DIR, "cost.jsonl")));
   if (!text.ok) return 0;
   return text.value.split("\n").reduce((total, line) => {
     const parsed = line.trim() === "" ? undefined : parseJsonObject(line);

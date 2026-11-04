@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { commandText } from "../git/command-text.js";
 import { memo, memoBy } from "../git/facts.js";
@@ -30,7 +31,7 @@ export const PROD_PROGRAMS: ReadonlySet<string> = new Set([
   "pg_restore",
 ]);
 
-export const EVIDENCE_FILE = ".finitemonkey/prod-evidence.jsonl";
+export const EVIDENCE_FILE = `${DATA_DIR}/prod-evidence.jsonl`;
 
 const SSH_LOOKUP_MS = 1500;
 
@@ -107,7 +108,7 @@ export const recordEvidence = (
   );
   if (lines.length === 0) return;
   const path = toAbsolutePath(join(root, EVIDENCE_FILE));
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR)));
   const before = runtime.readText(path);
   const text = before.ok ? before.value : "";
   runtime.writeAtomic(path, `${text}${text === "" || text.endsWith("\n") ? "" : "\n"}${lines.join("\n")}\n`);

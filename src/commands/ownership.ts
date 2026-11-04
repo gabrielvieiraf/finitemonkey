@@ -75,7 +75,7 @@ export const genOwnershipCommand: CommandSpec = {
         feature: OWNERSHIP_FEATURE,
         files: catalog ? [] : [{ path: OWNERSHIP_FILE, text: stringifyYaml({ components }) }],
         notes,
-        rerun: `finitemonkey gen ownership${flag} --yes`,
+        rerun: `fm gen ownership${flag} --yes`,
       }),
     );
   },

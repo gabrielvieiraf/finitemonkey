@@ -17,7 +17,7 @@ const fixture = (name: string): string => readFileSync(join(ROOT, "test", "fixtu
 
 const setup = (mode: string): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/policy.yml": policyWith({ "mcp-pin": mode }),
+    ".fm/policy.yml": policyWith({ "mcp-pin": mode }),
     "tools-v1.json": fixture("tools-v1.json"),
     "tools-v2.json": fixture("tools-v2.json"),
   });
@@ -76,7 +76,7 @@ describe("MCP tool descriptions are pinned", () => {
     await pin(repo, "tools-v1.json");
     await pin(repo, "tools-v2.json");
     assert.notEqual(decision(await callSearch(repo)), "ask");
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"feature":"mcp-pin".*"tool":"mcp__docs__search"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"feature":"mcp-pin".*"tool":"mcp__docs__search"/);
   });
 
   it("refuses input that is not a tool list", async () => {

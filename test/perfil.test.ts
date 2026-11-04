@@ -91,8 +91,8 @@ describe("perfil: never in git, PR text or reports", () => {
   it("the profile is ignored by git and absent from the gate report", async () => {
     const repo = await installed();
     await cliJson(["perfil", "start"], { cwd: repo.root, runtime: runtime(), stdin: tty("c\nb\nb\nb\nb\na\n") });
-    assert.match(repo.read(".finitemonkey/perfil.yml"), /knowledge: 70/);
-    assert.equal(repo.git("check-ignore", ".finitemonkey/perfil.yml").trim(), ".finitemonkey/perfil.yml");
+    assert.match(repo.read(".fm/perfil.yml"), /knowledge: 70/);
+    assert.equal(repo.git("check-ignore", ".fm/perfil.yml").trim(), ".fm/perfil.yml");
     repo.git("add", "-A");
     assert.doesNotMatch(repo.git("status", "--porcelain"), /perfil/);
     const gate = await cliJson(["gate"], { cwd: repo.root, runtime: runtime() });

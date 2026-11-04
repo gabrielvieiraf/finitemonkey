@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import { isFrontAgent } from "../../fronts/state.js";
 import { textField } from "../../hooks/fields.js";
 import type { HookHandler } from "../../hooks/handlers.js";
@@ -46,7 +47,7 @@ export const contractFacts = (t: Translate, contract: TaskContract, briefing: bo
     t("gate.context.front", { task: contract.id, goal: contract.goal, file: taskRelative(contract.id) }),
     t("gate.context.done_means", { list: contract.acceptance.map((check) => requirementText(t, check)).join("; ") }),
     ...(contract.scope.paths.length > 0 ? [t("gate.context.scope", { paths: contract.scope.paths.join(", ") })] : []),
-    ...(briefing ? [t("gate.context.briefing", { file: ".finitemonkey/briefing.md" })] : []),
+    ...(briefing ? [t("gate.context.briefing", { file: `${DATA_DIR}/briefing.md` })] : []),
   ].join("\n");
 
 export const subagentStart: HookHandler = (input) => {

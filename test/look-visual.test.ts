@@ -77,10 +77,10 @@ describe("visual: approved image against the next change", () => {
     await lookAt(repo);
     const agent = await cliJson(["look", "approve", "/"], { runtime, cwd: repo.root, env: { CLAUDECODE: "1" } });
     assert.notEqual(agent.code, 0);
-    assert.ok(!existsSync(join(repo.root, ".finitemonkey", "look", "approved", "root-390.png")));
+    assert.ok(!existsSync(join(repo.root, ".fm", "look", "approved", "root-390.png")));
     const approved = await cliJson(["look", "approve", "/"], { runtime, cwd: repo.root, stdin: tty() });
     assert.equal(approved.code, 0, approved.stdout);
-    assert.ok(existsSync(join(repo.root, ".finitemonkey", "look", "approved", "root-390.png")));
+    assert.ok(existsSync(join(repo.root, ".fm", "look", "approved", "root-390.png")));
     const visual = (run: Awaited<ReturnType<typeof lookAt>>) =>
       run.summary.findings.filter((item) => item.feature === "visual-approve");
     assert.deepEqual(visual(await lookAt(repo)), []);

@@ -13,7 +13,7 @@ import { cli, execResult, fakeRuntime } from "./support.js";
 
 const ROOT = toAbsolutePath("/home/ana/app");
 const file = (name: string) => toAbsolutePath(`${ROOT}/${name}`);
-const LOOK = { [file(".finitemonkey/look.yml")]: "port: 3000\n" };
+const LOOK = { [file(".fm/look.yml")]: "port: 3000\n" };
 const PACKAGE = { [file("package.json")]: JSON.stringify({ name: "app", devDependencies: { vite: "^7.0.0" } }) };
 
 const runtimeWith = (files: Readonly<Record<string, string>>, calls: ExecRequest[] = []) =>

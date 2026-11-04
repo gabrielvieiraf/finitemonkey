@@ -27,7 +27,7 @@ export const grepAt = (git: Git, hash: string, grep: GrepPattern, covered: reado
 };
 
 const SKIPPED_FILE =
-  /(^|\/)(node_modules|dist|build|vendor)\/|\.min\.js$|(^|\/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml)$|^docs\/plan\/|^\.finitemonkey\//;
+  /(^|\/)(node_modules|dist|build|vendor)\/|\.min\.js$|(^|\/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml)$|^docs\/plan\/|^\.(?:fm|finitemonkey)\//;
 
 const insideAny = (file: string, covered: readonly string[]): boolean =>
   covered.length === 0 ||

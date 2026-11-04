@@ -62,7 +62,7 @@ const toResult = (ctx: Ctx, request: AppProbeRequest, data: AppCheckData): Comma
     error: {
       code: "app_check_failed",
       message: human.join(" "),
-      fix: `finitemonkey app check --port ${String(request.port)}`,
+      fix: `fm app check --port ${String(request.port)}`,
     },
   };
 };

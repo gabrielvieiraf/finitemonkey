@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/judge-verbs@1.json",
   "title": "finitemonkey/judge-verbs@1",
-  "description": "`data` of every `finitemonkey judge <verb> --json` and of `judge call`: the same JSON for the CLI, the mod pane, the skill and the gate. Generated from JudgeResponse in src/judge/response.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of every `fm judge <verb> --json` and of `judge call`: the same JSON for the CLI, the mod pane, the skill and the gate. Generated from JudgeResponse in src/judge/response.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

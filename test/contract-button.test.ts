@@ -30,7 +30,7 @@ after(() => {
 const draft = (): TempRepo => {
   const repo = tempRepo({ "src/a.js": "export const a = 1;\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/tasks/t1.yml", CONTRACT);
+  write(repo.root, ".fm/tasks/t1.yml", CONTRACT);
   writeState(runtime, fmPaths(repo.root), { active: "t1", done: [] });
   return repo;
 };
@@ -68,10 +68,10 @@ describe("contract approval by button", () => {
     const shown = await run(repo, ["task", "trust"]);
     const hash = String(field(shown.body, "data", "hash"));
     const digest = String(field(shown.body, "data", "digest"));
-    write(repo.root, ".finitemonkey/tasks/t1.yml", CONTRACT.replace("the card", "the wallet"));
+    write(repo.root, ".fm/tasks/t1.yml", CONTRACT.replace("the card", "the wallet"));
     const goal = await run(repo, ["task", "trust", "t1", "--hash", hash, "--digest", digest]);
     assert.notEqual(goal.code, 0, goal.stdout);
-    write(repo.root, ".finitemonkey/tasks/t1.yml", CONTRACT.replace("node -e 0", "node -e 1"));
+    write(repo.root, ".fm/tasks/t1.yml", CONTRACT.replace("node -e 0", "node -e 1"));
     const check = await run(repo, ["task", "trust", "t1", "--hash", hash]);
     assert.notEqual(check.code, 0, check.stdout);
     assert.equal(readTrust(runtime, fmPaths(repo.root)).contracts["t1"], undefined);

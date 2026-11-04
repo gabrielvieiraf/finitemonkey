@@ -39,7 +39,7 @@ const machine = (config = ""): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(A, ".git"))]: "gitdir: /home/ana/shop/.git/worktrees/a\n",
     [toAbsolutePath(join(B, ".git"))]: "gitdir: /home/ana/shop/.git/worktrees/b\n",
-    [toAbsolutePath(join(A, ".finitemonkey", "config.yml"))]: config,
+    [toAbsolutePath(join(A, ".fm", "config.yml"))]: config,
   });
 
 const fire = (
@@ -191,11 +191,11 @@ describe("WorktreeCreate: worktrees off synced and mounted folders", () => {
     });
     const outcome = await fire(runtime, "WorktreeCreate", main, { name: "login", repo_path: main });
     assert.equal(outcome.exitCode, 0, outcome.stderr);
-    assert.equal(outcome.stdout.trim(), "/home/test/.finitemonkey/worktrees/shop/login");
+    assert.equal(outcome.stdout.trim(), "/home/test/.fm/worktrees/shop/login");
     assert.deepEqual(added[0]?.slice(0, 4), ["worktree", "add", "-b", "worktree-login"]);
     assert.ok(!added.some((args) => args[1] === "lock"));
     const registry = fs.readText(toAbsolutePath(join(main, ".git", "finitemonkey", "worktrees.yml")));
-    assert.ok(registry.ok && registry.value.includes("/home/test/.finitemonkey/worktrees/shop/login"));
+    assert.ok(registry.ok && registry.value.includes("/home/test/.fm/worktrees/shop/login"));
   });
 
   it("creates a real worktree, prints only its path and removes it through WorktreeRemove", async () => {

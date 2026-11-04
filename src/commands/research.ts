@@ -58,7 +58,7 @@ const newRecord = (ctx: Ctx, root: Root, topic: string): CommandResult => {
   });
   return {
     ...success({ schema: RESEARCH_SCHEMA, file, topic, created: true }, [ctx.t("research.created", { file })]),
-    next: `finitemonkey research check ${file}`,
+    next: `fm research check ${file}`,
   };
 };
 

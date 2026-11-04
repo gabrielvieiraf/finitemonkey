@@ -44,9 +44,9 @@ const history = (count: number): Record<string, string> =>
       const id = `past${String(index + 1)}`;
       const start = Date.UTC(2026, 9, index + 1, 9);
       return [
-        [`.finitemonkey/tasks/${id}.yml`, contract(id, "S", 1)],
+        [`.fm/tasks/${id}.yml`, contract(id, "S", 1)],
         [
-          `.finitemonkey/evidence/${id}.jsonl`,
+          `.fm/evidence/${id}.jsonl`,
           `${line(id, "c1", "passed", start)}\n${line(id, "*gate*", "passed", start + 3_600_000)}\n`,
         ],
       ];
@@ -57,9 +57,9 @@ const setup = (files: Readonly<Record<string, string>> = {}): Repo => {
   const done = Array.from({ length: 5 }, (_, index) => `past${String(index + 1)}`);
   const repo = makeRepo({
     ...history(5),
-    ".finitemonkey/tasks/big.yml": contract("big", "L", 3),
-    ".finitemonkey/tasks/mid.yml": contract("mid", "M", 4),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, done }),
+    ".fm/tasks/big.yml": contract("big", "L", 3),
+    ".fm/tasks/mid.yml": contract("mid", "M", 4),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, done }),
     ...files,
   });
   repos.push(repo);
@@ -126,7 +126,7 @@ describe("unattended runs sized by the local p80 horizon", () => {
     );
     assert.equal(report.stoppedBy, "gate_failed");
     assert.equal(readMarker(repoRuntime(), paths), undefined);
-    assert.match(repo.read(`.finitemonkey/reports/unattended-${report.run}.json`), /gate_failed/);
+    assert.match(repo.read(`.fm/reports/unattended-${report.run}.json`), /gate_failed/);
   });
 
   it("an edit to a fixed criterion during the run invalidates the part", () => {
@@ -138,7 +138,7 @@ describe("unattended runs sized by the local p80 horizon", () => {
       paths,
       {
         agent: (task) => {
-          repo.write(`.finitemonkey/tasks/${task.id}.yml`, contract(task.id, "S", 1));
+          repo.write(`.fm/tasks/${task.id}.yml`, contract(task.id, "S", 1));
           return true;
         },
         gate: () => "passed",
@@ -152,7 +152,7 @@ describe("unattended runs sized by the local p80 horizon", () => {
 
   it("holds destructive and production actions while a run is on, and lists them in the report", async () => {
     const repo = setup({
-      ".finitemonkey/cache/unattended.json": JSON.stringify({ run: "u1", until: "2999-01-01T00:00:00.000Z" }),
+      ".fm/cache/unattended.json": JSON.stringify({ run: "u1", until: "2999-01-01T00:00:00.000Z" }),
     });
     for (const command of ["git push origin wip", "rm -rf build", "psql postgres://db.example.com", "npm publish"]) {
       const outcome = await fireHook(repo, "PreToolUse", { tool_name: "Bash", tool_input: { command } });
@@ -161,6 +161,6 @@ describe("unattended runs sized by the local p80 horizon", () => {
     }
     const ok = await fireHook(repo, "PreToolUse", { tool_name: "Bash", tool_input: { command: "npm test" } });
     assert.equal(denied(ok), false);
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"unattended_hold".*"reason":"git push"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"unattended_hold".*"reason":"git push"/);
   });
 });

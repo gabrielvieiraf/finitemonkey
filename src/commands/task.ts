@@ -91,7 +91,7 @@ const createFailure = (ctx: Ctx, failure: CreateProblem): CommandResult => {
   if (failure.kind === "exists") {
     return failureFrom(
       ctx.t,
-      problem("task_exists", "error.task_exists", `finitemonkey task show ${failure.id}`, { task: failure.id }),
+      problem("task_exists", "error.task_exists", `fm task show ${failure.id}`, { task: failure.id }),
     );
   }
   const detail = failure.kind === "invalid" ? failure.issues.join("; ") : failure.detail;

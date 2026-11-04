@@ -58,7 +58,7 @@ const server = (docker: string, issues: () => string = () => "[]"): Server => {
 };
 
 const project = (config = ""): Repo => {
-  const repo = makeRepo({ ".finitemonkey/config.yml": `lang: en\n${config}`, "app.js": "console.log(1);\n" });
+  const repo = makeRepo({ ".fm/config.yml": `lang: en\n${config}`, "app.js": "console.log(1);\n" });
   repos.push(repo);
   return repo;
 };
@@ -78,7 +78,7 @@ describe("finitemonkey deploy check", POSIX, () => {
   it("reports a planted local edit on the test server, running only read commands", async () => {
     const repo = project();
     const app = checkout(repo);
-    repo.write(".finitemonkey/config.yml", `lang: en\ndeploy:\n  app_dir: ${app}\n`);
+    repo.write(".fm/config.yml", `lang: en\ndeploy:\n  app_dir: ${app}\n`);
     const clean = server("");
     const ok = await cliJson(["deploy", "check"], { cwd: repo.root, runtime: clean.runtime, env: ENV });
     assert.equal(ok.code, 0, ok.stdout);

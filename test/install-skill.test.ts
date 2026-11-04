@@ -11,7 +11,7 @@ describe("the project verify skill", () => {
     assert.equal((await run(vendored, ["init", "--yes"])).code, ExitCode.Ok);
     const skill = vendored.read(at(VERIFY_SKILL)) ?? "";
     assert.match(skill, /^---\nname: verify\ndescription: /);
-    assert.match(skill, /`node \.finitemonkey\/runtime\/dist\/finitemonkey\.mjs gate --fast --json`/);
+    assert.match(skill, /`node \.fm\/runtime\/dist\/finitemonkey\.mjs gate --fast --json`/);
     const local = repo({ "node_modules/finitemonkey/dist/finitemonkey.mjs": "" });
     assert.equal((await run(local, ["init", "--yes"])).code, ExitCode.Ok);
     assert.match(local.read(at(VERIFY_SKILL)) ?? "", /`node node_modules\/finitemonkey\/dist\/finitemonkey\.mjs gate/);

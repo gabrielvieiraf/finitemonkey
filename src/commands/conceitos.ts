@@ -98,7 +98,7 @@ const evidence = (ctx: Ctx): CommandResult => {
   );
 };
 
-const MARK_USAGE = `finitemonkey conceitos mark <concept> <${CONCEPT_LEVELS.join("|")}>`;
+const MARK_USAGE = `fm conceitos mark <concept> <${CONCEPT_LEVELS.join("|")}>`;
 
 const mark = (ctx: Ctx, rawConcept: string | undefined, rawLevel: string | undefined): CommandResult => {
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("perfil.error.person_only", MARK_USAGE));

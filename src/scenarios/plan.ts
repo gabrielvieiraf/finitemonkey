@@ -45,7 +45,7 @@ export interface AccessConfig {
 
 const SOURCE = /\.(?:[cm]?[jt]sx?|py)$/;
 const SKIP_DIR =
-  /(?:^|\/)(?:node_modules|\.git|dist|build|coverage|\.finitemonkey|\.next|\.svelte-kit|\.nuxt|\.output|\.?venv|__pycache__)\//;
+  /(?:^|\/)(?:node_modules|\.git|dist|build|coverage|\.(?:fm|finitemonkey)|\.next|\.svelte-kit|\.nuxt|\.output|\.?venv|__pycache__)\//;
 const PARAM = /\/(?::[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})(\/?)$/;
 const MAX_FILES = 2000;
 

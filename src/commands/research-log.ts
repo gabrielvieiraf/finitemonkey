@@ -1,6 +1,7 @@
 import { recordResearchConcepts } from "../conceitos/research.js";
 import { listOption, stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { PLAN_DIR, planPath, slugOf } from "../plan/folder.js";
@@ -112,7 +113,7 @@ export const researchSourceCommand: CommandSpec = {
       });
       const log = readResearchLog(ctx.runtime, paths, slug);
       if (!written || log === undefined)
-        return failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`));
+        return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/research/${slug}.jsonl`));
       const work = { slug, url, question: log.question.question, decision: log.question.decision };
       const concepts = recordResearchConcepts(ctx.runtime, paths, work, isPerson(ctx) ? "person" : "agent");
       return success({ schema: RESEARCH_LOG_SCHEMA, slug, state: researchState(log), concepts }, [
@@ -204,5 +205,5 @@ export const openResearchLog = (
   });
   return written
     ? { kind: "opened", slug, decision: file }
-    : { kind: "failed", result: failureFrom(ctx.t, guardianWriteProblem(`.finitemonkey/research/${slug}.jsonl`)) };
+    : { kind: "failed", result: failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/research/${slug}.jsonl`)) };
 };

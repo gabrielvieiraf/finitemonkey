@@ -45,7 +45,7 @@ const coverage = async (fs: ReturnType<typeof repo>) => {
 
 describe("rules coverage before and after compile", () => {
   it("a rule only in prose shows text only; after compile it shows full coverage", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES, "AGENTS.md": PROSE });
+    const fs = repo({ ".fm/rules.yml": RULES, "AGENTS.md": PROSE });
     const before = await coverage(fs);
     assert.equal(before.code, 1);
     assert.deepEqual(before.status, { "no-force-push": "text only", "no-wip-commits": "none" });
@@ -61,7 +61,7 @@ describe("rules coverage before and after compile", () => {
   });
 
   it("compile writes each output marked by id", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES });
+    const fs = repo({ ".fm/rules.yml": RULES });
     await run(fs, ["rules", "compile", "--ci"]);
     const settings = fs.read(at(".claude/settings.json")) ?? "";
     assert.match(settings, /"Bash\(git push --force:\*\)"/);
@@ -74,7 +74,7 @@ describe("rules coverage before and after compile", () => {
   });
 
   it("without --ci a never rule stays partial and coverage says so", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES });
+    const fs = repo({ ".fm/rules.yml": RULES });
     const compiled = await cli(["rules", "compile"], { cwd: ROOT, runtime: fakeRuntime({ fs }) });
     assert.match(compiled.stdout + compiled.stderr, /rules compile --ci/);
     const result = await coverage(fs);
@@ -104,7 +104,7 @@ const fire = (runtime: Runtime, command: string): Promise<HookOutcome> =>
 
 describe("compiled rules are enforced", () => {
   it("the guard blocks a command rule only once it is compiled", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES });
+    const fs = repo({ ".fm/rules.yml": RULES });
     const runtime = fakeRuntime({ fs });
     assert.equal((await fire(runtime, "git push origin feature --force")).verdict, "allow");
     await run(fs, ["rules", "compile"]);
@@ -115,7 +115,7 @@ describe("compiled rules are enforced", () => {
   });
 
   it("the commit-msg hook checks a commit text rule", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES, "msg.txt": "wip: half of the checkout\n" });
+    const fs = repo({ ".fm/rules.yml": RULES, "msg.txt": "wip: half of the checkout\n" });
     await run(fs, ["rules", "compile"]);
     const result = await run(fs, ["commit-msg", "msg.txt"]);
     assert.equal(result.code, 1);
@@ -130,7 +130,7 @@ after(() => {
 
 describe("the CI step", () => {
   it("checks the PR text and the commits of the branch", async () => {
-    const git = makeRepo({ ".finitemonkey/rules.yml": RULES, "src/a.ts": "export const a = 1;\n" });
+    const git = makeRepo({ ".fm/rules.yml": RULES, "src/a.ts": "export const a = 1;\n" });
     repos.push(git);
     const runtime = repoRuntime();
     assert.equal((await cliJson(["rules", "compile", "--ci"], { cwd: git.root, runtime })).code, 0);
@@ -172,7 +172,7 @@ describe("doctor and the CI cell", () => {
   };
 
   it('marks the CI cell "not required" when the ruleset does not require the check', async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES });
+    const fs = repo({ ".fm/rules.yml": RULES });
     await run(fs, ["rules", "compile", "--ci"]);
     const other = JSON.stringify([
       { type: "required_status_checks", parameters: { required_status_checks: [{ context: "build" }] } },
@@ -190,7 +190,7 @@ describe("doctor and the CI cell", () => {
   });
 
   it("fails a never rule that is only text", () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES, "AGENTS.md": PROSE });
+    const fs = repo({ ".fm/rules.yml": RULES, "AGENTS.md": PROSE });
     const { found: findings } = doctorWith(fs, "[]");
     assert.deepEqual(
       findings.map((item) => [item.check, item.status, item.params?.["id"]]),
@@ -204,7 +204,7 @@ describe("doctor and the CI cell", () => {
 
 describe("uninstall", () => {
   it("removes every compiled output by id", async () => {
-    const fs = repo({ ".finitemonkey/rules.yml": RULES, "AGENTS.md": PROSE });
+    const fs = repo({ ".fm/rules.yml": RULES, "AGENTS.md": PROSE });
     const runtime = fakeRuntime({ fs, tools: { claude: found("2.1.300 (Claude Code)") } });
     assert.equal((await cliJson(["init", "--yes"], { cwd: ROOT, runtime, env: {} })).code, 0);
     const installed = fs.read(at(".claude/settings.json"));
@@ -215,7 +215,7 @@ describe("uninstall", () => {
     assert.notEqual(installed, undefined);
     assert.doesNotMatch(fs.read(at("AGENTS.md")) ?? "", /finitemonkey:rules|rule no-force-push/);
     assert.equal(fs.read(at(".github/workflows/finitemonkey-rules.yml")), undefined);
-    assert.equal(fs.read(at(".finitemonkey/rules-compiled.json")), undefined);
+    assert.equal(fs.read(at(".fm/rules-compiled.json")), undefined);
     assert.match(fs.read(at("AGENTS.md")) ?? "", /Never force push a shared branch\./);
   });
 });

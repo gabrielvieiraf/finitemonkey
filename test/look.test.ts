@@ -97,7 +97,7 @@ const fresh = async (routes: readonly string[], extra: readonly string[] = []): 
   const repo = makeRepo({
     "server.js": SERVER,
     "src/page.tsx": "export const Page = () => null;\n",
-    ".finitemonkey/look.yml": lookYml(port, routes, extra),
+    ".fm/look.yml": lookYml(port, routes, extra),
   });
   repos.push(repo);
   contract(repo);
@@ -229,9 +229,9 @@ describe("look", () => {
         runtime,
         env: {},
       });
-    await read(join(repo.root, ".finitemonkey", "look", "w1", "root-390.png"));
+    await read(join(repo.root, ".fm", "look", "w1", "root-390.png"));
     await read(join(repo.root, "a.txt"));
-    assert.deepEqual(Object.keys(readLookReads(runtime, fmPaths(repo.root))), [".finitemonkey/look/w1/root-390.png"]);
+    assert.deepEqual(Object.keys(readLookReads(runtime, fmPaths(repo.root))), [".fm/look/w1/root-390.png"]);
   });
 });
 
@@ -242,7 +242,7 @@ describe("look: banned copy and approved screens", () => {
       return;
     }
     const repo = await fresh(["/", "/stripe"]);
-    repo.write(".finitemonkey/config.yml", "lang: en\nui:\n  banned_copy:\n    - processed by Stripe\n");
+    repo.write(".fm/config.yml", "lang: en\nui:\n  banned_copy:\n    - processed by Stripe\n");
     const first = done(await runLook(repoRuntime(), repo.root));
     assert.deepEqual([...new Set(rules(first, "/stripe"))], ["look/banned-copy"]);
     const paths = fmPaths(repo.root);
@@ -253,7 +253,7 @@ describe("look: banned copy and approved screens", () => {
       ...screen,
       structure: ["header", "nav", "main", "section", "table", "section", "form", "footer"],
     }));
-    repo.write(".finitemonkey/look/approved.json", JSON.stringify({ screens: other }));
+    repo.write(".fm/look/approved.json", JSON.stringify({ screens: other }));
     const drifted = done(await runLook(repoRuntime(), repo.root));
     assert.ok(drifted.summary.findings.some((item) => item.rule === "look/drift" && item.route === "/"));
   });

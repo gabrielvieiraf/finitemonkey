@@ -23,7 +23,7 @@ const tty = (): TextSource => Object.assign(Readable.from([]), { isTTY: true });
 
 const setup = (mode = "active"): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/policy.yml": policyWith({ "premise-check": mode, "claim-checks": "active" }),
+    ".fm/policy.yml": policyWith({ "premise-check": mode, "claim-checks": "active" }),
     "src/money.ts": "export const parseAmount = (v: string | null) => (v === null ? 0 : Number(v));\n",
   });
   repos.push(repo);
@@ -37,7 +37,7 @@ const run = (repo: Repo, args: readonly string[], person: boolean) =>
     ...(person ? { stdin: tty() } : { env: { CLAUDECODE: "1" } }),
   });
 
-const noClaims = (repo: Repo): boolean => !existsSync(join(repo.root, ".finitemonkey", "claims.jsonl"));
+const noClaims = (repo: Repo): boolean => !existsSync(join(repo.root, ".fm", "claims.jsonl"));
 
 const firstProposal = (repo: Repo) => readProposals(repoRuntime(), fmPaths(repo.root))[0];
 

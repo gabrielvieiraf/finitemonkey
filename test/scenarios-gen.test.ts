@@ -30,7 +30,7 @@ const CONFIG = {
 const project = (): Repo => {
   const repo = makeRepo({
     "server.js": SERVER,
-    ".finitemonkey/config.yml": [
+    ".fm/config.yml": [
       "access:",
       '  port: "4100"',
       `  user_a: "authorization: ${TOKEN}"`,

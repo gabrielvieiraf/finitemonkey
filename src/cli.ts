@@ -1,3 +1,5 @@
+import "./boot-data-dir.js";
+
 import { toAbsolutePath } from "./core/brand.js";
 import { isEntryPoint } from "./core/entry.js";
 import { nodeRealpath, nodeRuntime } from "./core/node-runtime.js";

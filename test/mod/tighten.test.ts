@@ -14,7 +14,7 @@ const RULES = [
   {
     id: "self.policy",
     target: "path",
-    pattern: String.raw`(?:^|/)\.finitemonkey/(?!reports/[^/]+\.json$)`,
+    pattern: String.raw`(?:^|/)\.fm/(?!reports/[^/]+\.json$)`,
     reason: "the evidence is written only by finitemonkey",
   },
   {
@@ -80,7 +80,7 @@ describe("tighten", () => {
       await start($, clock);
       const decided = await $.tool.check({
         tool: "Write",
-        input: { file_path: "/work/.finitemonkey/evidence/t1.jsonl" },
+        input: { file_path: "/work/.fm/evidence/t1.jsonl" },
       });
       expect(decided).toEqual({ decision: "deny", reason: "the evidence is written only by finitemonkey" });
       await clock.settle();
@@ -154,12 +154,12 @@ describe("tighten", () => {
     });
     await start($, clock);
     const inputs = [
-      { tool: "Write", file_path: "/work/.finitemonkey/state.json" },
-      { tool: "Write", file_path: "/work/.finitemonkey/reports/front.json" },
+      { tool: "Write", file_path: "/work/.fm/state.json" },
+      { tool: "Write", file_path: "/work/.fm/reports/front.json" },
       { tool: "Write", file_path: "/work/src/a.ts" },
       { tool: "Bash", command: "git commit --no-verify" },
       { tool: "Bash", command: "ls" },
-      { tool: "Read", file_path: "/work/.finitemonkey/state.json" },
+      { tool: "Read", file_path: "/work/.fm/state.json" },
     ];
     const rank: Readonly<Record<string, number>> = { allow: 0, ask: 1, deny: 2 };
     for (const want of ["allow", "ask", "deny"]) {

@@ -17,7 +17,7 @@ after(() => {
 const setup = (): Repo => {
   const repo = makeRepo({
     "src/billing.ts": "export function charge(): number {\n  return 1;\n}\n",
-    ".finitemonkey/policy.yml": policyWith({ "knowledge-claims": "active" }),
+    ".fm/policy.yml": policyWith({ "knowledge-claims": "active" }),
   });
   repos.push(repo);
   return repo;

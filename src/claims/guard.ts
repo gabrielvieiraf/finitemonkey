@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { logEvent } from "../evidence/log.js";
 import { human } from "../gate/hooks/common.js";
 import { type GateStatus, type GateStatusKind, readGateStatus } from "../gate/hooks/status.js";
@@ -15,7 +16,7 @@ import { completionClaim } from "./detect.js";
 export const CLAIMS_GUARD = "claims";
 const BLOCKED_FILE = "claims.json";
 const KEEP_KEYS = 50;
-const CONTRACT_DIR = ".finitemonkey/tasks/";
+const CONTRACT_DIR = `${DATA_DIR}/tasks/`;
 
 const allow = { kind: "allow" } as const;
 

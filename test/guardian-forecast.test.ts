@@ -31,8 +31,8 @@ const evidence = (task: string, check: string, status: string, at: string, tree 
 const finished = (id: string, day: number, hours: number): Readonly<Record<string, string>> => {
   const start = Date.UTC(2026, 9, day, 9);
   return {
-    [`.finitemonkey/tasks/${id}.yml`]: contract(id),
-    [`.finitemonkey/evidence/${id}.jsonl`]: `${[
+    [`.fm/tasks/${id}.yml`]: contract(id),
+    [`.fm/evidence/${id}.jsonl`]: `${[
       evidence(id, "tests", "failed", new Date(start).toISOString()),
       evidence(id, "*gate*", "failed", new Date(start + 60_000).toISOString()),
       evidence(id, "*gate*", "passed", new Date(start + hours * 3_600_000).toISOString()),
@@ -51,9 +51,9 @@ const setup = (count: number, extra: Readonly<Record<string, string>> = {}): Rep
   const done = Array.from({ length: count }, (_, index) => `past${String(index + 1)}`);
   const repo = makeRepo({
     ...history(count),
-    ".finitemonkey/tasks/new.yml": contract("new"),
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "new", done }),
-    ".finitemonkey/policy.yml": policyWith({ forecast: "active" }),
+    ".fm/tasks/new.yml": contract("new"),
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "new", done }),
+    ".fm/policy.yml": policyWith({ forecast: "active" }),
     ...extra,
   });
   repos.push(repo);
@@ -68,7 +68,7 @@ describe("forecasts from the person's own history", () => {
   });
 
   it("cites the tasks it used and their median, when the person trusts the contract", async () => {
-    const repo = setup(5, { ".finitemonkey/tasks/other.yml": contract("other", "[src/auth/]") });
+    const repo = setup(5, { ".fm/tasks/other.yml": contract("other", "[src/auth/]") });
     const run = await cli(["guardian", "forecast", "new"], { cwd: repo.root, runtime: repoRuntime() });
     assert.match(
       run.stdout,
@@ -80,7 +80,7 @@ describe("forecasts from the person's own history", () => {
 
   it("marks a task past twice its reference median and one check short as escalation", () => {
     const repo = setup(5, {
-      ".finitemonkey/evidence/new.jsonl": `${[
+      ".fm/evidence/new.jsonl": `${[
         evidence("new", "tests", "passed", "2026-10-20T09:00:00.000Z", "a"),
         evidence("new", "lint", "failed", "2026-10-20T09:00:01.000Z", "a"),
         evidence("new", "*gate*", "failed", "2026-10-20T09:00:02.000Z", "a"),

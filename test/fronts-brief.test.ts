@@ -81,15 +81,15 @@ const subagentStart = async (root: AbsolutePath, agentType: string): Promise<str
 const wave = (root: AbsolutePath): void => {
   write(
     root,
-    ".finitemonkey/fronts.yml",
+    ".fm/fronts.yml",
     serializeState({
       wave: 1,
       base: "main@abc1234",
-      briefing: ".finitemonkey/briefing.md",
+      briefing: ".fm/briefing.md",
       maxConcurrent: 3,
       budgetUsd: null,
       budgetMinutes: null,
-      fronts: [front("F1-checkout", ".finitemonkey/tasks/f1-checkout.yml")],
+      fronts: [front("F1-checkout", ".fm/tasks/f1-checkout.yml")],
       pending: ["F1-checkout"],
     }),
   );
@@ -108,7 +108,7 @@ describe("SubagentStart for fronts", () => {
       assert.match(context, /Pix checkout contract/);
       assert.match(context, /src\/checkout\/\*\*/);
       assert.match(context, /use the green button/);
-      assert.match(context, /\.finitemonkey\/reports\/F1-checkout\.json/);
+      assert.match(context, /\.fm\/reports\/F1-checkout\.json/);
       assert.doesNotMatch(context, /Main session goal/);
     } finally {
       repo.dispose();
@@ -139,7 +139,7 @@ describe("briefing", () => {
     const text = renderBriefing(fake, root, {
       wave: 2,
       base: "main@abc1234",
-      briefing: ".finitemonkey/briefing.md",
+      briefing: ".fm/briefing.md",
       maxConcurrent: 3,
       budgetUsd: null,
       budgetMinutes: null,
@@ -170,7 +170,7 @@ describe("briefing", () => {
       cwd: root,
       root,
       version: "1.0.0",
-      runtime: fakeRuntime({ files: { [`${root}/.finitemonkey/briefing.md`]: text } }),
+      runtime: fakeRuntime({ files: { [`${root}/.fm/briefing.md`]: text } }),
     });
     assert.equal(checkBriefing(env(long))[0]?.status, "warn");
     assert.equal(checkBriefing(env("short\n"))[0]?.status, "ok");

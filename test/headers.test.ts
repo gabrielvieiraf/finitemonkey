@@ -71,8 +71,8 @@ describe("security headers", () => {
 
 const project = (level: number, config = ""): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/config.yml": `lang: en\n${config}`,
-    ".finitemonkey/infra.yml": `schema: finitemonkey/infra@1\nlevel: ${String(level)}\nlevel_source: confirmed\n`,
+    ".fm/config.yml": `lang: en\n${config}`,
+    ".fm/infra.yml": `schema: finitemonkey/infra@1\nlevel: ${String(level)}\nlevel_source: confirmed\n`,
     "app.js": "x\n",
   });
   repos.push(repo);

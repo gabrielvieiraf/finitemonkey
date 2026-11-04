@@ -46,7 +46,7 @@ const ticking = (): Runtime => {
 const project = async (policy = OPT_IN): Promise<{ repo: TempRepo; deps: TeachDeps }> => {
   const repo = tempRepo({ "src/double.js": DOUBLE });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", policy);
+  write(repo.root, ".fm/policy.yml", policy);
   trustContract(repo.root, "twice", CONTRACT);
   const opts = { cwd: repo.root, runtime: repoRuntime() };
   const example = ["--says", "twice 21", "--run", "node src/double.js", "--input", "21", "--expect", "42"];
@@ -176,7 +176,7 @@ describe("teach-back keyed by execution", () => {
     const { repo } = await project("guards:\n  behavior-contract: active\n");
     const refused = await cliJson(["teach"], { cwd: repo.root, runtime: repoRuntime() });
     assert.notEqual(refused.code, 0);
-    write(repo.root, ".finitemonkey/policy.yml", OPT_IN);
+    write(repo.root, ".fm/policy.yml", OPT_IN);
     const asked = await cliJson(["teach", "ask", "--concepts", "backend/integration/webhook"], {
       cwd: repo.root,
       runtime: repoRuntime(),

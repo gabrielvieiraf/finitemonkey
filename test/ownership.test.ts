@@ -46,7 +46,7 @@ const runtimeWith = (files: Readonly<Record<string, string>>) =>
 
 describe("ownership check", () => {
   it("fails a component without owner", async () => {
-    const runtime = runtimeWith({ ".finitemonkey/ownership.yml": ownership(component("payments", "")) });
+    const runtime = runtimeWith({ ".fm/ownership.yml": ownership(component("payments", "")) });
     const run = await cli(["ownership", "check"], { runtime, cwd: ROOT });
     assert.equal(run.code, 1);
     assert.match(run.stdout + run.stderr, /no_owner: payments/);
@@ -55,7 +55,7 @@ describe("ownership check", () => {
   it("fails a name outside the master plan vocabulary", async () => {
     const runtime = runtimeWith({
       "docs/plan/MASTER.md": MASTER,
-      ".finitemonkey/ownership.yml": ownership(component("payments", "@acme/pay"), component("billing", "@acme/pay")),
+      ".fm/ownership.yml": ownership(component("payments", "@acme/pay"), component("billing", "@acme/pay")),
     });
     const run = await cli(["ownership", "check"], { runtime, cwd: ROOT });
     assert.equal(run.code, 1);
@@ -64,7 +64,7 @@ describe("ownership check", () => {
   });
 
   it("works without a master plan: the vocabulary check is skipped", async () => {
-    const runtime = runtimeWith({ ".finitemonkey/ownership.yml": ownership(component("billing", "@acme/pay")) });
+    const runtime = runtimeWith({ ".fm/ownership.yml": ownership(component("billing", "@acme/pay")) });
     const run = await cli(["ownership", "check"], { runtime, cwd: ROOT });
     assert.equal(run.code, 0, run.stdout);
   });
@@ -83,14 +83,14 @@ describe("ownership check", () => {
   it("follows the ownership flag in policy.yml and runs inside ci gate", () => {
     const bad = ownership(component("payments", ""));
     const shadow = runtimeWith({
-      ".finitemonkey/ownership.yml": bad,
-      ".finitemonkey/policy.yml": "guards:\n  ownership: shadow\n",
+      ".fm/ownership.yml": bad,
+      ".fm/policy.yml": "guards:\n  ownership: shadow\n",
     });
     assert.deepEqual(ownershipCheck(shadow, ROOT).failures, []);
-    const active = runtimeWith({ ".finitemonkey/ownership.yml": bad });
+    const active = runtimeWith({ ".fm/ownership.yml": bad });
     const gate = ciChecks(active, { root: ROOT, gitDir: ROOT, prefix: "" }, "origin/main", {});
     assert.deepEqual(gate.find((check) => check.id === "ownership")?.failures, [
-      "no_owner: payments (service) in .finitemonkey/ownership.yml",
+      "no_owner: payments (service) in .fm/ownership.yml",
     ]);
   });
 
@@ -106,7 +106,7 @@ describe("plan check reads the ownership file", () => {
   it("reports a responsibility with no component and a component owned by someone else", () => {
     const runtime = runtimeWith({
       "docs/plan/MASTER.md": MASTER,
-      ".finitemonkey/ownership.yml": ownership(component("payments", "@acme/other")),
+      ".fm/ownership.yml": ownership(component("payments", "@acme/other")),
     });
     const kinds = checkPlan(runtime, ROOT).issues.map((issue) => `${issue.kind}: ${issue.detail}`);
     assert.ok(kinds.includes("ownership_gap: checkout"), kinds.join("\n"));
@@ -118,7 +118,7 @@ describe("gen ownership", () => {
   it("seeds the components and owners from the master plan", async () => {
     const runtime = runtimeWith({ "docs/plan/MASTER.md": MASTER });
     const run = await cliJson(["gen", "ownership", "--yes"], { runtime, cwd: ROOT });
-    assert.deepEqual(field(run.body, "data", "written"), [".finitemonkey/ownership.yml"]);
+    assert.deepEqual(field(run.body, "data", "written"), [".fm/ownership.yml"]);
     assert.deepEqual(ownershipCheck(runtime, ROOT).failures, []);
   });
 
@@ -126,6 +126,6 @@ describe("gen ownership", () => {
     const runtime = runtimeWith({ "catalog-info.yaml": "metadata:\n  name: payments\n" });
     const run = await cliJson(["gen", "ownership", "--yes"], { runtime, cwd: ROOT });
     assert.deepEqual(field(run.body, "data", "written"), []);
-    assert.equal(runtime.readText(toAbsolutePath(at(".finitemonkey/ownership.yml"))).ok, false);
+    assert.equal(runtime.readText(toAbsolutePath(at(".fm/ownership.yml"))).ok, false);
   });
 });

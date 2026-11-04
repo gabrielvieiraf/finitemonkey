@@ -44,7 +44,8 @@ export interface DecisionRecord {
 const MANIFESTS = ["package.json", "pyproject.toml", "requirements.txt", "go.mod", "Cargo.toml", "Gemfile"] as const;
 const VENDORS =
   /^(?:stripe|@stripe\/|@aws-sdk\/|aws-sdk|firebase|@firebase\/|@sendgrid\/|twilio|openai|@anthropic-ai\/|@supabase\/|auth0|@auth0\/|@sentry\/|@vercel\/|mercadopago|asaas|@google-cloud\/|algoliasearch|resend|@clerk\/|posthog)/;
-const ARCH_FILES = /^(?:\.finitemonkey\/arch\.yml|docker-compose\.ya?ml|compose\.ya?ml|Dockerfile|terraform\/|infra\/)/;
+const ARCH_FILES =
+  /^(?:\.(?:fm|finitemonkey)\/arch\.yml|docker-compose\.ya?ml|compose\.ya?ml|Dockerfile|terraform\/|infra\/)/;
 
 export const recordPath = (paths: FmPaths, task: string): AbsolutePath =>
   toAbsolutePath(join(paths.dir, RECORD_DIR, `${task}.json`));

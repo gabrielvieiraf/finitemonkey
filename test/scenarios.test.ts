@@ -72,7 +72,7 @@ const project = async (checkOwner: boolean): Promise<TempRepo> => {
   const port = await freePort();
   write(
     repo.root,
-    ".finitemonkey/config.yml",
+    ".fm/config.yml",
     [
       "access:",
       "  start: node server.js",
@@ -82,7 +82,7 @@ const project = async (checkOwner: boolean): Promise<TempRepo> => {
       "",
     ].join("\n"),
   );
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  access-scenarios: active\n");
+  write(repo.root, ".fm/policy.yml", "guards:\n  access-scenarios: active\n");
   trustContract(repo.root, "orders", CONTRACT);
   write(repo.root, "server.js", `${server(checkOwner)}// edited\n`);
   return repo;

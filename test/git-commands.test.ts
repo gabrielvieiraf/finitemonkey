@@ -221,7 +221,7 @@ describe("hooks through the CLI", () => {
       write(repo.root, "README.md", "dirty\n");
       const payload = JSON.stringify({ hook_event_name: "SessionStart", session_id: "s1", source: "compact" });
       assert.equal(fm(repo.root, ["hook", "SessionStart"], payload).code, 0);
-      assert.ok(existsSync(join(repo.root, ".finitemonkey", "git", "baseline", "s1.json")));
+      assert.ok(existsSync(join(repo.root, ".fm", "git", "baseline", "s1.json")));
     } finally {
       repo.dispose();
     }

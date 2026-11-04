@@ -194,7 +194,7 @@ export const driftWorkflow = (branch: string, version: string): string =>
     "# Written by finitemonkey deploy generate. Reads production with a read-only SSH user and keeps one",
     `# issue "Production diverged from ${branch}" open while the server differs from the branch.`,
     "# Secrets: DEPLOY_HOST, DEPLOY_KNOWN_HOSTS and DEPLOY_READ_KEY, the key of a user that can only run",
-    "# docker ps (deploy.check_user in .finitemonkey/config.yml, deploy-ro by default).",
+    "# docker ps (deploy.check_user in .fm/config.yml, deploy-ro by default).",
     "name: Production drift",
     "",
     "on:",

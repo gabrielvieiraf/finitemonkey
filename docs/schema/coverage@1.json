@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/coverage@1.json",
   "title": "finitemonkey/coverage@1",
-  "description": "The per-test coverage file named by `test_budget.coverage` in `.finitemonkey/config.yml`: for each test id, the lines it runs and the assertions it makes, read by the test-budget check to find redundant tests. Generated from CoverageFile in src/testbudget/budget.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "The per-test coverage file named by `test_budget.coverage` in `.fm/config.yml`: for each test id, the lines it runs and the assertions it makes, read by the test-budget check to find redundant tests. Generated from CoverageFile in src/testbudget/budget.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

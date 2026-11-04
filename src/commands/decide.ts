@@ -44,7 +44,7 @@ const newRecord = (ctx: Ctx, root: Root, topic: string): CommandResult => {
   const file = `${PLAN_DIR}/${name}`;
   return {
     ...success({ schema: DECISION_SCHEMA, file, topic }, [ctx.t("decision.created", { file })]),
-    next: `finitemonkey decide check ${file}`,
+    next: `fm decide check ${file}`,
   };
 };
 

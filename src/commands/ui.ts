@@ -89,7 +89,7 @@ const propose = (ctx: Ctx, paths: FmPaths, task: string, from: string | undefine
         : []),
       ctx.t("ui.proposed", { task, hash: made.value }),
     ],
-    next: `finitemonkey ui approve ${task} --hash ${made.value}`,
+    next: `fm ui approve ${task} --hash ${made.value}`,
   };
 };
 

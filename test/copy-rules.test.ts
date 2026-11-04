@@ -125,8 +125,8 @@ describe("gate copy check with ui-copy", () => {
   it("lists findings in shadow without failing, even with ui-copy active below the threshold", () => {
     const repo = makeRepo({
       "src/locales/en.json": EN,
-      ".finitemonkey/policy.yml": "guards:\n  ui-copy: active\n",
-      ".finitemonkey/config.yml": "ui:\n  copy:\n    allow:\n      - OK\n    accept_threshold: 0.8\n",
+      ".fm/policy.yml": "guards:\n  ui-copy: active\n",
+      ".fm/config.yml": "ui:\n  copy:\n    allow:\n      - OK\n    accept_threshold: 0.8\n",
     });
     repos.push(repo);
     const outcome = copyCheck(CHECK, context(repo));
@@ -140,8 +140,8 @@ describe("gate copy check with ui-copy", () => {
   it("blocks a rule once its fixed-over-shown rate reaches the threshold", () => {
     const repo = makeRepo({
       "src/locales/en.json": EN,
-      ".finitemonkey/policy.yml": "guards:\n  ui-copy: active\n",
-      ".finitemonkey/config.yml": "ui:\n  copy:\n    allow:\n      - OK\n    accept_threshold: 0.5\n    min_shown: 1\n",
+      ".fm/policy.yml": "guards:\n  ui-copy: active\n",
+      ".fm/config.yml": "ui:\n  copy:\n    allow:\n      - OK\n    accept_threshold: 0.5\n    min_shown: 1\n",
     });
     repos.push(repo);
     const ctx = context(repo);
@@ -159,7 +159,7 @@ describe("gate copy check with ui-copy", () => {
   it("keeps a rule below the show threshold hidden and logged until its acceptance passes", () => {
     const repo = makeRepo({
       "src/locales/en.json": EN,
-      ".finitemonkey/config.yml": "ui:\n  copy:\n    allow:\n      - OK\n    show_threshold: 0.5\n    min_shown: 1\n",
+      ".fm/config.yml": "ui:\n  copy:\n    allow:\n      - OK\n    show_threshold: 0.5\n    min_shown: 1\n",
     });
     repos.push(repo);
     const ctx = context(repo);
@@ -167,7 +167,7 @@ describe("gate copy check with ui-copy", () => {
     assert.equal(hidden.status, "passed");
     assert.ok(!hidden.notes.some((item) => item.key === "gate.copy.rule.verb-first"));
     assert.ok(!hidden.notes.some((item) => item.key === "gate.copy.rule.error-action"));
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.ok(log.includes('"ui_copy_hidden"') && log.includes('"rule":"verb-first"'), log);
     repo.write("src/locales/en.json", EN.replace("Order details", "View details"));
     repo.write("src/locales/es.json", JSON.stringify({ menu: { button: { more: "Más" } } }));

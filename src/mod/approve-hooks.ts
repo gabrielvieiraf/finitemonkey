@@ -1,3 +1,4 @@
+import { DATA_DIR_NAME } from "../core/data-dir-name.js";
 import type { ModApi, ModElement, RenderInput } from "./api.js";
 import {
   CONTRACT_PANE,
@@ -57,7 +58,7 @@ async function decideExample($: ModApi, id: string, verdict: "approve" | "reject
 function editContract($: ModApi): Promise<void> {
   const task = memory.contract?.task;
   if (task !== undefined)
-    redraw($, `Edit .finitemonkey/tasks/${task}.yml or ask for the change, then run /fm contract again.`);
+    redraw($, `Edit ${DATA_DIR_NAME}/tasks/${task}.yml or ask for the change, then run /fm contract again.`);
   return Promise.resolve();
 }
 

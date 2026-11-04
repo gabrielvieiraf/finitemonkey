@@ -50,7 +50,7 @@ const setup = (policy?: string) => {
 };
 
 const events = (fs: ReturnType<typeof memoryFs>): readonly Readonly<Record<string, unknown>>[] =>
-  (fs.read(at(".finitemonkey/log.jsonl")) ?? "")
+  (fs.read(at(".fm/log.jsonl")) ?? "")
     .split("\n")
     .filter((line) => line !== "")
     .map((line) => {
@@ -68,7 +68,7 @@ const runNew = (runtime: Runtime) =>
     withPolicy({ ...blocker, id: "claims" }).PreToolUse ?? [],
   );
 
-describe("guard modes from .finitemonkey/policy.yml", () => {
+describe("guard modes from .fm/policy.yml", () => {
   it("parses modes, level and promoteAfter, and reports a mode it does not know", () => {
     const policy = parsePolicy("level: strict\npromoteAfter: 5\nguards:\n  prose: shadow\n  deps: maybe\n");
     assert.deepEqual(policy, {
@@ -143,10 +143,7 @@ describe("guard modes from .finitemonkey/policy.yml", () => {
 
   it("a recorded false positive keeps the guard in shadow", async () => {
     const { fs, runtime } = setup("promoteAfter: 1\nguards:\n  prose: active\n");
-    fs.writeAtomic(
-      toAbsolutePath(at(".finitemonkey/cache/shadow.json")),
-      '{"claims":{"firings":0,"falsePositives":1}}',
-    );
+    fs.writeAtomic(toAbsolutePath(at(".fm/cache/shadow.json")), '{"claims":{"firings":0,"falsePositives":1}}');
     assert.equal((await runNew(runtime)).kind, "allow");
     assert.equal((await runNew(runtime)).kind, "allow");
     assert.equal(events(fs).filter((event) => event["event"] === "guard_promoted").length, 0);
@@ -186,7 +183,7 @@ describe("a policy file only changes what it names", () => {
     const fs = memoryFs(
       {
         [at(POLICY_FILE)]: "guards:\n  deps: active\n  prose: shadow\n  secrets: off\n",
-        [toAbsolutePath("/home/test/.finitemonkey/policy.yml")]: "guards:\n  deps: off\n  prose: active\n  slop: off\n",
+        [toAbsolutePath("/home/test/.fm/policy.yml")]: "guards:\n  deps: off\n  prose: active\n  slop: off\n",
       },
       [at(".git")],
     );
@@ -268,6 +265,6 @@ describe("policy false-positive", () => {
       stdin: Object.assign(stdinFrom(""), { isTTY: true }),
     });
     assert.equal(result.code, ExitCode.Ok);
-    assert.match(fs.read(at(".finitemonkey/cache/shadow.json")) ?? "", /"falsePositives": 1/);
+    assert.match(fs.read(at(".fm/cache/shadow.json")) ?? "", /"falsePositives": 1/);
   });
 });

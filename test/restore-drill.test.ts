@@ -22,8 +22,8 @@ const STORE = (lines: readonly string[]): string =>
 
 const project = (config: string, files: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
-    ".gitignore": ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\n",
-    ".finitemonkey/config.yml": config,
+    ".gitignore": ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\n",
+    ".fm/config.yml": config,
     ...files,
   });
   repos.push(repo);
@@ -99,7 +99,7 @@ describe("restore drill", () => {
     );
     const run = await cliJson(["restore", "drill"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(run.code, 0, run.stdout);
-    const log = repo.read(join(".finitemonkey", "log.jsonl"));
+    const log = repo.read(join(".fm", "log.jsonl"));
     const line = log.split("\n").find((item) => item.includes("restore_drill")) ?? "";
     const parsed = parseJsonObject(line);
     assert.ok(parsed.ok);
@@ -133,7 +133,7 @@ describe("restore drill", () => {
     const shadow = await cliJson(["restore", "check"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(shadow.code, 0);
     assert.equal(firstOf(shadow.body, "reach", "problem"), "same-bucket");
-    repo.write(".finitemonkey/policy.yml", "guards:\n  restore-drill: active\n");
+    repo.write(".fm/policy.yml", "guards:\n  restore-drill: active\n");
     const active = await cliJson(["restore", "check"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(active.code, 1);
   });

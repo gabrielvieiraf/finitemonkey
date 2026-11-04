@@ -39,8 +39,8 @@ const profile = (knowledge: number): string =>
 const project = async (knowledge: number): Promise<TempRepo> => {
   const repo = tempRepo({ "src/refund.js": REFUND });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  predict-gate: active\n  behavior-contract: active\n");
-  write(repo.root, ".finitemonkey/perfil.yml", profile(knowledge));
+  write(repo.root, ".fm/policy.yml", "guards:\n  predict-gate: active\n  behavior-contract: active\n");
+  write(repo.root, ".fm/perfil.yml", profile(knowledge));
   trustContract(repo.root, "hooks", CONTRACT);
   const opts = { cwd: repo.root, runtime: repoRuntime() };
   await cliJson(
@@ -132,6 +132,6 @@ describe("predict before the change lands", () => {
     const repo = await project(10);
     await hook(promptRelease, "UserPromptSubmit", repo.root, { prompt: "fm: allow predict not now" });
     assert.equal((await edit(repo)).kind, "allow");
-    assert.match(readFileSync(join(repo.root, ".finitemonkey", "log.jsonl"), "utf8"), /"event":"predict\.skipped"/);
+    assert.match(readFileSync(join(repo.root, ".fm", "log.jsonl"), "utf8"), /"event":"predict\.skipped"/);
   });
 });

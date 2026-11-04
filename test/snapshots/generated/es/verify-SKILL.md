@@ -8,7 +8,7 @@ when_to_use: >-
 
 # Verificar: evidencia, no promesas
 
-1. Desde la raíz del proyecto, ejecuta `node .finitemonkey/runtime/dist/finitemonkey.mjs gate --fast --json`.
+1. Desde la raíz del proyecto, ejecuta `node .fm/runtime/dist/finitemonkey.mjs gate --fast --json`.
 2. Lee `data`; para cada elemento que falló, corrige la causa, nunca la verificación.
 3. Cita el comando y su código de salida al informar un resultado. Un resultado de antes de tu última edición ya no cuenta.
 

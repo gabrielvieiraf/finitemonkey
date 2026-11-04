@@ -37,11 +37,11 @@ const front = (id: string, agentId: string, paths: readonly string[]): Front => 
 const setup = (root: AbsolutePath): void => {
   write(
     root,
-    ".finitemonkey/fronts.yml",
+    ".fm/fronts.yml",
     serializeState({
       wave: 1,
       base: "main@abc",
-      briefing: ".finitemonkey/briefing.md",
+      briefing: ".fm/briefing.md",
       maxConcurrent: 3,
       budgetUsd: null,
       budgetMinutes: null,
@@ -131,12 +131,12 @@ describe("orchestrate: routing the person's messages", () => {
         provisional_decisions: [],
         evidence: "",
       };
-      write(repo.root, ".finitemonkey/reports/F2-invites.json", JSON.stringify(base));
+      write(repo.root, ".fm/reports/F2-invites.json", JSON.stringify(base));
       const missing = checkReport(runtime, repo.root, frontNamed(repo.root, "F2-invites"));
       assert.ok(missing.problems.some((problem) => problem.includes("invites expire in 7 days")));
       write(
         repo.root,
-        ".finitemonkey/reports/F2-invites.json",
+        ".fm/reports/F2-invites.json",
         JSON.stringify({
           ...base,
           inbox: [{ at: "x", text: "invites expire in 7 days", done: "set the expiry to 7 days" }],
@@ -174,7 +174,7 @@ describe("orchestrate: routing the person's messages", () => {
       assert.ok(state.ok);
       write(
         repo.root,
-        ".finitemonkey/fronts.yml",
+        ".fm/fronts.yml",
         serializeState({
           ...state.value,
           fronts: [

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/deps-scan@1.json",
   "title": "finitemonkey/deps-scan@1",
-  "description": "`data` of `finitemonkey deps scan --json`. Generated from DepsScanData in src/commands/deps-scan.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm deps scan --json`. Generated from DepsScanData in src/commands/deps-scan.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

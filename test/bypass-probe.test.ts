@@ -27,7 +27,7 @@ const NOW = "2026-10-26T12:00:00.000Z";
 
 const runtimeWith = (files: Readonly<Record<string, string>> = {}) =>
   fakeRuntime({
-    fs: memoryFs(files, [at(".git"), at(".finitemonkey"), at(".finitemonkey/cache")], NOW),
+    fs: memoryFs(files, [at(".git"), at(".fm"), at(".fm/cache")], NOW),
     tools: { claude: found("2.1.300 (Claude Code)") },
   });
 
@@ -71,13 +71,13 @@ describe("bypass probe", () => {
 
   it("reads the deny, the bypass record and the written file from the probe project", () => {
     const denied = JSON.stringify({ schemaVersion: 1, calls: [{ id: "t1", tool: "Write", summary: "x" }] }, null, 2);
-    assert.deepEqual(bypassFacts(runtimeWith({ [at(".finitemonkey/cache/denied.json")]: denied }), PATHS), {
+    assert.deepEqual(bypassFacts(runtimeWith({ [at(".fm/cache/denied.json")]: denied }), PATHS), {
       denied: true,
       ran: false,
       recorded: false,
     });
     const recorded = runtimeWith({
-      [at(".finitemonkey/bypasses.jsonl")]: `${JSON.stringify({ id: "t1", tool: "Write", summary: "x", at: NOW })}\n`,
+      [at(".fm/bypasses.jsonl")]: `${JSON.stringify({ id: "t1", tool: "Write", summary: "x", at: NOW })}\n`,
       [at(BYPASS_PROBE_FILE)]: "probe",
     });
     assert.deepEqual(bypassFacts(recorded, PATHS), { denied: true, ran: true, recorded: true });
@@ -108,14 +108,14 @@ describe("bypass probe", () => {
         return { found: true, ok: true, stdout: "" };
       },
     });
-    const dir = toAbsolutePath(join(ROOT, ".finitemonkey", "cache", "bypass-probe-run", "x"));
+    const dir = toAbsolutePath(join(ROOT, ".fm", "cache", "bypass-probe-run", "x"));
     const work = writeProbeProject(runtime, dir);
     const mod = writeApproveMod(runtime, dir);
     assert.deepEqual(
       gitCalls.map((args) => args.find((arg) => ["init", "add", "commit"].includes(arg))),
       ["init", "add", "commit"],
     );
-    const policy = runtime.readText(toAbsolutePath(join(work, ".finitemonkey", "policy.yml")));
+    const policy = runtime.readText(toAbsolutePath(join(work, ".fm", "policy.yml")));
     assert.ok(policy.ok && policy.value.includes("mod-tighten: off"));
     const register = runtime.readText(toAbsolutePath(join(mod, "hooks", "register.mjs")));
     assert.ok(register.ok && register.value === APPROVE_MOD);

@@ -71,14 +71,14 @@ const TASK = (size: string): string =>
 
 const propose = async (size: string, policy: string): Promise<{ readonly ui: string; readonly stdout: string }> => {
   const repo = makeRepo({
-    ".finitemonkey/tasks/t1.yml": TASK(size),
-    ".finitemonkey/policy.yml": policy,
+    ".fm/tasks/t1.yml": TASK(size),
+    ".fm/policy.yml": policy,
     "proposal.yml": PROPOSAL,
   });
   repos.push(repo);
   const run = await cli(["ui", "propose", "t1", "--from", "proposal.yml"], { runtime: repoRuntime(), cwd: repo.root });
   assert.equal(run.code, 0, run.stdout + run.stderr);
-  return { ui: repo.read(".finitemonkey/tasks/t1/ui.yml"), stdout: run.stdout };
+  return { ui: repo.read(".fm/tasks/t1/ui.yml"), stdout: run.stdout };
 };
 
 const sections = (source: string): number => {

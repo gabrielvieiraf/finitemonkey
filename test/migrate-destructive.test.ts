@@ -38,17 +38,17 @@ if (mode === "apply") {
 if (mode === "counts") console.log(JSON.stringify(db.rows));
 `;
 
-const IGNORE = ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\ndb.json\n";
+const IGNORE = ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\ndb.json\n";
 
 const project = (active: boolean): Repo => {
   const repo = makeRepo({
     ".gitignore": IGNORE,
-    ".finitemonkey/config.yml": "lang: en\n",
+    ".fm/config.yml": "lang: en\n",
     "tools/db.mjs": DB_TOOL,
     "migrations/001_users.sql": "CREATE TABLE users (id int, email text);\n",
   });
   repos.push(repo);
-  if (active) repo.write(".finitemonkey/policy.yml", "guards:\n  migrate-check: active\n");
+  if (active) repo.write(".fm/policy.yml", "guards:\n  migrate-check: active\n");
   const created = createTask(repoRuntime(), fmPaths(repo.root), {
     id: "t1",
     goal: "change the users table",
@@ -156,7 +156,7 @@ describe("migrate check with rollback plans, seeded rows and statistics", () => 
     const repo = project(false);
     repo.write("migrations/002_drop.sql", "ALTER TABLE users DROP COLUMN email;\n");
     assert.equal(run(repo).status, "failed");
-    repo.write(".finitemonkey/policy.yml", "level: light\n");
+    repo.write(".fm/policy.yml", "level: light\n");
     const shadow = run(repo);
     assert.equal(shadow.status, "passed");
     assert.ok(keys(shadow).includes("gate.migrate.destructive.drop-column"));
@@ -164,7 +164,7 @@ describe("migrate check with rollback plans, seeded rows and statistics", () => 
 
   it("reports a migration that deletes seeded rows with the counts before and after", () => {
     const repo = project(true);
-    repo.write(".finitemonkey/config.yml", seededConfig(repo));
+    repo.write(".fm/config.yml", seededConfig(repo));
     repo.write("migrations/002_cleanup.sql", "DELETE FROM users;\n");
     const outcome = run(repo);
     assert.equal(outcome.status, "failed");
@@ -174,7 +174,7 @@ describe("migrate check with rollback plans, seeded rows and statistics", () => 
 
   it("a migration that keeps the seeded rows passes", () => {
     const repo = project(true);
-    repo.write(".finitemonkey/config.yml", seededConfig(repo));
+    repo.write(".fm/config.yml", seededConfig(repo));
     repo.write("migrations/002_age.sql", "ALTER TABLE users ADD COLUMN age int;\n");
     assert.deepEqual(keys(run(repo)), ["gate.migrate.ok"]);
   });
@@ -182,7 +182,7 @@ describe("migrate check with rollback plans, seeded rows and statistics", () => 
   it("adds table sizes from migrate.stats and says when the file cannot be read", () => {
     const repo = project(true);
     repo.write("migrations/002_age.sql", "ALTER TABLE users ADD COLUMN age int;\n");
-    repo.write(".finitemonkey/config.yml", 'lang: en\nmigrate:\n  stats: "stats.json"\n');
+    repo.write(".fm/config.yml", 'lang: en\nmigrate:\n  stats: "stats.json"\n');
     assert.ok(keys(run(repo)).includes("gate.migrate.stats_unreadable"));
     repo.write("stats.json", JSON.stringify({ users: 52000000 }));
     const sized = run(repo).notes.find((item) => item.key === "gate.migrate.table_size");

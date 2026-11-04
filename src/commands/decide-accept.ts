@@ -1,5 +1,6 @@
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { needsPersonProblem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { toYaml, withStatus } from "../decide/revoke.js";
@@ -46,7 +47,7 @@ const accept = (ctx: Ctx, root: Root, name: string, choice?: string, reason?: st
     ...(choice === undefined ? {} : { choice }),
     ...(overridden && reason !== undefined && reason.trim() !== "" ? { overrideReason: reason.trim() } : {}),
   });
-  if (entry === undefined) return failureFrom(ctx.t, guardianWriteProblem(".finitemonkey/decisions.jsonl"));
+  if (entry === undefined) return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/decisions.jsonl`));
   return success({ schema: DECISION_SCHEMA, file, status: "accepted", entry }, [
     ctx.t(overridden ? "guardian.accept.overridden" : "guardian.accept.followed", { file, id: entry.id }),
   ]);

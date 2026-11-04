@@ -30,4 +30,4 @@ In a workflow or CI job, add a shell step:
 
 ## A design document as contract input
 
-An approved design document (an OpenSpec `design.md`, a Spec Kit `plan.md`) is input, not the contract. Copy its acceptance scenarios into the tasks file as EARS lines or checkboxes, run `task from-spec`, and keep the decision itself in `docs/plan/` with `finitemonkey decide new <topic>`.
+An approved design document (an OpenSpec `design.md`, a Spec Kit `plan.md`) is input, not the contract. Copy its acceptance scenarios into the tasks file as EARS lines or checkboxes, run `task from-spec`, and keep the decision itself in `docs/plan/` with `fm decide new <topic>`.

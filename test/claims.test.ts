@@ -15,14 +15,14 @@ import { fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 const PROJECT = toAbsolutePath("/home/ana/project");
 const SOURCE = join(PROJECT, "src", "checkout.ts");
 const TEST = join(PROJECT, "test", "checkout.test.ts");
-const STATUS = toAbsolutePath(join(PROJECT, ".finitemonkey", "cache", "gate-status.json"));
+const STATUS = toAbsolutePath(join(PROJECT, ".fm", "cache", "gate-status.json"));
 const ACTIVE = "guards:\n  claims: active\n";
 
 const projectFs = (policy: string = ACTIVE): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(PROJECT, ".git", "HEAD"))]: "ref: refs/heads/main\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "config.yml"))]: "lang: en\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "policy.yml"))]: policy,
+    [toAbsolutePath(join(PROJECT, ".fm", "config.yml"))]: "lang: en\n",
+    [toAbsolutePath(join(PROJECT, ".fm", "policy.yml"))]: policy,
   });
 
 const fire = async (fs: MemoryFs, event: HookEvent, payload: JsonObject): Promise<HookOutcome> => {
@@ -132,7 +132,7 @@ describe("claims: Stop blocks done claims the gate did not confirm", () => {
     await editFile(fs, SOURCE);
     gateStatus(fs, "failed", "tests");
     assert.equal(blockReason(await stop(fs, "Done.")), "");
-    const log = fs.readText(toAbsolutePath(join(PROJECT, ".finitemonkey", "log.jsonl")));
+    const log = fs.readText(toAbsolutePath(join(PROJECT, ".fm", "log.jsonl")));
     assert.ok(log.ok && log.value.includes('"claims.unconfirmed"') && log.value.includes('"guard_shadow"'));
   });
 });
@@ -156,9 +156,9 @@ describe("claims: test and contract edits need the person's yes", () => {
 
   it("lists an edited task contract", async () => {
     const fs = projectFs();
-    await editFile(fs, join(PROJECT, ".finitemonkey", "tasks", "pix.yml"));
+    await editFile(fs, join(PROJECT, ".fm", "tasks", "pix.yml"));
     fs.tick(1000);
     gateStatus(fs, "passed");
-    assert.match(blockReason(await stop(fs, "Finished.")), /\.finitemonkey\/tasks\/pix\.yml/);
+    assert.match(blockReason(await stop(fs, "Finished.")), /\.fm\/tasks\/pix\.yml/);
   });
 });

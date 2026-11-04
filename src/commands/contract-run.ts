@@ -16,7 +16,7 @@ import { localUrl, type Send } from "../scenarios/run.js";
 import { projectRoot } from "../secrets/project.js";
 import { withApp } from "./scenarios.js";
 
-export const LIVE_CONFIG_HINT = "add api: port (and start, base) to .finitemonkey/config.yml";
+export const LIVE_CONFIG_HINT = "add api: port (and start, base) to .fm/config.yml";
 
 export type SendFor = (port: number) => Send;
 

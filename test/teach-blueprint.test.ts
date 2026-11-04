@@ -20,8 +20,8 @@ const profile = (knowledge: number): string =>
 const project = (knowledge: number, guards = "guards:\n  teach-back: active\n"): TempRepo => {
   const repo = tempRepo({ "README.md": "app\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", guards);
-  write(repo.root, ".finitemonkey/perfil.yml", profile(knowledge));
+  write(repo.root, ".fm/policy.yml", guards);
+  write(repo.root, ".fm/perfil.yml", profile(knowledge));
   trustContract(repo.root, "hooks", CONTRACT);
   return repo;
 };

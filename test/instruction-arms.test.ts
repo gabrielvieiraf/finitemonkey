@@ -69,8 +69,8 @@ const session = (root: string, read: string, edited: string): string =>
 const project = (active: string, extra: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
     "src/coupon.ts": "export const total = 1;\n",
-    ".finitemonkey/policy.yml": `experiments:\n  ${SOURCE}: random\n`,
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active, done: [] }),
+    ".fm/policy.yml": `experiments:\n  ${SOURCE}: random\n`,
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active, done: [] }),
     ...extra,
   });
   repos.push(repo);
@@ -103,13 +103,13 @@ describe("instruction files and prompt sections as arms", () => {
 
   it("reports tokens per turn and localization per arm from a fixture session", async () => {
     const repo = project(OFF, {
-      ".finitemonkey/log.jsonl": `${[armLine(OFF), armLine(ACTIVE)].join("\n")}\n`,
-      ".finitemonkey/cost.jsonl": `${[costLine(OFF, 1, 900), costLine(OFF, 2, 1900), costLine(ACTIVE, 3, 4900)].join("\n")}\n`,
+      ".fm/log.jsonl": `${[armLine(OFF), armLine(ACTIVE)].join("\n")}\n`,
+      ".fm/cost.jsonl": `${[costLine(OFF, 1, 900), costLine(OFF, 2, 1900), costLine(ACTIVE, 3, 4900)].join("\n")}\n`,
     });
     repo.write("session.jsonl", session(repo.root, "src/coupon.ts", "src/coupon.ts"));
     await fireHook(repo, "Stop", { transcript_path: join(repo.root, "session.jsonl") }, repoRuntime({ spawned: [] }));
     await fireHook(repo, "Stop", { transcript_path: join(repo.root, "session.jsonl") }, repoRuntime({ spawned: [] }));
-    assert.equal(repo.read(".finitemonkey/log.jsonl").split('"experiment_localization"').length - 1, 1);
+    assert.equal(repo.read(".fm/log.jsonl").split('"experiment_localization"').length - 1, 1);
     const report = await claudeReport(repo);
     assert.equal(field(report, "off", "tokensPerTurn"), 1500);
     assert.equal(field(report, "active", "tokensPerTurn"), 5000);
@@ -120,7 +120,7 @@ describe("instruction files and prompt sections as arms", () => {
   });
 
   it("marks the arm unsupported when the mod finds no section to withhold, and supported once it drops one", async () => {
-    const repo = project(OFF, { ".finitemonkey/log.jsonl": `${armLine(OFF)}\n` });
+    const repo = project(OFF, { ".fm/log.jsonl": `${armLine(OFF)}\n` });
     const missing = await cliJson(["mod", "drop", "--source", SOURCE], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(missing.code, 0, missing.stdout);
     assert.equal(field(await claudeReport(repo), "support"), "unsupported");
@@ -132,7 +132,7 @@ describe("instruction files and prompt sections as arms", () => {
     });
     assert.equal(field(await claudeReport(repo), "support"), "supported");
     assert.match(
-      repo.read(".finitemonkey/log.jsonl"),
+      repo.read(".fm/log.jsonl"),
       new RegExp(`"event":"experiment_drop","feature":"claude-md","task":"${OFF}","section":"claude-md:project"`),
     );
     const bad = await cliJson(["mod", "drop", "--source", "readme"], { cwd: repo.root, runtime: repoRuntime() });

@@ -30,4 +30,4 @@ Num workflow ou job de CI, acrescente um passo de shell:
 
 ## Um documento de design como entrada do contrato
 
-Um documento de design aprovado (um `design.md` do OpenSpec, um `plan.md` do Spec Kit) é entrada, não o contrato. Copie os cenários de aceite para o arquivo de tarefas como linhas EARS ou checkboxes, rode `task from-spec` e guarde a decisão em `docs/plan/` com `finitemonkey decide new <tema>`.
+Um documento de design aprovado (um `design.md` do OpenSpec, um `plan.md` do Spec Kit) é entrada, não o contrato. Copie os cenários de aceite para o arquivo de tarefas como linhas EARS ou checkboxes, rode `task from-spec` e guarde a decisão em `docs/plan/` com `fm decide new <tema>`.

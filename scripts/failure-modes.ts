@@ -151,7 +151,7 @@ export const FAILURE_MODES: readonly FailureMode[] = [
     cause:
       "On a personal login without managed settings, a mod's tool.check allow or a tool.call answered without next runs over a PreToolUse deny",
     mitigation:
-      "The denied call id is kept; when it reaches PostToolUse it is recorded as guard_bypassed, shown in the status line and the gate band, and `ci gate` and `pr open` refuse until the person runs `finitemonkey bypass review`; `doctor` names installed mods with that reach",
+      "The denied call id is kept; when it reaches PostToolUse it is recorded as guard_bypassed, shown in the status line and the gate band, and `ci gate` and `pr open` refuse until the person runs `fm bypass review`; `doctor` names installed mods with that reach",
     file: "test/bypass.test.ts",
     test: "a call a guard denied that still runs is recorded, and ci gate refuses until the person reviews it",
   },

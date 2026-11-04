@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, type JsonObject, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { armOf } from "./experiment.js";
@@ -160,7 +161,7 @@ const variantOf = (raw: unknown): Variant | undefined => {
 };
 
 export const evolvePath = (root: AbsolutePath): AbsolutePath =>
-  toAbsolutePath(join(root, ".finitemonkey", "cache", EVOLVE_FILE));
+  toAbsolutePath(join(root, DATA_DIR, "cache", EVOLVE_FILE));
 
 export const EMPTY_EVOLVE: EvolveState = { variants: [], unseen: [] };
 
@@ -184,7 +185,7 @@ export const variantArm = (task: string, id: string): "active" | "off" => armOf(
 const STRENGTH: Readonly<Record<GuardMode, number>> = { off: 0, shadow: 1, active: 2 };
 
 const activeTaskOf = (runtime: Pick<Runtime, "readText">, root: AbsolutePath): string | undefined => {
-  const text = runtime.readText(toAbsolutePath(join(root, ".finitemonkey", "state.json")));
+  const text = runtime.readText(toAbsolutePath(join(root, DATA_DIR, "state.json")));
   const parsed = text.ok ? parseJsonObject(text.value) : undefined;
   const active = parsed?.ok === true ? parsed.value["active"] : undefined;
   return typeof active === "string" ? active : undefined;

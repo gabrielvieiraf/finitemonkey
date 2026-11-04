@@ -1,8 +1,9 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, type JsonObject, type Parsed, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 
-export const MANIFEST_FILE = ".finitemonkey/rules-compiled.json";
+export const MANIFEST_FILE = `${DATA_DIR}/rules-compiled.json`;
 export const SURFACES = ["guard", "config", "git", "ci", "text"] as const;
 
 export type Surface = (typeof SURFACES)[number];

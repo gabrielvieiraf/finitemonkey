@@ -37,14 +37,14 @@ const gateStatus = (at: string): string =>
   JSON.stringify({ schemaVersion: 1, status: "passed", task: "t1", detail: "", at });
 
 const setup = (mode: string, extra: Readonly<Record<string, string>> = {}): Repo => {
-  const repo = makeRepo({ ".finitemonkey/policy.yml": policyWith({ attention: mode }), ...extra });
+  const repo = makeRepo({ ".fm/policy.yml": policyWith({ attention: mode }), ...extra });
   repos.push(repo);
   return repo;
 };
 
 const logOf = (repo: Repo): string => {
   try {
-    return repo.read(".finitemonkey/log.jsonl");
+    return repo.read(".fm/log.jsonl");
   } catch {
     return "";
   }
@@ -57,7 +57,7 @@ const notifications = (repo: Repo): number =>
 
 describe("attention notifications", () => {
   it("emits exactly one notification per gate verdict and none without a transition", async () => {
-    const repo = setup("active", { ".finitemonkey/cache/gate-status.json": gateStatus("2026-10-01T10:00:00.000Z") });
+    const repo = setup("active", { ".fm/cache/gate-status.json": gateStatus("2026-10-01T10:00:00.000Z") });
     const { runtime } = watched();
     await fireHook(repo, "Stop", { stop_hook_active: false }, runtime);
     await fireHook(repo, "PostToolUse", { tool_name: "Read", tool_input: { file_path: "a" } }, runtime);
@@ -70,13 +70,13 @@ describe("attention notifications", () => {
     const { runtime } = watched();
     await fireHook(repo, "Notification", { message: "Claude needs your permission to use Bash" }, runtime);
     await fireHook(repo, "UserPromptSubmit", { prompt: "yes" }, runtime);
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.match(log, /"event":"attention.notify","kind":"ask"/);
     assert.match(log, /"event":"attention.answered","waitMs":\d+/);
   });
 
   it("emits nothing with the flag off", async () => {
-    const repo = setup("off", { ".finitemonkey/cache/gate-status.json": gateStatus("2026-10-01T10:00:00.000Z") });
+    const repo = setup("off", { ".fm/cache/gate-status.json": gateStatus("2026-10-01T10:00:00.000Z") });
     const { runtime, sent } = watched();
     await fireHook(repo, "Stop", { stop_hook_active: false }, runtime);
     await fireHook(repo, "Notification", { message: "waiting" }, runtime);
@@ -116,15 +116,15 @@ describe("timebox", () => {
     const day = Date.UTC(2026, 9, 1, 9);
     const past = Object.fromEntries(
       [1, 2, 3, 4, 5].flatMap((n) => [
-        [`.finitemonkey/tasks/p${String(n)}.yml`, contract(`p${String(n)}`)],
-        [`.finitemonkey/evidence/p${String(n)}.jsonl`, ledgerOf(`p${String(n)}`, day, n)],
+        [`.fm/tasks/p${String(n)}.yml`, contract(`p${String(n)}`)],
+        [`.fm/evidence/p${String(n)}.jsonl`, ledgerOf(`p${String(n)}`, day, n)],
       ]),
     );
     const repo = setup("active", {
       ...past,
-      ".finitemonkey/tasks/now.yml": contract("now"),
-      ".finitemonkey/evidence/now.jsonl": ledgerOf("now", day + 86_400_000, 0),
-      ".finitemonkey/state.json": JSON.stringify({
+      ".fm/tasks/now.yml": contract("now"),
+      ".fm/evidence/now.jsonl": ledgerOf("now", day + 86_400_000, 0),
+      ".fm/state.json": JSON.stringify({
         schemaVersion: 1,
         active: "now",
         done: ["p1", "p2", "p3", "p4", "p5"],
@@ -169,7 +169,7 @@ describe("attention queue", () => {
       "        text: report ready",
       "",
     ].join("\n");
-    const repo = setup("active", { ".finitemonkey/fronts.yml": fronts });
+    const repo = setup("active", { ".fm/fronts.yml": fronts });
     const runtime = repoRuntime({ now: () => "2026-10-01T12:00:00.000Z" });
     const run = await cli(["attention", "--json"], { cwd: repo.root, runtime });
     const body = (JSON.parse(run.stdout) as { data: { asks: readonly { front: string; waitMinutes: number }[] } }).data;

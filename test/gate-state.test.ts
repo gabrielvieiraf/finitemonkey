@@ -34,9 +34,7 @@ const setup = (options: Setup = {}): Repo => {
   const repo = makeRepo({
     "src/a.js": "export const a = 1;\n",
     "test/a.test.js": PASSING_TEST,
-    ...(options.hold === undefined
-      ? {}
-      : { ".finitemonkey/policy.yml": `guards:\n  ${HOLD_FEATURE}: ${options.hold}\n` }),
+    ...(options.hold === undefined ? {} : { ".fm/policy.yml": `guards:\n  ${HOLD_FEATURE}: ${options.hold}\n` }),
   });
   repos.push(repo);
   const created = createTask(repoRuntime(), fmPaths(repo.root), {
@@ -173,7 +171,7 @@ describe("a task with an unverified check never reaches done", () => {
     assert.equal(first.verdict, "block");
     const reason = String(field(parseBody(first.stdout), "reason"));
     assert.match(reason, /not verified yet \(task t1, tree w[0-9a-f]+, state partial\)/);
-    assert.match(reason, /to verify: pr: `gh auth login`, then `finitemonkey gate --task t1`/);
+    assert.match(reason, /to verify: pr: `gh auth login`, then `fm gate --task t1`/);
     const second = await stop(repo, repoRuntime(), true);
     assert.equal(second.verdict, "allow");
     assert.equal(readState(repoRuntime(), fmPaths(repo.root)).active, "t1");
@@ -182,6 +180,6 @@ describe("a task with an unverified check never reaches done", () => {
   it("in shadow the hold only records what it would have done", async () => {
     const repo = setup({ hold: "shadow" });
     assert.equal((await stop(repo, repoRuntime())).verdict, "allow");
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"feature":"gate-hold"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"feature":"gate-hold"/);
   });
 });

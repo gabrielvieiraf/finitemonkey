@@ -40,7 +40,7 @@ after(() => {
 const project = (mode = "active"): TempRepo => {
   const repo = tempRepo({ "src/max.mjs": MAX, "src/other.mjs": "export const other = 1;\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", `guards:\n  claim-checks: ${mode}\n`);
+  write(repo.root, ".fm/policy.yml", `guards:\n  claim-checks: ${mode}\n`);
   trustContract(repo.root, "t", CONTRACT);
   return repo;
 };
@@ -80,7 +80,7 @@ describe("executable claims at the gate", () => {
     write(repo.root, "src/max.mjs", MAX.replace("a > b ? a : b", "Math.max(a, b)"));
     const green = await claimsItem(repo);
     assert.equal(field(green, "status"), "passed", JSON.stringify(green));
-    const log = readFileSync(join(repo.root, ".finitemonkey/claims.jsonl"), "utf8");
+    const log = readFileSync(join(repo.root, ".fm/claims.jsonl"), "utf8");
     assert.match(log, new RegExp(`"event":"renew","id":"${id}".*"reason":"check_passed"`));
     write(repo.root, "src/max.mjs", MAX.replace("a > b ? a : b", "a"));
     const red = await claimsItem(repo);

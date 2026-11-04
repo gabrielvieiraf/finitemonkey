@@ -26,7 +26,7 @@ const unreadable = (dir: AbsolutePath, file: string, detail: string): Problem =>
   code: "i18n_catalog_unreadable",
   messageKey: "error.i18n_catalog_unreadable",
   params: { file, detail },
-  fix: `finitemonkey i18n check --dir ${dir}`,
+  fix: `fm i18n check --dir ${dir}`,
   exitCode: ExitCode.NotConfigured,
 });
 

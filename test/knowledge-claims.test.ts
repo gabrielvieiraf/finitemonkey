@@ -67,7 +67,7 @@ describe("anchored claims", () => {
 
   it("prints the origin chain down to the evidence and the prompt", async () => {
     const repo = setup({
-      ".finitemonkey/prompts.jsonl": `${JSON.stringify({ at: "2026-10-01T09:00:00.000Z", session: "s1", text: "round totals to cents" })}\n`,
+      ".fm/prompts.jsonl": `${JSON.stringify({ at: "2026-10-01T09:00:00.000Z", session: "s1", text: "round totals to cents" })}\n`,
     });
     appendEvidence(repoRuntime(), fmPaths(repo.root).evidence("t1"), [
       {
@@ -118,7 +118,7 @@ describe("anchored claims", () => {
   });
 
   it("never injects a stale claim into the context", async () => {
-    const repo = setup({ ".finitemonkey/policy.yml": policyWith({ "knowledge-claims": "active" }) });
+    const repo = setup({ ".fm/policy.yml": policyWith({ "knowledge-claims": "active" }) });
     await add(repo, "Totals round to cents", "--anchor", "src/totals.ts#total");
     await add(repo, "Tax is ten percent", "--anchor", "src/totals.ts#tax");
     repo.write("src/totals.ts", TOTALS.replace("value * 0.1", "value * 0.2"));
@@ -136,6 +136,6 @@ describe("anchored claims", () => {
       tool_input: { file_path: `${repo.root}/src/totals.ts`, old_string: "0.1", new_string: "0.2" },
       tool_response: {},
     });
-    assert.match(repo.read(".finitemonkey/claims.jsonl"), /"event":"stale"/);
+    assert.match(repo.read(".fm/claims.jsonl"), /"event":"stale"/);
   });
 });

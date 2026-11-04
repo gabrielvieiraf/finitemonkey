@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/evidence@1.json",
   "title": "finitemonkey/evidence@1",
-  "description": "One line of `.finitemonkey/evidence/<task>.jsonl`. Generated from Evidence in src/evidence/types.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "One line of `.fm/evidence/<task>.jsonl`. Generated from Evidence in src/evidence/types.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

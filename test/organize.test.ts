@@ -69,7 +69,7 @@ describe("organize", () => {
     write(repo.root, "src/use.js", `${USE}export const twice = (x) => (x > 1 ? use(x) : 0);\n`);
     git(repo.root, "commit", "-qam", "fix: twice");
     const first = await cliJson(["organize"], { cwd: repo.root, runtime: repoRuntime() });
-    rmSync(join(repo.root, ".finitemonkey", "cache"), { recursive: true, force: true });
+    rmSync(join(repo.root, ".fm", "cache"), { recursive: true, force: true });
     const second = await cliJson(["organize"], { cwd: repo.root, runtime: repoRuntime() });
     assert.deepEqual(field(first.body, "data", "hotspots"), field(second.body, "data", "hotspots"));
     const hotspots = field(first.body, "data", "hotspots");

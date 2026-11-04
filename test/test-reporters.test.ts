@@ -78,9 +78,9 @@ const TEST_HEAD =
 
 const project = (): Repo => {
   const repo = makeRepo({
-    ".gitignore": ".finitemonkey/*\n!.finitemonkey/config.yml\n!.finitemonkey/policy.yml\n",
-    ".finitemonkey/config.yml": "lang: en\ntest_budget:\n  slow_test_ms: 300\n",
-    ".finitemonkey/policy.yml": "guards:\n  test-budget: active\n",
+    ".gitignore": ".fm/*\n!.fm/config.yml\n!.fm/policy.yml\n",
+    ".fm/config.yml": "lang: en\ntest_budget:\n  slow_test_ms: 300\n",
+    ".fm/policy.yml": "guards:\n  test-budget: active\n",
     "package.json": '{"type": "module"}\n',
     "test/a.test.mjs": `${TEST_HEAD}test("fast", () => {});\ntest("slow one", () => wait(450));\n`,
   });

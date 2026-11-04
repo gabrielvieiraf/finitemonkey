@@ -35,8 +35,7 @@ const project = async (optIn: boolean): Promise<Repo> => {
   repos.push(repo);
   const root = toAbsolutePath(realpathSync.native(repo.root));
   assert.equal((await cli(["init", "--yes"], { cwd: root, runtime, env: {}, version: "1.0.0" })).code, 0);
-  if (optIn)
-    repo.write(".finitemonkey/config.yml", `${repo.read(".finitemonkey/config.yml")}supervisor:\n  enabled: true\n`);
+  if (optIn) repo.write(".fm/config.yml", `${repo.read(".fm/config.yml")}supervisor:\n  enabled: true\n`);
   repo.commit("install");
   const created = createTask(repoRuntime(), fmPaths(root), {
     id: "t1",
@@ -164,7 +163,7 @@ describe("account-switching supervisor", () => {
     const root = toAbsolutePath("/home/ana/project");
     const fs = memoryFs({
       [BUNDLE]: BUNDLE_TEXT,
-      [toAbsolutePath(".finitemonkey/config.yml", root)]: "schemaVersion: 1\nsupervisor:\n  enabled: true\n",
+      [toAbsolutePath(".fm/config.yml", root)]: "schemaVersion: 1\nsupervisor:\n  enabled: true\n",
       [toAbsolutePath("/tmp/holds/usage.json")]: JSON.stringify({ tokens: 1200, costUsd: 0.42, account: "b" }),
     });
     const result = await cliJson(["gain"], {

@@ -1,4 +1,5 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml, type YamlValue } from "../core/yaml/parse.js";
@@ -6,7 +7,7 @@ import { stringifyYaml } from "../core/yaml/write.js";
 import { isPersonalField } from "./personal.js";
 import { isSchemaCandidate, type SchemaField, schemaFieldsIn } from "./schema.js";
 
-export const DATA_MAP_FILE = ".finitemonkey/data-map.yml";
+export const DATA_MAP_FILE = `${DATA_DIR}/data-map.yml`;
 
 export interface DataMapRow {
   readonly field: string;

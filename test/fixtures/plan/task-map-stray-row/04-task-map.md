@@ -4,6 +4,6 @@ One row per issue.
 
 | Issue | Title | Front | State | Report |
 |---|---|---|---|---|
-| #70 | worktree registry | F1 | merged | .finitemonkey/reports/F1.json |
+| #70 | worktree registry | F1 | merged | .fm/reports/F1.json |
 | #71 | wt clean | F2 | open | - |
 | #99 | gone | - | open | - |

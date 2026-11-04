@@ -96,7 +96,7 @@ describe("arch: one file, configs per stack, and a ratchet", () => {
 
   it("records old violations, fails only new ones and drops fixed ones from the baseline", async () => {
     const repo = tempRepo({
-      ".finitemonkey/arch.yml": ARCH,
+      ".fm/arch.yml": ARCH,
       "src/infra/db.js": "export const db = 1;\n",
       "src/domain/order.js": 'import { db } from "../infra/db.js";\nexport const order = db;\n',
     });
@@ -118,7 +118,7 @@ describe("arch: one file, configs per stack, and a ratchet", () => {
     const fixed = await archItem(repo);
     assert.equal(field(fixed, "status"), "passed");
     assert.ok(noteKeys(fixed).includes("gate.arch.fixed"));
-    const baseline = readFileSync(join(repo.root, ".finitemonkey/findings/baseline.json"), "utf8");
+    const baseline = readFileSync(join(repo.root, ".fm/findings/baseline.json"), "utf8");
     assert.ok(!baseline.includes('"check": "arch"'));
     git(repo.root, "status", "--short");
   });

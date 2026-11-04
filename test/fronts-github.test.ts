@@ -31,7 +31,7 @@ const front = (id: string, issue: number | null, status: Front["status"]): Front
   status,
   blockedBy: [],
   inbox: [],
-  lastReport: status === "verified" ? ".finitemonkey/reports/F1.json" : null,
+  lastReport: status === "verified" ? ".fm/reports/F1.json" : null,
   costUsd: 0,
   startedAt: null,
 });
@@ -39,7 +39,7 @@ const front = (id: string, issue: number | null, status: Front["status"]): Front
 const STATE = serializeState({
   wave: 1,
   base: "main@abc1234",
-  briefing: ".finitemonkey/briefing.md",
+  briefing: ".fm/briefing.md",
   maxConcurrent: 3,
   budgetUsd: null,
   budgetMinutes: null,
@@ -60,7 +60,7 @@ const GH: Readonly<Record<string, string>> = {
 const setup = (policy: string | undefined) => {
   const fs = memoryFs({
     [toAbsolutePath(join(PROJECT, FRONTS_FILE))]: STATE,
-    ...(policy === undefined ? {} : { [toAbsolutePath(join(PROJECT, ".finitemonkey", "policy.yml"))]: policy }),
+    ...(policy === undefined ? {} : { [toAbsolutePath(join(PROJECT, ".fm", "policy.yml"))]: policy }),
   });
   const calls: string[][] = [];
   const exec = (request: ExecRequest) => {
@@ -124,7 +124,7 @@ describe("fronts sync --github: writes only with the flag and a person's yes", (
         ["project", "item-edit", "--id"],
       ],
     );
-    assert.match(done[0]?.[4] ?? "", /front F1 is verified\.\n\nLast report: \.finitemonkey\/reports\/F1\.json/);
+    assert.match(done[0]?.[4] ?? "", /front F1 is verified\.\n\nLast report: \.fm\/reports\/F1\.json/);
     assert.deepEqual(done[2]?.slice(3), [
       "PVTI_70",
       "--project-id",

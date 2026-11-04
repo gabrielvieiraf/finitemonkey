@@ -1,10 +1,11 @@
 import { join } from "node:path";
 
 import { toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { hiddenChars } from "../policy/untrusted.js";
 import { type Check, finding } from "./types.js";
 
-const FILES = ["CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", ".finitemonkey/learnings.jsonl"];
+const FILES = ["CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", `${DATA_DIR}/learnings.jsonl`];
 const RULES_DIR = ".claude/rules";
 const MAX_LISTED = 8;
 

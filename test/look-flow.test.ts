@@ -123,7 +123,7 @@ describe("flow and journeys: fixtures in the browser", () => {
         '    - "/kept #note"',
       ],
       policy: "guards:\n  a11y: off\n  keyboard: off\n  ui-states: off\n  ds-adherence: off\n  default-look: off\n",
-      files: { ".finitemonkey/look/journeys/orders.yml": JOURNEY },
+      files: { ".fm/look/journeys/orders.yml": JOURNEY },
     });
     repos.push(repo);
     assert.ok(approveJourney(repoRuntime(), fmPaths(repo.root), "orders", undefined).ok);
@@ -140,7 +140,7 @@ describe("flow and journeys: fixtures in the browser", () => {
       "/success flow/dead-end",
     ]);
     assert.deepEqual(found("journeys"), []);
-    const ux = repo.read(`.finitemonkey/look/${run.summary.treeHash}/ux.json`);
+    const ux = repo.read(`.fm/look/${run.summary.treeHash}/ux.json`);
     assert.ok(ux.includes('"passed": 1') && ux.includes('"mutants": 1') && ux.includes('"killed": 1'), ux.slice(-600));
   });
 });

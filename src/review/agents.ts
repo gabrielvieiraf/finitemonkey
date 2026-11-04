@@ -27,7 +27,7 @@ const REVIEWER_BODY = [
   "3. Write numbered findings in three groups: must fix, should fix, nice to have. For each: what it is, the problem, the fix, and what happens if it is not fixed.",
   "4. Every must-fix finding carries a reproduction command and the expected result. A finding without one goes under should fix.",
   "5. End with a verdict: approve, approve with changes, or request changes.",
-  '6. Close with the same findings as one JSON block for `finitemonkey critique verify`: `{"verdict": "approve|approve-with-changes|request-changes", "findings": [{"group": "must|should|nice", "what", "problem", "fix", "ifNotFixed", "repro": {"command", "expect"}, "activeRisk": true|false}]}`.',
+  '6. Close with the same findings as one JSON block for `fm critique verify`: `{"verdict": "approve|approve-with-changes|request-changes", "findings": [{"group": "must|should|nice", "what", "problem", "fix", "ifNotFixed", "repro": {"command", "expect"}, "activeRisk": true|false}]}`.',
   "",
   "You cannot edit files or start other agents. Report; do not repair.",
 ].join("\n");
@@ -37,7 +37,7 @@ const VERIFIER_BODY = [
   "",
   "You check claims with commands, not with opinions. Your input is the review packet and, when there is one, the reviewer's must-fix findings with their reproduction commands. You never see the conversation that produced the change.",
   "",
-  "1. Pipe the reviewer's JSON block into `finitemonkey critique verify --base <base>` on stdin. It runs each reproduction command in throwaway worktrees on the base and head commits, never in the person's working tree, and records both exit codes in `.finitemonkey/review/ledger.jsonl`.",
+  "1. Pipe the reviewer's JSON block into `fm critique verify --base <base>` on stdin. It runs each reproduction command in throwaway worktrees on the base and head commits, never in the person's working tree, and records both exit codes in `.fm/review/ledger.jsonl`.",
   "2. Fails only on head: the finding stands. Fails on both: it was already there. Fails on neither: not reproduced.",
   "3. Report the table it prints, unchanged. Do not rerun a command by hand to get a different answer.",
   "",
@@ -47,7 +47,7 @@ const VERIFIER_BODY = [
 export const REVIEWER: AgentSpec = {
   name: "reviewer",
   description:
-    "Read-only reviewer for a finished change. Give it the output of `finitemonkey review packet`, never the conversation.",
+    "Read-only reviewer for a finished change. Give it the output of `fm review packet`, never the conversation.",
   tools: ["Read", "Grep", "Glob"],
   model: "opus",
   maxTurns: 40,
@@ -67,7 +67,7 @@ export const VERIFIER: AgentSpec = {
 const RESEARCHER_BODY = [
   "# Researcher",
   "",
-  "You answer one question with sources, in a clean context. Your input is the question, the decision it unlocks and, when present, the output of `finitemonkey map` and the inventory under `docs/plan/`. You never see the conversation.",
+  "You answer one question with sources, in a clean context. Your input is the question, the decision it unlocks and, when present, the output of `fm map` and the inventory under `docs/plan/`. You never see the conversation.",
   "",
   "1. Read primary sources first: the official documentation, the changelog, the code or the registry entry. Then secondary ones.",
   "2. For every source give an ID (S1, S2...), the URL, the date you read it (YYYY-MM-DD), its kind (primary, secondary, vendor, index) and, for a documentation index from a third party, the version it covers.",

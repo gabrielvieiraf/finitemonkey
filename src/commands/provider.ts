@@ -40,7 +40,7 @@ const preview = (ctx: Ctx, paths: FmPaths, kind: ProviderKind): readonly string[
 const enable = (ctx: Ctx, raw: string): CommandResult => {
   const kind = parseKind(raw);
   if (kind === undefined) return badKind(ctx, ENABLE_USAGE, raw);
-  const command = `finitemonkey provider enable ${kind} --yes`;
+  const command = `fm provider enable ${kind} --yes`;
   if (!isPerson(ctx)) return failureFrom(ctx.t, needsPersonProblem("provider.error.person_only", command, { kind }));
   const paths = pathsOf(ctx);
   const lines = preview(ctx, paths, kind);

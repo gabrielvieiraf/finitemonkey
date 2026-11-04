@@ -144,11 +144,9 @@ describe("network claims in docs", () => {
 });
 
 describe("footprint list matches the code", () => {
-  it("every .finitemonkey/ path in src is listed", () => {
-    const paths = sources().flatMap((text) =>
-      [...text.matchAll(/["`](\.finitemonkey\/[\w./-]+)/g)].map((m) => m[1] ?? ""),
-    );
-    const unlisted = [...new Set(paths)].filter((path) => path !== ".finitemonkey/" && !covered(path));
+  it("every .fm/ path in src is listed", () => {
+    const paths = sources().flatMap((text) => [...text.matchAll(/["`](\.fm\/[\w./-]+)/g)].map((m) => m[1] ?? ""));
+    const unlisted = [...new Set(paths)].filter((path) => path !== ".fm/" && !covered(path));
     assert.deepEqual(unlisted, []);
   });
 

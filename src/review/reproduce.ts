@@ -1,10 +1,11 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Finding } from "./findings.js";
 
-export const REVIEW_LEDGER = ".finitemonkey/review/ledger.jsonl";
+export const REVIEW_LEDGER = `${DATA_DIR}/review/ledger.jsonl`;
 export const REPRO_TIMEOUT_MS = 120_000;
 
 export const OUTCOMES = ["head-only", "already-there", "not-reproduced", "not-run"] as const;
@@ -35,7 +36,7 @@ export const outcomeOf = (base: ReproRun | undefined, head: ReproRun | undefined
 };
 
 const worktreeDir = (root: AbsolutePath, side: string): AbsolutePath =>
-  toAbsolutePath(join(root, ".finitemonkey", "review", `worktree-${side}`));
+  toAbsolutePath(join(root, DATA_DIR, "review", `worktree-${side}`));
 
 export interface Sides {
   readonly base: string;
@@ -80,7 +81,7 @@ export const reproduce = (
   const musts = findings.filter((finding) => finding.group === "must");
   const runs = [...runAt(runtime, root, "base", sides.base, musts), ...runAt(runtime, root, "head", sides.head, musts)];
   if (runs.length > 0) {
-    runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey", "review")));
+    runtime.mkdir(toAbsolutePath(join(root, DATA_DIR, "review")));
     runtime.appendText(
       toAbsolutePath(join(root, REVIEW_LEDGER)),
       runs.map((run) => `${JSON.stringify(run)}\n`).join(""),

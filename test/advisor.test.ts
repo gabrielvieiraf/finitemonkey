@@ -26,11 +26,11 @@ const WIDE = (name: string): string =>
 
 const project = (test = 'node -e "process.exit(0)"'): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/policy.yml":
+    ".fm/policy.yml":
       "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     "package.json": JSON.stringify({ scripts: { test } }),
     "src/billing.ts": "export const placeholder = 1;\n",
-    ".finitemonkey/config.yml": "lang: en\n",
+    ".fm/config.yml": "lang: en\n",
   });
   repos.push(repo);
   return repo;
@@ -53,7 +53,7 @@ const stop = (repo: Repo, task = "implicit") => {
 
 const snapshot = (repo: Repo): string =>
   repo
-    .git("ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ".", ":(exclude).finitemonkey")
+    .git("ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ".", ":(exclude).fm")
     .split("\0")
     .filter((file) => file !== "")
     .map((file) => `${file}\n${repo.read(file)}`)

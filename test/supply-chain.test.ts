@@ -160,12 +160,12 @@ describe("supply chain: osv-scanner in CI", () => {
       ],
     );
     assert.equal(field(vulns[1], "deadline"), "2026-11-10T12:00:00.000Z");
-    assert.match(read(".finitemonkey/findings/osv.json") ?? "", /left-pad@1\.0\.0\/GHSA-dddd-eeee-ffff": "2026-10-27/);
+    assert.match(read(".fm/findings/osv.json") ?? "", /left-pad@1\.0\.0\/GHSA-dddd-eeee-ffff": "2026-10-27/);
   });
 
   it("blocks a warning again once its deadline has passed", async () => {
     const seen = {
-      ".finitemonkey/findings/osv.json": JSON.stringify({
+      ".fm/findings/osv.json": JSON.stringify({
         firstSeen: { "npm/left-pad@1.0.0/GHSA-dddd-eeee-ffff": "2026-09-01T00:00:00.000Z" },
       }),
     };

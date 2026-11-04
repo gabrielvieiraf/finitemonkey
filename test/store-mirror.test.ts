@@ -13,21 +13,21 @@ const INCIDENT = '{"schemaVersion":1,"id":"inc-000000000001","state":"aberto"}\n
 const quiet = { ...runtime, spawnSelf: () => true };
 
 const seed = (root: string): void => {
-  write(root, ".finitemonkey/allow/grants.json", GRANTS);
-  write(root, ".finitemonkey/incidents/inc-000000000001.json", INCIDENT);
+  write(root, ".fm/allow/grants.json", GRANTS);
+  write(root, ".fm/incidents/inc-000000000001.json", INCIDENT);
 };
 
 describe("store mirror", () => {
-  it("deleting .finitemonkey/ in a fixture restores approvals and incidents from the mirror and records it", async () => {
+  it("deleting .fm/ in a fixture restores approvals and incidents from the mirror and records it", async () => {
     const repo = tempRepo();
     try {
       seed(repo.root);
       assert.equal(mirrorStore(runtime, repo.root), 2);
-      rmSync(join(repo.root, ".finitemonkey"), { recursive: true, force: true });
+      rmSync(join(repo.root, ".fm"), { recursive: true, force: true });
       const started = await hook(sessionStart, "SessionStart", repo.root, { source: "startup" }, quiet);
-      assert.equal(readFileSync(join(repo.root, ".finitemonkey/allow/grants.json"), "utf8"), GRANTS);
-      assert.equal(readFileSync(join(repo.root, ".finitemonkey/incidents/inc-000000000001.json"), "utf8"), INCIDENT);
-      assert.match(readFileSync(join(repo.root, ".finitemonkey/log.jsonl"), "utf8"), /"event":"store_restored"/);
+      assert.equal(readFileSync(join(repo.root, ".fm/allow/grants.json"), "utf8"), GRANTS);
+      assert.equal(readFileSync(join(repo.root, ".fm/incidents/inc-000000000001.json"), "utf8"), INCIDENT);
+      assert.match(readFileSync(join(repo.root, ".fm/log.jsonl"), "utf8"), /"event":"store_restored"/);
       assert.match(JSON.stringify(started.output ?? {}), /restored 2 files/);
     } finally {
       repo.dispose();
@@ -42,7 +42,7 @@ describe("store mirror", () => {
       const [inGit, inHome] = mirrorDirs(runtime, repo.root);
       assert.ok(inGit !== undefined && inHome !== undefined);
       rmSync(inGit, { recursive: true, force: true });
-      rmSync(join(repo.root, ".finitemonkey"), { recursive: true, force: true });
+      rmSync(join(repo.root, ".fm"), { recursive: true, force: true });
       assert.deepEqual(restoreStore(runtime, repo.root), { from: inHome, files: 2 });
     } finally {
       repo.dispose();
@@ -56,10 +56,10 @@ describe("store mirror", () => {
       mirrorStore(runtime, repo.root);
       const dirs = mirrorDirs(runtime, repo.root);
       for (const dir of dirs) writeFileSync(join(dir, "allow/grants.json"), '{"grants":[{"guard":"git"}]}\n');
-      rmSync(join(repo.root, ".finitemonkey"), { recursive: true, force: true });
+      rmSync(join(repo.root, ".fm"), { recursive: true, force: true });
       assert.deepEqual(restoreStore(runtime, repo.root)?.files, 1);
-      assert.ok(!existsSync(join(repo.root, ".finitemonkey/allow/grants.json")));
-      rmSync(join(repo.root, ".finitemonkey"), { recursive: true, force: true });
+      assert.ok(!existsSync(join(repo.root, ".fm/allow/grants.json")));
+      rmSync(join(repo.root, ".fm"), { recursive: true, force: true });
       for (const dir of dirs) {
         const index = join(dir, "index.json");
         writeFileSync(index, readFileSync(index, "utf8").replace("inc-000000000001", "inc-000000000002"));
@@ -75,7 +75,7 @@ describe("store mirror", () => {
     try {
       seed(repo.root);
       mirrorStore(runtime, repo.root);
-      rmSync(join(repo.root, ".finitemonkey/incidents"), { recursive: true, force: true });
+      rmSync(join(repo.root, ".fm/incidents"), { recursive: true, force: true });
       assert.equal(restoreStore(runtime, repo.root), undefined);
     } finally {
       repo.dispose();

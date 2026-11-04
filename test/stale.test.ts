@@ -56,11 +56,7 @@ describe("stale status claims", () => {
 
   it("reports planned next to a command that exists, and not a planned item with no code", () => {
     const result = resolve(
-      [
-        "- `finitemonkey recap --since 7d` (planned).",
-        "- `finitemonkey teleport` (planned).",
-        "- `finitemonkey future` (planned).",
-      ].join("\n"),
+      ["- `fm recap --since 7d` (planned).", "- `fm teleport` (planned).", "- `fm future` (planned)."].join("\n"),
     );
     assert.equal(result.claims, 3);
     assert.deepEqual(
@@ -71,7 +67,7 @@ describe("stale status claims", () => {
 
   it("keeps a status to its own clause in a row that says several things", () => {
     const row =
-      "| I13 | No em dashes. | `finitemonkey prose check` flags em dashes, but no CI step runs it on the docs **(planned)** |";
+      "| I13 | No em dashes. | `fm prose check` flags em dashes, but no CI step runs it on the docs **(planned)** |";
     assert.deepEqual(resolve(row).stale, []);
   });
 

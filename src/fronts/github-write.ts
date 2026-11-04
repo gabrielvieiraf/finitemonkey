@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import type { Translate } from "../i18n/translate.js";
@@ -40,7 +41,7 @@ export const githubWritesOn = (runtime: Runtime, root: AbsolutePath): boolean =>
 };
 
 const ledgerPath = (root: AbsolutePath): AbsolutePath =>
-  toAbsolutePath(join(root, ".finitemonkey", "cache", "github-writes.json"));
+  toAbsolutePath(join(root, DATA_DIR, "cache", "github-writes.json"));
 
 const postedStatuses = (runtime: Runtime, root: AbsolutePath): Readonly<Record<string, unknown>> => {
   const text = runtime.readText(ledgerPath(root));
@@ -90,7 +91,7 @@ export const applyGithubWrites = (runtime: Runtime, root: AbsolutePath, plan: Gi
     posted[String(item.issue)] = item.status;
     comments += 1;
   }
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey", "cache")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR, "cache")));
   runtime.writeAtomic(ledgerPath(root), `${JSON.stringify(posted, null, 2)}\n`);
   const project = plan.project;
   const fields =

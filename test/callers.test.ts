@@ -127,7 +127,7 @@ describe("callers check", () => {
     const lock = readTrust(repoRuntime(), paths);
     writeTrust(repoRuntime(), paths, {
       ...lock,
-      approved: { ...lock.approved, t1: repo.read(".finitemonkey/tasks/t1.yml") },
+      approved: { ...lock.approved, t1: repo.read(".fm/tasks/t1.yml") },
     });
     renameTotal(repo);
     assert.equal(item(repo).status, "passed");

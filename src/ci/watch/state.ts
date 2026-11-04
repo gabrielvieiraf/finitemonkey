@@ -1,11 +1,12 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import type { JsonObject } from "../../core/parsed.js";
 import type { Runtime } from "../../core/runtime.js";
 import { readJsonFile, writeJsonFile } from "../../task/state.js";
 
-export const WATCH_DIR = ".finitemonkey/ci-watch";
+export const WATCH_DIR = `${DATA_DIR}/ci-watch`;
 
 export interface WatchState {
   readonly startedAt: string;

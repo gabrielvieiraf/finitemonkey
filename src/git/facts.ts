@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 export type DirtyKind = "changed" | "untracked" | "unmerged";
 
 export interface DirtyEntry {
@@ -44,7 +45,7 @@ export const memoBy = <T>(compute: (key: string) => T): ((key: string) => T) => 
   };
 };
 
-export const STATE_PREFIX = ".finitemonkey/";
+export const STATE_PREFIX = `${DATA_DIR}/`;
 
 const PORCELAIN_FIELDS = { ordinary: 8, renamed: 9, unmerged: 10 } as const;
 

@@ -214,7 +214,7 @@ describe("PreToolUse secrets guard: reads", () => {
 
 describe("PreToolUse secrets guard: the ledger signing key", () => {
   it("a Read or cat of the ledger signing key is blocked like any key file", async () => {
-    const key = "/home/ana/.finitemonkey/ledger.key";
+    const key = "/home/ana/.fm/ledger.key";
     assert.equal((await fire("PreToolUse", tool("Read", { file_path: key }))).verdict, "block");
     assert.equal((await fire("PreToolUse", tool("Bash", { command: `cat ${key}` }))).verdict, "block");
   });
@@ -268,7 +268,7 @@ describe("PostToolUse secrets guard", () => {
       incidents.map((item) => [item.state, item.where]),
       [["aberto", "tool-output:Bash:2"]],
     );
-    assert.equal(runtime.readText(toAbsolutePath(`${ROOT}/.finitemonkey/incidents/.gitignore`)).ok, true);
+    assert.equal(runtime.readText(toAbsolutePath(`${ROOT}/.fm/incidents/.gitignore`)).ok, true);
   });
 
   it("the same secret twice keeps one incident", async () => {

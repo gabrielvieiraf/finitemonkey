@@ -21,7 +21,7 @@ import type { CommandSpec } from "./types.js";
 
 export const SLOP_STATS_SCHEMA = "finitemonkey/slop-stats@1";
 export const SLOP_DISMISS_SCHEMA = "finitemonkey/slop-dismiss@1";
-const DISMISS_USAGE = `finitemonkey slop dismiss <${SLOP_DETECTORS.join("|")}> <file>:<line> --reason <why>`;
+const DISMISS_USAGE = `fm slop dismiss <${SLOP_DETECTORS.join("|")}> <file>:<line> --reason <why>`;
 
 const invalid = (ctx: Ctx, detail: string): CommandResult =>
   failureFrom(ctx.t, usageProblem("invalid_arguments", "error.invalid_arguments", DISMISS_USAGE, { detail }));

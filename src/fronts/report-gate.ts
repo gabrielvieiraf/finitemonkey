@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { readLedger } from "../evidence/ledger.js";
 import { gitAt, treeHash } from "../gate/git.js";
@@ -8,7 +9,7 @@ import { dirtyFiles } from "../wt/classify.js";
 import { type FrontReport, parseFrontReport } from "./report.js";
 import type { Front } from "./state.js";
 
-export const REPORTS_DIR = ".finitemonkey/reports";
+export const REPORTS_DIR = `${DATA_DIR}/reports`;
 
 export interface ReportCheck {
   readonly front: string;
@@ -39,7 +40,7 @@ const ledgerProblems = (runtime: Runtime, dir: AbsolutePath, report: FrontReport
   const ledger = readLedger(
     runtime,
     toAbsolutePath(
-      report.evidence === "" ? join(dir, ".finitemonkey", "evidence", `${report.front}.jsonl`) : report.evidence,
+      report.evidence === "" ? join(dir, DATA_DIR, "evidence", `${report.front}.jsonl`) : report.evidence,
       dir,
     ),
   );

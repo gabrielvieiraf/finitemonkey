@@ -21,7 +21,7 @@ const repo = (files: Readonly<Record<string, string>>): Repo => {
 };
 
 const DOCS = {
-  "README.md": "# App\n\n- `finitemonkey recap` (planned).\n- `finitemonkey teleport` (planned).\n",
+  "README.md": "# App\n\n- `fm recap` (planned).\n- `fm teleport` (planned).\n",
   "docs/essay.md": "| Mechanism | Status |\n|---|---|\n| Drift sensor | In development (#12) |\n",
   "CHANGELOG.md": "# Changelog\n\n## [1.2.0](https://example.com) (2026-10-01)\n",
   "src/app.ts": "export const app = 1;\n",
@@ -157,9 +157,9 @@ describe("finitemonkey recap", () => {
         from: "unverified",
       },
     ]);
-    target.write(".finitemonkey/state.json", '{"schemaVersion":1,"active":"t2","done":["t1"]}\n');
+    target.write(".fm/state.json", '{"schemaVersion":1,"active":"t2","done":["t1"]}\n');
     target.write(
-      join(".finitemonkey", "decision-records", "t1.json"),
+      join(".fm", "decision-records", "t1.json"),
       JSON.stringify({ task: "t1", at, changes: [{ class: "dependency", detail: "+left-pad" }] }),
     );
     const run = await cliJson(["recap", "--since", "7d"], { cwd: target.root, runtime });

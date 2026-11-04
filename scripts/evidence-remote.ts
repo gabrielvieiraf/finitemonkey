@@ -10,7 +10,7 @@ import { blocksOrAsks, replayGuard } from "./evidence-replay.js";
 
 export const REMOTE_CORPUS = "remote";
 
-const POLICY = join(".finitemonkey", "policy.yml");
+const POLICY = join(".fm", "policy.yml");
 const ACTIVE = "guards:\n  remote-destructive: active\n";
 
 export const replayRemote = async (

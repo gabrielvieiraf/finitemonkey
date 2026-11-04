@@ -1,12 +1,13 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import { isRecord, parseJsonObject } from "../../core/parsed.js";
 import { toPosixPath } from "../../core/posix-path.js";
 import type { Runtime } from "../../core/runtime.js";
 import { sha256Hex } from "../../secrets/fingerprint.js";
 
-export const LOCKS_DIR = ".finitemonkey/locks";
+export const LOCKS_DIR = `${DATA_DIR}/locks`;
 export const LOCK_STALE_MS = 12 * 60 * 60 * 1000;
 
 export interface FileLock {

@@ -25,7 +25,7 @@ const needsDecision = (level: DeployLevel, detected: DeployLevel, decision: stri
   code: "deploy_level_needs_decision",
   messageKey: "deploy.plan.needs_decision",
   params: { level, detected, decision: decision ?? "-" },
-  fix: `finitemonkey decide new "deploy level ${String(level)}"`,
+  fix: `fm decide new "deploy level ${String(level)}"`,
   exitCode: ExitCode.CheckFailed,
 });
 
@@ -78,7 +78,7 @@ export const recordLevel = (runtime: Runtime, root: AbsolutePath, request: Level
       code: "deploy_write_failed",
       messageKey: "infra.write_failed",
       params: { file: INFRA_FILE },
-      fix: "check that .finitemonkey can be written",
+      fix: "check that .fm can be written",
       exitCode: ExitCode.Internal,
     },
   };

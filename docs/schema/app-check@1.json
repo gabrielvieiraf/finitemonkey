@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/app-check@1.json",
   "title": "finitemonkey/app-check@1",
-  "description": "`data` of `finitemonkey app check --json`. Generated from AppCheckData in src/commands/app-check.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm app check --json`. Generated from AppCheckData in src/commands/app-check.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

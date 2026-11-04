@@ -156,7 +156,7 @@ describe("planta: the bar counts only green items for the current tree", () => {
     assert.ok(loaded.ok);
     assert.equal(loaded.value.contract.blueprint, "saas");
     assert.equal(loaded.value.trusted, true);
-    assert.match(target.read(".finitemonkey/tasks/t2.yml"), /^blueprint: saas$/m);
+    assert.match(target.read(".fm/tasks/t2.yml"), /^blueprint: saas$/m);
   });
 
   it("an unknown blueprint is a usage error", async () => {

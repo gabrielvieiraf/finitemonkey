@@ -106,15 +106,15 @@ describe("alert budget per warning class", () => {
   });
 
   it("a muted class stops warning, the firing is still counted, and the log says so", async () => {
-    const { fs, runtime } = setup({ [`.finitemonkey/cache/${ALERT_BUDGET_FILE}`]: history(19, 4) });
+    const { fs, runtime } = setup({ [`.fm/cache/${ALERT_BUDGET_FILE}`]: history(19, 4) });
     const decision = await fire(runtime);
     assert.deepEqual(decision, { kind: "allow", output: {} });
     assert.equal(readBudget(runtime, fmPaths(ROOT))["deps"]?.fired.length, 20);
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /"event":"guard_muted","guard":"deps"/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /"event":"guard_muted","guard":"deps"/);
   });
 
   it("a class under budget keeps warning", async () => {
-    const { runtime } = setup({ [`.finitemonkey/cache/${ALERT_BUDGET_FILE}`]: history(19, 1) });
+    const { runtime } = setup({ [`.fm/cache/${ALERT_BUDGET_FILE}`]: history(19, 1) });
     const decision = await fire(runtime);
     assert.equal(
       decision.kind === "allow" ? decision.output?.["systemMessage"] : undefined,
@@ -125,7 +125,7 @@ describe("alert budget per warning class", () => {
   it("a guard set explicitly in policy.yml is never muted", async () => {
     const { runtime } = setup({
       [POLICY_FILE]: "guards:\n  deps: active\n",
-      [`.finitemonkey/cache/${ALERT_BUDGET_FILE}`]: history(19, 10),
+      [`.fm/cache/${ALERT_BUDGET_FILE}`]: history(19, 10),
     });
     const decision = await fire(runtime);
     assert.equal(
@@ -137,18 +137,18 @@ describe("alert budget per warning class", () => {
   it("in shadow the budget only logs what it would mute", async () => {
     const { fs, runtime } = setup({
       [POLICY_FILE]: "guards:\n  alert-budget: shadow\n",
-      [`.finitemonkey/cache/${ALERT_BUDGET_FILE}`]: history(19, 10),
+      [`.fm/cache/${ALERT_BUDGET_FILE}`]: history(19, 10),
     });
     const decision = await fire(runtime);
     assert.equal(
       decision.kind === "allow" ? decision.output?.["systemMessage"] : undefined,
       "finitemonkey: check this package",
     );
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /"event":"guard_mute_shadow"/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /"event":"guard_mute_shadow"/);
   });
 
   it("a recorded false positive counts as a dismissal and doctor names the muted class", async () => {
-    const { runtime } = setup({ [`.finitemonkey/cache/${ALERT_BUDGET_FILE}`]: history(20, 3) });
+    const { runtime } = setup({ [`.fm/cache/${ALERT_BUDGET_FILE}`]: history(20, 3) });
     const recorded = await cliJson(["policy", "false-positive", "deps"], {
       cwd: ROOT,
       runtime,

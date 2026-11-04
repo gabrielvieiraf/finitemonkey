@@ -32,10 +32,10 @@ const RULES = [
 const projectFs = (files: Readonly<Record<string, string>> = {}): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/feature\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
-    [at(".finitemonkey/policy.yml")]:
+    [at(".fm/config.yml")]: "lang: en\n",
+    [at(".fm/policy.yml")]:
       "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
-    [at(".finitemonkey/rules.yml")]: RULES,
+    [at(".fm/rules.yml")]: RULES,
     ...Object.fromEntries(Object.entries(files).map(([path, text]) => [at(path), text])),
   });
 
@@ -98,7 +98,7 @@ describe("reminders: only on events", () => {
 
   it("injects a rule broken in the last task on the next prompt", async () => {
     const fs = projectFs();
-    recordViolation(fakeRuntime({ fs }), at(".finitemonkey"), {
+    recordViolation(fakeRuntime({ fs }), at(".fm"), {
       session: "s1",
       rule: "short",
       source: "person",
@@ -109,9 +109,9 @@ describe("reminders: only on events", () => {
   });
 
   it("only logs in shadow mode", async () => {
-    const fs = projectFs({ ".finitemonkey/policy.yml": "guards:\n  reminders: shadow\n" });
+    const fs = projectFs({ ".fm/policy.yml": "guards:\n  reminders: shadow\n" });
     assert.equal(reminderOf(await fire(fs, "SessionStart", { source: "startup" })), "");
-    assert.match(fs.read(at(".finitemonkey/log.jsonl")) ?? "", /reminder_shadow/);
+    assert.match(fs.read(at(".fm/log.jsonl")) ?? "", /reminder_shadow/);
   });
 });
 
@@ -126,7 +126,7 @@ const forty = (): string =>
 
 describe("reminders: size", () => {
   it(`stays under ${String(DEFAULT_MAX_RULES)} rules and ${String(DEFAULT_MAX_TOKENS)} tokens with 40 reminder rules`, async () => {
-    const fs = projectFs({ ".finitemonkey/rules.yml": forty() });
+    const fs = projectFs({ ".fm/rules.yml": forty() });
     const text = reminderOf(await fire(fs, "SessionStart", { source: "startup" }));
     const lines = text.split("\n").filter((line) => line.startsWith("- "));
     assert.ok(lines.length > 0 && lines.length <= DEFAULT_MAX_RULES, text);
@@ -137,7 +137,7 @@ describe("reminders: size", () => {
     const fs = projectFs();
     const runtime = fakeRuntime({ fs });
     for (let n = 0; n < 3; n += 1)
-      recordViolation(runtime, at(".finitemonkey"), { session: "s0", rule: "api-schema", source: "stop", detail: "" });
+      recordViolation(runtime, at(".fm"), { session: "s0", rule: "api-schema", source: "stop", detail: "" });
     const lines = reminderOf(await fire(fs, "SessionStart", { source: "startup" })).split("\n");
     assert.match(lines.at(-1) ?? "", /shared schema/);
   });
@@ -147,10 +147,7 @@ describe("reminders: subagents read the rules from disk", () => {
   it("a subagent gets the current text of a rule edited after the parent session started", async () => {
     const fs = projectFs();
     assert.match(reminderOf(await fire(fs, "SessionStart", { source: "startup" })), /short and concrete/);
-    fs.writeText(
-      at(".finitemonkey/rules.yml"),
-      RULES.replace("Keep answers short and concrete", "Answer in two lines"),
-    );
+    fs.writeText(at(".fm/rules.yml"), RULES.replace("Keep answers short and concrete", "Answer in two lines"));
     const sub = reminderOf(await fire(fs, "SubagentStart", { agent_id: "a1", agent_type: "Explore" }));
     assert.match(sub, /Answer in two lines/);
     assert.doesNotMatch(sub, /short and concrete/);

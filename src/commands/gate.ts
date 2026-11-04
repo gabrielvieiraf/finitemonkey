@@ -80,7 +80,7 @@ export const gateResult = (ctx: Ctx, report: GateReport, strict: boolean): Comma
     exitCode: ExitCode.CheckFailed,
     data: report,
     human,
-    error: { code, message: ctx.t(`error.${code}`, report.counts), fix: `finitemonkey gate --task ${report.task}` },
+    error: { code, message: ctx.t(`error.${code}`, report.counts), fix: `fm gate --task ${report.task}` },
   };
 };
 

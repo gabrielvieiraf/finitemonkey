@@ -42,9 +42,9 @@ const OLD_EVENTS = [
 const oldProject = (): MemoryFs =>
   memoryFs({
     [at(".git/HEAD")]: "ref: refs/heads/main\n",
-    [at(".finitemonkey/config.yml")]: "lang: en\n",
-    [at(".finitemonkey/conceitos.yml")]: OLD_BOOK,
-    [at(".finitemonkey/conceitos-events.jsonl")]: OLD_EVENTS,
+    [at(".fm/config.yml")]: "lang: en\n",
+    [at(".fm/conceitos.yml")]: OLD_BOOK,
+    [at(".fm/conceitos-events.jsonl")]: OLD_EVENTS,
   });
 
 describe("concept books with the eight old ids migrate", () => {

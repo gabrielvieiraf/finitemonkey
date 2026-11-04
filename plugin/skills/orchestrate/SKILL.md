@@ -15,7 +15,7 @@ A wave of fronts is listed in the `finitemonkey:` block above the message. Each 
 3. The message changes what a front must deliver (its contract): first record the change with `node "${CLAUDE_PLUGIN_ROOT}/scripts/finitemonkey.mjs" fronts route <front> "<message>" --contract`, then send the message.
 4. Several fronts: send it to each one.
 5. No front: handle it yourself, or plan it as a front of the next wave.
-6. A new front always goes through the `Agent` tool with `isolation: "worktree"` and the four-line prompt from `finitemonkey brief`.
+6. A new front always goes through the `Agent` tool with `isolation: "worktree"` and the four-line prompt from `fm brief`.
 
 Every message you send is added to the front's inbox, and the front's report must say what it did with it.
 

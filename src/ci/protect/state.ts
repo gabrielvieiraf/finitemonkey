@@ -1,11 +1,12 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import { isRecord, parseJson } from "../../core/parsed.js";
 import type { ExecResult, Runtime } from "../../core/runtime.js";
 
 export const PROTECT_RULESET_NAME = "finitemonkey: protected default branch";
-export const SETTINGS_CACHE = ".finitemonkey/cache/github-settings.json";
+export const SETTINGS_CACHE = `${DATA_DIR}/cache/github-settings.json`;
 const GH_TIMEOUT_MS = 15_000;
 
 export type Toggle = "enabled" | "disabled" | "unknown";
@@ -85,7 +86,7 @@ export const writeSettingsCache = (
   root: AbsolutePath,
   settings: GithubSettings,
 ): void => {
-  runtime.mkdir(toAbsolutePath(join(root, ".finitemonkey", "cache")));
+  runtime.mkdir(toAbsolutePath(join(root, DATA_DIR, "cache")));
   runtime.writeText(cachePath(root), `${JSON.stringify({ ...settings, at: runtime.now() }, null, 2)}\n`);
 };
 

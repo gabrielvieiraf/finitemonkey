@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/status@1.json",
   "title": "finitemonkey/status@1",
-  "description": "`data` of `finitemonkey status --json`, which the mod draws in the band and the gate pane. Generated from StatusData in src/bridge/status.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm status --json`, which the mod draws in the band and the gate pane. Generated from StatusData in src/bridge/status.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

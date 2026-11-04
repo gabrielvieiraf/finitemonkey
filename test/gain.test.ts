@@ -59,8 +59,8 @@ const ledger = [gate(8, "passed", 90_000, "def"), gate(20, "failed", 60_000), ga
 const fixture = () =>
   memoryFs(
     {
-      [at(".finitemonkey/log.jsonl")]: `${log}\n`,
-      [at(".finitemonkey/evidence/implicit.jsonl")]: `${ledger}\n`,
+      [at(".fm/log.jsonl")]: `${log}\n`,
+      [at(".fm/evidence/implicit.jsonl")]: `${ledger}\n`,
       ...keySeed(),
     },
     [at(".git")],
@@ -90,7 +90,7 @@ describe("finitemonkey gain", () => {
   it("a pass on the same tree as the failure is not a save", () => {
     const sameTree = [gate(8, "passed", 90_000), gate(20, "failed", 60_000)].join("\n");
     const fs = memoryFs(
-      { [at(".finitemonkey/log.jsonl")]: `${log}\n`, [at(".finitemonkey/evidence/implicit.jsonl")]: `${sameTree}\n` },
+      { [at(".fm/log.jsonl")]: `${log}\n`, [at(".fm/evidence/implicit.jsonl")]: `${sameTree}\n` },
       [at(".git")],
       NOW,
     );

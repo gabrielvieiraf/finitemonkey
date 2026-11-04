@@ -43,9 +43,9 @@ after(() => {
 const legacyRepo = (): TempRepo => {
   const repo = tempRepo({ "README.md": "hello\n" });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards: {}\n");
-  write(repo.root, ".finitemonkey/conceitos-events.jsonl", LEGACY);
-  write(repo.root, ".finitemonkey/perfil.yml", PERFIL);
+  write(repo.root, ".fm/policy.yml", "guards: {}\n");
+  write(repo.root, ".fm/conceitos-events.jsonl", LEGACY);
+  write(repo.root, ".fm/perfil.yml", PERFIL);
   return repo;
 };
 
@@ -66,11 +66,11 @@ const views = (runtime: Runtime, root: string): unknown => {
   };
 };
 
-const fileText = (root: string, name: string): string => readFileSync(join(root, ".finitemonkey", name), "utf8");
+const fileText = (root: string, name: string): string => readFileSync(join(root, ".fm", name), "utf8");
 
 const exists = (root: string, name: string): boolean => {
   try {
-    readFileSync(join(root, ".finitemonkey", name));
+    readFileSync(join(root, ".fm", name));
     return true;
   } catch {
     return false;
@@ -101,8 +101,8 @@ describe("judge views: profile, concepts, x-ray, probes and trajectory read the 
     const run = await cliJson(["conceitos", "migrate", "--dry-run"], { cwd: repo.root, runtime });
     assert.equal(run.code, 0, run.stdout);
     assert.deepEqual(field(run.body, "data", "files"), [
-      { file: ".finitemonkey/conceitos-events.jsonl", entries: 22 },
-      { file: ".finitemonkey/perfil.yml", entries: 6 },
+      { file: ".fm/conceitos-events.jsonl", entries: 22 },
+      { file: ".fm/perfil.yml", entries: 6 },
     ]);
     assert.equal(field(run.body, "data", "converted"), false);
     assert.equal(exists(repo.root, "judge.jsonl"), false);

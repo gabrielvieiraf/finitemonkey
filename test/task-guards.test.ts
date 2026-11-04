@@ -83,7 +83,7 @@ describe("policy explain shows the task source", () => {
       budget: undefined,
     });
     assert.ok(created.ok);
-    repo.write(".finitemonkey/tasks/t1.yml", `${created.value.text}guards:\n  scope: active\n`);
+    repo.write(".fm/tasks/t1.yml", `${created.value.text}guards:\n  scope: active\n`);
     const { body } = await cliJson(["policy", "explain"], { cwd: repo.root, runtime: repoRuntime() });
     const rows = field(body, "data", "guards");
     assert.ok(Array.isArray(rows));

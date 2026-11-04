@@ -1,5 +1,6 @@
 import { toAbsolutePath } from "../core/brand.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { envInHistory, type HistoryEnv, openHistoryIncidents } from "../creds/history.js";
 import { type Credential, credentialInventory, CREDS_FILE, inventoryYaml } from "../creds/inventory.js";
@@ -40,7 +41,7 @@ export const runCreds = (ctx: Ctx): CommandResult<CredsData> => {
   const ids = openHistoryIncidents(ctx.runtime, root, found, personName(ctx));
   const history = found.map((item, index) => ({ ...item, incident: ids[index] ?? null }));
   const data: CredsData = { schema: CREDS_SCHEMA, file: CREDS_FILE, credentials, history };
-  const made = ctx.runtime.mkdir(toAbsolutePath(".finitemonkey", root));
+  const made = ctx.runtime.mkdir(toAbsolutePath(DATA_DIR, root));
   const saved = made.ok ? ctx.runtime.writeText(toAbsolutePath(CREDS_FILE, root), inventoryYaml(credentials)) : made;
   if (saved.ok) return success(data, notes(ctx, data));
   return failureFrom(ctx.t, {

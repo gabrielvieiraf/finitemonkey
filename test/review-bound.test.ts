@@ -118,8 +118,8 @@ describe("reviews and approvals bound to a verdict and a tree", () => {
     const repo = fresh();
     const paths = fmPaths(repo.root);
     repo.write(".claude/agents/self-reviewer.md", "---\nname: self-reviewer\n---\nReview.\n");
-    const contract = readFileSync(join(repo.root, ".finitemonkey/tasks/t1.yml"), "utf8");
-    repo.write(".finitemonkey/tasks/t1.yml", `${contract}reviewers:\n  - self-reviewer\n`);
+    const contract = readFileSync(join(repo.root, ".fm/tasks/t1.yml"), "utf8");
+    repo.write(".fm/tasks/t1.yml", `${contract}reviewers:\n  - self-reviewer\n`);
     assert.equal(trustContract(repoRuntime(), paths, "t1", "person@test").kind, "trusted");
     recordReview(repoRuntime(), paths, tree(repo), "self-reviewer", "approve");
     assert.equal(item(repo, "size-review").status, "passed");

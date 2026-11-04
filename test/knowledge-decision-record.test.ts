@@ -114,10 +114,10 @@ describe("decision records", () => {
       options: ["A: R$ 10,00", "B: 1000 cents"],
     };
     const step = { model: "claude-x", agent: null, input: 10, output: 5, cacheRead: 0, cacheWrite: 0, arms: [] };
-    write(repo.root, ".finitemonkey/log.jsonl", `${JSON.stringify(divergence)}\n`);
+    write(repo.root, ".fm/log.jsonl", `${JSON.stringify(divergence)}\n`);
     write(
       repo.root,
-      ".finitemonkey/cost.jsonl",
+      ".fm/cost.jsonl",
       [
         { ...step, at: "2026-10-30T10:01:00.000Z", task: "pay3", usd: 0.25 },
         { ...step, at: "2026-10-30T10:02:00.000Z", task: "pay3", usd: 0.5 },

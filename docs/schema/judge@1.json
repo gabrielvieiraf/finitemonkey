@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/judge@1.json",
   "title": "finitemonkey/judge@1",
-  "description": "The judge data model: every entry of `.finitemonkey/judge.jsonl` by type, also `export` in `finitemonkey judge export --json`. Generated from JudgeExport in src/judge/types.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "The judge data model: every entry of `.fm/judge.jsonl` by type, also `export` in `fm judge export --json`. Generated from JudgeExport in src/judge/types.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

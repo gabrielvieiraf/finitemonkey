@@ -2,11 +2,12 @@ import { createHmac, randomBytes } from "node:crypto";
 import { dirname, join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { HOME_DATA_DIR } from "../core/data-dir.js";
 import { type JsonObject, parseJsonObject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { sha256Hex as sha256 } from "../secrets/fingerprint.js";
 
-export const KEY_PATH = [".finitemonkey", "ledger.key"] as const;
+export const KEY_PATH = [HOME_DATA_DIR, "ledger.key"] as const;
 const KEY_SHAPE = /^[0-9a-f]{64}$/;
 const KID_LENGTH = 12;
 

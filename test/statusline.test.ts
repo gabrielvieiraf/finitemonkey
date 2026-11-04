@@ -162,6 +162,6 @@ describe("statusline", () => {
     const run = await cli(["statusline"], { cwd: outside, runtime, env: {}, stdin: stdinFrom("{not json") });
     assert.equal(run.code, 0);
     assert.equal(run.stdout.trim(), "fm");
-    assert.ok(!existsSync(join(outside, ".finitemonkey")));
+    assert.ok(!existsSync(join(outside, ".fm")));
   });
 });

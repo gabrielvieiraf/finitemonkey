@@ -23,7 +23,7 @@ const permission = (output: JsonObject | undefined): unknown => {
 };
 
 const events = (root: string): readonly JsonObject[] => {
-  const file = join(root, ".finitemonkey", "log.jsonl");
+  const file = join(root, ".fm", "log.jsonl");
   if (!existsSync(file)) return [];
   return readFileSync(file, "utf8")
     .split("\n")
@@ -119,10 +119,10 @@ describe("remote destructive hook", () => {
       const shadow = await hook(remotePreToolUse, "PreToolUse", repo.root, call);
       assert.equal(permission(shadow.output), undefined);
       assert.equal(events(repo.root)[0]?.["decision"], "shadow");
-      write(repo.root, ".finitemonkey/policy.yml", "guards:\n  remote-destructive: active\n");
+      write(repo.root, ".fm/policy.yml", "guards:\n  remote-destructive: active\n");
       const active = await hook(remotePreToolUse, "PreToolUse", repo.root, call);
       assert.equal(permission(active.output), "ask");
-      writeFileSync(join(repo.root, ".finitemonkey/policy.yml"), "guards:\n  remote-destructive: off\n");
+      writeFileSync(join(repo.root, ".fm/policy.yml"), "guards:\n  remote-destructive: off\n");
       const off = await hook(remotePreToolUse, "PreToolUse", repo.root, mcp("mcp__acme__delete_user"));
       assert.equal(permission(off.output), "ask", "a catalog destroy is held even with the flag off");
     } finally {

@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 
 import { toAbsolutePath } from "../../core/brand.js";
+import { DATA_DIR } from "../../core/data-dir.js";
 import { logEvent } from "../../evidence/log.js";
 import { astCounter } from "../../guards/tests/ast-count.js";
 import { isSnapshot, isTestFile, testLanguage } from "../../guards/tests/patterns.js";
@@ -14,7 +15,7 @@ import { type CheckOutcome, failed, type GateContext, note, passed, unverified }
 import { runShellCheck } from "./command.js";
 
 export const REGRESSION_GUARD = "regression";
-export const REGRESSION_DIR = ".finitemonkey/regression";
+export const REGRESSION_DIR = `${DATA_DIR}/regression`;
 const CACHE_FILE = "regression.json";
 const FIX_GOAL = /\b(?:fix|fixes|fixed|bug|bugfix|hotfix|regression)\b/i;
 const FIX_BRANCH = /^(?:fix|bugfix|hotfix)[/-]/i;

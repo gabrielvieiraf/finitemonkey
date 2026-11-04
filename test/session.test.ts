@@ -141,7 +141,7 @@ describe("SubagentStart", () => {
     const { body } = await fire(repo, "SubagentStart", { agent_id: "a1", agent_type: "general-purpose" });
     const context = String(field(body, "hookSpecificOutput", "additionalContext"));
     assert.equal(field(body, "hookSpecificOutput", "hookEventName"), "SubagentStart");
-    assert.match(context, /works on task t1 \("change a"\), contract in \.finitemonkey\/tasks\/t1\.yml/);
+    assert.match(context, /works on task t1 \("change a"\), contract in \.fm\/tasks\/t1\.yml/);
     assert.match(context, /Done for this task means: tests tests kept.*M1 approval by the person/);
     assert.match(context, /Scope of the task: src\/\*\*\./);
   });
@@ -209,7 +209,7 @@ describe("UserPromptSubmit release markers", () => {
     const paths = fmPaths(repo.root);
     assert.equal(readGrants(repoRuntime(), paths)[0]?.guard, "tests");
     assert.equal(readApprovals(repoRuntime(), paths)[0]?.check, "M1");
-    const log = repo.read(".finitemonkey/log.jsonl");
+    const log = repo.read(".fm/log.jsonl");
     assert.match(log, /"event":"person.allow"/);
   });
 

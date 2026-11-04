@@ -57,12 +57,12 @@ const setup = (): Repo => {
   commitAs(repo, "ana@example.com", "2026-09-05T10:00:00Z", "fix: part 0 rounding", "src/f0.ts");
   commitAs(repo, "bia@example.com", "2026-09-06T10:00:00Z", 'Revert "feat: part 1"', "src/f1.ts");
   commitAs(repo, "ana@example.com", "2026-10-01T10:00:00Z", "feat: october", "src/oct.ts");
-  repo.write(".finitemonkey/policy.yml", policyWith({ "team-dashboard": "shadow" }));
-  repo.write(".finitemonkey/tasks/t1.yml", contract("t1"));
-  repo.write(".finitemonkey/tasks/t2.yml", contract("t2"));
-  repo.write(".finitemonkey/evidence/t1.jsonl", `${gate("t1", "passed", "2026-09-02T10:00:00.000Z")}\n`);
+  repo.write(".fm/policy.yml", policyWith({ "team-dashboard": "shadow" }));
+  repo.write(".fm/tasks/t1.yml", contract("t1"));
+  repo.write(".fm/tasks/t2.yml", contract("t2"));
+  repo.write(".fm/evidence/t1.jsonl", `${gate("t1", "passed", "2026-09-02T10:00:00.000Z")}\n`);
   repo.write(
-    ".finitemonkey/evidence/t2.jsonl",
+    ".fm/evidence/t2.jsonl",
     `${gate("t2", "failed", "2026-09-03T10:00:00.000Z")}\n${gate("t2", "failed", "2026-09-03T11:00:00.000Z")}\n${gate("t2", "passed", "2026-09-03T12:00:00.000Z")}\n`,
   );
   return repo;

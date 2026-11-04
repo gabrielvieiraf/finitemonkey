@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gabrielvieiraf/finitemonkey/blob/main/docs/schema/prose-check@1.json",
   "title": "finitemonkey/prose-check@1",
-  "description": "`data` of `finitemonkey prose check --json`. Generated from ProseCheckData in src/commands/prose-view.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
+  "description": "`data` of `fm prose check --json`. Generated from ProseCheckData in src/commands/prose-view.ts by scripts/build-schemas.ts. Within a version, fields are only added.",
   "type": "object",
   "properties": {
     "schema": {

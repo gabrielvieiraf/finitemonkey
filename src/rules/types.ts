@@ -1,9 +1,10 @@
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type JsonObject, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml, type YamlValue } from "../core/yaml/parse.js";
 
-export const RULES_FILE = ".finitemonkey/rules.yml";
+export const RULES_FILE = `${DATA_DIR}/rules.yml`;
 export const SEVERITIES = ["never", "must", "prefer"] as const;
 export const TEXT_TARGETS = ["commit", "pr"] as const;
 export const BUCKETS = ["deterministic", "stop", "reminder"] as const;

@@ -13,7 +13,7 @@ import type { CommandSpec } from "./types.js";
 
 export const PLANTA_SCHEMA = "finitemonkey/planta@1";
 
-const USAGE = `finitemonkey planta [${BLUEPRINT_TYPES.join("|")}]`;
+const USAGE = `fm planta [${BLUEPRINT_TYPES.join("|")}]`;
 
 const itemsJson = (ctx: Ctx, bar: BlueprintBar): readonly Readonly<Record<string, unknown>>[] =>
   bar.items.map((item) => {

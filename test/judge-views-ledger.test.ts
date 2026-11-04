@@ -40,7 +40,7 @@ after(() => {
 const project = (guards: string): TempRepo => {
   const repo = tempRepo({ "notes/vat.md": NOTE });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", `guards:\n${guards}`);
+  write(repo.root, ".fm/policy.yml", `guards:\n${guards}`);
   return repo;
 };
 
@@ -59,7 +59,7 @@ describe("judge views: perfil.yml and the task ledger", () => {
     const logged = profileFromLog(readEntries(runtime, paths));
     assert.ok(logged);
     assert.equal(logged.domains.backend.knowledge, 80);
-    const file = join(repo.root, ".finitemonkey", "perfil.yml");
+    const file = join(repo.root, ".fm", "perfil.yml");
     const rendered = renderProfile(logged);
     assert.equal(readFileSync(file, "utf8"), rendered);
     writeFileSync(file, rendered.replace("knowledge: 80", "knowledge: 95"));
@@ -88,7 +88,7 @@ describe("judge views: perfil.yml and the task ledger", () => {
     trustContract(repo.root, "t", CONTRACT);
     const runtime = repoRuntime();
     await cliJson(["judge", "classify", "notes/vat.md", "--task", "t"], { cwd: repo.root, runtime });
-    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: off\n");
+    write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: off\n");
     const gate = await cliJson(["gate"], { cwd: repo.root, runtime });
     const judge = judgeItem(gate.body);
     assert.equal(field(judge, "status"), "passed", gate.stdout);

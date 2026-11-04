@@ -137,7 +137,7 @@ describe("credential inventory", () => {
     const { runtime, fs } = repo(PROJECT, { ignored: [".env.production"] });
     const result = await cliJson(["creds"], { cwd: ROOT, runtime });
     assert.equal(result.code, 0);
-    const yaml = fs.read(at(".finitemonkey/creds.yml")) ?? "";
+    const yaml = fs.read(at(".fm/creds.yml")) ?? "";
     assert.match(
       yaml,
       /- name: AWS_SECRET_ACCESS_KEY\n {4}type: static\n {4}risk: high\n {4}cloud: aws\n {4}shared: true/,
@@ -156,7 +156,7 @@ describe("credential inventory", () => {
   it("never writes a value into the inventory or the output", async () => {
     const { runtime, fs } = repo(PROJECT, { ignored: [".env.production"] });
     const result = await cliJson(["creds"], { cwd: ROOT, runtime });
-    assert.ok(!(fs.read(at(".finitemonkey/creds.yml")) ?? "").includes(FAKE_VALUE));
+    assert.ok(!(fs.read(at(".fm/creds.yml")) ?? "").includes(FAKE_VALUE));
     assert.ok(!result.stdout.includes(FAKE_VALUE));
     assert.ok(!result.stderr.includes(FAKE_VALUE));
   });
@@ -169,9 +169,7 @@ describe("credential inventory", () => {
     assert.ok(Array.isArray(listed));
     const incident = field(listed[0], "incident");
     assert.equal(typeof incident, "string");
-    assert.ok(
-      Object.keys(fs.files()).some((path) => path.endsWith(`/.finitemonkey/incidents/${String(incident)}.json`)),
-    );
+    assert.ok(Object.keys(fs.files()).some((path) => path.endsWith(`/.fm/incidents/${String(incident)}.json`)));
     assert.deepEqual(
       doctor(runtime).map((item) => [item.check, item.status, item.params?.["file"]]),
       [["env.history", "fail", "config/.env"]],

@@ -276,7 +276,7 @@ describe("a11y: planted fixture against a clean twin", () => {
     assert.ok(at("/planted", 320).includes("a11y/reflow"));
     for (const width of [320, 390, 768, 1440]) assert.deepEqual(at("/clean", width), []);
     assert.ok(run.summary.findings.every((item) => item.feature !== "a11y" || !item.blocking));
-    const dir = join(repo.root, ".finitemonkey", "look", run.summary.treeHash);
+    const dir = join(repo.root, ".fm", "look", run.summary.treeHash);
     const ux = readFileSync(join(dir, "ux.json"), "utf8");
     assert.ok(!/score/i.test(ux));
     assert.ok(!/score/i.test(readFileSync(join(dir, "summary.json"), "utf8")));

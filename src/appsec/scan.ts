@@ -8,7 +8,7 @@ import { scanRules } from "./rules.js";
 import { APPSEC_CHECK, type AppsecFinding, RULE_OWASP, type ScanContext } from "./types.js";
 
 const SOURCE = /\.(?:[cm]?[jt]sx?|py)$/;
-const SKIPPED = /(?:^|\/)(?:node_modules|dist|build|\.next|vendor|\.finitemonkey|coverage)\//;
+const SKIPPED = /(?:^|\/)(?:node_modules|dist|build|\.next|vendor|\.(?:fm|finitemonkey)|coverage)\//;
 const TEST = /(?:^|\/)(?:tests?|__tests__|spec|fixtures)\/|\.(?:test|spec)\.[cm]?[jt]sx?$|(?:^|\/)test_[^/]*\.py$/;
 
 export const isAppsecSource = (file: string): boolean => SOURCE.test(file) && !SKIPPED.test(file) && !TEST.test(file);

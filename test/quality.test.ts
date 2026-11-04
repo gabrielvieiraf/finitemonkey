@@ -142,7 +142,7 @@ const project = (files: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
     "package.json": "{}\n",
     "src/big.ts": lines(900),
-    ".finitemonkey/policy.yml":
+    ".fm/policy.yml":
       "guards:\n  quality: active\n  slop: active\n  tests-hold: active\n  regression: active\n  advisor: active\n  reminders: active\n  learnings: active\n  rules-stop: active\n",
     ...files,
   });
@@ -177,16 +177,16 @@ describe("quality check at Stop", () => {
     assert.equal(grown.status, "failed");
     assert.equal(grown.notes[0]?.key, "gate.quality.file_lines");
     assert.equal(grown.notes[0].params["file"], "src/big.ts");
-    repo.write(".finitemonkey/policy.yml", "guards:\n  quality: shadow\n");
+    repo.write(".fm/policy.yml", "guards:\n  quality: shadow\n");
     const shadow = gate(repo);
     assert.equal(shadow.status, "passed");
     assert.equal(shadow.notes[0]?.key, "gate.quality.shadow");
-    repo.write(".finitemonkey/policy.yml", "guards:\n  quality: off\n");
+    repo.write(".fm/policy.yml", "guards:\n  quality: off\n");
     assert.deepEqual(
       gate(repo).notes.map((item) => item.key),
       ["gate.quality.off"],
     );
-    repo.remove(".finitemonkey/policy.yml");
+    repo.remove(".fm/policy.yml");
     repo.write("src/big.ts", lines(700));
     assert.equal(gate(repo).status, "passed");
   });
@@ -235,7 +235,7 @@ describe("quality size guard on edit", () => {
   });
 
   it("only warns in shadow mode", async () => {
-    const repo = project({ ".finitemonkey/policy.yml": "guards:\n  quality: shadow\n" });
+    const repo = project({ ".fm/policy.yml": "guards:\n  quality: shadow\n" });
     const outcome = await fire(repo, lines(950));
     assert.equal(outcome.verdict, "allow");
     assert.match(outcome.stdout, /would have 950 lines/);

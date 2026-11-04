@@ -21,7 +21,7 @@ export const conventionFlags = (ctx: Ctx, args: CommandArgs): ConventionFlags =>
       const problem = usageProblem(
         "invalid_arguments",
         "defaults.error.convention",
-        `finitemonkey init --${id} ${EXAMPLES[id]}`,
+        `fm init --${id} ${EXAMPLES[id]}`,
         {
           id,
           value: raw,

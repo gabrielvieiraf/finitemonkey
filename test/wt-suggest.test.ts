@@ -15,7 +15,7 @@ import { makeRepo, type Repo, repoRuntime } from "./repo.js";
 import { cliJson, fakeRuntime, field, parseBody, stdinFrom } from "./support.js";
 
 const PROJECT = toAbsolutePath("/home/ana/project");
-const CACHE = toAbsolutePath(join(PROJECT, ".finitemonkey", "cache", "wt-classes.json"));
+const CACHE = toAbsolutePath(join(PROJECT, ".fm", "cache", "wt-classes.json"));
 const HANDLERS: HookHandlers = withPolicy({ id: "wt-suggest", damage: false, handlers: WT_SUGGEST_HANDLERS });
 const MB = 1_048_576;
 
@@ -27,7 +27,7 @@ after(() => {
 const projectFs = (): MemoryFs =>
   memoryFs({
     [toAbsolutePath(join(PROJECT, ".git", "HEAD"))]: "ref: refs/heads/main\n",
-    [toAbsolutePath(join(PROJECT, ".finitemonkey", "config.yml"))]: "lang: en\n",
+    [toAbsolutePath(join(PROJECT, ".fm", "config.yml"))]: "lang: en\n",
     [toAbsolutePath(join(PROJECT, ".git", "worktrees", "feat", "HEAD"))]: "ref: refs/heads/feat\n",
   });
 
@@ -108,10 +108,10 @@ describe("wt: merged worktrees line at session start", () => {
 
   it("shadow logs the suggestion without showing it", async () => {
     const fs = projectFs();
-    fs.writeText(toAbsolutePath(join(PROJECT, ".finitemonkey", "policy.yml")), "guards:\n  wt-suggest: shadow\n");
+    fs.writeText(toAbsolutePath(join(PROJECT, ".fm", "policy.yml")), "guards:\n  wt-suggest: shadow\n");
     cache(fs, ["contained"]);
     assert.equal(message(await fire(fs, "SessionStart", [])), "");
-    const log = fs.readText(toAbsolutePath(join(PROJECT, ".finitemonkey", "log.jsonl")));
+    const log = fs.readText(toAbsolutePath(join(PROJECT, ".fm", "log.jsonl")));
     assert.ok(log.ok && log.value.includes('"wt.suggested"'));
   });
 });
@@ -131,7 +131,7 @@ describe("wt: background classification from Stop", () => {
   it("does not start without linked worktrees", async () => {
     const fs = memoryFs({
       [toAbsolutePath(join(PROJECT, ".git", "HEAD"))]: "ref: refs/heads/main\n",
-      [toAbsolutePath(join(PROJECT, ".finitemonkey", "config.yml"))]: "lang: en\n",
+      [toAbsolutePath(join(PROJECT, ".fm", "config.yml"))]: "lang: en\n",
     });
     const spawned: string[][] = [];
     await fire(fs, "Stop", [], spawned);
@@ -139,11 +139,11 @@ describe("wt: background classification from Stop", () => {
   });
 
   it("wt classify writes the cache the session start reads", async () => {
-    const repo = makeRepo({ "README.md": "# app\n", ".finitemonkey/config.yml": "lang: en\n" });
+    const repo = makeRepo({ "README.md": "# app\n", ".fm/config.yml": "lang: en\n" });
     repos.push(repo);
     const done = await cliJson(["wt", "classify"], { cwd: repo.root, runtime: repoRuntime() });
     assert.equal(done.code, 0, done.stdout);
     assert.deepEqual(field(done.body, "data", "cleanable"), { count: 0, bytes: 0 });
-    assert.match(repo.read(".finitemonkey/cache/wt-classes.json"), /"worktrees": \[\]/);
+    assert.match(repo.read(".fm/cache/wt-classes.json"), /"worktrees": \[\]/);
   });
 });

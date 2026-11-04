@@ -114,7 +114,7 @@ describe("ci protect", () => {
     ]);
     const posted = calls.find((call) => call.args.includes("POST"))?.input ?? "";
     assert.match(posted, /"name":"finitemonkey: protected default branch"/);
-    const log = runtime.readText(toAbsolutePath(at(".finitemonkey/ci-protect.jsonl")));
+    const log = runtime.readText(toAbsolutePath(at(".fm/ci-protect.jsonl")));
     assert.ok(log.ok);
     assert.equal(log.value.trim().split("\n").length, 4);
     assert.match(log.value, /"setting":"secret-scanning","current":"disabled","proposed":"enabled","ok":true/);
@@ -133,7 +133,7 @@ describe("ci protect", () => {
 
   it("gives the production environment the reviewers the plan lists", async () => {
     const calls: ExecRequest[] = [];
-    const plan = { ".finitemonkey/config.yml": 'deploy:\n  reviewers: "@alice, acme/ops"\n' };
+    const plan = { ".fm/config.yml": 'deploy:\n  reviewers: "@alice, acme/ops"\n' };
     const settled = {
       rules: rulesetFor("intermediate")["rules"] as unknown[],
       scanning: "enabled",
@@ -173,7 +173,7 @@ describe("ci protect", () => {
       scanning: "enabled",
       alerts: true,
     } as const;
-    const plan = { ".finitemonkey/config.yml": "deploy:\n  reviewers: alice, acme/ops\n" };
+    const plan = { ".fm/config.yml": "deploy:\n  reviewers: alice, acme/ops\n" };
     for (const [options, files] of [
       [{ ...settled, environment }, plan],
       [settled, {}],

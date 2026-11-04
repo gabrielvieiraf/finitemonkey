@@ -159,8 +159,8 @@ describe("research events beside code events", () => {
     const runtime = fakeRuntime({
       now: new Date(NOW).toISOString(),
       files: {
-        [join(root, ".finitemonkey", "conceitos-events.jsonl")]: LOG.map((item) => JSON.stringify(item)).join("\n"),
-        [join(root, ".finitemonkey", "judge.jsonl")]: RECORDS.map((item) =>
+        [join(root, ".fm", "conceitos-events.jsonl")]: LOG.map((item) => JSON.stringify(item)).join("\n"),
+        [join(root, ".fm", "judge.jsonl")]: RECORDS.map((item) =>
           JSON.stringify({ schema: "finitemonkey/judge@1", ...item }),
         ).join("\n"),
       },

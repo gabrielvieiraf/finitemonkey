@@ -13,7 +13,7 @@ English | [Português (Brasil)](trajectory-pane.pt-BR.md) | [Español](trajector
    /plugin install finitemonkey@finitemonkey-next
    ```
 
-   Enable only this plugin called `finitemonkey`, not the stable one as well.
+   Enable only this plugin called `fm`, not the stable one as well.
 
 2. From a clone of this repository, seed a throwaway project with a known trajectory:
 
@@ -23,10 +23,10 @@ English | [Português (Brasil)](trajectory-pane.pt-BR.md) | [Español](trajector
    cd ../fm-trajectory-check && git init -q
    ```
 
-   The script refuses a folder that already has `.finitemonkey/`, so it never touches a real record. It writes three files, dated relative to today:
-   - `.finitemonkey/policy.yml` turns the `trajectory` feature on (`guards: trajectory: active`), so the band shows the trajectory segment.
-   - `.finitemonkey/conceitos-events.jsonl` holds 13 events. The `backend` domain has enough evidence to draw: weeks with no evidence (hatched), a ricochet on `webhook` last week (✕) and a held mark on `idempotency` this week (◉). `infrastructure` has one weighted event, so it shows as "no data".
-   - `.finitemonkey/log.jsonl` holds five horizon helps in `backend`, some without criterion, so the blind band is drawn and the band also shows its blind band segment next to the trajectory.
+   The script refuses a folder that already has `.fm/`, so it never touches a real record. It writes three files, dated relative to today:
+   - `.fm/policy.yml` turns the `trajectory` feature on (`guards: trajectory: active`), so the band shows the trajectory segment.
+   - `.fm/conceitos-events.jsonl` holds 13 events. The `backend` domain has enough evidence to draw: weeks with no evidence (hatched), a ricochet on `webhook` last week (✕) and a held mark on `idempotency` this week (◉). `infrastructure` has one weighted event, so it shows as "no data".
+   - `.fm/log.jsonl` holds five horizon helps in `backend`, some without criterion, so the blind band is drawn and the band also shows its blind band segment next to the trajectory.
 
    `test/manual-trajectory.test.ts` keeps this fixture honest: it fails if the seed stops producing both marks in separate weeks, the hatched weeks, the "no data" row or the band segments.
 

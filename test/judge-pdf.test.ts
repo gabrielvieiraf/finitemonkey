@@ -46,7 +46,7 @@ const withPdf = (stdout: string | undefined): { readonly runtime: Runtime; reado
 const judgeOf = (runtime: Runtime): { readonly deps: JudgeDeps; readonly repo: TempRepo } => {
   const repo = tempRepo({ "docs/paper.pdf": PDF });
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n");
+  write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: shadow\n");
   return {
     repo,
     deps: {
@@ -123,7 +123,7 @@ describe("PDF sources", () => {
       version: "0.0.0",
       runtime: fakeRuntime({ files, tools }),
     });
-    const judge = { [join(root, ".finitemonkey", "judge.jsonl")]: "" };
+    const judge = { [join(root, ".fm", "judge.jsonl")]: "" };
     assert.deepEqual(checkPdfExtractor(env({}, {})), []);
     assert.equal(checkPdfExtractor(env(judge, {}))[0]?.status, "warn");
     assert.equal(checkPdfExtractor(env(judge, { pdftotext: found("pdftotext version 24.02.0") }))[0]?.status, "ok");

@@ -37,7 +37,7 @@ after(() => {
 const project = (files: Readonly<Record<string, string>>): TempRepo => {
   const repo = tempRepo(files);
   repos.push(repo);
-  write(repo.root, ".finitemonkey/policy.yml", "guards:\n  judge-core: shadow\n");
+  write(repo.root, ".fm/policy.yml", "guards:\n  judge-core: shadow\n");
   return repo;
 };
 
@@ -54,7 +54,7 @@ describe("research content stays data", () => {
     const read = await run(repo, ["judge", "read", "pages/eu.html", "--origin", "web"]);
     assert.equal(field(read.body, "data", "item", "instructions"), 1);
     assert.match(String(field(read.body, "data", "item", "data")), /^<untrusted-data source="pages\/eu.html">/);
-    assert.ok(existsSync(join(repo.root, ".finitemonkey", "cache", "untrusted.json")));
+    assert.ok(existsSync(join(repo.root, ".fm", "cache", "untrusted.json")));
     write(
       repo.root,
       "notes/eu.md",
@@ -94,7 +94,7 @@ describe("research content stays data", () => {
 const PAGE = "<p>Parcels above 150 euros pay customs duty.</p>";
 
 const unit = (): { readonly fs: MemoryFs; readonly runtime: Runtime; readonly deps: JudgeDeps } => {
-  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.finitemonkey")]);
+  const fs = memoryFs({}, [toAbsolutePath("/home/ana/project/.fm")]);
   const runtime = fakeRuntime({ fs });
   return {
     fs,

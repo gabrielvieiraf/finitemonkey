@@ -16,7 +16,7 @@ const t = createTranslator("en");
 const ROOT = toAbsolutePath("/work");
 
 const loaded = (policy?: string) => {
-  const files = policy === undefined ? {} : { [join(ROOT, ".finitemonkey", "policy.yml")]: policy };
+  const files = policy === undefined ? {} : { [join(ROOT, ".fm", "policy.yml")]: policy };
   const state = modState(fakeRuntime({ files }), fmPaths(ROOT), t);
   const parsed = parseModState(JSON.stringify({ schemaVersion: 1, data: state }));
   assert.ok(parsed !== undefined);

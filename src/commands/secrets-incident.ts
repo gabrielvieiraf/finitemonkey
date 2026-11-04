@@ -39,7 +39,7 @@ const fail = (ctx: Ctx, problem: Problem): CommandResult => failureFrom(ctx.t, p
 const notFound = (ctx: Ctx, id: string): CommandResult =>
   fail(
     ctx,
-    usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `finitemonkey secrets incident`, {
+    usageProblem("secrets_incident_not_found", "secrets.error.incident_not_found", `fm secrets incident`, {
       id,
     }),
   );
@@ -78,7 +78,7 @@ const notRotated = (ctx: Ctx, incident: Incident): CommandResult =>
     code: "secrets_not_rotated",
     messageKey: "secrets.error.not_rotated",
     params: { id: incident.id, state: incident.state },
-    fix: `finitemonkey secrets incident rotated ${incident.id}`,
+    fix: `fm secrets incident rotated ${incident.id}`,
     exitCode: ExitCode.NeedsPerson,
   });
 
@@ -87,7 +87,7 @@ const move = (ctx: Ctx, root: AbsolutePath, incident: Incident, action: "rotated
   if (!isPerson(ctx)) {
     return fail(
       ctx,
-      needsPersonProblem("secrets.error.person_only", `finitemonkey secrets incident ${action} ${incident.id}`, {
+      needsPersonProblem("secrets.error.person_only", `fm secrets incident ${action} ${incident.id}`, {
         action: ctx.t(`secrets.action.${action}`),
       }),
     );

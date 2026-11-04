@@ -132,7 +132,7 @@ describe("label guard: false positives and the block ceiling", () => {
   it("logs each block, and a false positive recorded by the person", async () => {
     const repo = await project(SCREENS, "saas");
     await stop(repo, "Your SaaS is ready!");
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"label.block","task":"t1","label":"saas"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"label.block","task":"t1","label":"saas"/);
     const stdin = Object.assign(stdinFrom(""), { isTTY: true });
     const recorded = await cliJson(["policy", "false-positive", "label"], {
       cwd: repo.root,
@@ -140,15 +140,15 @@ describe("label guard: false positives and the block ceiling", () => {
       stdin,
     });
     assert.equal(recorded.code, 0, recorded.stdout);
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"guard_false_positive","guard":"label"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"guard_false_positive","guard":"label"/);
   });
 
   it("in shadow it records what it would block instead of blocking", async () => {
     const repo = await project(SCREENS, "saas");
-    repo.write(".finitemonkey/policy.yml", "level: standard\nguards:\n  label: shadow\n");
+    repo.write(".fm/policy.yml", "level: standard\nguards:\n  label: shadow\n");
     const outcome = await stop(repo, "Your SaaS is ready!");
     assert.equal(outcome.verdict, "allow");
-    assert.match(repo.read(".finitemonkey/log.jsonl"), /"event":"guard_shadow","guard":"label"/);
+    assert.match(repo.read(".fm/log.jsonl"), /"event":"guard_shadow","guard":"label"/);
   });
 
   it("stops blocking after the same label is held three times in a row", async () => {

@@ -32,10 +32,10 @@ const FILE = "test/an-expired-coupon-is-rejected.negative.test.ts";
 
 const setup = (kinds: readonly ProviderKind[]): Repo => {
   const repo = makeRepo({
-    ".finitemonkey/tasks/coupons.yml": CONTRACT,
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "coupons", done: [] }),
-    ".finitemonkey/policy.yml": "guards:\n  model-provider: active\n",
-    ".finitemonkey/provider.json": providerJson(kinds),
+    ".fm/tasks/coupons.yml": CONTRACT,
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "coupons", done: [] }),
+    ".fm/policy.yml": "guards:\n  model-provider: active\n",
+    ".fm/provider.json": providerJson(kinds),
     "src/coupon.ts": "export const apply = (total: number): number => total;\n",
   });
   repos.push(repo);
@@ -136,7 +136,7 @@ describe("commands call their proposer only when the kind is on", () => {
       (field(made.body, "data", "journeys") as readonly unknown[]).map((item) => field(item, "approved")),
       [false],
     );
-    repo.write(".finitemonkey/config.yml", 'journeys:\n  proposer: node -e "process.exit(3)"\n');
+    repo.write(".fm/config.yml", 'journeys:\n  proposer: node -e "process.exit(3)"\n');
     const override = await cliJson(["journey", "propose", "other", "--says", "a buyer pays"], {
       cwd: repo.root,
       runtime,

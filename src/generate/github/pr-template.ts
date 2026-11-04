@@ -44,7 +44,7 @@ const TEXT: Readonly<Record<Lang, PrTemplateText>> = {
       "Loading, empty and error states covered",
       "Works with the keyboard",
       "User-facing text reviewed",
-      "`finitemonkey gate` passes",
+      "`fm gate` passes",
     ],
   },
   "pt-BR": {
@@ -64,7 +64,7 @@ const TEXT: Readonly<Record<Lang, PrTemplateText>> = {
       "Estados de carregando, vazio e erro cobertos",
       "Funciona pelo teclado",
       "Textos para o usuário revisados",
-      "`finitemonkey gate` passa",
+      "`fm gate` passa",
     ],
   },
   es: {
@@ -84,7 +84,7 @@ const TEXT: Readonly<Record<Lang, PrTemplateText>> = {
       "Estados de carga, vacío y error cubiertos",
       "Funciona con el teclado",
       "Textos para el usuario revisados",
-      "`finitemonkey gate` pasa",
+      "`fm gate` pasa",
     ],
   },
 };

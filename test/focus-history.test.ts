@@ -55,16 +55,16 @@ const HISTORY: Readonly<Record<string, readonly [readonly number[], number | und
 const files = (): Record<string, string> =>
   Object.fromEntries(
     Object.entries(HISTORY).flatMap(([id, [days, gate]]) => [
-      [`.finitemonkey/tasks/${id}.yml`, contractText(id)],
-      [`.finitemonkey/evidence/${id}.jsonl`, ledger(id, days, gate)],
+      [`.fm/tasks/${id}.yml`, contractText(id)],
+      [`.fm/evidence/${id}.jsonl`, ledger(id, days, gate)],
     ]),
   );
 
 const setup = (extra: Readonly<Record<string, string>> = {}): Repo => {
   const repo = makeRepo({
     ...files(),
-    ".finitemonkey/policy.yml": `${policyWith({ "focus-card": "active" })}person:\n  projectLimit: 5\n`,
-    ".finitemonkey/state.json": JSON.stringify({ schemaVersion: 1, active: "e", done: ["a", "b", "c", "d"] }),
+    ".fm/policy.yml": `${policyWith({ "focus-card": "active" })}person:\n  projectLimit: 5\n`,
+    ".fm/state.json": JSON.stringify({ schemaVersion: 1, active: "e", done: ["a", "b", "c", "d"] }),
     ...extra,
   });
   repos.push(repo);
@@ -109,7 +109,7 @@ describe("project limit from history", () => {
     assert.match(first, /history suggests a limit of 2 open projects.*2026-09-07 \(2\).*person\.projectLimit: 2/);
     const again = contextOf(await fireHook(repo, "SessionStart", { source: "startup" }, runtime));
     assert.doesNotMatch(again, /history suggests/);
-    assert.match(repo.read(".finitemonkey/policy.yml"), /projectLimit: 5/);
+    assert.match(repo.read(".fm/policy.yml"), /projectLimit: 5/);
   });
 });
 
@@ -157,7 +157,7 @@ describe("out-of-scope requests in the prompt", () => {
   it("asks once for a symbol defined outside scope, read from the map cache without a scan", async () => {
     const map =
       "# finitemonkey map tree=t budget=4000 source=git-grep folders=2 shown=2\nsrc/billing: totalOf\nsrc/shipping: quoteShipping\n";
-    const repo = setup({ ".finitemonkey/map.txt": map });
+    const repo = setup({ ".fm/map.txt": map });
     const ask = async (prompt: string): Promise<string> =>
       contextOf(await fireHook(repo, "UserPromptSubmit", { prompt }, repoRuntime({ now: () => NOW })));
     assert.doesNotMatch(await ask("fix totalOf for refunds"), /outside the scope/);

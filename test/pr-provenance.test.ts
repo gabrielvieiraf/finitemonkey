@@ -44,14 +44,14 @@ const setup = (): { repo: Repo; tree: string; outside: string } => {
       command: check === "unit" ? "npm test" : "npm run lint",
       exitCode: status === "passed" ? 0 : 1,
     });
-  repo.write(".finitemonkey/tasks/billing.yml", CONTRACT);
-  repo.write(".finitemonkey/state.json", JSON.stringify({ schemaVersion: 1, active: "billing", done: [] }));
+  repo.write(".fm/tasks/billing.yml", CONTRACT);
+  repo.write(".fm/state.json", JSON.stringify({ schemaVersion: 1, active: "billing", done: [] }));
   repo.write(
-    ".finitemonkey/evidence/billing.jsonl",
+    ".fm/evidence/billing.jsonl",
     `${evidence("unit", "passed", tree)}\n${evidence("lint", "failed", tree)}\n`,
   );
   repo.write(
-    ".finitemonkey/signals.jsonl",
+    ".fm/signals.jsonl",
     `${JSON.stringify({ kind: "edit", at: "2026-10-01T09:00:00.000Z", session: "s1", turn: 1, file: "src/total.ts", hash: "h", undo: false })}\n`,
   );
   return { repo, tree, outside };
@@ -107,8 +107,8 @@ describe("provenance block", () => {
     const { repo } = setup();
     const shadow = attachProvenance(repoRuntime(), repo.root, "Body\n", ["src/total.ts"]);
     assert.equal(shadow, "Body\n");
-    assert.match(repo.read(".finitemonkey/cache/pr-provenance.md"), /## Provenance/);
-    repo.write(".finitemonkey/policy.yml", "guards:\n  pr-provenance: active\n");
+    assert.match(repo.read(".fm/cache/pr-provenance.md"), /## Provenance/);
+    repo.write(".fm/policy.yml", "guards:\n  pr-provenance: active\n");
     assert.match(
       attachProvenance(repoRuntime(), repo.root, "Body\n", ["src/total.ts"]),
       /Body\n\n<!-- finitemonkey:provenance sha256=/,

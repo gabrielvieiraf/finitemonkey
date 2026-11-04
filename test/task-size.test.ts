@@ -24,7 +24,7 @@ const fresh = (size: TaskSize, config = ""): Repo => {
   const repo = makeRepo({
     "src/a.js": "export const a = 1;\n",
     "test/a.test.js": PASSING_TEST,
-    ...(config === "" ? {} : { ".finitemonkey/config.yml": config }),
+    ...(config === "" ? {} : { ".fm/config.yml": config }),
   });
   repos.push(repo);
   const created = createTask(repoRuntime(), fmPaths(repo.root), {

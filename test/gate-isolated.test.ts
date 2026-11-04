@@ -88,7 +88,7 @@ describe("gate --isolated", () => {
 
   it("refuses when the policy turns the feature off", async () => {
     const repo = project();
-    write(repo.root, ".finitemonkey/policy.yml", "guards:\n  gate-isolated: off\n");
+    write(repo.root, ".fm/policy.yml", "guards:\n  gate-isolated: off\n");
     const run = await gate(repo, ["--isolated"]);
     assert.equal(field(run.body, "error", "code"), "gate_not_run");
     assert.match(String(field(run.body, "error", "message")), /gate-isolated is off/);

@@ -221,7 +221,7 @@ describe("ci audit command", () => {
     assert.equal(light.code, 0, light.stdout);
     for (const level of ["level: strict\n", "projectLevel: 2\n"]) {
       const policy = `${level}guards:\n  ci-audit: active\n`;
-      const runtime = runtimeWith({ ".github/workflows/w.yml": unpinned, ".finitemonkey/policy.yml": policy });
+      const runtime = runtimeWith({ ".github/workflows/w.yml": unpinned, ".fm/policy.yml": policy });
       const strict = await cli(["ci", "audit"], { runtime, cwd: ROOT });
       assert.equal(strict.code, 1, level);
     }
@@ -272,7 +272,7 @@ describe("ci audit command", () => {
   it("shadow mode reports and exits 0", async () => {
     const runtime = runtimeWith({
       ".github/workflows/planted.yml": PLANTED,
-      ".finitemonkey/policy.yml": "guards:\n  ci-audit: shadow\n",
+      ".fm/policy.yml": "guards:\n  ci-audit: shadow\n",
     });
     const run = await cli(["ci", "audit"], { runtime, cwd: ROOT });
     assert.equal(run.code, 0);
@@ -289,7 +289,7 @@ describe("ci gen output passes ci audit", () => {
     for (const level of ["0", "2", "3"]) {
       it(`${label} project at level ${level}`, async () => {
         const policy = `projectLevel: ${level}\nguards:\n  ci-gen: active\n  ci-audit: active\n`;
-        const runtime = runtimeWith({ ...files, ".finitemonkey/policy.yml": policy });
+        const runtime = runtimeWith({ ...files, ".fm/policy.yml": policy });
         const gen = await cli(["ci", "gen", "--with", "deploy,release,review", "--oidc", "--yes"], {
           runtime,
           cwd: ROOT,

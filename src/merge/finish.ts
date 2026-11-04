@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import type { Runtime } from "../core/runtime.js";
 import { DROPPED_FILE } from "../git/merge/dropped.js";
 import { verifyMerge } from "../git/merge/verify.js";
@@ -30,7 +31,7 @@ const writeDropped = (
 ): AbsolutePath | undefined => {
   if (dropped.length === 0) return undefined;
   const path = toAbsolutePath(join(dir, DROPPED_FILE));
-  runtime.mkdir(toAbsolutePath(join(dir, ".finitemonkey")));
+  runtime.mkdir(toAbsolutePath(join(dir, DATA_DIR)));
   const items = dropped.map((item) => ({ ...item, approved_by: "declared removal" }));
   runtime.writeText(path, `${JSON.stringify({ dropped: items }, null, 2)}\n`);
   return path;

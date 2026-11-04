@@ -96,7 +96,7 @@ describe("finitemonkey prose check", () => {
 
 describe("proseGateStatus for the Stop gate", () => {
   it("lists flagged changed Markdown and blocks unless prose-blocks is off", () => {
-    const off = { [`${ROOT}/.finitemonkey/config.yml`]: "defaults:\n  prose-blocks: off\n" };
+    const off = { [`${ROOT}/.fm/config.yml`]: "defaults:\n  prose-blocks: off\n" };
     const neutral = proseGateStatus(fakeRuntime({ files: { ...files, ...off }, git: changed }), ROOT);
     assert.ok(neutral.ok);
     assert.deepEqual(
@@ -115,7 +115,7 @@ describe("proseGateStatus for the Stop gate", () => {
 
 describe("prose check in the gate", () => {
   const config = {};
-  const off = { [`${ROOT}/.finitemonkey/config.yml`]: "defaults:\n  prose-blocks: off\n" };
+  const off = { [`${ROOT}/.fm/config.yml`]: "defaults:\n  prose-blocks: off\n" };
   const outcome = (extra: Record<string, string>, git = changed) =>
     proseOutcome(proseGateStatus(fakeRuntime({ files: { ...files, ...extra }, git }), ROOT));
 

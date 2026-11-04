@@ -1,6 +1,6 @@
 ---
 name: teacher
-description: Read-only teacher. Give it one concept, the person's profile and concept book (`finitemonkey perfil --json`, `finitemonkey conceitos --json`) and the code in question; it returns an explanation at the right level, outside the main context.
+description: Read-only teacher. Give it one concept, the person's profile and concept book (`fm perfil --json`, `fm conceitos --json`) and the code in question; it returns an explanation at the right level, outside the main context.
 tools: Read, Grep, Glob
 disallowedTools: Edit, Write, MultiEdit, NotebookEdit, Agent, Task
 model: sonnet

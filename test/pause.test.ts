@@ -21,7 +21,7 @@ describe("fm off typed by the model", () => {
     "fm off",
     "finitemonkey on",
     "npx finitemonkey off",
-    "node .finitemonkey/runtime/dist/finitemonkey.mjs off",
+    "node .fm/runtime/dist/finitemonkey.mjs off",
     "node node_modules/finitemonkey/dist/finitemonkey.mjs on",
     "echo ok && fm off",
   ]) {
@@ -44,7 +44,7 @@ describe("fm off and fm on typed by the person", () => {
   before(() => {
     repo = tempRepo({
       "README.md": "x\n",
-      ".finitemonkey/config.yml": "prod:\n  hosts:\n    - app.example.com\n",
+      ".fm/config.yml": "prod:\n  hosts:\n    - app.example.com\n",
     });
   });
   after(() => {
@@ -74,7 +74,7 @@ describe("fm off and fm on typed by the person", () => {
     const on = await hook(pausePrompt, "UserPromptSubmit", repo.root, { prompt: "  FM ON " });
     assert.match(reasonOf(on), /Gate resumed/);
     assert.equal(readPause(runtime, paths()), undefined);
-    const log = runtime.readText(toAbsolutePath(join(repo.root, ".finitemonkey", "log.jsonl")));
+    const log = runtime.readText(toAbsolutePath(join(repo.root, ".fm", "log.jsonl")));
     assert.ok(log.ok && log.value.includes("gate_paused") && log.value.includes("gate_resumed"));
   });
 

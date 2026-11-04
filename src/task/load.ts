@@ -1,3 +1,4 @@
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, type Parsed, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { parseYaml } from "../core/yaml/parse.js";
@@ -40,7 +41,7 @@ export const contractHash = (contract: TaskContract, examples: readonly Example[
   return sha256(JSON.stringify(behavior.length === 0 ? criteria(contract) : [criteria(contract), behavior]));
 };
 
-export const taskRelative = (id: string): string => `.finitemonkey/tasks/${id}.yml`;
+export const taskRelative = (id: string): string => `${DATA_DIR}/tasks/${id}.yml`;
 
 export const parseContract = (id: string, text: string): Parsed<TaskContract, LoadProblem> => {
   const yaml = parseYaml(text);

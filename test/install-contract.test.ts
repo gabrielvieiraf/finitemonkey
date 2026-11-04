@@ -110,6 +110,6 @@ describe("install and uninstall contract for known failure patterns", () => {
       calls.filter((call) => /^(npm|npx|pnpm|yarn|gh|curl|wget)$/.test(call.command)),
       [],
     );
-    assert.ok(fs.read(at(".finitemonkey/runtime/dist/finitemonkey.mjs")) !== undefined);
+    assert.ok(fs.read(at(".fm/runtime/dist/finitemonkey.mjs")) !== undefined);
   });
 });

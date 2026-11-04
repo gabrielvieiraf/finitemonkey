@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { type AbsolutePath, toAbsolutePath } from "../core/brand.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { accept, isRecord, type Parsed, parseJsonObject, reject } from "../core/parsed.js";
 import type { Runtime } from "../core/runtime.js";
 import { isSensitivePath } from "../secrets/guards/paths.js";
@@ -33,7 +34,7 @@ export const SKIPPED_DIRS: ReadonlySet<string> = new Set([
   ".pytest_cache",
   ".mypy_cache",
   ".tox",
-  ".finitemonkey",
+  DATA_DIR,
   ".git",
 ]);
 

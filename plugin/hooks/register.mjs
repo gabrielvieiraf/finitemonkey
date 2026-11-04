@@ -395,6 +395,9 @@ async function refreshCost($) {
   return memory.cost;
 }
 
+// src/core/data-dir-name.ts
+var DATA_DIR_NAME = ".fm";
+
 // src/mod/approve-view.ts
 var CONTRACT_PANE = "fm-contract";
 var DIVERGE_PANE = "fm-diverge";
@@ -579,7 +582,7 @@ async function decideExample($, id, verdict) {
 function editContract($) {
   const task = memory.contract?.task;
   if (task !== void 0)
-    redraw($, `Edit .finitemonkey/tasks/${task}.yml or ask for the change, then run /fm contract again.`);
+    redraw($, `Edit ${DATA_DIR_NAME}/tasks/${task}.yml or ask for the change, then run /fm contract again.`);
   return Promise.resolve();
 }
 async function rejectContract($) {
@@ -2478,7 +2481,7 @@ var xrayTree = (elements, view, concepts, actions, surface, cards = { teach: voi
 };
 
 // src/mod/xray-hooks.ts
-var TEACH_OFF = "teach-back is off; it runs after guards: teach-back: active in .finitemonkey/policy.yml";
+var TEACH_OFF = "teach-back is off; it runs after guards: teach-back: active in .fm/policy.yml";
 async function loadXray($) {
   const xray = await runCli($, ["xray", "--json"]);
   const concepts = await runCli($, ["conceitos", "evidence", "--json"]);

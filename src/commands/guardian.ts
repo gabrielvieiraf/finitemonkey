@@ -1,5 +1,6 @@
 import { stringOption } from "../core/args.js";
 import type { Ctx } from "../core/context.js";
+import { DATA_DIR } from "../core/data-dir.js";
 import { needsPersonProblem, type Problem, usageProblem } from "../core/problem.js";
 import { type CommandResult, failureFrom, success } from "../core/result.js";
 import { ExitCode } from "../exit-codes.js";
@@ -21,7 +22,7 @@ export const guardianWriteProblem = (file: string): Problem => ({
   code: "guardian_write_failed",
   messageKey: "guardian.error.write",
   params: { file },
-  fix: "check that .finitemonkey can be written",
+  fix: "check that .fm can be written",
   exitCode: ExitCode.CheckFailed,
 });
 
@@ -67,7 +68,7 @@ export const guardianGoalAddCommand: CommandSpec = {
       const origin = isPerson(ctx) ? "stated" : "inferred";
       const entry = { id: nextGoalId(goals, kind), kind, text, origin } as const;
       if (!writeGoals(ctx.runtime, root, { ...goals, entries: [...goals.entries, entry] }))
-        return failureFrom(ctx.t, guardianWriteProblem(".finitemonkey/goals.yml"));
+        return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/goals.yml`));
       return success({ schema: GOALS_SCHEMA, entry }, [ctx.t(`guardian.goal.added_${origin}`, { id: entry.id })]);
     });
   },
@@ -98,7 +99,7 @@ export const guardianGoalConfirmCommand: CommandSpec = {
         );
       const entries = goals.entries.map((entry) => (entry.id === id ? { ...entry, origin: "stated" as const } : entry));
       if (!writeGoals(ctx.runtime, root, { ...goals, entries }))
-        return failureFrom(ctx.t, guardianWriteProblem(".finitemonkey/goals.yml"));
+        return failureFrom(ctx.t, guardianWriteProblem(`${DATA_DIR}/goals.yml`));
       return success({ schema: GOALS_SCHEMA, id, origin: "stated" }, [ctx.t("guardian.goal.confirmed", { id })]);
     });
   },

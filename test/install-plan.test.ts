@@ -108,7 +108,7 @@ describe("init writes only when asked", () => {
       "CLAUDE.md": "create",
       [CONFIG_FILE]: "create",
       [VERIFY_SKILL]: "create",
-      ".finitemonkey/policy.yml": "create",
+      ".fm/policy.yml": "create",
       [VENDOR_BIN]: "create",
       [VENDOR_PACKAGE]: "create",
     });
@@ -191,7 +191,7 @@ describe("init is idempotent and merges without clobbering", () => {
 
   it("a held install lock stops a concurrent run, and a stale one is taken over", async () => {
     const fs = repo();
-    const held = fs.lock(toAbsolutePath(at(".finitemonkey/locks/install.lock")), { staleMs: 1000, owner: "other" });
+    const held = fs.lock(toAbsolutePath(at(".fm/locks/install.lock")), { staleMs: 1000, owner: "other" });
     assert.ok(held.ok);
     const blocked = await run(fs, ["init", "--yes"]);
     assert.equal(field(blocked.body, "error", "code"), "install_locked");
@@ -256,7 +256,7 @@ describe("a teammate who clones an installed repository", () => {
         "AGENTS.md",
         "CLAUDE.md",
         CONFIG_FILE,
-        ".finitemonkey/policy.yml",
+        ".fm/policy.yml",
         VERIFY_SKILL,
         VENDOR_BIN,
         VENDOR_PACKAGE,

@@ -4,7 +4,7 @@ Written before the first run. Changes after a run starts go in the "Changes" sec
 
 ## Assignment
 
-- Each guardian feature reads its mode from `.finitemonkey/policy.yml` and starts in shadow: it computes and logs, but shows nothing and holds nothing until the person sets it to `active` or it is promoted.
+- Each guardian feature reads its mode from `.fm/policy.yml` and starts in shadow: it computes and logs, but shows nothing and holds nothing until the person sets it to `active` or it is promoted.
 - Under `experiments:`, `<feature>: random` assigns each task to an arm by a hash of the task id and the feature id, as in the [stage 2.5 plan](stage-2.5.md). Analysis is by intention to treat.
 - No verdict comes from a model. Every trigger is a deterministic rule over files, the diff, the ledger or the contract.
 
