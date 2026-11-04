@@ -48649,8 +48649,12 @@ var landedLevel = (inWeek, upTo, series) => {
   });
   return Math.max(...levels);
 };
+var fieldOfConcept = (id) => {
+  const segments3 = id.split("/");
+  return segments3[0] === "research" && segments3.length === 3 ? segments3[1] ?? "research" : domainOf(id);
+};
 var seriesOf = (domain, all, helps2, now) => {
-  const events = all.filter((event) => domainOf(event.concept) === domain);
+  const events = all.filter((event) => fieldOfConcept(event.concept) === domain);
   const keys2 = weekKeys(now);
   const weighted = events.filter((event) => event.weight !== 0 || event.origin === "agent");
   const weeksWith = new Set(weighted.map((event) => isoWeek(event.at)));
@@ -48695,11 +48699,16 @@ var seriesOf = (domain, all, helps2, now) => {
 };
 var trajectoryOf = (domain, all, helps2, now, outcomes2 = []) => {
   const series = seriesOf(domain, all, helps2, now);
-  const classified2 = classify2(all.filter((event) => domainOf(event.concept) === domain));
+  const classified2 = classify2(all.filter((event) => fieldOfConcept(event.concept) === domain));
   const weeks = series.weeks.map((week) => ({ ...week, splits: splitsOf(classified2, outcomes2, domain, week.week) }));
   return { ...series, weeks };
 };
-var trajectories = (events, helps2, now, outcomes2 = []) => DOMAINS.map((domain) => trajectoryOf(domain, events, helps2, now, outcomes2));
+var fieldsOf3 = (events) => {
+  const fixed3 = DOMAINS;
+  const extra = new Set(events.map((event) => fieldOfConcept(event.concept)).filter((field) => !fixed3.includes(field)));
+  return [...fixed3, ...[...extra].sort()];
+};
+var trajectories = (events, helps2, now, outcomes2 = []) => fieldsOf3(events).map((domain) => trajectoryOf(domain, events, helps2, now, outcomes2));
 
 // src/conceitos/trajectory-bands.ts
 var BANDS3 = {
@@ -66222,6 +66231,185 @@ var sheetPrompt = (input) => {
 };
 var SHEET_HANDLERS = { UserPromptSubmit: [sheetPrompt] };
 
+// src/conceitos/prompt-fields.ts
+var GENERAL_FIELD = "general";
+var PROMPT_FIELDS = [
+  {
+    field: "law",
+    terms: ["law", "laws", "legal", "legislation", "direito", "juridico", "lei", "leis", "derecho", "ley", "leyes"]
+  },
+  {
+    field: "health",
+    terms: ["health", "medicine", "medical", "nutrition", "saude", "medicina", "nutricao", "salud", "nutricion"]
+  },
+  { field: "economics", terms: ["economics", "economy", "economia", "macroeconomics", "microeconomics"] },
+  {
+    field: "finance",
+    terms: ["finance", "finances", "accounting", "investing", "financas", "contabilidade", "finanzas", "contabilidad"]
+  },
+  {
+    field: "mathematics",
+    terms: ["math", "mathematics", "maths", "algebra", "calculus", "geometry", "matematica", "calculo"]
+  },
+  { field: "statistics", terms: ["statistics", "probability", "estatistica", "probabilidade", "estadistica"] },
+  { field: "physics", terms: ["physics", "fisica", "mechanics", "thermodynamics"] },
+  { field: "chemistry", terms: ["chemistry", "quimica"] },
+  { field: "biology", terms: ["biology", "biologia", "genetics", "genetica"] },
+  { field: "history", terms: ["history", "historia"] },
+  { field: "philosophy", terms: ["philosophy", "filosofia", "ethics", "etica", "logic", "logica"] },
+  { field: "music", terms: ["music", "musica", "harmony", "harmonia", "armonia"] },
+  {
+    field: "interface",
+    terms: ["css", "html", "react", "frontend", "ui", "ux", "accessibility", "acessibilidade", "accesibilidad"]
+  },
+  { field: "backend", terms: ["sql", "database", "databases", "postgres", "backend", "banco", "graphql", "orm"] },
+  {
+    field: "infrastructure",
+    terms: ["docker", "kubernetes", "terraform", "linux", "git", "networking", "dns", "infraestrutura"]
+  },
+  {
+    field: "security",
+    terms: ["security", "cryptography", "encryption", "oauth", "seguranca", "seguridad", "criptografia"]
+  },
+  { field: "product", terms: ["product", "pricing", "marketing", "produto", "producto", "growth"] }
+];
+var fieldOfWords = (words11) => PROMPT_FIELDS.find((item2) => words11.some((word2) => item2.terms.includes(word2)))?.field ?? GENERAL_FIELD;
+
+// src/conceitos/prompt-topics.ts
+var CUES = [
+  "i'?m",
+  "i am",
+  "i want to",
+  "i'?d like to",
+  "i need to",
+  "trying to",
+  "help me",
+  "estou",
+  "quero",
+  "queria",
+  "preciso",
+  "tentando",
+  "me ajuda a",
+  "me ajude a",
+  "estoy",
+  "quiero",
+  "necesito",
+  "tratando de",
+  "intentando",
+  "ayudame a"
+].join("|");
+var VERBS3 = [
+  "understand",
+  "learn",
+  "learning",
+  "study",
+  "studying",
+  "research",
+  "researching",
+  "entender",
+  "entendendo",
+  "compreender",
+  "aprender",
+  "aprendendo",
+  "estudar",
+  "estudando",
+  "pesquisar",
+  "pesquisando",
+  "comprender",
+  "estudiar",
+  "estudiando",
+  "aprendiendo",
+  "investigar",
+  "investigando"
+].join("|");
+var INTENT = new RegExp(`(?:^|[^a-z])(?:${CUES})(?:\\s+[a-z']+){0,3}?\\s+(?:${VERBS3})\\s+([^.,;:!?\\n]+)`);
+var TEACH = /(?:^|[^a-z])(?:teach me|me ensina|me ensine|ensename)\s+([^.,;:!?\n]+)/;
+var FILLERS = new Set(
+  "about more a an the some sobre mais melhor o os as um uma de do da dos das el la los las un una mas mejor acerca".split(
+    " "
+  )
+);
+var STOPS = new Set(
+  [
+    "properly better because so and but for to in with now today please since while",
+    "porque para com e mas agora hoje pois enquanto desde",
+    "y pero con ahora hoy por mientras"
+  ].join(" ").split(" ")
+);
+var REJECTED = new Set(
+  [
+    "this that it these those why what how where when which who my your our their its",
+    "isso isto esse essa este esta aqui como que onde quando qual meu minha seu sua nosso",
+    "eso esto ese esa aqui cual donde cuando mi tu su nuestro",
+    "code codebase error errors bug bugs file files function test tests repo project issue diff output",
+    "codigo erro arquivo arquivos funcao teste testes projeto saida",
+    "archivo archivos funcion prueba pruebas proyecto salida"
+  ].join(" ").split(" ")
+);
+var MAX_WORDS = 3;
+var CODE_LIKE = /[/_`(){}=<>\\@#$%*[\]]/;
+var plainText = (text45) => text45.toLowerCase().replace(/[\u2018\u2019]/g, "'").normalize("NFKD").replace(/[̀-ͯ]/g, "");
+var topicWords = (raw) => {
+  if (CODE_LIKE.test(raw)) return void 0;
+  const words11 = raw.split(/\s+/).filter((word2) => word2 !== "");
+  const start2 = words11.findIndex((word2) => !FILLERS.has(word2));
+  const rest = start2 < 0 ? [] : words11.slice(start2);
+  const end = rest.findIndex((word2) => STOPS.has(word2));
+  const head = (end < 0 ? rest : rest.slice(0, end)).slice(0, MAX_WORDS);
+  const last = head.findLastIndex((word2) => !FILLERS.has(word2));
+  const kept = head.slice(0, last + 1);
+  if (kept.length === 0 || kept.some((word2) => REJECTED.has(word2))) return void 0;
+  return kept;
+};
+var studiedTopic = (prompt) => {
+  const text45 = plainText(prompt);
+  const raw = INTENT.exec(text45)?.[1] ?? TEACH.exec(text45)?.[1];
+  const words11 = raw === void 0 ? void 0 : topicWords(raw.trim());
+  const slug6 = words11 === void 0 ? "" : slugOf2(words11.join(" "));
+  return slug6.length < 3 ? void 0 : slug6;
+};
+var conceptOfTopic = (topic) => firstMentionedDomainConcept(topic.replace(/-/g, " ")) ?? `${fieldOfWords(topic.split("-"))}/${topic}`;
+var studiedConcept = (prompt) => {
+  const topic = studiedTopic(prompt);
+  return topic === void 0 ? void 0 : conceptOfTopic(topic);
+};
+
+// src/conceitos/prompt-concepts.ts
+var mentionedInBook = (prompt, book) => {
+  const aliases = book.aliases ?? {};
+  const known4 = new Set(bookConcepts(book));
+  const found2 = mentionedConcepts(`${prompt}
+${plainText(prompt)}`, [...known4, ...Object.keys(aliases)]).flatMap(
+    (id) => {
+      const target7 = resolveConcept(id, aliases);
+      return target7 !== void 0 && known4.has(target7) ? [target7] : [];
+    }
+  );
+  return [...new Set(found2)];
+};
+var conceptsInPrompt = (prompt, book) => {
+  const mentioned4 = mentionedInBook(prompt, book);
+  if (mentioned4.length > 0) return { ids: mentioned4 };
+  const id = parseConcept(studiedConcept(prompt), book.aliases ?? {});
+  if (id === void 0) return { ids: [] };
+  return book.concepts[id] === void 0 ? { ids: [id], created: id } : { ids: [id] };
+};
+var recordPromptConcepts = (runtime, paths, prompt) => {
+  const before2 = readBook(runtime, paths);
+  const found2 = conceptsInPrompt(prompt, before2);
+  if (found2.created !== void 0) {
+    const after2 = raise(before2, found2.created, "seen", runtime.now());
+    writeBook(runtime, paths, after2);
+    recordLevels(runtime, paths, { before: before2, after: after2 }, "person");
+  }
+  recordConceptEvents(
+    runtime,
+    paths,
+    found2.ids.map((concept) => ({ concept, kind: "exposure", origin: "person" }))
+  );
+  return found2;
+};
+
 // src/git/head-file.ts
 import { isAbsolute as isAbsolute8, join as join188, resolve as resolve3 } from "node:path";
 var SHA2 = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
@@ -66271,13 +66459,7 @@ var perfilPrompt = (input) => {
   const paths = projectPaths(input);
   if (paths === void 0 || !comesFromPerson(prompt)) return allow19;
   if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow19;
-  const concepts3 = mentionedConcepts(prompt, bookConcepts(readBook(input.runtime, paths)));
-  if (concepts3.length === 0) return allow19;
-  recordConceptEvents(
-    input.runtime,
-    paths,
-    concepts3.map((concept) => ({ concept, kind: "exposure", origin: "person" }))
-  );
+  recordPromptConcepts(input.runtime, paths, prompt);
   return allow19;
 };
 var COMMIT4 = /\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b/;
@@ -73354,7 +73536,7 @@ var PROGRAMS = /* @__PURE__ */ new Set([
 ]);
 var COMMAND_WORDS = /\b(command|commands|terminal|shell|comando|comandos)\b/i;
 var CODE_WORDS2 = /\b(file|files|code|component|function|module|arquivo|código|componente|função|archivo|función)\b/i;
-var MAX_WORDS = 3;
+var MAX_WORDS2 = 3;
 var MIN_WORD = 5;
 var codeSpans = (text45) => [...text45.matchAll(/`([^`]+)`/g)].map((match) => (match[1] ?? "").trim()).filter((span) => span !== "");
 var isCommand = (span) => PROGRAMS.has(span.split(/\s+/)[0] ?? "") && span.includes(" ");
@@ -73366,7 +73548,7 @@ var words9 = (text45) => [
   ...new Set(
     text45.toLowerCase().replace(/`[^`]*`/g, " ").split(/[^\p{L}\p{N}-]+/u).filter((word2) => word2.length >= MIN_WORD && !MODAL.test(word2) && !NEGATED2.test(word2))
   )
-].sort((left, right2) => right2.length - left.length).slice(0, MAX_WORDS);
+].sort((left, right2) => right2.length - left.length).slice(0, MAX_WORDS2);
 var scopeFor = (text45) => {
   const spans2 = codeSpans(text45);
   const tools = [
@@ -75875,7 +76057,7 @@ var redundantEntry = async (driver, steps, values) => {
 
 // src/look/node-forms.ts
 var text42 = (value2, key3) => isRecord(value2) && typeof value2[key3] === "string" ? value2[key3] : "";
-var fieldsOf3 = async (page2, form) => {
+var fieldsOf4 = async (page2, form) => {
   const raw = await page2.evaluate(runInPage(formFields.toString(), ["document", JSON.stringify(form)]));
   return Array.isArray(raw) ? raw.flatMap(
     (item2) => isRecord(item2) && typeof item2["sel"] === "string" ? [
@@ -75921,7 +76103,7 @@ var choicesOf = async (page2, form) => {
 };
 var stepDriver = (page2) => ({
   snapshot: async (step5) => {
-    const fields2 = await fieldsOf3(page2, step5);
+    const fields2 = await fieldsOf4(page2, step5);
     return fields2.length === 0 ? void 0 : { fields: fields2, choices: await choicesOf(page2, step5) };
   },
   fill: async (sel, value2) => page2.locator(sel).first().fill(value2),
@@ -75976,7 +76158,7 @@ var fill = async (page2, fields2, target7, values) => {
 };
 var checkForm = async (page2, url2, form, options2) => {
   await page2.goto(url2, { waitUntil: "networkidle" });
-  const fields2 = await fieldsOf3(page2, form);
+  const fields2 = await fieldsOf4(page2, form);
   if (fields2.length === 0) return [issue2("forms/native", form, "form not found on the page", { unverified: true })];
   const target7 = fields2.find(
     (field) => invalidValue(field) !== void 0 && validValue(field, options2.values) !== void 0
@@ -87405,10 +87587,12 @@ var fixOf = (event) => {
 var codeDomain = (field) => DOMAINS.find((domain) => domain === field);
 var withResearch = (domains, marks, weeks) => ({
   domains: domains.map((item2) => {
-    const mine = marks.filter((mark2) => codeDomain(mark2.field) === item2.domain && weeks.includes(mark2.week));
+    const mine = marks.filter((mark2) => mark2.field === item2.domain && weeks.includes(mark2.week));
     return item2.status === "ok" && mine.length > 0 ? { ...item2, research: mine } : item2;
   }),
-  outside: marks.filter((mark2) => codeDomain(mark2.field) === void 0 && weeks.includes(mark2.week))
+  outside: marks.filter(
+    (mark2) => codeDomain(mark2.field) === void 0 && !domains.some((item2) => item2.domain === mark2.field && item2.status === "ok") && weeks.includes(mark2.week)
+  )
 });
 var RESEARCH_GLYPH = {
   open: "▲",
