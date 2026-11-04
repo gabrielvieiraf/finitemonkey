@@ -24,7 +24,7 @@ import {
 } from "../scripts/sea-lib.js";
 import { ROOT } from "./support.js";
 
-const DIST = readFileSync(join(ROOT, "dist", "finitemonkey.mjs"), "utf8");
+const DIST = readFileSync(join(ROOT, "dist", "finitemonkey-core.mjs"), "utf8");
 const DOCTOR = JSON.stringify({
   schemaVersion: 1,
   data: { schema: "finitemonkey/doctor@1", checks: [{ check: "node" }] },

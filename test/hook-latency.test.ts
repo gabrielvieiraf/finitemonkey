@@ -14,7 +14,7 @@ import { pluginHooks } from "../src/install/plugin-hooks.js";
 import { BUNDLE, cliJson, field, found, parseBody, ROOT } from "./support.js";
 
 const RUNS = 10;
-const PLATFORM_LIMIT_MS: Readonly<Record<string, string>> = { linux: "300", win32: "500" };
+const PLATFORM_LIMIT_MS: Readonly<Record<string, string>> = { linux: "300", win32: "450" };
 const P95_LIMIT_MS = Number(process.env["FM_HOOK_P95_MS"] ?? PLATFORM_LIMIT_MS[process.platform] ?? "450");
 
 const base = mkdtempSync(join(tmpdir(), "fm-latency-"));

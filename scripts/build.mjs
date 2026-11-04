@@ -2,6 +2,8 @@ import { relative } from "node:path";
 
 import { bundle, bundleMod, copyToPlugin, ROOT } from "./bundle.mjs";
 
-const outfile = await bundle();
+const built = await bundle();
+const copied = copyToPlugin();
 const mod = await bundleMod();
-console.log(`built ${relative(ROOT, outfile)}, ${relative(ROOT, copyToPlugin(outfile))} and ${relative(ROOT, mod)}`);
+const names = [...built, ...copied, mod].map((path) => relative(ROOT, path));
+console.log(`built ${names.join(", ")}`);

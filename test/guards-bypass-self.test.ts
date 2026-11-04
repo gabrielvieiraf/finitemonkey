@@ -83,6 +83,7 @@ describe("self guard", () => {
     [".finitemonkey/findings/baseline.json", "policy"],
     [".finitemonkey/incidents/inc-0123456789ab.json", "policy"],
     [".finitemonkey/runtime/dist/finitemonkey.mjs", "policy"],
+    [".finitemonkey/runtime/dist/finitemonkey-core.mjs", "policy"],
     [".finitemonkey/trust.json", "policy"],
     [".finitemonkey\\lock.json", "policy"],
     ["src/app.ts", undefined],

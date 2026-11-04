@@ -1,3 +1,5 @@
+import { toAbsolutePath } from "../core/brand.js";
+import { corePath } from "../core/bundle-files.js";
 import type { Ctx } from "../core/context.js";
 import type { Problem } from "../core/problem.js";
 import type { ProjectDefaults } from "../defaults/items.js";
@@ -10,7 +12,7 @@ import type { Channel } from "./marketplace.js";
 import type { PlanError, PlanInput } from "./plan.js";
 import { findGitRoot, type Project, projectAt } from "./project.js";
 import { SANDBOX_PLATFORMS } from "./sandbox.js";
-import { isBundlePath } from "./vendor.js";
+import { isBundlePath, type VendorBundle } from "./vendor.js";
 
 export interface Opened {
   readonly project: Project;
@@ -90,10 +92,11 @@ export const notInstalled = (): Problem =>
 export const confirmProblem = (command: string, question: string, fix: string): Problem =>
   problem("needs_confirmation", "error.needs_confirmation", fix, ExitCode.NeedsPerson, { command, question });
 
-const selfBundle = (ctx: Ctx): string | undefined => {
+const selfBundle = (ctx: Ctx): VendorBundle | undefined => {
   if (!isBundlePath(ctx.runtime.selfPath)) return undefined;
-  const text = ctx.runtime.readText(ctx.runtime.selfPath);
-  return text.ok ? text.value : undefined;
+  const bin = ctx.runtime.readText(ctx.runtime.selfPath);
+  const core = ctx.runtime.readText(toAbsolutePath(corePath(ctx.runtime.selfPath)));
+  return bin.ok && core.ok ? { bin: bin.value, core: core.value } : undefined;
 };
 
 const INHERITED: ReadonlySet<LangSource> = new Set(["default", "config", "conversation", "claude-settings"]);
