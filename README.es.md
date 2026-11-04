@@ -168,15 +168,15 @@ El precio es cerca de 1,6 veces el costo y el doble del tiempo: el control ejecu
 Las guardas siempre activas también se vuelven a ejecutar en cada versión contra un corpus etiquetado:
 
 <!-- generated:evidence:start -->
-Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.47 sobre el corpus etiquetado en [bench/corpus](bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
+Tasas de error de los guards siempre activos, reproducidas con `npm run evidence` en la versión 0.1.0-next.48 sobre el corpus etiquetado en [bench/corpus](bench/corpus). Una release falla cuando la tasa de falsos positivos de un guard pasa del 15% o cuando su corpus tiene menos de 50 casos que deben bloquear o 50 que deben pasar. Por ahora todos los casos son sintéticos, escritos a partir de las listas de prueba de los propios guards; los casos de sesiones reales se contarán aparte.
 
 | Guard | Debe bloquear | Debe dejar | Falsos positivos | Falsos negativos | p95 (ms) |
 |---|---|---|---|---|---|
 | `secrets` | 59 | 54 | 0/54 (0.0%) | 0/59 (0.0%) | 0.2 |
-| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 26.0 |
-| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 54.7 |
-| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 1.4 |
-| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.3 |
+| `gate` | 52 | 52 | 0/52 (0.0%) | 0/52 (0.0%) | 27.7 |
+| `git` | 58 | 62 | 0/62 (0.0%) | 0/58 (0.0%) | 62.3 |
+| `rules` | 50 | 55 | 0/55 (0.0%) | 0/50 (0.0%) | 0.9 |
+| `remote` | 54 | 54 | 0/54 (0.0%) | 0/54 (0.0%) | 0.4 |
 
 Costo frente a Claude Code solo en las mismas tareas: todavía sin medir.
 
@@ -287,6 +287,7 @@ Generado desde `src/core/footprint.ts`, la lista que los tests exigen al código
 | Escribe | `.finitemonkey/regression/` | Un worktree desechable de git en el commit base, usado para comprobar que el test nuevo de una corrección de bug falla sin la corrección. Se elimina después de la ejecución. |
 | Escribe | `.finitemonkey/suggestions.jsonl` | Sugerencias de refactorización que se muestran al final de una tarea después de que pasa la puerta, con lo que se aceptó, descartó o cerró. No se cambia nada en el código. |
 | Escribe | `~/.finitemonkey/heavy/` | Un archivo de bloqueo por instalación, compilación o suite de pruebas en curso, compartido por todos los worktrees de la máquina, para que corran de a uno (por defecto en WSL). |
+| Escribe | `~/.finitemonkey/compile-cache/` | El código ya compilado de la CLI por Node, para que cada hook arranque más rápido después de la primera ejecución (Node 22.1 o posterior; `NODE_DISABLE_COMPILE_CACHE=1` lo desactiva). Es solo de tu usuario, nunca está dentro de un proyecto (no se escribe nada cuando tu carpeta personal está en un repositorio git) y se puede borrar cuando quieras. En Windows, `%USERPROFILE%` reemplaza `~`. |
 | Escribe | `.finitemonkey/instructions.jsonl` | El hook `InstructionsLoaded` agrega una línea por cada archivo de instrucciones que carga Claude Code: la sesión, la ruta, el motivo y cuándo. `finitemonkey instructions` lo compara con lo que resolvió. No se copia el contenido de ningún archivo. |
 | Escribe | `.finitemonkey/rules.yml`, `.finitemonkey/rule-violations.jsonl` | `rules propose` agrega a `.finitemonkey/rules.yml` solo las entradas que confirmas en una terminal. Cada regla incumplida al final de un turno, bloqueada por un guard o informada con `rules violation` deja una línea en `rule-violations.jsonl` (regla, origen, detalle enmascarado), la evidencia para promover un recordatorio. |
 | Escribe | `.finitemonkey/learnings.jsonl`, `.finitemonkey/cache/agent-changes.json` | Lecciones de trabajos anteriores: un texto corto ligado a rutas de archivo o a la firma de un error que se detuvo tras un cambio, cuántas veces se usó cada una y cuándo coincidió por última vez. Una lección sin uso por 90 días o marcada como inútil dos veces se borra; `learnings delete` quita una a mano. `cache/agent-changes.json` guarda las ediciones recientes del agente; cuando la persona deshace dos veces el mismo cambio en el mismo lugar, se convierte en una propuesta de lección con origen persona, usada solo después de `learnings accept`. |
