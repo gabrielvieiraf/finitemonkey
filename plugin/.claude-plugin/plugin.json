@@ -7,7 +7,7 @@
     "name": "Gabriel Vieira",
     "url": "https://github.com/gabrielvieiraf"
   },
-  "homepage": "https://github.com/gabrielvieiraf/finitemonkey#readme",
+  "homepage": "https://gabrielvieiraf.github.io/finitemonkey",
   "repository": "https://github.com/gabrielvieiraf/finitemonkey",
   "license": "Apache-2.0",
   "keywords": ["verification", "definition-of-done", "hooks", "guards"]
