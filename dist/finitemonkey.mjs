@@ -423,13 +423,14 @@ import { createInterface } from "node:readline";
 var MAX_BUFFER3 = 256 * 1024 * 1024;
 var GIT_ENV = { ...process.env, GIT_PAGER: "cat", GIT_TERMINAL_PROMPT: "0", LC_ALL: "C" };
 var notFound = (error) => error instanceof Error && "code" in error && error.code === "ENOENT";
-var nodeGit = (args2, cwd) => {
+var nodeGit = (args2, cwd, timeoutMs) => {
   const result2 = spawnSync3("git", [...args2], {
     cwd,
     encoding: "utf8",
     maxBuffer: MAX_BUFFER3,
     windowsHide: true,
-    env: GIT_ENV
+    env: GIT_ENV,
+    ...timeoutMs === void 0 ? {} : { timeout: timeoutMs }
   });
   const stdout = result2.stdout;
   return {
@@ -19227,8 +19228,9 @@ var en_default = {
   "doctor.fix.backup": "Backup of the previous files: {path}",
   "doctor.fix.manual": "--fix does not touch user settings, the shell profile or the system; run the fix shown under each remaining item",
   "doctor.report.written": "Report written to {path}; attach it to the issue",
-  "hook.failed_closed": "the {event} hook could not run ({detail}), so it blocked to stay safe. Run `finitemonkey doctor`",
+  "hook.failed_closed": "the {event} hook could not run ({detail}), so it blocked to stay safe. Until it runs again, only file reads, `finitemonkey doctor` and `finitemonkey off` go through. Run `finitemonkey doctor`",
   "hook.failed_open": "the {event} hook could not run ({detail}); continuing without it. Run `finitemonkey doctor`",
+  "hook.repair_allowed": "the {event} hook could not run ({detail}). This call reads files or diagnoses or turns off Finite Monkey, so it goes through. Run `finitemonkey doctor`",
   "exit.ok": "0 ok: the command did what it was asked",
   "exit.check_failed": "1 check failed: the command ran and found a problem",
   "exit.usage": "2 usage error: unknown command, unknown flag, bad value or command not available yet",
@@ -22344,8 +22346,9 @@ var es_default = {
   "doctor.fix.backup": "Copia de los archivos anteriores: {path}",
   "doctor.fix.manual": "--fix no toca los settings del usuario, el perfil de la shell ni el sistema; ejecuta la corrección indicada en cada elemento restante",
   "doctor.report.written": "Informe guardado en {path}; adjúntalo a la issue",
-  "hook.failed_closed": "el hook {event} no pudo ejecutarse ({detail}) y bloqueó por seguridad. Ejecuta `finitemonkey doctor`",
+  "hook.failed_closed": "el hook {event} no pudo ejecutarse ({detail}) y bloqueó por seguridad. Hasta que vuelva a ejecutarse, solo pasan la lectura de archivos, `finitemonkey doctor` y `finitemonkey off`. Ejecuta `finitemonkey doctor`",
   "hook.failed_open": "el hook {event} no pudo ejecutarse ({detail}); se sigue sin él. Ejecuta `finitemonkey doctor`",
+  "hook.repair_allowed": "el hook {event} no pudo ejecutarse ({detail}). Esta llamada lee archivos o diagnostica o apaga Finite Monkey, así que pasa. Ejecuta `finitemonkey doctor`",
   "exit.ok": "0 ok: el comando hizo lo que se pidió",
   "exit.check_failed": "1 revisión fallida: el comando se ejecutó y encontró un problema",
   "exit.usage": "2 error de uso: comando u opción desconocidos, valor inválido o comando aún no disponible",
@@ -25461,8 +25464,9 @@ var pt_BR_default = {
   "doctor.fix.backup": "Backup dos arquivos anteriores: {path}",
   "doctor.fix.manual": "--fix não mexe nos settings do usuário, no perfil do shell nem no sistema; rode a correção mostrada em cada item que sobrou",
   "doctor.report.written": "Relatório gravado em {path}; anexe na issue",
-  "hook.failed_closed": "o hook {event} não conseguiu rodar ({detail}) e bloqueou por segurança. Rode `finitemonkey doctor`",
+  "hook.failed_closed": "o hook {event} não conseguiu rodar ({detail}) e bloqueou por segurança. Até ele voltar a rodar, só passam leitura de arquivos, `finitemonkey doctor` e `finitemonkey off`. Rode `finitemonkey doctor`",
   "hook.failed_open": "o hook {event} não conseguiu rodar ({detail}); seguindo sem ele. Rode `finitemonkey doctor`",
+  "hook.repair_allowed": "o hook {event} não conseguiu rodar ({detail}). Esta chamada lê arquivos ou diagnostica ou desliga o Finite Monkey, então ela passa. Rode `finitemonkey doctor`",
   "exit.ok": "0 ok: o comando fez o que foi pedido",
   "exit.check_failed": "1 verificação reprovada: o comando rodou e achou um problema",
   "exit.usage": "2 erro de uso: comando ou opção desconhecidos, valor inválido ou comando ainda não disponível",
@@ -28581,6 +28585,7 @@ var review_default = {
     "doctor.report.written": "machine",
     "hook.failed_closed": "machine",
     "hook.failed_open": "machine",
+    "hook.repair_allowed": "machine",
     "exit.ok": "machine",
     "exit.check_failed": "machine",
     "exit.usage": "machine",
@@ -31696,6 +31701,7 @@ var review_default = {
     "doctor.report.written": "machine",
     "hook.failed_closed": "machine",
     "hook.failed_open": "machine",
+    "hook.repair_allowed": "machine",
     "exit.ok": "machine",
     "exit.check_failed": "machine",
     "exit.usage": "machine",
@@ -39979,6 +39985,20 @@ var checkHiddenText = ({ root, runtime }) => {
 
 // src/doctor/hooks.ts
 import { join as join206 } from "node:path";
+
+// src/hooks/bounded-runtime.ts
+var MIN_SLICE_MS = 1;
+var boundedRuntime = (runtime, deadlineAt) => {
+  const remaining = () => Math.max(MIN_SLICE_MS, deadlineAt - nowMs(runtime));
+  const capped4 = (wanted) => Math.min(wanted ?? Number.POSITIVE_INFINITY, remaining());
+  return {
+    ...runtime,
+    git: (args2, cwd, timeoutMs) => runtime.git(args2, cwd, capped4(timeoutMs)),
+    gitWith: (args2, cwd, options2) => runtime.gitWith(args2, cwd, { ...options2, timeoutMs: capped4(options2.timeoutMs) }),
+    exec: (request) => runtime.exec({ ...request, timeoutMs: capped4(request.timeoutMs) }),
+    execSelf: (args2, cwd, timeoutMs) => runtime.execSelf(args2, cwd, capped4(timeoutMs))
+  };
+};
 
 // src/advisor/hook.ts
 import { join as join102 } from "node:path";
@@ -69626,6 +69646,8 @@ var changedPaths3 = (before2, after2) => [.../* @__PURE__ */ new Set([...Object.
 var SHELL_WRITERS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var MAX_RECORDED_FILES = 200;
 var SNAPSHOT_PREFIX = "bash-before-";
+var SNAPSHOT_BUDGET_MS = 1e3;
+var budgeted2 = (input) => boundedRuntime(input.runtime, nowMs(input.runtime) + SNAPSHOT_BUDGET_MS);
 var allow25 = { kind: "allow" };
 var snapshotKey = (input) => {
   const raw = input.payload.raw;
@@ -69673,7 +69695,7 @@ var bashSnapshot = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 === void 0) return allow25;
   pruneStale(input, scope2.paths);
-  const snapshot2 = takeSnapshot2(input.runtime, scope2.paths.root, true);
+  const snapshot2 = takeSnapshot2(budgeted2(input), scope2.paths.root, true);
   if (snapshot2 !== void 0)
     input.runtime.writeText(
       snapshotFile(scope2.paths, input),
@@ -69702,7 +69724,7 @@ var bashWriteRecorder = (input) => {
   const scope2 = scopeOf(input);
   if (scope2 === void 0) return allow25;
   const before2 = readSnapshot2(input, scope2);
-  const after2 = before2 === void 0 ? void 0 : takeSnapshot2(input.runtime, scope2.paths.root, false);
+  const after2 = before2 === void 0 ? void 0 : takeSnapshot2(budgeted2(input), scope2.paths.root, false);
   if (before2 === void 0 || after2 === void 0) return allow25;
   const changed = changedPaths3(before2, after2).slice(0, MAX_RECORDED_FILES);
   const present5 = changed.filter((path) => (after2.marks[path]?.size ?? -1) >= 0);
@@ -71453,15 +71475,29 @@ var parseHookPayload = (event, text45, interactive) => {
   return accept(payload);
 };
 
+// src/hooks/repair.ts
+var READ_TOOLS4 = /* @__PURE__ */ new Set(["Read", "Grep", "Glob", "LS"]);
+var SHELL_TOOLS5 = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
+var CHAINING = /[;&|`$()<>\n\r]/;
+var REPAIR_COMMAND = /^\s*(?:npx\s+(?:-y\s+)?)?(?:finitemonkey|node\s+(?:"[^"]*finitemonkey\.mjs"|'[^']*finitemonkey\.mjs'|\S*finitemonkey\.mjs))\s+(?:doctor|off|on|status|help|--version)(?:\s+--?[\w-]+)*\s*$/;
+var repairCommand = (command) => !CHAINING.test(command) && REPAIR_COMMAND.test(command);
+var repairsItself = (event, payload) => {
+  if (event !== "PreToolUse" || payload === void 0) return false;
+  const tool = toolName(payload.raw);
+  if (READ_TOOLS4.has(tool)) return true;
+  return SHELL_TOOLS5.has(tool) && repairCommand(textField(toolInput(payload.raw), "command") ?? "");
+};
+
 // src/hooks/runner.ts
 var HOOK_PROBE_ENV = "FINITEMONKEY_HOOK_PROBE";
 var messageOf6 = (error) => error instanceof Error ? error.message : String(error);
 var decide3 = (input, handlers) => composeDecisions(input, handlers[input.event] ?? [allow35]);
-var evaluate2 = async (event, options2) => {
+var evaluate2 = async (event, options2, seen) => {
   const text45 = await readAll2(options2.stdin);
   const parsed = parseHookPayload(event, text45, options2.stdin.isTTY === true);
   if (!parsed.ok) return { kind: "failed", payload: void 0, detail: parsed.error };
   const payload = parsed.value;
+  seen.payload = payload;
   const probe = options2.env?.[PROBE_ID_ENV];
   if (probe !== void 0 && probe !== "") {
     const root = findRepoRoot(
@@ -71500,7 +71536,14 @@ var released = (event, detail, t) => ({
 `,
   verdict: "stop_released"
 });
-var failed7 = (event, detail, t) => HOOK_POLICIES[event].failClosed ? {
+var repairAllowed = (event, detail, t) => ({
+  exitCode: 0,
+  stdout: ALLOW_STDOUT,
+  stderr: `finitemonkey: ${t("hook.repair_allowed", { event, detail })}
+`,
+  verdict: "repair_allowed"
+});
+var failed7 = (event, detail, t, payload) => HOOK_POLICIES[event].failClosed && repairsItself(event, payload) ? repairAllowed(event, detail, t) : HOOK_POLICIES[event].failClosed ? {
   exitCode: 2,
   stdout: "",
   stderr: `finitemonkey: ${t("hook.failed_closed", { event, detail })}
@@ -71523,7 +71566,7 @@ var worktreeCreated = (output, t) => {
 var conclude2 = (event, evaluation, t, probe) => {
   const stopActive = evaluation.payload?.stopHookActive === true;
   if (evaluation.kind === "failed") {
-    return stopActive ? released(event, evaluation.detail, t) : failed7(event, evaluation.detail, t);
+    return stopActive ? released(event, evaluation.detail, t) : failed7(event, evaluation.detail, t, evaluation.payload);
   }
   const { decision: decision2 } = evaluation;
   if (decision2.kind === "allow") {
@@ -71538,15 +71581,17 @@ var conclude2 = (event, evaluation, t, probe) => {
 `, verdict: "block" };
 };
 var runHook = async (event, options2) => {
+  const seen = { payload: void 0 };
+  const bounded2 = { ...options2, runtime: boundedRuntime(options2.runtime, nowMs(options2.runtime) + options2.deadlineMs) };
   try {
     return conclude2(
       event,
-      await withDeadline(evaluate2(event, options2), options2.deadlineMs, options2.startTimer),
+      await withDeadline(evaluate2(event, bounded2, seen), options2.deadlineMs, options2.startTimer),
       options2.t,
       options2.env?.[HOOK_PROBE_ENV] === "1"
     );
   } catch (error) {
-    return failed7(event, messageOf6(error), options2.t);
+    return failed7(event, messageOf6(error), options2.t, seen.payload);
   }
 };
 
@@ -71627,14 +71672,14 @@ var executableVersion = (exec, invocation, cwd, env) => {
 
 // src/doctor/hook-health.ts
 var GUARDS = new Set(INSTALLED_HOOKS.filter((spec3) => spec3.guard).map((spec3) => spec3.event));
-var SHELL_TOOLS5 = ["Bash", "PowerShell"];
+var SHELL_TOOLS6 = ["Bash", "PowerShell"];
 var uncoveredTools = (matcher) => {
   if (matcher === void 0 || matcher === "" || matcher === "*") return [];
   try {
     const pattern = new RegExp(`^(?:${matcher})$`);
-    return SHELL_TOOLS5.filter((tool) => !pattern.test(tool));
+    return SHELL_TOOLS6.filter((tool) => !pattern.test(tool));
   } catch {
-    return SHELL_TOOLS5.filter((tool) => tool !== matcher);
+    return SHELL_TOOLS6.filter((tool) => tool !== matcher);
   }
 };
 var configProblems = (entry2) => {
@@ -94597,18 +94642,18 @@ var propose6 = (ctx, paths, task, from) => {
     );
   const parsed = parseUiContract(source4.value);
   if (!parsed.ok) return invalid9(ctx, parsed.error);
-  const budgeted2 = budgetProposal(ctx.runtime, paths, task, source4.value);
-  const made = proposeUi(ctx.runtime, paths, task, budgeted2.source);
+  const budgeted3 = budgetProposal(ctx.runtime, paths, task, source4.value);
+  const made = proposeUi(ctx.runtime, paths, task, budgeted3.source);
   if (!made.ok) return invalid9(ctx, made.error);
-  logEvent(ctx.runtime, paths, "ui.proposed", { task, hash: made.value, dropped: budgeted2.dropped.length });
+  logEvent(ctx.runtime, paths, "ui.proposed", { task, hash: made.value, dropped: budgeted3.dropped.length });
   return {
     ...show10(ctx, paths, task),
     human: [
-      ...budgeted2.applied ? [
+      ...budgeted3.applied ? [
         ctx.t("ui.trimmed", {
-          size: budgeted2.size ?? "",
-          count: budgeted2.dropped.length,
-          sections: budgeted2.dropped.slice(0, 5).join("; ")
+          size: budgeted3.size ?? "",
+          count: budgeted3.dropped.length,
+          sections: budgeted3.dropped.slice(0, 5).join("; ")
         })
       ] : [],
       ctx.t("ui.proposed", { task, hash: made.value })

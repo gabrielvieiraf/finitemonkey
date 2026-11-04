@@ -19,7 +19,7 @@ export interface GitResult {
   readonly stdout: string;
 }
 
-export type Git = (args: readonly string[], cwd: AbsolutePath) => GitResult;
+export type Git = (args: readonly string[], cwd: AbsolutePath, timeoutMs?: number) => GitResult;
 
 export type GitLines = (
   args: readonly string[],
