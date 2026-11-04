@@ -74,9 +74,10 @@ describe("knowledge in the band and in compaction", () => {
     const view = parseStatus(stdout);
     assert.ok(view !== undefined);
     assert.deepEqual(view.knowledge, { stale: 1, contradictions: 0, quarantined: 0 });
-    assert.match(bandLine(view), /knowledge: 1 stale · 0 rules contradict code · 0 in quarantine/);
+    assert.match(bandLine(view), /1 recorded fact points at code that changed \(finitemonkey claims list\)/);
+    assert.doesNotMatch(bandLine(view), /AGENTS\.md|wait for a green gate|waits for a green gate/);
     const zero: GateView = { ...view, knowledge: null };
-    assert.doesNotMatch(bandLine(zero), /knowledge/);
+    assert.doesNotMatch(bandLine(zero), /recorded fact/);
     const parsedZero = parseStatus(stdout.replace('"stale":1', '"stale":0'));
     assert.equal(parsedZero?.knowledge, null);
   });

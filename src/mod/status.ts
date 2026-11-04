@@ -161,11 +161,16 @@ export const trajectoryLine = (trajectory: NonNullable<GateView["trajectory"]>):
   ].join(", ");
 
 export const knowledgeLine = (knowledge: NonNullable<GateView["knowledge"]>): string =>
-  label("mod.view.knowledge", {
-    stale: knowledge.stale,
-    contradictions: knowledge.contradictions,
-    quarantined: knowledge.quarantined,
-  });
+  [
+    ...(knowledge.contradictions > 0 ? [label("mod.view.knowledge_rules", { count: knowledge.contradictions })] : []),
+    ...(knowledge.stale > 0 ? [label("mod.view.knowledge_stale", { count: knowledge.stale })] : []),
+    ...(knowledge.quarantined > 0 ? [label("mod.view.knowledge_quarantined", { count: knowledge.quarantined })] : []),
+  ].join(" · ");
+
+export const loopLine = (loop: NonNullable<GateView["loop"]>): string =>
+  loop.count + 1 >= loop.limit
+    ? label("mod.view.loop_held", { count: loop.count })
+    : label("mod.view.loop", { count: loop.count, limit: loop.limit });
 
 export const blindLine = (blind: NonNullable<GateView["blindBand"]>): string =>
   label("mod.view.blind", {
@@ -247,7 +252,7 @@ export const bandLine = (view: GateView): string =>
     ...(view.blindBand === null || view.blindBand.withoutCriterion === 0 ? [] : [blindLine(view.blindBand)]),
     ...(view.trajectory === null ? [] : [trajectoryLine(view.trajectory)]),
     ...(view.triage === null || view.triage.open === 0 ? [] : [triageLine(view.triage)]),
-    ...(view.loop === null ? [] : [label("mod.view.loop", { count: view.loop.count, limit: view.loop.limit })]),
+    ...(view.loop === null ? [] : [loopLine(view.loop)]),
     ...(view.cost === null ? [] : [costBand(view.cost)]),
     ...(view.xray === null || view.xray.beyond === 0 ? [] : [label("mod.view.xray", { count: view.xray.beyond })]),
   ].join(" · ");

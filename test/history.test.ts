@@ -10,7 +10,7 @@ import { hitsIn, type Pattern, PATTERNS } from "../src/history/patterns.js";
 import { parseTranscript } from "../src/history/transcript.js";
 import { repo, ROOT } from "./install-support.js";
 import { memoryFs } from "./memory-fs.js";
-import { BUNDLE, BUNDLE_TEXT, cliJson, fakeRuntime, field, found, ROOT as REPO_ROOT } from "./support.js";
+import { BUNDLE_FILES, cliJson, fakeRuntime, field, found, ROOT as REPO_ROOT } from "./support.js";
 
 const fixture = (name: string): string => readFileSync(join(REPO_ROOT, "test", "fixtures", "history", name), "utf8");
 
@@ -103,10 +103,9 @@ describe("init --look-back", () => {
   });
 
   it("with --look-back, prints counts marked as an estimate and writes nothing about them", async () => {
-    const fs = memoryFs(
-      { [BUNDLE]: BUNDLE_TEXT, [join(toAbsolutePath(logDir), "a.jsonl")]: fixture("labeled.jsonl") },
-      [join(ROOT, ".git")],
-    );
+    const fs = memoryFs({ ...BUNDLE_FILES, [join(toAbsolutePath(logDir), "a.jsonl")]: fixture("labeled.jsonl") }, [
+      join(ROOT, ".git"),
+    ]);
     const runtime = fakeRuntime({ fs, tools: { claude: found("2.1.300 (Claude Code)") } });
     const result = await cliJson(["init", "--dry-run", "--look-back"], { cwd: ROOT, runtime, env: {} });
     assert.equal(result.code, ExitCode.Ok);

@@ -7,13 +7,14 @@ import { pathToFileURL } from "node:url";
 
 import { isEntryPoint } from "../src/core/entry.js";
 import { nodeRealpath } from "../src/core/node-runtime.js";
-import { BUNDLE, bundle, field, parseBody, ROOT } from "./support.js";
+import { BUNDLE, bundle, CORE, field, parseBody, ROOT } from "./support.js";
 
 const base = mkdtempSync(join(tmpdir(), "fm-entry-"));
 const pkg = join(base, "Área de Trabalho", "pasta com espaço", "ação");
 const copied = join(pkg, "dist", "finitemonkey.mjs");
 mkdirSync(join(pkg, "dist"), { recursive: true });
 copyFileSync(BUNDLE, copied);
+copyFileSync(CORE, join(pkg, "dist", "finitemonkey-core.mjs"));
 copyFileSync(join(ROOT, "package.json"), join(pkg, "package.json"));
 const version = field(parseBody(readFileSync(join(ROOT, "package.json"), "utf8")), "version");
 

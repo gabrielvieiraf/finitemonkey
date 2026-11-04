@@ -6,14 +6,21 @@ import { build } from "esbuild";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const ENTRY = join(ROOT, "src", "cli.ts");
-export const OUTFILE = join(ROOT, "dist", "finitemonkey.mjs");
-export const PLUGIN_BUNDLE = join(ROOT, "plugin", "scripts", "finitemonkey.mjs");
+export const BIN_ENTRY = join(ROOT, "src", "bin.ts");
+export const BIN_FILE = "finitemonkey.mjs";
+export const CORE_FILE = "finitemonkey-core.mjs";
+export const BUNDLE_FILES = [BIN_FILE, CORE_FILE];
+export const DIST = join(ROOT, "dist");
+export const PLUGIN_SCRIPTS = join(ROOT, "plugin", "scripts");
+export const OUTFILE = join(DIST, BIN_FILE);
+export const CORE_OUTFILE = join(DIST, CORE_FILE);
+export const PLUGIN_BUNDLE = join(PLUGIN_SCRIPTS, BIN_FILE);
 export const MOD_ENTRY = join(ROOT, "src", "mod", "register.ts");
 export const MOD_BUNDLE = join(ROOT, "plugin", "hooks", "register.mjs");
 
-export const bundle = async (outfile = OUTFILE) => {
+const buildNode = async (entry, outfile) => {
   await build({
-    entryPoints: [ENTRY],
+    entryPoints: [entry],
     outfile,
     bundle: true,
     platform: "node",
@@ -27,6 +34,11 @@ export const bundle = async (outfile = OUTFILE) => {
   chmodSync(outfile, 0o755);
   return outfile;
 };
+
+export const bundle = async (dir = DIST) => [
+  await buildNode(BIN_ENTRY, join(dir, BIN_FILE)),
+  await buildNode(ENTRY, join(dir, CORE_FILE)),
+];
 
 export const bundleMod = async (outfile = MOD_BUNDLE) => {
   await build({
@@ -44,9 +56,11 @@ export const bundleMod = async (outfile = MOD_BUNDLE) => {
   return outfile;
 };
 
-export const copyToPlugin = (from = OUTFILE, to = PLUGIN_BUNDLE) => {
-  mkdirSync(join(to, ".."), { recursive: true });
-  copyFileSync(from, to);
-  chmodSync(to, 0o755);
-  return to;
+export const copyToPlugin = (from = DIST, to = PLUGIN_SCRIPTS) => {
+  mkdirSync(to, { recursive: true });
+  return BUNDLE_FILES.map((name) => {
+    copyFileSync(join(from, name), join(to, name));
+    chmodSync(join(to, name), 0o755);
+    return join(to, name);
+  });
 };

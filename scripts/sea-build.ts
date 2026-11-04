@@ -58,7 +58,7 @@ if (process.argv.includes("--asset-name")) {
 const problems = nodeProblems(process.versions.node);
 if (problems.length > 0) fail(problems);
 
-const entry = seaEntrySource(readFileSync(at("dist/finitemonkey.mjs"), "utf8"), version);
+const entry = seaEntrySource(readFileSync(at("dist/finitemonkey-core.mjs"), "utf8"), version);
 if (entry.problems.length > 0) fail(entry.problems);
 
 mkdirSync(at(SEA_DIR), { recursive: true });

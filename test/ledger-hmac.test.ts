@@ -10,7 +10,7 @@ import { keyPath } from "../src/evidence/sign.js";
 import { EVIDENCE_SCHEMA } from "../src/evidence/types.js";
 import { gitAt, treeHash } from "../src/gate/git.js";
 import { runGate } from "../src/gate/run.js";
-import { VENDOR_BIN } from "../src/install/layout.js";
+import { VENDOR_BIN, VENDOR_CORE } from "../src/install/layout.js";
 import { createTask } from "../src/task/create.js";
 import { fmPaths } from "../src/task/paths.js";
 import { makeRepo, PASSING_TEST, type Repo, repoRuntime } from "./repo.js";
@@ -82,15 +82,23 @@ describe("signed evidence ledger", () => {
     assert.equal(readLedgerChecked(runtime, fmPaths(repo.root).evidence("t1")).tampered, 1);
   });
 
-  it("a modified hook script makes the gate run the checks again instead of reusing evidence", () => {
+  const patchedScript = (script: string): void => {
     const runtime = homeRuntime();
     const repo = fresh();
     gate(repo, runtime);
     gate(repo, runtime);
     assert.equal(rawTestLines(repo), 1);
-    repo.write(VENDOR_BIN, "// patched\n");
+    repo.write(script, "// patched\n");
     gate(repo, runtime);
     assert.equal(rawTestLines(repo), 2);
+  };
+
+  it("a modified hook script makes the gate run the checks again instead of reusing evidence", () => {
+    patchedScript(VENDOR_BIN);
+  });
+
+  it("a modified vendored core makes the gate run the checks again instead of reusing evidence", () => {
+    patchedScript(VENDOR_CORE);
   });
 
   it("a missing key is created again and the old evidence is not trusted", () => {
