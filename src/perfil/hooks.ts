@@ -1,6 +1,4 @@
-import { bookConcepts, readBook } from "../conceitos/book.js";
-import { recordConceptEvents } from "../conceitos/evidence.js";
-import { mentionedConcepts } from "../conceitos/mentions.js";
+import { recordPromptConcepts } from "../conceitos/prompt-concepts.js";
 import { gitAt } from "../gate/git.js";
 import { projectPaths } from "../gate/hooks/common.js";
 import { headShaFromFiles } from "../git/head-file.js";
@@ -22,13 +20,7 @@ export const perfilPrompt: HookHandler = (input) => {
   const paths = projectPaths(input);
   if (paths === undefined || !comesFromPerson(prompt)) return allow;
   if (input.runtime.stat(paths.dir)?.kind !== "dir") return allow;
-  const concepts = mentionedConcepts(prompt, bookConcepts(readBook(input.runtime, paths)));
-  if (concepts.length === 0) return allow;
-  recordConceptEvents(
-    input.runtime,
-    paths,
-    concepts.map((concept) => ({ concept, kind: "exposure", origin: "person" })),
-  );
+  recordPromptConcepts(input.runtime, paths, prompt);
   return allow;
 };
 
